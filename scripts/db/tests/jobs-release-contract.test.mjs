@@ -40,12 +40,92 @@ test("Jobs migration is an approved forward migration", async () => {
   const release = await import("../production-release-migrations.mjs");
   assert.equal(
     release.CURRENT_PENDING_VERSIONS.at(-1),
-    "20260903081100",
+    "20260903103822",
   );
   assert.equal(
     release.EXPECTED_POST_MIGRATION_LATEST,
-    "20260903081100",
+    "20260903103822",
   );
+});
+
+test("CryptoJobsList uses its documented API contract and stays disabled until access review", () => {
+  const migration = read("supabase/migrations/20260903100928_add_cryptojobslist_adapter_contract.sql");
+  const adapter = read("supabase/functions/corelia-api/jobs/adapters.ts");
+  const pipeline = read("supabase/functions/corelia-api/jobs/pipeline.ts");
+
+  assert.match(migration, /https:\/\/api\.cryptojobslist\.com\/public\/jobs/);
+  assert.match(migration, /canonicalURL/);
+  assert.match(migration, /policy_reviewed_at = NULL/);
+  assert.match(migration, /enabled = false/);
+  assert.match(adapter, /missing_secret:CRYPTOJOBS_LIST_API_KEY/);
+  assert.match(adapter, /"x-api-key": apiKey/);
+  assert.match(adapter, /source_type === "cryptojobslist"/);
+  assert.match(pipeline, /Deno\.env\.get\("CRYPTOJOBS_LIST_API_KEY"\)/);
+});
+
+test("Jobs revalidation and operational alerts are independently observable", () => {
+  const migration = read("supabase/migrations/20260903094501_jobs_operational_alerts.sql");
+  const pipeline = read("supabase/functions/corelia-api/jobs/pipeline.ts");
+  const handlers = read("supabase/functions/corelia-api/jobs/handlers.ts");
+
+  assert.match(migration, /CREATE TABLE public\.job_operational_alerts/);
+  assert.match(migration, /ADD COLUMN last_revalidated_at/);
+  assert.match(migration, /job_operational_alerts_open_identity_unique/);
+  assert.match(pipeline, /export async function revalidateCompany/);
+  assert.match(handlers, /mode === "revalidation"/);
+  assert.match(handlers, /action === "alerts\.list"/);
+  assert.match(handlers, /action === "alerts\.resolve"/);
+});
+
+test("Jobs records AI fallback attempts separately from ingestion failures", () => {
+  const migration = read("supabase/migrations/20260903103822_add_jobs_ai_failure_observability.sql");
+  const pipeline = read("supabase/functions/corelia-api/jobs/pipeline.ts");
+  const operations = read("supabase/functions/corelia-api/jobs/operations.ts");
+
+  assert.match(migration, /ADD COLUMN ai_failed_count integer NOT NULL DEFAULT 0/);
+  assert.match(pipeline, /classification\.model === "deterministic"[\s\S]*?counters\.ai_failed_count \+= 1/);
+  assert.match(operations, /classificationFailedCount \/ context\.fetchedCount >= 0\.25/);
+});
+
+test("generic RSS uses provider-specific source policy instances", () => {
+  const migration = read("supabase/migrations/20260903091501_jobs_source_instances_and_operations.sql");
+  const handlers = read("supabase/functions/corelia-api/jobs/handlers.ts");
+
+  assert.match(migration, /ADD COLUMN source_id uuid REFERENCES public\.job_sources/);
+  assert.match(migration, /DROP INDEX IF EXISTS public\.job_sources_source_type_unique/);
+  assert.match(migration, /job_companies \(source_id, lower\(source_identifier\), source_region\)/);
+  assert.match(handlers, /action === "sources\.save"/);
+  assert.match(handlers, /source_type: "rss"/);
+  assert.match(handlers, /feed_urls: feedUrls/);
+});
+
+test("structured API and RSS feeds stay policy-gated until rollout", () => {
+  const migration = read("supabase/migrations/20260903090353_add_structured_job_feed_adapters.sql");
+  const adapter = read("supabase/functions/corelia-api/jobs/adapters.ts");
+
+  for (const source of ["himalayas", "weworkremotely", "remotive", "remoteok"]) {
+    assert.match(migration, new RegExp(`'${source}'`));
+  }
+  assert.match(migration, /'Himalayas'[\s\S]*?false, true/);
+  assert.match(migration, /'We Work Remotely'[\s\S]*?false, true/);
+  assert.match(migration, /'Remotive'[\s\S]*?false, true/);
+  assert.match(migration, /'Remote OK'[\s\S]*?false, true/);
+  assert.match(migration, /'CryptoJobsList'[\s\S]*?null/);
+  assert.match(adapter, /source_missing_feed_url/);
+  assert.match(adapter, /sourceHasCompleteSnapshot/);
+});
+
+test("web3.career source is token-gated and preserves provider apply URLs", () => {
+  const migration = read("supabase/migrations/20260903084000_add_web3career_jobs_source.sql");
+  const adapter = read("supabase/functions/corelia-api/jobs/adapters.ts");
+  const pipeline = read("supabase/functions/corelia-api/jobs/pipeline.ts");
+
+  assert.match(migration, /'web3career'/);
+  assert.match(migration, /Jobs sourced from web3\.career/);
+  assert.match(migration, /false,[\s\S]*true,[\s\S]*'Jobs sourced from web3\.career'/);
+  assert.match(adapter, /missing_secret:WEB3_CAREER_API_TOKEN/);
+  assert.match(adapter, /preserveApplyUrl: true/);
+  assert.match(pipeline, /validateExternalUrl\(job\.applyUrl \|\| job\.sourceUrl\)/);
 });
 
 test("Jobs Social backfill preserves engineering titles and staff overrides", () => {

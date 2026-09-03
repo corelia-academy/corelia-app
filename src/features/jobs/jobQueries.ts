@@ -7,6 +7,8 @@ import {
   getUserJobState,
   listAdminJobs,
   listCrawlerRuns,
+  listConnectedJobSources,
+  listJobOperationalAlerts,
   listJobCompaniesAdmin,
   listJobs,
   listJobSourcesAdmin,
@@ -21,6 +23,7 @@ export const jobKeys = {
   catalog: (filters: JobFilters, userId: string) => [...jobKeys.all, "catalog", filters, userId] as const,
   detail: (slug: string) => [...jobKeys.all, "detail", slug] as const,
   taxonomy: () => [...jobKeys.all, "taxonomy"] as const,
+  sources: () => [...jobKeys.all, "sources"] as const,
   state: (userId: string, jobId: string) => [...jobKeys.all, "state", userId, jobId] as const,
   userList: (userId: string, mode: string) => [...jobKeys.all, "user-list", userId, mode] as const,
   market: (days: number) => [...jobKeys.all, "market", days] as const,
@@ -29,6 +32,7 @@ export const jobKeys = {
   adminSources: () => [...jobKeys.admin, "sources"] as const,
   adminCompanies: () => [...jobKeys.admin, "companies"] as const,
   adminRuns: () => [...jobKeys.admin, "runs"] as const,
+  adminAlerts: () => [...jobKeys.admin, "alerts"] as const,
 };
 
 export function jobsCatalogQueryOptions(filters: JobFilters, userId?: string) {
@@ -58,6 +62,15 @@ export function jobTaxonomyQueryOptions() {
     queryKey: jobKeys.taxonomy(),
     queryFn: getJobTaxonomy,
     staleTime: 24 * 60 * 60_000,
+    meta: publicMeta,
+  });
+}
+
+export function jobSourceConnectionsQueryOptions() {
+  return queryOptions({
+    queryKey: jobKeys.sources(),
+    queryFn: listConnectedJobSources,
+    staleTime: 15 * 60_000,
     meta: publicMeta,
   });
 }
@@ -125,6 +138,16 @@ export function adminCrawlerRunsQueryOptions(userId: string | undefined) {
   return queryOptions({
     queryKey: jobKeys.adminRuns(),
     queryFn: listCrawlerRuns,
+    enabled: Boolean(userId),
+    staleTime: 10_000,
+    meta: { scope: "private", userId: userId ?? "missing", showInGlobalLoading: false },
+  });
+}
+
+export function adminJobOperationalAlertsQueryOptions(userId: string | undefined) {
+  return queryOptions({
+    queryKey: jobKeys.adminAlerts(),
+    queryFn: () => listJobOperationalAlerts(false),
     enabled: Boolean(userId),
     staleTime: 10_000,
     meta: { scope: "private", userId: userId ?? "missing", showInGlobalLoading: false },

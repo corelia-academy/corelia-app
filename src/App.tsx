@@ -378,6 +378,19 @@ export default function App() {
               <Route path="jobs/applied" element={<RequireAuth><Suspense fallback={<PageFallback />}><AppliedJobsPage /></Suspense></RequireAuth>} />
               <Route path="jobs/hidden" element={<RequireAuth><Suspense fallback={<PageFallback />}><HiddenJobsPage /></Suspense></RequireAuth>} />
               <Route path="jobs/market" element={<Suspense fallback={<PageFallback />}><JobMarketPage /></Suspense>} />
+              <Route path="jobs/market/skills/:skill" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/market/roles/:role" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/market/entry-level" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/market/remote" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/frontend" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/backend" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/ai-engineering" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/devops" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/skills/:skill" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/domains/:domain" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/remote" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/vietnam" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/apac" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
               <Route path="jobs/:slug" element={<Suspense fallback={<PageFallback />}><JobDetailPage /></Suspense>} />
               <Route
                 path="search"

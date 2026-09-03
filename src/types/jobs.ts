@@ -80,10 +80,12 @@ export type JobFilters = {
   jobType?: JobType;
   role?: string;
   domain?: string;
-  skill?: string;
   seniority?: string;
+  entryLevel?: boolean;
+  skill?: string;
   remoteType?: string;
   region?: string;
+  countryCode?: string;
   employmentType?: string;
   postedWithinDays?: number;
   salaryMin?: number;
@@ -98,6 +100,7 @@ export type JobsPageResult = {
   page: number;
   pageSize: number;
   stateByJobId: Record<string, UserJobState>;
+  hiddenCount: number;
 };
 
 export type JobTaxonomyItem = {
@@ -111,6 +114,11 @@ export type JobTaxonomy = {
   roles: JobTaxonomyItem[];
   domains: JobTaxonomyItem[];
   skills: JobTaxonomyItem[];
+};
+
+export type JobSourceConnection = {
+  name: string;
+  slug: string;
 };
 
 export type MarketDailyStat = {
@@ -130,6 +138,7 @@ export type MarketDimensionStat = {
   role?: string;
   skill?: string;
   domain?: string;
+  seniority?: string;
   new_jobs: number;
   active_jobs: number;
   comparable_new_jobs: number;
@@ -145,6 +154,9 @@ export type JobMarketSnapshot = {
   roles: MarketDimensionStat[];
   skills: MarketDimensionStat[];
   domains: MarketDimensionStat[];
+  seniorities: MarketDimensionStat[];
+  roleHistory: MarketDimensionStat[];
+  skillHistory: MarketDimensionStat[];
 };
 
 export type JobSourceAdmin = {
@@ -152,17 +164,29 @@ export type JobSourceAdmin = {
   name: string;
   slug: string;
   source_type: string;
+  base_url: string | null;
+  adapter_config: Record<string, unknown>;
   default_crawl_hours: number;
   priority: number;
   enabled: boolean;
   attribution_required: boolean;
+  attribution_text: string | null;
+  canonical_link_required: boolean;
+  allow_description_display: boolean;
+  allow_seo_indexing: boolean;
+  redistribution_notes: string | null;
+  terms_url: string | null;
   policy_reviewed_at: string | null;
   last_success_at: string | null;
   last_error: string | null;
+  last_revalidated_at: string | null;
+  last_revalidation_error: string | null;
+  jobs_found: number;
 };
 
 export type JobCompanyAdmin = {
   id: string;
+  source_id: string;
   name: string;
   slug: string;
   logo_url: string | null;
@@ -178,10 +202,15 @@ export type JobCompanyAdmin = {
   active: boolean;
   last_success_at: string | null;
   last_error: string | null;
+  last_revalidated_at: string | null;
+  last_revalidation_error: string | null;
+  open_jobs: number;
 };
 
 export type CrawlerRun = {
   id: string;
+  source_id: string | null;
+  company_id: string | null;
   target_type: string;
   target_value: string | null;
   trigger_type: string;
@@ -195,6 +224,22 @@ export type CrawlerRun = {
   review_count: number;
   rejected_count: number;
   failed_count: number;
+  ai_failed_count: number;
   expired_count: number;
   error_message: string | null;
+};
+
+export type JobOperationalAlert = {
+  id: string;
+  source_id: string | null;
+  company_id: string | null;
+  alert_type: string;
+  severity: "warning" | "critical";
+  message: string;
+  metadata: Record<string, unknown>;
+  occurrence_count: number;
+  first_seen_at: string;
+  last_seen_at: string;
+  resolved_at: string | null;
+  resolved_by: string | null;
 };

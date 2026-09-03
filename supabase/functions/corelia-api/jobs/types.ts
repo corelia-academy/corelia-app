@@ -1,4 +1,15 @@
-export type JobSourceType = "greenhouse" | "lever" | "ashby" | "smartrecruiters";
+export type JobSourceType =
+  | "greenhouse"
+  | "lever"
+  | "ashby"
+  | "smartrecruiters"
+  | "cryptojobslist"
+  | "web3career"
+  | "himalayas"
+  | "weworkremotely"
+  | "remotive"
+  | "remoteok"
+  | "rss";
 export type JobType = "tech" | "non_tech";
 
 export type NormalizedSourceJob = {
@@ -13,11 +24,14 @@ export type NormalizedSourceJob = {
   applyUrl: string;
   postedAt: string | null;
   sourceUpdatedAt: string | null;
+  expiresAt?: string | null;
+  companyLogoUrl?: string | null;
   salaryMin: number | null;
   salaryMax: number | null;
   salaryCurrency: string | null;
   salaryPeriod: "hour" | "day" | "week" | "month" | "year" | null;
   sourceTags: string[];
+  preserveApplyUrl?: boolean;
   raw: Record<string, unknown>;
 };
 
@@ -46,6 +60,7 @@ export type JobClassification = {
 
 export type JobCompanyRow = {
   id: string;
+  source_id: string;
   name: string;
   slug: string;
   logo_url: string | null;
@@ -60,6 +75,7 @@ export type JobCompanyRow = {
   crawl_interval_hours: number | null;
   priority: number;
   last_success_at: string | null;
+  last_revalidated_at: string | null;
 };
 
 export type JobSourceRow = {
@@ -72,6 +88,7 @@ export type JobSourceRow = {
   policy_reviewed_at: string | null;
   allow_description_display: boolean;
   canonical_link_required: boolean;
+  adapter_config: Record<string, unknown>;
 };
 
 export type CrawlCounters = {
@@ -80,6 +97,7 @@ export type CrawlCounters = {
   unchanged_count: number;
   duplicate_count: number;
   ai_queued_count: number;
+  ai_failed_count: number;
   published_count: number;
   review_count: number;
   rejected_count: number;
@@ -93,6 +111,7 @@ export const emptyCrawlCounters = (): CrawlCounters => ({
   unchanged_count: 0,
   duplicate_count: 0,
   ai_queued_count: 0,
+  ai_failed_count: 0,
   published_count: 0,
   review_count: 0,
   rejected_count: 0,

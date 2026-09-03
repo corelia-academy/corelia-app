@@ -3,7 +3,7 @@ const TRACKING_PARAMS = new Set([
   "gh_src", "lever-source", "source", "ref", "referrer", "trackingId",
 ]);
 
-export function htmlToText(html: string): string {
+export function decodeHtmlEntities(html: string): string {
   let decoded = html;
   for (let pass = 0; pass < 3; pass += 1) {
     const next = decoded.replace(
@@ -32,6 +32,12 @@ export function htmlToText(html: string): string {
     decoded = next;
   }
 
+  return decoded;
+}
+
+export function htmlToText(html: string): string {
+  const decoded = decodeHtmlEntities(html);
+
   return decoded
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
@@ -59,6 +65,16 @@ export function normalizeUrl(value: string): string {
     url.pathname = url.pathname.replace(/\/{2,}/g, "/").replace(/\/$/, "") || "/";
     url.searchParams.sort();
     return url.toString();
+  } catch {
+    return "";
+  }
+}
+
+export function validateExternalUrl(value: string): string {
+  const trimmed = value.trim();
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === "https:" || url.protocol === "http:" ? trimmed : "";
   } catch {
     return "";
   }
@@ -104,7 +120,11 @@ export function normalizeEmploymentType(value: unknown): string | null {
 
 export function isoDate(value: unknown): string | null {
   if (value == null || value === "") return null;
-  const date = typeof value === "number" ? new Date(value) : new Date(String(value));
+  const numeric = typeof value === "number" ? value : null;
+  const milliseconds = numeric != null && Math.abs(numeric) < 100_000_000_000
+    ? numeric * 1_000
+    : numeric;
+  const date = milliseconds == null ? new Date(String(value)) : new Date(milliseconds);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 

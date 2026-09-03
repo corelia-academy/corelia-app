@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { finiteNumber, htmlToText, normalizeUrl, slugify, stableStringify } from "./normalization.ts";
+import { finiteNumber, htmlToText, isoDate, normalizeUrl, slugify, stableStringify } from "./normalization.ts";
 
 describe("jobs normalization", () => {
   it("removes executable markup and tracking parameters", () => {
@@ -27,5 +27,10 @@ describe("jobs normalization", () => {
     expect(finiteNumber(null)).toBeNull();
     expect(finiteNumber("")).toBeNull();
     expect(finiteNumber("125000")).toBe(125000);
+  });
+
+  it("normalizes Unix seconds and milliseconds without shifting dates to 1970", () => {
+    expect(isoDate(1_788_421_936)).toBe("2026-09-03T07:52:16.000Z");
+    expect(isoDate(1_788_421_936_000)).toBe("2026-09-03T07:52:16.000Z");
   });
 });

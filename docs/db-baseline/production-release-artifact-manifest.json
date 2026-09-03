@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "4a621c7af5652ca0c62847d8802da97f8589136b",
-  "git_tree_sha": "6678cccb007e780e41a74a561e53ac2c398aadfc",
+  "rc_sha": "5a5b93103df13a7fba82e1dfc413f7b1ae6f265c",
+  "git_tree_sha": "c434a65741da230ed616e8a19627f8e55d40fdb2",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 173,
-  "latest_migration": "20260903081100_repair_social_engineering_job_type.sql",
+  "migration_count": 179,
+  "latest_migration": "20260903103822_add_jobs_ai_failure_observability.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "4a621c7af5652ca0c62847d8802da97f8589136b",
+  "source_sha": "5a5b93103df13a7fba82e1dfc413f7b1ae6f265c",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "bc655cf1dab1eea456a2411813bbab5457b5fc8b766befb5c7ee0c4738cf7421",
+  "candidate_tree_sha256": "db88558c467c14398f3d96ff755fb91a735f767a308b332daa4f587b82cbf804",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -195,15 +195,15 @@
     },
     {
       "path": "docs/jobs/corelia-jobs-complete-implementation-plan.md",
-      "sha256": "bad8d89dd5c2d5d8ea7bf9e4f38a76e343f8edf43b273d9bd37e4a207ff46dbb"
+      "sha256": "ae06acee0c4c3844a842a34e7246f22f28c68faefd4a1606a55bf941aa277336"
     },
     {
       "path": "docs/jobs/README.md",
-      "sha256": "f032c824357b4571e99fd6edc318147c902fcba072907e91182c067dbbb9b1da"
+      "sha256": "9e598235f2b594998afddac13f3f57ddeff9561748dd71b32ff06409dea6b389"
     },
     {
       "path": "docs/jobs/TEST_CHECKLIST.md",
-      "sha256": "cd4bce341c88ea26b9e82e5771c9d574322658fd85496eacbe4d0a2c35a76e08"
+      "sha256": "5b6dbbba90b89cb65f8d541d458513858ba51c1ae3d5c5d0e68fa8909831419c"
     },
     {
       "path": "docs/learning/admin-ui.md",
@@ -299,7 +299,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "590c326b968d88af9d00f97a5b25d7018f26cf311e673d5476d8f9b6158ba6d4"
+      "sha256": "f915429bd1c14839b758d050471228b7b5d42262fbfd56f603e251fca65923b2"
     },
     {
       "path": "pnpm-lock.yaml",
@@ -307,7 +307,7 @@
     },
     {
       "path": "public/sitemap.xml",
-      "sha256": "76296e6b147526d8887c397735093de3c9f10631c84444f0b842c88f293b325b"
+      "sha256": "1b0fa0a851669fc2c955bfda82900ee3cb1003b941c0cbb2194147e94a3be4df"
     },
     {
       "path": "README.md",
@@ -355,7 +355,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "03a1519d8038f92377541953d84187ccfa210d80d55da68d9f8be79bf3a1e9b6"
+      "sha256": "b1de65952504e616fb3c0fe0f76d4b50aaed112429fd0072932ecd06f00b8784"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -411,11 +411,15 @@
     },
     {
       "path": "scripts/db/tests/jobs-mvp.integration.sql",
-      "sha256": "f3429f2bffb43666c18e55423dcd15f362731c50bff82a35e8cab5e3cd61f7ac"
+      "sha256": "bd0e8ae2cbadcb56cdb443e3ec1cb18de7976d76160b100d543e1bc3277ea196"
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "bbc8f91ca886b54068fe6babce0ee6cb5d178e36b66c62decdda10065b369ce0"
+      "sha256": "240db8caaacc52f4b05930d40a55122eef12b38fb4d779bb3f20d8203aacc499"
+    },
+    {
+      "path": "scripts/db/tests/jobs-sitemap.test.mjs",
+      "sha256": "38aee87948c373ca4736522cd1d4ed315e75f6c7f32a1a973c6d8d5ad8f89d18"
     },
     {
       "path": "scripts/db/tests/learner-ai-database-retirement.contract.test.mjs",
@@ -510,6 +514,10 @@
       "sha256": "519e18681a88750dcbb6a9d5fed4e62fe47e0173f023a87345744f251528ff9a"
     },
     {
+      "path": "scripts/jobs/generate-sitemap.mjs",
+      "sha256": "7421280d4e6c7d5ae786a28938438459b7df671f2d2dbbe9db09a2e72417983e"
+    },
+    {
       "path": "scripts/purge-financial-storage.mjs",
       "sha256": "a3e30c78c62722ebf10edc6700f514dbada48b7c6356cae54ecdbb74f7dd9f32"
     },
@@ -535,7 +543,7 @@
     },
     {
       "path": "src/App.tsx",
-      "sha256": "cb0b293d1b9cd486fcc355e41e5331907e974bb23d6b84785f164a48488c2771"
+      "sha256": "1f9253e7ca9542a77dd0ef5f3b424f0ec1b2d6b01d4855f06c63d4e3c5dab2f2"
     },
     {
       "path": "src/components/auth/AuthBootstrapScreen.tsx",
@@ -734,8 +742,16 @@
       "sha256": "797ebe050c1115b353e210dc3539eefb37120a3354d636889483ef8d1f75a238"
     },
     {
+      "path": "src/features/jobs/atsDetection.test.ts",
+      "sha256": "5176f12a8d455c25468fd685f01dfc9b22259c06ad47944fe4cba79478db76c7"
+    },
+    {
+      "path": "src/features/jobs/atsDetection.ts",
+      "sha256": "51a356fbaccf6c36974c1a5ab88735d4614234bb9cf1a6c7756124a842a40a9f"
+    },
+    {
       "path": "src/features/jobs/JobCard.tsx",
-      "sha256": "bd86c5fee4a2048e906138a5ded44afe7defe408e987fd8fded9e7a9c7e8279d"
+      "sha256": "a59233283bd89bfb72974f9160ddb7eb461373feda50bb78b8ca31f6a328564b"
     },
     {
       "path": "src/features/jobs/jobFormat.test.ts",
@@ -747,7 +763,7 @@
     },
     {
       "path": "src/features/jobs/jobQueries.ts",
-      "sha256": "b736bb33747eb772b6e6661b0f9553aa2700ef77722eeaff31cb8fcea6dcfc20"
+      "sha256": "725f3addfca37b6359dafe972ab7f4f117744c69a9527815f2f7e9940b744768"
     },
     {
       "path": "src/features/jobs/JobsNav.tsx",
@@ -800,6 +816,10 @@
     {
       "path": "src/hooks/useLocale.ts",
       "sha256": "ea7fa11811b8077b85e16a66a4e01fb9ad04409ebd111db92cd22f65e8c8c2d2"
+    },
+    {
+      "path": "src/hooks/usePageMeta.ts",
+      "sha256": "5d23135ad103074c24f711bbf0ecf9a53ec68f04137f85871afefcb0498fa90b"
     },
     {
       "path": "src/i18n-types.d.ts",
@@ -879,7 +899,7 @@
     },
     {
       "path": "src/lib/jobs.ts",
-      "sha256": "37bc026d930226c43cfeb14e0d276994d92310d815720b7764e9ca9bf9c1349b"
+      "sha256": "1fdcec1e20096a1edd8cdedd073c60e1dd1d63859c5f09c37d6c404651749b52"
     },
     {
       "path": "src/lib/lessonFormat.test.ts",
@@ -1015,7 +1035,7 @@
     },
     {
       "path": "src/locales/en/jobs.json",
-      "sha256": "3b60088367a922c36f91e6fb77252c0f8bf248a0d5a1329208d15ab2ccbef48d"
+      "sha256": "57acd7ffa81b8b5e6a9341ea7d18d2deb710ebc5f034205443c7f14102d26588"
     },
     {
       "path": "src/locales/vi/account.json",
@@ -1043,7 +1063,7 @@
     },
     {
       "path": "src/locales/vi/jobs.json",
-      "sha256": "c07ac8ac5a408bb63d53a3f0891da039356fa94f02ef3efcf879ea693ca709a9"
+      "sha256": "c661630e4957e4dd84474b8e0429ffc09e9a05477fd658ffa11654baf7ce7f2b"
     },
     {
       "path": "src/main.tsx",
@@ -1131,7 +1151,7 @@
     },
     {
       "path": "src/pages/admin/jobs/AdminJobsPage.tsx",
-      "sha256": "b12e5298075fc75b01428cf959bba35f211c511d345ef6bec42b9ed6065c2b11"
+      "sha256": "0f46cfb9f415d1b2a843157a85dd4b4754ada5de265b4e917390e1f6be777d1c"
     },
     {
       "path": "src/pages/auth/ResetPasswordPage.tsx",
@@ -1403,15 +1423,15 @@
     },
     {
       "path": "src/pages/jobs/JobDetailPage.tsx",
-      "sha256": "a0e20bf7240c191e870ee8436a84f49664f787ac42a556dd780191f85c568c72"
+      "sha256": "6c3f5d64367c2ff5d15e863439bdf23b4ae83e7f380532ef6947ddf899d69262"
     },
     {
       "path": "src/pages/jobs/JobMarketPage.tsx",
-      "sha256": "d6fc4698c90419543552c146f2842446a98511c4e2a042b269fa45c79c92291f"
+      "sha256": "8fad8554257c5a52ee93e7e7a2db45f4e20521fff0779db68a6055ca1bb17db5"
     },
     {
       "path": "src/pages/jobs/JobsPage.tsx",
-      "sha256": "1683fea17c7534244f14de822b2cf958087a9d347885f3efe0e887743857372c"
+      "sha256": "179be0cdc6916c59a950923e8eb34d7a24789ffef47b986fb90d4316423cc79f"
     },
     {
       "path": "src/pages/jobs/UserJobsPage.tsx",
@@ -1575,11 +1595,15 @@
     },
     {
       "path": "src/types/jobs.ts",
-      "sha256": "8a26da1843b2bb316dddaeb21dc9f66381c6a5365369a5e6d0497f6a3efb15f8"
+      "sha256": "940cd31b7ba673a16aa67e31d8be2cff0576e121b0a4464a1962a8e2491a6eaa"
     },
     {
       "path": "src/types/projects.ts",
       "sha256": "36763cb7938c1db96382b3ac494396c6f3b10255cd558b11886bbe56cc320be6"
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "sha256": "be561626b509dad6611be8a7ab3f6d02de5a2473898dfc3a10c604968c7f8791"
     },
     {
       "path": "supabase/AGENTS.md",
@@ -1591,7 +1615,7 @@
     },
     {
       "path": "supabase/functions/.env.example",
-      "sha256": "f91ad04ca32e196608e87573365b07bff0de5d4abd4915308b12ed2f34a5db75"
+      "sha256": "e923fe073fdaab1fc34427d5deb4fadae1cb156b506de4ce36131da17159b390"
     },
     {
       "path": "supabase/functions/corelia-api/certificates/handlers.ts",
@@ -1627,11 +1651,11 @@
     },
     {
       "path": "supabase/functions/corelia-api/jobs/adapters.test.ts",
-      "sha256": "fdaa6a2bf2606303b464abe29db00d035e7baa0de177b5e0f359d772752d6a0d"
+      "sha256": "8482b67f127edac8be1311f4a42a0ef5d4891e3c89fc477d7de86cb76d3d744c"
     },
     {
       "path": "supabase/functions/corelia-api/jobs/adapters.ts",
-      "sha256": "bd3f4a41c0cf4c08ad740852412f6ad094928b3422d4b325de4ad1ffa437ffef"
+      "sha256": "172d9b737dacfee7e0a4f1ffcb38c44922b949e4fef5b2026d6f909854e63816"
     },
     {
       "path": "supabase/functions/corelia-api/jobs/classify.test.ts",
@@ -1642,24 +1666,40 @@
       "sha256": "830dea54c3b656724d55595c7e5b675db933c49ce54ed161fa4aed632178b987"
     },
     {
+      "path": "supabase/functions/corelia-api/jobs/dedupe.test.ts",
+      "sha256": "0bbe5c916f7209f7cbdd16b9ae588c8b197273cf4fc3a47ac05c62e6b782b7b3"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/dedupe.ts",
+      "sha256": "675410613874dff98a6402126c0614a9d6b5d97a8931178727f6fe81ee0d2227"
+    },
+    {
       "path": "supabase/functions/corelia-api/jobs/handlers.ts",
-      "sha256": "a6f921d0627332fce68fbf30627abbe37acdecba875f2bef389862bba76f36df"
+      "sha256": "f70d978084641797986299e9be7833f42147e9dba358dcb9e782d8ac95030172"
     },
     {
       "path": "supabase/functions/corelia-api/jobs/normalization.test.ts",
-      "sha256": "501de19eab2ae4d32349696535b25fa82e649ae67dcb5297e40c75f792863c49"
+      "sha256": "cf889b1056001ca49d8207c5ce8de10240024fc7a9cffff9a23e1fa13b94f3d3"
     },
     {
       "path": "supabase/functions/corelia-api/jobs/normalization.ts",
-      "sha256": "fdfa8b21aaed5820e78ea3af6e6debfc9e8a77cb09881b135bfccd98269e7b3c"
+      "sha256": "da3ebac364c680c485ca95b99545d48db9d44b6c44f7aac9ffc353b6813c53ec"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/operations.test.ts",
+      "sha256": "79ad42d21d3924a854ddfb71baffe2dbaa16ac0469744f079258cd5e35836372"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/operations.ts",
+      "sha256": "3e761260290dc08cbbd074c4a5e061c10b77a69350e021059919ad06ec924f99"
     },
     {
       "path": "supabase/functions/corelia-api/jobs/pipeline.test.ts",
-      "sha256": "e92ba4824ad00118cc94292d01550179dda4546266d7b84ff7a26848553cd58e"
+      "sha256": "b9fed54c1c5b51d4abe309b53b7f56a09b2dfab6d8fe21f795a5e2233ecce289"
     },
     {
       "path": "supabase/functions/corelia-api/jobs/pipeline.ts",
-      "sha256": "50556dd4ced81314f634a8e58ba2d9985c06406b5199e62d656c140e61885d58"
+      "sha256": "077dc851593871545c14639b35e8c6f68cf06aabb7a45750f100ec805bbb5bd8"
     },
     {
       "path": "supabase/functions/corelia-api/jobs/registry.ts",
@@ -1667,7 +1707,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/jobs/types.ts",
-      "sha256": "19303b73c7712e20980801245ecd8f588488bdb1016b779923c0f8c811aab69a"
+      "sha256": "1a37b6b4a395bd6cd913efa0fbad628ed54ac61aad557255a6656526349028b5"
     },
     {
       "path": "supabase/functions/corelia-api/lib/http.ts",
@@ -1703,7 +1743,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/README.md",
-      "sha256": "399364333f7b90569e2f97821875d7acce13506016bdb18709b009d6e91ce443"
+      "sha256": "9cabe10a4197c458a1be02d885c5727508d802247bd1549e598a7416a57735c7"
     },
     {
       "path": "supabase/functions/cron-jobs/index.ts",
@@ -1892,6 +1932,30 @@
     {
       "path": "supabase/migrations/20260903081100_repair_social_engineering_job_type.sql",
       "sha256": "29424f7676fcfe8b52722967eb5794680c5a34afd784433f29fd511348555593"
+    },
+    {
+      "path": "supabase/migrations/20260903084000_add_web3career_jobs_source.sql",
+      "sha256": "ad0b469d5008d625d0ed6463b7f26f3f3a7df8853364f85a5ba88efed83d7bf9"
+    },
+    {
+      "path": "supabase/migrations/20260903090353_add_structured_job_feed_adapters.sql",
+      "sha256": "a0096ca8aa56314c5e3ea4debb064a005a672fc65523263d82862b80c687e451"
+    },
+    {
+      "path": "supabase/migrations/20260903091501_jobs_source_instances_and_operations.sql",
+      "sha256": "7a0f0dbd083644952d0661ea048625a237d099f116b304b7a30f732774c1dff2"
+    },
+    {
+      "path": "supabase/migrations/20260903094501_jobs_operational_alerts.sql",
+      "sha256": "8eda9754cbdac4324805234930b958f316b5ada7a84ef582e3948ff541038cc8"
+    },
+    {
+      "path": "supabase/migrations/20260903100928_add_cryptojobslist_adapter_contract.sql",
+      "sha256": "28801b21e390d5952f02367e69a7b9fffcfd22b142e5cf0b4fdf19f69b26cb28"
+    },
+    {
+      "path": "supabase/migrations/20260903103822_add_jobs_ai_failure_observability.sql",
+      "sha256": "3e5b591e32d73d54d7f68a47967a5d4ad83488bdeb2dad8181887dc9b20bb308"
     },
     {
       "path": "vite.config.ts",
@@ -2166,6 +2230,30 @@
       {
         "path": "supabase/migrations/20260903081100_repair_social_engineering_job_type.sql",
         "sha256": "29424f7676fcfe8b52722967eb5794680c5a34afd784433f29fd511348555593"
+      },
+      {
+        "path": "supabase/migrations/20260903084000_add_web3career_jobs_source.sql",
+        "sha256": "ad0b469d5008d625d0ed6463b7f26f3f3a7df8853364f85a5ba88efed83d7bf9"
+      },
+      {
+        "path": "supabase/migrations/20260903090353_add_structured_job_feed_adapters.sql",
+        "sha256": "a0096ca8aa56314c5e3ea4debb064a005a672fc65523263d82862b80c687e451"
+      },
+      {
+        "path": "supabase/migrations/20260903091501_jobs_source_instances_and_operations.sql",
+        "sha256": "7a0f0dbd083644952d0661ea048625a237d099f116b304b7a30f732774c1dff2"
+      },
+      {
+        "path": "supabase/migrations/20260903094501_jobs_operational_alerts.sql",
+        "sha256": "8eda9754cbdac4324805234930b958f316b5ada7a84ef582e3948ff541038cc8"
+      },
+      {
+        "path": "supabase/migrations/20260903100928_add_cryptojobslist_adapter_contract.sql",
+        "sha256": "28801b21e390d5952f02367e69a7b9fffcfd22b142e5cf0b4fdf19f69b26cb28"
+      },
+      {
+        "path": "supabase/migrations/20260903103822_add_jobs_ai_failure_observability.sql",
+        "sha256": "3e5b591e32d73d54d7f68a47967a5d4ad83488bdeb2dad8181887dc9b20bb308"
       }
     ]
   }

@@ -12,7 +12,8 @@ BEGIN
     ('job_classifications'), ('job_events'), ('user_jobs'), ('crawler_runs'),
     ('source_coverage_daily'), ('market_daily_stats'),
     ('market_role_daily_stats'), ('market_skill_daily_stats'),
-    ('market_domain_daily_stats')
+    ('market_domain_daily_stats'), ('market_seniority_daily_stats'),
+    ('job_operational_alerts')
   ) AS expected(name)
   WHERE to_regclass('public.' || expected.name) IS NULL;
   IF v_missing IS NOT NULL THEN
@@ -28,7 +29,8 @@ BEGIN
       'job_sources', 'job_companies', 'job_roles', 'job_domains', 'job_skills',
       'jobs', 'raw_jobs', 'job_source_links', 'job_classifications', 'job_events',
       'user_jobs', 'crawler_runs', 'source_coverage_daily', 'market_daily_stats',
-      'market_role_daily_stats', 'market_skill_daily_stats', 'market_domain_daily_stats'
+      'market_role_daily_stats', 'market_skill_daily_stats', 'market_domain_daily_stats',
+      'market_seniority_daily_stats', 'job_operational_alerts'
     )
     AND NOT c.relrowsecurity;
   IF v_rls_missing IS NOT NULL THEN
@@ -44,6 +46,49 @@ BEGIN
       AND data_type = 'integer'
   ) THEN
     RAISE EXCEPTION 'crawler_runs.failed_count is missing';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'crawler_runs'
+      AND column_name = 'ai_failed_count'
+      AND data_type = 'integer'
+  ) THEN
+    RAISE EXCEPTION 'crawler_runs.ai_failed_count is missing';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'job_companies'
+      AND column_name = 'source_id' AND is_nullable = 'NO'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'job_companies'
+      AND column_name = 'last_revalidated_at'
+  ) THEN
+    RAISE EXCEPTION 'Jobs provider instance or revalidation columns are missing';
+  END IF;
+
+  IF (SELECT count(*) FROM public.job_sources) <> 10
+    OR NOT EXISTS (
+      SELECT 1 FROM public.job_sources
+      WHERE slug = 'cryptojobslist'
+        AND base_url = 'https://api.cryptojobslist.com/public/jobs'
+        AND enabled = false
+        AND policy_reviewed_at IS NULL
+        AND allow_description_display = true
+    )
+    OR NOT EXISTS (
+      SELECT 1
+      FROM public.job_companies AS company
+      JOIN public.job_sources AS source ON source.id = company.source_id
+      WHERE company.slug = 'cryptojobslist-feed'
+        AND source.slug = 'cryptojobslist'
+    )
+  THEN
+    RAISE EXCEPTION 'Jobs direct source inventory or CryptoJobsList policy gate is incomplete';
   END IF;
 
   IF EXISTS (
@@ -78,6 +123,7 @@ BEGIN
     OR has_table_privilege('anon', 'public.job_classifications', 'SELECT')
     OR has_table_privilege('anon', 'public.crawler_runs', 'SELECT')
     OR has_table_privilege('anon', 'public.source_coverage_daily', 'SELECT')
+    OR has_table_privilege('anon', 'public.job_operational_alerts', 'SELECT')
   THEN
     RAISE EXCEPTION 'Anonymous clients can read private Jobs operations data';
   END IF;
@@ -87,6 +133,7 @@ BEGIN
     OR has_table_privilege('authenticated', 'public.raw_jobs', 'INSERT')
     OR has_table_privilege('authenticated', 'public.job_classifications', 'INSERT')
     OR has_table_privilege('authenticated', 'public.crawler_runs', 'INSERT')
+    OR has_table_privilege('authenticated', 'public.job_operational_alerts', 'UPDATE')
     OR has_table_privilege('authenticated', 'public.market_daily_stats', 'UPDATE')
   THEN
     RAISE EXCEPTION 'Jobs write boundary grants are broader than intended';
@@ -107,9 +154,9 @@ BEGIN
 
   SELECT id INTO v_source_id FROM public.job_sources WHERE source_type = 'greenhouse';
   INSERT INTO public.job_companies (
-    id, name, slug, source_type, source_identifier, verified
+    id, source_id, name, slug, source_type, source_identifier, verified
   ) VALUES (
-    '00000000-0000-4000-8000-000000000991', 'Jobs Test Company',
+    '00000000-0000-4000-8000-000000000991', v_source_id, 'Jobs Test Company',
     'jobs-test-company', 'greenhouse', 'jobs-test-company', false
   );
   INSERT INTO public.jobs (

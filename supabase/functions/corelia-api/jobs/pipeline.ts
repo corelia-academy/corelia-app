@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "../lib/supabase.ts";
-import { fetchCompanyJobs } from "./adapters.ts";
+import { fetchCompanyJobs, sourceHasCompleteSnapshot } from "./adapters.ts";
 import {
   classifyJob,
   classifyJobDeterministically,
@@ -11,7 +11,10 @@ import {
   sha256,
   slugify,
   stableStringify,
+  validateExternalUrl,
 } from "./normalization.ts";
+import { shouldReplaceCanonical } from "./dedupe.ts";
+import { syncRunOperationalAlerts } from "./operations.ts";
 import {
   emptyCrawlCounters,
   type CrawlCounters,
@@ -29,6 +32,16 @@ type ExistingJob = {
   input_hash: string;
   classifier_version: string | null;
   manual_overrides: Record<string, unknown> | null;
+};
+
+type CanonicalDuplicate = ExistingJob & {
+  source_id: string;
+  source_job_id: string;
+  source_url: string;
+  job_sources: {
+    source_type: JobCompanyRow["source_type"];
+    priority: number;
+  } | null;
 };
 
 type CrawlOptions = {
@@ -138,15 +151,16 @@ function rankingScore(job: NormalizedSourceJob, source: JobSourceRow, classifica
   ) * 100) / 100;
 }
 
-async function lookupSource(db: SupabaseClient, sourceType: string): Promise<JobSourceRow> {
+async function lookupSource(db: SupabaseClient, sourceId: string): Promise<JobSourceRow> {
   const { data, error } = await db
     .from("job_sources")
-    .select("id,name,slug,source_type,enabled,priority,policy_reviewed_at,allow_description_display,canonical_link_required")
-    .eq("source_type", sourceType)
+    .select("id,name,slug,source_type,enabled,priority,policy_reviewed_at,allow_description_display,canonical_link_required,adapter_config")
+    .eq("id", sourceId)
     .eq("enabled", true)
+    .not("policy_reviewed_at", "is", null)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  if (!data) throw new Error(`job_source_not_enabled:${sourceType}`);
+  if (!data) throw new Error(`job_source_not_enabled_or_reviewed:${sourceId}`);
   return data as JobSourceRow;
 }
 
@@ -168,17 +182,34 @@ async function findExistingJob(
 async function findCanonicalDuplicate(
   db: SupabaseClient,
   canonicalUrl: string,
+  fingerprint: string,
   sourceId: string,
-): Promise<{ id: string } | null> {
-  const { data, error } = await db
+): Promise<CanonicalDuplicate | null> {
+  const select = "id,slug,status,payload_hash,input_hash,classifier_version,manual_overrides,source_id,source_job_id,source_url,job_sources!inner(source_type,priority)";
+  const { data: urlMatches, error: urlError } = await db
     .from("jobs")
-    .select("id")
+    .select(select)
     .eq("canonical_url", canonicalUrl)
-    .neq("source_id", sourceId)
-    .limit(1)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  return data as { id: string } | null;
+    .limit(20);
+  if (urlError) throw new Error(urlError.message);
+  const matches = [...(urlMatches ?? [])] as unknown as CanonicalDuplicate[];
+  if (!matches.length) {
+    const { data: fingerprintMatches, error: fingerprintError } = await db
+      .from("jobs")
+      .select(select)
+      .eq("fingerprint", fingerprint)
+      .neq("source_id", sourceId)
+      .limit(20);
+    if (fingerprintError) throw new Error(fingerprintError.message);
+    matches.push(...(fingerprintMatches ?? []) as unknown as CanonicalDuplicate[]);
+  }
+  return matches.sort((left, right) => {
+    if (!left.job_sources) return 1;
+    if (!right.job_sources) return -1;
+    const leftWins = shouldReplaceCanonical(right.job_sources, left.job_sources);
+    const rightWins = shouldReplaceCanonical(left.job_sources, right.job_sources);
+    return leftWins ? -1 : rightWins ? 1 : left.id.localeCompare(right.id);
+  })[0] ?? null;
 }
 
 async function writeRawJob(
@@ -244,7 +275,9 @@ async function processSourceJob(
     return;
   }
   job.sourceUrl = normalizeUrl(job.sourceUrl);
-  job.applyUrl = normalizeUrl(job.applyUrl || job.sourceUrl);
+  job.applyUrl = job.preserveApplyUrl
+    ? validateExternalUrl(job.applyUrl || job.sourceUrl)
+    : normalizeUrl(job.applyUrl || job.sourceUrl);
   normalizeSalary(job);
   const payloadHash = await sha256(stableStringify(job.raw));
   const inputHash = await sha256(stableStringify({
@@ -256,6 +289,7 @@ async function processSourceJob(
     salary: [job.salaryMin, job.salaryMax, job.salaryCurrency, job.salaryPeriod],
     tags: job.sourceTags,
   }));
+  const fingerprint = await sha256(`${slugify(job.companyName)}|${slugify(job.title)}|${slugify(job.locationText)}`);
   const deterministicClassification = classifyJobDeterministically(job);
   const shouldUseAi = Boolean(options.openAiApiKey && deterministicClassification.isRelevant);
   const targetClassifierVersion = shouldUseAi ? CLASSIFIER_VERSION : DETERMINISTIC_VERSION;
@@ -288,9 +322,10 @@ async function processSourceJob(
       await markRaw(db, raw.id, "rejected", existing?.id ?? null, "missing_essential_data");
       return;
     }
+    let duplicate: CanonicalDuplicate | null = null;
     if (!existing) {
-      const duplicate = await findCanonicalDuplicate(db, job.applyUrl, source.id);
-      if (duplicate) {
+      duplicate = await findCanonicalDuplicate(db, job.applyUrl, fingerprint, source.id);
+      if (duplicate && (!duplicate.job_sources || !shouldReplaceCanonical(duplicate.job_sources, source))) {
         const { error: linkError } = await db.from("job_source_links").upsert({
           job_id: duplicate.id,
           source_id: source.id,
@@ -324,19 +359,20 @@ async function processSourceJob(
           apiKey: options.openAiApiKey,
           model: options.openAiModel,
         });
+        if (classification.model === "deterministic") counters.ai_failed_count += 1;
       } else {
         classification = deterministicClassification;
       }
     }
-    const gate = qualityGate(classification, source, company, job, existing);
-    const fingerprint = await sha256(`${slugify(job.companyName)}|${slugify(job.title)}|${slugify(job.locationText)}`);
+    const canonicalExisting = existing ?? duplicate;
+    const gate = qualityGate(classification, source, company, job, canonicalExisting);
     const slugSuffix = (await sha256(`${source.id}|${job.sourceJobId}`)).slice(0, 10);
     const payload = applyManualOverrides({
-      slug: existing?.slug ?? `${slugify(job.companyName)}-${slugify(job.title)}-${slugSuffix}`,
+      slug: canonicalExisting?.slug ?? `${slugify(job.companyName)}-${slugify(job.title)}-${slugSuffix}`,
       title: job.title,
       company_id: company.id,
       company_name: job.companyName,
-      company_logo_url: company.logo_url,
+      company_logo_url: job.companyLogoUrl || company.logo_url,
       description_html: source.allow_description_display ? job.descriptionHtml : null,
       description_plain: source.allow_description_display ? job.descriptionPlain : null,
       summary: classification.summary,
@@ -366,6 +402,7 @@ async function processSourceJob(
       canonical_url: job.applyUrl,
       apply_url: job.applyUrl,
       posted_at: job.postedAt,
+      expires_at: job.expiresAt ?? null,
       source_updated_at: job.sourceUpdatedAt,
       last_seen_at: new Date().toISOString(),
       status: gate.status,
@@ -377,14 +414,24 @@ async function processSourceJob(
       payload_hash: payloadHash,
       fingerprint,
       ranking_score: rankingScore(job, source, classification),
-    }, existing?.manual_overrides);
-    const { data: saved, error: saveError } = await db
-      .from("jobs")
-      .upsert(payload, { onConflict: "source_id,source_job_id" })
-      .select("id,status")
-      .single();
+    }, canonicalExisting?.manual_overrides);
+    if (!existing && duplicate) {
+      const { error: oldLinkError } = await db.from("job_source_links").upsert({
+        job_id: duplicate.id,
+        source_id: duplicate.source_id,
+        source_job_id: duplicate.source_job_id,
+        source_url: duplicate.source_url,
+        last_seen_at: new Date().toISOString(),
+      }, { onConflict: "source_id,source_job_id" });
+      if (oldLinkError) throw new Error(oldLinkError.message);
+    }
+    const saveQuery = !existing && duplicate
+      ? db.from("jobs").update(payload).eq("id", duplicate.id)
+      : db.from("jobs").upsert(payload, { onConflict: "source_id,source_job_id" });
+    const { data: saved, error: saveError } = await saveQuery.select("id,status").single();
     if (saveError) throw new Error(saveError.message);
     const jobId = String(saved.id);
+    if (!existing && duplicate) counters.duplicate_count += 1;
     const { error: linkError } = await db.from("job_source_links").upsert({
       job_id: jobId,
       source_id: source.id,
@@ -423,23 +470,92 @@ async function expireMissingJobs(
   fetchedSourceIds: Set<string>,
 ): Promise<number> {
   if (fetchedSourceIds.size === 0) return 0;
-  const { data, error } = await db
-    .from("jobs")
-    .select("id,source_job_id")
-    .eq("source_id", source.id)
-    .eq("company_id", company.id)
-    .eq("status", "active");
-  if (error) throw new Error(error.message);
-  const expiredIds = (data ?? [])
+  const rows = await collectPagedRows("expiry_candidates", (from, to) =>
+    db.from("jobs")
+      .select("id,source_job_id")
+      .eq("source_id", source.id)
+      .eq("company_id", company.id)
+      .eq("status", "active")
+      .order("id", { ascending: true })
+      .range(from, to)
+  );
+  const expiredIds = rows
     .filter((row) => !fetchedSourceIds.has(String(row.source_job_id)))
     .map((row) => String(row.id));
   if (!expiredIds.length) return 0;
-  const { error: updateError } = await db.from("jobs").update({
-    status: "expired",
-    review_reason: "missing_from_complete_source_feed",
-  }).in("id", expiredIds);
-  if (updateError) throw new Error(updateError.message);
+  for (let offset = 0; offset < expiredIds.length; offset += 200) {
+    const { error: updateError } = await db.from("jobs").update({
+      status: "expired",
+      review_reason: "missing_from_complete_source_feed",
+    }).in("id", expiredIds.slice(offset, offset + 200));
+    if (updateError) throw new Error(updateError.message);
+  }
   return expiredIds.length;
+}
+
+async function activeJobCount(
+  db: SupabaseClient,
+  sourceId: string,
+  companyId: string,
+): Promise<number> {
+  const { count, error } = await db.from("jobs")
+    .select("id", { count: "exact", head: true })
+    .eq("source_id", sourceId)
+    .eq("company_id", companyId)
+    .eq("status", "active");
+  if (error) throw new Error(error.message);
+  return count ?? 0;
+}
+
+async function syncOperationalAlerts(
+  db: SupabaseClient,
+  sourceId: string,
+  companyId: string,
+  counters: CrawlCounters,
+  activeJobsBeforeRun: number,
+  errorText: string | null,
+): Promise<void> {
+  try {
+    const { data, error } = await db.from("crawler_runs")
+      .select("status")
+      .eq("source_id", sourceId)
+      .eq("company_id", companyId)
+      .order("started_at", { ascending: false })
+      .limit(3);
+    if (error) throw new Error(error.message);
+    await syncRunOperationalAlerts(db, {
+      sourceId,
+      companyId,
+      fetchedCount: counters.fetched_count,
+      failedCount: counters.failed_count,
+      classificationFailedCount: counters.ai_failed_count,
+      expiredCount: counters.expired_count,
+      activeJobsBeforeRun,
+      errorMessage: errorText,
+      recentStatuses: (data ?? []).map((row) => String(row.status)),
+    });
+  } catch (error) {
+    // Alert persistence must not rewrite a successful crawl as failed.
+    console.error("[jobs.alerts] sync failed", sourceId, companyId, error);
+  }
+}
+
+async function expireJobsPastSourceDate(
+  db: SupabaseClient,
+  sourceId: string,
+  companyId: string,
+): Promise<number> {
+  const { data, error } = await db.from("jobs").update({
+    status: "expired",
+    review_reason: "source_expiry_reached",
+  }).eq("source_id", sourceId)
+    .eq("company_id", companyId)
+    .eq("status", "active")
+    .not("expires_at", "is", null)
+    .lte("expires_at", new Date().toISOString())
+    .select("id");
+  if (error) throw new Error(error.message);
+  return (data ?? []).length;
 }
 
 async function writeCoverage(
@@ -474,7 +590,7 @@ export async function crawlCompany(
   company: JobCompanyRow,
   options: CrawlOptions,
 ): Promise<{ runId: string; counters: CrawlCounters; partial: boolean; error?: string }> {
-  const source = await lookupSource(db, company.source_type);
+  const source = await lookupSource(db, company.source_id);
   const counters = emptyCrawlCounters();
   const { data: run, error: runError } = await db.from("crawler_runs").insert({
     source_id: source.id,
@@ -487,8 +603,14 @@ export async function crawlCompany(
   }).select("id").single();
   if (runError) throw new Error(runError.message);
   const runId = String(run.id);
+  let activeJobsBeforeRun = 0;
   try {
-    const sourceJobs = await fetchCompanyJobs(company);
+    activeJobsBeforeRun = await activeJobCount(db, source.id, company.id);
+    const sourceJobs = await fetchCompanyJobs(company, fetch, {
+      adapterConfig: source.adapter_config,
+      cryptoJobsListApiKey: Deno.env.get("CRYPTOJOBS_LIST_API_KEY")?.trim() ?? "",
+      web3CareerApiToken: Deno.env.get("WEB3_CAREER_API_TOKEN")?.trim() ?? "",
+    });
     counters.fetched_count = sourceJobs.length;
     const fetchedIds = new Set(sourceJobs.map((job) => job.sourceJobId).filter(Boolean));
     const jobFailures: string[] = [];
@@ -503,7 +625,12 @@ export async function crawlCompany(
         }
       }
     }
-    counters.expired_count = await expireMissingJobs(db, source, company, fetchedIds);
+    // Rolling feeds do not prove that an absent job expired. Only complete
+    // snapshots may expire jobs by absence; explicit expires_at is handled by
+    // the public visibility and analytics filters.
+    counters.expired_count = sourceHasCompleteSnapshot(company.source_type, source.adapter_config)
+      ? await expireMissingJobs(db, source, company, fetchedIds)
+      : 0;
     const now = new Date().toISOString();
     const partial = counters.failed_count > 0;
     const partialError = partial
@@ -527,6 +654,7 @@ export async function crawlCompany(
       error_message: partialError,
     }).eq("id", runId);
     if (completeError) throw new Error(completeError.message);
+    await syncOperationalAlerts(db, source.id, company.id, counters, activeJobsBeforeRun, partialError);
     return {
       runId,
       counters,
@@ -542,6 +670,76 @@ export async function crawlCompany(
       db.from("job_sources").update({ last_error: message }).eq("id", source.id),
       writeCoverage(db, source, company, false, 0).catch(() => undefined),
     ]);
+    await syncOperationalAlerts(db, source.id, company.id, counters, activeJobsBeforeRun, message);
+    throw error;
+  }
+}
+
+export async function revalidateCompany(
+  db: SupabaseClient,
+  company: JobCompanyRow,
+  options: Pick<CrawlOptions, "triggerType" | "createdBy">,
+): Promise<{ runId: string; counters: CrawlCounters; partial: false }> {
+  const source = await lookupSource(db, company.source_id);
+  const counters = emptyCrawlCounters();
+  const { data: run, error: runError } = await db.from("crawler_runs").insert({
+    source_id: source.id,
+    company_id: company.id,
+    trigger_type: options.triggerType,
+    target_type: "revalidation",
+    target_value: company.id,
+    status: "running",
+    created_by: options.createdBy ?? null,
+  }).select("id").single();
+  if (runError) throw new Error(runError.message);
+  const runId = String(run.id);
+  let activeJobsBeforeRun = 0;
+  try {
+    activeJobsBeforeRun = await activeJobCount(db, source.id, company.id);
+    const sourceJobs = await fetchCompanyJobs(company, fetch, {
+      adapterConfig: source.adapter_config,
+      cryptoJobsListApiKey: Deno.env.get("CRYPTOJOBS_LIST_API_KEY")?.trim() ?? "",
+      web3CareerApiToken: Deno.env.get("WEB3_CAREER_API_TOKEN")?.trim() ?? "",
+    });
+    counters.fetched_count = sourceJobs.length;
+    const fetchedIds = new Set(sourceJobs.map((job) => job.sourceJobId).filter(Boolean));
+    if (fetchedIds.size) {
+      const ids = Array.from(fetchedIds);
+      const seenAt = new Date().toISOString();
+      for (let offset = 0; offset < ids.length; offset += 200) {
+        const { error: seenError } = await db.from("jobs").update({
+          last_seen_at: seenAt,
+        }).eq("source_id", source.id)
+          .eq("company_id", company.id)
+          .in("source_job_id", ids.slice(offset, offset + 200));
+        if (seenError) throw new Error(seenError.message);
+      }
+    }
+    const expiredByAbsence = sourceHasCompleteSnapshot(company.source_type, source.adapter_config)
+      ? await expireMissingJobs(db, source, company, fetchedIds)
+      : 0;
+    const expiredByDate = await expireJobsPastSourceDate(db, source.id, company.id);
+    counters.expired_count = expiredByAbsence + expiredByDate;
+    const now = new Date().toISOString();
+    const [{ error: companyError }, { error: sourceError }, { error: completeError }] = await Promise.all([
+      db.from("job_companies").update({ last_revalidated_at: now, last_revalidation_error: null }).eq("id", company.id),
+      db.from("job_sources").update({ last_revalidated_at: now, last_revalidation_error: null }).eq("id", source.id),
+      db.from("crawler_runs").update({ ...counters, status: "succeeded", completed_at: now }).eq("id", runId),
+    ]);
+    if (companyError) throw new Error(companyError.message);
+    if (sourceError) throw new Error(sourceError.message);
+    if (completeError) throw new Error(completeError.message);
+    await syncOperationalAlerts(db, source.id, company.id, counters, activeJobsBeforeRun, null);
+    return { runId, counters, partial: false };
+  } catch (error) {
+    const message = errorMessage(error).slice(0, 2_000);
+    const now = new Date().toISOString();
+    await Promise.all([
+      db.from("crawler_runs").update({ ...counters, status: "failed", completed_at: now, error_message: message }).eq("id", runId),
+      db.from("job_companies").update({ last_revalidated_at: now, last_revalidation_error: message }).eq("id", company.id),
+      db.from("job_sources").update({ last_revalidated_at: now, last_revalidation_error: message }).eq("id", source.id),
+    ]);
+    await syncOperationalAlerts(db, source.id, company.id, counters, activeJobsBeforeRun, message);
     throw error;
   }
 }
@@ -564,43 +762,93 @@ function increment(map: Map<string, number>, key: string, amount = 1): void {
   map.set(key, (map.get(key) ?? 0) + amount);
 }
 
+type PagedRowsResult<T> = {
+  data: T[] | null;
+  error: { message: string } | null;
+};
+
+export async function collectPagedRows<T>(
+  label: string,
+  fetchPage: (from: number, to: number) => PromiseLike<PagedRowsResult<T>>,
+): Promise<T[]> {
+  const rows: T[] = [];
+  const pageSize = 1_000;
+  for (let offset = 0; offset < 100_000; offset += pageSize) {
+    const { data, error } = await fetchPage(offset, offset + pageSize - 1);
+    if (error) throw new Error(error.message);
+    const page = data ?? [];
+    rows.push(...page);
+    if (page.length < pageSize) return rows;
+  }
+  throw new Error(`jobs_analytics_${label}_limit_exceeded`);
+}
+
 export async function refreshJobAnalytics(db: SupabaseClient): Promise<Record<string, number>> {
   const today = new Date().toISOString().slice(0, 10);
   const previous = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
   const start = `${today}T00:00:00.000Z`;
-  const [
-    { data: active, error: activeError },
-    { data: events, error: eventError },
-    { data: coverage, error: coverageError },
-    { data: sources, error: sourcesError },
-    { data: companies, error: companiesError },
-  ] = await Promise.all([
-    db.from("jobs").select("id,source_id,company_id,primary_role,domains,required_skills,preferred_skills,seniority,remote_type,salary_min,salary_max").eq("status", "active").limit(10_000),
-    db.from("job_events").select("job_id,event_type,source_id,company_id,role,domains,required_skills,preferred_skills,remote_type").gte("occurred_at", start).limit(10_000),
-    db.from("source_coverage_daily").select("date,source_id,company_id,crawl_success").in("date", [today, previous]).eq("crawl_success", true).limit(10_000),
-    db.from("job_sources").select("id").eq("enabled", true).not("policy_reviewed_at", "is", null),
-    db.from("job_companies").select("id").eq("active", true).eq("verified", true),
+  const { error: expiryError } = await db.from("jobs").update({
+    status: "expired",
+    review_reason: "source_expiry_reached",
+  }).eq("status", "active").lte("expires_at", new Date().toISOString());
+  if (expiryError) throw new Error(expiryError.message);
+  const [active, events, coverage, sources, companies] = await Promise.all([
+    collectPagedRows("active_jobs", (from, to) =>
+      db.from("jobs")
+        .select("id,source_id,company_id,primary_role,domains,required_skills,preferred_skills,seniority,remote_type,salary_min,salary_max")
+        .eq("status", "active")
+        .order("id", { ascending: true })
+        .range(from, to)
+    ),
+    collectPagedRows("events", (from, to) =>
+      db.from("job_events")
+        .select("job_id,event_type,source_id,company_id,role,domains,required_skills,preferred_skills,seniority,remote_type")
+        .gte("occurred_at", start)
+        .order("id", { ascending: true })
+        .range(from, to)
+    ),
+    collectPagedRows("coverage", (from, to) =>
+      db.from("source_coverage_daily")
+        .select("date,source_id,company_id,crawl_success")
+        .in("date", [today, previous])
+        .eq("crawl_success", true)
+        .order("date", { ascending: true })
+        .order("source_id", { ascending: true })
+        .order("company_id", { ascending: true })
+        .range(from, to)
+    ),
+    collectPagedRows("sources", (from, to) =>
+      db.from("job_sources")
+        .select("id")
+        .eq("enabled", true)
+        .not("policy_reviewed_at", "is", null)
+        .order("id", { ascending: true })
+        .range(from, to)
+    ),
+    collectPagedRows("companies", (from, to) =>
+      db.from("job_companies")
+        .select("id")
+        .eq("active", true)
+        .eq("verified", true)
+        .order("id", { ascending: true })
+        .range(from, to)
+    ),
   ]);
-  if (activeError) throw new Error(activeError.message);
-  if (eventError) throw new Error(eventError.message);
-  if (coverageError) throw new Error(coverageError.message);
-  if (sourcesError) throw new Error(sourcesError.message);
-  if (companiesError) throw new Error(companiesError.message);
   const visibleSourceIds = new Set((sources ?? []).map((source) => String(source.id)));
   const visibleCompanyIds = new Set((companies ?? []).map((company) => String(company.id)));
   const isVisiblePair = (sourceId: unknown, companyId: unknown) =>
     visibleSourceIds.has(String(sourceId)) && visibleCompanyIds.has(String(companyId));
-  const jobs = ((active ?? []) as AnalyticsJob[])
+  const jobs = (active as AnalyticsJob[])
     .filter((job) => isVisiblePair(job.source_id, job.company_id));
   const currentKeys = new Set<string>();
   const previousKeys = new Set<string>();
-  for (const row of coverage ?? []) {
+  for (const row of coverage) {
     const key = `${row.source_id}:${row.company_id}`;
     if (row.date === today) currentKeys.add(key);
     if (row.date === previous) previousKeys.add(key);
   }
   const stableKeys = new Set(Array.from(currentKeys).filter((key) => previousKeys.has(key)));
-  const visibleEvents = (events ?? []).filter((event) => isVisiblePair(event.source_id, event.company_id));
+  const visibleEvents = events.filter((event) => isVisiblePair(event.source_id, event.company_id));
   const publishedEvents = visibleEvents.filter((event) => ["job_published", "job_reactivated"].includes(String(event.event_type)));
   const expiredEvents = visibleEvents.filter((event) => event.event_type === "job_expired");
   const comparableNew = publishedEvents.filter((event) => stableKeys.has(`${event.source_id}:${event.company_id}`));
@@ -627,6 +875,8 @@ export async function refreshJobAnalytics(db: SupabaseClient): Promise<Record<st
   const skillComparable = new Map<string, number>();
   const domainActive = new Map<string, number>();
   const domainComparable = new Map<string, number>();
+  const seniorityActive = new Map<string, number>();
+  const seniorityComparable = new Map<string, number>();
   for (const job of jobs) {
     if (job.primary_role) {
       increment(roleActive, job.primary_role);
@@ -638,9 +888,11 @@ export async function refreshJobAnalytics(db: SupabaseClient): Promise<Record<st
     for (const skill of job.required_skills ?? []) increment(skillRequired, skill);
     for (const skill of job.preferred_skills ?? []) increment(skillPreferred, skill);
     for (const domain of job.domains ?? []) increment(domainActive, domain);
+    if (job.seniority) increment(seniorityActive, job.seniority);
     if (stableKeys.has(`${job.source_id}:${job.company_id}`)) {
       for (const skill of jobSkills) increment(skillComparable, skill);
       for (const domain of job.domains ?? []) increment(domainComparable, domain);
+      if (job.seniority) increment(seniorityComparable, job.seniority);
     }
   }
   const roleNew = new Map<string, number>();
@@ -650,15 +902,19 @@ export async function refreshJobAnalytics(db: SupabaseClient): Promise<Record<st
   const skillComparableNew = new Map<string, number>();
   const domainNew = new Map<string, number>();
   const domainComparableNew = new Map<string, number>();
+  const seniorityNew = new Map<string, number>();
+  const seniorityComparableNew = new Map<string, number>();
   for (const event of publishedEvents) {
     if (event.role) increment(roleNew, String(event.role));
     if (stableKeys.has(`${event.source_id}:${event.company_id}`) && event.role) increment(roleComparableNew, String(event.role));
     const eventSkills = unique([...(event.required_skills ?? []), ...(event.preferred_skills ?? [])]);
     for (const skill of eventSkills) increment(skillNew, skill);
     for (const domain of event.domains ?? []) increment(domainNew, domain);
+    if (event.seniority) increment(seniorityNew, String(event.seniority));
     if (stableKeys.has(`${event.source_id}:${event.company_id}`)) {
       for (const skill of eventSkills) increment(skillComparableNew, skill);
       for (const domain of event.domains ?? []) increment(domainComparableNew, domain);
+      if (event.seniority) increment(seniorityComparableNew, String(event.seniority));
     }
   }
   for (const event of expiredEvents) if (event.role) increment(roleExpired, String(event.role));
@@ -694,11 +950,20 @@ export async function refreshJobAnalytics(db: SupabaseClient): Promise<Record<st
     comparable_new_jobs: domainComparableNew.get(domain) ?? 0,
     comparable_total_jobs: domainComparable.get(domain) ?? 0,
   }));
+  const seniorities = unique([...seniorityActive.keys(), ...seniorityNew.keys()]).map((seniority) => ({
+    date: today,
+    seniority,
+    new_jobs: seniorityNew.get(seniority) ?? 0,
+    active_jobs: seniorityActive.get(seniority) ?? 0,
+    comparable_new_jobs: seniorityComparableNew.get(seniority) ?? 0,
+    comparable_total_jobs: seniorityComparable.get(seniority) ?? 0,
+  }));
 
   const deletes = await Promise.all([
     db.from("market_role_daily_stats").delete().eq("date", today),
     db.from("market_skill_daily_stats").delete().eq("date", today),
     db.from("market_domain_daily_stats").delete().eq("date", today),
+    db.from("market_seniority_daily_stats").delete().eq("date", today),
   ]);
   for (const result of deletes) if (result.error) throw new Error(result.error.message);
   const writes = await Promise.all([
@@ -706,6 +971,7 @@ export async function refreshJobAnalytics(db: SupabaseClient): Promise<Record<st
     roles.length ? db.from("market_role_daily_stats").insert(roles) : Promise.resolve({ error: null }),
     skills.length ? db.from("market_skill_daily_stats").insert(skills) : Promise.resolve({ error: null }),
     domains.length ? db.from("market_domain_daily_stats").insert(domains) : Promise.resolve({ error: null }),
+    seniorities.length ? db.from("market_seniority_daily_stats").insert(seniorities) : Promise.resolve({ error: null }),
   ]);
   for (const result of writes) if (result.error) throw new Error(result.error.message);
   return {
@@ -714,5 +980,6 @@ export async function refreshJobAnalytics(db: SupabaseClient): Promise<Record<st
     roles: roles.length,
     skills: skills.length,
     domains: domains.length,
+    seniorities: seniorities.length,
   };
 }

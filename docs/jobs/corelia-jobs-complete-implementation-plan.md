@@ -28,16 +28,19 @@ current Corelia architecture instead of introducing a separate service.
 - User-facing catalog, detail, and saved/applied/hidden queries explicitly
   enforce the public visibility gates even when the viewer is staff/admin.
 - Direct ATS adapters for Greenhouse, Lever (global and EU), Ashby, and
-  SmartRecruiters.
-- Raw payload staging, source-identity deduplication, canonical URL linking,
+  SmartRecruiters; structured adapters for CryptoJobsList, web3.career,
+  Himalayas, Remotive, Remote OK, and RSS feeds including We Work Remotely.
+- Raw payload staging, source-identity deduplication, canonical URL/fingerprint linking,
+  canonical source precedence,
   content hashing, unchanged-job short circuit, automatic expiry after a
   successful complete feed, and manual overrides that survive later crawls.
 - Deterministic hard filtering plus optional OpenAI Responses API structured
   classification. AI is not invoked for unchanged input under the same
   classifier version. If AI is not
   configured or unavailable, new jobs fail safe into admin review.
-- Admin controls for company registration, source enable/disable, manual crawl,
-  review/publish/reject, run history, and analytics refresh.
+- Admin controls for ATS detection/company registration, provider-specific RSS
+  sources, source policy/cadence editing, manual crawl, review overrides,
+  publish/reject, filtered run history, and analytics refresh.
 - Vietnamese and English interface copy.
 
 ## Naming adjustments from the original design
@@ -53,19 +56,20 @@ current Corelia architecture instead of introducing a separate service.
 
 ## Deferred after the MVP
 
-- Aggregator-specific adapters and licensed/partner feeds.
-- HTML/browser crawling, RSS/custom API adapters, and per-source rate-limit
-  queues.
-- Market drill-down routes (`roles`, `skills`, `domains`, `remote`,
-  `entry-level`, `salary`) and richer cohort/growth charts.
+- CryptoJobsList ingestion is implemented against its documented public API,
+  but activation remains gated on a project API key and review of the granted
+  redistribution terms; licensed/partner feeds remain provider-dependent.
+- HTML/browser crawling, arbitrary custom API adapters, and per-source
+  rate-limit queues.
+- Longer-range market comparisons remain unavailable until enough daily cohort
+  history has accumulated.
 - User job recommendations, alerts, and automatic matching; these are not part
   of the current product contract.
 
 ## Runtime setup
 
-1. Apply `20260903033132_jobs_mvp_foundation.sql`, the forward-only
-   `20260903055155_jobs_advisor_remediation.sql`, and
-   `20260903062207_normalize_job_ai_quality_score.sql` through the normal
+1. Apply the ordered Jobs migrations through
+   `20260903103822_add_jobs_ai_failure_observability.sql` using the normal
    migration release flow.
 2. Deploy both `corelia-api` and `cron-jobs`.
 3. Set a strong `CORELIA_JOBS_CRON_SECRET` on both functions. Set
@@ -752,6 +756,32 @@ not:
 
 > dozens of independent scrapers.
 
+## Source inventory summary
+
+The plan currently names **10 direct-ingestion providers**:
+
+```text
+Greenhouse, Lever, Ashby, SmartRecruiters,
+CryptoJobsList, web3.career, Himalayas, We Work Remotely,
+Remotive, Remote OK
+```
+
+It also names **7 discovery/reference platforms** that are not core crawlers:
+
+```text
+Wellfound, Y Combinator Jobs, CryptocurrencyJobs.co,
+Remote3, JobStash, ITviec, TopDev
+```
+
+Generic RSS is an ingestion mechanism, not one additional provider. A source
+with a permitted RSS/Atom feed can be connected by storing one or more feed
+URLs in `adapter_config.feed_urls`; it does not require a new hard-coded
+adapter. We Work Remotely is the first named RSS-backed provider. Remotive also
+publishes RSS, although the current Remotive adapter uses its JSON API.
+
+Therefore the documented inventory is **17 named platforms total**, of which
+10 are direct-ingestion candidates, plus an extensible generic RSS/Atom path.
+
 ---
 
 # 9. Researched Source Matrix
@@ -883,12 +913,12 @@ Public postings can be listed by company identifier. Before production, validate
 
 ## Tier A — Structured job feeds
 
-> **Implementation status:** these source-level aggregators are part of the
-> product direction, not the current MVP adapter set. The repository currently
-> implements only the four company ATS adapters above. CryptoJobsList and
-> web3.career remain unchecked in the Definition of Done until provider
-> credentials, attribution policy, source-level pagination and ingestion are
-> implemented end to end.
+> **Implementation status:** CryptoJobsList, web3.career, Himalayas, We Work
+> Remotely RSS, Remotive, Remote OK, and generic configured RSS parsing are
+> implemented. External feeds are seeded disabled for staged volume/cost and
+> policy validation. web3.career requires `WEB3_CAREER_API_TOKEN`;
+> CryptoJobsList requires `CRYPTOJOBS_LIST_API_KEY` and review of the terms
+> attached to the issued key before the source may be enabled.
 
 ### CryptoJobsList
 
@@ -3171,6 +3201,7 @@ create table crawler_runs (
   unchanged_count integer default 0,
   duplicate_count integer default 0,
   ai_queued_count integer default 0,
+  ai_failed_count integer default 0,
   published_count integer default 0,
   review_count integer default 0,
   rejected_count integer default 0,
@@ -3491,11 +3522,18 @@ AshbyAdapter
 SmartRecruitersAdapter
 ```
 
-Seed:
+Roll out:
 
 ```text
-first 100 curated companies
+first verified companies, then grow toward 100 curated companies
 ```
+
+Do not freeze 100 third-party ATS identifiers into a migration: board tokens,
+ownership and source policy can change independently of the schema. The
+repository seeds adapter policies and managed aggregate-feed targets; staff add
+or import employer targets through the company registry only after verifying
+the official careers URL and ATS identifier. The 100-company figure is an
+operational coverage target, not an MVP schema invariant.
 
 Deliverable:
 
@@ -3745,10 +3783,20 @@ requires the runtime steps in the implementation baseline.
 - [x] Lever
 - [x] Ashby
 - [x] SmartRecruiters
-- [ ] CryptoJobsList
-- [ ] web3.career
-- [ ] Himalayas
-- [ ] We Work Remotely
+- [x] CryptoJobsList
+- [x] web3.career
+- [x] Himalayas
+- [x] We Work Remotely
+- [x] Remotive
+- [x] Remote OK
+- [x] Generic configured RSS
+
+The checks above mean the adapter and policy contract exist and are covered by
+tests. A hosted source is only connected after its environment-specific secret
+(when required), policy review, enabled flag and verified active crawl target
+are all present. CryptoJobsList therefore remains intentionally disabled until
+the granted API terms are reviewed; `web3.career` remains disabled until its
+token is installed in that Supabase project.
 
 ## AI
 
@@ -3791,9 +3839,11 @@ requires the runtime steps in the implementation baseline.
 - [x] Role daily stats
 - [x] Skill daily stats
 - [x] Domain daily stats
+- [x] Seniority daily stats
 - [x] Remote stats
 - [x] Entry-level stats
 - [x] Main market dashboard
+- [x] Role, skill, entry-level and remote market drilldowns
 
 ---
 

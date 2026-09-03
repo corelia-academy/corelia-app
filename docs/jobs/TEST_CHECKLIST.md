@@ -58,16 +58,18 @@ redact secret.
 
 ## 2. Database schema, grants và RLS
 
-- [ ] Đủ 17 relations Jobs: `job_sources`, `job_companies`, `job_roles`,
+- [ ] Đủ 19 relations Jobs: `job_sources`, `job_companies`, `job_roles`,
   `job_domains`, `job_skills`, `jobs`, `raw_jobs`, `job_source_links`,
   `job_classifications`, `job_events`, `user_jobs`, `crawler_runs`,
   `source_coverage_daily`, `market_daily_stats`, `market_role_daily_stats`,
-  `market_skill_daily_stats`, `market_domain_daily_stats`.
+  `market_skill_daily_stats`, `market_domain_daily_stats`,
+  `market_seniority_daily_stats`,
+  `job_operational_alerts`.
 - [ ] RLS bật trên toàn bộ relations Jobs trong schema `public`.
 - [ ] `anon` và `authenticated` đọc được taxonomy active và dữ liệu public hợp
   lệ nhờ explicit grants + RLS.
 - [ ] Anonymous không đọc được `raw_jobs`, classifier evidence, crawler runs,
-  coverage hoặc operational metadata.
+  coverage, operational alerts hoặc operational metadata.
 - [ ] Browser role không insert/update/delete được canonical `jobs` hoặc market
   snapshots.
 - [ ] User chỉ đọc/ghi được row `user_jobs` có `user_id = auth.uid()`.
@@ -129,6 +131,19 @@ redact secret.
 - [ ] Pagination lấy danh sách posting rồi fetch detail đúng từng UUID.
 - [ ] Total/page vượt hard cap fail closed; không silently ingest một phần.
 - [ ] Map company, title, location, department, experience level và apply URL.
+
+### External API và RSS/Atom
+
+- [ ] web3.career thiếu `WEB3_CAREER_API_TOKEN` fail trước khi fetch; khi có
+  token thì giữ nguyên provider apply URL và map salary nếu source cung cấp.
+- [ ] CryptoJobsList thiếu `CRYPTOJOBS_LIST_API_KEY` fail trước khi fetch; khi
+  có key thì gửi bằng `x-api-key`, phân trang và giữ `canonicalURL`.
+- [ ] Himalayas cursor pagination, Remotive JSON và Remote OK JSON map đúng
+  description, logo, location, salary/tags có thật từ source.
+- [ ] We Work Remotely RSS và generic RSS/Atom đọc được cả `<item>` lẫn
+  `<entry>`, Atom `link href`, category term và loại duplicate feed entry.
+- [ ] External source disabled hoặc policy chưa review không làm job public;
+  footer Jobs chỉ liệt kê source có target active + verified thực sự connected.
 
 ## 5. Ingestion, dedup và quality gate
 
@@ -251,8 +266,12 @@ redact secret.
 - [ ] Chưa có snapshot hiển thị empty state, không crash.
 - [ ] Sau refresh, card active/new/remote share/entry-level khớp snapshot mới
   nhất.
-- [ ] Top roles/skills/domains sắp theo active jobs giảm dần.
-- [ ] Nhấn role/skill/domain mở catalog với query param đúng.
+- [ ] Activity 30 ngày, top roles/skills/domains, seniority mix và remote share
+  khớp các bảng snapshot tương ứng.
+- [ ] Role/skill growth chỉ xuất hiện khi đủ hai cửa sổ 7 ngày và chỉ dùng
+  `comparable_new_jobs` của stable source cohort.
+- [ ] Nhấn role/skill/domain hoặc card remote/entry-level mở đúng drilldown với
+  filter cố định.
 - [ ] Trang nêu rõ dữ liệu phụ thuộc coverage và không trình bày metric như toàn
   thị trường nếu chỉ là tập nguồn curated.
 - [ ] Snapshot trong range 7–365 ngày; latest chọn đúng ngày gần nhất.
@@ -266,6 +285,8 @@ redact secret.
   trực tiếp `corelia-api?op=jobs.runScheduled`.
 - [ ] Default `max_targets=1`; input bị clamp trong khoảng 1–10.
 - [ ] Scheduler chỉ chọn company active có source enabled và đã đến hạn.
+- [ ] `mode=discovery`, `mode=revalidation` và `mode=analytics` tạo đúng loại
+  crawler run; revalidation không gọi AI hoặc ghi raw payload mới.
 - [ ] Company chưa từng success được xem là due.
 - [ ] Cadence company override được ưu tiên; nếu null dùng cadence source.
 - [ ] Một invocation không chạy lại company vừa success trước khi đến hạn.
@@ -273,8 +294,25 @@ redact secret.
   migration, repo hoặc screenshot.
 - [ ] Cron result, Edge logs và `/admin/jobs/crawlers` cùng thể hiện một run; HTTP
   `207` được alert như partial failure.
+- [ ] Ba schedule discovery/revalidation/analytics tồn tại và lệch phút; không
+  có schedule cũ trùng lặp.
+- [ ] Ba lần fail liên tiếp, feed đang có job bỗng trả 0, schema/rate-limit và
+  classifier spike tạo alert; `ai_failed_count` vẫn được ghi dù crawl fallback
+  thành công; staff có thể resolve alert trong admin.
+- [ ] `CORELIA_JOBS_ALERT_WEBHOOK_URL` thiếu không làm crawl lỗi; nếu có thì chỉ
+  dùng HTTPS và không lộ URL trong log.
 
-## 12. i18n, responsive và accessibility
+## 12. SEO và sitemap
+
+- [ ] Các landing route role/skill/domain/remote/Vietnam/APAC có canonical URL
+  riêng và filter cố định không bị query string ghi đè.
+- [ ] Job detail chỉ emit `JobPosting` và `index,follow` khi source cho phép SEO;
+  nguồn không cho phép phải `noindex,nofollow` và không emit JSON-LD.
+- [ ] Build sitemap giữ static landing URLs, đổi đúng origin theo environment và
+  chỉ thêm job active mà RLS + `allow_seo_indexing` cho phép.
+- [ ] Saved/Applied/Hidden và admin routes không xuất hiện trong sitemap.
+
+## 13. i18n, responsive và accessibility
 
 Kiểm tra tối thiểu ở 390px, 768px, 1024px và 1440px, cả light/dark theme.
 
@@ -287,11 +325,12 @@ Kiểm tra tối thiểu ở 390px, 768px, 1024px và 1440px, cả light/dark th
 - [ ] Bảng admin cuộn ngang ở màn hình hẹp, không làm viewport tràn vô hạn.
 - [ ] Card grid, detail sidebar, filter grid và market cards không chồng/lệch ở
   bốn breakpoint.
-- [ ] Logo thiếu có fallback; logo dài/vuông dùng `object-contain`, không méo.
+- [ ] Logo thật dùng `object-contain`, không méo; job thiếu logo không hiện
+  generic company icon giống nhau trên mọi card/detail.
 - [ ] Icon trang trí không tạo accessible name thừa.
 - [ ] Zoom 200% vẫn thao tác được search, filters, actions và pagination.
 
-## 13. Regression và release smoke
+## 14. Regression và release smoke
 
 - [ ] Auth/login/logout và route guards hiện có không regression.
 - [ ] Sidebar app/admin không đổi quyền hoặc phá route ngoài Jobs.
@@ -308,7 +347,7 @@ Kiểm tra tối thiểu ở 390px, 768px, 1024px và 1440px, cả light/dark th
   visibility và market snapshot đều pass.
 - [ ] Không có secret/PII trong logs, analytics metadata hoặc evidence QA.
 
-## 14. Exit criteria
+## 15. Exit criteria
 
 - [ ] Không còn blocker/critical issue mở.
 - [ ] Mọi automated gate bắt buộc của môi trường đều xanh.

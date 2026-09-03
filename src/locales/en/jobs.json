@@ -2,9 +2,17 @@
   "eyebrow": "Corelia Jobs",
   "title": "Jobs across technology and Web3",
   "subtitle": "Explore curated technical and non-technical roles at technology and Web3 companies.",
+  "landing": {
+    "title": "{{label}} jobs",
+    "subtitle": "Browse curated {{label}} opportunities from reviewed technology and Web3 sources."
+  },
   "search": "Search",
   "searchPlaceholder": "Role, skill, company, or location",
   "results": "{{count}} jobs",
+  "hiddenCount": "{{count}} hidden",
+  "sources": {
+    "connected": "Connected job sources: {{sources}}"
+  },
   "retry": "Try again",
   "nav": {
     "label": "Jobs navigation",
@@ -134,6 +142,14 @@
     "topRoles": "Roles in demand",
     "topSkills": "Most requested skills",
     "topDomains": "Hiring by domain",
+    "activity": "New job activity",
+    "activityDescription": "Daily new and expired jobs across the last 30 observations",
+    "newJobs": "New jobs",
+    "expiredJobs": "Expired jobs",
+    "roleGrowth": "Role growth (comparable sources)",
+    "skillGrowth": "Skill growth (comparable sources)",
+    "seniorityMix": "Seniority mix",
+    "growthPending": "At least 14 daily snapshots are required before showing growth.",
     "disclaimer": "Observed in Corelia's tracked sources; this is a sampled market dataset, not a census.",
     "empty": {
       "title": "Market data is being prepared",
@@ -170,7 +186,18 @@
       "unverify": "Remove verification",
       "save": "Save",
       "cancel": "Cancel",
+      "edit": "Edit",
+      "logs": "View logs",
+      "careerPage": "Career page",
+      "clearLogFilter": "Show all runs",
+      "revalidate": "Revalidate",
+      "revalidateAll": "Revalidate due sources",
+      "resolve": "Resolve",
       "refreshAnalytics": "Refresh analytics"
+    },
+    "confirm": {
+      "runAll": "Run all enabled and due Jobs sources now? This may use external API and AI quota.",
+      "revalidateAll": "Revalidate all enabled and due Jobs sources now? This fetches current source snapshots but does not invoke AI."
     },
     "messages": {
       "runComplete": "Crawler run completed.",
@@ -181,14 +208,24 @@
     },
     "review": {
       "reason": "Review reason",
+      "title": "Job title",
+      "summary": "Factual summary",
+      "primaryRole": "Primary role slug",
+      "seniority": "Seniority slug",
+      "roles": "Role slugs, comma separated",
+      "domains": "Domain slugs, comma separated",
+      "requiredSkills": "Required skill slugs, comma separated",
+      "preferredSkills": "Preferred skill slugs, comma separated",
       "empty": "No jobs currently need review."
     },
     "columns": {
       "source": "Source",
       "type": "Type",
       "cadence": "Cadence",
+      "jobsFound": "Jobs found",
       "policy": "Policy reviewed",
       "lastRun": "Last success",
+      "lastError": "Last error",
       "status": "Status",
       "actions": "Actions",
       "started": "Started",
@@ -198,6 +235,7 @@
       "published": "Published",
       "review": "Review",
       "rejected": "Rejected",
+      "aiFailed": "AI fallback",
       "failed": "Failed"
     },
     "status": {
@@ -209,15 +247,45 @@
       "add": "Add company",
       "name": "Company name",
       "slug": "Slug",
+      "websiteUrl": "Website URL",
+      "logoUrl": "Logo URL (optional)",
+      "careersUrl": "Career page or ATS URL",
+      "source": "Source / adapter",
       "identifier": "ATS board/site identifier",
       "domains": "Domains, comma separated",
+      "cadence": "Crawl cadence in hours",
+      "priority": "Priority 0–100",
+      "detected": "Detected {{source}} / {{identifier}}. You can override it.",
+      "openJobs": "{{count}} open jobs",
+      "priorityValue": "Priority {{priority}}",
       "verified": "Verified",
       "unverified": "Unverified",
-      "neverRun": "Never crawled"
+      "neverRun": "Never crawled",
+      "lastRevalidated": "Last revalidation"
+    },
+    "source": {
+      "addRss": "Connect RSS feed",
+      "name": "Provider name",
+      "slug": "Provider slug",
+      "baseUrl": "Provider website URL",
+      "feedUrls": "RSS/Atom URLs, one per line",
+      "termsUrl": "Terms or feed documentation URL",
+      "priority": "Priority 0–100",
+      "attributionText": "Attribution text",
+      "redistributionNotes": "Redistribution/policy notes",
+      "policyReviewed": "Policy reviewed",
+      "attributionRequired": "Attribution required",
+      "canonicalRequired": "Canonical link required",
+      "allowDescription": "Allow description display",
+      "allowSeo": "Allow SEO indexing"
     },
     "analytics": {
       "comparableNew": "Comparable new jobs",
       "comparableTotal": "Comparable active jobs"
+    },
+    "alerts": {
+      "title": "Open operational alerts",
+      "occurrences": "{{count}} occurrence"
     }
   }
 }

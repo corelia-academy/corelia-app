@@ -1,4 +1,4 @@
-import { Bookmark, BriefcaseBusiness, Building2, Clock3, Eye, EyeOff, MapPin } from "lucide-react";
+import { Bookmark, BriefcaseBusiness, Clock3, Eye, EyeOff, MapPin } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -23,9 +23,11 @@ export function JobCard({ job, state, busy, onToggleSaved, onToggleApplied, onTo
     <Card className="group h-full transition-colors hover:border-primary/35">
       <CardContent className="flex h-full flex-col p-5">
         <div className="flex items-start gap-3">
-          <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border-subtle bg-surface-raised">
-            {job.company_logo_url ? <img src={job.company_logo_url} alt="" className="size-full object-contain p-1" /> : <Building2 className="size-5 text-foreground-subtle" aria-hidden />}
-          </div>
+          {job.company_logo_url ? (
+            <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border-subtle bg-surface-raised">
+              <img src={job.company_logo_url} alt="" className="size-full object-contain p-1" />
+            </div>
+          ) : null}
           <div className="min-w-0 flex-1">
             <span className="mb-1 inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">{t(`values.${job.job_type}`)}</span>
             <Link to={`/jobs/${job.slug}`} className="line-clamp-2 font-semibold text-foreground hover:text-primary">

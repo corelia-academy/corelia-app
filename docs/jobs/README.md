@@ -1,8 +1,9 @@
 # Corelia Jobs — Setup và vận hành
 
 Tài liệu này là runbook cho phần Jobs đã được triển khai trong repository. Phạm
-vi hiện tại gồm catalog public, trang chi tiết, Saved/Applied, market snapshot,
-admin vận hành nguồn, bốn ATS adapter, pipeline phân loại và lịch crawl.
+vi hiện tại gồm catalog public, trang chi tiết, Saved/Applied/Hidden, market
+snapshot, admin vận hành nguồn, bốn ATS adapter, sáu external feed adapter,
+generic RSS/Atom, pipeline phân loại, revalidation và lịch crawl.
 
 - Thiết kế và phạm vi đầy đủ: [corelia-jobs-complete-implementation-plan.md](./corelia-jobs-complete-implementation-plan.md)
 - Checklist kiểm thử: [TEST_CHECKLIST.md](./TEST_CHECKLIST.md)
@@ -15,6 +16,7 @@ admin vận hành nguồn, bốn ATS adapter, pipeline phân loại và lịch c
 | Migration `20260903033132_jobs_mvp_foundation.sql` | Có | Tạo schema, taxonomy, source policy, RLS, grants, lifecycle và market tables |
 | Migration `20260903055155_jobs_advisor_remediation.sql` | Có | Bổ sung index phủ foreign key và hợp nhất policy đọc theo khuyến nghị Advisor |
 | Migration `20260903062207_normalize_job_ai_quality_score.sql` | Có | Chuẩn hóa output AI dạng tỷ lệ `0–1` về thang quality gate `0–100` và sửa dữ liệu lịch sử bị reject sai |
+| Migrations Jobs đến `20260903103822_add_jobs_ai_failure_observability.sql` | Có | Thêm Tech/Non-tech, structured feeds, provider-specific RSS, revalidation, operational alerts, CryptoJobsList contract và AI fallback counters |
 | Frontend env Supabase | Có | Cho browser đọc catalog/taxonomy và ghi trạng thái Saved/Applied qua RLS |
 | Edge Function `corelia-api` | Có để vận hành | Admin CRUD, crawl thủ công, review và refresh analytics |
 | Edge Function `cron-jobs` | Có cho tự động hóa | Endpoint nhỏ nhận lịch và gọi `jobs.runScheduled` |
@@ -22,6 +24,9 @@ admin vận hành nguồn, bốn ATS adapter, pipeline phân loại và lịch c
 | Tài khoản `admin` hoặc `support_staff` | Có để vận hành | Quản lý company/source, chạy crawl và duyệt job |
 | Ít nhất một company ATS đã verify | Có để có dữ liệu | Xác định feed tuyển dụng được crawl |
 | `OPENAI_API_KEY` | Không | Bật phân loại AI và auto-publish khi vượt quality gate |
+| `WEB3_CAREER_API_TOKEN` | Có khi bật web3.career | Credential server-side cho API chính thức của web3.career |
+| `CRYPTOJOBS_LIST_API_KEY` | Có khi bật CryptoJobsList | API key server-side gửi bằng header `x-api-key` |
+| `CORELIA_JOBS_ALERT_WEBHOOK_URL` | Không | Gửi alert mới đến webhook Slack/Discord; alert vẫn lưu trong admin nếu thiếu |
 | Supabase Cron | Không cho local/manual; có cho production tự động | Kích hoạt crawl định kỳ |
 
 Không đưa `SUPABASE_SECRET_KEYS`, `CORELIA_JOBS_CRON_SECRET` hoặc
@@ -52,8 +57,8 @@ pnpm exec supabase migration up --local
 pnpm exec supabase migration list --local
 ```
 
-Danh sách migration local phải có các dòng `20260903033132`,
-`20260903055155` và `20260903062207` ở cả cột local và database.
+Danh sách migration local phải có các dòng từ `20260903033132` đến
+`20260903103822` ở cả cột local và database.
 `migration up --local` áp dụng migration còn thiếu mà không chủ động xóa dữ
 liệu hiện có.
 
@@ -151,10 +156,24 @@ tự suy ra công ty. Nếu bấm **Run now** khi source chưa có company activ
 hợp, API chọn `0 target`, không tạo `crawler_runs` và giao diện sẽ cảnh báo thay
 vì báo hoàn tất.
 
-`CryptoJobsList` và `web3.career` thuộc Tier A trong product direction nhưng
-chưa nằm trong adapter set hiện tại. Cả hai cần source-level ingestion riêng,
-điều khoản attribution/canonical được duyệt và credential do nhà cung cấp cấp;
-không dùng token mẫu công khai hoặc HTML scraping để thay thế.
+`web3.career`, CryptoJobsList, Himalayas, We Work Remotely, Remotive và Remote
+OK đã có adapter nhưng được seed disabled để rollout có kiểm soát.
+`web3.career` chỉ chạy khi có `WEB3_CAREER_API_TOKEN`; CryptoJobsList chỉ chạy
+khi có `CRYPTOJOBS_LIST_API_KEY` và policy của access grant đã được operator
+review. Không dùng HTML scraping để thay thế hai API này.
+
+Các aggregate feed được seed `max_jobs_per_run = 25` để một Edge invocation
+không phải phân loại hàng nghìn bản ghi. Khi có giới hạn này, feed được xem là
+một cửa sổ rolling: job vắng khỏi lượt hiện tại **không** bị expire theo
+absence; chỉ `expires_at` do provider cung cấp hoặc một snapshot thật sự đầy đủ
+mới được dùng làm bằng chứng hết hạn. Có thể tăng giới hạn sau khi đã đo thời
+gian chạy và chi phí trên staging.
+Generic RSS/Atom chỉ chấp nhận URL HTTP(S) public; localhost, loopback và dải
+IPv4 private/link-local bị từ chối ở cả admin validation lẫn adapter để tránh
+biến crawler thành đường truy cập mạng nội bộ.
+Analytics và lịch sử market đọc theo page 1.000 dòng với hard cap 100.000;
+vượt cap sẽ fail rõ ràng thay vì âm thầm công bố số liệu bị cắt bởi giới hạn
+response của PostgREST.
 
 1. Đăng nhập bằng `admin` hoặc `support_staff`.
 2. Mở `/admin/jobs/companies` và chọn **Thêm công ty**.
@@ -246,8 +265,9 @@ company trong một invocation dài.
 
 1. Bật `pg_cron` và `pg_net` trong project nếu chưa có.
 2. Lưu project URL và cron secret trong Supabase Vault.
-3. Tạo schedule gọi `POST /functions/v1/cron-jobs` với header
-   `x-corelia-jobs-cron-secret` và body `{ "max_targets": 1 }`.
+3. Tạo ba schedule gọi `POST /functions/v1/cron-jobs` với cùng header:
+   discovery theo giờ, revalidation theo giờ lệch phút và analytics hằng ngày.
+   Cadence trong DB vẫn quyết định target nào thực sự đến hạn.
 
 Template SQL sau dùng tên Vault riêng cho Corelia Jobs:
 
@@ -280,7 +300,39 @@ select cron.schedule(
         where name = 'corelia_jobs_cron_secret'
       )
     ),
-    body := '{"max_targets":1}'::jsonb,
+    body := '{"mode":"discovery","max_targets":1}'::jsonb,
+    timeout_milliseconds := 120000
+  );
+  $$
+);
+
+select cron.schedule(
+  'corelia-jobs-revalidation-hourly',
+  '17 * * * *',
+  $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'corelia_jobs_project_url') || '/functions/v1/cron-jobs',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-corelia-jobs-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'corelia_jobs_cron_secret')
+    ),
+    body := '{"mode":"revalidation","max_targets":1}'::jsonb,
+    timeout_milliseconds := 120000
+  );
+  $$
+);
+
+select cron.schedule(
+  'corelia-jobs-analytics-daily',
+  '30 4 * * *',
+  $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'corelia_jobs_project_url') || '/functions/v1/cron-jobs',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-corelia-jobs-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'corelia_jobs_cron_secret')
+    ),
+    body := '{"mode":"analytics"}'::jsonb,
     timeout_milliseconds := 120000
   );
   $$
@@ -293,7 +345,7 @@ khi tạo lại schedule, kiểm tra tránh trùng:
 ```sql
 select jobid, jobname, schedule, active
 from cron.job
-where jobname = 'corelia-jobs-hourly';
+where jobname like 'corelia-jobs%';
 ```
 
 Kiểm tra kết quả gần nhất trong `cron.job_run_details`, `net._http_response`,

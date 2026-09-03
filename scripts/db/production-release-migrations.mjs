@@ -36,6 +36,12 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260903062207_normalize_job_ai_quality_score.sql",
   "supabase/migrations/20260903071137_add_job_type_and_non_tech_roles.sql",
   "supabase/migrations/20260903081100_repair_social_engineering_job_type.sql",
+  "supabase/migrations/20260903084000_add_web3career_jobs_source.sql",
+  "supabase/migrations/20260903090353_add_structured_job_feed_adapters.sql",
+  "supabase/migrations/20260903091501_jobs_source_instances_and_operations.sql",
+  "supabase/migrations/20260903094501_jobs_operational_alerts.sql",
+  "supabase/migrations/20260903100928_add_cryptojobslist_adapter_contract.sql",
+  "supabase/migrations/20260903103822_add_jobs_ai_failure_observability.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
@@ -45,11 +51,14 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
 // Production is released through 20260901002156. The Hackathon schema changes,
 // Project submission/media gate, comment retirement, Jobs foundation, and its
 // advisor remediation, classifier scale repair, Tech/Non-tech taxonomy, and
-// the follow-up Social-vs-engineering backfill repair
+// the follow-up Social-vs-engineering backfill repair, web3.career, and the
+// reviewed structured API/RSS feeds, provider-specific source instances,
+// revalidation state, operational alerts, the CryptoJobsList API contract,
+// and AI fallback observability
 // ship as one forward-only pending batch.
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
-  APPROVED_PENDING_VERSIONS.slice(0, -9),
+  APPROVED_PENDING_VERSIONS.slice(0, -15),
 );
-export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-9));
+export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-15));
 export const EXPECTED_POST_MIGRATION_COUNT = PRODUCTION_BASELINE_COUNT + APPROVED_PENDING_VERSIONS.length;
 export const EXPECTED_POST_MIGRATION_LATEST = APPROVED_PENDING_VERSIONS.at(-1);
