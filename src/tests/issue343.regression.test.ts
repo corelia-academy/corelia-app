@@ -576,10 +576,14 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
             correct_index: 0,
           },
         ]);
-        await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
-      expect(container.textContent).toContain("Câu hỏi của Section B");
+      await vi.waitFor(async () => {
+        await act(async () => {
+          await Promise.resolve();
+        });
+        expect(container.textContent).toContain("Câu hỏi của Section B");
+      }, { timeout: 3_000 });
 
       // 4. Resolve Section A late
       await act(async () => {
@@ -594,12 +598,16 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
             correct_index: 0,
           },
         ]);
-        await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
       // Invariant: Section B MUST NOT display Section A's questions
-      expect(container.textContent).toContain("Câu hỏi của Section B");
-      expect(container.textContent).not.toContain("Câu hỏi của Section A đi lạc");
+      await vi.waitFor(async () => {
+        await act(async () => {
+          await Promise.resolve();
+        });
+        expect(container.textContent).toContain("Câu hỏi của Section B");
+        expect(container.textContent).not.toContain("Câu hỏi của Section A đi lạc");
+      }, { timeout: 3_000 });
 
       act(() => {
         root.unmount();
