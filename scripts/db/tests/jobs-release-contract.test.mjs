@@ -59,6 +59,18 @@ test("Jobs classifier scale repair normalizes historical ratios without overridi
   assert.match(classifier, /score > 0 && score <= 1 \? score \* 100 : score/);
 });
 
+test("Jobs scheduler permits only the exact non-relocatable pg_net advisor warning", () => {
+  for (const workflowPath of [
+    ".github/workflows/deploy-staging.yml",
+    ".github/workflows/deploy-prod.yml",
+  ]) {
+    const workflow = read(workflowPath);
+    assert.match(workflow, /\.name == "extension_in_public"/);
+    assert.match(workflow, /\.metadata\.name == "pg_net"/);
+    assert.match(workflow, /\.metadata\.schema == "public"/);
+  }
+});
+
 test("Jobs advisor remediation covers foreign keys and avoids overlapping read policies", () => {
   const migration = read("supabase/migrations/20260903055155_jobs_advisor_remediation.sql");
 

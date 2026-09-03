@@ -168,8 +168,13 @@ jobs:
           if [[ -z "$advisor_output" || "$advisor_output" == "No issues found" ]]; then
             exit 0
           fi
-          # HIBP protection is a project-plan Auth setting, not a database migration finding.
-          jq --exit-status 'all(.[]; .name == "auth_leaked_password_protection")' <<< "$advisor_output"
+          # HIBP protection is a project-plan Auth setting. pg_net is registered
+          # against public but creates its callable objects in its own net schema;
+          # it is non-relocatable and is required by the Jobs Edge scheduler.
+          jq --exit-status 'all(.[];
+            .name == "auth_leaked_password_protection" or
+            (.name == "extension_in_public" and .metadata.name == "pg_net" and .metadata.schema == "public")
+          )' <<< "$advisor_output"
 
       - name: Deploy Edge Function (corelia-api)
         env:
