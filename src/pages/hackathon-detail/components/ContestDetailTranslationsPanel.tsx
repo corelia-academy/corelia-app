@@ -1,9 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Copy, Save } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
-import { getHackathonLocaleContent, setHackathonLocaleContent, updateContest } from "@/lib/hackathons";
+import { setHackathonLocaleContent, updateContest } from "@/lib/hackathons";
+import {
+  hackathonKeys,
+  hackathonLocaleContentQueryOptions,
+} from "@/features/hackathons/hackathonQueries";
 import type { Locale } from "@/types/database";
 import type { ContestFaqEntry, ContestTimelineMilestone } from "@/types/hackathons";
 import type { EntityI18nConfig } from "@/types/entityLocales";
@@ -82,12 +87,20 @@ function entriesToFaqText(entries: ContestFaqEntry[] | undefined | null): string
 }
 
 export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewModel }) {
-  const { contest, translate, isManageView, activeManageSection, isManager } = vm;
+  const {
+    contest,
+    translate,
+    isManageView,
+    activeManageSection,
+    isManager,
+    user,
+    setContest,
+  } = vm;
+  const queryClient = useQueryClient();
   const visible = isManageView && isManager && activeManageSection === "translations";
 
   const initialConfig = (contest.i18n ?? { supported_locales: ["vi", "en"], primary_content_locale: "vi" }) as EntityI18nConfig;
   const [i18nConfigDraft, setI18nConfigDraft] = useState<EntityI18nConfig>(initialConfig);
-  const [savingConfig, setSavingConfig] = useState(false);
   const primaryLocale = configPrimary(i18nConfigDraft);
   const supportedLocales = configSupported(i18nConfigDraft);
 
@@ -116,16 +129,55 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
     milestonesTitlesText: "",
   }));
   const [loadedAt, setLoadedAt] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const initialRef = useRef<string>("");
-  const dirty = JSON.stringify(draft) !== initialRef.current;
+  const [initialDraftSnapshot, setInitialDraftSnapshot] = useState("");
+  const hydratedSelectionRef = useRef<string>("");
+  const dirty = JSON.stringify(draft) !== initialDraftSnapshot;
   const configDirty = JSON.stringify(i18nConfigDraft) !== JSON.stringify(initialConfig);
+  const localeQueryOptions = hackathonLocaleContentQueryOptions({
+    contestId: contest.id,
+    locale: targetLocale,
+    userId: user?.id,
+    enabled: visible && targetLocale !== primaryLocale,
+  });
+  const localeQuery = useQuery(localeQueryOptions);
+  const configMutation = useMutation({
+    mutationFn: async (normalized: EntityI18nConfig) => {
+      await updateContest(contest.id, { i18n: normalized });
+      return normalized;
+    },
+    onSuccess: (normalized) => {
+      setI18nConfigDraft(normalized);
+      setContest((current) => current ? { ...current, i18n: normalized } : current);
+      void queryClient.invalidateQueries({ queryKey: hackathonKeys.all });
+    },
+  });
+  const translationMutation = useMutation({
+    mutationFn: async (input: Parameters<typeof setHackathonLocaleContent>[2]) => {
+      await setHackathonLocaleContent(contest.id, targetLocale, input);
+      return { ...input, updated_at: new Date().toISOString() };
+    },
+    onSuccess: (localized) => {
+      queryClient.setQueryData(localeQueryOptions.queryKey, localized);
+      setInitialDraftSnapshot(JSON.stringify(draft));
+      setLoadedAt(localized.updated_at);
+    },
+  });
 
   useEffect(() => {
     if (!visible) return;
+    const selection = `${contest.id}:${primaryLocale}:${targetLocale}`;
+    if (hydratedSelectionRef.current === selection) return;
     let cancelled = false;
-    setError(null);
+    const hydrate = (next: TranslationDraft, nextLoadedAt: string | null) => {
+      queueMicrotask(() => {
+        if (cancelled) return;
+        setDraft(next);
+        setInitialDraftSnapshot(JSON.stringify(next));
+        setLoadedAt(nextLoadedAt);
+        hydratedSelectionRef.current = selection;
+      });
+    };
     if (targetLocale === primaryLocale) {
       const next: TranslationDraft = {
         title: primarySnapshot.title,
@@ -136,53 +188,37 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
         faqsText: entriesToFaqText(primarySnapshot.faqs),
         milestonesTitlesText: joinLines(primarySnapshot.timeline_milestones?.map((m) => m.title)),
       };
-      setDraft(next);
-      initialRef.current = JSON.stringify(next);
-      setLoadedAt(null);
-      return;
+      hydrate(next, null);
+      return () => { cancelled = true; };
     }
-    void (async () => {
-      try {
-        const localized = await getHackathonLocaleContent(contest.id, targetLocale);
-        if (cancelled) return;
-        const next: TranslationDraft = {
-          title: String(localized?.title ?? ""),
-          tagline: String(localized?.tagline ?? ""),
-          description: String(localized?.description ?? ""),
-          rules: String(localized?.rules ?? ""),
-          prize_pool_summary: String(localized?.prize_pool_summary ?? ""),
-          faqsText: entriesToFaqText(localized?.faqs ?? []),
-          milestonesTitlesText: joinLines(
-            (localized?.timeline_milestones ?? []).map((m: ContestTimelineMilestone) => m.title),
-          ),
-        };
-        setDraft(next);
-        initialRef.current = JSON.stringify(next);
-        setLoadedAt(localized?.updated_at ?? null);
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : translate("detail.errors.loadFailed"));
-      }
-    })();
-    return () => {
-      cancelled = true;
+    if (!localeQuery.isSuccess) return;
+    const localized = localeQuery.data;
+    const next: TranslationDraft = {
+      title: String(localized?.title ?? ""),
+      tagline: String(localized?.tagline ?? ""),
+      description: String(localized?.description ?? ""),
+      rules: String(localized?.rules ?? ""),
+      prize_pool_summary: String(localized?.prize_pool_summary ?? ""),
+      faqsText: entriesToFaqText(localized?.faqs ?? []),
+      milestonesTitlesText: joinLines(
+        (localized?.timeline_milestones ?? []).map((m: ContestTimelineMilestone) => m.title),
+      ),
     };
-  }, [contest.id, primaryLocale, primarySnapshot, targetLocale, translate, visible]);
+    hydrate(next, localized?.updated_at ?? null);
+    return () => { cancelled = true; };
+  }, [contest.id, localeQuery.data, localeQuery.isSuccess, primaryLocale, primarySnapshot, targetLocale, visible]);
 
   async function handleSaveConfig() {
     if (!visible) return;
-    setSavingConfig(true);
     setError(null);
     try {
       const normalized: EntityI18nConfig = {
         supported_locales: configSupported(i18nConfigDraft),
         primary_content_locale: configPrimary(i18nConfigDraft),
       };
-      await updateContest(contest.id, { i18n: normalized });
-      setI18nConfigDraft(normalized);
+      await configMutation.mutateAsync(normalized);
     } catch (e) {
       setError(e instanceof Error ? e.message : translate("detail.errors.loadFailed"));
-    } finally {
-      setSavingConfig(false);
     }
   }
 
@@ -202,7 +238,6 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
     if (!visible) return;
     if (!targetEnabled) return;
     if (targetLocale === primaryLocale) return;
-    setSaving(true);
     setError(null);
     try {
       const milestoneTitles = splitLines(draft.milestonesTitlesText);
@@ -210,7 +245,7 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
         (m, idx) => ({ ...m, title: milestoneTitles[idx] ?? "" }),
       ).filter((m) => m.title.trim().length > 0);
 
-      await setHackathonLocaleContent(contest.id, targetLocale, {
+      await translationMutation.mutateAsync({
         title: draft.title.trim() || undefined,
         tagline: draft.tagline.trim() || undefined,
         description: draft.description.trim() || null,
@@ -219,13 +254,8 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
         faqs: faqTextToEntries(draft.faqsText),
         timeline_milestones: nextMilestones,
       });
-
-      initialRef.current = JSON.stringify(draft);
-      setLoadedAt(new Date().toISOString());
     } catch (e) {
       setError(e instanceof Error ? e.message : translate("detail.errors.loadFailed"));
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -261,10 +291,10 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
             <Button
               type="button"
               onClick={() => void handleSave()}
-              disabled={!dirty || saving || !targetEnabled || targetLocale === primaryLocale}
+              disabled={!dirty || translationMutation.isPending || !targetEnabled || targetLocale === primaryLocale}
             >
               <Save className="size-4" aria-hidden />
-              {saving ? translate("detail.labels.saving") : translate("actions.save", { defaultValue: "Save" })}
+              {translationMutation.isPending ? translate("detail.labels.saving") : translate("actions.save", { defaultValue: "Save" })}
             </Button>
           </div>
         </div>
@@ -314,10 +344,10 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
             <Button
               type="button"
               variant="outline"
-              disabled={savingConfig || !configDirty}
+              disabled={configMutation.isPending || !configDirty}
               onClick={() => void handleSaveConfig()}
             >
-              {savingConfig ? translate("detail.labels.saving") : translate("actions.save", { defaultValue: "Save" })}
+              {configMutation.isPending ? translate("detail.labels.saving") : translate("actions.save", { defaultValue: "Save" })}
             </Button>
           </div>
         </div>
@@ -327,9 +357,11 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
             Target locale <b>{targetLocale}</b> is not enabled in supported locales.
           </div>
         ) : null}
-        {error ? (
+        {error || localeQuery.error ? (
           <div className="mt-3 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
-            {error}
+            {error || (localeQuery.error instanceof Error
+              ? localeQuery.error.message
+              : translate("detail.errors.loadFailed"))}
           </div>
         ) : null}
 
@@ -461,4 +493,3 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
     </Card>
   );
 }
-

@@ -2,7 +2,7 @@ import { createClient, type SupabaseClient, type User } from "https://esm.sh/@su
 
 type Role = "student" | "instructor" | "support_staff" | "admin";
 type Locale = "vi" | "en";
-type GenerateType = "course" | "lesson";
+type GenerateType = "course" | "lesson" | "hackathon";
 type ActionType = "generate" | "translate";
 type TargetField =
   | "title"
@@ -11,7 +11,7 @@ type TargetField =
   | "description_markdown"
   | "learning_outcomes";
 type SourceKind = "short_description" | "description_markdown" | "transcript";
-type BundleKind = "course_info" | "section" | "lesson" | "assignment";
+type BundleKind = "course_info" | "section" | "lesson" | "assignment" | "hackathon";
 
 type RequestBody = {
   action?: unknown;
@@ -24,6 +24,7 @@ type RequestBody = {
   bundleKind?: unknown;
   sourceBundle?: unknown;
   careerTrackId?: unknown;
+  hackathonId?: unknown;
   courseId?: unknown;
   sectionId?: unknown;
   lessonId?: unknown;
@@ -79,6 +80,20 @@ type TranslationBundle = {
   markdownDescription?: string;
   learningOutcomes?: string[];
   instructions?: string;
+  resourcesMarkdown?: string;
+  prizeDescriptionMarkdown?: string;
+  tracks?: TranslationItem[];
+  sectors?: TranslationItem[];
+  techStacks?: TranslationItem[];
+  timeline?: TranslationItem[];
+};
+
+type TranslationItem = {
+  id: string;
+  name?: string;
+  title?: string;
+  description?: string;
+  descriptionMarkdown?: string;
 };
 
 const CORS_METHODS = "POST, OPTIONS";
@@ -218,6 +233,7 @@ function parseBody(body: RequestBody): {
   bundleKind: BundleKind | null;
   sourceBundle: TranslationBundle | null;
   careerTrackId: string | null;
+  hackathonId: string | null;
   courseId: string | null;
   sectionId: string | null;
   lessonId: string | null;
@@ -230,7 +246,7 @@ function parseBody(body: RequestBody): {
       : body.action === "generate" || body.action == null
         ? "generate"
         : null;
-  const type = body.type === "lesson" ? "lesson" : body.type === "course" ? "course" : null;
+  const type = body.type === "lesson" ? "lesson" : body.type === "course" ? "course" : body.type === "hackathon" ? "hackathon" : null;
   const targetField =
     body.targetField === "title" ||
     body.targetField === "short_description" ||
@@ -248,11 +264,13 @@ function parseBody(body: RequestBody): {
     body.bundleKind === "course_info" ||
     body.bundleKind === "section" ||
     body.bundleKind === "lesson" ||
-    body.bundleKind === "assignment"
+    body.bundleKind === "assignment" ||
+    body.bundleKind === "hackathon"
       ? body.bundleKind
       : null;
   const sourceBundle = parseTranslationBundle(body.sourceBundle);
   const careerTrackId = parseOptionalResourceId(body.careerTrackId, "careerTrackId");
+  const hackathonId = parseOptionalResourceId(body.hackathonId, "hackathonId");
   const courseId = typeof body.courseId === "string" && body.courseId.trim() ? body.courseId.trim() : null;
   const sectionId = typeof body.sectionId === "string" && body.sectionId.trim() ? body.sectionId.trim() : null;
   const lessonId = typeof body.lessonId === "string" && body.lessonId.trim() ? body.lessonId.trim() : null;
@@ -264,9 +282,8 @@ function parseBody(body: RequestBody): {
     throw new Error("Thiếu action, type, targetField hoặc locale hợp lệ.");
   }
   if (careerTrackId) {
-    if (body.courseId != null) {
-      throw new Error("Không được gửi đồng thời courseId và careerTrackId.");
-    }
+    if (body.courseId != null) throw new Error("Không được gửi đồng thời courseId và careerTrackId.");
+    if (body.hackathonId != null) throw new Error("Không được gửi đồng thời hackathonId và careerTrackId.");
     const isCareerTrackTranslation =
       action === "translate" &&
       type === "course" &&
@@ -283,6 +300,27 @@ function parseBody(body: RequestBody): {
       throw new Error("careerTrackId chỉ hợp lệ cho luồng dịch toàn bộ Career Track.");
     }
   }
+  if (hackathonId) {
+    const isHackathonTranslation =
+      action === "translate" &&
+      type === "hackathon" &&
+      targetField === "description" &&
+      bundleKind === "hackathon";
+    const hasOtherResourceIds =
+      body.courseId != null ||
+      body.careerTrackId != null ||
+      body.sectionId != null ||
+      body.lessonId != null ||
+      body.youtubeUrl != null ||
+      body.lessonTitle != null ||
+      body.intent != null ||
+      body.sourceInputs != null;
+    if (!isHackathonTranslation || hasOtherResourceIds) {
+      throw new Error("hackathonId chỉ hợp lệ cho luồng dịch nội dung hackathon.");
+    }
+  } else if (type === "hackathon") {
+    throw new Error("Thiếu hackathonId cho luồng dịch nội dung hackathon.");
+  }
   return {
     action,
     type,
@@ -294,6 +332,7 @@ function parseBody(body: RequestBody): {
     bundleKind,
     sourceBundle,
     careerTrackId,
+    hackathonId,
     courseId,
     sectionId,
     lessonId,
@@ -322,12 +361,40 @@ function parseTranslationBundle(value: unknown): TranslationBundle | null {
         .map((item) => (typeof item === "string" ? item.trim() : ""))
         .filter(Boolean)
     : undefined;
+  const items = (key: "tracks" | "sectors" | "techStacks" | "timeline"): TranslationItem[] | undefined => {
+    const raw = input[key];
+    if (!Array.isArray(raw)) return undefined;
+    const parsed = raw.flatMap((item): TranslationItem[] => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) return [];
+      const row = item as Record<string, unknown>;
+      const id = typeof row.id === "string" ? row.id.trim() : "";
+      if (!id) return [];
+      const read = (field: keyof TranslationItem): string | undefined => {
+        const fieldValue = row[field];
+        return typeof fieldValue === "string" && fieldValue.trim() ? fieldValue.trim() : undefined;
+      };
+      return [{
+        id,
+        name: read("name"),
+        title: read("title"),
+        description: read("description"),
+        descriptionMarkdown: read("descriptionMarkdown"),
+      }];
+    });
+    return parsed.length ? parsed : undefined;
+  };
   const out: TranslationBundle = {
     title: text("title"),
     shortDescription: text("shortDescription"),
     description: text("description"),
     markdownDescription: text("markdownDescription"),
     instructions: text("instructions"),
+    resourcesMarkdown: text("resourcesMarkdown"),
+    prizeDescriptionMarkdown: text("prizeDescriptionMarkdown"),
+    tracks: items("tracks"),
+    sectors: items("sectors"),
+    techStacks: items("techStacks"),
+    timeline: items("timeline"),
   };
   if (learningOutcomes?.length) out.learningOutcomes = learningOutcomes;
   return Object.values(out).some((item) => (Array.isArray(item) ? item.length > 0 : Boolean(item)))
@@ -539,6 +606,26 @@ async function ensureCanManageCareerTrack(
   const row = data as CareerTrackRow;
   if (row.instructor_id === userId) return;
   throw new Error("Bạn không có quyền dịch lộ trình nghề nghiệp này.");
+}
+
+async function ensureCanTranslateHackathon(
+  db: SupabaseClient,
+  role: Role,
+  hackathonId: string,
+): Promise<void> {
+  if (role !== "admin" && role !== "support_staff") {
+    throw new HttpStatusError(403, "Bạn không có quyền dịch nội dung hackathon.");
+  }
+  const { data, error } = await db
+    .from("hackathons")
+    .select("id")
+    .eq("id", hackathonId)
+    .maybeSingle();
+  if (error) {
+    console.error("[generate-description] db error in hackathons:", error);
+    throw new Error("Không thể kết nối cơ sở dữ liệu.");
+  }
+  if (!data) throw new HttpStatusError(404, "Không tìm thấy hackathon.");
 }
 
 async function resolveAndValidateCourseScope(
@@ -874,6 +961,9 @@ function bundleFieldInstruction(kind: BundleKind, locale: Locale): string {
     locale === "vi"
       ? "Dịch tự nhiên, rõ ràng, giữ ý nghĩa giáo dục, không dịch từng chữ."
       : "Translate naturally and clearly, preserving the educational meaning without word-for-word phrasing.";
+  if (kind === "hackathon") {
+    return `${common} Translate every human-readable string while preserving Markdown and every item id exactly. Return JSON with keys: title, shortDescription, markdownDescription, resourcesMarkdown, prizeDescriptionMarkdown, tracks, sectors, techStacks, timeline. tracks/sectors/techStacks items use { id, name, description }; timeline items use { id, title, descriptionMarkdown }. Do not translate or invent ids.`;
+  }
   if (kind === "course_info") {
     return `${common} Return JSON with keys: title, shortDescription, description, learningOutcomes. learningOutcomes must be an array of short strings.`;
   }
@@ -897,9 +987,13 @@ function buildBundlePrompt(params: {
       ? "Viết hoàn toàn bằng tiếng Việt."
       : "Write entirely in English.";
   const framing =
-    params.locale === "vi"
-      ? `Bạn đang dịch nội dung khoá học từ ${params.sourceLocale === "en" ? "tiếng Anh" : "tiếng Việt"} sang tiếng Việt.`
-      : `You are translating course content from ${params.sourceLocale === "vi" ? "Vietnamese" : "English"} into English.`;
+    params.kind === "hackathon"
+      ? params.locale === "vi"
+        ? `Bạn đang dịch nội dung hackathon từ ${params.sourceLocale === "en" ? "tiếng Anh" : "tiếng Việt"} sang tiếng Việt.`
+        : `You are translating hackathon content from ${params.sourceLocale === "vi" ? "Vietnamese" : "English"} into English.`
+      : params.locale === "vi"
+        ? `Bạn đang dịch nội dung khoá học từ ${params.sourceLocale === "en" ? "tiếng Anh" : "tiếng Việt"} sang tiếng Việt.`
+        : `You are translating course content from ${params.sourceLocale === "vi" ? "Vietnamese" : "English"} into English.`;
   return [
     framing,
     localeInstruction,
@@ -956,7 +1050,11 @@ function parseModelJson(text: string): unknown {
   }
 }
 
-function validateBundle(kind: BundleKind, value: unknown): TranslationBundle {
+function validateBundle(
+  kind: BundleKind,
+  value: unknown,
+  sourceBundle?: TranslationBundle | null,
+): TranslationBundle {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error("OpenAI trả về bản dịch không hợp lệ.");
   }
@@ -966,6 +1064,48 @@ function validateBundle(kind: BundleKind, value: unknown): TranslationBundle {
     return typeof raw === "string" ? raw.trim() : "";
   };
   const bundle: TranslationBundle = {};
+  if (kind === "hackathon") {
+    const readItems = (
+      key: "tracks" | "sectors" | "techStacks" | "timeline",
+      sourceItems: TranslationItem[] | undefined,
+    ): TranslationItem[] => {
+      const rawItems = Array.isArray(input[key]) ? input[key] : [];
+      const translatedById = new Map<string, Record<string, unknown>>();
+      for (const rawItem of rawItems) {
+        if (!rawItem || typeof rawItem !== "object" || Array.isArray(rawItem)) continue;
+        const row = rawItem as Record<string, unknown>;
+        const id = typeof row.id === "string" ? row.id.trim() : "";
+        if (id) translatedById.set(id, row);
+      }
+      const read = (row: Record<string, unknown> | undefined, field: keyof TranslationItem): string | undefined => {
+        const raw = row?.[field];
+        return typeof raw === "string" && raw.trim() ? raw.trim() : undefined;
+      };
+      return (sourceItems ?? []).map((sourceItem) => {
+        const translated = translatedById.get(sourceItem.id);
+        return {
+          id: sourceItem.id,
+          name: read(translated, "name") ?? sourceItem.name,
+          title: read(translated, "title") ?? sourceItem.title,
+          description: read(translated, "description") ?? sourceItem.description,
+          descriptionMarkdown: read(translated, "descriptionMarkdown") ?? sourceItem.descriptionMarkdown,
+        };
+      });
+    };
+    bundle.title = readString("title");
+    bundle.shortDescription = readString("shortDescription");
+    bundle.markdownDescription = readString("markdownDescription");
+    bundle.resourcesMarkdown = readString("resourcesMarkdown");
+    bundle.prizeDescriptionMarkdown = readString("prizeDescriptionMarkdown");
+    bundle.tracks = readItems("tracks", sourceBundle?.tracks);
+    bundle.sectors = readItems("sectors", sourceBundle?.sectors);
+    bundle.techStacks = readItems("techStacks", sourceBundle?.techStacks);
+    bundle.timeline = readItems("timeline", sourceBundle?.timeline);
+    if (!bundle.title && !bundle.shortDescription && !bundle.markdownDescription && !bundle.resourcesMarkdown && !bundle.prizeDescriptionMarkdown && !bundle.tracks.length && !bundle.sectors.length && !bundle.techStacks.length && !bundle.timeline.length) {
+      throw new Error("OpenAI trả về bản dịch rỗng.");
+    }
+    return bundle;
+  }
   if (kind === "course_info") {
     bundle.title = readString("title");
     bundle.shortDescription = readString("shortDescription");
@@ -1110,7 +1250,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const normalizedYoutubeVideoId = parsed.youtubeUrl ? normalizeYoutubeVideoId(parsed.youtubeUrl) : null;
 
     let guardCourseId: string | null = null;
-    if (parsed.careerTrackId) {
+    if (parsed.hackathonId) {
+      await ensureCanTranslateHackathon(db, role, parsed.hackathonId);
+    } else if (parsed.careerTrackId) {
       await ensureCanManageCareerTrack(db, user.id, role, parsed.careerTrackId);
     } else {
       guardCourseId = await resolveAndValidateCourseScope(db, parsed);
@@ -1128,7 +1270,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         sourceBundle: parsed.sourceBundle,
       });
       const raw = await generateWithOpenAi(prompt);
-      const bundle = validateBundle(parsed.bundleKind, parseModelJson(raw));
+      const bundle = validateBundle(parsed.bundleKind, parseModelJson(raw), parsed.sourceBundle);
       const sourceTitle = parsed.sourceLocale
         ? `Source ${parsed.sourceLocale.toUpperCase()}`
         : "Source content";

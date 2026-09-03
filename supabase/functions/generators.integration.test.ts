@@ -162,6 +162,99 @@ describe("Edge Functions Integration: generate-questions and generate-descriptio
       expect(res.status).toBe(401);
     });
 
+    it("rejects instructors from the admin-only Hackathon translation scope", async () => {
+      await import("./generate-description/index");
+      const res = await descriptionHandler!(
+        new Request("http://localhost", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer test-token",
+          },
+          body: JSON.stringify({
+            hackathonId: "hackathon-1",
+            action: "translate",
+            type: "hackathon",
+            targetField: "description",
+            locale: "en",
+            sourceLocale: "vi",
+            bundleKind: "hackathon",
+            sourceBundle: { title: "Hackathon mẫu" },
+          }),
+        }),
+      );
+      expect(res.status).toBe(403);
+      const data = await res.json();
+      expect(data.message).toBe("Bạn không có quyền dịch nội dung hackathon.");
+    });
+
+    it("translates Hackathon content for admins while preserving taxonomy ids", async () => {
+      await import("./generate-description/index");
+      globalThis.fetch = vi.fn().mockImplementation(async (url: string | URL) => {
+        const urlStr = String(url);
+        if (urlStr.includes("/auth/v1/user")) {
+          return new Response(JSON.stringify({ id: "admin-1", email_confirmed_at: "2026-08-01T00:00:00Z" }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        if (urlStr.includes("/rest/v1/profiles")) {
+          return new Response(JSON.stringify({ role: "admin" }), {
+            status: 200,
+            headers: { "Content-Type": "application/json", "Content-Range": "0-0/1" },
+          });
+        }
+        if (urlStr.includes("/rest/v1/hackathons")) {
+          return new Response(JSON.stringify({ id: "hackathon-1" }), {
+            status: 200,
+            headers: { "Content-Type": "application/json", "Content-Range": "0-0/1" },
+          });
+        }
+        if (urlStr === "https://api.openai.com/v1/responses") {
+          return new Response(JSON.stringify({
+            output_text: JSON.stringify({
+              title: "Demo Hackathon",
+              shortDescription: "English summary",
+              tracks: [{ id: "track-1", name: "Education", description: "Build for learning" }],
+              sectors: [{ id: "changed-by-model", name: "Must be ignored" }],
+            }),
+          }), { status: 200, headers: { "Content-Type": "application/json" } });
+        }
+        return new Response(JSON.stringify({ message: "Not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      });
+
+      const res = await descriptionHandler!(
+        new Request("http://localhost", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer test-token" },
+          body: JSON.stringify({
+            hackathonId: "hackathon-1",
+            action: "translate",
+            type: "hackathon",
+            targetField: "description",
+            locale: "en",
+            sourceLocale: "vi",
+            bundleKind: "hackathon",
+            sourceBundle: {
+              title: "Hackathon mẫu",
+              shortDescription: "Mô tả ngắn",
+              tracks: [{ id: "track-1", name: "Giáo dục", description: "Xây dựng cho học tập" }],
+              sectors: [{ id: "sector-1", name: "Giáo dục" }],
+            },
+          }),
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.bundle.title).toBe("Demo Hackathon");
+      expect(data.bundle.tracks).toEqual([{ id: "track-1", name: "Education", description: "Build for learning" }]);
+      expect(data.bundle.sectors).toEqual([{ id: "sector-1", name: "Giáo dục" }]);
+    });
+
     it("masks database failures with 500 and safe message", async () => {
       await import("./generate-description/index");
       const res = await descriptionHandler!(

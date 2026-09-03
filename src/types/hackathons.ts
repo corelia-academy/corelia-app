@@ -2,7 +2,51 @@ export type ContestStatus = "draft" | "published" | "running" | "ended";
 
 export type ContestLocation = "online" | "offline" | "hybrid";
 
-export type ContestRegistrationStatus = "pending" | "approved" | "rejected";
+export interface HackathonHost {
+  name: string;
+  website_url?: string | null;
+  logo_url?: string | null;
+  logo_path?: string | null;
+}
+
+export interface HackathonSocialLinks {
+  telegram?: string | null;
+  x?: string | null;
+  facebook?: string | null;
+}
+
+export interface HackathonPrizePool {
+  /** Decimal string so fiat and token amounts retain their authored precision. */
+  amount: string;
+  currency: string;
+  description_markdown?: string | null;
+}
+
+export interface HackathonTaxonomyOption {
+  id: string;
+  name: string;
+  description?: string | null;
+  active: boolean;
+  sort_order: number;
+}
+
+export interface HackathonTimelineItem {
+  id: string;
+  title: string;
+  starts_at: string;
+  ends_at?: string | null;
+  description_markdown?: string | null;
+  sort_order: number;
+}
+
+export interface HackathonWinnerAward {
+  id: string;
+  project_id: string;
+  label: string;
+  sort_order: number;
+}
+
+export type ContestRegistrationStatus = "registered" | "pending" | "approved" | "rejected";
 
 export type ContestScopedViewerRole =
   | "judge"
@@ -26,6 +70,8 @@ export interface ContestTrack {
   name: string;
   description?: string | null;
   active?: boolean;
+  prize_amount?: string | null;
+  sort_order?: number;
   /**
    * Optional rubric definition (Phase 2+).
    * Current judging UI uses `rubric_weights` (4-criterion) and can ignore this for now.
@@ -74,8 +120,8 @@ export interface ContestLeaderboardEntry {
   demo_url?: string | null;
   repo_url?: string | null;
   slide_url?: string | null;
-  screenshot_url?: string | null;
-  cover_image_url?: string | null;
+  logo_path?: string | null;
+  screenshot_paths?: string[];
   video_url?: string | null;
   summary?: string | null;
 }
@@ -155,6 +201,13 @@ export interface ContestI18nContent {
   tracks?: Array<Pick<ContestTrack, "id" | "name" | "description" | "active">>;
   rounds?: Array<Pick<ContestRound, "id" | "name" | "active">>;
   updated_at?: string;
+  short_description?: string;
+  description_markdown?: string | null;
+  resources_markdown?: string | null;
+  prize_description_markdown?: string | null;
+  sectors?: HackathonTaxonomyOption[];
+  tech_stacks?: HackathonTaxonomyOption[];
+  timeline?: HackathonTimelineItem[];
 }
 
 export interface ContestWinner {
@@ -174,13 +227,25 @@ export interface Contest {
   slug?: string | null;
   title: string;
   tagline: string;
+  short_description?: string;
   description: string | null;
+  description_markdown?: string | null;
+  resources_markdown?: string | null;
   rules: string | null;
   status: ContestStatus;
   follower_count?: number;
   starts_at: string | null;
   ends_at: string | null;
   location: ContestLocation;
+  mode?: ContestLocation;
+  host?: HackathonHost;
+  social_links?: HackathonSocialLinks;
+  participants_count?: number;
+  prize_pool?: HackathonPrizePool;
+  sectors?: HackathonTaxonomyOption[];
+  tech_stacks?: HackathonTaxonomyOption[];
+  timeline?: HackathonTimelineItem[];
+  winner_awards?: HackathonWinnerAward[];
   /** Wide banner on contest detail (hero) */
   cover_image_url?: string | null;
   /** Storage path for banner — used when replacing/deleting */
@@ -233,12 +298,23 @@ export interface ContestInsert {
   slug?: string | null;
   title: string;
   tagline: string;
+  short_description?: string;
   description?: string | null;
+  description_markdown?: string | null;
+  resources_markdown?: string | null;
   rules?: string | null;
   status?: ContestStatus;
   starts_at?: string | null;
   ends_at?: string | null;
   location?: ContestLocation;
+  mode?: ContestLocation;
+  host?: HackathonHost;
+  social_links?: HackathonSocialLinks;
+  prize_pool?: HackathonPrizePool;
+  sectors?: HackathonTaxonomyOption[];
+  tech_stacks?: HackathonTaxonomyOption[];
+  timeline?: HackathonTimelineItem[];
+  winner_awards?: HackathonWinnerAward[];
   cover_image_url?: string | null;
   cover_image_path?: string | null;
   thumbnail_url?: string | null;
@@ -268,12 +344,23 @@ export interface ContestUpdate {
   slug?: string | null;
   title?: string;
   tagline?: string;
+  short_description?: string;
   description?: string | null;
+  description_markdown?: string | null;
+  resources_markdown?: string | null;
   rules?: string | null;
   status?: ContestStatus;
   starts_at?: string | null;
   ends_at?: string | null;
   location?: ContestLocation;
+  mode?: ContestLocation;
+  host?: HackathonHost;
+  social_links?: HackathonSocialLinks;
+  prize_pool?: HackathonPrizePool;
+  sectors?: HackathonTaxonomyOption[];
+  tech_stacks?: HackathonTaxonomyOption[];
+  timeline?: HackathonTimelineItem[];
+  winner_awards?: HackathonWinnerAward[];
   cover_image_url?: string | null;
   cover_image_path?: string | null;
   thumbnail_url?: string | null;
@@ -365,11 +452,15 @@ export interface ContestSubmission {
   contest_id: string;
   user_id: string;
   registration_id: string;
+  project_id?: string | null;
   team_name: string | null;
   team_members: string[];
   contestant_name: string | null;
   /** Track the submission belongs to (Phase 2 multi-track). */
   track_id?: string | null;
+  track_ids?: string[];
+  sector_ids?: string[];
+  tech_stack_ids?: string[];
   /** Stable display id for anonymous judging UI (Phase 2). */
   display_id?: string | null;
   title: string;
@@ -377,22 +468,27 @@ export interface ContestSubmission {
   demo_url: string | null;
   repo_url: string | null;
   slide_url: string | null;
-  screenshot_url: string | null;
-  cover_image_url: string | null;
   video_url: string | null;
+  logo_path: string | null;
+  screenshot_paths: string[];
   submitted_at: string;
   updated_at: string;
 }
 
 export interface ContestSubmissionInsert {
+  project_id?: string;
   title: string;
   summary?: string | null;
   demo_url?: string | null;
   repo_url?: string | null;
   slide_url?: string | null;
-  screenshot_url?: string | null;
-  cover_image_url?: string | null;
   video_url?: string | null;
+  logo_path?: string | null;
+  screenshot_paths?: string[];
+  slug?: string | null;
+  track_ids?: string[];
+  sector_ids?: string[];
+  tech_stack_ids?: string[];
 }
 
 /** Canonical vocabulary for new code; legacy Contest types remain source-compatible. */

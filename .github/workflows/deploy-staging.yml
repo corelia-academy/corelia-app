@@ -86,6 +86,15 @@ jobs:
         with:
           version: 2.98.1
 
+      - name: Verify Jobs scheduler secret is configured
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          test "$SUPABASE_PROJECT_REF" = "opoozbmfbezkrpzxsusx"
+          secrets_json="$(supabase secrets list --project-ref "$SUPABASE_PROJECT_REF" --output json)"
+          jq --exit-status 'map(.name) | index("CORELIA_JOBS_CRON_SECRET") != null' <<< "$secrets_json" > /dev/null
+
       - name: Detect destructive Streak cleanup rollout
         id: streak_cleanup
         shell: bash
@@ -159,14 +168,25 @@ jobs:
           if [[ -z "$advisor_output" || "$advisor_output" == "No issues found" ]]; then
             exit 0
           fi
-          # HIBP protection is a project-plan Auth setting, not a database migration finding.
-          jq --exit-status 'all(.[]; .name == "auth_leaked_password_protection")' <<< "$advisor_output"
+          # HIBP protection is a project-plan Auth setting. pg_net is registered
+          # against public but creates its callable objects in its own net schema;
+          # it is non-relocatable and is required by the Jobs Edge scheduler.
+          jq --exit-status 'all(.[];
+            .name == "auth_leaked_password_protection" or
+            (.name == "extension_in_public" and .metadata.name == "pg_net" and .metadata.schema == "public")
+          )' <<< "$advisor_output"
 
       - name: Deploy Edge Function (corelia-api)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: supabase functions deploy corelia-api --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Deploy Edge Function (cron-jobs)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase functions deploy cron-jobs --project-ref "$SUPABASE_PROJECT_REF"
 
       - name: Deploy Edge Function (generate-description)
         env:

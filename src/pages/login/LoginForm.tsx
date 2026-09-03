@@ -1,6 +1,13 @@
 import { useCallback, useMemo, useRef, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
-import { supabase } from "@/lib/supabase";
+import {
+  requestPasswordReset,
+  resendSignupConfirmation,
+  signInWithOAuth,
+  signInWithPassword,
+  signUpWithPassword,
+} from "@/lib/auth";
 import { setNewUserProfileForUser } from "@/lib/profile";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -52,6 +59,9 @@ export function LoginForm({
     email: string;
   } | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const { mutateAsync: executeAuth } = useMutation({
+    mutationFn: (operation: () => Promise<unknown>) => operation(),
+  });
 
   const hcaptchaEnabled = useMemo(() => isHcaptchaConfigured(), []);
   const captchaRef = useRef<InstanceType<typeof HCaptcha> | null>(null);
@@ -107,12 +117,10 @@ export function LoginForm({
 
     setResendConfirmationLoading(true);
     try {
-      const { error } = await supabase.auth.resend({
-        type: "signup",
+      await executeAuth(() => resendSignupConfirmation({
         email: trimmed,
-        ...(Object.keys(captchaOpts).length > 0 ? { options: captchaOpts } : {}),
-      });
-      if (error) throw error;
+        captchaToken: captchaOpts.captchaToken,
+      }));
       setEmailConfirmationSuccess(t("login.emailConfirmation.resendSuccess"));
       resetCaptchaAfterAuth();
     } catch (e: unknown) {
@@ -123,6 +131,7 @@ export function LoginForm({
   }, [
     captchaToken,
     email,
+    executeAuth,
     hcaptchaEnabled,
     resetCaptchaAfterAuth,
     t,
@@ -148,22 +157,21 @@ export function LoginForm({
 
       if (showForgotPassword) {
         authApiCalled = true;
-        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        await executeAuth(() => requestPasswordReset({
+          email: email.trim(),
           redirectTo: `${window.location.origin}/account/settings`,
-          ...captchaOpts,
-        });
-        if (error) throw error;
+          captchaToken: captchaOpts.captchaToken,
+        }));
         setSuccessMessage(t("login.forgotPassword.sent"));
         return;
       }
       if (mode === "sign_in") {
         authApiCalled = true;
-        const { error } = await supabase.auth.signInWithPassword({
+        await executeAuth(() => signInWithPassword({
           email: email.trim(),
           password,
-          ...(Object.keys(captchaOpts).length > 0 ? { options: captchaOpts } : {}),
-        });
-        if (error) throw error;
+          captchaToken: captchaOpts.captchaToken,
+        }));
       } else {
         if (password !== confirmPassword) {
           setErrorInfo({ message: t("errors.passwordMismatch") });
@@ -184,19 +192,14 @@ export function LoginForm({
           return;
         }
         authApiCalled = true;
-        const { data, error } = await supabase.auth.signUp({
+        const data = await executeAuth(() => signUpWithPassword({
           email: email.trim(),
           password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/signup-verified`,
-            data: {
-              full_name: name,
-              locale: authMetadataLocaleFromUiLanguage(i18n.resolvedLanguage ?? i18n.language),
-            },
-            ...captchaOpts,
-          },
-        });
-        if (error) throw error;
+          fullName: name,
+          locale: authMetadataLocaleFromUiLanguage(i18n.resolvedLanguage ?? i18n.language),
+          emailRedirectTo: `${window.location.origin}/auth/signup-verified`,
+          captchaToken: captchaOpts.captchaToken,
+        })) as Awaited<ReturnType<typeof signUpWithPassword>>;
         const session = data.session;
         const user = data.user;
         const trimmedEmail = email.trim();
@@ -240,11 +243,7 @@ export function LoginForm({
     setSignUpAwaitingVerification(null);
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: { redirectTo: `${window.location.origin}/` },
-      });
-      if (error) throw error;
+      await executeAuth(() => signInWithOAuth(provider));
     } catch (e: unknown) {
       setErrorInfo(getAuthErrorInfo(e, translate));
     } finally {

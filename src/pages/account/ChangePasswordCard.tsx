@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import type { User } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase";
+import { changePasswordWithReauthentication } from "@/lib/auth";
 import { PASSWORD_MIN_LENGTH, passwordMeetsProjectPolicy } from "@/lib/passwordPolicy";
 import { getAuthErrorInfo } from "@/pages/login/loginErrors";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,9 @@ export function ChangePasswordCard({ user }: { user: User }) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const changeMutation = useMutation({
+    mutationFn: changePasswordWithReauthentication,
+  });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -40,18 +43,12 @@ export function ChangePasswordCard({ user }: { user: User }) {
       return;
     }
 
-    setLoading(true);
     try {
-      const { error: reauthError } = await supabase.auth.signInWithPassword({
+      await changeMutation.mutateAsync({
         email,
-        password: currentPassword,
+        currentPassword,
+        newPassword,
       });
-      if (reauthError) throw reauthError;
-
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
-      if (updateError) throw updateError;
 
       setSuccess(t("password.success.changed"));
       setCurrentPassword("");
@@ -62,8 +59,6 @@ export function ChangePasswordCard({ user }: { user: User }) {
         String(tAuth(key as never, opts as never)),
       );
       setError(info.message || t("password.errors.changeFailed"));
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -136,8 +131,8 @@ export function ChangePasswordCard({ user }: { user: User }) {
           </div>
         ) : null}
         <div className="flex justify-end">
-          <Button type="submit" disabled={loading}>
-            {loading ? t("common.loading") : t("password.actions.submit")}
+          <Button type="submit" disabled={changeMutation.isPending}>
+            {changeMutation.isPending ? t("common.loading") : t("password.actions.submit")}
           </Button>
         </div>
       </form>

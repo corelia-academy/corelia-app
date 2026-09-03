@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 
 import { CERT_PLACEHOLDER } from "@/pages/achievements/constants";
-import { invokeClaimLookup, type PendingClaimItem } from "@/lib/credentialsEdge";
+import { pendingCredentialClaimQueryOptions } from "@/features/credentials/credentialQueries";
 
 type Status = "loading" | "loaded" | "error";
 
@@ -12,25 +12,13 @@ export function ClaimPage() {
   const { t } = useTranslation("common");
   const [params] = useSearchParams();
   const email = (params.get("email") ?? "").trim();
-  const [status, setStatus] = useState<Status>(email ? "loading" : "error");
-  const [items, setItems] = useState<PendingClaimItem[]>([]);
-
-  useEffect(() => {
-    if (!email) return;
-    let cancelled = false;
-    invokeClaimLookup(email)
-      .then((res) => {
-        if (cancelled) return;
-        setItems(res.items ?? []);
-        setStatus("loaded");
-      })
-      .catch(() => {
-        if (!cancelled) setStatus("error");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [email]);
+  const claimQuery = useQuery(pendingCredentialClaimQueryOptions(email));
+  const status: Status = !email || claimQuery.isError
+    ? "error"
+    : claimQuery.isPending
+      ? "loading"
+      : "loaded";
+  const items = claimQuery.data?.items ?? [];
 
   const signupUrl = `/login?mode=signup&email=${encodeURIComponent(email)}`;
 

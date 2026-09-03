@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { NavLink, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Search, ShieldAlert } from "lucide-react";
@@ -6,23 +7,7 @@ import { Search, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { supabase } from "@/lib/supabase";
-
-type SearchEntityType =
-  | "project"
-  | "hackathon"
-  | "course"
-  | "career_track"
-  | "profile";
-
-type SearchResultRow = {
-  entity_type: SearchEntityType;
-  entity_id: string;
-  title: string;
-  subtitle: string | null;
-  href: string;
-  rank: number;
-};
+import { searchResultsQueryOptions } from "@/features/search/searchQueries";
 
 function useQueryParam(name: string): string {
   const location = useLocation();
@@ -37,9 +22,12 @@ export default function SearchPage() {
   const navigate = useNavigate();
   const q = useQueryParam("q").trim();
   const [searchInput, setSearchInput] = useState(q);
-  const [items, setItems] = useState<SearchResultRow[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const resultsQuery = useQuery(searchResultsQueryOptions(q, 30));
+  const items = resultsQuery.data ?? [];
+  const loading = Boolean(q) && resultsQuery.isPending;
+  const error = resultsQuery.error instanceof Error
+    ? resultsQuery.error.message
+    : resultsQuery.error ? t("search.errors.loadFailed") : null;
 
   useEffect(() => {
     setSearchInput(q);
@@ -54,42 +42,6 @@ export default function SearchPage() {
       navigate("/search");
     }
   };
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      if (!q) {
-        setItems([]);
-        setError(null);
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-      try {
-        const { data, error: rpcErr } = await supabase.rpc("search_public", {
-          p_query: q,
-          p_limit: 30,
-          p_offset: 0,
-        });
-        if (rpcErr) throw new Error(rpcErr.message);
-        if (cancelled) return;
-        setItems((data ?? []) as SearchResultRow[]);
-      } catch (e) {
-        if (cancelled) return;
-        setError(
-          e instanceof Error ? e.message : t("search.errors.loadFailed"),
-        );
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [q, t]);
 
   return (
     <div className="container-app py-6 sm:py-8">
@@ -180,4 +132,3 @@ export default function SearchPage() {
     </div>
   );
 }
-

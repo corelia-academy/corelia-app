@@ -4,7 +4,7 @@ export const ROLE_GROUPS = {
   /** Admin and support staff. */
   admin: ["admin", "support_staff"] as UserRole[],
   /** Full hackathon managers for catalog, workspace, and service mutations. */
-  contestManagers: ["instructor", "support_staff", "admin"] as UserRole[],
+  contestManagers: ["support_staff", "admin"] as UserRole[],
   /** Instructor workspace access. */
   instructorWorkspace: ["instructor", "support_staff", "admin"] as UserRole[],
 } as const;

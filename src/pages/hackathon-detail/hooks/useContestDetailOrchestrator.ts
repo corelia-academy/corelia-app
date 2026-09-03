@@ -1,5 +1,6 @@
 import type { ChangeEvent } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import {
@@ -7,7 +8,6 @@ import {
   buildContestLeaderboard,
   createContestAccessInvite,
   deleteContest,
-  getContest,
   publishContestResults,
   refreshContestMetricsSnapshot,
   registerForContest,
@@ -24,10 +24,6 @@ import {
 } from "@/lib/hackathons";
 import {
   createProjectCollaborationInvite,
-  fetchHackathonProjectForOwnerSubmission,
-  listInvitableHackathonUsers,
-  listProjectCollaborationInvites,
-  listProjectCollaborators,
   removeProjectCollaborator,
   revokeProjectCollaborationInvite,
   type InvitableUserRow,
@@ -35,15 +31,16 @@ import {
   type ProjectCollaboratorRow,
 } from "@/lib/projectCollaboration";
 import {
+  invitableHackathonUsersQueryOptions,
+  projectCollaborationWorkspaceQueryOptions,
+} from "@/features/projects/projectCollaborationQueries";
+import {
   deleteStorageObjectByPath,
   uploadContestBanner,
   uploadContestOrganizationalPartnerLogo,
   uploadContestThumbnail,
 } from "@/lib/storage";
-import type { Project } from "@/types/projects";
-import type { Profile } from "@/types/database";
 import { useAuth } from "@/stores/authStore";
-import type { User } from "@supabase/supabase-js";
 import type {
   Contest,
   ContestAccessInvite,
@@ -71,7 +68,9 @@ import {
   parseLifecycleInstantMs,
 } from "@/pages/hackathon-detail/utils/contestLifecycle";
 import { formatContestDate } from "@/pages/hackathon-detail/utils/formatContestDate";
-import { fetchContestDetailPayload } from "./fetchContestDetailPayload";
+import { contestDetailPayloadQueryOptions } from "@/features/hackathons/contestDetailQuery";
+import { hackathonKeys } from "@/features/hackathons/hackathonQueries";
+import type { ContestDetailFetchedPayload } from "./fetchContestDetailPayload";
 import { deriveContestDetailPermissions } from "./useContestDetailPermissions";
 import { useContestInviteWorkspace } from "./useContestInviteWorkspace";
 import { useContestJudgingWorkspace } from "./useContestJudgingWorkspace";
@@ -98,6 +97,10 @@ const API_ERROR_I18N: Record<string, string> = {
   "missing_email:account": "detail.errors.missingAccountEmail",
 };
 
+const EMPTY_COLLAB_MEMBERS: ProjectCollaboratorRow[] = [];
+const EMPTY_COLLAB_INVITES: ProjectCollaborationInviteRow[] = [];
+const EMPTY_INVITABLE_USERS: InvitableUserRow[] = [];
+
 function translateApiError(
   err: unknown,
   translate: (key: string) => string,
@@ -121,6 +124,7 @@ export function useContestDetailOrchestrator({
   onContestSynced?: (next: Contest) => void;
 } = {}) {
   const { t, i18n } = useTranslation("contests");
+  const queryClient = useQueryClient();
   const translate = useCallback(
     (key: string, options?: Record<string, unknown>) =>
       String(t(key as never, options as never)),
@@ -132,20 +136,19 @@ export function useContestDetailOrchestrator({
   }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile, user, isAuthenticated, authInitialized } = useAuth();
+  const {
+    profile,
+    profileLoading,
+    user,
+    isAuthenticated,
+    authInitialized,
+  } = useAuth();
 
   const contestLoad = useContestLoad({
     contestSlug: slug,
     prefetchedContest,
   });
-  const {
-    contest,
-    setContest,
-    loading,
-    setLoading,
-    error,
-    setError,
-  } = contestLoad;
+  const { contest, setContest } = contestLoad;
   const id = contest?.id;
 
   const registrationFlow = useContestRegistrationFlow();
@@ -186,10 +189,6 @@ export function useContestDetailOrchestrator({
     setSubmissionRepoUrl,
     submissionSlideUrl,
     setSubmissionSlideUrl,
-    submissionScreenshotUrl,
-    setSubmissionScreenshotUrl,
-    submissionCoverImageUrl,
-    setSubmissionCoverImageUrl,
     submissionVideoUrl,
     setSubmissionVideoUrl,
     savingSubmission,
@@ -203,16 +202,30 @@ export function useContestDetailOrchestrator({
     hydrateFromPayload: hydrateJudgingFromPayload,
   } = judging;
 
-  const [collabProject, setCollabProject] = useState<Project | null>(null);
-  const [collabMembers, setCollabMembers] = useState<ProjectCollaboratorRow[]>([]);
-  const [collabInvites, setCollabInvites] = useState<ProjectCollaborationInviteRow[]>(
-    [],
-  );
-  const [collabLoading, setCollabLoading] = useState(false);
   const [collabInviteeQuery, setCollabInviteeQuery] = useState("");
-  const [invitableUsers, setInvitableUsers] = useState<InvitableUserRow[]>([]);
-  const [invitableLoading, setInvitableLoading] = useState(false);
+  const [debouncedCollabInviteeQuery, setDebouncedCollabInviteeQuery] = useState("");
   const [inviteSendingUserId, setInviteSendingUserId] = useState<string | null>(null);
+  const collaborationOptions = projectCollaborationWorkspaceQueryOptions({
+    userId: user?.id,
+    contestId: id,
+    enabled:
+      registration?.status === "approved" && Boolean(mySubmission),
+  });
+  const collaborationQuery = useQuery(collaborationOptions);
+  const refetchCollaboration = collaborationQuery.refetch;
+  const collabProject = collaborationQuery.data?.project ?? null;
+  const collabMembers = collaborationQuery.data?.members ?? EMPTY_COLLAB_MEMBERS;
+  const collabInvites = collaborationQuery.data?.invites ?? EMPTY_COLLAB_INVITES;
+  const invitableQuery = useQuery(
+    invitableHackathonUsersQueryOptions({
+      userId: user?.id,
+      projectId: collabProject?.id,
+      search: debouncedCollabInviteeQuery,
+    }),
+  );
+  const invitableUsers = invitableQuery.data ?? EMPTY_INVITABLE_USERS;
+  const collabLoading = collaborationQuery.isPending && collaborationQuery.fetchStatus !== "idle";
+  const invitableLoading = invitableQuery.isFetching;
 
   const invitesWs = useContestInviteWorkspace();
   const {
@@ -825,15 +838,11 @@ export function useContestDetailOrchestrator({
         submissionDemoUrl !== (mySubmission?.demo_url ?? "") ||
         submissionRepoUrl !== (mySubmission?.repo_url ?? "") ||
         submissionSlideUrl !== (mySubmission?.slide_url ?? "") ||
-        submissionScreenshotUrl !== (mySubmission?.screenshot_url ?? "") ||
-        submissionCoverImageUrl !== (mySubmission?.cover_image_url ?? "") ||
         submissionVideoUrl !== (mySubmission?.video_url ?? "")),
     [
       mySubmission?.demo_url,
       mySubmission?.repo_url,
       mySubmission?.slide_url,
-      mySubmission?.screenshot_url,
-      mySubmission?.cover_image_url,
       mySubmission?.summary,
       mySubmission?.title,
       mySubmission?.video_url,
@@ -841,8 +850,6 @@ export function useContestDetailOrchestrator({
       submissionDemoUrl,
       submissionRepoUrl,
       submissionSlideUrl,
-      submissionScreenshotUrl,
-      submissionCoverImageUrl,
       submissionSummary,
       submissionTitle,
       submissionVideoUrl,
@@ -854,135 +861,82 @@ export function useContestDetailOrchestrator({
     [leaderboard],
   );
 
-  const loadAbortRef = useRef<AbortController | null>(null);
-  /** Latest viewer + contest for fetch; avoids churning `loadContestData` identity on token-only updates / contest merges. */
-  const contestDetailFetchInputsRef = useRef<{
-    user: User | null;
-    profile: Profile | null;
-    contest: Contest | null;
-  }>({ user: null, profile: null, contest: null });
-  contestDetailFetchInputsRef.current = { user, profile, contest };
-
-  const loadContestData = useCallback(
-    async (opts?: { silent?: boolean }) => {
-      if (!slug || !authInitialized) return;
-      loadAbortRef.current?.abort();
-      const ctrl = new AbortController();
-      loadAbortRef.current = ctrl;
-      const silent = Boolean(opts?.silent);
-      if (!silent) {
-        setLoading(true);
-        setError(null);
-      }
-      const { user: viewer, profile: viewerProfile, contest: prefetchContest } =
-        contestDetailFetchInputsRef.current;
-      try {
-        const result = await fetchContestDetailPayload({
-          slug,
-          profile: viewerProfile,
-          userEmail: viewer?.email ?? undefined,
-          uiLocale: i18n.language,
-          viewer: viewer ?? null,
-          isManager,
-          translate,
-          signal: ctrl.signal,
-          prefetchedContest: prefetchContest,
-        });
-        if (loadAbortRef.current !== ctrl) return;
-        if (result.status === "aborted") return;
-        if (result.status === "error") {
-          if (!silent) {
-            setContest(null);
-            setError(result.errorMessage);
-          }
-          return;
-        }
-        const p = result.payload;
-        setContest(p.contest);
-        hydrateContestMetaFromPayload(p);
-        hydrateRegistrationFromPayload(p);
-        hydrateJudgingFromPayload(p);
-        hydrateInvitesFromPayload(p);
-      } catch (err) {
-        if (loadAbortRef.current !== ctrl) return;
-        if (!silent) {
-          setError(translateApiError(err, translate, "detail.errors.loadFailed"));
-        }
-      } finally {
-        if (loadAbortRef.current === ctrl && !silent) {
-          setLoading(false);
-        }
-      }
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const detailOptions = contestDetailPayloadQueryOptions({
+    slug,
+    viewer: user,
+    profile,
+    profileReady: authInitialized && (!user || !profileLoading),
+    locale,
+    isManager,
+    translate,
+    prefetchedContest: contest ?? prefetchedContest,
+  });
+  const detailQuery = useQuery(detailOptions);
+  const refetchDetail = detailQuery.refetch;
+  const operationMutation = useMutation({
+    mutationFn: (operation: () => Promise<unknown>) => operation(),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: [...hackathonKeys.all, "catalog"],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: [...hackathonKeys.all, "public-detail"],
+      });
+    },
+  });
+  const mutateOperation = operationMutation.mutateAsync;
+  const executeWrite = useCallback(
+    async <T,>(operation: () => Promise<T>): Promise<T> =>
+      (await mutateOperation(operation)) as T,
+    [mutateOperation],
+  );
+  const applyDetailPayload = useCallback(
+    (payload: ContestDetailFetchedPayload) => {
+      setContest(payload.contest);
+      hydrateContestMetaFromPayload(payload);
+      hydrateRegistrationFromPayload(payload);
+      hydrateJudgingFromPayload(payload);
+      hydrateInvitesFromPayload(payload);
     },
     [
-    hydrateContestMetaFromPayload,
-    hydrateInvitesFromPayload,
-    hydrateJudgingFromPayload,
-    hydrateRegistrationFromPayload,
-    slug,
-    isManager,
-    authInitialized,
-    setContest,
-    i18n.language,
-    setError,
-    setLoading,
-    translate,
+      hydrateContestMetaFromPayload,
+      hydrateInvitesFromPayload,
+      hydrateJudgingFromPayload,
+      hydrateRegistrationFromPayload,
+      setContest,
     ],
   );
+  const loadContestData = useCallback(
+    async (opts?: { silent?: boolean }) => {
+      void opts;
+      const result = await refetchDetail();
+      if (result.data) applyDetailPayload(result.data);
+    },
+    [applyDetailPayload, refetchDetail],
+  );
+  const loading =
+    !authInitialized ||
+    profileLoading ||
+    (detailQuery.isPending && detailQuery.fetchStatus !== "idle");
+  const error = detailQuery.error
+    ? translateApiError(detailQuery.error, translate, "detail.errors.loadFailed")
+    : null;
 
   const loadCollaboration = useCallback(async () => {
-    if (!id || !user?.id || registration?.status !== "approved" || !mySubmission) {
-      setCollabProject(null);
-      setCollabMembers([]);
-      setCollabInvites([]);
-      return;
-    }
-    setCollabLoading(true);
-    try {
-      const proj = await fetchHackathonProjectForOwnerSubmission(id, user.id);
-      setCollabProject(proj);
-      if (proj) {
-        const [mem, inv] = await Promise.all([
-          listProjectCollaborators(proj.id),
-          listProjectCollaborationInvites(proj.id),
-        ]);
-        setCollabMembers(mem);
-        setCollabInvites(inv);
-      } else {
-        setCollabMembers([]);
-        setCollabInvites([]);
-      }
-    } catch {
-      setCollabProject(null);
-      setCollabMembers([]);
-      setCollabInvites([]);
-    } finally {
-      setCollabLoading(false);
-    }
-  }, [id, user?.id, registration?.status, mySubmission]);
+    await refetchCollaboration();
+  }, [refetchCollaboration]);
 
   useEffect(() => {
-    void loadCollaboration();
-  }, [loadCollaboration]);
-
-  useEffect(() => {
-    if (!collabProject?.id) {
-      setInvitableUsers([]);
-      return;
-    }
     const handle = window.setTimeout(() => {
-      setInvitableLoading(true);
-      void listInvitableHackathonUsers(collabProject.id, collabInviteeQuery)
-        .then(setInvitableUsers)
-        .catch(() => setInvitableUsers([]))
-        .finally(() => setInvitableLoading(false));
+      setDebouncedCollabInviteeQuery(collabInviteeQuery);
     }, 320);
     return () => window.clearTimeout(handle);
-  }, [collabProject?.id, collabInviteeQuery]);
+  }, [collabInviteeQuery]);
 
   useEffect(() => {
-    void loadContestData();
-  }, [loadContestData]);
+    if (detailQuery.data) applyDetailPayload(detailQuery.data);
+  }, [applyDetailPayload, detailQuery.data]);
 
   useEffect(() => {
     if (!contest) return;
@@ -1144,7 +1098,7 @@ export function useContestDetailOrchestrator({
 
     setDeletingContest(true);
     try {
-      await deleteContest(contest.id);
+      await executeWrite(() => deleteContest(contest.id));
       toast.success(translate("detail.actions.deleteSuccess"));
       navigate("/hackathons", { replace: true });
     } catch (err) {
@@ -1152,7 +1106,7 @@ export function useContestDetailOrchestrator({
     } finally {
       setDeletingContest(false);
     }
-  }, [contest, navigate, setDeletingContest, translate]);
+  }, [contest, executeWrite, navigate, setDeletingContest, translate]);
 
   const handleApply = useCallback(async () => {
     if (!id || applying) return;
@@ -1174,13 +1128,15 @@ export function useContestDetailOrchestrator({
       profile?.website?.trim() || profile?.instructor_website?.trim() || "";
     setApplying(true);
     try {
-      const result = await registerForContest(id, {
-        contact_email: resolvedEmail,
-        contact_phone: resolvedPhone || undefined,
-        portfolio_url: resolvedPortfolio || undefined,
-        motivation: motivation.trim() || undefined,
-        user_full_name: profile?.full_name ?? undefined,
-      });
+      const result = await executeWrite(() =>
+        registerForContest(id, {
+          contact_email: resolvedEmail,
+          contact_phone: resolvedPhone || undefined,
+          portfolio_url: resolvedPortfolio || undefined,
+          motivation: motivation.trim() || undefined,
+          user_full_name: profile?.full_name ?? undefined,
+        }),
+      );
       setRegistration(result);
       toast.success(
         translate(
@@ -1197,6 +1153,7 @@ export function useContestDetailOrchestrator({
   }, [
     applying,
     contest,
+    executeWrite,
     id,
     isAuthenticated,
     location,
@@ -1219,10 +1176,12 @@ export function useContestDetailOrchestrator({
       if (!id || !canReview || savingReviewId) return;
       setSavingReviewId(userId);
       try {
-        await reviewContestRegistration(id, userId, {
-          status,
-          review_note: reviewNotes[userId] ?? "",
-        });
+        await executeWrite(() =>
+          reviewContestRegistration(id, userId, {
+            status,
+            review_note: reviewNotes[userId] ?? "",
+          }),
+        );
         toast.success(
           status === "approved"
             ? translate("detail.toasts.applicationReviewedApproved")
@@ -1237,6 +1196,7 @@ export function useContestDetailOrchestrator({
     },
     [
       canReview,
+      executeWrite,
       id,
       loadContestData,
       reviewNotes,
@@ -1258,7 +1218,7 @@ export function useContestDetailOrchestrator({
     }
     setSavingStatus(true);
     try {
-      await updateContest(id, { status: managerStatus });
+      await executeWrite(() => updateContest(id, { status: managerStatus }));
       setContest((prev) => (prev ? { ...prev, status: managerStatus } : prev));
       toast.success(translate("detail.toasts.contestStatusUpdated"));
     } catch (err) {
@@ -1268,6 +1228,7 @@ export function useContestDetailOrchestrator({
     }
   }, [
     contest,
+    executeWrite,
     id,
     isManager,
     managerStatus,
@@ -1283,16 +1244,13 @@ export function useContestDetailOrchestrator({
     if (nextSlug === (contest.slug ?? "")) return;
     setSavingSlug(true);
     try {
-      await updateContest(id, { slug: nextSlug });
-      const fresh = await getContest(id);
-      if (fresh) {
-        setContest(fresh);
-        onContestSynced?.(fresh);
-        if (fresh.slug && slug && fresh.slug !== slug) {
-          const rest = location.pathname.split("/").slice(3).join("/");
-          const target = rest.length > 0 ? `/hackathons/${fresh.slug}/${rest}` : `/hackathons/${fresh.slug}`;
-          navigate(target, { replace: true });
-        }
+      const fresh = await executeWrite(() => updateContest(id, { slug: nextSlug }));
+      setContest(fresh);
+      onContestSynced?.(fresh);
+      if (fresh.slug && slug && fresh.slug !== slug) {
+        const rest = location.pathname.split("/").slice(3).join("/");
+        const target = rest.length > 0 ? `/hackathons/${fresh.slug}/${rest}` : `/hackathons/${fresh.slug}`;
+        navigate(target, { replace: true });
       }
       toast.success(translate("detail.toasts.publicContentUpdated"));
     } catch (err) {
@@ -1302,6 +1260,7 @@ export function useContestDetailOrchestrator({
     }
   }, [
     contest,
+    executeWrite,
     id,
     isManager,
     location.pathname,
@@ -1319,13 +1278,15 @@ export function useContestDetailOrchestrator({
     if (!id || !isManager || savingInvite || !inviteEmail.trim()) return;
     setSavingInvite(true);
     try {
-      await createContestAccessInvite(id, {
-        email: inviteEmail,
-        roles: inviteRoles.length > 0 ? inviteRoles : ["judge"],
-        display_name: inviteDisplayName,
-        organization_name: inviteOrganization,
-        note: inviteNote,
-      });
+      await executeWrite(() =>
+        createContestAccessInvite(id, {
+          email: inviteEmail,
+          roles: inviteRoles.length > 0 ? inviteRoles : ["judge"],
+          display_name: inviteDisplayName,
+          organization_name: inviteOrganization,
+          note: inviteNote,
+        }),
+      );
       setInviteEmail("");
       setInviteDisplayName("");
       setInviteOrganization("");
@@ -1339,6 +1300,7 @@ export function useContestDetailOrchestrator({
       setSavingInvite(false);
     }
   }, [
+    executeWrite,
     id,
     inviteDisplayName,
     inviteEmail,
@@ -1401,10 +1363,12 @@ export function useContestDetailOrchestrator({
           );
 
           try {
-            await createContestAccessInvite(id, {
-              email,
-              roles: roles.length > 0 ? roles : ["judge"],
-            });
+            await executeWrite(() =>
+              createContestAccessInvite(id, {
+                email,
+                roles: roles.length > 0 ? roles : ["judge"],
+              }),
+            );
             successCount += 1;
           } catch {
             failCount += 1;
@@ -1424,7 +1388,7 @@ export function useContestDetailOrchestrator({
         setSavingInvite(false);
       }
     },
-    [id, isManager, loadContestData, savingInvite, setSavingInvite, translate],
+    [executeWrite, id, isManager, loadContestData, savingInvite, setSavingInvite, translate],
   );
 
   const handleInviteResponse = useCallback(
@@ -1432,7 +1396,7 @@ export function useContestDetailOrchestrator({
       if (!id || !myInvite) return;
       setInviteActionId(myInvite.id);
       try {
-        await respondToContestAccessInvite(id, status);
+        await executeWrite(() => respondToContestAccessInvite(id, status));
         toast.success(
           status === "accepted"
             ? translate("detail.toasts.inviteAccepted")
@@ -1445,7 +1409,7 @@ export function useContestDetailOrchestrator({
         setInviteActionId(null);
       }
     },
-    [id, loadContestData, myInvite, setInviteActionId, translate],
+    [executeWrite, id, loadContestData, myInvite, setInviteActionId, translate],
   );
 
   const handleInviteRevoke = useCallback(
@@ -1453,7 +1417,7 @@ export function useContestDetailOrchestrator({
       if (!id || !isManager) return;
       setInviteActionId(email);
       try {
-        await revokeContestAccessInvite(id, email);
+        await executeWrite(() => revokeContestAccessInvite(id, email));
         toast.success(translate("detail.toasts.inviteRevoked"));
         await loadContestData({ silent: true });
       } catch (err) {
@@ -1462,7 +1426,7 @@ export function useContestDetailOrchestrator({
         setInviteActionId(null);
       }
     },
-    [id, isManager, loadContestData, setInviteActionId, translate],
+    [executeWrite, id, isManager, loadContestData, setInviteActionId, translate],
   );
 
   const handleRubricSave = useCallback(async () => {
@@ -1483,7 +1447,7 @@ export function useContestDetailOrchestrator({
         toast.error(translate("detail.toasts.rubricWeightMustBe100"));
         return;
       }
-      await updateContest(id, { rubric_weights: weights });
+      await executeWrite(() => updateContest(id, { rubric_weights: weights }));
       setContest((prev) =>
         prev ? { ...prev, rubric_weights: weights } : prev,
       );
@@ -1494,6 +1458,7 @@ export function useContestDetailOrchestrator({
       setSavingRubric(false);
     }
   }, [
+    executeWrite,
     id,
     isManager,
     rubricWeights.impact,
@@ -1543,18 +1508,16 @@ export function useContestDetailOrchestrator({
           ? activeRoundIdDraft
           : rounds[0]!.id;
 
-      await updateContest(id, {
-        tracks,
-        rounds,
-        judging: { active_round_id: activeRound },
-        config: { ...(contest.config ?? {}), anonymous_judging: anonymousJudgingDraft },
-      });
-
-      const fresh = await getContest(id);
-      if (fresh) {
-        setContest(fresh);
-        onContestSynced?.(fresh);
-      }
+      const fresh = await executeWrite(() =>
+        updateContest(id, {
+          tracks,
+          rounds,
+          judging: { active_round_id: activeRound },
+          config: { ...(contest.config ?? {}), anonymous_judging: anonymousJudgingDraft },
+        }),
+      );
+      setContest(fresh);
+      onContestSynced?.(fresh);
       toast.success(translate("workspace.manage.tracksRoundsSaved"));
     } catch (err) {
       toast.error(translateApiError(err, translate, "workspace.manage.tracksRoundsSaveFailed"));
@@ -1565,6 +1528,7 @@ export function useContestDetailOrchestrator({
     activeRoundIdDraft,
     anonymousJudgingDraft,
     contest,
+    executeWrite,
     id,
     isManager,
     onContestSynced,
@@ -1581,9 +1545,8 @@ export function useContestDetailOrchestrator({
       if (!collabProject) return;
       setInviteSendingUserId(inviteeUserId);
       try {
-        const { token } = await createProjectCollaborationInvite(
-          collabProject.id,
-          inviteeUserId,
+        const { token } = await executeWrite(() =>
+          createProjectCollaborationInvite(collabProject.id, inviteeUserId),
         );
         const link = `${window.location.origin}/invites/project/${token}`;
         await navigator.clipboard.writeText(link);
@@ -1595,34 +1558,36 @@ export function useContestDetailOrchestrator({
         setInviteSendingUserId(null);
       }
     },
-    [collabProject, loadCollaboration, translate],
+    [collabProject, executeWrite, loadCollaboration, translate],
   );
 
   const handleRevokeCollabInvite = useCallback(
     async (inviteId: string) => {
       try {
-        await revokeProjectCollaborationInvite(inviteId);
+        await executeWrite(() => revokeProjectCollaborationInvite(inviteId));
         toast.success(translate("detail.toasts.collabInviteRevoked"));
         await loadCollaboration();
       } catch (err) {
         toast.error(translateApiError(err, translate, "detail.toasts.collabRevokeFailed"));
       }
     },
-    [loadCollaboration, translate],
+    [executeWrite, loadCollaboration, translate],
   );
 
   const handleRemoveCollaborator = useCallback(
     async (memberUserId: string) => {
       if (!collabProject) return;
       try {
-        await removeProjectCollaborator(collabProject.id, memberUserId);
+        await executeWrite(() =>
+          removeProjectCollaborator(collabProject.id, memberUserId),
+        );
         toast.success(translate("detail.toasts.collaboratorRemoved"));
         await loadCollaboration();
       } catch (err) {
         toast.error(translateApiError(err, translate, "detail.toasts.collaboratorRemoveFailed"));
       }
     },
-    [collabProject, loadCollaboration, translate],
+    [collabProject, executeWrite, loadCollaboration, translate],
   );
 
   const handleSubmissionSave = useCallback(async () => {
@@ -1637,16 +1602,18 @@ export function useContestDetailOrchestrator({
     }
     setSavingSubmission(true);
     try {
-      const saved = await upsertContestSubmission(id, {
-        title: submissionTitle,
-        summary: submissionSummary,
-        demo_url: submissionDemoUrl,
-        repo_url: submissionRepoUrl,
-        slide_url: submissionSlideUrl,
-        screenshot_url: submissionScreenshotUrl,
-        cover_image_url: submissionCoverImageUrl,
-        video_url: submissionVideoUrl,
-      });
+      const saved = await executeWrite(() =>
+        upsertContestSubmission(id, {
+          title: submissionTitle,
+          summary: submissionSummary,
+          demo_url: submissionDemoUrl,
+          repo_url: submissionRepoUrl,
+          slide_url: submissionSlideUrl,
+          logo_path: mySubmission?.logo_path ?? null,
+          screenshot_paths: mySubmission?.screenshot_paths ?? [],
+          video_url: submissionVideoUrl,
+        }),
+      );
       setMySubmission(saved);
       await loadCollaboration();
       toast.success(translate("detail.toasts.submissionSaved"));
@@ -1656,15 +1623,16 @@ export function useContestDetailOrchestrator({
       setSavingSubmission(false);
     }
   }, [
+    executeWrite,
     id,
+    mySubmission?.logo_path,
+    mySubmission?.screenshot_paths,
     savingSubmission,
     setMySubmission,
     setSavingSubmission,
     submissionDemoUrl,
     submissionRepoUrl,
     submissionSlideUrl,
-    submissionScreenshotUrl,
-    submissionCoverImageUrl,
     submissionVideoUrl,
     submissionSummary,
     submissionTitle,
@@ -1689,13 +1657,15 @@ export function useContestDetailOrchestrator({
       }
       setSavingScoreId(submissionId);
       try {
-        await scoreContestSubmission(id, submissionId, {
-          product_score: values[0],
-          technical_score: values[1],
-          presentation_score: values[2],
-          impact_score: values[3],
-          note: draft.note,
-        });
+        await executeWrite(() =>
+          scoreContestSubmission(id, submissionId, {
+            product_score: values[0],
+            technical_score: values[1],
+            presentation_score: values[2],
+            impact_score: values[3],
+            note: draft.note,
+          }),
+        );
         toast.success(translate("detail.toasts.scoreSaved"));
         await loadContestData({ silent: true });
       } catch (err) {
@@ -1706,6 +1676,7 @@ export function useContestDetailOrchestrator({
     },
     [
       canJudge,
+      executeWrite,
       id,
       loadContestData,
       scoreDrafts,
@@ -1723,7 +1694,7 @@ export function useContestDetailOrchestrator({
       if (!id || !isManager || blasting) return null;
       setBlasting(true);
       try {
-        const result = await blastContestEmail(id, params);
+        const result = await executeWrite(() => blastContestEmail(id, params));
         if (result.reason === "email_not_configured") {
           toast.error(translate("workspace.email.systemUnavailable"));
         } else {
@@ -1737,14 +1708,14 @@ export function useContestDetailOrchestrator({
         setBlasting(false);
       }
     },
-    [blasting, id, isManager, translate],
+    [blasting, executeWrite, id, isManager, translate],
   );
 
   const handleRefreshMetrics = useCallback(async () => {
     if (!id || !isManager || refreshingMetrics) return;
     setRefreshingMetrics(true);
     try {
-      const snapshot = await refreshContestMetricsSnapshot(id);
+      const snapshot = await executeWrite(() => refreshContestMetricsSnapshot(id));
       setContest((prev) =>
         prev ? { ...prev, metrics_snapshot: snapshot } : prev,
       );
@@ -1755,6 +1726,7 @@ export function useContestDetailOrchestrator({
       setRefreshingMetrics(false);
     }
   }, [
+    executeWrite,
     id,
     isManager,
     refreshingMetrics,
@@ -1783,7 +1755,7 @@ export function useContestDetailOrchestrator({
 
     setPublishingResults(true);
     try {
-      const result = await publishContestResults(id, winnerInputs);
+      const result = await executeWrite(() => publishContestResults(id, winnerInputs));
       setContest((prev) =>
         prev
           ? {
@@ -1800,6 +1772,7 @@ export function useContestDetailOrchestrator({
       setPublishingResults(false);
     }
   }, [
+    executeWrite,
     id,
     isManager,
     leaderboardReadyForPublish.length,
@@ -1818,17 +1791,14 @@ export function useContestDetailOrchestrator({
       if (!file || !id || !contest || !isManager) return;
       setBannerUploading(true);
       try {
-        const { url, path } = await uploadContestBanner(
-          id,
-          file,
-          contest.cover_image_path ?? null,
-        );
-        await updateContest(id, { cover_image_url: url, cover_image_path: path });
-        const next: Contest = {
-          ...contest,
-          cover_image_url: url,
-          cover_image_path: path,
-        };
+        const next = await executeWrite(async () => {
+          const { url, path } = await uploadContestBanner(
+            id,
+            file,
+            contest.cover_image_path ?? null,
+          );
+          return updateContest(id, { cover_image_url: url, cover_image_path: path });
+        });
         setContest(next);
         onContestSynced?.(next);
         toast.success(translate("detail.toasts.contestBannerUpdated"));
@@ -1840,6 +1810,7 @@ export function useContestDetailOrchestrator({
     },
     [
       contest,
+      executeWrite,
       id,
       isManager,
       onContestSynced,
@@ -1856,17 +1827,14 @@ export function useContestDetailOrchestrator({
       if (!file || !id || !contest || !isManager) return;
       setThumbnailUploading(true);
       try {
-        const { url, path } = await uploadContestThumbnail(
-          id,
-          file,
-          contest.thumbnail_path ?? null,
-        );
-        await updateContest(id, { thumbnail_url: url, thumbnail_path: path });
-        const next: Contest = {
-          ...contest,
-          thumbnail_url: url,
-          thumbnail_path: path,
-        };
+        const next = await executeWrite(async () => {
+          const { url, path } = await uploadContestThumbnail(
+            id,
+            file,
+            contest.thumbnail_path ?? null,
+          );
+          return updateContest(id, { thumbnail_url: url, thumbnail_path: path });
+        });
         setContest(next);
         onContestSynced?.(next);
         toast.success(translate("detail.toasts.contestThumbnailUpdated"));
@@ -1878,6 +1846,7 @@ export function useContestDetailOrchestrator({
     },
     [
       contest,
+      executeWrite,
       id,
       isManager,
       onContestSynced,
@@ -1901,21 +1870,20 @@ export function useContestDetailOrchestrator({
       const prevPath = row.logo_path?.trim() || null;
       setPartnerLogoUploadingIndex(index);
       try {
-        const { url, path } = await uploadContestOrganizationalPartnerLogo(
-          id,
-          partnerId,
-          file,
-          prevPath,
-        );
-        const organizational_partners = publicDraft.organizational_partners.map((p, i) =>
-          i === index ? { ...p, id: partnerId, logo_url: url, logo_path: path } : p,
-        );
-        await updateContest(id, { organizational_partners });
-        const fresh = await getContest(id);
-        if (fresh) {
-          setContest(fresh);
-          onContestSynced?.(fresh);
-        }
+        const fresh = await executeWrite(async () => {
+          const { url, path } = await uploadContestOrganizationalPartnerLogo(
+            id,
+            partnerId,
+            file,
+            prevPath,
+          );
+          const organizational_partners = publicDraft.organizational_partners.map((p, i) =>
+            i === index ? { ...p, id: partnerId, logo_url: url, logo_path: path } : p,
+          );
+          return updateContest(id, { organizational_partners });
+        });
+        setContest(fresh);
+        onContestSynced?.(fresh);
         toast.success(translate("detail.toasts.organizationalPartnerLogoUpdated"));
       } catch (err) {
         toast.error(translateApiError(err, translate, "detail.toasts.organizationalPartnerLogoUploadFailed"));
@@ -1925,6 +1893,7 @@ export function useContestDetailOrchestrator({
     },
     [
       contest,
+      executeWrite,
       id,
       isManager,
       onContestSynced,
@@ -1940,17 +1909,16 @@ export function useContestDetailOrchestrator({
       if (!id || !contest || !isManager) return;
       const row = publicDraft.organizational_partners[index];
       const prevPath = row?.logo_path?.trim() || null;
-      if (prevPath) await deleteStorageObjectByPath(prevPath);
       try {
         const organizational_partners = publicDraft.organizational_partners.map((p, i) =>
           i === index ? { ...p, logo_url: null, logo_path: null } : p,
         );
-        await updateContest(id, { organizational_partners });
-        const fresh = await getContest(id);
-        if (fresh) {
-          setContest(fresh);
-          onContestSynced?.(fresh);
-        }
+        const fresh = await executeWrite(async () => {
+          if (prevPath) await deleteStorageObjectByPath(prevPath);
+          return updateContest(id, { organizational_partners });
+        });
+        setContest(fresh);
+        onContestSynced?.(fresh);
         toast.success(translate("detail.toasts.organizationalPartnerLogoRemoved"));
       } catch (err) {
         toast.error(translateApiError(err, translate, "detail.toasts.organizationalPartnerLogoRemoveFailed"));
@@ -1958,6 +1926,7 @@ export function useContestDetailOrchestrator({
     },
     [
       contest,
+      executeWrite,
       id,
       isManager,
       onContestSynced,
@@ -2029,31 +1998,28 @@ export function useContestDetailOrchestrator({
           .map((p) => p.logo_path?.trim())
           .filter(Boolean) as string[],
       );
-      for (const path of prevLogoPaths) {
-        if (!nextLogoPaths.has(path)) {
-          await deleteStorageObjectByPath(path);
+      const fresh = await executeWrite(async () => {
+        for (const path of prevLogoPaths) {
+          if (!nextLogoPaths.has(path)) await deleteStorageObjectByPath(path);
         }
-      }
-      await updateContest(id, {
-        config: {
-          ...(contest.config ?? {}),
-          auto_approve_registrations: publicDraft.auto_approve_registrations,
-        },
-        registration_deadline: datetimeLocalToIso(publicDraft.registration_deadline_local),
-        submission_deadline: datetimeLocalToIso(publicDraft.submission_deadline_local),
-        starts_at: datetimeLocalToIso(publicDraft.starts_at_local),
-        ends_at: datetimeLocalToIso(publicDraft.ends_at_local),
-        prize_pool_summary: publicDraft.prize_pool_summary.trim() || null,
-        prizes,
-        faqs,
-        timeline_milestones: milestones,
-        organizational_partners,
+        return updateContest(id, {
+          config: {
+            ...(contest.config ?? {}),
+            auto_approve_registrations: publicDraft.auto_approve_registrations,
+          },
+          registration_deadline: datetimeLocalToIso(publicDraft.registration_deadline_local),
+          submission_deadline: datetimeLocalToIso(publicDraft.submission_deadline_local),
+          starts_at: datetimeLocalToIso(publicDraft.starts_at_local),
+          ends_at: datetimeLocalToIso(publicDraft.ends_at_local),
+          prize_pool_summary: publicDraft.prize_pool_summary.trim() || null,
+          prizes,
+          faqs,
+          timeline_milestones: milestones,
+          organizational_partners,
+        });
       });
-      const fresh = await getContest(id);
-      if (fresh) {
-        setContest(fresh);
-        onContestSynced?.(fresh);
-      }
+      setContest(fresh);
+      onContestSynced?.(fresh);
       toast.success(translate("detail.toasts.publicContentSaved"));
     } catch (err) {
       toast.error(translateApiError(err, translate, "detail.toasts.publicContentSaveFailed"));
@@ -2062,6 +2028,7 @@ export function useContestDetailOrchestrator({
     }
   }, [
     contest,
+    executeWrite,
     id,
     isManageView,
     isManager,
@@ -2172,6 +2139,7 @@ export function useContestDetailOrchestrator({
     user,
     isAuthenticated,
     contest,
+    setContest,
     loading,
     error,
     registration,
@@ -2200,10 +2168,6 @@ export function useContestDetailOrchestrator({
     setSubmissionRepoUrl,
     submissionSlideUrl,
     setSubmissionSlideUrl,
-    submissionScreenshotUrl,
-    setSubmissionScreenshotUrl,
-    submissionCoverImageUrl,
-    setSubmissionCoverImageUrl,
     submissionVideoUrl,
     setSubmissionVideoUrl,
     savingSubmission,

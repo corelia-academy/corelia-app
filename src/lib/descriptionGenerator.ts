@@ -2,7 +2,7 @@ import { supabaseFunctionHeaders } from "./coreliaEdgeApi";
 import { supabase } from "./supabase";
 import type { SupportedCourseLocale } from "../types/courses";
 
-export type DescriptionGeneratorType = "course" | "lesson";
+export type DescriptionGeneratorType = "course" | "lesson" | "hackathon";
 export type DescriptionGeneratorAction = "generate" | "translate";
 export type DescriptionGeneratorTargetField =
   | "title"
@@ -14,7 +14,16 @@ export type DescriptionTranslationBundleKind =
   | "course_info"
   | "section"
   | "lesson"
-  | "assignment";
+  | "assignment"
+  | "hackathon";
+
+export type HackathonTranslationItem = {
+  id: string;
+  name?: string;
+  title?: string;
+  description?: string;
+  descriptionMarkdown?: string;
+};
 
 export type DescriptionSourceKind =
   | "short_description"
@@ -44,6 +53,12 @@ export type DescriptionTranslationBundle = {
   markdownDescription?: string;
   learningOutcomes?: string[];
   instructions?: string;
+  resourcesMarkdown?: string;
+  prizeDescriptionMarkdown?: string;
+  tracks?: HackathonTranslationItem[];
+  sectors?: HackathonTranslationItem[];
+  techStacks?: HackathonTranslationItem[];
+  timeline?: HackathonTranslationItem[];
 };
 
 type GenerateDescriptionRequestCommon = {
@@ -63,6 +78,20 @@ type CareerTrackTranslationRequest = GenerateDescriptionRequestCommon & {
   targetField: "description";
   bundleKind: "course_info";
   careerTrackId: string;
+  hackathonId?: never;
+  courseId?: never;
+  sectionId?: never;
+  lessonId?: never;
+};
+
+type HackathonTranslationRequest = GenerateDescriptionRequestCommon & {
+  action: "translate";
+  type: "hackathon";
+  targetField: "description";
+  bundleKind: "hackathon";
+  hackathonId: string;
+  sourceBundle: DescriptionTranslationBundle;
+  careerTrackId?: never;
   courseId?: never;
   sectionId?: never;
   lessonId?: never;
@@ -70,9 +99,10 @@ type CareerTrackTranslationRequest = GenerateDescriptionRequestCommon & {
 
 type CourseOrLessonDescriptionRequest = GenerateDescriptionRequestCommon & {
   action?: DescriptionGeneratorAction;
-  type: DescriptionGeneratorType;
+  type: "course" | "lesson";
   bundleKind?: DescriptionTranslationBundleKind;
   careerTrackId?: never;
+  hackathonId?: never;
   courseId?: string;
   sectionId?: string;
   lessonId?: string;
@@ -80,6 +110,7 @@ type CourseOrLessonDescriptionRequest = GenerateDescriptionRequestCommon & {
 
 export type GenerateDescriptionRequest =
   | CareerTrackTranslationRequest
+  | HackathonTranslationRequest
   | CourseOrLessonDescriptionRequest;
 
 export function serializeGenerateDescriptionRequest(body: GenerateDescriptionRequest): string {

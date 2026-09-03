@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -8,10 +9,11 @@ import { useAuth } from "@/stores/authStore";
 import {
   acceptProjectInviteByToken,
   declineProjectInviteByToken,
-  peekProjectInviteByToken,
-  type ProjectInvitePreview,
 } from "@/lib/notifications";
-import { fetchProjectInviteDisplayContextByProjectIds } from "@/lib/notificationInviteContext";
+import {
+  projectInviteContextQueryOptions,
+  projectInvitePreviewQueryOptions,
+} from "@/features/invites/inviteQueries";
 import type { TFunction } from "i18next";
 
 function formatInviteError(err: unknown, t: TFunction<"contests">): string {
@@ -35,73 +37,41 @@ export default function ProjectInvitePage() {
   const navigate = useNavigate();
   const { t } = useTranslation("contests");
   const { t: tc } = useTranslation("common");
-  const { isAuthenticated, authInitialized } = useAuth();
-  const [busy, setBusy] = useState<"accept" | "decline" | null>(null);
+  const { isAuthenticated, authInitialized, user } = useAuth();
+  const queryClient = useQueryClient();
   const [message, setMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [preview, setPreview] = useState<ProjectInvitePreview | null>(null);
-  const [previewError, setPreviewError] = useState<string | null>(null);
-  const [previewLoading, setPreviewLoading] = useState(false);
 
   const safeToken = (token ?? "").trim();
-  const latestTokenRef = useRef(safeToken);
-  latestTokenRef.current = safeToken;
-  const abortControllerRef = useRef<AbortController | null>(null);
-
-  const fetchInvite = useCallback(
-    (targetToken: string) => {
-      if (!authInitialized || !isAuthenticated || !targetToken) return;
-      abortControllerRef.current?.abort();
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-
-      setPreviewLoading(true);
-      setPreviewError(null);
-      setErrorMessage(null);
-      setMessage(null);
-
-      peekProjectInviteByToken(targetToken, { signal: controller.signal })
-        .then((data) => {
-          if (latestTokenRef.current === targetToken) {
-            setPreview(data);
-          }
-        })
-        .catch((e: unknown) => {
-          if ((e as { name?: string })?.name === "AbortError") return;
-          if (latestTokenRef.current === targetToken) {
-            setPreview(null);
-            setPreviewError(formatInviteError(e, t));
-          }
-        })
-        .finally(() => {
-          if (latestTokenRef.current === targetToken) {
-            setPreviewLoading(false);
-          }
-        });
-    },
-    [authInitialized, isAuthenticated, t],
-  );
-
-  useEffect(() => {
-    fetchInvite(safeToken);
-    return () => {
-      abortControllerRef.current?.abort();
-    };
-  }, [fetchInvite, safeToken]);
+  const previewQuery = useQuery(projectInvitePreviewQueryOptions({
+    token: safeToken,
+    userId: user?.id,
+    enabled: authInitialized && isAuthenticated,
+  }));
+  const preview = previewQuery.data ?? null;
+  const previewError = previewQuery.error
+    ? formatInviteError(previewQuery.error, t)
+    : null;
+  const acceptMutation = useMutation({ mutationFn: acceptProjectInviteByToken });
+  const declineMutation = useMutation({ mutationFn: declineProjectInviteByToken });
+  const busy = acceptMutation.isPending
+    ? "accept"
+    : declineMutation.isPending
+      ? "decline"
+      : null;
 
   async function onAccept() {
     if (!safeToken) return;
-    setBusy("accept");
     setMessage(null);
     setErrorMessage(null);
     try {
-      const res = await acceptProjectInviteByToken(safeToken);
+      const res = await acceptMutation.mutateAsync(safeToken);
       toast.success(t("detail.inviteProject.accepted"));
 
       const pid = typeof res.project_id === "string" ? res.project_id : "";
       if (pid) {
-        const ctx = await fetchProjectInviteDisplayContextByProjectIds([pid]);
-        const href = ctx[pid]?.hackathonHref;
+        const ctx = await queryClient.fetchQuery(projectInviteContextQueryOptions(pid));
+        const href = ctx?.hackathonHref;
         if (href) {
           navigate(href, { replace: true });
           return;
@@ -113,26 +83,21 @@ export default function ProjectInvitePage() {
       const msg = formatInviteError(e, t);
       setErrorMessage(msg);
       toast.error(msg);
-    } finally {
-      setBusy(null);
     }
   }
 
   async function onDecline() {
     if (!safeToken) return;
-    setBusy("decline");
     setMessage(null);
     setErrorMessage(null);
     try {
-      await declineProjectInviteByToken(safeToken);
+      await declineMutation.mutateAsync(safeToken);
       setMessage(t("detail.inviteProject.declined"));
       toast.success(t("detail.inviteProject.declined"));
     } catch (e) {
       const msg = formatInviteError(e, t);
       setErrorMessage(msg);
       toast.error(msg);
-    } finally {
-      setBusy(null);
     }
   }
 
@@ -176,7 +141,7 @@ export default function ProjectInvitePage() {
             </div>
           ) : !safeToken ? (
             <p className="text-sm text-destructive">{t("detail.inviteProject.invalid")}</p>
-          ) : previewLoading ? (
+          ) : previewQuery.isPending ? (
             <p className="text-sm text-foreground-muted">{tc("status.loading")}</p>
           ) : previewError ? (
             <div className="space-y-3">
@@ -185,7 +150,7 @@ export default function ProjectInvitePage() {
                 type="button"
                 variant="outline"
                 className="w-full"
-                onClick={() => fetchInvite(safeToken)}
+                onClick={() => void previewQuery.refetch()}
               >
                 {t("detail.inviteProject.retry", { defaultValue: "Thử lại" })}
               </Button>

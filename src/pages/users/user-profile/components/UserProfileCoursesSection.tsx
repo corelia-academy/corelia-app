@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { BookOpen } from "lucide-react";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { getPublishedCoursesByInstructor } from "@/lib/courses";
+import { publicInstructorCoursesQueryOptions } from "@/features/profiles/publicProfileQueries";
 import type { PublicProfile } from "@/types/database";
-import type { Course } from "@/types/courses";
 
 export function UserProfileCoursesSection({
   profile,
@@ -14,34 +13,11 @@ export function UserProfileCoursesSection({
   profile: PublicProfile;
 }) {
   const { t } = useTranslation("common");
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const canShow = profile.role === "instructor";
-
-  useEffect(() => {
-    if (!canShow) return;
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        const rows = await getPublishedCoursesByInstructor(profile.id);
-        if (cancelled) return;
-        setCourses(rows);
-      } catch {
-        if (cancelled) return;
-        setError(t("userProfile.errors.loadFailed"));
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [canShow, profile.id, t]);
+  const query = useQuery(publicInstructorCoursesQueryOptions(profile.id, canShow));
+  const courses = query.data ?? [];
+  const loading = canShow && query.isPending;
+  const error = query.error ? t("userProfile.errors.loadFailed") : null;
 
   if (!canShow) {
     return (

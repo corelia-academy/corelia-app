@@ -1,11 +1,13 @@
 import { invokeCoreliaApi, callCoreliaApi } from "@/lib/coreliaEdgeApi";
+import { saveProject } from "@/lib/projectSubmission";
 import i18n from "@/i18n";
 import { supabase } from "@/lib/supabase";
-import { removeUndefinedFields, makeTTLCache } from "@/lib/utils";
+import { removeUndefinedFields } from "@/lib/utils";
 import { deleteStorageObjectByPath } from "@/lib/storage";
 import { getProfileForUser } from "@/lib/profile";
 import { normalizeContentLocale, pickContentLocale } from "@/lib/entityLocales";
 import { calculateContestScoreTotal } from "@/lib/hackathonScoreValidation";
+import { applyHackathonLocaleContent } from "@/lib/hackathonContract";
 import {
   canManageContests,
   canReviewContestApplications,
@@ -37,6 +39,8 @@ import type {
   ContestUpdate,
   ContestWinner,
   ContestWinnerInput,
+  HackathonTaxonomyOption,
+  HackathonTimelineItem,
 } from "@/types/hackathons";
 import type { User } from "@supabase/supabase-js";
 import type { Locale, Profile } from "@/types/database";
@@ -44,21 +48,7 @@ import type { Locale, Profile } from "@/types/database";
 const PUBLIC_CONTEST_STATUSES: Contest["status"][] = ["published", "running", "ended"];
 
 /** PostgREST row columns needed to build `Contest` via `contestFromRow` (avoids `select("*")`). */
-const CONTEST_ROW_SELECT = "id,status,created_at,updated_at,document" as const;
-
-const contestListCache = makeTTLCache<Contest[]>(2 * 60 * 1000);
-
-/** Same-bucket concurrent `listContests` calls share one in-flight fetch (race-safe vs TTL cache). */
-const listContestsInFlight = new Map<string, Promise<Contest[]>>();
-
-/** `ContestPublicLayout` + detail payload can overlap; collapse duplicate `getContest` rows. */
-const getContestByIdInFlight = new Map<string, Promise<Contest | null>>();
-const getContestBySlugInFlight = new Map<string, Promise<Contest | null>>();
-
-const LOCALE_CACHE_TTL = 5 * 60 * 1000;
-const hackathonLocaleCache = makeTTLCache<ContestI18nContent | null>(LOCALE_CACHE_TTL);
-/** Dedup concurrent fetches for the same key — separate from TTL so TTL starts on resolution. */
-const hackathonLocaleInFlight = new Map<string, Promise<ContestI18nContent | null>>();
+const CONTEST_ROW_SELECT = "id,status,participants_count,created_at,updated_at,document" as const;
 
 function sanitizeSlug(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -87,58 +77,28 @@ export type PrefetchedContestActorContext = {
   profile: Profile | null;
 };
 
-function applyContestLocaleContent(contest: Contest, localized: ContestI18nContent | null): Contest {
-  if (!localized) return contest;
-  return {
-    ...contest,
-    title: localized.title ?? contest.title,
-    tagline: localized.tagline ?? contest.tagline,
-    description: localized.description ?? contest.description,
-    rules: localized.rules ?? contest.rules,
-    prize_pool_summary: localized.prize_pool_summary ?? contest.prize_pool_summary,
-    faqs: localized.faqs ?? contest.faqs,
-    timeline_milestones: localized.timeline_milestones ?? contest.timeline_milestones,
-    organizational_partners:
-      localized.organizational_partners ?? contest.organizational_partners,
-    tracks: localized.tracks ? (localized.tracks as Contest["tracks"]) : contest.tracks,
-    rounds: localized.rounds ? (localized.rounds as Contest["rounds"]) : contest.rounds,
-  };
-}
+export const applyContestLocaleContent = applyHackathonLocaleContent;
 
 export async function getHackathonLocaleContent(
   contestId: string,
   locale: Locale,
+  signal?: AbortSignal,
 ): Promise<ContestI18nContent | null> {
   const normalized = normalizeContentLocale(locale);
-  const key = `${contestId}:${normalized}`;
-
-  const cached = hackathonLocaleCache.get(key);
-  if (cached) return cached;
-
-  const inflight = hackathonLocaleInFlight.get(key);
-  if (inflight) return inflight;
-
-  const promise = (async () => {
-    try {
-      const { data, error } = await supabase
-        .from("hackathon_locales")
-        .select("data")
-        .eq("hackathon_id", contestId)
-        .eq("locale", normalized)
-        .maybeSingle();
-      const result: ContestI18nContent | null =
-        error || !data?.data
-          ? null
-          : { ...(data.data as ContestI18nContent), updated_at: (data.data as ContestI18nContent).updated_at };
-      hackathonLocaleCache.set(key, Promise.resolve(result));
-      return result;
-    } finally {
-      hackathonLocaleInFlight.delete(key);
-    }
-  })();
-
-  hackathonLocaleInFlight.set(key, promise);
-  return promise;
+  let request = supabase
+    .from("hackathon_locales")
+    .select("data")
+    .eq("hackathon_id", contestId)
+    .eq("locale", normalized);
+  if (signal) request = request.abortSignal(signal);
+  const { data, error } = await request.maybeSingle();
+  if (error) throw new Error(error.message);
+  return data?.data
+    ? {
+        ...(data.data as ContestI18nContent),
+        updated_at: (data.data as ContestI18nContent).updated_at,
+      }
+    : null;
 }
 
 export async function getBatchHackathonLocaleContent(
@@ -150,29 +110,16 @@ export async function getBatchHackathonLocaleContent(
   const ids = Array.from(new Set(contestIds.map((v) => v.trim()).filter(Boolean)));
   if (ids.length === 0) return result;
 
-  const uncachedIds: string[] = [];
-  for (const id of ids) {
-    const cached = hackathonLocaleCache.get(`${id}:${normalized}`);
-    if (cached) {
-      const content = await cached;
-      if (content) result.set(id, content);
-    } else {
-      uncachedIds.push(id);
-    }
-  }
-  if (uncachedIds.length === 0) return result;
-
   const { data, error } = await supabase
     .from("hackathon_locales")
     .select("hackathon_id,data")
-    .in("hackathon_id", uncachedIds)
+    .in("hackathon_id", ids)
     .eq("locale", normalized);
 
   if (!error && data) {
     for (const row of data as Array<{ hackathon_id: string; data: unknown }>) {
       if (!row.data) continue;
       const content = row.data as ContestI18nContent;
-      hackathonLocaleCache.set(`${row.hackathon_id}:${normalized}`, Promise.resolve(content));
       result.set(row.hackathon_id, content);
     }
   }
@@ -195,7 +142,6 @@ export async function setHackathonLocaleContent(
     { onConflict: "hackathon_id,locale" },
   );
   if (error) throw new Error(error.message);
-  hackathonLocaleCache.delete(`${contestId}:${normalized}`);
 }
 
 function sanitizeEmail(email: string): string {
@@ -214,6 +160,37 @@ function sanitizeStringList(values: string[] | undefined): string[] {
   return Array.from(
     new Set(values.map((value) => value.trim()).filter((value) => value.length > 0)),
   );
+}
+
+function sanitizeTaxonomyOptions(
+  values: HackathonTaxonomyOption[] | undefined,
+): HackathonTaxonomyOption[] {
+  return (values ?? [])
+    .map((value, index) => ({
+      id: String(value.id ?? "").trim(),
+      name: String(value.name ?? "").trim(),
+      description: value.description?.trim() || null,
+      active: value.active !== false,
+      sort_order: Number.isFinite(value.sort_order) ? value.sort_order : index,
+    }))
+    .filter((value) => value.id.length > 0 && value.name.length > 0)
+    .sort((a, b) => a.sort_order - b.sort_order);
+}
+
+function sanitizeTimeline(
+  values: HackathonTimelineItem[] | undefined,
+): HackathonTimelineItem[] {
+  return (values ?? [])
+    .map((value, index) => ({
+      id: String(value.id ?? "").trim(),
+      title: String(value.title ?? "").trim(),
+      starts_at: String(value.starts_at ?? "").trim(),
+      ends_at: value.ends_at?.trim() || null,
+      description_markdown: value.description_markdown?.trim() || null,
+      sort_order: Number.isFinite(value.sort_order) ? value.sort_order : index,
+    }))
+    .filter((value) => value.id && value.title && value.starts_at)
+    .sort((a, b) => a.sort_order - b.sort_order);
 }
 
 function sanitizePrizeEntries(values: ContestPrizeEntry[] | undefined): ContestPrizeEntry[] {
@@ -283,14 +260,21 @@ export function contestSubmissionId(contestId: string, userId: string): string {
   return `${contestId}_${userId}`;
 }
 
-function contestScoreId(submissionId: string, judgeUid: string): string {
-  return `${submissionId}_${judgeUid}`;
+function projectSlug(title: string, suffix: string): string {
+  const base = title
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 72) || "project";
+  return `${base}-${suffix.slice(0, 8)}`;
 }
 
-function generateDisplayId(): string {
-  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const bytes = crypto.getRandomValues(new Uint8Array(4));
-  return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
+function contestScoreId(submissionId: string, judgeUid: string): string {
+  return `${submissionId}_${judgeUid}`;
 }
 
 function emptyMetricsSnapshot(): ContestMetricsSnapshot {
@@ -331,6 +315,8 @@ function normalizeTracks(tracks: ContestTrack[] | undefined): ContestTrack[] {
       name: String(t.name ?? "").trim(),
       description: t.description ?? null,
       active: t.active ?? true,
+      prize_amount: t.prize_amount?.trim() || null,
+      sort_order: Number.isFinite(t.sort_order) ? t.sort_order : 0,
       rubric: t.rubric,
     }))
     .filter((t) => t.id.length > 0 && t.name.length > 0);
@@ -403,6 +389,42 @@ function normalizeContest(data: Contest): Contest {
   return {
     ...data,
     slug: sanitizeSlug(data.slug),
+    tagline: data.short_description?.trim() || data.tagline?.trim() || "",
+    short_description: data.short_description?.trim() || data.tagline?.trim() || "",
+    description_markdown:
+      data.description_markdown?.trim() || data.description?.trim() || null,
+    resources_markdown: data.resources_markdown?.trim() || null,
+    mode: data.mode ?? data.location ?? "online",
+    location: data.mode ?? data.location ?? "online",
+    host: {
+      name: data.host?.name?.trim() || "",
+      website_url: data.host?.website_url?.trim() || null,
+      logo_url: data.host?.logo_url?.trim() || null,
+      logo_path: data.host?.logo_path?.trim() || null,
+    },
+    social_links: {
+      telegram: data.social_links?.telegram?.trim() || null,
+      x: data.social_links?.x?.trim() || null,
+      facebook: data.social_links?.facebook?.trim() || null,
+    },
+    participants_count: Number(data.participants_count ?? 0),
+    prize_pool: {
+      amount: data.prize_pool?.amount?.trim() || "0",
+      currency: data.prize_pool?.currency?.trim().toUpperCase() || "VND",
+      description_markdown: data.prize_pool?.description_markdown?.trim() || null,
+    },
+    sectors: sanitizeTaxonomyOptions(data.sectors),
+    tech_stacks: sanitizeTaxonomyOptions(data.tech_stacks),
+    timeline: sanitizeTimeline(data.timeline),
+    winner_awards: (data.winner_awards ?? [])
+      .map((award, index) => ({
+        id: String(award.id ?? "").trim() || crypto.randomUUID(),
+        project_id: String(award.project_id ?? "").trim(),
+        label: String(award.label ?? "").trim(),
+        sort_order: Number.isFinite(award.sort_order) ? award.sort_order : index,
+      }))
+      .filter((award) => award.project_id && award.label)
+      .sort((a, b) => a.sort_order - b.sort_order),
     judge_emails: sanitizeEmailList(data.judge_emails),
     co_organizer_emails: sanitizeEmailList(data.co_organizer_emails),
     co_host_viewer_emails: sanitizeEmailList(data.co_host_viewer_emails),
@@ -466,11 +488,13 @@ function contestFromRow(row: {
   status: string;
   created_at: string;
   updated_at: string;
+  participants_count?: number;
   document: Record<string, unknown> | null;
 }): Contest {
   const doc = row.document ?? {};
   return normalizeContest({
     id: row.id,
+    participants_count: row.participants_count ?? 0,
     judge_emails: [],
     co_organizer_emails: [],
     co_host_viewer_emails: [],
@@ -584,17 +608,6 @@ export async function listContests(
   }
   const profile = user ? await getProfileForUser(user).catch(() => null) : null;
   const isManager = canManageContests(profile);
-  const visibilityCacheKey = isManager
-    ? `manager:${user?.id ?? "unknown"}`
-    : "public";
-  const cacheKey = `${visibilityCacheKey}:${normalizedUiLocale}`;
-
-  const inflight = listContestsInFlight.get(cacheKey);
-  if (inflight) return inflight;
-
-  const cached = contestListCache.get(cacheKey);
-  if (cached) return cached;
-
   const promise = (async () => {
     let q = supabase
       .from("hackathons")
@@ -631,19 +644,27 @@ export async function listContests(
     });
   })();
 
-  listContestsInFlight.set(cacheKey, promise);
-  promise.finally(() => {
-    listContestsInFlight.delete(cacheKey);
-  });
-
-  contestListCache.set(cacheKey, promise);
-  promise.catch(() => contestListCache.delete(cacheKey));
   return promise;
 }
 
-export function invalidateContestListCache() {
-  contestListCache.clear();
-  listContestsInFlight.clear();
+export async function listPublicProfileContestPortfolio(
+  profileId: string,
+  includeParticipations: boolean,
+  uiLocale: string,
+) {
+  const contests = await listContests(null, uiLocale);
+  const organized = contests.filter((contest) => contest.created_by === profileId);
+  if (!includeParticipations) return { organized, participations: [] as Contest[] };
+  const { data, error } = await supabase
+    .from("contest_submissions")
+    .select("contest_id")
+    .eq("user_id", profileId);
+  if (error) throw new Error(error.message);
+  const participatedIds = new Set((data ?? []).map((row) => row.contest_id));
+  return {
+    organized,
+    participations: contests.filter((contest) => participatedIds.has(contest.id)),
+  };
 }
 
 export async function hasHackathonCoOrganizerAccess(email: string): Promise<boolean> {
@@ -664,32 +685,17 @@ export async function hasHackathonCoOrganizerAccess(email: string): Promise<bool
 
 export async function getContest(contestId: string, uiLocale?: string | null): Promise<Contest | null> {
   const normalizedUiLocale = normalizeContentLocale(uiLocale ?? i18n.resolvedLanguage ?? i18n.language);
-  const inflightKey = `${contestId}:${normalizedUiLocale}`;
-
-  const existing = getContestByIdInFlight.get(inflightKey);
-  if (existing) return existing;
-
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("hackathons")
-      .select(CONTEST_ROW_SELECT)
-      .eq("id", contestId)
-      .maybeSingle();
-    if (error || !data) return null;
-    const contest = contestFromRow(data as Parameters<typeof contestFromRow>[0]);
-    const desired = pickContentLocale(contest.i18n ?? null, normalizedUiLocale);
-    const localized = await getHackathonLocaleContent(contest.id, desired);
-    return applyContestLocaleContent(contest, localized);
-  })();
-
-  getContestByIdInFlight.set(inflightKey, promise);
-  promise.finally(() => {
-    if (getContestByIdInFlight.get(inflightKey) === promise) {
-      getContestByIdInFlight.delete(inflightKey);
-    }
-  });
-
-  return promise;
+  const { data, error } = await supabase
+    .from("hackathons")
+    .select(CONTEST_ROW_SELECT)
+    .eq("id", contestId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+  const contest = contestFromRow(data as Parameters<typeof contestFromRow>[0]);
+  const desired = pickContentLocale(contest.i18n ?? null, normalizedUiLocale);
+  const localized = await getHackathonLocaleContent(contest.id, desired);
+  return applyContestLocaleContent(contest, localized);
 }
 
 export async function getContestBySlug(slug: string, uiLocale?: string | null): Promise<Contest | null> {
@@ -698,31 +704,26 @@ export async function getContestBySlug(slug: string, uiLocale?: string | null): 
   const normalized = sanitizeSlug(slug);
   if (!normalized) return null;
 
-  const inflightKey = `${normalized}:${normalizedUiLocale}`;
-  const existing = getContestBySlugInFlight.get(inflightKey);
-  if (existing) return existing;
+  const { data, error } = await supabase
+    .from("hackathons")
+    .select(CONTEST_ROW_SELECT)
+    .eq("document->>slug", normalized)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+  const contest = contestFromRow(data as Parameters<typeof contestFromRow>[0]);
+  const desired = pickContentLocale(contest.i18n ?? null, normalizedUiLocale);
+  const localized = await getHackathonLocaleContent(contest.id, desired);
+  return applyContestLocaleContent(contest, localized);
+}
 
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("hackathons")
-      .select(CONTEST_ROW_SELECT)
-      .eq("document->>slug", normalized)
-      .maybeSingle();
-    if (error || !data) return null;
-    const contest = contestFromRow(data as Parameters<typeof contestFromRow>[0]);
-    const desired = pickContentLocale(contest.i18n ?? null, normalizedUiLocale);
-    const localized = await getHackathonLocaleContent(contest.id, desired);
-    return applyContestLocaleContent(contest, localized);
-  })();
+export async function getPublicContestBySlug(slug: string, uiLocale?: string | null): Promise<Contest | null> {
+  const contest = await getContestBySlug(slug, uiLocale);
+  return contest && PUBLIC_CONTEST_STATUSES.includes(contest.status) ? contest : null;
+}
 
-  getContestBySlugInFlight.set(inflightKey, promise);
-  promise.finally(() => {
-    if (getContestBySlugInFlight.get(inflightKey) === promise) {
-      getContestBySlugInFlight.delete(inflightKey);
-    }
-  });
-
-  return promise;
+export function listPublicContests(uiLocale?: string | null): Promise<Contest[]> {
+  return listContests(null, uiLocale ?? null);
 }
 
 export async function createContest(data: ContestInsert): Promise<Contest> {
@@ -733,12 +734,16 @@ export async function createContest(data: ContestInsert): Promise<Contest> {
   const document = removeUndefinedFields({
     slug: sanitizeSlug(data.slug),
     title: data.title.trim(),
-    tagline: data.tagline.trim(),
-    description: data.description?.trim() || null,
+    short_description: data.short_description?.trim() || data.tagline.trim(),
+    description_markdown:
+      data.description_markdown?.trim() || data.description?.trim() || null,
+    resources_markdown: data.resources_markdown?.trim() || null,
     rules: data.rules?.trim() || null,
     starts_at: data.starts_at ?? null,
     ends_at: data.ends_at ?? null,
-    location: data.location ?? "hybrid",
+    mode: data.mode ?? data.location ?? "hybrid",
+    host: data.host ?? { name: "" },
+    social_links: data.social_links ?? {},
     cover_image_url: data.cover_image_url ?? null,
     cover_image_path: data.cover_image_path ?? null,
     thumbnail_url: data.thumbnail_url ?? null,
@@ -757,6 +762,12 @@ export async function createContest(data: ContestInsert): Promise<Contest> {
     published_leaderboard: [],
     winner_announcements: [],
     prize_pool_summary: data.prize_pool_summary?.trim() || null,
+    prize_pool: data.prize_pool ?? { amount: "0", currency: "VND" },
+    tracks: normalizeTracks(data.tracks),
+    sectors: sanitizeTaxonomyOptions(data.sectors),
+    tech_stacks: sanitizeTaxonomyOptions(data.tech_stacks),
+    timeline: sanitizeTimeline(data.timeline),
+    winner_awards: data.winner_awards ?? [],
     prizes: sanitizePrizeEntries(data.prizes),
     faqs: sanitizeFaqEntries(data.faqs),
     timeline_milestones: sanitizeTimelineMilestones(data.timeline_milestones ?? []),
@@ -781,7 +792,7 @@ export async function createContest(data: ContestInsert): Promise<Contest> {
   return normalizeContest({ id, status, ...document } as unknown as Contest);
 }
 
-export async function updateContest(contestId: string, updates: ContestUpdate): Promise<void> {
+export async function updateContest(contestId: string, updates: ContestUpdate): Promise<Contest> {
   const { uid } = await requireContestManager();
   const { data: row, error: fetchErr } = await supabase
     .from("hackathons")
@@ -794,13 +805,22 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
   const payload = removeUndefinedFields({
     slug: updates.slug === undefined ? undefined : sanitizeSlug(updates.slug),
     title: updates.title?.trim(),
-    tagline: updates.tagline?.trim(),
-    description:
-      updates.description === undefined ? undefined : updates.description?.trim() || null,
+    short_description:
+      updates.short_description?.trim() ?? updates.tagline?.trim(),
+    description_markdown:
+      updates.description_markdown === undefined && updates.description === undefined
+        ? undefined
+        : updates.description_markdown?.trim() || updates.description?.trim() || null,
+    resources_markdown:
+      updates.resources_markdown === undefined
+        ? undefined
+        : updates.resources_markdown?.trim() || null,
     rules: updates.rules === undefined ? undefined : updates.rules?.trim() || null,
     starts_at: updates.starts_at,
     ends_at: updates.ends_at,
-    location: updates.location,
+    mode: updates.mode ?? updates.location,
+    host: updates.host,
+    social_links: updates.social_links,
     cover_image_url: updates.cover_image_url,
     cover_image_path: updates.cover_image_path,
     thumbnail_url: updates.thumbnail_url,
@@ -829,6 +849,18 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
       updates.prize_pool_summary === undefined
         ? undefined
         : updates.prize_pool_summary?.trim() || null,
+    prize_pool: updates.prize_pool,
+    tracks:
+      updates.tracks === undefined ? undefined : normalizeTracks(updates.tracks),
+    sectors:
+      updates.sectors === undefined ? undefined : sanitizeTaxonomyOptions(updates.sectors),
+    tech_stacks:
+      updates.tech_stacks === undefined
+        ? undefined
+        : sanitizeTaxonomyOptions(updates.tech_stacks),
+    timeline:
+      updates.timeline === undefined ? undefined : sanitizeTimeline(updates.timeline),
+    winner_awards: updates.winner_awards,
     prizes: updates.prizes !== undefined ? sanitizePrizeEntries(updates.prizes) : undefined,
     faqs: updates.faqs !== undefined ? sanitizeFaqEntries(updates.faqs) : undefined,
     timeline_milestones:
@@ -847,11 +879,14 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
   const nextDoc = { ...prevDoc, ...payload };
   const nextStatus = updates.status ?? (row.status as string);
   const now = new Date().toISOString();
-  const { error } = await supabase
+  const { data: updatedRow, error } = await supabase
     .from("hackathons")
     .update({ status: nextStatus, document: nextDoc, updated_at: now })
-    .eq("id", contestId);
+    .eq("id", contestId)
+    .select(CONTEST_ROW_SELECT)
+    .single();
   if (error) throw new Error(error.message);
+  return contestFromRow(updatedRow as Parameters<typeof contestFromRow>[0]);
 }
 
 export async function deleteContest(contestId: string): Promise<void> {
@@ -860,6 +895,7 @@ export async function deleteContest(contestId: string): Promise<void> {
   const existing = await getContest(contestId);
   await deleteStorageObjectByPath(existing?.cover_image_path);
   await deleteStorageObjectByPath(existing?.thumbnail_path);
+  await deleteStorageObjectByPath(existing?.host?.logo_path);
   for (const p of existing?.organizational_partners ?? []) {
     await deleteStorageObjectByPath(p.logo_path);
   }
@@ -901,21 +937,19 @@ export async function registerForContest(
   const profile = await getProfileForUser(user);
   const contest = await getContest(contestId);
   if (!contest) throw new Error("not_found:contest");
+  if (contest.status !== "published" || isPastContestRegistrationDeadline(contest)) {
+    throw new Error("forbidden:registration_closed");
+  }
   const now = new Date().toISOString();
   const registrationId = contestRegistrationId(contestId, user.id);
-  const autoApprove = Boolean(contest.config?.auto_approve_registrations);
-
   const document = removeUndefinedFields({
-    status: (autoApprove ? "approved" : "pending") as ContestRegistrationStatus,
+    status: "registered" as ContestRegistrationStatus,
     motivation: input.motivation?.trim() || null,
     contact_email: input.contact_email?.trim() || user.email || profile?.email || null,
     contact_phone: input.contact_phone?.trim() || profile?.phone || null,
     portfolio_url: input.portfolio_url?.trim() || null,
     user_full_name:
       input.user_full_name?.trim() || profile?.full_name || (user.user_metadata?.full_name as string) || null,
-    reviewed_at: autoApprove ? now : null,
-    reviewed_by: null,
-    review_note: null,
     applied_at: now,
     updated_at: now,
   }) as Record<string, unknown>;
@@ -1220,7 +1254,10 @@ export async function getMyContestSubmission(
     id: data.id,
     contest_id: hackathonId,
     user_id: data.user_id,
+    project_id: data.project_id ?? null,
     ...d,
+    logo_path: typeof d.logo_path === "string" ? d.logo_path : null,
+    screenshot_paths: sanitizeStringList(Array.isArray(d.screenshot_paths) ? d.screenshot_paths.filter((value): value is string => typeof value === "string") : []),
   } as ContestSubmission;
 }
 
@@ -1232,7 +1269,7 @@ export async function upsertContestSubmission(
   const contest = await getContest(contestId);
   if (!contest) throw new Error("not_found:contest");
   const registration = await getMyContestRegistration(contestId, user);
-  if (!registration || registration.status !== "approved") {
+  if (!registration || !["registered", "approved"].includes(registration.status)) {
     throw new Error("forbidden:submission_not_approved");
   }
 
@@ -1241,46 +1278,35 @@ export async function upsertContestSubmission(
   }
 
   const existing = await getMyContestSubmission(contestId, user);
-  const now = new Date().toISOString();
-  const submissionId = contestSubmissionId(contestId, user.id);
-  const trackId = contest.tracks?.[0]?.id ?? "general";
-  const displayId = existing?.display_id ?? generateDisplayId();
-  const document = removeUndefinedFields({
-    registration_id: registration.id,
-    team_name: existing?.team_name ?? null,
-    team_members: Array.isArray(existing?.team_members) ? existing.team_members : [],
-    contestant_name:
-      registration.user_full_name ?? (user.user_metadata?.full_name as string) ?? null,
-    track_id: existing?.track_id ?? trackId,
-    display_id: displayId,
-    title: input.title.trim(),
-    summary: input.summary?.trim() || null,
-    demo_url: input.demo_url?.trim() || null,
-    repo_url: input.repo_url?.trim() || null,
-    slide_url: input.slide_url?.trim() || null,
-    screenshot_url: input.screenshot_url?.trim() || null,
-    cover_image_url: input.cover_image_url?.trim() || null,
-    video_url: input.video_url?.trim() || null,
-    submitted_at: now,
-    updated_at: now,
-  }) as Record<string, unknown>;
-
-  const { error } = await supabase.from("hackathon_submissions").upsert(
-    {
-      id: submissionId,
-      hackathon_id: contestId,
-      user_id: user.id,
-      document,
-    },
-    { onConflict: "id" },
-  );
-  if (error) throw new Error(error.message);
-  return {
-    id: submissionId,
-    contest_id: contestId,
-    user_id: user.id,
-    ...document,
-  } as ContestSubmission;
+  const trackIds = sanitizeStringList(input.track_ids);
+  const sectorIds = sanitizeStringList(input.sector_ids);
+  const techStackIds = sanitizeStringList(input.tech_stack_ids);
+  if (!trackIds.length || !sectorIds.length || !techStackIds.length) {
+    throw new Error("invalid_input:project_taxonomy_required");
+  }
+  const projectId = existing?.project_id ?? input.project_id ?? crypto.randomUUID();
+  const slug = sanitizeSlug(input.slug) ?? projectSlug(input.title, projectId);
+  await saveProject({
+    project_id: projectId,
+    slug,
+    title: input.title,
+    summary: input.summary,
+    demo_url: input.demo_url,
+    repo_url: input.repo_url,
+    slide_url: input.slide_url,
+    video_url: input.video_url,
+    logo_path: input.logo_path,
+    screenshot_paths: input.screenshot_paths,
+    visibility: "public",
+    source_type: "hackathon",
+    source_id: contestId,
+    track_ids: trackIds,
+    sector_ids: sectorIds,
+    tech_stack_ids: techStackIds,
+  });
+  const saved = await getMyContestSubmission(contestId, user);
+  if (!saved) throw new Error("not_found:submission_after_save");
+  return saved;
 }
 
 export async function listContestSubmissions(
@@ -1297,7 +1323,10 @@ export async function listContestSubmissions(
       id: row.id,
       contest_id: hid ?? contestId,
       user_id: row.user_id,
+      project_id: typeof row.project_id === "string" ? row.project_id : null,
       ...d,
+      logo_path: typeof d.logo_path === "string" ? d.logo_path : null,
+      screenshot_paths: sanitizeStringList(Array.isArray(d.screenshot_paths) ? d.screenshot_paths.filter((value): value is string => typeof value === "string") : []),
     } as ContestSubmission;
   }
 
@@ -1419,8 +1448,8 @@ export function buildContestLeaderboard(
         demo_url: submission.demo_url ?? null,
         repo_url: submission.repo_url ?? null,
         slide_url: submission.slide_url ?? null,
-        screenshot_url: submission.screenshot_url ?? null,
-        cover_image_url: submission.cover_image_url ?? submission.screenshot_url ?? null,
+        logo_path: submission.logo_path ?? null,
+        screenshot_paths: submission.screenshot_paths ?? [],
         video_url: submission.video_url ?? null,
         summary: submission.summary ?? null,
       };

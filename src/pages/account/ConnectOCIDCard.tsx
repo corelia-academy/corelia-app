@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/stores/authStore";
 import { updateOCIDProfileForUser } from "@/lib/profile";
-import { supabase } from "@/lib/supabase";
+import { mintedCredentialCountQueryOptions } from "@/features/account/accountQueries";
 import { useTranslation } from "react-i18next";
 
 function truncateMiddle(value: string, head = 6, tail = 4) {
@@ -27,23 +28,12 @@ export default function ConnectOCIDCard() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
-  const [mintedCount, setMintedCount] = useState<number>(0);
 
   const connected = Boolean(profile?.ocid);
-
-  // Pre-fetch minted credential count so the dialog can show it instantly.
-  useEffect(() => {
-    if (!user?.id || !connected) {
-      setMintedCount(0);
-      return;
-    }
-    supabase
-      .from("credential_issuances")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("status", "minted")
-      .then(({ count }) => setMintedCount(count ?? 0));
-  }, [user?.id, connected]);
+  const mintedCountQuery = useQuery(
+    mintedCredentialCountQueryOptions(user?.id, connected),
+  );
+  const mintedCount = mintedCountQuery.data ?? 0;
 
   const ocidDisplay = useMemo(() => {
     const ocid = profile?.ocid ?? null;

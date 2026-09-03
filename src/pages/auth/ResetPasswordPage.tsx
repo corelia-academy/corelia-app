@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { NavLink, useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { updateAuthPassword } from "@/lib/auth";
 import { useAuthStore } from "@/stores/authStore";
 import { PASSWORD_MIN_LENGTH, passwordMeetsProjectPolicy } from "@/lib/passwordPolicy";
 import { getAuthErrorInfo } from "@/pages/login/loginErrors";
@@ -19,7 +20,7 @@ export default function ResetPasswordPage() {
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const passwordMutation = useMutation({ mutationFn: updateAuthPassword });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -36,10 +37,8 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    setLoading(true);
     try {
-      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
-      if (updateError) throw updateError;
+      await passwordMutation.mutateAsync(newPassword);
       setSuccess(true);
       setPasswordRecovery(false);
       setTimeout(() => void navigate("/", { replace: true }), 2000);
@@ -48,8 +47,6 @@ export default function ResetPasswordPage() {
         String(t(key as never, opts as never)),
       );
       setError(info.message || t("resetPassword.errorGeneric"));
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -136,8 +133,8 @@ export default function ResetPasswordPage() {
                 </div>
               ) : null}
 
-              <Button type="submit" disabled={loading} className="w-full">
-                {loading ? t("resetPassword.submitting") : t("resetPassword.submit")}
+              <Button type="submit" disabled={passwordMutation.isPending} className="w-full">
+                {passwordMutation.isPending ? t("resetPassword.submitting") : t("resetPassword.submit")}
               </Button>
             </form>
           )}

@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
+
+import { courseProgressQueryOptions } from "@/features/courses/courseQueries";
 import {
   computeProgressPercent,
-  getLessonProgressForCourse,
   getNextLesson,
   sortLessonsByCurriculum,
 } from "@/lib/courses";
@@ -26,85 +28,32 @@ interface UseCourseProgressResult {
   refresh: () => Promise<CourseProgressRefreshResult | null>;
 }
 
-interface CourseProgressData {
-  progressPercent: number;
-  hasStarted: boolean;
-  nextLesson: CourseLesson | null;
-}
-
-const INITIAL_PROGRESS_DATA: CourseProgressData = {
-  progressPercent: 0,
-  hasStarted: false,
-  nextLesson: null,
-};
-
 export function useCourseProgress({
   resolvedCourseId,
   profileId,
   lessons,
   sections,
 }: UseCourseProgressInput): UseCourseProgressResult {
-  const requestKey =
-    resolvedCourseId && profileId ? `${profileId}:${resolvedCourseId}` : "";
-  const [loadedResult, setLoadedResult] = useState<{
-    requestKey: string;
-    data: CourseProgressData;
-  }>({
-    requestKey: "",
-    data: INITIAL_PROGRESS_DATA,
-  });
-
-  useEffect(() => {
-    if (!resolvedCourseId || !profileId || !requestKey) return;
-    let cancelled = false;
-
-    getLessonProgressForCourse(profileId, resolvedCourseId)
-      .then((list) => {
-        if (cancelled) return;
-        const sorted = sortLessonsByCurriculum(lessons, sections);
-        setLoadedResult({
-          requestKey,
-          data: {
-            hasStarted: list.length > 0,
-            progressPercent: computeProgressPercent(sorted, list),
-            nextLesson: getNextLesson(sorted, list),
-          },
-        });
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setLoadedResult({
-          requestKey,
-          data: INITIAL_PROGRESS_DATA,
-        });
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [resolvedCourseId, profileId, lessons, sections, requestKey]);
+  const progressQuery = useQuery(
+    courseProgressQueryOptions(profileId, resolvedCourseId),
+  );
+  const list = progressQuery.data ?? [];
+  const sorted = useMemo(
+    () => sortLessonsByCurriculum(lessons, sections),
+    [lessons, sections],
+  );
 
   const refresh = useCallback(async () => {
-    if (!resolvedCourseId || !profileId || !requestKey) return null;
-    const list = await getLessonProgressForCourse(profileId, resolvedCourseId);
-    const sorted = sortLessonsByCurriculum(lessons, sections);
-    const next = getNextLesson(sorted, list);
-    const nextData: CourseProgressData = {
-      hasStarted: list.length > 0,
-      progressPercent: computeProgressPercent(sorted, list),
-      nextLesson: next,
-    };
-    setLoadedResult({ requestKey, data: nextData });
-    return { sorted, next };
-  }, [resolvedCourseId, profileId, lessons, sections, requestKey]);
-
-  const isCurrent = Boolean(requestKey) && loadedResult.requestKey === requestKey;
-  const currentData = isCurrent ? loadedResult.data : INITIAL_PROGRESS_DATA;
+    if (!resolvedCourseId || !profileId) return null;
+    const result = await progressQuery.refetch();
+    const refreshed = result.data ?? [];
+    return { sorted, next: getNextLesson(sorted, refreshed) };
+  }, [profileId, progressQuery, resolvedCourseId, sorted]);
 
   return {
-    progressPercent: currentData.progressPercent,
-    hasStarted: currentData.hasStarted,
-    nextLesson: currentData.nextLesson,
+    progressPercent: computeProgressPercent(sorted, list),
+    hasStarted: list.length > 0,
+    nextLesson: getNextLesson(sorted, list),
     refresh,
   };
 }

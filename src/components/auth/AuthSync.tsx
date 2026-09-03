@@ -1,22 +1,19 @@
 import { useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { getProfileForUser, invalidateCurrentProfileCache } from "@/lib/profile";
+import { getAuthSession, subscribeToAuthState } from "@/lib/auth";
 import { invokeCoreliaApi } from "@/lib/coreliaEdgeApi";
 import { useAuthStore } from "@/stores/authStore";
+import { currentProfileQueryOptions } from "@/features/auth/profileQueries";
+import { clearPrivateQueryCache, queryClient } from "@/lib/queryClient";
 import i18n, { DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n";
-import type { AuthChangeEvent, User } from "@supabase/supabase-js";
+import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { timedAsync } from "@/lib/perfTelemetry";
 
 
 /**
- * Đồng bộ session + profile từ Supabase vào auth store.
- * Profile fetch chạy ngoài stack của `onAuthStateChange` để không block session / REST khác.
+ * Đồng bộ Supabase session vào Zustand. Profile là server state trong TanStack Query.
  */
 export function AuthSync() {
-  const setUser = useAuthStore((s) => s.setUser);
-  const setProfile = useAuthStore((s) => s.setProfile);
-  const setProfileLoading = useAuthStore((s) => s.setProfileLoading);
-  const setAuthInitialized = useAuthStore((s) => s.setAuthInitialized);
+  const setAuthState = useAuthStore((s) => s.setAuthState);
   const setPasswordRecovery = useAuthStore((s) => s.setPasswordRecovery);
 
   useEffect(() => {
@@ -24,23 +21,19 @@ export function AuthSync() {
     let currentSeq = 0;
     let hasInitializedFromEvent = false;
 
-    function syncFromSession(session: { user?: unknown } | null) {
+    function syncFromSession(session: Session | null, recovery = false) {
       if (!mounted) return;
       const seq = ++currentSeq;
-      const user = (session as { user?: Parameters<typeof setUser>[0] } | null)?.user ?? null;
-      setUser(user);
-      setAuthInitialized(true);
+      const previousUserId = useAuthStore.getState().user?.id;
+      const user = session?.user ?? null;
 
       if (user) {
-        const { profile: existingProfile } = useAuthStore.getState();
-        if (existingProfile && existingProfile.id !== user.id) {
-          setProfile(null);
+        if (previousUserId && previousUserId !== user.id) {
+          void clearPrivateQueryCache(previousUserId);
         }
-        const needSpinner = !useAuthStore.getState().profile || useAuthStore.getState().profile?.id !== user.id;
-        if (needSpinner) setProfileLoading(true);
+        setAuthState(user, recovery ? "recovery" : "authenticated");
 
         const runSeq = seq;
-        const u = user as User;
 
         queueMicrotask(() => {
           if (!mounted || runSeq !== currentSeq) return;
@@ -51,29 +44,24 @@ export function AuthSync() {
                 "auth.profile.getProfileForUser",
                 async () =>
                   Promise.race([
-                    getProfileForUser(u),
+                    queryClient.fetchQuery(currentProfileQueryOptions(user)),
                     new Promise<null>((resolve) =>
                       setTimeout(() => resolve(null), PROFILE_TIMEOUT_MS),
                     ),
                   ]),
-                { userId: u.id },
+                { userId: user.id },
               );
               if (!mounted || runSeq !== currentSeq) return;
-              setProfile(p);
               const locale = (p?.locale ?? DEFAULT_LANGUAGE) as SupportedLanguage;
               void i18n.changeLanguage(locale);
             } catch (error) {
               console.error("Failed to load profile:", error);
-              if (mounted && runSeq === currentSeq) setProfile(null);
-            } finally {
-              if (needSpinner && mounted && runSeq === currentSeq) setProfileLoading(false);
             }
           })();
         });
       } else {
-        invalidateCurrentProfileCache();
-        setProfile(null);
-        setProfileLoading(false);
+        if (previousUserId) void clearPrivateQueryCache(previousUserId);
+        setAuthState(null, "anonymous");
         try {
           localStorage.removeItem("i18nextLng");
         } catch {
@@ -97,23 +85,18 @@ export function AuthSync() {
     const initTimeoutId = window.setTimeout(() => {
       if (!mounted || hasInitializedFromEvent) return;
       hasInitializedFromEvent = true;
-      setUser(null);
-      setProfile(null);
-      setProfileLoading(false);
-      setAuthInitialized(true);
+      setAuthState(null, "anonymous");
     }, INIT_TIMEOUT_MS);
 
     // Immediate session check on mount for instant UI hydration
-    void supabase.auth.getSession().then(({ data: { session } }) => {
+    void getAuthSession().then((session) => {
       if (!mounted || hasInitializedFromEvent) return;
       hasInitializedFromEvent = true;
       window.clearTimeout(initTimeoutId);
       syncFromSession(session);
-    });
+    }).catch(() => undefined);
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
+    const unsubscribeAuth = subscribeToAuthState((event: AuthChangeEvent, session) => {
       if (!hasInitializedFromEvent) {
         hasInitializedFromEvent = true;
         window.clearTimeout(initTimeoutId);
@@ -135,7 +118,7 @@ export function AuthSync() {
 
       if (event === "PASSWORD_RECOVERY") {
         setPasswordRecovery(true);
-        syncFromSession(session);
+        syncFromSession(session, true);
         return;
       }
 
@@ -163,7 +146,7 @@ export function AuthSync() {
       if (document.visibilityState !== "visible" || !mounted) return;
       void (async () => {
         try {
-          const { data: { session: freshSession } } = await supabase.auth.getSession();
+          const freshSession = await getAuthSession();
           if (!mounted) return;
           // If the session is gone after we had a user, the session-expired
           // event will have been dispatched by the patch; nothing more to do here.
@@ -200,11 +183,11 @@ export function AuthSync() {
     return () => {
       mounted = false;
       window.clearTimeout(initTimeoutId);
-      subscription.unsubscribe();
+      unsubscribeAuth();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("corelia:session-expired", handleSessionExpired);
     };
-  }, [setUser, setProfile, setProfileLoading, setAuthInitialized, setPasswordRecovery]);
+  }, [setAuthState, setPasswordRecovery]);
 
   return null;
 }

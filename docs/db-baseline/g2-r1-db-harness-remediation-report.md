@@ -1,5 +1,7 @@
 # DB Harness R1 Verification Package
 
+> **Historical hackathon evidence:** fixture invited judge, access invite và metrics snapshot bên dưới chỉ chứng minh schema cũ tại thời điểm test. Chúng đã bị supersede bởi [Hackathon hiện hành](../hackathon/README.md) và không phải acceptance criteria mới.
+
 ## 1. Verdict
 
 **`DB_INTEGRATION_PASS`**

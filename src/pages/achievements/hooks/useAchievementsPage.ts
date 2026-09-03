@@ -1,244 +1,166 @@
-import { useCallback, useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { CREDENTIAL_SYNC_EVENT } from "@/components/base/CredentialRealtimeSync";
 import {
-  fetchCourseIssuanceMapForUser,
+  achievementKeys,
+  achievementVaultQueryOptions,
+  type AchievementVaultData,
+} from "@/features/achievements/achievementQueries";
+import { callCoreliaApi } from "@/lib/coreliaEdgeApi";
+import {
   fetchMyCredentialIssuances,
   issuanceToBadgeItem,
 } from "@/lib/credentialIssuances";
-import { CREDENTIAL_SYNC_EVENT } from "@/components/base/CredentialRealtimeSync";
+import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
 import {
-  invokeCheckCourseCredential,
-  invokeListActiveCourseCredentialTemplates,
-} from "@/lib/credentialsEdge";
-import { callCoreliaApi } from "@/lib/coreliaEdgeApi";
-import {
-  backfillMissingEnrollmentsForUser,
   checkAndIssueCertificate,
-  computeProgressPercent,
-  courseHasCertificate,
   ensureEnrollmentForProgress,
-  getCourse,
-  getCourseLessons,
-  getLessonProgressForCourse,
-  getMyCertificateCodes,
-  getMyEnrollments,
-  invalidateCourseCache,
   syncCourseCompletion,
 } from "@/lib/courses";
 import { useAuth } from "@/stores/authStore";
-import type {
-  BadgeItem,
-  CertificateItem,
-  ClaimStatus,
-  ModalItem,
-} from "../types";
-import {
-  buildCourseCertificates,
-  buildStandaloneCourseCredentialBadges,
-  ocidWithEduSuffix,
-} from "../utils/buildAchievementsData";
+import type { BadgeItem, CertificateItem, ClaimStatus, ModalItem } from "../types";
+import { ocidWithEduSuffix } from "../utils/buildAchievementsData";
 
-export interface CertificateSyncCandidate {
-  courseId: string;
-  courseTitle: string;
-}
+type ModalSelection = Pick<ModalItem, "kind"> & { id: string };
+
+const EMPTY_VAULT: AchievementVaultData = {
+  certificates: [],
+  badges: [],
+  certificateSyncCandidates: [],
+};
 
 export function useAchievementsPage(enabled = true) {
-  const { user, isAuthenticated, profile } = useAuth();
-  const [certificates, setCertificates] = useState<CertificateItem[]>([]);
-  const [badges, setBadges] = useState<BadgeItem[]>([]);
-  const [modalItem, setModalItem] = useState<ModalItem | null>(null);
+  const { user, isAuthenticated, profile, profileLoading } = useAuth();
+  const { t, i18n } = useTranslation("common");
+  const queryClient = useQueryClient();
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const vaultOptions = achievementVaultQueryOptions({
+    userId: user?.id,
+    locale,
+    holderOcid: profile?.ocid,
+    holderName: profile?.full_name,
+    labels: {
+      courseCompletionTitle: t("achievements.certificates.courseCompletionTitle"),
+      fallbackCourseName: t("achievements.certificates.fallbackCourseName"),
+      fallbackInstructorName: t("achievements.certificates.fallbackInstructorName"),
+    },
+    enabled: enabled && isAuthenticated && !profileLoading,
+  });
+  const vaultQuery = useQuery(vaultOptions);
+  const vault = vaultQuery.data ?? EMPTY_VAULT;
+  const [modalSelection, setModalSelection] = useState<ModalSelection | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [claiming, setClaiming] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [syncingCourseId, setSyncingCourseId] = useState<string | null>(null);
-  const [certificateSyncCandidates, setCertificateSyncCandidates] = useState<
-    CertificateSyncCandidate[]
-  >([]);
   const [ocidConnectOpen, setOcidConnectOpen] = useState(false);
-  const { t } = useTranslation("common");
 
-  const loadAchievements = useCallback(async () => {
-    if (!enabled || !user || !isAuthenticated) {
-      setCertificates([]);
-      setBadges([]);
-      setCertificateSyncCandidates([]);
-      setLoadError(null);
-      setLoading(false);
-      return;
+  const patchVault = useCallback(
+    (updater: (current: AchievementVaultData) => AchievementVaultData) => {
+      queryClient.setQueryData<AchievementVaultData>(vaultOptions.queryKey, (current) =>
+        current ? updater(current) : current,
+      );
+    },
+    [queryClient, vaultOptions.queryKey],
+  );
+
+  const patchCert = useCallback(
+    (id: string, patch: Partial<CertificateItem>) => {
+      patchVault((current) => ({
+        ...current,
+        certificates: current.certificates.map((item) =>
+          item.id === id ? { ...item, ...patch } : item,
+        ),
+      }));
+    },
+    [patchVault],
+  );
+
+  const patchBadge = useCallback(
+    (id: string, patch: Partial<BadgeItem>) => {
+      patchVault((current) => ({
+        ...current,
+        badges: current.badges.map((item) =>
+          item.id === id ? { ...item, ...patch } : item,
+        ),
+      }));
+    },
+    [patchVault],
+  );
+
+  const openModal = useCallback((item: ModalItem) => {
+    setModalSelection({ kind: item.kind, id: item.data.id });
+    setModalOpen(true);
+  }, []);
+
+  const modalItem = useMemo<ModalItem | null>(() => {
+    if (!modalSelection) return null;
+    if (modalSelection.kind === "cert") {
+      const item = vault.certificates.find(({ id }) => id === modalSelection.id);
+      return item ? { kind: "cert", data: item } : null;
     }
+    const item = vault.badges.find(({ id }) => id === modalSelection.id);
+    return item ? { kind: "badge", data: item } : null;
+  }, [modalSelection, vault.badges, vault.certificates]);
 
-    try {
-      setLoading(true);
-      setLoadError(null);
-      // Invalidate course cache so certificate template URLs (CDN) are always fresh
-      invalidateCourseCache();
-      await backfillMissingEnrollmentsForUser(user.id).catch(() => 0);
-      const [enrollments, courseIssuanceMap, ocRows, certificateCodeMap] = await Promise.all([
-        getMyEnrollments(user.id),
-        fetchCourseIssuanceMapForUser(user.id),
-        fetchMyCredentialIssuances(user.id),
-        // Non-fatal: a missing code only hides the verify affordance, it must never
-        // stop the certificate vault from rendering.
-        getMyCertificateCodes(user.id).catch(() => new Map<string, string>()),
-      ]);
-
-      const courseIds = Array.from(new Set(enrollments.map((item) => item.course_id)));
-      const [courseRows, courseCredentialTemplateMap] = await Promise.all([
-        Promise.all(courseIds.map(async (courseId) => [courseId, await getCourse(courseId)] as const)),
-        invokeListActiveCourseCredentialTemplates(courseIds),
-      ]);
-      const courseMap = new Map(courseRows);
-
-      const certificateLabels = {
-        courseCompletionTitle: t("achievements.certificates.courseCompletionTitle"),
-        fallbackCourseName: t("achievements.certificates.fallbackCourseName"),
-        fallbackInstructorName: t("achievements.certificates.fallbackInstructorName"),
-      };
-      const enrollmentCertificates = buildCourseCertificates(
-        enrollments,
-        courseMap,
-        certificateLabels,
-        courseIssuanceMap,
-        profile?.ocid,
-        profile?.full_name,
-        courseCredentialTemplateMap,
-        certificateCodeMap,
+  const retryMutation = useMutation({
+    mutationFn: (issuanceId: string) =>
+      callCoreliaApi<{ status: string; ocCredentialId: string | null }>(
+        "credentials.retryPending",
+        { issuanceId },
+      ),
+  });
+  const claimMutation = useMutation({
+    mutationFn: async (input: { courseId: string; templateId?: string | null }) => {
+      await invokeCheckCourseCredential(input.courseId);
+      const rows = await fetchMyCredentialIssuances(user!.id);
+      return (
+        rows.find(
+          (row) =>
+            row.course_id === input.courseId &&
+            (!input.templateId || row.template_id === input.templateId),
+        ) ?? null
       );
-      const nextCertificates = [...enrollmentCertificates].sort((a, b) => {
-        const aDate = a.issuedAt.split("/").reverse().join("-");
-        const bDate = b.issuedAt.split("/").reverse().join("-");
-        return bDate.localeCompare(aDate);
+    },
+  });
+  const syncMutation = useMutation({
+    mutationFn: async (courseId: string) => {
+      await ensureEnrollmentForProgress(user!.id, courseId, new Date().toISOString());
+      await syncCourseCompletion(user!.id, courseId).catch((error) => {
+        console.warn("[achievements] course completion sync before certificate failed", {
+          userId: user!.id,
+          courseId,
+          error: error instanceof Error ? error.message : error,
+        });
       });
-      const pendingCandidates = await Promise.all(
-        enrollments
-          .filter((item) => !item.certificate_issued_at)
-          .map(async (item): Promise<CertificateSyncCandidate | null> => {
-            const course = courseMap.get(item.course_id);
-            if (!courseHasCertificate(course)) return null;
-            const [lessons, progressRows] = await Promise.all([
-              getCourseLessons(item.course_id).catch(() => []),
-              getLessonProgressForCourse(user.id, item.course_id).catch(() => []),
-            ]);
-            if (lessons.length === 0) return null;
-            if (computeProgressPercent(lessons, progressRows) < 100) return null;
-            return {
-              courseId: item.course_id,
-              courseTitle: course?.title || t("achievements.certificates.fallbackCourseName"),
-            };
-          }),
-      );
-
-      const courseIdsWithCredentialIssuance = new Set(
-        ocRows
-          .filter((row) => row.course_id)
-          .map((row) => row.course_id!),
-      );
-      const standaloneCourseCredentialBadges = buildStandaloneCourseCredentialBadges(
-        courseIds,
-        courseMap,
-        courseCredentialTemplateMap,
-        courseIdsWithCredentialIssuance,
-      );
-      const nextBadges = [
-        ...ocRows.map((row) => issuanceToBadgeItem(row, profile?.ocid)),
-        ...standaloneCourseCredentialBadges,
-      ];
-
-      setCertificates(nextCertificates);
-      setBadges(nextBadges);
-      setModalItem((current) => {
-        if (!current) return current;
-
-        if (current.kind === "cert") {
-          const nextCertificate = nextCertificates.find((item) => item.id === current.data.id);
-          return nextCertificate ? { kind: "cert", data: nextCertificate } : current;
-        }
-
-        const nextBadge = nextBadges.find(
-          (item) =>
-            item.id === current.data.id ||
-            (Boolean(current.data.courseId) &&
-              Boolean(current.data.templateId) &&
-              item.courseId === current.data.courseId &&
-              item.templateId === current.data.templateId),
-        );
-        return nextBadge ? { kind: "badge", data: nextBadge } : current;
-      });
-      setCertificateSyncCandidates(
-        pendingCandidates.filter((item): item is CertificateSyncCandidate => !!item),
-      );
-    } catch (error) {
-      console.error("[achievements] load failed", error);
-      // Do not replace already-rendered achievements with empty collections on
-      // a transient Supabase/Edge failure; that would falsely expose minted
-      // credentials as unclaimed.
-      setLoadError(t("achievements.loadError.body"));
-    } finally {
-      setLoading(false);
-    }
-  }, [enabled, isAuthenticated, profile?.full_name, profile?.ocid, t, user]);
+      return checkAndIssueCertificate(user!.id, courseId);
+    },
+  });
 
   useEffect(() => {
-    void loadAchievements();
     const handleSync = () => {
-      void loadAchievements();
+      void queryClient.invalidateQueries({ queryKey: achievementKeys.all });
     };
     window.addEventListener(CREDENTIAL_SYNC_EVENT, handleSync);
-    return () => {
-      window.removeEventListener(CREDENTIAL_SYNC_EVENT, handleSync);
-    };
-  }, [loadAchievements]);
+    return () => window.removeEventListener(CREDENTIAL_SYNC_EVENT, handleSync);
+  }, [queryClient]);
 
-  const openModal = (item: ModalItem) => {
-    setModalItem(item);
-    setModalOpen(true);
-  };
-
-  const patchCert = (id: string, patch: Partial<CertificateItem>) => {
-    setCertificates((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
-    setModalItem((prev) =>
-      prev?.kind === "cert" && prev.data.id === id
-        ? { kind: "cert", data: { ...prev.data, ...patch } }
-        : prev,
-    );
-  };
-
-  const patchBadge = (id: string, patch: Partial<BadgeItem>) => {
-    setBadges((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)));
-    setModalItem((prev) =>
-      prev?.kind === "badge" && prev.data.id === id
-        ? { kind: "badge", data: { ...prev.data, ...patch } }
-        : prev,
-    );
-  };
-
-  // A failed issuance already has an OC request. Retrying it must reuse that
-  // issuance, rather than submitting a new course-eligibility claim.
   const handleRetryBadge = async (badge: BadgeItem) => {
     if (!badge.issuanceId) {
       toast.error(t("achievements.sync.retryError"));
       return;
     }
 
-    setClaiming(true);
     patchBadge(badge.id, { ocClaimStatus: "pending" });
     try {
-      const result = await callCoreliaApi<{
-        status: string;
-        ocCredentialId: string | null;
-      }>("credentials.retryPending", { issuanceId: badge.issuanceId });
-
+      const result = await retryMutation.mutateAsync(badge.issuanceId);
       if (result.status === "failed") {
         patchBadge(badge.id, { ocClaimStatus: "failed" });
         toast.error(t("achievements.sync.retryError"));
         return;
       }
 
-      window.dispatchEvent(new Event(CREDENTIAL_SYNC_EVENT));
+      void queryClient.invalidateQueries({ queryKey: achievementKeys.all });
       if (result.status === "minted" && !result.ocCredentialId?.trim()) {
         toast.info(t("achievements.oc.modal.reconciliation.title"));
       } else if (result.status === "minted") {
@@ -250,42 +172,34 @@ export function useAchievementsPage(enabled = true) {
       patchBadge(badge.id, { ocClaimStatus: "failed" });
       console.error("[achievements] credential retry failed", error);
       toast.error(t("achievements.sync.retryError"));
-    } finally {
-      setClaiming(false);
     }
   };
 
-  // Standalone course credentials have no offchain certificate, so their
-  // claim is initiated directly from the OCA/OCB card.
   const handleClaimStandaloneCourseCredential = async (id: string) => {
-    const badge = badges.find((b) => b.id === id);
+    const badge = vault.badges.find((item) => item.id === id);
     if (!badge?.courseId) return;
-
     if (!profile?.ocid?.trim()) {
       setOcidConnectOpen(true);
       return;
     }
 
-    setClaiming(true);
     patchBadge(id, { ocClaimStatus: "pending" });
-
     try {
-      await invokeCheckCourseCredential(badge.courseId);
-
-      const issuances = await fetchMyCredentialIssuances(user!.id);
-      const row = issuances.find(
-        (r) => r.course_id === badge.courseId && r.template_id === badge.templateId,
-      );
-
+      const row = await claimMutation.mutateAsync({
+        courseId: badge.courseId,
+        templateId: badge.templateId,
+      });
       if (!row) {
         patchBadge(id, { ocClaimStatus: "unclaimed" });
         toast.error(t("achievements.oc.modal.claimToast.error.notEligible"));
         return;
       }
 
-      const newBadge = issuanceToBadgeItem(row, profile?.ocid);
-      setBadges((prev) => [newBadge, ...prev.filter((b) => b.id !== id)]);
-
+      const newBadge = issuanceToBadgeItem(row, profile.ocid);
+      patchVault((current) => ({
+        ...current,
+        badges: [newBadge, ...current.badges.filter((item) => item.id !== id)],
+      }));
       if (newBadge.ocClaimStatus === "claimed") {
         openModal({ kind: "badge", data: newBadge });
       } else if (
@@ -298,70 +212,56 @@ export function useAchievementsPage(enabled = true) {
       } else {
         toast.error(t("achievements.oc.modal.claimToast.error.failed"));
       }
-    } catch (err) {
+      void queryClient.invalidateQueries({ queryKey: achievementKeys.all });
+    } catch (error) {
       patchBadge(id, { ocClaimStatus: "failed" });
-      console.error("[achievements] standalone credential claim failed", err);
+      console.error("[achievements] standalone credential claim failed", error);
       toast.error(t("achievements.oc.modal.claimToast.error.failed"));
-    } finally {
-      setClaiming(false);
     }
   };
 
   const handleClaim = async (id: string, kind: "cert" | "badge") => {
     if (kind === "badge") {
-      const badge = badges.find((item) => item.id === id);
+      const badge = vault.badges.find((item) => item.id === id);
       if (badge?.ocClaimStatus === "failed" && badge.issuanceId) {
         await handleRetryBadge(badge);
-        return;
+      } else {
+        await handleClaimStandaloneCourseCredential(id);
       }
-      await handleClaimStandaloneCourseCredential(id);
       return;
     }
 
-    const cert = certificates.find((c) => c.id === id);
-    if (!cert?.courseId) return;
-    // Certi + OCB is auto-issued at completion. Its card can only View the
-    // resulting OCB and must never enter the manual OCA claim path.
-    if (cert.onchainCredentialAutoIssued) return;
-
+    const cert = vault.certificates.find((item) => item.id === id);
+    if (!cert?.courseId || cert.onchainCredentialAutoIssued) return;
     if (!profile?.ocid?.trim()) {
       setOcidConnectOpen(true);
       return;
     }
 
-    setClaiming(true);
     patchCert(id, { ocClaimStatus: "pending" });
-
     try {
-      await invokeCheckCourseCredential(cert.courseId);
-
-      // Reload issuances (with template info) so we can patch the certificate
-      // status and add the newly minted OCA or OCB card.
-      const issuances = await fetchMyCredentialIssuances(user!.id);
-      const row = issuances.find(
-        (r) => r.course_id === cert.courseId && r.template_id === cert.onchainTemplateId,
-      );
-
+      const row = await claimMutation.mutateAsync({
+        courseId: cert.courseId,
+        templateId: cert.onchainTemplateId,
+      });
       if (!row) {
-        // No issuance record created — template not active or criteria not met
         patchCert(id, { ocClaimStatus: "unclaimed" });
         toast.error(t("achievements.oc.modal.claimToast.error.notEligible"));
         return;
       }
 
-      const newBadge = issuanceToBadgeItem(row, profile?.ocid);
-      setBadges((prev) => [
-        newBadge,
-        ...prev,
-      ]);
-
+      const newBadge = issuanceToBadgeItem(row, profile.ocid);
+      patchVault((current) => ({
+        ...current,
+        badges: [newBadge, ...current.badges.filter((item) => item.id !== newBadge.id)],
+      }));
       if (newBadge.ocClaimStatus === "claimed") {
         patchCert(id, {
           ocClaimStatus: "claimed" as ClaimStatus,
           ocCredentialId: newBadge.mintCredentialId,
           ocCredentialUrl: newBadge.ocCredentialUrl,
           credentialId: newBadge.mintCredentialId ?? cert.credentialId,
-          ocHolderOcId: ocidWithEduSuffix(profile?.ocid),
+          ocHolderOcId: ocidWithEduSuffix(profile.ocid),
         });
         openModal({ kind: "badge", data: newBadge });
       } else if (
@@ -374,62 +274,49 @@ export function useAchievementsPage(enabled = true) {
         patchCert(id, { ocClaimStatus: "needs_reconciliation" });
         toast.info(t("achievements.oc.modal.reconciliation.title"));
       } else {
-        // minted without oc_credential_id, or failed — issuanceToBadgeItem
-        // already resolved ocClaimStatus to "failed" for both cases.
         patchCert(id, { ocClaimStatus: "failed" });
         toast.error(t("achievements.oc.modal.claimToast.error.failed"));
       }
-    } catch (err) {
+      void queryClient.invalidateQueries({ queryKey: achievementKeys.all });
+    } catch (error) {
       patchCert(id, { ocClaimStatus: "failed" });
-      console.error("[achievements] certificate credential claim failed", err);
+      console.error("[achievements] certificate credential claim failed", error);
       toast.error(t("achievements.oc.modal.claimToast.error.failed"));
-    } finally {
-      setClaiming(false);
     }
   };
 
   const handleSyncCertificate = async (courseId: string) => {
     if (!user) return;
-    setSyncingCourseId(courseId);
     try {
-      await ensureEnrollmentForProgress(user.id, courseId, new Date().toISOString());
-      await syncCourseCompletion(user.id, courseId).catch((err) => {
-        console.warn("[achievements] course completion sync before certificate failed", {
-          userId: user.id,
-          courseId,
-          error: err instanceof Error ? err.message : err,
-        });
-      });
-      const result = await checkAndIssueCertificate(user.id, courseId);
+      const result = await syncMutation.mutateAsync(courseId);
       if (result.issued) {
         toast.success(t("achievements.vaults.certificates.syncSuccess"));
       } else {
         toast.info(result.message || t("achievements.vaults.certificates.syncPending"));
       }
-      await loadAchievements();
-    } catch (err) {
+      await queryClient.invalidateQueries({ queryKey: achievementKeys.all });
+    } catch (error) {
       toast.error(
-        err instanceof Error
-          ? err.message
+        error instanceof Error
+          ? error.message
           : t("achievements.vaults.certificates.syncError"),
       );
-    } finally {
-      setSyncingCourseId(null);
     }
   };
 
   return {
-    certificates,
-    badges,
-    loading,
-    loadError,
-    reloadAchievements: loadAchievements,
-    certificateSyncCandidates,
-    syncingCourseId,
+    certificates: vault.certificates,
+    badges: vault.badges,
+    loading:
+      profileLoading || (vaultQuery.isPending && vaultQuery.fetchStatus !== "idle"),
+    loadError: vaultQuery.error ? t("achievements.loadError.body") : null,
+    reloadAchievements: vaultQuery.refetch,
+    certificateSyncCandidates: vault.certificateSyncCandidates,
+    syncingCourseId: syncMutation.isPending ? syncMutation.variables : null,
     modalItem,
     modalOpen,
     setModalOpen,
-    claiming,
+    claiming: retryMutation.isPending || claimMutation.isPending,
     openModal,
     handleClaim,
     handleRetryBadge,

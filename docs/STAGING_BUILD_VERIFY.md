@@ -24,9 +24,10 @@ You should see `{ version }` matching the app release you expect.
 After deploying frontend + backend:
 
 1. **Home** — load logged-in and anonymous; no `lock:sb-…-auth-token` steal in console during first paint.
-2. **Contests** (`/contests`) — list loads; managers see drafts where applicable.
+2. **Hackathons** (`/hackathons`) — catalog load; mở một hackathon và kiểm tra đủ năm tab URL `overview`, `prizes`, `timeline`, `resources`, `projects`.
 3. **Admin dashboard** — pinned programs load without profile errors.
-4. **Contest detail** — open a contest; participant workspace loads registration/submission without repeated auth failures.
+4. **Hackathon detail** — đăng ký tức thời, mở/tạo project và xác nhận không còn workspace, registration review, judging hoặc role invite cũ.
+5. **Hackathon admin** (`/admin/hackathons`) — admin/support mở được editor; role khác bị admin gate chặn.
 5. **Checkout success** — complete or simulate return URL; payment verify runs without hammering `getSession`.
 6. **OCID redirect** — callback completes and profile refresh works.
 

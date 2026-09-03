@@ -1,5 +1,7 @@
 # G1 Data Integrity Foundation
 
+> **Historical hackathon evidence:** phần registration review, score và `metrics_snapshot` ghi lại hệ thống cũ. Migration tinh giản thay thế flow này và xóa score/access-invite không cần export; xem [Hackathon hiện hành](../hackathon/README.md).
+
 ## 1. Verdict
 
 `PARTIAL_PENDING_CODEX_REVIEW`

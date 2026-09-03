@@ -59,14 +59,17 @@ export async function getSectionQuizResult(
   courseId: string,
   sectionId: string,
   totalQuestions: number,
+  signal?: AbortSignal,
 ): Promise<SectionQuizResult | null> {
-  const { data, error } = await supabase
+  let query = supabase
     .from("section_question_attempts")
     .select("id,user_id,course_id,section_id,lesson_id,question_id,selected_index,is_correct,attempted_at")
     .eq("course_id", courseId)
     .eq("section_id", sectionId)
     .is("lesson_id", null)
     .order("attempted_at", { ascending: false });
+  if (signal) query = query.abortSignal(signal);
+  const { data, error } = await query;
 
   if (error) throw new Error(error.message);
   const attempts = (data ?? []) as SectionQuestionAttempt[];
@@ -128,13 +131,16 @@ export async function getLessonQuizResult(
   courseId: string,
   lessonId: string,
   totalQuestions: number,
+  signal?: AbortSignal,
 ): Promise<SectionQuizResult | null> {
-  const { data, error } = await supabase
+  let query = supabase
     .from("section_question_attempts")
     .select("id,user_id,course_id,section_id,lesson_id,question_id,selected_index,is_correct,attempted_at")
     .eq("course_id", courseId)
     .eq("lesson_id", lessonId)
     .order("attempted_at", { ascending: false });
+  if (signal) query = query.abortSignal(signal);
+  const { data, error } = await query;
 
   if (error) throw new Error(error.message);
   const attempts = (data ?? []) as SectionQuestionAttempt[];

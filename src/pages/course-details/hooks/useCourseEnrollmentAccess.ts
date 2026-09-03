@@ -1,12 +1,17 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { User } from "@supabase/supabase-js";
-import { useCallback, useEffect, useState } from "react";
-import { enrollCourse, getEnrollment } from "@/lib/courses";
+import { useCallback } from "react";
+
+import {
+  courseEnrollmentQueryOptions,
+  courseKeys,
+} from "@/features/courses/courseQueries";
+import { enrollCourse } from "@/lib/courses";
 import type { Enrollment } from "@/types/courses";
 
 interface UseCourseEnrollmentAccessInput {
   resolvedCourseId: string | null;
   profileId: string | undefined;
-  /** Forwarded to `enrollCourse` to avoid a redundant `auth.getUser()`. */
   viewer?: User | null;
 }
 
@@ -24,52 +29,45 @@ export function useCourseEnrollmentAccess({
   profileId,
   viewer,
 }: UseCourseEnrollmentAccessInput): UseCourseEnrollmentAccessResult {
-  const [enrolled, setEnrolled] = useState(false);
-  const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
-  const [enrolling, setEnrolling] = useState(false);
+  const queryClient = useQueryClient();
+  const enrollmentQuery = useQuery(
+    courseEnrollmentQueryOptions(profileId, resolvedCourseId),
+  );
+  const enrollmentKey =
+    profileId && resolvedCourseId
+      ? courseKeys.enrollment(profileId, resolvedCourseId)
+      : null;
+  const enrollMutation = useMutation({
+    mutationFn: async () => {
+      if (!resolvedCourseId) return null;
+      return enrollCourse(resolvedCourseId, viewer);
+    },
+    onSuccess: (row) => {
+      if (enrollmentKey && row) queryClient.setQueryData(enrollmentKey, row);
+    },
+  });
 
-  useEffect(() => {
-    if (!resolvedCourseId || !profileId) {
-      setEnrolled(false);
-      setEnrollment(null);
-      return;
-    }
-    let cancelled = false;
-
-    getEnrollment(profileId, resolvedCourseId)
-      .then((enrollmentRow) => {
-        if (cancelled) return;
-        setEnrolled(!!enrollmentRow);
-        setEnrollment(enrollmentRow ?? null);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setEnrolled(false);
-        setEnrollment(null);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [resolvedCourseId, profileId]);
-
-  const runEnroll = useCallback(async () => {
-    if (!resolvedCourseId) return null;
-    setEnrolling(true);
-    try {
-      const row = await enrollCourse(resolvedCourseId, viewer);
-      setEnrolled(true);
-      setEnrollment(row);
-      return row;
-    } finally {
-      setEnrolling(false);
-    }
-  }, [resolvedCourseId, viewer]);
+  const runEnroll = useCallback(
+    () => enrollMutation.mutateAsync(),
+    [enrollMutation],
+  );
+  const setEnrollment = useCallback(
+    (value: Enrollment | null) => {
+      if (enrollmentKey) queryClient.setQueryData(enrollmentKey, value);
+    },
+    [enrollmentKey, queryClient],
+  );
+  const setEnrolled = useCallback(
+    (value: boolean) => {
+      if (!value) setEnrollment(null);
+    },
+    [setEnrollment],
+  );
 
   return {
-    enrolled,
-    enrollment,
-    enrolling,
+    enrolled: Boolean(enrollmentQuery.data),
+    enrollment: enrollmentQuery.data ?? null,
+    enrolling: enrollMutation.isPending,
     runEnroll,
     setEnrolled,
     setEnrollment,

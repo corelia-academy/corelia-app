@@ -1,5 +1,7 @@
 # G2-R1 Staging Execution Report
 
+> **Historical hackathon evidence:** kết quả invited judge, access invite và metrics RPC bên dưới thuộc lần triển khai cũ. Migration tinh giản xóa các object đó không cần export; xem [Hackathon hiện hành](../hackathon/README.md).
+
 ## 1. Verdict
 
 **`STAGING_VALIDATION_PASS_PENDING_REVIEW`**

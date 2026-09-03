@@ -1,10 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useCallback } from "react";
 import { Link, useParams } from "react-router";
 import { Globe, GraduationCap, Loader2, MapPin } from "lucide-react";
-import { getPublicProfileById } from "@/lib/profile";
-import { getPublishedCoursesByInstructor } from "@/lib/courses";
-import type { PublicProfile } from "@/types/database";
-import type { Course } from "@/types/courses";
+import { publicInstructorDetailQueryOptions } from "@/features/instructor/instructorQueries";
 import { getCourseLevelLabel, formatDuration } from "@/types/courses";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -27,49 +25,22 @@ const InstructorDetail = () => {
     [t],
   );
   const { id } = useParams<{ id: string }>();
-  const [profile, setProfile] = useState<PublicProfile | null>(null);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const isValidUuid = Boolean(id && UUID_REGEX.test(id.trim()));
 
-  useEffect(() => {
-    if (!id || !isValidUuid) return;
-    let cancelled = false;
-
-    Promise.all([getPublicProfileById(id), getPublishedCoursesByInstructor(id)])
-      .then(([prof, list]) => {
-        if (cancelled) return;
-        if (!prof || prof.role !== "instructor") {
-          setError(translate("detail.instructorDetail.errors.notFound"));
-          return;
-        }
-        setProfile(prof);
-        setCourses(list);
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setError(translate("detail.instructorDetail.errors.notFound"));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [id, isValidUuid, translate]);
+  const detailQuery = useQuery(publicInstructorDetailQueryOptions(id, isValidUuid));
+  const profile = detailQuery.data?.profile ?? null;
+  const courses = detailQuery.data?.courses ?? [];
 
   const instructorBio =
     profile?.instructor_bio?.trim() || profile?.bio?.trim() || undefined;
 
   const activeError = !isValidUuid
     ? translate("detail.instructorDetail.errors.notFound")
-    : error;
-  const isActuallyLoading = isValidUuid && loading;
+    : detailQuery.error || (profile && profile.role !== "instructor")
+      ? translate("detail.instructorDetail.errors.notFound")
+      : null;
+  const isActuallyLoading = isValidUuid && detailQuery.isPending;
 
   usePageMeta({
     title: profile?.full_name?.trim() ?? undefined,

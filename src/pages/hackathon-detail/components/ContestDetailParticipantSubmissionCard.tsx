@@ -62,10 +62,6 @@ export function ContestDetailParticipantSubmissionCard({
     setSubmissionRepoUrl,
     submissionSlideUrl,
     setSubmissionSlideUrl,
-    submissionScreenshotUrl,
-    setSubmissionScreenshotUrl,
-    submissionCoverImageUrl,
-    setSubmissionCoverImageUrl,
     submissionVideoUrl,
     setSubmissionVideoUrl,
     submissionDraftDirty,
@@ -192,36 +188,6 @@ export function ContestDetailParticipantSubmissionCard({
           </SubmissionGroup>
 
           <SubmissionGroup title={translate("detail.forms.submission.mediaGroup")}>
-            <SubmissionField
-              id="hackathon-submission-screenshot-url"
-              label={translate("detail.forms.submission.screenshotUrlLabel")}
-            >
-              <input
-                id="hackathon-submission-screenshot-url"
-                value={submissionScreenshotUrl}
-                onChange={(e) => setSubmissionScreenshotUrl(e.target.value)}
-                disabled={!submissionWorkspaceEditable}
-                className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:opacity-40"
-                placeholder={translate(
-                  "detail.forms.submission.screenshotUrlPlaceholder",
-                )}
-              />
-            </SubmissionField>
-            <SubmissionField
-              id="hackathon-submission-cover-url"
-              label={translate("detail.forms.submission.coverImageUrlLabel")}
-            >
-              <input
-                id="hackathon-submission-cover-url"
-                value={submissionCoverImageUrl}
-                onChange={(e) => setSubmissionCoverImageUrl(e.target.value)}
-                disabled={!submissionWorkspaceEditable}
-                className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:bg-surface-raised disabled:opacity-40"
-                placeholder={translate(
-                  "detail.forms.submission.coverImageUrlPlaceholder",
-                )}
-              />
-            </SubmissionField>
             <SubmissionField
               id="hackathon-submission-video-url"
               label={translate("detail.forms.submission.videoUrlLabel")}

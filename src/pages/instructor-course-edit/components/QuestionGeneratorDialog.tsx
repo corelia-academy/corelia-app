@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, Sparkles, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 
 import {
@@ -12,12 +13,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { invokeGenerateQuestions, type GeneratedQuestionSource } from "@/lib/questionGenerator";
-import { getSectionQuestions, setSectionQuestions, getLessonQuestions, setLessonQuestions } from "@/lib/sectionQuestions";
+import { setSectionQuestions, setLessonQuestions } from "@/lib/sectionQuestions";
 import type { SectionQuestionData, QuestionOption } from "@/types/questions";
 import type { CourseSection, SupportedCourseLocale } from "@/types/courses";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { instructorCourseQuestionsQueryOptions } from "@/features/courses/instructorCourseEditorQueries";
 
 type DraftQuestion = SectionQuestionData & {
   _key: string;
@@ -158,6 +160,7 @@ type Props = {
   mode?: "section" | "lesson";
   lessonId?: string | null;
   lessonTitle?: string | null;
+  userId?: string;
   /** Other lessons in the same section, for source selection */
   sectionLessons?: SourceLesson[];
 };
@@ -173,93 +176,80 @@ export function QuestionGeneratorDialog({
   mode = "section",
   lessonId,
   lessonTitle,
+  userId,
   sectionLessons = EMPTY_SECTION_LESSONS,
 }: Props) {
   const { t } = useTranslation("instructor");
+  const queryClient = useQueryClient();
   const [questions, setQuestions] = useState<DraftQuestion[]>([]);
   const [sources, setSources] = useState<GeneratedQuestionSource[]>([]);
-  const [generating, setGenerating] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [count, setCount] = useState<number>(5);
   // Lesson mode: which source lessons are selected for generation
   const [selectedSourceIds, setSelectedSourceIds] = useState<Set<string>>(new Set());
   const listEndRef = useRef<HTMLDivElement>(null);
-  const loadRequestIdRef = useRef(0);
   const generateRequestIdRef = useRef(0);
   const activeContextRef = useRef("");
+  const hydratedContextRef = useRef("");
   const openRef = useRef(open);
 
   const isLessonMode = mode === "lesson";
   const sectionId = section?.id;
+  const targetId = isLessonMode ? lessonId : sectionId;
+  const activeContext = `${courseId}:${mode}:${targetId || ""}:${locale}`;
+  const questionOptions = instructorCourseQuestionsQueryOptions({
+    courseId,
+    mode,
+    targetId,
+    locale,
+    userId,
+    enabled: open,
+  });
+  const questionsQuery = useQuery(questionOptions);
+  const loading = questionsQuery.isPending && questionsQuery.isEnabled;
+  const loadError = questionsQuery.isError
+    ? questionsQuery.error instanceof Error
+      ? questionsQuery.error.message
+      : t("courseEdit.questions.loadFailed", {
+          defaultValue: "Không thể tải câu hỏi hiện có.",
+        })
+    : null;
+  const generateMutation = useMutation({
+    mutationFn: (req: Parameters<typeof invokeGenerateQuestions>[0]) =>
+      invokeGenerateQuestions(req),
+  });
+  const saveMutation = useMutation({
+    mutationFn: (payload: SectionQuestionData[]) =>
+      isLessonMode
+        ? setLessonQuestions(courseId, lessonId!, payload, locale)
+        : setSectionQuestions(courseId, sectionId!, payload, locale),
+    onSuccess: (saved) => {
+      queryClient.setQueryData(questionOptions.queryKey, saved);
+    },
+  });
+  const generating = generateMutation.isPending;
+  const saving = saveMutation.isPending;
 
   useEffect(() => {
     openRef.current = open;
-  }, [open]);
-
-  const loadQuestions = useCallback(() => {
-    if (!open || !courseId) return;
-    if (isLessonMode && !lessonId) return;
-    if (!isLessonMode && !sectionId) return;
-
-    const activeRequestId = ++loadRequestIdRef.current;
-    const activeContext = `${courseId}:${mode}:${lessonId || ""}:${sectionId || ""}:${locale}`;
     activeContextRef.current = activeContext;
+  }, [activeContext, open]);
 
-    setLoading(true);
-    setGenerateError(null);
-    setLoadError(null);
-
-    const loadPromise = isLessonMode
-      ? getLessonQuestions(courseId, lessonId!, locale)
-      : getSectionQuestions(courseId, sectionId!, locale);
-
-    loadPromise
-      .then((existing) => {
-        if (
-          loadRequestIdRef.current !== activeRequestId ||
-          activeContextRef.current !== activeContext ||
-          !openRef.current
-        ) {
-          return;
-        }
-        setQuestions(existing.map(dataToDraft));
-        setLoadError(null);
-      })
-      .catch((err) => {
-        if (
-          loadRequestIdRef.current !== activeRequestId ||
-          activeContextRef.current !== activeContext ||
-          !openRef.current
-        ) {
-          return;
-        }
-        setQuestions([]);
-        setLoadError(
-          err instanceof Error
-            ? err.message
-            : t("courseEdit.questions.loadFailed", {
-                defaultValue: "Không thể tải câu hỏi hiện có.",
-              }),
-        );
-      })
-      .finally(() => {
-        if (loadRequestIdRef.current === activeRequestId) {
-          setLoading(false);
-        }
-      });
-  }, [open, courseId, isLessonMode, lessonId, sectionId, mode, locale, t]);
-
-  // Load existing questions when dialog opens or context changes
+  // Query data seeds an editable form draft once for each dialog context.
   useEffect(() => {
-    loadQuestions();
-    const ref = loadRequestIdRef;
+    if (!open || !questionsQuery.isSuccess) return;
+    if (hydratedContextRef.current === activeContext) return;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      hydratedContextRef.current = activeContext;
+      setQuestions(questionsQuery.data.map(dataToDraft));
+      setGenerateError(null);
+    });
     return () => {
-      ref.current += 1;
+      cancelled = true;
     };
-  }, [loadQuestions]);
+  }, [activeContext, open, questionsQuery.data, questionsQuery.isSuccess]);
 
   // Initialize selected source lessons in lesson mode
   useEffect(() => {
@@ -284,21 +274,31 @@ export function QuestionGeneratorDialog({
           : current && current.hasSourceContent !== false
             ? [current]
             : [];
-    setSelectedSourceIds(new Set(defaults.map((l) => l.id)));
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) setSelectedSourceIds(new Set(defaults.map((l) => l.id)));
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [open, isLessonMode, lessonId, sectionLessons]);
 
   // Reset when closed
   useEffect(() => {
     if (!open) {
-      loadRequestIdRef.current += 1;
       generateRequestIdRef.current += 1;
-      setQuestions([]);
-      setSources([]);
-      setGenerateError(null);
-      setLoadError(null);
-      setGenerating(false);
-      setSaving(false);
-      setSelectedSourceIds(new Set());
+      hydratedContextRef.current = "";
+      let cancelled = false;
+      queueMicrotask(() => {
+        if (cancelled) return;
+        setQuestions([]);
+        setSources([]);
+        setGenerateError(null);
+        setSelectedSourceIds(new Set());
+      });
+      return () => {
+        cancelled = true;
+      };
     }
   }, [open]);
 
@@ -306,7 +306,7 @@ export function QuestionGeneratorDialog({
     if (!courseId) return;
     if (!isLessonMode && !section) return;
     if (isLessonMode && !lessonId) return;
-    if (loadError !== null) {
+    if (questionsQuery.isError) {
       setGenerateError(
         t("courseEdit.questions.loadFailedBeforeGenerate", {
           defaultValue: "Không thể tạo câu hỏi khi chưa tải được dữ liệu hiện có.",
@@ -322,9 +322,6 @@ export function QuestionGeneratorDialog({
     }
 
     const activeGenerateId = ++generateRequestIdRef.current;
-    const activeContext = `${courseId}:${mode}:${lessonId || ""}:${sectionId || ""}:${locale}`;
-
-    setGenerating(true);
     setGenerateError(null);
     try {
       const req = isLessonMode
@@ -337,7 +334,7 @@ export function QuestionGeneratorDialog({
           }
         : { courseId, sectionId: section!.id, locale, count };
 
-      const res = await invokeGenerateQuestions(req);
+      const res = await generateMutation.mutateAsync(req);
       if (
         generateRequestIdRef.current !== activeGenerateId ||
         activeContextRef.current !== activeContext ||
@@ -359,10 +356,6 @@ export function QuestionGeneratorDialog({
       setGenerateError(
         err instanceof Error ? err.message : t("courseEdit.questions.generateFailed"),
       );
-    } finally {
-      if (generateRequestIdRef.current === activeGenerateId) {
-        setGenerating(false);
-      }
     }
   }
 
@@ -370,7 +363,7 @@ export function QuestionGeneratorDialog({
     if (!courseId) return;
     if (!isLessonMode && !section) return;
     if (isLessonMode && !lessonId) return;
-    if (loadError !== null) {
+    if (questionsQuery.isError) {
       toast.error(
         t("courseEdit.questions.loadFailedBeforeSave", {
           defaultValue: "Không thể lưu khi trạng thái tải câu hỏi đang bị lỗi.",
@@ -386,7 +379,6 @@ export function QuestionGeneratorDialog({
       toast.error(t("courseEdit.questions.fillRequired"));
       return;
     }
-    setSaving(true);
     try {
       const payload: SectionQuestionData[] = questions.map((q) => ({
         type: q.type,
@@ -397,18 +389,15 @@ export function QuestionGeneratorDialog({
         locale,
       }));
 
+      await saveMutation.mutateAsync(payload);
       if (isLessonMode) {
-        await setLessonQuestions(courseId, lessonId!, payload, locale);
         toast.success(t("courseEdit.questions.savedLesson", { count: questions.length }));
       } else {
-        await setSectionQuestions(courseId, section!.id, payload, locale);
         toast.success(t("courseEdit.questions.savedSection", { count: questions.length }));
       }
       onOpenChange(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("courseEdit.questions.saveFailed"));
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -583,7 +572,7 @@ export function QuestionGeneratorDialog({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={loadQuestions}
+                  onClick={() => void questionsQuery.refetch()}
                 >
                   {t("courseEdit.questions.retry", { defaultValue: "Thử lại" })}
                 </Button>

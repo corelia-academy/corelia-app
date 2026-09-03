@@ -1,36 +1,16 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { SkillTag } from "@/components/skills/SkillTag";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getProfileCourseSkills } from "@/lib/courses";
+import { publicProfileSkillsQueryOptions } from "@/features/profiles/publicProfileQueries";
 
 export function UserProfileSkillsCard({ profileId }: { profileId: string }) {
   const { t } = useTranslation("common");
-  const [loadedResult, setLoadedResult] = useState<{
-    profileId: string;
-    skills: string[];
-  }>({ profileId: "", skills: [] });
-
-  useEffect(() => {
-    let cancelled = false;
-
-    void getProfileCourseSkills(profileId)
-      .then((items) => {
-        if (!cancelled) setLoadedResult({ profileId, skills: items });
-      })
-      .catch(() => {
-        if (!cancelled) setLoadedResult({ profileId, skills: [] });
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [profileId]);
-
-  const loading = loadedResult.profileId !== profileId;
-  const skills = loading ? [] : loadedResult.skills;
+  const query = useQuery(publicProfileSkillsQueryOptions(profileId));
+  const loading = query.isPending;
+  const skills = query.data ?? [];
 
   return (
     <section className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-5">

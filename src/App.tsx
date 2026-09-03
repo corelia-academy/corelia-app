@@ -1,7 +1,6 @@
-import { Suspense, lazy, useEffect, useRef } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { LoadingBar } from "@/components/ui/LoadingBar";
-import { useLoadingStore } from "@/stores/loadingStore";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
@@ -16,6 +15,7 @@ import {
 } from "react-router";
 import { ThemeProvider } from "next-themes";
 import { AuthSync } from "@/components/auth/AuthSync";
+import { AuthBootstrapScreen } from "@/components/auth/AuthBootstrapScreen";
 import CredentialRealtimeSync from "@/components/base/CredentialRealtimeSync";
 import { PendingCredentialsWelcomeModal } from "@/components/base/PendingCredentialsWelcomeModal";
 import { RequireAuth } from "@/components/auth/RequireAuth";
@@ -23,6 +23,7 @@ import { RequireRole } from "@/components/auth/RequireRole";
 import { ROLE_GROUPS } from "@/config/roles";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/authStore";
+import { ScrollToTop } from "@/components/navigation/ScrollToTop";
 
 // Lazy-load all routes not needed on the initial render
 const Home = lazy(() => import("@/pages/home/index"));
@@ -55,6 +56,23 @@ const VerifyCertificatePage = lazy(() =>
 );
 const UserHandleRedirect = lazy(() => import("@/pages/users/UserHandleRedirect"));
 const AchievementsPage = lazy(() => import("@/pages/achievements"));
+const Hackathons = lazy(() => import("@/pages/hackathon-detail/Contests"));
+const HackathonPublicLayout = lazy(() => import("@/pages/hackathon-detail/ContestPublicLayout"));
+const HackathonOverviewTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonOverviewTab })));
+const HackathonPrizesTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonPrizesTab })));
+const HackathonTimelineTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonTimelineTab })));
+const HackathonResourcesTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonResourcesTab })));
+const HackathonProjectsTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonProjectsTab })));
+const ProjectsPage = lazy(() => import("@/pages/projects/ProjectsPage"));
+const ProjectDetailPage = lazy(() => import("@/pages/projects/ProjectDetailPage"));
+const ProjectNewPage = lazy(() => import("@/pages/projects/ProjectNewPage"));
+const ProjectEditPage = lazy(() => import("@/pages/projects/ProjectEditPage"));
+const JobsPage = lazy(() => import("@/pages/jobs/JobsPage"));
+const JobDetailPage = lazy(() => import("@/pages/jobs/JobDetailPage"));
+const SavedJobsPage = lazy(() => import("@/pages/jobs/UserJobsPage").then((m) => ({ default: m.SavedJobsPage })));
+const AppliedJobsPage = lazy(() => import("@/pages/jobs/UserJobsPage").then((m) => ({ default: m.AppliedJobsPage })));
+const HiddenJobsPage = lazy(() => import("@/pages/jobs/UserJobsPage").then((m) => ({ default: m.HiddenJobsPage })));
+const JobMarketPage = lazy(() => import("@/pages/jobs/JobMarketPage"));
 
 const Account = lazy(() => import("@/pages/account/Account"));
 const AccountProfileRoute = lazy(() =>
@@ -93,6 +111,9 @@ const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDe
 const AdminActivityMilestones = lazy(() => import("@/pages/admin/AdminActivityMilestones"));
 const AdminManualMint = lazy(() => import("@/pages/admin/AdminManualMint"));
 const AdminBranding = lazy(() => import("@/pages/admin/AdminBranding"));
+const AdminHackathons = lazy(() => import("@/pages/admin/hackathons/AdminHackathonsPage"));
+const AdminHackathonEditor = lazy(() => import("@/pages/admin/hackathons/AdminHackathonEditorPage"));
+const AdminJobsPage = lazy(() => import("@/pages/admin/jobs/AdminJobsPage"));
 
 const PageFallback = () => <AuthGateLoading />;
 
@@ -110,79 +131,14 @@ function RecoveryGuard() {
   return null;
 }
 
-function ScrollToTop() {
-  const location = useLocation();
-  const prevRef = useRef<{ pathname: string; hash: string } | null>(null);
-
-  useEffect(() => {
-    const prev = prevRef.current;
-    prevRef.current = {
-      pathname: location.pathname,
-      hash: location.hash,
-    };
-
-    if (
-      prev &&
-      prev.pathname === location.pathname &&
-      prev.hash !== location.hash
-    ) {
-      return;
-    }
-
-    const manageBaseRe = /^\/hackathons\/([^/]+)\/manage(?:\/|$)/;
-    const prevManage = prev?.pathname.match(manageBaseRe);
-    const nextManage = location.pathname.match(manageBaseRe);
-    if (
-      prev &&
-      prevManage &&
-      nextManage &&
-      prevManage[1] === nextManage[1] &&
-      prev.pathname !== location.pathname
-    ) {
-      return;
-    }
-
-    const legacyContestTabRe =
-      /^\/hackathons\/([^/]+)\/(?:overview|timeline|prizes|partners|rules|faqs|projects)$/;
-    const prevLegacy = prev?.pathname.match(legacyContestTabRe);
-    const nextCanonical = location.pathname.match(/^\/hackathons\/([^/]+)$/);
-    if (
-      prevLegacy &&
-      nextCanonical &&
-      prevLegacy[1] === nextCanonical[1]
-    ) {
-      return;
-    }
-
-    const canonicalContest = /^\/hackathons\/([^/]+)$/;
-    if (canonicalContest.test(location.pathname) && location.hash) {
-      return;
-    }
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [location.pathname, location.search, location.hash]);
-
-  return null;
-}
-
 export default function App() {
   const { i18n } = useTranslation();
-  const profileLoading = useAuthStore((s) => s.profileLoading);
-  const startLoading = useLoadingStore((s) => s.startLoading);
-  const stopLoading = useLoadingStore((s) => s.stopLoading);
+  const authStatus = useAuthStore((s) => s.status);
 
   useEffect(() => {
     document.documentElement.lang =
       i18n.resolvedLanguage ?? i18n.language ?? "vi";
   }, [i18n.resolvedLanguage, i18n.language]);
-
-  useEffect(() => {
-    if (profileLoading) {
-      startLoading("profile-loading");
-    } else {
-      stopLoading("profile-loading");
-    }
-  }, [profileLoading, startLoading, stopLoading]);
 
   if (import.meta.env.VITE_MAINTENANCE_MODE === "true") {
     return (
@@ -198,7 +154,10 @@ export default function App() {
       <LoadingBar />
       <Toaster />
       <AuthSync />
-      <TooltipProvider>
+      {authStatus === "booting" ? (
+        <AuthBootstrapScreen />
+      ) : (
+        <TooltipProvider>
         <BrowserRouter>
           <CredentialRealtimeSync />
           <ScrollToTop />
@@ -398,8 +357,41 @@ export default function App() {
                   </RequireAuth>
                 }
               />
-              <Route path="hackathons/*" element={<Navigate to="/" replace />} />
-              <Route path="projects/*" element={<Navigate to="/" replace />} />
+              <Route path="hackathons" element={<Suspense fallback={<PageFallback />}><Hackathons /></Suspense>} />
+              <Route path="hackathons/manage/*" element={<Suspense fallback={<PageFallback />}><NotFound /></Suspense>} />
+              <Route path="hackathons/new" element={<Suspense fallback={<PageFallback />}><NotFound /></Suspense>} />
+              <Route path="hackathons/:slug/manage/*" element={<Suspense fallback={<PageFallback />}><NotFound /></Suspense>} />
+              <Route path="hackathons/:slug" element={<Suspense fallback={<PageFallback />}><HackathonPublicLayout /></Suspense>}>
+                <Route index element={<Navigate to="overview" replace />} />
+                <Route path="overview" element={<Suspense fallback={<PageFallback />}><HackathonOverviewTab /></Suspense>} />
+                <Route path="prizes" element={<Suspense fallback={<PageFallback />}><HackathonPrizesTab /></Suspense>} />
+                <Route path="timeline" element={<Suspense fallback={<PageFallback />}><HackathonTimelineTab /></Suspense>} />
+                <Route path="resources" element={<Suspense fallback={<PageFallback />}><HackathonResourcesTab /></Suspense>} />
+                <Route path="projects" element={<Suspense fallback={<PageFallback />}><HackathonProjectsTab /></Suspense>} />
+              </Route>
+              <Route path="projects" element={<Suspense fallback={<PageFallback />}><ProjectsPage /></Suspense>} />
+              <Route path="projects/new" element={<RequireAuth><Suspense fallback={<PageFallback />}><ProjectNewPage /></Suspense></RequireAuth>} />
+              <Route path="projects/:slug/edit" element={<RequireAuth><Suspense fallback={<PageFallback />}><ProjectEditPage /></Suspense></RequireAuth>} />
+              <Route path="projects/:slug" element={<Suspense fallback={<PageFallback />}><ProjectDetailPage /></Suspense>} />
+              <Route path="jobs" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/saved" element={<RequireAuth><Suspense fallback={<PageFallback />}><SavedJobsPage /></Suspense></RequireAuth>} />
+              <Route path="jobs/applied" element={<RequireAuth><Suspense fallback={<PageFallback />}><AppliedJobsPage /></Suspense></RequireAuth>} />
+              <Route path="jobs/hidden" element={<RequireAuth><Suspense fallback={<PageFallback />}><HiddenJobsPage /></Suspense></RequireAuth>} />
+              <Route path="jobs/market" element={<Suspense fallback={<PageFallback />}><JobMarketPage /></Suspense>} />
+              <Route path="jobs/market/skills/:skill" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/market/roles/:role" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/market/entry-level" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/market/remote" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/frontend" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/backend" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/ai-engineering" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/devops" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/skills/:skill" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/domains/:domain" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/remote" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/vietnam" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/apac" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/:slug" element={<Suspense fallback={<PageFallback />}><JobDetailPage /></Suspense>} />
               <Route
                 path="search"
                 element={
@@ -519,14 +511,15 @@ export default function App() {
                     </Suspense>
                   }
                 />
-                <Route
-                  path="hackathons/*"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <NotFound />
-                    </Suspense>
-                  }
-                />
+                <Route path="hackathons" element={<Suspense fallback={<PageFallback />}><AdminHackathons /></Suspense>} />
+                <Route path="hackathons/new" element={<Suspense fallback={<PageFallback />}><AdminHackathonEditor /></Suspense>} />
+                <Route path="hackathons/:id/edit" element={<Suspense fallback={<PageFallback />}><AdminHackathonEditor /></Suspense>} />
+                <Route path="jobs" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="jobs/review" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="jobs/sources" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="jobs/companies" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="jobs/crawlers" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="jobs/analytics" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
               </Route>
               <Route
                 path="instructor"
@@ -642,7 +635,8 @@ export default function App() {
             </Route>
           </Routes>
         </BrowserRouter>
-      </TooltipProvider>
+        </TooltipProvider>
+      )}
     </ThemeProvider>
     </ErrorBoundary>
   );

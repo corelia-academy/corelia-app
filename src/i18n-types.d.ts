@@ -9,6 +9,7 @@ import instructor from "@/locales/vi/instructor.json";
 import admin from "@/locales/vi/admin.json";
 import career from "@/locales/vi/career.json";
 import feed from "@/locales/vi/feed.json";
+import jobs from "@/locales/vi/jobs.json";
 
 declare module "i18next" {
   interface CustomTypeOptions {
@@ -23,7 +24,7 @@ declare module "i18next" {
       instructor: typeof instructor;
       admin: typeof admin;
       feed: typeof feed;
+      jobs: typeof jobs;
     };
   }
 }
-

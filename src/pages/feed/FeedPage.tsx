@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, ChevronDown, Loader2, RefreshCw, Rss } from "lucide-react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -6,24 +7,20 @@ import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getFeed } from "@/lib/feed";
+import {
+  feedFollowingQueryOptions,
+  feedKeys,
+  feedTimelineQueryOptions,
+} from "@/features/feed/feedQueries";
+import type { FeedActor } from "@/lib/feed";
+import { subscribeToActivityEvents } from "@/lib/feed";
 import { bundleFeedEvents } from "@/lib/feedBundling";
 import { markFeedRead } from "@/lib/feedUnread";
-import { listFollowing } from "@/lib/follows";
-import { supabase } from "@/lib/supabase";
+import { subscribeToFollowingChanges } from "@/lib/follows";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
 import type { ActivityEvent, FeedBundle, FollowRow, FollowSubjectType } from "@/types/feed";
 
-interface FeedActor {
-  id: string;
-  username: string | null;
-  ocid: string | null;
-  full_name: string | null;
-  avatar_url: string | null;
-}
-
-const PAGE_SIZE = 20;
 const FOLLOW_SUBJECT_TYPES: FollowSubjectType[] = ["user", "course", "hackathon", "project"];
 
 type FollowedSubjects = Record<FollowSubjectType, Set<string>>;
@@ -47,36 +44,6 @@ function buildFollowedSubjects(rows: FollowRow[]): FollowedSubjects {
   }
 
   return subjects;
-}
-
-function activityEventFromRecord(record: Record<string, unknown>): ActivityEvent | null {
-  if (
-    typeof record.id !== "number" ||
-    typeof record.actor_id !== "string" ||
-    typeof record.verb !== "string" ||
-    typeof record.object_type !== "string" ||
-    typeof record.object_id !== "string" ||
-    typeof record.created_at !== "string"
-  ) {
-    return null;
-  }
-
-  return {
-    id: record.id,
-    actor_id: record.actor_id,
-    verb: record.verb,
-    object_type: record.object_type,
-    object_id: record.object_id,
-    target_type: typeof record.target_type === "string" ? record.target_type : null,
-    target_id: typeof record.target_id === "string" ? record.target_id : null,
-    payload: record.payload && typeof record.payload === "object"
-      ? (record.payload as Record<string, unknown>)
-      : {},
-    visibility: record.visibility === "followers" || record.visibility === "private"
-      ? record.visibility
-      : "public",
-    created_at: record.created_at,
-  };
 }
 
 function isFollowSubjectType(value: string | null): value is FollowSubjectType {
@@ -238,125 +205,62 @@ function FeedItem({
 export default function FeedPage() {
   const { t, i18n } = useTranslation("feed");
   const { user } = useAuth();
-  const [events, setEvents] = useState<ActivityEvent[]>([]);
-  const [actors, setActors] = useState<Record<string, FeedActor>>({});
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [hasNewEvents, setHasNewEvents] = useState(false);
-  const cursorRef = useRef<string | null>(null);
-  const followedRef = useRef<FollowedSubjects>(createFollowedSubjects());
-
-  const refreshFollowedSubjects = useCallback(async () => {
-    if (!user?.id) {
-      followedRef.current = createFollowedSubjects();
-      return followedRef.current;
-    }
-
-    const rows = await listFollowing();
-    const next = buildFollowedSubjects(rows);
-    followedRef.current = next;
-    return next;
-  }, [user?.id]);
-
-  const loadActors = useCallback(async (nextEvents: ActivityEvent[]) => {
-    const ids = Array.from(new Set(nextEvents.map((event) => event.actor_id)));
-    if (ids.length === 0) return;
-
-    const { data, error: actorError } = await supabase
-      .from("public_profiles")
-      .select("id,username,ocid,full_name,avatar_url")
-      .in("id", ids);
-    if (actorError) throw new Error(actorError.message);
-
-    setActors((current) => {
-      const next = { ...current };
-      for (const row of data ?? []) {
-        const actor = row as FeedActor;
-        next[actor.id] = actor;
-      }
-      return next;
-    });
-  }, []);
-
-  const load = useCallback(
-    async ({ append = false }: { append?: boolean } = {}) => {
-      if (append) setLoadingMore(true);
-      else setLoading(true);
-      setError(null);
-      try {
-        await refreshFollowedSubjects();
-        const nextEvents = await getFeed({
-          cursor: append ? cursorRef.current : null,
-          limit: PAGE_SIZE,
-        });
-        await loadActors(nextEvents);
-        setEvents((current) => {
-          if (!append) return nextEvents;
-          const seen = new Set(current.map((event) => event.id));
-          return [...current, ...nextEvents.filter((event) => !seen.has(event.id))];
-        });
-        if (!append) {
-          if (user?.id) markFeedRead(user.id, nextEvents[0]?.created_at ?? new Date().toISOString());
-          setHasNewEvents(false);
-        }
-      } catch (e) {
-        setError(e instanceof Error ? e.message : t("errors.load"));
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
-      }
-    },
-    [loadActors, refreshFollowedSubjects, t, user?.id],
+  const timelineQuery = useInfiniteQuery(feedTimelineQueryOptions(user?.id ?? null));
+  const followingQuery = useQuery(feedFollowingQueryOptions(user?.id ?? null));
+  const events = useMemo(() => {
+    const seen = new Set<number>();
+    return (timelineQuery.data?.pages ?? []).flatMap((page) =>
+      page.events.filter((event) => {
+        if (seen.has(event.id)) return false;
+        seen.add(event.id);
+        return true;
+      }),
+    );
+  }, [timelineQuery.data]);
+  const actors = useMemo(
+    () => Object.assign({}, ...(timelineQuery.data?.pages.map((page) => page.actors) ?? [])) as Record<string, FeedActor>,
+    [timelineQuery.data],
+  );
+  const followedSubjects = useMemo(
+    () => buildFollowedSubjects(followingQuery.data ?? []),
+    [followingQuery.data],
   );
 
   useEffect(() => {
-    void load();
-  }, [load]);
-
-  useEffect(() => {
-    cursorRef.current = events.at(-1)?.created_at ?? null;
-  }, [events]);
+    const newest = events[0]?.created_at;
+    if (!user?.id || !newest) return;
+    markFeedRead(user.id, newest);
+    queryClient.setQueryData(feedKeys.unread(user.id), 0);
+  }, [events, queryClient, user?.id]);
 
   useEffect(() => {
     if (!user?.id) return;
 
-    const channel = supabase
-      .channel("activity-feed-page")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "activity_events" },
-        (payload) => {
-          const event = activityEventFromRecord(payload.new);
-          if (!event) return;
-          if (eventMatchesFollowedSubjects(event, followedRef.current, user.id)) {
-            setHasNewEvents(true);
-          }
-        },
-      )
-      .subscribe();
-
-    const followsChannel = supabase
-      .channel("activity-feed-follows")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "follows",
-          filter: `follower_id=eq.${user.id}`,
-        },
-        () => {
-          void refreshFollowedSubjects();
-        },
-      )
-      .subscribe();
+    const unsubscribeActivity = subscribeToActivityEvents("feed-page", (event) => {
+      if (eventMatchesFollowedSubjects(event, followedSubjects, user.id)) {
+        setHasNewEvents(true);
+      }
+    });
+    const unsubscribeFollowing = subscribeToFollowingChanges(
+      user.id,
+      "feed-page",
+      () => {
+        void queryClient.invalidateQueries({ queryKey: feedKeys.following(user.id) });
+      },
+    );
 
     return () => {
-      void supabase.removeChannel(channel);
-      void supabase.removeChannel(followsChannel);
+      unsubscribeActivity();
+      unsubscribeFollowing();
     };
-  }, [refreshFollowedSubjects, user?.id]);
+  }, [followedSubjects, queryClient, user?.id]);
+
+  const refresh = async () => {
+    await Promise.all([timelineQuery.refetch(), followingQuery.refetch()]);
+    setHasNewEvents(false);
+  };
 
   const groupedEvents = useMemo(() => bundleFeedEvents(events), [events]);
 
@@ -379,10 +283,13 @@ export default function FeedPage() {
           type="button"
           variant="outline"
           className="gap-1.5 self-start sm:self-auto"
-          onClick={() => void load()}
-          disabled={loading}
+          onClick={() => void refresh()}
+          disabled={timelineQuery.isFetching}
         >
-          <RefreshCw className={cn("size-4", loading ? "animate-spin" : "")} aria-hidden />
+          <RefreshCw
+            className={cn("size-4", timelineQuery.isFetching ? "animate-spin" : "")}
+            aria-hidden
+          />
           {t("actions.refresh")}
         </Button>
       </div>
@@ -392,24 +299,26 @@ export default function FeedPage() {
           type="button"
           variant="secondary"
           className="mb-4 w-full gap-1.5"
-          onClick={() => void load()}
+          onClick={() => void refresh()}
         >
           <Bell className="size-4" aria-hidden />
           {t("actions.showNew")}
         </Button>
       ) : null}
 
-      {loading ? (
+      {timelineQuery.isPending ? (
         <div className="space-y-3">
           <Skeleton className="h-24 w-full rounded-lg" />
           <Skeleton className="h-24 w-full rounded-lg" />
           <Skeleton className="h-24 w-full rounded-lg" />
         </div>
-      ) : error ? (
+      ) : timelineQuery.error ? (
         <div className="rounded-lg border border-border-subtle bg-surface-base p-6 text-center shadow-card">
           <p className="text-sm font-medium text-foreground">{t("errors.title")}</p>
-          <p className="mt-1 text-sm text-foreground-muted">{error}</p>
-          <Button type="button" className="mt-4" onClick={() => void load()}>
+          <p className="mt-1 text-sm text-foreground-muted">
+            {timelineQuery.error instanceof Error ? timelineQuery.error.message : t("errors.load")}
+          </p>
+          <Button type="button" className="mt-4" onClick={() => void refresh()}>
             {t("actions.retry")}
           </Button>
         </div>
@@ -438,10 +347,10 @@ export default function FeedPage() {
               type="button"
               variant="outline"
               className="gap-1.5"
-              disabled={loadingMore || groupedEvents.length < PAGE_SIZE}
-              onClick={() => void load({ append: true })}
+              disabled={timelineQuery.isFetchingNextPage || !timelineQuery.hasNextPage}
+              onClick={() => void timelineQuery.fetchNextPage()}
             >
-              {loadingMore ? (
+              {timelineQuery.isFetchingNextPage ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden />
               ) : (
                 <ChevronDown className="size-4" aria-hidden />

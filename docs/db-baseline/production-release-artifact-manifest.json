@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "a1b04f069c50c23e63fd8fb6c4138223d5a2574a",
-  "git_tree_sha": "34f840f2c0d54c1714db5c6466fae6ff779debf7",
+  "rc_sha": "7955a712b1b572ffc1031b6c331aea9c5cfa153f",
+  "git_tree_sha": "d533bfdb7bbf3489ae7492abea59fdc31c538af9",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 164,
-  "latest_migration": "20260901002156_remove_dashboard_configs_and_tier_limits.sql",
+  "migration_count": 181,
+  "latest_migration": "20260903111914_grant_job_company_source_for_connected_adapters.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "a1b04f069c50c23e63fd8fb6c4138223d5a2574a",
+  "source_sha": "7955a712b1b572ffc1031b6c331aea9c5cfa153f",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "3541ac157ef506b61ae27e9ed519d15acd0d2756e4fb68b973073b7859095fb8",
+  "candidate_tree_sha256": "56f0ffc8aff2a394dc57542fad9ce41f81f1db7065fde61949572924eb5a350a",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -23,7 +23,11 @@
     },
     {
       "path": ".env.example",
-      "sha256": "ee7f591d24c124288c2ba3064aacbdd6243ec3d5ee7b9425ef410db4727935de"
+      "sha256": "00e0522a7cf872f4691349a9e316071a48bb8e22a413f4b76341beb65b64ede5"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug-report.yml",
+      "sha256": "eb30346f42930cba4be53f46a12b8d5382e74160f13122e703c4775576e34106"
     },
     {
       "path": ".github/ISSUE_TEMPLATE/emergency-db-sql.yml",
@@ -43,31 +47,31 @@
     },
     {
       "path": ".github/workflows/deploy-prod.yml",
-      "sha256": "a91ef431d57b010cfbd0248b007f7dd6c13889c87e7695dc8e04396bd89e7f6c"
+      "sha256": "6a0b0f940e8a9451f00bd73c0f6362a0bf11dc4df31d07a71088d3a88311ea0c"
     },
     {
       "path": ".github/workflows/deploy-staging.yml",
-      "sha256": "aec9628c794033b0c546262a6a79a0c1f56cc497a4d083492356081547bb767e"
+      "sha256": "a00d4d6e519b2d8018423e5668f0f549f39bc59ee0585cd2a2d2e535c782f574"
     },
     {
       "path": ".gitignore",
-      "sha256": "999b0c881a6feaa4c9bef922916a4ede61215240ee1728df26093a0192d07d67"
+      "sha256": "8c2d8284425a481e32289bfa26a711b02ada279841d2ab964d9c60a6b3522b53"
     },
     {
-      "path": "docs/audit/cora-beta-scope-audit-2026-08-25.md",
-      "sha256": "6be90b643035d108d00a86b61f94c2a24f2c5c3448e7db114225f906a4ae43da"
+      "path": "AGENTS.md",
+      "sha256": "4b191bddf8b34a8cc442bff9339d8ecff87f852892ddfbd21ed14590bd59e6bb"
     },
     {
-      "path": "docs/audit/frontend-performance-audit-2026-08-25.md",
-      "sha256": "c3d9788e0b6154af99ef24c818e06be906cdda7b2f180059b6dd1fdbd7fbbabb"
+      "path": "docs/CODE_REVIEW_SUPABASE_MIGRATION.md",
+      "sha256": "45e744e8697649385739cbbd149e9af09a1e5cf00debbf7a8e1e0ffbd9b1d416"
     },
     {
       "path": "docs/corelia-db-final-preimplementation-plan.md",
-      "sha256": "d36fbd2b3b174480b161b4f85b874952a3044f43473e56de79e4e7985eb1e1c8"
+      "sha256": "804eaef6a0065783852f147e6966b20181fca2bf5e25d10532833c8cb27c2e10"
     },
     {
       "path": "docs/corelia-db-optimization-master-plan.md",
-      "sha256": "b7f57281d4763cddebdfbafa6fdc0d5db2c02ba7de0634109fa9652e9bd5b8d7"
+      "sha256": "b16ea89318361f9a1fbc075695246a917e61f16d7f2979464c6ff1c8f2cbc7f9"
     },
     {
       "path": "docs/db-baseline/baseline-context.json",
@@ -83,7 +87,7 @@
     },
     {
       "path": "docs/db-baseline/corelia-db-optimization-completion-report.md",
-      "sha256": "60bf4b5e7a6b14b91ce21a724d4f9f237139a77424df3a080302b2fff80babe7"
+      "sha256": "dd7da599c009a9cf2f97e1e832b9c785a6ddacc3ec9a586ef6403665a25c6f1e"
     },
     {
       "path": "docs/db-baseline/expected-drift.json",
@@ -91,19 +95,19 @@
     },
     {
       "path": "docs/db-baseline/g1-data-integrity-implementation-report.md",
-      "sha256": "2d356cbc0bf4cc1083836d3558370414cffb161614c6b11e944130206e53b920"
+      "sha256": "ef918f9c542359c9b77bbff4aa328a73065fb860dc8df81903ee2d70bd2ac21a"
     },
     {
       "path": "docs/db-baseline/g2-canonical-state-integrity-implementation-report.md",
-      "sha256": "d5f2fe7c979337a06b1e30b7d585da7101bd3c80f8c233977219f62c8d97691a"
+      "sha256": "03d9f8d03490aa11d6ef1f26120d1767505541ab5808f0b6d6529e53e597da37"
     },
     {
       "path": "docs/db-baseline/g2-r1-db-harness-remediation-report.md",
-      "sha256": "56d1b18e4e7bf1952bc34d1ae6d5a134e5cfef4a5240f5cb80373312726a1cde"
+      "sha256": "8ec79cc61a7d8a3d2bad9ae539edcff252fdb9bcb02ac3cb4449fbdb17f42062"
     },
     {
       "path": "docs/db-baseline/m1-staging-canonical-behavior-report.md",
-      "sha256": "56ce2914eeaf0f4655e6f3c81bd6e4df47ba038864151d25b9ae63fe20194980"
+      "sha256": "34aee0f90a477c8670a1c0fd984263cbd634f15211610908cf8d099320a053f8"
     },
     {
       "path": "docs/db-baseline/main-g2-r1-rollout-plan.md",
@@ -123,23 +127,83 @@
     },
     {
       "path": "docs/db-baseline/staging-g2-r1-execution-report.md",
-      "sha256": "fd3361ecbab3c4691a234121d325b3c46341a442cf545e76289c9fee91532853"
+      "sha256": "ef34cc813ea4fbe6409ddb90777af1189db04a6074a21df11642909a0eff255e"
     },
     {
       "path": "docs/db-baseline/table-role-dependency-lifecycle-audit.md",
-      "sha256": "371ee3d8d935e10529e1c96721bf0f093e11ccebe23f2a96991c71ee140a8c94"
+      "sha256": "3c3fafcf74ad3e5db7c7150c03f9fb3684937b5427f4db566b14949a1a569258"
     },
     {
       "path": "docs/db-baseline/wave-0-implementation-report.md",
       "sha256": "fad43d7b38667a132bb0a954d2e142c82b676eadd87b74b5d19f71760f643fa3"
     },
     {
-      "path": "docs/DESIGN.md",
-      "sha256": "986424940a7c2b924b2b10aeadf6b030d9d4b0ca5d66e9b3cadf0d1dd5e46873"
+      "path": "docs/front-end-rules/architecture.md",
+      "sha256": "9c9d18d3c07c69c6a1072e31838c684a54470d2529da3fb8bad5a03dc9cff812"
+    },
+    {
+      "path": "docs/front-end-rules/auth-and-session.md",
+      "sha256": "71a32ff9b746942b8ac8e100fc3f9f7bd80eab55de9f12cbedfeb4e90ad9d2ec"
+    },
+    {
+      "path": "docs/front-end-rules/data-and-state.md",
+      "sha256": "fee5aa72ed0347c3ec9191b4777b77ded13782b3a17b880cf3cddedf5c830bb8"
+    },
+    {
+      "path": "docs/front-end-rules/migration-testing-and-cleanup.md",
+      "sha256": "a02b07cd930e8aeee02354af53b011f16b5c35471ae3baa51f939b710e286339"
+    },
+    {
+      "path": "docs/front-end-rules/performance-and-loading.md",
+      "sha256": "893ecfceb99c126cdb9ff681a8302f7d92efdf2a2121f0ac9714cc8b2cb0a9c2"
+    },
+    {
+      "path": "docs/front-end-rules/README.md",
+      "sha256": "9cc1f3d648fb6e2907bfd562d68b9b958ebed81badab54fbf8667fd66c59911e"
+    },
+    {
+      "path": "docs/front-end-rules/supabase-and-realtime.md",
+      "sha256": "5e8180608455c5a17bda233027ade157000ad1c50b9ea0ee4a921f6ab99333c2"
+    },
+    {
+      "path": "docs/hackathon/acceptance-checklist.md",
+      "sha256": "1384650312b9b650ef403b52c50ad62134c62f2c3768d98d5526eb8dfebcde53"
+    },
+    {
+      "path": "docs/hackathon/flows-and-permissions.md",
+      "sha256": "ae71706e9ea7cbd4361735844e84a9aa204a1ab5140be0670a9717c278a1f353"
+    },
+    {
+      "path": "docs/hackathon/product-scope.md",
+      "sha256": "02ba86990f4c09fdc983ac2de97dc069bafb63a944d9cd2d02c44fef5f1ef01b"
+    },
+    {
+      "path": "docs/hackathon/README.md",
+      "sha256": "18edc32b2d55eb15ce4d242f9835b380f92cbb99b0b64799ba47b3ebb7bced59"
+    },
+    {
+      "path": "docs/hackathon/simplification-plan.md",
+      "sha256": "e93dbfe7a7598570cb8ac094b43fa61af48ac56d1b3ec8f8c5b129ae3f3dfb25"
+    },
+    {
+      "path": "docs/hackathon/test-checklist.md",
+      "sha256": "7da2f9eb66c1941c085b75bbf757462fdad6eb5c3626952fb420d92e19859d6a"
     },
     {
       "path": "docs/ISSUE_SKILL_MILESTONE_OCB_REUSE.md",
       "sha256": "aed9f2e9d3f46bb00a739c30cd905f69608d5c1a0469c03da49c8167760c39d8"
+    },
+    {
+      "path": "docs/jobs/corelia-jobs-complete-implementation-plan.md",
+      "sha256": "0b85ba70e888b5c1eca7a7b2c3189b939742f807764db850978938b9aaee796b"
+    },
+    {
+      "path": "docs/jobs/README.md",
+      "sha256": "4315a4b914114a1acc3ee04f02128d7b790815d390345d118efa20dbdf741f9a"
+    },
+    {
+      "path": "docs/jobs/TEST_CHECKLIST.md",
+      "sha256": "edcdbbf8f187e4570fa731fc6f036c33b48b8f23bf5fad2fe54fcfe2cfde4a48"
     },
     {
       "path": "docs/learning/admin-ui.md",
@@ -155,7 +219,7 @@
     },
     {
       "path": "docs/learning/learner-ui.md",
-      "sha256": "e67b97bc4cc0ab21d63edc1af3a6c8a543a502c10fb552dce6423335313ca8d7"
+      "sha256": "b0afc99e03ef0248cb0550fe9535820d22ae4c16205bfbeb989b8b557fe94642"
     },
     {
       "path": "docs/learning/learning-system.md",
@@ -166,12 +230,16 @@
       "sha256": "90964d338393dae08bf6664677a518f54ef9487dd927361da1efc85f8c342cf6"
     },
     {
-      "path": "docs/RELEASE_PROCESS.md",
-      "sha256": "230734e80e06b9c5a2a7d8e937157cfa08d74201e9abb490133b6b5177206ff7"
+      "path": "docs/PERF_FETCH_OPTIMIZATION.md",
+      "sha256": "22801b30ff89df3012998fca5c6bba4dcbbd09665e6c4e8648328fd4c6056193"
     },
     {
-      "path": "docs/rules/frontend_data_architecture_rules.md",
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      "path": "docs/RELEASE_PROCESS.md",
+      "sha256": "7ed70932b799bb32739bc372cdc66e7e36eb61d09e98db965da41ce632317625"
+    },
+    {
+      "path": "docs/STAGING_BUILD_VERIFY.md",
+      "sha256": "5240d1d4c6fb283f3d7efeb714260b37cdc59173994637a57092d2824de23260"
     },
     {
       "path": "docs/streak/README.md",
@@ -186,12 +254,20 @@
       "sha256": "ac1502036622cfdaf1097df4d568891ed155990d1b50f61c9a122beb6d73c93c"
     },
     {
+      "path": "docs/SUPABASE_SECURITY_CHECK.md",
+      "sha256": "58b40f477c0d3ce00fc6c221f4019f592f5992a6a762302b3703dbb9ca04e8f9"
+    },
+    {
       "path": "docs/tests/02-home-discovery.md",
       "sha256": "ef6b3d968a04f40d030ea0809b880130c0f6f38ad03dbce931b7dc34ae7008c5"
     },
     {
       "path": "docs/tests/03-courses-catalog-detail-checkout-learn.md",
       "sha256": "a942f135e49df48c403cbcac39e9d48e86de907883cfe75a5d6446549ec8b14b"
+    },
+    {
+      "path": "docs/tests/04-career.md",
+      "sha256": "d9a0f35a3132c425d72825c604a6655eef2965955b02d89d6c99e2b5c6b0fe71"
     },
     {
       "path": "docs/tests/06-public-profiles.md",
@@ -202,16 +278,20 @@
       "sha256": "8969e3b0b42f6420e2fc0744fdbe63fa6430ae6b0895adfca9e4750acc0d8efc"
     },
     {
+      "path": "docs/tests/11-admin.md",
+      "sha256": "b793ddb57e86a008fe495efba5dc9d38532e23f46a48e29a2ed9338ce83f1072"
+    },
+    {
       "path": "docs/tests/12-cross-cutting-i18n-theme-errors.md",
       "sha256": "5adee5663b27744b65326649c74c9fc57360bac95f38a114910f81d5a26a68c9"
     },
     {
       "path": "docs/tests/manual.html",
-      "sha256": "778c81824c29bc4d9d1556669226702d6ddb7ecf523e669db1910f98f3d712c4"
+      "sha256": "45a2730d0a1bc542e244fb99f03eb199ec7931e4eada44c08b7a39e6c6fe1b86"
     },
     {
       "path": "docs/tests/README.md",
-      "sha256": "d94f1b9c9d94768b395be0740e7e227e51e3245fd5b09f42404e3baed043c7bb"
+      "sha256": "e3032188ff07398136d055e4c7c6eb6543fe964c1857f25231697becd5fb2730"
     },
     {
       "path": "docs/tests/skill-badge-milestone-test.html",
@@ -219,15 +299,23 @@
     },
     {
       "path": "package.json",
-      "sha256": "32f258291ed160ba166cdae9dbb05b6ffb8cfecced998a138589f1cbd17fee38"
+      "sha256": "f915429bd1c14839b758d050471228b7b5d42262fbfd56f603e251fca65923b2"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "00f98f60c9b9900a8bf16513499031b477444de57577938f9b3433ef653a1403"
+    },
+    {
+      "path": "public/sitemap.xml",
+      "sha256": "1b0fa0a851669fc2c955bfda82900ee3cb1003b941c0cbb2194147e94a3be4df"
     },
     {
       "path": "README.md",
-      "sha256": "5826d6c10583b8d3596bc15373043eedc349ead83e83530872ceb239fc791d09"
+      "sha256": "23850b0497be165c61bf36ba9ec2947e0dd8581b09a75e3542c20216ad9e469b"
     },
     {
       "path": "scripts/db/audit-production-ai-state.sql",
-      "sha256": "fcb95e081daec4b93f3acd52037910bdf9fd936bb3c8396e74342814fdeba104"
+      "sha256": "c5d5319eae2895264dfb9dc9522274e491dae992748fd27c1eec85c7e241f15f"
     },
     {
       "path": "scripts/db/build-production-release-candidate.mjs",
@@ -267,7 +355,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "fa70b42ed9309dc1d927ce8f63609a303d176ef79c808aa06ac6555b7fbb3b0d"
+      "sha256": "f5a8351be4d582bac38e264f82ce2c33fc9764972e69e666770c7cb9e2ae6304"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -279,23 +367,23 @@
     },
     {
       "path": "scripts/db/rebuild-production-manifest.mjs",
-      "sha256": "102fff2ef8500a9569c488271490b868b0320e70adf1550db5e8d159c49c9fd1"
+      "sha256": "f0f494a574851b2bb18f0c883012bfc12002234035894d2a70ea87e54771e743"
     },
     {
       "path": "scripts/db/tests/ai-quota-semantic.contract.test.mjs",
       "sha256": "cb5eb7fe98f7aee9a0aec1f290cd1a1c8cdad9998f3a923b98ccf1c5b7b6919f"
     },
     {
-      "path": "scripts/db/tests/canonical-payment-entitlements-integration.sql",
-      "sha256": "f938c8a84d1575bca9d0eae841daba51a9a41d30db65395b4fa8716b223b6941"
-    },
-    {
-      "path": "scripts/db/tests/canonical-payment-entitlements.contract.test.mjs",
-      "sha256": "015e8a02b6616896349b9369ff704c6ac5e01fa5fe3850c5dbec710bf823c776"
-    },
-    {
       "path": "scripts/db/tests/catalog-and-history.test.mjs",
       "sha256": "fece316f33688205c6c6cde4ffee79df8823c0987e81576406a66e4f1c0d79e8"
+    },
+    {
+      "path": "scripts/db/tests/config-table-retirement.contract.test.mjs",
+      "sha256": "be8d4c41581b11bdd1cd49d29e158ef93d1b98718e94410c510bc069242bb6da"
+    },
+    {
+      "path": "scripts/db/tests/financial-retirement.contract.test.mjs",
+      "sha256": "5e40f20b2cff9b6213f28fa3b98afad92374ac92714b827767a735af94999d9c"
     },
     {
       "path": "scripts/db/tests/g2-canonical-integrity.contract.test.mjs",
@@ -314,8 +402,24 @@
       "sha256": "51ec0e6bacc289a3a44477e507943d5f632fca89a0d5e95c73b8e5790d4bc7dc"
     },
     {
+      "path": "scripts/db/tests/hackathon-project-rpc-boundary.contract.test.mjs",
+      "sha256": "899d5fad15590bfdfba3a574c04de32a4839cef5f9abe890fd1752ff635af93b"
+    },
+    {
       "path": "scripts/db/tests/incremental-upgrade-proof.mjs",
       "sha256": "ba3702b7525559a9aa563d3488598c3c435fcdcc9563f9e0189bc804ceeecbee"
+    },
+    {
+      "path": "scripts/db/tests/jobs-mvp.integration.sql",
+      "sha256": "44731fe88f592b1fefd45c5abd74aad042a3236cfe476b597478102c3fc2b88a"
+    },
+    {
+      "path": "scripts/db/tests/jobs-release-contract.test.mjs",
+      "sha256": "942ebdb4435572b80fcde5f699f300e46cb13a0f3492ad5c5d1e45334172c96e"
+    },
+    {
+      "path": "scripts/db/tests/jobs-sitemap.test.mjs",
+      "sha256": "cf2719d7a2e00a7e7219850480e0c225fed0fea4292fd935fe66fc75b4319cfc"
     },
     {
       "path": "scripts/db/tests/learner-ai-database-retirement.contract.test.mjs",
@@ -323,19 +427,15 @@
     },
     {
       "path": "scripts/db/tests/learner-ai-retirement.integration.sql",
-      "sha256": "80085c44b05bbc5582e50566a44e80b22e8d6c72d6c01d2aca6f61a985dbe2a4"
+      "sha256": "e78dd785bd1afb3abe89536badd52f415e2f688d96a31c0e680c2b836b26e74a"
     },
     {
       "path": "scripts/db/tests/master-enrollment-security.contract.test.mjs",
       "sha256": "74d198fef2a23bc40767fff431df33082f85ac8f4f197d73e073712f2e3f23d3"
     },
     {
-      "path": "scripts/db/tests/master-financial-access.contract.test.mjs",
-      "sha256": "7711a3871f8d03c62c4bb8fdd30fa59b15a6bb038fba92c3e30a1f58b2998be8"
-    },
-    {
       "path": "scripts/db/tests/master-schema-lifecycle-index.contract.test.mjs",
-      "sha256": "7b87e1b58777163ece6ad98c4c0c76f6c78b5f5e006ecf983998864f73e14ade"
+      "sha256": "be41e0a39ab3c8a093351664c53b2992f8f0f0a401b9d43a8a2d145033921f42"
     },
     {
       "path": "scripts/db/tests/migration-baseline.test.mjs",
@@ -343,7 +443,7 @@
     },
     {
       "path": "scripts/db/tests/production-frontend-artifact.test.mjs",
-      "sha256": "1e063c200d0469038612cebeb901ae5f9553330da286916e7ead6a9eb33d9af4"
+      "sha256": "b5b436adb6e686e46d479de33fa4f74738633efc8f0f79c69c2bc76282f38ee4"
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
@@ -351,27 +451,19 @@
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
-      "sha256": "ea940c8a9f64e2cd620ab1075f8205603a84f225f47e7489fd1dd388dcd0215a"
+      "sha256": "c367d56d2dc1c0829ce512f626262a367a8ff8c4499269a1375247952bf4210d"
     },
     {
       "path": "scripts/db/tests/production-release-artifact.test.mjs",
-      "sha256": "e7fdf5acbe56886f52d7bd342a1fe00110a45e17437f5f6b774319ab31a38013"
+      "sha256": "5ec781fc157f2e5286cb1b34de09bab25d80488c6f0155e923d9f9dd6b7e680f"
     },
     {
       "path": "scripts/db/tests/project-seed-only.contract.test.mjs",
       "sha256": "3a373e66ad36009b9f50269118fa6287dac46b2a4382d5c3b7d8e503b4e5ee7c"
     },
     {
-      "path": "scripts/db/tests/r4-payment-concurrency.integration.mjs",
-      "sha256": "63283d9999cdb48539f8a889613a1f7ca9db6df5b81d480f0c39798ebc4d73c8"
-    },
-    {
-      "path": "scripts/db/tests/r4-payment-refund-integration.sql",
-      "sha256": "df9c80e320fd540026521f3648ee8bca0d62d29f1b62e2dca0a0c119795a94d3"
-    },
-    {
-      "path": "scripts/db/tests/r4-payment-remediation.contract.test.mjs",
-      "sha256": "3df4dcba5cdc5c5224d3e2e5cf55d64ec55e46aad7e5e50ccd9b3523bb0c3d97"
+      "path": "scripts/db/tests/project-submission.integration.sql",
+      "sha256": "d633d7a35ea36cb82c9d6a719b7c3da1a99c6a0fd509cbb10013456128d0503a"
     },
     {
       "path": "scripts/db/tests/remove-streak-feature.contract.test.mjs",
@@ -399,7 +491,7 @@
     },
     {
       "path": "scripts/db/verify-local-migration-apply.mjs",
-      "sha256": "904f6eb7cfaa3f2e578fddb04e240610d919d65941fc17fa5b6b6ae48f87fa21"
+      "sha256": "3124ca5d927545dd9b13ad7c809a64c5f8fd210e7be78112ab6b14ccd9eec0b0"
     },
     {
       "path": "scripts/db/verify-migration-baseline.mjs",
@@ -415,11 +507,19 @@
     },
     {
       "path": "scripts/db/verify-production-post-migration.mjs",
-      "sha256": "5a354a9faef4730228cf08cc7969d35c0c765cdb924f4fce40fcbaabbe4cba94"
+      "sha256": "dd037d6c744c5e7517658c3a2ce04a76db4bd18c175dd259e058aa02fee1269b"
     },
     {
       "path": "scripts/db/verify-production-release-artifact.mjs",
       "sha256": "519e18681a88750dcbb6a9d5fed4e62fe47e0173f023a87345744f251528ff9a"
+    },
+    {
+      "path": "scripts/jobs/generate-sitemap.mjs",
+      "sha256": "84e514274ca57d22d316b9ef6d01f2d091974ebc26d02e39dddd029bc5f1315f"
+    },
+    {
+      "path": "scripts/purge-financial-storage.mjs",
+      "sha256": "a3e30c78c62722ebf10edc6700f514dbada48b7c6356cae54ecdbb74f7dd9f32"
     },
     {
       "path": "scripts/retire-learner-ai-edge.sh",
@@ -434,24 +534,96 @@
       "sha256": "074035f3004f35e72e7f7ded9766418a36ea62702a4161864787b246cad30215"
     },
     {
+      "path": "src/AGENTS.md",
+      "sha256": "5c071fe7685c19542267ce2272362702050a4126d7b5bbf4d78b5bb62a4e0c8d"
+    },
+    {
+      "path": "src/App.routerContext.test.ts",
+      "sha256": "5dd3bb002a8061401cbf5381e370dbac2d13606119abd4b7cb6c84716a922969"
+    },
+    {
       "path": "src/App.tsx",
-      "sha256": "001ee94c9a721caa1ee06395c43578fd5dcafa5c47befa61b5d1bf2c14a8bc12"
+      "sha256": "1f9253e7ca9542a77dd0ef5f3b424f0ec1b2d6b01d4855f06c63d4e3c5dab2f2"
+    },
+    {
+      "path": "src/components/auth/AuthBootstrapScreen.tsx",
+      "sha256": "2478598c23d6332d78c185051f159acaab472192d87321452655448f34b9cda2"
+    },
+    {
+      "path": "src/components/auth/AuthGateLoading.tsx",
+      "sha256": "ba42044338e030a80b3c1b10a49b97a6770bbc6198a5697a6e305ca969852060"
     },
     {
       "path": "src/components/auth/AuthSync.tsx",
-      "sha256": "8247a19fafa5fd1b98a5649c5f197e3f9b94764c411ab04260d5819a9b8afa39"
+      "sha256": "9dab565ce672c7ce60cd8c8b77503c4d8aa6aa26b575b37b4ce89d157bc628d2"
+    },
+    {
+      "path": "src/components/auth/RequireContestManager.tsx",
+      "sha256": "4685ccd38bc0fab3c9af619c33266bef30e3844fb11aaf65cf4165298d0c64a4"
+    },
+    {
+      "path": "src/components/base/AppSidebar.tsx",
+      "sha256": "eae926e0222f12791bfb4a67515d5cc79f2b568843bc2dfbb53880bff7ef2b85"
+    },
+    {
+      "path": "src/components/base/CredentialRealtimeSync.tsx",
+      "sha256": "18617adc7f05afbef8f7c6ef534b8502df4e9192d55f3648387d8adfb5ae3208"
+    },
+    {
+      "path": "src/components/base/PendingCredentialsWelcomeModal.tsx",
+      "sha256": "59e8489f06f278e9a787ee2e92ffa4860f20eaa4abd5b7d06e34fcddca3b24f5"
     },
     {
       "path": "src/components/layouts/Header.tsx",
-      "sha256": "08435461eb9993bbc3fd436b856ad7e31588e2898b290042a7b94b2fc3e307a5"
+      "sha256": "56c002873f89683aaa28718c3f1e1e481fc4ecde2c0c3e9a1e36965181ac05bf"
     },
     {
       "path": "src/components/layouts/MainLayout.tsx",
-      "sha256": "7a4c20a20054511f9ce60876ea4fa7cfd85d7f246ecb8e7dfae74350b4af2f1a"
+      "sha256": "02e0810e354b7fc39467ba9f189332269a3d32b3cd49732b36fa263136ada828"
+    },
+    {
+      "path": "src/components/layouts/NotificationBell.tsx",
+      "sha256": "01f255ea697f9e29453e12e02c2ac92377a1a34969c99bdbe88a79d4d1dcd8f0"
+    },
+    {
+      "path": "src/components/navigation/ScrollToTop.test.tsx",
+      "sha256": "5328e8cc88d3367c3f289caaadd524ff65bf528dc4240d832b1aa08b2e4a05e5"
+    },
+    {
+      "path": "src/components/navigation/ScrollToTop.tsx",
+      "sha256": "8a469f8b10aceb65b1d990f9270214a3e41c8bffdd22994e2cd295c641378aca"
+    },
+    {
+      "path": "src/components/projects/ProjectCard.tsx",
+      "sha256": "77e3124111e9ecfdffb93e92789fda5b604ab340c95c1c1aae0abbfecc40003d"
+    },
+    {
+      "path": "src/components/projects/ProjectFilterBar.tsx",
+      "sha256": "8e0170e506207c842b5aa1294d1c746b42d753081536deff79c13909cda2f819"
+    },
+    {
+      "path": "src/components/projects/ProjectSocialBlock.tsx",
+      "sha256": "300443d65495fbaa0e8d2738f7f3caef6abf9a702d12798c96cf68353e1d58a3"
     },
     {
       "path": "src/components/skills/SkillTag.tsx",
       "sha256": "009d57f637c5f64172632874218d188cd0b00eaa46589bb90a416e2b20eec28b"
+    },
+    {
+      "path": "src/components/social/FollowButton.tsx",
+      "sha256": "fcbdf4021b086caee17123ec7fa37293c4ba3541b8fe3615589edce3c1aae8df"
+    },
+    {
+      "path": "src/components/social/FollowerPreview.tsx",
+      "sha256": "1b018d848ea59d6141af966ae36f3a8c5fb841acba484a1daa244a85ef2ee492"
+    },
+    {
+      "path": "src/components/social/FollowingListDialog.tsx",
+      "sha256": "4ba805322ee69046b7693e6df69d36758eb9a6b670966d6f3c64501e151b2c42"
+    },
+    {
+      "path": "src/components/ui/LoadingBar.tsx",
+      "sha256": "a6f01ff39e547e0da41eeb0a8739f454c8803925506766ed42e78477a13842a7"
     },
     {
       "path": "src/components/ui/sheet.tsx",
@@ -459,23 +631,223 @@
     },
     {
       "path": "src/components/ui/sidebar.tsx",
-      "sha256": "03480817b3871692699e0257753c0b1a7e0260a1f65d4fa9ac3e80ca43c1d78b"
+      "sha256": "3756d8300b484e96ebf995529da079914cff4dd41b37e30ed3ca81b3f523b10e"
+    },
+    {
+      "path": "src/config/roles.ts",
+      "sha256": "78c6efe7a455c67d3c9ea7dfa15ef981fdfeba82c7509c0aa56a8f05127aa7fb"
+    },
+    {
+      "path": "src/features/account/accountQueries.ts",
+      "sha256": "4fec67e2ef12e8385a5bd61c0891f7dff727607e30f4b9621dbcaa1e30849c95"
+    },
+    {
+      "path": "src/features/achievements/achievementQueries.ts",
+      "sha256": "7963c4e52f0cf6640ddde1555c0b18bdb16aff7eac4242d53276f35a9d949250"
+    },
+    {
+      "path": "src/features/admin/adminQueries.ts",
+      "sha256": "c813125283eec9768a1ff40958eea4fbbf5b357fcaa0c15001b76258b8bf2f30"
+    },
+    {
+      "path": "src/features/admin/instructors/hooks/useCourseCountsByInstructor.ts",
+      "sha256": "cd2f15db7661076e1850f487b20333b6820a02cea538ba2dd65db7bf43386714"
     },
     {
       "path": "src/features/admin/layout/adminPageMeta.ts",
-      "sha256": "576274c2a9e96eeaa0eeccb7d1e5e9d90ff341e2cc7ca46c10601934d0106827"
+      "sha256": "e890b79fe9475f7d26f16ab7dd53a81ff95e960d04a9c1f48af8e34b12be7134"
     },
     {
       "path": "src/features/admin/layout/AdminSidebar.tsx",
-      "sha256": "c963d8028f88990e2cdfe945bcdaf52a1853a24bf3e6d68a4db2c78953256149"
+      "sha256": "0675cdc787cf8d05db38f053053f0b3722dc4b240b0ceb27fe1ce1b9df008a97"
+    },
+    {
+      "path": "src/features/admin/users/hooks/useAdminProfiles.ts",
+      "sha256": "bba36f2268773e34099a5d889edc9ebc374cfc235ca3098c1759517a6149a3c6"
+    },
+    {
+      "path": "src/features/auth/authQueries.ts",
+      "sha256": "c05702b1ec908d5bdda255b06934edff1cffa5173a9aef7641ebc931ab104c74"
+    },
+    {
+      "path": "src/features/auth/profileQueries.ts",
+      "sha256": "ed32ac8245ab081e6b72267ce82182461878fbb2949722445750461ee2e8b9dc"
+    },
+    {
+      "path": "src/features/career/careerQueries.ts",
+      "sha256": "979425e89acd2cbc4f63de26601375c7d8b096d09c3917e356c3026f2a146bef"
+    },
+    {
+      "path": "src/features/courses/courseQueries.test.ts",
+      "sha256": "4ade63f39f353b8a2549b4d4113e0a6366435bb8094503a1dd7f2a2a56a06b51"
+    },
+    {
+      "path": "src/features/courses/courseQueries.ts",
+      "sha256": "630ac117352a54a0d43253fa9a73239c7c0f4ba336092e1be81b683898705f29"
+    },
+    {
+      "path": "src/features/courses/instructorCourseEditorQueries.ts",
+      "sha256": "76add74e89321991b1727b5b02c24a85df410d1bd330b590927759f5a77bcfcf"
+    },
+    {
+      "path": "src/features/courses/quizQueries.ts",
+      "sha256": "7c79b678546372abe119f9b7db902534886ab761d3b37d49eec4a0d5e45e9ac6"
+    },
+    {
+      "path": "src/features/credentials/courseCredentialQueries.ts",
+      "sha256": "6e06c7e3452cb097d25d7e7ced5257f88e31317924d55c67bf8a27c169aae831"
+    },
+    {
+      "path": "src/features/credentials/credentialQueries.ts",
+      "sha256": "3379c7a8333013101d2309e94e49dcfbbcf14a180d05fad05e305dd3d8582864"
+    },
+    {
+      "path": "src/features/feed/feedQueries.ts",
+      "sha256": "8be3a567403ca960c42942c8c099fb4ac25685adcf5b279ee0c22e3dfc42d5ae"
+    },
+    {
+      "path": "src/features/hackathons/contestDetailQuery.ts",
+      "sha256": "2adbf648ae125db9c2eaab461a006bb18396751dae78b282802edbaf29be8377"
+    },
+    {
+      "path": "src/features/hackathons/hackathonAwardQueries.ts",
+      "sha256": "006449e8b9e97980dffcc96169c20e89f71d8d190349ce98a90af3e98a5ef373"
+    },
+    {
+      "path": "src/features/hackathons/hackathonQueries.test.ts",
+      "sha256": "2e9af3935f1ea84cdcc6394e10785d39de91955fb53236da15eb0a3585999388"
+    },
+    {
+      "path": "src/features/hackathons/hackathonQueries.ts",
+      "sha256": "494f66ddf973e1dd345642114e3309ab9732af87bb30c6130d23ebfb3068205a"
+    },
+    {
+      "path": "src/features/instructor/instructorQueries.ts",
+      "sha256": "696b6f455e81a0f948a11e41515ba4d78e7b8e4ac3d77779354d8c4cfde2de46"
+    },
+    {
+      "path": "src/features/instructor/layout/hooks/useInstructorCourseTitle.ts",
+      "sha256": "47edcdc03f0d42a048f8a642f265b1778bfdab687210e9de0a32c722886e0297"
+    },
+    {
+      "path": "src/features/instructor/layout/instructorLayoutResolvers.ts",
+      "sha256": "5de4d4fddfe927c62536450f64c9addf4bf3f051f49102d7307ab8c58bf0aa94"
+    },
+    {
+      "path": "src/features/instructor/layout/InstructorSidebar.tsx",
+      "sha256": "68acb01aed3952cd9484d0c6d231d73a39df4b30ac91cf5f844e9cc689d1df22"
+    },
+    {
+      "path": "src/features/invites/inviteQueries.ts",
+      "sha256": "797ebe050c1115b353e210dc3539eefb37120a3354d636889483ef8d1f75a238"
+    },
+    {
+      "path": "src/features/jobs/atsDetection.test.ts",
+      "sha256": "5176f12a8d455c25468fd685f01dfc9b22259c06ad47944fe4cba79478db76c7"
+    },
+    {
+      "path": "src/features/jobs/atsDetection.ts",
+      "sha256": "51a356fbaccf6c36974c1a5ab88735d4614234bb9cf1a6c7756124a842a40a9f"
+    },
+    {
+      "path": "src/features/jobs/JobCard.tsx",
+      "sha256": "a59233283bd89bfb72974f9160ddb7eb461373feda50bb78b8ca31f6a328564b"
+    },
+    {
+      "path": "src/features/jobs/jobFormat.test.ts",
+      "sha256": "62febaa86766ec4838d2bd83591ab861acd0eeeee636fbf019f73a5d4a42bd20"
+    },
+    {
+      "path": "src/features/jobs/jobFormat.ts",
+      "sha256": "01f76ce241aa203292840e0c2eb7ce600ccab0dedb07df09c2226628ca35ec7a"
+    },
+    {
+      "path": "src/features/jobs/jobPagination.ts",
+      "sha256": "ed7dc979c5a44301ccefae32b8c395c41d549d33b48788374168c7368702ea83"
+    },
+    {
+      "path": "src/features/jobs/jobQueries.test.ts",
+      "sha256": "5724298c4c3488704d37b531d02a0873e5093a62df144b3bbf9f010793d00476"
+    },
+    {
+      "path": "src/features/jobs/jobQueries.ts",
+      "sha256": "43de55361e227afe0d54de31595bd2955eca754c706591f71d609a4cc1f1d607"
+    },
+    {
+      "path": "src/features/jobs/JobsNav.tsx",
+      "sha256": "a088d88aca43fc0cf3237a4cbe93525c261c51818e148c7243273a860935a862"
+    },
+    {
+      "path": "src/features/notifications/notificationQueries.ts",
+      "sha256": "69f36ac214293dacd60068f1c03df74e8b2502624d8b30385b9c8bc0c908b174"
+    },
+    {
+      "path": "src/features/profiles/publicProfileQueries.ts",
+      "sha256": "6b3fb48020dc7c0bd4a50c28383ded709fe610d8e15f01cb286e65ece67ecac1"
+    },
+    {
+      "path": "src/features/projects/projectCollaborationQueries.ts",
+      "sha256": "c0886db2812855832f0f83117ffaa65f18063868b59da175ef602fa312808a47"
+    },
+    {
+      "path": "src/features/projects/ProjectMediaEditor.tsx",
+      "sha256": "4520d5c55b019f5793831692971110360c736ff4abfae548bac979c181053aa9"
+    },
+    {
+      "path": "src/features/projects/projectQueries.ts",
+      "sha256": "ff00a785bab2b10248520e524e00fbc535477ad4aa99aa52a20f5f731aedbbd6"
+    },
+    {
+      "path": "src/features/projects/projectSocialQueries.ts",
+      "sha256": "b6db3c35539697084215169f0e60c216fb4e08fa0fb8868488e3cfbd2a12c803"
+    },
+    {
+      "path": "src/features/projects/ProjectTeamEditor.tsx",
+      "sha256": "31297bc0ab3ce2848da70364bea612a0005ccb79234107ad767c33058d6d7f72"
+    },
+    {
+      "path": "src/features/search/searchQueries.ts",
+      "sha256": "9e753c6b53a845de2b59abb45e5db0c20c81f8591c033af0a2c2c6bbb8a76a2f"
+    },
+    {
+      "path": "src/features/social/socialQueries.ts",
+      "sha256": "8a74f0ded584b8e11e75ae5441bda63623560075950bc52ea027b941bce34e19"
+    },
+    {
+      "path": "src/hooks/use-mobile.ts",
+      "sha256": "6d1014d3ad3585ad67dfc295e06292d6909cbf3b5fa2bdac258910aec2e243b0"
+    },
+    {
+      "path": "src/hooks/useFeedUnreadCount.ts",
+      "sha256": "d96372eb75580d4890879eea504a5b71ab5670711c95ba061ada7387ee5caa72"
+    },
+    {
+      "path": "src/hooks/useLocale.ts",
+      "sha256": "ea7fa11811b8077b85e16a66a4e01fb9ad04409ebd111db92cd22f65e8c8c2d2"
+    },
+    {
+      "path": "src/hooks/usePageMeta.ts",
+      "sha256": "5d23135ad103074c24f711bbf0ecf9a53ec68f04137f85871afefcb0498fa90b"
     },
     {
       "path": "src/i18n-types.d.ts",
-      "sha256": "6e27f17cbe13ae5243f0c5846f5c85de8d2e78e04b4cb53994b00f97cbaa6457"
+      "sha256": "b7a8b241c145bce60f7c3fe118d1263e68cd260a109e5e86fd8d01ca206623f8"
     },
     {
       "path": "src/i18n.ts",
-      "sha256": "88487cb1c16b80e47e072790b94ba499720e6c21d42226359475f7d86462e335"
+      "sha256": "3024c90f349fbf678ff368d1e9d213c6e54de2ec4dfb96f3424f451416aaacba"
+    },
+    {
+      "path": "src/lib/auth.ts",
+      "sha256": "a9d1e04efbe10596cc342ef6a4480e0864fab3e3e4887eb76db5803d8ea5d9d6"
+    },
+    {
+      "path": "src/lib/careerTracks.ts",
+      "sha256": "ced59d101a752ee39739e63fec735e72d3df7d5bab2fbe339e8aa58ae412b508"
+    },
+    {
+      "path": "src/lib/collections.ts",
+      "sha256": "6603a1eec63020e4d36130b1fa810cb61335a021987e1e436224d7818e152ef4"
     },
     {
       "path": "src/lib/courses.test.ts",
@@ -483,27 +855,59 @@
     },
     {
       "path": "src/lib/courses.ts",
-      "sha256": "013b672d58a60f6edca61435890b679bc45cdf48aaea72fe10ba99993bf9708b"
+      "sha256": "1280d9409e441ce4dd85df77c99658970e46c7159517ba0a53b35b25479e3bcf"
     },
     {
       "path": "src/lib/credentialIssuances.ts",
-      "sha256": "f198c06e97b26264c4e627029d2ee02c5aeccb0b61137b4b032ba33dfb0fbe5e"
+      "sha256": "ef6d4a54fa2c3b4e292fcff55e547469378e0de0c5234b836ac7b50837f319ee"
     },
     {
       "path": "src/lib/credentialTemplates.ts",
-      "sha256": "d8dbfc035410efada0572504089534926577aedfb04d90199a263592abf67331"
+      "sha256": "fbd52c93454d583fc42c56e43b3d8b89c96117cc7cdba1b1732ab9f56aea892d"
     },
     {
       "path": "src/lib/descriptionGenerator.test.ts",
-      "sha256": "0a426b5dcf5e8c3311b71a4bf306bd64bb6cbd8af0781e47a0a8c548df569c57"
+      "sha256": "59f7b2e775277fb260ee22b79154d06f2dbfba8fb6c8dfcf495d074909eda9ad"
     },
     {
       "path": "src/lib/descriptionGenerator.ts",
-      "sha256": "bbcff1c607abeede1032f83e9851cfb0522349c970288d9ed2c4a9c8af679cac"
+      "sha256": "585f27f7226170881a708307cf2228cec1aaedf6d0e51c28e33398d6b6ee0b12"
+    },
+    {
+      "path": "src/lib/feed.ts",
+      "sha256": "9067dfdb5a7c479bd6b60feff244ac35b2d5522a4287b76d86f1934ac412cb47"
+    },
+    {
+      "path": "src/lib/follows.ts",
+      "sha256": "d30c4333d269e89d740b78a06a13cdf7e0f086e08156798cd1aa9a412c155d24"
+    },
+    {
+      "path": "src/lib/hackathonContract.test.ts",
+      "sha256": "c11e94e40dda907d3cf3ea4aa28e0c7bfdcda52622b1ab048d8d2a13db3488c6"
+    },
+    {
+      "path": "src/lib/hackathonContract.ts",
+      "sha256": "1a4eda7850f61ceb57cc72e875be52fa05bdd171505c074fa0c55b0b164d55c2"
+    },
+    {
+      "path": "src/lib/hackathonLearning.ts",
+      "sha256": "6802316910b938a970a2a8ecc180d3e5ae6527a2d9b4b4f618fc39f91e6f61f3"
+    },
+    {
+      "path": "src/lib/hackathonLocalization.test.ts",
+      "sha256": "8f760fb694701eaca3afbd2e7f3ef11afb50c066b5473cfd069b3675fc967d74"
+    },
+    {
+      "path": "src/lib/hackathons.test.ts",
+      "sha256": "c6a072503b4532ce0225ac1257383e2c0dea1ebd01130fa0479ec5ff87f82602"
     },
     {
       "path": "src/lib/hackathons.ts",
-      "sha256": "63d53432e131b5fba2538c5b0bb2e252bd20fba7b663377e20b1157a3a3a97bd"
+      "sha256": "07a580e5a2cf11ce664cfa56f15594114c9c1604dfa46df044ed85409019d2f7"
+    },
+    {
+      "path": "src/lib/jobs.ts",
+      "sha256": "f671841e1e2ccb11b0c855bdf7ddeaa79ef0f5558029c06d0d3983a132d7b40e"
     },
     {
       "path": "src/lib/lessonFormat.test.ts",
@@ -518,20 +922,36 @@
       "sha256": "6acbf9a00296d473696916a349af44b92651b05d3bc0bbcd9ec47a7c67211cf5"
     },
     {
-      "path": "src/lib/payments.ts",
-      "sha256": "2e3d29fa57fb89ce276626b6df5b441768812b8c12a6c7a69c16d68091a67ab0"
+      "path": "src/lib/notificationPreferences.ts",
+      "sha256": "014f197caa73901fc8b5cbd0edbd8174a3af94ae9169a5c0ee0ab2339bc3a837"
     },
     {
-      "path": "src/lib/paymentSettlement.test.ts",
-      "sha256": "77152453574fba173eacd9b1e309bd8689efb6ff053ebda401d31f1934f2d314"
+      "path": "src/lib/notifications.ts",
+      "sha256": "32a39f02ca924b5a6caed88f9de8eea1f73c4280e01c1a30d92be061829d856a"
+    },
+    {
+      "path": "src/lib/permissions.test.ts",
+      "sha256": "698764d318d56cdfc67bda7fdcfb7349d511602321ed9d6367cba980bf4544be"
+    },
+    {
+      "path": "src/lib/permissions.ts",
+      "sha256": "ca857a772eb498364367204c24926b3d19b72c122148bef21554fe29a219f30c"
+    },
+    {
+      "path": "src/lib/profile.ts",
+      "sha256": "8d65f91ae53c64b0dba163c7934c4fa486fd3d3b7ca351cb328a582c5f75631a"
     },
     {
       "path": "src/lib/projectCollaboration.ts",
-      "sha256": "4747543972634b9a20508d4059ea6228e0e0b1a725603dac47d59a0077e73c39"
+      "sha256": "19b13784208724e017707f2847452fe3d07546f5d9271e4fa782fa834580880b"
     },
     {
       "path": "src/lib/projects.ts",
-      "sha256": "961d7df4ed04aea2126654693a281b47fd1f3aa5dd4ff93cc4108c96ac02a2c2"
+      "sha256": "1c2bb3f6011653d410a2200cf9e8c55d815313b954627ee9eeacc22ab4998d01"
+    },
+    {
+      "path": "src/lib/projectSocial.ts",
+      "sha256": "c33fc8477b0a0d12541f2bfccdc558fb35c7fa6f6e85f168c2e52fe3261714f4"
     },
     {
       "path": "src/lib/projectSource.test.ts",
@@ -542,68 +962,144 @@
       "sha256": "2d46b998658122284e7aa1c489ab2c363d5534b1f8401c04ec2fa6eee3fe8c12"
     },
     {
+      "path": "src/lib/projectSubmission.ts",
+      "sha256": "4e9b440cd082de8b8712d66c370f5f0c05d45693d01f796720faf87cc71f1326"
+    },
+    {
+      "path": "src/lib/projectVideo.test.ts",
+      "sha256": "30d501d2259f493bdf747cfa782f7d8a96a9afd675e856685ca746996ad6a0ec"
+    },
+    {
+      "path": "src/lib/projectVideo.ts",
+      "sha256": "1cdb281fe92ec7f298eb1b1d780a4d3c260ae4c77a90b584f9d90698e306fc41"
+    },
+    {
+      "path": "src/lib/queryClient.test.ts",
+      "sha256": "e7bcfd15978c91ec0a2cae933de13a5f5a262ddc5894808a0b91c2a9512cef1d"
+    },
+    {
+      "path": "src/lib/queryClient.ts",
+      "sha256": "3e00bba6817139197494e2819b80aa16566cf6c37df03c9f533924050423aef8"
+    },
+    {
       "path": "src/lib/quizAttempts.ts",
-      "sha256": "dd8554866777b64939b6609f021cd74ce121cdaca7c6c9da57c178457ba1a1f6"
+      "sha256": "49accbc9629af4da681a245bc71371feb2413b3d193339226c075ea9e752621e"
+    },
+    {
+      "path": "src/lib/routePrefetch.ts",
+      "sha256": "5ba35680c13a983434da6455b3bfbc0590701dd8dd1e9df558bd90bf836a7042"
+    },
+    {
+      "path": "src/lib/search.ts",
+      "sha256": "4b3620a57b3212ce07709bca1828d76fa9a309b0f48ff845e863f4e2f6d45f24"
+    },
+    {
+      "path": "src/lib/sectionQuestions.ts",
+      "sha256": "aa1540867ab717fb0f8163d18d394ea4c7b297d6344ae9bb158ef657dec2ae90"
+    },
+    {
+      "path": "src/lib/slug.test.ts",
+      "sha256": "351b7cd0270785dc87ab2beda1e32b34142f2c86a605fc853ff605470a48e489"
+    },
+    {
+      "path": "src/lib/slug.ts",
+      "sha256": "f95d1b298a01eb34f6a33c91796e71ef16b7e604cc20816e265141580a46e51a"
     },
     {
       "path": "src/lib/storage.ts",
-      "sha256": "56ea9340263959ded21c8d01835c791a2252105139fd7f6f44ee948b7742d007"
+      "sha256": "95ec3f08d2fcc837a871253d34c5f69ff6ebe668d2a7561b20b3b0fdb2f62487"
     },
     {
       "path": "src/lib/supabase.ts",
-      "sha256": "2ffea888680796fc0560992173b625bc2e2a08329ab12b1de51340b8f43ec2e2"
+      "sha256": "28727b61be7064ac9daa34dbe12c1e1f7ce70d342f51763a02cf6736444c9cd4"
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "sha256": "d6226d6416eccc1413ca39ac5619ae7e30fd7ca49fd8b8d89b51e21218bb6472"
     },
     {
       "path": "src/locales/en/account.json",
-      "sha256": "b2457510e30bed669d6459af83792abf1d6203a4eaa933458e9db65c779891d6"
+      "sha256": "429af6690cdfe76827aa3fa5f42db6c966d18538fac9dd54a69edf624a11948e"
     },
     {
       "path": "src/locales/en/admin.json",
-      "sha256": "b182d52432e3708fba586ab764902729e1e816cda9f7769f7f5f3a6f5aa228e4"
+      "sha256": "996874cd4501d312d4a7b96e28a037687d75bf0b2c8d7b2f367e287842056ed4"
     },
     {
       "path": "src/locales/en/common.json",
-      "sha256": "23562e85e3ddc30510e32932b31739c4b96a244fbab55241b9ad1f65aa9e670d"
+      "sha256": "93f82904179e0b4cb0f0348af8ee3f80ab3b68aae2d7cf6a1b6290e130cc7edc"
+    },
+    {
+      "path": "src/locales/en/contests.json",
+      "sha256": "f2ba7f37481053040315f6a485159f564437c58238a81644542edd64c53a6307"
     },
     {
       "path": "src/locales/en/courses.json",
-      "sha256": "168ad4f3a669cdd5d12bde5fa2b8f2070f17e30c3fc4ad972bf092103d6574c7"
+      "sha256": "2c2850157500cf3f4244dfcb0b76c389c690c0c232d8cee0b7967a513a92b780"
     },
     {
       "path": "src/locales/en/instructor.json",
-      "sha256": "07117dd16eae6d03f3d75d1a379ae808755e5ba404713719b62e75f23dee754c"
+      "sha256": "8c26337f45d3af7bdf3faf71b19219484ebbc4183295b1eee9eeb44e8f3d8284"
+    },
+    {
+      "path": "src/locales/en/jobs.json",
+      "sha256": "fd675fd3acc926df831dbf659c6a68df607eb8680621a1bcb6200f9e2e907cf6"
     },
     {
       "path": "src/locales/vi/account.json",
-      "sha256": "f5a60307400ab10dcfdeb10e5767bcd97d23625e545578fae5eec21b600e2be1"
+      "sha256": "8e19857444d03ebbff8534c9290a47c1d6d137e0eb95b394dfb2902cd40b6416"
     },
     {
       "path": "src/locales/vi/admin.json",
-      "sha256": "6d7199245cc6755d86e7279802997db3733fd8e913a57fefe6aa53720314b084"
+      "sha256": "c50867e656d5ed96bcab05f56ca626ec6a03a5ce95382abf01c83f3c06107928"
     },
     {
       "path": "src/locales/vi/common.json",
-      "sha256": "6a9fbad8cce3bd3e6d3a718bb29ebaced073a031a879dc1716e5d33fd72ef5e0"
+      "sha256": "d684cec50313e185cf5592710c835ddc88dd2fc1fb0eca9f73e10f989f0f98c1"
+    },
+    {
+      "path": "src/locales/vi/contests.json",
+      "sha256": "9451a48185d34407297fa9828e404f8f9c5d4a1257ae5cab4432b0da7ac83336"
     },
     {
       "path": "src/locales/vi/courses.json",
-      "sha256": "c2a5859f6009abf04175916f3a0e756a78c30fe8110eb0deb67f6a577d2c784a"
+      "sha256": "31418c8809ac1d3c14a195dd196903b24124ec43b66587a3f0ac5fc123ce6c80"
     },
     {
       "path": "src/locales/vi/instructor.json",
-      "sha256": "21fe6e7a01c9d24c18e8e2425d1a7d7389ca7ca1cd30361544d4935eccaf5d65"
+      "sha256": "2620a181e9dbb76e7c7d269b460be563f7897be0f5c3704f5c4cc66b3c9a0b3e"
     },
     {
-      "path": "src/pages/account/AccountBillingRoute.tsx",
-      "sha256": "1d326b0eae474f11fce5dfed315791ad338717b48668fabc2d58704c98d897db"
+      "path": "src/locales/vi/jobs.json",
+      "sha256": "f8d9228d216d054861b7388432b2009d24d42f6a3d50bce5e27840061ba3cfea"
     },
     {
-      "path": "src/pages/account/billingPurpose.ts",
-      "sha256": "f1433bd962c1779fc4f51932324c1c88cffd420970f005cbdb352b1e61b340aa"
+      "path": "src/main.tsx",
+      "sha256": "028f863232458a4e4d95636e6c47231c8a3f38a8ddf27e41f12b8d6e2c1ae8d9"
+    },
+    {
+      "path": "src/pages/account/Account.tsx",
+      "sha256": "e4b3efab0a700ad17ef36b23de0a2d4628f0bec1a2b1f92c4186c8fd0dbbf6fe"
+    },
+    {
+      "path": "src/pages/account/AccountProjectsRoute.tsx",
+      "sha256": "27c7b15140f22ab1f4c490c0721a498b1d06de40e40cf3cae86dfdc81490bd9a"
+    },
+    {
+      "path": "src/pages/account/ChangePasswordCard.tsx",
+      "sha256": "8e2c871a96ef4bfd40dbf9916a7a0f93909f5d4a9ab7aff3111b690ed3ffdb1a"
+    },
+    {
+      "path": "src/pages/account/ConnectOCIDCard.tsx",
+      "sha256": "f472993721c1843be67f6b3168df93f2d25359822c8a95b3a39e78c1c7c6da95"
     },
     {
       "path": "src/pages/account/NotificationPreferencesCard.tsx",
-      "sha256": "be2440c90fa0b60594d1a2ba4285dad052d41724f03e66abb392574b285b6853"
+      "sha256": "481548c12173b8850c6bdcf2b5150978e4d66db35232e14836efc32410657a43"
+    },
+    {
+      "path": "src/pages/achievements/hooks/useAchievementsPage.ts",
+      "sha256": "19e13cd77e4a4731e99dfb4e74f51a93735552f270340b59797f7c36db24ae3c"
     },
     {
       "path": "src/pages/achievements/types.ts",
@@ -611,7 +1107,23 @@
     },
     {
       "path": "src/pages/admin/AdminActivityMilestones.tsx",
-      "sha256": "befb02d253856cbbefc0de3d181f857f178e8513f9a1c8f1e01aee6e524dc5a5"
+      "sha256": "b30391a0215ba9e3ddb3814a43afc57e4f458c9dcf2896a4b1971fbf087f68df"
+    },
+    {
+      "path": "src/pages/admin/AdminBranding.tsx",
+      "sha256": "7651ca98e05c46d7d6c44bf98e0653b361a3ca9b3d0dd478d905b5f83c749fae"
+    },
+    {
+      "path": "src/pages/admin/AdminInstructorDetail.tsx",
+      "sha256": "4eebbdc5724eb0c14efd3fdc5af20f70dfbdcb5033e36a33793bb7baae0ee35d"
+    },
+    {
+      "path": "src/pages/admin/AdminLayout.test.ts",
+      "sha256": "96d3410e706ee93f70bde33183f80b6df74340b4e343725f2194cab5cceb80c3"
+    },
+    {
+      "path": "src/pages/admin/AdminLayout.tsx",
+      "sha256": "f3c46b80e3b5037fb482c6c87277d1c51faf1d0aa6c5a4076006d83f3425a1dc"
     },
     {
       "path": "src/pages/admin/AdminManualMint.tsx",
@@ -623,31 +1135,215 @@
     },
     {
       "path": "src/pages/admin/components/ManualMintHistoryTable.tsx",
-      "sha256": "c10dbc950f4f87d757066f9b399f40ca993d25414a414d63aa6c0222c7f0facf"
+      "sha256": "f4b23f0d42cd35c0b3f35786b49f8d131acb66cea6331100154b277f5ca161f2"
+    },
+    {
+      "path": "src/pages/admin/components/ManualMintProfilePreviewDialog.tsx",
+      "sha256": "28e52e68748cd2139c70f796917c60542a9c504b4f182210997419e504ae7660"
     },
     {
       "path": "src/pages/admin/components/ManualMintTemplatesTab.tsx",
-      "sha256": "74f0005a2c358b482abf0e30b25d74c872961ffa0f7faadb587fe0d211649997"
+      "sha256": "a9d054b690b47df71063a5769a11760bc62bc05c4e67305c2e46bc9715a5b7a6"
+    },
+    {
+      "path": "src/pages/admin/hackathons/AdminHackathonEditorPage.test.ts",
+      "sha256": "ba0117f6cbaadf5b719082eb15853a548d0042a0c8976d05ee154c836cd6a54a"
+    },
+    {
+      "path": "src/pages/admin/hackathons/AdminHackathonEditorPage.tsx",
+      "sha256": "7d7b9e84214d44cdf4b4f24b70cf4af3e23797d39b1ec5bc7cca55dd39f510a4"
+    },
+    {
+      "path": "src/pages/admin/hackathons/AdminHackathonsPage.tsx",
+      "sha256": "db19bd75a2f4fc6efcea3f11cf45589409b35040c556562c78f2a10d080b9e22"
+    },
+    {
+      "path": "src/pages/admin/jobs/AdminJobsPage.tsx",
+      "sha256": "0f46cfb9f415d1b2a843157a85dd4b4754ada5de265b4e917390e1f6be777d1c"
+    },
+    {
+      "path": "src/pages/auth/ResetPasswordPage.tsx",
+      "sha256": "d40e84a40c26e33b469561ae89d02f0d86e78af1aeaed2e0d705c56603f234c7"
+    },
+    {
+      "path": "src/pages/auth/SignupVerified.tsx",
+      "sha256": "2e2c220b9fc656c1a6fd42e8d05c32c5be4fa0c88e840daab297b5a7f6197cc8"
+    },
+    {
+      "path": "src/pages/career/CareerDetailPage.tsx",
+      "sha256": "75d055f57e8474b65baefb273ad7adc78fe8ce95bfdbc80c09df6da7e78ab688"
+    },
+    {
+      "path": "src/pages/career/CareerListPage.tsx",
+      "sha256": "1cc7e740145b52e1b8843008b76698136a121d53149b3bccc5b3c96ddf78b681"
+    },
+    {
+      "path": "src/pages/career/hooks/useCareerTrackDetail.ts",
+      "sha256": "89daf15c354a8b3ab1dd08f8c00c6d92e80e3fa632b6e5ded3d86fe34daa6246"
+    },
+    {
+      "path": "src/pages/career/hooks/useCareerTrackProgress.ts",
+      "sha256": "217f3eb87cbf5a4e0e089c566e43fc28792e2913405bd3199733926f7509b7f1"
+    },
+    {
+      "path": "src/pages/career/hooks/useCareerTracksCatalog.ts",
+      "sha256": "cd56224689219c83cc0208ad70f1e8c5fbcd428a2684a3716e740bbd0cf6618f"
+    },
+    {
+      "path": "src/pages/claim/ClaimPage.tsx",
+      "sha256": "3efb79485ec73a95b7397b616ea1ea89b9b7458ea547ea61ddb665f1e25c279e"
     },
     {
       "path": "src/pages/course-details/components/CourseAccessPanel.tsx",
-      "sha256": "3051ed5dc56b8353626e51d45f2771d4cea62353b1f13152e30d0629f6f58c80"
+      "sha256": "eb309d732ff5bd8a118fad53d00f7072407c55f03225db746a27bcb45555494c"
+    },
+    {
+      "path": "src/pages/course-details/components/CourseDetailStates.tsx",
+      "sha256": "0aaabce6d1dde1dd39f17335bb924adb3be542bf27ec8f90650855674249b804"
+    },
+    {
+      "path": "src/pages/course-details/components/CourseHero.tsx",
+      "sha256": "b5c621096d997b7e9cda776019c9ed58a2a21012ec4394e42bea4aeaaca7b586"
     },
     {
       "path": "src/pages/course-details/components/CourseSkills.tsx",
       "sha256": "9a9ed0329acda08f3fc2fa72805c2f0f580667e886ac888a6a6350d5ab703051"
     },
     {
-      "path": "src/pages/course-details/CourseDetail.tsx",
-      "sha256": "85a8103d54985072b0c5a7d329946281d681718bdef0fdfb9bd8a041b46584e6"
+      "path": "src/pages/course-details/components/CourseSpotlightSection.tsx",
+      "sha256": "925da87bf97b268f5d9b2b99872e794213e4443f31d37b5b988e2aeba1eb1803"
     },
     {
-      "path": "src/pages/course-details/hooks/useCourseLessons.ts",
-      "sha256": "16aa20455ff7a3d149824815a839c6b772b615c5734a6631d55aa96d67d0dfe9"
+      "path": "src/pages/course-details/CourseDetail.tsx",
+      "sha256": "bed416689748480c7a74f6c518922a51f061eacbaf079576fd559e0de5bf1ac0"
+    },
+    {
+      "path": "src/pages/course-details/hooks/useCourseEnrollmentAccess.ts",
+      "sha256": "fb5dc60c7e340b3d34d9e7973a9a8fa7d9e9f063267d5bb3878988463a1da4e1"
+    },
+    {
+      "path": "src/pages/course-details/hooks/useCourseLoad.ts",
+      "sha256": "948ecf7685ef9c778c38fabf3f4fdd7fc3dc62dcbea54f051a116eea82c7bb25"
     },
     {
       "path": "src/pages/course-details/hooks/useCourseProgress.ts",
-      "sha256": "87f16a3346ea024f49ec5b170dfbd0593884a6e23b472b3a2a9ede0c54d4adaa"
+      "sha256": "dae2e1faaea459952fd80e33efcdea73f07d10649829986c3e051a32552d7a75"
+    },
+    {
+      "path": "src/pages/course-details/hooks/useInstructorProfile.ts",
+      "sha256": "50c6188c55938c2f31474b414de4c0df3be71ee5c24cfbdb27185cf179a17cfd"
+    },
+    {
+      "path": "src/pages/course-details/hooks/useSpotlightContests.ts",
+      "sha256": "bd66504f42b241f4a7060ee1b8525eb99f04150248875541f0564dfe906be86e"
+    },
+    {
+      "path": "src/pages/courses/courses-page/CoursesPage.tsx",
+      "sha256": "96797093ed46dc29de9b630fa0bd7f751d7c3bf539da4e5a48a78232ae5ce37e"
+    },
+    {
+      "path": "src/pages/courses/courses-page/hooks/useCoursesCatalog.ts",
+      "sha256": "cf706d91d74a9e9c8b06311686b309e0cf00b005bd0ef9e00c475adb66a227a1"
+    },
+    {
+      "path": "src/pages/courses/courses-page/hooks/useUserCoursesProgress.ts",
+      "sha256": "f32832be89167130378248f382c239173181f9e160f6b1b1042663e87a40ff53"
+    },
+    {
+      "path": "src/pages/courses/courses-page/utils/catalog.ts",
+      "sha256": "76be8b7e2400722aac9faac23148bc497f04cc8def1a8af65acf8c875922f117"
+    },
+    {
+      "path": "src/pages/EmailUnsubscribePage.tsx",
+      "sha256": "3cfe1daacd624c20185a09bb102a07ba19cb0c86b94153be8a583c7987139563"
+    },
+    {
+      "path": "src/pages/feed/FeedPage.tsx",
+      "sha256": "09c6437d825448ee3cf7663f6d662b555a6ed65dfaaa9f42f829ecdc28d3f62e"
+    },
+    {
+      "path": "src/pages/hackathon-detail/components/ContestDetailApplicationsPanel.tsx",
+      "sha256": "9343f49a4a34483d696d26622984fcc5c651d062b83033326eebc48ea94b2c54"
+    },
+    {
+      "path": "src/pages/hackathon-detail/components/ContestDetailAwardsPanel.tsx",
+      "sha256": "071d15b019c2b9ab13028c0cb02d12fedbcdc057f52d0e72b5fa5dc77633e4c1"
+    },
+    {
+      "path": "src/pages/hackathon-detail/components/ContestDetailGateStates.tsx",
+      "sha256": "819a8ca16de0be73eae5e8a5b9eed4bde1b151ce8ec68647f8d08068330cabf2"
+    },
+    {
+      "path": "src/pages/hackathon-detail/components/ContestDetailJudgingPanel.tsx",
+      "sha256": "2e5b61ce3b112285936d3893d09db28b50c3066d6c7e76a6a8931cd151350d30"
+    },
+    {
+      "path": "src/pages/hackathon-detail/components/ContestDetailParticipantSubmissionCard.tsx",
+      "sha256": "280f0cec541370d274e51975fdce6710a7c1539dde3ab0e43ef43bb1d75f19ed"
+    },
+    {
+      "path": "src/pages/hackathon-detail/components/ContestDetailSubmissionCollaboration.tsx",
+      "sha256": "967bc07fd49d67447752b39f89d84f4c720d3acc403abefa0a69c757a0722a0e"
+    },
+    {
+      "path": "src/pages/hackathon-detail/components/ContestDetailTranslationsPanel.tsx",
+      "sha256": "ed8a4a95b17ba7468abab351dad089f9060d72d7493cb407c21da74c704744cd"
+    },
+    {
+      "path": "src/pages/hackathon-detail/components/ContestPublicProjectsSection.tsx",
+      "sha256": "efb4e2040cac7da9e18de8472e5b34435497d02e158916f9aeed2c541eebf183"
+    },
+    {
+      "path": "src/pages/hackathon-detail/ContestNew.tsx",
+      "sha256": "91baa7bfa111893fb35db82fde9df3c41f7618462bcba2cec74380ed76e4b0d0"
+    },
+    {
+      "path": "src/pages/hackathon-detail/ContestPublicLayout.test.tsx",
+      "sha256": "5dee452eedff92694b8fb4f61e5ab1e5aef8546044ef02cfd7e24a96a337d4b7"
+    },
+    {
+      "path": "src/pages/hackathon-detail/ContestPublicLayout.tsx",
+      "sha256": "d94e1322d92e81fd24b8931f67269f49bb1a29d1d588e491c6d6f044663aafa7"
+    },
+    {
+      "path": "src/pages/hackathon-detail/ContestPublicPage.tsx",
+      "sha256": "f2d4872a52d85e4f8b2e46b7254d08776a205554221659c4ede6fcdc3c663a93"
+    },
+    {
+      "path": "src/pages/hackathon-detail/ContestPublicTabs.test.tsx",
+      "sha256": "c25f4c02176177efa211c10ea6051cbce5d09201f527f5749b6a40b36dd268dd"
+    },
+    {
+      "path": "src/pages/hackathon-detail/ContestPublicTabs.tsx",
+      "sha256": "cadf13e517162618076d83acd736afd82b5197929ad405ea210a55411c776339"
+    },
+    {
+      "path": "src/pages/hackathon-detail/Contests.tsx",
+      "sha256": "a12c7c31dafa21bc066c387d061b84bdf967f62ba8fdd0cd1b1b2b112ae58799"
+    },
+    {
+      "path": "src/pages/hackathon-detail/hooks/fetchContestDetailPayload.ts",
+      "sha256": "3fd659618a891366e8289471cbf8362c7391f06d9fab3be301505a4d7cb875a5"
+    },
+    {
+      "path": "src/pages/hackathon-detail/hooks/useContestDetailOrchestrator.ts",
+      "sha256": "0b98eb358af6b074067408595f270819b43718df3dfee7b1b1fcf70259ce1f1e"
+    },
+    {
+      "path": "src/pages/hackathon-detail/hooks/useContestJudgingWorkspace.ts",
+      "sha256": "9835d04ed2c5f2bc248facf682949a222db6de5a3991511e9572f16778d41cac"
+    },
+    {
+      "path": "src/pages/hackathon-detail/hooks/useContestLearningLinks.ts",
+      "sha256": "40b159cca649b7dd7f7f5976daea561a5d2b6025b9201ba7a7ae37ac3750a99c"
+    },
+    {
+      "path": "src/pages/hackathon-detail/hooks/useContestLoad.ts",
+      "sha256": "f2af35d3a0fb4cd68b1d54b7bb2b86f03b3c926311da52951ff82d0876529230"
+    },
+    {
+      "path": "src/pages/hackathon-detail/InstructorContests.tsx",
+      "sha256": "68de58a929bda6e4178d922f0d0025350f7706fc97d7ab4ebc2351980d410843"
     },
     {
       "path": "src/pages/hackathon-detail/utils/contestLifecycle.test.ts",
@@ -658,24 +1354,104 @@
       "sha256": "e321eff286f6fd755c9f4bcf152f64df8c3ca036fb9fa677ae6f5f799b3bb3b0"
     },
     {
+      "path": "src/pages/hackathon-detail/utils/contestShowcase.ts",
+      "sha256": "29d78515375f0c3a4619febf88ef6af2752d63e0db2c6fd6a0f79ebd983cf373"
+    },
+    {
+      "path": "src/pages/home/components/HomeHeader.tsx",
+      "sha256": "5b21fc74d8dd74bb8c6afbbfe4e0908f3fd87b0e9a282db818e611a88de4d5b1"
+    },
+    {
+      "path": "src/pages/home/Home.tsx",
+      "sha256": "69d32911f54b2a1a5fa385fc19a1bd03bc3e82677df730bf75edc210c998a220"
+    },
+    {
+      "path": "src/pages/home/hooks/useHomeCatalogAndContests.ts",
+      "sha256": "5cb60abf4e02020959c93a4e96fee6e926eeeeeddc3d86dfa6af3dd3d50cefd6"
+    },
+    {
+      "path": "src/pages/home/hooks/useHomeUserDashboard.ts",
+      "sha256": "7e9e0af616de251a0894be32984afa353d830d74aa012fc3436d738de69b4204"
+    },
+    {
+      "path": "src/pages/home/queries/homeQueries.ts",
+      "sha256": "ba5173f7506d8eb25bf2dfc870f98f6f25a972a958470d548fd4a80eea473d9d"
+    },
+    {
+      "path": "src/pages/home/utils/homeTypes.ts",
+      "sha256": "c753fb2f96a2828d80f56bd842728b1f54940e49e77a85669dac26a321c0ddb3"
+    },
+    {
       "path": "src/pages/instructor-career-tracks/InstructorCareerTrackEditorPage.tsx",
-      "sha256": "12491f58684a2e9d8056804707dd03b576ed8bef6f89d5671907281789bce005"
+      "sha256": "0ccc1d9d8b6150820ab449daefb1584c0151f4e80fc0630f02062de64f2f9c17"
+    },
+    {
+      "path": "src/pages/instructor-career-tracks/InstructorCareerTracksPage.tsx",
+      "sha256": "9aa043813a955b4270c5b20fd2531675d388a361e6f30f44809bd0330f590f82"
+    },
+    {
+      "path": "src/pages/instructor-course-edit/components/CourseOcbCredentialSection.tsx",
+      "sha256": "89a60ff80cfd1e08dd52e5a94c3bf0750561c1462a16bd854cc063d91fd50c3a"
     },
     {
       "path": "src/pages/instructor-course-edit/components/QuestionGeneratorDialog.tsx",
-      "sha256": "65c76feb034948d35aeb117e8c978876b9acfeeb3dda5db7e457405e15624488"
+      "sha256": "3dd4979b8581987e16ee09c9c6243e9facb0b6650272fecd415df93de93d98f6"
+    },
+    {
+      "path": "src/pages/instructor-course-edit/constants.ts",
+      "sha256": "ca845cbe955dadd9ea19aed495d4b29e3274ea66c09b52da25eff3e1f8ad897f"
     },
     {
       "path": "src/pages/instructor-course-edit/InstructorCourseEdit.tsx",
-      "sha256": "3aeecb7676e12c20a2679be78944ca3fdb4b05da77ad1389c7cd0a7220ad55b0"
+      "sha256": "f6f9fa974e8204c47f40246e423e7b9a54f8f58ea171563577a075b610c9b2bd"
     },
     {
       "path": "src/pages/instructor-course-new/hooks/useInstructorCourseNewForm.ts",
-      "sha256": "844d8ea49ab29baf09a0954fc8eaaed9c5fb2c12dbaac01ba80f29771d8fc2fc"
+      "sha256": "8a9ea2579e6e465f019804b7345055ef1489729bedabb8b46991ab7e7b451d53"
     },
     {
       "path": "src/pages/instructor-course-new/InstructorCourseNewPage.tsx",
-      "sha256": "52103cfee426a994b82eadcf38eba322cae261b458877fb2222b02ee6f240063"
+      "sha256": "76b5c429282f44b05f2f506f9d528ffb65165036ae057b991aa9117836e6e61c"
+    },
+    {
+      "path": "src/pages/InstructorCourses.tsx",
+      "sha256": "322c160fea31d4e05cdcb8cb678440d2960df26737800e6f6144bd1463f87f7f"
+    },
+    {
+      "path": "src/pages/InstructorDetail.tsx",
+      "sha256": "097b4818e715f30e5255a85eda63799d5ddb9d2df337292406f3c2abd0c3c5df"
+    },
+    {
+      "path": "src/pages/invites/CoInstructorInvitePage.tsx",
+      "sha256": "db6d7ffc56825916f7fbd1dcfc51ccca4a7caa89bbee561454de4ca52710c955"
+    },
+    {
+      "path": "src/pages/invites/ProjectInvitePage.tsx",
+      "sha256": "3bf5c37760ae5342c49e0fda6544a73a21f17c34e4a7b8614c11c1d9cbe94fba"
+    },
+    {
+      "path": "src/pages/jobs/JobDetailPage.tsx",
+      "sha256": "6c3f5d64367c2ff5d15e863439bdf23b4ae83e7f380532ef6947ddf899d69262"
+    },
+    {
+      "path": "src/pages/jobs/JobMarketPage.tsx",
+      "sha256": "8fad8554257c5a52ee93e7e7a2db45f4e20521fff0779db68a6055ca1bb17db5"
+    },
+    {
+      "path": "src/pages/jobs/JobsPage.tsx",
+      "sha256": "d4987c9ef9ba696b50fed8ca9dfbfa582d6353b3b331c096c13d4e00a37cebb4"
+    },
+    {
+      "path": "src/pages/jobs/UserJobsPage.tsx",
+      "sha256": "242a04c4bb23bb1bf0ec4cc3898d9c111d58ec0b9ad501a642f8767ab902fba1"
+    },
+    {
+      "path": "src/pages/learn/components/FinalAssignmentPanel.tsx",
+      "sha256": "90209b5d0e441b8dd1c4b2fdae95474901df575add8ce8e48c2d420e9350e731"
+    },
+    {
+      "path": "src/pages/learn/components/LearnStates.tsx",
+      "sha256": "ced8a04fe54505a6670503928fdb9537301afef0ddbe54c4b4df887a4b9dcd60"
     },
     {
       "path": "src/pages/learn/components/LessonPlayerCard.tsx",
@@ -687,39 +1463,99 @@
     },
     {
       "path": "src/pages/learn/components/LessonQuiz.tsx",
-      "sha256": "82d327c51f86d9e77301ff2bebbc748fc842c135a6529f593a8327118400cb88"
+      "sha256": "c1bb1bdfcdaddd5f1465a143edfcfda982db4325e4d01cf40f936ebbe36ec060"
     },
     {
       "path": "src/pages/learn/components/SectionQuiz.tsx",
       "sha256": "d3c748a47bfd0347462ccbcc659f1116f422611fa23a672eec229e64dfd9621c"
     },
     {
+      "path": "src/pages/learn/hooks/useLearnCourseLoad.ts",
+      "sha256": "f78d38389bd0c2e44f61e27bdbc7ad2a9cae6c6c9136db9a1477f114badaafa8"
+    },
+    {
       "path": "src/pages/learn/hooks/useLearnEnrollmentAccess.ts",
-      "sha256": "5947f2e67254e878211925cff7501e2c2269cfc3e766a0dfcfd530d4f5666f4e"
+      "sha256": "390480471ed07ce6015ece738d33032c9c48a35bb4e1562454463c4f6eba49ab"
+    },
+    {
+      "path": "src/pages/learn/hooks/useLearnProgress.ts",
+      "sha256": "8244eee99a4e0ad5e3eacfc324d999573e929d3bfb24cd47faa376bf4e7c3d8c"
+    },
+    {
+      "path": "src/pages/learn/hooks/useLearnSubmission.ts",
+      "sha256": "5befa2578d1d8304ed66e164adf1ac288cc08515037b2aaaf19fde270e377155"
     },
     {
       "path": "src/pages/learn/Learn.tsx",
-      "sha256": "793281898b746039daae9bf96b322aaa8d392bdf8d4a442e2468b8e222af4144"
+      "sha256": "c205724ca2f22967b332a9c346f2c7ca140ca50a6894943d702776c55a5e5836"
     },
     {
       "path": "src/pages/learn/LearnLayout.tsx",
       "sha256": "76d80f4cc0fa975aec7a5fd8c63e961233d1adf28c8dd84fd72e04cd072c089a"
     },
     {
+      "path": "src/pages/login/Auth.tsx",
+      "sha256": "55251e00f94198302e484cefe671923bb2284bf780a9a214b2ec32a14aaaf0dc"
+    },
+    {
+      "path": "src/pages/login/components/LoginMfaChallenge.tsx",
+      "sha256": "ee6c79423dc79efd2f2fc07f3325cd3c46b549e9bc03e87d88b4d4a23a40e48b"
+    },
+    {
+      "path": "src/pages/login/LoginForm.tsx",
+      "sha256": "508247acbfcb7e1b728039071fe7476a2db6b3c424ebfec1cf1c618dd7623183"
+    },
+    {
+      "path": "src/pages/OCIDRedirect.tsx",
+      "sha256": "c213f15c1c6661b087da45bc9f6eb742dd01af69389f0711d6e5b9bcefc5cf28"
+    },
+    {
       "path": "src/pages/projects/ProjectDetailPage.tsx",
-      "sha256": "9d65567ce330ea5bdfead755363edb1a84f50ae57aa8c8bdd877dee96f24cafe"
+      "sha256": "e63c42e5aa158032c7f9d00f5a4f47c18d5d69c40b1e24f54e17be2d7dd58a09"
+    },
+    {
+      "path": "src/pages/projects/ProjectEditPage.tsx",
+      "sha256": "85af89893730673c577c2a6c5da38eb14586b350e29a07fdd9a113ffead2c8dd"
+    },
+    {
+      "path": "src/pages/projects/ProjectNewPage.tsx",
+      "sha256": "4d53c193a0526cee290caaffd2e18b06ca78c81774348914bd18f470dae8d3d9"
+    },
+    {
+      "path": "src/pages/projects/ProjectsPage.tsx",
+      "sha256": "1d6c169531a46ed39e69aa74151fdb6e13b12e4dfb5450a96170e9fe122c6ad3"
+    },
+    {
+      "path": "src/pages/search/SearchPage.tsx",
+      "sha256": "288d1e1770e707d1e44ba4cd7f9c6ddec4e58d50a979e059ec3b03cd8105f17e"
     },
     {
       "path": "src/pages/users/user-profile/components/UserProfileActivitySection.tsx",
-      "sha256": "602e96429883a1dc451f48355644e6d8744fb689ac72347aab614e765052f768"
+      "sha256": "d981d9c1c48014b4e63aee58d09b8e7c85eeb8373d296c87e5a083ed56db2e02"
+    },
+    {
+      "path": "src/pages/users/user-profile/components/UserProfileContestsSection.tsx",
+      "sha256": "984047774c69286ba04800c6c7e0a3e986f52c58d95ed34d8b0d82a2ae463e39"
+    },
+    {
+      "path": "src/pages/users/user-profile/components/UserProfileCoursesSection.tsx",
+      "sha256": "c3a0b325e9c6feb9f62a27bc19efab3740b33c17a7762088d49a9dd422390f00"
     },
     {
       "path": "src/pages/users/user-profile/components/UserProfileProjectsSection.tsx",
-      "sha256": "2da9a304040db440cb0b22fdb4d48b2892b06a8ac816d102b353850c31cad5fc"
+      "sha256": "fb0f6fcaa575336a0a3fff7e7a3ef87c2d3e95bb96df56f3652170250c91be62"
     },
     {
       "path": "src/pages/users/user-profile/components/UserProfileSkillsCard.tsx",
-      "sha256": "87ae09d3aaf4b57a05719b09047a4a16fe1419e3e3a95d03d971c2ca573812ec"
+      "sha256": "0ac1c3bd544f245dd77448938151f7ce58e7d59c796fd4d87b2f566ecf2bd061"
+    },
+    {
+      "path": "src/pages/users/user-profile/hooks/usePublicAchievements.ts",
+      "sha256": "6dfc2cb4f6e581cf85b39cd248b9558e4bb5d70b091d1d3dae45cd24780dd9bc"
+    },
+    {
+      "path": "src/pages/users/user-profile/hooks/useUserProfileLayoutData.ts",
+      "sha256": "13b603722d19a70f64c3ecb01312662f941ce251c469509d2fa582d62056c00d"
     },
     {
       "path": "src/pages/users/user-profile/UserProfilePage.tsx",
@@ -727,39 +1563,71 @@
     },
     {
       "path": "src/pages/users/UserHandleRedirect.tsx",
-      "sha256": "e84115683dd7c876f67fa66f5265fb7352dfa496ec386de684a60d5178e567a9"
+      "sha256": "6316ffe7e5ada2a4ef31da332fcd0821d218381ae6ee9a5264f037c046a641c9"
+    },
+    {
+      "path": "src/pages/verify/VerifyCertificatePage.tsx",
+      "sha256": "858a35d59ca32e5d916479fc94c3ca2d1570bcff8357471a7f2a70200625d552"
     },
     {
       "path": "src/stores/authStore.ts",
-      "sha256": "356d56b8a993db3799cc350a87592ddde18662020a1fb9e8f2551c630a66df7e"
+      "sha256": "728836f4a7c57a289f58b98b5023b558c05d7dc70dc6386c3dfac822e169066e"
+    },
+    {
+      "path": "src/styles/globals.css",
+      "sha256": "74b360cbe9e29c83e268c2c2d8e2b0da48a356ab9cdff24c226789099283b736"
+    },
+    {
+      "path": "src/tests/issue343.regression.test.ts",
+      "sha256": "923ad9c312091794b0904a48f85ca941a03a50716fe4c42b43459ad7458fe3ec"
     },
     {
       "path": "src/tests/waveB.retirement.test.ts",
-      "sha256": "a83583a0da930980b6f6012d7e11c02a3051d32932575f1daed54c62de61f4e3"
+      "sha256": "8b40cf966dcb6c7c2d7792cfb42599089fc7407358782b49e40794e0ddc4f3f8"
     },
     {
       "path": "src/tests/waveC.retirement.test.ts",
-      "sha256": "a0b4ab5c738f7ad3f08ff38b43ef0163f25b05e71f0c63c7e98be3c46840dcbb"
+      "sha256": "ea086fad278fa4fd68a9ca9ae929a05b18578188f9f66bc0c329767dc44c72e6"
     },
     {
       "path": "src/types/courses.ts",
-      "sha256": "320dfbeb73b6e3499d8a10beb6263ff456fd078b7e2f8971bf01a3b422e2ca0c"
+      "sha256": "c8bec74e6a4efe3f209b59e3821ef2ffabb69fc154fdb17227006167733d9616"
+    },
+    {
+      "path": "src/types/database.ts",
+      "sha256": "f4ca4d9f70e24518205721edc2d88aeb3c59d11c8d66abc3a0899bfd9774e699"
     },
     {
       "path": "src/types/hackathons.ts",
-      "sha256": "28472158995e985307cf96b22b065b4f0ba953434ab52cf06bdd284e7d740a63"
+      "sha256": "6abe4fde395089596d01174724e7162b4b79c9b1d208a0c56c1b484a14695ede"
+    },
+    {
+      "path": "src/types/jobs.ts",
+      "sha256": "940cd31b7ba673a16aa67e31d8be2cff0576e121b0a4464a1962a8e2491a6eaa"
     },
     {
       "path": "src/types/projects.ts",
-      "sha256": "40cb3d543c101a8f9f086bd16daec557cf1f948424fce0839a322719527953f8"
+      "sha256": "36763cb7938c1db96382b3ac494396c6f3b10255cd558b11886bbe56cc320be6"
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "sha256": "be561626b509dad6611be8a7ab3f6d02de5a2473898dfc3a10c604968c7f8791"
+    },
+    {
+      "path": "supabase/AGENTS.md",
+      "sha256": "ebafb55537ce9c8a2cad10f54d8f9b3fc91708604867c04e0663ab74fbcd90d1"
     },
     {
       "path": "supabase/config.toml",
-      "sha256": "148d5d2f9034b621b8735d79a5a8e8601dd0da7de959abf295ba535596140c6a"
+      "sha256": "9e3b379c1c581f0f7d767d3b561ab40218e6c1f621083529f08a26b727d8b514"
     },
     {
       "path": "supabase/functions/.env.example",
-      "sha256": "ce0285beedf0cf3c76c70723003def8a4f7e27cd46b87edab7bdc1bdb93ce3b0"
+      "sha256": "e923fe073fdaab1fc34427d5deb4fadae1cb156b506de4ce36131da17159b390"
+    },
+    {
+      "path": "supabase/functions/corelia-api/certificates/handlers.ts",
+      "sha256": "e6b3b93dc2cbe93d3ac34bf843ff1b30d438d26796702d5c4be702877897d422"
     },
     {
       "path": "supabase/functions/corelia-api/courses/completion.ts",
@@ -775,7 +1643,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/credentials/check_course.ts",
-      "sha256": "fce73c156e2f613e73119fc3b5870db8c53024830d92194f1380597e2ace5819"
+      "sha256": "8243a297ade69cb69a8fb6f0e222fe54b5038a43068cbb2dc59583d7c4c9a548"
     },
     {
       "path": "supabase/functions/corelia-api/credentials/retry_pending.ts",
@@ -787,27 +1655,107 @@
     },
     {
       "path": "supabase/functions/corelia-api/index.ts",
-      "sha256": "3af95ce962ec103e867124ed7eaa3a598e575e9e47a1285a1a9aa6bcdfa983a5"
+      "sha256": "78ca7a1a5bc5fede11e553a51175cf2e8c86f84e2f375323669c9785927f8f5b"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/adapters.test.ts",
+      "sha256": "8482b67f127edac8be1311f4a42a0ef5d4891e3c89fc477d7de86cb76d3d744c"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/adapters.ts",
+      "sha256": "172d9b737dacfee7e0a4f1ffcb38c44922b949e4fef5b2026d6f909854e63816"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/classify.test.ts",
+      "sha256": "a72aa694fb4ab7f2dd80c4b42c61f87c199ba26ac5410390bb55e00013df83dc"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/classify.ts",
+      "sha256": "830dea54c3b656724d55595c7e5b675db933c49ce54ed161fa4aed632178b987"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/dedupe.test.ts",
+      "sha256": "0bbe5c916f7209f7cbdd16b9ae588c8b197273cf4fc3a47ac05c62e6b782b7b3"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/dedupe.ts",
+      "sha256": "675410613874dff98a6402126c0614a9d6b5d97a8931178727f6fe81ee0d2227"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/handlers.ts",
+      "sha256": "f70d978084641797986299e9be7833f42147e9dba358dcb9e782d8ac95030172"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/normalization.test.ts",
+      "sha256": "cf889b1056001ca49d8207c5ce8de10240024fc7a9cffff9a23e1fa13b94f3d3"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/normalization.ts",
+      "sha256": "da3ebac364c680c485ca95b99545d48db9d44b6c44f7aac9ffc353b6813c53ec"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/operations.test.ts",
+      "sha256": "79ad42d21d3924a854ddfb71baffe2dbaa16ac0469744f079258cd5e35836372"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/operations.ts",
+      "sha256": "3e761260290dc08cbbd074c4a5e061c10b77a69350e021059919ad06ec924f99"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/pipeline.test.ts",
+      "sha256": "b9fed54c1c5b51d4abe309b53b7f56a09b2dfab6d8fe21f795a5e2233ecce289"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/pipeline.ts",
+      "sha256": "077dc851593871545c14639b35e8c6f68cf06aabb7a45750f100ec805bbb5bd8"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/registry.ts",
+      "sha256": "31f39d8aa3dfca50c4987c11b9e0df2852653c2f2a8d182313a8d7a14f0990b0"
+    },
+    {
+      "path": "supabase/functions/corelia-api/jobs/types.ts",
+      "sha256": "1a37b6b4a395bd6cd913efa0fbad628ed54ac61aad557255a6656526349028b5"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/http.ts",
+      "sha256": "6118a68939110e97ae8b817cd9fbac18f98db604c9b758a553fa419b8c1475fe"
     },
     {
       "path": "supabase/functions/corelia-api/lib/supabase.ts",
       "sha256": "fc8cb28a0c12ebb4728c38e4eb7ba6da4e208d5b6d84d2a3e8e99beaea18762b"
     },
     {
-      "path": "supabase/functions/corelia-api/payments/grant_access.ts",
-      "sha256": "e916186c6c734dd429388d05e6e8e90ae61eacd636452706305bcd84d24962db"
+      "path": "supabase/functions/corelia-api/notifications/unsubscribe.ts",
+      "sha256": "8f6c9c05983772f1be51704d03b77887e5f2b761d2f18b4436b5a165e62d096b"
     },
     {
-      "path": "supabase/functions/corelia-api/payments/handlers.ts",
-      "sha256": "f5bab3457b13263ba7e0d19a9eae170dae964c7de31312702061f6d91fcf8d75"
+      "path": "supabase/functions/corelia-api/projects/handlers.ts",
+      "sha256": "6a07fba8729b5e7e39f3863bb241bf095ee8f7e3d10ba5d1e2d98e6c7c875de7"
     },
     {
-      "path": "supabase/functions/corelia-api/payments/types.ts",
-      "sha256": "a20fc0398b8e54fa16a950e31e15f137ae7ec99bd61e2aaebce3f8a1bdaaa814"
+      "path": "supabase/functions/corelia-api/projects/openai.test.ts",
+      "sha256": "c6407181f01f629345f7a028d34448ea7faf3f1424dd41fd05a0c12fb775715b"
+    },
+    {
+      "path": "supabase/functions/corelia-api/projects/openai.ts",
+      "sha256": "5b3d03eb10849cbf211eb632f09c3a0052a307f8bf68021a108967e4383c6dd1"
+    },
+    {
+      "path": "supabase/functions/corelia-api/projects/validation.test.ts",
+      "sha256": "cfaf5d91304b8f2a892ccb73116e571ce27f5dd8c6b57735056a98859f5ac3f5"
+    },
+    {
+      "path": "supabase/functions/corelia-api/projects/validation.ts",
+      "sha256": "8a19d4f83fb2f39a0ffc83c6d30d3b49a2037ec97af1c7e58dfb8d137de73736"
     },
     {
       "path": "supabase/functions/corelia-api/README.md",
-      "sha256": "5433125c07ec9a3393481526708c61b169d777816248bc23792c9891d61089b5"
+      "sha256": "9cabe10a4197c458a1be02d885c5727508d802247bd1549e598a7416a57735c7"
+    },
+    {
+      "path": "supabase/functions/cron-jobs/index.ts",
+      "sha256": "23fc8ff80c811b92c683bdd31d043bc12e08e5d25168f3f40bc3cb26d3eb8dab"
     },
     {
       "path": "supabase/functions/cron-learning-reminders/index.ts",
@@ -815,11 +1763,15 @@
     },
     {
       "path": "supabase/functions/generate-description/index.ts",
-      "sha256": "0f6d5633955f9d77d898cf7762dd75a26eced4580a4265254441074506e88627"
+      "sha256": "d744f4618be3afaa9d14cb8e4e1efd055ab616fe2075ffd72c59e7405bc3df1c"
     },
     {
       "path": "supabase/functions/generate-questions/index.ts",
-      "sha256": "cb0ba9d7170bbe605eff5d36323dbb94d9fea0d8668874d565f4e573ff9c9b5a"
+      "sha256": "b0b27df6151c6bbcd60ea8415484c61f2e01b07e33521c9b289c9e40fdab82e4"
+    },
+    {
+      "path": "supabase/functions/generators.integration.test.ts",
+      "sha256": "41888cc77cbe782877260a31ff48eb9148217d219c08675f393ec574adb60ed6"
     },
     {
       "path": "supabase/migrations/20260814010000_harden_course_completion_integrity.sql",
@@ -942,8 +1894,92 @@
       "sha256": "78262d7a1d193619b1f718e4f2efe23e6b81d6f4b5c1fd99584e6bf4227ab8d0"
     },
     {
+      "path": "supabase/migrations/20260831230000_remove_all_financial_features.sql",
+      "sha256": "92720d6a2cb4a7e1698e3593b466fdd8e307faa34b4559b3bc28f214c0c442ee"
+    },
+    {
+      "path": "supabase/migrations/20260831232819_restore_enrollment_rpc_security_boundary.sql",
+      "sha256": "6a4e867d49d07c827395bea8da5ec15bd415652e06c2441c1fa0a9f62c342ae6"
+    },
+    {
+      "path": "supabase/migrations/20260901002156_remove_dashboard_configs_and_tier_limits.sql",
+      "sha256": "a23fca0360617ab01153ff7aa1f53c744662eea63c17425bf0ea4832bdce1d95"
+    },
+    {
+      "path": "supabase/migrations/20260901093558_simplify_hackathons_and_projects.sql",
+      "sha256": "c3701a71925c32b018ae6835bfe4a521e5ac7892d302723dd2ae69535bbf6eb0"
+    },
+    {
+      "path": "supabase/migrations/20260901104414_harden_hackathon_project_rpc_boundary.sql",
+      "sha256": "e84ef4ce8f04ef62a0b2526aa943a48ac2c5cdc43c9c69fe941bd197dd7435c7"
+    },
+    {
+      "path": "supabase/migrations/20260903023210_project_media_ai_gate.sql",
+      "sha256": "513d76941b9c3441e47cc021a78ca61249387a7df8ec5f0b6e07b517296f2ef8"
+    },
+    {
+      "path": "supabase/migrations/20260903032312_disable_project_comments.sql",
+      "sha256": "a5875e7061c0ca46f150d040d67b5bc47a81dae6538b1703f67210f32768eb83"
+    },
+    {
+      "path": "supabase/migrations/20260903033132_jobs_mvp_foundation.sql",
+      "sha256": "aceadf822ac611cb1f73e1d0f1dc88e98803c9926b1e30f92f1de4ed56c00489"
+    },
+    {
+      "path": "supabase/migrations/20260903055155_jobs_advisor_remediation.sql",
+      "sha256": "2f8016520f7cb49dde4aad31c4406ff3623901b8a60d89755bb45b8177040d69"
+    },
+    {
+      "path": "supabase/migrations/20260903062207_normalize_job_ai_quality_score.sql",
+      "sha256": "4a7fe79e10afb015452bcf08dd52ea90bdf0899781b068271f3582b702804461"
+    },
+    {
+      "path": "supabase/migrations/20260903071137_add_job_type_and_non_tech_roles.sql",
+      "sha256": "3eb766d3d278f86fb3c52904f6582c2020d640a0dcfb00fdeeb18fcb77c96976"
+    },
+    {
+      "path": "supabase/migrations/20260903081100_repair_social_engineering_job_type.sql",
+      "sha256": "29424f7676fcfe8b52722967eb5794680c5a34afd784433f29fd511348555593"
+    },
+    {
+      "path": "supabase/migrations/20260903084000_add_web3career_jobs_source.sql",
+      "sha256": "ad0b469d5008d625d0ed6463b7f26f3f3a7df8853364f85a5ba88efed83d7bf9"
+    },
+    {
+      "path": "supabase/migrations/20260903090353_add_structured_job_feed_adapters.sql",
+      "sha256": "a0096ca8aa56314c5e3ea4debb064a005a672fc65523263d82862b80c687e451"
+    },
+    {
+      "path": "supabase/migrations/20260903091501_jobs_source_instances_and_operations.sql",
+      "sha256": "7a0f0dbd083644952d0661ea048625a237d099f116b304b7a30f732774c1dff2"
+    },
+    {
+      "path": "supabase/migrations/20260903094501_jobs_operational_alerts.sql",
+      "sha256": "8eda9754cbdac4324805234930b958f316b5ada7a84ef582e3948ff541038cc8"
+    },
+    {
+      "path": "supabase/migrations/20260903100928_add_cryptojobslist_adapter_contract.sql",
+      "sha256": "28801b21e390d5952f02367e69a7b9fffcfd22b142e5cf0b4fdf19f69b26cb28"
+    },
+    {
+      "path": "supabase/migrations/20260903103822_add_jobs_ai_failure_observability.sql",
+      "sha256": "3e5b591e32d73d54d7f68a47967a5d4ad83488bdeb2dad8181887dc9b20bb308"
+    },
+    {
+      "path": "supabase/migrations/20260903110012_configure_jobs_schedules.sql",
+      "sha256": "8a00f180bf62835b7690a44aa6d66a4a8fdcc1d4e4d2d074a98fb179feee18e7"
+    },
+    {
+      "path": "supabase/migrations/20260903111914_grant_job_company_source_for_connected_adapters.sql",
+      "sha256": "2baa18fa41f4530c2b0fb64f4b0cd64f0819a9caafab3b5e6bd2873b6f62e116"
+    },
+    {
       "path": "vite.config.ts",
-      "sha256": "26ecbdc0314eadbada05a2ac0e65a3daaf028d1bf73fdcdc3ebe14ab42bfa71f"
+      "sha256": "d8f68a27ad409450cff6a10f1b1d628a67bb20b52832774fcaa5eb7b3bb3ae81"
+    },
+    {
+      "path": "vitest.config.ts",
+      "sha256": "098ea8616e8e2e19e7bd936fe8e6fa4b067bb201492c0261131ddbb4b198c0cf"
     },
     {
       "path": "walkthrough.md",
@@ -951,11 +1987,20 @@
     }
   ],
   "deleted_files": [
+    "docs/BRAND_DIRECTION_v2.md",
     "docs/cora/CORA_AI_TUTOR.md",
     "docs/cora/CORA_IMPLEMENTATION_PLAN.md",
     "docs/cora/CORA_MONETIZATION.md",
+    "docs/DESIGN.md",
+    "docs/GOOGLE_FORM_BUG_REPORT.md",
+    "docs/HACKATHON_ROLES_PERMISSIONS.md",
+    "docs/REDESIGN_HACKATHON_DETAILS.md",
+    "docs/tests/08-hackathons-public.md",
+    "docs/tests/09-hackathons-manage-workspace.md",
     "public/logo/Cora_AI_Tutor.svg",
+    "scripts/apply-design-bulk.mjs",
     "scripts/backfill_token_usage.ts",
+    "scripts/check-design-system.sh",
     "scripts/cora-platform-guide.mjs",
     "scripts/seed-knowledge.mjs",
     "scripts/test-cora-ai-stream.mjs",
@@ -979,6 +2024,11 @@
     "src/components/course-ai/SuggestionPills.tsx",
     "src/components/course-ai/suggestions.ts",
     "src/components/course-ai/visibility.ts",
+    "src/components/feedback/ReportIssueLink.tsx",
+    "src/features/admin/instructors/components/InstructorDocumentList.tsx",
+    "src/features/admin/instructors/detail/sections/ContractsSection.tsx",
+    "src/features/admin/instructors/detail/sections/InvoicesSection.tsx",
+    "src/features/admin/instructors/detail/sections/PaymentsSection.tsx",
     "src/hooks/useCoraAI.ts",
     "src/hooks/useFlashcardDeck.ts",
     "src/hooks/useLearningPaths.ts",
@@ -986,25 +2036,46 @@
     "src/hooks/useReadinessCheck.ts",
     "src/lib/aiVouchers.ts",
     "src/lib/coraAi.ts",
+    "src/lib/coreliaEdgeCallbackUrl.test.ts",
+    "src/lib/dashboardConfig.ts",
+    "src/lib/discounts.ts",
     "src/lib/flashcards.ts",
+    "src/lib/hackathonScoreValidation.test.ts",
     "src/lib/learningPaths.ts",
     "src/lib/lessonEmbedding.ts",
     "src/lib/lessonSummary.ts",
+    "src/lib/payments.ts",
     "src/lib/readinessCheck.ts",
     "src/locales/en/learningPath.json",
     "src/locales/vi/learningPath.json",
+    "src/pages/account/AccountBillingRoute.tsx",
     "src/pages/account/AccountCoraRoute.tsx",
     "src/pages/admin/AdminCoraVouchers.tsx",
+    "src/pages/admin/AdminDashboard.tsx",
+    "src/pages/CheckoutCourse.tsx",
+    "src/pages/CheckoutSuccess.tsx",
     "src/pages/cora/CoraCheckoutPage.tsx",
+    "src/pages/course-details/hooks/useCourseLessons.ts",
+    "src/pages/course-details/hooks/usePaymentReturnFlow.ts",
+    "src/pages/course-details/utils/pricing.ts",
     "src/pages/home/components/DashboardAiAssistantPanel.tsx",
     "src/pages/home/components/HomeSidebarAuthenticated.tsx",
+    "src/pages/instructor-course-edit/utils/currency.ts",
+    "src/pages/instructor-course-new/utils/currency.ts",
+    "src/pages/instructor/PartnerFinance.tsx",
     "src/pages/learn/components/FlashcardDeckCard.tsx",
     "src/pages/learn/components/LessonReadinessCard.tsx",
     "src/pages/learn/components/LessonRecapCard.tsx",
+    "src/pages/learn/hooks/useLearnPaymentReturnFlow.ts",
     "src/pages/learning-path/components/LearningPathCard.tsx",
     "src/pages/learning-path/components/LearningPathForm.tsx",
     "src/pages/learning-path/LearningPathPage.tsx",
+    "src/pages/roadmap/index.ts",
+    "src/pages/roadmap/RoadmapPage.tsx",
+    "src/pages/users/user-profile/utils/contestFromRow.ts",
     "src/stores/coraStore.ts",
+    "src/stores/loadingStore.ts",
+    "src/types/dashboard.ts",
     "supabase/functions/ai-tutor/accessGuards.ts",
     "supabase/functions/ai-tutor/behaviorTypes.ts",
     "supabase/functions/ai-tutor/index.ts",
@@ -1021,6 +2092,11 @@
     "supabase/functions/ai-tutor/surfaceHints.ts",
     "supabase/functions/ai-tutor/types.ts",
     "supabase/functions/ai-tutor/usageAccounting.ts",
+    "supabase/functions/corelia-api/payments/callback_url.ts",
+    "supabase/functions/corelia-api/payments/grant_access.ts",
+    "supabase/functions/corelia-api/payments/handlers.ts",
+    "supabase/functions/corelia-api/payments/sepay.ts",
+    "supabase/functions/corelia-api/payments/types.ts",
     "supabase/functions/corelia-api/payments/vouchers.ts",
     "supabase/functions/embed-lesson/index.ts",
     "supabase/functions/generate-flashcards/index.ts",
@@ -1134,6 +2210,74 @@
       {
         "path": "supabase/migrations/20260901002156_remove_dashboard_configs_and_tier_limits.sql",
         "sha256": "a23fca0360617ab01153ff7aa1f53c744662eea63c17425bf0ea4832bdce1d95"
+      },
+      {
+        "path": "supabase/migrations/20260901093558_simplify_hackathons_and_projects.sql",
+        "sha256": "c3701a71925c32b018ae6835bfe4a521e5ac7892d302723dd2ae69535bbf6eb0"
+      },
+      {
+        "path": "supabase/migrations/20260901104414_harden_hackathon_project_rpc_boundary.sql",
+        "sha256": "e84ef4ce8f04ef62a0b2526aa943a48ac2c5cdc43c9c69fe941bd197dd7435c7"
+      },
+      {
+        "path": "supabase/migrations/20260903023210_project_media_ai_gate.sql",
+        "sha256": "513d76941b9c3441e47cc021a78ca61249387a7df8ec5f0b6e07b517296f2ef8"
+      },
+      {
+        "path": "supabase/migrations/20260903032312_disable_project_comments.sql",
+        "sha256": "a5875e7061c0ca46f150d040d67b5bc47a81dae6538b1703f67210f32768eb83"
+      },
+      {
+        "path": "supabase/migrations/20260903033132_jobs_mvp_foundation.sql",
+        "sha256": "aceadf822ac611cb1f73e1d0f1dc88e98803c9926b1e30f92f1de4ed56c00489"
+      },
+      {
+        "path": "supabase/migrations/20260903055155_jobs_advisor_remediation.sql",
+        "sha256": "2f8016520f7cb49dde4aad31c4406ff3623901b8a60d89755bb45b8177040d69"
+      },
+      {
+        "path": "supabase/migrations/20260903062207_normalize_job_ai_quality_score.sql",
+        "sha256": "4a7fe79e10afb015452bcf08dd52ea90bdf0899781b068271f3582b702804461"
+      },
+      {
+        "path": "supabase/migrations/20260903071137_add_job_type_and_non_tech_roles.sql",
+        "sha256": "3eb766d3d278f86fb3c52904f6582c2020d640a0dcfb00fdeeb18fcb77c96976"
+      },
+      {
+        "path": "supabase/migrations/20260903081100_repair_social_engineering_job_type.sql",
+        "sha256": "29424f7676fcfe8b52722967eb5794680c5a34afd784433f29fd511348555593"
+      },
+      {
+        "path": "supabase/migrations/20260903084000_add_web3career_jobs_source.sql",
+        "sha256": "ad0b469d5008d625d0ed6463b7f26f3f3a7df8853364f85a5ba88efed83d7bf9"
+      },
+      {
+        "path": "supabase/migrations/20260903090353_add_structured_job_feed_adapters.sql",
+        "sha256": "a0096ca8aa56314c5e3ea4debb064a005a672fc65523263d82862b80c687e451"
+      },
+      {
+        "path": "supabase/migrations/20260903091501_jobs_source_instances_and_operations.sql",
+        "sha256": "7a0f0dbd083644952d0661ea048625a237d099f116b304b7a30f732774c1dff2"
+      },
+      {
+        "path": "supabase/migrations/20260903094501_jobs_operational_alerts.sql",
+        "sha256": "8eda9754cbdac4324805234930b958f316b5ada7a84ef582e3948ff541038cc8"
+      },
+      {
+        "path": "supabase/migrations/20260903100928_add_cryptojobslist_adapter_contract.sql",
+        "sha256": "28801b21e390d5952f02367e69a7b9fffcfd22b142e5cf0b4fdf19f69b26cb28"
+      },
+      {
+        "path": "supabase/migrations/20260903103822_add_jobs_ai_failure_observability.sql",
+        "sha256": "3e5b591e32d73d54d7f68a47967a5d4ad83488bdeb2dad8181887dc9b20bb308"
+      },
+      {
+        "path": "supabase/migrations/20260903110012_configure_jobs_schedules.sql",
+        "sha256": "8a00f180bf62835b7690a44aa6d66a4a8fdcc1d4e4d2d074a98fb179feee18e7"
+      },
+      {
+        "path": "supabase/migrations/20260903111914_grant_job_company_source_for_connected_adapters.sql",
+        "sha256": "2baa18fa41f4530c2b0fb64f4b0cd64f0819a9caafab3b5e6bd2873b6f62e116"
       }
     ]
   }

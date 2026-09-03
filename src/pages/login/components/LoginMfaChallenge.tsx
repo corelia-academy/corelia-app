@@ -1,8 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { Loader2, Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { supabase } from "@/lib/supabase";
+import {
+  challengeMfa,
+  getAuthSession,
+  resendSignupConfirmation,
+  verifyMfa,
+} from "@/lib/auth";
+import { mfaFactorsQueryOptions } from "@/features/auth/authQueries";
+import { useAuth } from "@/stores/authStore";
 import { LoginHcaptcha } from "@/components/auth/LoginHcaptcha";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -39,13 +47,25 @@ export function LoginMfaChallenge({
   onCancel: () => void | Promise<void>;
 }) {
   const { t } = useTranslation("auth");
+  const { user } = useAuth();
   const translate = useMemo<Translate>(
     () => (key, options) => String(t(key as never, options as never)),
     [t],
   );
 
-  const [loadingFactors, setLoadingFactors] = useState(true);
-  const [factor, setFactor] = useState<FactorChoice | null>(null);
+  const factorsQuery = useQuery(mfaFactorsQueryOptions(user?.id));
+  const factor = useMemo(
+    () => factorsQuery.data
+      ? pickVerifiedFactor({
+          totp: factorsQuery.data.totp ?? [],
+          phone: factorsQuery.data.phone ?? [],
+        })
+      : null,
+    [factorsQuery.data],
+  );
+  const { mutateAsync: executeAuth } = useMutation({
+    mutationFn: (operation: () => Promise<unknown>) => operation(),
+  });
   const [challengeId, setChallengeId] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -62,34 +82,6 @@ export function LoginMfaChallenge({
     setCaptchaToken(null);
   }, []);
 
-  const loadFactors = useCallback(async () => {
-    setLoadingFactors(true);
-    setErrorInfo(null);
-    setResendEmailSuccess(null);
-    setResendEmailError(null);
-    try {
-      const { data, error } = await supabase.auth.mfa.listFactors();
-      if (error) throw error;
-      const chosen = pickVerifiedFactor({
-        totp: data?.totp ?? [],
-        phone: data?.phone ?? [],
-      });
-      setFactor(chosen);
-      if (!chosen) {
-        setErrorInfo({ message: t("errors.auth__mfa-no-factors") });
-      }
-    } catch (e: unknown) {
-      setErrorInfo(getAuthErrorInfo(e, translate));
-      setFactor(null);
-    } finally {
-      setLoadingFactors(false);
-    }
-  }, [t, translate]);
-
-  useEffect(() => {
-    void loadFactors();
-  }, [loadFactors]);
-
   const handleResendConfirmationEmail = useCallback(async () => {
     setResendEmailSuccess(null);
     setResendEmailError(null);
@@ -103,22 +95,16 @@ export function LoginMfaChallenge({
 
     setResendEmailBusy(true);
     try {
-      const {
-        data: { session },
-        error: sessionErr,
-      } = await supabase.auth.getSession();
-      if (sessionErr) throw sessionErr;
+      const session = await executeAuth(getAuthSession) as Awaited<ReturnType<typeof getAuthSession>>;
       const mail = session?.user?.email?.trim();
       if (!mail) {
         setResendEmailError(t("errors.generic"));
         return;
       }
-      const { error } = await supabase.auth.resend({
-        type: "signup",
+      await executeAuth(() => resendSignupConfirmation({
         email: mail,
-        ...(Object.keys(captchaOpts).length > 0 ? { options: captchaOpts } : {}),
-      });
-      if (error) throw error;
+        captchaToken: captchaOpts.captchaToken,
+      }));
       setResendEmailSuccess(t("login.emailConfirmation.resendSuccess"));
       setErrorInfo(null);
       resetCaptchaAfterResend();
@@ -127,17 +113,14 @@ export function LoginMfaChallenge({
     } finally {
       setResendEmailBusy(false);
     }
-  }, [captchaToken, hcaptchaEnabled, resetCaptchaAfterResend, t, translate]);
+  }, [captchaToken, executeAuth, hcaptchaEnabled, resetCaptchaAfterResend, t, translate]);
 
   const startChallenge = useCallback(async () => {
     if (!factor) return;
     setBusy(true);
     setErrorInfo(null);
     try {
-      const { data, error } = await supabase.auth.mfa.challenge({
-        factorId: factor.id,
-      });
-      if (error) throw error;
+      const data = await executeAuth(() => challengeMfa(factor.id)) as Awaited<ReturnType<typeof challengeMfa>>;
       setChallengeId(data.id);
     } catch (e: unknown) {
       setErrorInfo(getAuthErrorInfo(e, translate));
@@ -145,14 +128,14 @@ export function LoginMfaChallenge({
     } finally {
       setBusy(false);
     }
-  }, [factor, translate]);
+  }, [executeAuth, factor, translate]);
 
   useEffect(() => {
-    if (!factor || loadingFactors) return;
+    if (!factor || factorsQuery.isPending) return;
     if (factor.kind === "totp") {
       void startChallenge();
     }
-  }, [factor, loadingFactors, startChallenge]);
+  }, [factor, factorsQuery.isPending, startChallenge]);
 
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
@@ -169,12 +152,11 @@ export function LoginMfaChallenge({
     setErrorInfo(null);
     setResendEmailSuccess(null);
     try {
-      const { error } = await supabase.auth.mfa.verify({
+      await executeAuth(() => verifyMfa({
         factorId: factor.id,
         challengeId,
         code: trimmed,
-      });
-      if (error) throw error;
+      }));
       onSuccess();
     } catch (e: unknown) {
       setErrorInfo(getAuthErrorInfo(e, translate));
@@ -190,8 +172,15 @@ export function LoginMfaChallenge({
         ? t("login.subtitle.mfaTotp")
         : t("login.subtitle.mfa");
 
-  const emailConfirmationMessage = isEmailNotConfirmed(errorInfo)
-    ? errorInfo?.message ?? null
+  const effectiveErrorInfo = errorInfo ?? (
+    factorsQuery.error
+      ? getAuthErrorInfo(factorsQuery.error, translate)
+      : factorsQuery.isSuccess && !factor
+        ? { message: t("errors.auth__mfa-no-factors") }
+        : null
+  );
+  const emailConfirmationMessage = isEmailNotConfirmed(effectiveErrorInfo)
+    ? effectiveErrorInfo?.message ?? null
     : null;
   const emailConfirmationPanel = emailConfirmationMessage ? (
     <div
@@ -235,7 +224,7 @@ export function LoginMfaChallenge({
     </div>
   ) : null;
 
-  if (loadingFactors) {
+  if (factorsQuery.isPending) {
     return (
       <div className="flex min-h-[200px] flex-col items-center justify-center gap-3 py-8">
         <Loader2 className="size-8 animate-spin text-foreground-muted" aria-hidden />
@@ -306,10 +295,10 @@ export function LoginMfaChallenge({
               />
             </Field>
 
-            {errorInfo ? (
-              isEmailNotConfirmed(errorInfo) ? emailConfirmationPanel : (
+            {effectiveErrorInfo ? (
+              isEmailNotConfirmed(effectiveErrorInfo) ? emailConfirmationPanel : (
                 <div className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                  {errorInfo.message}
+                  {effectiveErrorInfo.message}
                 </div>
               )
             ) : null}
@@ -320,10 +309,10 @@ export function LoginMfaChallenge({
           </>
         ) : null}
 
-        {!factor && errorInfo ? (
-          isEmailNotConfirmed(errorInfo) ? emailConfirmationPanel : (
+        {!factor && effectiveErrorInfo ? (
+          isEmailNotConfirmed(effectiveErrorInfo) ? emailConfirmationPanel : (
             <div className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {errorInfo.message}
+              {effectiveErrorInfo.message}
             </div>
           )
         ) : null}

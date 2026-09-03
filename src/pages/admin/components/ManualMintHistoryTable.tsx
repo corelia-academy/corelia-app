@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   AlertCircle,
@@ -17,11 +18,12 @@ import {
 import { toast } from "sonner";
 
 import {
-  listManualMintHistoryForAdmin,
   retryManualGrant,
   revokeManualGrant,
   type ManualMintHistoryRow,
 } from "@/lib/manualMintHistory";
+import { adminKeys, manualMintHistoryQueryOptions } from "@/features/admin/adminQueries";
+import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -67,10 +69,10 @@ function matchesDateFilter(dateStr: string, filter: DateFilter): boolean {
 
 export function ManualMintHistoryTable() {
   const { t } = useTranslation("admin");
-  const [rows, setRows] = useState<ManualMintHistoryRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [revokingId, setRevokingId] = useState<string | null>(null);
-  const [retryingId, setRetryingId] = useState<string | null>(null);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const historyQuery = useQuery(manualMintHistoryQueryOptions(user?.id));
+  const rows = useMemo(() => historyQuery.data ?? [], [historyQuery.data]);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -78,23 +80,23 @@ export function ManualMintHistoryTable() {
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await listManualMintHistoryForAdmin();
-      setRows(data);
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t("manualMint.history.loadFailed"),
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
-
-  useEffect(() => {
-    void loadData();
-  }, [loadData]);
+  const refresh = () =>
+    queryClient.invalidateQueries({
+      queryKey: adminKeys.manualMintHistory(user?.id ?? "missing"),
+    });
+  const revokeMutation = useMutation({
+    mutationFn: (item: ManualMintHistoryRow) => revokeManualGrant(item.id, item.isGhost),
+    onSuccess: async () => {
+      toast.success(t("manualMint.history.revokeSuccess"));
+      await refresh();
+    },
+  });
+  const retryMutation = useMutation({
+    mutationFn: (item: ManualMintHistoryRow) => retryManualGrant(item.id),
+    onSettled: refresh,
+  });
+  const revokingId = revokeMutation.isPending ? revokeMutation.variables?.id ?? null : null;
+  const retryingId = retryMutation.isPending ? retryMutation.variables?.id ?? null : null;
 
   const counts = useMemo(() => {
     return {
@@ -117,26 +119,20 @@ export function ManualMintHistoryTable() {
     );
     if (!confirmed) return;
 
-    setRevokingId(item.id);
     try {
-      await revokeManualGrant(item.id, item.isGhost);
-      toast.success(t("manualMint.history.revokeSuccess"));
-      await loadData();
+      await revokeMutation.mutateAsync(item);
     } catch (err) {
       toast.error(
         err instanceof Error
           ? err.message
           : t("manualMint.history.revokeFailed"),
       );
-    } finally {
-      setRevokingId(null);
-    }
+    } finally { /* mutation owns pending state */ }
   };
 
   const handleRetry = async (item: ManualMintHistoryRow) => {
-    setRetryingId(item.id);
     try {
-      const res = await retryManualGrant(item.id);
+      const res = await retryMutation.mutateAsync(item);
       if (res && res.status === "minted") {
         toast.success(t("manualMint.history.retrySuccess"));
       } else if (res && res.status === "pending") {
@@ -146,17 +142,13 @@ export function ManualMintHistoryTable() {
           (res && res.message) || t("manualMint.history.retryFailed"),
         );
       }
-      await loadData();
     } catch (err) {
       toast.error(
         err instanceof Error
           ? err.message
           : t("manualMint.history.retryFailed"),
       );
-      await loadData();
-    } finally {
-      setRetryingId(null);
-    }
+    } finally { /* mutation owns pending state */ }
   };
 
   const hasActiveFilters =
@@ -409,12 +401,12 @@ export function ManualMintHistoryTable() {
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => void loadData()}
-            disabled={loading}
+            onClick={() => void historyQuery.refetch()}
+            disabled={historyQuery.isFetching}
             className="h-8.5 px-2.5 text-xs cursor-pointer"
           >
             <RefreshCw
-              className={cn("size-3.5", loading && "animate-spin")}
+              className={cn("size-3.5", historyQuery.isFetching && "animate-spin")}
             />
           </Button>
         </div>
@@ -422,7 +414,7 @@ export function ManualMintHistoryTable() {
 
       {/* Table Container - Fluid 100% width with fixed layout (NO horizontal scroll) */}
       <div className="w-full overflow-hidden rounded-lg border border-border-subtle bg-surface-base">
-        {loading ? (
+        {historyQuery.isPending ? (
           <div className="flex flex-col items-center justify-center py-16 text-foreground-muted">
             <Loader2 className="mb-2 size-6 animate-spin text-primary" />
             <p className="text-xs">{t("manualMint.lookup.loading")}</p>

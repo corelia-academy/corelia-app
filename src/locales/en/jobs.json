@@ -1,0 +1,292 @@
+{
+  "eyebrow": "Corelia Jobs",
+  "title": "Jobs across technology and Web3",
+  "subtitle": "Explore curated technical and non-technical roles at technology and Web3 companies.",
+  "landing": {
+    "title": "{{label}} jobs",
+    "subtitle": "Browse curated {{label}} opportunities from reviewed technology and Web3 sources."
+  },
+  "search": "Search",
+  "searchPlaceholder": "Role, skill, company, or location",
+  "results": "{{count}} jobs",
+  "hiddenCount": "{{count}} hidden",
+  "sources": {
+    "connected": "Connected job sources: {{sources}}"
+  },
+  "retry": "Try again",
+  "nav": {
+    "label": "Jobs navigation",
+    "find": "Find jobs",
+    "saved": "Saved",
+    "applied": "Applied",
+    "hidden": "Hidden",
+    "market": "Market"
+  },
+  "filters": {
+    "label": "Filters",
+    "jobType": "Job type",
+    "role": "Role",
+    "domain": "Domain",
+    "skill": "Skill",
+    "seniority": "Seniority",
+    "workMode": "Work mode",
+    "region": "Region",
+    "employmentType": "Employment type",
+    "minimumSalary": "Minimum salary",
+    "salaryCurrency": "Salary currency",
+    "postedDate": "Posted date",
+    "allRoles": "All roles",
+    "allJobTypes": "All job types",
+    "allDomains": "All domains",
+    "allSkills": "All skills",
+    "allSeniorities": "All seniorities",
+    "allWorkModes": "All work modes",
+    "allRegions": "All regions",
+    "allEmploymentTypes": "All employment types",
+    "allCurrencies": "All currencies",
+    "anyDate": "Any date",
+    "last7Days": "Last 7 days",
+    "last30Days": "Last 30 days",
+    "clear": "Clear"
+  },
+  "values": {
+    "tech": "Tech",
+    "non_tech": "Non-tech",
+    "intern": "Intern",
+    "fresher": "Fresher",
+    "junior": "Junior",
+    "mid": "Mid-level",
+    "senior": "Senior",
+    "lead": "Lead / Staff",
+    "manager": "Manager",
+    "remote": "Remote",
+    "hybrid": "Hybrid",
+    "onsite": "On-site",
+    "full_time": "Full-time",
+    "part_time": "Part-time",
+    "contract": "Contract",
+    "temporary": "Temporary",
+    "internship": "Internship"
+  },
+  "actions": {
+    "save": "Save job",
+    "unsave": "Remove saved job",
+    "markApplied": "Mark applied",
+    "applied": "Applied",
+    "hide": "Hide job",
+    "unhide": "Show job again",
+    "apply": "Apply on company site"
+  },
+  "card": {
+    "salaryNotShown": "Salary not shown"
+  },
+  "empty": {
+    "title": "No matching jobs",
+    "description": "Try broadening your search or clearing some filters."
+  },
+  "infinite": {
+    "loading": "Loading more jobs…",
+    "loadMore": "Load more jobs",
+    "retry": "Retry loading more jobs",
+    "ready": "More jobs load automatically as you scroll."
+  },
+  "messages": {
+    "loginRequired": "Sign in to save, hide, or track applications.",
+    "updateFailed": "Could not update this job.",
+    "loadFailed": "Could not load jobs.",
+    "hidden": "Job hidden.",
+    "viewHidden": "View hidden",
+    "unhidden": "Job returned to the main list."
+  },
+  "detail": {
+    "back": "Back to jobs",
+    "notFound": "This job is unavailable or has expired.",
+    "about": "About the role",
+    "noDescription": "The source did not provide a full description.",
+    "requiredSkills": "Required skills",
+    "preferredSkills": "Preferred skills",
+    "overview": "Job overview",
+    "salary": "Salary",
+    "jobType": "Job type",
+    "seniority": "Seniority",
+    "role": "Role",
+    "source": "Source",
+    "sourceAttribution": "Listing provided by {{source}}."
+  },
+  "user": {
+    "saved": {
+      "title": "Saved jobs",
+      "description": "Keep promising roles in one place and return when you are ready.",
+      "empty": "You have not saved any active jobs yet."
+    },
+    "applied": {
+      "title": "Applications",
+      "description": "A lightweight record of jobs you have applied to.",
+      "empty": "You have not marked any active jobs as applied."
+    },
+    "hidden": {
+      "title": "Hidden jobs",
+      "description": "Review jobs you hid and return any of them to the main list.",
+      "empty": "You have no hidden jobs."
+    }
+  },
+  "market": {
+    "eyebrow": "Market intelligence",
+    "title": "What tracked technology companies are hiring for",
+    "subtitle": "Daily aggregates for technical and non-technical roles from Corelia's curated sources. Growth and comparable metrics use sources observed across both comparison windows.",
+    "cards": {
+      "active": "Active jobs",
+      "new": "New today",
+      "remote": "Remote share",
+      "entry": "Entry-level jobs"
+    },
+    "topRoles": "Roles in demand",
+    "topSkills": "Most requested skills",
+    "topDomains": "Hiring by domain",
+    "activity": "New job activity",
+    "activityDescription": "Daily new and expired jobs across the last 30 observations",
+    "newJobs": "New jobs",
+    "expiredJobs": "Expired jobs",
+    "roleGrowth": "Role growth (comparable sources)",
+    "skillGrowth": "Skill growth (comparable sources)",
+    "seniorityMix": "Seniority mix",
+    "growthPending": "At least 14 daily snapshots are required before showing growth.",
+    "disclaimer": "Observed in Corelia's tracked sources; this is a sampled market dataset, not a census.",
+    "empty": {
+      "title": "Market data is being prepared",
+      "description": "An admin must crawl at least one verified company and refresh daily analytics."
+    }
+  },
+  "admin": {
+    "title": "Jobs operations",
+    "subtitle": "Manage sources and companies, review classifications, run crawlers, and inspect market aggregates.",
+    "loading": "Loading Jobs operations…",
+    "nav": {
+      "overview": "Overview",
+      "review": "Review",
+      "sources": "Sources",
+      "companies": "Companies",
+      "crawlers": "Crawler runs",
+      "analytics": "Analytics"
+    },
+    "overview": {
+      "active": "Active jobs",
+      "review": "Needs review",
+      "companies": "Companies",
+      "sources": "Sources",
+      "failedRuns": "Failed runs"
+    },
+    "actions": {
+      "run": "Run now",
+      "runAll": "Run crawl batch",
+      "publish": "Publish",
+      "reject": "Reject",
+      "enable": "Enable",
+      "disable": "Disable",
+      "verify": "Verify",
+      "unverify": "Remove verification",
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "logs": "View logs",
+      "careerPage": "Career page",
+      "clearLogFilter": "Show all runs",
+      "revalidate": "Revalidate",
+      "revalidateAll": "Revalidate due sources",
+      "resolve": "Resolve",
+      "refreshAnalytics": "Refresh analytics"
+    },
+    "confirm": {
+      "runAll": "Run all enabled and due Jobs sources now? This may use external API and AI quota.",
+      "revalidateAll": "Revalidate all enabled and due Jobs sources now? This fetches current source snapshots but does not invoke AI."
+    },
+    "messages": {
+      "runComplete": "Crawler run completed.",
+      "noEligibleCompanies": "No active company matched this source. Add and verify a company before running it.",
+      "saved": "Changes saved.",
+      "analyticsRefreshed": "Market analytics refreshed.",
+      "actionFailed": "The operation could not be completed."
+    },
+    "review": {
+      "reason": "Review reason",
+      "title": "Job title",
+      "summary": "Factual summary",
+      "primaryRole": "Primary role slug",
+      "seniority": "Seniority slug",
+      "roles": "Role slugs, comma separated",
+      "domains": "Domain slugs, comma separated",
+      "requiredSkills": "Required skill slugs, comma separated",
+      "preferredSkills": "Preferred skill slugs, comma separated",
+      "empty": "No jobs currently need review."
+    },
+    "columns": {
+      "source": "Source",
+      "type": "Type",
+      "cadence": "Cadence",
+      "jobsFound": "Jobs found",
+      "policy": "Policy reviewed",
+      "lastRun": "Last success",
+      "lastError": "Last error",
+      "status": "Status",
+      "actions": "Actions",
+      "started": "Started",
+      "trigger": "Trigger",
+      "target": "Target",
+      "fetched": "Fetched",
+      "published": "Published",
+      "review": "Review",
+      "rejected": "Rejected",
+      "aiFailed": "AI fallback",
+      "failed": "Failed"
+    },
+    "status": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "error": "Error"
+    },
+    "company": {
+      "add": "Add company",
+      "name": "Company name",
+      "slug": "Slug",
+      "websiteUrl": "Website URL",
+      "logoUrl": "Logo URL (optional)",
+      "careersUrl": "Career page or ATS URL",
+      "source": "Source / adapter",
+      "identifier": "ATS board/site identifier",
+      "domains": "Domains, comma separated",
+      "cadence": "Crawl cadence in hours",
+      "priority": "Priority 0–100",
+      "detected": "Detected {{source}} / {{identifier}}. You can override it.",
+      "openJobs": "{{count}} open jobs",
+      "priorityValue": "Priority {{priority}}",
+      "verified": "Verified",
+      "unverified": "Unverified",
+      "neverRun": "Never crawled",
+      "lastRevalidated": "Last revalidation"
+    },
+    "source": {
+      "addRss": "Connect RSS feed",
+      "name": "Provider name",
+      "slug": "Provider slug",
+      "baseUrl": "Provider website URL",
+      "feedUrls": "RSS/Atom URLs, one per line",
+      "termsUrl": "Terms or feed documentation URL",
+      "priority": "Priority 0–100",
+      "attributionText": "Attribution text",
+      "redistributionNotes": "Redistribution/policy notes",
+      "policyReviewed": "Policy reviewed",
+      "attributionRequired": "Attribution required",
+      "canonicalRequired": "Canonical link required",
+      "allowDescription": "Allow description display",
+      "allowSeo": "Allow SEO indexing"
+    },
+    "analytics": {
+      "comparableNew": "Comparable new jobs",
+      "comparableTotal": "Comparable active jobs"
+    },
+    "alerts": {
+      "title": "Open operational alerts",
+      "occurrences": "{{count}} occurrence"
+    }
+  }
+}

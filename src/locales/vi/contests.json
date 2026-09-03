@@ -13,6 +13,7 @@
     "unknown": "—"
   },
   "registrationStatus": {
+    "registered": "Đã đăng ký",
     "pending": "Chờ duyệt",
     "approved": "Đã duyệt",
     "rejected": "Từ chối",
@@ -21,9 +22,9 @@
   "catalog": {
     "heroEyebrow": "Hackathon & hoạt động hệ sinh thái",
     "heroTitle": "Hackathon của Corelia",
-    "heroDescription": "Khám phá hackathon và các hoạt động nhiều vòng đang được Corelia mở cho cộng đồng. Hồ sơ chỉ được tham gia chính thức sau khi đội ngũ Corelia xét duyệt.",
+    "heroDescription": "Khám phá hackathon đang mở và đăng ký tức thời để bắt đầu xây dựng dự án.",
     "missingSlug": "Hackathon này chưa có slug. Hãy chạy migration backfill slug hoặc set slug trong workspace settings.",
-    "pillReviewed": "Corelia xét duyệt đầu vào",
+    "pillReviewed": "Đăng ký tức thời",
     "pillTeamBased": "Bài nộp theo đội",
     "sectionWhyTitle": "Hackathon không chỉ để thi, mà còn để học, xây dựng và va chạm thực tế",
     "loadingTitle": "Đang tải danh sách hackathon...",
@@ -75,6 +76,60 @@
       "leaderboardHint": "Ban giám khảo chấm theo rubric; bảng xếp hạng và danh sách người thắng chỉ hiện sau khi được công bố chính thức."
     },
     "listCardImageAlt": "Ảnh đại diện contest — {{title}}"
+  },
+  "public": {
+    "previewNotice": "Bản xem trước — hackathon này chưa được công khai.",
+    "registered": "Đăng ký thành công.",
+    "registerFailed": "Không thể đăng ký hackathon.",
+    "register": "Đăng ký ngay",
+    "registeredLabel": "Đã đăng ký",
+    "registrationClosed": "Đã đóng đăng ký",
+    "createProject": "Tạo / xem dự án",
+    "submissionClosed": "Đã đóng nộp dự án",
+    "hostedBy": "Tổ chức bởi",
+    "participants": "Người đăng ký",
+    "registrationDeadline": "Hạn đăng ký",
+    "submissionDeadline": "Hạn nộp dự án",
+    "tabsLabel": "Nội dung hackathon",
+    "tabs": {
+      "overview": "Tổng quan",
+      "prizes": "Giải thưởng",
+      "timeline": "Timeline",
+      "resources": "Tài nguyên",
+      "projects": "Dự án"
+    },
+    "mode": { "online": "Online", "offline": "Offline", "hybrid": "Hybrid" },
+    "status": { "draft": "Bản nháp", "published": "Đang mở", "running": "Đang diễn ra", "ended": "Đã kết thúc" },
+    "overview": {
+      "description": "Giới thiệu",
+      "summary": "Thông tin nhanh",
+      "mode": "Hình thức",
+      "registration": "Trạng thái của bạn",
+      "registered": "Đã đăng ký",
+      "notRegistered": "Chưa đăng ký"
+    },
+    "prizes": { "total": "Tổng prize pool" },
+    "projects": {
+      "filters": "Lọc dự án",
+      "sort": "Sắp xếp",
+      "newest": "Mới nhất",
+      "oldest": "Cũ nhất",
+      "tracks": "Tracks",
+      "sectors": "Chuyên môn kỹ thuật",
+      "techStacks": "Công nghệ",
+      "selectedCount": "Đã chọn {{count}} bộ lọc",
+      "clearFilters": "Xóa lọc",
+      "loading": "Đang tải…",
+      "loadMore": "Tải thêm",
+      "openCatalog": "Mở trang tổng hợp dự án"
+    },
+    "empty": {
+      "overview": "Nội dung giới thiệu sẽ được cập nhật.",
+      "prizes": "Thông tin giải thưởng sẽ được cập nhật.",
+      "timeline": "Timeline sẽ được cập nhật.",
+      "resources": "Tài nguyên sẽ được cập nhật.",
+      "projects": "Chưa có dự án phù hợp."
+    }
   },
   "workspace": {
     "access": {

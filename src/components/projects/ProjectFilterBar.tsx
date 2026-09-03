@@ -29,12 +29,12 @@ const SORT_OPTIONS: Array<{
   value: PublicProjectSort;
   labelKey:
     | "projects.sort.newest"
-    | "projects.sort.mostLiked"
-    | "projects.sort.mostCommented";
+    | "projects.sort.oldest"
+    | "projects.sort.mostLiked";
 }> = [
   { value: "newest", labelKey: "projects.sort.newest" },
+  { value: "oldest", labelKey: "projects.sort.oldest" },
   { value: "most_liked", labelKey: "projects.sort.mostLiked" },
-  { value: "most_commented", labelKey: "projects.sort.mostCommented" },
 ];
 
 export function ProjectFilterBar({

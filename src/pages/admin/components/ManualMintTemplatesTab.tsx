@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ImageIcon, Loader2, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -6,12 +7,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  listManualBadgeTemplates,
   deleteManualBadgeTemplate,
   type CredentialTemplateRow,
 } from "@/lib/credentialTemplates";
 import { cn } from "@/lib/utils";
 import { ManualMintCreateTemplateDialog } from "./ManualMintCreateTemplateDialog";
+import { adminKeys, manualMintTemplatesQueryOptions } from "@/features/admin/adminQueries";
+import { useAuth } from "@/stores/authStore";
 
 interface ManualMintTemplatesTabProps {
   onSelectTemplate: (template: CredentialTemplateRow) => void;
@@ -19,10 +21,11 @@ interface ManualMintTemplatesTabProps {
 
 export function ManualMintTemplatesTab({ onSelectTemplate }: ManualMintTemplatesTabProps) {
   const { t } = useTranslation("admin");
-  const [templates, setTemplates] = useState<CredentialTemplateRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const templatesQuery = useQuery(manualMintTemplatesQueryOptions(user?.id));
+  const templates = templatesQuery.data ?? [];
   const [search, setSearch] = useState("");
-  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
 
   const getErrorMessage = useCallback((err: unknown, fallback: string) => {
@@ -33,34 +36,23 @@ export function ManualMintTemplatesTab({ onSelectTemplate }: ManualMintTemplates
     return code || fallback;
   }, [t]);
 
-  const fetchTemplates = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await listManualBadgeTemplates();
-      setTemplates(data);
-    } catch (err) {
-      toast.error(getErrorMessage(err, t("manualMint.templates.loadFailed")));
-    } finally {
-      setLoading(false);
-    }
-  }, [getErrorMessage, t]);
-
-  useEffect(() => {
-    void fetchTemplates();
-  }, [fetchTemplates]);
+  const deleteMutation = useMutation({
+    mutationFn: deleteManualBadgeTemplate,
+    onSuccess: () => {
+      toast.success(t("manualMint.templates.deleteSuccess"));
+      void queryClient.invalidateQueries({
+        queryKey: adminKeys.manualMintTemplates(user?.id ?? "missing"),
+      });
+    },
+  });
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(t("manualMint.templates.deleteConfirm", { name }))) return;
-    setDeletingId(id);
     try {
-      await deleteManualBadgeTemplate(id);
-      toast.success(t("manualMint.templates.deleteSuccess"));
-      await fetchTemplates();
+      await deleteMutation.mutateAsync(id);
     } catch (err) {
       toast.error(getErrorMessage(err, t("manualMint.templates.deleteFailed")));
-    } finally {
-      setDeletingId(null);
-    }
+    } finally { /* mutation owns pending state */ }
   };
 
   const filtered = templates.filter((tpl) => {
@@ -101,7 +93,7 @@ export function ManualMintTemplatesTab({ onSelectTemplate }: ManualMintTemplates
         </div>
       </div>
 
-      {loading ? (
+      {templatesQuery.isPending ? (
         <div className="flex min-h-[240px] items-center justify-center">
           <Loader2 className="size-6 animate-spin text-primary" />
         </div>
@@ -196,10 +188,10 @@ export function ManualMintTemplatesTab({ onSelectTemplate }: ManualMintTemplates
                     variant="ghost"
                     size="sm"
                     className="h-8 text-xs text-destructive hover:bg-destructive/10"
-                    disabled={deletingId === tpl.id}
+                    disabled={deleteMutation.isPending && deleteMutation.variables === tpl.id}
                     onClick={() => handleDelete(tpl.id, tpl.name)}
                   >
-                    {deletingId === tpl.id ? (
+                    {deleteMutation.isPending && deleteMutation.variables === tpl.id ? (
                       <Loader2 className="size-3.5 animate-spin" />
                     ) : (
                       <Trash2 className="size-3.5" />
@@ -215,7 +207,11 @@ export function ManualMintTemplatesTab({ onSelectTemplate }: ManualMintTemplates
       <ManualMintCreateTemplateDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onCreated={() => void fetchTemplates()}
+        onCreated={() =>
+          void queryClient.invalidateQueries({
+            queryKey: adminKeys.manualMintTemplates(user?.id ?? "missing"),
+          })
+        }
       />
     </div>
   );

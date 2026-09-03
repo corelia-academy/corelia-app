@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import type { User } from "@supabase/supabase-js";
 import { useNavigate } from "react-router";
 import { LoginCallBack, useOCAuth } from "@opencampus/ocid-connect-js";
 import { updateOCIDProfileForUser } from "@/lib/profile";
-import { supabase } from "@/lib/supabase";
+import { getAuthSession } from "@/lib/auth";
 import { invokeCoreliaApi } from "@/lib/coreliaEdgeApi";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuth, useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 
@@ -44,9 +46,22 @@ function ErrorView() {
 export default function OCIDRedirect() {
   const { t } = useTranslation("account");
   const navigate = useNavigate();
-  const refreshProfile = useAuthStore((s) => s.refreshProfile);
+  const { refreshProfile } = useAuth();
   const { OCId, ethAddress, ocAuth } = useOCAuth();
   const [error, setError] = useState<string | null>(null);
+  const { mutateAsync: linkOcid } = useMutation({
+    mutationFn: async (input: {
+      user: User;
+      ocid: string;
+      ethAddress: string | null;
+    }) => {
+      await updateOCIDProfileForUser(input.user, {
+        ocid: input.ocid,
+        ocid_eth_address: input.ethAddress,
+      });
+      void invokeCoreliaApi("credentials.retryPending", {});
+    },
+  });
 
   const callbacks = useMemo(() => {
     return {
@@ -54,9 +69,7 @@ export default function OCIDRedirect() {
         setError(null);
         let user = useAuthStore.getState().user;
         if (!user) {
-          const {
-            data: { session },
-          } = await supabase.auth.getSession();
+          const session = await getAuthSession();
           user = session?.user ?? null;
         }
         if (!user) {
@@ -85,13 +98,8 @@ export default function OCIDRedirect() {
         }
 
         try {
-          await updateOCIDProfileForUser(user, {
-            ocid: resolvedOCId,
-            ocid_eth_address: resolvedEth,
-          });
+          await linkOcid({ user, ocid: resolvedOCId, ethAddress: resolvedEth });
           await refreshProfile(user);
-          // Fire-and-forget: mint any credentials that were held waiting for OCID.
-          void invokeCoreliaApi("credentials.retryPending", {});
           navigate("/account", { replace: true });
         } catch (e) {
           const message =
@@ -109,7 +117,7 @@ export default function OCIDRedirect() {
         setError(message);
       },
     };
-  }, [OCId, ethAddress, navigate, ocAuth, refreshProfile, t]);
+  }, [OCId, ethAddress, linkOcid, navigate, ocAuth, refreshProfile, t]);
 
   return (
     <div className="min-h-[60vh]">
@@ -135,4 +143,3 @@ export default function OCIDRedirect() {
     </div>
   );
 }
-

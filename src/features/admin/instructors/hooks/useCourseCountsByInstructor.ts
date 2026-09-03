@@ -1,30 +1,22 @@
-import { useCallback, useEffect, useState } from "react";
-import { getCoursesForManagement } from "@/lib/courses";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
+
+import { adminCourseCountsQueryOptions, adminKeys } from "@/features/admin/adminQueries";
+import { useAuth } from "@/stores/authStore";
 
 export function useCourseCountsByInstructor() {
-  const [counts, setCounts] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(true);
-
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const courses = await getCoursesForManagement("", true);
-      const next: Record<string, number> = {};
-      for (const c of courses) {
-        next[c.instructor_id] = (next[c.instructor_id] ?? 0) + 1;
-      }
-      setCounts(next);
-    } catch {
-      setCounts({});
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
-
-  return { counts, loading, refresh, setCounts };
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const query = useQuery(adminCourseCountsQueryOptions(user?.id));
+  const setCounts = useCallback(
+    (counts: Record<string, number>) =>
+      queryClient.setQueryData(adminKeys.courseCounts(user?.id ?? "missing"), counts),
+    [queryClient, user?.id],
+  );
+  return {
+    counts: query.data ?? {},
+    loading: query.isPending,
+    refresh: async () => { await query.refetch(); },
+    setCounts,
+  };
 }
-

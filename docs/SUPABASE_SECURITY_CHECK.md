@@ -1,5 +1,7 @@
 # Supabase Security Check
 
+> **Historical hackathon inventory:** danh sách score/access-invite và helper role bên dưới phản ánh schema trước migration tinh giản. Contract hiện hành xóa các object này không cần export; xem [docs/hackathon](./hackathon/README.md).
+
 This audit pass hardens the highest-risk write surfaces that were still relying
 too heavily on client-side rules.
 
@@ -67,7 +69,6 @@ too heavily on client-side rules.
   - `project_locales`
   - `project_collaborators`
   - `project_collaboration_invites`
-  - `project_comments`
   - `project_hearts`
 - Client/RPC entrypoints:
   - `src/lib/projects.ts`

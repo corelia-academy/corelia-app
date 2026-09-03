@@ -40,7 +40,7 @@ export async function fetchHackathonProjectForOwnerSubmission(
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,created_at,updated_at",
+      "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,created_at,updated_at",
     )
     .in("source_type", ["contest", "hackathon"])
     .eq("source_id", hackathonId)
@@ -63,6 +63,23 @@ export async function listProjectCollaborators(
   return (data ?? []) as ProjectCollaboratorRow[];
 }
 
+export type PublicProjectTeamMember = CollaborationProfileMini & { user_id: string };
+
+export async function listPublicProjectTeam(projectId: string): Promise<PublicProjectTeamMember[]> {
+  const { data: rows, error } = await supabase
+    .from("project_collaborators")
+    .select("user_id")
+    .eq("project_id", projectId)
+    .eq("show_in_portfolio", true);
+  if (error) throw new Error(error.message);
+  const ids = (rows ?? []).map((row) => String(row.user_id));
+  const profiles = await listCollaborationProfiles(ids);
+  return ids.flatMap((id) => {
+    const profile = profiles[id];
+    return profile ? [{ user_id: id, ...profile }] : [];
+  });
+}
+
 export async function listProjectCollaborationInvites(
   projectId: string,
 ): Promise<ProjectCollaborationInviteRow[]> {
@@ -81,6 +98,49 @@ export type InvitableUserRow = {
   full_name: string | null;
   avatar_url: string | null;
 };
+
+export type CollaborationProfileMini = {
+  id: string;
+  username: string | null;
+  full_name: string | null;
+  avatar_url?: string | null;
+};
+
+export async function listCollaborationProfiles(
+  userIds: string[],
+  signal?: AbortSignal,
+): Promise<Record<string, CollaborationProfileMini>> {
+  const ids = Array.from(new Set(userIds.filter(Boolean)));
+  if (ids.length === 0) return {};
+  let request = supabase
+    .from("public_profiles")
+    .select("id,username,full_name,avatar_url")
+    .in("id", ids);
+  if (signal) request = request.abortSignal(signal);
+  const { data, error } = await request;
+  if (error) throw new Error(error.message);
+  return Object.fromEntries(
+    ((data ?? []) as CollaborationProfileMini[]).map((profile) => [profile.id, profile]),
+  );
+}
+
+export async function listProjectTeamCandidates(input: {
+  projectId: string;
+  sourceType: string;
+  sourceId?: string | null;
+  search?: string;
+  limit?: number;
+}): Promise<InvitableUserRow[]> {
+  const { data, error } = await supabase.rpc("list_project_team_candidates", {
+    p_project_id: input.projectId,
+    p_source_type: input.sourceType,
+    p_source_id: input.sourceId ?? null,
+    p_search: input.search?.trim() ?? "",
+    p_limit: input.limit ?? 50,
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as InvitableUserRow[];
+}
 
 export async function listInvitableHackathonUsers(
   projectId: string,

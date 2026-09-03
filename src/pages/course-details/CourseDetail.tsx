@@ -13,7 +13,6 @@ import {
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
 import { isActivityLesson, splitLessonCounts } from "@/lib/lessonFormat";
 import { useCourseLoad } from "./hooks/useCourseLoad";
-import { useCourseLessons } from "./hooks/useCourseLessons";
 import { useCourseEnrollmentAccess } from "./hooks/useCourseEnrollmentAccess";
 import { useCourseProgress } from "./hooks/useCourseProgress";
 import { useSpotlightContests } from "./hooks/useSpotlightContests";
@@ -76,17 +75,8 @@ export default function CourseDetail() {
     viewer: user,
   });
 
-  const loadLessonsErrorFallback = translate(
-    "detail.loadLessonsErrorFallback",
-  );
-
-  const { lessons, loaded: lessonsLoaded } = useCourseLessons({
-    resolvedCourseId: courseLoad.resolvedCourseId,
-    course: courseLoad.course,
-    previewOnly: false,
-    onError: courseLoad.setError,
-    loadLessonsErrorFallback,
-  });
+  const lessons = courseLoad.lessons;
+  const lessonsLoaded = !courseLoad.loading && !courseLoad.error;
 
   const progress = useCourseProgress({
     resolvedCourseId: courseLoad.resolvedCourseId,

@@ -4,7 +4,8 @@ Tài liệu này định nghĩa UI target cho `/learn/:courseId` và `/learn/:co
 
 ## 1. Design constraints
 
-- Tuân thủ [Corelia Design System](../DESIGN.md); không tạo palette, radius hoặc typography riêng.
+- Visual behavior hiện hành trong learner components và styles là nguồn chuẩn; không có design-system specification riêng bằng Markdown.
+- Tuân thủ [Frontend Rules](../front-end-rules/README.md) về architecture, accessibility, responsive behavior, loading và layout stability.
 - Một viewport chỉ có một primary CTA.
 - Mọi course đã publish đều miễn phí; không hiển thị lock, price, purchase hoặc preview badge.
 - Desktop ưu tiên học tập tập trung; mobile ưu tiên article/video/quiz/practice, không cố biến code editor thành IDE đầy đủ.

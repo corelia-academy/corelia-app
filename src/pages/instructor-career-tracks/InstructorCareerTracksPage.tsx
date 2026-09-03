@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router";
 import { Eye, EyeOff, Layers, Plus, Pencil } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -7,38 +8,47 @@ import { EmptyState, PageContainer, PageSectionCard } from "@/components/layouts
 import { Button } from "@/components/ui/button";
 import type { CareerTrackDetail } from "@/types/career";
 import {
-  listCareerTracksForInstructor,
-  setInstructorCareerTrackPublished,
-} from "@/lib/careerTracks";
+  careerKeys,
+  instructorCareerTracksQueryOptions,
+} from "@/features/career/careerQueries";
+import { setInstructorCareerTrackPublished } from "@/lib/careerTracks";
+import { useAuth } from "@/stores/authStore";
+
+const EMPTY_TRACKS: CareerTrackDetail[] = [];
 
 export default function InstructorCareerTracksPage() {
   const { t } = useTranslation("instructor");
   const navigate = useNavigate();
-  const [tracks, setTracks] = useState<CareerTrackDetail[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    queueMicrotask(() => {
-      if (cancelled) return;
-      setLoading(true);
-      setError(null);
-    });
-    listCareerTracksForInstructor()
-      .then((rows) => {
-        if (!cancelled) setTracks(rows);
-      })
-      .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : t("careerTracks.errors.loadFailed"));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [t]);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const options = instructorCareerTracksQueryOptions(user?.id);
+  const tracksQuery = useQuery(options);
+  const tracks = tracksQuery.data ?? EMPTY_TRACKS;
+  const publishMutation = useMutation({
+    mutationFn: ({ trackId, published }: { trackId: string; published: boolean }) =>
+      setInstructorCareerTrackPublished(trackId, published),
+    onMutate: async ({ trackId, published }) => {
+      await queryClient.cancelQueries({ queryKey: options.queryKey });
+      const previous = queryClient.getQueryData<CareerTrackDetail[]>(options.queryKey);
+      queryClient.setQueryData<CareerTrackDetail[]>(options.queryKey, (current) =>
+        current?.map((track) =>
+          track.id === trackId ? { ...track, published } : track,
+        ),
+      );
+      return { previous };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previous) queryClient.setQueryData(options.queryKey, context.previous);
+    },
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: careerKeys.instructorList(user?.id || "missing") }),
+  });
+  const errorValue = publishMutation.error ?? tracksQuery.error;
+  const error = errorValue
+    ? errorValue instanceof Error
+      ? errorValue.message
+      : t("careerTracks.errors.loadFailed")
+    : null;
 
   const stats = useMemo(() => {
     const published = tracks.filter((x) => x.published).length;
@@ -47,18 +57,12 @@ export default function InstructorCareerTracksPage() {
   }, [tracks]);
 
   async function togglePublish(trackId: string, next: boolean) {
-    setError(null);
     try {
-      await setInstructorCareerTrackPublished(trackId, next);
-      setTracks((prev) =>
-        prev.map((t) => (t.id === trackId ? { ...t, published: next } : t)),
-      );
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t("careerTracks.errors.saveFailed"));
-    }
+      await publishMutation.mutateAsync({ trackId, published: next });
+    } catch { /* mutation error is rendered above */ }
   }
 
-  if (loading) {
+  if (tracksQuery.isPending) {
     return (
       <div className="flex min-h-80 items-center justify-center">
         <div className="text-sm text-foreground-muted">{t("careerTracks.labels.loading")}</div>
@@ -171,4 +175,3 @@ export default function InstructorCareerTracksPage() {
     </PageContainer>
   );
 }
-

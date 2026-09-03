@@ -1,17 +1,18 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
 import { Trophy, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { hasHackathonCoOrganizerAccess, listContests } from "@/lib/hackathons";
 import { contestListImageUrl } from "@/lib/hackathonVisuals";
-import { canAccessContestManagementCatalog, canManageContests } from "@/lib/permissions";
+import { canManageContests } from "@/lib/permissions";
 import { useAuth } from "@/stores/authStore";
 import type { Contest } from "@/types/hackathons";
 import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { publicHackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
 import {
   contestListLocationLabel,
   contestListStatusLabel,
@@ -22,7 +23,8 @@ import {
   ContestListCardThumbnail,
   ContestListMetricCellCatalog,
 } from "@/features/hackathons/list/ContestListCardPrimitives";
-import { perfMeasureEnd, perfMeasureStart } from "@/lib/perfTelemetry";
+
+const EMPTY_CONTESTS: Contest[] = [];
 
 function CatalogGridSkeleton() {
   return (
@@ -57,69 +59,19 @@ export default function Contests() {
       String(t(key as never, options as never)),
     [t],
   );
-  const { profile, user } = useAuth();
-  const [items, setItems] = useState<Contest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [retryToken, setRetryToken] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    setItems([]);
-
-    perfMeasureStart("contests.catalog_wave");
-    void listContests(user ?? null)
-      .then((data) => {
-        if (!cancelled) setItems(data);
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setItems([]);
-          setError(
-            err instanceof Error
-              ? err.message
-              : translate("catalog.loadErrorFallback"),
-          );
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          perfMeasureEnd("contests.catalog_wave", {
-            viewer: user?.id ?? "guest",
-          });
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- listContests gates on user; avoid object identity churn
-  }, [translate, user?.id, retryToken, i18n.language]);
+  const { profile } = useAuth();
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const catalogQuery = useQuery(publicHackathonCatalogQueryOptions(locale));
+  const items = catalogQuery.data ?? EMPTY_CONTESTS;
+  const loading = catalogQuery.isPending;
+  const error = catalogQuery.error
+    ? catalogQuery.error instanceof Error
+      ? catalogQuery.error.message
+      : translate("catalog.loadErrorFallback")
+    : null;
 
   const isManager = canManageContests(profile);
-  const canManageCatalog = canAccessContestManagementCatalog(profile);
-  const [canManageCatalogScoped, setCanManageCatalogScoped] = useState(false);
-
-  useEffect(() => {
-    if (!profile?.email) {
-      setCanManageCatalogScoped(false);
-      return;
-    }
-    if (canManageCatalog) {
-      setCanManageCatalogScoped(true);
-      return;
-    }
-    let cancelled = false;
-    void hasHackathonCoOrganizerAccess(profile.email).then((ok) => {
-      if (!cancelled) setCanManageCatalogScoped(ok);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [canManageCatalog, profile?.email]);
+  const canManageCatalogScoped = isManager;
 
   const stats = useMemo(() => {
     const total = items.length;
@@ -160,7 +112,7 @@ export default function Contests() {
         {canManageCatalogScoped ? (
           <div className="flex flex-wrap gap-2">
             <Button
-              render={<NavLink to="/hackathons/manage" />}
+              render={<NavLink to="/admin/hackathons" />}
               nativeButton={false}
               size="sm"
               variant="outline"
@@ -188,7 +140,7 @@ export default function Contests() {
             <Button
               type="button"
               className="min-h-11"
-              onClick={() => setRetryToken((n) => n + 1)}
+              onClick={() => void catalogQuery.refetch()}
             >
               {t("catalog.retry")}
             </Button>
@@ -234,7 +186,7 @@ export default function Contests() {
                 </div>
                 {isManager ? (
                   <Button
-                    render={<NavLink to="/hackathons/manage" />}
+                    render={<NavLink to="/admin/hackathons" />}
                     nativeButton={false}
                     size="sm"
                     variant="outline"
@@ -287,7 +239,7 @@ export default function Contests() {
                       </div>
                       <span className="shrink-0 rounded-md bg-surface-raised px-2 py-0.5 text-xs font-medium text-foreground-muted">
                         {contestListLocationLabel(
-                          contest.location,
+                          contest.mode ?? contest.location,
                           translate,
                           "catalog",
                         )}
@@ -316,7 +268,7 @@ export default function Contests() {
                       <div className="grid gap-2 sm:grid-cols-2">
                         <ContestListMetricCellCatalog icon={Users}>
                           {t("catalog.item.registrationsCount", {
-                            count: contest.metrics_snapshot.registrations_total,
+                            count: contest.participants_count ?? 0,
                           })}
                         </ContestListMetricCellCatalog>
                         <ContestListMetricCellCatalog icon={Trophy}>

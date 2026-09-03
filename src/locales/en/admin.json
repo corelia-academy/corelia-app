@@ -15,6 +15,10 @@
         "label": "Users",
         "tooltip": "Users"
       },
+      "jobs": {
+        "label": "Jobs",
+        "tooltip": "Jobs ingestion and review"
+      },
       "instructors": {
         "label": "Instructors",
         "tooltip": "Instructors"
@@ -38,12 +42,20 @@
       "contests": {
         "label": "Contests",
         "tooltip": "Contests"
+      },
+      "hackathons": {
+        "label": "Hackathons",
+        "tooltip": "Manage hackathons"
       }
     },
     "pageMeta": {
       "users": {
         "title": "User management",
         "description": "Control roles and access health across all users."
+      },
+      "jobs": {
+        "title": "Jobs operations",
+        "description": "Manage sources, companies, review queues, crawler runs, and market analytics."
       },
       "instructors": {
         "title": "Instructor management",
@@ -65,6 +77,10 @@
         "title": "Contest operations",
         "description": "Create and manage contests, review applications, score submissions, and publish results."
       },
+      "hackathons": {
+        "title": "Hackathon management",
+        "description": "Edit content, taxonomy, projects, and winners."
+      },
       "instructorDetail": {
         "title": "Instructor detail",
         "description": "Update profile and instructor information."
@@ -75,6 +91,138 @@
       "pills": {
         "sensitive": "Sensitive permissions",
         "manualAudit": "Manual audit"
+      }
+    }
+  },
+  "hackathons": {
+    "title": "Hackathons",
+    "description": "Create and manage public hackathon pages.",
+    "new": "New hackathon",
+    "edit": "Edit",
+    "view": "View public",
+    "preview": "Preview",
+    "loading": "Loading hackathons…",
+    "empty": "No hackathons yet.",
+    "editor": {
+      "back": "Back to list",
+      "newTitle": "New hackathon",
+      "editTitle": "Edit hackathon",
+      "newIntro": "Create the general information first; after the draft exists, complete the content, prizes, timeline, and projects.",
+      "editIntro": "Edit one hackathon section at a time and save before moving to other work.",
+      "participants": "registrations",
+      "saveAll": "Save all",
+      "saveSection": "Save changes",
+      "createDraft": "Create draft",
+      "cancel": "Cancel",
+      "saved": "Hackathon saved.",
+      "saveFailed": "Could not save hackathon.",
+      "notFound": "Hackathon not found.",
+      "unsaved": "Unsaved changes",
+      "leaveConfirm": "You have unsaved changes. Leave the editor and discard them?",
+      "add": "Add",
+      "archive": "Archive",
+      "restore": "Restore",
+      "activate": "Activate",
+      "remove": "Remove",
+      "removeImage": "Remove image",
+      "removeTrack": "Delete track",
+      "removeTrackConfirm": "Delete this track? The change takes effect after saving.",
+      "noTracks": "No tracks yet. Add them only when prizes need to be divided by track.",
+      "trackNumber": "Track {{number}}",
+      "trackName": "Track name",
+      "trackNamePlaceholder": "For example: Consumer, Infrastructure…",
+      "trackPrize": "Prize allocation",
+      "trackDescription": "Description",
+      "trackDescriptionPlaceholder": "Describe the scope and criteria for this track…",
+      "noTimeline": "No timeline stages yet.",
+      "timelineNumber": "Stage {{number}}",
+      "timelineTitle": "Stage title",
+      "timelineStarts": "Starts",
+      "timelineEnds": "Ends",
+      "removeTimeline": "Delete stage",
+      "saveBeforeWinners": "Save the hackathon before selecting winners.",
+      "selectProject": "Select a project",
+      "awardLabel": "Award label",
+      "noAwards": "No winning projects selected yet.",
+      "deleteConfirm": "Permanently delete this hackathon?",
+      "applyStatus": "Apply status",
+      "publish": "Publish",
+      "end": "End",
+      "delete": "Delete hackathon",
+      "editingLanguage": "Editing language",
+      "primaryBadge": "Primary",
+      "sidebarTitle": "Hackathon settings",
+      "taxonomyHint": "New hackathons include common sector and technology presets. Rename, add, or archive unused options; taxonomy in use cannot be deleted.",
+      "validationRequired": "Vietnamese title and slug are required.",
+      "validationCurrency": "Currency must be 2–10 uppercase letters or numbers.",
+      "validationPrize": "Track allocations cannot exceed the prize pool.",
+      "validationDeadlines": "Registration deadline must precede submission deadline.",
+      "status": {
+        "draft": "Draft",
+        "published": "Published",
+        "running": "Running",
+        "ended": "Ended"
+      },
+      "modes": {
+        "online": "Online",
+        "offline": "Offline",
+        "hybrid": "Hybrid"
+      },
+      "aiTranslation": {
+        "action": "Translate {{source}} → {{target}} with AI",
+        "translating": "AI is translating…",
+        "noSource": "There is no {{source}} content to translate yet.",
+        "overwriteConfirm": "The {{target}} draft already has content. Replace it with the AI translation?",
+        "invalidResponse": "AI returned an invalid hackathon translation.",
+        "applied": "Applied the AI translation from {{source}} to {{target}}. Review it before saving.",
+        "failed": "Could not translate the hackathon content."
+      },
+      "sections": {
+        "overview": "Overview",
+        "description": "Description",
+        "prizes": "Prize & Tracks",
+        "timeline": "Timeline",
+        "resources": "Resources",
+        "taxonomy": "Project Taxonomy",
+        "projects": "Projects & Winners",
+        "danger": "Publish, end & delete"
+      },
+      "sectionDescriptions": {
+        "overview": "Identity, host information, contact channels, and deadlines.",
+        "description": "The full Markdown introduction for the hackathon.",
+        "prizes": "Define the total prize pool and add tracks only when prizes need to be split.",
+        "timeline": "Hackathon stages ordered from earliest to latest.",
+        "resources": "Supporting documents, links, and guidance in Markdown.",
+        "projects": "Select winning projects and assign award labels manually.",
+        "danger": "Change the public status or permanently delete this hackathon."
+      },
+      "fields": {
+        "title": "Title",
+        "slug": "Slug",
+        "shortDescription": "Short description",
+        "mode": "Mode",
+        "host": "Host",
+        "hostWebsite": "Host website",
+        "currency": "Currency",
+        "markdown": "Markdown content",
+        "prizeDescription": "Prize description Markdown",
+        "timelineDescription": "Stage description Markdown",
+        "tracks": "Tracks",
+        "banner": "Hackathon banner",
+        "bannerHint": "Upload a wide image. Recommended ratio: 21:9.",
+        "bannerEmpty": "Add a cover image",
+        "uploadBanner": "Upload banner",
+        "changeBanner": "Change banner",
+        "bannerPreviewAlt": "Hackathon banner preview",
+        "hostLogo": "Host logo",
+        "hostLogoHint": "Upload a square or transparent logo.",
+        "changeHostLogo": "Upload or change host logo",
+        "hostLogoPreviewAlt": "Host logo preview",
+        "totalPrize": "Total prize pool",
+        "registration_deadline": "Registration deadline",
+        "submission_deadline": "Submission deadline",
+        "sectors": "Engineering areas",
+        "tech_stacks": "Technologies"
       }
     }
   },

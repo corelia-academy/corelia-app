@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -13,7 +14,6 @@ import { useAuth } from "@/stores/authStore";
 import {
   acceptProjectInviteById,
   declineProjectInviteById,
-  listMyNotifications,
   markAllNotificationsRead,
   markNotificationRead,
   type UserNotificationRow,
@@ -24,9 +24,10 @@ import {
 } from "@/lib/coInstructorInvites";
 import { useNavigate } from "react-router";
 import {
-  fetchProjectInviteDisplayContextByProjectIds,
-  type ProjectInviteDisplayContext,
-} from "@/lib/notificationInviteContext";
+  notificationInviteContextsQueryOptions,
+  notificationKeys,
+  notificationsQueryOptions,
+} from "@/features/notifications/notificationQueries";
 
 function payloadString(payload: Record<string, unknown>, key: string): string {
   const v = payload[key];
@@ -44,164 +45,136 @@ function payloadInternalPath(
 
 export function NotificationBell() {
   const { t } = useTranslation("common");
-  const { isAuthenticated, authInitialized, profile } = useAuth();
+  const { isAuthenticated, authInitialized, profile, user } = useAuth();
+  const userId = user?.id ?? null;
   // Achievements (Certificate vault) live on the public profile page.
   const achievementsPath = profile?.username
     ? `/@${encodeURIComponent(profile.username)}`
     : "/account";
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState<UserNotificationRow[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [busyId, setBusyId] = useState<string | null>(null);
-  const [inviteContextByProjectId, setInviteContextByProjectId] = useState<
-    Record<string, ProjectInviteDisplayContext>
-  >({});
+  const notificationsQuery = useQuery(
+    notificationsQueryOptions(userId, authInitialized && isAuthenticated),
+  );
+  const items = useMemo(() => notificationsQuery.data ?? [], [notificationsQuery.data]);
+  const loading = notificationsQuery.isPending;
 
-  const inviteProjectIdsKey = useMemo(() => {
+  const inviteProjectIds = useMemo(() => {
     const ids = new Set<string>();
     for (const n of items) {
       if (n.type !== "project_collaboration_invite") continue;
       const pid = n.payload.project_id;
       if (typeof pid === "string" && pid) ids.add(pid);
     }
-    return Array.from(ids).sort().join("|");
+    return Array.from(ids).sort();
   }, [items]);
 
-  useEffect(() => {
-    const inviteProjectIds = inviteProjectIdsKey
-      ? inviteProjectIdsKey.split("|").filter(Boolean)
-      : [];
-    if (inviteProjectIds.length === 0) {
-      setInviteContextByProjectId({});
-      return;
-    }
-    let cancelled = false;
-    void fetchProjectInviteDisplayContextByProjectIds(inviteProjectIds).then((ctx) => {
-      if (!cancelled) setInviteContextByProjectId(ctx);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [inviteProjectIdsKey]);
+  const inviteContextQuery = useQuery(
+    notificationInviteContextsQueryOptions(userId, inviteProjectIds),
+  );
+  const inviteContextByProjectId = inviteContextQuery.data ?? {};
 
-  const refresh = useCallback(async () => {
-    if (!isAuthenticated) return;
-    setLoading(true);
-    try {
-      const list = await listMyNotifications(40);
-      setItems(list);
-    } catch {
-      setItems([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (!authInitialized || !isAuthenticated) return;
-    void refresh();
-    const id = window.setInterval(() => void refresh(), 60000);
-    return () => window.clearInterval(id);
-  }, [authInitialized, isAuthenticated, refresh]);
+  const { mutate: markAllRead } = useMutation({
+    mutationFn: markAllNotificationsRead,
+    onSuccess: () => {
+      const readAt = new Date().toISOString();
+      queryClient.setQueryData<UserNotificationRow[]>(
+        notificationKeys.list(userId),
+        (current = []) =>
+          current.map((item) => (item.read_at ? item : { ...item, read_at: readAt })),
+      );
+    },
+    onError: (error) => {
+      console.error("[NotificationBell] markAllNotificationsRead failed", error);
+    },
+  });
 
   useEffect(() => {
     if (open && isAuthenticated) {
-      void markAllNotificationsRead()
-        .then(() => {
-          setItems((prev) =>
-            prev.map((item) =>
-              item.read_at ? item : { ...item, read_at: new Date().toISOString() }
-            )
-          );
-        })
-        .catch((e) => {
-          console.error("[NotificationBell] markAllNotificationsRead failed", e);
-        });
+      markAllRead();
     }
-  }, [open, isAuthenticated]);
+  }, [open, isAuthenticated, markAllRead]);
 
   const unreadCount = items.filter((n) => !n.read_at && !n.resolved_at).length;
 
-  async function handleAcceptInvite(notification: UserNotificationRow) {
-    const inviteId = notification.payload.invite_id;
-    if (typeof inviteId !== "string" || !inviteId) return;
-    setBusyId(notification.id);
-    try {
-      await acceptProjectInviteById(inviteId);
-      await markNotificationRead(notification.id);
-      await refresh();
-      toast.success(t("notifications.inviteAccepted"));
-    } catch (e) {
-      toast.error(
-        e instanceof Error ? e.message : t("notifications.inviteAcceptFailed"),
-      );
-    } finally {
-      setBusyId(null);
-    }
-  }
-
-  async function handleAcceptCoInstructorInvite(notification: UserNotificationRow) {
-    const inviteId = notification.payload.invite_id;
-    if (typeof inviteId !== "string" || !inviteId) return;
-    setBusyId(notification.id);
-    try {
-      const res = await acceptCoInstructorInviteById(inviteId);
-      await markNotificationRead(notification.id);
-      await refresh();
-      toast.success(t("notifications.coInstructorInviteAccepted"));
-      setOpen(false);
-      if (res?.course_id) {
-        navigate(`/instructor/courses/${res.course_id}/edit`);
+  type InviteAction =
+    | "accept-project"
+    | "decline-project"
+    | "accept-course"
+    | "decline-course";
+  const inviteMutation = useMutation({
+    mutationFn: async ({
+      action,
+      notification,
+    }: {
+      action: InviteAction;
+      notification: UserNotificationRow;
+    }) => {
+      const inviteId = notification.payload.invite_id;
+      if (typeof inviteId !== "string" || !inviteId) {
+        throw new Error(t("notifications.inviteAcceptFailed"));
       }
-    } catch (e) {
-      toast.error(
-        e instanceof Error
-          ? e.message
-          : t("notifications.coInstructorInviteAcceptFailed"),
-      );
-    } finally {
-      setBusyId(null);
-    }
-  }
 
-  async function handleDeclineCoInstructorInvite(notification: UserNotificationRow) {
-    const inviteId = notification.payload.invite_id;
-    if (typeof inviteId !== "string" || !inviteId) return;
-    setBusyId(notification.id);
-    try {
-      await declineCoInstructorInviteById(inviteId);
+      let courseId: string | null = null;
+      if (action === "accept-project") await acceptProjectInviteById(inviteId);
+      if (action === "decline-project") await declineProjectInviteById(inviteId);
+      if (action === "accept-course") {
+        const result = await acceptCoInstructorInviteById(inviteId);
+        courseId = result?.course_id ?? null;
+      }
+      if (action === "decline-course") await declineCoInstructorInviteById(inviteId);
       await markNotificationRead(notification.id);
-      await refresh();
-      toast.success(t("notifications.coInstructorInviteDeclined"));
-    } catch (e) {
-      toast.error(
-        e instanceof Error
-          ? e.message
-          : t("notifications.coInstructorInviteDeclineFailed"),
+      return { courseId };
+    },
+    onSuccess: async ({ courseId }, { action }) => {
+      await queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+      const messageKey =
+        action === "accept-project"
+          ? "notifications.inviteAccepted"
+          : action === "decline-project"
+            ? "notifications.inviteDeclined"
+            : action === "accept-course"
+              ? "notifications.coInstructorInviteAccepted"
+              : "notifications.coInstructorInviteDeclined";
+      toast.success(t(messageKey));
+      if (action === "accept-course") {
+        setOpen(false);
+        if (courseId) navigate(`/instructor/courses/${courseId}/edit`);
+      }
+    },
+    onError: (error, { action }) => {
+      const fallbackKey =
+        action === "accept-project"
+          ? "notifications.inviteAcceptFailed"
+          : action === "decline-project"
+            ? "notifications.inviteDeclineFailed"
+            : action === "accept-course"
+              ? "notifications.coInstructorInviteAcceptFailed"
+              : "notifications.coInstructorInviteDeclineFailed";
+      toast.error(error instanceof Error ? error.message : t(fallbackKey));
+    },
+  });
+  const busyId = inviteMutation.isPending
+    ? inviteMutation.variables?.notification.id ?? null
+    : null;
+  const { mutate: markRead } = useMutation({
+    mutationFn: markNotificationRead,
+    onSuccess: (_, notificationId) => {
+      queryClient.setQueryData<UserNotificationRow[]>(
+        notificationKeys.list(userId),
+        (current = []) =>
+          current.map((item) =>
+            item.id === notificationId
+              ? { ...item, read_at: item.read_at ?? new Date().toISOString() }
+              : item,
+          ),
       );
-    } finally {
-      setBusyId(null);
-    }
-  }
-
-  async function handleDeclineInvite(notification: UserNotificationRow) {
-    const inviteId = notification.payload.invite_id;
-    if (typeof inviteId !== "string" || !inviteId) return;
-    setBusyId(notification.id);
-    try {
-      await declineProjectInviteById(inviteId);
-      await markNotificationRead(notification.id);
-      await refresh();
-      toast.success(t("notifications.inviteDeclined"));
-    } catch (e) {
-      toast.error(
-        e instanceof Error ? e.message : t("notifications.inviteDeclineFailed"),
-      );
-    } finally {
-      setBusyId(null);
-    }
-  }
+    },
+    onError: (error) => {
+      console.error("[NotificationBell] markNotificationRead failed", error);
+    },
+  });
 
   if (!authInitialized || !isAuthenticated) return null;
 
@@ -307,7 +280,12 @@ export function NotificationBell() {
                               size="sm"
                               className="min-h-8"
                               disabled={busyId === n.id}
-                              onClick={() => void handleAcceptInvite(n)}
+                              onClick={() =>
+                                inviteMutation.mutate({
+                                  action: "accept-project",
+                                  notification: n,
+                                })
+                              }
                             >
                               {t("header.accept")}
                             </Button>
@@ -317,7 +295,12 @@ export function NotificationBell() {
                               variant="outline"
                               className="min-h-8"
                               disabled={busyId === n.id}
-                              onClick={() => void handleDeclineInvite(n)}
+                              onClick={() =>
+                                inviteMutation.mutate({
+                                  action: "decline-project",
+                                  notification: n,
+                                })
+                              }
                             >
                               {t("header.decline")}
                             </Button>
@@ -360,7 +343,12 @@ export function NotificationBell() {
                               size="sm"
                               className="min-h-8"
                               disabled={busyId === n.id}
-                              onClick={() => void handleAcceptCoInstructorInvite(n)}
+                              onClick={() =>
+                                inviteMutation.mutate({
+                                  action: "accept-course",
+                                  notification: n,
+                                })
+                              }
                             >
                               {t("header.accept")}
                             </Button>
@@ -370,7 +358,12 @@ export function NotificationBell() {
                               variant="outline"
                               className="min-h-8"
                               disabled={busyId === n.id}
-                              onClick={() => void handleDeclineCoInstructorInvite(n)}
+                              onClick={() =>
+                                inviteMutation.mutate({
+                                  action: "decline-course",
+                                  notification: n,
+                                })
+                              }
                             >
                               {t("header.decline")}
                             </Button>
@@ -415,7 +408,7 @@ export function NotificationBell() {
                               nativeButton={false}
                               onClick={() => {
                                 setOpen(false);
-                                void markNotificationRead(n.id).then(() => refresh());
+                                markRead(n.id);
                               }}
                             >
                               {t("notifications.viewHackathon")}
@@ -454,7 +447,7 @@ export function NotificationBell() {
                             nativeButton={false}
                             onClick={() => {
                               setOpen(false);
-                              void markNotificationRead(n.id).then(() => refresh());
+                              markRead(n.id);
                             }}
                           >
                             {t("notifications.viewCompletion")}
@@ -494,7 +487,7 @@ export function NotificationBell() {
                             nativeButton={false}
                             onClick={() => {
                               setOpen(false);
-                              void markNotificationRead(n.id).then(() => refresh());
+                              markRead(n.id);
                             }}
                           >
                             {t("notifications.viewCertificate")}
@@ -532,7 +525,7 @@ export function NotificationBell() {
                             nativeButton={false}
                             onClick={() => {
                               setOpen(false);
-                              void markNotificationRead(n.id).then(() => refresh());
+                              markRead(n.id);
                             }}
                           >
                             {t("notifications.viewCredential")}
@@ -558,7 +551,7 @@ export function NotificationBell() {
                               variant="ghost"
                               size="xs"
                               className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
-                              onClick={() => void markNotificationRead(n.id).then(() => refresh())}
+                              onClick={() => markRead(n.id)}
                             >
                               {t("notifications.markRead")}
                             </Button>

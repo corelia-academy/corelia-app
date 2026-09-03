@@ -1,0 +1,39 @@
+# Frontend Agent Guide
+
+These instructions apply under `src/`.
+
+## Structure and Boundaries
+
+- `App.tsx` owns React Router v7 route composition and lazy route imports.
+- `pages/<feature>/` owns route-level composition. For a large page, colocate `components/`, `hooks/`, and pure `utils/`; keep the page component focused on composition.
+- `features/` contains domain-specific reusable UI/logic that is not a route entry point.
+- `components/ui/` contains shared primitives; `components/` contains cross-page UI. Reuse both before adding a new component.
+- `lib/` is the established client data/domain layer. Extend a relevant helper instead of issuing new Supabase queries or Edge requests from presentation components.
+- `stores/` contains Zustand cross-cutting state. Keep feature-local state in React unless it genuinely needs cross-route ownership.
+- `types/` contains shared domain/database types; avoid parallel local shapes when a canonical type exists.
+
+## React, Data, and Auth
+
+- Use `@/…` for internal imports and follow the local file's formatting.
+- Follow `docs/front-end-rules/` as the architecture source of truth. During migration, use TanStack Query as the sole server-state cache and do not introduce another data-fetching framework.
+- Put Supabase access in domain services and server-state orchestration in query hooks/options. Keep components presentational; use effects only for external-system synchronization with cleanup.
+- Parallelize independent reads and reuse canonical query options/keys for fetching and prefetching.
+- Auth uses Supabase, `useAuth()`/`useAuthStore`, `AuthSync`, and the guards in `components/auth/`. Do not add Firebase code or duplicate auth listeners.
+- Use `RequireAuth`, `RequireRole`, and feature-specific guards. Role groups belong in `config/roles.ts`, not inline route arrays.
+- Preserve route paths, params, query/hash behavior, and redirects unless explicitly changing navigation behavior.
+
+## UI and i18n
+
+- UI is code-defined: inspect `components/ui/*`, shared components, styles, and representative feature code. Reuse existing primitives before adding another, but update code when product requirements need a new visual behavior.
+- Use Tailwind v4 and `cn` from `lib/utils`. Do not add another UI framework or icon library; current general-purpose icons use `lucide-react`.
+- Keep interactive controls accessible: explicit non-submit button types, labels for icon-only controls, meaningful alt text, focus behavior, and adequate touch targets.
+- User-facing text uses an existing i18next namespace from `i18n.ts`. Add matching keys to both `locales/vi/<namespace>.json` and `locales/en/<namespace>.json`.
+- Keep responsive behavior, layout stability, and loading/error/empty states consistent with representative pages in the same feature.
+
+## Placement and Validation
+
+- New route/page → `pages/<feature>/`; page-only UI/hook → inside that feature folder.
+- Cross-page domain UI/logic → `features/<domain>/`; broadly reusable UI → `components/`; data/RPC/Edge helper → `lib/`.
+- Place tests next to the relevant helper or in `src/tests/` when they cover cross-cutting regressions.
+- Start with `pnpm vitest run <relevant-test-file>`, then run `pnpm lint` and `pnpm build` when TypeScript/UI behavior changed. Add the broader suite when the change crosses features or release parity requires it.
+- Frontend implementation is local-only by default. Do not commit, push, or deploy frontend changes to `staging` or another remote unless the user explicitly requests remote delivery for the current change; a request from an earlier turn does not carry forward.

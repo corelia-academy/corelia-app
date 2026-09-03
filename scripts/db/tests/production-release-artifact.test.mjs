@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join, parse, resolve } from "node:path";
 import test from "node:test";
 import { assertSafeOutputPath } from "../build-production-release-candidate.mjs";
+import { parseNameStatusLine } from "../rebuild-production-manifest.mjs";
 import {
   DEFAULT_MANIFEST_PATH,
   EXPECTED_BASE_MAIN_SHA,
@@ -103,6 +104,21 @@ function expectFailure(manifest, state, pattern) {
   assert.equal(result.ok, false);
   assert.match(result.errors.join("\n"), pattern);
 }
+
+test("manifest builder resolves rename and copy rows to their target path", () => {
+  assert.deepEqual(parseNameStatusLine("R082\tdocs/old.md\tdocs/new.md"), {
+    status: "R082",
+    path: "docs/new.md",
+  });
+  assert.deepEqual(parseNameStatusLine("C100\tsrc/source.ts\tsrc/copy.ts"), {
+    status: "C100",
+    path: "src/copy.ts",
+  });
+  assert.deepEqual(parseNameStatusLine("M\tsrc/changed.ts"), {
+    status: "M",
+    path: "src/changed.ts",
+  });
+});
 
 test("exact candidate passes exact file, hash, tree and approved migration checks", () => {
   const { manifest, state } = buildFixture();
@@ -279,6 +295,7 @@ test("Production workflow is manual-only and does not require an approved releas
   // F-02 check: Workflow deploys only retained functions and runs remote cleanup.
   const expectedEdgeFunctions = [
     "corelia-api",
+    "cron-jobs",
     "generate-description",
     "generate-questions",
   ];

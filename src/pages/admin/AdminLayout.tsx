@@ -13,13 +13,17 @@ import { resolveAdminPageMeta } from "@/features/admin/layout/adminPageMeta";
 export default function AdminLayout() {
   const { t } = useTranslation("admin");
   const location = useLocation();
+  const isHackathonEditor =
+    location.pathname === "/admin/hackathons/new" ||
+    /^\/admin\/hackathons\/[^/]+\/edit$/.test(location.pathname);
   const { titleKey, descriptionKey } = resolveAdminPageMeta(location.pathname);
   const metaTitle = t(titleKey as never);
   void t(descriptionKey as never);
 
   return (
     <SidebarProvider
-      defaultOpen
+      key={isHackathonEditor ? "hackathon-editor" : "admin-default"}
+      defaultOpen={!isHackathonEditor}
       style={{ "--app-header-height": "2.75rem" } as React.CSSProperties}
     >
       <AdminSidebar />

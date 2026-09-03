@@ -1,0 +1,52 @@
+{
+  "eyebrow": "Corelia Jobs",
+  "title": "Việc làm trong công nghệ và Web3",
+  "subtitle": "Khám phá các vị trí tech và non-tech được tuyển chọn tại các công ty công nghệ và Web3.",
+  "landing": { "title": "Việc làm {{label}}", "subtitle": "Khám phá cơ hội {{label}} được tuyển chọn từ các nguồn công nghệ và Web3 đã qua rà soát." },
+  "search": "Tìm kiếm",
+  "searchPlaceholder": "Vị trí, kỹ năng, công ty hoặc địa điểm",
+  "results": "{{count}} việc làm",
+  "hiddenCount": "{{count}} đã ẩn",
+  "sources": { "connected": "Nguồn việc làm đang kết nối: {{sources}}" },
+  "retry": "Thử lại",
+  "nav": { "label": "Điều hướng việc làm", "find": "Tìm việc", "saved": "Đã lưu", "applied": "Đã ứng tuyển", "hidden": "Đã ẩn", "market": "Thị trường" },
+  "filters": {
+    "label": "Bộ lọc", "jobType": "Nhóm công việc", "role": "Vai trò", "domain": "Lĩnh vực", "skill": "Kỹ năng", "seniority": "Cấp độ", "workMode": "Hình thức làm việc", "region": "Khu vực", "employmentType": "Loại hình công việc", "minimumSalary": "Mức lương tối thiểu", "salaryCurrency": "Đơn vị lương", "postedDate": "Ngày đăng",
+    "allJobTypes": "Tất cả nhóm", "allRoles": "Tất cả vai trò", "allDomains": "Tất cả lĩnh vực", "allSkills": "Tất cả kỹ năng", "allSeniorities": "Tất cả cấp độ", "allWorkModes": "Mọi hình thức", "allRegions": "Tất cả khu vực", "allEmploymentTypes": "Mọi loại hình", "allCurrencies": "Tất cả đơn vị", "anyDate": "Mọi thời điểm", "last7Days": "7 ngày qua", "last30Days": "30 ngày qua", "clear": "Xóa lọc"
+  },
+  "values": { "tech": "Tech", "non_tech": "Non-tech", "intern": "Thực tập", "fresher": "Fresher", "junior": "Junior", "mid": "Mid-level", "senior": "Senior", "lead": "Lead / Staff", "manager": "Quản lý", "remote": "Từ xa", "hybrid": "Kết hợp", "onsite": "Tại văn phòng", "full_time": "Toàn thời gian", "part_time": "Bán thời gian", "contract": "Hợp đồng", "temporary": "Tạm thời", "internship": "Thực tập" },
+  "actions": { "save": "Lưu việc làm", "unsave": "Bỏ lưu", "markApplied": "Đánh dấu đã ứng tuyển", "applied": "Đã ứng tuyển", "hide": "Ẩn việc làm", "unhide": "Hiện lại việc làm", "apply": "Ứng tuyển trên trang công ty" },
+  "card": { "salaryNotShown": "Không công khai lương" },
+  "empty": { "title": "Không có việc làm phù hợp", "description": "Hãy mở rộng tìm kiếm hoặc xóa bớt bộ lọc." },
+  "infinite": { "loading": "Đang tải thêm việc làm…", "loadMore": "Tải thêm việc làm", "retry": "Thử tải thêm việc làm", "ready": "Việc làm tiếp theo sẽ tự tải khi bạn cuộn xuống." },
+  "messages": { "loginRequired": "Đăng nhập để lưu, ẩn hoặc theo dõi đơn ứng tuyển.", "updateFailed": "Không thể cập nhật việc làm này.", "loadFailed": "Không thể tải danh sách việc làm.", "hidden": "Đã ẩn việc làm.", "viewHidden": "Xem việc đã ẩn", "unhidden": "Đã đưa việc làm về danh sách chính." },
+  "detail": {
+    "back": "Quay lại danh sách", "notFound": "Việc làm này không còn khả dụng hoặc đã hết hạn.", "about": "Mô tả công việc", "noDescription": "Nguồn chưa cung cấp mô tả đầy đủ.", "requiredSkills": "Kỹ năng bắt buộc", "preferredSkills": "Kỹ năng ưu tiên", "overview": "Tổng quan", "salary": "Mức lương", "jobType": "Nhóm công việc", "seniority": "Cấp độ", "role": "Vai trò", "source": "Nguồn", "sourceAttribution": "Tin tuyển dụng do {{source}} cung cấp."
+  },
+  "user": {
+    "saved": { "title": "Việc làm đã lưu", "description": "Giữ các cơ hội tiềm năng ở một nơi để quay lại khi bạn sẵn sàng.", "empty": "Bạn chưa lưu việc làm đang hoạt động nào." },
+    "applied": { "title": "Đơn ứng tuyển", "description": "Danh sách gọn nhẹ các việc làm bạn đã ứng tuyển.", "empty": "Bạn chưa đánh dấu việc làm đang hoạt động nào là đã ứng tuyển." },
+    "hidden": { "title": "Việc làm đã ẩn", "description": "Xem lại các việc làm đã ẩn và đưa chúng trở lại danh sách chính.", "empty": "Bạn chưa ẩn việc làm nào." }
+  },
+  "market": {
+    "eyebrow": "Dữ liệu thị trường", "title": "Các công ty công nghệ đang tuyển gì", "subtitle": "Số liệu hằng ngày cho cả vị trí tech và non-tech từ các nguồn được Corelia tuyển chọn. Chỉ số so sánh dùng các nguồn xuất hiện trong cả hai kỳ.",
+    "cards": { "active": "Việc làm đang mở", "new": "Tin mới hôm nay", "remote": "Tỷ lệ từ xa", "entry": "Vị trí đầu vào" },
+    "topRoles": "Vai trò có nhu cầu", "topSkills": "Kỹ năng được yêu cầu nhiều", "topDomains": "Tuyển dụng theo lĩnh vực", "activity": "Hoạt động tuyển dụng mới", "activityDescription": "Số tin mới và hết hạn hằng ngày trong 30 lần quan sát gần nhất", "newJobs": "Tin mới", "expiredJobs": "Tin hết hạn", "roleGrowth": "Tăng trưởng vai trò (nguồn so sánh được)", "skillGrowth": "Tăng trưởng kỹ năng (nguồn so sánh được)", "seniorityMix": "Phân bổ cấp độ", "growthPending": "Cần ít nhất 14 snapshot hằng ngày trước khi hiển thị tăng trưởng.", "disclaimer": "Quan sát từ các nguồn Corelia theo dõi; đây là dữ liệu mẫu, không phải toàn bộ thị trường.",
+    "empty": { "title": "Dữ liệu thị trường đang được chuẩn bị", "description": "Admin cần crawl ít nhất một công ty đã xác minh và làm mới analytics hằng ngày." }
+  },
+  "admin": {
+    "title": "Vận hành Jobs", "subtitle": "Quản lý nguồn và công ty, duyệt phân loại, chạy crawler và kiểm tra dữ liệu thị trường.", "loading": "Đang tải vận hành Jobs…",
+    "nav": { "overview": "Tổng quan", "review": "Chờ duyệt", "sources": "Nguồn", "companies": "Công ty", "crawlers": "Lượt crawl", "analytics": "Analytics" },
+    "overview": { "active": "Việc làm đang mở", "review": "Cần duyệt", "companies": "Công ty", "sources": "Nguồn", "failedRuns": "Lượt chạy lỗi" },
+    "actions": { "run": "Chạy ngay", "runAll": "Chạy một lô crawl", "revalidate": "Kiểm tra lại", "revalidateAll": "Kiểm tra lại nguồn đến hạn", "resolve": "Đánh dấu đã xử lý", "publish": "Đăng", "reject": "Từ chối", "enable": "Bật", "disable": "Tắt", "verify": "Xác minh", "unverify": "Bỏ xác minh", "save": "Lưu", "cancel": "Hủy", "edit": "Sửa", "logs": "Xem log", "careerPage": "Trang tuyển dụng", "clearLogFilter": "Hiện tất cả lượt chạy", "refreshAnalytics": "Làm mới analytics" },
+    "confirm": { "runAll": "Chạy ngay toàn bộ nguồn Jobs đang bật và đến hạn? Thao tác này có thể dùng quota API ngoài và AI.", "revalidateAll": "Kiểm tra lại toàn bộ nguồn Jobs đang bật và đến hạn? Thao tác này lấy snapshot hiện tại nhưng không gọi AI." },
+    "messages": { "runComplete": "Đã hoàn tất lượt crawl.", "noEligibleCompanies": "Nguồn này chưa có công ty active phù hợp. Hãy thêm và xác minh công ty trước khi chạy.", "saved": "Đã lưu thay đổi.", "analyticsRefreshed": "Đã làm mới dữ liệu thị trường.", "actionFailed": "Không thể hoàn tất thao tác." },
+    "review": { "reason": "Lý do cần duyệt", "title": "Tên vị trí", "summary": "Tóm tắt đúng sự thật", "primaryRole": "Slug vai trò chính", "seniority": "Slug cấp độ", "roles": "Các slug vai trò, cách nhau bằng dấu phẩy", "domains": "Các slug lĩnh vực, cách nhau bằng dấu phẩy", "requiredSkills": "Các slug kỹ năng bắt buộc, cách nhau bằng dấu phẩy", "preferredSkills": "Các slug kỹ năng ưu tiên, cách nhau bằng dấu phẩy", "empty": "Hiện không có việc làm cần duyệt." },
+    "columns": { "source": "Nguồn", "type": "Loại", "cadence": "Chu kỳ", "jobsFound": "Số việc làm", "policy": "Đã duyệt chính sách", "lastRun": "Lần thành công cuối", "lastError": "Lỗi gần nhất", "status": "Trạng thái", "actions": "Thao tác", "started": "Bắt đầu", "trigger": "Kích hoạt", "target": "Đối tượng", "fetched": "Đã lấy", "published": "Đã đăng", "review": "Chờ duyệt", "rejected": "Từ chối", "aiFailed": "AI fallback", "failed": "Lỗi" },
+    "status": { "enabled": "Đang bật", "disabled": "Đã tắt", "error": "Có lỗi" },
+    "company": { "add": "Thêm công ty", "name": "Tên công ty", "slug": "Slug", "websiteUrl": "URL website", "logoUrl": "URL logo (không bắt buộc)", "careersUrl": "URL tuyển dụng hoặc ATS", "source": "Nguồn / adapter", "identifier": "Mã board/site ATS", "domains": "Lĩnh vực, cách nhau bằng dấu phẩy", "cadence": "Chu kỳ crawl theo giờ", "priority": "Độ ưu tiên 0–100", "detected": "Đã nhận diện {{source}} / {{identifier}}. Có thể chỉnh lại.", "openJobs": "{{count}} việc làm đang mở", "priorityValue": "Ưu tiên {{priority}}", "verified": "Đã xác minh", "unverified": "Chưa xác minh", "neverRun": "Chưa từng crawl", "lastRevalidated": "Kiểm tra lại gần nhất" },
+    "source": { "addRss": "Kết nối nguồn RSS", "name": "Tên nhà cung cấp", "slug": "Slug nhà cung cấp", "baseUrl": "URL website nhà cung cấp", "feedUrls": "URL RSS/Atom, mỗi dòng một URL", "termsUrl": "URL điều khoản hoặc tài liệu feed", "priority": "Độ ưu tiên 0–100", "attributionText": "Nội dung ghi nguồn", "redistributionNotes": "Ghi chú chính sách/phân phối lại", "policyReviewed": "Đã duyệt chính sách", "attributionRequired": "Bắt buộc ghi nguồn", "canonicalRequired": "Bắt buộc link canonical", "allowDescription": "Cho phép hiển thị mô tả", "allowSeo": "Cho phép index SEO" },
+    "analytics": { "comparableNew": "Tin mới có thể so sánh", "comparableTotal": "Tin đang mở có thể so sánh" },
+    "alerts": { "title": "Cảnh báo vận hành đang mở", "occurrences": "{{count}} lần xuất hiện" }
+  }
+}

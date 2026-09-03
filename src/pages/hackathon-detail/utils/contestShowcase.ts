@@ -12,15 +12,16 @@ export type ContestShowcaseDisplayRow = {
   submissionId: string;
   /** Row UUID on `projects` when synced; null when leaderboard entry has no linked project row yet. */
   projectId: string | null;
-  ownerId: string | null;
   likeCount: number;
   title: string;
   summary: string | null;
   demo_url: string | null;
   repo_url: string | null;
   slide_url: string | null;
-  screenshot_url: string | null;
-  cover_image_url: string | null;
+  logo_path: string | null;
+  screenshot_paths: string[];
+  logo_url?: string | null;
+  screenshot_urls?: string[];
   video_url: string | null;
   rank?: number;
   average_score?: number;
@@ -46,15 +47,16 @@ export function buildContestShowcaseRows(
         key: proj.id,
         submissionId: proj.source_submission_id ?? proj.id,
         projectId: proj.id,
-        ownerId: proj.owner_id,
         likeCount: Number(proj.like_count ?? 0),
         title: proj.title,
         summary: proj.summary,
         demo_url: proj.demo_url,
         repo_url: proj.repo_url,
         slide_url: proj.slide_url,
-        screenshot_url: proj.screenshot_url,
-        cover_image_url: proj.cover_image_url,
+        logo_path: proj.logo_path,
+        screenshot_paths: proj.screenshot_paths,
+        logo_url: proj.logo_url,
+        screenshot_urls: proj.screenshot_urls,
         video_url: proj.video_url,
         contestant_fallback: null,
       }));
@@ -72,20 +74,16 @@ export function buildContestShowcaseRows(
       key: entry.submission_id,
       submissionId: entry.submission_id,
       projectId: proj?.id ?? null,
-      ownerId: proj?.owner_id ?? null,
       likeCount: Number(proj?.like_count ?? 0),
       title,
       summary: proj?.summary ?? entry.summary ?? null,
       demo_url: proj?.demo_url ?? entry.demo_url ?? null,
       repo_url: proj?.repo_url ?? entry.repo_url ?? null,
       slide_url: proj?.slide_url ?? entry.slide_url ?? null,
-      screenshot_url: proj?.screenshot_url ?? entry.screenshot_url ?? null,
-      cover_image_url:
-        proj?.cover_image_url ??
-        entry.cover_image_url ??
-        proj?.screenshot_url ??
-        entry.screenshot_url ??
-        null,
+      logo_path: proj?.logo_path ?? entry.logo_path ?? null,
+      screenshot_paths: proj?.screenshot_paths ?? entry.screenshot_paths ?? [],
+      logo_url: proj?.logo_url ?? null,
+      screenshot_urls: proj?.screenshot_urls ?? [],
       video_url: proj?.video_url ?? entry.video_url ?? null,
       rank: entry.rank,
       average_score: entry.average_score,
@@ -108,15 +106,16 @@ export function buildContestShowcaseRows(
       key: proj.id,
       submissionId: sid,
       projectId: proj.id,
-      ownerId: proj.owner_id,
       likeCount: Number(proj.like_count ?? 0),
       title: proj.title,
       summary: proj.summary,
       demo_url: proj.demo_url,
       repo_url: proj.repo_url,
       slide_url: proj.slide_url,
-      screenshot_url: proj.screenshot_url,
-      cover_image_url: proj.cover_image_url,
+      logo_path: proj.logo_path,
+      screenshot_paths: proj.screenshot_paths,
+      logo_url: proj.logo_url,
+      screenshot_urls: proj.screenshot_urls,
       video_url: proj.video_url,
       contestant_fallback: null,
     });

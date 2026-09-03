@@ -1,5 +1,7 @@
 # Corelia Database Optimization — Master Plan
 
+> **Superseded for hackathon:** inventory score/access-invite và lifecycle judging bên dưới chỉ là snapshot audit cũ. Contract hiện hành nằm tại [docs/hackathon](./hackathon/README.md) và xóa trực tiếp các object legacy không cần export.
+
 > Phạm vi: audit và lập kế hoạch. Tài liệu này không tự thay đổi code, database, migration history hoặc production.
 >
 > Cập nhật: 2026-08-23 | Target: `corelia-app` / Main Production và `corelia-staging` / Staging

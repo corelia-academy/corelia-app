@@ -11,12 +11,12 @@ This update changes CI/CD release controls only. It does not change application 
 - **Separated deployment paths:** The [`Deploy Staging`](.github/workflows/deploy-staging.yml) workflow handles Supabase migrations and Edge Functions. The Vite app and Cloudflare Workers deployment use a separate path.
 - **Staging release gate:** A qualifying push to `staging` runs migration guardrails, the full test suite, lint, build, and an isolated local migration recreate before any remote migration or Edge Function deployment.
 - **Pull-request guardrails:** Pull requests that touch database or release-control files run migration baseline/declaration checks and an isolated migration recreation. [`Verify Protected Live Migration History`](.github/workflows/db-live-history-verify.yml) provides a separate read-only check for `staging` or `main`.
-- **Production release control:** Production is not push-triggered. The [`Deploy Production`](.github/workflows/deploy-prod.yml) workflow uses a manual two-stage release from `main`, with an approved release commit, an exact confirmation token, and explicit acknowledgement of recovery limitations.
+- **Production release control:** Production is not push-triggered. The [`Deploy Production`](.github/workflows/deploy-prod.yml) workflow must be dispatched manually from `main` and runs its verification job before any Supabase deployment.
 - **Failure containment:** Release jobs use bounded local cleanup and controlled concurrency; migration rollouts that require destructive changes can deploy a compatible backend before applying the migration.
 
 ## Release process
 
-See [Release process](docs/RELEASE_PROCESS.md) for the staging and production flow, release gates, approval inputs, rationale, and failure handling.
+See [Release process](docs/RELEASE_PROCESS.md) for the staging and production flow, release gates, current triggers, and failure handling.
 
 ## Prerequisites
 
@@ -79,7 +79,7 @@ Workflows under [.github/workflows](.github/workflows) build with Vite and expec
 - `VITE_SUPABASE_PUBLISHABLE_KEY` and/or `VITE_SUPABASE_ANON_KEY` (at least one must be set for the client key)
 - Optional: `VITE_OCID_CLIENT_ID`, `VITE_OCID_REDIRECT_URI`, `VITE_YOUTUBE_API_KEY`
 
-Replace the placeholder “Hosting deploy” step in each workflow with your real host command (e.g. `wrangler deploy` or Cloudflare Pages) when ready.
+The workflows in this repository do not publish the frontend. Treat Cloudflare frontend publication as a separate pipeline and verify it independently when a release contains browser-app changes.
 
 ## React Compiler
 

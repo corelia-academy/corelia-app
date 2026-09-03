@@ -1,410 +1,192 @@
-import { useCallback, useEffect, useState } from "react";
-import { NavLink, useNavigate, useSearchParams } from "react-router";
+import { useCallback, useMemo } from "react";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { Package, ShieldAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import {
-  ExternalLink,
-  FileImage,
-  Github,
-  GraduationCap,
-  Heart,
-  ImageIcon,
-  MessageCircle,
-  Package,
-  PlayCircle,
-  Presentation,
-  ShieldAlert,
-  Trophy,
-} from "lucide-react";
+import { useSearchParams } from "react-router";
 
+import { ProjectCard } from "@/components/projects/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/projects/ProjectCardSkeleton";
-import { ProjectFilterBar } from "@/components/projects/ProjectFilterBar";
 import { Button } from "@/components/ui/button";
-import {
-  listPublicDirectoryItems,
-  type PublicDirectoryItem,
-  type PublicProjectSort,
-  type PublicProjectSourceFilter,
-} from "@/lib/projects";
+import { publicHackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
+import { publicProjectDirectoryQueryOptions } from "@/features/projects/projectQueries";
+import type { PublicProjectEntry, PublicProjectSort } from "@/lib/projects";
 import { cn } from "@/lib/utils";
-import type { Project } from "@/types/projects";
+import type { Contest, HackathonTaxonomyOption } from "@/types/hackathons";
 
-const PAGE_SIZE = 12;
+type FilterOption = Pick<HackathonTaxonomyOption, "id" | "name"> & { active?: boolean };
 
-function normalizeSourceParam(value: string | null): PublicProjectSourceFilter {
-  if (value === "hackathon" || value === "course" || value === "standalone") return value;
-  return "all";
+function csv(value: string | null): string[] {
+  return Array.from(new Set((value ?? "").split(",").map((item) => item.trim()).filter(Boolean)));
 }
 
-function normalizeSortParam(value: string | null): PublicProjectSort {
-  if (value === "most_liked" || value === "most_commented") return value;
-  return "newest";
+function sortParam(value: string | null): PublicProjectSort {
+  return value === "oldest" ? "oldest" : "newest";
 }
 
-function emptyDescriptionKey(source: PublicProjectSourceFilter):
-  | "projects.emptyDescription"
-  | "projects.emptyHackathonDescription"
-  | "projects.emptyCourseDescription"
-  | "projects.emptyShowcaseDescription" {
-  if (source === "hackathon") return "projects.emptyHackathonDescription";
-  if (source === "course") return "projects.emptyCourseDescription";
-  if (source === "standalone") return "projects.emptyShowcaseDescription";
-  return "projects.emptyDescription";
-}
-
-function ownerDisplay(item: PublicDirectoryItem): {
-  ownerLabel: string | null;
-  ownerHandle: string | null;
-} {
-  const owner = item.projectOwner;
-  const handle = owner?.username || owner?.ocid || owner?.id || null;
-  const label = owner?.full_name?.trim() || owner?.username?.trim() || owner?.ocid?.trim() || null;
-  return { ownerLabel: label, ownerHandle: handle };
-}
-
-function DirectoryCover({ item }: { item: PublicDirectoryItem }) {
-  const Icon = item.kind === "hackathon" ? Trophy : item.kind === "course" ? GraduationCap : ImageIcon;
-  if (item.imageUrl) {
-    return (
-      <img
-        src={item.imageUrl}
-        alt={item.title}
-        className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
-        loading="lazy"
-      />
-    );
-  }
-
+function TaxonomyFilter({
+  label,
+  options,
+  selected,
+  onChange,
+}: {
+  label: string;
+  options: FilterOption[];
+  selected: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  const activeOptions = options.filter((option) => option.active !== false);
+  if (activeOptions.length === 0) return null;
   return (
-    <div className="flex h-full w-full items-center justify-center bg-surface-raised">
-      <div className="flex size-14 items-center justify-center rounded-full border border-border-subtle bg-surface-base text-foreground-subtle">
-        <Icon className="size-7" aria-hidden />
-      </div>
-    </div>
-  );
-}
-
-function DirectoryCard({ item }: { item: PublicDirectoryItem }) {
-  const { t } = useTranslation("common");
-  const navigate = useNavigate();
-  const project = item.kind === "showcase" ? (item.source as Project) : null;
-  const { ownerHandle, ownerLabel } = ownerDisplay(item);
-  const ownerText = ownerHandle ? `@${ownerHandle}` : ownerLabel;
-  const badge =
-    item.kind === "hackathon"
-      ? t("projects.sourceHackathon")
-      : item.kind === "course"
-        ? t("projects.sourceCourse")
-        : t("projects.sourceShowcase");
-
-  const actions = project
-    ? [
-        { key: "demo", label: t("projects.detail.demo"), href: project.demo_url, icon: ExternalLink },
-        { key: "repo", label: t("projects.detail.repo"), href: project.repo_url, icon: Github },
-        { key: "slides", label: t("projects.detail.slides"), href: project.slide_url, icon: Presentation },
-        {
-          key: "screenshot",
-          label: t("projects.detail.screenshot"),
-          href: project.screenshot_url,
-          icon: FileImage,
-        },
-        { key: "video", label: t("projects.detail.video"), href: project.video_url, icon: PlayCircle },
-      ].filter((action) => Boolean(action.href))
-    : [];
-  const visibleActions = actions.slice(0, 4);
-  const hiddenActionCount = Math.max(0, actions.length - visibleActions.length);
-
-  return (
-    <article
-      role="link"
-      tabIndex={0}
-      aria-label={item.title}
-      className={cn(
-        "group flex h-full min-h-[360px] cursor-pointer flex-col overflow-hidden rounded-lg border border-border-subtle bg-surface-base shadow-card transition-colors hover:border-border hover:bg-surface-raised/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-      )}
-      onClick={() => navigate(item.href)}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          navigate(item.href);
-        }
-      }}
-    >
-      <div className="aspect-video w-full overflow-hidden border-b border-border-subtle bg-surface-raised">
-        <DirectoryCover item={item} />
-      </div>
-
-      <div className="flex min-h-0 flex-1 flex-col p-4">
-        <div className="flex items-start gap-2">
-          <h2 className="min-w-0 flex-1 line-clamp-2 text-sm font-semibold leading-snug text-foreground">
-            {item.title}
-          </h2>
-          <span className="shrink-0 rounded-full border border-border-subtle bg-surface-raised px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-foreground-muted">
-            {badge}
-          </span>
-        </div>
-
-        {ownerText ? (
-          <div className="mt-2 text-xs text-foreground-muted">
-            {t("projects.byPrefix")}{" "}
-            {ownerHandle ? (
-              <NavLink
-                className="font-medium text-foreground underline underline-offset-4 hover:no-underline"
-                to={`/@${ownerHandle}`}
-                onClick={(event) => event.stopPropagation()}
-              >
-                {ownerText}
-              </NavLink>
-            ) : (
-              <span className="font-medium text-foreground">{ownerText}</span>
-            )}
-          </div>
-        ) : null}
-
-        <p className="mt-3 min-h-10 line-clamp-2 text-sm leading-5 text-foreground-muted">
-          {item.summary || t("projects.card.noSummary")}
-        </p>
-
-        <div className="mt-auto flex items-center justify-between gap-3 pt-4">
-          {project ? (
-            <div className="flex items-center gap-3 text-xs text-foreground-muted">
-              <span className="inline-flex items-center gap-1">
-                <Heart className="size-4" aria-hidden />
-                <span className="tabular-nums">{Number(project.like_count ?? 0)}</span>
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <MessageCircle className="size-4" aria-hidden />
-                <span className="tabular-nums">{Number(project.comment_count ?? 0)}</span>
-              </span>
-            </div>
-          ) : (
-            <span className="inline-flex items-center gap-1 text-xs text-foreground-muted">
-              {item.kind === "hackathon" ? (
-                <Trophy className="size-4" aria-hidden />
-              ) : (
-                <GraduationCap className="size-4" aria-hidden />
+    <fieldset className="min-w-0">
+      <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-foreground-muted">
+        {label}
+      </legend>
+      <div className="flex flex-wrap gap-2">
+        {activeOptions.map((option) => {
+          const checked = selected.includes(option.id);
+          return (
+            <button
+              key={option.id}
+              type="button"
+              aria-pressed={checked}
+              className={cn(
+                "min-h-11 rounded-full border px-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                checked
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-surface-base text-foreground hover:bg-surface-raised",
               )}
-              {badge}
-            </span>
-          )}
-
-          <div className="flex items-center gap-1" aria-label={t("projects.card.links")}>
-            {visibleActions.map((action) => {
-              const Icon = action.icon;
-              return (
-                <a
-                  key={action.key}
-                  href={action.href ?? undefined}
-                  target="_blank"
-                  rel="noreferrer"
-                  title={action.label}
-                  aria-label={action.label}
-                  className="inline-flex size-8 items-center justify-center rounded-md border border-border bg-surface-base text-foreground-muted transition-colors hover:bg-surface-raised hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <Icon className="size-4" aria-hidden />
-                </a>
-              );
-            })}
-            {hiddenActionCount > 0 ? (
-              <span
-                className="inline-flex size-8 items-center justify-center rounded-md border border-border bg-surface-base text-sm font-semibold text-foreground-muted"
-                title={t("projects.card.moreLinks", { count: hiddenActionCount })}
-              >
-                ...
-              </span>
-            ) : null}
-            <span className="inline-flex size-8 items-center justify-center rounded-md border border-border bg-surface-base text-foreground-muted transition-colors group-hover:bg-surface-raised group-hover:text-foreground">
-              <ExternalLink className="size-4" aria-hidden />
-            </span>
-          </div>
-        </div>
+              onClick={() =>
+                onChange(
+                  checked ? selected.filter((id) => id !== option.id) : [...selected, option.id],
+                )
+              }
+            >
+              {option.name}
+            </button>
+          );
+        })}
       </div>
-    </article>
+    </fieldset>
   );
+}
+
+function winnerFirst(items: PublicProjectEntry[], contest: Contest | null): PublicProjectEntry[] {
+  const order = new Map(
+    (contest?.winner_awards ?? []).map((award) => [award.project_id, award.sort_order]),
+  );
+  return [...items].sort((a, b) => {
+    const aOrder = order.get(a.project.id);
+    const bOrder = order.get(b.project.id);
+    if (aOrder == null && bOrder == null) return 0;
+    if (aOrder == null) return 1;
+    if (bOrder == null) return -1;
+    return aOrder - bOrder;
+  });
 }
 
 export default function ProjectsPage() {
   const { t, i18n } = useTranslation("common");
-  const [searchParams, setSearchParams] = useSearchParams();
-  const source = normalizeSourceParam(searchParams.get("source"));
-  const sort = normalizeSortParam(searchParams.get("sort"));
-  const [items, setItems] = useState<PublicDirectoryItem[]>([]);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [params, setParams] = useSearchParams();
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const hackathonSlug = params.get("hackathon") ?? "";
+  const trackIds = csv(params.get("tracks"));
+  const sectorIds = csv(params.get("sectors"));
+  const techStackIds = csv(params.get("tech"));
+  const sort = sortParam(params.get("sort"));
 
-  const updateSearch = useCallback(
-    (next: { source?: PublicProjectSourceFilter; sort?: PublicProjectSort }) => {
-      const params = new URLSearchParams(searchParams);
-      const nextSource = next.source ?? source;
-      const nextSort = next.sort ?? sort;
-
-      if (nextSource === "all") params.delete("source");
-      else params.set("source", nextSource);
-
-      params.set("sort", nextSort);
-      setSearchParams(params, { replace: false });
-    },
-    [searchParams, setSearchParams, sort, source],
+  const hackathonsQuery = useQuery(publicHackathonCatalogQueryOptions(locale));
+  const hackathons = hackathonsQuery.data ?? [];
+  const selectedHackathon = hackathons.find((item) => item.slug === hackathonSlug) ?? null;
+  const projectsQuery = useInfiniteQuery(
+    publicProjectDirectoryQueryOptions(locale, "all", sort, {
+      hackathonId: selectedHackathon?.id ?? null,
+      trackIds,
+      sectorIds,
+      techStackIds,
+      winnerProjectIds: selectedHackathon?.winner_awards?.map((award) => award.project_id) ?? [],
+    }),
+  );
+  const items = useMemo(
+    () => winnerFirst(projectsQuery.data?.pages.flatMap((page) => page.items) ?? [], selectedHackathon),
+    [projectsQuery.data?.pages, selectedHackathon],
   );
 
-  const loadFirstPage = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await listPublicDirectoryItems({
-        locale: i18n.language,
-        source,
-        sort,
-        limit: PAGE_SIZE,
-        cursor: null,
-      });
-      setItems(result.items);
-      setNextCursor(result.nextCursor);
-      setHasMore(result.hasMore);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t("projects.errorDescription"));
-      setItems([]);
-      setNextCursor(null);
-      setHasMore(false);
-    } finally {
-      setLoading(false);
+  const update = useCallback((key: string, value: string | string[]) => {
+    const next = new URLSearchParams(params);
+    const normalized = Array.isArray(value) ? value.join(",") : value;
+    if (normalized) next.set(key, normalized);
+    else next.delete(key);
+    if (key === "hackathon") {
+      next.delete("tracks");
+      next.delete("sectors");
+      next.delete("tech");
     }
-  }, [i18n.language, sort, source, t]);
+    setParams(next);
+  }, [params, setParams]);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        const result = await listPublicDirectoryItems({
-          locale: i18n.language,
-          source,
-          sort,
-          limit: PAGE_SIZE,
-          cursor: null,
-        });
-        if (cancelled) return;
-        setItems(result.items);
-        setNextCursor(result.nextCursor);
-        setHasMore(result.hasMore);
-      } catch (e) {
-        if (cancelled) return;
-        setError(e instanceof Error ? e.message : t("projects.errorDescription"));
-        setItems([]);
-        setNextCursor(null);
-        setHasMore(false);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [i18n.language, sort, source, t]);
-
-  async function handleLoadMore() {
-    if (!nextCursor || loadingMore) return;
-    setLoadingMore(true);
-    setError(null);
-    try {
-      const result = await listPublicDirectoryItems({
-        locale: i18n.language,
-        source,
-        sort,
-        limit: PAGE_SIZE,
-        cursor: nextCursor,
-      });
-      setItems((current) => [...current, ...result.items]);
-      setNextCursor(result.nextCursor);
-      setHasMore(result.hasMore);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t("projects.errorDescription"));
-    } finally {
-      setLoadingMore(false);
-    }
-  }
+  const error = projectsQuery.error instanceof Error ? projectsQuery.error.message : null;
 
   return (
     <div className="container-app py-6 sm:py-8">
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <Package className="size-5 text-primary" aria-hidden />
-            <h1 className="truncate text-xl font-semibold text-foreground sm:text-2xl">
-              {t("projects.title")}
-            </h1>
-          </div>
-          <p className="mt-1 text-sm text-foreground-muted">{t("projects.description")}</p>
+      <header className="mb-6">
+        <div className="flex items-center gap-2">
+          <Package className="size-5 text-primary" aria-hidden />
+          <h1 className="text-xl font-semibold text-foreground sm:text-2xl">{t("projects.title")}</h1>
         </div>
-      </div>
+        <p className="mt-1 text-sm text-foreground-muted">{t("projects.description")}</p>
+      </header>
 
-      <ProjectFilterBar
-        source={source}
-        sort={sort}
-        onSourceChange={(nextSource) => updateSearch({ source: nextSource })}
-        onSortChange={(nextSort) => updateSearch({ sort: nextSort })}
-      />
+      <section className="space-y-5 rounded-lg border border-border-subtle bg-surface-base p-4 shadow-card">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="text-sm font-medium text-foreground">
+            {t("projects.filters.hackathon")}
+            <select className="mt-2 min-h-11 w-full rounded-md border border-border bg-background px-3" value={hackathonSlug} onChange={(event) => update("hackathon", event.target.value)}>
+              <option value="">{t("projects.filters.allHackathons")}</option>
+              {hackathons.map((hackathon) => <option key={hackathon.id} value={hackathon.slug ?? ""}>{hackathon.title}</option>)}
+            </select>
+          </label>
+          <label className="text-sm font-medium text-foreground">
+            {t("projects.sort.label")}
+            <select className="mt-2 min-h-11 w-full rounded-md border border-border bg-background px-3" value={sort} onChange={(event) => update("sort", event.target.value)}>
+              <option value="newest">{t("projects.sort.newest")}</option>
+              <option value="oldest">{t("projects.sort.oldest")}</option>
+            </select>
+          </label>
+        </div>
+
+        {selectedHackathon ? (
+          <div className="grid gap-5 border-t border-border-subtle pt-5 lg:grid-cols-3">
+            <TaxonomyFilter label={t("projects.filters.tracks")} options={selectedHackathon.tracks ?? []} selected={trackIds} onChange={(ids) => update("tracks", ids)} />
+            <TaxonomyFilter label={t("projects.filters.sectors")} options={selectedHackathon.sectors ?? []} selected={sectorIds} onChange={(ids) => update("sectors", ids)} />
+            <TaxonomyFilter label={t("projects.filters.techStacks")} options={selectedHackathon.tech_stacks ?? []} selected={techStackIds} onChange={(ids) => update("tech", ids)} />
+          </div>
+        ) : null}
+      </section>
 
       <div className="mt-6">
-        {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <ProjectCardSkeleton key={index} />
-            ))}
-          </div>
+        {projectsQuery.isPending ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div>
         ) : error && items.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-14 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
-              <ShieldAlert className="size-6 text-foreground-subtle" aria-hidden />
-            </div>
-            <div className="max-w-lg">
-              <h2 className="text-sm font-semibold text-foreground">{t("projects.errorTitle")}</h2>
-              <p className="mt-1 text-sm text-foreground-muted">
-                {error || t("projects.errorDescription")}
-              </p>
-            </div>
-            <Button type="button" onClick={() => void loadFirstPage()}>
-              {t("projects.retry")}
-            </Button>
+          <div className="flex flex-col items-center gap-3 py-14 text-center" role="alert">
+            <ShieldAlert className="size-8 text-foreground-subtle" aria-hidden />
+            <p className="text-sm text-foreground-muted">{error}</p>
+            <Button type="button" onClick={() => void projectsQuery.refetch()}>{t("projects.retry")}</Button>
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-lg border border-border-subtle bg-surface-base px-4 py-14 text-center shadow-card">
-            <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
-              <Package className="size-6 text-foreground-subtle" aria-hidden />
-            </div>
-            <div className="max-w-lg">
-              <h2 className="text-sm font-semibold text-foreground">{t("projects.emptyTitle")}</h2>
-              <p className="mt-1 text-sm text-foreground-muted">
-                {t(emptyDescriptionKey(source))}
-              </p>
-            </div>
+          <div className="rounded-lg border border-border-subtle bg-surface-base px-4 py-14 text-center shadow-card">
+            <Package className="mx-auto size-8 text-foreground-subtle" aria-hidden />
+            <h2 className="mt-3 text-sm font-semibold text-foreground">{t("projects.emptyTitle")}</h2>
+            <p className="mt-1 text-sm text-foreground-muted">{t("projects.emptyDescription")}</p>
           </div>
         ) : (
           <>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {items.map((item) => (
-                <DirectoryCard
-                  key={item.id}
-                  item={item}
-                />
-              ))}
+              {items.map(({ project, owner }) => <ProjectCard key={project.id} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} />)}
             </div>
-
-            {error ? (
-              <div className="mt-4 rounded-lg border border-border-subtle bg-surface-base p-3 text-sm text-foreground-muted">
-                {error}
-              </div>
-            ) : null}
-
-            {hasMore ? (
+            {projectsQuery.hasNextPage ? (
               <div className="mt-6 flex justify-center">
-                <Button type="button" variant="outline" disabled={loadingMore} onClick={() => void handleLoadMore()}>
-                  {loadingMore ? t("projects.loading") : t("projects.loadMore")}
+                <Button type="button" variant="outline" disabled={projectsQuery.isFetchingNextPage} onClick={() => void projectsQuery.fetchNextPage()}>
+                  {projectsQuery.isFetchingNextPage ? t("projects.loading") : t("projects.loadMore")}
                 </Button>
               </div>
             ) : null}
@@ -414,4 +196,3 @@ export default function ProjectsPage() {
     </div>
   );
 }
-

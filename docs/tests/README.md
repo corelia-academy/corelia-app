@@ -39,12 +39,12 @@ Client build cần tối thiểu `VITE_SUPABASE_URL` và một trong `VITE_SUPAB
 
 ## Role trong hệ thống và gate truy cập
 
-| Role (`profiles.role`) | `/admin/*` | `/instructor/*` | Hackathon manager (`/hackathons/manage`, `/hackathons/new`) |
-|------------------------|------------|-----------------|---------------------------------------------------------------|
-| `student`              | Không      | Không           | Chỉ khi email có trong `co_organizer_emails` của contest (scoped) — xem [09-hackathons-manage-workspace.md](./09-hackathons-manage-workspace.md) |
-| `instructor`           | Không      | Có              | Có (catalog quản lý)                                          |
-| `support_staff`        | **Có**     | **Có**          | Có                                                            |
-| `admin`                | **Có**     | **Có**          | Có                                                            |
+| Role (`profiles.role`) | `/admin/*` | `/instructor/*` | Hackathon MVP mục tiêu |
+|------------------------|------------|-----------------|------------------------|
+| `student`              | Không      | Không           | Chỉ tham gia            |
+| `instructor`           | Không      | Có              | Chỉ tham gia             |
+| `support_staff`        | **Có**     | **Có**          | Hỗ trợ vận hành         |
+| `admin`                | **Có**     | **Có**          | Toàn quyền              |
 
 **Lưu ý:** `admin` và `support_staff` **đều** được vào `/admin` và `/instructor` theo cấu hình hiện tại (`ROLE_GROUPS.admin` và `ROLE_GROUPS.instructorWorkspace`). Nếu nghiệp vụ yêu cầu kiểm tra riêng quyền admin vs support (ví dụ audit), hãy có **hai** tài khoản và so sánh.
 
@@ -56,21 +56,14 @@ Client build cần tối thiểu `VITE_SUPABASE_URL` và một trong `VITE_SUPAB
 |----|----------|-----------------|---------------|
 | **Student_1** | Luồng học viên chính | `student` | Đăng ký qua UI staging |
 | **Student_2** *(tuỳ chọn)* | Invite project, tương tác đa user | `student` | Email khác Student_1 |
-| **Instructor_1** | Workspace giảng viên + hackathon manager | `instructor` | Gán role sau khi có user (SQL staging hoặc Admin Users nếu team hỗ trợ) |
+| **Instructor_1** | Workspace giảng viên; negative test admin hackathon | `instructor` | Gán role sau khi có user (SQL staging hoặc Admin Users nếu team hỗ trợ) |
 | **Admin_1** hoặc **Support_1** | Trang quản trị + có thể vào instructor | `admin` **hoặc** `support_staff` | Một account là đủ cho smoke **admin**; dùng **hai** account nếu cần so sánh policy |
-| **Scoped_coorganizer** | Vào `/hackathons/manage` không cần instructor | `student` (hoặc role bất kỳ đã login) | Thêm **email** user vào `co_organizer_emails` của một contest trên staging |
-| **Scoped_reviewer** *(tuỳ chọn)* | Tab `applications` trên workspace contest | `student` hoặc role bất kỳ | Email trong `reviewer_emails` của contest seed |
-| **Scoped_judge** *(tuỳ chọn)* | Tab `judging` trên workspace contest | `student` hoặc role bất kỳ | Email trong `judge_emails` của contest seed |
 
 **Không** dùng production để chỉnh role hoặc seed dữ liệu test.
 
 ### Tiền đề staging — Hackathons
 
-- Ít nhất một contest **published** với `slug` cố định (team ghi trong sheet QA).
-- Khuyến nghị **hai contest** ở lifecycle phase khác nhau (ví dụ đang mở đăng ký vs đã kết thúc) — chỉnh timestamp trên staging hoặc seed riêng.
-- Registrations với status **approved**, **pending**, **rejected** để test email blast ([09](./09-hackathons-manage-workspace.md)).
-- Contest **ended** đã **publish results** để test `#results` trên public ([08](./08-hackathons-public.md)).
-- Edge Function **`hackathons.blastEmail`** đã deploy staging; biến `RESEND_API_KEY`, `MAIL_FROM` (hoặc chấp nhận UI `notConfigured`).
+Module dùng public tabs và editor tại `/admin/hackathons`. Dùng dữ liệu và luồng trong [checklist Hackathon](../hackathon/acceptance-checklist.md). Không chuẩn bị judge, score, leaderboard, email blast hoặc scoped role cũ.
 
 ---
 
@@ -85,8 +78,7 @@ Client build cần tối thiểu `VITE_SUPABASE_URL` và một trong `VITE_SUPAB
 | [05-projects-invites-search.md](./05-projects-invites-search.md) | Projects, invite, search |
 | [06-public-profiles.md](./06-public-profiles.md) | Hồ sơ công khai `/u/:handle` |
 | [07-account-hub.md](./07-account-hub.md) | `/account/*` |
-| [08-hackathons-public.md](./08-hackathons-public.md) | Hackathon công khai — single-page `/hackathons/:slug` + hash, lifecycle, showcase |
-| [09-hackathons-manage-workspace.md](./09-hackathons-manage-workspace.md) | Workspace manage — tabs overview/applications/judging/email/… |
+| [Hackathon MVP](../hackathon/README.md) | Phạm vi mới, luồng tối giản và checklist nghiệm thu hackathon |
 | [10-instructor-workspace.md](./10-instructor-workspace.md) | Workspace instructor |
 | [11-admin.md](./11-admin.md) | Admin (`admin` / `support_staff`), activity milestones |
 | [12-cross-cutting-i18n-theme-errors.md](./12-cross-cutting-i18n-theme-errors.md) | i18n, theme, 404, lỗi |

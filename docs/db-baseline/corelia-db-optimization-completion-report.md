@@ -1,5 +1,7 @@
 # CORELIA Database Refactoring & Optimization — Completion Report
 
+> **Historical hackathon evidence:** mọi mô tả metrics snapshot, registration review, judging hoặc score trong báo cáo này đã bị [contract hackathon mới](../hackathon/README.md) thay thế.
+
 > Cập nhật: 2026-08-27
 > Repository: `corelia-app`
 > Candidate branch: `feat/db-canonical-payment-entitlements`

@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 window.confirm = () => true;
@@ -101,7 +102,7 @@ import { useLearnEnrollmentAccess } from "@/pages/learn/hooks/useLearnEnrollment
 import { QuestionGeneratorDialog } from "@/pages/instructor-course-edit/components/QuestionGeneratorDialog";
 import { getSectionQuestions } from "@/lib/sectionQuestions";
 import { peekProjectInviteByToken } from "@/lib/notifications";
-import { getCareerTrackBySlug, listCareerTracks, invalidateCareerTracksCache } from "@/lib/careerTracks";
+import { getCareerTrackBySlug, listCareerTracks } from "@/lib/careerTracks";
 import { CourseSpotlightSection } from "@/pages/course-details/components/CourseSpotlightSection";
 import { invokeGenerateQuestions } from "@/lib/questionGenerator";
 import { supabase } from "@/lib/supabase";
@@ -114,6 +115,9 @@ import type { CourseSection } from "@/types/courses";
 function renderRealHook<P, R>(hookFn: (props: P) => R, initialProps: P) {
   let latestResult!: R;
   let currentProps = initialProps;
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
 
   function TestComponent({ props }: { props: P }) {
     latestResult = hookFn(props);
@@ -125,7 +129,13 @@ function renderRealHook<P, R>(hookFn: (props: P) => R, initialProps: P) {
   const root = createRoot(container);
 
   act(() => {
-    root.render(React.createElement(TestComponent, { props: currentProps }));
+    root.render(
+      React.createElement(
+        QueryClientProvider,
+        { client: queryClient },
+        React.createElement(TestComponent, { props: currentProps }),
+      ),
+    );
   });
 
   return {
@@ -135,13 +145,20 @@ function renderRealHook<P, R>(hookFn: (props: P) => R, initialProps: P) {
     rerender(nextProps: P) {
       currentProps = nextProps;
       act(() => {
-        root.render(React.createElement(TestComponent, { props: currentProps }));
+        root.render(
+          React.createElement(
+            QueryClientProvider,
+            { client: queryClient },
+            React.createElement(TestComponent, { props: currentProps }),
+          ),
+        );
       });
     },
     unmount() {
       act(() => {
         root.unmount();
       });
+      queryClient.clear();
       container.remove();
     },
   };
@@ -150,7 +167,6 @@ function renderRealHook<P, R>(hookFn: (props: P) => R, initialProps: P) {
 describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Execution)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    invalidateCareerTracksCache();
     supabase.from = vi.fn().mockImplementation(() => createMockChain([]));
   });
 
@@ -404,18 +420,19 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
   });
 
   describe("BUG-011: Context isolation in useLearnEnrollmentAccess hook (Real React DOM Lifecycle)", () => {
-    it("does not leak enrollment state between courses", () => {
+    it("does not leak enrollment state between courses", async () => {
       const hook = renderRealHook(useLearnEnrollmentAccess, {
         courseId: "course-A",
         profileId: "user-1",
       });
 
       expect(hook.current.loading).toBe(true);
-      act(() => {
+      await act(async () => {
         hook.current.setEnrollment({
           course_id: "course-A",
         } as never);
         hook.current.setEnrolled(true);
+        await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
       expect(hook.current.enrolled).toBe(true);
@@ -443,17 +460,18 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
       hook.unmount();
     });
 
-    it("does not leak enrollment across different accounts in the same course", () => {
+    it("does not leak enrollment across different accounts in the same course", async () => {
       const hook = renderRealHook(useLearnEnrollmentAccess, {
         courseId: "course-1",
         profileId: "user-alice",
       });
 
-      act(() => {
+      await act(async () => {
         hook.current.setEnrollment({
           course_id: "course-1",
         } as never);
         hook.current.setEnrolled(true);
+        await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
       expect(hook.current.enrolled).toBe(true);
@@ -505,30 +523,43 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
       const container = document.createElement("div");
       document.body.appendChild(container);
       const root = createRoot(container);
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+      });
 
       // 1. Mount on Section A
       act(() => {
         root.render(
-          React.createElement(QuestionGeneratorDialog, {
-            open: true,
-            onOpenChange: () => {},
-            courseId: "course-1",
-            section: mockSectionA,
-            locale: "vi",
-          }),
+          React.createElement(
+            QueryClientProvider,
+            { client: queryClient },
+            React.createElement(QuestionGeneratorDialog, {
+              open: true,
+              onOpenChange: () => {},
+              courseId: "course-1",
+              section: mockSectionA,
+              locale: "vi",
+              userId: "u-1",
+            }),
+          ),
         );
       });
 
       // 2. Switch to Section B while Section A load is pending
       act(() => {
         root.render(
-          React.createElement(QuestionGeneratorDialog, {
-            open: true,
-            onOpenChange: () => {},
-            courseId: "course-1",
-            section: mockSectionB,
-            locale: "vi",
-          }),
+          React.createElement(
+            QueryClientProvider,
+            { client: queryClient },
+            React.createElement(QuestionGeneratorDialog, {
+              open: true,
+              onOpenChange: () => {},
+              courseId: "course-1",
+              section: mockSectionB,
+              locale: "vi",
+              userId: "u-1",
+            }),
+          ),
         );
       });
 
@@ -545,6 +576,7 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
             correct_index: 0,
           },
         ]);
+        await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
       expect(container.textContent).toContain("Câu hỏi của Section B");
@@ -562,6 +594,7 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
             correct_index: 0,
           },
         ]);
+        await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
       // Invariant: Section B MUST NOT display Section A's questions
@@ -571,6 +604,7 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
       act(() => {
         root.unmount();
       });
+      queryClient.clear();
       container.remove();
     });
 
@@ -585,16 +619,24 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
       const container = document.createElement("div");
       document.body.appendChild(container);
       const root = createRoot(container);
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+      });
 
       act(() => {
         root.render(
-          React.createElement(QuestionGeneratorDialog, {
-            open: true,
-            onOpenChange: () => {},
-            courseId: "course-1",
-            section: mockSectionA,
-            locale: "vi",
-          }),
+          React.createElement(
+            QueryClientProvider,
+            { client: queryClient },
+            React.createElement(QuestionGeneratorDialog, {
+              open: true,
+              onOpenChange: () => {},
+              courseId: "course-1",
+              section: mockSectionA,
+              locale: "vi",
+              userId: "u-1",
+            }),
+          ),
         );
       });
 
@@ -602,7 +644,12 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
         rejectLoad(new Error("Database connection lost"));
       });
 
-      expect(container.textContent).toContain("Database connection lost");
+      await vi.waitFor(async () => {
+        await act(async () => {
+          await Promise.resolve();
+        });
+        expect(container.textContent).toContain("Database connection lost");
+      });
 
       const generateBtn = Array.from(container.querySelectorAll("button")).find((btn) =>
         btn.textContent?.includes("courseEdit.questions.generate"),
@@ -612,6 +659,7 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
       act(() => {
         root.unmount();
       });
+      queryClient.clear();
       container.remove();
     });
   });

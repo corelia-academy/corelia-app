@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
-import { useLoadingStore } from "@/stores/loadingStore";
+import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 
 export function LoadingBar() {
-  const isLoading = useLoadingStore((s) => s.isLoading);
+  const fetchingCount = useIsFetching({
+    predicate: (query) => query.meta?.showInGlobalLoading !== false,
+  });
+  const mutatingCount = useIsMutating();
+  const isLoading = fetchingCount > 0 || mutatingCount > 0;
   const [barState, setBarState] = useState({
     progress: 0,
     visible: false,

@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { supabase } from "@/lib/supabase";
+import { clearPendingCredentialsClaimedAt } from "@/lib/profile";
+import { profileKeys } from "@/features/auth/profileQueries";
+import type { Profile } from "@/types/database";
 import { useAuth } from "@/stores/authStore";
 
 /** Shown once, right after login, when private.handle_new_user() has just
@@ -14,21 +17,26 @@ export function PendingCredentialsWelcomeModal() {
   const { profile, user } = useAuth();
   const { t } = useTranslation("common");
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [dismissed, setDismissed] = useState(false);
+  const clearMutation = useMutation({
+    mutationFn: (userId: string) => clearPendingCredentialsClaimedAt(userId),
+    onMutate: (userId) => {
+      queryClient.setQueryData<Profile | null>(profileKeys.current(userId), (current) =>
+        current ? { ...current, pending_credentials_claimed_at: null } : current,
+      );
+    },
+    onError: (_, userId) => {
+      void queryClient.invalidateQueries({ queryKey: profileKeys.current(userId) });
+    },
+  });
 
   const open = !dismissed && !!profile?.pending_credentials_claimed_at;
 
   const clearFlag = async () => {
     setDismissed(true);
     if (!user?.id) return;
-    await supabase
-      .from("profiles")
-      .update({ pending_credentials_claimed_at: null })
-      .eq("id", user.id)
-      .then(
-        () => {},
-        () => {},
-      );
+    await clearMutation.mutateAsync(user.id).catch(() => undefined);
   };
 
   return (

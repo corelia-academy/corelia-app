@@ -10,7 +10,7 @@ function profileWithRole(role: UserRole): Profile {
 }
 
 describe("hackathon manager permissions", () => {
-  it.each(["instructor", "support_staff", "admin"] satisfies UserRole[])(
+  it.each(["support_staff", "admin"] satisfies UserRole[])(
     "allows %s to manage hackathons end-to-end",
     (role) => {
       const profile = profileWithRole(role);
@@ -19,6 +19,13 @@ describe("hackathon manager permissions", () => {
       expect(canAccessContestManagementCatalog(profile)).toBe(true);
     },
   );
+
+  it("keeps instructors outside hackathon administration", () => {
+    const profile = profileWithRole("instructor");
+
+    expect(canManageContests(profile)).toBe(false);
+    expect(canAccessContestManagementCatalog(profile)).toBe(false);
+  });
 
   it("does not grant full manager access to students", () => {
     const profile = profileWithRole("student");

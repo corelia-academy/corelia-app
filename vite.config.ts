@@ -48,15 +48,11 @@ export default defineConfig({
           if (id.includes('@opencampus/ocid-connect-js')) {
             return 'vendor-ocid'
           }
+          if (id.includes('@tanstack/react-query') || id.includes('@tanstack/query-core')) {
+            return 'vendor-query'
+          }
           if (id.includes('@base-ui/react') || id.includes('next-themes') || id.includes('sonner') || id.includes('zustand')) {
             return 'vendor-ui'
-          }
-
-          if (
-            id.includes('/src/components/layouts/MainLayout') ||
-            id.includes('/src/pages/home/')
-          ) {
-            return 'feature-learner-core'
           }
         },
       },

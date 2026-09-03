@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState, type ChangeEvent } from "react";
+import { useState, type ChangeEvent } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Plus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -19,19 +20,17 @@ const TEXTAREA_CLASS =
 const SELECT_CLASS =
   "flex h-10 w-full rounded-md border border-border-subtle bg-surface-base px-3 text-sm";
 
-import {
-  countIssuancesForTemplate,
-  listHackathonCredentialTemplates,
-  saveHackathonCredentialTemplate,
-  type CredentialTemplateRow,
-} from "@/lib/credentialTemplates";
+import { saveHackathonCredentialTemplate, type CredentialTemplateRow } from "@/lib/credentialTemplates";
 import {
   invokeGrantCredentials,
-  invokeHackathonListEligible,
   type EligibleUser,
 } from "@/lib/credentialsEdge";
 import { uploadHackathonCredentialBadgeImage } from "@/lib/storage";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
+import {
+  hackathonAwardTemplatesQueryOptions,
+  hackathonEligibleUsersQueryOptions,
+} from "@/features/hackathons/hackathonAwardQueries";
 
 type SubTab = "templates" | "grant" | "eligibility";
 
@@ -60,15 +59,19 @@ function statusLabel(s: EligibleUser["issuanceStatus"], translate: (k: string) =
 }
 
 export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel }) {
-  const { contest, translate } = vm;
+  const { contest, translate, user } = vm;
+  const queryClient = useQueryClient();
+  const templatesOptions = hackathonAwardTemplatesQueryOptions(
+    contest.id,
+    user?.id ?? "missing",
+  );
+  const templatesQuery = useQuery(templatesOptions);
+  const templates = templatesQuery.data?.templates ?? [];
+  const counts = templatesQuery.data?.counts ?? {};
+  const loading = templatesQuery.isPending;
   const [tab, setTab] = useState<SubTab>("templates");
-  const [templates, setTemplates] = useState<CredentialTemplateRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [counts, setCounts] = useState<Record<string, number>>({});
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editRow, setEditRow] = useState<CredentialTemplateRow | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   const [formRole, setFormRole] = useState<(typeof ROLES)[number]>("participant");
   const [formName, setFormName] = useState("");
@@ -83,50 +86,35 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
   const [grantTemplateId, setGrantTemplateId] = useState("");
   const [grantUserIds, setGrantUserIds] = useState("");
   const [grantReason, setGrantReason] = useState("");
-  const [granting, setGranting] = useState(false);
 
   // Eligibility tab state
   const [eligTemplateId, setEligTemplateId] = useState("");
-  const [eligUsers, setEligUsers] = useState<EligibleUser[] | null>(null);
-  const [eligLoading, setEligLoading] = useState(false);
   const [eligSelected, setEligSelected] = useState<Set<string>>(new Set());
-  const [eligGranting, setEligGranting] = useState(false);
-
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const rows = await listHackathonCredentialTemplates(contest.id);
-      setTemplates(rows);
-      const next: Record<string, number> = {};
-      await Promise.all(
-        rows.map(async (r) => {
-          next[r.id] = await countIssuancesForTemplate(r.id).catch(() => 0);
-        }),
-      );
-      setCounts(next);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : translate("workspace.awards.loadFailed"));
-    } finally {
-      setLoading(false);
-    }
-  }, [contest.id, translate]);
-
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
-
-  useEffect(() => {
-    setGrantTemplateId((prev) => {
-      if (prev) return prev;
-      const active = templates.find((r) => r.is_active);
-      return active?.id ?? templates[0]?.id ?? "";
-    });
-    setEligTemplateId((prev) => {
-      if (prev) return prev;
-      const active = templates.find((r) => r.is_active);
-      return active?.id ?? templates[0]?.id ?? "";
-    });
-  }, [templates]);
+  const defaultTemplateId =
+    templates.find((template) => template.is_active)?.id ?? templates[0]?.id ?? "";
+  const resolvedGrantTemplateId = grantTemplateId || defaultTemplateId;
+  const resolvedEligTemplateId = eligTemplateId || defaultTemplateId;
+  const eligibleQuery = useQuery(
+    hackathonEligibleUsersQueryOptions(
+      contest.id,
+      resolvedEligTemplateId,
+      user?.id ?? "missing",
+    ),
+  );
+  const eligUsers = eligibleQuery.data ?? null;
+  const saveMutation = useMutation({
+    mutationFn: saveHackathonCredentialTemplate,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: templatesOptions.queryKey }),
+  });
+  const grantMutation = useMutation({ mutationFn: invokeGrantCredentials });
+  const uploadMutation = useMutation({
+    mutationFn: (file: File) => uploadHackathonCredentialBadgeImage(contest.id, file),
+  });
+  const saving = saveMutation.isPending;
+  const granting = grantMutation.isPending;
+  const eligGranting = grantMutation.isPending;
+  const uploading = uploadMutation.isPending;
+  const eligLoading = eligibleQuery.isFetching;
 
   const openCreate = () => {
     setEditRow(null);
@@ -159,9 +147,8 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
   };
 
   const handleSaveTemplate = async () => {
-    setSaving(true);
     try {
-      await saveHackathonCredentialTemplate({
+      await saveMutation.mutateAsync({
         hackathonId: contest.id,
         hackathonSlug: contest.slug ?? contest.id,
         templateId: editRow?.id ?? null,
@@ -178,11 +165,9 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
       });
       toast.success(translate("workspace.awards.saved"));
       setDialogOpen(false);
-      await refresh();
+      await templatesQuery.refetch();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : translate("workspace.awards.saveFailed"));
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -191,14 +176,13 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
       .split(/[\s,;]+/)
       .map((s) => s.trim())
       .filter(Boolean);
-    if (!grantTemplateId || ids.length === 0) {
+    if (!resolvedGrantTemplateId || ids.length === 0) {
       toast.error(translate("workspace.awards.grantNeedInputs"));
       return;
     }
-    setGranting(true);
     try {
-      const res = await invokeGrantCredentials({
-        templateId: grantTemplateId,
+      const res = await grantMutation.mutateAsync({
+        templateId: resolvedGrantTemplateId,
         userIds: ids,
         grantedReason: grantReason.trim() || null,
       });
@@ -208,40 +192,29 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
       }
       toast.success(translate("workspace.awards.grantOk"));
       setGrantUserIds("");
-      await refresh();
+      await templatesQuery.refetch();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : translate("workspace.awards.grantFailed"));
-    } finally {
-      setGranting(false);
     }
   };
 
   const handleLoadEligible = async () => {
-    if (!eligTemplateId) return;
-    setEligLoading(true);
-    setEligUsers(null);
+    if (!resolvedEligTemplateId) return;
     setEligSelected(new Set());
     try {
-      const res = await invokeHackathonListEligible({
-        hackathonId: contest.id,
-        templateId: eligTemplateId,
-      });
-      if (!res.ok) throw new Error(res.message ?? "Unknown error");
-      setEligUsers(res.users ?? []);
+      const result = await eligibleQuery.refetch();
+      if (result.error) throw result.error;
     } catch (e) {
       toast.error(e instanceof Error ? e.message : translate("workspace.awards.loadFailed"));
-    } finally {
-      setEligLoading(false);
     }
   };
 
   const handleEligGrant = async () => {
     const ids = Array.from(eligSelected);
-    if (!eligTemplateId || ids.length === 0) return;
-    setEligGranting(true);
+    if (!resolvedEligTemplateId || ids.length === 0) return;
     try {
-      const res = await invokeGrantCredentials({
-        templateId: eligTemplateId,
+      const res = await grantMutation.mutateAsync({
+        templateId: resolvedEligTemplateId,
         userIds: ids,
       });
       if (res.errors?.length) {
@@ -253,8 +226,6 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
       await handleLoadEligible();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : translate("workspace.awards.eligibilityGrantFailed"));
-    } finally {
-      setEligGranting(false);
     }
   };
 
@@ -355,7 +326,7 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
             <FieldLabel>{translate("workspace.awards.grantTemplateLabel")}</FieldLabel>
             <select
               className={SELECT_CLASS}
-              value={grantTemplateId}
+              value={resolvedGrantTemplateId}
               onChange={(e) => setGrantTemplateId(e.target.value)}
             >
               {templates.filter((x) => x.is_active).map((x) => (
@@ -397,10 +368,9 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
                 <FieldLabel>{translate("workspace.awards.eligibilityTemplateLabel")}</FieldLabel>
                 <select
                   className={SELECT_CLASS}
-                  value={eligTemplateId}
+                  value={resolvedEligTemplateId}
                   onChange={(e) => {
                     setEligTemplateId(e.target.value);
-                    setEligUsers(null);
                     setEligSelected(new Set());
                   }}
                 >
@@ -412,7 +382,7 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
                 </select>
               </Field>
             </div>
-            <Button type="button" disabled={!eligTemplateId || eligLoading} onClick={() => void handleLoadEligible()}>
+            <Button type="button" disabled={!resolvedEligTemplateId || eligLoading} onClick={() => void handleLoadEligible()}>
               {eligLoading
                 ? translate("workspace.awards.eligibilityLoading")
                 : translate("workspace.awards.eligibilityLoad")}
@@ -610,14 +580,11 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
                 onChange={async (e: ChangeEvent<HTMLInputElement>) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
-                  setUploading(true);
                   try {
-                    const { url } = await uploadHackathonCredentialBadgeImage(contest.id, file);
+                    const { url } = await uploadMutation.mutateAsync(file);
                     setFormImageUrl(url);
                   } catch (err) {
                     toast.error(err instanceof Error ? err.message : "Upload failed");
-                  } finally {
-                    setUploading(false);
                   }
                 }}
               />

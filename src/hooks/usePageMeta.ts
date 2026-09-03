@@ -5,6 +5,8 @@ interface PageMeta {
   description?: string;
   image?: string;
   url?: string;
+  canonicalUrl?: string;
+  robots?: string;
 }
 
 function getMeta(selector: string): string {
@@ -20,7 +22,7 @@ function setMeta(selector: string, value: string) {
  * Dynamically updates OpenGraph and Twitter meta tags for the current page.
  * Restores original values from index.html on unmount.
  */
-export function usePageMeta({ title, description, image, url }: PageMeta) {
+export function usePageMeta({ title, description, image, url, canonicalUrl, robots }: PageMeta) {
   useEffect(() => {
     const prevTitle = document.title;
     const prevOgTitle = getMeta('meta[property="og:title"]');
@@ -31,6 +33,18 @@ export function usePageMeta({ title, description, image, url }: PageMeta) {
     const prevTwTitle = getMeta('meta[name="twitter:title"]');
     const prevTwDesc = getMeta('meta[name="twitter:description"]');
     const prevTwImage = getMeta('meta[name="twitter:image"]');
+    const existingCanonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    const previousCanonical = existingCanonical?.href ?? "";
+    const canonical = canonicalUrl
+      ? existingCanonical ?? document.head.appendChild(document.createElement("link"))
+      : existingCanonical;
+    if (canonicalUrl && canonical && !existingCanonical) canonical.rel = "canonical";
+    const existingRobots = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
+    const previousRobots = existingRobots?.content ?? "";
+    const robotsMeta = robots
+      ? existingRobots ?? document.head.appendChild(document.createElement("meta"))
+      : existingRobots;
+    if (robots && robotsMeta && !existingRobots) robotsMeta.name = "robots";
 
     if (title) {
       document.title = `${title} · Corelia Academy`;
@@ -49,6 +63,8 @@ export function usePageMeta({ title, description, image, url }: PageMeta) {
     if (url) {
       setMeta('meta[property="og:url"]', url);
     }
+    if (canonicalUrl && canonical) canonical.href = canonicalUrl;
+    if (robots && robotsMeta) robotsMeta.content = robots;
 
     return () => {
       document.title = prevTitle;
@@ -60,6 +76,10 @@ export function usePageMeta({ title, description, image, url }: PageMeta) {
       setMeta('meta[name="twitter:title"]', prevTwTitle);
       setMeta('meta[name="twitter:description"]', prevTwDesc);
       setMeta('meta[name="twitter:image"]', prevTwImage);
+      if (existingCanonical && canonical) canonical.href = previousCanonical;
+      else canonical?.remove();
+      if (existingRobots && robotsMeta) robotsMeta.content = previousRobots;
+      else robotsMeta?.remove();
     };
-  }, [title, description, image, url]);
+  }, [title, description, image, url, canonicalUrl, robots]);
 }

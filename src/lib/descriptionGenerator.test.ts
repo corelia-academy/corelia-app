@@ -36,6 +36,31 @@ describe("generate-description request contract", () => {
     expect(serialized).not.toHaveProperty("courseId");
   });
 
+  it("serializes a structured Hackathon translation with an isolated hackathon scope", () => {
+    const request = {
+      action: "translate",
+      type: "hackathon",
+      targetField: "description",
+      locale: "en",
+      sourceLocale: "vi",
+      bundleKind: "hackathon",
+      hackathonId: "hackathon-123",
+      sourceBundle: {
+        title: "Hackathon mẫu",
+        tracks: [{ id: "track-1", name: "Giáo dục", description: "Mô tả" }],
+        timeline: [{ id: "stage-1", title: "Đăng ký", descriptionMarkdown: "Nội dung" }],
+      },
+    } satisfies GenerateDescriptionRequest;
+
+    const serialized = JSON.parse(serializeGenerateDescriptionRequest(request)) as Record<string, unknown>;
+
+    expect(serialized.hackathonId).toBe("hackathon-123");
+    expect(serialized.type).toBe("hackathon");
+    expect(serialized.bundleKind).toBe("hackathon");
+    expect(serialized).not.toHaveProperty("courseId");
+    expect(serialized).not.toHaveProperty("careerTrackId");
+  });
+
   it("rejects invalid Career Track and course resource combinations at compile time", () => {
     // @ts-expect-error Career Track requests require action: "translate".
     const missingTranslateAction: GenerateDescriptionRequest = {
@@ -66,11 +91,35 @@ describe("generate-description request contract", () => {
       careerTrackId: "career-track-123",
     };
 
+    // @ts-expect-error Hackathon translations cannot include a course resource ID.
+    const hackathonWithCourseId: GenerateDescriptionRequest = {
+      action: "translate",
+      type: "hackathon",
+      targetField: "description",
+      locale: "en",
+      bundleKind: "hackathon",
+      hackathonId: "hackathon-123",
+      sourceBundle: { title: "Hackathon" },
+      courseId: "course-123",
+    };
+
+    // @ts-expect-error Hackathon translations require hackathonId.
+    const hackathonWithoutScope: GenerateDescriptionRequest = {
+      action: "translate",
+      type: "hackathon",
+      targetField: "description",
+      locale: "en",
+      bundleKind: "hackathon",
+      sourceBundle: { title: "Hackathon" },
+    };
+
     expect([
       missingTranslateAction,
       careerTrackWithCourseId,
       courseRequestWithCareerTrackId,
-    ]).toHaveLength(3);
+      hackathonWithCourseId,
+      hackathonWithoutScope,
+    ]).toHaveLength(5);
   });
 });
 

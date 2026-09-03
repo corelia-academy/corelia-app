@@ -47,11 +47,13 @@ export async function muteSubject(
   if (error) throw new Error(error.message);
 }
 
-export async function listFollowing(): Promise<FollowRow[]> {
-  const { data, error } = await supabase
+export async function listFollowing(signal?: AbortSignal): Promise<FollowRow[]> {
+  let request = supabase
     .from("follows")
     .select("follower_id,subject_type,subject_id,created_at,muted_until")
     .order("created_at", { ascending: false });
+  if (signal) request = request.abortSignal(signal);
+  const { data, error } = await request;
   if (error) throw new Error(error.message);
   return (data ?? []) as FollowRow[];
 }
@@ -98,4 +100,25 @@ export async function isFollowing(subject: FollowSubject): Promise<boolean> {
     .maybeSingle();
   if (error) throw new Error(error.message);
   return Boolean(data);
+}
+
+export function subscribeToFollowingChanges(
+  userId: string,
+  concernId: string,
+  onChange: () => void,
+): () => void {
+  const channel = supabase
+    .channel(`following:${concernId}:${userId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "follows",
+        filter: `follower_id=eq.${userId}`,
+      },
+      onChange,
+    )
+    .subscribe();
+  return () => { void supabase.removeChannel(channel); };
 }

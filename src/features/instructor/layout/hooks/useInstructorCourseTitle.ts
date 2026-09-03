@@ -1,5 +1,10 @@
-import { useEffect, useState } from "react";
-import { getCourse } from "@/lib/courses";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
+
+import {
+  instructorCourseTitleQueryOptions,
+  instructorKeys,
+} from "@/features/instructor/instructorQueries";
 
 export function useInstructorCourseTitle({
   id,
@@ -8,23 +13,13 @@ export function useInstructorCourseTitle({
   id?: string;
   enabled: boolean;
 }) {
-  const [courseTitle, setCourseTitle] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!enabled || !id) return;
-    let cancelled = false;
-    getCourse(id)
-      .then((c) => {
-        if (!cancelled) setCourseTitle(c?.title ?? null);
-      })
-      .catch(() => {
-        if (!cancelled) setCourseTitle(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [id, enabled]);
-
-  return { courseTitle, setCourseTitle };
+  const queryClient = useQueryClient();
+  const query = useQuery(instructorCourseTitleQueryOptions(id, enabled));
+  const setCourseTitle = useCallback(
+    (title: string | null) => {
+      if (id) queryClient.setQueryData(instructorKeys.courseTitle(id), title);
+    },
+    [id, queryClient],
+  );
+  return { courseTitle: query.data ?? null, setCourseTitle };
 }
-

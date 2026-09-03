@@ -1,8 +1,10 @@
 import { createRoot } from "react-dom/client";
+import { QueryClientProvider } from "@tanstack/react-query";
 import "./styles/globals.css";
 import "./i18n";
 import App from "./App";
 import { OCConnect } from "@opencampus/ocid-connect-js";
+import { queryClient } from "@/lib/queryClient";
 declare global {
   interface Window {
     __CORELIA_BUILD__?: { version: string };
@@ -20,7 +22,9 @@ const ocidOpts = {
 } as const;
 
 createRoot(document.getElementById("root")!).render(
-  <OCConnect opts={ocidOpts} sandboxMode={import.meta.env.VITE_OCID_SANDBOX === "true"}>
-    <App />
-  </OCConnect>,
+  <QueryClientProvider client={queryClient}>
+    <OCConnect opts={ocidOpts} sandboxMode={import.meta.env.VITE_OCID_SANDBOX === "true"}>
+      <App />
+    </OCConnect>
+  </QueryClientProvider>,
 );

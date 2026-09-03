@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { ExternalLink, FolderGit2 } from "lucide-react";
@@ -6,18 +7,13 @@ import { ExternalLink, FolderGit2 } from "lucide-react";
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { supabase } from "@/lib/supabase";
-import {
-  applyProjectLocaleContent,
-  getBatchProjectLocaleContent,
-  getProjectCoverImageUrl,
-} from "@/lib/projects";
-import { listMyProjectHeartIds } from "@/lib/projectSocial";
-import { pickContentLocale } from "@/lib/entityLocales";
+import { getProjectCoverImageUrl } from "@/lib/projects";
 import type { PublicProfile } from "@/types/database";
 import type { Project } from "@/types/projects";
 import { isHackathonProjectSource, projectSourceLabelKey } from "@/lib/projectSource";
 import { useAuth } from "@/stores/authStore";
+import { publicProfileProjectsQueryOptions } from "@/features/profiles/publicProfileQueries";
+import { projectHeartsQueryOptions } from "@/features/projects/projectSocialQueries";
 
 function sourceLink(project: Project): string | null {
   if (isHackathonProjectSource(project.source_type) && project.source_id) {
@@ -36,114 +32,13 @@ export function UserProfileProjectsSection({
 }) {
   const { user } = useAuth();
   const { t, i18n } = useTranslation("common");
-  const [items, setItems] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [heartedByProjectId, setHeartedByProjectId] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        const select =
-          "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
-
-        const [{ data: owned, error: ownedErr }, { data: collabRows, error: collabErr }] =
-          await Promise.all([
-            supabase
-              .from("projects")
-              .select(select)
-              .eq("owner_id", profile.id)
-              .eq("visibility", "public")
-              .order("updated_at", { ascending: false }),
-            supabase
-              .from("project_collaborators")
-              .select("project_id")
-              .eq("user_id", profile.id)
-              .eq("show_in_portfolio", true),
-          ]);
-
-        if (ownedErr) throw new Error(ownedErr.message);
-        if (collabErr) throw new Error(collabErr.message);
-        if (cancelled) return;
-
-        const collaboratorProjectIds = Array.from(
-          new Set((collabRows ?? []).map((row) => row.project_id).filter(Boolean)),
-        ) as string[];
-
-        let collaboratorProjects: Project[] = [];
-        if (collaboratorProjectIds.length > 0) {
-          const { data, error } = await supabase
-            .from("projects")
-            .select(select)
-            .in("id", collaboratorProjectIds)
-            .eq("visibility", "public")
-            .order("updated_at", { ascending: false });
-          if (error) throw new Error(error.message);
-          collaboratorProjects = (data ?? []) as Project[];
-        }
-
-        const merged = [...((owned ?? []) as Project[]), ...collaboratorProjects];
-        const byId = new Map<string, Project>();
-        for (const item of merged) byId.set(item.id, item);
-        const baseList = Array.from(byId.values()).sort((a, b) =>
-          String(b.updated_at ?? "").localeCompare(String(a.updated_at ?? "")),
-        );
-
-        const preferred = i18n.language;
-        const idsByLocale = new Map<"vi" | "en", string[]>();
-        for (const p of baseList) {
-          const desired = pickContentLocale(p.i18n ?? null, preferred);
-          const ids = idsByLocale.get(desired) ?? [];
-          ids.push(p.id);
-          idsByLocale.set(desired, ids);
-        }
-        const localeMaps = new Map<"vi" | "en", Map<string, { title?: string; summary?: string | null }>>();
-        await Promise.all(
-          Array.from(idsByLocale.entries()).map(async ([locale, ids]) => {
-            localeMaps.set(locale, await getBatchProjectLocaleContent(ids, locale));
-          }),
-        );
-
-        setItems(
-          baseList.map((p) => {
-            const desired = pickContentLocale(p.i18n ?? null, preferred);
-            const localized = localeMaps.get(desired)?.get(p.id) ?? null;
-            return applyProjectLocaleContent(p, localized);
-          }),
-        );
-      } catch {
-        if (cancelled) return;
-        setError(t("userProfile.errors.loadFailed"));
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [profile.id, t, i18n.language]);
-
-  useEffect(() => {
-    const ids = items.map((p) => p.id).filter(Boolean);
-    if (ids.length === 0 || !user) {
-      queueMicrotask(() => setHeartedByProjectId({}));
-      return;
-    }
-    let cancelled = false;
-    void listMyProjectHeartIds(ids).then((set) => {
-      if (cancelled) return;
-      const next: Record<string, boolean> = {};
-      for (const id of ids) next[id] = set.has(id);
-      setHeartedByProjectId(next);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [items, user]);
+  const projectsQuery = useQuery(publicProfileProjectsQueryOptions(profile.id, i18n.language));
+  const items = useMemo(() => projectsQuery.data ?? [], [projectsQuery.data]);
+  const projectIds = useMemo(() => items.map((project) => project.id), [items]);
+  const heartsQuery = useQuery(projectHeartsQueryOptions(user?.id, projectIds));
+  const heartedIds = heartsQuery.data ?? new Set<string>();
+  const loading = projectsQuery.isPending;
+  const error = projectsQuery.error ? t("userProfile.errors.loadFailed") : null;
 
   if (loading) {
     return (
@@ -313,24 +208,6 @@ export function UserProfileProjectsSection({
                         {t("userProfile.projects.slides")}
                       </Button>
                     ) : null}
-                    {project.screenshot_url ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        render={
-                          <a
-                            href={project.screenshot_url}
-                            target="_blank"
-                            rel="noreferrer"
-                          />
-                        }
-                        nativeButton={false}
-                        className="gap-1"
-                      >
-                        <ExternalLink className="size-4" aria-hidden />
-                        {t("userProfile.projects.screenshot")}
-                      </Button>
-                    ) : null}
                     {project.video_url ? (
                       <Button
                         size="sm"
@@ -349,10 +226,8 @@ export function UserProfileProjectsSection({
 
                   <ProjectSocialBlock
                     projectId={project.id}
-                    ownerId={project.owner_id}
                     likeCount={Number(project.like_count ?? 0)}
-                    hearted={heartedByProjectId[project.id] ?? false}
-                    variant="default"
+                    hearted={heartedIds.has(project.id)}
                     className="mt-4"
                   />
                 </div>

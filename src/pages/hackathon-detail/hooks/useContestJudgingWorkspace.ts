@@ -20,8 +20,6 @@ export function useContestJudgingWorkspace() {
   const [submissionDemoUrl, setSubmissionDemoUrl] = useState("");
   const [submissionRepoUrl, setSubmissionRepoUrl] = useState("");
   const [submissionSlideUrl, setSubmissionSlideUrl] = useState("");
-  const [submissionScreenshotUrl, setSubmissionScreenshotUrl] = useState("");
-  const [submissionCoverImageUrl, setSubmissionCoverImageUrl] = useState("");
   const [submissionVideoUrl, setSubmissionVideoUrl] = useState("");
   const [savingSubmission, setSavingSubmission] = useState(false);
 
@@ -50,8 +48,6 @@ export function useContestJudgingWorkspace() {
     setSubmissionDemoUrl(payload.submissionDemoUrl);
     setSubmissionRepoUrl(payload.submissionRepoUrl);
     setSubmissionSlideUrl(payload.submissionSlideUrl);
-    setSubmissionScreenshotUrl(payload.submissionScreenshotUrl);
-    setSubmissionCoverImageUrl(payload.submissionCoverImageUrl);
     setSubmissionVideoUrl(payload.submissionVideoUrl);
     setWinnerAwards(payload.winnerAwards);
   }, []);
@@ -79,10 +75,6 @@ export function useContestJudgingWorkspace() {
     setSubmissionRepoUrl,
     submissionSlideUrl,
     setSubmissionSlideUrl,
-    submissionScreenshotUrl,
-    setSubmissionScreenshotUrl,
-    submissionCoverImageUrl,
-    setSubmissionCoverImageUrl,
     submissionVideoUrl,
     setSubmissionVideoUrl,
     savingSubmission,

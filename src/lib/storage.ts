@@ -138,6 +138,16 @@ export function uploadContestThumbnail(
   return uploadToPath(`contest-thumbnails/${contestId}/${Date.now()}.${ext}`, file, previousPath);
 }
 
+export function uploadContestHostLogo(
+  contestId: string,
+  file: File,
+  previousPath?: string | null,
+): Promise<{ url: string; path: string }> {
+  if (!contestId) throw new Error("Thiếu contestId khi upload logo đơn vị tổ chức");
+  const ext = buildSafeExt(file.name, "png");
+  return uploadToPath(`contest-org-partner-logos/${contestId}/host/${Date.now()}.${ext}`, file, previousPath);
+}
+
 /** Permanent CDN URL — hackathon credential badge for OC payload. */
 export function uploadHackathonCredentialBadgeImage(
   hackathonId: string,

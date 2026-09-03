@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Link, useParams } from "react-router";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -15,34 +16,49 @@ export default function AdminInstructorDetail() {
   const { profiles, setProfiles, loading, error, setError } = useAdminProfiles({
     fallbackErrorMessage: t("instructorDetailPage.errors.loadFailed"),
   });
-  const [savingDetails, setSavingDetails] = useState(false);
   const [editForm, setEditForm] = useState<InstructorEditForm | null>(null);
   const instructor = useMemo(
     () => profiles.find((profile) => profile.id === id) ?? null,
     [id, profiles],
   );
+  const updateMutation = useMutation({
+    mutationFn: ({
+      instructorId,
+      updates,
+    }: {
+      instructorId: string;
+      updates: Parameters<typeof updateProfileAdmin>[1];
+    }) => updateProfileAdmin(instructorId, updates),
+    onSuccess: (_, { instructorId, updates }) => {
+      setProfiles((current) => current.map((profile) =>
+        profile.id === instructorId
+          ? { ...profile, ...updates, updated_at: new Date().toISOString() }
+          : profile,
+      ));
+    },
+  });
 
   useEffect(() => {
-    if (!instructor) {
-      setEditForm(null);
-      return;
-    }
-    setEditForm({
-      role: instructor.role,
-      instructor_origin: instructor.instructor_origin ?? "external",
-      full_name: instructor.full_name ?? "",
-      email: instructor.email ?? "",
-      phone: instructor.phone ?? "",
-      instructor_organization: instructor.instructor_organization ?? "",
-      instructor_headline: instructor.instructor_headline ?? "",
-      instructor_bio: instructor.instructor_bio ?? "",
-      instructor_website: instructor.instructor_website ?? "",
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setEditForm(instructor ? {
+        role: instructor.role,
+        instructor_origin: instructor.instructor_origin ?? "external",
+        full_name: instructor.full_name ?? "",
+        email: instructor.email ?? "",
+        phone: instructor.phone ?? "",
+        instructor_organization: instructor.instructor_organization ?? "",
+        instructor_headline: instructor.instructor_headline ?? "",
+        instructor_bio: instructor.instructor_bio ?? "",
+        instructor_website: instructor.instructor_website ?? "",
+      } : null);
     });
+    return () => { cancelled = true; };
   }, [instructor]);
 
   async function handleSaveDetails() {
     if (!instructor || !editForm) return;
-    setSavingDetails(true);
     setError(null);
     const updates = {
       role: editForm.role,
@@ -56,17 +72,10 @@ export default function AdminInstructorDetail() {
       instructor_website: editForm.instructor_website.trim() || null,
     };
     try {
-      await updateProfileAdmin(instructor.id, updates);
-      setProfiles((current) => current.map((profile) =>
-        profile.id === instructor.id
-          ? { ...profile, ...updates, updated_at: new Date().toISOString() }
-          : profile,
-      ));
+      await updateMutation.mutateAsync({ instructorId: instructor.id, updates });
       toast.success(t("instructorDetailPage.toasts.detailsSaved"));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : t("instructorDetailPage.errors.saveFailed"));
-    } finally {
-      setSavingDetails(false);
     }
   }
 
@@ -106,7 +115,7 @@ export default function AdminInstructorDetail() {
           editForm={editForm}
           setEditForm={setEditForm}
           profileCompletionPercent={Math.round((completedFields / 7) * 100)}
-          savingDetails={savingDetails}
+          savingDetails={updateMutation.isPending}
           onSave={() => void handleSaveDetails()}
         />
       </div>

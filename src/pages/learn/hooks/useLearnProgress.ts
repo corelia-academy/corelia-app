@@ -1,8 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
+import type { Dispatch, SetStateAction } from "react";
+
+import {
+  courseKeys,
+  courseProgressQueryOptions,
+} from "@/features/courses/courseQueries";
 import {
   computeProgressPercent,
   getCompletedLessonIds,
-  getLessonProgressForCourse,
   getNextLesson,
 } from "@/lib/courses";
 import type { CourseLesson, LessonProgress } from "@/types/courses";
@@ -21,7 +27,7 @@ interface UseLearnProgressResult {
   progressPercent: number;
   nextLesson: CourseLesson | null;
   refresh: () => Promise<LessonProgress[] | null>;
-  setProgressList: React.Dispatch<React.SetStateAction<LessonProgress[]>>;
+  setProgressList: Dispatch<SetStateAction<LessonProgress[]>>;
 }
 
 export function useLearnProgress({
@@ -29,51 +35,51 @@ export function useLearnProgress({
   profileId,
   visibleLessons,
 }: UseLearnProgressInput): UseLearnProgressResult {
-  const [progressList, setProgressList] = useState<LessonProgress[]>([]);
-  const hasContext = !!courseId && !!profileId;
-
-  useEffect(() => {
-    if (!courseId || !profileId) return;
-    let cancelled = false;
-    getLessonProgressForCourse(profileId, courseId)
-      .then((rows) => {
-        if (!cancelled) setProgressList(rows);
-      })
-      .catch(() => {
-        if (!cancelled) setProgressList([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [courseId, profileId]);
-
-  const effectiveProgressList = useMemo(
-    () => (hasContext ? progressList : EMPTY_PROGRESS_LIST),
-    [hasContext, progressList],
+  const queryClient = useQueryClient();
+  const progressQuery = useQuery(
+    courseProgressQueryOptions(profileId, courseId),
   );
+  const hasContext = Boolean(courseId && profileId);
+  const progressList = hasContext
+    ? progressQuery.data ?? EMPTY_PROGRESS_LIST
+    : EMPTY_PROGRESS_LIST;
+  const progressKey =
+    profileId && courseId ? courseKeys.progress(profileId, courseId) : null;
 
   const completedIds = useMemo(
-    () => getCompletedLessonIds(visibleLessons, effectiveProgressList),
-    [effectiveProgressList, visibleLessons],
+    () => getCompletedLessonIds(visibleLessons, progressList),
+    [progressList, visibleLessons],
   );
   const progressPercent = useMemo(
-    () => computeProgressPercent(visibleLessons, effectiveProgressList),
-    [effectiveProgressList, visibleLessons],
+    () => computeProgressPercent(visibleLessons, progressList),
+    [progressList, visibleLessons],
   );
   const nextLesson = useMemo(
-    () => getNextLesson(visibleLessons, effectiveProgressList),
-    [effectiveProgressList, visibleLessons],
+    () => getNextLesson(visibleLessons, progressList),
+    [progressList, visibleLessons],
   );
 
   const refresh = useCallback(async () => {
     if (!courseId || !profileId) return null;
-    const rows = await getLessonProgressForCourse(profileId, courseId);
-    setProgressList(rows);
-    return rows;
-  }, [courseId, profileId]);
+    const result = await progressQuery.refetch();
+    return result.data ?? [];
+  }, [courseId, profileId, progressQuery]);
+
+  const setProgressList: Dispatch<SetStateAction<LessonProgress[]>> =
+    useCallback(
+      (update) => {
+        if (!progressKey) return;
+        queryClient.setQueryData<LessonProgress[]>(progressKey, (previous) =>
+          typeof update === "function"
+            ? update(previous ?? EMPTY_PROGRESS_LIST)
+            : update,
+        );
+      },
+      [progressKey, queryClient],
+    );
 
   return {
-    progressList: effectiveProgressList,
+    progressList,
     completedIds,
     progressPercent,
     nextLesson,
@@ -81,4 +87,3 @@ export function useLearnProgress({
     setProgressList,
   };
 }
-

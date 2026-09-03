@@ -15,4 +15,12 @@ describe("App router context", () => {
     expect(routerIndex).toBeGreaterThanOrEqual(0);
     expect(credentialSyncIndex).toBeGreaterThan(routerIndex);
   });
+
+  it("renders a neutral bootstrap screen before mounting auth-aware routes", () => {
+    expect(appSource).toContain('authStatus === "booting"');
+    expect(appSource).toContain("<AuthBootstrapScreen />");
+    expect(appSource).toMatch(
+      /authStatus === "booting"[\s\S]*?<AuthBootstrapScreen \/>[\s\S]*?<BrowserRouter>/,
+    );
+  });
 });

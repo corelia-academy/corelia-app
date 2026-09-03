@@ -66,16 +66,19 @@ export function ContestDetailApplicationsPanel({
     let pending = 0;
     let approved = 0;
     let rejected = 0;
+    let registered = 0;
     for (const r of registrations) {
       if (r.status === "pending") pending += 1;
       else if (r.status === "approved") approved += 1;
-      else rejected += 1;
+      else if (r.status === "rejected") rejected += 1;
+      else registered += 1;
     }
     return {
       all: registrations.length,
       pending,
       approved,
       rejected,
+      registered,
     };
   }, [registrations]);
 
@@ -170,7 +173,7 @@ export function ContestDetailApplicationsPanel({
                       setPage(1);
                     }}
                   >
-                    {translate(fb.labelKey)} ({statusCounts[fb.id]})
+                    {translate(fb.labelKey)} ({statusCounts[fb.id] ?? 0})
                   </Button>
                 ))}
               </div>

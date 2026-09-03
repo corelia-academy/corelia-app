@@ -1,5 +1,11 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { User } from "@supabase/supabase-js";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+
+import {
+  courseKeys,
+  courseSubmissionQueryOptions,
+} from "@/features/courses/courseQueries";
 import { getSubmission, submitFinalAssignment } from "@/lib/finalAssignment";
 
 type SubmissionRow = Awaited<ReturnType<typeof getSubmission>>;
@@ -25,46 +31,43 @@ export function useLearnSubmission({
   profileId,
   viewer,
 }: UseLearnSubmissionInput): UseLearnSubmissionResult {
-  const [submission, setSubmission] = useState<SubmissionRow>(null);
-
-  const refresh = useCallback(async () => {
-    if (!courseId || !profileId) return null;
-    const row = await getSubmission(profileId, courseId);
-    setSubmission(row);
-    return row;
-  }, [courseId, profileId]);
-
-  useEffect(() => {
-    if (!courseId || !profileId) return;
-    let cancelled = false;
-    getSubmission(profileId, courseId).then((row) => {
-      if (!cancelled) setSubmission(row);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [courseId, profileId]);
-
-  const submit = useCallback(
-    async (input: { content: string; fileUrls?: string[] }) => {
+  const queryClient = useQueryClient();
+  const submissionQuery = useQuery(
+    courseSubmissionQueryOptions(profileId, courseId),
+  );
+  const submissionKey =
+    profileId && courseId ? courseKeys.submission(profileId, courseId) : null;
+  const submitMutation = useMutation({
+    mutationFn: async (input: { content: string; fileUrls?: string[] }) => {
       if (!courseId) throw new Error("Missing courseId");
-      const row = await submitFinalAssignment(
+      return submitFinalAssignment(
         courseId,
         input.content.trim(),
         input.fileUrls?.length ? input.fileUrls : undefined,
         viewer,
       );
-      setSubmission(row);
-      return row;
     },
-    [courseId, viewer],
+    onSuccess: (row) => {
+      if (submissionKey) queryClient.setQueryData(submissionKey, row);
+    },
+  });
+
+  const refresh = useCallback(async () => {
+    if (!courseId || !profileId) return null;
+    const result = await submissionQuery.refetch();
+    return result.data ?? null;
+  }, [courseId, profileId, submissionQuery]);
+  const setSubmission = useCallback(
+    (value: SubmissionRow) => {
+      if (submissionKey) queryClient.setQueryData(submissionKey, value);
+    },
+    [queryClient, submissionKey],
   );
 
   return {
-    submission,
+    submission: submissionQuery.data ?? null,
     refresh,
-    submit,
+    submit: submitMutation.mutateAsync,
     setSubmission,
   };
 }
-
