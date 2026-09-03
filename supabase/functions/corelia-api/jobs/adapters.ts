@@ -107,11 +107,55 @@ function leverJobs(payload: unknown, company: JobCompanyRow): NormalizedSourceJo
   });
 }
 
+function compensationPeriod(value: unknown): NormalizedSourceJob["salaryPeriod"] {
+  const interval = stringValue(value).toLowerCase();
+  if (/hour/.test(interval)) return "hour";
+  if (/day/.test(interval)) return "day";
+  if (/week/.test(interval)) return "week";
+  if (/month/.test(interval)) return "month";
+  if (/year|annual/.test(interval)) return "year";
+  return null;
+}
+
+function ashbySalary(raw: Record<string, unknown>): Pick<
+  NormalizedSourceJob,
+  "salaryMin" | "salaryMax" | "salaryCurrency" | "salaryPeriod"
+> {
+  if (raw.shouldDisplayCompensationOnJobPostings === false) {
+    return { salaryMin: null, salaryMax: null, salaryCurrency: null, salaryPeriod: null };
+  }
+  const compensation = recordValue(raw.compensation);
+  const summaryComponents = Array.isArray(compensation.summaryComponents)
+    ? compensation.summaryComponents
+    : [];
+  const tierComponents = (Array.isArray(compensation.compensationTiers)
+    ? compensation.compensationTiers
+    : []).flatMap((tier) => {
+      const components = recordValue(tier).components;
+      return Array.isArray(components) ? components : [];
+    });
+  const salary = [...summaryComponents, ...tierComponents]
+    .map(recordValue)
+    .find((component) =>
+      stringValue(component.compensationType).toLowerCase() === "salary" &&
+      (finiteNumber(component.minValue) != null || finiteNumber(component.maxValue) != null)
+    );
+  if (!salary) {
+    return { salaryMin: null, salaryMax: null, salaryCurrency: null, salaryPeriod: null };
+  }
+  return {
+    salaryMin: finiteNumber(salary.minValue),
+    salaryMax: finiteNumber(salary.maxValue),
+    salaryCurrency: stringValue(salary.currencyCode).toUpperCase() || null,
+    salaryPeriod: compensationPeriod(salary.interval),
+  };
+}
+
 function ashbyJobs(payload: unknown, company: JobCompanyRow): NormalizedSourceJob[] {
   const jobs = Array.isArray(recordValue(payload).jobs) ? recordValue(payload).jobs as unknown[] : [];
   return jobs.map((item) => {
     const raw = recordValue(item);
-    const compensation = recordValue(raw.compensation);
+    const salary = ashbySalary(raw);
     const descriptionHtml = stringValue(raw.descriptionHtml);
     const descriptionPlain = stringValue(raw.descriptionPlain) || htmlToText(descriptionHtml);
     const sourceUrl = normalizeUrl(stringValue(raw.jobUrl));
@@ -128,10 +172,7 @@ function ashbyJobs(payload: unknown, company: JobCompanyRow): NormalizedSourceJo
       applyUrl: normalizeUrl(stringValue(raw.applyUrl) || sourceUrl),
       postedAt: isoDate(raw.publishedAt),
       sourceUpdatedAt: null,
-      salaryMin: finiteNumber(compensation.minValue),
-      salaryMax: finiteNumber(compensation.maxValue),
-      salaryCurrency: stringValue(compensation.currency).toUpperCase() || null,
-      salaryPeriod: /hour/i.test(stringValue(compensation.interval)) ? "hour" : "year",
+      ...salary,
       sourceTags: [raw.department, raw.team, raw.employmentType].map(stringValue).filter(Boolean),
       raw,
     };

@@ -1,5 +1,6 @@
 export type JobStatus = "review" | "active" | "rejected" | "expired" | "disabled" | "duplicate";
 export type JobRemoteType = "remote" | "hybrid" | "onsite" | "unknown";
+export type JobType = "tech" | "non_tech";
 
 export type Job = {
   id: string;
@@ -11,6 +12,7 @@ export type Job = {
   description_html: string | null;
   description_plain: string | null;
   summary: string | null;
+  job_type: JobType;
   primary_role: string | null;
   roles: string[];
   domains: string[];
@@ -75,6 +77,7 @@ export type UserJobState = {
 
 export type JobFilters = {
   query?: string;
+  jobType?: JobType;
   role?: string;
   domain?: string;
   skill?: string;

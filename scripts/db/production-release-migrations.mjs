@@ -34,6 +34,7 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260903033132_jobs_mvp_foundation.sql",
   "supabase/migrations/20260903055155_jobs_advisor_remediation.sql",
   "supabase/migrations/20260903062207_normalize_job_ai_quality_score.sql",
+  "supabase/migrations/20260903071137_add_job_type_and_non_tech_roles.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
@@ -42,11 +43,11 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
 
 // Production is released through 20260901002156. The Hackathon schema changes,
 // Project submission/media gate, comment retirement, Jobs foundation, and its
-// advisor remediation, and classifier scale repair ship as one forward-only
-// pending batch.
+// advisor remediation, classifier scale repair, and Tech/Non-tech taxonomy
+// ship as one forward-only pending batch.
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
-  APPROVED_PENDING_VERSIONS.slice(0, -7),
+  APPROVED_PENDING_VERSIONS.slice(0, -8),
 );
-export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-7));
+export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-8));
 export const EXPECTED_POST_MIGRATION_COUNT = PRODUCTION_BASELINE_COUNT + APPROVED_PENDING_VERSIONS.length;
 export const EXPECTED_POST_MIGRATION_LATEST = APPROVED_PENDING_VERSIONS.at(-1);

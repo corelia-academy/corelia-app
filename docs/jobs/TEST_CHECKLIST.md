@@ -149,8 +149,10 @@ redact secret.
   không tạo canonical job thứ hai.
 - [ ] Job thiếu title/company/source/apply URL vào review hoặc bị từ chối theo
   quality gate, không public.
-- [ ] Job rõ ràng non-tech bị deterministic filter chặn mà không gọi AI.
-- [ ] Job tech map đúng role/domain/skills/seniority/remote/employment/region khi
+- [ ] Job ngoài phạm vi rõ ràng bị deterministic filter chặn mà không gọi AI.
+- [ ] Job tech và non-tech map đúng `job_type`; Social/Content/Marketing không bị
+      gán tech chỉ vì mô tả nhắc đến sản phẩm hoặc đội engineering.
+- [ ] Job map đúng role/domain/skills/seniority/remote/employment/region khi
   có evidence.
 - [ ] Không suy diễn salary, location, eligibility hoặc skill khi source không
   có bằng chứng.
@@ -196,6 +198,9 @@ redact secret.
   được sửa.
 - [ ] Catalog chỉ hiển thị canonical job đủ visibility gate, sắp theo ranking
   rồi `posted_at` mới nhất.
+- [ ] Anonymous, user thường và staff/admin nhận cùng tập job public trước khi
+  áp dụng trạng thái hide cá nhân; quyền staff không làm job `review` hoặc
+  `rejected` xuất hiện trên catalog/detail người dùng.
 - [ ] Search tìm theo title/company/description/skills và giữ query trong URL.
 - [ ] Filter role, domain, skill, seniority, work mode, region, employment type
   và posted date trả đúng kết quả.
@@ -237,6 +242,8 @@ redact secret.
 - [ ] User A không đọc/sửa trạng thái job của user B bằng request trực tiếp.
 - [ ] `/jobs/saved` và `/jobs/applied` yêu cầu đăng nhập và có return flow hợp
   lệ.
+- [ ] `/jobs/hidden` yêu cầu đăng nhập, liệt kê job đã ẩn và nút hiện lại đưa
+  job về catalog; route riêng tư này không nằm trong sitemap.
 - [ ] Job không còn public không bị rò qua danh sách Saved/Applied.
 
 ## 10. Market `/jobs/market`

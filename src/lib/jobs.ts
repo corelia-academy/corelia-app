@@ -13,7 +13,11 @@ import type {
   UserJobState,
 } from "@/types/jobs";
 
-const JOB_SELECT = "id,slug,title,company_id,company_name,company_logo_url,description_html,description_plain,summary,primary_role,roles,domains,required_skills,preferred_skills,mentioned_skills,seniority,experience_min_years,experience_max_years,employment_type,remote_type,location_text,country_codes,regions,remote_eligibility,salary_min,salary_max,salary_currency,salary_period,source_id,source_job_id,source_url,canonical_url,apply_url,posted_at,first_seen_at,last_seen_at,expires_at,status,created_at,updated_at,job_sources(name,slug,attribution_required,attribution_text,allow_seo_indexing)";
+const JOB_SELECT: string = "id,slug,title,company_id,company_name,company_logo_url,description_html,description_plain,summary,job_type,primary_role,roles,domains,required_skills,preferred_skills,mentioned_skills,seniority,experience_min_years,experience_max_years,employment_type,remote_type,location_text,country_codes,regions,remote_eligibility,salary_min,salary_max,salary_currency,salary_period,source_id,source_job_id,source_url,canonical_url,apply_url,posted_at,first_seen_at,last_seen_at,expires_at,status,created_at,updated_at,job_sources!inner(name,slug,enabled,policy_reviewed_at,attribution_required,attribution_text,allow_seo_indexing),job_companies!inner(active,verified)";
+
+function publicJobExpiryFilter(): string {
+  return `expires_at.is.null,expires_at.gt.${new Date().toISOString()}`;
+}
 
 function sanitizeFilters(filters: JobFilters): Required<Pick<JobFilters, "page" | "pageSize">> & JobFilters {
   const rawPage = Number(filters.page);
@@ -33,7 +37,15 @@ function sanitizeFilters(filters: JobFilters): Required<Pick<JobFilters, "page" 
 export async function listJobs(filters: JobFilters, userId?: string | null): Promise<JobsPageResult> {
   const normalized = sanitizeFilters(filters);
   const offset = (normalized.page - 1) * normalized.pageSize;
-  let query = supabase.from("jobs").select(JOB_SELECT, { count: "exact" });
+  let query = supabase
+    .from("jobs")
+    .select(JOB_SELECT, { count: "exact" })
+    .eq("status", "active")
+    .or(publicJobExpiryFilter())
+    .eq("job_sources.enabled", true)
+    .not("job_sources.policy_reviewed_at", "is", null)
+    .eq("job_companies.active", true)
+    .eq("job_companies.verified", true);
   if (userId) {
     const { data: hidden, error: hiddenError } = await supabase
       .from("user_jobs")
@@ -45,6 +57,7 @@ export async function listJobs(filters: JobFilters, userId?: string | null): Pro
     if (hiddenIds.length) query = query.not("id", "in", `(${hiddenIds.join(",")})`);
   }
   if (normalized.query) query = query.textSearch("search_vector", normalized.query, { type: "websearch", config: "simple" });
+  if (normalized.jobType) query = query.eq("job_type", normalized.jobType);
   if (normalized.role) query = query.contains("roles", [normalized.role]);
   if (normalized.domain) query = query.contains("domains", [normalized.domain]);
   if (normalized.skill) query = query.overlaps("mentioned_skills", [normalized.skill]);
@@ -67,19 +80,29 @@ export async function listJobs(filters: JobFilters, userId?: string | null): Pro
     .order("id", { ascending: true })
     .range(offset, offset + normalized.pageSize - 1);
   if (error) throw new Error(error.message);
-  const jobIds = (data ?? []).map((job) => String(job.id));
+  const items = (data ?? []) as unknown as Job[];
+  const jobIds = items.map((job) => job.id);
   const stateResult = userId && jobIds.length
     ? await supabase.from("user_jobs").select("*").eq("user_id", userId).in("job_id", jobIds)
     : { data: [], error: null };
   if (stateResult.error) throw new Error(stateResult.error.message);
   const states = (stateResult.data ?? []) as UserJobState[];
   const stateByJobId = Object.fromEntries(states.map((state) => [state.job_id, state]));
-  const items = (data ?? []) as unknown as Job[];
   return { items, total: count ?? items.length, page: normalized.page, pageSize: normalized.pageSize, stateByJobId };
 }
 
 export async function getJobBySlug(slug: string): Promise<Job | null> {
-  const { data, error } = await supabase.from("jobs").select(JOB_SELECT).eq("slug", slug).maybeSingle();
+  const { data, error } = await supabase
+    .from("jobs")
+    .select(JOB_SELECT)
+    .eq("slug", slug)
+    .eq("status", "active")
+    .or(publicJobExpiryFilter())
+    .eq("job_sources.enabled", true)
+    .not("job_sources.policy_reviewed_at", "is", null)
+    .eq("job_companies.active", true)
+    .eq("job_companies.verified", true)
+    .maybeSingle();
   if (error) throw new Error(error.message);
   return data as unknown as Job | null;
 }
@@ -133,18 +156,30 @@ export async function setUserJobState(
   return data as UserJobState;
 }
 
-export async function listUserJobs(userId: string, mode: "saved" | "applied"): Promise<Array<{ job: Job; state: UserJobState }>> {
-  const { data: states, error: stateError } = await supabase
+export async function listUserJobs(userId: string, mode: "saved" | "applied" | "hidden"): Promise<Array<{ job: Job; state: UserJobState }>> {
+  let stateQuery = supabase
     .from("user_jobs")
     .select("*")
     .eq("user_id", userId)
-    .eq(mode, true)
-    .eq("hidden", false)
-    .order(mode === "saved" ? "saved_at" : "applied_at", { ascending: false });
+    .eq(mode, true);
+  if (mode !== "hidden") stateQuery = stateQuery.eq("hidden", false);
+  const { data: states, error: stateError } = await stateQuery.order(
+    mode === "saved" ? "saved_at" : mode === "applied" ? "applied_at" : "updated_at",
+    { ascending: false },
+  );
   if (stateError) throw new Error(stateError.message);
   const typedStates = (states ?? []) as UserJobState[];
   if (!typedStates.length) return [];
-  const { data: jobs, error: jobsError } = await supabase.from("jobs").select(JOB_SELECT).in("id", typedStates.map((state) => state.job_id));
+  const { data: jobs, error: jobsError } = await supabase
+    .from("jobs")
+    .select(JOB_SELECT)
+    .in("id", typedStates.map((state) => state.job_id))
+    .eq("status", "active")
+    .or(publicJobExpiryFilter())
+    .eq("job_sources.enabled", true)
+    .not("job_sources.policy_reviewed_at", "is", null)
+    .eq("job_companies.active", true)
+    .eq("job_companies.verified", true);
   if (jobsError) throw new Error(jobsError.message);
   const byId = new Map(((jobs ?? []) as unknown as Job[]).map((job) => [job.id, job]));
   return typedStates.flatMap((state) => {

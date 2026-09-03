@@ -12,7 +12,7 @@ const routeLoaders: Array<{
   { matches: (path) => path.startsWith("/courses"), load: () => import("@/pages/courses") },
   { matches: (path) => path.startsWith("/career"), load: () => import("@/pages/career") },
   { matches: (path) => path.startsWith("/jobs/market"), load: () => import("@/pages/jobs/JobMarketPage") },
-  { matches: (path) => path.startsWith("/jobs/saved") || path.startsWith("/jobs/applied"), load: () => import("@/pages/jobs/UserJobsPage") },
+  { matches: (path) => path.startsWith("/jobs/saved") || path.startsWith("/jobs/applied") || path.startsWith("/jobs/hidden"), load: () => import("@/pages/jobs/UserJobsPage") },
   { matches: (path) => /^\/jobs\/[^/]+/.test(path), load: () => import("@/pages/jobs/JobDetailPage") },
   { matches: (path) => path.startsWith("/jobs"), load: () => import("@/pages/jobs/JobsPage") },
   { matches: (path) => path.startsWith("/login"), load: () => import("@/pages/login/Auth") },

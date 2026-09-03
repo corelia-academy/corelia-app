@@ -40,12 +40,22 @@ test("Jobs migration is an approved forward migration", async () => {
   const release = await import("../production-release-migrations.mjs");
   assert.equal(
     release.CURRENT_PENDING_VERSIONS.at(-1),
-    "20260903062207",
+    "20260903071137",
   );
   assert.equal(
     release.EXPECTED_POST_MIGRATION_LATEST,
-    "20260903062207",
+    "20260903071137",
   );
+});
+
+test("Jobs type migration adds the public contract and non-tech role taxonomy", () => {
+  const migration = read("supabase/migrations/20260903071137_add_job_type_and_non_tech_roles.sql");
+
+  assert.match(migration, /ADD COLUMN job_type text NOT NULL DEFAULT 'tech'/);
+  assert.match(migration, /CHECK \(job_type IN \('tech', 'non_tech'\)\)/);
+  assert.match(migration, /\('social-media', 'Social Media'/);
+  assert.match(migration, /GRANT SELECT \(job_type\) ON public\.jobs TO anon, authenticated/);
+  assert.match(migration, /NEW\.job_type/);
 });
 
 test("Jobs classifier scale repair normalizes historical ratios without overriding staff decisions", () => {
@@ -55,7 +65,7 @@ test("Jobs classifier scale repair normalizes historical ratios without overridi
   assert.match(migration, /quality_score > 0[\s\S]*quality_score <= 1/);
   assert.match(migration, /NOT \(manual_overrides \? 'status'\)/);
   assert.match(migration, /processing_status = 'processed'/);
-  assert.match(classifier, /CLASSIFIER_VERSION = "jobs-ai-2"/);
+  assert.match(classifier, /CLASSIFIER_VERSION = "jobs-ai-3"/);
   assert.match(classifier, /score > 0 && score <= 1 \? score \* 100 : score/);
 });
 

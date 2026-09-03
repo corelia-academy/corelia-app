@@ -1,31 +1,32 @@
 {
   "eyebrow": "Corelia Jobs",
-  "title": "Việc làm phần mềm và công nghệ cho người xây dựng sản phẩm",
-  "subtitle": "Khám phá các vị trí được tuyển chọn trong kỹ thuật phần mềm, AI, Web3, hạ tầng, dữ liệu, bảo mật và các công ty hướng đến developer.",
+  "title": "Việc làm trong công nghệ và Web3",
+  "subtitle": "Khám phá các vị trí tech và non-tech được tuyển chọn tại các công ty công nghệ và Web3.",
   "search": "Tìm kiếm",
   "searchPlaceholder": "Vị trí, kỹ năng, công ty hoặc địa điểm",
   "results": "{{count}} việc làm",
   "retry": "Thử lại",
-  "nav": { "label": "Điều hướng việc làm", "find": "Tìm việc", "saved": "Đã lưu", "applied": "Đã ứng tuyển", "market": "Thị trường" },
+  "nav": { "label": "Điều hướng việc làm", "find": "Tìm việc", "saved": "Đã lưu", "applied": "Đã ứng tuyển", "hidden": "Đã ẩn", "market": "Thị trường" },
   "filters": {
-    "label": "Bộ lọc", "role": "Vai trò", "domain": "Lĩnh vực", "skill": "Kỹ năng", "seniority": "Cấp độ", "workMode": "Hình thức làm việc", "region": "Khu vực", "employmentType": "Loại hình công việc", "minimumSalary": "Mức lương tối thiểu", "salaryCurrency": "Đơn vị lương", "postedDate": "Ngày đăng",
-    "allRoles": "Tất cả vai trò", "allDomains": "Tất cả lĩnh vực", "allSkills": "Tất cả kỹ năng", "allSeniorities": "Tất cả cấp độ", "allWorkModes": "Mọi hình thức", "allRegions": "Tất cả khu vực", "allEmploymentTypes": "Mọi loại hình", "allCurrencies": "Tất cả đơn vị", "anyDate": "Mọi thời điểm", "last7Days": "7 ngày qua", "last30Days": "30 ngày qua", "clear": "Xóa lọc"
+    "label": "Bộ lọc", "jobType": "Nhóm công việc", "role": "Vai trò", "domain": "Lĩnh vực", "skill": "Kỹ năng", "seniority": "Cấp độ", "workMode": "Hình thức làm việc", "region": "Khu vực", "employmentType": "Loại hình công việc", "minimumSalary": "Mức lương tối thiểu", "salaryCurrency": "Đơn vị lương", "postedDate": "Ngày đăng",
+    "allJobTypes": "Tất cả nhóm", "allRoles": "Tất cả vai trò", "allDomains": "Tất cả lĩnh vực", "allSkills": "Tất cả kỹ năng", "allSeniorities": "Tất cả cấp độ", "allWorkModes": "Mọi hình thức", "allRegions": "Tất cả khu vực", "allEmploymentTypes": "Mọi loại hình", "allCurrencies": "Tất cả đơn vị", "anyDate": "Mọi thời điểm", "last7Days": "7 ngày qua", "last30Days": "30 ngày qua", "clear": "Xóa lọc"
   },
-  "values": { "intern": "Thực tập", "fresher": "Fresher", "junior": "Junior", "mid": "Mid-level", "senior": "Senior", "lead": "Lead / Staff", "manager": "Quản lý", "remote": "Từ xa", "hybrid": "Kết hợp", "onsite": "Tại văn phòng", "full_time": "Toàn thời gian", "part_time": "Bán thời gian", "contract": "Hợp đồng", "temporary": "Tạm thời", "internship": "Thực tập" },
-  "actions": { "save": "Lưu việc làm", "unsave": "Bỏ lưu", "markApplied": "Đánh dấu đã ứng tuyển", "applied": "Đã ứng tuyển", "hide": "Ẩn việc làm", "apply": "Ứng tuyển trên trang công ty" },
+  "values": { "tech": "Tech", "non_tech": "Non-tech", "intern": "Thực tập", "fresher": "Fresher", "junior": "Junior", "mid": "Mid-level", "senior": "Senior", "lead": "Lead / Staff", "manager": "Quản lý", "remote": "Từ xa", "hybrid": "Kết hợp", "onsite": "Tại văn phòng", "full_time": "Toàn thời gian", "part_time": "Bán thời gian", "contract": "Hợp đồng", "temporary": "Tạm thời", "internship": "Thực tập" },
+  "actions": { "save": "Lưu việc làm", "unsave": "Bỏ lưu", "markApplied": "Đánh dấu đã ứng tuyển", "applied": "Đã ứng tuyển", "hide": "Ẩn việc làm", "unhide": "Hiện lại việc làm", "apply": "Ứng tuyển trên trang công ty" },
   "card": { "salaryNotShown": "Không công khai lương" },
   "empty": { "title": "Không có việc làm phù hợp", "description": "Hãy mở rộng tìm kiếm hoặc xóa bớt bộ lọc." },
   "pagination": { "previous": "Trước", "next": "Tiếp", "page": "Trang {{page}} / {{total}}" },
-  "messages": { "loginRequired": "Đăng nhập để lưu, ẩn hoặc theo dõi đơn ứng tuyển.", "updateFailed": "Không thể cập nhật việc làm này.", "loadFailed": "Không thể tải danh sách việc làm." },
+  "messages": { "loginRequired": "Đăng nhập để lưu, ẩn hoặc theo dõi đơn ứng tuyển.", "updateFailed": "Không thể cập nhật việc làm này.", "loadFailed": "Không thể tải danh sách việc làm.", "hidden": "Đã ẩn việc làm.", "viewHidden": "Xem việc đã ẩn", "unhidden": "Đã đưa việc làm về danh sách chính." },
   "detail": {
-    "back": "Quay lại danh sách", "notFound": "Việc làm này không còn khả dụng hoặc đã hết hạn.", "about": "Mô tả công việc", "noDescription": "Nguồn chưa cung cấp mô tả đầy đủ.", "requiredSkills": "Kỹ năng bắt buộc", "preferredSkills": "Kỹ năng ưu tiên", "overview": "Tổng quan", "salary": "Mức lương", "seniority": "Cấp độ", "role": "Vai trò", "source": "Nguồn", "sourceAttribution": "Tin tuyển dụng do {{source}} cung cấp."
+    "back": "Quay lại danh sách", "notFound": "Việc làm này không còn khả dụng hoặc đã hết hạn.", "about": "Mô tả công việc", "noDescription": "Nguồn chưa cung cấp mô tả đầy đủ.", "requiredSkills": "Kỹ năng bắt buộc", "preferredSkills": "Kỹ năng ưu tiên", "overview": "Tổng quan", "salary": "Mức lương", "jobType": "Nhóm công việc", "seniority": "Cấp độ", "role": "Vai trò", "source": "Nguồn", "sourceAttribution": "Tin tuyển dụng do {{source}} cung cấp."
   },
   "user": {
     "saved": { "title": "Việc làm đã lưu", "description": "Giữ các cơ hội tiềm năng ở một nơi để quay lại khi bạn sẵn sàng.", "empty": "Bạn chưa lưu việc làm đang hoạt động nào." },
-    "applied": { "title": "Đơn ứng tuyển", "description": "Danh sách gọn nhẹ các việc làm bạn đã ứng tuyển.", "empty": "Bạn chưa đánh dấu việc làm đang hoạt động nào là đã ứng tuyển." }
+    "applied": { "title": "Đơn ứng tuyển", "description": "Danh sách gọn nhẹ các việc làm bạn đã ứng tuyển.", "empty": "Bạn chưa đánh dấu việc làm đang hoạt động nào là đã ứng tuyển." },
+    "hidden": { "title": "Việc làm đã ẩn", "description": "Xem lại các việc làm đã ẩn và đưa chúng trở lại danh sách chính.", "empty": "Bạn chưa ẩn việc làm nào." }
   },
   "market": {
-    "eyebrow": "Dữ liệu thị trường", "title": "Thị trường công nghệ đang tuyển gì", "subtitle": "Số liệu tổng hợp hằng ngày từ các nguồn được Corelia tuyển chọn. Chỉ số so sánh dùng các nguồn xuất hiện trong cả hai kỳ.",
+    "eyebrow": "Dữ liệu thị trường", "title": "Các công ty công nghệ đang tuyển gì", "subtitle": "Số liệu hằng ngày cho cả vị trí tech và non-tech từ các nguồn được Corelia tuyển chọn. Chỉ số so sánh dùng các nguồn xuất hiện trong cả hai kỳ.",
     "cards": { "active": "Việc làm đang mở", "new": "Tin mới hôm nay", "remote": "Tỷ lệ từ xa", "entry": "Vị trí đầu vào" },
     "topRoles": "Vai trò có nhu cầu", "topSkills": "Kỹ năng được yêu cầu nhiều", "topDomains": "Tuyển dụng theo lĩnh vực", "disclaimer": "Quan sát từ các nguồn Corelia theo dõi; đây là dữ liệu mẫu, không phải toàn bộ thị trường.",
     "empty": { "title": "Dữ liệu thị trường đang được chuẩn bị", "description": "Admin cần crawl ít nhất một công ty đã xác minh và làm mới analytics hằng ngày." }

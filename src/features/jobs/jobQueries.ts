@@ -72,7 +72,7 @@ export function userJobStateQueryOptions(userId: string | undefined, jobId: stri
   });
 }
 
-export function userJobsQueryOptions(userId: string | undefined, mode: "saved" | "applied") {
+export function userJobsQueryOptions(userId: string | undefined, mode: "saved" | "applied" | "hidden") {
   return queryOptions({
     queryKey: jobKeys.userList(userId ?? "missing", mode),
     queryFn: () => listUserJobs(userId!, mode),

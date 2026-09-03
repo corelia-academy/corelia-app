@@ -71,6 +71,7 @@ const JobsPage = lazy(() => import("@/pages/jobs/JobsPage"));
 const JobDetailPage = lazy(() => import("@/pages/jobs/JobDetailPage"));
 const SavedJobsPage = lazy(() => import("@/pages/jobs/UserJobsPage").then((m) => ({ default: m.SavedJobsPage })));
 const AppliedJobsPage = lazy(() => import("@/pages/jobs/UserJobsPage").then((m) => ({ default: m.AppliedJobsPage })));
+const HiddenJobsPage = lazy(() => import("@/pages/jobs/UserJobsPage").then((m) => ({ default: m.HiddenJobsPage })));
 const JobMarketPage = lazy(() => import("@/pages/jobs/JobMarketPage"));
 
 const Account = lazy(() => import("@/pages/account/Account"));
@@ -375,6 +376,7 @@ export default function App() {
               <Route path="jobs" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
               <Route path="jobs/saved" element={<RequireAuth><Suspense fallback={<PageFallback />}><SavedJobsPage /></Suspense></RequireAuth>} />
               <Route path="jobs/applied" element={<RequireAuth><Suspense fallback={<PageFallback />}><AppliedJobsPage /></Suspense></RequireAuth>} />
+              <Route path="jobs/hidden" element={<RequireAuth><Suspense fallback={<PageFallback />}><HiddenJobsPage /></Suspense></RequireAuth>} />
               <Route path="jobs/market" element={<Suspense fallback={<PageFallback />}><JobMarketPage /></Suspense>} />
               <Route path="jobs/:slug" element={<Suspense fallback={<PageFallback />}><JobDetailPage /></Suspense>} />
               <Route

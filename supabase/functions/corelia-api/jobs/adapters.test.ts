@@ -55,6 +55,56 @@ describe("ATS adapters", () => {
     expect(String(fetcher.mock.calls[0]?.[0])).toContain("https://api.eu.lever.co/");
   });
 
+  it("reads visible Ashby salary components from the nested compensation payload", async () => {
+    const fetcher = vi.fn(async () => new Response(JSON.stringify({
+      jobs: [{
+        id: "ashby-job",
+        title: "Ecosystem Manager",
+        jobUrl: "https://jobs.ashbyhq.com/example/ashby-job",
+        applyUrl: "https://jobs.ashbyhq.com/example/ashby-job/application",
+        descriptionPlain: "Build the ecosystem.",
+        shouldDisplayCompensationOnJobPostings: true,
+        compensation: {
+          summaryComponents: [
+            { compensationType: "Salary", minValue: 140_000, maxValue: 170_000, currencyCode: "USD", interval: "1 YEAR" },
+            { compensationType: "Bonus", minValue: null, maxValue: null, currencyCode: "USD", interval: "1 YEAR" },
+          ],
+        },
+      }],
+    }), { status: 200 }));
+    const jobs = await fetchCompanyJobs({ ...company, source_type: "ashby" }, fetcher);
+    expect(jobs[0]).toMatchObject({
+      salaryMin: 140_000,
+      salaryMax: 170_000,
+      salaryCurrency: "USD",
+      salaryPeriod: "year",
+    });
+  });
+
+  it("does not expose Ashby compensation when the posting disables salary display", async () => {
+    const fetcher = vi.fn(async () => new Response(JSON.stringify({
+      jobs: [{
+        id: "private-salary",
+        title: "Engineer",
+        jobUrl: "https://jobs.ashbyhq.com/example/private-salary",
+        descriptionPlain: "Build software.",
+        shouldDisplayCompensationOnJobPostings: false,
+        compensation: {
+          summaryComponents: [
+            { compensationType: "Salary", minValue: 100_000, maxValue: 120_000, currencyCode: "USD", interval: "1 YEAR" },
+          ],
+        },
+      }],
+    }), { status: 200 }));
+    const jobs = await fetchCompanyJobs({ ...company, source_type: "ashby" }, fetcher);
+    expect(jobs[0]).toMatchObject({
+      salaryMin: null,
+      salaryMax: null,
+      salaryCurrency: null,
+      salaryPeriod: null,
+    });
+  });
+
   it("paginates Lever feeds before treating them as complete", async () => {
     const firstPage = Array.from({ length: 100 }, (_, index) => ({
       id: `job-${index}`,

@@ -12,6 +12,11 @@ describe("jobs normalization", () => {
     expect(normalizeUrl("/relative/jobs/1")).toBe("");
   });
 
+  it("decodes Greenhouse-encoded markup before stripping tags", () => {
+    const encoded = "&lt;div class=&quot;content-intro&quot;&gt;&lt;p&gt;&lt;strong&gt;Build Web3&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;TypeScript &amp;amp; React&lt;/p&gt;&lt;/div&gt;";
+    expect(htmlToText(encoded)).toBe("Build Web3\nTypeScript & React");
+  });
+
   it("produces stable hashes inputs independent of object key order", () => {
     expect(stableStringify({ b: 2, a: { d: 4, c: 3 } }))
       .toBe(stableStringify({ a: { c: 3, d: 4 }, b: 2 }));

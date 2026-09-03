@@ -179,7 +179,7 @@ export async function handleJobsRefreshAnalytics(req: Request, db: SupabaseClien
 }
 
 const OVERRIDE_SCALAR_FIELDS = new Set([
-  "title", "summary", "primary_role", "seniority", "employment_type",
+  "title", "summary", "job_type", "primary_role", "seniority", "employment_type",
   "remote_type", "remote_eligibility", "location_text", "salary_min",
   "salary_max", "salary_currency", "salary_period", "review_reason",
 ]);

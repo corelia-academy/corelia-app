@@ -1,4 +1,4 @@
-import { Bookmark, BriefcaseBusiness, Building2, Clock3, EyeOff, MapPin } from "lucide-react";
+import { Bookmark, BriefcaseBusiness, Building2, Clock3, Eye, EyeOff, MapPin } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -13,10 +13,10 @@ type Props = {
   busy?: boolean;
   onToggleSaved?: () => void;
   onToggleApplied?: () => void;
-  onHide?: () => void;
+  onToggleHidden?: () => void;
 };
 
-export function JobCard({ job, state, busy, onToggleSaved, onToggleApplied, onHide }: Props) {
+export function JobCard({ job, state, busy, onToggleSaved, onToggleApplied, onToggleHidden }: Props) {
   const { t, i18n } = useTranslation("jobs");
   const salary = formatJobSalary(job, i18n.language);
   return (
@@ -27,6 +27,7 @@ export function JobCard({ job, state, busy, onToggleSaved, onToggleApplied, onHi
             {job.company_logo_url ? <img src={job.company_logo_url} alt="" className="size-full object-contain p-1" /> : <Building2 className="size-5 text-foreground-subtle" aria-hidden />}
           </div>
           <div className="min-w-0 flex-1">
+            <span className="mb-1 inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">{t(`values.${job.job_type}`)}</span>
             <Link to={`/jobs/${job.slug}`} className="line-clamp-2 font-semibold text-foreground hover:text-primary">
               {job.title}
             </Link>
@@ -53,7 +54,7 @@ export function JobCard({ job, state, busy, onToggleSaved, onToggleApplied, onHi
           <div className="text-sm font-semibold text-foreground">{salary ?? t("card.salaryNotShown")}</div>
           <div className="flex gap-1">
             {onToggleApplied ? <Button type="button" size="sm" variant={state?.applied ? "secondary" : "outline"} disabled={busy} onClick={onToggleApplied}>{state?.applied ? t("actions.applied") : t("actions.markApplied")}</Button> : null}
-            {onHide ? <Button type="button" size="icon-sm" variant="ghost" disabled={busy} aria-label={t("actions.hide")} onClick={onHide}><EyeOff className="size-4" aria-hidden /></Button> : null}
+            {onToggleHidden ? <Button type="button" size="icon-sm" variant="ghost" disabled={busy} aria-label={state?.hidden ? t("actions.unhide") : t("actions.hide")} title={state?.hidden ? t("actions.unhide") : t("actions.hide")} onClick={onToggleHidden}>{state?.hidden ? <Eye className="size-4" aria-hidden /> : <EyeOff className="size-4" aria-hidden />}</Button> : null}
           </div>
         </div>
       </CardContent>

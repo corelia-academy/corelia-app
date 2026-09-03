@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BriefcaseBusiness, Search, SlidersHorizontal } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -19,11 +19,15 @@ export default function JobsPage() {
   const { t } = useTranslation("jobs");
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const requestedPage = Number(params.get("page") ?? 1);
   const page = Number.isFinite(requestedPage) ? Math.max(1, Math.min(10_000, Math.trunc(requestedPage))) : 1;
   const filters = {
     query: params.get("q") || undefined,
+    jobType: params.get("type") === "tech" || params.get("type") === "non_tech"
+      ? params.get("type") as "tech" | "non_tech"
+      : undefined,
     role: params.get("role") || undefined,
     domain: params.get("domain") || undefined,
     skill: params.get("skill") || undefined,
@@ -44,8 +48,13 @@ export default function JobsPage() {
       if (!user?.id) throw new Error("login_required");
       return setUserJobState(user.id, jobId, patch);
     },
-    onSuccess: async () => {
+    onSuccess: async (_, variables) => {
       await queryClient.invalidateQueries({ queryKey: jobKeys.all });
+      if (variables.patch.hidden === true) {
+        toast.success(t("messages.hidden"), {
+          action: { label: t("messages.viewHidden"), onClick: () => navigate("/jobs/hidden") },
+        });
+      }
     },
     onError: (error) => toast.error(error.message === "login_required" ? t("messages.loginRequired") : t("messages.updateFailed")),
   });
@@ -84,6 +93,7 @@ export default function JobsPage() {
         <section className="rounded-xl border border-border-subtle bg-surface-base p-4" aria-label={t("filters.label")}>
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold"><SlidersHorizontal className="size-4" aria-hidden />{t("filters.label")}</div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+            <select className={SELECT_CLASS} value={filters.jobType ?? ""} onChange={(e) => updateParam("type", e.target.value)} aria-label={t("filters.jobType")}><option value="">{t("filters.allJobTypes")}</option>{(["tech", "non_tech"] as const).map((value) => <option key={value} value={value}>{t(`values.${value}`)}</option>)}</select>
             <select className={SELECT_CLASS} value={filters.role ?? ""} onChange={(e) => updateParam("role", e.target.value)} aria-label={t("filters.role")}><option value="">{t("filters.allRoles")}</option>{taxonomyQuery.data?.roles.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}</select>
             <select className={SELECT_CLASS} value={filters.domain ?? ""} onChange={(e) => updateParam("domain", e.target.value)} aria-label={t("filters.domain")}><option value="">{t("filters.allDomains")}</option>{taxonomyQuery.data?.domains.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}</select>
             <select className={SELECT_CLASS} value={filters.skill ?? ""} onChange={(e) => updateParam("skill", e.target.value)} aria-label={t("filters.skill")}><option value="">{t("filters.allSkills")}</option>{taxonomyQuery.data?.skills.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}</select>
@@ -100,7 +110,7 @@ export default function JobsPage() {
         <div className="flex items-center justify-between gap-3"><p className="text-sm text-foreground-muted">{t("results", { count: result?.total ?? 0 })}</p></div>
         {jobsQuery.isPending ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-72 animate-pulse rounded-2xl bg-surface-raised" />)}</div> : jobsQuery.isError ? <div className="rounded-xl border border-destructive/30 p-8 text-center text-sm text-destructive" role="alert">{t("messages.loadFailed")} <Button type="button" variant="outline" className="ml-2" onClick={() => void jobsQuery.refetch()}>{t("retry")}</Button></div> : result?.items.length ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{result.items.map((job) => {
           const state = result.stateByJobId[job.id];
-          return <JobCard key={job.id} job={job} state={state} busy={stateMutation.isPending && stateMutation.variables?.jobId === job.id} onToggleSaved={() => mutateState(job.id, { saved: !state?.saved })} onToggleApplied={() => mutateState(job.id, { applied: !state?.applied })} onHide={() => mutateState(job.id, { hidden: true })} />;
+          return <JobCard key={job.id} job={job} state={state} busy={stateMutation.isPending && stateMutation.variables?.jobId === job.id} onToggleSaved={() => mutateState(job.id, { saved: !state?.saved })} onToggleApplied={() => mutateState(job.id, { applied: !state?.applied })} onToggleHidden={() => mutateState(job.id, { hidden: true })} />;
         })}</div> : <div className="rounded-xl border border-border-subtle bg-surface-base p-12 text-center"><BriefcaseBusiness className="mx-auto size-8 text-foreground-subtle" aria-hidden /><h2 className="mt-3 font-semibold">{t("empty.title")}</h2><p className="mt-1 text-sm text-foreground-muted">{t("empty.description")}</p></div>}
         {totalPages > 1 ? <div className="flex items-center justify-center gap-3"><Button type="button" variant="outline" disabled={page <= 1} onClick={() => updateParam("page", String(page - 1))}>{t("pagination.previous")}</Button><span className="text-sm text-foreground-muted">{t("pagination.page", { page, total: totalPages })}</span><Button type="button" variant="outline" disabled={page >= totalPages} onClick={() => updateParam("page", String(page + 1))}>{t("pagination.next")}</Button></div> : null}
       </div>

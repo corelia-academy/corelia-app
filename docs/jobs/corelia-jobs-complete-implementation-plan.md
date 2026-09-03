@@ -1,9 +1,9 @@
 # Corelia Jobs — Complete Implementation Plan
-## Curated Software & Technology Job Board + AI Cleaning + Market Intelligence
+## Curated Technology/Web3 Company Jobs + AI Cleaning + Market Intelligence
 
 **Version:** September 2026
 **Primary stack assumption:** React/TypeScript + Supabase/PostgreSQL
-**Core operating principle:** Curated sources, deterministic filtering first, AI only for new/changed jobs, daily market analytics.
+**Core operating principle:** Curated sources, deterministic filtering first, AI for new/changed jobs or a new classifier version, daily market analytics.
 
 **Operator docs:** [Setup và vận hành](./README.md) · [Test checklist](./TEST_CHECKLIST.md)
 
@@ -17,19 +17,24 @@ current Corelia architecture instead of introducing a separate service.
 
 ## Implemented in this repository
 
-- Public routes: `/jobs`, `/jobs/:slug`, `/jobs/saved`, `/jobs/applied`, and
-  `/jobs/market`.
+- Public routes: `/jobs`, `/jobs/:slug`, and `/jobs/market`.
+- Authenticated user routes: `/jobs/saved`, `/jobs/applied`, and `/jobs/hidden`.
+  Hidden jobs can be reviewed and restored; this private route is intentionally
+  excluded from the public sitemap.
 - Admin routes: `/admin/jobs`, `/admin/jobs/review`, `/admin/jobs/sources`,
   `/admin/jobs/companies`, `/admin/jobs/crawlers`, and `/admin/jobs/analytics`.
 - Supabase schema, explicit grants, RLS, public/private data separation,
   lifecycle events, coverage snapshots, and daily market aggregates.
+- User-facing catalog, detail, and saved/applied/hidden queries explicitly
+  enforce the public visibility gates even when the viewer is staff/admin.
 - Direct ATS adapters for Greenhouse, Lever (global and EU), Ashby, and
   SmartRecruiters.
 - Raw payload staging, source-identity deduplication, canonical URL linking,
   content hashing, unchanged-job short circuit, automatic expiry after a
   successful complete feed, and manual overrides that survive later crawls.
 - Deterministic hard filtering plus optional OpenAI Responses API structured
-  classification. AI is never invoked for an unchanged payload. If AI is not
+  classification. AI is not invoked for unchanged input under the same
+  classifier version. If AI is not
   configured or unavailable, new jobs fail safe into admin review.
 - Admin controls for company registration, source enable/disable, manual crawl,
   review/publish/reject, run history, and analytics refresh.
@@ -86,7 +91,7 @@ data remain staff-only.
 
 Corelia Jobs should be built as:
 
-> **A curated software & technology job board for builders, with a built-in tech hiring market dashboard.**
+> **A curated job board for technology and Web3 companies, with explicit Tech / Non-tech classification and a built-in hiring market dashboard.**
 
 It should NOT be designed as:
 
@@ -132,10 +137,10 @@ Search + Market Insights
    - one company,
    - one adapter,
    - all enabled sources.
-4. **Never re-run AI on unchanged jobs.**
+4. **Never re-run AI on unchanged jobs under the same classifier version.**
 5. AI runs only after:
    - source validation,
-   - obvious non-tech filtering,
+   - obvious out-of-scope filtering,
    - exact duplicate detection,
    - content hash comparison.
 6. AI returns both:
@@ -152,11 +157,11 @@ Search + Market Insights
 
 Recommended positioning:
 
-> **Software & Technology Jobs for Builders**
+> **Jobs across Technology and Web3**
 
 Alternative user-facing copy:
 
-> Find your next opportunity across software engineering, AI, Web3, infrastructure, data, security and developer-focused companies.
+> Find technical and non-technical opportunities at software, AI, Web3, infrastructure, data, security and developer-focused companies.
 
 Corelia should remain opinionated about the scope.
 
@@ -187,15 +192,22 @@ Include jobs such as:
 - Technical Product Manager
 - Engineering Manager
 - Forward Deployed Engineer
+- Social Media Manager
+- Content Marketing Manager
+- Product Marketing Manager
+- Community Manager
+- Product Designer
+- Product Manager
+- Business Development / Partnerships
+- Sales / Customer Success
+- Operations / Finance / People / Legal
 
-Do not prioritize unrelated roles such as:
+Do not prioritize roles outside the tracked technology/Web3 company scope, such as:
 
-- retail
-- hospitality
-- generic accounting
-- general admin
-- non-tech operations
-- generic offline sales
+- consumer retail and warehouse roles
+- hospitality and clinical roles
+- transport and local logistics roles
+- generic offline sales unrelated to a tracked company
 
 ---
 
@@ -210,6 +222,7 @@ Routes:
 /jobs/:slug
 /jobs/saved
 /jobs/applied
+/jobs/hidden
 ```
 
 Core features:
@@ -226,6 +239,7 @@ Core features:
 - save
 - mark applied
 - hide
+- review hidden jobs and restore them to the main list
 - external apply
 
 ---
@@ -274,6 +288,7 @@ Each job must be represented across independent dimensions:
 
 ```text
 ROLE
+JOB TYPE
 DOMAIN
 SKILLS
 SENIORITY
@@ -289,6 +304,9 @@ Senior Backend Engineer
 
 Role:
 backend-engineering
+
+Job Type:
+tech
 
 Domains:
 web3
@@ -312,6 +330,27 @@ remote
 Regions:
 APAC
 ```
+
+---
+
+## 3.1 Job Type Taxonomy
+
+Every canonical job has exactly one high-level type:
+
+```text
+tech
+non_tech
+```
+
+`tech` means the role's core output is building, operating, securing, testing,
+documenting, or directly supporting technical systems. `non_tech` covers
+marketing, social/content, design, community, sales, recruiting, finance,
+legal, and general operations—even when the employer or subject matter is
+highly technical. Company boilerplate, collaboration with engineers, or words
+such as “technical curiosity” are not sufficient evidence for `tech`.
+
+Example: `Social & Technical Content Manager` maps to
+`job_type = non_tech` and `primary_role = social-media`.
 
 ---
 
@@ -396,9 +435,39 @@ solutions-architecture
 ```text
 product-engineering
 technical-product-management
-product-management
 engineering-management
 technical-program-management
+```
+
+## Product, Design, Marketing & Content
+
+```text
+product-management
+program-management
+product-design
+ux-ui-design
+social-media
+content-marketing
+product-marketing
+growth-marketing
+marketing
+communications-pr
+```
+
+## Community, Business & Operations
+
+```text
+community-management
+business-development
+partnerships
+sales
+customer-success
+customer-support
+operations
+finance-accounting
+people-hr
+recruiting
+legal-compliance
 ```
 
 This taxonomy should remain compatible with the broad role families seen on developer learning systems such as roadmap.sh, but Corelia owns its own canonical IDs.
@@ -835,7 +904,7 @@ Good for:
 - DeFi
 - smart contracts
 - community
-- technical Web3 jobs
+- technical and non-technical Web3 jobs
 
 The current API is explicitly marketed for:
 
@@ -1334,7 +1403,7 @@ clearly expired
 exact duplicate source_job_id
 exact duplicate canonical apply URL
 unchanged payload hash
-obviously non-tech based on trusted source category
+obviously outside the tracked company/job scope
 ```
 
 This protects AI cost.
@@ -1465,6 +1534,8 @@ create table jobs (
   description_plain text,
 
   summary text,
+
+  job_type text not null check (job_type in ('tech', 'non_tech')),
 
   primary_role text,
   roles text[] default '{}',
@@ -1762,6 +1833,7 @@ Example:
 ```json
 {
   "is_relevant": true,
+  "job_type": "tech",
   "primary_role": "backend-engineering",
   "roles": [
     "backend-engineering"
@@ -1956,7 +2028,6 @@ is_relevant = false
 quality < 40
 spam
 expired
-non-tech
 missing essential data
 ```
 
@@ -2059,6 +2130,7 @@ create table job_events (
 
   source_id uuid,
 
+  job_type text,
   role text,
   domains text[],
 
@@ -3508,6 +3580,7 @@ Implement:
 /jobs/:slug
 /jobs/saved
 /jobs/applied
+/jobs/hidden
 ```
 
 Filters:
@@ -3708,6 +3781,7 @@ requires the runtime steps in the implementation baseline.
 - [x] Save
 - [x] Applied
 - [x] Hide
+- [x] Review and restore hidden jobs
 
 ## Market Intelligence
 

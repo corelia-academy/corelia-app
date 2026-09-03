@@ -26,6 +26,8 @@ type ExistingJob = {
   slug: string;
   status: string;
   payload_hash: string;
+  input_hash: string;
+  classifier_version: string | null;
   manual_overrides: Record<string, unknown> | null;
 };
 
@@ -35,6 +37,17 @@ type CrawlOptions = {
   openAiApiKey?: string;
   openAiModel?: string;
 };
+
+export function hasUnchangedSourceInput(
+  existing: Pick<ExistingJob, "payload_hash" | "input_hash" | "classifier_version"> | null,
+  payloadHash: string,
+  inputHash: string,
+  classifierVersion: string,
+): boolean {
+  return existing?.payload_hash === payloadHash &&
+    existing.input_hash === inputHash &&
+    existing.classifier_version === classifierVersion;
+}
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -69,7 +82,7 @@ function applyManualOverrides(
   if (!overrides) return payload;
   const output = { ...payload, manual_overrides: overrides };
   const scalarFields = [
-    "title", "summary", "primary_role", "seniority", "employment_type",
+    "title", "summary", "job_type", "primary_role", "seniority", "employment_type",
     "remote_type", "remote_eligibility", "location_text", "salary_min",
     "salary_max", "salary_currency", "salary_period", "status", "review_reason",
   ];
@@ -144,7 +157,7 @@ async function findExistingJob(
 ): Promise<ExistingJob | null> {
   const { data, error } = await db
     .from("jobs")
-    .select("id,slug,status,payload_hash,manual_overrides")
+    .select("id,slug,status,payload_hash,input_hash,classifier_version,manual_overrides")
     .eq("source_id", sourceId)
     .eq("source_job_id", sourceJobId)
     .maybeSingle();
@@ -234,10 +247,21 @@ async function processSourceJob(
   job.applyUrl = normalizeUrl(job.applyUrl || job.sourceUrl);
   normalizeSalary(job);
   const payloadHash = await sha256(stableStringify(job.raw));
+  const inputHash = await sha256(stableStringify({
+    title: job.title,
+    company: job.companyName,
+    description: job.descriptionPlain,
+    location: job.locationText,
+    employment: job.employmentType,
+    salary: [job.salaryMin, job.salaryMax, job.salaryCurrency, job.salaryPeriod],
+    tags: job.sourceTags,
+  }));
+  const deterministicClassification = classifyJobDeterministically(job);
+  const shouldUseAi = Boolean(options.openAiApiKey && deterministicClassification.isRelevant);
+  const targetClassifierVersion = shouldUseAi ? CLASSIFIER_VERSION : DETERMINISTIC_VERSION;
   const existing = await findExistingJob(db, source.id, job.sourceJobId);
-  if (existing?.payload_hash === payloadHash) {
+  if (hasUnchangedSourceInput(existing, payloadHash, inputHash, targetClassifierVersion)) {
     counters.unchanged_count += 1;
-    const deterministicClassification = classifyJobDeterministically(job);
     const { error } = await db.from("jobs").update({
       last_seen_at: new Date().toISOString(),
       source_updated_at: job.sourceUpdatedAt,
@@ -281,18 +305,6 @@ async function processSourceJob(
       }
     }
 
-    const inputHash = await sha256(stableStringify({
-      title: job.title,
-      company: job.companyName,
-      description: job.descriptionPlain,
-      location: job.locationText,
-      employment: job.employmentType,
-      salary: [job.salaryMin, job.salaryMax, job.salaryCurrency, job.salaryPeriod],
-      tags: job.sourceTags,
-    }));
-    const deterministicClassification = classifyJobDeterministically(job);
-    const shouldUseAi = Boolean(options.openAiApiKey && deterministicClassification.isRelevant);
-    const targetClassifierVersion = shouldUseAi ? CLASSIFIER_VERSION : DETERMINISTIC_VERSION;
     let classification: JobClassification | null = null;
     if (existing) {
       const { data: cached, error: cachedError } = await db
@@ -328,6 +340,7 @@ async function processSourceJob(
       description_html: source.allow_description_display ? job.descriptionHtml : null,
       description_plain: source.allow_description_display ? job.descriptionPlain : null,
       summary: classification.summary,
+      job_type: classification.jobType,
       primary_role: classification.primaryRole,
       roles: classification.roles,
       domains: unique([...(company.domains ?? []), ...classification.domains]),

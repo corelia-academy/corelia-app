@@ -5,6 +5,7 @@ const links = [
   ["/jobs", "nav.find"],
   ["/jobs/saved", "nav.saved"],
   ["/jobs/applied", "nav.applied"],
+  ["/jobs/hidden", "nav.hidden"],
   ["/jobs/market", "nav.market"],
 ] as const;
 

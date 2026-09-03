@@ -1,7 +1,7 @@
 {
   "eyebrow": "Corelia Jobs",
-  "title": "Software & technology jobs for builders",
-  "subtitle": "Explore curated roles across engineering, AI, Web3, infrastructure, data, security, and developer-focused companies.",
+  "title": "Jobs across technology and Web3",
+  "subtitle": "Explore curated technical and non-technical roles at technology and Web3 companies.",
   "search": "Search",
   "searchPlaceholder": "Role, skill, company, or location",
   "results": "{{count}} jobs",
@@ -11,10 +11,12 @@
     "find": "Find jobs",
     "saved": "Saved",
     "applied": "Applied",
+    "hidden": "Hidden",
     "market": "Market"
   },
   "filters": {
     "label": "Filters",
+    "jobType": "Job type",
     "role": "Role",
     "domain": "Domain",
     "skill": "Skill",
@@ -26,6 +28,7 @@
     "salaryCurrency": "Salary currency",
     "postedDate": "Posted date",
     "allRoles": "All roles",
+    "allJobTypes": "All job types",
     "allDomains": "All domains",
     "allSkills": "All skills",
     "allSeniorities": "All seniorities",
@@ -39,6 +42,8 @@
     "clear": "Clear"
   },
   "values": {
+    "tech": "Tech",
+    "non_tech": "Non-tech",
     "intern": "Intern",
     "fresher": "Fresher",
     "junior": "Junior",
@@ -61,6 +66,7 @@
     "markApplied": "Mark applied",
     "applied": "Applied",
     "hide": "Hide job",
+    "unhide": "Show job again",
     "apply": "Apply on company site"
   },
   "card": {
@@ -78,7 +84,10 @@
   "messages": {
     "loginRequired": "Sign in to save, hide, or track applications.",
     "updateFailed": "Could not update this job.",
-    "loadFailed": "Could not load jobs."
+    "loadFailed": "Could not load jobs.",
+    "hidden": "Job hidden.",
+    "viewHidden": "View hidden",
+    "unhidden": "Job returned to the main list."
   },
   "detail": {
     "back": "Back to jobs",
@@ -89,6 +98,7 @@
     "preferredSkills": "Preferred skills",
     "overview": "Job overview",
     "salary": "Salary",
+    "jobType": "Job type",
     "seniority": "Seniority",
     "role": "Role",
     "source": "Source",
@@ -104,12 +114,17 @@
       "title": "Applications",
       "description": "A lightweight record of jobs you have applied to.",
       "empty": "You have not marked any active jobs as applied."
+    },
+    "hidden": {
+      "title": "Hidden jobs",
+      "description": "Review jobs you hid and return any of them to the main list.",
+      "empty": "You have no hidden jobs."
     }
   },
   "market": {
     "eyebrow": "Market intelligence",
-    "title": "What the tracked tech market is hiring for",
-    "subtitle": "Daily aggregates from Corelia's curated sources. Growth and comparable metrics use sources observed across both comparison windows.",
+    "title": "What tracked technology companies are hiring for",
+    "subtitle": "Daily aggregates for technical and non-technical roles from Corelia's curated sources. Growth and comparable metrics use sources observed across both comparison windows.",
     "cards": {
       "active": "Active jobs",
       "new": "New today",

@@ -100,6 +100,7 @@ BEGIN
   END IF;
   IF NOT has_column_privilege('anon', 'public.jobs', 'ranking_score', 'SELECT')
     OR NOT has_column_privilege('anon', 'public.jobs', 'search_vector', 'SELECT')
+    OR NOT has_column_privilege('anon', 'public.jobs', 'job_type', 'SELECT')
   THEN
     RAISE EXCEPTION 'Jobs catalog cannot order or search with the anonymous column grants';
   END IF;
@@ -128,6 +129,7 @@ BEGIN
     SELECT 1 FROM public.job_events
     WHERE job_id = '00000000-0000-4000-8000-000000000992'
       AND event_type = 'job_published'
+      AND job_type = 'tech'
   ) THEN
     RAISE EXCEPTION 'Active Jobs insert did not create a lifecycle event';
   END IF;

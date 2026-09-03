@@ -1,4 +1,5 @@
 export type JobSourceType = "greenhouse" | "lever" | "ashby" | "smartrecruiters";
+export type JobType = "tech" | "non_tech";
 
 export type NormalizedSourceJob = {
   sourceJobId: string;
@@ -22,6 +23,7 @@ export type NormalizedSourceJob = {
 
 export type JobClassification = {
   isRelevant: boolean;
+  jobType: JobType;
   primaryRole: string | null;
   roles: string[];
   domains: string[];

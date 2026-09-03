@@ -1,16 +1,17 @@
 import {
-  CLEARLY_NON_TECH_TITLE,
+  CLEARLY_OUT_OF_SCOPE_TITLE,
   DOMAIN_PATTERNS,
   JOB_DOMAIN_SLUGS,
   JOB_ROLE_SLUGS,
   JOB_SKILL_ALIASES,
   JOB_SKILL_SLUGS,
   ROLE_PATTERNS,
+  jobTypeForRole,
 } from "./registry.ts";
 import type { JobClassification, NormalizedSourceJob } from "./types.ts";
 
-export const CLASSIFIER_VERSION = "jobs-ai-2";
-export const DETERMINISTIC_VERSION = "jobs-deterministic-1";
+export const CLASSIFIER_VERSION = "jobs-ai-3";
+export const DETERMINISTIC_VERSION = "jobs-deterministic-2";
 const OPENAI_TIMEOUT_MS = 30_000;
 
 function escapeRegExp(value: string): string {
@@ -31,6 +32,14 @@ function detectSkills(text: string): string[] {
 function preferredSection(text: string): string {
   const match = text.match(/(?:preferred|nice to have|bonus|ideally|plus)\s*(?:qualifications?|skills?)?[:\s]([\s\S]{0,3000})/i);
   return match?.[1] ?? "";
+}
+
+function qualificationSection(text: string): string {
+  const start = text.search(/(?:^|\n)\s*(?:what (?:we(?:'|’)?re|we are) looking for|requirements?|qualifications?|who you are|you have)\s*[:\n]/i);
+  if (start < 0) return "";
+  const section = text.slice(start);
+  const end = section.slice(1).search(/(?:^|\n)\s*(?:benefits|perks|compensation|about (?:us|the company))\s*[:\n]/i);
+  return end < 0 ? section : section.slice(0, end + 1);
 }
 
 function detectSeniority(text: string): string | null {
@@ -91,18 +100,21 @@ export function classifyJobDeterministically(job: NormalizedSourceJob): JobClass
   const fullText = `${titleAndTags}\n${job.descriptionPlain}`.slice(0, 30_000);
   const roleMatches = ROLE_PATTERNS.filter(([, pattern]) => pattern.test(titleAndTags)).map(([role]) => role);
   const primaryRole = roleMatches[0] ?? null;
+  const technicalEvidence = Boolean(primaryRole || /\b(code|software|data|cloud|security|api|developer|engineer)\b/i.test(fullText));
+  const jobType = jobTypeForRole(primaryRole) ?? (technicalEvidence ? "tech" : "non_tech");
+  const consistentRoles = roleMatches.filter((role) => jobTypeForRole(role) === jobType);
   const domains = DOMAIN_PATTERNS.filter(([, pattern]) => pattern.test(fullText)).map(([domain]) => domain);
   if (domains.length === 0) domains.push("general-software");
-  const allSkills = detectSkills(fullText);
-  const preferredSkills = detectSkills(preferredSection(job.descriptionPlain));
+  const skillEvidence = jobType === "tech" ? fullText : qualificationSection(job.descriptionPlain);
+  const allSkills = detectSkills(skillEvidence);
+  const preferredSkills = detectSkills(preferredSection(skillEvidence));
   const preferredSet = new Set(preferredSkills);
   const requiredSkills = allSkills.filter((skill) => !preferredSet.has(skill));
   const seniority = detectSeniority(`${job.title}\n${job.descriptionPlain.slice(0, 5000)}`);
   const experience = detectExperience(job.descriptionPlain.slice(0, 8000));
   const location = detectLocation(job.locationText, job.descriptionPlain);
-  const clearlyNonTech = CLEARLY_NON_TECH_TITLE.test(job.title);
-  const technicalEvidence = Boolean(primaryRole || allSkills.length || /\b(code|software|data|cloud|security|api|developer|engineer)\b/i.test(fullText));
-  const isRelevant = !clearlyNonTech && technicalEvidence;
+  const clearlyOutOfScope = CLEARLY_OUT_OF_SCOPE_TITLE.test(job.title);
+  const isRelevant = !clearlyOutOfScope;
   let qualityScore = 20;
   if (job.descriptionPlain.length >= 400) qualityScore += 25;
   else if (job.descriptionPlain.length >= 120) qualityScore += 12;
@@ -116,8 +128,9 @@ export function classifyJobDeterministically(job: NormalizedSourceJob): JobClass
   qualityScore = Math.min(100, qualityScore);
   return {
     isRelevant,
+    jobType,
     primaryRole,
-    roles: roleMatches,
+    roles: consistentRoles,
     domains,
     requiredSkills,
     preferredSkills,
@@ -127,7 +140,7 @@ export function classifyJobDeterministically(job: NormalizedSourceJob): JobClass
     ...location,
     summary: factualSummary(job),
     qualityScore,
-    confidence: clearlyNonTech ? 0.96 : primaryRole ? 0.72 : technicalEvidence ? 0.52 : 0.25,
+    confidence: clearlyOutOfScope ? 0.96 : primaryRole ? 0.72 : technicalEvidence ? 0.52 : 0.4,
     evidence: {
       role: primaryRole ? job.title : null,
       requiredSkills,
@@ -178,6 +191,7 @@ function assertAiClassificationShape(value: unknown): asserts value is Record<st
   const nullableNumberFields = ["experience_min_years", "experience_max_years"];
   if (
     typeof output.is_relevant !== "boolean" ||
+    !["tech", "non_tech"].includes(String(output.job_type)) ||
     typeof output.remote_type !== "string" ||
     typeof output.summary !== "string" ||
     typeof output.quality_score !== "number" ||
@@ -196,13 +210,26 @@ function parseAiClassification(
   fallback: JobClassification,
   model: string,
 ): JobClassification {
-  const roles = allowedList(value.roles, JOB_ROLE_SLUGS);
-  const primaryRole = typeof value.primary_role === "string" && JOB_ROLE_SLUGS.includes(value.primary_role as typeof JOB_ROLE_SLUGS[number])
+  const returnedRoles = allowedList(value.roles, JOB_ROLE_SLUGS);
+  const returnedPrimaryRole = typeof value.primary_role === "string" && JOB_ROLE_SLUGS.includes(value.primary_role as typeof JOB_ROLE_SLUGS[number])
     ? value.primary_role
-    : roles[0] ?? null;
-  const requiredSkills = allowedList(value.required_skills, JOB_SKILL_SLUGS);
+    : returnedRoles[0] ?? null;
+  // Title patterns are intentionally narrow and therefore stronger than a
+  // model guess influenced by company boilerplate or adjacent teams.
+  const primaryRole = fallback.primaryRole ?? returnedPrimaryRole;
+  const evidence = value.evidence && typeof value.evidence === "object" && !Array.isArray(value.evidence)
+    ? value.evidence as Record<string, unknown>
+    : {};
+  const skillEvidence = Array.isArray(evidence.skills) ? evidence.skills.map(String).join("\n") : "";
+  const evidenceBackedSkills = (candidate: unknown) => allowedList(candidate, JOB_SKILL_SLUGS)
+    .filter((skill) => JOB_SKILL_ALIASES[skill]?.some((alias) => hasAlias(skillEvidence, alias)));
+  const requiredSkills = evidenceBackedSkills(value.required_skills);
   const preferredSkills = allowedList(value.preferred_skills, JOB_SKILL_SLUGS)
+    .filter((skill) => JOB_SKILL_ALIASES[skill]?.some((alias) => hasAlias(skillEvidence, alias)))
     .filter((skill) => !requiredSkills.includes(skill));
+  const jobType = jobTypeForRole(primaryRole) ?? (value.job_type === "non_tech" ? "non_tech" : "tech");
+  const roles = Array.from(new Set([primaryRole, ...returnedRoles]))
+    .filter((role): role is string => Boolean(role) && jobTypeForRole(role) === jobType);
   const remote = String(value.remote_type ?? "unknown");
   const experienceMinYears = nullableNumber(value.experience_min_years);
   const parsedExperienceMax = nullableNumber(value.experience_max_years);
@@ -211,8 +238,9 @@ function parseAiClassification(
     : parsedExperienceMax;
   return {
     isRelevant: value.is_relevant === true,
+    jobType,
     primaryRole,
-    roles: primaryRole && !roles.includes(primaryRole) ? [primaryRole, ...roles] : roles,
+    roles,
     domains: allowedList(value.domains, JOB_DOMAIN_SLUGS),
     requiredSkills,
     preferredSkills,
@@ -230,9 +258,7 @@ function parseAiClassification(
     summary: typeof value.summary === "string" && value.summary.trim() ? value.summary.trim().slice(0, 500) : fallback.summary,
     qualityScore: normalizeQualityScore(value.quality_score, fallback.qualityScore),
     confidence: clampNumber(value.confidence, 0, 1, fallback.confidence),
-    evidence: value.evidence && typeof value.evidence === "object" && !Array.isArray(value.evidence)
-      ? value.evidence as Record<string, unknown>
-      : {},
+    evidence,
     model,
     classifierVersion: CLASSIFIER_VERSION,
   };
@@ -251,6 +277,7 @@ export async function classifyJob(
     additionalProperties: false,
     properties: {
       is_relevant: { type: "boolean" },
+      job_type: { type: "string", enum: ["tech", "non_tech"] },
       primary_role: { type: ["string", "null"], enum: [...JOB_ROLE_SLUGS, null] },
       roles: { type: "array", items: { type: "string", enum: JOB_ROLE_SLUGS } },
       domains: { type: "array", items: { type: "string", enum: JOB_DOMAIN_SLUGS } },
@@ -271,16 +298,17 @@ export async function classifyJob(
         additionalProperties: false,
         properties: {
           role: { type: ["string", "null"] },
+          job_type: { type: ["string", "null"] },
           skills: { type: "array", items: { type: "string" } },
           seniority: { type: ["string", "null"] },
           experience: { type: ["string", "null"] },
           location: { type: ["string", "null"] },
         },
-        required: ["role", "skills", "seniority", "experience", "location"],
+        required: ["role", "job_type", "skills", "seniority", "experience", "location"],
       },
     },
     required: [
-      "is_relevant", "primary_role", "roles", "domains", "required_skills",
+      "is_relevant", "job_type", "primary_role", "roles", "domains", "required_skills",
       "preferred_skills", "seniority", "experience_min_years", "experience_max_years",
       "remote_type", "country_codes", "regions", "remote_eligibility", "summary",
       "quality_score", "confidence", "evidence",
@@ -314,7 +342,7 @@ export async function classifyJob(
         model,
         store: false,
         max_output_tokens: 1800,
-        instructions: "Classify a technology job for Corelia. Use only evidence present in the supplied job. Never invent skills, seniority, experience, salary, location, or eligibility. Put short exact source excerpts in evidence. If a field is unsupported, return null or an empty array.",
+        instructions: "Classify a real job from a curated technology or Web3 company for Corelia. job_type is tech only when the role's core work builds, operates, secures, tests, documents, or directly supports technical systems; marketing, social media, content, community, sales, recruiting, finance, legal, design, and general operations are non_tech even when the company or subject matter is technical. Choose roles from the supplied taxonomy based on the candidate's core responsibilities, not company boilerplate or teams they collaborate with. A title such as Social & Technical Content Manager is social-media/non_tech, not technical-writing. Never infer a programming skill merely because it appears in product copy, company context, or an adjacent team's work. Return a skill only when an exact source excerpt in evidence.skills states it as a candidate requirement or preference; otherwise omit it. Use only evidence present in the supplied job. Never invent skills, seniority, experience, salary, location, or eligibility. Put short exact source excerpts in evidence. If a field is unsupported, return null or an empty array.",
         input,
         text: { format: { type: "json_schema", name: "corelia_job_classification", strict: true, schema } },
       }),

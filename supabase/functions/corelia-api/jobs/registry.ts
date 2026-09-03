@@ -22,7 +22,44 @@ export const JOB_ROLE_SLUGS = [
   "solutions-engineering",
   "technical-product-management",
   "engineering-management",
+  "product-management",
+  "program-management",
+  "product-design",
+  "ux-ui-design",
+  "social-media",
+  "content-marketing",
+  "product-marketing",
+  "growth-marketing",
+  "marketing",
+  "communications-pr",
+  "community-management",
+  "business-development",
+  "partnerships",
+  "sales",
+  "customer-success",
+  "customer-support",
+  "operations",
+  "finance-accounting",
+  "people-hr",
+  "recruiting",
+  "legal-compliance",
 ] as const;
+
+export const TECH_JOB_ROLE_SLUGS = new Set<string>([
+  "frontend-engineering", "backend-engineering", "fullstack-engineering",
+  "mobile-engineering", "blockchain-engineering", "smart-contract-engineering",
+  "software-architecture", "general-software-engineering", "devops",
+  "site-reliability-engineering", "platform-engineering", "cloud-engineering",
+  "ai-engineering", "machine-learning-engineering", "data-engineering",
+  "data-science", "cybersecurity", "qa-engineering", "developer-relations",
+  "technical-writing", "solutions-engineering", "technical-product-management",
+  "engineering-management",
+]);
+
+export function jobTypeForRole(role: string | null): "tech" | "non_tech" | null {
+  if (!role) return null;
+  return TECH_JOB_ROLE_SLUGS.has(role) ? "tech" : "non_tech";
+}
 
 export const JOB_DOMAIN_SLUGS = [
   "ai", "web3", "fintech", "saas", "cloud", "developer-tools",
@@ -75,6 +112,12 @@ export const JOB_SKILL_ALIASES: Record<string, string[]> = {
 export const JOB_SKILL_SLUGS = Object.keys(JOB_SKILL_ALIASES);
 
 export const ROLE_PATTERNS: Array<[string, RegExp]> = [
+  ["social-media", /\b(social(?: media)?|social[- ]first)\b.*\b(manager|lead|strategist|specialist|producer|creator|content)\b/i],
+  ["product-marketing", /\bproduct marketing\b/i],
+  ["growth-marketing", /\b(growth|performance|demand generation) marketing\b/i],
+  ["content-marketing", /\b(content (?:marketing|manager|strategist|editor)|editorial (?:manager|lead|strategist))\b/i],
+  ["communications-pr", /\b(communications?|public relations|pr)\b.*\b(manager|lead|director|specialist)\b/i],
+  ["community-management", /\bcommunity\b.*\b(manager|lead|director|specialist|moderator)\b/i],
   ["smart-contract-engineering", /\bsmart[- ]?contract\b/i],
   ["blockchain-engineering", /\b(blockchain|web3|protocol)\b.*\b(engineer|developer)\b|\b(solana|ethereum)\b.*\b(engineer|developer)\b/i],
   ["frontend-engineering", /\b(front[- ]?end|ui engineer|web engineer)\b/i],
@@ -94,9 +137,24 @@ export const ROLE_PATTERNS: Array<[string, RegExp]> = [
   ["developer-relations", /\b(developer relations|devrel|developer advocate)\b/i],
   ["technical-writing", /\btechnical writer/i],
   ["solutions-engineering", /\bsolutions? (engineer|architect)\b/i],
-  ["technical-product-management", /\b(technical )?product manager\b/i],
+  ["technical-product-management", /\btechnical product manager\b/i],
   ["engineering-management", /\b(engineering manager|head of engineering|director of engineering)\b/i],
   ["software-architecture", /\bsoftware architect/i],
+  ["product-management", /\bproduct manager\b/i],
+  ["program-management", /\b(program|project) manager\b/i],
+  ["product-design", /\bproduct designer\b/i],
+  ["ux-ui-design", /\b(ux|ui|user experience|user interface)\b.*\b(designer|researcher)\b/i],
+  ["business-development", /\bbusiness development\b/i],
+  ["partnerships", /\b(partnerships?|alliances?)\b.*\b(manager|lead|director|associate)\b/i],
+  ["customer-success", /\bcustomer success\b/i],
+  ["customer-support", /\b(customer|technical) support\b/i],
+  ["sales", /\b(sales|account executive|account manager)\b/i],
+  ["recruiting", /\b(recruiter|recruiting|talent acquisition)\b/i],
+  ["people-hr", /\b(human resources|people operations|people partner|hr manager)\b/i],
+  ["finance-accounting", /\b(finance|financial|accounting|accountant|controller|treasury)\b/i],
+  ["legal-compliance", /\b(legal|counsel|compliance|regulatory)\b/i],
+  ["operations", /\b(operations|chief of staff)\b/i],
+  ["marketing", /\bmarketing\b/i],
   ["general-software-engineering", /\b(software|product|systems?)\b.*\b(engineer|developer)\b|\b(engineer|developer)\b/i],
 ];
 
@@ -118,4 +176,4 @@ export const DOMAIN_PATTERNS: Array<[string, RegExp]> = [
   ["saas", /\bsaas\b/i],
 ];
 
-export const CLEARLY_NON_TECH_TITLE = /\b(accountant|bookkeeper|cashier|warehouse|driver|nurse|bartender|waiter|waitress|receptionist|administrative assistant|sales representative|real estate|store manager)\b/i;
+export const CLEARLY_OUT_OF_SCOPE_TITLE = /\b(cashier|warehouse worker|driver|nurse|bartender|waiter|waitress|real estate agent|store manager)\b/i;
