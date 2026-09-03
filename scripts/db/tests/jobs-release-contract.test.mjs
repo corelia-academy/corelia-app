@@ -40,11 +40,11 @@ test("Jobs migration is an approved forward migration", async () => {
   const release = await import("../production-release-migrations.mjs");
   assert.equal(
     release.CURRENT_PENDING_VERSIONS.at(-1),
-    "20260903110012",
+    "20260903111914",
   );
   assert.equal(
     release.EXPECTED_POST_MIGRATION_LATEST,
-    "20260903110012",
+    "20260903111914",
   );
 });
 
@@ -111,6 +111,24 @@ test("generic RSS uses provider-specific source policy instances", () => {
   assert.match(handlers, /action === "sources\.save"/);
   assert.match(handlers, /source_type: "rss"/);
   assert.match(handlers, /feed_urls: feedUrls/);
+});
+
+test("connected Jobs adapters use the direct source-to-company relationship", () => {
+  const client = read("src/lib/jobs.ts");
+  const migration = read("supabase/migrations/20260903111914_grant_job_company_source_for_connected_adapters.sql");
+
+  assert.match(
+    client,
+    /job_companies!job_companies_source_id_fkey!inner\(id\)/,
+  );
+  assert.doesNotMatch(
+    client,
+    /select\("name,slug,job_companies!inner\(id\)"\)/,
+  );
+  assert.match(
+    migration,
+    /GRANT SELECT \(source_id\) ON public\.job_companies TO anon, authenticated/,
+  );
 });
 
 test("structured API and RSS feeds stay policy-gated until rollout", () => {

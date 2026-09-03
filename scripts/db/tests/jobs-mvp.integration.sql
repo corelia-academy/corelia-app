@@ -176,8 +176,10 @@ BEGIN
   IF NOT has_column_privilege('anon', 'public.jobs', 'ranking_score', 'SELECT')
     OR NOT has_column_privilege('anon', 'public.jobs', 'search_vector', 'SELECT')
     OR NOT has_column_privilege('anon', 'public.jobs', 'job_type', 'SELECT')
+    OR NOT has_column_privilege('anon', 'public.job_companies', 'source_id', 'SELECT')
+    OR NOT has_column_privilege('authenticated', 'public.job_companies', 'source_id', 'SELECT')
   THEN
-    RAISE EXCEPTION 'Jobs catalog cannot order or search with the anonymous column grants';
+    RAISE EXCEPTION 'Jobs catalog or connected adapters cannot use the public column grants';
   END IF;
 
   SELECT id INTO v_source_id FROM public.job_sources WHERE source_type = 'greenhouse';

@@ -69,7 +69,7 @@ current Corelia architecture instead of introducing a separate service.
 ## Runtime setup
 
 1. Apply the ordered Jobs migrations through
-   `20260903110012_configure_jobs_schedules.sql` using the normal
+   `20260903111914_grant_job_company_source_for_connected_adapters.sql` using the normal
    migration release flow.
 2. Deploy both `corelia-api` and `cron-jobs`.
 3. Set a strong `CORELIA_JOBS_CRON_SECRET` on both functions. Set

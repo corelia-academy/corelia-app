@@ -165,7 +165,7 @@ export async function getJobTaxonomy(): Promise<JobTaxonomy> {
 export async function listConnectedJobSources(): Promise<JobSourceConnection[]> {
   const { data, error } = await supabase
     .from("job_sources")
-    .select("name,slug,job_companies!inner(id)")
+    .select("name,slug,job_companies!job_companies_source_id_fkey!inner(id)")
     .eq("enabled", true)
     .not("policy_reviewed_at", "is", null)
     .eq("job_companies.active", true)
