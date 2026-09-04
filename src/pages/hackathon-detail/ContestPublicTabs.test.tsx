@@ -108,4 +108,20 @@ describe("HackathonProjectsTab filters", () => {
 
     await view.cleanup();
   });
+
+  it("displays error state with retry button when project query fails", async () => {
+    projectQueryFn.mockRejectedValueOnce(new Error("Network failed"));
+
+    const view = renderProjectsTab("/hackathons/demo-hackathon/projects");
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+
+    expect(view.container.textContent).toContain("public.projects.errorLoading");
+    const retryBtn = Array.from(view.container.querySelectorAll("button"))
+      .find((button) => button.textContent?.includes("public.projects.retry"));
+    expect(retryBtn).toBeDefined();
+
+    await view.cleanup();
+  });
 });

@@ -121,7 +121,9 @@
       "clearFilters": "Xóa lọc",
       "loading": "Đang tải…",
       "loadMore": "Tải thêm",
-      "openCatalog": "Mở trang tổng hợp dự án"
+      "openCatalog": "Mở trang tổng hợp dự án",
+      "errorLoading": "Đã xảy ra lỗi khi tải danh sách dự án.",
+      "retry": "Thử lại"
     },
     "empty": {
       "overview": "Nội dung giới thiệu sẽ được cập nhật.",

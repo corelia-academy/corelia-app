@@ -171,7 +171,28 @@ export function HackathonProjectsTab() {
         </div>
       </section>
 
-      {query.isPending ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div> : projects.length === 0 ? <EmptyTab icon={<Package className="size-6" />} title={t("public.empty.projects")} /> : (
+      {query.isPending ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <ProjectCardSkeleton key={index} />
+          ))}
+        </div>
+      ) : query.isError ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-border-subtle bg-surface-base p-8 text-center shadow-card">
+          <p className="text-sm font-medium text-destructive">{t("public.projects.errorLoading")}</p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-3"
+            onClick={() => void query.refetch()}
+          >
+            {t("public.projects.retry")}
+          </Button>
+        </div>
+      ) : projects.length === 0 ? (
+        <EmptyTab icon={<Package className="size-6" />} title={t("public.empty.projects")} />
+      ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map(({ project, owner }) => (

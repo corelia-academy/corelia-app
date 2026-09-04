@@ -690,7 +690,8 @@ export function useContestDetailOrchestrator({
     const participantSubmissionHash = `${base}#participant-submission`;
     const showProjects = contestPublicShowcaseProjectsNavVisible(contest);
     const registrationWindowOpen =
-      contest.status === "published" && !isPastContestRegistrationDeadline(contest);
+      (contest.status === "published" || contest.status === "running") &&
+      !isPastContestRegistrationDeadline(contest);
     const autoApproveRegistrations = Boolean(
       contest.config?.auto_approve_registrations,
     );

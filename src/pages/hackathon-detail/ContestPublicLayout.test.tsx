@@ -189,4 +189,14 @@ describe("draft hackathon preview", () => {
 
     await view.cleanup();
   });
+
+  it("renders public hackathon content when slug in URL has uppercase characters", async () => {
+    const view = renderRoute("/hackathons/Published-Demo/overview");
+    await settle();
+
+    expect(view.container.textContent).toContain("Published Demo");
+    expect(view.container.textContent).not.toContain("detail.errors.notFound");
+
+    await view.cleanup();
+  });
 });

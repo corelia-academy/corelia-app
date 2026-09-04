@@ -121,7 +121,9 @@
       "clearFilters": "Clear",
       "loading": "Loading…",
       "loadMore": "Load more",
-      "openCatalog": "Open project catalog"
+      "openCatalog": "Open project catalog",
+      "errorLoading": "Failed to load projects.",
+      "retry": "Retry"
     },
     "empty": {
       "overview": "Description will be added soon.",

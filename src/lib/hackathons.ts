@@ -937,7 +937,10 @@ export async function registerForContest(
   const profile = await getProfileForUser(user);
   const contest = await getContest(contestId);
   if (!contest) throw new Error("not_found:contest");
-  if (contest.status !== "published" || isPastContestRegistrationDeadline(contest)) {
+  if (
+    (contest.status !== "published" && contest.status !== "running") ||
+    isPastContestRegistrationDeadline(contest)
+  ) {
     throw new Error("forbidden:registration_closed");
   }
   const now = new Date().toISOString();

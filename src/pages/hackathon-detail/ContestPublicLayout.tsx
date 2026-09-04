@@ -59,7 +59,12 @@ export default function ContestPublicLayout() {
   const previewContestQuery = useQuery(previewOptions);
   const contestQuery = previewRequested ? previewContestQuery : publicContestQuery;
   const loaded = contestQuery.data;
-  const contest = loaded && loaded.slug === slug && (!previewRequested || previewAuthorized) ? loaded : null;
+  const contest =
+    loaded &&
+    loaded.slug?.toLowerCase() === (slug ?? "").toLowerCase() &&
+    (!previewRequested || previewAuthorized)
+      ? loaded
+      : null;
   const previewAccessPending = previewRequested && (!authInitialized || profileLoading);
   const registrationQuery = useQuery({
     queryKey: ["hackathons", contest?.id, "my-registration", user?.id ?? "anonymous"],
@@ -68,12 +73,17 @@ export default function ContestPublicLayout() {
     staleTime: 30_000,
   });
   const registration = registrationQuery.data ?? null;
-  const [renderedAt] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 15_000);
+    return () => clearInterval(timer);
+  }, []);
+
   const registrationClosed = Boolean(
-    contest?.registration_deadline && renderedAt > new Date(contest.registration_deadline).getTime(),
+    contest?.registration_deadline && now > new Date(contest.registration_deadline).getTime(),
   );
   const submissionClosed = Boolean(
-    contest?.submission_deadline && renderedAt > new Date(contest.submission_deadline).getTime(),
+    contest?.submission_deadline && now > new Date(contest.submission_deadline).getTime(),
   );
   const registerMutation = useMutation({
     mutationFn: () => registerForContest(contest!.id, {}),

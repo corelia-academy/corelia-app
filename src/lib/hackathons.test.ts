@@ -73,7 +73,7 @@ vi.mock("@/lib/supabase", () => {
   };
 });
 
-import { createContest, updateContest } from "./hackathons";
+import { createContest, registerForContest, updateContest } from "./hackathons";
 
 const customTrack = {
   id: "open-track",
@@ -106,5 +106,12 @@ describe("hackathon track persistence", () => {
     await updateContest("hackathon-1", { tracks: [customTrack] });
 
     expect((db.updated?.document as { tracks?: unknown[] }).tracks).toEqual([customTrack]);
+  });
+});
+
+describe("issue 395: register for contest when running", () => {
+  it("rejects registration when contest status is ended", async () => {
+    // baseRow default status is draft, so it should be rejected with forbidden:registration_closed
+    await expect(registerForContest("hackathon-1", {})).rejects.toThrow("forbidden:registration_closed");
   });
 });
