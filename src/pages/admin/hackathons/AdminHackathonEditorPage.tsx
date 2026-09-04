@@ -17,7 +17,7 @@ import { invokeGenerateDescription, type DescriptionTranslationBundle, type Hack
 import { canonicalizeSlug, normalizeSlugDraft } from "@/lib/slug";
 import { cn } from "@/lib/utils";
 import type { Contest, ContestI18nContent, ContestLocation, ContestStatus, ContestTrack, HackathonTaxonomyOption, HackathonTimelineItem, HackathonWinnerAward } from "@/types/hackathons";
-import { isPrizeAllocationValid } from "@/lib/hackathonContract";
+import { areHackathonDeadlinesValid, isPrizeAllocationValid } from "@/lib/hackathonContract";
 import { isValidHackathonSocialLink, normalizeHackathonSocialLink } from "./utils/socialLinks";
 
 type Locale = "vi" | "en";
@@ -107,9 +107,17 @@ const DEFAULT_TAXONOMY = {
   ],
 } as const;
 
+function datetimeLocalToIso(local: string | null | undefined): string | null {
+  if (!local || !local.trim()) return null;
+  const t = new Date(local).getTime();
+  if (Number.isNaN(t)) return null;
+  return new Date(t).toISOString();
+}
+
 function dateInput(value: string | null | undefined): string {
   if (!value) return "";
-  const d = new Date(value);
+  const normalized = value.includes(" ") && !value.includes("T") ? value.replace(" ", "T") : value;
+  const d = new Date(normalized);
   if (isNaN(d.getTime())) return "";
   const pad = (n: number) => String(n).padStart(2, "0");
   const year = d.getFullYear();
@@ -287,7 +295,7 @@ export default function AdminHackathonEditorPage() {
         );
       }
     }
-    if (draft.registration_deadline && draft.submission_deadline && draft.registration_deadline > draft.submission_deadline) {
+    if (!areHackathonDeadlinesValid(datetimeLocalToIso(draft.registration_deadline), datetimeLocalToIso(draft.submission_deadline))) {
       throw new EditorValidationError(t("hackathons.editor.validationDeadlines"), "overview", "hackathon-registration-deadline");
     }
     if (!isValidHackathonSocialLink("telegram", draft.telegram)) {
@@ -322,8 +330,8 @@ export default function AdminHackathonEditorPage() {
     description_markdown: draft.locales.vi.description_markdown,
     resources_markdown: draft.locales.vi.resources_markdown,
     status: draft.status,
-    registration_deadline: draft.registration_deadline ? new Date(draft.registration_deadline).toISOString() : null,
-    submission_deadline: draft.submission_deadline ? new Date(draft.submission_deadline).toISOString() : null,
+    registration_deadline: datetimeLocalToIso(draft.registration_deadline),
+    submission_deadline: datetimeLocalToIso(draft.submission_deadline),
     location: draft.mode,
     mode: draft.mode,
     cover_image_url: bannerRemoved ? null : draft.cover_image_url || null,
@@ -385,6 +393,8 @@ export default function AdminHackathonEditorPage() {
     onSuccess: async ({ contest, banner, hostLogo }) => {
       setDraft((current) => ({
         ...current,
+        registration_deadline: dateInput(contest.registration_deadline),
+        submission_deadline: dateInput(contest.submission_deadline),
         cover_image_url: banner?.url ?? (bannerRemoved ? "" : current.cover_image_url),
         cover_image_path: banner?.path ?? (bannerRemoved ? "" : current.cover_image_path),
         host_logo_url: hostLogo?.url ?? (hostLogoRemoved ? "" : current.host_logo_url),
@@ -398,7 +408,16 @@ export default function AdminHackathonEditorPage() {
       setHostLogoRemoved(false);
       setDirty(false);
       toast.success(t("hackathons.editor.saved"));
-      await queryClient.invalidateQueries({ queryKey: ["hackathons"] });
+      queryClient.setQueryData(
+        ["admin", "hackathons", contest.id, "editor"],
+        (old: { contest: Contest; vi: ContestI18nContent; en: ContestI18nContent } | undefined) =>
+          old ? { ...old, contest } : undefined,
+      );
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["admin", "hackathons"] }),
+        queryClient.invalidateQueries({ queryKey: ["hackathons"] }),
+        queryClient.invalidateQueries({ queryKey: ["hackathon", contest.id] }),
+      ]);
       if (isNew) navigate(`/admin/hackathons/${contest.id}/edit#overview`, { replace: true });
     },
     onError: (error) => {

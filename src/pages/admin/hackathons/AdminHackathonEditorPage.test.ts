@@ -343,4 +343,68 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
 
     await view.cleanup();
   });
+
+  it("saves updated registration_deadline and submission_deadline when edited in Overview", async () => {
+    const { updateContest } = await import("@/lib/hackathons");
+    (updateContest as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(contest);
+
+    const view = renderEditor("/admin/hackathons/hackathon-1/edit#overview");
+    await settle();
+
+    const regInput = view.container.querySelector<HTMLInputElement>("#hackathon-registration-deadline");
+    const subInput = view.container.querySelector<HTMLInputElement>("#hackathon-submission-deadline");
+    expect(regInput).toBeDefined();
+    expect(subInput).toBeDefined();
+
+    await act(async () => {
+      changeInput(regInput!, "2026-10-01T20:00");
+      changeInput(subInput!, "2026-10-20T20:00");
+    });
+
+    const saveButton = Array.from(view.container.querySelectorAll("button"))
+      .find((button) => button.textContent?.includes("hackathons.editor.saveSection"));
+    expect(saveButton).toBeDefined();
+
+    await act(async () => saveButton?.click());
+    await settle();
+
+    expect(updateContest).toHaveBeenCalledWith(
+      "hackathon-1",
+      expect.objectContaining({
+        registration_deadline: expect.stringMatching(/^2026-10-01T/),
+        submission_deadline: expect.stringMatching(/^2026-10-20T/),
+      }),
+    );
+
+    await view.cleanup();
+  });
+
+  it("rejects saving when registration_deadline is strictly after submission_deadline", async () => {
+    const { updateContest } = await import("@/lib/hackathons");
+    const { toast } = await import("sonner");
+    (updateContest as unknown as ReturnType<typeof vi.fn>).mockClear();
+    (toast.error as unknown as ReturnType<typeof vi.fn>).mockClear();
+
+    const view = renderEditor("/admin/hackathons/hackathon-1/edit#overview");
+    await settle();
+
+    const regInput = view.container.querySelector<HTMLInputElement>("#hackathon-registration-deadline");
+    const subInput = view.container.querySelector<HTMLInputElement>("#hackathon-submission-deadline");
+
+    await act(async () => {
+      changeInput(regInput!, "2026-10-25T20:00");
+      changeInput(subInput!, "2026-10-10T20:00");
+    });
+
+    const saveButton = Array.from(view.container.querySelectorAll("button"))
+      .find((button) => button.textContent?.includes("hackathons.editor.saveSection"));
+    await act(async () => saveButton?.click());
+    await settle();
+
+    expect(updateContest).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith("hackathons.editor.validationDeadlines");
+
+    await view.cleanup();
+  });
 });
+
