@@ -22,7 +22,7 @@ if (process.env.SUPABASE_DB_URL && !process.env.SUPABASE_DB_URL.includes("127.0.
 }
 
 // 1. Check Docker environment
-console.log("[STEP 1/3] Checking Docker daemon status...");
+console.log("[STEP 1/4] Checking Docker daemon status...");
 try {
   execFileSync("docker", ["info"], { stdio: "ignore", shell: false });
   console.log("✓ Docker daemon is active and responsive.\n");
@@ -37,7 +37,7 @@ try {
 }
 
 // 2. Clean recreate from zero
-console.log("[STEP 2/3] Executing clean recreate from zero via canonical migration chain...");
+console.log("[STEP 2/4] Executing clean recreate from zero via canonical migration chain...");
 try {
   const resetArgs = ["exec", "supabase", "db", "reset", "--local", "--no-seed", "--yes"];
   execFileSync(command, resetArgs, { stdio: "inherit", shell: pnpmShell });
@@ -49,7 +49,7 @@ try {
 }
 
 // 3. Execute retained SQL integration suite.
-console.log("[STEP 3/3] Executing retained SQL integration assertions...");
+console.log("[STEP 3/4] Executing retained SQL integration assertions...");
 for (const sqlTestPath of sqlTestPaths) {
   if (!existsSync(sqlTestPath)) {
     console.error(`\n[HARNESS_CONFIGURATION_FAILURE] SQL integration test file missing at ${sqlTestPath}`);
@@ -65,6 +65,19 @@ for (const sqlTestPath of sqlTestPaths) {
   }
 }
 console.log("✓ SQL integration test suites executed successfully.\n");
+
+// 4. Exercise the exact Jobs relationship through the local PostgREST server.
+console.log("[STEP 4/4] Executing Jobs PostgREST relationship smoke...");
+try {
+  execFileSync(command, ["exec", "node", "scripts/db/tests/jobs-postgrest.integration.mjs"], {
+    stdio: "inherit",
+    shell: pnpmShell,
+  });
+  console.log("✓ Jobs PostgREST relationship smoke executed successfully.\n");
+} catch (postgrestErr) {
+  console.error("\n[POSTGREST_INTEGRATION_FAILURE] Jobs relationship smoke failed.");
+  process.exit(1);
+}
 
 console.log("===============================================================================");
 console.log(" ALL DATABASE INTEGRATION GATES PASSED (100% SUCCESS)");
