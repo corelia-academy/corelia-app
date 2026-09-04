@@ -9,6 +9,7 @@ import { LoginForm } from "@/pages/login/LoginForm";
 import { LoginMfaChallenge } from "@/pages/login/components/LoginMfaChallenge";
 import { LanguageSwitcher } from "@/components/base/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
+import { sanitizeInternalRedirect } from "./utils/redirect";
 
 /**
  * `unchecked` = đang chờ getAuthenticatorAssuranceLevel hoặc chưa có user.
@@ -21,8 +22,18 @@ export default function Auth() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { t } = useTranslation("common");
-  const from =
-    (location.state as { from?: { pathname: string } })?.from?.pathname ?? "/";
+
+  const stateFrom = (location.state as { from?: { pathname?: string; search?: string; hash?: string } })?.from;
+  const stateFromPath = stateFrom
+    ? `${stateFrom.pathname ?? ""}${stateFrom.search ?? ""}${stateFrom.hash ?? ""}`
+    : undefined;
+
+  const rawFrom =
+    searchParams.get("next") ||
+    searchParams.get("redirect") ||
+    stateFromPath;
+  const from = sanitizeInternalRedirect(rawFrom);
+
   // Prefill from /claim's CTA link (?mode=signup&email=...).
   const initialEmail = searchParams.get("email")?.trim() || undefined;
   const initialMode = searchParams.get("mode") === "signup" ? "sign_up" : undefined;
