@@ -57,6 +57,14 @@ test("Jobs scheduler keeps JWT verification off only because both hops enforce t
 test("Jobs migration is an approved forward migration", async () => {
   const release = await import("../production-release-migrations.mjs");
   assert.equal(
+    release.PREVIOUSLY_RELEASED_APPROVED_VERSIONS.at(-1),
+    "20260903111914",
+  );
+  assert.deepEqual(
+    release.CURRENT_PENDING_VERSIONS,
+    ["20260903214029"],
+  );
+  assert.equal(
     release.CURRENT_PENDING_VERSIONS.at(-1),
     "20260903214029",
   );
