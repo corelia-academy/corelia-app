@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "2a479dabd494ff05ea7bfc1417bb46290e20fc0a",
-  "git_tree_sha": "96c363c630ae1235c890811f1dd8916d76c31a66",
+  "rc_sha": "11aea71bd8444ce3c695fd13ac8c158b3a093af4",
+  "git_tree_sha": "1f3c9c2ff1b75bd5efef5cc0c3e50cc0f8cd53b0",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 182,
   "latest_migration": "20260903214029_classify_job_sources_and_add_rss_feeds.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "2a479dabd494ff05ea7bfc1417bb46290e20fc0a",
+  "source_sha": "11aea71bd8444ce3c695fd13ac8c158b3a093af4",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "e1819f1b33d2e2681a6d84adf9e57b7706f5511da56c2c2bf937f3c8d16850b9",
+  "candidate_tree_sha256": "6ceb91399652c637795583c619adcc05ec88f1d6e7684f1fed97b429208107ce",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -1311,11 +1311,11 @@
     },
     {
       "path": "src/pages/hackathon-detail/ContestPublicLayout.test.tsx",
-      "sha256": "0d9348898794db1a4d93c00c7b4c31e9d2fdf83487018d44558858e52716afc7"
+      "sha256": "1db932470a2f9a80b4a23909c6d5c3af0907e3ab0d43f57fbf89779c600d96a7"
     },
     {
       "path": "src/pages/hackathon-detail/ContestPublicLayout.tsx",
-      "sha256": "c8f559d8dddd1d509807cba2ceb768e365e5b5af609f477f5e888bab77387f60"
+      "sha256": "bac6e5d30522424326f778776c9e142cb9daa7ad10dfbe6d0063b51456608509"
     },
     {
       "path": "src/pages/hackathon-detail/ContestPublicPage.tsx",
