@@ -22,13 +22,13 @@ describe("canProfileBlastHackathonEmail", () => {
     ).toBe(true);
   });
 
-  it("allows co-organizers", () => {
+  it("does not allow co-organizers after simplified scope", () => {
     expect(
       canProfileBlastHackathonEmail(
         { role: "student", email: "  CoHost@Example.com " },
         hackathon,
       ),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("does not allow application reviewers", () => {
