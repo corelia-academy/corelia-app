@@ -75,7 +75,7 @@ jobs:
           test -n "$VITE_SUPABASE_PUBLISHABLE_KEY"
           test -n "$VITE_CDN_BASE_URL"
           pnpm build:prod
-          node scripts/db/verify-production-frontend-artifact.mjs dist "$RUNNER_TEMP/production-frontend-artifact.json"
+          node scripts/db/verify-production-frontend-artifact.mjs dist/client "$RUNNER_TEMP/production-frontend-artifact.json"
           node -e 'const fs=require("node:fs"); const r=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Production frontend artifact\n\n- Supabase project ref: \`${r.supabaseProjectRef}\`\n- CDN origin: \`${r.cdnOrigin}\`\n- App version: \`${r.appVersion}\`\n- Files: \`${r.fileCount}\`\n- Artifact SHA-256: \`${r.artifactSha256}\`\n`)' "$RUNNER_TEMP/production-frontend-artifact.json"
 
       - name: Cleanly recreate isolated local migration chain
