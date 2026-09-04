@@ -725,7 +725,9 @@
   "combobox": {
     "searchPlaceholder": "Tìm theo tên hoặc email",
     "emptyLabel": "Không có kết quả phù hợp.",
-    "done": "Xong"
+    "done": "Xong",
+    "loadMore": "Tải thêm",
+    "loadingMore": "Đang tải thêm..."
   },
   "openCampusConnect": {
     "header": {

@@ -725,7 +725,9 @@
   "combobox": {
     "searchPlaceholder": "Search by name or email",
     "emptyLabel": "No matching results.",
-    "done": "Done"
+    "done": "Done",
+    "loadMore": "Load more",
+    "loadingMore": "Loading more..."
   },
   "openCampusConnect": {
     "header": {
