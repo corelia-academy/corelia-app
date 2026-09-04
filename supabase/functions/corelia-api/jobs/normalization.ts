@@ -50,6 +50,34 @@ export function htmlToText(html: string): string {
     .trim();
 }
 
+const TERMINAL_BOILERPLATE_HEADING = /^(?:application process|how to apply|application instructions|resources\s*(?:&|and)\s*support|ready to apply|next steps)(?:\s*\([^\n)]*\))?\s*:?[ \t]*$/gim;
+
+/**
+ * Removes provider/application boilerplate appended after the actual role
+ * description. The untouched provider payload remains stored in raw_jobs.
+ */
+export function cleanJobDescription(value: string): string {
+  const normalized = value
+    .replace(/\r\n?/g, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  if (!normalized) return "";
+
+  const minimumBodyLength = Math.min(320, Math.floor(normalized.length * 0.4));
+  let cutAt = normalized.length;
+  for (const match of normalized.matchAll(TERMINAL_BOILERPLATE_HEADING)) {
+    if ((match.index ?? 0) >= minimumBodyLength) {
+      cutAt = Math.min(cutAt, match.index ?? cutAt);
+    }
+  }
+
+  return normalized
+    .slice(0, cutAt)
+    .replace(/\n(?:originally posted (?:on|at)|source)\b[^\n]*$/i, "")
+    .trim();
+}
+
 export function normalizeUrl(value: string): string {
   try {
     const url = new URL(value.trim());

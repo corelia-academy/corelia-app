@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { finiteNumber, htmlToText, isoDate, normalizeUrl, slugify, stableStringify } from "./normalization.ts";
+import { cleanJobDescription, finiteNumber, htmlToText, isoDate, normalizeUrl, slugify, stableStringify } from "./normalization.ts";
 
 describe("jobs normalization", () => {
   it("removes executable markup and tracking parameters", () => {
@@ -32,5 +32,32 @@ describe("jobs normalization", () => {
   it("normalizes Unix seconds and milliseconds without shifting dates to 1970", () => {
     expect(isoDate(1_788_421_936)).toBe("2026-09-03T07:52:16.000Z");
     expect(isoDate(1_788_421_936_000)).toBe("2026-09-03T07:52:16.000Z");
+  });
+
+  it("removes terminal application boilerplate while preserving the role description", () => {
+    const description = `${"Finance role responsibilities and qualifications. ".repeat(12)}
+
+Application Process (Takes 20–30 mins to complete)
+
+Upload resume
+
+AI interview based on your resume
+
+Submit form
+
+Resources & Support
+
+For any help, contact support.
+
+Originally posted on Himalayas`;
+    const cleaned = cleanJobDescription(description);
+    expect(cleaned).toContain("Finance role responsibilities");
+    expect(cleaned).not.toContain("Application Process");
+    expect(cleaned).not.toContain("Resources & Support");
+  });
+
+  it("does not strip a short legitimate how-to-apply mention in the main body", () => {
+    const description = "How to apply is explained during the interview. Build and maintain our platform.";
+    expect(cleanJobDescription(description)).toBe(description);
   });
 });

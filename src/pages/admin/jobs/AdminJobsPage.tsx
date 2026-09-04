@@ -44,6 +44,12 @@ const TEXTAREA_CLASS = "min-h-20 rounded-md border border-border-subtle bg-surfa
 const EMPLOYER_SOURCE_TYPES = new Set(["greenhouse", "lever", "ashby", "smartrecruiters"]);
 type RssSourceInput = Parameters<typeof saveRssJobSourceAdmin>[0];
 
+function operationError(error: unknown, fallback: string, policyRequired: string): string {
+  const message = error instanceof Error ? error.message : "";
+  if (message.includes("source_policy_required")) return policyRequired;
+  return message && !message.includes("jobs_operation_failed") ? message : fallback;
+}
+
 export default function AdminJobsPage() {
   const { t } = useTranslation("jobs");
   const { user } = useAuth();
@@ -67,25 +73,26 @@ export default function AdminJobsPage() {
     mutationFn: ({ type, value, mode = "discovery" }: { type: "company" | "source" | "adapter" | "all"; value?: string; mode?: "discovery" | "revalidation" }) => runJobsTarget(type, value, mode),
     onSuccess: async (result) => {
       if (Number(result.companies ?? 0) === 0) toast.warning(t("admin.messages.noEligibleCompanies"));
+      else if (Number(result.failures ?? 0) > 0) toast.warning(t("admin.messages.runPartial", { failures: Number(result.failures) }));
       else toast.success(t("admin.messages.runComplete"));
       await invalidate();
     },
-    onError: () => toast.error(t("admin.messages.actionFailed")),
+    onError: (error) => toast.error(operationError(error, t("admin.messages.actionFailed"), t("admin.messages.policyRequired"))),
   });
   const reviewMutation = useMutation({
     mutationFn: ({ id, status, overrides = {} }: { id: string; status: "active" | "review" | "rejected"; overrides?: Record<string, unknown> }) => reviewJob(id, status, overrides),
     onSuccess: async () => { toast.success(t("admin.messages.saved")); await invalidate(); },
-    onError: () => toast.error(t("admin.messages.actionFailed")),
+    onError: (error) => toast.error(operationError(error, t("admin.messages.actionFailed"), t("admin.messages.policyRequired"))),
   });
   const sourceMutation = useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: Partial<JobSourceAdmin> }) => updateJobSourceAdmin(id, patch),
     onSuccess: async () => { toast.success(t("admin.messages.saved")); await invalidate(); },
-    onError: () => toast.error(t("admin.messages.actionFailed")),
+    onError: (error) => toast.error(operationError(error, t("admin.messages.actionFailed"), t("admin.messages.policyRequired"))),
   });
   const rssSourceMutation = useMutation({
     mutationFn: saveRssJobSourceAdmin,
     onSuccess: async () => { toast.success(t("admin.messages.saved")); await invalidate(); },
-    onError: () => toast.error(t("admin.messages.actionFailed")),
+    onError: (error) => toast.error(operationError(error, t("admin.messages.actionFailed"), t("admin.messages.policyRequired"))),
   });
   const analyticsMutation = useMutation({
     mutationFn: refreshJobsAnalytics,
@@ -205,6 +212,18 @@ function SourcesSection({
     });
     setAddingRss(false);
   };
+  const directSources = sources.filter((source) => !EMPLOYER_SOURCE_TYPES.has(source.source_type));
+  const atsSources = sources.filter((source) => EMPLOYER_SOURCE_TYPES.has(source.source_type));
+  const renderTable = (items: JobSourceAdmin[], companyScoped: boolean) => (
+    <div className="overflow-x-auto rounded-xl border border-border-subtle bg-surface-base"><table className="w-full min-w-[1180px] text-left text-sm"><thead className="border-b border-border-subtle bg-surface-raised"><tr>{(["source", "type", "cadence", "jobsFound", "targets", "credential", "policy", "lastRun", "lastError", "status", "actions"] as const).map((key) => <th key={key} className="px-4 py-3 font-medium">{t(`admin.columns.${key}`)}</th>)}</tr></thead><tbody>{items.map((source) => {
+      const hasRunnableTarget = !companyScoped || source.active_target_count > 0;
+      const hasCredential = !source.credential_required || source.credential_configured;
+      return <Fragment key={source.id}>
+        <tr className="border-b border-border-subtle last:border-0"><td className="px-4 py-3 font-medium">{source.name}</td><td className="px-4 py-3">{source.source_type}</td><td className="px-4 py-3">{source.default_crawl_hours}h</td><td className="px-4 py-3">{source.jobs_found}</td><td className="px-4 py-3">{companyScoped ? t("admin.source.targetCount", { active: source.active_target_count, total: source.target_count }) : t("admin.source.direct")}</td><td className="px-4 py-3">{source.credential_required ? <span className={source.credential_configured ? "text-emerald-600 dark:text-emerald-400" : "text-amber-700 dark:text-amber-300"}>{source.credential_configured ? t("admin.source.credentialConfigured") : t("admin.source.credentialMissing")}</span> : "—"}</td><td className="px-4 py-3">{source.policy_reviewed_at ? "✓" : "—"}</td><td className="px-4 py-3 text-foreground-muted">{source.last_success_at ? new Date(source.last_success_at).toLocaleString() : "—"}</td><td className="max-w-52 truncate px-4 py-3 text-foreground-muted" title={source.last_error ?? undefined}>{source.last_error || "—"}</td><td className="px-4 py-3">{source.last_error ? <span className="text-destructive">{t("admin.status.error")}</span> : source.enabled ? t("admin.status.enabled") : t("admin.status.disabled")}</td><td className="px-4 py-3"><div className="flex flex-wrap gap-1">{companyScoped && !hasRunnableTarget ? <Button render={<Link to="/admin/jobs/companies" />} size="sm" variant="outline"><Plus className="size-3.5" aria-hidden />{t("admin.actions.addTarget")}</Button> : <Button type="button" size="sm" variant="outline" disabled={busy || !source.enabled || !hasRunnableTarget || !hasCredential} onClick={() => onRun(source.id)}>{t("admin.actions.run")}</Button>}<Button type="button" size="sm" variant="ghost" disabled={busy} onClick={() => setEditingId(editingId === source.id ? null : source.id)}><Pencil className="size-3.5" aria-hidden />{t("admin.actions.edit")}</Button><Button render={<Link to={`/admin/jobs/crawlers?source=${source.id}`} />} size="sm" variant="ghost">{t("admin.actions.logs")}</Button><Button type="button" size="sm" variant="ghost" disabled={busy || (!source.policy_reviewed_at && !source.enabled)} onClick={() => onToggle(source.id, !source.enabled)}>{source.enabled ? t("admin.actions.disable") : t("admin.actions.enable")}</Button></div></td></tr>
+        {editingId === source.id ? <tr key={`${source.id}-edit`} className="border-b border-border-subtle bg-surface-raised/40"><td colSpan={11} className="p-4"><form className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" onSubmit={(event) => submitEdit(source, event)}><Input name="default_crawl_hours" type="number" min="6" max="168" defaultValue={source.default_crawl_hours} aria-label={t("admin.columns.cadence")} /><Input name="priority" type="number" min="0" max="100" defaultValue={source.priority} aria-label={t("admin.source.priority")} /><Input name="terms_url" type="url" defaultValue={source.terms_url ?? ""} placeholder={t("admin.source.termsUrl")} /><Input name="attribution_text" defaultValue={source.attribution_text ?? ""} placeholder={t("admin.source.attributionText")} />{source.source_type === "rss" || source.source_type === "weworkremotely" ? <textarea name="feed_urls" className={`${TEXTAREA_CLASS} sm:col-span-2`} defaultValue={Array.isArray(source.adapter_config?.feed_urls) ? source.adapter_config.feed_urls.map(String).join("\n") : ""} placeholder={t("admin.source.feedUrls")} /> : null}<textarea name="redistribution_notes" className={`${TEXTAREA_CLASS} sm:col-span-2`} defaultValue={source.redistribution_notes ?? ""} placeholder={t("admin.source.redistributionNotes")} /><label className="flex items-center gap-2 text-sm"><input name="policy_reviewed" type="checkbox" defaultChecked={Boolean(source.policy_reviewed_at)} />{t("admin.source.policyReviewed")}</label><label className="flex items-center gap-2 text-sm"><input name="attribution_required" type="checkbox" defaultChecked={source.attribution_required} />{t("admin.source.attributionRequired")}</label><label className="flex items-center gap-2 text-sm"><input name="canonical_link_required" type="checkbox" defaultChecked={source.canonical_link_required} />{t("admin.source.canonicalRequired")}</label><label className="flex items-center gap-2 text-sm"><input name="allow_description_display" type="checkbox" defaultChecked={source.allow_description_display} />{t("admin.source.allowDescription")}</label><label className="flex items-center gap-2 text-sm"><input name="allow_seo_indexing" type="checkbox" defaultChecked={source.allow_seo_indexing} />{t("admin.source.allowSeo")}</label><div className="flex gap-2"><Button type="submit" size="sm" disabled={busy}>{t("admin.actions.save")}</Button><Button type="button" size="sm" variant="ghost" onClick={() => setEditingId(null)}>{t("admin.actions.cancel")}</Button></div></form></td></tr> : null}
+      </Fragment>;
+    })}</tbody></table></div>
+  );
   return <>
     {addingRss ? <Card className="mb-5"><CardContent className="p-5"><form className="grid gap-3 sm:grid-cols-2" onSubmit={submitRss}>
       <Input name="name" required placeholder={t("admin.source.name")} />
@@ -222,10 +241,8 @@ function SourcesSection({
       <label className="flex items-center gap-2 text-sm"><input name="allow_seo_indexing" type="checkbox" />{t("admin.source.allowSeo")}</label>
       <div className="flex gap-2 sm:col-span-2"><Button type="submit" disabled={busy}>{t("admin.actions.save")}</Button><Button type="button" variant="ghost" onClick={() => setAddingRss(false)}>{t("admin.actions.cancel")}</Button></div>
     </form></CardContent></Card> : <Button type="button" className="mb-5" onClick={() => setAddingRss(true)}><Rss className="size-4" aria-hidden />{t("admin.source.addRss")}</Button>}
-    <div className="overflow-x-auto rounded-xl border border-border-subtle bg-surface-base"><table className="w-full min-w-[1050px] text-left text-sm"><thead className="border-b border-border-subtle bg-surface-raised"><tr>{(["source", "type", "cadence", "jobsFound", "policy", "lastRun", "lastError", "status", "actions"] as const).map((key) => <th key={key} className="px-4 py-3 font-medium">{t(`admin.columns.${key}`)}</th>)}</tr></thead><tbody>{sources.map((source) => <Fragment key={source.id}>
-      <tr className="border-b border-border-subtle last:border-0"><td className="px-4 py-3 font-medium">{source.name}</td><td className="px-4 py-3">{source.source_type}</td><td className="px-4 py-3">{source.default_crawl_hours}h</td><td className="px-4 py-3">{source.jobs_found}</td><td className="px-4 py-3">{source.policy_reviewed_at ? "✓" : "—"}</td><td className="px-4 py-3 text-foreground-muted">{source.last_success_at ? new Date(source.last_success_at).toLocaleString() : "—"}</td><td className="max-w-52 truncate px-4 py-3 text-foreground-muted" title={source.last_error ?? undefined}>{source.last_error || "—"}</td><td className="px-4 py-3">{source.last_error ? <span className="text-destructive">{t("admin.status.error")}</span> : source.enabled ? t("admin.status.enabled") : t("admin.status.disabled")}</td><td className="px-4 py-3"><div className="flex flex-wrap gap-1"><Button type="button" size="sm" variant="outline" disabled={busy || !source.enabled} onClick={() => onRun(source.id)}>{t("admin.actions.run")}</Button><Button type="button" size="sm" variant="ghost" disabled={busy} onClick={() => setEditingId(editingId === source.id ? null : source.id)}><Pencil className="size-3.5" aria-hidden />{t("admin.actions.edit")}</Button><Button render={<Link to={`/admin/jobs/crawlers?source=${source.id}`} />} size="sm" variant="ghost">{t("admin.actions.logs")}</Button><Button type="button" size="sm" variant="ghost" disabled={busy || (!source.policy_reviewed_at && !source.enabled)} onClick={() => onToggle(source.id, !source.enabled)}>{source.enabled ? t("admin.actions.disable") : t("admin.actions.enable")}</Button></div></td></tr>
-      {editingId === source.id ? <tr key={`${source.id}-edit`} className="border-b border-border-subtle bg-surface-raised/40"><td colSpan={9} className="p-4"><form className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" onSubmit={(event) => submitEdit(source, event)}><Input name="default_crawl_hours" type="number" min="6" max="168" defaultValue={source.default_crawl_hours} aria-label={t("admin.columns.cadence")} /><Input name="priority" type="number" min="0" max="100" defaultValue={source.priority} aria-label={t("admin.source.priority")} /><Input name="terms_url" type="url" defaultValue={source.terms_url ?? ""} placeholder={t("admin.source.termsUrl")} /><Input name="attribution_text" defaultValue={source.attribution_text ?? ""} placeholder={t("admin.source.attributionText")} />{source.source_type === "rss" || source.source_type === "weworkremotely" ? <textarea name="feed_urls" className={`${TEXTAREA_CLASS} sm:col-span-2`} defaultValue={Array.isArray(source.adapter_config?.feed_urls) ? source.adapter_config.feed_urls.map(String).join("\n") : ""} placeholder={t("admin.source.feedUrls")} /> : null}<textarea name="redistribution_notes" className={`${TEXTAREA_CLASS} sm:col-span-2`} defaultValue={source.redistribution_notes ?? ""} placeholder={t("admin.source.redistributionNotes")} /><label className="flex items-center gap-2 text-sm"><input name="policy_reviewed" type="checkbox" defaultChecked={Boolean(source.policy_reviewed_at)} />{t("admin.source.policyReviewed")}</label><label className="flex items-center gap-2 text-sm"><input name="attribution_required" type="checkbox" defaultChecked={source.attribution_required} />{t("admin.source.attributionRequired")}</label><label className="flex items-center gap-2 text-sm"><input name="canonical_link_required" type="checkbox" defaultChecked={source.canonical_link_required} />{t("admin.source.canonicalRequired")}</label><label className="flex items-center gap-2 text-sm"><input name="allow_description_display" type="checkbox" defaultChecked={source.allow_description_display} />{t("admin.source.allowDescription")}</label><label className="flex items-center gap-2 text-sm"><input name="allow_seo_indexing" type="checkbox" defaultChecked={source.allow_seo_indexing} />{t("admin.source.allowSeo")}</label><div className="flex gap-2"><Button type="submit" size="sm" disabled={busy}>{t("admin.actions.save")}</Button><Button type="button" size="sm" variant="ghost" onClick={() => setEditingId(null)}>{t("admin.actions.cancel")}</Button></div></form></td></tr> : null}
-    </Fragment>)}</tbody></table></div>
+    <section><h2 className="text-lg font-semibold">{t("admin.source.feedTitle")}</h2><p className="mt-1 text-sm text-foreground-muted">{t("admin.source.feedDescription")}</p><div className="mt-3">{renderTable(directSources, false)}</div></section>
+    <section className="mt-8"><h2 className="text-lg font-semibold">{t("admin.source.atsTitle")}</h2><p className="mt-1 text-sm text-foreground-muted">{t("admin.source.atsDescription")}</p><div className="mt-3">{renderTable(atsSources, true)}</div></section>
   </>;
 }
 
@@ -238,16 +255,23 @@ function CompaniesSection({ companies, sources, busy, onRun, onSaved }: { compan
   const updateCareersUrl = (careersUrl: string) => {
     const detected = detectAtsFromCareersUrl(careersUrl);
     const detectedSource = detected ? sources.find((source) => source.source_type === detected.sourceType) : null;
-    setDraft((current) => ({
-      ...current,
-      careers_url: careersUrl,
-      ...(detected && detectedSource ? {
-        source_id: detectedSource.id,
-        source_type: detected.sourceType,
-        source_identifier: detected.sourceIdentifier,
-        source_region: detected.sourceRegion,
-      } : {}),
-    }));
+    setDraft((current) => {
+      const identifierName = detected?.sourceIdentifier
+        ? detected.sourceIdentifier.replace(/[-_]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase())
+        : "";
+      return {
+        ...current,
+        careers_url: careersUrl,
+        ...(detected && detectedSource ? {
+          name: current?.name || identifierName,
+          slug: current?.slug || detected.sourceIdentifier.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+          source_id: detectedSource.id,
+          source_type: detected.sourceType,
+          source_identifier: detected.sourceIdentifier,
+          source_region: detected.sourceRegion,
+        } : {}),
+      };
+    });
   };
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -265,6 +289,7 @@ function CompaniesSection({ companies, sources, busy, onRun, onSaved }: { compan
     });
   };
   return <>
+    <div className="mb-5 rounded-xl border border-border-subtle bg-surface-raised/40 p-4"><h2 className="font-semibold">{t("admin.company.title")}</h2><p className="mt-1 text-sm leading-6 text-foreground-muted">{t("admin.company.description")}</p></div>
     {draft ? <Card className="mb-5"><CardContent className="p-5"><form className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" onSubmit={submit}>
       <Input required value={draft.name ?? ""} onChange={(event) => setDraft({ ...draft, name: event.target.value })} placeholder={t("admin.company.name")} />
       <Input required value={draft.slug ?? ""} onChange={(event) => setDraft({ ...draft, slug: event.target.value })} placeholder={t("admin.company.slug")} />
@@ -282,7 +307,7 @@ function CompaniesSection({ companies, sources, busy, onRun, onSaved }: { compan
       {draft.careers_url && detectAtsFromCareersUrl(draft.careers_url) ? <p className="self-center text-xs text-foreground-muted">{t("admin.company.detected", { source: draft.source_type, identifier: draft.source_identifier })}</p> : null}
       <div className="flex gap-2 lg:col-span-4"><Button type="submit" disabled={saveMutation.isPending}>{t("admin.actions.save")}</Button><Button type="button" variant="ghost" onClick={() => setDraft(null)}>{t("admin.actions.cancel")}</Button></div>
     </form></CardContent></Card> : <Button type="button" className="mb-5" onClick={() => setDraft({ source_region: "global", domains: [], priority: 50, verified: false, active: true })}><Plus className="size-4" aria-hidden />{t("admin.company.add")}</Button>}
-    <div className="grid gap-4 lg:grid-cols-2">{employerCompanies.map((company) => <Card key={company.id}><CardContent className="p-5"><div className="flex items-start justify-between gap-3"><div><h2 className="font-semibold">{company.name}</h2><p className="mt-1 text-sm text-foreground-muted">{company.source_type} · {company.source_identifier}</p></div><span className={`rounded-full px-2 py-1 text-xs ${company.active && company.verified ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "bg-surface-raised text-foreground-muted"}`}>{company.verified ? t("admin.company.verified") : t("admin.company.unverified")}</span></div><div className="mt-3 flex flex-wrap gap-1.5">{company.domains.map((domain) => <span key={domain} className="rounded-full bg-surface-raised px-2 py-1 text-xs">{humanizeJobSlug(domain)}</span>)}</div><div className="mt-3 flex gap-4 text-xs text-foreground-muted"><span>{t("admin.company.openJobs", { count: company.open_jobs })}</span><span>{t("admin.company.priorityValue", { priority: company.priority })}</span></div><p className="mt-3 text-xs text-foreground-muted">{company.last_error || (company.last_success_at ? new Date(company.last_success_at).toLocaleString() : t("admin.company.neverRun"))}</p><p className="mt-1 text-xs text-foreground-muted">{t("admin.company.lastRevalidated")}: {company.last_revalidation_error || (company.last_revalidated_at ? new Date(company.last_revalidated_at).toLocaleString() : t("admin.company.neverRun"))}</p><div className="mt-4 flex flex-wrap gap-2"><Button type="button" size="sm" variant="outline" disabled={busy || !company.active} onClick={() => onRun(company.id)}><Play className="size-4" aria-hidden />{t("admin.actions.run")}</Button><Button type="button" size="sm" variant="outline" disabled={busy || !company.active} onClick={() => onRun(company.id, "revalidation")}><RefreshCw className="size-4" aria-hidden />{t("admin.actions.revalidate")}</Button><Button type="button" size="sm" variant="ghost" disabled={saveMutation.isPending} onClick={() => setDraft(company)}><Pencil className="size-3.5" aria-hidden />{t("admin.actions.edit")}</Button>{company.careers_url ? <Button render={<a href={company.careers_url} target="_blank" rel="noopener noreferrer" />} size="sm" variant="ghost"><ExternalLink className="size-3.5" aria-hidden />{t("admin.actions.careerPage")}</Button> : null}<Button type="button" size="sm" variant="ghost" disabled={saveMutation.isPending} onClick={() => saveMutation.mutate({ ...company, verified: !company.verified })}>{company.verified ? t("admin.actions.unverify") : t("admin.actions.verify")}</Button><Button type="button" size="sm" variant="ghost" disabled={saveMutation.isPending} onClick={() => saveMutation.mutate({ ...company, active: !company.active })}>{company.active ? t("admin.actions.disable") : t("admin.actions.enable")}</Button></div></CardContent></Card>)}</div>
+    {employerCompanies.length ? <div className="grid gap-4 lg:grid-cols-2">{employerCompanies.map((company) => <Card key={company.id}><CardContent className="p-5"><div className="flex items-start justify-between gap-3"><div><h2 className="font-semibold">{company.name}</h2><p className="mt-1 text-sm text-foreground-muted">{company.source_type} · {company.source_identifier}</p></div><span className={`rounded-full px-2 py-1 text-xs ${company.active && company.verified ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "bg-surface-raised text-foreground-muted"}`}>{company.verified ? t("admin.company.verified") : t("admin.company.unverified")}</span></div><div className="mt-3 flex flex-wrap gap-1.5">{company.domains.map((domain) => <span key={domain} className="rounded-full bg-surface-raised px-2 py-1 text-xs">{humanizeJobSlug(domain)}</span>)}</div><div className="mt-3 flex gap-4 text-xs text-foreground-muted"><span>{t("admin.company.openJobs", { count: company.open_jobs })}</span><span>{t("admin.company.priorityValue", { priority: company.priority })}</span></div><p className="mt-3 text-xs text-foreground-muted">{company.last_error || (company.last_success_at ? new Date(company.last_success_at).toLocaleString() : t("admin.company.neverRun"))}</p><p className="mt-1 text-xs text-foreground-muted">{t("admin.company.lastRevalidated")}: {company.last_revalidation_error || (company.last_revalidated_at ? new Date(company.last_revalidated_at).toLocaleString() : t("admin.company.neverRun"))}</p><div className="mt-4 flex flex-wrap gap-2"><Button type="button" size="sm" variant="outline" disabled={busy || !company.active} onClick={() => onRun(company.id)}><Play className="size-4" aria-hidden />{t("admin.actions.run")}</Button><Button type="button" size="sm" variant="outline" disabled={busy || !company.active} onClick={() => onRun(company.id, "revalidation")}><RefreshCw className="size-4" aria-hidden />{t("admin.actions.revalidate")}</Button><Button type="button" size="sm" variant="ghost" disabled={saveMutation.isPending} onClick={() => setDraft(company)}><Pencil className="size-3.5" aria-hidden />{t("admin.actions.edit")}</Button>{company.careers_url ? <Button render={<a href={company.careers_url} target="_blank" rel="noopener noreferrer" />} size="sm" variant="ghost"><ExternalLink className="size-3.5" aria-hidden />{t("admin.actions.careerPage")}</Button> : null}<Button type="button" size="sm" variant="ghost" disabled={saveMutation.isPending} onClick={() => saveMutation.mutate({ ...company, verified: !company.verified })}>{company.verified ? t("admin.actions.unverify") : t("admin.actions.verify")}</Button><Button type="button" size="sm" variant="ghost" disabled={saveMutation.isPending} onClick={() => saveMutation.mutate({ ...company, active: !company.active })}>{company.active ? t("admin.actions.disable") : t("admin.actions.enable")}</Button></div></CardContent></Card>)}</div> : <p className="rounded-xl border border-dashed border-border-subtle p-10 text-center text-sm text-foreground-muted">{t("admin.company.empty")}</p>}
   </>;
 }
 

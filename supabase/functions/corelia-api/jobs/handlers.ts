@@ -5,7 +5,9 @@ import { crawlCompany, refreshJobAnalytics, revalidateCompany } from "./pipeline
 import type { JobCompanyRow } from "./types.ts";
 
 const COMPANY_SELECT = "id,source_id,name,slug,logo_url,website_url,careers_url,domains,source_type,source_identifier,source_region,active,verified,crawl_interval_hours,priority,last_success_at,last_revalidated_at";
+const RUN_COMPANY_SELECT = `${COMPANY_SELECT},job_sources!inner(enabled,policy_reviewed_at)`;
 const ADMIN_ROLES = new Set(["admin", "support_staff"]);
+const EMPLOYER_SOURCE_TYPES = ["greenhouse", "lever", "ashby", "smartrecruiters"];
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -38,17 +40,28 @@ async function selectCompanies(
   targetType: string,
   targetValue: string,
   maxTargets: number,
-): Promise<JobCompanyRow[]> {
-  let query = db.from("job_companies").select(COMPANY_SELECT).eq("active", true);
+  offset = 0,
+): Promise<{ items: JobCompanyRow[]; nextOffset: number | null }> {
+  let query = db.from("job_companies").select(RUN_COMPANY_SELECT)
+    .eq("active", true)
+    .eq("job_sources.enabled", true)
+    .not("job_sources.policy_reviewed_at", "is", null);
   if (targetType === "company") query = query.eq("id", targetValue);
   else if (targetType === "adapter") query = query.eq("source_type", targetValue);
   else if (targetType === "source") query = query.eq("source_id", targetValue);
   else if (targetType !== "all") {
     throw new Error("invalid_input:target_type");
   }
-  const { data, error } = await query.order("priority", { ascending: false }).limit(maxTargets);
+  const { data, error } = await query
+    .order("priority", { ascending: false })
+    .order("id", { ascending: true })
+    .range(offset, offset + maxTargets);
   if (error) throw new Error(error.message);
-  return (data ?? []) as JobCompanyRow[];
+  const rows = (data ?? []) as unknown as JobCompanyRow[];
+  return {
+    items: rows.slice(0, maxTargets),
+    nextOffset: rows.length > maxTargets ? offset + maxTargets : null,
+  };
 }
 
 function isDue(company: JobCompanyRow, sourceCrawlHours: number): boolean {
@@ -62,6 +75,7 @@ async function runCompanies(
   companies: JobCompanyRow[],
   triggerType: "scheduled" | "manual" | "retry",
   createdBy: string | null,
+  nextOffset: number | null = null,
 ): Promise<Response> {
   const results: Array<Record<string, unknown>> = [];
   const openAiApiKey = Deno.env.get("OPENAI_API_KEY")?.trim() ?? "";
@@ -76,10 +90,12 @@ async function runCompanies(
   }
   let analytics: Record<string, number> | null = null;
   let analyticsError: string | null = null;
-  try {
-    analytics = await refreshJobAnalytics(db);
-  } catch (error) {
-    analyticsError = errorMessage(error);
+  if (nextOffset == null) {
+    try {
+      analytics = await refreshJobAnalytics(db);
+    } catch (error) {
+      analyticsError = errorMessage(error);
+    }
   }
   const failures = results.filter((result) => !result.ok).length;
   return json({
@@ -89,6 +105,7 @@ async function runCompanies(
     results,
     analytics,
     analytics_error: analyticsError,
+    next_offset: nextOffset,
   }, failures ? 207 : 200);
 }
 
@@ -97,6 +114,7 @@ async function revalidateCompanies(
   companies: JobCompanyRow[],
   triggerType: "scheduled" | "manual" | "retry",
   createdBy: string | null,
+  nextOffset: number | null = null,
 ): Promise<Response> {
   const results: Array<Record<string, unknown>> = [];
   for (const company of companies) {
@@ -108,7 +126,7 @@ async function revalidateCompanies(
     }
   }
   const failures = results.filter((result) => !result.ok).length;
-  return json({ ok: failures === 0, companies: results.length, failures, results }, failures ? 207 : 200);
+  return json({ ok: failures === 0, companies: results.length, failures, results, next_offset: nextOffset }, failures ? 207 : 200);
 }
 
 async function runAnalytics(
@@ -153,15 +171,18 @@ export async function handleJobsRun(req: Request, db: SupabaseClient): Promise<R
     if (["company", "source", "adapter"].includes(targetType) && !targetValue) {
       throw new Error("invalid_input:target_value");
     }
-    const companies = await selectCompanies(
+    const maxTargets = numberInRange(body.max_targets, targetType === "company" ? 1 : 3, 1, 10);
+    const offset = targetType === "company" ? 0 : numberInRange(body.offset, 0, 0, 10_000);
+    const selection = await selectCompanies(
       db,
       targetType,
       targetValue,
-      numberInRange(body.max_targets, targetType === "company" ? 1 : 3, 1, 10),
+      maxTargets,
+      offset,
     );
     return mode === "revalidation"
-      ? revalidateCompanies(db, companies, "manual", actorId)
-      : runCompanies(db, companies, "manual", actorId);
+      ? revalidateCompanies(db, selection.items, "manual", actorId, selection.nextOffset)
+      : runCompanies(db, selection.items, "manual", actorId, selection.nextOffset);
   } catch (error) {
     return errorResponse(error);
   }
@@ -187,7 +208,7 @@ export async function handleJobsRunScheduled(req: Request, db: SupabaseClient): 
     const crawlHoursBySource = new Map(
       (sources ?? []).map((source) => [String(source.id), Number(source.default_crawl_hours)]),
     );
-    const companies = (await selectCompanies(db, "all", "", 1_000))
+    const companies = (await selectCompanies(db, "all", "", 1_000)).items
       .filter((company) => {
         const sourceCrawlHours = crawlHoursBySource.get(company.source_id);
         if (sourceCrawlHours == null) return false;
@@ -354,14 +375,34 @@ export async function handleJobsAdmin(req: Request, db: SupabaseClient): Promise
       return json({ items: data ?? [] });
     }
     if (action === "sources.list") {
-      const [{ data, error }, counts] = await Promise.all([
+      const [{ data, error }, counts, { data: targets, error: targetsError }] = await Promise.all([
         db.from("job_sources").select("*").order("priority", { ascending: false }),
         jobCountsBy(db, "source_id", false),
+        db.from("job_companies").select("source_id,active,verified"),
       ]);
       if (error) throw new Error(error.message);
+      if (targetsError) throw new Error(targetsError.message);
+      const targetStats = new Map<string, { total: number; active: number; verified: number }>();
+      for (const target of targets ?? []) {
+        const sourceId = String(target.source_id);
+        const current = targetStats.get(sourceId) ?? { total: 0, active: 0, verified: 0 };
+        current.total += 1;
+        if (target.active) current.active += 1;
+        if (target.active && target.verified) current.verified += 1;
+        targetStats.set(sourceId, current);
+      }
       const items = (data ?? []).map((source) => ({
         ...source,
         jobs_found: counts.get(String(source.id)) ?? 0,
+        target_count: targetStats.get(String(source.id))?.total ?? 0,
+        active_target_count: targetStats.get(String(source.id))?.active ?? 0,
+        verified_target_count: targetStats.get(String(source.id))?.verified ?? 0,
+        credential_required: source.source_type === "cryptojobslist" || source.source_type === "web3career",
+        credential_configured: source.source_type === "cryptojobslist"
+          ? Boolean(Deno.env.get("CRYPTOJOBS_LIST_API_KEY")?.trim())
+          : source.source_type === "web3career"
+          ? Boolean(Deno.env.get("WEB3_CAREER_API_TOKEN")?.trim())
+          : true,
       }));
       return json({ items });
     }
@@ -467,7 +508,9 @@ export async function handleJobsAdmin(req: Request, db: SupabaseClient): Promise
     }
     if (action === "companies.list") {
       const [{ data, error }, counts] = await Promise.all([
-        db.from("job_companies").select("*").order("priority", { ascending: false }),
+        db.from("job_companies").select("*")
+          .in("source_type", EMPLOYER_SOURCE_TYPES)
+          .order("priority", { ascending: false }),
         jobCountsBy(db, "company_id", true),
       ]);
       if (error) throw new Error(error.message);

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, ExternalLink, Facebook, Globe2, MapPin, Send, Users } from "lucide-react";
+import { CalendarClock, Facebook, Globe2, MapPin, Send, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
@@ -25,6 +25,22 @@ export type HackathonOutletContext = {
 function formatDate(value: string | null, locale: string): string {
   if (!value) return "—";
   return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+}
+
+function XLogo({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden
+      className={className}
+      data-social-icon="x"
+    >
+      <path
+        fill="currentColor"
+        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.657l-5.214-6.817-5.967 6.817H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"
+      />
+    </svg>
+  );
 }
 
 export default function ContestPublicLayout() {
@@ -136,17 +152,21 @@ export default function ContestPublicLayout() {
       {previewAuthorized ? <div className="border-b border-warning/30 bg-warning-muted px-4 py-2 text-center text-sm font-medium text-foreground" role="status">{t("public.previewNotice")}</div> : null}
       <PageContainer width="default" className="pb-0">
         <header className="min-w-0 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
-          <div className="relative h-48 overflow-hidden bg-surface-raised sm:h-auto sm:aspect-[16/6] sm:min-h-48">
-            {contest.cover_image_url ? <img src={contest.cover_image_url} alt="" className="h-full w-full object-cover" /> : null}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 min-w-0 p-5 text-white sm:p-8">
-              <div className="mb-3 flex flex-wrap gap-2 text-xs font-medium uppercase tracking-wide">
-                <span className="rounded-full bg-white/15 px-3 py-1 backdrop-blur">{t(`public.mode.${contest.mode ?? contest.location}`)}</span>
-                <span className="rounded-full bg-white/15 px-3 py-1 backdrop-blur">{t(`public.status.${contest.status}`)}</span>
-              </div>
-              <h1 className="min-w-0 max-w-4xl break-words text-2xl font-bold [overflow-wrap:anywhere] sm:text-4xl">{contest.title}</h1>
-              <p className="mt-2 max-w-3xl text-sm text-white/85 sm:text-base">{contest.short_description || contest.tagline}</p>
+          {contest.cover_image_url ? (
+            <div className="aspect-[21/9] w-full overflow-hidden bg-surface-raised">
+              <img src={contest.cover_image_url} alt="" className="h-full w-full object-cover" />
             </div>
+          ) : null}
+
+          <div className="min-w-0 border-b border-border-subtle p-5 sm:p-6">
+            <div className="mb-3 flex flex-wrap gap-2 text-xs font-medium uppercase tracking-wide text-foreground-muted">
+              <span className="rounded-full bg-surface-raised px-3 py-1">{t(`public.mode.${contest.mode ?? contest.location}`)}</span>
+              <span className="rounded-full bg-surface-raised px-3 py-1">{t(`public.status.${contest.status}`)}</span>
+            </div>
+            <h1 className="min-w-0 max-w-4xl break-words text-2xl font-bold text-foreground [overflow-wrap:anywhere] sm:text-4xl">{contest.title}</h1>
+            {contest.short_description || contest.tagline ? (
+              <p className="mt-2 max-w-3xl text-sm text-foreground-muted sm:text-base">{contest.short_description || contest.tagline}</p>
+            ) : null}
           </div>
 
           <div className="grid gap-5 p-5 lg:grid-cols-[1fr_auto] lg:items-center sm:p-6">
@@ -161,7 +181,7 @@ export default function ContestPublicLayout() {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {contest.social_links?.telegram ? <Button render={<a href={contest.social_links.telegram} target="_blank" rel="noreferrer" aria-label="Telegram" />} nativeButton={false} size="icon" variant="outline"><Send className="size-4" /></Button> : null}
-              {contest.social_links?.x ? <Button render={<a href={contest.social_links.x} target="_blank" rel="noreferrer" aria-label="X" />} nativeButton={false} size="icon" variant="outline"><ExternalLink className="size-4" /></Button> : null}
+              {contest.social_links?.x ? <Button render={<a href={contest.social_links.x} target="_blank" rel="noreferrer" aria-label="X" />} nativeButton={false} size="icon" variant="outline"><XLogo className="size-4" /></Button> : null}
               {contest.social_links?.facebook ? <Button render={<a href={contest.social_links.facebook} target="_blank" rel="noreferrer" aria-label="Facebook" />} nativeButton={false} size="icon" variant="outline"><Facebook className="size-4" /></Button> : null}
               {cta}
             </div>

@@ -29,9 +29,9 @@ const draftContest = {
   location: "online",
   mode: "online",
   participants_count: 0,
-  cover_image_url: null,
+  cover_image_url: "https://cdn.example.com/banner.png",
   host: { name: "Corelia", logo_url: null, website_url: null },
-  social_links: {},
+  social_links: { x: "https://x.com/corelia" },
   registration_deadline: null,
   submission_deadline: null,
   tracks: [],
@@ -130,6 +130,23 @@ describe("draft hackathon preview", () => {
     const tabLinks = Array.from(view.container.querySelectorAll("nav a"));
     expect(tabLinks).toHaveLength(5);
     expect(tabLinks.every((link) => link.getAttribute("href")?.endsWith("?preview=1"))).toBe(true);
+
+    await view.cleanup();
+  });
+
+  it("shows the full banner without a dark content overlay and uses the X brand icon", async () => {
+    const view = renderRoute("/hackathons/draft-demo/overview?preview=1");
+    await settle();
+
+    const banner = view.container.querySelector<HTMLImageElement>("img[src='https://cdn.example.com/banner.png']");
+    expect(banner?.parentElement?.className).toContain("aspect-[21/9]");
+    expect(view.container.querySelector(".bg-gradient-to-t")).toBeNull();
+    expect(view.container.querySelector("h1")?.closest(".absolute")).toBeNull();
+
+    const xLink = view.container.querySelector<HTMLAnchorElement>('a[aria-label="X"]');
+    expect(xLink?.href).toBe("https://x.com/corelia");
+    expect(xLink?.querySelector('[data-social-icon="x"]')).not.toBeNull();
+    expect(xLink?.querySelector(".lucide-external-link")).toBeNull();
 
     await view.cleanup();
   });

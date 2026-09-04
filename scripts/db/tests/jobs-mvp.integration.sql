@@ -71,7 +71,7 @@ BEGIN
     RAISE EXCEPTION 'Jobs provider instance or revalidation columns are missing';
   END IF;
 
-  IF (SELECT count(*) FROM public.job_sources) <> 10
+  IF (SELECT count(*) FROM public.job_sources) <> 12
     OR NOT EXISTS (
       SELECT 1 FROM public.job_sources
       WHERE slug = 'cryptojobslist'
@@ -87,6 +87,18 @@ BEGIN
       WHERE company.slug = 'cryptojobslist-feed'
         AND source.slug = 'cryptojobslist'
     )
+    OR (SELECT count(*) FROM public.job_sources
+        WHERE slug IN ('remote-first-jobs-rss', 'real-work-from-anywhere-rss')
+          AND ingestion_mode = 'rss'
+          AND enabled = false
+          AND policy_reviewed_at IS NULL) <> 2
+    OR (SELECT count(*)
+        FROM public.job_companies AS company
+        JOIN public.job_sources AS source ON source.id = company.source_id
+        WHERE source.slug IN ('remote-first-jobs-rss', 'real-work-from-anywhere-rss')
+          AND company.source_type = 'rss'
+          AND company.active = true
+          AND company.verified = true) <> 2
   THEN
     RAISE EXCEPTION 'Jobs direct source inventory or CryptoJobsList policy gate is incomplete';
   END IF;

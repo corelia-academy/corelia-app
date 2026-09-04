@@ -17,12 +17,13 @@ generic RSS/Atom, pipeline phân loại, revalidation và lịch crawl.
 | Migration `20260903055155_jobs_advisor_remediation.sql` | Có | Bổ sung index phủ foreign key và hợp nhất policy đọc theo khuyến nghị Advisor |
 | Migration `20260903062207_normalize_job_ai_quality_score.sql` | Có | Chuẩn hóa output AI dạng tỷ lệ `0–1` về thang quality gate `0–100` và sửa dữ liệu lịch sử bị reject sai |
 | Migrations Jobs đến `20260903110012_configure_jobs_schedules.sql` | Có | Thêm Tech/Non-tech, structured feeds, provider-specific RSS, revalidation, operational alerts, CryptoJobsList contract, AI fallback counters và ba lịch Vault-backed |
+| Migration `20260903214029_classify_job_sources_and_add_rss_feeds.sql` | Có | Phân loại direct/RSS/ATS và seed Remote First Jobs cùng Real Work From Anywhere ở trạng thái tắt |
 | Frontend env Supabase | Có | Cho browser đọc catalog/taxonomy và ghi trạng thái Saved/Applied qua RLS |
 | Edge Function `corelia-api` | Có để vận hành | Admin CRUD, crawl thủ công, review và refresh analytics |
 | Edge Function `cron-jobs` | Có cho tự động hóa | Endpoint nhỏ nhận lịch và gọi `jobs.runScheduled` |
 | `CORELIA_JOBS_CRON_SECRET` | Có cho tự động hóa | Xác thực riêng giữa Supabase Cron, `cron-jobs` và `corelia-api` |
 | Tài khoản `admin` hoặc `support_staff` | Có để vận hành | Quản lý company/source, chạy crawl và duyệt job |
-| Ít nhất một company ATS đã verify | Có để có dữ liệu | Xác định feed tuyển dụng được crawl |
+| Ít nhất một ATS target đã verify | Chỉ cần cho Greenhouse/Lever/Ashby/SmartRecruiters | Xác định board tuyển dụng theo công ty; nguồn tổng hợp và RSS không cần target do admin tạo |
 | `OPENAI_API_KEY` | Không | Bật phân loại AI và auto-publish khi vượt quality gate |
 | `WEB3_CAREER_API_TOKEN` | Có khi bật web3.career | Credential server-side cho API chính thức của web3.career |
 | `CRYPTOJOBS_LIST_API_KEY` | Có khi bật CryptoJobsList | API key server-side gửi bằng header `x-api-key` |
@@ -146,15 +147,34 @@ Các thao tác `/admin/jobs/*` chỉ chấp nhận Bearer token của profile c�
 được cấp một trong hai role qua quy trình quản trị hiện có. Không đổi role trực
 tiếp trên production chỉ để smoke test.
 
-## 4. Đăng ký company và tạo dữ liệu đầu tiên
+## 4. Kết nối nguồn và tạo dữ liệu đầu tiên
+
+Trang **Sources** chia adapter thành hai nhóm:
+
+- **Nguồn job trực tiếp**: web3.career, CryptoJobsList, Himalayas, We Work
+  Remotely, Remotive, Remote OK và generic RSS. Chỉ cần duyệt policy, cấu hình
+  credential nếu nguồn yêu cầu rồi bật và chạy; không thêm company.
+- **ATS connectors**: Greenhouse, Lever, Ashby và SmartRecruiters. Public API
+  của các provider này yêu cầu board/site/company identifier, vì vậy mỗi công
+  ty cần một careers URL trong tab **ATS Targets**. Form tự nhận diện provider,
+  identifier và region từ URL được hỗ trợ.
+
+Các row `job_companies` của nguồn tổng hợp/RSS là target scheduler do hệ thống
+quản lý và không hiển thị trong tab **ATS Targets**. Chúng không phải company
+mà admin phải nhập.
+
+Nút **Run all sources** xử lý toàn bộ target đủ điều kiện theo nhiều batch nhỏ,
+không dừng ở ba target đầu. Mỗi Edge invocation vẫn bị giới hạn để tránh timeout
+và analytics chỉ refresh sau batch cuối.
+
+Hai RSS provider được seed thêm ở trạng thái tắt và chưa duyệt policy:
+Remote First Jobs và Real Work From Anywhere. Admin phải kiểm tra điều khoản
+hiện hành trước khi đánh dấu policy reviewed và bật nguồn.
 
 Migration seed sẵn bốn source policy đã review: Greenhouse, Lever, Ashby và
-SmartRecruiters. Migration **không** seed company thật, nên `/jobs` hiển thị
-empty state hợp lệ cho đến khi có company được crawl và job được publish.
-Các dòng trong `/admin/jobs/sources` là adapter/policy, không phải feed có thể
-tự suy ra công ty. Nếu bấm **Run now** khi source chưa có company active phù
-hợp, API chọn `0 target`, không tạo `crawler_runs` và giao diện sẽ cảnh báo thay
-vì báo hoàn tất.
+SmartRecruiters. Migration **không** seed ATS target thật. Mỗi ATS connector
+không có target sẽ hiển thị CTA sang tab **ATS Targets** thay vì nút chạy gây
+nhầm lẫn.
 
 `web3.career`, CryptoJobsList, Himalayas, We Work Remotely, Remotive và Remote
 OK đã có adapter nhưng được seed disabled để rollout có kiểm soát.
@@ -176,9 +196,9 @@ vượt cap sẽ fail rõ ràng thay vì âm thầm công bố số liệu bị 
 response của PostgREST.
 
 1. Đăng nhập bằng `admin` hoặc `support_staff`.
-2. Mở `/admin/jobs/companies` và chọn **Thêm công ty**.
-3. Điền `name`, slug duy nhất, ATS, identifier, region và domain.
-4. Chỉ bật **Đã xác minh** sau khi kiểm tra company/feed là chính chủ và nằm
+2. Mở `/admin/jobs/companies` và chọn **Thêm ATS target**.
+3. Dán careers URL; kiểm tra name, slug, ATS, identifier và region được tự nhận diện.
+4. Chỉ bật **Đã xác minh** sau khi kiểm tra careers page là chính chủ và nằm
    trong chính sách nguồn đã duyệt.
 5. Lưu company, sau đó chạy riêng company đó.
 6. Kiểm tra `/admin/jobs/crawlers` và `last_error` của company/source.
