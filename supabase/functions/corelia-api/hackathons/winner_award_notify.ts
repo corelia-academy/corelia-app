@@ -55,6 +55,7 @@ export async function handleHackathonWinnerAwardNotify(
       : "";
 
     let notifiedCount = 0;
+    let emailsSentCount = 0;
 
     for (const item of rawAwards) {
       const award = item as Partial<AwardItem>;
@@ -160,20 +161,29 @@ export async function handleHackathonWinnerAwardNotify(
             locale,
           });
 
-          await sendTransactionalEmailViaResend({
+          const mailResult = await sendTransactionalEmailViaResend({
             db,
             mailType: "hackathon_winner_award",
             to: [recipientEmail],
             subject,
             html,
           });
+
+          if ("sent" in mailResult && mailResult.sent) {
+            emailsSentCount++;
+          } else if ("providerError" in mailResult && mailResult.providerError) {
+            console.error(
+              `[winner_award_notify] send email failed for recipient ${recipientEmail}: status ${mailResult.httpStatus}`,
+              mailResult.body,
+            );
+          }
         }
 
         notifiedCount++;
       }
     }
 
-    return json({ ok: true, notified_count: notifiedCount }, 200);
+    return json({ ok: true, notified_count: notifiedCount, emails_sent_count: emailsSentCount }, 200);
   } catch (e) {
     const msg = e instanceof Error ? e.message : "unknown";
     if (isAuthFailure(msg)) return json({ message: "unauthenticated" }, 401);
