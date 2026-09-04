@@ -87,8 +87,13 @@ export function sanitizeHackathonTaxonomy(values: HackathonTaxonomyOption[]): Ha
 export function isPrizeAllocationValid(total: string, tracks: ContestTrack[]): boolean {
   const totalValue = Number(total);
   if (!Number.isFinite(totalValue) || totalValue < 0) return false;
-  const allocated = tracks.reduce((sum, track) => sum + Number(track.prize_amount || 0), 0);
-  return Number.isFinite(allocated) && allocated >= 0 && allocated <= totalValue;
+  let allocated = 0;
+  for (const track of tracks) {
+    const amount = Number(track.prize_amount || 0);
+    if (!Number.isFinite(amount) || amount < 0) return false;
+    allocated += amount;
+  }
+  return Number.isFinite(allocated) && allocated <= totalValue;
 }
 
 export function areHackathonDeadlinesValid(registration: string | null, submission: string | null): boolean {

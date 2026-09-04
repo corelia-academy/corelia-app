@@ -28,6 +28,9 @@ describe("simplified hackathon contract", () => {
   it("validates prize allocation and deadlines", () => {
     expect(isPrizeAllocationValid("1000.50", [{ id: "a", name: "A", prize_amount: "400.25" }, { id: "b", name: "B", prize_amount: "600.25" }])).toBe(true);
     expect(isPrizeAllocationValid("1000", [{ id: "a", name: "A", prize_amount: "1000.01" }])).toBe(false);
+    expect(isPrizeAllocationValid("100", [{ id: "a", name: "A", prize_amount: "-50" }, { id: "b", name: "B", prize_amount: "100" }])).toBe(false);
+    expect(isPrizeAllocationValid("100", [{ id: "a", name: "A", prize_amount: "NaN" }])).toBe(false);
+    expect(isPrizeAllocationValid("100", [{ id: "a", name: "A", prize_amount: "-0.01" }])).toBe(false);
     expect(areHackathonDeadlinesValid("2026-01-01T00:00:00Z", "2026-01-02T00:00:00Z")).toBe(true);
     expect(areHackathonDeadlinesValid("2026-01-03T00:00:00Z", "2026-01-02T00:00:00Z")).toBe(false);
   });
