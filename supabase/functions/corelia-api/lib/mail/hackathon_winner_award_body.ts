@@ -59,8 +59,13 @@ export function buildHackathonWinnerAwardEmail(args: {
     <p>${copy.bodyLine(safeProject, safeAward, safeHackathon)}</p>
   `;
 
+  const isProjectLink = args.hackathonHref ? /\/projects\/[^/?#]+/.test(args.hackathonHref) : false;
+  const ctaText = isProjectLink
+    ? (locale === "vi" ? "Xem chi tiết giải thưởng →" : "View award details →")
+    : copy.cta;
+
   const ctaHtml = args.hackathonHref?.trim()
-    ? emailCtaButton(args.hackathonHref.trim(), copy.cta)
+    ? emailCtaButton(args.hackathonHref.trim(), ctaText)
     : undefined;
 
   const subject = locale === "vi"

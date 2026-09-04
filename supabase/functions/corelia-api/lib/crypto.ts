@@ -78,3 +78,18 @@ export function bytesToBase64Url(buf: Uint8Array): string {
   for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]!);
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
+
+/**
+ * Generates a custom SHA-256-derived UUID-formatted value from a seed string.
+ * Formats a deterministic 128-bit output with standard UUID layout and variant bits
+ * for PostgreSQL uuid column validity.
+ */
+export async function generateDeterministicUuid(seed: string): Promise<string> {
+  const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(seed));
+  const bytes = new Uint8Array(hashBuffer);
+  // Set format nibble (0x50) and variant bits (10xx / 0x80) for PostgreSQL uuid data type compatibility
+  bytes[6] = (bytes[6]! & 0x0f) | 0x50;
+  bytes[8] = (bytes[8]! & 0x3f) | 0x80;
+  const hex = Array.from(bytes.slice(0, 16), (b) => b.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
+}

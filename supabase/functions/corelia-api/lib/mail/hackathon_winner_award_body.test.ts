@@ -39,6 +39,30 @@ describe("buildHackathonWinnerAwardEmail", () => {
     expect(result.html).toContain("View hackathon →");
   });
 
+  it("uses project-specific CTA text when link points to /projects/:slug", () => {
+    const viResult = buildHackathonWinnerAwardEmail({
+      hackathonTitle: "Corelia AI Hackathon 2026",
+      projectTitle: "AI Doc Assistant",
+      awardLabel: "Giải Nhất",
+      hackathonHref: "https://corelia.academy/projects/ai-doc-assistant",
+      locale: "vi",
+    });
+    expect(viResult.html).toContain("https://corelia.academy/projects/ai-doc-assistant");
+    expect(viResult.html).toContain("Xem chi tiết giải thưởng →");
+    expect(viResult.html).not.toContain("Xem cuộc thi →");
+
+    const enResult = buildHackathonWinnerAwardEmail({
+      hackathonTitle: "Global Web3 Hackathon",
+      projectTitle: "DeFi Lending Protocol",
+      awardLabel: "First Prize",
+      hackathonHref: "https://corelia.academy/projects/defi-lending-protocol",
+      locale: "en",
+    });
+    expect(enResult.html).toContain("https://corelia.academy/projects/defi-lending-protocol");
+    expect(enResult.html).toContain("View award details →");
+    expect(enResult.html).not.toContain("View hackathon →");
+  });
+
   it("handles fallback values gracefully for Vietnamese", () => {
     const result = buildHackathonWinnerAwardEmail({
       hackathonTitle: "",

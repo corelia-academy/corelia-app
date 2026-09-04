@@ -1,4 +1,5 @@
 import { isAuthFailure } from "../lib/authz.ts";
+import { generateDeterministicUuid } from "../lib/crypto.ts";
 import { json } from "../lib/http.ts";
 import { buildHackathonWinnerAwardEmail } from "../lib/mail/hackathon_winner_award_body.ts";
 import { resolveAppUrl } from "../lib/mail/layout.ts";
@@ -50,7 +51,7 @@ export async function handleHackathonWinnerAwardNotify(
         : "Hackathon";
     const hackathonSlug = typeof hDoc.slug === "string" ? hDoc.slug.trim() : "";
     const appOrigin = resolveAppUrl();
-    const hackathonHref = hackathonSlug
+    const defaultHackathonHref = hackathonSlug
       ? `${appOrigin}/hackathons/${encodeURIComponent(hackathonSlug)}`
       : "";
 
@@ -76,6 +77,11 @@ export async function handleHackathonWinnerAwardNotify(
 
       const projectTitle = String(project.title ?? "").trim() || "Project";
       const projectSlug = String(project.slug ?? "").trim();
+      const awardHref = projectSlug
+        ? `${appOrigin}/projects/${encodeURIComponent(projectSlug)}`
+        : hackathonSlug
+          ? `${appOrigin}/hackathons/${encodeURIComponent(hackathonSlug)}/projects`
+          : defaultHackathonHref;
 
       const { data: collabs } = await db
         .from("project_collaborators")
@@ -91,10 +97,14 @@ export async function handleHackathonWinnerAwardNotify(
       }
 
       for (const userId of targetUserIds) {
+        const deterministicNotifId = await generateDeterministicUuid(
+          `hackathon_winner_award:${hackathonId}:${projectId}:${userId}:${awardLabel.trim().toLowerCase()}`
+        );
+
         // Check deduplication so saving multiple times does not spam
         const { data: existingNotif } = await db
           .from("user_notifications")
-          .select("id")
+          .select("id, payload")
           .eq("user_id", userId)
           .eq("type", "hackathon_winner_award")
           .contains("payload", {
@@ -104,14 +114,13 @@ export async function handleHackathonWinnerAwardNotify(
           })
           .maybeSingle();
 
-        if (existingNotif) {
-          continue;
-        }
+        let notifId = (existingNotif?.id as string | undefined) ?? null;
+        let existingPayload = (existingNotif?.payload ?? {}) as Record<string, unknown>;
+        let isFirstInsert = false;
 
-        const { error: insErr } = await db.from("user_notifications").insert({
-          user_id: userId,
-          type: "hackathon_winner_award",
-          payload: {
+        if (!notifId) {
+          const nowIso = new Date().toISOString();
+          const candidatePayload = {
             hackathon_id: hackathonId,
             hackathon_title: hackathonTitle,
             hackathon_slug: hackathonSlug,
@@ -119,11 +128,99 @@ export async function handleHackathonWinnerAwardNotify(
             project_title: projectTitle,
             project_slug: projectSlug,
             award_label: awardLabel,
-          },
-        });
-        if (insErr) {
-          console.error("[winner_award_notify] insert notification failed:", insErr);
-          continue;
+            email_sent: false,
+            email_sending: true,
+            email_lock_at: nowIso,
+          };
+
+          // True DB-level atomic insertion using deterministic primary key:
+          // If another concurrent worker attempts to insert simultaneously, PostgreSQL's
+          // PRIMARY KEY (id) constraint enforces that exactly ONE worker succeeds.
+          const { data: insData, error: insErr } = await db
+            .from("user_notifications")
+            .insert({
+              id: deterministicNotifId,
+              user_id: userId,
+              type: "hackathon_winner_award",
+              payload: candidatePayload,
+            })
+            .select("id")
+            .maybeSingle();
+
+          if (insErr) {
+            // Check if error was due to unique violation (duplicate primary key 23505)
+            // If so, another concurrent worker won the race and created the notification!
+            const isDuplicateKey = (insErr as { code?: string })?.code === "23505" ||
+              insErr.message?.includes("duplicate key") ||
+              insErr.message?.includes("user_notifications_pkey");
+
+            if (isDuplicateKey) {
+              const { data: winnerNotif } = await db
+                .from("user_notifications")
+                .select("id, payload")
+                .eq("id", deterministicNotifId)
+                .maybeSingle();
+
+              if (!winnerNotif) {
+                continue;
+              }
+              notifId = winnerNotif.id;
+              existingPayload = (winnerNotif.payload ?? {}) as Record<string, unknown>;
+            } else {
+              console.error("[winner_award_notify] insert notification failed:", insErr);
+              continue;
+            }
+          } else {
+            notifId = (insData?.id as string | undefined) ?? deterministicNotifId;
+            notifiedCount++;
+            isFirstInsert = true;
+          }
+        }
+
+        if (!isFirstInsert) {
+          if (existingPayload.email_sent === true) {
+            continue;
+          }
+
+          const now = Date.now();
+          const IN_FLIGHT_TIMEOUT_MS = 30_000;
+          if (existingPayload.email_sending === true) {
+            const lockAt = typeof existingPayload.email_lock_at === "string"
+              ? Date.parse(existingPayload.email_lock_at)
+              : 0;
+            if (!lockAt || now - lockAt < IN_FLIGHT_TIMEOUT_MS) {
+              // Already being sent by another concurrent call
+              continue;
+            }
+          }
+
+          // DB-level atomic compare-and-set lock:
+          const lockAtIso = new Date().toISOString();
+          const staleThresholdIso = new Date(Date.now() - IN_FLIGHT_TIMEOUT_MS).toISOString();
+          const { data: lockedRows, error: lockErr } = await db
+            .from("user_notifications")
+            .update({
+              payload: {
+                ...(existingPayload ?? {}),
+                hackathon_id: hackathonId,
+                hackathon_title: hackathonTitle,
+                hackathon_slug: hackathonSlug,
+                project_id: projectId,
+                project_title: projectTitle,
+                project_slug: projectSlug,
+                award_label: awardLabel,
+                email_sending: true,
+                email_lock_at: lockAtIso,
+              },
+            })
+            .eq("id", notifId)
+            .or(`payload->>email_sending.is.null,payload->>email_sending.eq.false,payload->>email_lock_at.lt.${staleThresholdIso}`)
+            .select("id");
+
+          if (lockErr || !lockedRows || !Array.isArray(lockedRows) || lockedRows.length === 0) {
+            // Concurrent invocation acquired the lock -> skip
+            continue;
+          }
         }
 
         // Lookup recipient email & locale
@@ -153,11 +250,12 @@ export async function handleHackathonWinnerAwardNotify(
         }
 
         if (recipientEmail) {
+
           const { subject, html } = buildHackathonWinnerAwardEmail({
             hackathonTitle,
             projectTitle,
             awardLabel,
-            hackathonHref,
+            hackathonHref: awardHref,
             locale,
           });
 
@@ -171,15 +269,70 @@ export async function handleHackathonWinnerAwardNotify(
 
           if ("sent" in mailResult && mailResult.sent) {
             emailsSentCount++;
-          } else if ("providerError" in mailResult && mailResult.providerError) {
-            console.error(
-              `[winner_award_notify] send email failed for recipient ${recipientEmail}: status ${mailResult.httpStatus}`,
-              mailResult.body,
-            );
+            if (notifId) {
+              let updated = false;
+              for (let attempt = 0; attempt < 3; attempt++) {
+                const { error: updErr } = await db
+                  .from("user_notifications")
+                  .update({
+                    payload: {
+                      ...(existingPayload ?? {}),
+                      hackathon_id: hackathonId,
+                      hackathon_title: hackathonTitle,
+                      hackathon_slug: hackathonSlug,
+                      project_id: projectId,
+                      project_title: projectTitle,
+                      project_slug: projectSlug,
+                      award_label: awardLabel,
+                      email_sent: true,
+                      email_sending: false,
+                      email_sent_at: new Date().toISOString(),
+                    },
+                  })
+                  .eq("id", notifId);
+
+                if (!updErr) {
+                  updated = true;
+                  break;
+                }
+                await new Promise((r) => setTimeout(r, 100 * (attempt + 1)));
+              }
+              if (!updated) {
+                // Residual edge case: Resend accepted the email, but DB update retries failed.
+                // The in-app lock remains active until the 30s stale threshold expires.
+                // A subsequent retry after 30s could re-read email_sent=false and dispatch a duplicate email
+                // (inherent distributed transaction limitation between external email provider and local DB).
+                console.error(`[winner_award_notify] failed to update notification payload after email sent to ${recipientEmail}`);
+              }
+            }
+          } else {
+            if ("providerError" in mailResult && mailResult.providerError) {
+              console.error(
+                `[winner_award_notify] send email failed for recipient ${recipientEmail}: status ${mailResult.httpStatus}`,
+                mailResult.body,
+              );
+            }
+            if (notifId) {
+              await db
+                .from("user_notifications")
+                .update({
+                  payload: {
+                    ...(existingPayload ?? {}),
+                    hackathon_id: hackathonId,
+                    hackathon_title: hackathonTitle,
+                    hackathon_slug: hackathonSlug,
+                    project_id: projectId,
+                    project_title: projectTitle,
+                    project_slug: projectSlug,
+                    award_label: awardLabel,
+                    email_sending: false,
+                    email_last_attempt_at: new Date().toISOString(),
+                  },
+                })
+                .eq("id", notifId);
+            }
           }
         }
-
-        notifiedCount++;
       }
     }
 

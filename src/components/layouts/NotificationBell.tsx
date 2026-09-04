@@ -231,6 +231,7 @@ export function NotificationBell() {
                   payloadString(n.payload, "hackathon_title") ||
                   t("notifications.hackathonRegistrationFallbackTitle");
                 const hackathonSlug = payloadString(n.payload, "hackathon_slug");
+                const projectSlug = payloadString(n.payload, "project_slug");
                 const reviewNote = payloadString(n.payload, "review_note");
                 return (
                   <li
@@ -431,14 +432,22 @@ export function NotificationBell() {
                             hackathon: hackathonTitle,
                           })}
                         </p>
-                        {hackathonSlug ? (
+                        {projectSlug || hackathonSlug ? (
                           <div className="mt-2">
                             <Button
                               type="button"
                               variant="ghost"
                               size="xs"
                               className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
-                              render={<NavLink to={`/hackathons/${hackathonSlug}`} />}
+                              render={
+                                <NavLink
+                                  to={
+                                    projectSlug
+                                      ? `/projects/${projectSlug}`
+                                      : `/hackathons/${hackathonSlug}/projects`
+                                  }
+                                />
+                              }
                               nativeButton={false}
                               onClick={() => {
                                 setOpen(false);
