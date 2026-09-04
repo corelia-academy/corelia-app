@@ -5,6 +5,7 @@ describe("buildProjectCollaborationInviteEmail", () => {
   beforeEach(() => {
     vi.stubGlobal("Deno", { env: { get: () => "https://app.corelia.academy" } });
   });
+
   it("builds Vietnamese email correctly", () => {
     const result = buildProjectCollaborationInviteEmail({
       projectTitle: "AI Chatbot",
@@ -14,11 +15,11 @@ describe("buildProjectCollaborationInviteEmail", () => {
       locale: "vi",
     });
 
-    expect(result.subject).toContain("Bạn được mời tham gia dự án — AI Chatbot");
+    expect(result.subject).toContain('Lời mời tham gia dự án "AI Chatbot"');
     expect(result.html).toContain("AI Chatbot");
     expect(result.html).toContain("Nguyen Van A");
     expect(result.html).toContain("https://corelia.academy/invites/project/tok123");
-    expect(result.html).toContain("Xem và phản hồi lời mời");
+    expect(result.html).toContain("Xem chi tiết lời mời →");
   });
 
   it("builds English email correctly", () => {
@@ -30,11 +31,11 @@ describe("buildProjectCollaborationInviteEmail", () => {
       locale: "en",
     });
 
-    expect(result.subject).toContain("You're invited to join a project — Web3 Wallet");
+    expect(result.subject).toContain('Invitation to join "Web3 Wallet"');
     expect(result.html).toContain("Web3 Wallet");
     expect(result.html).toContain("Alice Smith");
     expect(result.html).toContain("https://corelia.academy/invites/project/tok456");
-    expect(result.html).toContain("Review invite");
+    expect(result.html).toContain("Review invitation →");
   });
 
   it("handles fallback values gracefully for Vietnamese", () => {
