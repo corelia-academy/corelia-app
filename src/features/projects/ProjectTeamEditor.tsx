@@ -86,12 +86,16 @@ export function ProjectTeamEditor({
       <div>
         <legend className="text-sm font-medium">{t("projects.team.title")}</legend>
         <p className="mt-1 text-xs text-foreground-muted">{t("projects.team.hint")}</p>
+        {sourceType === "hackathon" ? (
+          <p className="mt-1 text-xs text-foreground-muted">{t("projects.team.hackathonEligibleHint")}</p>
+        ) : null}
       </div>
       <ProfileCombobox
         title={t("projects.team.pickTitle")}
-        description={t("projects.team.pickDescription")}
+        description={sourceType === "hackathon" ? t("projects.team.hackathonPickDescription") : t("projects.team.pickDescription")}
         options={options}
         placeholder={t("projects.team.placeholder")}
+        searchPlaceholder={t("projects.team.searchPlaceholder")}
         emptyLabel={candidatesQuery.isPending ? t("projects.team.loading") : t("projects.team.empty")}
         value={persisted ? "" : selectedIds}
         multiple={!persisted}
