@@ -1,6 +1,19 @@
 import type { Contest, ContestI18nContent, ContestTrack, HackathonTaxonomyOption, HackathonTimelineItem, HackathonWinnerAward } from "@/types/hackathons";
 import { canonicalizeSlug } from "@/lib/slug";
 
+function fallbackLocalizedText(localized: string | null | undefined, fallback: string): string;
+function fallbackLocalizedText(localized: string | null | undefined, fallback: string | null): string | null;
+function fallbackLocalizedText(localized: string | null | undefined, fallback: string | null | undefined): string | null | undefined;
+function fallbackLocalizedText(localized: string | null | undefined, fallback: string | null | undefined): string | null | undefined {
+  if (typeof localized === "string" && localized.trim().length > 0) {
+    return localized;
+  }
+  if (typeof fallback === "string" && fallback.trim().length > 0) {
+    return fallback;
+  }
+  return localized ?? fallback;
+}
+
 export function applyHackathonLocaleContent(contest: Contest, localized: ContestI18nContent | null): Contest {
   if (!localized) return contest;
   const localizedTracks = new Map((localized.tracks ?? []).map((item) => [item.id, item]));
@@ -9,22 +22,50 @@ export function applyHackathonLocaleContent(contest: Contest, localized: Contest
   const localizedTimeline = new Map((localized.timeline ?? []).map((item) => [item.id, item]));
   return {
     ...contest,
-    title: localized.title ?? contest.title,
-    tagline: localized.tagline ?? contest.tagline,
-    short_description: localized.short_description ?? contest.short_description ?? contest.tagline,
-    description: localized.description ?? contest.description,
-    description_markdown: localized.description_markdown ?? contest.description_markdown ?? contest.description,
-    resources_markdown: localized.resources_markdown ?? contest.resources_markdown,
-    rules: localized.rules ?? contest.rules,
-    prize_pool_summary: localized.prize_pool_summary ?? contest.prize_pool_summary,
-    faqs: localized.faqs ?? contest.faqs,
-    timeline_milestones: localized.timeline_milestones ?? contest.timeline_milestones,
-    organizational_partners: localized.organizational_partners ?? contest.organizational_partners,
-    prize_pool: contest.prize_pool ? { ...contest.prize_pool, description_markdown: localized.prize_description_markdown ?? contest.prize_pool.description_markdown } : contest.prize_pool,
-    tracks: localized.tracks ? (contest.tracks ?? []).map((item) => ({ ...item, name: localizedTracks.get(item.id)?.name ?? item.name, description: localizedTracks.get(item.id)?.description ?? item.description })) : contest.tracks,
-    sectors: localized.sectors ? (contest.sectors ?? []).map((item) => ({ ...item, name: localizedSectors.get(item.id)?.name ?? item.name, description: localizedSectors.get(item.id)?.description ?? item.description })) : contest.sectors,
-    tech_stacks: localized.tech_stacks ? (contest.tech_stacks ?? []).map((item) => ({ ...item, name: localizedTechStacks.get(item.id)?.name ?? item.name, description: localizedTechStacks.get(item.id)?.description ?? item.description })) : contest.tech_stacks,
-    timeline: localized.timeline ? (contest.timeline ?? []).map((item) => ({ ...item, title: localizedTimeline.get(item.id)?.title ?? item.title, description_markdown: localizedTimeline.get(item.id)?.description_markdown ?? item.description_markdown })) : contest.timeline,
+    title: fallbackLocalizedText(localized.title, contest.title),
+    tagline: fallbackLocalizedText(localized.tagline, contest.tagline),
+    short_description: fallbackLocalizedText(localized.short_description, contest.short_description ?? contest.tagline),
+    description: fallbackLocalizedText(localized.description, contest.description),
+    description_markdown: fallbackLocalizedText(localized.description_markdown, contest.description_markdown ?? contest.description),
+    resources_markdown: fallbackLocalizedText(localized.resources_markdown, contest.resources_markdown),
+    rules: fallbackLocalizedText(localized.rules, contest.rules),
+    prize_pool_summary: fallbackLocalizedText(localized.prize_pool_summary, contest.prize_pool_summary),
+    faqs: localized.faqs && localized.faqs.length > 0 ? localized.faqs : contest.faqs,
+    timeline_milestones: localized.timeline_milestones && localized.timeline_milestones.length > 0 ? localized.timeline_milestones : contest.timeline_milestones,
+    organizational_partners: localized.organizational_partners && localized.organizational_partners.length > 0 ? localized.organizational_partners : contest.organizational_partners,
+    prize_pool: contest.prize_pool ? { ...contest.prize_pool, description_markdown: fallbackLocalizedText(localized.prize_description_markdown, contest.prize_pool.description_markdown) } : contest.prize_pool,
+    tracks: localized.tracks ? (contest.tracks ?? []).map((item) => {
+      const loc = localizedTracks.get(item.id);
+      return {
+        ...item,
+        name: fallbackLocalizedText(loc?.name, item.name),
+        description: fallbackLocalizedText(loc?.description, item.description),
+      };
+    }) : contest.tracks,
+    sectors: localized.sectors ? (contest.sectors ?? []).map((item) => {
+      const loc = localizedSectors.get(item.id);
+      return {
+        ...item,
+        name: fallbackLocalizedText(loc?.name, item.name),
+        description: fallbackLocalizedText(loc?.description, item.description),
+      };
+    }) : contest.sectors,
+    tech_stacks: localized.tech_stacks ? (contest.tech_stacks ?? []).map((item) => {
+      const loc = localizedTechStacks.get(item.id);
+      return {
+        ...item,
+        name: fallbackLocalizedText(loc?.name, item.name),
+        description: fallbackLocalizedText(loc?.description, item.description),
+      };
+    }) : contest.tech_stacks,
+    timeline: localized.timeline ? (contest.timeline ?? []).map((item) => {
+      const loc = localizedTimeline.get(item.id);
+      return {
+        ...item,
+        title: fallbackLocalizedText(loc?.title, item.title),
+        description_markdown: fallbackLocalizedText(loc?.description_markdown, item.description_markdown),
+      };
+    }) : contest.timeline,
     rounds: localized.rounds ? (localized.rounds as Contest["rounds"]) : contest.rounds,
   };
 }
