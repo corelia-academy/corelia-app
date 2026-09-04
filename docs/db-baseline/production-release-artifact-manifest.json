@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "5e57b1bf93355f33c8d8e71082ceb919c4e77c55",
-  "git_tree_sha": "547004a2fd2adca46b4dd2621d98208724b2dee9",
+  "rc_sha": "2a479dabd494ff05ea7bfc1417bb46290e20fc0a",
+  "git_tree_sha": "96c363c630ae1235c890811f1dd8916d76c31a66",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 182,
   "latest_migration": "20260903214029_classify_job_sources_and_add_rss_feeds.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "5e57b1bf93355f33c8d8e71082ceb919c4e77c55",
+  "source_sha": "2a479dabd494ff05ea7bfc1417bb46290e20fc0a",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "7af64bbe0aed51191df40a9ee3922dccea803637ef394ab511a48f11401e977a",
+  "candidate_tree_sha256": "e1819f1b33d2e2681a6d84adf9e57b7706f5511da56c2c2bf937f3c8d16850b9",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -355,7 +355,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "653ed046b2ce4ad22ef040899889c67a96875a9975fb62b97bb5dd15f36a7d95"
+      "sha256": "7a9140e02a714f8e3e99c948ee5f73ae3b10779c23d9aabe8fa966a5ac0c805d"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -415,7 +415,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "49e5b548169636ca53a20489d9da3b0303b1c0c279b752e7629278e3c1d1dc5e"
+      "sha256": "aa349e772f6ac486a39427af5f7e3b18a88acfb5e8579988e0654b6345f0e39d"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
@@ -515,7 +515,7 @@
     },
     {
       "path": "scripts/db/verify-production-release-artifact.mjs",
-      "sha256": "519e18681a88750dcbb6a9d5fed4e62fe47e0173f023a87345744f251528ff9a"
+      "sha256": "12da6a0b223cd2b5498709f2782a725a3bb42a5590a889a2490dbf7a8daddf95"
     },
     {
       "path": "scripts/jobs/generate-sitemap.mjs",
