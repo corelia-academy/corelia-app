@@ -167,6 +167,10 @@
       "validationTelegram": "Telegram must be a valid t.me URL or @username.",
       "validationX": "X must be a full x.com or twitter.com URL.",
       "validationFacebook": "Facebook must be a full facebook.com URL.",
+      "validationTrackNameRequired": "Track {{number}} is missing a name. Please enter a name or remove it before saving.",
+      "trackAdded": "New track added to draft.",
+      "awardMissingFields": "Please select a project and enter the award name.",
+      "awardAdded": "Award added to list.",
       "status": {
         "draft": "Draft",
         "published": "Published",
