@@ -143,8 +143,8 @@ export default function ProjectNewPage() {
       <header className="mt-4"><h1 className="text-2xl font-semibold text-foreground">{t("projects.form.createTitle")}</h1>{contest ? <p className="mt-1 text-sm text-foreground-muted">{contest.title}</p> : null}</header>
       <form className="mt-6 space-y-6 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-7" onSubmit={(event) => { event.preventDefault(); mutation.mutate(); }}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="text-sm font-medium">{t("projects.form.title")} <span className="text-destructive">*</span><Input className="mt-2" required maxLength={160} value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-          <label className="text-sm font-medium">{t("projects.form.slug")} <span className="text-destructive">*</span><Input className="mt-2" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" value={slugTouched ? slug : effectiveSlug} onChange={(event) => { setSlugTouched(true); setSlug(normalizeSlugDraft(event.target.value)); }} onBlur={() => setSlug((current) => generateCanonicalProjectSlug(current))} /></label>
+          <label className="text-sm font-medium">{t("projects.form.title")} <span className="text-primary">*</span><Input className="mt-2" required maxLength={160} value={title} onChange={(event) => setTitle(event.target.value)} /></label>
+          <label className="text-sm font-medium">{t("projects.form.slug")} <span className="text-primary">*</span><Input className="mt-2" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" value={slugTouched ? slug : effectiveSlug} onChange={(event) => { setSlugTouched(true); setSlug(normalizeSlugDraft(event.target.value)); }} onBlur={() => setSlug((current) => generateCanonicalProjectSlug(current))} /></label>
         </div>
         <label className="block text-sm font-medium">{t("projects.form.summary")}<textarea className="mt-2 min-h-28 w-full rounded-md border border-border bg-background px-3 py-2" rows={5} maxLength={1000} value={summary} onChange={(event) => setSummary(event.target.value)} /></label>
         <div className="grid gap-4 sm:grid-cols-2">
