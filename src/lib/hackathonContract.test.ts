@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
+import type { Contest } from "@/types/hackathons";
+
 import {
+  applyHackathonLocaleContent,
   areHackathonDeadlinesValid,
   generateCanonicalProjectSlug,
   isPrizeAllocationValid,
@@ -25,6 +28,9 @@ describe("simplified hackathon contract", () => {
   it("validates prize allocation and deadlines", () => {
     expect(isPrizeAllocationValid("1000.50", [{ id: "a", name: "A", prize_amount: "400.25" }, { id: "b", name: "B", prize_amount: "600.25" }])).toBe(true);
     expect(isPrizeAllocationValid("1000", [{ id: "a", name: "A", prize_amount: "1000.01" }])).toBe(false);
+    expect(isPrizeAllocationValid("100", [{ id: "a", name: "A", prize_amount: "-50" }, { id: "b", name: "B", prize_amount: "100" }])).toBe(false);
+    expect(isPrizeAllocationValid("100", [{ id: "a", name: "A", prize_amount: "NaN" }])).toBe(false);
+    expect(isPrizeAllocationValid("100", [{ id: "a", name: "A", prize_amount: "-0.01" }])).toBe(false);
     expect(areHackathonDeadlinesValid("2026-01-01T00:00:00Z", "2026-01-02T00:00:00Z")).toBe(true);
     expect(areHackathonDeadlinesValid("2026-01-03T00:00:00Z", "2026-01-02T00:00:00Z")).toBe(false);
   });
@@ -56,5 +62,60 @@ describe("simplified hackathon contract", () => {
   it("generates deterministic lowercase slugs", () => {
     expect(generateCanonicalProjectSlug("Ứng dụng Giáo dục", "A1B2C3D4-extra")).toBe("ung-dung-giao-duc-a1b2c3d4");
     expect(generateCanonicalProjectSlug("manual-slug-")).toBe("manual-slug");
+  });
+
+  it("falls back to original contest content when localized strings are empty or whitespace", () => {
+    const baseContest = {
+      id: "contest-1",
+      title: "Cuộc thi AI",
+      tagline: "Khám phá tiềm năng AI",
+      short_description: "Mô tả ngắn cuộc thi",
+      description: "Mô tả chi tiết",
+      description_markdown: "# Nội dung cuộc thi",
+      resources_markdown: "Tài liệu",
+      rules: "Quy định",
+      status: "published" as const,
+      location: "online" as const,
+      registration_deadline: null,
+      submission_deadline: null,
+      max_participants: null,
+      judge_emails: [],
+      tracks: [
+        { id: "track-1", name: "AI Agent", description: "Lập trình agent" },
+      ],
+      sectors: [
+        { id: "sec-1", name: "Giáo dục", active: true, sort_order: 0 },
+      ],
+    } as unknown as Contest;
+
+    // Case 1: Empty string should fall back to base
+    const localizedEmpty = {
+      title: "",
+      tagline: "   ",
+      short_description: "",
+      description_markdown: "  \n  ",
+      tracks: [{ id: "track-1", name: "" }],
+      sectors: [{ id: "sec-1", name: "   ", active: true, sort_order: 0 }],
+    };
+    const resultEmpty = applyHackathonLocaleContent(baseContest, localizedEmpty);
+    expect(resultEmpty.title).toBe("Cuộc thi AI");
+    expect(resultEmpty.tagline).toBe("Khám phá tiềm năng AI");
+    expect(resultEmpty.short_description).toBe("Mô tả ngắn cuộc thi");
+    expect(resultEmpty.description_markdown).toBe("# Nội dung cuộc thi");
+    expect(resultEmpty.tracks?.[0]?.name).toBe("AI Agent");
+    expect(resultEmpty.sectors?.[0]?.name).toBe("Giáo dục");
+
+    // Case 2: Valid localized string should take precedence
+    const localizedValid = {
+      title: "Global AI Hackathon",
+      tagline: "Explore AI potentials",
+      short_description: "Short summary",
+      tracks: [{ id: "track-1", name: "AI Agent Global" }],
+    };
+    const resultValid = applyHackathonLocaleContent(baseContest, localizedValid);
+    expect(resultValid.title).toBe("Global AI Hackathon");
+    expect(resultValid.tagline).toBe("Explore AI potentials");
+    expect(resultValid.short_description).toBe("Short summary");
+    expect(resultValid.tracks?.[0]?.name).toBe("AI Agent Global");
   });
 });

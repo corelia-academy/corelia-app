@@ -8,14 +8,16 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { ProfileCombobox } from "@/components/ui/profile-combobox";
 import { PageContainer, PageSectionCard } from "@/components/layouts/PagePrimitives";
 import { publicProjectDirectoryQueryOptions } from "@/features/projects/projectQueries";
-import { createContest, deleteContest, getContest, getHackathonLocaleContent, setHackathonLocaleContent, updateContest } from "@/lib/hackathons";
+import { createContest, deleteContest, getContest, getHackathonLocaleContent, notifyHackathonWinnerAwards, setHackathonLocaleContent, updateContest } from "@/lib/hackathons";
 import { deleteStorageObjectByPath, uploadContestBanner, uploadContestHostLogo } from "@/lib/storage";
 import { invokeGenerateDescription, type DescriptionTranslationBundle, type HackathonTranslationItem } from "@/lib/descriptionGenerator";
 import { canonicalizeSlug, normalizeSlugDraft } from "@/lib/slug";
 import { cn } from "@/lib/utils";
 import type { Contest, ContestI18nContent, ContestLocation, ContestStatus, ContestTrack, HackathonTaxonomyOption, HackathonTimelineItem, HackathonWinnerAward } from "@/types/hackathons";
+import { areHackathonDeadlinesValid, isPrizeAllocationValid } from "@/lib/hackathonContract";
 import { isValidHackathonSocialLink, normalizeHackathonSocialLink } from "./utils/socialLinks";
 
 type Locale = "vi" | "en";
@@ -54,6 +56,18 @@ type Draft = {
 
 const SECTIONS = ["overview", "description", "prizes", "timeline", "resources", "taxonomy", "projects", "danger"] as const;
 type SectionId = typeof SECTIONS[number];
+
+class EditorValidationError extends Error {
+  section: SectionId;
+  fieldId?: string;
+  constructor(message: string, section: SectionId, fieldId?: string) {
+    super(message);
+    this.name = "EditorValidationError";
+    this.section = section;
+    this.fieldId = fieldId;
+  }
+}
+
 const SECTION_ICONS = {
   overview: Settings,
   description: FileText,
@@ -93,8 +107,25 @@ const DEFAULT_TAXONOMY = {
   ],
 } as const;
 
+function datetimeLocalToIso(local: string | null | undefined): string | null {
+  if (!local || !local.trim()) return null;
+  const t = new Date(local).getTime();
+  if (Number.isNaN(t)) return null;
+  return new Date(t).toISOString();
+}
+
 function dateInput(value: string | null | undefined): string {
-  return value ? new Date(value).toISOString().slice(0, 16) : "";
+  if (!value) return "";
+  const normalized = value.includes(" ") && !value.includes("T") ? value.replace(" ", "T") : value;
+  const d = new Date(normalized);
+  if (isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const year = d.getFullYear();
+  const month = pad(d.getMonth() + 1);
+  const day = pad(d.getDate());
+  const hours = pad(d.getHours());
+  const minutes = pad(d.getMinutes());
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
 function localeFromContest(contest: Contest, localized: ContestI18nContent | null, fallback: boolean): LocaleDraft {
@@ -228,20 +259,60 @@ export default function AdminHackathonEditorPage() {
   }, [isNew, location.hash, location.pathname, location.search, navigate]);
 
   const projectsQuery = useInfiniteQuery({ ...publicProjectDirectoryQueryOptions("vi", "hackathon", "newest", { hackathonId: id ?? null, winnerProjectIds: draft.winner_awards.map((award) => award.project_id) }), enabled: Boolean(id) });
-  const projects = projectsQuery.data?.pages.flatMap((page) => page.items) ?? [];
+  const { hasNextPage: hasMoreProjects, isFetchingNextPage: isFetchingMoreProjects, fetchNextPage: fetchNextProjectsPage } = projectsQuery;
+  useEffect(() => {
+    if (activeSection === "projects" && hasMoreProjects && !isFetchingMoreProjects) {
+      void fetchNextProjectsPage();
+    }
+  }, [activeSection, hasMoreProjects, isFetchingMoreProjects, fetchNextProjectsPage]);
+  const projects = useMemo(() => projectsQuery.data?.pages.flatMap((page) => page.items) ?? [], [projectsQuery.data?.pages]);
+  const projectAwardOptions = useMemo(
+    () =>
+      projects.map(({ project, owner }) => ({
+        id: project.id,
+        label: project.title,
+        description: owner?.username ? `@${owner.username}` : (owner?.full_name ?? null),
+      })),
+    [projects],
+  );
   const localized = draft.locales[locale];
   const change = (patch: Partial<Draft>) => { setDraft((current) => ({ ...current, ...patch })); setDirty(true); };
   const changeLocale = (patch: Partial<LocaleDraft>) => { setDraft((current) => ({ ...current, locales: { ...current.locales, [locale]: { ...current.locales[locale], ...patch } } })); setDirty(true); };
   const validate = () => {
-    if (!draft.locales.vi.title.trim() || !canonicalizeSlug(draft.slug)) throw new Error(t("hackathons.editor.validationRequired"));
-    if (!/^[A-Z0-9]{2,10}$/.test(draft.prize_currency.trim().toUpperCase())) throw new Error(t("hackathons.editor.validationCurrency"));
-    const total = Number(draft.prize_amount || 0);
-    const allocated = draft.locales.vi.tracks.reduce((sum, track) => sum + Number(track.prize_amount || 0), 0);
-    if (allocated > total) throw new Error(t("hackathons.editor.validationPrize"));
-    if (draft.registration_deadline && draft.submission_deadline && draft.registration_deadline > draft.submission_deadline) throw new Error(t("hackathons.editor.validationDeadlines"));
-    if (!isValidHackathonSocialLink("telegram", draft.telegram)) throw new Error(t("hackathons.editor.validationTelegram"));
-    if (!isValidHackathonSocialLink("x", draft.x)) throw new Error(t("hackathons.editor.validationX"));
-    if (!isValidHackathonSocialLink("facebook", draft.facebook)) throw new Error(t("hackathons.editor.validationFacebook"));
+    if (!draft.locales.vi.title.trim()) {
+      throw new EditorValidationError(t("hackathons.editor.validationRequired"), "overview", "hackathon-title");
+    }
+    if (!canonicalizeSlug(draft.slug)) {
+      throw new EditorValidationError(t("hackathons.editor.validationRequired"), "overview", "hackathon-slug");
+    }
+    if (!/^[A-Z0-9]{2,10}$/.test(draft.prize_currency.trim().toUpperCase())) {
+      throw new EditorValidationError(t("hackathons.editor.validationCurrency"), "prizes", "hackathon-currency");
+    }
+    if (!isPrizeAllocationValid(draft.prize_amount, draft.locales.vi.tracks)) {
+      throw new EditorValidationError(t("hackathons.editor.validationPrize"), "prizes", "hackathon-prize-amount");
+    }
+    for (let i = 0; i < draft.locales.vi.tracks.length; i++) {
+      const track = draft.locales.vi.tracks[i];
+      if (!track.name?.trim()) {
+        throw new EditorValidationError(
+          t("hackathons.editor.validationTrackNameRequired", { number: i + 1 }),
+          "prizes",
+          `hackathon-track-name-${track.id}`
+        );
+      }
+    }
+    if (!areHackathonDeadlinesValid(datetimeLocalToIso(draft.registration_deadline), datetimeLocalToIso(draft.submission_deadline))) {
+      throw new EditorValidationError(t("hackathons.editor.validationDeadlines"), "overview", "hackathon-registration-deadline");
+    }
+    if (!isValidHackathonSocialLink("telegram", draft.telegram)) {
+      throw new EditorValidationError(t("hackathons.editor.validationTelegram"), "overview", "hackathon-telegram");
+    }
+    if (!isValidHackathonSocialLink("x", draft.x)) {
+      throw new EditorValidationError(t("hackathons.editor.validationX"), "overview", "hackathon-x");
+    }
+    if (!isValidHackathonSocialLink("facebook", draft.facebook)) {
+      throw new EditorValidationError(t("hackathons.editor.validationFacebook"), "overview", "hackathon-facebook");
+    }
   };
   const localePayload = (target: Locale): ContestI18nContent => ({
     title: draft.locales[target].title,
@@ -249,7 +320,10 @@ export default function AdminHackathonEditorPage() {
     description_markdown: draft.locales[target].description_markdown,
     resources_markdown: draft.locales[target].resources_markdown,
     prize_description_markdown: draft.locales[target].prize_description_markdown,
-    tracks: draft.locales[target].tracks,
+    tracks: draft.locales[target].tracks.filter((track) => {
+      const viName = draft.locales.vi.tracks.find((item) => item.id === track.id)?.name?.trim();
+      return Boolean(viName || track.name?.trim());
+    }),
     sectors: draft.locales[target].sectors,
     tech_stacks: draft.locales[target].tech_stacks,
     timeline: draft.locales[target].timeline,
@@ -262,8 +336,8 @@ export default function AdminHackathonEditorPage() {
     description_markdown: draft.locales.vi.description_markdown,
     resources_markdown: draft.locales.vi.resources_markdown,
     status: draft.status,
-    registration_deadline: draft.registration_deadline ? new Date(draft.registration_deadline).toISOString() : null,
-    submission_deadline: draft.submission_deadline ? new Date(draft.submission_deadline).toISOString() : null,
+    registration_deadline: datetimeLocalToIso(draft.registration_deadline),
+    submission_deadline: datetimeLocalToIso(draft.submission_deadline),
     location: draft.mode,
     mode: draft.mode,
     cover_image_url: bannerRemoved ? null : draft.cover_image_url || null,
@@ -275,7 +349,7 @@ export default function AdminHackathonEditorPage() {
       facebook: normalizeHackathonSocialLink("facebook", draft.facebook) || null,
     },
     prize_pool: { amount: draft.prize_amount || "0", currency: draft.prize_currency.trim().toUpperCase(), description_markdown: draft.locales.vi.prize_description_markdown },
-    tracks: draft.locales.vi.tracks,
+    tracks: draft.locales.vi.tracks.filter((item) => item.name?.trim()),
     sectors: draft.locales.vi.sectors,
     tech_stacks: draft.locales.vi.tech_stacks,
     timeline: draft.locales.vi.timeline,
@@ -307,11 +381,26 @@ export default function AdminHackathonEditorPage() {
         bannerRemoved && !bannerFile ? deleteStorageObjectByPath(draft.cover_image_path) : Promise.resolve(),
         hostLogoRemoved && !hostLogoFile ? deleteStorageObjectByPath(draft.host_logo_path) : Promise.resolve(),
       ]);
+      if (draft.winner_awards.length > 0) {
+        try {
+          await notifyHackathonWinnerAwards(
+            contest.id,
+            draft.winner_awards.map((award) => ({
+              project_id: award.project_id,
+              label: award.label,
+            })),
+          );
+        } catch (awardErr) {
+          console.warn("[AdminHackathonEditor] Failed to notify winner awards:", awardErr);
+        }
+      }
       return { contest, banner, hostLogo };
     },
     onSuccess: async ({ contest, banner, hostLogo }) => {
       setDraft((current) => ({
         ...current,
+        registration_deadline: dateInput(contest.registration_deadline),
+        submission_deadline: dateInput(contest.submission_deadline),
         cover_image_url: banner?.url ?? (bannerRemoved ? "" : current.cover_image_url),
         cover_image_path: banner?.path ?? (bannerRemoved ? "" : current.cover_image_path),
         host_logo_url: hostLogo?.url ?? (hostLogoRemoved ? "" : current.host_logo_url),
@@ -325,10 +414,36 @@ export default function AdminHackathonEditorPage() {
       setHostLogoRemoved(false);
       setDirty(false);
       toast.success(t("hackathons.editor.saved"));
-      await queryClient.invalidateQueries({ queryKey: ["hackathons"] });
+      queryClient.setQueryData(
+        ["admin", "hackathons", contest.id, "editor"],
+        (old: { contest: Contest; vi: ContestI18nContent; en: ContestI18nContent } | undefined) =>
+          old ? { ...old, contest } : undefined,
+      );
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["admin", "hackathons"] }),
+        queryClient.invalidateQueries({ queryKey: ["hackathons"] }),
+        queryClient.invalidateQueries({ queryKey: ["hackathon", contest.id] }),
+      ]);
       if (isNew) navigate(`/admin/hackathons/${contest.id}/edit#overview`, { replace: true });
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : t("hackathons.editor.saveFailed")),
+    onError: (error) => {
+      if (error instanceof EditorValidationError) {
+        selectSection(error.section);
+        toast.error(error.message);
+        if (error.fieldId && typeof document !== "undefined") {
+          setTimeout(() => {
+            if (typeof document === "undefined") return;
+            const el = document.getElementById(error.fieldId!);
+            if (el) {
+              el.focus();
+              el.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }, 150);
+        }
+        return;
+      }
+      toast.error(error instanceof Error ? error.message : t("hackathons.editor.saveFailed"));
+    },
   });
   const save = () => saveMutation.mutate();
   const leaveEditor = () => {
@@ -341,7 +456,9 @@ export default function AdminHackathonEditorPage() {
   };
   const addTrack = () => {
     const track: ContestTrack = { id: crypto.randomUUID(), name: "", description: "", prize_amount: "0", active: true, sort_order: draft.locales.vi.tracks.length };
-    setDraft((current) => ({ ...current, locales: { vi: { ...current.locales.vi, tracks: [...current.locales.vi.tracks, track] }, en: { ...current.locales.en, tracks: [...current.locales.en.tracks, { ...track, name: "", description: "" }] } } })); setDirty(true);
+    setDraft((current) => ({ ...current, locales: { vi: { ...current.locales.vi, tracks: [...current.locales.vi.tracks, track] }, en: { ...current.locales.en, tracks: [...current.locales.en.tracks, { ...track, name: "", description: "" }] } } }));
+    setDirty(true);
+    toast.success(t("hackathons.editor.trackAdded"));
   };
   const removeTrack = (trackId: string) => {
     const isPersisted = loadedDraft?.locales.vi.tracks.some((track) => track.id === trackId) ?? false;
@@ -533,8 +650,8 @@ export default function AdminHackathonEditorPage() {
         <main className="min-w-0 flex-1">
           {activeSection === "overview" ? <EditorSection title={t("hackathons.editor.sections.overview")} description={t("hackathons.editor.sectionDescriptions.overview")} onSave={save} saving={saveMutation.isPending} saveLabel={t(isNew ? "hackathons.editor.createDraft" : "hackathons.editor.saveSection")} secondaryAction={isNew ? { label: t("hackathons.editor.cancel"), onClick: leaveEditor } : undefined}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field><FieldLabel>{t("hackathons.editor.fields.title")} <span className="rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">{locale.toUpperCase()}</span></FieldLabel><Input value={localized.title} onChange={(event) => changeLocale({ title: event.target.value })} onBlur={() => { if (!draft.slug.trim() && localized.title.trim()) change({ slug: canonicalizeSlug(localized.title) }); }} /></Field>
-              <Field><FieldLabel>{t("hackathons.editor.fields.slug")}</FieldLabel><Input value={draft.slug} onChange={(event) => change({ slug: normalizeSlugDraft(event.target.value) })} onBlur={() => { const slug = canonicalizeSlug(draft.slug); if (slug !== draft.slug) change({ slug }); }} /></Field>
+              <Field><FieldLabel htmlFor="hackathon-title">{t("hackathons.editor.fields.title")} <span className="text-primary">*</span> <span className="rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">{locale.toUpperCase()}</span></FieldLabel><Input id="hackathon-title" value={localized.title} onChange={(event) => changeLocale({ title: event.target.value })} onBlur={() => { if (!draft.slug.trim() && localized.title.trim()) change({ slug: canonicalizeSlug(localized.title) }); }} /></Field>
+              <Field><FieldLabel htmlFor="hackathon-slug">{t("hackathons.editor.fields.slug")} <span className="text-primary">*</span></FieldLabel><Input id="hackathon-slug" value={draft.slug} onChange={(event) => change({ slug: normalizeSlugDraft(event.target.value) })} onBlur={() => { const slug = canonicalizeSlug(draft.slug); if (slug !== draft.slug) change({ slug }); }} /></Field>
             </div>
             <Field><FieldLabel>{t("hackathons.editor.fields.shortDescription")} <span className="rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">{locale.toUpperCase()}</span></FieldLabel><textarea className={textareaClass} value={localized.short_description} onChange={(event) => changeLocale({ short_description: event.target.value })} /></Field>
             <Field><FieldLabel>{t("hackathons.editor.fields.banner")}</FieldLabel><div className="relative flex h-44 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-surface-overlay sm:h-56 2xl:h-64">{bannerPreviewUrl || (!bannerRemoved && draft.cover_image_url) ? <img src={bannerPreviewUrl ?? draft.cover_image_url} alt={t("hackathons.editor.fields.bannerPreviewAlt")} className="absolute inset-0 size-full object-cover" /> : <div className="flex flex-col items-center gap-2 px-6 text-center text-foreground-muted"><ImageIcon className="size-9" /><p className="text-sm font-medium">{t("hackathons.editor.fields.bannerEmpty")}</p><p className="text-xs">{t("hackathons.editor.fields.bannerHint")}</p></div>}<div className="absolute bottom-3 right-3 flex items-center gap-2">{bannerPreviewUrl || (!bannerRemoved && draft.cover_image_url) ? <Button type="button" variant="secondary" size="icon-lg" className="min-h-11 min-w-11 border border-border bg-background/90 shadow-sm backdrop-blur" aria-label={t("hackathons.editor.removeImage")} onClick={() => { setBannerFile(null); setBannerPreviewUrl(null); setBannerRemoved(true); setDirty(true); }}><Trash2 className="size-4" /></Button> : null}<label htmlFor="hackathon-banner-upload" className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-border bg-background/90 px-4 text-sm font-medium text-foreground shadow-sm backdrop-blur transition-colors hover:bg-background focus-within:ring-2 focus-within:ring-primary/40"><Camera className="size-4" />{bannerPreviewUrl || (!bannerRemoved && draft.cover_image_url) ? t("hackathons.editor.fields.changeBanner") : t("hackathons.editor.fields.uploadBanner")}</label><Input id="hackathon-banner-upload" className="sr-only" type="file" accept="image/*" aria-label={t("hackathons.editor.fields.banner")} onChange={(event) => { const file = event.target.files?.[0] ?? null; setBannerFile(file); setBannerPreviewUrl(file ? URL.createObjectURL(file) : null); setBannerRemoved(false); if (file) setDirty(true); event.target.value = ""; }} /></div></div></Field>
@@ -542,26 +659,29 @@ export default function AdminHackathonEditorPage() {
             <div className="grid gap-4 sm:grid-cols-3">
               <Field>
                 <FieldLabel htmlFor="hackathon-telegram">{t("hackathons.editor.fields.telegram")}</FieldLabel>
-                <Input id="hackathon-telegram" type="text" inputMode="url" autoCapitalize="none" spellCheck={false} placeholder={t("hackathons.editor.fields.telegramPlaceholder")} value={draft.telegram} onChange={(event) => change({ telegram: event.target.value })} onBlur={() => { const telegram = normalizeHackathonSocialLink("telegram", draft.telegram); if (telegram !== draft.telegram) change({ telegram }); }} />
+                <Input id="hackathon-telegram" type="text" inputMode="url" autoCapitalize="none" spellCheck={false} placeholder={t("hackathons.editor.fields.telegramPlaceholder")} value={draft.telegram} onChange={(event) => change({ telegram: event.target.value })} onBlur={() => { const telegram = normalizeHackathonSocialLink("telegram", draft.telegram); if (draft.telegram.trim() && !isValidHackathonSocialLink("telegram", draft.telegram)) { toast.error(t("hackathons.editor.validationTelegram")); } else if (telegram !== draft.telegram) { change({ telegram }); } }} />
                 <FieldDescription>{t("hackathons.editor.fields.telegramHint")}</FieldDescription>
               </Field>
               <Field>
                 <FieldLabel htmlFor="hackathon-x">{t("hackathons.editor.fields.x")}</FieldLabel>
-                <Input id="hackathon-x" type="url" inputMode="url" autoCapitalize="none" spellCheck={false} placeholder={t("hackathons.editor.fields.xPlaceholder")} value={draft.x} onChange={(event) => change({ x: event.target.value })} />
+                <Input id="hackathon-x" type="url" inputMode="url" autoCapitalize="none" spellCheck={false} placeholder={t("hackathons.editor.fields.xPlaceholder")} value={draft.x} onChange={(event) => change({ x: event.target.value })} onBlur={() => { if (draft.x.trim() && !isValidHackathonSocialLink("x", draft.x)) { toast.error(t("hackathons.editor.validationX")); } }} />
                 <FieldDescription>{t("hackathons.editor.fields.fullUrlHint")}</FieldDescription>
               </Field>
               <Field>
                 <FieldLabel htmlFor="hackathon-facebook">{t("hackathons.editor.fields.facebook")}</FieldLabel>
-                <Input id="hackathon-facebook" type="url" inputMode="url" autoCapitalize="none" spellCheck={false} placeholder={t("hackathons.editor.fields.facebookPlaceholder")} value={draft.facebook} onChange={(event) => change({ facebook: event.target.value })} />
+                <Input id="hackathon-facebook" type="url" inputMode="url" autoCapitalize="none" spellCheck={false} placeholder={t("hackathons.editor.fields.facebookPlaceholder")} value={draft.facebook} onChange={(event) => change({ facebook: event.target.value })} onBlur={() => { if (draft.facebook.trim() && !isValidHackathonSocialLink("facebook", draft.facebook)) { toast.error(t("hackathons.editor.validationFacebook")); } }} />
                 <FieldDescription>{t("hackathons.editor.fields.fullUrlHint")}</FieldDescription>
               </Field>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">{(["registration_deadline", "submission_deadline"] as const).map((key) => <Field key={key}><FieldLabel>{t(`hackathons.editor.fields.${key}`)}</FieldLabel><Input type="datetime-local" value={draft[key]} onChange={(event) => change({ [key]: event.target.value })} /></Field>)}</div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field><FieldLabel htmlFor="hackathon-registration-deadline">{t("hackathons.editor.fields.registration_deadline")}</FieldLabel><Input id="hackathon-registration-deadline" type="datetime-local" value={draft.registration_deadline} onChange={(event) => change({ registration_deadline: event.target.value })} /></Field>
+              <Field><FieldLabel htmlFor="hackathon-submission-deadline">{t("hackathons.editor.fields.submission_deadline")}</FieldLabel><Input id="hackathon-submission-deadline" type="datetime-local" value={draft.submission_deadline} onChange={(event) => change({ submission_deadline: event.target.value })} /></Field>
+            </div>
           </EditorSection> : null}
 
           {activeSection === "description" && !isNew ? <EditorSection title={t("hackathons.editor.sections.description")} description={t("hackathons.editor.sectionDescriptions.description")} onSave={save} saving={saveMutation.isPending} saveLabel={t("hackathons.editor.saveSection")}><Field><FieldLabel>{t("hackathons.editor.fields.markdown")} <span className="rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">{locale.toUpperCase()}</span></FieldLabel><textarea className={`${textareaClass} min-h-80 font-mono leading-6`} value={localized.description_markdown} onChange={(event) => changeLocale({ description_markdown: event.target.value })} /></Field></EditorSection> : null}
 
-          {activeSection === "prizes" && !isNew ? <EditorSection title={t("hackathons.editor.sections.prizes")} description={t("hackathons.editor.sectionDescriptions.prizes")} onSave={save} saving={saveMutation.isPending} saveLabel={t("hackathons.editor.saveSection")}><div className="grid gap-4 sm:grid-cols-2"><Field><FieldLabel>{t("hackathons.editor.fields.totalPrize")}</FieldLabel><Input inputMode="decimal" value={draft.prize_amount} onChange={(event) => change({ prize_amount: event.target.value })} /></Field><Field><FieldLabel>{t("hackathons.editor.fields.currency")}</FieldLabel><Input value={draft.prize_currency} maxLength={10} onChange={(event) => change({ prize_currency: event.target.value.toUpperCase() })} /></Field></div><Field><FieldLabel>{t("hackathons.editor.fields.prizeDescription")} <span className="rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">{locale.toUpperCase()}</span></FieldLabel><textarea className={textareaClass} value={localized.prize_description_markdown} onChange={(event) => changeLocale({ prize_description_markdown: event.target.value })} /></Field><div><div className="flex items-center justify-between"><h3 className="font-semibold text-foreground">{t("hackathons.editor.fields.tracks")}</h3><Button type="button" variant="outline" size="sm" onClick={addTrack}><Plus className="size-4" />{t("hackathons.editor.add")}</Button></div>{localized.tracks.length === 0 ? <div className="mt-3 rounded-xl border border-dashed border-border p-6 text-center text-sm text-foreground-muted">{t("hackathons.editor.noTracks")}</div> : null}<div className="mt-3 space-y-3">{localized.tracks.map((track, index) => { const prizeAmount = draft.locales.vi.tracks.find((item) => item.id === track.id)?.prize_amount ?? "0"; return <div key={track.id} className="rounded-xl border border-border-subtle bg-surface-raised p-4"><div className="flex items-center justify-between gap-3"><span className="text-sm font-semibold">{t("hackathons.editor.trackNumber", { number: index + 1 })}</span><Button type="button" variant="ghost" size="icon" className="text-foreground-muted hover:text-destructive" aria-label={t("hackathons.editor.removeTrack")} onClick={() => removeTrack(track.id)}><Trash2 className="size-4" /></Button></div><div className="mt-3 grid gap-4 sm:grid-cols-[minmax(0,1fr)_180px]"><Field><FieldLabel>{t("hackathons.editor.trackName")} ({locale.toUpperCase()})</FieldLabel><Input value={track.name} placeholder={t("hackathons.editor.trackNamePlaceholder")} onChange={(event) => changeLocale({ tracks: localized.tracks.map((item) => item.id === track.id ? { ...item, name: event.target.value } : item) })} /></Field><Field><FieldLabel>{t("hackathons.editor.trackPrize")}</FieldLabel><Input disabled={locale !== "vi"} inputMode="decimal" value={prizeAmount} onChange={(event) => { const tracks = draft.locales.vi.tracks.map((item) => item.id === track.id ? { ...item, prize_amount: event.target.value } : item); setDraft((current) => ({ ...current, locales: { ...current.locales, vi: { ...current.locales.vi, tracks } } })); setDirty(true); }} /></Field></div><Field className="mt-4"><FieldLabel>{t("hackathons.editor.trackDescription")} ({locale.toUpperCase()})</FieldLabel><textarea className={`${textareaClass} min-h-24`} value={track.description ?? ""} placeholder={t("hackathons.editor.trackDescriptionPlaceholder")} onChange={(event) => changeLocale({ tracks: localized.tracks.map((item) => item.id === track.id ? { ...item, description: event.target.value } : item) })} /></Field></div>; })}</div></div></EditorSection> : null}
+          {activeSection === "prizes" && !isNew ? <EditorSection title={t("hackathons.editor.sections.prizes")} description={t("hackathons.editor.sectionDescriptions.prizes")} onSave={save} saving={saveMutation.isPending} saveLabel={t("hackathons.editor.saveSection")}><div className="grid gap-4 sm:grid-cols-2"><Field><FieldLabel htmlFor="hackathon-prize-amount">{t("hackathons.editor.fields.totalPrize")} <span className="text-primary">*</span></FieldLabel><Input id="hackathon-prize-amount" inputMode="decimal" value={draft.prize_amount} onChange={(event) => change({ prize_amount: event.target.value })} /></Field><Field><FieldLabel htmlFor="hackathon-currency">{t("hackathons.editor.fields.currency")}</FieldLabel><Input id="hackathon-currency" value={draft.prize_currency} maxLength={10} onChange={(event) => change({ prize_currency: event.target.value.toUpperCase() })} /></Field></div><Field><FieldLabel>{t("hackathons.editor.fields.prizeDescription")} <span className="rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">{locale.toUpperCase()}</span></FieldLabel><textarea className={textareaClass} value={localized.prize_description_markdown} onChange={(event) => changeLocale({ prize_description_markdown: event.target.value })} /></Field><div><div className="flex items-center justify-between"><h3 className="font-semibold text-foreground">{t("hackathons.editor.fields.tracks")}</h3><Button type="button" variant="outline" size="sm" onClick={addTrack}><Plus className="size-4" />{t("hackathons.editor.add")}</Button></div>{localized.tracks.length === 0 ? <div className="mt-3 rounded-xl border border-dashed border-border p-6 text-center text-sm text-foreground-muted">{t("hackathons.editor.noTracks")}</div> : null}<div className="mt-3 space-y-3">{localized.tracks.map((track, index) => { const prizeAmount = draft.locales.vi.tracks.find((item) => item.id === track.id)?.prize_amount ?? "0"; return <div key={track.id} className="rounded-xl border border-border-subtle bg-surface-raised p-4"><div className="flex items-center justify-between gap-3"><span className="text-sm font-semibold">{t("hackathons.editor.trackNumber", { number: index + 1 })}</span><Button type="button" variant="ghost" size="icon" className="text-foreground-muted hover:text-destructive" aria-label={t("hackathons.editor.removeTrack")} onClick={() => removeTrack(track.id)}><Trash2 className="size-4" /></Button></div><div className="mt-3 grid gap-4 sm:grid-cols-[minmax(0,1fr)_180px]"><Field><FieldLabel htmlFor={`hackathon-track-name-${track.id}`}>{t("hackathons.editor.trackName")} ({locale.toUpperCase()}) <span className="text-primary">*</span></FieldLabel><Input id={`hackathon-track-name-${track.id}`} value={track.name} placeholder={t("hackathons.editor.trackNamePlaceholder")} onChange={(event) => changeLocale({ tracks: localized.tracks.map((item) => item.id === track.id ? { ...item, name: event.target.value } : item) })} /></Field><Field><FieldLabel>{t("hackathons.editor.trackPrize")}</FieldLabel><Input disabled={locale !== "vi"} inputMode="decimal" value={prizeAmount} onChange={(event) => { const tracks = draft.locales.vi.tracks.map((item) => item.id === track.id ? { ...item, prize_amount: event.target.value } : item); setDraft((current) => ({ ...current, locales: { ...current.locales, vi: { ...current.locales.vi, tracks } } })); setDirty(true); }} /></Field></div><Field className="mt-4"><FieldLabel>{t("hackathons.editor.trackDescription")} ({locale.toUpperCase()})</FieldLabel><textarea className={`${textareaClass} min-h-24`} value={track.description ?? ""} placeholder={t("hackathons.editor.trackDescriptionPlaceholder")} onChange={(event) => changeLocale({ tracks: localized.tracks.map((item) => item.id === track.id ? { ...item, description: event.target.value } : item) })} /></Field></div>; })}</div></div></EditorSection> : null}
 
           {activeSection === "timeline" && !isNew ? <EditorSection title={t("hackathons.editor.sections.timeline")} description={t("hackathons.editor.sectionDescriptions.timeline")} onSave={save} saving={saveMutation.isPending} saveLabel={t("hackathons.editor.saveSection")}><div className="flex justify-end"><Button type="button" variant="outline" size="sm" onClick={addTimeline}><Plus className="size-4" />{t("hackathons.editor.add")}</Button></div>{localized.timeline.length === 0 ? <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-foreground-muted">{t("hackathons.editor.noTimeline")}</div> : null}{localized.timeline.map((item, index) => <div key={item.id} className="rounded-xl border border-border-subtle bg-surface-raised p-4"><div className="flex items-start justify-between gap-3"><span className="text-sm font-semibold">{t("hackathons.editor.timelineNumber", { number: index + 1 })}</span><Button type="button" variant="ghost" size="icon" className="text-foreground-muted hover:text-destructive" aria-label={t("hackathons.editor.removeTimeline")} onClick={() => removeTimeline(item.id)}><Trash2 className="size-4" /></Button></div><Field className="mt-3"><FieldLabel>{t("hackathons.editor.timelineTitle")} ({locale.toUpperCase()})</FieldLabel><Input value={item.title} onChange={(event) => changeLocale({ timeline: localized.timeline.map((row) => row.id === item.id ? { ...row, title: event.target.value } : row) })} /></Field><div className="mt-4 grid gap-3 sm:grid-cols-2"><Field><FieldLabel>{t("hackathons.editor.timelineStarts")}</FieldLabel><Input type="datetime-local" disabled={locale !== "vi"} value={dateInput(draft.locales.vi.timeline[index]?.starts_at)} onChange={(event) => { const timeline = draft.locales.vi.timeline.map((row) => row.id === item.id ? { ...row, starts_at: new Date(event.target.value).toISOString() } : row); setDraft((current) => ({ ...current, locales: { ...current.locales, vi: { ...current.locales.vi, timeline } } })); setDirty(true); }} /></Field><Field><FieldLabel>{t("hackathons.editor.timelineEnds")}</FieldLabel><Input type="datetime-local" disabled={locale !== "vi"} value={dateInput(draft.locales.vi.timeline[index]?.ends_at)} onChange={(event) => { const timeline = draft.locales.vi.timeline.map((row) => row.id === item.id ? { ...row, ends_at: event.target.value ? new Date(event.target.value).toISOString() : null } : row); setDraft((current) => ({ ...current, locales: { ...current.locales, vi: { ...current.locales.vi, timeline } } })); setDirty(true); }} /></Field></div><Field className="mt-4"><FieldLabel>{t("hackathons.editor.fields.timelineDescription")} ({locale.toUpperCase()})</FieldLabel><textarea className={textareaClass} value={item.description_markdown ?? ""} onChange={(event) => changeLocale({ timeline: localized.timeline.map((row) => row.id === item.id ? { ...row, description_markdown: event.target.value } : row) })} /></Field></div>)}</EditorSection> : null}
 
@@ -569,9 +689,9 @@ export default function AdminHackathonEditorPage() {
 
           {activeSection === "taxonomy" && !isNew ? <EditorSection title={t("hackathons.editor.sections.taxonomy")} description={t("hackathons.editor.taxonomyHint")} onSave={save} saving={saveMutation.isPending} saveLabel={t("hackathons.editor.saveSection")}>{(["sectors", "tech_stacks"] as const).map((key) => <div key={key}><div className="flex items-center justify-between"><h3 className="font-semibold text-foreground">{t(`hackathons.editor.fields.${key}`)}</h3><Button type="button" variant="outline" size="sm" onClick={() => addTaxonomy(key)}><Plus className="size-4" />{t("hackathons.editor.add")}</Button></div><div className="mt-3 grid gap-3 sm:grid-cols-2">{localized[key].map((option) => <div key={option.id} className={cn("flex gap-2 rounded-xl border border-border-subtle bg-surface-raised p-3", option.active === false && "opacity-60")}><Input value={option.name} onChange={(event) => changeLocale({ [key]: localized[key].map((row) => row.id === option.id ? { ...row, name: event.target.value } : row) })} /><Button type="button" variant="outline" size="sm" onClick={() => { const update = (target: Locale) => draft.locales[target][key].map((row) => row.id === option.id ? { ...row, active: row.active === false } : row); setDraft((current) => ({ ...current, locales: { vi: { ...current.locales.vi, [key]: update("vi") }, en: { ...current.locales.en, [key]: update("en") } } })); setDirty(true); }}>{option.active === false ? <><Check className="size-4" />{t("hackathons.editor.restore")}</> : t("hackathons.editor.archive")}</Button></div>)}</div></div>)}</EditorSection> : null}
 
-          {activeSection === "projects" && !isNew ? <EditorSection title={t("hackathons.editor.sections.projects")} description={t("hackathons.editor.sectionDescriptions.projects")} onSave={save} saving={saveMutation.isPending} saveLabel={t("hackathons.editor.saveSection")}><div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"><Field><FieldLabel>{t("hackathons.editor.selectProject")}</FieldLabel><select className={inputClass} value={winnerProjectId} onChange={(event) => setWinnerProjectId(event.target.value)}><option value="">{t("hackathons.editor.selectProject")}</option>{projects.map(({ project }) => <option key={project.id} value={project.id}>{project.title}</option>)}</select></Field><Field><FieldLabel>{t("hackathons.editor.awardLabel")}</FieldLabel><Input value={winnerLabel} onChange={(event) => setWinnerLabel(event.target.value)} /></Field><Button type="button" className="min-h-11" onClick={() => { const label = winnerLabel.trim(); if (!winnerProjectId || !label) return; change({ winner_awards: [...draft.winner_awards, { id: crypto.randomUUID(), project_id: winnerProjectId, label, sort_order: draft.winner_awards.length }] }); setWinnerProjectId(""); setWinnerLabel(""); }}><Plus className="size-4" />{t("hackathons.editor.add")}</Button></div>{draft.winner_awards.length === 0 ? <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-foreground-muted">{t("hackathons.editor.noAwards")}</div> : null}{draft.winner_awards.map((award, index) => <div key={award.id} className="flex items-center gap-3 rounded-xl border border-border-subtle bg-surface-raised p-3"><span className="text-xs tabular-nums text-foreground-muted">{index + 1}</span><Input value={award.label} onChange={(event) => change({ winner_awards: draft.winner_awards.map((item) => item.id === award.id ? { ...item, label: event.target.value } : item) })} /><span className="min-w-0 flex-1 truncate text-sm text-foreground-muted">{projects.find(({ project }) => project.id === award.project_id)?.project.title ?? award.project_id}</span><Button type="button" variant="ghost" size="icon" aria-label={t("hackathons.editor.remove")} onClick={() => change({ winner_awards: draft.winner_awards.filter((item) => item.id !== award.id).map((item, order) => ({ ...item, sort_order: order })) })}><Trash2 className="size-4" /></Button></div>)}</EditorSection> : null}
+          {activeSection === "projects" && !isNew ? <EditorSection title={t("hackathons.editor.sections.projects")} description={t("hackathons.editor.sectionDescriptions.projects")} onSave={save} saving={saveMutation.isPending} saveLabel={t("hackathons.editor.saveSection")}><div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"><Field><FieldLabel>{t("hackathons.editor.selectProject")} <span className="text-primary">*</span></FieldLabel><ProfileCombobox title={t("hackathons.editor.selectProject")} description={t("hackathons.editor.selectProjectHint")} options={projectAwardOptions} placeholder={t("hackathons.editor.selectProject")} searchPlaceholder={t("hackathons.editor.searchProjectPlaceholder")} emptyLabel={projectsQuery.isPending ? t("hackathons.editor.loadingProjects") : t("hackathons.editor.noEligibleProjects")} value={winnerProjectId} onChange={(val) => setWinnerProjectId(Array.isArray(val) ? val[0] || "" : val || "")} onLoadMore={() => { if (hasMoreProjects && !isFetchingMoreProjects) void fetchNextProjectsPage(); }} hasMore={Boolean(hasMoreProjects)} isLoadingMore={isFetchingMoreProjects} /></Field><Field><FieldLabel htmlFor="hackathon-winner-award-label">{t("hackathons.editor.awardLabel")} <span className="text-primary">*</span></FieldLabel><Input id="hackathon-winner-award-label" value={winnerLabel} onChange={(event) => setWinnerLabel(event.target.value)} /></Field><Button type="button" className="min-h-11" onClick={() => { const label = winnerLabel.trim(); if (!winnerProjectId || !label) { toast.error(t("hackathons.editor.awardMissingFields")); return; } change({ winner_awards: [...draft.winner_awards, { id: crypto.randomUUID(), project_id: winnerProjectId, label, sort_order: draft.winner_awards.length }] }); setWinnerProjectId(""); setWinnerLabel(""); toast.success(t("hackathons.editor.awardAdded")); }}><Plus className="size-4" />{t("hackathons.editor.add")}</Button></div>{draft.winner_awards.length === 0 ? <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-foreground-muted">{t("hackathons.editor.noAwards")}</div> : null}{draft.winner_awards.map((award, index) => <div key={award.id} className="flex items-center gap-3 rounded-xl border border-border-subtle bg-surface-raised p-3"><span className="text-xs tabular-nums text-foreground-muted">{index + 1}</span><Input value={award.label} onChange={(event) => change({ winner_awards: draft.winner_awards.map((item) => item.id === award.id ? { ...item, label: event.target.value } : item) })} /><span className="min-w-0 flex-1 truncate text-sm text-foreground-muted">{projects.find(({ project }) => project.id === award.project_id)?.project.title ?? award.project_id}</span><Button type="button" variant="ghost" size="icon" aria-label={t("hackathons.editor.remove")} onClick={() => change({ winner_awards: draft.winner_awards.filter((item) => item.id !== award.id).map((item, order) => ({ ...item, sort_order: order })) })}><Trash2 className="size-4" /></Button></div>)}</EditorSection> : null}
 
-          {activeSection === "danger" && !isNew ? <PageSectionCard className="border-destructive/30 p-6"><h2 className="text-lg font-medium text-destructive">{t("hackathons.editor.sections.danger")}</h2><p className="mt-2 text-sm text-foreground-muted">{t("hackathons.editor.sectionDescriptions.danger")}</p><div className="mt-6 flex flex-wrap gap-2"><Button type="button" variant={draft.status === "published" ? "default" : "outline"} onClick={() => change({ status: "published" })}>{t("hackathons.editor.publish")}</Button><Button type="button" variant={draft.status === "ended" ? "default" : "outline"} onClick={() => change({ status: "ended" })}>{t("hackathons.editor.end")}</Button><Button type="button" disabled={saveMutation.isPending} onClick={save}>{t("hackathons.editor.applyStatus")}</Button><Button type="button" variant="destructive" onClick={async () => { if (!window.confirm(t("hackathons.editor.deleteConfirm"))) return; await deleteContest(id!); navigate("/admin/hackathons"); }}><Trash2 className="size-4" />{t("hackathons.editor.delete")}</Button></div></PageSectionCard> : null}
+          {activeSection === "danger" && !isNew ? <PageSectionCard className="border-destructive/30 p-6"><h2 className="text-lg font-medium text-destructive">{t("hackathons.editor.sections.danger")}</h2><p className="mt-2 text-sm text-foreground-muted">{t("hackathons.editor.sectionDescriptions.danger")}</p><div className="mt-6 flex flex-wrap items-center gap-3">{draft.status === "published" ? <Button type="button" className="bg-blue-600 font-medium text-white hover:bg-blue-700 border-0" onClick={() => change({ status: "draft" })}>{t("hackathons.editor.statusPublishedCta")}</Button> : <Button type="button" variant="outline" className="border-border bg-surface-base font-medium text-foreground hover:bg-surface-raised" onClick={() => change({ status: "published" })}>{t("hackathons.editor.statusDraftCta")}</Button>}<Button type="button" variant={draft.status === "ended" ? "default" : "outline"} onClick={() => change({ status: "ended" })}>{t("hackathons.editor.end")}</Button><Button type="button" disabled={saveMutation.isPending} onClick={save}>{t("hackathons.editor.applyStatus")}</Button><Button type="button" variant="destructive" onClick={async () => { if (!window.confirm(t("hackathons.editor.deleteConfirm"))) return; await deleteContest(id!); navigate("/admin/hackathons"); }}><Trash2 className="size-4" />{t("hackathons.editor.delete")}</Button></div></PageSectionCard> : null}
         </main>
       </div>
     </PageContainer>

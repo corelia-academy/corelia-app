@@ -99,6 +99,10 @@
     "hackathonRegistrationReviewNote": "Ghi chú từ ban tổ chức: {{note}}",
     "hackathonRegistrationFallbackTitle": "Hackathon",
     "viewHackathon": "Xem hackathon",
+    "hackathonWinnerAwardTitle": "Trao giải cuộc thi",
+    "hackathonWinnerAwardBody": "Dự án \"{{project}}\" của bạn đã đạt giải \"{{award}}\" tại \"{{hackathon}}\".",
+    "projectFallback": "dự án của bạn",
+    "viewAwardDetails": "Xem kết quả",
     "courseAnnouncementTitle": "Thông báo từ khoá học",
     "trackAnnouncementTitle": "Thông báo từ lộ trình học",
     "markRead": "Đánh dấu đã đọc",
@@ -290,14 +294,36 @@
       "saveFailed": "Không thể lưu dự án.",
       "notEligible": "Bạn chưa thể tạo dự án",
       "notEligibleDescription": "Hãy đăng ký hackathon trước hoặc kiểm tra lại hạn nộp bài.",
-      "cannotEdit": "Bạn không có quyền sửa dự án này."
+      "cannotEdit": "Bạn không có quyền sửa dự án này.",
+      "errors": {
+        "invalidUrl": "Đường dẫn không hợp lệ hoặc không an toàn.",
+        "invalidDemoUrl": "Đường dẫn bản demo không hợp lệ (phải bắt đầu bằng https:// và an toàn).",
+        "invalidRepoUrl": "Đường dẫn repo không hợp lệ (phải là liên kết GitHub dạng https://github.com/owner/repo).",
+        "invalidSlideUrl": "Đường dẫn slide không hợp lệ (phải bắt đầu bằng https:// và an toàn).",
+        "invalidVideoUrl": "Đường dẫn video không hợp lệ (phải bắt đầu bằng https:// và an toàn).",
+        "unverifiableLink": "Không thể xác minh đường dẫn liên kết.",
+        "unverifiableDemoUrl": "Không thể kết nối hoặc xác minh đường dẫn demo.",
+        "unverifiableRepoUrl": "Không thể xác minh kho mã nguồn GitHub (kho có thể đang ở chế độ riêng tư).",
+        "unverifiableSlideUrl": "Không thể truy cập hoặc xác minh tài liệu slide.",
+        "linkBlocked": "Liên kết bị chặn do không phù hợp với tiêu chuẩn kiểm duyệt cộng đồng.",
+        "moderationTitle": "Tiêu đề dự án chứa nội dung không phù hợp với tiêu chuẩn cộng đồng.",
+        "moderationSummary": "Tóm tắt dự án chứa nội dung không phù hợp với tiêu chuẩn cộng đồng.",
+        "moderationLogo": "Ảnh logo không phù hợp với tiêu chuẩn cộng đồng.",
+        "moderationImage": "Hình ảnh tải lên không phù hợp với tiêu chuẩn cộng đồng.",
+        "aiUnavailable": "Hệ thống kiểm duyệt tự động tạm thời gián đoạn. Vui lòng thử lại sau.",
+        "logoSize": "Kích thước ảnh logo không được vượt quá 2 MB.",
+        "invalidSlug": "Đường dẫn định danh (slug) chỉ chứa chữ thường, số và dấu gạch nối."
+      }
     },
     "team": {
       "title": "Thành viên nhóm",
       "hint": "Thành viên chỉ được hiển thị sau khi chấp nhận lời mời và không có quyền sửa dự án.",
+      "hackathonEligibleHint": "Chỉ hiển thị người dùng đã đăng ký tham gia hackathon này.",
       "pickTitle": "Chọn thành viên",
       "pickDescription": "Tìm tài khoản Corelia để gửi lời mời tham gia dự án.",
-      "placeholder": "Chọn thành viên",
+      "hackathonPickDescription": "Chỉ hiển thị người dùng đã đăng ký tham gia hackathon này.",
+      "placeholder": "Tìm theo tên hoặc @username",
+      "searchPlaceholder": "Tìm theo tên hoặc @username…",
       "loading": "Đang tải thành viên…",
       "empty": "Không tìm thấy thành viên phù hợp.",
       "inviteAfterSave": "Lời mời sẽ được gửi sau khi dự án vượt qua kiểm duyệt và được lưu.",
@@ -702,7 +728,9 @@
   "combobox": {
     "searchPlaceholder": "Tìm theo tên hoặc email",
     "emptyLabel": "Không có kết quả phù hợp.",
-    "done": "Xong"
+    "done": "Xong",
+    "loadMore": "Tải thêm",
+    "loadingMore": "Đang tải thêm..."
   },
   "openCampusConnect": {
     "header": {

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { CalendarDays, Coins, FolderOpen, Package, SlidersHorizontal, Sparkles, X } from "lucide-react";
+import { CalendarDays, Coins, FolderOpen, Package, SlidersHorizontal, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useOutletContext, useSearchParams } from "react-router";
 
@@ -173,7 +173,17 @@ export function HackathonProjectsTab() {
 
       {query.isPending ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div> : projects.length === 0 ? <EmptyTab icon={<Package className="size-6" />} title={t("public.empty.projects")} /> : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{projects.map(({ project, owner }) => <div key={project.id} className="relative">{awards.has(project.id) ? <div className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950 shadow"><Sparkles className="size-3" />{awards.get(project.id)}</div> : null}<ProjectCard project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} /></div>)}</div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {projects.map(({ project, owner }) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                ownerLabel={owner?.full_name ?? owner?.username}
+                ownerHandle={owner?.username ?? owner?.ocid}
+                awardLabel={awards.get(project.id)}
+              />
+            ))}
+          </div>
           {query.hasNextPage ? <div className="flex justify-center"><Button type="button" variant="outline" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>{query.isFetchingNextPage ? t("public.projects.loading") : t("public.projects.loadMore")}</Button></div> : null}
         </>
       )}

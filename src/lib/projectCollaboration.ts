@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { contestSubmissionId } from "@/lib/hackathons";
+import { callCoreliaApi } from "@/lib/coreliaEdgeApi";
 import type { Project } from "@/types/projects";
 
 export type ProjectCollaborationInviteRow = {
@@ -162,6 +163,16 @@ export type CreateInviteResult = {
   expires_at: string;
 };
 
+export async function sendProjectCollaborationInviteEmail(args: {
+  inviteId: string;
+  token: string;
+}): Promise<{ ok: boolean; email_sent: boolean; reason?: string }> {
+  return await callCoreliaApi("projects.collaborationInvite.sendEmail", {
+    invite_id: args.inviteId,
+    token: args.token,
+  });
+}
+
 export async function createProjectCollaborationInvite(
   projectId: string,
   inviteeUserId: string,
@@ -173,6 +184,17 @@ export async function createProjectCollaborationInvite(
   if (error) throw new Error(error.message);
   const row = data as { invite_id?: string; token?: string; expires_at?: string } | null;
   if (!row?.invite_id || !row?.token) throw new Error("Invalid invite response");
+
+  try {
+    await sendProjectCollaborationInviteEmail({
+      inviteId: row.invite_id,
+      token: row.token,
+    });
+  } catch (emailErr) {
+    // In-app notification already created by the RPC; surface email error softly
+    console.warn("[projectCollaboration] send invite email failed", emailErr);
+  }
+
   return {
     invite_id: row.invite_id,
     token: row.token,

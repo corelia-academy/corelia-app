@@ -26,6 +26,9 @@ interface ProfileComboboxProps {
   value: string | string[];
   onChange: (value: string | string[]) => void;
   multiple?: boolean;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
 }
 
 function normalize(text: string) {
@@ -42,6 +45,9 @@ export function ProfileCombobox({
   value,
   onChange,
   multiple = false,
+  onLoadMore,
+  hasMore = false,
+  isLoadingMore = false,
 }: ProfileComboboxProps) {
   const { t } = useTranslation("common");
   const [open, setOpen] = useState(false);
@@ -167,6 +173,20 @@ export function ProfileCombobox({
                   );
                 })
               )}
+              {hasMore ? (
+                <div className="pt-2 text-center">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-xs text-foreground-muted hover:text-foreground"
+                    disabled={isLoadingMore}
+                    onClick={onLoadMore}
+                  >
+                    {isLoadingMore ? t("combobox.loadingMore") : t("combobox.loadMore")}
+                  </Button>
+                </div>
+              ) : null}
             </div>
 
             {multiple ? (

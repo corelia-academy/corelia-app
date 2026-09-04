@@ -12,7 +12,7 @@ type RecipientFilter = "all" | "approved" | "pending" | "rejected";
 async function senderCanBlastHackathon(
   db: SupabaseClient,
   senderId: string,
-  hackathonId: string,
+  _hackathonId: string,
 ): Promise<boolean> {
   const { data: profile, error } = await db
     .from("profiles")
@@ -22,17 +22,7 @@ async function senderCanBlastHackathon(
   if (error) throw new Error(error.message);
   if (!profile) return false;
 
-  if (canProfileBlastHackathonEmail(profile, undefined)) return true;
-
-  const { data: h, error: hErr } = await db
-    .from("hackathons")
-    .select("document")
-    .eq("id", hackathonId)
-    .maybeSingle();
-  if (hErr) throw new Error(hErr.message);
-  if (!h?.document || typeof h.document !== "object") return false;
-
-  return canProfileBlastHackathonEmail(profile, h.document as Record<string, unknown>);
+  return canProfileBlastHackathonEmail(profile);
 }
 
 export async function handleHackathonBlastEmail(

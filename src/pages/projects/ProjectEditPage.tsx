@@ -16,6 +16,7 @@ import { updateMyProject } from "@/lib/projects";
 import { isHackathonProjectSource } from "@/lib/projectSource";
 import { canonicalizeSlug, normalizeSlugDraft } from "@/lib/slug";
 import { deleteProjectMedia } from "@/lib/projectSubmission";
+import { formatProjectError } from "@/lib/projectErrors";
 import { useAuth } from "@/stores/authStore";
 
 type Draft = {
@@ -110,7 +111,7 @@ export default function ProjectEditPage() {
     },
     onError: async (error) => {
       await clearUnsavedUploads();
-      toast.error(error instanceof Error ? error.message : t("projects.form.saveFailed"));
+      toast.error(formatProjectError(error, t));
     },
   });
   const toggle = (key: "tracks" | "sectors" | "tech", id: string) => setDraft((current) => ({ ...current, [key]: current[key].includes(id) ? current[key].filter((value) => value !== id) : [...current[key], id] }));
@@ -125,7 +126,7 @@ export default function ProjectEditPage() {
       <Button variant="ghost" render={<NavLink to={`/projects/${project.slug}`} />} nativeButton={false}><ArrowLeft className="size-4" />{t("projects.form.back")}</Button>
       <h1 className="mt-4 text-2xl font-semibold">{t("projects.form.editTitle")}</h1>
       <form className="mt-6 space-y-6 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-7" onSubmit={(event) => { event.preventDefault(); mutation.mutate(); }}>
-        <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium">{t("projects.form.title")}<Input className="mt-2" required maxLength={160} value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} /></label><label className="text-sm font-medium">{t("projects.form.slug")}<Input className="mt-2" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" value={draft.slug} onChange={(event) => setDraft({ ...draft, slug: normalizeSlugDraft(event.target.value) })} onBlur={() => setDraft((current) => ({ ...current, slug: canonicalizeSlug(current.slug) }))} /></label></div>
+        <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium">{t("projects.form.title")} <span className="text-primary">*</span><Input className="mt-2" required maxLength={160} value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} /></label><label className="text-sm font-medium">{t("projects.form.slug")} <span className="text-primary">*</span><Input className="mt-2" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" value={draft.slug} onChange={(event) => setDraft({ ...draft, slug: normalizeSlugDraft(event.target.value) })} onBlur={() => setDraft((current) => ({ ...current, slug: canonicalizeSlug(current.slug) }))} /></label></div>
         <label className="block text-sm font-medium">{t("projects.form.summary")}<textarea className="mt-2 min-h-28 w-full rounded-md border border-border bg-background px-3 py-2" rows={5} maxLength={1000} value={draft.summary} onChange={(event) => setDraft({ ...draft, summary: event.target.value })} /></label>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="text-sm font-medium">{t("projects.form.demoUrl")}<Input className="mt-2" type="url" value={draft.demo} onChange={(event) => setDraft({ ...draft, demo: event.target.value })} /></label>
