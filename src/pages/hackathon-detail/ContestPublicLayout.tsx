@@ -160,7 +160,6 @@ export default function ContestPublicLayout() {
 
           <div className="min-w-0 border-b border-border-subtle p-5 sm:p-6">
             <div className="mb-3 flex flex-wrap gap-2 text-xs font-medium uppercase tracking-wide text-foreground-muted">
-              <span className="rounded-full bg-surface-raised px-3 py-1">{t(`public.mode.${contest.mode ?? contest.location}`)}</span>
               <span className="rounded-full bg-surface-raised px-3 py-1">{t(`public.status.${contest.status}`)}</span>
             </div>
             <h1 className="min-w-0 max-w-4xl break-words text-2xl font-bold text-foreground [overflow-wrap:anywhere] sm:text-4xl">{contest.title}</h1>
