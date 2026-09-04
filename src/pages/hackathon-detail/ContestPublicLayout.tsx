@@ -153,15 +153,25 @@ export default function ContestPublicLayout() {
       <PageContainer width="default" className="pb-0">
         <header className="min-w-0 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
           {contest.cover_image_url ? (
-            <div className="aspect-[21/9] w-full overflow-hidden bg-surface-raised">
+            <div className="relative aspect-[21/9] w-full overflow-hidden bg-surface-raised">
               <img src={contest.cover_image_url} alt="" className="h-full w-full object-cover" />
+              {!previewRequested ? (
+                <span
+                  data-hackathon-hero-status
+                  className="absolute bottom-4 left-4 rounded-full border border-border bg-background/90 px-3 py-1 text-xs font-medium uppercase tracking-wide text-foreground shadow-sm backdrop-blur-sm sm:bottom-5 sm:left-5"
+                >
+                  {t(`public.status.${contest.status}`)}
+                </span>
+              ) : null}
             </div>
           ) : null}
 
           <div className="min-w-0 border-b border-border-subtle p-5 sm:p-6">
-            <div className="mb-3 flex flex-wrap gap-2 text-xs font-medium uppercase tracking-wide text-foreground-muted">
-              <span className="rounded-full bg-surface-raised px-3 py-1">{t(`public.status.${contest.status}`)}</span>
-            </div>
+            {!previewRequested && !contest.cover_image_url ? (
+              <div className="mb-3 flex flex-wrap gap-2 text-xs font-medium uppercase tracking-wide text-foreground-muted">
+                <span className="rounded-full bg-surface-raised px-3 py-1">{t(`public.status.${contest.status}`)}</span>
+              </div>
+            ) : null}
             <h1 className="min-w-0 max-w-4xl break-words text-2xl font-bold text-foreground [overflow-wrap:anywhere] sm:text-4xl">{contest.title}</h1>
             {contest.short_description || contest.tagline ? (
               <p className="mt-2 max-w-3xl text-sm text-foreground-muted sm:text-base">{contest.short_description || contest.tagline}</p>
