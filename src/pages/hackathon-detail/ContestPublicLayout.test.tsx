@@ -125,6 +125,8 @@ describe("draft hackathon preview", () => {
 
     expect(view.container.textContent).toContain("Draft Demo");
     expect(view.container.textContent).toContain("Preview notice");
+    expect(view.container.textContent).toContain("public.status.draft");
+    expect(view.container.textContent).not.toContain("public.mode.online");
     expect(view.container.textContent).not.toContain("public.register");
     expect(view.container.textContent).not.toContain("public.createProject");
     const tabLinks = Array.from(view.container.querySelectorAll("nav a"));
