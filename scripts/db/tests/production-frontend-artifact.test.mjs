@@ -182,11 +182,25 @@ test("Production workflow uses the technical frontend gate and preserves deploym
   assert.doesNotMatch(workflow, /APPROVED_PRODUCTION_RELEASE_SHA|APPROVED_RELEASE_SHA/);
   assert.doesNotMatch(workflow, /inputs\.release_sha|ref: \$\{\{ inputs\.release_sha \}\}/);
 
-  const migrationIndex = workflow.indexOf("Verify exact Production migration state and apply approved migrations");
+  const preflightIndex = workflow.indexOf("Verify exact Production migration state before deployment");
+  const migrationIndex = workflow.indexOf("Re-verify exact Production migration state and apply approved migrations");
   const postGateIndex = workflow.indexOf("Verify live DB post-migration state and data invariants");
   const coreliaApiIndex = workflow.indexOf("Deploy Edge Function (corelia-api)");
+  const storageCleanupIndex = workflow.indexOf("Purge retired financial Storage objects");
   const cleanupIndex = workflow.indexOf("scripts/retire-learner-ai-edge.sh");
-  assert.ok(coreliaApiIndex >= 0 && coreliaApiIndex < migrationIndex && migrationIndex < postGateIndex && postGateIndex < cleanupIndex);
+  assert.ok(
+    preflightIndex >= 0 &&
+      preflightIndex < coreliaApiIndex &&
+      coreliaApiIndex < storageCleanupIndex &&
+      storageCleanupIndex < migrationIndex &&
+      migrationIndex < postGateIndex &&
+      postGateIndex < cleanupIndex,
+  );
+  assert.equal(
+    workflow.slice(0, coreliaApiIndex).match(/verify-production-migration-state\.mjs/g)?.length,
+    1,
+    "Production must verify exact migration state before its first mutation",
+  );
 
   const deployedFunctions = [...workflow.matchAll(/supabase functions deploy ([a-z0-9-]+)/g)]
     .map((match) => match[1]);
