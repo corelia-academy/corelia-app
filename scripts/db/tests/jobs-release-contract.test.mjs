@@ -41,6 +41,38 @@ test("Jobs release wiring deploys both Edge Functions and fails closed on a miss
   assert.doesNotMatch(vaultGuard, /opoozbmfbezkrpzxsusx|lawhkvyyoznwygzsycan/);
 });
 
+test("Jobs release workflows preserve migration and Edge deployment ordering", () => {
+  const staging = read(".github/workflows/deploy-staging.yml");
+  const stagingMigration = staging.indexOf("Apply Supabase migrations");
+  const stagingConditionalPreDeploy = staging.indexOf("Deploy corelia-api before destructive Streak cleanup");
+  const stagingNormalDeploy = staging.indexOf("Deploy Edge Function (corelia-api)");
+
+  assert.ok(stagingConditionalPreDeploy >= 0 && stagingConditionalPreDeploy < stagingMigration);
+  assert.match(
+    staging.slice(stagingConditionalPreDeploy, stagingMigration),
+    /if: steps\.streak_cleanup\.outputs\.required == 'true'/,
+  );
+  assert.ok(stagingMigration < stagingNormalDeploy);
+  assert.equal(
+    [...staging.matchAll(/supabase functions deploy corelia-api\b/g)].length,
+    2,
+    "Staging must have only the conditional compatibility deploy and the normal post-migration deploy",
+  );
+
+  const production = read(".github/workflows/deploy-prod.yml");
+  const preflight = production.indexOf("Verify exact Production migration state before deployment");
+  const coreliaApiDeploy = production.indexOf("Deploy Edge Function (corelia-api)");
+  const storageCleanup = production.indexOf("Purge retired financial Storage objects");
+  const migrationApply = production.indexOf("Re-verify exact Production migration state and apply approved migrations");
+
+  assert.ok(preflight >= 0 && preflight < coreliaApiDeploy);
+  assert.ok(coreliaApiDeploy < storageCleanup && storageCleanup < migrationApply);
+  assert.match(
+    production.slice(preflight, coreliaApiDeploy),
+    /verify-production-migration-state\.mjs/,
+  );
+});
+
 test("Jobs scheduler keeps JWT verification off only because both hops enforce the custom secret", () => {
   const config = read("supabase/config.toml");
   const cron = read("supabase/functions/cron-jobs/index.ts");
@@ -141,6 +173,7 @@ test("generic RSS uses provider-specific source policy instances", () => {
 
 test("connected Jobs adapters use the direct source-to-company relationship", () => {
   const client = read("src/lib/jobs.ts");
+  const handlers = read("supabase/functions/corelia-api/jobs/handlers.ts");
   const migration = read("supabase/migrations/20260903111914_grant_job_company_source_for_connected_adapters.sql");
 
   assert.match(
@@ -152,9 +185,26 @@ test("connected Jobs adapters use the direct source-to-company relationship", ()
     /select\("name,slug,job_companies!inner\(id\)"\)/,
   );
   assert.match(
+    handlers,
+    /run_source:job_sources!job_companies_source_id_fkey!inner\(enabled,policy_reviewed_at\)/,
+  );
+  assert.match(handlers, /\.eq\("run_source\.enabled", true\)/);
+  assert.match(handlers, /\.not\("run_source\.policy_reviewed_at", "is", null\)/);
+  assert.doesNotMatch(handlers, /(?:^|,)job_sources!inner\(/);
+  assert.match(
     migration,
     /GRANT SELECT \(source_id\) ON public\.job_companies TO anon, authenticated/,
   );
+});
+
+test("Jobs target selection logs structured PostgREST diagnostics without changing the public error", () => {
+  const handlers = read("supabase/functions/corelia-api/jobs/handlers.ts");
+
+  assert.match(handlers, /jobs target selection/);
+  for (const field of ["code", "message", "details", "hint"]) {
+    assert.match(handlers, new RegExp(`${field}: error\\.${field}`));
+  }
+  assert.match(handlers, /return json\(\{ message: "jobs_operation_failed" \}, 500\)/);
 });
 
 test("structured API and RSS feeds stay policy-gated until rollout", () => {
