@@ -182,6 +182,12 @@ export type JobSourceAdmin = {
   last_revalidated_at: string | null;
   last_revalidation_error: string | null;
   jobs_found: number;
+  ingestion_mode: "aggregate" | "company_scoped" | "rss";
+  target_count: number;
+  active_target_count: number;
+  verified_target_count: number;
+  credential_required: boolean;
+  credential_configured: boolean;
 };
 
 export type JobCompanyAdmin = {

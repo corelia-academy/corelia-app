@@ -6,7 +6,7 @@ import { useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { PageContainer, PageSectionCard } from "@/components/layouts/PagePrimitives";
 import { publicProjectDirectoryQueryOptions } from "@/features/projects/projectQueries";
@@ -16,6 +16,7 @@ import { invokeGenerateDescription, type DescriptionTranslationBundle, type Hack
 import { canonicalizeSlug, normalizeSlugDraft } from "@/lib/slug";
 import { cn } from "@/lib/utils";
 import type { Contest, ContestI18nContent, ContestLocation, ContestStatus, ContestTrack, HackathonTaxonomyOption, HackathonTimelineItem, HackathonWinnerAward } from "@/types/hackathons";
+import { isValidHackathonSocialLink, normalizeHackathonSocialLink } from "./utils/socialLinks";
 
 type Locale = "vi" | "en";
 type LocaleDraft = {
@@ -238,6 +239,9 @@ export default function AdminHackathonEditorPage() {
     const allocated = draft.locales.vi.tracks.reduce((sum, track) => sum + Number(track.prize_amount || 0), 0);
     if (allocated > total) throw new Error(t("hackathons.editor.validationPrize"));
     if (draft.registration_deadline && draft.submission_deadline && draft.registration_deadline > draft.submission_deadline) throw new Error(t("hackathons.editor.validationDeadlines"));
+    if (!isValidHackathonSocialLink("telegram", draft.telegram)) throw new Error(t("hackathons.editor.validationTelegram"));
+    if (!isValidHackathonSocialLink("x", draft.x)) throw new Error(t("hackathons.editor.validationX"));
+    if (!isValidHackathonSocialLink("facebook", draft.facebook)) throw new Error(t("hackathons.editor.validationFacebook"));
   };
   const localePayload = (target: Locale): ContestI18nContent => ({
     title: draft.locales[target].title,
@@ -265,7 +269,11 @@ export default function AdminHackathonEditorPage() {
     cover_image_url: bannerRemoved ? null : draft.cover_image_url || null,
     cover_image_path: bannerRemoved ? null : draft.cover_image_path || null,
     host: { name: draft.host_name, logo_url: hostLogoRemoved ? null : draft.host_logo_url || null, logo_path: hostLogoRemoved ? null : draft.host_logo_path || null, website_url: draft.host_website_url || null },
-    social_links: { telegram: draft.telegram || null, x: draft.x || null, facebook: draft.facebook || null },
+    social_links: {
+      telegram: normalizeHackathonSocialLink("telegram", draft.telegram) || null,
+      x: normalizeHackathonSocialLink("x", draft.x) || null,
+      facebook: normalizeHackathonSocialLink("facebook", draft.facebook) || null,
+    },
     prize_pool: { amount: draft.prize_amount || "0", currency: draft.prize_currency.trim().toUpperCase(), description_markdown: draft.locales.vi.prize_description_markdown },
     tracks: draft.locales.vi.tracks,
     sectors: draft.locales.vi.sectors,
@@ -531,7 +539,23 @@ export default function AdminHackathonEditorPage() {
             <Field><FieldLabel>{t("hackathons.editor.fields.shortDescription")} <span className="rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">{locale.toUpperCase()}</span></FieldLabel><textarea className={textareaClass} value={localized.short_description} onChange={(event) => changeLocale({ short_description: event.target.value })} /></Field>
             <Field><FieldLabel>{t("hackathons.editor.fields.banner")}</FieldLabel><div className="relative flex h-44 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-surface-overlay sm:h-56 2xl:h-64">{bannerPreviewUrl || (!bannerRemoved && draft.cover_image_url) ? <img src={bannerPreviewUrl ?? draft.cover_image_url} alt={t("hackathons.editor.fields.bannerPreviewAlt")} className="absolute inset-0 size-full object-cover" /> : <div className="flex flex-col items-center gap-2 px-6 text-center text-foreground-muted"><ImageIcon className="size-9" /><p className="text-sm font-medium">{t("hackathons.editor.fields.bannerEmpty")}</p><p className="text-xs">{t("hackathons.editor.fields.bannerHint")}</p></div>}<div className="absolute bottom-3 right-3 flex items-center gap-2">{bannerPreviewUrl || (!bannerRemoved && draft.cover_image_url) ? <Button type="button" variant="secondary" size="icon-lg" className="min-h-11 min-w-11 border border-border bg-background/90 shadow-sm backdrop-blur" aria-label={t("hackathons.editor.removeImage")} onClick={() => { setBannerFile(null); setBannerPreviewUrl(null); setBannerRemoved(true); setDirty(true); }}><Trash2 className="size-4" /></Button> : null}<label htmlFor="hackathon-banner-upload" className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-border bg-background/90 px-4 text-sm font-medium text-foreground shadow-sm backdrop-blur transition-colors hover:bg-background focus-within:ring-2 focus-within:ring-primary/40"><Camera className="size-4" />{bannerPreviewUrl || (!bannerRemoved && draft.cover_image_url) ? t("hackathons.editor.fields.changeBanner") : t("hackathons.editor.fields.uploadBanner")}</label><Input id="hackathon-banner-upload" className="sr-only" type="file" accept="image/*" aria-label={t("hackathons.editor.fields.banner")} onChange={(event) => { const file = event.target.files?.[0] ?? null; setBannerFile(file); setBannerPreviewUrl(file ? URL.createObjectURL(file) : null); setBannerRemoved(false); if (file) setDirty(true); event.target.value = ""; }} /></div></div></Field>
             <div className="grid gap-4 rounded-xl border border-border-subtle bg-surface-raised/60 p-4 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-center"><div><p className="text-sm font-medium">{t("hackathons.editor.fields.hostLogo")}</p><div className="relative mt-2 flex aspect-square w-32 items-center justify-center overflow-hidden rounded-lg border border-border bg-white text-foreground-muted">{hostLogoPreviewUrl || (!hostLogoRemoved && draft.host_logo_url) ? <img src={hostLogoPreviewUrl ?? draft.host_logo_url} alt={t("hackathons.editor.fields.hostLogoPreviewAlt")} className="size-full object-contain p-3" /> : <ImageIcon className="size-8" />}<label htmlFor="hackathon-host-logo-upload" className="absolute bottom-2 right-2 flex size-11 cursor-pointer items-center justify-center rounded-full border border-border bg-background/95 text-foreground shadow-sm transition-colors hover:bg-surface-raised focus-within:ring-2 focus-within:ring-primary/40" title={t("hackathons.editor.fields.changeHostLogo")}><Camera className="size-4" /></label><Input id="hackathon-host-logo-upload" className="sr-only" type="file" accept="image/*" aria-label={t("hackathons.editor.fields.hostLogo")} onChange={(event) => { const file = event.target.files?.[0] ?? null; setHostLogoFile(file); setHostLogoPreviewUrl(file ? URL.createObjectURL(file) : null); setHostLogoRemoved(false); if (file) setDirty(true); event.target.value = ""; }} /></div><p className="mt-2 text-xs leading-5 text-foreground-muted">{t("hackathons.editor.fields.hostLogoHint")}</p>{hostLogoPreviewUrl || (!hostLogoRemoved && draft.host_logo_url) ? <Button type="button" variant="ghost" size="sm" className="mt-1 text-foreground-muted hover:text-destructive" onClick={() => { setHostLogoFile(null); setHostLogoPreviewUrl(null); setHostLogoRemoved(true); setDirty(true); }}><Trash2 className="size-4" />{t("hackathons.editor.removeImage")}</Button> : null}</div><div className="grid gap-4 sm:grid-cols-2"><Field><FieldLabel>{t("hackathons.editor.fields.host")}</FieldLabel><Input value={draft.host_name} onChange={(event) => change({ host_name: event.target.value })} /></Field><Field><FieldLabel>{t("hackathons.editor.fields.hostWebsite")}</FieldLabel><Input type="url" value={draft.host_website_url} onChange={(event) => change({ host_website_url: event.target.value })} /></Field><Field><FieldLabel>{t("hackathons.editor.fields.mode")}</FieldLabel><select className={inputClass} value={draft.mode} onChange={(event) => change({ mode: event.target.value as ContestLocation })}>{(["online", "offline", "hybrid"] as ContestLocation[]).map((mode) => <option key={mode} value={mode}>{t(`hackathons.editor.modes.${mode}`)}</option>)}</select></Field></div></div>
-            <div className="grid gap-4 sm:grid-cols-3"><Field><FieldLabel>Telegram</FieldLabel><Input type="url" value={draft.telegram} onChange={(event) => change({ telegram: event.target.value })} /></Field><Field><FieldLabel>X</FieldLabel><Input type="url" value={draft.x} onChange={(event) => change({ x: event.target.value })} /></Field><Field><FieldLabel>Facebook</FieldLabel><Input type="url" value={draft.facebook} onChange={(event) => change({ facebook: event.target.value })} /></Field></div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Field>
+                <FieldLabel htmlFor="hackathon-telegram">{t("hackathons.editor.fields.telegram")}</FieldLabel>
+                <Input id="hackathon-telegram" type="text" inputMode="url" autoCapitalize="none" spellCheck={false} placeholder={t("hackathons.editor.fields.telegramPlaceholder")} value={draft.telegram} onChange={(event) => change({ telegram: event.target.value })} onBlur={() => { const telegram = normalizeHackathonSocialLink("telegram", draft.telegram); if (telegram !== draft.telegram) change({ telegram }); }} />
+                <FieldDescription>{t("hackathons.editor.fields.telegramHint")}</FieldDescription>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="hackathon-x">{t("hackathons.editor.fields.x")}</FieldLabel>
+                <Input id="hackathon-x" type="url" inputMode="url" autoCapitalize="none" spellCheck={false} placeholder={t("hackathons.editor.fields.xPlaceholder")} value={draft.x} onChange={(event) => change({ x: event.target.value })} />
+                <FieldDescription>{t("hackathons.editor.fields.fullUrlHint")}</FieldDescription>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="hackathon-facebook">{t("hackathons.editor.fields.facebook")}</FieldLabel>
+                <Input id="hackathon-facebook" type="url" inputMode="url" autoCapitalize="none" spellCheck={false} placeholder={t("hackathons.editor.fields.facebookPlaceholder")} value={draft.facebook} onChange={(event) => change({ facebook: event.target.value })} />
+                <FieldDescription>{t("hackathons.editor.fields.fullUrlHint")}</FieldDescription>
+              </Field>
+            </div>
             <div className="grid gap-4 sm:grid-cols-2">{(["registration_deadline", "submission_deadline"] as const).map((key) => <Field key={key}><FieldLabel>{t(`hackathons.editor.fields.${key}`)}</FieldLabel><Input type="datetime-local" value={draft[key]} onChange={(event) => change({ [key]: event.target.value })} /></Field>)}</div>
           </EditorSection> : null}
 

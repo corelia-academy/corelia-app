@@ -159,26 +159,27 @@
   },
   "admin": {
     "title": "Jobs operations",
-    "subtitle": "Manage sources and companies, review classifications, run crawlers, and inspect market aggregates.",
+    "subtitle": "Manage direct job feeds and ATS targets, review classifications, run crawlers, and inspect market aggregates.",
     "loading": "Loading Jobs operations…",
     "nav": {
       "overview": "Overview",
       "review": "Review",
       "sources": "Sources",
-      "companies": "Companies",
+      "companies": "ATS Targets",
       "crawlers": "Crawler runs",
       "analytics": "Analytics"
     },
     "overview": {
       "active": "Active jobs",
       "review": "Needs review",
-      "companies": "Companies",
+      "companies": "ATS targets",
       "sources": "Sources",
       "failedRuns": "Failed runs"
     },
     "actions": {
       "run": "Run now",
-      "runAll": "Run crawl batch",
+      "runAll": "Run all sources",
+      "addTarget": "Add ATS target",
       "publish": "Publish",
       "reject": "Reject",
       "enable": "Enable",
@@ -202,7 +203,9 @@
     },
     "messages": {
       "runComplete": "Crawler run completed.",
-      "noEligibleCompanies": "No active company matched this source. Add and verify a company before running it.",
+      "runPartial": "Crawler finished with {{failures}} failed target(s). Check the run logs for details.",
+      "noEligibleCompanies": "No eligible target is ready. Direct feeds can run immediately; ATS connectors need an active careers URL.",
+      "policyRequired": "Review the source policy before enabling this source.",
       "saved": "Changes saved.",
       "analyticsRefreshed": "Market analytics refreshed.",
       "actionFailed": "The operation could not be completed."
@@ -224,6 +227,8 @@
       "type": "Type",
       "cadence": "Cadence",
       "jobsFound": "Jobs found",
+      "targets": "ATS targets",
+      "credential": "Credential",
       "policy": "Policy reviewed",
       "lastRun": "Last success",
       "lastError": "Last error",
@@ -245,7 +250,10 @@
       "error": "Error"
     },
     "company": {
-      "add": "Add company",
+      "title": "Company-scoped ATS targets",
+      "description": "Greenhouse, Lever, Ashby, and SmartRecruiters do not expose one global job feed. Paste a public careers URL here so Corelia can detect its ATS and board identifier. Direct job feeds do not need entries in this tab.",
+      "empty": "No ATS targets yet. Add a public Greenhouse, Lever, Ashby, or SmartRecruiters careers URL to start.",
+      "add": "Add ATS target",
       "name": "Company name",
       "slug": "Slug",
       "websiteUrl": "Website URL",
@@ -265,6 +273,14 @@
       "lastRevalidated": "Last revalidation"
     },
     "source": {
+      "feedTitle": "Direct job feeds",
+      "feedDescription": "These aggregators and RSS feeds pull jobs directly. They do not require you to add a company.",
+      "atsTitle": "ATS connectors",
+      "atsDescription": "These adapters only run for the careers URLs configured under ATS Targets.",
+      "direct": "Direct",
+      "targetCount": "{{active}} active / {{total}}",
+      "credentialConfigured": "Configured",
+      "credentialMissing": "Missing",
       "addRss": "Connect RSS feed",
       "name": "Provider name",
       "slug": "Provider slug",

@@ -7,6 +7,7 @@ import {
   DETERMINISTIC_VERSION,
 } from "./classify.ts";
 import {
+  cleanJobDescription,
   normalizeUrl,
   sha256,
   slugify,
@@ -278,6 +279,7 @@ async function processSourceJob(
   job.applyUrl = job.preserveApplyUrl
     ? validateExternalUrl(job.applyUrl || job.sourceUrl)
     : normalizeUrl(job.applyUrl || job.sourceUrl);
+  job.descriptionPlain = cleanJobDescription(job.descriptionPlain);
   normalizeSalary(job);
   const payloadHash = await sha256(stableStringify(job.raw));
   const inputHash = await sha256(stableStringify({

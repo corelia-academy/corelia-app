@@ -274,6 +274,46 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
     await view.cleanup();
   });
 
+  it("makes each social format explicit and saves Telegram usernames as public links", async () => {
+    const view = renderEditor("/admin/hackathons/new#overview");
+    await settle();
+
+    const inputs = view.container.querySelectorAll("input");
+    const telegram = view.container.querySelector<HTMLInputElement>("#hackathon-telegram");
+    const x = view.container.querySelector<HTMLInputElement>("#hackathon-x");
+    const facebook = view.container.querySelector<HTMLInputElement>("#hackathon-facebook");
+
+    expect(telegram?.type).toBe("text");
+    expect(telegram?.placeholder).toBe("hackathons.editor.fields.telegramPlaceholder");
+    expect(x?.type).toBe("url");
+    expect(x?.placeholder).toBe("hackathons.editor.fields.xPlaceholder");
+    expect(facebook?.type).toBe("url");
+    expect(facebook?.placeholder).toBe("hackathons.editor.fields.facebookPlaceholder");
+
+    await act(async () => {
+      changeInput(inputs[0], "Social format demo");
+      changeInput(inputs[1], "social-format-demo");
+      changeInput(telegram!, "@corelia_builders");
+      changeInput(x!, "https://x.com/unihackfest");
+      changeInput(facebook!, "https://www.facebook.com/unihackfest");
+    });
+
+    const createButton = Array.from(view.container.querySelectorAll("button"))
+      .find((button) => button.textContent?.includes("hackathons.editor.createDraft"));
+    await act(async () => createButton?.click());
+    await settle();
+
+    expect(createContest).toHaveBeenCalledWith(expect.objectContaining({
+      social_links: {
+        telegram: "https://t.me/corelia_builders",
+        x: "https://x.com/unihackfest",
+        facebook: "https://www.facebook.com/unihackfest",
+      },
+    }));
+
+    await view.cleanup();
+  });
+
   it("translates the complete source locale into the selected locale draft without auto-saving", async () => {
     const view = renderEditor("/admin/hackathons/hackathon-1/edit#overview");
     await settle();

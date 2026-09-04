@@ -380,7 +380,41 @@ export async function runJobsTarget(
   targetValue?: string,
   mode: "discovery" | "revalidation" = "discovery",
 ): Promise<Record<string, unknown>> {
-  return callCoreliaApi("jobs.run", { target_type: targetType, target_value: targetValue ?? "", mode });
+  const batchSize = targetType === "company" ? 1 : 3;
+  let offset = 0;
+  let companies = 0;
+  let failures = 0;
+  let analytics: unknown = null;
+  let analyticsError: unknown = null;
+  const results: unknown[] = [];
+
+  for (let batch = 0; batch < 334; batch += 1) {
+    const response = await callCoreliaApi<Record<string, unknown>>("jobs.run", {
+      target_type: targetType,
+      target_value: targetValue ?? "",
+      mode,
+      max_targets: batchSize,
+      offset,
+    });
+    companies += Number(response.companies ?? 0);
+    failures += Number(response.failures ?? 0);
+    if (Array.isArray(response.results)) results.push(...response.results);
+    if (response.analytics != null) analytics = response.analytics;
+    if (response.analytics_error != null) analyticsError = response.analytics_error;
+
+    const nextOffset = typeof response.next_offset === "number" ? response.next_offset : null;
+    if (nextOffset == null || targetType === "company") break;
+    offset = nextOffset;
+  }
+
+  return {
+    ok: failures === 0,
+    companies,
+    failures,
+    results,
+    analytics,
+    analytics_error: analyticsError,
+  };
 }
 
 export async function reviewJob(jobId: string, status: "active" | "review" | "rejected" | "expired" | "disabled", overrides: Record<string, unknown> = {}): Promise<Job> {
