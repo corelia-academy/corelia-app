@@ -103,7 +103,7 @@ export function UserProfileContestsSection({
               return (
                 <NavLink
                   key={id}
-                  to={`/hackathons/${id}/overview`}
+                  to={`/hackathons/${contest.slug || id}/overview`}
                   className="block rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card transition-[background-color,border-color] duration-150 hover:border-border hover:bg-surface-raised"
                 >
                   <div className="min-w-0">
@@ -146,7 +146,7 @@ export function UserProfileContestsSection({
                 return (
                   <NavLink
                     key={`p-${id}`}
-                    to={`/hackathons/${id}/overview`}
+                    to={`/hackathons/${contest.slug || id}/overview`}
                     className="block rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card transition-[background-color,border-color] duration-150 hover:border-border hover:bg-surface-raised"
                   >
                     <div className="min-w-0">

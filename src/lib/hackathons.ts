@@ -656,11 +656,13 @@ export async function listPublicProfileContestPortfolio(
   const organized = contests.filter((contest) => contest.created_by === profileId);
   if (!includeParticipations) return { organized, participations: [] as Contest[] };
   const { data, error } = await supabase
-    .from("contest_submissions")
-    .select("contest_id")
+    .from("hackathon_submissions")
+    .select("hackathon_id")
     .eq("user_id", profileId);
   if (error) throw new Error(error.message);
-  const participatedIds = new Set((data ?? []).map((row) => row.contest_id));
+  const participatedIds = new Set(
+    (data ?? []).map((row) => (row as { hackathon_id: string }).hackathon_id),
+  );
   return {
     organized,
     participations: contests.filter((contest) => participatedIds.has(contest.id)),
@@ -676,7 +678,7 @@ export async function hasHackathonCoOrganizerAccess(email: string): Promise<bool
   const { data, error } = await supabase
     .from("hackathons")
     .select("id")
-    .filter("document->co_organizer_emails", "cs", JSON.stringify([normalized]))
+    .contains("document", { co_organizer_emails: [normalized] })
     .limit(1);
 
   if (error) return false;
@@ -704,12 +706,23 @@ export async function getContestBySlug(slug: string, uiLocale?: string | null): 
   const normalized = sanitizeSlug(slug);
   if (!normalized) return null;
 
-  const { data, error } = await supabase
+  const { data: slugData, error } = await supabase
     .from("hackathons")
     .select(CONTEST_ROW_SELECT)
     .eq("document->>slug", normalized)
     .maybeSingle();
   if (error) throw new Error(error.message);
+  let data = slugData;
+  if (!data) {
+    // Fallback: check if identifier matches hackathon ID directly (e.g. from source_id or legacy links)
+    const byIdResult = await supabase
+      .from("hackathons")
+      .select(CONTEST_ROW_SELECT)
+      .eq("id", slug.trim())
+      .maybeSingle();
+    if (byIdResult.error) throw new Error(byIdResult.error.message);
+    data = byIdResult.data;
+  }
   if (!data) return null;
   const contest = contestFromRow(data as Parameters<typeof contestFromRow>[0]);
   const desired = pickContentLocale(contest.i18n ?? null, normalizedUiLocale);

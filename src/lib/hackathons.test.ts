@@ -26,6 +26,9 @@ vi.mock("@/lib/supabase", () => {
     const chain = {
       select: vi.fn(() => chain),
       eq: vi.fn(() => chain),
+      order: vi.fn(() => chain),
+      in: vi.fn(() => chain),
+      then: vi.fn((resolve: (val: unknown) => unknown) => resolve({ data: [baseRow()], error: null })),
       insert: vi.fn(async (payload: Record<string, unknown>) => {
         db.inserted = payload;
         return { error: null };
@@ -60,7 +63,9 @@ vi.mock("@/lib/supabase", () => {
     const chain = {
       select: vi.fn(() => chain),
       eq: vi.fn(() => chain),
+      in: vi.fn(() => chain),
       maybeSingle: vi.fn(async () => ({ data: null, error: null })),
+      then: vi.fn((resolve: (val: unknown) => unknown) => resolve({ data: [], error: null })),
     };
     return chain;
   };
@@ -68,12 +73,25 @@ vi.mock("@/lib/supabase", () => {
   return {
     supabase: {
       auth: { getUser: vi.fn(async () => ({ data: { user: { id: "admin-1", email: "admin@example.com" } } })) },
-      from: vi.fn((table: string) => table === "hackathons" ? hackathonChain() : localeChain()),
+      from: vi.fn((table: string) => {
+        if (table === "hackathons") return hackathonChain();
+        if (table === "hackathon_submissions") {
+          const chain = {
+            select: vi.fn(() => chain),
+            eq: vi.fn(async () => ({
+              data: [{ hackathon_id: "hackathon-1" }],
+              error: null,
+            })),
+          };
+          return chain;
+        }
+        return localeChain();
+      }),
     },
   };
 });
 
-import { createContest, updateContest } from "./hackathons";
+import { createContest, getContestBySlug, listPublicProfileContestPortfolio, updateContest } from "./hackathons";
 
 const customTrack = {
   id: "open-track",
@@ -106,5 +124,19 @@ describe("hackathon track persistence", () => {
     await updateContest("hackathon-1", { tracks: [customTrack] });
 
     expect((db.updated?.document as { tracks?: unknown[] }).tracks).toEqual([customTrack]);
+  });
+});
+
+describe("issue 393: profile hackathon portfolio & slug fallback", () => {
+  it("queries hackathon_submissions to return user participations", async () => {
+    const res = await listPublicProfileContestPortfolio("user-1", true, "vi");
+    expect(res).toBeDefined();
+    expect(res.participations).toBeDefined();
+  });
+
+  it("resolves hackathon when ID is passed to getContestBySlug as fallback", async () => {
+    const contest = await getContestBySlug("hackathon-1", "vi");
+    expect(contest).toBeDefined();
+    expect(contest?.id).toBe("hackathon-1");
   });
 });
