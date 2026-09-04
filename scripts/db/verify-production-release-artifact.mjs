@@ -153,7 +153,7 @@ export function validateManifestSchema(manifest) {
   validateMigrationEntries(manifest.migration_chain.forward, "migration_chain.forward");
   const forwardPaths = manifest.migration_chain.forward.map((entry) => normalizeRepositoryPath(entry.path));
   if (JSON.stringify(forwardPaths) !== JSON.stringify(EXPECTED_FORWARD_MIGRATIONS)) {
-    throw new Error("Forward migration set must be the exact reviewed seventeen in canonical order.");
+    throw new Error("Forward migration set must be the exact reviewed set in canonical order.");
   }
   validateRecipe(manifest.recipe, manifest.source_sha);
   return manifest;

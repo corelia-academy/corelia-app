@@ -51,19 +51,11 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production is released through 20260901002156. The Hackathon schema changes,
-// Project submission/media gate, comment retirement, Jobs foundation, and its
-// advisor remediation, classifier scale repair, Tech/Non-tech taxonomy, and
-// the follow-up Social-vs-engineering backfill repair, web3.career, and the
-// reviewed structured API/RSS feeds, provider-specific source instances,
-// revalidation state, operational alerts, the CryptoJobsList API contract,
-// AI fallback observability, reproducible Vault-backed schedules, and the
-// least-privilege public relationship grant for connected adapter attribution,
-// explicit ingestion modes, and policy-gated RSS source instances ship as one
-// forward-only pending batch.
+// Production is released through 20260903111914. The remaining forward-only
+// batch adds explicit ingestion modes and policy-gated RSS source instances.
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
-  APPROVED_PENDING_VERSIONS.slice(0, -18),
+  APPROVED_PENDING_VERSIONS.slice(0, -1),
 );
-export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-18));
+export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-1));
 export const EXPECTED_POST_MIGRATION_COUNT = PRODUCTION_BASELINE_COUNT + APPROVED_PENDING_VERSIONS.length;
 export const EXPECTED_POST_MIGRATION_LATEST = APPROVED_PENDING_VERSIONS.at(-1);
