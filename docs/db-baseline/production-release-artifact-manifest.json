@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "be5abee2c57e2e92ea1e5196d27e931b114aef30",
-  "git_tree_sha": "61bacc255c25ac290baa2b97c796a066a607708b",
+  "rc_sha": "5e57b1bf93355f33c8d8e71082ceb919c4e77c55",
+  "git_tree_sha": "547004a2fd2adca46b4dd2621d98208724b2dee9",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 181,
-  "latest_migration": "20260903111914_grant_job_company_source_for_connected_adapters.sql",
+  "migration_count": 182,
+  "latest_migration": "20260903214029_classify_job_sources_and_add_rss_feeds.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "be5abee2c57e2e92ea1e5196d27e931b114aef30",
+  "source_sha": "5e57b1bf93355f33c8d8e71082ceb919c4e77c55",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "d32c764ac6cdaed20c456bfcb5f07faee066e1b334c24c2023e301fa181bff3c",
+  "candidate_tree_sha256": "7af64bbe0aed51191df40a9ee3922dccea803637ef394ab511a48f11401e977a",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -199,7 +199,7 @@
     },
     {
       "path": "docs/jobs/README.md",
-      "sha256": "94ffef1a536da928d8af3516b9c3dcf49c9474b6c392a520e76367bed20e7618"
+      "sha256": "917d06ea0d3e6b3159ac588d3346cd659fa7d8e2ec90ad98dc099bb8da26b31e"
     },
     {
       "path": "docs/jobs/TEST_CHECKLIST.md",
@@ -355,7 +355,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "f5a8351be4d582bac38e264f82ce2c33fc9764972e69e666770c7cb9e2ae6304"
+      "sha256": "653ed046b2ce4ad22ef040899889c67a96875a9975fb62b97bb5dd15f36a7d95"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -411,11 +411,11 @@
     },
     {
       "path": "scripts/db/tests/jobs-mvp.integration.sql",
-      "sha256": "44731fe88f592b1fefd45c5abd74aad042a3236cfe476b597478102c3fc2b88a"
+      "sha256": "6e855220e911c7b5220bb598746dd1036193ae6f2db411ddc073547087f6c6d0"
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "bd4893f6592bfeb7ba990b786a0f5557e874fc21535fc28857f88f38c4120e72"
+      "sha256": "49e5b548169636ca53a20489d9da3b0303b1c0c279b752e7629278e3c1d1dc5e"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
@@ -911,7 +911,7 @@
     },
     {
       "path": "src/lib/jobs.ts",
-      "sha256": "f671841e1e2ccb11b0c855bdf7ddeaa79ef0f5558029c06d0d3983a132d7b40e"
+      "sha256": "8cfd76f47fb48f454c2a5fa9515f72d7dadb2eaa84a6de95d95b9ef9eff715b0"
     },
     {
       "path": "src/lib/lessonFormat.test.ts",
@@ -1027,7 +1027,7 @@
     },
     {
       "path": "src/locales/en/admin.json",
-      "sha256": "996874cd4501d312d4a7b96e28a037687d75bf0b2c8d7b2f367e287842056ed4"
+      "sha256": "fee024212423047871be8d9deb2edb921475c34c259b7dd3d23c10543423f09f"
     },
     {
       "path": "src/locales/en/common.json",
@@ -1047,7 +1047,7 @@
     },
     {
       "path": "src/locales/en/jobs.json",
-      "sha256": "fd675fd3acc926df831dbf659c6a68df607eb8680621a1bcb6200f9e2e907cf6"
+      "sha256": "e39a342adafa3d6e8766d51f0b08812b5b2cda10eea8709b27863d4a6a6663c1"
     },
     {
       "path": "src/locales/vi/account.json",
@@ -1055,7 +1055,7 @@
     },
     {
       "path": "src/locales/vi/admin.json",
-      "sha256": "c50867e656d5ed96bcab05f56ca626ec6a03a5ce95382abf01c83f3c06107928"
+      "sha256": "14cb3dc9b1efa5a20bbbabf700169f383985151912693a2ff32d199bf92bd7aa"
     },
     {
       "path": "src/locales/vi/common.json",
@@ -1075,7 +1075,7 @@
     },
     {
       "path": "src/locales/vi/jobs.json",
-      "sha256": "f8d9228d216d054861b7388432b2009d24d42f6a3d50bce5e27840061ba3cfea"
+      "sha256": "da5870908c9bb231dee794d04525a8e293e98231b0d3a80e9f5c42ddb62e4224"
     },
     {
       "path": "src/main.tsx",
@@ -1151,19 +1151,27 @@
     },
     {
       "path": "src/pages/admin/hackathons/AdminHackathonEditorPage.test.ts",
-      "sha256": "ba0117f6cbaadf5b719082eb15853a548d0042a0c8976d05ee154c836cd6a54a"
+      "sha256": "2bd333c5802a5abe85ce167d26cad4b38d119fbbd0fc3bcc2f5d12c93e8d3b28"
     },
     {
       "path": "src/pages/admin/hackathons/AdminHackathonEditorPage.tsx",
-      "sha256": "7d7b9e84214d44cdf4b4f24b70cf4af3e23797d39b1ec5bc7cca55dd39f510a4"
+      "sha256": "015c1a800ac6826b94a6a3c8f8445777160fa2c38c06ad3a73a2e6afa2c5a45b"
     },
     {
       "path": "src/pages/admin/hackathons/AdminHackathonsPage.tsx",
       "sha256": "db19bd75a2f4fc6efcea3f11cf45589409b35040c556562c78f2a10d080b9e22"
     },
     {
+      "path": "src/pages/admin/hackathons/utils/socialLinks.test.ts",
+      "sha256": "08ac1dbccd15fed46f48bcbac386e3fd15159ca7b55befaae830e58bb49c5fe1"
+    },
+    {
+      "path": "src/pages/admin/hackathons/utils/socialLinks.ts",
+      "sha256": "a57f8d3c0e418f54b6bdce55e5a943b6fb2152769d70093c31b822acd701e8c3"
+    },
+    {
       "path": "src/pages/admin/jobs/AdminJobsPage.tsx",
-      "sha256": "0f46cfb9f415d1b2a843157a85dd4b4754ada5de265b4e917390e1f6be777d1c"
+      "sha256": "c87910bec568377dc5e5069677d507a92c66b5d9d112f95e6274a5f0dbfa648e"
     },
     {
       "path": "src/pages/auth/ResetPasswordPage.tsx",
@@ -1303,11 +1311,11 @@
     },
     {
       "path": "src/pages/hackathon-detail/ContestPublicLayout.test.tsx",
-      "sha256": "5dee452eedff92694b8fb4f61e5ab1e5aef8546044ef02cfd7e24a96a337d4b7"
+      "sha256": "0d9348898794db1a4d93c00c7b4c31e9d2fdf83487018d44558858e52716afc7"
     },
     {
       "path": "src/pages/hackathon-detail/ContestPublicLayout.tsx",
-      "sha256": "d94e1322d92e81fd24b8931f67269f49bb1a29d1d588e491c6d6f044663aafa7"
+      "sha256": "c8f559d8dddd1d509807cba2ceb768e365e5b5af609f477f5e888bab77387f60"
     },
     {
       "path": "src/pages/hackathon-detail/ContestPublicPage.tsx",
@@ -1607,7 +1615,7 @@
     },
     {
       "path": "src/types/jobs.ts",
-      "sha256": "940cd31b7ba673a16aa67e31d8be2cff0576e121b0a4464a1962a8e2491a6eaa"
+      "sha256": "a9b029f0300d7742772a75d1585e8ed232ff125c8928a54b195315e60a76c92b"
     },
     {
       "path": "src/types/projects.ts",
@@ -1687,15 +1695,15 @@
     },
     {
       "path": "supabase/functions/corelia-api/jobs/handlers.ts",
-      "sha256": "f70d978084641797986299e9be7833f42147e9dba358dcb9e782d8ac95030172"
+      "sha256": "18373e6c90d7cb1882d2618a1bcb4cda8aba602d713ec4ff4d6bd18ccc4f3de7"
     },
     {
       "path": "supabase/functions/corelia-api/jobs/normalization.test.ts",
-      "sha256": "cf889b1056001ca49d8207c5ce8de10240024fc7a9cffff9a23e1fa13b94f3d3"
+      "sha256": "493a93d59b0d395fadbfb89065dc493e7c6ad55f716fea57ac803e8f3c1a42c2"
     },
     {
       "path": "supabase/functions/corelia-api/jobs/normalization.ts",
-      "sha256": "da3ebac364c680c485ca95b99545d48db9d44b6c44f7aac9ffc353b6813c53ec"
+      "sha256": "89c59fed1022c23faa7fe9fff4766abd0be5eb4ce127707abbe36d483cf356a0"
     },
     {
       "path": "supabase/functions/corelia-api/jobs/operations.test.ts",
@@ -1711,7 +1719,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/jobs/pipeline.ts",
-      "sha256": "077dc851593871545c14639b35e8c6f68cf06aabb7a45750f100ec805bbb5bd8"
+      "sha256": "7a7475b912f2f53277a54a5f0dd630b35a2c57b8b9afe5a086bcb70358aba313"
     },
     {
       "path": "supabase/functions/corelia-api/jobs/registry.ts",
@@ -1976,6 +1984,10 @@
     {
       "path": "supabase/migrations/20260903111914_grant_job_company_source_for_connected_adapters.sql",
       "sha256": "2baa18fa41f4530c2b0fb64f4b0cd64f0819a9caafab3b5e6bd2873b6f62e116"
+    },
+    {
+      "path": "supabase/migrations/20260903214029_classify_job_sources_and_add_rss_feeds.sql",
+      "sha256": "bcf6108292b5e6e7dd97b481a91cde6d47853f75e300adf2610bdc209e1da20e"
     },
     {
       "path": "vite.config.ts",
@@ -2282,6 +2294,10 @@
       {
         "path": "supabase/migrations/20260903111914_grant_job_company_source_for_connected_adapters.sql",
         "sha256": "2baa18fa41f4530c2b0fb64f4b0cd64f0819a9caafab3b5e6bd2873b6f62e116"
+      },
+      {
+        "path": "supabase/migrations/20260903214029_classify_job_sources_and_add_rss_feeds.sql",
+        "sha256": "bcf6108292b5e6e7dd97b481a91cde6d47853f75e300adf2610bdc209e1da20e"
       }
     ]
   }
