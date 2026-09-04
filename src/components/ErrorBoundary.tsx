@@ -2,6 +2,7 @@ import { Component, type ErrorInfo, type ReactNode } from "react";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { isStaleChunkLoadError } from "@/lib/staleChunkRecovery";
 
 interface Props {
   children: ReactNode;
@@ -13,12 +14,6 @@ interface BoundaryProps extends Props {
 
 interface State {
   error: Error | null;
-}
-
-function isStaleChunkLoadError(error: Error): boolean {
-  return /failed to fetch dynamically imported module|error loading dynamically imported module|importing a module script failed|loading chunk \d+ failed/i.test(
-    `${error.name} ${error.message}`,
-  );
 }
 
 /** Lightweight boundary for individual page sections — keeps other sections alive on error. */
@@ -85,13 +80,17 @@ class ErrorBoundaryInner extends Component<BoundaryProps, State> {
 
   render() {
     if (this.state.error) {
+      const isStaleChunk = isStaleChunkLoadError(this.state.error);
+
       return (
         <div className="flex min-h-svh flex-col items-center justify-center gap-4 p-8 text-center">
           <p className="text-lg font-semibold text-destructive">
-            {this.props.t("errorBoundary.title")}
+            {this.props.t(isStaleChunk ? "errorBoundary.staleTitle" : "errorBoundary.title")}
           </p>
           <p className="max-w-md text-sm text-foreground-muted">
-            {this.state.error.message}
+            {isStaleChunk
+              ? this.props.t("errorBoundary.staleMessage")
+              : this.state.error.message}
           </p>
           <div className="flex gap-3">
             <button
@@ -99,17 +98,16 @@ class ErrorBoundaryInner extends Component<BoundaryProps, State> {
               className="rounded-md border border-border px-4 py-2 text-sm transition-colors duration-150 hover:bg-surface-raised"
               onClick={this.handleRetry}
             >
-              {this.props.t("actions.retry")}
+              {this.props.t(isStaleChunk ? "errorBoundary.reload" : "actions.retry")}
             </button>
             <button
               type="button"
               className="rounded-md border border-border px-4 py-2 text-sm transition-colors duration-150 hover:bg-surface-raised"
               onClick={() => {
-                window.localStorage.removeItem("corelia-auth");
-                window.location.href = "/";
+                window.location.assign("/");
               }}
             >
-              {this.props.t("errorBoundary.reloadHome")}
+              {this.props.t("errorBoundary.goHome")}
             </button>
           </div>
         </div>

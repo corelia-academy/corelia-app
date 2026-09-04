@@ -359,7 +359,10 @@
   "errorBoundary": {
     "title": "Đã xảy ra lỗi",
     "sectionMessage": "Không thể tải nội dung này.",
-    "reloadHome": "Làm mới & về trang chủ"
+    "staleTitle": "Corelia vừa được cập nhật",
+    "staleMessage": "Không thể tải phiên bản mới nhất. Hãy kiểm tra kết nối rồi tải lại trang.",
+    "reload": "Tải lại",
+    "goHome": "Về trang chủ"
   },
   "home": {
     "syncing": "Đang đồng bộ...",

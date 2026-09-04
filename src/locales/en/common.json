@@ -359,7 +359,10 @@
   "errorBoundary": {
     "title": "Something went wrong",
     "sectionMessage": "Could not load this content.",
-    "reloadHome": "Reload & go home"
+    "staleTitle": "Corelia was updated",
+    "staleMessage": "The latest version could not be loaded. Check your connection, then reload the page.",
+    "reload": "Reload",
+    "goHome": "Go home"
   },
   "home": {
     "syncing": "Syncing...",
