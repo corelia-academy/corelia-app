@@ -1057,6 +1057,19 @@ export async function blastContestEmail(
   });
 }
 
+export async function notifyHackathonWinnerAwards(
+  hackathonId: string,
+  awards: Array<{ project_id: string; label: string }>,
+): Promise<{ ok: boolean; notified_count: number }> {
+  return callCoreliaApi<{ ok: boolean; notified_count: number }>(
+    "hackathons.winnerAwards.notify",
+    {
+      hackathon_id: hackathonId,
+      awards,
+    },
+  );
+}
+
 export async function getMyContestAccessInvite(
   contestId: string,
   viewer?: User | null,

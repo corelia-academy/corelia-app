@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { ProfileCombobox } from "@/components/ui/profile-combobox";
 import { PageContainer, PageSectionCard } from "@/components/layouts/PagePrimitives";
 import { publicProjectDirectoryQueryOptions } from "@/features/projects/projectQueries";
-import { createContest, deleteContest, getContest, getHackathonLocaleContent, setHackathonLocaleContent, updateContest } from "@/lib/hackathons";
+import { createContest, deleteContest, getContest, getHackathonLocaleContent, notifyHackathonWinnerAwards, setHackathonLocaleContent, updateContest } from "@/lib/hackathons";
 import { deleteStorageObjectByPath, uploadContestBanner, uploadContestHostLogo } from "@/lib/storage";
 import { invokeGenerateDescription, type DescriptionTranslationBundle, type HackathonTranslationItem } from "@/lib/descriptionGenerator";
 import { canonicalizeSlug, normalizeSlugDraft } from "@/lib/slug";
@@ -358,6 +358,19 @@ class EditorValidationError extends Error {
         bannerRemoved && !bannerFile ? deleteStorageObjectByPath(draft.cover_image_path) : Promise.resolve(),
         hostLogoRemoved && !hostLogoFile ? deleteStorageObjectByPath(draft.host_logo_path) : Promise.resolve(),
       ]);
+      if (draft.winner_awards.length > 0) {
+        try {
+          await notifyHackathonWinnerAwards(
+            contest.id,
+            draft.winner_awards.map((award) => ({
+              project_id: award.project_id,
+              label: award.label,
+            })),
+          );
+        } catch (awardErr) {
+          console.warn("[AdminHackathonEditor] Failed to notify winner awards:", awardErr);
+        }
+      }
       return { contest, banner, hostLogo };
     },
     onSuccess: async ({ contest, banner, hostLogo }) => {

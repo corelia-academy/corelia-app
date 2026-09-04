@@ -217,6 +217,7 @@ export function NotificationBell() {
                 const isRegApproved = n.type === "hackathon_registration_approved";
                 const isRegRejected = n.type === "hackathon_registration_rejected";
                 const isHackathonRegistrationReview = isRegApproved || isRegRejected;
+                const isHackathonWinnerAward = n.type === "hackathon_winner_award";
                 const isCourseAnnouncement = n.type === "course_announcement";
                 const isTrackAnnouncement = n.type === "track_announcement";
                 const isCourseCompleted = n.type === "course_completed";
@@ -412,6 +413,39 @@ export function NotificationBell() {
                               }}
                             >
                               {t("notifications.viewHackathon")}
+                            </Button>
+                          </div>
+                        ) : null}
+                      </>
+                    ) : isHackathonWinnerAward ? (
+                      <>
+                        <div className="font-medium text-foreground">
+                          {t("notifications.hackathonWinnerAwardTitle")}
+                        </div>
+                        <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
+                          {t("notifications.hackathonWinnerAwardBody", {
+                            project:
+                              payloadString(n.payload, "project_title") ||
+                              t("notifications.projectFallback"),
+                            award: payloadString(n.payload, "award_label"),
+                            hackathon: hackathonTitle,
+                          })}
+                        </p>
+                        {hackathonSlug ? (
+                          <div className="mt-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="xs"
+                              className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
+                              render={<NavLink to={`/hackathons/${hackathonSlug}`} />}
+                              nativeButton={false}
+                              onClick={() => {
+                                setOpen(false);
+                                markRead(n.id);
+                              }}
+                            >
+                              {t("notifications.viewAwardDetails")}
                             </Button>
                           </div>
                         ) : null}
