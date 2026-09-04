@@ -41,6 +41,14 @@ const draftContest = {
   winner_awards: [],
 } as unknown as Contest;
 
+const publishedContest = {
+  ...draftContest,
+  id: "hackathon-2",
+  slug: "published-demo",
+  title: "Published Demo",
+  status: "published",
+} as unknown as Contest;
+
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string) => key === "public.previewNotice" ? "Preview notice" : key,
@@ -56,7 +64,7 @@ vi.mock("@/lib/hackathons", () => ({
 vi.mock("@/features/hackathons/hackathonQueries", () => ({
   publicHackathonDetailQueryOptions: (_slug: string, _locale: string, enabled: boolean) => ({
     queryKey: ["hackathons", "public-test"],
-    queryFn: async () => null,
+    queryFn: async () => publishedContest,
     enabled,
   }),
   hackathonPreviewQueryOptions: (_slug: string, _locale: string, _userId: string, enabled: boolean) => ({
@@ -125,7 +133,7 @@ describe("draft hackathon preview", () => {
 
     expect(view.container.textContent).toContain("Draft Demo");
     expect(view.container.textContent).toContain("Preview notice");
-    expect(view.container.textContent).toContain("public.status.draft");
+    expect(view.container.textContent).not.toContain("public.status.draft");
     expect(view.container.textContent).not.toContain("public.mode.online");
     expect(view.container.textContent).not.toContain("public.register");
     expect(view.container.textContent).not.toContain("public.createProject");
@@ -149,6 +157,19 @@ describe("draft hackathon preview", () => {
     expect(xLink?.href).toBe("https://x.com/corelia");
     expect(xLink?.querySelector('[data-social-icon="x"]')).not.toBeNull();
     expect(xLink?.querySelector(".lucide-external-link")).toBeNull();
+
+    await view.cleanup();
+  });
+
+  it("places the public status on the banner without a gradient overlay", async () => {
+    const view = renderRoute("/hackathons/published-demo/overview");
+    await settle();
+
+    const status = view.container.querySelector<HTMLElement>("[data-hackathon-hero-status]");
+    expect(status?.textContent).toBe("public.status.published");
+    expect(status?.className).toContain("absolute");
+    expect(status?.parentElement?.querySelector("img")).not.toBeNull();
+    expect(view.container.querySelector(".bg-gradient-to-t")).toBeNull();
 
     await view.cleanup();
   });
