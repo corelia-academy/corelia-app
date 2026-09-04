@@ -1,14 +1,17 @@
 import type { Contest, ContestI18nContent, ContestTrack, HackathonTaxonomyOption, HackathonTimelineItem, HackathonWinnerAward } from "@/types/hackathons";
 import { canonicalizeSlug } from "@/lib/slug";
 
-function fallbackLocalizedText<T extends string | null | undefined>(localized: T, fallback: T): T {
+function fallbackLocalizedText(localized: string | null | undefined, fallback: string): string;
+function fallbackLocalizedText(localized: string | null | undefined, fallback: string | null): string | null;
+function fallbackLocalizedText(localized: string | null | undefined, fallback: string | null | undefined): string | null | undefined;
+function fallbackLocalizedText(localized: string | null | undefined, fallback: string | null | undefined): string | null | undefined {
   if (typeof localized === "string" && localized.trim().length > 0) {
     return localized;
   }
   if (typeof fallback === "string" && fallback.trim().length > 0) {
     return fallback;
   }
-  return (localized ?? fallback) as T;
+  return localized ?? fallback;
 }
 
 export function applyHackathonLocaleContent(contest: Contest, localized: ContestI18nContent | null): Contest {

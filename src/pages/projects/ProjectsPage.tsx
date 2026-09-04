@@ -95,8 +95,11 @@ export default function ProjectsPage() {
   const sort = sortParam(params.get("sort"));
 
   const hackathonsQuery = useQuery(publicHackathonCatalogQueryOptions(locale));
-  const hackathons = hackathonsQuery.data ?? [];
-  const selectedHackathon = hackathons.find((item) => item.slug === hackathonSlug) ?? null;
+  const hackathons = useMemo(() => hackathonsQuery.data ?? [], [hackathonsQuery.data]);
+  const selectedHackathon = useMemo(
+    () => hackathons.find((item) => item.slug === hackathonSlug) ?? null,
+    [hackathons, hackathonSlug],
+  );
 
   const allWinnerAwards = useMemo(() => {
     if (selectedHackathon) {

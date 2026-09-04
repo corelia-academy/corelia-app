@@ -108,6 +108,11 @@ export default function ProjectDetailPage() {
     : null;
 
   const owner = useMemo(() => ownerDisplay(entry?.owner ?? null), [entry?.owner]);
+  const projectId = entry?.project.id;
+  const winnerAward = useMemo(() => {
+    const awards = sourceQuery.data?.winner_awards ?? [];
+    return awards.find((item) => item.project_id === projectId) ?? null;
+  }, [sourceQuery.data?.winner_awards, projectId]);
 
   useEffect(() => {
     if (entry?.project.slug && slug !== entry.project.slug) {
@@ -171,11 +176,6 @@ export default function ProjectDetailPage() {
   const canEdit = user?.id === project.owner_id || profile?.role === "admin" || profile?.role === "support_staff";
   const description = project.summary || t("projects.detail.noDescription");
   const videoEmbed = projectVideoEmbed(project.video_url);
-
-  const winnerAward = useMemo(() => {
-    const awards = sourceQuery.data?.winner_awards ?? [];
-    return awards.find((item) => item.project_id === project?.id) ?? null;
-  }, [sourceQuery.data?.winner_awards, project?.id]);
 
   const actions = [
     href

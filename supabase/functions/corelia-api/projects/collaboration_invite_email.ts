@@ -17,6 +17,14 @@ import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
  *   - the caller is the inviter on the invite row (or admin/support),
  *   - the invite is still pending and not expired.
  */
+async function sha256Hex(text: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export async function handleProjectCollaborationInviteEmail(
   req: Request,
   db: SupabaseClient,
@@ -36,11 +44,16 @@ export async function handleProjectCollaborationInviteEmail(
 
     const { data: invite, error: invErr } = await db
       .from("project_collaboration_invites")
-      .select("id, project_id, invitee_user_id, invited_by, status, expires_at")
+      .select("id, project_id, invitee_user_id, invited_by, status, expires_at, token_hash")
       .eq("id", inviteId)
       .maybeSingle();
     if (invErr) throw new Error(invErr.message);
     if (!invite) return json({ message: "invite_not_found" }, 404);
+
+    const calculatedHash = await sha256Hex(token);
+    if (invite.token_hash && calculatedHash !== invite.token_hash) {
+      return json({ message: "invalid_input:token_mismatch" }, 400);
+    }
 
     if (invite.invited_by !== sender.id) {
       const { data: prof } = await db

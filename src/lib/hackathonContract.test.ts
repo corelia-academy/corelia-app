@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import type { Contest } from "@/types/hackathons";
+
 import {
   applyHackathonLocaleContent,
   areHackathonDeadlinesValid,
@@ -81,7 +83,7 @@ describe("simplified hackathon contract", () => {
       sectors: [
         { id: "sec-1", name: "Giáo dục", active: true, sort_order: 0 },
       ],
-    };
+    } as unknown as Contest;
 
     // Case 1: Empty string should fall back to base
     const localizedEmpty = {

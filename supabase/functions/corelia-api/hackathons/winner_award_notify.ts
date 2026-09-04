@@ -64,10 +64,14 @@ export async function handleHackathonWinnerAwardNotify(
 
       const { data: project, error: pErr } = await db
         .from("projects")
-        .select("id, title, slug, owner_id")
+        .select("id, title, slug, owner_id, source_id")
         .eq("id", projectId)
         .maybeSingle();
       if (pErr || !project) continue;
+      if (String(project.source_id ?? "") !== hackathonId) {
+        console.warn(`[winner_award_notify] project ${projectId} does not belong to hackathon ${hackathonId}`);
+        continue;
+      }
 
       const projectTitle = String(project.title ?? "").trim() || "Project";
       const projectSlug = String(project.slug ?? "").trim();
@@ -103,7 +107,7 @@ export async function handleHackathonWinnerAwardNotify(
           continue;
         }
 
-        await db.from("user_notifications").insert({
+        const { error: insErr } = await db.from("user_notifications").insert({
           user_id: userId,
           type: "hackathon_winner_award",
           payload: {
@@ -116,6 +120,10 @@ export async function handleHackathonWinnerAwardNotify(
             award_label: awardLabel,
           },
         });
+        if (insErr) {
+          console.error("[winner_award_notify] insert notification failed:", insErr);
+          continue;
+        }
 
         // Lookup recipient email & locale
         const { data: prof } = await db

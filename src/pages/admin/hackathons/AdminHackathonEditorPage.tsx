@@ -17,6 +17,7 @@ import { invokeGenerateDescription, type DescriptionTranslationBundle, type Hack
 import { canonicalizeSlug, normalizeSlugDraft } from "@/lib/slug";
 import { cn } from "@/lib/utils";
 import type { Contest, ContestI18nContent, ContestLocation, ContestStatus, ContestTrack, HackathonTaxonomyOption, HackathonTimelineItem, HackathonWinnerAward } from "@/types/hackathons";
+import { isPrizeAllocationValid } from "@/lib/hackathonContract";
 import { isValidHackathonSocialLink, normalizeHackathonSocialLink } from "./utils/socialLinks";
 
 type Locale = "vi" | "en";
@@ -55,6 +56,18 @@ type Draft = {
 
 const SECTIONS = ["overview", "description", "prizes", "timeline", "resources", "taxonomy", "projects", "danger"] as const;
 type SectionId = typeof SECTIONS[number];
+
+class EditorValidationError extends Error {
+  section: SectionId;
+  fieldId?: string;
+  constructor(message: string, section: SectionId, fieldId?: string) {
+    super(message);
+    this.name = "EditorValidationError";
+    this.section = section;
+    this.fieldId = fieldId;
+  }
+}
+
 const SECTION_ICONS = {
   overview: Settings,
   description: FileText,
@@ -95,7 +108,16 @@ const DEFAULT_TAXONOMY = {
 } as const;
 
 function dateInput(value: string | null | undefined): string {
-  return value ? new Date(value).toISOString().slice(0, 16) : "";
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const year = d.getFullYear();
+  const month = pad(d.getMonth() + 1);
+  const day = pad(d.getDate());
+  const hours = pad(d.getHours());
+  const minutes = pad(d.getMinutes());
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
 function localeFromContest(contest: Contest, localized: ContestI18nContent | null, fallback: boolean): LocaleDraft {
@@ -228,19 +250,8 @@ export default function AdminHackathonEditorPage() {
     navigate({ pathname: location.pathname, search: location.search, hash: "overview" }, { replace: true });
   }, [isNew, location.hash, location.pathname, location.search, navigate]);
 
-class EditorValidationError extends Error {
-  section: SectionId;
-  fieldId?: string;
-  constructor(message: string, section: SectionId, fieldId?: string) {
-    super(message);
-    this.name = "EditorValidationError";
-    this.section = section;
-    this.fieldId = fieldId;
-  }
-}
-
   const projectsQuery = useInfiniteQuery({ ...publicProjectDirectoryQueryOptions("vi", "hackathon", "newest", { hackathonId: id ?? null, winnerProjectIds: draft.winner_awards.map((award) => award.project_id) }), enabled: Boolean(id) });
-  const projects = projectsQuery.data?.pages.flatMap((page) => page.items) ?? [];
+  const projects = useMemo(() => projectsQuery.data?.pages.flatMap((page) => page.items) ?? [], [projectsQuery.data?.pages]);
   const projectAwardOptions = useMemo(
     () =>
       projects.map(({ project, owner }) => ({
@@ -263,9 +274,7 @@ class EditorValidationError extends Error {
     if (!/^[A-Z0-9]{2,10}$/.test(draft.prize_currency.trim().toUpperCase())) {
       throw new EditorValidationError(t("hackathons.editor.validationCurrency"), "prizes", "hackathon-currency");
     }
-    const total = Number(draft.prize_amount || 0);
-    const allocated = draft.locales.vi.tracks.reduce((sum, track) => sum + Number(track.prize_amount || 0), 0);
-    if (allocated > total) {
+    if (!isPrizeAllocationValid(draft.prize_amount, draft.locales.vi.tracks)) {
       throw new EditorValidationError(t("hackathons.editor.validationPrize"), "prizes", "hackathon-prize-amount");
     }
     for (let i = 0; i < draft.locales.vi.tracks.length; i++) {
