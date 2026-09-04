@@ -11,7 +11,7 @@ import { publicHackathonCatalogQueryOptions } from "@/features/hackathons/hackat
 import { publicProjectDirectoryQueryOptions } from "@/features/projects/projectQueries";
 import type { PublicProjectEntry, PublicProjectSort } from "@/lib/projects";
 import { cn } from "@/lib/utils";
-import type { Contest, HackathonTaxonomyOption } from "@/types/hackathons";
+import type { HackathonTaxonomyOption, HackathonWinnerAward } from "@/types/hackathons";
 
 type FilterOption = Pick<HackathonTaxonomyOption, "id" | "name"> & { active?: boolean };
 
@@ -70,9 +70,9 @@ function TaxonomyFilter({
   );
 }
 
-function winnerFirst(items: PublicProjectEntry[], contest: Contest | null): PublicProjectEntry[] {
+function winnerFirst(items: PublicProjectEntry[], awards: HackathonWinnerAward[]): PublicProjectEntry[] {
   const order = new Map(
-    (contest?.winner_awards ?? []).map((award) => [award.project_id, award.sort_order]),
+    awards.map((award) => [award.project_id, award.sort_order]),
   );
   return [...items].sort((a, b) => {
     const aOrder = order.get(a.project.id);
@@ -97,18 +97,34 @@ export default function ProjectsPage() {
   const hackathonsQuery = useQuery(publicHackathonCatalogQueryOptions(locale));
   const hackathons = hackathonsQuery.data ?? [];
   const selectedHackathon = hackathons.find((item) => item.slug === hackathonSlug) ?? null;
+
+  const allWinnerAwards = useMemo(() => {
+    if (selectedHackathon) {
+      return selectedHackathon.winner_awards ?? [];
+    }
+    return hackathons.flatMap((h) => h.winner_awards ?? []);
+  }, [selectedHackathon, hackathons]);
+
+  const awardsMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const award of allWinnerAwards) {
+      map.set(award.project_id, award.label);
+    }
+    return map;
+  }, [allWinnerAwards]);
+
   const projectsQuery = useInfiniteQuery(
     publicProjectDirectoryQueryOptions(locale, "all", sort, {
       hackathonId: selectedHackathon?.id ?? null,
       trackIds,
       sectorIds,
       techStackIds,
-      winnerProjectIds: selectedHackathon?.winner_awards?.map((award) => award.project_id) ?? [],
+      winnerProjectIds: allWinnerAwards.map((award) => award.project_id),
     }),
   );
   const items = useMemo(
-    () => winnerFirst(projectsQuery.data?.pages.flatMap((page) => page.items) ?? [], selectedHackathon),
-    [projectsQuery.data?.pages, selectedHackathon],
+    () => winnerFirst(projectsQuery.data?.pages.flatMap((page) => page.items) ?? [], allWinnerAwards),
+    [projectsQuery.data?.pages, allWinnerAwards],
   );
 
   const update = useCallback((key: string, value: string | string[]) => {
@@ -181,7 +197,15 @@ export default function ProjectsPage() {
         ) : (
           <>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {items.map(({ project, owner }) => <ProjectCard key={project.id} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} />)}
+              {items.map(({ project, owner }) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  ownerLabel={owner?.full_name ?? owner?.username}
+                  ownerHandle={owner?.username ?? owner?.ocid}
+                  awardLabel={awardsMap.get(project.id)}
+                />
+              ))}
             </div>
             {projectsQuery.hasNextPage ? (
               <div className="mt-6 flex justify-center">

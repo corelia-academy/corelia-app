@@ -8,6 +8,7 @@ import {
   Package,
   PlayCircle,
   Presentation,
+  Sparkles,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -20,6 +21,7 @@ type ProjectCardProps = {
   project: Project;
   ownerLabel?: string | null;
   ownerHandle?: string | null;
+  awardLabel?: string | null;
   className?: string;
 };
 
@@ -60,6 +62,7 @@ export function ProjectCard({
   project,
   ownerLabel,
   ownerHandle,
+  awardLabel,
   className,
 }: ProjectCardProps) {
   const { t } = useTranslation("common");
@@ -98,7 +101,13 @@ export function ProjectCard({
       onClick={openProject}
       onKeyDown={handleKeyDown}
     >
-      <div className="aspect-video w-full overflow-hidden border-b border-border-subtle bg-surface-raised">
+      <div className="relative aspect-video w-full overflow-hidden border-b border-border-subtle bg-surface-raised">
+        {awardLabel ? (
+          <div className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950 shadow">
+            <Sparkles className="size-3" aria-hidden />
+            <span>{awardLabel}</span>
+          </div>
+        ) : null}
         <ProjectCover project={project} />
       </div>
 

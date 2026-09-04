@@ -10,6 +10,7 @@ import {
   PlayCircle,
   Presentation,
   ShieldAlert,
+  Sparkles,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -171,6 +172,11 @@ export default function ProjectDetailPage() {
   const description = project.summary || t("projects.detail.noDescription");
   const videoEmbed = projectVideoEmbed(project.video_url);
 
+  const winnerAward = useMemo(() => {
+    const awards = sourceQuery.data?.winner_awards ?? [];
+    return awards.find((item) => item.project_id === project?.id) ?? null;
+  }, [sourceQuery.data?.winner_awards, project?.id]);
+
   const actions = [
     href
       ? {
@@ -242,6 +248,12 @@ export default function ProjectDetailPage() {
               <h1 className="min-w-0 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                 {project.title}
               </h1>
+              {winnerAward ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-xs font-semibold text-amber-950 shadow">
+                  <Sparkles className="size-3" aria-hidden />
+                  {winnerAward.label}
+                </span>
+              ) : null}
               <span className="rounded-full border border-border-subtle bg-surface-raised px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-foreground-muted">
                 {t(projectSourceLabelKey(project.source_type))}
               </span>
