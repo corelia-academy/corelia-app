@@ -38,9 +38,11 @@ import {
   handleJobsRun,
   handleJobsRunScheduled,
 } from "./jobs/handlers.ts";
+import { handleAdminEmailOutboxReconcile } from "./lib/mail/outbox.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
 
 const PROTECTED_OPS = new Set<string>([
+  "admin.emailOutbox.reconcile",
   "certificates.issue",
   "certificates.backfillEligible",
   "certificates.revoke",
@@ -182,6 +184,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleJobsReview(req, db);
     } else if (op === "jobs.admin" && req.method === "POST") {
       response = await handleJobsAdmin(req, db);
+    } else if (op === "admin.emailOutbox.reconcile" && req.method === "POST") {
+      response = await handleAdminEmailOutboxReconcile(req, db);
     } else {
       response = json({ message: "Not found" }, 404);
     }

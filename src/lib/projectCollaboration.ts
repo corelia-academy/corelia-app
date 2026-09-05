@@ -165,11 +165,11 @@ export type CreateInviteResult = {
 
 export async function sendProjectCollaborationInviteEmail(args: {
   inviteId: string;
-  token: string;
-}): Promise<{ ok: boolean; email_sent: boolean; reason?: string }> {
+  token?: string;
+}): Promise<{ ok: boolean; email_sent: boolean; reason?: string; idempotent_replay?: boolean }> {
   return await callCoreliaApi("projects.collaborationInvite.sendEmail", {
     invite_id: args.inviteId,
-    token: args.token,
+    ...(args.token ? { token: args.token } : {}),
   });
 }
 

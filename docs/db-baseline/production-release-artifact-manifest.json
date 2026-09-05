@@ -5,8 +5,8 @@
   "git_tree_sha": "1f3c9c2ff1b75bd5efef5cc0c3e50cc0f8cd53b0",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 182,
-  "latest_migration": "20260903214029_classify_job_sources_and_add_rss_feeds.sql",
+  "migration_count": 183,
+  "latest_migration": "20260906100000_email_outbox_events.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "source_sha": "11aea71bd8444ce3c695fd13ac8c158b3a093af4",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
@@ -2298,6 +2298,10 @@
       {
         "path": "supabase/migrations/20260903214029_classify_job_sources_and_add_rss_feeds.sql",
         "sha256": "bcf6108292b5e6e7dd97b481a91cde6d47853f75e300adf2610bdc209e1da20e"
+      },
+      {
+        "path": "supabase/migrations/20260906100000_email_outbox_events.sql",
+        "sha256": "d0749833da264d59b372d5bc24fef412d4e40cd7edfe6c3c1a2f8d95504c6040"
       }
     ]
   }

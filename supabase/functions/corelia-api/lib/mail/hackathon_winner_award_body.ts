@@ -47,6 +47,7 @@ export function buildHackathonWinnerAwardEmail(args: {
   awardLabel: string;
   hackathonHref?: string;
   locale?: string | null;
+  fingerprint?: string;
 }): { subject: string; html: string } {
   const locale = normalizeEmailLocale(args.locale);
   const copy = COPY[locale];
@@ -82,6 +83,7 @@ export function buildHackathonWinnerAwardEmail(args: {
       bodyHtml,
       ctaHtml,
       footerReason: copy.reason,
+      fingerprint: args.fingerprint,
     }),
   };
 }

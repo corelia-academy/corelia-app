@@ -67,6 +67,7 @@ export function buildProjectCollaborationInviteEmail(args: {
   inviteUrl: string;
   expiresAt: Date;
   locale?: string | null;
+  fingerprint?: string;
 }): { subject: string; html: string } {
   const locale = normalizeEmailLocale(args.locale);
   const copy = COPY[locale];
@@ -91,6 +92,7 @@ export function buildProjectCollaborationInviteEmail(args: {
       bodyHtml,
       ctaHtml: emailCtaButton(args.inviteUrl, copy.cta),
       footerReason: copy.reason,
+      fingerprint: args.fingerprint,
     }),
   };
 }

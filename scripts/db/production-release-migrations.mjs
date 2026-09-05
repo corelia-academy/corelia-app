@@ -45,6 +45,7 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260903110012_configure_jobs_schedules.sql",
   "supabase/migrations/20260903111914_grant_job_company_source_for_connected_adapters.sql",
   "supabase/migrations/20260903214029_classify_job_sources_and_add_rss_feeds.sql",
+  "supabase/migrations/20260906100000_email_outbox_events.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
@@ -52,10 +53,20 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
 );
 
 // Production is released through 20260903111914. The remaining forward-only
-// batch adds explicit ingestion modes and policy-gated RSS source instances.
+// batch adds explicit ingestion modes, policy-gated RSS source instances,
+// and transactional email outbox idempotency.
+const PROD_RELEASED_CHECKPOINT = "20260903111914";
+const checkpointIndex = APPROVED_PENDING_VERSIONS.indexOf(PROD_RELEASED_CHECKPOINT);
+
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
-  APPROVED_PENDING_VERSIONS.slice(0, -1),
+  checkpointIndex >= 0
+    ? APPROVED_PENDING_VERSIONS.slice(0, checkpointIndex + 1)
+    : APPROVED_PENDING_VERSIONS.slice(0, -1),
 );
-export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-1));
+export const CURRENT_PENDING_VERSIONS = Object.freeze(
+  checkpointIndex >= 0
+    ? APPROVED_PENDING_VERSIONS.slice(checkpointIndex + 1)
+    : APPROVED_PENDING_VERSIONS.slice(-1),
+);
 export const EXPECTED_POST_MIGRATION_COUNT = PRODUCTION_BASELINE_COUNT + APPROVED_PENDING_VERSIONS.length;
 export const EXPECTED_POST_MIGRATION_LATEST = APPROVED_PENDING_VERSIONS.at(-1);

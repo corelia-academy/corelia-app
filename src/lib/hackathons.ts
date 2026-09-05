@@ -1057,11 +1057,25 @@ export async function blastContestEmail(
   });
 }
 
+export interface WinnerAwardNotifyResult {
+  ok: boolean;
+  notified_count: number;
+  emails_sent_count?: number;
+  failures_count?: number;
+  failures?: Array<{
+    project_id: string;
+    user_id: string;
+    recipient_email?: string;
+    reason: string;
+    is_retryable: boolean;
+  }>;
+}
+
 export async function notifyHackathonWinnerAwards(
   hackathonId: string,
   awards: Array<{ project_id: string; label: string }>,
-): Promise<{ ok: boolean; notified_count: number }> {
-  return callCoreliaApi<{ ok: boolean; notified_count: number }>(
+): Promise<WinnerAwardNotifyResult> {
+  return callCoreliaApi<WinnerAwardNotifyResult>(
     "hackathons.winnerAwards.notify",
     {
       hackathon_id: hackathonId,

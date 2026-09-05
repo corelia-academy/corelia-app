@@ -3,12 +3,21 @@ import { generateDeterministicUuid } from "../lib/crypto.ts";
 import { json } from "../lib/http.ts";
 import { buildHackathonWinnerAwardEmail } from "../lib/mail/hackathon_winner_award_body.ts";
 import { resolveAppUrl } from "../lib/mail/layout.ts";
-import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
+import { claimOutboxLease, commitOutboxSuccess, commitOutboxFailure, releaseOutboxUnconfigured, persistOutboxDispatch } from "../lib/mail/outbox.ts";
+import { sendTransactionalEmailViaResend, isTransactionalEmailConfigured } from "../lib/mail/resend.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 
 interface AwardItem {
   project_id: string;
   label: string;
+}
+
+export interface AwardFailureItem {
+  project_id: string;
+  user_id: string;
+  recipient_email?: string;
+  reason: string;
+  is_retryable: boolean;
 }
 
 export async function handleHackathonWinnerAwardNotify(
@@ -57,6 +66,7 @@ export async function handleHackathonWinnerAwardNotify(
 
     let notifiedCount = 0;
     let emailsSentCount = 0;
+    const failures: AwardFailureItem[] = [];
 
     for (const item of rawAwards) {
       const award = item as Partial<AwardItem>;
@@ -177,51 +187,8 @@ export async function handleHackathonWinnerAwardNotify(
           }
         }
 
-        if (!isFirstInsert) {
-          if (existingPayload.email_sent === true) {
-            continue;
-          }
-
-          const now = Date.now();
-          const IN_FLIGHT_TIMEOUT_MS = 30_000;
-          if (existingPayload.email_sending === true) {
-            const lockAt = typeof existingPayload.email_lock_at === "string"
-              ? Date.parse(existingPayload.email_lock_at)
-              : 0;
-            if (!lockAt || now - lockAt < IN_FLIGHT_TIMEOUT_MS) {
-              // Already being sent by another concurrent call
-              continue;
-            }
-          }
-
-          // DB-level atomic compare-and-set lock:
-          const lockAtIso = new Date().toISOString();
-          const staleThresholdIso = new Date(Date.now() - IN_FLIGHT_TIMEOUT_MS).toISOString();
-          const { data: lockedRows, error: lockErr } = await db
-            .from("user_notifications")
-            .update({
-              payload: {
-                ...(existingPayload ?? {}),
-                hackathon_id: hackathonId,
-                hackathon_title: hackathonTitle,
-                hackathon_slug: hackathonSlug,
-                project_id: projectId,
-                project_title: projectTitle,
-                project_slug: projectSlug,
-                award_label: awardLabel,
-                email_sending: true,
-                email_lock_at: lockAtIso,
-              },
-            })
-            .eq("id", notifId)
-            .or(`payload->>email_sending.is.null,payload->>email_sending.eq.false,payload->>email_lock_at.lt.${staleThresholdIso}`)
-            .select("id");
-
-          if (lockErr || !lockedRows || !Array.isArray(lockedRows) || lockedRows.length === 0) {
-            // Concurrent invocation acquired the lock -> skip
-            continue;
-          }
-        }
+        const awardIdempotencyKey = deterministicNotifId;
+        const scopedMailType = `hackathon_winner_award:${awardIdempotencyKey}`;
 
         // Lookup recipient email & locale
         const { data: prof } = await db
@@ -249,71 +216,154 @@ export async function handleHackathonWinnerAwardNotify(
           }
         }
 
-        if (recipientEmail) {
-
-          const { subject, html } = buildHackathonWinnerAwardEmail({
-            hackathonTitle,
-            projectTitle,
-            awardLabel,
-            hackathonHref: awardHref,
-            locale,
+        if (!recipientEmail) {
+          failures.push({
+            project_id: projectId,
+            user_id: userId,
+            recipient_email: "",
+            reason: "no_recipient_email",
+            is_retryable: false,
           });
+          continue;
+        }
 
-          const mailResult = await sendTransactionalEmailViaResend({
+        const mailFrom = Deno.env.get("MAIL_FROM")?.trim() || "Corelia <noreply@corelia.academy>";
+
+        const claimRes = await claimOutboxLease({
+          db,
+          idempotencyKey: awardIdempotencyKey,
+          eventType: "hackathon_winner_award",
+          recipientEmail,
+          buildSnapshot: () => {
+            const { subject, html } = buildHackathonWinnerAwardEmail({
+              hackathonTitle,
+              projectTitle,
+              awardLabel,
+              hackathonHref: awardHref,
+              locale,
+              fingerprint: awardIdempotencyKey,
+            });
+            return {
+              from: mailFrom,
+              to: [recipientEmail],
+              subject,
+              html,
+              idempotency_key: awardIdempotencyKey,
+            };
+          },
+        });
+
+        if (claimRes.type === "already_accepted") {
+          if (notifId && existingPayload?.email_sent !== true) {
+            // Reconcile downstream notification display payload:
+            await db.from("user_notifications").update({
+              payload: {
+                ...(existingPayload ?? {}),
+                hackathon_id: hackathonId,
+                hackathon_title: hackathonTitle,
+                hackathon_slug: hackathonSlug,
+                project_id: projectId,
+                project_title: projectTitle,
+                project_slug: projectSlug,
+                award_label: awardLabel,
+                email_sent: true,
+                email_sending: false,
+                email_sent_at: claimRes.event.updated_at,
+              },
+            }).eq("id", notifId);
+          }
+          continue;
+        }
+
+        if (claimRes.type === "rate_limited") {
+          failures.push({ project_id: projectId, user_id: userId, recipient_email: recipientEmail, reason: "rate_limited", is_retryable: true });
+          continue;
+        }
+        if (claimRes.type === "lease_locked") {
+          failures.push({ project_id: projectId, user_id: userId, recipient_email: recipientEmail, reason: "lease_locked", is_retryable: true });
+          continue;
+        }
+        if (claimRes.type === "failed_permanent") {
+          failures.push({ project_id: projectId, user_id: userId, recipient_email: recipientEmail, reason: "email_delivery_rejected", is_retryable: false });
+          continue;
+        }
+        if (claimRes.type === "indeterminate_outside_window") {
+          failures.push({ project_id: projectId, user_id: userId, recipient_email: recipientEmail, reason: "indeterminate_delivery_requires_reconciliation", is_retryable: false });
+          continue;
+        }
+        if (claimRes.type === "db_error") {
+          failures.push({ project_id: projectId, user_id: userId, recipient_email: recipientEmail, reason: "db_error", is_retryable: true });
+          continue;
+        }
+
+        // Acquired lease: extract frozen request payload from outbox snapshot
+        const requestPayload = claimRes.event.request_payload;
+
+        // Check mail configuration BEFORE network call or recording dispatch
+        if (!isTransactionalEmailConfigured(requestPayload.from)) {
+          await releaseOutboxUnconfigured({
             db,
-            mailType: "hackathon_winner_award",
-            to: [recipientEmail],
-            subject,
-            html,
+            idempotencyKey: awardIdempotencyKey,
+            leaseToken: claimRes.leaseToken,
+          });
+          failures.push({
+            project_id: projectId,
+            user_id: userId,
+            recipient_email: recipientEmail,
+            reason: "email_not_configured",
+            is_retryable: true,
+          });
+          continue;
+        }
+
+        // Persist dispatch attempt with fencing BEFORE provider network call (V-02a)
+        const dispatchRes = await persistOutboxDispatch({
+          db,
+          idempotencyKey: awardIdempotencyKey,
+          leaseToken: claimRes.leaseToken,
+          existingFirstDispatchedAt: claimRes.event.first_dispatched_at,
+        });
+
+        if (!dispatchRes.ok) {
+          console.error("[winner_award_notify] dispatch fencing failed, skipping:", dispatchRes.error);
+          const isExpired = dispatchRes.error === "dispatch_window_expired";
+          failures.push({
+            project_id: projectId,
+            user_id: userId,
+            recipient_email: recipientEmail,
+            reason: dispatchRes.error || "dispatch_fencing_failed",
+            is_retryable: !isExpired,
+          });
+          continue;
+        }
+
+        const mailResult = await sendTransactionalEmailViaResend({
+          db,
+          mailType: scopedMailType,
+          to: requestPayload.to,
+          subject: requestPayload.subject,
+          html: requestPayload.html,
+          from: requestPayload.from,
+          idempotencyKey: requestPayload.idempotency_key,
+        });
+
+        if (mailResult && "sent" in mailResult && mailResult.sent) {
+          emailsSentCount++;
+          const providerMsgId = "providerMessageId" in mailResult && typeof mailResult.providerMessageId === "string"
+            ? mailResult.providerMessageId
+            : null;
+
+          await commitOutboxSuccess({
+            db,
+            idempotencyKey: awardIdempotencyKey,
+            leaseToken: claimRes.leaseToken,
+            providerMessageId: providerMsgId,
           });
 
-          if ("sent" in mailResult && mailResult.sent) {
-            emailsSentCount++;
-            if (notifId) {
-              let updated = false;
-              for (let attempt = 0; attempt < 3; attempt++) {
-                const { error: updErr } = await db
-                  .from("user_notifications")
-                  .update({
-                    payload: {
-                      ...(existingPayload ?? {}),
-                      hackathon_id: hackathonId,
-                      hackathon_title: hackathonTitle,
-                      hackathon_slug: hackathonSlug,
-                      project_id: projectId,
-                      project_title: projectTitle,
-                      project_slug: projectSlug,
-                      award_label: awardLabel,
-                      email_sent: true,
-                      email_sending: false,
-                      email_sent_at: new Date().toISOString(),
-                    },
-                  })
-                  .eq("id", notifId);
-
-                if (!updErr) {
-                  updated = true;
-                  break;
-                }
-                await new Promise((r) => setTimeout(r, 100 * (attempt + 1)));
-              }
-              if (!updated) {
-                // Residual edge case: Resend accepted the email, but DB update retries failed.
-                // The in-app lock remains active until the 30s stale threshold expires.
-                // A subsequent retry after 30s could re-read email_sent=false and dispatch a duplicate email
-                // (inherent distributed transaction limitation between external email provider and local DB).
-                console.error(`[winner_award_notify] failed to update notification payload after email sent to ${recipientEmail}`);
-              }
-            }
-          } else {
-            if ("providerError" in mailResult && mailResult.providerError) {
-              console.error(
-                `[winner_award_notify] send email failed for recipient ${recipientEmail}: status ${mailResult.httpStatus}`,
-                mailResult.body,
-              );
-            }
-            if (notifId) {
-              await db
+          if (notifId) {
+            let updated = false;
+            for (let attempt = 0; attempt < 3; attempt++) {
+              const { error: updErr } = await db
                 .from("user_notifications")
                 .update({
                   payload: {
@@ -325,18 +375,83 @@ export async function handleHackathonWinnerAwardNotify(
                     project_title: projectTitle,
                     project_slug: projectSlug,
                     award_label: awardLabel,
+                    email_sent: true,
                     email_sending: false,
-                    email_last_attempt_at: new Date().toISOString(),
+                    email_sent_at: new Date().toISOString(),
                   },
                 })
                 .eq("id", notifId);
+
+              if (!updErr) {
+                updated = true;
+                break;
+              }
+              await new Promise((r) => setTimeout(r, 100 * (attempt + 1)));
+            }
+            if (!updated) {
+              console.error(`[winner_award_notify] failed to update notification display payload for ${recipientEmail}`);
             }
           }
+        } else {
+          const httpStatus = mailResult && "httpStatus" in mailResult && typeof mailResult.httpStatus === "number"
+            ? mailResult.httpStatus
+            : 500;
+          const isConfigError = mailResult && "isConfigError" in mailResult
+            ? Boolean(mailResult.isConfigError)
+            : (httpStatus === 401 || httpStatus === 403);
+          const isRetryable = mailResult && "isRetryable" in mailResult
+            ? Boolean(mailResult.isRetryable)
+            : (httpStatus >= 500 || httpStatus === 429);
+          const isPermanent = !isRetryable && !isConfigError;
+
+          await commitOutboxFailure({
+            db,
+            idempotencyKey: awardIdempotencyKey,
+            leaseToken: claimRes.leaseToken,
+            isPermanent,
+            isConfigError,
+            existingFirstDispatchedAt: claimRes.event.first_dispatched_at,
+          });
+
+          if (notifId) {
+            await db
+              .from("user_notifications")
+              .update({
+                payload: {
+                  ...(existingPayload ?? {}),
+                  hackathon_id: hackathonId,
+                  hackathon_title: hackathonTitle,
+                  hackathon_slug: hackathonSlug,
+                  project_id: projectId,
+                  project_title: projectTitle,
+                  project_slug: projectSlug,
+                  award_label: awardLabel,
+                  email_sending: false,
+                  email_last_attempt_at: new Date().toISOString(),
+                  ...(isPermanent ? { email_delivery_failed: true } : {}),
+                },
+              })
+              .eq("id", notifId);
+          }
+
+          failures.push({
+            project_id: projectId,
+            user_id: userId,
+            recipient_email: recipientEmail,
+            reason: isConfigError ? "provider_config_error" : isPermanent ? "provider_error_permanent" : "provider_error_retryable",
+            is_retryable: !isPermanent,
+          });
         }
       }
     }
 
-    return json({ ok: true, notified_count: notifiedCount, emails_sent_count: emailsSentCount }, 200);
+    return json({
+      ok: true,
+      notified_count: notifiedCount,
+      emails_sent_count: emailsSentCount,
+      failures_count: failures.length,
+      failures,
+    }, 200);
   } catch (e) {
     const msg = e instanceof Error ? e.message : "unknown";
     if (isAuthFailure(msg)) return json({ message: "unauthenticated" }, 401);

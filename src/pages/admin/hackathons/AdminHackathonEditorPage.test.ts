@@ -4,16 +4,18 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { toast } from "sonner";
 
 import type { Contest } from "@/types/hackathons";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const { createContest, getContest, getHackathonLocaleContent, invokeGenerateDescription, projectQueryFn, setHackathonLocaleContent } = vi.hoisted(() => ({
+const { createContest, getContest, getHackathonLocaleContent, invokeGenerateDescription, notifyHackathonWinnerAwards, projectQueryFn, setHackathonLocaleContent } = vi.hoisted(() => ({
   createContest: vi.fn(),
   getContest: vi.fn(),
   getHackathonLocaleContent: vi.fn(),
   invokeGenerateDescription: vi.fn(),
+  notifyHackathonWinnerAwards: vi.fn(),
   projectQueryFn: vi.fn(
     async (): Promise<{
       items: Array<{ project: { id: string; title: string }; owner?: { username?: string; full_name?: string | null } | null }>;
@@ -29,13 +31,14 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() } }));
 
 vi.mock("@/lib/hackathons", () => ({
   createContest,
   deleteContest: vi.fn(),
   getContest,
   getHackathonLocaleContent,
+  notifyHackathonWinnerAwards,
   setHackathonLocaleContent,
   updateContest: vi.fn(),
 }));
@@ -472,6 +475,71 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
     const addedAwardInput = Array.from(view.container.querySelectorAll("input"))
       .find((input) => input.value === "Second Place");
     expect(addedAwardInput).toBeDefined();
+
+    await view.cleanup();
+  });
+
+  it("shows awardsNotifyNotConfigured warning and no success toast when email is unconfigured (V-01c)", async () => {
+    getContest.mockResolvedValueOnce({
+      ...contest,
+      winner_awards: [{ id: "aw-1", project_id: "p1", label: "First Place", sort_order: 0 }],
+    });
+    notifyHackathonWinnerAwards.mockResolvedValueOnce({
+      ok: true,
+      emails_sent_count: 0,
+      failures_count: 1,
+      failures: [{ project_id: "p1", user_id: "u1", recipient_email: "u1@example.com", reason: "email_not_configured", is_retryable: true }],
+    });
+
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    const view = renderEditor("/admin/hackathons/hackathon-1/edit#projects");
+    await settle();
+
+    const notifyButton = Array.from(view.container.querySelectorAll("button"))
+      .find((b) => b.textContent?.includes("hackathons.editor.notifyAwardsAction"));
+    expect(notifyButton).toBeDefined();
+
+    await act(async () => notifyButton?.click());
+    await settle();
+
+    expect(notifyHackathonWinnerAwards).toHaveBeenCalled();
+    expect(toast.warning).toHaveBeenCalledWith("hackathons.editor.awardsNotifyNotConfigured");
+    expect(toast.success).not.toHaveBeenCalledWith(expect.stringContaining("hackathons.editor.awardsNotified"));
+
+    await view.cleanup();
+  });
+
+  it("shows distinct error toasts for indeterminate and permanent failures (V-01c)", async () => {
+    getContest.mockResolvedValueOnce({
+      ...contest,
+      winner_awards: [{ id: "aw-1", project_id: "p1", label: "First Place", sort_order: 0 }],
+    });
+    notifyHackathonWinnerAwards.mockResolvedValueOnce({
+      ok: true,
+      emails_sent_count: 0,
+      failures_count: 2,
+      failures: [
+        { project_id: "p1", user_id: "u1", recipient_email: "u1@example.com", reason: "indeterminate_delivery_requires_reconciliation", is_retryable: false },
+        { project_id: "p2", user_id: "u2", recipient_email: "u2@example.com", reason: "email_delivery_rejected", is_retryable: false },
+      ],
+    });
+
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    const view = renderEditor("/admin/hackathons/hackathon-1/edit#projects");
+    await settle();
+
+    const notifyButton = Array.from(view.container.querySelectorAll("button"))
+      .find((b) => b.textContent?.includes("hackathons.editor.notifyAwardsAction"));
+    expect(notifyButton).toBeDefined();
+
+    await act(async () => notifyButton?.click());
+    await settle();
+
+    expect(toast.error).toHaveBeenCalledWith("hackathons.editor.awardsNotifyIndeterminateError");
+    expect(toast.error).toHaveBeenCalledWith("hackathons.editor.awardsNotifyPermanentError");
+    expect(toast.success).not.toHaveBeenCalledWith(expect.stringContaining("hackathons.editor.awardsNotified"));
 
     await view.cleanup();
   });

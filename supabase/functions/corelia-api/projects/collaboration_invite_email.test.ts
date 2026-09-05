@@ -4,6 +4,7 @@ import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
 
 vi.mock("../lib/mail/resend.ts", () => ({
   sendTransactionalEmailViaResend: vi.fn(),
+  isTransactionalEmailConfigured: vi.fn(() => true),
 }));
 
 async function sha256Hex(text: string): Promise<string> {
@@ -32,11 +33,19 @@ describe("handleProjectCollaborationInviteEmail replay and idempotency", () => {
     emailSending?: boolean;
     emailLockAt?: string;
     lastAttemptAt?: string;
+    outboxStatus?: "pending" | "sending" | "accepted" | "failed" | "indeterminate";
+    firstDispatchedAt?: string | null;
     notificationPayload?: Record<string, unknown>;
+    existingAttempts?: Array<{ mail_type: string; recipient_email?: string; provider_status: string }>;
+    inviteCreatedAt?: string;
+    outboxQueryError?: boolean;
+    tokenHash?: string;
+    preparedToken?: string;
   } = {}) {
     let currentNotifId = options.notificationId !== undefined ? options.notificationId : notifId;
     let notifUpdatePayload: Record<string, unknown> | null = null;
     let inviteNotificationId = currentNotifId;
+    let currentInviteTokenHash: string = options.tokenHash ?? "default-hash";
     let insertedNotif: Record<string, unknown> | null = null;
     let insertCount = 0;
     let deleteCount = 0;
@@ -47,6 +56,112 @@ describe("handleProjectCollaborationInviteEmail replay and idempotency", () => {
       ...(options.emailLockAt ? { email_lock_at: options.emailLockAt } : {}),
       ...(options.lastAttemptAt ? { email_last_attempt_at: options.lastAttemptAt } : {}),
     };
+
+    const outboxEvents: any[] = [];
+    if (options.preparedToken) {
+      outboxEvents.push({
+        id: "outbox-prepared-1",
+        idempotency_key: inviteId,
+        event_type: "project_collaboration_invite",
+        recipient_email: "",
+        status: "pending",
+        request_payload: {
+          token: options.preparedToken,
+          prepared: true,
+        },
+        provider_message_id: null,
+        lease_acquired_at: null,
+        lease_token: null,
+        last_attempt_at: null,
+        first_dispatched_at: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    } else if (options.outboxStatus) {
+      outboxEvents.push({
+        id: "outbox-status-" + options.outboxStatus,
+        idempotency_key: inviteId,
+        event_type: "project_collaboration_invite",
+        recipient_email: recipientEmail,
+        status: options.outboxStatus,
+        request_payload: {
+          from: "Corelia <noreply@corelia.academy>",
+          to: [recipientEmail],
+          subject: "Invite",
+          html: "<p>Invite</p>",
+          idempotency_key: inviteId,
+        },
+        provider_message_id: options.outboxStatus === "accepted" ? "resend-msg-1" : null,
+        lease_acquired_at: options.emailLockAt || (options.outboxStatus === "sending" ? new Date().toISOString() : null),
+        last_attempt_at: options.lastAttemptAt || new Date().toISOString(),
+        first_dispatched_at: options.firstDispatchedAt !== undefined ? options.firstDispatchedAt : (options.outboxStatus !== "pending" ? (options.lastAttemptAt || new Date().toISOString()) : null),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    } else if (options.emailAlreadySent || options.existingAttempts?.some((a) => a.provider_status === "accepted")) {
+      outboxEvents.push({
+        id: "outbox-sent",
+        idempotency_key: inviteId,
+        event_type: "project_collaboration_invite",
+        recipient_email: recipientEmail,
+        status: "accepted",
+        request_payload: {
+          from: "Corelia <noreply@corelia.academy>",
+          to: [recipientEmail],
+          subject: "Invite",
+          html: "<p>Invite</p>",
+          idempotency_key: inviteId,
+        },
+        provider_message_id: "resend-msg-1",
+        lease_acquired_at: new Date().toISOString(),
+        last_attempt_at: new Date().toISOString(),
+        first_dispatched_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    } else if (options.emailSending) {
+      outboxEvents.push({
+        id: "outbox-sending",
+        idempotency_key: inviteId,
+        event_type: "project_collaboration_invite",
+        recipient_email: recipientEmail,
+        status: "sending",
+        request_payload: {
+          from: "Corelia <noreply@corelia.academy>",
+          to: [recipientEmail],
+          subject: "Invite",
+          html: "<p>Invite</p>",
+          idempotency_key: inviteId,
+        },
+        provider_message_id: null,
+        lease_acquired_at: options.emailLockAt || new Date().toISOString(),
+        last_attempt_at: options.emailLockAt || new Date().toISOString(),
+        first_dispatched_at: options.emailLockAt || new Date().toISOString(),
+        created_at: options.emailLockAt || new Date().toISOString(),
+        updated_at: options.emailLockAt || new Date().toISOString(),
+      });
+    } else if (options.lastAttemptAt) {
+      outboxEvents.push({
+        id: "outbox-recent-attempt",
+        idempotency_key: inviteId,
+        event_type: "project_collaboration_invite",
+        recipient_email: recipientEmail,
+        status: "indeterminate",
+        request_payload: {
+          from: "Corelia <noreply@corelia.academy>",
+          to: [recipientEmail],
+          subject: "Invite",
+          html: "<p>Invite</p>",
+          idempotency_key: inviteId,
+        },
+        provider_message_id: null,
+        lease_acquired_at: null,
+        last_attempt_at: options.lastAttemptAt,
+        first_dispatched_at: options.lastAttemptAt,
+        created_at: options.lastAttemptAt,
+        updated_at: options.lastAttemptAt,
+      });
+    }
 
     const mockDb = {
       auth: {
@@ -62,25 +177,204 @@ describe("handleProjectCollaborationInviteEmail replay and idempotency", () => {
         },
       },
       from: vi.fn((table: string) => {
+        if (table === "profiles") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn((_col: string, _val: unknown) => ({
+              maybeSingle: vi.fn().mockResolvedValue({
+                data: {
+                  email: recipientEmail,
+                  full_name: "Test User",
+                  locale: "vi",
+                },
+                error: null,
+              }),
+            })),
+          };
+        }
+        if (table === "projects") {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            maybeSingle: vi.fn().mockResolvedValue({
+              data: {
+                id: "proj-1",
+                title: "Test Project",
+                slug: "test-project",
+              },
+              error: null,
+            }),
+          };
+        }
+        if (table === "email_delivery_attempts") {
+          let mailTypeFilter: string | null = null;
+          let statusFilter: string | null = null;
+          let recipientFilter: string | null = null;
+          const attempts = options.existingAttempts ? [...options.existingAttempts] : [];
+          const queryBuilder: any = {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn((field: string, val: string) => {
+              if (field === "mail_type") mailTypeFilter = val;
+              if (field === "provider_status") statusFilter = val;
+              if (field === "recipient_email") recipientFilter = val;
+              return queryBuilder;
+            }),
+            limit: vi.fn().mockReturnThis(),
+            maybeSingle: vi.fn(async () => {
+              const match = attempts.find(
+                (a) => (!mailTypeFilter || a.mail_type === mailTypeFilter) &&
+                       (!statusFilter || a.provider_status === statusFilter) &&
+                       (!recipientFilter || a.recipient_email === recipientFilter)
+              );
+              return { data: match ? { id: "attempt-1", ...match } : null, error: null };
+            }),
+            insert: vi.fn(async (records: any) => {
+              const recs = Array.isArray(records) ? records : [records];
+              attempts.push(...recs);
+              return { data: recs, error: null };
+            }),
+            then: async (resolve: any, reject: any) => {
+              const matched = attempts.filter(
+                (a) => (!mailTypeFilter || a.mail_type === mailTypeFilter) &&
+                       (!statusFilter || a.provider_status === statusFilter) &&
+                       (!recipientFilter || a.recipient_email === recipientFilter)
+              );
+              return Promise.resolve({ data: matched, error: null }).then(resolve, reject);
+            },
+          };
+          return queryBuilder;
+        }
+        if (table === "email_outbox_events") {
+          if (options.outboxQueryError) {
+            const errBuilder: any = {
+              select: vi.fn(() => errBuilder),
+              eq: vi.fn(() => errBuilder),
+              limit: vi.fn(() => errBuilder),
+              then: (resolve: any) => resolve({ data: null, error: { message: "db connection failed" } }),
+            };
+            return errBuilder;
+          }
+          const queryEqs: Record<string, any> = {};
+          let orPred: string | null = null;
+          let limitCount: number | null = null;
+
+          const outboxBuilder: any = {
+            select: vi.fn(() => outboxBuilder),
+            eq: vi.fn((col: string, val: any) => {
+              queryEqs[col] = val;
+              return outboxBuilder;
+            }),
+            or: vi.fn((pred: string) => {
+              orPred = pred;
+              return outboxBuilder;
+            }),
+            limit: vi.fn((n: number) => {
+              limitCount = n;
+              return outboxBuilder;
+            }),
+            insert: vi.fn((record: any) => {
+              const rec = Array.isArray(record) ? record[0] : record;
+              const duplicate = outboxEvents.some((e) => e.idempotency_key === rec.idempotency_key);
+              const insertBuilder: any = {
+                select: vi.fn(async () => {
+                  if (duplicate) {
+                    return { data: null, error: { code: "23505", message: "duplicate key value violates unique constraint" } };
+                  }
+                  const newRow = {
+                    id: "outbox-" + (outboxEvents.length + 1),
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    provider_message_id: null,
+                    ...rec,
+                  };
+                  outboxEvents.push(newRow);
+                  return { data: [newRow], error: null };
+                }),
+                then: (resolve: any, reject: any) => insertBuilder.select().then(resolve, reject),
+              };
+              return insertBuilder;
+            }),
+            update: vi.fn((patch: any) => {
+              const updateEqs: Record<string, any> = {};
+              let updateOrPred: string | null = null;
+              const updateBuilder = {
+                eq: vi.fn((col: string, val: any) => {
+                  updateEqs[col] = val;
+                  return updateBuilder;
+                }),
+                or: vi.fn((pred: string) => {
+                  updateOrPred = pred;
+                  return updateBuilder;
+                }),
+                select: vi.fn(async () => {
+                  const target = outboxEvents.find((e) => {
+                    for (const [k, v] of Object.entries(updateEqs)) {
+                      if ((e as any)[k] !== v) return false;
+                    }
+                    return true;
+                  });
+                  if (!target) return { data: [], error: null };
+                  if (updateOrPred) {
+                    const now = Date.now();
+                    const LEASE_MS = 30_000;
+                    const leaseAt = target.lease_acquired_at ? Date.parse(target.lease_acquired_at) : 0;
+                    const isStale = !leaseAt || (now - leaseAt >= LEASE_MS) || (leaseAt > now);
+                    const canAcquire =
+                      target.status === "pending" ||
+                      target.status === "indeterminate" ||
+                      (target.status === "sending" && isStale);
+                    if (!canAcquire) {
+                      return { data: [], error: null };
+                    }
+                  }
+                  Object.assign(target, patch, { updated_at: new Date().toISOString() });
+                  return { data: [target], error: null };
+                }),
+                then: async (resolve: any, reject: any) => {
+                  const res = await updateBuilder.select();
+                  return Promise.resolve(res).then(resolve, reject);
+                },
+              };
+              return updateBuilder;
+            }),
+            then: async (resolve: any, reject: any) => {
+              let matched = outboxEvents.filter((e) => {
+                for (const [k, v] of Object.entries(queryEqs)) {
+                  if ((e as any)[k] !== v) return false;
+                }
+                return true;
+              });
+              if (limitCount !== null) matched = matched.slice(0, limitCount);
+              return Promise.resolve({ data: matched, error: null }).then(resolve, reject);
+            },
+          };
+          return outboxBuilder;
+        }
         if (table === "project_collaboration_invites") {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
             is: vi.fn().mockReturnThis(),
-            maybeSingle: vi.fn().mockImplementation(async () => ({
-              data: {
-                id: inviteId,
-                project_id: "proj-1",
-                invitee_user_id: "user-invitee-1",
-                invited_by: senderId,
-                status: "pending",
-                expires_at: new Date(Date.now() + 86400000).toISOString(),
-                token_hash: await sha256Hex(token),
-                notification_id: inviteNotificationId,
-              },
-              error: null,
-            })),
-            update: vi.fn((patch: { notification_id?: string }) => {
+            maybeSingle: vi.fn().mockImplementation(async () => {
+              if (currentInviteTokenHash === "default-hash") {
+                currentInviteTokenHash = await sha256Hex(token);
+              }
+              return {
+                data: {
+                  id: inviteId,
+                  project_id: "proj-1",
+                  invitee_user_id: "user-invitee-1",
+                  invited_by: senderId,
+                  status: "pending",
+                  expires_at: new Date(Date.now() + 86400000).toISOString(),
+                  token_hash: currentInviteTokenHash,
+                  notification_id: inviteNotificationId,
+                  created_at: options.inviteCreatedAt ?? new Date().toISOString(),
+                },
+                error: null,
+              };
+            }),
+            update: vi.fn((patch: { notification_id?: string; token_hash?: string }) => {
               let isConditionalNullCheck = false;
               const updateBuilder = {
                 eq: vi.fn().mockReturnThis(),
@@ -99,8 +393,15 @@ describe("handleProjectCollaborationInviteEmail replay and idempotency", () => {
                   if (patch.notification_id) {
                     inviteNotificationId = patch.notification_id;
                   }
-                  return { data: [{ notification_id: inviteNotificationId }], error: null };
+                  if (patch.token_hash) {
+                    currentInviteTokenHash = patch.token_hash;
+                  }
+                  return { data: [{ id: inviteId, notification_id: inviteNotificationId, token_hash: currentInviteTokenHash }], error: null };
                 }),
+                then: async (resolve: any, reject: any) => {
+                  const res = await updateBuilder.select();
+                  return Promise.resolve(res).then(resolve, reject);
+                },
               };
               return updateBuilder;
             }),
@@ -225,19 +526,21 @@ describe("handleProjectCollaborationInviteEmail replay and idempotency", () => {
       getDeleteCount: () => deleteCount,
       getActiveNotificationCount: () => insertCount - deleteCount,
       getInviteNotificationId: () => inviteNotificationId,
+      getCurrentTokenHash: () => currentInviteTokenHash,
+      getOutboxEvents: () => outboxEvents,
     };
 
     return mockDb;
   }
 
-  function createRequest(): Request {
+  function createRequest(bodyOverride?: Record<string, unknown>): Request {
     return new Request("https://api.corelia.academy/op", {
       method: "POST",
       headers: {
         Authorization: "Bearer valid-token",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ invite_id: inviteId, token }),
+      body: JSON.stringify(bodyOverride !== undefined ? bodyOverride : { invite_id: inviteId, token }),
     });
   }
 
@@ -450,5 +753,315 @@ describe("handleProjectCollaborationInviteEmail replay and idempotency", () => {
       invite_id: inviteId,
     });
     expect(typeof updatedPayload?.email_sent_at).toBe("string");
+  });
+
+  it("passes stable idempotencyKey to Resend and sets deterministic fingerprint in email html", async () => {
+    const db = createMockDb({ emailAlreadySent: false });
+    (sendTransactionalEmailViaResend as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      sent: true,
+      providerMessageId: "resend-msg-idem-invite",
+    });
+
+    const req = createRequest();
+    const res = await handleProjectCollaborationInviteEmail(req, db as any);
+    expect(res.status).toBe(200);
+
+    expect(sendTransactionalEmailViaResend).toHaveBeenCalledTimes(1);
+    const mailCall = (sendTransactionalEmailViaResend as unknown as ReturnType<typeof vi.fn>).mock.calls[0][0];
+
+    // Assert stable per-event idempotency key passed to Resend:
+    expect(mailCall.idempotencyKey).toBe(inviteId);
+    expect(mailCall.mailType).toBe(`project_collaboration_invite:${inviteId}`);
+
+    // Assert HTML body contains the deterministic fingerprint:
+    expect(mailCall.html).toContain(inviteId);
+  });
+
+  it("skips resending when authoritative delivery is already recorded in email_delivery_attempts even if notification payload has email_sent=false", async () => {
+    // Simulate recipient tampering or un-synced display state:
+    const db = createMockDb({
+      emailAlreadySent: false, // Untrusted/tampered notification payload
+      existingAttempts: [
+        {
+          mail_type: `project_collaboration_invite:${inviteId}`,
+          recipient_email: recipientEmail,
+          provider_status: "accepted",
+        },
+      ],
+    });
+
+    const req = createRequest();
+    const res = await handleProjectCollaborationInviteEmail(req, db as any);
+    const body = await res.json();
+    expect(body).toEqual({ ok: true, email_sent: false, idempotent_replay: true });
+    expect(sendTransactionalEmailViaResend).not.toHaveBeenCalled();
+  });
+
+  it("allows retry with only invite_id (no token) when outbox record already exists", async () => {
+    // Record already exists in outbox with sending or indeterminate status from previous run:
+    const db = createMockDb({
+      outboxStatus: "indeterminate",
+      lastAttemptAt: new Date(Date.now() - 120_000).toISOString(), // 2 minutes ago (past 60s cooldown)
+    });
+    (sendTransactionalEmailViaResend as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      sent: true,
+      providerMessageId: "resend-msg-tokenless-retry",
+    });
+
+    // Request from client containing ONLY invite_id (no token provided):
+    const req = createRequest({ invite_id: inviteId });
+    const res = await handleProjectCollaborationInviteEmail(req, db as any);
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body).toEqual({ ok: true, email_sent: true });
+    expect(sendTransactionalEmailViaResend).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects with 400 invalid_input:token when provided token is shorter than 32 characters", async () => {
+    const db = createMockDb({ emailAlreadySent: false });
+    const req = createRequest({ invite_id: inviteId, token: "too_short" });
+    const res = await handleProjectCollaborationInviteEmail(req, db as any);
+    expect(res.status).toBe(400);
+
+    const body = await res.json();
+    expect(body).toEqual({ message: "invalid_input:token" });
+    expect(sendTransactionalEmailViaResend).not.toHaveBeenCalled();
+  });
+
+  it("returns 422 provider_error_permanent and marks failed when Resend returns permanent error (422)", async () => {
+    const db = createMockDb({ emailAlreadySent: false });
+    (sendTransactionalEmailViaResend as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      sent: false,
+      providerError: true,
+      httpStatus: 422,
+      body: "Unprocessable Entity",
+      isRetryable: false,
+    });
+
+    const req = createRequest();
+    const res = await handleProjectCollaborationInviteEmail(req, db as any);
+    expect(res.status).toBe(422);
+
+    const body = await res.json();
+    expect(body).toEqual({ message: "provider_error_permanent", status: 422 });
+    const updatedPayload = db.getUpdatedNotifPayload();
+    expect(updatedPayload?.email_sending).toBe(false);
+    expect(updatedPayload?.email_delivery_failed).toBe(true);
+  });
+
+  it("returns 502 provider_error_retryable and marks indeterminate when Resend returns 500", async () => {
+    const db = createMockDb({ emailAlreadySent: false });
+    (sendTransactionalEmailViaResend as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      sent: false,
+      providerError: true,
+      httpStatus: 500,
+      body: "Internal Server Error",
+      isRetryable: true,
+    });
+
+    const req = createRequest();
+    const res = await handleProjectCollaborationInviteEmail(req, db as any);
+    expect(res.status).toBe(502);
+
+    const body = await res.json();
+    expect(body).toEqual({ message: "provider_error_retryable", status: 500 });
+    const updatedPayload = db.getUpdatedNotifPayload();
+    expect(updatedPayload?.email_sending).toBe(false);
+  });
+
+  it("returns 429 when client calls while in active cooldown (<60s)", async () => {
+    const db = createMockDb({
+      outboxStatus: "indeterminate",
+      lastAttemptAt: new Date(Date.now() - 10_000).toISOString(), // 10s ago (< 60s cooldown)
+    });
+
+    const req = createRequest({ invite_id: inviteId });
+    const res = await handleProjectCollaborationInviteEmail(req, db as any);
+    expect(res.status).toBe(429);
+
+    const body = await res.json();
+    expect(body.message).toBe("rate_limited:try_again_later");
+    expect(sendTransactionalEmailViaResend).not.toHaveBeenCalled();
+  });
+
+  it("returns 422 email_delivery_rejected when outbox record is failed permanent", async () => {
+    const db = createMockDb({
+      outboxStatus: "failed",
+    });
+
+    const req = createRequest({ invite_id: inviteId });
+    const res = await handleProjectCollaborationInviteEmail(req, db as any);
+    expect(res.status).toBe(422);
+
+    const body = await res.json();
+    expect(body).toEqual({ message: "email_delivery_rejected" });
+    expect(sendTransactionalEmailViaResend).not.toHaveBeenCalled();
+  });
+
+  it("returns 409 indeterminate_delivery_requires_reconciliation when outbox record was dispatched >24h ago", async () => {
+    const db = createMockDb({
+      outboxStatus: "indeterminate",
+      lastAttemptAt: new Date(Date.now() - (25 * 3600 * 1000)).toISOString(),
+      firstDispatchedAt: new Date(Date.now() - (25 * 3600 * 1000)).toISOString(),
+    });
+
+    const req = createRequest({ invite_id: inviteId });
+    const res = await handleProjectCollaborationInviteEmail(req, db as any);
+    expect(res.status).toBe(409);
+
+    const body = await res.json();
+    expect(body).toEqual({ message: "indeterminate_delivery_requires_reconciliation" });
+    expect(sendTransactionalEmailViaResend).not.toHaveBeenCalled();
+  });
+
+  it("dispatches successfully from prepared outbox record when client token is omitted (S3)", async () => {
+    const preparedToken = "b".repeat(64);
+    const tokenHash = await sha256Hex(preparedToken);
+    const db = createMockDb({ preparedToken, tokenHash });
+    (sendTransactionalEmailViaResend as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      sent: true,
+      providerMessageId: "resend-msg-prepared-success",
+    });
+
+    // Request contains only invite_id, NO token:
+    const req = createRequest({ invite_id: inviteId });
+    const res = await handleProjectCollaborationInviteEmail(req, db as any);
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body).toEqual({ ok: true, email_sent: true });
+    expect(sendTransactionalEmailViaResend).toHaveBeenCalledTimes(1);
+
+    // Verify email link was constructed with the prepared token:
+    const callArgs = (sendTransactionalEmailViaResend as unknown as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(callArgs.html).toContain(`/invites/project/${preparedToken}`);
+
+    // Verify outbox record now contains completed snapshot:
+    const outboxRow = db.getOutboxEvents()[0];
+    expect(outboxRow.request_payload.html).toBeDefined();
+    expect(outboxRow.request_payload.metadata.invite_token).toBe(preparedToken);
+  });
+
+  it("fails closed with 500 internal_error when outbox query encounters DB error (V-01a)", async () => {
+    const db = createMockDb({ outboxQueryError: true });
+    const req = createRequest({ invite_id: inviteId });
+    const res = await handleProjectCollaborationInviteEmail(req, db as any);
+    expect(res.status).toBe(500);
+
+    const body = await res.json();
+    expect(body).toEqual({ message: "internal_error" });
+    expect(sendTransactionalEmailViaResend).not.toHaveBeenCalled();
+  });
+
+  it("rejects tokenless request for legacy invite under HOLD without prepared outbox (V-01a, V-02b)", async () => {
+    const db = createMockDb(); // No outbox record prepared
+    const req = createRequest({ invite_id: inviteId });
+    const res = await handleProjectCollaborationInviteEmail(req, db as any);
+    expect(res.status).toBe(400);
+
+    const body = await res.json();
+    expect(body).toEqual({ message: "missing_fields:token" });
+    expect(sendTransactionalEmailViaResend).not.toHaveBeenCalled();
+    expect(db.getOutboxEvents().length).toBe(0);
+  });
+
+  it("project title containing invite URL pattern does not affect token or link (V-01a, S3)", async () => {
+    const realToken = "e".repeat(64);
+    const fakeTokenInTitle = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    const tokenHash = await sha256Hex(realToken);
+
+    const db = createMockDb({ preparedToken: realToken, tokenHash });
+    // Override project title with a string containing an invite URL pattern before CTA
+    const origFrom = db.from;
+    db.from = vi.fn((table: string) => {
+      if (table === "projects") {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: {
+              id: "proj-1",
+              title: `Adversarial Project /invites/project/${fakeTokenInTitle}`,
+              slug: "adversarial-project",
+            },
+            error: null,
+          }),
+        };
+      }
+      return origFrom(table);
+    });
+
+    (sendTransactionalEmailViaResend as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      sent: true,
+      providerMessageId: "resend-msg-title-isolation",
+    });
+
+    const req = createRequest({ invite_id: inviteId });
+    const res = await handleProjectCollaborationInviteEmail(req, db as any);
+    expect(res.status).toBe(200);
+
+    // Email link and snapshot metadata must strictly contain realToken, NOT fakeTokenInTitle:
+    const callArgs = (sendTransactionalEmailViaResend as unknown as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(callArgs.html).toContain(`/invites/project/${realToken}`);
+
+    const outboxRow = db.getOutboxEvents()[0];
+    expect(outboxRow.request_payload.metadata.invite_token).toBe(realToken);
+    expect(outboxRow.request_payload.metadata.invite_token).not.toBe(fakeTokenInTitle);
+  });
+
+  it("ensures atomic consistency and single dispatch under concurrent tokenless requests (S3)", async () => {
+    const preparedToken = "f".repeat(64);
+    const tokenHash = await sha256Hex(preparedToken);
+    const db = createMockDb({ preparedToken, tokenHash });
+    (sendTransactionalEmailViaResend as unknown as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 25));
+      return {
+        sent: true,
+        providerMessageId: "resend-msg-concurrent-s3",
+      };
+    });
+
+    // Launch two concurrent tokenless requests:
+    const req1 = createRequest({ invite_id: inviteId });
+    const req2 = createRequest({ invite_id: inviteId });
+
+    const [res1, res2] = await Promise.all([
+      handleProjectCollaborationInviteEmail(req1, db as any),
+      handleProjectCollaborationInviteEmail(req2, db as any),
+    ]);
+
+    const statuses = [res1.status, res2.status].sort();
+    // Winner gets 200; loser gets 429 (lease locked by winner in claimOutboxLease):
+    expect(statuses).toEqual([200, 429]);
+
+    // Crucial invariant: Exactly one email was dispatched containing the prepared token
+    expect(sendTransactionalEmailViaResend).toHaveBeenCalledTimes(1);
+    const callArgs = (sendTransactionalEmailViaResend as unknown as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(callArgs.html).toContain(`/invites/project/${preparedToken}`);
+  });
+
+  it("returns 503 provider_config_error on 401/403 and does not mark outbox permanently failed (V-01b)", async () => {
+    const db = createMockDb();
+    (sendTransactionalEmailViaResend as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      sent: false,
+      providerError: true,
+      httpStatus: 401,
+      body: "Unauthorized",
+      isRetryable: false,
+      isConfigError: true,
+    });
+
+    const req = createRequest({ invite_id: inviteId, token });
+    const res = await handleProjectCollaborationInviteEmail(req, db as any);
+    expect(res.status).toBe(503);
+
+    const body = await res.json();
+    expect(body).toEqual({ message: "provider_config_error", status: 401 });
+
+    const updatedPayload = db.getUpdatedNotifPayload();
+    expect(updatedPayload?.email_sending).toBe(false);
+    // Crucial: email_delivery_failed must NOT be set to true on config errors
+    expect(updatedPayload?.email_delivery_failed).toBeUndefined();
   });
 });
