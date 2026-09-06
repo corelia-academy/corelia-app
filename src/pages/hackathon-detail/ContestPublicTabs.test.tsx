@@ -12,11 +12,12 @@ import type { Contest } from "@/types/hackathons";
 const { projectQueryFn } = vi.hoisted(() => ({
   projectQueryFn: vi.fn(async () => ({ items: [], nextCursor: null })),
 }));
+const locale = vi.hoisted(() => ({ value: "vi" }));
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string, options?: { count?: number }) => options?.count === undefined ? key : `${key}:${options.count}`,
-    i18n: { resolvedLanguage: "vi", language: "vi" },
+    i18n: { resolvedLanguage: locale.value, language: locale.value },
   }),
 }));
 
@@ -32,7 +33,7 @@ vi.mock("@/features/projects/projectQueries", () => ({
 vi.mock("@/components/projects/ProjectCard", () => ({ ProjectCard: () => null }));
 vi.mock("@/components/projects/ProjectCardSkeleton", () => ({ ProjectCardSkeleton: () => null }));
 
-import { HackathonProjectsTab } from "./ContestPublicTabs";
+import { HackathonPrizesTab, HackathonProjectsTab } from "./ContestPublicTabs";
 
 const contest = {
   id: "hackathon-1",
@@ -107,5 +108,89 @@ describe("HackathonProjectsTab filters", () => {
     expect(view.container.textContent).not.toContain("public.projects.selectedCount");
 
     await view.cleanup();
+  });
+});
+
+describe("HackathonPrizesTab", () => {
+  afterEach(() => {
+    locale.value = "vi";
+  });
+
+  async function renderPrizes(prizeContest: Partial<Contest>) {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={{ contest: prizeContest, registration: null }} />}>
+              <Route index element={<HackathonPrizesTab />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>,
+      );
+    });
+    return {
+      container,
+      async cleanup() {
+        await act(async () => root.unmount());
+        container.remove();
+      },
+    };
+  }
+
+  it.each([
+    ["vi", "100.000.000", "50.000.000,125"],
+    ["en", "100,000,000", "50,000,000.125"],
+  ])("formats prize amounts in %s without dropping fractional awards", async (language, total, allocation) => {
+    locale.value = language;
+    const view = await renderPrizes({
+      prize_pool: { amount: "100000000", currency: "VND" },
+      tracks: [{ id: "product", name: "Best Product & Business", prize_amount: "50000000.125" }],
+    });
+    try {
+      expect(view.container.querySelector("section")?.textContent).toContain(`${total} VND`);
+      expect(view.container.querySelector("article")?.textContent).toContain(`${allocation} VND`);
+    } finally {
+      await view.cleanup();
+    }
+  });
+
+  it("renders track paragraphs, rubric lists and links as Markdown", async () => {
+    const view = await renderPrizes({
+      tracks: [{
+        id: "technical",
+        name: "Best Technical Build",
+        description: "Build a working demo.\n\n**Judging rubric**\n\n- Technical depth: 30%.\n- Architecture: 25%.\n\n[Rules](https://unihackfest.vn/)",
+      }],
+    });
+    try {
+      const track = view.container.querySelector("article");
+      expect(track?.querySelectorAll("p")).toHaveLength(3);
+      expect(track?.querySelectorAll("ul > li")).toHaveLength(2);
+      expect(track?.querySelector("strong")?.textContent).toBe("Judging rubric");
+      expect(track?.querySelector("a")?.getAttribute("href")).toBe("https://unihackfest.vn/");
+    } finally {
+      await view.cleanup();
+    }
+  });
+
+  it("preserves legacy non-numeric prize labels and excludes archived tracks", async () => {
+    const view = await renderPrizes({
+      prize_pool: { amount: "TBA", currency: "VND" },
+      tracks: [
+        { id: "active", name: "Active", prize_amount: "TBA" },
+        { id: "archived", name: "Archived", prize_amount: "1000", active: false },
+      ],
+    });
+    try {
+      expect(view.container.textContent).toContain("TBA VND");
+      expect(view.container.textContent).not.toContain("NaN");
+      expect(view.container.querySelectorAll("article")).toHaveLength(1);
+      expect(view.container.querySelector("article")?.textContent).toContain("TBA VND");
+    } finally {
+      await view.cleanup();
+    }
   });
 });
