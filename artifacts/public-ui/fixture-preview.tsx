@@ -14,6 +14,7 @@ import type { Course, CourseSection } from "../../src/types/courses";
 import type { Job } from "../../src/types/jobs";
 import type { Project } from "../../src/types/projects";
 import "../../src/styles/globals.css";
+import "../../src/styles/brand-palette.css";
 import "../../src/styles/public-ui.css";
 const course = { id: "fixture-course", slug: "fixture-course", title: "A long course title: TypeScript, AWS, AI and accessible applications for the next generation of builders", short_description: "Fixture content only. This card deliberately has a long title and a broken thumbnail to exercise layout and image fallback without creating any server records.", thumbnail_url: "/fixture-image-does-not-exist.png", level: "beginner", total_duration_seconds: 7200 } as Course;
 const job = { id: "fixture-job", slug: "fixture-job", title: "Senior Software Engineer, Infrastructure and Developer Experience across distributed teams", company_name: "Example Company (fixture)", company_logo_url: null, job_type: "tech", remote_type: "remote", employment_type: "full_time", salary_min: 100000, salary_max: 250000, salary_currency: "USD", salary_period: "year", required_skills: ["typescript", "aws", "ai"], domains: [], primary_role: "backend-engineering", summary: "Local fixture. Buttons are inert; no application or account operation will be sent.", first_seen_at: "2026-09-06" } as Job;

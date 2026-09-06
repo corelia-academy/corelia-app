@@ -1,0 +1,146 @@
+[
+  {
+    "path": "/",
+    "mode": "light",
+    "bg": "rgb(244, 247, 255)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": "14rem"
+  },
+  {
+    "path": "/feed",
+    "mode": "light",
+    "bg": "rgb(244, 247, 255)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": "14rem"
+  },
+  {
+    "path": "/career",
+    "mode": "light",
+    "bg": "rgb(244, 247, 255)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": "14rem"
+  },
+  {
+    "path": "/account",
+    "mode": "light",
+    "bg": "rgb(244, 247, 255)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": "14rem"
+  },
+  {
+    "path": "/admin",
+    "mode": "light",
+    "bg": "rgb(244, 247, 255)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": "14rem"
+  },
+  {
+    "path": "/instructor/courses",
+    "mode": "light",
+    "bg": "rgb(244, 247, 255)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": "14rem"
+  },
+  {
+    "path": "/jobs/saved",
+    "mode": "light",
+    "bg": "rgb(244, 247, 255)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": "14rem"
+  },
+  {
+    "path": "/projects/demo/edit",
+    "mode": "light",
+    "bg": "rgb(244, 247, 255)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": "14rem"
+  },
+  {
+    "path": "/learn/demo",
+    "mode": "light",
+    "bg": "rgb(244, 247, 255)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": null
+  },
+  {
+    "path": "/",
+    "mode": "dark",
+    "bg": "rgb(10, 9, 19)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": "14rem"
+  },
+  {
+    "path": "/feed",
+    "mode": "dark",
+    "bg": "rgb(10, 9, 19)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": "14rem"
+  },
+  {
+    "path": "/career",
+    "mode": "dark",
+    "bg": "rgb(10, 9, 19)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": "14rem"
+  },
+  {
+    "path": "/account",
+    "mode": "dark",
+    "bg": "rgb(10, 9, 19)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": "14rem"
+  },
+  {
+    "path": "/admin",
+    "mode": "dark",
+    "bg": "rgb(10, 9, 19)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": "14rem"
+  },
+  {
+    "path": "/instructor/courses",
+    "mode": "dark",
+    "bg": "rgb(10, 9, 19)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": "14rem"
+  },
+  {
+    "path": "/jobs/saved",
+    "mode": "dark",
+    "bg": "rgb(10, 9, 19)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": "14rem"
+  },
+  {
+    "path": "/projects/demo/edit",
+    "mode": "dark",
+    "bg": "rgb(10, 9, 19)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": "14rem"
+  },
+  {
+    "path": "/learn/demo",
+    "mode": "dark",
+    "bg": "rgb(10, 9, 19)",
+    "overflow": false,
+    "primary": "#1759F1",
+    "width": null
+  }
+]
