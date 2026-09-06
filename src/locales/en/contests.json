@@ -108,7 +108,16 @@
       "registered": "Registered",
       "notRegistered": "Not registered"
     },
-    "prizes": { "total": "Total prize pool" },
+    "prizes": { "total": "Total prize pool", "breakdown": "View breakdown" },
+    "prepare": {
+      "title": "Prepare with AI",
+      "description": "Copy this prompt into your AI assistant to understand the hackathon and plan your working demo.",
+      "promptLabel": "Hackathon preparation prompt",
+      "copy": "Copy prompt",
+      "copied": "Prompt copied.",
+      "copyFailed": "Could not copy. Select and copy the prompt above.",
+      "prompt": "I am preparing for {{title}}. Read the overview at {{url}}/overview, prizes and judging criteria at {{url}}/prizes, and official resources at {{url}}/resources. Summarize eligibility, tracks, submission requirements, ecosystem and technology expectations, and judging criteria. Cite the sources and flag missing or conflicting information instead of guessing. Ask about my skills, team and available time, then suggest three suitable project ideas and a practical 7-day plan to build a working demo and prepare the pitch."
+    },
     "projects": {
       "filters": "Filter projects",
       "sort": "Sort",

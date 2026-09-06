@@ -29,6 +29,7 @@ const draftContest = {
   location: "online",
   mode: "online",
   participants_count: 0,
+  prize_pool: { amount: "100000000", currency: "VND" },
   cover_image_url: "https://cdn.example.com/banner.png",
   host: { name: "Corelia", logo_url: null, website_url: null },
   social_links: { x: "https://x.com/corelia" },
@@ -172,6 +173,21 @@ describe("draft hackathon preview", () => {
     expect(view.container.querySelector(".bg-gradient-to-t")).toBeNull();
 
     await view.cleanup();
+  });
+
+  it.each([
+    ["/hackathons/published-demo/overview", "/hackathons/published-demo/prizes"],
+    ["/hackathons/draft-demo/overview?preview=1", "/hackathons/draft-demo/prizes?preview=1"],
+  ])("shows a localized prize summary with a detail link on %s", async (entry, target) => {
+    const view = renderRoute(entry);
+    await settle();
+    try {
+      const summary = view.container.querySelector(`header a[href='${target}']`);
+      expect(summary?.textContent).toContain("100.000.000 VND");
+      expect(summary?.textContent).toContain("public.prizes.breakdown");
+    } finally {
+      await view.cleanup();
+    }
   });
 
   it("does not expose a draft preview to a non-manager", async () => {

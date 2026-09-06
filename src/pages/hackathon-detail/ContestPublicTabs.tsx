@@ -12,6 +12,8 @@ import { publicProjectDirectoryQueryOptions } from "@/features/projects/projectQ
 import { cn } from "@/lib/utils";
 import type { ContestTrack, HackathonTaxonomyOption } from "@/types/hackathons";
 import type { HackathonOutletContext } from "./ContestPublicLayout";
+import { ContestPreparationCard } from "./components/ContestPreparationCard";
+import { formatPrizeAmount } from "./utils/formatPrizeAmount";
 
 function EmptyTab({ icon, title }: { icon: React.ReactNode; title: string }) {
   return (
@@ -32,14 +34,17 @@ export function HackathonOverviewTab() {
         <h2 className="text-lg font-semibold text-foreground">{t("public.overview.description")}</h2>
         {content ? <div className="mt-4"><Markdown content={content} /></div> : <p className="mt-4 text-sm text-foreground-muted">{t("public.empty.overview")}</p>}
       </section>
-      <aside className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card lg:self-start">
-        <h2 className="font-semibold text-foreground">{t("public.overview.summary")}</h2>
-        <dl className="mt-4 space-y-3 text-sm">
-          <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.overview.mode")}</dt><dd className="font-medium">{t(`public.mode.${contest.mode ?? contest.location}`)}</dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.participants")}</dt><dd className="font-medium">{contest.participants_count ?? 0}</dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.overview.registration")}</dt><dd className="font-medium">{registration ? t("public.overview.registered") : t("public.overview.notRegistered")}</dd></div>
-        </dl>
-      </aside>
+      <div className="min-w-0 space-y-6 lg:self-start">
+        <aside className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card">
+          <h2 className="font-semibold text-foreground">{t("public.overview.summary")}</h2>
+          <dl className="mt-4 space-y-3 text-sm">
+            <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.overview.mode")}</dt><dd className="font-medium">{t(`public.mode.${contest.mode ?? contest.location}`)}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.participants")}</dt><dd className="font-medium">{contest.participants_count ?? 0}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.overview.registration")}</dt><dd className="font-medium">{registration ? t("public.overview.registered") : t("public.overview.notRegistered")}</dd></div>
+          </dl>
+        </aside>
+        {contest.slug && contest.status !== "draft" ? <ContestPreparationCard contest={contest} /> : null}
+      </div>
     </div>
   );
 }
@@ -47,8 +52,7 @@ export function HackathonOverviewTab() {
 export function HackathonPrizesTab() {
   const { contest } = useOutletContext<HackathonOutletContext>();
   const { t, i18n } = useTranslation("contests");
-  const numberFormat = new Intl.NumberFormat(i18n.resolvedLanguage ?? i18n.language, { maximumFractionDigits: 20 });
-  const formatAmount = (amount: string) => Number.isFinite(Number(amount)) ? numberFormat.format(Number(amount)) : amount;
+  const formatAmount = (amount: string) => formatPrizeAmount(amount, i18n.resolvedLanguage ?? i18n.language);
   const pool = contest.prize_pool;
   const tracks = [...(contest.tracks ?? [])].filter((track) => track.active !== false).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
   if (!pool && tracks.length === 0) return <EmptyTab icon={<Coins className="size-6" />} title={t("public.empty.prizes")} />;
