@@ -42,13 +42,57 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) * 0.6);
+  /* --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: 1rem; /* 16px — premium card radius */
+  --radius-2xl: 1rem; 16px — premium card radius
   --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-4xl: calc(var(--radius) * 2.6); */
+  
+  /*
+   * Figma token -> Tailwind v4/CSS variable mapping:
+   * spacing: none=0, xxs=2, xs=4, sm=6, md=8, 2md=10, lg=12,
+   *          xl=16, 2xl=20, 3xl=24, 4xl=28, 5xl=32, 6xl=40,
+   *          7xl=48, 8xl=64, 9xl=80, 10xl=96, 11xl=128,
+   *          12xl=160, 13xl=192, 14xl=224, 15xl=256px.
+   * radius: sm=6, md=8, lg=10, xl=12, 2xl=16, 3xl=20,
+   *         full=9999px.
+   * Figma's 8px/10px spacing rows were normalized to spacing-md/2md.
+   */
+  /* Corelia DS v2 spacing tokens — 4px base */
+  --spacing-none: 0rem;
+  --spacing-xxs: 0.125rem;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.375rem;
+  --spacing-md: 0.5rem;
+  --spacing-2md: 0.625rem;
+  --spacing-lg: 0.75rem;
+  --spacing-xl: 1rem;
+  --spacing-2xl: 1.25rem;
+  --spacing-3xl: 1.5rem;
+  --spacing-4xl: 1.75rem;
+  --spacing-5xl: 2rem;
+  --spacing-6xl: 2.5rem;
+  --spacing-7xl: 3rem;
+  --spacing-8xl: 4rem;
+  --spacing-9xl: 5rem;
+  --spacing-10xl: 6rem;
+  --spacing-11xl: 8rem;
+  --spacing-12xl: 10rem;
+  --spacing-13xl: 12rem;
+  --spacing-14xl: 14rem;
+  --spacing-15xl: 16rem;
+
+  /* Corelia DS v2 radius tokens */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.25rem;
+  --radius-full: 9999px;
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -102,7 +146,8 @@
   --popover-foreground: oklch(0.22 0.006 260);
 
   /* ── Brand Colors (Google Blue) ── */
-  --primary: oklch(0.58 0.19 255); /* Google Blue ≈ #4285F4 */
+  --primary: oklch(0.58 0.19 255);
+  /* Google Blue ≈ #4285F4 */
   --primary-foreground: oklch(1 0 0);
   --primary-muted: color-mix(in oklch, var(--primary) 10%, transparent);
   --primary-container: oklch(0.93 0.045 255);
@@ -118,20 +163,25 @@
   --accent-muted: color-mix(in oklch, var(--accent) 15%, transparent);
 
   /* ── Semantic Colors (Bộ màu logo Google) ── */
-  --destructive: oklch(0.63 0.22 25); /* Google Red ≈ #EA4335 */
+  --destructive: oklch(0.63 0.22 25);
+  /* Google Red ≈ #EA4335 */
   --destructive-foreground: oklch(1 0 0);
   --destructive-muted: color-mix(in oklch, var(--destructive) 10%, transparent);
 
-  --success: oklch(0.64 0.16 145); /* Google Green ≈ #34A853 */
+  --success: oklch(0.64 0.16 145);
+  /* Google Green ≈ #34A853 */
   --success-foreground: oklch(1 0 0);
   --success-muted: color-mix(in oklch, var(--success) 10%, transparent);
 
-  --warning: oklch(0.78 0.16 85); /* Google Yellow ≈ #FBBC05 */
+  --warning: oklch(0.78 0.16 85);
+  /* Google Yellow ≈ #FBBC05 */
   --warning-foreground: oklch(0.25 0.02 260);
-  --warning-muted: oklch(0.96 0.05 90); /* Nền banner vàng nhạt */
+  --warning-muted: oklch(0.96 0.05 90);
+  /* Nền banner vàng nhạt */
 
   /* ── Borders & Inputs ── */
-  --border: oklch(0.89 0.004 260); /* Viền xám nhạt kiểu Google (#dadce0) */
+  --border: oklch(0.89 0.004 260);
+  /* Viền xám nhạt kiểu Google (#dadce0) */
   --border-subtle: oklch(0.93 0.003 260);
   --border-strong: oklch(0.76 0.006 260);
   --input: oklch(0.89 0.004 260);
@@ -147,10 +197,12 @@
 
   /* ── Brand ── */
   --brand-navy: oklch(0.2 0.03 255);
-  --brand-accent: oklch(0.58 0.19 255); /* Google Blue */
+  --brand-accent: oklch(0.58 0.19 255);
+  /* Google Blue */
 
   /* ── Sidebar ── */
-  --sidebar: oklch(0.98 0.003 260); /* ≈ #f8f9fa */
+  --sidebar: oklch(0.98 0.003 260);
+  /* ≈ #f8f9fa */
   --sidebar-foreground: oklch(0.22 0.006 260);
   --sidebar-primary: oklch(0.58 0.19 255);
   --sidebar-primary-foreground: oklch(1 0 0);
@@ -174,19 +226,23 @@
   --app-max-width: 80rem;
 
   /* ── Background & Surfaces ── */
-  --background: oklch(0.19 0.006 260); /* ≈ #202124 kiểu Google Dark */
+  --background: oklch(0.19 0.006 260);
+  /* ≈ #202124 kiểu Google Dark */
   --foreground: oklch(0.92 0.004 260);
   --foreground-muted: oklch(0.68 0.008 260);
   --foreground-subtle: oklch(0.52 0.008 260);
 
-  --card: oklch(0.23 0.007 260); /* Card sáng hơn nền một chút để tạo độ nổi */
+  --card: oklch(0.23 0.007 260);
+  /* Card sáng hơn nền một chút để tạo độ nổi */
   --card-foreground: oklch(0.92 0.004 260);
   --popover: oklch(0.23 0.007 260);
   --popover-foreground: oklch(0.92 0.004 260);
 
   /* ── Brand Colors (Google Blue sáng hơn cho nền tối) ── */
-  --primary: oklch(0.75 0.13 255); /* ≈ #8ab4f8 */
-  --primary-foreground: oklch(0.19 0.03 255); /* Chữ navy đậm trên nền xanh */
+  --primary: oklch(0.75 0.13 255);
+  /* ≈ #8ab4f8 */
+  --primary-foreground: oklch(0.19 0.03 255);
+  /* Chữ navy đậm trên nền xanh */
   --primary-muted: color-mix(in oklch, var(--primary) 15%, transparent);
   --primary-container: oklch(0.3 0.05 255);
   --on-primary-container: oklch(0.85 0.1 255);
@@ -201,17 +257,21 @@
   --accent-muted: color-mix(in oklch, var(--accent) 15%, transparent);
 
   /* ── Semantic Colors (Bộ màu Google, sáng hơn cho Dark Mode) ── */
-  --destructive: oklch(0.72 0.18 25); /* ≈ #f28b82 */
+  --destructive: oklch(0.72 0.18 25);
+  /* ≈ #f28b82 */
   --destructive-foreground: oklch(0.19 0.03 25);
   --destructive-muted: color-mix(in oklch, var(--destructive) 15%, transparent);
 
-  --success: oklch(0.75 0.14 145); /* ≈ #81c995 */
+  --success: oklch(0.75 0.14 145);
+  /* ≈ #81c995 */
   --success-foreground: oklch(0.19 0.03 145);
   --success-muted: color-mix(in oklch, var(--success) 15%, transparent);
 
-  --warning: oklch(0.85 0.14 85); /* ≈ #fdd663 */
+  --warning: oklch(0.85 0.14 85);
+  /* ≈ #fdd663 */
   --warning-foreground: oklch(0.19 0.03 85);
-  --warning-muted: oklch(0.28 0.05 85); /* Nền banner vàng sẫm */
+  --warning-muted: oklch(0.28 0.05 85);
+  /* Nền banner vàng sẫm */
 
   /* ── Borders & Inputs ── */
   --border: oklch(0.32 0.007 260);
@@ -229,7 +289,8 @@
 
   /* ── Brand ── */
   --brand-navy: oklch(0.14 0.01 260);
-  --brand-accent: oklch(0.75 0.13 255); /* Google Blue sáng cho dark mode */
+  --brand-accent: oklch(0.75 0.13 255);
+  /* Google Blue sáng cho dark mode */
 
   /* ── Sidebar ── */
   --sidebar: oklch(0.16 0.006 260);
@@ -252,13 +313,16 @@
   * {
     @apply border-border outline-primary/40;
   }
+
   body {
     @apply bg-surface-base font-sans text-foreground antialiased;
     min-height: 100dvh;
   }
+
   html {
     @apply font-sans;
   }
+
   ::selection {
     background: color-mix(in oklch, var(--primary) 18%, transparent);
     color: var(--foreground);
@@ -287,17 +351,16 @@
 
 /* Trang login: Midnight Blue gradient + electric blue dot pattern */
 .bg-auth-page {
-  --auth-dot: oklch(0.58 0.19 255 / 0.08); /* Google blue dot */
+  --auth-dot: oklch(0.58 0.19 255 / 0.08);
+  /* Google blue dot */
   background-color: var(--background);
   background-image:
     radial-gradient(circle at 50% 50%, var(--auth-dot) 1px, transparent 1px),
-    linear-gradient(
-      160deg,
+    linear-gradient(160deg,
       var(--background) 0%,
       oklch(0.95 0.03 255) 35%,
       oklch(0.97 0.015 255) 70%,
-      var(--background) 100%
-    );
+      var(--background) 100%);
   background-size:
     24px 24px,
     100% 100%;
@@ -307,16 +370,15 @@
 }
 
 .dark .bg-auth-page {
-  --auth-dot: oklch(0.75 0.13 255 / 0.1); /* Google blue dot (dark) */
+  --auth-dot: oklch(0.75 0.13 255 / 0.1);
+  /* Google blue dot (dark) */
   background-image:
     radial-gradient(circle at 50% 50%, var(--auth-dot) 1px, transparent 1px),
-    linear-gradient(
-      160deg,
+    linear-gradient(160deg,
       var(--background) 0%,
       oklch(0.24 0.05 255) 40%,
       oklch(0.21 0.03 260) 70%,
-      var(--background) 100%
-    );
+      var(--background) 100%);
   background-size:
     24px 24px,
     100% 100%;
@@ -342,6 +404,7 @@
 @utility ds-card-hover {
   transition-property: transform, background-color, border-color, box-shadow;
   transition-duration: 200ms;
+
   &:hover {
     transform: translateY(-2px);
     background-color: var(--surface-raised);
@@ -376,6 +439,7 @@
     opacity: 0;
     transform: translateY(12px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

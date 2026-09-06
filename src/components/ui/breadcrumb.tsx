@@ -8,7 +8,7 @@ export function Breadcrumb({
   return (
     <nav
       aria-label="Breadcrumb"
-      className={cn("flex items-center gap-1 text-xs text-foreground-muted", className)}
+      className={cn("flex items-center gap-xs text-xs text-foreground-muted", className)}
       {...props}
     />
   );
@@ -20,7 +20,7 @@ export function BreadcrumbList({
 }: React.ComponentProps<"ol">) {
   return (
     <ol
-      className={cn("flex flex-wrap items-center gap-1.5", className)}
+      className={cn("flex flex-wrap items-center gap-sm", className)}
       {...props}
     />
   );
@@ -32,7 +32,7 @@ export function BreadcrumbItem({
 }: React.ComponentProps<"li">) {
   return (
     <li
-      className={cn("inline-flex items-center gap-1.5", className)}
+      className={cn("inline-flex items-center gap-sm", className)}
       {...props}
     />
   );
