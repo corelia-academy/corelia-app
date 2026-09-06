@@ -1,3 +1,4 @@
+import { deepStrictEqual } from "node:assert";
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -184,14 +185,28 @@ async function main() {
   // Setup common test user and project
   const testUserId = randomUUID();
   const testEmail = `real_concurrency_${Date.now()}@example.com`;
+  const testPassword = "ConcurrencyTestPass123!";
   const { stdout: projOut } = await runLocalSql(`SELECT id FROM projects LIMIT 1;`);
   const projMatch = projOut.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
   if (!projMatch) throw new Error("No projects found in local DB.");
   const testProjId = projMatch[0];
 
-  await runLocalSql(`
-    INSERT INTO auth.users (id, email) VALUES ('${testUserId}', '${testEmail}') ON CONFLICT DO NOTHING;
-  `);
+  if (SERVICE_KEY) {
+    const adminInitClient = createClient(SUPABASE_URL, SERVICE_KEY);
+    const { error: createErr } = await adminInitClient.auth.admin.createUser({
+      id: testUserId,
+      email: testEmail,
+      password: testPassword,
+      email_confirm: true,
+    });
+    if (createErr) {
+      throw new Error(`Failed to create test user via admin API: ${createErr.message}`);
+    }
+  } else {
+    await runLocalSql(`
+      INSERT INTO auth.users (id, email) VALUES ('${testUserId}', '${testEmail}') ON CONFLICT DO NOTHING;
+    `);
+  }
 
   try {
     // --------------------------------------------------------------------------
@@ -310,6 +325,13 @@ async function main() {
     if (!countCheck.includes("1")) {
       throw new Error(`Expected exactly 1 notification row in DB, got: ${countCheck}`);
     }
+
+    // Cleanup Suite 1 test artifacts
+    await runLocalSql(`
+      DELETE FROM project_collaboration_invites WHERE id = '${inviteId}';
+      DELETE FROM user_notifications WHERE id = '${notifWorker1}';
+    `);
+
     console.log("  ✓ SUITE 1 PASS: True concurrent multi-session orphan invite claim serialized correctly.");
 
     // --------------------------------------------------------------------------
@@ -533,7 +555,7 @@ async function main() {
     const client1 = createClient(SUPABASE_URL, SERVICE_KEY);
     const client2 = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    const httpDetNotifId = "e3000000-0000-5000-8000-000000000001";
+    const httpDetNotifId = randomUUID();
     await runLocalSql(`DELETE FROM user_notifications WHERE id = '${httpDetNotifId}';`);
 
     const insertCandidate = async (client, workerName) => {
@@ -601,6 +623,7 @@ async function main() {
     const testScopedMailType = `hackathon_winner_award:${httpDetNotifId}`;
 
     await runLocalSql(`
+      DELETE FROM email_delivery_attempts WHERE mail_type = '${testScopedMailType}';
       INSERT INTO email_delivery_attempts (mail_type, recipient_email, provider, provider_status, provider_message_id)
       VALUES ('${testScopedMailType}', '${testEmail}', 'resend', 'accepted', 're_concurrency_proof_2');
     `);
@@ -672,7 +695,9 @@ async function main() {
       .eq("idempotency_key", outboxKey)
       .single();
 
-    if (JSON.stringify(dbCheckRow.request_payload) !== JSON.stringify(initialSnapshot)) {
+    try {
+      deepStrictEqual(dbCheckRow.request_payload, initialSnapshot);
+    } catch {
       throw new Error("Case 2 Failure: request_payload in DB does not match initial snapshot!");
     }
     console.log("  ✓ Case 2 PASS: request_payload snapshot is byte-for-byte immutable in outbox.");
@@ -899,8 +924,9 @@ async function main() {
       const { createHash } = await import("node:crypto");
       const tokenHash = createHash("sha256").update(token).digest("hex");
 
-      // S3: Insert invite row and prepared outbox event as done atomically by the RPC
+      // S3: Clean any existing invites for user and insert fresh invite row and prepared outbox event
       await runLocalSql(`
+        DELETE FROM project_collaboration_invites WHERE invitee_user_id = '${testUserId}';
         INSERT INTO project_collaboration_invites (id, project_id, invitee_user_id, invited_by, status, token_hash, expires_at)
         VALUES ('${handlerInviteId}', '${testProjId}', '${testUserId}', '${testUserId}', 'pending', '${tokenHash}', now() + interval '1 day');
 
@@ -972,7 +998,14 @@ async function main() {
 
   } finally {
     // Teardown test artifacts
+    if (SERVICE_KEY) {
+      try {
+        const adminTeardownClient = createClient(SUPABASE_URL, SERVICE_KEY);
+        await adminTeardownClient.auth.admin.deleteUser(testUserId);
+      } catch {}
+    }
     await runLocalSql(`
+      DELETE FROM email_delivery_attempts WHERE recipient_email = '${testEmail}';
       DELETE FROM email_outbox_events WHERE recipient_email = '${testEmail}';
       DELETE FROM project_collaboration_invites WHERE invitee_user_id = '${testUserId}';
       DELETE FROM user_notifications WHERE user_id = '${testUserId}';
