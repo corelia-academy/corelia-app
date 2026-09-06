@@ -1,4 +1,4 @@
-/** Keep public presentation separate from learning and private workspaces. */
+/** Public content sizing only; navigation and brand colors are shared across all routes. */
 export function isPublicPresentation(pathname: string, authenticated: boolean): boolean {
   const parts = pathname.split("/").filter(Boolean);
   const [root, second] = parts;

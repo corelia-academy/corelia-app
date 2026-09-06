@@ -19,10 +19,10 @@ const MainLayout = () => {
     <SidebarProvider
       defaultOpen
       mobileBreakpoint={1024}
-      className={publicUI ? "public-ui flex-col" : "flex-col"}
-      style={{ "--app-header-height": "4.75rem", ...(publicUI ? { "--sidebar-width": "14rem" } : {}) } as CSSProperties}
+      className="public-ui flex-col"
+      style={{ "--app-header-height": "4.75rem", "--sidebar-width": "14rem" } as CSSProperties}
     >
-      <Header publicUI={publicUI} />
+      <Header publicUI />
       <div className="flex min-h-0 flex-1">
         <MainAppSidebar />
         <SidebarInset className="flex min-h-[calc(100svh-var(--app-header-height))] min-w-0 flex-col">
