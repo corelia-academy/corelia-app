@@ -18,7 +18,7 @@ import { uploadContestBanner, uploadContestThumbnail } from "@/lib/storage";
 import type { ContestLocation, ContestStatus } from "@/types/hackathons";
 import { useTranslation } from "react-i18next";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
-import { datetimeLocalToIso } from "@/pages/hackathon-detail/utils/datetime";
+import { datetimeLocalToIso } from "@/lib/datetime";
 import { normalizeSlug, slugifyTitle } from "@/pages/hackathon-detail/utils/slug";
 import { hackathonKeys } from "@/features/hackathons/hackathonQueries";
 
