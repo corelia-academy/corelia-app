@@ -1,7 +1,5 @@
-/* Route-scoped brand palette. The conditional body scope also reaches portals;
-   it disappears automatically on Learn/private routes. Theme ownership stays
-   with the existing next-themes provider. */
-:is(.public-ui, .public-status), body:has(.public-ui, .public-status) {
+/* Shared Corelia palette for every route and portal. Theme selection remains owned by next-themes. */
+:root {
   --background: #F4F7FF;
   --foreground: #171923;
   --foreground-muted: #526079;
@@ -46,9 +44,11 @@
   --sidebar-border: #D8DFED;
   --sidebar-ring: #1759F1;
 }
-.dark :is(.public-ui, .public-status),
-.dark body:has(.public-ui, .public-status),
-body.dark:has(.public-ui, .public-status) {
+.dark {
+  --primary: #1759F1;
+  --primary-foreground: #FFFFFF;
+  --sidebar-primary: #1759F1;
+  --sidebar-primary-foreground: #FFFFFF;
   --background: #0A0913;
   --foreground: #EAE6E3;
   --foreground-muted: #CBD1E2;
@@ -89,25 +89,25 @@ body.dark:has(.public-ui, .public-status) {
   --sidebar-border: #282E3F;
   --sidebar-ring: #91B5FF;
 }
-body:has(.public-ui, .public-status), .public-ui, .public-status {
+body, .public-ui, .public-status {
   background-color: var(--background);
   color: var(--foreground);
 }
-body:has(.public-ui, .public-status) .text-primary { color: var(--public-link); }
-body:has(.public-ui, .public-status) :is(a, button, input, select, summary):focus-visible {
+body .text-primary { color: var(--public-link); }
+body :is(a, button, input, select, summary):focus-visible {
   outline-color: var(--public-link);
 }
-body:has(.public-ui, .public-status) :is(input, select, textarea, [data-slot=button].border-border):not([aria-invalid=true]):not(.border-destructive) {
+body :is(input, select, textarea, [data-slot=button].border-border):not([aria-invalid=true]):not(.border-destructive) {
   border-color: var(--public-control-border);
 }
-body:has(.public-ui, .public-status) :is(button, a).bg-primary:hover:not(:disabled):not([aria-disabled=true]) {
+body :is(button, a).bg-primary:hover:not(:disabled):not([aria-disabled=true]) {
   background-color: var(--public-cta-hover);
   opacity: 1;
 }
-body:has(.public-ui, .public-status) :is(button, a).bg-primary:active:not(:disabled):not([aria-disabled=true]) {
+body :is(button, a).bg-primary:active:not(:disabled):not([aria-disabled=true]) {
   background-color: var(--public-cta-active);
 }
-body:has(.public-ui, .public-status) nav a[aria-current=page] {
+body nav a[aria-current=page] {
   background-color: var(--sidebar-accent);
   color: var(--sidebar-accent-foreground);
 }

@@ -1,5 +1,3 @@
-@import "./public-palette.css";
-
 /* Presentation is opt-in at MainLayout; no global primitive/token changes. */
 .public-ui .public-content { min-width: 0; }
 .public-ui .public-content > :is(div, main, section) {
