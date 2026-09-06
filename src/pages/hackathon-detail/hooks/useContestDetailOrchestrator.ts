@@ -54,7 +54,7 @@ import { buildContestTimelineRows } from "@/components/hackathons/contestTimelin
 import {
   datetimeLocalToIso,
   isoToDatetimeLocal,
-} from "@/pages/hackathon-detail/utils/datetime";
+} from "@/lib/datetime";
 import { validateContestScheduleInputs } from "@/lib/hackathonScheduleValidation";
 import {
   formatContestCountdown,

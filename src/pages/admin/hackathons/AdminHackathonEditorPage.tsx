@@ -17,6 +17,7 @@ import { deleteStorageObjectByPath, uploadContestBanner, uploadContestHostLogo }
 import { invokeGenerateDescription, type DescriptionTranslationBundle, type HackathonTranslationItem } from "@/lib/descriptionGenerator";
 import { canonicalizeSlug, normalizeSlugDraft } from "@/lib/slug";
 import { cn } from "@/lib/utils";
+import { datetimeLocalToIso, isoToDatetimeLocal } from "@/lib/datetime";
 import type { Contest, ContestI18nContent, ContestLocation, ContestStatus, ContestTrack, HackathonTaxonomyOption, HackathonTimelineItem, HackathonWinnerAward } from "@/types/hackathons";
 import { areHackathonDeadlinesValid, isPrizeAllocationValid } from "@/lib/hackathonContract";
 import { isValidHackathonSocialLink, normalizeHackathonSocialLink } from "./utils/socialLinks";
@@ -108,25 +109,8 @@ const DEFAULT_TAXONOMY = {
   ],
 } as const;
 
-function datetimeLocalToIso(local: string | null | undefined): string | null {
-  if (!local || !local.trim()) return null;
-  const t = new Date(local).getTime();
-  if (Number.isNaN(t)) return null;
-  return new Date(t).toISOString();
-}
-
 function dateInput(value: string | null | undefined): string {
-  if (!value) return "";
-  const normalized = value.includes(" ") && !value.includes("T") ? value.replace(" ", "T") : value;
-  const d = new Date(normalized);
-  if (isNaN(d.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const year = d.getFullYear();
-  const month = pad(d.getMonth() + 1);
-  const day = pad(d.getDate());
-  const hours = pad(d.getHours());
-  const minutes = pad(d.getMinutes());
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
+  return isoToDatetimeLocal(value);
 }
 
 function localeFromContest(contest: Contest, localized: ContestI18nContent | null, fallback: boolean): LocaleDraft {
@@ -370,6 +354,9 @@ export default function AdminHackathonEditorPage() {
     tech_stacks: draft.locales[target].tech_stacks,
     timeline: draft.locales[target].timeline,
   });
+  const deadlinePayload = (key: "registration_deadline" | "submission_deadline") => draft[key] === loadedDraft?.[key]
+    ? editorQuery.data?.contest[key] ?? null
+    : datetimeLocalToIso(draft[key]);
   const payload = () => ({
     slug: canonicalizeSlug(draft.slug),
     title: draft.locales.vi.title,
@@ -378,8 +365,8 @@ export default function AdminHackathonEditorPage() {
     description_markdown: draft.locales.vi.description_markdown,
     resources_markdown: draft.locales.vi.resources_markdown,
     status: draft.status,
-    registration_deadline: datetimeLocalToIso(draft.registration_deadline),
-    submission_deadline: datetimeLocalToIso(draft.submission_deadline),
+    registration_deadline: deadlinePayload("registration_deadline"),
+    submission_deadline: deadlinePayload("submission_deadline"),
     location: draft.mode,
     mode: draft.mode,
     cover_image_url: bannerRemoved ? null : draft.cover_image_url || null,

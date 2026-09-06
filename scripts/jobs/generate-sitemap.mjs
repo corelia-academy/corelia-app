@@ -85,8 +85,8 @@ export async function generateSitemap({ cwd = process.cwd(), mode = "production"
   const supabaseUrl = process.env.VITE_SUPABASE_URL || env.VITE_SUPABASE_URL || "";
   const publicKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY ||
     process.env.VITE_SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY || "";
-  const distPath = resolve(cwd, "dist/sitemap.xml");
-  const robotsPath = resolve(cwd, "dist/robots.txt");
+  const distPath = resolve(cwd, "dist/client/sitemap.xml");
+  const robotsPath = resolve(cwd, "dist/client/robots.txt");
   const [baseXml, baseRobots] = await Promise.all([
     readFile(distPath, "utf8"),
     readFile(robotsPath, "utf8"),

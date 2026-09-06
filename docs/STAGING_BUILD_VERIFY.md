@@ -19,6 +19,37 @@ You should see `{ version }` matching the app release you expect.
 
 3. Optionally inspect **`index.html`** script `src` URLs — hashed asset names change when a new frontend bundle ships.
 
+## Stale chunk recovery verification
+
+The frontend installs a `vite:preloadError` recovery handler before React mounts. It may reload the current URL once per tab within a 60-second window. A repeated failure must stop auto-reloading and fall through to the localized error screen. Recovery must not clear `corelia-auth` or otherwise sign the user out.
+
+### Local Worker routing
+
+Start the production-style preview with `pnpm preview`, then verify:
+
+```sh
+curl -i http://localhost:8787/
+curl -i http://localhost:8787/courses/example
+curl -i http://localhost:8787/assets/__missing_stale_chunk__.js
+```
+
+Expected results:
+
+- `/` and the deep link return the SPA HTML with `200` and a revalidating cache policy.
+- A real hashed file under `/assets/` returns its JavaScript or CSS MIME type and the immutable cache policy.
+- The fake asset returns `404`, `Content-Type: text/plain`, and `Cache-Control: no-store`; it must never return `index.html`.
+
+### Cross-deployment staging acceptance
+
+1. Open staging build A, record `window.__CORELIA_BUILD__`, and keep the tab open.
+2. Publish build B through the external frontend pipeline with at least one changed lazy chunk hash.
+3. In the build A tab, navigate to a lazy-loaded route that has not been opened in that tab.
+4. Confirm the tab reloads no more than once, preserves the full URL, loads build B, and retains the signed-in session.
+5. Simulate or retain an unavailable chunk long enough to confirm a repeated failure shows the localized fallback instead of entering a reload loop.
+6. In Cloudflare observability, confirm the old path is logged as `missing_static_asset` without query parameters or user data.
+
+The frontend publication system is outside this repository. Before staging or Production acceptance, confirm it runs `wrangler deploy` from this repository so the Worker entry and static assets are published together.
+
 ## Auth lock re-audit checklist
 
 After deploying frontend + backend:

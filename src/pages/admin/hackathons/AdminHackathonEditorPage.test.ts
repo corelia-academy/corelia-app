@@ -10,7 +10,7 @@ import type { Contest } from "@/types/hackathons";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const { createContest, getContest, getHackathonLocaleContent, invokeGenerateDescription, notifyHackathonWinnerAwards, projectQueryFn, setHackathonLocaleContent } = vi.hoisted(() => ({
+const { createContest, getContest, getHackathonLocaleContent, invokeGenerateDescription, notifyHackathonWinnerAwards, projectQueryFn, setHackathonLocaleContent, updateContest } = vi.hoisted(() => ({
   createContest: vi.fn(),
   getContest: vi.fn(),
   getHackathonLocaleContent: vi.fn(),
@@ -23,6 +23,7 @@ const { createContest, getContest, getHackathonLocaleContent, invokeGenerateDesc
     }> => ({ items: [], nextCursor: null }),
   ),
   setHackathonLocaleContent: vi.fn(),
+  updateContest: vi.fn(),
 }));
 
 vi.mock("react-i18next", () => ({
@@ -40,7 +41,7 @@ vi.mock("@/lib/hackathons", () => ({
   getHackathonLocaleContent,
   notifyHackathonWinnerAwards,
   setHackathonLocaleContent,
-  updateContest: vi.fn(),
+  updateContest,
 }));
 
 vi.mock("@/lib/storage", () => ({
@@ -157,6 +158,7 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
     getContest.mockResolvedValue(contest);
     getHackathonLocaleContent.mockResolvedValue(null);
     createContest.mockResolvedValue(contest);
+    updateContest.mockResolvedValue(contest);
     setHackathonLocaleContent.mockResolvedValue(undefined);
     invokeGenerateDescription.mockResolvedValue({
       description: "{}",
@@ -207,6 +209,26 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
     expect(view.container.querySelector('[data-testid="location"]')?.textContent).toBe("/admin/hackathons/hackathon-1/edit#overview");
 
     await view.cleanup();
+  });
+
+  it("displays local deadlines and preserves their exact instants when saving other content", async () => {
+    const deadline = new Date(2026, 8, 29, 22, 0, 35).toISOString();
+    getContest.mockResolvedValue({ ...contest, registration_deadline: deadline, submission_deadline: deadline });
+    const view = renderEditor("/admin/hackathons/hackathon-1/edit#overview");
+    await settle();
+    try {
+      const dates = view.container.querySelectorAll<HTMLInputElement>('input[type="datetime-local"]');
+      expect(Array.from(dates, (input) => input.value)).toEqual(["2026-09-29T22:00", "2026-09-29T22:00"]);
+      await act(async () => changeInput(view.container.querySelector("input")!, "Updated title"));
+      const save = Array.from(view.container.querySelectorAll("button")).find((button) => button.textContent?.includes("hackathons.editor.saveSection"));
+      await act(async () => save?.click());
+      await settle();
+      expect(updateContest).toHaveBeenCalledWith("hackathon-1", expect.objectContaining({
+        title: "Updated title", registration_deadline: deadline, submission_deadline: deadline,
+      }));
+    } finally {
+      await view.cleanup();
+    }
   });
 
   it("creates a draft and moves the new flow to the editable Overview route", async () => {

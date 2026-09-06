@@ -5,6 +5,7 @@ import "./i18n";
 import App from "./App";
 import { OCConnect } from "@opencampus/ocid-connect-js";
 import { queryClient } from "@/lib/queryClient";
+import { installStaleChunkRecovery } from "@/lib/staleChunkRecovery";
 declare global {
   interface Window {
     __CORELIA_BUILD__?: { version: string };
@@ -14,6 +15,8 @@ declare global {
 window.__CORELIA_BUILD__ = {
   version: import.meta.env.VITE_APP_VERSION,
 };
+
+installStaleChunkRecovery({ buildVersion: import.meta.env.VITE_APP_VERSION });
 
 const ocidOpts = {
   clientId: import.meta.env.VITE_OCID_CLIENT_ID,

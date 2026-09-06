@@ -5,7 +5,8 @@ import { crawlCompany, refreshJobAnalytics, revalidateCompany } from "./pipeline
 import type { JobCompanyRow } from "./types.ts";
 
 const COMPANY_SELECT = "id,source_id,name,slug,logo_url,website_url,careers_url,domains,source_type,source_identifier,source_region,active,verified,crawl_interval_hours,priority,last_success_at,last_revalidated_at";
-const RUN_COMPANY_SELECT = `${COMPANY_SELECT},job_sources!inner(enabled,policy_reviewed_at)`;
+const RUN_SOURCE_RELATION = "run_source:job_sources!job_companies_source_id_fkey!inner(enabled,policy_reviewed_at)";
+const RUN_COMPANY_SELECT = `${COMPANY_SELECT},${RUN_SOURCE_RELATION}`;
 const ADMIN_ROLES = new Set(["admin", "support_staff"]);
 const EMPLOYER_SOURCE_TYPES = ["greenhouse", "lever", "ashby", "smartrecruiters"];
 
@@ -44,8 +45,8 @@ async function selectCompanies(
 ): Promise<{ items: JobCompanyRow[]; nextOffset: number | null }> {
   let query = db.from("job_companies").select(RUN_COMPANY_SELECT)
     .eq("active", true)
-    .eq("job_sources.enabled", true)
-    .not("job_sources.policy_reviewed_at", "is", null);
+    .eq("run_source.enabled", true)
+    .not("run_source.policy_reviewed_at", "is", null);
   if (targetType === "company") query = query.eq("id", targetValue);
   else if (targetType === "adapter") query = query.eq("source_type", targetValue);
   else if (targetType === "source") query = query.eq("source_id", targetValue);
@@ -56,7 +57,21 @@ async function selectCompanies(
     .order("priority", { ascending: false })
     .order("id", { ascending: true })
     .range(offset, offset + maxTargets);
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("[corelia-api] jobs target selection", {
+      targetType,
+      targetValue,
+      maxTargets,
+      offset,
+      error: {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      },
+    });
+    throw new Error(error.message);
+  }
   const rows = (data ?? []) as unknown as JobCompanyRow[];
   return {
     items: rows.slice(0, maxTargets),

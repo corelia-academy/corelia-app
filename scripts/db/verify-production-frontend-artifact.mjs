@@ -59,6 +59,30 @@ function sha256(buffer) {
   return createHash("sha256").update(buffer).digest("hex");
 }
 
+function parseHeaderRules(contents) {
+  const rules = new Map();
+  let currentPath;
+
+  for (const line of contents.replaceAll("\r\n", "\n").split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+
+    if (!/^\s/.test(line)) {
+      currentPath = trimmed;
+      if (!rules.has(currentPath)) rules.set(currentPath, []);
+      continue;
+    }
+
+    if (currentPath) rules.get(currentPath).push(trimmed);
+  }
+
+  return rules;
+}
+
+function hasHeader(rules, pathPattern, expectedHeader) {
+  return rules.get(pathPattern)?.includes(expectedHeader) === true;
+}
+
 export async function verifyProductionFrontendArtifact({
   distDir,
   expectedSupabaseUrl,
@@ -97,12 +121,29 @@ export async function verifyProductionFrontendArtifact({
     fail("artifact is missing index.html");
   }
 
+  const headersFile = files.find(({ relativePath }) => relativePath === "_headers");
+  if (!headersFile) fail("artifact is missing _headers");
+  const headerRules = parseHeaderRules(await readFile(headersFile.absolutePath, "utf8"));
+  if (
+    !hasHeader(headerRules, "/", "Cache-Control: no-cache") ||
+    !hasHeader(headerRules, "/index.html", "Cache-Control: no-cache") ||
+    !hasHeader(
+      headerRules,
+      "/assets/*",
+      "Cache-Control: public, max-age=31536000, immutable",
+    )
+  ) {
+    fail("artifact _headers does not contain the required HTML and hashed-asset cache policies");
+  }
+
   const expectedSupabaseBytes = Buffer.from(normalizedSupabaseUrl, "utf8");
   const productionRefBytes = Buffer.from(PRODUCTION_PROJECT_REF, "utf8");
   const stagingRefBytes = Buffer.from(STAGING_PROJECT_REF, "utf8");
   const expectedCdnBytes = Buffer.from(normalizedCdnUrl, "utf8");
   const versionBytes = Buffer.from(version, "utf8");
   const buildMarkerBytes = Buffer.from("__CORELIA_BUILD__", "utf8");
+  const preloadErrorHandlerBytes = Buffer.from("vite:preloadError", "utf8");
+  const staleChunkReloadGuardBytes = Buffer.from("corelia:stale-chunk-reload-at", "utf8");
 
   let hasExpectedSupabaseUrl = false;
   let hasProductionRef = false;
@@ -110,6 +151,8 @@ export async function verifyProductionFrontendArtifact({
   let hasExpectedCdnUrl = false;
   let hasExpectedVersion = false;
   let hasBuildMarker = false;
+  let hasPreloadErrorHandler = false;
+  let hasStaleChunkReloadGuard = false;
   const fileHashes = [];
 
   for (const file of files) {
@@ -123,6 +166,8 @@ export async function verifyProductionFrontendArtifact({
     hasExpectedCdnUrl ||= contents.includes(expectedCdnBytes);
     hasExpectedVersion ||= contents.includes(versionBytes);
     hasBuildMarker ||= contents.includes(buildMarkerBytes);
+    hasPreloadErrorHandler ||= contents.includes(preloadErrorHandlerBytes);
+    hasStaleChunkReloadGuard ||= contents.includes(staleChunkReloadGuardBytes);
   }
 
   if (!hasExpectedSupabaseUrl || !hasProductionRef) {
@@ -132,6 +177,9 @@ export async function verifyProductionFrontendArtifact({
   if (!hasExpectedCdnUrl) fail("artifact does not contain the expected Production CDN target");
   if (!hasExpectedVersion || !hasBuildMarker) {
     fail("artifact does not contain the expected app version and Corelia build marker");
+  }
+  if (!hasPreloadErrorHandler || !hasStaleChunkReloadGuard) {
+    fail("artifact does not contain the stale chunk recovery handler and reload guard");
   }
 
   const artifactIdentity = fileHashes
