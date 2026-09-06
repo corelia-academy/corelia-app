@@ -46,7 +46,9 @@ export function HackathonOverviewTab() {
 
 export function HackathonPrizesTab() {
   const { contest } = useOutletContext<HackathonOutletContext>();
-  const { t } = useTranslation("contests");
+  const { t, i18n } = useTranslation("contests");
+  const numberFormat = new Intl.NumberFormat(i18n.resolvedLanguage ?? i18n.language, { maximumFractionDigits: 20 });
+  const formatAmount = (amount: string) => Number.isFinite(Number(amount)) ? numberFormat.format(Number(amount)) : amount;
   const pool = contest.prize_pool;
   const tracks = [...(contest.tracks ?? [])].filter((track) => track.active !== false).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
   if (!pool && tracks.length === 0) return <EmptyTab icon={<Coins className="size-6" />} title={t("public.empty.prizes")} />;
@@ -54,14 +56,14 @@ export function HackathonPrizesTab() {
     <div className="space-y-6">
       <section className="rounded-2xl border border-border-subtle bg-surface-base p-6 shadow-card">
         <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">{t("public.prizes.total")}</div>
-        <div className="mt-2 text-3xl font-bold text-foreground">{pool?.amount || "0"} <span className="text-lg text-foreground-muted">{pool?.currency}</span></div>
+        <div className="mt-2 break-words text-3xl font-bold text-foreground">{formatAmount(pool?.amount || "0")} <span className="text-lg text-foreground-muted">{pool?.currency}</span></div>
         {pool?.description_markdown ? <div className="mt-4"><Markdown content={pool.description_markdown} /></div> : null}
       </section>
       <div className="grid gap-4 md:grid-cols-2">
         {tracks.map((track) => (
-          <article key={track.id} className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card">
-            <div className="flex items-start justify-between gap-4"><h2 className="font-semibold text-foreground">{track.name}</h2>{track.prize_amount ? <span className="shrink-0 font-semibold text-primary">{track.prize_amount} {pool?.currency}</span> : null}</div>
-            {track.description ? <p className="mt-2 text-sm leading-6 text-foreground-muted">{track.description}</p> : null}
+          <article key={track.id} className="min-w-0 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card">
+            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2"><h2 className="min-w-0 break-words font-semibold text-foreground">{track.name}</h2>{track.prize_amount ? <span className="break-words font-semibold text-primary">{formatAmount(track.prize_amount)} {pool?.currency}</span> : null}</div>
+            {track.description ? <div className="mt-3 break-words text-foreground-muted"><Markdown content={track.description} compact /></div> : null}
           </article>
         ))}
       </div>
