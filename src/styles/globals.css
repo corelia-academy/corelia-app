@@ -7,6 +7,63 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Figma Color 🟢 (node 12:3) → Tailwind color tokens */
+  --color-neutral-50: var(--neutral-50);
+  --color-neutral-100: var(--neutral-100);
+  --color-neutral-200: var(--neutral-200);
+  --color-neutral-300: var(--neutral-300);
+  --color-neutral-400: var(--neutral-400);
+  --color-neutral-900: var(--neutral-900);
+  --color-blue-50: var(--blue-50);
+  --color-blue-100: var(--blue-100);
+  --color-blue-200: var(--blue-200);
+  --color-blue-300: var(--blue-300);
+  --color-blue-400: var(--blue-400);
+  --color-blue-700: var(--blue-700);
+  --color-blue-900: var(--blue-900);
+  --color-error-50: var(--error-50);
+  --color-error-100: var(--error-100);
+  --color-error-300: var(--error-300);
+  --color-error-500: var(--error-500);
+  --color-error-700: var(--error-700);
+  --color-error-900: var(--error-900);
+  --color-warning-50: var(--warning-50);
+  --color-warning-100: var(--warning-100);
+  --color-warning-300: var(--warning-300);
+  --color-warning-500: var(--warning-500);
+  --color-warning-700: var(--warning-700);
+  --color-warning-900: var(--warning-900);
+  --color-success-50: var(--success-50);
+  --color-success-100: var(--success-100);
+  --color-success-300: var(--success-300);
+  --color-success-500: var(--success-500);
+  --color-success-700: var(--success-700);
+  --color-success-900: var(--success-900);
+  --color-accent-yellow-50: var(--accent-yellow-50);
+  --color-accent-yellow-100: var(--accent-yellow-100);
+  --color-accent-yellow-300: var(--accent-yellow-300);
+  --color-accent-yellow-500: var(--accent-yellow-500);
+  --color-accent-yellow-700: var(--accent-yellow-700);
+  --color-accent-yellow-900: var(--accent-yellow-900);
+  --color-accent-teal-50: var(--accent-teal-50);
+  --color-accent-teal-100: var(--accent-teal-100);
+  --color-accent-teal-300: var(--accent-teal-300);
+  --color-accent-teal-500: var(--accent-teal-500);
+  --color-accent-teal-700: var(--accent-teal-700);
+  --color-accent-teal-900: var(--accent-teal-900);
+  --color-accent-purple-50: var(--accent-purple-50);
+  --color-accent-purple-100: var(--accent-purple-100);
+  --color-accent-purple-300: var(--accent-purple-300);
+  --color-accent-purple-500: var(--accent-purple-500);
+  --color-accent-purple-700: var(--accent-purple-700);
+  --color-accent-purple-900: var(--accent-purple-900);
+  --color-accent-sky-50: var(--accent-sky-50);
+  --color-accent-sky-100: var(--accent-sky-100);
+  --color-accent-sky-300: var(--accent-sky-300);
+  --color-accent-sky-500: var(--accent-sky-500);
+  --color-accent-sky-700: var(--accent-sky-700);
+  --color-accent-sky-900: var(--accent-sky-900);
+
   --color-foreground: var(--foreground);
   --color-foreground-muted: var(--foreground-muted);
   --color-foreground-subtle: var(--foreground-subtle);
@@ -46,7 +103,8 @@
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: 1rem; /* 16px — premium card radius */
+  --radius-2xl: 1rem;
+  /* 16px — premium card radius */
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
   --color-sidebar: var(--sidebar);
@@ -83,59 +141,130 @@
   --content-px: clamp(1rem, 3vw, 2rem);
   --app-max-width: 80rem;
 
+  /*
+     Issue #380 — Figma Color 🟢 (node 12:3) → CSS token mapping.
+     Primitive values are defined once here; semantic aliases below consume them.
+  */
+  --neutral-50: #fafbfb;
+  --neutral-100: #f5f6f9;
+  --neutral-200: #dee2ec;
+  --neutral-300: #cbd0df;
+  --neutral-400: #8f99b5;
+  --neutral-900: #060b14;
+
+  --blue-50: #eef5ff;
+  --blue-100: #dae9ff;
+  --blue-200: #bddaff;
+  --blue-300: #90c3ff;
+  --blue-400: #5ba3ff;
+  --blue-700: #1759f1;
+  --blue-900: #1a378e;
+
+  --error-50: #fef3f2;
+  --error-100: #fed9d5;
+  --error-300: #fda59b;
+  --error-500: #eb5146;
+  --error-700: #be211c;
+  --error-900: #8d0e0e;
+
+  --warning-50: #fffae7;
+  --warning-100: #ffe0a2;
+  --warning-300: #ffc465;
+  --warning-500: #f08d14;
+  --warning-700: #cc6f13;
+  --warning-900: #8b3603;
+
+  --success-50: #e0ffeb;
+  --success-100: #9ff9c1;
+  --success-300: #4be18a;
+  --success-500: #13c05d;
+  --success-700: #079047;
+  --success-900: #036034;
+
+  --accent-yellow-50: #fff7e0;
+  --accent-yellow-100: #fae69e;
+  --accent-yellow-300: #f4cc38;
+  --accent-yellow-500: #f5c000;
+  --accent-yellow-700: #d6a800;
+  --accent-yellow-900: #947400;
+
+  --accent-teal-50: #e9fdfb;
+  --accent-teal-100: #a9f8ef;
+  --accent-teal-300: #71f3e4;
+  --accent-teal-500: #12d9c2;
+  --accent-teal-700: #0c9787;
+  --accent-teal-900: #097165;
+
+  --accent-purple-50: #f8f2fe;
+  --accent-purple-100: #e8d5fe;
+  --accent-purple-300: #c99bfd;
+  --accent-purple-500: #9346eb;
+  --accent-purple-700: #681cbe;
+  --accent-purple-900: #490e8d;
+
+  --accent-sky-50: #e0f6ff;
+  --accent-sky-100: #9fdff9;
+  --accent-sky-300: #42baea;
+  --accent-sky-500: #00b7ff;
+  --accent-sky-700: #006c97;
+  --accent-sky-900: #004763;
+
+  --text-primary-2: #121926;
+  --text-secondary: #4b5565;
+
   /* ==========================================
      LIGHT MODE: Material You (Google) — sáng, đơn giản, rực rỡ có kiểm soát
      ========================================== */
 
   /* ── Background & Surfaces ── */
   /* Nền trắng gần như tuyệt đối, hơi ánh xanh mát kiểu Google */
-  --background: oklch(0.99 0.003 250);
+  --background: var(--neutral-50);
   /* Chữ xám đậm trung tính kiểu Google (#202124) */
-  --foreground: oklch(0.22 0.006 260);
-  --foreground-muted: oklch(0.48 0.012 260);
-  --foreground-subtle: oklch(0.66 0.01 260);
+  --foreground: var(--text-primary-2);
+  --foreground-muted: var(--text-secondary);
+  --foreground-subtle: var(--neutral-400);
 
   /* Thẻ Card trắng thuần */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.006 260);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.006 260);
+  --card: var(--neutral-50);
+  --card-foreground: var(--text-primary-2);
+  --popover: var(--neutral-50);
+  --popover-foreground: var(--text-primary-2);
 
   /* ── Brand Colors (Google Blue) ── */
-  --primary: oklch(0.58 0.19 255); /* Google Blue ≈ #4285F4 */
-  --primary-foreground: oklch(1 0 0);
-  --primary-muted: color-mix(in oklch, var(--primary) 10%, transparent);
-  --primary-container: oklch(0.93 0.045 255);
-  --on-primary-container: oklch(0.32 0.15 255);
+  --primary: var(--blue-700);
+  --primary-foreground: var(--neutral-50);
+  --primary-muted: var(--blue-100);
+  --primary-container: var(--blue-100);
+  --on-primary-container: var(--blue-900);
 
   /* ── Secondary / Muted (Xám nhạt kiểu Google buttons) ── */
-  --secondary: oklch(0.96 0.004 260);
-  --secondary-foreground: oklch(0.28 0.01 260);
-  --muted: oklch(0.96 0.004 260);
-  --muted-foreground: oklch(0.5 0.012 260);
-  --accent: oklch(0.94 0.035 255);
-  --accent-foreground: oklch(0.32 0.15 255);
-  --accent-muted: color-mix(in oklch, var(--accent) 15%, transparent);
+  --secondary: var(--neutral-100);
+  --secondary-foreground: var(--text-primary-2);
+  --muted: var(--neutral-100);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--blue-100);
+  --accent-foreground: var(--blue-900);
+  --accent-muted: var(--blue-50);
 
   /* ── Semantic Colors (Bộ màu logo Google) ── */
-  --destructive: oklch(0.63 0.22 25); /* Google Red ≈ #EA4335 */
-  --destructive-foreground: oklch(1 0 0);
-  --destructive-muted: color-mix(in oklch, var(--destructive) 10%, transparent);
+  --destructive: var(--error-500);
+  --destructive-foreground: var(--neutral-50);
+  --destructive-muted: var(--error-50);
 
-  --success: oklch(0.64 0.16 145); /* Google Green ≈ #34A853 */
-  --success-foreground: oklch(1 0 0);
-  --success-muted: color-mix(in oklch, var(--success) 10%, transparent);
+  --success: var(--success-500);
+  --success-foreground: var(--neutral-50);
+  --success-muted: var(--success-50);
 
-  --warning: oklch(0.78 0.16 85); /* Google Yellow ≈ #FBBC05 */
-  --warning-foreground: oklch(0.25 0.02 260);
-  --warning-muted: oklch(0.96 0.05 90); /* Nền banner vàng nhạt */
+  --warning: var(--warning-500);
+  --warning-foreground: var(--neutral-900);
+  --warning-muted: var(--warning-50);
 
   /* ── Borders & Inputs ── */
-  --border: oklch(0.89 0.004 260); /* Viền xám nhạt kiểu Google (#dadce0) */
-  --border-subtle: oklch(0.93 0.003 260);
-  --border-strong: oklch(0.76 0.006 260);
-  --input: oklch(0.89 0.004 260);
-  --ring: oklch(0.58 0.19 255);
+  --border: var(--neutral-200);
+  --border-subtle: var(--neutral-100);
+  --border-strong: var(--neutral-400);
+  --input: var(--neutral-400);
+  --ring: var(--blue-700);
 
   /* ── Shadows (rất nhẹ, đúng chất Material) ── */
   --elevation-1: 0 1px 2px 0 oklch(0.22 0.02 260 / 0.05);
@@ -146,23 +275,24 @@
   --elevation-card: 0 8px 24px oklch(0.2 0.02 260 / 0.04);
 
   /* ── Brand ── */
-  --brand-navy: oklch(0.2 0.03 255);
-  --brand-accent: oklch(0.58 0.19 255); /* Google Blue */
+  --brand-navy: var(--neutral-900);
+  --brand-accent: var(--blue-700);
 
   /* ── Sidebar ── */
-  --sidebar: oklch(0.98 0.003 260); /* ≈ #f8f9fa */
-  --sidebar-foreground: oklch(0.22 0.006 260);
-  --sidebar-primary: oklch(0.58 0.19 255);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.94 0.035 255);
-  --sidebar-accent-foreground: oklch(0.32 0.15 255);
-  --sidebar-border: oklch(0.89 0.004 260);
-  --sidebar-ring: oklch(0.58 0.19 255);
+  --sidebar: var(--neutral-50);
+  --sidebar-foreground: var(--text-primary-2);
+  --sidebar-primary: var(--blue-700);
+  --sidebar-primary-foreground: var(--neutral-50);
+  --sidebar-accent: var(--blue-100);
+  --sidebar-accent-foreground: var(--blue-900);
+  --sidebar-border: var(--neutral-200);
+  --sidebar-ring: var(--blue-700);
 
   /* ── Corelia DS v2 surfaces ── */
   --surface-base: var(--card);
-  --surface-raised: oklch(0.98 0.003 260);
-  --surface-overlay: oklch(0.96 0.004 260);
+  --surface-raised: var(--neutral-50);
+  /* --surface-overlay: var(--neutral-100); */
+  --surface-overlay: var(--blue-50);
   --surface-float: var(--popover);
 }
 
@@ -174,51 +304,51 @@
   --app-max-width: 80rem;
 
   /* ── Background & Surfaces ── */
-  --background: oklch(0.19 0.006 260); /* ≈ #202124 kiểu Google Dark */
-  --foreground: oklch(0.92 0.004 260);
-  --foreground-muted: oklch(0.68 0.008 260);
-  --foreground-subtle: oklch(0.52 0.008 260);
+  --background: var(--neutral-900);
+  --foreground: var(--neutral-50);
+  --foreground-muted: var(--neutral-300);
+  --foreground-subtle: var(--neutral-400);
 
-  --card: oklch(0.23 0.007 260); /* Card sáng hơn nền một chút để tạo độ nổi */
-  --card-foreground: oklch(0.92 0.004 260);
-  --popover: oklch(0.23 0.007 260);
-  --popover-foreground: oklch(0.92 0.004 260);
+  --card: color-mix(in srgb, var(--neutral-900) 92%, var(--neutral-300));
+  --card-foreground: var(--neutral-50);
+  --popover: var(--card);
+  --popover-foreground: var(--neutral-50);
 
   /* ── Brand Colors (Google Blue sáng hơn cho nền tối) ── */
-  --primary: oklch(0.75 0.13 255); /* ≈ #8ab4f8 */
-  --primary-foreground: oklch(0.19 0.03 255); /* Chữ navy đậm trên nền xanh */
-  --primary-muted: color-mix(in oklch, var(--primary) 15%, transparent);
-  --primary-container: oklch(0.3 0.05 255);
-  --on-primary-container: oklch(0.85 0.1 255);
+  --primary: var(--blue-400);
+  --primary-foreground: var(--neutral-900);
+  --primary-muted: var(--blue-900);
+  --primary-container: var(--blue-900);
+  --on-primary-container: var(--blue-100);
 
   /* ── Secondary / Muted ── */
-  --secondary: oklch(0.27 0.007 260);
-  --secondary-foreground: oklch(0.92 0.004 260);
-  --muted: oklch(0.27 0.007 260);
-  --muted-foreground: oklch(0.68 0.008 260);
-  --accent: oklch(0.3 0.05 255);
-  --accent-foreground: oklch(0.85 0.1 255);
-  --accent-muted: color-mix(in oklch, var(--accent) 15%, transparent);
+  --secondary: var(--blue-900);
+  --secondary-foreground: var(--neutral-50);
+  --muted: var(--blue-900);
+  --muted-foreground: var(--neutral-300);
+  --accent: var(--blue-900);
+  --accent-foreground: var(--blue-100);
+  --accent-muted: var(--blue-900);
 
   /* ── Semantic Colors (Bộ màu Google, sáng hơn cho Dark Mode) ── */
-  --destructive: oklch(0.72 0.18 25); /* ≈ #f28b82 */
-  --destructive-foreground: oklch(0.19 0.03 25);
-  --destructive-muted: color-mix(in oklch, var(--destructive) 15%, transparent);
+  --destructive: var(--error-300);
+  --destructive-foreground: var(--error-900);
+  --destructive-muted: var(--error-900);
 
-  --success: oklch(0.75 0.14 145); /* ≈ #81c995 */
-  --success-foreground: oklch(0.19 0.03 145);
-  --success-muted: color-mix(in oklch, var(--success) 15%, transparent);
+  --success: var(--success-300);
+  --success-foreground: var(--success-900);
+  --success-muted: var(--success-900);
 
-  --warning: oklch(0.85 0.14 85); /* ≈ #fdd663 */
-  --warning-foreground: oklch(0.19 0.03 85);
-  --warning-muted: oklch(0.28 0.05 85); /* Nền banner vàng sẫm */
+  --warning: var(--warning-300);
+  --warning-foreground: var(--warning-900);
+  --warning-muted: var(--warning-900);
 
   /* ── Borders & Inputs ── */
-  --border: oklch(0.32 0.007 260);
-  --border-subtle: oklch(0.27 0.006 260);
-  --border-strong: oklch(0.42 0.008 260);
-  --input: oklch(0.32 0.007 260);
-  --ring: oklch(0.75 0.13 255);
+  --border: color-mix(in srgb, var(--neutral-900) 70%, var(--neutral-400));
+  --border-subtle: color-mix(in srgb, var(--neutral-900) 82%, var(--neutral-400));
+  --border-strong: var(--neutral-400);
+  --input: var(--neutral-400);
+  --ring: var(--blue-400);
 
   /* ── Shadows ── */
   --elevation-1: 0 1px 2px 0 oklch(0 0 0 / 0.35);
@@ -228,37 +358,43 @@
   --elevation-card: 0 8px 24px oklch(0 0 0 / 0.2);
 
   /* ── Brand ── */
-  --brand-navy: oklch(0.14 0.01 260);
-  --brand-accent: oklch(0.75 0.13 255); /* Google Blue sáng cho dark mode */
+  --brand-navy: var(--neutral-900);
+  --brand-accent: var(--blue-400);
 
   /* ── Sidebar ── */
-  --sidebar: oklch(0.16 0.006 260);
-  --sidebar-foreground: oklch(0.92 0.004 260);
-  --sidebar-primary: oklch(0.75 0.13 255);
-  --sidebar-primary-foreground: oklch(0.19 0.03 255);
-  --sidebar-accent: oklch(0.3 0.05 255);
-  --sidebar-accent-foreground: oklch(0.85 0.1 255);
-  --sidebar-border: oklch(0.32 0.007 260);
-  --sidebar-ring: oklch(0.75 0.13 255);
+  --sidebar: var(--card);
+  --sidebar-foreground: var(--neutral-50);
+  --sidebar-primary: var(--blue-400);
+  --sidebar-primary-foreground: var(--neutral-900);
+  --sidebar-accent: var(--blue-900);
+  --sidebar-accent-foreground: var(--blue-100);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--blue-400);
 
   /* ── Corelia DS v2 surfaces ── */
-  --surface-base: oklch(0.19 0.006 260);
-  --surface-raised: oklch(0.23 0.007 260);
-  --surface-overlay: oklch(0.27 0.007 260);
-  --surface-float: oklch(0.3 0.007 260);
+  --surface-base: var(--background);
+  --surface-raised: var(--card);
+  /* --surface-overlay: var(--blue-900); */
+  --surface-overlay: color-mix(in srgb,
+      var(--neutral-900) 82%,
+      var(--neutral-300));
+  --surface-float: color-mix(in srgb, var(--neutral-900) 78%, var(--neutral-300));
 }
 
 @layer base {
   * {
     @apply border-border outline-primary/40;
   }
+
   body {
     @apply bg-surface-base font-sans text-foreground antialiased;
     min-height: 100dvh;
   }
+
   html {
     @apply font-sans;
   }
+
   ::selection {
     background: color-mix(in oklch, var(--primary) 18%, transparent);
     color: var(--foreground);
@@ -287,17 +423,16 @@
 
 /* Trang login: Midnight Blue gradient + electric blue dot pattern */
 .bg-auth-page {
-  --auth-dot: oklch(0.58 0.19 255 / 0.08); /* Google blue dot */
+  --auth-dot: oklch(0.58 0.19 255 / 0.08);
+  /* Google blue dot */
   background-color: var(--background);
   background-image:
     radial-gradient(circle at 50% 50%, var(--auth-dot) 1px, transparent 1px),
-    linear-gradient(
-      160deg,
+    linear-gradient(160deg,
       var(--background) 0%,
       oklch(0.95 0.03 255) 35%,
       oklch(0.97 0.015 255) 70%,
-      var(--background) 100%
-    );
+      var(--background) 100%);
   background-size:
     24px 24px,
     100% 100%;
@@ -307,16 +442,15 @@
 }
 
 .dark .bg-auth-page {
-  --auth-dot: oklch(0.75 0.13 255 / 0.1); /* Google blue dot (dark) */
+  --auth-dot: oklch(0.75 0.13 255 / 0.1);
+  /* Google blue dot (dark) */
   background-image:
     radial-gradient(circle at 50% 50%, var(--auth-dot) 1px, transparent 1px),
-    linear-gradient(
-      160deg,
+    linear-gradient(160deg,
       var(--background) 0%,
       oklch(0.24 0.05 255) 40%,
       oklch(0.21 0.03 260) 70%,
-      var(--background) 100%
-    );
+      var(--background) 100%);
   background-size:
     24px 24px,
     100% 100%;
@@ -342,6 +476,7 @@
 @utility ds-card-hover {
   transition-property: transform, background-color, border-color, box-shadow;
   transition-duration: 200ms;
+
   &:hover {
     transform: translateY(-2px);
     background-color: var(--surface-raised);
@@ -376,6 +511,7 @@
     opacity: 0;
     transform: translateY(12px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
