@@ -18,11 +18,11 @@ function useQueryParam(name: string): string {
 }
 
 export default function SearchPage() {
-  const { t } = useTranslation("common");
+  const { t, i18n } = useTranslation("common");
   const navigate = useNavigate();
   const q = useQueryParam("q").trim();
   const [searchInput, setSearchInput] = useState(q);
-  const resultsQuery = useQuery(searchResultsQueryOptions(q, 30));
+  const resultsQuery = useQuery(searchResultsQueryOptions(q, 30, true, i18n.language));
   const items = resultsQuery.data ?? [];
   const loading = Boolean(q) && resultsQuery.isPending;
   const error = resultsQuery.error instanceof Error
@@ -64,7 +64,7 @@ export default function SearchPage() {
                 aria-hidden
               />
               <Input
-                type="search"
+                type="search" aria-label={t("search.placeholder")}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder={t("search.placeholder")}
@@ -95,6 +95,7 @@ export default function SearchPage() {
             </div>
             <div className="max-w-lg">
               <p className="text-sm font-medium text-foreground">{error}</p>
+              <Button className="mt-4" variant="outline" onClick={() => void resultsQuery.refetch()}>{t("actions.retry")}</Button>
             </div>
           </div>
         ) : !q ? null : items.length === 0 ? (
@@ -102,15 +103,15 @@ export default function SearchPage() {
             {t("search.empty")}
           </div>
         ) : (
-          <div className="grid gap-3">
+          <div className="divide-y divide-border-subtle">
             {items.map((item) => (
               <NavLink
                 key={`${item.entity_type}:${item.entity_id}`}
                 to={item.href}
-                className="block rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 transition-colors duration-150 hover:bg-surface-raised"
+                className="block rounded-lg bg-surface-base px-4 py-5 transition-colors duration-150 hover:bg-surface-raised"
               >
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold text-foreground">
+                  <div className="line-clamp-2 text-base font-semibold text-foreground">
                     {item.title}
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-foreground-muted">

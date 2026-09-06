@@ -27,6 +27,7 @@ export function useCoursesCatalog() {
 
   return {
     loading: catalogQuery.isPending,
+    retry: () => catalogQuery.refetch(),
     error: catalogQuery.error instanceof Error
       ? catalogQuery.error.message
       : catalogQuery.error ? t("catalog.loadErrorFallback") : null,

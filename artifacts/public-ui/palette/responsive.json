@@ -1,0 +1,492 @@
+[
+  {
+    "path": "/jobs",
+    "width": 360,
+    "client": 346,
+    "scroll": 346,
+    "dark": false
+  },
+  {
+    "path": "/jobs",
+    "width": 390,
+    "client": 376,
+    "scroll": 376,
+    "dark": false
+  },
+  {
+    "path": "/jobs",
+    "width": 768,
+    "client": 755,
+    "scroll": 755,
+    "dark": false
+  },
+  {
+    "path": "/jobs",
+    "width": 1024,
+    "client": 1010,
+    "scroll": 1010,
+    "dark": false
+  },
+  {
+    "path": "/jobs",
+    "width": 1440,
+    "client": 1426,
+    "scroll": 1426,
+    "dark": false
+  },
+  {
+    "path": "/jobs",
+    "width": 360,
+    "client": 346,
+    "scroll": 346,
+    "dark": true
+  },
+  {
+    "path": "/jobs",
+    "width": 390,
+    "client": 376,
+    "scroll": 376,
+    "dark": true
+  },
+  {
+    "path": "/jobs",
+    "width": 768,
+    "client": 755,
+    "scroll": 755,
+    "dark": true
+  },
+  {
+    "path": "/jobs",
+    "width": 1024,
+    "client": 1010,
+    "scroll": 1010,
+    "dark": true
+  },
+  {
+    "path": "/jobs",
+    "width": 1440,
+    "client": 1426,
+    "scroll": 1426,
+    "dark": true
+  },
+  {
+    "path": "/",
+    "width": 360,
+    "client": 346,
+    "scroll": 346,
+    "dark": false
+  },
+  {
+    "path": "/",
+    "width": 390,
+    "client": 376,
+    "scroll": 376,
+    "dark": false
+  },
+  {
+    "path": "/",
+    "width": 768,
+    "client": 755,
+    "scroll": 755,
+    "dark": false
+  },
+  {
+    "path": "/",
+    "width": 1024,
+    "client": 1010,
+    "scroll": 1010,
+    "dark": false
+  },
+  {
+    "path": "/",
+    "width": 1440,
+    "client": 1426,
+    "scroll": 1426,
+    "dark": false
+  },
+  {
+    "path": "/",
+    "width": 360,
+    "client": 346,
+    "scroll": 346,
+    "dark": true
+  },
+  {
+    "path": "/",
+    "width": 390,
+    "client": 376,
+    "scroll": 376,
+    "dark": true
+  },
+  {
+    "path": "/",
+    "width": 768,
+    "client": 755,
+    "scroll": 755,
+    "dark": true
+  },
+  {
+    "path": "/",
+    "width": 1024,
+    "client": 1010,
+    "scroll": 1010,
+    "dark": true
+  },
+  {
+    "path": "/",
+    "width": 1440,
+    "client": 1426,
+    "scroll": 1426,
+    "dark": true
+  },
+  {
+    "path": "/courses",
+    "width": 360,
+    "client": 346,
+    "scroll": 346,
+    "dark": false
+  },
+  {
+    "path": "/courses",
+    "width": 390,
+    "client": 376,
+    "scroll": 376,
+    "dark": false
+  },
+  {
+    "path": "/courses",
+    "width": 768,
+    "client": 755,
+    "scroll": 755,
+    "dark": false
+  },
+  {
+    "path": "/courses",
+    "width": 1024,
+    "client": 1010,
+    "scroll": 1010,
+    "dark": false
+  },
+  {
+    "path": "/courses",
+    "width": 1440,
+    "client": 1426,
+    "scroll": 1426,
+    "dark": false
+  },
+  {
+    "path": "/courses",
+    "width": 360,
+    "client": 346,
+    "scroll": 346,
+    "dark": true
+  },
+  {
+    "path": "/courses",
+    "width": 390,
+    "client": 376,
+    "scroll": 376,
+    "dark": true
+  },
+  {
+    "path": "/courses",
+    "width": 768,
+    "client": 755,
+    "scroll": 755,
+    "dark": true
+  },
+  {
+    "path": "/courses",
+    "width": 1024,
+    "client": 1010,
+    "scroll": 1010,
+    "dark": true
+  },
+  {
+    "path": "/courses",
+    "width": 1440,
+    "client": 1426,
+    "scroll": 1426,
+    "dark": true
+  },
+  {
+    "path": "/hackathons",
+    "width": 360,
+    "client": 346,
+    "scroll": 346,
+    "dark": false
+  },
+  {
+    "path": "/hackathons",
+    "width": 390,
+    "client": 376,
+    "scroll": 376,
+    "dark": false
+  },
+  {
+    "path": "/hackathons",
+    "width": 768,
+    "client": 755,
+    "scroll": 755,
+    "dark": false
+  },
+  {
+    "path": "/hackathons",
+    "width": 1024,
+    "client": 1010,
+    "scroll": 1010,
+    "dark": false
+  },
+  {
+    "path": "/hackathons",
+    "width": 1440,
+    "client": 1426,
+    "scroll": 1426,
+    "dark": false
+  },
+  {
+    "path": "/hackathons",
+    "width": 360,
+    "client": 346,
+    "scroll": 346,
+    "dark": true
+  },
+  {
+    "path": "/hackathons",
+    "width": 390,
+    "client": 376,
+    "scroll": 376,
+    "dark": true
+  },
+  {
+    "path": "/hackathons",
+    "width": 768,
+    "client": 755,
+    "scroll": 755,
+    "dark": true
+  },
+  {
+    "path": "/hackathons",
+    "width": 1024,
+    "client": 1010,
+    "scroll": 1010,
+    "dark": true
+  },
+  {
+    "path": "/hackathons",
+    "width": 1440,
+    "client": 1426,
+    "scroll": 1426,
+    "dark": true
+  },
+  {
+    "path": "/courses/solidity-developer",
+    "width": 360,
+    "client": 346,
+    "scroll": 346,
+    "dark": false
+  },
+  {
+    "path": "/courses/solidity-developer",
+    "width": 390,
+    "client": 376,
+    "scroll": 376,
+    "dark": false
+  },
+  {
+    "path": "/courses/solidity-developer",
+    "width": 768,
+    "client": 755,
+    "scroll": 755,
+    "dark": false
+  },
+  {
+    "path": "/courses/solidity-developer",
+    "width": 1024,
+    "client": 1010,
+    "scroll": 1010,
+    "dark": false
+  },
+  {
+    "path": "/courses/solidity-developer",
+    "width": 1440,
+    "client": 1426,
+    "scroll": 1426,
+    "dark": false
+  },
+  {
+    "path": "/courses/solidity-developer",
+    "width": 360,
+    "client": 346,
+    "scroll": 346,
+    "dark": true
+  },
+  {
+    "path": "/courses/solidity-developer",
+    "width": 390,
+    "client": 376,
+    "scroll": 376,
+    "dark": true
+  },
+  {
+    "path": "/courses/solidity-developer",
+    "width": 768,
+    "client": 755,
+    "scroll": 755,
+    "dark": true
+  },
+  {
+    "path": "/courses/solidity-developer",
+    "width": 1024,
+    "client": 1010,
+    "scroll": 1010,
+    "dark": true
+  },
+  {
+    "path": "/courses/solidity-developer",
+    "width": 1440,
+    "client": 1426,
+    "scroll": 1426,
+    "dark": true
+  },
+  {
+    "path": "/login",
+    "width": 360,
+    "client": 360,
+    "scroll": 360,
+    "dark": false
+  },
+  {
+    "path": "/login",
+    "width": 390,
+    "client": 390,
+    "scroll": 390,
+    "dark": false
+  },
+  {
+    "path": "/login",
+    "width": 768,
+    "client": 768,
+    "scroll": 768,
+    "dark": false
+  },
+  {
+    "path": "/login",
+    "width": 1024,
+    "client": 1024,
+    "scroll": 1024,
+    "dark": false
+  },
+  {
+    "path": "/login",
+    "width": 1440,
+    "client": 1440,
+    "scroll": 1440,
+    "dark": false
+  },
+  {
+    "path": "/login",
+    "width": 360,
+    "client": 360,
+    "scroll": 360,
+    "dark": true
+  },
+  {
+    "path": "/login",
+    "width": 390,
+    "client": 390,
+    "scroll": 390,
+    "dark": true
+  },
+  {
+    "path": "/login",
+    "width": 768,
+    "client": 768,
+    "scroll": 768,
+    "dark": true
+  },
+  {
+    "path": "/login",
+    "width": 1024,
+    "client": 1024,
+    "scroll": 1024,
+    "dark": true
+  },
+  {
+    "path": "/login",
+    "width": 1440,
+    "client": 1440,
+    "scroll": 1440,
+    "dark": true
+  },
+  {
+    "path": "/verify",
+    "width": 360,
+    "client": 360,
+    "scroll": 360,
+    "dark": false
+  },
+  {
+    "path": "/verify",
+    "width": 390,
+    "client": 390,
+    "scroll": 390,
+    "dark": false
+  },
+  {
+    "path": "/verify",
+    "width": 768,
+    "client": 768,
+    "scroll": 768,
+    "dark": false
+  },
+  {
+    "path": "/verify",
+    "width": 1024,
+    "client": 1024,
+    "scroll": 1024,
+    "dark": false
+  },
+  {
+    "path": "/verify",
+    "width": 1440,
+    "client": 1440,
+    "scroll": 1440,
+    "dark": false
+  },
+  {
+    "path": "/verify",
+    "width": 360,
+    "client": 360,
+    "scroll": 360,
+    "dark": true
+  },
+  {
+    "path": "/verify",
+    "width": 390,
+    "client": 390,
+    "scroll": 390,
+    "dark": true
+  },
+  {
+    "path": "/verify",
+    "width": 768,
+    "client": 768,
+    "scroll": 768,
+    "dark": true
+  },
+  {
+    "path": "/verify",
+    "width": 1024,
+    "client": 1024,
+    "scroll": 1024,
+    "dark": true
+  },
+  {
+    "path": "/verify",
+    "width": 1440,
+    "client": 1440,
+    "scroll": 1440,
+    "dark": true
+  }
+]

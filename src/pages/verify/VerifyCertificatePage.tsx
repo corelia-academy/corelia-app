@@ -1,3 +1,4 @@
+import "@/styles/public-ui.css";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router";
@@ -146,8 +147,8 @@ export function VerifyCertificatePage() {
     // the viewport exactly and everything below the info strip (the certificate image)
     // flexes to whatever room is left. Same behaviour on phone and on a full laptop
     // window — no md: fallback to a taller, scrollable layout.
-    <div className="flex h-dvh flex-col items-center justify-center bg-background p-4">
-      <div className="flex h-full max-h-[min(48rem,calc(100dvh-2rem))] w-full flex-col rounded-2xl border border-border-subtle bg-surface-base shadow-card p-5 text-center">
+    <div className="public-status flex min-h-dvh flex-col items-center justify-center bg-background p-4">
+      <div className="flex min-h-[min(48rem,calc(100dvh-2rem))] w-full max-w-5xl flex-col rounded-2xl border border-border-subtle bg-surface-base shadow-card p-5 text-center">
         {status === "loading" && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
             <Loader2 className="size-6 animate-spin text-primary" aria-hidden />

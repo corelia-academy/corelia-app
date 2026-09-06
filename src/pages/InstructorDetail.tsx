@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { Link, useParams } from "react-router";
 import { Globe, GraduationCap, Loader2, MapPin } from "lucide-react";
 import { publicInstructorDetailQueryOptions } from "@/features/instructor/instructorQueries";
-import { getCourseLevelLabel, formatDuration } from "@/types/courses";
+import { PublicCourseCard } from "@/components/courses/PublicCourseCard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
 const InstructorDetail = () => {
-  const { t } = useTranslation("courses");
+  const { t, i18n } = useTranslation("courses");
   const translate = useCallback(
     (key: string, options?: Record<string, unknown>) =>
       String(t(key as never, options as never)),
@@ -28,7 +28,7 @@ const InstructorDetail = () => {
   const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const isValidUuid = Boolean(id && UUID_REGEX.test(id.trim()));
 
-  const detailQuery = useQuery(publicInstructorDetailQueryOptions(id, isValidUuid));
+  const detailQuery = useQuery(publicInstructorDetailQueryOptions(id, isValidUuid, i18n.language));
   const profile = detailQuery.data?.profile ?? null;
   const courses = detailQuery.data?.courses ?? [];
 
@@ -51,7 +51,7 @@ const InstructorDetail = () => {
 
   if (!id) {
     return (
-      <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5">
           <p className="text-sm font-medium text-destructive">
             {translate("detail.instructorDetail.errors.missingId")}
@@ -69,7 +69,7 @@ const InstructorDetail = () => {
 
   if (isActuallyLoading) {
     return (
-      <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-2xl border border-border-subtle bg-surface-base p-8 text-center">
           <Loader2 className="size-8 animate-spin text-foreground-muted" aria-hidden />
           <p className="mt-4 text-sm text-foreground-muted">
@@ -82,7 +82,7 @@ const InstructorDetail = () => {
 
   if (activeError || !profile) {
     return (
-      <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5">
           <p className="text-sm font-medium text-destructive">
             {activeError ?? translate("detail.instructorDetail.errors.notFound")}
@@ -108,7 +108,7 @@ const InstructorDetail = () => {
     "?";
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+    <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       <Breadcrumb className="mb-3">
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -213,37 +213,7 @@ const InstructorDetail = () => {
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {courses.map((course) => (
-                <Link
-                  key={course.id}
-                  to={`/courses/${course.slug || course.id}`}
-                  className="group overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card text-foreground transition-[transform,background-color,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised"
-                >
-                  <div className="relative aspect-video w-full overflow-hidden bg-surface-raised">
-                    <img
-                      src={course.thumbnail_url}
-                      alt=""
-                      className="size-full object-cover transition-opacity duration-200 group-hover:opacity-95"
-                    />
-                    <span className="absolute left-2 top-2 rounded-md bg-foreground/80 px-2 py-0.5 text-xs font-medium text-background">
-                      {getCourseLevelLabel(course.level)}
-                    </span>
-                  </div>
-                  <div className="space-y-2 p-4">
-                    <p className="text-sm font-medium leading-snug text-foreground line-clamp-2">
-                      {course.title}
-                    </p>
-                    {course.short_description ? (
-                      <p className="text-xs text-foreground-muted line-clamp-2">
-                        {course.short_description}
-                      </p>
-                    ) : null}
-                    <p className="text-xs text-foreground-muted">
-                      {translate("detail.instructorDetail.courses.durationPrefix", {
-                        duration: formatDuration(Number(course.total_duration_seconds) || 0),
-                      })}
-                    </p>
-                  </div>
-                </Link>
+                <PublicCourseCard key={course.id} course={course} />
               ))}
             </div>
           )}

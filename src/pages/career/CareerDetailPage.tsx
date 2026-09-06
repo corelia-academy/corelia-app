@@ -64,7 +64,7 @@ export default function CareerDetailPage() {
     return (
       <div className="container-app py-6 sm:py-8">
         <Skeleton className="h-48 w-full rounded-2xl border border-border-subtle" />
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <Skeleton className="h-72 w-full rounded-2xl" />
           <Skeleton className="h-72 w-full rounded-2xl" />
         </div>
@@ -93,8 +93,8 @@ export default function CareerDetailPage() {
     <div className="container-app py-6 sm:py-8">
       <CareerHero track={track} />
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
-        <main className="min-w-0 space-y-6">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0 space-y-6">
           {track.what_youll_learn.length > 0 ? (
             <Card>
               <CardContent className="p-6">
@@ -167,7 +167,7 @@ export default function CareerDetailPage() {
               </CardContent>
             </Card>
           ) : null}
-        </main>
+        </div>
 
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           <CareerActionPanel
@@ -205,7 +205,7 @@ function CareerHero({
 
   return (
     <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card">
-      <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)] lg:items-start">
+      <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 text-xs">
             {track.has_certificate ? (
