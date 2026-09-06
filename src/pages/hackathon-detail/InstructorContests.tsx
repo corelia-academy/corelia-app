@@ -188,7 +188,7 @@ export default function InstructorContests() {
             <p className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
               {t("instructor.hero.eyebrow")}
             </p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+            <h2 className="mt-2 text-heading-large font-display text-foreground">
               {t("instructor.hero.title")}
             </h2>
             <p className="mt-2 text-sm text-foreground-muted sm:text-sm">
@@ -374,7 +374,7 @@ export default function InstructorContests() {
                     )}
                   </span>
                 </div>
-                <h3 className="mt-4 text-lg font-medium tracking-tight text-foreground">
+                <h3 className="mt-4 text-heading-medium font-display text-foreground">
                   {contest.title}
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-foreground-muted">

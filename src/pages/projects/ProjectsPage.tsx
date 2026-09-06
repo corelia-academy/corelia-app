@@ -131,7 +131,7 @@ export default function ProjectsPage() {
       <header className="mb-6">
         <div className="flex items-center gap-2">
           <Package className="size-5 text-primary" aria-hidden />
-          <h1 className="text-xl font-semibold text-foreground sm:text-2xl">{t("projects.title")}</h1>
+          <h1 className="text-heading-large font-display text-foreground">{t("projects.title")}</h1>
         </div>
         <p className="mt-1 text-sm text-foreground-muted">{t("projects.description")}</p>
       </header>
@@ -175,7 +175,7 @@ export default function ProjectsPage() {
         ) : items.length === 0 ? (
           <div className="rounded-2xl border border-border-subtle bg-surface-base px-4 py-14 text-center shadow-card">
             <Package className="mx-auto size-8 text-foreground-subtle" aria-hidden />
-            <h2 className="mt-3 text-sm font-semibold text-foreground">{t("projects.emptyTitle")}</h2>
+            <h2 className="mt-3 text-heading-small font-display text-foreground">{t("projects.emptyTitle")}</h2>
             <p className="mt-1 text-sm text-foreground-muted">{t("projects.emptyDescription")}</p>
           </div>
         ) : (

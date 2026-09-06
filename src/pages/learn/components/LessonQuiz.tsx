@@ -174,7 +174,7 @@ export function LessonQuiz({
     <div className="mx-4 mb-8 overflow-hidden rounded-2xl border border-border-subtle shadow-card sm:mx-6">
       <div className="px-6 py-6 space-y-6">
         <div className="space-y-1">
-          <h2 className="text-[18px] font-semibold text-foreground">{title}</h2>
+          <h2 className="text-heading-medium font-display text-foreground">{title}</h2>
           <p className="text-[13px] text-foreground-muted">
             {t("detail.learn.quiz.meta", { count: questions.length })}
           </p>

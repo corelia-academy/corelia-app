@@ -10,7 +10,7 @@ export function LanguageSettingsCard() {
   return (
     <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div className="min-w-0">
-        <h2 className="text-lg font-semibold text-foreground">
+        <h2 className="text-heading-medium font-display text-foreground">
           {t("settings.language.title")}
         </h2>
         <p className="mt-1 text-sm text-foreground-muted">

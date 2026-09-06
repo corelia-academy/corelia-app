@@ -175,7 +175,7 @@ export default function ContestPublicLayout() {
             ) : null}
             <div className="flex min-w-0 flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
               <div className="min-w-0 flex-1">
-                <h1 className="min-w-0 max-w-4xl break-words text-2xl font-bold text-foreground [overflow-wrap:anywhere] sm:text-4xl">{contest.title}</h1>
+                <h1 className="min-w-0 max-w-4xl break-words text-display-small font-display text-foreground [overflow-wrap:anywhere]">{contest.title}</h1>
                 {contest.short_description || contest.tagline ? (
                   <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground-muted sm:text-base">{contest.short_description || contest.tagline}</p>
                 ) : null}

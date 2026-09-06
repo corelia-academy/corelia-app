@@ -29,7 +29,7 @@ const FieldLabel = React.forwardRef<
   <label
     ref={ref}
     data-slot="field-label"
-    className={cn("text-sm font-medium leading-none", className)}
+    className={cn("text-label-medium font-body", className)}
     {...props}
   />
 ));
@@ -42,7 +42,7 @@ const FieldDescription = React.forwardRef<
   <p
     ref={ref}
     data-slot="field-description"
-    className={cn("text-xs text-foreground-muted", className)}
+    className={cn("text-body-small font-body text-foreground-muted", className)}
     {...props}
   />
 ));
@@ -63,7 +63,7 @@ const FieldSeparator = React.forwardRef<
     {children != null && (
       <span
         data-slot="field-separator-content"
-        className="text-xs text-foreground-muted"
+        className="text-body-small font-body text-foreground-muted"
       >
         {children}
       </span>

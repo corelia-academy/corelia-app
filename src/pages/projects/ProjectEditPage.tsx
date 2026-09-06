@@ -116,14 +116,14 @@ export default function ProjectEditPage() {
   const toggle = (key: "tracks" | "sectors" | "tech", id: string) => setDraft((current) => ({ ...current, [key]: current[key].includes(id) ? current[key].filter((value) => value !== id) : [...current[key], id] }));
 
   if (projectQuery.isPending) return <div className="container-app py-16 text-center text-sm text-foreground-muted">{t("projects.loading")}</div>;
-  if (!project || !canEdit) return <div className="container-app py-16 text-center"><h1 className="font-semibold">{t("projects.form.cannotEdit")}</h1><Button className="mt-4" render={<NavLink to="/projects" />} nativeButton={false}>{t("projects.detail.goBack")}</Button></div>;
+  if (!project || !canEdit) return <div className="container-app py-16 text-center"><h1 className="text-heading-medium font-display">{t("projects.form.cannotEdit")}</h1><Button className="mt-4" render={<NavLink to="/projects" />} nativeButton={false}>{t("projects.detail.goBack")}</Button></div>;
   const contest = contestQuery.data;
   const groups = contest ? [{ key: "tracks" as const, label: t("projects.filters.tracks"), options: contest.tracks ?? [] }, { key: "sectors" as const, label: t("projects.filters.sectors"), options: contest.sectors ?? [] }, { key: "tech" as const, label: t("projects.filters.techStacks"), options: contest.tech_stacks ?? [] }] : [];
 
   return (
     <div className="container-app max-w-4xl py-6 sm:py-8">
       <Button variant="ghost" render={<NavLink to={`/projects/${project.slug}`} />} nativeButton={false}><ArrowLeft className="size-4" />{t("projects.form.back")}</Button>
-      <h1 className="mt-4 text-2xl font-semibold">{t("projects.form.editTitle")}</h1>
+      <h1 className="mt-4 text-heading-large font-display">{t("projects.form.editTitle")}</h1>
       <form className="mt-6 space-y-6 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-7" onSubmit={(event) => { event.preventDefault(); mutation.mutate(); }}>
         <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium">{t("projects.form.title")}<Input className="mt-2" required maxLength={160} value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} /></label><label className="text-sm font-medium">{t("projects.form.slug")}<Input className="mt-2" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" value={draft.slug} onChange={(event) => setDraft({ ...draft, slug: normalizeSlugDraft(event.target.value) })} onBlur={() => setDraft((current) => ({ ...current, slug: canonicalizeSlug(current.slug) }))} /></label></div>
         <label className="block text-sm font-medium">{t("projects.form.summary")}<textarea className="mt-2 min-h-28 w-full rounded-md border border-border bg-background px-3 py-2" rows={5} maxLength={1000} value={draft.summary} onChange={(event) => setDraft({ ...draft, summary: event.target.value })} /></label>

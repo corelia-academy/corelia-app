@@ -122,7 +122,7 @@ export default function ProjectDetailPage() {
             <Package className="size-6 text-foreground-subtle" aria-hidden />
           </div>
           <div className="max-w-md">
-            <h1 className="text-lg font-semibold text-foreground">
+            <h1 className="text-heading-medium font-display text-foreground">
               {t("projects.detail.notFoundTitle")}
             </h1>
             <p className="mt-1 text-sm text-foreground-muted">
@@ -147,7 +147,7 @@ export default function ProjectDetailPage() {
             <ShieldAlert className="size-6 text-foreground-subtle" aria-hidden />
           </div>
           <div className="max-w-md">
-            <h1 className="text-lg font-semibold text-foreground">{t("projects.errorTitle")}</h1>
+            <h1 className="text-heading-medium font-display text-foreground">{t("projects.errorTitle")}</h1>
             <p className="mt-1 text-sm text-foreground-muted">
               {error || t("projects.errorDescription")}
             </p>
@@ -239,7 +239,7 @@ export default function ProjectDetailPage() {
               <ProjectLogo project={project} />
               <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="min-w-0 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+              <h1 className="min-w-0 text-display-small font-display text-foreground">
                 {project.title}
               </h1>
               <span className="rounded-full border border-border-subtle bg-surface-raised px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-foreground-muted">
@@ -301,7 +301,7 @@ export default function ProjectDetailPage() {
 
             {videoEmbed ? (
               <section className="mt-6">
-                <h2 className="text-base font-semibold text-foreground">{t("projects.detail.video")}</h2>
+                <h2 className="text-heading-small font-display text-foreground">{t("projects.detail.video")}</h2>
                 <iframe
                   className="mt-3 aspect-video w-full rounded-lg border border-border-subtle"
                   src={videoEmbed.src}
@@ -314,7 +314,7 @@ export default function ProjectDetailPage() {
 
             {(project.screenshot_urls?.length ?? 0) > 0 ? (
               <section className="mt-6">
-                <h2 className="text-base font-semibold text-foreground">{t("projects.form.screenshots")}</h2>
+                <h2 className="text-heading-small font-display text-foreground">{t("projects.form.screenshots")}</h2>
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   {project.screenshot_urls?.map((url, index) => (
                     <a key={url} href={url} target="_blank" rel="noreferrer" className="overflow-hidden rounded-lg border border-border-subtle">
@@ -327,7 +327,7 @@ export default function ProjectDetailPage() {
 
             {(teamQuery.data?.length ?? 0) > 0 ? (
               <section className="mt-6">
-                <h2 className="text-base font-semibold text-foreground">{t("projects.team.publicTitle")}</h2>
+                <h2 className="text-heading-small font-display text-foreground">{t("projects.team.publicTitle")}</h2>
                 <div className="mt-3 flex flex-wrap gap-3">
                   {teamQuery.data?.map((member) => {
                     const label = member.full_name?.trim() || member.username?.trim() || member.user_id;
@@ -346,10 +346,10 @@ export default function ProjectDetailPage() {
             ) : null}
 
             <section className="mt-6">
-              <h2 className="text-base font-semibold text-foreground">
+              <h2 className="text-heading-small font-display text-foreground">
                 {t("projects.detail.description")}
               </h2>
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-foreground-muted">
+              <p className="mt-3 whitespace-pre-wrap text-body-medium font-body text-foreground-muted">
                 {description}
               </p>
             </section>

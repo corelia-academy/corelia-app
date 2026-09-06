@@ -1,6 +1,16 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+
+/* Corelia typography fonts — only the weights used by the Figma type scale. */
+@import "@fontsource/akt/400.css";
+@import "@fontsource/akt/500.css";
+@import "@fontsource/akt/600.css";
+@import "@fontsource/be-vietnam-pro/400.css";
+@import "@fontsource/be-vietnam-pro/400-italic.css";
+@import "@fontsource/be-vietnam-pro/500.css";
+
+/* Keep Google Sans for the existing certificate-rendering flow. */
 @import "@fontsource-variable/google-sans";
 @import "@fontsource-variable/jetbrains-mono";
 
@@ -69,13 +79,128 @@
   --color-brand-accent: var(--brand-accent);
 
   /* Shadows */
-  --shadow-card: var(--elevation-card);
+  /* --shadow-card: var(--elevation-card);
   --font-sans:
     "Google Sans Variable", ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
     "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
     "Noto Color Emoji", sans-serif;
   --font-mono: "JetBrains Mono Variable", monospace;
+  */
+  --shadow-card: var(--elevation-card);
+  --font-display: "Akt", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-cta: "Akt", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-body);
+  --font-mono: "JetBrains Mono Variable", monospace;
+
+  /* Figma typography scale — size, line-height, letter-spacing and weight. */
+  --text-display-large: 3rem;
+  --text-display-large--line-height: 1.15;
+  --text-display-large--letter-spacing: -0.01em;
+  --text-display-large--font-weight: 500;
+  --text-display-medium: 2.5rem;
+  --text-display-medium--line-height: 1.15;
+  --text-display-medium--letter-spacing: -0.01em;
+  --text-display-medium--font-weight: 400;
+  --text-display-small: 2rem;
+  --text-display-small--line-height: 1.15;
+  --text-display-small--letter-spacing: -0.01em;
+  --text-display-small--font-weight: 400;
+
+  --text-heading-large: 1.75rem;
+  --text-heading-large--line-height: 1.2;
+  --text-heading-large--letter-spacing: 0;
+  --text-heading-large--font-weight: 500;
+  --text-heading-medium: 1.125rem;
+  --text-heading-medium--line-height: 1.2;
+  --text-heading-medium--letter-spacing: 0;
+  --text-heading-medium--font-weight: 500;
+  --text-heading-small: 1rem;
+  --text-heading-small--line-height: 1.2;
+  --text-heading-small--letter-spacing: 0.01em;
+  --text-heading-small--font-weight: 500;
+
+  --text-title-large: 1rem;
+  --text-title-large--line-height: 1.5rem;
+  --text-title-large--letter-spacing: -0.02em;
+  --text-title-large--font-weight: 500;
+  --text-title-medium: 0.875rem;
+  --text-title-medium--line-height: 1.25rem;
+  --text-title-medium--letter-spacing: -0.01em;
+  --text-title-medium--font-weight: 500;
+  --text-title-small: 0.75rem;
+  --text-title-small--line-height: 1rem;
+  --text-title-small--letter-spacing: -0.01em;
+  --text-title-small--font-weight: 500;
+  --text-title-xsmall: 0.625rem;
+  --text-title-xsmall--line-height: 1rem;
+  --text-title-xsmall--letter-spacing: 0;
+  --text-title-xsmall--font-weight: 500;
+
+  --text-body-large: 1rem;
+  --text-body-large--line-height: 1.4;
+  --text-body-large--letter-spacing: 0.02em;
+  --text-body-large--font-weight: 400;
+  --text-body-medium: 0.875rem;
+  --text-body-medium--line-height: 1.25;
+  --text-body-medium--letter-spacing: 0.02em;
+  --text-body-medium--font-weight: 400;
+  --text-body-small: 0.75rem;
+  --text-body-small--line-height: 1.2;
+  --text-body-small--letter-spacing: 0.02em;
+  --text-body-small--font-weight: 400;
+  --text-body-xsmall: 0.625rem;
+  --text-body-xsmall--line-height: 1.2;
+  --text-body-xsmall--letter-spacing: 0.02em;
+  --text-body-xsmall--font-weight: 400;
+
+  --text-cta-large: 1rem;
+  --text-cta-large--line-height: 1.5rem;
+  --text-cta-large--letter-spacing: 0.01em;
+  --text-cta-large--font-weight: 600;
+  --text-cta-medium: 0.875rem;
+  --text-cta-medium--line-height: 1.25rem;
+  --text-cta-medium--letter-spacing: 0.01em;
+  --text-cta-medium--font-weight: 600;
+  --text-cta-small: 0.75rem;
+  --text-cta-small--line-height: 1rem;
+  --text-cta-small--letter-spacing: 0.01em;
+  --text-cta-small--font-weight: 500;
+  --text-cta-link: 0.875rem;
+  --text-cta-link--line-height: 1.25;
+  --text-cta-link--letter-spacing: 0.01em;
+  --text-cta-link--font-weight: 600;
+
+  --text-label-large: 1rem;
+  --text-label-large--line-height: 1;
+  --text-label-large--letter-spacing: 0;
+  --text-label-large--font-weight: 500;
+  --text-label-medium: 0.875rem;
+  --text-label-medium--line-height: 1;
+  --text-label-medium--letter-spacing: -0.005em;
+  --text-label-medium--font-weight: 500;
+  --text-label-small: 0.75rem;
+  --text-label-small--line-height: 1;
+  --text-label-small--letter-spacing: 0;
+  --text-label-small--font-weight: 500;
+  --text-label-xsmall: 0.625rem;
+  --text-label-xsmall--line-height: 1;
+  --text-label-xsmall--letter-spacing: 0;
+  --text-label-xsmall--font-weight: 500;
+
+  --text-note-regular: 0.875rem;
+  --text-note-regular--line-height: 1.25;
+  --text-note-regular--letter-spacing: 0.02em;
+  --text-note-regular--font-weight: 400;
+  --text-note-medium: 0.875rem;
+  --text-note-medium--line-height: 1.25;
+  --text-note-medium--letter-spacing: 0.02em;
+  --text-note-medium--font-weight: 500;
+  --text-note-italic: 0.875rem;
+  --text-note-italic--line-height: 1.25;
+  --text-note-italic--letter-spacing: 0.02em;
+  --text-note-italic--font-weight: 400;
 }
 
 :root {

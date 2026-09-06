@@ -143,7 +143,7 @@ const InstructorDetail = () => {
                 <GraduationCap className="size-3.5" aria-hidden />
                 <span>{originLabel}</span>
               </div>
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+              <h1 className="text-display-small font-display text-foreground">
                 {profile.full_name ?? translate("detail.instructorDetail.fallbackName")}
               </h1>
               {profile.instructor_headline ? (
@@ -175,7 +175,7 @@ const InstructorDetail = () => {
 
           {profile.instructor_bio ? (
             <div className="mt-5 border-t border-border-subtle pt-4">
-              <h2 className="mb-2 text-sm font-semibold text-foreground">
+              <h2 className="mb-2 text-heading-small font-display text-foreground">
                 {translate("detail.instructorDetail.bioTitle")}
               </h2>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
@@ -187,7 +187,7 @@ const InstructorDetail = () => {
 
         <section className="rounded-2xl border border-border-subtle bg-surface-base p-6">
           <div className="mb-3 flex items-center justify-between gap-2">
-            <h2 className="text-lg font-medium text-foreground">
+            <h2 className="text-heading-medium font-display text-foreground">
               {translate("detail.instructorDetail.courses.title")}
             </h2>
             <Button

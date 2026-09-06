@@ -134,12 +134,12 @@ export default function ProjectNewPage() {
   });
 
   if ((hackathonSlug && contestQuery.isPending) || (contest && registrationQuery.isPending)) return <div className="container-app py-16 text-center text-sm text-foreground-muted">{t("projects.loading")}</div>;
-  if (hackathonSlug && (!contest || !eligibleRegistration)) return <div className="container-app py-16 text-center"><Package className="mx-auto size-8 text-foreground-subtle" /><h1 className="mt-3 font-semibold">{t("projects.form.notEligible")}</h1><p className="mt-1 text-sm text-foreground-muted">{t("projects.form.notEligibleDescription")}</p><Button className="mt-4" render={<NavLink to={contest ? `/hackathons/${contest.slug}/overview` : "/hackathons"} />} nativeButton={false}>{t("projects.detail.goBack")}</Button></div>;
+  if (hackathonSlug && (!contest || !eligibleRegistration)) return <div className="container-app py-16 text-center"><Package className="mx-auto size-8 text-foreground-subtle" /><h1 className="mt-3 text-heading-medium font-display">{t("projects.form.notEligible")}</h1><p className="mt-1 text-body-medium font-body text-foreground-muted">{t("projects.form.notEligibleDescription")}</p><Button className="mt-4" render={<NavLink to={contest ? `/hackathons/${contest.slug}/overview` : "/hackathons"} />} nativeButton={false}>{t("projects.detail.goBack")}</Button></div>;
 
   return (
     <div className="container-app max-w-4xl py-6 sm:py-8">
       <Button variant="ghost" render={<NavLink to={contest ? `/hackathons/${contest.slug}/projects` : "/projects"} />} nativeButton={false}><ArrowLeft className="size-4" />{t("projects.form.back")}</Button>
-      <header className="mt-4"><h1 className="text-2xl font-semibold text-foreground">{t("projects.form.createTitle")}</h1>{contest ? <p className="mt-1 text-sm text-foreground-muted">{contest.title}</p> : null}</header>
+      <header className="mt-4"><h1 className="text-heading-large font-display text-foreground">{t("projects.form.createTitle")}</h1>{contest ? <p className="mt-1 text-body-medium font-body text-foreground-muted">{contest.title}</p> : null}</header>
       <form className="mt-6 space-y-6 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-7" onSubmit={(event) => { event.preventDefault(); mutation.mutate(); }}>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="text-sm font-medium">{t("projects.form.title")}<Input className="mt-2" required maxLength={160} value={title} onChange={(event) => setTitle(event.target.value)} /></label>

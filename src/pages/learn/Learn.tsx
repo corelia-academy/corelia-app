@@ -402,7 +402,7 @@ export default function Learn() {
     return (
       <div className="mx-auto w-full max-w-[960px] px-4 py-12">
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-6 text-center shadow-card">
-          <h1 className="text-xl font-semibold text-foreground">
+          <h1 className="text-heading-medium font-display text-foreground">
             {translate("detail.learn.lessonNotFoundTitle", { defaultValue: "Không tìm thấy bài học" })}
           </h1>
           <p className="mt-2 text-sm text-foreground-muted">
