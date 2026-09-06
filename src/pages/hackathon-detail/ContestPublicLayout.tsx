@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, Facebook, Globe2, MapPin, Send, Users } from "lucide-react";
+import { CalendarClock, Coins, Facebook, Globe2, MapPin, Send, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
 import type { Contest, ContestRegistration } from "@/types/hackathons";
 import { ContestDetailLoadingCard } from "@/pages/hackathon-detail/components/ContestDetailGateStates";
+import { formatPrizeAmount } from "./utils/formatPrizeAmount";
 
 const TABS = ["overview", "prizes", "timeline", "resources", "projects"] as const;
 
@@ -175,6 +176,16 @@ export default function ContestPublicLayout() {
             <h1 className="min-w-0 max-w-4xl break-words text-2xl font-bold text-foreground [overflow-wrap:anywhere] sm:text-4xl">{contest.title}</h1>
             {contest.short_description || contest.tagline ? (
               <p className="mt-2 max-w-3xl text-sm text-foreground-muted sm:text-base">{contest.short_description || contest.tagline}</p>
+            ) : null}
+            {contest.prize_pool?.amount && Number(contest.prize_pool.amount) !== 0 ? (
+              <NavLink
+                to={`/hackathons/${slug}/prizes${previewRequested ? "?preview=1" : ""}`}
+                className="mt-4 inline-flex max-w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              >
+                <span className="flex items-center gap-2 text-foreground-muted"><Coins className="size-4 text-primary" aria-hidden />{t("public.prizes.total")}</span>
+                <span className="break-words text-lg font-semibold text-primary">{formatPrizeAmount(contest.prize_pool.amount, locale)} {contest.prize_pool.currency}</span>
+                <span className="text-foreground-muted">{t("public.prizes.breakdown")} →</span>
+              </NavLink>
             ) : null}
           </div>
 
