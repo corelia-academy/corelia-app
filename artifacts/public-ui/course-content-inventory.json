@@ -1,0 +1,344 @@
+[
+  {
+    "id": "6066e9f9-c26a-47de-8c46-55a2326b5264",
+    "slug": "solidity-developer",
+    "fields": {
+      "title": "Solidity Developer: Build Smart Contracts on Ethereum",
+      "short_description": "Khóa học thực chiến giúp bạn học Solidity từ cơ bản đến nâng cao thông qua việc xây dựng các smart contract thật trên Ethereum.",
+      "description": "Solidity Developer là khóa học dành cho những ai muốn bắt đầu lập trình smart contract trên Ethereum và các blockchain tương thích EVM. Khóa học đi từ cú pháp Solidity cơ bản đến các pattern thường gặp khi xây dựng contract thực tế.\n\nBạn sẽ học cách viết, deploy và tương tác với smart contract bằng Solidity. Nội dung bao gồm biến, function, mapping, struct, array, memory/storage/calldata, constructor, modifier, event, error handling, inheritance, contract factory, payable function và tích hợp oracle như Chainlink Data Feed.\n\nThay vì chỉ học lý thuyết rời rạc, khóa học được thiết kế theo hướng “learn by building”. Học viên sẽ từng bước xây dựng các contract như Simple Storage, Contract Factory và Crowdfunding Contract để hiểu cách smart contract được dùng trong sản phẩm thật.\n\nKhóa học phù hợp với người đã có kiến thức lập trình cơ bản, sinh viên ngành công nghệ, developer Web2 muốn chuyển sang Web3, hoặc học viên đã hoàn thành khóa Blockchain Basics.",
+      "learning_outcomes": [
+        "Hiểu cấu trúc một Solidity smart contract.",
+        "Biết viết, compile, deploy và tương tác với contract bằng Remix.",
+        "Nắm được các kiểu dữ liệu quan trọng trong Solidity.",
+        "Biết dùng function, modifier, constructor, event, require, revert và custom error.",
+        "Hiểu sự khác nhau giữa storage, memory và calldata.",
+        "Biết sử dụng mapping, array, struct trong smart contract.",
+        "Hiểu msg.sender, msg.value, payable, wei và flow nhận/gửi ETH.",
+        "Biết xây dựng Contract Factory để tạo nhiều contract con.",
+        "Biết xây dựng Crowdfunding Contract có logic nhận đóng góp.",
+        "Biết tích hợp Chainlink Data Feed ở mức cơ bản.",
+        "Có portfolio smart contract đầu tiên để tiếp tục học Foundry, testing và dApp frontend."
+      ]
+    },
+    "locales": [
+      {
+        "locale": "vi",
+        "fields": {
+          "title": "Solidity Developer: Build Smart Contracts on Ethereum",
+          "short_description": "Khóa học thực chiến giúp bạn học Solidity từ cơ bản đến nâng cao thông qua việc xây dựng các smart contract thật trên Ethereum.",
+          "description": "Solidity Developer là khóa học dành cho những ai muốn bắt đầu lập trình smart contract trên Ethereum và các blockchain tương thích EVM. Khóa học đi từ cú pháp Solidity cơ bản đến các pattern thường gặp khi xây dựng contract thực tế.\n\nBạn sẽ học cách viết, deploy và tương tác với smart contract bằng Solidity. Nội dung bao gồm biến, function, mapping, struct, array, memory/storage/calldata, constructor, modifier, event, error handling, inheritance, contract factory, payable function và tích hợp oracle như Chainlink Data Feed.\n\nThay vì chỉ học lý thuyết rời rạc, khóa học được thiết kế theo hướng “learn by building”. Học viên sẽ từng bước xây dựng các contract như Simple Storage, Contract Factory và Crowdfunding Contract để hiểu cách smart contract được dùng trong sản phẩm thật.\n\nKhóa học phù hợp với người đã có kiến thức lập trình cơ bản, sinh viên ngành công nghệ, developer Web2 muốn chuyển sang Web3, hoặc học viên đã hoàn thành khóa Blockchain Basics.",
+          "learning_outcomes": [
+            "Hiểu cấu trúc một Solidity smart contract.",
+            "Biết viết, compile, deploy và tương tác với contract bằng Remix.",
+            "Nắm được các kiểu dữ liệu quan trọng trong Solidity.",
+            "Biết dùng function, modifier, constructor, event, require, revert và custom error.",
+            "Hiểu sự khác nhau giữa storage, memory và calldata.",
+            "Biết sử dụng mapping, array, struct trong smart contract.",
+            "Hiểu msg.sender, msg.value, payable, wei và flow nhận/gửi ETH.",
+            "Biết xây dựng Contract Factory để tạo nhiều contract con.",
+            "Biết xây dựng Crowdfunding Contract có logic nhận đóng góp.",
+            "Biết tích hợp Chainlink Data Feed ở mức cơ bản.",
+            "Có portfolio smart contract đầu tiên để tiếp tục học Foundry, testing và dApp frontend."
+          ]
+        }
+      },
+      {
+        "locale": "en",
+        "fields": {
+          "title": "Solidity Developer: Build Smart Contracts on Ethereum",
+          "short_description": "A practical course that helps you learn Solidity from basics to advanced by building real smart contracts on Ethereum.",
+          "description": "Solidity Developer is a course for anyone who wants to start building smart contracts on Ethereum and other EVM-compatible blockchains. It covers Solidity from the basic syntax to the common patterns used when developing real-world contracts.\n\nYou will learn how to write, deploy, and interact with smart contracts using Solidity. The content includes variables, functions, mappings, structs, arrays, memory/storage/calldata, constructors, modifiers, events, error handling, inheritance, contract factories, payable functions, and oracle integration such as Chainlink Data Feeds.\n\nRather than focusing only on isolated theory, the course is designed around a “learn by building” approach. You will gradually build contracts such as Simple Storage, a Contract Factory, and a Crowdfunding Contract to understand how smart contracts are used in real products.\n\nThis course is suitable for learners with basic programming knowledge, technology students, Web2 developers moving into Web3, or students who have completed the Blockchain Basics course.",
+          "learning_outcomes": [
+            "Understand the structure of a Solidity smart contract.",
+            "Be able to write, compile, deploy, and interact with contracts using Remix.",
+            "Understand the most important data types in Solidity.",
+            "Be able to use functions, modifiers, constructors, events, require, revert, and custom errors.",
+            "Understand the differences between storage, memory, and calldata.",
+            "Be able to use mappings, arrays, and structs in smart contracts.",
+            "Understand msg.sender, msg.value, payable, wei, and the flow of receiving and sending ETH.",
+            "Be able to build a Contract Factory to create multiple child contracts.",
+            "Be able to build a crowdfunding contract with contribution logic.",
+            "Be able to integrate Chainlink Data Feeds at a basic level.",
+            "Have your first smart contract portfolio project and be ready to continue with Foundry, testing, and dApp frontend development."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "b9917d42-1a55-4cdc-b6f9-8f29273e4f8b",
+    "slug": "blockchain-basics",
+    "fields": {
+      "title": "Blockchain Basics",
+      "short_description": "Khóa học nhập môn giúp bạn hiểu blockchain, ví, giao dịch, gas fee và smart contract một cách dễ hiểu trước khi bắt đầu lập trình Web3.",
+      "description": "Blockchain Basics là khóa học nền tảng dành cho người mới bắt đầu tìm hiểu Web3, blockchain và smart contract. Khóa học không tập trung vào việc code ngay từ đầu, mà giúp học viên hiểu rõ “bên dưới” một giao dịch blockchain đang diễn ra như thế nào.\n\nBạn sẽ học cách blockchain lưu trữ dữ liệu, ví Web3 hoạt động ra sao, private key/signature có vai trò gì, gas fee được tính thế nào, smart contract khác gì backend truyền thống, và tại sao blockchain có thể tạo ra các ứng dụng phi tập trung.\n\nKhóa học phù hợp với sinh viên, người mới tìm hiểu Web3, developer Web2 muốn chuyển hướng sang blockchain, hoặc bất kỳ ai muốn có nền tảng chắc chắn trước khi học Solidity và xây dựng dApp.",
+      "learning_outcomes": [
+        "Hiểu blockchain là gì và vì sao nó khác với hệ thống truyền thống.",
+        "Hiểu khái niệm wallet, private key, public address và signature.",
+        "Biết cách một transaction được tạo, ký, gửi và xác nhận on-chain.",
+        "Hiểu gas fee, block explorer, testnet và mainnet.",
+        "Hiểu smart contract là gì và khi nào nên dùng smart contract.",
+        "Biết cách tạo ví Web3 và tương tác cơ bản với testnet.",
+        "Biết đọc thông tin giao dịch, địa chỉ ví và contract trên block explorer.",
+        "Có nền tảng đủ tốt để tiếp tục học Solidity Developer."
+      ]
+    },
+    "locales": [
+      {
+        "locale": "vi",
+        "fields": {
+          "title": "Blockchain Basics",
+          "short_description": "Khóa học nhập môn giúp bạn hiểu blockchain, ví, giao dịch, gas fee và smart contract một cách dễ hiểu trước khi bắt đầu lập trình Web3.",
+          "description": "Blockchain Basics là khóa học nền tảng dành cho người mới bắt đầu tìm hiểu Web3, blockchain và smart contract. Khóa học không tập trung vào việc code ngay từ đầu, mà giúp học viên hiểu rõ “bên dưới” một giao dịch blockchain đang diễn ra như thế nào.\n\nBạn sẽ học cách blockchain lưu trữ dữ liệu, ví Web3 hoạt động ra sao, private key/signature có vai trò gì, gas fee được tính thế nào, smart contract khác gì backend truyền thống, và tại sao blockchain có thể tạo ra các ứng dụng phi tập trung.\n\nKhóa học phù hợp với sinh viên, người mới tìm hiểu Web3, developer Web2 muốn chuyển hướng sang blockchain, hoặc bất kỳ ai muốn có nền tảng chắc chắn trước khi học Solidity và xây dựng dApp.",
+          "learning_outcomes": [
+            "Hiểu blockchain là gì và vì sao nó khác với hệ thống truyền thống.",
+            "Hiểu khái niệm wallet, private key, public address và signature.",
+            "Biết cách một transaction được tạo, ký, gửi và xác nhận on-chain.",
+            "Hiểu gas fee, block explorer, testnet và mainnet.",
+            "Hiểu smart contract là gì và khi nào nên dùng smart contract.",
+            "Biết cách tạo ví Web3 và tương tác cơ bản với testnet.",
+            "Biết đọc thông tin giao dịch, địa chỉ ví và contract trên block explorer.",
+            "Có nền tảng đủ tốt để tiếp tục học Solidity Developer."
+          ]
+        }
+      },
+      {
+        "locale": "en",
+        "fields": {
+          "title": "Blockchain Basics",
+          "short_description": "An introductory course that helps you understand blockchain, wallets, transactions, gas fees, and smart contracts in a clear and practical way before you start building in Web3.",
+          "description": "Blockchain Basics is a foundational course for beginners exploring Web3, blockchain, and smart contracts. Rather than starting with code, the course helps you understand what is happening “under the hood” during a blockchain transaction.\n\nYou will learn how blockchain stores data, how Web3 wallets work, the roles of private keys and signatures, how gas fees are calculated, how smart contracts differ from traditional backend systems, and why blockchain can enable decentralized applications.\n\nThis course is suitable for students, people new to Web3, Web2 developers looking to move into blockchain, or anyone who wants a solid foundation before learning Solidity and building dApps.",
+          "learning_outcomes": [
+            "Understand what blockchain is and why it differs from traditional systems.",
+            "Understand the concepts of wallets, private keys, public addresses, and signatures.",
+            "Know how a transaction is created, signed, sent, and confirmed on-chain.",
+            "Understand gas fees, block explorers, testnets, and mainnets.",
+            "Understand what smart contracts are and when to use them.",
+            "Know how to create a Web3 wallet and interact with a testnet.",
+            "Know how to read transaction, wallet, and contract information on a block explorer.",
+            "Have a strong enough foundation to continue learning Solidity development."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "75c2e7c9-947c-408c-93a1-037fe86794fe",
+    "slug": "solana-bootcamp",
+    "fields": {
+      "title": "Solana Bootcamp",
+      "short_description": "Khóa học lập trình Solana chuyên sâu dành cho developer, giúp học viên đi từ nền tảng Rust, Solana account model, Anchor, PDA, testing đến xây dựng dApp full-stack, triển khai Devnet và phát triển AI Agent tương tác on-chain.",
+      "description": "Solana Developer Bootcamp là chương trình đào tạo thực chiến dành cho các bạn đã có kiến thức lập trình cơ bản và muốn bắt đầu xây dựng sản phẩm trên hệ sinh thái Solana một cách bài bản.\n\nKhóa học được thiết kế theo phương pháp code-along từ starter repo, giúp học viên tự tay xây dựng từng phần của dự án thay vì chỉ clone source code hoàn chỉnh. Chương trình bắt đầu từ việc thiết lập môi trường phát triển, làm quen với Rust ở mức cần thiết, sau đó đi sâu vào mô hình tư duy cốt lõi của Solana như transaction, instruction, account, program, signer, PDA, rent, serialization và cách dữ liệu được lưu trữ on-chain.\n\nSau phần nền tảng, học viên sẽ học Anchor từ con số 0, hiểu cách tổ chức project, viết instruction handler, định nghĩa account schema, sử dụng constraint, xử lý lỗi, viết test và triển khai chương trình lên Devnet. Các project thực hành bao gồm PDA Counter, Voting App, SPL Token, Escrow, Stablecoin Lite, Simple AMM và các bài tích hợp frontend để hoàn thiện luồng full-stack Solana dApp.\n\nỞ giai đoạn nâng cao, chương trình mở rộng sang các chủ đề như indexing, privacy/ZK, forecasting app, bảo mật và production readiness. Đặc biệt, bootcamp còn có phase về AI Agents & Agentic Payments on Solana, nơi học viên học cách xây dựng MCP server, x402 paywall và AI Agent có khả năng đọc dữ liệu on-chain, đưa ra quyết định, thanh toán cho API/data và thực thi hành động trên Solana với guardrails an toàn.\n\nKết thúc khóa học, học viên sẽ hoàn thành một capstone project có smart contract, test suite, frontend, Devnet deployment, architecture diagram, demo video và security checklist. Đây là nền tảng phù hợp để học viên tiếp tục tham gia hackathon, xây dựng sản phẩm Web3 thực tế, đóng góp vào hệ sinh thái Solana hoặc phát triển các ứng dụng kết hợp AI và blockchain.",
+      "learning_outcomes": [
+        "Hiểu cách Solana hoạt động qua các khái niệm cốt lõi như account, program, transaction, instruction, signer, PDA và rent.",
+        "Nắm được Rust ở mức cần thiết để đọc, viết và debug Solana program.",
+        "Thiết lập môi trường phát triển Solana đầy đủ với Rust, Solana CLI, Anchor, wallet, local validator và Devnet.",
+        "Xây dựng smart contract/program trên Solana bằng Anchor từ con số 0.",
+        "Thiết kế account schema, PDA, instruction flow và validation logic cho ứng dụng on-chain.",
+        "Viết test cho Solana program bằng Anchor test, Rust unit test và LiteSVM ở mức cơ bản.",
+        "Xây dựng các project thực hành như PDA Counter, Voting App, SPL Token, Escrow, Stablecoin Lite và Simple AMM.",
+        "Kết nối smart contract với frontend thông qua IDL, TypeScript client và wallet adapter.",
+        "Deploy chương trình lên Devnet và kiểm tra transaction/account state bằng Solana Explorer.",
+        "Nhận diện các lỗi bảo mật phổ biến trong Solana và áp dụng checklist trước khi launch.",
+        "Hiểu cách xây dựng ứng dụng full-stack Solana có smart contract, test suite, frontend và deployment.",
+        "Làm quen với các chủ đề nâng cao như indexing, ZK/privacy, forecasting app, x402 payment và MCP.",
+        "Xây dựng AI Agent cơ bản có thể đọc dữ liệu on-chain, gọi Solana tools, thanh toán API qua x402 và thực thi hành động trên Devnet.",
+        "Hoàn thành capstone project với GitHub repo, architecture diagram, frontend deploy, Devnet program ID, demo video và security checklist."
+      ]
+    },
+    "locales": [
+      {
+        "locale": "vi",
+        "fields": {
+          "title": "Solana Bootcamp",
+          "short_description": "Khóa học lập trình Solana chuyên sâu dành cho developer, giúp học viên đi từ nền tảng Rust, Solana account model, Anchor, PDA, testing đến xây dựng dApp full-stack, triển khai Devnet và phát triển AI Agent tương tác on-chain.",
+          "description": "Solana Developer Bootcamp là chương trình đào tạo thực chiến dành cho các bạn đã có kiến thức lập trình cơ bản và muốn bắt đầu xây dựng sản phẩm trên hệ sinh thái Solana một cách bài bản.\n\nKhóa học được thiết kế theo phương pháp code-along từ starter repo, giúp học viên tự tay xây dựng từng phần của dự án thay vì chỉ clone source code hoàn chỉnh. Chương trình bắt đầu từ việc thiết lập môi trường phát triển, làm quen với Rust ở mức cần thiết, sau đó đi sâu vào mô hình tư duy cốt lõi của Solana như transaction, instruction, account, program, signer, PDA, rent, serialization và cách dữ liệu được lưu trữ on-chain.\n\nSau phần nền tảng, học viên sẽ học Anchor từ con số 0, hiểu cách tổ chức project, viết instruction handler, định nghĩa account schema, sử dụng constraint, xử lý lỗi, viết test và triển khai chương trình lên Devnet. Các project thực hành bao gồm PDA Counter, Voting App, SPL Token, Escrow, Stablecoin Lite, Simple AMM và các bài tích hợp frontend để hoàn thiện luồng full-stack Solana dApp.\n\nỞ giai đoạn nâng cao, chương trình mở rộng sang các chủ đề như indexing, privacy/ZK, forecasting app, bảo mật và production readiness. Đặc biệt, bootcamp còn có phase về AI Agents & Agentic Payments on Solana, nơi học viên học cách xây dựng MCP server, x402 paywall và AI Agent có khả năng đọc dữ liệu on-chain, đưa ra quyết định, thanh toán cho API/data và thực thi hành động trên Solana với guardrails an toàn.\n\nKết thúc khóa học, học viên sẽ hoàn thành một capstone project có smart contract, test suite, frontend, Devnet deployment, architecture diagram, demo video và security checklist. Đây là nền tảng phù hợp để học viên tiếp tục tham gia hackathon, xây dựng sản phẩm Web3 thực tế, đóng góp vào hệ sinh thái Solana hoặc phát triển các ứng dụng kết hợp AI và blockchain.",
+          "learning_outcomes": [
+            "Hiểu cách Solana hoạt động qua các khái niệm cốt lõi như account, program, transaction, instruction, signer, PDA và rent.",
+            "Nắm được Rust ở mức cần thiết để đọc, viết và debug Solana program.",
+            "Thiết lập môi trường phát triển Solana đầy đủ với Rust, Solana CLI, Anchor, wallet, local validator và Devnet.",
+            "Xây dựng smart contract/program trên Solana bằng Anchor từ con số 0.",
+            "Thiết kế account schema, PDA, instruction flow và validation logic cho ứng dụng on-chain.",
+            "Viết test cho Solana program bằng Anchor test, Rust unit test và LiteSVM ở mức cơ bản.",
+            "Xây dựng các project thực hành như PDA Counter, Voting App, SPL Token, Escrow, Stablecoin Lite và Simple AMM.",
+            "Kết nối smart contract với frontend thông qua IDL, TypeScript client và wallet adapter.",
+            "Deploy chương trình lên Devnet và kiểm tra transaction/account state bằng Solana Explorer.",
+            "Nhận diện các lỗi bảo mật phổ biến trong Solana và áp dụng checklist trước khi launch.",
+            "Hiểu cách xây dựng ứng dụng full-stack Solana có smart contract, test suite, frontend và deployment.",
+            "Làm quen với các chủ đề nâng cao như indexing, ZK/privacy, forecasting app, x402 payment và MCP.",
+            "Xây dựng AI Agent cơ bản có thể đọc dữ liệu on-chain, gọi Solana tools, thanh toán API qua x402 và thực thi hành động trên Devnet.",
+            "Hoàn thành capstone project với GitHub repo, architecture diagram, frontend deploy, Devnet program ID, demo video và security checklist."
+          ]
+        }
+      },
+      {
+        "locale": "en",
+        "fields": {
+          "title": "Solana Bootcamp",
+          "short_description": "An in-depth Solana development course for developers, covering Rust fundamentals, the Solana account model, Anchor, PDAs, testing, and full-stack dApp development. Learners also build and deploy on Devnet and explore AI agents that interact on-chain.",
+          "description": "Solana Developer Bootcamp is a hands-on training program for learners who already have basic programming knowledge and want to start building products in the Solana ecosystem in a structured way.\n\nThe course is designed as a code-along experience based on a starter repository, allowing students to build each part of the project themselves rather than simply cloning a finished codebase. It begins with setting up the development environment, covering the essential Rust concepts needed to get started, and then introduces the core Solana mental model, including transactions, instructions, accounts, programs, signers, PDAs, rent, serialization, and how data is stored on-chain.\n\nAfter the fundamentals, students learn Anchor from scratch. They will understand how to structure a project, write instruction handlers, define account schemas, use constraints, handle errors, write tests, and deploy programs to Devnet. Practical projects include a PDA Counter, Voting App, SPL Token, Escrow, Stablecoin Lite, Simple AMM, and frontend integration exercises to complete a full-stack Solana dApp flow.\n\nIn the advanced stage, the program expands into topics such as indexing, privacy and ZK, forecasting applications, security, and production readiness. In particular, the bootcamp also includes a phase on AI Agents and Agentic Payments on Solana, where students learn how to build an MCP server, an x402 paywall, and AI agents that can read on-chain data, make decisions, pay for APIs or data, and execute actions on Solana with safe guardrails.\n\nBy the end of the course, students will complete a capstone project that includes a smart contract, test suite, frontend, Devnet deployment, architecture diagram, demo video, and security checklist. This provides a strong foundation for participating in hackathons, building real Web3 products, contributing to the Solana ecosystem, or developing applications that combine AI and blockchain.",
+          "learning_outcomes": [
+            "Understand how Solana works through core concepts such as accounts, programs, transactions, instructions, signers, PDAs, and rent.",
+            "Gain the Rust skills needed to read, write, and debug Solana programs.",
+            "Set up a complete Solana development environment with Rust, Solana CLI, Anchor, a wallet, local validator, and Devnet.",
+            "Build Solana smart contracts/programs from scratch using Anchor.",
+            "Design account schemas, PDAs, instruction flows, and validation logic for on-chain applications.",
+            "Write tests for Solana programs using Anchor tests, Rust unit tests, and LiteSVM at a basic level.",
+            "Build practical projects such as a PDA Counter, Voting App, SPL Token, Escrow, Stablecoin Lite, and Simple AMM.",
+            "Connect smart contracts to a frontend using the IDL, TypeScript client, and wallet adapter.",
+            "Deploy programs to Devnet and verify transaction and account state with Solana Explorer.",
+            "Recognize common Solana security issues and apply a pre-launch checklist.",
+            "Understand how to build a full-stack Solana application with smart contract, test suite, frontend, and deployment.",
+            "Get familiar with advanced topics such as indexing, ZK/privacy, forecasting apps, x402 payments, and MCP.",
+            "Build a basic AI Agent that can read on-chain data, call Solana tools, pay for APIs via x402, and execute actions on Devnet.",
+            "Complete a capstone project with a GitHub repo, architecture diagram, frontend deployment, Devnet program ID, demo video, and security check"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "c28b8eb2-64fd-45d0-a51b-ba6a535a71af",
+    "slug": "evm-dapp-developer",
+    "fields": {
+      "title": "EVM dApp Developer: Foundry, Testing & Front-end",
+      "short_description": "Khóa học nâng cao giúp bạn xây dựng dApp trên EVM một cách chuyên nghiệp với Foundry, smart contract testing, deployment, contract verification và front-end tích hợp ví Web3.",
+      "description": "EVM dApp Developer: Foundry, Testing & Front-end là khóa học dành cho học viên đã có nền tảng Solidity và muốn nâng cấp từ việc “viết được smart contract” lên khả năng xây dựng, kiểm thử, triển khai và tích hợp một dApp hoàn chỉnh trên các blockchain tương thích EVM.\n\nKhóa học tập trung vào workflow thực tế của một EVM developer: thiết lập project bằng Foundry, chạy local blockchain với Anvil, viết unit test, mock test, fork test, kiểm tra coverage, tạo deployment script, quản lý RPC URL/private key bằng environment variables, deploy contract lên testnet và verify contract trên block explorer.\n\nBên cạnh phần smart contract, học viên cũng sẽ học cách kết nối front-end với ví Web3, đọc dữ liệu từ contract, gửi transaction từ giao diện, và xử lý các trạng thái thường gặp như loading, success, failed hoặc user rejection.\n\nSau khóa học, học viên không chỉ hiểu cách phát triển smart contract chuyên nghiệp hơn, mà còn có thể hoàn thiện một EVM dApp từ contract layer đến front-end layer để dùng làm portfolio, hackathon project hoặc nền tảng cho sản phẩm Web3 thực tế.",
+      "learning_outcomes": [
+        "Biết thiết lập và quản lý project smart contract bằng Foundry.",
+        "Biết chạy local blockchain environment bằng Anvil.",
+        "Biết compile, test và deploy smart contract bằng Foundry.",
+        "Biết viết unit test cho smart contract.",
+        "Biết sử dụng mock contract để mô phỏng dữ liệu và dependency.",
+        "Biết thực hiện fork test với dữ liệu gần thực tế.",
+        "Biết đọc coverage report và cải thiện chất lượng contract.",
+        "Biết viết deployment script cho nhiều môi trường khác nhau.",
+        "Biết quản lý RPC URL, private key và environment variables an toàn hơn.",
+        "Biết deploy smart contract lên EVM testnet.",
+        "Biết verify contract trên block explorer.",
+        "Biết kết nối front-end application với ví Web3.",
+        "Biết đọc dữ liệu từ smart contract và hiển thị lên giao diện.",
+        "Biết gửi transaction từ front-end đến smart contract.",
+        "Biết xử lý trạng thái giao dịch như loading, success, failed và user rejection.",
+        "Hoàn thành một EVM dApp có smart contract, test, deployment và front-end integration.",
+        "Có sản phẩm portfolio phù hợp cho hackathon, internship hoặc showcase cá nhân."
+      ]
+    },
+    "locales": [
+      {
+        "locale": "en",
+        "fields": {
+          "title": "EVM dApp Developer: Foundry, Testing & Front-end",
+          "short_description": "An advanced course that helps you build professional EVM dApps with Foundry, covering smart contract testing, deployment, contract verification, and Web3 wallet-integrated front-end development.",
+          "description": "EVM dApp Developer: Foundry, Testing & Front-end is a course for learners who already have a foundation in Solidity and want to move beyond simply writing smart contracts to building, testing, deploying, and integrating a complete dApp on EVM-compatible blockchains.\n\nThe course focuses on the practical workflow of an EVM developer: setting up a project with Foundry, running a local blockchain with Anvil, writing unit tests, mock tests, and fork tests, checking coverage, creating deployment scripts, managing RPC URLs and private keys with environment variables, deploying contracts to a testnet, and verifying contracts on a block explorer.\n\nIn addition to smart contract development, learners will also study how to connect a front-end to a Web3 wallet, read data from a contract, send transactions from the interface, and handle common states such as loading, success, failed, and user rejection.\n\nBy the end of the course, learners will not only understand how to develop smart contracts more professionally, but also be able to complete an EVM dApp from the contract layer to the front-end layer for a portfolio, a hackathon project, or the foundation of a real Web3 product.",
+          "learning_outcomes": [
+            "Set up and manage a smart contract project with Foundry.",
+            "Run a local blockchain environment using Anvil.",
+            "Compile, test, and deploy smart contracts with Foundry.",
+            "Write unit tests for smart contracts.",
+            "Use mock contracts to simulate data and dependencies.",
+            "Perform fork tests with near-real-world data.",
+            "Read coverage reports and improve contract quality.",
+            "Write deployment scripts for multiple environments.",
+            "Manage RPC URLs, private keys, and environment variables more securely.",
+            "Deploy smart contracts to an EVM testnet.",
+            "Verify contracts on a block explorer.",
+            "Connect a front-end application to a Web3 wallet.",
+            "Read data from smart contracts and display it in the UI.",
+            "Send transactions from the front end to a smart contract.",
+            "Handle transaction states such as loading, success, failure, and user rejection.",
+            "Build a complete EVM dApp with contracts, tests, deployment, and front-end integration.",
+            "Create a portfolio-ready project for hackathons, internships, or personal showcases."
+          ]
+        }
+      },
+      {
+        "locale": "vi",
+        "fields": {
+          "title": "EVM dApp Developer: Foundry, Testing & Front-end",
+          "short_description": "Khóa học nâng cao giúp bạn xây dựng dApp trên EVM một cách chuyên nghiệp với Foundry, smart contract testing, deployment, contract verification và front-end tích hợp ví Web3.",
+          "description": "EVM dApp Developer: Foundry, Testing & Front-end là khóa học dành cho học viên đã có nền tảng Solidity và muốn nâng cấp từ việc “viết được smart contract” lên khả năng xây dựng, kiểm thử, triển khai và tích hợp một dApp hoàn chỉnh trên các blockchain tương thích EVM.\n\nKhóa học tập trung vào workflow thực tế của một EVM developer: thiết lập project bằng Foundry, chạy local blockchain với Anvil, viết unit test, mock test, fork test, kiểm tra coverage, tạo deployment script, quản lý RPC URL/private key bằng environment variables, deploy contract lên testnet và verify contract trên block explorer.\n\nBên cạnh phần smart contract, học viên cũng sẽ học cách kết nối front-end với ví Web3, đọc dữ liệu từ contract, gửi transaction từ giao diện, và xử lý các trạng thái thường gặp như loading, success, failed hoặc user rejection.\n\nSau khóa học, học viên không chỉ hiểu cách phát triển smart contract chuyên nghiệp hơn, mà còn có thể hoàn thiện một EVM dApp từ contract layer đến front-end layer để dùng làm portfolio, hackathon project hoặc nền tảng cho sản phẩm Web3 thực tế.",
+          "learning_outcomes": [
+            "Biết thiết lập và quản lý project smart contract bằng Foundry.",
+            "Biết chạy local blockchain environment bằng Anvil.",
+            "Biết compile, test và deploy smart contract bằng Foundry.",
+            "Biết viết unit test cho smart contract.",
+            "Biết sử dụng mock contract để mô phỏng dữ liệu và dependency.",
+            "Biết thực hiện fork test với dữ liệu gần thực tế.",
+            "Biết đọc coverage report và cải thiện chất lượng contract.",
+            "Biết viết deployment script cho nhiều môi trường khác nhau.",
+            "Biết quản lý RPC URL, private key và environment variables an toàn hơn.",
+            "Biết deploy smart contract lên EVM testnet.",
+            "Biết verify contract trên block explorer.",
+            "Biết kết nối front-end application với ví Web3.",
+            "Biết đọc dữ liệu từ smart contract và hiển thị lên giao diện.",
+            "Biết gửi transaction từ front-end đến smart contract.",
+            "Biết xử lý trạng thái giao dịch như loading, success, failed và user rejection.",
+            "Hoàn thành một EVM dApp có smart contract, test, deployment và front-end integration.",
+            "Có sản phẩm portfolio phù hợp cho hackathon, internship hoặc showcase cá nhân."
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "862cfec6-fefc-4364-9a0f-8b54f399aaf3",
+    "slug": "rust-survival-kit",
+    "fields": {
+      "title": "Rust Survival Kit",
+      "short_description": "Learn the Rust essentials you need to start building on Solana.",
+      "description": "This course provides a foundation in Rust, covering syntax, ownership, borrowing, structs, enums, error handling, and testing. Students will practice through real-world mini-projects, building the necessary technical skills to further develop applications in Solana.",
+      "learning_outcomes": []
+    },
+    "locales": [
+      {
+        "locale": "vi",
+        "fields": {
+          "title": "Rust Survival Kit",
+          "short_description": "Learn the Rust essentials you need to start building on Solana.",
+          "description": "This course provides a foundation in Rust, covering syntax, ownership, borrowing, structs, enums, error handling, and testing. Students will practice through real-world mini-projects, building the necessary technical skills to further develop applications in Solana.",
+          "learning_outcomes": []
+        }
+      }
+    ]
+  },
+  {
+    "id": "ea125dad-1ca0-4639-b7b1-d0049314671a",
+    "slug": "digital-assets-market",
+    "fields": {
+      "title": "Digital Assets Market",
+      "short_description": "Thị trường tài sản số không chỉ có giá token, biểu đồ giao dịch hay những xu hướng đầu cơ ngắn hạn. Đằng sau đó là một hệ sinh thái gồm blockchain, stablecoin, sàn giao dịch, ví, dịch vụ lưu ký, thanh toán, tokenization, dữ liệu, bảo mật và nhiều mô hình sản phẩm mới đang dần hình thành.",
+      "description": "**Digital Asset Market** là khóa học Corelia Academy phát triển, giúp người học xây dựng nền tảng kiến thức toàn diện về thị trường tài sản số dưới góc nhìn **thị trường, công nghệ và sản phẩm**.\n\nThay vì hướng dẫn đầu tư hoặc dự đoán giá, khóa học tập trung trả lời những câu hỏi quan trọng hơn:\n\n* Tài sản số thực sự là gì và chúng đại diện cho giá trị nào?\n* Một giao dịch tài sản số đi qua những thành phần nào?\n* Sàn giao dịch, ví, dịch vụ lưu ký và stablecoin vận hành ra sao?\n* Khi nào blockchain hoặc token thực sự cần thiết cho một sản phẩm?\n* Làm thế nào để đánh giá một cơ hội thị trường thay vì chỉ chạy theo xu hướng?\n* Những yếu tố pháp lý, bảo mật và trải nghiệm người dùng nào cần được xem xét ngay từ đầu?\n\nThông qua các ví dụ thực tế, sơ đồ hệ sinh thái và bài tập ứng dụng, người học sẽ từng bước chuyển từ việc **hiểu khái niệm** sang khả năng **phân tích thị trường, nhận diện vấn đề và hình thành một định hướng sản phẩm khả thi**.\n\n## Khóa học dành cho ai?\n\nKhóa học phù hợp với:\n\n* Sinh viên và người mới bắt đầu tìm hiểu về digital assets.\n* Developer muốn hiểu rõ bối cảnh thị trường trước khi xây dựng sản phẩm.\n* Product designer, product manager và founder đang nghiên cứu các mô hình ứng dụng mới.\n* Người làm business, marketing, growth hoặc community trong lĩnh vực công nghệ.\n* Researcher muốn xây dựng nền tảng phân tích có hệ thống về thị trường tài sản số.\n* Những người muốn hiểu Web3 và digital assets mà không bắt đầu từ hoạt động trading.\n\nKhóa học không yêu cầu kinh nghiệm về blockchain, lập trình hoặc tài chính. Người học chỉ cần có khả năng sử dụng trình duyệt, bảng tính và công cụ trình bày cơ bản.\n\n## Lưu ý\n\nĐây là khóa học kiến thức và phát triển sản phẩm, **không phải khóa học đầu tư, giao dịch hoặc tư vấn tài chính**.\n\nKhóa học không yêu cầu người học mua tài sản số, sử dụng tiền thật, phát hành token hoặc thực hiện bất kỳ giao dịch tài chính nào.",
+      "learning_outcomes": [
+        "Phân biệt các nhóm tài sản số như cryptoasset, token, stablecoin, NFT, RWA và credential asset.",
+        "Hiểu cấu trúc của thị trường tài sản số và vai trò của từng thành phần trong hệ sinh thái.",
+        "Phân tích mô hình hoạt động của sàn giao dịch, ví, dịch vụ lưu ký và hệ thống thanh toán.",
+        "Đánh giá khi nào nên hoặc không nên sử dụng blockchain và token.",
+        "Nhận diện nhu cầu, hành vi người dùng và khoảng trống sản phẩm trên thị trường.",
+        "Xây dựng problem statement, market sizing và product thesis cho một ý tưởng.",
+        "Tiếp cận sản phẩm tài sản số theo tư duy bảo mật và tuân thủ ngay từ giai đoạn thiết kế.",
+        "Hoàn thiện một Market Opportunity Memo cho cơ hội sản phẩm do mình lựa chọn."
+      ]
+    },
+    "locales": [
+      {
+        "locale": "vi",
+        "fields": {
+          "title": "Digital Assets Market",
+          "short_description": "Thị trường tài sản số không chỉ có giá token, biểu đồ giao dịch hay những xu hướng đầu cơ ngắn hạn. Đằng sau đó là một hệ sinh thái gồm blockchain, stablecoin, sàn giao dịch, ví, dịch vụ lưu ký, thanh toán, tokenization, dữ liệu, bảo mật và nhiều mô hình sản phẩm mới đang dần hình thành.",
+          "description": "**Digital Asset Market** là khóa học Corelia Academy phát triển, giúp người học xây dựng nền tảng kiến thức toàn diện về thị trường tài sản số dưới góc nhìn **thị trường, công nghệ và sản phẩm**.\n\nThay vì hướng dẫn đầu tư hoặc dự đoán giá, khóa học tập trung trả lời những câu hỏi quan trọng hơn:\n\n* Tài sản số thực sự là gì và chúng đại diện cho giá trị nào?\n* Một giao dịch tài sản số đi qua những thành phần nào?\n* Sàn giao dịch, ví, dịch vụ lưu ký và stablecoin vận hành ra sao?\n* Khi nào blockchain hoặc token thực sự cần thiết cho một sản phẩm?\n* Làm thế nào để đánh giá một cơ hội thị trường thay vì chỉ chạy theo xu hướng?\n* Những yếu tố pháp lý, bảo mật và trải nghiệm người dùng nào cần được xem xét ngay từ đầu?\n\nThông qua các ví dụ thực tế, sơ đồ hệ sinh thái và bài tập ứng dụng, người học sẽ từng bước chuyển từ việc **hiểu khái niệm** sang khả năng **phân tích thị trường, nhận diện vấn đề và hình thành một định hướng sản phẩm khả thi**.\n\n## Khóa học dành cho ai?\n\nKhóa học phù hợp với:\n\n* Sinh viên và người mới bắt đầu tìm hiểu về digital assets.\n* Developer muốn hiểu rõ bối cảnh thị trường trước khi xây dựng sản phẩm.\n* Product designer, product manager và founder đang nghiên cứu các mô hình ứng dụng mới.\n* Người làm business, marketing, growth hoặc community trong lĩnh vực công nghệ.\n* Researcher muốn xây dựng nền tảng phân tích có hệ thống về thị trường tài sản số.\n* Những người muốn hiểu Web3 và digital assets mà không bắt đầu từ hoạt động trading.\n\nKhóa học không yêu cầu kinh nghiệm về blockchain, lập trình hoặc tài chính. Người học chỉ cần có khả năng sử dụng trình duyệt, bảng tính và công cụ trình bày cơ bản.\n\n## Lưu ý\n\nĐây là khóa học kiến thức và phát triển sản phẩm, **không phải khóa học đầu tư, giao dịch hoặc tư vấn tài chính**.\n\nKhóa học không yêu cầu người học mua tài sản số, sử dụng tiền thật, phát hành token hoặc thực hiện bất kỳ giao dịch tài chính nào.",
+          "learning_outcomes": [
+            "Phân biệt các nhóm tài sản số như cryptoasset, token, stablecoin, NFT, RWA và credential asset.",
+            "Hiểu cấu trúc của thị trường tài sản số và vai trò của từng thành phần trong hệ sinh thái.",
+            "Phân tích mô hình hoạt động của sàn giao dịch, ví, dịch vụ lưu ký và hệ thống thanh toán.",
+            "Đánh giá khi nào nên hoặc không nên sử dụng blockchain và token.",
+            "Nhận diện nhu cầu, hành vi người dùng và khoảng trống sản phẩm trên thị trường.",
+            "Xây dựng problem statement, market sizing và product thesis cho một ý tưởng.",
+            "Tiếp cận sản phẩm tài sản số theo tư duy bảo mật và tuân thủ ngay từ giai đoạn thiết kế.",
+            "Hoàn thiện một Market Opportunity Memo cho cơ hội sản phẩm do mình lựa chọn."
+          ]
+        }
+      }
+    ]
+  }
+]

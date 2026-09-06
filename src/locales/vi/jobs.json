@@ -11,6 +11,7 @@
   "retry": "Thử lại",
   "nav": { "label": "Điều hướng việc làm", "find": "Tìm việc", "saved": "Đã lưu", "applied": "Đã ứng tuyển", "hidden": "Đã ẩn", "market": "Thị trường" },
   "filters": {
+    "more": "Bộ lọc thêm",
     "label": "Bộ lọc", "jobType": "Nhóm công việc", "role": "Vai trò", "domain": "Lĩnh vực", "skill": "Kỹ năng", "seniority": "Cấp độ", "workMode": "Hình thức làm việc", "region": "Khu vực", "employmentType": "Loại hình công việc", "minimumSalary": "Mức lương tối thiểu", "salaryCurrency": "Đơn vị lương", "postedDate": "Ngày đăng",
     "allJobTypes": "Tất cả nhóm", "allRoles": "Tất cả vai trò", "allDomains": "Tất cả lĩnh vực", "allSkills": "Tất cả kỹ năng", "allSeniorities": "Tất cả cấp độ", "allWorkModes": "Mọi hình thức", "allRegions": "Tất cả khu vực", "allEmploymentTypes": "Mọi loại hình", "allCurrencies": "Tất cả đơn vị", "anyDate": "Mọi thời điểm", "last7Days": "7 ngày qua", "last30Days": "30 ngày qua", "clear": "Xóa lọc"
   },
@@ -29,6 +30,7 @@
     "hidden": { "title": "Việc làm đã ẩn", "description": "Xem lại các việc làm đã ẩn và đưa chúng trở lại danh sách chính.", "empty": "Bạn chưa ẩn việc làm nào." }
   },
   "market": {
+    "chartScale": "Số việc làm · thang đo 0–{{count}}",
     "eyebrow": "Dữ liệu thị trường", "title": "Các công ty công nghệ đang tuyển gì", "subtitle": "Số liệu hằng ngày cho cả vị trí tech và non-tech từ các nguồn được Corelia tuyển chọn. Chỉ số so sánh dùng các nguồn xuất hiện trong cả hai kỳ.",
     "cards": { "active": "Việc làm đang mở", "new": "Tin mới hôm nay", "remote": "Tỷ lệ từ xa", "entry": "Vị trí đầu vào" },
     "topRoles": "Vai trò có nhu cầu", "topSkills": "Kỹ năng được yêu cầu nhiều", "topDomains": "Tuyển dụng theo lĩnh vực", "activity": "Hoạt động tuyển dụng mới", "activityDescription": "Số tin mới và hết hạn hằng ngày trong 30 lần quan sát gần nhất", "newJobs": "Tin mới", "expiredJobs": "Tin hết hạn", "roleGrowth": "Tăng trưởng vai trò (nguồn so sánh được)", "skillGrowth": "Tăng trưởng kỹ năng (nguồn so sánh được)", "seniorityMix": "Phân bổ cấp độ", "growthPending": "Cần ít nhất 14 snapshot hằng ngày trước khi hiển thị tăng trưởng.", "disclaimer": "Quan sát từ các nguồn Corelia theo dõi; đây là dữ liệu mẫu, không phải toàn bộ thị trường.",

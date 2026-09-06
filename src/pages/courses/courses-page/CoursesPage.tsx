@@ -1,134 +1,19 @@
 import { Link } from "react-router";
-import { ArrowRight, BadgeCheck, BookOpen, Clock } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
-import {
-  formatDuration,
-  getCourseLevelLabel,
-  type Course,
-} from "@/types/courses";
+import { PublicCourseCard } from "@/components/courses/PublicCourseCard";
 
 import { useCoursesCatalog } from "./hooks/useCoursesCatalog";
 import {
   useUserCoursesProgress,
-  type CourseProgressEntry,
 } from "./hooks/useUserCoursesProgress";
-import { type CatalogTranslate } from "./utils/catalog";
-
-function levelBadgeClass(level?: string | null): string {
-  switch (level) {
-    case "beginner":
-      return "border-success/30 bg-success/15 text-success";
-    case "intermediate":
-      return "border-brand-accent/30 bg-brand-accent/15 text-brand-accent";
-    case "advanced":
-      return "border-warning/30 bg-warning/15 text-warning";
-    default:
-      return "border-border bg-surface-raised text-foreground-muted";
-  }
-}
-
-function CourseCard({
-  course,
-  progress,
-  translate,
-  cardContinueLabel,
-  cardStartLabel,
-}: {
-  course: Course;
-  progress: CourseProgressEntry | undefined;
-  translate: CatalogTranslate;
-  cardContinueLabel: string;
-  cardStartLabel: string;
-}) {
-  const enrolled = !!progress?.enrolled;
-  const percent = progress?.percent ?? 0;
-  const showProgress = enrolled && percent > 0;
-  const ctaLabel = showProgress ? cardContinueLabel : cardStartLabel;
-
-  return (
-    <Link
-      to={`/courses/${course.slug || course.id}`}
-      className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised"
-    >
-      <div className="relative aspect-video w-full overflow-hidden bg-surface-raised">
-        {course.thumbnail_url ? (
-          <img
-            src={course.thumbnail_url}
-            alt={course.title}
-            className="size-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
-          />
-        ) : (
-          <div className="flex size-full items-center justify-center">
-            <BookOpen className="size-10 text-foreground-subtle" aria-hidden />
-          </div>
-        )}
-        <span
-          className={cn(
-            "absolute right-3 top-3 inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium backdrop-blur-sm",
-            levelBadgeClass(course.level),
-          )}
-        >
-          {getCourseLevelLabel(course.level)}
-        </span>
-        {showProgress ? (
-          <div className="absolute inset-x-0 bottom-0 h-1.5 bg-black/30">
-            <div
-              className="h-full bg-success"
-              style={{ width: `${percent}%` }}
-            />
-          </div>
-        ) : null}
-      </div>
-
-      <div className="flex min-w-0 flex-1 flex-col gap-2 p-4">
-        <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-foreground">
-          {course.title}
-        </h3>
-
-        {course.short_description || course.description ? (
-          <p className="line-clamp-2 text-[13px] leading-relaxed text-foreground-muted">
-            {course.short_description || course.description}
-          </p>
-        ) : null}
-
-        <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-foreground-muted">
-          <span className="inline-flex items-center gap-1">
-            <Clock className="size-3.5 shrink-0" aria-hidden />
-            {formatDuration(Number(course.total_duration_seconds) || 0)}
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <BadgeCheck className="size-3.5 shrink-0" aria-hidden />
-            {translate("pricing.freeLearning")}
-          </span>
-          <span className="ml-auto font-medium text-foreground">
-            {translate("pricing.freeLearning")}
-          </span>
-        </div>
-
-        {enrolled ? (
-          <div className="flex items-center justify-between gap-2 border-t border-border-subtle pt-2">
-            <span className="text-[13px] text-foreground-muted">
-              {showProgress ? `${percent}%` : ctaLabel}
-            </span>
-            <span className="inline-flex items-center gap-1 text-[13px] font-medium text-primary">
-              {showProgress ? ctaLabel : null}
-              <ArrowRight className="size-3.5" aria-hidden />
-            </span>
-          </div>
-        ) : null}
-      </div>
-    </Link>
-  );
-}
 
 export default function CoursesPage() {
   const { t } = useTranslation("courses");
-  const translate: CatalogTranslate = (key, options) =>
-    String(t(key as never, options as never));
+  const { t: tCommon } = useTranslation("common");
   const {
     loading,
     error,
@@ -136,6 +21,7 @@ export default function CoursesPage() {
     hasActiveFilters,
     activeFilterCount,
     resetFilters,
+    retry,
   } = useCoursesCatalog();
   const { progressByCourse } = useUserCoursesProgress();
 
@@ -169,13 +55,12 @@ export default function CoursesPage() {
           <p className="mt-2 text-sm leading-relaxed text-destructive/90">
             {error}
           </p>
+          <Button className="mt-4" variant="outline" onClick={() => void retry()}>{tCommon("actions.retry")}</Button>
         </div>
       </div>
     );
   }
 
-  const cardContinueLabel = t("catalog.card.continueLearning");
-  const cardStartLabel = t("catalog.card.startLearning");
 
   return (
     <div className="container-app py-6 sm:py-8">
@@ -243,13 +128,10 @@ export default function CoursesPage() {
       ) : (
         <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredOnlineCourses.map((course) => (
-            <CourseCard
+            <PublicCourseCard
               key={course.id}
               course={course}
               progress={progressByCourse.get(course.id)}
-              translate={translate}
-              cardContinueLabel={cardContinueLabel}
-              cardStartLabel={cardStartLabel}
             />
           ))}
         </div>

@@ -1,3 +1,4 @@
+import "@/styles/public-ui.css";
 import { useEffect, useMemo, useState } from "react";
 import { NavLink, useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
@@ -88,7 +89,7 @@ export default function SignupVerified() {
   const errorMessage = (failureReason?.trim() || t("signupVerified.sessionError")).trim();
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-auth-page p-6 md:p-10">
+    <div className="flex min-h-svh flex-col items-center justify-center public-status bg-auth-page p-6 md:p-10">
       <div className="w-full max-w-md">
         <div className="mb-4 flex items-center justify-between gap-3">
           <NavLink

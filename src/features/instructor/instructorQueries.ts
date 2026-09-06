@@ -1,3 +1,4 @@
+import { normalizeContentLocale } from "@/lib/entityLocales";
 import { queryOptions } from "@tanstack/react-query";
 
 import {
@@ -11,8 +12,8 @@ export const instructorKeys = {
   all: ["instructor"] as const,
   managedCourses: (userId: string, canViewAll: boolean) =>
     [...instructorKeys.all, "managed-courses", userId, canViewAll] as const,
-  publicDetail: (profileId: string) =>
-    [...instructorKeys.all, "public-detail", profileId] as const,
+  publicDetail: (profileId: string, locale = "vi") =>
+    [...instructorKeys.all, "public-detail", profileId, normalizeContentLocale(locale)] as const,
   courseTitle: (courseId: string) =>
     [...instructorKeys.all, "course-title", courseId] as const,
 };
@@ -38,13 +39,14 @@ export function managedCoursesQueryOptions(
 export function publicInstructorDetailQueryOptions(
   profileId: string | undefined,
   enabled: boolean,
+  locale = "vi",
 ) {
   return queryOptions({
-    queryKey: instructorKeys.publicDetail(profileId || "missing"),
+    queryKey: instructorKeys.publicDetail(profileId || "missing", locale),
     queryFn: async () => {
       const [profile, courses] = await Promise.all([
         getPublicProfileById(profileId!),
-        getPublishedCoursesByInstructor(profileId!),
+        getPublishedCoursesByInstructor(profileId!, normalizeContentLocale(locale)),
       ]);
       return { profile, courses };
     },

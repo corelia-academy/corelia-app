@@ -1,5 +1,8 @@
 import type { CSSProperties } from "react";
-import { Outlet } from "react-router";
+import { useAuth } from "@/stores/authStore";
+import { isPublicPresentation } from "./publicPresentation";
+import "@/styles/public-ui.css";
+import { Outlet, useLocation } from "react-router";
 import {
   SidebarInset,
   SidebarProvider,
@@ -9,18 +12,21 @@ import AppSidebar from "@/components/base/AppSidebar";
 import Header from "./Header";
 
 const MainLayout = () => {
+  const { pathname } = useLocation();
+  const { isAuthenticated } = useAuth();
+  const publicUI = isPublicPresentation(pathname, isAuthenticated);
   return (
     <SidebarProvider
       defaultOpen
       mobileBreakpoint={1024}
-      className="flex-col"
-      style={{ "--app-header-height": "4.75rem" } as CSSProperties}
+      className={publicUI ? "public-ui flex-col" : "flex-col"}
+      style={{ "--app-header-height": "4.75rem", ...(publicUI ? { "--sidebar-width": "14rem" } : {}) } as CSSProperties}
     >
-      <Header />
+      <Header publicUI={publicUI} />
       <div className="flex min-h-0 flex-1">
         <MainAppSidebar />
         <SidebarInset className="flex min-h-[calc(100svh-var(--app-header-height))] min-w-0 flex-col">
-          <div className="flex-1">
+          <div className={publicUI ? "public-content flex-1" : "flex-1"}>
             <Outlet />
           </div>
         </SidebarInset>

@@ -79,9 +79,7 @@ export function CourseCurriculum({
   const { t } = useTranslation("courses");
   const translate = (key: string, options?: Record<string, unknown>) =>
     String(t(key as never, options as never));
-  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [sectionOverrides, setSectionOverrides] = useState<Record<string, boolean>>({});
 
   return (
     <section className="mt-8">
@@ -116,7 +114,7 @@ export function CourseCurriculum({
       <div className="space-y-3">
         {visibleLessonGroups.map(
           ({ section, lessons: sectionLessons }, sectionIndex) => {
-            const isCollapsed = collapsedSections.has(section.id);
+            const isCollapsed = sectionOverrides[section.id] ?? sectionIndex !== 0;
             const sectionContentCount = sectionLessons.filter(
               (l) => !isActivityLesson(l),
             ).length;
@@ -128,13 +126,10 @@ export function CourseCurriculum({
               >
                 <button
                   type="button"
+                  aria-expanded={!isCollapsed}
+                  aria-controls={`curriculum-${section.id}`}
                   onClick={() =>
-                    setCollapsedSections((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(section.id)) next.delete(section.id);
-                      else next.add(section.id);
-                      return next;
-                    })
+                    setSectionOverrides(prev => ({ ...prev, [section.id]: !isCollapsed }))
                   }
                   className="flex w-full flex-col gap-2 border-b border-border-subtle bg-surface-raised px-4 py-3 text-left transition-colors duration-150 hover:bg-surface-overlay sm:flex-row sm:items-center sm:justify-between"
                 >
@@ -171,7 +166,7 @@ export function CourseCurriculum({
                   </div>
                 </button>
                 {!isCollapsed ? (
-                  <div className="divide-y divide-border-subtle">
+                  <div id={`curriculum-${section.id}`} className="divide-y divide-border-subtle">
                     {sectionLessons.map((lesson, lessonIndex) => (
                       <LessonRow
                         key={lesson.id}

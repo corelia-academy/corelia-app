@@ -66,7 +66,7 @@ function DetailSkeleton() {
     <div className="container-app py-6 sm:py-8">
       <Skeleton className="mb-4 h-8 w-40" />
       <Skeleton className="h-72 w-full rounded-lg" />
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-4">
           <Skeleton className="h-8 w-2/3" />
           <Skeleton className="h-5 w-48" />
@@ -232,9 +232,9 @@ export default function ProjectDetailPage() {
         {t("projects.detail.backToProjects")}
       </Button>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
-        <main className="min-w-0">
-          <div className="rounded-lg border border-border-subtle bg-surface-base p-4 shadow-card sm:p-6">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0">
+          <div className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-6">
             <div className="flex items-start gap-4">
               <ProjectLogo project={project} />
               <div className="min-w-0">
@@ -354,10 +354,10 @@ export default function ProjectDetailPage() {
               </p>
             </section>
           </div>
-        </main>
+        </div>
 
         <aside className="min-w-0 lg:sticky lg:top-20 lg:self-start">
-          <div className="rounded-lg border border-border-subtle bg-surface-base p-4 shadow-card">
+          <div className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card">
             <ProjectSocialBlock
               projectId={project.id}
               likeCount={Number(project.like_count ?? 0)}

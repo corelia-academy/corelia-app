@@ -1,0 +1,130 @@
+[
+  {
+    "entity_type": "course",
+    "id": "862cfec6-fefc-4364-9a0f-8b54f399aaf3",
+    "slug": "rust-survival-kit",
+    "field": "short_description",
+    "locale": "vi",
+    "source": "Learn the Rust essentials you need to start building on Solana.",
+    "translation": "Học những kiến thức Rust thiết yếu để bắt đầu xây dựng ứng dụng trên Solana.",
+    "status": "draft",
+    "production_written": false
+  },
+  {
+    "entity_type": "course",
+    "id": "862cfec6-fefc-4364-9a0f-8b54f399aaf3",
+    "slug": "rust-survival-kit",
+    "field": "description",
+    "locale": "vi",
+    "source": "This course provides a foundation in Rust, covering syntax, ownership, borrowing, structs, enums, error handling, and testing. Students will practice through real-world mini-projects, building the necessary technical skills to further develop applications in Solana.",
+    "translation": "Khóa học cung cấp nền tảng Rust, bao gồm cú pháp, ownership, borrowing, struct, enum, xử lý lỗi và kiểm thử. Người học thực hành qua các dự án nhỏ gắn với thực tế, xây dựng kỹ năng kỹ thuật cần thiết để tiếp tục phát triển ứng dụng trên Solana.",
+    "status": "draft",
+    "production_written": false
+  },
+  {
+    "entity_type": "course",
+    "id": "862cfec6-fefc-4364-9a0f-8b54f399aaf3",
+    "slug": "rust-survival-kit",
+    "field": "title",
+    "locale": "en",
+    "source": "Rust Survival Kit",
+    "translation": "Rust Survival Kit",
+    "status": "draft",
+    "production_written": false
+  },
+  {
+    "entity_type": "course",
+    "id": "862cfec6-fefc-4364-9a0f-8b54f399aaf3",
+    "slug": "rust-survival-kit",
+    "field": "short_description",
+    "locale": "en",
+    "source": "Learn the Rust essentials you need to start building on Solana.",
+    "translation": "Learn the Rust essentials you need to start building on Solana.",
+    "status": "draft",
+    "production_written": false
+  },
+  {
+    "entity_type": "course",
+    "id": "862cfec6-fefc-4364-9a0f-8b54f399aaf3",
+    "slug": "rust-survival-kit",
+    "field": "description",
+    "locale": "en",
+    "source": "This course provides a foundation in Rust, covering syntax, ownership, borrowing, structs, enums, error handling, and testing. Students will practice through real-world mini-projects, building the necessary technical skills to further develop applications in Solana.",
+    "translation": "This course provides a foundation in Rust, covering syntax, ownership, borrowing, structs, enums, error handling, and testing. Students will practice through real-world mini-projects, building the necessary technical skills to further develop applications in Solana.",
+    "status": "draft",
+    "production_written": false
+  },
+  {
+    "entity_type": "course",
+    "id": "862cfec6-fefc-4364-9a0f-8b54f399aaf3",
+    "slug": "rust-survival-kit",
+    "field": "learning_outcomes",
+    "locale": "en",
+    "source": [],
+    "translation": [],
+    "status": "draft",
+    "production_written": false
+  },
+  {
+    "entity_type": "course",
+    "id": "ea125dad-1ca0-4639-b7b1-d0049314671a",
+    "slug": "digital-assets-market",
+    "field": "title",
+    "locale": "en",
+    "source": "Digital Assets Market",
+    "translation": "Digital Assets Market",
+    "status": "draft",
+    "production_written": false
+  },
+  {
+    "entity_type": "course",
+    "id": "ea125dad-1ca0-4639-b7b1-d0049314671a",
+    "slug": "digital-assets-market",
+    "field": "short_description",
+    "locale": "en",
+    "source": "Thị trường tài sản số không chỉ có giá token, biểu đồ giao dịch hay những xu hướng đầu cơ ngắn hạn. Đằng sau đó là một hệ sinh thái gồm blockchain, stablecoin, sàn giao dịch, ví, dịch vụ lưu ký, thanh toán, tokenization, dữ liệu, bảo mật và nhiều mô hình sản phẩm mới đang dần hình thành.",
+    "translation": "The digital assets market extends beyond token prices, trading charts and short-term speculation. Behind it is an ecosystem of blockchains, stablecoins, exchanges, wallets, custody services, payments, tokenization, data, security and emerging product models.",
+    "status": "draft",
+    "production_written": false
+  },
+  {
+    "entity_type": "course",
+    "id": "ea125dad-1ca0-4639-b7b1-d0049314671a",
+    "slug": "digital-assets-market",
+    "field": "description",
+    "locale": "en",
+    "source": "**Digital Asset Market** là khóa học Corelia Academy phát triển, giúp người học xây dựng nền tảng kiến thức toàn diện về thị trường tài sản số dưới góc nhìn **thị trường, công nghệ và sản phẩm**.\n\nThay vì hướng dẫn đầu tư hoặc dự đoán giá, khóa học tập trung trả lời những câu hỏi quan trọng hơn:\n\n* Tài sản số thực sự là gì và chúng đại diện cho giá trị nào?\n* Một giao dịch tài sản số đi qua những thành phần nào?\n* Sàn giao dịch, ví, dịch vụ lưu ký và stablecoin vận hành ra sao?\n* Khi nào blockchain hoặc token thực sự cần thiết cho một sản phẩm?\n* Làm thế nào để đánh giá một cơ hội thị trường thay vì chỉ chạy theo xu hướng?\n* Những yếu tố pháp lý, bảo mật và trải nghiệm người dùng nào cần được xem xét ngay từ đầu?\n\nThông qua các ví dụ thực tế, sơ đồ hệ sinh thái và bài tập ứng dụng, người học sẽ từng bước chuyển từ việc **hiểu khái niệm** sang khả năng **phân tích thị trường, nhận diện vấn đề và hình thành một định hướng sản phẩm khả thi**.\n\n## Khóa học dành cho ai?\n\nKhóa học phù hợp với:\n\n* Sinh viên và người mới bắt đầu tìm hiểu về digital assets.\n* Developer muốn hiểu rõ bối cảnh thị trường trước khi xây dựng sản phẩm.\n* Product designer, product manager và founder đang nghiên cứu các mô hình ứng dụng mới.\n* Người làm business, marketing, growth hoặc community trong lĩnh vực công nghệ.\n* Researcher muốn xây dựng nền tảng phân tích có hệ thống về thị trường tài sản số.\n* Những người muốn hiểu Web3 và digital assets mà không bắt đầu từ hoạt động trading.\n\nKhóa học không yêu cầu kinh nghiệm về blockchain, lập trình hoặc tài chính. Người học chỉ cần có khả năng sử dụng trình duyệt, bảng tính và công cụ trình bày cơ bản.\n\n## Lưu ý\n\nĐây là khóa học kiến thức và phát triển sản phẩm, **không phải khóa học đầu tư, giao dịch hoặc tư vấn tài chính**.\n\nKhóa học không yêu cầu người học mua tài sản số, sử dụng tiền thật, phát hành token hoặc thực hiện bất kỳ giao dịch tài chính nào.",
+    "translation": "**Digital Asset Market** is a course developed by Corelia Academy to help learners build a comprehensive foundation in digital assets from **market, technology and product** perspectives.\n\nRather than teaching investing or price prediction, the course focuses on these questions:\n\n* What are digital assets, and what value do they represent?\n* Which components does a digital asset transaction pass through?\n* How do exchanges, wallets, custody services and stablecoins work?\n* When does a product actually need a blockchain or token?\n* How can you assess a market opportunity instead of simply following trends?\n* Which legal, security and user experience considerations should be addressed from the start?\n\nThrough practical examples, ecosystem maps and applied exercises, learners progress from **understanding concepts** to **analyzing markets, identifying problems and developing a viable product direction**.\n\n## Who is this course for?\n\nThis course is suitable for:\n\n* Students and beginners exploring digital assets.\n* Developers who want to understand the market context before building a product.\n* Product designers, product managers and founders researching new applications.\n* Business, marketing, growth and community professionals in technology.\n* Researchers building a systematic foundation for analyzing digital asset markets.\n* Anyone who wants to understand Web3 and digital assets without starting with trading.\n\nNo blockchain, programming or finance experience is required. Learners only need basic browser, spreadsheet and presentation skills.\n\n## Note\n\nThis course focuses on knowledge and product development. It is **not a course on investing, trading or financial advice**.\n\nLearners are not required to buy digital assets, use real money, issue tokens or carry out any financial transactions.",
+    "status": "draft",
+    "production_written": false
+  },
+  {
+    "entity_type": "course",
+    "id": "ea125dad-1ca0-4639-b7b1-d0049314671a",
+    "slug": "digital-assets-market",
+    "field": "learning_outcomes",
+    "locale": "en",
+    "source": [
+      "Phân biệt các nhóm tài sản số như cryptoasset, token, stablecoin, NFT, RWA và credential asset.",
+      "Hiểu cấu trúc của thị trường tài sản số và vai trò của từng thành phần trong hệ sinh thái.",
+      "Phân tích mô hình hoạt động của sàn giao dịch, ví, dịch vụ lưu ký và hệ thống thanh toán.",
+      "Đánh giá khi nào nên hoặc không nên sử dụng blockchain và token.",
+      "Nhận diện nhu cầu, hành vi người dùng và khoảng trống sản phẩm trên thị trường.",
+      "Xây dựng problem statement, market sizing và product thesis cho một ý tưởng.",
+      "Tiếp cận sản phẩm tài sản số theo tư duy bảo mật và tuân thủ ngay từ giai đoạn thiết kế.",
+      "Hoàn thiện một Market Opportunity Memo cho cơ hội sản phẩm do mình lựa chọn."
+    ],
+    "translation": [
+      "Distinguish digital asset categories, including cryptoassets, tokens, stablecoins, NFTs, RWAs and credential assets.",
+      "Understand the structure of the digital assets market and the role of each ecosystem participant.",
+      "Analyze how exchanges, wallets, custody services and payment systems operate.",
+      "Assess when to use—and when not to use—blockchains and tokens.",
+      "Identify user needs, behaviors and gaps in the market.",
+      "Develop a problem statement, market sizing and product thesis for an idea.",
+      "Consider security and compliance from the product design stage.",
+      "Complete a Market Opportunity Memo for a product opportunity of your choice."
+    ],
+    "status": "draft",
+    "production_written": false
+  }
+]

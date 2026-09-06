@@ -33,6 +33,8 @@
     "certificate": "Certificate",
     "certificateIncluded": "Certificate included",
     "certificateNotIncluded": "No certificate",
+    "coursesCount_one": "{{count}} course",
+    "coursesCount_other": "{{count}} courses",
     "coursesCount": "{{count}} course",
     "coursesCount_plural": "{{count}} courses"
   },

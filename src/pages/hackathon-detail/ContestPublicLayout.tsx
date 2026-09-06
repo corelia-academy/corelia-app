@@ -218,7 +218,7 @@ export default function ContestPublicLayout() {
         </header>
       </PageContainer>
 
-      <div className="sticky top-11 z-20 mt-4 border-y border-border-subtle bg-background/95 backdrop-blur">
+      <div className="sticky top-(--app-header-height) z-20 mt-4 border-y border-border-subtle bg-background/95 backdrop-blur">
         <div ref={tabsScrollerRef} className="overflow-x-auto overscroll-x-contain scroll-px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <PageContainer width="default" className="py-0">
             <nav className="flex min-w-max" aria-label={t("public.tabsLabel")}>

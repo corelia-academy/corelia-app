@@ -1,0 +1,122 @@
+[
+  {
+    "name": "CTA",
+    "foreground": "#FFFFFF",
+    "background": "#1759F1",
+    "ratio": 5.62,
+    "threshold": 4.5,
+    "passed": true
+  },
+  {
+    "name": "CTA hover",
+    "foreground": "#FFFFFF",
+    "background": "#1248C5",
+    "ratio": 7.61,
+    "threshold": 4.5,
+    "passed": true
+  },
+  {
+    "name": "light body",
+    "foreground": "#171923",
+    "background": "#F4F7FF",
+    "ratio": 16.33,
+    "threshold": 4.5,
+    "passed": true
+  },
+  {
+    "name": "light secondary",
+    "foreground": "#526079",
+    "background": "#FFFFFF",
+    "ratio": 6.35,
+    "threshold": 4.5,
+    "passed": true
+  },
+  {
+    "name": "light link",
+    "foreground": "#1759F1",
+    "background": "#F4F7FF",
+    "ratio": 5.25,
+    "threshold": 4.5,
+    "passed": true
+  },
+  {
+    "name": "dark body",
+    "foreground": "#EAE6E3",
+    "background": "#0A0913",
+    "ratio": 15.95,
+    "threshold": 4.5,
+    "passed": true
+  },
+  {
+    "name": "dark secondary",
+    "foreground": "#CBD1E2",
+    "background": "#131522",
+    "ratio": 11.88,
+    "threshold": 4.5,
+    "passed": true
+  },
+  {
+    "name": "dark link",
+    "foreground": "#91B5FF",
+    "background": "#131522",
+    "ratio": 8.86,
+    "threshold": 4.5,
+    "passed": true
+  },
+  {
+    "name": "light selected",
+    "foreground": "#1A378E",
+    "background": "#DAE9FF",
+    "ratio": 8.62,
+    "threshold": 4.5,
+    "passed": true
+  },
+  {
+    "name": "dark selected",
+    "foreground": "#EAE6E3",
+    "background": "#1A2B55",
+    "ratio": 11.13,
+    "threshold": 4.5,
+    "passed": true
+  },
+  {
+    "name": "light control border",
+    "foreground": "#7886A0",
+    "background": "#FFFFFF",
+    "ratio": 3.67,
+    "threshold": 3,
+    "passed": true
+  },
+  {
+    "name": "dark control border",
+    "foreground": "#67758F",
+    "background": "#131522",
+    "ratio": 3.9,
+    "threshold": 3,
+    "passed": true
+  },
+  {
+    "name": "chart blue on dark",
+    "foreground": "#1759F1",
+    "background": "#131522",
+    "ratio": 3.23,
+    "threshold": 3,
+    "passed": true
+  },
+  {
+    "name": "dark CTA hover text",
+    "foreground": "#FFFFFF",
+    "background": "#2464F5",
+    "ratio": 4.98,
+    "threshold": 4.5,
+    "passed": true
+  },
+  {
+    "name": "dark CTA hover boundary",
+    "foreground": "#2464F5",
+    "background": "#131522",
+    "ratio": 3.64,
+    "threshold": 3,
+    "passed": true
+  }
+]
