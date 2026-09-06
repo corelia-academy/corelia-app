@@ -1,3 +1,4 @@
+import { normalizeContentLocale } from "@/lib/entityLocales";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 import { getProfileCourseSkills, getPublishedCoursesByInstructor } from "@/lib/courses";
@@ -19,7 +20,7 @@ export const publicProfileKeys = {
   achievements: (profileId: string) =>
     [...publicProfileKeys.all, "achievements", profileId] as const,
   skills: (profileId: string) => [...publicProfileKeys.all, "skills", profileId] as const,
-  courses: (profileId: string) => [...publicProfileKeys.all, "courses", profileId] as const,
+  courses: (profileId: string, locale = "vi") => [...publicProfileKeys.all, "courses", profileId, normalizeContentLocale(locale)] as const,
   activity: (profileId: string) => [...publicProfileKeys.all, "activity", profileId] as const,
   projects: (profileId: string, locale: string) =>
     [...publicProfileKeys.all, "projects", profileId, locale] as const,
@@ -74,10 +75,11 @@ export function publicProfileSkillsQueryOptions(profileId: string) {
 export function publicInstructorCoursesQueryOptions(
   profileId: string,
   enabled: boolean,
+  locale = "vi",
 ) {
   return queryOptions({
-    queryKey: publicProfileKeys.courses(profileId),
-    queryFn: () => getPublishedCoursesByInstructor(profileId),
+    queryKey: publicProfileKeys.courses(profileId, locale),
+    queryFn: () => getPublishedCoursesByInstructor(profileId, normalizeContentLocale(locale)),
     enabled,
     staleTime: 60_000,
     meta: publicMeta,

@@ -1,3 +1,4 @@
+import "@/styles/public-ui.css";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -23,8 +24,8 @@ export function ClaimPage() {
   const signupUrl = `/login?mode=signup&email=${encodeURIComponent(email)}`;
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-surface-base shadow-card p-8 text-center shadow-sm">
+    <div className="public-status flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10">
+      <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-surface-base p-5 text-center sm:p-8">
         {status === "loading" && (
           <div className="flex flex-col items-center gap-3 py-6">
             <Loader2 className="size-6 animate-spin text-primary" aria-hidden />
