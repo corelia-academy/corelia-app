@@ -109,14 +109,25 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
+  /*
+   * Figma token -> Tailwind v4/CSS variable mapping:
+   * spacing: none=0, xxs=2, xs=4, sm=6, md=8, 2md=10, lg=12,
+   *          xl=16, 2xl=20, 3xl=24, 4xl=28, 5xl=32, 6xl=40,
+   *          7xl=48, 8xl=64, 9xl=80, 10xl=96, 11xl=128,
+   *          12xl=160, 13xl=192, 14xl=224, 15xl=256px.
+   * radius: sm=6, md=8, lg=10, xl=12, 2xl=16, 3xl=20,
+   *         full=9999px.
+   * Figma's 8px/10px spacing rows were normalized to spacing-md/2md.
+   */
+  /* Corelia DS v2 radius tokens */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.75rem;
   --radius-2xl: 1rem;
-  /* 16px — premium card radius */
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-3xl: 1.25rem;
+  --radius-full: 9999px;
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -259,6 +270,185 @@
   --text-note-italic--line-height: 1.25;
   --text-note-italic--letter-spacing: 0.02em;
   --text-note-italic--font-weight: 400;
+}
+
+/* Corelia spacing tokens — isolated from Tailwind's default spacing namespace. */
+@theme {
+  --corelia-spacing-none: 0rem;
+  --corelia-spacing-xxs: 0.125rem;
+  --corelia-spacing-xs: 0.25rem;
+  --corelia-spacing-sm: 0.375rem;
+  --corelia-spacing-md: 0.5rem;
+  --corelia-spacing-2md: 0.625rem;
+  --corelia-spacing-lg: 0.75rem;
+  --corelia-spacing-xl: 1rem;
+  --corelia-spacing-2xl: 1.25rem;
+  --corelia-spacing-3xl: 1.5rem;
+  --corelia-spacing-4xl: 1.75rem;
+  --corelia-spacing-5xl: 2rem;
+  --corelia-spacing-6xl: 2.5rem;
+  --corelia-spacing-7xl: 3rem;
+  --corelia-spacing-8xl: 4rem;
+  --corelia-spacing-9xl: 5rem;
+  --corelia-spacing-10xl: 6rem;
+  --corelia-spacing-11xl: 8rem;
+  --corelia-spacing-12xl: 10rem;
+  --corelia-spacing-13xl: 12rem;
+  --corelia-spacing-14xl: 14rem;
+  --corelia-spacing-15xl: 16rem;
+}
+
+/* Corelia spacing utilities. Tailwind variants such as sm:, hover:, and data-* remain supported. */
+@utility p-* {
+  padding: --value(--corelia-spacing-*);
+}
+
+@utility px-* {
+  padding-inline: --value(--corelia-spacing-*);
+}
+
+@utility py-* {
+  padding-block: --value(--corelia-spacing-*);
+}
+
+@utility pt-* {
+  padding-top: --value(--corelia-spacing-*);
+}
+
+@utility pr-* {
+  padding-right: --value(--corelia-spacing-*);
+}
+
+@utility pb-* {
+  padding-bottom: --value(--corelia-spacing-*);
+}
+
+@utility pl-* {
+  padding-left: --value(--corelia-spacing-*);
+}
+
+@utility m-* {
+  margin: --value(--corelia-spacing-*);
+}
+
+@utility mx-* {
+  margin-inline: --value(--corelia-spacing-*);
+}
+
+@utility my-* {
+  margin-block: --value(--corelia-spacing-*);
+}
+
+@utility mt-* {
+  margin-top: --value(--corelia-spacing-*);
+}
+
+@utility mr-* {
+  margin-right: --value(--corelia-spacing-*);
+}
+
+@utility mb-* {
+  margin-bottom: --value(--corelia-spacing-*);
+}
+
+@utility ml-* {
+  margin-left: --value(--corelia-spacing-*);
+}
+
+@utility -m-* {
+  margin: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -mx-* {
+  margin-inline: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -my-* {
+  margin-block: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -mt-* {
+  margin-top: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -mr-* {
+  margin-right: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -mb-* {
+  margin-bottom: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -ml-* {
+  margin-left: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility gap-* {
+  gap: --value(--corelia-spacing-*);
+}
+
+@utility gap-x-* {
+  column-gap: --value(--corelia-spacing-*);
+}
+
+@utility gap-y-* {
+  row-gap: --value(--corelia-spacing-*);
+}
+
+@utility inset-* {
+  inset: --value(--corelia-spacing-*);
+}
+
+@utility inset-x-* {
+  inset-inline: --value(--corelia-spacing-*);
+}
+
+@utility inset-y-* {
+  inset-block: --value(--corelia-spacing-*);
+}
+
+@utility top-* {
+  top: --value(--corelia-spacing-*);
+}
+
+@utility right-* {
+  right: --value(--corelia-spacing-*);
+}
+
+@utility bottom-* {
+  bottom: --value(--corelia-spacing-*);
+}
+
+@utility left-* {
+  left: --value(--corelia-spacing-*);
+}
+
+@utility -inset-* {
+  inset: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -inset-x-* {
+  inset-inline: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -inset-y-* {
+  inset-block: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -top-* {
+  top: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -right-* {
+  right: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -bottom-* {
+  bottom: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -left-* {
+  left: calc(--value(--corelia-spacing-*) * -1);
 }
 
 :root {
