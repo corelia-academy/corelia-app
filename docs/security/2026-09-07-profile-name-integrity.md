@@ -45,3 +45,20 @@ records remain private for incident review; do not expose them through an RPC.
 This change closes the identified profile integrity paths. It does not prove
 that historical account compromise is fully contained or replace a review of
 account access, external credentials, and retained incident logs.
+
+## Expanded permission review
+
+Production review found no client-readable public tables without RLS, no public
+SECURITY DEFINER functions executable by browser roles, no broad true write
+policies, and no client-readable views bypassing invoker security. However, 44
+public/storage tables retained TRUNCATE, REFERENCES and TRIGGER grants for each
+browser role (41 application tables and 3 Supabase-managed Storage tables).
+The second migration removes these grants on application tables and their
+postgres/public defaults. Storage ACLs are provider-owned: the migration role
+is not a member of supabase_storage_admin and cannot change them. Their RLS
+remains enabled; no broad anonymous write policy was found. It also protects instructor_origin, used in credential
+authorization, on INSERT and UPDATE and audits attempted changes.
+
+Manual staging inspection also found that a partial cached profile could leave
+username blank after the full response arrived. Form synchronization now updates
+untouched fields on profile changes while preserving edits made during loading.
