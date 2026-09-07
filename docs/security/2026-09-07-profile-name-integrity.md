@@ -59,6 +59,8 @@ is not a member of supabase_storage_admin and cannot change them. Their RLS
 remains enabled; no broad anonymous write policy was found. It also protects instructor_origin, used in credential
 authorization, on INSERT and UPDATE and audits attempted changes.
 
-Manual staging inspection also found that a partial cached profile could leave
-username blank after the full response arrived. Form synchronization now updates
-untouched fields on profile changes while preserving edits made during loading.
+Form synchronization updates untouched fields on profile changes while preserving
+edits made during loading. The browser DOM tool reported an empty username, but
+a screenshot confirmed the visible field was populated: this was not evidence
+of username loss. A staging save with an appended U+FFF6 preserved the original
+name and username in the database.
