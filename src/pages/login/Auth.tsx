@@ -1,3 +1,4 @@
+import "@/styles/public-ui.css";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigate, NavLink, useLocation, useSearchParams } from "react-router";
@@ -43,7 +44,7 @@ export default function Auth() {
 
   if (!authInitialized) {
     return (
-      <div className="min-h-svh bg-auth-page">
+      <div className="min-h-svh public-status bg-auth-page">
         <AuthGateLoading minHeightClass="min-h-svh" />
       </div>
     );
@@ -51,7 +52,7 @@ export default function Auth() {
 
   if (user && mfaGate === "unchecked") {
     return (
-      <div className="min-h-svh bg-auth-page">
+      <div className="min-h-svh public-status bg-auth-page">
         <AuthGateLoading minHeightClass="min-h-svh" />
       </div>
     );
@@ -59,7 +60,7 @@ export default function Auth() {
 
   if (user && mfaGate === "mfa") {
     return (
-      <div className="flex min-h-svh flex-col items-center justify-center bg-auth-page p-6 md:p-10">
+      <div className="flex min-h-svh flex-col items-center justify-center public-status bg-auth-page p-6 md:p-10">
         <div className="w-full max-w-sm md:max-w-md">
           <div className="mb-4 flex items-center justify-between gap-3">
             <NavLink
@@ -88,7 +89,7 @@ export default function Auth() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-auth-page p-6 md:p-10">
+    <div className="flex min-h-svh flex-col items-center justify-center public-status bg-auth-page p-6 md:p-10">
       <div className="w-full max-w-sm md:max-w-4xl">
         <div className="mb-4 flex items-center justify-between gap-3">
           <NavLink

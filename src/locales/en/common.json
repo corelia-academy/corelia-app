@@ -1,6 +1,7 @@
 {
   "appName": "Corelia",
   "language": {
+    "switchLabel": "Change language",
     "vi": "Vietnamese",
     "en": "English"
   },

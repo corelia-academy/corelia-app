@@ -378,25 +378,8 @@ export default function CourseDetail() {
         </div>
       ) : null}
 
-      <div className="mt-6 space-y-4 lg:hidden">
-        <CourseAccessPanel
-          resolvedCourseId={courseLoad.resolvedCourseId}
-          enrolled={access.enrolled}
-          progressPercent={progress.progressPercent}
-          isPublicEmptyCurriculum={isPublicEmptyCurriculum}
-          hasStarted={progress.hasStarted}
-          nextLesson={progress.nextLesson}
-          enrolling={access.enrolling}
-          onContinue={handleContinue}
-          onEnroll={handleEnrollClick}
-        />
-        <CourseLanguagePanel course={course} lessons={lessons} />
-        <CoursePartnerBrandPanel course={course} />
-        <CourseSponsorsPanel sponsors={course.sponsors} />
-      </div>
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
-        <main className="min-w-0">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0">
           <CourseLearningOutcomes outcomes={course.learning_outcomes ?? []} />
           <CourseSkills skills={course.skills ?? []} />
 
@@ -428,9 +411,9 @@ export default function CourseDetail() {
             nextLesson={progress.nextLesson}
             spotlightContests={spotlightContests}
           />
-        </main>
+        </div>
 
-        <aside className="hidden lg:flex lg:flex-col lg:gap-4 lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] lg:overflow-y-auto">
+        <aside className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
           <CourseAccessPanel
             resolvedCourseId={courseLoad.resolvedCourseId}
             enrolled={access.enrolled}

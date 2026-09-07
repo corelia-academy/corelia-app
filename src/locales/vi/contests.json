@@ -108,7 +108,16 @@
       "registered": "Đã đăng ký",
       "notRegistered": "Chưa đăng ký"
     },
-    "prizes": { "total": "Tổng prize pool" },
+    "prizes": { "total": "Tổng giải thưởng", "breakdown": "Xem cơ cấu giải" },
+    "prepare": {
+      "title": "Chuẩn bị cùng AI",
+      "description": "Sao chép prompt vào trợ lý AI để tìm hiểu cuộc thi và lên kế hoạch xây dựng sản phẩm demo.",
+      "promptLabel": "Prompt chuẩn bị hackathon",
+      "copy": "Sao chép prompt",
+      "copied": "Đã sao chép prompt.",
+      "copyFailed": "Không sao chép được. Bạn có thể chọn và sao chép prompt ở trên.",
+      "prompt": "Tôi đang chuẩn bị tham gia {{title}}. Hãy đọc tổng quan tại {{url}}/overview, giải thưởng và tiêu chí chấm điểm tại {{url}}/prizes, tài nguyên chính thức tại {{url}}/resources. Tóm tắt đối tượng tham gia, các track, yêu cầu nộp bài, hệ sinh thái/công nghệ và tiêu chí chấm điểm. Dẫn nguồn và chỉ rõ thông tin thiếu hoặc mâu thuẫn, không tự suy đoán. Hỏi tôi về kỹ năng, đội nhóm và thời gian có thể dành cho cuộc thi, sau đó đề xuất ba ý tưởng phù hợp cùng kế hoạch thực tế trong 7 ngày để xây dựng demo hoạt động được và chuẩn bị pitching."
+    },
     "projects": {
       "filters": "Lọc dự án",
       "sort": "Sắp xếp",

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, Facebook, Globe2, MapPin, Send, Users } from "lucide-react";
+import { ArrowUpRight, CalendarClock, Facebook, Globe2, MapPin, Send, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
 import type { Contest, ContestRegistration } from "@/types/hackathons";
 import { ContestDetailLoadingCard } from "@/pages/hackathon-detail/components/ContestDetailGateStates";
+import { formatPrizeAmount } from "./utils/formatPrizeAmount";
 
 const TABS = ["overview", "prizes", "timeline", "resources", "projects"] as const;
 
@@ -173,10 +174,29 @@ export default function ContestPublicLayout() {
                 <span className="rounded-full bg-surface-raised px-3 py-1">{t(`public.status.${contest.status}`)}</span>
               </div>
             ) : null}
-            <h1 className="min-w-0 max-w-4xl break-words text-2xl font-bold text-foreground [overflow-wrap:anywhere] sm:text-4xl">{contest.title}</h1>
-            {contest.short_description || contest.tagline ? (
-              <p className="mt-2 max-w-3xl text-sm text-foreground-muted sm:text-base">{contest.short_description || contest.tagline}</p>
-            ) : null}
+            <div className="flex min-w-0 flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
+              <div className="min-w-0 flex-1">
+                <h1 className="min-w-0 max-w-4xl break-words text-2xl font-bold text-foreground [overflow-wrap:anywhere] sm:text-4xl">{contest.title}</h1>
+                {contest.short_description || contest.tagline ? (
+                  <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground-muted sm:text-base">{contest.short_description || contest.tagline}</p>
+                ) : null}
+              </div>
+              {contest.prize_pool?.amount && Number(contest.prize_pool.amount) !== 0 ? (
+                <NavLink
+                  to={`/hackathons/${slug}/prizes${previewRequested ? "?preview=1" : ""}`}
+                  className="group flex min-w-0 flex-col items-start gap-1 border-t border-border-subtle pt-4 outline-none focus-visible:rounded-lg focus-visible:ring-2 focus-visible:ring-primary/40 lg:max-w-xs lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-8"
+                >
+                  <div className="min-w-0">
+                    <div className="text-xs font-medium text-foreground-muted">{t("public.prizes.total")}</div>
+                    <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                      <span className="break-words text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{formatPrizeAmount(contest.prize_pool.amount, locale)}</span>
+                      <span className="text-sm font-medium text-foreground-muted"> {contest.prize_pool.currency}</span>
+                    </div>
+                  </div>
+                  <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-primary group-hover:underline mt-1">{t("public.prizes.breakdown")}<ArrowUpRight className="size-3.5" aria-hidden /></span>
+                </NavLink>
+              ) : null}
+            </div>
           </div>
 
           <div className="grid gap-5 p-5 lg:grid-cols-[1fr_auto] lg:items-center sm:p-6">
@@ -199,7 +219,7 @@ export default function ContestPublicLayout() {
         </header>
       </PageContainer>
 
-      <div className="sticky top-11 z-20 mt-4 border-y border-border-subtle bg-background/95 backdrop-blur">
+      <div className="sticky top-(--app-header-height) z-20 mt-4 border-y border-border-subtle bg-background/95 backdrop-blur">
         <div ref={tabsScrollerRef} className="overflow-x-auto overscroll-x-contain scroll-px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <PageContainer width="default" className="py-0">
             <nav className="flex min-w-max" aria-label={t("public.tabsLabel")}>

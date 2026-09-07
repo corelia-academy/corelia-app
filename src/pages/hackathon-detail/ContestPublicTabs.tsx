@@ -14,6 +14,8 @@ import { projectHeartsQueryOptions } from "@/features/projects/projectSocialQuer
 import { cn } from "@/lib/utils";
 import type { ContestTrack, HackathonTaxonomyOption } from "@/types/hackathons";
 import type { HackathonOutletContext } from "./ContestPublicLayout";
+import { ContestPreparationCard } from "./components/ContestPreparationCard";
+import { formatPrizeAmount } from "./utils/formatPrizeAmount";
 
 function EmptyTab({ icon, title }: { icon: React.ReactNode; title: string }) {
   return (
@@ -34,21 +36,25 @@ export function HackathonOverviewTab() {
         <h2 className="text-lg font-semibold text-foreground">{t("public.overview.description")}</h2>
         {content ? <div className="mt-4"><Markdown content={content} /></div> : <p className="mt-4 text-sm text-foreground-muted">{t("public.empty.overview")}</p>}
       </section>
-      <aside className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card lg:self-start">
-        <h2 className="font-semibold text-foreground">{t("public.overview.summary")}</h2>
-        <dl className="mt-4 space-y-3 text-sm">
-          <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.overview.mode")}</dt><dd className="font-medium">{t(`public.mode.${contest.mode ?? contest.location}`)}</dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.participants")}</dt><dd className="font-medium">{contest.participants_count ?? 0}</dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.overview.registration")}</dt><dd className="font-medium">{registration ? t("public.overview.registered") : t("public.overview.notRegistered")}</dd></div>
-        </dl>
-      </aside>
+      <div className="min-w-0 space-y-6 lg:self-start">
+        <aside className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card">
+          <h2 className="font-semibold text-foreground">{t("public.overview.summary")}</h2>
+          <dl className="mt-4 space-y-3 text-sm">
+            <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.overview.mode")}</dt><dd className="font-medium">{t(`public.mode.${contest.mode ?? contest.location}`)}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.participants")}</dt><dd className="font-medium">{contest.participants_count ?? 0}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.overview.registration")}</dt><dd className="font-medium">{registration ? t("public.overview.registered") : t("public.overview.notRegistered")}</dd></div>
+          </dl>
+        </aside>
+        {contest.slug && contest.status !== "draft" ? <ContestPreparationCard contest={contest} /> : null}
+      </div>
     </div>
   );
 }
 
 export function HackathonPrizesTab() {
   const { contest } = useOutletContext<HackathonOutletContext>();
-  const { t } = useTranslation("contests");
+  const { t, i18n } = useTranslation("contests");
+  const formatAmount = (amount: string) => formatPrizeAmount(amount, i18n.resolvedLanguage ?? i18n.language);
   const pool = contest.prize_pool;
   const tracks = [...(contest.tracks ?? [])].filter((track) => track.active !== false).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
   if (!pool && tracks.length === 0) return <EmptyTab icon={<Coins className="size-6" />} title={t("public.empty.prizes")} />;
@@ -56,14 +62,14 @@ export function HackathonPrizesTab() {
     <div className="space-y-6">
       <section className="rounded-2xl border border-border-subtle bg-surface-base p-6 shadow-card">
         <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">{t("public.prizes.total")}</div>
-        <div className="mt-2 text-3xl font-bold text-foreground">{pool?.amount || "0"} <span className="text-lg text-foreground-muted">{pool?.currency}</span></div>
+        <div className="mt-2 break-words text-3xl font-bold text-foreground">{formatAmount(pool?.amount || "0")} <span className="text-lg text-foreground-muted">{pool?.currency}</span></div>
         {pool?.description_markdown ? <div className="mt-4"><Markdown content={pool.description_markdown} /></div> : null}
       </section>
       <div className="grid gap-4 md:grid-cols-2">
         {tracks.map((track) => (
-          <article key={track.id} className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card">
-            <div className="flex items-start justify-between gap-4"><h2 className="font-semibold text-foreground">{track.name}</h2>{track.prize_amount ? <span className="shrink-0 font-semibold text-primary">{track.prize_amount} {pool?.currency}</span> : null}</div>
-            {track.description ? <p className="mt-2 text-sm leading-6 text-foreground-muted">{track.description}</p> : null}
+          <article key={track.id} className="min-w-0 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card">
+            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2"><h2 className="min-w-0 break-words font-semibold text-foreground">{track.name}</h2>{track.prize_amount ? <span className="break-words font-semibold text-primary">{formatAmount(track.prize_amount)} {pool?.currency}</span> : null}</div>
+            {track.description ? <div className="mt-3 break-words text-foreground-muted"><Markdown content={track.description} compact /></div> : null}
           </article>
         ))}
       </div>

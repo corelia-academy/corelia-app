@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
-import { Trophy, Users } from "lucide-react";
+import { ArrowUpRight, CalendarDays, Trophy, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,7 +9,7 @@ import { contestListImageUrl } from "@/lib/hackathonVisuals";
 import { canManageContests } from "@/lib/permissions";
 import { useAuth } from "@/stores/authStore";
 import type { Contest } from "@/types/hackathons";
-import { intlLocale } from "@/lib/intl";
+import { formatPrizeAmount } from "./utils/formatPrizeAmount";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { publicHackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
@@ -18,38 +18,16 @@ import {
   contestListStatusLabel,
   formatContestListDateRange,
 } from "@/features/hackathons/list/contestListFormatters";
-import {
-  ContestListCardDateRowCatalog,
-  ContestListCardThumbnail,
-  ContestListMetricCellCatalog,
-} from "@/features/hackathons/list/ContestListCardPrimitives";
 
 const EMPTY_CONTESTS: Contest[] = [];
 
 function CatalogGridSkeleton() {
-  return (
-    <>
-      {Array.from({ length: 6 }).map((_, idx) => (
-        <Card key={idx} className="overflow-hidden">
-          <Skeleton className="aspect-video w-full rounded-none" />
-          <CardContent className="space-y-3 p-4 sm:p-6">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 flex-1 space-y-2">
-                <Skeleton className="h-3 w-20 rounded-sm" />
-                <Skeleton className="h-6 w-full max-w-[220px] rounded-sm" />
-              </div>
-              <Skeleton className="h-6 w-16 shrink-0 rounded-md" />
-            </div>
-            <Skeleton className="h-4 w-full rounded-sm" />
-            <div className="space-y-2">
-              <Skeleton className="h-10 w-full rounded-lg" />
-              <Skeleton className="h-10 w-full rounded-lg" />
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </>
-  );
+  return <>{Array.from({ length: 3 }).map((_, index) => (
+    <div key={index} className="overflow-hidden rounded-2xl border border-border-subtle md:grid md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+      <Skeleton className="aspect-video h-full w-full rounded-none" />
+      <div className="space-y-4 p-6"><Skeleton className="h-5 w-28" /><Skeleton className="h-8 w-3/4" /><Skeleton className="h-16 w-full" /><Skeleton className="h-10 w-40" /></div>
+    </div>
+  ))}</>;
 }
 
 export default function Contests() {
@@ -90,24 +68,16 @@ export default function Contests() {
 
   return (
     <div className="container-app py-6 sm:py-8">
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <Trophy className="size-5 text-primary" aria-hidden />
-            <h1 className="truncate text-xl font-semibold text-foreground sm:text-2xl">
+            <Trophy className="size-6 text-primary" aria-hidden />
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {t("catalog.heroTitle")}
             </h1>
           </div>
-          <p className="mt-1 text-sm text-foreground-muted">
-            {t("catalog.statsSummary", {
-              total: stats.total,
-              accepting: stats.accepting,
-              running: stats.running,
-              ended: stats.ended,
-            })}
-            {showGrid && null}
-            {showEmpty && null}
-          </p>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-foreground-muted sm:text-base">{t("catalog.heroDescription")}</p>
+          {showData ? <p className="mt-4 text-xs text-foreground-muted">{t("catalog.statsSummary", stats)}</p> : null}
         </div>
         {canManageCatalogScoped ? (
           <div className="flex flex-wrap gap-2">
@@ -150,7 +120,7 @@ export default function Contests() {
       ) : null}
 
       <div
-        className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2 xl:grid-cols-3"
+        className="grid gap-6"
         aria-busy={loading}
         aria-live={
           loading
@@ -165,7 +135,7 @@ export default function Contests() {
         {loading ? (
           <div className="contents">{CatalogGridSkeleton()}</div>
         ) : showEmpty ? (
-          <Card className="sm:col-span-2 xl:col-span-3">
+          <Card className="w-full">
             <CardContent className="p-8 text-center">
               <div className="flex flex-col items-center gap-3 py-8 text-center">
                 <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
@@ -214,87 +184,30 @@ export default function Contests() {
                 className="group block min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 aria-label={`${t("catalog.viewContest")}: ${contest.title}`}
               >
-                <Card className="h-full overflow-hidden border-border-subtle transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out group-hover:border-border group-hover:bg-surface-raised group-hover:-translate-y-0.5">
-                  <ContestListCardThumbnail
-                    src={listImageUrl}
-                    alt=""
-                    aspectClassName="aspect-video"
-                    surfaceClassName="bg-surface-raised"
-                    emptyMinHeightClassName="min-h-28"
-                    trophyIconClassName="size-14 text-primary/40"
-                  />
-                  <CardContent className="flex h-full flex-col p-4 sm:p-6">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="text-xs text-foreground-muted">
-                          {contestListStatusLabel(
-                            contest.status,
-                            translate,
-                            "catalog",
-                          )}
-                        </div>
-                        <div className="mt-1 text-lg font-semibold leading-snug text-foreground">
-                          {contest.title}
-                        </div>
-                      </div>
-                      <span className="shrink-0 rounded-md bg-surface-raised px-2 py-0.5 text-xs font-medium text-foreground-muted">
-                        {contestListLocationLabel(
-                          contest.mode ?? contest.location,
-                          translate,
-                          "catalog",
-                        )}
-                      </span>
+                <article className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base transition-[border-color,box-shadow] duration-200 group-hover:border-primary/30 group-hover:shadow-md md:grid md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                  <div className="relative flex min-h-48 items-center justify-center overflow-hidden bg-surface-raised md:min-h-80">
+                    {listImageUrl ? <img src={listImageUrl} alt="" className="aspect-video w-full object-cover md:absolute md:inset-0 md:h-full" /> : <Trophy className="size-16 text-primary/30" aria-hidden />}
+                  </div>
+                  <div className="flex min-w-0 flex-col p-5 sm:p-7">
+                    <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-primary"><span className="size-1.5 rounded-full bg-current" />{contestListStatusLabel(contest.status, translate, "catalog")}</span>
+                      <span className="text-foreground-muted">{contestListLocationLabel(contest.mode ?? contest.location, translate, "catalog")}</span>
                     </div>
-
-                    <div className="mt-2 text-sm text-foreground-muted">
-                      {contest.tagline}
+                    <h2 className="mt-4 text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl">{contest.title}</h2>
+                    {contest.short_description || contest.tagline ? <p className="mt-3 line-clamp-3 text-sm leading-6 text-foreground-muted">{contest.short_description || contest.tagline}</p> : null}
+                    <div className="my-5 flex flex-wrap gap-x-8 gap-y-4">
+                      {contest.prize_pool?.amount && Number(contest.prize_pool.amount) !== 0 ? <div><p className="text-xs text-foreground-muted">{t("public.prizes.total")}</p><p className="mt-1 text-xl font-semibold tracking-tight text-foreground">{formatPrizeAmount(contest.prize_pool.amount, locale)} <span className="text-xs font-medium text-foreground-muted">{contest.prize_pool.currency}</span></p></div> : null}
+                      {contest.host?.name ? <div className="min-w-0"><p className="text-xs text-foreground-muted">{t("public.hostedBy")}</p><p className="mt-1 break-words text-sm font-medium text-foreground">{contest.host.name}</p></div> : null}
                     </div>
-
-                    {contest.description ? (
-                      <div className="mt-3 line-clamp-3 text-sm leading-relaxed text-foreground-muted">
-                        {contest.description}
-                      </div>
-                    ) : null}
-
-                    <div className="mt-4 grid gap-2 text-xs text-foreground-muted">
-                      <ContestListCardDateRowCatalog>
-                        {formatContestListDateRange(
-                          contest.starts_at,
-                          contest.ends_at,
-                          translate,
-                          "catalog",
-                        )}
-                      </ContestListCardDateRowCatalog>
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        <ContestListMetricCellCatalog icon={Users}>
-                          {t("catalog.item.registrationsCount", {
-                            count: contest.participants_count ?? 0,
-                          })}
-                        </ContestListMetricCellCatalog>
-                        <ContestListMetricCellCatalog icon={Trophy}>
-                          {t("catalog.item.submissionsCount", {
-                            count: contest.metrics_snapshot.submissions_total,
-                          })}
-                        </ContestListMetricCellCatalog>
-                      </div>
+                    <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-foreground-muted">
+                      {contest.registration_deadline ? <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 shrink-0" aria-hidden />{t("catalog.registrationDeadlinePrefix", { date: new Date(contest.registration_deadline).toLocaleDateString(locale) })}</span> : contest.starts_at || contest.ends_at ? <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 shrink-0" aria-hidden />{formatContestListDateRange(contest.starts_at, contest.ends_at, translate, "catalog")}</span> : null}
+                      <span className="inline-flex items-center gap-1.5"><Users className="size-4 shrink-0" aria-hidden />{t("catalog.item.registrationsCount", { count: contest.participants_count ?? 0 })}</span>
                     </div>
-
-                    <div className="mt-5 flex min-h-11 flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">
-                      <div className="text-xs text-foreground-muted">
-                        {contest.registration_deadline
-                          ? t("catalog.registrationDeadlinePrefix", {
-                              date: new Date(
-                                contest.registration_deadline,
-                              ).toLocaleDateString(intlLocale()),
-                            })
-                          : t("catalog.registrationNoLimit")}
-                      </div>
-                      <span className="text-sm font-medium text-primary group-hover:underline">
-                        {t("catalog.viewContest")} →
-                      </span>
+                    <div className="mt-6 flex justify-end border-t border-border-subtle pt-4">
+                      <span className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors group-hover:bg-primary/90">{t("catalog.viewContest")}<ArrowUpRight className="size-4" aria-hidden /></span>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </article>
               </NavLink>
             );
           })

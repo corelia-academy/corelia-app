@@ -71,7 +71,7 @@ function DetailSkeleton() {
     <div className="container-app py-6 sm:py-8">
       <Skeleton className="mb-4 h-8 w-40" />
       <Skeleton className="h-72 w-full rounded-lg" />
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-4">
           <Skeleton className="h-8 w-2/3" />
           <Skeleton className="h-5 w-48" />

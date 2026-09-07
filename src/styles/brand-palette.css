@@ -1,0 +1,118 @@
+/* Shared Corelia palette for every route and portal. Theme selection remains owned by next-themes. */
+:root {
+  --background: #F4F7FF;
+  --foreground: #171923;
+  --foreground-muted: #526079;
+  --foreground-subtle: #526079;
+  --card: #FFFFFF;
+  --card-foreground: #171923;
+  --popover: #FFFFFF;
+  --popover-foreground: #171923;
+  --surface-base: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --surface-overlay: #EAF0FC;
+  --surface-float: #FFFFFF;
+  --primary: #1759F1;
+  --primary-foreground: #FFFFFF;
+  --primary-muted: #DAE9FF;
+  --primary-container: #DAE9FF;
+  --on-primary-container: #1A378E;
+  --public-link: #1759F1;
+  --public-cta-hover: #1248C5;
+  --public-cta-active: #103DA5;
+  --public-control-border: #7886A0;
+  --secondary: #EAF0FC;
+  --secondary-foreground: #171923;
+  --muted: #EAF0FC;
+  --muted-foreground: #526079;
+  --accent: #DAE9FF;
+  --accent-muted: #DAE9FF;
+  --accent-foreground: #1A378E;
+  --border: #D8DFED;
+  --border-subtle: #D8DFED;
+  --border-strong: #7886A0;
+  --input: #7886A0;
+  --ring: #1759F1;
+  --brand-navy: #171923;
+  --brand-accent: #1759F1;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #171923;
+  --sidebar-primary: #1759F1;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #DAE9FF;
+  --sidebar-accent-foreground: #1A378E;
+  --sidebar-border: #D8DFED;
+  --sidebar-ring: #1759F1;
+}
+.dark {
+  --primary: #1759F1;
+  --primary-foreground: #FFFFFF;
+  --sidebar-primary: #1759F1;
+  --sidebar-primary-foreground: #FFFFFF;
+  --background: #0A0913;
+  --foreground: #EAE6E3;
+  --foreground-muted: #CBD1E2;
+  --foreground-subtle: #CBD1E2;
+  --card: #131522;
+  --card-foreground: #EAE6E3;
+  --popover: #131522;
+  --popover-foreground: #EAE6E3;
+  --surface-base: #131522;
+  --surface-raised: #131522;
+  --surface-overlay: #20263A;
+  --surface-float: #131522;
+  --primary-muted: #1A2B55;
+  --primary-container: #1A2B55;
+  --on-primary-container: #CBD1E2;
+  --public-link: #91B5FF;
+  --public-cta-hover: #2464F5;
+  --public-cta-active: #1759F1;
+  --public-control-border: #67758F;
+  --secondary: #20263A;
+  --secondary-foreground: #EAE6E3;
+  --muted: #20263A;
+  --muted-foreground: #CBD1E2;
+  --accent: #1A2B55;
+  --accent-muted: #1A2B55;
+  --accent-foreground: #CBD1E2;
+  --border: #282E3F;
+  --border-subtle: #282E3F;
+  --border-strong: #67758F;
+  --input: #67758F;
+  --ring: #91B5FF;
+  --brand-navy: #0A0913;
+  --brand-accent: #91B5FF;
+  --sidebar: #131522;
+  --sidebar-foreground: #EAE6E3;
+  --sidebar-accent: #1A2B55;
+  --sidebar-accent-foreground: #EAE6E3;
+  --sidebar-border: #282E3F;
+  --sidebar-ring: #91B5FF;
+}
+body, .public-ui, .public-status {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+body .text-primary { color: var(--public-link); }
+body :is(a, button, input, select, summary):focus-visible {
+  outline-color: var(--public-link);
+}
+body :is(input, select, textarea, [data-slot=button].border-border):not([aria-invalid=true]):not(.border-destructive) {
+  border-color: var(--public-control-border);
+}
+body :is(button, a).bg-primary:hover:not(:disabled):not([aria-disabled=true]) {
+  background-color: var(--public-cta-hover);
+  opacity: 1;
+}
+body :is(button, a).bg-primary:active:not(:disabled):not([aria-disabled=true]) {
+  background-color: var(--public-cta-active);
+}
+body nav a[aria-current=page] {
+  background-color: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
+}
+.public-status.bg-auth-page {
+  background-image: radial-gradient(ellipse at top, color-mix(in srgb, var(--primary) 12%, transparent), transparent 65%);
+}
+
+.public-ui .public-content, .public-ui [data-slot=sidebar-inset] { background-color: var(--background); }
