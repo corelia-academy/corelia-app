@@ -9,6 +9,7 @@ import type { Job, UserJobState } from "@/types/jobs";
 
 type Props = {
   job: Job;
+  publicAppearance?: boolean;
   state?: UserJobState | null;
   busy?: boolean;
   onToggleSaved?: () => void;
@@ -16,16 +17,16 @@ type Props = {
   onToggleHidden?: () => void;
 };
 
-export function JobCard({ job, state, busy, onToggleSaved, onToggleApplied, onToggleHidden }: Props) {
+export function JobCard({ publicAppearance = false, job, state, busy, onToggleSaved, onToggleApplied, onToggleHidden }: Props) {
   const { t, i18n } = useTranslation("jobs");
   const salary = formatJobSalary(job, i18n.language);
   return (
-    <Card className="group h-full transition-colors hover:border-primary/35">
+    <Card className={`group h-full transition-colors hover:border-primary/35 ${publicAppearance ? "public-job-card min-w-0" : ""}`}>
       <CardContent className="flex h-full flex-col p-5">
         <div className="flex items-start gap-3">
           {job.company_logo_url ? (
             <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border-subtle bg-surface-raised">
-              <img src={job.company_logo_url} alt="" className="size-full object-contain p-1" />
+              <img src={job.company_logo_url} alt="" className="size-full object-contain" />
             </div>
           ) : null}
           <div className="min-w-0 flex-1">
@@ -43,7 +44,7 @@ export function JobCard({ job, state, busy, onToggleSaved, onToggleApplied, onTo
         </div>
         <div className="mt-4 flex flex-wrap gap-x-3 gap-y-2 text-xs text-foreground-muted">
           <span className="inline-flex items-center gap-1"><MapPin className="size-3.5" aria-hidden />{job.location_text || humanizeJobSlug(job.remote_type)}</span>
-          <span className="inline-flex items-center gap-1"><BriefcaseBusiness className="size-3.5" aria-hidden />{humanizeJobSlug(job.employment_type)}</span>
+          <span className="inline-flex items-center gap-1"><BriefcaseBusiness className="size-3.5" aria-hidden />{t(`values.${job.employment_type}`, { defaultValue: humanizeJobSlug(job.employment_type) })}</span>
           <span className="inline-flex items-center gap-1"><Clock3 className="size-3.5" aria-hidden />{formatJobDate(job.posted_at ?? job.first_seen_at, i18n.language)}</span>
         </div>
         {job.summary ? <p className="mt-4 line-clamp-3 text-sm leading-6 text-foreground-muted">{job.summary}</p> : null}

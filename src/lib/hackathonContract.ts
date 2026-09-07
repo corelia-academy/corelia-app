@@ -1,17 +1,16 @@
 import type { Contest, ContestI18nContent, ContestTrack, HackathonTaxonomyOption, HackathonTimelineItem, HackathonWinnerAward } from "@/types/hackathons";
 import { canonicalizeSlug } from "@/lib/slug";
 
-function fallbackLocalizedText(localized: string | null | undefined, fallback: string): string;
-function fallbackLocalizedText(localized: string | null | undefined, fallback: string | null): string | null;
-function fallbackLocalizedText(localized: string | null | undefined, fallback: string | null | undefined): string | null | undefined;
-function fallbackLocalizedText(localized: string | null | undefined, fallback: string | null | undefined): string | null | undefined {
-  if (typeof localized === "string" && localized.trim().length > 0) {
-    return localized;
+function fallbackLocalizedText(...candidates: [...(string | null | undefined)[], string]): string;
+function fallbackLocalizedText(...candidates: [...(string | null | undefined)[], string | null]): string | null;
+function fallbackLocalizedText(...candidates: (string | null | undefined)[]): string | null | undefined;
+function fallbackLocalizedText(...candidates: (string | null | undefined)[]): string | null | undefined {
+  for (const candidate of candidates) {
+    if (typeof candidate === "string" && candidate.trim().length > 0) {
+      return candidate;
+    }
   }
-  if (typeof fallback === "string" && fallback.trim().length > 0) {
-    return fallback;
-  }
-  return localized ?? fallback;
+  return candidates[candidates.length - 1];
 }
 
 export function applyHackathonLocaleContent(contest: Contest, localized: ContestI18nContent | null): Contest {
@@ -23,10 +22,10 @@ export function applyHackathonLocaleContent(contest: Contest, localized: Contest
   return {
     ...contest,
     title: fallbackLocalizedText(localized.title, contest.title),
-    tagline: fallbackLocalizedText(localized.tagline, contest.tagline),
-    short_description: fallbackLocalizedText(localized.short_description, contest.short_description ?? contest.tagline),
-    description: fallbackLocalizedText(localized.description, contest.description),
-    description_markdown: fallbackLocalizedText(localized.description_markdown, contest.description_markdown ?? contest.description),
+    tagline: fallbackLocalizedText(localized.tagline, localized.short_description, contest.tagline),
+    short_description: fallbackLocalizedText(localized.short_description, localized.tagline, contest.short_description, contest.tagline),
+    description: fallbackLocalizedText(localized.description, localized.description_markdown, contest.description),
+    description_markdown: fallbackLocalizedText(localized.description_markdown, localized.description, contest.description_markdown, contest.description),
     resources_markdown: fallbackLocalizedText(localized.resources_markdown, contest.resources_markdown),
     rules: fallbackLocalizedText(localized.rules, contest.rules),
     prize_pool_summary: fallbackLocalizedText(localized.prize_pool_summary, contest.prize_pool_summary),

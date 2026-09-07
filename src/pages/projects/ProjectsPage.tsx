@@ -155,7 +155,7 @@ export default function ProjectsPage() {
         <p className="mt-1 text-sm text-foreground-muted">{t("projects.description")}</p>
       </header>
 
-      <section className="space-y-5 rounded-lg border border-border-subtle bg-surface-base p-4 shadow-card">
+      <section className="space-y-5 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="text-sm font-medium text-foreground">
             {t("projects.filters.hackathon")}
@@ -192,7 +192,7 @@ export default function ProjectsPage() {
             <Button type="button" onClick={() => void projectsQuery.refetch()}>{t("projects.retry")}</Button>
           </div>
         ) : items.length === 0 ? (
-          <div className="rounded-lg border border-border-subtle bg-surface-base px-4 py-14 text-center shadow-card">
+          <div className="rounded-2xl border border-border-subtle bg-surface-base px-4 py-14 text-center shadow-card">
             <Package className="mx-auto size-8 text-foreground-subtle" aria-hidden />
             <h2 className="mt-3 text-sm font-semibold text-foreground">{t("projects.emptyTitle")}</h2>
             <p className="mt-1 text-sm text-foreground-muted">{t("projects.emptyDescription")}</p>

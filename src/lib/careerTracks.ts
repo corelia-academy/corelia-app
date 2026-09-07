@@ -1,3 +1,4 @@
+import { localizePublicCourses } from "@/lib/courses";
 import { supabase } from "@/lib/supabase";
 import { normalizeContentLocale, pickContentLocale } from "@/lib/entityLocales";
 import type {
@@ -57,6 +58,7 @@ function pickIncludedCourse(course: Course): IncludedCoursePick {
 
 async function fetchPublishedCoursesByIds(
   courseIds: string[],
+  uiLocale?: string | null,
 ): Promise<Map<string, IncludedCoursePick>> {
   const result = new Map<string, IncludedCoursePick>();
   const ids = Array.from(new Set(courseIds.filter(Boolean)));
@@ -70,8 +72,7 @@ async function fetchPublishedCoursesByIds(
 
   if (error) throw new Error(error.message);
 
-  for (const row of (data ?? []) as unknown as CourseRow[]) {
-    const course = rowToCourse(row);
+  for (const course of await localizePublicCourses(((data ?? []) as unknown as CourseRow[]).map(rowToCourse), uiLocale)) {
     result.set(course.id, pickIncludedCourse(course));
   }
 
@@ -108,9 +109,10 @@ async function fetchHandlesByInstructorIds(
 async function computeDetail(
   track: CareerTrackRow,
   courseRows: CareerTrackCourseRow[],
+  uiLocale?: string | null,
 ): Promise<CareerTrackDetail> {
   const ids = (courseRows ?? []).map((r) => r.course_id);
-  const coursesById = await fetchPublishedCoursesByIds(ids);
+  const coursesById = await fetchPublishedCoursesByIds(ids, uiLocale);
 
   const includedCourses: CareerTrackIncludedCourse[] = (courseRows ?? [])
     .map((r) => ({
@@ -260,7 +262,7 @@ export async function listCareerTracks(uiLocale?: string | null): Promise<Career
     const unlocalizedList = await Promise.all(
       rows.map(async (r) => {
         const { career_track_courses, ...track } = r;
-        const detail = await computeDetail(track, career_track_courses ?? []);
+        const detail = await computeDetail(track, career_track_courses ?? [], normalizedUiLocale);
         return {
           ...detail,
           instructorHandle:
@@ -353,7 +355,7 @@ export async function getCareerTrackBySlug(
       career_track_courses?: CareerTrackCourseRow[];
     };
     const { career_track_courses, ...track } = row;
-    const detail = await computeDetail(track, career_track_courses ?? []);
+    const detail = await computeDetail(track, career_track_courses ?? [], normalizedUiLocale);
 
     let instructorHandle: string | null = null;
     if (detail.owner_scope === "instructor" && detail.instructor_id) {

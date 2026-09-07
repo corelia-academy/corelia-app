@@ -10,7 +10,7 @@ import { useLocale } from "@/hooks/useLocale";
 import { useTranslation } from "react-i18next";
 import type { SupportedLanguage } from "@/i18n";
 
-export function LanguageSwitcher() {
+export function LanguageSwitcher({ compact = true }: { compact?: boolean }) {
   const { t } = useTranslation("common");
   const { language, setLanguage } = useLocale();
 
@@ -23,8 +23,9 @@ export function LanguageSwitcher() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button size="icon" variant="ghost" aria-label="Language">
+          <Button size={compact ? "icon" : "default"} variant="ghost" className={compact ? undefined : "min-h-11 px-2"} aria-label={t("language.switchLabel")}>
             <Globe className="size-4" />
+            {!compact ? <span className="text-xs font-semibold uppercase">{language}</span> : null}
           </Button>
         }
       />

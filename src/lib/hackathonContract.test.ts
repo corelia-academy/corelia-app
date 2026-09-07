@@ -117,5 +117,27 @@ describe("simplified hackathon contract", () => {
     expect(resultValid.tagline).toBe("Explore AI potentials");
     expect(resultValid.short_description).toBe("Short summary");
     expect(resultValid.tracks?.[0]?.name).toBe("AI Agent Global");
+
+    // Case 3: Cross-fallback between tagline and short_description
+    const localizedOnlyShort = { short_description: "Only Short" };
+    const resultOnlyShort = applyHackathonLocaleContent(baseContest, localizedOnlyShort);
+    expect(resultOnlyShort.tagline).toBe("Only Short");
+    expect(resultOnlyShort.short_description).toBe("Only Short");
+
+    const localizedOnlyTagline = { tagline: "Only Tagline" };
+    const resultOnlyTagline = applyHackathonLocaleContent(baseContest, localizedOnlyTagline);
+    expect(resultOnlyTagline.tagline).toBe("Only Tagline");
+    expect(resultOnlyTagline.short_description).toBe("Only Tagline");
+
+    // Case 4: Cross-fallback between description and description_markdown
+    const localizedOnlyDesc = { description: "Only Desc" };
+    const resultOnlyDesc = applyHackathonLocaleContent(baseContest, localizedOnlyDesc);
+    expect(resultOnlyDesc.description).toBe("Only Desc");
+    expect(resultOnlyDesc.description_markdown).toBe("Only Desc");
+
+    const localizedOnlyMarkdown = { description_markdown: "# Only Markdown" };
+    const resultOnlyMarkdown = applyHackathonLocaleContent(baseContest, localizedOnlyMarkdown);
+    expect(resultOnlyMarkdown.description).toBe("# Only Markdown");
+    expect(resultOnlyMarkdown.description_markdown).toBe("# Only Markdown");
   });
 });

@@ -168,7 +168,7 @@
       },
       "stats": {
         "duration": "Tổng thời lượng",
-        "curriculum": "Curriculum",
+        "curriculum": "Nội dung học",
         "completion": "Hoàn thành",
         "videoLanguage": "Ngôn ngữ video"
       },
@@ -225,8 +225,8 @@
       },
       "spotlight": {
         "eyebrow": "Bước tiếp theo cùng Corelia",
-        "title": "Những hoạt động nên đến sau khi bạn đã hiểu khoá học này",
-        "description": "Phần này không cố bán thêm. Nó chỉ gợi ý những nhịp tiếp theo thực sự liên quan: quay lại bài đang dở, contest đang mở hoặc các khoá học phù hợp trong hệ sinh thái."
+        "title": "Tiếp tục khám phá",
+        "description": "Tiếp tục bài học, khám phá hackathon đang mở hoặc chọn lộ trình tiếp theo."
       }
     },
     "accessPanel": {
