@@ -326,5 +326,6 @@ export default function ProjectDetailPage() {
         {href ? <Button className="w-full" variant="outline" render={<NavLink to={href} />} nativeButton={false}>{sourceQuery.data?.title || t("projects.detail.viewSource")}<ExternalLink className="size-4" /></Button> : null}
       </aside>
     </div>
-  </div>;
+  </div>
+  );
 }
