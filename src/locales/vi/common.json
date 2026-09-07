@@ -365,7 +365,13 @@
       "hackathonMissing": "Hackathon này không khả dụng. Hãy xóa bộ lọc để xem dự án khác.",
       "mediaExpired": "Một ảnh tải lên đã hết hạn. Hãy thêm lại ảnh và lưu dự án.",
       "resourceRequired": "Thêm ít nhất một demo, repo, slide hoặc video trước khi nộp dự án hackathon.",
-      "contentRequired": "Điền {{field}} trước khi chia sẻ dự án. Chỉ khoảng trắng hoặc dấu câu không được tính là nội dung."
+      "contentRequired": "Điền {{field}} trước khi chia sẻ dự án. Chỉ khoảng trắng hoặc dấu câu không được tính là nội dung.",
+      "alreadyRegistered": "Bạn đã đăng ký tham gia hackathon này rồi.",
+      "registrationDeadlinePassed": "Đã hết hạn đăng ký tham gia. Cổng đăng ký đã đóng.",
+      "submissionUnauthorized": "Bạn không có quyền nộp dự án vào hackathon này.",
+      "moderationFlagged": "Nội dung bị hệ thống kiểm duyệt cảnh báo. Vui lòng chỉnh sửa và thử lại.",
+      "userBlocked": "Tài khoản của bạn đang bị giới hạn thực hiện thao tác này.",
+      "rateLimitExceeded": "Quá nhiều yêu cầu. Vui lòng thử lại sau ít phút."
     },
     "editor": {
       "workspace": "Không gian dự án",

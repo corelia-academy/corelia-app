@@ -365,7 +365,13 @@
       "hackathonMissing": "This hackathon is unavailable. Clear the filter to browse other projects.",
       "mediaExpired": "An uploaded image has expired. Add it again and save your project.",
       "resourceRequired": "Add at least one demo, repository, slide or video before submitting to a hackathon.",
-      "contentRequired": "Complete {{field}} before sharing this project. Whitespace or punctuation alone is not content."
+      "contentRequired": "Complete {{field}} before sharing this project. Whitespace or punctuation alone is not content.",
+      "alreadyRegistered": "You are already registered for this hackathon.",
+      "registrationDeadlinePassed": "The registration deadline has passed. New registrations are closed.",
+      "submissionUnauthorized": "You are not authorized to submit to this hackathon.",
+      "moderationFlagged": "Content was flagged by automated moderation. Please revise it and try again.",
+      "userBlocked": "Your account is restricted from performing this action.",
+      "rateLimitExceeded": "Too many requests. Please wait a moment and try again."
     },
     "editor": {
       "workspace": "Project workspace",
