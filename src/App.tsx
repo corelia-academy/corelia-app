@@ -78,6 +78,9 @@ const Account = lazy(() => import("@/pages/account/Account"));
 const AccountProfileRoute = lazy(() =>
   import("@/pages/account/AccountProfileRoute").then((m) => ({ default: m.AccountProfileRoute })),
 );
+const AccountProjectsRoute = lazy(() =>
+  import("@/pages/account/AccountProjectsRoute").then((m) => ({ default: m.AccountProjectsRoute })),
+);
 const AccountCvRoute = lazy(() =>
   import("@/pages/account/AccountCvRoute").then((m) => ({ default: m.AccountCvRoute })),
 );
@@ -443,7 +446,7 @@ export default function App() {
                     </Suspense>
                   }
                 />
-                <Route path="projects" element={<Navigate to="/account" replace />} />
+                <Route path="projects" element={<Suspense fallback={<PageFallback />}><AccountProjectsRoute /></Suspense>} />
                 <Route
                   path="instructor"
                   element={
