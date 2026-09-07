@@ -23,7 +23,7 @@ export function ContestDetailAnalyticsPanel({ vm }: { vm: ContestDetailViewModel
         <div className="flex items-center gap-3">
           <BarChart3 className="size-5 text-primary" aria-hidden />
           <div>
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            <h2 className="text-heading-medium font-display text-foreground">
               {translate("workspace.manage.analyticsTitle")}
             </h2>
             <p className="mt-1 text-sm text-foreground-muted">
@@ -69,7 +69,7 @@ export function ContestDetailAnalyticsPanel({ vm }: { vm: ContestDetailViewModel
 
         <div className="mt-6">
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-base font-medium text-foreground">
+            <h3 className="text-heading-small font-display text-foreground">
               {translate("workspace.manage.publishedLeaderboard")}
             </h3>
             {contest.published_leaderboard.length > 0 && (
@@ -122,7 +122,7 @@ export function ContestDetailAnalyticsPanel({ vm }: { vm: ContestDetailViewModel
         <div className="mt-6">
           <div className="flex items-center gap-3">
             <Trophy className="size-5 text-primary" aria-hidden />
-            <h3 className="text-base font-medium text-foreground">
+            <h3 className="text-heading-small font-display text-foreground">
               {translate("workspace.manage.winnersHeading")}
             </h3>
           </div>

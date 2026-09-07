@@ -159,7 +159,7 @@ export function ManualMintTemplatesTab({ onSelectTemplate }: ManualMintTemplates
                           </span>
                         )}
                       </div>
-                      <h3 className="truncate text-sm font-semibold text-foreground group-hover:text-primary">
+                      <h3 className="truncate text-heading-small font-display text-foreground group-hover:text-primary">
                         {tpl.name}
                       </h3>
                     </div>

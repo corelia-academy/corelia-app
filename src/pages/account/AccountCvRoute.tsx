@@ -5,7 +5,7 @@ function CvSection() {
   return (
     <div className="space-y-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div>
-        <h2 className="text-lg font-semibold">{t("cv.title")}</h2>
+        <h2 className="text-heading-medium font-display">{t("cv.title")}</h2>
         <p className="mt-1 text-sm text-foreground-muted">
           {t("cv.subtitle")}
         </p>
@@ -22,7 +22,7 @@ function CvSection() {
       </div>
 
       <div className="space-y-3 text-sm">
-        <h3 className="font-medium">{t("cv.prep.title")}</h3>
+        <h3 className="text-heading-small font-display">{t("cv.prep.title")}</h3>
         <ul className="list-disc space-y-1 pl-4 text-foreground-muted">
           <li>{t("cv.prep.items.0")}</li>
           <li>{t("cv.prep.items.1")}</li>

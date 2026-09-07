@@ -184,7 +184,7 @@ export function ContestManageOverviewDashboard({
       <Card>
         <CardContent className="p-4 sm:p-6">
           <header className="space-y-1">
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            <h2 className="text-heading-medium font-display text-foreground">
               {translate("workspace.manage.dashboard.actionsTitle")}
             </h2>
             <p className="text-sm text-foreground-muted">

@@ -66,7 +66,7 @@ export function ProjectCard({
           className="border-0 pt-0"
         />
       </div>
-      <h2 className="mt-4 line-clamp-2 break-words text-lg font-semibold leading-snug">
+      <h2 className="mt-4 line-clamp-2 break-words text-heading-small font-display text-foreground">
         <NavLink
           to={detailPath}
           className="rounded-sm hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
@@ -74,18 +74,18 @@ export function ProjectCard({
           {project.title}
         </NavLink>
       </h2>
-      <p className="mt-2 min-h-16 line-clamp-3 text-sm leading-6 text-foreground-muted">
+      <p className="mt-2 min-h-16 line-clamp-3 text-body-medium font-body text-foreground-muted">
         {project.summary || t("projects.card.noSummary")}
       </p>
-      <dl className="mt-5 space-y-3 text-xs">
+      <dl className="mt-5 space-y-3 text-body-small font-body">
         {technologies.length ? (
           <div className="flex items-start gap-3">
-            <dt className="w-20 shrink-0 text-foreground-subtle">{t("projects.filters.techStacks")}</dt>
+            <dt className="w-20 shrink-0 text-label-small font-body text-foreground-subtle">{t("projects.filters.techStacks")}</dt>
             <dd className="min-w-0 font-medium">{technologies.map((item) => item.name).join(", ")}</dd>
           </div>
         ) : null}
         <div className="flex items-center gap-3">
-          <dt className="w-20 shrink-0 text-foreground-subtle">{t("projects.editor.builder")}</dt>
+          <dt className="w-20 shrink-0 text-label-small font-body text-foreground-subtle">{t("projects.editor.builder")}</dt>
           <dd className="min-w-0 truncate font-medium">
             {ownerHandle ? (
               <NavLink to={`/@${ownerHandle}`} className="hover:underline">
@@ -99,7 +99,7 @@ export function ProjectCard({
       </dl>
       {displayAward ? (
         <div className="mt-4 flex flex-wrap gap-1.5">
-          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-label-small font-body text-primary">
             <Trophy className="size-3" />
             {displayAward}
           </span>

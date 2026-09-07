@@ -470,7 +470,7 @@ export function CourseOcbCredentialSection({
       {/* Header row */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+          <h3 className="text-heading-small font-display text-foreground flex items-center gap-2">
             <Shield className="size-4 shrink-0 text-primary" aria-hidden />
             {t("courseEdit.ocb.title")}
           </h3>

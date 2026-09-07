@@ -29,12 +29,12 @@ export default function ProjectEditPage() {
   });
 
   if (projectQuery.isPending || (hackathon && contestQuery.isPending)) {
-    return <div className="container-app py-16" role="status">{t("projects.loading")}</div>;
+    return <div className="container-app py-16 text-body-medium font-body" role="status">{t("projects.loading")}</div>;
   }
   if (projectQuery.isError || contestQuery.isError || (hackathon && !contestQuery.data)) {
     return (
       <div className="container-app py-16" role="alert">
-        <p>{t("projects.errorDescription")}</p>
+        <p className="text-body-medium font-body">{t("projects.errorDescription")}</p>
         <Button onClick={() => { void projectQuery.refetch(); if (hackathon) void contestQuery.refetch(); }}>
           {t("projects.retry")}
         </Button>
@@ -44,7 +44,7 @@ export default function ProjectEditPage() {
   if (!project || !(project.owner_id === user?.id || profile?.role === "admin" || profile?.role === "support_staff")) {
     return (
       <div className="container-app py-16">
-        <h1>{t("projects.form.cannotEdit")}</h1>
+        <h1 className="text-heading-medium font-display">{t("projects.form.cannotEdit")}</h1>
         <Button className="mt-4" render={<NavLink to="/projects" />} nativeButton={false}>
           {t("projects.detail.goBack")}
         </Button>
@@ -54,7 +54,7 @@ export default function ProjectEditPage() {
   if (project.blocked) {
     return (
       <div className="container-app space-y-4 py-8">
-        <p role="status">{t("projects.management.blockedError")}</p>
+        <p className="text-body-medium font-body" role="status">{t("projects.management.blockedError")}</p>
         <ProjectManagementControls project={project} onDeleted={() => navigate("/projects", { replace: true })} />
       </div>
     );

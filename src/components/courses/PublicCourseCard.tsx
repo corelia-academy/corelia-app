@@ -19,7 +19,7 @@ export function PublicCourseCard({ course, progress }: {
       </div>
       <div className="flex flex-1 flex-col gap-3 p-5 sm:p-6">
         <span className="self-start rounded-full bg-primary-muted px-3 py-1 text-xs font-medium text-foreground">{getCourseLevelLabel(course.level)}</span>
-        <h3 className="line-clamp-2 min-h-12 text-lg font-semibold leading-6">{course.title}</h3>
+        <h3 className="line-clamp-2 min-h-12 text-heading-medium font-display">{course.title}</h3>
         {course.short_description ? <p className="line-clamp-3 text-sm leading-6 text-foreground-muted">{course.short_description}</p> : null}
         <div className="mt-auto flex flex-wrap items-center gap-2 pt-2 text-sm text-foreground-muted"><Clock className="size-4" aria-hidden />{formatDuration(Number(course.total_duration_seconds) || 0)}</div>
         {progress?.enrolled ? <div className="space-y-2 border-t border-border-subtle pt-3">

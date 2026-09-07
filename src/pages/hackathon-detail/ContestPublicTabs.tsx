@@ -33,12 +33,12 @@ export function HackathonOverviewTab() {
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]">
       <section className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-7">
-        <h2 className="text-lg font-semibold text-foreground">{t("public.overview.description")}</h2>
+        <h2 className="text-heading-medium font-display text-foreground">{t("public.overview.description")}</h2>
         {content ? <div className="mt-4"><Markdown content={content} /></div> : <p className="mt-4 text-sm text-foreground-muted">{t("public.empty.overview")}</p>}
       </section>
       <div className="min-w-0 space-y-6 lg:self-start">
         <aside className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card">
-          <h2 className="font-semibold text-foreground">{t("public.overview.summary")}</h2>
+          <h2 className="text-heading-small font-display text-foreground">{t("public.overview.summary")}</h2>
           <dl className="mt-4 space-y-3 text-sm">
             <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.overview.mode")}</dt><dd className="font-medium">{t(`public.mode.${contest.mode ?? contest.location}`)}</dd></div>
             <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.participants")}</dt><dd className="font-medium">{contest.participants_count ?? 0}</dd></div>
@@ -68,7 +68,7 @@ export function HackathonPrizesTab() {
       <div className="grid gap-4 md:grid-cols-2">
         {tracks.map((track) => (
           <article key={track.id} className="min-w-0 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card">
-            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2"><h2 className="min-w-0 break-words font-semibold text-foreground">{track.name}</h2>{track.prize_amount ? <span className="break-words font-semibold text-primary">{formatAmount(track.prize_amount)} {pool?.currency}</span> : null}</div>
+            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2"><h2 className="min-w-0 break-words text-heading-small font-display text-foreground">{track.name}</h2>{track.prize_amount ? <span className="break-words font-semibold text-primary">{formatAmount(track.prize_amount)} {pool?.currency}</span> : null}</div>
             {track.description ? <div className="mt-3 break-words text-foreground-muted"><Markdown content={track.description} compact /></div> : null}
           </article>
         ))}
@@ -89,7 +89,7 @@ export function HackathonTimelineTab() {
         <li key={item.id} className="relative pb-8 last:pb-0">
           <span className="absolute -left-[2.15rem] top-1 size-3 rounded-full border-2 border-background bg-primary" />
           <div className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card">
-            <h2 className="font-semibold text-foreground">{item.title}</h2>
+            <h2 className="text-heading-small font-display text-foreground">{item.title}</h2>
             <time className="mt-1 block text-xs text-foreground-muted">{new Date(item.starts_at).toLocaleString(locale)}{item.ends_at ? ` — ${new Date(item.ends_at).toLocaleString(locale)}` : ""}</time>
             {item.description_markdown ? <div className="mt-3"><Markdown content={item.description_markdown} compact /></div> : null}
           </div>
@@ -166,7 +166,7 @@ export function HackathonProjectsTab() {
           <div className="flex min-w-0 items-center gap-2.5">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-surface-raised text-foreground-muted"><SlidersHorizontal className="size-4" /></span>
             <div className="min-w-0">
-              <h2 className="font-semibold text-foreground">{t("public.projects.filters")}</h2>
+              <h2 className="text-heading-small font-display text-foreground">{t("public.projects.filters")}</h2>
               {activeFilterCount > 0 ? <p className="text-xs text-foreground-muted">{t("public.projects.selectedCount", { count: activeFilterCount })}</p> : null}
             </div>
           </div>

@@ -139,12 +139,12 @@ export function CourseHero({
             ) : null}
           </div>
 
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
+          <h1 className="mt-3 text-heading-large font-display text-foreground">
             {course.title}
           </h1>
 
           {course.short_description ? (
-            <p className="mt-3 text-sm leading-relaxed text-foreground-muted">
+            <p className="mt-3 text-body-medium font-body text-foreground-muted">
               {course.short_description}
             </p>
           ) : null}

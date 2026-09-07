@@ -41,12 +41,12 @@ export default function ProjectNewPage() {
   });
 
   if (hackathonSlug && (contestQuery.isPending || (contest && contextQuery.isPending))) {
-    return <div className="container-app py-16" role="status">{t("projects.loading")}</div>;
+    return <div className="container-app py-16 text-body-medium font-body" role="status">{t("projects.loading")}</div>;
   }
   if (contestQuery.isError || contextQuery.isError) {
     return (
       <div className="container-app py-16" role="alert">
-        <p>{t("projects.errorDescription")}</p>
+        <p className="text-body-medium font-body">{t("projects.errorDescription")}</p>
         <Button onClick={() => { void contestQuery.refetch(); void contextQuery.refetch(); }}>
           {t("projects.retry")}
         </Button>
@@ -59,8 +59,8 @@ export default function ProjectNewPage() {
   if (hackathonSlug && (!contest || !contextQuery.data?.registration || !["registered", "approved"].includes(contextQuery.data.registration.status))) {
     return (
       <div className="container-app py-16 text-center">
-        <h1 className="font-semibold">{t("projects.form.notEligible")}</h1>
-        <p className="mt-2 text-sm">{t("projects.form.notEligibleDescription")}</p>
+        <h1 className="text-heading-medium font-display">{t("projects.form.notEligible")}</h1>
+        <p className="mt-2 text-body-medium font-body">{t("projects.form.notEligibleDescription")}</p>
         <Button className="mt-4" render={<NavLink to={contest ? `/hackathons/${contest.slug}` : "/hackathons"} />} nativeButton={false}>
           {t("projects.form.back")}
         </Button>
