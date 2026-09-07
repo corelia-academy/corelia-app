@@ -87,8 +87,8 @@
   "projects": {
     "pageTitle": "Không gian dự án",
     "listTitle": "Dự án của tôi",
-    "ownerBadge": "Owner",
-    "collaboratorBadge": "Collaborator",
+    "ownerBadge": "Chủ dự án",
+    "collaboratorBadge": "Thành viên",
     "publicListingLabel": "Danh sách public:",
     "collaboratorCardTitle": "Hiển thị của collaborator",
     "collaboratorCardBody": "Bạn đang là collaborator của project này. Bạn có thể chọn việc project có xuất hiện trên hồ sơ công khai của mình hay không.",

@@ -55,8 +55,13 @@ The following additional cases were exercised through the deployed browser UI un
 | Private standalone in public gallery | Excluded |
 | Anonymous REST read of private/public QA records | Private returns empty list; public record returns expected ID and public visibility |
 | Save/upload/delete Edge requests without Authorization | All three return 401 |
-| My projects action | BUG: `/account/projects` redirects to profile. Fix restores the existing account project component under its existing authenticated parent route; post-deploy retest pending |
+| My projects action | BUG: `/account/projects` redirected to profile. Route restored under its existing authenticated parent; staging retest shows both owned QA projects. Follow-up adds open/edit actions and visibility labels to the legacy screen |
+| Public repository verification | `https://github.com/facebook/react` accepted; temporary resource subsequently cleared through the editor |
+| Unlisted visibility | Readable by anonymous REST request through its direct slug, absent from public gallery; restored to private afterward |
+| Team picker | Registered candidates load; nonexistent search has a clear empty state; closes without sending an invite |
 
 Current public QA slug: `qa-project-showcase-20260907-renamed`; original link still redirects correctly. Private QA record: `/projects/qa-du-an-rieng-tu-20260907`. Both are intentionally retained. No invitation was sent and no other user's content was changed.
 
-Remaining coverage requires external input: Chrome file chooser still fails `Not allowed` before upload reaches the app, and a second authorized QA account is needed for invite accept/decline/revoke and authenticated non-owner checks. Upload/file-size/type/reordering remain unit-tested only. Full keyboard/screen-reader audit, confirm-dialog cancellation, deadline boundaries and successful public-link verification are not yet manually proven.
+Remaining coverage requires external input: Chrome file chooser still fails `Not allowed` before upload reaches the app, and a second authorized QA account is needed for invite accept/decline/revoke and authenticated non-owner checks. Upload/file-size/type/reordering remain unit-tested only. Full keyboard/screen-reader audit, confirm-dialog cancellation and deadline boundaries are not yet manually proven.
+
+First route repair published as staging `9fcd7875`, Cloudflare build `f0bca476-fb3a-487e-84f0-c09011a48075` succeeded. The backend remained on the already verified deployment; frontend-only repair did not require another backend deployment.
