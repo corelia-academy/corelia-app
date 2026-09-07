@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "2b0f19ee57d77475fedec53c68148c7b4c60f58c",
-  "git_tree_sha": "acd2a043f5ba523046f3176a35e4f6ba8e08e416",
+  "rc_sha": "c21b8213fbf7cd69d777c6ac94cf611163920edf",
+  "git_tree_sha": "50617a5177e18259b8e488ee5a3c1d2c6f651bfd",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 183,
   "latest_migration": "20260907014331_project_story_content.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "2b0f19ee57d77475fedec53c68148c7b4c60f58c",
+  "source_sha": "c21b8213fbf7cd69d777c6ac94cf611163920edf",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "5adb86c6cf564eee88b699fff8a8844bb3190ede40b2127ef21e97fe00ffc2be",
+  "candidate_tree_sha256": "73a57e642121af4c405243e26bcaa265daa2b7dfad22ead8a449ff377f8d2dca",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -1123,11 +1123,11 @@
     },
     {
       "path": "src/features/projects/ProjectEditor.test.tsx",
-      "sha256": "b09311cbde926c829277ded3300a1a417a9fad0da022a2ecdf6e910c4dd35e3e"
+      "sha256": "29a3b59c95effa96aa4360a46bbd526c827f116cdb681b9b12cd0abc7625a590"
     },
     {
       "path": "src/features/projects/ProjectEditor.tsx",
-      "sha256": "ffbe67fb1bb28942f3364f5213bddbfed36f2ed2b77485f98f590d3b20ecda86"
+      "sha256": "5aca6ddd986fe14c686844da97556d28a16c13a00b8574d8d7cc33b641f77906"
     },
     {
       "path": "src/features/projects/projectEditorDraft.ts",
@@ -1419,7 +1419,7 @@
     },
     {
       "path": "src/locales/en/common.json",
-      "sha256": "b5af4ffdc47257bc8bd4ff9ef12b2eb45acf60b3c18de0c98a8faf4ed4df602a"
+      "sha256": "fcae44779bb38abee7a7ad9079bc98bd68549802c4327f2ecb658058a1d1edff"
     },
     {
       "path": "src/locales/en/contests.json",
@@ -1451,7 +1451,7 @@
     },
     {
       "path": "src/locales/vi/common.json",
-      "sha256": "633cb2c880ccf66e9c35a7919bb754edce17c27745d99c552bad4b3c25106a68"
+      "sha256": "443db39db3f99c1045f5f63391e2f80d58594f6da7da77f7f87b192e651c7071"
     },
     {
       "path": "src/locales/vi/contests.json",
