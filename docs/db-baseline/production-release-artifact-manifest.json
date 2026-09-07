@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "d48217ccc8e46552e37ff2f13c613dbd2c923729",
-  "git_tree_sha": "0dbc3e9f9008a726864b1b15fa54cecf61a0e900",
+  "rc_sha": "df762103225181507431cb38d433f2b86e9ae5ed",
+  "git_tree_sha": "4a3e49ea7618152c8f06d79e1def4b206598c320",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 185,
   "latest_migration": "20260907060557_restrict_client_table_ddl_privileges.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "d48217ccc8e46552e37ff2f13c613dbd2c923729",
+  "source_sha": "df762103225181507431cb38d433f2b86e9ae5ed",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "6aeccc812d680e7baa9ce96765b5e52fbc26896970711ebc81801b79c412c51b",
+  "candidate_tree_sha256": "93a01c9d12693baa72db9ff271b9aa76eca4c803c547c881d0a752813eb242f8",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -511,7 +511,7 @@
     },
     {
       "path": "docs/security/2026-09-07-profile-name-integrity.md",
-      "sha256": "fc3164ed38c933a226dcf06833f2c3bf48ebc0a1a41c4ebbf0dd24dd791478e6"
+      "sha256": "d1910995f28963cf312babe90c9d4f9af06eb3f57270df46d5e2e93770df5112"
     },
     {
       "path": "docs/STAGING_BUILD_VERIFY.md",
@@ -1495,7 +1495,7 @@
     },
     {
       "path": "src/pages/account/AccountProfileRoute.tsx",
-      "sha256": "c3ed7e9afd92de730ed995e3d7e21b8a9aa9b10c745b01aac14b2421a882579f"
+      "sha256": "896bb26a75fc2d7a7f1d97595f646cccbd2eb3208dfa8e415e02754f38d3df35"
     },
     {
       "path": "src/pages/account/AccountProjectsRoute.tsx",
