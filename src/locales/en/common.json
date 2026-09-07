@@ -933,5 +933,15 @@
   "maintenance": {
     "title": "System under maintenance",
     "body": "Corelia is being upgraded. We'll be back soon. Thanks for your patience!"
+  },
+  "scrollbarDemo": {
+    "title": "Scrollbar",
+    "description": "Native scrolling examples. Use Tab to focus a region, then arrow keys to scroll.",
+    "light": "Light",
+    "dark": "Dark",
+    "vertical": "Vertical · {{percent}}%",
+    "horizontal": "Horizontal · {{percent}}%",
+    "sample": "Sample {{count}}",
+    "code": "Code block"
   }
 }

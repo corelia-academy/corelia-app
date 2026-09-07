@@ -131,7 +131,7 @@ export function ProfileCombobox({
               placeholder={searchPlaceholder ?? t("combobox.searchPlaceholder")}
             />
 
-            <div className="mt-4 max-h-[min(60vh,28rem)] space-y-2 overflow-y-auto pr-1">
+            <div className="scrollbar-design mt-4 max-h-[min(60vh,28rem)] space-y-2 overflow-y-auto pr-1">
               {filtered.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border-subtle bg-surface-base px-4 py-5 text-sm text-foreground-muted">
                   {emptyLabel ?? t("combobox.emptyLabel")}

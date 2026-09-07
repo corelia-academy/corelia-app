@@ -933,5 +933,15 @@
   "maintenance": {
     "title": "Đang bảo trì hệ thống",
     "body": "Corelia đang được nâng cấp. Chúng tôi sẽ trở lại sớm. Cảm ơn bạn đã kiên nhẫn chờ đợi!"
+  },
+  "scrollbarDemo": {
+    "title": "Thanh cuộn",
+    "description": "Ví dụ cuộn gốc của trình duyệt. Dùng Tab để chọn vùng, sau đó dùng phím mũi tên để cuộn.",
+    "light": "Sáng",
+    "dark": "Tối",
+    "vertical": "Dọc · {{percent}}%",
+    "horizontal": "Ngang · {{percent}}%",
+    "sample": "Mẫu {{count}}",
+    "code": "Khối mã"
   }
 }

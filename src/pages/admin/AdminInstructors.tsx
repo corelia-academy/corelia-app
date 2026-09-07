@@ -340,7 +340,7 @@ export default function AdminInstructors() {
             })
           )}
         </div>
-        <div className="hidden overflow-x-auto md:block">
+        <div className="scrollbar-design hidden overflow-x-auto md:block">
           <table className="w-full text-left">
             <thead className="border-b border-border-subtle bg-surface-raised">
               <tr>
