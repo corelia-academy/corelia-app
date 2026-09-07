@@ -55,7 +55,7 @@ export default function CareerListPage() {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Briefcase className="size-5 text-primary" aria-hidden />
-            <h1 className="truncate text-xl font-semibold text-foreground sm:text-2xl">
+            <h1 className="truncate text-heading-large font-display text-foreground">
               {t("list.title")}
             </h1>
           </div>

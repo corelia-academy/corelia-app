@@ -16,7 +16,7 @@ export function UserProfileSkillsCard({ profileId }: { profileId: string }) {
     <section className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-5">
       <div className="flex items-center gap-2">
         <Sparkles className="size-4 text-foreground-muted" aria-hidden />
-        <h2 className="text-sm font-semibold text-foreground">
+        <h2 className="text-heading-small font-display text-foreground">
           {t("userProfile.skills.title")}
         </h2>
       </div>

@@ -24,7 +24,7 @@ import {
 function errorResponse(error: unknown): Response {
   const message = error instanceof Error ? error.message : "internal_error";
   if (error instanceof ProjectAiError) return json({ message: error.code }, error.status);
-  if (message.startsWith("invalid_input:") || message.startsWith("invalid_url:")) {
+  if (message.startsWith("required_content:") || message.startsWith("invalid_input:") || message.startsWith("invalid_url:")) {
     return json({ message }, 400);
   }
   if (["Missing Authorization header", "Invalid Authorization header", "Invalid or expired session"].includes(message)) {
@@ -261,6 +261,10 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
 
     const title = String(body.title ?? "").trim();
     const summary = String(body.summary ?? "").trim();
+    const description = body.description == null ? null : String(body.description).trim();
+    const progress = body.progress == null ? null : String(body.progress).trim();
+    if ((description?.length ?? 0) > 20_000 || (progress?.length ?? 0) > 10_000) return json({ message: "invalid_input:project_content" }, 400);
+    const pitchVideoUrl = body.pitch_video_url == null ? null : normalizeHttpsUrl("pitch_video_url", body.pitch_video_url) ?? "";
     const slug = normalizeProjectSlug(body.slug);
     if (!title || title.length > 160 || summary.length > 1_000) {
       return json({ message: "invalid_input:project_content" }, 400);
@@ -272,9 +276,31 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
       return json({ message: "invalid_input:project_screenshot_limit" }, 400);
     }
 
+    // Existing source is immutable in the save RPC; do not trust a caller's
+    // source/visibility to exempt an existing hackathon project from requirements.
+    const { data: existing, error: existingError } = await db.from("projects")
+      .select("source_type,description,progress,pitch_video_url").eq("id", projectId).maybeSingle();
+    if (existingError) throw new Error(existingError.message);
+    const source = existing?.source_type ?? (String(body.source_type ?? "").trim() || "standalone");
+    const hackathon = source === "hackathon" || source === "contest";
+    const publishing = hackathon || String(body.visibility ?? "public") !== "private";
+    const requiredContent = publishing ? [
+      ["summary", summary],
+      ["description", description ?? existing?.description ?? ""],
+      ...(hackathon ? [["progress", progress ?? existing?.progress ?? ""]] : []),
+    ] : [];
+    for (const [field, value] of requiredContent) {
+      if (!/[\p{L}\p{N}]/u.test(String(value))) return json({ message: `required_content:${field}` }, 400);
+    }
+    if (hackathon && !links.length && !videoUrl && !(pitchVideoUrl ?? existing?.pitch_video_url)) {
+      return json({ message: "required_content:resource" }, 400);
+    }
+
     await moderateProjectText([
       { field: "title", text: title },
       { field: "summary", text: summary },
+      { field: "description", text: description ?? "" },
+      { field: "progress", text: progress ?? "" },
     ]);
     await verifyPublicProjectLinks(links);
 
@@ -284,6 +310,9 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
       p_slug: slug,
       p_title: title,
       p_summary: summary || null,
+      p_description: description,
+      p_progress: progress,
+      p_pitch_video_url: pitchVideoUrl,
       p_demo_url: links.find((link) => link.field === "demo_url")?.url ?? null,
       p_repo_url: links.find((link) => link.field === "repo_url")?.url ?? null,
       p_slide_url: links.find((link) => link.field === "slide_url")?.url ?? null,
@@ -326,6 +355,34 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
     }
     const saved = Array.isArray(data) ? data[0] : data;
     return json({ ok: true, project: saved });
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
+
+export async function handleProjectManage(req: Request, db: SupabaseClient): Promise<Response> {
+  try {
+    const user = await verifyBearerUser(req, db);
+    const body = await req.json().catch(() => ({})) as Record<string, unknown>;
+    if (typeof body.project_id !== "string" || !isUuid(body.project_id) || typeof body.action !== "string" ||
+      !["delete", "block", "unblock", "public", "unlisted", "private"].includes(body.action) ||
+      (body.reason != null && (typeof body.reason !== "string" || body.reason.length > 1000))) {
+      return json({ message: "invalid_input:project_action" }, 400);
+    }
+    const { error } = await db.rpc("manage_project", {
+      p_actor_id: user.id,
+      p_project_id: body.project_id,
+      p_action: body.action,
+      p_reason: body.reason ?? null,
+    });
+    if (error) throw new Error(error.message);
+    if (body.action === "delete") {
+      // Deletion is already committed. Cleanup failure must not report a failed
+      // delete; the expiry registry preserves the work for the next cleanup.
+      try { await cleanupExpiredProjectMedia(db); }
+      catch (error) { console.warn("[projects.manage] media cleanup deferred", error); }
+    }
+    return json({ ok: true });
   } catch (error) {
     return errorResponse(error);
   }

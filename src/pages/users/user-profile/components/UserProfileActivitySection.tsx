@@ -158,7 +158,7 @@ export function UserProfileActivitySection({
     <section className="space-y-3">
       <div className="flex items-center gap-2">
         <Activity className="size-4 text-foreground-muted" aria-hidden />
-        <h2 className="text-base font-semibold text-foreground">
+        <h2 className="text-heading-small font-display text-foreground">
           {t("userProfile.activity.title")}
         </h2>
       </div>

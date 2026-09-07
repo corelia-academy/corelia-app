@@ -1,3 +1,4 @@
+import { profileNameFromMetadata, validateProfileName } from "@/lib/profileName";
 import { supabase } from "@/lib/supabase";
 import { uploadUserAvatar } from "@/lib/storage";
 import type { User } from "@supabase/supabase-js";
@@ -76,7 +77,7 @@ async function _fetchProfileForUser(user: User): Promise<Profile | null> {
       role: "student",
       locale: "vi",
       profile_public: true,
-      full_name: String(user.user_metadata?.full_name ?? user.user_metadata?.name ?? "").trim() || null,
+      full_name: profileNameFromMetadata(user.user_metadata?.full_name ?? user.user_metadata?.name),
       avatar_url: user.user_metadata?.avatar_url ?? null,
       phone: user.phone ?? null,
       email: user.email ?? null,
@@ -104,7 +105,7 @@ async function _fetchProfileForUser(user: User): Promise<Profile | null> {
     (pWithUsername.full_name == null || pWithUsername.full_name === "") &&
     user.user_metadata?.full_name
   ) {
-    updates.full_name = String(user.user_metadata.full_name).trim();
+    updates.full_name = profileNameFromMetadata(user.user_metadata.full_name);
   }
   if (Object.keys(updates).length > 0) {
     updates.updated_at = new Date().toISOString();
@@ -204,7 +205,7 @@ function fallbackProfile(user: { id: string; email?: string | null; user_metadat
     id: user.id,
     role: "student",
     username: null,
-    full_name: String(user.user_metadata?.full_name ?? "").trim() || null,
+    full_name: profileNameFromMetadata(user.user_metadata?.full_name),
     avatar_url: (user.user_metadata?.avatar_url as string) ?? null,
     phone: null,
     email: user.email ?? null,
@@ -274,7 +275,7 @@ export async function setNewUserProfileForUser(
       id: user.id,
       role: "student",
       locale: "vi",
-      full_name: String(data.full_name ?? user.user_metadata?.full_name ?? "").trim() || null,
+      full_name: validateProfileName(data.full_name ?? profileNameFromMetadata(user.user_metadata?.full_name)),
       email: data.email ?? user.email ?? null,
       avatar_url: (user.user_metadata?.avatar_url as string) ?? null,
       phone: user.phone ?? null,
@@ -303,7 +304,7 @@ export async function updateProfileForUser(
 ): Promise<Profile> {
   const safeUpdates: Record<string, unknown> = {};
   if (updates.username !== undefined) safeUpdates.username = updates.username;
-  if (updates.full_name !== undefined) safeUpdates.full_name = updates.full_name;
+  if (updates.full_name !== undefined) safeUpdates.full_name = validateProfileName(updates.full_name);
   if (updates.avatar_url !== undefined) safeUpdates.avatar_url = updates.avatar_url;
   if (updates.phone !== undefined) safeUpdates.phone = updates.phone;
   if (updates.email !== undefined) safeUpdates.email = updates.email;
@@ -433,6 +434,7 @@ export async function uploadAvatar(file: File): Promise<string> {
 // allow-lists columns and never forwards role/tier.
 export async function updateProfileAdmin(userId: string, updates: ProfileUpdate): Promise<void> {
   const payload: Record<string, unknown> = { ...updates, updated_at: new Date().toISOString() };
+  if (updates.full_name !== undefined) payload.full_name = validateProfileName(updates.full_name);
   Object.keys(payload).forEach((k) => {
     if (payload[k] === undefined) delete payload[k];
   });

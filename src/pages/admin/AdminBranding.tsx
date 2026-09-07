@@ -109,7 +109,7 @@ export default function AdminBranding() {
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">{t("branding.logo.title")}</h2>
+        <h2 className="text-heading-medium font-display text-foreground">{t("branding.logo.title")}</h2>
         <p className="mt-1 text-sm text-foreground-muted">{t("branding.logo.subtitle")}</p>
       </div>
 
@@ -165,7 +165,7 @@ export default function AdminBranding() {
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold text-foreground">{t("branding.appBaseUrl.title")}</h2>
+        <h2 className="text-heading-medium font-display text-foreground">{t("branding.appBaseUrl.title")}</h2>
         <p className="mt-1 text-sm text-foreground-muted">{t("branding.appBaseUrl.subtitle")}</p>
       </div>
 

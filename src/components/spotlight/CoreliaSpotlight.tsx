@@ -59,10 +59,10 @@ export function CoreliaSpotlight({
         <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
           {eyebrow}
         </div>
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">
+        <h2 className="text-heading-medium font-display text-foreground">
           {title}
         </h2>
-        <p className="max-w-3xl text-sm leading-relaxed text-foreground-muted">
+        <p className="max-w-3xl text-body-medium font-body text-foreground-muted">
           {description}
         </p>
       </div>
@@ -103,7 +103,7 @@ export function CoreliaSpotlight({
               <div className="mt-4 text-lg font-semibold leading-snug text-foreground">
                 {item.title}
               </div>
-              <div className="mt-2 text-sm leading-relaxed text-foreground-muted">
+              <div className="mt-2 text-body-medium font-body text-foreground-muted">
                 {item.description}
               </div>
 

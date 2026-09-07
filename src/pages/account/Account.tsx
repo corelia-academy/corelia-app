@@ -130,7 +130,7 @@ export default function Account() {
                 <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                   {t("nav.currentSectionLabel")}
                 </p>
-                <h2 className="mt-1 text-lg font-semibold text-foreground">
+                <h2 className="mt-1 text-heading-medium font-display text-foreground">
                   {activeNavItem.title}
                 </h2>
                 <p className="mt-1 text-sm text-foreground-muted">

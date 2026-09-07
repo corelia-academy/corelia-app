@@ -35,21 +35,21 @@ export function ClaimPage() {
 
         {status === "error" && (
           <>
-            <h1 className="text-xl font-semibold text-foreground">{t("claim.errorTitle")}</h1>
+            <h1 className="text-heading-medium font-display text-foreground">{t("claim.errorTitle")}</h1>
             <p className="mt-2 text-sm text-foreground-muted">{t("claim.errorBody")}</p>
           </>
         )}
 
         {status === "loaded" && items.length === 0 && (
           <>
-            <h1 className="text-xl font-semibold text-foreground">{t("claim.emptyTitle")}</h1>
+            <h1 className="text-heading-medium font-display text-foreground">{t("claim.emptyTitle")}</h1>
             <p className="mt-2 text-sm text-foreground-muted">{t("claim.emptyBody")}</p>
           </>
         )}
 
         {status === "loaded" && items.length > 0 && (
           <>
-            <h1 className="text-xl font-semibold text-foreground">{t("claim.title")}</h1>
+            <h1 className="text-heading-medium font-display text-foreground">{t("claim.title")}</h1>
             <p className="mt-2 text-sm text-foreground-muted">
               {t("claim.subtitle", { email })}
             </p>

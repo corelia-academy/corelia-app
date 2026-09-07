@@ -21,7 +21,7 @@ export function ContestPreparationCard({ contest }: { contest: Pick<Contest, "ti
 
   return (
     <section className="min-w-0 rounded-2xl border border-primary/20 bg-primary/5 p-5">
-      <h2 className="flex items-center gap-2 font-semibold text-foreground"><Sparkles className="size-4 shrink-0 text-primary" aria-hidden />{t("public.prepare.title")}</h2>
+      <h2 className="flex items-center gap-2 text-heading-small font-display text-foreground"><Sparkles className="size-4 shrink-0 text-primary" aria-hidden />{t("public.prepare.title")}</h2>
       <p className="mt-2 text-sm leading-6 text-foreground-muted">{t("public.prepare.description")}</p>
       <textarea
         readOnly

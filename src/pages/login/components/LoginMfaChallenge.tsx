@@ -235,7 +235,7 @@ export function LoginMfaChallenge({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-normal tracking-tight text-foreground">
+        <h1 className="text-heading-large font-display text-foreground">
           {t("login.title.mfa")}
         </h1>
         <p className="text-balance text-sm text-foreground-muted">{subtitle}</p>

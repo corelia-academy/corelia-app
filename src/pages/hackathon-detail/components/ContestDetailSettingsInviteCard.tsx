@@ -27,7 +27,7 @@ export function ContestDetailSettingsInviteCard({
             <Building2 className="size-5 text-primary" aria-hidden />
           )}
           <div>
-            <h2 className="text-lg font-medium tracking-tight text-foreground">
+            <h2 className="text-heading-medium font-display text-foreground">
               {translate("workspace.manage.inviteCollaborationTitle")}
             </h2>
             <p className="mt-1 text-sm text-foreground-muted">

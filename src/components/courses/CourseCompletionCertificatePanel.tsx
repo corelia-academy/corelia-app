@@ -64,7 +64,7 @@ export function CourseCompletionCertificatePanel({
             )}
           </div>
           <div className="min-w-0">
-            <h2 className="text-base font-semibold text-foreground">
+            <h2 className="text-heading-small font-display text-foreground">
               {t("detail.learn.completion.title")}
             </h2>
             <p className="mt-1 text-sm leading-relaxed text-foreground-muted">

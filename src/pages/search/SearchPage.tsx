@@ -48,7 +48,7 @@ export default function SearchPage() {
       <div className="flex items-start gap-3">
         <Search className="mt-1 size-5 text-primary" aria-hidden />
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-xl font-semibold text-foreground sm:text-2xl">
+          <h1 className="truncate text-heading-large font-display text-foreground">
             {t("search.title")}
           </h1>
           <p className="mt-2 text-sm text-foreground-muted">

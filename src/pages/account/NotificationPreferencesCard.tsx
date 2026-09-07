@@ -90,7 +90,7 @@ export function NotificationPreferencesCard() {
 
   return (
     <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
-      <h2 className="text-lg font-semibold text-foreground">
+      <h2 className="text-heading-medium font-display text-foreground">
         {t("settings.notifications.title")}
       </h2>
       <p className="mt-1 text-sm text-foreground-muted">

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { CalendarDays, Coins, FolderOpen, Package, SlidersHorizontal, Sparkles, X } from "lucide-react";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { ChevronDown, CalendarDays, Coins, FolderOpen, Package, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useOutletContext, useSearchParams } from "react-router";
 
@@ -9,6 +9,8 @@ import { ProjectCard } from "@/components/projects/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/projects/ProjectCardSkeleton";
 import { Button } from "@/components/ui/button";
 import { publicProjectDirectoryQueryOptions } from "@/features/projects/projectQueries";
+import { useAuth } from "@/stores/authStore";
+import { projectHeartsQueryOptions } from "@/features/projects/projectSocialQueries";
 import { cn } from "@/lib/utils";
 import type { ContestTrack, HackathonTaxonomyOption } from "@/types/hackathons";
 import type { HackathonOutletContext } from "./ContestPublicLayout";
@@ -31,12 +33,12 @@ export function HackathonOverviewTab() {
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]">
       <section className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-7">
-        <h2 className="text-lg font-semibold text-foreground">{t("public.overview.description")}</h2>
+        <h2 className="text-heading-medium font-display text-foreground">{t("public.overview.description")}</h2>
         {content ? <div className="mt-4"><Markdown content={content} /></div> : <p className="mt-4 text-sm text-foreground-muted">{t("public.empty.overview")}</p>}
       </section>
       <div className="min-w-0 space-y-6 lg:self-start">
         <aside className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card">
-          <h2 className="font-semibold text-foreground">{t("public.overview.summary")}</h2>
+          <h2 className="text-heading-small font-display text-foreground">{t("public.overview.summary")}</h2>
           <dl className="mt-4 space-y-3 text-sm">
             <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.overview.mode")}</dt><dd className="font-medium">{t(`public.mode.${contest.mode ?? contest.location}`)}</dd></div>
             <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.participants")}</dt><dd className="font-medium">{contest.participants_count ?? 0}</dd></div>
@@ -66,7 +68,7 @@ export function HackathonPrizesTab() {
       <div className="grid gap-4 md:grid-cols-2">
         {tracks.map((track) => (
           <article key={track.id} className="min-w-0 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card">
-            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2"><h2 className="min-w-0 break-words font-semibold text-foreground">{track.name}</h2>{track.prize_amount ? <span className="break-words font-semibold text-primary">{formatAmount(track.prize_amount)} {pool?.currency}</span> : null}</div>
+            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2"><h2 className="min-w-0 break-words text-heading-small font-display text-foreground">{track.name}</h2>{track.prize_amount ? <span className="break-words font-semibold text-primary">{formatAmount(track.prize_amount)} {pool?.currency}</span> : null}</div>
             {track.description ? <div className="mt-3 break-words text-foreground-muted"><Markdown content={track.description} compact /></div> : null}
           </article>
         ))}
@@ -87,7 +89,7 @@ export function HackathonTimelineTab() {
         <li key={item.id} className="relative pb-8 last:pb-0">
           <span className="absolute -left-[2.15rem] top-1 size-3 rounded-full border-2 border-background bg-primary" />
           <div className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card">
-            <h2 className="font-semibold text-foreground">{item.title}</h2>
+            <h2 className="text-heading-small font-display text-foreground">{item.title}</h2>
             <time className="mt-1 block text-xs text-foreground-muted">{new Date(item.starts_at).toLocaleString(locale)}{item.ends_at ? ` — ${new Date(item.ends_at).toLocaleString(locale)}` : ""}</time>
             {item.description_markdown ? <div className="mt-3"><Markdown content={item.description_markdown} compact /></div> : null}
           </div>
@@ -110,22 +112,24 @@ function FilterGroup({ label, options, selected, toggle }: { label: string; opti
   const visible = options.filter((option) => option.active !== false);
   if (!visible.length) return null;
   return (
-    <div role="group" aria-label={label} className="grid min-w-0 gap-2 py-3 sm:grid-cols-[9.5rem_minmax(0,1fr)] sm:items-start sm:gap-3">
-      <div className="flex min-h-10 items-center gap-2 text-xs font-semibold uppercase tracking-wide text-foreground-muted">
+    <details className="relative min-w-0 rounded-lg border border-border bg-background">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3 text-sm font-medium">
         <span>{label}</span>
         {selected.length > 0 ? <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] tabular-nums text-primary">{selected.length}</span> : null}
-      </div>
-      <div className="-mx-1 flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain px-1 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden">
+        <ChevronDown className="ml-auto size-4" />
+      </summary>
+      <div role="group" aria-label={label} className="z-20 flex max-h-72 flex-col gap-1 overflow-y-auto border-t border-border bg-surface-base p-2 sm:absolute sm:top-full sm:mt-2 sm:w-72 sm:rounded-xl sm:border sm:shadow-lg">
         {visible.map((option) => {
           const isSelected = selected.includes(option.id);
-          return <button key={option.id} type="button" aria-pressed={isSelected} className={cn("min-h-11 shrink-0 rounded-full border px-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:min-h-10", isSelected ? "border-primary bg-primary text-primary-foreground" : "border-border-subtle bg-background text-foreground hover:border-border hover:bg-surface-raised")} onClick={() => toggle(option.id)}>{option.name}</button>;
+          return <button key={option.id} type="button" aria-pressed={isSelected} className={cn("min-h-11 shrink-0 rounded-md border px-3 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:min-h-10", isSelected ? "border-primary bg-primary text-primary-foreground" : "border-border-subtle bg-background text-foreground hover:border-border hover:bg-surface-raised")} onClick={() => toggle(option.id)}>{option.name}</button>;
         })}
       </div>
-    </div>
+    </details>
   );
 }
 
 export function HackathonProjectsTab() {
+  const { user } = useAuth();
   const { contest } = useOutletContext<HackathonOutletContext>();
   const { t, i18n } = useTranslation("contests");
   const [params, setParams] = useSearchParams();
@@ -140,6 +144,7 @@ export function HackathonProjectsTab() {
   const winnerOrder = useMemo(() => new Map((contest.winner_awards ?? []).map((award) => [award.project_id, award.sort_order])), [contest.winner_awards]);
   const awards = useMemo(() => new Map((contest.winner_awards ?? []).map((award) => [award.project_id, award.label])), [contest.winner_awards]);
   const projects = useMemo(() => [...(query.data?.pages.flatMap((page) => page.items) ?? [])].sort((a, b) => (winnerOrder.get(a.project.id) ?? Number.MAX_SAFE_INTEGER) - (winnerOrder.get(b.project.id) ?? Number.MAX_SAFE_INTEGER)), [query.data?.pages, winnerOrder]);
+  const hearts = useQuery(projectHeartsQueryOptions(user?.id, projects.map(item => item.project.id)));
   const toggle = (key: string, id: string) => {
     const next = new URLSearchParams(params);
     const values = read(key);
@@ -161,7 +166,7 @@ export function HackathonProjectsTab() {
           <div className="flex min-w-0 items-center gap-2.5">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-surface-raised text-foreground-muted"><SlidersHorizontal className="size-4" /></span>
             <div className="min-w-0">
-              <h2 className="font-semibold text-foreground">{t("public.projects.filters")}</h2>
+              <h2 className="text-heading-small font-display text-foreground">{t("public.projects.filters")}</h2>
               {activeFilterCount > 0 ? <p className="text-xs text-foreground-muted">{t("public.projects.selectedCount", { count: activeFilterCount })}</p> : null}
             </div>
           </div>
@@ -170,16 +175,16 @@ export function HackathonProjectsTab() {
             <label className="flex items-center gap-2 text-sm text-foreground-muted"><span className="sr-only sm:not-sr-only">{t("public.projects.sort")}</span><select className="min-h-10 rounded-md border border-border bg-background px-2.5 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/40" value={sort} onChange={(event) => { const next = new URLSearchParams(params); if (event.target.value === "oldest") next.set("sort", "oldest"); else next.delete("sort"); setParams(next, { preventScrollReset: true }); }}><option value="newest">{t("public.projects.newest")}</option><option value="oldest">{t("public.projects.oldest")}</option></select></label>
           </div>
         </div>
-        <div className="divide-y divide-border-subtle">
+        <div className="grid gap-3 py-4 sm:grid-cols-3">
           <FilterGroup label={t("public.projects.tracks")} options={(contest.tracks ?? []) as ContestTrack[]} selected={tracks} toggle={(id) => toggle("tracks", id)} />
           <FilterGroup label={t("public.projects.sectors")} options={contest.sectors ?? []} selected={sectors} toggle={(id) => toggle("sectors", id)} />
           <FilterGroup label={t("public.projects.techStacks")} options={contest.tech_stacks ?? []} selected={tech} toggle={(id) => toggle("tech", id)} />
         </div>
       </section>
 
-      {query.isPending ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div> : projects.length === 0 ? <EmptyTab icon={<Package className="size-6" />} title={t("public.empty.projects")} /> : (
+      {query.isPending ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div> : query.isError ? <div role="alert" className="py-8 text-center"><p>{t("detail.errors.loadFailed")}</p><Button className="mt-3" onClick={() => void query.refetch()}>{t("projects.retry", { ns: "common" })}</Button></div> : projects.length === 0 ? <EmptyTab icon={<Package className="size-6" />} title={t("public.empty.projects")} /> : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{projects.map(({ project, owner }) => <div key={project.id} className="relative">{awards.has(project.id) ? <div className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950 shadow"><Sparkles className="size-3" />{awards.get(project.id)}</div> : null}<ProjectCard project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} /></div>)}</div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{projects.map(({ project, owner }) => <div key={project.id} className="relative">{awards.has(project.id) ? <div className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950 shadow"><Sparkles className="size-3" />{awards.get(project.id)}</div> : null}<ProjectCard hearted={hearts.data?.has(project.id) ?? false} taxonomy={contest} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} /></div>)}</div>
           {query.hasNextPage ? <div className="flex justify-center"><Button type="button" variant="outline" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>{query.isFetchingNextPage ? t("public.projects.loading") : t("public.projects.loadMore")}</Button></div> : null}
         </>
       )}

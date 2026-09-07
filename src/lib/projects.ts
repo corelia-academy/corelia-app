@@ -28,6 +28,7 @@ const PUBLIC_PORTFOLIO_PROJECT_SELECT =
 
 async function attachProjectMedia<T extends Pick<Project, "logo_path" | "screenshot_paths">>(
   projects: T[],
+  requireAllMedia = false,
 ): Promise<Array<T & Pick<Project, "logo_url" | "screenshot_urls">>> {
   const paths = Array.from(new Set(projects.flatMap((project) => [
     project.logo_path,
@@ -41,6 +42,11 @@ async function attachProjectMedia<T extends Pick<Project, "logo_path" | "screens
   const { data, error } = await supabase.storage.from("app").createSignedUrls(paths, 60 * 60);
   if (error) throw new Error(error.message);
   const urlByPath = new Map((data ?? []).map((item) => [item.path, item.signedUrl]));
+  // An editor must not pair a later screenshot URL with an earlier path, or
+  // silently remove unavailable media when saving an unrelated text change.
+  if (requireAllMedia && paths.some(path => !urlByPath.get(path))) {
+    throw new Error("project_media_unavailable");
+  }
   return projects.map((project) => ({
     ...project,
     logo_url: project.logo_path ? urlByPath.get(project.logo_path) ?? null : null,
@@ -583,12 +589,14 @@ export async function listPublicDirectoryItems(
 export async function getProjectBySlugOrId(
   slugOrId: string,
   uiLocale?: string | null,
+  sourceContent = false,
 ): Promise<PublicProjectEntry | null> {
   const value = slugOrId.trim().toLowerCase();
   if (!value) return null;
 
-  const select =
-    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
+  // Read the complete public project row so additive moderation fields do not
+  // break detail pages while the frontend/database releases converge.
+  const select = "*" as const;
 
   let projectId = isUuidLike(value) ? value : null;
   const currentSlug = isUuidLike(value) ? null : value;
@@ -611,17 +619,32 @@ export async function getProjectBySlugOrId(
   if (error) throw new Error(error.message);
   if (!data) return null;
 
-  const [localizedProject] = await localizeProjects([data as Project], uiLocale);
+  const [localizedProject] = sourceContent ? await attachProjectMedia([data as Project], true) : await localizeProjects([data as Project], uiLocale);
   const [entry] = await attachOwners([localizedProject]);
   return entry ?? null;
 }
 
 export const getProjectById = getProjectBySlugOrId;
 
+export async function listProjectsForModeration(page: number, status: string) {
+  let query = supabase.from("projects")
+    .select("id,slug,owner_id,title,visibility,blocked", { count: "exact" })
+    .order("updated_at", { ascending: false }).order("id")
+    .range(page * 20, page * 20 + 19);
+  if (status === "blocked") query = query.eq("blocked", true);
+  else if (["public", "unlisted", "private"].includes(status)) query = query.eq("visibility", status).eq("blocked", false);
+  const { data, error, count } = await query;
+  if (error) throw new Error(error.message);
+  return { items: (data ?? []) as Pick<Project, "id" | "slug" | "owner_id" | "title" | "visibility" | "blocked">[], count: count ?? 0 };
+}
+
 export type ProjectUpdateInput = Pick<
   Project,
   "slug" | "title" | "summary" | "demo_url" | "repo_url" | "slide_url" | "video_url" | "logo_path" | "screenshot_paths" | "visibility"
 > & {
+  description?: string | null;
+  progress?: string | null;
+  pitch_video_url?: string | null;
   hackathon_track_ids?: string[];
   hackathon_sector_ids?: string[];
   hackathon_tech_stack_ids?: string[];
@@ -636,6 +659,9 @@ export async function updateMyProject(
     project_id: projectId,
     slug: input.slug,
     title: input.title,
+    description: input.description,
+    progress: input.progress,
+    pitch_video_url: input.pitch_video_url,
     summary: input.summary,
     demo_url: input.demo_url,
     repo_url: input.repo_url,
