@@ -8,6 +8,7 @@ const PAGE_META: Array<{
   titleKey: string;
   descriptionKey: string;
 }> = [
+  { match: pathname => pathname.startsWith("/admin/projects"), titleKey: "layout.pageMeta.projects.title", descriptionKey: "layout.pageMeta.projects.description" },
   {
     match: (pathname) => pathname.startsWith("/admin/jobs"),
     titleKey: "layout.pageMeta.jobs.title",
