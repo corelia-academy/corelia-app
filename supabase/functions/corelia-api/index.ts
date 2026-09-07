@@ -22,8 +22,10 @@ import { handleSendLearningReminders } from "./courses/learning_reminders.ts";
 import { handleSyncCourseCompletion } from "./courses/completion.ts";
 import { handleHackathonBlastEmail } from "./hackathons/blast_email.ts";
 import { handleHackathonNotifyRegistrationReview } from "./hackathons/handlers.ts";
+import { handleHackathonWinnerAwardNotify } from "./hackathons/winner_award_notify.ts";
 import { corsHeadersForRequest, json, withCors } from "./lib/http.ts";
 import { handleNotificationsUnsubscribe } from "./notifications/unsubscribe.ts";
+import { handleProjectCollaborationInviteEmail } from "./projects/collaboration_invite_email.ts";
 import {
   handleProjectMediaDelete,
   handleProjectMediaUpload,
@@ -37,20 +39,24 @@ import {
   handleJobsRun,
   handleJobsRunScheduled,
 } from "./jobs/handlers.ts";
+import { handleAdminEmailOutboxReconcile } from "./lib/mail/outbox.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
 
 const PROTECTED_OPS = new Set<string>([
+  "admin.emailOutbox.reconcile",
   "certificates.issue",
   "certificates.backfillEligible",
   "certificates.revoke",
   // certificates.verify is PUBLIC — intentionally omitted from PROTECTED_OPS
   "hackathons.notifyRegistrationReview",
+  "hackathons.winnerAwards.notify",
   "hackathons.blastEmail",
   "courses.syncCompletion",
   "courses.blastEmail",
   "courses.coInstructorInvite.sendEmail",
   "courses.sendLearningReminders",
   "careerTracks.blastEmail",
+  "projects.collaborationInvite.sendEmail",
   // notifications.unsubscribe is PUBLIC — intentionally omitted from PROTECTED_OPS
   "credentials.checkCourseCompletion",
   "credentials.checkActivityMilestones",
@@ -126,6 +132,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleRevokeCertificate(req, db);
     } else if (op === "hackathons.notifyRegistrationReview" && req.method === "POST") {
       response = await handleHackathonNotifyRegistrationReview(req, db);
+    } else if (op === "hackathons.winnerAwards.notify" && req.method === "POST") {
+      response = await handleHackathonWinnerAwardNotify(req, db);
     } else if (op === "hackathons.blastEmail" && req.method === "POST") {
       response = await handleHackathonBlastEmail(req, db);
     } else if (op === "courses.syncCompletion" && req.method === "POST") {
@@ -134,6 +142,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleCourseBlastEmail(req, db);
     } else if (op === "courses.coInstructorInvite.sendEmail" && req.method === "POST") {
       response = await handleCoInstructorInviteEmail(req, db);
+    } else if (op === "projects.collaborationInvite.sendEmail" && req.method === "POST") {
+      response = await handleProjectCollaborationInviteEmail(req, db);
     } else if (op === "courses.sendLearningReminders" && req.method === "POST") {
       response = await handleSendLearningReminders(req, db, { allowCron: isLearningReminderCron });
     } else if (op === "careerTracks.blastEmail" && req.method === "POST") {
@@ -178,6 +188,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleJobsReview(req, db);
     } else if (op === "jobs.admin" && req.method === "POST") {
       response = await handleJobsAdmin(req, db);
+    } else if (op === "admin.emailOutbox.reconcile" && req.method === "POST") {
+      response = await handleAdminEmailOutboxReconcile(req, db);
     } else {
       response = json({ message: "Not found" }, 404);
     }
