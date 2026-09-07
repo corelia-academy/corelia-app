@@ -24,7 +24,7 @@ export function getProjectCoverImageUrl(
 }
 
 const PUBLIC_PORTFOLIO_PROJECT_SELECT =
-  "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,blocked,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
+  "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
 
 async function attachProjectMedia<T extends Pick<Project, "logo_path" | "screenshot_paths">>(
   projects: T[],
@@ -398,7 +398,7 @@ export async function listPublicProjects(
   options: ListPublicProjectsOptions = {},
 ): Promise<PublicProjectListResult> {
   const select =
-    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,blocked,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
+    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
   const limit = normalizeProjectLimit(options.limit);
   const offset = parseProjectCursor(options.cursor);
   const sourceType = normalizePublicProjectSource(options.source);
@@ -462,7 +462,7 @@ async function listDirectoryProjectEntries(
   uiLocale?: string | null,
 ): Promise<PublicProjectEntry[]> {
   const select =
-    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,blocked,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
+    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
 
   const { data, error } = await supabase
     .from("projects")
@@ -594,8 +594,9 @@ export async function getProjectBySlugOrId(
   const value = slugOrId.trim().toLowerCase();
   if (!value) return null;
 
-  const select =
-    "id,slug,owner_id,title,summary,description,progress,pitch_video_url,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,blocked,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
+  // Read the complete public project row so additive moderation fields do not
+  // break detail pages while the frontend/database releases converge.
+  const select = "*" as const;
 
   let projectId = isUuidLike(value) ? value : null;
   const currentSlug = isUuidLike(value) ? null : value;
@@ -685,7 +686,7 @@ export async function listMyProjects(uiLocale?: string | null): Promise<Project[
   if (!user) throw new Error("Chưa đăng nhập");
 
   const select =
-    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,blocked,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
+    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
 
   const [{ data: owned, error: ownedErr }, { data: collaboratorRows, error: collabErr }] =
     await Promise.all([
@@ -758,7 +759,7 @@ export async function listMyProjectsForAccount(uiLocale?: string | null): Promis
   if (!user) throw new Error("Chưa đăng nhập");
 
   const select =
-    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,blocked,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
+    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
 
   const [{ data: owned, error: ownedErr }, { data: collaboratorRows, error: collabErr }] =
     await Promise.all([
