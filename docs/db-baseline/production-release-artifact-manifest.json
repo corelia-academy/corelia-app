@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "b21af43e01d706df1325fc3ab59a5a0f5e97091a",
-  "git_tree_sha": "c74f4af78ee0ae9134b64164cfac851c6f58ddaa",
+  "rc_sha": "c2f818b6d1d646e2ccc2112893828ca480d16829",
+  "git_tree_sha": "3e6c737f37601ef687e8965d268713e599884c6d",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 183,
   "latest_migration": "20260907014331_project_story_content.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "b21af43e01d706df1325fc3ab59a5a0f5e97091a",
+  "source_sha": "c2f818b6d1d646e2ccc2112893828ca480d16829",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "5893c8e88c80e2a2db7bc641f22a8046de0ba06b75448efde09f3883064148b7",
+  "candidate_tree_sha256": "4bc9aa245081ad4762de2ba04bc573ef8369e0143ac6a9afd7f7c9c8cb8ef14f",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -566,6 +566,10 @@
       "sha256": "afdd60ddb68c5d6ea2cbcd22ea3e32a0537356b90a696d38d66fe9414ddac12c"
     },
     {
+      "path": "docs/tests/2026-09-07-project-staging-validation.md",
+      "sha256": "cab140c64c12c31b190216e2775fe56faa149ef6ae80809bc92ad6f16f7d7e66"
+    },
+    {
       "path": "docs/tests/manual.html",
       "sha256": "45a2730d0a1bc542e244fb99f03eb199ec7931e4eada44c08b7a39e6c6fe1b86"
     },
@@ -835,7 +839,7 @@
     },
     {
       "path": "src/App.tsx",
-      "sha256": "1f9253e7ca9542a77dd0ef5f3b424f0ec1b2d6b01d4855f06c63d4e3c5dab2f2"
+      "sha256": "162511a64d0cc330912487e7aa042fc5a77f804d18cab88c99b4b4f7837b1158"
     },
     {
       "path": "src/components/auth/AuthBootstrapScreen.tsx",
