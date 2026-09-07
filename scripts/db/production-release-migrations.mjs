@@ -52,11 +52,11 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production is released through 20260903111914. The remaining forward-only
-// batch adds ingestion modes/RSS source instances and project story content.
+// Production is released through 20260903214029 (verified in run 34025599024).
+// The remaining forward-only migration adds project story content.
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
-  APPROVED_PENDING_VERSIONS.slice(0, -2),
+  APPROVED_PENDING_VERSIONS.slice(0, -1),
 );
-export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-2));
+export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-1));
 export const EXPECTED_POST_MIGRATION_COUNT = PRODUCTION_BASELINE_COUNT + APPROVED_PENDING_VERSIONS.length;
 export const EXPECTED_POST_MIGRATION_LATEST = APPROVED_PENDING_VERSIONS.at(-1);
