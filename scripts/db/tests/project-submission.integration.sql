@@ -80,6 +80,53 @@ BEGIN
     RAISE EXCEPTION 'AI-gated project save did not persist canonical media';
   END IF;
 
+  PERFORM * FROM public.save_ai_gated_project(
+    p_actor_id => v_user_id, p_project_id => v_project_id,
+    p_slug => 'project-gate-test', p_title => 'Project story',
+    p_description => '## Solution' || chr(10) || 'Detailed description',
+    p_progress => 'Built a working prototype',
+    p_pitch_video_url => 'https://youtu.be/pitch-test'
+  );
+  IF NOT EXISTS (SELECT 1 FROM public.projects WHERE id = v_project_id
+    AND description LIKE '## Solution%' AND progress = 'Built a working prototype'
+    AND pitch_video_url = 'https://youtu.be/pitch-test') THEN
+    RAISE EXCEPTION 'Project story was not persisted';
+  END IF;
+  -- Legacy clients must preserve fields they do not yet send.
+  PERFORM * FROM public.save_ai_gated_project(
+    p_actor_id => v_user_id, p_project_id => v_project_id,
+    p_slug => 'project-gate-test', p_title => 'Legacy edit'
+  );
+  IF NOT EXISTS (SELECT 1 FROM public.projects WHERE id = v_project_id
+    AND progress = 'Built a working prototype') THEN
+    RAISE EXCEPTION 'Legacy save erased project story';
+  END IF;
+  BEGIN
+    PERFORM * FROM public.save_ai_gated_project(
+      p_actor_id => v_user_id, p_project_id => v_project_id,
+      p_slug => 'project-gate-test', p_title => 'Should roll back',
+      p_description => repeat('x', 20001)
+    );
+    RAISE EXCEPTION 'Oversized description accepted';
+  EXCEPTION WHEN check_violation THEN NULL;
+  END;
+  IF NOT EXISTS (SELECT 1 FROM public.projects WHERE id = v_project_id AND title = 'Legacy edit') THEN
+    RAISE EXCEPTION 'Content constraint failure did not roll back the base save';
+  END IF;
+  PERFORM * FROM public.save_ai_gated_project(
+    p_actor_id => v_user_id, p_project_id => v_project_id,
+    p_slug => 'project-gate-test', p_title => 'Clear story',
+    p_description => '', p_progress => '', p_pitch_video_url => ''
+  );
+  IF EXISTS (SELECT 1 FROM public.projects WHERE id = v_project_id
+    AND (description IS NOT NULL OR progress IS NOT NULL OR pitch_video_url IS NOT NULL)) THEN
+    RAISE EXCEPTION 'Explicitly cleared story fields remain';
+  END IF;
+  IF has_function_privilege('authenticated', 'public.save_ai_gated_project(uuid,uuid,text,text,text,text,text,text,text,text,text[],text,text,text,text[],text[],text[],text,text,text)', 'EXECUTE')
+    OR has_function_privilege('anon', 'public.save_ai_gated_project(uuid,uuid,text,text,text,text,text,text,text,text,text[],text,text,text,text[],text[],text[],text,text,text)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'Project story RPC exposed outside the AI gate';
+  END IF;
+
   DELETE FROM public.project_media_uploads WHERE project_id = v_project_id;
   DELETE FROM public.projects WHERE id = v_project_id;
   DELETE FROM public.profiles WHERE id = v_user_id;

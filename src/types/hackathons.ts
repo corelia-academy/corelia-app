@@ -478,6 +478,9 @@ export interface ContestSubmission {
 export interface ContestSubmissionInsert {
   project_id?: string;
   title: string;
+  description?: string | null;
+  progress?: string | null;
+  pitch_video_url?: string | null;
   summary?: string | null;
   demo_url?: string | null;
   repo_url?: string | null;

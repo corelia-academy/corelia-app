@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { Package, ShieldAlert } from "lucide-react";
+import { ChevronDown, Package, Plus, ShieldAlert, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router";
+import { NavLink, useSearchParams } from "react-router";
 
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/projects/ProjectCardSkeleton";
@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { publicHackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
 import { publicProjectDirectoryQueryOptions } from "@/features/projects/projectQueries";
 import type { PublicProjectEntry, PublicProjectSort } from "@/lib/projects";
+import { projectHeartsQueryOptions } from "@/features/projects/projectSocialQueries";
+import { useAuth } from "@/stores/authStore";
 import { cn } from "@/lib/utils";
 import type { Contest, HackathonTaxonomyOption } from "@/types/hackathons";
 
@@ -37,11 +39,9 @@ function TaxonomyFilter({
   const activeOptions = options.filter((option) => option.active !== false);
   if (activeOptions.length === 0) return null;
   return (
-    <fieldset className="min-w-0">
-      <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-foreground-muted">
-        {label}
-      </legend>
-      <div className="flex flex-wrap gap-2">
+    <details className="relative min-w-0 rounded-lg border border-border bg-surface-base">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-3 text-sm font-medium">{label}{selected.length ? <span className="rounded-full bg-primary/10 px-2 text-primary">{selected.length}</span> : null}<ChevronDown className="size-4" /></summary>
+      <div className="relative z-10 flex max-h-72 flex-col gap-1 overflow-auto border-t border-border p-2 lg:absolute lg:top-full lg:mt-2 lg:w-72 lg:rounded-xl lg:border lg:bg-surface-base lg:shadow-lg">
         {activeOptions.map((option) => {
           const checked = selected.includes(option.id);
           return (
@@ -50,7 +50,7 @@ function TaxonomyFilter({
               type="button"
               aria-pressed={checked}
               className={cn(
-                "min-h-11 rounded-full border px-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                "min-h-11 rounded-md border px-3 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                 checked
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-border bg-surface-base text-foreground hover:bg-surface-raised",
@@ -66,7 +66,7 @@ function TaxonomyFilter({
           );
         })}
       </div>
-    </fieldset>
+    </details>
   );
 }
 
@@ -86,6 +86,7 @@ function winnerFirst(items: PublicProjectEntry[], contest: Contest | null): Publ
 
 export default function ProjectsPage() {
   const { t, i18n } = useTranslation("common");
+  const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const hackathonSlug = params.get("hackathon") ?? "";
@@ -97,20 +98,20 @@ export default function ProjectsPage() {
   const hackathonsQuery = useQuery(publicHackathonCatalogQueryOptions(locale));
   const hackathons = hackathonsQuery.data ?? [];
   const selectedHackathon = hackathons.find((item) => item.slug === hackathonSlug) ?? null;
-  const projectsQuery = useInfiniteQuery(
-    publicProjectDirectoryQueryOptions(locale, "all", sort, {
+  const directoryOptions = publicProjectDirectoryQueryOptions(locale, "all", sort, {
       hackathonId: selectedHackathon?.id ?? null,
       trackIds,
       sectorIds,
       techStackIds,
       winnerProjectIds: selectedHackathon?.winner_awards?.map((award) => award.project_id) ?? [],
-    }),
-  );
+    });
+  const projectsQuery = useInfiniteQuery({ ...directoryOptions, enabled: !hackathonSlug || Boolean(selectedHackathon) });
   const items = useMemo(
     () => winnerFirst(projectsQuery.data?.pages.flatMap((page) => page.items) ?? [], selectedHackathon),
     [projectsQuery.data?.pages, selectedHackathon],
   );
 
+  const hearts = useQuery(projectHeartsQueryOptions(user?.id, items.map(item => item.project.id)));
   const update = useCallback((key: string, value: string | string[]) => {
     const next = new URLSearchParams(params);
     const normalized = Array.isArray(value) ? value.join(",") : value;
@@ -124,16 +125,19 @@ export default function ProjectsPage() {
     setParams(next);
   }, [params, setParams]);
 
-  const error = projectsQuery.error instanceof Error ? projectsQuery.error.message : null;
+  const error = projectsQuery.isError || hackathonsQuery.isError ? t("projects.errorDescription") : hackathonSlug && hackathonsQuery.isSuccess && !selectedHackathon ? t("projects.errors.hackathonMissing") : null;
 
   return (
     <div className="container-app py-6 sm:py-8">
-      <header className="mb-6">
+      <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
+        <div>
         <div className="flex items-center gap-2">
           <Package className="size-5 text-primary" aria-hidden />
           <h1 className="text-xl font-semibold text-foreground sm:text-2xl">{t("projects.title")}</h1>
         </div>
         <p className="mt-1 text-sm text-foreground-muted">{t("projects.description")}</p>
+        </div>
+        <div className="flex gap-2"><Button variant="outline" render={<NavLink to="/account/projects" />} nativeButton={false}>{t("projects.editor.myProjects")}</Button><Button render={<NavLink to={hackathonSlug ? `/projects/new?hackathon=${encodeURIComponent(hackathonSlug)}` : "/projects/new"} />} nativeButton={false}><Plus className="size-4" />{t("projects.form.create")}</Button></div>
       </header>
 
       <section className="space-y-5 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card">
@@ -155,22 +159,23 @@ export default function ProjectsPage() {
         </div>
 
         {selectedHackathon ? (
-          <div className="grid gap-5 border-t border-border-subtle pt-5 lg:grid-cols-3">
+          <div className="grid gap-3 border-t border-border-subtle pt-4 sm:grid-cols-3">
             <TaxonomyFilter label={t("projects.filters.tracks")} options={selectedHackathon.tracks ?? []} selected={trackIds} onChange={(ids) => update("tracks", ids)} />
             <TaxonomyFilter label={t("projects.filters.sectors")} options={selectedHackathon.sectors ?? []} selected={sectorIds} onChange={(ids) => update("sectors", ids)} />
             <TaxonomyFilter label={t("projects.filters.techStacks")} options={selectedHackathon.tech_stacks ?? []} selected={techStackIds} onChange={(ids) => update("tech", ids)} />
           </div>
         ) : null}
+        {(hackathonSlug || trackIds.length || sectorIds.length || techStackIds.length || sort !== "newest") ? <Button type="button" variant="ghost" size="sm" onClick={() => setParams(new URLSearchParams())}><X className="size-4" />{t("projects.editor.clearFilters")}</Button> : null}
       </section>
 
       <div className="mt-6">
-        {projectsQuery.isPending ? (
+        {projectsQuery.isPending && !error ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div>
         ) : error && items.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-14 text-center" role="alert">
             <ShieldAlert className="size-8 text-foreground-subtle" aria-hidden />
             <p className="text-sm text-foreground-muted">{error}</p>
-            <Button type="button" onClick={() => void projectsQuery.refetch()}>{t("projects.retry")}</Button>
+            <Button type="button" onClick={() => { void projectsQuery.refetch(); void hackathonsQuery.refetch(); }}>{t("projects.retry")}</Button>
           </div>
         ) : items.length === 0 ? (
           <div className="rounded-2xl border border-border-subtle bg-surface-base px-4 py-14 text-center shadow-card">
@@ -181,7 +186,7 @@ export default function ProjectsPage() {
         ) : (
           <>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {items.map(({ project, owner }) => <ProjectCard key={project.id} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} />)}
+              {items.map(({ project, owner }) => <ProjectCard key={project.id} hearted={hearts.data?.has(project.id) ?? false} project={project} taxonomy={hackathons.find(item => item.id === project.source_id)} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} />)}
             </div>
             {projectsQuery.hasNextPage ? (
               <div className="mt-6 flex justify-center">

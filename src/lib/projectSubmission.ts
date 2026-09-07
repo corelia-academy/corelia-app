@@ -7,6 +7,9 @@ export type ProjectSaveInput = {
   slug: string;
   title: string;
   summary?: string | null;
+  description?: string | null;
+  progress?: string | null;
+  pitch_video_url?: string | null;
   demo_url?: string | null;
   repo_url?: string | null;
   slide_url?: string | null;

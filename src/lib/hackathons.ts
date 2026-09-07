@@ -1246,7 +1246,8 @@ export async function getMyContestSubmission(
     .select("*")
     .eq("id", id)
     .maybeSingle();
-  if (error || !data) return null;
+  if (error) throw new Error(error.message);
+  if (!data) return null;
   const d = data.document as Record<string, unknown>;
   const hackathonId = getHackathonIdFromRow(data as unknown as Record<string, unknown>);
   if (!hackathonId) return null;
@@ -1278,6 +1279,11 @@ export async function upsertContestSubmission(
   }
 
   const existing = await getMyContestSubmission(contestId, user);
+  // A new form owns its upload/project ID. Never silently swap that ID for an
+  // existing submission: doing so overwrites content and misroutes team invites.
+  if (existing?.project_id && input.project_id && existing.project_id !== input.project_id) {
+    throw new Error("conflict:project_already_exists");
+  }
   const trackIds = sanitizeStringList(input.track_ids);
   const sectorIds = sanitizeStringList(input.sector_ids);
   const techStackIds = sanitizeStringList(input.tech_stack_ids);
@@ -1291,6 +1297,9 @@ export async function upsertContestSubmission(
     slug,
     title: input.title,
     summary: input.summary,
+    description: input.description,
+    progress: input.progress,
+    pitch_video_url: input.pitch_video_url,
     demo_url: input.demo_url,
     repo_url: input.repo_url,
     slide_url: input.slide_url,
