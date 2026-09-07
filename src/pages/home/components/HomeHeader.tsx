@@ -31,10 +31,10 @@ export function HomeHeader({
           </div>
         ) : (
           <>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            <h1 className="text-heading-large font-display text-foreground">
               {t("home.sections.greeting", { name: firstName })}
             </h1>
-            <p className="text-sm leading-relaxed text-foreground-muted">
+            <p className="text-body-medium font-body text-foreground-muted">
               {t("home.sections.greetingSubtitle")}
             </p>
           </>

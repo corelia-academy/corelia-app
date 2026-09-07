@@ -127,8 +127,10 @@ export function CodeBlock({ language, code }: Props) {
       </div>
 
       {/* Code body */}
-      <div className="overflow-x-auto bg-surface-base font-mono">
+      <div className="bg-surface-base font-mono">
         <SyntaxHighlighter
+          className="scrollbar-design"
+          tabIndex={0}
           language={language || "text"}
           style={isDark ? oneDark : oneLight}
           customStyle={{

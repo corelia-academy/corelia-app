@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2, UserPlus, X } from "lucide-react";
-import { useMemo } from "react";
+import { Loader2, Mail, Trash2, UserPlus, X } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -14,6 +14,7 @@ import {
   listProjectTeamCandidates,
   removeProjectCollaborator,
   revokeProjectCollaborationInvite,
+  sendProjectCollaborationInviteEmail,
 } from "@/lib/projectCollaboration";
 
 type Props = {
@@ -78,6 +79,39 @@ export function ProjectTeamEditor({
     onError: (error) => toast.error(error instanceof Error ? error.message : t("projects.team.actionFailed")),
   });
 
+  const [resendingInviteId, setResendingInviteId] = useState<string | null>(null);
+
+  const resendInviteMutation = useMutation({
+    mutationFn: async (inviteId: string) => {
+      setResendingInviteId(inviteId);
+      return await sendProjectCollaborationInviteEmail({ inviteId });
+    },
+    onSuccess: (res) => {
+      if (res.idempotent_replay) {
+        toast.info(t("projects.team.emailAlreadySent"));
+      } else if (res.email_sent) {
+        toast.success(t("projects.team.emailSent"));
+      } else {
+        toast.info(t("projects.team.emailSkipped"));
+      }
+    },
+    onError: (error) => {
+      const msg = error instanceof Error ? error.message : "";
+      if (msg.includes("rate_limited")) {
+        toast.error(t("projects.team.emailRateLimited"));
+      } else if (msg.includes("rejected") || msg.includes("permanent")) {
+        toast.error(t("projects.team.emailPermanentError"));
+      } else if (msg.includes("reconciliation") || msg.includes("indeterminate")) {
+        toast.error(t("projects.team.emailIndeterminateError"));
+      } else {
+        toast.error(t("projects.team.emailRetryableError"));
+      }
+    },
+    onSettled: () => {
+      setResendingInviteId(null);
+    },
+  });
+
   const team = teamQuery.data;
   const pending = team?.invites.filter((invite) => invite.status === "pending") ?? [];
 
@@ -86,12 +120,16 @@ export function ProjectTeamEditor({
       <div>
         <legend className="text-sm font-medium">{t("projects.team.title")}</legend>
         <p className="mt-1 text-xs text-foreground-muted">{t("projects.team.hint")}</p>
+        {sourceType === "hackathon" ? (
+          <p className="mt-1 text-xs text-foreground-muted">{t("projects.team.hackathonEligibleHint")}</p>
+        ) : null}
       </div>
       <ProfileCombobox
         title={t("projects.team.pickTitle")}
-        description={t("projects.team.pickDescription")}
+        description={sourceType === "hackathon" ? t("projects.team.hackathonPickDescription") : t("projects.team.pickDescription")}
         options={options}
         placeholder={t("projects.team.placeholder")}
+        searchPlaceholder={t("projects.team.searchPlaceholder")}
         emptyLabel={candidatesQuery.isPending ? t("projects.team.loading") : t("projects.team.empty")}
         value={persisted ? "" : selectedIds}
         multiple={!persisted}
@@ -114,9 +152,30 @@ export function ProjectTeamEditor({
           <ul className="mt-2 space-y-2">
             {pending.map((invite) => {
               const profile = team?.profiles[invite.invitee_user_id];
+              const isResending = resendInviteMutation.isPending && resendingInviteId === invite.id;
               return <li key={invite.id} className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 text-sm">
                 <span>{profile?.full_name || profile?.username || invite.invitee_user_id}</span>
-                <Button type="button" size="sm" variant="ghost" disabled={revokeMutation.isPending} onClick={() => revokeMutation.mutate(invite.id)}><X className="size-4" />{t("projects.team.revoke")}</Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={isResending}
+                    onClick={() => resendInviteMutation.mutate(invite.id)}
+                  >
+                    {isResending ? <Loader2 className="size-4 animate-spin" /> : <Mail className="size-4" />}
+                    {t("projects.team.resendEmail")}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    disabled={revokeMutation.isPending}
+                    onClick={() => revokeMutation.mutate(invite.id)}
+                  >
+                    <X className="size-4" />{t("projects.team.revoke")}
+                  </Button>
+                </div>
               </li>;
             })}
           </ul>

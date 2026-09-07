@@ -47,7 +47,7 @@ export function EmailUnsubscribePage() {
         )}
         {status === "success" && (
           <>
-            <h1 className="text-xl font-semibold text-foreground">
+            <h1 className="text-heading-medium font-display text-foreground">
               {t("unsubscribe.successTitle")}
             </h1>
             <p className="mt-2 text-sm text-foreground-muted">
@@ -63,7 +63,7 @@ export function EmailUnsubscribePage() {
         )}
         {status === "error" && (
           <>
-            <h1 className="text-xl font-semibold text-foreground">
+            <h1 className="text-heading-medium font-display text-foreground">
               {t("unsubscribe.errorTitle")}
             </h1>
             <p className="mt-2 text-sm text-foreground-muted">

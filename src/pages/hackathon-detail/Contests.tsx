@@ -72,7 +72,7 @@ export default function Contests() {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Trophy className="size-6 text-primary" aria-hidden />
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+          <h1 className="text-display-small font-display text-foreground">
               {t("catalog.heroTitle")}
             </h1>
           </div>
@@ -193,7 +193,7 @@ export default function Contests() {
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-primary"><span className="size-1.5 rounded-full bg-current" />{contestListStatusLabel(contest.status, translate, "catalog")}</span>
                       <span className="text-foreground-muted">{contestListLocationLabel(contest.mode ?? contest.location, translate, "catalog")}</span>
                     </div>
-                    <h2 className="mt-4 text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl">{contest.title}</h2>
+                    <h2 className="mt-4 text-display-small font-display text-foreground">{contest.title}</h2>
                     {contest.short_description || contest.tagline ? <p className="mt-3 line-clamp-3 text-sm leading-6 text-foreground-muted">{contest.short_description || contest.tagline}</p> : null}
                     <div className="my-5 flex flex-wrap gap-x-8 gap-y-4">
                       {contest.prize_pool?.amount && Number(contest.prize_pool.amount) !== 0 ? <div><p className="text-xs text-foreground-muted">{t("public.prizes.total")}</p><p className="mt-1 text-xl font-semibold tracking-tight text-foreground">{formatPrizeAmount(contest.prize_pool.amount, locale)} <span className="text-xs font-medium text-foreground-muted">{contest.prize_pool.currency}</span></p></div> : null}

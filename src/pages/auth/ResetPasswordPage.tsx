@@ -85,7 +85,7 @@ export default function ResetPasswordPage() {
 
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
           <div>
-            <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
+            <h1 className="text-heading-medium font-display text-foreground">
               {t("resetPassword.title")}
             </h1>
             <p className="mt-1 text-sm text-foreground-muted">

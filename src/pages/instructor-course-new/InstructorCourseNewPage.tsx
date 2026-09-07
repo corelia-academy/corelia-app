@@ -190,7 +190,7 @@ export default function InstructorCourseNewPage() {
           <PageSectionCard className="p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <h2 className="text-lg font-medium text-foreground">
+                <h2 className="text-heading-medium font-display text-foreground">
                   {t("courseNew.nav.generalInfo")}
                 </h2>
                 <p className="mt-2 text-sm text-foreground-muted">

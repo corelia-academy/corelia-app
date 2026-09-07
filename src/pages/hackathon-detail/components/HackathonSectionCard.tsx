@@ -42,7 +42,7 @@ export function HackathonSectionCard({
                 {eyebrow}
               </div>
             ) : null}
-            <h2 className="relative pl-3 text-lg font-semibold tracking-tight text-foreground before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[3px] before:rounded-full before:bg-primary">
+            <h2 className="relative pl-3 text-heading-medium font-display text-foreground before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[3px] before:rounded-full before:bg-primary">
               {title}
             </h2>
             {description ? (

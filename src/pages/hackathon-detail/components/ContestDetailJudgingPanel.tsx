@@ -50,7 +50,7 @@ export function ContestDetailJudgingPanel({
         <div className="flex items-center gap-3">
           <Gavel className="size-5 text-primary" aria-hidden />
           <div>
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            <h2 className="text-heading-medium font-display text-foreground">
               {translate("workspace.manage.judgingTitle")}
             </h2>
             <p className="mt-1 text-sm text-foreground-muted">

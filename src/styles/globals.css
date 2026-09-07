@@ -1,12 +1,79 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+
+/* Corelia typography fonts — only the weights used by the Figma type scale. */
+@import "@fontsource/akt/400.css";
+@import "@fontsource/akt/500.css";
+@import "@fontsource/akt/600.css";
+@import "@fontsource/be-vietnam-pro/400.css";
+@import "@fontsource/be-vietnam-pro/400-italic.css";
+@import "@fontsource/be-vietnam-pro/500.css";
+
+/* Keep Google Sans for the existing certificate-rendering flow. */
 @import "@fontsource-variable/google-sans";
 @import "@fontsource-variable/jetbrains-mono";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Figma Color 🟢 (node 12:3) → Tailwind color tokens */
+  --color-neutral-50: var(--neutral-50);
+  --color-neutral-100: var(--neutral-100);
+  --color-neutral-200: var(--neutral-200);
+  --color-neutral-300: var(--neutral-300);
+  --color-neutral-400: var(--neutral-400);
+  --color-neutral-900: var(--neutral-900);
+  --color-blue-50: var(--blue-50);
+  --color-blue-100: var(--blue-100);
+  --color-blue-200: var(--blue-200);
+  --color-blue-300: var(--blue-300);
+  --color-blue-400: var(--blue-400);
+  --color-blue-700: var(--blue-700);
+  --color-blue-900: var(--blue-900);
+  --color-error-50: var(--error-50);
+  --color-error-100: var(--error-100);
+  --color-error-300: var(--error-300);
+  --color-error-500: var(--error-500);
+  --color-error-700: var(--error-700);
+  --color-error-900: var(--error-900);
+  --color-warning-50: var(--warning-50);
+  --color-warning-100: var(--warning-100);
+  --color-warning-300: var(--warning-300);
+  --color-warning-500: var(--warning-500);
+  --color-warning-700: var(--warning-700);
+  --color-warning-900: var(--warning-900);
+  --color-success-50: var(--success-50);
+  --color-success-100: var(--success-100);
+  --color-success-300: var(--success-300);
+  --color-success-500: var(--success-500);
+  --color-success-700: var(--success-700);
+  --color-success-900: var(--success-900);
+  --color-accent-yellow-50: var(--accent-yellow-50);
+  --color-accent-yellow-100: var(--accent-yellow-100);
+  --color-accent-yellow-300: var(--accent-yellow-300);
+  --color-accent-yellow-500: var(--accent-yellow-500);
+  --color-accent-yellow-700: var(--accent-yellow-700);
+  --color-accent-yellow-900: var(--accent-yellow-900);
+  --color-accent-teal-50: var(--accent-teal-50);
+  --color-accent-teal-100: var(--accent-teal-100);
+  --color-accent-teal-300: var(--accent-teal-300);
+  --color-accent-teal-500: var(--accent-teal-500);
+  --color-accent-teal-700: var(--accent-teal-700);
+  --color-accent-teal-900: var(--accent-teal-900);
+  --color-accent-purple-50: var(--accent-purple-50);
+  --color-accent-purple-100: var(--accent-purple-100);
+  --color-accent-purple-300: var(--accent-purple-300);
+  --color-accent-purple-500: var(--accent-purple-500);
+  --color-accent-purple-700: var(--accent-purple-700);
+  --color-accent-purple-900: var(--accent-purple-900);
+  --color-accent-sky-50: var(--accent-sky-50);
+  --color-accent-sky-100: var(--accent-sky-100);
+  --color-accent-sky-300: var(--accent-sky-300);
+  --color-accent-sky-500: var(--accent-sky-500);
+  --color-accent-sky-700: var(--accent-sky-700);
+  --color-accent-sky-900: var(--accent-sky-900);
+
   --color-foreground: var(--foreground);
   --color-foreground-muted: var(--foreground-muted);
   --color-foreground-subtle: var(--foreground-subtle);
@@ -42,13 +109,25 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: 1rem; /* 16px — premium card radius */
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /*
+   * Figma token -> Tailwind v4/CSS variable mapping:
+   * spacing: none=0, xxs=2, xs=4, sm=6, md=8, 2md=10, lg=12,
+   *          xl=16, 2xl=20, 3xl=24, 4xl=28, 5xl=32, 6xl=40,
+   *          7xl=48, 8xl=64, 9xl=80, 10xl=96, 11xl=128,
+   *          12xl=160, 13xl=192, 14xl=224, 15xl=256px.
+   * radius: sm=6, md=8, lg=10, xl=12, 2xl=16, 3xl=20,
+   *         full=9999px.
+   * Figma's 8px/10px spacing rows were normalized to spacing-md/2md.
+   */
+  /* Corelia DS v2 radius tokens */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.25rem;
+  --radius-full: 9999px;
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -69,13 +148,307 @@
   --color-brand-accent: var(--brand-accent);
 
   /* Shadows */
-  --shadow-card: var(--elevation-card);
+  /* --shadow-card: var(--elevation-card);
   --font-sans:
     "Google Sans Variable", ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
     "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
     "Noto Color Emoji", sans-serif;
   --font-mono: "JetBrains Mono Variable", monospace;
+  */
+  --shadow-card: var(--elevation-card);
+  --font-display: "Akt", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-cta: "Akt", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-body);
+  --font-mono: "JetBrains Mono Variable", monospace;
+
+  /* Figma typography scale — size, line-height, letter-spacing and weight. */
+  --text-display-large: 3rem;
+  --text-display-large--line-height: 1.15;
+  --text-display-large--letter-spacing: -0.01em;
+  --text-display-large--font-weight: 500;
+  --text-display-medium: 2.5rem;
+  --text-display-medium--line-height: 1.15;
+  --text-display-medium--letter-spacing: -0.01em;
+  --text-display-medium--font-weight: 400;
+  --text-display-small: 2rem;
+  --text-display-small--line-height: 1.15;
+  --text-display-small--letter-spacing: -0.01em;
+  --text-display-small--font-weight: 400;
+
+  --text-heading-large: 1.75rem;
+  --text-heading-large--line-height: 1.2;
+  --text-heading-large--letter-spacing: 0;
+  --text-heading-large--font-weight: 500;
+  --text-heading-medium: 1.125rem;
+  --text-heading-medium--line-height: 1.2;
+  --text-heading-medium--letter-spacing: 0;
+  --text-heading-medium--font-weight: 500;
+  --text-heading-small: 1rem;
+  --text-heading-small--line-height: 1.2;
+  --text-heading-small--letter-spacing: 0.01em;
+  --text-heading-small--font-weight: 500;
+
+  --text-title-large: 1rem;
+  --text-title-large--line-height: 1.5rem;
+  --text-title-large--letter-spacing: -0.02em;
+  --text-title-large--font-weight: 500;
+  --text-title-medium: 0.875rem;
+  --text-title-medium--line-height: 1.25rem;
+  --text-title-medium--letter-spacing: -0.01em;
+  --text-title-medium--font-weight: 500;
+  --text-title-small: 0.75rem;
+  --text-title-small--line-height: 1rem;
+  --text-title-small--letter-spacing: -0.01em;
+  --text-title-small--font-weight: 500;
+  --text-title-xsmall: 0.625rem;
+  --text-title-xsmall--line-height: 1rem;
+  --text-title-xsmall--letter-spacing: 0;
+  --text-title-xsmall--font-weight: 500;
+
+  --text-body-large: 1rem;
+  --text-body-large--line-height: 1.4;
+  --text-body-large--letter-spacing: 0.02em;
+  --text-body-large--font-weight: 400;
+  --text-body-medium: 0.875rem;
+  --text-body-medium--line-height: 1.25;
+  --text-body-medium--letter-spacing: 0.02em;
+  --text-body-medium--font-weight: 400;
+  --text-body-small: 0.75rem;
+  --text-body-small--line-height: 1.2;
+  --text-body-small--letter-spacing: 0.02em;
+  --text-body-small--font-weight: 400;
+  --text-body-xsmall: 0.625rem;
+  --text-body-xsmall--line-height: 1.2;
+  --text-body-xsmall--letter-spacing: 0.02em;
+  --text-body-xsmall--font-weight: 400;
+
+  --text-cta-large: 1rem;
+  --text-cta-large--line-height: 1.5rem;
+  --text-cta-large--letter-spacing: 0.01em;
+  --text-cta-large--font-weight: 600;
+  --text-cta-medium: 0.875rem;
+  --text-cta-medium--line-height: 1.25rem;
+  --text-cta-medium--letter-spacing: 0.01em;
+  --text-cta-medium--font-weight: 600;
+  --text-cta-small: 0.75rem;
+  --text-cta-small--line-height: 1rem;
+  --text-cta-small--letter-spacing: 0.01em;
+  --text-cta-small--font-weight: 500;
+  --text-cta-link: 0.875rem;
+  --text-cta-link--line-height: 1.25;
+  --text-cta-link--letter-spacing: 0.01em;
+  --text-cta-link--font-weight: 600;
+
+  --text-label-large: 1rem;
+  --text-label-large--line-height: 1;
+  --text-label-large--letter-spacing: 0;
+  --text-label-large--font-weight: 500;
+  --text-label-medium: 0.875rem;
+  --text-label-medium--line-height: 1;
+  --text-label-medium--letter-spacing: -0.005em;
+  --text-label-medium--font-weight: 500;
+  --text-label-small: 0.75rem;
+  --text-label-small--line-height: 1;
+  --text-label-small--letter-spacing: 0;
+  --text-label-small--font-weight: 500;
+  --text-label-xsmall: 0.625rem;
+  --text-label-xsmall--line-height: 1;
+  --text-label-xsmall--letter-spacing: 0;
+  --text-label-xsmall--font-weight: 500;
+
+  --text-note-regular: 0.875rem;
+  --text-note-regular--line-height: 1.25;
+  --text-note-regular--letter-spacing: 0.02em;
+  --text-note-regular--font-weight: 400;
+  --text-note-medium: 0.875rem;
+  --text-note-medium--line-height: 1.25;
+  --text-note-medium--letter-spacing: 0.02em;
+  --text-note-medium--font-weight: 500;
+  --text-note-italic: 0.875rem;
+  --text-note-italic--line-height: 1.25;
+  --text-note-italic--letter-spacing: 0.02em;
+  --text-note-italic--font-weight: 400;
+}
+
+/* Corelia spacing tokens — isolated from Tailwind's default spacing namespace. */
+@theme {
+  --corelia-spacing-none: 0rem;
+  --corelia-spacing-xxs: 0.125rem;
+  --corelia-spacing-xs: 0.25rem;
+  --corelia-spacing-sm: 0.375rem;
+  --corelia-spacing-md: 0.5rem;
+  --corelia-spacing-2md: 0.625rem;
+  --corelia-spacing-lg: 0.75rem;
+  --corelia-spacing-xl: 1rem;
+  --corelia-spacing-2xl: 1.25rem;
+  --corelia-spacing-3xl: 1.5rem;
+  --corelia-spacing-4xl: 1.75rem;
+  --corelia-spacing-5xl: 2rem;
+  --corelia-spacing-6xl: 2.5rem;
+  --corelia-spacing-7xl: 3rem;
+  --corelia-spacing-8xl: 4rem;
+  --corelia-spacing-9xl: 5rem;
+  --corelia-spacing-10xl: 6rem;
+  --corelia-spacing-11xl: 8rem;
+  --corelia-spacing-12xl: 10rem;
+  --corelia-spacing-13xl: 12rem;
+  --corelia-spacing-14xl: 14rem;
+  --corelia-spacing-15xl: 16rem;
+}
+
+/* Corelia spacing utilities. Tailwind variants such as sm:, hover:, and data-* remain supported. */
+@utility p-* {
+  padding: --value(--corelia-spacing-*);
+}
+
+@utility px-* {
+  padding-inline: --value(--corelia-spacing-*);
+}
+
+@utility py-* {
+  padding-block: --value(--corelia-spacing-*);
+}
+
+@utility pt-* {
+  padding-top: --value(--corelia-spacing-*);
+}
+
+@utility pr-* {
+  padding-right: --value(--corelia-spacing-*);
+}
+
+@utility pb-* {
+  padding-bottom: --value(--corelia-spacing-*);
+}
+
+@utility pl-* {
+  padding-left: --value(--corelia-spacing-*);
+}
+
+@utility m-* {
+  margin: --value(--corelia-spacing-*);
+}
+
+@utility mx-* {
+  margin-inline: --value(--corelia-spacing-*);
+}
+
+@utility my-* {
+  margin-block: --value(--corelia-spacing-*);
+}
+
+@utility mt-* {
+  margin-top: --value(--corelia-spacing-*);
+}
+
+@utility mr-* {
+  margin-right: --value(--corelia-spacing-*);
+}
+
+@utility mb-* {
+  margin-bottom: --value(--corelia-spacing-*);
+}
+
+@utility ml-* {
+  margin-left: --value(--corelia-spacing-*);
+}
+
+@utility -m-* {
+  margin: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -mx-* {
+  margin-inline: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -my-* {
+  margin-block: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -mt-* {
+  margin-top: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -mr-* {
+  margin-right: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -mb-* {
+  margin-bottom: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -ml-* {
+  margin-left: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility gap-* {
+  gap: --value(--corelia-spacing-*);
+}
+
+@utility gap-x-* {
+  column-gap: --value(--corelia-spacing-*);
+}
+
+@utility gap-y-* {
+  row-gap: --value(--corelia-spacing-*);
+}
+
+@utility inset-* {
+  inset: --value(--corelia-spacing-*);
+}
+
+@utility inset-x-* {
+  inset-inline: --value(--corelia-spacing-*);
+}
+
+@utility inset-y-* {
+  inset-block: --value(--corelia-spacing-*);
+}
+
+@utility top-* {
+  top: --value(--corelia-spacing-*);
+}
+
+@utility right-* {
+  right: --value(--corelia-spacing-*);
+}
+
+@utility bottom-* {
+  bottom: --value(--corelia-spacing-*);
+}
+
+@utility left-* {
+  left: --value(--corelia-spacing-*);
+}
+
+@utility -inset-* {
+  inset: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -inset-x-* {
+  inset-inline: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -inset-y-* {
+  inset-block: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -top-* {
+  top: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -right-* {
+  right: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -bottom-* {
+  bottom: calc(--value(--corelia-spacing-*) * -1);
+}
+
+@utility -left-* {
+  left: calc(--value(--corelia-spacing-*) * -1);
 }
 
 :root {
@@ -83,59 +456,130 @@
   --content-px: clamp(1rem, 3vw, 2rem);
   --app-max-width: 80rem;
 
+  /*
+     Issue #380 — Figma Color 🟢 (node 12:3) → CSS token mapping.
+     Primitive values are defined once here; semantic aliases below consume them.
+  */
+  --neutral-50: #fafbfb;
+  --neutral-100: #f5f6f9;
+  --neutral-200: #dee2ec;
+  --neutral-300: #cbd0df;
+  --neutral-400: #8f99b5;
+  --neutral-900: #060b14;
+
+  --blue-50: #eef5ff;
+  --blue-100: #dae9ff;
+  --blue-200: #bddaff;
+  --blue-300: #90c3ff;
+  --blue-400: #5ba3ff;
+  --blue-700: #1759f1;
+  --blue-900: #1a378e;
+
+  --error-50: #fef3f2;
+  --error-100: #fed9d5;
+  --error-300: #fda59b;
+  --error-500: #eb5146;
+  --error-700: #be211c;
+  --error-900: #8d0e0e;
+
+  --warning-50: #fffae7;
+  --warning-100: #ffe0a2;
+  --warning-300: #ffc465;
+  --warning-500: #f08d14;
+  --warning-700: #cc6f13;
+  --warning-900: #8b3603;
+
+  --success-50: #e0ffeb;
+  --success-100: #9ff9c1;
+  --success-300: #4be18a;
+  --success-500: #13c05d;
+  --success-700: #079047;
+  --success-900: #036034;
+
+  --accent-yellow-50: #fff7e0;
+  --accent-yellow-100: #fae69e;
+  --accent-yellow-300: #f4cc38;
+  --accent-yellow-500: #f5c000;
+  --accent-yellow-700: #d6a800;
+  --accent-yellow-900: #947400;
+
+  --accent-teal-50: #e9fdfb;
+  --accent-teal-100: #a9f8ef;
+  --accent-teal-300: #71f3e4;
+  --accent-teal-500: #12d9c2;
+  --accent-teal-700: #0c9787;
+  --accent-teal-900: #097165;
+
+  --accent-purple-50: #f8f2fe;
+  --accent-purple-100: #e8d5fe;
+  --accent-purple-300: #c99bfd;
+  --accent-purple-500: #9346eb;
+  --accent-purple-700: #681cbe;
+  --accent-purple-900: #490e8d;
+
+  --accent-sky-50: #e0f6ff;
+  --accent-sky-100: #9fdff9;
+  --accent-sky-300: #42baea;
+  --accent-sky-500: #00b7ff;
+  --accent-sky-700: #006c97;
+  --accent-sky-900: #004763;
+
+  --text-primary-2: #121926;
+  --text-secondary: #4b5565;
+
   /* ==========================================
      LIGHT MODE: Material You (Google) — sáng, đơn giản, rực rỡ có kiểm soát
      ========================================== */
 
   /* ── Background & Surfaces ── */
   /* Nền trắng gần như tuyệt đối, hơi ánh xanh mát kiểu Google */
-  --background: oklch(0.99 0.003 250);
+  --background: var(--neutral-50);
   /* Chữ xám đậm trung tính kiểu Google (#202124) */
-  --foreground: oklch(0.22 0.006 260);
-  --foreground-muted: oklch(0.48 0.012 260);
-  --foreground-subtle: oklch(0.66 0.01 260);
+  --foreground: var(--text-primary-2);
+  --foreground-muted: var(--text-secondary);
+  --foreground-subtle: var(--neutral-400);
 
   /* Thẻ Card trắng thuần */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.006 260);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.006 260);
+  --card: var(--neutral-50);
+  --card-foreground: var(--text-primary-2);
+  --popover: var(--neutral-50);
+  --popover-foreground: var(--text-primary-2);
 
   /* ── Brand Colors (Google Blue) ── */
-  --primary: oklch(0.58 0.19 255); /* Google Blue ≈ #4285F4 */
-  --primary-foreground: oklch(1 0 0);
-  --primary-muted: color-mix(in oklch, var(--primary) 10%, transparent);
-  --primary-container: oklch(0.93 0.045 255);
-  --on-primary-container: oklch(0.32 0.15 255);
+  --primary: var(--blue-700);
+  --primary-foreground: var(--neutral-50);
+  --primary-muted: var(--blue-100);
+  --primary-container: var(--blue-100);
+  --on-primary-container: var(--blue-900);
 
   /* ── Secondary / Muted (Xám nhạt kiểu Google buttons) ── */
-  --secondary: oklch(0.96 0.004 260);
-  --secondary-foreground: oklch(0.28 0.01 260);
-  --muted: oklch(0.96 0.004 260);
-  --muted-foreground: oklch(0.5 0.012 260);
-  --accent: oklch(0.94 0.035 255);
-  --accent-foreground: oklch(0.32 0.15 255);
-  --accent-muted: color-mix(in oklch, var(--accent) 15%, transparent);
+  --secondary: var(--neutral-100);
+  --secondary-foreground: var(--text-primary-2);
+  --muted: var(--neutral-100);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--blue-100);
+  --accent-foreground: var(--blue-900);
+  --accent-muted: var(--blue-50);
 
   /* ── Semantic Colors (Bộ màu logo Google) ── */
-  --destructive: oklch(0.63 0.22 25); /* Google Red ≈ #EA4335 */
-  --destructive-foreground: oklch(1 0 0);
-  --destructive-muted: color-mix(in oklch, var(--destructive) 10%, transparent);
+  --destructive: var(--error-500);
+  --destructive-foreground: var(--neutral-50);
+  --destructive-muted: var(--error-50);
 
-  --success: oklch(0.64 0.16 145); /* Google Green ≈ #34A853 */
-  --success-foreground: oklch(1 0 0);
-  --success-muted: color-mix(in oklch, var(--success) 10%, transparent);
+  --success: var(--success-500);
+  --success-foreground: var(--neutral-50);
+  --success-muted: var(--success-50);
 
-  --warning: oklch(0.78 0.16 85); /* Google Yellow ≈ #FBBC05 */
-  --warning-foreground: oklch(0.25 0.02 260);
-  --warning-muted: oklch(0.96 0.05 90); /* Nền banner vàng nhạt */
+  --warning: var(--warning-500);
+  --warning-foreground: var(--neutral-900);
+  --warning-muted: var(--warning-50);
 
   /* ── Borders & Inputs ── */
-  --border: oklch(0.89 0.004 260); /* Viền xám nhạt kiểu Google (#dadce0) */
-  --border-subtle: oklch(0.93 0.003 260);
-  --border-strong: oklch(0.76 0.006 260);
-  --input: oklch(0.89 0.004 260);
-  --ring: oklch(0.58 0.19 255);
+  --border: var(--neutral-200);
+  --border-subtle: var(--neutral-100);
+  --border-strong: var(--neutral-400);
+  --input: var(--neutral-400);
+  --ring: var(--blue-700);
 
   /* ── Shadows (rất nhẹ, đúng chất Material) ── */
   --elevation-1: 0 1px 2px 0 oklch(0.22 0.02 260 / 0.05);
@@ -146,23 +590,24 @@
   --elevation-card: 0 8px 24px oklch(0.2 0.02 260 / 0.04);
 
   /* ── Brand ── */
-  --brand-navy: oklch(0.2 0.03 255);
-  --brand-accent: oklch(0.58 0.19 255); /* Google Blue */
+  --brand-navy: var(--neutral-900);
+  --brand-accent: var(--blue-700);
 
   /* ── Sidebar ── */
-  --sidebar: oklch(0.98 0.003 260); /* ≈ #f8f9fa */
-  --sidebar-foreground: oklch(0.22 0.006 260);
-  --sidebar-primary: oklch(0.58 0.19 255);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.94 0.035 255);
-  --sidebar-accent-foreground: oklch(0.32 0.15 255);
-  --sidebar-border: oklch(0.89 0.004 260);
-  --sidebar-ring: oklch(0.58 0.19 255);
+  --sidebar: var(--neutral-50);
+  --sidebar-foreground: var(--text-primary-2);
+  --sidebar-primary: var(--blue-700);
+  --sidebar-primary-foreground: var(--neutral-50);
+  --sidebar-accent: var(--blue-100);
+  --sidebar-accent-foreground: var(--blue-900);
+  --sidebar-border: var(--neutral-200);
+  --sidebar-ring: var(--blue-700);
 
   /* ── Corelia DS v2 surfaces ── */
   --surface-base: var(--card);
-  --surface-raised: oklch(0.98 0.003 260);
-  --surface-overlay: oklch(0.96 0.004 260);
+  --surface-raised: var(--neutral-50);
+  /* --surface-overlay: var(--neutral-100); */
+  --surface-overlay: var(--blue-50);
   --surface-float: var(--popover);
 }
 
@@ -174,51 +619,51 @@
   --app-max-width: 80rem;
 
   /* ── Background & Surfaces ── */
-  --background: oklch(0.19 0.006 260); /* ≈ #202124 kiểu Google Dark */
-  --foreground: oklch(0.92 0.004 260);
-  --foreground-muted: oklch(0.68 0.008 260);
-  --foreground-subtle: oklch(0.52 0.008 260);
+  --background: var(--neutral-900);
+  --foreground: var(--neutral-50);
+  --foreground-muted: var(--neutral-300);
+  --foreground-subtle: var(--neutral-400);
 
-  --card: oklch(0.23 0.007 260); /* Card sáng hơn nền một chút để tạo độ nổi */
-  --card-foreground: oklch(0.92 0.004 260);
-  --popover: oklch(0.23 0.007 260);
-  --popover-foreground: oklch(0.92 0.004 260);
+  --card: color-mix(in srgb, var(--neutral-900) 92%, var(--neutral-300));
+  --card-foreground: var(--neutral-50);
+  --popover: var(--card);
+  --popover-foreground: var(--neutral-50);
 
   /* ── Brand Colors (Google Blue sáng hơn cho nền tối) ── */
-  --primary: oklch(0.75 0.13 255); /* ≈ #8ab4f8 */
-  --primary-foreground: oklch(0.19 0.03 255); /* Chữ navy đậm trên nền xanh */
-  --primary-muted: color-mix(in oklch, var(--primary) 15%, transparent);
-  --primary-container: oklch(0.3 0.05 255);
-  --on-primary-container: oklch(0.85 0.1 255);
+  --primary: var(--blue-400);
+  --primary-foreground: var(--neutral-900);
+  --primary-muted: var(--blue-900);
+  --primary-container: var(--blue-900);
+  --on-primary-container: var(--blue-100);
 
   /* ── Secondary / Muted ── */
-  --secondary: oklch(0.27 0.007 260);
-  --secondary-foreground: oklch(0.92 0.004 260);
-  --muted: oklch(0.27 0.007 260);
-  --muted-foreground: oklch(0.68 0.008 260);
-  --accent: oklch(0.3 0.05 255);
-  --accent-foreground: oklch(0.85 0.1 255);
-  --accent-muted: color-mix(in oklch, var(--accent) 15%, transparent);
+  --secondary: var(--blue-900);
+  --secondary-foreground: var(--neutral-50);
+  --muted: var(--blue-900);
+  --muted-foreground: var(--neutral-300);
+  --accent: var(--blue-900);
+  --accent-foreground: var(--blue-100);
+  --accent-muted: var(--blue-900);
 
   /* ── Semantic Colors (Bộ màu Google, sáng hơn cho Dark Mode) ── */
-  --destructive: oklch(0.72 0.18 25); /* ≈ #f28b82 */
-  --destructive-foreground: oklch(0.19 0.03 25);
-  --destructive-muted: color-mix(in oklch, var(--destructive) 15%, transparent);
+  --destructive: var(--error-300);
+  --destructive-foreground: var(--error-900);
+  --destructive-muted: var(--error-900);
 
-  --success: oklch(0.75 0.14 145); /* ≈ #81c995 */
-  --success-foreground: oklch(0.19 0.03 145);
-  --success-muted: color-mix(in oklch, var(--success) 15%, transparent);
+  --success: var(--success-300);
+  --success-foreground: var(--success-900);
+  --success-muted: var(--success-900);
 
-  --warning: oklch(0.85 0.14 85); /* ≈ #fdd663 */
-  --warning-foreground: oklch(0.19 0.03 85);
-  --warning-muted: oklch(0.28 0.05 85); /* Nền banner vàng sẫm */
+  --warning: var(--warning-300);
+  --warning-foreground: var(--warning-900);
+  --warning-muted: var(--warning-900);
 
   /* ── Borders & Inputs ── */
-  --border: oklch(0.32 0.007 260);
-  --border-subtle: oklch(0.27 0.006 260);
-  --border-strong: oklch(0.42 0.008 260);
-  --input: oklch(0.32 0.007 260);
-  --ring: oklch(0.75 0.13 255);
+  --border: color-mix(in srgb, var(--neutral-900) 70%, var(--neutral-400));
+  --border-subtle: color-mix(in srgb, var(--neutral-900) 82%, var(--neutral-400));
+  --border-strong: var(--neutral-400);
+  --input: var(--neutral-400);
+  --ring: var(--blue-400);
 
   /* ── Shadows ── */
   --elevation-1: 0 1px 2px 0 oklch(0 0 0 / 0.35);
@@ -228,37 +673,43 @@
   --elevation-card: 0 8px 24px oklch(0 0 0 / 0.2);
 
   /* ── Brand ── */
-  --brand-navy: oklch(0.14 0.01 260);
-  --brand-accent: oklch(0.75 0.13 255); /* Google Blue sáng cho dark mode */
+  --brand-navy: var(--neutral-900);
+  --brand-accent: var(--blue-400);
 
   /* ── Sidebar ── */
-  --sidebar: oklch(0.16 0.006 260);
-  --sidebar-foreground: oklch(0.92 0.004 260);
-  --sidebar-primary: oklch(0.75 0.13 255);
-  --sidebar-primary-foreground: oklch(0.19 0.03 255);
-  --sidebar-accent: oklch(0.3 0.05 255);
-  --sidebar-accent-foreground: oklch(0.85 0.1 255);
-  --sidebar-border: oklch(0.32 0.007 260);
-  --sidebar-ring: oklch(0.75 0.13 255);
+  --sidebar: var(--card);
+  --sidebar-foreground: var(--neutral-50);
+  --sidebar-primary: var(--blue-400);
+  --sidebar-primary-foreground: var(--neutral-900);
+  --sidebar-accent: var(--blue-900);
+  --sidebar-accent-foreground: var(--blue-100);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--blue-400);
 
   /* ── Corelia DS v2 surfaces ── */
-  --surface-base: oklch(0.19 0.006 260);
-  --surface-raised: oklch(0.23 0.007 260);
-  --surface-overlay: oklch(0.27 0.007 260);
-  --surface-float: oklch(0.3 0.007 260);
+  --surface-base: var(--background);
+  --surface-raised: var(--card);
+  /* --surface-overlay: var(--blue-900); */
+  --surface-overlay: color-mix(in srgb,
+      var(--neutral-900) 82%,
+      var(--neutral-300));
+  --surface-float: color-mix(in srgb, var(--neutral-900) 78%, var(--neutral-300));
 }
 
 @layer base {
   * {
     @apply border-border outline-primary/40;
   }
+
   body {
     @apply bg-surface-base font-sans text-foreground antialiased;
     min-height: 100dvh;
   }
+
   html {
     @apply font-sans;
   }
+
   ::selection {
     background: color-mix(in oklch, var(--primary) 18%, transparent);
     color: var(--foreground);
@@ -287,17 +738,16 @@
 
 /* Trang login: Midnight Blue gradient + electric blue dot pattern */
 .bg-auth-page {
-  --auth-dot: oklch(0.58 0.19 255 / 0.08); /* Google blue dot */
+  --auth-dot: oklch(0.58 0.19 255 / 0.08);
+  /* Google blue dot */
   background-color: var(--background);
   background-image:
     radial-gradient(circle at 50% 50%, var(--auth-dot) 1px, transparent 1px),
-    linear-gradient(
-      160deg,
+    linear-gradient(160deg,
       var(--background) 0%,
       oklch(0.95 0.03 255) 35%,
       oklch(0.97 0.015 255) 70%,
-      var(--background) 100%
-    );
+      var(--background) 100%);
   background-size:
     24px 24px,
     100% 100%;
@@ -307,16 +757,15 @@
 }
 
 .dark .bg-auth-page {
-  --auth-dot: oklch(0.75 0.13 255 / 0.1); /* Google blue dot (dark) */
+  --auth-dot: oklch(0.75 0.13 255 / 0.1);
+  /* Google blue dot (dark) */
   background-image:
     radial-gradient(circle at 50% 50%, var(--auth-dot) 1px, transparent 1px),
-    linear-gradient(
-      160deg,
+    linear-gradient(160deg,
       var(--background) 0%,
       oklch(0.24 0.05 255) 40%,
       oklch(0.21 0.03 260) 70%,
-      var(--background) 100%
-    );
+      var(--background) 100%);
   background-size:
     24px 24px,
     100% 100%;
@@ -342,6 +791,7 @@
 @utility ds-card-hover {
   transition-property: transform, background-color, border-color, box-shadow;
   transition-duration: 200ms;
+
   &:hover {
     transform: translateY(-2px);
     background-color: var(--surface-raised);
@@ -351,6 +801,34 @@
 @utility ds-body {
   font-size: 15px;
   line-height: 1.7;
+}
+
+/* Shared native scrollbar styles */
+.scrollbar-design {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.scrollbar-design::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-design::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-design::-webkit-scrollbar-thumb {
+  background-color: var(--border-strong);
+  border-radius: 8px;
+}
+
+.scrollbar-design::-webkit-scrollbar-thumb:hover {
+  background-color: var(--foreground-muted);
+}
+
+.scrollbar-design::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 @utility ds-h2 {
@@ -376,6 +854,7 @@
     opacity: 0;
     transform: translateY(12px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

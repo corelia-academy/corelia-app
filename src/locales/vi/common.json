@@ -100,6 +100,10 @@
     "hackathonRegistrationReviewNote": "Ghi chú từ ban tổ chức: {{note}}",
     "hackathonRegistrationFallbackTitle": "Hackathon",
     "viewHackathon": "Xem hackathon",
+    "hackathonWinnerAwardTitle": "Trao giải cuộc thi",
+    "hackathonWinnerAwardBody": "Dự án \"{{project}}\" của bạn đã đạt giải \"{{award}}\" tại \"{{hackathon}}\".",
+    "projectFallback": "dự án của bạn",
+    "viewAwardDetails": "Xem kết quả",
     "courseAnnouncementTitle": "Thông báo từ khoá học",
     "trackAnnouncementTitle": "Thông báo từ lộ trình học",
     "markRead": "Đánh dấu đã đọc",
@@ -291,14 +295,36 @@
       "saveFailed": "Không thể lưu dự án.",
       "notEligible": "Bạn chưa thể tạo dự án",
       "notEligibleDescription": "Hãy đăng ký hackathon trước hoặc kiểm tra lại hạn nộp bài.",
-      "cannotEdit": "Bạn không có quyền sửa dự án này."
+      "cannotEdit": "Bạn không có quyền sửa dự án này.",
+      "errors": {
+        "invalidUrl": "Đường dẫn không hợp lệ hoặc không an toàn.",
+        "invalidDemoUrl": "Đường dẫn bản demo không hợp lệ (phải bắt đầu bằng https:// và an toàn).",
+        "invalidRepoUrl": "Đường dẫn repo không hợp lệ (phải là liên kết GitHub dạng https://github.com/owner/repo).",
+        "invalidSlideUrl": "Đường dẫn slide không hợp lệ (phải bắt đầu bằng https:// và an toàn).",
+        "invalidVideoUrl": "Đường dẫn video không hợp lệ (phải bắt đầu bằng https:// và an toàn).",
+        "unverifiableLink": "Không thể xác minh đường dẫn liên kết.",
+        "unverifiableDemoUrl": "Không thể kết nối hoặc xác minh đường dẫn demo.",
+        "unverifiableRepoUrl": "Không thể xác minh kho mã nguồn GitHub (kho có thể đang ở chế độ riêng tư).",
+        "unverifiableSlideUrl": "Không thể truy cập hoặc xác minh tài liệu slide.",
+        "linkBlocked": "Liên kết bị chặn do không phù hợp với tiêu chuẩn kiểm duyệt cộng đồng.",
+        "moderationTitle": "Tiêu đề dự án chứa nội dung không phù hợp với tiêu chuẩn cộng đồng.",
+        "moderationSummary": "Tóm tắt dự án chứa nội dung không phù hợp với tiêu chuẩn cộng đồng.",
+        "moderationLogo": "Ảnh logo không phù hợp với tiêu chuẩn cộng đồng.",
+        "moderationImage": "Hình ảnh tải lên không phù hợp với tiêu chuẩn cộng đồng.",
+        "aiUnavailable": "Hệ thống kiểm duyệt tự động tạm thời gián đoạn. Vui lòng thử lại sau.",
+        "logoSize": "Kích thước ảnh logo không được vượt quá 2 MB.",
+        "invalidSlug": "Đường dẫn định danh (slug) chỉ chứa chữ thường, số và dấu gạch nối."
+      }
     },
     "team": {
       "title": "Thành viên nhóm",
       "hint": "Thành viên chỉ được hiển thị sau khi chấp nhận lời mời và không có quyền sửa dự án.",
+      "hackathonEligibleHint": "Chỉ hiển thị người dùng đã đăng ký tham gia hackathon này.",
       "pickTitle": "Chọn thành viên",
       "pickDescription": "Tìm tài khoản Corelia để gửi lời mời tham gia dự án.",
-      "placeholder": "Chọn thành viên",
+      "hackathonPickDescription": "Chỉ hiển thị người dùng đã đăng ký tham gia hackathon này.",
+      "placeholder": "Tìm theo tên hoặc @username",
+      "searchPlaceholder": "Tìm theo tên hoặc @username…",
       "loading": "Đang tải thành viên…",
       "empty": "Không tìm thấy thành viên phù hợp.",
       "inviteAfterSave": "Lời mời sẽ được gửi sau khi dự án vượt qua kiểm duyệt và được lưu.",
@@ -308,6 +334,14 @@
       "members": "Thành viên đã tham gia",
       "revoke": "Thu hồi",
       "remove": "Xóa",
+      "resendEmail": "Gửi lại email",
+      "emailSent": "Đã gửi email mời.",
+      "emailAlreadySent": "Email mời đã được gửi trước đó.",
+      "emailSkipped": "Đã ghi nhận lời mời; bỏ qua gửi email.",
+      "emailRateLimited": "Đang giới hạn tần suất gửi email. Vui lòng thử lại sau ít phút.",
+      "emailPermanentError": "Email bị nhà cung cấp từ chối vĩnh viễn. Vui lòng kiểm tra lại địa chỉ người nhận.",
+      "emailIndeterminateError": "Trạng thái gửi email chưa được xác định. Cần đối soát thủ công.",
+      "emailRetryableError": "Không thể gửi email mời. Vui lòng thử lại sau.",
       "actionFailed": "Không cập nhật được thành viên.",
       "publicTitle": "Nhóm thực hiện"
     },
@@ -331,19 +365,25 @@
       "hackathonMissing": "Hackathon này không khả dụng. Hãy xóa bộ lọc để xem dự án khác.",
       "mediaExpired": "Một ảnh tải lên đã hết hạn. Hãy thêm lại ảnh và lưu dự án.",
       "resourceRequired": "Thêm ít nhất một demo, repo, slide hoặc video trước khi nộp dự án hackathon.",
-      "contentRequired": "Điền {{field}} trước khi chia sẻ dự án. Chỉ khoảng trắng hoặc dấu câu không được tính là nội dung."
+      "contentRequired": "Điền {{field}} trước khi chia sẻ dự án. Chỉ khoảng trắng hoặc dấu câu không được tính là nội dung.",
+      "alreadyRegistered": "Bạn đã đăng ký tham gia hackathon này rồi.",
+      "registrationDeadlinePassed": "Đã hết hạn đăng ký tham gia. Cổng đăng ký đã đóng.",
+      "submissionUnauthorized": "Bạn không có quyền nộp dự án vào hackathon này.",
+      "moderationFlagged": "Nội dung bị hệ thống kiểm duyệt cảnh báo. Vui lòng chỉnh sửa và thử lại.",
+      "userBlocked": "Tài khoản của bạn đang bị giới hạn thực hiện thao tác này.",
+      "rateLimitExceeded": "Quá nhiều yêu cầu. Vui lòng thử lại sau ít phút."
     },
     "editor": {
       "workspace": "Không gian dự án",
-      "intro": "Kể câu chuyện của bạn, giới thiệu sản phẩm và những người cùng xây dựng.",
+      "intro": "Chia sẻ ý tưởng hoặc sản phẩm của bạn. Điền phần bắt buộc trước, rồi bổ sung hình ảnh và tài liệu nếu có.",
       "content": "Nội dung dự án",
       "basics": "Tổng quan dự án",
       "basicsHint": "Đặt tên dễ nhớ và giải thích vấn đề mà dự án giải quyết.",
-      "titlePlaceholder": "Dự án của bạn tên là gì?",
-      "summaryPlaceholder": "Mô tả ý tưởng, người dùng, sản phẩm đã xây dựng và tiến độ của bạn.",
+      "titlePlaceholder": "Ví dụ: StudyBuddy — tìm bạn học cùng",
+      "summaryPlaceholder": "Ví dụ: StudyBuddy giúp sinh viên tìm nhóm học phù hợp theo môn học và lịch rảnh.",
       "media": "Logo & ảnh sản phẩm",
       "links": "Demo & tài liệu",
-      "linksHint": "Liên kết HTTPS không bắt buộc: demo, mã nguồn công khai, slide và video. Đảm bảo giám khảo có thể mở xem.",
+      "linksHint": "Chọn loại tài liệu bạn muốn bổ sung. Chỉ cần điền những gì đã có; có thể thêm sau trước hạn nộp.",
       "categories": "Tracks & công nghệ",
       "categoriesHint": "Chọn ít nhất một mục trong mỗi nhóm để cộng đồng và giám khảo tìm thấy dự án của bạn.",
       "team": "Đội ngũ của bạn",
@@ -383,13 +423,13 @@
       "winner": "Dự án đạt giải",
       "story": "Câu chuyện dự án",
       "description": "Mô tả chi tiết",
-      "descriptionHint": "Giải thích vấn đề, giải pháp, kiến trúc và điểm khác biệt. Hỗ trợ Markdown.",
+      "descriptionHint": "Trình bày vấn đề, người dùng, giải pháp và điểm khác biệt. Nếu mới ở mức ý tưởng, mô tả cách bạn dự định giải quyết; chưa cần kiến trúc hay mã nguồn.",
       "progress": "Tiến độ trong hackathon",
-      "progressHint": "Bạn đã xây dựng, học hỏi và hoàn thành những gì? Chia sẻ cột mốc và kế hoạch tiếp theo. Hỗ trợ Markdown.",
+      "progressHint": "Nêu những việc đã thực hiện trong hackathon: nghiên cứu, phỏng vấn, phác thảo hoặc xây dựng thử. Phân biệt phần đã làm với kế hoạch tiếp theo.",
       "pitchVideo": "Video thuyết trình",
       "videos": "Video dự án",
       "resourceRequired": "Ít nhất một demo, repo, slide hoặc video",
-      "hackathonLinksHint": "Cung cấp ít nhất một link HTTPS đến demo, repo công khai, slide hoặc video. Đảm bảo người đánh giá mở được link.",
+      "hackathonLinksHint": "Demo, mã nguồn, slide và video đều tùy chọn. Bạn có thể nộp ý tưởng mà chưa có các liên kết này.",
       "characterLimit": "{{count}} / tối đa {{limit}} ký tự",
       "write": "Viết",
       "preview": "Xem trước",
@@ -402,7 +442,41 @@
       "markdownlist": "Danh sách",
       "markdownlink": "Liên kết",
       "markdowncode": "Mã nội tuyến",
-      "limitHint": "Rút ngắn các trường vượt giới hạn ký tự hiển thị trước khi lưu."
+      "limitHint": "Rút ngắn các trường vượt giới hạn ký tự hiển thị trước khi lưu.",
+      "optional": "Tùy chọn",
+      "titleHint": "Chọn tên ngắn, dễ nhớ. Không cần ghi tên hackathon vào tên dự án.",
+      "slugHint": "Đường dẫn được tạo tự động từ tên dự án. Bạn có thể chỉnh sửa nếu cần.",
+      "summaryHint": "Viết 2–3 câu: dự án dành cho ai, giải quyết vấn đề gì và mang lại lợi ích gì.",
+      "descriptionPlaceholder": "Vấn đề: Người dùng đang gặp khó khăn gì?\n\nGiải pháp: Ý tưởng của bạn giúp họ như thế nào?\n\nĐiểm khác biệt: Vì sao cách tiếp cận này hữu ích?",
+      "progressPlaceholder": "Đã thực hiện: Khảo sát 10 sinh viên và phác thảo luồng sử dụng.\n\nHọc được: Người dùng cần nhóm học có lịch phù hợp.\n\nTiếp theo: Thử nghiệm bản phác thảo với người dùng.",
+      "ideaHint": "Mới ở mức ý tưởng? Bạn có thể bỏ qua toàn bộ phần này và vẫn nộp dự án.",
+      "checklistHint": "Chỉ các mục dưới đây là bắt buộc. Demo và tài liệu không ảnh hưởng đến việc hoàn thành.",
+      "addResource": "Thêm {{resource}}",
+      "removeResource": "Xóa {{resource}}",
+      "httpsHint": "Nhập đường dẫn đầy đủ bắt đầu bằng https://, ví dụ https://example.com/demo.",
+      "resourceAccessHint": "Dùng link HTTPS và bật quyền xem công khai hoặc “Ai có đường liên kết”. Thử mở bằng cửa sổ ẩn danh để chắc chắn giám khảo xem được.",
+      "resourceFields": {
+        "demo": {
+          "label": "Demo trực tuyến",
+          "hint": "Link đến bản chạy thử của sản phẩm để người đánh giá trải nghiệm."
+        },
+        "slide": {
+          "label": "Slide / pitch deck",
+          "hint": "Bản trình bày ý tưởng, vấn đề và giải pháp; ví dụ Google Slides hoặc Canva."
+        },
+        "repo": {
+          "label": "Mã nguồn GitHub",
+          "hint": "Link đến repository công khai, dạng github.com/nhom/du-an; không dùng link issue hoặc file."
+        },
+        "video": {
+          "label": "Video demo",
+          "hint": "Video quay cách sản phẩm hoạt động, ví dụ YouTube, Vimeo hoặc Loom."
+        },
+        "pitchVideo": {
+          "label": "Video thuyết trình",
+          "hint": "Video giới thiệu ý tưởng, giá trị và đội ngũ; có thể dùng ngay cả khi chưa có sản phẩm."
+        }
+      }
     },
     "management": {
       "manage": "Quản lý project",
@@ -812,7 +886,9 @@
   "combobox": {
     "searchPlaceholder": "Tìm theo tên hoặc email",
     "emptyLabel": "Không có kết quả phù hợp.",
-    "done": "Xong"
+    "done": "Xong",
+    "loadMore": "Tải thêm",
+    "loadingMore": "Đang tải thêm..."
   },
   "openCampusConnect": {
     "header": {
@@ -891,5 +967,15 @@
   "maintenance": {
     "title": "Đang bảo trì hệ thống",
     "body": "Corelia đang được nâng cấp. Chúng tôi sẽ trở lại sớm. Cảm ơn bạn đã kiên nhẫn chờ đợi!"
+  },
+  "scrollbarDemo": {
+    "title": "Thanh cuộn",
+    "description": "Ví dụ cuộn gốc của trình duyệt. Dùng Tab để chọn vùng, sau đó dùng phím mũi tên để cuộn.",
+    "light": "Sáng",
+    "dark": "Tối",
+    "vertical": "Dọc · {{percent}}%",
+    "horizontal": "Ngang · {{percent}}%",
+    "sample": "Mẫu {{count}}",
+    "code": "Khối mã"
   }
 }

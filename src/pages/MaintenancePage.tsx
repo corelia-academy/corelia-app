@@ -16,7 +16,7 @@ export default function MaintenancePage() {
         className="hidden h-10 dark:block"
       />
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold text-foreground">
+        <h1 className="text-heading-large font-display text-foreground">
           {t("maintenance.title")}
         </h1>
         <p className="max-w-sm text-sm text-foreground-muted">

@@ -154,7 +154,7 @@ function FollowerListDialog({
             {t("followers.empty")}
           </div>
         ) : (
-          <div className="max-h-80 overflow-y-auto">
+          <div className="scrollbar-design max-h-80 overflow-y-auto">
             <div className="divide-y divide-border-subtle">
               {visibleItems.map((row) => {
                 const label = followerLabel(row);

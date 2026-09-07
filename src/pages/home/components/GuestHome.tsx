@@ -28,12 +28,12 @@ export function GuestHome({
             <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               Corelia Academy
             </div>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight leading-tight text-foreground">
+            <h1 className="mt-2 text-display-small font-display text-foreground">
               <span className="bg-linear-to-r from-primary to-foreground bg-clip-text text-transparent">
                 {t("home.guest.heroTitle")}
               </span>
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-foreground-muted">
+            <p className="mt-2 max-w-2xl text-body-medium font-body text-foreground-muted">
               {t("home.guest.heroSubtitle")}
             </p>
 
@@ -92,7 +92,7 @@ export function GuestHome({
 
           <section className="py-4">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold tracking-tight text-foreground">
+              <h2 className="text-heading-medium font-display text-foreground">
                 {t("home.guest.featuredCoursesTitle")}
               </h2>
               <Button
@@ -134,7 +134,7 @@ export function GuestHome({
           </section>
 
           {tracksQuery.data?.length ? <section className="space-y-4">
-            <h2 className="text-2xl font-semibold">{tCareer("list.title")}</h2>
+            <h2 className="text-heading-large font-display">{tCareer("list.title")}</h2>
             {tracksQuery.data.slice(0, 2).map(track => <CareerTrackListCard key={track.id} track={track} />)}
           </section> : null}
         </div>

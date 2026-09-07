@@ -8,7 +8,7 @@ const FieldGroup = React.forwardRef<
   <div
     ref={ref}
     data-slot="field-group"
-    className={cn("flex flex-col gap-6", className)}
+    className={cn("flex flex-col gap-3xl", className)}
     {...props}
   />
 ));
@@ -18,7 +18,7 @@ const Field = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} data-slot="field" className={cn("flex flex-col gap-2", className)} {...props} />
+  <div ref={ref} data-slot="field" className={cn("flex flex-col gap-md", className)} {...props} />
 ));
 Field.displayName = "Field";
 
@@ -29,7 +29,7 @@ const FieldLabel = React.forwardRef<
   <label
     ref={ref}
     data-slot="field-label"
-    className={cn("text-sm font-medium leading-none", className)}
+    className={cn("text-label-medium font-body", className)}
     {...props}
   />
 ));
@@ -42,7 +42,7 @@ const FieldDescription = React.forwardRef<
   <p
     ref={ref}
     data-slot="field-description"
-    className={cn("text-xs text-foreground-muted", className)}
+    className={cn("text-body-small font-body text-foreground-muted", className)}
     {...props}
   />
 ));
@@ -56,14 +56,14 @@ const FieldSeparator = React.forwardRef<
     ref={ref}
     data-slot="field-separator"
     role="separator"
-    className={cn("relative flex items-center gap-4", className)}
+    className={cn("relative flex items-center gap-xl", className)}
     {...props}
   >
     <div className="flex-1 border-t border-border" />
     {children != null && (
       <span
         data-slot="field-separator-content"
-        className="text-xs text-foreground-muted"
+        className="text-body-small font-body text-foreground-muted"
       >
         {children}
       </span>

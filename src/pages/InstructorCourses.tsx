@@ -131,7 +131,7 @@ const InstructorCourses = () => {
       <PageSectionCard className="mt-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">
+            <h2 className="text-heading-medium font-display text-foreground">
               {t("courseListPage.hero.title")}
             </h2>
             <p className="mt-2 max-w-3xl text-sm text-foreground-muted sm:text-sm">
@@ -205,7 +205,7 @@ const InstructorCourses = () => {
                       {getCourseOwnerTypeLabel(course.owner_type)}
                     </span>
                   </div>
-                  <h3 className="mt-3 line-clamp-2 text-lg font-medium tracking-tight text-foreground">
+                  <h3 className="mt-3 line-clamp-2 text-heading-medium font-display text-foreground">
                     {course.title}
                   </h3>
                   <p className="mt-1 text-sm text-foreground-muted">
