@@ -81,7 +81,7 @@ describe("ProjectEditor", () => {
     expect(save).not.toHaveBeenCalled();
     expect((host.querySelector('button[type="submit"]') as HTMLButtonElement).disabled).toBe(true);
   });
-  it("requires progress and a resource for hackathon submissions", async () => {
+  it("requires progress but accepts an idea without resources", async () => {
     const save = await render();
     await input('#project-story > div:last-child textarea','');
     await submit();
@@ -89,8 +89,23 @@ describe("ProjectEditor", () => {
     await input('#project-story > div:last-child textarea','Built a prototype');
     await input('#project-links input[value="https://youtu.be/demo"]','');
     await submit();
-    expect(save).not.toHaveBeenCalled();
-    expect(host.textContent).toContain('projects.editor.resourceRequired');
+    expect(save).toHaveBeenCalledOnce();
+    expect(host.textContent).not.toContain('projects.editor.resourceRequired');
+    expect(host.textContent).toContain('projects.editor.optional');
+  });
+
+  it("adds optional resources on demand and keeps empty links out of the save", async () => {
+    const save = await render(undefined, true, contest, { ...project, video_url: null });
+    expect(host.querySelectorAll('#project-links input')).toHaveLength(0);
+    await act(async () => (host.querySelector('#project-links button') as HTMLButtonElement).click());
+    expect(host.querySelectorAll('#project-links input')).toHaveLength(1);
+    await input('#project-links input', 'https://example.com/demo');
+    await submit();
+    expect(save).toHaveBeenLastCalledWith(expect.objectContaining({ draft: expect.objectContaining({ demo: 'https://example.com/demo', repo: '', slide: '' }) }));
+    await act(async () => (host.querySelector('#project-links button[aria-label]') as HTMLButtonElement).click());
+    expect(host.querySelectorAll('#project-links input')).toHaveLength(0);
+    await submit();
+    expect(save).toHaveBeenLastCalledWith(expect.objectContaining({ draft: expect.objectContaining({ demo: '' }) }));
   });
 
   it("allows an unfinished private draft but blocks changing it to public", async () => {

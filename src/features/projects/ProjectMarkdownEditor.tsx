@@ -5,9 +5,9 @@ import { useTranslation } from "react-i18next";
 
 import { Markdown } from "@/components/markdown/Markdown";
 
-export function ProjectMarkdownEditor({ label, value, onChange, maxLength, required, placeholder, rows = 10 }: {
+export function ProjectMarkdownEditor({ label, value, onChange, maxLength, required, placeholder, hint, rows = 10 }: {
   label: string; value: string; onChange: (value: string) => void; maxLength: number;
-  required: boolean; placeholder: string; rows?: number;
+  required: boolean; placeholder: string; hint?: string; rows?: number;
 }) {
   const { t } = useTranslation("common");
   const id = useId();
@@ -38,6 +38,7 @@ export function ProjectMarkdownEditor({ label, value, onChange, maxLength, requi
   }
   return <div className="min-w-0">
     <label htmlFor={id} className="text-label-medium font-body">{label}{required ? <span className="text-primary"> *</span> : null}</label>
+    {hint ? <p id={`${id}-hint`} className="mt-2 text-body-small text-foreground-muted">{hint}</p> : null}
     <Tabs.Root value={mode} onValueChange={value => setMode(String(value))} className="mt-2 overflow-hidden rounded-lg border border-border bg-background">
       <Tabs.List aria-label={`${label} — Markdown`} className="flex gap-1 border-b border-border p-2">
         {(["write", "preview"] as const).map(tab => <Tabs.Tab key={tab} value={tab} className="min-h-10 rounded-md px-3 text-cta-medium font-body data-[active]:bg-primary/10 data-[active]:text-primary">{t(`projects.editor.${tab}`)}</Tabs.Tab>)}
@@ -46,7 +47,7 @@ export function ProjectMarkdownEditor({ label, value, onChange, maxLength, requi
         <div role="group" aria-label={t("projects.editor.formatting")} className="flex flex-wrap gap-1 border-b border-border p-2">
           {actions.map(action => <button key={action.key} type="button" onClick={() => format(action)} title={t(`projects.editor.markdown${action.key}`)} aria-label={t(`projects.editor.markdown${action.key}`)} className="flex size-10 items-center justify-center rounded-md hover:bg-surface-raised focus-visible:outline-2 focus-visible:outline-primary"><action.icon className="size-4" /></button>)}
         </div>
-        <textarea ref={textarea} id={id} required={required} aria-describedby={`${id}-limit`} rows={rows} maxLength={maxLength} value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder} className="block w-full resize-y bg-transparent px-3 py-2 text-body-medium font-body focus-visible:outline-2 focus-visible:outline-primary" />
+        <textarea ref={textarea} id={id} required={required} aria-describedby={`${id}-limit${hint ? ` ${id}-hint` : ""}`} rows={rows} maxLength={maxLength} value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder} className="block w-full resize-y bg-transparent px-3 py-2 text-body-medium font-body focus-visible:outline-2 focus-visible:outline-primary" />
       </Tabs.Panel>
       <Tabs.Panel value="preview" className="scrollbar-design min-h-40 overflow-x-auto break-words p-4 [&_img]:max-w-full">
         {value.trim() ? <Markdown content={value} /> : <p className="text-body-medium font-body text-foreground-muted">{t("projects.editor.previewEmpty")}</p>}
