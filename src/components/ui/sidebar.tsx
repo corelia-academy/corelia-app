@@ -358,13 +358,20 @@ function SidebarFooter({ className, ...props }: React.ComponentProps<"div">) {
 
 function SidebarSeparator({
   className,
+  orientation = "horizontal",
   ...props
 }: React.ComponentProps<typeof Separator>) {
   return (
     <Separator
       data-slot="sidebar-separator"
       data-sidebar="separator"
-      className={cn("mx-2 bg-sidebar-border data-horizontal:w-auto", className)}
+      aria-hidden="true"
+      orientation={orientation}
+      className={cn(
+        "mx-2 border-sidebar-border",
+        orientation === "horizontal" ? "w-auto" : "h-auto",
+        className,
+      )}
       {...props}
     />
   )
