@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "a927c1fb5f7e16a06d7675e329db1fa877431f5f",
-  "git_tree_sha": "8b229effd2fe47671d50f06b31806a5a8b47b3b5",
+  "rc_sha": "7c83f9f61b0bbdd4c01d3f52437ef1fad4de1a6b",
+  "git_tree_sha": "e1254358df59a986a1220602fc0767e22d703fed",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 184,
   "latest_migration": "20260907054710_harden_profile_name_integrity.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "a927c1fb5f7e16a06d7675e329db1fa877431f5f",
+  "source_sha": "7c83f9f61b0bbdd4c01d3f52437ef1fad4de1a6b",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "087106dba0644ebebde4fd6e1589f1d0ee2df6a31782c953b3a690e0804c832b",
+  "candidate_tree_sha256": "b185b76974a5861d3ee6c21b9eb2e5f55b99688e050128f3a905d0ed33596716",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -715,7 +715,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "573723371f12a1a97a1cbdb633e0753a169886e1252caad4fbda0b6b890c5b08"
+      "sha256": "e9b654900e53ae339f1d86712438a0e3a1dd2c7acbca354fd6b697dbf82af8eb"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
