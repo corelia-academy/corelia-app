@@ -158,7 +158,9 @@ jobs:
           supabase link --project-ref "$SUPABASE_PROJECT_REF" --dns-resolver https
           supabase migration list --linked --password "$SUPABASE_DB_PASSWORD" --dns-resolver https > "$RUNNER_TEMP/production-before-apply-migration-list.txt"
           node scripts/db/verify-production-migration-state.mjs "$RUNNER_TEMP/production-before-apply-migration-list.txt"
-          supabase migration up --linked --dns-resolver https
+          # The exact-state guard above permits only the approved outbox migration
+          # (or an empty retry); its timestamp predates the latest released migration.
+          supabase migration up --linked --dns-resolver https --include-all
 
       - name: Verify Jobs scheduler Vault configuration
         env:
