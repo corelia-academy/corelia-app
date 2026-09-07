@@ -401,7 +401,8 @@
       "markdownitalic": "In nghiêng",
       "markdownlist": "Danh sách",
       "markdownlink": "Liên kết",
-      "markdowncode": "Mã nội tuyến"
+      "markdowncode": "Mã nội tuyến",
+      "limitHint": "Rút ngắn các trường vượt giới hạn ký tự hiển thị trước khi lưu."
     }
   },
   "search": {

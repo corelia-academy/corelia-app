@@ -65,7 +65,10 @@ export function ProjectEditor({ projectId, userId, project, contest, onSave, onS
     ] : []),
     ...groups.map(group => ({ label: group.label, done: draft[group.key].length > 0, href: "#project-categories" })),
   ];
-  const complete = requirements.every(item => item.done);
+  const withinLimits = draft.title.length <= 160 && draft.slug.length <= 160
+    && draft.summary.length <= 1000 && draft.description.length <= 20000 && draft.progress.length <= 10000
+    && [draft.demo, draft.repo, draft.slide, draft.video, draft.pitchVideo].every(value => value.length <= 2048);
+  const complete = requirements.every(item => item.done) && withinLimits;
   const mutation = useMutation({
     mutationFn: () => onSave({ draft: { ...draft, slug }, teamIds, removedPaths }),
     onSuccess: result => { clear(); onSaved(result); },
@@ -106,7 +109,8 @@ export function ProjectEditor({ projectId, userId, project, contest, onSave, onS
         <nav aria-label={t("projects.editor.sections")} className="hidden rounded-2xl border border-border-subtle bg-surface-base p-5 lg:block"><ol className="space-y-4">{sections.map((section,index)=><li key={section}><a href={`#project-${section}`} className="flex items-center gap-3 text-sm hover:text-primary"><span className="flex size-6 items-center justify-center rounded-full bg-surface-raised text-xs">{index+1}</span>{t(`projects.editor.${section}`)}</a></li>)}</ol></nav>
         <div className="rounded-2xl border border-border-subtle bg-surface-base p-5"><h2 className="font-semibold">{t("projects.editor.checklist")}</h2><ul className="mt-4 space-y-3">{requirements.map(item => <li key={item.label}><a href={item.href} className="flex items-center gap-2 text-sm">{item.done ? <Check className="size-4 text-primary" /> : <Circle className="size-4 text-foreground-subtle" />}<span>{item.label}</span><span className="sr-only">{t(item.done ? "projects.editor.complete" : "projects.editor.missing")}</span></a></li>)}</ul>
           {contest ? <p className="mt-5 text-xs leading-5 text-foreground-muted">{t("projects.editor.publicHint")}</p> : <label className="mt-5 block text-sm">{t("projects.form.visibility")}<select value={draft.visibility} onChange={event=>change("visibility", event.target.value as ProjectDraft['visibility'])} disabled={mutation.isPending} className="mt-2 min-h-11 w-full rounded-md border border-border bg-background px-3">{(['public','unlisted','private'] as const).map(value=><option key={value} value={value}>{t(`projects.editor.${value}`)}</option>)}</select></label>}
-          {!complete ? <p className="mt-4 text-xs text-foreground-muted">{t("projects.editor.requiredHint")}</p> : null}
+          {!withinLimits ? <p role="alert" className="mt-4 text-xs text-destructive">{t("projects.editor.limitHint")}</p> : null}
+          {!complete && withinLimits ? <p className="mt-4 text-xs text-foreground-muted">{t("projects.editor.requiredHint")}</p> : null}
           <Button className="mt-5 w-full" type="submit" disabled={mutation.isPending || uploading || closed || !complete}>{mutation.isPending || uploading ? <LoaderCircle className="size-4 animate-spin" /> : null}{t(uploading ? "projects.editor.uploading" : mutation.isPending ? "projects.form.saving" : project ? "projects.form.save" : "projects.form.create")}</Button>
           <p className="mt-3 text-xs text-foreground-muted" role="status">{t(dirty ? "projects.editor.unsaved" : "projects.editor.ready")}</p>
         </div>

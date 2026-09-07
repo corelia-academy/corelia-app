@@ -128,4 +128,15 @@ describe("ProjectEditor", () => {
     expect(textarea.value).toHaveLength(20000);
   });
 
+  it("blocks oversized restored content even when all required items are complete", async () => {
+    const save = await render();
+    await input('textarea','x'.repeat(1001));
+    await submit();
+    expect(save).not.toHaveBeenCalled();
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain('projects.editor.limitHint');
+    await input('textarea','x'.repeat(1000));
+    await submit();
+    expect(save).toHaveBeenCalledOnce();
+  });
+
 });

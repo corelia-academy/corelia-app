@@ -401,7 +401,8 @@
       "markdownitalic": "Italic",
       "markdownlist": "Bullet list",
       "markdownlink": "Link",
-      "markdowncode": "Inline code"
+      "markdowncode": "Inline code",
+      "limitHint": "Shorten fields that exceed their displayed character limit before saving."
     }
   },
   "search": {
