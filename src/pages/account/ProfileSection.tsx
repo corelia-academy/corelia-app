@@ -1,3 +1,4 @@
+import { PROFILE_NAME_MAX_LENGTH } from "@/lib/profileName";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Image as ImageIcon, Loader2 } from "lucide-react";
@@ -159,6 +160,7 @@ export function ProfileSection(props: {
           </Label>
           <Input
             id="full_name"
+            maxLength={PROFILE_NAME_MAX_LENGTH}
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
@@ -166,7 +168,7 @@ export function ProfileSection(props: {
             className="rounded"
           />
           <p className="text-xs text-foreground-muted">
-            {t("profile.fullName.hint")}
+            {t("profile.fullName.hint")} {t("profile.fullName.limit", { count: Array.from(fullName).length, max: PROFILE_NAME_MAX_LENGTH })}
           </p>
         </div>
 

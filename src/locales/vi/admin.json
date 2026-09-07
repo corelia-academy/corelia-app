@@ -46,6 +46,9 @@
       "hackathons": {
         "label": "Hackathon",
         "tooltip": "Quản lý hackathon"
+      },
+      "projects": {
+        "label": "Projects"
       }
     },
     "pageMeta": {
@@ -84,6 +87,10 @@
       "instructorDetail": {
         "title": "Chi tiết giảng viên",
         "description": "Cập nhật hồ sơ và thông tin giảng viên."
+      },
+      "projects": {
+        "title": "Projects",
+        "description": "Kiểm duyệt project"
       }
     },
     "hero": {

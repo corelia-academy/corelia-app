@@ -1,188 +1,129 @@
-import type { KeyboardEvent, MouseEvent } from "react";
-import { NavLink, useNavigate } from "react-router";
-import {
-  ExternalLink,
-  Github,
-  Heart,
-  ImageIcon,
-  Package,
-  PlayCircle,
-  Presentation,
-  Sparkles,
-} from "lucide-react";
+import { NavLink } from "react-router";
+import { ExternalLink, Github, ImageIcon, Presentation, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { getProjectCoverImageUrl } from "@/lib/projects";
-import { projectSourceLabelKey } from "@/lib/projectSource";
 import { cn } from "@/lib/utils";
+import type { Contest } from "@/types/hackathons";
 import type { Project } from "@/types/projects";
 
 type ProjectCardProps = {
   project: Project;
   ownerLabel?: string | null;
   ownerHandle?: string | null;
+  taxonomy?: Contest | null;
   awardLabel?: string | null;
+  hearted?: boolean;
   className?: string;
 };
-
-type ProjectAction = {
-  key: string;
-  label: string;
-  href: string | null;
-  icon: typeof ExternalLink;
-};
-
-function stopCardNavigation(event: MouseEvent<HTMLElement>) {
-  event.stopPropagation();
-}
-
-function ProjectCover({ project }: { project: Project }) {
-  const coverUrl = getProjectCoverImageUrl(project);
-  if (coverUrl) {
-    return (
-      <img
-        src={coverUrl}
-        alt={project.title}
-        className="h-full w-full object-contain p-6 transition-transform duration-200 group-hover:scale-[1.02]"
-        loading="lazy"
-      />
-    );
-  }
-
-  return (
-    <div className="flex h-full w-full items-center justify-center bg-surface-raised">
-      <div className="flex size-14 items-center justify-center rounded-full border border-border-subtle bg-surface-base text-foreground-subtle">
-        <ImageIcon className="size-7" aria-hidden />
-      </div>
-    </div>
-  );
-}
 
 export function ProjectCard({
   project,
   ownerLabel,
   ownerHandle,
+  taxonomy,
   awardLabel,
+  hearted,
   className,
 }: ProjectCardProps) {
   const { t } = useTranslation("common");
-  const navigate = useNavigate();
   const detailPath = `/projects/${project.slug || project.id}`;
-  const ownerText = ownerHandle ? `@${ownerHandle}` : ownerLabel;
-  const actions: ProjectAction[] = [
-    { key: "demo", label: t("projects.detail.demo"), href: project.demo_url, icon: ExternalLink },
-    { key: "repo", label: t("projects.detail.repo"), href: project.repo_url, icon: Github },
-    { key: "slides", label: t("projects.detail.slides"), href: project.slide_url, icon: Presentation },
-    { key: "video", label: t("projects.detail.video"), href: project.video_url, icon: PlayCircle },
-  ].filter((action) => Boolean(action.href));
-  const visibleActions = actions.slice(0, 4);
-  const hiddenActionCount = Math.max(0, actions.length - visibleActions.length);
-
-  function openProject() {
-    navigate(detailPath);
-  }
-
-  function handleKeyDown(event: KeyboardEvent<HTMLElement>) {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      openProject();
-    }
-  }
+  const logo = getProjectCoverImageUrl(project);
+  const technologies = taxonomy?.tech_stacks?.filter((item) => project.hackathon_tech_stack_ids?.includes(item.id)) ?? [];
+  const awards = taxonomy?.winner_awards?.filter((award) => award.project_id === project.id) ?? [];
+  const displayAward = awardLabel || (awards.length ? awards[0].label || t("projects.editor.winner") : null);
+  const actions = [
+    { href: project.demo_url, label: t("projects.detail.demo"), icon: ExternalLink },
+    { href: project.repo_url, label: t("projects.detail.repo"), icon: Github },
+    { href: project.slide_url, label: t("projects.detail.slides"), icon: Presentation },
+  ].filter((item) => item.href);
 
   return (
     <article
-      role="link"
-      tabIndex={0}
-      aria-label={project.title}
       className={cn(
-        "group flex h-full min-h-[360px] cursor-pointer flex-col overflow-hidden rounded-lg border border-border-subtle bg-surface-base shadow-card transition-colors hover:border-border hover:bg-surface-raised/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+        "group relative flex h-full min-w-0 flex-col rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card transition-shadow hover:border-primary/40 hover:shadow-md",
         className,
       )}
-      onClick={openProject}
-      onKeyDown={handleKeyDown}
     >
-      <div className="relative aspect-video w-full overflow-hidden border-b border-border-subtle bg-surface-raised">
-        {awardLabel ? (
-          <div className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950 shadow">
-            <Sparkles className="size-3" aria-hidden />
-            <span>{awardLabel}</span>
+      <div className="flex items-start justify-between gap-3">
+        <NavLink
+          to={detailPath}
+          tabIndex={-1}
+          aria-hidden="true"
+          className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border-subtle bg-surface-raised"
+        >
+          {logo ? (
+            <img src={logo} alt="" className="size-full object-contain" loading="lazy" />
+          ) : (
+            <ImageIcon className="size-7 text-foreground-subtle" />
+          )}
+        </NavLink>
+        <ProjectSocialBlock
+          projectId={project.id}
+          likeCount={Number(project.like_count ?? 0)}
+          hearted={hearted}
+          className="border-0 pt-0"
+        />
+      </div>
+      <h2 className="mt-4 line-clamp-2 break-words text-lg font-semibold leading-snug">
+        <NavLink
+          to={detailPath}
+          className="rounded-sm hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
+        >
+          {project.title}
+        </NavLink>
+      </h2>
+      <p className="mt-2 min-h-16 line-clamp-3 text-sm leading-6 text-foreground-muted">
+        {project.summary || t("projects.card.noSummary")}
+      </p>
+      <dl className="mt-5 space-y-3 text-xs">
+        {technologies.length ? (
+          <div className="flex items-start gap-3">
+            <dt className="w-20 shrink-0 text-foreground-subtle">{t("projects.filters.techStacks")}</dt>
+            <dd className="min-w-0 font-medium">{technologies.map((item) => item.name).join(", ")}</dd>
           </div>
         ) : null}
-        <ProjectCover project={project} />
-      </div>
-
-      <div className="flex min-h-0 flex-1 flex-col p-4">
-        <div className="flex items-start gap-2">
-          <h2 className="min-w-0 flex-1 line-clamp-2 text-sm font-semibold leading-snug text-foreground">
-            {project.title}
-          </h2>
-          <span className="shrink-0 rounded-full border border-border-subtle bg-surface-raised px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-foreground-muted">
-            {t(projectSourceLabelKey(project.source_type))}
-          </span>
-        </div>
-
-        {ownerText ? (
-          <div className="mt-2 text-xs text-foreground-muted">
-            {t("projects.byPrefix")}{" "}
+        <div className="flex items-center gap-3">
+          <dt className="w-20 shrink-0 text-foreground-subtle">{t("projects.editor.builder")}</dt>
+          <dd className="min-w-0 truncate font-medium">
             {ownerHandle ? (
-              <NavLink
-                className="font-medium text-foreground underline underline-offset-4 hover:no-underline"
-                to={`/@${ownerHandle}`}
-                onClick={stopCardNavigation}
-              >
-                {ownerText}
+              <NavLink to={`/@${ownerHandle}`} className="hover:underline">
+                {ownerLabel || `@${ownerHandle}`}
               </NavLink>
             ) : (
-              <span className="font-medium text-foreground">{ownerText}</span>
+              ownerLabel || t("projects.editor.builder")
             )}
-          </div>
-        ) : null}
-
-        <p className="mt-3 min-h-10 line-clamp-2 text-sm leading-5 text-foreground-muted">
-          {project.summary || t("projects.card.noSummary")}
-        </p>
-
-        <div className="mt-auto flex items-center justify-between gap-3 pt-4">
-          <div className="flex items-center text-xs text-foreground-muted">
-            <span className="inline-flex items-center gap-1">
-              <Heart className="size-4" aria-hidden />
-              <span className="tabular-nums">{Number(project.like_count ?? 0)}</span>
-            </span>
-          </div>
-
-          {visibleActions.length > 0 ? (
-            <div className="flex items-center gap-1" aria-label={t("projects.card.links")}>
-              {visibleActions.map((action) => {
-                const Icon = action.icon;
-                return (
-                  <a
-                    key={action.key}
-                    href={action.href ?? undefined}
-                    target="_blank"
-                    rel="noreferrer"
-                    title={action.label}
-                    aria-label={action.label}
-                    className="inline-flex size-8 items-center justify-center rounded-md border border-border bg-surface-base text-foreground-muted transition-colors hover:bg-surface-raised hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    onClick={stopCardNavigation}
-                  >
-                    <Icon className="size-4" aria-hidden />
-                  </a>
-                );
-              })}
-              {hiddenActionCount > 0 ? (
-                <span
-                  className="inline-flex size-8 items-center justify-center rounded-md border border-border bg-surface-base text-sm font-semibold text-foreground-muted"
-                  title={t("projects.card.moreLinks", { count: hiddenActionCount })}
-                >
-                  ...
-                </span>
-              ) : null}
-            </div>
-          ) : (
-            <Package className="size-4 text-foreground-subtle" aria-hidden />
-          )}
+          </dd>
         </div>
-      </div>
+      </dl>
+      {displayAward ? (
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+            <Trophy className="size-3" />
+            {displayAward}
+          </span>
+        </div>
+      ) : null}
+      {actions.length ? (
+        <div className="mt-auto pt-4">
+          <div className="flex gap-1 border-t border-border-subtle pt-4">
+            {actions.map(({ href, label, icon: Icon }) => (
+              <a
+                key={label}
+                href={href!}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={label}
+                title={label}
+                className="flex size-10 items-center justify-center rounded-lg border border-border-subtle hover:bg-surface-raised"
+              >
+                <Icon className="size-4" />
+              </a>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </article>
   );
 }

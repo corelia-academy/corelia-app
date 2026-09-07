@@ -43,6 +43,8 @@ export function ProjectSocialBlock({
     mutationFn: () => toggleProjectHeart(projectId),
     onSuccess: (next) => {
       if (user?.id) queryClient.setQueryData(projectSocialKeys.heart(user.id, projectId), next);
+      void queryClient.invalidateQueries({ queryKey: ["project-social", "hearts"] });
+      void queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
   });
 

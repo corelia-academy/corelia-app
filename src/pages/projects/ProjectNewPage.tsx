@@ -1,167 +1,121 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Package } from "lucide-react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Navigate, NavLink, useNavigate, useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
-import { NavLink, useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ProjectMediaEditor, type ProjectMediaItem } from "@/features/projects/ProjectMediaEditor";
-import { ProjectTeamEditor } from "@/features/projects/ProjectTeamEditor";
+import { ProjectEditor, type ProjectEditorSave } from "@/features/projects/ProjectEditor";
+import { getContestBySlug, getMyContestRegistration, getMyContestSubmission, upsertContestSubmission } from "@/lib/hackathons";
 import { createProjectCollaborationInvite } from "@/lib/projectCollaboration";
-import { getContestBySlug, getMyContestRegistration, upsertContestSubmission } from "@/lib/hackathons";
-import { generateCanonicalProjectSlug } from "@/lib/hackathonContract";
-import { deleteProjectMedia, saveProject } from "@/lib/projectSubmission";
-import { formatProjectError } from "@/lib/projectErrors";
-import { normalizeSlugDraft } from "@/lib/slug";
+import { saveProject } from "@/lib/projectSubmission";
 import { useAuth } from "@/stores/authStore";
-import type { HackathonTaxonomyOption } from "@/types/hackathons";
-
-function Choices({ label, options, value, onChange }: {
-  label: string;
-  options: Array<Pick<HackathonTaxonomyOption, "id" | "name"> & { active?: boolean }>;
-  value: string[];
-  onChange: (value: string[]) => void;
-}) {
-  return (
-    <fieldset>
-      <legend className="text-sm font-medium text-foreground">{label}</legend>
-      <div className="mt-2 grid gap-2 sm:grid-cols-2">
-        {options.filter((option) => option.active !== false).map((option) => (
-          <label key={option.id} className="flex min-h-11 items-center gap-3 rounded-md border border-border px-3 text-sm">
-            <input type="checkbox" checked={value.includes(option.id)} onChange={() => onChange(value.includes(option.id) ? value.filter((id) => id !== option.id) : [...value, option.id])} />
-            {option.name}
-          </label>
-        ))}
-      </div>
-    </fieldset>
-  );
-}
 
 export default function ProjectNewPage() {
   const { t, i18n } = useTranslation("common");
   const { user } = useAuth();
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const locale = i18n.resolvedLanguage ?? i18n.language;
-  const hackathonSlug = params.get("hackathon") ?? "";
-  const contestQuery = useQuery({ queryKey: ["hackathons", "project-new", hackathonSlug, locale], queryFn: () => getContestBySlug(hackathonSlug, locale), enabled: Boolean(hackathonSlug) });
-  const contest = contestQuery.data ?? null;
-  const registrationQuery = useQuery({ queryKey: ["hackathons", contest?.id, "my-registration", user?.id], queryFn: () => getMyContestRegistration(contest!.id, user), enabled: Boolean(contest && user) });
-  const eligibleRegistration = registrationQuery.data && ["registered", "approved"].includes(registrationQuery.data.status);
+  const queryClient = useQueryClient();
   const [projectId] = useState(() => crypto.randomUUID());
-  const [title, setTitle] = useState("");
-  const [slug, setSlug] = useState("");
-  const [slugTouched, setSlugTouched] = useState(false);
-  const [summary, setSummary] = useState("");
-  const [demoUrl, setDemoUrl] = useState("");
-  const [repoUrl, setRepoUrl] = useState("");
-  const [slideUrl, setSlideUrl] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
-  const [logo, setLogo] = useState<ProjectMediaItem | null>(null);
-  const [screenshots, setScreenshots] = useState<ProjectMediaItem[]>([]);
-  const [teamIds, setTeamIds] = useState<string[]>([]);
-  const [tracks, setTracks] = useState<string[]>([]);
-  const [sectors, setSectors] = useState<string[]>([]);
-  const [tech, setTech] = useState<string[]>([]);
-  const mediaRef = useRef<ProjectMediaItem[]>([]);
-  const savedRef = useRef(false);
-  const effectiveSlug = useMemo(() => generateCanonicalProjectSlug(slugTouched ? slug : title), [slug, slugTouched, title]);
 
-  useEffect(() => {
-    mediaRef.current = [...(logo ? [logo] : []), ...screenshots];
-  }, [logo, screenshots]);
-  useEffect(() => () => {
-    if (savedRef.current) return;
-    for (const item of mediaRef.current) {
-      void deleteProjectMedia(projectId, item.path).catch(() => undefined);
-    }
-  }, [projectId]);
-
-  async function clearTemporaryMedia() {
-    const current = mediaRef.current;
-    await Promise.allSettled(current.map((item) => deleteProjectMedia(projectId, item.path)));
-    mediaRef.current = [];
-    setLogo(null);
-    setScreenshots([]);
-  }
-
-  const mutation = useMutation({
-    mutationFn: async () => {
-      const submission = contest
-        ? await upsertContestSubmission(contest.id, {
-            project_id: projectId,
-            title,
-            slug: effectiveSlug,
-            summary,
-            demo_url: demoUrl,
-            repo_url: repoUrl,
-            slide_url: slideUrl,
-            video_url: videoUrl,
-            logo_path: logo?.path ?? null,
-            screenshot_paths: screenshots.map((item) => item.path),
-            track_ids: tracks,
-            sector_ids: sectors,
-            tech_stack_ids: tech,
-          })
-        : await saveProject({
-            project_id: projectId,
-            title,
-            slug: effectiveSlug,
-            summary,
-            demo_url: demoUrl,
-            repo_url: repoUrl,
-            slide_url: slideUrl,
-            video_url: videoUrl,
-            logo_path: logo?.path ?? null,
-            screenshot_paths: screenshots.map((item) => item.path),
-            visibility: "public",
-            source_type: "standalone",
-          });
-      const invites = await Promise.allSettled(teamIds.map((id) => createProjectCollaborationInvite(projectId, id)));
-      return { submission, inviteFailed: invites.some((result) => result.status === "rejected") };
+  const hackathonSlug = params.get("hackathon") ?? "";
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const contestQuery = useQuery({
+    queryKey: ["hackathons", "project-new", hackathonSlug, locale],
+    queryFn: () => getContestBySlug(hackathonSlug, locale),
+    enabled: Boolean(hackathonSlug),
+  });
+  const contest = contestQuery.data;
+  const contextQuery = useQuery({
+    queryKey: ["projects", "new-context", contest?.id, user?.id],
+    queryFn: async () => {
+      const [registration, submission] = await Promise.all([
+        getMyContestRegistration(contest!.id, user),
+        getMyContestSubmission(contest!.id, user),
+      ]);
+      return { registration, submission };
     },
-    onSuccess: ({ submission, inviteFailed }) => {
-      savedRef.current = true;
-      toast.success(t("projects.form.created"));
-      if (inviteFailed) toast.warning(t("projects.team.someInvitesFailed"));
-      navigate(`/projects/${effectiveSlug || submission.project_id}`);
-    },
-    onError: async (error) => {
-      await clearTemporaryMedia();
-      toast.error(formatProjectError(error, t));
-    },
+    enabled: Boolean(contest && user),
+    staleTime: 0,
   });
 
-  if ((hackathonSlug && contestQuery.isPending) || (contest && registrationQuery.isPending)) return <div className="container-app py-16 text-center text-sm text-foreground-muted">{t("projects.loading")}</div>;
-  if (hackathonSlug && (!contest || !eligibleRegistration)) return <div className="container-app py-16 text-center"><Package className="mx-auto size-8 text-foreground-subtle" /><h1 className="mt-3 font-semibold">{t("projects.form.notEligible")}</h1><p className="mt-1 text-sm text-foreground-muted">{t("projects.form.notEligibleDescription")}</p><Button className="mt-4" render={<NavLink to={contest ? `/hackathons/${contest.slug}/overview` : "/hackathons"} />} nativeButton={false}>{t("projects.detail.goBack")}</Button></div>;
+  if (hackathonSlug && (contestQuery.isPending || (contest && contextQuery.isPending))) {
+    return <div className="container-app py-16" role="status">{t("projects.loading")}</div>;
+  }
+  if (contestQuery.isError || contextQuery.isError) {
+    return (
+      <div className="container-app py-16" role="alert">
+        <p>{t("projects.errorDescription")}</p>
+        <Button onClick={() => { void contestQuery.refetch(); void contextQuery.refetch(); }}>
+          {t("projects.retry")}
+        </Button>
+      </div>
+    );
+  }
+  if (contextQuery.data?.submission?.project_id) {
+    return <Navigate replace to={`/projects/${contextQuery.data.submission.project_id}/edit`} />;
+  }
+  if (hackathonSlug && (!contest || !contextQuery.data?.registration || !["registered", "approved"].includes(contextQuery.data.registration.status))) {
+    return (
+      <div className="container-app py-16 text-center">
+        <h1 className="font-semibold">{t("projects.form.notEligible")}</h1>
+        <p className="mt-2 text-sm">{t("projects.form.notEligibleDescription")}</p>
+        <Button className="mt-4" render={<NavLink to={contest ? `/hackathons/${contest.slug}` : "/hackathons"} />} nativeButton={false}>
+          {t("projects.form.back")}
+        </Button>
+      </div>
+    );
+  }
+
+  async function save({ draft, teamIds, removedPaths }: ProjectEditorSave) {
+    const input = {
+      project_id: projectId,
+      title: draft.title,
+      slug: draft.slug,
+      summary: draft.summary,
+      description: draft.description,
+      progress: draft.progress,
+      pitch_video_url: draft.pitchVideo,
+      demo_url: draft.demo,
+      repo_url: draft.repo,
+      slide_url: draft.slide,
+      video_url: draft.video,
+      logo_path: draft.logo?.path ?? null,
+      screenshot_paths: draft.screenshots.map((item) => item.path),
+      removed_media_paths: removedPaths,
+      track_ids: draft.tracks,
+      sector_ids: draft.sectors,
+      tech_stack_ids: draft.tech,
+    };
+    let savedId: string = projectId;
+    let savedSlug = draft.slug;
+    if (contest) {
+      const submission = await upsertContestSubmission(contest.id, input);
+      savedId = submission.project_id ?? projectId;
+    } else {
+      const result = await saveProject({ ...input, visibility: draft.visibility, source_type: "standalone" });
+      savedId = result.project_id;
+      savedSlug = result.project_slug;
+    }
+    const invites = await Promise.allSettled(teamIds.map((id) => createProjectCollaborationInvite(savedId, id)));
+    if (invites.some((item) => item.status === "rejected")) toast.warning(t("projects.team.someInvitesFailed"));
+    return savedSlug || savedId;
+  }
 
   return (
-    <div className="container-app max-w-4xl py-6 sm:py-8">
-      <Button variant="ghost" render={<NavLink to={contest ? `/hackathons/${contest.slug}/projects` : "/projects"} />} nativeButton={false}><ArrowLeft className="size-4" />{t("projects.form.back")}</Button>
-      <header className="mt-4"><h1 className="text-2xl font-semibold text-foreground">{t("projects.form.createTitle")}</h1>{contest ? <p className="mt-1 text-sm text-foreground-muted">{contest.title}</p> : null}</header>
-      <form className="mt-6 space-y-6 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-7" onSubmit={(event) => { event.preventDefault(); mutation.mutate(); }}>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="text-sm font-medium">{t("projects.form.title")} <span className="text-primary">*</span><Input className="mt-2" required maxLength={160} value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-          <label className="text-sm font-medium">{t("projects.form.slug")} <span className="text-primary">*</span><Input className="mt-2" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" value={slugTouched ? slug : effectiveSlug} onChange={(event) => { setSlugTouched(true); setSlug(normalizeSlugDraft(event.target.value)); }} onBlur={() => setSlug((current) => generateCanonicalProjectSlug(current))} /></label>
-        </div>
-        <label className="block text-sm font-medium">{t("projects.form.summary")}<textarea className="mt-2 min-h-28 w-full rounded-md border border-border bg-background px-3 py-2" rows={5} maxLength={1000} value={summary} onChange={(event) => setSummary(event.target.value)} /></label>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="text-sm font-medium">{t("projects.form.demoUrl")}<Input className="mt-2" type="url" value={demoUrl} onChange={(event) => setDemoUrl(event.target.value)} /></label>
-          <label className="text-sm font-medium">{t("projects.form.repoUrl")}<Input className="mt-2" type="url" value={repoUrl} onChange={(event) => setRepoUrl(event.target.value)} /></label>
-          <label className="text-sm font-medium">{t("projects.form.slideUrl")}<Input className="mt-2" type="url" value={slideUrl} onChange={(event) => setSlideUrl(event.target.value)} /></label>
-          <label className="text-sm font-medium">{t("projects.form.videoUrl")}<Input className="mt-2" type="url" value={videoUrl} onChange={(event) => setVideoUrl(event.target.value)} /></label>
-        </div>
-        <ProjectMediaEditor projectId={projectId} logo={logo} screenshots={screenshots} onLogoChange={setLogo} onScreenshotsChange={setScreenshots} />
-        <ProjectTeamEditor projectId={projectId} sourceType={contest ? "hackathon" : "standalone"} sourceId={contest?.id} persisted={false} selectedIds={teamIds} onSelectedIdsChange={setTeamIds} />
-        {contest ? <>
-          <Choices label={t("projects.filters.tracks")} options={contest.tracks ?? []} value={tracks} onChange={setTracks} />
-          <Choices label={t("projects.filters.sectors")} options={contest.sectors ?? []} value={sectors} onChange={setSectors} />
-          <Choices label={t("projects.filters.techStacks")} options={contest.tech_stacks ?? []} value={tech} onChange={setTech} />
-        </> : null}
-        <div className="flex justify-end"><Button type="submit" disabled={mutation.isPending || !title.trim() || !effectiveSlug || (Boolean(contest) && (!tracks.length || !sectors.length || !tech.length))}>{mutation.isPending ? t("projects.form.saving") : t("projects.form.create")}</Button></div>
-      </form>
-    </div>
+    <ProjectEditor
+      key={contest?.id ?? "standalone"}
+      projectId={projectId}
+      userId={user!.id}
+      contest={contest}
+      onSave={save}
+      onSaved={(slug) => {
+        void queryClient.invalidateQueries({ queryKey: ["projects"] });
+        void queryClient.invalidateQueries({ queryKey: ["hackathons"] });
+        toast.success(t("projects.form.created"));
+        navigate(`/projects/${slug}`);
+      }}
+    />
   );
 }

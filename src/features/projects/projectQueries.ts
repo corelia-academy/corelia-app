@@ -78,3 +78,14 @@ export function publicProjectDetailQueryOptions(
     meta: publicMeta,
   });
 }
+
+/** Editors always load source text; UI language must not overwrite it with a translation. */
+export function projectEditorQueryOptions(projectId: string | undefined, userId: string | undefined) {
+  return queryOptions({
+    queryKey: [...projectKeys.all, "editor", projectId, userId],
+    queryFn: () => getProjectBySlugOrId(projectId!, null, true),
+    enabled: Boolean(projectId && userId),
+    staleTime: 0,
+    meta: { scope: "private", userId, showInGlobalLoading: false },
+  });
+}
