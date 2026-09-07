@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
 import { Button } from "@/components/ui/button";
 import { hackathonPreviewQueryOptions, publicHackathonDetailQueryOptions } from "@/features/hackathons/hackathonQueries";
-import { getMyContestRegistration, registerForContest } from "@/lib/hackathons";
+import { getMyContestRegistration, getMyContestSubmission, registerForContest } from "@/lib/hackathons";
 import { canManageContests } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
@@ -67,6 +67,7 @@ export default function ContestPublicLayout() {
     enabled: Boolean(contest && user && !previewRequested),
     staleTime: 30_000,
   });
+  const submissionQuery = useQuery({ queryKey: ["projects", "my-submission", contest?.id, user?.id], queryFn: () => getMyContestSubmission(contest!.id, user), enabled: Boolean(contest && user && !previewRequested), staleTime: 0 });
   const registration = registrationQuery.data ?? null;
   const [renderedAt] = useState(() => Date.now());
   const registrationClosed = Boolean(
@@ -126,10 +127,10 @@ export default function ContestPublicLayout() {
   const cta = previewRequested ? null : registration ? (
     <Button
       type="button"
-      disabled={submissionClosed}
-      onClick={() => navigate(`/projects/new?hackathon=${encodeURIComponent(slug)}`)}
+      disabled={!submissionQuery.data?.project_id && submissionClosed}
+      onClick={() => navigate(submissionQuery.data?.project_id ? `/projects/${submissionQuery.data.project_id}` : `/projects/new?hackathon=${encodeURIComponent(slug)}`)}
     >
-      {submissionClosed ? t("public.submissionClosed") : t("public.createProject")}
+      {submissionQuery.data?.project_id ? t("projects.editor.viewProject", { ns: "common" }) : submissionClosed ? t("public.submissionClosed") : t("public.createProject")}
     </Button>
   ) : (
     <Button

@@ -261,6 +261,10 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
 
     const title = String(body.title ?? "").trim();
     const summary = String(body.summary ?? "").trim();
+    const description = body.description == null ? null : String(body.description).trim();
+    const progress = body.progress == null ? null : String(body.progress).trim();
+    if ((description?.length ?? 0) > 20_000 || (progress?.length ?? 0) > 10_000) return json({ message: "invalid_input:project_content" }, 400);
+    const pitchVideoUrl = body.pitch_video_url == null ? null : normalizeHttpsUrl("pitch_video_url", body.pitch_video_url) ?? "";
     const slug = normalizeProjectSlug(body.slug);
     if (!title || title.length > 160 || summary.length > 1_000) {
       return json({ message: "invalid_input:project_content" }, 400);
@@ -275,6 +279,8 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
     await moderateProjectText([
       { field: "title", text: title },
       { field: "summary", text: summary },
+      { field: "description", text: description ?? "" },
+      { field: "progress", text: progress ?? "" },
     ]);
     await verifyPublicProjectLinks(links);
 
@@ -284,6 +290,9 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
       p_slug: slug,
       p_title: title,
       p_summary: summary || null,
+      p_description: description,
+      p_progress: progress,
+      p_pitch_video_url: pitchVideoUrl,
       p_demo_url: links.find((link) => link.field === "demo_url")?.url ?? null,
       p_repo_url: links.find((link) => link.field === "repo_url")?.url ?? null,
       p_slide_url: links.find((link) => link.field === "slide_url")?.url ?? null,
