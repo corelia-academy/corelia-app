@@ -48,7 +48,7 @@ export function ProjectMarkdownEditor({ label, value, onChange, maxLength, requi
         </div>
         <textarea ref={textarea} id={id} required={required} aria-describedby={`${id}-limit`} rows={rows} maxLength={maxLength} value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder} className="block w-full resize-y bg-transparent px-3 py-2 text-sm leading-6 focus-visible:outline-2 focus-visible:outline-primary" />
       </Tabs.Panel>
-      <Tabs.Panel value="preview" className="min-h-40 overflow-x-auto break-words p-4 [&_img]:max-w-full">
+      <Tabs.Panel value="preview" className="scrollbar-design min-h-40 overflow-x-auto break-words p-4 [&_img]:max-w-full">
         {value.trim() ? <Markdown content={value} /> : <p className="text-sm text-foreground-muted">{t("projects.editor.previewEmpty")}</p>}
       </Tabs.Panel>
     </Tabs.Root>

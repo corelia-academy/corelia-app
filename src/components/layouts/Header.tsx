@@ -319,7 +319,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
               trending.length > 0 ||
               suggestionsLoading) ? (
               <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-xl border border-border bg-surface-overlay">
-                <div className="max-h-[60vh] overflow-auto p-2">
+                <div className="scrollbar-design max-h-[60vh] overflow-auto p-2">
                   {searchText.trim() ? (
                     <button
                       type="button"

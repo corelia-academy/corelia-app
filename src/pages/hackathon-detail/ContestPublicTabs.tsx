@@ -118,7 +118,7 @@ function FilterGroup({ label, options, selected, toggle }: { label: string; opti
         {selected.length > 0 ? <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] tabular-nums text-primary">{selected.length}</span> : null}
         <ChevronDown className="ml-auto size-4" />
       </summary>
-      <div role="group" aria-label={label} className="z-20 flex max-h-72 flex-col gap-1 overflow-y-auto border-t border-border bg-surface-base p-2 sm:absolute sm:top-full sm:mt-2 sm:w-72 sm:rounded-xl sm:border sm:shadow-lg">
+      <div role="group" aria-label={label} className="scrollbar-design z-20 flex max-h-72 flex-col gap-1 overflow-y-auto border-t border-border bg-surface-base p-2 sm:absolute sm:top-full sm:mt-2 sm:w-72 sm:rounded-xl sm:border sm:shadow-lg">
         {visible.map((option) => {
           const isSelected = selected.includes(option.id);
           return <button key={option.id} type="button" aria-pressed={isSelected} className={cn("min-h-11 shrink-0 rounded-md border px-3 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:min-h-10", isSelected ? "border-primary bg-primary text-primary-foreground" : "border-border-subtle bg-background text-foreground hover:border-border hover:bg-surface-raised")} onClick={() => toggle(option.id)}>{option.name}</button>;

@@ -200,7 +200,7 @@ export function NotificationBell() {
         <div className="border-b border-border px-3 py-2 text-sm font-semibold text-foreground">
           {t("header.notifications")}
         </div>
-        <div className="max-h-80 overflow-auto p-2">
+        <div className="scrollbar-design max-h-80 overflow-auto p-2">
           {loading && items.length === 0 ? (
             <div className="px-2 py-6 text-center text-sm text-foreground-muted">
               {t("status.loading")}

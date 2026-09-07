@@ -247,7 +247,7 @@ export default function ProjectDetailPage() {
     </header>
     <div className="mt-6 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
       <Tabs.Root defaultValue="overview" className="min-w-0">
-        <Tabs.List className="mb-6 flex gap-6 overflow-x-auto border-b border-border-subtle" aria-label={t("projects.editor.sections")}>
+        <Tabs.List className="scrollbar-design mb-6 flex gap-6 overflow-x-auto border-b border-border-subtle" aria-label={t("projects.editor.sections")}>
           {(["overview","resources","team"] as const).map(value => <Tabs.Tab key={value} value={value} className="min-h-12 shrink-0 border-b-2 border-transparent px-1 text-sm font-medium text-foreground-muted data-[active]:border-primary data-[active]:text-primary">{t(value === "team" ? "projects.team.publicTitle" : `projects.editor.${value}`)}</Tabs.Tab>)}
         </Tabs.List>
         <Tabs.Panel value="overview" className="space-y-6">

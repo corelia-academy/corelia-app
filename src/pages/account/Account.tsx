@@ -64,7 +64,7 @@ export default function Account() {
           <div className="mb-4 hidden text-xs font-semibold uppercase tracking-widest text-foreground-muted lg:block">
             {t("nav.sectionTitle")}
           </div>
-          <div className="-mx-4 overflow-x-auto px-4 lg:hidden">
+          <div className="scrollbar-design -mx-4 overflow-x-auto px-4 lg:hidden">
             <div className="flex min-w-max gap-2 pb-1">
               {navItems.map((item) => (
                 <NavLink

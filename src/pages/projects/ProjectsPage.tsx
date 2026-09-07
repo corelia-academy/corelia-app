@@ -41,7 +41,7 @@ function TaxonomyFilter({
   return (
     <details className="relative min-w-0 rounded-lg border border-border bg-surface-base">
       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-3 text-sm font-medium">{label}{selected.length ? <span className="rounded-full bg-primary/10 px-2 text-primary">{selected.length}</span> : null}<ChevronDown className="size-4" /></summary>
-      <div className="relative z-10 flex max-h-72 flex-col gap-1 overflow-auto border-t border-border p-2 lg:absolute lg:top-full lg:mt-2 lg:w-72 lg:rounded-xl lg:border lg:bg-surface-base lg:shadow-lg">
+      <div className="scrollbar-design relative z-10 flex max-h-72 flex-col gap-1 overflow-auto border-t border-border p-2 lg:absolute lg:top-full lg:mt-2 lg:w-72 lg:rounded-xl lg:border lg:bg-surface-base lg:shadow-lg">
         {activeOptions.map((option) => {
           const checked = selected.includes(option.id);
           return (
