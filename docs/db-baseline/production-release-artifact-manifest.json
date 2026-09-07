@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "7c83f9f61b0bbdd4c01d3f52437ef1fad4de1a6b",
-  "git_tree_sha": "e1254358df59a986a1220602fc0767e22d703fed",
+  "rc_sha": "d48217ccc8e46552e37ff2f13c613dbd2c923729",
+  "git_tree_sha": "0dbc3e9f9008a726864b1b15fa54cecf61a0e900",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 184,
-  "latest_migration": "20260907054710_harden_profile_name_integrity.sql",
+  "migration_count": 185,
+  "latest_migration": "20260907060557_restrict_client_table_ddl_privileges.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "7c83f9f61b0bbdd4c01d3f52437ef1fad4de1a6b",
+  "source_sha": "d48217ccc8e46552e37ff2f13c613dbd2c923729",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "b185b76974a5861d3ee6c21b9eb2e5f55b99688e050128f3a905d0ed33596716",
+  "candidate_tree_sha256": "6aeccc812d680e7baa9ce96765b5e52fbc26896970711ebc81801b79c412c51b",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -511,7 +511,7 @@
     },
     {
       "path": "docs/security/2026-09-07-profile-name-integrity.md",
-      "sha256": "0e696c4d517c13bd0214701283d5507c5cd6a44a5499cdf3b9e1649335ba8501"
+      "sha256": "fc3164ed38c933a226dcf06833f2c3bf48ebc0a1a41c4ebbf0dd24dd791478e6"
     },
     {
       "path": "docs/STAGING_BUILD_VERIFY.md",
@@ -651,7 +651,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "abaac22aab6881d45e42382476019e658a47c20833c13f1023da674aba8b22a0"
+      "sha256": "b8e1df6cc2424f9de1f69fad9c00236329a92ca9afd26b173a5d97d224ad4df4"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -715,7 +715,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "e9b654900e53ae339f1d86712438a0e3a1dd2c7acbca354fd6b697dbf82af8eb"
+      "sha256": "8cf6d21bac268c3fd98bef5872e6661a1e153a644f4b1460f17329931cbd094c"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
@@ -759,7 +759,7 @@
     },
     {
       "path": "scripts/db/tests/profile-name-integrity.integration.sql",
-      "sha256": "7660e7e35adea6df53f97c7837ba34d219528437a324aac1516549acdeced39c"
+      "sha256": "edd1e0bdb19a2a6c07efdca4608d612a9345eba83457442241c4796a8655e925"
     },
     {
       "path": "scripts/db/tests/project-seed-only.contract.test.mjs",
@@ -1423,7 +1423,7 @@
     },
     {
       "path": "src/locales/en/account.json",
-      "sha256": "d2358e4e48c839791072bdecdf04ec2cbdc3b2aad8df9a4ca1b15527698e2459"
+      "sha256": "cce7221d143fbed15541ab7a0f92c551329737dc64c44b69a6fb805564f1fba8"
     },
     {
       "path": "src/locales/en/admin.json",
@@ -1455,7 +1455,7 @@
     },
     {
       "path": "src/locales/vi/account.json",
-      "sha256": "7b6a9f1350c1819123b2f7b452c1508d97a6cfcd77851c3df1a97e40d8df5ff3"
+      "sha256": "4a73a7a1ad1a77056ec6e3e880b3a0f7e81258846757b5b9791d90dccac5d32e"
     },
     {
       "path": "src/locales/vi/admin.json",
@@ -1495,7 +1495,7 @@
     },
     {
       "path": "src/pages/account/AccountProfileRoute.tsx",
-      "sha256": "52a4644c354ddc0f017c56f0d4fa2c25490ff817be7dc2ed30a28afb1e9f1c37"
+      "sha256": "c3ed7e9afd92de730ed995e3d7e21b8a9aa9b10c745b01aac14b2421a882579f"
     },
     {
       "path": "src/pages/account/AccountProjectsRoute.tsx",
@@ -2454,6 +2454,10 @@
       "sha256": "a64570b9cb6f12007511741a9919faf3a37cb112d21c62c09bf3850df8dea734"
     },
     {
+      "path": "supabase/migrations/20260907060557_restrict_client_table_ddl_privileges.sql",
+      "sha256": "379c8ca3b097796577235ef42812ddfd2264d43b9c2a9d411a4012920d065aa6"
+    },
+    {
       "path": "tsconfig.node.json",
       "sha256": "c3415f90d416eb6f73e6c9908ae03c07263e3b6b7d1e66d8cad6cb2929e67be0"
     },
@@ -2786,6 +2790,10 @@
       {
         "path": "supabase/migrations/20260907054710_harden_profile_name_integrity.sql",
         "sha256": "a64570b9cb6f12007511741a9919faf3a37cb112d21c62c09bf3850df8dea734"
+      },
+      {
+        "path": "supabase/migrations/20260907060557_restrict_client_table_ddl_privileges.sql",
+        "sha256": "379c8ca3b097796577235ef42812ddfd2264d43b9c2a9d411a4012920d065aa6"
       }
     ]
   }
