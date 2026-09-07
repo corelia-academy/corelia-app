@@ -147,7 +147,7 @@ export function AccountProfileRoute() {
       const usernameChanged =
         newUsername?.toLowerCase() !== (profile?.username ?? "").toLowerCase();
 
-      await updateProfileForUser(user, {
+      const savedProfile = await updateProfileForUser(user, {
         ...(usernameChanged ? { username: newUsername } : {}),
         full_name: fullName.trim() || null,
         phone: phone.trim() || null,
@@ -156,6 +156,7 @@ export function AccountProfileRoute() {
         website: website.trim() || null,
         profile_public: profilePublic,
       });
+      setFullName(current => current === fullName ? savedProfile.full_name ?? "" : current);
       await refreshProfile(user);
       setSuccess(t("profile.success.updated"));
     } catch (err) {
