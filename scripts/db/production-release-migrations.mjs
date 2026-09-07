@@ -46,14 +46,15 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260903111914_grant_job_company_source_for_connected_adapters.sql",
   "supabase/migrations/20260903214029_classify_job_sources_and_add_rss_feeds.sql",
   "supabase/migrations/20260907014331_project_story_content.sql",
+  "supabase/migrations/20260907054710_harden_profile_name_integrity.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production is released through 20260903214029 (verified in run 34025599024).
-// The remaining forward-only migration adds project story content.
+// Production is released through 20260907014331 (verified in run 34087244422).
+// The remaining forward migration repairs and protects profile names.
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
   APPROVED_PENDING_VERSIONS.slice(0, -1),
 );

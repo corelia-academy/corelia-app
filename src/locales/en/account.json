@@ -226,7 +226,8 @@
     "fullName": {
       "label": "Full name",
       "placeholder": "Nguyen Van A",
-      "hint": "Used for certificates and transcripts."
+      "hint": "Used for certificates and transcripts.",
+      "limit": "{{count}} / {{max}} characters maximum."
     },
     "username": {
       "label": "Username",
@@ -262,7 +263,8 @@
       "updateFailed": "Unable to update information.",
       "visibilityUpdateFailed": "Unable to update profile visibility.",
       "usernameTaken": "This username is already taken. Please choose a different one.",
-      "loadFailed": "Could not load your profile. Please check your connection."
+      "loadFailed": "Could not load your profile. Please check your connection.",
+      "invalidName": "Use a name of at most 160 characters without hidden control characters."
     },
     "retry": "Try again"
   },

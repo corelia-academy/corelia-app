@@ -165,7 +165,9 @@ export function AccountProfileRoute() {
       setError(
         isUsernameTaken
           ? t("profile.errors.usernameTaken")
-          : raw || t("profile.errors.updateFailed"),
+          : raw.includes("profile_name_")
+            ? t("profile.errors.invalidName")
+            : raw || t("profile.errors.updateFailed"),
       );
     } finally {
       setSaving(false);
