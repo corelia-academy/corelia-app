@@ -28,3 +28,17 @@ describe("cn typography tokens", () => {
     ).toBe("text-body-small");
   });
 });
+
+describe("cn spacing tokens", () => {
+  it("allows a dialog consumer to remove token padding and gap", () => {
+    expect(cn("p-xl gap-xl", "p-0 gap-0")).toBe("p-0 gap-0");
+  });
+
+  it("preserves directional overrides and independent typography", () => {
+    expect(cn("p-xl text-body-medium text-foreground", "px-md")).toBe(
+      "p-xl text-body-medium text-foreground px-md",
+    );
+    expect(cn("px-md", "p-xl")).toBe("p-xl");
+    expect(cn("sm:gap-xl", "sm:gap-md")).toBe("sm:gap-md");
+  });
+});
