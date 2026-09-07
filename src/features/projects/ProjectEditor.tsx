@@ -75,7 +75,6 @@ export function ProjectEditor({ projectId, userId, project, contest, onSave, onS
     onError: () => requestAnimationFrame(() => errorRef.current?.focus()),
   });
   const back = project ? `/projects/${project.slug}` : contest ? `/hackathons/${contest.slug}/projects` : "/projects";
-  const sections: Array<"basics" | "story" | "media" | "links" | "categories" | "team"> = ["basics", "story", "media", "links", ...(contest ? ["categories" as const] : []), "team"];
   function change<K extends keyof ProjectDraft>(key: K, value: ProjectDraft[K]) {
     dismissRecovery();
     setDraft(current => ({ ...current, [key]: value }));
@@ -106,7 +105,6 @@ export function ProjectEditor({ projectId, userId, project, contest, onSave, onS
         <section id="project-team" className="scroll-mt-24 rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="mb-5 text-lg font-semibold">{t("projects.editor.team")}</h2><ProjectTeamEditor projectId={projectId} sourceType={project?.source_type ?? (contest ? "hackathon" : "standalone")} sourceId={project?.source_id ?? contest?.id} persisted={Boolean(project)} selectedIds={teamIds} onSelectedIdsChange={setTeamIds} /></section>
       </fieldset>
       <aside className="space-y-5 lg:sticky lg:top-24">
-        <nav aria-label={t("projects.editor.sections")} className="hidden rounded-2xl border border-border-subtle bg-surface-base p-5 lg:block"><ol className="space-y-4">{sections.map((section,index)=><li key={section}><a href={`#project-${section}`} className="flex items-center gap-3 text-sm hover:text-primary"><span className="flex size-6 items-center justify-center rounded-full bg-surface-raised text-xs">{index+1}</span>{t(`projects.editor.${section}`)}</a></li>)}</ol></nav>
         <div className="rounded-2xl border border-border-subtle bg-surface-base p-5"><h2 className="font-semibold">{t("projects.editor.checklist")}</h2><ul className="mt-4 space-y-3">{requirements.map(item => <li key={item.label}><a href={item.href} className="flex items-center gap-2 text-sm">{item.done ? <Check className="size-4 text-primary" /> : <Circle className="size-4 text-foreground-subtle" />}<span>{item.label}</span><span className="sr-only">{t(item.done ? "projects.editor.complete" : "projects.editor.missing")}</span></a></li>)}</ul>
           {contest ? <p className="mt-5 text-xs leading-5 text-foreground-muted">{t("projects.editor.publicHint")}</p> : <label className="mt-5 block text-sm">{t("projects.form.visibility")}<select value={draft.visibility} onChange={event=>change("visibility", event.target.value as ProjectDraft['visibility'])} disabled={mutation.isPending} className="mt-2 min-h-11 w-full rounded-md border border-border bg-background px-3">{(['public','unlisted','private'] as const).map(value=><option key={value} value={value}>{t(`projects.editor.${value}`)}</option>)}</select></label>}
           {!withinLimits ? <p role="alert" className="mt-4 text-xs text-destructive">{t("projects.editor.limitHint")}</p> : null}
