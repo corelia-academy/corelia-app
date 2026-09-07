@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "d47911c9f5b51069e624d01838353c5730079fa4",
-  "git_tree_sha": "038ca612b110fb5a93421d74fa50863a4ed9fae8",
+  "rc_sha": "e275fc0b87b79f90b7a10ed8f38e945a26a72cb9",
+  "git_tree_sha": "56d22e630b8e2ffb845caa022caf338a5d210323",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 187,
   "latest_migration": "20260907075801_project_moderation_and_deletion.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "d47911c9f5b51069e624d01838353c5730079fa4",
+  "source_sha": "e275fc0b87b79f90b7a10ed8f38e945a26a72cb9",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "4a6d498b0567d62160d7fcecbaca530b45e1fea2948ecb1e46e551e2698a45a7",
+  "candidate_tree_sha256": "13b44f173ec8905051fff829f48bf69da7fa6dc9229934880ef77bd5c9a5b47f",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -1371,11 +1371,11 @@
     },
     {
       "path": "src/lib/projectErrors.test.ts",
-      "sha256": "58f5b2ba81a3ad94ff51db6e7beeaa099b90490b3fd09e6d59e04edcb87b4bc2"
+      "sha256": "8f7d576c25ee1f2599ff61fde0209e09045c935d694aba96d8a801354054fc76"
     },
     {
       "path": "src/lib/projectErrors.ts",
-      "sha256": "7d7567f916e319cb9313c92f09d15923cf2466335c555ef1543de2a99260bb65"
+      "sha256": "01692a97f842bed2ddd9c9911bf0bda49d8c5e313d14d325eb9517ea9ebb843a"
     },
     {
       "path": "src/lib/projects.ts",
@@ -1471,7 +1471,7 @@
     },
     {
       "path": "src/locales/en/common.json",
-      "sha256": "2b15dd18d794794f3f0417577ea0da56c5a3da61cffab875e4664be002ad5015"
+      "sha256": "5cff91dc7508ed6c672c9d34b7e8fe88e1ef676acbcc648e1ecb1f59a3f04d61"
     },
     {
       "path": "src/locales/en/contests.json",
@@ -1503,7 +1503,7 @@
     },
     {
       "path": "src/locales/vi/common.json",
-      "sha256": "94287b915d01cf726b3771305db3d2aedfade9659fe92b2d291e15ff2c47a8d9"
+      "sha256": "61fd91f15f29a6543ec202e4c7cc2127d24ba49516e2702ba74fcc99c143f7af"
     },
     {
       "path": "src/locales/vi/contests.json",
@@ -2003,7 +2003,7 @@
     },
     {
       "path": "src/pages/projects/ProjectDetailPage.tsx",
-      "sha256": "cb3c28de1b0bed5b45212f7c178e1eb626a523577dbfcf8f1fc14ea3836d251f"
+      "sha256": "c2e70f44209100e7bdca6f8f97d4c7ab7a03b61a6b2f0ac8c99f365aa8496696"
     },
     {
       "path": "src/pages/projects/ProjectEditPage.tsx",
