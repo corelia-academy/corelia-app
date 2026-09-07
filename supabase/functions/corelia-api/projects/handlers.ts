@@ -292,9 +292,6 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
     for (const [field, value] of requiredContent) {
       if (!/[\p{L}\p{N}]/u.test(String(value))) return json({ message: `required_content:${field}` }, 400);
     }
-    if (hackathon && !links.length && !videoUrl && !(pitchVideoUrl ?? existing?.pitch_video_url)) {
-      return json({ message: "required_content:resource" }, 400);
-    }
 
     await moderateProjectText([
       { field: "title", text: title },

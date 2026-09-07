@@ -375,15 +375,15 @@
     },
     "editor": {
       "workspace": "Không gian dự án",
-      "intro": "Kể câu chuyện của bạn, giới thiệu sản phẩm và những người cùng xây dựng.",
+      "intro": "Chia sẻ ý tưởng hoặc sản phẩm của bạn. Điền phần bắt buộc trước, rồi bổ sung hình ảnh và tài liệu nếu có.",
       "content": "Nội dung dự án",
       "basics": "Tổng quan dự án",
       "basicsHint": "Đặt tên dễ nhớ và giải thích vấn đề mà dự án giải quyết.",
-      "titlePlaceholder": "Dự án của bạn tên là gì?",
-      "summaryPlaceholder": "Mô tả ý tưởng, người dùng, sản phẩm đã xây dựng và tiến độ của bạn.",
+      "titlePlaceholder": "Ví dụ: StudyBuddy — tìm bạn học cùng",
+      "summaryPlaceholder": "Ví dụ: StudyBuddy giúp sinh viên tìm nhóm học phù hợp theo môn học và lịch rảnh.",
       "media": "Logo & ảnh sản phẩm",
       "links": "Demo & tài liệu",
-      "linksHint": "Liên kết HTTPS không bắt buộc: demo, mã nguồn công khai, slide và video. Đảm bảo giám khảo có thể mở xem.",
+      "linksHint": "Chọn loại tài liệu bạn muốn bổ sung. Chỉ cần điền những gì đã có; có thể thêm sau trước hạn nộp.",
       "categories": "Tracks & công nghệ",
       "categoriesHint": "Chọn ít nhất một mục trong mỗi nhóm để cộng đồng và giám khảo tìm thấy dự án của bạn.",
       "team": "Đội ngũ của bạn",
@@ -423,13 +423,13 @@
       "winner": "Dự án đạt giải",
       "story": "Câu chuyện dự án",
       "description": "Mô tả chi tiết",
-      "descriptionHint": "Giải thích vấn đề, giải pháp, kiến trúc và điểm khác biệt. Hỗ trợ Markdown.",
+      "descriptionHint": "Trình bày vấn đề, người dùng, giải pháp và điểm khác biệt. Nếu mới ở mức ý tưởng, mô tả cách bạn dự định giải quyết; chưa cần kiến trúc hay mã nguồn.",
       "progress": "Tiến độ trong hackathon",
-      "progressHint": "Bạn đã xây dựng, học hỏi và hoàn thành những gì? Chia sẻ cột mốc và kế hoạch tiếp theo. Hỗ trợ Markdown.",
+      "progressHint": "Nêu những việc đã thực hiện trong hackathon: nghiên cứu, phỏng vấn, phác thảo hoặc xây dựng thử. Phân biệt phần đã làm với kế hoạch tiếp theo.",
       "pitchVideo": "Video thuyết trình",
       "videos": "Video dự án",
       "resourceRequired": "Ít nhất một demo, repo, slide hoặc video",
-      "hackathonLinksHint": "Cung cấp ít nhất một link HTTPS đến demo, repo công khai, slide hoặc video. Đảm bảo người đánh giá mở được link.",
+      "hackathonLinksHint": "Demo, mã nguồn, slide và video đều tùy chọn. Bạn có thể nộp ý tưởng mà chưa có các liên kết này.",
       "characterLimit": "{{count}} / tối đa {{limit}} ký tự",
       "write": "Viết",
       "preview": "Xem trước",
@@ -442,7 +442,41 @@
       "markdownlist": "Danh sách",
       "markdownlink": "Liên kết",
       "markdowncode": "Mã nội tuyến",
-      "limitHint": "Rút ngắn các trường vượt giới hạn ký tự hiển thị trước khi lưu."
+      "limitHint": "Rút ngắn các trường vượt giới hạn ký tự hiển thị trước khi lưu.",
+      "optional": "Tùy chọn",
+      "titleHint": "Chọn tên ngắn, dễ nhớ. Không cần ghi tên hackathon vào tên dự án.",
+      "slugHint": "Đường dẫn được tạo tự động từ tên dự án. Bạn có thể chỉnh sửa nếu cần.",
+      "summaryHint": "Viết 2–3 câu: dự án dành cho ai, giải quyết vấn đề gì và mang lại lợi ích gì.",
+      "descriptionPlaceholder": "Vấn đề: Người dùng đang gặp khó khăn gì?\n\nGiải pháp: Ý tưởng của bạn giúp họ như thế nào?\n\nĐiểm khác biệt: Vì sao cách tiếp cận này hữu ích?",
+      "progressPlaceholder": "Đã thực hiện: Khảo sát 10 sinh viên và phác thảo luồng sử dụng.\n\nHọc được: Người dùng cần nhóm học có lịch phù hợp.\n\nTiếp theo: Thử nghiệm bản phác thảo với người dùng.",
+      "ideaHint": "Mới ở mức ý tưởng? Bạn có thể bỏ qua toàn bộ phần này và vẫn nộp dự án.",
+      "checklistHint": "Chỉ các mục dưới đây là bắt buộc. Demo và tài liệu không ảnh hưởng đến việc hoàn thành.",
+      "addResource": "Thêm {{resource}}",
+      "removeResource": "Xóa {{resource}}",
+      "httpsHint": "Nhập đường dẫn đầy đủ bắt đầu bằng https://, ví dụ https://example.com/demo.",
+      "resourceAccessHint": "Dùng link HTTPS và bật quyền xem công khai hoặc “Ai có đường liên kết”. Thử mở bằng cửa sổ ẩn danh để chắc chắn giám khảo xem được.",
+      "resourceFields": {
+        "demo": {
+          "label": "Demo trực tuyến",
+          "hint": "Link đến bản chạy thử của sản phẩm để người đánh giá trải nghiệm."
+        },
+        "slide": {
+          "label": "Slide / pitch deck",
+          "hint": "Bản trình bày ý tưởng, vấn đề và giải pháp; ví dụ Google Slides hoặc Canva."
+        },
+        "repo": {
+          "label": "Mã nguồn GitHub",
+          "hint": "Link đến repository công khai, dạng github.com/nhom/du-an; không dùng link issue hoặc file."
+        },
+        "video": {
+          "label": "Video demo",
+          "hint": "Video quay cách sản phẩm hoạt động, ví dụ YouTube, Vimeo hoặc Loom."
+        },
+        "pitchVideo": {
+          "label": "Video thuyết trình",
+          "hint": "Video giới thiệu ý tưởng, giá trị và đội ngũ; có thể dùng ngay cả khi chưa có sản phẩm."
+        }
+      }
     },
     "management": {
       "manage": "Quản lý project",

@@ -375,15 +375,15 @@
     },
     "editor": {
       "workspace": "Project workspace",
-      "intro": "Tell your story, show what you built, and introduce the people behind it.",
+      "intro": "Share an idea or a working product. Complete the required sections first, then add images and resources if you have them.",
       "content": "Project content",
       "basics": "Project overview",
       "basicsHint": "Give your project a clear name and explain the problem it solves.",
-      "titlePlaceholder": "What is your project called?",
-      "summaryPlaceholder": "Describe your idea, who it helps, what you built, and your progress.",
+      "titlePlaceholder": "Example: StudyBuddy — find a study partner",
+      "summaryPlaceholder": "Example: StudyBuddy helps students find study groups that match their subjects and schedules.",
       "media": "Logo & screenshots",
       "links": "Demo & resources",
-      "linksHint": "Optional HTTPS links to your live demo, public repository, presentation and video. Make sure reviewers can open them.",
+      "linksHint": "Choose the resources you want to add. Include only what you already have; you can add more before the deadline.",
       "categories": "Tracks & technologies",
       "categoriesHint": "Choose at least one option in each group so builders and judges can discover your project.",
       "team": "Your team",
@@ -423,13 +423,13 @@
       "winner": "Award winner",
       "story": "Project story",
       "description": "Detailed description",
-      "descriptionHint": "Explain the problem, solution, architecture and what makes your project different. Markdown is supported.",
+      "descriptionHint": "Explain the problem, users, solution, and what makes it different. For an idea, describe your proposed approach; architecture and source code are not needed yet.",
       "progress": "Progress during the hackathon",
-      "progressHint": "What did you build, learn and ship? Share milestones and what comes next. Markdown is supported.",
+      "progressHint": "Describe work completed during the hackathon: research, interviews, sketches, or a prototype. Separate what you have done from your next steps.",
       "pitchVideo": "Pitch video",
       "videos": "Project videos",
       "resourceRequired": "At least one demo, repository, slide or video",
-      "hackathonLinksHint": "Provide at least one HTTPS link to a demo, public repository, presentation or video. Make sure reviewers can open it.",
+      "hackathonLinksHint": "Demos, source code, slides, and videos are optional. You can submit an idea without any of these links.",
       "characterLimit": "{{count}} / {{limit}} characters maximum",
       "write": "Write",
       "preview": "Preview",
@@ -442,7 +442,41 @@
       "markdownlist": "Bullet list",
       "markdownlink": "Link",
       "markdowncode": "Inline code",
-      "limitHint": "Shorten fields that exceed their displayed character limit before saving."
+      "limitHint": "Shorten fields that exceed their displayed character limit before saving.",
+      "optional": "Optional",
+      "titleHint": "Choose a short, memorable name. You do not need to include the hackathon name.",
+      "slugHint": "This address is generated from your project name. You can edit it if needed.",
+      "summaryHint": "Write 2–3 sentences: who it is for, the problem it solves, and the benefit it offers.",
+      "descriptionPlaceholder": "Problem: What difficulty do your users face?\n\nSolution: How would your idea help them?\n\nWhat makes it different: Why is this approach useful?",
+      "progressPlaceholder": "Completed: Surveyed 10 students and sketched the user flow.\n\nLearned: Users need study groups with compatible schedules.\n\nNext: Test the sketches with users.",
+      "ideaHint": "Still at the idea stage? You can skip this entire section and submit your project.",
+      "checklistHint": "Only the items below are required. Demos and resources do not affect completion.",
+      "addResource": "Add {{resource}}",
+      "removeResource": "Remove {{resource}}",
+      "httpsHint": "Enter a complete link starting with https://, for example https://example.com/demo.",
+      "resourceAccessHint": "Use HTTPS links with public or “Anyone with the link” viewing access. Open them in a private window to check that reviewers can view them.",
+      "resourceFields": {
+        "demo": {
+          "label": "Live demo",
+          "hint": "A working version of your product that reviewers can try."
+        },
+        "slide": {
+          "label": "Slides / pitch deck",
+          "hint": "Present your idea, problem, and solution; for example with Google Slides or Canva."
+        },
+        "repo": {
+          "label": "GitHub source code",
+          "hint": "A public repository at github.com/team/project, rather than an issue or file link."
+        },
+        "video": {
+          "label": "Demo video",
+          "hint": "A recording of your product in action, such as a YouTube, Vimeo, or Loom video."
+        },
+        "pitchVideo": {
+          "label": "Pitch video",
+          "hint": "Introduce your idea, its value, and your team. A working product is not needed."
+        }
+      }
     },
     "management": {
       "manage": "Manage projects",
