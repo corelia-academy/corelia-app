@@ -226,7 +226,8 @@
     "fullName": {
       "label": "Họ và tên đầy đủ",
       "placeholder": "Nguyễn Văn A",
-      "hint": "Dùng để hiển thị trên chứng nhận và bảng điểm."
+      "hint": "Dùng để hiển thị trên chứng nhận và bảng điểm.",
+      "limit": "{{count}} / {{max}} ký tự tối đa."
     },
     "username": {
       "label": "Username",
@@ -262,7 +263,9 @@
       "updateFailed": "Không thể cập nhật thông tin.",
       "visibilityUpdateFailed": "Không thể cập nhật trạng thái hiển thị hồ sơ.",
       "usernameTaken": "Username này đã được sử dụng. Vui lòng chọn username khác.",
-      "loadFailed": "Không thể tải thông tin tài khoản. Kiểm tra kết nối và thử lại."
+      "loadFailed": "Không thể tải thông tin tài khoản. Kiểm tra kết nối và thử lại.",
+      "invalidName": "Tên tối đa 160 ký tự, không chứa ký tự điều khiển ẩn.",
+      "invalidText": "Một trường thông tin quá dài hoặc chứa ký tự điều khiển ẩn. Vui lòng rút ngắn hoặc nhập lại."
     },
     "retry": "Thử lại"
   },

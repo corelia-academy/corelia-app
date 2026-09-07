@@ -5,6 +5,7 @@ import { existsSync } from "node:fs";
 const command = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const pnpmShell = process.platform === "win32";
 const sqlTestPaths = [
+  "scripts/db/tests/profile-name-integrity.integration.sql",
   "scripts/db/tests/learner-ai-retirement.integration.sql",
   "scripts/db/tests/project-submission.integration.sql",
   "scripts/db/tests/jobs-mvp.integration.sql",
