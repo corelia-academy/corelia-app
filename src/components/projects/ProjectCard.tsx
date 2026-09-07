@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { getProjectCoverImageUrl } from "@/lib/projects";
-import { projectSourceLabelKey } from "@/lib/projectSource";
 import { cn } from "@/lib/utils";
 import type { Contest } from "@/types/hackathons";
 import type { Project } from "@/types/projects";
@@ -23,7 +22,6 @@ export function ProjectCard({ project, ownerLabel, ownerHandle, taxonomy, hearte
   const detailPath = `/projects/${project.slug || project.id}`;
   const logo = getProjectCoverImageUrl(project);
   const technologies = taxonomy?.tech_stacks?.filter(item => project.hackathon_tech_stack_ids?.includes(item.id)) ?? [];
-  const sectors = taxonomy?.sectors?.filter(item => project.hackathon_sector_ids?.includes(item.id)) ?? [];
   const awards = taxonomy?.winner_awards?.filter(award => award.project_id === project.id) ?? [];
   const actions = [
     { href: project.demo_url, label: t("projects.detail.demo"), icon: ExternalLink },
@@ -43,10 +41,9 @@ export function ProjectCard({ project, ownerLabel, ownerHandle, taxonomy, hearte
       {technologies.length ? <div className="flex items-start gap-3"><dt className="w-20 shrink-0 text-foreground-subtle">{t("projects.filters.techStacks")}</dt><dd className="min-w-0 font-medium">{technologies.map(item => item.name).join(", ")}</dd></div> : null}
       <div className="flex items-center gap-3"><dt className="w-20 shrink-0 text-foreground-subtle">{t("projects.editor.builder")}</dt><dd className="min-w-0 truncate font-medium">{ownerHandle ? <NavLink to={`/@${ownerHandle}`} className="hover:underline">{ownerLabel || `@${ownerHandle}`}</NavLink> : ownerLabel || t("projects.editor.builder")}</dd></div>
     </dl>
-    <div className="mt-4 flex flex-wrap gap-1.5">{awards.length ? <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary"><Trophy className="size-3" />{t("projects.editor.winner")}</span> : null}{sectors.map(item=><span key={item.id} className="rounded-full bg-surface-raised px-2 py-1 text-xs text-foreground-muted">{item.name}</span>)}{!sectors.length ? <span className="rounded-full bg-surface-raised px-2 py-1 text-xs text-foreground-muted">{t(projectSourceLabelKey(project.source_type))}</span> : null}</div>
-    <div className="mt-auto flex items-center justify-between gap-2 border-t border-border-subtle pt-4">
-      <NavLink to={detailPath} className="inline-flex min-h-10 items-center gap-1 text-xs font-semibold text-primary">{t("projects.editor.viewProject")}<ExternalLink className="size-3.5" /></NavLink>
-      <div className="flex gap-1">{actions.map(({href,label,icon:Icon})=><a key={label} href={href!} target="_blank" rel="noreferrer" aria-label={label} title={label} className="flex size-10 items-center justify-center rounded-lg border border-border-subtle hover:bg-surface-raised"><Icon className="size-4" /></a>)}</div>
-    </div>
+    {awards.length ? <div className="mt-4 flex flex-wrap gap-1.5"><span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary"><Trophy className="size-3" />{t("projects.editor.winner")}</span></div> : null}
+    {actions.length ? <div className="mt-auto pt-4">
+      <div className="flex gap-1 border-t border-border-subtle pt-4">{actions.map(({href,label,icon:Icon})=><a key={label} href={href!} target="_blank" rel="noreferrer" aria-label={label} title={label} className="flex size-10 items-center justify-center rounded-lg border border-border-subtle hover:bg-surface-raised"><Icon className="size-4" /></a>)}</div>
+    </div> : null}
   </article>;
 }

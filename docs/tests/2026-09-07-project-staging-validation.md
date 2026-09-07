@@ -65,3 +65,14 @@ Current public QA slug: `qa-project-showcase-20260907-renamed`; original link st
 Remaining coverage requires external input: Chrome file chooser still fails `Not allowed` before upload reaches the app, and a second authorized QA account is needed for invite accept/decline/revoke and authenticated non-owner checks. Upload/file-size/type/reordering remain unit-tested only. Full keyboard/screen-reader audit, confirm-dialog cancellation and deadline boundaries are not yet manually proven.
 
 First route repair published as staging `9fcd7875`, Cloudflare build `f0bca476-fb3a-487e-84f0-c09011a48075` succeeded. The backend remained on the already verified deployment; frontend-only repair did not require another backend deployment.
+
+## Final repair retest
+
+- Final staging commit `c25636c3`; Cloudflare build `746eeec2-08b2-4862-b2a6-86c7b1cdf76c` completed successfully.
+- Refreshed `/account/projects` shows both QA records, translated owner badges and public/private labels instead of internal UUIDs.
+- Selecting the private project updates the heading and both action destinations. Clicking Edit opens its populated editor with visibility still `private`.
+- Successful repository fixture was cleared and no longer appears in detail resources.
+- Nonexistent project route renders the localized not-found state; nonexistent hackathon context does not open a creation form.
+- Latest console samples for project detail and private editor contain no error entries.
+- Lint, staging build, `db:verify` and exact artifact verification passed for the final repair. Full suite before the final small action-link change passed 64 files / 354 tests; the final link behavior was verified in the deployed browser.
+- Upload and second-account authorization remain outstanding; full manual completion is not claimed. The temporary local Supabase stack from earlier validation was stopped; ongoing testing uses staging.
