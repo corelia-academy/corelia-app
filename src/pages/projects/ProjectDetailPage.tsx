@@ -54,7 +54,7 @@ function ProjectLogo({ project }: { project: Project }) {
   if (coverUrl) {
     return (
       <div className="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border-subtle bg-surface-raised">
-        <img src={coverUrl} alt={project.title} className="h-full w-full object-contain p-2" />
+        <img src={coverUrl} alt={project.title} className="h-full w-full object-contain" />
       </div>
     );
   }

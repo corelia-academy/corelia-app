@@ -31,7 +31,7 @@ export function ProjectCard({ project, ownerLabel, ownerHandle, taxonomy, hearte
   return <article className={cn("group relative flex h-full min-w-0 flex-col rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card transition-shadow hover:border-primary/40 hover:shadow-md",className)}>
     <div className="flex items-start justify-between gap-3">
       <NavLink to={detailPath} tabIndex={-1} aria-hidden="true" className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border-subtle bg-surface-raised">
-        {logo ? <img src={logo} alt="" className="size-full object-contain p-1" loading="lazy" /> : <ImageIcon className="size-7 text-foreground-subtle" />}
+        {logo ? <img src={logo} alt="" className="size-full object-contain" loading="lazy" /> : <ImageIcon className="size-7 text-foreground-subtle" />}
       </NavLink>
       <ProjectSocialBlock projectId={project.id} likeCount={Number(project.like_count ?? 0)} hearted={hearted} className="border-0 pt-0" />
     </div>
