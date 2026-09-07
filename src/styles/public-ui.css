@@ -12,6 +12,7 @@
   white-space: normal;
   overflow-wrap: anywhere;
 }
+.public-ui .public-content :is(h1, h2) { font-family: var(--font-display); }
 .public-ui .public-content h2 { line-height: 1.35; }
 .public-ui .public-content .shadow-card { box-shadow: none; }
 .public-ui .public-content :is(button, select, input:not([type=checkbox]):not([type=radio])) { min-height: 44px; }
@@ -47,7 +48,7 @@
   .public-ui .public-content [data-slot=card-content] { padding: 24px; }
 }
 .public-status { min-height: 100svh; background: var(--background); }
-.public-status :is(h1, h2) { letter-spacing: -0.025em; line-height: 1.25; }
+.public-status :is(h1, h2) { font-family: var(--font-display); letter-spacing: -0.025em; line-height: 1.25; }
 .public-status h1 { font-size: 28px; }
 .public-status [data-slot=card] { box-shadow: none; border-radius: 16px; }
 .public-status :is(button, input:not([type=checkbox]):not([type=radio])) { min-height: 44px; }

@@ -326,7 +326,7 @@ export function CertificateCard({
             />
           </div>
 
-          <h3 className="mt-2 line-clamp-2 text-sm font-semibold leading-snug text-foreground sm:text-base">
+          <h3 className="mt-2 line-clamp-2 text-heading-small font-display text-foreground">
             {cert.course}
           </h3>
 

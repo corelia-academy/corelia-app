@@ -33,10 +33,10 @@ function AccountSettingsSection() {
       <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-lg font-semibold text-foreground">
+            <h2 className="text-heading-medium font-display text-foreground">
               {t("settings.appearance.title")}
             </h2>
-            <p className="mt-1 text-sm text-foreground-muted">
+            <p className="mt-1 text-body-medium font-body text-foreground-muted">
               {t("settings.appearance.description")}
             </p>
           </div>
@@ -53,7 +53,7 @@ function AccountSettingsSection() {
                 type="button"
                 onClick={() => setTheme(themeOption)}
                 className={[
-                  "min-h-11 rounded-full border px-3 py-1 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
+                  "min-h-11 rounded-full border px-3 py-1 text-cta-medium font-cta transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
                   (theme ?? "system") === themeOption
                     ? "border-primary/30 bg-primary-muted text-primary"
                     : "border-border-subtle bg-surface-base text-foreground-muted hover:bg-surface-raised hover:text-foreground",
@@ -72,10 +72,10 @@ function AccountSettingsSection() {
 
       <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
         <div className="min-w-0">
-            <h2 className="text-lg font-semibold text-foreground">
+            <h2 className="text-heading-medium font-display text-foreground">
             {t("settings.session.title")}
           </h2>
-          <p className="mt-1 text-sm text-foreground-muted">
+          <p className="mt-1 text-body-medium font-body text-foreground-muted">
             {t("settings.session.description")}
           </p>
         </div>
@@ -85,7 +85,7 @@ function AccountSettingsSection() {
             <div className="text-sm font-medium text-foreground">
               {t("settings.session.signOutTitle")}
             </div>
-            <div className="mt-1 text-sm leading-relaxed text-foreground-muted">
+            <div className="mt-1 text-body-medium font-body text-foreground-muted">
               {t("settings.session.signOutDescription")}
             </div>
           </div>

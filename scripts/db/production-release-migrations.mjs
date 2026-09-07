@@ -45,18 +45,27 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260903110012_configure_jobs_schedules.sql",
   "supabase/migrations/20260903111914_grant_job_company_source_for_connected_adapters.sql",
   "supabase/migrations/20260903214029_classify_job_sources_and_add_rss_feeds.sql",
+  "supabase/migrations/20260906100000_email_outbox_events.sql",
   "supabase/migrations/20260907014331_project_story_content.sql",
+  "supabase/migrations/20260907054710_harden_profile_name_integrity.sql",
+  "supabase/migrations/20260907060557_restrict_client_table_ddl_privileges.sql",
+  "supabase/migrations/20260907075801_project_moderation_and_deletion.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production is released through 20260903214029 (verified in run 34025599024).
-// The remaining forward-only migration adds project story content.
+// Production is released through 20260907060557 (run 34091572249),
+// excluding unreleased branch migration 20260906100000.
+// The current forward migration set contains email outbox events and project moderation/deletion.
+const UNRELEASED_PENDING_VERSIONS = new Set(["20260906100000", "20260907075801"]);
+
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
-  APPROVED_PENDING_VERSIONS.slice(0, -1),
+  APPROVED_PENDING_VERSIONS.filter((v) => !UNRELEASED_PENDING_VERSIONS.has(v)),
 );
-export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-1));
+export const CURRENT_PENDING_VERSIONS = Object.freeze(
+  APPROVED_PENDING_VERSIONS.filter((v) => UNRELEASED_PENDING_VERSIONS.has(v)),
+);
 export const EXPECTED_POST_MIGRATION_COUNT = PRODUCTION_BASELINE_COUNT + APPROVED_PENDING_VERSIONS.length;
 export const EXPECTED_POST_MIGRATION_LATEST = APPROVED_PENDING_VERSIONS.at(-1);

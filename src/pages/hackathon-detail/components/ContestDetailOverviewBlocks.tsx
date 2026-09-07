@@ -25,7 +25,7 @@ export function ContestDetailOverviewBlocks({
   return (
     <Card id="about" className="scroll-mt-36">
       <CardContent className="p-4 sm:p-6">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">
+        <h2 className="text-heading-medium font-display text-foreground">
           {translate("detail.labels.contextPublic")}
         </h2>
         <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">

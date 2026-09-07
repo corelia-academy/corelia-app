@@ -58,7 +58,7 @@ export function CoursePartnerBrandPanel({
   return (
     <Card>
       <CardContent className="p-4">
-        <h3 className="text-sm font-medium text-foreground">
+        <h3 className="text-heading-small font-display text-foreground">
           {translate("detail.courseDetail.partnerBrand.title")}
         </h3>
 

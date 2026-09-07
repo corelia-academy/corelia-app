@@ -45,7 +45,7 @@ export function UserProfileProjectsSection({
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <FolderGit2 className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {t("projects.title")}
           </h2>
         </div>
@@ -60,7 +60,7 @@ export function UserProfileProjectsSection({
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <FolderGit2 className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {t("projects.title")}
           </h2>
         </div>
@@ -76,7 +76,7 @@ export function UserProfileProjectsSection({
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <FolderGit2 className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {t("projects.title")}
           </h2>
         </div>
@@ -92,7 +92,7 @@ export function UserProfileProjectsSection({
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <FolderGit2 className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {t("projects.title")}
           </h2>
         </div>
@@ -137,7 +137,7 @@ export function UserProfileProjectsSection({
 
                 <div className="flex min-w-0 flex-col p-4 sm:p-5">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="min-w-0 flex-1 truncate text-base font-semibold text-foreground">
+                    <h3 className="min-w-0 flex-1 truncate text-heading-small font-display text-foreground">
                       {project.title}
                     </h3>
                     <span className="shrink-0 rounded-full border border-border-subtle bg-surface-raised px-2 py-0.5 text-[10px] font-medium uppercase text-foreground-muted">

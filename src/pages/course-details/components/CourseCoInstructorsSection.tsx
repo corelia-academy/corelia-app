@@ -29,7 +29,7 @@ export function CourseCoInstructorsSection({
 
   return (
     <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
-      <h2 className="text-base font-semibold text-foreground">
+      <h2 className="text-heading-small font-display text-foreground">
         {translate("detail.courseDetail.coInstructors.title")}
       </h2>
       <p className="mt-1 text-sm text-foreground-muted">

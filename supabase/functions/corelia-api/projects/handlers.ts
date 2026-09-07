@@ -359,3 +359,31 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
     return errorResponse(error);
   }
 }
+
+export async function handleProjectManage(req: Request, db: SupabaseClient): Promise<Response> {
+  try {
+    const user = await verifyBearerUser(req, db);
+    const body = await req.json().catch(() => ({})) as Record<string, unknown>;
+    if (typeof body.project_id !== "string" || !isUuid(body.project_id) || typeof body.action !== "string" ||
+      !["delete", "block", "unblock", "public", "unlisted", "private"].includes(body.action) ||
+      (body.reason != null && (typeof body.reason !== "string" || body.reason.length > 1000))) {
+      return json({ message: "invalid_input:project_action" }, 400);
+    }
+    const { error } = await db.rpc("manage_project", {
+      p_actor_id: user.id,
+      p_project_id: body.project_id,
+      p_action: body.action,
+      p_reason: body.reason ?? null,
+    });
+    if (error) throw new Error(error.message);
+    if (body.action === "delete") {
+      // Deletion is already committed. Cleanup failure must not report a failed
+      // delete; the expiry registry preserves the work for the next cleanup.
+      try { await cleanupExpiredProjectMedia(db); }
+      catch (error) { console.warn("[projects.manage] media cleanup deferred", error); }
+    }
+    return json({ ok: true });
+  } catch (error) {
+    return errorResponse(error);
+  }
+}

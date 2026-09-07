@@ -77,7 +77,7 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Award className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.tabs.achievements")}
           </h2>
         </div>
@@ -120,7 +120,7 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
           <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-surface-raised">
             <Lock className="size-5 text-foreground-subtle" aria-hidden />
           </div>
-          <h3 className="mt-4 text-base font-semibold text-foreground">
+          <h3 className="mt-4 text-heading-small font-display text-foreground">
             {t("userProfile.achievements.privateTitle")}
           </h3>
           <p className="mx-auto mt-2 max-w-md text-sm text-foreground-muted">

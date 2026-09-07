@@ -112,7 +112,7 @@ export default function ConfirmSignup() {
         </div>
 
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-          <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
+          <h1 className="text-heading-medium font-display text-foreground">
             {invalid ? t("confirmSignup.invalidTitle") : t("confirmSignup.title")}
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-foreground-muted">

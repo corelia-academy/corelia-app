@@ -26,6 +26,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { ScrollToTop } from "@/components/navigation/ScrollToTop";
 
 // Lazy-load all routes not needed on the initial render
+const ScrollbarPage = lazy(() => import("@/pages/design-system/ScrollbarPage"));
 const Home = lazy(() => import("@/pages/home/index"));
 const FeedPage = lazy(() => import("@/pages/feed/FeedPage"));
 const Courses = lazy(() => import("@/pages/courses"));
@@ -116,6 +117,7 @@ const AdminManualMint = lazy(() => import("@/pages/admin/AdminManualMint"));
 const AdminBranding = lazy(() => import("@/pages/admin/AdminBranding"));
 const AdminHackathons = lazy(() => import("@/pages/admin/hackathons/AdminHackathonsPage"));
 const AdminHackathonEditor = lazy(() => import("@/pages/admin/hackathons/AdminHackathonEditorPage"));
+const AdminProjectsPage = lazy(() => import("@/pages/admin/AdminProjectsPage"));
 const AdminJobsPage = lazy(() => import("@/pages/admin/jobs/AdminJobsPage"));
 
 const PageFallback = () => <AuthGateLoading />;
@@ -167,6 +169,7 @@ export default function App() {
           <RecoveryGuard />
           <PendingCredentialsWelcomeModal />
           <Routes>
+            <Route path="/design-system/scrollbar" element={<Suspense fallback={<PageFallback />}><ScrollbarPage /></Suspense>} />
             <Route
               path="/login"
               element={
@@ -517,6 +520,7 @@ export default function App() {
                 <Route path="hackathons" element={<Suspense fallback={<PageFallback />}><AdminHackathons /></Suspense>} />
                 <Route path="hackathons/new" element={<Suspense fallback={<PageFallback />}><AdminHackathonEditor /></Suspense>} />
                 <Route path="hackathons/:id/edit" element={<Suspense fallback={<PageFallback />}><AdminHackathonEditor /></Suspense>} />
+                <Route path="projects" element={<RequireRole roles={ROLE_GROUPS.projectModerators}><Suspense fallback={<PageFallback />}><AdminProjectsPage /></Suspense></RequireRole>} />
                 <Route path="jobs" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
                 <Route path="jobs/review" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
                 <Route path="jobs/sources" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />

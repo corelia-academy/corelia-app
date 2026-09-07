@@ -70,7 +70,7 @@ export function AnnouncementsSection({ courseId, enrollmentCount }: Props) {
           <Mail className="size-5" aria-hidden />
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="text-heading-medium font-display text-foreground">
             {t("courseEdit.announcements.heroTitle")}
           </h2>
           <p className="mt-1 text-sm text-foreground-muted">

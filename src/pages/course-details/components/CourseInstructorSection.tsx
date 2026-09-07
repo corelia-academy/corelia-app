@@ -122,7 +122,7 @@ function InstructorCard({
 
       {bio ? (
         <div className="mt-3 border-t border-border-subtle pt-3">
-          <p className="line-clamp-4 whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+      <p className="line-clamp-4 whitespace-pre-wrap text-body-medium font-body text-foreground/90">
             {bio}
           </p>
         </div>
@@ -162,7 +162,7 @@ export function CourseInstructorSection({
 
   return (
     <section className="mt-6 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
-      <h2 className="text-base font-semibold text-foreground">{title}</h2>
+      <h2 className="text-heading-small font-display text-foreground">{title}</h2>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <InstructorCard

@@ -91,7 +91,7 @@ export function ContestPublicLearningSection(props: {
 
         {showRelated ? (
           <div>
-            <h3 className="text-sm font-semibold text-foreground">
+            <h3 className="text-heading-small font-display text-foreground">
               {t("detail.learn.relatedCoursesTitle")}
             </h3>
             <p className="mt-2 text-sm text-foreground-muted">
@@ -133,7 +133,7 @@ export function ContestPublicLearningSection(props: {
 
         {showTracks ? (
           <div>
-            <h3 className="text-sm font-semibold text-foreground">
+            <h3 className="text-heading-small font-display text-foreground">
               {t("detail.learn.relatedTracksTitle")}
             </h3>
             <p className="mt-2 text-sm text-foreground-muted">

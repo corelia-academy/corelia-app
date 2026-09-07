@@ -100,6 +100,10 @@
     "hackathonRegistrationReviewNote": "Note from reviewer: {{note}}",
     "hackathonRegistrationFallbackTitle": "Hackathon",
     "viewHackathon": "View hackathon",
+    "hackathonWinnerAwardTitle": "Hackathon award",
+    "hackathonWinnerAwardBody": "Your project \"{{project}}\" was awarded \"{{award}}\" at \"{{hackathon}}\".",
+    "projectFallback": "your project",
+    "viewAwardDetails": "View results",
     "courseAnnouncementTitle": "Course announcement",
     "trackAnnouncementTitle": "Learning path announcement",
     "markRead": "Mark as read",
@@ -291,14 +295,36 @@
       "saveFailed": "Could not save project.",
       "notEligible": "You cannot create a project yet",
       "notEligibleDescription": "Register for the hackathon first or check the submission deadline.",
-      "cannotEdit": "You do not have permission to edit this project."
+      "cannotEdit": "You do not have permission to edit this project.",
+      "errors": {
+        "invalidUrl": "The provided URL is invalid or unsafe.",
+        "invalidDemoUrl": "The demo URL is invalid (must start with https:// and be safe).",
+        "invalidRepoUrl": "The repository URL is invalid (must be a GitHub URL like https://github.com/owner/repo).",
+        "invalidSlideUrl": "The slide URL is invalid (must start with https:// and be safe).",
+        "invalidVideoUrl": "The video URL is invalid (must start with https:// and be safe).",
+        "unverifiableLink": "Could not verify the link destination.",
+        "unverifiableDemoUrl": "Could not access or verify the demo URL.",
+        "unverifiableRepoUrl": "Could not verify the GitHub repository (it may be private).",
+        "unverifiableSlideUrl": "Could not access or verify the presentation slide URL.",
+        "linkBlocked": "The link was blocked by automated content moderation.",
+        "moderationTitle": "The project title does not meet community guidelines.",
+        "moderationSummary": "The project summary does not meet community guidelines.",
+        "moderationLogo": "The logo does not meet community guidelines.",
+        "moderationImage": "The uploaded image does not meet community guidelines.",
+        "aiUnavailable": "Automated verification is temporarily unavailable. Please try again shortly.",
+        "logoSize": "Logo file size must not exceed 2 MB.",
+        "invalidSlug": "Slug must consist of lowercase letters, numbers, and hyphens."
+      }
     },
     "team": {
       "title": "Team members",
       "hint": "Members appear only after accepting an invitation and cannot edit the project.",
+      "hackathonEligibleHint": "Only users who have registered for this hackathon are eligible.",
       "pickTitle": "Choose team members",
       "pickDescription": "Find Corelia accounts to invite to this project.",
-      "placeholder": "Choose team members",
+      "hackathonPickDescription": "Only users who have registered for this hackathon are eligible.",
+      "placeholder": "Search by name or @username",
+      "searchPlaceholder": "Search by name or @username…",
       "loading": "Loading members…",
       "empty": "No eligible members found.",
       "inviteAfterSave": "Invitations are sent after the project passes moderation and is saved.",
@@ -308,6 +334,14 @@
       "members": "Accepted members",
       "revoke": "Revoke",
       "remove": "Remove",
+      "resendEmail": "Resend email",
+      "emailSent": "Invitation email sent.",
+      "emailAlreadySent": "Invitation email was already sent.",
+      "emailSkipped": "Invitation recorded; email sending was skipped.",
+      "emailRateLimited": "Email delivery is rate-limited. Please try again shortly.",
+      "emailPermanentError": "Email delivery permanently rejected. Please verify the recipient address.",
+      "emailIndeterminateError": "Email delivery status is indeterminate. Manual reconciliation is required.",
+      "emailRetryableError": "Could not send invitation email. Please try again later.",
       "actionFailed": "Could not update the team.",
       "publicTitle": "Project team"
     },
@@ -331,7 +365,13 @@
       "hackathonMissing": "This hackathon is unavailable. Clear the filter to browse other projects.",
       "mediaExpired": "An uploaded image has expired. Add it again and save your project.",
       "resourceRequired": "Add at least one demo, repository, slide or video before submitting to a hackathon.",
-      "contentRequired": "Complete {{field}} before sharing this project. Whitespace or punctuation alone is not content."
+      "contentRequired": "Complete {{field}} before sharing this project. Whitespace or punctuation alone is not content.",
+      "alreadyRegistered": "You are already registered for this hackathon.",
+      "registrationDeadlinePassed": "The registration deadline has passed. New registrations are closed.",
+      "submissionUnauthorized": "You are not authorized to submit to this hackathon.",
+      "moderationFlagged": "Content was flagged by automated moderation. Please revise it and try again.",
+      "userBlocked": "Your account is restricted from performing this action.",
+      "rateLimitExceeded": "Too many requests. Please wait a moment and try again."
     },
     "editor": {
       "workspace": "Project workspace",
@@ -403,6 +443,31 @@
       "markdownlink": "Link",
       "markdowncode": "Inline code",
       "limitHint": "Shorten fields that exceed their displayed character limit before saving."
+    },
+    "management": {
+      "manage": "Manage projects",
+      "title": "Manage “{{title}}”",
+      "delete": "Delete project",
+      "block": "Block project",
+      "unblock": "Unblock project",
+      "blocked": "Blocked",
+      "public": "Public",
+      "unlisted": "Unlisted",
+      "private": "Private",
+      "all": "All statuses",
+      "status": "Status",
+      "action": "Action",
+      "reason": "Reason (required)",
+      "deleteDescription": "This permanently deletes the project and withdraws its linked hackathon submission. This cannot be undone.",
+      "description": "Blocking hides the project from public view and prevents republishing. Unblocking keeps it private until you publish it again.",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "success": "Project updated successfully.",
+      "failed": "Unable to update the project. Check your permissions and try again.",
+      "blockedError": "This project is blocked. An admin must unblock it before it can be published again.",
+      "contentError": "Add a summary and detailed description before publishing.",
+      "previous": "Previous",
+      "next": "Next"
     }
   },
   "search": {
@@ -787,7 +852,9 @@
   "combobox": {
     "searchPlaceholder": "Search by name or email",
     "emptyLabel": "No matching results.",
-    "done": "Done"
+    "done": "Done",
+    "loadMore": "Load more",
+    "loadingMore": "Loading more..."
   },
   "openCampusConnect": {
     "header": {
@@ -866,5 +933,15 @@
   "maintenance": {
     "title": "System under maintenance",
     "body": "Corelia is being upgraded. We'll be back soon. Thanks for your patience!"
+  },
+  "scrollbarDemo": {
+    "title": "Scrollbar",
+    "description": "Native scrolling examples. Use Tab to focus a region, then arrow keys to scroll.",
+    "light": "Light",
+    "dark": "Dark",
+    "vertical": "Vertical · {{percent}}%",
+    "horizontal": "Horizontal · {{percent}}%",
+    "sample": "Sample {{count}}",
+    "code": "Code block"
   }
 }

@@ -89,7 +89,7 @@ export function ContestDetailBlastEmailPanel({
             <Mail className="size-5" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            <h2 className="text-heading-medium font-display text-foreground">
               {translate("workspace.email.heroTitle")}
             </h2>
             <p className="mt-1 text-sm text-foreground-muted">

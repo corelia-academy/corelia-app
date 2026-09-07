@@ -37,7 +37,7 @@ export function ContestDetailResultsBlocks({
               <div className="flex items-center gap-3">
                 <Trophy className="size-5 text-primary" aria-hidden />
                 <div>
-                  <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                  <h2 className="text-heading-medium font-display text-foreground">
                     {translate("workspace.manage.outcomesTitle")}
                   </h2>
                   <p className="mt-1 text-sm text-foreground-muted">
@@ -91,7 +91,7 @@ export function ContestDetailResultsBlocks({
 
               {isManager && leaderboard.length > 0 && (
                 <div className="mt-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
-                  <h3 className="text-base font-medium text-foreground">
+                  <h3 className="text-heading-small font-display text-foreground">
                     {translate("workspace.manage.publishResultsHeading")}
                   </h3>
                   <div className="mt-4 space-y-4">
@@ -161,7 +161,7 @@ export function ContestDetailResultsBlocks({
 
               <div className="mt-4">
                 <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-base font-medium text-foreground">
+                  <h3 className="text-heading-small font-display text-foreground">
                     {translate("workspace.manage.publishedLeaderboard")}
                   </h3>
                   {contest.published_leaderboard.length > 0 && (
@@ -218,7 +218,7 @@ export function ContestDetailResultsBlocks({
               </div>
 
               <div className="mt-4">
-                <h3 className="text-base font-medium text-foreground">
+                <h3 className="text-heading-small font-display text-foreground">
                   {translate("workspace.manage.winnersHeading")}
                 </h3>
                 <div className="mt-3 space-y-3">
@@ -268,7 +268,7 @@ export function ContestDetailResultsBlocks({
               <div className="flex items-center gap-3">
                 <Trophy className="size-5 text-primary" aria-hidden />
                 <div>
-                  <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                  <h2 className="text-heading-medium font-display text-foreground">
                     {translate("detail.public.results.cardTitle")}
                   </h2>
                   <p className="mt-1 text-sm text-foreground-muted">
@@ -278,7 +278,7 @@ export function ContestDetailResultsBlocks({
               </div>
 
               <div className="mt-4">
-                <h3 className="text-base font-medium text-foreground">
+                <h3 className="text-heading-small font-display text-foreground">
                   {translate("detail.public.results.leaderboardHeading")}
                 </h3>
                 <div className="mt-3 space-y-3">
@@ -324,7 +324,7 @@ export function ContestDetailResultsBlocks({
               </div>
 
               <div className="mt-4">
-                <h3 className="text-base font-medium text-foreground">
+                <h3 className="text-heading-small font-display text-foreground">
                   {translate("detail.public.results.winnersHeading")}
                 </h3>
                 <div className="mt-3 space-y-3">

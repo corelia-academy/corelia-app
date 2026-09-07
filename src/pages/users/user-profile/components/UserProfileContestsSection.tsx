@@ -28,7 +28,7 @@ export function UserProfileContestsSection({
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <Trophy className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.tabs.contests")}
           </h2>
         </div>
@@ -43,7 +43,7 @@ export function UserProfileContestsSection({
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <Trophy className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.tabs.contests")}
           </h2>
         </div>
@@ -59,7 +59,7 @@ export function UserProfileContestsSection({
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <Trophy className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.tabs.contests")}
           </h2>
         </div>
@@ -75,7 +75,7 @@ export function UserProfileContestsSection({
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Trophy className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.tabs.contests")}
           </h2>
         </div>

@@ -501,7 +501,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                       onClick={() => navigate(item.to)}
                       onPointerEnter={() => prefetchRouteChunk(item.to)}
                       onFocus={() => prefetchRouteChunk(item.to)}
-                      className="min-h-11 text-sm leading-relaxed"
+                      className="min-h-11"
                     >
                       <div className="pl-2">{item.icon}</div>
                       {item.label}
@@ -515,7 +515,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                       )
                     }
                     variant="destructive"
-                    className="min-h-11 text-sm leading-relaxed"
+                    className="min-h-11"
                   >
                     <div className="pl-2">
                       <LogOut className="mr-2 size-4" aria-hidden />
