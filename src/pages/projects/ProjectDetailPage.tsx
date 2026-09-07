@@ -14,6 +14,7 @@ import {
   PlayCircle,
   Presentation,
   ShieldAlert,
+  Sparkles,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -113,6 +114,11 @@ export default function ProjectDetailPage() {
     : null;
 
   const owner = useMemo(() => ownerDisplay(entry?.owner ?? null), [entry?.owner]);
+  const projectId = entry?.project.id;
+  const winnerAward = useMemo(() => {
+    const awards = sourceQuery.data?.winner_awards ?? [];
+    return awards.find((item) => item.project_id === projectId) ?? null;
+  }, [sourceQuery.data?.winner_awards, projectId]);
 
   useEffect(() => {
     if (entry?.project.slug && slug !== entry.project.slug) {
@@ -237,16 +243,63 @@ export default function ProjectDetailPage() {
   const ownerLink = owner.handle ? `/@${owner.handle}` : null;
   const back = sourceQuery.data?.slug ? `/hackathons/${sourceQuery.data.slug}/projects` : "/projects";
 
-  return <div className="container-app py-6 sm:py-8">
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-      <Button variant="ghost" size="sm" render={<NavLink to={back} />} nativeButton={false}><ArrowLeft className="size-4" />{t("projects.detail.backToProjects")}</Button>
-      <div className="flex flex-wrap items-center gap-2"><ProjectManagementControls project={project} onDeleted={() => navigate("/projects", { replace: true })} /><ProjectSocialBlock projectId={project.id} likeCount={Number(project.like_count ?? 0)} className="border-0 pt-0" /><Button variant="outline" size="sm" onClick={async () => { try { await navigator.clipboard.writeText(`${window.location.origin}/projects/${project.slug}`); toast.success(t("projects.editor.copied")); } catch { toast.error(t("projects.editor.copyFailed")); } }}><Share2 className="size-4" />{t("projects.editor.share")}</Button>{canEdit ? <Button size="sm" render={<NavLink to={`/projects/${project.slug}/edit`} />} nativeButton={false}>{t("projects.detail.edit")}</Button> : null}</div>
-    </div>
-    {project.blocked ? <p role="status" className="mb-4 rounded-lg border border-destructive p-3 text-body-medium font-body text-destructive">{t("projects.management.blockedError")}</p> : null}
-    <header className="flex flex-col gap-5 border-b border-border-subtle pb-8 sm:flex-row sm:items-start">
-      <ProjectLogo project={project} />
-      <div className="min-w-0 flex-1"><span className="text-label-small font-body uppercase tracking-widest text-primary">{t(projectSourceLabelKey(project.source_type))}</span><h1 className="mt-2 break-words text-display-small font-display text-foreground">{project.title}</h1><p className="mt-3 max-w-3xl whitespace-pre-wrap break-words text-body-medium font-body text-foreground-muted">{project.summary || t("projects.card.noSummary")}</p></div>
-    </header>
+  return (
+    <div className="container-app py-6 sm:py-8">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <Button variant="ghost" size="sm" render={<NavLink to={back} />} nativeButton={false}>
+          <ArrowLeft className="size-4" />
+          {t("projects.detail.backToProjects")}
+        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <ProjectManagementControls project={project} onDeleted={() => navigate("/projects", { replace: true })} />
+          <ProjectSocialBlock projectId={project.id} likeCount={Number(project.like_count ?? 0)} className="border-0 pt-0" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(`${window.location.origin}/projects/${project.slug}`);
+                toast.success(t("projects.editor.copied"));
+              } catch {
+                toast.error(t("projects.editor.copyFailed"));
+              }
+            }}
+          >
+            <Share2 className="size-4" />
+            {t("projects.editor.share")}
+          </Button>
+          {canEdit ? (
+            <Button size="sm" render={<NavLink to={`/projects/${project.slug}/edit`} />} nativeButton={false}>
+              {t("projects.detail.edit")}
+            </Button>
+          ) : null}
+        </div>
+      </div>
+      {project.blocked ? (
+        <p role="status" className="mb-4 rounded-lg border border-destructive p-3 text-body-medium font-body text-destructive">
+          {t("projects.management.blockedError")}
+        </p>
+      ) : null}
+      <header className="flex flex-col gap-5 border-b border-border-subtle pb-8 sm:flex-row sm:items-start">
+        <ProjectLogo project={project} />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-label-small font-body uppercase tracking-widest text-primary">
+              {t(projectSourceLabelKey(project.source_type))}
+            </span>
+            {winnerAward ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-xs font-semibold text-amber-950 shadow">
+                <Sparkles className="size-3" aria-hidden />
+                {winnerAward.label}
+              </span>
+            ) : null}
+          </div>
+          <h1 className="mt-2 break-words text-display-small font-display text-foreground">{project.title}</h1>
+          <p className="mt-3 max-w-3xl whitespace-pre-wrap break-words text-body-medium font-body text-foreground-muted">
+            {project.summary || t("projects.card.noSummary")}
+          </p>
+        </div>
+      </header>
     <div className="mt-6 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
       <Tabs.Root defaultValue="overview" className="min-w-0">
         <Tabs.List className="mb-6 flex gap-6 overflow-x-auto border-b border-border-subtle" aria-label={t("projects.editor.sections")}>
@@ -273,5 +326,6 @@ export default function ProjectDetailPage() {
         {href ? <Button className="w-full" variant="outline" render={<NavLink to={href} />} nativeButton={false}>{sourceQuery.data?.title || t("projects.detail.viewSource")}<ExternalLink className="size-4" /></Button> : null}
       </aside>
     </div>
-  </div>;
+  </div>
+  );
 }

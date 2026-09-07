@@ -36,7 +36,7 @@ function SubmissionField({
     <div className="space-y-1.5">
       <label htmlFor={id} className="text-sm font-medium text-foreground">
         {label}
-        {required ? <span className="text-destructive"> *</span> : null}
+        {required ? <span className="text-primary"> *</span> : null}
       </label>
       {children}
     </div>

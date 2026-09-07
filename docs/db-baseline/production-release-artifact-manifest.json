@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "00c9dd955c697767acd8551d21b422e08d1dfc42",
-  "git_tree_sha": "c5a30a1e02f2c245f85b839026cf601d8d0956f7",
+  "rc_sha": "e275fc0b87b79f90b7a10ed8f38e945a26a72cb9",
+  "git_tree_sha": "56d22e630b8e2ffb845caa022caf338a5d210323",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 186,
+  "migration_count": 187,
   "latest_migration": "20260907075801_project_moderation_and_deletion.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "00c9dd955c697767acd8551d21b422e08d1dfc42",
+  "source_sha": "e275fc0b87b79f90b7a10ed8f38e945a26a72cb9",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "50737b083f9b63d4dab543a59aa187cd41b5299a89719844c936b2ded27b1eaf",
+  "candidate_tree_sha256": "13b44f173ec8905051fff829f48bf69da7fa6dc9229934880ef77bd5c9a5b47f",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -651,7 +651,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "001fc39540a55b6ce5d4fa103e388542f20584808626f9abf2fc8378216dfe63"
+      "sha256": "be35e79ebb455c0005d8e2378821fc990dd91f36ecf7644c0d9681043e232388"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -715,7 +715,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "d8e57ab813dfd1a14c9e26d5a81d45883d9725d3822abac9332da1ff64fe306f"
+      "sha256": "f81beca1233f5e5a578b028006de9fe4562958dd883f97cd5db621f71519f8e2"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
@@ -826,6 +826,10 @@
       "sha256": "12da6a0b223cd2b5498709f2782a725a3bb42a5590a889a2490dbf7a8daddf95"
     },
     {
+      "path": "scripts/esm-loader.mjs",
+      "sha256": "9f2ae627c2dfa7ea2d571871f95666198b0c52953cef131720303e7ea6e67364"
+    },
+    {
       "path": "scripts/jobs/generate-sitemap.mjs",
       "sha256": "8227da13926fe1d2d657301f2e98332547fa25b4ed4faa19a4b4de1270627a91"
     },
@@ -844,6 +848,14 @@
     {
       "path": "scripts/seed-local-course-skills.sql",
       "sha256": "074035f3004f35e72e7f7ded9766418a36ea62702a4161864787b246cad30215"
+    },
+    {
+      "path": "scripts/verify-email-concurrency.mjs",
+      "sha256": "9777f2944b10b60a60234795b36f2cbe7b38269595b9f9a71ad206fa8a6de859"
+    },
+    {
+      "path": "scripts/verify-email-concurrency.sql",
+      "sha256": "7950e822f936a8520ea649041383e1edded633fbca921697b192556e87c8fc0b"
     },
     {
       "path": "src/AGENTS.md",
@@ -915,7 +927,7 @@
     },
     {
       "path": "src/components/layouts/NotificationBell.tsx",
-      "sha256": "01f255ea697f9e29453e12e02c2ac92377a1a34969c99bdbe88a79d4d1dcd8f0"
+      "sha256": "05ed846c4cb3eba831888dfef8718dcbf48c9445725e837c320da8788f1f00fd"
     },
     {
       "path": "src/components/layouts/publicPresentation.test.ts",
@@ -935,7 +947,7 @@
     },
     {
       "path": "src/components/projects/ProjectCard.tsx",
-      "sha256": "499349e8810127912b496395a9ab05cca1976cd069618ab69c735e15d65949f3"
+      "sha256": "ab4c503bfe4841fb09973af868e7cbe8c80331bf3f405cd779abc430f394317f"
     },
     {
       "path": "src/components/projects/ProjectFilterBar.tsx",
@@ -968,6 +980,10 @@
     {
       "path": "src/components/ui/LoadingBar.tsx",
       "sha256": "a6f01ff39e547e0da41eeb0a8739f454c8803925506766ed42e78477a13842a7"
+    },
+    {
+      "path": "src/components/ui/profile-combobox.tsx",
+      "sha256": "f155367c41047ab6f2a534e2ebc26d4b3998defa151d4a22865e39d5a3188c8b"
     },
     {
       "path": "src/components/ui/sheet.tsx",
@@ -1170,8 +1186,12 @@
       "sha256": "b6db3c35539697084215169f0e60c216fb4e08fa0fb8868488e3cfbd2a12c803"
     },
     {
+      "path": "src/features/projects/ProjectTeamEditor.test.tsx",
+      "sha256": "7265df296235ff489fbbe3f1ba2723655f2eb640ad88499f7518fe5b01011e7e"
+    },
+    {
       "path": "src/features/projects/ProjectTeamEditor.tsx",
-      "sha256": "31297bc0ab3ce2848da70364bea612a0005ccb79234107ad767c33058d6d7f72"
+      "sha256": "3dd07040b5dfeffa176f67a09254dda87d8211ca98c5cf6e7ae91a8d27ce98e6"
     },
     {
       "path": "src/features/projects/useProjectDraft.ts",
@@ -1271,11 +1291,11 @@
     },
     {
       "path": "src/lib/hackathonContract.test.ts",
-      "sha256": "c11e94e40dda907d3cf3ea4aa28e0c7bfdcda52622b1ab048d8d2a13db3488c6"
+      "sha256": "e17e3b147deb83b60523e6b1d7aaf09993fcd0248773b079600b47116d8bc1f6"
     },
     {
       "path": "src/lib/hackathonContract.ts",
-      "sha256": "4b2c90bcb7304569d38c7f9fe94dbf7c4a5c24a91378102bedb03976d98a6400"
+      "sha256": "a7141f4c755b7e45fc2acea45a5b6dd8903deaf41e49a192c4a66f69073c40c5"
     },
     {
       "path": "src/lib/hackathonLearning.ts",
@@ -1295,7 +1315,7 @@
     },
     {
       "path": "src/lib/hackathons.ts",
-      "sha256": "8e3090661dafe756ab0eeec930964c90ee2925be0d4932ac5a15b23654f386d8"
+      "sha256": "26638422f38e77673ccd1f10ae94d9d8039005a3ece374b2e8440cd620246928"
     },
     {
       "path": "src/lib/jobs.ts",
@@ -1343,15 +1363,19 @@
     },
     {
       "path": "src/lib/projectCollaboration.ts",
-      "sha256": "19b13784208724e017707f2847452fe3d07546f5d9271e4fa782fa834580880b"
+      "sha256": "64cfb674550d783e772b4bf23c3023fac092138ab360f50ba3109c426c0de850"
     },
     {
       "path": "src/lib/projectEditorSource.test.ts",
       "sha256": "99dcac6cee0c567e7febddc919cdc50811a7ee3befebc7915be3eb7b78f6207b"
     },
     {
+      "path": "src/lib/projectErrors.test.ts",
+      "sha256": "8f7d576c25ee1f2599ff61fde0209e09045c935d694aba96d8a801354054fc76"
+    },
+    {
       "path": "src/lib/projectErrors.ts",
-      "sha256": "bca5f8d19f26fcdf6f528cb8b80855e3af8251dd36dd854d0eb0dff8a0f550fd"
+      "sha256": "01692a97f842bed2ddd9c9911bf0bda49d8c5e313d14d325eb9517ea9ebb843a"
     },
     {
       "path": "src/lib/projects.ts",
@@ -1439,7 +1463,7 @@
     },
     {
       "path": "src/locales/en/admin.json",
-      "sha256": "2ca12466f477fcb9225240771b21d953c0b8a090360838be72725761a15bd532"
+      "sha256": "ecaa669bbd7818b76216640116ae5af498a9dbf6e9afde5da07e6e016eb4f917"
     },
     {
       "path": "src/locales/en/career.json",
@@ -1447,7 +1471,7 @@
     },
     {
       "path": "src/locales/en/common.json",
-      "sha256": "677ae96198a7dcb5d32e4e62f96e46a6b8c24ffa2d7883e525ea92636b7d8eb7"
+      "sha256": "5cff91dc7508ed6c672c9d34b7e8fe88e1ef676acbcc648e1ecb1f59a3f04d61"
     },
     {
       "path": "src/locales/en/contests.json",
@@ -1471,7 +1495,7 @@
     },
     {
       "path": "src/locales/vi/admin.json",
-      "sha256": "ab4f3721d4767fd86f19b545df868f3411fd2867d17aab15938bab0e6411b72a"
+      "sha256": "d8221ab35b3d9228d8c3126c4a45ef9e6ca9b840b891001dd124aa1abeb9fa08"
     },
     {
       "path": "src/locales/vi/career.json",
@@ -1479,7 +1503,7 @@
     },
     {
       "path": "src/locales/vi/common.json",
-      "sha256": "ccec5384aad9910ee1963f6624a76c6a1d6bd9541cca463f9e6f52e2536b0480"
+      "sha256": "61fd91f15f29a6543ec202e4c7cc2127d24ba49516e2702ba74fcc99c143f7af"
     },
     {
       "path": "src/locales/vi/contests.json",
@@ -1583,11 +1607,11 @@
     },
     {
       "path": "src/pages/admin/hackathons/AdminHackathonEditorPage.test.ts",
-      "sha256": "26d94ee46f06b648136a3149218dcf4c2d5a946bd2b8091827b05ac4fb56caa9"
+      "sha256": "45bd0db0c9a2a7666401a74d2e0dae7e1b57742fa2e77b16e6489d087f7cbc00"
     },
     {
       "path": "src/pages/admin/hackathons/AdminHackathonEditorPage.tsx",
-      "sha256": "de9491b880e7a707372b4c79b19cdd878db73c8b807a7439e781f28ed83e3ebf"
+      "sha256": "0f3a3dd524ec2cfd4a40c6946ddd6c34bdd557407149ba1828839552cdd10a3b"
     },
     {
       "path": "src/pages/admin/hackathons/AdminHackathonsPage.tsx",
@@ -1731,7 +1755,7 @@
     },
     {
       "path": "src/pages/hackathon-detail/components/ContestDetailParticipantSubmissionCard.tsx",
-      "sha256": "280f0cec541370d274e51975fdce6710a7c1539dde3ab0e43ef43bb1d75f19ed"
+      "sha256": "90897adfd4344486e900c299f51c9459d34f8e96304a5aac30aaacbfa434f42f"
     },
     {
       "path": "src/pages/hackathon-detail/components/ContestDetailSubmissionCollaboration.tsx",
@@ -1979,11 +2003,11 @@
     },
     {
       "path": "src/pages/projects/ProjectDetailPage.tsx",
-      "sha256": "12214ae923a9c9fbdef87bd9930a4330829ac3a93b5601f0a1b0e7685800dc38"
+      "sha256": "c2e70f44209100e7bdca6f8f97d4c7ab7a03b61a6b2f0ac8c99f365aa8496696"
     },
     {
       "path": "src/pages/projects/ProjectEditPage.tsx",
-      "sha256": "16a6f50472cee6a1ac20eab249c07b91222608886cef15e9a55ad94c6de2e7ce"
+      "sha256": "e0768ff159774b310e291bbc918a6ca8ada6bf573dc1337028b8eed2059083ec"
     },
     {
       "path": "src/pages/projects/ProjectNewPage.test.tsx",
@@ -1991,11 +2015,11 @@
     },
     {
       "path": "src/pages/projects/ProjectNewPage.tsx",
-      "sha256": "72acab4213b7b247fe93c4dbaff40fe04bf3f5112a679dfa89f7ed6c8daaa5f3"
+      "sha256": "81a3a3115029b7456b746a54dff2f4ef5f2af8f11f9aee7d8348993e17760439"
     },
     {
       "path": "src/pages/projects/ProjectsPage.tsx",
-      "sha256": "3885e5c1be10931cd49ee6db3a81f9c897d9ce4cef6f7902b2acd39ef8bda6de"
+      "sha256": "91d3d757d1abfd730fb274363d99ff36728aff29aa32ba8eb7e700d23154c46b"
     },
     {
       "path": "src/pages/search/SearchPage.tsx",
@@ -2134,8 +2158,28 @@
       "sha256": "c7aaebbec86315e21748b08586f75101f97b8fcf985efe936cbb4319aceeb261"
     },
     {
+      "path": "supabase/functions/corelia-api/hackathons/blast_email.ts",
+      "sha256": "71575c49f51fd570f60fd4f056646a288fa7ffa972fa04e3fe39d23d8e180557"
+    },
+    {
+      "path": "supabase/functions/corelia-api/hackathons/blast_permissions.test.ts",
+      "sha256": "21c03d76eca1bdc53382f7091095ff44a8ac7d0a6adb666d6d4b19eef4e6a652"
+    },
+    {
+      "path": "supabase/functions/corelia-api/hackathons/blast_permissions.ts",
+      "sha256": "349e0e116b54f117308de29d5e0dc53acaec3a960e2afa51cdbcbc2e01dd2637"
+    },
+    {
+      "path": "supabase/functions/corelia-api/hackathons/winner_award_notify.test.ts",
+      "sha256": "840e2b94dbfb9e2e45c61ed2ddcd48a1f92eb411325b9f9c28ad3e177a1c5ed0"
+    },
+    {
+      "path": "supabase/functions/corelia-api/hackathons/winner_award_notify.ts",
+      "sha256": "d6e3a8f1e048ba7a926d41f93fc477c2229270bcf9a0ac40a04352f6cc10169f"
+    },
+    {
       "path": "supabase/functions/corelia-api/index.ts",
-      "sha256": "ce42e6f6da2bcdabba8fb50b922f08f12cea5e14e565021c2f44218d56bc5f26"
+      "sha256": "b026a258909a9c93d4c06a61ffe96c141d36681526373114fc1a88bb1cc4f743"
     },
     {
       "path": "supabase/functions/corelia-api/jobs/adapters.test.ts",
@@ -2198,8 +2242,48 @@
       "sha256": "1a37b6b4a395bd6cd913efa0fbad628ed54ac61aad557255a6656526349028b5"
     },
     {
+      "path": "supabase/functions/corelia-api/lib/crypto.ts",
+      "sha256": "ed0948cbc76aeccaf866abbd3050de84dd98e1166e0e7dac1da5fffb7c70e0fd"
+    },
+    {
       "path": "supabase/functions/corelia-api/lib/http.ts",
       "sha256": "6118a68939110e97ae8b817cd9fbac18f98db604c9b758a553fa419b8c1475fe"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/hackathon_winner_award_body.test.ts",
+      "sha256": "48b4674da947924f0b3a130aea5a4fdf670518d7361690554b36b4234ed8c7ed"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/hackathon_winner_award_body.ts",
+      "sha256": "b486a407cb4622c075eb42508691c0b7a43ee75e8eb205d0be099efe9516e046"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/layout.ts",
+      "sha256": "cd32b46c483ba41a27559212ea25bf3ed8aefbd1b1399f947d6a53219617a3de"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/outbox.test.ts",
+      "sha256": "f362ed78e855fcdeb4a8c0ca886e1402db8c00b9000b7843a3a6aca0408b4c42"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/outbox.ts",
+      "sha256": "f6f2df4959c53b54c9a61d97bac9cd4b963d73304cb588c47fe46eef29e9939a"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/project_collaboration_invite_body.test.ts",
+      "sha256": "f5a5a067083f5c636d26ae3ab27460e74af4cd23e761f2ecaf2d1edb390571c9"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/project_collaboration_invite_body.ts",
+      "sha256": "1126e934348c013d45d10d491cb7b89172125d95e322229f9e42ad0065f6f501"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/resend.test.ts",
+      "sha256": "e5c9da93998b72a74cf43fff689ee0105043feda557cd8265abc841d59cdb258"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/resend.ts",
+      "sha256": "f9cc3bfaa20c282e60c745f3c73dc47f0d2a56ce5ba5c23684860a7cc2b229f3"
     },
     {
       "path": "supabase/functions/corelia-api/lib/supabase.ts",
@@ -2208,6 +2292,14 @@
     {
       "path": "supabase/functions/corelia-api/notifications/unsubscribe.ts",
       "sha256": "8f6c9c05983772f1be51704d03b77887e5f2b761d2f18b4436b5a165e62d096b"
+    },
+    {
+      "path": "supabase/functions/corelia-api/projects/collaboration_invite_email.test.ts",
+      "sha256": "ba3e7dd8b79c976828f9cf73dd92d74172076c68c88a80e824008a2722426177"
+    },
+    {
+      "path": "supabase/functions/corelia-api/projects/collaboration_invite_email.ts",
+      "sha256": "8142728eb3fa0b584276294f6d0c5d729293408be1d3abea6366e4e575f3233b"
     },
     {
       "path": "supabase/functions/corelia-api/projects/handlers.test.ts",
@@ -2464,6 +2556,10 @@
     {
       "path": "supabase/migrations/20260903214029_classify_job_sources_and_add_rss_feeds.sql",
       "sha256": "bcf6108292b5e6e7dd97b481a91cde6d47853f75e300adf2610bdc209e1da20e"
+    },
+    {
+      "path": "supabase/migrations/20260906100000_email_outbox_events.sql",
+      "sha256": "15b6fbc65d6459250f818bbb54ae0317b4daf7ee802bfcc091a7148d2a37d057"
     },
     {
       "path": "supabase/migrations/20260907014331_project_story_content.sql",
@@ -2806,6 +2902,10 @@
       {
         "path": "supabase/migrations/20260903214029_classify_job_sources_and_add_rss_feeds.sql",
         "sha256": "bcf6108292b5e6e7dd97b481a91cde6d47853f75e300adf2610bdc209e1da20e"
+      },
+      {
+        "path": "supabase/migrations/20260906100000_email_outbox_events.sql",
+        "sha256": "15b6fbc65d6459250f818bbb54ae0317b4daf7ee802bfcc091a7148d2a37d057"
       },
       {
         "path": "supabase/migrations/20260907014331_project_story_content.sql",
