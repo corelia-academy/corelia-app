@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "06368c259b0391e04e4ce4b8fd6a2dc92b9cab5b",
-  "git_tree_sha": "b2286bd07ff40d5c85a4ed8b8cb5b3350f635c1a",
+  "rc_sha": "2b0f19ee57d77475fedec53c68148c7b4c60f58c",
+  "git_tree_sha": "acd2a043f5ba523046f3176a35e4f6ba8e08e416",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 183,
   "latest_migration": "20260907014331_project_story_content.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "06368c259b0391e04e4ce4b8fd6a2dc92b9cab5b",
+  "source_sha": "2b0f19ee57d77475fedec53c68148c7b4c60f58c",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "c62c1f39dd0df0124e855ad3ce127d46c98f32558cd1e16fc9f950bd7cba0e83",
+  "candidate_tree_sha256": "5adb86c6cf564eee88b699fff8a8844bb3190ede40b2127ef21e97fe00ffc2be",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -560,6 +560,10 @@
     {
       "path": "docs/tests/2026-09-07-project-manual-qa.md",
       "sha256": "c38a1fd7f60f5b89baa97912fc5b02aaa9d1e09bdfc16e607f7eb982f6873672"
+    },
+    {
+      "path": "docs/tests/2026-09-07-project-publication-validation.md",
+      "sha256": "18fa045356e90f57bc050584be40fb07c396b936dceefad61aae70f01291eccf"
     },
     {
       "path": "docs/tests/2026-09-07-project-redesign-validation.md",
@@ -1119,15 +1123,19 @@
     },
     {
       "path": "src/features/projects/ProjectEditor.test.tsx",
-      "sha256": "cdeffaeec05fdf86311e8d94527dfc2e481b7e68883d2602b1859cbda1b80429"
+      "sha256": "b09311cbde926c829277ded3300a1a417a9fad0da022a2ecdf6e910c4dd35e3e"
     },
     {
       "path": "src/features/projects/ProjectEditor.tsx",
-      "sha256": "28f4efd42e6826f986a81216845cadcc7f06043e88ecfbf22bd15a64b3d7c29e"
+      "sha256": "ffbe67fb1bb28942f3364f5213bddbfed36f2ed2b77485f98f590d3b20ecda86"
     },
     {
       "path": "src/features/projects/projectEditorDraft.ts",
       "sha256": "1e0c7cdc0acfdee1470a80dc53823e3497301d2a34f1079fd5d257ae22f00487"
+    },
+    {
+      "path": "src/features/projects/ProjectMarkdownEditor.tsx",
+      "sha256": "edb46a3f0190a93f72b72a1b39941e36e10d43db2e9986aef8a775223836b302"
     },
     {
       "path": "src/features/projects/ProjectMediaEditor.test.tsx",
@@ -1315,7 +1323,7 @@
     },
     {
       "path": "src/lib/projectErrors.ts",
-      "sha256": "4752e4ea27cc6f90384c305a377866a3dce509fb461041d4e2e4a1dce2f175a0"
+      "sha256": "bca5f8d19f26fcdf6f528cb8b80855e3af8251dd36dd854d0eb0dff8a0f550fd"
     },
     {
       "path": "src/lib/projects.ts",
@@ -1411,7 +1419,7 @@
     },
     {
       "path": "src/locales/en/common.json",
-      "sha256": "480b6c5f1d14e075676949110f7357605810084dc7f8e3025a42def4635f0065"
+      "sha256": "b5af4ffdc47257bc8bd4ff9ef12b2eb45acf60b3c18de0c98a8faf4ed4df602a"
     },
     {
       "path": "src/locales/en/contests.json",
@@ -1443,7 +1451,7 @@
     },
     {
       "path": "src/locales/vi/common.json",
-      "sha256": "1f896a2884f5bc42f1bd22465ab2155706b788aff48a71bd10bd7c1aff4bc88d"
+      "sha256": "633cb2c880ccf66e9c35a7919bb754edce17c27745d99c552bad4b3c25106a68"
     },
     {
       "path": "src/locales/vi/contests.json",
@@ -2163,11 +2171,11 @@
     },
     {
       "path": "supabase/functions/corelia-api/projects/handlers.test.ts",
-      "sha256": "54ba837f943a1325b1d673abdd6332df7acc49993b3c78c7ecffb02191fcfb34"
+      "sha256": "4a381ea34e8379ecafcf57bcb5372a168edf409815d847b631895f849e1d866f"
     },
     {
       "path": "supabase/functions/corelia-api/projects/handlers.ts",
-      "sha256": "a7683f97efcdb0a5998786e46c4dc2c24092344e304f67c56f43c58f20257bae"
+      "sha256": "4cec7975debd0d6d5b116e200ea1edc302fed926fc609c2b73f17bb44aafe75e"
     },
     {
       "path": "supabase/functions/corelia-api/projects/openai.test.ts",
@@ -2179,11 +2187,11 @@
     },
     {
       "path": "supabase/functions/corelia-api/projects/validation.test.ts",
-      "sha256": "cfaf5d91304b8f2a892ccb73116e571ce27f5dd8c6b57735056a98859f5ac3f5"
+      "sha256": "1366cd80367bf9d34965246e16445fbf1cc61797b6ec939428bb9149b4df59d5"
     },
     {
       "path": "supabase/functions/corelia-api/projects/validation.ts",
-      "sha256": "8a19d4f83fb2f39a0ffc83c6d30d3b49a2037ec97af1c7e58dfb8d137de73736"
+      "sha256": "ef239224edf0f473303d585821816ec1b2760bb39606e567ca277595a45d9a6a"
     },
     {
       "path": "supabase/functions/corelia-api/README.md",
