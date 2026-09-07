@@ -3,10 +3,18 @@ import {
   detectImageMime,
   isOwnedProjectMediaPath,
   normalizeHttpsUrl,
+  normalizeProjectSlug,
   validateProjectLinks,
 } from "./validation.ts";
 
 describe("project validation", () => {
+  it("enforces slug and URL limits at the boundary", () => {
+    expect(normalizeProjectSlug('a'.repeat(160))).toHaveLength(160);
+    expect(() => normalizeProjectSlug('a'.repeat(161))).toThrow('invalid_input:project_slug');
+    const url = 'https://example.com/' + 'a'.repeat(2028);
+    expect(normalizeHttpsUrl('demo_url',url)).toHaveLength(2048);
+    expect(() => normalizeHttpsUrl('demo_url',url+'a')).toThrow('invalid_url:demo_url');
+  });
   it("accepts a canonical GitHub repository", () => {
     expect(validateProjectLinks({ repo_url: "https://github.com/corelia/app" })[0]).toMatchObject({
       field: "repo_url",

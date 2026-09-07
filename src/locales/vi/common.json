@@ -329,7 +329,9 @@
       "taxonomy": "Chọn ít nhất một track, chuyên môn kỹ thuật và công nghệ.",
       "unavailable": "Dịch vụ kiểm duyệt tạm thời không khả dụng. Thay đổi đã được giữ lại; hãy thử lại sau.",
       "hackathonMissing": "Hackathon này không khả dụng. Hãy xóa bộ lọc để xem dự án khác.",
-      "mediaExpired": "Một ảnh tải lên đã hết hạn. Hãy thêm lại ảnh và lưu dự án."
+      "mediaExpired": "Một ảnh tải lên đã hết hạn. Hãy thêm lại ảnh và lưu dự án.",
+      "resourceRequired": "Thêm ít nhất một demo, repo, slide hoặc video trước khi nộp dự án hackathon.",
+      "contentRequired": "Điền {{field}} trước khi chia sẻ dự án. Chỉ khoảng trắng hoặc dấu câu không được tính là nội dung."
     },
     "editor": {
       "workspace": "Không gian dự án",
@@ -385,7 +387,21 @@
       "progress": "Tiến độ trong hackathon",
       "progressHint": "Bạn đã xây dựng, học hỏi và hoàn thành những gì? Chia sẻ cột mốc và kế hoạch tiếp theo. Hỗ trợ Markdown.",
       "pitchVideo": "Video thuyết trình",
-      "videos": "Video dự án"
+      "videos": "Video dự án",
+      "resourceRequired": "Ít nhất một demo, repo, slide hoặc video",
+      "hackathonLinksHint": "Cung cấp ít nhất một link HTTPS đến demo, repo công khai, slide hoặc video. Đảm bảo người đánh giá mở được link.",
+      "characterLimit": "{{count}} / tối đa {{limit}} ký tự",
+      "write": "Viết",
+      "preview": "Xem trước",
+      "previewEmpty": "Nhập Markdown để xem trước nội dung tại đây.",
+      "formatting": "Định dạng Markdown",
+      "markdownText": "Nội dung",
+      "markdownheading": "Tiêu đề",
+      "markdownbold": "In đậm",
+      "markdownitalic": "In nghiêng",
+      "markdownlist": "Danh sách",
+      "markdownlink": "Liên kết",
+      "markdowncode": "Mã nội tuyến"
     }
   },
   "search": {

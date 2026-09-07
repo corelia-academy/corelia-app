@@ -329,7 +329,9 @@
       "taxonomy": "Select at least one track, engineering area and technology.",
       "unavailable": "Content review is temporarily unavailable. Your changes are preserved; please try again shortly.",
       "hackathonMissing": "This hackathon is unavailable. Clear the filter to browse other projects.",
-      "mediaExpired": "An uploaded image has expired. Add it again and save your project."
+      "mediaExpired": "An uploaded image has expired. Add it again and save your project.",
+      "resourceRequired": "Add at least one demo, repository, slide or video before submitting to a hackathon.",
+      "contentRequired": "Complete {{field}} before sharing this project. Whitespace or punctuation alone is not content."
     },
     "editor": {
       "workspace": "Project workspace",
@@ -385,7 +387,21 @@
       "progress": "Progress during the hackathon",
       "progressHint": "What did you build, learn and ship? Share milestones and what comes next. Markdown is supported.",
       "pitchVideo": "Pitch video",
-      "videos": "Project videos"
+      "videos": "Project videos",
+      "resourceRequired": "At least one demo, repository, slide or video",
+      "hackathonLinksHint": "Provide at least one HTTPS link to a demo, public repository, presentation or video. Make sure reviewers can open it.",
+      "characterLimit": "{{count}} / {{limit}} characters maximum",
+      "write": "Write",
+      "preview": "Preview",
+      "previewEmpty": "Write Markdown to see the preview here.",
+      "formatting": "Markdown formatting",
+      "markdownText": "Text",
+      "markdownheading": "Heading",
+      "markdownbold": "Bold",
+      "markdownitalic": "Italic",
+      "markdownlist": "Bullet list",
+      "markdownlink": "Link",
+      "markdowncode": "Inline code"
     }
   },
   "search": {
