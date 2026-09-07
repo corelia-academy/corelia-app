@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "961f340f1d229b3a8d185af80d28b4e4676ebb2a",
-  "git_tree_sha": "ce96e7a467fcd59c276d6c910e82bcccfab9f89c",
+  "rc_sha": "6764a5ebe0d127dc62eaa436a1b9144b6272f34d",
+  "git_tree_sha": "cf23792bf6e5e5bf29c7657f7c62897d35d71ab9",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 187,
   "latest_migration": "20260907075801_project_moderation_and_deletion.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "961f340f1d229b3a8d185af80d28b4e4676ebb2a",
+  "source_sha": "6764a5ebe0d127dc62eaa436a1b9144b6272f34d",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "51e7b37429dc7688e95bbcc973c1f82997fdce7d48b3a847db4d62019925a442",
+  "candidate_tree_sha256": "eb8edabdc69e907c0aa4bebd62c4840fe812600a461a32fd8d89ddc04b8a9f83",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -47,7 +47,7 @@
     },
     {
       "path": ".github/workflows/deploy-prod.yml",
-      "sha256": "1c5cbc36ac4bf6358d15b3f79254cfb5602228b9b6b73eadbee8679184669b1a"
+      "sha256": "443195885688c18d42821cef7a1751252171ac40aa5dba0d37a17405b8a1c669"
     },
     {
       "path": ".github/workflows/deploy-staging.yml",
@@ -651,7 +651,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "be35e79ebb455c0005d8e2378821fc990dd91f36ecf7644c0d9681043e232388"
+      "sha256": "fbe5d58c2c62ca7e123e4dac7de3d91431b7d58ddc334bd34ec3875d5b8b2217"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -715,7 +715,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "f81beca1233f5e5a578b028006de9fe4562958dd883f97cd5db621f71519f8e2"
+      "sha256": "6673faca249c99aa06b0e80226bf023db83105d839f5ad1fb620d4122c7c1197"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
@@ -743,11 +743,11 @@
     },
     {
       "path": "scripts/db/tests/production-frontend-artifact.test.mjs",
-      "sha256": "6b1453a30cb3ee1036f22c9f08f6aff73121a54eff2431da27ccea626773f9df"
+      "sha256": "c260acb8a6e583e590cb2e28d2bc4588a5d4b637bb45826be9bade7a5f6f46ea"
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "6a115cfc5f5e1c3f8b916df1932687cb4cb187899605cae6496d3475ed4980a3"
+      "sha256": "0b0e999d2627596298728feb74b65188dd8d57f5f8d36a999f1987c0ef24c06b"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
