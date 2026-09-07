@@ -177,7 +177,8 @@ test("Production workflow uses the technical frontend gate and preserves deploym
   assert.match(workflow, /VITE_CDN_BASE_URL: \$\{\{ vars\.VITE_CDN_BASE_URL \}\}/);
   assert.match(workflow, /pnpm build:prod[\s\S]*verify-production-frontend-artifact\.mjs/);
   assert.match(workflow, /verify-production-frontend-artifact\.mjs dist\/client/);
-  assert.doesNotMatch(workflow, /migration repair|--include-all/);
+  assert.doesNotMatch(workflow, /migration repair/);
+  assert.match(workflow, /node scripts\/db\/verify-production-migration-state\.mjs "\$RUNNER_TEMP\/production-before-apply-migration-list\.txt"\n(?: *#.*\n)* *supabase migration up --linked --dns-resolver https --include-all/);
 
   assert.doesNotMatch(workflow, /APPROVED_PRODUCTION_RELEASE_SHA|APPROVED_RELEASE_SHA/);
   assert.doesNotMatch(workflow, /inputs\.release_sha|ref: \$\{\{ inputs\.release_sha \}\}/);
