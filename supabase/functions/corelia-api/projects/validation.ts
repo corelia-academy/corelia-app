@@ -20,7 +20,7 @@ export function isUuid(value: string): boolean {
 
 export function normalizeProjectSlug(value: unknown): string {
   const slug = String(value ?? "").trim().toLowerCase();
-  if (!SLUG_RE.test(slug)) throw new Error("invalid_input:project_slug");
+  if (slug.length > 160 || !SLUG_RE.test(slug)) throw new Error("invalid_input:project_slug");
   return slug;
 }
 
@@ -59,6 +59,7 @@ function isUnsafeHostname(hostname: string): boolean {
 export function normalizeHttpsUrl(field: string, value: unknown): string | null {
   const raw = String(value ?? "").trim();
   if (!raw) return null;
+  if (raw.length > 2048) throw new Error(`invalid_url:${field}`);
   let parsed: URL;
   try {
     parsed = new URL(raw);

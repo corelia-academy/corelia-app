@@ -30,6 +30,8 @@ vi.mock("@/features/projects/projectQueries", () => ({
   }),
 }));
 
+vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: null }) }));
+vi.mock("@/lib/projectSocial", () => ({ listMyProjectHeartIds: async () => new Set() }));
 vi.mock("@/components/projects/ProjectCard", () => ({ ProjectCard: () => null }));
 vi.mock("@/components/projects/ProjectCardSkeleton", () => ({ ProjectCardSkeleton: () => null }));
 

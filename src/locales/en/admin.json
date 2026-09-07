@@ -46,6 +46,9 @@
       "hackathons": {
         "label": "Hackathons",
         "tooltip": "Manage hackathons"
+      },
+      "projects": {
+        "label": "Projects"
       }
     },
     "pageMeta": {
@@ -84,6 +87,10 @@
       "instructorDetail": {
         "title": "Instructor detail",
         "description": "Update profile and instructor information."
+      },
+      "projects": {
+        "title": "Projects",
+        "description": "Project moderation"
       }
     },
     "hero": {
