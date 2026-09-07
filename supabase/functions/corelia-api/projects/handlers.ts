@@ -24,7 +24,7 @@ import {
 function errorResponse(error: unknown): Response {
   const message = error instanceof Error ? error.message : "internal_error";
   if (error instanceof ProjectAiError) return json({ message: error.code }, error.status);
-  if (message.startsWith("invalid_input:") || message.startsWith("invalid_url:")) {
+  if (message.startsWith("required_content:") || message.startsWith("invalid_input:") || message.startsWith("invalid_url:")) {
     return json({ message }, 400);
   }
   if (["Missing Authorization header", "Invalid Authorization header", "Invalid or expired session"].includes(message)) {
@@ -274,6 +274,26 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
     const screenshotPaths = stringList(body.screenshot_paths);
     if (screenshotPaths.length > PROJECT_SCREENSHOT_LIMIT) {
       return json({ message: "invalid_input:project_screenshot_limit" }, 400);
+    }
+
+    // Existing source is immutable in the save RPC; do not trust a caller's
+    // source/visibility to exempt an existing hackathon project from requirements.
+    const { data: existing, error: existingError } = await db.from("projects")
+      .select("source_type,description,progress,pitch_video_url").eq("id", projectId).maybeSingle();
+    if (existingError) throw new Error(existingError.message);
+    const source = existing?.source_type ?? (String(body.source_type ?? "").trim() || "standalone");
+    const hackathon = source === "hackathon" || source === "contest";
+    const publishing = hackathon || String(body.visibility ?? "public") !== "private";
+    const requiredContent = publishing ? [
+      ["summary", summary],
+      ["description", description ?? existing?.description ?? ""],
+      ...(hackathon ? [["progress", progress ?? existing?.progress ?? ""]] : []),
+    ] : [];
+    for (const [field, value] of requiredContent) {
+      if (!/[\p{L}\p{N}]/u.test(String(value))) return json({ message: `required_content:${field}` }, 400);
+    }
+    if (hackathon && !links.length && !videoUrl && !(pitchVideoUrl ?? existing?.pitch_video_url)) {
+      return json({ message: "required_content:resource" }, 400);
     }
 
     await moderateProjectText([
