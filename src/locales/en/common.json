@@ -403,6 +403,31 @@
       "markdownlink": "Link",
       "markdowncode": "Inline code",
       "limitHint": "Shorten fields that exceed their displayed character limit before saving."
+    },
+    "management": {
+      "manage": "Manage projects",
+      "title": "Manage “{{title}}”",
+      "delete": "Delete project",
+      "block": "Block project",
+      "unblock": "Unblock project",
+      "blocked": "Blocked",
+      "public": "Public",
+      "unlisted": "Unlisted",
+      "private": "Private",
+      "all": "All statuses",
+      "status": "Status",
+      "action": "Action",
+      "reason": "Reason (required)",
+      "deleteDescription": "This permanently deletes the project and withdraws its linked hackathon submission. This cannot be undone.",
+      "description": "Blocking hides the project from public view and prevents republishing. Unblocking keeps it private until you publish it again.",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "success": "Project updated successfully.",
+      "failed": "Unable to update the project. Check your permissions and try again.",
+      "blockedError": "This project is blocked. An admin must unblock it before it can be published again.",
+      "contentError": "Add a summary and detailed description before publishing.",
+      "previous": "Previous",
+      "next": "Next"
     }
   },
   "search": {

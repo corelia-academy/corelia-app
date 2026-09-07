@@ -403,6 +403,31 @@
       "markdownlink": "Liên kết",
       "markdowncode": "Mã nội tuyến",
       "limitHint": "Rút ngắn các trường vượt giới hạn ký tự hiển thị trước khi lưu."
+    },
+    "management": {
+      "manage": "Quản lý project",
+      "title": "Quản lý “{{title}}”",
+      "delete": "Xoá project",
+      "block": "Chặn project",
+      "unblock": "Bỏ chặn project",
+      "blocked": "Đã chặn",
+      "public": "Công khai",
+      "unlisted": "Không liệt kê",
+      "private": "Riêng tư",
+      "all": "Tất cả trạng thái",
+      "status": "Trạng thái",
+      "action": "Thao tác",
+      "reason": "Lý do (bắt buộc)",
+      "deleteDescription": "Thao tác này xoá vĩnh viễn project và rút bài nộp hackathon liên quan. Không thể hoàn tác.",
+      "description": "Chặn sẽ ẩn project khỏi công khai và ngăn đăng lại. Bỏ chặn vẫn giữ project riêng tư cho đến khi bạn công khai lại.",
+      "cancel": "Huỷ",
+      "saving": "Đang lưu…",
+      "success": "Đã cập nhật project.",
+      "failed": "Không thể cập nhật project. Hãy kiểm tra quyền truy cập và thử lại.",
+      "blockedError": "Project đã bị chặn. Admin cần bỏ chặn trước khi có thể đăng lại.",
+      "contentError": "Cần bổ sung tóm tắt và mô tả chi tiết trước khi công khai.",
+      "previous": "Trước",
+      "next": "Tiếp"
     }
   },
   "search": {

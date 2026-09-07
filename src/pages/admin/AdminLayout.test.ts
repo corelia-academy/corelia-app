@@ -11,6 +11,7 @@ vi.mock("react-i18next", () => ({
 }));
 
 vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => false }));
+vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ profile: { role: "admin" } }) }));
 
 import AdminLayout from "./AdminLayout";
 

@@ -4,6 +4,7 @@ import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Copy, Languages, Save, UserRoundCheck, UserRoundPlus } from "lucide-react";
 
+import { ProjectManagementControls } from "@/components/projects/ProjectManagementControls";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { MyProjectEntry } from "@/lib/projectCollaboration";
@@ -204,6 +205,7 @@ export function AccountProjectsRoute() {
         </div>
       </div>
 
+      {selected ? <ProjectManagementControls key={selected.id} project={selected} onDeleted={() => setSelectedProjectId("")} /> : null}
       {entries.length === 0 ? (
         <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted">
           {t("projects.empty")}

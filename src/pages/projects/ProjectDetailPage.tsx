@@ -18,6 +18,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { Markdown } from "@/components/markdown/Markdown";
+import { ProjectManagementControls } from "@/components/projects/ProjectManagementControls";
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -239,8 +240,9 @@ export default function ProjectDetailPage() {
   return <div className="container-app py-6 sm:py-8">
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <Button variant="ghost" size="sm" render={<NavLink to={back} />} nativeButton={false}><ArrowLeft className="size-4" />{t("projects.detail.backToProjects")}</Button>
-      <div className="flex items-center gap-2"><ProjectSocialBlock projectId={project.id} likeCount={Number(project.like_count ?? 0)} className="border-0 pt-0" /><Button variant="outline" size="sm" onClick={async () => { try { await navigator.clipboard.writeText(`${window.location.origin}/projects/${project.slug}`); toast.success(t("projects.editor.copied")); } catch { toast.error(t("projects.editor.copyFailed")); } }}><Share2 className="size-4" />{t("projects.editor.share")}</Button>{canEdit ? <Button size="sm" render={<NavLink to={`/projects/${project.slug}/edit`} />} nativeButton={false}>{t("projects.detail.edit")}</Button> : null}</div>
+      <div className="flex flex-wrap items-center gap-2"><ProjectManagementControls project={project} onDeleted={() => navigate("/projects", { replace: true })} /><ProjectSocialBlock projectId={project.id} likeCount={Number(project.like_count ?? 0)} className="border-0 pt-0" /><Button variant="outline" size="sm" onClick={async () => { try { await navigator.clipboard.writeText(`${window.location.origin}/projects/${project.slug}`); toast.success(t("projects.editor.copied")); } catch { toast.error(t("projects.editor.copyFailed")); } }}><Share2 className="size-4" />{t("projects.editor.share")}</Button>{canEdit ? <Button size="sm" render={<NavLink to={`/projects/${project.slug}/edit`} />} nativeButton={false}>{t("projects.detail.edit")}</Button> : null}</div>
     </div>
+    {project.blocked ? <p role="status" className="mb-4 rounded-lg border border-destructive p-3 text-sm text-destructive">{t("projects.management.blockedError")}</p> : null}
     <header className="flex flex-col gap-5 border-b border-border-subtle pb-8 sm:flex-row sm:items-start">
       <ProjectLogo project={project} />
       <div className="min-w-0 flex-1"><span className="text-xs font-semibold uppercase tracking-widest text-primary">{t(projectSourceLabelKey(project.source_type))}</span><h1 className="mt-2 break-words text-3xl font-semibold tracking-tight sm:text-4xl">{project.title}</h1><p className="mt-3 max-w-3xl whitespace-pre-wrap break-words text-sm leading-7 text-foreground-muted">{project.summary || t("projects.card.noSummary")}</p></div>

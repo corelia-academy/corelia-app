@@ -48,17 +48,18 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260907014331_project_story_content.sql",
   "supabase/migrations/20260907054710_harden_profile_name_integrity.sql",
   "supabase/migrations/20260907060557_restrict_client_table_ddl_privileges.sql",
+  "supabase/migrations/20260907075801_project_moderation_and_deletion.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production is released through 20260907014331 (verified in run 34087244422).
-// The remaining forward migration repairs and protects profile names.
+// Production is released through 20260907060557 (run 34091572249).
+// The remaining forward migration adds project moderation and audited deletion.
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
-  APPROVED_PENDING_VERSIONS.slice(0, -2),
+  APPROVED_PENDING_VERSIONS.slice(0, -1),
 );
-export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-2));
+export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-1));
 export const EXPECTED_POST_MIGRATION_COUNT = PRODUCTION_BASELINE_COUNT + APPROVED_PENDING_VERSIONS.length;
 export const EXPECTED_POST_MIGRATION_LATEST = APPROVED_PENDING_VERSIONS.at(-1);
