@@ -4,6 +4,7 @@ import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Copy, Languages, Save, UserRoundCheck, UserRoundPlus } from "lucide-react";
 
+import { ProjectManagementControls } from "@/components/projects/ProjectManagementControls";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { MyProjectEntry } from "@/lib/projectCollaboration";
@@ -204,6 +205,7 @@ export function AccountProjectsRoute() {
         </div>
       </div>
 
+      {selected ? <ProjectManagementControls key={selected.id} project={selected} onDeleted={() => setSelectedProjectId("")} /> : null}
       {entries.length === 0 ? (
         <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted">
           {t("projects.empty")}
@@ -235,7 +237,7 @@ export function AccountProjectsRoute() {
                           : t("account:projects.collaboratorBadge")}
                       </span>
                     </div>
-                    <div className="mt-0.5 text-xs opacity-80">{project.id}</div>
+                    <div className="mt-0.5 text-xs opacity-80">{t(`projects.editor.${project.visibility}`)}</div>
                   </button>
                 ))}
               </div>
@@ -251,6 +253,13 @@ export function AccountProjectsRoute() {
           <div className="lg:col-span-8">
             {selected ? (
               <div className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border-subtle bg-surface-base p-4">
+                  <h1 className="min-w-0 break-words text-lg font-semibold">{selected.title}</h1>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" render={<NavLink to={`/projects/${selected.slug}`} />} nativeButton={false}>{t("projects.editor.viewProject")}</Button>
+                    {selectedIsOwner ? <Button render={<NavLink to={`/projects/${selected.slug}/edit`} />} nativeButton={false}>{t("projects.detail.edit")}</Button> : null}
+                  </div>
+                </div>
                 {!selectedIsOwner && selectedAccess ? (
                   <>
                     <div className="rounded-lg border border-border-subtle bg-surface-raised p-4">

@@ -237,7 +237,7 @@ function Sidebar({
           "sticky top-(--app-header-height) z-10 hidden h-[calc(100svh-var(--app-header-height))] self-start w-(--sidebar-width) transition-[width] duration-200 ease-linear md:flex",
           // Adjust the padding for floating and inset variants.
           variant === "floating" || variant === "inset"
-            ? "p-md group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+var(--spacing-xl)+2px)]"
+            ? "p-md group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+var(--corelia-spacing-xl)+2px)]"
             : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
           className
         )}

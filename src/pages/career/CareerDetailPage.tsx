@@ -64,7 +64,7 @@ export default function CareerDetailPage() {
     return (
       <div className="container-app py-6 sm:py-8">
         <Skeleton className="h-48 w-full rounded-2xl border border-border-subtle" />
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <Skeleton className="h-72 w-full rounded-2xl" />
           <Skeleton className="h-72 w-full rounded-2xl" />
         </div>
@@ -93,12 +93,12 @@ export default function CareerDetailPage() {
     <div className="container-app py-6 sm:py-8">
       <CareerHero track={track} />
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
-        <main className="min-w-0 space-y-6">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0 space-y-6">
           {track.what_youll_learn.length > 0 ? (
             <Card>
               <CardContent className="p-6">
-                <h2 className="text-[18px] font-semibold text-foreground">
+                <h2 className="text-heading-medium font-display text-foreground">
                   {t("detail.whatYoullLearn")}
                 </h2>
                 <ul className="mt-4 space-y-2 text-sm text-foreground-muted">
@@ -119,7 +119,7 @@ export default function CareerDetailPage() {
           {track.description?.trim() ? (
             <Card>
               <CardContent className="p-6">
-                <h2 className="text-[18px] font-semibold text-foreground">
+                <h2 className="text-heading-medium font-display text-foreground">
                   {t("detail.description")}
                 </h2>
                 <p className="mt-3 whitespace-pre-wrap text-[15px] leading-[1.7] text-foreground-muted">
@@ -131,7 +131,7 @@ export default function CareerDetailPage() {
 
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-[18px] font-semibold text-foreground">
+              <h2 className="text-heading-medium font-display text-foreground">
                 {t("detail.includedCourses")}
               </h2>
               <ul className="mt-4 space-y-3">
@@ -150,7 +150,7 @@ export default function CareerDetailPage() {
           {track.prerequisites.length > 0 ? (
             <Card>
               <CardContent className="p-6">
-                <h2 className="text-[18px] font-semibold text-foreground">
+              <h2 className="text-heading-medium font-display text-foreground">
                   {t("detail.prerequisites")}
                 </h2>
                 <ul className="mt-4 space-y-2 text-sm text-foreground-muted">
@@ -167,7 +167,7 @@ export default function CareerDetailPage() {
               </CardContent>
             </Card>
           ) : null}
-        </main>
+        </div>
 
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           <CareerActionPanel
@@ -205,7 +205,7 @@ function CareerHero({
 
   return (
     <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card">
-      <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)] lg:items-start">
+      <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 text-xs">
             {track.has_certificate ? (
@@ -216,12 +216,12 @@ function CareerHero({
             ) : null}
           </div>
 
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
+          <h1 className="mt-3 text-heading-large font-display text-foreground">
             {track.title}
           </h1>
 
           {track.short_description ? (
-            <p className="mt-3 text-sm leading-relaxed text-foreground-muted">
+            <p className="mt-3 text-body-medium font-body text-foreground-muted">
               {track.short_description}
             </p>
           ) : null}
@@ -302,12 +302,12 @@ function CareerActionPanel({
   return (
     <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
       <div className="border-b border-border-subtle bg-surface-raised px-4 py-3">
-        <h3 className="text-sm font-medium text-foreground">
+        <h3 className="text-heading-small font-display text-foreground">
           {t("detail.actionPanel.ready")}
         </h3>
       </div>
       <div className="p-4">
-        <p className="mb-4 text-sm leading-relaxed text-foreground-muted">
+        <p className="mb-4 text-body-medium font-body text-foreground-muted">
           {continueCourseId
             ? t("detail.actionPanel.continueLabel")
             : t("detail.actionPanel.exploreCopy")}

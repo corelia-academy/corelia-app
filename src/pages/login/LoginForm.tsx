@@ -265,7 +265,7 @@ export function LoginForm({
           <form onSubmit={(e) => void handleSubmit(e)} className="p-6 md:p-8">
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-normal tracking-tight text-foreground">
+                <h1 className="text-heading-large font-display text-foreground">
                   {title}
                 </h1>
                 <p className="text-balance text-sm text-foreground-muted">

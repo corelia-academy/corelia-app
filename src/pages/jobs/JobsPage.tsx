@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { JobCard } from "@/features/jobs/JobCard";
 import { humanizeJobSlug } from "@/features/jobs/jobFormat";
 import { JobsNav } from "@/features/jobs/JobsNav";
-import { jobKeys, jobsInfiniteCatalogQueryOptions, jobSourceConnectionsQueryOptions, jobTaxonomyQueryOptions } from "@/features/jobs/jobQueries";
+import { jobKeys, jobsInfiniteCatalogQueryOptions, jobTaxonomyQueryOptions } from "@/features/jobs/jobQueries";
 import { setUserJobState } from "@/lib/jobs";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useAuth } from "@/stores/authStore";
@@ -77,7 +77,6 @@ export default function JobsPage() {
   });
   const jobsQuery = useInfiniteQuery(jobsInfiniteCatalogQueryOptions(filters, user?.id));
   const taxonomyQuery = useQuery(jobTaxonomyQueryOptions());
-  const sourcesQuery = useQuery(jobSourceConnectionsQueryOptions());
   const stateMutation = useMutation({
     mutationFn: ({ jobId, patch }: { jobId: string; patch: Partial<Pick<UserJobState, "saved" | "applied" | "hidden">> }) => {
       if (!user?.id) throw new Error("login_required");
@@ -141,7 +140,7 @@ export default function JobsPage() {
         <JobsNav />
         <header className="rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7">
           <div className="flex items-center gap-2 text-sm font-semibold text-primary"><BriefcaseBusiness className="size-4" aria-hidden />{t("eyebrow")}</div>
-          <h1 className="mt-3 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{landing ? t("landing.title", { label: landing.label }) : t("title")}</h1>
+          <h1 className="mt-3 text-foreground text-heading-medium font-display">{landing ? t("landing.title", { label: landing.label }) : t("title")}</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground-muted sm:text-base">{landing ? t("landing.subtitle", { label: landing.label }) : t("subtitle")}</p>
           <form className="mt-5 flex max-w-2xl gap-2" onSubmit={(event) => {
             event.preventDefault();
@@ -154,28 +153,32 @@ export default function JobsPage() {
         </header>
         <section className="rounded-xl border border-border-subtle bg-surface-base p-4" aria-label={t("filters.label")}>
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold"><SlidersHorizontal className="size-4" aria-hidden />{t("filters.label")}</div>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             <select className={SELECT_CLASS} value={filters.jobType ?? ""} onChange={(e) => updateParam("type", e.target.value)} aria-label={t("filters.jobType")}><option value="">{t("filters.allJobTypes")}</option>{(["tech", "non_tech"] as const).map((value) => <option key={value} value={value}>{t(`values.${value}`)}</option>)}</select>
             <select className={SELECT_CLASS} disabled={Boolean(landing?.filters.role)} value={filters.role ?? ""} onChange={(e) => updateParam("role", e.target.value)} aria-label={t("filters.role")}><option value="">{t("filters.allRoles")}</option>{taxonomyQuery.data?.roles.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}</select>
+            <select className={SELECT_CLASS} disabled={Boolean(landing?.filters.remoteType)} value={filters.remoteType ?? ""} onChange={(e) => updateParam("remote", e.target.value)} aria-label={t("filters.workMode")}><option value="">{t("filters.allWorkModes")}</option>{(["remote", "hybrid", "onsite"] as const).map((value) => <option key={value} value={value}>{t(`values.${value}`)}</option>)}</select>
+          </div>
+          <details className="mt-4 group" open={["domain", "skill", "seniority", "region", "employment", "currency", "salary", "days"].some(key => params.has(key))}>
+            <summary className="cursor-pointer py-3 text-sm font-medium text-primary">{t("filters.more")}</summary>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 pt-3">
             <select className={SELECT_CLASS} disabled={Boolean(landing?.filters.domain)} value={filters.domain ?? ""} onChange={(e) => updateParam("domain", e.target.value)} aria-label={t("filters.domain")}><option value="">{t("filters.allDomains")}</option>{taxonomyQuery.data?.domains.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}</select>
             <select className={SELECT_CLASS} disabled={Boolean(landing?.filters.skill)} value={filters.skill ?? ""} onChange={(e) => updateParam("skill", e.target.value)} aria-label={t("filters.skill")}><option value="">{t("filters.allSkills")}</option>{taxonomyQuery.data?.skills.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}</select>
             <select className={SELECT_CLASS} disabled={Boolean(landing?.filters.entryLevel)} value={filters.seniority ?? ""} onChange={(e) => updateParam("seniority", e.target.value)} aria-label={t("filters.seniority")}><option value="">{landing?.filters.entryLevel ? t("market.cards.entry") : t("filters.allSeniorities")}</option>{(["intern", "fresher", "junior", "mid", "senior", "lead", "manager"] as const).map((value) => <option key={value} value={value}>{t(`values.${value}`)}</option>)}</select>
-            <select className={SELECT_CLASS} disabled={Boolean(landing?.filters.remoteType)} value={filters.remoteType ?? ""} onChange={(e) => updateParam("remote", e.target.value)} aria-label={t("filters.workMode")}><option value="">{t("filters.allWorkModes")}</option>{(["remote", "hybrid", "onsite"] as const).map((value) => <option key={value} value={value}>{t(`values.${value}`)}</option>)}</select>
             <select className={SELECT_CLASS} disabled={Boolean(landing?.filters.region || landing?.filters.countryCode)} value={filters.region ?? ""} onChange={(e) => updateParam("region", e.target.value)} aria-label={t("filters.region")}><option value="">{landing?.filters.countryCode === "VN" ? "Vietnam" : t("filters.allRegions")}</option>{(["APAC", "EMEA", "AMER"] as const).map((value) => <option key={value} value={value}>{value}</option>)}</select>
             <select className={SELECT_CLASS} value={filters.employmentType ?? ""} onChange={(e) => updateParam("employment", e.target.value)} aria-label={t("filters.employmentType")}><option value="">{t("filters.allEmploymentTypes")}</option>{(["full_time", "part_time", "contract", "temporary", "internship"] as const).map((value) => <option key={value} value={value}>{t(`values.${value}`)}</option>)}</select>
             <select className={SELECT_CLASS} value={filters.salaryCurrency ?? ""} onChange={(e) => updateParam("currency", e.target.value)} aria-label={t("filters.salaryCurrency")}><option value="">{t("filters.allCurrencies")}</option>{["USD", "EUR", "GBP", "SGD", "VND"].map((value) => <option key={value} value={value}>{value}</option>)}</select>
             <Input type="number" inputMode="numeric" min="0" step="1000" disabled={!filters.salaryCurrency} value={params.get("salary") ?? ""} onChange={(e) => updateParam("salary", e.target.value)} placeholder={t("filters.minimumSalary")} aria-label={t("filters.minimumSalary")} />
             <select className={SELECT_CLASS} value={String(filters.postedWithinDays ?? "")} onChange={(e) => updateParam("days", e.target.value)} aria-label={t("filters.postedDate")}><option value="">{t("filters.anyDate")}</option><option value="7">{t("filters.last7Days")}</option><option value="30">{t("filters.last30Days")}</option></select>
             <Button type="button" variant="ghost" onClick={() => setParams({})}>{t("filters.clear")}</Button>
-          </div>
+            </div>
+          </details>
         </section>
         <div className="flex items-center justify-between gap-3"><p className="text-sm text-foreground-muted">{t("results", { count: latestPage?.total ?? 0 })}{latestPage?.hiddenCount ? <> · <Link to="/jobs/hidden" className="underline-offset-4 hover:underline">{t("hiddenCount", { count: latestPage.hiddenCount })}</Link></> : null}</p></div>
         {jobsQuery.isPending ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-72 animate-pulse rounded-2xl bg-surface-raised" />)}</div> : jobsQuery.isError && !jobsQuery.data ? <div className="rounded-xl border border-destructive/30 p-8 text-center text-sm text-destructive" role="alert">{t("messages.loadFailed")} <Button type="button" variant="outline" className="ml-2" onClick={() => void jobsQuery.refetch()}>{t("retry")}</Button></div> : jobs.length ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{jobs.map((job) => {
           const state = stateByJobId[job.id];
-          return <JobCard key={job.id} job={job} state={state} busy={stateMutation.isPending && stateMutation.variables?.jobId === job.id} onToggleSaved={() => mutateState(job.id, { saved: !state?.saved })} onToggleApplied={() => mutateState(job.id, { applied: !state?.applied })} onToggleHidden={() => mutateState(job.id, { hidden: true })} />;
-        })}</div> : <div className="rounded-xl border border-border-subtle bg-surface-base p-12 text-center"><BriefcaseBusiness className="mx-auto size-8 text-foreground-subtle" aria-hidden /><h2 className="mt-3 font-semibold">{t("empty.title")}</h2><p className="mt-1 text-sm text-foreground-muted">{t("empty.description")}</p></div>}
+          return <JobCard publicAppearance key={job.id} job={job} state={state} busy={stateMutation.isPending && stateMutation.variables?.jobId === job.id} onToggleSaved={() => mutateState(job.id, { saved: !state?.saved })} onToggleApplied={() => mutateState(job.id, { applied: !state?.applied })} onToggleHidden={() => mutateState(job.id, { hidden: true })} />;
+        })}</div> : <div className="rounded-xl border border-border-subtle bg-surface-base p-12 text-center"><BriefcaseBusiness className="mx-auto size-8 text-foreground-subtle" aria-hidden /><h2 className="mt-3 text-heading-small font-display">{t("empty.title")}</h2><p className="mt-1 text-sm text-foreground-muted">{t("empty.description")}</p></div>}
         {jobsQuery.hasNextPage ? <div ref={loadMoreRef} className="flex min-h-10 items-center justify-center text-sm text-foreground-muted" role="status" aria-live="polite">{jobsQuery.isFetchingNextPage ? t("infinite.loading") : jobsQuery.isFetchNextPageError ? <Button type="button" variant="outline" onClick={() => void jobsQuery.fetchNextPage()}>{t("infinite.retry")}</Button> : typeof IntersectionObserver === "undefined" ? <Button type="button" variant="outline" onClick={() => void jobsQuery.fetchNextPage()}>{t("infinite.loadMore")}</Button> : <span className="sr-only">{t("infinite.ready")}</span>}</div> : null}
-        {sourcesQuery.data?.length ? <footer className="border-t border-border-subtle pt-4 text-center text-xs text-foreground-muted">{t("sources.connected", { sources: sourcesQuery.data.map((source) => source.name).join(" · ") })}</footer> : null}
       </div>
     </div>
   );

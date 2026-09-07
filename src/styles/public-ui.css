@@ -1,0 +1,66 @@
+/* Presentation is opt-in at MainLayout; no global primitive/token changes. */
+.public-ui .public-content { min-width: 0; }
+.public-ui .public-content > :is(div, main, section) {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+.public-ui .public-content h1 {
+  font-size: 28px;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.public-ui .public-content :is(h1, h2) { font-family: var(--font-display); }
+.public-ui .public-content h2 { line-height: 1.35; }
+.public-ui .public-content .shadow-card { box-shadow: none; }
+.public-ui .public-content :is(button, select, input:not([type=checkbox]):not([type=radio])) { min-height: 44px; }
+.public-ui [data-sidebar=menu-button] { min-height: 44px; }
+.public-ui [data-sidebar=menu-button][data-active=true] { box-shadow: none; }
+.public-ui :is(a, button, input, select, summary):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.public-ui .public-content [role=tablist] { max-width: 100%; overflow-x: auto; }
+.public-ui .public-content :is(input, select) { min-width: 0; }
+@media (min-width: 640px) {
+  .public-ui .public-content > :is(div, main, section) { padding-inline: 24px; }
+  .public-ui .public-content h1 { font-size: 36px; }
+}
+@media (min-width: 1024px) {
+  .public-ui .public-content > :is(div, main, section) { padding-inline: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .public-ui *, .public-ui *::before, .public-ui *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.public-ui .public-content h2 { font-size: 22px; }
+.public-ui .public-content [data-slot=button] { min-height: 44px; }
+.public-ui .public-content [data-slot=card] { box-shadow: none; }
+.public-ui .public-content :is(article, section) { min-width: 0; }
+.public-ui .public-content .prose { max-width: 720px; overflow-wrap: anywhere; }
+.public-ui .public-content [data-slot=card-content] { padding: 20px; }
+.public-ui .public-content [data-slot=button][data-size^=icon] { min-width: 44px; }
+@media (min-width: 640px) {
+  .public-ui .public-content [data-slot=card-content] { padding: 24px; }
+}
+.public-status { min-height: 100svh; background: var(--background); }
+.public-status :is(h1, h2) { font-family: var(--font-display); letter-spacing: -0.025em; line-height: 1.25; }
+.public-status h1 { font-size: 28px; }
+.public-status [data-slot=card] { box-shadow: none; border-radius: 16px; }
+.public-status :is(button, input:not([type=checkbox]):not([type=radio])) { min-height: 44px; }
+.public-status :is(a, button, input):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+
+.public-job-card > div > div:last-child { flex-wrap: wrap; align-items: center; }
+.public-job-card > div > div:last-child > div:first-child { width: 100%; overflow-wrap: anywhere; }
+.public-job-card > div > div:last-child > div:last-child { margin-left: auto; }
+.public-job-card button[class*="size-7"] { min-width: 44px; }
+.public-ui .public-content article[role=link] { border-radius: 16px; }
+.public-ui .public-content article[role=link] > div:last-child { padding: 20px; }
+.public-ui .public-content article[role=link] a[class*="size-8"] { min-width: 44px; min-height: 44px; }
+.public-ui .public-content article[role=link] h2 { font-size: 18px; }
+/* Secondary public labels remain readable in both themes. */
+.public-ui, .public-status { --foreground-subtle: var(--foreground-muted); }

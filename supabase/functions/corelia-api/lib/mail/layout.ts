@@ -77,6 +77,8 @@ type TransactionalWrapParams = {
   footerExtraHtml?: string;
   /** Hidden inbox-preview text. Defaults to heroSubtitle or heroTitle. */
   preheader?: string;
+  /** Stable fingerprint for deterministic retry idempotency. If omitted, generates random timestamp. */
+  fingerprint?: string;
 };
 
 /** Full branded HTML document for fixed transactional emails (Resend). */
@@ -94,9 +96,10 @@ export function wrapTransactionalEmail(params: TransactionalWrapParams): string 
 
   // Unique per-send fingerprint so Gmail doesn't dedupe boilerplate footer
   // across multiple emails to the same recipient.
-  const messageFingerprint = `${Date.now().toString(36)}-${Math.random()
-    .toString(36)
-    .slice(2, 8)}`;
+  // Use caller-provided stable fingerprint if supplied to keep retried request bodies byte-identical.
+  const messageFingerprint = params.fingerprint?.trim()
+    ? params.fingerprint.trim()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
   const preheaderText = (params.preheader ?? params.heroSubtitle ?? params.heroTitle).trim();
   const preheaderBlock = preheaderText

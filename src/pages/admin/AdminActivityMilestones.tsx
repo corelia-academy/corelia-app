@@ -188,7 +188,7 @@ export default function AdminActivityMilestones() {
     <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-6">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-foreground">{t("activityMilestones.heading")}</h1>
+          <h1 className="text-heading-medium font-display text-foreground">{t("activityMilestones.heading")}</h1>
           <p className="mt-1 text-sm text-foreground-muted">{t("activityMilestones.subheading")}</p>
         </div>
         <Button type="button" onClick={openCreate}>

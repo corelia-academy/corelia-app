@@ -1,3 +1,4 @@
+import "@/styles/public-ui.css";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { NavLink, useNavigate } from "react-router";
@@ -52,7 +53,7 @@ export default function ResetPasswordPage() {
 
   if (!user) {
     return (
-      <div className="flex min-h-svh flex-col items-center justify-center bg-auth-page p-6 md:p-10">
+      <div className="flex min-h-svh flex-col items-center justify-center public-status bg-auth-page p-6 md:p-10">
         <div className="w-full max-w-md">
           <div className="rounded-xl border border-border bg-card p-6 shadow-sm text-center space-y-4">
             <p className="text-foreground-muted text-sm">{t("resetPassword.sessionExpired")}</p>
@@ -69,7 +70,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-auth-page p-6 md:p-10">
+    <div className="flex min-h-svh flex-col items-center justify-center public-status bg-auth-page p-6 md:p-10">
       <div className="w-full max-w-md">
         <div className="mb-4 flex items-center justify-between gap-3">
           <NavLink
@@ -84,7 +85,7 @@ export default function ResetPasswordPage() {
 
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
           <div>
-            <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
+            <h1 className="text-heading-medium font-display text-foreground">
               {t("resetPassword.title")}
             </h1>
             <p className="mt-1 text-sm text-foreground-muted">

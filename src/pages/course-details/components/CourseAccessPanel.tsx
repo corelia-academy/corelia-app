@@ -36,7 +36,7 @@ export function CourseAccessPanel({
   return (
     <div className={cn("overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card", className)}>
       <div className="border-b border-border-subtle bg-surface-raised px-4 py-3">
-        <h3 className="text-sm font-medium text-foreground">{translate("detail.accessPanel.ready")}</h3>
+        <h3 className="text-heading-small font-display text-foreground">{translate("detail.accessPanel.ready")}</h3>
       </div>
       <div className="p-4">
         {isPublicEmptyCurriculum ? (

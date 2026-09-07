@@ -92,7 +92,7 @@ export default function ConnectOCIDCard() {
     <section className="space-y-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold">{t("ocid.card.title")}</h2>
+          <h2 className="text-heading-medium font-display">{t("ocid.card.title")}</h2>
           <p className="mt-1 text-sm text-foreground-muted">
             {t("ocid.card.description")}
           </p>

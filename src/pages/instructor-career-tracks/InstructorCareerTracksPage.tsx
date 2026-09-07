@@ -81,7 +81,7 @@ export default function InstructorCareerTracksPage() {
       <PageSectionCard className="mb-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-lg font-semibold text-foreground">
+            <h1 className="text-heading-medium font-display text-foreground">
               {t("careerTracks.list.title")}
             </h1>
             <p className="mt-1 text-sm text-foreground-muted">

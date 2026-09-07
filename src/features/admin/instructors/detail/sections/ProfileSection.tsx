@@ -38,7 +38,7 @@ export function ProfileSection({
     <section className="rounded-2xl border border-border-subtle bg-surface-base p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-lg font-medium text-foreground">
+          <h2 className="text-heading-medium font-display text-foreground">
             {t("instructorDetailPage.profile.title")}
           </h2>
           <p className="mt-1 text-sm text-foreground-muted">

@@ -1,8 +1,12 @@
+import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { careerCatalogQueryOptions } from "@/features/career/careerQueries";
+import { CareerTrackListCard } from "@/components/career/CareerTrackListCard";
 import { ArrowRight, BookOpen, Trophy } from "lucide-react";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
 import { Button } from "@/components/ui/button";
-import { getCourseLevelLabel } from "@/types/courses";
+import { PublicCourseCard } from "@/components/courses/PublicCourseCard";
 import type { Course } from "@/types/courses";
 
 export function GuestHome({
@@ -12,22 +16,24 @@ export function GuestHome({
   t: TFunction<"common">;
   courseCatalog: Course[];
 }) {
+  const { t: tCareer, i18n } = useTranslation("career");
+  const tracksQuery = useQuery({ ...careerCatalogQueryOptions(i18n.language), meta: { scope: "public", showInGlobalLoading: false } });
   const featuredCourses = (courseCatalog ?? []).slice(0, 6);
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="min-w-0 space-y-6">
-          <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
+      <div className="grid gap-6 ">
+        <div className="min-w-0 space-y-8">
+          <section className="rounded-2xl border border-primary/15 bg-linear-to-br from-primary-muted to-surface-base p-5 sm:p-10">
             <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               Corelia Academy
             </div>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight leading-tight text-foreground">
+            <h1 className="mt-2 text-display-small font-display text-foreground">
               <span className="bg-linear-to-r from-primary to-foreground bg-clip-text text-transparent">
                 {t("home.guest.heroTitle")}
               </span>
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-foreground-muted">
+            <p className="mt-2 max-w-2xl text-body-medium font-body text-foreground-muted">
               {t("home.guest.heroSubtitle")}
             </p>
 
@@ -65,7 +71,7 @@ export function GuestHome({
                 return (
                   <div
                     key={item.label}
-                    className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:bg-surface-raised"
+                    className="py-3"
                   >
                     <div className="flex items-start gap-3">
                       <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary-muted text-primary">
@@ -73,7 +79,7 @@ export function GuestHome({
                       </div>
                       <div className="min-w-0">
                         <div className="text-sm font-medium text-foreground">{item.label}</div>
-                        <div className="mt-1 text-xs leading-relaxed text-foreground-muted">
+                        <div className="mt-1 text-sm leading-relaxed text-foreground-muted">
                           {item.note}
                         </div>
                       </div>
@@ -84,9 +90,9 @@ export function GuestHome({
             </div>
           </section>
 
-          <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-5">
+          <section className="py-4">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold tracking-tight text-foreground">
+              <h2 className="text-heading-medium font-display text-foreground">
                 {t("home.guest.featuredCoursesTitle")}
               </h2>
               <Button
@@ -121,85 +127,18 @@ export function GuestHome({
                 </div>
               ) : (
                 featuredCourses.map((course) => (
-                  <NavLink
-                    key={course.id}
-                    to={`/courses/${course.slug || course.id}`}
-                    className="group cursor-pointer overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:bg-surface-raised hover:border-border hover:-translate-y-0.5"
-                  >
-                    <div className="relative aspect-video bg-surface-raised">
-                      {course.thumbnail_url ? (
-                        <img
-                          src={course.thumbnail_url}
-                          alt=""
-                          className="absolute inset-0 size-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
-                        />
-                      ) : null}
-                    </div>
-                    <div className="p-4 space-y-2">
-                      <div className="line-clamp-1 rounded-sm border border-border bg-surface-raised px-2 py-0.5 text-xs font-medium text-foreground-muted">
-                        {getCourseLevelLabel(course.level)}
-                      </div>
-                      <div className="line-clamp-2 text-sm font-semibold leading-snug tracking-tight text-foreground">
-                        {course.title}
-                      </div>
-                    </div>
-                  </NavLink>
+                  <PublicCourseCard key={course.id} course={course} />
                 ))
               )}
             </div>
           </section>
 
+          {tracksQuery.data?.length ? <section className="space-y-4">
+            <h2 className="text-heading-large font-display">{tCareer("list.title")}</h2>
+            {tracksQuery.data.slice(0, 2).map(track => <CareerTrackListCard key={track.id} track={track} />)}
+          </section> : null}
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-16 lg:self-start">
-          <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
-            <div className="text-sm font-medium text-foreground">
-              {t("home.guest.startLearningTitle")}
-            </div>
-            <p className="mt-2 text-sm leading-relaxed text-foreground-muted">
-              {t("home.guest.startLearningSubtitle")}
-            </p>
-            <div className="mt-4 grid gap-2">
-              <Button
-                className="w-full"
-                variant="secondary"
-                render={<NavLink to="/login" />}
-                nativeButton={false}
-              >
-                {t("home.guest.signIn")}
-              </Button>
-              <Button
-                className="w-full"
-                render={<NavLink to="/courses" />}
-                nativeButton={false}
-                variant="outline"
-              >
-                {t("home.exploreCourses")}
-              </Button>
-            </div>
-          </section>
-
-          <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-              <BookOpen className="size-4 shrink-0" aria-hidden />
-              {t("home.guest.quickLinksTitle")}
-            </div>
-            <div className="mt-4 space-y-2">
-              {[
-                { label: t("home.allCourses"), to: "/courses" },
-              ].map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className="flex items-center justify-between rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-3 text-sm text-foreground transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:bg-surface-raised hover:border-border hover:-translate-y-0.5"
-                >
-                  <span>{item.label}</span>
-                  <ArrowRight className="size-4 text-foreground-muted" aria-hidden />
-                </NavLink>
-              ))}
-            </div>
-          </section>
-        </aside>
       </div>
     </div>
   );

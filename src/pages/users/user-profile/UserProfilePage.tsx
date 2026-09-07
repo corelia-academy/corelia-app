@@ -146,7 +146,7 @@ function ProfileSidebar({
       <section className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-5">
         <div className="flex items-center gap-2">
           <Sparkles className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-sm font-semibold text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.overview.title")}
           </h2>
         </div>
@@ -156,7 +156,7 @@ function ProfileSidebar({
       </section>
 
       <section className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-5">
-        <h2 className="text-sm font-semibold text-foreground">
+        <h2 className="text-heading-small font-display text-foreground">
           {t("userProfile.overview.quickInfo")}
         </h2>
         <div className="mt-3 divide-y divide-border-subtle">
@@ -178,7 +178,7 @@ function ProfileSidebar({
 
       {(headerHandle || ocid || (website && isValidHttpUrl(website))) ? (
         <section className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-5">
-          <h2 className="text-sm font-semibold text-foreground">
+        <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.labels.profile")}
           </h2>
           <div className="mt-3 space-y-2 text-sm">
@@ -290,7 +290,7 @@ export default function UserProfileLayout() {
                   </>
                 ) : profile ? (
                   <>
-                    <h1 className="text-2xl font-semibold leading-tight text-foreground [overflow-wrap:anywhere] sm:text-4xl">
+                    <h1 className="text-display-small font-display text-foreground [overflow-wrap:anywhere]">
                       {profileTitle(profile)}
                     </h1>
                     <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm text-foreground-muted">
@@ -486,7 +486,7 @@ export default function UserProfileLayout() {
                   <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-surface-raised">
                     <Lock className="size-5 text-foreground-subtle" aria-hidden />
                   </div>
-                  <h3 className="mt-4 text-base font-semibold text-foreground">
+                  <h3 className="mt-4 text-heading-small font-display text-foreground">
                     {t("userProfile.private.title")}
                   </h3>
                   <p className="mt-2 text-sm text-foreground-muted max-w-sm mx-auto">

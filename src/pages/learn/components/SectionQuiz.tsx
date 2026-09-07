@@ -98,7 +98,7 @@ export function SectionQuiz({
     <div className="border-t border-border-subtle px-4 pb-8 pt-6 sm:px-6">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="space-y-1">
-          <h2 className="text-[18px] font-semibold text-foreground">
+          <h2 className="text-heading-medium font-display text-foreground">
             {t("detail.learn.quiz.sectionTitle", { title: sectionTitle })}
           </h2>
           <p className="text-[13px] text-foreground-muted">

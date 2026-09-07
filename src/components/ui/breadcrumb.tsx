@@ -8,7 +8,7 @@ export function Breadcrumb({
   return (
     <nav
       aria-label="Breadcrumb"
-      className={cn("flex items-center gap-xs text-xs text-foreground-muted", className)}
+      className={cn("flex items-center gap-xs text-body-small font-body text-foreground-muted", className)}
       {...props}
     />
   );
@@ -78,7 +78,7 @@ export function BreadcrumbPage({
   return (
     <span
       aria-current="page"
-      className={cn("font-medium text-foreground", className)}
+      className={cn("text-label-small font-body text-foreground", className)}
       {...props}
     />
   );

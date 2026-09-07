@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { NavLink } from "react-router";
+import { PublicCourseCard } from "@/components/courses/PublicCourseCard";
 import { useTranslation } from "react-i18next";
 import { BookOpen } from "lucide-react";
 
@@ -12,9 +12,9 @@ export function UserProfileCoursesSection({
 }: {
   profile: PublicProfile;
 }) {
-  const { t } = useTranslation("common");
+  const { t, i18n } = useTranslation("common");
   const canShow = profile.role === "instructor";
-  const query = useQuery(publicInstructorCoursesQueryOptions(profile.id, canShow));
+  const query = useQuery(publicInstructorCoursesQueryOptions(profile.id, canShow, i18n.language));
   const courses = query.data ?? [];
   const loading = canShow && query.isPending;
   const error = query.error ? t("userProfile.errors.loadFailed") : null;
@@ -24,7 +24,7 @@ export function UserProfileCoursesSection({
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <BookOpen className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.tabs.courses")}
           </h2>
         </div>
@@ -40,7 +40,7 @@ export function UserProfileCoursesSection({
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <BookOpen className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.tabs.courses")}
           </h2>
         </div>
@@ -55,7 +55,7 @@ export function UserProfileCoursesSection({
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <BookOpen className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.tabs.courses")}
           </h2>
         </div>
@@ -71,7 +71,7 @@ export function UserProfileCoursesSection({
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <BookOpen className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.tabs.courses")}
           </h2>
         </div>
@@ -87,7 +87,7 @@ export function UserProfileCoursesSection({
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <BookOpen className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.tabs.courses")}
           </h2>
         </div>
@@ -98,22 +98,7 @@ export function UserProfileCoursesSection({
 
       <div className="grid gap-3 sm:grid-cols-2">
         {courses.map((c) => (
-          <NavLink
-            key={c.id}
-            to={`/courses/${c.id}`}
-            className="block rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card transition-[background-color,border-color] duration-150 hover:border-border hover:bg-surface-raised"
-          >
-            <div className="min-w-0">
-              <div className="line-clamp-2 text-sm font-semibold leading-5 text-foreground">
-                {c.title}
-              </div>
-              <div className="mt-2 text-xs text-foreground-muted">
-                {t("userProfile.courses.updatedAt", {
-                  date: new Date(c.updated_at).toLocaleDateString(),
-                })}
-              </div>
-            </div>
-          </NavLink>
+          <PublicCourseCard key={c.id} course={c} />
         ))}
       </div>
     </section>

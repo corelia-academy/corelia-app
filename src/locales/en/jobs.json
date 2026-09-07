@@ -47,7 +47,8 @@
     "anyDate": "Any date",
     "last7Days": "Last 7 days",
     "last30Days": "Last 30 days",
-    "clear": "Clear"
+    "clear": "Clear",
+    "more": "More filters"
   },
   "values": {
     "tech": "Tech",
@@ -155,7 +156,8 @@
     "empty": {
       "title": "Market data is being prepared",
       "description": "An admin must crawl at least one verified company and refresh daily analytics."
-    }
+    },
+    "chartScale": "Jobs · scale 0–{{count}}"
   },
   "admin": {
     "title": "Jobs operations",

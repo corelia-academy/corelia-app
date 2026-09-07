@@ -54,7 +54,8 @@ export function formatJobSalary(job: Job, locale: string): string | null {
     const max = job.salary_max == null ? null : formatter.format(job.salary_max);
     const range = min && max ? `${min}–${max}` : min ?? max;
     if (!range) return null;
-    return job.salary_period ? `${range}/${job.salary_period}` : range;
+    const periods: Record<string, string> = locale.toLowerCase().startsWith("vi") ? { hour: "giờ", day: "ngày", week: "tuần", month: "tháng", year: "năm" } : {};
+    return job.salary_period ? `${range}/${periods[job.salary_period] ?? job.salary_period}` : range;
   } catch {
     return null;
   }
@@ -69,5 +70,6 @@ export function formatJobDate(value: string | null, locale: string): string {
 
 export function humanizeJobSlug(value: string | null | undefined): string {
   if (!value) return "—";
-  return value.replace(/_/g, " ").replace(/-/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const brands: Record<string, string> = { aws: "AWS", ai: "AI", api: "API", typescript: "TypeScript", javascript: "JavaScript", devops: "DevOps", mysql: "MySQL", postgresql: "PostgreSQL", saas: "SaaS", web3: "Web3" };
+  return value.replace(/[_-]/g, " ").split(" ").map(word => brands[word.toLowerCase()] ?? word.replace(/^\w/, letter => letter.toUpperCase())).join(" ");
 }

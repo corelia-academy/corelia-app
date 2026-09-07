@@ -1,3 +1,4 @@
+import { LanguageSwitcher } from "@/components/base/LanguageSwitcher";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, NavLink, useLocation } from "react-router";
@@ -75,7 +76,7 @@ function addRecentSearch(query: string) {
   writeRecentSearches(next);
 }
 
-export default function Header() {
+export default function Header({ publicUI = false }: { publicUI?: boolean }) {
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -85,7 +86,7 @@ export default function Header() {
     signOut,
     user,
   } = useAuth();
-  const { t } = useTranslation("common");
+  const { t, i18n } = useTranslation("common");
   const { t: tAccount } = useTranslation("account");
   const { isInitialized, authState, ocAuth } = useOCAuth();
   const { resolvedTheme } = useTheme();
@@ -102,7 +103,7 @@ export default function Header() {
   const searchWrapRef = useRef<HTMLDivElement | null>(null);
   const trendingQuery = useQuery(trendingSearchesQueryOptions());
   const suggestionsQuery = useQuery(
-    searchResultsQueryOptions(debouncedSearchText, MAX_SUGGESTIONS, searchOpen),
+    searchResultsQueryOptions(debouncedSearchText, MAX_SUGGESTIONS, searchOpen, publicUI ? i18n.language : undefined),
   );
   const logSearchMutation = useMutation({ mutationFn: logSearchQuery });
   const trending = trendingQuery.data ?? [];
@@ -466,6 +467,7 @@ export default function Header() {
         </form>
 
         <div className="flex items-center gap-2">
+          {publicUI ? <LanguageSwitcher compact={false} /> : null}
           {!authInitialized ? (
             <div className="h-9 w-28 animate-pulse rounded-full bg-surface-raised md:h-10" />
           ) : isAuthenticated ? (
@@ -499,7 +501,7 @@ export default function Header() {
                       onClick={() => navigate(item.to)}
                       onPointerEnter={() => prefetchRouteChunk(item.to)}
                       onFocus={() => prefetchRouteChunk(item.to)}
-                      className="min-h-11 text-sm leading-relaxed"
+                      className="min-h-11"
                     >
                       <div className="pl-2">{item.icon}</div>
                       {item.label}
@@ -513,7 +515,7 @@ export default function Header() {
                       )
                     }
                     variant="destructive"
-                    className="min-h-11 text-sm leading-relaxed"
+                    className="min-h-11"
                   >
                     <div className="pl-2">
                       <LogOut className="mr-2 size-4" aria-hidden />

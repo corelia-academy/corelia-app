@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
 import { Button } from "@/components/ui/button";
 import { hackathonPreviewQueryOptions, publicHackathonDetailQueryOptions } from "@/features/hackathons/hackathonQueries";
-import { getMyContestRegistration, registerForContest } from "@/lib/hackathons";
+import { getMyContestRegistration, getMyContestSubmission, registerForContest } from "@/lib/hackathons";
 import { canManageContests } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
@@ -68,6 +68,7 @@ export default function ContestPublicLayout() {
     enabled: Boolean(contest && user && !previewRequested),
     staleTime: 30_000,
   });
+  const submissionQuery = useQuery({ queryKey: ["projects", "my-submission", contest?.id, user?.id], queryFn: () => getMyContestSubmission(contest!.id, user), enabled: Boolean(contest && user && !previewRequested), staleTime: 0 });
   const registration = registrationQuery.data ?? null;
   const [renderedAt] = useState(() => Date.now());
   const registrationClosed = Boolean(
@@ -127,10 +128,10 @@ export default function ContestPublicLayout() {
   const cta = previewRequested ? null : registration ? (
     <Button
       type="button"
-      disabled={submissionClosed}
-      onClick={() => navigate(`/projects/new?hackathon=${encodeURIComponent(slug)}`)}
+      disabled={!submissionQuery.data?.project_id && submissionClosed}
+      onClick={() => navigate(submissionQuery.data?.project_id ? `/projects/${submissionQuery.data.project_id}` : `/projects/new?hackathon=${encodeURIComponent(slug)}`)}
     >
-      {submissionClosed ? t("public.submissionClosed") : t("public.createProject")}
+      {submissionQuery.data?.project_id ? t("projects.editor.viewProject", { ns: "common" }) : submissionClosed ? t("public.submissionClosed") : t("public.createProject")}
     </Button>
   ) : (
     <Button
@@ -175,7 +176,7 @@ export default function ContestPublicLayout() {
             ) : null}
             <div className="flex min-w-0 flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
               <div className="min-w-0 flex-1">
-                <h1 className="min-w-0 max-w-4xl break-words text-2xl font-bold text-foreground [overflow-wrap:anywhere] sm:text-4xl">{contest.title}</h1>
+                <h1 className="min-w-0 max-w-4xl break-words text-display-small font-display text-foreground [overflow-wrap:anywhere]">{contest.title}</h1>
                 {contest.short_description || contest.tagline ? (
                   <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground-muted sm:text-base">{contest.short_description || contest.tagline}</p>
                 ) : null}
@@ -218,7 +219,7 @@ export default function ContestPublicLayout() {
         </header>
       </PageContainer>
 
-      <div className="sticky top-11 z-20 mt-4 border-y border-border-subtle bg-background/95 backdrop-blur">
+      <div className="sticky top-(--app-header-height) z-20 mt-4 border-y border-border-subtle bg-background/95 backdrop-blur">
         <div ref={tabsScrollerRef} className="overflow-x-auto overscroll-x-contain scroll-px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <PageContainer width="default" className="py-0">
             <nav className="flex min-w-max" aria-label={t("public.tabsLabel")}>

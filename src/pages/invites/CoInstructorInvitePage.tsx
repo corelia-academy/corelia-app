@@ -1,3 +1,4 @@
+import "@/styles/public-ui.css";
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router";
@@ -122,10 +123,10 @@ export default function CoInstructorInvitePage() {
     : [];
 
   return (
-    <div className="container-app flex min-h-[50vh] items-center justify-center py-10">
+    <div className="public-status container-app flex min-h-[50vh] items-center justify-center py-10">
       <Card className="w-full max-w-md">
         <CardContent className="space-y-4 p-6">
-          <h1 className="text-lg font-semibold text-foreground">
+          <h1 className="text-heading-medium font-display text-foreground">
             {t("inviteCoInstructor.title")}
           </h1>
 

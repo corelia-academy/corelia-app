@@ -26,13 +26,42 @@ const coreliaSpacing = [
   "15xl",
 ] as const;
 
+const coreliaTypography = [
+  "display-large",
+  "display-medium",
+  "display-small",
+  "heading-large",
+  "heading-medium",
+  "heading-small",
+  "title-large",
+  "title-medium",
+  "title-small",
+  "title-xsmall",
+  "body-large",
+  "body-medium",
+  "body-small",
+  "body-xsmall",
+  "cta-large",
+  "cta-medium",
+  "cta-small",
+  "cta-link",
+  "label-large",
+  "label-medium",
+  "label-small",
+  "label-xsmall",
+  "note-regular",
+  "note-medium",
+  "note-italic",
+] as const
+
 const twMergeCorelia = extendTailwindMerge({
   extend: {
     theme: {
+      text: coreliaTypography,
       spacing: coreliaSpacing,
     },
   },
-});
+})
 
 export function cn(...inputs: ClassValue[]) {
   return twMergeCorelia(clsx(inputs))

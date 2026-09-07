@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { UserCircle } from "lucide-react";
 import type { Profile } from "@/types/database";
@@ -66,19 +66,22 @@ export function AccountProfileRoute() {
     setProfilePublic,
   } = useProfileForm(profile);
 
-  // Sync form fields when profile arrives after initial render
-  const profileId = profile?.id;
+  // A cached partial profile and its complete response have the same ID.
+  // Refresh untouched fields while preserving edits made during the fetch.
+  const lastSyncedProfile = useRef(profile);
   useEffect(() => {
     if (!profile) return;
-    setFullName(profile.full_name ?? "");
-    setPhone(profile.phone ?? "");
-    setAvatarUrl(profile.avatar_url ?? "");
-    setUsername(profile.username ?? "");
-    setBio(profile.bio ?? "");
-    setWebsite(profile.website ?? "");
-    setProfilePublic(profile.profile_public ?? true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profileId]);
+    const previous = lastSyncedProfile.current;
+    const sameUser = previous?.id === profile.id;
+    setFullName(current => !sameUser || current === (previous?.full_name ?? "") ? profile.full_name ?? "" : current);
+    setPhone(current => !sameUser || current === (previous?.phone ?? "") ? profile.phone ?? "" : current);
+    setAvatarUrl(current => !sameUser || current === (previous?.avatar_url ?? "") ? profile.avatar_url ?? "" : current);
+    setUsername(current => !sameUser || current === (previous?.username ?? "") ? profile.username ?? "" : current);
+    setBio(current => !sameUser || current === (previous?.bio ?? "") ? profile.bio ?? "" : current);
+    setWebsite(current => !sameUser || current === (previous?.website ?? "") ? profile.website ?? "" : current);
+    setProfilePublic(current => !sameUser || current === (previous?.profile_public ?? true) ? profile.profile_public ?? true : current);
+    lastSyncedProfile.current = profile;
+  }, [profile, setFullName, setPhone, setAvatarUrl, setUsername, setBio, setWebsite, setProfilePublic]);
 
   async function onAvatarUpload(file: File) {
     if (!user) return;
@@ -144,7 +147,7 @@ export function AccountProfileRoute() {
       const usernameChanged =
         newUsername?.toLowerCase() !== (profile?.username ?? "").toLowerCase();
 
-      await updateProfileForUser(user, {
+      const savedProfile = await updateProfileForUser(user, {
         ...(usernameChanged ? { username: newUsername } : {}),
         full_name: fullName.trim() || null,
         phone: phone.trim() || null,
@@ -153,6 +156,7 @@ export function AccountProfileRoute() {
         website: website.trim() || null,
         profile_public: profilePublic,
       });
+      setFullName(current => current === fullName ? savedProfile.full_name ?? "" : current);
       await refreshProfile(user);
       setSuccess(t("profile.success.updated"));
     } catch (err) {
@@ -165,7 +169,11 @@ export function AccountProfileRoute() {
       setError(
         isUsernameTaken
           ? t("profile.errors.usernameTaken")
-          : raw || t("profile.errors.updateFailed"),
+          : raw.includes("profile_name_")
+            ? t("profile.errors.invalidName")
+            : raw.includes("profile_text_invalid") || raw.includes("profile_username_too_long")
+              ? t("profile.errors.invalidText")
+              : raw || t("profile.errors.updateFailed"),
       );
     } finally {
       setSaving(false);

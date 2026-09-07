@@ -2,7 +2,7 @@ import type { Locale } from "@/types/database";
 import type { EntityI18nConfig } from "@/types/entityLocales";
 
 export function normalizeContentLocale(input?: string | null): Locale {
-  return input === "en" ? "en" : "vi";
+  return input?.trim().toLowerCase().split(/[-_]/)[0] === "en" ? "en" : "vi";
 }
 
 export function getSupportedContentLocales(config?: EntityI18nConfig | null): Locale[] {

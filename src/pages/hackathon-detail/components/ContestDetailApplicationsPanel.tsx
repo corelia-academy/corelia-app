@@ -127,7 +127,7 @@ export function ContestDetailApplicationsPanel({
       <CardContent className="p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            <h2 className="text-heading-medium font-display text-foreground">
               {translate("workspace.manage.applicationsReviewTitle")}
             </h2>
             <p className="mt-2 text-sm text-foreground-muted">

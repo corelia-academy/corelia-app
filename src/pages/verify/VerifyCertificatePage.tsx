@@ -1,3 +1,4 @@
+import "@/styles/public-ui.css";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router";
@@ -120,7 +121,7 @@ export function VerifyCertificatePage() {
 
   const searchForm = (
     <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-3 text-left">
-      <label htmlFor="certificate-code" className="text-sm font-medium text-foreground">
+      <label htmlFor="certificate-code" className="text-label-medium font-body text-foreground">
         {t("verify.inputLabel")}
       </label>
       <input
@@ -146,8 +147,8 @@ export function VerifyCertificatePage() {
     // the viewport exactly and everything below the info strip (the certificate image)
     // flexes to whatever room is left. Same behaviour on phone and on a full laptop
     // window — no md: fallback to a taller, scrollable layout.
-    <div className="flex h-dvh flex-col items-center justify-center bg-background p-4">
-      <div className="flex h-full max-h-[min(48rem,calc(100dvh-2rem))] w-full flex-col rounded-2xl border border-border-subtle bg-surface-base shadow-card p-5 text-center">
+    <div className="public-status flex min-h-dvh flex-col items-center justify-center bg-background p-4">
+      <div className="flex min-h-[min(48rem,calc(100dvh-2rem))] w-full max-w-5xl flex-col rounded-2xl border border-border-subtle bg-surface-base shadow-card p-5 text-center">
         {status === "loading" && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
             <Loader2 className="size-6 animate-spin text-primary" aria-hidden />
@@ -157,7 +158,7 @@ export function VerifyCertificatePage() {
 
         {status === "idle" && (
           <div className="flex flex-1 flex-col items-center justify-center">
-            <h1 className="text-xl font-semibold text-foreground">{t("verify.formTitle")}</h1>
+            <h1 className="text-heading-medium font-display text-foreground">{t("verify.formTitle")}</h1>
             <p className="mt-2 text-sm text-foreground-muted">{t("verify.formHint")}</p>
             {searchForm}
           </div>
@@ -165,7 +166,7 @@ export function VerifyCertificatePage() {
 
         {status === "error" && (
           <div className="flex flex-1 flex-col items-center justify-center">
-            <h1 className="text-xl font-semibold text-foreground">{t("verify.errorTitle")}</h1>
+            <h1 className="text-heading-medium font-display text-foreground">{t("verify.errorTitle")}</h1>
             <p className="mt-2 text-sm text-foreground-muted">{t("verify.errorBody")}</p>
             {searchForm}
           </div>
@@ -174,7 +175,7 @@ export function VerifyCertificatePage() {
         {status === "notfound" && (
           <div className="flex flex-1 flex-col items-center justify-center">
             <SearchX className="mx-auto size-10 text-foreground-muted" aria-hidden />
-            <h1 className="mt-3 text-xl font-semibold text-foreground">{t("verify.notFoundTitle")}</h1>
+            <h1 className="mt-3 text-heading-medium font-display text-foreground">{t("verify.notFoundTitle")}</h1>
             <p className="mt-2 text-sm text-foreground-muted">{t("verify.notFoundBody")}</p>
             {searchForm}
           </div>
@@ -188,7 +189,7 @@ export function VerifyCertificatePage() {
               {status === "valid" ? (
                 <>
                   <CheckCircle2 className="mx-auto size-8 text-success" aria-hidden />
-                  <h1 className="mt-2 text-lg font-semibold text-foreground">
+                  <h1 className="mt-2 text-heading-medium font-display text-foreground">
                     {t("verify.validTitle")}
                   </h1>
                   <p className="mt-1 text-xs text-foreground-muted">
@@ -198,7 +199,7 @@ export function VerifyCertificatePage() {
               ) : (
                 <>
                   <ShieldX className="mx-auto size-8 text-destructive" aria-hidden />
-                  <h1 className="mt-2 text-lg font-semibold text-foreground">
+                  <h1 className="mt-2 text-heading-medium font-display text-foreground">
                     {t("verify.revokedTitle")}
                   </h1>
                   <p className="mt-1 text-xs text-foreground-muted">

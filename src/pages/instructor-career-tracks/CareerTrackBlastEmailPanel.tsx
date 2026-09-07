@@ -64,7 +64,7 @@ export function CareerTrackBlastEmailPanel({ trackId }: Props) {
           <Mail className="size-5" aria-hidden />
         </div>
         <div>
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {t("careerTracks.announcements.heroTitle")}
           </h2>
           <p className="mt-0.5 text-sm text-foreground-muted">

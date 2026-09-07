@@ -84,7 +84,7 @@ function lessonRowToLesson(
 }
 
 export function normalizeCourseLocale(input?: string | null): SupportedCourseLocale {
-  return input === "en" ? "en" : "vi";
+  return input?.trim().toLowerCase().split(/[-_]/)[0] === "en" ? "en" : "vi";
 }
 
 export function getCoursePrimaryLocale(course?: Pick<Course, "i18n"> | null): SupportedCourseLocale {
@@ -347,7 +347,19 @@ export async function getPublishedCourses(): Promise<Course[]> {
   return (data ?? []).map((r) => rowToCourse(r as CourseRow));
 }
 
-export async function getPublishedCoursesByInstructor(instructorId: string): Promise<Course[]> {
+/** Batch projection shared by public catalogs and embedded course lists. */
+export async function localizePublicCourses(courses: Course[], uiLocale?: string | null): Promise<Course[]> {
+  if (uiLocale == null) return courses;
+  const locales = [...new Set(courses.map(course => pickCourseContentLocale(course, uiLocale)))];
+  const batches = await Promise.all(locales.map(async locale => [locale, await getBatchCourseLocaleContent(
+    courses.filter(course => pickCourseContentLocale(course, uiLocale) === locale).map(course => course.id), locale,
+  )] as const));
+  const byLocale = new Map(batches);
+  return courses.map(course => applyCourseLocaleContent(course,
+    byLocale.get(pickCourseContentLocale(course, uiLocale))?.get(course.id) ?? null));
+}
+
+export async function getPublishedCoursesByInstructor(instructorId: string, uiLocale?: string | null): Promise<Course[]> {
   const trimmed = instructorId?.trim();
   const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!trimmed || !UUID_REGEX.test(trimmed)) return [];
@@ -364,7 +376,7 @@ export async function getPublishedCoursesByInstructor(instructorId: string): Pro
     }
     throw new Error(error.message);
   }
-  return (data ?? []).map((r) => rowToCourse(r as CourseRow));
+  return localizePublicCourses((data ?? []).map((r) => rowToCourse(r as CourseRow)), uiLocale);
 }
 
 export async function getCourse(courseId: string): Promise<Course | null> {

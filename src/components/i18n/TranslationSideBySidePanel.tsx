@@ -21,7 +21,7 @@ export function TranslationSideBySidePanel({
       <CardContent className="p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+            <h2 className="text-heading-medium font-display text-foreground">{title}</h2>
             {description ? (
               <p className="mt-1 text-sm text-foreground-muted">{description}</p>
             ) : null}

@@ -117,7 +117,7 @@ export function OcCredentialModal({
               {t("achievements.oc.modal.review.back")}
             </button>
 
-            <h2 className="text-base font-semibold text-foreground sm:text-lg">
+            <h2 className="text-heading-medium font-display text-foreground">
               {t("achievements.oc.modal.review.title")}
             </h2>
             <p className="mt-1 mb-5 text-sm text-foreground-muted">

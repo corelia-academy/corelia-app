@@ -1,3 +1,4 @@
+import "@/styles/public-ui.css";
 import { useEffect, useMemo, useState } from "react";
 import { NavLink, useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
@@ -88,7 +89,7 @@ export default function SignupVerified() {
   const errorMessage = (failureReason?.trim() || t("signupVerified.sessionError")).trim();
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-auth-page p-6 md:p-10">
+    <div className="flex min-h-svh flex-col items-center justify-center public-status bg-auth-page p-6 md:p-10">
       <div className="w-full max-w-md">
         <div className="mb-4 flex items-center justify-between gap-3">
           <NavLink
@@ -104,7 +105,7 @@ export default function SignupVerified() {
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
           {phase === "waiting" ? (
             <>
-              <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
+              <h1 className="text-heading-medium font-display text-foreground">
                 {t("signupVerified.waitingTitle")}
               </h1>
               <p className="mt-2 text-sm leading-relaxed text-foreground-muted">
@@ -115,7 +116,7 @@ export default function SignupVerified() {
 
           {phase === "success" ? (
             <>
-              <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
+              <h1 className="text-heading-medium font-display text-foreground">
                 {t("signupVerified.successTitle")}
               </h1>
               <p className="mt-2 text-sm leading-relaxed text-foreground-muted">
@@ -129,7 +130,7 @@ export default function SignupVerified() {
 
           {phase === "error" ? (
             <>
-              <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
+              <h1 className="text-heading-medium font-display text-foreground">
                 {t("signupVerified.errorTitle")}
               </h1>
               <p className="mt-2 text-sm leading-relaxed text-foreground-muted">{errorMessage}</p>
