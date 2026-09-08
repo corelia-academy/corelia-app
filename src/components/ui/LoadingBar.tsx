@@ -86,7 +86,7 @@ export function LoadingBar() {
         }`}
       >
         <div
-          className="loading-bar-gradient h-full bg-gradient-to-r from-primary via-brand-accent to-indigo-500 transition-all duration-300 ease-out"
+          className="loading-bar-gradient h-full bg-gradient-to-r from-primary via-brand-accent to-blue-700 transition-all duration-300 ease-out"
           style={{
             width: `${progress}%`,
             boxShadow:

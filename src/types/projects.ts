@@ -20,6 +20,7 @@ export interface Project {
   /** Short-lived client-resolved URLs for private Storage objects. */
   logo_url?: string | null;
   screenshot_urls?: string[];
+  blocked?: boolean;
   visibility: ProjectVisibility;
   source_type: ProjectSourceType;
   source_id: string | null;

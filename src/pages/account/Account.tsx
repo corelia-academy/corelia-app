@@ -65,7 +65,7 @@ export default function Account() {
           <div className="mb-4 hidden text-xs font-semibold uppercase tracking-widest text-foreground-muted lg:block">
             {t("nav.sectionTitle")}
           </div>
-          <div className="-mx-4 overflow-x-auto px-4 lg:hidden">
+          <div className="scrollbar-design -mx-4 overflow-x-auto px-4 lg:hidden">
             <div className="flex min-w-max gap-2 pb-1">
               {navItems.map((item) => (
                 <NavLink
@@ -126,7 +126,7 @@ export default function Account() {
                 <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                   {t("nav.currentSectionLabel")}
                 </p>
-                <h2 className="mt-1 text-lg font-semibold text-foreground">
+                <h2 className="mt-1 text-heading-medium font-display text-foreground">
                   {activeNavItem.title}
                 </h2>
                 <p className="mt-1 text-sm text-foreground-muted">

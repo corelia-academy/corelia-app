@@ -1,5 +1,5 @@
 /* Shared Corelia palette for every route and portal. Theme selection remains owned by next-themes. */
-:root {
+/* :root {
   --background: #F4F7FF;
   --foreground: #171923;
   --foreground-muted: #526079;
@@ -88,7 +88,25 @@
   --sidebar-accent-foreground: #EAE6E3;
   --sidebar-border: #282E3F;
   --sidebar-ring: #91B5FF;
+} */
+
+:root {
+  --public-link: var(--blue-700);
+  --public-cta-hover: #1248C5;
+  --public-cta-hover-foreground: var(--neutral-50);
+  --public-cta-active: #103DA5;
+  --public-cta-active-foreground: var(--neutral-50);
+  --public-control-border: var(--neutral-400);
 }
+.dark {
+  --public-link: var(--blue-400);
+  --public-cta-hover: #2464F5;
+  --public-cta-hover-foreground: var(--neutral-50);
+  --public-cta-active: var(--blue-700);
+  --public-cta-active-foreground: var(--neutral-50);
+  --public-control-border: var(--neutral-400);
+}
+
 body, .public-ui, .public-status {
   background-color: var(--background);
   color: var(--foreground);
@@ -102,10 +120,12 @@ body :is(input, select, textarea, [data-slot=button].border-border):not([aria-in
 }
 body :is(button, a).bg-primary:hover:not(:disabled):not([aria-disabled=true]) {
   background-color: var(--public-cta-hover);
+  color: var(--public-cta-hover-foreground);
   opacity: 1;
 }
 body :is(button, a).bg-primary:active:not(:disabled):not([aria-disabled=true]) {
   background-color: var(--public-cta-active);
+  color: var(--public-cta-active-foreground);
 }
 body nav a[aria-current=page] {
   background-color: var(--sidebar-accent);

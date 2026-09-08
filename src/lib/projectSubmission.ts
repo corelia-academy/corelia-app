@@ -107,3 +107,14 @@ export async function deleteProjectMedia(projectId: string, path: string): Promi
   });
   await parseResponse(response);
 }
+
+export type ProjectManagementAction = "delete" | "block" | "unblock" | ProjectVisibility;
+
+export async function manageProject(projectId: string, action: ProjectManagementAction, reason: string): Promise<void> {
+  const response = await authenticatedRequest("projects.manage", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ project_id: projectId, action, reason }),
+  });
+  await parseResponse(response);
+}

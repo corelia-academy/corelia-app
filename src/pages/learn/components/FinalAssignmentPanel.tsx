@@ -62,7 +62,7 @@ export function FinalAssignmentPanel({
     <div className="mt-6 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-6">
       <div className="flex items-center gap-2">
         <FileText className="w-5 h-5 text-primary" aria-hidden />
-        <h2 className="text-[18px] font-semibold text-foreground">
+        <h2 className="text-heading-medium font-display text-foreground">
           {course.final_assignment_title}
         </h2>
       </div>

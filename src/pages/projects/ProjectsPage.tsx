@@ -13,7 +13,7 @@ import type { PublicProjectEntry, PublicProjectSort } from "@/lib/projects";
 import { projectHeartsQueryOptions } from "@/features/projects/projectSocialQueries";
 import { useAuth } from "@/stores/authStore";
 import { cn } from "@/lib/utils";
-import type { Contest, HackathonTaxonomyOption } from "@/types/hackathons";
+import type { HackathonTaxonomyOption, HackathonWinnerAward } from "@/types/hackathons";
 
 type FilterOption = Pick<HackathonTaxonomyOption, "id" | "name"> & { active?: boolean };
 
@@ -41,7 +41,7 @@ function TaxonomyFilter({
   return (
     <details className="relative min-w-0 rounded-lg border border-border bg-surface-base">
       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-3 text-sm font-medium">{label}{selected.length ? <span className="rounded-full bg-primary/10 px-2 text-primary">{selected.length}</span> : null}<ChevronDown className="size-4" /></summary>
-      <div className="relative z-10 flex max-h-72 flex-col gap-1 overflow-auto border-t border-border p-2 lg:absolute lg:top-full lg:mt-2 lg:w-72 lg:rounded-xl lg:border lg:bg-surface-base lg:shadow-lg">
+      <div className="scrollbar-design relative z-10 flex max-h-72 flex-col gap-1 overflow-auto border-t border-border p-2 lg:absolute lg:top-full lg:mt-2 lg:w-72 lg:rounded-xl lg:border lg:bg-surface-base lg:shadow-lg">
         {activeOptions.map((option) => {
           const checked = selected.includes(option.id);
           return (
@@ -70,9 +70,9 @@ function TaxonomyFilter({
   );
 }
 
-function winnerFirst(items: PublicProjectEntry[], contest: Contest | null): PublicProjectEntry[] {
+function winnerFirst(items: PublicProjectEntry[], awards: HackathonWinnerAward[]): PublicProjectEntry[] {
   const order = new Map(
-    (contest?.winner_awards ?? []).map((award) => [award.project_id, award.sort_order]),
+    awards.map((award) => [award.project_id, award.sort_order]),
   );
   return [...items].sort((a, b) => {
     const aOrder = order.get(a.project.id);
@@ -96,19 +96,41 @@ export default function ProjectsPage() {
   const sort = sortParam(params.get("sort"));
 
   const hackathonsQuery = useQuery(publicHackathonCatalogQueryOptions(locale));
-  const hackathons = hackathonsQuery.data ?? [];
-  const selectedHackathon = hackathons.find((item) => item.slug === hackathonSlug) ?? null;
+  const hackathons = useMemo(() => hackathonsQuery.data ?? [], [hackathonsQuery.data]);
+  const selectedHackathon = useMemo(
+    () => hackathons.find((item) => item.slug === hackathonSlug) ?? null,
+    [hackathons, hackathonSlug],
+  );
+
+  const allWinnerAwards = useMemo(() => {
+    if (selectedHackathon) {
+      return selectedHackathon.winner_awards ?? [];
+    }
+    return hackathons.flatMap((h) => h.winner_awards ?? []);
+  }, [selectedHackathon, hackathons]);
+
+  const awardsMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const award of allWinnerAwards) {
+      map.set(award.project_id, award.label);
+    }
+    return map;
+  }, [allWinnerAwards]);
+
   const directoryOptions = publicProjectDirectoryQueryOptions(locale, "all", sort, {
-      hackathonId: selectedHackathon?.id ?? null,
-      trackIds,
-      sectorIds,
-      techStackIds,
-      winnerProjectIds: selectedHackathon?.winner_awards?.map((award) => award.project_id) ?? [],
-    });
-  const projectsQuery = useInfiniteQuery({ ...directoryOptions, enabled: !hackathonSlug || Boolean(selectedHackathon) });
+    hackathonId: selectedHackathon?.id ?? null,
+    trackIds,
+    sectorIds,
+    techStackIds,
+    winnerProjectIds: allWinnerAwards.map((award) => award.project_id),
+  });
+  const projectsQuery = useInfiniteQuery({
+    ...directoryOptions,
+    enabled: !hackathonSlug || Boolean(selectedHackathon),
+  });
   const items = useMemo(
-    () => winnerFirst(projectsQuery.data?.pages.flatMap((page) => page.items) ?? [], selectedHackathon),
-    [projectsQuery.data?.pages, selectedHackathon],
+    () => winnerFirst(projectsQuery.data?.pages.flatMap((page) => page.items) ?? [], allWinnerAwards),
+    [projectsQuery.data?.pages, allWinnerAwards],
   );
 
   const hearts = useQuery(projectHeartsQueryOptions(user?.id, items.map(item => item.project.id)));
@@ -133,7 +155,7 @@ export default function ProjectsPage() {
         <div>
         <div className="flex items-center gap-2">
           <Package className="size-5 text-primary" aria-hidden />
-          <h1 className="text-xl font-semibold text-foreground sm:text-2xl">{t("projects.title")}</h1>
+          <h1 className="text-heading-large font-display text-foreground">{t("projects.title")}</h1>
         </div>
         <p className="mt-1 text-sm text-foreground-muted">{t("projects.description")}</p>
         </div>
@@ -180,13 +202,23 @@ export default function ProjectsPage() {
         ) : items.length === 0 ? (
           <div className="rounded-2xl border border-border-subtle bg-surface-base px-4 py-14 text-center shadow-card">
             <Package className="mx-auto size-8 text-foreground-subtle" aria-hidden />
-            <h2 className="mt-3 text-sm font-semibold text-foreground">{t("projects.emptyTitle")}</h2>
+            <h2 className="mt-3 text-heading-small font-display text-foreground">{t("projects.emptyTitle")}</h2>
             <p className="mt-1 text-sm text-foreground-muted">{t("projects.emptyDescription")}</p>
           </div>
         ) : (
           <>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {items.map(({ project, owner }) => <ProjectCard key={project.id} hearted={hearts.data?.has(project.id) ?? false} project={project} taxonomy={hackathons.find(item => item.id === project.source_id)} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} />)}
+              {items.map(({ project, owner }) => (
+                <ProjectCard
+                  key={project.id}
+                  hearted={hearts.data?.has(project.id) ?? false}
+                  project={project}
+                  taxonomy={hackathons.find((item) => item.id === project.source_id)}
+                  ownerLabel={owner?.full_name ?? owner?.username}
+                  ownerHandle={owner?.username ?? owner?.ocid}
+                  awardLabel={awardsMap.get(project.id)}
+                />
+              ))}
             </div>
             {projectsQuery.hasNextPage ? (
               <div className="mt-6 flex justify-center">

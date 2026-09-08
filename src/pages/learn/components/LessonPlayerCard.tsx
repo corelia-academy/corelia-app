@@ -109,7 +109,7 @@ export function LessonPlayerCard({
                 </LearnBadge>
               ) : null}
             </div>
-            <h2 className="mt-3 text-2xl font-semibold text-foreground">
+            <h2 className="mt-3 text-heading-large font-display text-foreground">
               {lesson.title}
             </h2>
             {lesson.short_description?.trim() ? (

@@ -11,7 +11,7 @@ export default function NotFound() {
         404
       </p>
       <div className="max-w-md space-y-2">
-        <h1 className="text-xl font-semibold text-foreground">
+        <h1 className="text-heading-medium font-display text-foreground">
           {t("notFound.title")}
         </h1>
         <p className="text-sm text-foreground-muted">{t("notFound.description")}</p>

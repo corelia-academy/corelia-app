@@ -46,7 +46,7 @@ export function ContestDetailParticipantApplicationCard({
         <>
           {embedded ? (
             <div className="mb-4">
-              <h2 className="text-base font-semibold tracking-tight text-foreground">
+              <h2 className="text-heading-small font-display text-foreground">
                 {translate("detail.participant.applicationCardTitle")}
               </h2>
               <p className="mt-1 text-sm leading-relaxed text-foreground-muted">
@@ -56,7 +56,7 @@ export function ContestDetailParticipantApplicationCard({
           ) : (
             <div className="flex items-center gap-3">
               <div>
-                <h2 className="text-lg font-semibold tracking-tight text-foreground">
+              <h2 className="text-heading-medium font-display text-foreground">
                   {translate("detail.participant.applicationCardTitle")}
                 </h2>
                 <p className="mt-1 text-sm leading-relaxed text-foreground-muted">
@@ -91,14 +91,14 @@ export function ContestDetailParticipantApplicationCard({
         ) : contest.status !== "published" ? (
           <>
             {embedded ? (
-              <h2 className="mb-3 text-base font-semibold tracking-tight text-foreground">
+              <h2 className="mb-3 text-heading-small font-display text-foreground">
                 {translate("detail.participant.registrationLockedTitle")}
               </h2>
             ) : (
               <div className="flex items-center gap-3">
                 <Lock className="size-5 text-primary" aria-hidden />
                 <div>
-                  <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                  <h2 className="text-heading-medium font-display text-foreground">
                     {translate("detail.participant.registrationLockedTitle")}
                   </h2>
                 </div>
@@ -130,14 +130,14 @@ export function ContestDetailParticipantApplicationCard({
         ) : !registrationWorkspaceEditable ? (
           <>
             {embedded ? (
-              <h2 className="mb-3 text-base font-semibold tracking-tight text-foreground">
+              <h2 className="mb-3 text-heading-small font-display text-foreground">
                 {translate("detail.participant.registrationClosedTitle")}
               </h2>
             ) : (
               <div className="flex items-center gap-3">
                 <Lock className="size-5 text-primary" aria-hidden />
                 <div>
-                  <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                  <h2 className="text-heading-medium font-display text-foreground">
                     {translate("detail.participant.registrationClosedTitle")}
                   </h2>
                 </div>
@@ -170,7 +170,7 @@ export function ContestDetailParticipantApplicationCard({
           <>
             {embedded ? (
               <div className="mb-4">
-                <h2 className="text-base font-semibold tracking-tight text-foreground">
+                <h2 className="text-heading-small font-display text-foreground">
                   {translate("detail.participant.applicationCardTitle")}
                 </h2>
                 <p className="mt-1 text-sm leading-relaxed text-foreground-muted">
@@ -180,7 +180,7 @@ export function ContestDetailParticipantApplicationCard({
             ) : (
               <div className="flex items-center gap-3">
                 <div>
-                  <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                  <h2 className="text-heading-medium font-display text-foreground">
                     {translate("detail.participant.applicationCardTitle")}
                   </h2>
                   <p className="mt-1 text-sm leading-relaxed text-foreground-muted">

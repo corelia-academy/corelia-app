@@ -105,7 +105,7 @@ export default function SignupVerified() {
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
           {phase === "waiting" ? (
             <>
-              <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
+              <h1 className="text-heading-medium font-display text-foreground">
                 {t("signupVerified.waitingTitle")}
               </h1>
               <p className="mt-2 text-sm leading-relaxed text-foreground-muted">
@@ -116,7 +116,7 @@ export default function SignupVerified() {
 
           {phase === "success" ? (
             <>
-              <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
+              <h1 className="text-heading-medium font-display text-foreground">
                 {t("signupVerified.successTitle")}
               </h1>
               <p className="mt-2 text-sm leading-relaxed text-foreground-muted">
@@ -130,7 +130,7 @@ export default function SignupVerified() {
 
           {phase === "error" ? (
             <>
-              <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
+              <h1 className="text-heading-medium font-display text-foreground">
                 {t("signupVerified.errorTitle")}
               </h1>
               <p className="mt-2 text-sm leading-relaxed text-foreground-muted">{errorMessage}</p>

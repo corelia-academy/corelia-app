@@ -4598,7 +4598,7 @@ const InstructorCourseEdit = () => {
         <div className="min-w-0 flex-1">
           {activeSection === "info" && canAccessInfo && (
             <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
-              <h2 className="text-lg font-medium text-foreground">
+              <h2 className="text-heading-medium font-display text-foreground">
                 {t("courseEdit.sidebar.nav.info")}
               </h2>
               <FieldGroup className="mt-4">
@@ -5995,7 +5995,7 @@ const InstructorCourseEdit = () => {
           {activeSection === "content" && canAccessContent && (
             <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
+                <h2 className="text-heading-medium font-display text-foreground flex items-center gap-2">
                   <List className="size-5" /> {t("courseEdit.content.heading")}
                 </h2>
                 <div className="flex flex-wrap items-center justify-end gap-2">
@@ -7819,7 +7819,7 @@ const InstructorCourseEdit = () => {
           {activeSection === "assignments" && canAccessAssignments && (
             <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
               <div className="mb-2 flex items-center justify-between gap-3">
-                <h2 className="flex items-center gap-2 text-lg font-medium text-foreground">
+                <h2 className="flex items-center gap-2 text-heading-medium font-display text-foreground">
                   <FileText className="size-5" aria-hidden /> {t("courseEdit.sidebar.nav.assignments")}
                 </h2>
                 <div className="flex flex-wrap items-center justify-end gap-2">
@@ -7860,7 +7860,7 @@ const InstructorCourseEdit = () => {
               </p>
 
               <div className="mb-8 rounded-md border border-border-subtle bg-surface-raised p-4">
-                <h3 className="text-sm font-medium text-foreground mb-3">
+                <h3 className="text-heading-small font-display text-foreground mb-3">
                   {t("courseEdit.assignments.settingsTitle")}
                 </h3>
                 <FieldGroup>
@@ -7951,7 +7951,7 @@ const InstructorCourseEdit = () => {
                 </FieldGroup>
               </div>
 
-              <h3 className="text-sm font-medium text-foreground mb-3">
+              <h3 className="text-heading-small font-display text-foreground mb-3">
                 {t("courseEdit.assignments.submissionsTitle")}
               </h3>
               {(contentForm.final_assignment_title || course.final_assignment_title) ? (
@@ -8091,7 +8091,7 @@ const InstructorCourseEdit = () => {
             <div className="space-y-4">
               {/* PDF certificate template — enabled through General info. */}
               <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
-                <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-1">
+                <h2 className="text-heading-medium font-display text-foreground flex items-center gap-2 mb-1">
                   <Award className="size-5" aria-hidden /> {t("courseEdit.certificate.sectionTitle")}
                 </h2>
                 <p className="mb-6 text-sm text-foreground-muted">
@@ -8324,7 +8324,7 @@ const InstructorCourseEdit = () => {
                 </div>
 
                 <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
-                  <h3 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                  <h3 className="text-heading-small font-display text-foreground mb-2 flex items-center gap-2">
                     <FileText className="size-4" /> {t("courseEdit.certificateGuide.title")}
                   </h3>
                   <ul className="list-inside list-disc space-y-1 text-sm text-foreground-muted">
@@ -8379,7 +8379,7 @@ const InstructorCourseEdit = () => {
 
           {activeSection === "students" && canAccessStudents && (
             <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
-              <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
+              <h2 className="text-heading-medium font-display text-foreground flex items-center gap-2 mb-4">
                 <Users className="size-5" /> {t("courseEdit.sidebar.nav.students")}
               </h2>
               {enrollments.length === 0 ? (
@@ -8524,7 +8524,7 @@ const InstructorCourseEdit = () => {
 
           {activeSection === "danger" && canAccessDanger && (
             <section className="rounded-md border border-destructive/30 bg-surface-base p-6">
-              <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-2">
+              <h2 className="text-heading-medium font-display text-foreground flex items-center gap-2 mb-2">
                 <AlertTriangle className="size-5" aria-hidden /> {t("courseEdit.danger.dangerZoneTitle")}
               </h2>
               <p className="text-sm text-foreground-muted mb-4">

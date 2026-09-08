@@ -319,7 +319,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
               trending.length > 0 ||
               suggestionsLoading) ? (
               <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-xl border border-border bg-surface-overlay">
-                <div className="max-h-[60vh] overflow-auto p-2">
+                <div className="scrollbar-design max-h-[60vh] overflow-auto p-2">
                   {searchText.trim() ? (
                     <button
                       type="button"
@@ -501,7 +501,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                       onClick={() => navigate(item.to)}
                       onPointerEnter={() => prefetchRouteChunk(item.to)}
                       onFocus={() => prefetchRouteChunk(item.to)}
-                      className="min-h-11 text-sm leading-relaxed"
+                      className="min-h-11"
                     >
                       <div className="pl-2">{item.icon}</div>
                       {item.label}
@@ -515,7 +515,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                       )
                     }
                     variant="destructive"
-                    className="min-h-11 text-sm leading-relaxed"
+                    className="min-h-11"
                   >
                     <div className="pl-2">
                       <LogOut className="mr-2 size-4" aria-hidden />

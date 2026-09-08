@@ -14,7 +14,7 @@ export function ContinueLearningSection({
   return (
     <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-[18px] font-semibold text-foreground">{t("home.continueLearning")}</h2>
+        <h2 className="text-heading-medium font-display text-foreground">{t("home.continueLearning")}</h2>
         <Button
           render={<NavLink to="/courses" />}
           nativeButton={false}
@@ -28,7 +28,7 @@ export function ContinueLearningSection({
       </div>
 
       {focusCards.length > 0 ? (
-        <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
+        <div className="scrollbar-design mt-3 flex gap-3 overflow-x-auto pb-1">
           {focusCards.map((item) => (
             <NavLink
               key={item.id}

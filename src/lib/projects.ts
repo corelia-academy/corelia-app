@@ -594,8 +594,9 @@ export async function getProjectBySlugOrId(
   const value = slugOrId.trim().toLowerCase();
   if (!value) return null;
 
-  const select =
-    "id,slug,owner_id,title,summary,description,progress,pitch_video_url,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
+  // Read the complete public project row so additive moderation fields do not
+  // break detail pages while the frontend/database releases converge.
+  const select = "*" as const;
 
   let projectId = isUuidLike(value) ? value : null;
   const currentSlug = isUuidLike(value) ? null : value;
@@ -624,6 +625,18 @@ export async function getProjectBySlugOrId(
 }
 
 export const getProjectById = getProjectBySlugOrId;
+
+export async function listProjectsForModeration(page: number, status: string) {
+  let query = supabase.from("projects")
+    .select("id,slug,owner_id,title,visibility,blocked", { count: "exact" })
+    .order("updated_at", { ascending: false }).order("id")
+    .range(page * 20, page * 20 + 19);
+  if (status === "blocked") query = query.eq("blocked", true);
+  else if (["public", "unlisted", "private"].includes(status)) query = query.eq("visibility", status).eq("blocked", false);
+  const { data, error, count } = await query;
+  if (error) throw new Error(error.message);
+  return { items: (data ?? []) as Pick<Project, "id" | "slug" | "owner_id" | "title" | "visibility" | "blocked">[], count: count ?? 0 };
+}
 
 export type ProjectUpdateInput = Pick<
   Project,

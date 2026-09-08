@@ -56,12 +56,12 @@ export function CareerTrackListCard({ track }: { track: CareerTrackDetail }) {
           ) : null}
         </div>
 
-        <h2 className="mt-3 line-clamp-2 text-lg font-semibold leading-snug text-foreground sm:text-xl">
+        <h2 className="mt-3 line-clamp-2 text-heading-medium font-display text-foreground">
           {track.title}
         </h2>
 
         {summary ? (
-          <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-foreground-muted">
+          <p className="mt-3 line-clamp-3 text-body-medium font-body text-foreground-muted">
             {summary}
           </p>
         ) : null}

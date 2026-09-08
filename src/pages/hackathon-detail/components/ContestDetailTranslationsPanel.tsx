@@ -266,7 +266,7 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
       <CardContent className="p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            <h2 className="text-heading-medium font-display text-foreground">
               {translate("workspace.tabs.translations", { defaultValue: "Translations" })}
             </h2>
             <p className="mt-1 text-sm text-foreground-muted">

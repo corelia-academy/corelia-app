@@ -126,7 +126,7 @@ export default function AdminInstructors() {
       <div className="mt-6 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="text-heading-medium font-display text-foreground">
               {t("instructors.hero.title")}
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground-muted">
@@ -340,7 +340,7 @@ export default function AdminInstructors() {
             })
           )}
         </div>
-        <div className="hidden overflow-x-auto md:block">
+        <div className="scrollbar-design hidden overflow-x-auto md:block">
           <table className="w-full text-left">
             <thead className="border-b border-border-subtle bg-surface-raised">
               <tr>

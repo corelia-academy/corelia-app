@@ -234,7 +234,7 @@ export default function AdminManualMint() {
       <LoadingOverlay show={looking} label={t("manualMint.lookup.loading")} />
 
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-foreground">{t("manualMint.heading")}</h1>
+        <h1 className="text-heading-medium font-display text-foreground">{t("manualMint.heading")}</h1>
         <p className="mt-1 text-sm text-foreground-muted">{t("manualMint.subheading")}</p>
       </div>
 
@@ -365,7 +365,7 @@ export default function AdminManualMint() {
             )}
           >
             <div className="flex items-center justify-between border-b border-border-subtle/70 pb-2">
-              <h3 className="text-sm font-semibold text-foreground">
+              <h3 className="text-heading-small font-display text-foreground">
                 {t("manualMint.form.grantSectionTitle")}
               </h3>
               <Button

@@ -14,7 +14,7 @@ export function ContestPublicFinalCtaSection() {
   return (
     <Card id="final-cta" className="scroll-mt-36 border-primary/20 bg-primary/5">
       <CardContent className="p-6 text-center sm:p-8">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">
+        <h2 className="text-heading-medium font-display text-foreground">
           {translate("detail.finalCta.title")}
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-foreground-muted">

@@ -272,7 +272,7 @@ export default function FeedPage() {
             <Rss className="size-4" aria-hidden />
             {t("eyebrow")}
           </div>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          <h1 className="mt-2 text-display-small font-display text-foreground">
             {t("title")}
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-foreground-muted">
@@ -325,7 +325,7 @@ export default function FeedPage() {
       ) : groupedEvents.length === 0 ? (
         <div className="rounded-lg border border-border-subtle bg-surface-base p-8 text-center shadow-card">
           <Rss className="mx-auto size-8 text-foreground-subtle" aria-hidden />
-          <h2 className="mt-3 text-base font-semibold text-foreground">
+          <h2 className="mt-3 text-heading-small font-display text-foreground">
             {t("empty.title")}
           </h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-foreground-muted">

@@ -12,7 +12,7 @@ const links = [
 export function JobsNav() {
   const { t } = useTranslation("jobs");
   return (
-    <nav className="flex gap-1 overflow-x-auto rounded-lg border border-border-subtle bg-surface-base p-1" aria-label={t("nav.label")}>
+    <nav className="scrollbar-design flex gap-1 overflow-x-auto rounded-lg border border-border-subtle bg-surface-base p-1" aria-label={t("nav.label")}>
       {links.map(([href, key]) => (
         <NavLink
           key={href}

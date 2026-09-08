@@ -84,7 +84,7 @@ export function ProjectSocialBlock({
         aria-label={hearted ? t("projects.social.unheart") : t("projects.social.heart")}
       >
         <Heart className={cn("size-4", hearted && "fill-current")} aria-hidden />
-        <span className="tabular-nums text-sm font-medium">{likeCount}</span>
+        <span className="tabular-nums text-label-medium font-body">{likeCount}</span>
       </Button>
     </div>
   );
