@@ -122,8 +122,8 @@ BEGIN
     AND (description IS NOT NULL OR progress IS NOT NULL OR pitch_video_url IS NOT NULL)) THEN
     RAISE EXCEPTION 'Explicitly cleared story fields remain';
   END IF;
-  IF has_function_privilege('authenticated', 'public.save_ai_gated_project(uuid,uuid,text,text,text,text,text,text,text,text,text[],text,text,text,text[],text[],text[],text,text,text)', 'EXECUTE')
-    OR has_function_privilege('anon', 'public.save_ai_gated_project(uuid,uuid,text,text,text,text,text,text,text,text,text[],text,text,text,text[],text[],text[],text,text,text)', 'EXECUTE') THEN
+  IF has_function_privilege('authenticated', 'public.save_ai_gated_project(uuid,uuid,text,text,text,text,text,text,text,text,text[],text,text,text,text[],text[],text[],text,text,text,text,jsonb)', 'EXECUTE')
+    OR has_function_privilege('anon', 'public.save_ai_gated_project(uuid,uuid,text,text,text,text,text,text,text,text,text[],text,text,text,text[],text[],text[],text,text,text,text,jsonb)', 'EXECUTE') THEN
     RAISE EXCEPTION 'Project story RPC exposed outside the AI gate';
   END IF;
 

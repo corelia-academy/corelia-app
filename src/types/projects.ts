@@ -1,3 +1,6 @@
+export type ProjectContent = { title: string; summary: string; description: string; progress: string };
+export type ProjectLocales = Partial<Record<"vi" | "en", Partial<ProjectContent>>>;
+
 export type ProjectVisibility = "public" | "unlisted" | "private";
 /** `contest` is legacy compatibility; new hackathon-linked projects use `hackathon`. */
 export type ProjectSourceType = "standalone" | "contest" | "hackathon" | "course";
@@ -34,6 +37,8 @@ export interface Project {
   follower_count?: number;
   /** Text-only content localization config */
   i18n?: import("@/types/entityLocales").EntityI18nConfig;
+  /** Loaded only for editing; never use localized display text as source. */
+  content_locales?: ProjectLocales;
   created_at: string;
   updated_at: string;
 }

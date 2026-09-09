@@ -4,6 +4,7 @@ import { Navigate, NavLink, useNavigate, useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { projectLocalePayload } from "@/features/projects/projectEditorDraft";
 import { Button } from "@/components/ui/button";
 import { ProjectEditor, type ProjectEditorSave } from "@/features/projects/ProjectEditor";
 import { getContestBySlug, getMyContestRegistration, getMyContestSubmission, upsertContestSubmission } from "@/lib/hackathons";
@@ -22,6 +23,7 @@ export default function ProjectNewPage() {
   const hackathonSlug = params.get("hackathon") ?? "";
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const contestQuery = useQuery({
+    placeholderData: (previous, query) => query?.queryKey[2] === hackathonSlug ? previous : undefined,
     queryKey: ["hackathons", "project-new", hackathonSlug, locale],
     queryFn: () => getContestBySlug(hackathonSlug, locale),
     enabled: Boolean(hackathonSlug),
@@ -70,6 +72,7 @@ export default function ProjectNewPage() {
 
   async function save({ draft, teamIds, removedPaths }: ProjectEditorSave) {
     const input = {
+      ...projectLocalePayload(draft),
       project_id: projectId,
       title: draft.title,
       slug: draft.slug,

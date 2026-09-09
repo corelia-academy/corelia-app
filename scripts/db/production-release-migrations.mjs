@@ -50,16 +50,16 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260907054710_harden_profile_name_integrity.sql",
   "supabase/migrations/20260907060557_restrict_client_table_ddl_privileges.sql",
   "supabase/migrations/20260907075801_project_moderation_and_deletion.sql",
+  "supabase/migrations/20260909200232_project_content_localization.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production is released through 20260907075801 (run 34099968632),
-// excluding branch migration 20260906100000, confirmed by preflight run 34159917824.
-// Only email outbox events remain pending; its timestamp precedes the latest release.
-const UNRELEASED_PENDING_VERSIONS = new Set(["20260906100000"]);
+// Production run 34161071504 applied email outbox events and passed final gates.
+// All earlier approved migrations are released; only project localization is pending.
+const UNRELEASED_PENDING_VERSIONS = new Set(["20260909200232"]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
   APPROVED_PENDING_VERSIONS.filter((v) => !UNRELEASED_PENDING_VERSIONS.has(v)),

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  translateProjectText,
   moderateProjectImage,
   moderateProjectText,
   verifyPublicProjectLinks,
@@ -72,5 +73,33 @@ describe("project OpenAI gate", () => {
       text: { format: { type: "json_schema", strict: true } },
     });
     expect(JSON.stringify(request)).not.toContain("video_url");
+  });
+});
+
+describe("project AI translation", () => {
+  beforeEach(() => vi.stubGlobal("Deno", { env: { get: () => "test-key" } }));
+  afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+  const content = {title:"Corelia",summary:"A summary",description:"## Story\n[Demo](https://example.com)\n`code`",progress:""};
+  it("uses structured output without web tools, preserves source text and records token counts", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(response({status:"completed",output_text:JSON.stringify({...content,summary:"Tóm tắt"}),usage:{input_tokens:100,output_tokens:80}}));
+    vi.stubGlobal("fetch",fetchMock);
+    const result = await translateProjectText(content,"en","vi");
+    const payload = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(payload.model).toBe("gpt-5.4-mini"); expect(payload.tools).toBeUndefined();
+    expect(payload.text.format.strict).toBe(true);
+    expect(JSON.parse(payload.input[1].content)).toEqual(content);
+    expect(result.content.description).toBe(content.description);
+    expect(result.usage).toEqual({input_tokens:100,output_tokens:80});
+  });
+  it.each([
+    {status:"incomplete",output_text:JSON.stringify(content)},
+    {status:"completed",output_text:"invalid JSON"},
+    {status:"completed",output_text:JSON.stringify({title:"Only title"})},
+    {status:"completed",output_text:JSON.stringify({...content,description:"x".repeat(20001)})},
+    {status:"completed",output_text:JSON.stringify({...content,description:""})},
+    {status:"completed",output_text:JSON.stringify({...content,description:"Changed https://other.example `new code`"})},
+  ])("rejects unusable AI responses", async payload => {
+    vi.stubGlobal("fetch",vi.fn().mockResolvedValue(response(payload)));
+    await expect(translateProjectText(content,"en","vi")).rejects.toMatchObject({code:"ai_unavailable:invalid_response"});
   });
 });
