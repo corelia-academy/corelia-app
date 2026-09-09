@@ -94,15 +94,15 @@ test("Jobs migration is an approved forward migration", async () => {
   );
   assert.deepEqual(
     release.CURRENT_PENDING_VERSIONS,
-    ["20260906100000"],
+    ["20260909200232"],
   );
   assert.equal(
     release.CURRENT_PENDING_VERSIONS.at(-1),
-    "20260906100000",
+    "20260909200232",
   );
   assert.equal(
     release.EXPECTED_POST_MIGRATION_LATEST,
-    "20260907075801",
+    "20260909200232",
   );
   assert.ok(
     release.APPROVED_PENDING_VERSIONS.includes("20260903214029"),

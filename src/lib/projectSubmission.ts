@@ -1,8 +1,10 @@
 import { coreliaEdgeUrl, supabaseFunctionHeaders } from "@/lib/coreliaEdgeApi";
 import { supabase } from "@/lib/supabase";
-import type { ProjectSourceType, ProjectVisibility } from "@/types/projects";
+import type { ProjectSourceType, ProjectVisibility, ProjectContent, ProjectLocales } from "@/types/projects";
 
 export type ProjectSaveInput = {
+  primary_content_locale?: "vi" | "en";
+  locales?: ProjectLocales;
   project_id: string;
   slug: string;
   title: string;
@@ -117,4 +119,14 @@ export async function manageProject(projectId: string, action: ProjectManagement
     body: JSON.stringify({ project_id: projectId, action, reason }),
   });
   await parseResponse(response);
+}
+
+export async function translateProjectContent(projectId: string, sourceLocale: "vi" | "en", targetLocale: "vi" | "en", content: ProjectContent): Promise<ProjectContent> {
+  const response = await authenticatedRequest("projects.translate", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ project_id: projectId, source_locale: sourceLocale, target_locale: targetLocale, content }),
+  });
+  const payload = await parseResponse<{ content: ProjectContent }>(response);
+  if (!payload.content || !["title", "summary", "description", "progress"].every(key => typeof payload.content[key as keyof ProjectContent] === "string")) throw new Error("ai_unavailable:invalid_response");
+  return payload.content;
 }

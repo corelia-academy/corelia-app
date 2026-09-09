@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { ProjectManagementControls } from "@/components/projects/ProjectManagementControls";
+import { projectLocalePayload } from "@/features/projects/projectEditorDraft";
 import { Button } from "@/components/ui/button";
 import { ProjectEditor } from "@/features/projects/ProjectEditor";
 import { projectEditorQueryOptions } from "@/features/projects/projectQueries";
@@ -23,6 +24,7 @@ export default function ProjectEditPage() {
   const project = projectQuery.data?.project;
   const hackathon = Boolean(project && isHackathonProjectSource(project.source_type));
   const contestQuery = useQuery({
+    placeholderData: (previous, query) => query?.queryKey[1] === project?.source_id ? previous : undefined,
     queryKey: ["hackathons", project?.source_id, "project-edit", locale],
     queryFn: () => getContest(project!.source_id!, locale),
     enabled: Boolean(project?.source_id && hackathon),
@@ -69,6 +71,7 @@ export default function ProjectEditPage() {
       contest={contestQuery.data}
       onSave={async ({ draft, removedPaths }) => {
         await updateMyProject(project.id, {
+          ...projectLocalePayload(draft),
           slug: draft.slug,
           title: draft.title,
           summary: draft.summary,

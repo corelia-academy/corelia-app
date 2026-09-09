@@ -8,6 +8,8 @@ import type { Project } from "@/types/projects";
 import type { Contest } from "@/types/hackathons";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+const translate = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/projectSubmission", () => ({ translateProjectContent: translate }));
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock("@/lib/hackathons", () => ({ getEffectiveContestSubmissionDeadline: () => null, isPastContestSubmissionDeadline: () => false }));
 vi.mock("./ProjectTeamEditor", () => ({ ProjectTeamEditor: () => null }));
@@ -154,4 +156,58 @@ describe("ProjectEditor", () => {
     expect(save).toHaveBeenCalledOnce();
   });
 
+});
+
+describe("project language editing", () => {
+  async function button(text: string) {
+    await act(async () => Array.from(host.querySelectorAll("button")).find(item => item.textContent?.includes(text))!.click());
+  }
+  it("keeps primary and secondary content independent and saves both without changing the slug", async () => {
+    const save = await render();
+    await button("English");
+    expect((host.querySelector("textarea") as HTMLTextAreaElement).value).toBe("");
+    await input("#project-basics input", "English project");
+    await input("textarea", "English summary");
+    await button("Tiếng Việt");
+    expect((host.querySelector("#project-basics input") as HTMLInputElement).value).toBe("Original");
+    expect((host.querySelector("input[pattern]") as HTMLInputElement).value).toBe("original");
+    await submit();
+    expect((save.mock.calls as unknown as Array<[{ draft: import("./projectEditorDraft").ProjectDraft }]>)[0][0].draft).toMatchObject({ primaryLocale: "vi", title: "Original", locales: { en: { title: "English project", summary: "English summary" } } });
+  });
+  it("recovers secondary content and validates the selected primary language", async () => {
+    const save = await render();
+    await button("English");
+    await input("textarea", "Recovered English summary");
+    await button("projects.translation.makePrimary");
+    await submit();
+    expect(save).not.toHaveBeenCalled();
+    await act(async()=>root.unmount()); client.clear(); host.remove();
+    await render();
+    expect((host.querySelector("textarea") as HTMLTextAreaElement).value).toBe("Recovered English summary");
+    await button("Tiếng Việt");
+    expect((host.querySelector("textarea") as HTMLTextAreaElement).value).toBe("Keep description");
+  });
+  it("previews AI output without saving and rejects applying it after a newer edit", async () => {
+    translate.mockResolvedValue({ title: "Translated", summary: "Summary", description: "Story", progress: "Progress" });
+    const save = await render();
+    await button("projects.translation.translate");
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+    expect(host.textContent).toContain("projects.translation.preview");
+    expect(save).not.toHaveBeenCalled();
+    await input("#project-basics input", "New original");
+    const apply = Array.from(host.querySelectorAll("button")).find(item => item.textContent === "projects.translation.apply")!;
+    expect(apply.disabled).toBe(true);
+    expect(host.textContent).toContain("projects.translation.stale");
+  });
+  it("applies a reviewed translation only to the secondary language", async () => {
+    translate.mockResolvedValue({ title: "Translated", summary: "Summary", description: "Story", progress: "Progress" });
+    const save = await render();
+    await button("projects.translation.translate");
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+    await button("projects.translation.apply");
+    expect((host.querySelector("#project-basics input") as HTMLInputElement).value).toBe("Translated");
+    await submit();
+    expect((save.mock.calls as unknown as Array<[{ draft: import("./projectEditorDraft").ProjectDraft }]>)[0][0].draft.title).toBe("Original");
+    expect((save.mock.calls as unknown as Array<[{ draft: import("./projectEditorDraft").ProjectDraft }]>)[0][0].draft.locales.en?.description).toBe("Story");
+  });
 });

@@ -1322,6 +1322,8 @@ export async function upsertContestSubmission(
   await saveProject({
     project_id: projectId,
     slug,
+    primary_content_locale: input.primary_content_locale,
+    locales: input.locales,
     title: input.title,
     summary: input.summary,
     description: input.description,
