@@ -28,6 +28,7 @@ import {
   handleProjectMediaDelete,
   handleProjectMediaUpload,
   handleProjectSave,
+  handleProjectTranslate,
   handleProjectManage,
 } from "./projects/handlers.ts";
 import {
@@ -62,6 +63,7 @@ const PROTECTED_OPS = new Set<string>([
   "credentials.listActiveCourseCredentialTemplates",
   "credentials.grantPending",
   "projects.save",
+  "projects.translate",
   "projects.manage",
   "projects.media.upload",
   "projects.media.delete",
@@ -162,6 +164,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleClaimLookup(req, db);
     } else if (op === "projects.manage" && req.method === "POST") {
       response = await handleProjectManage(req, db);
+    } else if (op === "projects.translate" && req.method === "POST") {
+      response = await handleProjectTranslate(req, db);
     } else if (op === "projects.save" && req.method === "POST") {
       response = await handleProjectSave(req, db);
     } else if (op === "projects.media.upload" && req.method === "POST") {

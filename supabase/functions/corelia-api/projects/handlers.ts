@@ -1,6 +1,8 @@
+import { contentLocale, projectContent, projectLocales } from "./localization.ts";
 import { json } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient, type User } from "../lib/supabase.ts";
 import {
+  translateProjectText,
   moderateProjectImage,
   moderateProjectText,
   ProjectAiError,
@@ -30,6 +32,7 @@ function errorResponse(error: unknown): Response {
   if (["Missing Authorization header", "Invalid Authorization header", "Invalid or expired session"].includes(message)) {
     return json({ message: "unauthenticated" }, 401);
   }
+  if (message.startsWith("rate_limited:")) return json({ message }, 429);
   if (message.startsWith("forbidden:")) return json({ message }, 403);
   if (message.startsWith("not_found:")) return json({ message }, 404);
   if (message.startsWith("conflict:")) return json({ message }, 409);
@@ -225,19 +228,11 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
     if (!isUuid(projectId)) return json({ message: "invalid_input:project_id" }, 400);
 
     if (mode === "locale") {
-      const locale = String(body.locale ?? "").trim();
-      const data = typeof body.data === "object" && body.data !== null
-        ? body.data as Record<string, unknown>
-        : {};
-      const localeTitle = String(data.title ?? "");
-      const localeSummary = String(data.summary ?? "");
-      if (localeTitle.length > 160 || localeSummary.length > 1_000) {
-        return json({ message: "invalid_input:project_content" }, 400);
-      }
-      await moderateProjectText([
-        { field: "locale.title", text: localeTitle },
-        { field: "locale.summary", text: localeSummary },
-      ]);
+      const locale = contentLocale(body.locale);
+      const data = projectContent(body.data, true);
+      const access = await actorCanManageProject(db,user,projectId);
+      if (!access.allowed) throw new Error("forbidden:project_update");
+      await moderateProjectText(Object.entries(data).map(([field,text]) => ({ field: `locale.${field}`, text })));
       const { error } = await db.rpc("save_ai_gated_project_locale", {
         p_actor_id: user.id,
         p_project_id: projectId,
@@ -259,6 +254,10 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
       return json({ ok: true });
     }
 
+    const locales = body.locales === undefined ? undefined : projectLocales(body.locales);
+    const primary = body.primary_content_locale === undefined ? undefined : contentLocale(body.primary_content_locale);
+    if ((locales !== undefined) !== (primary !== undefined) || (primary && !locales?.[primary])) throw new Error("invalid_input:project_locales");
+    if (primary) Object.assign(body, projectContent(locales![primary]));
     const title = String(body.title ?? "").trim();
     const summary = String(body.summary ?? "").trim();
     const description = body.description == null ? null : String(body.description).trim();
@@ -279,8 +278,9 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
     // Existing source is immutable in the save RPC; do not trust a caller's
     // source/visibility to exempt an existing hackathon project from requirements.
     const { data: existing, error: existingError } = await db.from("projects")
-      .select("source_type,description,progress,pitch_video_url").eq("id", projectId).maybeSingle();
+      .select("source_type,description,progress,pitch_video_url,blocked").eq("id", projectId).maybeSingle();
     if (existingError) throw new Error(existingError.message);
+    if (existing?.blocked) throw new Error("forbidden:project_blocked");
     const source = existing?.source_type ?? (String(body.source_type ?? "").trim() || "standalone");
     const hackathon = source === "hackathon" || source === "contest";
     const publishing = hackathon || String(body.visibility ?? "public") !== "private";
@@ -301,10 +301,12 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
       { field: "summary", text: summary },
       { field: "description", text: description ?? "" },
       { field: "progress", text: progress ?? "" },
+      ...Object.entries(locales ?? {}).filter(([locale]) => locale !== primary).flatMap(([locale, content]) => Object.entries(content).map(([field,text]) => ({ field: `${locale}.${field}`, text }))),
     ]);
     await verifyPublicProjectLinks(links);
 
     const params = {
+      ...(primary ? { p_primary_content_locale: primary, p_locales: locales } : {}),
       p_actor_id: user.id,
       p_project_id: projectId,
       p_slug: slug,
@@ -384,6 +386,30 @@ export async function handleProjectManage(req: Request, db: SupabaseClient): Pro
     }
     return json({ ok: true });
   } catch (error) {
+    return errorResponse(error);
+  }
+}
+
+export async function handleProjectTranslate(req: Request, db: SupabaseClient): Promise<Response> {
+  let requestId: string | undefined;
+  try {
+    const user = await verifyBearerUser(req, db);
+    const body = await req.json() as Record<string, unknown>;
+    if (typeof body.project_id !== "string" || !isUuid(body.project_id)) throw new Error("invalid_input:project_id");
+    const source = contentLocale(body.source_locale);
+    const target = contentLocale(body.target_locale);
+    if (source === target) throw new Error("invalid_input:project_locale");
+    const content = projectContent(body.content);
+    if (!Object.values(content).some(text => /[\p{L}\p{N}]/u.test(text))) throw new Error("required_content:title");
+    const { data, error } = await db.rpc("reserve_project_translation", { p_actor_id: user.id, p_project_id: body.project_id });
+    if (error) throw new Error(error.message);
+    requestId = String(data);
+    await moderateProjectText(Object.entries(content).map(([field,text]) => ({ field, text })));
+    const result = await translateProjectText(content, source, target);
+    console.info("[projects.translate]", { requestId, status: "completed", usage: result.usage });
+    return json({ content: result.content });
+  } catch (error) {
+    console.info("[projects.translate]", { requestId, status: "failed" });
     return errorResponse(error);
   }
 }

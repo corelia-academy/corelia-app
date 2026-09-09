@@ -3,7 +3,7 @@ import { removeUndefinedFields } from "@/lib/utils";
 import { normalizeContentLocale, pickContentLocale } from "@/lib/entityLocales";
 import { getPublishedCourses } from "@/lib/courses";
 import { listContests } from "@/lib/hackathons";
-import type { ContestLinkedShowcaseProject, Project, ProjectSourceType } from "@/types/projects";
+import type { ContestLinkedShowcaseProject, Project, ProjectSourceType, ProjectLocales } from "@/types/projects";
 import type { Locale } from "@/types/database";
 import type { EntityI18nConfig } from "@/types/entityLocales";
 import type { MyProjectEntry } from "@/lib/projectCollaboration";
@@ -14,6 +14,8 @@ import { saveProject, saveProjectI18n, saveProjectLocale } from "@/lib/projectSu
 export type ProjectI18nContent = {
   title?: string;
   summary?: string | null;
+  description?: string | null;
+  progress?: string | null;
   updated_at?: string;
 };
 
@@ -118,8 +120,10 @@ export function applyProjectLocaleContent(project: Project, localized: ProjectI1
   if (!localized) return project;
   return {
     ...project,
-    title: localized.title ?? project.title,
-    summary: localized.summary ?? project.summary,
+    title: localized.title?.trim() ? localized.title : project.title,
+    summary: localized.summary?.trim() ? localized.summary : project.summary,
+    description: localized.description?.trim() ? localized.description : project.description,
+    progress: localized.progress?.trim() ? localized.progress : project.progress,
   };
 }
 
@@ -620,6 +624,11 @@ export async function getProjectBySlugOrId(
   if (!data) return null;
 
   const [localizedProject] = sourceContent ? await attachProjectMedia([data as Project], true) : await localizeProjects([data as Project], uiLocale);
+  if (sourceContent) {
+    const { data: locales, error: localeError } = await supabase.from("project_locales").select("locale,data").eq("project_id", data.id);
+    if (localeError) throw new Error(localeError.message);
+    localizedProject.content_locales = Object.fromEntries((locales ?? []).map(row => [row.locale, row.data])) as ProjectLocales;
+  }
   const [entry] = await attachOwners([localizedProject]);
   return entry ?? null;
 }
@@ -649,6 +658,8 @@ export type ProjectUpdateInput = Pick<
   hackathon_sector_ids?: string[];
   hackathon_tech_stack_ids?: string[];
   removed_media_paths?: string[];
+  primary_content_locale?: "vi" | "en";
+  locales?: ProjectLocales;
 };
 
 export async function updateMyProject(
@@ -657,6 +668,8 @@ export async function updateMyProject(
 ): Promise<void> {
   await saveProject({
     project_id: projectId,
+    primary_content_locale: input.primary_content_locale,
+    locales: input.locales,
     slug: input.slug,
     title: input.title,
     description: input.description,

@@ -476,6 +476,8 @@ export interface ContestSubmission {
 }
 
 export interface ContestSubmissionInsert {
+  primary_content_locale?: "vi" | "en";
+  locales?: import("@/types/projects").ProjectLocales;
   project_id?: string;
   title: string;
   description?: string | null;

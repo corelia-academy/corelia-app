@@ -4,6 +4,7 @@ import { Navigate, NavLink, useNavigate, useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { projectLocalePayload } from "@/features/projects/projectEditorDraft";
 import { Button } from "@/components/ui/button";
 import { ProjectEditor, type ProjectEditorSave } from "@/features/projects/ProjectEditor";
 import { getContestBySlug, getMyContestRegistration, getMyContestSubmission, upsertContestSubmission } from "@/lib/hackathons";
@@ -20,7 +21,7 @@ export default function ProjectNewPage() {
   const [projectId] = useState(() => crypto.randomUUID());
   const hackathonSlug = params.get("hackathon") ?? "";
   const locale = i18n.resolvedLanguage ?? i18n.language;
-  const contestQuery = useQuery({ queryKey: ["hackathons", "project-new", hackathonSlug, locale], queryFn: () => getContestBySlug(hackathonSlug, locale), enabled: Boolean(hackathonSlug) });
+  const contestQuery = useQuery({ placeholderData: (previous, query) => query?.queryKey[2] === hackathonSlug ? previous : undefined, queryKey: ["hackathons", "project-new", hackathonSlug, locale], queryFn: () => getContestBySlug(hackathonSlug, locale), enabled: Boolean(hackathonSlug) });
   const contest = contestQuery.data;
   const contextQuery = useQuery({
     queryKey: ["projects", "new-context", contest?.id, user?.id],
@@ -35,7 +36,7 @@ export default function ProjectNewPage() {
   if (hackathonSlug && (!contest || !contextQuery.data?.registration || !["registered", "approved"].includes(contextQuery.data.registration.status))) return <div className="container-app py-16 text-center"><h1 className="font-semibold">{t("projects.form.notEligible")}</h1><p className="mt-2 text-sm">{t("projects.form.notEligibleDescription")}</p><Button className="mt-4" render={<NavLink to={contest ? `/hackathons/${contest.slug}` : "/hackathons"} />} nativeButton={false}>{t("projects.form.back")}</Button></div>;
 
   async function save({ draft, teamIds, removedPaths }: ProjectEditorSave) {
-    const input = { project_id: projectId, title: draft.title, slug: draft.slug, summary: draft.summary, description: draft.description, progress: draft.progress, pitch_video_url: draft.pitchVideo, demo_url: draft.demo, repo_url: draft.repo, slide_url: draft.slide, video_url: draft.video, logo_path: draft.logo?.path ?? null, screenshot_paths: draft.screenshots.map(item => item.path), removed_media_paths: removedPaths, track_ids: draft.tracks, sector_ids: draft.sectors, tech_stack_ids: draft.tech };
+    const input = { ...projectLocalePayload(draft), project_id: projectId, title: draft.title, slug: draft.slug, summary: draft.summary, description: draft.description, progress: draft.progress, pitch_video_url: draft.pitchVideo, demo_url: draft.demo, repo_url: draft.repo, slide_url: draft.slide, video_url: draft.video, logo_path: draft.logo?.path ?? null, screenshot_paths: draft.screenshots.map(item => item.path), removed_media_paths: removedPaths, track_ids: draft.tracks, sector_ids: draft.sectors, tech_stack_ids: draft.tech };
     let savedId: string = projectId;
     let savedSlug = draft.slug;
     if (contest) {

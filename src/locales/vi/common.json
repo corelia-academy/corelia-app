@@ -196,6 +196,21 @@
     }
   },
   "projects": {
+    "translation": {
+      "languages": "Ngôn ngữ nội dung",
+      "primary": "Bản chính",
+      "optional": "Chỉ bản chính cần đủ nội dung bắt buộc. Bản dịch tùy chọn; trường còn trống sẽ hiển thị bản chính.",
+      "makePrimary": "Đặt làm ngôn ngữ chính",
+      "translate": "Dịch sang {{target}} bằng AI",
+      "translating": "Đang dịch…",
+      "hint": "AI dịch từ bản chính. Bạn có thể xem và chỉnh lại trước khi áp dụng; bản dịch được lưu khi lưu dự án.",
+      "preview": "Xem trước bản dịch",
+      "stale": "Nội dung dự án đã thay đổi. Hãy dịch lại để tránh ghi đè thay đổi mới.",
+      "replaceHint": "Áp dụng sẽ thay nội dung bản dịch hiện tại bằng bản xem trước này.",
+      "apply": "Áp dụng bản dịch",
+      "discard": "Bỏ bản dịch",
+      "rateLimited": "Bạn đã dùng hết 10 lượt dịch trong một giờ. Vui lòng thử lại sau."
+    },
     "title": "Dự án",
     "description": "Trang tổng hợp dự án public của toàn bộ cộng đồng Corelia.",
     "empty": "Chưa có dự án nào.",

@@ -196,6 +196,21 @@
     }
   },
   "projects": {
+    "translation": {
+      "languages": "Content languages",
+      "primary": "Primary",
+      "optional": "Only the primary language needs all required content. Translation is optional; empty fields display the primary content.",
+      "makePrimary": "Set as primary language",
+      "translate": "Translate to {{target}} with AI",
+      "translating": "Translating…",
+      "hint": "AI translates the primary content. Review and edit before applying; translations are saved with your project.",
+      "preview": "Translation preview",
+      "stale": "The project has changed. Translate again to avoid overwriting newer edits.",
+      "replaceHint": "Applying replaces the current translation with this preview.",
+      "apply": "Apply translation",
+      "discard": "Discard translation",
+      "rateLimited": "You have used 10 translations in one hour. Please try again later."
+    },
     "title": "Projects",
     "description": "A public gallery of projects across the Corelia ecosystem.",
     "empty": "No projects yet.",

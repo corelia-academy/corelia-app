@@ -9,6 +9,7 @@ export function projectErrorMessage(error: unknown, t: TFunction<"common">): str
     title: "title", summary: "summary", logo: "logo", screenshot: "screenshots",
   };
   const label = field === "description" ? t("projects.editor.description") : field === "progress" ? t("projects.editor.progress") : field === "pitch_video_url" ? t("projects.editor.pitchVideo") : fields[field ?? ""] ? t(`projects.form.${fields[field!]}`) : t("projects.editor.content");
+  if (code === "rate_limited") return t("projects.translation.rateLimited");
   if (code === "required_content") return field === "resource" ? t("projects.errors.resourceRequired") : t("projects.errors.contentRequired", { field: label });
   if (message.includes("_upload")) return t("projects.errors.mediaExpired");
   if (["invalid_url", "link_unverifiable", "link_rejected"].includes(code ?? "")) {

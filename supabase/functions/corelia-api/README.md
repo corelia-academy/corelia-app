@@ -32,6 +32,20 @@ You cannot create secrets starting with `SUPABASE_` in the Dashboard because thi
 |------|---------|---------|
 | `OPENAI_API_KEY` | Có | Dùng cho `projects.save` và `projects.media.upload`; thiếu key thì project save/upload fail-closed. |
 
+`projects.save` accepts optional `primary_content_locale` (`vi`/`en`) and
+`locales` (language → title, summary, description, progress). Send both together;
+the primary entry supplies canonical text. The RPC commits translations and
+project data atomically. Omitted locales preserve stored translations for old
+clients. Locale/config writes also enforce ownership, blocks, and submission deadlines.
+
+`projects.translate` accepts `project_id`, `source_locale`, `target_locale`, and
+`content` with the four text fields. It returns `{ content }` for review without
+saving. It uses `gpt-5.4-mini`, no web tools, and the existing `OPENAI_API_KEY`.
+A database reservation limits each authenticated user to 10 attempts per rolling
+hour across Edge instances, including failed attempts. Logs contain request ID,
+status and provider input/output token counts, never project text. Translation
+is optional; provider failures do not prevent manual bilingual editing.
+
 Project text/images use `omni-moderation-latest`. Public project links use the
 Responses API with `gpt-5.4-mini` and web search. `video_url` is deliberately
 excluded from AI checks.

@@ -70,3 +70,31 @@ describe("project story save handler", () => {
   });
 
 });
+
+describe("bilingual project save", () => {
+  beforeEach(() => { vi.clearAllMocks(); mocks.existing.mockResolvedValue({ data: null, error: null }); mocks.rpc.mockResolvedValue({ data: [{ project_id: base.project_id, project_slug: "project" }], error: null }); });
+  it("takes canonical content from the primary locale and moderates every translated field", async () => {
+    const response = await handleProjectSave(request({ primary_content_locale:"en", locales:{ en:{ title:"English",summary:"English summary",description:"English story",progress:"English progress" }, vi:{title:"Tên",summary:"Tóm tắt",description:"Mô tả",progress:"Tiến độ"} } }),db);
+    expect(response.status).toBe(200);
+    expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project",expect.objectContaining({p_title:"English",p_primary_content_locale:"en",p_locales:expect.objectContaining({vi:expect.objectContaining({progress:"Tiến độ"})})}));
+    expect(mocks.moderate).toHaveBeenCalledWith(expect.arrayContaining([{field:"vi.description",text:"Mô tả"},{field:"vi.progress",text:"Tiến độ"}]));
+  });
+  it.each([
+    {primary_content_locale:"en"}, {locales:{vi:{}}}, {primary_content_locale:"en",locales:{vi:{title:"Title"}}},
+    {primary_content_locale:"en",locales:{en:{title:"English",summary:"Summary",description:"Story"},vi:{progress:"x".repeat(10001)}}},
+  ])("rejects invalid bilingual requests before moderation", async input => {
+    expect((await handleProjectSave(request(input),db)).status).toBe(400);
+    expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.moderate).not.toHaveBeenCalled();
+  });
+  it("does not save any language if translated text fails moderation", async () => {
+    mocks.moderate.mockRejectedValueOnce(new Error("moderation_blocked:vi.description"));
+    const response = await handleProjectSave(request({primary_content_locale:"en",locales:{en:{title:"Title",summary:"Summary",description:"Story"},vi:{description:"Blocked"}}}),db);
+    expect(response.status).not.toBe(200);
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+  it("rejects blocked projects before calling AI", async () => {
+    mocks.existing.mockResolvedValue({data:{blocked:true},error:null});
+    expect((await handleProjectSave(request({}),db)).status).toBe(403);
+    expect(mocks.moderate).not.toHaveBeenCalled();
+  });
+});
