@@ -535,7 +535,7 @@ export default function InstructorCareerTrackEditorPage() {
       <PageSectionCard className="mb-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-lg font-semibold text-foreground">
+            <h1 className="text-heading-medium font-display text-foreground">
               {isNew ? t("careerTracks.editor.newTitle") : t("careerTracks.editor.editTitle")}
             </h1>
             <p className="mt-1 text-sm text-foreground-muted">

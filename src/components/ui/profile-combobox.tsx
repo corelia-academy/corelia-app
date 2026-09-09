@@ -26,6 +26,9 @@ interface ProfileComboboxProps {
   value: string | string[];
   onChange: (value: string | string[]) => void;
   multiple?: boolean;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
 }
 
 function normalize(text: string) {
@@ -42,6 +45,9 @@ export function ProfileCombobox({
   value,
   onChange,
   multiple = false,
+  onLoadMore,
+  hasMore = false,
+  isLoadingMore = false,
 }: ProfileComboboxProps) {
   const { t } = useTranslation("common");
   const [open, setOpen] = useState(false);
@@ -125,7 +131,7 @@ export function ProfileCombobox({
               placeholder={searchPlaceholder ?? t("combobox.searchPlaceholder")}
             />
 
-            <div className="mt-4 max-h-[min(60vh,28rem)] space-y-2 overflow-y-auto pr-1">
+            <div className="scrollbar-design mt-4 max-h-[min(60vh,28rem)] space-y-2 overflow-y-auto pr-1">
               {filtered.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border-subtle bg-surface-base px-4 py-5 text-sm text-foreground-muted">
                   {emptyLabel ?? t("combobox.emptyLabel")}
@@ -167,6 +173,20 @@ export function ProfileCombobox({
                   );
                 })
               )}
+              {hasMore ? (
+                <div className="pt-2 text-center">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-xs text-foreground-muted hover:text-foreground"
+                    disabled={isLoadingMore}
+                    onClick={onLoadMore}
+                  >
+                    {isLoadingMore ? t("combobox.loadingMore") : t("combobox.loadMore")}
+                  </Button>
+                </div>
+              ) : null}
             </div>
 
             {multiple ? (

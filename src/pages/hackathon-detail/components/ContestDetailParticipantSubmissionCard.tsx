@@ -15,7 +15,7 @@ function SubmissionGroup({
 }) {
   return (
     <section className="space-y-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      <h3 className="text-heading-small font-display text-foreground">{title}</h3>
       <div className="space-y-3">{children}</div>
     </section>
   );
@@ -36,7 +36,7 @@ function SubmissionField({
     <div className="space-y-1.5">
       <label htmlFor={id} className="text-sm font-medium text-foreground">
         {label}
-        {required ? <span className="text-destructive"> *</span> : null}
+        {required ? <span className="text-primary"> *</span> : null}
       </label>
       {children}
     </div>
@@ -77,7 +77,7 @@ export function ContestDetailParticipantSubmissionCard({
         <div className="flex items-center gap-3">
           <CheckCheck className="size-5 text-primary" aria-hidden />
           <div>
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            <h2 className="text-heading-medium font-display text-foreground">
               {translate("detail.participant.submissionWorkspaceTitle")}
             </h2>
             <p className="mt-1 text-sm leading-relaxed text-foreground-muted">
@@ -89,7 +89,7 @@ export function ContestDetailParticipantSubmissionCard({
         </div>
       ) : (
         <div className="mb-4">
-          <h2 className="text-base font-semibold tracking-tight text-foreground">
+          <h2 className="text-heading-small font-display text-foreground">
             {translate("detail.participant.submissionWorkspaceTitle")}
           </h2>
           <p className="mt-1 text-sm leading-relaxed text-foreground-muted">

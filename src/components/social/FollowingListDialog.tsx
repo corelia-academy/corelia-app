@@ -66,7 +66,7 @@ export function FollowingListDialog({
             {t("following.empty")}
           </div>
         ) : (
-          <div className="max-h-80 overflow-y-auto">
+          <div className="scrollbar-design max-h-80 overflow-y-auto">
             <div className="divide-y divide-border-subtle">
               {items.map((row) => {
                 const label = profileLabel(row);

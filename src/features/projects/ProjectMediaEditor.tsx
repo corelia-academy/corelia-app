@@ -120,8 +120,8 @@ export function ProjectMediaEditor({
   return (
     <div className="space-y-5">
       <fieldset>
-        <legend className="text-sm font-medium">{t("projects.form.logo")}</legend>
-        <p className="mt-1 text-xs text-foreground-muted">{t("projects.form.logoHint")}</p>
+        <legend className="text-label-medium font-body">{t("projects.form.logo")}</legend>
+        <p className="mt-1 text-body-small font-body text-foreground-muted">{t("projects.form.logoHint")}</p>
         <div className="mt-3 flex items-center gap-3">
           <div className="flex size-24 items-center justify-center overflow-hidden rounded-lg border border-border bg-surface-raised">
             {logo ? <img src={logo.url} alt="" className="h-full w-full object-contain" /> : <ImagePlus className="size-7 text-foreground-subtle" aria-hidden />}
@@ -135,11 +135,11 @@ export function ProjectMediaEditor({
       </fieldset>
 
       <fieldset>
-        <legend className="text-sm font-medium">{t("projects.form.screenshots")}</legend>
-        <p className="mt-1 text-xs text-foreground-muted">{t("projects.form.screenshotsHint")}</p>
+        <legend className="text-label-medium font-body">{t("projects.form.screenshots")}</legend>
+        <p className="mt-1 text-body-small font-body text-foreground-muted">{t("projects.form.screenshotsHint")}</p>
         <input ref={screenshotsInput} hidden type="file" accept={ACCEPT} multiple disabled={uploading || screenshots.length >= 6} aria-label={t("projects.form.addScreenshots")} onChange={event => { void uploadScreenshots(Array.from(event.target.files ?? [])); event.target.value = ""; }} />
         <Button className="mt-3" type="button" variant="outline" disabled={uploading || screenshots.length >= 6} onClick={() => screenshotsInput.current?.click()}><ImagePlus className="size-4" />{t("projects.form.addScreenshots")}</Button>
-        {uploading ? <p className="mt-3 text-sm text-foreground-muted" role="status">{t("projects.editor.uploading")}</p> : null}
+        {uploading ? <p className="mt-3 text-body-medium font-body text-foreground-muted" role="status">{t("projects.editor.uploading")}</p> : null}
         {screenshots.length ? (
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {screenshots.map((item, index) => (

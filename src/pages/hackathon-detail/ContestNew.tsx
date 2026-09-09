@@ -187,7 +187,7 @@ export default function ContestNew() {
               <div className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 {t("instructorNew.hero.eyebrow")}
               </div>
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-2xl">
+              <h1 className="mt-2 text-heading-large font-display text-foreground">
                 {t("instructorNew.hero.title")}
               </h1>
               <p className="mt-2 max-w-3xl text-sm text-foreground-muted">

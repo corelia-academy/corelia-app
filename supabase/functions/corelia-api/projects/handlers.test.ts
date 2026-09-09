@@ -39,7 +39,6 @@ describe("project story save handler", () => {
     { summary: "" }, { summary: " \t\n" }, { summary: "..." },
     { description: "" }, { description: "\u200b" }, { description: "### ---" },
     { source_type: "hackathon", progress: "" },
-    { source_type: "hackathon", progress: "Built a prototype" },
     { visibility: "unlisted", description: "" },
     { source_type: " hackathon ", visibility:"private", summary:"" },
   ])("rejects incomplete shared projects before moderation or persistence: %j", async payload => {
@@ -67,6 +66,20 @@ describe("project story save handler", () => {
   });
   it("accepts a complete hackathon project with a video resource", async () => {
     expect((await handleProjectSave(request({source_type:"hackathon",progress:"Built prototype",video_url:"https://youtu.be/demo"}),db)).status).toBe(200);
+  });
+
+  it("accepts an idea-only hackathon submission with no resource links", async () => {
+    const response = await handleProjectSave(request({ source_type: "hackathon", progress: "Interviewed users and sketched the idea" }), db);
+    expect(response.status).toBe(200);
+    expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project", expect.objectContaining({
+      p_demo_url: null, p_repo_url: null, p_slide_url: null, p_video_url: null, p_pitch_video_url: null,
+    }));
+  });
+
+  it("still rejects invalid optional links before persistence", async () => {
+    const response = await handleProjectSave(request({ source_type: "hackathon", progress: "Researched the problem", demo_url: "http://example.com" }), db);
+    expect(response.status).toBe(400);
+    expect(mocks.rpc).not.toHaveBeenCalled();
   });
 
 });

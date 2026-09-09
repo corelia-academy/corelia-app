@@ -144,5 +144,17 @@ test("Production workflow structure safety", () => {
   assert.ok(workflow.indexOf(guard) >= 0, "workflow must invoke the Production migration guard");
   assert.ok(workflow.indexOf(guard) < workflow.indexOf(migrationUp), "guard must run before migration up");
   assert.doesNotMatch(workflow, /migration repair/);
-  assert.doesNotMatch(workflow, /--include-all/);
+  const applyStep = workflow.slice(workflow.indexOf("- name: Re-verify exact Production migration state and apply approved migrations"), workflow.indexOf("- name:", workflow.indexOf("- name: Re-verify exact Production migration state and apply approved migrations") + 8));
+  assert.ok(applyStep.indexOf(guard) >= 0, "out-of-order application must retain its exact-state guard in the same fail-fast step");
+  assert.ok(applyStep.indexOf(guard) < applyStep.indexOf(migrationUp));
+  assert.match(applyStep, /supabase migration up --linked --dns-resolver https --include-all/);
+});
+
+test("Production outbox release accepts the observed prior ledger and rejects missing moderation", () => {
+  const localVersions = [...realReleasedVersions, ...APPROVED_PENDING_VERSIONS];
+  const observedRemote = localVersions.filter((v) => v !== "20260906100000");
+  const result = validate({ remoteVersions: observedRemote });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.pendingVersions, ["20260906100000"]);
+  assert.equal(validate({ remoteVersions: observedRemote.filter((v) => v !== "20260907075801") }).ok, false);
 });

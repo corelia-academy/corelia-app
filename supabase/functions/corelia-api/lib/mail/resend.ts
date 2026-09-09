@@ -4,15 +4,34 @@
  */
 import type { SupabaseClient } from "../supabase.ts";
 
-const RESEND_SEND_URL = "https://api.resend.com/emails";
-const RESEND_BATCH_URL = "https://api.resend.com/emails/batch";
+function getResendSendUrl(): string {
+  return (
+    (typeof Deno !== "undefined" ? Deno.env.get("RESEND_SEND_URL") : (typeof process !== "undefined" ? process.env.RESEND_SEND_URL : undefined))?.trim() ||
+    "https://api.resend.com/emails"
+  );
+}
+
+function getResendBatchUrl(): string {
+  return (
+    (typeof Deno !== "undefined" ? Deno.env.get("RESEND_BATCH_URL") : (typeof process !== "undefined" ? process.env.RESEND_BATCH_URL : undefined))?.trim() ||
+    "https://api.resend.com/emails/batch"
+  );
+}
 
 const RESEND_BATCH_CHUNK = 100;
 
 export type TransactionalMailResult =
-  | { sent: true }
+  | { sent: true; providerMessageId: string | null }
   | { sent: false; skipped: true; reason: "email_not_configured" }
-  | { sent: false; providerError: true; httpStatus: number; body: string };
+  | {
+      sent: false;
+      providerError: true;
+      httpStatus: number;
+      body: string;
+      errorName?: string;
+      isRetryable: boolean;
+      isConfigError?: boolean;
+    };
 
 type MailAttemptStatus = "accepted" | "provider_error" | "skipped";
 
@@ -52,9 +71,17 @@ function messageIdFromResponse(data: unknown): string | null {
   return typeof id === "string" && id.trim() ? id.trim() : null;
 }
 
+export function isTransactionalEmailConfigured(from?: string): boolean {
+  const apiKey = Deno.env.get("RESEND_API_KEY")?.trim() ?? "";
+  const mailFrom = from?.trim() || Deno.env.get("MAIL_FROM")?.trim() || "";
+  return Boolean(apiKey && mailFrom);
+}
+
 /**
  * Send one transactional message. If Resend is not configured, returns skip (no throw).
  * On HTTP error from Resend, returns providerError for the caller to map to 5xx.
+ *
+ * If `from` is specified in params (e.g. from frozen outbox snapshot), it is used verbatim.
  */
 export async function sendTransactionalEmailViaResend(params: {
   db: SupabaseClient;
@@ -62,10 +89,12 @@ export async function sendTransactionalEmailViaResend(params: {
   to: string[];
   subject: string;
   html: string;
+  from?: string;
+  idempotencyKey?: string;
 }): Promise<TransactionalMailResult> {
   const apiKey = Deno.env.get("RESEND_API_KEY")?.trim() ?? "";
-  const mailFrom = Deno.env.get("MAIL_FROM")?.trim() ?? "";
-  if (!apiKey || !mailFrom) {
+  const mailFrom = params.from?.trim() || Deno.env.get("MAIL_FROM")?.trim() || "";
+  if (!isTransactionalEmailConfigured(params.from)) {
     console.warn("[corelia-api] transactional email skipped (set RESEND_API_KEY and MAIL_FROM)");
     await recordMailAttempts({
       db: params.db,
@@ -77,12 +106,17 @@ export async function sendTransactionalEmailViaResend(params: {
   }
 
   try {
-    const res = await fetch(RESEND_SEND_URL, {
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    };
+    if (params.idempotencyKey?.trim()) {
+      headers["Idempotency-Key"] = params.idempotencyKey.trim();
+    }
+
+    const res = await fetch(getResendSendUrl(), {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify({
         from: mailFrom,
         to: params.to,
@@ -94,6 +128,28 @@ export async function sendTransactionalEmailViaResend(params: {
     if (!res.ok) {
       const body = await res.text().catch(() => "");
       console.error("[corelia-api] Resend HTTP error", res.status, body);
+
+      let errorName: string | undefined;
+      try {
+        const parsed = JSON.parse(body);
+        if (parsed && typeof parsed.name === "string") {
+          errorName = parsed.name;
+        }
+      } catch {
+        // non-json body
+      }
+
+      // 401 Unauthorized / 403 Forbidden: API key, permissions, or unverified domain.
+      // 409 concurrent_idempotent_requests is retryable (concurrent in-flight call at Resend).
+      // 409 invalid_idempotent_request is permanent (payload mismatch).
+      // 422 is permanent (invalid parameters / malformed payload).
+      // 429 is retryable. 5xx is retryable.
+      const isConfigError = res.status === 401 || res.status === 403;
+      const isRetryable =
+        res.status >= 500 ||
+        res.status === 429 ||
+        (res.status === 409 && errorName === "concurrent_idempotent_requests");
+
       await recordMailAttempts({
         db: params.db,
         mailType: params.mailType,
@@ -101,19 +157,28 @@ export async function sendTransactionalEmailViaResend(params: {
         status: "provider_error",
         httpStatus: res.status,
       });
-      return { sent: false, providerError: true, httpStatus: res.status, body };
+      return {
+        sent: false,
+        providerError: true,
+        httpStatus: res.status,
+        body,
+        errorName,
+        isRetryable,
+        isConfigError,
+      };
     }
 
     const data = await res.json().catch(() => null);
+    const providerMessageId = messageIdFromResponse(data);
     await recordMailAttempts({
       db: params.db,
       mailType: params.mailType,
       recipients: params.to,
       status: "accepted",
       httpStatus: res.status,
-      providerMessageIds: params.to.map(() => messageIdFromResponse(data)),
+      providerMessageIds: params.to.map(() => providerMessageId),
     });
-    return { sent: true };
+    return { sent: true, providerMessageId };
   } catch (err) {
     console.error("[corelia-api] Resend request exception", err);
     await recordMailAttempts({
@@ -122,7 +187,13 @@ export async function sendTransactionalEmailViaResend(params: {
       recipients: params.to,
       status: "provider_error",
     });
-    return { sent: false, providerError: true, httpStatus: 0, body: "network_error" };
+    return {
+      sent: false,
+      providerError: true,
+      httpStatus: 0,
+      body: "network_error",
+      isRetryable: true,
+    };
   }
 }
 
@@ -170,7 +241,7 @@ export async function sendBatchEmailsViaResend(params: {
     }));
 
     try {
-      const res = await fetch(RESEND_BATCH_URL, {
+      const res = await fetch(getResendBatchUrl(), {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,

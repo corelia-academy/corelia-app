@@ -68,7 +68,7 @@ export default function CoursesPage() {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <BookOpen className="size-5 text-primary" aria-hidden />
-            <h1 className="truncate text-xl font-semibold text-foreground sm:text-2xl">
+            <h1 className="truncate text-heading-large font-display text-foreground">
               {t("catalog.title")}
             </h1>
           </div>

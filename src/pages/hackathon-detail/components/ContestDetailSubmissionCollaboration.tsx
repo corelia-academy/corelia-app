@@ -89,7 +89,7 @@ export function ContestDetailSubmissionCollaboration({
     <div className="space-y-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div className="flex items-center gap-2">
         <Users className="size-5 text-primary" aria-hidden />
-        <h3 className="text-sm font-semibold text-foreground">
+        <h3 className="text-heading-small font-display text-foreground">
           {translate("detail.collaboration.sectionTitle")}
         </h3>
       </div>

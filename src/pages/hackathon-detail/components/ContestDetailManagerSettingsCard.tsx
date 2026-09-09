@@ -232,7 +232,7 @@ export function ContestDetailManagerSettingsCard({
           <div>
             <h2
               id="contest-settings-general-heading"
-              className="text-lg font-medium tracking-tight text-foreground"
+              className="text-heading-medium font-display text-foreground"
             >
               {translate("workspace.manage.operationsControlsTitle")}
             </h2>
@@ -278,7 +278,7 @@ export function ContestDetailManagerSettingsCard({
         </Button>
 
         <div className="mt-4 border-t border-border-subtle pt-4">
-          <h3 className="text-base font-medium text-foreground">
+          <h3 className="text-heading-small font-display text-foreground">
             {translate("workspace.manage.slugTitle")}
           </h3>
           <p className="mt-2 text-sm text-foreground-muted">
@@ -324,7 +324,7 @@ export function ContestDetailManagerSettingsCard({
             className="scroll-mt-28 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6 sm:scroll-mt-32"
           >
         <div>
-          <h3 className="text-base font-medium text-foreground">
+          <h3 className="text-heading-small font-display text-foreground">
             {translate("workspace.manage.rubricTitle")}
           </h3>
           <p className="mt-2 text-sm text-foreground-muted">
@@ -385,7 +385,7 @@ export function ContestDetailManagerSettingsCard({
         </div>
 
         <div className="mt-4 border-t border-border-subtle pt-4">
-          <h3 className="text-base font-medium text-foreground">
+          <h3 className="text-heading-small font-display text-foreground">
             {translate("workspace.manage.tracksRoundsTitle")}
           </h3>
           <p className="mt-2 text-sm text-foreground-muted">
@@ -590,7 +590,7 @@ export function ContestDetailManagerSettingsCard({
             className="scroll-mt-28 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6 sm:scroll-mt-32"
           >
         <div>
-          <h3 className="text-base font-medium text-foreground">
+          <h3 className="text-heading-small font-display text-foreground">
             {translate("workspace.manage.accessInvitesTitle")}
           </h3>
           <div className="mt-4 space-y-3">
@@ -762,7 +762,7 @@ export function ContestDetailManagerSettingsCard({
             className="scroll-mt-28 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6 sm:scroll-mt-32"
           >
         <div>
-          <h3 className="text-base font-medium text-foreground">
+          <h3 className="text-heading-small font-display text-foreground">
             {translate("workspace.manage.publicPageContentTitle")}
           </h3>
           <p className="mt-2 text-sm text-foreground-muted">
@@ -1448,7 +1448,7 @@ export function ContestDetailManagerSettingsCard({
           >
           <h3
             id="contest-settings-danger-heading"
-            className="text-base font-medium text-foreground"
+            className="text-heading-small font-display text-foreground"
           >
             {translate("workspace.manage.dangerZoneTitle")}
           </h3>
