@@ -50,7 +50,7 @@ const PUBLIC_CONTEST_STATUSES: Contest["status"][] = ["published", "running", "e
 /** PostgREST row columns needed to build `Contest` via `contestFromRow` (avoids `select("*")`). */
 const CONTEST_ROW_SELECT = "id,status,participants_count,created_at,updated_at,document" as const;
 
-function sanitizeSlug(value: unknown): string | null {
+export function sanitizeSlug(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const lowered = value.trim().toLowerCase();
   if (!lowered) return null;
@@ -377,6 +377,13 @@ export function isPastContestRegistrationDeadline(
   const ms = new Date(iso).getTime();
   if (!Number.isFinite(ms)) return false;
   return Date.now() > ms;
+}
+
+export function canRegisterForContest(
+  contest: Pick<Contest, "status" | "registration_deadline" | "submission_deadline" | "ends_at">,
+): boolean {
+  const allowedStatus = contest.status === "published" || contest.status === "running";
+  return allowedStatus && !isPastContestRegistrationDeadline(contest);
 }
 
 function normalizeContest(data: Contest): Contest {
@@ -937,7 +944,7 @@ export async function registerForContest(
   const profile = await getProfileForUser(user);
   const contest = await getContest(contestId);
   if (!contest) throw new Error("not_found:contest");
-  if (contest.status !== "published" || isPastContestRegistrationDeadline(contest)) {
+  if (!canRegisterForContest(contest)) {
     throw new Error("forbidden:registration_closed");
   }
   const now = new Date().toISOString();
