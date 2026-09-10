@@ -287,7 +287,6 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
     const requiredContent = publishing ? [
       ["summary", summary],
       ["description", description ?? existing?.description ?? ""],
-      ...(hackathon ? [["progress", progress ?? existing?.progress ?? ""]] : []),
     ] : [];
     for (const [field, value] of requiredContent) {
       if (!/[\p{L}\p{N}]/u.test(String(value))) return json({ message: `required_content:${field}` }, 400);
