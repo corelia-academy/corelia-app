@@ -96,12 +96,11 @@ export default function Account() {
                   icon={item.icon}
                   label={item.title}
                   supportingText={item.description}
+                  showTrailingIcon
+                  showPressed
                   size="small"
                   className={cn(
-                    " px-3 py-3 text-left transition-colors duration-150",
-                    activeNavItem.to === item.to
-                      ? "bg-primary-muted text-primary"
-                      : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
+                    " px-3 py-3 transition-colors duration-150"
                   )}
                   nativeButton={false}
                   render={

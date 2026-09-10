@@ -1,4 +1,5 @@
 import { LanguageSwitcher } from "@/components/base/LanguageSwitcher";
+import { Action } from "@/components/ui/action";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, NavLink, useLocation } from "react-router";
@@ -23,7 +24,6 @@ import { useTheme } from "next-themes";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -94,6 +94,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
   const [ocConnectOpen, setOcConnectOpen] = useState(false);
   const [ocConnectLoading, setOcConnectLoading] = useState(false);
   const [ocConnectError, setOcConnectError] = useState<string | null>(null);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -153,12 +154,12 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
               ? `/@${profile.id}`
               : "/account",
         label: t("header.publicProfile"),
-        icon: <UserCircle className="mr-2 size-4 shrink-0" aria-hidden />,
+        icon: <UserCircle aria-hidden />,
       },
       {
         to: "/account/profile",
         label: tAccount("nav.profile.title"),
-        icon: <UserCircle className="mr-2 size-4 shrink-0" aria-hidden />,
+        icon: <UserCircle aria-hidden />,
       },
       ...(profile?.role === "instructor"
         ? [
@@ -166,7 +167,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
               to: "/account/instructor",
               label: tAccount("nav.instructor.title"),
               icon: (
-                <GraduationCap className="mr-2 size-4 shrink-0" aria-hidden />
+                <GraduationCap aria-hidden />
               ),
             },
           ]
@@ -174,12 +175,12 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
       {
         to: "/account/cv",
         label: tAccount("nav.cv.title"),
-        icon: <IdCard className="mr-2 size-4 shrink-0" aria-hidden />,
+        icon: <IdCard aria-hidden />,
       },
       {
         to: "/achievements",
         label: tAccount("nav.achievements.title"),
-        icon: <Award className="mr-2 size-4 shrink-0" aria-hidden />,
+        icon: <Award aria-hidden />,
       },
       {
         // "Cài đặt" trong menu hồ sơ là lối vào khu vực tài khoản; route gốc
@@ -187,7 +188,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
         // các deep link có chủ đích như unsubscribe hoặc đổi mật khẩu.
         to: "/account",
         label: tAccount("nav.settings.title"),
-        icon: <Settings className="mr-2 size-4 shrink-0" aria-hidden />,
+        icon: <Settings aria-hidden />,
       },
     ],
     [profile, t, tAccount],
@@ -473,7 +474,10 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
           ) : isAuthenticated ? (
             <div className="flex items-center gap-3">
               <NotificationBell />
-              <DropdownMenu>
+              <DropdownMenu
+                open={accountMenuOpen}
+                onOpenChange={setAccountMenuOpen}
+              >
                 <DropdownMenuTrigger
                   render={
                     <button
@@ -496,32 +500,41 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                 />
                 <DropdownMenuContent align="end" className="z-20 min-w-64">
                   {accountDropdownItems.map((item) => (
-                    <DropdownMenuItem
+                    <Action
                       key={item.to}
-                      onClick={() => navigate(item.to)}
+                      role="menuitem"
+                      variant="default"
+                      size="small"
+                      icon={item.icon}
+                      label={item.label}
+                      showActive={false}
+                      showPressed
+                      render={<NavLink to={item.to} />}
+                      nativeButton={false}
                       onPointerEnter={() => prefetchRouteChunk(item.to)}
                       onFocus={() => prefetchRouteChunk(item.to)}
-                      className="min-h-11"
-                    >
-                      <div className="pl-2">{item.icon}</div>
-                      {item.label}
-                    </DropdownMenuItem>
+                      onClick={() => setAccountMenuOpen(false)}
+                    />
                   ))}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() =>
+                  <Action
+                    role="menuitem"
+                    type="button"
+                    variant="destructive"
+                    size="small"
+                    icon={<LogOut aria-hidden />}
+                    label={t("tabs.signOut")}
+                    isActive={false}
+                    showActive={false}
+                    hoverAsActive
+                    showPressed
+                    onClick={() => {
+                      setAccountMenuOpen(false);
                       void signOut().then(() =>
                         navigate("/login", { replace: true }),
-                      )
-                    }
-                    variant="destructive"
-                    className="min-h-11"
-                  >
-                    <div className="pl-2">
-                      <LogOut className="mr-2 size-4" aria-hidden />
-                    </div>
-                    {t("tabs.signOut")}
-                  </DropdownMenuItem>
+                      );
+                    }}
+                  />
                 </DropdownMenuContent>
               </DropdownMenu>
 
