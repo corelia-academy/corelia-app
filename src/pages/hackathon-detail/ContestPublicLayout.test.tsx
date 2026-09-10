@@ -60,7 +60,12 @@ vi.mock("react-i18next", () => ({
 vi.mock("@/stores/authStore", () => ({ useAuth: () => state.auth }));
 vi.mock("@/lib/hackathons", () => ({
   getMyContestRegistration: vi.fn(async () => null),
+  getMyContestSubmission: vi.fn(async () => null),
   registerForContest: vi.fn(),
+  canRegisterForContest: vi.fn((c) => c?.status === "published" || c?.status === "running"),
+  isPastContestRegistrationDeadline: vi.fn(() => false),
+  isPastContestSubmissionDeadline: vi.fn(() => false),
+  sanitizeSlug: (value: unknown) => (typeof value === "string" ? value.trim().toLowerCase() : null),
 }));
 vi.mock("@/features/hackathons/hackathonQueries", () => ({
   publicHackathonDetailQueryOptions: (_slug: string, _locale: string, enabled: boolean) => ({
@@ -202,6 +207,16 @@ describe("draft hackathon preview", () => {
 
     expect(view.container.textContent).toContain("detail.errors.notFound");
     expect(view.container.textContent).not.toContain("Draft Demo");
+
+    await view.cleanup();
+  });
+
+  it("renders contest correctly when URL has uppercase slug (/hackathons/PUBLISHED-DEMO/overview)", async () => {
+    const view = renderRoute("/hackathons/PUBLISHED-DEMO/overview");
+    await settle();
+
+    expect(view.container.textContent).toContain("Published Demo");
+    expect(view.container.textContent).not.toContain("detail.errors.notFound");
 
     await view.cleanup();
   });

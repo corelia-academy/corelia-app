@@ -67,7 +67,23 @@ export default function ContestPublicLayout() {
   const previewContestQuery = useQuery(previewOptions);
   const contestQuery = previewRequested ? previewContestQuery : publicContestQuery;
   const loaded = contestQuery.data;
-  const contest = loaded && loaded.slug === slug && (!previewRequested || previewAuthorized) ? loaded : null;
+  const canonicalParamSlug = slug ? sanitizeSlug(slug) : null;
+  const contest =
+    loaded &&
+    (loaded.slug === canonicalParamSlug || loaded.id === slug) &&
+    (!previewRequested || previewAuthorized)
+      ? loaded
+      : null;
+
+  useEffect(() => {
+    if (contest?.slug && slug && slug !== contest.slug) {
+      const currentPath = location.pathname;
+      const targetPath = currentPath.replace(`/hackathons/${slug}`, `/hackathons/${contest.slug}`);
+      if (targetPath !== currentPath) {
+        navigate(`${targetPath}${location.search}${location.hash}`, { replace: true });
+      }
+    }
+  }, [contest?.slug, slug, location.pathname, location.search, location.hash, navigate]);
 
   const previewAccessPending = previewRequested && (!authInitialized || profileLoading);
   const registrationQuery = useQuery({
