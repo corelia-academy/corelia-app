@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "6cf24f4759385ff715fd5ea49d9ac6024a97dcb2",
-  "git_tree_sha": "0b85eb906729f3aa173067a1be21423da675adc4",
+  "rc_sha": "1738288ba55094ce30f58712f1a49fba88f100a3",
+  "git_tree_sha": "d04d548874d25bfe1eef97c119d64e4d54dc1f53",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 188,
-  "latest_migration": "20260909200232_project_content_localization.sql",
+  "migration_count": 189,
+  "latest_migration": "20260910040636_optional_hackathon_progress.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "6cf24f4759385ff715fd5ea49d9ac6024a97dcb2",
+  "source_sha": "1738288ba55094ce30f58712f1a49fba88f100a3",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "952713724f642180cb4c8d460e8d299bd4359f6d0899ed678a293916f7cea331",
+  "candidate_tree_sha256": "99394e14f8261ff9ce8a7bce0c2bcc88cd809f36047dbe50fbc57c550bd2ffe4",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -651,7 +651,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "f9a8d6e604129c19a1251c024e8cbc22d9ade17f83355ea2b62e45098863bc83"
+      "sha256": "f3026c61ce16dac6a063b4717f6ad90f20f26bd05f6913408eede79b66fc3d8b"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -715,7 +715,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "4355fb3953555a88a1319be69601ee0ce242a26c19ba220aa0c6ec96e797aee7"
+      "sha256": "36e8dc2de6b64fa7a4712bf0f12d078786072f05a365a2cd6c35ca70bae1749c"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
@@ -747,7 +747,7 @@
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "f5a66936f90aaef4911d057c6f453ff4b5dbe893ad46d11ddbb100ccfe28ccac"
+      "sha256": "8d7833fe9a1d9dbb83d6b8c5c5f73785a0168846dbf049116cfa23aaea056c1d"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
@@ -763,7 +763,7 @@
     },
     {
       "path": "scripts/db/tests/project-localization.integration.sql",
-      "sha256": "553ee6d647daed43aef98be137ef06143cc4856ecfd8ee158411eaf425bf8622"
+      "sha256": "e167ef4587d9eb523d2c5892f245f9b3b358ffdf29c96b1aa7543cf86369524c"
     },
     {
       "path": "scripts/db/tests/project-moderation.integration.sql",
@@ -1227,11 +1227,11 @@
     },
     {
       "path": "src/features/projects/ProjectEditor.test.tsx",
-      "sha256": "cdc1032091e7918c45fc6121d784a445a19a411bedcf28be91e2f58a617b860e"
+      "sha256": "b0fa7752bd9034d7cf2826424d2630413fff5139debfb315b5bc8deacd2f1cd0"
     },
     {
       "path": "src/features/projects/ProjectEditor.tsx",
-      "sha256": "bfb3ff2e58916f97449b475c5bd6b2ab570b8a3e7f53dc0ba00c8d648dac55b9"
+      "sha256": "ac45841d71de53e6faf1845ed05635a0a9b5d8f1b02bf9a8895af45037e6efcc"
     },
     {
       "path": "src/features/projects/projectEditorDraft.test.ts",
@@ -1559,7 +1559,7 @@
     },
     {
       "path": "src/locales/en/common.json",
-      "sha256": "7a7f5d8bb7f2cedb5383b4512e644913eec35c9f8b8b3955085f9e9f4fdb999e"
+      "sha256": "b5d24ffde2aabcb87d1f4ce6f900f7e119338544b90ac6d954b8eef07a28c53a"
     },
     {
       "path": "src/locales/en/contests.json",
@@ -1591,7 +1591,7 @@
     },
     {
       "path": "src/locales/vi/common.json",
-      "sha256": "0a89b881c8ae0d063ddcfd8e91025fa3085b3933c7a4c0f9291980ebc467df70"
+      "sha256": "bd0dbdc940d9a019ee526c383bc9e4e7e5a59e9529b34c3dd3098f84967f9945"
     },
     {
       "path": "src/locales/vi/contests.json",
@@ -2531,11 +2531,11 @@
     },
     {
       "path": "supabase/functions/corelia-api/projects/handlers.test.ts",
-      "sha256": "4bc9206373d848347f2144c64888d7d1d59b9ef3a96241fcd33e436803301c5f"
+      "sha256": "8f0aaa48b35ef40504adad562d3335b7986a235d8380d645e350416002f92254"
     },
     {
       "path": "supabase/functions/corelia-api/projects/handlers.ts",
-      "sha256": "5f5695df51e0e91fde8220dfead3bfab66cd507795da5a8bf75c88ea236f3ebc"
+      "sha256": "06d9e8772270b7938da6a563fe3a18259f9b3d07273e7f33a2d07c4e434ea506"
     },
     {
       "path": "supabase/functions/corelia-api/projects/localization.test.ts",
@@ -2820,6 +2820,10 @@
     {
       "path": "supabase/migrations/20260909200232_project_content_localization.sql",
       "sha256": "a5ce1c732adb960a1659ba63220ef366701faef03b72e9a2175b55390083b2b7"
+    },
+    {
+      "path": "supabase/migrations/20260910040636_optional_hackathon_progress.sql",
+      "sha256": "616a5fef31d36a700149412eb167dd55c60819d8453e030ce546f1ada3d73df6"
     },
     {
       "path": "tsconfig.node.json",
@@ -3170,6 +3174,10 @@
       {
         "path": "supabase/migrations/20260909200232_project_content_localization.sql",
         "sha256": "a5ce1c732adb960a1659ba63220ef366701faef03b72e9a2175b55390083b2b7"
+      },
+      {
+        "path": "supabase/migrations/20260910040636_optional_hackathon_progress.sql",
+        "sha256": "616a5fef31d36a700149412eb167dd55c60819d8453e030ce546f1ada3d73df6"
       }
     ]
   }
