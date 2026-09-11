@@ -440,7 +440,7 @@
       "description": "Detailed description",
       "descriptionHint": "Explain the problem, users, solution, and what makes it different. For an idea, describe your proposed approach; architecture and source code are not needed yet.",
       "progress": "Progress during the hackathon",
-      "progressHint": "Describe work completed during the hackathon: research, interviews, sketches, or a prototype. Separate what you have done from your next steps.",
+      "progressHint": "Optional. Describe work completed during the hackathon: research, interviews, sketches, or a prototype. Separate what you have done from your next steps.",
       "pitchVideo": "Pitch video",
       "videos": "Project videos",
       "resourceRequired": "At least one demo, repository, slide or video",

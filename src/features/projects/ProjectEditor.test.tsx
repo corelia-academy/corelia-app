@@ -83,15 +83,15 @@ describe("ProjectEditor", () => {
     expect(save).not.toHaveBeenCalled();
     expect((host.querySelector('button[type="submit"]') as HTMLButtonElement).disabled).toBe(true);
   });
-  it("requires progress but accepts an idea without resources", async () => {
+  it("accepts an idea without progress or resources", async () => {
     const save = await render();
     await input('#project-story > div:last-child textarea','');
-    await submit();
-    expect(save).not.toHaveBeenCalled();
-    await input('#project-story > div:last-child textarea','Built a prototype');
+    expect((host.querySelector('#project-story > div:last-child textarea') as HTMLTextAreaElement).required).toBe(false);
+    expect(host.querySelector("aside")?.textContent).not.toContain("projects.editor.progress");
     await input('#project-links input[value="https://youtu.be/demo"]','');
     await submit();
     expect(save).toHaveBeenCalledOnce();
+    expect(save).toHaveBeenCalledWith(expect.objectContaining({ draft: expect.objectContaining({ progress: '' }) }));
     expect(host.textContent).not.toContain('projects.editor.resourceRequired');
     expect(host.textContent).toContain('projects.editor.optional');
   });

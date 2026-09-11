@@ -440,7 +440,7 @@
       "description": "Mô tả chi tiết",
       "descriptionHint": "Trình bày vấn đề, người dùng, giải pháp và điểm khác biệt. Nếu mới ở mức ý tưởng, mô tả cách bạn dự định giải quyết; chưa cần kiến trúc hay mã nguồn.",
       "progress": "Tiến độ trong hackathon",
-      "progressHint": "Nêu những việc đã thực hiện trong hackathon: nghiên cứu, phỏng vấn, phác thảo hoặc xây dựng thử. Phân biệt phần đã làm với kế hoạch tiếp theo.",
+      "progressHint": "Không bắt buộc. Nêu những việc đã thực hiện trong hackathon: nghiên cứu, phỏng vấn, phác thảo hoặc xây dựng thử. Phân biệt phần đã làm với kế hoạch tiếp theo.",
       "pitchVideo": "Video thuyết trình",
       "videos": "Video dự án",
       "resourceRequired": "Ít nhất một demo, repo, slide hoặc video",
