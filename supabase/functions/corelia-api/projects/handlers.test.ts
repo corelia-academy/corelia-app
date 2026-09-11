@@ -38,7 +38,6 @@ describe("project story save handler", () => {
   it.each([
     { summary: "" }, { summary: " \t\n" }, { summary: "..." },
     { description: "" }, { description: "\u200b" }, { description: "### ---" },
-    { source_type: "hackathon", progress: "" },
     { visibility: "unlisted", description: "" },
     { source_type: " hackathon ", visibility:"private", summary:"" },
   ])("rejects incomplete shared projects before moderation or persistence: %j", async payload => {
@@ -68,12 +67,20 @@ describe("project story save handler", () => {
     expect((await handleProjectSave(request({source_type:"hackathon",progress:"Built prototype",video_url:"https://youtu.be/demo"}),db)).status).toBe(200);
   });
 
-  it("accepts an idea-only hackathon submission with no resource links", async () => {
-    const response = await handleProjectSave(request({ source_type: "hackathon", progress: "Interviewed users and sketched the idea" }), db);
+  it.each([undefined, null, "", "   "])("accepts a hackathon idea with optional progress (%j) and no resource links", async progress => {
+    const response = await handleProjectSave(request({ source_type: "hackathon", progress }), db);
     expect(response.status).toBe(200);
     expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project", expect.objectContaining({
+      p_progress: progress == null ? null : "",
       p_demo_url: null, p_repo_url: null, p_slide_url: null, p_video_url: null, p_pitch_video_url: null,
     }));
+  });
+
+  it("allows clearing progress on an existing hackathon project", async () => {
+    mocks.existing.mockResolvedValue({ data: { source_type: "hackathon", progress: "Previous progress" }, error: null });
+    const response = await handleProjectSave(request({ progress: "" }), db);
+    expect(response.status).toBe(200);
+    expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project", expect.objectContaining({ p_progress: "" }));
   });
 
   it("still rejects invalid optional links before persistence", async () => {

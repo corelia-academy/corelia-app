@@ -55,9 +55,37 @@ BEGIN
     PERFORM public.update_ai_gated_project_i18n(actor,project,'{}');
     RAISE EXCEPTION 'Blocked config edit allowed';
   EXCEPTION WHEN OTHERS THEN IF SQLERRM NOT LIKE '%forbidden:project_blocked%' THEN RAISE; END IF; END;
-  INSERT INTO public.hackathons(id,status,document) VALUES(hackathon,'published',jsonb_build_object('slug','locale-deadline-test','status','published','submission_deadline',clock_timestamp()-interval '1 day','tracks','[{"id":"track"}]'::jsonb,'sectors','[{"id":"sector"}]'::jsonb,'tech_stacks','[{"id":"tech"}]'::jsonb));
+  INSERT INTO public.hackathons(id,status,document) VALUES(hackathon,'published',jsonb_build_object('slug','locale-deadline-test','status','published','submission_deadline',clock_timestamp()+interval '1 day','tracks','[{"id":"track"}]'::jsonb,'sectors','[{"id":"sector"}]'::jsonb,'tech_stacks','[{"id":"tech"}]'::jsonb));
   INSERT INTO public.hackathon_registrations(id,hackathon_id,user_id,document) VALUES(hackathon||'_'||actor::text,hackathon,actor,'{"status":"registered"}');
   INSERT INTO public.projects(id,owner_id,slug,title,source_type,source_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids) VALUES(event_project,actor,'locale-deadline-project','Deadline','hackathon',hackathon,ARRAY['track'],ARRAY['sector'],ARRAY['tech']);
+  -- Hackathon progress can be omitted, entered, and explicitly cleared in the primary locale.
+  SET LOCAL ROLE service_role;
+  PERFORM public.save_ai_gated_project_locale(actor,event_project,'vi','{"summary":"Idea summary","description":"Idea description"}');
+  PERFORM public.save_ai_gated_project_locale(actor,event_project,'vi','{"progress":"Initial research"}');
+  PERFORM public.save_ai_gated_project_locale(actor,event_project,'vi','{"progress":""}');
+  IF EXISTS(SELECT 1 FROM public.projects WHERE id=event_project AND progress IS NOT NULL)
+    OR EXISTS(SELECT 1 FROM public.project_locales WHERE project_id=event_project AND locale='vi' AND data->>'progress' IS NOT NULL) THEN
+    RAISE EXCEPTION 'Optional hackathon progress was not cleared';
+  END IF;
+  BEGIN
+    PERFORM public.save_ai_gated_project_locale(actor,event_project,'vi',jsonb_build_object('progress',repeat('x',10001)));
+    RAISE EXCEPTION 'Oversized optional progress accepted';
+  EXCEPTION WHEN OTHERS THEN IF SQLERRM NOT LIKE '%invalid_input:project_content%' THEN RAISE; END IF; END;
+  BEGIN
+    PERFORM public.save_ai_gated_project_locale(actor,event_project,'vi','{"description":""}');
+    RAISE EXCEPTION 'Required hackathon description cleared';
+  EXCEPTION WHEN OTHERS THEN IF SQLERRM NOT LIKE '%required_content:description%' THEN RAISE; END IF; END;
+  RESET ROLE;
+  UPDATE public.profiles SET role='admin' WHERE id=other_actor;
+  SET LOCAL ROLE service_role;
+  PERFORM public.manage_project(other_actor,event_project,'private','Review idea');
+  PERFORM public.manage_project(other_actor,event_project,'unlisted','Approve idea without progress or links');
+  PERFORM public.manage_project(other_actor,event_project,'public','Publish idea without progress or links');
+  RESET ROLE;
+  IF NOT EXISTS(SELECT 1 FROM public.projects WHERE id=event_project AND visibility='public' AND progress IS NULL) THEN
+    RAISE EXCEPTION 'Hackathon idea could not be published without progress';
+  END IF;
+  UPDATE public.hackathons SET document=jsonb_set(document,'{submission_deadline}',to_jsonb(clock_timestamp()-interval '1 day')) WHERE id=hackathon;
   BEGIN
     PERFORM public.save_ai_gated_project_locale(actor,event_project,'en','{"title":"Late edit"}');
     RAISE EXCEPTION 'Late translation saved';
