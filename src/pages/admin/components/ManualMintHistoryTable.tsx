@@ -289,7 +289,7 @@ export function ManualMintHistoryTable() {
           className={cn(
             "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer",
             statusFilter === "pending"
-              ? "bg-yellow-400 text-neutral-950 font-bold shadow-xs"
+              ? "bg-yellow-400 text-neutral-900 font-bold shadow-xs"
               : "bg-surface-raised/60 text-foreground-muted hover:bg-surface-raised hover:text-foreground",
           )}
         >
@@ -299,7 +299,7 @@ export function ManualMintHistoryTable() {
             className={cn(
               "rounded-full px-1.5 py-0.2 text-[10px]",
               statusFilter === "pending"
-                ? "bg-neutral-950/20 text-neutral-950 font-bold"
+                ? "bg-neutral-900/20 text-neutral-900 font-bold"
                 : "bg-surface-base text-foreground-muted",
             )}
           >

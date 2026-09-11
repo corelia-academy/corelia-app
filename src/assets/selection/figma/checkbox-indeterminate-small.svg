@@ -1,0 +1,8 @@
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Checkbox">
+<rect x="0.75" y="0.75" width="18.5" height="18.5" rx="4.25" stroke="var(--blue-600)" stroke-width="1.5"/>
+<g id="Line">
+<path id="Vector 1" d="M5 10H15" stroke="var(--blue-600)" stroke-width="1.67" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</svg>

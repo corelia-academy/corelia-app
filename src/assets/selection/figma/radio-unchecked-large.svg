@@ -1,0 +1,10 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="check" clip-path="url(#clip0_0_4)">
+<path id="Ellipse 2 (Stroke)" d="M12.0002 0.749919C18.2134 0.749919 23.2502 5.78672 23.2502 11.9999C23.2502 18.2131 18.2134 23.2499 12.0002 23.2499C5.78696 23.2499 0.750163 18.2131 0.750163 11.9999C0.750163 5.78672 5.78696 0.749919 12.0002 0.749919ZM12.0002 1.04972C5.95265 1.04972 1.04997 5.9524 1.04997 11.9999C1.04997 18.0474 5.95264 22.9501 12.0002 22.9501C18.0477 22.9501 22.9504 18.0474 22.9504 11.9999C22.9504 5.9524 18.0477 1.04972 12.0002 1.04972Z" stroke="var(--foreground)" stroke-width="1.5"/>
+</g>
+<defs>
+<clipPath id="clip0_0_4">
+<rect width="24" height="24" fill="white"/>
+</clipPath>
+</defs>
+</svg>
