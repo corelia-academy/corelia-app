@@ -7,6 +7,7 @@ import { clearPrivateQueryCache, queryClient } from "@/lib/queryClient";
 import i18n, { DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { timedAsync } from "@/lib/perfTelemetry";
+import { isAuthSyncLocaleIgnored, resetManualLocaleIntent } from "@/lib/localeSyncGuard";
 
 
 /**
@@ -29,6 +30,7 @@ export function AuthSync() {
 
       if (user) {
         if (previousUserId && previousUserId !== user.id) {
+          resetManualLocaleIntent();
           void clearPrivateQueryCache(previousUserId);
         }
         setAuthState(user, recovery ? "recovery" : "authenticated");
@@ -53,14 +55,19 @@ export function AuthSync() {
               );
               if (!mounted || runSeq !== currentSeq) return;
               const locale = (p?.locale ?? DEFAULT_LANGUAGE) as SupportedLanguage;
-              void i18n.changeLanguage(locale);
+              if (!isAuthSyncLocaleIgnored(locale)) {
+                void i18n.changeLanguage(locale);
+              }
             } catch (error) {
               console.error("Failed to load profile:", error);
             }
           })();
         });
       } else {
-        if (previousUserId) void clearPrivateQueryCache(previousUserId);
+        if (previousUserId) {
+          resetManualLocaleIntent();
+          void clearPrivateQueryCache(previousUserId);
+        }
         setAuthState(null, "anonymous");
         try {
           localStorage.removeItem("i18nextLng");
@@ -76,7 +83,9 @@ export function AuthSync() {
               : []) ?? [];
         const isVi = langs.some((l) => String(l).toLowerCase().startsWith("vi"));
         const publicLocale: SupportedLanguage = isVi ? "vi" : "en";
-        void i18n.changeLanguage(publicLocale);
+        if (!isAuthSyncLocaleIgnored(publicLocale)) {
+          void i18n.changeLanguage(publicLocale);
+        }
       }
     }
 
