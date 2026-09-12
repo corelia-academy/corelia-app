@@ -2,7 +2,7 @@
 import { act } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRoot } from "react-dom/client";
-import { MemoryRouter, Route, Routes } from "react-router";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Contest } from "@/types/hackathons";
@@ -122,6 +122,11 @@ describe("ProjectsPage hackathon slug filter case-insensitivity", () => {
     }
   }
 
+  function LocationTracker() {
+    const location = useLocation();
+    return <span data-testid="location-search">{location.search}</span>;
+  }
+
   async function renderPage(initialEntry: string) {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
@@ -132,6 +137,7 @@ describe("ProjectsPage hackathon slug filter case-insensitivity", () => {
       root.render(
         <QueryClientProvider client={queryClient}>
           <MemoryRouter initialEntries={[initialEntry]}>
+            <LocationTracker />
             <Routes>
               <Route path="/projects" element={<ProjectsPage />} />
             </Routes>
@@ -144,6 +150,7 @@ describe("ProjectsPage hackathon slug filter case-insensitivity", () => {
 
     return {
       container,
+      getSearch: () => container.querySelector('[data-testid="location-search"]')?.textContent ?? "",
       cleanup: async () => {
         await act(async () => {
           root.unmount();
@@ -162,11 +169,12 @@ describe("ProjectsPage hackathon slug filter case-insensitivity", () => {
 
     expect(view.container.textContent).toContain("Project Alpha");
     expect(view.container.textContent).not.toContain("This hackathon is unavailable");
+    expect(view.getSearch()).toBe("?hackathon=qa-356");
 
     await view.cleanup();
   });
 
-  it("resolves uppercase hackathon slug QA-356 and renders the same project list", async () => {
+  it("resolves uppercase hackathon slug QA-356, renders the same project list, and canonicalizes URL to lowercase", async () => {
     const view = await renderPage("/projects?hackathon=QA-356");
 
     const select = view.container.querySelector("select");
@@ -175,6 +183,23 @@ describe("ProjectsPage hackathon slug filter case-insensitivity", () => {
 
     expect(view.container.textContent).toContain("Project Alpha");
     expect(view.container.textContent).not.toContain("This hackathon is unavailable");
+    // Explicitly verify runtime URL canonicalization to lowercase
+    expect(view.getSearch()).toBe("?hackathon=qa-356");
+
+    await view.cleanup();
+  });
+
+  it("resolves mixed-case slug Qa-356 with whitespace padding and canonicalizes URL to lowercase", async () => {
+    const view = await renderPage("/projects?hackathon=%20Qa-356%20");
+
+    const select = view.container.querySelector("select");
+    expect(select).not.toBeNull();
+    expect(select?.value).toBe("qa-356");
+
+    expect(view.container.textContent).toContain("Project Alpha");
+    expect(view.container.textContent).not.toContain("This hackathon is unavailable");
+    // Explicitly verify runtime URL canonicalization to lowercase canonical slug
+    expect(view.getSearch()).toBe("?hackathon=qa-356");
 
     await view.cleanup();
   });
@@ -188,6 +213,7 @@ describe("ProjectsPage hackathon slug filter case-insensitivity", () => {
 
     expect(view.container.textContent).toContain("This hackathon is unavailable");
     expect(view.container.textContent).not.toContain("Project Alpha");
+    expect(view.getSearch()).toBe("?hackathon=unknown-hackathon");
 
     await view.cleanup();
   });
