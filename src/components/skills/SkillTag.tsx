@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { cn } from "@/lib/utils";
+import { Tag } from "@/components/ui/tag";
 
 export function SkillTag({
   children,
@@ -10,13 +10,8 @@ export function SkillTag({
   className?: string;
 }) {
   return (
-    <span
-      className={cn(
-        "inline-flex h-8 items-center rounded-full border border-border-subtle bg-surface-raised px-3 text-sm font-medium leading-none text-foreground-muted",
-        className,
-      )}
-    >
+    <Tag type="label" size="large" className={className}>
       {children}
-    </span>
+    </Tag>
   );
 }
