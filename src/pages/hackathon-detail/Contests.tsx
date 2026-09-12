@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { contestListImageUrl } from "@/lib/hackathonVisuals";
+import { canRegisterForContest } from "@/lib/hackathons";
 import { canManageContests } from "@/lib/permissions";
 import { useAuth } from "@/stores/authStore";
 import type { Contest } from "@/types/hackathons";
@@ -53,9 +54,7 @@ export default function Contests() {
 
   const stats = useMemo(() => {
     const total = items.length;
-    const accepting = items.filter(
-      (item) => item.status === "published",
-    ).length;
+    const accepting = items.filter(canRegisterForContest).length;
     const running = items.filter((item) => item.status === "running").length;
     const ended = items.filter((item) => item.status === "ended").length;
     return { total, accepting, running, ended };
