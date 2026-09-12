@@ -91,18 +91,18 @@
 } */
 
 :root {
-  --public-link: var(--blue-700);
-  --public-cta-hover: #1248C5;
+  --public-link: var(--blue-600);
+  --public-cta-hover: var(--blue-700);
   --public-cta-hover-foreground: var(--neutral-50);
-  --public-cta-active: #103DA5;
+  --public-cta-active: var(--blue-800);
   --public-cta-active-foreground: var(--neutral-50);
   --public-control-border: var(--neutral-400);
 }
 .dark {
   --public-link: var(--blue-400);
-  --public-cta-hover: #2464F5;
+  --public-cta-hover: var(--blue-500);
   --public-cta-hover-foreground: var(--neutral-50);
-  --public-cta-active: var(--blue-700);
+  --public-cta-active: var(--blue-600);
   --public-cta-active-foreground: var(--neutral-50);
   --public-control-border: var(--neutral-400);
 }
