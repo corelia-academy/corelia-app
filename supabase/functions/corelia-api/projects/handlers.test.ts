@@ -128,8 +128,6 @@ describe("project story save handler", () => {
     ["slide_url", `https://example.com/${"a".repeat(2048)}`],
   ])("rejects invalid optional %s before moderation or persistence", async (field, url) => {
     const response = await handleProjectSave(request({ source_type: "hackathon", [field]: url }), db);
-  ])("rejects invalid optional %s before moderation or persistence", async (field, url) => {
-    const response = await handleProjectSave(request({ source_type: "hackathon", [field]: url }), db);
     expect(response.status).toBe(400);
     expect(await response.json()).toEqual({ message: `invalid_url:${field}` });
     expect(mocks.moderate).not.toHaveBeenCalled();
