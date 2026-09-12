@@ -167,4 +167,57 @@ describe("Contests catalog statistics", () => {
 
     await view.cleanup();
   });
+
+  it("uses submission_deadline fallback when registration_deadline is null", async () => {
+    const past = new Date(Date.now() - 86400000).toISOString();
+    const future = new Date(Date.now() + 86400000 * 7).toISOString();
+    state.items = [
+      {
+        id: "h-sub-past",
+        slug: "h-sub-past",
+        title: "Submission Past",
+        status: "published",
+        registration_deadline: null,
+        submission_deadline: past,
+      } as unknown as Contest,
+      {
+        id: "h-sub-future",
+        slug: "h-sub-future",
+        title: "Submission Future",
+        status: "published",
+        registration_deadline: null,
+        submission_deadline: future,
+      } as unknown as Contest,
+    ];
+
+    const view = await renderPage();
+    expect(view.container.textContent).toContain("2 total · 1 accepting · 0 running · 0 ended");
+
+    await view.cleanup();
+  });
+
+  it("excludes draft and ended hackathons from accepting count even if deadlines are in future", async () => {
+    const future = new Date(Date.now() + 86400000 * 7).toISOString();
+    state.items = [
+      {
+        id: "h-draft",
+        slug: "h-draft",
+        title: "Draft Hackathon",
+        status: "draft",
+        registration_deadline: future,
+      } as unknown as Contest,
+      {
+        id: "h-ended",
+        slug: "h-ended",
+        title: "Ended Hackathon",
+        status: "ended",
+        registration_deadline: future,
+      } as unknown as Contest,
+    ];
+
+    const view = await renderPage();
+    expect(view.container.textContent).toContain("2 total · 0 accepting · 0 running · 1 ended");
+
+    await view.cleanup();
+  });
 });
