@@ -696,7 +696,7 @@ export function useContestDetailOrchestrator({
     );
 
     const loginRedirect = (path: string) =>
-      `/login?redirect=${encodeURIComponent(path)}`;
+      `/login?next=${encodeURIComponent(path)}`;
 
     const buildRegistrationCta = () => {
       if (!isAuthenticated) {

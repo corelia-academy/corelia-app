@@ -139,7 +139,7 @@ export default function ContestPublicLayout() {
       disabled={registrationClosed || registerMutation.isPending}
       onClick={() => {
         if (!user) {
-          navigate(`/login?next=${encodeURIComponent(location.pathname)}`);
+          navigate(`/login?next=${encodeURIComponent(location.pathname + location.search + location.hash)}`);
           return;
         }
         registerMutation.mutate();
