@@ -79,19 +79,15 @@ describe("Checkbox", () => {
       expect(control.querySelector('[data-slot="checkbox-checked-frame"]')).not.toBeNull()
       expect(control.querySelector('[data-slot="checkbox-indeterminate-frame"]')).not.toBeNull()
 
+      expect(control.querySelector('[data-slot="checkbox-unchecked-frame"] svg')).not.toBeNull()
+      expect(control.querySelector('[data-slot="checkbox-checked-frame"] svg')).not.toBeNull()
+      expect(control.querySelector('[data-slot="checkbox-indeterminate-frame"] svg')).not.toBeNull()
+
       if (item.indeterminate) {
         const indeterminateFrame = control.querySelector<HTMLElement>(
           '[data-slot="checkbox-indeterminate-frame"]',
         )
-        const indeterminateSvg = indeterminateFrame?.querySelector<SVGElement>("svg")
-        expect(indeterminateSvg?.tagName).toBe("svg")
-        expect(indeterminateSvg?.outerHTML).not.toMatch(/#[0-9a-f]{6}/i)
-        expect(indeterminateSvg?.querySelector("rect")?.getAttribute(item.disabled ? "fill" : "stroke")).toBe(
-          item.disabled ? "var(--neutral-500)" : "var(--blue-600)",
-        )
-        expect(indeterminateSvg?.querySelector("path")?.getAttribute("stroke")).toBe(
-          item.disabled ? "var(--neutral-400)" : "var(--blue-600)",
-        )
+        expect(indeterminateFrame?.querySelector("svg")).not.toBeNull()
       }
     })
 

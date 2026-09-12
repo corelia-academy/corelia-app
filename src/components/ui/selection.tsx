@@ -1,6 +1,13 @@
 import * as React from "react"
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox"
 import { Radio as RadioPrimitive } from "@base-ui/react/radio"
+import {
+  CheckSquare,
+  Circle,
+  MinusSquare,
+  RadioButton,
+  Square,
+} from "@phosphor-icons/react"
 
 import { cn } from "@/lib/utils"
 
@@ -24,68 +31,63 @@ const sizeStyles: Record<
 type SelectionIconState = "unchecked" | "checked" | "indeterminate"
 type SelectionIconKind = "checkbox" | "radio"
 
-const selectionSvgSources = import.meta.glob<string>(
-  "/src/assets/selection/figma/*.svg",
-  {
-    eager: true,
-    import: "default",
-    query: "?raw",
-  },
-)
-
-function getSelectionAssetFileName(
-  kind: SelectionIconKind,
-  state: SelectionIconState,
-  size: SelectionSize,
-  disabled: boolean,
-) {
-  const disabledSuffix = disabled ? "-disabled" : ""
-  return `${kind}-${state}${disabledSuffix}-${size}.svg`
-}
-
-function scopeSelectionSvgIds(source: string, scopeId: string) {
-  return source
-    .replace(
-      /\bid="([^"]+)"/g,
-      (_, id: string) => `id="${scopeId}-${id}"`,
-    )
-    .replace(
-      /url\(#([^)]+)\)/g,
-      (_, id: string) => `url(#${scopeId}-${id})`,
-    )
-}
-
-type SelectionSvgProps = {
+type SelectionIconProps = {
   className?: string
   dataSlot: string
-  fileName: string
+  kind: SelectionIconKind
+  size: SelectionSize
+  disabled: boolean
+  state: SelectionIconState
 }
 
-function SelectionSvg({
+function SelectionIcon({
   className,
   dataSlot,
-  fileName,
-}: SelectionSvgProps) {
-  const instanceId = React.useId().replace(/:/g, "")
-  const sourcePath = `/src/assets/selection/figma/${fileName}`
-  const source = selectionSvgSources[sourcePath]
+  kind,
+  size,
+  disabled,
+  state,
+}: SelectionIconProps) {
+  const iconSize = size === "small" ? 20 : 24
+  const color = disabled
+    ? "var(--neutral-500)"
+    : state === "unchecked"
+      ? "var(--foreground-muted)"
+      : "var(--blue-600)"
 
-  if (!source) {
-    throw new Error(`Selection SVG asset not found: ${fileName}`)
+  const iconMap: Record<
+    SelectionIconKind,
+    Record<SelectionIconState, React.ElementType | null>
+  > = {
+    checkbox: {
+      unchecked: Square,
+      checked: CheckSquare,
+      indeterminate: MinusSquare,
+    },
+    radio: {
+      unchecked: Circle,
+      checked: RadioButton,
+      indeterminate: null,
+    },
   }
 
-  const scopedSource = React.useMemo(
-    () => scopeSelectionSvgIds(source, instanceId),
-    [source, instanceId],
-  )
+  const Icon = iconMap[kind][state]
+
+  if (!Icon) {
+    return null
+  }
 
   return (
     <span
       aria-hidden
-      className={cn("pointer-events-none block size-full", className)}
+      className={cn(
+        "pointer-events-none inline-flex size-full items-center justify-center",
+        className,
+      )}
       data-slot={dataSlot}
-      dangerouslySetInnerHTML={{ __html: scopedSource }}
-    />
+    >
+      <Icon color={color} size={iconSize} weight="regular" />
+    </span>
   )
 }
 
@@ -308,19 +310,28 @@ export const Checkbox = React.forwardRef<HTMLElement, CheckboxProps>(
           aria-hidden
           className="pointer-events-none absolute -inset-2 scale-90 rounded-md bg-blue-600/10 opacity-0 transition-[opacity,transform,background-color] duration-150 ease-out group-hover/checkbox:scale-100 group-hover/checkbox:opacity-100 group-focus-visible/checkbox:scale-100 group-focus-visible/checkbox:opacity-100 group-active/checkbox:scale-100 group-active/checkbox:opacity-100 group-active/checkbox:bg-blue-600/20 group-data-[disabled]/checkbox:opacity-0 motion-reduce:transition-none"
         />
-        <SelectionSvg
+        <SelectionIcon
           dataSlot="checkbox-unchecked-frame"
-          fileName={getSelectionAssetFileName("checkbox", "unchecked", size, disabled)}
+          kind="checkbox"
+          size={size}
+          disabled={disabled}
+          state="unchecked"
           className="pointer-events-none absolute inset-0 size-full transition-[opacity,transform] duration-150 ease-out group-data-[checked]/checkbox:scale-95 group-data-[checked]/checkbox:opacity-0 group-data-[indeterminate]/checkbox:scale-95 group-data-[indeterminate]/checkbox:opacity-0 motion-reduce:transition-none"
         />
-        <SelectionSvg
+        <SelectionIcon
           dataSlot="checkbox-checked-frame"
-          fileName={getSelectionAssetFileName("checkbox", "checked", size, disabled)}
+          kind="checkbox"
+          size={size}
+          disabled={disabled}
+          state="checked"
           className="pointer-events-none absolute inset-0 size-full scale-95 opacity-0 transition-[opacity,transform] duration-150 ease-out group-data-[checked]/checkbox:scale-100 group-data-[checked]/checkbox:opacity-100 motion-reduce:transition-none"
         />
-        <SelectionSvg
+        <SelectionIcon
           dataSlot="checkbox-indeterminate-frame"
-          fileName={getSelectionAssetFileName("checkbox", "indeterminate", size, disabled)}
+          kind="checkbox"
+          size={size}
+          disabled={disabled}
+          state="indeterminate"
           className="pointer-events-none absolute inset-0 size-full scale-95 opacity-0 transition-[opacity,transform] duration-150 ease-out group-data-[indeterminate]/checkbox:scale-100 group-data-[indeterminate]/checkbox:opacity-100 motion-reduce:transition-none"
         />
       </CheckboxPrimitive.Root>
@@ -411,18 +422,24 @@ export const Radio = React.forwardRef<HTMLElement, RadioProps>(
         onClick={handleClick}
         {...labelledByProps}
       >
-        <SelectionSvg
+        <SelectionIcon
           dataSlot="radio-unchecked-icon"
-          fileName={getSelectionAssetFileName("radio", "unchecked", size, disabled)}
+          kind="radio"
+          size={size}
+          disabled={disabled}
+          state="unchecked"
           className="block size-full group-data-[checked]/radio:hidden"
         />
         <RadioPrimitive.Indicator
           data-slot="radio-indicator"
           className="block size-full"
         >
-          <SelectionSvg
+          <SelectionIcon
             dataSlot="radio-checked-icon"
-            fileName={getSelectionAssetFileName("radio", "checked", size, disabled)}
+            kind="radio"
+            size={size}
+            disabled={disabled}
+            state="checked"
             className="block size-full"
           />
         </RadioPrimitive.Indicator>
