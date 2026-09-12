@@ -28,6 +28,8 @@ export interface Project {
   source_type: ProjectSourceType;
   source_id: string | null;
   source_submission_id: string | null;
+  /** Slug of the linked hackathon when source_type is hackathon/contest */
+  hackathon_slug?: string | null;
   hackathon_track_ids: string[];
   hackathon_sector_ids: string[];
   hackathon_tech_stack_ids: string[];

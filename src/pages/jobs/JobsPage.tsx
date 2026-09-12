@@ -1,9 +1,10 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BriefcaseBusiness, Search, SlidersHorizontal } from "lucide-react";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
+import { parseSalaryFilter } from "./jobFilterUtils";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,7 +61,7 @@ export default function JobsPage() {
     region: params.get("region") || undefined,
     employmentType: params.get("employment") || undefined,
     postedWithinDays: Number(params.get("days")) || undefined,
-    salaryMin: Number(params.get("salary")) || undefined,
+    salaryMin: parseSalaryFilter(params.get("salary")),
     salaryCurrency: params.get("currency") || undefined,
     pageSize: 24,
     ...landing?.filters,
@@ -97,6 +98,28 @@ export default function JobsPage() {
     if (value) next.set(key, value); else next.delete(key);
     next.delete("page");
     setParams(next);
+  };
+
+  const urlSalary = params.get("salary") ?? "";
+  const [salaryDraft, setSalaryDraft] = useState(urlSalary);
+  const isComposingRef = useRef(false);
+
+  useEffect(() => {
+    setSalaryDraft(urlSalary);
+  }, [urlSalary]);
+
+  const commitSalary = (val: string) => {
+    const trimmed = val.trim();
+    if (!trimmed) {
+      updateParam("salary", "");
+      return;
+    }
+    const parsed = parseSalaryFilter(trimmed);
+    if (parsed !== undefined) {
+      updateParam("salary", String(parsed));
+    } else {
+      setSalaryDraft(urlSalary);
+    }
   };
   const mutateState = (jobId: string, patch: Partial<Pick<UserJobState, "saved" | "applied" | "hidden">>) => {
     if (!user) {
@@ -167,7 +190,35 @@ export default function JobsPage() {
             <select className={SELECT_CLASS} disabled={Boolean(landing?.filters.region || landing?.filters.countryCode)} value={filters.region ?? ""} onChange={(e) => updateParam("region", e.target.value)} aria-label={t("filters.region")}><option value="">{landing?.filters.countryCode === "VN" ? "Vietnam" : t("filters.allRegions")}</option>{(["APAC", "EMEA", "AMER"] as const).map((value) => <option key={value} value={value}>{value}</option>)}</select>
             <select className={SELECT_CLASS} value={filters.employmentType ?? ""} onChange={(e) => updateParam("employment", e.target.value)} aria-label={t("filters.employmentType")}><option value="">{t("filters.allEmploymentTypes")}</option>{(["full_time", "part_time", "contract", "temporary", "internship"] as const).map((value) => <option key={value} value={value}>{t(`values.${value}`)}</option>)}</select>
             <select className={SELECT_CLASS} value={filters.salaryCurrency ?? ""} onChange={(e) => updateParam("currency", e.target.value)} aria-label={t("filters.salaryCurrency")}><option value="">{t("filters.allCurrencies")}</option>{["USD", "EUR", "GBP", "SGD", "VND"].map((value) => <option key={value} value={value}>{value}</option>)}</select>
-            <Input type="number" inputMode="numeric" min="0" step="1000" disabled={!filters.salaryCurrency} value={params.get("salary") ?? ""} onChange={(e) => updateParam("salary", e.target.value)} placeholder={t("filters.minimumSalary")} aria-label={t("filters.minimumSalary")} />
+            <Input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              disabled={!filters.salaryCurrency}
+              value={salaryDraft}
+              onCompositionStart={() => {
+                isComposingRef.current = true;
+              }}
+              onCompositionEnd={(e) => {
+                isComposingRef.current = false;
+                setSalaryDraft(e.currentTarget.value);
+                commitSalary(e.currentTarget.value);
+              }}
+              onChange={(e) => setSalaryDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !isComposingRef.current) {
+                  e.preventDefault();
+                  commitSalary(e.currentTarget.value);
+                }
+              }}
+              onBlur={(e) => {
+                if (!isComposingRef.current) {
+                  commitSalary(e.currentTarget.value);
+                }
+              }}
+              placeholder={t("filters.minimumSalary")}
+              aria-label={t("filters.minimumSalary")}
+            />
             <select className={SELECT_CLASS} value={String(filters.postedWithinDays ?? "")} onChange={(e) => updateParam("days", e.target.value)} aria-label={t("filters.postedDate")}><option value="">{t("filters.anyDate")}</option><option value="7">{t("filters.last7Days")}</option><option value="30">{t("filters.last30Days")}</option></select>
             <Button type="button" variant="ghost" onClick={() => setParams({})}>{t("filters.clear")}</Button>
             </div>
