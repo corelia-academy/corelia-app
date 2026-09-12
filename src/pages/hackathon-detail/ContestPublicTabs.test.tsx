@@ -111,6 +111,47 @@ describe("HackathonProjectsTab filters", () => {
 
     await view.cleanup();
   });
+
+  it("renders role='alert' and retry button when projects query errors", async () => {
+    projectQueryFn.mockRejectedValueOnce(new Error("Network error"));
+
+    const view = renderProjectsTab("/hackathons/demo-hackathon/projects");
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    const alert = view.container.querySelector('[role="alert"]');
+    expect(alert).not.toBeNull();
+    expect(alert?.textContent).toContain("detail.errors.loadFailed");
+
+    const retryButton = alert?.querySelector("button");
+    expect(retryButton).not.toBeNull();
+    expect(retryButton?.textContent).toContain("projects.retry");
+
+    // Click retry calls query again
+    projectQueryFn.mockResolvedValueOnce({ items: [], nextCursor: null });
+    await act(async () => {
+      retryButton?.click();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    expect(projectQueryFn).toHaveBeenCalled();
+    await view.cleanup();
+  });
+
+  it("renders empty state instead of alert when query returns 0 projects", async () => {
+    projectQueryFn.mockResolvedValueOnce({ items: [], nextCursor: null });
+
+    const view = renderProjectsTab("/hackathons/demo-hackathon/projects");
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    expect(view.container.querySelector('[role="alert"]')).toBeNull();
+    expect(view.container.textContent).toContain("public.empty.projects");
+
+    await view.cleanup();
+  });
 });
 
 describe("HackathonPrizesTab", () => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowUpRight, CalendarClock, Facebook, Globe2, MapPin, Send, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -8,7 +8,14 @@ import { toast } from "sonner";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
 import { Button } from "@/components/ui/button";
 import { hackathonPreviewQueryOptions, publicHackathonDetailQueryOptions } from "@/features/hackathons/hackathonQueries";
-import { getMyContestRegistration, getMyContestSubmission, registerForContest } from "@/lib/hackathons";
+import {
+  getMyContestRegistration,
+  getMyContestSubmission,
+  registerForContest,
+  canRegisterForContest,
+  isPastContestSubmissionDeadline,
+  sanitizeSlug,
+} from "@/lib/hackathons";
 import { canManageContests } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
@@ -60,7 +67,24 @@ export default function ContestPublicLayout() {
   const previewContestQuery = useQuery(previewOptions);
   const contestQuery = previewRequested ? previewContestQuery : publicContestQuery;
   const loaded = contestQuery.data;
-  const contest = loaded && loaded.slug === slug && (!previewRequested || previewAuthorized) ? loaded : null;
+  const canonicalParamSlug = slug ? sanitizeSlug(slug) : null;
+  const contest =
+    loaded &&
+    (loaded.slug === canonicalParamSlug || loaded.id === slug) &&
+    (!previewRequested || previewAuthorized)
+      ? loaded
+      : null;
+
+  useEffect(() => {
+    if (contest?.slug && slug && slug !== contest.slug) {
+      const currentPath = location.pathname;
+      const targetPath = currentPath.replace(`/hackathons/${slug}`, `/hackathons/${contest.slug}`);
+      if (targetPath !== currentPath) {
+        navigate(`${targetPath}${location.search}${location.hash}`, { replace: true });
+      }
+    }
+  }, [contest?.slug, slug, location.pathname, location.search, location.hash, navigate]);
+
   const previewAccessPending = previewRequested && (!authInitialized || profileLoading);
   const registrationQuery = useQuery({
     queryKey: ["hackathons", contest?.id, "my-registration", user?.id ?? "anonymous"],
@@ -70,12 +94,9 @@ export default function ContestPublicLayout() {
   });
   const submissionQuery = useQuery({ queryKey: ["projects", "my-submission", contest?.id, user?.id], queryFn: () => getMyContestSubmission(contest!.id, user), enabled: Boolean(contest && user && !previewRequested), staleTime: 0 });
   const registration = registrationQuery.data ?? null;
-  const [renderedAt] = useState(() => Date.now());
-  const registrationClosed = Boolean(
-    contest?.registration_deadline && renderedAt > new Date(contest.registration_deadline).getTime(),
-  );
+  const canRegister = Boolean(contest && canRegisterForContest(contest));
   const submissionClosed = Boolean(
-    contest?.submission_deadline && renderedAt > new Date(contest.submission_deadline).getTime(),
+    contest && isPastContestSubmissionDeadline(contest),
   );
   const registerMutation = useMutation({
     mutationFn: () => registerForContest(contest!.id, {}),
@@ -136,16 +157,16 @@ export default function ContestPublicLayout() {
   ) : (
     <Button
       type="button"
-      disabled={registrationClosed || registerMutation.isPending}
+      disabled={!canRegister || registerMutation.isPending}
       onClick={() => {
         if (!user) {
-          navigate(`/login?next=${encodeURIComponent(location.pathname)}`);
+          navigate(`/login?redirect=${encodeURIComponent(`${location.pathname}${location.search}${location.hash}`)}`);
           return;
         }
         registerMutation.mutate();
       }}
     >
-      {registrationClosed ? t("public.registrationClosed") : t("public.register")}
+      {!canRegister ? t("public.registrationClosed") : t("public.register")}
     </Button>
   );
 
