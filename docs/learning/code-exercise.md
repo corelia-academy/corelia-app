@@ -2,6 +2,7 @@
 
 Tài liệu này mở rộng [Learning System](./learning-system.md), [Learner UI](./learner-ui.md) và [Admin UI](./admin-ui.md).
 
+Quyền authoring áp dụng theo hợp đồng hiện hành: owner, co-instructor có feature content và staff được cấp quyền. Các nhãn “admin builder/UI” bên dưới chỉ giao diện authoring, không áp đặt admin-only hoặc thay route instructor.
 ## 1. Product decision
 
 `code_exercise` là công cụ self-practice có phản hồi nhanh. Nó không phải secure assessment, anti-cheat system hoặc bằng chứng rằng learner tự viết code.
@@ -218,7 +219,7 @@ Limitations hiển thị rõ trong admin UI:
 
 ## 6. Editor choice
 
-Repo chưa có code editor dependency. Với `edit`, thêm:
+Implementation hiện tại đã tích hợp hai dependency cho mode `edit`:
 
 ```text
 monaco-editor
@@ -233,7 +234,7 @@ Constraints:
 - Có loading skeleton và plain textarea fallback nếu Monaco chunk không load.
 - Kiểm tra production chunk size; không import Monaco từ global learning shell.
 
-Nếu bundle integration gây blocker, ship textarea fallback cho pilot trước; data model và engine không đổi.
+Textarea fallback dùng cùng data model và engine; fallback không thay điều kiện hoàn thành bài.
 
 ## 7. Learner flow
 
@@ -403,7 +404,7 @@ malformed config cannot save
 failing reference solution cannot publish
 save/reload preserves shape
 preview and learner return identical result
-non-admin mutation remains denied
+mutation without course content permission remains denied
 ```
 
 ### CE-4 — Integration and pilot
@@ -419,7 +420,7 @@ Exit gate:
 no regression to article/video/quiz/practice
 production bundle lazy-loads Monaco
 course progress/completion correct
-admin authors without raw JSON
+authorized instructor/staff authors without raw JSON
 text-rule limitations acceptable for pilot
 ```
 

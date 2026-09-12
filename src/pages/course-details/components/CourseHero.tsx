@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { invalidateLearningProgress } from "@/features/learning/invalidateLearningProgress";
 import { BookOpen, Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -27,7 +29,6 @@ interface CourseHeroProps {
   previewLessons: CourseLesson[];
   displayTotalDuration: number;
   curriculumCountLabel: string;
-  progressPercent?: number;
   onCertificateClaimed?: (issuedAt: string) => void;
 }
 
@@ -39,7 +40,6 @@ export function CourseHero({
   previewLessons,
   displayTotalDuration,
   curriculumCountLabel,
-  progressPercent = 0,
   onCertificateClaimed,
 }: CourseHeroProps) {
   const { t } = useTranslation(["courses", "common"]);
@@ -49,26 +49,31 @@ export function CourseHero({
     String(t(`common:${key}` as never, options as never));
   const [failedThumbnailSrc, setFailedThumbnailSrc] = useState<string | null>(null);
   const [claiming, setClaiming] = useState(false);
+  const claimInFlight = useRef(false);
+  const queryClient = useQueryClient();
   const hasCourseCertificate = courseHasCertificate(course);
   const isCertificateIssued = !!enrollment?.certificate_issued_at;
   const canClaimCertificate =
-    !isCertificateIssued && hasCourseCertificate && !!enrollment && progressPercent >= 100;
+    !isCertificateIssued && hasCourseCertificate && Boolean(enrollment?.completed_at);
   const showCertificateAvailableBadge =
     hasCourseCertificate && !isCertificateIssued && !canClaimCertificate;
 
   const handleClaimCertificate = async () => {
-    if (!enrollment || claiming) return;
+    if (!enrollment || !canClaimCertificate || claimInFlight.current) return;
+    claimInFlight.current = true;
     setClaiming(true);
     try {
       const result = await checkAndIssueCertificate(enrollment.user_id, course.id);
       if (result.issued) {
         onCertificateClaimed?.(result.certificate_issued_at || new Date().toISOString());
+        await invalidateLearningProgress(queryClient, enrollment.user_id, course.id);
       } else if (result.message) {
         toast.error(result.message);
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : translate("detail.courseDetail.claimCertificateFailed"));
     } finally {
+      claimInFlight.current = false;
       setClaiming(false);
     }
   };

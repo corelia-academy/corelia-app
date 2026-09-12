@@ -4,6 +4,8 @@
  */
 
 import i18n from "@/i18n";
+import type { CodeExerciseConfig, CodeExerciseLocaleContent } from "@/features/code-exercise/types";
+import type { PracticeConfig, QuizConfig, CourseInstructorRef, ArtifactField } from "@/features/learning/types";
 
 export type SupportedCourseLocale = "vi" | "en";
 
@@ -98,6 +100,9 @@ export interface CourseLocaleContent {
 }
 
 export interface Course {
+  archived_at?: string | null;
+  instructors?: CourseInstructorRef[];
+  final_assignment_fields?: ArtifactField[];
   id: string;
   title: string;
   slug: string;
@@ -208,9 +213,15 @@ export interface LessonResource {
 }
 
 /** `video` = YouTube embed; `article` = markdown/text lesson; `quiz` = MCQ with score; `practice` = open-ended exercise. */
-export type LessonFormat = "video" | "article" | "quiz" | "practice";
+export type LessonFormat = "video" | "article" | "quiz" | "practice" | "code_exercise";
 
 export interface CourseLesson {
+  published?: boolean;
+  archived_at?: string | null;
+  quiz_config?: QuizConfig;
+  practice_config?: PracticeConfig;
+  code_exercise_config?: CodeExerciseConfig;
+  code_exercise_locale?: CodeExerciseLocaleContent;
   id: string;
   section_id: string;
   title: string;
@@ -244,6 +255,9 @@ export interface CourseLesson {
 }
 
 export interface CourseLessonLocaleContent {
+  code_exercise_locale?: CodeExerciseLocaleContent;
+  practice_copy?: Record<string, { title?: string; instructions_markdown?: string; label?: string }>;
+  question_copy?: Record<string, { question?: string; explanation?: string; options?: Record<string, string> }>;
   locale: SupportedCourseLocale;
   title: string;
   short_description?: string;
@@ -275,6 +289,7 @@ export interface Enrollment {
 export type FinalSubmissionStatus = "pending" | "approved" | "rejected";
 
 export interface FinalAssignmentSubmission {
+  artifacts?: Partial<Record<ArtifactField, string>>;
   id: string;
   user_id: string;
   course_id: string;
@@ -334,6 +349,7 @@ export interface CourseInsert {
 
 /** Cập nhật một phần thông tin khoá (instructor/admin) */
 export interface CourseUpdate {
+  instructors?: CourseInstructorRef[];
   title?: string;
   slug?: string;
   description?: string;
@@ -350,6 +366,7 @@ export interface CourseUpdate {
   final_assignment_title?: string | null;
   final_assignment_description?: string | null;
   final_assignment_instructions?: string | null;
+  final_assignment_fields?: ArtifactField[];
   certificate_template_url?: string | null;
   certificate_template_path?: string | null;
   certificate_name_x_percent?: number | null;
@@ -390,6 +407,11 @@ export interface CourseSectionInsert {
 }
 
 export interface CourseLessonInsert {
+  archived_at?: string | null;
+  published?: boolean;
+  quiz_config?: QuizConfig;
+  practice_config?: PracticeConfig;
+  code_exercise_config?: CodeExerciseConfig;
   section_id: string;
   title: string;
   lesson_format?: LessonFormat;
@@ -436,7 +458,7 @@ function isYoutubeVideoId(value: string | null | undefined): value is string {
 /** Trích xuất YouTube video ID từ các URL watch, short, live, embed và youtu.be. */
 export function getYoutubeVideoId(url: string): string | null {
   const raw = url.trim();
-  if (!raw) return null;
+  if (!raw || /[\s\\]/.test(raw)) return null;
 
   let parsed: URL;
   try {
@@ -444,6 +466,7 @@ export function getYoutubeVideoId(url: string): string | null {
   } catch {
     return null;
   }
+  if (parsed.username || parsed.password) return null;
 
   const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
   const pathSegments = parsed.pathname.split("/").filter(Boolean);

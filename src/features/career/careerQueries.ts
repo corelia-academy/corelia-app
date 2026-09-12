@@ -10,6 +10,8 @@ import {
   getCoursesForManagement,
   getLearnerCourseProgressSnapshot,
   getMyEnrollments,
+  getCompletedLessonIds,
+  computeProgressPercent,
 } from "@/lib/courses";
 
 export type CareerCourseProgress = {
@@ -17,6 +19,7 @@ export type CareerCourseProgress = {
   completedLessons: number;
   totalLessons: number;
   progressPercent: number;
+  completed: boolean;
 };
 
 export const careerKeys = {
@@ -135,21 +138,22 @@ export function careerProgressQueryOptions(
     queryFn: async () => {
       const [enrollments, snapshot] = await Promise.all([
         getMyEnrollments(userId!),
-        getLearnerCourseProgressSnapshot(userId!),
+        getLearnerCourseProgressSnapshot(userId!, normalizedIds),
       ]);
       const enrolledIds = new Set(enrollments.map((item) => item.course_id));
+      const completedIds = new Set(enrollments.filter(item => item.completed_at).map(item => item.course_id));
       const targetIds = normalizedIds.filter((id) => enrolledIds.has(id));
       const entries = targetIds.map((courseId) => {
         const progress = snapshot.progressByCourse.get(courseId) ?? [];
-        const completedLessons = progress.filter((item) => item.completed_at).length;
-        const totalLessons = snapshot.lessonsByCourse.get(courseId)?.length ?? 0;
+        const lessons = (snapshot.lessonsByCourse.get(courseId) ?? []).filter(lesson => lesson.published !== false && !lesson.archived_at);
+        const completedLessons = getCompletedLessonIds(lessons, progress).size;
+        const totalLessons = lessons.length;
         return [courseId, {
           enrolled: true,
           completedLessons,
           totalLessons,
-          progressPercent: totalLessons > 0
-            ? Math.min(100, Math.round((completedLessons / totalLessons) * 100))
-            : 0,
+          progressPercent: computeProgressPercent(lessons, progress),
+          completed: completedIds.has(courseId),
         } satisfies CareerCourseProgress] as const;
       });
       return new Map(entries);

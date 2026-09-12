@@ -23,13 +23,20 @@
   --color-neutral-200: var(--neutral-200);
   --color-neutral-300: var(--neutral-300);
   --color-neutral-400: var(--neutral-400);
+  --color-neutral-500: var(--neutral-500);
+  --color-neutral-600: var(--neutral-600);
+  --color-neutral-700: var(--neutral-700);
+  --color-neutral-800: var(--neutral-800);
   --color-neutral-900: var(--neutral-900);
   --color-blue-50: var(--blue-50);
   --color-blue-100: var(--blue-100);
   --color-blue-200: var(--blue-200);
   --color-blue-300: var(--blue-300);
   --color-blue-400: var(--blue-400);
+  --color-blue-500: var(--blue-500);
+  --color-blue-600: var(--blue-600);
   --color-blue-700: var(--blue-700);
+  --color-blue-800: var(--blue-800);
   --color-blue-900: var(--blue-900);
   --color-error-50: var(--error-50);
   --color-error-100: var(--error-100);
@@ -80,6 +87,8 @@
 
   --color-primary: var(--primary);
   --color-primary-muted: var(--primary-muted);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
   --color-primary-foreground: var(--primary-foreground);
 
   --color-secondary: var(--secondary);
@@ -142,6 +151,13 @@
   --color-surface-raised: var(--surface-raised);
   --color-surface-overlay: var(--surface-overlay);
   --color-surface-float: var(--surface-float);
+  /* Action interaction token mapped from the Figma hover surface. */
+  --color-action-hover: var(--action-hover);
+  --color-action-text: var(--action-text);
+  --color-action-supporting: var(--action-supporting);
+  --color-action-destructive: var(--action-destructive);
+  --color-action-destructive-supporting: var(--action-destructive-supporting);
+  --color-action-disabled: var(--action-disabled);
 
   /* Brand tokens */
   --color-brand-navy: var(--brand-navy);
@@ -465,6 +481,10 @@
   --neutral-200: #dee2ec;
   --neutral-300: #cbd0df;
   --neutral-400: #8f99b5;
+  --neutral-500: #596587;
+  --neutral-600: #354467;
+  --neutral-700: #1f3050;
+  --neutral-800: #0b1528;
   --neutral-900: #060b14;
 
   --blue-50: #eef5ff;
@@ -472,7 +492,10 @@
   --blue-200: #bddaff;
   --blue-300: #90c3ff;
   --blue-400: #5ba3ff;
-  --blue-700: #1759f1;
+  --blue-500: #357efc;
+  --blue-600: #1759f1;
+  --blue-700: #1749de;
+  --blue-800: #193cb4;
   --blue-900: #1a378e;
 
   --error-50: #fef3f2;
@@ -546,7 +569,7 @@
   --popover-foreground: var(--text-primary-2);
 
   /* ── Brand Colors (Google Blue) ── */
-  --primary: var(--blue-700);
+  --primary: var(--blue-600);
   --primary-foreground: var(--neutral-50);
   --primary-muted: var(--blue-100);
   --primary-container: var(--blue-100);
@@ -579,7 +602,7 @@
   --border-subtle: var(--neutral-100);
   --border-strong: var(--neutral-400);
   --input: var(--neutral-400);
-  --ring: var(--blue-700);
+  --ring: var(--blue-600);
 
   /* ── Shadows (rất nhẹ, đúng chất Material) ── */
   --elevation-1: 0 1px 2px 0 oklch(0.22 0.02 260 / 0.05);
@@ -591,23 +614,29 @@
 
   /* ── Brand ── */
   --brand-navy: var(--neutral-900);
-  --brand-accent: var(--blue-700);
+  --brand-accent: var(--blue-600);
 
   /* ── Sidebar ── */
   --sidebar: var(--neutral-50);
   --sidebar-foreground: var(--text-primary-2);
-  --sidebar-primary: var(--blue-700);
+  --sidebar-primary: var(--blue-600);
   --sidebar-primary-foreground: var(--neutral-50);
   --sidebar-accent: var(--blue-100);
   --sidebar-accent-foreground: var(--blue-900);
   --sidebar-border: var(--neutral-200);
-  --sidebar-ring: var(--blue-700);
+  --sidebar-ring: var(--blue-600);
 
   /* ── Corelia DS v2 surfaces ── */
   --surface-base: var(--card);
   --surface-raised: var(--neutral-50);
-  /* --surface-overlay: var(--neutral-100); */
-  --surface-overlay: var(--blue-50);
+  /* Light hover uses a visible neutral layer instead of the page background. */
+  --action-hover: var(--neutral-100);
+  --action-text: var(--foreground);
+  --action-supporting: var(--foreground-muted);
+  --action-destructive: var(--destructive);
+  --action-destructive-supporting: var(--foreground-muted);
+  --action-disabled: var(--foreground-subtle);
+  --surface-overlay: var(--neutral-100);
   --surface-float: var(--popover);
 }
 
@@ -689,6 +718,13 @@
   /* ── Corelia DS v2 surfaces ── */
   --surface-base: var(--background);
   --surface-raised: var(--card);
+  /* Dark hover maps to the Figma neutral raised surface. */
+  --action-hover: var(--neutral-800);
+  --action-text: var(--neutral-200);
+  --action-supporting: var(--neutral-200);
+  --action-destructive: var(--error-500);
+  --action-destructive-supporting: var(--neutral-400);
+  --action-disabled: #596587;
   /* --surface-overlay: var(--blue-900); */
   --surface-overlay: color-mix(in srgb,
       var(--neutral-900) 82%,

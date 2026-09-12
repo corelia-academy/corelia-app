@@ -107,13 +107,55 @@ export async function listPublicPortfolioProjects(
     idsByLocale.set(locale, [...(idsByLocale.get(locale) ?? []), project.id]);
   }
   const localeMaps = new Map<Locale, Map<string, ProjectI18nContent>>();
-  await Promise.all(Array.from(idsByLocale.entries()).map(async ([locale, ids]) => {
-    localeMaps.set(locale, await getBatchProjectLocaleContent(ids, locale));
-  }));
-  return attachProjectMedia(projects.map((project) => {
-    const locale = pickContentLocale(project.i18n ?? null, uiLocale);
-    return applyProjectLocaleContent(project, localeMaps.get(locale)?.get(project.id) ?? null);
-  }));
+  const hackathonSourceIds = Array.from(
+    new Set(
+      projects
+        .filter(
+          (p) =>
+            (p.source_type === "contest" || p.source_type === "hackathon") &&
+            Boolean(p.source_id),
+        )
+        .map((p) => p.source_id as string),
+    ),
+  );
+  const hackathonSlugById = new Map<string, string>();
+
+  await Promise.all([
+    Promise.all(
+      Array.from(idsByLocale.entries()).map(async ([locale, ids]) => {
+        localeMaps.set(locale, await getBatchProjectLocaleContent(ids, locale));
+      }),
+    ),
+    (async () => {
+      if (hackathonSourceIds.length === 0) return;
+      const { data: hackathonRows } = await supabase
+        .from("hackathons")
+        .select("id, document")
+        .in("id", hackathonSourceIds);
+      for (const row of hackathonRows ?? []) {
+        const doc = (row.document as Record<string, unknown> | null) ?? {};
+        const slug = typeof doc.slug === "string" ? doc.slug.trim() : null;
+        if (slug) hackathonSlugById.set(row.id, slug);
+      }
+    })(),
+  ]);
+
+  return attachProjectMedia(
+    projects.map((project) => {
+      const locale = pickContentLocale(project.i18n ?? null, uiLocale);
+      const localized = applyProjectLocaleContent(
+        project,
+        localeMaps.get(locale)?.get(project.id) ?? null,
+      );
+      const hackathonSlug = project.source_id
+        ? hackathonSlugById.get(project.source_id) ?? null
+        : null;
+      return {
+        ...localized,
+        hackathon_slug: hackathonSlug,
+      };
+    }),
+  );
 }
 
 export function applyProjectLocaleContent(project: Project, localized: ProjectI18nContent | null): Project {

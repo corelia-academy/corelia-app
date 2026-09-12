@@ -20,6 +20,7 @@ import { useAuth } from "@/stores/authStore";
 
 import { useCareerTrackDetail } from "./hooks/useCareerTrackDetail";
 import { useCareerTrackProgress } from "./hooks/useCareerTrackProgress";
+import type { CareerCourseProgress } from "@/features/career/careerQueries";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { normalizeYoutubeVideoId } from "@/lib/youtubeVideoId";
 
@@ -41,7 +42,7 @@ export default function CareerDetailPage() {
     for (const c of track.includedCourses) {
       const p = progressByCourse.get(c.course.id);
       if (!p) continue;
-      if (p.progressPercent >= 100) continue;
+      if (p.completed) continue;
       if (!best || p.progressPercent > best.percent) {
         best = { courseId: c.course.id, percent: p.progressPercent };
       }
@@ -354,18 +355,13 @@ function CourseRow({
     total_duration_seconds: number;
     short_description?: string;
   };
-  progress: {
-    enrolled: boolean;
-    completedLessons: number;
-    totalLessons: number;
-    progressPercent: number;
-  } | null;
+  progress: CareerCourseProgress | null;
 }) {
   const { t } = useTranslation("career");
   const detailHref = `/courses/${course.slug || course.id}`;
   const continueHref = `/learn/${course.id}`;
   const isStarted = progress && progress.progressPercent > 0;
-  const isCompleted = progress && progress.progressPercent >= 100;
+  const isCompleted = progress?.completed;
   const primaryHref = progress && !isCompleted ? continueHref : detailHref;
   const primaryLabel = isCompleted
     ? t("detail.viewCourseButton")

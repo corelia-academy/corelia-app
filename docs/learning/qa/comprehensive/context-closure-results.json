@@ -1,0 +1,85 @@
+{
+  "captured_at": "2026-09-12T01:47:36.350267+00:00",
+  "source_sha256": "7f7afafa5e5975a7074a13c518f5da4d8da79adea7be9d79a919b0902ba74e87",
+  "tests": 871,
+  "test_files": 127,
+  "logs": {
+    "tests": {
+      "path": "/tmp/corelia-learning-final-context-tests.log",
+      "sha256": "9e18b44ae5b5cea62279ee8dc8dbd3cdd66672bbf57bbdefc42d87326352017f"
+    },
+    "lint": {
+      "path": "/tmp/corelia-learning-final-context-lint.log",
+      "sha256": "4f9830ea8aa9961c9990f21472e135e8bba9f25b7dd96a9d4a6e670e328521d8"
+    },
+    "build": {
+      "path": "/tmp/corelia-learning-final-context-build.log",
+      "sha256": "c611d747d7c755e9865b1dde18e94f3d4952cae0d5ceafbb98f769a2dab97531"
+    },
+    "db_verify": {
+      "path": "/tmp/corelia-learning-db-governance-closure.log",
+      "sha256": "c2a4639eccb5a0ee7d9626b91c4c940aede3e575317af94328f7ceb93cb1c45d"
+    },
+    "context_targeted": {
+      "path": "/tmp/corelia-learning-context-closure.log",
+      "sha256": "b861854e753ea8d479dc450358785dd57b0879dd0760cc35c033520febc8037a"
+    },
+    "cargo": {
+      "path": "/tmp/corelia-learning-context-cargo.log",
+      "sha256": "8b35f9b5da396abee9e710f271e2fdc33a79d7069ee14ee4dddb11db0a338ad9"
+    },
+    "cli": {
+      "path": "/tmp/corelia-learning-context-cli.log",
+      "sha256": "bbfa2f8779eb3148e08b6ba2b9d5f62327624bd800c96255a00fe2814f47b288"
+    },
+    "edge": {
+      "path": "/tmp/corelia-learning-edge-closure.log",
+      "sha256": "e0f46476604fa432e45439595185c4674953bfd20b531ee5e2624d574c9e2ab1"
+    },
+    "storage": {
+      "path": "/tmp/corelia-learning-storage-closure.log",
+      "sha256": "771c64b84f5c86af0db963064a74e016ac36ff15f60ec7f84e830e18b5064f42"
+    }
+  },
+  "journey": {
+    "user_id": "6f04b322-d836-46d3-aaa3-ec9db97341e0",
+    "progress": 12,
+    "submissions": [
+      {
+        "id": "632e9b8d-0dbf-40ac-b77b-a87c05aa5aef",
+        "status": "rejected",
+        "submitted_at": "2026-09-12T01:40:01.048186+00:00"
+      },
+      {
+        "id": "598e4393-09cb-4593-83ad-ff59563ed908",
+        "status": "approved",
+        "submitted_at": "2026-09-12T01:41:05.950681+00:00"
+      }
+    ],
+    "completed_at": "2026-09-12T01:41:53.600235+00:00",
+    "certificate_issued_at": null
+  },
+  "review_fault_retry": true,
+  "browser_completion_banner": true,
+  "analytics": {
+    "enrolled": 6,
+    "started": 6,
+    "completed": 6,
+    "submitted_learners": 6,
+    "approved_learners": 6,
+    "quiz06": "6/6",
+    "quiz10": "6/7"
+  },
+  "privacy": {
+    "event_requests": 21,
+    "allowed_event_fields": [
+      "p_course",
+      "p_event",
+      "p_lesson",
+      "p_passed"
+    ],
+    "event_payload_fields_safe": true,
+    "capture_contains_values": false
+  },
+  "local_done": false
+}

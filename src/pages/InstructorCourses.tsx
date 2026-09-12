@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   BookOpen,
@@ -19,9 +19,14 @@ import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { EmptyState, PageContainer, PageSectionCard } from "@/components/layouts/PagePrimitives";
+import { useLearningTranslation } from "@/features/learning/useLearningTranslation";
+import { Input } from "@/components/ui/input";
 
 const InstructorCourses = () => {
   const { t } = useTranslation("instructor");
+  const { t: learningT } = useLearningTranslation();
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("all");
   const { profile, authInitialized, profileLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const isAdmin = profile?.role === "admin";
@@ -34,6 +39,10 @@ const InstructorCourses = () => {
     ),
   );
   const courses = useMemo(() => coursesQuery.data ?? [], [coursesQuery.data]);
+  const visibleCourses = useMemo(() => courses.filter(course => {
+    const state = course.archived_at ? "archived" : course.published ? "published" : "draft";
+    return (status === "all" || status === state) && `${course.title} ${course.slug}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase());
+  }), [courses, search, status]);
   const loading = profileLoading || (Boolean(profile?.id) && coursesQuery.isPending);
   const error = !isAuthenticated
     ? t("courseListPage.errors.loadFailed")
@@ -44,8 +53,8 @@ const InstructorCourses = () => {
         : null;
 
   const stats = useMemo(() => {
-    const published = courses.filter((course) => course.published).length;
-    const drafts = courses.length - published;
+    const published = courses.filter((course) => course.published && !course.archived_at).length;
+    const drafts = courses.filter((course) => !course.published && !course.archived_at).length;
     return { total: courses.length, published, drafts, free: courses.length };
   }, [courses]);
 
@@ -149,6 +158,13 @@ const InstructorCourses = () => {
         </div>
       </PageSectionCard>
 
+      <div className="mt-4 flex flex-wrap gap-3">
+        <Input aria-label={learningT("learning.search")} placeholder={learningT("learning.search")} value={search} onChange={event => setSearch(event.target.value)} className="max-w-sm" />
+        <select aria-label={learningT("learning.publicationStatus")} value={status} onChange={event => setStatus(event.target.value)} className="min-h-10 rounded-md border border-border bg-surface-base px-3 text-sm">
+          {["all", "published", "draft", "archived"].map(value => <option key={value} value={value}>{learningT(`learning.${value}`)}</option>)}
+        </select>
+      </div>
+
       {courses.length === 0 ? (
         <div className="mt-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card">
           <EmptyState
@@ -167,9 +183,9 @@ const InstructorCourses = () => {
             }
           />
         </div>
-      ) : (
+      ) : visibleCourses.length === 0 ? <p className="py-8 text-center text-foreground-muted">{learningT("learning.noMatchingCourses")}</p> : (
         <div className="mt-4 grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-          {courses.map((course) => (
+          {visibleCourses.map((course) => (
             <article
               key={course.id}
               className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card transition-[transform,background-color,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-surface-raised"
@@ -187,7 +203,7 @@ const InstructorCourses = () => {
                   />
                   <div className="absolute inset-x-0 bottom-0 flex flex-wrap gap-2 p-3">
                     <span className="inline-flex items-center rounded-full bg-surface-base/90 px-3 py-1 text-xs font-medium text-foreground">
-                      {course.published
+                      {course.archived_at ? learningT("learning.archived") : course.published
                         ? t("courseListPage.coursePills.published")
                         : t("courseListPage.coursePills.draft")}
                     </span>

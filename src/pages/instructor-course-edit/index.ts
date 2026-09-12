@@ -1,2 +1,1 @@
-export { default } from "./InstructorCourseEdit";
-
+export { default } from "./LearningCourseEditorRoute";

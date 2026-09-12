@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const command = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const pnpmShell = process.platform === "win32";
@@ -67,6 +67,25 @@ for (const sqlTestPath of sqlTestPaths) {
     process.exit(1);
   }
 }
+// This suite exercises JWT roles in a transaction and needs a multi-statement client.
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/learning-system.integration.sql")),
+  stdio: ["pipe", "inherit", "inherit"],
+});
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/learning-audit.integration.sql")),
+  stdio: ["pipe", "inherit", "inherit"],
+});
+execFileSync(process.execPath, ["scripts/db/tests/learning-concurrency.mjs"], { stdio: "inherit" });
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/learning-policy-scope.integration.sql")),
+  stdio: ["pipe", "inherit", "inherit"],
+});
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/learning-course-save.integration.sql")),
+  stdio: ["pipe", "inherit", "inherit"],
+});
+execFileSync(process.execPath, ["scripts/db/tests/learning-policy-postgrest.integration.mjs"], { stdio: "inherit" });
 console.log("✓ SQL integration test suites executed successfully.\n");
 
 // 4. Exercise the exact Jobs relationship through the local PostgREST server.

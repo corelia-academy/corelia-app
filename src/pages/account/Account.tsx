@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation } from "react-router";
 import { useAuth } from "@/stores/authStore";
 import { cn } from "@/lib/utils";
+import { Action } from "@/components/ui/action";
 import { useTranslation } from "react-i18next";
 import {
   GraduationCap,
@@ -90,31 +91,25 @@ export default function Account() {
           <div className="hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card p-2 lg:block">
             <div className="grid gap-2">
               {navItems.map((item) => (
-                <NavLink
+                <Action
                   key={item.to}
-                  to={item.to}
-                  end={"end" in item ? item.end : undefined}
-                  className={({ isActive }) =>
-                    cn(
-                      "rounded-md px-3 py-3 text-left transition-colors duration-150",
-                      isActive
-                        ? "bg-primary-muted text-primary"
-                        : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
-                    )
+                  icon={item.icon}
+                  label={item.title}
+                  supportingText={item.description}
+                  showTrailingIcon
+                  showPressed
+                  size="small"
+                  className={cn(
+                    " px-3 py-3 transition-colors duration-150"
+                  )}
+                  nativeButton={false}
+                  render={
+                    <NavLink
+                      to={item.to}
+                      end={"end" in item ? item.end : undefined}
+                    />
                   }
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5 shrink-0 text-primary">
-                      {item.icon}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium">{item.title}</div>
-                      <div className="mt-0.5 text-xs text-foreground-muted">
-                        {item.description}
-                      </div>
-                    </div>
-                  </div>
-                </NavLink>
+                />
               ))}
             </div>
           </div>

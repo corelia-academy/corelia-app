@@ -50,7 +50,7 @@ const PUBLIC_CONTEST_STATUSES: Contest["status"][] = ["published", "running", "e
 /** PostgREST row columns needed to build `Contest` via `contestFromRow` (avoids `select("*")`). */
 const CONTEST_ROW_SELECT = "id,status,participants_count,created_at,updated_at,document" as const;
 
-function sanitizeSlug(value: unknown): string | null {
+export function sanitizeSlug(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const lowered = value.trim().toLowerCase();
   if (!lowered) return null;
@@ -379,6 +379,13 @@ export function isPastContestRegistrationDeadline(
   return Date.now() > ms;
 }
 
+export function canRegisterForContest(
+  contest: Pick<Contest, "status" | "registration_deadline" | "submission_deadline" | "ends_at">,
+): boolean {
+  const allowedStatus = contest.status === "published" || contest.status === "running";
+  return allowedStatus && !isPastContestRegistrationDeadline(contest);
+}
+
 function normalizeContest(data: Contest): Contest {
   const rounds = normalizeRounds(data.rounds);
   const judgingActiveRoundId =
@@ -656,11 +663,11 @@ export async function listPublicProfileContestPortfolio(
   const organized = contests.filter((contest) => contest.created_by === profileId);
   if (!includeParticipations) return { organized, participations: [] as Contest[] };
   const { data, error } = await supabase
-    .from("contest_submissions")
-    .select("contest_id")
+    .from("hackathon_submissions")
+    .select("hackathon_id")
     .eq("user_id", profileId);
   if (error) throw new Error(error.message);
-  const participatedIds = new Set((data ?? []).map((row) => row.contest_id));
+  const participatedIds = new Set((data ?? []).map((row) => row.hackathon_id));
   return {
     organized,
     participations: contests.filter((contest) => participatedIds.has(contest.id)),
@@ -704,11 +711,24 @@ export async function getContestBySlug(slug: string, uiLocale?: string | null): 
   const normalized = sanitizeSlug(slug);
   if (!normalized) return null;
 
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("hackathons")
     .select(CONTEST_ROW_SELECT)
     .eq("document->>slug", normalized)
     .maybeSingle();
+
+  if (!data && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug.trim())) {
+    const byId = await supabase
+      .from("hackathons")
+      .select(CONTEST_ROW_SELECT)
+      .eq("id", slug.trim())
+      .maybeSingle();
+    if (!byId.error && byId.data) {
+      data = byId.data;
+      error = null;
+    }
+  }
+
   if (error) throw new Error(error.message);
   if (!data) return null;
   const contest = contestFromRow(data as Parameters<typeof contestFromRow>[0]);
@@ -937,7 +957,7 @@ export async function registerForContest(
   const profile = await getProfileForUser(user);
   const contest = await getContest(contestId);
   if (!contest) throw new Error("not_found:contest");
-  if (contest.status !== "published" || isPastContestRegistrationDeadline(contest)) {
+  if (!canRegisterForContest(contest)) {
     throw new Error("forbidden:registration_closed");
   }
   const now = new Date().toISOString();

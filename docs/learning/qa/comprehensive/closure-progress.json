@@ -1,0 +1,33 @@
+{
+  "captured_at": "2026-09-12T01:05:00.612491+00:00",
+  "scope": "AUD-20 attribution and additional C03 REST coverage; not whole-system Local Done",
+  "tests": 865,
+  "test_files": 123,
+  "logs": {
+    "tests": {
+      "path": "/tmp/corelia-learning-closure-tests.log",
+      "sha256": "2098cfd1be403f058d2b3cc5b1c36725fb5bf21114701eccfceb7dcc464d813e"
+    },
+    "lint": {
+      "path": "/tmp/corelia-learning-closure-lint.log",
+      "sha256": "4f9830ea8aa9961c9990f21472e135e8bba9f25b7dd96a9d4a6e670e328521d8"
+    },
+    "build": {
+      "path": "/tmp/corelia-learning-closure-build.log",
+      "sha256": "fad9c7e2b908548d8e80dd0e83ec55afab5a0270d5966ed706cd32d526b1276b"
+    },
+    "attribution_sql": {
+      "path": "/tmp/corelia-attribution-sql.log",
+      "sha256": "43a3236e236970d2958a56c1d76aa4055f2c0949eebac91aaffb65a53e16beed"
+    },
+    "publication_rest": {
+      "path": "/tmp/corelia-learning-publication-rest.log",
+      "sha256": "e4ca5d5965df0d201cc438298f99efc9257b5e58dfb3345eb679e39e5969c078"
+    }
+  },
+  "source": {
+    "src/pages/course-details/components/CourseInstructorSection.tsx": "5fcbd8d07c75616845c021fe17f9c39a489d8cd758c8c6153ef7eca2c8caa3c6",
+    "src/pages/instructor-course-edit/InstructorCourseEdit.tsx": "3553f26bb1f4a9fb25461d4b1814cd7e1feb7ce020b734c04a07c0c8528530a6",
+    "src/features/learning/courseInstructors.ts": "52366455516497ece7dccda21c5eee49ef7a0736b5f5ab4dab948938027f2ce8"
+  }
+}

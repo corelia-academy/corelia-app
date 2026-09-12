@@ -1,20 +1,21 @@
+import { lessonText } from "@/features/learning/lessonCopy";
 import type { CourseLesson, LessonFormat } from "@/types/courses";
 
 export type { LessonFormat };
 
 export function getLessonFormat(
-  lesson: Pick<CourseLesson, "lesson_format" | "youtube_url" | "description_markdown" | "short_description">,
+  lesson: Pick<CourseLesson, "lesson_format" | "youtube_url" | "description_markdown" | "short_description" | "published" | "archived_at" | "code_exercise_config">,
 ): LessonFormat {
   if (lesson.lesson_format) return lesson.lesson_format;
-  if (lesson.youtube_url?.trim()) return "video";
-  if (lesson.description_markdown?.trim() || lesson.short_description?.trim()) {
+  if (lessonText(lesson.youtube_url).trim()) return "video";
+  if (lessonText(lesson.description_markdown).trim() || lessonText(lesson.short_description).trim()) {
     return "article";
   }
   return "video";
 }
 
 export function isArticleLesson(
-  lesson: Pick<CourseLesson, "lesson_format" | "youtube_url" | "description_markdown" | "short_description">,
+  lesson: Pick<CourseLesson, "lesson_format" | "youtube_url" | "description_markdown" | "short_description" | "published" | "archived_at" | "code_exercise_config">,
 ): boolean {
   return getLessonFormat(lesson) === "article";
 }
@@ -22,28 +23,31 @@ export function isArticleLesson(
 export function isVideoLesson(
   lesson: Pick<CourseLesson, "lesson_format" | "youtube_url">,
 ): boolean {
-  return getLessonFormat(lesson) === "video" && Boolean(lesson.youtube_url?.trim());
+  return getLessonFormat(lesson) === "video" && Boolean(lessonText(lesson.youtube_url).trim());
 }
 
-/** Lesson is visible to learners (not an empty draft). */
+/** Explicit publication is authoritative; infer only for legacy records. */
 export function isLessonPublishedForLearners(
   lesson: Pick<
     CourseLesson,
-    "lesson_format" | "youtube_url" | "description_markdown" | "short_description"
+    "lesson_format" | "youtube_url" | "description_markdown" | "short_description" | "published" | "archived_at" | "code_exercise_config"
   >,
 ): boolean {
+  if (lesson.archived_at || lesson.published === false) return false;
+  if (lesson.published === true) return true;
   const format = getLessonFormat(lesson);
+  if (format === "code_exercise") return Boolean(lesson.code_exercise_config);
   if (format === "quiz") return true;
   if (format === "article" || format === "practice") {
-    return Boolean(lesson.description_markdown?.trim() || lesson.short_description?.trim());
+    return Boolean(lessonText(lesson.description_markdown).trim() || lessonText(lesson.short_description).trim());
   }
-  return Boolean(lesson.youtube_url?.trim());
+  return Boolean(lessonText(lesson.youtube_url).trim());
 }
 
 export function isLessonDraftForLearners(
   lesson: Pick<
     CourseLesson,
-    "lesson_format" | "youtube_url" | "description_markdown" | "short_description"
+    "lesson_format" | "youtube_url" | "description_markdown" | "short_description" | "published" | "archived_at" | "code_exercise_config"
   >,
 ): boolean {
   return !isLessonPublishedForLearners(lesson);
@@ -51,10 +55,10 @@ export function isLessonDraftForLearners(
 
 /** True if lesson is an activity (quiz / practice) rather than content (video / article). */
 export function isActivityLesson(
-  lesson: Pick<CourseLesson, "lesson_format" | "youtube_url" | "description_markdown" | "short_description">,
+  lesson: Pick<CourseLesson, "lesson_format" | "youtube_url" | "description_markdown" | "short_description" | "published" | "archived_at" | "code_exercise_config">,
 ): boolean {
   const format = getLessonFormat(lesson);
-  return format === "quiz" || format === "practice";
+  return format === "quiz" || format === "practice" || format === "code_exercise";
 }
 
 export function getActivityLessonDisplayName(format: LessonFormat, index: number): string {
@@ -66,7 +70,7 @@ export function getActivityLessonDisplayName(format: LessonFormat, index: number
 
 export function getNextActivityLessonTitle(
   format: LessonFormat,
-  sectionLessons: Pick<CourseLesson, "lesson_format" | "youtube_url" | "description_markdown" | "short_description">[],
+  sectionLessons: Pick<CourseLesson, "lesson_format" | "youtube_url" | "description_markdown" | "short_description" | "published" | "archived_at" | "code_exercise_config">[],
 ): string {
   if (format !== "quiz" && format !== "practice") return "";
   const count = sectionLessons.filter((lesson) => getLessonFormat(lesson) === format).length;
@@ -78,6 +82,7 @@ export interface LessonTypeCounts {
   articleCount: number;
   quizCount: number;
   practiceCount: number;
+  codeCount: number;
   totalCount: number;
 }
 
@@ -85,7 +90,7 @@ export interface LessonTypeCounts {
 export function getDetailedLessonCounts<
   T extends Pick<
     CourseLesson,
-    "lesson_format" | "youtube_url" | "description_markdown" | "short_description"
+    "lesson_format" | "youtube_url" | "description_markdown" | "short_description" | "published" | "archived_at" | "code_exercise_config"
   >,
 >(
   lessons: T[],
@@ -94,6 +99,7 @@ export function getDetailedLessonCounts<
   let articleCount = 0;
   let quizCount = 0;
   let practiceCount = 0;
+  let codeCount = 0;
 
   for (const lesson of lessons) {
     switch (getLessonFormat(lesson)) {
@@ -106,6 +112,9 @@ export function getDetailedLessonCounts<
       case "quiz":
         quizCount += 1;
         break;
+      case "code_exercise":
+        codeCount += 1;
+        break;
       case "practice":
         practiceCount += 1;
         break;
@@ -117,6 +126,7 @@ export function getDetailedLessonCounts<
     articleCount,
     quizCount,
     practiceCount,
+    codeCount,
     totalCount: lessons.length,
   };
 }
@@ -125,7 +135,7 @@ export function getDetailedLessonCounts<
 export function splitLessonCounts<
   T extends Pick<
     CourseLesson,
-    "lesson_format" | "youtube_url" | "description_markdown" | "short_description"
+    "lesson_format" | "youtube_url" | "description_markdown" | "short_description" | "published" | "archived_at" | "code_exercise_config"
   >,
 >(lessons: T[]): { contentCount: number; activityCount: number } {
   let contentCount = 0;

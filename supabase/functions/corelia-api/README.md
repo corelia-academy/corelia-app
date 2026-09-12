@@ -46,9 +46,12 @@ hour across Edge instances, including failed attempts. Logs contain request ID,
 status and provider input/output token counts, never project text. Translation
 is optional; provider failures do not prevent manual bilingual editing.
 
-Project text/images use `omni-moderation-latest`. Public project links use the
-Responses API with `gpt-5.4-mini` and web search. `video_url` is deliberately
-excluded from AI checks.
+Project text/images use `omni-moderation-latest`. Resource URL fields (demo,
+repository, slides, demo video, and pitch video) are validated locally for HTTPS,
+length, and safe URL structure; embedded credentials and local/private addresses
+are rejected. Repository URLs must have the form `github.com/owner/repo`. Saving
+does not fetch resource destinations or use AI/web search to verify or moderate
+them. Submitters are responsible for ensuring reviewers can access their links.
 
 ### Jobs ingestion và phân loại
 

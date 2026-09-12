@@ -1,0 +1,8 @@
+{
+  "title": "YouTube playback fixture",
+  "lesson_format": "video",
+  "youtube_url": "https://www.youtube.com/watch?v=M7lc1UVf-VE",
+  "youtube_start_seconds": 5,
+  "youtube_end_seconds": 15,
+  "description_markdown": "Local QA fixture for playback and retry. Not part of the 12-lesson course."
+}

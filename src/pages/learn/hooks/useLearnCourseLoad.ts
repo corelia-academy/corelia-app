@@ -44,7 +44,7 @@ export function useLearnCourseLoad({
   });
 
   useEffect(() => {
-    if (!courseId) return;
+    if (!courseId || !viewer) return;
     touchMutation.mutate({ id: courseId, user: viewer ?? null });
   // Touching last_accessed_at is a route-entry side effect, not a read cache.
   // eslint-disable-next-line react-hooks/exhaustive-deps

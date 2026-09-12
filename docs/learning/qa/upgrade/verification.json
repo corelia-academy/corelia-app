@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "history_sha256": "d0c3014104c865a87b59999596aa717af50266a6ca7492068fd10827259f6d65",
+  "history_unchanged": true,
+  "permissions_unchanged": true,
+  "migrations": 215,
+  "invalid_lessons": [
+    {
+      "issues": [
+        "content_required"
+      ],
+      "archived": false,
+      "course_id": "learning-upgrade-fixture",
+      "lesson_id": "legacy-empty",
+      "published": false,
+      "public_visible": false
+    },
+    {
+      "issues": [
+        "invalid_locale_copy"
+      ],
+      "archived": false,
+      "course_id": "learning-upgrade-fixture",
+      "lesson_id": "legacy-video",
+      "published": true,
+      "public_visible": true
+    }
+  ]
+}

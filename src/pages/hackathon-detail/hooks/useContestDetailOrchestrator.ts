@@ -17,8 +17,8 @@ import {
   scoreContestSubmission,
   updateContest,
   upsertContestSubmission,
-  isPastContestRegistrationDeadline,
   isPastContestSubmissionDeadline,
+  canRegisterForContest,
   type BlastEmailFilter,
   type BlastEmailResult,
 } from "@/lib/hackathons";
@@ -689,14 +689,13 @@ export function useContestDetailOrchestrator({
     const participantWorkspaceHash = `${base}#participant-workspace`;
     const participantSubmissionHash = `${base}#participant-submission`;
     const showProjects = contestPublicShowcaseProjectsNavVisible(contest);
-    const registrationWindowOpen =
-      contest.status === "published" && !isPastContestRegistrationDeadline(contest);
+    const registrationWindowOpen = canRegisterForContest(contest);
     const autoApproveRegistrations = Boolean(
       contest.config?.auto_approve_registrations,
     );
 
     const loginRedirect = (path: string) =>
-      `/login?redirect=${encodeURIComponent(path)}`;
+      `/login?next=${encodeURIComponent(path)}`;
 
     const buildRegistrationCta = () => {
       if (!isAuthenticated) {
@@ -820,8 +819,8 @@ export function useContestDetailOrchestrator({
 
   const registrationWorkspaceEditable = useMemo(() => {
     void countdownTick;
-    if (!contest || contest.status !== "published") return false;
-    return !isPastContestRegistrationDeadline(contest);
+    if (!contest) return false;
+    return canRegisterForContest(contest);
   }, [contest, countdownTick]);
 
   const submissionWorkspaceEditable = useMemo(() => {

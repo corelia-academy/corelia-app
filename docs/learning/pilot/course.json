@@ -1,0 +1,800 @@
+{
+  "course": {
+    "id": "corelia-learning-pilot-rust-cli",
+    "slug": "rust-cli-task-manager",
+    "published": true,
+    "data": {
+      "title": "Rust căn bản: Xây CLI quản lý công việc",
+      "description": "Học Rust bằng một CLI chạy được trên máy của bạn. Hoàn thành 12 bài, nộp repository và nhận review.",
+      "short_description": "Từ biến và struct đến CLI có persistence và tests.",
+      "level": "beginner",
+      "thumbnail_url": "",
+      "instructor_name": "Corelia",
+      "instructors": [],
+      "has_certificate": false,
+      "has_sections": true,
+      "total_duration_seconds": 0,
+      "skills": [
+        "Rust",
+        "Cargo",
+        "CLI",
+        "Unit testing"
+      ],
+      "learning_outcomes": [
+        "Viết Rust với ownership và Result",
+        "Lưu và đọc dữ liệu file",
+        "Viết unit tests",
+        "Nộp project có thể review"
+      ],
+      "i18n": {
+        "supported_locales": [
+          "vi",
+          "en"
+        ],
+        "primary_content_locale": "vi"
+      },
+      "final_assignment_title": "CLI quản lý công việc",
+      "final_assignment_instructions": "Nộp GitHub URL và notes. Rubric: add/list/done đúng (30%), persistence và xử lý lỗi (25%), unit tests (25%), README và khả năng tái lập (20%). Cần đầy đủ cả bốn nhóm; reviewer yêu cầu chỉnh sửa nếu thiếu.",
+      "final_assignment_fields": [
+        "github_url",
+        "notes"
+      ]
+    }
+  },
+  "course_locales": {
+    "vi": {
+      "title": "Rust căn bản: Xây CLI quản lý công việc",
+      "description": "Học Rust bằng một CLI chạy được trên máy của bạn. Hoàn thành 12 bài, nộp repository và nhận review."
+    },
+    "en": {
+      "title": "Rust foundations: Build a task-management CLI",
+      "description": "Learn Rust by building a CLI on your own machine. Finish 12 lessons, submit a repository and receive a review.",
+      "short_description": "From variables and structs to persistence and tests.",
+      "learning_outcomes": [
+        "Write Rust using ownership and Result",
+        "Persist and load file data",
+        "Write unit tests",
+        "Submit a reviewable project"
+      ],
+      "final_assignment_title": "Task-management CLI",
+      "final_assignment_instructions": "Submit a GitHub URL and design notes. Rubric: correct add/list/done (30%), persistence and error handling (25%), unit tests (25%), README and reproducibility (20%). All four areas are required; the reviewer requests changes when one is missing."
+    }
+  },
+  "sections": [
+    {
+      "id": "corelia-learning-pilot-rust-cli-section-1",
+      "order": 0,
+      "title": "Nền tảng Rust",
+      "en_title": "Rust foundations"
+    },
+    {
+      "id": "corelia-learning-pilot-rust-cli-section-2",
+      "order": 1,
+      "title": "Từ hàm đến sản phẩm",
+      "en_title": "From functions to a product"
+    }
+  ],
+  "lessons": [
+    {
+      "lesson": {
+        "id": "corelia-learning-pilot-rust-cli-lesson-01",
+        "section_id": "corelia-learning-pilot-rust-cli-section-1",
+        "order": 0,
+        "title": "Đầu ra: một CLI có thể dùng được",
+        "description_markdown": "## Bạn sẽ xây gì?\nCLI quản lý công việc có ba lệnh `add`, `list`, `done`. Dữ liệu tồn tại sau khi đóng chương trình. Sản phẩm cuối khóa là GitHub repository có README và tests.\n\n### Trước khi bắt đầu\nBạn cần biết mở terminal, chỉnh sửa file và tạo Git repository. Không cần tài khoản blockchain hoặc ví.\n\n### Cách học\nĐọc phần giải thích, hoàn thành 2 bài điền và 2 bài sửa code, rồi chạy Cargo trên máy của bạn. Bài code trong trình duyệt chỉ so khớp văn bản, không biên dịch Rust và không chứng minh kỹ năng độc lập.\n\n### Nghiệm thu cuối khóa\n`cargo test` pass; chạy `add`, tắt rồi mở lại và `list` vẫn thấy dữ liệu; `done` đổi đúng công việc; dữ liệu lỗi được báo rõ. Giảng viên review project trước khi khóa học được đánh dấu hoàn thành.",
+        "lesson_format": "article",
+        "duration_seconds": 0,
+        "published": true
+      },
+      "locales": {
+        "vi": {
+          "title": "Đầu ra: một CLI có thể dùng được",
+          "description_markdown": "## Bạn sẽ xây gì?\nCLI quản lý công việc có ba lệnh `add`, `list`, `done`. Dữ liệu tồn tại sau khi đóng chương trình. Sản phẩm cuối khóa là GitHub repository có README và tests.\n\n### Trước khi bắt đầu\nBạn cần biết mở terminal, chỉnh sửa file và tạo Git repository. Không cần tài khoản blockchain hoặc ví.\n\n### Cách học\nĐọc phần giải thích, hoàn thành 2 bài điền và 2 bài sửa code, rồi chạy Cargo trên máy của bạn. Bài code trong trình duyệt chỉ so khớp văn bản, không biên dịch Rust và không chứng minh kỹ năng độc lập.\n\n### Nghiệm thu cuối khóa\n`cargo test` pass; chạy `add`, tắt rồi mở lại và `list` vẫn thấy dữ liệu; `done` đổi đúng công việc; dữ liệu lỗi được báo rõ. Giảng viên review project trước khi khóa học được đánh dấu hoàn thành."
+        },
+        "en": {
+          "title": "Outcome: a usable CLI",
+          "description_markdown": "## What will you build?\nA task CLI with `add`, `list` and `done`. Data survives process restarts. Your deliverable is a GitHub repository with a README and tests.\n\n### Prerequisites\nYou should be able to open a terminal, edit a file and create a Git repository. No blockchain account or wallet is needed.\n\n### Learning approach\nRead the explanations, finish two fill and two edit exercises, then run Cargo on your own machine. Browser exercises compare text; they do not compile Rust or independently verify skill.\n\n### Acceptance\n`cargo test` passes; add a task, restart and list it; mark the correct task done; report corrupt input clearly. An instructor reviews your project before course completion."
+        }
+      },
+      "questions": []
+    },
+    {
+      "lesson": {
+        "id": "corelia-learning-pilot-rust-cli-lesson-02",
+        "section_id": "corelia-learning-pilot-rust-cli-section-1",
+        "order": 1,
+        "title": "Cargo và chương trình đầu tiên",
+        "description_markdown": "## Cài toolchain\nCài Rust bằng rustup từ https://rustup.rs. Mở terminal mới, chạy `rustc --version` và `cargo --version`.\n\n```sh\ncargo new corelia-tasks\ncd corelia-tasks\ncargo run\ncargo test\n```\n`cargo run` phải in `Hello, world!`; `cargo test` phải kết thúc thành công. Nếu lệnh không tồn tại, kiểm tra PATH sau khi cài. Không đánh dấu checklist cho đến khi tự chạy được.",
+        "lesson_format": "practice",
+        "duration_seconds": 0,
+        "published": true,
+        "practice_config": {
+          "mode": "checklist",
+          "revision": 1,
+          "checklist_items": [
+            {
+              "id": "toolchain",
+              "label": "Đã kiểm tra rustc và Cargo"
+            },
+            {
+              "id": "run",
+              "label": "Đã chạy chương trình"
+            },
+            {
+              "id": "tests",
+              "label": "Đã chạy cargo test"
+            }
+          ]
+        }
+      },
+      "locales": {
+        "vi": {
+          "title": "Cargo và chương trình đầu tiên",
+          "description_markdown": "## Cài toolchain\nCài Rust bằng rustup từ https://rustup.rs. Mở terminal mới, chạy `rustc --version` và `cargo --version`.\n\n```sh\ncargo new corelia-tasks\ncd corelia-tasks\ncargo run\ncargo test\n```\n`cargo run` phải in `Hello, world!`; `cargo test` phải kết thúc thành công. Nếu lệnh không tồn tại, kiểm tra PATH sau khi cài. Không đánh dấu checklist cho đến khi tự chạy được."
+        },
+        "en": {
+          "title": "Cargo and your first program",
+          "description_markdown": "## Install the toolchain\nInstall Rust with rustup from https://rustup.rs. Open a fresh terminal and run `rustc --version` and `cargo --version`.\n\n```sh\ncargo new corelia-tasks\ncd corelia-tasks\ncargo run\ncargo test\n```\n`cargo run` should print `Hello, world!`; `cargo test` should finish successfully. If a command is missing, check your PATH after installation. Check each item only after doing it yourself.",
+          "practice_copy": {
+            "toolchain": {
+              "label": "Checked rustc and Cargo"
+            },
+            "run": {
+              "label": "Ran the program"
+            },
+            "tests": {
+              "label": "Ran cargo test"
+            }
+          }
+        }
+      },
+      "questions": []
+    },
+    {
+      "lesson": {
+        "id": "corelia-learning-pilot-rust-cli-lesson-03",
+        "section_id": "corelia-learning-pilot-rust-cli-section-1",
+        "order": 2,
+        "title": "Biến, mutability và giá trị",
+        "description_markdown": "## Biến mặc định không đổi\n```rust\nlet count = 0;\n// count += 1; // lỗi: count immutable\n```\n`let mut count = 0;` cho phép gán giá trị mới. `mut` không làm biến chia sẻ giữa thread; đây chỉ là quyền thay đổi binding tại scope hiện tại.\n\nMột biến đếm số task cần tăng sau khi thêm công việc. Ở bài sau, điền đúng từ khóa để phép cộng biên dịch được khi chạy trên máy.\n\n### Tự kiểm tra\nThử xóa `mut`, chạy `cargo check`, đọc tên biến trong thông báo lỗi rồi khôi phục nó.",
+        "lesson_format": "article",
+        "duration_seconds": 0,
+        "published": true
+      },
+      "locales": {
+        "vi": {
+          "title": "Biến, mutability và giá trị",
+          "description_markdown": "## Biến mặc định không đổi\n```rust\nlet count = 0;\n// count += 1; // lỗi: count immutable\n```\n`let mut count = 0;` cho phép gán giá trị mới. `mut` không làm biến chia sẻ giữa thread; đây chỉ là quyền thay đổi binding tại scope hiện tại.\n\nMột biến đếm số task cần tăng sau khi thêm công việc. Ở bài sau, điền đúng từ khóa để phép cộng biên dịch được khi chạy trên máy.\n\n### Tự kiểm tra\nThử xóa `mut`, chạy `cargo check`, đọc tên biến trong thông báo lỗi rồi khôi phục nó."
+        },
+        "en": {
+          "title": "Variables, mutability and values",
+          "description_markdown": "## Bindings are immutable by default\n```rust\nlet count = 0;\n// count += 1; // error: count is immutable\n```\n`let mut count = 0;` permits reassignment. It does not make the variable shared across threads; it permits changing the binding in its current scope.\n\nA task counter must increase after adding work. In the next lesson, fill the keyword that allows the increment to compile on your machine.\n\n### Self-check\nRemove `mut`, run `cargo check`, read the variable named in the diagnostic, then restore it."
+        }
+      },
+      "questions": []
+    },
+    {
+      "lesson": {
+        "id": "corelia-learning-pilot-rust-cli-lesson-04",
+        "section_id": "corelia-learning-pilot-rust-cli-section-1",
+        "order": 3,
+        "title": "Điền từ khóa mut",
+        "description_markdown": "Điền **một từ khóa** để `count += 1` hợp lệ. Không đổi tên biến hoặc phần còn lại của chương trình.",
+        "lesson_format": "code_exercise",
+        "duration_seconds": 0,
+        "published": true,
+        "code_exercise_config": {
+          "schema_version": 1,
+          "revision": 1,
+          "mode": "fill",
+          "language": "rust",
+          "file": {
+            "path": "lib.rs",
+            "starter_source": "fn main() {\n    let {{blank:mutable}} count = 0;\n    count += 1;\n    println!(\"{count}\");\n}"
+          },
+          "reference_solution": "fn main() {\n    let mut count = 0;\n    count += 1;\n    println!(\"{count}\");\n}",
+          "blanks": [
+            {
+              "id": "mutable",
+              "accepted_answers": [
+                "mut"
+              ],
+              "feedback": "Biến cần cho phép thay đổi giá trị."
+            }
+          ],
+          "hints": [
+            "Rust mặc định tạo biến immutable."
+          ]
+        }
+      },
+      "locales": {
+        "vi": {
+          "title": "Điền từ khóa mut",
+          "description_markdown": "Điền **một từ khóa** để `count += 1` hợp lệ. Không đổi tên biến hoặc phần còn lại của chương trình."
+        },
+        "en": {
+          "title": "Fill the mut keyword",
+          "description_markdown": "Fill **one keyword** so that `count += 1` is valid. Keep the variable name and the surrounding program.",
+          "code_exercise_locale": {
+            "hints": [
+              "Rust bindings are immutable by default."
+            ],
+            "blank_feedback": {
+              "mutable": "The binding must permit reassignment."
+            }
+          }
+        }
+      },
+      "questions": []
+    },
+    {
+      "lesson": {
+        "id": "corelia-learning-pilot-rust-cli-lesson-05",
+        "section_id": "corelia-learning-pilot-rust-cli-section-1",
+        "order": 4,
+        "title": "Struct Task và kiểu ID",
+        "description_markdown": "Project dùng `Task` với ID số nguyên **không dấu 64 bit**, tiêu đề `String` và trạng thái `bool`. Điền kiểu cho ID. `String` sở hữu vùng nhớ chứa tiêu đề; `bool` biểu diễn hoàn thành hay chưa.",
+        "lesson_format": "code_exercise",
+        "duration_seconds": 0,
+        "published": true,
+        "code_exercise_config": {
+          "schema_version": 1,
+          "revision": 1,
+          "mode": "fill",
+          "language": "rust",
+          "file": {
+            "path": "lib.rs",
+            "starter_source": "pub struct Task {\n    pub id: {{blank:id_type}},\n    pub title: String,\n    pub done: bool,\n}"
+          },
+          "reference_solution": "pub struct Task {\n    pub id: u64,\n    pub title: String,\n    pub done: bool,\n}",
+          "blanks": [
+            {
+              "id": "id_type",
+              "accepted_answers": [
+                "u64"
+              ],
+              "feedback": "Dùng số nguyên không dấu 64 bit."
+            }
+          ],
+          "hints": [
+            "ID trong project này dùng kiểu u64."
+          ]
+        }
+      },
+      "locales": {
+        "vi": {
+          "title": "Struct Task và kiểu ID",
+          "description_markdown": "Project dùng `Task` với ID số nguyên **không dấu 64 bit**, tiêu đề `String` và trạng thái `bool`. Điền kiểu cho ID. `String` sở hữu vùng nhớ chứa tiêu đề; `bool` biểu diễn hoàn thành hay chưa."
+        },
+        "en": {
+          "title": "Task struct and ID type",
+          "description_markdown": "The project uses a `Task` with a **64-bit unsigned integer** ID, a `String` title and a `bool` state. Fill the ID type. `String` owns the title data; `bool` represents completion.",
+          "code_exercise_locale": {
+            "hints": [
+              "This project uses u64 IDs."
+            ],
+            "blank_feedback": {
+              "id_type": "Use a 64-bit unsigned integer."
+            }
+          }
+        }
+      },
+      "questions": []
+    },
+    {
+      "lesson": {
+        "id": "corelia-learning-pilot-rust-cli-lesson-06",
+        "section_id": "corelia-learning-pilot-rust-cli-section-1",
+        "order": 5,
+        "title": "Quiz: nền tảng Rust",
+        "description_markdown": "Trả lời cả ba câu. Cần đạt ít nhất 70%; có thể làm lại. Đọc giải thích sau khi nộp.",
+        "lesson_format": "quiz",
+        "duration_seconds": 0,
+        "published": true,
+        "quiz_config": {
+          "passing_ratio": 0.7,
+          "allow_retry": true
+        }
+      },
+      "locales": {
+        "vi": {
+          "title": "Quiz: nền tảng Rust",
+          "description_markdown": "Trả lời cả ba câu. Cần đạt ít nhất 70%; có thể làm lại. Đọc giải thích sau khi nộp."
+        },
+        "en": {
+          "title": "Quiz: Rust foundations",
+          "description_markdown": "Answer all three questions. Pass at 70% or above; retries are allowed. Read the explanations after submission.",
+          "question_copy": {
+            "corelia-learning-pilot-rust-cli-q-6-1": {
+              "question": "Which keyword permits reassignment?",
+              "options": {
+                "a": "mut",
+                "b": "pub",
+                "c": "use"
+              },
+              "explanation": "mut permits reassignment; pub controls visibility."
+            },
+            "corelia-learning-pilot-rust-cli-q-6-2": {
+              "question": "What does u64 represent?",
+              "options": {
+                "a": "64-bit signed integer",
+                "b": "64-bit unsigned integer",
+                "c": "Text string"
+              },
+              "explanation": "u means unsigned; 64 is the bit width."
+            },
+            "corelia-learning-pilot-rust-cli-q-6-3": {
+              "question": "Which command runs unit tests?",
+              "options": {
+                "a": "cargo run",
+                "b": "cargo test",
+                "c": "cargo new"
+              },
+              "explanation": "cargo test compiles and runs the test harness."
+            }
+          }
+        }
+      },
+      "questions": [
+        {
+          "id": "corelia-learning-pilot-rust-cli-q-6-1",
+          "order": 0,
+          "type": "mcq",
+          "question": "Từ khóa nào cho phép đổi binding?",
+          "options": [
+            {
+              "id": "a",
+              "text": "mut"
+            },
+            {
+              "id": "b",
+              "text": "pub"
+            },
+            {
+              "id": "c",
+              "text": "use"
+            }
+          ],
+          "correct_index": 0,
+          "explanation": "mut cho phép gán lại; pub chỉ điều khiển visibility."
+        },
+        {
+          "id": "corelia-learning-pilot-rust-cli-q-6-2",
+          "order": 1,
+          "type": "mcq",
+          "question": "u64 biểu diễn gì?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Số nguyên có dấu 64 bit"
+            },
+            {
+              "id": "b",
+              "text": "Số nguyên không dấu 64 bit"
+            },
+            {
+              "id": "c",
+              "text": "Chuỗi ký tự"
+            }
+          ],
+          "correct_index": 1,
+          "explanation": "u là unsigned, 64 là số bit."
+        },
+        {
+          "id": "corelia-learning-pilot-rust-cli-q-6-3",
+          "order": 2,
+          "type": "mcq",
+          "question": "Lệnh nào chạy unit tests?",
+          "options": [
+            {
+              "id": "a",
+              "text": "cargo run"
+            },
+            {
+              "id": "b",
+              "text": "cargo test"
+            },
+            {
+              "id": "c",
+              "text": "cargo new"
+            }
+          ],
+          "correct_index": 1,
+          "explanation": "cargo test biên dịch và chạy test harness."
+        }
+      ]
+    },
+    {
+      "lesson": {
+        "id": "corelia-learning-pilot-rust-cli-lesson-07",
+        "section_id": "corelia-learning-pilot-rust-cli-section-2",
+        "order": 0,
+        "title": "Ownership, borrowing và xử lý lỗi",
+        "description_markdown": "## Sở hữu và mượn\nMột `String` được move khi chuyển ownership. Dùng `&str` nếu hàm chỉ đọc tiêu đề; dùng `&mut Vec<Task>` khi cần thêm task. Scope của borrow giúp Rust chặn truy cập xung đột ở compile time.\n\n```rust\nfn title_length(title: &str) -> usize {\n    title.len()\n}\n```\n`len()` đo byte, không phải số ký tự người đọc thấy.\n\n## Lỗi có thể phục hồi\n`Result<T, E>` chứa `Ok(value)` hoặc `Err(error)`. Dùng `?` để chuyển lỗi lên caller thay vì `unwrap()` trong đường chạy CLI. Chỉ dùng `unwrap()` ở test khi failure cần làm test fail.\n\n## Đừng mất dữ liệu\nFile thiếu có thể là danh sách rỗng; file hỏng phải báo lỗi. Không xử lý cả hai thành rỗng rồi ghi đè dữ liệu người dùng.",
+        "lesson_format": "article",
+        "duration_seconds": 0,
+        "published": true
+      },
+      "locales": {
+        "vi": {
+          "title": "Ownership, borrowing và xử lý lỗi",
+          "description_markdown": "## Sở hữu và mượn\nMột `String` được move khi chuyển ownership. Dùng `&str` nếu hàm chỉ đọc tiêu đề; dùng `&mut Vec<Task>` khi cần thêm task. Scope của borrow giúp Rust chặn truy cập xung đột ở compile time.\n\n```rust\nfn title_length(title: &str) -> usize {\n    title.len()\n}\n```\n`len()` đo byte, không phải số ký tự người đọc thấy.\n\n## Lỗi có thể phục hồi\n`Result<T, E>` chứa `Ok(value)` hoặc `Err(error)`. Dùng `?` để chuyển lỗi lên caller thay vì `unwrap()` trong đường chạy CLI. Chỉ dùng `unwrap()` ở test khi failure cần làm test fail.\n\n## Đừng mất dữ liệu\nFile thiếu có thể là danh sách rỗng; file hỏng phải báo lỗi. Không xử lý cả hai thành rỗng rồi ghi đè dữ liệu người dùng."
+        },
+        "en": {
+          "title": "Ownership, borrowing and errors",
+          "description_markdown": "## Ownership and borrowing\nA `String` moves when ownership transfers. Use `&str` when a function only reads a title and `&mut Vec<Task>` when adding tasks. Borrow scopes help Rust reject conflicting access at compile time.\n\n```rust\nfn title_length(title: &str) -> usize {\n    title.len()\n}\n```\n`len()` counts bytes, not user-perceived characters.\n\n## Recoverable errors\n`Result<T, E>` is either `Ok(value)` or `Err(error)`. Use `?` to propagate errors instead of calling `unwrap()` in normal CLI execution. In a test, `unwrap()` is appropriate when failure should fail the test.\n\n## Protect persisted data\nA missing file may mean an empty task list; a corrupt file must produce an error. Do not turn both into empty data and overwrite the user's work."
+        }
+      },
+      "questions": []
+    },
+    {
+      "lesson": {
+        "id": "corelia-learning-pilot-rust-cli-lesson-08",
+        "section_id": "corelia-learning-pilot-rust-cli-section-2",
+        "order": 1,
+        "title": "Viết hàm lấy ID tiếp theo",
+        "description_markdown": "Hoàn thiện `next_id`: lấy ID lớn nhất, dùng 0 nếu slice rỗng rồi cộng 1. Dùng chuỗi lời gọi `.iter().copied().max().unwrap_or(0) + 1`. Bài này giới hạn ID nhỏ để luyện iterator; project thật phải xử lý overflow bằng `checked_add`.",
+        "lesson_format": "code_exercise",
+        "duration_seconds": 0,
+        "published": true,
+        "code_exercise_config": {
+          "schema_version": 1,
+          "revision": 1,
+          "mode": "edit",
+          "language": "rust",
+          "file": {
+            "path": "lib.rs",
+            "starter_source": "pub fn next_id(ids: &[u64]) -> u64 {\n    0\n}"
+          },
+          "reference_solution": "pub fn next_id(ids: &[u64]) -> u64 {\n    ids.iter().copied().max().unwrap_or(0) + 1\n}",
+          "tests": [
+            {
+              "id": "next_id",
+              "type": "source_equals",
+              "required": true,
+              "description": "Lấy ID lớn nhất, mặc định 0 rồi cộng 1.",
+              "accepted_sources": [
+                "pub fn next_id(ids: &[u64]) -> u64 {\n    ids.iter().copied().max().unwrap_or(0) + 1\n}"
+              ],
+              "failure_message": "Đọc gợi ý và đối chiếu chữ ký hàm. Bài này dùng so khớp văn bản chính xác."
+            }
+          ],
+          "hints": [
+            "Đây là bài có đáp án hẹp. Xem lời giải nếu cách viết tương đương của bạn chưa được chấp nhận."
+          ]
+        }
+      },
+      "locales": {
+        "vi": {
+          "title": "Viết hàm lấy ID tiếp theo",
+          "description_markdown": "Hoàn thiện `next_id`: lấy ID lớn nhất, dùng 0 nếu slice rỗng rồi cộng 1. Dùng chuỗi lời gọi `.iter().copied().max().unwrap_or(0) + 1`. Bài này giới hạn ID nhỏ để luyện iterator; project thật phải xử lý overflow bằng `checked_add`."
+        },
+        "en": {
+          "title": "Write a next-ID helper",
+          "description_markdown": "Complete `next_id`: take the largest ID, use zero for an empty slice, then add one. Use `.iter().copied().max().unwrap_or(0) + 1`. This exercise uses small IDs to practice iterators; the real project must handle overflow with `checked_add`.",
+          "code_exercise_locale": {
+            "hints": [
+              "This narrow exercise uses exact text comparison. View the solution if an equivalent implementation is not accepted."
+            ],
+            "test_copy": {
+              "next_id": {
+                "description": "Required reference implementation",
+                "failure_message": "Check the signature and hint. This exercise compares exact source text."
+              }
+            }
+          }
+        }
+      },
+      "questions": []
+    },
+    {
+      "lesson": {
+        "id": "corelia-learning-pilot-rust-cli-lesson-09",
+        "section_id": "corelia-learning-pilot-rust-cli-section-2",
+        "order": 2,
+        "title": "Sửa validation tiêu đề",
+        "description_markdown": "Trả về true khi tiêu đề sau trim không rỗng và không chứa newline, carriage return hoặc tab. Dùng `!title.trim().is_empty() && !title.contains(['\\n', '\\r', '\\t'])`. Text test chỉ chấp nhận biểu thức này; test Cargo ở project sẽ kiểm tra hành vi thực tế.",
+        "lesson_format": "code_exercise",
+        "duration_seconds": 0,
+        "published": true,
+        "code_exercise_config": {
+          "schema_version": 1,
+          "revision": 1,
+          "mode": "edit",
+          "language": "rust",
+          "file": {
+            "path": "lib.rs",
+            "starter_source": "pub fn is_valid_title(title: &str) -> bool {\n    true\n}"
+          },
+          "reference_solution": "pub fn is_valid_title(title: &str) -> bool {\n    !title.trim().is_empty() && !title.contains(['\\n', '\\r', '\\t'])\n}",
+          "tests": [
+            {
+              "id": "validate_title",
+              "type": "source_equals",
+              "required": true,
+              "description": "Từ chối tiêu đề rỗng và ký tự ngắt dòng/tab.",
+              "accepted_sources": [
+                "pub fn is_valid_title(title: &str) -> bool {\n    !title.trim().is_empty() && !title.contains(['\\n', '\\r', '\\t'])\n}"
+              ],
+              "failure_message": "Đọc gợi ý và đối chiếu chữ ký hàm. Bài này dùng so khớp văn bản chính xác."
+            }
+          ],
+          "hints": [
+            "Đây là bài có đáp án hẹp. Xem lời giải nếu cách viết tương đương của bạn chưa được chấp nhận."
+          ]
+        }
+      },
+      "locales": {
+        "vi": {
+          "title": "Sửa validation tiêu đề",
+          "description_markdown": "Trả về true khi tiêu đề sau trim không rỗng và không chứa newline, carriage return hoặc tab. Dùng `!title.trim().is_empty() && !title.contains(['\\n', '\\r', '\\t'])`. Text test chỉ chấp nhận biểu thức này; test Cargo ở project sẽ kiểm tra hành vi thực tế."
+        },
+        "en": {
+          "title": "Fix title validation",
+          "description_markdown": "Return true only when the trimmed title is nonempty and contains no newline, carriage return or tab. Use `!title.trim().is_empty() && !title.contains(['\\n', '\\r', '\\t'])`. This text test accepts that expression; project Cargo tests check actual behavior.",
+          "code_exercise_locale": {
+            "hints": [
+              "This narrow exercise uses exact text comparison. View the solution if an equivalent implementation is not accepted."
+            ],
+            "test_copy": {
+              "validate_title": {
+                "description": "Required reference implementation",
+                "failure_message": "Check the signature and hint. This exercise compares exact source text."
+              }
+            }
+          }
+        }
+      },
+      "questions": []
+    },
+    {
+      "lesson": {
+        "id": "corelia-learning-pilot-rust-cli-lesson-10",
+        "section_id": "corelia-learning-pilot-rust-cli-section-2",
+        "order": 3,
+        "title": "Quiz: lỗi và dữ liệu bền vững",
+        "description_markdown": "Kiểm tra các quyết định sẽ ảnh hưởng project cuối khóa. Cần đạt 70%.",
+        "lesson_format": "quiz",
+        "duration_seconds": 0,
+        "published": true,
+        "quiz_config": {
+          "passing_ratio": 0.7,
+          "allow_retry": true
+        }
+      },
+      "locales": {
+        "vi": {
+          "title": "Quiz: lỗi và dữ liệu bền vững",
+          "description_markdown": "Kiểm tra các quyết định sẽ ảnh hưởng project cuối khóa. Cần đạt 70%."
+        },
+        "en": {
+          "title": "Quiz: errors and persistence",
+          "description_markdown": "Check decisions that affect your final project. Pass at 70%.",
+          "question_copy": {
+            "corelia-learning-pilot-rust-cli-q-10-1": {
+              "question": "What should the CLI do with a corrupt file?",
+              "options": {
+                "a": "Overwrite it with empty data",
+                "b": "Report the error and preserve data",
+                "c": "Ignore every error"
+              },
+              "explanation": "Report the error instead of silently losing data."
+            },
+            "corelia-learning-pilot-rust-cli-q-10-2": {
+              "question": "Which parameter suits a function adding a task?",
+              "options": {
+                "a": "&mut Vec<Task>",
+                "b": "&str",
+                "c": "bool"
+              },
+              "explanation": "A mutable borrow permits appending elements."
+            },
+            "corelia-learning-pilot-rust-cli-q-10-3": {
+              "question": "What does a browser text-test pass establish?",
+              "options": {
+                "a": "Rust compiled",
+                "b": "The text rules matched",
+                "c": "There are no runtime bugs"
+              },
+              "explanation": "Run Cargo locally to check compilation and behavior."
+            }
+          }
+        }
+      },
+      "questions": [
+        {
+          "id": "corelia-learning-pilot-rust-cli-q-10-1",
+          "order": 0,
+          "type": "mcq",
+          "question": "Khi file bị hỏng, CLI nên làm gì?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Ghi đè bằng danh sách rỗng"
+            },
+            {
+              "id": "b",
+              "text": "Báo lỗi và giữ dữ liệu"
+            },
+            {
+              "id": "c",
+              "text": "Bỏ qua tất cả lỗi"
+            }
+          ],
+          "correct_index": 1,
+          "explanation": "Báo lỗi để learner sửa file, không mất dữ liệu im lặng."
+        },
+        {
+          "id": "corelia-learning-pilot-rust-cli-q-10-2",
+          "order": 1,
+          "type": "mcq",
+          "question": "Hàm thêm task cần tham số nào?",
+          "options": [
+            {
+              "id": "a",
+              "text": "&mut Vec<Task>"
+            },
+            {
+              "id": "b",
+              "text": "&str"
+            },
+            {
+              "id": "c",
+              "text": "bool"
+            }
+          ],
+          "correct_index": 0,
+          "explanation": "Mutable borrow cho phép thêm phần tử."
+        },
+        {
+          "id": "corelia-learning-pilot-rust-cli-q-10-3",
+          "order": 2,
+          "type": "mcq",
+          "question": "Thành công trên browser text test chứng minh gì?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Rust đã biên dịch"
+            },
+            {
+              "id": "b",
+              "text": "Đã khớp các text rule"
+            },
+            {
+              "id": "c",
+              "text": "Không có bug runtime"
+            }
+          ],
+          "correct_index": 1,
+          "explanation": "Phải chạy Cargo trên máy để kiểm tra compilation và behavior."
+        }
+      ]
+    },
+    {
+      "lesson": {
+        "id": "corelia-learning-pilot-rust-cli-lesson-11",
+        "section_id": "corelia-learning-pilot-rust-cli-section-2",
+        "order": 4,
+        "title": "Xây CLI add/list/done",
+        "description_markdown": "## Chạy tool thật trên máy\nDùng starter trong `docs/learning/pilot/starter`. Tạo `Task { id: u64, title: String, done: bool }`, rồi tách domain logic vào `src/lib.rs` và parsing lệnh vào `src/main.rs`.\n\n### Hành vi bắt buộc\n- `cargo run -- add \"Học Rust\"`: thêm một task và in ID.\n- `cargo run -- list`: in ID, trạng thái và tiêu đề.\n- `cargo run -- done 1`: đánh dấu đúng task, không tạo task mới.\n- Đóng chương trình, mở lại: dữ liệu vẫn còn.\n\nDùng file TSV `id<TAB>done<TAB>title`, với done là 0 hoặc 1. Từ chối tab/newline trong tiêu đề. File chưa có là danh sách rỗng; parse lỗi phải trả Err. Viết vào file tạm rồi rename để giảm rủi ro ghi dở.\n\n### Unit tests\nKiểm tra thêm task, ID tiếp theo, done không tồn tại, title rỗng, Unicode, serialization round-trip và file hỏng.",
+        "lesson_format": "practice",
+        "duration_seconds": 0,
+        "published": true,
+        "practice_config": {
+          "mode": "guided_project",
+          "revision": 1,
+          "requires_review": false,
+          "project_steps": [
+            {
+              "id": "model",
+              "title": "Tạo Task và domain functions",
+              "verification": "self_check",
+              "order": 0
+            },
+            {
+              "id": "cli",
+              "title": "Chạy đủ ba lệnh CLI",
+              "verification": "self_check",
+              "order": 1
+            },
+            {
+              "id": "persist",
+              "title": "Kiểm tra persistence sau restart",
+              "verification": "self_check",
+              "order": 2
+            },
+            {
+              "id": "test",
+              "title": "cargo test pass các ca bắt buộc",
+              "verification": "self_check",
+              "order": 3
+            }
+          ]
+        }
+      },
+      "locales": {
+        "vi": {
+          "title": "Xây CLI add/list/done",
+          "description_markdown": "## Chạy tool thật trên máy\nDùng starter trong `docs/learning/pilot/starter`. Tạo `Task { id: u64, title: String, done: bool }`, rồi tách domain logic vào `src/lib.rs` và parsing lệnh vào `src/main.rs`.\n\n### Hành vi bắt buộc\n- `cargo run -- add \"Học Rust\"`: thêm một task và in ID.\n- `cargo run -- list`: in ID, trạng thái và tiêu đề.\n- `cargo run -- done 1`: đánh dấu đúng task, không tạo task mới.\n- Đóng chương trình, mở lại: dữ liệu vẫn còn.\n\nDùng file TSV `id<TAB>done<TAB>title`, với done là 0 hoặc 1. Từ chối tab/newline trong tiêu đề. File chưa có là danh sách rỗng; parse lỗi phải trả Err. Viết vào file tạm rồi rename để giảm rủi ro ghi dở.\n\n### Unit tests\nKiểm tra thêm task, ID tiếp theo, done không tồn tại, title rỗng, Unicode, serialization round-trip và file hỏng."
+        },
+        "en": {
+          "title": "Build the add/list/done CLI",
+          "description_markdown": "## Use the real toolchain locally\nStart from `docs/learning/pilot/starter`. Define `Task { id: u64, title: String, done: bool }`, put domain logic in `src/lib.rs` and CLI argument parsing in `src/main.rs`.\n\n### Required behavior\n- `cargo run -- add \"Learn Rust\"`: add a task and print its ID.\n- `cargo run -- list`: print IDs, status and titles.\n- `cargo run -- done 1`: complete the specified task without adding one.\n- Restart the process: data is still present.\n\nUse TSV records `id<TAB>done<TAB>title`, with done equal to 0 or 1. Reject tabs/newlines in titles. A missing file is empty data; parse errors return Err. Write a temporary file then rename it to reduce partial-write risk.\n\n### Unit tests\nCover adding tasks, next IDs, missing IDs, empty titles, Unicode, serialization round trips and corrupt files.",
+          "practice_copy": {
+            "model": {
+              "title": "Create Task and domain functions"
+            },
+            "cli": {
+              "title": "Run all three CLI commands"
+            },
+            "persist": {
+              "title": "Verify persistence after restart"
+            },
+            "test": {
+              "title": "Pass the required cargo tests"
+            }
+          }
+        }
+      },
+      "questions": []
+    },
+    {
+      "lesson": {
+        "id": "corelia-learning-pilot-rust-cli-lesson-12",
+        "section_id": "corelia-learning-pilot-rust-cli-section-2",
+        "order": 5,
+        "title": "Chuẩn bị repository và nộp project",
+        "description_markdown": "## Công bố sản phẩm do bạn chủ động chọn\nTạo GitHub repository chứa source, Cargo.toml, Cargo.lock, README và tests. Không đưa file `tasks.tsv` cá nhân vào repository. README cần ghi cách cài/chạy, ba lệnh ví dụ, format file và các giới hạn đã biết.\n\n### Tự nghiệm thu\nChạy `cargo test` và `cargo run -- add \"Review me\"`; đóng/mở lại, `list`, rồi `done <id>`. Nhờ người khác làm theo README nếu có thể.\n\nĐiền GitHub URL cùng notes tóm tắt quyết định thiết kế. Nhấn hoàn thành bài hướng dẫn rồi nộp ở panel cuối khóa. Đây là một submission duy nhất; giảng viên sẽ duyệt hoặc yêu cầu chỉnh sửa. Bạn có thể tự tạo project trên Corelia để hiển thị portfolio; hệ thống không tự công khai bài nộp.",
+        "lesson_format": "practice",
+        "duration_seconds": 0,
+        "published": true,
+        "practice_config": {
+          "mode": "guided_project",
+          "revision": 1,
+          "requires_review": false,
+          "submission_fields": [
+            "github_url",
+            "notes"
+          ],
+          "project_steps": [
+            {
+              "id": "readme",
+              "title": "README đủ lệnh và giới hạn",
+              "verification": "self_check",
+              "order": 0
+            },
+            {
+              "id": "repository",
+              "title": "Repository có thể review",
+              "verification": "artifact_required",
+              "artifact_fields": [
+                "github_url",
+                "notes"
+              ],
+              "order": 1
+            }
+          ]
+        }
+      },
+      "locales": {
+        "vi": {
+          "title": "Chuẩn bị repository và nộp project",
+          "description_markdown": "## Công bố sản phẩm do bạn chủ động chọn\nTạo GitHub repository chứa source, Cargo.toml, Cargo.lock, README và tests. Không đưa file `tasks.tsv` cá nhân vào repository. README cần ghi cách cài/chạy, ba lệnh ví dụ, format file và các giới hạn đã biết.\n\n### Tự nghiệm thu\nChạy `cargo test` và `cargo run -- add \"Review me\"`; đóng/mở lại, `list`, rồi `done <id>`. Nhờ người khác làm theo README nếu có thể.\n\nĐiền GitHub URL cùng notes tóm tắt quyết định thiết kế. Nhấn hoàn thành bài hướng dẫn rồi nộp ở panel cuối khóa. Đây là một submission duy nhất; giảng viên sẽ duyệt hoặc yêu cầu chỉnh sửa. Bạn có thể tự tạo project trên Corelia để hiển thị portfolio; hệ thống không tự công khai bài nộp."
+        },
+        "en": {
+          "title": "Prepare the repository and submit",
+          "description_markdown": "## Publish only what you choose\nCreate a GitHub repository with source, Cargo.toml, Cargo.lock, a README and tests. Do not commit your personal `tasks.tsv`. Document installation, three example commands, the file format and known limitations.\n\n### Self-review\nRun `cargo test` and `cargo run -- add \"Review me\"`; restart, list tasks and complete the new ID. If possible, ask someone else to follow the README.\n\nEnter the GitHub URL and notes about your design decisions. Complete this guide, then submit in the final-assignment panel. There is only one submission: an instructor approves it or requests changes. You may separately create a Corelia project for your portfolio; the submission is never made public automatically.",
+          "practice_copy": {
+            "readme": {
+              "title": "README covers commands and limitations"
+            },
+            "repository": {
+              "title": "Repository is ready for review"
+            }
+          }
+        }
+      },
+      "questions": []
+    }
+  ]
+}

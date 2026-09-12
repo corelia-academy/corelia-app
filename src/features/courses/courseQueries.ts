@@ -217,6 +217,8 @@ export function courseSubmissionQueryOptions(
     queryKey: courseKeys.submission(userId || "missing", courseId || "missing"),
     queryFn: () => getSubmission(userId!, courseId!),
     enabled: hasContext,
+    refetchInterval: query => hasContext && query.state.data?.status === "pending" ? 15_000 : false,
+    refetchIntervalInBackground: false,
     staleTime: 30_000,
     retry: false,
     meta: {

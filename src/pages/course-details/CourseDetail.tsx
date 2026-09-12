@@ -1,3 +1,5 @@
+import { useQueryClient } from "@tanstack/react-query";
+import { invalidateLearningProgress } from "@/features/learning/invalidateLearningProgress";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -11,7 +13,7 @@ import {
   syncCourseCompletion,
 } from "@/lib/courses";
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
-import { isActivityLesson, splitLessonCounts } from "@/lib/lessonFormat";
+import { isLessonPublishedForLearners } from "@/lib/lessonFormat";
 import { useCourseLoad } from "./hooks/useCourseLoad";
 import { useCourseEnrollmentAccess } from "./hooks/useCourseEnrollmentAccess";
 import { useCourseProgress } from "./hooks/useCourseProgress";
@@ -42,6 +44,7 @@ import { CourseCompletionCertificatePanel } from "@/components/courses/CourseCom
 import type { CertificateIssueReason } from "@/lib/courses";
 
 export default function CourseDetail() {
+  const queryClient = useQueryClient();
   const { t } = useTranslation("courses");
   const translate = useMemo(
     () => (key: string, options?: Record<string, unknown>) =>
@@ -86,7 +89,6 @@ export default function CourseDetail() {
   });
 
   const spotlightContests = useSpotlightContests();
-  const { profile: instructorProfile } = useInstructorProfile(courseLoad.course?.instructor_id);
 
   const syncCertificate = useCallback(async () => {
     const course = courseLoad.course;
@@ -95,6 +97,7 @@ export default function CourseDetail() {
       return null;
     }
     let phase: "completion" | "certificate" = "completion";
+    let completionConfirmed = false;
     setCertificateIssueReason(null);
     setCertificateIssueError(null);
     try {
@@ -112,6 +115,7 @@ export default function CourseDetail() {
       const completion = await syncCourseCompletion(profile.id, courseId);
       let baseEnrollment = enrollment ?? access.enrollment;
       if (completion.completed) {
+        completionConfirmed = true;
         const completedAt = completion.completed_at || baseEnrollment?.completed_at || new Date().toISOString();
         if (baseEnrollment) {
           baseEnrollment = { ...baseEnrollment, completed_at: completedAt };
@@ -120,12 +124,14 @@ export default function CourseDetail() {
         }
         setCompletionJustSynced(true);
       } else {
+        if (completion.reason === "final_assignment_pending") return null;
         setCompletionSyncError(
           completion.message || translate("detail.learn.completion.completionSyncFailed"),
         );
         return null;
       }
       setCompletionSyncing(false);
+      phase = "certificate";
       const credentialCheck = await invokeCheckCourseCredential(courseId, undefined, {
         autoIssue: true,
       });
@@ -140,7 +146,6 @@ export default function CourseDetail() {
       if (!courseHasCertificate(course)) {
         return null;
       }
-      phase = "certificate";
       setCertificateIssuing(true);
       const result = await checkAndIssueCertificate(profile.id, courseId);
       setCertificateIssueReason(result.reason);
@@ -177,8 +182,10 @@ export default function CourseDetail() {
     } finally {
       setCompletionSyncing(false);
       setCertificateIssuing(false);
+      if (completionConfirmed) await invalidateLearningProgress(queryClient, profile.id, courseId);
     }
   }, [
+    queryClient,
     access,
     courseLoad.course,
     courseLoad.resolvedCourseId,
@@ -213,7 +220,7 @@ export default function CourseDetail() {
   ]);
 
   const sortedLessons = useMemo(
-    () => sortLessonsByCurriculum(lessons, courseLoad.sections),
+    () => sortLessonsByCurriculum(lessons.filter(isLessonPublishedForLearners), courseLoad.sections),
     [lessons, courseLoad.sections],
   );
   const lessonsBySection = useMemo<CurriculumGroup[]>(
@@ -222,7 +229,7 @@ export default function CourseDetail() {
         section,
         lessons: sortedLessons.filter(
           (lesson) =>
-            lesson.section_id === section.id && !isActivityLesson(lesson),
+            lesson.section_id === section.id,
         ),
       })),
     [courseLoad.sections, sortedLessons],
@@ -231,11 +238,11 @@ export default function CourseDetail() {
     ({ lessons: sectionLessons }) => sectionLessons.length > 0,
   );
 
-  const { contentCount } = splitLessonCounts(lessons);
   const curriculumCountLabel = translate("detail.courseDetail.lessonCount", {
-    count: contentCount,
+    count: sortedLessons.length,
   });
 
+  const { profile: instructorProfile } = useInstructorProfile(courseLoad.course?.instructor_id);
   const canReviewDraft =
     courseLoad.course &&
     !courseLoad.course.published &&
@@ -256,7 +263,7 @@ export default function CourseDetail() {
   // Tổng này được DB trigger đồng bộ từ toàn bộ course_lessons.
   const displayTotalDuration = storedTotal;
 
-  const courseCompleted = progress.progressPercent >= 100 && sortedLessons.length > 0;
+  const courseCompleted = Boolean(access.enrollment?.completed_at || completionJustSynced);
   const isPublicEmptyCurriculum =
     courseLoad.course?.published === true &&
     lessonsLoaded &&
@@ -344,7 +351,6 @@ export default function CourseDetail() {
         previewLessons={[]}
         displayTotalDuration={displayTotalDuration}
         curriculumCountLabel={curriculumCountLabel}
-        progressPercent={progress.progressPercent}
         onCertificateClaimed={(issuedAt) =>
           access.setEnrollment(
             access.enrollment ? { ...access.enrollment, certificate_issued_at: issuedAt } : null,
@@ -397,10 +403,11 @@ export default function CourseDetail() {
             hasSections={courseLoad.course?.has_sections ?? true}
           />
 
-          {instructorProfile ? (
+          {instructorProfile || course.instructors !== undefined ? (
             <CourseInstructorSection
               profile={instructorProfile}
               coInstructors={course.co_instructors ?? []}
+              instructors={course.instructors}
             />
           ) : null}
 

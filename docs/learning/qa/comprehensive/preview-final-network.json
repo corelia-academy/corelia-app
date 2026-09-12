@@ -1,0 +1,559 @@
+{
+  "requests": [
+    {
+      "at": "2026-09-12T00:29:24.847Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:24.848Z",
+      "method": "GET",
+      "path": "/rest/v1/course_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:24.848Z",
+      "method": "GET",
+      "path": "/rest/v1/courses",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:24.849Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lessons",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:24.851Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:24.852Z",
+      "method": "GET",
+      "path": "/rest/v1/course_sections",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:24.858Z",
+      "method": "GET",
+      "path": "/rest/v1/course_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:24.883Z",
+      "method": "GET",
+      "path": "/rest/v1/profiles",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:42.930Z",
+      "method": "GET",
+      "path": "/rest/v1/profiles",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:43.176Z",
+      "method": "POST",
+      "path": "/rest/v1/rpc/list_trending_searches",
+      "status": 200,
+      "keys": [
+        "p_limit"
+      ]
+    },
+    {
+      "at": "2026-09-12T00:29:43.181Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:43.530Z",
+      "method": "GET",
+      "path": "/rest/v1/course_sections",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:43.530Z",
+      "method": "GET",
+      "path": "/rest/v1/course_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:43.531Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:43.534Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:43.534Z",
+      "method": "GET",
+      "path": "/rest/v1/courses",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:43.534Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lessons",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:43.538Z",
+      "method": "GET",
+      "path": "/rest/v1/course_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:54.348Z",
+      "method": "GET",
+      "path": "/rest/v1/profiles",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:55.385Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:55.385Z",
+      "method": "GET",
+      "path": "/rest/v1/course_sections",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:55.386Z",
+      "method": "GET",
+      "path": "/rest/v1/courses",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:55.386Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:55.386Z",
+      "method": "POST",
+      "path": "/rest/v1/rpc/list_trending_searches",
+      "status": 200,
+      "keys": [
+        "p_limit"
+      ]
+    },
+    {
+      "at": "2026-09-12T00:29:55.386Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lessons",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:55.395Z",
+      "method": "GET",
+      "path": "/rest/v1/course_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:55.399Z",
+      "method": "GET",
+      "path": "/rest/v1/course_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:55.399Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:29:59.714Z",
+      "method": "GET",
+      "path": "/rest/v1/profiles",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:00.804Z",
+      "method": "POST",
+      "path": "/rest/v1/rpc/list_trending_searches",
+      "status": 200,
+      "keys": [
+        "p_limit"
+      ]
+    },
+    {
+      "at": "2026-09-12T00:30:00.804Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:00.808Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:00.808Z",
+      "method": "GET",
+      "path": "/rest/v1/course_sections",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:00.810Z",
+      "method": "GET",
+      "path": "/rest/v1/courses",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:00.811Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lessons",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:00.815Z",
+      "method": "GET",
+      "path": "/rest/v1/course_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:00.815Z",
+      "method": "GET",
+      "path": "/rest/v1/course_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:00.815Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:00.833Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:00.834Z",
+      "method": "GET",
+      "path": "/rest/v1/course_section_questions",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:04.484Z",
+      "method": "GET",
+      "path": "/rest/v1/course_sections",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:04.485Z",
+      "method": "GET",
+      "path": "/rest/v1/courses",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:04.485Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lessons",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:04.485Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:04.485Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:04.485Z",
+      "method": "GET",
+      "path": "/rest/v1/course_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:04.491Z",
+      "method": "GET",
+      "path": "/rest/v1/course_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:04.504Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:04.506Z",
+      "method": "GET",
+      "path": "/rest/v1/course_section_questions",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:13.498Z",
+      "method": "GET",
+      "path": "/rest/v1/profiles",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:14.595Z",
+      "method": "GET",
+      "path": "/rest/v1/course_sections",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:14.598Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:14.598Z",
+      "method": "GET",
+      "path": "/rest/v1/course_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:14.598Z",
+      "method": "POST",
+      "path": "/rest/v1/rpc/list_trending_searches",
+      "status": 200,
+      "keys": [
+        "p_limit"
+      ]
+    },
+    {
+      "at": "2026-09-12T00:30:14.599Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:14.599Z",
+      "method": "GET",
+      "path": "/rest/v1/courses",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:14.606Z",
+      "method": "GET",
+      "path": "/rest/v1/course_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:14.606Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lessons",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:14.606Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:20.641Z",
+      "method": "GET",
+      "path": "/rest/v1/profiles",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:21.713Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:21.714Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:21.714Z",
+      "method": "POST",
+      "path": "/rest/v1/rpc/list_trending_searches",
+      "status": 200,
+      "keys": [
+        "p_limit"
+      ]
+    },
+    {
+      "at": "2026-09-12T00:30:21.714Z",
+      "method": "GET",
+      "path": "/rest/v1/course_sections",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:21.714Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lessons",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:21.714Z",
+      "method": "GET",
+      "path": "/rest/v1/courses",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:21.721Z",
+      "method": "GET",
+      "path": "/rest/v1/course_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:21.723Z",
+      "method": "GET",
+      "path": "/rest/v1/course_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:21.724Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:26.104Z",
+      "method": "GET",
+      "path": "/rest/v1/course_sections",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:26.105Z",
+      "method": "GET",
+      "path": "/rest/v1/courses",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:26.105Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:26.105Z",
+      "method": "GET",
+      "path": "/rest/v1/course_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:26.106Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lessons",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:26.107Z",
+      "method": "GET",
+      "path": "/rest/v1/course_lesson_locales",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T00:30:26.111Z",
+      "method": "GET",
+      "path": "/rest/v1/course_locales",
+      "status": 200,
+      "keys": []
+    }
+  ],
+  "counts_before": {
+    "events": 138,
+    "attempts": 27,
+    "progress": 49,
+    "submissions": 8
+  },
+  "counts_after": {
+    "events": 138,
+    "attempts": 27,
+    "progress": 49,
+    "submissions": 8
+  },
+  "learning_writes_detected": 0
+}

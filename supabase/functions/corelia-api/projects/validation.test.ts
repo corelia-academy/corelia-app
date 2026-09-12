@@ -35,7 +35,7 @@ describe("project validation", () => {
     expect(() => normalizeHttpsUrl("demo_url", "https://[fe80::1]/demo")).toThrow("invalid_url:demo_url");
   });
 
-  it("does not include video_url in the AI link-check input", () => {
+  it("validates video URLs separately from demo, repository and slide links", () => {
     const values = { video_url: "https://example.com/demo.mp4" } as Parameters<typeof validateProjectLinks>[0];
     expect(validateProjectLinks(values)).toEqual([]);
   });

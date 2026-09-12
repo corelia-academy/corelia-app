@@ -88,7 +88,7 @@ export function ContestDetailParticipantApplicationCard({
               ) : null}
             </div>
           </>
-        ) : contest.status !== "published" ? (
+        ) : contest.status !== "published" && contest.status !== "running" ? (
           <>
             {embedded ? (
               <h2 className="mb-3 text-heading-small font-display text-foreground">

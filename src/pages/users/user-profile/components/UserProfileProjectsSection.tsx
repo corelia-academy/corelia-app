@@ -16,8 +16,11 @@ import { publicProfileProjectsQueryOptions } from "@/features/profiles/publicPro
 import { projectHeartsQueryOptions } from "@/features/projects/projectSocialQueries";
 
 function sourceLink(project: Project): string | null {
-  if (isHackathonProjectSource(project.source_type) && project.source_id) {
-    return `/hackathons/${project.source_id}/overview`;
+  if (isHackathonProjectSource(project.source_type)) {
+    const slugOrId = project.hackathon_slug || project.source_id;
+    if (slugOrId) {
+      return `/hackathons/${slugOrId}/overview`;
+    }
   }
   if (project.source_type === "course" && project.source_id) {
     return `/courses/${project.source_id}`;

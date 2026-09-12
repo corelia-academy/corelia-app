@@ -1,0 +1,40 @@
+{
+  "checked_at": "2026-09-12T00:00:56.619847+00:00",
+  "migration": "20260911215843",
+  "seed_twice_equal": true,
+  "counts": {
+    "lessons": 12,
+    "locales": 24,
+    "sections": 2,
+    "questions": 6
+  },
+  "content_sha256": "0dc4177eccd0e17b40d561bd707bd7ed017956bcde088a1113763bd1a6db87ae",
+  "cli_workflow": [
+    {
+      "args": [
+        "add",
+        "Học Rust"
+      ],
+      "stdout": "Added task 1"
+    },
+    {
+      "args": [
+        "list"
+      ],
+      "stdout": "1 [ ] Học Rust"
+    },
+    {
+      "args": [
+        "done",
+        "1"
+      ],
+      "stdout": "Completed task 1"
+    },
+    {
+      "args": [
+        "list"
+      ],
+      "stdout": "1 [x] Học Rust"
+    }
+  ]
+}

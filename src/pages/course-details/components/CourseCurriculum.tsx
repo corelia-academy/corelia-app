@@ -1,10 +1,10 @@
+import { lessonText } from "@/features/learning/lessonCopy";
 import { useState } from "react";
 import { BookOpen, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { CourseBadge } from "./CourseBadge";
 import {
-  isActivityLesson,
   isLessonDraftForLearners,
 } from "@/lib/lessonFormat";
 import {
@@ -36,11 +36,11 @@ function LessonRow({
       </div>
       <div className="min-w-0 flex-1">
         <p className="line-clamp-2 text-sm text-foreground sm:line-clamp-1">
-          {lesson.title}
+          {lessonText(lesson.title)}
         </p>
-        {lesson.short_description?.trim() ? (
+        {lessonText(lesson.short_description).trim() ? (
           <p className="mt-1 line-clamp-2 text-[13px] text-foreground-muted">
-            {lesson.short_description}
+            {lessonText(lesson.short_description)}
           </p>
         ) : null}
         {lesson.duration_seconds > 0 ? (
@@ -115,9 +115,7 @@ export function CourseCurriculum({
         {visibleLessonGroups.map(
           ({ section, lessons: sectionLessons }, sectionIndex) => {
             const isCollapsed = sectionOverrides[section.id] ?? sectionIndex !== 0;
-            const sectionContentCount = sectionLessons.filter(
-              (l) => !isActivityLesson(l),
-            ).length;
+            const sectionContentCount = sectionLessons.length;
 
             return (
               <div

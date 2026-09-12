@@ -1,5 +1,6 @@
+import { lessonText } from "@/features/learning/lessonCopy";
 import { Link } from "react-router";
-import { CheckCircle2, CheckSquare, ChevronDown, FileText, List, Lock, PenLine, PlayCircle } from "lucide-react";
+import { CheckCircle2, CheckSquare, ChevronDown, FileText, List, Code2, PenLine, PlayCircle } from "lucide-react";
 import { getLessonFormat, isArticleLesson } from "@/lib/lessonFormat";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,7 +15,6 @@ function LessonItem({
   currentLessonId,
   completedIds,
   hasFullCourseAccess,
-  translate,
 }: {
   courseId: string;
   lesson: import("@/types/courses").CourseLesson;
@@ -25,28 +25,12 @@ function LessonItem({
 }) {
   const done = completedIds.has(lesson.id);
   const active = currentLessonId === lesson.id;
-  const locked = !hasFullCourseAccess && !lesson.is_preview_free;
+  void hasFullCourseAccess;
   const article = isArticleLesson(lesson);
   const rowClassName = cn(
     "border-t border-border-subtle border-l-[3px] pl-[calc(1rem-3px)] pr-4 py-3 transition-colors duration-150",
     active ? "bg-primary-muted text-primary border-l-brand-accent" : "border-l-transparent",
   );
-
-  if (locked) {
-    return (
-      <div className={cn(rowClassName, "opacity-75")}>
-        <div className="flex items-start gap-3">
-          <Lock className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted" aria-hidden />
-          <span className="min-w-0 flex-1 line-clamp-2 text-sm leading-5 text-foreground-muted">
-            {lesson.title}
-          </span>
-          <span className="shrink-0 text-xs text-warning">
-            {translate("detail.learn.lessonLockedBadge")}
-          </span>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <Link
@@ -58,6 +42,8 @@ function LessonItem({
     >
       {done ? (
         <CheckCircle2 className="mt-0.5 w-4 h-4 shrink-0 text-success sm:mt-0" aria-hidden />
+      ) : getLessonFormat(lesson) === "code_exercise" ? (
+        <Code2 className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" aria-hidden />
       ) : getLessonFormat(lesson) === "practice" ? (
         <PenLine className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" aria-hidden />
       ) : getLessonFormat(lesson) === "quiz" ? (
@@ -74,7 +60,7 @@ function LessonItem({
             active ? "font-medium text-primary" : "text-foreground",
           )}
         >
-          {lesson.title}
+          {lessonText(lesson.title)}
         </span>
         {lesson.duration_seconds > 0 ? (
           <span className="mt-1 block text-xs text-foreground-muted sm:hidden">

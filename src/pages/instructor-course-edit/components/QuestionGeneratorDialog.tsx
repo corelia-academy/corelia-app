@@ -1,3 +1,9 @@
+import { useLearningConfirm } from "@/features/learning/useLearningConfirm";
+import { invalidateLearningQuestions } from "@/features/learning/questionCache";
+import { isQuizQuestionShape, recoverQuizQuestion } from "@/features/learning/quizShape";
+import { lessonText } from "@/features/learning/lessonCopy";
+import { dataToDraft, makeBlankQuestion, questionPayload, type DraftQuestion } from "./questionDraft";
+import { useLearningTranslation } from "@/features/learning/useLearningTranslation";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, Sparkles, Trash2, ChevronDown, ChevronUp } from "lucide-react";
@@ -21,42 +27,21 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { instructorCourseQuestionsQueryOptions } from "@/features/courses/instructorCourseEditorQueries";
 
-type DraftQuestion = SectionQuestionData & {
-  _key: string;
-};
-
-const OPTION_IDS = ["a", "b", "c", "d"] as const;
 const COUNT_OPTIONS = [3, 5, 7, 10] as const;
-
-function makeBlankQuestion(): DraftQuestion {
-  return {
-    _key: crypto.randomUUID(),
-    type: "mcq",
-    question: "",
-    options: OPTION_IDS.map((id) => ({ id, text: "" })),
-    correct_index: 0,
-    explanation: "",
-  };
-}
-
-function dataToDraft(q: SectionQuestionData): DraftQuestion {
-  const opts = OPTION_IDS.map((id, i) => ({
-    id,
-    text: q.options[i]?.text ?? "",
-  }));
-  return { ...q, options: opts, _key: crypto.randomUUID() };
-}
 
 type QuestionEditorProps = {
   question: DraftQuestion;
   index: number;
   onChange: (updated: DraftQuestion) => void;
   onDelete: () => void;
+  copyOnly?: boolean;
 };
 
-function QuestionEditor({ question, index, onChange, onDelete }: QuestionEditorProps) {
+function QuestionEditor({ question, index, onChange, onDelete, copyOnly }: QuestionEditorProps) {
   const { t } = useTranslation("instructor");
   const [showExplanation, setShowExplanation] = useState(!!question.explanation);
+  const { t: learningT } = useLearningTranslation();
+  const { confirm, confirmation } = useLearningConfirm();
 
   function setField<K extends keyof DraftQuestion>(key: K, value: DraftQuestion[K]) {
     onChange({ ...question, [key]: value });
@@ -69,14 +54,17 @@ function QuestionEditor({ question, index, onChange, onDelete }: QuestionEditorP
     onChange({ ...question, options: opts });
   }
 
+  if (!isQuizQuestionShape(question)) return <div role="alert" className="space-y-2 rounded-lg border border-destructive/30 p-3">{confirmation}<p>{learningT("learning.invalidQuestionsRecovery")}</p><Button type="button" onClick={async () => { if (await confirm(learningT("learning.recoverQuestionsConfirm"))) onChange(recoverQuizQuestion(question)); }}>{learningT("learning.recoverQuestions")}</Button></div>;
+
   return (
     <div className="rounded-lg border border-border-subtle bg-surface-raised p-4 space-y-3">
       <div className="flex items-start justify-between gap-2">
         <span className="shrink-0 mt-0.5 inline-flex items-center rounded border border-border-subtle px-2 py-0.5 text-xs font-medium text-foreground-muted">
-          Câu {index + 1}
+          {t("courseEdit.questions.number", { number: index + 1 })}
         </span>
         <button
           type="button"
+          disabled={copyOnly}
           onClick={onDelete}
           className="ml-auto text-foreground-muted hover:text-destructive transition-colors"
           aria-label={t("courseEdit.questionGenerator.deleteQuestion", "Xóa câu hỏi")}
@@ -97,6 +85,7 @@ function QuestionEditor({ question, index, onChange, onDelete }: QuestionEditorP
         {question.options.map((opt, i) => (
           <div key={opt.id} className="flex items-center gap-2">
             <input
+              disabled={copyOnly}
               type="radio"
               name={`correct-${question._key}`}
               value={String(i)}
@@ -155,7 +144,9 @@ type Props = {
   section: CourseSection | null;
   courseId: string;
   locale: SupportedCourseLocale;
+  primaryLocale?: SupportedCourseLocale;
   onOpenChange: (open: boolean) => void;
+  onDirtyChange?: (dirty: boolean) => void;
   /** When set to "lesson", uses lessonId-scoped questions instead of sectionId-scoped */
   mode?: "section" | "lesson";
   lessonId?: string | null;
@@ -172,7 +163,9 @@ export function QuestionGeneratorDialog({
   section,
   courseId,
   locale,
+  primaryLocale = "vi",
   onOpenChange,
+  onDirtyChange,
   mode = "section",
   lessonId,
   lessonTitle,
@@ -180,8 +173,11 @@ export function QuestionGeneratorDialog({
   sectionLessons = EMPTY_SECTION_LESSONS,
 }: Props) {
   const { t } = useTranslation("instructor");
+  const { t: learningT } = useLearningTranslation();
+  const { confirm, confirmation } = useLearningConfirm();
   const queryClient = useQueryClient();
   const [questions, setQuestions] = useState<DraftQuestion[]>([]);
+  const [savedQuestions, setSavedQuestions] = useState<DraftQuestion[]>([]);
   const [sources, setSources] = useState<GeneratedQuestionSource[]>([]);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [count, setCount] = useState<number>(5);
@@ -194,9 +190,10 @@ export function QuestionGeneratorDialog({
   const openRef = useRef(open);
 
   const isLessonMode = mode === "lesson";
+  const copyOnly = isLessonMode && locale !== primaryLocale;
   const sectionId = section?.id;
   const targetId = isLessonMode ? lessonId : sectionId;
-  const activeContext = `${courseId}:${mode}:${targetId || ""}:${locale}`;
+  const activeContext = `${userId}:${courseId}:${mode}:${targetId || ""}:${locale}`;
   const questionOptions = instructorCourseQuestionsQueryOptions({
     courseId,
     mode,
@@ -219,16 +216,31 @@ export function QuestionGeneratorDialog({
       invokeGenerateQuestions(req),
   });
   const saveMutation = useMutation({
-    mutationFn: (payload: SectionQuestionData[]) =>
-      isLessonMode
+    mutationFn: async (payload: Array<SectionQuestionData & { id: string }>) => {
+      const queryKey = questionOptions.queryKey;
+      const saved = await (isLessonMode
         ? setLessonQuestions(courseId, lessonId!, payload, locale)
-        : setSectionQuestions(courseId, sectionId!, payload, locale),
-    onSuccess: (saved) => {
-      queryClient.setQueryData(questionOptions.queryKey, saved);
+        : setSectionQuestions(courseId, sectionId!, payload, locale));
+      await invalidateLearningQuestions(queryClient, courseId);
+      return { saved, queryKey };
+    },
+    onSuccess: ({ saved, queryKey }) => {
+      queryClient.setQueryData(queryKey, saved);
     },
   });
   const generating = generateMutation.isPending;
   const saving = saveMutation.isPending;
+  const dirty = open && JSON.stringify(questions) !== JSON.stringify(savedQuestions);
+  useEffect(() => {
+    onDirtyChange?.(dirty || (open && saving));
+    return () => onDirtyChange?.(false);
+  }, [dirty, open, saving, onDirtyChange]);
+
+  async function requestClose(nextOpen: boolean) {
+    if (!nextOpen && (saving || generating)) return;
+    if (!nextOpen && dirty && !await confirm(learningT("learning.dirtyConfirm"))) return;
+    onOpenChange(nextOpen);
+  }
 
   useEffect(() => {
     openRef.current = open;
@@ -243,7 +255,9 @@ export function QuestionGeneratorDialog({
     queueMicrotask(() => {
       if (cancelled) return;
       hydratedContextRef.current = activeContext;
-      setQuestions(questionsQuery.data.map(dataToDraft));
+      const initial = questionsQuery.data.map(dataToDraft);
+      setQuestions(initial);
+      setSavedQuestions(initial);
       setGenerateError(null);
     });
     return () => {
@@ -292,6 +306,7 @@ export function QuestionGeneratorDialog({
       queueMicrotask(() => {
         if (cancelled) return;
         setQuestions([]);
+        setSavedQuestions([]);
         setSources([]);
         setGenerateError(null);
         setSelectedSourceIds(new Set());
@@ -303,7 +318,8 @@ export function QuestionGeneratorDialog({
   }, [open]);
 
   async function handleGenerate() {
-    if (!courseId) return;
+    if (copyOnly) return;
+    if (!courseId || loading || saving || generating) return;
     if (!isLessonMode && !section) return;
     if (isLessonMode && !lessonId) return;
     if (questionsQuery.isError) {
@@ -316,7 +332,7 @@ export function QuestionGeneratorDialog({
     }
     if (
       questions.length > 0 &&
-      !window.confirm(t("courseEdit.questionGenerator.replaceDraftConfirm"))
+      !await confirm(t("courseEdit.questionGenerator.replaceDraftConfirm"))
     ) {
       return;
     }
@@ -360,7 +376,7 @@ export function QuestionGeneratorDialog({
   }
 
   async function handleSave() {
-    if (!courseId) return;
+    if (!courseId || loading || saving || generating) return;
     if (!isLessonMode && !section) return;
     if (isLessonMode && !lessonId) return;
     if (questionsQuery.isError) {
@@ -373,23 +389,18 @@ export function QuestionGeneratorDialog({
     }
 
     const invalid = questions.find(
-      (q) => !q.question.trim() || q.options.filter((o) => o.text.trim()).length < 2,
+      (q) => !isQuizQuestionShape(q) || !q.question.trim() || q.options.filter((o) => o.text.trim()).length < 2,
     );
     if (invalid) {
       toast.error(t("courseEdit.questions.fillRequired"));
       return;
     }
+    const savedContext = activeContext;
     try {
-      const payload: SectionQuestionData[] = questions.map((q) => ({
-        type: q.type,
-        question: q.question.trim(),
-        options: q.options.map((o) => ({ id: o.id, text: o.text.trim() })),
-        correct_index: q.correct_index,
-        explanation: q.explanation?.trim() || undefined,
-        locale,
-      }));
+      const payload = questionPayload(questions, locale);
 
       await saveMutation.mutateAsync(payload);
+      if (activeContextRef.current !== savedContext || !openRef.current) return;
       if (isLessonMode) {
         toast.success(t("courseEdit.questions.savedLesson", { count: questions.length }));
       } else {
@@ -435,18 +446,19 @@ export function QuestionGeneratorDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 gap-0">
+    <Dialog open={open} onOpenChange={requestClose}>
+      {confirmation}<DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 gap-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border-subtle shrink-0">
           <DialogTitle className="text-base">
             {dialogTitle}
           </DialogTitle>
           <DialogDescription>
             {dialogDescription}
+            {copyOnly && ` — ${t("courseEdit.i18n.translationModeBadge")}`}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-1 overflow-hidden">
+        <fieldset disabled={saving || generating || loading} className="flex min-h-0 flex-1 overflow-hidden">
           {/* Left panel: controls + sources */}
           <div className="w-64 shrink-0 border-r border-border-subtle overflow-y-auto p-4 space-y-4">
             {/* Source lesson selector (lesson mode only) */}
@@ -469,7 +481,7 @@ export function QuestionGeneratorDialog({
                           "text-xs leading-relaxed",
                           l.id === lessonId ? "text-foreground font-medium" : "text-foreground-muted",
                         )}>
-                          {l.title}
+                          {lessonText(l.title)}
                           {l.id === lessonId && (
                             <span className="ml-1 text-[10px] text-foreground-subtle">
                               ({t("courseEdit.questions.currentLesson")})
@@ -511,6 +523,7 @@ export function QuestionGeneratorDialog({
               size="sm"
               className="w-full"
               disabled={
+                copyOnly ||
                 generating ||
                 loading ||
                 loadError !== null ||
@@ -589,6 +602,7 @@ export function QuestionGeneratorDialog({
               <QuestionEditor
                 key={q._key}
                 question={q}
+                copyOnly={copyOnly}
                 index={i}
                 onChange={(updated) => updateQuestion(i, updated)}
                 onDelete={() => deleteQuestion(i)}
@@ -600,7 +614,7 @@ export function QuestionGeneratorDialog({
               variant="outline"
               size="sm"
               className="w-full"
-              disabled={loading || loadError !== null}
+              disabled={copyOnly || loading || loadError !== null}
               onClick={addBlankQuestion}
             >
               <Plus className="size-4 mr-1.5" aria-hidden />
@@ -609,14 +623,14 @@ export function QuestionGeneratorDialog({
 
             <div ref={listEndRef} />
           </div>
-        </div>
+        </fieldset>
 
         <DialogFooter className="px-6 py-4 border-t border-border-subtle shrink-0">
           <Button
             type="button"
             variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={saving}
+            onClick={() => requestClose(false)}
+            disabled={saving || generating}
           >
             {t("courseEdit.questions.cancel")}
           </Button>

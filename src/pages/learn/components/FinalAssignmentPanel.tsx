@@ -1,4 +1,8 @@
-import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { ArtifactField } from "@/features/learning/types";
+import { validArtifact } from "@/features/learning/validation";
+import { normalizeArtifactDraft, readArtifactDraft } from "@/features/learning/artifactDraft";
+import { useEffect, useId, useRef, useState } from "react";
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -12,46 +16,87 @@ type SubmissionRow = {
   reviewer_comment?: string | null;
 } | null;
 
-export function FinalAssignmentPanel({
-  courseId,
-  course,
-  profileId,
-  submission,
-  translate,
-  onSubmit,
-}: {
+interface FinalAssignmentPanelProps {
   courseId: string;
   course: Course;
   profileId: string;
   submission: SubmissionRow;
+  submissionState?: "loading" | "error" | "ready";
+  onRetryLoad?: () => void;
   translate: TranslateFn;
-  onSubmit: (input: { content: string; fileUrls?: string[] }) => Promise<void>;
-}) {
+  onSubmit: (input: { content: string; fileUrls?: string[]; artifacts?: Partial<Record<ArtifactField, string>>; requestId?: string }) => Promise<void>;
+}
+
+export function FinalAssignmentPanel(props: FinalAssignmentPanelProps) {
+  return <FinalAssignmentForm key={`${props.courseId}:${props.profileId}`} {...props} />;
+}
+
+function FinalAssignmentForm({ courseId, course, profileId, submission, submissionState = "ready", onRetryLoad, translate, onSubmit }: FinalAssignmentPanelProps) {
+  const { t } = useTranslation("courses");
+  const [requestId, setRequestId] = useState(() => crypto.randomUUID());
+  const [error, setError] = useState<string | null>(null);
+  const pendingPayload = useRef<Parameters<FinalAssignmentPanelProps["onSubmit"]>[0] | null>(null);
+  const uploadedFiles = useRef(new Map<File, string>());
+  const inFlight = useRef(false);
+  const [awaitingResult, setAwaitingResult] = useState(false);
+  const filesInput = useRef<HTMLInputElement>(null);
+  const [artifacts, setArtifacts] = useState(() => readArtifactDraft(`corelia:final-artifacts:${profileId}:${courseId}`));
+  useEffect(() => {
+    const restore = (event: Event) => {
+      const detail = (event as CustomEvent<{ userId: string; courseId: string; artifacts: Partial<Record<ArtifactField, string>> }>).detail;
+      if (!inFlight.current && !pendingPayload.current && detail?.userId === profileId && detail.courseId === courseId) setArtifacts(previous => ({ ...previous, ...normalizeArtifactDraft(detail.artifacts) }));
+    };
+    window.addEventListener("learning:final-artifacts", restore);
+    return () => window.removeEventListener("learning:final-artifacts", restore);
+  }, [profileId, courseId]);
+  const contentRequired = !course.final_assignment_fields?.length;
+  const valid = (course.final_assignment_fields ?? []).every(f => validArtifact(f, artifacts[f] ?? ""));
   const [submitting, setSubmitting] = useState(false);
   const [submitContent, setSubmitContent] = useState("");
   const [submitFiles, setSubmitFiles] = useState<File[]>([]);
+  const canSubmit = valid && Boolean(profileId) && (!contentRequired || Boolean(submitContent.trim()));
   const contentId = useId();
   const filesId = useId();
 
 
   const handleSubmit = async () => {
-    if (!submitContent.trim()) return;
+    if (submissionState !== "ready" || (submission && submission.status !== "rejected")) return;
+    if (inFlight.current || (!pendingPayload.current && !canSubmit)) return;
+    inFlight.current = true;
+    setError(null);
     setSubmitting(true);
     try {
-      const fileUrls: string[] = [];
-      for (const file of submitFiles) {
-        const uploaded = await uploadFinalAssignmentFile(courseId, profileId, file);
-        fileUrls.push(uploaded.url);
+      if (!pendingPayload.current) {
+        const fileUrls: string[] = [];
+        for (const file of submitFiles) {
+          let url = uploadedFiles.current.get(file);
+          if (!url) {
+            const uploaded = await uploadFinalAssignmentFile(courseId, profileId, file);
+            url = uploaded.url;
+            uploadedFiles.current.set(file, url);
+          }
+          fileUrls.push(url);
+        }
+        pendingPayload.current = {
+          content: submitContent.trim(),
+          artifacts: { ...artifacts },
+          requestId,
+          fileUrls: fileUrls.length ? fileUrls : undefined,
+        };
+        setAwaitingResult(true);
       }
-      await onSubmit({
-        content: submitContent.trim(),
-        fileUrls: fileUrls.length ? fileUrls : undefined,
-      });
+      await onSubmit(pendingPayload.current);
+      pendingPayload.current = null;
+      uploadedFiles.current.clear();
+      setAwaitingResult(false);
+      if (filesInput.current) filesInput.current.value = "";
+      setRequestId(crypto.randomUUID());
       setSubmitContent("");
       setSubmitFiles([]);
     } catch (e) {
-      console.warn("Submit failed", e);
+      setError(e instanceof Error ? e.message : t("learning.systemError"));
     } finally {
+      inFlight.current = false;
       setSubmitting(false);
     }
   };
@@ -59,7 +104,7 @@ export function FinalAssignmentPanel({
   if (!course.final_assignment_title) return null;
 
   return (
-    <div className="mt-6 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-6">
+    <div id="final-assignment" className="mt-6 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-6">
       <div className="flex items-center gap-2">
         <FileText className="w-5 h-5 text-primary" aria-hidden />
         <h2 className="text-heading-medium font-display text-foreground">
@@ -79,6 +124,8 @@ export function FinalAssignmentPanel({
         </div>
       ) : null}
 
+      {submissionState === "loading" && <p role="status" className="mt-4 text-sm">{t("learning.loading")}</p>}
+      {submissionState === "error" && <div role="alert" className="mt-4 space-y-2"><p>{t("learning.loadError")}</p>{onRetryLoad && <Button type="button" variant="outline" onClick={onRetryLoad}>{t("learning.retry")}</Button>}</div>}
       {submission ? (
         <div className="mt-4 rounded-md bg-surface-raised p-4">
           <p className="text-sm font-medium text-foreground">
@@ -96,15 +143,21 @@ export function FinalAssignmentPanel({
         </div>
       ) : null}
 
-      {(submission?.status === "rejected" ||
+      {submissionState === "ready" && (submission?.status === "rejected" ||
         !submission) ? (
         <div className="mt-4 space-y-4">
+          {(course.final_assignment_fields ?? []).map(field => <label key={field} className="block space-y-2 text-sm"><span>{t(`learning.artifacts.${field}`)} *</span><input disabled={submitting || awaitingResult} value={artifacts[field] ?? ""} onChange={e => setArtifacts(a => ({ ...a, [field]: e.target.value }))} className="min-h-11 w-full rounded-lg border border-border bg-surface-base px-3" /></label>)}
+          {error && <p role="alert" className="text-destructive">{error}</p>}
+          {error && awaitingResult && <p className="text-sm text-foreground-muted">{t("learning.finalRetrySameSubmission")}</p>}
+          {!profileId && <p>{t("learning.loginToSave")}</p>}
           <div className="space-y-1.5">
-            <Label htmlFor={contentId} className="sr-only">
-              {translate("detail.learn.finalAssignment.contentPlaceholder")}
+            <Label htmlFor={contentId}>
+              {t(contentRequired ? "learning.finalContentRequired" : "learning.finalContentOptional")}
             </Label>
             <textarea
               id={contentId}
+              required={contentRequired}
+              disabled={submitting || awaitingResult}
               placeholder={translate(
                 "detail.learn.finalAssignment.contentPlaceholder",
               )}
@@ -120,6 +173,8 @@ export function FinalAssignmentPanel({
             </Label>
             <input
               id={filesId}
+              ref={filesInput}
+              disabled={submitting || awaitingResult}
               type="file"
               multiple
               accept=".pdf,.doc,.docx,.zip"
@@ -129,11 +184,11 @@ export function FinalAssignmentPanel({
           </div>
           <Button
             onClick={() => void handleSubmit()}
-            disabled={submitting || !submitContent.trim()}
+            disabled={submitting || (!awaitingResult && !canSubmit)}
           >
             {submitting
               ? translate("detail.learn.finalAssignment.submitting")
-              : translate("detail.learn.finalAssignment.submit")}
+              : error && awaitingResult ? t("learning.retry") : translate("detail.learn.finalAssignment.submit")}
           </Button>
         </div>
       ) : null}

@@ -1,273 +1,76 @@
+import { lessonText } from "@/features/learning/lessonCopy";
+import { validateLessonResources } from "@/features/learning/resourceValidation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
-import { Markdown } from "@/components/markdown/Markdown";
-import { isArticleLesson, isLessonDraftForLearners, isVideoLesson } from "@/lib/lessonFormat";
-import { cn } from "@/lib/utils";
-import { getYoutubeEmbedUrlForLesson } from "@/types/courses";
+import { useAuth } from "@/stores/authStore";
+import { LessonRenderer } from "@/features/learning/LessonRenderer";
+import type { LessonActionState } from "@/features/learning/types";
 import type { CourseLesson } from "@/types/courses";
-import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
-import { LearnBadge } from "./LearnBadge";
-import { LessonQuiz } from "./LessonQuiz";
-import { LessonPractice } from "./LessonPractice";
+import type { SectionQuestion } from "@/types/questions";
+import { getLessonFormat } from "@/lib/lessonFormat";
 
-type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
-
-export function LessonPlayerCard({
-  lesson,
-  lessonIndex,
-  isDraftLesson,
-  completed,
-  hasFullCourseAccess,
-  previousLesson,
-  nextLesson,
-  translate,
-  onMarkComplete,
-  onNavigateToLesson,
-  courseId,
-}: {
-  lesson: CourseLesson | null;
-  lessonIndex: number | null;
-  isDraftLesson: boolean;
-  completed: boolean;
-  hasFullCourseAccess: boolean;
-  previousLesson: CourseLesson | null;
-  nextLesson: CourseLesson | null;
-  translate: TranslateFn;
-  onMarkComplete: () => void;
-  onNavigateToLesson: (lessonId: string) => void;
-  courseId?: string | null;
-}) {
-  const articleLesson = lesson ? isArticleLesson(lesson) : false;
-  const videoLesson = lesson ? isVideoLesson(lesson) : false;
-  const quizLesson = lesson?.lesson_format === "quiz";
-  const practiceLesson = lesson?.lesson_format === "practice";
-  const embedUrl =
-    lesson && videoLesson && lesson.youtube_url?.trim()
-      ? getYoutubeEmbedUrlForLesson(lesson)
-      : null;
-
-  const autoplayEmbedUrl = (() => {
-    if (!embedUrl) return null;
-    const u = new URL(embedUrl);
-    u.searchParams.set("autoplay", "1");
-    return u.toString();
-  })();
-
-  const showArticleBody =
-    !!lesson &&
-    articleLesson &&
-    Boolean(lesson.description_markdown?.trim());
-
-  const draftForDisplay = lesson ? isLessonDraftForLearners(lesson) : isDraftLesson;
-  const unavailableContentCopy =
-    videoLesson || lesson?.lesson_format === "video"
-      ? {
-          title: "detail.learn.lessonVideoUnavailableTitle",
-          body: "detail.learn.lessonVideoUnavailableBody",
-        }
-      : articleLesson
-        ? {
-            title: "detail.learn.lessonArticleUnavailableTitle",
-            body: "detail.learn.lessonArticleUnavailableBody",
-          }
-        : practiceLesson
-          ? {
-              title: "detail.learn.lessonPracticeUnavailableTitle",
-              body: "detail.learn.lessonPracticeUnavailableBody",
-            }
-          : {
-              title: "detail.learn.lessonContentUnavailableTitle",
-              body: "detail.learn.lessonContentUnavailableBody",
-            };
-
-  if (!lesson) {
-    return (
-      <div className="px-4 py-16 sm:px-6 text-center text-sm text-foreground-muted">
-        {translate("detail.learn.noLessonSelected")}
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="px-4 py-4 sm:px-6">
-        {lesson ? (
-          <>
-            <div className="flex flex-wrap items-center gap-2">
-              <LearnBadge variant="primaryContainer">
-                {translate("detail.learn.lessonNumberBadge", {
-                  index: (lessonIndex ?? 0) + 1,
-                })}
-              </LearnBadge>
-              {articleLesson ? (
-                <LearnBadge variant="outline">
-                  {translate("detail.learn.articleLessonBadge")}
-                </LearnBadge>
-              ) : null}
-              {completed ? (
-                <LearnBadge variant="success">
-                  {translate("detail.learn.completedBadge")}
-                </LearnBadge>
-              ) : null}
-            </div>
-            <h2 className="mt-3 text-heading-large font-display text-foreground">
-              {lesson.title}
-            </h2>
-            {lesson.short_description?.trim() ? (
-              <p className="mt-2 whitespace-pre-wrap text-[15px] leading-[1.7] text-foreground-muted">
-                {lesson.short_description}
-              </p>
-            ) : null}
-          </>
-        ) : null}
-      </div>
-
-      {lesson && autoplayEmbedUrl ? (
-        <div className="mx-4 overflow-hidden rounded-2xl shadow-card sm:mx-6">
-          <div className="relative aspect-video w-full bg-brand-navy">
-            <iframe
-              key={lesson.id}
-              src={autoplayEmbedUrl}
-              title={lesson.title}
-              className="absolute inset-0 size-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-        </div>
-      ) : showArticleBody ? (
-        <div className="mx-4 overflow-hidden rounded-2xl border border-border-subtle shadow-card sm:mx-6">
-          <div className="px-6 pt-5 pb-8 text-[15px] leading-[1.7]">
-            <Markdown content={lesson.description_markdown!} />
-          </div>
-        </div>
-      ) : quizLesson && courseId && lesson ? (
-        <LessonQuiz
-          courseId={courseId}
-          lessonId={lesson.id}
-          lessonTitle={lesson.title}
-          onPassed={completed ? undefined : onMarkComplete}
-        />
-      ) : practiceLesson && lesson?.description_markdown?.trim() ? (
-        <LessonPractice markdown={lesson.description_markdown} />
-      ) : lesson ? (
-        <div className="mx-4 mb-2 flex aspect-video items-center justify-center rounded-2xl border border-border-subtle bg-surface-raised sm:mx-6">
-          {draftForDisplay ? (
-            <div className="max-w-md px-6 text-center">
-              <p className="text-sm font-medium text-foreground">
-                {translate(
-                  articleLesson
-                    ? "detail.learn.lessonArticleDraftNoticeTitle"
-                    : "detail.learn.lessonDraftNoticeTitle",
-                )}
-              </p>
-              <p className="mt-2 text-sm text-foreground-muted">
-                {translate(
-                  articleLesson
-                    ? "detail.learn.lessonArticleDraftNoticeBody"
-                    : "detail.learn.lessonDraftNoticeBody",
-                )}
-              </p>
-            </div>
-          ) : (
-            <div className="max-w-md px-6 text-center">
-              <p className="text-sm font-medium text-foreground">
-                {translate(unavailableContentCopy.title)}
-              </p>
-              <p className="mt-2 text-sm text-foreground-muted">
-                {translate(unavailableContentCopy.body)}
-              </p>
-            </div>
-          )}
-        </div>
-      ) : null}
-
-      <div className="px-4 py-4 pb-8 sm:px-6">
-        {lesson ? (
-          <>
-            {(videoLesson || lesson.lesson_format === "video") && lesson.description_markdown?.trim() ? (
-              <div className="rounded-2xl border border-border-subtle bg-surface-raised p-5 text-[15px] leading-[1.7]">
-                <Markdown content={lesson.description_markdown} />
-              </div>
-            ) : null}
-            {lesson.resources?.length ? (
-              <div
-                className={cn(
-                  "rounded-2xl border border-border-subtle bg-surface-base p-4",
-                  (videoLesson && lesson.description_markdown?.trim()) || showArticleBody
-                    ? "mt-4"
-                    : "",
-                )}
-              >
-                <p className="text-[13px] font-semibold text-foreground">
-                  {translate("detail.learn.lessonResourcesTitle")}
-                </p>
-                <ul className="mt-2 space-y-1 text-[13px]">
-                  {lesson.resources
-                    .map((r) => ({
-                      title: (r.title ?? "").trim(),
-                      url: (r.url ?? "").trim(),
-                    }))
-                    .filter((r) => r.title && r.url)
-                    .map((r) => (
-                      <li key={r.url} className="truncate">
-                        <a
-                          href={r.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-primary underline underline-offset-4 transition-opacity duration-150 hover:opacity-80"
-                        >
-                          {r.title}
-                        </a>
-                      </li>
-                    ))}
-                </ul>
-              </div>
-            ) : null}
-
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-              {!draftForDisplay ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-center sm:w-auto"
-                  onClick={onMarkComplete}
-                  disabled={completed || !hasFullCourseAccess}
-                >
-                  <CheckCircle2 className="w-4 h-4" aria-hidden />{" "}
-                  {completed
-                    ? translate("detail.learn.markComplete.done")
-                    : practiceLesson
-                      ? translate("detail.learn.markComplete.actionPractice")
-                      : articleLesson
-                        ? translate("detail.learn.markComplete.actionArticle")
-                        : translate("detail.learn.markComplete.action")}
-                </Button>
-              ) : null}
-              {previousLesson ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-center sm:w-auto"
-                  onClick={() => onNavigateToLesson(previousLesson.id)}
-                >
-                  <ArrowLeft className="w-4 h-4" aria-hidden />{" "}
-                  {translate("detail.learn.nav.previous")}
-                </Button>
-              ) : null}
-              {nextLesson ? (
-                <Button
-                  size="sm"
-                  className="w-full justify-center sm:w-auto"
-                  onClick={() => onNavigateToLesson(nextLesson.id)}
-                >
-                  {translate("detail.learn.nav.next")}{" "}
-                  <ArrowRight className="w-4 h-4" aria-hidden />
-                </Button>
-              ) : null}
-            </div>
-          </>
-        ) : null}
-      </div>
+type Props = {
+  lesson: CourseLesson | null; lessonIndex: number | null; isDraftLesson: boolean; completed: boolean;
+  hasFullCourseAccess: boolean; previousLesson: CourseLesson | null; nextLesson: CourseLesson | null;
+  translate: (key: string, options?: Record<string, unknown>) => string;
+  onMarkComplete(): Promise<void>; onNavigateToLesson(id: string): void;
+  courseId?: string | null; mode?: "learner" | "preview"; questions?: SectionQuestion[];
+  contentLocale?: string;
+  hasFinalAssignment?: boolean;
+};
+export function LessonPlayerCard(props: Props) {
+  const { user } = useAuth();
+  return <Workspace key={`${props.courseId}:${props.lesson?.id}:${props.mode}:${user?.id}:${props.contentLocale}`} {...props} />;
+}
+function Workspace({ lesson, lessonIndex, completed, previousLesson, nextLesson, onMarkComplete, onNavigateToLesson, courseId, mode = "learner", questions, contentLocale, hasFinalAssignment = false }: Props) {
+  const { t } = useTranslation("courses");
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const active = useRef(true);
+  const inFlight = useRef(false);
+  useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
+  const [action, setAction] = useState<LessonActionState | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const registerAction = useCallback((next: LessonActionState | null) => setAction(next), []);
+  const complete = useCallback(async () => {
+    if (mode === "preview") return;
+    await onMarkComplete();
+    if (!active.current) return;
+    if (nextLesson && lesson && ["article","video","practice"].includes(getLessonFormat(lesson))) onNavigateToLesson(nextLesson.id);
+  }, [mode, onMarkComplete, nextLesson, lesson, onNavigateToLesson]);
+  if (!lesson || !courseId) return <p className="p-6">{t("learning.unavailable")}</p>;
+  const resources = validateLessonResources(lesson.resources ?? [], lesson.id, "vi", true).length ? [] : lesson.resources ?? [];
+  const run = async () => {
+    if (inFlight.current) return;
+    if (mode === "learner" && !user) { navigate("/login", { state: { from: { pathname: `/learn/${courseId}/lesson/${lesson.id}` } } }); return; }
+    inFlight.current = true;
+    setBusy(true); setError(null);
+    try {
+      if (completed && mode === "learner") {
+        if (nextLesson) onNavigateToLesson(nextLesson.id);
+        else { const final = document.getElementById("final-assignment"); if(final) final.scrollIntoView({ behavior: "smooth" }); else navigate(`/courses/${courseId}`); }
+      } else await action?.run();
+    } catch (e) { if (active.current) setError(e instanceof Error ? e.message : t("learning.systemError")); }
+    finally { inFlight.current = false; if (active.current) setBusy(false); }
+  };
+  const label = busy ? t("learning.saving") : mode === "learner" && !user ? t("learning.login") : completed && mode === "learner" ? t(nextLesson ? "learning.next" : hasFinalAssignment ? "learning.finalAssignmentLink" : "learning.finish") : action?.label ?? t("learning.unavailable");
+  return <div className="flex min-h-full flex-col">
+    <div className="mx-auto w-full max-w-5xl flex-1 space-y-5 px-4 py-6 sm:px-6">
+      {mode === "preview" && <p className="rounded-lg bg-primary/10 p-3 text-sm">{t("learning.previewBanner")}</p>}
+      <div><p className="text-sm text-foreground-muted">{t(`learning.formats.${getLessonFormat(lesson)}`)} {completed && `· ${t("learning.completed")}`}</p><h1 className="mt-2 text-heading-large font-display">{lessonText(lesson.title)}</h1>{lesson.short_description && <p className="mt-2 text-foreground-muted">{lessonText(lesson.short_description)}</p>}</div>
+      <LessonRenderer lesson={lesson} courseId={courseId} mode={mode} contentLocale={contentLocale} completed={completed} onComplete={complete} onAction={registerAction} questions={questions} />
+      {!!resources.length && <section className="rounded-xl border border-border p-4"><h2 className="mb-2 font-medium">{t("learning.resources")}</h2>{resources.map((r,i) => <a key={i} href={r.url} target="_blank" rel="noreferrer" className="block text-primary underline">{r.title}</a>)}</section>}
     </div>
-  );
+    <footer className="sticky bottom-0 z-10 border-t border-border bg-surface-base px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6">
+      {error && <p role="alert" className="mb-2 text-sm text-destructive">{error}</p>}
+      <div className="flex items-center justify-between gap-3">
+        <Button type="button" variant="outline" disabled={!previousLesson || busy} onClick={() => previousLesson && onNavigateToLesson(previousLesson.id)}>{t("learning.previous")}</Button>
+        <span className="hidden text-sm text-foreground-muted sm:block">{t("learning.lessonNumber", { number: (lessonIndex ?? 0)+1 })}</span>
+        <Button type="button" disabled={busy || action?.pending || (!(completed && mode === "learner") && (!action || (action.disabled && (mode === "preview" || !!user))))} onClick={() => void run()}>{label}</Button>
+      </div>
+    </footer>
+  </div>;
 }

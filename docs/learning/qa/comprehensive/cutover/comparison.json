@@ -1,0 +1,159 @@
+{
+  "report_version": 1,
+  "snapshot_version": 2,
+  "changes": {
+    "lessons": [
+      {
+        "course_id": "learning-upgrade-fixture",
+        "lesson_id": "legacy-empty",
+        "status": "changed",
+        "before": {
+          "archived": false,
+          "course_id": "learning-upgrade-fixture",
+          "issues": [],
+          "lesson_id": "legacy-empty",
+          "public_visible": true,
+          "published": true
+        },
+        "after": {
+          "archived": false,
+          "course_id": "learning-upgrade-fixture",
+          "issues": [
+            "content_required"
+          ],
+          "lesson_id": "legacy-empty",
+          "public_visible": false,
+          "published": false
+        }
+      },
+      {
+        "course_id": "learning-upgrade-fixture",
+        "lesson_id": "legacy-video",
+        "status": "changed",
+        "before": {
+          "archived": false,
+          "course_id": "learning-upgrade-fixture",
+          "issues": [],
+          "lesson_id": "legacy-video",
+          "public_visible": true,
+          "published": true
+        },
+        "after": {
+          "archived": false,
+          "course_id": "learning-upgrade-fixture",
+          "issues": [
+            "invalid_locale_copy"
+          ],
+          "lesson_id": "legacy-video",
+          "public_visible": true,
+          "published": true
+        }
+      }
+    ],
+    "attribution": [
+      {
+        "course_id": "learning-upgrade-fixture",
+        "status": "changed",
+        "before": {
+          "course_id": "learning-upgrade-fixture",
+          "instructors": null,
+          "legacy_owner": "dddd0000-0000-4000-8000-000000000001",
+          "legacy_permissions": {
+            "dddd0000-0000-4000-8000-000000000002": {
+              "content": true,
+              "students": false,
+              "submissions": false
+            }
+          }
+        },
+        "after": {
+          "course_id": "learning-upgrade-fixture",
+          "instructors": [
+            {
+              "order": 0,
+              "profile_id": "dddd0000-0000-4000-8000-000000000001"
+            },
+            {
+              "order": 1,
+              "profile_id": "dddd0000-0000-4000-8000-000000000002"
+            }
+          ],
+          "legacy_owner": "dddd0000-0000-4000-8000-000000000001",
+          "legacy_permissions": {
+            "dddd0000-0000-4000-8000-000000000002": {
+              "content": true,
+              "students": false,
+              "submissions": false
+            }
+          }
+        }
+      }
+    ],
+    "completion": [
+      {
+        "course_id": "learning-upgrade-fixture",
+        "status": "changed",
+        "before": {
+          "all_lessons": 4,
+          "course_id": "learning-upgrade-fixture",
+          "excluded_lessons": 0,
+          "historical_completions": 1,
+          "historical_credentials": 1,
+          "required_lessons": 4
+        },
+        "after": {
+          "all_lessons": 4,
+          "course_id": "learning-upgrade-fixture",
+          "excluded_lessons": 1,
+          "historical_completions": 1,
+          "historical_credentials": 1,
+          "required_lessons": 3
+        }
+      }
+    ],
+    "enrollment_readiness": [
+      {
+        "course_id": "learning-upgrade-fixture",
+        "user_id": "dddd0000-0000-4000-8000-000000000003",
+        "status": "changed",
+        "before": {
+          "canonical_percent": 25,
+          "certificate_issued_at": "2026-01-04T00:00:00+00:00",
+          "completed_at": "2026-01-03T00:00:00+00:00",
+          "completed_required_lessons": 1,
+          "completion_sync_pending": false,
+          "course_id": "learning-upgrade-fixture",
+          "eligible_now": false,
+          "final_required": true,
+          "historical_completion_preserved": true,
+          "latest_final_status": "pending",
+          "required_lessons": 4,
+          "user_id": "dddd0000-0000-4000-8000-000000000003"
+        },
+        "after": {
+          "canonical_percent": 33.33,
+          "certificate_issued_at": "2026-01-04T00:00:00+00:00",
+          "completed_at": "2026-01-03T00:00:00+00:00",
+          "completed_required_lessons": 1,
+          "completion_sync_pending": false,
+          "course_id": "learning-upgrade-fixture",
+          "eligible_now": false,
+          "final_required": true,
+          "historical_completion_preserved": true,
+          "latest_final_status": "pending",
+          "required_lessons": 3,
+          "user_id": "dddd0000-0000-4000-8000-000000000003"
+        }
+      }
+    ],
+    "permissions": []
+  },
+  "history_changes": [],
+  "summary": {
+    "lessons": 2,
+    "attribution": 1,
+    "completion": 1,
+    "enrollment_readiness": 1,
+    "permissions": 0
+  }
+}

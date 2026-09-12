@@ -1,0 +1,65 @@
+{
+  "window_start": "2026-09-11T19:52:59Z",
+  "tested_formats": [
+    "article",
+    "video",
+    "quiz",
+    "code_exercise",
+    "practice"
+  ],
+  "mutations": [
+    {
+      "at": "2026-09-11T19:53:34.516Z",
+      "method": "POST",
+      "path": "/rest/v1/rpc/list_trending_searches",
+      "status": 200,
+      "keys": [
+        "p_limit"
+      ]
+    },
+    {
+      "at": "2026-09-11T19:54:36.799Z",
+      "method": "POST",
+      "path": "/rest/v1/rpc/list_trending_searches",
+      "status": 200,
+      "keys": [
+        "p_limit"
+      ]
+    },
+    {
+      "at": "2026-09-11T19:54:58.541Z",
+      "method": "POST",
+      "path": "/rest/v1/rpc/list_trending_searches",
+      "status": 200,
+      "keys": [
+        "p_limit"
+      ]
+    },
+    {
+      "at": "2026-09-11T19:55:15.584Z",
+      "method": "POST",
+      "path": "/rest/v1/rpc/list_trending_searches",
+      "status": 200,
+      "keys": [
+        "p_limit"
+      ]
+    },
+    {
+      "at": "2026-09-11T19:55:22.294Z",
+      "method": "POST",
+      "path": "/rest/v1/rpc/list_trending_searches",
+      "status": 200,
+      "keys": [
+        "p_limit"
+      ]
+    }
+  ],
+  "learning_writes": 0,
+  "code_preview_reload": "input empty; no saved-draft status in preview",
+  "analytics_keys": [
+    "p_course",
+    "p_event",
+    "p_lesson",
+    "p_passed"
+  ]
+}

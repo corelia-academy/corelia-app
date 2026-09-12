@@ -1,0 +1,51 @@
+{
+  "captured_at": "2026-09-12T00:27:31.292405+00:00",
+  "source_fingerprint": "4e149c6e92f8a34e580fe1f122f298708620e31def4ee85859458c53fe74daa0",
+  "migration": "20260911215843",
+  "postgres_image": "17.6.1.156",
+  "gates": {
+    "db_verify": {
+      "result": "pass",
+      "log": "/tmp/corelia-audit-db-verify-final.log",
+      "sha256": "08b295d9d7fff85500bf70a2a953d8372ecf965e766a7713ce51cca6101f2f8c"
+    },
+    "db_verify_local": {
+      "result": "pass",
+      "log": "/tmp/corelia-audit-db-local-final.log",
+      "sha256": "b019f02d78d3ccaced93aec14bd93bb719aebc429dbb8916c1c4ee04c020a968"
+    },
+    "edge": {
+      "result": "pass",
+      "log": "/tmp/corelia-audit-policy-edge.log",
+      "sha256": "e0f46476604fa432e45439595185c4674953bfd20b531ee5e2624d574c9e2ab1"
+    },
+    "storage": {
+      "result": "pass",
+      "log": "/tmp/corelia-audit-storage-final.log",
+      "sha256": "771c64b84f5c86af0db963064a74e016ac36ff15f60ec7f84e830e18b5064f42"
+    },
+    "full_tests": {
+      "result": "pass",
+      "log": "/tmp/corelia-audit-full-final.log",
+      "sha256": "7fe5353880e889d1f9ee139f66cd34f4197c3d070d4537f265aa1a4d34231a26",
+      "files": 122,
+      "tests": 858
+    },
+    "lint": {
+      "result": "pass",
+      "log": "/tmp/corelia-audit-lint-final.log",
+      "sha256": "4f9830ea8aa9961c9990f21472e135e8bba9f25b7dd96a9d4a6e670e328521d8"
+    },
+    "build": {
+      "result": "pass",
+      "log": "/tmp/corelia-audit-build-final.log",
+      "sha256": "4ce6d8d3e1b23c059ab4d265f5bf0cf7303348b969c67a292a0e5555ac3b6db3"
+    },
+    "cutover": {
+      "result": "pass",
+      "log": "/tmp/corelia-audit-cutover-final.log",
+      "sha256": "1556fca2dc0376830f070f644d91fa81b6b890f34d5737abbd2d5c5f3fd27dfe"
+    }
+  },
+  "note": "Gate evidence only; acceptance-status.md remains the sole acceptance state. Browser matrix and full diff review remain open."
+}

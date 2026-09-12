@@ -29,7 +29,7 @@
     "shell": {
       "newCourse": {
         "title": "Create a new course",
-        "description": "Set up content, pricing, and the learning journey from scratch."
+        "description": "Set up content and a free learning journey from scratch."
       },
       "careerTracks": {
         "title": "Manage career tracks",
@@ -210,7 +210,7 @@
     },
     "tip": {
       "title": "Quick setup tip",
-      "description": "Title, slug, cover image, and pricing model are the 4 fields worth locking in early so later edits go faster."
+      "description": "Choose the title, slug, and content languages before adding sections and lessons."
     },
     "section": {
       "description": "Fill in the basic information. After creating, you'll be moved to the edit page to add chapters, lessons, and advanced configuration.",
@@ -478,7 +478,7 @@
     "toasts": {
       "totalDurationRefreshed": "Total duration updated. The course list page should now display correctly.",
       "saved": "Changes saved.",
-      "assignmentApproved": "Submission approved. A certificate will be issued when the learner reaches 100% completion.",
+      "assignmentApproved": "Submission approved.",
       "assignmentRejected": "Submission rejected.",
       "certificateIssued": "Certificate issued.",
       "assignmentConfigSaved": "Assignment settings saved.",
@@ -672,6 +672,7 @@
       "sectionTitlePlaceholder": "Section title"
     },
     "questions": {
+      "number": "Question {{number}}",
       "loadFailed": "Failed to load existing questions.",
       "loadFailedBeforeGenerate": "Cannot generate questions while existing questions failed to load.",
       "loadFailedBeforeSave": "Cannot save questions while question loading is in an error state.",
@@ -875,6 +876,7 @@
       }
     },
     "assignments": {
+      "completionRequirement": "When a final assignment is configured, learners must submit it and receive approval to complete the course.",
       "titleLabel": "Assignment title",
       "titlePlaceholder": "e.g. Final project (leave blank = not required)",
       "descriptionLabel": "Description / requirements",
@@ -895,7 +897,11 @@
         "actions": "Actions"
       },
       "lessonProgress": "{{progress}}% lessons",
-      "attachments": "{{count}} attachment(s)"
+      "attachments": "{{count}} attachment(s)",
+      "viewSubmission": "View full submission",
+      "attachment": "Attachment {{number}}",
+      "unavailableAttachment": "Attachment {{number}} has an invalid link",
+      "feedback": "Review feedback"
     },
     "publishing": {
       "publishedHint": "Published (visible on the course page)",
@@ -915,7 +921,7 @@
       },
       "status": {
         "approved": "Approved",
-        "rejected": "Rejected",
+        "rejected": "Changes requested",
         "pending": "Pending",
         "notSubmitted": "Not submitted",
         "notEligible": "Not eligible",
@@ -947,7 +953,14 @@
       "moveSectionDown": "Move section {{title}} down",
       "dragLesson": "Drag to reorder lesson {{title}}",
       "moveLessonUp": "Move lesson {{title}} up",
-      "moveLessonDown": "Move lesson {{title}} down"
+      "moveLessonDown": "Move lesson {{title}} down",
+      "removeOutcome": "Remove learning outcome {{number}}",
+      "removeSkill": "Remove skill {{number}}",
+      "deleteSection": "Delete section {{title}}",
+      "editSponsor": "Edit sponsor {{title}}",
+      "removeSponsor": "Remove sponsor {{title}}",
+      "editPartner": "Edit partner {{title}}",
+      "removePartner": "Remove partner {{title}}"
     },
     "access": {
       "noPermission": "You don't have permission to edit this course.",
