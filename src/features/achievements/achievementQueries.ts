@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+import { courseCertificateCandidates } from "./courseCertificateCandidates";
 
 import {
   fetchCourseIssuanceMapForUser,
@@ -7,8 +8,6 @@ import {
 } from "@/lib/credentialIssuances";
 import { invokeListActiveCourseCredentialTemplates } from "@/lib/credentialsEdge";
 import {
-  computeProgressPercent,
-  courseHasCertificate,
   getCoursesByIds,
   getLearnerCourseProgressSnapshot,
   getMyCertificateCodes,
@@ -113,27 +112,14 @@ export function achievementVaultQueryOptions(input: {
         courseCredentialTemplateMap,
         certificateCodeMap,
       );
-      const enrollmentByCourse = new Map(
-        enrollments.map((item) => [item.course_id, item] as const),
-      );
-      const certificateSyncCandidates = courseIds.flatMap(
-        (courseId): CertificateSyncCandidate[] => {
-          if (enrollmentByCourse.get(courseId)?.certificate_issued_at) return [];
-          const course = courseMap.get(courseId);
-          if (!courseHasCertificate(course)) return [];
-          const lessons = progressSnapshot.lessonsByCourse.get(courseId) ?? [];
-          const progress = progressSnapshot.progressByCourse.get(courseId) ?? [];
-          if (lessons.length === 0 || computeProgressPercent(lessons, progress) < 100) {
-            return [];
-          }
-          return [
-            {
-              courseId,
-              courseTitle: course?.title || input.labels.fallbackCourseName,
-            },
-          ];
-        },
-      );
+      const certificateSyncCandidates = await courseCertificateCandidates({
+        userId,
+        courseIds,
+        courses: courseMap,
+        enrollments,
+        progress: progressSnapshot,
+        fallbackTitle: input.labels.fallbackCourseName,
+      });
 
       const courseIdsWithCredentialIssuance = new Set(
         issuanceRows

@@ -1,5 +1,7 @@
 # Corelia Learning System
 
+> **Cập nhật phạm vi 11/09/2026:** Giữ route `/instructor/courses`, `/instructor/courses/new`, `/instructor/courses/:id/edit` và quyền quản lý hiện hữu của instructor. Chỉ bổ sung tính năng vào editor hiện tại. Yêu cầu này thay thế phương án chuyển sang admin-only trong kế hoạch cũ; xem [quyết định hiện hành](./README.md#điều-chỉnh-phạm-vi-ngày-11092026).
+
 ## 1. Mục tiêu
 
 Corelia cải thiện trải nghiệm học hiện tại bằng phản hồi tương tác vừa đủ, không xây một Cloud IDE hay một learning platform mới song song với hệ thống đang chạy.
@@ -30,9 +32,9 @@ UI implementation specs:
 - [Learner UI](./learner-ui.md)
 - [Admin authoring UI](./admin-ui.md)
 
-## 2. Baseline hiện tại
+## 2. Baseline trước đợt Learning
 
-Repo đã có các khối cần giữ:
+Trước đợt triển khai này, repo đã có các khối cần giữ dưới đây. Đây là mô tả compatibility, không phải danh sách tính năng hiện tại hay trạng thái nghiệm thu:
 
 - `courses`, `course_sections`, `course_lessons` với nội dung mở rộng trong `data JSONB`.
 - `enrollments` và `lesson_progress` theo `user × course × lesson`.
@@ -45,7 +47,7 @@ Repo đã có các khối cần giữ:
 - Final assignment, manual review, completion sync và credential issuance.
 - Course editor, instructor/co-instructor ownership lịch sử, preview-free lesson và publish flag.
 
-Hệ thống mới phải mở rộng các khối này. Không tạo lại `modules`, `lessons`, `course_enrollments` hoặc một course builder thứ hai. Ownership và payment trong baseline không phải target: mọi course thuộc nền tảng, admin quản trị content và mọi course đều miễn phí.
+Hệ thống mới phải mở rộng các khối này. Không tạo lại `modules`, `lessons`, `course_enrollments` hoặc một course builder thứ hai. Giữ ownership và quyền quản trị instructor hiện hữu. Mọi course đều miễn phí.
 
 ## 3. Phạm vi sản phẩm tối ưu
 
@@ -95,7 +97,7 @@ Một Instructor Studio mới song song
 Mobile IDE
 Analytics warehouse riêng
 Course marketplace, checkout và paywall
-Instructor/co-instructor permission matrix
+Một permission matrix mới thay thế quyền instructor/co-instructor hiện hữu
 Learner AI tutor, chat sidebar và explain-selection UI
 ```
 
@@ -111,95 +113,13 @@ Course
 
 Không đổi tên `section` thành `module` ở database. UI có thể dịch thành “Chương” hoặc “Module” theo locale mà không thay schema.
 
-### Platform ownership và instructor attribution
+### Instructor ownership và attribution
 
-Mọi course thuộc Corelia; course không thuộc một instructor account. Chỉ tài khoản có role `admin` được tạo, sửa, sắp xếp, publish hoặc archive course content.
+Giữ `courses.instructor_id` và cơ chế phân quyền course hiện hữu. Instructor quản lý khóa học của mình; co-instructor có quyền theo từng feature đã được cấp. Quyền admin/support hiện có được giữ, không mở quyền cho instructor đối với course của người khác.
 
-Instructor là metadata hiển thị dưới dạng danh sách, không phải authorization principal:
+RPC mới dùng `private.can_manage_course` hoặc `private.can_manage_course_feature`, tương ứng quyền sửa course, content, submissions và students. UI dùng guard workspace hiện hữu. Attribution chỉ bổ sung thông tin hiển thị; việc xuất hiện trong metadata không tự cấp quyền.
 
-```ts
-interface CourseInstructorRef {
-  profile_id: string;
-  role_label?: string; // ví dụ: "Lead Instructor", chỉ để hiển thị
-  order: number;
-}
-
-interface Course {
-  // existing course fields
-  instructors: CourseInstructorRef[];
-}
-```
-
-- Admin chọn một hoặc nhiều profile đã tồn tại và sắp xếp thứ tự hiển thị.
-- Tên, avatar, headline và organization được resolve từ profile; không sao chép permission vào course.
-- Instructor không tự động có quyền sửa course vì xuất hiện trong danh sách.
-- Admin editor có một mục `Instructors` dạng danh sách với thao tác Add, Remove và Reorder; không có checkbox permission.
-- Course detail hiển thị danh sách theo `order`. Nếu danh sách trống, hiển thị Corelia là đơn vị phát hành thay vì tạo instructor giả.
-- Bỏ target `owner_type`, revenue share, co-instructor invites và per-course permission matrix khỏi learning system.
-- `courses.instructor_id` hiện đang bắt buộc ở database chỉ được giữ như field legacy trong giai đoạn migration; authorization mới không dựa vào field này. Migration xóa/nullable field chỉ thực hiện sau khi mọi query và RLS đã chuyển sang admin-only.
-
-`CourseLesson` tiếp tục giữ các field phổ biến hiện có. Thêm config theo format trong `course_lessons.data`:
-
-```ts
-interface CourseLesson {
-  id: string;
-  section_id: string;
-  title: string;
-  lesson_format: LessonFormat;
-  short_description?: string;
-  description_markdown?: string;
-  resources?: LessonResource[];
-  order: number;
-  youtube_url?: string;
-  youtube_start_seconds?: number;
-  youtube_end_seconds?: number | null;
-
-  quiz_config?: QuizConfig;
-  practice_config?: PracticeConfig;
-  code_exercise_config?: CodeExerciseConfig;
-}
-
-interface QuizConfig {
-  passing_ratio: number; // 0..1, default 0.7 for legacy data
-  allow_retry: boolean;  // default true
-}
-
-interface PracticeConfig {
-  mode: "instruction" | "checklist" | "submission" | "guided_project";
-  checklist_items?: Array<{ id: string; label: string }>;
-  requires_review?: boolean; // default false
-
-  // guided_project only
-  project_steps?: GuidedProjectStep[];
-  submission_fields?: Array<
-    | "github_url"
-    | "deployment_url"
-    | "contract_address"
-    | "transaction_url"
-    | "demo_url"
-    | "notes"
-  >;
-  related_hackathon_id?: string;
-  related_project_template_id?: string;
-}
-
-interface GuidedProjectStep {
-  id: string;
-  title: string;
-  instructions_markdown?: string;
-  verification?: "self_check" | "artifact_required";
-  order: number;
-}
-```
-
-`practice_source_lesson_id` hiện hữu tiếp tục được giữ cho practice liên kết tới bài nội dung nguồn. `CodeExerciseConfig` được định nghĩa trong [Code Exercise](./code-exercise.md), không lặp lại một schema thứ hai tại đây.
-
-Invariant:
-
-- Chỉ config tương ứng với `lesson_format` được sử dụng.
-- Content có thể dịch nằm trong locale record; rule, IDs và cấu hình máy đọc không nhân bản theo locale.
-- Lesson ID ổn định khi đổi nội dung hoặc locale để không làm mất progress.
-- Không yêu cầu admin nhập thời lượng ước tính mới.
+Không đổi route edit, xóa cơ chế invite hay thay quyền ownership trong đợt này. Giữ các phần thông tin, sponsor/partner, PDF certificate, OpenCampus Credentials, thông báo và quản lý học viên; thêm format, publication và preview vào editor hiện hữu.
 
 ### Xử lý duration hiện hữu
 
@@ -333,12 +253,12 @@ type PracticeMode =
 
 Một guided project có thể là một lesson cho project ngắn hoặc một section gồm nhiều lesson `practice` cho project dài. Mode này không nhúng compiler, terminal hoặc deploy runtime vào browser.
 
-Artifact được cấu hình bằng các field có kiểu rõ như GitHub URL, deployment URL, contract/program address, transaction URL, demo URL và notes. Learner draft được lưu trong submission flow hiện hữu nếu tương thích; nếu chưa có storage phù hợp, guided project chỉ được publish với `requires_review = false` và lưu artifact ở course final assignment. Không tạo một bảng submission tổng quát trước khi pilot chứng minh cần review ở cấp lesson.
+Artifact dùng các field GitHub URL, deployment URL, contract address, transaction URL, demo URL và notes. Draft lưu local theo user/course/lesson/revision; bài nộp chính thức lưu ở final assignment cấp course. `requires_review=true` ở lesson bị chặn publish; không tạo submission/review riêng từng lesson.
 
 Completion:
 
 - Không review: tất cả required steps được check và mọi required artifact hợp lệ; sau đó learner tự hoàn thành lesson.
-- Có review: submission phải được admin approve trước khi lesson complete.
+- Review chỉ ở final assignment của course; lesson không có submission/review riêng. Course completion đợi final assignment được reviewer có quyền approve.
 - Project là đầu ra cuối khóa: tiếp tục dùng course final assignment hiện hữu; guided project lessons đóng vai trò hướng dẫn, không tạo bản submission thứ hai.
 
 ### Code exercise
@@ -349,7 +269,7 @@ Một lesson type với `fill | edit`, single-file Rust và client-side text val
 
 Wireframes, form behavior, YouTube video flow và component mapping được khóa tại [Admin Authoring UI](./admin-ui.md).
 
-Tái sử dụng course editor hiện hữu nhưng route và authorization target là admin-only. Không tạo một Instructor Studio hoặc co-instructor workflow mới.
+Mở rộng course editor hiện hữu tại `/instructor/courses/:id/edit`, giữ route và mô hình quyền đang chạy. Không tạo course editor thứ hai.
 
 Lesson editor có shell chung:
 
@@ -377,7 +297,7 @@ Admin chỉ có thể publish course khi:
 - Guided project có ít nhất một step; mọi step có stable ID, title và verification mode.
 - Mỗi step `artifact_required` ánh xạ tới ít nhất một required submission field.
 - `requires_review = true` chỉ hợp lệ khi review surface và storage tương ứng đã sẵn sàng.
-- Related hackathon/project template, nếu có, phải tồn tại và được learner truy cập.
+- Related hackathon/project, nếu có, phải tồn tại và công khai khi publish. `related_project_template_id` chỉ giữ legacy; phải gỡ trước publish, không tự đổi thành project ID.
 
 - Có title, section và ít nhất một lesson publishable.
 - Mỗi lesson có content tối thiểu đúng theo format.
@@ -420,7 +340,7 @@ RLS/application rules:
 - Anonymous chỉ đọc course/lesson đã publish và metadata public.
 - Learner đã đăng nhập có thể học toàn bộ lesson đã publish và lưu progress.
 - Learner chỉ đọc progress, attempts và submissions của chính mình.
-- Chỉ `admin` được tạo/sửa/publish/archive course, section, lesson, quiz question và test config.
+- Instructor được tạo course; owner và staff quản trị course theo quyền hiện hữu. Co-instructor có feature content được sửa section/lesson/question/config, feature submissions được review, feature students được đọc roster. Attribution không cấp các quyền này.
 - Instructor attribution không cấp quyền authoring hoặc learner-data access.
 - Learner không thể sửa question answer, tests hoặc completion rule.
 - Quiz và reviewed-submission completion được ghi qua trusted path; content/code self-practice dùng progress flow hiện hữu.
@@ -470,10 +390,10 @@ Không cần per-test dashboard, funnel builder, time-to-deploy hoặc blockchai
 - Gom completion action theo lesson format.
 - Viết characterization tests cho article, video, quiz, practice, access và progress.
 - Ghi nhận consumer của duration trước khi ẩn field khỏi authoring.
-- Chuyển course mutation authorization sang admin-only; danh sách instructor chỉ còn metadata hiển thị.
+- Giữ course mutation authorization hiện hữu; RPC learning mới tái sử dụng helper quyền theo course/feature.
 - Ẩn checkout/paywall/price khỏi learning flow nhưng bảo toàn dữ liệu legacy trong migration đầu.
 - Normalize mọi course hiện tại về hành vi `free`; `is_preview_free` không còn ảnh hưởng learner access.
-- Chuyển route tạo/sửa course sang admin guard; ngừng dùng instructor/co-instructor ownership để authorize.
+- Giữ route tạo/sửa course, instructor ownership và quyền co-instructor theo feature.
 - Backfill `courses.data.instructors` từ instructor attribution hiện hữu khi profile còn hợp lệ; không copy permission.
 - Giữ các bảng invite/permission cũ bất hoạt trong lần đầu, rồi xóa ở migration cleanup riêng sau khi xác nhận không còn consumer.
 - Không tạo compatibility placeholder cho learner AI trong learning routes.
@@ -489,7 +409,7 @@ Không cần per-test dashboard, funnel builder, time-to-deploy hoặc blockchai
 ### Phase 2 — Practice cleanup
 
 - Bổ sung `PracticeMode` cho instruction, checklist, submission và guided project.
-- Thêm guided-project steps, typed artifact fields và liên kết hackathon/project template.
+- Thêm guided-project steps, typed artifact fields và liên kết hackathon/project công khai.
 - Dùng final assignment hiện hữu cho project cuối khóa có review.
 - Hướng course mới từ section quiz sang quiz lesson; chưa xóa dữ liệu cũ.
 
@@ -516,7 +436,7 @@ Không có phase blockchain verification, browser runtime hoặc course versioni
 - Video/article/quiz/practice hiện hữu render và complete không regression.
 - Progress và credential đã cấp không bị thay đổi khi deploy schema/config mới.
 - Locale switch giữ nguyên lesson và completion.
-- Legacy ownership/payment fields còn dữ liệu nhưng không cấp quyền hoặc tạo paywall trong target flow.
+- Ownership tiếp tục cấp quyền theo cơ chế hiện hữu; không có paywall.
 
 ### Learner
 
@@ -527,7 +447,7 @@ Không có phase blockchain verification, browser runtime hoặc course versioni
 - System error không bị tính là failed attempt.
 - Mobile article/video/quiz/practice hoạt động; code edit đưa ra desktop guidance phù hợp.
 
-### Admin authoring
+### Instructor/staff authoring
 
 - Không thể publish lesson thiếu content/config bắt buộc.
 - Preview dùng đúng renderer learner và không ghi progress.
@@ -540,7 +460,7 @@ Không có phase blockchain verification, browser runtime hoặc course versioni
 
 - Learner không thể complete quiz bằng cách gửi `passed: true` trực tiếp; code exercise không đặt mục tiêu anti-cheat.
 - Attempt/submission của learner khác không đọc được.
-- Non-admin, kể cả profile xuất hiện trong danh sách instructor, không sửa được course content.
+- Chỉ owner, co-instructor có feature content hoặc staff theo quyền hiện hữu được sửa course content. Profile chỉ có attribution không được cấp quyền mutation.
 - Course/lesson chưa publish không bị lộ cho anonymous learner.
 
 ## 15. Quyết định đã khóa
@@ -557,7 +477,7 @@ Không có phase blockchain verification, browser runtime hoặc course versioni
 10. Learner và admin preview dùng chung renderer.
 11. Course completion tách khỏi credential issuance.
 12. Chỉ mở rộng sau khi pilot tạo ra nhu cầu đo được.
-13. Mọi course thuộc nền tảng; chỉ admin sửa content.
+13. Instructor quản lý course theo ownership/quyền hiện hữu; không tạo editor hoặc route quản trị thay thế.
 14. Instructor là danh sách attribution, không phải permission model.
 15. Video lesson chỉ dùng YouTube URL trong phase hiện tại; managed hosting để sau.
 16. Mọi course hiện tại đều miễn phí; payment và paid access để sau.

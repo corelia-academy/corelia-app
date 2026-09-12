@@ -1,3 +1,8 @@
+import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { getPublicProfileById } from "@/lib/profile";
+import { parseCourseInstructors } from "@/features/learning/courseInstructors";
+import type { CourseInstructorRef } from "@/features/learning/types";
 import {
   Globe,
   Github,
@@ -14,7 +19,8 @@ import type { CourseCoInstructorSnapshot } from "@/types/courses";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface CourseInstructorSectionProps {
-  profile: PublicProfile;
+  profile?: PublicProfile | null;
+  instructors?: CourseInstructorRef[];
   coInstructors?: CourseCoInstructorSnapshot[];
 }
 
@@ -134,10 +140,44 @@ function InstructorCard({
 export function CourseInstructorSection({
   profile,
   coInstructors,
+  instructors,
 }: CourseInstructorSectionProps) {
   const { t } = useTranslation("courses");
   const translate = (key: string) => String(t(key as never));
 
+  const storedAttribution = instructors === undefined ? null : parseCourseInstructors(instructors);
+  // Existing co-instructor visibility controls remain authoritative. Newly
+  // accepted visible co-instructors must still appear after the one-time backfill.
+  const hiddenIds = new Set((coInstructors ?? []).filter(item => item.show_on_course_page === false).map(item => item.id));
+  const attributedIds = new Set(storedAttribution?.map(item => item.profile_id));
+  const attribution: CourseInstructorRef[] | null = storedAttribution === null ? null : [
+    ...storedAttribution.filter(item => !hiddenIds.has(item.profile_id)),
+    ...(coInstructors ?? []).filter(item => !hiddenIds.has(item.id) && !attributedIds.has(item.id))
+      .map((item, index) => ({ profile_id: item.id, order: storedAttribution.length + index })),
+  ];
+  const attributionQuery = useQuery({
+    queryKey: ["learning-attribution", attribution?.map(item => item.profile_id) ?? []],
+    queryFn: () => Promise.all((attribution ?? []).map(item => getPublicProfileById(item.profile_id))),
+    enabled: attribution !== null && attribution.length > 0,
+    staleTime: 30_000,
+  });
+  if (attribution !== null) {
+    if (attribution.length === 0) return null;
+    return <section className="mt-6 rounded-2xl border border-border-subtle bg-surface-base p-4 sm:p-6">
+      <h2 className="text-heading-small font-display">{translate("detail.courseDetail.instructor.titlePlural")}</h2>
+      {attributionQuery.isPending ? <p role="status">{translate("learning.loading")}</p> : null}
+      {attributionQuery.isError ? <div role="alert"><p>{translate("learning.loadError")}</p><Button type="button" variant="outline" onClick={() => void attributionQuery.refetch()}>{translate("learning.retry")}</Button></div> : null}
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">{attribution.map((item, index) => {
+        const person = attributionQuery.data?.[index];
+        if (!person) return null;
+        return <InstructorCard key={item.profile_id} avatarUrl={person.avatar_url}
+          name={person.full_name?.trim() || translate("detail.courseDetail.instructor.fallbackName")}
+          meta={item.role_label} bio={person.instructor_bio?.trim() || person.bio?.trim()}
+          profileLink={person.role === "instructor" ? `/instructors/${person.id}` : person.username ? `/@${encodeURIComponent(person.username)}` : undefined} />;
+      })}</div>
+    </section>;
+  }
+  if (!profile) return null;
   const mainName = profile.full_name?.trim() || translate("detail.courseDetail.instructor.fallbackName");
   const mainMeta = [profile.instructor_headline, profile.instructor_organization]
     .filter(Boolean)

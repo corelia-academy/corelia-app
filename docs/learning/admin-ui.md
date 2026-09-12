@@ -1,21 +1,23 @@
-# Admin Learning Authoring UI
+# Instructor Learning Authoring UI
 
-Tài liệu này định nghĩa UI để admin quản lý toàn bộ course content. Instructor chỉ là attribution list; không có instructor/co-instructor workspace hoặc permission controls.
+> **Cập nhật phạm vi 11/09/2026:** Giữ route `/instructor/courses`, `/instructor/courses/new`, `/instructor/courses/:id/edit` và quyền quản lý hiện hữu của instructor. Chỉ bổ sung tính năng vào editor hiện tại. Yêu cầu này thay thế phương án chuyển sang admin-only trong kế hoạch cũ; xem [quyết định hiện hành](./README.md#điều-chỉnh-phạm-vi-ngày-11092026).
+
+Tài liệu này định nghĩa tính năng bổ sung cho editor instructor hiện hữu. Giữ ownership, quyền co-instructor theo feature và các panel vận hành đang có.
 
 ## 1. Routes và authorization
 
 Target routes:
 
 ```text
-/admin/learning/courses
-/admin/learning/courses/new
-/admin/learning/courses/:courseId
-/admin/learning/courses/:courseId/preview/:lessonId?
+/instructor/courses
+/instructor/courses/new
+/instructor/courses/:id/edit
+/instructor/courses/:id/preview/:lessonId?
 ```
 
-- Tất cả route dùng admin guard trước khi fetch editable data.
-- Có thể tái sử dụng `InstructorCourseEdit` trong migration đầu nhưng component/route mới phải đặt dưới admin ownership.
-- Non-admin nhận `403`/redirect; việc profile nằm trong course instructor list không thay đổi kết quả.
+- Route dùng guard instructor workspace và kiểm tra quyền theo course/feature trước khi cho phép mutation.
+- `InstructorCourseEdit` tiếp tục là editor chính; thêm lesson builder/preview vào trong editor này.
+- Instructor sở hữu course hoặc co-instructor được cấp feature tương ứng có quyền; người không có quyền nhận `403`/redirect.
 
 ## 2. Course list
 
@@ -40,7 +42,7 @@ Actions:
 - Publish/Unpublish theo validation.
 - Archive; delete chỉ dành cho course draft chưa có learner data và cần confirm rõ.
 
-Không có owner filter, instructor permission, revenue, price hoặc payment columns.
+Giữ quyền và invite co-instructor hiện hữu trong editor. Không thêm revenue, price hoặc payment columns.
 
 States:
 
@@ -50,6 +52,8 @@ States:
 - Load error: inline retry, không thay bằng empty state.
 
 ## 3. Course editor shell
+
+Wireframe dưới đây nhóm trách nhiệm thiết kế, không yêu cầu đổi tên hoặc thay navigation editor đang có. Implementation giữ General info, Content & lessons, Final assignment, Certificate/OpenCampus Credentials, Announcements và Manage students. Attribution nằm trong General info; locale dùng bộ chọn ngôn ngữ hiện hữu. Hướng dẫn thao tác thực tế ở [authoring và review](authoring-and-review.md).
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────┐
@@ -134,7 +138,7 @@ Rules:
 - Drag hoặc Move up/down để reorder, luôn có keyboard alternative.
 - Role label là localized display text nếu product cần dịch; không phải system role.
 - Remove chỉ bỏ attribution khỏi course, không xóa profile.
-- Không có permission checkbox, invite, ownership transfer hoặc publish rights.
+- Giữ permission controls và invite hiện hữu; attribution không tự cấp thêm quyền.
 
 ## 6. Curriculum editor
 
@@ -289,11 +293,11 @@ Submission:
 ```text
 Instructions
 Accepted input: [Text] [URL] [File]
-Requires admin review [on/off]
+Review: course final assignment
 ```
 
 - Chỉ bật input type đã có storage/validation implementation.
-- Nếu `requires_review`, admin cần review surface trước khi course dùng format này trong production.
+- `requires_review=true` ở lesson bị chặn publish. Review chỉ dùng final assignment cấp course.
 - Course final assignment vẫn cấu hình ở panel riêng, không nhân bản tự động thành practice lesson.
 
 Guided project:
@@ -313,15 +317,15 @@ Required artifacts
 [ ] Deployment URL   [ ] Transaction URL   [ ] Notes
 
 Related hackathon (optional)
-Project template (optional)
-Requires admin review [off]
+Public reference project (optional)
+Lesson-level review: unavailable
 ```
 
 - Steps có stable ID, reorder và validation giống checklist; mỗi step chọn `self_check` hoặc `artifact_required`.
 - Không có terminal, compiler, wallet signing hoặc deploy action trong editor/preview.
 - Admin phải cung cấp command và expected outcome trong instructions khi yêu cầu Cargo, Anchor, Foundry hoặc chain CLI.
 - Nếu project là final assignment, editor chỉ cấu hình steps hướng dẫn và liên kết tới final assignment; không bật một submission thứ hai.
-- Không cho publish `requires_review = true` trước khi review surface và storage tương ứng đã tồn tại.
+- Không cho publish lesson có `requires_review = true` trong phạm vi này; reviewer dùng duy nhất final assignment cấp course.
 
 ## 12. Code exercise editor
 
@@ -338,7 +342,7 @@ Desktop:
 Reference solution [tab]
 ```
 
-- Fill: admin selects source range, action `Make blank`, then configures accepted answers.
+- Fill: chọn đoạn source và dùng Make blank from selection, hoặc nhập marker `{{blank:id}}` trong starter; cấu hình accepted answers cho từng blank.
 - Edit: entire starter file editable; no file tree in MVP.
 - MVP tests chỉ có source-equals, contains và not-contains; không có regex hoặc AST UI.
 - `Validate solution` runs all required tests.
@@ -358,7 +362,7 @@ Requires approval before course completion [on]
 ```
 
 - Không có certificate fee.
-- Review queue là admin-only.
+- Review queue dùng quyền `submissions` hiện hữu trên course; learner không duyệt bài của mình.
 - Disable final assignment không xóa submissions cũ; confirm ảnh hưởng completion policy.
 
 ## 14. Preview
@@ -411,7 +415,7 @@ Reuse/refactor:
 
 ```text
 InstructorCourseEdit.tsx
-→ tách orchestration và panels; mount dưới admin route trong migration
+→ thêm tính năng vào editor và route instructor hiện hữu
 
 LessonFormatSelector.tsx
 → thêm code_exercise; remove paid-preview behavior từ consumer
@@ -442,8 +446,8 @@ Không tạo một form monolith mới. Mỗi panel nhận typed draft và callb
 
 ## 18. Admin UI acceptance criteria
 
-- Chỉ admin mở được mọi authoring route và mutation.
-- Course list/editor không hiển thị owner, co-instructor permissions, pricing hoặc payment fields.
+- Instructor/owner và co-instructor mở được đúng feature đã cấp; không sửa được course ngoài phạm vi quyền.
+- Course editor giữ co-instructor permissions/invites hiện hữu; không hiển thị pricing hoặc payment fields.
 - Instructor list hỗ trợ add/remove/reorder và không thay authorization.
 - Video lesson dùng YouTube URL, optional start/end seconds và shared learner preview.
 - Course không publish khi YouTube URL hoặc lesson config invalid.

@@ -39,13 +39,30 @@ test("CASE P0: exact prior Production release + current pending set => PASS", ()
   assert.deepEqual(result.pendingVersions, CURRENT_PENDING_VERSIONS);
 });
 
-test("CASE P0b: repository migrations exactly match the frozen baseline plus approved pending set", () => {
+test("CASE P0b: development chain preserves the approved release and allows later forward migrations", () => {
   const localVersions = readdirSync(resolve(process.cwd(), "supabase/migrations"))
     .map((name) => name.match(/^(\d{14})_[^/]+\.sql$/)?.[1])
     .filter(Boolean)
     .sort();
 
-  assert.deepEqual(localVersions, [...realReleasedVersions, ...APPROVED_PENDING_VERSIONS]);
+  const approvedRelease = [...realReleasedVersions, ...APPROVED_PENDING_VERSIONS];
+  // The immutable historical baseline remains a prefix. Concurrent feature
+  // branches may add forward migrations before a subsequently approved release
+  // migration; local development must preserve that approved set as a subsequence.
+  // Whether that interleaving can be deployed is checked by the release verifier,
+  // not by granting those development migrations Production approval here.
+  assert.deepEqual(localVersions.slice(0, realReleasedVersions.length), realReleasedVersions);
+  const approved = new Set(approvedRelease);
+  assert.deepEqual(localVersions.filter(version => approved.has(version)), approvedRelease);
+  const developmentVersions = localVersions.filter(version => !approved.has(version));
+  assert.equal(new Set(localVersions).size, localVersions.length);
+  assert.ok(developmentVersions.every(version => version > realReleasedVersions.at(-1)));
+  // Development migrations are valid locally but never implicitly approved for Production.
+  if (developmentVersions.length) {
+    const result = validate({ localVersions });
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join("\n"), /Local migration chain is not the released baseline|Pending migration set differs/);
+  }
 });
 
 test("CASE P0c: exact fully released remote chain is accepted for an idempotent retry", () => {

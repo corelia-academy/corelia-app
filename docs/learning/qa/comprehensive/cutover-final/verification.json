@@ -1,0 +1,41 @@
+{
+  "postgres_image": "public.ecr.aws/supabase/postgres:17.6.1.156",
+  "passed": true,
+  "history_sha256": "91f92982d066eb5b5f3c2d57c49637b4b8ec6c03634edc7aecfcca932ea0c163",
+  "history_unchanged": true,
+  "permissions_unchanged": true,
+  "compatibility_probes_passed": true,
+  "migrations": 223,
+  "invalid_lessons": [
+    {
+      "issues": [
+        "content_required"
+      ],
+      "archived": false,
+      "course_id": "learning-upgrade-fixture",
+      "lesson_id": "legacy-empty",
+      "published": false,
+      "public_visible": false
+    },
+    {
+      "issues": [
+        "invalid_questions"
+      ],
+      "archived": false,
+      "course_id": "learning-upgrade-fixture",
+      "lesson_id": "legacy-malformed-quiz",
+      "published": true,
+      "public_visible": true
+    },
+    {
+      "issues": [
+        "invalid_locale_copy"
+      ],
+      "archived": false,
+      "course_id": "learning-upgrade-fixture",
+      "lesson_id": "legacy-video",
+      "published": true,
+      "public_visible": true
+    }
+  ]
+}

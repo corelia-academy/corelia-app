@@ -1,0 +1,16 @@
+{
+  "history": [
+    "rejected",
+    "approved"
+  ],
+  "progress": 12,
+  "completed": true,
+  "credential_issued": false,
+  "checked_at": "2026-09-12T00:39:49.735838+00:00",
+  "learner": "ec999a47-120e-416d-89d8-52fb5b6f84fc",
+  "pending_before_review": {
+    "progress": 12,
+    "completed_at": null
+  },
+  "source_fingerprint": "4e149c6e92f8a34e580fe1f122f298708620e31def4ee85859458c53fe74daa0"
+}

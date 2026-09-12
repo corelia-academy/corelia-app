@@ -1,0 +1,7 @@
+{
+  "local_only": true,
+  "path": "/var/folders/wt/mpk6kfyn7bn_l8370xn3hrn00000gp/T/corelia-pre-final-reset-kj4obtw_/qa.dump",
+  "bytes": 1343772,
+  "sha256": "d90dfe694732112e7445e114ca830f13c7eea4164beca871c8c9bbc254a65b15",
+  "purpose": "Preserve QA data before authorized disposable fresh-install gate"
+}

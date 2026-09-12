@@ -71,7 +71,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Start isolated local Supabase stack
-        run: pnpm exec supabase start
+        run: |
+          # Reserved-role denial probes crash on the CLI's older default image.
+          mkdir -p supabase/.temp
+          printf '%s' '17.6.1.156' > supabase/.temp/postgres-version
+          pnpm exec supabase start
 
       - name: Apply every migration to an empty local database
         run: pnpm db:verify:local

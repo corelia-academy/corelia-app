@@ -1,10 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "../lib/supabase.ts";
-const mocks = vi.hoisted(() => ({ moderate: vi.fn(), links: vi.fn(), rpc: vi.fn(), existing: vi.fn() }));
+const mocks = vi.hoisted(() => ({ moderate: vi.fn(), rpc: vi.fn(), existing: vi.fn() }));
 vi.mock("../lib/supabase.ts", () => ({ verifyBearerUser: async () => ({ id: "11111111-1111-4111-8111-111111111111" }) }));
 vi.mock("./openai.ts", () => ({
   moderateProjectText: mocks.moderate,
-  verifyPublicProjectLinks: mocks.links,
   moderateProjectImage: vi.fn(),
   ProjectAiError: class extends Error {},
 }));
@@ -22,9 +21,40 @@ describe("project story save handler", () => {
     expect(response.status).toBe(200);
     expect(mocks.moderate).toHaveBeenCalledWith(expect.arrayContaining([{field:"description",text:"Detailed story"},{field:"progress",text:"Built a prototype"}]));
     expect(JSON.stringify(mocks.moderate.mock.calls)).not.toContain("youtu.be");
-    expect(JSON.stringify(mocks.links.mock.calls)).not.toContain("youtu.be");
     expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project",expect.objectContaining({p_description:"Detailed story",p_progress:"Built a prototype",p_pitch_video_url:"https://youtu.be/pitch"}));
   });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it.each([
+    { source: "standalone", existing: false },
+    { source: "standalone", existing: true },
+    { source: "hackathon", existing: false },
+    { source: "hackathon", existing: true },
+  ])("saves external resource URLs without fetching destinations or sending them to AI: %j", async ({ source, existing }) => {
+    const fetchMock = vi.fn().mockRejectedValue(new Error("External access unavailable"));
+    vi.stubGlobal("fetch", fetchMock);
+    mocks.existing.mockResolvedValue({ data: existing ? { source_type: source } : null, error: null });
+    for (const slide of ["https://canva.link/uaa6hz3b6rgwlp3", "https://docs.google.com/presentation/d/example/edit?usp=sharing"]) {
+      const resources = {
+        demo_url: "https://demo.example.com/",
+        repo_url: "https://github.com/corelia/app",
+        slide_url: slide,
+        video_url: "https://youtu.be/demo",
+        pitch_video_url: "https://www.loom.com/share/pitch",
+      };
+      const response = await handleProjectSave(request({ source_type: source, ...resources }), db);
+      expect(response.status).toBe(200);
+      expect(mocks.rpc).toHaveBeenLastCalledWith("save_ai_gated_project", expect.objectContaining(
+        Object.fromEntries(Object.entries(resources).map(([field, url]) => [`p_${field}`, url])),
+      ));
+      expect(mocks.moderate).toHaveBeenCalled();
+      for (const url of Object.values(resources)) {
+        expect(JSON.stringify(mocks.moderate.mock.calls)).not.toContain(url);
+      }
+    }
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("preserves omitted story fields but forwards explicit clearing", async () => {
     await handleProjectSave(request({description:null,visibility:"private"}),db);
     expect(mocks.rpc).toHaveBeenLastCalledWith("save_ai_gated_project",expect.objectContaining({p_description:null,p_progress:null,p_pitch_video_url:null}));
@@ -83,9 +113,26 @@ describe("project story save handler", () => {
     expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project", expect.objectContaining({ p_progress: "" }));
   });
 
-  it("still rejects invalid optional links before persistence", async () => {
-    const response = await handleProjectSave(request({ source_type: "hackathon", progress: "Researched the problem", demo_url: "http://example.com" }), db);
+  it.each([
+    ["demo_url", "not a URL"],
+    ["demo_url", "http://example.com"],
+    ["slide_url", "javascript:alert(1)"],
+    ["slide_url", "https://user:password@example.com/slides"],
+    ["demo_url", "https://localhost/demo"],
+    ["demo_url", "https://192.168.1.1/demo"],
+    ["slide_url", "https://[::1]/slides"],
+    ["repo_url", "https://github.com/corelia/app/issues"],
+    ["repo_url", "https://gitlab.com/corelia/app"],
+    ["video_url", "http://youtu.be/demo"],
+    ["pitch_video_url", "http://youtu.be/pitch"],
+    ["slide_url", `https://example.com/${"a".repeat(2048)}`],
+  ])("rejects invalid optional %s before moderation or persistence", async (field, url) => {
+    const response = await handleProjectSave(request({ source_type: "hackathon", [field]: url }), db);
+  ])("rejects invalid optional %s before moderation or persistence", async (field, url) => {
+    const response = await handleProjectSave(request({ source_type: "hackathon", [field]: url }), db);
     expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ message: `invalid_url:${field}` });
+    expect(mocks.moderate).not.toHaveBeenCalled();
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
 

@@ -101,7 +101,6 @@ export async function listJobs(filters: JobFilters, userId?: string | null): Pro
   }
   if (normalized.salaryCurrency) query = query.eq("salary_currency", normalized.salaryCurrency.toUpperCase());
   const { data, error, count } = await query
-    .order("ranking_score", { ascending: false })
     .order("posted_at", { ascending: false, nullsFirst: false })
     .order("id", { ascending: true })
     .range(offset, offset + normalized.pageSize - 1);

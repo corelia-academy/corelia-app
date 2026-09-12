@@ -1,0 +1,10 @@
+{
+  "checked_at": "2026-09-11T23:59:26.274115+00:00",
+  "migration": "20260911215843",
+  "image": "17.6.1.156",
+  "sha256_before": "c972065111f7a5fb5ff6803e3f2145ead8fb45975c70ac2d3966a5bd3e077e25",
+  "sha256_after": "c972065111f7a5fb5ff6803e3f2145ead8fb45975c70ac2d3966a5bd3e077e25",
+  "matched": true,
+  "scope": "public/auth/storage data; QA and outside-Learning rows preserved",
+  "backup_bytes": 75468
+}

@@ -36,7 +36,7 @@ export async function canManageHackathon(db: SupabaseClient, uid: string, hackat
   return createdBy === uid;
 }
 
-export async function canManageCourse(db: SupabaseClient, uid: string, courseId: string): Promise<boolean> {
+export async function canManageCourse(db: SupabaseClient, uid: string, courseId: string, requiredFeatures?: readonly string[]): Promise<boolean> {
   const [role, courseRes] = await Promise.all([
     getUserRole(db, uid),
     db.from("courses").select("instructor_id, data").eq("id", courseId).maybeSingle(),
@@ -47,5 +47,12 @@ export async function canManageCourse(db: SupabaseClient, uid: string, courseId:
   if (role !== "instructor") return false;
   if (String(courseRes.data.instructor_id ?? "") === uid) return true;
   const data = (courseRes.data.data ?? {}) as Record<string, unknown>;
+  if (requiredFeatures) {
+    const permissions = data.co_instructor_permissions;
+    if (!permissions || typeof permissions !== "object" || Array.isArray(permissions)) return false;
+    const assigned = (permissions as Record<string, unknown>)[uid];
+    return Boolean(assigned && typeof assigned === "object" && !Array.isArray(assigned) &&
+      requiredFeatures.some(feature => (assigned as Record<string, unknown>)[feature] === true));
+  }
   return isCoInstructor(data, uid);
 }

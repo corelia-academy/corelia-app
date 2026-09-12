@@ -25,6 +25,8 @@ The live catalog is runtime state to verify, never a place to make an undocument
 | `pnpm db:verify` | Runs both static guardrails. |
 | `pnpm db:verify:local` | Resets the **local** Supabase database only; never use `--linked`. Requires Docker/local Supabase and skips seed data. |
 
+Local development may append forward migrations after the approved release chain; checksum/name/version checks still apply through the baseline verifier. Production validation remains exact: new local migrations are not added to the approved pending set automatically. CASE P0b tests this separation, including rejection of unapproved development migrations by the Production verifier.
+
 ## Catalog fingerprint capture
 
 `node scripts/db/catalog-fingerprint.mjs --input <read-only-catalog-export.json> --output <fingerprint.json>` creates raw and conservative semantic fingerprints for tables, constraints, RLS, functions and triggers. Indexes are recorded but report-only in Wave 0.

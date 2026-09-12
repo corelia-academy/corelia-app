@@ -1,3 +1,4 @@
+import { useLearningConfirm } from "@/features/learning/useLearningConfirm";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -122,9 +123,11 @@ export function CourseOcbCredentialSection({
   });
   const credentialQuery = useQuery(queryOptions);
   const { mutateAsync: executeOperation } = useMutation({
-    mutationFn: (operation: () => Promise<unknown>) => operation(),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryOptions.queryKey });
+    mutationFn: async (operation: () => Promise<unknown>) => {
+      const queryKey = queryOptions.queryKey;
+      const result = await operation();
+      void queryClient.invalidateQueries({ queryKey });
+      return result;
     },
   });
   const loading = credentialQuery.isPending;
@@ -343,6 +346,7 @@ export function CourseOcbCredentialSection({
    *  React has flushed the state update. Defaults to the current `isActive`
    *  state for the manual Save button path. Returns whether the save went
    *  through, so callers can roll back optimistic UI on failure. */
+  const { confirm, confirmation } = useLearningConfirm();
   const handleSave = async (active = isActive): Promise<boolean> => {
     if (!canEdit) {
       toast.error(t("courseEdit.ocb.noPermission"));
@@ -359,7 +363,7 @@ export function CourseOcbCredentialSection({
     // only stops *future* learners from getting it. Confirm rather than
     // silently changing that policy out from under in-progress students.
     if (!active && issuanceCount > 0) {
-      const proceed = window.confirm(
+      const proceed = await confirm(
         t("courseEdit.ocb.confirmDeactivateWithIssuances", {
           count: issuanceCount,
           defaultValue: `Đã có ${issuanceCount} học viên nhận credential này. Tắt sẽ ngừng cấp cho học viên mới, KHÔNG thu hồi credential đã cấp cho học viên cũ. Tiếp tục tắt?`,
@@ -466,7 +470,7 @@ export function CourseOcbCredentialSection({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6">{confirmation}
       {/* Header row */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">

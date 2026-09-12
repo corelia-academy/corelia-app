@@ -6,7 +6,6 @@ import {
   moderateProjectImage,
   moderateProjectText,
   ProjectAiError,
-  verifyPublicProjectLinks,
 } from "./openai.ts";
 import {
   detectImageMime,
@@ -299,7 +298,6 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
       { field: "progress", text: progress ?? "" },
       ...Object.entries(locales ?? {}).filter(([locale]) => locale !== primary).flatMap(([locale, content]) => Object.entries(content).map(([field,text]) => ({ field: `${locale}.${field}`, text }))),
     ]);
-    await verifyPublicProjectLinks(links);
 
     const params = {
       ...(primary ? { p_primary_content_locale: primary, p_locales: locales } : {}),
@@ -314,7 +312,6 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
       p_demo_url: links.find((link) => link.field === "demo_url")?.url ?? null,
       p_repo_url: links.find((link) => link.field === "repo_url")?.url ?? null,
       p_slide_url: links.find((link) => link.field === "slide_url")?.url ?? null,
-      // Intentionally excluded from every AI request.
       p_video_url: videoUrl,
       p_logo_path: String(body.logo_path ?? "").trim() || null,
       p_screenshot_paths: screenshotPaths,

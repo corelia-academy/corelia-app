@@ -1,8 +1,11 @@
+import { normalizeCodeLocale } from "@/features/code-exercise/locale";
+import { normalizeVideoLocale } from "@/features/learning/videoLocale";
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
 import { coreliaEdgeUrl, supabaseFunctionHeaders } from "@/lib/coreliaEdgeApi";
 import { supabase } from "@/lib/supabase";
 import { removeUndefinedFields } from "@/lib/utils";
 import { getYoutubeVideoId } from "@/types/courses";
+import { isPracticeConfig } from "@/features/learning/practiceConfig";
 import type {
   Course,
   CourseSection,
@@ -30,6 +33,7 @@ type CourseRow = {
   id: string;
   instructor_id: string;
   published: boolean;
+  archived_at?: string | null;
   slug: string;
   updated_at: string;
   created_at: string;
@@ -38,7 +42,7 @@ type CourseRow = {
 
 /** Columns needed for `rowToCourse` (avoid `select("*")` on hot list paths). */
 const COURSE_ROW_SELECT =
-  "id,instructor_id,published,slug,updated_at,created_at,data" as const;
+  "id,instructor_id,published,archived_at,slug,updated_at,created_at,data" as const;
 
 function rowToCourse(row: CourseRow): Course {
   return {
@@ -46,6 +50,7 @@ function rowToCourse(row: CourseRow): Course {
     id: row.id,
     instructor_id: row.instructor_id,
     published: row.published,
+    archived_at: row.archived_at,
     slug: row.slug,
     updated_at: row.updated_at,
     created_at: row.created_at,
@@ -69,6 +74,8 @@ function lessonRowToLesson(
   row: {
     id: string;
     section_id: string;
+    published?: boolean;
+    archived_at?: string | null;
     sort_order: number;
     data: Record<string, unknown> | null;
   },
@@ -78,6 +85,8 @@ function lessonRowToLesson(
     ...d,
     id: row.id,
     section_id: row.section_id,
+    published: row.published,
+    archived_at: row.archived_at,
     order: row.sort_order,
     title: (d.title as string) ?? "",
   } as CourseLesson;
@@ -143,31 +152,49 @@ export function applyCourseLessonLocaleContent(
 ): CourseLesson {
   if (!localized) return lesson;
 
+  const videoCopy = normalizeVideoLocale(localized).value;
+
   // Empty or malformed locale URLs must not hide a valid master video. Locale
   // records created by older editor flows can retain an empty string here.
-  const localizedYoutubeUrl = localized.youtube_url?.trim();
+  const localizedYoutubeUrl = typeof localized.youtube_url === "string" ? localized.youtube_url.trim() : undefined;
   const hasValidLocalizedYoutubeUrl = Boolean(
     localizedYoutubeUrl && getYoutubeVideoId(localizedYoutubeUrl),
   );
 
   return {
     ...lesson,
-    title: localized.title ?? lesson.title,
-    short_description: localized.short_description ?? lesson.short_description,
-    description_markdown: localized.description_markdown ?? lesson.description_markdown,
+    title: typeof localized.title === "string" ? localized.title : lesson.title,
+    short_description: typeof localized.short_description === "string" ? localized.short_description : lesson.short_description,
+    description_markdown: typeof localized.description_markdown === "string" ? localized.description_markdown : lesson.description_markdown,
+    code_exercise_locale: localized.code_exercise_locale === undefined ? lesson.code_exercise_locale : normalizeCodeLocale(localized.code_exercise_locale).value,
+    practice_config: isPracticeConfig(lesson.practice_config) ? {
+      ...lesson.practice_config,
+      checklist_items: lesson.practice_config.checklist_items?.map(item => {
+        const copy = localized.practice_copy?.[item.id];
+        return { ...item, label: typeof copy?.label === "string" ? copy.label : item.label };
+      }),
+      project_steps: lesson.practice_config.project_steps?.map(step => {
+        const copy = localized.practice_copy?.[step.id];
+        return {
+          ...step,
+          title: typeof copy?.title === "string" ? copy.title : step.title,
+          instructions_markdown: typeof copy?.instructions_markdown === "string" ? copy.instructions_markdown : step.instructions_markdown,
+        };
+      }),
+    } : lesson.practice_config,
     resources: localized.resources ?? lesson.resources,
     youtube_url: hasValidLocalizedYoutubeUrl ? localizedYoutubeUrl : lesson.youtube_url,
     youtube_start_seconds:
       hasValidLocalizedYoutubeUrl
-        ? localized.youtube_start_seconds ?? lesson.youtube_start_seconds
+        ? typeof localized.youtube_start_seconds === "number" && Number.isFinite(localized.youtube_start_seconds) ? localized.youtube_start_seconds : lesson.youtube_start_seconds
         : lesson.youtube_start_seconds,
     youtube_end_seconds:
       hasValidLocalizedYoutubeUrl
-        ? localized.youtube_end_seconds ?? lesson.youtube_end_seconds
+        ? typeof localized.youtube_end_seconds === "number" && Number.isFinite(localized.youtube_end_seconds) ? localized.youtube_end_seconds : lesson.youtube_end_seconds
         : lesson.youtube_end_seconds,
-    video_primary_locale: localized.video_primary_locale ?? lesson.video_primary_locale,
-    has_subtitle: localized.has_subtitle ?? lesson.has_subtitle,
-    subtitle_locales: localized.subtitle_locales ?? lesson.subtitle_locales,
+    video_primary_locale: videoCopy.video_primary_locale ?? normalizeVideoLocale(lesson).value.video_primary_locale,
+    has_subtitle: videoCopy.has_subtitle ?? normalizeVideoLocale(lesson).value.has_subtitle,
+    subtitle_locales: videoCopy.subtitle_locales ?? normalizeVideoLocale(lesson).value.subtitle_locales,
   };
 }
 
@@ -209,6 +236,22 @@ export async function getBatchCourseLocaleContent(
   }
 
   return result;
+}
+
+/** Persist course metadata and active content locale in one RLS-governed transaction. */
+export async function saveCourseWithLocale(
+  courseId: string,
+  patch: CourseUpdate,
+  locale: SupportedCourseLocale,
+  copy: Partial<Omit<CourseLocaleContent, "locale">>,
+): Promise<void> {
+  const { error } = await supabase.rpc("learning_save_course_info", {
+    p_course: courseId,
+    p_patch: removeUndefinedFields(patch as Record<string, unknown>),
+    p_locale: locale,
+    p_copy: removeUndefinedFields(copy as Record<string, unknown>),
+  });
+  if (error) throw new Error(error.message);
 }
 
 export async function setCourseLocaleContent(
@@ -342,6 +385,7 @@ export async function getPublishedCourses(): Promise<Course[]> {
     .from("courses")
     .select(COURSE_ROW_SELECT)
     .eq("published", true)
+    .is("archived_at", null)
     .order("updated_at", { ascending: false });
   if (error) throw new Error(error.message);
   return (data ?? []).map((r) => rowToCourse(r as CourseRow));
@@ -368,6 +412,7 @@ export async function getPublishedCoursesByInstructor(instructorId: string, uiLo
     .from("courses")
     .select(COURSE_ROW_SELECT)
     .eq("published", true)
+    .is("archived_at", null)
     .eq("instructor_id", trimmed)
     .order("updated_at", { ascending: false });
   if (error) {
@@ -417,6 +462,7 @@ export async function getCourseBySlug(slug: string, viewer?: User | null): Promi
     .select(COURSE_ROW_SELECT)
     .eq("slug", normalized)
     .eq("published", true)
+    .is("archived_at", null)
     .maybeSingle();
   if (pub) return rowToCourse(pub as CourseRow);
 
@@ -459,7 +505,7 @@ export async function getCourseLessons(
     .order("sort_order", { ascending: true });
   if (error) throw new Error(error.message);
   const rows = (data ?? []).map((r) => lessonRowToLesson(r as CourseRow & { section_id: string; sort_order: number }));
-  if (options?.previewOnly) return rows.filter((l) => l.is_preview_free === true);
+  void options;
   return rows;
 }
 
@@ -679,6 +725,7 @@ export type LearnerCourseProgressSnapshot = {
  */
 export async function getLearnerCourseProgressSnapshot(
   userId: string,
+  includeCourseIds: readonly string[] = [],
 ): Promise<LearnerCourseProgressSnapshot> {
   const { data: progressData, error: progressError } = await supabase
     .from("lesson_progress")
@@ -690,7 +737,7 @@ export async function getLearnerCourseProgressSnapshot(
     (row) => ({ id: row.id, ...row } as LessonProgress),
   );
   const courseIds = Array.from(
-    new Set(progressRows.map((row) => row.course_id).filter(Boolean)),
+    new Set([...progressRows.map((row) => row.course_id), ...includeCourseIds].filter(Boolean)),
   );
   const progressByCourse = new Map<string, LessonProgress[]>();
   for (const row of progressRows) {
@@ -704,7 +751,7 @@ export async function getLearnerCourseProgressSnapshot(
 
   const { data: lessonData, error: lessonError } = await supabase
     .from("course_lessons")
-    .select("id,course_id,section_id,sort_order,data")
+    .select("id,course_id,section_id,sort_order,published,archived_at,data")
     .in("course_id", courseIds)
     .order("sort_order", { ascending: true });
   if (lessonError) throw new Error(lessonError.message);
@@ -738,6 +785,8 @@ export async function getLessonCountsByCourseIds(
   const { data, error } = await supabase
     .from("course_lessons")
     .select("course_id")
+    .eq("published", true)
+    .is("archived_at", null)
     .in("course_id", ids);
   if (error) throw new Error(error.message);
   for (const row of data ?? []) {
@@ -760,7 +809,7 @@ export function sortLessonsByCurriculum(lessons: CourseLesson[], sections: Cours
 }
 
 export function getCompletedLessonIds(lessons: CourseLesson[], progressList: LessonProgress[]): Set<string> {
-  const lessonIds = new Set(lessons.map((lesson) => lesson.id));
+  const lessonIds = new Set(lessons.filter(l => l.published !== false && !l.archived_at).map((lesson) => lesson.id));
   return new Set(
     progressList
       .filter((progress) => progress.completed_at && lessonIds.has(progress.lesson_id))
@@ -777,6 +826,7 @@ export type CertificateIssueReason =
   | "already_issued"
   | "no_course"
   | "no_enrollment"
+  | "final_assignment_pending"
   | "lessons_incomplete"
   | "assignment_not_approved"
   | "issued"
@@ -795,6 +845,7 @@ export type CourseCompletionReason =
   | "already_completed"
   | "no_course"
   | "no_enrollment"
+  | "final_assignment_pending"
   | "lessons_incomplete"
   | "unknown";
 
@@ -1029,15 +1080,15 @@ export async function backfillMissingEnrollmentsForUser(userId: string): Promise
 }
 
 export function computeProgressPercent(lessons: CourseLesson[], progressList: LessonProgress[]): number {
-  if (lessons.length === 0) return 0;
-  const completedIds = getCompletedLessonIds(lessons, progressList);
-  const completed = lessons.filter((l) => completedIds.has(l.id)).length;
-  return Math.round((completed / lessons.length) * 100);
+  const required = lessons.filter(l => l.published !== false && !l.archived_at);
+  if (required.length === 0) return 0;
+  const completedIds = getCompletedLessonIds(required, progressList);
+  return Math.round((completedIds.size / required.length) * 100);
 }
 
 export function getNextLesson(lessons: CourseLesson[], progressList: LessonProgress[]): CourseLesson | null {
   const completedIds = getCompletedLessonIds(lessons, progressList);
-  return lessons.find((l) => !completedIds.has(l.id)) ?? null;
+  return lessons.find((l) => l.published !== false && !l.archived_at && !completedIds.has(l.id)) ?? null;
 }
 
 export async function createCourse(data: CourseInsert, viewer?: User | null): Promise<Course> {
@@ -1169,16 +1220,20 @@ export async function addLesson(courseId: string, data: CourseLessonInsert): Pro
   delete (lessonRest as { order?: unknown }).order;
   delete (lessonRest as { id?: unknown }).id;
   delete (lessonRest as { section_id?: unknown }).section_id;
+  delete lessonRest.published;
+  delete lessonRest.archived_at;
   const dataDoc = removeUndefinedFields(lessonRest as unknown as Record<string, unknown>);
-  const { error } = await supabase.from("course_lessons").insert({
+  const { data: saved, error } = await supabase.from("course_lessons").insert({
+    published: payload.published ?? false,
+    archived_at: payload.archived_at ?? null,
     course_id: courseId,
     id,
     section_id,
     sort_order: sortOrder,
     data: dataDoc,
-  });
+  }).select("*").single();
   if (error) throw new Error(error.message);
-  return { id, ...payload } as CourseLesson;
+  return lessonRowToLesson(saved);
 }
 
 export async function getCoursesForManagement(userId: string, isAdmin: boolean): Promise<Course[]> {
@@ -1223,7 +1278,9 @@ export async function updateCourse(courseId: string, data: CourseUpdate): Promis
   const { error } = await supabase
     .from("courses")
     .update({ ...top, data: nextData })
-    .eq("id", courseId);
+    .eq("id", courseId)
+    .select("id")
+    .single();
   if (error) throw new Error(error.message);
 }
 
@@ -1253,7 +1310,9 @@ export async function updateSection(
     .from("course_sections")
     .update({ data: next, sort_order: sortOrder })
     .eq("course_id", courseId)
-    .eq("id", sectionId);
+    .eq("id", sectionId)
+    .select("id")
+    .single();
   if (upErr) throw new Error(upErr.message);
 }
 
@@ -1275,6 +1334,8 @@ export async function updateLesson(
   delete patch.order;
   delete patch.section_id;
   const next = { ...prev, ...patch };
+  delete next.published;
+  delete next.archived_at;
   if (options?.clearYoutubeSegments) {
     delete next.youtube_start_seconds;
     delete next.youtube_end_seconds;
@@ -1287,11 +1348,15 @@ export async function updateLesson(
   const updates: Record<string, unknown> = { data: next };
   if (data.order != null) updates.sort_order = Number(data.order);
   if (data.section_id != null) updates.section_id = data.section_id;
+  if (data.published !== undefined) updates.published = data.published;
+  if (data.archived_at !== undefined) updates.archived_at = data.archived_at;
   const { error: upErr } = await supabase
     .from("course_lessons")
     .update(updates)
     .eq("course_id", courseId)
-    .eq("id", lessonId);
+    .eq("id", lessonId)
+    .select("id")
+    .single();
   if (upErr) throw new Error(upErr.message);
 }
 
@@ -1319,33 +1384,20 @@ export async function reorderCourseSections(
   if (error) throw new Error(error.message);
 }
 
-export async function deleteSection(
-  courseId: string,
-  sectionId: string,
-  lessonIdsInSection: string[],
-): Promise<void> {
-  const { error: sectionError } = await supabase
-    .from("course_sections")
-    .delete()
-    .eq("course_id", courseId)
-    .eq("id", sectionId);
-  if (sectionError) throw new Error(sectionError.message);
-  if (lessonIdsInSection.length > 0) {
-    const { error: lessonsError } = await supabase
-      .from("course_lessons")
-      .delete()
-      .eq("course_id", courseId)
-      .in("id", lessonIdsInSection);
-    if (lessonsError) throw new Error(lessonsError.message);
-  }
+export async function deleteSection(courseId: string, sectionId: string): Promise<void> {
+  const { error } = await supabase.rpc("learning_delete_section", {
+    p_course: courseId,
+    p_section: sectionId,
+  });
+  if (error) throw new Error(error.message);
 }
 
 export async function deleteLesson(courseId: string, lessonId: string): Promise<void> {
-  const { error } = await supabase.from("course_lessons").delete().eq("course_id", courseId).eq("id", lessonId);
+  const { error } = await supabase.from("course_lessons").delete().eq("course_id", courseId).eq("id", lessonId).select("id").single();
   if (error) throw new Error(error.message);
 }
 
 export async function deleteCourse(courseId: string): Promise<void> {
-  const { error } = await supabase.from("courses").delete().eq("id", courseId);
+  const { error } = await supabase.from("courses").delete().eq("id", courseId).select("id").single();
   if (error) throw new Error(error.message);
 }

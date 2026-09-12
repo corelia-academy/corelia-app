@@ -8,8 +8,10 @@ const appSource = readFileSync(
 );
 
 describe("App router context", () => {
-  it("mounts CredentialRealtimeSync inside BrowserRouter", () => {
-    const routerIndex = appSource.indexOf("<BrowserRouter>");
+  it("mounts CredentialRealtimeSync inside the data router route element", () => {
+    const routerIndex = appSource.indexOf("function ApplicationRoutes()");
+    expect(appSource).toContain('element: <ApplicationRoutes />');
+    expect(appSource).toContain("<RouterProvider router={router} />");
     const credentialSyncIndex = appSource.indexOf("<CredentialRealtimeSync />");
 
     expect(routerIndex).toBeGreaterThanOrEqual(0);
@@ -20,7 +22,7 @@ describe("App router context", () => {
     expect(appSource).toContain('authStatus === "booting"');
     expect(appSource).toContain("<AuthBootstrapScreen />");
     expect(appSource).toMatch(
-      /authStatus === "booting"[\s\S]*?<AuthBootstrapScreen \/>[\s\S]*?<BrowserRouter>/,
+      /authStatus === "booting"[\s\S]*?<AuthBootstrapScreen \/>[\s\S]*?<ApplicationRouter \/>/,
     );
   });
 });

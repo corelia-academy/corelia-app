@@ -1,0 +1,171 @@
+{
+  "started_at": "2026-09-12T00:59:42.835776+00:00",
+  "finished_at": "2026-09-12T01:03:23.093969+00:00",
+  "scope": "Unsaved VI previews: article, quiz, code fill, instruction practice, video. Complete/check/reload actions tested. Does not cover code edit or every practice mode; not a final whole-system signoff.",
+  "requests": 23,
+  "learning_writes": [],
+  "network_records": [
+    {
+      "at": "2026-09-12T01:00:01.854Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:00:05.764Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:00:08.348Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:00:13.860Z",
+      "method": "GET",
+      "path": "/rest/v1/profiles",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:00:13.868Z",
+      "method": "GET",
+      "path": "/rest/v1/course_section_questions",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:00:42.053Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:00:53.837Z",
+      "method": "GET",
+      "path": "/rest/v1/profiles",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:01:01.933Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:01:05.792Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:01:08.408Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:01:42.076Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:02:01.993Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:02:05.816Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:02:06.590Z",
+      "method": "GET",
+      "path": "/rest/v1/profiles",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:02:06.591Z",
+      "method": "GET",
+      "path": "/rest/v1/hackathons",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:02:06.592Z",
+      "method": "GET",
+      "path": "/rest/v1/projects",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:02:08.450Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:02:46.151Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:02:49.611Z",
+      "method": "GET",
+      "path": "/rest/v1/profiles",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:03:02.035Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:03:03.261Z",
+      "method": "GET",
+      "path": "/rest/v1/",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:03:05.843Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    },
+    {
+      "at": "2026-09-12T01:03:08.490Z",
+      "method": "GET",
+      "path": "/rest/v1/user_notifications",
+      "status": 200,
+      "keys": []
+    }
+  ],
+  "renderer_sha256": "ee403eecd89bc71cfb86e10674cc4a9c332198273a2411f5ca537de522559021"
+}

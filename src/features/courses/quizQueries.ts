@@ -1,3 +1,4 @@
+import { isQuizQuestionShape } from "@/features/learning/quizShape";
 import { queryOptions } from "@tanstack/react-query";
 
 import { getLessonQuizResult, getSectionQuizResult } from "@/lib/quizAttempts";
@@ -36,6 +37,7 @@ export function sectionQuizQueryOptions(input: {
         undefined,
         signal,
       );
+      if (questions.some(question => !isQuizQuestionShape(question))) throw new Error("INVALID_QUESTIONS");
       const existingResult = questions.length
         ? await getSectionQuizResult(
             input.courseId,
@@ -71,6 +73,7 @@ export function lessonQuizQueryOptions(input: {
         undefined,
         signal,
       );
+      if (questions.some(question => !isQuizQuestionShape(question))) throw new Error("INVALID_QUESTIONS");
       const existingResult = questions.length
         ? await getLessonQuizResult(
             input.courseId,

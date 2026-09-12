@@ -1,0 +1,42 @@
+BEGIN
+      probe       | errors 
+------------------+--------
+ master_text_type | {}
+(1 row)
+
+         probe          | errors 
+------------------------+--------
+ duplicate_checklist_id | {}
+(1 row)
+
+      probe      |                errors                 
+-----------------+---------------------------------------
+ threshold_0_005 | {invalid_threshold,invalid_questions}
+(1 row)
+
+ROLLBACK
+BEGIN
+ local_actor_set 
+-----------------
+ t
+(1 row)
+
+SET
+           probe            | rows_changed 
+----------------------------+--------------
+ unauthorized_course_update |            0
+(1 row)
+
+ROLLBACK
+BEGIN
+ local_actor_set 
+-----------------
+ t
+(1 row)
+
+          probe          | result  
+-------------------------+---------
+ malformed_final_payload | pending
+(1 row)
+
+ROLLBACK

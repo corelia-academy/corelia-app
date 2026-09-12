@@ -8,7 +8,8 @@ type CourseCompletionReason =
   | "already_completed"
   | "no_course"
   | "no_enrollment"
-  | "lessons_incomplete";
+  | "lessons_incomplete"
+  | "final_assignment_pending";
 
 type CourseCompletionResult = {
   ok: boolean;
@@ -110,6 +111,8 @@ export async function syncCourseCompletionIfReady(
     lesson_total?: number;
     completed_distinct?: number;
     all_lessons_complete?: boolean;
+    final_assignment_required?: boolean;
+    final_submission_status?: string;
   } | null;
   const lessonTotal = Number(readiness?.lesson_total ?? 0);
   const completedDistinct = Number(readiness?.completed_distinct ?? 0);
@@ -123,6 +126,10 @@ export async function syncCourseCompletionIfReady(
       lesson_total: lessonTotal,
       completed_distinct: completedDistinct,
     };
+  }
+
+  if (readiness?.final_assignment_required && readiness.final_submission_status !== "approved") {
+    return { ok: true, completed: false, reason: "final_assignment_pending", lesson_total: lessonTotal, completed_distinct: completedDistinct };
   }
 
   const completedAt = nowIso();
@@ -200,7 +207,7 @@ export async function handleSyncCourseCompletion(req: Request, db: SupabaseClien
     if (!targetUserId) return json({ ok: false, completed: false, message: "Thiếu userId" }, 400);
 
     if (user.id !== targetUserId) {
-      if (!await canManageCourse(db, user.id, courseId)) {
+      if (!await canManageCourse(db, user.id, courseId, ["students", "submissions"])) {
         return json({ ok: false, completed: false, message: "Không đủ quyền." }, 403);
       }
     }

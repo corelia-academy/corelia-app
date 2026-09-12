@@ -1,0 +1,47 @@
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+const course = `impact-qa-${randomUUID()}`;
+const user = randomUUID();
+const sql = input => execFileSync('docker',['exec','-i','supabase_db_corelia-app','psql','-U','postgres','-d','postgres','-qAt','-v','ON_ERROR_STOP=1'],{input,encoding:'utf8'});
+let created = false;
+try {
+  sql(`BEGIN;
+    INSERT INTO auth.users(id,email) VALUES('${user}','${user}@corelia.local');
+    INSERT INTO public.courses(id,slug,instructor_id,published,data) VALUES('${course}','${course}','${user}',false,'{"title":"Impact fixture"}');
+    INSERT INTO public.course_sections(course_id,id,data) VALUES('${course}','section','{"title":"Section"}');
+    INSERT INTO public.course_lessons(course_id,id,section_id,published,data) VALUES('${course}','one','section',true,'{"title":"Article","lesson_format":"article","description_markdown":"Read"}');
+    UPDATE public.courses SET published=true WHERE id='${course}';
+    INSERT INTO public.lesson_progress(id,user_id,course_id,lesson_id,completed_at) VALUES('${randomUUID()}','${user}','${course}','one',now());
+    INSERT INTO public.course_lessons(course_id,id,section_id,published,data) VALUES('${course}','two','section',true,'{"title":"Added article","lesson_format":"article","description_markdown":"Read"}');
+    INSERT INTO public.course_lessons(course_id,id,section_id,published,data) VALUES('${course}','draft','section',false,'{"title":"Draft","lesson_format":"article"}');
+    UPDATE public.courses SET data=data||'{"final_assignment_title":"Project","final_assignment_instructions":"Submit notes","final_assignment_fields":["notes"]}' WHERE id='${course}';
+    SELECT set_config('request.jwt.claim.sub','${user}',true);
+    SELECT public.learning_final_submit('${course}','Pending project','[]','{"notes":"Local QA"}','${randomUUID()}');
+    COMMIT;`);
+  created = true;
+  const before = sql(`SELECT completed_at FROM public.enrollments WHERE course_id='${course}' AND user_id='${user}';`);
+  assert(before);
+  const report = JSON.parse(execFileSync(process.execPath,['scripts/learning/impact-local.mjs'],{encoding:'utf8'}));
+  const row = report.enrollment_readiness.find(row => row.course_id === course && row.user_id === user);
+  assert.equal(row.required_lessons,2);
+  assert.equal(row.completed_required_lessons,1);
+  assert.equal(row.canonical_percent,50);
+  assert.equal(row.final_required,true);
+  assert.equal(row.latest_final_status,'pending');
+  assert.equal(row.eligible_now,false);
+  assert.equal(row.historical_completion_preserved,true);
+  assert.equal(row.completion_sync_pending,false);
+  assert.equal(report.completion.find(row => row.course_id === course).excluded_lessons,1);
+  assert.equal(sql(`SELECT completed_at FROM public.enrollments WHERE course_id='${course}' AND user_id='${user}';`),before);
+  console.log('PASS: impact report calculates current progress/final gates and preserves historical completion without writes.');
+} finally {
+  if (created) sql(`BEGIN;
+    DELETE FROM public.final_assignment_submissions WHERE course_id='${course}';
+    DELETE FROM public.lesson_progress WHERE course_id='${course}';
+    DELETE FROM public.enrollments WHERE course_id='${course}';
+    UPDATE public.courses SET published=false WHERE id='${course}';
+    UPDATE public.course_lessons SET published=false WHERE course_id='${course}';
+    DELETE FROM public.courses WHERE id='${course}';
+    DELETE FROM auth.users WHERE id='${user}'; COMMIT;`);
+}

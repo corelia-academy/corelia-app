@@ -1,0 +1,27 @@
+{
+  "captured_at": "2026-09-12T04:27:40.510586+00:00",
+  "head": "2c27f22269e515077dc3f44fafd3f164af209384",
+  "tests": 874,
+  "test_files": 128,
+  "lint": "pass",
+  "build": "pass",
+  "files_sha256": {
+    "src/features/learning/useLearningConfirm.tsx": "8076a7c78bf6b7595b7840885ec8699e73449f9b5ab4c682c3cdae7d3eb81df7",
+    "src/features/learning/useLearningConfirm.test.tsx": "b4d52b6af187e0172246e8426b6d7f2757911d5cc08c33ef8071a7e953982d70",
+    "src/features/learning/admin/LessonEditor.tsx": "46bf543bc4468b272a4350506a260ee83b87ab378f17ca5a49a38e39c67352d2",
+    "src/features/learning/admin/LessonEditor.test.tsx": "7405cee5c65c7fb28d832c29759aa0b7fad62cc0682cb05a229bc420411d2790",
+    "src/features/code-exercise/CodeExerciseLesson.tsx": "7e6928da6a2b4a78ac800e6080c43e969e28dce7eb1e4b0cd2aafcb0b65c4911",
+    "src/features/code-exercise/admin/CodeExerciseBuilder.tsx": "f73617e586b5cd2ae668d32a47805455700fc225f6efc43cd7b73fe9baf728d5",
+    "src/pages/instructor-course-edit/InstructorCourseEdit.tsx": "5d16f5754ee50ce9e18d3de989b119aa531dd948fe30c48cc5b595de23bb5cee",
+    "src/pages/instructor-course-edit/components/QuestionGeneratorDialog.tsx": "b741c1958b7e0cf832c2d5aa5db48b56d0b447a2b00c52cd399de83dc49ddc44",
+    "src/pages/instructor-course-edit/components/CourseOcbCredentialSection.tsx": "d27e5bd0fe986395b68052fb6e0c8b4ee999c3797d05bc884f6f2ec04150f33f",
+    "src/locales/en/courses.json": "234d70da6cc37f1575b600a52b436c37f16361ea7a523eedb814601dda8a6193",
+    "src/locales/vi/courses.json": "17f3bf1a737f3506860d7a8f3e4d3c235dd9f94b9926effbf2a71783d7837f88"
+  },
+  "logs_sha256": {
+    "/tmp/corelia-modal-full-tests.log": "9a2ea76d23b281130cac4c65d46ef91699707663f48f71685971e802854ab3fc",
+    "/tmp/corelia-modal-lint.log": "4f9830ea8aa9961c9990f21472e135e8bba9f25b7dd96a9d4a6e670e328521d8",
+    "/tmp/corelia-modal-build.log": "95f20347f7c9c455c4fedc9610807421942ef76dcfd14dbd286308b6f76c6b80"
+  },
+  "remote_actions": false
+}

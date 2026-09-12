@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { LoadingBar } from "@/components/ui/LoadingBar";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,7 +6,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
 import MaintenancePage from "@/pages/MaintenancePage";
 import {
-  BrowserRouter,
+  createBrowserRouter,
+  RouterProvider,
   Navigate,
   Route,
   Routes,
@@ -102,6 +103,7 @@ const InstructorWorkspaceProfileRoute = lazy(() =>
 const InstructorLayout = lazy(() => import("@/pages/instructor/InstructorLayout"));
 const InstructorCourses = lazy(() => import("@/pages/InstructorCourses"));
 const InstructorCourseNew = lazy(() => import("@/pages/instructor-course-new"));
+const LearningPreview = lazy(() => import("@/pages/instructor-course-edit/LearningPreview"));
 const InstructorCourseEdit = lazy(() => import("@/pages/instructor-course-edit"));
 const InstructorCareerTracks = lazy(() => import("@/pages/instructor-career-tracks"));
 const InstructorCareerTrackEditor = lazy(
@@ -163,7 +165,26 @@ export default function App() {
         <AuthBootstrapScreen />
       ) : (
         <TooltipProvider>
-        <BrowserRouter>
+        <ApplicationRouter />
+        </TooltipProvider>
+      )}
+    </ThemeProvider>
+    </ErrorBoundary>
+  );
+}
+
+
+// Keep the existing descendant route tree while enabling supported navigation
+// blockers (including browser Back/Forward) in authoring workspaces.
+function ApplicationRouter() {
+  const [router] = useState(() => createBrowserRouter([
+    { path: "*", element: <ApplicationRoutes /> },
+  ]));
+  return <RouterProvider router={router} />;
+}
+
+function ApplicationRoutes() {
+  return <>
           <CredentialRealtimeSync />
           <ScrollToTop />
           <RecoveryGuard />
@@ -245,11 +266,9 @@ export default function App() {
             <Route
               path="learn"
               element={
-                <RequireAuth>
-                  <Suspense fallback={<PageFallback />}>
-                    <LearnLayout />
-                  </Suspense>
-                </RequireAuth>
+                <Suspense fallback={<PageFallback />}>
+                  <LearnLayout />
+                </Suspense>
               }
             >
               <Route
@@ -590,6 +609,7 @@ export default function App() {
                     </Suspense>
                   }
                 />
+                <Route path="courses/:id/preview/:lessonId?" element={<Suspense fallback={<PageFallback />}><LearningPreview /></Suspense>} />
                 <Route
                   path="courses/:id/edit"
                   element={
@@ -641,10 +661,5 @@ export default function App() {
               />
             </Route>
           </Routes>
-        </BrowserRouter>
-        </TooltipProvider>
-      )}
-    </ThemeProvider>
-    </ErrorBoundary>
-  );
+</>;
 }

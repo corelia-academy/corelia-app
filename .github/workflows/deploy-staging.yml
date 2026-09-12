@@ -54,6 +54,9 @@ jobs:
       - name: Cleanly recreate isolated local migration chain
         timeout-minutes: 15
         run: |
+          # Match the image used by local Learning authorization QA.
+          mkdir -p supabase/.temp
+          printf '%s' '17.6.1.156' > supabase/.temp/postgres-version
           supabase start
           pnpm db:verify:local
 

@@ -1,4 +1,5 @@
-import { QueryClient } from "@tanstack/react-query";
+// @vitest-environment happy-dom
+import { QueryClient, QueryObserver, focusManager } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const courseService = vi.hoisted(() => ({
@@ -28,8 +29,11 @@ vi.mock("@/lib/profile", () => ({ getPublicProfileById: vi.fn() }));
 import {
   courseBundleQueryOptions,
   courseKeys,
+  courseSubmissionQueryOptions,
 } from "@/features/courses/courseQueries";
 import type { Course } from "@/types/courses";
+import type { FinalAssignmentSubmission } from "@/types/courses";
+import { getSubmission } from "@/lib/finalAssignment";
 
 const COURSE_ID = "3f33aa63-b8d9-4cb9-a73e-f9dfeabaf162";
 const course = {
@@ -107,4 +111,28 @@ describe("course query contracts", () => {
     await expect(pending).rejects.toBeDefined();
     expect(client.getQueryData(options.queryKey)).toBeUndefined();
   });
+});
+
+it.each(["approved", "rejected"] as const)("refreshes pending review, preserves it on read failure, and stops after %s", async status => {
+  vi.clearAllMocks();
+  vi.useFakeTimers();
+  focusManager.setFocused(true);
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const pending = { id: "submission", status: "pending" } as FinalAssignmentSubmission;
+  const approved = { ...pending, status } as FinalAssignmentSubmission;
+  vi.mocked(getSubmission).mockResolvedValueOnce(pending).mockRejectedValueOnce(new Error("Offline")).mockResolvedValueOnce(approved);
+  const options = courseSubmissionQueryOptions("learner", "course");
+  await client.fetchQuery(options);
+  const observer = new QueryObserver(client, options);
+  const unsubscribe = observer.subscribe(() => {});
+  try {
+    await vi.advanceTimersByTimeAsync(15_000);
+    expect(client.getQueryData(options.queryKey)).toEqual(pending);
+    expect(getSubmission).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(15_000);
+    expect(client.getQueryData(options.queryKey)).toEqual(approved);
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(getSubmission).toHaveBeenCalledTimes(3);
+    expect(getSubmission).toHaveBeenLastCalledWith("learner", "course");
+  } finally { unsubscribe(); observer.destroy(); client.clear(); focusManager.setFocused(undefined); vi.useRealTimers(); }
 });

@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-09-11T18:16:09.784Z",
+  "upload": true,
+  "replace_denied": true,
+  "upsert_denied": true,
+  "delete_no_rows": true,
+  "history_intact": true,
+  "reviewer_read": true,
+  "reviewer_replace_denied": true,
+  "anonymous_read_denied": true
+}

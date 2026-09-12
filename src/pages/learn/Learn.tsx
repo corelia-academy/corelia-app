@@ -1,3 +1,6 @@
+import { lessonText } from "@/features/learning/lessonCopy";
+import { recordLearningEvent } from "@/lib/learning";
+import { invalidateLearningProgress } from "@/features/learning/invalidateLearningProgress";
 import {
   useCallback,
   useEffect,
@@ -24,7 +27,6 @@ import {
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
 import {
   isLessonDraftForLearners,
-  isLessonPublishedForLearners,
 } from "@/lib/lessonFormat";
 import { useAuth } from "@/stores/authStore";
 import { toast } from "sonner";
@@ -62,7 +64,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   sectionQuizQueryOptions,
   type SectionQuizQueryData,
@@ -87,6 +89,12 @@ function getDesktopBreakpointSnapshot() {
 }
 
 export default function Learn() {
+  const { courseId } = useParams<{ courseId: string }>();
+  const { user } = useAuth();
+  return <LearnWorkspace key={`${courseId}:${user?.id ?? "anonymous"}`} />;
+}
+
+function LearnWorkspace() {
   const { t } = useTranslation("courses");
   const translate = useCallback(
     (key: string, options?: Record<string, unknown>) =>
@@ -100,6 +108,11 @@ export default function Learn() {
   const navigate = useNavigate();
   const { profile, user } = useAuth();
   const queryClient = useQueryClient();
+  const activeWorkspace = useRef(true);
+  useEffect(() => {
+    activeWorkspace.current = true;
+    return () => { activeWorkspace.current = false; };
+  }, []);
   const isDesktop = useSyncExternalStore(
     subscribeDesktopBreakpoint,
     getDesktopBreakpointSnapshot,
@@ -132,7 +145,7 @@ export default function Learn() {
     () => sortLessonsByCurriculum(courseLoad.lessons, courseLoad.sections),
     [courseLoad.lessons, courseLoad.sections],
   );
-  const visibleLessons = sortedLessons;
+  const visibleLessons = useMemo(() => sortedLessons.filter(l => l.published !== false && !l.archived_at), [sortedLessons]);
 
   const progress = useLearnProgress({
     courseId,
@@ -150,6 +163,7 @@ export default function Learn() {
     const course = courseLoad.course;
     if (!courseId || !profile?.id || !course) return null;
     let phase: "completion" | "certificate" = "completion";
+    let completionConfirmed = false;
     setCertificateIssueReason(null);
     setCertificateIssueError(null);
     try {
@@ -158,12 +172,16 @@ export default function Learn() {
         courseId,
         new Date().toISOString(),
       );
+      if (!activeWorkspace.current) return null;
       if (enrollment) access.setEnrollment(enrollment);
       setCompletionSyncing(true);
       setCompletionSyncError(null);
       const completion = await syncCourseCompletion(profile.id, courseId);
+      completionConfirmed = completion.completed;
+      if (!activeWorkspace.current) return null;
       let baseEnrollment = enrollment ?? access.enrollment;
       if (completion.completed) {
+        completionConfirmed = true;
         const completedAt = completion.completed_at || baseEnrollment?.completed_at || new Date().toISOString();
         if (baseEnrollment) {
           baseEnrollment = { ...baseEnrollment, completed_at: completedAt };
@@ -171,15 +189,18 @@ export default function Learn() {
         }
         setCompletionJustSynced(true);
       } else {
+        if (completion.reason === "final_assignment_pending") return null;
         setCompletionSyncError(
           completion.message || translate("detail.learn.completion.completionSyncFailed"),
         );
         return null;
       }
       setCompletionSyncing(false);
+      phase = "certificate";
       const credentialCheck = await invokeCheckCourseCredential(courseId, undefined, {
         autoIssue: true,
       });
+      if (!activeWorkspace.current) return null;
       if (credentialCheck.reason === "oca_requires_manual_claim") {
         toast.success(translate("detail.courseDetail.ocaReady"), {
           action: {
@@ -191,9 +212,9 @@ export default function Learn() {
       if (!courseHasCertificate(course)) {
         return null;
       }
-      phase = "certificate";
       setCertificateAutoIssuing(true);
       const result = await checkAndIssueCertificate(profile.id, courseId);
+      if (!activeWorkspace.current) return null;
       setCertificateIssueReason(result.reason);
       if (result.issued) {
         const issuedAt = result.certificate_issued_at || new Date().toISOString();
@@ -213,6 +234,7 @@ export default function Learn() {
       }
       return result;
     } catch (err) {
+      if (!activeWorkspace.current) return null;
       const message = err instanceof Error
         ? err.message
         : translate("detail.courseDetail.claimCertificateFailed");
@@ -225,10 +247,14 @@ export default function Learn() {
       });
       return null;
     } finally {
-      setCompletionSyncing(false);
-      setCertificateAutoIssuing(false);
+      if (activeWorkspace.current) {
+        setCompletionSyncing(false);
+        setCertificateAutoIssuing(false);
+      }
+      if (completionConfirmed) await invalidateLearningProgress(queryClient, profile.id, courseId);
     }
   }, [
+    queryClient,
     access,
     courseId,
     courseLoad.course,
@@ -242,10 +268,11 @@ export default function Learn() {
     const course = courseLoad.course;
     if (!courseId || !profile?.id || !course) return;
     if (progress.progressPercent < 100) return;
+    if (course.final_assignment_title && submission.submission?.status !== "approved") return;
     if (access.enrollment?.completed_at && (!courseHasCertificate(course) || access.enrollment.certificate_issued_at)) {
       return;
     }
-    const key = `${profile.id}:${courseId}`;
+    const key = `${profile.id}:${courseId}:${submission.submission?.status ?? "none"}`;
     if (completionSyncAttemptedRef.current.has(key)) return;
     completionSyncAttemptedRef.current.add(key);
     void syncCertificate();
@@ -256,6 +283,7 @@ export default function Learn() {
     profile?.id,
     progress.progressPercent,
     syncCertificate,
+    submission.submission?.status,
   ]);
 
   useEffect(() => {
@@ -280,36 +308,15 @@ export default function Learn() {
     return visibleLessons.find((lesson) => lesson.id === lessonId) ?? null;
   }, [lessonId, visibleLessons]);
 
-  const isPrivilegedViewer =
-    profile?.role === "admin" ||
-    profile?.role === "support_staff" ||
-    profile?.role === "instructor";
-  const isDraftLesson = currentLesson
-    ? isLessonDraftForLearners(currentLesson)
-    : false;
-
+  const isDraftLesson = currentLesson ? isLessonDraftForLearners(currentLesson) : false;
   useEffect(() => {
-    if (!courseId || !lessonId || !currentLesson) return;
-    if (!isDraftLesson) return;
-    if (isPrivilegedViewer) return;
-
-    const fallback = visibleLessons.find((l) =>
-      isLessonPublishedForLearners(l),
-    );
-    if (fallback && fallback.id !== currentLesson.id) {
-      toast.message(translate("detail.learn.lessonDraftToast"));
-      navigate(`/learn/${courseId}/lesson/${fallback.id}`, { replace: true });
-    }
-  }, [
-    courseId,
-    currentLesson,
-    isDraftLesson,
-    isPrivilegedViewer,
-    lessonId,
-    navigate,
-    translate,
-    visibleLessons,
-  ]);
+    if (!courseId || !lessonId || courseLoad.loading || currentLesson || !visibleLessons.length) return;
+    toast.message(translate("learning.invalidRoute"));
+    navigate(`/learn/${courseId}/lesson/${visibleLessons[0].id}`, { replace: true });
+  }, [courseId, lessonId, courseLoad.loading, currentLesson, visibleLessons, navigate, translate]);
+  useEffect(() => {
+    if (user && currentLesson && courseId) void recordLearningEvent(courseId, currentLesson.id, "lesson_started");
+  }, [user, courseId, currentLesson]);
 
   const sectionQuizOptions = sectionQuizQueryOptions({
     userId: user?.id,
@@ -337,20 +344,19 @@ export default function Learn() {
     () =>
       courseLoad.sections.map((section) => ({
         section,
-        lessons: sortedLessons.filter(
+        lessons: visibleLessons.filter(
           (lesson) => lesson.section_id === section.id,
         ),
       })),
-    [courseLoad.sections, sortedLessons],
+    [courseLoad.sections, visibleLessons],
   );
   const visibleSectionCount = lessonsBySection.filter(
     ({ lessons: sectionLessons }) => sectionLessons.length > 0,
   ).length;
 
-  const markComplete = async () => {
+  const completeMutation = useMutation({ mutationFn: async () => {
     if (!currentLesson || !courseId || !access.hasFullCourseAccess) return;
     if (isDraftLesson) return;
-    try {
       await setLessonProgress(
         currentLesson.id,
         courseId,
@@ -375,10 +381,10 @@ export default function Learn() {
         });
         return next;
       });
-    } catch (e) {
-      console.warn("Could not update progress", e);
-    }
-  };
+      if (profile?.id) await invalidateLearningProgress(queryClient, profile.id, courseId);
+  }});
+  const markComplete = completeMutation.mutateAsync;
+
 
   if (!courseId) {
     return <LearnMissingCourseIdState translate={translate} />;
@@ -388,7 +394,7 @@ export default function Learn() {
     return <LearnLoadingState translate={translate} />;
   }
 
-  if (courseLoad.error || !courseLoad.course) {
+  if (courseLoad.error || !courseLoad.course || !courseLoad.course.published || courseLoad.course.archived_at) {
     return (
       <LearnErrorState
         translate={translate}
@@ -426,13 +432,13 @@ export default function Learn() {
   const course = courseLoad.course;
   const hasCourseCertificate = courseHasCertificate(course);
   const hasFullCourseAccess = access.hasFullCourseAccess;
-  const courseCompleted = progress.progressPercent >= 100 && visibleLessons.length > 0;
+  const courseCompleted = Boolean(access.enrollment?.completed_at || completionJustSynced);
   const completionSynced = Boolean(access.enrollment?.completed_at || completionJustSynced);
   const certificateIssued = Boolean(access.enrollment?.certificate_issued_at || certificateJustIssued);
   const achievementsPath = "/achievements";
 
   const shouldShowFinalAssignment =
-    !nextLesson && hasFullCourseAccess && !!course.final_assignment_title;
+    hasFullCourseAccess && !!course.final_assignment_title;
   const shouldShowSectionQuiz =
     currentLesson?.lesson_format !== "quiz" &&
     currentLesson?.lesson_format !== "practice";
@@ -497,10 +503,11 @@ export default function Learn() {
           !!currentLesson && progress.completedIds.has(currentLesson.id)
         }
         hasFullCourseAccess={hasFullCourseAccess}
+        hasFinalAssignment={shouldShowFinalAssignment}
         previousLesson={previousLesson}
         nextLesson={nextLessonInSequence}
         translate={translate}
-        onMarkComplete={() => void markComplete()}
+        onMarkComplete={markComplete}
         onNavigateToLesson={(id) => navigate(`/learn/${courseId}/lesson/${id}`)}
         courseId={courseId}
       />
@@ -532,7 +539,9 @@ export default function Learn() {
             courseId={courseId}
             course={course}
             profileId={profile?.id ?? ""}
-            submission={submission.submission as never}
+            submission={submission.submission}
+            submissionState={submission.state}
+            onRetryLoad={() => void submission.refresh()}
             translate={translate}
             onSubmit={async (input) => {
               await submission.submit(input);
@@ -583,7 +592,7 @@ export default function Learn() {
           <>
             <span className="shrink-0 text-foreground-subtle">/</span>
             <span className="truncate text-foreground-muted">
-              {currentLesson.title}
+              {lessonText(currentLesson.title)}
             </span>
           </>
         )}

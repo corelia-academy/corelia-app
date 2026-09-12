@@ -1,7 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import {
-  computeProgressPercent,
   getCourse,
   getCourseLessonLocaleContent,
   getCourseLessonLocaleContentMap,
@@ -12,14 +11,13 @@ import {
   getCourseSections,
   getEnrollmentsForCourse,
   getLessonDistinctLearnerCountsForCourse,
-  getLessonProgressForUsersInCourse,
 } from "@/lib/courses";
-import { getSubmissionsForCourse } from "@/lib/finalAssignment";
+import { getSubmissionsForCourse, latestSubmissionsByUser } from "@/lib/finalAssignment";
 import {
-  getProfilesByIds,
   listCourseCoInstructorCandidates,
 } from "@/lib/profile";
 import { listPendingCoInstructorInvites } from "@/lib/coInstructorInvites";
+import { getLearningCourseRoster, type LearningCourseParticipant } from "@/lib/learning";
 import { getLessonQuestions, getSectionQuestions } from "@/lib/sectionQuestions";
 import type { Profile } from "@/types/database";
 import type {
@@ -38,7 +36,7 @@ export interface InstructorCourseWorkspace {
   enrollments: Enrollment[];
   submissions: FinalAssignmentSubmission[];
   submissionByUser: Record<string, FinalAssignmentSubmission>;
-  studentProfiles: Record<string, Profile | null>;
+  studentProfiles: Record<string, LearningCourseParticipant | null>;
   studentProgress: Record<string, number>;
   lessonLearnerCounts: Record<string, number>;
 }
@@ -231,22 +229,10 @@ export function instructorCourseWorkspaceQueryOptions(input: {
         ]);
       if (signal.aborted) throw new DOMException("Query cancelled", "AbortError");
 
-      const userIds = enrollments.map((enrollment) => enrollment.user_id);
-      const [studentProfiles, progressByUser] = canStudents
-        ? await Promise.all([
-            getProfilesByIds(userIds, signal),
-            getLessonProgressForUsersInCourse(userIds, courseId, signal),
-          ])
-        : [{}, new Map<string, never[]>()];
-      const studentProgress = Object.fromEntries(
-        userIds.map((studentId) => [
-          studentId,
-          computeProgressPercent(lessons, progressByUser.get(studentId) ?? []),
-        ]),
-      );
-      const submissionByUser = Object.fromEntries(
-        submissions.map((submission: FinalAssignmentSubmission) => [submission.user_id, submission]),
-      );
+      const roster = canStudents || canSubmissions ? await getLearningCourseRoster(courseId, signal) : [];
+      const studentProfiles = Object.fromEntries(roster.map(participant => [participant.id, participant]));
+      const studentProgress = Object.fromEntries(roster.map(participant => [participant.id, participant.progress_percent]));
+      const submissionByUser = latestSubmissionsByUser(submissions);
 
       return {
         course,
@@ -262,6 +248,7 @@ export function instructorCourseWorkspaceQueryOptions(input: {
     },
     enabled: Boolean(courseId && userId),
     staleTime: 30_000,
+    refetchOnWindowFocus: true,
     meta: privateMeta(input.profile?.id),
   });
 }

@@ -21,12 +21,15 @@ export function cdnPublicUrl(path: string): string {
   return data.publicUrl;
 }
 
+// Course callers retain prior objects: the following database Save can still fail,
+// and historical credentials may reference previous assets.
 async function uploadToCdn(
   path: string,
   file: File,
   previousPath?: string | null,
+  preservePrevious = false,
 ): Promise<{ url: string; path: string }> {
-  if (previousPath) {
+  if (previousPath && !preservePrevious) {
     await deleteCdnObjectByPath(previousPath);
   }
   const options = {
@@ -72,8 +75,9 @@ async function uploadToPath(
   path: string,
   file: File,
   previousPath?: string | null,
+  preservePrevious = false,
 ): Promise<{ url: string; path: string }> {
-  await deleteStorageObjectByPath(previousPath);
+  if (!preservePrevious) await deleteStorageObjectByPath(previousPath);
   const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
     contentType: file.type || "application/octet-stream",
     upsert: true,
@@ -101,7 +105,7 @@ export function uploadCourseThumbnail(
 ): Promise<{ url: string; path: string }> {
   if (!courseId) throw new Error("Thiếu courseId khi upload ảnh bìa");
   const ext = buildSafeExt(file.name);
-  return uploadToPath(`course-thumbnails/${courseId}/${Date.now()}.${ext}`, file, previousPath);
+  return uploadToPath(`course-thumbnails/${courseId}/${crypto.randomUUID()}.${ext}`, file, previousPath, true);
 }
 
 export function uploadCareerTrackThumbnail(
@@ -188,16 +192,19 @@ export function uploadContestOrganizationalPartnerLogo(
   );
 }
 
-export function uploadFinalAssignmentFile(
+export async function uploadFinalAssignmentFile(
   courseId: string,
   userId: string,
   file: File,
 ): Promise<{ url: string; path: string }> {
   const ext = buildSafeExt(file.name, "pdf");
-  return uploadToPath(
-    `final-assignment-submissions/${courseId}/${userId}/${Date.now()}.${ext}`,
-    file,
-  );
+  const path = `final-assignment-submissions/${courseId}/${userId}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+    contentType: file.type || "application/octet-stream",
+    upsert: false,
+  });
+  if (error) throw new Error(error.message);
+  return { path, url: await signedUrlForPath(path) };
 }
 
 /** Permanent CDN URL — course certificate template image.
@@ -209,7 +216,7 @@ export function uploadCertificateTemplate(
 ): Promise<{ url: string; path: string }> {
   if (!courseId) throw new Error("Thiếu courseId");
   const ext = buildSafeExt(file.name, "png");
-  return uploadToCdn(`certificate-templates/${courseId}/${Date.now()}.${ext}`, file, previousPath);
+  return uploadToCdn(`certificate-templates/${courseId}/${crypto.randomUUID()}.${ext}`, file, previousPath, true);
 }
 
 /** Permanent CDN URL — on-chain OCA credential template (must stay name-free per OC
@@ -224,9 +231,10 @@ export function uploadOnchainCertificateTemplate(
   if (!courseId) throw new Error("Thiếu courseId");
   const ext = buildSafeExt(file.name, "png");
   return uploadToCdn(
-    `certificate-templates/${courseId}/${Date.now()}-onchain.${ext}`,
+    `certificate-templates/${courseId}/${crypto.randomUUID()}-onchain.${ext}`,
     file,
     previousPath,
+    true,
   );
 }
 
@@ -270,9 +278,10 @@ export function uploadCourseCredentialBadgeImage(
   if (!courseId) throw new Error("Thiếu courseId");
   const ext = buildSafeExt(file.name, "png");
   return uploadToCdn(
-    `credential-badges/course/${courseId}/${Date.now()}.${ext}`,
+    `credential-badges/course/${courseId}/${crypto.randomUUID()}.${ext}`,
     file,
     previousPath,
+    true,
   );
 }
 
@@ -287,7 +296,7 @@ export function uploadCourseSponsorLogo(
   if (!cid) throw new Error("Thiếu courseId");
   if (!sid) throw new Error("Thiếu sponsorId");
   const ext = buildSafeExt(file.name, "png");
-  return uploadToPath(`course-sponsor-logos/${cid}/${sid}/${Date.now()}.${ext}`, file, previousPath);
+  return uploadToPath(`course-sponsor-logos/${cid}/${sid}/${crypto.randomUUID()}.${ext}`, file, previousPath, true);
 }
 
 export function uploadCoursePartnerLogo(
@@ -301,7 +310,7 @@ export function uploadCoursePartnerLogo(
   if (!cid) throw new Error("Thiếu courseId");
   if (!pid) throw new Error("Thiếu partnerId");
   const ext = buildSafeExt(file.name, "png");
-  return uploadToPath(`course-partners/${cid}/${pid}/${Date.now()}.${ext}`, file, previousPath);
+  return uploadToPath(`course-partners/${cid}/${pid}/${crypto.randomUUID()}.${ext}`, file, previousPath, true);
 }
 
 export function uploadCoursePartnerBrandLogo(
@@ -312,7 +321,7 @@ export function uploadCoursePartnerBrandLogo(
   const cid = String(courseId ?? "").trim();
   if (!cid) throw new Error("Thiếu courseId");
   const ext = buildSafeExt(file.name, "png");
-  return uploadToPath(`course-partner-brand/${cid}/${Date.now()}.${ext}`, file, previousPath);
+  return uploadToPath(`course-partner-brand/${cid}/${crypto.randomUUID()}.${ext}`, file, previousPath, true);
 }
 
 /** ảnh đại diện: avatars/{userId}/{timestamp}.{ext} */

@@ -1,5 +1,4 @@
 import { projectContent, PROJECT_CONTENT_LIMITS, type ContentLocale, type ProjectContent } from "./localization.ts";
-import type { ProjectLink } from "./validation.ts";
 
 const OPENAI_API_BASE = "https://api.openai.com/v1";
 
@@ -99,64 +98,6 @@ function responseText(response: Record<string, unknown>): string {
     }
   }
   return "";
-}
-
-export async function verifyPublicProjectLinks(links: ProjectLink[]): Promise<void> {
-  if (!links.length) return;
-  const response = await openAiFetch("/responses", {
-    model: "gpt-5.4-mini",
-    store: false,
-    reasoning: { effort: "low" },
-    tools: [{ type: "web_search" }],
-    input: [
-      {
-        role: "system",
-        content: "Verify each submitted project URL using public web search. A URL passes only if its public destination can be verified and is not associated with gambling, pornography, sexual services, malware, scams, illegal commerce, hate, violence, self-harm, or other harmful/abusive content. repo_url must resolve to an actual public GitHub repository, demo_url to a public project demo, and slide_url to public project slides. Do not trust the URL text alone. Return exactly one check per input field.",
-      },
-      { role: "user", content: JSON.stringify(links) },
-    ],
-    text: {
-      format: {
-        type: "json_schema",
-        name: "project_link_checks",
-        strict: true,
-        schema: {
-          type: "object",
-          additionalProperties: false,
-          properties: {
-            checks: {
-              type: "array",
-              items: {
-                type: "object",
-                additionalProperties: false,
-                properties: {
-                  field: { type: "string", enum: ["demo_url", "repo_url", "slide_url"] },
-                  verified: { type: "boolean" },
-                  allowed: { type: "boolean" },
-                  reason: { type: "string" },
-                },
-                required: ["field", "verified", "allowed", "reason"],
-              },
-            },
-          },
-          required: ["checks"],
-        },
-      },
-    },
-  }, 30_000);
-
-  let parsed: { checks?: Array<{ field?: string; verified?: boolean; allowed?: boolean }> };
-  try {
-    parsed = JSON.parse(responseText(response));
-  } catch {
-    throw new ProjectAiError("ai_unavailable:invalid_response", 503);
-  }
-  const checks = Array.isArray(parsed.checks) ? parsed.checks : [];
-  for (const link of links) {
-    const check = checks.find((item) => item.field === link.field);
-    if (!check || check.verified !== true) throw new ProjectAiError(`link_unverifiable:${link.field}`);
-    if (check.allowed !== true) throw new ProjectAiError(`link_blocked:${link.field}`);
-  }
 }
 
 export async function translateProjectText(content: Partial<ProjectContent>, source: ContentLocale, target: ContentLocale) {

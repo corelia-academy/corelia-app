@@ -1,14 +1,33 @@
+import { useLearningConfirm } from "@/features/learning/useLearningConfirm";
+import { lessonText, normalizeLessonCopy } from "@/features/learning/lessonCopy";
+import { normalizeVideoLocale } from "@/features/learning/videoLocale";
+import { normalizeCodeLocale } from "@/features/code-exercise/locale";
+import { isLessonResourceList } from "@/features/learning/resourceValidation";
+import { InstructorAttributionEditor } from "@/features/learning/admin/InstructorAttributionEditor";
+import { parseCourseInstructors } from "@/features/learning/courseInstructors";
+import type { CourseInstructorRef, PublishValidationIssue } from "@/features/learning/types";
+import { useSectionDrafts } from "./hooks/useSectionDrafts";
+import { useCourseFieldDraft } from "./hooks/useCourseFieldDraft";
+import { useCourseSettingsDraft } from "./hooks/useCourseSettingsDraft";
+import { useCourseContentDraft } from "./hooks/useCourseContentDraft";
+import { learningSaveError } from "@/features/learning/publishError";
+import { ARTIFACT_FIELDS, type ArtifactField } from "@/features/learning/types";
+import { SubmissionReviewContent } from "@/features/learning/SubmissionReviewContent";
+import { CourseLearningReport } from "@/features/learning/CourseLearningReport";
+import { archiveLearningCourse, archiveLearningLesson } from "@/lib/learning";
+import { useLearningTranslation } from "@/features/learning/useLearningTranslation";
 import {
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
+  type ReactNode,
   type Dispatch,
   type SetStateAction,
 } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useParams } from "react-router";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
 import {
   ArrowLeft,
   ArrowRight,
@@ -25,6 +44,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   CheckSquare,
+  Code2,
   Download,
   GripVertical,
   Loader2,
@@ -40,15 +60,14 @@ import {
   getLessonDistinctLearnerCountsForCourse,
   checkAndIssueCertificate,
   updateCourse,
-  isCourseCoInstructorWithAnyPermission,
-  toCoInstructorSnapshot,
+  saveCourseWithLocale,
+  isCourseCoInstructorWithAnyPermission,  toCoInstructorSnapshot,
   applyCourseLessonLocaleContent,
   applyCourseSectionLocaleContent,
   getCoursePrimaryLocale,
   getCourseSupportedLocales,
   normalizeCourseLocale,
   setCourseLessonLocaleContent,
-  setCourseLocaleContent,
   setCourseSectionLocaleContent,
   addSection,
   addLesson,
@@ -73,7 +92,7 @@ import {
   type InstructorCourseWorkspace,
 } from "@/features/courses/instructorCourseEditorQueries";
 import { courseKeys } from "@/features/courses/courseQueries";
-import { updateSubmissionStatus } from "@/lib/finalAssignment";
+import { latestSubmissionsByUser, updateSubmissionStatus } from "@/lib/finalAssignment";
 import { fetchYoutubeVideoMetadata, getYoutubeVideoDuration } from "@/lib/youtube";
 import {
   buildSegmentsFromChapterStarts,
@@ -207,8 +226,9 @@ type CoverageFieldKey =
   | "final_assignment_description"
   | "final_assignment_instructions";
 
-const InstructorCourseEdit = () => {
+const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLesson, onEditLearningLesson, renderLearningReadiness }: { learningTools?: ReactNode | ((focusIssue: (issue: PublishValidationIssue) => void) => ReactNode); onDirtyChange?: (dirty: boolean) => void; onCreateLearningLesson?: (lesson: CourseLesson) => void; onEditLearningLesson?: (lesson: CourseLesson) => void; renderLearningReadiness?: (lesson: CourseLesson) => ReactNode } = {}) => {
   const { t, i18n } = useTranslation("instructor");
+  const { confirm, confirmation } = useLearningConfirm();
 
   const formatHumanVideoDuration = (totalSeconds: number) => {
     if (!(totalSeconds > 0)) return "—";
@@ -220,7 +240,12 @@ const InstructorCourseEdit = () => {
     return `${h} hr ${m} min`;
   };
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const editorLocation = useLocation();
   const { profile } = useAuth();
+  const { t: learningT } = useLearningTranslation();
+  const [archivingId, setArchivingId] = useState<string | null>(null);
+  const [reviewComments, setReviewComments] = useState<Record<string, string>>({});
   const queryClient = useQueryClient();
   const workspaceOptions = instructorCourseWorkspaceQueryOptions({ courseId: id, profile });
   const workspaceQuery = useQuery(workspaceOptions);
@@ -302,8 +327,15 @@ const InstructorCourseEdit = () => {
   const [addingSection, setAddingSection] = useState(false);
   const [newSectionDescription, setNewSectionDescription] = useState("");
   const [editingSection, setEditingSection] = useState<CourseSection | null>(null);
-  const [editingSectionTitle, setEditingSectionTitle] = useState("");
-  const [editingSectionDescription, setEditingSectionDescription] = useState("");
+  const sectionDrafts = useSectionDrafts();
+  const { title: editingSectionTitle, description: editingSectionDescription } = sectionDrafts.value;
+  const { setTitle: setEditingSectionTitle, setDescription: setEditingSectionDescription, locale: dialogSectionLocale } = sectionDrafts;
+  const [savingSection, setSavingSection] = useState(false);
+  const [loadingSectionLocales, setLoadingSectionLocales] = useState(false);
+  const [sectionLoadError, setSectionLoadError] = useState<string | null>(null);
+  const [sectionSaveError, setSectionSaveError] = useState<string | null>(null);
+  const sectionSessionRef = useRef<object | null>(null);
+  const retrySectionLoadRef = useRef<() => void>(() => {});
   const [addingLessonInProgress, setAddingLessonInProgress] = useState(false);
   const [reorderingLessons, setReorderingLessons] = useState(false);
   const [draggingLessonId, setDraggingLessonId] = useState<string | null>(null);
@@ -320,8 +352,6 @@ const InstructorCourseEdit = () => {
   const [newLessonTitle, setNewLessonTitle] = useState("");
   const [newLessonShortDescription, setNewLessonShortDescription] = useState("");
   const [newLessonYoutubeUrl, setNewLessonYoutubeUrl] = useState("");
-  const [newLessonMinutes, setNewLessonMinutes] = useState<number | "">("");
-  const [newLessonIsPreviewFree, setNewLessonIsPreviewFree] = useState(false);
   const [newLessonMarkdown, setNewLessonMarkdown] = useState("");
   const [newLessonResources, setNewLessonResources] = useState<
     Array<{ title: string; url: string }>
@@ -366,7 +396,6 @@ const InstructorCourseEdit = () => {
     GeneratedQuestionSource[]
   >([]);
   const [editingLessonFormat, setEditingLessonFormat] = useState<LessonFormat>("video");
-  const [editingLessonMinutes, setEditingLessonMinutes] = useState<number | "">("");
   const [longVideoSplitOpen, setLongVideoSplitOpen] = useState(false);
   const [longVideoSplitPayload, setLongVideoSplitPayload] = useState<{
     sectionId: string;
@@ -388,8 +417,6 @@ const InstructorCourseEdit = () => {
     shortDescription: string;
     markdown: string;
     resources: Array<{ title: string; url: string }>;
-    minutes: number | "";
-    isPreviewFree: boolean;
     videoPrimaryLocale?: SupportedCourseLocale;
     hasSubtitle?: boolean;
     subtitleLocales?: SupportedCourseLocale[];
@@ -429,11 +456,12 @@ const InstructorCourseEdit = () => {
       >
     >
   >({});
-  const [form, setForm] = useState({
+  const { value: form, setValue: setForm, hydrate: hydrateForm, acknowledge: acknowledgeForm, dirty: formDirty } = useCourseSettingsDraft(`${profile?.id ?? "anonymous"}:${id ?? "missing"}`, {
     slug: "",
     thumbnail_url: "",
     level: "all" as CourseLevel,
     published: false,
+    final_assignment_fields: [] as ArtifactField[],
     is_external_aggregated: false,
     is_updating: false,
     has_certificate: false,
@@ -462,21 +490,19 @@ const InstructorCourseEdit = () => {
   // while the template remains and then appear enabled again after reload.
   const certificateTemplateConfigured = Boolean(form.certificate_template_url.trim());
 
-  const [coInstructorIds, setCoInstructorIds] = useState<string[]>([]);
-  const [coInstructorPermissions, setCoInstructorPermissions] = useState<
-    Record<string, CourseCoInstructorPermissions>
-  >({});
+  const [attribution, setAttribution, hydrateAttribution, acknowledgeAttribution, attributionDirty] = useCourseFieldDraft<CourseInstructorRef[] | null>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:attribution`, null);
+  const [coInstructorIds, setCoInstructorIds, hydrateCoInstructorIds, acknowledgeCoInstructorIds, coInstructorIdsDirty] = useCourseFieldDraft<string[]>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:coInstructorIds`, []);
+  const [coInstructorPermissions, setCoInstructorPermissions, hydrateCoInstructorPermissions, acknowledgeCoInstructorPermissions, coInstructorPermissionsDirty] = useCourseFieldDraft<Record<string, CourseCoInstructorPermissions>>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:coInstructorPermissions`, {});
   // Snapshot of ids that were already accepted at load-time. Used to decide
   // which uids in coInstructorIds need an invite (newly added) vs perms update.
   const [acceptedCoInstructorIdsSnapshot, setAcceptedCoInstructorIdsSnapshot] =
     useState<string[]>([]);
   // Per co-instructor visibility on course details page (default: true).
-  const [coInstructorVisibility, setCoInstructorVisibility] = useState<Record<string, boolean>>({});
+  const [coInstructorVisibility, setCoInstructorVisibility, hydrateCoInstructorVisibility, acknowledgeCoInstructorVisibility, coInstructorVisibilityDirty] = useCourseFieldDraft<Record<string, boolean>>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:coInstructorVisibility`, {});
 
-  const [supportedLocales, setSupportedLocales] = useState<SupportedCourseLocale[]>(["vi", "en"]);
-  const [primaryContentLocale, setPrimaryContentLocale] = useState<SupportedCourseLocale>("vi");
-  const [defaultVideoPrimaryLocale, setDefaultVideoPrimaryLocale] =
-    useState<SupportedCourseLocale>("vi");
+  const [supportedLocales, setSupportedLocales, hydrateSupportedLocales, acknowledgeSupportedLocales, supportedLocalesDirty] = useCourseFieldDraft<SupportedCourseLocale[]>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:supportedLocales`, ["vi", "en"]);
+  const [primaryContentLocale, setPrimaryContentLocale, hydratePrimaryContentLocale, acknowledgePrimaryContentLocale, primaryContentLocaleDirty] = useCourseFieldDraft<SupportedCourseLocale>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:primaryContentLocale`, "vi");
+  const [defaultVideoPrimaryLocale, setDefaultVideoPrimaryLocale, hydrateDefaultVideoPrimaryLocale, acknowledgeDefaultVideoPrimaryLocale, defaultVideoPrimaryLocaleDirty] = useCourseFieldDraft<SupportedCourseLocale>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:defaultVideoPrimaryLocale`, "vi");
   const [activeContentLocale, setActiveContentLocale] = useState<SupportedCourseLocale>("vi");
   const localeOptions = instructorCourseLocaleQueryOptions({
     courseId: id,
@@ -514,7 +540,6 @@ const InstructorCourseEdit = () => {
     [localeOptions.queryKey, queryClient],
   );
   // Per-locale draft cache for section & lesson dialogs
-  type SectionDraft = { title: string; description: string };
   type LessonDraft = {
     title: string; youtubeUrl: string; videoPrimaryLocale: SupportedCourseLocale;
     hasSubtitle: boolean; subtitleLocales: SupportedCourseLocale[];
@@ -523,21 +548,13 @@ const InstructorCourseEdit = () => {
     practiceSourceLessonId: string;
     practiceSourceLessonIds: string[];
   };
-  const sectionDraftRef = useRef<Map<SupportedCourseLocale, SectionDraft>>(new Map());
   const lessonDraftRef = useRef<Map<SupportedCourseLocale, LessonDraft>>(new Map());
-  const [dialogSectionLocale, setDialogSectionLocale] = useState<SupportedCourseLocale>("vi");
+  const lessonLocaleLoadGeneration = useRef(0);
   const [dialogLessonLocale, setDialogLessonLocale] = useState<SupportedCourseLocale>("vi");
-  const [contentForm, setContentForm] = useState({
-    title: "",
-    short_description: "",
-    description: "",
-    learning_outcomes: [] as string[],
-    final_assignment_title: "",
-    final_assignment_description: "",
-    final_assignment_instructions: "",
-  });
-  const contentHydratedSelectionRef = useRef("");
-  const [courseSkills, setCourseSkills] = useState<string[]>([]);
+  const { contentForm, setContentForm, hydrateContentForm, markContentSaved, contentDirty } = useCourseContentDraft(
+    `${profile?.id ?? "anonymous"}:${id ?? "missing"}:${activeContentLocale}`,
+  );
+  const [courseSkills, setCourseSkills, hydrateCourseSkills, acknowledgeCourseSkills, courseSkillsDirty] = useCourseFieldDraft<string[]>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:courseSkills`, []);
   const [descriptionGeneratorOpen, setDescriptionGeneratorOpen] = useState(false);
   const [descriptionGeneratorRequest, setDescriptionGeneratorRequest] =
     useState<DescriptionGeneratorDialogRequest | null>(null);
@@ -546,6 +563,7 @@ const InstructorCourseEdit = () => {
   const [questionGeneratorSection, setQuestionGeneratorSection] = useState<CourseSection | null>(null);
   const [lessonQuizDialogOpen, setLessonQuizDialogOpen] = useState(false);
   const [lessonQuizDialogLesson, setLessonQuizDialogLesson] = useState<CourseLesson | null>(null);
+  const reviewInFlight = useRef(false);
   const [reviewingSubmissionId, setReviewingSubmissionId] = useState<
     string | null
   >(null);
@@ -554,7 +572,7 @@ const InstructorCourseEdit = () => {
   const [uploadingThumb, setUploadingThumb] = useState(false);
   const certificateInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingCert, setUploadingCert] = useState(false);
-  const [sponsors, setSponsors] = useState<CourseSponsor[]>([]);
+  const [sponsors, setSponsors, hydrateSponsors, acknowledgeSponsors, sponsorsDirty] = useCourseFieldDraft<CourseSponsor[]>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:sponsors`, []);
   const [sponsorDialogOpen, setSponsorDialogOpen] = useState(false);
   const [activeSponsorId, setActiveSponsorId] = useState<string | null>(null);
   type LocaleContentDraft = { name: string; description: string };
@@ -572,7 +590,7 @@ const InstructorCourseEdit = () => {
   const [sponsorDialogLocale, setSponsorDialogLocale] = useState<SupportedCourseLocale>("vi");
   const sponsorLogoInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingSponsorLogo, setUploadingSponsorLogo] = useState(false);
-  const [partners, setPartners] = useState<CoursePartner[]>([]);
+  const [partners, setPartners, hydratePartners, acknowledgePartners, partnersDirty] = useCourseFieldDraft<CoursePartner[]>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:partners`, []);
   const [partnerDialogOpen, setPartnerDialogOpen] = useState(false);
   const [activePartnerId, setActivePartnerId] = useState<string | null>(null);
   const [partnerForm, setPartnerForm] = useState<{
@@ -615,56 +633,85 @@ const InstructorCourseEdit = () => {
   // persisted course setting only after the PDF template upload succeeds.
   const [certificateSetupPending, setCertificateSetupPending] = useState(false);
   const skipCertificateSetupHashGuardRef = useRef(false);
+  const newLessonDirty = addingLessonDraftSectionId !== null && (
+    newLessonFormat !== "video" || Boolean(newLessonTitle || newLessonShortDescription || newLessonYoutubeUrl || newLessonMarkdown) ||
+    newLessonResources.length > 0 || newQuizQuestions.some(question =>
+      Boolean(question.question || question.explanation) || question.options.some(option => Boolean(option.text)),
+    )
+  );
+  const curriculumDraftDirty = Boolean(newSectionTitle || newSectionDescription) || newLessonDirty || sectionDrafts.dirty || savingSection || addingSection || addingLessonInProgress;
+  const [sectionQuestionsDirty, setSectionQuestionsDirty] = useState(false);
+  const [lessonQuestionsDirty, setLessonQuestionsDirty] = useState(false);
+  const extraFieldsDirty = attributionDirty || coInstructorIdsDirty || coInstructorPermissionsDirty || coInstructorVisibilityDirty || supportedLocalesDirty || primaryContentLocaleDirty || defaultVideoPrimaryLocaleDirty || courseSkillsDirty || sponsorsDirty || partnersDirty;
+  useEffect(() => {
+    onDirtyChange?.(contentDirty || formDirty || extraFieldsDirty || curriculumDraftDirty || sectionQuestionsDirty || lessonQuestionsDirty || ocbDirty || certificateSetupPending);
+    return () => onDirtyChange?.(false);
+  }, [contentDirty, formDirty, extraFieldsDirty, curriculumDraftDirty, sectionQuestionsDirty, lessonQuestionsDirty, ocbDirty, certificateSetupPending, onDirtyChange]);
+
 
   // Confirms before leaving the OCC tab with unsaved OCA/OCB edits — the
   // credential template's own Save button no longer auto-persists on every
   // toggle flip, so this is the safety net against silently losing a draft.
   const confirmLeaveOcbDirty = useCallback(
     () =>
-      window.confirm(
+      confirm(
         t("courseEdit.ocb.leaveWithoutSavingWarning", {
           defaultValue:
             "Bạn có thay đổi cấu hình OpenCampus Credentials chưa lưu. Rời trang bây giờ sẽ KHÔNG cấp chứng chỉ on-chain cho học viên. Rời trang?",
         }),
       ),
-    [t],
+    [t, confirm],
   );
 
   const abandonCertificateSetup = useCallback(() => {
     setCertificateSetupPending(false);
     setForm((previous) => ({ ...previous, has_certificate: false }));
-  }, []);
+  }, [setForm]);
 
   const confirmLeaveCertificateSetup = useCallback(
     () =>
-      window.confirm(
+      confirm(
         t("courseEdit.certificate.setupLeaveWarning", {
           defaultValue:
             "Quá trình khởi tạo chứng nhận sẽ bị hủy. Bạn sẽ phải khởi tạo lại từ đầu. Rời trang?",
         }),
       ),
-    [t],
+    [t, confirm],
   );
 
-  const setSection = (id: SectionId) => {
+  const setSection = async (id: SectionId) => {
     if (activeSection === "credentials" && id !== "credentials" && ocbDirty) {
-      if (!confirmLeaveOcbDirty()) return false;
+      if (!await confirmLeaveOcbDirty()) return false;
     }
     if (activeSection === "certificate" && id !== "certificate" && certificateSetupPending) {
-      if (!confirmLeaveCertificateSetup()) return false;
+      if (!await confirmLeaveCertificateSetup()) return false;
       abandonCertificateSetup();
-      // Updating location.hash below emits a second navigation event. Its
+      // Updating the router hash below emits a second navigation event. Its
       // guard must not ask the same confirmation again.
       skipCertificateSetupHashGuardRef.current = true;
     }
     setActiveSection(id);
-    window.location.hash = id;
+    void navigate({ hash: `#${id}` });
     window.scrollTo({ top: 0 });
     return true;
   };
 
-  const goToCertificateIssuanceToggle = () => {
-    if (setSection("info")) setScrollToCertificateIssuanceToggle(true);
+  const [learningFocus, setLearningFocus] = useState<PublishValidationIssue | null>(null);
+  const focusLearningIssue = async (issue: PublishValidationIssue) => {
+    if (!await setSection(issue.panel ?? "content")) return;
+    if (issue.locale) setActiveContentLocale(issue.locale);
+    setLearningFocus({ ...issue });
+    setError(learningT(`learning.validation.${issue.code}`, { defaultValue: issue.code }));
+  };
+  useEffect(() => {
+    if (!learningFocus || activeSection !== (learningFocus.panel ?? "content") || (learningFocus.locale && activeContentLocale !== learningFocus.locale)) return;
+    const target = document.getElementById(`learning-course-${learningFocus.field}`);
+    target?.focus();
+    target?.scrollIntoView?.({ block: "center" });
+  }, [learningFocus, activeSection, activeContentLocale]);
+
+  const goToCertificateIssuanceToggle = async () => {
+    if (await setSection("info")) setScrollToCertificateIssuanceToggle(true);
   };
 
   const showCertificateLockedToast = () => {
@@ -681,8 +728,8 @@ const InstructorCourseEdit = () => {
   };
 
   useEffect(() => {
-    const onHash = () => {
-      const hash = window.location.hash.slice(1);
+    const onHash = async () => {
+      const hash = editorLocation.hash.slice(1);
       if (!sectionIds.includes(hash as SectionId)) return;
       if (skipCertificateSetupHashGuardRef.current) {
         skipCertificateSetupHashGuardRef.current = false;
@@ -690,25 +737,26 @@ const InstructorCourseEdit = () => {
         return;
       }
       if (activeSection === "credentials" && hash !== "credentials" && ocbDirty) {
-        if (!confirmLeaveOcbDirty()) {
+        if (!await confirmLeaveOcbDirty()) {
           // Undo the browser's hash change (e.g. back/forward button) and
           // stay put — best-effort, since we can't cancel it outright.
-          window.location.hash = "credentials";
+          void navigate({ hash: "#credentials" }, { replace: true });
           return;
         }
       }
       if (activeSection === "certificate" && hash !== "certificate" && certificateSetupPending) {
-        if (!confirmLeaveCertificateSetup()) {
-          window.location.hash = "certificate";
+        if (!await confirmLeaveCertificateSetup()) {
+          void navigate({ hash: "#certificate" }, { replace: true });
           return;
         }
         abandonCertificateSetup();
       }
       setActiveSection(hash as SectionId);
     };
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
+    onHash();
   }, [
+    editorLocation.hash,
+    navigate,
     sectionIds,
     activeSection,
     ocbDirty,
@@ -1029,23 +1077,24 @@ const InstructorCourseEdit = () => {
       .filter(Boolean)
       .filter((cid) => cid !== course.instructor_id);
     const uniqueAccepted = Array.from(new Set(acceptedIds));
-    setCoInstructorIds(uniqueAccepted);
-    setCoInstructorPermissions(course.co_instructor_permissions ?? {});
+    hydrateCoInstructorIds(uniqueAccepted);
+    hydrateCoInstructorPermissions(course.co_instructor_permissions ?? {});
     setAcceptedCoInstructorIdsSnapshot(uniqueAccepted);
     const vis: Record<string, boolean> = {};
     for (const snap of course.co_instructors ?? []) {
       vis[snap.id] = snap.show_on_course_page !== false;
     }
-    setCoInstructorVisibility(vis);
-  }, [course]);
+    hydrateCoInstructorVisibility(vis);
+  }, [course, hydrateCoInstructorIds, hydrateCoInstructorPermissions, hydrateCoInstructorVisibility]);
 
   useEffect(() => {
     if (course) {
-      setForm({
+      hydrateForm({
         slug: course.slug,
         thumbnail_url: course.thumbnail_url,
         level: course.level,
         published: course.published,
+        final_assignment_fields: course.final_assignment_fields ?? [],
         is_external_aggregated: course.is_external_aggregated ?? false,
         is_updating: course.is_updating ?? false,
         has_certificate: course.has_certificate === true || !!course.certificate_template_url,
@@ -1079,20 +1128,21 @@ const InstructorCourseEdit = () => {
         external_source_attribution_note:
           course.external_source_attribution_note ?? "",
       });
-      setCourseSkills(
+      hydrateCourseSkills(
         (Array.isArray(course.skills) ? course.skills : [])
           .filter((item): item is string => typeof item === "string")
           .map((item) => item.trim())
           .filter(Boolean),
       );
-      setSponsors(Array.isArray(course.sponsors) ? course.sponsors : []);
+      hydrateAttribution(parseCourseInstructors(course.instructors ?? [{ profile_id: course.instructor_id, order: 0 }]));
+      hydrateSponsors(Array.isArray(course.sponsors) ? course.sponsors : []);
       const list = Array.isArray(course.partners) ? course.partners : [];
       if (list.length > 0) {
-        setPartners(list);
+        hydratePartners(list);
       } else {
         const legacy = course.partner_brand ?? null;
         const legacyName = String(legacy?.name ?? "").trim();
-        setPartners(
+        hydratePartners(
           legacyName
             ? [
                 {
@@ -1111,17 +1161,15 @@ const InstructorCourseEdit = () => {
       const supported = getCourseSupportedLocales(course);
       const primary = getCoursePrimaryLocale(course);
       const defaultVideo = normalizeCourseLocale(course.i18n?.default_video_primary_locale);
-      setSupportedLocales(supported);
-      setPrimaryContentLocale(primary);
-      setDefaultVideoPrimaryLocale(defaultVideo);
+      hydrateSupportedLocales(supported);
+      hydratePrimaryContentLocale(primary);
+      hydrateDefaultVideoPrimaryLocale(defaultVideo);
       setActiveContentLocale((prev) => (supported.includes(prev) ? prev : primary));
     }
-  }, [course]);
+  }, [course, hydrateForm, hydrateAttribution, hydrateCourseSkills, hydrateSponsors, hydratePartners, hydrateSupportedLocales, hydratePrimaryContentLocale, hydrateDefaultVideoPrimaryLocale]);
 
   useEffect(() => {
     if (!id || !course || !localeQuery.isSuccess) return;
-    const selection = `${id}:${activeContentLocale}`;
-    if (contentHydratedSelectionRef.current === selection) return;
     const fallbackFromCourse = () => ({
       title: course.title ?? "",
       short_description: course.short_description ?? "",
@@ -1151,13 +1199,12 @@ const InstructorCourseEdit = () => {
     let cancelled = false;
     queueMicrotask(() => {
       if (cancelled) return;
-      setContentForm(next);
-      contentHydratedSelectionRef.current = selection;
+      hydrateContentForm(next);
     });
     return () => {
       cancelled = true;
     };
-  }, [activeContentLocale, course, id, localeQuery.data, localeQuery.isSuccess]);
+  }, [activeContentLocale, course, hydrateContentForm, id, localeQuery.data, localeQuery.isSuccess]);
 
   // Backfill tổng thời lượng khi mở trang (để danh sách khoá học bên ngoài hiển thị đúng)
   useEffect(() => {
@@ -1295,9 +1342,9 @@ const InstructorCourseEdit = () => {
         ).values(),
       ).slice(0, 20);
 
-      await setCourseLocaleContent(id, activeContentLocale, {
+      const activeLocaleCopy = {
         title: contentForm.title.trim() || course.title,
-        description: contentForm.description.trim() || course.description,
+        description: contentForm.description.trim(),
         short_description: contentForm.short_description.trim() || "",
         learning_outcomes: sanitizedOutcomes,
         final_assignment_title: contentForm.final_assignment_title.trim() || null,
@@ -1305,7 +1352,7 @@ const InstructorCourseEdit = () => {
           contentForm.final_assignment_description.trim() || null,
         final_assignment_instructions:
           contentForm.final_assignment_instructions.trim() || null,
-      });
+      };
 
       const nextSupported = Array.from(
         new Set<SupportedCourseLocale>(supportedLocales),
@@ -1424,11 +1471,12 @@ const InstructorCourseEdit = () => {
         ),
       };
 
-      await updateCourse(id, {
+      await saveCourseWithLocale(id, {
         slug: form.slug,
         thumbnail_url: form.thumbnail_url,
         level: form.level,
         published: form.published,
+        final_assignment_fields: form.final_assignment_fields,
         is_external_aggregated: form.is_external_aggregated,
         external_source_urls: form.external_source_urls_text
           .split("\n")
@@ -1443,10 +1491,11 @@ const InstructorCourseEdit = () => {
         skills: sanitizedSkills,
         sponsors,
         partners,
+        ...(attribution !== null && { instructors: attribution }),
         ...(shouldUpdateRootContent && {
           title: contentForm.title.trim() || course.title,
-          short_description: contentForm.short_description.trim() || undefined,
-          description: contentForm.description.trim() || course.description,
+          short_description: contentForm.short_description.trim(),
+          description: contentForm.description.trim(),
           learning_outcomes: sanitizedOutcomes,
           final_assignment_title: contentForm.final_assignment_title.trim() || null,
           final_assignment_description:
@@ -1462,7 +1511,8 @@ const InstructorCourseEdit = () => {
           co_instructors: coInstructorSnapshots,
           co_instructor_permissions: coInstructorPermissionsPayload,
         }),
-      });
+      }, activeContentLocale, activeLocaleCopy);
+      markContentSaved(contentForm);
       setCourse((prev) =>
         prev
           ? {
@@ -1471,6 +1521,7 @@ const InstructorCourseEdit = () => {
               thumbnail_url: form.thumbnail_url,
               level: form.level,
               published: form.published,
+        final_assignment_fields: form.final_assignment_fields,
               is_external_aggregated: form.is_external_aggregated,
               external_source_urls: form.external_source_urls_text
                 .split("\n")
@@ -1484,6 +1535,7 @@ const InstructorCourseEdit = () => {
               skills: sanitizedSkills,
               sponsors,
               partners,
+              ...(attribution !== null && { instructors: attribution }),
               ...(shouldUpdateRootContent && {
                 title: contentForm.title.trim() || prev.title,
                 short_description: contentForm.short_description,
@@ -1510,6 +1562,14 @@ const InstructorCourseEdit = () => {
             }
           : null,
       );
+      acknowledgeForm(form);
+      acknowledgeSupportedLocales(supportedLocales);
+      acknowledgePrimaryContentLocale(primaryContentLocale);
+      acknowledgeDefaultVideoPrimaryLocale(defaultVideoPrimaryLocale);
+      acknowledgeCourseSkills(courseSkills);
+      acknowledgeSponsors(sponsors);
+      acknowledgeAttribution(attribution);
+      acknowledgePartners(partners);
       toast.success(successMessage);
 
       // After course save, fire co-instructor invites for newly-added uids.
@@ -1567,12 +1627,20 @@ const InstructorCourseEdit = () => {
           console.error("[co-instructor invite] refresh pending", err);
         }
       }
+      if (canEditCoInstructors) {
+        const invitedSet = new Set(idsToInvite);
+        const savedPermissions = { ...coInstructorPermissions };
+        for (const inviteeId of invitedSet) delete savedPermissions[inviteeId];
+        acknowledgeCoInstructorIds(coInstructorIds.filter(uid => !invitedSet.has(uid)));
+        acknowledgeCoInstructorPermissions(savedPermissions);
+        acknowledgeCoInstructorVisibility(coInstructorVisibility);
+      }
     });
 
     try {
       await savePromise;
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
+      setError(learningSaveError(e, learningT, lessons, t("courseEdit.errors.updateFailed")));
     } finally {
       setSaving(false);
     }
@@ -1596,43 +1664,27 @@ const InstructorCourseEdit = () => {
     status: "approved" | "rejected",
     comment?: string,
   ) => {
+    if (reviewInFlight.current) return;
+    reviewInFlight.current = true;
     setReviewingSubmissionId(submissionId);
     try {
-      await runMutation(() => updateSubmissionStatus(submissionId, status, comment || null));
-      const sub = submissions.find((s) => s.id === submissionId);
-      if (sub) {
-        setSubmissions((prev) =>
-          prev.map((s) =>
-            s.id === submissionId
-              ? { ...s, status, reviewer_comment: comment ?? null }
-              : s,
-          ),
-        );
-        setSubmissionByUser((prev) => ({
-          ...prev,
-          [sub.user_id]: { ...sub, status, reviewer_comment: comment ?? null },
-        }));
-      }
-      if (status === "approved" && sub) {
-        const result = await runMutation(() => checkAndIssueCertificate(sub.user_id, id ?? ""));
-        if (result.issued) {
-          setEnrollments((prev) =>
-            prev.map((e) =>
-              e.user_id === sub.user_id
-                ? { ...e, certificate_issued_at: result.certificate_issued_at || new Date().toISOString() }
-                : e,
-            ),
-          );
-        }
-      }
+      const reviewed = await runMutation(() => updateSubmissionStatus(submissionId, status, comment || null));
+      setSubmissions(previous => previous.map(submission => submission.id === reviewed.id ? reviewed : submission));
+      setSubmissionByUser(previous => latestSubmissionsByUser([...Object.values(previous).filter(submission => submission.id !== reviewed.id), reviewed]));
+      // The review RPC commits completion; the service schedules credential
+      // synchronization separately. Do not issue again or fail a saved review.
       toast.success(
         status === "approved"
           ? t("courseEdit.toasts.assignmentApproved")
           : t("courseEdit.toasts.assignmentRejected"),
       );
     } catch (e) {
+      if (e instanceof Error && e.message === "STALE_SUBMISSION") {
+        await workspaceQuery.refetch();
+      }
       toast.error(e instanceof Error ? e.message : t("courseEdit.errors.processFailed"));
     } finally {
+      reviewInFlight.current = false;
       setReviewingSubmissionId(null);
     }
   };
@@ -1913,7 +1965,7 @@ const InstructorCourseEdit = () => {
   const removeSponsor = async (s: CourseSponsor) => {
     const sid = String(s.id ?? "").trim();
     if (!sid) return;
-    if (!confirm(String(t("courseEdit.sponsors.confirm.remove")))) return;
+    if (!await confirm(String(t("courseEdit.sponsors.confirm.remove")))) return;
     const nextSponsors = sponsors.filter((x) => String(x.id ?? "").trim() !== sid);
     await persistSponsors(nextSponsors, "courseEdit.sponsors.toasts.removed");
     await runMutation(() => deleteStorageObjectByPath(s.logo_path ?? null));
@@ -2069,7 +2121,7 @@ const InstructorCourseEdit = () => {
   const removePartner = async (p: CoursePartner) => {
     const pid = String(p.id ?? "").trim();
     if (!pid) return;
-    if (!confirm(String(t("courseEdit.partners.confirm.remove")))) return;
+    if (!await confirm(String(t("courseEdit.partners.confirm.remove")))) return;
     const nextPartners = partners.filter((x) => String(x.id ?? "").trim() !== pid);
     await persistPartners(nextPartners, "courseEdit.partners.toasts.removed");
     await runMutation(() => deleteStorageObjectByPath(p.logo_path ?? null));
@@ -2301,7 +2353,7 @@ const InstructorCourseEdit = () => {
 
   const handleTranslateSectionBundle = () => {
     if (!editingSection || dialogSectionLocale === primaryContentLocale) return;
-    const sourceDraft = sectionDraftRef.current.get(primaryContentLocale) ?? {
+    const sourceDraft = sectionDrafts.get(primaryContentLocale) ?? {
       title: editingSection.title ?? "",
       description: editingSection.description ?? "",
     };
@@ -2566,68 +2618,50 @@ const InstructorCourseEdit = () => {
   };
 
   const openEditSection = (section: CourseSection) => {
-    sectionDraftRef.current = new Map();
-    const initLocale = activeContentLocale;
-    setDialogSectionLocale(initLocale);
+    const token = {};
+    sectionSessionRef.current = token;
+    const base = { title: section.title ?? "", description: section.description ?? "" };
+    const hydrate = sectionDrafts.begin(activeContentLocale, Object.fromEntries(
+      supportedLocales.map(locale => [locale, base]),
+    ));
     setEditingSection(section);
-    setEditingSectionTitle(section.title ?? "");
-    setEditingSectionDescription(section.description ?? "");
-    if (!id) return;
-    // Pre-load all supported locales in the background
-    for (const loc of supportedLocales) {
-      if (loc === primaryContentLocale) {
-        sectionDraftRef.current.set(loc, {
-          title: section.title ?? "",
-          description: section.description ?? "",
-        });
-      } else {
-        void queryClient.fetchQuery(instructorCourseSectionLocaleQueryOptions({
-          courseId: id,
-          sectionId: section.id,
-          locale: loc,
-          userId: profile?.id,
-        })).catch(() => null).then((localized) => {
-          if (!sectionDraftRef.current.has(loc)) {
-            sectionDraftRef.current.set(loc, {
-              title: localized?.title ?? section.title ?? "",
-              description: localized?.description ?? section.description ?? "",
-            });
-          }
-          if (loc === initLocale) {
-            setEditingSectionTitle(localized?.title ?? section.title ?? "");
-            setEditingSectionDescription(localized?.description ?? section.description ?? "");
-          }
-        });
-      }
-    }
+    setSectionSaveError(null);
+    const load = async () => {
+      if (!id) return;
+      setLoadingSectionLocales(true);
+      setSectionLoadError(null);
+      const results = await Promise.allSettled(supportedLocales.filter(loc => loc !== primaryContentLocale).map(async loc => {
+        const localized = await queryClient.fetchQuery(instructorCourseSectionLocaleQueryOptions({
+          courseId: id, sectionId: section.id, locale: loc, userId: profile?.id,
+        }));
+        hydrate(loc, { title: localized?.title ?? base.title, description: localized?.description ?? base.description });
+      }));
+      if (sectionSessionRef.current !== token) return;
+      if (results.some(result => result.status === "rejected")) setSectionLoadError(t("courseEdit.errors.updateFailed"));
+      setLoadingSectionLocales(false);
+    };
+    retrySectionLoadRef.current = () => { void load(); };
+    void load();
   };
 
-  const switchDialogSectionLocale = (nextLocale: SupportedCourseLocale) => {
-    // Save current
-    sectionDraftRef.current.set(dialogSectionLocale, {
-      title: editingSectionTitle,
-      description: editingSectionDescription,
-    });
-    // Load next
-    const saved = sectionDraftRef.current.get(nextLocale);
-    setEditingSectionTitle(saved?.title ?? editingSection?.title ?? "");
-    setEditingSectionDescription(saved?.description ?? editingSection?.description ?? "");
-    setDialogSectionLocale(nextLocale);
+  const switchDialogSectionLocale = sectionDrafts.select;
+  const closeEditSection = async () => {
+    if (savingSection) return;
+    if (sectionDrafts.dirty && !await confirm(learningT("learning.dirtyConfirm"))) return;
+    sectionSessionRef.current = null;
+    sectionDrafts.close();
+    setEditingSection(null);
   };
 
   const handleSaveSectionDetails = async () => {
-    if (!id || !editingSection) return;
+    if (!id || !editingSection || savingSection || loadingSectionLocales || sectionLoadError || translatingBundle === "section") return;
+    setSavingSection(true);
+    setSectionSaveError(null);
+    const submitted = sectionDrafts.changed;
     const savePromise = runMutation(async () => {
-      // Flush current dialog locale into draft map before saving
-      sectionDraftRef.current.set(dialogSectionLocale, {
-        title: editingSectionTitle,
-        description: editingSectionDescription,
-      });
-
-      // Save each locale that was touched
-      for (const [loc, draft] of sectionDraftRef.current) {
+      for (const [loc, draft] of submitted) {
         const title = draft.title.trim() || editingSection.title;
-        const description = draft.description.trim() || undefined;
+        const description = draft.description.trim();
         if (loc === primaryContentLocale) {
           await updateSection(id, editingSection.id, { title, description });
           setSections((prev) =>
@@ -2638,13 +2672,6 @@ const InstructorCourseEdit = () => {
         } else {
           await setCourseSectionLocaleContent(id, editingSection.id, loc, { title, description });
           if (loc === activeContentLocale) {
-            setSections((prev) =>
-              prev.map((s) =>
-                s.id === editingSection.id
-                  ? applyCourseSectionLocaleContent(s, { locale: loc, title, description })
-                  : s,
-              ),
-            );
             setSectionLocaleMap((prev) => {
               const next = new Map(prev);
               next.set(editingSection.id, { locale: loc, title, description });
@@ -2652,14 +2679,19 @@ const InstructorCourseEdit = () => {
             });
           }
         }
+        sectionDrafts.acknowledge(loc, draft);
       }
+      sectionSessionRef.current = null;
+      sectionDrafts.close();
       setEditingSection(null);
     });
 
     try {
       await savePromise;
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
+      setSectionSaveError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
+    } finally {
+      setSavingSection(false);
     }
   };
 
@@ -2668,8 +2700,6 @@ const InstructorCourseEdit = () => {
     shortDescription: string;
     markdown: string;
     resources: Array<{ title: string; url: string }>;
-    minutes: number | "";
-    isPreviewFree: boolean;
     videoPrimaryLocale?: SupportedCourseLocale;
     hasSubtitle?: boolean;
     subtitleLocales?: SupportedCourseLocale[];
@@ -2701,15 +2731,10 @@ const InstructorCourseEdit = () => {
       .filter((r) => r.title && r.url);
 
     const fromApi = youtubeUrl ? await getYoutubeVideoDuration(youtubeUrl) : 0;
-    const fromInput =
-      snap.minutes !== "" && Number(snap.minutes) > 0 ? Number(snap.minutes) * 60 : 0;
-
     const durationSeconds =
       opts.explicit_duration_seconds != null
         ? opts.explicit_duration_seconds
-        : fromInput > 0
-          ? fromInput
-          : fromApi;
+        : fromApi;
 
     const ytStartRaw = opts.youtube_start_seconds;
     const ytStart =
@@ -2939,8 +2964,6 @@ const InstructorCourseEdit = () => {
     setNewLessonTitle("");
     setNewLessonShortDescription("");
     setNewLessonYoutubeUrl("");
-    setNewLessonMinutes("");
-    setNewLessonIsPreviewFree(false);
     setNewLessonMarkdown("");
     setNewLessonResources([]);
     setNewPracticeSourceLessonId("");
@@ -2950,6 +2973,12 @@ const InstructorCourseEdit = () => {
     setNewLessonFormat("video");
     setAddingLessonDraftSectionId(null);
     pendingNewLessonSnapRef.current = null;
+  };
+
+  const closeNewLessonDialog = async () => {
+    if (addingLessonInProgress || newQuizGenerating) return;
+    if (newLessonDirty && !await confirm(learningT("learning.dirtyConfirm"))) return;
+    resetNewLessonFormFields();
   };
 
   const updateNewQuizQuestion = (
@@ -3014,8 +3043,6 @@ const InstructorCourseEdit = () => {
       setNewLessonYoutubeUrl(payload.youtubeUrl);
       setNewLessonMarkdown(snap.markdown);
       setNewLessonResources(snap.resources);
-      setNewLessonMinutes(snap.minutes);
-      setNewLessonIsPreviewFree(snap.isPreviewFree);
     }
   };
 
@@ -3032,6 +3059,7 @@ const InstructorCourseEdit = () => {
         resetNewLessonFormFields();
         setLongVideoSplitPayload(null);
         setLongVideoSplitOpen(false);
+        lessonLocaleLoadGeneration.current += 1;
         setEditingLesson(null);
         lessonDraftRef.current = new Map();
         toast.success(t("courseEdit.toasts.saved"));
@@ -3077,6 +3105,7 @@ const InstructorCourseEdit = () => {
         resetNewLessonFormFields();
         setLongVideoSplitPayload(null);
         setLongVideoSplitOpen(false);
+        lessonLocaleLoadGeneration.current += 1;
         setEditingLesson(null);
         lessonDraftRef.current = new Map();
         toast.success(t("courseEdit.toasts.saved"));
@@ -3182,6 +3211,7 @@ const InstructorCourseEdit = () => {
         setLongVideoSplitPayload(null);
         setManualSegmentRows([{ start: "0:00", end: "", title: "" }]);
         setLongVideoSplitOpen(false);
+        lessonLocaleLoadGeneration.current += 1;
         setEditingLesson(null);
         lessonDraftRef.current = new Map();
         toast.success(t("courseEdit.toasts.saved"));
@@ -3229,9 +3259,6 @@ const InstructorCourseEdit = () => {
         newLessonFormat === "quiz" || newLessonFormat === "practice"
           ? []
           : [...newLessonResources],
-      minutes:
-        newLessonMinutes,
-      isPreviewFree: newLessonIsPreviewFree,
     };
     pendingNewLessonSnapRef.current = snap;
 
@@ -3264,15 +3291,10 @@ const InstructorCourseEdit = () => {
 
     setAddingLessonInProgress(true);
     try {
-      const fromInput =
-        newLessonMinutes !== "" && Number(newLessonMinutes) > 0
-          ? Number(newLessonMinutes) * 60
-          : 0;
-
       const meta = youtubeUrl ? await fetchYoutubeVideoMetadata(youtubeUrl) : null;
       const fromApi = meta?.durationSeconds ?? (youtubeUrl ? await getYoutubeVideoDuration(youtubeUrl) : 0);
 
-      const durationGuess = fromInput > 0 ? fromInput : fromApi;
+      const durationGuess = fromApi;
 
       if (!isNonVideoNewFormat && youtubeUrl && durationGuess > LONG_VIDEO_SPLIT_SECONDS) {
         const videoDur = meta?.durationSeconds ?? durationGuess;
@@ -3365,6 +3387,11 @@ const InstructorCourseEdit = () => {
   });
 
   const openEditLesson = (lesson: CourseLesson) => {
+    if (onEditLearningLesson && (["quiz", "practice", "code_exercise"].includes(getLessonFormat(lesson)) || normalizeLessonCopy(lesson).invalid || normalizeVideoLocale(lesson).invalid || normalizeCodeLocale(lesson.code_exercise_locale).invalid || !isLessonResourceList(lesson.resources ?? []))) {
+      onEditLearningLesson(lesson);
+      return;
+    }
+    const loadGeneration = ++lessonLocaleLoadGeneration.current;
     lessonDraftRef.current = new Map();
     const initLocale = activeContentLocale;
     setDialogLessonLocale(initLocale);
@@ -3372,9 +3399,6 @@ const InstructorCourseEdit = () => {
     lessonDraftRef.current.set(primaryContentLocale, lessonToDraft(lesson));
     setEditingLesson(lesson);
     setEditingLessonFormat(getLessonFormat(lesson));
-    setEditingLessonMinutes(
-      lesson.duration_seconds > 0 ? Math.ceil(lesson.duration_seconds / 60) : "",
-    );
     applyLessonDraftToState(lessonToDraft(lesson));
     setEditingLessonYoutubeStartLabel(
       formatSecondsToTimestamp(lesson.youtube_start_seconds ?? 0),
@@ -3394,6 +3418,13 @@ const InstructorCourseEdit = () => {
         locale: loc,
         userId: profile?.id,
       })).catch(() => null).then((localized) => {
+        if (loadGeneration !== lessonLocaleLoadGeneration.current) return;
+        if (localized && onEditLearningLesson && (normalizeLessonCopy(localized).invalid || normalizeVideoLocale(localized).invalid || normalizeCodeLocale(localized.code_exercise_locale).invalid || !isLessonResourceList(localized.resources ?? []))) {
+          lessonLocaleLoadGeneration.current += 1;
+        setEditingLesson(null);
+          onEditLearningLesson(lesson);
+          return;
+        }
         const draft: LessonDraft = {
           title: localized?.title ?? lesson.title ?? "",
           youtubeUrl: localized?.youtube_url ?? lesson.youtube_url ?? "",
@@ -3498,8 +3529,6 @@ const InstructorCourseEdit = () => {
             shortDescription: primaryDraft.shortDescription,
             markdown: primaryDraft.markdown,
             resources: [...primaryDraft.resources],
-            minutes: "",
-            isPreviewFree: !!editingLesson.is_preview_free,
             videoPrimaryLocale: primaryDraft.videoPrimaryLocale,
             hasSubtitle: primaryDraft.hasSubtitle,
             subtitleLocales: [...primaryDraft.subtitleLocales],
@@ -3594,35 +3623,24 @@ const InstructorCourseEdit = () => {
                 : {}),
             }
           : {};
-      const nonVideoDurationPatch = isNonVideoFormat
-        ? {
-            duration_seconds:
-              editingLessonMinutes === ""
-                ? 0
-                : Math.max(0, Math.round(Number(editingLessonMinutes) * 60)),
-          }
-        : {};
-
       for (const [loc, draft] of lessonDraftRef.current) {
         const sanitizedResources = (draft.resources ?? [])
           .map((r) => ({ title: (r.title ?? "").trim(), url: (r.url ?? "").trim() }))
           .filter((r) => r.title && r.url);
         const payload = {
           title: draft.title.trim() || editingLesson.title,
-          youtube_url: isNonVideoFormat ? undefined : draft.youtubeUrl.trim() || undefined,
+          youtube_url: isNonVideoFormat ? undefined : draft.youtubeUrl.trim(),
           video_primary_locale: draft.videoPrimaryLocale,
           has_subtitle: isNonVideoFormat ? false : draft.hasSubtitle,
           subtitle_locales:
             isNonVideoFormat || !draft.hasSubtitle ? [] : draft.subtitleLocales,
-          short_description: isQuizFormat || isPracticeFormat ? "" : draft.shortDescription.trim() || undefined,
-          description_markdown: isQuizFormat ? "" : draft.markdown.trim() || undefined,
+          short_description: isQuizFormat || isPracticeFormat ? "" : draft.shortDescription.trim(),
+          description_markdown: isQuizFormat ? "" : draft.markdown.trim(),
           resources: isQuizFormat || isPracticeFormat
             ? []
-            : sanitizedResources.length
-              ? sanitizedResources
-              : undefined,
+            : sanitizedResources,
           practice_source_lesson_id: isPracticeFormat
-            ? draft.practiceSourceLessonIds[0] || draft.practiceSourceLessonId || undefined
+            ? draft.practiceSourceLessonIds[0] || draft.practiceSourceLessonId || null
             : undefined,
         };
         if (loc === primaryContentLocale) {
@@ -3630,7 +3648,6 @@ const InstructorCourseEdit = () => {
             ...payload,
             lesson_format: editingLessonFormat,
             ...segmentPrimaryPatch,
-            ...nonVideoDurationPatch,
           };
           await updateLesson(id, editingLesson.id, merged, {
             clearYoutube: isNonVideoFormat,
@@ -3663,7 +3680,8 @@ const InstructorCourseEdit = () => {
       void getLessonDistinctLearnerCountsForCourse(id)
         .then(setLessonLearnerCounts)
         .catch(() => {});
-      setEditingLesson(null);
+      lessonLocaleLoadGeneration.current += 1;
+        setEditingLesson(null);
     });
 
     try {
@@ -3674,15 +3692,10 @@ const InstructorCourseEdit = () => {
   };
 
   const handleDeleteSection = async (sectionId: string) => {
-    if (!id || !confirm(t("courseEdit.confirm.deleteSection"))) return;
-    const secLessons = lessons.filter((l) => l.section_id === sectionId);
+    if (!id || !await confirm(t("courseEdit.confirm.deleteSection"))) return;
     try {
       await runMutation(async () => {
-        await deleteSection(
-          id,
-          sectionId,
-          secLessons.map((l) => l.id),
-        );
+        await deleteSection(id, sectionId);
         await refreshCourseTotalDuration(id);
       });
       setSections((prev) => prev.filter((s) => s.id !== sectionId));
@@ -3693,7 +3706,7 @@ const InstructorCourseEdit = () => {
   };
 
   const handleDeleteLesson = async (lessonId: string) => {
-    if (!id || !confirm(t("courseEdit.confirm.deleteLesson"))) return;
+    if (!id || !await confirm(t("courseEdit.confirm.deleteLesson"))) return;
     try {
       await runMutation(async () => {
         await deleteLesson(id, lessonId);
@@ -3705,10 +3718,33 @@ const InstructorCourseEdit = () => {
     }
   };
 
+  const handleArchiveLesson = async (lesson: CourseLesson) => {
+    if (!id || archivingId || !await confirm(learningT(lesson.archived_at ? "learning.restoreConfirm" : "learning.archiveLessonConfirm"))) return;
+    setArchivingId(lesson.id);
+    try {
+      await runMutation(() => archiveLearningLesson(id, lesson.id, !lesson.archived_at));
+      toast.success(learningT(lesson.archived_at ? "learning.restoredDraft" : "learning.archived"));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : learningT("learning.saveError"));
+    } finally { setArchivingId(null); }
+  };
+
+  const handleArchiveCourse = async () => {
+    if (!course || archivingId || !await confirm(learningT(course.archived_at ? "learning.restoreConfirm" : "learning.archiveCourseConfirm"))) return;
+    setArchivingId(course.id);
+    try {
+      await runMutation(() => archiveLearningCourse(course.id, !course.archived_at));
+      await queryClient.invalidateQueries({ queryKey: ["instructor"] });
+      toast.success(learningT(course.archived_at ? "learning.restoredDraft" : "learning.archived"));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : learningT("learning.saveError"));
+    } finally { setArchivingId(null); }
+  };
+
   const handleDeleteCourse = async () => {
     if (
       !id ||
-      !confirm(t("courseEdit.confirm.deleteCourse"))
+      !await confirm(t("courseEdit.confirm.deleteCourse"))
     )
       return;
     try {
@@ -3783,6 +3819,7 @@ const InstructorCourseEdit = () => {
     nextSectionLessons: CourseLesson[],
   ) => {
     if (!id || nextSectionLessons.length === 0) return;
+    setError(null);
 
     const previousLessons = lessons;
     const reorderedById = new Map(
@@ -3965,6 +4002,7 @@ const InstructorCourseEdit = () => {
 
   const commitSectionOrder = async (nextOrderedSections: CourseSection[]) => {
     if (!id || nextOrderedSections.length === 0) return;
+    setError(null);
 
     const previousSections = sections;
     const reorderedById = new Map(
@@ -4358,6 +4396,7 @@ const InstructorCourseEdit = () => {
 
   return (
     <PageContainer>
+      {confirmation}
       <div className="mb-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-wrap gap-2">
@@ -4796,6 +4835,7 @@ const InstructorCourseEdit = () => {
                     </span>
                   </FieldLabel>
                   <Input
+                    id="learning-course-title"
                     value={contentForm.title}
                     onChange={(e) =>
                       setContentForm((p) => ({ ...p, title: e.target.value }))
@@ -4806,6 +4846,7 @@ const InstructorCourseEdit = () => {
                 <Field>
                   <FieldLabel>Slug</FieldLabel>
                   <Input
+                    id="learning-course-slug"
                     value={form.slug}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, slug: e.target.value }))
@@ -4961,6 +5002,7 @@ const InstructorCourseEdit = () => {
                           variant="outline"
                           size="sm"
                           className="h-9 px-3"
+                          aria-label={t("courseEdit.a11y.removeOutcome", { number: idx + 1 })}
                           onClick={() =>
                             setContentForm((p) => {
                               const next = [...(p.learning_outcomes ?? [])];
@@ -5014,6 +5056,7 @@ const InstructorCourseEdit = () => {
                           variant="outline"
                           size="sm"
                           className="h-9 px-3"
+                          aria-label={t("courseEdit.a11y.removeSkill", { number: idx + 1 })}
                           onClick={() =>
                             setCourseSkills((prev) => prev.filter((_, itemIdx) => itemIdx !== idx))
                           }
@@ -5035,6 +5078,14 @@ const InstructorCourseEdit = () => {
                   </Button>
                 </Field>
                 </div>
+
+                {course && canEdit && attribution === null ? <p role="alert">{learningT("learning.invalidAttribution")}</p> : null}
+                {course && canEdit && attribution !== null ? (
+                  <Field>
+                    <FieldLabel>{learningT("learning.instructors")}</FieldLabel>
+                    <InstructorAttributionEditor value={attribution} onChange={setAttribution} />
+                  </Field>
+                ) : null}
 
                 {course && canEditCoInstructors ? (
                   <Field>
@@ -5355,6 +5406,7 @@ const InstructorCourseEdit = () => {
                                   variant="outline"
                                   size="sm"
                                   className="h-9 px-3"
+                                  aria-label={t("courseEdit.a11y.editSponsor", { title: name })}
                                   onClick={() => openEditSponsor(s)}
                                 >
                                   <Pencil className="size-4" aria-hidden />
@@ -5364,6 +5416,7 @@ const InstructorCourseEdit = () => {
                                   variant="outline"
                                   size="sm"
                                   className="h-9 px-3 text-destructive hover:text-destructive"
+                                  aria-label={t("courseEdit.a11y.removeSponsor", { title: name })}
                                   onClick={() => void removeSponsor(s)}
                                 >
                                   <Trash2 className="size-4" aria-hidden />
@@ -5605,6 +5658,7 @@ const InstructorCourseEdit = () => {
                                   variant="outline"
                                   size="sm"
                                   className="h-9 px-3"
+                                  aria-label={t("courseEdit.a11y.editPartner", { title: name })}
                                   onClick={() => openEditPartner(p)}
                                   disabled={!canEdit}
                                 >
@@ -5615,6 +5669,7 @@ const InstructorCourseEdit = () => {
                                   variant="outline"
                                   size="sm"
                                   className="h-9 px-3 text-destructive hover:text-destructive"
+                                  aria-label={t("courseEdit.a11y.removePartner", { title: name })}
                                   onClick={() => void removePartner(p)}
                                   disabled={!canEdit}
                                 >
@@ -5993,12 +6048,13 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "content" && canAccessContent && (
-            <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
+            <section id="learning-course-curriculum" tabIndex={-1} className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-heading-medium font-display text-foreground flex items-center gap-2">
                   <List className="size-5" /> {t("courseEdit.content.heading")}
                 </h2>
                 <div className="flex flex-wrap items-center justify-end gap-2">
+                  {typeof learningTools === "function" ? learningTools(focusLearningIssue) : learningTools}
                   {reorderingLessons && (
                     <span className="text-xs text-foreground-muted">
                       {t("courseEdit.content.savingOrder")}
@@ -6029,7 +6085,6 @@ const InstructorCourseEdit = () => {
                   onChange={(e) => {
                     const value = e.target.checked;
                     setForm((p) => ({ ...p, has_sections: value }));
-                    if (id) void updateCourse(id, { has_sections: value });
                   }}
                   className="mt-0.5 rounded border-border"
                 />
@@ -6039,6 +6094,9 @@ const InstructorCourseEdit = () => {
                     {t("courseEdit.content.sectionsToggleHint")}
                   </span>
                 </label>
+                <Button type="button" variant="outline" disabled={saving} onClick={() => void saveCourseInfo()}>
+                  {t(saving ? "courseEdit.labels.saving" : "courseEdit.labels.save")}
+                </Button>
               </div>
 
               <div className="mt-4 space-y-4">
@@ -6065,8 +6123,8 @@ const InstructorCourseEdit = () => {
                     )}
                   >
                     {form.has_sections && (
-                    <div className="flex items-center justify-between border-b border-border-subtle bg-surface-raised px-4 py-2">
-                      <div className="flex min-w-0 items-center gap-2">
+                    <div className="flex flex-col gap-2 border-b border-border-subtle bg-surface-raised px-4 py-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex min-w-0 flex-1 items-center gap-2">
                         <button
                           type="button"
                           draggable={!reorderingSections}
@@ -6101,7 +6159,7 @@ const InstructorCourseEdit = () => {
                           ) : null}
                         </div>
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex shrink-0 flex-wrap items-center gap-1">
                         <Button
                           type="button"
                           variant="ghost"
@@ -6147,6 +6205,8 @@ const InstructorCourseEdit = () => {
                           variant="ghost"
                           size="sm"
                           className="text-destructive hover:text-destructive"
+                          type="button"
+                          aria-label={t("courseEdit.a11y.deleteSection", { title: lessonText(section.title) })}
                           onClick={() => handleDeleteSection(section.id)}
                         >
                           <Trash2 className="size-4" aria-hidden />
@@ -6208,6 +6268,8 @@ const InstructorCourseEdit = () => {
                                 <CheckSquare className="size-4 shrink-0 text-foreground-muted" />
                               ) : resolvedLessonFormat === "practice" ? (
                                 <PenLine className="size-4 shrink-0 text-foreground-muted" />
+                              ) : resolvedLessonFormat === "code_exercise" ? (
+                                <Code2 className="size-4 shrink-0 text-foreground-muted" />
                               ) : resolvedLessonFormat === "article" ? (
                                 <FileText className="size-4 shrink-0 text-foreground-muted" />
                               ) : (
@@ -6215,19 +6277,20 @@ const InstructorCourseEdit = () => {
                               )}
                               <span className="text-sm text-foreground truncate">
                                 {activeContentLocale !== primaryContentLocale && lessonLocaleMap.has(lesson.id)
-                                  ? (lessonLocaleMap.get(lesson.id)?.title ?? lesson.title)
-                                  : lesson.title}
+                                  ? lessonText(lessonLocaleMap.get(lesson.id)?.title, lessonText(lesson.title))
+                                  : lessonText(lesson.title)}
                               </span>
                               {activeContentLocale !== primaryContentLocale && !lessonLocaleMap.has(lesson.id) && (
                                 <span className="rounded bg-warning/15 px-1.5 py-0.5 text-[10px] font-medium text-warning shrink-0">
                                   {t("courseEdit.lessons.notTranslated")}
                                 </span>
                               )}
-                              {isLessonDraftForLearners(lesson) ? (
+                              {lesson.archived_at ? <span className="rounded-md bg-surface-raised px-2 py-0.5 text-xs text-foreground-muted">{learningT("learning.archived")}</span> : isLessonDraftForLearners(lesson) ? (
                                 <span className="rounded-md bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning">
-                                  {t("courseEdit.lessons.draftBadge")}
+                                  {learningT("learning.draft")}
                                 </span>
                               ) : null}
+                              {renderLearningReadiness?.(lesson)}
                               {lesson.duration_seconds > 0 ? (
                                 <span className="shrink-0 text-xs text-foreground-muted">
                                   {formatDuration(lesson.duration_seconds)}
@@ -6245,6 +6308,7 @@ const InstructorCourseEdit = () => {
                               >
                                 {t("courseEdit.lessons.edit")}
                               </Button>
+                              {onEditLearningLesson && <Button type="button" variant="ghost" size="sm" onClick={() => onEditLearningLesson(lesson)}>{t("learning.publishSettings", { ns: "courses", defaultValue: "Publication & preview" })}</Button>}
                               <Button
                                 type="button"
                                 variant="ghost"
@@ -6282,12 +6346,16 @@ const InstructorCourseEdit = () => {
                               >
                                 {t("courseEdit.lessons.lessonQuestions")}
                               </Button>
+                              <Button type="button" variant="ghost" size="sm" disabled={Boolean(archivingId)} onClick={() => void handleArchiveLesson(lesson)}>
+                                {learningT(lesson.archived_at ? "learning.restoreDraft" : "learning.archive")}
+                              </Button>
                               <Button
                                 type="button"
                                 variant="ghost"
                                 size="sm"
                                 className="text-destructive shrink-0"
-                                disabled={reorderingLessons}
+                                disabled={reorderingLessons || Boolean(lesson.published || lesson.archived_at || lessonLearnerCounts[lesson.id])}
+                                aria-label={learningT("learning.deleteDraft")}
                                 onClick={() => handleDeleteLesson(lesson.id)}
                               >
                                 <Trash2 className="size-4" aria-hidden />
@@ -6307,8 +6375,6 @@ const InstructorCourseEdit = () => {
                           setNewLessonTitle("");
                           setNewLessonShortDescription("");
                           setNewLessonYoutubeUrl("");
-                          setNewLessonMinutes("");
-                          setNewLessonIsPreviewFree(false);
                           setNewLessonMarkdown("");
                           setNewLessonResources([]);
                           setNewPracticeSourceLessonId("");
@@ -6371,8 +6437,9 @@ const InstructorCourseEdit = () => {
             </section>
           )}
 
-          <Dialog open={!!editingSection} onOpenChange={(open) => !open && setEditingSection(null)}>
+          <Dialog open={!!editingSection} onOpenChange={(open) => !open && closeEditSection()}>
             <DialogContent className="w-[calc(100%-2rem)] max-w-2xl">
+              <fieldset disabled={savingSection} className="contents">
               <DialogHeader>
                 <div className="flex items-center justify-between gap-3">
                   <DialogTitle>{t("courseEdit.sections.editTitle")}</DialogTitle>
@@ -6440,6 +6507,7 @@ const InstructorCourseEdit = () => {
                     </span>
                   </FieldLabel>
                   <Input
+                    aria-label={t("courseEdit.sections.titleLabel")}
                     value={editingSectionTitle}
                     onChange={(e) => setEditingSectionTitle(e.target.value)}
                   />
@@ -6462,6 +6530,7 @@ const InstructorCourseEdit = () => {
                     </Button>
                   </FieldLabel>
                   <textarea
+                    aria-label={t("courseEdit.sections.descriptionLabel")}
                     value={editingSectionDescription}
                     onChange={(e) => setEditingSectionDescription(e.target.value)}
                     placeholder={t("courseEdit.sections.descriptionPlaceholder")}
@@ -6470,14 +6539,17 @@ const InstructorCourseEdit = () => {
                   />
                 </Field>
               </div>
+              {sectionSaveError && <p role="alert" className="text-sm text-destructive">{sectionSaveError}</p>}
+              {sectionLoadError && <p role="alert" className="text-sm text-destructive">{sectionLoadError} <Button type="button" variant="outline" onClick={() => retrySectionLoadRef.current()}>{learningT("learning.retry")}</Button></p>}
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setEditingSection(null)}>
+                <Button type="button" variant="outline" onClick={closeEditSection}>
                   {t("courseEdit.sections.cancel")}
                 </Button>
-                <Button type="button" onClick={() => void handleSaveSectionDetails()}>
+                <Button type="button" disabled={savingSection || loadingSectionLocales || Boolean(sectionLoadError) || translatingBundle === "section"} onClick={() => void handleSaveSectionDetails()}>
                   {t("courseEdit.sections.save")}
                 </Button>
               </DialogFooter>
+              </fieldset>
             </DialogContent>
           </Dialog>
 
@@ -6590,11 +6662,9 @@ const InstructorCourseEdit = () => {
                           if (next === "quiz") {
                             setEditingLessonShortDescription("");
                             setEditingLessonMarkdown("");
-                            setEditingLessonMinutes("");
                             setEditingLessonResources([]);
                           } else if (next === "practice") {
                             setEditingLessonShortDescription("");
-                            setEditingLessonMinutes("");
                             setEditingLessonResources([]);
                             const source = getPracticeSourceLessons(
                               editingLesson?.section_id,
@@ -6701,29 +6771,6 @@ const InstructorCourseEdit = () => {
                       placeholder={t("courseEdit.content.lessonTitlePlaceholder")}
                     />
                   </Field>
-                  {dialogLessonLocale === primaryContentLocale &&
-                  editingLessonFormat !== "video" ? (
-                    <Field>
-                      <FieldLabel>{t("courseEdit.lessons.durationMinutesLabel")}</FieldLabel>
-                      <Input
-                        type="number"
-                        min={0}
-                        value={
-                          editingLessonMinutes === "" ? "" : String(editingLessonMinutes)
-                        }
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          setEditingLessonMinutes(
-                            v === "" ? "" : Math.max(0, parseInt(v, 10) || 0),
-                          );
-                        }}
-                        placeholder={t("courseEdit.content.lessonMinutesPlaceholder")}
-                      />
-                      <p className="mt-1 text-xs text-foreground-muted">
-                        {t("courseEdit.lessons.nonVideoDurationHint")}
-                      </p>
-                    </Field>
-                  ) : null}
                   {editingLessonFormat === "video" ? (
                   <Field>
                     <FieldLabel>{t("courseEdit.lessons.videoPrimaryLocaleLabel")}</FieldLabel>
@@ -6802,7 +6849,7 @@ const InstructorCourseEdit = () => {
                               onChange={() => toggleEditingPracticeSourceLesson(lesson.id)}
                               className="mt-0.5 shrink-0 rounded border-border accent-primary"
                             />
-                            <span className="line-clamp-2">{lesson.title}</span>
+                            <span className="line-clamp-2">{lessonText(lesson.title)}</span>
                           </label>
                         ))}
                       </div>
@@ -7233,7 +7280,7 @@ const InstructorCourseEdit = () => {
 
           <Dialog
             open={addingLessonDraftSectionId != null}
-            onOpenChange={(open) => !open && setAddingLessonDraftSectionId(null)}
+            onOpenChange={(open) => !open && closeNewLessonDialog()}
           >
             <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden p-0">
               <div className="flex max-h-[85vh] flex-col">
@@ -7259,12 +7306,22 @@ const InstructorCourseEdit = () => {
                     <LessonFormatSelector
                       value={newLessonFormat}
                       onChange={(next) => {
+                        if (next === "code_exercise" && onCreateLearningLesson && addingLessonDraftSectionId) {
+                          onCreateLearningLesson({
+                            id: crypto.randomUUID(), section_id: addingLessonDraftSectionId,
+                            title: newLessonTitle, short_description: newLessonShortDescription,
+                            description_markdown: newLessonMarkdown, resources: newLessonResources,
+                            lesson_format: "code_exercise", published: false, duration_seconds: 0,
+                            order: getNextOrder(lessons.filter(lesson => lesson.section_id === addingLessonDraftSectionId)),
+                          });
+                          setAddingLessonDraftSectionId(null);
+                          return;
+                        }
                         setNewLessonFormat(next);
                         if (next !== "video") setNewLessonYoutubeUrl("");
                         if (next === "quiz") {
                           setNewLessonShortDescription("");
                           setNewLessonMarkdown("");
-                          setNewLessonMinutes("");
                           setNewLessonResources([]);
                           seedNewQuizSourceLessons(addingLessonDraftSectionId);
                           setNewQuizQuestions((prev) =>
@@ -7272,7 +7329,6 @@ const InstructorCourseEdit = () => {
                           );
                         } else if (next === "practice") {
                           setNewLessonShortDescription("");
-                          setNewLessonMinutes("");
                           setNewLessonResources([]);
                           seedNewPracticeSourceLessons(addingLessonDraftSectionId);
                         }
@@ -7281,6 +7337,7 @@ const InstructorCourseEdit = () => {
                       articleLabel={t("courseEdit.lessons.formatArticle")}
                       quizLabel={t("courseEdit.lessons.formatQuiz")}
                       practiceLabel={t("courseEdit.lessons.formatPractice")}
+                      codeExerciseLabel={onCreateLearningLesson ? learningT("learning.formats.code_exercise") : undefined}
                       hint={t("courseEdit.lessons.formatHint")}
                     />
                   </Field>
@@ -7387,26 +7444,6 @@ const InstructorCourseEdit = () => {
                     />
                   </Field>
                   ) : null}
-                  {newLessonFormat !== "video" ? (
-                  <Field>
-                    <FieldLabel>{t("courseEdit.lessons.durationMinutesLabel")}</FieldLabel>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={newLessonMinutes === "" ? "" : String(newLessonMinutes)}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setNewLessonMinutes(
-                          v === "" ? "" : Math.max(0, parseInt(v, 10) || 0),
-                        );
-                      }}
-                      placeholder={t("courseEdit.content.lessonMinutesPlaceholder")}
-                    />
-                    <p className="mt-1 text-xs text-foreground-muted">
-                      {t("courseEdit.lessons.nonVideoDurationHint")}
-                    </p>
-                  </Field>
-                  ) : null}
                   {newLessonFormat === "quiz" ? (
                     <div className="space-y-3 rounded-lg border border-border-subtle bg-surface-raised p-4">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -7452,7 +7489,7 @@ const InstructorCourseEdit = () => {
                                     onChange={() => toggleNewQuizSourceLesson(lesson.id)}
                                     className="mt-0.5 shrink-0 rounded border-border accent-primary"
                                   />
-                                  <span className="line-clamp-2">{lesson.title}</span>
+                                  <span className="line-clamp-2">{lessonText(lesson.title)}</span>
                                 </label>
                               ))}
                             </div>
@@ -7617,7 +7654,7 @@ const InstructorCourseEdit = () => {
                               onChange={() => toggleNewPracticeSourceLesson(lesson.id)}
                               className="mt-0.5 shrink-0 rounded border-border accent-primary"
                             />
-                            <span className="line-clamp-2">{lesson.title}</span>
+                            <span className="line-clamp-2">{lessonText(lesson.title)}</span>
                           </label>
                         ))}
                       </div>
@@ -7798,7 +7835,7 @@ const InstructorCourseEdit = () => {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setAddingLessonDraftSectionId(null)}
+                    onClick={closeNewLessonDialog}
                   >
                     {t("courseEdit.lessons.cancel")}
                   </Button>
@@ -7855,8 +7892,7 @@ const InstructorCourseEdit = () => {
                 </div>
               </div>
               <p className="mb-4 text-sm text-foreground-muted">
-                Nếu có, học viên phải nộp và được duyệt mới đủ điều kiện nhận
-                chứng nhận.
+                {t("courseEdit.assignments.completionRequirement")}
               </p>
 
               <div className="mb-8 rounded-md border border-border-subtle bg-surface-raised p-4">
@@ -7928,6 +7964,7 @@ const InstructorCourseEdit = () => {
                     </FieldLabel>
                     <textarea
                       placeholder={t("courseEdit.assignments.instructionsPlaceholder")}
+                    id="learning-course-final_assignment_instructions"
                     value={contentForm.final_assignment_instructions}
                       onChange={(e) =>
                       setContentForm((p) => ({
@@ -7940,6 +7977,13 @@ const InstructorCourseEdit = () => {
                     />
                   </Field>
                   </div>
+                  <fieldset disabled={!canEdit || saving} className="space-y-2">
+                    <legend className="mb-2 text-sm font-medium">{t("learning.requiredArtifacts", { ns: "courses" })}</legend>
+                    {ARTIFACT_FIELDS.map(field => <label key={field} className="flex min-h-10 items-center gap-3 text-sm">
+                      <input type="checkbox" checked={form.final_assignment_fields.includes(field)} onChange={event => setForm(previous => ({ ...previous, final_assignment_fields: event.target.checked ? [...previous.final_assignment_fields, field] : previous.final_assignment_fields.filter(value => value !== field) }))} />
+                      {t(`learning.artifacts.${field}`, { ns: "courses" })}
+                    </label>)}
+                  </fieldset>
                   <Button
                     onClick={() =>
                       void saveCourseInfo(t("courseEdit.toasts.assignmentConfigSaved"))
@@ -7951,9 +7995,14 @@ const InstructorCourseEdit = () => {
                 </FieldGroup>
               </div>
 
-              <h3 className="text-heading-small font-display text-foreground mb-3">
-                {t("courseEdit.assignments.submissionsTitle")}
-              </h3>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <h3 className="text-heading-small font-display text-foreground">
+                  {t("courseEdit.assignments.submissionsTitle")}
+                </h3>
+                <Button type="button" variant="outline" size="sm" disabled={workspaceQuery.isFetching} onClick={() => void workspaceQuery.refetch()}>
+                  {learningT("learning.refresh")}
+                </Button>
+              </div>
               {(contentForm.final_assignment_title || course.final_assignment_title) ? (
                 <>
                   {submissions.length === 0 ? (
@@ -7961,7 +8010,7 @@ const InstructorCourseEdit = () => {
                       {t("courseEdit.assignments.noSubmissions")}
                     </p>
                   ) : (
-                    <div className="overflow-hidden rounded-md border border-border-subtle">
+                    <div className="overflow-x-auto rounded-md border border-border-subtle">
                       <table className="w-full text-left text-sm">
                         <thead>
                           <tr className="border-b border-border-subtle bg-surface-raised">
@@ -8002,14 +8051,7 @@ const InstructorCourseEdit = () => {
                                   </div>
                                 </td>
                                 <td className="px-4 py-3 max-w-[200px]">
-                                  <p className="line-clamp-2 text-foreground-muted">
-                                    {sub.content || "—"}
-                                  </p>
-                                  {sub.file_urls?.length ? (
-                                    <span className="text-xs text-foreground-muted">
-                                      {t("courseEdit.assignments.attachments" as never, { count: sub.file_urls.length })}
-                                    </span>
-                                  ) : null}
+                                  <SubmissionReviewContent content={sub.content} artifacts={sub.artifacts} fileUrls={sub.file_urls} comment={sub.reviewer_comment} />
                                 </td>
                                 <td className="px-4 py-3 text-foreground-muted">
                                   {new Date(
@@ -8032,19 +8074,30 @@ const InstructorCourseEdit = () => {
                                   )}
                                 </td>
                                 <td className="px-4 py-3">
-                                  {sub.status === "pending" ? (
-                                    <div className="flex gap-1">
+                                  {sub.status === "pending" && submissionByUser[sub.user_id]?.id === sub.id ? (
+                                    <div className="min-w-56 space-y-2">
+                                      <label className="block text-xs text-foreground-muted">
+                                        {t("courseEdit.assignments.feedback")}
+                                        <textarea
+                                          className="mt-1 min-h-20 w-full rounded-md border border-border bg-surface-base p-2 text-sm text-foreground"
+                                          value={reviewComments[sub.id] ?? ""}
+                                          disabled={reviewingSubmissionId !== null}
+                                          onChange={event => setReviewComments(previous => ({ ...previous, [sub.id]: event.target.value }))}
+                                        />
+                                      </label>
+                                      <div className="flex gap-1">
                                       <Button
                                         size="sm"
                                         variant="outline"
                                         className="border-success/30 text-success"
                                         disabled={
-                                          reviewingSubmissionId === sub.id
+                                          reviewingSubmissionId !== null
                                         }
                                         onClick={() =>
                                           handleReviewSubmission(
                                             sub.id,
                                             "approved",
+                                            reviewComments[sub.id]?.trim(),
                                           )
                                         }
                                       >
@@ -8057,17 +8110,19 @@ const InstructorCourseEdit = () => {
                                         variant="outline"
                                         className="border-destructive/30 text-destructive"
                                         disabled={
-                                          reviewingSubmissionId === sub.id
+                                          reviewingSubmissionId !== null
                                         }
                                         onClick={() =>
                                           handleReviewSubmission(
                                             sub.id,
                                             "rejected",
+                                            reviewComments[sub.id]?.trim(),
                                           )
                                         }
                                       >
                                         {t("courseEdit.assignments.reviewReject")}
                                       </Button>
+                                      </div>
                                     </div>
                                   ) : null}
                                 </td>
@@ -8382,6 +8437,7 @@ const InstructorCourseEdit = () => {
               <h2 className="text-heading-medium font-display text-foreground flex items-center gap-2 mb-4">
                 <Users className="size-5" /> {t("courseEdit.sidebar.nav.students")}
               </h2>
+              {course && <CourseLearningReport courseId={course.id} />}
               {enrollments.length === 0 ? (
                 <p className="text-sm text-foreground-muted py-4">
                   {t("courseEdit.students.empty")}
@@ -8524,6 +8580,13 @@ const InstructorCourseEdit = () => {
 
           {activeSection === "danger" && canAccessDanger && (
             <section className="rounded-md border border-destructive/30 bg-surface-base p-6">
+              <div className="mb-6 space-y-3">
+                <h2 className="font-medium">{learningT(course?.archived_at ? "learning.archived" : "learning.archive")}</h2>
+                <p className="text-sm text-foreground-muted">{learningT("learning.archiveHint")}</p>
+                <Button type="button" variant="outline" disabled={Boolean(archivingId)} onClick={() => void handleArchiveCourse()}>
+                  {learningT(course?.archived_at ? "learning.restoreDraft" : "learning.archive")}
+                </Button>
+              </div>
               <h2 className="text-heading-medium font-display text-foreground flex items-center gap-2 mb-2">
                 <AlertTriangle className="size-5" aria-hidden /> {t("courseEdit.danger.dangerZoneTitle")}
               </h2>
@@ -8537,6 +8600,7 @@ const InstructorCourseEdit = () => {
                       variant="outline"
                       className="text-destructive border-destructive/50 hover:bg-destructive/10"
                       type="button"
+                      disabled={Boolean(course?.published || course?.archived_at || enrollments.length || submissions.length)}
                     >
                       <Trash2 className="size-4" aria-hidden /> {t("courseEdit.sidebar.nav.danger")}
                     </Button>
@@ -8573,6 +8637,7 @@ const InstructorCourseEdit = () => {
         t={(key, options) => String(t(key as never, options as never))}
       />
       <QuestionGeneratorDialog
+        onDirtyChange={setSectionQuestionsDirty}
         open={questionGeneratorOpen}
         section={questionGeneratorSection}
         courseId={id ?? ""}
@@ -8584,6 +8649,8 @@ const InstructorCourseEdit = () => {
         }}
       />
       <QuestionGeneratorDialog
+        primaryLocale={primaryContentLocale}
+        onDirtyChange={setLessonQuestionsDirty}
         open={lessonQuizDialogOpen}
         section={null}
         courseId={id ?? ""}

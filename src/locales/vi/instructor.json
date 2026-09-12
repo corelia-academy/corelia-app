@@ -29,7 +29,7 @@
     "shell": {
       "newCourse": {
         "title": "Tạo khoá học mới",
-        "description": "Khởi tạo nội dung, mô hình giá và hành trình học ngay từ đầu."
+        "description": "Khởi tạo nội dung và hành trình học miễn phí ngay từ đầu."
       },
       "careerTracks": {
         "title": "Quản lý lộ trình học",
@@ -210,7 +210,7 @@
     },
     "tip": {
       "title": "Mẹo khởi tạo nhanh",
-      "description": "Tên, slug, ảnh bìa và mô hình giá là 4 trường nên chốt sớm để bước chỉnh sửa sau nhanh hơn."
+      "description": "Chốt tên, slug và ngôn ngữ nội dung trước khi thêm chương và bài học."
     },
     "section": {
       "description": "Điền thông tin cơ bản. Sau khi tạo, bạn sẽ được chuyển sang trang chỉnh sửa để thêm chương, bài học và các cấu hình nâng cao.",
@@ -478,8 +478,8 @@
     "toasts": {
       "totalDurationRefreshed": "Đã cập nhật tổng thời lượng. Trang danh sách khoá học sẽ hiển thị đúng.",
       "saved": "Đã lưu thay đổi.",
-      "assignmentApproved": "Đã duyệt bài. Chứng nhận sẽ được cấp nếu học viên đã hoàn thành 100% bài học.",
-      "assignmentRejected": "Đã từ chối bài.",
+      "assignmentApproved": "Đã duyệt bài.",
+      "assignmentRejected": "Đã yêu cầu chỉnh sửa bài.",
       "certificateIssued": "Đã cấp chứng nhận.",
       "assignmentConfigSaved": "Đã lưu cấu hình bài tập.",
       "certTemplateUploaded": "Đã tải template chứng nhận lên.",
@@ -672,6 +672,7 @@
       "sectionTitlePlaceholder": "Tên chương"
     },
     "questions": {
+      "number": "Câu {{number}}",
       "loadFailed": "Không thể tải câu hỏi hiện có.",
       "loadFailedBeforeGenerate": "Không thể tạo câu hỏi khi chưa tải được dữ liệu hiện có.",
       "loadFailedBeforeSave": "Không thể lưu khi trạng thái tải câu hỏi đang bị lỗi.",
@@ -875,6 +876,7 @@
       }
     },
     "assignments": {
+      "completionRequirement": "Khi có bài tập cuối khóa, học viên phải nộp bài và được duyệt để hoàn thành khóa học.",
       "titleLabel": "Tiêu đề bài tập",
       "titlePlaceholder": "VD: Dự án cuối khoá (để trống = không yêu cầu)",
       "descriptionLabel": "Mô tả / yêu cầu",
@@ -895,7 +897,11 @@
         "actions": "Thao tác"
       },
       "lessonProgress": "{{progress}}% bài học",
-      "attachments": "{{count}} file đính kèm"
+      "attachments": "{{count}} file đính kèm",
+      "viewSubmission": "Xem đầy đủ bài nộp",
+      "attachment": "File đính kèm {{number}}",
+      "unavailableAttachment": "File đính kèm {{number}} có liên kết không hợp lệ",
+      "feedback": "Nhận xét bài nộp"
     },
     "publishing": {
       "publishedHint": "Đã xuất bản (hiển thị trên trang Khoá học)",
@@ -915,7 +921,7 @@
       },
       "status": {
         "approved": "Đã duyệt",
-        "rejected": "Từ chối",
+        "rejected": "Cần chỉnh sửa",
         "pending": "Chờ duyệt",
         "notSubmitted": "Chưa nộp",
         "notEligible": "Chưa đủ điều kiện",
@@ -947,7 +953,14 @@
       "moveSectionDown": "Đưa chương {{title}} xuống dưới",
       "dragLesson": "Kéo để đổi thứ tự bài {{title}}",
       "moveLessonUp": "Đưa bài {{title}} lên trên",
-      "moveLessonDown": "Đưa bài {{title}} xuống dưới"
+      "moveLessonDown": "Đưa bài {{title}} xuống dưới",
+      "removeOutcome": "Xóa kết quả học tập {{number}}",
+      "removeSkill": "Xóa skill {{number}}",
+      "deleteSection": "Xóa chương {{title}}",
+      "editSponsor": "Sửa sponsor {{title}}",
+      "removeSponsor": "Xóa sponsor {{title}}",
+      "editPartner": "Sửa partner {{title}}",
+      "removePartner": "Xóa partner {{title}}"
     },
     "access": {
       "noPermission": "Bạn không có quyền sửa khoá học này.",
