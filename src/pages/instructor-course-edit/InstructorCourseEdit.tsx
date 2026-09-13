@@ -883,10 +883,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       [coInstructorOptions.queryKey, queryClient],
     );
   const isCoreliaCourse = (form.owner_type ?? course?.owner_type ?? "corelia") === "corelia";
-  const isCoreliaInstructor = profile?.instructor_origin === "corelia";
-  const canManageCourseOcb = Boolean(
-    course && isCoreliaCourse && (isAdmin || isSupportStaff || isCoreliaInstructor),
-  );
+  const canManageCourseOcb = Boolean(course && isCoreliaCourse && isAdmin);
 
   const createSourcePreview = (
     item: {
@@ -1511,8 +1508,10 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
             contentForm.final_assignment_instructions.trim() || null,
         }),
         ...certificatePatch,
-        onchain_certificate_template_url: form.onchain_certificate_template_url || null,
-        onchain_certificate_template_path: form.onchain_certificate_template_path || null,
+        ...(isAdmin && {
+          onchain_certificate_template_url: form.onchain_certificate_template_url || null,
+          onchain_certificate_template_path: form.onchain_certificate_template_path || null,
+        }),
         owner_type: form.owner_type,
         ...(canEditCoInstructors && {
           co_instructors: coInstructorSnapshots,
@@ -1785,7 +1784,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
   };
 
   const handleOnchainCertificateUploaded = async (result: { url: string; path: string }) => {
-    if (!id) return;
+    if (!id || !isAdmin || !isCoreliaCourse) return;
     try {
       await runMutation(() => updateCourse(id, {
         onchain_certificate_template_url: result.url,
@@ -1811,7 +1810,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
   };
 
   const handleClearOnchainCertificate = async () => {
-    if (!id) return;
+    if (!id || !isAdmin || !isCoreliaCourse) return;
     try {
       await runMutation(() => updateCourse(id, {
         onchain_certificate_template_url: null,
@@ -8387,22 +8386,52 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
           {/* Card 2: Open Campus On-chain Credential — kept mounted across tab switches
               (not gated by activeSection) so unsaved OCA/OCB edits inside
               CourseOcbCredentialSection survive navigating to another tab and back. */}
-          {canAccessCertificate && id && canManageCourseOcb && (
+          {canAccessCertificate && id && (
             <section
               className={`rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6 ${
                 activeSection === "credentials" ? "" : "hidden"
               }`}
             >
-              <CourseOcbCredentialSection
-                courseId={id}
-                courseSlug={(form.slug || course.slug || "").trim()}
-                canEdit={canManageCourseOcb}
-                onDirtyChange={setOcbDirty}
-                onchainCertificateTemplateUrl={form.onchain_certificate_template_url || null}
-                onchainCertificateTemplatePath={form.onchain_certificate_template_path || null}
-                onOnchainCertificateUploaded={handleOnchainCertificateUploaded}
-                onClearOnchainCertificate={handleClearOnchainCertificate}
-              />
+              {!isAdmin ? (
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
+                  <div className="flex items-start gap-3">
+                    <Settings className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
+                    <div>
+                      <h2 className="font-display text-heading-small text-foreground">
+                        {t("courseEdit.ocb.adminManagedTitle")}
+                      </h2>
+                      <p className="mt-1 text-sm text-foreground-muted">
+                        {t("courseEdit.ocb.adminManagedDescription")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : !isCoreliaCourse ? (
+                <div className="rounded-xl border border-border-subtle bg-surface-raised p-5">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="mt-0.5 size-5 shrink-0 text-warning" aria-hidden />
+                    <div>
+                      <h2 className="font-display text-heading-small text-foreground">
+                        {t("courseEdit.ocb.unsupportedCourseTitle")}
+                      </h2>
+                      <p className="mt-1 text-sm text-foreground-muted">
+                        {t("courseEdit.ocb.unsupportedCourseDescription")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <CourseOcbCredentialSection
+                  courseId={id}
+                  courseSlug={(form.slug || course.slug || "").trim()}
+                  canEdit={canManageCourseOcb}
+                  onDirtyChange={setOcbDirty}
+                  onchainCertificateTemplateUrl={form.onchain_certificate_template_url || null}
+                  onchainCertificateTemplatePath={form.onchain_certificate_template_path || null}
+                  onOnchainCertificateUploaded={handleOnchainCertificateUploaded}
+                  onClearOnchainCertificate={handleClearOnchainCertificate}
+                />
+              )}
             </section>
           )}
 
