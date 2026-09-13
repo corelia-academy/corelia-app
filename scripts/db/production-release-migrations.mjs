@@ -87,6 +87,7 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260911194806_learning_course_creation_scope.sql",
   "supabase/migrations/20260911215843_learning_atomic_course_info.sql",
   "supabase/migrations/20260912101500_submit_quiz_attempts_invoker_wrapper.sql",
+  "supabase/migrations/20260913081055_refactor_lesson_video_and_legacy_quizzes.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
@@ -132,6 +133,7 @@ const UNRELEASED_PENDING_VERSIONS = new Set([
   "20260911194806",
   "20260911215843",
   "20260912101500",
+  "20260913081055",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
