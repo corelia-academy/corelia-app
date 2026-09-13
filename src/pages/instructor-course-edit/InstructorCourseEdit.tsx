@@ -6323,7 +6323,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                               >
                                 {t("courseEdit.lessons.edit")}
                               </Button>
-                              <Button type="button" variant="ghost" size="sm" onClick={() => navigate(`/instructor/courses/${id}/preview/${lesson.id}`)}>{learningT("learning.preview")}</Button>
+                              <Button type="button" variant="ghost" size="sm" onClick={() => navigate(`/instructor/courses/${id}/preview/${lesson.id}`, { state: { editorLocation } })}>{learningT("learning.preview")}</Button>
                               <DropdownMenu>
                                 <DropdownMenuTrigger render={<Button type="button" variant="ghost" size="icon-sm" aria-label={`${learningT("learning.moreActions")} · ${lesson.title}`}><MoreHorizontal className="size-4" aria-hidden /></Button>} />
                                 <DropdownMenuContent align="end">
