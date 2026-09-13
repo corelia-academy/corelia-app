@@ -42,7 +42,6 @@ import {
 } from "./components/LessonCurriculum";
 import { LessonPlayerCard } from "./components/LessonPlayerCard";
 import { FinalAssignmentPanel } from "./components/FinalAssignmentPanel";
-import { SectionQuiz } from "./components/SectionQuiz";
 import { useLearnCourseLoad } from "./hooks/useLearnCourseLoad";
 import { useLearnEnrollmentAccess } from "./hooks/useLearnEnrollmentAccess";
 import { useLearnProgress } from "./hooks/useLearnProgress";
@@ -64,11 +63,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  sectionQuizQueryOptions,
-  type SectionQuizQueryData,
-} from "@/features/courses/quizQueries";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const DESKTOP_BREAKPOINT_QUERY = "(min-width: 1280px)";
 
@@ -318,15 +313,6 @@ function LearnWorkspace() {
     if (user && currentLesson && courseId) void recordLearningEvent(courseId, currentLesson.id, "lesson_started");
   }, [user, courseId, currentLesson]);
 
-  const sectionQuizOptions = sectionQuizQueryOptions({
-    userId: user?.id,
-    courseId: courseId ?? "",
-    sectionId: currentLesson?.section_id ?? "",
-  });
-  const sectionQuizQuery = useQuery(sectionQuizOptions);
-  const sectionQuestions = sectionQuizQuery.data?.questions ?? [];
-  const sectionQuizResult = sectionQuizQuery.data?.existingResult ?? null;
-
   const nextLesson = progress.nextLesson;
   const currentLessonIndex = currentLesson
     ? visibleLessons.findIndex((lesson) => lesson.id === currentLesson.id)
@@ -439,10 +425,6 @@ function LearnWorkspace() {
 
   const shouldShowFinalAssignment =
     hasFullCourseAccess && !!course.final_assignment_title;
-  const shouldShowSectionQuiz =
-    currentLesson?.lesson_format !== "quiz" &&
-    currentLesson?.lesson_format !== "practice";
-
   const curriculumProps = {
     courseId: courseId,
     groups: lessonsBySection,
@@ -511,27 +493,6 @@ function LearnWorkspace() {
         onNavigateToLesson={(id) => navigate(`/learn/${courseId}/lesson/${id}`)}
         courseId={courseId}
       />
-
-      {shouldShowSectionQuiz && sectionQuestions.length > 0 && currentLesson?.section_id && courseId && (
-        <SectionQuiz
-          key={currentLesson.section_id}
-          courseId={courseId}
-          sectionId={currentLesson.section_id}
-          sectionTitle={
-            courseLoad.sections.find((s) => s.id === currentLesson.section_id)
-              ?.title ?? ""
-          }
-          questions={sectionQuestions}
-          existingResult={sectionQuizResult}
-          onResultUpdate={(existingResult) => {
-            queryClient.setQueryData<SectionQuizQueryData>(
-              sectionQuizOptions.queryKey,
-              (current) =>
-                current ? { ...current, existingResult } : current,
-            );
-          }}
-        />
-      )}
 
       {shouldShowFinalAssignment ? (
         <div className="px-4 pb-8 sm:px-6">

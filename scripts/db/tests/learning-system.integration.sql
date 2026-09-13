@@ -82,43 +82,25 @@ END $$;
 UPDATE public.courses SET published=true WHERE id='learning-test';
 SET CONSTRAINTS ALL IMMEDIATE;
 
--- Legacy section question writes preserve IDs/history and rollback as a unit.
-SELECT public.learning_save_section_questions('learning-test','learning-section','[{"id":"section-vi-1","type":"mcq","question":"VI one","options":[{"id":"a","text":"A"},{"id":"b","text":"B"}],"correct_index":0},{"id":"section-vi-2","type":"mcq","question":"VI two","options":[{"id":"a","text":"A"},{"id":"b","text":"B"}],"correct_index":1}]','vi');
-SELECT public.learning_save_section_questions('learning-test','learning-section','[{"id":"section-en-1","type":"mcq","question":"EN one","options":[{"id":"a","text":"A"},{"id":"b","text":"B"}],"correct_index":0}]','en');
-RESET ROLE;
-INSERT INTO public.section_question_attempts(user_id,course_id,section_id,question_id,selected_index,is_correct)
-VALUES('eeee0000-0000-4000-8000-000000000002','learning-test','learning-section','section-vi-2',1,true);
-SET LOCAL ROLE authenticated;
-DO $$ DECLARE before_rows jsonb; after_rows jsonb; BEGIN
- SELECT jsonb_agg(to_jsonb(q) ORDER BY id) INTO before_rows FROM public.course_section_questions q WHERE section_id='learning-section' AND lesson_id IS NULL;
- BEGIN
-  PERFORM public.learning_save_section_questions('learning-test','learning-section','[{"id":"section-vi-1","type":"mcq","question":"bad","options":[],"correct_index":0}]','vi');
-  RAISE EXCEPTION 'invalid section quiz saved';
- EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'INVALID_QUESTION_OPTIONS' THEN RAISE; END IF; END;
- SELECT jsonb_agg(to_jsonb(q) ORDER BY id) INTO after_rows FROM public.course_section_questions q WHERE section_id='learning-section' AND lesson_id IS NULL;
- IF before_rows IS DISTINCT FROM after_rows THEN RAISE EXCEPTION 'failed section save changed rows'; END IF;
- BEGIN
-  PERFORM public.learning_save_section_questions('learning-test','learning-section','[{"id":"learning-question","type":"mcq","question":"stolen","options":[{"id":"a","text":"A"},{"id":"b","text":"B"}],"correct_index":0}]','vi');
-  RAISE EXCEPTION 'section save stole lesson question';
- EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'QUESTION_SCOPE_MISMATCH' THEN RAISE; END IF; END;
- PERFORM public.learning_save_section_questions('learning-test','learning-section','[{"id":"section-vi-1","type":"mcq","question":"VI updated","options":[{"id":"a","text":"A"},{"id":"b","text":"B"}],"correct_index":1}]','vi');
- IF NOT EXISTS(SELECT 1 FROM public.course_section_questions WHERE id='section-vi-2' AND archived_at IS NOT NULL) THEN RAISE EXCEPTION 'section removal did not archive'; END IF;
- IF NOT EXISTS(SELECT 1 FROM public.course_section_questions WHERE id='section-vi-1' AND data->>'question'='VI updated' AND archived_at IS NULL) THEN RAISE EXCEPTION 'section stable ID update failed'; END IF;
- IF NOT EXISTS(SELECT 1 FROM public.course_section_questions WHERE id='section-en-1' AND archived_at IS NULL) THEN RAISE EXCEPTION 'section locale save removed another locale'; END IF;
-END $$;
-RESET ROLE;
+-- New questions must belong to a Quiz lesson; the legacy section writer is retired.
 DO $$ BEGIN
- IF NOT EXISTS(SELECT 1 FROM public.section_question_attempts WHERE question_id='section-vi-2') THEN RAISE EXCEPTION 'section save lost historical attempt'; END IF;
+ BEGIN
+  PERFORM public.learning_save_section_questions('learning-test','learning-section','[]','vi');
+  RAISE EXCEPTION 'legacy section question write accepted';
+ EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'QUESTIONS_REQUIRE_QUIZ_LESSON' THEN RAISE; END IF; END;
+ BEGIN
+  INSERT INTO public.course_section_questions(id,course_id,section_id,lesson_id,sort_order,data)
+  VALUES('section-write-blocked','learning-test','learning-section',NULL,0,'{"type":"mcq","question":"Blocked","options":[{"id":"a","text":"A"},{"id":"b","text":"B"}],"correct_index":0}');
+  RAISE EXCEPTION 'direct section question write accepted';
+ EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'QUESTIONS_REQUIRE_QUIZ_LESSON' THEN RAISE; END IF; END;
 END $$;
--- Remove only this isolated assertion fixture before the existing aggregate tests.
-DELETE FROM public.section_question_attempts WHERE question_id='section-vi-2';
 SELECT set_config('request.jwt.claim.sub','eeee0000-0000-4000-8000-000000000002',true);
 SET LOCAL ROLE authenticated;
 DO $$ BEGIN
  BEGIN
   PERFORM public.learning_save_section_questions('learning-test','learning-section','[]','vi');
   RAISE EXCEPTION 'learner mutated section questions';
- EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'QUESTIONS_REQUIRE_QUIZ_LESSON' THEN RAISE; END IF; END;
 END $$;
 SELECT set_config('request.jwt.claim.sub','eeee0000-0000-4000-8000-000000000001',true);
 
@@ -238,7 +220,7 @@ DO $$ BEGIN
    UPDATE public.course_section_questions SET lesson_id='learning-draft' WHERE course_id='learning-test' AND id='learning-question';
    RAISE EXCEPTION 'question move left a published quiz empty';
  EXCEPTION WHEN raise_exception THEN
-   IF SQLERRM NOT LIKE '%invalid_questions%' THEN RAISE; END IF;
+   IF SQLERRM<>'QUESTIONS_REQUIRE_QUIZ_LESSON' AND SQLERRM NOT LIKE '%invalid_questions%' THEN RAISE; END IF;
  END;
  IF NOT EXISTS(SELECT 1 FROM public.course_section_questions WHERE course_id='learning-test' AND id='learning-question' AND lesson_id='learning-quiz') THEN RAISE EXCEPTION 'failed move did not roll back'; END IF;
 END $$;

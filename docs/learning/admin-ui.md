@@ -197,6 +197,11 @@ Common fields:
 - Locale selector cho translatable content.
 - Status/readiness summary.
 
+Mỗi dòng curriculum chỉ hiện `Sửa`, `Xem thử` và menu mở rộng. Di chuyển,
+lưu trữ/khôi phục và xóa bản nháp nằm trong menu mở rộng. Câu hỏi chỉ được
+soạn trong bài Quiz tạo qua Thêm bài học; chương và bài không phải Quiz không
+có thao tác câu hỏi riêng.
+
 Format conversion:
 
 - Article ↔ Video chỉ sau confirm nếu field nguồn sẽ bị bỏ khỏi active config.
@@ -208,7 +213,7 @@ Format conversion:
 Fields:
 
 ```text
-YouTube URL *
+YouTube URL (optional while updating)
 Start time (optional)
 End time (optional)
 [Preview]
@@ -216,6 +221,8 @@ End time (optional)
 
 - Debounced URL validation.
 - Accept watch, short, live, embed and youtu.be forms supported by parser hiện hữu.
+- URL trống là trạng thái “Đang cập nhật” có thể xuất bản; URL đã nhập nhưng
+  sai định dạng vẫn là lỗi readiness.
 - End must be greater than start.
 - Failed embed preview does not discard entered URL.
 - Không hiển thị source selector hoặc upload CTA trong phase này.
