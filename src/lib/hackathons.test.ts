@@ -73,7 +73,7 @@ vi.mock("@/lib/supabase", () => {
   };
 });
 
-import { createContest, updateContest } from "./hackathons";
+import { canRegisterForContest, createContest, updateContest } from "./hackathons";
 
 const customTrack = {
   id: "open-track",
@@ -106,5 +106,130 @@ describe("hackathon track persistence", () => {
     await updateContest("hackathon-1", { tracks: [customTrack] });
 
     expect((db.updated?.document as { tracks?: unknown[] }).tracks).toEqual([customTrack]);
+  });
+});
+
+describe("canRegisterForContest registration policy", () => {
+  const future = new Date(Date.now() + 86400000 * 7).toISOString();
+  const past = new Date(Date.now() - 86400000 * 7).toISOString();
+
+  it("returns true for published and running hackathons within deadline", () => {
+    expect(
+      canRegisterForContest({
+        status: "published",
+        registration_deadline: future,
+        submission_deadline: null,
+        ends_at: null,
+      }),
+    ).toBe(true);
+
+    expect(
+      canRegisterForContest({
+        status: "running",
+        registration_deadline: future,
+        submission_deadline: null,
+        ends_at: null,
+      }),
+    ).toBe(true);
+  });
+
+  it("returns false for hackathons after registration deadline", () => {
+    expect(
+      canRegisterForContest({
+        status: "published",
+        registration_deadline: past,
+        submission_deadline: future,
+        ends_at: future,
+      }),
+    ).toBe(false);
+
+    expect(
+      canRegisterForContest({
+        status: "running",
+        registration_deadline: past,
+        submission_deadline: future,
+        ends_at: future,
+      }),
+    ).toBe(false);
+  });
+
+  it("falls back to submission_deadline when registration_deadline is empty", () => {
+    expect(
+      canRegisterForContest({
+        status: "published",
+        registration_deadline: null,
+        submission_deadline: future,
+        ends_at: null,
+      }),
+    ).toBe(true);
+
+    expect(
+      canRegisterForContest({
+        status: "published",
+        registration_deadline: null,
+        submission_deadline: past,
+        ends_at: future,
+      }),
+    ).toBe(false);
+  });
+
+  it("falls back to ends_at when both registration and submission deadlines are empty", () => {
+    expect(
+      canRegisterForContest({
+        status: "published",
+        registration_deadline: null,
+        submission_deadline: null,
+        ends_at: future,
+      }),
+    ).toBe(true);
+
+    expect(
+      canRegisterForContest({
+        status: "published",
+        registration_deadline: null,
+        submission_deadline: null,
+        ends_at: past,
+      }),
+    ).toBe(false);
+  });
+
+  it("returns true when all deadlines are empty/omitted for published/running", () => {
+    expect(
+      canRegisterForContest({
+        status: "published",
+        registration_deadline: null,
+        submission_deadline: null,
+        ends_at: null,
+      }),
+    ).toBe(true);
+
+    expect(
+      canRegisterForContest({
+        status: "running",
+        registration_deadline: null,
+        submission_deadline: null,
+        ends_at: null,
+      }),
+    ).toBe(true);
+  });
+
+  it("returns false for draft or ended hackathons regardless of deadline", () => {
+    expect(
+      canRegisterForContest({
+        status: "draft",
+        registration_deadline: future,
+        submission_deadline: future,
+        ends_at: future,
+      }),
+    ).toBe(false);
+
+    expect(
+      canRegisterForContest({
+        status: "ended",
+        registration_deadline: future,
+        submission_deadline: future,
+        ends_at: future,
+      }),
+    ).toBe(false);
   });
 });
