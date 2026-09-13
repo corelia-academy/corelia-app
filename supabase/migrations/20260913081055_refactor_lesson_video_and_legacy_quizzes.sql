@@ -64,6 +64,10 @@ LEFT JOIN public.course_lessons lesson ON lesson.course_id=q.course_id AND lesso
 WHERE q.archived_at IS NULL
   AND (q.lesson_id IS NULL OR COALESCE(lesson.data->>'lesson_format','')<>'quiz');
 
+-- Reordering does not change learner-visible lesson content. Avoid revalidating
+-- unrelated legacy published lessons while their sort_order is normalized.
+ALTER TABLE public.course_lessons DISABLE TRIGGER learning_publication;
+
 -- Create a draft Quiz for every legacy question group that is not already owned
 -- by a Quiz lesson. Locale-specific groups stay separate when identity cannot be
 -- proven across translations.
@@ -155,9 +159,15 @@ END $$;
 WITH ranked AS (
   SELECT course_id,id,row_number() OVER (PARTITION BY course_id,section_id ORDER BY sort_order,id)-1 AS next_order
   FROM public.course_lessons
+  WHERE EXISTS (
+    SELECT 1 FROM learning_legacy_question_snapshot snapshot
+    WHERE snapshot.course_id=course_lessons.course_id
+  )
 )
 UPDATE public.course_lessons l SET sort_order=ranked.next_order
 FROM ranked WHERE ranked.course_id=l.course_id AND ranked.id=l.id;
+
+ALTER TABLE public.course_lessons ENABLE TRIGGER learning_publication;
 
 -- Active questions can only belong to Quiz lessons after the conversion.
 CREATE OR REPLACE FUNCTION private.learning_quiz_question_scope_guard() RETURNS trigger
