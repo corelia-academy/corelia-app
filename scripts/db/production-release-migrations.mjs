@@ -88,6 +88,7 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260911215843_learning_atomic_course_info.sql",
   "supabase/migrations/20260912101500_submit_quiz_attempts_invoker_wrapper.sql",
   "supabase/migrations/20260913081055_refactor_lesson_video_and_legacy_quizzes.sql",
+  "supabase/migrations/20260913084439_course_credentials_admin_only.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
@@ -95,9 +96,9 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
 );
 
 // All earlier approved migrations are present in the Production ledger. This
-// release has exactly one pending migration from the course-authoring refactor.
+// release has exactly one pending migration for course credential administration.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260913081055",
+  "20260913084439",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
