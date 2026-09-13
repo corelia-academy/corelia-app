@@ -77,4 +77,98 @@ SELECT public.learning_save_course_info('atomic-course-save','{"published":false
 SET CONSTRAINTS ALL IMMEDIATE;
 DO $$ BEGIN IF (SELECT published FROM public.courses WHERE id='atomic-course-save') THEN RAISE EXCEPTION 'Unable to unpublish invalid course'; END IF; END $$;
 RESET ROLE;
+
+-- Course credential configuration and on-chain artwork are admin-only. Normal
+-- certificate authoring and ordinary course saves retain their existing access.
+SELECT set_config('request.jwt.claim.sub','cccc3333-0000-4000-8000-000000000007',true);
+SET LOCAL ROLE authenticated;
+INSERT INTO public.credential_templates(
+  id,scope_type,course_id,name,description,image_url,achievement_type,
+  identifier_prefix,collection_symbol,trigger_type,trigger_rule,is_active
+) VALUES (
+  'cccc3333-0000-4000-8000-000000000099','course','atomic-course-save',
+  'Admin credential','Admin credential','https://example.com/badge.png','Badge',
+  'corelia:admin-test','ocbadge','auto','{"completion_pct":100}',false
+);
+UPDATE public.courses
+SET data=data||'{"onchain_certificate_template_url":"https://example.com/onchain.png","onchain_certificate_template_path":"certificate-templates/atomic-course-save/admin-onchain.png"}'::jsonb
+WHERE id='atomic-course-save';
+INSERT INTO storage.objects(bucket_id,name)
+VALUES
+  ('cdn','credential-badges/course/atomic-course-save/admin.png'),
+  ('cdn','certificate-templates/atomic-course-save/admin-onchain.png');
+RESET ROLE;
+
+DO $$ DECLARE actor integer; denied boolean; affected integer; BEGIN
+ FOR actor IN SELECT unnest(ARRAY[1,6]) LOOP
+  PERFORM set_config('request.jwt.claim.sub','cccc3333-0000-4000-8000-'||lpad(actor::text,12,'0'),true);
+  EXECUTE 'SET LOCAL ROLE authenticated';
+
+  denied:=false;
+  BEGIN
+   INSERT INTO public.credential_templates(
+     scope_type,course_id,name,description,image_url,achievement_type,
+     identifier_prefix,collection_symbol,trigger_type,trigger_rule,is_active
+   ) VALUES (
+     'course','atomic-course-save','Forbidden','Forbidden','https://example.com/forbidden.png',
+     'Badge','corelia:forbidden-'||actor,'ocbadge','auto','{"completion_pct":100}',false
+   );
+  EXCEPTION WHEN insufficient_privilege THEN denied:=true; END;
+  IF NOT denied THEN RAISE EXCEPTION 'Actor % inserted a course credential template',actor; END IF;
+
+  UPDATE public.credential_templates SET name='Forbidden update'
+  WHERE id='cccc3333-0000-4000-8000-000000000099';
+  GET DIAGNOSTICS affected=ROW_COUNT;
+  IF affected<>0 THEN RAISE EXCEPTION 'Actor % updated a course credential template',actor; END IF;
+
+  DELETE FROM public.credential_templates
+  WHERE id='cccc3333-0000-4000-8000-000000000099';
+  GET DIAGNOSTICS affected=ROW_COUNT;
+  IF affected<>0 THEN RAISE EXCEPTION 'Actor % deleted a course credential template',actor; END IF;
+
+  denied:=false;
+  BEGIN
+   PERFORM public.learning_save_course_info(
+     'atomic-course-save',
+     '{"onchain_certificate_template_url":"https://example.com/forbidden-onchain.png"}',
+     'vi','{"title":"Saved"}'
+   );
+  EXCEPTION WHEN insufficient_privilege THEN denied:=true; END;
+  IF NOT denied THEN RAISE EXCEPTION 'Actor % changed an on-chain course field',actor; END IF;
+
+  denied:=false;
+  BEGIN
+   INSERT INTO storage.objects(bucket_id,name)
+   VALUES('cdn','credential-badges/course/atomic-course-save/forbidden-'||actor||'.png');
+  EXCEPTION WHEN insufficient_privilege THEN denied:=true; END;
+  IF NOT denied THEN RAISE EXCEPTION 'Actor % uploaded course credential artwork',actor; END IF;
+
+  denied:=false;
+  BEGIN
+   INSERT INTO storage.objects(bucket_id,name)
+   VALUES('cdn','certificate-templates/atomic-course-save/forbidden-'||actor||'-onchain.png');
+  EXCEPTION WHEN insufficient_privilege THEN denied:=true; END;
+  IF NOT denied THEN RAISE EXCEPTION 'Actor % uploaded on-chain certificate artwork',actor; END IF;
+
+  IF actor=1 THEN
+    INSERT INTO storage.objects(bucket_id,name)
+    VALUES('cdn','certificate-templates/atomic-course-save/instructor-certificate.png');
+    PERFORM public.learning_save_course_info(
+      'atomic-course-save','{"short_description":"Instructor ordinary save"}',
+      'vi','{"title":"Saved"}'
+    );
+  END IF;
+  RESET ROLE;
+ END LOOP;
+END $$;
+
+SELECT set_config('request.jwt.claim.sub','cccc3333-0000-4000-8000-000000000007',true);
+SET LOCAL ROLE authenticated;
+UPDATE public.credential_templates SET name='Admin updated credential'
+WHERE id='cccc3333-0000-4000-8000-000000000099';
+DO $$ BEGIN
+ IF (SELECT name FROM public.credential_templates WHERE id='cccc3333-0000-4000-8000-000000000099')<>'Admin updated credential'
+ THEN RAISE EXCEPTION 'Admin course credential update did not persist'; END IF;
+END $$;
+RESET ROLE;
 ROLLBACK;
