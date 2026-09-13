@@ -7,6 +7,10 @@ import type { CourseLesson } from "@/types/courses";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 vi.mock("./useLearningTranslation", () => ({ useLearningTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock("./YoutubeLessonVideo", () => ({ YoutubeLessonVideo: () => null }));
+vi.mock("./PracticeLesson", () => ({ PracticeLesson: () => null }));
+vi.mock("./QuizLesson", () => ({ QuizLesson: () => null }));
+vi.mock("@/features/code-exercise/CodeExerciseLesson", () => ({ CodeExerciseLesson: () => null }));
 
 it("shows an updating video without offering a completion action", () => {
   const host = document.createElement("div");
