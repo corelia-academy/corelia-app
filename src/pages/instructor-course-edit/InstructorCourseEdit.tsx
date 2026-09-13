@@ -53,6 +53,7 @@ import {
   Trash2,
   Pencil,
   Sparkles,
+  MoreHorizontal,
 } from "lucide-react";
 import {
   getCourse,
@@ -136,9 +137,17 @@ import {
   getLessonFormat,
   getNextActivityLessonTitle,
   isLessonDraftForLearners,
+  isVideoLessonUpdating,
 } from "@/lib/lessonFormat";
 import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -226,7 +235,7 @@ type CoverageFieldKey =
   | "final_assignment_description"
   | "final_assignment_instructions";
 
-const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLesson, onEditLearningLesson, renderLearningReadiness }: { learningTools?: ReactNode | ((focusIssue: (issue: PublishValidationIssue) => void) => ReactNode); onDirtyChange?: (dirty: boolean) => void; onCreateLearningLesson?: (lesson: CourseLesson) => void; onEditLearningLesson?: (lesson: CourseLesson) => void; renderLearningReadiness?: (lesson: CourseLesson) => ReactNode } = {}) => {
+const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLesson, onEditLearningLesson, renderLearningReadiness }: { learningTools?: ReactNode | ((focusIssue: (issue: PublishValidationIssue) => void) => ReactNode); onDirtyChange?: (dirty: boolean) => void; onCreateLearningLesson?: (lesson: CourseLesson) => void; onEditLearningLesson?: (lesson: CourseLesson) => void; renderLearningReadiness?: (lesson: CourseLesson, openEditor: () => void) => ReactNode } = {}) => {
   const { t, i18n } = useTranslation("instructor");
   const { confirm, confirmation } = useLearningConfirm();
 
@@ -425,6 +434,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
   const [editingLessonYoutubeStartLabel, setEditingLessonYoutubeStartLabel] = useState("0:00");
   const [editingLessonYoutubeEndLabel, setEditingLessonYoutubeEndLabel] = useState("");
   const [editingLesson, setEditingLesson] = useState<CourseLesson | null>(null);
+  const [editingLessonPublished, setEditingLessonPublished] = useState(false);
   const [editingLessonTitle, setEditingLessonTitle] = useState("");
   const [editingLessonYoutubeUrl, setEditingLessonYoutubeUrl] = useState("");
   const [editingLessonVideoPrimaryLocale, setEditingLessonVideoPrimaryLocale] =
@@ -559,8 +569,6 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
   const [descriptionGeneratorRequest, setDescriptionGeneratorRequest] =
     useState<DescriptionGeneratorDialogRequest | null>(null);
   const [translatingBundle, setTranslatingBundle] = useState<string | null>(null);
-  const [questionGeneratorOpen, setQuestionGeneratorOpen] = useState(false);
-  const [questionGeneratorSection, setQuestionGeneratorSection] = useState<CourseSection | null>(null);
   const [lessonQuizDialogOpen, setLessonQuizDialogOpen] = useState(false);
   const [lessonQuizDialogLesson, setLessonQuizDialogLesson] = useState<CourseLesson | null>(null);
   const reviewInFlight = useRef(false);
@@ -640,13 +648,12 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
     )
   );
   const curriculumDraftDirty = Boolean(newSectionTitle || newSectionDescription) || newLessonDirty || sectionDrafts.dirty || savingSection || addingSection || addingLessonInProgress;
-  const [sectionQuestionsDirty, setSectionQuestionsDirty] = useState(false);
   const [lessonQuestionsDirty, setLessonQuestionsDirty] = useState(false);
   const extraFieldsDirty = attributionDirty || coInstructorIdsDirty || coInstructorPermissionsDirty || coInstructorVisibilityDirty || supportedLocalesDirty || primaryContentLocaleDirty || defaultVideoPrimaryLocaleDirty || courseSkillsDirty || sponsorsDirty || partnersDirty;
   useEffect(() => {
-    onDirtyChange?.(contentDirty || formDirty || extraFieldsDirty || curriculumDraftDirty || sectionQuestionsDirty || lessonQuestionsDirty || ocbDirty || certificateSetupPending);
+    onDirtyChange?.(contentDirty || formDirty || extraFieldsDirty || curriculumDraftDirty || lessonQuestionsDirty || ocbDirty || certificateSetupPending);
     return () => onDirtyChange?.(false);
-  }, [contentDirty, formDirty, extraFieldsDirty, curriculumDraftDirty, sectionQuestionsDirty, lessonQuestionsDirty, ocbDirty, certificateSetupPending, onDirtyChange]);
+  }, [contentDirty, formDirty, extraFieldsDirty, curriculumDraftDirty, lessonQuestionsDirty, ocbDirty, certificateSetupPending, onDirtyChange]);
 
 
   // Confirms before leaving the OCC tab with unsaved OCA/OCB edits — the
@@ -1646,6 +1653,21 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
     }
   };
 
+  const saveCourseStructure = async () => {
+    if (!id || !course || saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await runMutation(() => updateCourse(id, { has_sections: form.has_sections }));
+      setCourse((previous) => previous ? { ...previous, has_sections: form.has_sections } : previous);
+      toast.success(t("courseEdit.toasts.saved"));
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : t("courseEdit.errors.updateFailed"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleRevokeCoInstructorInvite = async (inviteId: string) => {
     if (!course?.id) return;
     try {
@@ -2453,11 +2475,6 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
     } finally {
       setAddingSection(false);
     }
-  };
-
-  const openQuestionGenerator = (section: CourseSection) => {
-    setQuestionGeneratorSection(section);
-    setQuestionGeneratorOpen(true);
   };
 
   const openLessonQuizGenerator = (lesson: CourseLesson) => {
@@ -3387,7 +3404,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
   });
 
   const openEditLesson = (lesson: CourseLesson) => {
-    if (onEditLearningLesson && (["quiz", "practice", "code_exercise"].includes(getLessonFormat(lesson)) || normalizeLessonCopy(lesson).invalid || normalizeVideoLocale(lesson).invalid || normalizeCodeLocale(lesson.code_exercise_locale).invalid || !isLessonResourceList(lesson.resources ?? []))) {
+    if (onEditLearningLesson && (["practice", "code_exercise"].includes(getLessonFormat(lesson)) || normalizeLessonCopy(lesson).invalid || normalizeVideoLocale(lesson).invalid || normalizeCodeLocale(lesson.code_exercise_locale).invalid || !isLessonResourceList(lesson.resources ?? []))) {
       onEditLearningLesson(lesson);
       return;
     }
@@ -3398,6 +3415,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
     // Primary locale uses the lesson data directly
     lessonDraftRef.current.set(primaryContentLocale, lessonToDraft(lesson));
     setEditingLesson(lesson);
+    setEditingLessonPublished(Boolean(lesson.published));
     setEditingLessonFormat(getLessonFormat(lesson));
     applyLessonDraftToState(lessonToDraft(lesson));
     setEditingLessonYoutubeStartLabel(
@@ -3647,6 +3665,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
           const merged = {
             ...payload,
             lesson_format: editingLessonFormat,
+            published: editingLessonPublished,
             ...segmentPrimaryPatch,
           };
           await updateLesson(id, editingLesson.id, merged, {
@@ -3722,7 +3741,10 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
     if (!id || archivingId || !await confirm(learningT(lesson.archived_at ? "learning.restoreConfirm" : "learning.archiveLessonConfirm"))) return;
     setArchivingId(lesson.id);
     try {
-      await runMutation(() => archiveLearningLesson(id, lesson.id, !lesson.archived_at));
+      await runMutation(async () => {
+        await archiveLearningLesson(id, lesson.id, !lesson.archived_at);
+        await refreshCourseTotalDuration(id);
+      });
       toast.success(learningT(lesson.archived_at ? "learning.restoredDraft" : "learning.archived"));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : learningT("learning.saveError"));
@@ -6060,17 +6082,14 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       {t("courseEdit.content.savingOrder")}
                     </span>
                   )}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={refreshingTotal || lessons.length === 0 || !canEdit}
-                    onClick={() => void handleRefreshTotalDuration()}
-                  >
-                    {refreshingTotal
-                      ? t("courseEdit.labels.updating")
-                      : t("courseEdit.labels.updateTotalDuration")}
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger render={<Button type="button" variant="outline" size="icon-sm" aria-label={learningT("learning.moreActions")}><MoreHorizontal className="size-4" aria-hidden /></Button>} />
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem disabled={refreshingTotal || lessons.length === 0 || !canEdit} onClick={() => void handleRefreshTotalDuration()}>
+                        {refreshingTotal ? t("courseEdit.labels.updating") : learningT("learning.recalculateDuration")}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
               <p className="mt-2 text-xs text-foreground-muted">
@@ -6094,8 +6113,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     {t("courseEdit.content.sectionsToggleHint")}
                   </span>
                 </label>
-                <Button type="button" variant="outline" disabled={saving} onClick={() => void saveCourseInfo()}>
-                  {t(saving ? "courseEdit.labels.saving" : "courseEdit.labels.save")}
+                <Button type="button" variant="outline" disabled={saving} onClick={() => void saveCourseStructure()}>
+                  {t(saving ? "courseEdit.labels.saving" : "courseEdit.content.saveStructure")}
                 </Button>
               </div>
 
@@ -6194,14 +6213,6 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                           {t("courseEdit.sections.edit")}
                         </Button>
                         <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openQuestionGenerator(section)}
-                        >
-                          {t("courseEdit.sections.questions")}
-                        </Button>
-                        <Button
                           variant="ghost"
                           size="sm"
                           className="text-destructive hover:text-destructive"
@@ -6290,7 +6301,12 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                                   {learningT("learning.draft")}
                                 </span>
                               ) : null}
-                              {renderLearningReadiness?.(lesson)}
+                              {!lesson.archived_at && lesson.published && isVideoLessonUpdating(lesson) ? (
+                                <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                                  {learningT("learning.updating")}
+                                </span>
+                              ) : null}
+                              {renderLearningReadiness?.(lesson, () => openEditLesson(lesson))}
                               {lesson.duration_seconds > 0 ? (
                                 <span className="shrink-0 text-xs text-foreground-muted">
                                   {formatDuration(lesson.duration_seconds)}
@@ -6308,58 +6324,17 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                               >
                                 {t("courseEdit.lessons.edit")}
                               </Button>
-                              {onEditLearningLesson && <Button type="button" variant="ghost" size="sm" onClick={() => onEditLearningLesson(lesson)}>{t("learning.publishSettings", { ns: "courses", defaultValue: "Publication & preview" })}</Button>}
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon-xs"
-                                disabled={reorderingLessons || lessonIndex === 0}
-                                onClick={() =>
-                                  void handleMoveLesson(section.id, lesson.id, -1)
-                                }
-                                aria-label={t("courseEdit.a11y.moveLessonUp", { title: lesson.title })}
-                                title={t("courseEdit.tooltips.moveUp")}
-                              >
-                                <ArrowUpFromLine className="size-4" aria-hidden />
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon-xs"
-                                disabled={
-                                  reorderingLessons ||
-                                  lessonIndex === secLessons.length - 1
-                                }
-                                onClick={() =>
-                                  void handleMoveLesson(section.id, lesson.id, 1)
-                                }
-                                aria-label={t("courseEdit.a11y.moveLessonDown", { title: lesson.title })}
-                                title={t("courseEdit.tooltips.moveDown")}
-                              >
-                                <ArrowDownToLine className="size-4" aria-hidden />
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => openLessonQuizGenerator(lesson)}
-                              >
-                                {t("courseEdit.lessons.lessonQuestions")}
-                              </Button>
-                              <Button type="button" variant="ghost" size="sm" disabled={Boolean(archivingId)} onClick={() => void handleArchiveLesson(lesson)}>
-                                {learningT(lesson.archived_at ? "learning.restoreDraft" : "learning.archive")}
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="text-destructive shrink-0"
-                                disabled={reorderingLessons || Boolean(lesson.published || lesson.archived_at || lessonLearnerCounts[lesson.id])}
-                                aria-label={learningT("learning.deleteDraft")}
-                                onClick={() => handleDeleteLesson(lesson.id)}
-                              >
-                                <Trash2 className="size-4" aria-hidden />
-                              </Button>
+                              <Button type="button" variant="ghost" size="sm" onClick={() => navigate(`/instructor/courses/${id}/preview/${lesson.id}`)}>{learningT("learning.preview")}</Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger render={<Button type="button" variant="ghost" size="icon-sm" aria-label={`${learningT("learning.moreActions")} · ${lesson.title}`}><MoreHorizontal className="size-4" aria-hidden /></Button>} />
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem disabled={reorderingLessons || lessonIndex === 0} onClick={() => void handleMoveLesson(section.id, lesson.id, -1)}>{learningT("learning.moveUp")}</DropdownMenuItem>
+                                  <DropdownMenuItem disabled={reorderingLessons || lessonIndex === secLessons.length - 1} onClick={() => void handleMoveLesson(section.id, lesson.id, 1)}>{learningT("learning.moveDown")}</DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem disabled={Boolean(archivingId)} onClick={() => void handleArchiveLesson(lesson)}>{learningT(lesson.archived_at ? "learning.restoreDraft" : "learning.archive")}</DropdownMenuItem>
+                                  <DropdownMenuItem variant="destructive" disabled={reorderingLessons || Boolean(lesson.published || lesson.archived_at || lessonLearnerCounts[lesson.id])} onClick={() => handleDeleteLesson(lesson.id)}>{learningT("learning.deleteDraft")}</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </li>
                         );
@@ -6560,6 +6535,12 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                   <div className="flex items-center justify-between gap-3">
                     <DialogTitle>{t("courseEdit.lessons.editTitle")}</DialogTitle>
                     <div className="flex flex-wrap items-center justify-end gap-2">
+                      {dialogLessonLocale === primaryContentLocale ? (
+                        <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                          <input type="checkbox" checked={editingLessonPublished} onChange={(event) => setEditingLessonPublished(event.target.checked)} className="rounded border-border" />
+                          {learningT("learning.published")}
+                        </label>
+                      ) : null}
                       {dialogLessonLocale !== primaryContentLocale ? (
                         <Button
                           type="button"
@@ -8635,18 +8616,6 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
           if (!open) setDescriptionGeneratorRequest(null);
         }}
         t={(key, options) => String(t(key as never, options as never))}
-      />
-      <QuestionGeneratorDialog
-        onDirtyChange={setSectionQuestionsDirty}
-        open={questionGeneratorOpen}
-        section={questionGeneratorSection}
-        courseId={id ?? ""}
-        locale={activeContentLocale}
-        userId={profile?.id}
-        onOpenChange={(open) => {
-          setQuestionGeneratorOpen(open);
-          if (!open) setQuestionGeneratorSection(null);
-        }}
       />
       <QuestionGeneratorDialog
         primaryLocale={primaryContentLocale}

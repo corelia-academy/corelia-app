@@ -26,6 +26,12 @@ export function isVideoLesson(
   return getLessonFormat(lesson) === "video" && Boolean(lessonText(lesson.youtube_url).trim());
 }
 
+export function isVideoLessonUpdating(
+  lesson: Pick<CourseLesson, "lesson_format" | "youtube_url" | "description_markdown" | "short_description" | "published" | "archived_at" | "code_exercise_config">,
+): boolean {
+  return getLessonFormat(lesson) === "video" && !lessonText(lesson.youtube_url).trim();
+}
+
 /** Explicit publication is authoritative; infer only for legacy records. */
 export function isLessonPublishedForLearners(
   lesson: Pick<

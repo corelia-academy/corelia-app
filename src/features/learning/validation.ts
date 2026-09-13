@@ -33,7 +33,10 @@ export function validateLesson(lesson: CourseLesson): PublishValidationIssue[] {
   if (lesson.lesson_format != null && !["article", "video", "quiz", "practice", "code_exercise"].includes(lesson.lesson_format)) codes.push(["lesson_format", "invalid_format"]);
   const format = getLessonFormat(lesson);
   if (format === "video") {
-    if (!getYoutubeVideoId(typeof lesson.youtube_url === "string" ? lesson.youtube_url : "")) codes.push(["youtube_url", "youtube_required"]);
+    const youtubeUrl = typeof lesson.youtube_url === "string" ? lesson.youtube_url.trim() : "";
+    // Empty means the published lesson is still being updated. Only a supplied,
+    // malformed URL is a readiness/publication error.
+    if (youtubeUrl && !getYoutubeVideoId(youtubeUrl)) codes.push(["youtube_url", "youtube_required"]);
     const start = lesson.youtube_start_seconds ?? 0;
     const end = lesson.youtube_end_seconds;
     if (typeof start !== "number" || !Number.isFinite(start) || start < 0 ||

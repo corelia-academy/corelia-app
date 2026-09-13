@@ -11,6 +11,7 @@ import type { CourseLesson } from "@/types/courses";
 vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: { id: "owner" } }) }));
 vi.mock("@/features/learning/useLearningTranslation", () => ({ useLearningTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock("@/lib/learning", () => ({ getLearningEditor: vi.fn(), getLearningReadiness: vi.fn(), publishLearningReport: vi.fn() }));
+vi.mock("@/lib/courses", () => ({ refreshCourseTotalDuration: vi.fn() }));
 vi.mock("./InstructorCourseEdit", () => ({ default: function CourseEditor({ onEditLearningLesson }: { onEditLearningLesson(lesson: CourseLesson): void }) {
   const { id } = useParams();
   return <button onClick={() => onEditLearningLesson({ id: "lesson", title: id ?? "", section_id: "section", duration_seconds: 0, order: 0 })}>Open lesson</button>;

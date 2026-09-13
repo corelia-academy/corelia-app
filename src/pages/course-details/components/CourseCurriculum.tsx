@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { CourseBadge } from "./CourseBadge";
 import {
   isLessonDraftForLearners,
+  isVideoLessonUpdating,
 } from "@/lib/lessonFormat";
 import {
   formatDuration,
@@ -57,6 +58,11 @@ function LessonRow({
       {isLessonDraftForLearners(lesson) ? (
         <CourseBadge className="mt-0.5 sm:mt-0" variant="warning">
           {translate("detail.courseDetail.lessonDraftBadge")}
+        </CourseBadge>
+      ) : null}
+      {!lesson.archived_at && lesson.published && isVideoLessonUpdating(lesson) ? (
+        <CourseBadge className="mt-0.5 sm:mt-0" variant="warning">
+          {translate("learning.updating")}
         </CourseBadge>
       ) : null}
     </div>
