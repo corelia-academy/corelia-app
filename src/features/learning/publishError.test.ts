@@ -19,6 +19,10 @@ describe("publication errors from deferred writes", () => {
   it("does not show raw unknown validation codes or guess an unknown lesson title", () => {
     expect(learningSaveError(new Error("LESSON_NOT_PUBLISHABLE: missing-id: future_rule"), t)).toBe("Save failed");
   });
+  it("translates COURSE_NOT_PUBLISHABLE and FINAL_INSTRUCTIONS_REQUIRED cleanly", () => {
+    expect(learningSaveError(new Error("COURSE_NOT_PUBLISHABLE"), t)).toBe("Nội dung khóa học không được để trống.");
+    expect(learningSaveError({ message: "Postgres error: COURSE_NOT_PUBLISHABLE" }, t)).toBe("Nội dung khóa học không được để trống.");
+  });
 });
 
 

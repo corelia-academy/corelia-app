@@ -613,6 +613,7 @@
     },
     "removeResource": "Remove resource {{number}}",
     "validation": {
+      "course_not_publishable": "Course content cannot be empty before publishing.",
       "slug_required": "Enter a course slug.",
       "published_lesson_required": "Publish at least one lesson before publishing the course.",
       "final_instructions_required": "Enter final assignment instructions before publishing.",
