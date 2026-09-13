@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "fc2bb47d1f4b11563ae91d3f4628d645e5c818aa",
-  "git_tree_sha": "67f67726b3e7a89384c3c251585ca8c08cecb348",
+  "rc_sha": "b1a6a758c0792539090e3e2a249c8e163ba00087",
+  "git_tree_sha": "3e152163cad6b1ea9baa626de8ebd720010fa258",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 226,
-  "latest_migration": "20260913084439_course_credentials_admin_only.sql",
+  "migration_count": 228,
+  "latest_migration": "20260913133229_repair_hackathon_metrics_authorization.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "fc2bb47d1f4b11563ae91d3f4628d645e5c818aa",
+  "source_sha": "b1a6a758c0792539090e3e2a249c8e163ba00087",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "552c67acaa31db2b0a95bb6b5f3804e664dbe2ac6c0e83520134734317366a83",
+  "candidate_tree_sha256": "05f8028e33aba1624db809952e33b5e73c86252be4efcd8176c54942e713568a",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -903,7 +903,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "7c19f0f2fcd0b62ee658edf161e1a67eba50a5e6e84b0b01a372639024e33b99"
+      "sha256": "9182305f7fdda166d41c1b4d7470b8f240a14688d8a39bea5184e9dd84e07ac8"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -935,7 +935,7 @@
     },
     {
       "path": "scripts/db/tests/g2-canonical-integrity.contract.test.mjs",
-      "sha256": "e70d0c4326d5913a315423b5d82acf4aee967e45e8d24b693dcc185e152aa48a"
+      "sha256": "d3b19bceed7f24579df9bd5fdd9809a495df227aec404a31a7b7f0b9df137f62"
     },
     {
       "path": "scripts/db/tests/g2-r1-concurrency.integration.mjs",
@@ -967,7 +967,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "dd7255c33c2cc0a39b1dde6cefa25e99d66be3895b47b4fc7b2df2fb57119056"
+      "sha256": "52ebed7af50925cb0b387905252ef4c331b220c6f7fce0a3b7fe0390d447ee32"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
@@ -1031,7 +1031,7 @@
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "c2458a5f94c4f0a38c9816d25e5c0d74a22fef80680add90fdef6ddd7a024af4"
+      "sha256": "6c89d8a09d5e3081c565cbb45029d7b07bfa7ed9069d056685033f7fd91e44e4"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
@@ -1059,7 +1059,7 @@
     },
     {
       "path": "scripts/db/tests/project-submission.integration.sql",
-      "sha256": "3c5ce0af3cc84ff8173487256582989bab672be98636475dfc90152e8aea4dca"
+      "sha256": "23603f1193d128b5965a2c50126ee329af5b1828f30cde89d5aac67fceb0721f"
     },
     {
       "path": "scripts/db/tests/remove-streak-feature.contract.test.mjs",
@@ -1307,7 +1307,7 @@
     },
     {
       "path": "src/components/projects/ProjectCard.tsx",
-      "sha256": "d28320d16120c485e828827e20f339259f837bb2260568d5f97d4c20218e935c"
+      "sha256": "e918824e21ae45a1d26b82ac0f845835badd91e8a2c765b4aa3e19364eefff2b"
     },
     {
       "path": "src/components/projects/ProjectFilterBar.tsx",
@@ -1903,11 +1903,11 @@
     },
     {
       "path": "src/features/projects/ProjectEditor.test.tsx",
-      "sha256": "b0fa7752bd9034d7cf2826424d2630413fff5139debfb315b5bc8deacd2f1cd0"
+      "sha256": "820280ffb425b7b8b399174b4bbe2cd58a74244d6e61975e3af216d44d264c59"
     },
     {
       "path": "src/features/projects/ProjectEditor.tsx",
-      "sha256": "ac45841d71de53e6faf1845ed05635a0a9b5d8f1b02bf9a8895af45037e6efcc"
+      "sha256": "ea043a095fbdbb5e456473743d39755ea1319b400821190ac98d1dd852ea1411"
     },
     {
       "path": "src/features/projects/projectEditorDraft.test.ts",
@@ -1915,7 +1915,7 @@
     },
     {
       "path": "src/features/projects/projectEditorDraft.ts",
-      "sha256": "4c5db615a1a389d1edcf91f62d5d3572ce2a5cb73edf2437683d0126f427f4cc"
+      "sha256": "faeb58b84cc6cd4e3b9252ed74db68fae29f81a4388194f6216b51cdf7609cf4"
     },
     {
       "path": "src/features/projects/ProjectMarkdownEditor.tsx",
@@ -1942,6 +1942,10 @@
       "sha256": "b6db3c35539697084215169f0e60c216fb4e08fa0fb8868488e3cfbd2a12c803"
     },
     {
+      "path": "src/features/projects/ProjectTaxonomyPicker.tsx",
+      "sha256": "70ae098255c50f945f92515be800f42f18fdf49b3178ec88fe6c4a3c553a36f3"
+    },
+    {
       "path": "src/features/projects/ProjectTeamEditor.test.tsx",
       "sha256": "7265df296235ff489fbbe3f1ba2723655f2eb640ad88499f7518fe5b01011e7e"
     },
@@ -1955,7 +1959,7 @@
     },
     {
       "path": "src/features/projects/useProjectDraft.ts",
-      "sha256": "0883d54fcc40c8267a6e6884f7abdfe93974576576fddc15fed5eb1d6cfb8082"
+      "sha256": "18dd9781d667afac252e75bec0c00c128aa2460adedbb08b956406ad704cd48b"
     },
     {
       "path": "src/features/projects/useProjectManagement.ts",
@@ -2099,7 +2103,7 @@
     },
     {
       "path": "src/lib/hackathons.ts",
-      "sha256": "e13a2ba3fa04d4dcf8fb740e6b3b611d7206884a5cd311259da06b8436e5270b"
+      "sha256": "961adc4d7b17f5ac33931f80108d7cb5a96aa3a24fd4c119cfa06cfab09340dc"
     },
     {
       "path": "src/lib/jobs.ts",
@@ -2171,7 +2175,7 @@
     },
     {
       "path": "src/lib/projectCollaboration.ts",
-      "sha256": "64cfb674550d783e772b4bf23c3023fac092138ab360f50ba3109c426c0de850"
+      "sha256": "92eef598a88c3e929477a33025372b02b43d394cdb0053a855c04e84ccc3d9a8"
     },
     {
       "path": "src/lib/projectEditorSource.test.ts",
@@ -2187,7 +2191,7 @@
     },
     {
       "path": "src/lib/projects.ts",
-      "sha256": "20cf72b084696b56ccdba5470eb3b907358b628af28afe64a77c0cc76d30e1d2"
+      "sha256": "e926c2293e670cdf43a5ea6a95aa9b8ae45c70e182d126fadfd8a5268d56b71c"
     },
     {
       "path": "src/lib/projectSocial.ts",
@@ -2203,7 +2207,11 @@
     },
     {
       "path": "src/lib/projectSubmission.ts",
-      "sha256": "e6a356a33fd3f2ee9035e9cc944561bb3dbd092b5d8c7df3448c73d666b5d956"
+      "sha256": "f3f9e61ab7ddaf76a6685d2c3c5536ed28b81ea359382f74701bf2f6df603587"
+    },
+    {
+      "path": "src/lib/projectTaxonomy.ts",
+      "sha256": "d44499bb8d45baa55e224cd4836674b629cbb5dc3dbcae551bac899f538bcfe6"
     },
     {
       "path": "src/lib/projectVideo.test.ts",
@@ -2299,7 +2307,7 @@
     },
     {
       "path": "src/locales/en/common.json",
-      "sha256": "b5d24ffde2aabcb87d1f4ce6f900f7e119338544b90ac6d954b8eef07a28c53a"
+      "sha256": "0458539499aa83021caac9907e7c2e072bdb0bb083e38f75a3f669b6e66c68d9"
     },
     {
       "path": "src/locales/en/contests.json",
@@ -2331,7 +2339,7 @@
     },
     {
       "path": "src/locales/vi/common.json",
-      "sha256": "bd0dbdc940d9a019ee526c383bc9e4e7e5a59e9529b34c3dd3098f84967f9945"
+      "sha256": "8159320dc7d48ce2fc6954718f43fc9fef41e01c956c30a1cfedbb2c491d5c55"
     },
     {
       "path": "src/locales/vi/contests.json",
@@ -2467,11 +2475,11 @@
     },
     {
       "path": "src/pages/admin/hackathons/AdminHackathonEditorPage.test.ts",
-      "sha256": "45bd0db0c9a2a7666401a74d2e0dae7e1b57742fa2e77b16e6489d087f7cbc00"
+      "sha256": "54bb17abcd185035de5d00eeef3c25359f1aafb9d43f41bfa600865bb7a90755"
     },
     {
       "path": "src/pages/admin/hackathons/AdminHackathonEditorPage.tsx",
-      "sha256": "d4c30a11c1c771909dc768d1e7f9e16a052e4935a2003972278997b8d336f0c4"
+      "sha256": "b086ce50c95343f1c4b704e59745874442003703cd66e382b20b094b65e7d17e"
     },
     {
       "path": "src/pages/admin/hackathons/AdminHackathonsPage.tsx",
@@ -2743,11 +2751,11 @@
     },
     {
       "path": "src/pages/hackathon-detail/ContestPublicTabs.test.tsx",
-      "sha256": "5654e730de0a16e447ca2189797e06f5b81ffe000d7b6ffcf5e411783f5f329c"
+      "sha256": "2ae66c008c36fd37c04c36188dede28febe3d38d8eff3c796029f984128e753a"
     },
     {
       "path": "src/pages/hackathon-detail/ContestPublicTabs.tsx",
-      "sha256": "4b354811ab12dc2b0ca44a670497e74092e8dc6641d5b1d37479a7e8c5d04c01"
+      "sha256": "9cb5711cbdeefeb8cd2ae9621b4a2574e8a8e9b0bc4ccf0339ef4464d189d470"
     },
     {
       "path": "src/pages/hackathon-detail/Contests.tsx",
@@ -3071,11 +3079,11 @@
     },
     {
       "path": "src/pages/projects/ProjectDetailPage.tsx",
-      "sha256": "af8b40e4ecf5d2060568a299ce98fb1c84a0db9a3dc01b8d8e4cd158b8f704fd"
+      "sha256": "040fb3354d068b39ff6ac2f3a4ca2016feb3f6f588bff10bab541ad1a6f5867b"
     },
     {
       "path": "src/pages/projects/ProjectEditPage.tsx",
-      "sha256": "33fad4e7db114e319081337b75509b0b3b272663a9972b8d0abb8bf79463cebe"
+      "sha256": "b44dbb5ed4c30c89b7dbb68099f925932844b5669f268b07e8993a08d8080d0d"
     },
     {
       "path": "src/pages/projects/ProjectNewPage.test.tsx",
@@ -3083,11 +3091,11 @@
     },
     {
       "path": "src/pages/projects/ProjectNewPage.tsx",
-      "sha256": "b1ae90b5e733ab1f25e227e982bfb73418ebb15a19ecdb160e32401a390fabcc"
+      "sha256": "1cf7df6635c20e35b0c4b992aaf6e1265393d2dd74939561a1847d713cdb9d38"
     },
     {
       "path": "src/pages/projects/ProjectsPage.tsx",
-      "sha256": "17e9a88efb80ec9eafb11bf880f02448c65037b9f0c0aed0ff7da36803c638ef"
+      "sha256": "dee2b6bb1df7c353c2734a3b28557d620dfbe51e60faa1f82668011d89022748"
     },
     {
       "path": "src/pages/search/SearchPage.tsx",
@@ -3179,7 +3187,7 @@
     },
     {
       "path": "src/types/hackathons.ts",
-      "sha256": "ca737d187826d8aabb680f2fe88938097ef856b41edd836db82ac64eeb293239"
+      "sha256": "2d861be26933d204672bff579258162637321742da10f23705e5024c7b1f1c20"
     },
     {
       "path": "src/types/jobs.ts",
@@ -3187,7 +3195,7 @@
     },
     {
       "path": "src/types/projects.ts",
-      "sha256": "ea449cd850a2d4ebf57472258ba68796671236503d3aea82363f3bd49c8104df"
+      "sha256": "d5446364eee716d89137bcf067cde3eccdc2277d0f3d43c2c3b6d111029adc97"
     },
     {
       "path": "src/vite-env.d.ts",
@@ -3387,11 +3395,11 @@
     },
     {
       "path": "supabase/functions/corelia-api/projects/handlers.test.ts",
-      "sha256": "0f5274780539227e5a01f74ff7bb2a3ee992310af83fa6211f50d12bdd1f22cb"
+      "sha256": "cda3a3f7b9be96bf1a3e73a8cfb135897f5ddce1e9947a5a07d2500e463bc083"
     },
     {
       "path": "supabase/functions/corelia-api/projects/handlers.ts",
-      "sha256": "e0b8cfd8b9f57c23cce2e050bf07c54bf5ee3953e35da1715a288a37667bba27"
+      "sha256": "c45fdb9a4d9f8bbe72879309b019f36291442236d84170c1d858dea834b1b56a"
     },
     {
       "path": "supabase/functions/corelia-api/projects/localization.test.ts",
@@ -3828,6 +3836,14 @@
     {
       "path": "supabase/migrations/20260913084439_course_credentials_admin_only.sql",
       "sha256": "685e2d0d133ff1ae6b28d2a04f2a06efa8e4fa62205e38ff035158cd171e681f"
+    },
+    {
+      "path": "supabase/migrations/20260913130748_project_system_taxonomy.sql",
+      "sha256": "0ed6964b703db0c8ab49f55db4e722434f7a27cb6ae5398a0355ae3ab3a0774b"
+    },
+    {
+      "path": "supabase/migrations/20260913133229_repair_hackathon_metrics_authorization.sql",
+      "sha256": "00f0c4228aa05e2b3f1eeae51e5c0dfad6cd31f539e213b4e7ce26a124344ab1"
     },
     {
       "path": "tsconfig.node.json",
@@ -4330,6 +4346,14 @@
       {
         "path": "supabase/migrations/20260913084439_course_credentials_admin_only.sql",
         "sha256": "685e2d0d133ff1ae6b28d2a04f2a06efa8e4fa62205e38ff035158cd171e681f"
+      },
+      {
+        "path": "supabase/migrations/20260913130748_project_system_taxonomy.sql",
+        "sha256": "0ed6964b703db0c8ab49f55db4e722434f7a27cb6ae5398a0355ae3ab3a0774b"
+      },
+      {
+        "path": "supabase/migrations/20260913133229_repair_hackathon_metrics_authorization.sql",
+        "sha256": "00f0c4228aa05e2b3f1eeae51e5c0dfad6cd31f539e213b4e7ce26a124344ab1"
       }
     ]
   }
