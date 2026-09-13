@@ -11,6 +11,10 @@ const g2R1Migration = readFileSync(
   resolve(process.cwd(), "supabase/migrations/20260823140000_g2_r1_remediation.sql"),
   "utf8",
 );
+const metricsAuthorizationRepair = readFileSync(
+  resolve(process.cwd(), "supabase/migrations/20260913133229_repair_hackathon_metrics_authorization.sql"),
+  "utf8",
+);
 const hackathons = readFileSync(resolve(process.cwd(), "src/lib/hackathons.ts"), "utf8");
 
 test("G2-A: Historical migration deprecates profiles.streak_days", () => {
@@ -44,6 +48,10 @@ test("G2-D: Migration-level voucher archival and RESTRICT constraints preserve h
 test("G2-E (FV-G2-03): Hackathon metrics refresh uses atomic JSONB patch RPC to prevent lost updates", () => {
   assert.match(g2R1Migration, /CREATE OR REPLACE FUNCTION public\.patch_hackathon_metrics_snapshot/);
   assert.match(g2R1Migration, /jsonb_set\([\s\S]*'\{metrics_snapshot\}'/);
+  assert.match(metricsAuthorizationRepair, /CREATE OR REPLACE FUNCTION private\.patch_hackathon_metrics_snapshot/);
+  assert.match(metricsAuthorizationRepair, /public\.is_admin_or_support\(\)/);
+  assert.match(metricsAuthorizationRepair, /v_created_by IS DISTINCT FROM v_uid::text/);
+  assert.doesNotMatch(metricsAuthorizationRepair, /has_hackathon_invite_role/);
   assert.match(hackathons, /supabase\.rpc\("patch_hackathon_metrics_snapshot"/);
   assert.doesNotMatch(hackathons, /refreshContestMetricsSnapshot[\s\S]*updateContest\(contestId,\s*\{\s*metrics_snapshot/);
 });
@@ -51,4 +59,3 @@ test("G2-E (FV-G2-03): Hackathon metrics refresh uses atomic JSONB patch RPC to 
 test("G2-F: Historical migration marks ai_model_pricing as a deprecation candidate", () => {
   assert.match(g2Migration, /COMMENT ON TABLE public\.ai_model_pricing IS 'DEPRECATION_CANDIDATE_PENDING_REVIEW/);
 });
-

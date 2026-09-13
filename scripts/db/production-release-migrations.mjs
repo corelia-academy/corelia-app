@@ -89,6 +89,8 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260912101500_submit_quiz_attempts_invoker_wrapper.sql",
   "supabase/migrations/20260913081055_refactor_lesson_video_and_legacy_quizzes.sql",
   "supabase/migrations/20260913084439_course_credentials_admin_only.sql",
+  "supabase/migrations/20260913130748_project_system_taxonomy.sql",
+  "supabase/migrations/20260913133229_repair_hackathon_metrics_authorization.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
@@ -96,9 +98,10 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
 );
 
 // All earlier approved migrations are present in the Production ledger. This
-// release has exactly one pending migration for course credential administration.
+// release has exactly the project taxonomy migration and its forward RPC repair.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260913084439",
+  "20260913130748",
+  "20260913133229",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

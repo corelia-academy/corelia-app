@@ -7,6 +7,7 @@ import { getProjectCoverImageUrl } from "@/lib/projects";
 import { cn } from "@/lib/utils";
 import type { Contest } from "@/types/hackathons";
 import type { Project } from "@/types/projects";
+import { projectTaxonomyNames, type ProjectTaxonomyOption } from "@/lib/projectTaxonomy";
 
 type ProjectCardProps = {
   project: Project;
@@ -16,6 +17,7 @@ type ProjectCardProps = {
   awardLabel?: string | null;
   hearted?: boolean;
   className?: string;
+  systemTaxonomy?: ProjectTaxonomyOption[];
 };
 
 export function ProjectCard({
@@ -26,11 +28,12 @@ export function ProjectCard({
   awardLabel,
   hearted,
   className,
+  systemTaxonomy = [],
 }: ProjectCardProps) {
   const { t } = useTranslation("common");
   const detailPath = `/projects/${project.slug || project.id}`;
   const logo = getProjectCoverImageUrl(project);
-  const technologies = taxonomy?.tech_stacks?.filter((item) => project.hackathon_tech_stack_ids?.includes(item.id)) ?? [];
+  const technologies = projectTaxonomyNames(project.hackathon_tech_stack_ids ?? [], project.custom_tech_stack_names ?? [], systemTaxonomy.filter((item) => item.kind === "technology"), taxonomy?.tech_stacks ?? []);
   const awards = taxonomy?.winner_awards?.filter((award) => award.project_id === project.id) ?? [];
   const displayAward = awardLabel || (awards.length ? awards[0].label || t("projects.editor.winner") : null);
   const actions = [
@@ -81,7 +84,7 @@ export function ProjectCard({
         {technologies.length ? (
           <div className="flex items-start gap-3">
             <dt className="w-20 shrink-0 text-label-small font-body text-foreground-subtle">{t("projects.filters.techStacks")}</dt>
-            <dd className="min-w-0 font-medium">{technologies.map((item) => item.name).join(", ")}</dd>
+            <dd className="min-w-0 font-medium">{technologies.join(", ")}</dd>
           </div>
         ) : null}
         <div className="flex items-center gap-3">

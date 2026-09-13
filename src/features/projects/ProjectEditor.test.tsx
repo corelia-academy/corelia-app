@@ -12,6 +12,13 @@ const translate = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/projectSubmission", () => ({ translateProjectContent: translate }));
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock("@/lib/hackathons", () => ({ getEffectiveContestSubmissionDeadline: () => null, isPastContestSubmissionDeadline: () => false }));
+vi.mock("@/lib/projectTaxonomy", () => ({
+  listProjectTaxonomyOptions: async () => [
+    { id: "area", kind: "sector", name: "Area", sort_order: 0 },
+    { id: "tech", kind: "technology", name: "Tech", sort_order: 0 },
+  ],
+  normalizeTaxonomySearch: (value: string) => value.toLowerCase().trim(),
+}));
 vi.mock("./ProjectTeamEditor", () => ({ ProjectTeamEditor: () => null }));
 vi.mock("./ProjectMediaEditor", () => ({ ProjectMediaEditor: ({ onUploadingChange }: { onUploadingChange: (value: boolean) => void }) => <button type="button" onClick={() => onUploadingChange(true)}>upload-test</button> }));
 import { ProjectEditor } from "./ProjectEditor";
@@ -46,7 +53,7 @@ describe("ProjectEditor", () => {
     await submit();
     expect(save).toHaveBeenCalledOnce();
     expect((host.querySelector("textarea") as HTMLTextAreaElement).value).toBe("Unsaved changes must survive");
-    expect(host.querySelectorAll('input[type="checkbox"]:checked')).toHaveLength(3);
+    expect(host.querySelectorAll('input[type="checkbox"]:checked')).toHaveLength(1);
     expect(host.querySelector('[role="alert"]')?.textContent).toContain("projects.errors.link");
     expect(host.textContent).not.toContain("link_unverifiable");
   });
@@ -94,6 +101,17 @@ describe("ProjectEditor", () => {
     expect(save).toHaveBeenCalledWith(expect.objectContaining({ draft: expect.objectContaining({ progress: '' }) }));
     expect(host.textContent).not.toContain('projects.editor.resourceRequired');
     expect(host.textContent).toContain('projects.editor.optional');
+  });
+
+  it("allows optional taxonomy to be empty and adds a project-only value", async () => {
+    const save = await render(undefined, true, contest, { ...project, hackathon_sector_ids: [], hackathon_tech_stack_ids: [], custom_sector_names: [], custom_tech_stack_names: [] });
+    const details = host.querySelectorAll("#project-categories details");
+    await act(async () => { (details[1] as HTMLDetailsElement).open = true; details[1].dispatchEvent(new Event("toggle")); });
+    const search = details[1].querySelector("input") as HTMLInputElement;
+    await act(async () => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value")!.set!.call(search,"WebAssembly"); search.dispatchEvent(new Event("input",{bubbles:true})); });
+    await act(async () => search.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })));
+    await submit();
+    expect(save).toHaveBeenCalledWith(expect.objectContaining({ draft: expect.objectContaining({ sectors: [], customSectors: [], tech: [], customTech: ["WebAssembly"] }) }));
   });
 
   it("adds optional resources on demand and keeps empty links out of the save", async () => {

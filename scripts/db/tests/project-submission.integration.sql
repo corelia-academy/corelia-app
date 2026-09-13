@@ -122,6 +122,34 @@ BEGIN
     AND (description IS NOT NULL OR progress IS NOT NULL OR pitch_video_url IS NOT NULL)) THEN
     RAISE EXCEPTION 'Explicitly cleared story fields remain';
   END IF;
+  PERFORM * FROM public.save_ai_gated_project_taxonomy(
+    p_actor_id => v_user_id, p_project_id => v_project_id,
+    p_slug => 'project-gate-test', p_title => 'Custom taxonomy',
+    p_custom_sector_names => ARRAY['  Quantum   Systems  ','quantum systems'],
+    p_custom_tech_stack_names => ARRAY['WebAssembly']
+  );
+  IF NOT EXISTS (SELECT 1 FROM public.projects WHERE id=v_project_id
+    AND custom_sector_names=ARRAY['Quantum Systems'] AND custom_tech_stack_names=ARRAY['WebAssembly']) THEN
+    RAISE EXCEPTION 'Custom project taxonomy was not normalized and persisted';
+  END IF;
+  -- An old request routed through the new Edge handler omits custom arrays.
+  PERFORM * FROM public.save_ai_gated_project_taxonomy(
+    p_actor_id => v_user_id, p_project_id => v_project_id,
+    p_slug => 'project-gate-test', p_title => 'Legacy taxonomy edit'
+  );
+  IF NOT EXISTS (SELECT 1 FROM public.projects WHERE id=v_project_id
+    AND custom_tech_stack_names=ARRAY['WebAssembly']) THEN
+    RAISE EXCEPTION 'Omitted custom taxonomy was erased';
+  END IF;
+  PERFORM * FROM public.save_ai_gated_project_taxonomy(
+    p_actor_id => v_user_id, p_project_id => v_project_id,
+    p_slug => 'project-gate-test', p_title => 'Clear custom taxonomy',
+    p_custom_sector_names => '{}', p_custom_tech_stack_names => '{}'
+  );
+  IF EXISTS (SELECT 1 FROM public.projects WHERE id=v_project_id
+    AND (cardinality(custom_sector_names)>0 OR cardinality(custom_tech_stack_names)>0)) THEN
+    RAISE EXCEPTION 'Explicitly cleared custom taxonomy remains';
+  END IF;
   IF has_function_privilege('authenticated', 'public.save_ai_gated_project(uuid,uuid,text,text,text,text,text,text,text,text,text[],text,text,text,text[],text[],text[],text,text,text,text,jsonb)', 'EXECUTE')
     OR has_function_privilege('anon', 'public.save_ai_gated_project(uuid,uuid,text,text,text,text,text,text,text,text,text[],text,text,text,text[],text[],text[],text,text,text,text,jsonb)', 'EXECUTE') THEN
     RAISE EXCEPTION 'Project story RPC exposed outside the AI gate';
