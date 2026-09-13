@@ -2,7 +2,7 @@ import type { PublishValidationIssue } from "@/features/learning/types";
 import { useUnsavedLearning } from "@/features/learning/admin/useUnsavedLearning";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useMemo, useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useLocation, useParams } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import InstructorCourseEdit from "./InstructorCourseEdit";
 import { useAuth } from "@/stores/authStore";
@@ -24,6 +24,7 @@ export default function LearningCourseEditorRoute() {
 }
 
 function LearningCourseEditorWorkspace() {
+  const editorLocation = useLocation();
   const { id } = useParams();
   const { user } = useAuth();
   const { t } = useLearningTranslation();
@@ -58,7 +59,7 @@ function LearningCourseEditorWorkspace() {
     <InstructorCourseEdit onDirtyChange={setCourseDirty} onCreateLearningLesson={lesson => setEditing({ isNew: true, lesson: { ...lesson, code_exercise_config: defaultCodeConfig() } })} renderLearningReadiness={(lesson, openEditor) => lesson.archived_at ? null : <LessonReadinessBadge issues={readinessByLesson.get(lesson.id)} failed={readiness.isError} onOpen={openEditor} onRetry={() => void readiness.refetch()} />} onEditLearningLesson={lesson => setEditing({ lesson, isNew: false })} learningTools={focusCourseIssue => <>
       <Button type="button" variant="outline" size="sm" onClick={() => setCheckingContent(true)}>{t("learning.contentCheck")}</Button>
       {publication.isError && <Button type="button" variant="outline" size="sm" onClick={() => void publication.refetch()}>{t("learning.retryPublication")}</Button>}
-      <Link to={`/instructor/courses/${id}/preview`} className="text-sm text-primary underline">{t("learning.preview")}</Link>
+      <Link to={`/instructor/courses/${id}/preview`} state={{ editorLocation }} className="text-sm text-primary underline">{t("learning.preview")}</Link>
       <Dialog open={checkingContent} onOpenChange={setCheckingContent}>
         <DialogContent><DialogTitle>{t("learning.contentCheckTitle")}</DialogTitle><DialogDescription>{issues.length ? t("learning.reviewCourseOnly") : t("learning.noContentIssues")}</DialogDescription>
           {issues.length > 0 && <ul className="space-y-2">{issues.map((issue, index) => {
