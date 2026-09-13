@@ -31,6 +31,7 @@ import { getContest } from "@/lib/hackathons";
 import { isHackathonProjectSource, projectSourceLabelKey } from "@/lib/projectSource";
 import { useAuth } from "@/stores/authStore";
 import type { Project } from "@/types/projects";
+import { listProjectTaxonomyOptions, projectTaxonomyNames } from "@/lib/projectTaxonomy";
 
 function sourceLink(project: Project, hackathonSlug?: string | null): string | null {
   if (isHackathonProjectSource(project.source_type) && project.source_id) {
@@ -91,6 +92,7 @@ export default function ProjectDetailPage() {
   const { user, profile } = useAuth();
   const { t, i18n } = useTranslation("common");
   const locale = i18n.resolvedLanguage ?? i18n.language;
+  const taxonomyQuery = useQuery({ queryKey: ["projects", "taxonomy", locale], queryFn: () => listProjectTaxonomyOptions(locale), staleTime: 5 * 60_000 });
   const query = useQuery(publicProjectDetailQueryOptions(slug, locale));
   const entry = query.data;
   const sourceQuery = useQuery({
@@ -234,10 +236,10 @@ export default function ProjectDetailPage() {
   ].filter(Boolean);
 
   const taxonomy = [
-    { label: t("projects.filters.tracks"), options: sourceQuery.data?.tracks, selected: project.hackathon_track_ids },
-    { label: t("projects.filters.sectors"), options: sourceQuery.data?.sectors, selected: project.hackathon_sector_ids },
-    { label: t("projects.filters.techStacks"), options: sourceQuery.data?.tech_stacks, selected: project.hackathon_tech_stack_ids },
-  ].map(group => ({ ...group, values: group.options?.filter(option => group.selected?.includes(option.id)) ?? [] }));
+    { label: t("projects.filters.tracks"), values: (sourceQuery.data?.tracks ?? []).filter(option => project.hackathon_track_ids?.includes(option.id)).map(option => ({ id: option.id, name: option.name })) },
+    { label: t("projects.filters.sectors"), values: projectTaxonomyNames(project.hackathon_sector_ids ?? [], project.custom_sector_names ?? [], (taxonomyQuery.data ?? []).filter(option => option.kind === "sector"), sourceQuery.data?.sectors ?? []).map((name) => ({ id: `sector:${name}`, name })) },
+    { label: t("projects.filters.techStacks"), values: projectTaxonomyNames(project.hackathon_tech_stack_ids ?? [], project.custom_tech_stack_names ?? [], (taxonomyQuery.data ?? []).filter(option => option.kind === "technology"), sourceQuery.data?.tech_stacks ?? []).map((name) => ({ id: `technology:${name}`, name })) },
+  ];
   const resourceActions = actions.filter(action => action && action.key !== "source");
   const teamMembers = teamQuery.data?.filter(member => member.user_id !== project.owner_id) ?? [];
   const ownerLink = owner.handle ? `/@${owner.handle}` : null;

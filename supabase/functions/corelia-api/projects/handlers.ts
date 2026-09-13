@@ -154,6 +154,18 @@ function stringList(value: unknown): string[] {
   return Array.from(new Set(value.map((item) => String(item).trim()).filter(Boolean)));
 }
 
+function optionalCustomList(value: unknown): string[] | null | undefined {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) throw new Error("invalid_input:project_taxonomy_custom");
+  const normalized = Array.from(new Map(value.map((item) => {
+    if (typeof item !== "string") throw new Error("invalid_input:project_taxonomy_custom");
+    const name = item.trim().replace(/\s+/g, " ");
+    return [name.toLocaleLowerCase(), name] as const;
+  }).filter(([, name]) => Boolean(name))).values());
+  if (normalized.length > 20 || normalized.some((name) => name.length > 80)) throw new Error("invalid_input:project_taxonomy_custom");
+  return normalized;
+}
+
 function normalizeProjectI18n(value: unknown): Record<string, unknown> | null {
   if (value === null) return null;
   if (typeof value !== "object" || Array.isArray(value)) throw new Error("invalid_input:project_i18n");
@@ -321,8 +333,10 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
       p_track_ids: stringList(body.track_ids),
       p_sector_ids: stringList(body.sector_ids),
       p_tech_stack_ids: stringList(body.tech_stack_ids),
+      ...(body.custom_sector_names === undefined ? {} : { p_custom_sector_names: optionalCustomList(body.custom_sector_names) }),
+      ...(body.custom_tech_stack_names === undefined ? {} : { p_custom_tech_stack_names: optionalCustomList(body.custom_tech_stack_names) }),
     };
-    const { data, error } = await db.rpc("save_ai_gated_project", params);
+    const { data, error } = await db.rpc("save_ai_gated_project_taxonomy", params);
     if (error) throw new Error(error.message);
     const committedPaths = [params.p_logo_path, ...params.p_screenshot_paths]
       .filter((path): path is string => Boolean(path));

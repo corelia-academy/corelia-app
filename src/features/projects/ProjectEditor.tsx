@@ -1,7 +1,7 @@
 import { ProjectTranslationEditor } from "./ProjectTranslationEditor";
 import type { ProjectContent } from "@/types/projects";
 import { useEffect, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Check, Circle, ExternalLink, LoaderCircle } from "lucide-react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -12,12 +12,14 @@ import { getEffectiveContestSubmissionDeadline, isPastContestSubmissionDeadline 
 import { generateCanonicalProjectSlug } from "@/lib/hackathonContract";
 import { normalizeSlugDraft } from "@/lib/slug";
 import { projectErrorMessage } from "@/lib/projectErrors";
+import { listProjectTaxonomyOptions, type ProjectTaxonomyOption } from "@/lib/projectTaxonomy";
 import type { Contest } from "@/types/hackathons";
 import type { Project } from "@/types/projects";
 import { ProjectMarkdownEditor } from "./ProjectMarkdownEditor";
 import { ProjectResourcesEditor } from "./ProjectResourcesEditor";
 import { ProjectMediaEditor } from "./ProjectMediaEditor";
 import { ProjectTeamEditor } from "./ProjectTeamEditor";
+import { ProjectTaxonomyPicker } from "./ProjectTaxonomyPicker";
 import { projectDraft, contentForLocale, changePrimaryLocale, type ProjectDraft } from "./projectEditorDraft";
 import { useProjectDraft } from "./useProjectDraft";
 
@@ -29,7 +31,8 @@ export function ProjectEditor({ projectId, userId, project, contest, onSave, onS
   onSaved: (slug: string) => void;
 }) {
   const { t, i18n } = useTranslation("common");
-  const [initial] = useState(() => projectDraft(project, i18n?.resolvedLanguage ?? i18n?.language ?? "vi"));
+  const uiLocale = i18n?.resolvedLanguage ?? i18n?.language ?? "vi";
+  const [initial] = useState(() => projectDraft(project, uiLocale));
   const { draft, setDraft, dirty, clear, recovered, dismissRecovery } = useProjectDraft(
     `corelia:project-draft:${userId}:${project?.id ?? contest?.id ?? "new"}`,
     initial, t("projects.editor.leave"),
@@ -51,11 +54,20 @@ export function ProjectEditor({ projectId, userId, project, contest, onSave, onS
   const [removedPaths, setRemovedPaths] = useState<string[]>([]);
   const errorRef = useRef<HTMLDivElement>(null);
   const slug = draft.slug ? generateCanonicalProjectSlug(draft.slug) : "";
-  const groups = contest ? [
-    { key: "tracks" as const, label: t("projects.filters.tracks"), options: contest.tracks ?? [] },
-    { key: "sectors" as const, label: t("projects.filters.sectors"), options: contest.sectors ?? [] },
-    { key: "tech" as const, label: t("projects.filters.techStacks"), options: contest.tech_stacks ?? [] },
-  ] : [];
+  const taxonomyQuery = useQuery({
+    queryKey: ["projects", "taxonomy", uiLocale],
+    queryFn: () => listProjectTaxonomyOptions(uiLocale),
+    staleTime: 5 * 60_000,
+    enabled: Boolean(contest),
+  });
+  const systemOptions = taxonomyQuery.data ?? [];
+  const withSelectedLegacy = (kind: "sector" | "technology", legacy: NonNullable<Contest["sectors"]>, selectedIds: string[]): ProjectTaxonomyOption[] => {
+    const current = systemOptions.filter((option) => option.kind === kind);
+    const known = new Set(current.map((option) => option.id));
+    return [...current, ...legacy.filter((option) => selectedIds.includes(option.id) && !known.has(option.id)).map((option, index) => ({ id: option.id, kind, name: option.name, sort_order: current.length + index }))];
+  };
+  const sectorOptions = contest ? withSelectedLegacy("sector", contest.sectors ?? [], draft.sectors) : [];
+  const techOptions = contest ? withSelectedLegacy("technology", contest.tech_stacks ?? [], draft.tech) : [];
   const publishing = Boolean(contest) || draft.visibility !== "private";
   const hasContent = (value: string) => /[\p{L}\p{N}]/u.test(value);
   const requirements = [
@@ -65,7 +77,7 @@ export function ProjectEditor({ projectId, userId, project, contest, onSave, onS
       { label: t("projects.form.summary"), done: hasContent(draft.summary), href: "#project-basics" },
       { label: t("projects.editor.description"), done: hasContent(draft.description), href: "#project-story" },
     ] : []),
-    ...groups.map(group => ({ label: group.label, done: draft[group.key].length > 0, href: "#project-categories" })),
+    ...(contest ? [{ label: t("projects.filters.tracks"), done: draft.tracks.length > 0, href: "#project-categories" }] : []),
   ];
   const withinLimits = draft.title.length <= 160 && draft.slug.length <= 160
     && (["vi", "en"] as const).every(locale => { const value = contentForLocale(draft, locale); return value.title.length <= 160 && value.summary.length <= 1000 && value.description.length <= 20000 && value.progress.length <= 10000; })
@@ -120,7 +132,7 @@ export function ProjectEditor({ projectId, userId, project, contest, onSave, onS
         <section id="project-story" className="scroll-mt-24 space-y-5 rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="text-heading-medium font-display">{t("projects.editor.story")}</h2>{([['description',20000],['progress',10000]] as const).map(([key,max]) => <ProjectMarkdownEditor key={key} label={t(`projects.editor.${key}`)} value={content[key]} onChange={value => changeContent(key,value)} maxLength={max} required={isPrimary && key === "description" && publishing} hint={t(`projects.editor.${key}Hint`)} placeholder={t(`projects.editor.${key}Placeholder`)} rows={key === "description" ? 10 : 6} />)}</section>
         <section id="project-media" className="scroll-mt-24 rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="mb-5 text-heading-medium font-display">{t("projects.editor.media")}</h2><ProjectMediaEditor projectId={projectId} logo={draft.logo} screenshots={draft.screenshots} onLogoChange={logo => change("logo", logo)} onScreenshotsChange={screenshots => change("screenshots", screenshots)} deleteOnRemove={false} onRemovePath={path => setRemovedPaths(current => [...new Set([...current, path])])} onUploadingChange={setUploading} /></section>
         <ProjectResourcesEditor draft={draft} onChange={change} />
-        {contest ? <section id="project-categories" className="scroll-mt-24 space-y-6 rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><div><h2 className="text-heading-medium font-display">{t("projects.editor.categories")}</h2><p className="mt-1 text-body-medium font-body text-foreground-muted">{t("projects.editor.categoriesHint")}</p></div>{groups.map(group => <fieldset key={group.key}><legend className="text-label-medium font-body">{group.label} <span className="text-primary">*</span></legend><div className="mt-3 flex flex-wrap gap-2">{group.options.filter(option => option.active !== false || draft[group.key].includes(option.id)).map(option => <label key={option.id} className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-body-medium font-body ${draft[group.key].includes(option.id) ? 'border-primary bg-primary/5 text-primary' : 'border-border bg-background'}`}><input type="checkbox" className="accent-primary" checked={draft[group.key].includes(option.id)} onChange={() => change(group.key,draft[group.key].includes(option.id) ? draft[group.key].filter(id=>id!==option.id) : [...draft[group.key],option.id])} />{option.name}</label>)}</div></fieldset>)}</section> : null}
+        {contest ? <section id="project-categories" className="scroll-mt-24 space-y-6 rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><div><h2 className="text-heading-medium font-display">{t("projects.editor.categories")}</h2><p className="mt-1 text-body-medium font-body text-foreground-muted">{t("projects.editor.categoriesHint")}</p></div><fieldset><legend className="text-label-medium font-body">{t("projects.filters.tracks")} <span className="text-primary">*</span></legend><div className="mt-3 flex flex-wrap gap-2">{(contest.tracks ?? []).filter(option => option.active !== false || draft.tracks.includes(option.id)).map(option => <label key={option.id} className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-body-medium font-body ${draft.tracks.includes(option.id) ? 'border-primary bg-primary/5 text-primary' : 'border-border bg-background'}`}><input type="checkbox" className="accent-primary" checked={draft.tracks.includes(option.id)} onChange={() => change("tracks",draft.tracks.includes(option.id) ? draft.tracks.filter(id=>id!==option.id) : [...draft.tracks,option.id])} />{option.name}</label>)}</div></fieldset><ProjectTaxonomyPicker label={t("projects.filters.sectors")} options={sectorOptions} selectedIds={draft.sectors} customValues={draft.customSectors} searchPlaceholder={t("projects.editor.taxonomySearch")} addLabel={(value) => t("projects.editor.taxonomyAdd", { value })} limitLabel={t("projects.editor.taxonomyLimit")} onChange={(ids, custom) => setDraft(current => ({ ...current, sectors: ids, customSectors: custom }))} /><ProjectTaxonomyPicker label={t("projects.filters.techStacks")} options={techOptions} selectedIds={draft.tech} customValues={draft.customTech} searchPlaceholder={t("projects.editor.taxonomySearch")} addLabel={(value) => t("projects.editor.taxonomyAdd", { value })} limitLabel={t("projects.editor.taxonomyLimit")} onChange={(ids, custom) => setDraft(current => ({ ...current, tech: ids, customTech: custom }))} />{taxonomyQuery.isError ? <p role="alert" className="text-sm text-destructive">{t("projects.editor.taxonomyLoadError")}</p> : null}</section> : null}
         <section id="project-team" className="scroll-mt-24 rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="mb-5 text-heading-medium font-display">{t("projects.editor.team")}</h2><ProjectTeamEditor projectId={projectId} sourceType={project?.source_type ?? (contest ? "hackathon" : "standalone")} sourceId={project?.source_id ?? contest?.id} persisted={Boolean(project)} selectedIds={teamIds} onSelectedIdsChange={setTeamIds} /></section>
       </fieldset>
       <aside className="space-y-5 lg:sticky lg:top-24">

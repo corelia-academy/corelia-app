@@ -14,6 +14,7 @@ import { projectHeartsQueryOptions } from "@/features/projects/projectSocialQuer
 import { useAuth } from "@/stores/authStore";
 import { cn } from "@/lib/utils";
 import type { HackathonTaxonomyOption, HackathonWinnerAward } from "@/types/hackathons";
+import { listProjectTaxonomyOptions } from "@/lib/projectTaxonomy";
 
 type FilterOption = Pick<HackathonTaxonomyOption, "id" | "name"> & { active?: boolean };
 
@@ -96,6 +97,13 @@ export default function ProjectsPage() {
   const sort = sortParam(params.get("sort"));
 
   const hackathonsQuery = useQuery(publicHackathonCatalogQueryOptions(locale));
+  const taxonomyQuery = useQuery({ queryKey: ["projects", "taxonomy", locale], queryFn: () => listProjectTaxonomyOptions(locale), staleTime: 5 * 60_000 });
+  const systemTaxonomy = taxonomyQuery.data ?? [];
+  const filterOptions = (kind: "sector" | "technology", legacy: FilterOption[]) => {
+    const system = systemTaxonomy.filter((item) => item.kind === kind);
+    const known = new Set(system.map((item) => item.id));
+    return [...system, ...legacy.filter((item) => !known.has(item.id))];
+  };
   const hackathons = useMemo(() => hackathonsQuery.data ?? [], [hackathonsQuery.data]);
   const selectedHackathon = useMemo(
     () => hackathons.find((item) => item.slug === hackathonSlug) ?? null,
@@ -183,8 +191,8 @@ export default function ProjectsPage() {
         {selectedHackathon ? (
           <div className="grid gap-3 border-t border-border-subtle pt-4 sm:grid-cols-3">
             <TaxonomyFilter label={t("projects.filters.tracks")} options={selectedHackathon.tracks ?? []} selected={trackIds} onChange={(ids) => update("tracks", ids)} />
-            <TaxonomyFilter label={t("projects.filters.sectors")} options={selectedHackathon.sectors ?? []} selected={sectorIds} onChange={(ids) => update("sectors", ids)} />
-            <TaxonomyFilter label={t("projects.filters.techStacks")} options={selectedHackathon.tech_stacks ?? []} selected={techStackIds} onChange={(ids) => update("tech", ids)} />
+            <TaxonomyFilter label={t("projects.filters.sectors")} options={filterOptions("sector", selectedHackathon.sectors ?? [])} selected={sectorIds} onChange={(ids) => update("sectors", ids)} />
+            <TaxonomyFilter label={t("projects.filters.techStacks")} options={filterOptions("technology", selectedHackathon.tech_stacks ?? [])} selected={techStackIds} onChange={(ids) => update("tech", ids)} />
           </div>
         ) : null}
         {(hackathonSlug || trackIds.length || sectorIds.length || techStackIds.length || sort !== "newest") ? <Button type="button" variant="ghost" size="sm" onClick={() => setParams(new URLSearchParams())}><X className="size-4" />{t("projects.editor.clearFilters")}</Button> : null}
@@ -210,6 +218,7 @@ export default function ProjectsPage() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {items.map(({ project, owner }) => (
                 <ProjectCard
+                  systemTaxonomy={systemTaxonomy}
                   key={project.id}
                   hearted={hearts.data?.has(project.id) ?? false}
                   project={project}

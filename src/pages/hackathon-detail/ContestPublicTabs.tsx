@@ -16,6 +16,7 @@ import type { ContestTrack, HackathonTaxonomyOption } from "@/types/hackathons";
 import type { HackathonOutletContext } from "./ContestPublicLayout";
 import { ContestPreparationCard } from "./components/ContestPreparationCard";
 import { formatPrizeAmount } from "./utils/formatPrizeAmount";
+import { listProjectTaxonomyOptions } from "@/lib/projectTaxonomy";
 
 function EmptyTab({ icon, title }: { icon: React.ReactNode; title: string }) {
   return (
@@ -134,6 +135,13 @@ export function HackathonProjectsTab() {
   const { t, i18n } = useTranslation("contests");
   const [params, setParams] = useSearchParams();
   const locale = i18n.resolvedLanguage ?? i18n.language;
+  const taxonomyQuery = useQuery({ queryKey: ["projects", "taxonomy", locale], queryFn: () => listProjectTaxonomyOptions(locale), staleTime: 5 * 60_000 });
+  const systemTaxonomy = taxonomyQuery.data ?? [];
+  const filterOptions = (kind: "sector" | "technology", legacy: HackathonTaxonomyOption[]) => {
+    const system = systemTaxonomy.filter((item) => item.kind === kind);
+    const known = new Set(system.map((item) => item.id));
+    return [...system, ...legacy.filter((item) => !known.has(item.id))];
+  };
   const read = (key: string) => (params.get(key) ?? "").split(",").filter(Boolean);
   const tracks = read("tracks");
   const sectors = read("sectors");
@@ -177,14 +185,14 @@ export function HackathonProjectsTab() {
         </div>
         <div className="grid gap-3 py-4 sm:grid-cols-3">
           <FilterGroup label={t("public.projects.tracks")} options={(contest.tracks ?? []) as ContestTrack[]} selected={tracks} toggle={(id) => toggle("tracks", id)} />
-          <FilterGroup label={t("public.projects.sectors")} options={contest.sectors ?? []} selected={sectors} toggle={(id) => toggle("sectors", id)} />
-          <FilterGroup label={t("public.projects.techStacks")} options={contest.tech_stacks ?? []} selected={tech} toggle={(id) => toggle("tech", id)} />
+          <FilterGroup label={t("public.projects.sectors")} options={filterOptions("sector", contest.sectors ?? [])} selected={sectors} toggle={(id) => toggle("sectors", id)} />
+          <FilterGroup label={t("public.projects.techStacks")} options={filterOptions("technology", contest.tech_stacks ?? [])} selected={tech} toggle={(id) => toggle("tech", id)} />
         </div>
       </section>
 
       {query.isPending ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div> : query.isError ? <div role="alert" className="py-8 text-center"><p>{t("detail.errors.loadFailed")}</p><Button className="mt-3" onClick={() => void query.refetch()}>{t("projects.retry", { ns: "common" })}</Button></div> : projects.length === 0 ? <EmptyTab icon={<Package className="size-6" />} title={t("public.empty.projects")} /> : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{projects.map(({ project, owner }) => <div key={project.id} className="relative">{awards.has(project.id) ? <div className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950 shadow"><Sparkles className="size-3" />{awards.get(project.id)}</div> : null}<ProjectCard hearted={hearts.data?.has(project.id) ?? false} taxonomy={contest} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} /></div>)}</div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{projects.map(({ project, owner }) => <div key={project.id} className="relative">{awards.has(project.id) ? <div className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950 shadow"><Sparkles className="size-3" />{awards.get(project.id)}</div> : null}<ProjectCard systemTaxonomy={systemTaxonomy} hearted={hearts.data?.has(project.id) ?? false} taxonomy={contest} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} /></div>)}</div>
           {query.hasNextPage ? <div className="flex justify-center"><Button type="button" variant="outline" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>{query.isFetchingNextPage ? t("public.projects.loading") : t("public.projects.loadMore")}</Button></div> : null}
         </>
       )}

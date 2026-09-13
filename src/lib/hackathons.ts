@@ -1334,7 +1334,7 @@ export async function upsertContestSubmission(
   const trackIds = sanitizeStringList(input.track_ids);
   const sectorIds = sanitizeStringList(input.sector_ids);
   const techStackIds = sanitizeStringList(input.tech_stack_ids);
-  if (!trackIds.length || !sectorIds.length || !techStackIds.length) {
+  if (!trackIds.length) {
     throw new Error("invalid_input:project_taxonomy_required");
   }
   const projectId = existing?.project_id ?? input.project_id ?? crypto.randomUUID();
@@ -1361,6 +1361,8 @@ export async function upsertContestSubmission(
     track_ids: trackIds,
     sector_ids: sectorIds,
     tech_stack_ids: techStackIds,
+    custom_sector_names: input.custom_sector_names,
+    custom_tech_stack_names: input.custom_tech_stack_names,
   });
   const saved = await getMyContestSubmission(contestId, user);
   if (!saved) throw new Error("not_found:submission_after_save");

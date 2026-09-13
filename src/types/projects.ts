@@ -33,6 +33,8 @@ export interface Project {
   hackathon_track_ids: string[];
   hackathon_sector_ids: string[];
   hackathon_tech_stack_ids: string[];
+  custom_sector_names: string[];
+  custom_tech_stack_names: string[];
   /** Denormalized count from project_hearts (server-maintained). */
   like_count?: number;
   /** Denormalized count from follows (server-maintained). */
@@ -68,4 +70,6 @@ export type ContestLinkedShowcaseProject = Pick<
   | "hackathon_track_ids"
   | "hackathon_sector_ids"
   | "hackathon_tech_stack_ids"
+  | "custom_sector_names"
+  | "custom_tech_stack_names"
 >;

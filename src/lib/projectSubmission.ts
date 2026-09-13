@@ -24,6 +24,8 @@ export type ProjectSaveInput = {
   track_ids?: string[];
   sector_ids?: string[];
   tech_stack_ids?: string[];
+  custom_sector_names?: string[];
+  custom_tech_stack_names?: string[];
   removed_media_paths?: string[];
 };
 
