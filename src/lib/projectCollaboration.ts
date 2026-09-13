@@ -41,7 +41,7 @@ export async function fetchHackathonProjectForOwnerSubmission(
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,created_at,updated_at",
+      "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,custom_sector_names,custom_tech_stack_names,created_at,updated_at",
     )
     .in("source_type", ["contest", "hackathon"])
     .eq("source_id", hackathonId)

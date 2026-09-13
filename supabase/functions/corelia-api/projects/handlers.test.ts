@@ -21,7 +21,7 @@ describe("project story save handler", () => {
     expect(response.status).toBe(200);
     expect(mocks.moderate).toHaveBeenCalledWith(expect.arrayContaining([{field:"description",text:"Detailed story"},{field:"progress",text:"Built a prototype"}]));
     expect(JSON.stringify(mocks.moderate.mock.calls)).not.toContain("youtu.be");
-    expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project",expect.objectContaining({p_description:"Detailed story",p_progress:"Built a prototype",p_pitch_video_url:"https://youtu.be/pitch"}));
+    expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project_taxonomy",expect.objectContaining({p_description:"Detailed story",p_progress:"Built a prototype",p_pitch_video_url:"https://youtu.be/pitch"}));
   });
   afterEach(() => vi.unstubAllGlobals());
 
@@ -44,7 +44,7 @@ describe("project story save handler", () => {
       };
       const response = await handleProjectSave(request({ source_type: source, ...resources }), db);
       expect(response.status).toBe(200);
-      expect(mocks.rpc).toHaveBeenLastCalledWith("save_ai_gated_project", expect.objectContaining(
+      expect(mocks.rpc).toHaveBeenLastCalledWith("save_ai_gated_project_taxonomy", expect.objectContaining(
         Object.fromEntries(Object.entries(resources).map(([field, url]) => [`p_${field}`, url])),
       ));
       expect(mocks.moderate).toHaveBeenCalled();
@@ -57,9 +57,9 @@ describe("project story save handler", () => {
 
   it("preserves omitted story fields but forwards explicit clearing", async () => {
     await handleProjectSave(request({description:null,visibility:"private"}),db);
-    expect(mocks.rpc).toHaveBeenLastCalledWith("save_ai_gated_project",expect.objectContaining({p_description:null,p_progress:null,p_pitch_video_url:null}));
+    expect(mocks.rpc).toHaveBeenLastCalledWith("save_ai_gated_project_taxonomy",expect.objectContaining({p_description:null,p_progress:null,p_pitch_video_url:null}));
     await handleProjectSave(request({description:"",progress:"",pitch_video_url:"",visibility:"private"}),db);
-    expect(mocks.rpc).toHaveBeenLastCalledWith("save_ai_gated_project",expect.objectContaining({p_description:"",p_progress:"",p_pitch_video_url:""}));
+    expect(mocks.rpc).toHaveBeenLastCalledWith("save_ai_gated_project_taxonomy",expect.objectContaining({p_description:"",p_progress:"",p_pitch_video_url:""}));
   });
   it.each([{description:"x".repeat(20001)},{progress:"x".repeat(10001)},{pitch_video_url:"javascript:alert(1)"}])("rejects invalid content before saving", async payload => {
     expect((await handleProjectSave(request(payload),db)).status).toBe(400);
@@ -100,7 +100,7 @@ describe("project story save handler", () => {
   it.each([undefined, null, "", "   "])("accepts a hackathon idea with optional progress (%j) and no resource links", async progress => {
     const response = await handleProjectSave(request({ source_type: "hackathon", progress }), db);
     expect(response.status).toBe(200);
-    expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project", expect.objectContaining({
+    expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project_taxonomy", expect.objectContaining({
       p_progress: progress == null ? null : "",
       p_demo_url: null, p_repo_url: null, p_slide_url: null, p_video_url: null, p_pitch_video_url: null,
     }));
@@ -110,7 +110,7 @@ describe("project story save handler", () => {
     mocks.existing.mockResolvedValue({ data: { source_type: "hackathon", progress: "Previous progress" }, error: null });
     const response = await handleProjectSave(request({ progress: "" }), db);
     expect(response.status).toBe(200);
-    expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project", expect.objectContaining({ p_progress: "" }));
+    expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project_taxonomy", expect.objectContaining({ p_progress: "" }));
   });
 
   it.each([
@@ -141,7 +141,7 @@ describe("bilingual project save", () => {
   it("takes canonical content from the primary locale and moderates every translated field", async () => {
     const response = await handleProjectSave(request({ primary_content_locale:"en", locales:{ en:{ title:"English",summary:"English summary",description:"English story",progress:"English progress" }, vi:{title:"Tên",summary:"Tóm tắt",description:"Mô tả",progress:"Tiến độ"} } }),db);
     expect(response.status).toBe(200);
-    expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project",expect.objectContaining({p_title:"English",p_primary_content_locale:"en",p_locales:expect.objectContaining({vi:expect.objectContaining({progress:"Tiến độ"})})}));
+    expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project_taxonomy",expect.objectContaining({p_title:"English",p_primary_content_locale:"en",p_locales:expect.objectContaining({vi:expect.objectContaining({progress:"Tiến độ"})})}));
     expect(mocks.moderate).toHaveBeenCalledWith(expect.arrayContaining([{field:"vi.description",text:"Mô tả"},{field:"vi.progress",text:"Tiến độ"}]));
   });
   it.each([

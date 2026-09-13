@@ -250,13 +250,9 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
     expect(createContest).toHaveBeenCalledWith(expect.objectContaining({
       sectors: expect.arrayContaining([
         expect.objectContaining({ id: "sector-ai-engineering", name: "Kỹ thuật AI & Machine Learning" }),
-        expect.objectContaining({ id: "sector-blockchain-web3", name: "Blockchain & Web3" }),
-        expect.objectContaining({ id: "sector-developer-tools", name: "Công cụ lập trình & Mã nguồn mở" }),
       ]),
       tech_stacks: expect.arrayContaining([
-        expect.objectContaining({ id: "tech-javascript-typescript", name: "JavaScript / TypeScript" }),
-        expect.objectContaining({ id: "tech-solidity-evm", name: "Solidity / EVM" }),
-        expect.objectContaining({ id: "tech-solana", name: "Solana" }),
+        expect.objectContaining({ id: "tech-python", name: "Python" }),
       ]),
     }));
     expect(setHackathonLocaleContent).toHaveBeenCalledTimes(2);
@@ -266,14 +262,13 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
       expect.objectContaining({
         sectors: expect.arrayContaining([
           expect.objectContaining({ id: "sector-ai-engineering", name: "AI & Machine Learning Engineering" }),
-          expect.objectContaining({ id: "sector-developer-tools", name: "Developer Tools & Open Source" }),
         ]),
         tech_stacks: expect.arrayContaining([
-          expect.objectContaining({ id: "tech-pytorch-tensorflow", name: "PyTorch / TensorFlow" }),
-          expect.objectContaining({ id: "tech-solana", name: "Solana" }),
+          expect.objectContaining({ id: "tech-python", name: "Python" }),
         ]),
       }),
     );
+    expect(view.container.textContent).not.toContain("hackathons.editor.sections.taxonomy");
     expect(view.container.querySelector('[data-testid="location"]')?.textContent)
       .toBe("/admin/hackathons/hackathon-1/edit#overview");
 
@@ -566,4 +561,3 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
     await view.cleanup();
   });
 });
-

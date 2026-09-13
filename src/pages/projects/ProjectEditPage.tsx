@@ -88,6 +88,8 @@ export default function ProjectEditPage() {
           hackathon_track_ids: draft.tracks,
           hackathon_sector_ids: draft.sectors,
           hackathon_tech_stack_ids: draft.tech,
+          custom_sector_names: draft.customSectors,
+          custom_tech_stack_names: draft.customTech,
           removed_media_paths: removedPaths,
         });
         return draft.slug;

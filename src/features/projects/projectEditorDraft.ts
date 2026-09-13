@@ -10,6 +10,7 @@ export type ProjectDraft = {
   logo: ProjectMediaItem | null; screenshots: ProjectMediaItem[];
   visibility: Project["visibility"];
   tracks: string[]; sectors: string[]; tech: string[];
+  customSectors: string[]; customTech: string[];
 };
 
 export function projectDraft(project?: Project | null, uiLocale = "vi"): ProjectDraft {
@@ -26,6 +27,7 @@ export function projectDraft(project?: Project | null, uiLocale = "vi"): Project
     screenshots: (project?.screenshot_paths ?? []).map((path, index) => ({ path, url: project?.screenshot_urls?.[index] ?? "" })).filter(item => item.url),
     visibility: project?.visibility ?? "public",
     tracks: project?.hackathon_track_ids ?? [], sectors: project?.hackathon_sector_ids ?? [], tech: project?.hackathon_tech_stack_ids ?? [],
+    customSectors: project?.custom_sector_names ?? [], customTech: project?.custom_tech_stack_names ?? [],
   };
 }
 

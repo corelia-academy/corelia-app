@@ -461,6 +461,8 @@ export interface ContestSubmission {
   track_ids?: string[];
   sector_ids?: string[];
   tech_stack_ids?: string[];
+  custom_sector_names?: string[];
+  custom_tech_stack_names?: string[];
   /** Stable display id for anonymous judging UI (Phase 2). */
   display_id?: string | null;
   title: string;
@@ -494,6 +496,8 @@ export interface ContestSubmissionInsert {
   track_ids?: string[];
   sector_ids?: string[];
   tech_stack_ids?: string[];
+  custom_sector_names?: string[];
+  custom_tech_stack_names?: string[];
 }
 
 /** Canonical vocabulary for new code; legacy Contest types remain source-compatible. */

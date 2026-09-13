@@ -90,6 +90,8 @@ export default function ProjectNewPage() {
       track_ids: draft.tracks,
       sector_ids: draft.sectors,
       tech_stack_ids: draft.tech,
+      custom_sector_names: draft.customSectors,
+      custom_tech_stack_names: draft.customTech,
     };
     let savedId: string = projectId;
     let savedSlug = draft.slug;
