@@ -167,10 +167,10 @@ test("Production workflow structure safety", () => {
   assert.match(applyStep, /supabase migration up --linked --dns-resolver https --include-all/);
 });
 
-test("Production course-authoring release accepts the current ledger and rejects missing prior migrations", () => {
+test("Production course-credential release accepts the current ledger and rejects missing prior migrations", () => {
   const localVersions = [...realReleasedVersions, ...APPROVED_PENDING_VERSIONS];
   const observedRemote = localVersions.filter((v) => !CURRENT_PENDING_VERSIONS.includes(v));
-  assert.deepEqual(CURRENT_PENDING_VERSIONS, ["20260913081055"]);
+  assert.deepEqual(CURRENT_PENDING_VERSIONS, ["20260913084439"]);
   const result = validate({ remoteVersions: observedRemote });
   assert.equal(result.ok, true);
   assert.deepEqual(result.pendingVersions, CURRENT_PENDING_VERSIONS);
