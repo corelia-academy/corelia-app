@@ -94,45 +94,9 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// This release keeps optional hackathon progress as already approved and
-// includes the learning migration wave 20260910040432 onward as currently
-// unreleased in production ledger.
+// All earlier approved migrations are present in the Production ledger. This
+// release has exactly one pending migration from the course-authoring refactor.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260910040432",
-  "20260910040433",
-  "20260910041019",
-  "20260910071631",
-  "20260911102911",
-  "20260911110235",
-  "20260911112530",
-  "20260911113516",
-  "20260911120958",
-  "20260911121236",
-  "20260911122011",
-  "20260911122247",
-  "20260911123245",
-  "20260911123514",
-  "20260911124254",
-  "20260911124739",
-  "20260911125242",
-  "20260911132358",
-  "20260911140639",
-  "20260911141007",
-  "20260911142402",
-  "20260911152152",
-  "20260911162146",
-  "20260911165011",
-  "20260911170038",
-  "20260911171251",
-  "20260911172940",
-  "20260911173523",
-  "20260911180616",
-  "20260911184027",
-  "20260911185307",
-  "20260911185926",
-  "20260911194806",
-  "20260911215843",
-  "20260912101500",
   "20260913081055",
 ]);
 
