@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { CalendarClock, Plus, Trophy, Users } from "lucide-react";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router";
 
@@ -9,6 +10,16 @@ import { hackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQue
 import { useAuth } from "@/stores/authStore";
 
 const PUBLIC_STATUSES = new Set(["published", "running", "ended"]);
+
+function getLocalizedStatus(t: TFunction<"admin">, status?: string | null) {
+  if (!status) return "";
+  return t(`hackathons.editor.status.${status}` as never, { defaultValue: status });
+}
+
+function getLocalizedMode(t: TFunction<"admin">, mode?: string | null) {
+  if (!mode) return "";
+  return t(`hackathons.editor.modes.${mode}` as never, { defaultValue: mode });
+}
 
 export default function AdminHackathonsPage() {
   const { t, i18n } = useTranslation("admin");
@@ -28,9 +39,9 @@ export default function AdminHackathonsPage() {
             <Card key={hackathon.id} className="overflow-hidden">
               <div className="aspect-video bg-surface-raised">{hackathon.cover_image_url ? <img src={hackathon.cover_image_url} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center"><Trophy className="size-10 text-foreground-subtle" /></div>}</div>
               <CardContent className="p-5">
-                <div className="flex items-start justify-between gap-3"><h2 className="text-heading-small font-display">{hackathon.title}</h2><span className="rounded-full bg-surface-raised px-2 py-1 text-xs text-foreground-muted">{hackathon.status}</span></div>
+                <div className="flex items-start justify-between gap-3"><h2 className="text-heading-small font-display">{hackathon.title}</h2><span className="rounded-full bg-surface-raised px-2 py-1 text-xs text-foreground-muted">{getLocalizedStatus(t, hackathon.status)}</span></div>
                 <p className="mt-2 line-clamp-2 text-sm text-foreground-muted">{hackathon.short_description || hackathon.tagline}</p>
-                <div className="mt-4 flex gap-4 text-xs text-foreground-muted"><span className="inline-flex items-center gap-1"><Users className="size-4" />{hackathon.participants_count ?? 0}</span><span className="inline-flex items-center gap-1"><CalendarClock className="size-4" />{hackathon.mode ?? hackathon.location}</span></div>
+                <div className="mt-4 flex gap-4 text-xs text-foreground-muted"><span className="inline-flex items-center gap-1"><Users className="size-4" />{hackathon.participants_count ?? 0}</span><span className="inline-flex items-center gap-1"><CalendarClock className="size-4" />{getLocalizedMode(t, hackathon.mode ?? hackathon.location)}</span></div>
                 <div className="mt-5 flex gap-2"><Button className="flex-1" render={<NavLink to={`/admin/hackathons/${hackathon.id}/edit`} />} nativeButton={false}>{t("hackathons.edit")}</Button>{hackathon.slug ? <Button variant="outline" render={<NavLink to={`/hackathons/${hackathon.slug}/overview${PUBLIC_STATUSES.has(hackathon.status) ? "" : "?preview=1"}`} />} nativeButton={false}>{t(PUBLIC_STATUSES.has(hackathon.status) ? "hackathons.view" : "hackathons.preview")}</Button> : null}</div>
               </CardContent>
             </Card>
