@@ -620,6 +620,7 @@
     },
     "removeResource": "Bỏ tài nguyên {{number}}",
     "validation": {
+      "course_not_publishable": "Nội dung khóa học không được để trống.",
       "slug_required": "Nhập slug cho khóa học.",
       "published_lesson_required": "Xuất bản ít nhất một bài học trước khi xuất bản khóa học.",
       "final_instructions_required": "Nhập hướng dẫn bài cuối khóa trước khi xuất bản.",

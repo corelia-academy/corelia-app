@@ -6,6 +6,17 @@ type Translate = (key: string, options?: Record<string, unknown>) => string;
 export function learningSaveError(error: unknown, t: Translate, lessons: Pick<CourseLesson, "id" | "title">[] = [], fallback = t("learning.saveError")): string {
   const message = error instanceof Error ? error.message :
     error && typeof error === "object" && "message" in error && typeof error.message === "string" ? error.message : fallback;
+  if (/COURSE_NOT_PUBLISHABLE/.test(message)) {
+    return t("learning.validation.course_not_publishable", {
+      defaultValue: "Nội dung khóa học không được để trống.",
+    });
+  }
+  if (/FINAL_INSTRUCTIONS_REQUIRED/.test(message)) {
+    return t("learning.validation.final_instructions_required", {
+      defaultValue: fallback,
+    });
+  }
+
   const match = /^LESSON_NOT_PUBLISHABLE:\s*(?:([^:]+):\s*)?([a-z_]+(?:\s*,\s*[a-z_]+)*)$/.exec(message);
   if (!match) return message;
   const details = [...new Set(match[2].split(",").map(code => code.trim()))]
