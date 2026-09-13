@@ -169,10 +169,12 @@ test("Production workflow structure safety", () => {
 
 test("Production optional-progress release accepts the localization ledger and rejects missing prior migrations", () => {
   const localVersions = [...realReleasedVersions, ...APPROVED_PENDING_VERSIONS];
-  const observedRemote = localVersions.filter((v) => v !== "20260910040636");
+  const lastPending = CURRENT_PENDING_VERSIONS.at(-1);
+  const observedRemote = localVersions.filter((v) => v !== lastPending);
   const result = validate({ remoteVersions: observedRemote });
   assert.equal(result.ok, true);
-  assert.deepEqual(result.pendingVersions, ["20260910040636"]);
+  assert.deepEqual(result.pendingVersions, [lastPending]);
+  assert.equal(validate({ remoteVersions: observedRemote.filter((v) => v !== lastPending) }).ok, false);
   assert.equal(validate({ remoteVersions: observedRemote.filter((v) => v !== "20260909200232") }).ok, false);
   assert.equal(validate({ remoteVersions: observedRemote.filter((v) => v !== "20260907075801") }).ok, false);
   assert.equal(validate({ remoteVersions: observedRemote.filter((v) => v !== "20260906100000") }).ok, false);
