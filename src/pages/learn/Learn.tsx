@@ -20,9 +20,11 @@ import {
   courseHasCertificate,
   ensureEnrollmentForProgress,
   getNextLesson,
+  revertCourseCompletion,
   setLessonProgress,
   sortLessonsByCurriculum,
   syncCourseCompletion,
+  type RevertCourseCompletionMode,
 } from "@/lib/courses";
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
 import {
@@ -371,6 +373,38 @@ function LearnWorkspace() {
   }});
   const markComplete = completeMutation.mutateAsync;
 
+  const handleRevert = useCallback(
+    async (mode: RevertCourseCompletionMode) => {
+      if (!courseId || !profile?.id) return;
+
+      await revertCourseCompletion(courseId, mode);
+      setCompletionJustSynced(false);
+      if (access.enrollment) {
+        access.setEnrollment({
+          ...access.enrollment,
+          completed_at: null,
+        });
+      }
+      const key = `${profile.id}:${courseId}:${submission.submission?.status ?? "none"}`;
+      completionSyncAttemptedRef.current.delete(key);
+      await invalidateLearningProgress(queryClient, profile.id, courseId);
+      await progress.refresh();
+      toast.success(
+        translate("detail.learn.completion.revertSuccess", {
+          defaultValue: "Đã hoàn tác trạng thái hoàn thành khóa học.",
+        }),
+      );
+    },
+    [
+      access,
+      courseId,
+      profile?.id,
+      progress,
+      queryClient,
+      submission.submission?.status,
+      translate,
+    ],
+  );
 
   if (!courseId) {
     return <LearnMissingCourseIdState translate={translate} />;
@@ -474,6 +508,7 @@ function LearnWorkspace() {
               ? () => void syncCertificate()
               : undefined
           }
+          onRevert={handleRevert}
         />
       ) : null}
 

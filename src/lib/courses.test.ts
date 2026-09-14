@@ -10,7 +10,7 @@ vi.mock("@/lib/supabase", () => ({
   supabase: { from: vi.fn(), rpc: vi.fn() },
 }));
 
-import { saveCourseWithLocale, updateCourse, updateSection, addLesson, updateLesson, applyCourseLessonLocaleContent, deleteCourse, deleteLesson, getLearnerCourseProgressSnapshot } from "./courses";
+import { saveCourseWithLocale, updateCourse, updateSection, addLesson, updateLesson, applyCourseLessonLocaleContent, deleteCourse, deleteLesson, getLearnerCourseProgressSnapshot, revertCourseCompletion } from "./courses";
 import { supabase } from "./supabase";
 
 const masterVideoLesson: CourseLesson = {
@@ -217,5 +217,52 @@ it("saves metadata and locale in one RPC and propagates rollback failures", asyn
   await saveCourseWithLocale("course", { instructors }, "en", { title: "Course" });
   expect(supabase.rpc).toHaveBeenLastCalledWith("learning_save_course_info", {
     p_course: "course", p_patch: { instructors }, p_locale: "en", p_copy: { title: "Course" },
+  });
+});
+
+describe("revertCourseCompletion", () => {
+  it("calls learning_revert_completion RPC with default last_lesson mode", async () => {
+    const mockData = {
+      ok: true,
+      mode: "last_lesson",
+      reverted_lesson_id: "lesson-1",
+      reverted_count: 1,
+      certificate_preserved: true,
+    };
+    vi.mocked(supabase.rpc).mockResolvedValueOnce({ data: mockData, error: null } as never);
+
+    const result = await revertCourseCompletion("course-1");
+    expect(supabase.rpc).toHaveBeenCalledWith("learning_revert_completion", {
+      p_course_id: "course-1",
+      p_mode: "last_lesson",
+    });
+    expect(result).toEqual(mockData);
+  });
+
+  it("calls learning_revert_completion RPC with reset_all mode", async () => {
+    const mockData = {
+      ok: true,
+      mode: "reset_all",
+      reverted_lesson_id: null,
+      reverted_count: 5,
+      certificate_preserved: true,
+    };
+    vi.mocked(supabase.rpc).mockResolvedValueOnce({ data: mockData, error: null } as never);
+
+    const result = await revertCourseCompletion("course-1", "reset_all");
+    expect(supabase.rpc).toHaveBeenCalledWith("learning_revert_completion", {
+      p_course_id: "course-1",
+      p_mode: "reset_all",
+    });
+    expect(result).toEqual(mockData);
+  });
+
+  it("propagates error when RPC fails", async () => {
+    vi.mocked(supabase.rpc).mockResolvedValueOnce({
+      data: null,
+      error: { message: "NOT_ENROLLED" },
+    } as never);
+
+    await expect(revertCourseCompletion("course-1")).rejects.toThrow("NOT_ENROLLED");
   });
 });

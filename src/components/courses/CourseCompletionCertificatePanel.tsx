@@ -1,9 +1,11 @@
-import { Award, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
+import { useState } from "react";
+import { Award, CheckCircle2, Loader2, RefreshCw, RotateCcw } from "lucide-react";
 import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
-import type { CertificateIssueReason } from "@/lib/courses";
+import type { CertificateIssueReason, RevertCourseCompletionMode } from "@/lib/courses";
+import { RevertCourseCompletionDialog } from "./RevertCourseCompletionDialog";
 import { cn } from "@/lib/utils";
 
 interface CourseCompletionCertificatePanelProps {
@@ -15,6 +17,7 @@ interface CourseCompletionCertificatePanelProps {
   issueError?: string | null;
   achievementsPath: string;
   onRetry?: () => void;
+  onRevert?: (mode: RevertCourseCompletionMode) => Promise<void>;
 }
 
 export function CourseCompletionCertificatePanel({
@@ -26,8 +29,10 @@ export function CourseCompletionCertificatePanel({
   issueError = null,
   achievementsPath,
   onRetry,
+  onRevert,
 }: CourseCompletionCertificatePanelProps) {
   const { t } = useTranslation("courses");
+  const [revertDialogOpen, setRevertDialogOpen] = useState(false);
   const bodyKey = (() => {
     if (issueError) return "detail.learn.completion.certificateSyncFailed";
     if (!hasCertificate) {
@@ -89,6 +94,27 @@ export function CourseCompletionCertificatePanel({
               {t("detail.learn.completion.retryCertificateSync")}
             </Button>
           ) : null}
+          {onRevert && (
+            <>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setRevertDialogOpen(true)}
+              >
+                <RotateCcw className="size-4" aria-hidden />
+                {t("detail.learn.completion.revertAction", {
+                  defaultValue: "Hoàn tác hoàn thành",
+                })}
+              </Button>
+              <RevertCourseCompletionDialog
+                open={revertDialogOpen}
+                onOpenChange={setRevertDialogOpen}
+                onConfirm={onRevert}
+                certificateIssued={certificateIssued}
+              />
+            </>
+          )}
         </div>
       </div>
     </div>

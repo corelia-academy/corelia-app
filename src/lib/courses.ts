@@ -930,6 +930,28 @@ export async function syncCourseCompletion(
   };
 }
 
+export type RevertCourseCompletionMode = "last_lesson" | "reset_all";
+
+export interface RevertCourseCompletionResult {
+  ok: boolean;
+  mode: RevertCourseCompletionMode;
+  reverted_lesson_id?: string | null;
+  reverted_count?: number;
+  certificate_preserved: boolean;
+}
+
+export async function revertCourseCompletion(
+  courseId: string,
+  mode: RevertCourseCompletionMode = "last_lesson",
+): Promise<RevertCourseCompletionResult> {
+  const { data, error } = await supabase.rpc("learning_revert_completion", {
+    p_course_id: courseId,
+    p_mode: mode,
+  });
+  if (error) throw new Error(error.message);
+  return data as RevertCourseCompletionResult;
+}
+
 export async function setLessonProgress(
   lessonId: string,
   courseId: string,
