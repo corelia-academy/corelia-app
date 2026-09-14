@@ -8,7 +8,10 @@ import { ProjectCard } from "@/components/projects/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/projects/ProjectCardSkeleton";
 import { Button } from "@/components/ui/button";
 import { publicHackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
-import { publicProjectDirectoryQueryOptions } from "@/features/projects/projectQueries";
+import {
+  publicProjectDirectoryQueryOptions,
+  publicProjectTeamsQueryOptions,
+} from "@/features/projects/projectQueries";
 import type { PublicProjectEntry, PublicProjectSort } from "@/lib/projects";
 import { projectHeartsQueryOptions } from "@/features/projects/projectSocialQueries";
 import { useAuth } from "@/stores/authStore";
@@ -154,6 +157,7 @@ export default function ProjectsPage() {
     () => winnerFirst(projectsQuery.data?.pages.flatMap((page) => page.items) ?? [], allWinnerAwards),
     [projectsQuery.data?.pages, allWinnerAwards],
   );
+  const teamsQuery = useQuery(publicProjectTeamsQueryOptions(items.map((item) => item.project.id)));
 
   const hearts = useQuery(projectHeartsQueryOptions(user?.id, items.map(item => item.project.id)));
   const update = useCallback((key: string, value: string | string[]) => {
@@ -239,6 +243,8 @@ export default function ProjectsPage() {
                   taxonomy={hackathons.find((item) => item.id === project.source_id)}
                   ownerLabel={owner?.full_name ?? owner?.username}
                   ownerHandle={owner?.username ?? owner?.ocid}
+                  ownerAvatarUrl={owner?.avatar_url}
+                  teamMembers={teamsQuery.data?.[project.id] ?? []}
                   awardLabel={awardsMap.get(project.id)}
                 />
               ))}

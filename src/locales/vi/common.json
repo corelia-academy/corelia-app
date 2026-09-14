@@ -333,7 +333,7 @@
     },
     "team": {
       "title": "Thành viên nhóm",
-      "hint": "Thành viên chỉ được hiển thị sau khi chấp nhận lời mời và không có quyền sửa dự án.",
+      "hint": "Thành viên được hiển thị công khai trên dự án sau khi chấp nhận lời mời và không có quyền sửa dự án. Tùy chọn portfolio chỉ điều khiển việc dự án xuất hiện trên hồ sơ cá nhân.",
       "hackathonEligibleHint": "Chỉ hiển thị người dùng đã đăng ký tham gia hackathon này.",
       "pickTitle": "Chọn thành viên",
       "pickDescription": "Tìm tài khoản Corelia để gửi lời mời tham gia dự án.",
@@ -347,6 +347,7 @@
       "someInvitesFailed": "Dự án đã được tạo nhưng một số lời mời chưa gửi được.",
       "pending": "Đang chờ phản hồi",
       "members": "Thành viên đã tham gia",
+      "moreMembers": "Thêm {{count}} thành viên",
       "revoke": "Thu hồi",
       "remove": "Xóa",
       "resendEmail": "Gửi lại email",
