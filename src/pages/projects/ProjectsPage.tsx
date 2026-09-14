@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { ChevronDown, Package, Plus, ShieldAlert, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -8,7 +8,10 @@ import { ProjectCard } from "@/components/projects/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/projects/ProjectCardSkeleton";
 import { Button } from "@/components/ui/button";
 import { publicHackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
-import { publicProjectDirectoryQueryOptions } from "@/features/projects/projectQueries";
+import {
+  publicProjectDirectoryQueryOptions,
+  publicProjectTeamsQueryOptions,
+} from "@/features/projects/projectQueries";
 import type { PublicProjectEntry, PublicProjectSort } from "@/lib/projects";
 import { projectHeartsQueryOptions } from "@/features/projects/projectSocialQueries";
 import { useAuth } from "@/stores/authStore";
@@ -90,7 +93,8 @@ export default function ProjectsPage() {
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const locale = i18n.resolvedLanguage ?? i18n.language;
-  const hackathonSlug = params.get("hackathon") ?? "";
+  const hackathonParam = params.get("hackathon")?.trim() ?? "";
+  const normalizedHackathonSlug = hackathonParam.toLowerCase();
   const trackIds = csv(params.get("tracks"));
   const sectorIds = csv(params.get("sectors"));
   const techStackIds = csv(params.get("tech"));
@@ -106,9 +110,22 @@ export default function ProjectsPage() {
   };
   const hackathons = useMemo(() => hackathonsQuery.data ?? [], [hackathonsQuery.data]);
   const selectedHackathon = useMemo(
-    () => hackathons.find((item) => item.slug === hackathonSlug) ?? null,
-    [hackathons, hackathonSlug],
+    () =>
+      normalizedHackathonSlug
+        ? hackathons.find(
+            (item) => (item.slug ?? "").toLowerCase() === normalizedHackathonSlug,
+          ) ?? null
+        : null,
+    [hackathons, normalizedHackathonSlug],
   );
+
+  useEffect(() => {
+    if (selectedHackathon?.slug && hackathonParam && hackathonParam !== selectedHackathon.slug) {
+      const next = new URLSearchParams(params);
+      next.set("hackathon", selectedHackathon.slug);
+      setParams(next, { replace: true });
+    }
+  }, [selectedHackathon?.slug, hackathonParam, params, setParams]);
 
   const allWinnerAwards = useMemo(() => {
     if (selectedHackathon) {
@@ -134,12 +151,13 @@ export default function ProjectsPage() {
   });
   const projectsQuery = useInfiniteQuery({
     ...directoryOptions,
-    enabled: !hackathonSlug || Boolean(selectedHackathon),
+    enabled: !hackathonParam || Boolean(selectedHackathon),
   });
   const items = useMemo(
     () => winnerFirst(projectsQuery.data?.pages.flatMap((page) => page.items) ?? [], allWinnerAwards),
     [projectsQuery.data?.pages, allWinnerAwards],
   );
+  const teamsQuery = useQuery(publicProjectTeamsQueryOptions(items.map((item) => item.project.id)));
 
   const hearts = useQuery(projectHeartsQueryOptions(user?.id, items.map(item => item.project.id)));
   const update = useCallback((key: string, value: string | string[]) => {
@@ -155,7 +173,7 @@ export default function ProjectsPage() {
     setParams(next);
   }, [params, setParams]);
 
-  const error = projectsQuery.isError || hackathonsQuery.isError ? t("projects.errorDescription") : hackathonSlug && hackathonsQuery.isSuccess && !selectedHackathon ? t("projects.errors.hackathonMissing") : null;
+  const error = projectsQuery.isError || hackathonsQuery.isError ? t("projects.errorDescription") : hackathonParam && hackathonsQuery.isSuccess && !selectedHackathon ? t("projects.errors.hackathonMissing") : null;
 
   return (
     <div className="container-app py-6 sm:py-8">
@@ -167,14 +185,14 @@ export default function ProjectsPage() {
         </div>
         <p className="mt-1 text-sm text-foreground-muted">{t("projects.description")}</p>
         </div>
-        <div className="flex gap-2"><Button variant="outline" render={<NavLink to="/account/projects" />} nativeButton={false}>{t("projects.editor.myProjects")}</Button><Button render={<NavLink to={hackathonSlug ? `/projects/new?hackathon=${encodeURIComponent(hackathonSlug)}` : "/projects/new"} />} nativeButton={false}><Plus className="size-4" />{t("projects.form.create")}</Button></div>
+        <div className="flex gap-2"><Button variant="outline" render={<NavLink to="/account/projects" />} nativeButton={false}>{t("projects.editor.myProjects")}</Button><Button render={<NavLink to={selectedHackathon?.slug ? `/projects/new?hackathon=${encodeURIComponent(selectedHackathon.slug)}` : hackathonParam ? `/projects/new?hackathon=${encodeURIComponent(hackathonParam)}` : "/projects/new"} />} nativeButton={false}><Plus className="size-4" />{t("projects.form.create")}</Button></div>
       </header>
 
       <section className="space-y-5 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="text-sm font-medium text-foreground">
             {t("projects.filters.hackathon")}
-            <select className="mt-2 min-h-11 w-full rounded-md border border-border bg-background px-3" value={hackathonSlug} onChange={(event) => update("hackathon", event.target.value)}>
+            <select className="mt-2 min-h-11 w-full rounded-md border border-border bg-background px-3" value={selectedHackathon?.slug ?? ""} onChange={(event) => update("hackathon", event.target.value)}>
               <option value="">{t("projects.filters.allHackathons")}</option>
               {hackathons.map((hackathon) => <option key={hackathon.id} value={hackathon.slug ?? ""}>{hackathon.title}</option>)}
             </select>
@@ -195,7 +213,7 @@ export default function ProjectsPage() {
             <TaxonomyFilter label={t("projects.filters.techStacks")} options={filterOptions("technology", selectedHackathon.tech_stacks ?? [])} selected={techStackIds} onChange={(ids) => update("tech", ids)} />
           </div>
         ) : null}
-        {(hackathonSlug || trackIds.length || sectorIds.length || techStackIds.length || sort !== "newest") ? <Button type="button" variant="ghost" size="sm" onClick={() => setParams(new URLSearchParams())}><X className="size-4" />{t("projects.editor.clearFilters")}</Button> : null}
+        {(hackathonParam || trackIds.length || sectorIds.length || techStackIds.length || sort !== "newest") ? <Button type="button" variant="ghost" size="sm" onClick={() => setParams(new URLSearchParams())}><X className="size-4" />{t("projects.editor.clearFilters")}</Button> : null}
       </section>
 
       <div className="mt-6">
@@ -225,6 +243,8 @@ export default function ProjectsPage() {
                   taxonomy={hackathons.find((item) => item.id === project.source_id)}
                   ownerLabel={owner?.full_name ?? owner?.username}
                   ownerHandle={owner?.username ?? owner?.ocid}
+                  ownerAvatarUrl={owner?.avatar_url}
+                  teamMembers={teamsQuery.data?.[project.id] ?? []}
                   awardLabel={awardsMap.get(project.id)}
                 />
               ))}

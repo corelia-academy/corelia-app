@@ -91,6 +91,7 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260913084439_course_credentials_admin_only.sql",
   "supabase/migrations/20260913130748_project_system_taxonomy.sql",
   "supabase/migrations/20260913133229_repair_hackathon_metrics_authorization.sql",
+  "supabase/migrations/20260914162720_public_project_team_members.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
@@ -98,10 +99,9 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
 );
 
 // All earlier approved migrations are present in the Production ledger. This
-// release has exactly the project taxonomy migration and its forward RPC repair.
+// release has exactly the public project team-membership policy migration.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260913130748",
-  "20260913133229",
+  "20260914162720",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
