@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "d2eee2b577ce3ba8c63e1cee11bac1c774183ecf",
-  "git_tree_sha": "a5f918a880d65c151d4e5f65db5eb0e731f98eb1",
+  "rc_sha": "bce4c4aa2b2be2ae450939fed189c2c57d5789af",
+  "git_tree_sha": "06c9f85c3ab5db3a57f16745bba9044aad261058",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 229,
   "latest_migration": "20260914162720_public_project_team_members.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "d2eee2b577ce3ba8c63e1cee11bac1c774183ecf",
+  "source_sha": "bce4c4aa2b2be2ae450939fed189c2c57d5789af",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "996682edaa961048a047b464984a844d71753a0126310b97eaba0111ea2daea4",
+  "candidate_tree_sha256": "9b1e56c356a618942f6c975371e58f4beb50ecfa81ceda67e152b14507fe4470",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -3127,7 +3127,7 @@
     },
     {
       "path": "src/pages/projects/ProjectDetailPage.tsx",
-      "sha256": "903ed1458939d08f4362f9e4b732b7ccb61f9aba965024321cfdb6d25b98e9a4"
+      "sha256": "a20a522a71e3abfaff6e222c9e1ac24937675c1aa2474877f76c8ea4d8be1425"
     },
     {
       "path": "src/pages/projects/ProjectEditPage.tsx",
