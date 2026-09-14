@@ -333,7 +333,7 @@
     },
     "team": {
       "title": "Team members",
-      "hint": "Members appear only after accepting an invitation and cannot edit the project.",
+      "hint": "Members appear publicly on the project after accepting an invitation and cannot edit it. The portfolio setting only controls whether the project appears on their profile.",
       "hackathonEligibleHint": "Only users who have registered for this hackathon are eligible.",
       "pickTitle": "Choose team members",
       "pickDescription": "Find Corelia accounts to invite to this project.",
@@ -347,6 +347,7 @@
       "someInvitesFailed": "The project was created, but some invitations could not be sent.",
       "pending": "Pending invitations",
       "members": "Accepted members",
+      "moreMembers": "{{count}} more members",
       "revoke": "Revoke",
       "remove": "Remove",
       "resendEmail": "Resend email",

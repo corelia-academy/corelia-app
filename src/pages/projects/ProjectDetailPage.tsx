@@ -6,7 +6,6 @@ import { NavLink, useNavigate, useParams } from "react-router";
 import {
   ArrowLeft,
   Share2,
-  Users,
   ExternalLink,
   Github,
   ImageIcon,
@@ -21,12 +20,15 @@ import { useTranslation } from "react-i18next";
 import { Markdown } from "@/components/markdown/Markdown";
 import { ProjectManagementControls } from "@/components/projects/ProjectManagementControls";
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getProjectCoverImageUrl, type PublicProjectEntry } from "@/lib/projects";
-import { listPublicProjectTeam } from "@/lib/projectCollaboration";
 import { projectVideoEmbed } from "@/lib/projectVideo";
-import { publicProjectDetailQueryOptions } from "@/features/projects/projectQueries";
+import {
+  publicProjectDetailQueryOptions,
+  publicProjectTeamsQueryOptions,
+} from "@/features/projects/projectQueries";
 import { getContest } from "@/lib/hackathons";
 import { isHackathonProjectSource, projectSourceLabelKey } from "@/lib/projectSource";
 import { useAuth } from "@/stores/authStore";
@@ -101,12 +103,9 @@ export default function ProjectDetailPage() {
     enabled: Boolean(entry?.project.source_id && isHackathonProjectSource(entry.project.source_type)),
     staleTime: 60_000,
   });
-  const teamQuery = useQuery({
-    queryKey: ["projects", entry?.project.id ?? "missing", "public-team"],
-    queryFn: () => listPublicProjectTeam(entry!.project.id),
-    enabled: Boolean(entry?.project.id),
-    staleTime: 60_000,
-  });
+  const teamQuery = useQuery(
+    publicProjectTeamsQueryOptions(entry?.project.id ? [entry.project.id] : []),
+  );
   const loading = query.isPending;
   const notFound = !slug || (query.isSuccess && entry === null);
   const error = query.error
@@ -241,7 +240,7 @@ export default function ProjectDetailPage() {
     { label: t("projects.filters.techStacks"), values: projectTaxonomyNames(project.hackathon_tech_stack_ids ?? [], project.custom_tech_stack_names ?? [], (taxonomyQuery.data ?? []).filter(option => option.kind === "technology"), sourceQuery.data?.tech_stacks ?? []).map((name) => ({ id: `technology:${name}`, name })) },
   ];
   const resourceActions = actions.filter(action => action && action.key !== "source");
-  const teamMembers = teamQuery.data?.filter(member => member.user_id !== project.owner_id) ?? [];
+  const teamMembers = teamQuery.data?.[project.id]?.filter(member => member.user_id !== project.owner_id) ?? [];
   const ownerLink = owner.handle ? `/@${owner.handle}` : null;
   const back = sourceQuery.data?.slug ? `/hackathons/${sourceQuery.data.slug}/projects` : "/projects";
 
@@ -315,8 +314,8 @@ export default function ProjectDetailPage() {
           {href && sourceQuery.data ? <NavLink to={href} className="flex flex-col gap-4 rounded-2xl border border-border-subtle bg-surface-base p-5 hover:border-primary/40 sm:flex-row">{sourceQuery.data.cover_image_url ? <img src={sourceQuery.data.cover_image_url} alt="" className="h-24 w-full rounded-lg object-cover sm:w-36" /> : null}<div className="min-w-0"><p className="text-label-small font-body uppercase tracking-wide text-foreground-muted">{t("projects.editor.hackathon")}</p><h2 className="mt-2 text-title-large font-display">{sourceQuery.data.title}</h2><p className="mt-1 line-clamp-2 text-body-medium font-body text-foreground-muted">{sourceQuery.data.short_description || sourceQuery.data.tagline}</p></div></NavLink> : null}
         </Tabs.Panel>
         {resourceActions.length ? <Tabs.Panel value="resources" className="rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="text-heading-small font-display text-foreground">{t("projects.editor.links")}</h2><div className="mt-5 space-y-3">{resourceActions.length ? resourceActions.map(action => action ? <a key={action.key} href={action.href} target="_blank" rel="noreferrer" className="flex min-w-0 items-center gap-3 rounded-xl border border-border p-4 hover:bg-surface-raised"><action.icon className="size-5 shrink-0 text-primary" /><span className="min-w-0"><span className="block text-cta-medium font-body">{action.label}</span><span className="mt-1 block truncate text-body-small font-body text-foreground-muted">{action.href}</span></span><ExternalLink className="ml-auto size-4 shrink-0" /></a> : null) : <p className="text-body-medium font-body text-foreground-muted">{t("projects.editor.noResources")}</p>}</div></Tabs.Panel> : null}
-        <Tabs.Panel value="team" className="rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="text-heading-small font-display text-foreground">{t("projects.team.publicTitle")}</h2><p className="mt-1 text-body-medium font-body text-foreground-muted">{t("projects.editor.aboutTeam")}</p><div className="mt-5 flex items-center gap-3 rounded-xl border border-border p-4"><Users className="size-6 text-primary" /><div><p className="text-label-small font-body text-foreground-muted">{t("projects.editor.teamLeader")}</p>{ownerLink ? <NavLink to={ownerLink} className="mt-1 block text-cta-medium font-body hover:underline">{owner.label || owner.handle}</NavLink> : <p>{owner.label}</p>}</div></div>
-          {teamQuery.isPending ? <p className="mt-4 text-body-medium font-body" role="status">{t("projects.team.loading")}</p> : teamQuery.isError ? <Button className="mt-4" variant="outline" onClick={() => void teamQuery.refetch()}>{t("projects.retry")}</Button> : teamMembers.length ? <div className="mt-4 grid gap-3 sm:grid-cols-2">{teamMembers.map(member => { const label = member.full_name?.trim() || member.username?.trim() || t("projects.editor.builder"); const content = <>{member.avatar_url ? <img src={member.avatar_url} alt="" className="size-10 rounded-full object-cover" /> : <span className="flex size-10 items-center justify-center rounded-full bg-surface-raised">{label[0]}</span>}<span className="min-w-0 truncate">{label}</span></>; return member.username ? <NavLink key={member.user_id} to={`/@${member.username}`} className="flex items-center gap-3 rounded-xl border border-border p-4 text-body-medium font-body hover:bg-surface-raised">{content}</NavLink> : <div key={member.user_id} className="flex items-center gap-3 rounded-xl border border-border p-4 text-body-medium font-body">{content}</div>; })}</div> : <p className="mt-4 text-body-medium font-body text-foreground-muted">{t("projects.editor.noTeam")}</p>}
+        <Tabs.Panel value="team" className="rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="text-heading-small font-display text-foreground">{t("projects.team.publicTitle")}</h2><p className="mt-1 text-body-medium font-body text-foreground-muted">{t("projects.editor.aboutTeam")}</p><div className="mt-5 flex items-center gap-3 rounded-xl border border-border p-4"><Avatar size="lg"><AvatarImage src={entry.owner?.avatar_url ?? undefined} alt="" /><AvatarFallback>{(owner.label || owner.handle || t("projects.editor.builder")).charAt(0).toUpperCase()}</AvatarFallback></Avatar><div><p className="text-label-small font-body text-foreground-muted">{t("projects.editor.teamLeader")}</p>{ownerLink ? <NavLink to={ownerLink} className="mt-1 block text-cta-medium font-body hover:underline">{owner.label || owner.handle}</NavLink> : <p>{owner.label}</p>}</div></div>
+          {teamQuery.isPending ? <p className="mt-4 text-body-medium font-body" role="status">{t("projects.team.loading")}</p> : teamQuery.isError ? <Button className="mt-4" variant="outline" onClick={() => void teamQuery.refetch()}>{t("projects.retry")}</Button> : teamMembers.length ? <div className="mt-4 grid gap-3 sm:grid-cols-2">{teamMembers.map(member => { const label = member.full_name?.trim() || member.username?.trim() || t("projects.editor.builder"); const content = <><Avatar size="lg"><AvatarImage src={member.avatar_url ?? undefined} alt="" /><AvatarFallback>{label.charAt(0).toUpperCase()}</AvatarFallback></Avatar><span className="min-w-0 truncate">{label}</span></>; const handle = member.username?.trim() || member.id; return handle ? <NavLink key={member.user_id} to={`/@${handle}`} className="flex items-center gap-3 rounded-xl border border-border p-4 text-body-medium font-body hover:bg-surface-raised">{content}</NavLink> : <div key={member.user_id} className="flex items-center gap-3 rounded-xl border border-border p-4 text-body-medium font-body">{content}</div>; })}</div> : <p className="mt-4 text-body-medium font-body text-foreground-muted">{t("projects.editor.noTeam")}</p>}
         </Tabs.Panel>
       </Tabs.Root>
       <aside className="min-w-0 space-y-5 lg:sticky lg:top-24">
