@@ -79,14 +79,16 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
     <footer className="sticky bottom-0 z-10 border-t border-border bg-surface-base px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6">
       {error && <p role="alert" className="mb-2 text-sm text-destructive">{error}</p>}
       {confirmation}
-      {mode === "learner" && user && onReset && hasFullCourseAccess && !isDraftLesson && <div className="mb-3 flex flex-wrap gap-2">
-        {completed && <Button type="button" variant="outline" disabled={busy || action?.pending} onClick={() => void reset(false)}>{t("learning.markIncomplete")}</Button>}
-        {["quiz", "practice", "code_exercise"].includes(getLessonFormat(lesson)) && <Button type="button" variant="outline" disabled={busy || action?.pending} onClick={() => void reset(true)}>{t("learning.redoFromStart")}</Button>}
-      </div>}
-      <div className="flex items-center justify-between gap-3">
+      <div className="grid grid-cols-[auto_1fr] items-center gap-3 sm:grid-cols-[auto_1fr_auto]">
         <Button type="button" variant="outline" disabled={!previousLesson || busy} onClick={() => previousLesson && onNavigateToLesson(previousLesson.id)}>{t("learning.previous")}</Button>
-        <span className="hidden text-sm text-foreground-muted sm:block">{t("learning.lessonNumber", { number: (lessonIndex ?? 0)+1 })}</span>
-        <Button type="button" disabled={busy || action?.pending || (!(completed && mode === "learner") && (!action || (action.disabled && (mode === "preview" || !!user))))} onClick={() => void run()}>{label}</Button>
+        <span className="hidden text-center text-sm text-foreground-muted sm:block">{t("learning.lessonNumber", { number: (lessonIndex ?? 0)+1 })}</span>
+        <div className="col-span-2 flex flex-wrap items-center justify-end gap-2 sm:col-auto">
+          {mode === "learner" && user && onReset && hasFullCourseAccess && !isDraftLesson && <>
+            {completed && <Button type="button" variant="outline" disabled={busy || action?.pending} onClick={() => void reset(false)}>{t("learning.markIncomplete")}</Button>}
+            {["quiz", "practice", "code_exercise"].includes(getLessonFormat(lesson)) && <Button type="button" variant="outline" disabled={busy || action?.pending} onClick={() => void reset(true)}>{t("learning.redoFromStart")}</Button>}
+          </>}
+          <Button type="button" disabled={busy || action?.pending || (!(completed && mode === "learner") && (!action || (action.disabled && (mode === "preview" || !!user))))} onClick={() => void run()}>{label}</Button>
+        </div>
       </div>
     </footer>
   </div>;
