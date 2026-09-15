@@ -429,6 +429,21 @@ DO $$ DECLARE r jsonb; BEGIN
  PERFORM public.learning_event('learning-test','learning-quiz','lesson_started');
  PERFORM public.learning_event('learning-test','learning-quiz','lesson_started');
  INSERT INTO public.lesson_progress(id,user_id,course_id,lesson_id,completed_at) VALUES('other-completion',auth.uid(),'learning-other','learning-quiz',now());
+ r:=public.learning_reset_lesson('learning-other','learning-quiz',true,0);
+ IF (r->>'reset_epoch')::integer<>1 OR (SELECT count(*) FROM public.lesson_progress WHERE user_id=auth.uid() AND course_id='learning-other' AND lesson_id='learning-quiz' AND completed_at IS NOT NULL)<>0
+    OR (SELECT count(*) FROM public.lesson_progress WHERE user_id=auth.uid() AND course_id='learning-other' AND lesson_id='learning-quiz' AND reset_epoch=1)<>2 THEN
+   RAISE EXCEPTION 'reset left a legacy progress row completed'; END IF;
+ BEGIN
+  UPDATE public.lesson_progress SET completed_at=now() WHERE id=auth.uid()::text||'_learning-other_learning-quiz';
+  RAISE EXCEPTION 'old client completed a reset article without a nonce';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ BEGIN
+  UPDATE public.lesson_progress SET completed_at=now(),reset_epoch=0,completion_nonce=gen_random_uuid() WHERE id=auth.uid()::text||'_learning-other_learning-quiz';
+  RAISE EXCEPTION 'stale article epoch was accepted';
+ EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'STALE_LESSON_ATTEMPT' THEN RAISE; END IF; END;
+ UPDATE public.lesson_progress SET completed_at=now(),completion_nonce=gen_random_uuid() WHERE id=auth.uid()::text||'_learning-other_learning-quiz';
+ IF (SELECT count(*) FROM public.lesson_progress WHERE user_id=auth.uid() AND course_id='learning-other' AND lesson_id='learning-quiz' AND completed_at IS NOT NULL)<>1 THEN
+   RAISE EXCEPTION 'current article run did not complete'; END IF;
  BEGIN
    PERFORM public.learning_curriculum_readiness('learning-test');
    RAISE EXCEPTION 'learner read content readiness';
@@ -446,9 +461,11 @@ DO $$ DECLARE r jsonb; BEGIN
  IF (r->>'completed')::boolean THEN RAISE EXCEPTION 'failed result claimed completion'; END IF;
  IF (r->>'passed')::boolean THEN RAISE EXCEPTION 'wrong answer passed'; END IF;
  IF EXISTS(SELECT 1 FROM public.lesson_progress WHERE course_id='learning-test' AND lesson_id='learning-quiz' AND completed_at IS NOT NULL) THEN RAISE EXCEPTION 'failed quiz completed'; END IF;
- r:=public.learning_quiz_submit('learning-test','learning-quiz','eeee1111-0000-4000-8000-000000000002','{"learning-question":0}',0);
+ r:=public.learning_reset_lesson('learning-test','learning-quiz',true,0);
+ IF (r->>'reset_epoch')::integer<>1 THEN RAISE EXCEPTION 'failed quiz did not start a new run'; END IF;
+ r:=public.learning_quiz_submit('learning-test','learning-quiz','eeee1111-0000-4000-8000-000000000002','{"learning-question":0}',1);
  IF NOT (r->>'passed')::boolean THEN RAISE EXCEPTION 'correct answer failed'; END IF;
- PERFORM public.learning_quiz_submit('learning-test','learning-quiz','eeee1111-0000-4000-8000-000000000002','{"learning-question":0}',0);
+ PERFORM public.learning_quiz_submit('learning-test','learning-quiz','eeee1111-0000-4000-8000-000000000002','{"learning-question":0}',1);
  IF (SELECT count(*) FROM public.section_question_attempts WHERE lesson_id='learning-quiz')<>2 THEN RAISE EXCEPTION 'duplicate attempt'; END IF;
  IF EXISTS(SELECT 1 FROM public.enrollments WHERE course_id='learning-test' AND completed_at IS NOT NULL) THEN RAISE EXCEPTION 'completed before final review'; END IF;
  -- Required artifacts are sufficient; legacy text remains optional for this course.
