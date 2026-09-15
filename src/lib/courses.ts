@@ -936,6 +936,7 @@ export async function setLessonProgress(
   completed: boolean,
   watchSeconds?: number,
   viewer?: User | null,
+  expectedEpoch?: number,
 ): Promise<void> {
   const user =
     viewer ??
@@ -952,6 +953,7 @@ export async function setLessonProgress(
     lesson_id: lessonId,
     course_id: courseId,
     completed_at: completed ? now : null,
+    reset_epoch: expectedEpoch,
     watch_seconds: watchSeconds,
   }) as Record<string, unknown>;
 
@@ -982,6 +984,17 @@ export async function setLessonProgress(
   } else {
     void ensureEnrollmentForProgress(user.id, courseId, now);
   }
+}
+
+export async function resetLessonProgress(courseId: string, lessonId: string, clear: boolean, expectedEpoch: number): Promise<LessonProgress> {
+  const { data, error } = await supabase.rpc("learning_reset_lesson", {
+    p_course: courseId,
+    p_lesson: lessonId,
+    p_clear: clear,
+    p_epoch: expectedEpoch,
+  });
+  if (error) throw new Error(error.message);
+  return (data as { progress: LessonProgress }).progress;
 }
 
 export async function ensureEnrollmentForProgress(

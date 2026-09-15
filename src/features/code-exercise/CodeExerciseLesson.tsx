@@ -18,12 +18,17 @@ export function CodeExerciseLesson(props: LessonRendererProps) {
   const { t } = useLearningTranslation();
   const config = props.lesson.code_exercise_config;
   if (validateCodeConfig(config).length || !config) return <p role="alert">{t("learning.unavailable")}</p>;
-  return <Exercise key={`${props.courseId}:${props.lesson.id}:${config.revision}:${user?.id}:${props.mode}`} {...props} config={config} userId={user?.id} />;
+  return <Exercise key={`${props.courseId}:${props.lesson.id}:${config.revision}:${user?.id}:${props.mode}:${props.draftEpoch ?? 0}`} {...props} config={config} userId={user?.id} />;
 }
-function Exercise({ lesson, courseId, config, userId, mode, completed, onComplete, onAction }: LessonRendererProps & { config: CodeExerciseConfig; userId?: string }) {
+function Exercise({ lesson, courseId, config, userId, mode, completed, onComplete, onAction, draftEpoch = 0 }: LessonRendererProps & { config: CodeExerciseConfig; userId?: string }) {
   const { t } = useLearningTranslation();
   const copy = normalizeCodeLocale(lesson.code_exercise_locale).value;
-  const key = mode === "learner" && userId ? codeDraftKey(userId, courseId, lesson.id, config.revision) : null;
+  const key = mode === "learner" && userId ? `${codeDraftKey(userId, courseId, lesson.id, config.revision)}${draftEpoch ? `:${draftEpoch}` : ""}` : null;
+  useEffect(() => {
+    if (!key || !userId || !draftEpoch) return;
+    const previous = `${codeDraftKey(userId, courseId, lesson.id, config.revision)}${draftEpoch > 1 ? `:${draftEpoch - 1}` : ""}`;
+    try { localStorage.removeItem(previous); } catch { /* A blocked store cannot prevent a fresh draft. */ }
+  }, [key, userId, courseId, lesson.id, config.revision, draftEpoch]);
   const [restored] = useState(() => key ? readCodeDraft(key) : null);
   const [source, setSource] = useState(restored?.mode === "edit" ? restored.source : config.file.starter_source);
   const [answers, setAnswers] = useState<Record<string, string>>(restored?.mode === "fill" ? restored.answers : {});

@@ -20,6 +20,7 @@ import {
   courseHasCertificate,
   ensureEnrollmentForProgress,
   getNextLesson,
+  resetLessonProgress,
   setLessonProgress,
   sortLessonsByCurriculum,
   syncCourseCompletion,
@@ -349,6 +350,7 @@ function LearnWorkspace() {
         true,
         undefined,
         user,
+        progress.progressList.find(item => item.lesson_id === currentLesson.id)?.reset_epoch ?? 0,
       );
       progress.setProgressList((prev) => {
         const existing = prev.find(
@@ -364,12 +366,21 @@ function LearnWorkspace() {
           user_id: profile?.id ?? "",
           completed_at: new Date().toISOString(),
           watch_seconds: existing?.watch_seconds,
+          reset_epoch: existing?.reset_epoch ?? 0,
+          draft_epoch: existing?.draft_epoch ?? 0,
         });
         return next;
       });
       if (profile?.id) await invalidateLearningProgress(queryClient, profile.id, courseId);
   }});
   const markComplete = completeMutation.mutateAsync;
+  const resetMutation = useMutation({ mutationFn: async (clear: boolean) => {
+    if (!currentLesson || !courseId || !user || !access.hasFullCourseAccess) throw new Error(translate("learning.unavailable"));
+    const row = await resetLessonProgress(courseId, currentLesson.id, clear, progress.progressList.find(item => item.lesson_id === currentLesson.id)?.reset_epoch ?? 0);
+    progress.setProgressList(prev => [...prev.filter(item => item.lesson_id !== currentLesson.id), row]);
+    await queryClient.invalidateQueries({ queryKey: ["learning-quiz", courseId, currentLesson.id] });
+    if (profile?.id) await invalidateLearningProgress(queryClient, profile.id, courseId);
+  }});
 
 
   if (!courseId) {
@@ -484,12 +495,15 @@ function LearnWorkspace() {
         completed={
           !!currentLesson && progress.completedIds.has(currentLesson.id)
         }
+        resetEpoch={progress.progressList.find(item => item.lesson_id === currentLesson?.id)?.reset_epoch ?? 0}
+        draftEpoch={progress.progressList.find(item => item.lesson_id === currentLesson?.id)?.draft_epoch ?? 0}
         hasFullCourseAccess={hasFullCourseAccess}
         hasFinalAssignment={shouldShowFinalAssignment}
         previousLesson={previousLesson}
         nextLesson={nextLessonInSequence}
         translate={translate}
         onMarkComplete={markComplete}
+        onReset={resetMutation.mutateAsync}
         onNavigateToLesson={(id) => navigate(`/learn/${courseId}/lesson/${id}`)}
         courseId={courseId}
       />
