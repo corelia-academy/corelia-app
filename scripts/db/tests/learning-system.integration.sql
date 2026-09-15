@@ -365,7 +365,7 @@ DO $$ BEGIN
 END $$;
 RESET ROLE;
 
--- No-retry attempts in one course must not block a different course with the same lesson ID.
+-- Legacy no-retry settings still allow new attempts, scoped by course and lesson ID.
 SET CONSTRAINTS ALL DEFERRED;
 INSERT INTO public.courses(id,instructor_id,slug,published,data) VALUES('retry-scope-a','eeee0000-0000-4000-8000-000000000003','retry-scope-a',false,'{"title":"Retry scope"}');
 INSERT INTO public.course_sections(course_id,id,data) VALUES('retry-scope-a','section','{"title":"Section"}');
@@ -378,15 +378,40 @@ UPDATE public.courses SET published=true WHERE id='retry-scope-b';
 SET CONSTRAINTS ALL IMMEDIATE;
 SELECT set_config('request.jwt.claim.sub','eeee0000-0000-4000-8000-000000000002',true);
 SET LOCAL ROLE authenticated;
-DO $$ DECLARE r jsonb; BEGIN
- r:=public.learning_quiz_submit('retry-scope-a','shared-quiz',gen_random_uuid(),'{"retry-scope-a-q":0}');
+DO $$ DECLARE r jsonb; original_at timestamptz; BEGIN
+ r:=public.learning_quiz_submit('retry-scope-a','shared-quiz',gen_random_uuid(),'{"retry-scope-a-q":0}',0);
  IF r->>'passed'<>'true' THEN RAISE EXCEPTION 'first course quiz failed'; END IF;
- r:=public.learning_quiz_submit('retry-scope-b','shared-quiz',gen_random_uuid(),'{"retry-scope-b-q":0}');
+ r:=public.learning_quiz_submit('retry-scope-b','shared-quiz',gen_random_uuid(),'{"retry-scope-b-q":0}',0);
  IF r->>'passed'<>'true' THEN RAISE EXCEPTION 'second course blocked by unrelated attempts'; END IF;
+ r:=public.learning_quiz_submit('retry-scope-b','shared-quiz',gen_random_uuid(),'{"retry-scope-b-q":0}',0);
+ IF r->>'passed'<>'true' THEN RAISE EXCEPTION 'same-course retry was blocked'; END IF;
+ SELECT completed_at INTO original_at FROM public.lesson_progress WHERE user_id='eeee0000-0000-4000-8000-000000000002' AND course_id='retry-scope-b' AND lesson_id='shared-quiz';
+ UPDATE public.lesson_progress SET completed_at=now() WHERE user_id='eeee0000-0000-4000-8000-000000000002' AND course_id='retry-scope-b' AND lesson_id='shared-quiz';
+ IF (SELECT completed_at FROM public.lesson_progress WHERE user_id='eeee0000-0000-4000-8000-000000000002' AND course_id='retry-scope-b' AND lesson_id='shared-quiz') IS DISTINCT FROM original_at THEN RAISE EXCEPTION 'completion timestamp changed on repeat update'; END IF;
  BEGIN
-  PERFORM public.learning_quiz_submit('retry-scope-b','shared-quiz',gen_random_uuid(),'{"retry-scope-b-q":0}');
-  RAISE EXCEPTION 'same-course retry bypassed';
- EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'RETRY_DISABLED' THEN RAISE; END IF; END;
+  UPDATE public.lesson_progress SET reset_epoch=1,completed_at=now() WHERE user_id='eeee0000-0000-4000-8000-000000000002' AND course_id='retry-scope-b' AND lesson_id='shared-quiz';
+  RAISE EXCEPTION 'client awarded a quiz without a pass in its new epoch';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ BEGIN
+  UPDATE public.lesson_progress SET completed_at=NULL WHERE user_id='eeee0000-0000-4000-8000-000000000002' AND course_id='retry-scope-b' AND lesson_id='shared-quiz';
+  RAISE EXCEPTION 'client cleared completion without increasing the epoch';
+ EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'RESET_EPOCH_REQUIRED' THEN RAISE; END IF; END;
+ r:=public.learning_reset_lesson('retry-scope-b','shared-quiz',true,0);
+ IF (r->>'reset_epoch')::integer<>1 OR (r->'progress'->>'completed_at') IS NOT NULL OR r->'progress'->>'user_id'<>'eeee0000-0000-4000-8000-000000000002' THEN RAISE EXCEPTION 'reset did not clear only the caller completion'; END IF;
+ BEGIN
+  PERFORM public.learning_quiz_submit('retry-scope-b','shared-quiz',gen_random_uuid(),'{"retry-scope-b-q":0}',0);
+  RAISE EXCEPTION 'stale epoch was accepted';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ r:=public.learning_quiz_submit('retry-scope-b','shared-quiz',gen_random_uuid(),'{"retry-scope-b-q":0}',1);
+ IF r->>'completed'<>'true' THEN RAISE EXCEPTION 'new epoch did not complete'; END IF;
+END $$;
+RESET ROLE;
+SET LOCAL ROLE anon;
+DO $$ BEGIN
+ BEGIN
+  PERFORM public.learning_reset_lesson('retry-scope-b','shared-quiz',true,1);
+  RAISE EXCEPTION 'anonymous reset was allowed';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
 END $$;
 RESET ROLE;
 UPDATE public.courses SET published=false WHERE id IN ('retry-scope-a','retry-scope-b');
@@ -417,13 +442,13 @@ DO $$ DECLARE r jsonb; BEGIN
    INSERT INTO public.lesson_progress(id,user_id,course_id,lesson_id,completed_at) VALUES('bypass','eeee0000-0000-4000-8000-000000000002','learning-test','learning-quiz',now());
    RAISE EXCEPTION 'quiz completion bypassed';
  EXCEPTION WHEN insufficient_privilege THEN NULL; END;
- r:=public.learning_quiz_submit('learning-test','learning-quiz','eeee1111-0000-4000-8000-000000000001','{"learning-question":1}');
+ r:=public.learning_quiz_submit('learning-test','learning-quiz','eeee1111-0000-4000-8000-000000000001','{"learning-question":1}',0);
  IF (r->>'completed')::boolean THEN RAISE EXCEPTION 'failed result claimed completion'; END IF;
  IF (r->>'passed')::boolean THEN RAISE EXCEPTION 'wrong answer passed'; END IF;
  IF EXISTS(SELECT 1 FROM public.lesson_progress WHERE course_id='learning-test' AND lesson_id='learning-quiz' AND completed_at IS NOT NULL) THEN RAISE EXCEPTION 'failed quiz completed'; END IF;
- r:=public.learning_quiz_submit('learning-test','learning-quiz','eeee1111-0000-4000-8000-000000000002','{"learning-question":0}');
+ r:=public.learning_quiz_submit('learning-test','learning-quiz','eeee1111-0000-4000-8000-000000000002','{"learning-question":0}',0);
  IF NOT (r->>'passed')::boolean THEN RAISE EXCEPTION 'correct answer failed'; END IF;
- PERFORM public.learning_quiz_submit('learning-test','learning-quiz','eeee1111-0000-4000-8000-000000000002','{"learning-question":0}');
+ PERFORM public.learning_quiz_submit('learning-test','learning-quiz','eeee1111-0000-4000-8000-000000000002','{"learning-question":0}',0);
  IF (SELECT count(*) FROM public.section_question_attempts WHERE lesson_id='learning-quiz')<>2 THEN RAISE EXCEPTION 'duplicate attempt'; END IF;
  IF EXISTS(SELECT 1 FROM public.enrollments WHERE course_id='learning-test' AND completed_at IS NOT NULL) THEN RAISE EXCEPTION 'completed before final review'; END IF;
  -- Required artifacts are sufficient; legacy text remains optional for this course.

@@ -61,3 +61,28 @@ it("waits for completion and its cache refresh before navigating on the active l
   await act(async () => resolve());
   expect(navigate).toHaveBeenCalledExactlyOnceWith("next");
 });
+
+it("marks a completed lesson incomplete without navigating and blocks duplicate requests", async () => {
+  const host = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+  let resolve!: () => void;
+  const reset = vi.fn(() => new Promise<void>(done => { resolve = done; }));
+  const navigate = vi.fn();
+  act(() => root.render(<LessonPlayerCard {...props} completed courseId="course" onMarkComplete={vi.fn()} onReset={reset} onNavigateToLesson={navigate} />));
+  const button = Array.from(host.querySelectorAll("button")).find(item => item.textContent === "learning.markIncomplete")!;
+  act(() => { button.click(); button.click(); });
+  expect(reset).toHaveBeenCalledExactlyOnceWith(false);
+  expect(button.disabled).toBe(true);
+  await act(async () => resolve());
+  expect(navigate).not.toHaveBeenCalled();
+});
+
+it("does not offer progress reset for an unavailable lesson", () => {
+  const host = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+  const reset = vi.fn();
+  act(() => root.render(<LessonPlayerCard {...props} completed isDraftLesson courseId="course" onMarkComplete={vi.fn()} onReset={reset} onNavigateToLesson={vi.fn()} />));
+  expect(host.textContent).not.toContain("learning.markIncomplete");
+  act(() => root.render(<LessonPlayerCard {...props} completed hasFullCourseAccess={false} courseId="course" onMarkComplete={vi.fn()} onReset={reset} onNavigateToLesson={vi.fn()} />));
+  expect(host.textContent).not.toContain("learning.markIncomplete");
+});

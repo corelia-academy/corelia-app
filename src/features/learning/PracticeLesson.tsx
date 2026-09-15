@@ -11,12 +11,17 @@ import type { ArtifactField, LessonRendererProps } from "./types";
 
 export function PracticeLesson(props: LessonRendererProps) {
   const { user } = useAuth();
-  return <Practice key={`${props.courseId}:${props.lesson.id}:${props.lesson.practice_config?.revision}:${props.mode}:${user?.id}`} {...props} userId={user?.id} />;
+  return <Practice key={`${props.courseId}:${props.lesson.id}:${props.lesson.practice_config?.revision}:${props.mode}:${user?.id}:${props.draftEpoch ?? 0}`} {...props} userId={user?.id} />;
 }
-function Practice({ lesson, mode, courseId, userId, onAction, onComplete, contentLocale }: LessonRendererProps & { userId?: string }) {
+function Practice({ lesson, mode, courseId, userId, onAction, onComplete, contentLocale, draftEpoch = 0 }: LessonRendererProps & { userId?: string }) {
   const { t } = useLearningTranslation();
   const config = useMemo(() => lesson.practice_config ?? { mode: "instruction" as const }, [lesson.practice_config]);
-  const key = mode === "learner" && userId ? `corelia:practice:${userId}:${courseId}:${lesson.id}:${config.revision ?? 1}` : null;
+  const key = mode === "learner" && userId ? `corelia:practice:${userId}:${courseId}:${lesson.id}:${config.revision ?? 1}${draftEpoch ? `:${draftEpoch}` : ""}` : null;
+  useEffect(() => {
+    if (!key || !draftEpoch) return;
+    const previous = `corelia:practice:${userId}:${courseId}:${lesson.id}:${config.revision ?? 1}${draftEpoch > 1 ? `:${draftEpoch - 1}` : ""}`;
+    try { localStorage.removeItem(previous); } catch { /* A blocked store cannot prevent a fresh draft. */ }
+  }, [key, draftEpoch, userId, courseId, lesson.id, config.revision]);
   const [initial] = useState(() => readPracticeDraft(key));
   const [checked, setChecked] = useState<Record<string, boolean>>(initial.checked ?? {});
   const [artifacts, setArtifacts] = useState<Partial<Record<ArtifactField,string>>>(initial.artifacts ?? {});
