@@ -12,9 +12,15 @@ export function normalizeEmailLocale(locale?: string | null): EmailLocale {
 }
 
 export function resolveAppUrl(): string {
+  const getEnv = (name: string): string =>
+    typeof Deno !== "undefined"
+      ? Deno.env.get(name)?.trim() ?? ""
+      : typeof process !== "undefined"
+        ? process.env[name]?.trim() ?? ""
+        : "";
   const raw =
-    Deno.env.get("APP_URL")?.trim() ||
-    Deno.env.get("CORELIA_APP_ORIGIN")?.trim() ||
+    getEnv("APP_URL") ||
+    getEnv("CORELIA_APP_ORIGIN") ||
     "https://app.corelia.dev";
   return raw.replace(/\/+$/, "");
 }
