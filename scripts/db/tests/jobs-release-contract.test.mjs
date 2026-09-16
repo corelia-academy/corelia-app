@@ -90,7 +90,7 @@ test("Jobs migration is an approved forward migration", async () => {
   const release = await import("../production-release-migrations.mjs");
   assert.equal(
     release.PREVIOUSLY_RELEASED_APPROVED_VERSIONS.at(-1),
-    "20260913133229",
+    "20260914162720",
   );
   assert.ok(
     release.CURRENT_PENDING_VERSIONS.length >= 1,
