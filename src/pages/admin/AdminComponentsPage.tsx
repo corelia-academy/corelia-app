@@ -1,8 +1,15 @@
-import { useEffect, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
-import { NavLink, useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 
+import { Action } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 
 import AdminActionComponentPage from "./components/AdminActionComponentPage";
@@ -51,6 +58,9 @@ const components = [
   },
 ] as const;
 
+type ComponentSlug = (typeof components)[number]["slug"];
+type ActiveComponent = "overview" | ComponentSlug;
+
 type ComponentSectionProps = {
   slug: string;
   title: string;
@@ -85,7 +95,7 @@ function ComponentSection({
   );
 }
 
-function scrollToComponent(slug: string) {
+function scrollToComponent(slug: ComponentSlug) {
   document.getElementById(`component-${slug}`)?.scrollIntoView({
     behavior: "smooth",
     block: "start",
@@ -97,16 +107,110 @@ export default function AdminComponentsPage() {
   const navigate = useNavigate();
   const { resolvedTheme, setTheme } = useTheme();
   const pathnameSlug = pathname.split("/").at(-1);
-  const activeSlug = components.some(({ slug }) => slug === pathnameSlug)
-    ? pathnameSlug
-    : null;
+  const routeSlug = components.find(({ slug }) => slug === pathnameSlug)?.slug ?? null;
+  const [activeComponent, setActiveComponent] = useState<ActiveComponent>(
+    routeSlug ?? "overview",
+  );
+  const programmaticScrollRef = useRef(false);
+  const scrollCleanupRef = useRef<(() => void) | null>(null);
+
+  const beginProgrammaticScroll = useCallback((slug: ComponentSlug) => {
+    scrollCleanupRef.current?.();
+    programmaticScrollRef.current = true;
+    setActiveComponent(slug);
+
+    let finished = false;
+
+    const finishScroll = () => {
+      if (finished) return;
+
+      finished = true;
+      window.removeEventListener("scrollend", finishScroll);
+
+      if (timeoutId !== undefined) {
+        window.clearTimeout(timeoutId);
+      }
+
+      scrollCleanupRef.current = null;
+      programmaticScrollRef.current = false;
+      setActiveComponent(slug);
+    };
+
+    const timeoutId = window.setTimeout(finishScroll, 2000);
+    window.addEventListener("scrollend", finishScroll, { once: true });
+    scrollCleanupRef.current = () => {
+      if (finished) return;
+
+      finished = true;
+      window.removeEventListener("scrollend", finishScroll);
+
+      if (timeoutId !== undefined) {
+        window.clearTimeout(timeoutId);
+      }
+
+      scrollCleanupRef.current = null;
+      programmaticScrollRef.current = false;
+    };
+
+    scrollToComponent(slug);
+  }, []);
 
   useEffect(() => {
-    if (!activeSlug) return;
+    const frame = window.requestAnimationFrame(() => {
+      setActiveComponent(routeSlug ?? "overview");
+    });
 
-    const timeoutId = window.setTimeout(() => scrollToComponent(activeSlug), 0);
+    return () => window.cancelAnimationFrame(frame);
+  }, [routeSlug]);
+
+  useEffect(() => {
+    if (!routeSlug) return;
+
+    const timeoutId = window.setTimeout(
+      () => beginProgrammaticScroll(routeSlug),
+      0,
+    );
     return () => window.clearTimeout(timeoutId);
-  }, [activeSlug]);
+  }, [beginProgrammaticScroll, routeSlug]);
+
+  useEffect(() => {
+    return () => scrollCleanupRef.current?.();
+  }, []);
+
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      () => {
+        if (programmaticScrollRef.current) return;
+
+        const activationY = 96;
+        let nextActiveComponent: ActiveComponent = "overview";
+
+        for (const { slug } of components) {
+          const section = document.getElementById(`component-${slug}`);
+
+          if (section && section.getBoundingClientRect().top <= activationY) {
+            nextActiveComponent = slug;
+          }
+        }
+
+        setActiveComponent(nextActiveComponent);
+      },
+      {
+        root: null,
+        rootMargin: "-40px 0px -60% 0px",
+        threshold: [0, 1],
+      },
+    );
+
+    for (const component of components) {
+      const section = document.getElementById(`component-${component.slug}`);
+      if (section) observer.observe(section);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <main className="container-app min-h-screen select-none space-y-8 py-6 sm:py-8">
@@ -162,36 +266,29 @@ export default function AdminComponentsPage() {
               className="flex gap-1 overflow-x-auto lg:block lg:space-y-1 lg:overflow-visible"
               data-testid="component-navigation"
             >
-              <NavLink
-                end
-                to="/components"
-                className={({ isActive }) =>
-                  `block min-h-9 whitespace-nowrap rounded-md px-3 py-2 text-body-small transition-colors focus-visible:outline-2 focus-visible:outline-primary ${
-                    isActive
-                      ? "bg-primary-muted text-primary"
-                      : "text-foreground-muted hover:bg-surface-raised hover:text-foreground"
-                  }`
-                }
-              >
-                Overview
-              </NavLink>
               {components.map(({ slug, title }) => (
-                <NavLink
+                <Action
                   key={slug}
-                  to={`/components/${slug}`}
-                  onClick={() => {
-                    if (activeSlug === slug) scrollToComponent(slug);
-                  }}
-                  className={({ isActive }) =>
-                    `block min-h-9 whitespace-nowrap rounded-md px-3 py-2 text-body-small transition-colors focus-visible:outline-2 focus-visible:outline-primary ${
-                      isActive
-                        ? "bg-primary-muted text-primary"
-                        : "text-foreground-muted hover:bg-surface-raised hover:text-foreground"
-                    }`
+                  nativeButton={false}
+                  render={
+                    <Link
+                      to={`/components/${slug}`}
+                      aria-current={
+                        activeComponent === slug ? "page" : undefined
+                      }
+                    />
                   }
-                >
-                  {title}
-                </NavLink>
+                  label={title}
+                  size="small"
+                  isActive={activeComponent === slug}
+                  className="justify-start"
+                  onClick={() => {
+                    setActiveComponent(slug);
+                    if (routeSlug === slug) {
+                      beginProgrammaticScroll(slug);
+                    }
+                  }}
+                />
               ))}
             </nav>
           </div>

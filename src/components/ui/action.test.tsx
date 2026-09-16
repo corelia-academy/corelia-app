@@ -47,6 +47,20 @@ describe("Action", () => {
     expect(markup).toContain("data-disabled:select-none");
   });
 
+  it("does not add hover or pressed styles when disabled", () => {
+    const markup = renderAction({
+      label: "Disabled action",
+      disabled: true,
+      hoverAsActive: true,
+      showPressed: true,
+    });
+
+    expect(markup).toContain("data-disabled:cursor-not-allowed");
+    expect(markup).not.toContain("hover:bg-action-hover");
+    expect(markup).not.toContain("hover:bg-action-active");
+    expect(markup).not.toContain("max-lg:active:bg-action-active");
+  });
+
   it("supports default/destructive variants and large/small sizes", () => {
     const defaultLarge = renderAction({
       label: "Default action",

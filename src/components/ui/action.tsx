@@ -32,6 +32,12 @@ const actionVariants = cva(
                 true: "",
                 false: "",
             },
+
+            // Disabled scope (phạm vi trạng thái vô hiệu hóa).
+            disabled: {
+                true: "",
+                false: "",
+            },
         },
         compoundVariants: [
             // Default + Large + inactive (loại thường + lớn + chưa được chọn):
@@ -40,6 +46,7 @@ const actionVariants = cva(
                 variant: "default",
                 size: "large",
                 isActive: false,
+                disabled: false,
                 class: "hover:bg-action-hover hover:rounded-xl",
             },
 
@@ -49,6 +56,7 @@ const actionVariants = cva(
                 variant: "default",
                 size: "small",
                 isActive: false,
+                disabled: false,
                 class: "hover:bg-action-hover hover:rounded-lg",
             },
 
@@ -58,6 +66,7 @@ const actionVariants = cva(
                 variant: "destructive",
                 size: "large",
                 isActive: false,
+                disabled: false,
                 class: "hover:bg-action-hover hover:rounded-xl",
             },
 
@@ -67,6 +76,7 @@ const actionVariants = cva(
                 variant: "destructive",
                 size: "small",
                 isActive: false,
+                disabled: false,
                 class: "hover:bg-action-hover hover:rounded-lg",
             },
 
@@ -94,6 +104,7 @@ const actionVariants = cva(
             variant: "default",
             size: "large",
             isActive: false,
+            disabled: false,
         },
     },
 );
@@ -163,7 +174,7 @@ function Action({
         : variant === "destructive" && size === "small"
             ? "text-action-destructive-supporting"
             : "text-action-supporting";
-    const pressedClass = showPressed
+    const pressedClass = showPressed && !disabled
         ? visualIsActive || hoverAsActive
             ? variant === "destructive"
                 ? "max-lg:active:bg-action-destructive-active max-lg:active:text-action-destructive-active-foreground"
@@ -173,22 +184,26 @@ function Action({
     const activeRouteClass = showActive
         ? variant === "destructive"
             ? cn(
-                "aria-[current=page]:bg-action-destructive-active aria-[current=page]:text-action-destructive-active-foreground aria-[current=page]:hover:bg-action-destructive-active aria-[current=page]:hover:text-action-destructive-active-foreground",
-                showPressed &&
+                "aria-[current=page]:bg-action-destructive-active aria-[current=page]:text-action-destructive-active-foreground",
+                !disabled &&
+                "aria-[current=page]:hover:bg-action-destructive-active aria-[current=page]:hover:text-action-destructive-active-foreground",
+                !disabled && showPressed &&
                 "max-lg:aria-[current=page]:active:bg-action-destructive-active max-lg:aria-[current=page]:active:text-action-destructive-active-foreground",
             )
             : cn(
-                "aria-[current=page]:bg-action-active aria-[current=page]:text-action-active-foreground aria-[current=page]:hover:bg-action-active aria-[current=page]:hover:text-action-active-foreground",
-                showPressed &&
+                "aria-[current=page]:bg-action-active aria-[current=page]:text-action-active-foreground",
+                !disabled &&
+                "aria-[current=page]:hover:bg-action-active aria-[current=page]:hover:text-action-active-foreground",
+                !disabled && showPressed &&
                 "max-lg:aria-[current=page]:active:bg-action-active max-lg:aria-[current=page]:active:text-action-active-foreground",
             )
         : undefined;
-    const hoverAsActiveClass = hoverAsActive
+    const hoverAsActiveClass = hoverAsActive && !disabled
         ? variant === "destructive"
             ? "hover:bg-action-destructive-active hover:text-action-destructive-active-foreground"
             : "hover:bg-action-active hover:text-action-active-foreground"
         : undefined;
-    const hoverAsActiveTextClass = hoverAsActive
+    const hoverAsActiveTextClass = hoverAsActive && !disabled
         ? variant === "destructive"
             ? cn(
                 "group-hover/action:text-action-destructive-active-foreground",
@@ -212,6 +227,7 @@ function Action({
                     variant,
                     size,
                     isActive: visualIsActive,
+                    disabled,
                     className,
                 }),
                 pressedClass,
