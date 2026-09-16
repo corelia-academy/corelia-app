@@ -109,7 +109,7 @@ export default function AdminComponentsPage() {
   }, [activeSlug]);
 
   return (
-    <main className="container-app min-h-screen space-y-8 py-6 sm:py-8">
+    <main className="container-app min-h-screen select-none space-y-8 py-6 sm:py-8">
       <header className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Button

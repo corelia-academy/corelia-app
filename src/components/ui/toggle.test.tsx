@@ -83,14 +83,14 @@ describe("Toggle", () => {
         item.checked
           ? item.variant === "alternative"
             ? item.disabled
-              ? "data-[checked]:data-[variant=alternative]:data-[disabled]:bg-success-700"
-              : "data-[checked]:data-[variant=alternative]:bg-success-500"
+              ? "data-[checked]:data-[variant=alternative]:data-[disabled]:bg-toggle-track-alternative-disabled"
+              : "data-[checked]:data-[variant=alternative]:bg-toggle-track-alternative"
             : item.disabled
-              ? "data-[checked]:data-[disabled]:bg-blue-800"
-              : "data-[checked]:bg-blue-600"
+              ? "data-[checked]:data-[disabled]:bg-toggle-track-checked-disabled"
+              : "data-[checked]:bg-toggle-track-checked"
           : item.disabled
-            ? "data-[disabled]:bg-neutral-500"
-            : "bg-neutral-600",
+            ? "data-[disabled]:bg-toggle-track-disabled"
+            : "bg-toggle-track",
       )
       expect(thumb?.className).not.toContain("translate-x-3")
     })
@@ -222,19 +222,22 @@ describe("IconToggle", () => {
       {
         pressed: false,
         disabled: true,
-        stateClasses: ["data-[disabled]:text-neutral-500"],
+        stateClasses: ["data-[disabled]:text-toggle-icon-disabled"],
       },
       {
         pressed: true,
         disabled: false,
-        stateClasses: ["data-[pressed]:bg-blue-600", "data-[pressed]:text-neutral-50"],
+        stateClasses: [
+          "data-[pressed]:bg-toggle-pressed-background",
+          "data-[pressed]:text-toggle-pressed-foreground",
+        ],
       },
       {
         pressed: true,
         disabled: true,
         stateClasses: [
-          "data-[pressed]:data-[disabled]:bg-neutral-500",
-          "data-[pressed]:data-[disabled]:text-neutral-800",
+          "data-[pressed]:data-[disabled]:bg-toggle-pressed-disabled-background",
+          "data-[pressed]:data-[disabled]:text-toggle-pressed-disabled-foreground",
         ],
       },
     ]

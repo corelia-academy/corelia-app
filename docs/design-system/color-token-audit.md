@@ -32,61 +32,62 @@ Nguồn chính: `src/styles/globals.css`.
 - 🟡 `Pending audit`: cần migrate sang semantic token sau khi page showcase hoàn tất.
 - 🟢 `No page blocker`: component không chặn việc tạo showcase page.
 - ✅ `Verified`: đã kiểm tra light mode, dark mode và trạng thái tương tác.
+- Lưu ý: `P0/P1/P2` chỉ là priority (mức ưu tiên) tại thời điểm phát hiện; trạng thái hiện tại được xác định bằng `Status`, `Page status` và `Current status`.
 
 ## Priority 0 — Hotfix nghiêm trọng
 
-### 🔴 Action — active/destructive dùng primitive trực tiếp
+### ✅ Action — active/destructive đã dùng semantic token
 
 - File: `src/components/ui/action.tsx`
 - Evidence: `bg-blue-900`, `bg-error-700` và các pseudo-state (trạng thái CSS như hover/active) tương ứng.
 - Risk: active/destructive state không đi qua semantic action token thống nhất giữa hai theme.
-- Status: `Open / Hotfix`
+- Status: `Verified` — semantic token migration và validation đã đạt.
 - Verification required: default, active, destructive, hover, pressed, disabled, light mode, dark mode.
 
-### 🔴 Tag — datetime separator dùng neutral primitive
+### ✅ Tag / Chips — active/disabled và datetime dùng semantic token
 
 - File: `src/components/ui/tag.tsx`
 - Evidence: `border-neutral-600` trên separator giữa date và time.
 - Risk: contrast của divider phụ thuộc màu cố định thay vì border token theo theme.
-- Status: `Open / Hotfix`
+- Status: `Verified` — active/disabled đã migrate; datetime separator dùng `border-border`.
 - Verification required: label, datetime, disabled, light mode, dark mode.
 
 ## Priority 1 — Cần migration semantic token
 
-### 🟡 Badge
+### ✅ Badge
 
 - File: `src/components/ui/badge.tsx`
 - Evidence: trực tiếp dùng blue, error, warning, success, accent và neutral palette cho outline/filled.
 - Assessment: các class đang trỏ vào global primitive, nhưng chưa có semantic badge mapping riêng.
-- Status: `Pending audit`
+- Status: `Verified` — semantic Badge token và visual QA Light/Dark đã đạt.
 
-### 🟡 Selection
+### ✅ Selection
 
 - File: `src/components/ui/selection.tsx`
 - Evidence: `var(--blue-600)`, `bg-blue-600/10`, `bg-blue-600/20`, `has-data-[checked]:border-blue-600`.
 - Risk: checked/focus state có thể không đồng nhất với `--primary` khi đổi theme.
-- Status: `Pending audit`
+- Status: `Verified` — semantic Selection token và visual QA Light/Dark đã đạt.
 
-### 🟡 Toggle / IconToggle
+### ✅ Toggle / IconToggle
 
 - File: `src/components/ui/toggle.tsx`
 - Evidence: `bg-blue-600`, `bg-blue-800`, `bg-success-500`, `bg-success-700`, `bg-neutral-500` và các text primitive.
 - Risk: checked/disabled state chưa biểu đạt bằng semantic interaction token.
-- Status: `Pending audit`
+- Status: `Verified` — semantic Toggle token và visual QA Light/Dark đã đạt.
 
 ## Priority 2 — Đối chiếu sau
 
-### 🟢 Separator
+### ✅ Separator
 
 - File: `src/components/ui/separator.tsx`
 - Evidence: đang dùng `border-border`; hỗ trợ horizontal/vertical và solid/dashed.
-- Status: `No page blocker; audit pending`
+- Status: `Verified` — Light/Dark, horizontal/vertical và solid/dashed đã kiểm tra trực tiếp.
 
-### 🟢 Scrollbar
+### ✅ Scrollbar
 
 - File: `src/styles/globals.css`, utility `.scrollbar-design`.
 - Evidence: thumb dùng `var(--border-strong)`, hover dùng `var(--foreground-muted)`.
-- Status: `No page blocker; audit pending`
+- Status: `Verified` — Light/Dark, vertical/horizontal overflow và cuộn thật đã kiểm tra trực tiếp.
 
 ## Admin component showcase
 
@@ -95,7 +96,7 @@ Nguồn chính: `src/styles/globals.css`.
 - Legacy URL: `/admin/components/*` redirects to the matching canonical URL.
 - Access: chỉ role `admin`.
 - Support staff: không hiển thị menu và bị redirect nếu truy cập trực tiếp.
-- Status: `Implemented in pages; token migration intentionally deferred`
+- Status: `Page implementation completed; disabled interaction remediation completed for showcase controls; brand-palette migration intentionally deferred`
 - Index render toàn bộ 7 component section trong một standalone page (trang độc lập), có sidebar navigation (điều hướng thanh bên) và scroll tới section tương ứng.
 - Các URL `/components/action`, `/components/badge`, `/components/tag`, `/components/selection`, `/components/toggle`, `/components/separator` và `/components/scrollbar` là deep-link (URL trỏ thẳng tới section), nhưng dùng chung page shell.
 - Mỗi detail page có state matrix (ma trận trạng thái) và criterion (tiêu chí kiểm tra) ở đầu section.
@@ -107,7 +108,7 @@ Nguồn chính: `src/styles/globals.css`.
 
 Phạm vi của phase hiện tại được chốt là hoàn thiện trải nghiệm xem và test trực tiếp trên các page component. Không sửa `src/styles/globals.css`, `src/styles/brand-palette.css` hoặc các primitive trong `src/components/ui/` ở phase này. Các vấn đề cần sửa ở global/UI được tách riêng bên dưới để xử lý ở phase sau.
 
-### 🔴 P0 — Action showcase đã thu gọn về State reference
+### ✅ Action showcase — State reference đã hoàn tất
 
 - Page: `src/pages/admin/components/AdminActionComponentPage.tsx`
 - Evidence hiện tại:
@@ -119,9 +120,9 @@ Phạm vi của phase hiện tại được chốt là hoàn thiện trải nghi
 - Đối chiếu model/API hiện được page kiểm tra: `Default/Destructive × Large/Small × Default/HoverAsActive/Pressed/Disable`, leading icon, supporting text, active và disabled.
 - Page action: `Implemented — State reference only; 16 state samples are clickable where enabled`.
 - Trailing icon đã được bật lại bằng prop `showTrailingIcon`; icon vẫn dùng asset/logic sẵn có của `src/components/ui/action.tsx`.
-- UI/global follow-up riêng: `src/components/ui/action.tsx` đang hardcode `bg-blue-900`, `bg-error-700` và pressed/route variants; tiếp tục giữ trong backlog 🔴 P0 color-token hotfix, không sửa ở phase này.
+- UI/global follow-up riêng: `src/components/ui/action.tsx` đã dùng semantic Action token cho active/destructive, pressed và route variants; không còn blocker color-token trong phạm vi đã audit.
 
-### 🟡 P1 — Badge showcase chưa thể hiện đủ tổ hợp thực tế
+### ✅ Badge showcase — Figma matrix và icon coverage đã hoàn tất
 
 - Page: `src/pages/admin/components/AdminBadgeComponentPage.tsx`
 - Evidence hiện tại:
@@ -133,9 +134,9 @@ Phạm vi của phase hiện tại được chốt là hoàn thiện trải nghi
   - Badge là `span` hiển thị, không phải control có `onClick`; vì vậy “disabled” hiện là visual state (trạng thái hiển thị), không phải cơ chế khóa click.
 - Page badge: `Implemented — Figma matrix and icon coverage completed`.
 - Phạm vi thay đổi lần này chỉ ở showcase page và test; không sửa `src/components/ui/badge.tsx`, global tokens hoặc UI primitive.
-- UI/global follow-up riêng: `src/components/ui/badge.tsx` đang dùng trực tiếp blue/error/warning/success/accent/neutral primitive classes; ghi nhận để migrate semantic badge tokens ở phase sau.
+- UI/global follow-up riêng: `src/components/ui/badge.tsx` đã dùng semantic Badge token cho outline/filled; visual QA Light/Dark đạt — `Verified`.
 
-### 🔴 P0 — Tag/Chips page đang ép card bằng chiều rộng cố định
+### ✅ Tag/Chips showcase — layout responsive đã hoàn tất
 
 - Page: `src/pages/admin/components/AdminTagComponentPage.tsx`
 - Evidence hiện tại:
@@ -144,9 +145,9 @@ Phạm vi của phase hiện tại được chốt là hoàn thiện trải nghi
   - Primitive `Tag` không khai báo width cố định, nhưng có `inline-flex shrink-0`; cần phân biệt đây là kích thước theo nội dung, không phải nguyên nhân chính của card bị ép rộng.
   - Tag hiện là `span`, `disabled` chỉ là visual state; không có click handler để test “disable không click”.
 - Page tag/chips: `Implemented — P0 page layout fix completed`.
-- UI/global follow-up riêng: `src/components/ui/tag.tsx` có `border-neutral-600` cho datetime separator; đây vẫn là 🔴 P0 color-token hotfix đã ghi ở trên.
+- UI/global follow-up riêng: `src/components/ui/tag.tsx` đã dùng semantic Tag token cho active/disabled và `border-border` cho datetime separator; `Verified`.
 
-### 🟡 P1 — Selection page đã hoàn thiện state matrix và interactive flow
+### ✅ Selection showcase — state matrix và interactive flow đã hoàn tất
 
 - Page: `src/pages/admin/components/AdminSelectionComponentPage.tsx`
 - Evidence hiện tại:
@@ -162,10 +163,10 @@ Phạm vi của phase hiện tại được chốt là hoàn thiện trải nghi
   - Card `Indeterminate` chưa được bật. Nếu cần bổ sung, chỉ áp dụng cho CheckboxCard bằng cách mở lại prop `indeterminate` trong primitive, tính aggregate state của nhóm card và bổ sung test tri-state; RadioCard không có trạng thái này.
   - Primitive selection có `data-[disabled]:pointer-events-none` và tests đã kiểm tra disabled không đổi trạng thái; đây là điểm đang đúng luồng, không đánh dấu lỗi page.
 - Page selection: `Implemented — controls và selection cards dùng flow tương tác riêng đúng bản chất; cards dùng orientation + size groups và không ép width cứng`.
-- UI/global follow-up riêng: checked/focus/card border đang dùng blue primitive trực tiếp (`var(--blue-600)`, `bg-blue-600/10`, `bg-blue-600/20`, `border-blue-600`); migrate semantic token ở phase sau.
-- UI primitive follow-up riêng: Radio active icon hiện chưa khớp reference Figma; cần kiểm tra lại center dot/inner ring trong `src/components/ui/selection.tsx` ở phase sau. Chưa sửa trong phase dựng pages.
+- UI/global follow-up riêng: checked/feedback/card border đã migrate sang semantic Selection token; cần giữ lại light/dark contrast audit định kỳ, không còn blocker P1 trong phạm vi hiện tại.
+- UI primitive follow-up riêng: Radio active icon đã dùng hai Phosphor `Circle` (outer ring + filled center dot); visual QA trên `/components/selection` đạt, không còn mismatch đã ghi nhận.
 
-### 🟡 P1 — Toggle/IconToggle page chưa thể hiện toàn bộ model trên cùng một page
+### ✅ Toggle/IconToggle showcase — state matrix và interaction đã hoàn tất
 
 - Page: `src/pages/admin/components/AdminToggleComponentPage.tsx`
 - Evidence hiện tại:
@@ -174,7 +175,7 @@ Phạm vi của phase hiện tại được chốt là hoàn thiện trải nghi
   - IconToggle section có enabled controlled và disabled pressed, nhưng chưa có cả pressed/unpressed theo Figma và chưa có luồng keyboard/đổi icon trực tiếp.
   - Primitive toggle tests đã bao phủ 12 toggle variants và 4 IconToggle states; thiếu sót hiện tại chủ yếu nằm ở page showcase chưa trình bày các model đó cho admin thao tác.
 - Page toggle: `Implemented — P1 page matrix/interactions completed; primitive token follow-up deferred`.
-- UI/global follow-up riêng: primitive toggle đang dùng trực tiếp `bg-blue-600`, `bg-blue-800`, `bg-success-500`, `bg-success-700` và neutral primitives; migrate semantic interaction token ở phase sau.
+- UI/global follow-up riêng: Toggle và IconToggle đã migrate track, thumb, label, pressed và disabled state sang semantic Toggle token; visual QA Light/Dark đạt — `Verified`.
 
 ### 🟢 Separator — page đã đủ 4 biến thể chính
 
@@ -182,7 +183,7 @@ Phạm vi của phase hiện tại được chốt là hoàn thiện trải nghi
 - Evidence: đã có horizontal/vertical và solid/dashed; đây là đúng `2 orientation × 2 dash` của Figma.
 - Không có interaction/disabled contract; không cần thêm click test.
 - Page separator: `No page blocker`.
-- UI/global follow-up riêng: primitive đang dùng `border-border`, nên không có cảnh báo hardcode màu nghiêm trọng.
+- UI/global follow-up riêng: primitive đang dùng `border-border`; visual QA Light/Dark đạt, không có cảnh báo hardcode màu nghiêm trọng — `Verified`.
 
 ### 🟢 Scrollbar — đã có thao tác cuộn thật nhưng cần giữ responsive
 
@@ -190,17 +191,18 @@ Phạm vi của phase hiện tại được chốt là hoàn thiện trải nghi
 - Evidence: đã có vertical/horizontal × 25/50/75; vùng demo có `overflow-auto`, focus bằng keyboard và nội dung đủ dài để kéo thật.
 - Chưa thấy page blocker về trạng thái; cần giữ kiểm tra viewport nhỏ để vùng demo không bị cắt.
 - Page scrollbar: `No page blocker`.
-- UI/global follow-up riêng: utility `.scrollbar-design` dùng `var(--border-strong)` và `var(--foreground-muted)`, không ghi nhận hotfix page.
+- UI/global follow-up riêng: utility `.scrollbar-design` dùng `var(--border-strong)` và `var(--foreground-muted)`; visual QA Light/Dark và cuộn thật đạt — `Verified`.
 
 ### Disabled interaction — phân loại đúng phạm vi
 
 - Control có interaction: `Action`, `Checkbox/Radio`, `CheckboxCard/RadioCard`, `Toggle`, `IconToggle`. Các primitive này đã chuyển `disabled` xuống Base UI và có CSS/logic chặn thay đổi trạng thái; Selection và Toggle đã có test trực tiếp cho click/keyboard disabled.
 - Visual-only: `Badge`, `Tag`, `Separator`, `Scrollbar`. Các component này không nhận click contract; không được kết luận là lỗi “disabled vẫn click” nếu page chỉ dùng để hiển thị trạng thái.
-- Cần bổ sung test page cho từng control interactive để chứng minh `disabled` không gọi callback; đây là page work ở phase tiếp theo. Nếu yêu cầu biến Badge/Tag thành clickable thì đó là thay đổi API/business contract, phải duyệt riêng trước khi sửa.
+- Disabled status: `Verified` cho Action, Checkbox/Radio, CheckboxCard/RadioCard, Toggle và IconToggle; component tests xác nhận disabled không đổi state hoặc không gọi callback. Badge và Tag đã có visual disabled contract (cursor cấm thao tác, không chọn/copy text); Separator và Scrollbar không có disabled contract vì không phải interactive control.
+- Static pointer contract: các mẫu Badge/Tag enabled trong showcase và Separator dùng `pointer-events-none` để không nhận thao tác chuột; các mẫu disabled cố ý không dùng class này để giữ `cursor-not-allowed`; Scrollbar vẫn nhận pointer event để giữ thao tác cuộn thật. Các component và wrapper của showcase dùng `select-none` để tránh bôi đen text; input/textarea không nằm trong phạm vi này.
 
 ## Phase decision
 
-- Phase hiện tại: chỉ dựng và audit page showcase; không sửa global/UI primitive. Trạng thái: `Page navigation implemented — pending user visual QA`.
+- Phase hiện tại: `Global + UI primitive remediation — scope 1–3`. Trạng thái: `Closed — disabled interaction audit, status reconciliation và AGENTS.local decision note đã hoàn tất; scope 4 brand-palette migration deferred pending explicit plan/review`.
 - Phase dựng pages đã triển khai các thay đổi được duyệt: Action State reference tương tác, Tag/Chips intrinsic sizing, Badge icon combinations, Selection state matrix, Toggle/IconToggle state matrix và standalone single-page navigation cho Components.
 - Content source của toàn bộ catalog và 7 detail pages đã thống nhất English default; locale JSON showcase đã trở về baseline.
 - Phase tiếp theo: `Global + UI primitive token remediation`; bắt đầu bằng manual QA trên admin URL rồi xử lý color-token hotfix theo thứ tự P0 → P1 → P2.
@@ -230,11 +232,11 @@ Phạm vi của phase hiện tại được chốt là hoàn thiện trải nghi
 
 ### Phần đã ghi nhận nhưng cố tình hoãn từ phase trước
 
-- `src/components/ui/action.tsx`: active/destructive và pressed/route variants còn dùng primitive màu trực tiếp; đây là P0.
-- `src/components/ui/tag.tsx`: datetime separator còn dùng `border-neutral-600`; đây là P0.
-- `src/components/ui/badge.tsx`: outline/filled đang dùng trực tiếp blue/error/warning/success/accent/neutral; đây là P1.
-- `src/components/ui/selection.tsx`: checked/focus/card border đang dùng trực tiếp blue primitive; radio active icon mismatch với Figma là UI follow-up riêng; đây là P1.
-- `src/components/ui/toggle.tsx`: checked/disabled đang dùng trực tiếp blue/success/neutral primitive; đây là P1.
+- `src/components/ui/action.tsx`: active/destructive và pressed/route variants đã chuyển sang semantic Action token; targeted tests, TypeScript và ESLint đều pass; đã Verified trong phạm vi code.
+- `src/components/ui/tag.tsx`: label active/disabled đã chuyển sang semantic Tag token; datetime separator tiếp tục dùng semantic `border-border`; đã Verified trong phạm vi code.
+- `src/components/ui/badge.tsx`: outline/filled đã chuyển sang semantic Badge token; visual QA (kiểm tra giao diện thực tế) Light/Dark đã đạt — `Verified`.
+- `src/components/ui/selection.tsx`: checked/feedback/card border đã chuyển sang semantic Selection token; focus ring vốn đã dùng semantic `primary`; radio active icon đã tách thành outer ring + filled center dot bằng Phosphor; visual QA light/dark trên showcase đã đạt — `Verified`.
+- `src/components/ui/toggle.tsx`: checked/disabled/alternative/pressed đã dùng semantic Toggle token; visual QA Light/Dark đạt — `Verified`.
 - `src/components/ui/separator.tsx`: hiện đã dùng `border-border`; chỉ cần audit light/dark và không có hotfix blocker.
 - `src/styles/globals.css` utility `.scrollbar-design`: hiện dùng `var(--border-strong)` và `var(--foreground-muted)`; chỉ cần audit contrast và không có hotfix blocker.
 - Badge, Tag, Separator và Scrollbar là visual-only trong showcase; không được biến lỗi “disabled vẫn click” thành thay đổi API nếu chưa có yêu cầu mới.
@@ -254,14 +256,17 @@ Phạm vi của phase hiện tại được chốt là hoàn thiện trải nghi
 - Đối chiếu light/dark để bảo đảm active không bị tối hoặc mất contrast.
 - Không thay đổi API page showcase nếu primitive hiện tại đã đủ contract.
 - Definition of done (tiêu chí hoàn tất): không còn hardcode primitive P0 trong các state đã liệt kê; test default/active/destructive/hover/pressed/disabled pass ở cả theme.
+- Current status: `Verified`.
 
 ### Phạm vi 2 — P0 Tag / Chips
 
 - File chính: `src/components/ui/tag.tsx` và test tương ứng.
-- Thay `border-neutral-600` của datetime separator bằng border semantic phù hợp.
+- Dùng semantic Tag token cho active/disabled background và foreground.
+- Giữ `border-border` cho datetime separator thay cho `border-neutral-600`.
 - Kiểm tra label, datetime, icon, disabled và contrast light/dark.
 - Không thay đổi intrinsic sizing (kích thước theo nội dung) đã hoàn tất ở showcase page.
-- Definition of done: datetime separator không còn phụ thuộc neutral primitive cố định; test render và theme audit pass.
+- Definition of done: Tag label/datetime không còn phụ thuộc primitive cố định trong các state đã audit; test render và theme audit pass.
+- Current status: `Verified` — code migration, Tag test `15/15`, Admin component page test `12/12`, TypeScript, ESLint và live QA Light/Dark đã đạt.
 
 ### Phạm vi 3 — P1 Badge
 
@@ -270,6 +275,7 @@ Phạm vi của phase hiện tại được chốt là hoàn thiện trải nghi
 - Bảo đảm icon leading/trailing và 4 size không làm sai foreground/background token.
 - Giữ nguyên matrix page đã pass.
 - Definition of done: badge không dùng primitive trực tiếp khi đã có semantic mapping; test color/variant/size/icon pass.
+- Current status: `Verified` — code migration, tests và visual QA Light/Dark đã đạt.
 
 ### Phạm vi 4 — P1 Selection
 
@@ -278,6 +284,7 @@ Phạm vi của phase hiện tại được chốt là hoàn thiện trải nghi
 - Tách riêng việc sửa radio active icon mismatch với việc migrate color token; không gộp hai nguyên nhân thành một thay đổi.
 - Giữ nguyên tri-state checkbox, radio deselect và disabled behavior của showcase page.
 - Definition of done: checkbox/radio/card giữ đúng behavior và màu light/dark; test primitive và page không regression (thoái lui).
+- Current status: `Verified`.
 
 ### Phạm vi 5 — P1 Toggle / IconToggle
 
@@ -286,12 +293,14 @@ Phạm vi của phase hiện tại được chốt là hoàn thiện trải nghi
 - Kiểm tra cả Toggle và IconToggle, không chỉ toggle thường.
 - Giữ nguyên state matrix và thao tác của showcase page.
 - Definition of done: checked/disabled/pressed không còn phụ thuộc primitive hardcode; test variant/size/icon state pass.
+- Current status: `Verified`.
 
 ### Phạm vi 6 — P2 Separator và Scrollbar
 
 - `src/components/ui/separator.tsx`: xác nhận `border-border` đúng trong light/dark, solid/dashed và horizontal/vertical.
 - `src/styles/globals.css`: xác nhận `.scrollbar-design` dùng semantic border/foreground token đúng contrast; không đổi nếu audit đã đạt.
 - Đây là phạm vi audit sau P0/P1, không phải hotfix mặc định.
+- Current status: `Verified` — Separator và Scrollbar đã pass audit Light/Dark.
 
 ### Quy trình thực hiện trong phase mới
 
@@ -338,3 +347,17 @@ Phạm vi của phase hiện tại được chốt là hoàn thiện trải nghi
 - 2026-09-16: Theo xác nhận `YES`, thêm title lớn và mô tả riêng cho từng vùng `Action`, `Badge`, `Tag / Chips`, `Selection`, `Toggle`, `Separator` và `Scrollbar`; bổ sung `aria-labelledby` để định danh section rõ ràng. Chỉ sửa page/test/report, không sửa component logic hoặc global/UI primitive. Targeted tests pass `14/14`, TypeScript và ESLint pass.
 - 2026-09-16: Theo xác nhận `YES`, đưa nhóm nút đổi theme `Light/Dark` lên header trên cùng bên phải của standalone Components page; thêm test id riêng để tránh nhầm với các control `aria-pressed` bên trong component. Targeted page tests pass `2/2`, TypeScript và ESLint pass.
 - 2026-09-16: Theo xác nhận `YES`, đổi canonical URL của Components page từ `/admin/components/*` sang `/components/*`, giữ quyền admin bằng `RequireRole`, cập nhật Admin Sidebar và deep-link navigation. Thêm legacy redirect (redirect tương thích) từ `/admin/components/*` để không làm gãy URL cũ. Không sửa global token hoặc UI primitive.
+- 2026-09-16: Theo xác nhận `YES`, hoàn tất Global token baseline bước đầu: thêm semantic token cho Action active/destructive active và supporting text ở light/dark mode; thay hardcode dark `--action-disabled: #596587` bằng `var(--neutral-500)`. Chưa migrate `src/components/ui/action.tsx`; bước tiếp theo vẫn là Action P0.
+- 2026-09-16: Theo xác nhận `YES`, migrate `src/components/ui/action.tsx` sang semantic Action token cho active, destructive active, hover-as-active, pressed và route-active; label/supporting/date-time cũng dùng foreground token tương ứng khi Action active. Cập nhật `action.test.tsx`; chưa sửa API/layout/page showcase. Validation: targeted tests `21/21` pass, TypeScript app/node pass, ESLint pass, `git diff --check` pass. Trạng thái Action: `Verified` trong phạm vi code.
+- 2026-09-16: Theo xác nhận `YES`, migrate datetime separator trong `src/components/ui/tag.tsx` từ `border-neutral-600` sang semantic `border-border`; cập nhật `tag.test.tsx`. Không thay đổi layout, sizing, API hoặc component khác. Validation: targeted tests `27/27` pass, TypeScript app/node pass, ESLint pass, `git diff --check` pass. Trạng thái Tag/Chips: `Verified` trong phạm vi code.
+- 2026-09-16: Theo xác nhận `YES`, migrate `src/components/ui/badge.tsx` sang semantic Badge token cho outline/filled ở 9 màu; giữ nguyên size, icon, layout và behavior. Cập nhật `badge.test.tsx`. Validation: targeted tests `29/29` pass, TypeScript app/node pass, ESLint pass, `git diff --check` pass. Trạng thái Badge: `In progress — visual QA pending`.
+- 2026-09-16: Theo xác nhận `YES`, migrate `src/components/ui/selection.tsx` sang semantic Selection token cho icon active/unchecked/disabled, checkbox feedback và selected card border; giữ nguyên tri-state, radio deselect, disabled behavior và radio icon. Cập nhật `selection.test.tsx`. Validation: targeted tests `30/30` pass, TypeScript app/node pass, ESLint pass, `git diff --check` pass. Trạng thái Selection: `In progress — visual QA pending`.
+- 2026-09-16: Theo xác nhận `YES`, sửa Radio active icon trong `src/components/ui/selection.tsx` bằng hai Phosphor `Circle`: outer ring dùng `regular`, center dot dùng `fill`; cập nhật test kiểm tra `radio-checked-dot`. Không thay đổi Radio interaction, color mapping hoặc layout. Validation: targeted tests `30/30` pass, TypeScript app/node pass, ESLint pass, `git diff --check` pass. Trạng thái Selection: `In progress — visual QA pending`.
+- 2026-09-16: Visual QA trực tiếp `/components/selection` sau reload: Radio active hiển thị đúng outer ring + center dot; Plan options tự chia đều; card matrix `Small/Large` giữ đúng cột `Default/Selected/Disabled`. Không tái hiện trạng thái radio card bị đảo sau khi reset trang. Trạng thái Selection: `Verified`.
+- 2026-09-16: Theo xác nhận `YES`, migrate `src/components/ui/toggle.tsx` và `IconToggle` sang semantic Toggle token cho track, thumb, label, pressed và disabled state; thêm mapping Light/Dark trong `src/styles/globals.css`, cập nhật `toggle.test.tsx`. Không đổi API, layout hoặc interaction. Validation: targeted tests `20/20` pass, TypeScript app/node pass, ESLint pass, `git diff --check` pass; visual QA live Light/Dark pass trên `/components/toggle`. Trạng thái Toggle/IconToggle: `Verified`.
+- 2026-09-16: Audit trực tiếp Separator và Scrollbar trong Light/Dark: Separator hiển thị đúng `horizontal/vertical × solid/dashed`; Scrollbar có overflow thật theo cả hai chiều và cuộn được. Không sửa source vì token hiện tại đã đạt. Trạng thái Separator/Scrollbar: `Verified`.
+- 2026-09-16: Visual QA trực tiếp Badge trên `/components/badge`: Light/Dark đều hiển thị đủ Outline/Filled, 9 màu, 4 size và icon ở Small/Medium/Large; không thấy lỗi contrast hoặc layout. Trạng thái Badge: `Verified`.
+- 2026-09-16: Theo xác nhận `YES`, migrate Tag/Chips active/disabled background và foreground sang semantic Tag token trong Light/Dark; giữ nguyên màu hiển thị, layout, API và datetime separator. Cập nhật `tag.test.tsx`. Validation: Tag `15/15`, Admin component page `12/12`, TypeScript, ESLint, `git diff --check` và live QA Light/Dark pass. Trạng thái Tag/Chips: `Verified`.
+- 2026-09-16: Theo xác nhận `YES`, giới hạn các selector public trong `src/styles/brand-palette.css` vào `.public-ui .public-content` và `.public-status`; giữ nguyên public token, nhưng ngăn `body` selector ghi đè Admin/component showcase. Không thay đổi `globals.css`, route hoặc layout.
+- 2026-09-16: Validation sau brand-palette scope fix: public presentation tests và Admin component page tests `33/33` pass, TypeScript pass, ESLint pass, `git diff --check` pass; live QA `/admin/jobs` và `/courses` không tái hiện lỗi layout/màu. Trạng thái Global public CSS scope: `Verified`.
+- 2026-09-16: Theo quyết định mới, giữ riêng `src/styles/brand-palette.css` làm lớp public/auth presentation để dễ quản lý; không gộp vào `globals.css` trong phase hiện tại. `globals.css` tiếp tục sở hữu shared primitive/semantic tokens, còn `brand-palette.css` giữ public-specific aliases và selector đã scope. Trạng thái quyết định: `Verified — merge deferred by design`.

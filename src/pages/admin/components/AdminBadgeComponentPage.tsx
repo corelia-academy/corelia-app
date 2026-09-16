@@ -67,7 +67,13 @@ export default function AdminBadgeComponentPage({
                     {sizes.map((size) => {
                       if (size === "xsmall") {
                         return (
-                          <Badge key={`${variant}-${color}-${size}`} color={color} size={size} variant={variant}>
+                          <Badge
+                            key={`${variant}-${color}-${size}`}
+                            color={color}
+                            size={size}
+                            variant={variant}
+                            className={color === "disabled" ? undefined : "pointer-events-none"}
+                          >
                             Label
                           </Badge>
                         );
@@ -79,6 +85,7 @@ export default function AdminBadgeComponentPage({
                           color={color}
                           size={size}
                           variant={variant}
+                          className={color === "disabled" ? undefined : "pointer-events-none"}
                           leadingIcon={<Cube className="size-4" weight="regular" />}
                           trailingIcon={<Cube className="size-4" weight="regular" />}
                         >

@@ -33,7 +33,7 @@ export function ComponentShowcaseLayout({
   }
 
   return (
-    <main className="container-app space-y-8 py-8">
+    <main className="container-app select-none space-y-8 py-8">
       <header className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <NavLink

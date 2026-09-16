@@ -20,6 +20,7 @@ describe("Action", () => {
     expect(markup).toContain("Personal info");
     expect(markup).toContain("Name, contact, avatar");
     expect(markup).toContain('data-testid="leading-icon"');
+    expect(markup).toContain("select-none");
     expect(markup).not.toContain("/icons/action/next.svg");
   });
 
@@ -41,6 +42,9 @@ describe("Action", () => {
     });
 
     expect(markup).toContain("/icons/action/next-disabled.svg");
+    expect(markup).not.toContain("data-disabled:pointer-events-none");
+    expect(markup).toContain("data-disabled:cursor-not-allowed");
+    expect(markup).toContain("data-disabled:select-none");
   });
 
   it("supports default/destructive variants and large/small sizes", () => {
@@ -72,8 +76,9 @@ describe("Action", () => {
     });
 
     expect(markup).toContain('data-active="true"');
-    expect(markup).toContain("bg-blue-900");
-    expect(markup).toContain("data-[active=true]:hover:bg-blue-900");
+    expect(markup).toContain("bg-action-active");
+    expect(markup).toContain("text-action-active-foreground");
+    expect(markup).toContain("data-[active=true]:hover:bg-action-active");
     expect(markup).not.toContain("hover:bg-action-hover");
   });
 
@@ -85,7 +90,7 @@ describe("Action", () => {
     });
 
     expect(markup).toContain('data-active="true"');
-    expect(markup).not.toContain("bg-blue-900");
+    expect(markup).not.toContain("bg-action-active");
     expect(markup).toContain("hover:bg-action-hover");
   });
 
@@ -96,7 +101,7 @@ describe("Action", () => {
       showPressed: true,
     });
 
-    expect(markup).toContain("max-lg:active:bg-blue-900");
+    expect(markup).toContain("max-lg:active:bg-action-active");
   });
 
   it("supports destructive hover-as-active behavior", () => {
@@ -107,8 +112,8 @@ describe("Action", () => {
       showPressed: true,
     });
 
-    expect(markup).toContain("hover:bg-error-700");
-    expect(markup).toContain("max-lg:active:bg-error-700");
+    expect(markup).toContain("hover:bg-action-destructive-active");
+    expect(markup).toContain("max-lg:active:bg-action-destructive-active");
   });
 
   it("can render as a link for menu/list usage", () => {

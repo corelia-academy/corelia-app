@@ -4,7 +4,7 @@ import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex shrink-0 items-center justify-center rounded-full border font-body font-medium whitespace-nowrap",
+  "inline-flex shrink-0 items-center justify-center rounded-full border font-body font-medium whitespace-nowrap select-none",
   {
     variants: {
       size: {
@@ -14,24 +14,18 @@ const badgeVariants = cva(
         large: "h-8 gap-1 px-3 py-2 text-base leading-none",
       },
       color: {
-        primary: "border-blue-400 text-blue-400",
-        warning: "border-warning-500 text-warning-500",
-        success: "border-success-500 text-success-500",
-        gold: "border-accent-yellow-500 text-accent-yellow-500",
-        limeGreen: "border-accent-teal-500 text-accent-teal-500",
-        cyan: "border-accent-sky-500 text-accent-sky-500",
-        error: "border-error-500 text-error-500",
-        gray: [
-          "border-neutral-600 text-neutral-600",
-          "dark:border-neutral-200 dark:text-neutral-200",
-        ].join(" "),
-        disabled: [
-          "border-neutral-400 text-neutral-400",
-          "dark:border-neutral-500 dark:text-neutral-500",
-        ].join(" "),
+        primary: "border-badge-primary text-badge-primary",
+        warning: "border-badge-warning text-badge-warning",
+        success: "border-badge-success text-badge-success",
+        gold: "border-badge-gold text-badge-gold",
+        limeGreen: "border-badge-lime-green text-badge-lime-green",
+        cyan: "border-badge-cyan text-badge-cyan",
+        error: "border-badge-error text-badge-error",
+        gray: "border-badge-gray text-badge-gray",
+        disabled: "border-badge-disabled text-badge-disabled",
       },
       variant: {
-        outline: "bg-neutral-50/5",
+        outline: "bg-badge-outline-background",
         filled: "border-transparent",
       },
     },
@@ -39,53 +33,47 @@ const badgeVariants = cva(
       {
         color: "primary",
         variant: "filled",
-        className: "border-transparent bg-blue-400 text-neutral-900",
+        className: "border-transparent bg-badge-primary-filled text-badge-primary-filled-foreground",
       },
       {
         color: "warning",
         variant: "filled",
-        className: "border-transparent bg-warning-700 text-neutral-50",
+        className: "border-transparent bg-badge-warning-filled text-badge-warning-filled-foreground",
       },
       {
         color: "success",
         variant: "filled",
-        className: "border-transparent bg-success-700 text-neutral-50",
+        className: "border-transparent bg-badge-success-filled text-badge-success-filled-foreground",
       },
       {
         color: "gold",
         variant: "filled",
-        className: "border-transparent bg-accent-yellow-500 text-neutral-900",
+        className: "border-transparent bg-badge-gold-filled text-badge-gold-filled-foreground",
       },
       {
         color: "limeGreen",
         variant: "filled",
-        className: "border-transparent bg-accent-teal-900 text-accent-teal-50",
+        className: "border-transparent bg-badge-lime-green-filled text-badge-lime-green-filled-foreground",
       },
       {
         color: "cyan",
         variant: "filled",
-        className: "border-transparent bg-accent-sky-100 text-neutral-900",
+        className: "border-transparent bg-badge-cyan-filled text-badge-cyan-filled-foreground",
       },
       {
         color: "error",
         variant: "filled",
-        className: "border-transparent bg-error-700 text-neutral-50",
+        className: "border-transparent bg-badge-error-filled text-badge-error-filled-foreground",
       },
       {
         color: "gray",
         variant: "filled",
-        className: [
-          "border-transparent bg-neutral-200 text-neutral-800",
-          "dark:bg-neutral-600 dark:text-neutral-100",
-        ].join(" "),
+        className: "border-transparent bg-badge-gray-filled text-badge-gray-filled-foreground",
       },
       {
         color: "disabled",
         variant: "filled",
-        className: [
-          "border-transparent bg-neutral-100 text-neutral-400",
-          "dark:bg-neutral-800 dark:text-neutral-500",
-        ].join(" "),
+        className: "border-transparent bg-badge-disabled-filled text-badge-disabled-filled-foreground",
       },
     ],
     defaultVariants: {
@@ -138,14 +126,23 @@ function Badge({
   leadingIcon,
   trailingIcon,
   children,
+  onClick,
   ...props
 }: BadgeProps) {
   const supportsIcons = size !== "xsmall"
+  const isDisabled = color === "disabled"
 
   return (
     <span
       data-slot="badge"
-      className={cn(badgeVariants({ color, size, variant }), className)}
+      data-disabled={isDisabled ? "true" : undefined}
+      aria-disabled={isDisabled || undefined}
+      onClick={isDisabled ? undefined : onClick}
+      className={cn(
+        badgeVariants({ color, size, variant }),
+        isDisabled && "cursor-not-allowed select-none",
+        className,
+      )}
       {...props}
     >
       {supportsIcons && leadingIcon ? (

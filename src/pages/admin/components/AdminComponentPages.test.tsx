@@ -105,7 +105,7 @@ describe("admin component detail pages", () => {
     );
     const status = container.querySelector('[role="status"]');
 
-    expect(hoverAction?.className).toContain("hover:bg-blue-900");
+    expect(hoverAction?.className).toContain("hover:bg-action-active");
     expect(container.querySelector('[data-testid="action-playground"]')).toBeNull();
     expect(status?.textContent).toContain("Active state: —");
 

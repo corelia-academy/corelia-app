@@ -29,8 +29,8 @@ export default function AdminTagComponentPage({
           {sizes.map((size) => (
             <div key={size} className="flex flex-wrap items-center gap-3 rounded-md border border-border-subtle p-3">
               <span className="w-full text-body-small text-foreground-muted sm:w-auto">{sizeLabels[size]}</span>
-              <Tag type="label" size={size}>Enabled</Tag>
-              <Tag type="label" size={size} leadingVisual={<UserCircle className="size-4" />}>Avatar visual</Tag>
+              <Tag type="label" size={size} className="pointer-events-none">Enabled</Tag>
+              <Tag type="label" size={size} className="pointer-events-none" leadingVisual={<UserCircle className="size-4" />}>Avatar visual</Tag>
               <Tag type="label" size={size} disabled>Disabled</Tag>
               <Tag type="label" size={size} disabled leadingVisual={<UserCircle className="size-4" />}>Disabled</Tag>
             </div>
@@ -42,9 +42,9 @@ export default function AdminTagComponentPage({
           {sizes.flatMap((size) => [false, true].map((disabled) => (
             <div key={`${size}-${disabled}`} className="flex flex-wrap items-center gap-3 rounded-md border border-border-subtle p-3">
               <span className="w-full text-body-small text-foreground-muted sm:w-16">{sizeLabels[size]}</span>
-              <Tag type="datetime" size={size} date="14 Sep 2026" disabled={disabled} />
-              <Tag type="datetime" size={size} time="10:30" disabled={disabled} />
-              <Tag type="datetime" size={size} date="14 Sep 2026" time="10:30" disabled={disabled} />
+              <Tag type="datetime" size={size} date="14 Sep 2026" disabled={disabled} className={disabled ? undefined : "pointer-events-none"} />
+              <Tag type="datetime" size={size} time="10:30" disabled={disabled} className={disabled ? undefined : "pointer-events-none"} />
+              <Tag type="datetime" size={size} date="14 Sep 2026" time="10:30" disabled={disabled} className={disabled ? undefined : "pointer-events-none"} />
             </div>
           ))) }
         </div>

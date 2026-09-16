@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 const actionVariants = cva(
     // Shared layout scope (phạm vi layout dùng chung cho mọi Action).
-    "group/action relative flex min-w-0 w-full items-center border border-transparent text-left outline-none transition-[background-color,color,border-radius] duration-150 ease-out focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background data-disabled:pointer-events-none data-disabled:cursor-not-allowed",
+    "group/action relative flex min-w-0 w-full items-center border border-transparent text-left select-none outline-none transition-[background-color,color,border-radius] duration-150 ease-out focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background data-disabled:cursor-not-allowed data-disabled:select-none",
     {
         variants: {
             // Type scope (phạm vi loại hành động).
@@ -82,12 +82,12 @@ const actionVariants = cva(
             {
                 variant: "default",
                 isActive: true,
-                class: "bg-blue-900 text-action-text data-[active=true]:hover:bg-blue-900 data-[active=true]:hover:text-action-text",
+                class: "bg-action-active text-action-active-foreground data-[active=true]:hover:bg-action-active data-[active=true]:hover:text-action-active-foreground",
             },
             {
                 variant: "destructive",
                 isActive: true,
-                class: "bg-error-700 text-action-text data-[active=true]:hover:bg-error-700 data-[active=true]:hover:text-action-text",
+                class: "bg-action-destructive-active text-action-destructive-active-foreground data-[active=true]:hover:bg-action-destructive-active data-[active=true]:hover:text-action-destructive-active-foreground",
             },
         ],
         defaultVariants: {
@@ -147,36 +147,57 @@ function Action({
         ? "/icons/action/next-disabled.svg"
         : "/icons/action/next.svg";
     const visualIsActive = showActive && isActive;
+    const activeForegroundClass = variant === "destructive"
+        ? "text-action-destructive-active-foreground"
+        : "text-action-active-foreground";
+    const activeSupportingClass = variant === "destructive"
+        ? "text-action-destructive-active-supporting"
+        : "text-action-active-supporting";
+    const contentForegroundClass = visualIsActive
+        ? activeForegroundClass
+        : variant === "destructive"
+            ? "text-action-destructive"
+            : "text-action-text";
+    const contentSupportingClass = visualIsActive
+        ? activeSupportingClass
+        : variant === "destructive" && size === "small"
+            ? "text-action-destructive-supporting"
+            : "text-action-supporting";
     const pressedClass = showPressed
         ? visualIsActive || hoverAsActive
             ? variant === "destructive"
-                ? "max-lg:active:bg-error-700 max-lg:active:text-action-text"
-                : "max-lg:active:bg-blue-900 max-lg:active:text-action-text"
+                ? "max-lg:active:bg-action-destructive-active max-lg:active:text-action-destructive-active-foreground"
+                : "max-lg:active:bg-action-active max-lg:active:text-action-active-foreground"
             : "max-lg:active:bg-action-hover"
         : undefined;
     const activeRouteClass = showActive
         ? variant === "destructive"
             ? cn(
-                "aria-[current=page]:bg-error-700 aria-[current=page]:text-action-text aria-[current=page]:hover:bg-error-700 aria-[current=page]:hover:text-action-text",
+                "aria-[current=page]:bg-action-destructive-active aria-[current=page]:text-action-destructive-active-foreground aria-[current=page]:hover:bg-action-destructive-active aria-[current=page]:hover:text-action-destructive-active-foreground",
                 showPressed &&
-                "max-lg:aria-[current=page]:active:bg-error-700 max-lg:aria-[current=page]:active:text-action-text",
+                "max-lg:aria-[current=page]:active:bg-action-destructive-active max-lg:aria-[current=page]:active:text-action-destructive-active-foreground",
             )
             : cn(
-                "aria-[current=page]:bg-blue-900 aria-[current=page]:text-action-text aria-[current=page]:hover:bg-blue-900 aria-[current=page]:hover:text-action-text",
+                "aria-[current=page]:bg-action-active aria-[current=page]:text-action-active-foreground aria-[current=page]:hover:bg-action-active aria-[current=page]:hover:text-action-active-foreground",
                 showPressed &&
-                "max-lg:aria-[current=page]:active:bg-blue-900 max-lg:aria-[current=page]:active:text-action-text",
+                "max-lg:aria-[current=page]:active:bg-action-active max-lg:aria-[current=page]:active:text-action-active-foreground",
             )
         : undefined;
     const hoverAsActiveClass = hoverAsActive
         ? variant === "destructive"
-            ? "hover:bg-error-700 hover:text-action-text"
-            : "hover:bg-blue-900 hover:text-action-text"
+            ? "hover:bg-action-destructive-active hover:text-action-destructive-active-foreground"
+            : "hover:bg-action-active hover:text-action-active-foreground"
         : undefined;
     const hoverAsActiveTextClass = hoverAsActive
-        ? cn(
-            "group-hover/action:text-action-text",
-            showPressed && "max-lg:group-active/action:text-action-text",
-        )
+        ? variant === "destructive"
+            ? cn(
+                "group-hover/action:text-action-destructive-active-foreground",
+                showPressed && "max-lg:group-active/action:text-action-destructive-active-foreground",
+            )
+            : cn(
+                "group-hover/action:text-action-active-foreground",
+                showPressed && "max-lg:group-active/action:text-action-active-foreground",
+            )
         : undefined;
 
     return (
@@ -205,11 +226,7 @@ function Action({
                     className={cn(
                         "flex shrink-0 items-center justify-center",
                         size === "large" ? "size-6" : "size-5",
-                        disabled
-                            ? "text-action-disabled"
-                            : variant === "destructive" && !visualIsActive
-                                ? "text-action-destructive"
-                                : "text-action-text",
+                        disabled ? "text-action-disabled" : contentForegroundClass,
                         hoverAsActiveTextClass,
                         "[&_svg]:size-full",
                     )}
@@ -234,11 +251,7 @@ function Action({
                         size === "large"
                             ? "text-label-large"
                             : "text-label-medium",
-                        disabled
-                            ? "text-action-disabled"
-                            : variant === "destructive" && !visualIsActive
-                                ? "text-action-destructive"
-                                : "text-action-text",
+                        disabled ? "text-action-disabled" : contentForegroundClass,
                         hoverAsActiveTextClass,
                     )}
                 >
@@ -253,11 +266,7 @@ function Action({
                             size === "large"
                                 ? "text-body-medium"
                                 : "text-body-small",
-                            disabled
-                                ? "text-action-disabled"
-                                : variant === "destructive" && !visualIsActive && size === "small"
-                                    ? "text-action-destructive-supporting"
-                                    : "text-action-supporting",
+                            disabled ? "text-action-disabled" : contentSupportingClass,
                             hoverAsActiveTextClass,
                         )}
                     >
@@ -271,7 +280,7 @@ function Action({
                 <span
                     className={cn(
                         "shrink-0 font-body text-body-small",
-                        disabled ? "text-action-disabled" : "text-action-supporting",
+                        disabled ? "text-action-disabled" : contentSupportingClass,
                         hoverAsActiveTextClass,
                     )}
                 >
