@@ -92,6 +92,8 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260913130748_project_system_taxonomy.sql",
   "supabase/migrations/20260913133229_repair_hackathon_metrics_authorization.sql",
   "supabase/migrations/20260914162720_public_project_team_members.sql",
+  "supabase/migrations/20260915052442_learning_translation_authoring.sql",
+  "supabase/migrations/20260915054142_learning_translation_video_inference.sql",
   "supabase/migrations/20260915062707_learning_redo_lessons.sql",
   "supabase/migrations/20260915130736_learning_redo_stale_clients.sql",
 ]);
@@ -100,11 +102,12 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// All earlier approved migrations, including the public project team policy,
-// are present in the Production ledger. Only the Learning redo pair remains.
+// Production already contains every previously approved migration, including
+// the later Learning redo pair. This release fills the two earlier translation
+// migration versions that have already passed Staging with --include-all.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260915062707",
-  "20260915130736",
+  "20260915052442",
+  "20260915054142",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

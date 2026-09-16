@@ -396,6 +396,12 @@
     "mustLoginFeature": "Bạn cần đăng nhập để dùng tính năng này."
   },
   "learning": {
+    "translationReference": "Bản gốc để tham khảo",
+    "useSourceVideo": "Dùng video gốc",
+    "translationMissing": "Chưa có bản dịch. Nhập nội dung cho ngôn ngữ này.",
+    "translationLoadError": "Không tải được bản dịch. Hãy thử lại trước khi chỉnh sửa.",
+    "savedRefreshFailed": "Đã lưu nội dung, nhưng chưa tải lại được dữ liệu. Hãy tải lại trang.",
+
     "invalidResourcesRecovery": "Danh sách tài liệu có mục sai cấu trúc. Bạn có thể bỏ các mục hỏng để tiếp tục chỉnh sửa.",
     "recoverResources": "Bỏ mục tài liệu hỏng",
     "recoverResourcesConfirm": "Bỏ các mục tài liệu sai cấu trúc và chuyển bài về nháp? Tài liệu hợp lệ và nội dung khác được giữ.",

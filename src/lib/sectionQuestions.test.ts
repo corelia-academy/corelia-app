@@ -57,3 +57,19 @@ it("rejects a translated payload that changes canonical scoring before mutation"
   await expect(setLessonQuestions("course", "lesson", [{ ...canonical.data, id: canonical.id, correct_index: 0 }], "en")).rejects.toThrow("preserve");
   expect(supabase.rpc).not.toHaveBeenCalled();
 });
+
+it("returns empty untranslated question fields for authoring without changing source IDs or scoring", async () => {
+  mockLessonData();
+  const { getLessonQuestions } = await import("./sectionQuestions");
+  const questions = await getLessonQuestions("course", "lesson", "en", undefined, false);
+  expect(questions[0]).toMatchObject({ id: "question-1", question: "English question", explanation: "", correct_index: 1,
+    options: [{ id: "first", text: "First" }, { id: "second", text: "" }] });
+});
+
+it("does not write an unchanged partial question translation", async () => {
+  mockLessonData();
+  const { getLessonQuestions, setLessonQuestions } = await import("./sectionQuestions");
+  const questions = await getLessonQuestions("course", "lesson", "en", undefined, false);
+  await setLessonQuestions("course", "lesson", questions, "en");
+  expect(supabase.rpc).not.toHaveBeenCalled();
+});

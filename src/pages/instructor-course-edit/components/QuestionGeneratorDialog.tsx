@@ -1,3 +1,5 @@
+import { TranslationReference } from "@/features/learning/admin/TranslationReference";
+import { learningSaveError } from "@/features/learning/publishError";
 import { useLearningConfirm } from "@/features/learning/useLearningConfirm";
 import { invalidateLearningQuestions } from "@/features/learning/questionCache";
 import { isQuizQuestionShape, recoverQuizQuestion } from "@/features/learning/quizShape";
@@ -199,10 +201,12 @@ export function QuestionGeneratorDialog({
     mode,
     targetId,
     locale,
+    primaryLocale,
     userId,
     enabled: open,
   });
   const questionsQuery = useQuery(questionOptions);
+  const sourceQuery = useQuery(instructorCourseQuestionsQueryOptions({ courseId, mode, targetId, locale: primaryLocale, primaryLocale, userId, enabled: open && copyOnly }));
   const loading = questionsQuery.isPending && questionsQuery.isEnabled;
   const loadError = questionsQuery.isError
     ? questionsQuery.error instanceof Error
@@ -389,7 +393,7 @@ export function QuestionGeneratorDialog({
     }
 
     const invalid = questions.find(
-      (q) => !isQuizQuestionShape(q) || !q.question.trim() || q.options.filter((o) => o.text.trim()).length < 2,
+      (q) => !isQuizQuestionShape(q) || (!copyOnly && (!q.question.trim() || q.options.filter((o) => o.text.trim()).length < 2)),
     );
     if (invalid) {
       toast.error(t("courseEdit.questions.fillRequired"));
@@ -408,7 +412,7 @@ export function QuestionGeneratorDialog({
       }
       onOpenChange(false);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("courseEdit.questions.saveFailed"));
+      toast.error(learningSaveError(err, learningT, [], t("courseEdit.questions.saveFailed")));
     }
   }
 
@@ -598,6 +602,7 @@ export function QuestionGeneratorDialog({
               </p>
             )}
 
+            {copyOnly && <TranslationReference values={(sourceQuery.data??[]).flatMap(question=>[question.question,...question.options.map(option=>option.text),question.explanation])}/>}
             {questions.map((q, i) => (
               <QuestionEditor
                 key={q._key}

@@ -1,3 +1,6 @@
+import { lessonDraftPatch, type LessonDraft } from "./lessonDraft";
+import { TranslationReference } from "@/features/learning/admin/TranslationReference";
+import { changedLocaleFields, translationVideoIssues, type LessonLocales } from "@/features/learning/translationDraft";
 import { useLearningConfirm } from "@/features/learning/useLearningConfirm";
 import { lessonText, normalizeLessonCopy } from "@/features/learning/lessonCopy";
 import { normalizeVideoLocale } from "@/features/learning/videoLocale";
@@ -10,11 +13,11 @@ import { useSectionDrafts } from "./hooks/useSectionDrafts";
 import { useCourseFieldDraft } from "./hooks/useCourseFieldDraft";
 import { useCourseSettingsDraft } from "./hooks/useCourseSettingsDraft";
 import { useCourseContentDraft } from "./hooks/useCourseContentDraft";
-import { learningSaveError } from "@/features/learning/publishError";
+import { learningSaveError, learningMutationIssues } from "@/features/learning/publishError";
 import { ARTIFACT_FIELDS, type ArtifactField } from "@/features/learning/types";
 import { SubmissionReviewContent } from "@/features/learning/SubmissionReviewContent";
 import { CourseLearningReport } from "@/features/learning/CourseLearningReport";
-import { archiveLearningCourse, archiveLearningLesson } from "@/lib/learning";
+import { saveLearningLesson, archiveLearningCourse, archiveLearningLesson } from "@/lib/learning";
 import { useLearningTranslation } from "@/features/learning/useLearningTranslation";
 import {
   useCallback,
@@ -74,7 +77,6 @@ import {
   addLesson,
   getOrCreateDefaultSection,
   updateSection,
-  updateLesson,
   reorderCourseLessons,
   reorderCourseSections,
   deleteSection,
@@ -235,7 +237,7 @@ type CoverageFieldKey =
   | "final_assignment_description"
   | "final_assignment_instructions";
 
-const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLesson, onEditLearningLesson, renderLearningReadiness }: { learningTools?: ReactNode | ((focusIssue: (issue: PublishValidationIssue) => void) => ReactNode); onDirtyChange?: (dirty: boolean) => void; onCreateLearningLesson?: (lesson: CourseLesson) => void; onEditLearningLesson?: (lesson: CourseLesson) => void; renderLearningReadiness?: (lesson: CourseLesson, openEditor: () => void) => ReactNode } = {}) => {
+const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLesson, onEditLearningLesson, renderLearningReadiness }: { learningTools?: ReactNode | ((focusIssue: (issue: PublishValidationIssue) => void) => ReactNode); onDirtyChange?: (dirty: boolean) => void; onCreateLearningLesson?: (lesson: CourseLesson) => void; onEditLearningLesson?: (lesson: CourseLesson, locale?: SupportedCourseLocale) => void; renderLearningReadiness?: (lesson: CourseLesson, openEditor: () => void) => ReactNode } = {}) => {
   const { t, i18n } = useTranslation("instructor");
   const { confirm, confirmation } = useLearningConfirm();
 
@@ -536,32 +538,25 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
     ),
     [localeOptions.queryKey, queryClient],
   );
-  const setLessonLocaleMap: Dispatch<
-    SetStateAction<Map<string, CourseLessonLocaleContent>>
-  > = useCallback(
-    (update) => queryClient.setQueryData(localeOptions.queryKey, (current) =>
-      current
-        ? {
-            ...current,
-            lessonLocaleMap: resolveStateUpdate(update, current.lessonLocaleMap),
-          }
-        : current,
-    ),
-    [localeOptions.queryKey, queryClient],
-  );
   // Per-locale draft cache for section & lesson dialogs
-  type LessonDraft = {
-    title: string; youtubeUrl: string; videoPrimaryLocale: SupportedCourseLocale;
-    hasSubtitle: boolean; subtitleLocales: SupportedCourseLocale[];
-    shortDescription: string; markdown: string;
-    resources: Array<{ title: string; url: string }>;
-    practiceSourceLessonId: string;
-    practiceSourceLessonIds: string[];
-  };
   const lessonDraftRef = useRef<Map<SupportedCourseLocale, LessonDraft>>(new Map());
+  const lessonSavedDraftRef = useRef<Map<SupportedCourseLocale, LessonDraft>>(new Map());
+  const [loadingLessonLocales, setLoadingLessonLocales] = useState(false);
+  const [lessonLoadError, setLessonLoadError] = useState<string | null>(null);
+  const [lessonSaveError, setLessonSaveError] = useState<string | null>(null);
+  const [lessonSaveIssues, setLessonSaveIssues] = useState<PublishValidationIssue[]>([]);
+  const [savingLesson, setSavingLesson] = useState(false);
+  const [editingLessonUseSourceVideo, setEditingLessonUseSourceVideo] = useState(false);
+  const retryLessonLoadRef = useRef<() => void>(() => {});
   const lessonLocaleLoadGeneration = useRef(0);
   const [dialogLessonLocale, setDialogLessonLocale] = useState<SupportedCourseLocale>("vi");
-  const { contentForm, setContentForm, hydrateContentForm, markContentSaved, contentDirty } = useCourseContentDraft(
+  useEffect(() => {
+    const issue = lessonSaveIssues.find(item => !item.locale || item.locale === dialogLessonLocale);
+    if (!issue || savingLesson) return;
+    const target = document.getElementById(`legacy-learning-${issue.field}`);
+    target?.focus(); target?.scrollIntoView?.({ block: "center" });
+  }, [lessonSaveIssues, dialogLessonLocale, savingLesson]);
+  const { contentForm, setContentForm, hydrateContentForm, markContentSaved, contentDirty, contentPatch } = useCourseContentDraft(
     `${profile?.id ?? "anonymous"}:${id ?? "missing"}:${activeContentLocale}`,
   );
   const [courseSkills, setCourseSkills, hydrateCourseSkills, acknowledgeCourseSkills, courseSkillsDirty] = useCourseFieldDraft<string[]>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:courseSkills`, []);
@@ -651,9 +646,19 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
   const [lessonQuestionsDirty, setLessonQuestionsDirty] = useState(false);
   const extraFieldsDirty = attributionDirty || coInstructorIdsDirty || coInstructorPermissionsDirty || coInstructorVisibilityDirty || supportedLocalesDirty || primaryContentLocaleDirty || defaultVideoPrimaryLocaleDirty || courseSkillsDirty || sponsorsDirty || partnersDirty;
   useEffect(() => {
-    onDirtyChange?.(contentDirty || formDirty || extraFieldsDirty || curriculumDraftDirty || lessonQuestionsDirty || ocbDirty || certificateSetupPending);
+    const drafts = new Map(lessonDraftRef.current);
+    if (editingLesson && !loadingLessonLocales && !lessonLoadError) drafts.set(dialogLessonLocale, {
+      title: editingLessonTitle, youtubeUrl: editingLessonYoutubeUrl, videoPrimaryLocale: editingLessonVideoPrimaryLocale,
+      hasSubtitle: editingLessonHasSubtitle, subtitleLocales: editingLessonSubtitleLocales,
+      shortDescription: editingLessonShortDescription, markdown: editingLessonMarkdown, resources: editingLessonResources,
+      practiceSourceLessonId: editingPracticeSourceLessonId, practiceSourceLessonIds: Array.from(editingPracticeSourceLessonIds),
+      startLabel: editingLessonYoutubeStartLabel, endLabel: editingLessonYoutubeEndLabel, useSourceVideo: editingLessonUseSourceVideo,
+    });
+    const lessonDirty = Boolean(editingLesson) && ([...drafts].some(([locale, draft]) => Object.keys(changedLocaleFields(draft, lessonSavedDraftRef.current.get(locale) ?? {})).length > 0)
+      || editingLessonPublished !== Boolean(editingLesson?.published) || editingLessonFormat !== getLessonFormat(editingLesson!));
+    onDirtyChange?.(contentDirty || formDirty || extraFieldsDirty || curriculumDraftDirty || lessonQuestionsDirty || lessonDirty || savingLesson || ocbDirty || certificateSetupPending);
     return () => onDirtyChange?.(false);
-  }, [contentDirty, formDirty, extraFieldsDirty, curriculumDraftDirty, lessonQuestionsDirty, ocbDirty, certificateSetupPending, onDirtyChange]);
+  }, [contentDirty, formDirty, extraFieldsDirty, curriculumDraftDirty, lessonQuestionsDirty, ocbDirty, certificateSetupPending, onDirtyChange, editingLesson, loadingLessonLocales, lessonLoadError, dialogLessonLocale, editingLessonTitle, editingLessonYoutubeUrl, editingLessonVideoPrimaryLocale, editingLessonHasSubtitle, editingLessonSubtitleLocales, editingLessonShortDescription, editingLessonMarkdown, editingLessonResources, editingPracticeSourceLessonId, editingPracticeSourceLessonIds, editingLessonYoutubeStartLabel, editingLessonYoutubeEndLabel, editingLessonUseSourceVideo, editingLessonPublished, editingLessonFormat, savingLesson]);
 
 
   // Confirms before leaving the OCC tab with unsaved OCA/OCB edits — the
@@ -1184,22 +1189,13 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       final_assignment_instructions: course.final_assignment_instructions ?? "",
     });
     const localized = localeQuery.data.courseContent;
-    const next = !localized
-      ? fallbackFromCourse()
-      : {
-        title: localized.title ?? fallbackFromCourse().title,
-        short_description: localized.short_description ?? fallbackFromCourse().short_description,
-        description: localized.description ?? fallbackFromCourse().description,
-        learning_outcomes: localized.learning_outcomes ?? fallbackFromCourse().learning_outcomes,
-        final_assignment_title:
-          (localized.final_assignment_title ?? "") || fallbackFromCourse().final_assignment_title,
-        final_assignment_description:
-          (localized.final_assignment_description ?? "") ||
-          fallbackFromCourse().final_assignment_description,
-        final_assignment_instructions:
-          (localized.final_assignment_instructions ?? "") ||
-          fallbackFromCourse().final_assignment_instructions,
-      };
+    const next = activeContentLocale === primaryContentLocale ? fallbackFromCourse() : {
+      title: localized?.title ?? "", short_description: localized?.short_description ?? "",
+      description: localized?.description ?? "", learning_outcomes: localized?.learning_outcomes ?? [],
+      final_assignment_title: localized?.final_assignment_title ?? "",
+      final_assignment_description: localized?.final_assignment_description ?? "",
+      final_assignment_instructions: localized?.final_assignment_instructions ?? "",
+    };
     let cancelled = false;
     queueMicrotask(() => {
       if (cancelled) return;
@@ -1208,7 +1204,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
     return () => {
       cancelled = true;
     };
-  }, [activeContentLocale, course, hydrateContentForm, id, localeQuery.data, localeQuery.isSuccess]);
+  }, [activeContentLocale, primaryContentLocale, course, hydrateContentForm, id, localeQuery.data, localeQuery.isSuccess]);
 
   // Backfill tổng thời lượng khi mở trang (để danh sách khoá học bên ngoài hiển thị đúng)
   useEffect(() => {
@@ -1290,7 +1286,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
     };
 
   const saveCourseInfo = async (successMessage = t("courseEdit.toasts.saved")) => {
-    if (!id || !course) return;
+    if (!id || !course || !localeQuery.isSuccess) return;
     if (form.is_external_aggregated) {
       const externalSources = form.external_source_urls_text
         .split("\n")
@@ -1347,7 +1343,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       ).slice(0, 20);
 
       const activeLocaleCopy = {
-        title: contentForm.title.trim() || course.title,
+        title: activeContentLocale === primaryContentLocale ? contentForm.title.trim() || course.title : contentForm.title.trim(),
         description: contentForm.description.trim(),
         short_description: contentForm.short_description.trim() || "",
         learning_outcomes: sanitizedOutcomes,
@@ -1497,7 +1493,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
         partners,
         ...(attribution !== null && { instructors: attribution }),
         ...(shouldUpdateRootContent && {
-          title: contentForm.title.trim() || course.title,
+          title: activeContentLocale === primaryContentLocale ? contentForm.title.trim() || course.title : contentForm.title.trim(),
           short_description: contentForm.short_description.trim(),
           description: contentForm.description.trim(),
           learning_outcomes: sanitizedOutcomes,
@@ -1517,7 +1513,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
           co_instructors: coInstructorSnapshots,
           co_instructor_permissions: coInstructorPermissionsPayload,
         }),
-      }, activeContentLocale, activeLocaleCopy);
+      }, activeContentLocale, activeContentLocale === primaryContentLocale ? activeLocaleCopy : Object.fromEntries(Object.keys(contentPatch).map(key => [key, activeLocaleCopy[key as keyof typeof activeLocaleCopy]])));
       markContentSaved(contentForm);
       setCourse((prev) =>
         prev
@@ -2399,6 +2395,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
 
   const handleTranslateLessonBundle = () => {
     if (!editingLesson || dialogLessonLocale === primaryContentLocale) return;
+    const generation = lessonLocaleLoadGeneration.current;
     const sourceDraft =
       lessonDraftRef.current.get(primaryContentLocale) ?? captureLessonDraftFromState();
     void translateBundle({
@@ -2415,6 +2412,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
         markdownDescription: sourceDraft.markdown,
       },
       onApply: (bundle) => {
+        if (generation !== lessonLocaleLoadGeneration.current) return;
         setEditingLessonTitle(bundle.title ?? editingLessonTitle);
         setEditingLessonShortDescription(
           bundle.shortDescription ?? editingLessonShortDescription,
@@ -2638,7 +2636,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
     sectionSessionRef.current = token;
     const base = { title: section.title ?? "", description: section.description ?? "" };
     const hydrate = sectionDrafts.begin(activeContentLocale, Object.fromEntries(
-      supportedLocales.map(locale => [locale, base]),
+      supportedLocales.map(locale => [locale, locale === primaryContentLocale ? base : { title: "", description: "" }]),
     ));
     setEditingSection(section);
     setSectionSaveError(null);
@@ -2650,7 +2648,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
         const localized = await queryClient.fetchQuery(instructorCourseSectionLocaleQueryOptions({
           courseId: id, sectionId: section.id, locale: loc, userId: profile?.id,
         }));
-        hydrate(loc, { title: localized?.title ?? base.title, description: localized?.description ?? base.description });
+        hydrate(loc, { title: localized?.title ?? "", description: localized?.description ?? "" });
       }));
       if (sectionSessionRef.current !== token) return;
       if (results.some(result => result.status === "rejected")) setSectionLoadError(t("courseEdit.errors.updateFailed"));
@@ -2676,7 +2674,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
     const submitted = sectionDrafts.changed;
     const savePromise = runMutation(async () => {
       for (const [loc, draft] of submitted) {
-        const title = draft.title.trim() || editingSection.title;
+        const title = loc === primaryContentLocale ? draft.title.trim() || editingSection.title : draft.title.trim();
         const description = draft.description.trim();
         if (loc === primaryContentLocale) {
           await updateSection(id, editingSection.id, { title, description });
@@ -2934,42 +2932,19 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
     const ytTrim = pv.youtubeUrl.trim();
     const fullDur = await getYoutubeVideoDuration(ytTrim);
 
+    let candidate: CourseLesson = { ...lessonBeingEdited, lesson_format: "video", published: editingLessonPublished,
+      youtube_url: ytTrim, youtube_start_seconds: 0, youtube_end_seconds: null,
+      ...(fullDur > 0 ? { duration_seconds: Math.floor(fullDur) } : {}),
+    };
+    const locales: LessonLocales = {};
     for (const [loc, draft] of lessonDraftRef.current) {
-      const sanitizedResources = (draft.resources ?? [])
-        .map((r) => ({ title: (r.title ?? "").trim(), url: (r.url ?? "").trim() }))
-        .filter((r) => r.title && r.url);
-      const payload = {
-        title: draft.title.trim() || lessonBeingEdited.title,
-        youtube_url: ytTrim || undefined,
-        video_primary_locale: draft.videoPrimaryLocale,
-        has_subtitle: draft.hasSubtitle,
-        subtitle_locales: draft.hasSubtitle ? draft.subtitleLocales : [],
-        short_description: draft.shortDescription.trim() || undefined,
-        description_markdown: draft.markdown.trim() || undefined,
-        resources: sanitizedResources.length ? sanitizedResources : undefined,
-      };
-      if (loc === primaryContentLocale) {
-        await updateLesson(
-          id,
-          lessonId,
-          {
-            ...payload,
-            ...(fullDur > 0
-              ? { duration_seconds: Math.max(1, Math.floor(fullDur)) }
-              : {}),
-          },
-          { clearYoutubeSegments: true },
-        );
-      } else {
-        await setCourseLessonLocaleContent(id, lessonId, loc, payload);
-      }
+      const patch = lessonDraftPatch(draft, lessonSavedDraftRef.current.get(loc), loc === primaryContentLocale);
+      if (loc === primaryContentLocale) candidate = { ...candidate, ...patch, youtube_url: ytTrim, youtube_start_seconds: 0, youtube_end_seconds: null };
+      else if (Object.keys(patch).length) locales[loc] = patch;
     }
-
-    const freshLessons = await getCourseLessons(id);
-    setLessons(freshLessons);
-    await refreshCourseTotalDuration(id);
-    const refreshedCourse = await getCourse(id);
-    if (refreshedCourse) setCourse(refreshedCourse);
+    const saved = await saveLearningLesson(id, candidate, undefined, locales);
+    setLessons(previous => previous.map(lesson => lesson.id === lessonId ? saved : lesson));
+    await queryClient.invalidateQueries({ queryKey: ["courses"] }).catch(() => toast.error(learningT("learning.savedRefreshFailed")));
     void getLessonDistinctLearnerCountsForCourse(id)
       .then(setLessonLearnerCounts)
       .catch(() => {});
@@ -3364,6 +3339,9 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
   };
 
   const applyLessonDraftToState = (draft: LessonDraft) => {
+    setEditingLessonYoutubeStartLabel(draft.startLabel);
+    setEditingLessonYoutubeEndLabel(draft.endLabel);
+    setEditingLessonUseSourceVideo(draft.useSourceVideo);
     setEditingLessonTitle(draft.title);
     setEditingLessonYoutubeUrl(draft.youtubeUrl);
     setEditingLessonVideoPrimaryLocale(draft.videoPrimaryLocale);
@@ -3377,6 +3355,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
   };
 
   const captureLessonDraftFromState = (): LessonDraft => ({
+    startLabel: editingLessonYoutubeStartLabel, endLabel: editingLessonYoutubeEndLabel, useSourceVideo: editingLessonUseSourceVideo,
     title: editingLessonTitle,
     youtubeUrl: editingLessonYoutubeUrl,
     videoPrimaryLocale: editingLessonVideoPrimaryLocale,
@@ -3390,6 +3369,9 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
   });
 
   const lessonToDraft = (lesson: CourseLesson): LessonDraft => ({
+    startLabel: formatSecondsToTimestamp(lesson.youtube_start_seconds ?? 0),
+    endLabel: lesson.youtube_end_seconds == null ? "" : formatSecondsToTimestamp(lesson.youtube_end_seconds),
+    useSourceVideo: false,
     title: lesson.title ?? "",
     youtubeUrl: lesson.youtube_url ?? "",
     videoPrimaryLocale: normalizeCourseLocale(lesson.video_primary_locale ?? defaultVideoPrimaryLocale),
@@ -3404,75 +3386,71 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
 
   const openEditLesson = (lesson: CourseLesson) => {
     if (onEditLearningLesson && (["practice", "code_exercise"].includes(getLessonFormat(lesson)) || normalizeLessonCopy(lesson).invalid || normalizeVideoLocale(lesson).invalid || normalizeCodeLocale(lesson.code_exercise_locale).invalid || !isLessonResourceList(lesson.resources ?? []))) {
-      onEditLearningLesson(lesson);
+      onEditLearningLesson(lesson, activeContentLocale);
       return;
     }
     const loadGeneration = ++lessonLocaleLoadGeneration.current;
-    lessonDraftRef.current = new Map();
     const initLocale = activeContentLocale;
+    const primaryDraft = lessonToDraft(lesson);
+    const emptyDraft: LessonDraft = { ...primaryDraft, title: "", shortDescription: "", markdown: "", resources: [], youtubeUrl: "", startLabel: "0:00", endLabel: "", useSourceVideo: true };
+    lessonDraftRef.current = new Map([[primaryContentLocale, primaryDraft]]);
+    lessonSavedDraftRef.current = new Map([[primaryContentLocale, primaryDraft]]);
     setDialogLessonLocale(initLocale);
-    // Primary locale uses the lesson data directly
-    lessonDraftRef.current.set(primaryContentLocale, lessonToDraft(lesson));
     setEditingLesson(lesson);
     setEditingLessonPublished(Boolean(lesson.published));
     setEditingLessonFormat(getLessonFormat(lesson));
-    applyLessonDraftToState(lessonToDraft(lesson));
-    setEditingLessonYoutubeStartLabel(
-      formatSecondsToTimestamp(lesson.youtube_start_seconds ?? 0),
-    );
-    const ys = lesson.youtube_start_seconds ?? 0;
-    const ye = lesson.youtube_end_seconds;
-    setEditingLessonYoutubeEndLabel(
-      ye != null && ye > ys ? formatSecondsToTimestamp(ye) : "",
-    );
-    if (!id) return;
-    // Pre-load non-primary locales in background
-    for (const loc of supportedLocales) {
-      if (loc === primaryContentLocale) continue;
-      void queryClient.fetchQuery(instructorCourseLessonLocaleQueryOptions({
-        courseId: id,
-        lessonId: lesson.id,
-        locale: loc,
-        userId: profile?.id,
-      })).catch(() => null).then((localized) => {
+    setLessonSaveError(null);
+    setLessonSaveIssues([]);
+    applyLessonDraftToState(initLocale === primaryContentLocale ? primaryDraft : emptyDraft);
+    const load = async () => {
+      if (!id) return;
+      setLoadingLessonLocales(true);
+      setLessonLoadError(null);
+      const results = await Promise.allSettled(supportedLocales.filter(loc => loc !== primaryContentLocale).map(async loc => {
+        const localized = await queryClient.fetchQuery(instructorCourseLessonLocaleQueryOptions({ courseId: id, lessonId: lesson.id, locale: loc, userId: profile?.id }));
         if (loadGeneration !== lessonLocaleLoadGeneration.current) return;
         if (localized && onEditLearningLesson && (normalizeLessonCopy(localized).invalid || normalizeVideoLocale(localized).invalid || normalizeCodeLocale(localized.code_exercise_locale).invalid || !isLessonResourceList(localized.resources ?? []))) {
           lessonLocaleLoadGeneration.current += 1;
-        setEditingLesson(null);
-          onEditLearningLesson(lesson);
+          setEditingLesson(null);
+          onEditLearningLesson(lesson, initLocale);
           return;
         }
         const draft: LessonDraft = {
-          title: localized?.title ?? lesson.title ?? "",
-          youtubeUrl: localized?.youtube_url ?? lesson.youtube_url ?? "",
+          ...emptyDraft, title: localized?.title ?? "", youtubeUrl: localized?.youtube_url ?? "",
+          useSourceVideo: !localized?.youtube_url?.trim(),
+          startLabel: formatSecondsToTimestamp(localized?.youtube_start_seconds ?? 0),
+          endLabel: localized?.youtube_end_seconds == null ? "" : formatSecondsToTimestamp(localized.youtube_end_seconds),
           videoPrimaryLocale: normalizeCourseLocale(localized?.video_primary_locale ?? lesson.video_primary_locale ?? defaultVideoPrimaryLocale),
           hasSubtitle: localized?.has_subtitle ?? lesson.has_subtitle ?? false,
           subtitleLocales: (localized?.subtitle_locales ?? lesson.subtitle_locales ?? []).map(normalizeCourseLocale),
-          shortDescription: localized?.short_description ?? lesson.short_description ?? "",
-          markdown: localized?.description_markdown ?? lesson.description_markdown ?? "",
-          resources: (localized?.resources ?? lesson.resources ?? []).map((r) => ({ title: r.title ?? "", url: r.url ?? "" })),
-          practiceSourceLessonId: lesson.practice_source_lesson_id ?? "",
-          practiceSourceLessonIds: lesson.practice_source_lesson_id ? [lesson.practice_source_lesson_id] : [],
+          shortDescription: localized?.short_description ?? "", markdown: localized?.description_markdown ?? "",
+          resources: (localized?.resources ?? []).map(r => ({ title: r.title ?? "", url: r.url ?? "" })),
         };
-        if (!lessonDraftRef.current.has(loc)) {
-          lessonDraftRef.current.set(loc, draft);
-        }
-        if (loc === initLocale) {
-          applyLessonDraftToState(draft);
-          setEditingLessonYoutubeStartLabel(
-            formatSecondsToTimestamp(lesson.youtube_start_seconds ?? 0),
-          );
-          const ys0 = lesson.youtube_start_seconds ?? 0;
-          const ye0 = lesson.youtube_end_seconds;
-          setEditingLessonYoutubeEndLabel(
-            ye0 != null && ye0 > ys0 ? formatSecondsToTimestamp(ye0) : "",
-          );
-        }
-      });
-    }
+        lessonDraftRef.current.set(loc, draft);
+        lessonSavedDraftRef.current.set(loc, draft);
+      }));
+      if (loadGeneration !== lessonLocaleLoadGeneration.current) return;
+      if (results.some(result => result.status === "rejected")) setLessonLoadError(learningT("learning.translationLoadError"));
+      applyLessonDraftToState(lessonDraftRef.current.get(initLocale) ?? emptyDraft);
+      setLoadingLessonLocales(false);
+    };
+    retryLessonLoadRef.current = () => { void load(); };
+    void load();
+  };
+
+  const closeEditLesson = async () => {
+    if (!editingLesson || savingLesson || translatingBundle === "lesson") return;
+    const drafts = new Map(lessonDraftRef.current);
+    if (!loadingLessonLocales && !lessonLoadError) drafts.set(dialogLessonLocale, captureLessonDraftFromState());
+    const dirty = [...drafts].some(([locale, draft]) => Object.keys(changedLocaleFields(draft, lessonSavedDraftRef.current.get(locale) ?? {})).length > 0)
+      || editingLessonPublished !== Boolean(editingLesson?.published) || editingLessonFormat !== getLessonFormat(editingLesson!);
+    if (dirty && !await confirm(learningT("learning.dirtyConfirm"))) return;
+    lessonLocaleLoadGeneration.current += 1;
+    setEditingLesson(null);
   };
 
   const switchDialogLessonLocale = (nextLocale: SupportedCourseLocale) => {
+    if (loadingLessonLocales || lessonLoadError || savingLesson) return;
     lessonDraftRef.current.set(dialogLessonLocale, captureLessonDraftFromState());
     const saved = lessonDraftRef.current.get(nextLocale);
     if (saved) {
@@ -3482,7 +3460,10 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
   };
 
   const handleSaveLessonDetails = async () => {
-    if (!id || !editingLesson) return;
+    if (!id || !editingLesson || loadingLessonLocales || lessonLoadError || savingLesson) return;
+    setSavingLesson(true);
+    setLessonSaveError(null);
+    setLessonSaveIssues([]);
     const savePromise = runMutation(async () => {
       // Flush current dialog state into draft map
       lessonDraftRef.current.set(dialogLessonLocale, captureLessonDraftFromState());
@@ -3510,7 +3491,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
         }
       }
 
-      const ytUrlTrimmedMaster = isNonVideoFormat ? "" : editingLessonYoutubeUrl.trim();
+      const ytUrlTrimmedMaster = isNonVideoFormat ? "" : primaryDraft.youtubeUrl.trim();
       const learnerCount = lessonLearnerCounts[editingLesson.id] ?? 0;
       if (!isNonVideoFormat && learnerCount > 0) {
         const prevId = getYoutubeVideoId(editingLesson.youtube_url ?? "");
@@ -3591,11 +3572,11 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       let youtube_end_seconds: number | null | undefined;
       if (!isNonVideoFormat && ytUrlTrimmedMaster) {
         const startParsed =
-          parseTimestampLabelToSeconds(editingLessonYoutubeStartLabel.trim()) ?? 0;
+          parseTimestampLabelToSeconds(primaryDraft.startLabel.trim()) ?? 0;
         youtube_start_seconds = startParsed > 0 ? startParsed : undefined;
-        if (editingLessonYoutubeEndLabel.trim()) {
+        if (primaryDraft.endLabel.trim()) {
           const endParsed = parseTimestampLabelToSeconds(
-            editingLessonYoutubeEndLabel.trim(),
+            primaryDraft.endLabel.trim(),
           );
           if (endParsed == null || endParsed <= startParsed) {
             toast.error(t("courseEdit.lessons.segmentEndInvalid"));
@@ -3607,8 +3588,10 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
         }
       }
 
+      const savedMaster = lessonSavedDraftRef.current.get(primaryContentLocale);
+      const masterVideoChanged = primaryDraft.youtubeUrl !== savedMaster?.youtubeUrl || primaryDraft.startLabel !== savedMaster?.startLabel || primaryDraft.endLabel !== savedMaster?.endLabel;
       let segmentDurationSeconds: number | undefined;
-      if (!isNonVideoFormat && ytUrlTrimmedMaster) {
+      if (masterVideoChanged && !isNonVideoFormat && ytUrlTrimmedMaster) {
         const effectiveStart = youtube_start_seconds ?? 0;
         if (
           youtube_end_seconds != null &&
@@ -3630,7 +3613,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       }
 
       const segmentPrimaryPatch =
-        !isNonVideoFormat && ytUrlTrimmedMaster
+        masterVideoChanged && !isNonVideoFormat && ytUrlTrimmedMaster
           ? {
               youtube_start_seconds,
               youtube_end_seconds:
@@ -3640,61 +3623,28 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                 : {}),
             }
           : {};
+      let candidate: CourseLesson = { ...editingLesson, lesson_format: editingLessonFormat, published: editingLessonPublished };
+      const localePatches: LessonLocales = {};
       for (const [loc, draft] of lessonDraftRef.current) {
-        const sanitizedResources = (draft.resources ?? [])
-          .map((r) => ({ title: (r.title ?? "").trim(), url: (r.url ?? "").trim() }))
-          .filter((r) => r.title && r.url);
-        const payload = {
-          title: draft.title.trim() || editingLesson.title,
-          youtube_url: isNonVideoFormat ? undefined : draft.youtubeUrl.trim(),
-          video_primary_locale: draft.videoPrimaryLocale,
-          has_subtitle: isNonVideoFormat ? false : draft.hasSubtitle,
-          subtitle_locales:
-            isNonVideoFormat || !draft.hasSubtitle ? [] : draft.subtitleLocales,
-          short_description: isQuizFormat || isPracticeFormat ? "" : draft.shortDescription.trim(),
-          description_markdown: isQuizFormat ? "" : draft.markdown.trim(),
-          resources: isQuizFormat || isPracticeFormat
-            ? []
-            : sanitizedResources,
-          practice_source_lesson_id: isPracticeFormat
-            ? draft.practiceSourceLessonIds[0] || draft.practiceSourceLessonId || null
-            : undefined,
-        };
+        const patch = lessonDraftPatch(draft, lessonSavedDraftRef.current.get(loc), loc === primaryContentLocale);
         if (loc === primaryContentLocale) {
-          const merged = {
-            ...payload,
-            lesson_format: editingLessonFormat,
-            published: editingLessonPublished,
-            ...segmentPrimaryPatch,
-          };
-          await updateLesson(id, editingLesson.id, merged, {
-            clearYoutube: isNonVideoFormat,
-            clearYoutubeSegments: Boolean(!isNonVideoFormat && ytUrlTrimmedMaster),
-          });
-          setLessons((prev) =>
-            prev.map((l) => (l.id === editingLesson.id ? { ...l, ...merged } : l)),
-          );
-        } else {
-          await setCourseLessonLocaleContent(id, editingLesson.id, loc, payload);
-          if (loc === activeContentLocale) {
-            setLessons((prev) =>
-              prev.map((l) =>
-                l.id === editingLesson.id
-                  ? applyCourseLessonLocaleContent(l, { locale: loc, ...payload })
-                  : l,
-              ),
-            );
-            setLessonLocaleMap((prev) => {
-              const next = new Map(prev);
-              next.set(editingLesson.id, { locale: loc, ...payload });
-              return next;
-            });
-          }
+          candidate = { ...candidate, ...patch, ...segmentPrimaryPatch };
+          if (isNonVideoFormat && getLessonFormat(editingLesson) === "video") candidate = { ...candidate, youtube_url: "", youtube_start_seconds: 0, youtube_end_seconds: null };
+        } else if (Object.keys(patch).length) {
+          localePatches[loc] = patch;
+        }
+        if (!(loc !== primaryContentLocale && draft.useSourceVideo) && !isNonVideoFormat &&
+          (parseTimestampLabelToSeconds(draft.startLabel.trim()) == null || (draft.endLabel.trim() && parseTimestampLabelToSeconds(draft.endLabel.trim()) == null))) {
+          throw new Error(learningT("learning.validation.invalid_segment") + " · " + loc.toUpperCase());
         }
       }
-      await refreshCourseTotalDuration(id);
-      const refreshedCourse = await getCourse(id);
-      if (refreshedCourse) setCourse(refreshedCourse);
+      const videoIssues = translationVideoIssues(candidate, localePatches, primaryContentLocale);
+      if (videoIssues.length) throw Object.assign(new Error("LESSON_NOT_PUBLISHABLE: " + videoIssues.map(issue => issue.code).join(",")), { details: JSON.stringify({ issues: videoIssues }) });
+      const savedLesson = await saveLearningLesson(id, candidate, undefined, localePatches);
+      setLessons(previous => previous.map(lesson => lesson.id === savedLesson.id ? savedLesson : lesson));
+      // The save transaction also synchronizes duration. Refresh failures must not be reported as failed writes.
+      await queryClient.invalidateQueries({ queryKey: ["courses"] }).catch(() => toast.error(learningT("learning.savedRefreshFailed")));
+
       void getLessonDistinctLearnerCountsForCourse(id)
         .then(setLessonLearnerCounts)
         .catch(() => {});
@@ -3705,7 +3655,13 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
     try {
       await savePromise;
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
+      const issues = learningMutationIssues(e, editingLesson.id);
+      setLessonSaveIssues(issues);
+      const message = learningSaveError(e, learningT, lessons, t("courseEdit.errors.updateFailed"));
+      setLessonSaveError(message + (issues[0]?.locale ? " · " + issues[0].locale.toUpperCase() : ""));
+      if (issues[0]?.locale) { const draft = lessonDraftRef.current.get(issues[0].locale); if (draft) applyLessonDraftToState(draft); setDialogLessonLocale(issues[0].locale); }
+    } finally {
+      setSavingLesson(false);
     }
   };
 
@@ -4658,6 +4614,10 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
         <div className="min-w-0 flex-1">
           {activeSection === "info" && canAccessInfo && (
             <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
+              {activeContentLocale !== primaryContentLocale && <TranslationReference values={[course.title,course.short_description,course.description,...(course.learning_outcomes??[])]}/>}
+              {localeQuery.isPending && <p role="status">{learningT("learning.loading")}</p>}
+              {localeQuery.isError && <p role="alert">{learningT("learning.translationLoadError")} <Button type="button" onClick={() => void localeQuery.refetch()}>{learningT("learning.retry")}</Button></p>}
+              <fieldset disabled={!localeQuery.isSuccess} className="contents">
               <h2 className="text-heading-medium font-display text-foreground">
                 {t("courseEdit.sidebar.nav.info")}
               </h2>
@@ -6065,6 +6025,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
               >
                 {saving ? t("courseEdit.labels.saving") : t("courseEdit.labels.save")}
               </Button>
+            </fieldset>
             </section>
           )}
 
@@ -6414,6 +6375,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
           <Dialog open={!!editingSection} onOpenChange={(open) => !open && closeEditSection()}>
             <DialogContent className="w-[calc(100%-2rem)] max-w-2xl">
               <fieldset disabled={savingSection} className="contents">
+              {dialogSectionLocale !== primaryContentLocale && editingSection && <TranslationReference values={[editingSection.title,editingSection.description]}/>}
               <DialogHeader>
                 <div className="flex items-center justify-between gap-3">
                   <DialogTitle>{t("courseEdit.sections.editTitle")}</DialogTitle>
@@ -6527,9 +6489,12 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
             </DialogContent>
           </Dialog>
 
-          <Dialog open={!!editingLesson} onOpenChange={(open) => !open && setEditingLesson(null)}>
+          <Dialog open={!!editingLesson} onOpenChange={(open) => !open && closeEditLesson()}>
             <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden p-0">
-              <div className="flex max-h-[85vh] flex-col">
+              {loadingLessonLocales && <p role="status" className="p-3">{learningT("learning.loading")}</p>}
+              {(loadingLessonLocales || lessonLoadError) && <Button type="button" variant="outline" onClick={() => void closeEditLesson()}>{learningT("learning.cancel")}</Button>}
+              {lessonLoadError && <p role="alert" className="p-3">{lessonLoadError} <Button type="button" onClick={() => retryLessonLoadRef.current()}>{learningT("learning.retry")}</Button></p>}
+              <fieldset disabled={loadingLessonLocales || Boolean(lessonLoadError) || savingLesson || translatingBundle === "lesson"} className="flex min-h-0 max-h-[85vh] flex-col">
                 <DialogHeader className="sticky top-0 z-10 border-b border-border-subtle bg-surface-float/95 p-4 backdrop-blur">
                   <div className="flex items-center justify-between gap-3">
                     <DialogTitle>{t("courseEdit.lessons.editTitle")}</DialogTitle>
@@ -6595,6 +6560,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       </p>
                     </div>
                   ) : null}
+                  {dialogLessonLocale !== primaryContentLocale && editingLesson && <TranslationReference values={[editingLesson.title,editingLesson.short_description,editingLesson.description_markdown,...(editingLesson.resources??[]).flatMap(resource=>[resource.title,resource.url])]} />}
                   {editingLesson && (lessonLearnerCounts[editingLesson.id] ?? 0) > 0 ? (
                     <div
                       role="alert"
@@ -6669,20 +6635,21 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       />
                     </Field>
                   ) : null}
-                  {dialogLessonLocale === primaryContentLocale &&
+                  {dialogLessonLocale !== primaryContentLocale && editingLessonFormat === "video" && <label className="flex gap-2 text-sm"><input type="checkbox" checked={editingLessonUseSourceVideo} onChange={event => setEditingLessonUseSourceVideo(event.target.checked)} />{learningT("learning.useSourceVideo")}{editingLessonUseSourceVideo && <span>{editingLesson?.youtube_url}</span>}</label>}
+                  {(dialogLessonLocale === primaryContentLocale || !editingLessonUseSourceVideo) &&
                   editingLessonFormat === "video" ? (
                   <Field>
                     <FieldLabel>{t("courseEdit.lessons.youtubeLabel")}</FieldLabel>
                     <Input
-                      value={editingLessonYoutubeUrl}
+                      id="legacy-learning-youtube_url" value={editingLessonYoutubeUrl}
                       onChange={(e) => setEditingLessonYoutubeUrl(e.target.value)}
                       placeholder={t("courseEdit.lessons.youtubePlaceholder")}
                       readOnly={
-                        !!editingLesson &&
+                        dialogLessonLocale === primaryContentLocale && !!editingLesson &&
                         (lessonLearnerCounts[editingLesson.id] ?? 0) > 0
                       }
                       disabled={
-                        !!editingLesson &&
+                        dialogLessonLocale === primaryContentLocale && !!editingLesson &&
                         (lessonLearnerCounts[editingLesson.id] ?? 0) > 0
                       }
                       title={
@@ -6693,14 +6660,14 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     />
                   </Field>
                   ) : null}
-                  {dialogLessonLocale === primaryContentLocale &&
+                  {(dialogLessonLocale === primaryContentLocale || !editingLessonUseSourceVideo) &&
                   editingLessonFormat === "video" &&
                   editingLessonYoutubeUrl.trim() ? (
                     <div className="grid gap-3 sm:grid-cols-2">
                       <Field>
                         <FieldLabel>{t("courseEdit.lessons.segmentStartLabel")}</FieldLabel>
                         <Input
-                          value={editingLessonYoutubeStartLabel}
+                          id="legacy-learning-youtube_start_seconds" value={editingLessonYoutubeStartLabel}
                           onChange={(e) => setEditingLessonYoutubeStartLabel(e.target.value)}
                           placeholder={t("courseEdit.lessons.segmentStartPlaceholder")}
                           autoComplete="off"
@@ -6709,7 +6676,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       <Field>
                         <FieldLabel>{t("courseEdit.lessons.segmentEndLabel")}</FieldLabel>
                         <Input
-                          value={editingLessonYoutubeEndLabel}
+                          id="legacy-learning-youtube_end_seconds" value={editingLessonYoutubeEndLabel}
                           onChange={(e) => setEditingLessonYoutubeEndLabel(e.target.value)}
                           placeholder={t("courseEdit.lessons.segmentEndPlaceholder")}
                           autoComplete="off"
@@ -6746,7 +6713,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       ) : null}
                     </FieldLabel>
                     <Input
-                      value={editingLessonTitle}
+                      id="legacy-learning-title" value={editingLessonTitle}
                       onChange={(e) => setEditingLessonTitle(e.target.value)}
                       placeholder={t("courseEdit.content.lessonTitlePlaceholder")}
                     />
@@ -6920,7 +6887,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       )}
                     </p>
                     <textarea
-                      value={editingLessonMarkdown}
+                      id="legacy-learning-description_markdown" value={editingLessonMarkdown}
                       onChange={(e) => setEditingLessonMarkdown(e.target.value)}
                       className="min-h-[220px] w-full rounded border border-border bg-surface-base px-3 py-2 font-mono text-sm leading-6 outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                       rows={10}
@@ -6934,7 +6901,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       {editingLessonResources.map((r, idx) => (
                         <div key={idx} className="grid gap-2 sm:grid-cols-[1fr_1.2fr_auto] sm:items-center">
                           <Input
-                            value={r.title}
+                            id={`legacy-learning-resource-${idx}-title`} value={r.title}
                             placeholder={t("courseEdit.lessons.resourceTitlePlaceholder")}
                             onChange={(e) =>
                               setEditingLessonResources((prev) => {
@@ -6945,7 +6912,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                             }
                           />
                           <Input
-                            value={r.url}
+                            id={`legacy-learning-resource-${idx}-url`} value={r.url}
                             placeholder={t("courseEdit.lessons.resourceUrlPlaceholder")}
                             onChange={(e) =>
                               setEditingLessonResources((prev) => {
@@ -7039,15 +7006,16 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                 ) : null}
                   </div>
                 </div>
+                {lessonSaveError && <p role="alert" className="px-4 text-sm text-destructive">{lessonSaveError}</p>}
                 <DialogFooter className="sticky bottom-0 z-10 border-t border-border-subtle bg-surface-float/95 p-4 backdrop-blur">
-                  <Button type="button" variant="outline" onClick={() => setEditingLesson(null)}>
+                  <Button type="button" variant="outline" onClick={() => void closeEditLesson()}>
                     {t("courseEdit.lessons.cancel")}
                   </Button>
                   <Button type="button" onClick={() => void handleSaveLessonDetails()}>
                     {t("courseEdit.lessons.save")}
                   </Button>
                 </DialogFooter>
-              </div>
+              </fieldset>
             </DialogContent>
           </Dialog>
 
@@ -7835,6 +7803,10 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
 
           {activeSection === "assignments" && canAccessAssignments && (
             <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
+              {activeContentLocale !== primaryContentLocale && <TranslationReference values={[course.final_assignment_title,course.final_assignment_description,course.final_assignment_instructions]}/>}
+              {localeQuery.isPending && <p role="status">{learningT("learning.loading")}</p>}
+              {localeQuery.isError && <p role="alert">{learningT("learning.translationLoadError")} <Button type="button" onClick={() => void localeQuery.refetch()}>{learningT("learning.retry")}</Button></p>}
+              <fieldset disabled={!localeQuery.isSuccess} className="contents">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <h2 className="flex items-center gap-2 text-heading-medium font-display text-foreground">
                   <FileText className="size-5" aria-hidden /> {t("courseEdit.sidebar.nav.assignments")}
@@ -8119,6 +8091,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                   {t("courseEdit.assignments.noSubmissionsHint")}
                 </p>
               )}
+            </fieldset>
             </section>
           )}
 
@@ -8652,7 +8625,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
         open={lessonQuizDialogOpen}
         section={null}
         courseId={id ?? ""}
-        locale={activeContentLocale}
+        locale={editingLesson ? dialogLessonLocale : activeContentLocale}
         userId={profile?.id}
         mode="lesson"
         lessonId={lessonQuizDialogLesson?.id}
