@@ -100,6 +100,7 @@ export function CourseCompletionCertificatePanel({
                 type="button"
                 size="sm"
                 variant="outline"
+                disabled={issuing}
                 onClick={() => setRevertDialogOpen(true)}
               >
                 <RotateCcw className="size-4" aria-hidden />

@@ -115,7 +115,9 @@ export function RevertCourseCompletionDialog({
                     })}
                   </span>
                   <span className="inline-flex items-center rounded-full border border-primary/20 bg-primary/15 px-2 py-0.5 text-[11px] font-medium text-primary">
-                    Khuyên dùng
+                    {t("detail.learn.completion.revertRecommendedBadge", {
+                      defaultValue: "Khuyên dùng",
+                    })}
                   </span>
                 </div>
                 <p className="text-xs leading-relaxed text-foreground-muted">
@@ -159,7 +161,9 @@ export function RevertCourseCompletionDialog({
                     })}
                   </span>
                   <span className="inline-flex items-center rounded-full border border-border-strong bg-surface-raised px-2 py-0.5 text-[11px] font-medium text-foreground-muted">
-                    0%
+                    {t("detail.learn.completion.resetAllBadge", {
+                      defaultValue: "0%",
+                    })}
                   </span>
                 </div>
                 <p className="text-xs leading-relaxed text-foreground-muted">
@@ -179,7 +183,9 @@ export function RevertCourseCompletionDialog({
               </div>
               <div className="min-w-0 space-y-0.5 leading-relaxed">
                 <span className="block font-semibold text-success">
-                  Chứng nhận được bảo lưu an toàn
+                  {t("detail.learn.completion.revertPreserveCertificateTitle", {
+                    defaultValue: "Chứng nhận được bảo lưu an toàn",
+                  })}
                 </span>
                 <p className="text-foreground-muted">
                   {t("detail.learn.completion.revertPreserveCertificateNotice", {

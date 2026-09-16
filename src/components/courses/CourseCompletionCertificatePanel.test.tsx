@@ -137,4 +137,26 @@ describe("CourseCompletionCertificatePanel", () => {
 
     await view.unmount();
   });
+
+  it("disables revert button when issuing is true", async () => {
+    const onRevert = vi.fn().mockResolvedValue(undefined);
+    const view = render(
+      <CourseCompletionCertificatePanel
+        hasCertificate={true}
+        certificateIssued={true}
+        issuing={true}
+        achievementsPath="/achievements"
+        onRevert={onRevert}
+      />,
+    );
+    await view.render();
+
+    const revertBtn = Array.from(view.container.querySelectorAll("button")).find((btn) =>
+      btn.textContent?.includes("Hoàn tác hoàn thành"),
+    );
+    expect(revertBtn).toBeDefined();
+    expect(revertBtn?.hasAttribute("disabled")).toBe(true);
+
+    await view.unmount();
+  });
 });
