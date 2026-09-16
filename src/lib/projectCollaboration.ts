@@ -129,6 +129,7 @@ export type CollaborationProfileMini = {
   username: string | null;
   full_name: string | null;
   avatar_url?: string | null;
+  avatar_seed?: string | null;
 };
 
 export async function listCollaborationProfiles(
@@ -139,7 +140,7 @@ export async function listCollaborationProfiles(
   if (ids.length === 0) return {};
   let request = supabase
     .from("public_profiles")
-    .select("id,username,full_name,avatar_url")
+    .select("id,username,full_name,avatar_url,avatar_seed")
     .in("id", ids);
   if (signal) request = request.abortSignal(signal);
   const { data, error } = await request;

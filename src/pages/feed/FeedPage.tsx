@@ -4,7 +4,7 @@ import { Bell, ChevronDown, Loader2, RefreshCw, Rss } from "lucide-react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -173,10 +173,14 @@ function FeedItem({
     <article className="rounded-lg border border-border-subtle bg-surface-base p-4 shadow-card">
       <div className="flex gap-3">
         <NavLink to={actorHref(actor, event.actor_id)} className="shrink-0">
-          <Avatar className="size-10">
-            <AvatarImage src={actor?.avatar_url ?? undefined} alt="" />
-            <AvatarFallback>{actorName.charAt(0).toUpperCase()}</AvatarFallback>
-          </Avatar>
+          <UserAvatar
+            userId={actor?.id ?? event.actor_id}
+            avatarUrl={actor?.avatar_url}
+            avatarSeed={actor?.avatar_seed}
+            alt={actorName}
+            fallback={actorName.charAt(0).toUpperCase()}
+            className="size-10"
+          />
         </NavLink>
         <div className="min-w-0 flex-1">
           <p className="text-sm leading-6 text-foreground">

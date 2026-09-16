@@ -221,6 +221,11 @@
       "alt": "Avatar",
       "upload": "Tải ảnh lên",
       "uploading": "Đang tải lên…",
+      "randomize": "Đổi mẫu ngẫu nhiên",
+      "tryAnother": "Thử mẫu khác",
+      "useThis": "Dùng avatar này",
+      "cancel": "Hủy",
+      "saving": "Đang lưu…",
       "hint": "JPG, PNG hoặc WebP. Ảnh sẽ được lưu và cập nhật ngay."
     },
     "fullName": {
@@ -260,6 +265,7 @@
     },
     "errors": {
       "avatarUploadFailed": "Không thể tải ảnh lên.",
+      "avatarUpdateFailed": "Không thể cập nhật avatar.",
       "updateFailed": "Không thể cập nhật thông tin.",
       "visibilityUpdateFailed": "Không thể cập nhật trạng thái hiển thị hồ sơ.",
       "usernameTaken": "Username này đã được sử dụng. Vui lòng chọn username khác.",

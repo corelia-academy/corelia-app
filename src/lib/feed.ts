@@ -14,6 +14,7 @@ export interface FeedActor {
   ocid: string | null;
   full_name: string | null;
   avatar_url: string | null;
+  avatar_seed: string | null;
 }
 
 export interface FeedPageData {
@@ -40,7 +41,7 @@ export async function getFeedPage(options: GetFeedOptions = {}): Promise<FeedPag
 
   let request = supabase
     .from("public_profiles")
-    .select("id,username,ocid,full_name,avatar_url")
+    .select("id,username,ocid,full_name,avatar_url,avatar_seed")
     .in("id", actorIds);
   if (options.signal) request = request.abortSignal(options.signal);
   const { data, error } = await request;

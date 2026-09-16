@@ -13,6 +13,7 @@ export type ManualMintHistoryRow = {
   recipientEmail: string;
   recipientOcid: string | null;
   recipientAvatarUrl: string | null;
+  recipientAvatarSeed: string | null;
   grantedBy: string | null;
   granterName: string | null;
   granterEmail: string | null;
@@ -77,6 +78,7 @@ type ProfileQueryResult = {
   email: string | null;
   ocid: string | null;
   avatar_url: string | null;
+  avatar_seed: string | null;
 };
 
 export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistoryRow[]> {
@@ -168,7 +170,7 @@ export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistory
   if (userIds.length > 0) {
     const { data: profiles, error: profErr } = await supabase
       .from("profiles")
-      .select("id, full_name, email, ocid, avatar_url")
+      .select("id, full_name, email, ocid, avatar_url, avatar_seed")
       .in("id", userIds);
 
     if (!profErr && profiles) {
@@ -207,6 +209,7 @@ export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistory
       recipientEmail: recipient?.email ?? "",
       recipientOcid: recipient?.ocid ?? null,
       recipientAvatarUrl: recipient?.avatar_url ?? null,
+      recipientAvatarSeed: recipient?.avatar_seed ?? null,
       grantedBy: item.granted_by,
       granterName: granter?.full_name?.trim() || granter?.email || "Admin",
       granterEmail: granter?.email ?? null,
@@ -243,6 +246,7 @@ export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistory
       recipientEmail: item.email,
       recipientOcid: null,
       recipientAvatarUrl: null,
+      recipientAvatarSeed: null,
       grantedBy: item.granted_by ?? null,
       granterName: granter?.full_name?.trim() || granter?.email || "Admin",
       granterEmail: granter?.email ?? null,

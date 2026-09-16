@@ -2,7 +2,7 @@ import { Link } from "react-router";
 import { Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { CourseCoInstructorSnapshot } from "@/types/courses";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 
 interface CourseCoInstructorsSectionProps {
   coInstructors: CourseCoInstructorSnapshot[];
@@ -50,10 +50,14 @@ export function CourseCoInstructorsSection({
               className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4"
             >
               <div className="flex items-start gap-3">
-                <Avatar className="mt-0.5 size-10 rounded-full border border-border-subtle">
-                  <AvatarImage src={p.avatar_url || undefined} alt={label} />
-                  <AvatarFallback>{fallback}</AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  userId={p.id}
+                  avatarUrl={p.avatar_url}
+                  avatarSeed={p.avatar_seed}
+                  alt={label}
+                  fallback={fallback}
+                  className="mt-0.5 size-10 rounded-full border border-border-subtle"
+                />
 
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-foreground">
@@ -96,4 +100,3 @@ export function CourseCoInstructorsSection({
     </section>
   );
 }
-

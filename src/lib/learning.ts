@@ -6,6 +6,7 @@ import { getLessonQuestions } from "@/lib/sectionQuestions";
 import type { CourseLesson, CourseLessonLocaleContent, SupportedCourseLocale } from "@/types/courses";
 import type { SectionQuestion, SectionQuestionAttempt } from "@/types/questions";
 import type { PublishValidationIssue } from "@/features/learning/types";
+import { getPublicAvatarSeeds } from "@/lib/publicProfileAvatars";
 
 export interface LearningQuizResult {
   attempt_group_id: string;
@@ -87,6 +88,7 @@ export interface LearningCourseParticipant {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
+  avatar_seed?: string | null;
   email: string | null;
   progress_percent: number;
 }
@@ -95,10 +97,12 @@ export async function getLearningCourseRoster(courseId: string, signal?: AbortSi
   if (signal) request = request.abortSignal(signal);
   const { data, error } = await request;
   if (error) throw new Error(error.message);
-  return data ?? [];
+  const rows = (data ?? []) as LearningCourseParticipant[];
+  const seeds = await getPublicAvatarSeeds(rows.map((row) => row.id), signal);
+  return rows.map((row) => ({ ...row, avatar_seed: seeds.get(row.id) ?? null }));
 }
 export async function searchLearningInstructors(search: string) {
-  const { data, error } = await supabase.from("public_profiles").select("id,full_name,avatar_url,instructor_headline,instructor_organization").ilike("full_name", `%${search.replace(/[%_]/g, "")}%`).limit(20);
+  const { data, error } = await supabase.from("public_profiles").select("id,full_name,avatar_url,avatar_seed,instructor_headline,instructor_organization").ilike("full_name", `%${search.replace(/[%_]/g, "")}%`).limit(20);
   if (error) throw new Error(error.message);
   return data ?? [];
 }

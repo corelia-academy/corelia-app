@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import type { FollowRow, FollowSubject } from "@/types/feed";
+import { getPublicAvatarSeeds } from "@/lib/publicProfileAvatars";
 
 export interface FollowerPreviewRow {
   id: string;
@@ -7,6 +8,7 @@ export interface FollowerPreviewRow {
   ocid: string | null;
   full_name: string | null;
   avatar_url: string | null;
+  avatar_seed: string | null;
   followed_at: string;
 }
 
@@ -68,7 +70,9 @@ export async function listFollowers(
     p_limit: limit,
   });
   if (error) throw new Error(error.message);
-  return (data ?? []) as FollowerPreviewRow[];
+  const rows = (data ?? []) as Omit<FollowerPreviewRow, "avatar_seed">[];
+  const seeds = await getPublicAvatarSeeds(rows.map((row) => row.id));
+  return rows.map((row) => ({ ...row, avatar_seed: seeds.get(row.id) ?? null }));
 }
 
 export async function listUserFollowing(
@@ -80,7 +84,9 @@ export async function listUserFollowing(
     p_limit: limit,
   });
   if (error) throw new Error(error.message);
-  return (data ?? []) as FollowerPreviewRow[];
+  const rows = (data ?? []) as Omit<FollowerPreviewRow, "avatar_seed">[];
+  const seeds = await getPublicAvatarSeeds(rows.map((row) => row.id));
+  return rows.map((row) => ({ ...row, avatar_seed: seeds.get(row.id) ?? null }));
 }
 
 export async function getUserFollowingProfileCount(userId: string): Promise<number> {

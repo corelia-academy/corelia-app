@@ -15,7 +15,7 @@ import {
   Lock,
 } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { FollowButton } from "@/components/social/FollowButton";
 import { FollowerPreview } from "@/components/social/FollowerPreview";
@@ -266,19 +266,17 @@ export default function UserProfileLayout() {
               {loading ? (
                 <Skeleton className="size-20 rounded-2xl sm:size-28" />
               ) : (
-                <Avatar
+                <UserAvatar
+                  userId={profile?.id}
+                  avatarUrl={profile?.avatar_url}
+                  avatarSeed={profile?.avatar_seed}
+                  alt={profile ? profileTitle(profile) : ""}
+                  fallback={<User className="size-7" aria-hidden />}
                   size="lg"
                   className="size-20 rounded-2xl ring-4 ring-surface-base/80 sm:size-28"
-                >
-                  <AvatarImage
-                    src={profile?.avatar_url ?? undefined}
-                    alt=""
-                    className="rounded-2xl"
-                  />
-                  <AvatarFallback className="rounded-2xl">
-                    <User className="size-7" aria-hidden />
-                  </AvatarFallback>
-                </Avatar>
+                  imageClassName="rounded-2xl"
+                  fallbackClassName="rounded-2xl"
+                />
               )}
 
               <div className="min-w-0 flex-1">

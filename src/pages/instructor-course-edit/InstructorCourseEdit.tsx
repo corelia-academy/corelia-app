@@ -143,6 +143,7 @@ import {
 } from "@/lib/lessonFormat";
 import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/components/UserAvatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8466,19 +8467,17 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                           >
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
-                                {profile?.avatar_url ? (
-                                  <img
-                                    src={profile.avatar_url}
-                                    alt=""
-                                    className="h-8 w-8 rounded-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-raised text-foreground-muted text-xs font-medium">
-                                    {(profile?.full_name || e.user_id)
-                                      .charAt(0)
-                                      .toUpperCase()}
-                                  </div>
-                                )}
+                                <UserAvatar
+                                  userId={e.user_id}
+                                  avatarUrl={profile?.avatar_url}
+                                  avatarSeed={profile?.avatar_seed}
+                                  alt={profile?.full_name || e.user_id}
+                                  fallback={(profile?.full_name || e.user_id)
+                                    .charAt(0)
+                                    .toUpperCase()}
+                                  className="size-8"
+                                  size="sm"
+                                />
                                 <span className="font-medium text-foreground">
                                   {profile?.full_name || "—"}
                                 </span>

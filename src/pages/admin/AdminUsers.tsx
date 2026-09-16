@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { useAdminProfiles } from "@/features/admin/users/hooks/useAdminProfiles";
 import { AdminStatsCard } from "@/features/admin/ui/AdminStatsCard";
 import { AdminErrorBanner } from "@/features/admin/ui/AdminErrorBanner";
+import { UserAvatar } from "@/components/UserAvatar";
 
 export default function AdminUsers() {
   const { t } = useTranslation("admin");
@@ -255,17 +256,14 @@ export default function AdminUsers() {
             filtered.map((p) => (
               <article key={p.id} className="space-y-4 p-4">
                 <div className="flex items-center gap-3">
-                  {p.avatar_url ? (
-                    <img
-                      src={p.avatar_url}
-                      alt=""
-                      className="size-10 rounded-full bg-surface-raised object-cover"
-                    />
-                  ) : (
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-raised text-sm font-medium text-foreground-muted">
-                      {(p.full_name || p.username || "U")[0].toUpperCase()}
-                    </div>
-                  )}
+                  <UserAvatar
+                    userId={p.id}
+                    avatarUrl={p.avatar_url}
+                    avatarSeed={p.avatar_seed}
+                    alt={p.full_name || p.username || "User"}
+                    fallback={(p.full_name || p.username || "U")[0].toUpperCase()}
+                    className="size-10"
+                  />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-foreground">
                       {p.full_name || (p.username ? `@${p.username}` : t("users.mobile.notUpdated"))}
@@ -424,17 +422,14 @@ export default function AdminUsers() {
                   <tr key={p.id} className="transition-colors hover:bg-surface-raised">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        {p.avatar_url ? (
-                          <img
-                            src={p.avatar_url}
-                            alt=""
-                            className="size-9 rounded-full bg-surface-raised object-cover"
-                          />
-                        ) : (
-                          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-surface-raised text-sm font-medium text-foreground-muted">
-                            {(p.full_name || p.username || "U")[0].toUpperCase()}
-                          </div>
-                        )}
+                        <UserAvatar
+                          userId={p.id}
+                          avatarUrl={p.avatar_url}
+                          avatarSeed={p.avatar_seed}
+                          alt={p.full_name || p.username || "User"}
+                          fallback={(p.full_name || p.username || "U")[0].toUpperCase()}
+                          className="size-9"
+                        />
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium text-foreground">
                             {p.full_name || (p.username ? `@${p.username}` : t("users.mobile.notUpdated"))}
