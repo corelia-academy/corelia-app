@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "b3ed246eb38bed62d154c772947fa782b5c5a3a4",
-  "git_tree_sha": "195a1e1ad1fda852ee4f9b95d24246178244b0d5",
+  "rc_sha": "c710b990625fcbe48e143997b00a7a7270175cfa",
+  "git_tree_sha": "eefed107deb5c385cfa5acfc59b655bbca8c88ab",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 234,
-  "latest_migration": "20260916045248_add_profile_avatar_seed.sql",
+  "migration_count": 235,
+  "latest_migration": "20260916093549_email_center.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "b3ed246eb38bed62d154c772947fa782b5c5a3a4",
+  "source_sha": "c710b990625fcbe48e143997b00a7a7270175cfa",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "557af4178f0714b3918f9d170d1b59b87ba71e30d947d6ef938f3f1a9895ee74",
+  "candidate_tree_sha256": "3b258ae7050508ad5715d2c105dd6937bddcc428170958e064d5025b9be99968",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -47,11 +47,11 @@
     },
     {
       "path": ".github/workflows/deploy-prod.yml",
-      "sha256": "0cb14501691f5f37767456b4257b8aed2c8bd5f908780aa8eff91a4daa9f347d"
+      "sha256": "e96fff91fabac8ea5a57e9fd09c7045625605164869a3244d07184f7ed12d247"
     },
     {
       "path": ".github/workflows/deploy-staging.yml",
-      "sha256": "3b965c696c9fabf1660bda972b2b3138af03d39ecbf63d91bbd72f447dcb84cc"
+      "sha256": "8552f2ca8c417bba30ebcb99855724aa3a03cc5613d3fa100ad9057af9b6dfaf"
     },
     {
       "path": ".gitignore",
@@ -408,6 +408,14 @@
     {
       "path": "docs/db-baseline/wave-0-implementation-report.md",
       "sha256": "fad43d7b38667a132bb0a954d2e142c82b676eadd87b74b5d19f71760f643fa3"
+    },
+    {
+      "path": "docs/EMAIL_CENTER_ADMIN_GUIDE.md",
+      "sha256": "a43745230ac29ca969b925b37b26dad1af2b118687c04f501d446deef04111c9"
+    },
+    {
+      "path": "docs/EMAIL_CENTER_SETUP_STATUS.md",
+      "sha256": "accf9efd7250b917f64283c4a6d23bff87890635edcfbb8d5ab6d36370eab8bc"
     },
     {
       "path": "docs/front-end-rules/architecture.md",
@@ -843,7 +851,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "c9c68a52697f2ca0b5a804b2c0e9abce31d35f5ddd8530935045b271409034d3"
+      "sha256": "66ae0adccafdf3a8ba1bd49dd2e669d2087caeefdab5c2a1bd0b9d172839fa7d"
     },
     {
       "path": "pnpm-lock.yaml",
@@ -911,7 +919,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "7c961ca8cb1cb6a9eb4c2312da322a94180fe069897682bd19c507060ad303a5"
+      "sha256": "9af7d81284c28efabe24651ee770a3bf68cbdb37f5de5c6562cefa0d283fbc3c"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -940,6 +948,10 @@
     {
       "path": "scripts/db/tests/config-table-retirement.contract.test.mjs",
       "sha256": "be8d4c41581b11bdd1cd49d29e158ef93d1b98718e94410c510bc069242bb6da"
+    },
+    {
+      "path": "scripts/db/tests/email-center.integration.sql",
+      "sha256": "363e2f2981c5d3ec81a667749cfe3798637e0c1c5ddedf26afaa2077af7ddde2"
     },
     {
       "path": "scripts/db/tests/financial-retirement.contract.test.mjs",
@@ -979,7 +991,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "d43acf894f01d9c0f448e2b04ea897cf97bebaf54faee26fd193d25f7d725942"
+      "sha256": "97408ddbe34f0180954017232eb8986d8220fbbca5367a0aefd5f126cbbc4e13"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
@@ -1043,11 +1055,11 @@
     },
     {
       "path": "scripts/db/tests/production-frontend-artifact.test.mjs",
-      "sha256": "c260acb8a6e583e590cb2e28d2bc4588a5d4b637bb45826be9bade7a5f6f46ea"
+      "sha256": "6b3e93305aa7a647c228c663ddb187cd4a4fd71aa47eed071899d1c0a1ec8c6b"
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "904346aba0c405b10c53060b9522c2eb128a6559a2eb94117cb09f73494830fc"
+      "sha256": "2d25021d8ee15e177683f92b38d15945267d5854079196431b2fa591414947dc"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
@@ -1098,6 +1110,10 @@
       "sha256": "2769b99d902e430ed417b0467c21d0cc751efe35bf583a9ce3ebe158e22b026c"
     },
     {
+      "path": "scripts/db/verify-email-center-scheduler-vault.sql",
+      "sha256": "edad14e31ce4526588ed9aa043f3f0ebf8aac1c65e19e53f40905bb759480591"
+    },
+    {
       "path": "scripts/db/verify-jobs-scheduler-vault.sql",
       "sha256": "6f82ac6efad2cd3a7ffe937f8846e8241cef864532c129114c5fe4edfce3bc2e"
     },
@@ -1107,7 +1123,7 @@
     },
     {
       "path": "scripts/db/verify-local-migration-apply.mjs",
-      "sha256": "ef70e3b4d8eaa4d37e8734fa49cd334cfbde631a4cb3c5d2aad3964d4b429db9"
+      "sha256": "04c42fec4f08eb6f3935033678a30a7cfe2b712cdae90452e6bfe86db3ffa342"
     },
     {
       "path": "scripts/db/verify-migration-baseline.mjs",
@@ -1215,7 +1231,7 @@
     },
     {
       "path": "src/App.tsx",
-      "sha256": "ca4d4c8d7a5ac0ddd61d12285160ea00b23b321fc904ddc22c3c884997f3b5cb"
+      "sha256": "f755b8e8b75439cbefc54f2ae462ce858671678e7670b100da6e6f1d23ddc724"
     },
     {
       "path": "src/components/auth/AuthBootstrapScreen.tsx",
@@ -1458,8 +1474,12 @@
       "sha256": "834cda89bbf545176b00ff1d5ba326e05a37c6fc63edec0951e5ad9e15de9a1b"
     },
     {
+      "path": "src/components/UserAvatar.test.tsx",
+      "sha256": "ba73db7aa33ff9c230931a680d3147aa3a89b1d75ac515051ba0a5dc365e5f46"
+    },
+    {
       "path": "src/components/UserAvatar.tsx",
-      "sha256": "239b0186059fadc742982150317c7370913a302de14df3ed7f7cb37b30d8e6c1"
+      "sha256": "330052b3b3962b46330f1e6658ba7ca47a175b632ae5c644f73717a793429d99"
     },
     {
       "path": "src/config/roles.ts",
@@ -1495,11 +1515,11 @@
     },
     {
       "path": "src/features/admin/layout/adminPageMeta.ts",
-      "sha256": "073634478612b3b2023cbfacd3972122d8ba2b27d5f692ba8c5a66a9b07cbeaf"
+      "sha256": "d9a427453cea56730822d7e66b1f28e2281b5ee1264061c6c54ebd0464d97efe"
     },
     {
       "path": "src/features/admin/layout/AdminSidebar.tsx",
-      "sha256": "83a3812ace1c46f916d7b596d00ad9211728e8e26efdc7c2d26d43959201aa6e"
+      "sha256": "a761de155fe95d59c262ae31a67884986473bf0669e4137b956963c59359cd5e"
     },
     {
       "path": "src/features/admin/users/hooks/useAdminProfiles.ts",
@@ -2055,11 +2075,11 @@
     },
     {
       "path": "src/i18n-types.d.ts",
-      "sha256": "b7a8b241c145bce60f7c3fe118d1263e68cd260a109e5e86fd8d01ca206623f8"
+      "sha256": "3f6359056e87f666a5d86e06c6383fcf23fac05a07aa63233320a4d5c65590e9"
     },
     {
       "path": "src/i18n.ts",
-      "sha256": "3024c90f349fbf678ff368d1e9d213c6e54de2ec4dfb96f3424f451416aaacba"
+      "sha256": "20a336c47b17ce8768ff9aa8f74a41647b11daca5d723681670d938615edb24e"
     },
     {
       "path": "src/lib/auth.ts",
@@ -2120,6 +2140,10 @@
     {
       "path": "src/lib/descriptionGenerator.ts",
       "sha256": "585f27f7226170881a708307cf2228cec1aaedf6d0e51c28e33398d6b6ee0b12"
+    },
+    {
+      "path": "src/lib/emailCenter.ts",
+      "sha256": "cd762df3e49a3c9390a341c2c0eb6edd858ec1984c5fd0453c9e8f48a8a8c080"
     },
     {
       "path": "src/lib/entityLocales.test.ts",
@@ -2211,7 +2235,7 @@
     },
     {
       "path": "src/lib/notificationPreferences.ts",
-      "sha256": "014f197caa73901fc8b5cbd0edbd8174a3af94ae9169a5c0ee0ab2339bc3a837"
+      "sha256": "f44e6392142dd726a72fe052492bf1fdf3207c600f38b904c5d5427e6996e269"
     },
     {
       "path": "src/lib/notifications.ts",
@@ -2375,7 +2399,7 @@
     },
     {
       "path": "src/locales/en/admin.json",
-      "sha256": "ecaa669bbd7818b76216640116ae5af498a9dbf6e9afde5da07e6e016eb4f917"
+      "sha256": "3af10d4754d16babdc2fa1bc65f601b9492bc7a1b2fb98219f06da783f12e0be"
     },
     {
       "path": "src/locales/en/career.json",
@@ -2394,6 +2418,10 @@
       "sha256": "fc56e2757647234625deeb5e02b14e4ae01df6a3088a84d88a852c52ef95ce2c"
     },
     {
+      "path": "src/locales/en/emailCenter.json",
+      "sha256": "cb881965c18d91c7fc35a96e3a021df5c705dc37e41a6d1f9d501cdbe0a3d37c"
+    },
+    {
       "path": "src/locales/en/instructor.json",
       "sha256": "1301426f7627bc2b8bd3e827df6f042fd96d2b3e6b8b11d34ea16e69e8deacaf"
     },
@@ -2407,7 +2435,7 @@
     },
     {
       "path": "src/locales/vi/admin.json",
-      "sha256": "d8221ab35b3d9228d8c3126c4a45ef9e6ca9b840b891001dd124aa1abeb9fa08"
+      "sha256": "12d49ed57fff8fac32ea33a14132510419792182b7b395ee44777f2bed5953f1"
     },
     {
       "path": "src/locales/vi/career.json",
@@ -2424,6 +2452,10 @@
     {
       "path": "src/locales/vi/courses.json",
       "sha256": "0ebe230e490941ee79750f0bc8ab38e8f77687e1b6bb4347a27fc6212e501631"
+    },
+    {
+      "path": "src/locales/vi/emailCenter.json",
+      "sha256": "dd7190705c1e67fcec4b14286fc62d62f55aa30ac865f778a5dc8c061a709a95"
     },
     {
       "path": "src/locales/vi/instructor.json",
@@ -2548,6 +2580,10 @@
     {
       "path": "src/pages/admin/components/ManualMintTemplatesTab.tsx",
       "sha256": "9b8a3b1ae112a650c4f612072f4af4e5fe985227818e01b7a5e4ab522f43729c"
+    },
+    {
+      "path": "src/pages/admin/email/AdminEmailCenterPage.tsx",
+      "sha256": "0ec13724e29598c2f35ffe95f481f8c109d376dd12e9aba1a1846ddb61b2a289"
     },
     {
       "path": "src/pages/admin/hackathons/AdminHackathonEditorPage.test.ts",
@@ -3307,11 +3343,11 @@
     },
     {
       "path": "supabase/config.toml",
-      "sha256": "9e3b379c1c581f0f7d767d3b561ab40218e6c1f621083529f08a26b727d8b514"
+      "sha256": "4635e2f25ea9cebfb188389af8aac38079983ea701e44486ca1c61dd8ceae4a0"
     },
     {
       "path": "supabase/functions/.env.example",
-      "sha256": "e923fe073fdaab1fc34427d5deb4fadae1cb156b506de4ce36131da17159b390"
+      "sha256": "ff54cf8d2189e17a77104541eb2374af672fd762f09889ffd69a276c5f134430"
     },
     {
       "path": "supabase/functions/corelia-api/certificates/handlers.ts",
@@ -3319,7 +3355,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/courses/completion.ts",
-      "sha256": "36af2c6fc8e54128a33af63119b942344272d9d9c632e715af6ca189c376201d"
+      "sha256": "2471e78cef3be5d92522d290816cfbbcbdb59082664168a817e277ebe901f966"
     },
     {
       "path": "supabase/functions/corelia-api/courses/learning_reminders.ts",
@@ -3340,6 +3376,50 @@
     {
       "path": "supabase/functions/corelia-api/credentials/revoke.ts",
       "sha256": "c7aaebbec86315e21748b08586f75101f97b8fcf985efe936cbb4319aceeb261"
+    },
+    {
+      "path": "supabase/functions/corelia-api/email/automation.ts",
+      "sha256": "7e823e8f0a424f9ca775aa759710267751161f9e5c890332224b08d7293e3cc9"
+    },
+    {
+      "path": "supabase/functions/corelia-api/email/batching.test.ts",
+      "sha256": "7d1228d2e39f580ed773090b53b8a22f1cd723c85f7e9124911764231d95f74a"
+    },
+    {
+      "path": "supabase/functions/corelia-api/email/batching.ts",
+      "sha256": "3b05239644b408e6c25ca5ada5e80894b31d333746b0614b5104c3e469a8785e"
+    },
+    {
+      "path": "supabase/functions/corelia-api/email/csv.test.ts",
+      "sha256": "cedc478ce06ba5cd157b9de2523a4e021886494cd7f4ccb7dddbe09c4e21e30a"
+    },
+    {
+      "path": "supabase/functions/corelia-api/email/csv.ts",
+      "sha256": "0218241d36424d5cc41ba870332911ec2f56e8ecdbcf4cb93dcbc2c588e08ae9"
+    },
+    {
+      "path": "supabase/functions/corelia-api/email/handler.ts",
+      "sha256": "4cab3f1c2d84222e8c82853eb9e6e844f59749e7379acaaecd95b350328ae1b3"
+    },
+    {
+      "path": "supabase/functions/corelia-api/email/importWorker.ts",
+      "sha256": "f1f4f09765317432ffa0f9a55518fd80ab0c945cb3e883947e7513a6e6ea8ec9"
+    },
+    {
+      "path": "supabase/functions/corelia-api/email/template.test.ts",
+      "sha256": "1754875b4a6853bdcb7673c361d5d9770bd85fa084023ad8a6c7dd883529a8ce"
+    },
+    {
+      "path": "supabase/functions/corelia-api/email/template.ts",
+      "sha256": "747cfcbe20809529b41e0af6aa9b55aedbc0178781876bd58f2d7f355cd0d019"
+    },
+    {
+      "path": "supabase/functions/corelia-api/email/webhook.ts",
+      "sha256": "9dd72224b4b527b84cc6856af43bd97255008f3034e8878f269009a563b590ce"
+    },
+    {
+      "path": "supabase/functions/corelia-api/email/worker.ts",
+      "sha256": "570e1a2cfff781803bf8210a613b6f7a930a19411aef0e1cc563db675b4511cc"
     },
     {
       "path": "supabase/functions/corelia-api/hackathons/blast_email.ts",
@@ -3363,7 +3443,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/index.ts",
-      "sha256": "c985d39fc35e026219762b1b9f40a8c1a19963a0d4c9208a40c65002bb3d1835"
+      "sha256": "2f8ada1947bdb177fe1321c53babfc0d3509a4e01c5ef75fa9268fa75bc10b93"
     },
     {
       "path": "supabase/functions/corelia-api/jobs/adapters.test.ts",
@@ -3451,7 +3531,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/layout.ts",
-      "sha256": "cd32b46c483ba41a27559212ea25bf3ed8aefbd1b1399f947d6a53219617a3de"
+      "sha256": "0ab8a95ef65a81db031b2c7bb297e8ccd8ecca184a20737d4810100a88c0160d"
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/outbox.test.ts",
@@ -3475,7 +3555,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/resend.ts",
-      "sha256": "f9cc3bfaa20c282e60c745f3c73dc47f0d2a56ce5ba5c23684860a7cc2b229f3"
+      "sha256": "7d828cacb49d51deeff656e6ac60e99d13661be45962e68f7a6ae9ebe59b832d"
     },
     {
       "path": "supabase/functions/corelia-api/lib/supabase.ts",
@@ -3535,7 +3615,11 @@
     },
     {
       "path": "supabase/functions/corelia-api/README.md",
-      "sha256": "435a49db7f802964b5f0a931b720a58556536dc950e0198b3e319c07b12affcd"
+      "sha256": "cdd7c5e2d95798d0d4212a70b665fb65cf74cb1f033595b331c5fb8a0e780f83"
+    },
+    {
+      "path": "supabase/functions/cron-email-center/index.ts",
+      "sha256": "c75fac178047686a036f3d543bcafb7f498f4610c80bf915b0a4f325761d0b8f"
     },
     {
       "path": "supabase/functions/cron-jobs/index.ts",
@@ -3968,6 +4052,10 @@
     {
       "path": "supabase/migrations/20260916045248_add_profile_avatar_seed.sql",
       "sha256": "e5f9346f3eb64cfdff9607b16c7bff5aaae98cdebfb78ece56749eb68fe07a66"
+    },
+    {
+      "path": "supabase/migrations/20260916093549_email_center.sql",
+      "sha256": "d363c8ad6a8e0f75ea738d52b3b31ccef01f7c803bd822d3de6d7c5fcddf55b6"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -4506,6 +4594,10 @@
       {
         "path": "supabase/migrations/20260916045248_add_profile_avatar_seed.sql",
         "sha256": "e5f9346f3eb64cfdff9607b16c7bff5aaae98cdebfb78ece56749eb68fe07a66"
+      },
+      {
+        "path": "supabase/migrations/20260916093549_email_center.sql",
+        "sha256": "d363c8ad6a8e0f75ea738d52b3b31ccef01f7c803bd822d3de6d7c5fcddf55b6"
       }
     ]
   }
