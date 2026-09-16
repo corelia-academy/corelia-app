@@ -96,18 +96,17 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260915054142_learning_translation_video_inference.sql",
   "supabase/migrations/20260915062707_learning_redo_lessons.sql",
   "supabase/migrations/20260915130736_learning_redo_stale_clients.sql",
+  "supabase/migrations/20260916045248_add_profile_avatar_seed.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production already contains every previously approved migration, including
-// the later Learning redo pair. This release fills the two earlier translation
-// migration versions that have already passed Staging with --include-all.
+// Production already contains every previously approved migration. This release
+// adds the avatar seed migration after it passed the complete Staging gate.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260915052442",
-  "20260915054142",
+  "20260916045248",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
