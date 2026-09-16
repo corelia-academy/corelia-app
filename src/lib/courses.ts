@@ -186,11 +186,11 @@ export function applyCourseLessonLocaleContent(
     youtube_url: hasValidLocalizedYoutubeUrl ? localizedYoutubeUrl : lesson.youtube_url,
     youtube_start_seconds:
       hasValidLocalizedYoutubeUrl
-        ? typeof localized.youtube_start_seconds === "number" && Number.isFinite(localized.youtube_start_seconds) ? localized.youtube_start_seconds : lesson.youtube_start_seconds
+        ? typeof localized.youtube_start_seconds === "number" && Number.isFinite(localized.youtube_start_seconds) ? localized.youtube_start_seconds : 0
         : lesson.youtube_start_seconds,
     youtube_end_seconds:
       hasValidLocalizedYoutubeUrl
-        ? typeof localized.youtube_end_seconds === "number" && Number.isFinite(localized.youtube_end_seconds) ? localized.youtube_end_seconds : lesson.youtube_end_seconds
+        ? typeof localized.youtube_end_seconds === "number" && Number.isFinite(localized.youtube_end_seconds) ? localized.youtube_end_seconds : null
         : lesson.youtube_end_seconds,
     video_primary_locale: videoCopy.video_primary_locale ?? normalizeVideoLocale(lesson).value.video_primary_locale,
     has_subtitle: videoCopy.has_subtitle ?? normalizeVideoLocale(lesson).value.has_subtitle,

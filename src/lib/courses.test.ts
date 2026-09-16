@@ -45,9 +45,9 @@ describe("applyCourseLessonLocaleContent", () => {
     expect(localized).toMatchObject({ title: invalid, youtube_url: invalid });
   });
 
-  it("ignores non-numeric locale segments while using a valid translated video", () => {
+  it("uses independent default segments for a valid translated video with malformed legacy segments", () => {
     const localized = { locale: "en", youtube_url: "https://youtu.be/dQw4w9WgXcQ", youtube_start_seconds: "10", youtube_end_seconds: {} } as unknown as Parameters<typeof applyCourseLessonLocaleContent>[1];
-    expect(applyCourseLessonLocaleContent(masterVideoLesson, localized)).toMatchObject({ youtube_url: "https://youtu.be/dQw4w9WgXcQ", youtube_start_seconds: 15, youtube_end_seconds: 45 });
+    expect(applyCourseLessonLocaleContent(masterVideoLesson, localized)).toMatchObject({ youtube_url: "https://youtu.be/dQw4w9WgXcQ", youtube_start_seconds: 0, youtube_end_seconds: null });
   });
 
   it("preserves canonical practice copy when a translation has invalid text types", () => {
