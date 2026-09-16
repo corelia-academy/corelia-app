@@ -152,7 +152,7 @@ try {
     UPDATE public.courses SET published=true WHERE id='${id}'; COMMIT;`);
   const request = randomUUID();
   const quizCall = answer => `DO $$ DECLARE result jsonb; BEGIN
-    result:=public.learning_quiz_submit('${id}','quiz','${request}','{"${questionId}":${answer}}');
+    result:=public.learning_quiz_submit('${id}','quiz','${request}','{"${questionId}":${answer}}',0);
     IF result->>'attempt_group_id'<>'${request}' OR result->>'passed'<>'true' OR result->>'correct'<>'1' OR result->>'completed'<>'true' THEN RAISE EXCEPTION 'incorrect replay result: %',result; END IF;
   END $$;`;
   const firstSubmit = new Session(`quiz-first-${user}`);
@@ -165,7 +165,7 @@ try {
   await waitForBlock(replaySubmit.name);
   const competingSubmit = new Session(`quiz-competing-${user}`);
   await competingSubmit.begin(learner);
-  const competingQuizResult = competingSubmit.exec(`SELECT public.learning_quiz_submit('${id}','quiz','${randomUUID()}','{"${questionId}":0}'); COMMIT;`).then(() => null, error => error);
+  const competingQuizResult = competingSubmit.exec(`SELECT public.learning_quiz_submit('${id}','quiz','${randomUUID()}','{"${questionId}":0}',0); COMMIT;`).then(() => null, error => error);
   await waitForBlock(competingSubmit.name);
   const questionEdit = new Session(`question-after-submit-${user}`);
   await questionEdit.begin();
@@ -173,11 +173,11 @@ try {
   await waitForBlock(questionEdit.name);
   await firstSubmit.exec('COMMIT;');
   assert.equal(await replayResult, null);
-  assert.match(String(await competingQuizResult), /RETRY_DISABLED/);
+  assert.equal(await competingQuizResult, null);
   assert.equal(await questionEditResult, null);
-  console.log('PASS: a different concurrent quiz request is rejected when retry is disabled');
+  console.log('PASS: a different concurrent quiz request can retry after the first commits');
   console.log('PASS: question editing waits for grading and cannot change the stored result');
-  assert.equal(sql(`SELECT count(*)||':'||count(DISTINCT attempt_group_id)||':'||bool_and(is_correct) FROM public.section_question_attempts WHERE course_id='${id}' AND user_id='${learner}';`), '1:1:true');
+  assert.equal(sql(`SELECT count(*)||':'||count(DISTINCT attempt_group_id) FROM public.section_question_attempts WHERE course_id='${id}' AND user_id='${learner}';`), '2:2');
   assert.equal(sql(`SELECT count(*) FROM public.lesson_progress WHERE course_id='${id}' AND user_id='${learner}' AND completed_at IS NOT NULL;`), '1');
   console.log('PASS: concurrent quiz replay returns the first result with one attempt group and completion');
   // Reverse the ordering: submit must grade the committed question after an edit.
@@ -187,7 +187,7 @@ try {
   await submitAfterEdit.begin(user);
   await editBeforeSubmit.exec(`UPDATE public.course_section_questions SET data=jsonb_set(data,'{correct_index}','0') WHERE id='${questionId}';`);
   const submitAfterEditResult = submitAfterEdit.exec(`DO $$ DECLARE result jsonb; BEGIN
-    result:=public.learning_quiz_submit('${id}','quiz','${randomUUID()}','{"${questionId}":0}');
+    result:=public.learning_quiz_submit('${id}','quiz','${randomUUID()}','{"${questionId}":0}',0);
     IF result->>'passed'<>'true' THEN RAISE EXCEPTION 'graded stale question: %',result; END IF;
   END $$; COMMIT;`).then(() => null, error => error);
   await waitForBlock(submitAfterEdit.name);

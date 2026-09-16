@@ -78,3 +78,13 @@ it("does not clear newer edits when an earlier save resolves", () => {
   act(() => get().setContentForm(submitted));
   expect(get().contentDirty).toBe(false);
 });
+
+it("does not materialize missing EN copy when saving unrelated settings", () => {
+  const { select, get } = setup();
+  select("owner:course:en");
+  const empty = { title: "", description: "", short_description: "", learning_outcomes: [], final_assignment_title: "", final_assignment_description: "", final_assignment_instructions: "" };
+  act(() => get().hydrateContentForm(empty));
+  expect(get().contentPatch).toEqual({});
+  act(() => get().setContentForm(previous => ({ ...previous, description: "English description" })));
+  expect(get().contentPatch).toEqual({ description: "English description" });
+});

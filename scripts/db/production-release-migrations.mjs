@@ -91,17 +91,25 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260913084439_course_credentials_admin_only.sql",
   "supabase/migrations/20260913130748_project_system_taxonomy.sql",
   "supabase/migrations/20260913133229_repair_hackathon_metrics_authorization.sql",
+  "supabase/migrations/20260914162720_public_project_team_members.sql",
+  "supabase/migrations/20260915052442_learning_translation_authoring.sql",
+  "supabase/migrations/20260915054142_learning_translation_video_inference.sql",
+  "supabase/migrations/20260915062707_learning_redo_lessons.sql",
+  "supabase/migrations/20260915130736_learning_redo_stale_clients.sql",
+  "supabase/migrations/20260916045248_add_profile_avatar_seed.sql",
+  "supabase/migrations/20260916093549_email_center.sql",
+  "supabase/migrations/20260916120421_email_contact_sync_and_import_sources.sql",
+  "supabase/migrations/20260916153501_learning_multilanguage_code.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// All earlier approved migrations are present in the Production ledger. This
-// release has exactly the project taxonomy migration and its forward RPC repair.
+// Production includes contact sync through successful workflow 35096851299.
+// This release expands the existing text-based code validator to eight languages.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260913130748",
-  "20260913133229",
+  "20260916153501",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

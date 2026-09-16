@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { adminProfilePreviewQueryOptions } from "@/features/admin/adminQueries";
 import { getRoleLabel } from "@/types/database";
@@ -44,10 +44,14 @@ export function ManualMintProfilePreviewDialog({
         ) : (
           <div className="space-y-4 py-2">
             <div className="flex items-center gap-3">
-              <Avatar size="lg">
-                <AvatarImage src={profile.avatar_url ?? undefined} alt="" />
-                <AvatarFallback>{(profile.full_name ?? "?").slice(0, 1).toUpperCase()}</AvatarFallback>
-              </Avatar>
+              <UserAvatar
+                userId={profile.id}
+                avatarUrl={profile.avatar_url}
+                avatarSeed={profile.avatar_seed}
+                alt={profile.full_name ?? ""}
+                fallback={(profile.full_name ?? "?").slice(0, 1).toUpperCase()}
+                size="lg"
+              />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-foreground">
                   {profile.full_name || t("manualMint.preview.noName")}

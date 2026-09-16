@@ -121,7 +121,7 @@ it("preserves malformed practice until explicit reset, then saves a draft with c
   expect(config).toEqual({ mode: "checklist", checklist_items: {} });
   expect(button("learning.preview").disabled).toBe(false);
   await click("learning.save");
-  expect(saveLearningLesson).toHaveBeenCalledWith("course", expect.objectContaining({ published: false, title: "Legacy", description_markdown: "Keep instructions", duration_seconds: 37, practice_config: { mode: "instruction" } }), undefined, locales);
+  expect(saveLearningLesson).toHaveBeenCalledWith("course", expect.objectContaining({ published: false, title: "Legacy", description_markdown: "Keep instructions", duration_seconds: 37, practice_config: { mode: "instruction" } }), undefined, {});
 });
 
 it.each([undefined, {}])("recovers missing or malformed code config only after confirmation: %j", async config => {
@@ -154,7 +154,7 @@ it.each([undefined, {}])("recovers missing or malformed code config only after c
   expect(initial.code_exercise_config).toBe(config);
   expect(button("learning.preview").disabled).toBe(false);
   await click("learning.save");
-  expect(saveLearningLesson).toHaveBeenCalledWith("course", expect.objectContaining({ published: false, title: "Legacy code", description_markdown: "Keep instructions", duration_seconds: 37, code_exercise_config: defaultCodeConfig() }), undefined, locales);
+  expect(saveLearningLesson).toHaveBeenCalledWith("course", expect.objectContaining({ published: false, title: "Legacy code", description_markdown: "Keep instructions", duration_seconds: 37, code_exercise_config: defaultCodeConfig() }), undefined, {});
 });
 
 it("requires confirmation to discard malformed resources and preserves valid entries and other lesson content", async () => {
@@ -236,7 +236,7 @@ it("recovers hidden malformed code copy only after confirmation and preserves va
   expect(container.textContent).not.toContain("learning.invalidCopyRecovery");
   expect(saveLearningLesson).not.toHaveBeenCalled(); expect(locales).toEqual(before);
   await click("learning.save");
-  expect(saveLearningLesson).toHaveBeenCalledWith("course", expect.objectContaining({ published: false, duration_seconds: 37, code_exercise_config: initial.code_exercise_config }), undefined, expect.objectContaining({ en: expect.objectContaining({ title: "English", code_exercise_locale: { hints: ["Keep"], test_copy: { test: { description: "Keep test" } } }, subtitle_locales: ["en"] }) }));
+  expect(saveLearningLesson).toHaveBeenCalledWith("course", expect.objectContaining({ published: false, duration_seconds: 37, code_exercise_config: initial.code_exercise_config }), undefined, expect.objectContaining({ en: expect.objectContaining({ code_exercise_locale: { hints: ["Keep"], test_copy: { test: { description: "Keep test" } } }, subtitle_locales: ["en"] }) }));
 });
 
 it("keeps malformed master text until confirmed recovery and saves only as a draft", async () => {
@@ -310,4 +310,121 @@ it("opens with fresh questions and preserves an active draft during background r
   vi.mocked(getLessonQuestions).mockResolvedValue([question("Background server update")] as never);
   await act(async () => { await client.invalidateQueries({ queryKey: key }); await new Promise(done => setTimeout(done, 10)); });
   expect(Array.from(container.querySelectorAll("input,textarea")).some(field => (field as HTMLInputElement).value === "Unsaved author edit")).toBe(true);
+});
+
+function mountTranslation(initial: CourseLesson, locales = {}, initialLocale: "vi" | "en" = "en", isNew = initial.lesson_format === "quiz") {
+  const container = document.createElement("div"); document.body.append(container);
+  const root = createRoot(container); const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  cleanup = () => { act(() => root.unmount()); container.remove(); client.clear(); };
+  const onClose = vi.fn();
+  act(() => root.render(<QueryClientProvider client={client}><LessonEditor courseId="course" initial={initial} initialLocale={initialLocale} primaryLocale="vi" locales={locales} sections={[]} nextLessonOrder={1} isNew={isNew} onClose={onClose} onSaved={async () => {}} /></QueryClientProvider>));
+  return { container, onClose,
+    click: async (label: string) => { await act(async () => Array.from(container.querySelectorAll("button")).find(button => button.textContent === label)!.click()); },
+    switchLocale: (locale: string) => act(() => { const select = container.querySelector("select")!; select.value = locale; select.dispatchEvent(new Event("change", { bubbles: true })); }),
+    type: (selector: string, value: string) => act(() => { const input = container.querySelector(selector)!; Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), "value")!.set!.call(input, value); input.dispatchEvent(new Event("input", { bubbles: true })); }),
+  };
+}
+const translatedVideo: CourseLesson = { id: "translation", section_id: "section", title: "Tiêu đề gốc", description_markdown: "Mô tả gốc", short_description: "Tóm tắt gốc", lesson_format: "video", youtube_url: "https://youtu.be/dQw4w9WgXcQ", youtube_start_seconds: 40, youtube_end_seconds: 50, duration_seconds: 10, order: 0, published: true };
+
+it("opens EN with blank inputs and a read-only source, and switching alone does not create EN", async () => {
+  const editor = mountTranslation(translatedVideo);
+  expect(editor.container.querySelector("select")?.value).toBe("en");
+  expect(editor.container.querySelector<HTMLInputElement>("#learning-title")?.value).toBe("");
+  expect(editor.container.querySelector<HTMLTextAreaElement>("#learning-description_markdown")?.value).toBe("");
+  expect(editor.container.querySelector("details")?.textContent).toContain("Tiêu đề gốc");
+  expect(editor.container.querySelector("#learning-youtube_url")).toBeNull();
+  editor.switchLocale("vi");
+  expect(editor.container.querySelector<HTMLInputElement>("#learning-title")?.value).toBe("Tiêu đề gốc");
+  editor.switchLocale("en");
+  await editor.click("learning.save");
+  expect(saveLearningLesson).toHaveBeenCalledWith("course", translatedVideo, undefined, {});
+});
+
+it("retains an EN draft across switches, sends only its edits, and keeps it after failed Save", async () => {
+  const editor = mountTranslation(translatedVideo, { en: { title: "Existing English" } });
+  editor.type("#learning-title", "Updated English");
+  editor.switchLocale("vi"); editor.switchLocale("en");
+  expect(editor.container.querySelector<HTMLInputElement>("#learning-title")?.value).toBe("Updated English");
+  vi.mocked(saveLearningLesson).mockRejectedValueOnce(new Error("network failed"));
+  await editor.click("learning.save");
+  expect(editor.onClose).not.toHaveBeenCalled();
+  expect(editor.container.querySelector<HTMLInputElement>("#learning-title")?.value).toBe("Updated English");
+  expect(saveLearningLesson).toHaveBeenCalledWith("course", translatedVideo, undefined, { en: { title: "Updated English" } });
+});
+
+it("shows invalid EN video input and focuses its locale without substituting the source URL", async () => {
+  const editor = mountTranslation(translatedVideo, { en: { youtube_url: "invalid" } });
+  expect(editor.container.querySelector<HTMLInputElement>("#learning-youtube_url")?.value).toBe("invalid");
+  await editor.click("learning.save");
+  expect(saveLearningLesson).not.toHaveBeenCalled();
+  await editor.click("learning.fixFirst");
+  expect(document.activeElement?.id).toBe("learning-youtube_url");
+  expect(editor.container.querySelector("select")?.value).toBe("en");
+});
+
+it("keeps missing practice translations blank while source labels remain in reference", () => {
+  const editor = mountTranslation({ ...translatedVideo, lesson_format: "practice", practice_config: { mode: "checklist", checklist_items: [{ id: "one", label: "Mục gốc" }] } });
+  expect(Array.from(editor.container.querySelectorAll("input,textarea")).some(input => (input as HTMLInputElement).value === "Mục gốc")).toBe(false);
+  expect(Array.from(editor.container.querySelectorAll("details")).some(detail => detail.textContent?.includes("Mục gốc"))).toBe(true);
+});
+
+
+it("does not resend untouched source questions when saving EN after a background refresh", async () => {
+  const question = (text: string) => ({ id: "question", question: text, type: "mcq", options: [{ id: "a", text: "A" }, { id: "b", text: "B" }], correct_index: 0 });
+  const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });
+  const key = ["learning-editor-questions", "course", "lesson", "instructor"];
+  vi.mocked(getLessonQuestions).mockResolvedValue([question("Original question")] as never);
+  const container = document.createElement("div"); document.body.append(container);
+  const root = createRoot(container);
+  cleanup = () => { act(() => root.unmount()); container.remove(); client.clear(); };
+  const initial: CourseLesson = { id: "lesson", section_id: "section", title: "Quiz", lesson_format: "quiz", quiz_config: { passing_ratio: 0.7, allow_retry: true }, order: 0, duration_seconds: 0 };
+  vi.mocked(saveLearningLesson).mockResolvedValue(initial);
+  await act(async () => {
+    root.render(<QueryClientProvider client={client}><LessonEditor courseId="course" initial={initial} initialLocale="en" sections={[]} nextLessonOrder={1} primaryLocale="vi" locales={{}} isNew={false} onClose={vi.fn()} onSaved={vi.fn()} /></QueryClientProvider>);
+  });
+  await act(async () => { await new Promise(done => setTimeout(done, 10)); });
+  const input = container.querySelector<HTMLInputElement>("#learning-title")!;
+  act(() => {
+    Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), "value")!.set!.call(input, "English quiz");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  vi.mocked(getLessonQuestions).mockResolvedValue([question("Updated elsewhere")] as never);
+  await act(async () => { await client.invalidateQueries({ queryKey: key }); await new Promise(done => setTimeout(done, 10)); });
+  await act(async () => Array.from(container.querySelectorAll("button")).find(button => button.textContent === "learning.save")!.click());
+  expect(saveLearningLesson).toHaveBeenCalledWith("course", expect.objectContaining({ title: "Quiz" }), undefined, { en: { title: "English quiz" } });
+});
+
+it.each(["practice", "code_exercise"] as const)("publishes %s without video or translations and preserves payload on retry", async lesson_format => {
+  const initial: CourseLesson = { id: "new-lesson", section_id: "section", title: "Exercise", description_markdown: "Instructions", lesson_format, published: false, order: 0, duration_seconds: 0,
+    ...(lesson_format === "practice" ? { practice_config: { mode: "instruction" as const } } : { code_exercise_config: defaultCodeConfig("fill", "typescript") }) };
+  vi.mocked(saveLearningLesson).mockRejectedValueOnce(new Error("network failed")).mockResolvedValueOnce({ ...initial, published: true });
+  const { click, container, onClose } = mountTranslation(initial, { vi: undefined, en: undefined }, "vi", lesson_format === "code_exercise");
+  act(() => container.querySelector<HTMLInputElement>('input[type="checkbox"]')!.click());
+  await click("learning.save");
+  expect(container.textContent).toContain("network failed");
+  expect(onClose).not.toHaveBeenCalled();
+  await click("learning.save");
+  expect(saveLearningLesson).toHaveBeenCalledTimes(2);
+  expect(saveLearningLesson).toHaveBeenLastCalledWith("course", { ...initial, published: true }, undefined, {});
+  expect(onClose).toHaveBeenCalledOnce();
+});
+
+it.each([undefined, null])("creates code with EN content and an absent VI entry (%s)", async missing => {
+  const initial: CourseLesson = { id: "new-code", section_id: "section", title: "Code", lesson_format: "code_exercise", published: false, order: 0, duration_seconds: 0, code_exercise_config: defaultCodeConfig("fill", "python") };
+  vi.mocked(saveLearningLesson).mockResolvedValue(initial);
+  const { click, type } = mountTranslation(initial, { vi: missing, en: { title: "English" } }, "en", true);
+  type("#learning-title", "Updated English");
+  await click("learning.save");
+  expect(saveLearningLesson).toHaveBeenCalledWith("course", initial, undefined, { en: { title: "Updated English" } });
+});
+
+
+it("identifies a missing reference solution without losing the code draft", async () => {
+  const initial: CourseLesson = { id: "new-code", section_id: "section", title: "Code", lesson_format: "code_exercise", published: false, order: 0, duration_seconds: 0, code_exercise_config: { ...defaultCodeConfig("fill", "typescript"), reference_solution: "" } };
+  const { click, container, onClose } = mountTranslation(initial, { vi: undefined, en: undefined }, "vi", true);
+  await click("learning.save");
+  expect(saveLearningLesson).not.toHaveBeenCalled();
+  expect(onClose).not.toHaveBeenCalled();
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain("learning.validation.reference_required");
+  expect(container.querySelector('[role="alert"]')?.textContent).not.toContain("learning.validation.source_required");
 });

@@ -12,6 +12,7 @@ function rowToProfile(row: Record<string, unknown>): Profile {
     username: (row.username as string | null) ?? null,
     full_name: (row.full_name as string | null) ?? null,
     avatar_url: (row.avatar_url as string | null) ?? null,
+    avatar_seed: (row.avatar_seed as string | null) ?? null,
     phone: (row.phone as string | null) ?? null,
     email: (row.email as string | null) ?? null,
     bio: (row.bio as string | null) ?? null,
@@ -43,6 +44,7 @@ function rowToPublicProfile(row: Record<string, unknown>): PublicProfile {
     role: row.role as PublicProfile["role"],
     full_name: (row.full_name as string | null) ?? null,
     avatar_url: (row.avatar_url as string | null) ?? null,
+    avatar_seed: (row.avatar_seed as string | null) ?? null,
     bio: (row.bio as string | null) ?? null,
     website: (row.website as string | null) ?? null,
     instructor_origin: (row.instructor_origin as PublicProfile["instructor_origin"]) ?? null,
@@ -79,6 +81,7 @@ async function _fetchProfileForUser(user: User): Promise<Profile | null> {
       profile_public: true,
       full_name: profileNameFromMetadata(user.user_metadata?.full_name ?? user.user_metadata?.name),
       avatar_url: user.user_metadata?.avatar_url ?? null,
+      avatar_seed: null,
       phone: user.phone ?? null,
       email: user.email ?? null,
       created_at: new Date().toISOString(),
@@ -207,6 +210,7 @@ function fallbackProfile(user: { id: string; email?: string | null; user_metadat
     username: null,
     full_name: profileNameFromMetadata(user.user_metadata?.full_name),
     avatar_url: (user.user_metadata?.avatar_url as string) ?? null,
+    avatar_seed: null,
     phone: null,
     email: user.email ?? null,
     bio: null,
@@ -278,6 +282,7 @@ export async function setNewUserProfileForUser(
       full_name: validateProfileName(data.full_name ?? profileNameFromMetadata(user.user_metadata?.full_name)),
       email: data.email ?? user.email ?? null,
       avatar_url: (user.user_metadata?.avatar_url as string) ?? null,
+      avatar_seed: null,
       phone: user.phone ?? null,
       created_at: now,
       updated_at: now,
@@ -306,6 +311,7 @@ export async function updateProfileForUser(
   if (updates.username !== undefined) safeUpdates.username = updates.username;
   if (updates.full_name !== undefined) safeUpdates.full_name = validateProfileName(updates.full_name);
   if (updates.avatar_url !== undefined) safeUpdates.avatar_url = updates.avatar_url;
+  if (updates.avatar_seed !== undefined) safeUpdates.avatar_seed = updates.avatar_seed;
   if (updates.phone !== undefined) safeUpdates.phone = updates.phone;
   if (updates.email !== undefined) safeUpdates.email = updates.email;
   if (updates.bio !== undefined) safeUpdates.bio = updates.bio;

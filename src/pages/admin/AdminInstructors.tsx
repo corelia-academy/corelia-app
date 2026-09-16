@@ -16,6 +16,7 @@ import { useAdminProfiles } from "@/features/admin/users/hooks/useAdminProfiles"
 import { useCourseCountsByInstructor } from "@/features/admin/instructors/hooks/useCourseCountsByInstructor";
 import { AdminStatsCard } from "@/features/admin/ui/AdminStatsCard";
 import { AdminErrorBanner } from "@/features/admin/ui/AdminErrorBanner";
+import { UserAvatar } from "@/components/UserAvatar";
 
 type InstructorOrigin = NonNullable<Profile["instructor_origin"]>;
 
@@ -248,17 +249,14 @@ export default function AdminInstructors() {
                   onClick={() => navigate(`/admin/instructors/${p.id}`)}
                 >
                   <div className="flex items-center gap-3">
-                    {p.avatar_url ? (
-                      <img
-                        src={p.avatar_url}
-                        alt=""
-                      className="size-10 rounded-full bg-surface-raised object-cover"
-                      />
-                    ) : (
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-raised text-sm font-medium text-foreground-muted">
-                        {(p.full_name || "I")[0]}
-                      </div>
-                    )}
+                    <UserAvatar
+                      userId={p.id}
+                      avatarUrl={p.avatar_url}
+                      avatarSeed={p.avatar_seed}
+                      alt={p.full_name || "Instructor"}
+                      fallback={(p.full_name || "I")[0]}
+                      className="size-10"
+                    />
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-foreground">
                         {p.full_name || t("instructors.list.notUpdated")}
@@ -391,17 +389,14 @@ export default function AdminInstructors() {
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          {p.avatar_url ? (
-                            <img
-                              src={p.avatar_url}
-                              alt=""
-                              className="size-9 rounded-full bg-surface-raised object-cover"
-                            />
-                          ) : (
-                            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-surface-raised text-sm font-medium text-foreground-muted">
-                              {(p.full_name || "I")[0]}
-                            </div>
-                          )}
+                          <UserAvatar
+                            userId={p.id}
+                            avatarUrl={p.avatar_url}
+                            avatarSeed={p.avatar_seed}
+                            alt={p.full_name || "Instructor"}
+                            fallback={(p.full_name || "I")[0]}
+                            className="size-9"
+                          />
                           <div className="min-w-0">
                             <p className="truncate text-sm font-medium text-foreground">
                               {p.full_name || t("instructors.list.notUpdated")}

@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { PracticeProjectLink } from "./PracticeProject";
 import { PracticeHackathonLink } from "./PracticeHackathon";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -11,12 +12,17 @@ import type { ArtifactField, LessonRendererProps } from "./types";
 
 export function PracticeLesson(props: LessonRendererProps) {
   const { user } = useAuth();
-  return <Practice key={`${props.courseId}:${props.lesson.id}:${props.lesson.practice_config?.revision}:${props.mode}:${user?.id}`} {...props} userId={user?.id} />;
+  return <Practice key={`${props.courseId}:${props.lesson.id}:${props.lesson.practice_config?.revision}:${props.mode}:${user?.id}:${props.draftEpoch ?? 0}`} {...props} userId={user?.id} />;
 }
-function Practice({ lesson, mode, courseId, userId, onAction, onComplete, contentLocale }: LessonRendererProps & { userId?: string }) {
+function Practice({ lesson, mode, courseId, userId, onAction, onComplete, contentLocale, draftEpoch = 0 }: LessonRendererProps & { userId?: string }) {
   const { t } = useLearningTranslation();
   const config = useMemo(() => lesson.practice_config ?? { mode: "instruction" as const }, [lesson.practice_config]);
-  const key = mode === "learner" && userId ? `corelia:practice:${userId}:${courseId}:${lesson.id}:${config.revision ?? 1}` : null;
+  const key = mode === "learner" && userId ? `corelia:practice:${userId}:${courseId}:${lesson.id}:${config.revision ?? 1}${draftEpoch ? `:${draftEpoch}` : ""}` : null;
+  useEffect(() => {
+    if (!key || !draftEpoch) return;
+    const previous = `corelia:practice:${userId}:${courseId}:${lesson.id}:${config.revision ?? 1}${draftEpoch > 1 ? `:${draftEpoch - 1}` : ""}`;
+    try { localStorage.removeItem(previous); } catch { /* A blocked store cannot prevent a fresh draft. */ }
+  }, [key, draftEpoch, userId, courseId, lesson.id, config.revision]);
   const [initial] = useState(() => readPracticeDraft(key));
   const [checked, setChecked] = useState<Record<string, boolean>>(initial.checked ?? {});
   const [artifacts, setArtifacts] = useState<Partial<Record<ArtifactField,string>>>(initial.artifacts ?? {});
@@ -57,7 +63,7 @@ function Practice({ lesson, mode, courseId, userId, onAction, onComplete, conten
     {config.related_hackathon_id && <PracticeHackathonLink id={config.related_hackathon_id} locale={contentLocale} />}
     {steps.map(step => <div key={step.id} className="rounded-xl border border-border p-4"><label className="flex min-h-11 items-center gap-3"><input type="checkbox" checked={checked[step.id] === true} onChange={e => setChecked(c => ({ ...c, [step.id]: e.target.checked }))} /><span>{step.title}</span></label>{step.instructions_markdown && <Markdown content={step.instructions_markdown} />}</div>)}
     {fields.map(field => <label key={field} className="block space-y-2 text-sm"><span>{t(`learning.artifacts.${field}`)} *</span><input value={artifacts[field] ?? ""} onChange={e => setArtifacts(a => ({ ...a, [field]: e.target.value }))} className="min-h-11 w-full rounded-lg border border-border bg-surface-base px-3" /></label>)}
-    {(fields.length > 0 || config.mode === "submission") && <a href="#final-assignment" className="text-primary underline">{t("learning.finalAssignmentLink")}</a>}
+    {mode === "learner" && (fields.length > 0 || config.mode === "submission") && <Link to={`/learn/${courseId}/final-assignment`} className="text-primary underline">{t("learning.finalAssignmentLink")}</Link>}
     {mode === "learner" && config.mode === "guided_project" && <div className="space-y-2 text-sm"><p>{t("learning.portfolioOptional")}</p><div className="flex flex-wrap gap-4"><a href="/projects/new" className="text-primary underline">{t("learning.createPortfolioProject")}</a><a href="/account/profile" className="text-primary underline">{t("learning.openProfile")}</a></div></div>}
     {(!saved || !artifactSaved) && <p role="status" className="text-sm text-foreground-muted">{t("learning.draftUnavailable")}</p>}
   </div>;

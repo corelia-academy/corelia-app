@@ -103,6 +103,12 @@ Nếu thiếu `RESEND_API_KEY` hoặc `MAIL_FROM`, handler **không lỗi**: tr�
 
 Code gửi mail chung: [`lib/mail/resend.ts`](lib/mail/resend.ts) (transport) + [`lib/mail/layout.ts`](lib/mail/layout.ts) (branded shell, i18n vi/en). Handler/builder lo `subject` + nội dung body; `wrapTransactionalEmail` / `wrapBlastEmail` bọc HTML cuối.
 
+### Email Center
+
+`email.admin` cung cấp API quản trị contact/list/import, template/version, campaign và automation. `email.worker` chỉ nhận request có `EMAIL_WORKER_SECRET`; `email.webhook` xác minh chữ ký Svix bằng `RESEND_WEBHOOK_SIGNING_SECRET`; `email.unsubscribe` là endpoint public cho marketing unsubscribe. Dữ liệu Email Center chỉ truy cập qua service-role boundary và các bảng không cấp quyền Data API cho `anon`/`authenticated`.
+
+Worker theo lô dùng Resend Batch API, lease từng recipient và idempotency key ổn định. `accepted` không đồng nghĩa `delivered`; delivery/bounce/complaint được cập nhật từ webhook. Hướng dẫn vận hành đầy đủ ở [`docs/EMAIL_CENTER_ADMIN_GUIDE.md`](../../../docs/EMAIL_CENTER_ADMIN_GUIDE.md).
+
 ## Local
 
 Local secrets dùng chung file [`supabase/functions/.env`](../.env). Khởi tạo từ [`supabase/functions/.env.example`](../.env.example), rồi serve function với:

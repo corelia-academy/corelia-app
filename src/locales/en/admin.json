@@ -47,11 +47,19 @@
         "label": "Hackathons",
         "tooltip": "Manage hackathons"
       },
+      "email": {
+        "label": "Email Center",
+        "tooltip": "Recipients, templates, campaigns, and automations"
+      },
       "projects": {
         "label": "Projects"
       }
     },
     "pageMeta": {
+      "email": {
+        "title": "Email Center",
+        "description": "Operate system, learning, program, and marketing email."
+      },
       "users": {
         "title": "User management",
         "description": "Control roles and access health across all users."

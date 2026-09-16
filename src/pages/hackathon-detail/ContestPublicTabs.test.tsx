@@ -28,6 +28,10 @@ vi.mock("@/features/projects/projectQueries", () => ({
     initialPageParam: null,
     getNextPageParam: () => undefined,
   }),
+  publicProjectTeamsQueryOptions: () => ({
+    queryKey: ["projects", "teams", "test"],
+    queryFn: async () => ({}),
+  }),
 }));
 
 vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: null }) }));

@@ -51,6 +51,10 @@ vi.mock("@/features/hackathons/hackathonQueries", () => ({
 }));
 
 vi.mock("@/features/projects/projectQueries", () => ({
+  publicProjectTeamsQueryOptions: () => ({
+    queryKey: ["projects", "teams-test"],
+    queryFn: async () => ({}),
+  }),
   publicProjectDirectoryQueryOptions: (
     _locale: string,
     _tab: string,

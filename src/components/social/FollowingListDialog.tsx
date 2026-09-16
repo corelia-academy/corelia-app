@@ -3,11 +3,7 @@ import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import {
   Dialog,
   DialogContent,
@@ -77,10 +73,13 @@ export function FollowingListDialog({
                     className="flex items-center gap-3 py-3 hover:bg-surface-raised"
                     onClick={() => onOpenChange(false)}
                   >
-                    <Avatar>
-                      <AvatarImage src={row.avatar_url ?? undefined} alt="" />
-                      <AvatarFallback>{label.charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
+                    <UserAvatar
+                      userId={row.id}
+                      avatarUrl={row.avatar_url}
+                      avatarSeed={row.avatar_seed}
+                      alt={label}
+                      fallback={label.charAt(0).toUpperCase()}
+                    />
                     <div className="min-w-0">
                       <div className="truncate text-sm font-medium text-foreground">
                         {label}

@@ -1,3 +1,4 @@
+import { codeLanguages, isCodeLanguage, validCodeFile, type CodeLanguage } from "./languages";
 import type { CodeExerciseConfig } from "./types";
 import { evaluateCodeExercise, matchBlank, MAX_SOURCE_BYTES, sourceBytes } from "./evaluate";
 import { parseMarkers } from "./markers";
@@ -8,9 +9,9 @@ export function validateCodeConfig(value: unknown, publish = false): string[] {
   if (!value || typeof value !== "object") return ["config_required"];
   if (!isCodeConfigShape(value)) return ["invalid_config"];
   const c = value as CodeExerciseConfig;
-  if (c.schema_version !== 1 || c.language !== "rust" || !["fill", "edit"].includes(c.mode)) errors.push("unsupported_config");
+  if (c.schema_version !== 1 || !isCodeLanguage(c.language) || !["fill", "edit"].includes(c.mode)) errors.push("unsupported_config");
   if (!Number.isInteger(c.revision) || c.revision < 1) errors.push("invalid_revision");
-  if (!c.file || typeof c.file.path !== "string" || !/^[\w.-]+\.rs$/.test(c.file.path)) errors.push("invalid_file");
+  if (!c.file || typeof c.file.path !== "string" || !validCodeFile(c.file.path, c.language)) errors.push("invalid_file");
   for (const source of [c.file?.starter_source, c.reference_solution]) {
     if (typeof source !== "string" || !source.trim()) errors.push("source_required");
     else if (sourceBytes(source) > MAX_SOURCE_BYTES) errors.push("source_too_large");
@@ -53,11 +54,12 @@ export function validateCodeConfig(value: unknown, publish = false): string[] {
   }
   return [...new Set(errors)];
 }
-export function defaultCodeConfig(mode: "fill" | "edit" = "fill"): CodeExerciseConfig {
-  const base = { schema_version: 1 as const, revision: 1, language: "rust" as const, file: { path: "lib.rs", starter_source: mode === "fill" ? "let {{blank:mutable}} count = 0;" : "pub fn add(a: i32, b: i32) -> i32 { 0 }" }, reference_solution: mode === "fill" ? "let mut count = 0;" : "pub fn add(a: i32, b: i32) -> i32 { a + b }" };
-  return mode === "fill" ? { ...base, mode, blanks: [{ id: "mutable", accepted_answers: ["mut"] }] } : { ...base, mode, tests: [{ id: "sum", type: "contains", value: "a + b", required: true, description: "a + b" }] };
+export function defaultCodeConfig(mode: "fill" | "edit" = "fill", language: CodeLanguage = "rust"): CodeExerciseConfig {
+  const template = codeLanguages[language];
+  const base = { schema_version: 1 as const, revision: 1, language, file: { path: template.path, starter_source: mode === "fill" ? template.fill : template.edit }, reference_solution: mode === "fill" ? template.fill.replace("{{blank:mutable}}", template.answer) : template.solution };
+  return mode === "fill" ? { ...base, mode, blanks: [{ id: "mutable", accepted_answers: [template.answer] }] } : { ...base, mode, tests: [{ id: "sum", type: "contains", value: "a + b", required: true, description: "a + b" }] };
 }
 export function withCodeRevision(previous: CodeExerciseConfig | undefined, next: CodeExerciseConfig): CodeExerciseConfig {
-  const machine = (c: CodeExerciseConfig) => JSON.stringify({ mode: c.mode, file: c.file, reference_solution: c.reference_solution, blanks: c.blanks?.map(({ id, accepted_answers, case_sensitive, trim_whitespace }) => ({ id, accepted_answers, case_sensitive, trim_whitespace })), tests: c.tests?.map(t => t.type === "source_equals" ? { id: t.id, type: t.type, required: t.required, accepted_sources: t.accepted_sources } : { id: t.id, type: t.type, required: t.required, value: t.value }) });
+  const machine = (c: CodeExerciseConfig) => JSON.stringify({ language: c.language, mode: c.mode, file: c.file, reference_solution: c.reference_solution, blanks: c.blanks?.map(({ id, accepted_answers, case_sensitive, trim_whitespace }) => ({ id, accepted_answers, case_sensitive, trim_whitespace })), tests: c.tests?.map(t => t.type === "source_equals" ? { id: t.id, type: t.type, required: t.required, accepted_sources: t.accepted_sources } : { id: t.id, type: t.type, required: t.required, value: t.value }) });
   return { ...next, revision: previous ? previous.revision + Number(machine(previous) !== machine(next)) : 1 };
 }

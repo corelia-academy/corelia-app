@@ -324,6 +324,9 @@
           "unknown": "Chứng nhận đang chờ hệ thống xác nhận đủ điều kiện."
         }
       },
+      "finalAssignmentTitle": "Bài tập cuối khóa",
+      "finalAssignmentAccessRequired": "Bạn cần quyền truy cập khóa học để mở bài tập cuối khóa.",
+      "finalAssignmentUnavailable": "Khóa học chưa có bài tập cuối khóa.",
       "finalAssignment": {
         "status": {
           "approved": "Bài nộp đã được duyệt.",
@@ -396,6 +399,12 @@
     "mustLoginFeature": "Bạn cần đăng nhập để dùng tính năng này."
   },
   "learning": {
+    "translationReference": "Bản gốc để tham khảo",
+    "useSourceVideo": "Dùng video gốc",
+    "translationMissing": "Chưa có bản dịch. Nhập nội dung cho ngôn ngữ này.",
+    "translationLoadError": "Không tải được bản dịch. Hãy thử lại trước khi chỉnh sửa.",
+    "savedRefreshFailed": "Đã lưu nội dung, nhưng chưa tải lại được dữ liệu. Hãy tải lại trang.",
+
     "invalidResourcesRecovery": "Danh sách tài liệu có mục sai cấu trúc. Bạn có thể bỏ các mục hỏng để tiếp tục chỉnh sửa.",
     "recoverResources": "Bỏ mục tài liệu hỏng",
     "recoverResourcesConfirm": "Bỏ các mục tài liệu sai cấu trúc và chuyển bài về nháp? Tài liệu hợp lệ và nội dung khác được giữ.",
@@ -458,6 +467,9 @@
     "openYoutube": "Mở trên YouTube",
     "previewBanner": "XEM THỬ · Không lưu tiến độ, bài nộp hoặc nháp.",
     "completed": "Đã hoàn thành",
+    "markIncomplete": "Đánh dấu chưa hoàn thành",
+    "redoFromStart": "Làm lại từ đầu",
+    "redoConfirm": "Làm lại bài này từ đầu? Đáp án và bản nháp trên thiết bị sẽ được xóa. Lịch sử nộp bài vẫn được giữ.",
     "resources": "Tài nguyên",
     "previous": "Bài trước",
     "next": "Bài tiếp theo",
@@ -574,7 +586,8 @@
     "startSeconds": "Bắt đầu (giây)",
     "endSeconds": "Kết thúc (giây, có thể bỏ trống)",
     "addResource": "Thêm tài nguyên",
-    "fileName": "Tên file Rust",
+    "codeLanguage": "Ngôn ngữ lập trình",
+    "fileName": "Tên tệp mã nguồn",
     "starter": "Mã nguồn ban đầu",
     "referenceSolution": "Lời giải tham chiếu",
     "acceptedAnswers": "Đáp án chấp nhận (mỗi dòng một đáp án)",
@@ -587,7 +600,7 @@
     "testValue": "Giá trị kiểm tra",
     "validateSolution": "Kiểm tra lời giải",
     "runStarter": "Kiểm tra mã ban đầu",
-    "textRulesNotice": "Kiểm tra văn bản, không biên dịch Rust. Comment có thể khớp và lời giải tương đương có thể không khớp.",
+    "textRulesNotice": "Kiểm tra văn bản, không biên dịch hoặc chạy chương trình. Comment có thể khớp và lời giải tương đương có thể không khớp.",
     "starterPassConfirm": "Mã ban đầu đã đạt mọi kiểm tra. Vẫn xuất bản bài này?",
     "makeBlank": "Tạo ô trống từ vùng chọn",
     "fill": "Điền chỗ trống",
@@ -652,9 +665,10 @@
       "invalid_steps": "Thêm bước dự án và liên kết artifact bắt buộc với trường nộp bài.",
       "invalid_artifact": "Chọn các trường artifact được hỗ trợ.",
       "config_required": "Thiết lập bài tập code.",
-      "unsupported_config": "Dùng cấu hình Rust dạng điền hoặc chỉnh sửa được hỗ trợ.",
+      "unsupported_config": "Chọn ngôn ngữ và cấu hình dạng điền hoặc chỉnh sửa được hỗ trợ.",
       "invalid_revision": "Revision bài tập phải là số nguyên dương.",
-      "invalid_file": "Thiết lập một file mã nguồn Rust.",
+      "invalid_file": "Nhập tên một tệp mã nguồn có phần mở rộng đúng với ngôn ngữ đã chọn.",
+      "reference_required": "Bổ sung lời giải tham chiếu.",
       "source_required": "Thêm mã nguồn khởi đầu.",
       "source_too_large": "Giữ mã nguồn trong giới hạn 64 KiB.",
       "invalid_hints": "Mỗi gợi ý phải là văn bản.",

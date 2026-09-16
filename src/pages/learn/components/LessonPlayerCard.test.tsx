@@ -9,7 +9,8 @@ import type { LessonRendererProps } from "@/features/learning/types";
 const translate = (key: string) => key;
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: translate }) }));
 vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: { id: "learner" } }) }));
-vi.mock("react-router", () => ({ useNavigate: () => vi.fn() }));
+const routeNavigate = vi.hoisted(() => vi.fn());
+vi.mock("react-router", () => ({ useNavigate: () => routeNavigate }));
 vi.mock("@/features/learning/LessonRenderer", () => ({ LessonRenderer: ({ onAction, onComplete }: LessonRendererProps) => {
   useEffect(() => { onAction({ label: "Complete", run: onComplete }); return () => onAction(null); }, [onAction, onComplete]);
   return <div>Lesson content</div>;
@@ -60,4 +61,40 @@ it("waits for completion and its cache refresh before navigating on the active l
   expect(navigate).not.toHaveBeenCalled();
   await act(async () => resolve());
   expect(navigate).toHaveBeenCalledExactlyOnceWith("next");
+});
+
+it("marks a completed lesson incomplete without navigating and blocks duplicate requests", async () => {
+  const host = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+  let resolve!: () => void;
+  const reset = vi.fn(() => new Promise<void>(done => { resolve = done; }));
+  const navigate = vi.fn();
+  act(() => root.render(<LessonPlayerCard {...props} completed courseId="course" onMarkComplete={vi.fn()} onReset={reset} onNavigateToLesson={navigate} />));
+  const button = Array.from(host.querySelectorAll("button")).find(item => item.textContent === "learning.markIncomplete")!;
+  act(() => { button.click(); button.click(); });
+  expect(reset).toHaveBeenCalledExactlyOnceWith(false);
+  expect(button.disabled).toBe(true);
+  await act(async () => resolve());
+  expect(navigate).not.toHaveBeenCalled();
+});
+
+it("does not offer progress reset for an unavailable lesson", () => {
+  const host = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+  const reset = vi.fn();
+  act(() => root.render(<LessonPlayerCard {...props} completed isDraftLesson courseId="course" onMarkComplete={vi.fn()} onReset={reset} onNavigateToLesson={vi.fn()} />));
+  expect(host.textContent).not.toContain("learning.markIncomplete");
+  act(() => root.render(<LessonPlayerCard {...props} completed hasFullCourseAccess={false} courseId="course" onMarkComplete={vi.fn()} onReset={reset} onNavigateToLesson={vi.fn()} />));
+  expect(host.textContent).not.toContain("learning.markIncomplete");
+});
+
+
+it("opens the final assignment route after the last completed lesson", async () => {
+  const host = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+  const markComplete = vi.fn();
+  act(() => root.render(<LessonPlayerCard {...props} completed hasFinalAssignment nextLesson={null} courseId="course" onMarkComplete={markComplete} onNavigateToLesson={vi.fn()} />));
+  await act(async () => Array.from(host.querySelectorAll("button")).find(button => button.textContent === "learning.finalAssignmentLink")!.click());
+  expect(routeNavigate).toHaveBeenCalledWith("/learn/course/final-assignment");
+  expect(markComplete).not.toHaveBeenCalled();
 });

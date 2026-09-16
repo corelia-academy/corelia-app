@@ -32,6 +32,7 @@ export interface Profile {
   username?: string | null;
   full_name: string | null;
   avatar_url: string | null;
+  avatar_seed: string | null;
   phone: string | null;
   /** Email đăng nhập (từ Supabase Auth), lưu khi tạo profile */
   email: string | null;
@@ -75,6 +76,7 @@ export interface ProfileInsert {
   username?: string | null;
   full_name?: string | null;
   avatar_url?: string | null;
+  avatar_seed?: string | null;
   phone?: string | null;
   email?: string | null;
   bio?: string | null;
@@ -99,6 +101,7 @@ export interface ProfileUpdate {
   username?: string | null;
   full_name?: string | null;
   avatar_url?: string | null;
+  avatar_seed?: string | null;
   phone?: string | null;
   email?: string | null;
   bio?: string | null;
@@ -152,6 +155,7 @@ export interface PublicProfile {
   role: UserRole;
   full_name: string | null;
   avatar_url: string | null;
+  avatar_seed: string | null;
   bio: string | null;
   website: string | null;
   instructor_origin: Profile["instructor_origin"] | null;

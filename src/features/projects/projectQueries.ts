@@ -6,6 +6,7 @@ import {
   type PublicProjectSort,
   type PublicProjectSourceFilter,
 } from "@/lib/projects";
+import { listPublicProjectTeams } from "@/lib/projectCollaboration";
 
 const DIRECTORY_PAGE_SIZE = 12;
 const publicMeta = { scope: "public", showInGlobalLoading: false } as const;
@@ -21,7 +22,19 @@ export const projectKeys = {
   ) => [...projectKeys.all, "directory", locale, source, sort, hackathonId, taxonomyKey] as const,
   detail: (projectId: string, locale: string) =>
     [...projectKeys.all, "detail", projectId, locale] as const,
+  teams: (projectIds: string[]) => [...projectKeys.all, "teams", ...projectIds] as const,
 };
+
+export function publicProjectTeamsQueryOptions(projectIds: string[]) {
+  const ids = Array.from(new Set(projectIds.map((id) => id.trim()).filter(Boolean))).sort();
+  return queryOptions({
+    queryKey: projectKeys.teams(ids),
+    queryFn: () => listPublicProjectTeams(ids),
+    enabled: ids.length > 0,
+    staleTime: 60_000,
+    meta: publicMeta,
+  });
+}
 
 export function publicProjectDirectoryQueryOptions(
   locale: string,

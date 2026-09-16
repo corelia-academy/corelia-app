@@ -64,21 +64,45 @@ export async function listProjectCollaborators(
   return (data ?? []) as ProjectCollaboratorRow[];
 }
 
-export type PublicProjectTeamMember = CollaborationProfileMini & { user_id: string };
+export type PublicProjectTeamMember = CollaborationProfileMini & {
+  user_id: string;
+  added_at: string;
+};
 
-export async function listPublicProjectTeam(projectId: string): Promise<PublicProjectTeamMember[]> {
+export type PublicProjectTeams = Record<string, PublicProjectTeamMember[]>;
+
+export async function listPublicProjectTeams(projectIds: string[]): Promise<PublicProjectTeams> {
+  const ids = Array.from(new Set(projectIds.map((id) => id.trim()).filter(Boolean)));
+  if (ids.length === 0) return {};
+
   const { data: rows, error } = await supabase
     .from("project_collaborators")
-    .select("user_id")
-    .eq("project_id", projectId)
-    .eq("show_in_portfolio", true);
+    .select("project_id,user_id,added_at")
+    .in("project_id", ids)
+    .order("added_at", { ascending: true });
   if (error) throw new Error(error.message);
-  const ids = (rows ?? []).map((row) => String(row.user_id));
-  const profiles = await listCollaborationProfiles(ids);
-  return ids.flatMap((id) => {
-    const profile = profiles[id];
-    return profile ? [{ user_id: id, ...profile }] : [];
-  });
+
+  const profiles = await listCollaborationProfiles(
+    (rows ?? []).map((row) => String(row.user_id)),
+  );
+  const teams = Object.fromEntries(ids.map((id) => [id, []])) as PublicProjectTeams;
+  for (const row of rows ?? []) {
+    const projectId = String(row.project_id);
+    const userId = String(row.user_id);
+    const profile = profiles[userId];
+    if (!profile || !teams[projectId]) continue;
+    teams[projectId].push({
+      user_id: userId,
+      added_at: String(row.added_at),
+      ...profile,
+    });
+  }
+  return teams;
+}
+
+export async function listPublicProjectTeam(projectId: string): Promise<PublicProjectTeamMember[]> {
+  const teams = await listPublicProjectTeams([projectId]);
+  return teams[projectId.trim()] ?? [];
 }
 
 export async function listProjectCollaborationInvites(
@@ -105,6 +129,7 @@ export type CollaborationProfileMini = {
   username: string | null;
   full_name: string | null;
   avatar_url?: string | null;
+  avatar_seed?: string | null;
 };
 
 export async function listCollaborationProfiles(
@@ -115,7 +140,7 @@ export async function listCollaborationProfiles(
   if (ids.length === 0) return {};
   let request = supabase
     .from("public_profiles")
-    .select("id,username,full_name,avatar_url")
+    .select("id,username,full_name,avatar_url,avatar_seed")
     .in("id", ids);
   if (signal) request = request.abortSignal(signal);
   const { data, error } = await request;

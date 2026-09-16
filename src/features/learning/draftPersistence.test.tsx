@@ -2,10 +2,15 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { PracticeLesson } from "./PracticeLesson";
+import { MemoryRouter } from "react-router";
+import { PracticeLesson as PracticeLessonComponent } from "./PracticeLesson";
 import { CodeExerciseLesson } from "@/features/code-exercise/CodeExerciseLesson";
 import { defaultCodeConfig } from "@/features/code-exercise/config";
 import type { LessonRendererProps } from "./types";
+
+function PracticeLesson(props: LessonRendererProps) {
+  return <MemoryRouter><PracticeLessonComponent {...props} /></MemoryRouter>;
+}
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const translate = (key: string) => key;
