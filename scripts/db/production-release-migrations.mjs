@@ -97,6 +97,7 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260915062707_learning_redo_lessons.sql",
   "supabase/migrations/20260915130736_learning_redo_stale_clients.sql",
   "supabase/migrations/20260916045248_add_profile_avatar_seed.sql",
+  "supabase/migrations/20260916093549_email_center.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
@@ -104,9 +105,9 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
 );
 
 // Production already contains every previously approved migration. This release
-// adds the avatar seed migration after it passed the complete Staging gate.
+// adds Email Center after Staging workflow 35089057411 and Gmail delivery passed.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260916045248",
+  "20260916093549",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
