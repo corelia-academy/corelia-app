@@ -48,7 +48,7 @@ async function dashboard(db: SupabaseClient): Promise<Response> {
     db.from("email_templates").select("id", { count: "exact", head: true }).eq("active", true),
     db.from("email_campaigns").select("id", { count: "exact", head: true }),
     db.from("email_campaign_recipients").select("id", { count: "exact", head: true }).in("status", ["queued", "sending", "indeterminate"]),
-    db.from("email_import_jobs").select("id,status,original_filename,imported_count,invalid_count,created_at").order("created_at", { ascending: false }).limit(5),
+    db.from("email_import_jobs").select("id,status,source_type,original_filename,total_rows,imported_count,duplicate_count,invalid_count,error_message,created_at").order("created_at", { ascending: false }).limit(10),
     db.from("email_automations").select("id,name,trigger_type,purpose,enabled,updated_at").order("updated_at", { ascending: false }),
     db.from("email_senders").select("*").order("purpose"),
     db.from("email_settings").select("*").eq("singleton", true).single(),
@@ -65,6 +65,16 @@ async function listRows(db: SupabaseClient, action: string, body: Record<string,
     let query = db.from("email_contacts").select("*, email_contact_consents(topic,status,source,changed_at)", { count: "exact" }).order("created_at", { ascending: false }).range(from, to);
     const search = String(body.search ?? "").trim();
     if (search) query = query.or(`email.ilike.%${search.replace(/[%_,()]/g, "") }%,full_name.ilike.%${search.replace(/[%_,()]/g, "")}%`);
+    const source = String(body.source ?? "");
+    if (["corelia", "csv", "luma"].includes(source)) query = query.eq("source_type", source);
+    const marketing = String(body.marketing ?? "");
+    if (["none", "subscribed", "unsubscribed"].includes(marketing)) query = query.eq("marketing_status", marketing);
+    const delivery = String(body.delivery ?? "");
+    if (delivery === "suppressed") query = query.not("global_suppressed_at", "is", null);
+    if (delivery === "active") query = query.is("global_suppressed_at", null);
+    const verified = String(body.verified ?? "");
+    if (verified === "verified") query = query.not("account_verified_at", "is", null);
+    if (verified === "unverified") query = query.not("user_id", "is", null).is("account_verified_at", null);
     const { data, error, count } = await query;
     if (error) throw error;
     return json({ items: data ?? [], total: count ?? 0, page: Math.floor(from / PAGE_SIZE), page_size: PAGE_SIZE });
@@ -79,17 +89,26 @@ async function listRows(db: SupabaseClient, action: string, body: Record<string,
 async function createImport(db: SupabaseClient, actor: AdminContext, body: Record<string, unknown>): Promise<Response> {
   const filename = String(body.filename ?? "contacts.csv").replace(/[^a-zA-Z0-9._-]/g, "_");
   const listName = String(body.list_name ?? filename.replace(/\.csv$/i, "")).trim();
+  const sourceType = body.source_type === "luma" ? "luma" : "csv";
   if (!listName) return json({ message: "invalid_input:list_name" }, 400);
-  const { data: list, error: listError } = await db.from("email_lists").insert({ name: listName, source_type: "import", created_by: actor.id }).select("id").single();
-  if (listError) throw listError;
+  let listId = String(body.list_id ?? "").trim();
+  if (listId) {
+    const { data: existingList, error: existingListError } = await db.from("email_lists").select("id").eq("id", listId).maybeSingle();
+    if (existingListError) throw existingListError;
+    if (!existingList) return json({ message: "list_not_found" }, 404);
+  } else {
+    const { data: list, error: listError } = await db.from("email_lists").insert({ name: listName, source_type: sourceType === "luma" ? "luma" : "import", created_by: actor.id }).select("id").single();
+    if (listError) throw listError;
+    listId = list.id;
+  }
   const importId = crypto.randomUUID();
   const path = `${actor.id}/${importId}/${filename}`;
   const { data: upload, error: uploadError } = await db.storage.from("email-imports").createSignedUploadUrl(path);
   if (uploadError) throw uploadError;
-  const { error } = await db.from("email_import_jobs").insert({ id: importId, list_id: list.id, storage_path: path, original_filename: filename, column_mapping: body.column_mapping ?? {}, created_by: actor.id });
+  const { error } = await db.from("email_import_jobs").insert({ id: importId, list_id: listId, storage_path: path, original_filename: filename, column_mapping: body.column_mapping ?? {}, source_type: sourceType, created_by: actor.id });
   if (error) throw error;
   await audit(db, actor, "create", "email_import", importId);
-  return json({ id: importId, list_id: list.id, path, token: upload.token });
+  return json({ id: importId, list_id: listId, path, token: upload.token });
 }
 
 async function processImport(db: SupabaseClient, actor: AdminContext, body: Record<string, unknown>): Promise<Response> {
