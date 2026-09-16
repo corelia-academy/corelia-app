@@ -113,6 +113,10 @@
   --color-border: var(--border);
   --color-border-subtle: var(--border-subtle);
   --color-border-strong: var(--border-strong);
+  --color-tag-background: var(--tag-background);
+  --color-tag-foreground: var(--tag-foreground);
+  --color-tag-disabled-background: var(--tag-disabled-background);
+  --color-tag-disabled-foreground: var(--tag-disabled-foreground);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -158,6 +162,67 @@
   --color-action-destructive: var(--action-destructive);
   --color-action-destructive-supporting: var(--action-destructive-supporting);
   --color-action-disabled: var(--action-disabled);
+  --color-action-active: var(--action-active);
+  --color-action-active-foreground: var(--action-active-foreground);
+  --color-action-active-supporting: var(--action-active-supporting);
+  --color-action-destructive-active: var(--action-destructive-active);
+  --color-action-destructive-active-foreground: var(--action-destructive-active-foreground);
+  --color-action-destructive-active-supporting: var(--action-destructive-active-supporting);
+
+  /* Toggle semantic color tokens for Toggle and IconToggle states. */
+  --color-toggle-track: var(--toggle-track);
+  --color-toggle-track-checked: var(--toggle-track-checked);
+  --color-toggle-track-alternative: var(--toggle-track-alternative);
+  --color-toggle-track-disabled: var(--toggle-track-disabled);
+  --color-toggle-track-checked-disabled: var(--toggle-track-checked-disabled);
+  --color-toggle-track-alternative-disabled: var(--toggle-track-alternative-disabled);
+  --color-toggle-thumb: var(--toggle-thumb);
+  --color-toggle-thumb-disabled: var(--toggle-thumb-disabled);
+  --color-toggle-text: var(--toggle-text);
+  --color-toggle-text-disabled: var(--toggle-text-disabled);
+  --color-toggle-pressed-background: var(--toggle-pressed-background);
+  --color-toggle-pressed-foreground: var(--toggle-pressed-foreground);
+  --color-toggle-icon-disabled: var(--toggle-icon-disabled);
+  --color-toggle-pressed-disabled-background: var(--toggle-pressed-disabled-background);
+  --color-toggle-pressed-disabled-foreground: var(--toggle-pressed-disabled-foreground);
+
+  /* Badge semantic color tokens mapped from the Figma badge matrix. */
+  --color-badge-outline-background: var(--badge-outline-background);
+  --color-badge-primary: var(--badge-primary);
+  --color-badge-primary-filled: var(--badge-primary-filled);
+  --color-badge-primary-filled-foreground: var(--badge-primary-filled-foreground);
+  --color-badge-warning: var(--badge-warning);
+  --color-badge-warning-filled: var(--badge-warning-filled);
+  --color-badge-warning-filled-foreground: var(--badge-warning-filled-foreground);
+  --color-badge-success: var(--badge-success);
+  --color-badge-success-filled: var(--badge-success-filled);
+  --color-badge-success-filled-foreground: var(--badge-success-filled-foreground);
+  --color-badge-gold: var(--badge-gold);
+  --color-badge-gold-filled: var(--badge-gold-filled);
+  --color-badge-gold-filled-foreground: var(--badge-gold-filled-foreground);
+  --color-badge-lime-green: var(--badge-lime-green);
+  --color-badge-lime-green-filled: var(--badge-lime-green-filled);
+  --color-badge-lime-green-filled-foreground: var(--badge-lime-green-filled-foreground);
+  --color-badge-cyan: var(--badge-cyan);
+  --color-badge-cyan-filled: var(--badge-cyan-filled);
+  --color-badge-cyan-filled-foreground: var(--badge-cyan-filled-foreground);
+  --color-badge-error: var(--badge-error);
+  --color-badge-error-filled: var(--badge-error-filled);
+  --color-badge-error-filled-foreground: var(--badge-error-filled-foreground);
+  --color-badge-gray: var(--badge-gray);
+  --color-badge-gray-filled: var(--badge-gray-filled);
+  --color-badge-gray-filled-foreground: var(--badge-gray-filled-foreground);
+  --color-badge-disabled: var(--badge-disabled);
+  --color-badge-disabled-filled: var(--badge-disabled-filled);
+  --color-badge-disabled-filled-foreground: var(--badge-disabled-filled-foreground);
+
+  /* Selection semantic color tokens for checkbox, radio and selection cards. */
+  --color-selection-active: var(--selection-active);
+  --color-selection-unchecked: var(--selection-unchecked);
+  --color-selection-disabled: var(--selection-disabled);
+  --color-selection-feedback: var(--selection-feedback);
+  --color-selection-feedback-pressed: var(--selection-feedback-pressed);
+  --color-selection-card-selected-border: var(--selection-card-selected-border);
 
   /* Brand tokens */
   --color-brand-navy: var(--brand-navy);
@@ -636,6 +701,69 @@
   --action-destructive: var(--destructive);
   --action-destructive-supporting: var(--foreground-muted);
   --action-disabled: var(--foreground-subtle);
+  --action-active: var(--blue-900);
+  --action-active-foreground: var(--neutral-50);
+  --action-active-supporting: var(--neutral-200);
+  --action-destructive-active: var(--error-700);
+  --action-destructive-active-foreground: var(--neutral-50);
+  --action-destructive-active-supporting: var(--neutral-200);
+  /* Toggle semantic colors preserve the current light state mapping. */
+  --toggle-track: var(--neutral-600);
+  --toggle-track-checked: var(--primary);
+  --toggle-track-alternative: var(--success);
+  --toggle-track-disabled: var(--neutral-500);
+  --toggle-track-checked-disabled: var(--blue-800);
+  --toggle-track-alternative-disabled: var(--success-700);
+  --toggle-thumb: var(--neutral-50);
+  --toggle-thumb-disabled: var(--neutral-700);
+  --toggle-text: var(--foreground);
+  --toggle-text-disabled: var(--neutral-500);
+  --toggle-pressed-background: var(--primary);
+  --toggle-pressed-foreground: var(--neutral-50);
+  --toggle-icon-disabled: var(--neutral-500);
+  --toggle-pressed-disabled-background: var(--neutral-500);
+  --toggle-pressed-disabled-foreground: var(--neutral-800);
+  /* Selection semantic colors follow the primary theme in light mode. */
+  --selection-active: var(--primary);
+  --selection-unchecked: var(--foreground-muted);
+  --selection-disabled: var(--foreground-subtle);
+  --selection-feedback: color-mix(in srgb, var(--primary) 10%, transparent);
+  --selection-feedback-pressed: color-mix(in srgb, var(--primary) 20%, transparent);
+  --selection-card-selected-border: var(--primary);
+  /* Badge semantic colors preserve the current light Figma mapping. */
+  --badge-outline-background: color-mix(in srgb, var(--neutral-50) 5%, transparent);
+  --badge-primary: var(--blue-400);
+  --badge-primary-filled: var(--blue-400);
+  --badge-primary-filled-foreground: var(--neutral-900);
+  --badge-warning: var(--warning-500);
+  --badge-warning-filled: var(--warning-700);
+  --badge-warning-filled-foreground: var(--neutral-50);
+  --badge-success: var(--success-500);
+  --badge-success-filled: var(--success-700);
+  --badge-success-filled-foreground: var(--neutral-50);
+  --badge-gold: var(--accent-yellow-500);
+  --badge-gold-filled: var(--accent-yellow-500);
+  --badge-gold-filled-foreground: var(--neutral-900);
+  --badge-lime-green: var(--accent-teal-500);
+  --badge-lime-green-filled: var(--accent-teal-900);
+  --badge-lime-green-filled-foreground: var(--accent-teal-50);
+  --badge-cyan: var(--accent-sky-500);
+  --badge-cyan-filled: var(--accent-sky-100);
+  --badge-cyan-filled-foreground: var(--neutral-900);
+  --badge-error: var(--error-500);
+  --badge-error-filled: var(--error-700);
+  --badge-error-filled-foreground: var(--neutral-50);
+  --badge-gray: var(--neutral-600);
+  --badge-gray-filled: var(--neutral-200);
+  --badge-gray-filled-foreground: var(--neutral-800);
+  --badge-disabled: var(--neutral-400);
+  --badge-disabled-filled: var(--neutral-100);
+  --badge-disabled-filled-foreground: var(--neutral-400);
+  /* Tag semantic colors preserve the existing neutral label mapping. */
+  --tag-background: var(--neutral-700);
+  --tag-foreground: var(--neutral-200);
+  --tag-disabled-background: var(--neutral-800);
+  --tag-disabled-foreground: var(--neutral-500);
   --surface-overlay: var(--neutral-100);
   --surface-float: var(--popover);
 }
@@ -724,7 +852,70 @@
   --action-supporting: var(--neutral-200);
   --action-destructive: var(--error-500);
   --action-destructive-supporting: var(--neutral-400);
-  --action-disabled: #596587;
+  --action-disabled: var(--neutral-500);
+  --action-active: var(--blue-900);
+  --action-active-foreground: var(--neutral-200);
+  --action-active-supporting: var(--neutral-200);
+  --action-destructive-active: var(--error-700);
+  --action-destructive-active-foreground: var(--neutral-200);
+  --action-destructive-active-supporting: var(--neutral-200);
+  /* Toggle semantic colors preserve disabled mappings and follow dark primary/success. */
+  --toggle-track: var(--neutral-600);
+  --toggle-track-checked: var(--primary);
+  --toggle-track-alternative: var(--success);
+  --toggle-track-disabled: var(--neutral-500);
+  --toggle-track-checked-disabled: var(--blue-800);
+  --toggle-track-alternative-disabled: var(--success-700);
+  --toggle-thumb: var(--neutral-50);
+  --toggle-thumb-disabled: var(--neutral-700);
+  --toggle-text: var(--neutral-200);
+  --toggle-text-disabled: var(--neutral-500);
+  --toggle-pressed-background: var(--primary);
+  --toggle-pressed-foreground: var(--neutral-50);
+  --toggle-icon-disabled: var(--neutral-500);
+  --toggle-pressed-disabled-background: var(--neutral-500);
+  --toggle-pressed-disabled-foreground: var(--neutral-800);
+  /* Selection semantic colors follow the primary theme in dark mode. */
+  --selection-active: var(--primary);
+  --selection-unchecked: var(--foreground-muted);
+  --selection-disabled: var(--foreground-subtle);
+  --selection-feedback: color-mix(in srgb, var(--primary) 10%, transparent);
+  --selection-feedback-pressed: color-mix(in srgb, var(--primary) 20%, transparent);
+  --selection-card-selected-border: var(--primary);
+  /* Badge semantic colors preserve the current dark Figma mapping. */
+  --badge-outline-background: color-mix(in srgb, var(--neutral-50) 5%, transparent);
+  --badge-primary: var(--blue-400);
+  --badge-primary-filled: var(--blue-400);
+  --badge-primary-filled-foreground: var(--neutral-900);
+  --badge-warning: var(--warning-500);
+  --badge-warning-filled: var(--warning-700);
+  --badge-warning-filled-foreground: var(--neutral-50);
+  --badge-success: var(--success-500);
+  --badge-success-filled: var(--success-700);
+  --badge-success-filled-foreground: var(--neutral-50);
+  --badge-gold: var(--accent-yellow-500);
+  --badge-gold-filled: var(--accent-yellow-500);
+  --badge-gold-filled-foreground: var(--neutral-900);
+  --badge-lime-green: var(--accent-teal-500);
+  --badge-lime-green-filled: var(--accent-teal-900);
+  --badge-lime-green-filled-foreground: var(--accent-teal-50);
+  --badge-cyan: var(--accent-sky-500);
+  --badge-cyan-filled: var(--accent-sky-100);
+  --badge-cyan-filled-foreground: var(--neutral-900);
+  --badge-error: var(--error-500);
+  --badge-error-filled: var(--error-700);
+  --badge-error-filled-foreground: var(--neutral-50);
+  --badge-gray: var(--neutral-200);
+  --badge-gray-filled: var(--neutral-600);
+  --badge-gray-filled-foreground: var(--neutral-100);
+  --badge-disabled: var(--neutral-500);
+  --badge-disabled-filled: var(--neutral-800);
+  --badge-disabled-filled-foreground: var(--neutral-500);
+  /* Tag semantic colors preserve the existing neutral label mapping. */
+  --tag-background: var(--neutral-700);
+  --tag-foreground: var(--neutral-200);
+  --tag-disabled-background: var(--neutral-800);
+  --tag-disabled-foreground: var(--neutral-500);
   /* --surface-overlay: var(--blue-900); */
   --surface-overlay: color-mix(in srgb,
       var(--neutral-900) 82%,

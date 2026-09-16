@@ -288,7 +288,13 @@ describe("Radio", () => {
       expect(control.querySelector('[data-slot="radio-unchecked-icon"]')).not.toBeNull()
 
       if (item.checked) {
-        expect(control.querySelector('[data-slot="radio-checked-icon"]')).not.toBeNull()
+        const checkedIcon = control.querySelector('[data-slot="radio-checked-icon"]')
+
+        expect(checkedIcon).not.toBeNull()
+        expect(
+          checkedIcon?.querySelector('[data-slot="radio-checked-dot"]'),
+        ).not.toBeNull()
+        expect(checkedIcon?.querySelectorAll("svg")).toHaveLength(2)
       } else {
         expect(control.querySelector('[data-slot="radio-checked-icon"]')).toBeNull()
       }
@@ -464,7 +470,9 @@ describe("Selection cards", () => {
     expect(cards[1].dataset.size).toBe("large")
     expect(cards[1].hasAttribute("data-disabled")).toBe(true)
     expect(controls[1].getAttribute("aria-checked")).toBe("true")
-    expect(cards[1].className).toContain("has-data-[checked]:border-blue-600")
+    expect(cards[1].className).toContain(
+      "has-data-[checked]:border-selection-card-selected-border",
+    )
     expect(cards[1].className).toContain(
       "has-data-[disabled]:has-data-[checked]:border-transparent",
     )
@@ -535,7 +543,9 @@ describe("Selection cards", () => {
     expect(controls).toHaveLength(2)
     expect(controls[0].getAttribute("aria-checked")).toBe("false")
     expect(controls[1].getAttribute("aria-checked")).toBe("true")
-    expect(cards[1].className).toContain("has-data-[checked]:border-blue-600")
+    expect(cards[1].className).toContain(
+      "has-data-[checked]:border-selection-card-selected-border",
+    )
     expect(new FormData(form ?? undefined).get("plan")).toBe("pro")
 
     await act(async () => cards[0]?.click())

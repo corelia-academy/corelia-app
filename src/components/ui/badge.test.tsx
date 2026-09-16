@@ -21,6 +21,7 @@ describe("Badge", () => {
     expect(markup).toContain(heightClass)
     expect(markup).toContain("leading-none")
     expect(markup).toContain("font-medium")
+    expect(markup).toContain("select-none")
   })
 
   it("renders filled and outline color variants", () => {
@@ -35,10 +36,10 @@ describe("Badge", () => {
       </Badge>,
     )
 
-    expect(filled).toContain("bg-success-700")
-    expect(filled).toContain("text-neutral-50")
-    expect(outline).toContain("border-success-500")
-    expect(outline).toContain("bg-neutral-50/5")
+    expect(filled).toContain("bg-badge-success-filled")
+    expect(filled).toContain("text-badge-success-filled-foreground")
+    expect(outline).toContain("border-badge-success")
+    expect(outline).toContain("bg-badge-outline-background")
   })
 
   it("maps Lime Green, Gray, and Disabled to the theme-aware Figma colors", () => {
@@ -68,36 +69,32 @@ describe("Badge", () => {
       </Badge>,
     )
 
-    expect(limeGreen).toContain("bg-accent-teal-900")
-    expect(limeGreen).toContain("text-accent-teal-50")
-    expect(grayOutline).toContain("border-neutral-600")
-    expect(grayOutline).toContain("text-neutral-600")
-    expect(grayOutline).toContain("dark:border-neutral-200")
-    expect(grayOutline).toContain("dark:text-neutral-200")
-    expect(grayFilled).toContain("bg-neutral-200")
-    expect(grayFilled).toContain("text-neutral-800")
-    expect(grayFilled).toContain("dark:bg-neutral-600")
-    expect(grayFilled).toContain("dark:text-neutral-100")
-    expect(disabledOutline).toContain("border-neutral-400")
-    expect(disabledOutline).toContain("text-neutral-400")
-    expect(disabledOutline).toContain("dark:border-neutral-500")
-    expect(disabledOutline).toContain("dark:text-neutral-500")
-    expect(disabledFilled).toContain("bg-neutral-100")
-    expect(disabledFilled).toContain("text-neutral-400")
-    expect(disabledFilled).toContain("dark:bg-neutral-800")
-    expect(disabledFilled).toContain("dark:text-neutral-500")
+    expect(limeGreen).toContain("bg-badge-lime-green-filled")
+    expect(limeGreen).toContain("text-badge-lime-green-filled-foreground")
+    expect(grayOutline).toContain("border-badge-gray")
+    expect(grayOutline).toContain("text-badge-gray")
+    expect(grayFilled).toContain("bg-badge-gray-filled")
+    expect(grayFilled).toContain("text-badge-gray-filled-foreground")
+    expect(disabledOutline).toContain("border-badge-disabled")
+    expect(disabledOutline).toContain("text-badge-disabled")
+    expect(disabledOutline).toContain('data-disabled="true"')
+    expect(disabledOutline).toContain('aria-disabled="true"')
+    expect(disabledOutline).toContain("cursor-not-allowed")
+    expect(disabledOutline).toContain("select-none")
+    expect(disabledFilled).toContain("bg-badge-disabled-filled")
+    expect(disabledFilled).toContain("text-badge-disabled-filled-foreground")
   })
 
   it.each([
-    ["primary", "border-blue-400", "bg-blue-400", "text-neutral-900"],
-    ["warning", "border-warning-500", "bg-warning-700", "text-neutral-50"],
-    ["success", "border-success-500", "bg-success-700", "text-neutral-50"],
-    ["gold", "border-accent-yellow-500", "bg-accent-yellow-500", "text-neutral-900"],
-    ["limeGreen", "border-accent-teal-500", "bg-accent-teal-900", "text-accent-teal-50"],
-    ["cyan", "border-accent-sky-500", "bg-accent-sky-100", "text-neutral-900"],
-    ["error", "border-error-500", "bg-error-700", "text-neutral-50"],
-    ["gray", "border-neutral-600", "bg-neutral-200", "text-neutral-800"],
-    ["disabled", "border-neutral-400", "bg-neutral-100", "text-neutral-400"],
+    ["primary", "border-badge-primary", "bg-badge-primary-filled", "text-badge-primary-filled-foreground"],
+    ["warning", "border-badge-warning", "bg-badge-warning-filled", "text-badge-warning-filled-foreground"],
+    ["success", "border-badge-success", "bg-badge-success-filled", "text-badge-success-filled-foreground"],
+    ["gold", "border-badge-gold", "bg-badge-gold-filled", "text-badge-gold-filled-foreground"],
+    ["limeGreen", "border-badge-lime-green", "bg-badge-lime-green-filled", "text-badge-lime-green-filled-foreground"],
+    ["cyan", "border-badge-cyan", "bg-badge-cyan-filled", "text-badge-cyan-filled-foreground"],
+    ["error", "border-badge-error", "bg-badge-error-filled", "text-badge-error-filled-foreground"],
+    ["gray", "border-badge-gray", "bg-badge-gray-filled", "text-badge-gray-filled-foreground"],
+    ["disabled", "border-badge-disabled", "bg-badge-disabled-filled", "text-badge-disabled-filled-foreground"],
   ] as const)("maps %s to the current Figma color tokens", (color, outlineClass, filledClass, filledTextClass) => {
     const outline = renderToStaticMarkup(
       <Badge color={color} variant="outline">

@@ -94,7 +94,7 @@ export const Toggle = React.forwardRef<HTMLElement, ToggleProps>(
         data-size={size}
         data-variant={variant}
         className={cn(
-          "group/toggle relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center overflow-clip rounded-xl border-0 bg-neutral-600 p-0.5 outline-none transition-colors duration-150 ease-out focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[checked]:justify-end data-[checked]:bg-blue-600 data-[checked]:data-[variant=alternative]:bg-success-500 data-[disabled]:cursor-not-allowed data-[disabled]:bg-neutral-500 data-[checked]:data-[disabled]:bg-blue-800 data-[checked]:data-[variant=alternative]:data-[disabled]:bg-success-700 motion-reduce:transition-none",
+          "group/toggle relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center overflow-clip rounded-xl border-0 bg-toggle-track p-0.5 outline-none transition-colors duration-150 ease-out focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[checked]:justify-end data-[checked]:bg-toggle-track-checked data-[checked]:data-[variant=alternative]:bg-toggle-track-alternative data-[disabled]:cursor-not-allowed data-[disabled]:bg-toggle-track-disabled data-[checked]:data-[disabled]:bg-toggle-track-checked-disabled data-[checked]:data-[variant=alternative]:data-[disabled]:bg-toggle-track-alternative-disabled motion-reduce:transition-none",
           className,
         )}
         {...rootProps}
@@ -103,7 +103,7 @@ export const Toggle = React.forwardRef<HTMLElement, ToggleProps>(
       >
         <SwitchPrimitive.Thumb
           data-slot="toggle-thumb"
-          className="block h-4 w-5 shrink-0 rounded-full bg-neutral-50 transition-transform duration-150 ease-out group-data-[disabled]/toggle:bg-neutral-700 motion-reduce:transition-none"
+          className="block h-4 w-5 shrink-0 rounded-full bg-toggle-thumb transition-transform duration-150 ease-out group-data-[disabled]/toggle:bg-toggle-thumb-disabled motion-reduce:transition-none"
         />
       </SwitchPrimitive.Root>
     )
@@ -119,7 +119,7 @@ export const Toggle = React.forwardRef<HTMLElement, ToggleProps>(
           "flex min-w-0 flex-col font-body",
           sizeStyles[size].textGap,
           sizeStyles[size].label,
-          disabled ? "text-neutral-500" : "text-foreground dark:text-neutral-200",
+          disabled ? "text-toggle-text-disabled" : "text-toggle-text",
           labelClassName,
         )}
       >
@@ -173,9 +173,9 @@ export const IconToggle = React.forwardRef<
     data-slot="icon-toggle"
     className={cn(
       "inline-flex size-10 shrink-0 items-center justify-center rounded-md border-0 bg-transparent p-0 text-foreground outline-none transition-colors duration-150 ease-out",
-      "data-[pressed]:bg-blue-600 data-[pressed]:text-neutral-50",
-      "data-[disabled]:cursor-not-allowed data-[disabled]:text-neutral-500",
-      "data-[pressed]:data-[disabled]:bg-neutral-500 data-[pressed]:data-[disabled]:text-neutral-800",
+      "data-[pressed]:bg-toggle-pressed-background data-[pressed]:text-toggle-pressed-foreground",
+      "data-[disabled]:cursor-not-allowed data-[disabled]:text-toggle-icon-disabled",
+      "data-[pressed]:data-[disabled]:bg-toggle-pressed-disabled-background data-[pressed]:data-[disabled]:text-toggle-pressed-disabled-foreground",
       "focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       "motion-reduce:transition-none",
       className,

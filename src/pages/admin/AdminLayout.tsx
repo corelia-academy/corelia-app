@@ -16,14 +16,23 @@ export default function AdminLayout() {
   const isHackathonEditor =
     location.pathname === "/admin/hackathons/new" ||
     /^\/admin\/hackathons\/[^/]+\/edit$/.test(location.pathname);
-  const { titleKey, descriptionKey } = resolveAdminPageMeta(location.pathname);
-  const metaTitle = t(titleKey as never);
-  void t(descriptionKey as never);
+
+  const [sidebarOpen, setSidebarOpen] = React.useState(
+    () => !isHackathonEditor,
+  );
+
+  React.useEffect(() => {
+    setSidebarOpen(!isHackathonEditor);
+  }, [location.pathname, isHackathonEditor]);
+
+  const { titleKey, descriptionKey, title, description } = resolveAdminPageMeta(location.pathname);
+  const metaTitle = title ?? t(titleKey as never);
+  void (description ?? t(descriptionKey as never));
 
   return (
     <SidebarProvider
-      key={isHackathonEditor ? "hackathon-editor" : "admin-default"}
-      defaultOpen={!isHackathonEditor}
+      open={sidebarOpen}
+      onOpenChange={setSidebarOpen}
       style={{ "--app-header-height": "2.75rem" } as React.CSSProperties}
     >
       <AdminSidebar />

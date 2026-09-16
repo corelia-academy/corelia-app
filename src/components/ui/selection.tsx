@@ -5,7 +5,6 @@ import {
   CheckSquare,
   Circle,
   MinusSquare,
-  RadioButton,
   Square,
 } from "@phosphor-icons/react"
 
@@ -50,10 +49,10 @@ function SelectionIcon({
 }: SelectionIconProps) {
   const iconSize = size === "small" ? 20 : 24
   const color = disabled
-    ? "var(--neutral-500)"
+    ? "var(--selection-disabled)"
     : state === "unchecked"
-      ? "var(--foreground-muted)"
-      : "var(--blue-600)"
+      ? "var(--selection-unchecked)"
+      : "var(--selection-active)"
 
   const iconMap: Record<
     SelectionIconKind,
@@ -66,9 +65,33 @@ function SelectionIcon({
     },
     radio: {
       unchecked: Circle,
-      checked: RadioButton,
+      checked: null,
       indeterminate: null,
     },
+  }
+
+  if (kind === "radio" && state === "checked") {
+    const innerIconSize = Math.round(iconSize * 0.5)
+
+    return (
+      <span
+        aria-hidden
+        className={cn(
+          className,
+          "pointer-events-none relative inline-flex size-full items-center justify-center",
+        )}
+        data-slot={dataSlot}
+      >
+        <Circle color={color} size={iconSize} weight="regular" />
+        <span
+          data-slot="radio-checked-dot"
+          className="pointer-events-none absolute inset-0 inline-flex items-center justify-center"
+          aria-hidden="true"
+        >
+          <Circle color={color} size={innerIconSize} weight="fill" />
+        </span>
+      </span>
+    )
   }
 
   const Icon = iconMap[kind][state]
@@ -308,7 +331,7 @@ export const Checkbox = React.forwardRef<HTMLElement, CheckboxProps>(
         <span
           data-slot="checkbox-interaction-feedback"
           aria-hidden
-          className="pointer-events-none absolute -inset-2 scale-90 rounded-md bg-blue-600/10 opacity-0 transition-[opacity,transform,background-color] duration-150 ease-out group-hover/checkbox:scale-100 group-hover/checkbox:opacity-100 group-focus-visible/checkbox:scale-100 group-focus-visible/checkbox:opacity-100 group-active/checkbox:scale-100 group-active/checkbox:opacity-100 group-active/checkbox:bg-blue-600/20 group-data-[disabled]/checkbox:opacity-0 motion-reduce:transition-none"
+          className="pointer-events-none absolute -inset-2 scale-90 rounded-md bg-selection-feedback opacity-0 transition-[opacity,transform,background-color] duration-150 ease-out group-hover/checkbox:scale-100 group-hover/checkbox:opacity-100 group-focus-visible/checkbox:scale-100 group-focus-visible/checkbox:opacity-100 group-active/checkbox:scale-100 group-active/checkbox:opacity-100 group-active/checkbox:bg-selection-feedback-pressed group-data-[disabled]/checkbox:opacity-0 motion-reduce:transition-none"
         />
         <SelectionIcon
           dataSlot="checkbox-unchecked-frame"
@@ -503,7 +526,7 @@ function SelectionCardShell({
       data-orientation={orientation}
       data-size={size}
       className={cn(
-        "group/select-card flex w-full min-w-0 cursor-pointer rounded-md border border-transparent bg-surface-raised p-lg text-foreground outline-none transition-colors duration-150 ease-out select-none focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-background has-data-[checked]:border-blue-600 has-data-[disabled]:cursor-not-allowed has-data-[disabled]:border-transparent has-data-[disabled]:text-foreground-muted has-data-[disabled]:has-data-[checked]:border-transparent",
+        "group/select-card flex w-full min-w-0 cursor-pointer rounded-md border border-transparent bg-surface-raised p-lg text-foreground outline-none transition-colors duration-150 ease-out select-none focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-background has-data-[checked]:border-selection-card-selected-border has-data-[disabled]:cursor-not-allowed has-data-[disabled]:border-transparent has-data-[disabled]:text-foreground-muted has-data-[disabled]:has-data-[checked]:border-transparent",
         orientation === "horizontal" ? "flex-col gap-xs" : "flex-col gap-md",
         className,
       )}

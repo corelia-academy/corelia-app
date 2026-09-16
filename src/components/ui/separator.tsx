@@ -21,7 +21,7 @@ function Separator({
       data-slot="separator"
       orientation={orientation}
       className={cn(
-        "shrink-0 border-border",
+        "pointer-events-none select-none shrink-0 border-border",
         isVertical ? "self-stretch w-px border-s" : "h-px w-full border-t",
         variant === "dashed" ? "border-dashed" : "border-solid",
         className

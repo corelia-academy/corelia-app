@@ -31,13 +31,13 @@ export default function Account() {
     },
     ...(profile?.role === "instructor"
       ? [
-          {
-            to: "/account/instructor",
-            title: t("nav.instructor.title"),
-            description: t("nav.instructor.description"),
-            icon: <GraduationCap className="size-4 shrink-0" aria-hidden />,
-          },
-        ]
+        {
+          to: "/account/instructor",
+          title: t("nav.instructor.title"),
+          description: t("nav.instructor.description"),
+          icon: <GraduationCap className="size-4 shrink-0" aria-hidden />,
+        },
+      ]
       : []),
     {
       to: "/account/cv",
@@ -95,6 +95,7 @@ export default function Account() {
                   key={item.to}
                   icon={item.icon}
                   label={item.title}
+                  isActive={activeNavItem.to === item.to}
                   supportingText={item.description}
                   showTrailingIcon
                   showPressed
