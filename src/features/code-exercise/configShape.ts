@@ -1,3 +1,4 @@
+import { isCodeLanguage } from "./languages";
 import type { CodeExerciseConfig } from "./types";
 
 const record = (value: unknown): value is Record<string, unknown> =>
@@ -9,7 +10,7 @@ const optionalText = (value: Record<string, unknown>, keys: string[]) =>
 
 /** Protect authoring from malformed persisted JSON without rejecting unfinished copy/rules. */
 export function isCodeConfigShape(value: unknown): value is CodeExerciseConfig {
-  if (!record(value) || value.schema_version !== 1 || value.language !== "rust" ||
+  if (!record(value) || value.schema_version !== 1 || !isCodeLanguage(value.language) ||
     !Number.isSafeInteger(value.revision) || Number(value.revision) < 1 ||
     !record(value.file) || typeof value.file.path !== "string" || typeof value.file.starter_source !== "string" ||
     typeof value.reference_solution !== "string" || (value.hints !== undefined && !strings(value.hints))) return false;

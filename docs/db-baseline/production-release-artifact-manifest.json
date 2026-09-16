@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "e015813f329efaf5cc54a846b69ff6a01f6102f1",
-  "git_tree_sha": "dce5f4de385bb18ce035734c3b7e00322769baa8",
+  "rc_sha": "3f8307f372cb4e52c0b0b47f4d9fe5ecb41b742f",
+  "git_tree_sha": "e293fe26f50b5a5736e20a3e26cbe707df6a6a03",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 237,
   "latest_migration": "20260916153501_learning_multilanguage_code.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "e015813f329efaf5cc54a846b69ff6a01f6102f1",
+  "source_sha": "3f8307f372cb4e52c0b0b47f4d9fe5ecb41b742f",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "6d806e960be88a48433a4186d27420224ef088f81d83f2a1b47cd8492820bfd3",
+  "candidate_tree_sha256": "fa0460da9ce2f83fea8426fe586ad7710663b6bc8846545b96fb09683f6de817",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -1235,7 +1235,7 @@
     },
     {
       "path": "src/App.tsx",
-      "sha256": "f755b8e8b75439cbefc54f2ae462ce858671678e7670b100da6e6f1d23ddc724"
+      "sha256": "8be049dd7bce0afd4b2372da62deb3b549a268975ba7047bc9241508eb61d095"
     },
     {
       "path": "src/components/auth/AuthBootstrapScreen.tsx",
@@ -1546,16 +1546,20 @@
       "sha256": "e2bc1bd05a43a78c628360b325b60e05779f421970fd3d2d478c39e52688ddba"
     },
     {
+      "path": "src/features/code-exercise/admin/CodeExerciseBuilder.test.tsx",
+      "sha256": "83448a12e2d7be434691ebeec55a8bd3a608c64b783f95e337d7306232454f64"
+    },
+    {
       "path": "src/features/code-exercise/admin/CodeExerciseBuilder.tsx",
-      "sha256": "f73617e586b5cd2ae668d32a47805455700fc225f6efc43cd7b73fe9baf728d5"
+      "sha256": "396bdd18d3c9b63d4ffc05697fe9e5dac91481fed908d035c92c8eae39fe0bba"
     },
     {
       "path": "src/features/code-exercise/CodeEditor.tsx",
-      "sha256": "824c1940dac2e7eb3ffe0b6eb34f25212b8097ec2e63f7930fcb971fde702c37"
+      "sha256": "7a28381dac9e38e56ea4509bd0b53429301a0b887ff6394ad575cae1f014008a"
     },
     {
       "path": "src/features/code-exercise/CodeExerciseEdit.tsx",
-      "sha256": "1e4b03be8956ad942933a81f90202306f7f647820250f29fd47fc3b5f4b542ac"
+      "sha256": "be5241b2b4a45fd333bf24533c3672de21f293b3e10704117d1ca8dfa5fe3a0c"
     },
     {
       "path": "src/features/code-exercise/CodeExerciseLesson.test.tsx",
@@ -1563,11 +1567,11 @@
     },
     {
       "path": "src/features/code-exercise/CodeExerciseLesson.tsx",
-      "sha256": "4ea67cb7a84a12ad549fb5bde8a20660c76ad679ccfa9f4f2313c1eaf7e11e27"
+      "sha256": "8681c292d1dd782e740b436870637e8c85af8ea78f08fc919ba11753e68a129e"
     },
     {
       "path": "src/features/code-exercise/config.ts",
-      "sha256": "991b9cb439c4124ea6d17ed64ffdab80ea356a4e25d1fdc6b24f7c1e9a519532"
+      "sha256": "bc24ff52a6513483f2b5c9ce416232e25acf25c9009818c5476e8a77c56ec5d9"
     },
     {
       "path": "src/features/code-exercise/configShape.test.ts",
@@ -1575,7 +1579,7 @@
     },
     {
       "path": "src/features/code-exercise/configShape.ts",
-      "sha256": "7cea358f5c459242e6bfe24ea7367a05b1fb5a3594ffc20beb5405822d5817af"
+      "sha256": "629c07f78fe17ea576a7dd3c851dfa68fb22c95037c6709bdaf31bd5eadf2399"
     },
     {
       "path": "src/features/code-exercise/drafts.test.ts",
@@ -1592,6 +1596,14 @@
     {
       "path": "src/features/code-exercise/evaluate.ts",
       "sha256": "33e2d66abe28cc860e97565ac0fed05032fb269c8141ecf1374a89a40028dfc1"
+    },
+    {
+      "path": "src/features/code-exercise/languages.test.ts",
+      "sha256": "fe5b435e4f375a3b78832fdacc0b13a061a8fcb61d6fb0415d92c1e9d4beb054"
+    },
+    {
+      "path": "src/features/code-exercise/languages.ts",
+      "sha256": "d5f1b40aab1ae44ee5f3375c5cc469ca7125c95397981c92fd1f332cdfe7d9e5"
     },
     {
       "path": "src/features/code-exercise/locale.test.ts",
@@ -1611,7 +1623,7 @@
     },
     {
       "path": "src/features/code-exercise/types.ts",
-      "sha256": "4eec6558dd0ba8916d4c8bfff5d92dba11c4030b65fea183e088d13299761790"
+      "sha256": "58060c12003ca6d7b2a9265900e2d94cfacbeaab718ffa7efc1763cc2e8bc940"
     },
     {
       "path": "src/features/courses/courseQueries.test.ts",
@@ -1743,11 +1755,11 @@
     },
     {
       "path": "src/features/learning/admin/LessonEditor.test.tsx",
-      "sha256": "2012f458ec64aa250a764af0817c2a6aafee88484a7a6730807ace613328be9d"
+      "sha256": "7462a0bf262d37010e6a0b074cb03f03881c041049d18274086001a2f705029f"
     },
     {
       "path": "src/features/learning/admin/LessonEditor.tsx",
-      "sha256": "aa5e0af24ee7a85484e55ad358ec050fd0930668b0b2e1351de965808ddb9b10"
+      "sha256": "d2a537428c03cdeb892fa5daf513102b81168bb86655a1524e278e26c4920d92"
     },
     {
       "path": "src/features/learning/admin/LessonReadinessBadge.test.tsx",
@@ -1811,7 +1823,7 @@
     },
     {
       "path": "src/features/learning/draftPersistence.test.tsx",
-      "sha256": "e218bb5dbac553f0a86f03fea1e0c4aba94a10443fd46523dce80d6dbcb87652"
+      "sha256": "dd6291c19865c7b9a1dd4deb3be7ba096976b3e102710cff233d5d1ca5f6abad"
     },
     {
       "path": "src/features/learning/invalidateLearningProgress.test.ts",
@@ -1863,7 +1875,7 @@
     },
     {
       "path": "src/features/learning/PracticeLesson.tsx",
-      "sha256": "b966a8f68d4b460348715d50c6e06c8e310e5bea16b323da7243f6441fbee1c0"
+      "sha256": "7888b474f2e873a964b663a9e498ae8806fac6c9fba21f8fe05d4529c8b68123"
     },
     {
       "path": "src/features/learning/PracticeProject.test.tsx",
@@ -1931,11 +1943,11 @@
     },
     {
       "path": "src/features/learning/translationDraft.test.ts",
-      "sha256": "95204a8d1bfa014a969cfd298cef6062fd6dee85b693e027fbbf655914bf42b9"
+      "sha256": "c7bae73a3c823e3c877f4322af2a2f67874d1188a12df1cd0cd76beb71467221"
     },
     {
       "path": "src/features/learning/translationDraft.ts",
-      "sha256": "c6649d30b2149ce57bef5d06dd741a0e2c50759158f4f1001e0cdaaa6affddd2"
+      "sha256": "1f37778b4adad10e92f3755d870a8873113fa325a0aba4c5400a1acee2979bc7"
     },
     {
       "path": "src/features/learning/types.ts",
@@ -2427,7 +2439,7 @@
     },
     {
       "path": "src/locales/en/courses.json",
-      "sha256": "fc56e2757647234625deeb5e02b14e4ae01df6a3088a84d88a852c52ef95ce2c"
+      "sha256": "377d9285175460b0500c5f0f0c65f6535c6548db36039fa93937f66b5506486e"
     },
     {
       "path": "src/locales/en/emailCenter.json",
@@ -2463,7 +2475,7 @@
     },
     {
       "path": "src/locales/vi/courses.json",
-      "sha256": "0ebe230e490941ee79750f0bc8ab38e8f77687e1b6bb4347a27fc6212e501631"
+      "sha256": "24498fba1d694f574cbbaa62f7466a559dadffbe39c3aa35629c5350ba0d2cb6"
     },
     {
       "path": "src/locales/vi/emailCenter.json",
@@ -3055,7 +3067,7 @@
     },
     {
       "path": "src/pages/instructor-course-edit/LearningCourseEditorRoute.tsx",
-      "sha256": "3fc465af0557fd174b715c2626ff6b660c64a7b72d58fa837d4346166f3e0ae8"
+      "sha256": "0029d70b776fef4311bfa8f4000ac7357edb765c3615a550ff4499e9b6fa4a22"
     },
     {
       "path": "src/pages/instructor-course-edit/LearningPreview.test.tsx",
@@ -3131,7 +3143,7 @@
     },
     {
       "path": "src/pages/learn/components/FinalAssignmentPanel.tsx",
-      "sha256": "879a4dfe00cabd6adc24d976f199c7aafbcb32cde4f9b19132214a20d1da8d93"
+      "sha256": "b4bba1e9520385eb5c52fcdd8a1ee82a732a96b9199b1b2d5ba10d2c3b952154"
     },
     {
       "path": "src/pages/learn/components/LearnStates.tsx",
@@ -3139,15 +3151,15 @@
     },
     {
       "path": "src/pages/learn/components/LessonCurriculum.tsx",
-      "sha256": "107d6766ed2590ba22d8234cbcf8ea436995acf3cb28fc02d8d47494b8a7b750"
+      "sha256": "548364cc11f393de34dbb0f03950d2eb32f821f73a4e37a77e1595017ccc57ce"
     },
     {
       "path": "src/pages/learn/components/LessonPlayerCard.test.tsx",
-      "sha256": "c8fdd8aac5e7de5e3242c1271d453e00a4f5e200adf3dcf4cdea58060d18ad13"
+      "sha256": "2af5fb5906822fa9a33c733db3b54b99225619e0def5302d27fafc1eb48fef12"
     },
     {
       "path": "src/pages/learn/components/LessonPlayerCard.tsx",
-      "sha256": "dbc67aa14fb6cdb9db8ab150124fc8e8f15e91e3ce825f9e44eaa12a5804c974"
+      "sha256": "2059f94802283831e2fcaec53e7f499e9fd4915af9ef5142fe636234a693f964"
     },
     {
       "path": "src/pages/learn/components/LessonPractice.tsx",
@@ -3186,8 +3198,12 @@
       "sha256": "947b58ee2804772ef86b2efc5b5b49c23e3511f60195f86fba8796536022a0f3"
     },
     {
+      "path": "src/pages/learn/Learn.finalAssignment.test.tsx",
+      "sha256": "dbe3253e5ba47d54119286b0c53e75a14233c21dcc3347d18660433375f86473"
+    },
+    {
       "path": "src/pages/learn/Learn.tsx",
-      "sha256": "e5af7b0f2f2f97af7c5feb9df008cba454e36ad9474006fab21a97e8688b0bc3"
+      "sha256": "dc5c3690c5d769b55e66a2dd1c271a49173cf22afd46959094469b0ccdaa0554"
     },
     {
       "path": "src/pages/learn/LearnLayout.tsx",
