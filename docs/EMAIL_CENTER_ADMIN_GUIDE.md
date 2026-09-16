@@ -36,6 +36,8 @@ learner@example.com,Nguyễn An,vi,true
 
 Email được chuẩn hóa chữ thường và gộp theo địa chỉ. Giá trị consent hợp lệ gồm `true`, `yes`, `1`, `có`, `đồng ý`. Import lại không bật lại contact đã hủy đăng ký và không tự đưa contact vào automation. File nằm trong bucket private `email-imports`; báo cáo lỗi được lưu cạnh file import.
 
+Màn hình import hỗ trợ nguồn CSV thường hoặc Luma, xem trước 10 dòng và ánh xạ thủ công các cột email, họ tên (hoặc họ/tên riêng), ngôn ngữ và consent. Dữ liệu tham dự sự kiện của Luma không được suy diễn thành consent marketing. Tài khoản Corelia luôn giữ tên/ngôn ngữ từ profile; CSV chỉ bổ sung membership vào danh sách và không ghi đè hồ sơ đó.
+
 ## 3. Template và chiến dịch
 
 1. Tạo template đúng mục đích; dùng biến `{{name}}`, `{{course_name}}`, `{{event_url}}` khi cần.

@@ -98,16 +98,17 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260915130736_learning_redo_stale_clients.sql",
   "supabase/migrations/20260916045248_add_profile_avatar_seed.sql",
   "supabase/migrations/20260916093549_email_center.sql",
+  "supabase/migrations/20260916120421_email_contact_sync_and_import_sources.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production already contains every previously approved migration. This release
-// adds Email Center after Staging workflow 35089057411 and Gmail delivery passed.
+// Production already contains Email Center through workflow 35091944273. This
+// release adds account/contact synchronization and source-aware CSV imports.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260916093549",
+  "20260916120421",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

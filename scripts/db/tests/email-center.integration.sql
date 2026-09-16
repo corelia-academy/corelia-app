@@ -26,6 +26,31 @@ BEGIN
 
     INSERT INTO auth.users(id, email, raw_user_meta_data) VALUES (v_actor, 'email-admin@corelia.local', '{}');
     UPDATE public.profiles SET role = 'admin' WHERE id = v_actor;
+    IF NOT EXISTS (
+      SELECT 1 FROM public.email_contacts
+      WHERE user_id = v_actor AND email = 'email-admin@corelia.local'
+        AND source_type = 'corelia' AND account_verified_at IS NULL
+    ) THEN
+      RAISE EXCEPTION 'Corelia account was not synchronized into Email Center';
+    END IF;
+    UPDATE public.profiles SET full_name = 'Email Admin', locale = 'en' WHERE id = v_actor;
+    IF NOT EXISTS (
+      SELECT 1 FROM public.email_contacts
+      WHERE user_id = v_actor AND full_name = 'Email Admin' AND locale = 'en'
+    ) THEN
+      RAISE EXCEPTION 'Profile changes were not synchronized into Email Center';
+    END IF;
+    UPDATE auth.users SET email = 'email-admin-changed@corelia.local' WHERE id = v_actor;
+    IF (SELECT count(*) FROM public.email_contacts WHERE user_id = v_actor) <> 1
+       OR NOT EXISTS (SELECT 1 FROM public.email_contacts WHERE user_id = v_actor AND email = 'email-admin-changed@corelia.local')
+       OR NOT EXISTS (SELECT 1 FROM public.email_contacts WHERE user_id IS NULL AND email = 'email-admin@corelia.local') THEN
+      RAISE EXCEPTION 'Email change did not preserve the old address and move the account link';
+    END IF;
+    PERFORM private.sync_email_contact_for_user(v_actor);
+    PERFORM private.sync_email_contact_for_user(v_actor);
+    IF (SELECT count(*) FROM public.email_contacts WHERE user_id = v_actor) <> 1 THEN
+      RAISE EXCEPTION 'Account synchronization is not idempotent';
+    END IF;
     INSERT INTO public.email_lists(id, name, created_by) VALUES (v_list_id, 'Integration list', v_actor);
     INSERT INTO public.email_contacts(id, email, full_name) VALUES
       ('ec000000-0000-4000-8000-000000000101', 'one@example.com', 'One'),
@@ -35,6 +60,10 @@ BEGIN
       SELECT v_list_id, id FROM public.email_contacts WHERE email IN ('one@example.com','two@example.com','blocked@example.com');
     INSERT INTO public.email_contact_consents(contact_id, topic, status, source)
       SELECT id, 'marketing', 'subscribed', 'test' FROM public.email_contacts WHERE email IN ('one@example.com','two@example.com');
+    IF (SELECT count(*) FROM public.email_contacts WHERE marketing_status = 'subscribed' AND email IN ('one@example.com','two@example.com')) <> 2
+       OR (SELECT marketing_status FROM public.email_contacts WHERE email = 'blocked@example.com') <> 'none' THEN
+      RAISE EXCEPTION 'Denormalized marketing status is out of sync';
+    END IF;
     INSERT INTO public.email_templates(id, name, purpose, created_by) VALUES (v_template_id, 'Marketing', 'marketing', v_actor);
     INSERT INTO public.email_template_versions(id, template_id, version, status, subject, body_text, created_by, published_at)
       VALUES (v_version_id, v_template_id, 1, 'published', 'Hello {{name}}', 'Body', v_actor, now());
