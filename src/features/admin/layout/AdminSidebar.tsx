@@ -11,7 +11,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { Package, Award, BriefcaseBusiness, GraduationCap, ImageIcon, Medal, Settings, Trophy, Users } from "lucide-react";
+import { Package, Award, BriefcaseBusiness, GraduationCap, ImageIcon, Mail, Medal, Settings, Trophy, Users } from "lucide-react";
 import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 
@@ -51,6 +51,9 @@ export function AdminSidebar() {
           <SidebarGroupContent className="px-1">
             <SidebarMenu className="gap-2">
               {profile?.role === "admin" ? <SidebarMenuItem><SidebarMenuButton tooltip={t("layout.sidebar.projects.label")} isActive={pathname.startsWith("/admin/projects")} render={<NavLink to="/admin/projects" className="flex w-full items-center gap-2"><Package className="size-4" aria-hidden /><span>{t("layout.sidebar.projects.label")}</span></NavLink>} /></SidebarMenuItem> : null}
+              <SidebarMenuItem>
+                <SidebarMenuButton className="rounded-md" tooltip={t("layout.sidebar.email.tooltip")} isActive={pathname.startsWith("/admin/email")} render={<NavLink to="/admin/email" className="flex w-full items-center gap-2"><Mail className="size-4" aria-hidden /><span>{t("layout.sidebar.email.label")}</span></NavLink>} />
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   className="rounded-md"

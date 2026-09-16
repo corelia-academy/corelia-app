@@ -2,6 +2,7 @@ import { canManageCourse, isAuthFailure } from "../lib/authz.ts";
 import { json, nowIso } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 import { runActivityMilestoneCheck } from "../credentials/check_activity.ts";
+import { enqueueEmailAutomationForUser } from "../email/automation.ts";
 
 type CourseCompletionReason =
   | "completed"
@@ -184,6 +185,16 @@ export async function syncCourseCompletionIfReady(
   }
 
   await evaluateCourseCompletionMilestones(db, targetUserId, courseId);
+
+  await enqueueEmailAutomationForUser({
+    db,
+    triggerType: "course_completed",
+    userId: targetUserId,
+    triggerKey: `course_completed:${enrollmentId}`,
+    objectType: "course",
+    objectId: courseId,
+    context: { course_id: courseId, course_name: courseTitle ?? "", completed_at: updatedAt },
+  }).catch((error) => console.error("[corelia-api] completion automation enqueue failed", error));
 
   return {
     ok: true,

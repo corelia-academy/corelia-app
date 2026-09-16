@@ -41,10 +41,14 @@ import {
   handleJobsRunScheduled,
 } from "./jobs/handlers.ts";
 import { handleAdminEmailOutboxReconcile } from "./lib/mail/outbox.ts";
+import { handleEmailAdmin, handleEmailUnsubscribe } from "./email/handler.ts";
+import { runEmailWorker } from "./email/worker.ts";
+import { handleResendWebhook } from "./email/webhook.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
 
 const PROTECTED_OPS = new Set<string>([
   "admin.emailOutbox.reconcile",
+  "email.admin",
   "certificates.issue",
   "certificates.backfillEligible",
   "certificates.revoke",
@@ -98,6 +102,12 @@ function hasJobsCronSecret(req: Request): boolean {
   return Boolean(expected && provided && expected === provided);
 }
 
+function hasEmailWorkerSecret(req: Request): boolean {
+  const expected = Deno.env.get("EMAIL_WORKER_SECRET")?.trim() ?? "";
+  const provided = req.headers.get("x-corelia-email-worker-secret")?.trim() ?? "";
+  return Boolean(expected && provided && expected === provided);
+}
+
 Deno.serve(async (req: Request): Promise<Response> => {
   const cors = corsHeadersForRequest(req);
   if (req.method === "OPTIONS") {
@@ -110,7 +120,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const op = url.searchParams.get("op") ?? "";
     const isLearningReminderCron = op === "courses.sendLearningReminders" && hasLearningReminderCronSecret(req);
     const isJobsCron = op === "jobs.runScheduled" && hasJobsCronSecret(req);
-    if (PROTECTED_OPS.has(op) && !hasBearerAuthHeader(req) && !isLearningReminderCron && !isJobsCron) {
+    const isEmailWorker = op === "email.worker" && hasEmailWorkerSecret(req);
+    if (PROTECTED_OPS.has(op) && !hasBearerAuthHeader(req) && !isLearningReminderCron && !isJobsCron && !isEmailWorker) {
       return withCors(req, json({ message: "Missing Authorization header" }, 401));
     }
     let db: SupabaseClient;
@@ -194,6 +205,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleJobsAdmin(req, db);
     } else if (op === "admin.emailOutbox.reconcile" && req.method === "POST") {
       response = await handleAdminEmailOutboxReconcile(req, db);
+    } else if (op === "email.admin" && req.method === "POST") {
+      response = await handleEmailAdmin(req, db);
+    } else if (op === "email.worker" && req.method === "POST") {
+      response = await runEmailWorker(req, db);
+    } else if (op === "email.webhook" && req.method === "POST") {
+      response = await handleResendWebhook(req, db);
+    } else if (op === "email.unsubscribe" && req.method === "POST") {
+      response = await handleEmailUnsubscribe(req, db);
     } else {
       response = json({ message: "Not found" }, 404);
     }
