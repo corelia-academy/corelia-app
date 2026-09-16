@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { UserCircle } from "lucide-react";
 import type { Profile } from "@/types/database";
@@ -8,6 +9,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ConnectOCIDCard from "@/pages/account/ConnectOCIDCard";
 import { ChangePasswordCard } from "./ChangePasswordCard";
 import { ProfileSection } from "./ProfileSection";
+import { queryClient } from "@/lib/queryClient";
+import { publicProfileKeys } from "@/features/profiles/publicProfileQueries";
+import { socialKeys } from "@/features/social/socialQueries";
+import { feedKeys } from "@/features/feed/feedQueries";
+import { projectKeys } from "@/features/projects/projectQueries";
+import { projectCollaborationKeys } from "@/features/projects/projectCollaborationQueries";
+import { instructorKeys } from "@/features/instructor/instructorQueries";
 
 function useProfileForm(profile: Profile | null) {
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
@@ -42,6 +50,7 @@ export function AccountProfileRoute() {
   const [saving, setSaving] = useState(false);
   const [visibilitySaving, setVisibilitySaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [previewAvatarSeed, setPreviewAvatarSeed] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -66,6 +75,32 @@ export function AccountProfileRoute() {
     setProfilePublic,
   } = useProfileForm(profile);
 
+  const generatedAvatarMutation = useMutation({
+    mutationFn: async (avatarSeed: string) => {
+      if (!user) throw new Error(t("profile.errors.avatarUpdateFailed"));
+      return updateProfileForUser(user, {
+        avatar_url: null,
+        avatar_seed: avatarSeed,
+      });
+    },
+  });
+
+  async function refreshAvatarConsumers() {
+    if (!user) return;
+    const results = await Promise.allSettled([
+      refreshProfile(user),
+      queryClient.invalidateQueries({ queryKey: publicProfileKeys.all }),
+      queryClient.invalidateQueries({ queryKey: socialKeys.all }),
+      queryClient.invalidateQueries({ queryKey: feedKeys.all }),
+      queryClient.invalidateQueries({ queryKey: projectKeys.all }),
+      queryClient.invalidateQueries({ queryKey: projectCollaborationKeys.all }),
+      queryClient.invalidateQueries({ queryKey: instructorKeys.all }),
+    ]);
+    if (results.some((result) => result.status === "rejected")) {
+      console.warn("[profile] Avatar saved, but some cached views could not refresh.");
+    }
+  }
+
   // A cached partial profile and its complete response have the same ID.
   // Refresh untouched fields while preserving edits made during the fetch.
   const lastSyncedProfile = useRef(profile);
@@ -73,6 +108,7 @@ export function AccountProfileRoute() {
     if (!profile) return;
     const previous = lastSyncedProfile.current;
     const sameUser = previous?.id === profile.id;
+    if (!sameUser) setPreviewAvatarSeed(null);
     setFullName(current => !sameUser || current === (previous?.full_name ?? "") ? profile.full_name ?? "" : current);
     setPhone(current => !sameUser || current === (previous?.phone ?? "") ? profile.phone ?? "" : current);
     setAvatarUrl(current => !sameUser || current === (previous?.avatar_url ?? "") ? profile.avatar_url ?? "" : current);
@@ -90,9 +126,10 @@ export function AccountProfileRoute() {
     setUploadingAvatar(true);
     try {
       const url = await uploadAvatarForUser(user, file);
+      await updateProfileForUser(user, { avatar_url: url, avatar_seed: null });
       setAvatarUrl(url);
-      await updateProfileForUser(user, { avatar_url: url });
-      await refreshProfile(user);
+      await refreshAvatarConsumers();
+      setPreviewAvatarSeed(null);
       setSuccess(t("profile.success.avatarUpdated"));
     } catch (err) {
       const message =
@@ -102,6 +139,31 @@ export function AccountProfileRoute() {
       setError(message);
     } finally {
       setUploadingAvatar(false);
+    }
+  }
+
+  function onGenerateAvatarPreview() {
+    setError(null);
+    setSuccess(null);
+    setPreviewAvatarSeed(crypto.randomUUID());
+  }
+
+  async function onSaveGeneratedAvatar() {
+    if (!user || !previewAvatarSeed) return;
+    setError(null);
+    setSuccess(null);
+    try {
+      await generatedAvatarMutation.mutateAsync(previewAvatarSeed);
+      setAvatarUrl("");
+      await refreshAvatarConsumers();
+      setPreviewAvatarSeed(null);
+      setSuccess(t("profile.success.avatarUpdated"));
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message
+          ? err.message
+          : t("profile.errors.avatarUpdateFailed"),
+      );
     }
   }
 
@@ -151,7 +213,6 @@ export function AccountProfileRoute() {
         ...(usernameChanged ? { username: newUsername } : {}),
         full_name: fullName.trim() || null,
         phone: phone.trim() || null,
-        avatar_url: avatarUrl || null,
         bio: bio.trim() || null,
         website: website.trim() || null,
         profile_public: profilePublic,
@@ -269,6 +330,9 @@ export function AccountProfileRoute() {
         fullName={fullName}
         phone={phone}
         avatarUrl={avatarUrl}
+        avatarSeed={profile?.avatar_seed ?? null}
+        userId={user?.id ?? null}
+        previewAvatarSeed={previewAvatarSeed}
         bio={bio}
         website={website}
         profilePublic={profilePublic}
@@ -277,7 +341,11 @@ export function AccountProfileRoute() {
         setPhone={setPhone}
         saving={saving}
         uploadingAvatar={uploadingAvatar}
+        savingAvatar={generatedAvatarMutation.isPending}
         onAvatarUpload={onAvatarUpload}
+        onGenerateAvatarPreview={onGenerateAvatarPreview}
+        onSaveGeneratedAvatar={onSaveGeneratedAvatar}
+        onCancelGeneratedAvatar={() => setPreviewAvatarSeed(null)}
         setUsername={setUsername}
         setBio={setBio}
         setWebsite={setWebsite}

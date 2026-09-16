@@ -4,12 +4,10 @@ import { useTranslation } from "react-i18next";
 
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import {
-  Avatar,
-  AvatarFallback,
   AvatarGroup,
   AvatarGroupCount,
-  AvatarImage,
 } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { getProjectCoverImageUrl } from "@/lib/projects";
 import { cn } from "@/lib/utils";
 import type { PublicProjectTeamMember } from "@/lib/projectCollaboration";
@@ -22,6 +20,7 @@ type ProjectCardProps = {
   ownerLabel?: string | null;
   ownerHandle?: string | null;
   ownerAvatarUrl?: string | null;
+  ownerAvatarSeed?: string | null;
   teamMembers?: PublicProjectTeamMember[];
   taxonomy?: Contest | null;
   awardLabel?: string | null;
@@ -35,6 +34,7 @@ export function ProjectCard({
   ownerLabel,
   ownerHandle,
   ownerAvatarUrl,
+  ownerAvatarSeed,
   teamMembers = [],
   taxonomy,
   awardLabel,
@@ -55,6 +55,7 @@ export function ProjectCard({
       label: ownerName,
       href: ownerHandle ? `/@${ownerHandle}` : null,
       avatarUrl: ownerAvatarUrl,
+      avatarSeed: ownerAvatarSeed,
     },
     ...teamMembers
       .filter((member) => member.user_id !== project.owner_id)
@@ -63,6 +64,7 @@ export function ProjectCard({
         label: member.full_name?.trim() || member.username?.trim() || t("projects.editor.builder"),
         href: `/@${member.username?.trim() || member.id}`,
         avatarUrl: member.avatar_url,
+        avatarSeed: member.avatar_seed,
       })),
   ];
   const visiblePeople = people.slice(0, 3);
@@ -122,10 +124,13 @@ export function ProjectCard({
           <dd className="min-w-0 font-medium">
             {people.length === 1 ? (
               <div className="flex min-w-0 items-center gap-2">
-                <Avatar>
-                  <AvatarImage src={ownerAvatarUrl ?? undefined} alt="" />
-                  <AvatarFallback>{ownerName.charAt(0).toUpperCase()}</AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  userId={project.owner_id}
+                  avatarUrl={ownerAvatarUrl}
+                  avatarSeed={ownerAvatarSeed}
+                  alt={ownerName}
+                  fallback={ownerName.charAt(0).toUpperCase()}
+                />
                 {ownerHandle ? (
                   <NavLink to={`/@${ownerHandle}`} className="min-w-0 truncate hover:underline">
                     {ownerName}
@@ -138,10 +143,13 @@ export function ProjectCard({
               <AvatarGroup aria-label={t("projects.team.members")}>
                 {visiblePeople.map((person) => {
                   const avatar = (
-                    <Avatar>
-                      <AvatarImage src={person.avatarUrl ?? undefined} alt="" />
-                      <AvatarFallback>{person.label.charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
+                    <UserAvatar
+                      userId={person.id}
+                      avatarUrl={person.avatarUrl}
+                      avatarSeed={person.avatarSeed}
+                      alt={person.label}
+                      fallback={person.label.charAt(0).toUpperCase()}
+                    />
                   );
                   return person.href ? (
                     <NavLink key={person.id} to={person.href} title={person.label} aria-label={person.label}>

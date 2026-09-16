@@ -27,11 +27,25 @@ describe("course roster", () => {
     const participant = { id: "learner", full_name: "Learner", avatar_url: null, email: null, progress_percent: 75 };
     const abortSignal = vi.fn().mockResolvedValue({ data: [participant], error: null });
     vi.mocked(supabase.rpc).mockReturnValue({ abortSignal } as unknown as ReturnType<typeof supabase.rpc>);
+    const seedQuery = { select: vi.fn(), in: vi.fn(), abortSignal: vi.fn() };
+    seedQuery.select.mockReturnValue(seedQuery);
+    seedQuery.in.mockReturnValue(seedQuery);
+    seedQuery.abortSignal.mockResolvedValue({
+      data: [{ id: "learner", avatar_seed: "seed" }],
+      error: null,
+    });
+    vi.mocked(supabase.from).mockReturnValue(
+      seedQuery as unknown as ReturnType<typeof supabase.from>,
+    );
     const controller = new AbortController();
-    expect(await getLearningCourseRoster("course", controller.signal)).toEqual([participant]);
+    expect(await getLearningCourseRoster("course", controller.signal)).toEqual([
+      { ...participant, avatar_seed: "seed" },
+    ]);
     expect(supabase.rpc).toHaveBeenCalledWith("learning_course_roster", { p_course: "course" });
     expect(abortSignal).toHaveBeenCalledWith(controller.signal);
-    expect(supabase.from).not.toHaveBeenCalled();
+    expect(supabase.from).toHaveBeenCalledWith("public_profiles");
+    expect(seedQuery.in).toHaveBeenCalledWith("id", ["learner"]);
+    expect(seedQuery.abortSignal).toHaveBeenCalledWith(controller.signal);
   });
   it("surfaces permission errors instead of rendering a misleading empty roster", async () => {
     vi.mocked(supabase.rpc).mockResolvedValue({ data: null, error: { message: "COURSE_ROSTER_PERMISSION_REQUIRED" } } as never);

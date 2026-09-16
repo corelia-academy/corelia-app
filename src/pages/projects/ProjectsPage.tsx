@@ -244,6 +244,7 @@ export default function ProjectsPage() {
                   ownerLabel={owner?.full_name ?? owner?.username}
                   ownerHandle={owner?.username ?? owner?.ocid}
                   ownerAvatarUrl={owner?.avatar_url}
+                  ownerAvatarSeed={owner?.avatar_seed}
                   teamMembers={teamsQuery.data?.[project.id] ?? []}
                   awardLabel={awardsMap.get(project.id)}
                 />

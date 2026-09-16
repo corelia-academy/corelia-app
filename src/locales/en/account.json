@@ -221,6 +221,11 @@
       "alt": "Avatar",
       "upload": "Upload image",
       "uploading": "Uploading…",
+      "randomize": "Try a random avatar",
+      "tryAnother": "Try another",
+      "useThis": "Use this avatar",
+      "cancel": "Cancel",
+      "saving": "Saving…",
       "hint": "JPG, PNG, or WebP. The image will be saved and updated immediately."
     },
     "fullName": {
@@ -260,6 +265,7 @@
     },
     "errors": {
       "avatarUploadFailed": "Unable to upload image.",
+      "avatarUpdateFailed": "Unable to update avatar.",
       "updateFailed": "Unable to update information.",
       "visibilityUpdateFailed": "Unable to update profile visibility.",
       "usernameTaken": "This username is already taken. Please choose a different one.",
