@@ -121,6 +121,7 @@ const AdminHackathons = lazy(() => import("@/pages/admin/hackathons/AdminHackath
 const AdminHackathonEditor = lazy(() => import("@/pages/admin/hackathons/AdminHackathonEditorPage"));
 const AdminProjectsPage = lazy(() => import("@/pages/admin/AdminProjectsPage"));
 const AdminJobsPage = lazy(() => import("@/pages/admin/jobs/AdminJobsPage"));
+const AdminComponentsPage = lazy(() => import("@/pages/admin/AdminComponentsPage"));
 
 const PageFallback = () => <AuthGateLoading />;
 
@@ -136,6 +137,13 @@ function RecoveryGuard() {
   }, [isPasswordRecovery, location.pathname, navigate]);
 
   return null;
+}
+
+function LegacyComponentsRedirect() {
+  const { pathname } = useLocation();
+  const targetPath = pathname.replace(/^\/admin\/components(?=$|\/)/, "/components");
+
+  return <Navigate to={targetPath} replace />;
 }
 
 export default function App() {
@@ -288,6 +296,53 @@ function ApplicationRoutes() {
                 }
               />
             </Route>
+            <Route
+              path="/components"
+              element={
+                <RequireRole roles={ROLE_GROUPS.projectModerators}>
+                  <Suspense fallback={<PageFallback />}>
+                    <AdminComponentsPage />
+                  </Suspense>
+                </RequireRole>
+              }
+            />
+            {[
+              "action",
+              "badge",
+              "tag",
+              "selection",
+              "toggle",
+              "separator",
+              "scrollbar",
+            ].map((component) => (
+              <Route
+                key={component}
+                path={`/components/${component}`}
+                element={
+                  <RequireRole roles={ROLE_GROUPS.projectModerators}>
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminComponentsPage />
+                    </Suspense>
+                  </RequireRole>
+                }
+              />
+            ))}
+            <Route
+              path="/admin/components"
+              element={
+                <RequireRole roles={ROLE_GROUPS.projectModerators}>
+                  <LegacyComponentsRedirect />
+                </RequireRole>
+              }
+            />
+            <Route
+              path="/admin/components/*"
+              element={
+                <RequireRole roles={ROLE_GROUPS.projectModerators}>
+                  <LegacyComponentsRedirect />
+                </RequireRole>
+              }
+            />
             <Route
               path="/"
               element={
