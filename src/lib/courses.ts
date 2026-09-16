@@ -954,6 +954,7 @@ export async function setLessonProgress(
     course_id: courseId,
     completed_at: completed ? now : null,
     reset_epoch: expectedEpoch,
+    completion_nonce: completed && (expectedEpoch ?? 0) > 0 ? crypto.randomUUID() : undefined,
     watch_seconds: watchSeconds,
   }) as Record<string, unknown>;
 
