@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "3e2e83aa4cae41f859dedb0ff8b8da426ac1f855",
-  "git_tree_sha": "81fffb3706bfd5646b222ac711c82cdba64e130f",
+  "rc_sha": "7343b765e9ee353200a380851004d5fcda677799",
+  "git_tree_sha": "6c33c34d11c8c19bfd180dd1e000043f4026cb13",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 236,
-  "latest_migration": "20260916120421_email_contact_sync_and_import_sources.sql",
+  "migration_count": 237,
+  "latest_migration": "20260916153501_learning_multilanguage_code.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "3e2e83aa4cae41f859dedb0ff8b8da426ac1f855",
+  "source_sha": "7343b765e9ee353200a380851004d5fcda677799",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "2bd38db7451f13c48dc1b20f91e2ca9de9b1bae48a43eedba01474de05c69330",
+  "candidate_tree_sha256": "1349123a319afa7543be341592b8ee5807ecf634e03a2e594d6b5eb14d6061c7",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -919,7 +919,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "f5ab1ab2c902fab3029bea56948ab571f3a29743054c67cd8c0595a98b039ba6"
+      "sha256": "2b3ba55d33d128efa1e31a64a84c1c568eb9811676fd61574dd961d61f2d63ef"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -1020,6 +1020,10 @@
     {
       "path": "scripts/db/tests/learning-edge.integration.mjs",
       "sha256": "f6c38c1c1c56080dd9adaa74138e25ff529e01ac5f85523e0f6a3cbfe981ea4e"
+    },
+    {
+      "path": "scripts/db/tests/learning-multilanguage.integration.sql",
+      "sha256": "736b69233b1c3a9b6d642bf9f14b0808a51ade164a83aca4424e2b8ccba14c3f"
     },
     {
       "path": "scripts/db/tests/learning-policy-postgrest.integration.mjs",
@@ -1123,7 +1127,7 @@
     },
     {
       "path": "scripts/db/verify-local-migration-apply.mjs",
-      "sha256": "04c42fec4f08eb6f3935033678a30a7cfe2b712cdae90452e6bfe86db3ffa342"
+      "sha256": "b8401d4b806c3c9cbb99b59087c338f4b6e4fe7777d61c0b2305192be4e6a72b"
     },
     {
       "path": "scripts/db/verify-migration-baseline.mjs",
@@ -4070,6 +4074,10 @@
       "sha256": "c74d53a37615db80a8d1c41857b778c7883a99bb88119438426ec97f86e66ab7"
     },
     {
+      "path": "supabase/migrations/20260916153501_learning_multilanguage_code.sql",
+      "sha256": "2ffadf72ba163fa11c6dd2f5a36b99874cc4817fe13766b9a6210aaf6506d73d"
+    },
+    {
       "path": "THIRD_PARTY_NOTICES.md",
       "sha256": "6eee615c30adee49a0ecfb18059dfdfb967e54a527769c4f426c5cb0cc9e3eaf"
     },
@@ -4614,6 +4622,10 @@
       {
         "path": "supabase/migrations/20260916120421_email_contact_sync_and_import_sources.sql",
         "sha256": "c74d53a37615db80a8d1c41857b778c7883a99bb88119438426ec97f86e66ab7"
+      },
+      {
+        "path": "supabase/migrations/20260916153501_learning_multilanguage_code.sql",
+        "sha256": "2ffadf72ba163fa11c6dd2f5a36b99874cc4817fe13766b9a6210aaf6506d73d"
       }
     ]
   }
