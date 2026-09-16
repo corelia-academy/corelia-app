@@ -281,6 +281,10 @@ function ApplicationRoutes() {
                 }
               />
               <Route
+                path=":courseId/final-assignment"
+                element={<Suspense fallback={<PageFallback />}><Learn /></Suspense>}
+              />
+              <Route
                 path=":courseId/lesson/:lessonId"
                 element={
                   <Suspense fallback={<PageFallback />}>
