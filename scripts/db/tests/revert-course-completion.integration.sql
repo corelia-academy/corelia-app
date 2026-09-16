@@ -19,8 +19,8 @@ INSERT INTO public.course_lessons(course_id, id, section_id, sort_order, publish
 ON CONFLICT (course_id, id) DO NOTHING;
 
 -- Initial completed enrollment with an issued certificate
-INSERT INTO public.enrollments(id, user_id, course_id, enrolled_at, completed_at, certificate_issued_at) VALUES
-  ('eeee0000-0000-4000-8000-000000000333_course-revert-test', 'eeee0000-0000-4000-8000-000000000333', 'course-revert-test', now() - interval '2 days', now() - interval '1 day', now() - interval '1 day')
+INSERT INTO public.enrollments(id, user_id, course_id, enrolled_at, last_accessed_at, completed_at, certificate_issued_at) VALUES
+  ('eeee0000-0000-4000-8000-000000000333_course-revert-test', 'eeee0000-0000-4000-8000-000000000333', 'course-revert-test', now() - interval '2 days', now() - interval '1 hour', now() - interval '1 day', now() - interval '1 day')
 ON CONFLICT (id) DO UPDATE SET
   completed_at = EXCLUDED.completed_at,
   certificate_issued_at = EXCLUDED.certificate_issued_at;
@@ -30,7 +30,7 @@ INSERT INTO public.lesson_progress(id, user_id, course_id, lesson_id, completed_
   ('eeee0000-0000-4000-8000-000000000333_course-revert-test_lesson-revert-2', 'eeee0000-0000-4000-8000-000000000333', 'course-revert-test', 'lesson-revert-2', now() - interval '1 day')
 ON CONFLICT (id) DO UPDATE SET completed_at = EXCLUDED.completed_at;
 
--- Set context as the learner
+-- Set context as the learner (tests V-01: authenticated client calling public wrapper)
 SELECT set_config('request.jwt.claim.sub', 'eeee0000-0000-4000-8000-000000000333', true);
 SELECT set_config('request.jwt.claim.role', 'authenticated', true);
 SET LOCAL ROLE authenticated;
@@ -70,7 +70,52 @@ BEGIN
   END IF;
 END $$;
 
--- Test 2: Revert reset all
+-- Test 2 (V-02 verification): Cannot revert an incomplete enrollment
+DO $$
+BEGIN
+  BEGIN
+    PERFORM public.learning_revert_completion('course-revert-test', 'last_lesson');
+    RAISE EXCEPTION 'Expected COURSE_NOT_COMPLETED exception, but call succeeded';
+  EXCEPTION
+    WHEN SQLSTATE '22023' THEN
+      -- Expected COURSE_NOT_COMPLETED
+      NULL;
+  END;
+END $$;
+
+-- Reset completion state for further tests
+RESET ROLE;
+UPDATE public.enrollments
+   SET completed_at = now() - interval '1 day'
+ WHERE course_id = 'course-revert-test' AND user_id = 'eeee0000-0000-4000-8000-000000000333';
+UPDATE public.lesson_progress
+   SET completed_at = now() - interval '1 day'
+ WHERE course_id = 'course-revert-test' AND user_id = 'eeee0000-0000-4000-8000-000000000333';
+SET LOCAL ROLE authenticated;
+
+-- Test 3 (V-04 verification): Revert with NULL or invalid mode must fail
+DO $$
+BEGIN
+  -- Test with NULL mode
+  BEGIN
+    PERFORM public.learning_revert_completion('course-revert-test', NULL);
+    RAISE EXCEPTION 'Expected INVALID_MODE exception on NULL mode, but call succeeded';
+  EXCEPTION
+    WHEN SQLSTATE '22023' THEN
+      NULL;
+  END;
+
+  -- Test with unrecognized mode
+  BEGIN
+    PERFORM public.learning_revert_completion('course-revert-test', 'unrecognized_mode');
+    RAISE EXCEPTION 'Expected INVALID_MODE exception on unknown mode, but call succeeded';
+  EXCEPTION
+    WHEN SQLSTATE '22023' THEN
+      NULL;
+  END;
+END $$;
+
+-- Test 4: Revert reset all
 DO $$
 DECLARE
   v_res jsonb;
