@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "c710b990625fcbe48e143997b00a7a7270175cfa",
-  "git_tree_sha": "eefed107deb5c385cfa5acfc59b655bbca8c88ab",
+  "rc_sha": "3e2e83aa4cae41f859dedb0ff8b8da426ac1f855",
+  "git_tree_sha": "81fffb3706bfd5646b222ac711c82cdba64e130f",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 235,
-  "latest_migration": "20260916093549_email_center.sql",
+  "migration_count": 236,
+  "latest_migration": "20260916120421_email_contact_sync_and_import_sources.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "c710b990625fcbe48e143997b00a7a7270175cfa",
+  "source_sha": "3e2e83aa4cae41f859dedb0ff8b8da426ac1f855",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "3b258ae7050508ad5715d2c105dd6937bddcc428170958e064d5025b9be99968",
+  "candidate_tree_sha256": "2bd38db7451f13c48dc1b20f91e2ca9de9b1bae48a43eedba01474de05c69330",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -411,7 +411,7 @@
     },
     {
       "path": "docs/EMAIL_CENTER_ADMIN_GUIDE.md",
-      "sha256": "a43745230ac29ca969b925b37b26dad1af2b118687c04f501d446deef04111c9"
+      "sha256": "589902bb1a5ab366ed3ee2cb476c33818f42e212dc7b631202011fee3b580941"
     },
     {
       "path": "docs/EMAIL_CENTER_SETUP_STATUS.md",
@@ -919,7 +919,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "9af7d81284c28efabe24651ee770a3bf68cbdb37f5de5c6562cefa0d283fbc3c"
+      "sha256": "f5ab1ab2c902fab3029bea56948ab571f3a29743054c67cd8c0595a98b039ba6"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -951,7 +951,7 @@
     },
     {
       "path": "scripts/db/tests/email-center.integration.sql",
-      "sha256": "363e2f2981c5d3ec81a667749cfe3798637e0c1c5ddedf26afaa2077af7ddde2"
+      "sha256": "884aef2799ca0da25730d4518224438f051f7fabcf1752989c464ee327cd2715"
     },
     {
       "path": "scripts/db/tests/financial-retirement.contract.test.mjs",
@@ -991,7 +991,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "97408ddbe34f0180954017232eb8986d8220fbbca5367a0aefd5f126cbbc4e13"
+      "sha256": "54140e433fc53150599f43bd53d0a4081844e028e16575977a5767c4b5158aa0"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
@@ -1059,7 +1059,7 @@
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "2d25021d8ee15e177683f92b38d15945267d5854079196431b2fa591414947dc"
+      "sha256": "b4a3a307f5a55c3daade37e73205588377f38065967755563e5a4893f074e098"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
@@ -2110,6 +2110,14 @@
       "sha256": "6603a1eec63020e4d36130b1fa810cb61335a021987e1e436224d7818e152ef4"
     },
     {
+      "path": "src/lib/contactCsv.test.ts",
+      "sha256": "16ea14ddeedf30bfc398bb8fc7a1ef75b59c5aa2a02e290dd14814f56dc69d87"
+    },
+    {
+      "path": "src/lib/contactCsv.ts",
+      "sha256": "253bc95fffac1c58fcbc736aab05a913873ed87a009c2970fab9300c303d2f2e"
+    },
+    {
       "path": "src/lib/contestRegistrationPolicy.test.ts",
       "sha256": "1f67d1db6c88dc8fbfd1ee98b0f15e7d1c1c8785a0682ef60c8c7a45cb6a306a"
     },
@@ -2143,7 +2151,7 @@
     },
     {
       "path": "src/lib/emailCenter.ts",
-      "sha256": "cd762df3e49a3c9390a341c2c0eb6edd858ec1984c5fd0453c9e8f48a8a8c080"
+      "sha256": "52ae599a439821b1e7a02986059a59c0290eb387c89c526fde5338d6b6874ee4"
     },
     {
       "path": "src/lib/entityLocales.test.ts",
@@ -2419,7 +2427,7 @@
     },
     {
       "path": "src/locales/en/emailCenter.json",
-      "sha256": "cb881965c18d91c7fc35a96e3a021df5c705dc37e41a6d1f9d501cdbe0a3d37c"
+      "sha256": "2847252c784c394b41b3459962d1833f6fba3a7bd9efce728370b2ccf4a0a296"
     },
     {
       "path": "src/locales/en/instructor.json",
@@ -2455,7 +2463,7 @@
     },
     {
       "path": "src/locales/vi/emailCenter.json",
-      "sha256": "dd7190705c1e67fcec4b14286fc62d62f55aa30ac865f778a5dc8c061a709a95"
+      "sha256": "dc99bdf8d52dbf68514140c2c1893bc959e18c55d4943576b8f4c88c1fddb1c8"
     },
     {
       "path": "src/locales/vi/instructor.json",
@@ -2583,7 +2591,7 @@
     },
     {
       "path": "src/pages/admin/email/AdminEmailCenterPage.tsx",
-      "sha256": "0ec13724e29598c2f35ffe95f481f8c109d376dd12e9aba1a1846ddb61b2a289"
+      "sha256": "33123b269ac5e02650afddb8e5db2ca4df32ea7954a6dfdcb4b091062e412863"
     },
     {
       "path": "src/pages/admin/hackathons/AdminHackathonEditorPage.test.ts",
@@ -3391,19 +3399,19 @@
     },
     {
       "path": "supabase/functions/corelia-api/email/csv.test.ts",
-      "sha256": "cedc478ce06ba5cd157b9de2523a4e021886494cd7f4ccb7dddbe09c4e21e30a"
+      "sha256": "d8d36facde9e0c0d0f84ec0a3b74f4a215d4ca0bfb83a5c9b3471fb618aa20f4"
     },
     {
       "path": "supabase/functions/corelia-api/email/csv.ts",
-      "sha256": "0218241d36424d5cc41ba870332911ec2f56e8ecdbcf4cb93dcbc2c588e08ae9"
+      "sha256": "27754dca7409a0700aeffd0767c4391d28b7db100097ac162e75c1275b2992f9"
     },
     {
       "path": "supabase/functions/corelia-api/email/handler.ts",
-      "sha256": "4cab3f1c2d84222e8c82853eb9e6e844f59749e7379acaaecd95b350328ae1b3"
+      "sha256": "a954c4be7267cc791a5b8dc60460f4e65efb9d97969180163e95fb3dbea71c24"
     },
     {
       "path": "supabase/functions/corelia-api/email/importWorker.ts",
-      "sha256": "f1f4f09765317432ffa0f9a55518fd80ab0c945cb3e883947e7513a6e6ea8ec9"
+      "sha256": "f2115f65d8fe56d70704a42c80604a281fc4a3638c7f118899919e9297890abf"
     },
     {
       "path": "supabase/functions/corelia-api/email/template.test.ts",
@@ -4058,6 +4066,10 @@
       "sha256": "d363c8ad6a8e0f75ea738d52b3b31ccef01f7c803bd822d3de6d7c5fcddf55b6"
     },
     {
+      "path": "supabase/migrations/20260916120421_email_contact_sync_and_import_sources.sql",
+      "sha256": "c74d53a37615db80a8d1c41857b778c7883a99bb88119438426ec97f86e66ab7"
+    },
+    {
       "path": "THIRD_PARTY_NOTICES.md",
       "sha256": "6eee615c30adee49a0ecfb18059dfdfb967e54a527769c4f426c5cb0cc9e3eaf"
     },
@@ -4598,6 +4610,10 @@
       {
         "path": "supabase/migrations/20260916093549_email_center.sql",
         "sha256": "d363c8ad6a8e0f75ea738d52b3b31ccef01f7c803bd822d3de6d7c5fcddf55b6"
+      },
+      {
+        "path": "supabase/migrations/20260916120421_email_contact_sync_and_import_sources.sql",
+        "sha256": "c74d53a37615db80a8d1c41857b778c7883a99bb88119438426ec97f86e66ab7"
       }
     ]
   }
