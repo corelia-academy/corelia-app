@@ -208,6 +208,7 @@ test("Production workflow uses the technical frontend gate and preserves deploym
   assert.deepEqual(deployedFunctions, [
     "corelia-api",
     "cron-jobs",
+    "cron-email-center",
     "generate-description",
     "generate-questions",
   ]);

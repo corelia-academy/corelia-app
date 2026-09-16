@@ -90,6 +90,8 @@ export async function sendTransactionalEmailViaResend(params: {
   subject: string;
   html: string;
   from?: string;
+  replyTo?: string;
+  headers?: Record<string, string>;
   idempotencyKey?: string;
 }): Promise<TransactionalMailResult> {
   const apiKey = Deno.env.get("RESEND_API_KEY")?.trim() ?? "";
@@ -122,6 +124,8 @@ export async function sendTransactionalEmailViaResend(params: {
         to: params.to,
         subject: params.subject,
         html: params.html,
+        reply_to: params.replyTo?.trim() || undefined,
+        headers: params.headers,
       }),
     });
 

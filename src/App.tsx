@@ -121,6 +121,7 @@ const AdminHackathons = lazy(() => import("@/pages/admin/hackathons/AdminHackath
 const AdminHackathonEditor = lazy(() => import("@/pages/admin/hackathons/AdminHackathonEditorPage"));
 const AdminProjectsPage = lazy(() => import("@/pages/admin/AdminProjectsPage"));
 const AdminJobsPage = lazy(() => import("@/pages/admin/jobs/AdminJobsPage"));
+const AdminEmailCenterPage = lazy(() => import("@/pages/admin/email/AdminEmailCenterPage"));
 
 const PageFallback = () => <AuthGateLoading />;
 
@@ -546,6 +547,7 @@ function ApplicationRoutes() {
                 <Route path="jobs/companies" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
                 <Route path="jobs/crawlers" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
                 <Route path="jobs/analytics" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="email" element={<Suspense fallback={<PageFallback />}><AdminEmailCenterPage /></Suspense>} />
               </Route>
               <Route
                 path="instructor"
