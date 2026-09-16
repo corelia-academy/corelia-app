@@ -37,7 +37,7 @@ export function ComponentShowcaseLayout({
       <header className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <NavLink
-            to="/admin/components"
+            to="/components"
             className="text-body-small text-foreground-muted underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-primary"
           >
             Back to components

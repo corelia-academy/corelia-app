@@ -140,13 +140,6 @@ function RecoveryGuard() {
   return null;
 }
 
-function LegacyComponentsRedirect() {
-  const { pathname } = useLocation();
-  const targetPath = pathname.replace(/^\/admin\/components(?=$|\/)/, "/components");
-
-  return <Navigate to={targetPath} replace />;
-}
-
 export default function App() {
   const { i18n } = useTranslation();
   const authStatus = useAuthStore((s) => s.status);
@@ -332,22 +325,6 @@ function ApplicationRoutes() {
                 }
               />
             ))}
-            <Route
-              path="/admin/components"
-              element={
-                <RequireRole roles={ROLE_GROUPS.projectModerators}>
-                  <LegacyComponentsRedirect />
-                </RequireRole>
-              }
-            />
-            <Route
-              path="/admin/components/*"
-              element={
-                <RequireRole roles={ROLE_GROUPS.projectModerators}>
-                  <LegacyComponentsRedirect />
-                </RequireRole>
-              }
-            />
             <Route
               path="/"
               element={

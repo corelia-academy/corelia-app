@@ -14,7 +14,6 @@ const PAGE_META: Array<{
 }> = [
   { match: pathname => pathname.startsWith("/admin/email"), titleKey: "layout.pageMeta.email.title", descriptionKey: "layout.pageMeta.email.description" },
   { match: pathname => pathname.startsWith("/admin/projects"), titleKey: "layout.pageMeta.projects.title", descriptionKey: "layout.pageMeta.projects.description" },
-  { match: pathname => pathname.startsWith("/admin/components"), title: "Component showcase", description: "Inspect interactive design system component states." },
   {
     match: (pathname) => pathname.startsWith("/admin/jobs"),
     titleKey: "layout.pageMeta.jobs.title",
