@@ -6,6 +6,7 @@ import { getLessonQuestions } from "@/lib/sectionQuestions";
 import type { CourseLesson, CourseLessonLocaleContent, SupportedCourseLocale } from "@/types/courses";
 import type { SectionQuestion, SectionQuestionAttempt } from "@/types/questions";
 import type { PublishValidationIssue } from "@/features/learning/types";
+import { getPublicAvatarSeeds } from "@/lib/publicProfileAvatars";
 
 export interface LearningQuizResult {
   attempt_group_id: string;
@@ -16,8 +17,8 @@ export interface LearningQuizResult {
   completed: boolean;
   attempts: SectionQuestionAttempt[];
 }
-export async function submitLearningQuiz(courseId: string, lessonId: string, requestId: string, answers: Record<string, number>): Promise<LearningQuizResult> {
-  const { data, error } = await supabase.rpc("learning_quiz_submit", { p_course: courseId, p_lesson: lessonId, p_request: requestId, p_answers: answers });
+export async function submitLearningQuiz(courseId: string, lessonId: string, requestId: string, answers: Record<string, number>, epoch = 0): Promise<LearningQuizResult> {
+  const { data, error } = await supabase.rpc("learning_quiz_submit", { p_course: courseId, p_lesson: lessonId, p_request: requestId, p_answers: answers, p_epoch: epoch });
   if (error) throw new Error(error.message);
   return data as LearningQuizResult;
 }
@@ -29,13 +30,14 @@ export async function getLearningQuiz(courseId: string, lessonId: string, userId
     userId ? getLessonProgressForCourse(userId, courseId) : Promise.resolve([]),
   ]);
   if (attempts.error) throw new Error(attempts.error.message);
-  const all = (attempts.data ?? []) as (SectionQuestionAttempt & { attempt_group_id: string; group_total: number; group_correct: number; passing_ratio: number })[];
-  const latest = all[0];
+  const all = (attempts.data ?? []) as (SectionQuestionAttempt & { attempt_group_id: string; group_total: number; group_correct: number; passing_ratio: number; reset_epoch?: number })[];
+  const lessonEpoch = progress.find(row => row.lesson_id === lessonId)?.reset_epoch ?? 0;
+  const latest = all.find(row => (row.reset_epoch ?? 0) === lessonEpoch);
   if (questions.some(question => !isQuizQuestionShape(question))) throw new Error("INVALID_QUESTIONS");
   const translated = normalizeLessonCopy(copy.get(lessonId) ?? {}).value.question_copy;
   return {
     questions: questions.map(q => ({ ...q, question: translated?.[q.id]?.question ?? q.question, explanation: translated?.[q.id]?.explanation ?? q.explanation, options: q.options.map(o => ({ ...o, text: translated?.[q.id]?.options?.[o.id] ?? o.text })) })),
-    result: latest ? { attempt_group_id: latest.attempt_group_id, total: latest.group_total, correct: latest.group_correct, passing_ratio: latest.passing_ratio, passed: latest.group_correct / latest.group_total >= latest.passing_ratio, completed: progress.some(row => row.lesson_id === lessonId && Boolean(row.completed_at)), attempts: all.filter(a => a.attempt_group_id === latest.attempt_group_id) } as LearningQuizResult : null,
+    result: latest ? { attempt_group_id: latest.attempt_group_id, total: latest.group_total, correct: latest.group_correct, passing_ratio: latest.passing_ratio, passed: latest.group_correct / latest.group_total >= latest.passing_ratio, completed: progress.some(row => row.lesson_id === lessonId && Boolean(row.completed_at)), attempts: all.filter(a => a.attempt_group_id === latest.attempt_group_id && (a.reset_epoch ?? 0) === lessonEpoch) } as LearningQuizResult : null,
   };
 }
 export async function saveLearningLesson(courseId: string, lesson: CourseLesson, questions?: SectionQuestion[], locales?: Partial<Record<SupportedCourseLocale, Partial<CourseLessonLocaleContent>>>): Promise<CourseLesson> {
@@ -86,6 +88,7 @@ export interface LearningCourseParticipant {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
+  avatar_seed?: string | null;
   email: string | null;
   progress_percent: number;
 }
@@ -94,10 +97,12 @@ export async function getLearningCourseRoster(courseId: string, signal?: AbortSi
   if (signal) request = request.abortSignal(signal);
   const { data, error } = await request;
   if (error) throw new Error(error.message);
-  return data ?? [];
+  const rows = (data ?? []) as LearningCourseParticipant[];
+  const seeds = await getPublicAvatarSeeds(rows.map((row) => row.id), signal);
+  return rows.map((row) => ({ ...row, avatar_seed: seeds.get(row.id) ?? null }));
 }
 export async function searchLearningInstructors(search: string) {
-  const { data, error } = await supabase.from("public_profiles").select("id,full_name,avatar_url,instructor_headline,instructor_organization").ilike("full_name", `%${search.replace(/[%_]/g, "")}%`).limit(20);
+  const { data, error } = await supabase.from("public_profiles").select("id,full_name,avatar_url,avatar_seed,instructor_headline,instructor_organization").ilike("full_name", `%${search.replace(/[%_]/g, "")}%`).limit(20);
   if (error) throw new Error(error.message);
   return data ?? [];
 }

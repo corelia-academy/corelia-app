@@ -4,7 +4,7 @@ import { Link, useParams } from "react-router";
 import { Globe, GraduationCap, Loader2, MapPin } from "lucide-react";
 import { publicInstructorDetailQueryOptions } from "@/features/instructor/instructorQueries";
 import { PublicCourseCard } from "@/components/courses/PublicCourseCard";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import {
   Breadcrumb,
@@ -134,10 +134,14 @@ const InstructorDetail = () => {
       <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.1fr)]">
         <section className="rounded-2xl border border-border-subtle bg-surface-base p-6">
           <div className="flex flex-wrap items-center gap-4">
-            <Avatar className="size-20 rounded-full border border-border-subtle">
-              <AvatarImage src={profile.avatar_url || undefined} alt={profile.full_name ?? ""} />
-              <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
+            <UserAvatar
+              userId={profile.id}
+              avatarUrl={profile.avatar_url}
+              avatarSeed={profile.avatar_seed}
+              alt={profile.full_name ?? ""}
+              fallback={initials}
+              className="size-20 rounded-full border border-border-subtle"
+            />
             <div className="min-w-0 space-y-2">
               <div className="inline-flex items-center gap-2 rounded-full bg-surface-raised px-3 py-1 text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 <GraduationCap className="size-3.5" aria-hidden />

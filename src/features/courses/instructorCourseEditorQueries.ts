@@ -86,6 +86,7 @@ export function instructorCourseQuestionsQueryOptions(input: {
   mode: "section" | "lesson";
   targetId: string | null | undefined;
   locale: SupportedCourseLocale;
+  primaryLocale: SupportedCourseLocale;
   userId: string | undefined;
   enabled: boolean;
 }) {
@@ -101,7 +102,7 @@ export function instructorCourseQuestionsQueryOptions(input: {
     ),
     queryFn: ({ signal }) =>
       input.mode === "lesson"
-        ? getLessonQuestions(input.courseId, targetId, input.locale, signal)
+        ? getLessonQuestions(input.courseId, targetId, input.locale === input.primaryLocale ? undefined : input.locale, signal, false)
         : getSectionQuestions(input.courseId, targetId, input.locale, signal),
     enabled: Boolean(
       input.enabled && input.courseId && targetId && userId,

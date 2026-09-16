@@ -14,7 +14,7 @@ import {
   Settings,
   UserCircle,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
@@ -133,7 +133,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
       metaName ??
       profile?.id?.slice(0, 8) ??
       t("user.fallbackName"));
-  const avatarUrl = profile?.avatar_url ?? metaAvatar ?? undefined;
+  const avatarUrl = profile ? profile.avatar_url : metaAvatar;
   const avatarFallback = (
     profile?.full_name ??
     metaName ??
@@ -488,10 +488,14 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                           : "text-foreground md:bg-surface-base"
                       } cursor-pointer`}
                     >
-                      <Avatar className="size-10 transition-[box-shadow,background-color] group-hover:bg-surface-raised group-hover:ring-2 group-hover:ring-primary/20 md:-ml-1">
-                        <AvatarImage src={avatarUrl} alt={displayName} />
-                        <AvatarFallback>{avatarFallback}</AvatarFallback>
-                      </Avatar>
+                      <UserAvatar
+                        userId={profile?.id ?? user?.id}
+                        avatarUrl={avatarUrl}
+                        avatarSeed={profile?.avatar_seed}
+                        alt={displayName}
+                        fallback={avatarFallback}
+                        className="size-10 transition-[box-shadow,background-color] group-hover:bg-surface-raised group-hover:ring-2 group-hover:ring-primary/20 md:-ml-1"
+                      />
                       <span className="hidden max-w-48 truncate md:inline">
                         {displayName}
                       </span>

@@ -186,11 +186,11 @@ export function applyCourseLessonLocaleContent(
     youtube_url: hasValidLocalizedYoutubeUrl ? localizedYoutubeUrl : lesson.youtube_url,
     youtube_start_seconds:
       hasValidLocalizedYoutubeUrl
-        ? typeof localized.youtube_start_seconds === "number" && Number.isFinite(localized.youtube_start_seconds) ? localized.youtube_start_seconds : lesson.youtube_start_seconds
+        ? typeof localized.youtube_start_seconds === "number" && Number.isFinite(localized.youtube_start_seconds) ? localized.youtube_start_seconds : 0
         : lesson.youtube_start_seconds,
     youtube_end_seconds:
       hasValidLocalizedYoutubeUrl
-        ? typeof localized.youtube_end_seconds === "number" && Number.isFinite(localized.youtube_end_seconds) ? localized.youtube_end_seconds : lesson.youtube_end_seconds
+        ? typeof localized.youtube_end_seconds === "number" && Number.isFinite(localized.youtube_end_seconds) ? localized.youtube_end_seconds : null
         : lesson.youtube_end_seconds,
     video_primary_locale: videoCopy.video_primary_locale ?? normalizeVideoLocale(lesson).value.video_primary_locale,
     has_subtitle: videoCopy.has_subtitle ?? normalizeVideoLocale(lesson).value.has_subtitle,
@@ -958,6 +958,7 @@ export async function setLessonProgress(
   completed: boolean,
   watchSeconds?: number,
   viewer?: User | null,
+  expectedEpoch?: number,
 ): Promise<void> {
   const user =
     viewer ??
@@ -974,6 +975,8 @@ export async function setLessonProgress(
     lesson_id: lessonId,
     course_id: courseId,
     completed_at: completed ? now : null,
+    reset_epoch: expectedEpoch,
+    completion_nonce: completed && (expectedEpoch ?? 0) > 0 ? crypto.randomUUID() : undefined,
     watch_seconds: watchSeconds,
   }) as Record<string, unknown>;
 
@@ -1004,6 +1007,17 @@ export async function setLessonProgress(
   } else {
     void ensureEnrollmentForProgress(user.id, courseId, now);
   }
+}
+
+export async function resetLessonProgress(courseId: string, lessonId: string, clear: boolean, expectedEpoch: number): Promise<LessonProgress> {
+  const { data, error } = await supabase.rpc("learning_reset_lesson", {
+    p_course: courseId,
+    p_lesson: lessonId,
+    p_clear: clear,
+    p_epoch: expectedEpoch,
+  });
+  if (error) throw new Error(error.message);
+  return (data as { progress: LessonProgress }).progress;
 }
 
 export async function ensureEnrollmentForProgress(
@@ -1177,6 +1191,7 @@ export function toCoInstructorSnapshot(profile: {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
+  avatar_seed?: string | null;
   instructor_headline?: string | null;
   instructor_bio?: string | null;
   instructor_organization?: string | null;
@@ -1186,6 +1201,7 @@ export function toCoInstructorSnapshot(profile: {
     id: profile.id,
     name: profile.full_name ?? "",
     avatar_url: profile.avatar_url ?? null,
+    avatar_seed: profile.avatar_seed ?? null,
     headline: profile.instructor_headline ?? null,
     organization: profile.instructor_organization ?? null,
     website: profile.instructor_website ?? null,

@@ -3,7 +3,7 @@ import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Activity } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { publicProfileActivityQueryOptions } from "@/features/profiles/publicProfileQueries";
 import type { PublicProfile } from "@/types/database";
@@ -114,10 +114,14 @@ function ActivityRow({
   return (
     <article className="rounded-lg border border-border-subtle bg-surface-base p-4 shadow-card">
       <div className="flex gap-3">
-        <Avatar className="size-9">
-          <AvatarImage src={profile.avatar_url ?? undefined} alt="" />
-          <AvatarFallback>{actor.charAt(0).toUpperCase()}</AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          userId={profile.id}
+          avatarUrl={profile.avatar_url}
+          avatarSeed={profile.avatar_seed}
+          alt={actor}
+          fallback={actor.charAt(0).toUpperCase()}
+          className="size-9"
+        />
         <div className="min-w-0 flex-1">
           <p className="text-sm leading-6 text-foreground">{text}</p>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-foreground-muted">

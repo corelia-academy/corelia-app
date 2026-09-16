@@ -3,8 +3,14 @@ import { ExternalLink, Github, ImageIcon, Presentation, Trophy } from "lucide-re
 import { useTranslation } from "react-i18next";
 
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
+import {
+  AvatarGroup,
+  AvatarGroupCount,
+} from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { getProjectCoverImageUrl } from "@/lib/projects";
 import { cn } from "@/lib/utils";
+import type { PublicProjectTeamMember } from "@/lib/projectCollaboration";
 import type { Contest } from "@/types/hackathons";
 import type { Project } from "@/types/projects";
 import { projectTaxonomyNames, type ProjectTaxonomyOption } from "@/lib/projectTaxonomy";
@@ -13,6 +19,9 @@ type ProjectCardProps = {
   project: Project;
   ownerLabel?: string | null;
   ownerHandle?: string | null;
+  ownerAvatarUrl?: string | null;
+  ownerAvatarSeed?: string | null;
+  teamMembers?: PublicProjectTeamMember[];
   taxonomy?: Contest | null;
   awardLabel?: string | null;
   hearted?: boolean;
@@ -24,6 +33,9 @@ export function ProjectCard({
   project,
   ownerLabel,
   ownerHandle,
+  ownerAvatarUrl,
+  ownerAvatarSeed,
+  teamMembers = [],
   taxonomy,
   awardLabel,
   hearted,
@@ -36,6 +48,26 @@ export function ProjectCard({
   const technologies = projectTaxonomyNames(project.hackathon_tech_stack_ids ?? [], project.custom_tech_stack_names ?? [], systemTaxonomy.filter((item) => item.kind === "technology"), taxonomy?.tech_stacks ?? []);
   const awards = taxonomy?.winner_awards?.filter((award) => award.project_id === project.id) ?? [];
   const displayAward = awardLabel || (awards.length ? awards[0].label || t("projects.editor.winner") : null);
+  const ownerName = ownerLabel?.trim() || (ownerHandle ? `@${ownerHandle}` : t("projects.editor.builder"));
+  const people = [
+    {
+      id: project.owner_id,
+      label: ownerName,
+      href: ownerHandle ? `/@${ownerHandle}` : null,
+      avatarUrl: ownerAvatarUrl,
+      avatarSeed: ownerAvatarSeed,
+    },
+    ...teamMembers
+      .filter((member) => member.user_id !== project.owner_id)
+      .map((member) => ({
+        id: member.user_id,
+        label: member.full_name?.trim() || member.username?.trim() || t("projects.editor.builder"),
+        href: `/@${member.username?.trim() || member.id}`,
+        avatarUrl: member.avatar_url,
+        avatarSeed: member.avatar_seed,
+      })),
+  ];
+  const visiblePeople = people.slice(0, 3);
   const actions = [
     { href: project.demo_url, label: t("projects.detail.demo"), icon: ExternalLink },
     { href: project.repo_url, label: t("projects.detail.repo"), icon: Github },
@@ -89,13 +121,55 @@ export function ProjectCard({
         ) : null}
         <div className="flex items-center gap-3">
           <dt className="w-20 shrink-0 text-label-small font-body text-foreground-subtle">{t("projects.editor.builder")}</dt>
-          <dd className="min-w-0 truncate font-medium">
-            {ownerHandle ? (
-              <NavLink to={`/@${ownerHandle}`} className="hover:underline">
-                {ownerLabel || `@${ownerHandle}`}
-              </NavLink>
+          <dd className="min-w-0 font-medium">
+            {people.length === 1 ? (
+              <div className="flex min-w-0 items-center gap-2">
+                <UserAvatar
+                  userId={project.owner_id}
+                  avatarUrl={ownerAvatarUrl}
+                  avatarSeed={ownerAvatarSeed}
+                  alt={ownerName}
+                  fallback={ownerName.charAt(0).toUpperCase()}
+                />
+                {ownerHandle ? (
+                  <NavLink to={`/@${ownerHandle}`} className="min-w-0 truncate hover:underline">
+                    {ownerName}
+                  </NavLink>
+                ) : (
+                  <span className="min-w-0 truncate">{ownerName}</span>
+                )}
+              </div>
             ) : (
-              ownerLabel || t("projects.editor.builder")
+              <AvatarGroup aria-label={t("projects.team.members")}>
+                {visiblePeople.map((person) => {
+                  const avatar = (
+                    <UserAvatar
+                      userId={person.id}
+                      avatarUrl={person.avatarUrl}
+                      avatarSeed={person.avatarSeed}
+                      alt={person.label}
+                      fallback={person.label.charAt(0).toUpperCase()}
+                    />
+                  );
+                  return person.href ? (
+                    <NavLink key={person.id} to={person.href} title={person.label} aria-label={person.label}>
+                      {avatar}
+                    </NavLink>
+                  ) : (
+                    <span key={person.id} title={person.label} aria-label={person.label}>
+                      {avatar}
+                    </span>
+                  );
+                })}
+                {people.length > visiblePeople.length ? (
+                  <AvatarGroupCount
+                    title={t("projects.team.moreMembers", { count: people.length - visiblePeople.length })}
+                    aria-label={t("projects.team.moreMembers", { count: people.length - visiblePeople.length })}
+                  >
+                    +{people.length - visiblePeople.length}
+                  </AvatarGroupCount>
+                ) : null}
+              </AvatarGroup>
             )}
           </dd>
         </div>

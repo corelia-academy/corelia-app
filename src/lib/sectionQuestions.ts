@@ -83,6 +83,7 @@ export async function getLessonQuestions(
   lessonId: string,
   locale?: string,
   signal?: AbortSignal,
+  fallbackToSource = true,
 ): Promise<SectionQuestion[]> {
   let query = supabase.from("course_section_questions")
     .select("id,course_id,section_id,lesson_id,sort_order,data,created_at,updated_at")
@@ -98,9 +99,9 @@ export async function getLessonQuestions(
   if (copyError) throw new Error(copyError.message);
   const copy = normalizeLessonCopy(localized?.data ?? {}).value.question_copy;
   return questions.map(question => ({ ...question,
-    question: copy?.[question.id]?.question ?? question.question,
-    explanation: copy?.[question.id]?.explanation ?? question.explanation,
-    options: Array.isArray(question.options) && question.options.every(option => option && typeof option === "object") ? question.options.map(option => ({ ...option, text: copy?.[question.id]?.options?.[option.id] ?? option.text })) : question.options,
+    question: copy?.[question.id]?.question ?? (fallbackToSource ? question.question : ""),
+    explanation: copy?.[question.id]?.explanation ?? (fallbackToSource ? question.explanation : ""),
+    options: Array.isArray(question.options) && question.options.every(option => option && typeof option === "object") ? question.options.map(option => ({ ...option, text: copy?.[question.id]?.options?.[option.id] ?? (fallbackToSource ? option.text : "") })) : question.options,
   }));
 }
 
@@ -126,12 +127,30 @@ export async function setLessonQuestions(
     return !canonical || row.correct_index !== canonical.correct_index || row.type !== canonical.type ||
       row.options.length !== canonical.options.length || row.options.some((option, index) => option.id !== canonical.options[index]?.id);
   }))) throw new Error("Question translations must preserve question IDs, options, and scoring.");
+  let translatedCopy: Record<string, unknown> | undefined;
+  if (translating) {
+    const { data: localized, error: copyError } = await supabase.from("course_lesson_locales").select("data").eq("course_id", courseId).eq("lesson_id", lessonId).eq("locale", locale!).maybeSingle();
+    if (copyError) throw new Error(copyError.message);
+    const original = normalizeLessonCopy(localized?.data ?? {}).value.question_copy ?? {};
+    const next = structuredClone(original);
+    let changed = false;
+    for (const row of rows) {
+      const previous = original[row.id] ?? {};
+      const copy = { ...previous, options: { ...previous.options } };
+      if (row.question !== (previous.question ?? "")) { copy.question = row.question; changed = true; }
+      if ((row.explanation ?? "") !== (previous.explanation ?? "")) { copy.explanation = row.explanation ?? ""; changed = true; }
+      for (const option of row.options) if (option.text !== (previous.options?.[option.id] ?? "")) { copy.options[option.id] = option.text; changed = true; }
+      if (JSON.stringify(copy) !== JSON.stringify({ ...previous, options: { ...previous.options } })) next[row.id] = copy;
+    }
+    if (!changed) return getLessonQuestions(courseId, lessonId, locale, undefined, false);
+    translatedCopy = { question_copy: next };
+  }
   const { error } = await supabase.rpc("learning_save_lesson", {
     p_course: courseId,
     p_lesson: { ...lesson.data, id: lesson.id, section_id: lesson.section_id, order: lesson.sort_order, published: lesson.published, archived_at: lesson.archived_at },
     p_questions: translating ? null : rows,
-    p_locales: locale ? { [locale]: { question_copy: Object.fromEntries(rows.map(question => [question.id, { question: question.question, explanation: question.explanation, options: Object.fromEntries(question.options.map(option => [option.id, option.text])) }])) } } : null,
+    p_locales: translating ? { [locale!]: translatedCopy } : locale ? { [locale]: { question_copy: Object.fromEntries(rows.map(question => [question.id, { question: question.question, explanation: question.explanation, options: Object.fromEntries(question.options.map(option => [option.id, option.text])) }])) } } : null,
   });
-  if (error) throw new Error(error.message);
-  return getLessonQuestions(courseId, lessonId, locale);
+  if (error) throw Object.assign(new Error(error.message), { details: error.details });
+  return getLessonQuestions(courseId, lessonId, translating ? locale : undefined, undefined, false);
 }

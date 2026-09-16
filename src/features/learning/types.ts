@@ -24,6 +24,8 @@ export interface LessonRendererProps {
   completed: boolean;
   mode: "learner" | "preview";
   contentLocale?: string;
+  resetEpoch?: number;
+  draftEpoch?: number;
   onComplete(): Promise<void>;
   onAction(action: LessonActionState | null): void;
 }

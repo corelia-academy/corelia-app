@@ -231,9 +231,9 @@ Checklist này dùng cho manual regression trên local hoặc Staging. Đánh d�
 - [ ] Owner không thể chèn trực tiếp accepted collaborator để bỏ qua bước tự accept.
 - [ ] Accepted member không có quyền mở/lưu form edit project.
 - [ ] Owner và staff vẫn là các bên duy nhất có quyền sửa project.
-- [ ] Detail hiển thị owner và accepted member có avatar/link profile; không hiển thị pending invite.
-- [ ] Member đặt `show_in_portfolio=false` biến mất khỏi detail public và portfolio cá nhân.
-- [ ] Member đặt `show_in_portfolio=true` xuất hiện lại trên project public/unlisted và portfolio.
+- [ ] Card/detail hiển thị owner và mọi accepted member có avatar/link profile; không hiển thị pending invite.
+- [ ] Member đặt `show_in_portfolio=false` vẫn xuất hiện trong team của project public/unlisted nhưng project biến mất khỏi portfolio cá nhân.
+- [ ] Member đặt `show_in_portfolio=true` vẫn xuất hiện trong team và project xuất hiện lại trên portfolio cá nhân.
 
 ## 9. Project gallery và bộ lọc
 
@@ -282,7 +282,7 @@ Kiểm tra tối thiểu ở 1440px, 1024px, 768px và 390px.
 - [ ] Browser role không có quyền truy cập registry `project_media_uploads` hoặc ghi trực tiếp prefix `project-media`.
 - [ ] Bảng `project_comments`, trigger, function guard và các index/policy liên quan không còn tồn tại trong database.
 - [ ] RLS/grant của `project_hearts` vẫn cho phép đọc count và thả/bỏ tim đúng quyền.
-- [ ] Public chỉ đọc được collaborator của project public/unlisted khi `show_in_portfolio=true`.
+- [ ] Public đọc được mọi accepted collaborator của project public/unlisted, không phụ thuộc `show_in_portfolio`, nhưng không đọc được team của project private.
 - [ ] Invitation/pending state và thao tác quản lý team không lộ cho anonymous/người không có quyền.
 - [ ] Cột project `cover_image_url` và `screenshot_url` không còn tồn tại; chỉ còn `logo_path` và `screenshot_paths` với constraint tối đa 6.
 - [ ] Public query không trả draft dù JWT thuộc admin.

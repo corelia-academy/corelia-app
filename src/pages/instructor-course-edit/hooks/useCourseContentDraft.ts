@@ -1,3 +1,4 @@
+import { changedLocaleFields } from "@/features/learning/translationDraft";
 import { useCallback, useState, type SetStateAction } from "react";
 
 type CourseContentDraft = {
@@ -38,5 +39,5 @@ export function useCourseContentDraft(selection: string) {
   const scope = selection.slice(0, selection.lastIndexOf(":") + 1);
   const contentDirty = Object.entries(drafts).some(([key, entry]) => key.startsWith(scope)
     && JSON.stringify(entry.value) !== JSON.stringify(entry.saved ?? emptyDraft));
-  return { contentForm: drafts[selection]?.value ?? emptyDraft, setContentForm, hydrateContentForm, markContentSaved, contentDirty };
+  return { contentPatch: changedLocaleFields(drafts[selection]?.value ?? emptyDraft, drafts[selection]?.saved ?? emptyDraft), contentForm: drafts[selection]?.value ?? emptyDraft, setContentForm, hydrateContentForm, markContentSaved, contentDirty };
 }

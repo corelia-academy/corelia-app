@@ -26,6 +26,7 @@ export interface CourseCoInstructorSnapshot {
   id: string;
   name: string;
   avatar_url?: string | null;
+  avatar_seed?: string | null;
   headline?: string | null;
   organization?: string | null;
   website?: string | null;
@@ -310,6 +311,8 @@ export interface LessonProgress {
   course_id: string;
   /** null = chưa hoàn thành */
   completed_at: string | null;
+  reset_epoch?: number;
+  draft_epoch?: number;
   /** Số giây đã xem (tùy chọn) */
   watch_seconds?: number;
 }

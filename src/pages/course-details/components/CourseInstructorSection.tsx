@@ -16,7 +16,7 @@ import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
 import type { InstructorSocialLink, InstructorSocialPlatform, PublicProfile } from "@/types/database";
 import type { CourseCoInstructorSnapshot } from "@/types/courses";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 
 interface CourseInstructorSectionProps {
   profile?: PublicProfile | null;
@@ -71,14 +71,18 @@ function getSocialLabel(link: InstructorSocialLink): string {
 }
 
 function InstructorCard({
+  userId,
   avatarUrl,
+  avatarSeed,
   name,
   meta,
   bio,
   socialLinks,
   profileLink,
 }: {
+  userId: string;
   avatarUrl?: string | null;
+  avatarSeed?: string | null;
   name: string;
   meta?: string;
   bio?: string;
@@ -88,10 +92,14 @@ function InstructorCard({
   return (
     <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div className="flex items-start gap-3">
-        <Avatar className="mt-0.5 size-12 shrink-0 rounded-full border border-border-subtle">
-          <AvatarImage src={avatarUrl || undefined} alt={name} />
-          <AvatarFallback>{initials(name)}</AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          userId={userId}
+          avatarUrl={avatarUrl}
+          avatarSeed={avatarSeed}
+          alt={name}
+          fallback={initials(name)}
+          className="mt-0.5 size-12 shrink-0 rounded-full border border-border-subtle"
+        />
 
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold text-foreground">
@@ -161,6 +169,18 @@ export function CourseInstructorSection({
     enabled: attribution !== null && attribution.length > 0,
     staleTime: 30_000,
   });
+  const coInstructorIds = (coInstructors ?? []).map((item) => item.id);
+  const coInstructorProfilesQuery = useQuery({
+    queryKey: ["course-co-instructor-avatars", coInstructorIds],
+    queryFn: () => Promise.all(coInstructorIds.map((id) => getPublicProfileById(id))),
+    enabled: attribution === null && coInstructorIds.length > 0,
+    staleTime: 30_000,
+  });
+  const currentCoInstructorProfiles = new Map(
+    (coInstructorProfilesQuery.data ?? [])
+      .filter((item) => item != null)
+      .map((item) => [item.id, item]),
+  );
   if (attribution !== null) {
     if (attribution.length === 0) return null;
     return <section className="mt-6 rounded-2xl border border-border-subtle bg-surface-base p-4 sm:p-6">
@@ -170,7 +190,7 @@ export function CourseInstructorSection({
       <div className="mt-4 grid gap-3 sm:grid-cols-2">{attribution.map((item, index) => {
         const person = attributionQuery.data?.[index];
         if (!person) return null;
-        return <InstructorCard key={item.profile_id} avatarUrl={person.avatar_url}
+        return <InstructorCard key={item.profile_id} userId={person.id} avatarUrl={person.avatar_url} avatarSeed={person.avatar_seed}
           name={person.full_name?.trim() || translate("detail.courseDetail.instructor.fallbackName")}
           meta={item.role_label} bio={person.instructor_bio?.trim() || person.bio?.trim()}
           profileLink={person.role === "instructor" ? `/instructors/${person.id}` : person.username ? `/@${encodeURIComponent(person.username)}` : undefined} />;
@@ -206,7 +226,9 @@ export function CourseInstructorSection({
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <InstructorCard
+          userId={profile.id}
           avatarUrl={profile.avatar_url}
+          avatarSeed={profile.avatar_seed}
           name={mainName}
           meta={mainMeta}
           bio={mainBio}
@@ -216,7 +238,9 @@ export function CourseInstructorSection({
 
         {hasCoInstructors
           ? visibleCoInstructors.map((p) => {
+              const currentProfile = currentCoInstructorProfiles.get(p.id);
               const label =
+                currentProfile?.full_name?.trim() ||
                 (p.name ?? "").trim() ||
                 translate("detail.courseDetail.coInstructors.fallbackName");
               const meta = [p.headline, p.organization].filter(Boolean).join(" • ");
@@ -227,7 +251,9 @@ export function CourseInstructorSection({
               return (
                 <InstructorCard
                   key={p.id}
-                  avatarUrl={p.avatar_url}
+                  userId={p.id}
+                  avatarUrl={currentProfile?.avatar_url ?? p.avatar_url}
+                  avatarSeed={currentProfile?.avatar_seed ?? p.avatar_seed}
                   name={label}
                   meta={meta}
                   bio={p.bio?.trim()}
