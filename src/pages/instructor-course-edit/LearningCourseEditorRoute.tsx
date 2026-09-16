@@ -95,7 +95,10 @@ function LearningCourseEditorWorkspace() {
       nextLessonOrder={Math.max(-1, ...editorBundle.lessons.map(lesson => lesson.order)) + 1}
       initialLocale={editing.locale}
       primaryLocale={editorBundle.course.i18n?.primary_content_locale ?? "vi"}
-      locales={{ vi: editorBundle.locales.vi.get(editing.lesson.id), en: editorBundle.locales.en.get(editing.lesson.id) }}
+      locales={Object.fromEntries((["vi", "en"] as const).flatMap(locale => {
+        const copy = editorBundle.locales[locale].get(editing.lesson.id);
+        return copy == null ? [] : [[locale, copy]];
+      }))}
       onClose={closeEditor} onSaved={refresh} />}
     <Dialog open={navigationBlocker.state==="blocked"} onOpenChange={open=>{if(!open&&navigationBlocker.state==="blocked")navigationBlocker.reset();}}>
       <DialogContent><DialogTitle>{t("learning.unsavedTitle")}</DialogTitle><DialogDescription>{t("learning.dirtyConfirm")}</DialogDescription>

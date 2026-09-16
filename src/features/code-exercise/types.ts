@@ -1,3 +1,5 @@
+import type { CodeLanguage } from "./languages";
+
 export interface CodeExerciseBlank {
   id: string;
   accepted_answers: string[];
@@ -15,7 +17,7 @@ export type CodeExerciseTest = {
 interface BaseConfig {
   schema_version: 1;
   revision: number;
-  language: "rust";
+  language: CodeLanguage;
   file: { path: string; starter_source: string };
   reference_solution: string;
   hints?: string[];
