@@ -1,5 +1,6 @@
 import { callCoreliaApi } from "@/lib/coreliaEdgeApi";
 import { supabase } from "@/lib/supabase";
+import type { ContactCsvMapping } from "@/lib/contactCsv";
 
 export type EmailPurpose = "system" | "learning" | "event" | "marketing";
 export type EmailDashboard = {
@@ -15,9 +16,25 @@ export function emailAdmin<T>(action: string, payload: Record<string, unknown> =
   return callCoreliaApi<T>("email.admin", { action, ...payload });
 }
 
-export async function uploadContactCsv(file: File, listName: string): Promise<Record<string, unknown>> {
-  const job = await emailAdmin<{ id: string; path: string; token: string }>("imports.create", { filename: file.name, list_name: listName });
+export type ContactCsvImportOptions = {
+  listName: string;
+  listId?: string;
+  sourceType: "csv" | "luma";
+  columnMapping: ContactCsvMapping;
+};
+
+export async function uploadContactCsv(file: File, options: ContactCsvImportOptions | string): Promise<Record<string, unknown>> {
+  const normalized: ContactCsvImportOptions = typeof options === "string"
+    ? { listName: options, sourceType: "csv", columnMapping: {} }
+    : options;
+  const job = await emailAdmin<{ id: string; path: string; token: string }>("imports.create", {
+    filename: file.name,
+    list_name: normalized.listName,
+    list_id: normalized.listId,
+    source_type: normalized.sourceType,
+    column_mapping: normalized.columnMapping,
+  });
   const { error } = await supabase.storage.from("email-imports").uploadToSignedUrl(job.path, job.token, file, { contentType: file.type || "text/csv" });
   if (error) throw error;
-  return emailAdmin("imports.process", { id: job.id });
+  return emailAdmin("imports.process", { id: job.id, column_mapping: normalized.columnMapping });
 }

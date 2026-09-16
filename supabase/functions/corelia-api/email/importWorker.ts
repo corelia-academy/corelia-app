@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "../lib/supabase.ts";
-import { consentFromCsv, normalizeEmail, parseCsv } from "./csv.ts";
+import { contactColumnIndex, contactNameFromCsv, consentFromCsv, normalizeEmail, parseCsv, type ContactColumnMapping } from "./csv.ts";
 
 const CHUNK_SIZE = 250;
 
@@ -18,16 +18,11 @@ export async function processNextImportChunk(db: SupabaseClient): Promise<{ proc
     if (downloadError || !blob) throw downloadError ?? new Error("import_download_failed");
     const rows = parseCsv(await blob.text());
     if (rows.length < 2) throw new Error("csv_has_no_data");
-    const headers = rows[0]!.map((value) => value.trim().toLowerCase());
-    const mapping = (job.column_mapping ?? {}) as Record<string, string>;
-    const column = (name: string, fallbacks: string[]) => {
-      const configured = mapping[name]?.toLowerCase();
-      return configured ? headers.indexOf(configured) : headers.findIndex((header) => fallbacks.includes(header));
-    };
-    const emailIndex = column("email", ["email", "e-mail"]);
-    const nameIndex = column("full_name", ["full_name", "name", "ho_ten", "họ tên"]);
-    const localeIndex = column("locale", ["locale", "language", "ngon_ngu", "ngôn ngữ"]);
-    const consentIndex = column("marketing_consent", ["marketing_consent", "consent", "dong_y", "đồng ý"]);
+    const headers = rows[0]!.map((value) => value.trim());
+    const mapping = (job.column_mapping ?? {}) as ContactColumnMapping;
+    const emailIndex = contactColumnIndex(headers, "email", mapping);
+    const localeIndex = contactColumnIndex(headers, "locale", mapping);
+    const consentIndex = contactColumnIndex(headers, "marketing_consent", mapping);
     if (emailIndex < 0) throw new Error("csv_email_column_missing");
 
     const start = Math.max(1, Number(job.cursor_row ?? 0) + 1);
@@ -47,7 +42,7 @@ export async function processNextImportChunk(db: SupabaseClient): Promise<{ proc
       if (unique.has(email)) { duplicate += 1; continue; }
       unique.set(email, {
         email,
-        full_name: (row[nameIndex] ?? "").trim() || null,
+        full_name: contactNameFromCsv(row, headers, mapping),
         locale: (row[localeIndex] ?? "").trim().toLowerCase() === "en" ? "en" : "vi",
         consent: consentIndex >= 0 && consentFromCsv(row[consentIndex] ?? ""),
         row: index + 1,
@@ -57,9 +52,30 @@ export async function processNextImportChunk(db: SupabaseClient): Promise<{ proc
     let imported = 0;
     if (contactsInput.length) {
       const now = new Date().toISOString();
-      const { error: upsertError } = await db.from("email_contacts").upsert(contactsInput.map(({ email, full_name, locale }) => ({ email, full_name, locale, updated_at: now })), { onConflict: "email" });
-      if (upsertError) throw upsertError;
-      const { data: contacts, error: contactsError } = await db.from("email_contacts").select("id,email").in("email", contactsInput.map((item) => item.email));
+      const emails = contactsInput.map((item) => item.email);
+      const { data: existingContacts, error: existingError } = await db.from("email_contacts").select("id,email,user_id,full_name,locale,source_type").in("email", emails);
+      if (existingError) throw existingError;
+      const existingByEmail = new Map((existingContacts ?? []).map((contact) => [contact.email, contact]));
+      const inserts = contactsInput.filter((item) => !existingByEmail.has(item.email)).map(({ email, full_name, locale }) => ({
+        email, full_name, locale, source_type: job.source_type === "luma" ? "luma" : "csv",
+        metadata: { source: job.source_type === "luma" ? "luma" : "csv" }, updated_at: now,
+      }));
+      if (inserts.length) {
+        const { error: insertError } = await db.from("email_contacts").insert(inserts);
+        if (insertError) throw insertError;
+      }
+      for (const item of contactsInput) {
+        const existing = existingByEmail.get(item.email);
+        if (!existing || existing.user_id) continue;
+        const { error: updateError } = await db.from("email_contacts").update({
+          full_name: item.full_name ?? existing.full_name,
+          locale: localeIndex >= 0 ? item.locale : existing.locale,
+          source_type: existing.source_type === "corelia" ? "corelia" : (job.source_type === "luma" ? "luma" : "csv"),
+          updated_at: now,
+        }).eq("id", existing.id).is("user_id", null);
+        if (updateError) throw updateError;
+      }
+      const { data: contacts, error: contactsError } = await db.from("email_contacts").select("id,email").in("email", emails);
       if (contactsError) throw contactsError;
       const contactByEmail = new Map((contacts ?? []).map((contact) => [contact.email, contact.id]));
       const contactIds = [...contactByEmail.values()];
@@ -73,7 +89,7 @@ export async function processNextImportChunk(db: SupabaseClient): Promise<{ proc
       if (consentItems.length) {
         const { data: prior } = await db.from("email_contact_consents").select("contact_id,status").eq("topic", "marketing").in("contact_id", consentItems.map((item) => item.contact_id));
         const unsubscribed = new Set((prior ?? []).filter((item) => item.status === "unsubscribed").map((item) => item.contact_id));
-        const consentRows = consentItems.filter((item) => !unsubscribed.has(item.contact_id)).map((item) => ({ contact_id: item.contact_id, topic: "marketing", status: "subscribed", source: "csv_import", evidence: { import_id: job.id, row: item.row }, changed_at: now }));
+        const consentRows = consentItems.filter((item) => !unsubscribed.has(item.contact_id)).map((item) => ({ contact_id: item.contact_id, topic: "marketing", status: "subscribed", source: job.source_type === "luma" ? "luma_csv_import" : "csv_import", evidence: { import_id: job.id, row: item.row }, changed_at: now }));
         if (consentRows.length) {
           const { error: consentError } = await db.from("email_contact_consents").upsert(consentRows, { onConflict: "contact_id,topic" });
           if (consentError) throw consentError;
