@@ -116,3 +116,9 @@ Nếu muốn bỏ field khỏi bài cuối khóa, hãy sửa hoặc unpublish c�
 ### Dự án tham khảo trong practice
 
 Chọn dự án từ directory công khai ở trường Dự án tham khảo; dùng Tải thêm dự án để xem các trang tiếp theo. ID được lưu trong related_project_id. Project phải tồn tại, public và không bị chặn khi publish; learner không nhận link tới project đã private/unlisted/blocked/xóa. Reference legacy related_project_template_id phải được gỡ bằng nút riêng; không tự chuyển nó thành project ID. Guided project có link tự tạo portfolio và cập nhật hồ sơ qua flow hiện hữu, không truyền artifact hoặc tự public bài nộp.
+
+### Soạn bản dịch
+
+Ô nhập ở ngôn ngữ phụ chỉ hiển thị nội dung đã dịch; trường chưa dịch để trống. Mở **Bản gốc để tham khảo** để đọc nội dung nguồn. Chuyển ngôn ngữ giữ bản nháp trong dialog; việc chỉ mở một ngôn ngữ không tạo bản dịch trong database. Nếu tải bản dịch lỗi, thử lại trước khi chỉnh sửa hoặc lưu.
+
+Video bản dịch mặc định **Dùng video gốc**. Bỏ chọn để nhập video riêng và đoạn phát riêng; chọn lại để trở về video nguồn. Lưu chi tiết bài học và bản dịch là một transaction: lỗi validation không để lại nội dung đã lưu một phần. Lỗi video bản dịch chỉ rõ ngôn ngữ và đưa về trường cần sửa. Bản dịch tiếng Việt đã tồn tại trong ô EN không tự bị xóa hoặc ghi đè.
