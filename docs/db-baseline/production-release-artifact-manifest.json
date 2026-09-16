@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "9c9b053e44e041d1c1937f4bc5128c2704d757c7",
-  "git_tree_sha": "7c7b163e7ed3ae4e3058843c754f84408cefba71",
+  "rc_sha": "80af794c19251564f6c232e22f81afa6f9c16f83",
+  "git_tree_sha": "0802473853a00c744b81a5bffbfd13fc2f474d17",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 231,
+  "migration_count": 233,
   "latest_migration": "20260915130736_learning_redo_stale_clients.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "9c9b053e44e041d1c1937f4bc5128c2704d757c7",
+  "source_sha": "80af794c19251564f6c232e22f81afa6f9c16f83",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "b688d76a72d1156aa272838699c654eac35377898d305dfb7a1ab390cfdc2802",
+  "candidate_tree_sha256": "9f2402445cc40eae5095a67cc0550612718dbfa8f08cf54f24f8c640c0458f36",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -487,7 +487,7 @@
     },
     {
       "path": "docs/learning/authoring-and-review.md",
-      "sha256": "b5594505ba9a5923357eb891544360a5cdd34af7d537be8338d684e27262a559"
+      "sha256": "4e175c76b849bf47507b781a2d1c84a66c582c4e3f8a00dedd8718739e45b6fe"
     },
     {
       "path": "docs/learning/code-exercise.md",
@@ -911,7 +911,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "1e7081865bc947beb4825d531a72f6a7fb05b4466290b3f289436a88705ea842"
+      "sha256": "e795abd1db5a254b97f04b1cc5b44a4d8151c93e42a48e3469fe58cc47673ef8"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -975,7 +975,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "219cc81629f0b3e1ba19a575b26b0e6b75a65653b15fb666d43c25ded7048ddc"
+      "sha256": "aa77e6bc38c8c635538fa785db1e4cdf34e1f9cf10160e4564eda97d5ebf2945"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
@@ -1022,6 +1022,10 @@
       "sha256": "aa02a561d485ec53d3dadc10d94b30eecd988467c80bcdbd61e86a484da05932"
     },
     {
+      "path": "scripts/db/tests/learning-translation.integration.sql",
+      "sha256": "80dcf8783497c1cbbae1b2e5932cfa989badf881154f50ccbc801a6191bb351a"
+    },
+    {
       "path": "scripts/db/tests/master-enrollment-security.contract.test.mjs",
       "sha256": "74d198fef2a23bc40767fff431df33082f85ac8f4f197d73e073712f2e3f23d3"
     },
@@ -1039,7 +1043,7 @@
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "c6991f86b85e7cada457e49948ae07c11df8fbfed491519ed5495dafff93f468"
+      "sha256": "e4990c4602fb317d561db46aa778eea21108a291490a0a6e368fd95504d285a7"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
@@ -1099,7 +1103,7 @@
     },
     {
       "path": "scripts/db/verify-local-migration-apply.mjs",
-      "sha256": "38581153ee16e06041129591a7b1dae81f7ed82b8effbd209a10ed8e1fd65355"
+      "sha256": "62beb1f74887e518cb0deef1735a685980f3ad449ff0a2b62cb98490f334ac27"
     },
     {
       "path": "scripts/db/verify-migration-baseline.mjs",
@@ -1587,7 +1591,7 @@
     },
     {
       "path": "src/features/courses/instructorCourseEditorQueries.ts",
-      "sha256": "0bc6cc513ca3950c430e6378288fa20d1d8ca0a6cb47e3341f3ef0aed78b1515"
+      "sha256": "3fa1530767e8e357f54ac5e6f079a58bf220b9b59bf7a3fee03bec976289c303"
     },
     {
       "path": "src/features/courses/quizQueries.ts",
@@ -1707,11 +1711,11 @@
     },
     {
       "path": "src/features/learning/admin/LessonEditor.test.tsx",
-      "sha256": "d845e58e5c7314b7c56aa57b543e6f0db05ef61eb7dd99ae2cddfdcee87d0fff"
+      "sha256": "2012f458ec64aa250a764af0817c2a6aafee88484a7a6730807ace613328be9d"
     },
     {
       "path": "src/features/learning/admin/LessonEditor.tsx",
-      "sha256": "5e8dcfac242c020b4d98fd8698b32e0b820820b16678fd51cdaeb12322fe434d"
+      "sha256": "aa5e0af24ee7a85484e55ad358ec050fd0930668b0b2e1351de965808ddb9b10"
     },
     {
       "path": "src/features/learning/admin/LessonReadinessBadge.test.tsx",
@@ -1744,6 +1748,10 @@
     {
       "path": "src/features/learning/admin/quizValidation.ts",
       "sha256": "ba00f470d965795cf40126a2478d5ab5c218a5d84ea9d5b947a55d37fb944f94"
+    },
+    {
+      "path": "src/features/learning/admin/TranslationReference.tsx",
+      "sha256": "9c90d0bc32e759a49423edc07cb63567b63e149cc0b170572b76199f747c23d0"
     },
     {
       "path": "src/features/learning/admin/useUnsavedLearning.test.tsx",
@@ -1888,6 +1896,14 @@
     {
       "path": "src/features/learning/SubmissionReviewContent.tsx",
       "sha256": "ad4227ef94a0bd93896482c2a6cd8e35174579fd2760c2a5f9c3c700707b450b"
+    },
+    {
+      "path": "src/features/learning/translationDraft.test.ts",
+      "sha256": "95204a8d1bfa014a969cfd298cef6062fd6dee85b693e027fbbf655914bf42b9"
+    },
+    {
+      "path": "src/features/learning/translationDraft.ts",
+      "sha256": "c6649d30b2149ce57bef5d06dd741a0e2c50759158f4f1001e0cdaaa6affddd2"
     },
     {
       "path": "src/features/learning/types.ts",
@@ -2063,11 +2079,11 @@
     },
     {
       "path": "src/lib/courses.test.ts",
-      "sha256": "4e7a8989f00015faa7505e679b2136e7bb7563a6656cde744b31e1c98756d811"
+      "sha256": "69e2c92f20de6b167a6e610f2f6dff775aa55daf5a1fc066427d01a6833e2b28"
     },
     {
       "path": "src/lib/courses.ts",
-      "sha256": "8d146f587ce3e30c3fb0134ef10bea5c00c858b3a2ac9bb1891bde15842edc33"
+      "sha256": "96925eba643a90ec8c8d78133441798e30890bafc547737897afdd68018eed52"
     },
     {
       "path": "src/lib/credentialIssuances.ts",
@@ -2283,11 +2299,11 @@
     },
     {
       "path": "src/lib/sectionQuestions.test.ts",
-      "sha256": "3a7ae67cd229b5de8ad641b05d823295b675b47f9cd2e7f1750754a25ec19e42"
+      "sha256": "ae84cbf1eacc11d73f56dadba133b4d90a13cd4d89bba62bc8739f0cb88d6de3"
     },
     {
       "path": "src/lib/sectionQuestions.ts",
-      "sha256": "64077052fca67ebbcb364f6f2ac75fd26784eeb9d218d0c7f44fb432cfc4b8e2"
+      "sha256": "2610a6f679f32ef4fee1543d462366074b5c3d475bd8f7d40e66fd54af1e5c7d"
     },
     {
       "path": "src/lib/slug.test.ts",
@@ -2355,7 +2371,7 @@
     },
     {
       "path": "src/locales/en/courses.json",
-      "sha256": "0bf7004903091c2e3c747bc4320f50670946ba20700fec093c95bcffdb1a8c38"
+      "sha256": "fc56e2757647234625deeb5e02b14e4ae01df6a3088a84d88a852c52ef95ce2c"
     },
     {
       "path": "src/locales/en/instructor.json",
@@ -2387,7 +2403,7 @@
     },
     {
       "path": "src/locales/vi/courses.json",
-      "sha256": "dd72805d69e77303ed10ab496f84b1a99e0bfe34fe6d21834aec38efd91ca999"
+      "sha256": "0ebe230e490941ee79750f0bc8ab38e8f77687e1b6bb4347a27fc6212e501631"
     },
     {
       "path": "src/locales/vi/instructor.json",
@@ -2919,7 +2935,7 @@
     },
     {
       "path": "src/pages/instructor-course-edit/components/QuestionGeneratorDialog.tsx",
-      "sha256": "d75c07fe6a8f9ea033848a754c86f4e39c3befb88b6e128a0e080cd7c25f9fa6"
+      "sha256": "00552f364e668844daf3c92e487726808e42f0aa8565145e26a1b820f1cbd511"
     },
     {
       "path": "src/pages/instructor-course-edit/constants.ts",
@@ -2927,11 +2943,11 @@
     },
     {
       "path": "src/pages/instructor-course-edit/hooks/useCourseContentDraft.test.tsx",
-      "sha256": "a9bff51f31493d0e6babb62785a2d917b663ca85940bbe8b0e81a591a2622db1"
+      "sha256": "686580909ff6bb8904934a6570f634f1e488697523b30b62cca43b95cf27bedf"
     },
     {
       "path": "src/pages/instructor-course-edit/hooks/useCourseContentDraft.ts",
-      "sha256": "c77b9c0f1c32ba10bcfc644262d9c3e6cef3002cdad9ecef170065b4e53e902b"
+      "sha256": "4a2036cd31e9c599e390ff343415bce6a553442e2145f1181a5bd0f4452b7913"
     },
     {
       "path": "src/pages/instructor-course-edit/hooks/useCourseFieldDraft.test.tsx",
@@ -2963,15 +2979,15 @@
     },
     {
       "path": "src/pages/instructor-course-edit/InstructorCourseEdit.tsx",
-      "sha256": "eb0336fa0161051a2648024bd7e2b428b3b7bfc14a1b45210f5d82806ca2578c"
+      "sha256": "7ef181d938ca5ef1a15373b1b7349851abb51678767924be07ce9ee7c49289d5"
     },
     {
       "path": "src/pages/instructor-course-edit/LearningCourseEditorRoute.test.tsx",
-      "sha256": "390d5e097e49a289c328c341f60554e531ec2987c3c080432232f3960c102ab1"
+      "sha256": "2d9efa2fe6ed792824626a5f52372cdbb2d7fa9009eff8374166b812d9021e3d"
     },
     {
       "path": "src/pages/instructor-course-edit/LearningCourseEditorRoute.tsx",
-      "sha256": "1a0140b71d0867140f6bf7dd03c82bd2e7b309ad62ea7aca81cece8676cffbf4"
+      "sha256": "3fc465af0557fd174b715c2626ff6b660c64a7b72d58fa837d4346166f3e0ae8"
     },
     {
       "path": "src/pages/instructor-course-edit/LearningPreview.test.tsx",
@@ -2980,6 +2996,14 @@
     {
       "path": "src/pages/instructor-course-edit/LearningPreview.tsx",
       "sha256": "32f174bd63f60025ad1af292e4fc851737c875448b03782315a41085148c2ee6"
+    },
+    {
+      "path": "src/pages/instructor-course-edit/lessonDraft.test.ts",
+      "sha256": "9f0e8187fb12dc7c4264c38855f174dcbc59089633eed2b4453d154a35e1f6f6"
+    },
+    {
+      "path": "src/pages/instructor-course-edit/lessonDraft.ts",
+      "sha256": "d80885a99520b4319ec11928cdc15a1b0e4668436fdda4b635a526588cfc7d8c"
     },
     {
       "path": "src/pages/instructor-course-new/hooks/useInstructorCourseNewForm.ts",
@@ -3902,6 +3926,14 @@
       "sha256": "5a4ecd3897716c50b7fdc6cf724f7300e885f64574e20b9dd8a5fc740bac7d1e"
     },
     {
+      "path": "supabase/migrations/20260915052442_learning_translation_authoring.sql",
+      "sha256": "43297491a82305eb9f29f112a28c5a101f0740bb64af0e6a234d4c7dc46058b7"
+    },
+    {
+      "path": "supabase/migrations/20260915054142_learning_translation_video_inference.sql",
+      "sha256": "4a881b163041f167ee68a1d4533a643802445d71b7e07fa24f77ec5bbf495fc1"
+    },
+    {
       "path": "supabase/migrations/20260915062707_learning_redo_lessons.sql",
       "sha256": "4aa2ad7844c19c3cbd1b8224ed50c5f25f2343a9effc2bc4051183c2040c1174"
     },
@@ -4422,6 +4454,14 @@
       {
         "path": "supabase/migrations/20260914162720_public_project_team_members.sql",
         "sha256": "5a4ecd3897716c50b7fdc6cf724f7300e885f64574e20b9dd8a5fc740bac7d1e"
+      },
+      {
+        "path": "supabase/migrations/20260915052442_learning_translation_authoring.sql",
+        "sha256": "43297491a82305eb9f29f112a28c5a101f0740bb64af0e6a234d4c7dc46058b7"
+      },
+      {
+        "path": "supabase/migrations/20260915054142_learning_translation_video_inference.sql",
+        "sha256": "4a881b163041f167ee68a1d4533a643802445d71b7e07fa24f77ec5bbf495fc1"
       },
       {
         "path": "supabase/migrations/20260915062707_learning_redo_lessons.sql",
