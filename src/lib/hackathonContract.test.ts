@@ -11,6 +11,7 @@ import {
   orderWinnerFirst,
   sanitizeHackathonTaxonomy,
   sortHackathonTimeline,
+  validateHackathonTaxonomyContract,
 } from "./hackathonContract";
 
 describe("simplified hackathon contract", () => {
@@ -139,5 +140,52 @@ describe("simplified hackathon contract", () => {
     const resultOnlyMarkdown = applyHackathonLocaleContent(baseContest, localizedOnlyMarkdown);
     expect(resultOnlyMarkdown.description).toBe("# Only Markdown");
     expect(resultOnlyMarkdown.description_markdown).toBe("# Only Markdown");
+  });
+
+  describe("hackathon taxonomy contract validation", () => {
+    const validSector = { id: "sec-ai", name: "AI Engineering", active: true };
+    const validTech = { id: "tech-ts", name: "TypeScript", active: true };
+
+    it("allows draft hackathon to omit taxonomy", () => {
+      expect(validateHackathonTaxonomyContract("draft", [], [])).toEqual({ valid: true });
+      expect(validateHackathonTaxonomyContract("draft", null, null)).toEqual({ valid: true });
+      expect(validateHackathonTaxonomyContract("draft", undefined, undefined)).toEqual({ valid: true });
+    });
+
+    it("accepts published or running hackathons with valid active taxonomy", () => {
+      expect(validateHackathonTaxonomyContract("published", [validSector], [validTech])).toEqual({ valid: true });
+      expect(validateHackathonTaxonomyContract("running", [validSector], [validTech])).toEqual({ valid: true });
+    });
+
+    it("rejects published or running hackathons when sectors or tech_stacks is empty", () => {
+      expect(validateHackathonTaxonomyContract("published", [], [validTech])).toEqual({ valid: false, reason: "required" });
+      expect(validateHackathonTaxonomyContract("published", [validSector], [])).toEqual({ valid: false, reason: "required" });
+      expect(validateHackathonTaxonomyContract("running", [], [validTech])).toEqual({ valid: false, reason: "required" });
+      expect(validateHackathonTaxonomyContract("running", [validSector], [])).toEqual({ valid: false, reason: "required" });
+    });
+
+    it("rejects published or running hackathons when all items in a group are inactive", () => {
+      const inactiveSector = { id: "sec-ai", name: "AI Engineering", active: false };
+      const inactiveTech = { id: "tech-ts", name: "TypeScript", active: false };
+
+      expect(validateHackathonTaxonomyContract("published", [inactiveSector], [validTech])).toEqual({ valid: false, reason: "required" });
+      expect(validateHackathonTaxonomyContract("published", [validSector], [inactiveTech])).toEqual({ valid: false, reason: "required" });
+      expect(validateHackathonTaxonomyContract("running", [inactiveSector], [validTech])).toEqual({ valid: false, reason: "required" });
+    });
+
+    it("rejects published or running hackathons when items are null, wrong type, or missing id/name", () => {
+      expect(validateHackathonTaxonomyContract("published", [null], [validTech])).toEqual({ valid: false, reason: "invalid_item" });
+      expect(validateHackathonTaxonomyContract("published", ["invalid"], [validTech])).toEqual({ valid: false, reason: "invalid_item" });
+      expect(validateHackathonTaxonomyContract("published", [{ id: "", name: "Name" }], [validTech])).toEqual({ valid: false, reason: "invalid_item" });
+      expect(validateHackathonTaxonomyContract("published", [{ id: "id", name: "  " }], [validTech])).toEqual({ valid: false, reason: "invalid_item" });
+      expect(validateHackathonTaxonomyContract("published", [validSector], [{ id: "tech" }])).toEqual({ valid: false, reason: "invalid_item" });
+      expect(validateHackathonTaxonomyContract("running", [validSector], [123])).toEqual({ valid: false, reason: "invalid_item" });
+      // V-01 regressions: numeric id/name, non-boolean active, non-numeric sort_order
+      expect(validateHackathonTaxonomyContract("published", [{ id: 123, name: "Name" }], [validTech])).toEqual({ valid: false, reason: "invalid_item" });
+      expect(validateHackathonTaxonomyContract("published", [{ id: "sec", name: 456 }], [validTech])).toEqual({ valid: false, reason: "invalid_item" });
+      expect(validateHackathonTaxonomyContract("published", [{ id: "sec", name: "AI", active: 0 }], [validTech])).toEqual({ valid: false, reason: "invalid_item" });
+      expect(validateHackathonTaxonomyContract("published", [{ id: "sec", name: "AI", active: "true" }], [validTech])).toEqual({ valid: false, reason: "invalid_item" });
+      expect(validateHackathonTaxonomyContract("published", [{ id: "sec", name: "AI", sort_order: "first" }], [validTech])).toEqual({ valid: false, reason: "invalid_item" });
+    });
   });
 });

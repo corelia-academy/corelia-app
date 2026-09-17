@@ -34,6 +34,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Provision PostgreSQL server binaries in PATH
+        run: |
+          PG_BIN_DIR=$(dirname "$(find /usr/lib/postgresql -name initdb -type f 2>/dev/null | sort -V | tail -n 1)")
+          if [ -n "$PG_BIN_DIR" ] && [ -d "$PG_BIN_DIR" ]; then
+            echo "$PG_BIN_DIR" >> "$GITHUB_PATH"
+            echo "Provisioned PostgreSQL server binaries from $PG_BIN_DIR into GITHUB_PATH"
+          fi
+
       - name: Test guardrails
         run: pnpm db:guard:test
 

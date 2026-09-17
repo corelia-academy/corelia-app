@@ -232,4 +232,82 @@ describe("canRegisterForContest registration policy", () => {
       }),
     ).toBe(false);
   });
+
+  describe("hackathon taxonomy write contract enforcement", () => {
+    const validSector = { id: "sec-1", name: "AI", active: true, sort_order: 0 };
+    const validTech = { id: "tech-1", name: "Python", active: true, sort_order: 0 };
+
+    it("allows creating a draft with empty taxonomy without injecting dummy values", async () => {
+      const contest = await createContest({
+        title: "Draft Event",
+        tagline: "Draft Tagline",
+        slug: "draft-event",
+        status: "draft",
+        sectors: [],
+        tech_stacks: [],
+      });
+
+      expect(contest.status).toBe("draft");
+      expect(db.inserted?.document).toMatchObject({
+        sectors: [],
+        tech_stacks: [],
+      });
+    });
+
+    it("rejects creating a published hackathon when sectors or tech_stacks is empty", async () => {
+      await expect(
+        createContest({
+          title: "Published Event",
+          tagline: "",
+          slug: "published-event",
+          status: "published",
+          sectors: [],
+          tech_stacks: [validTech],
+        }),
+      ).rejects.toThrow("invalid_input:hackathon_taxonomy_required");
+
+      await expect(
+        createContest({
+          title: "Published Event",
+          tagline: "",
+          slug: "published-event",
+          status: "published",
+          sectors: [validSector],
+          tech_stacks: [],
+        }),
+      ).rejects.toThrow("invalid_input:hackathon_taxonomy_required");
+    });
+
+    it("rejects creating a published hackathon when items are invalid", async () => {
+      await expect(
+        createContest({
+          title: "Published Event",
+          tagline: "",
+          slug: "published-event",
+          status: "published",
+          sectors: [{ id: "", name: "" } as unknown as typeof validSector],
+          tech_stacks: [validTech],
+        }),
+      ).rejects.toThrow("invalid_input:hackathon_taxonomy_invalid");
+    });
+
+    it("rejects updating to published when hackathon lacks active taxonomy", async () => {
+      await expect(
+        updateContest("hackathon-1", {
+          status: "published",
+          sectors: [],
+          tech_stacks: [],
+        }),
+      ).rejects.toThrow("invalid_input:hackathon_taxonomy_required");
+    });
+
+    it("allows updating to published when valid active taxonomy is provided", async () => {
+      const updated = await updateContest("hackathon-1", {
+        status: "published",
+        sectors: [validSector],
+        tech_stacks: [validTech],
+      });
+      expect(updated.status).toBe("published");
+    });
+  });
 });

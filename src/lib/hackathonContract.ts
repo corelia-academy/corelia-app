@@ -83,6 +83,54 @@ export function sanitizeHackathonTaxonomy(values: HackathonTaxonomyOption[]): Ha
     .sort((a, b) => a.sort_order - b.sort_order);
 }
 
+export type HackathonTaxonomyValidationResult =
+  | { valid: true }
+  | { valid: false; reason: "required" | "invalid_item" };
+
+export function isHackathonTaxonomyItemValid(item: unknown): item is HackathonTaxonomyOption {
+  if (typeof item !== "object" || item === null || Array.isArray(item)) return false;
+  const candidate = item as Record<string, unknown>;
+  if (typeof candidate.id !== "string" || !candidate.id.trim()) return false;
+  if (typeof candidate.name !== "string" || !candidate.name.trim()) return false;
+  if ("active" in candidate && candidate.active !== undefined && typeof candidate.active !== "boolean") {
+    return false;
+  }
+  if ("sort_order" in candidate && candidate.sort_order !== undefined && typeof candidate.sort_order !== "number") {
+    return false;
+  }
+  return true;
+}
+
+export function validateHackathonTaxonomyContract(
+  status: string | null | undefined,
+  sectors: unknown,
+  techStacks: unknown,
+): HackathonTaxonomyValidationResult {
+  if (status !== "published" && status !== "running") {
+    return { valid: true };
+  }
+  if (!Array.isArray(sectors) || !Array.isArray(techStacks)) {
+    return { valid: false, reason: "required" };
+  }
+  for (const s of sectors) {
+    if (!isHackathonTaxonomyItemValid(s)) {
+      return { valid: false, reason: "invalid_item" };
+    }
+  }
+  for (const t of techStacks) {
+    if (!isHackathonTaxonomyItemValid(t)) {
+      return { valid: false, reason: "invalid_item" };
+    }
+  }
+  const hasActiveSector = sectors.some((s) => (s as { active?: boolean }).active !== false);
+  const hasActiveTech = techStacks.some((t) => (t as { active?: boolean }).active !== false);
+  if (!hasActiveSector || !hasActiveTech) {
+    return { valid: false, reason: "required" };
+  }
+  return { valid: true };
+}
+
+
 export function isPrizeAllocationValid(total: string, tracks: ContestTrack[]): boolean {
   const totalValue = Number(total);
   if (!Number.isFinite(totalValue) || totalValue < 0) return false;
