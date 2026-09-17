@@ -99,11 +99,11 @@ export default function AdminToggleComponentPage({
           <div data-testid="icon-toggle-group-disabled" className="grid gap-3 rounded-md border border-border-subtle bg-surface-base p-4">
             <p className="text-body-small text-foreground-muted">Disabled</p>
             <div className="flex items-center gap-4">
-              <div data-testid="icon-toggle-sample-disabled-unpressed" className="p-2">
-                <IconToggle aria-label="Disabled toggle" disabled />
-              </div>
               <div data-testid="icon-toggle-sample-disabled-pressed" className="p-2">
                 <IconToggle aria-label="Disabled toggle" pressed disabled />
+              </div>
+              <div data-testid="icon-toggle-sample-disabled-unpressed" className="p-2">
+                <IconToggle aria-label="Disabled toggle" disabled />
               </div>
             </div>
           </div>

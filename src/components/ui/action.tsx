@@ -163,7 +163,7 @@ function Action({
         : "text-action-active-foreground";
     const activeSupportingClass = variant === "destructive"
         ? "text-action-destructive-active-supporting"
-        : "text-action-active-supporting";
+        : "text-neutral-400";
     const contentForegroundClass = visualIsActive
         ? activeForegroundClass
         : variant === "destructive"
@@ -171,9 +171,9 @@ function Action({
             : "text-action-text";
     const contentSupportingClass = visualIsActive
         ? activeSupportingClass
-        : variant === "destructive" && size === "small"
+        : variant === "destructive"
             ? "text-action-destructive-supporting"
-            : "text-action-supporting";
+            : "text-neutral-400";
     const pressedClass = showPressed && !disabled
         ? visualIsActive || hoverAsActive
             ? variant === "destructive"
@@ -212,6 +212,14 @@ function Action({
             : cn(
                 "group-hover/action:text-action-active-foreground",
                 showPressed && "max-lg:group-active/action:text-action-active-foreground",
+            )
+        : undefined;
+    const hoverAsActiveSupportingClass = hoverAsActive && !disabled
+        ? variant === "destructive"
+            ? hoverAsActiveTextClass
+            : cn(
+                "group-hover/action:text-neutral-400",
+                showPressed && "max-lg:group-active/action:text-neutral-400",
             )
         : undefined;
 
@@ -283,7 +291,7 @@ function Action({
                                 ? "text-body-medium"
                                 : "text-body-small",
                             disabled ? "text-action-disabled" : contentSupportingClass,
-                            hoverAsActiveTextClass,
+                            hoverAsActiveSupportingClass,
                         )}
                     >
                         {supportingText}
@@ -297,7 +305,7 @@ function Action({
                     className={cn(
                         "shrink-0 font-body text-body-small",
                         disabled ? "text-action-disabled" : contentSupportingClass,
-                        hoverAsActiveTextClass,
+                        hoverAsActiveSupportingClass,
                     )}
                 >
                     {dateTime}

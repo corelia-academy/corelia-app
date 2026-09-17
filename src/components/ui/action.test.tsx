@@ -121,6 +121,7 @@ describe("Action", () => {
   it("supports destructive hover-as-active behavior", () => {
     const markup = renderAction({
       label: "Sign out",
+      supportingText: "Sign out of this device",
       variant: "destructive",
       hoverAsActive: true,
       showPressed: true,
@@ -128,6 +129,21 @@ describe("Action", () => {
 
     expect(markup).toContain("hover:bg-action-destructive-active");
     expect(markup).toContain("max-lg:active:bg-action-destructive-active");
+    expect(markup).toContain("group-hover/action:text-action-destructive-active-foreground");
+    expect(markup).not.toContain("group-hover/action:text-neutral-400");
+  });
+
+  it("keeps default supporting text on the supporting color during hover-as-active", () => {
+    const markup = renderAction({
+      label: "Open details",
+      supportingText: "Description",
+      hoverAsActive: true,
+      showPressed: true,
+    });
+
+    expect(markup).toContain("group-hover/action:text-neutral-400");
+    expect(markup).toContain("max-lg:group-active/action:text-neutral-400");
+    expect(markup.match(/group-hover\/action:text-action-active-foreground/g)).toHaveLength(1);
   });
 
   it("can render as a link for menu/list usage", () => {
