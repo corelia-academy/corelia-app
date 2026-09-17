@@ -178,7 +178,7 @@ export async function handleSendLearningReminders(
               ${locale === "vi" ? "Các khóa học đang học:" : "Your in-progress courses:"}
             </p>
             <ul style="padding-left: 18px; margin: 0; font-size: 13px; color: #1e293b;">
-              ${userRecord.courses.map((c) => `<li><a href="${appUrl}/learn/${c.slug}" style="color: #2ab89e; text-decoration: none;">${escapeHtml(c.title)}</a></li>`).join("")}
+              ${userRecord.courses.map((c) => `<li><a href="${appUrl}/learn/${c.slug}" style="color: #1759f1; text-decoration: none;">${escapeHtml(c.title)}</a></li>`).join("")}
             </ul>
           </div>
         `;
@@ -190,7 +190,7 @@ export async function handleSendLearningReminders(
         heroTitle,
         heroSubtitle,
         bodyHtml: `${bodyText}${courseListHtml}`,
-        ctaHtml: `<a href="${primaryLink}" class="e-btn e-btn-teal" style="text-decoration:none; display:inline-block; padding:12px 24px; border-radius:8px; font-weight:bold;">${locale === "vi" ? "Tiếp tục học ngay" : "Resume Learning"}</a>`,
+        ctaHtml: `<a href="${primaryLink}" class="e-btn e-btn-primary" style="display:inline-block;background:#1759f1;color:#ffffff;font-size:15px;font-weight:700;line-height:1.2;padding:14px 22px;border-radius:8px;text-decoration:none;">${locale === "vi" ? "Tiếp tục học ngay" : "Resume Learning"}</a>`,
         footerReason: locale === "vi" ? "Bạn nhận được email này vì bạn đang ghi danh vào các khóa học trên Corelia." : "You received this email because you are enrolled in courses on Corelia.",
       });
 
