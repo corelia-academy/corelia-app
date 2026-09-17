@@ -13,4 +13,22 @@ describe("Email Center template rendering", () => {
     expect(rendered.html).not.toContain("<b>An</b>");
     expect(isSafeEmailUrl("javascript:alert(1)")).toBe(false);
   });
+
+  it("renders the current Corelia brand shell", () => {
+    const rendered = renderEmailDocument({
+      subject: "Course update",
+      bodyText: "Keep building.",
+      ctaLabel: "Continue learning",
+      ctaUrl: "https://app.corelia.academy/learn",
+      purpose: "learning",
+      values: {},
+    });
+
+    expect(rendered.html).toContain("background:#f4f7ff");
+    expect(rendered.html).toContain("background: #0a0913");
+    expect(rendered.html).toContain("background:#1759f1");
+    expect(rendered.html).toContain("color:#ffffff");
+    expect(rendered.html).not.toContain("Lora");
+    expect(rendered.html).not.toContain("#2ab89e");
+  });
 });
