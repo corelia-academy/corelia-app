@@ -65,18 +65,19 @@ export function AnnouncementBodyField({
         className="w-full resize-y rounded-md border border-border bg-surface-base px-3 py-2 text-sm leading-relaxed text-foreground outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
       />
       {showPreview && previewHtml ? (
-        <div className="mt-3 overflow-hidden rounded-md border border-border-subtle bg-[#f5f0eb] p-3">
+        <div className="mt-3 overflow-hidden rounded-md border border-border-subtle bg-[#f4f7ff] p-3">
           {previewBrandedNote ? (
             <p className="mb-2 text-xs text-foreground-muted">{previewBrandedNote}</p>
           ) : null}
-          <div className="mx-auto max-w-[520px] overflow-hidden rounded-xl border border-[#ddd7cf] bg-white">
-            <div className="bg-[#1e2440] px-6 py-4">
-              <span className="text-[11px] font-bold uppercase tracking-widest text-[#f5f0eb]">
+          <div className="mx-auto max-w-[600px] overflow-hidden rounded-2xl border border-[#d8dfed] bg-white">
+            <div className="h-1 bg-[#1759f1]" />
+            <div className="bg-[#0a0913] px-6 py-5">
+              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-white">
                 Corelia Academy
               </span>
             </div>
             <div
-              className="px-6 py-5 text-sm leading-relaxed text-[#3d4566] [&_p]:mb-3 [&_p:last-child]:mb-0"
+              className="px-6 py-6 text-base leading-relaxed text-[#526079] [&_a]:text-[#1759f1] [&_p]:mb-4 [&_p:last-child]:mb-0 [&_strong]:text-[#171923]"
               dangerouslySetInnerHTML={{ __html: previewHtml }}
             />
           </div>
