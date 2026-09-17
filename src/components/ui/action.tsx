@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CaretRight } from "@phosphor-icons/react";
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
 
@@ -154,13 +155,13 @@ function Action({
     disabled = false,
     ...props
 }: ActionProps) {
-    const nextIconSrc = disabled
-        ? "/icons/action/next-disabled.svg"
-        : "/icons/action/next.svg";
     const visualIsActive = showActive && isActive;
     const activeForegroundClass = variant === "destructive"
         ? "text-action-destructive-active-foreground"
         : "text-action-active-foreground";
+    const activeIconClass = variant === "destructive"
+        ? "text-action-destructive-active-icon"
+        : "text-action-active-icon";
     const activeSupportingClass = variant === "destructive"
         ? "text-action-destructive-active-supporting"
         : "text-neutral-400";
@@ -169,10 +170,18 @@ function Action({
         : variant === "destructive"
             ? "text-action-destructive"
             : "text-action-text";
+    const contentIconClass = visualIsActive
+        ? activeIconClass
+        : contentForegroundClass;
     const contentSupportingClass = visualIsActive
         ? activeSupportingClass
         : variant === "destructive"
             ? "text-action-destructive-supporting"
+            : "text-neutral-400";
+    const trailingIconClass = disabled
+        ? "text-neutral-500"
+        : visualIsActive
+            ? activeIconClass
             : "text-neutral-400";
     const pressedClass = showPressed && !disabled
         ? visualIsActive || hoverAsActive
@@ -180,23 +189,6 @@ function Action({
                 ? "max-lg:active:bg-action-destructive-active max-lg:active:text-action-destructive-active-foreground"
                 : "max-lg:active:bg-action-active max-lg:active:text-action-active-foreground"
             : "max-lg:active:bg-action-hover"
-        : undefined;
-    const activeRouteClass = showActive
-        ? variant === "destructive"
-            ? cn(
-                "aria-[current=page]:bg-action-destructive-active aria-[current=page]:text-action-destructive-active-foreground",
-                !disabled &&
-                "aria-[current=page]:hover:bg-action-destructive-active aria-[current=page]:hover:text-action-destructive-active-foreground",
-                !disabled && showPressed &&
-                "max-lg:aria-[current=page]:active:bg-action-destructive-active max-lg:aria-[current=page]:active:text-action-destructive-active-foreground",
-            )
-            : cn(
-                "aria-[current=page]:bg-action-active aria-[current=page]:text-action-active-foreground",
-                !disabled &&
-                "aria-[current=page]:hover:bg-action-active aria-[current=page]:hover:text-action-active-foreground",
-                !disabled && showPressed &&
-                "max-lg:aria-[current=page]:active:bg-action-active max-lg:aria-[current=page]:active:text-action-active-foreground",
-            )
         : undefined;
     const hoverAsActiveClass = hoverAsActive && !disabled
         ? variant === "destructive"
@@ -212,6 +204,17 @@ function Action({
             : cn(
                 "group-hover/action:text-action-active-foreground",
                 showPressed && "max-lg:group-active/action:text-action-active-foreground",
+            )
+        : undefined;
+    const hoverAsActiveIconClass = hoverAsActive && !disabled
+        ? variant === "destructive"
+            ? cn(
+                "group-hover/action:text-action-destructive-active-icon",
+                showPressed && "max-lg:group-active/action:text-action-destructive-active-icon",
+            )
+            : cn(
+                "group-hover/action:text-action-active-icon",
+                showPressed && "max-lg:group-active/action:text-action-active-icon",
             )
         : undefined;
     const hoverAsActiveSupportingClass = hoverAsActive && !disabled
@@ -239,7 +242,6 @@ function Action({
                     className,
                 }),
                 pressedClass,
-                activeRouteClass,
                 hoverAsActiveClass,
             )}
             {...props}
@@ -250,8 +252,8 @@ function Action({
                     className={cn(
                         "flex shrink-0 items-center justify-center",
                         size === "large" ? "size-6" : "size-5",
-                        disabled ? "text-action-disabled" : contentForegroundClass,
-                        hoverAsActiveTextClass,
+                        disabled ? "text-action-disabled" : contentIconClass,
+                        hoverAsActiveIconClass,
                         "[&_svg]:size-full",
                     )}
                 >
@@ -324,11 +326,15 @@ function Action({
 
             {/* Trailing icon opt-in (chỉ hiển thị khi nơi dùng khai báo). */}
             {showTrailingIcon ? (
-                <img
-                    src={nextIconSrc}
-                    alt=""
-                    aria-hidden="true"
-                    className="size-4 shrink-0"
+                <CaretRight
+                    weight="duotone"
+                    aria-hidden
+                    data-slot="action-trailing-icon"
+                    className={cn(
+                        "size-4 shrink-0",
+                        trailingIconClass,
+                        hoverAsActiveIconClass,
+                    )}
                 />
             ) : null}
         </ButtonPrimitive>

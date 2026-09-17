@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FunnelIcon } from "@phosphor-icons/react/dist/csr/Funnel";
 
 import { IconToggle, Toggle } from "@/components/ui/toggle";
 
@@ -21,6 +22,7 @@ export default function AdminToggleComponentPage({
 }: AdminToggleComponentPageProps) {
   // const [checked, setChecked] = useState(false);
   const [pressed, setPressed] = useState(true);
+  const filterIcon = <FunnelIcon weight="regular" className="size-5" />;
 
   return (
     <ComponentShowcaseLayout
@@ -89,10 +91,10 @@ export default function AdminToggleComponentPage({
             <p className="text-body-small text-foreground-muted">Enable</p>
             <div className="flex items-center gap-4">
               <div data-testid="icon-toggle-sample-enabled-pressed" className="p-2">
-                <IconToggle aria-label="Toggle filter" pressed={pressed} onPressedChange={setPressed} />
+                <IconToggle icon={filterIcon} aria-label="Toggle filter" pressed={pressed} onPressedChange={setPressed} />
               </div>
               <div data-testid="icon-toggle-sample-enabled-unpressed" className="p-2">
-                <IconToggle aria-label="Toggle filter" defaultPressed={false} />
+                <IconToggle icon={filterIcon} aria-label="Toggle filter" defaultPressed={false} />
               </div>
             </div>
           </div>
@@ -100,10 +102,10 @@ export default function AdminToggleComponentPage({
             <p className="text-body-small text-foreground-muted">Disabled</p>
             <div className="flex items-center gap-4">
               <div data-testid="icon-toggle-sample-disabled-pressed" className="p-2">
-                <IconToggle aria-label="Disabled toggle" pressed disabled />
+                <IconToggle icon={filterIcon} aria-label="Disabled toggle" pressed disabled />
               </div>
               <div data-testid="icon-toggle-sample-disabled-unpressed" className="p-2">
-                <IconToggle aria-label="Disabled toggle" disabled />
+                <IconToggle icon={filterIcon} aria-label="Disabled toggle" disabled />
               </div>
             </div>
           </div>

@@ -30,7 +30,7 @@ describe("Action", () => {
       showTrailingIcon: true,
     });
 
-    expect(markup).toContain("/icons/action/next.svg");
+    expect(markup).toContain('data-slot="action-trailing-icon"');
   });
 
   it("uses the disabled trailing asset when disabled", () => {
@@ -41,7 +41,8 @@ describe("Action", () => {
       showTrailingIcon: true,
     });
 
-    expect(markup).toContain("/icons/action/next-disabled.svg");
+    expect(markup).toContain('data-slot="action-trailing-icon"');
+    expect(markup).toContain("text-neutral-500");
     expect(markup).not.toContain("data-disabled:pointer-events-none");
     expect(markup).toContain("data-disabled:cursor-not-allowed");
     expect(markup).toContain("data-disabled:select-none");
@@ -133,6 +134,31 @@ describe("Action", () => {
     expect(markup).not.toContain("group-hover/action:text-neutral-400");
   });
 
+  it("uses the dedicated light icon token for destructive active actions", () => {
+    const markup = renderAction({
+      label: "Delete account",
+      variant: "destructive",
+      isActive: true,
+      icon: <UserRound />,
+      showTrailingIcon: true,
+    });
+
+    expect(markup).toContain("text-action-destructive-active-icon");
+    expect(markup).toContain('data-slot="action-trailing-icon"');
+  });
+
+  it("uses the active icon token for default active actions", () => {
+    const markup = renderAction({
+      label: "Open details",
+      isActive: true,
+      icon: <UserRound />,
+      showTrailingIcon: true,
+    });
+
+    expect(markup).toContain("text-action-active-icon");
+    expect(markup).toContain('data-slot="action-trailing-icon"');
+  });
+
   it("keeps default supporting text on the supporting color during hover-as-active", () => {
     const markup = renderAction({
       label: "Open details",
@@ -154,5 +180,18 @@ describe("Action", () => {
     });
 
     expect(markup).toContain('href="/account/profile"');
+  });
+
+  it("uses isActive as the only visual active source", () => {
+    const markup = renderAction({
+      label: "Profile",
+      nativeButton: false,
+      render: <a href="/account/profile" aria-current="page" />,
+    });
+
+    expect(markup).toContain('aria-current="page"');
+    expect(markup).toContain('data-active="false"');
+    expect(markup).not.toContain("bg-action-active");
+    expect(markup).toContain("text-action-text");
   });
 });
