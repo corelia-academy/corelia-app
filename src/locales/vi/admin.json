@@ -175,6 +175,8 @@
       "validationX": "X phải là URL đầy đủ trên x.com hoặc twitter.com.",
       "validationFacebook": "Facebook phải là URL đầy đủ trên facebook.com.",
       "validationTrackNameRequired": "Hạng mục {{number}} chưa có tên. Vui lòng nhập tên hoặc bấm xóa nếu không dùng.",
+      "validationTaxonomyRequired": "Hackathon ở trạng thái xuất bản hoặc đang chạy phải có ít nhất một lĩnh vực và một công nghệ đang kích hoạt.",
+      "validationTaxonomyItemInvalid": "Mỗi lĩnh vực hoặc công nghệ phải có mã định danh và tên hợp lệ.",
       "trackAdded": "Đã thêm hạng mục mới vào bản nháp.",
       "awardMissingFields": "Vui lòng chọn bài thi và nhập tên giải thưởng.",
       "awardAdded": "Đã thêm giải thưởng vào danh sách.",

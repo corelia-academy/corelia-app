@@ -248,27 +248,19 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
 
     expect(createContest).toHaveBeenCalledOnce();
     expect(createContest).toHaveBeenCalledWith(expect.objectContaining({
-      sectors: expect.arrayContaining([
-        expect.objectContaining({ id: "sector-ai-engineering", name: "Kỹ thuật AI & Machine Learning" }),
-      ]),
-      tech_stacks: expect.arrayContaining([
-        expect.objectContaining({ id: "tech-python", name: "Python" }),
-      ]),
+      sectors: [],
+      tech_stacks: [],
     }));
     expect(setHackathonLocaleContent).toHaveBeenCalledTimes(2);
     expect(setHackathonLocaleContent).toHaveBeenCalledWith(
       "hackathon-1",
       "en",
       expect.objectContaining({
-        sectors: expect.arrayContaining([
-          expect.objectContaining({ id: "sector-ai-engineering", name: "AI & Machine Learning Engineering" }),
-        ]),
-        tech_stacks: expect.arrayContaining([
-          expect.objectContaining({ id: "tech-python", name: "Python" }),
-        ]),
+        sectors: [],
+        tech_stacks: [],
       }),
     );
-    expect(view.container.textContent).not.toContain("hackathons.editor.sections.taxonomy");
+    expect(view.container.textContent).toContain("hackathons.editor.sections.taxonomy");
     expect(view.container.querySelector('[data-testid="location"]')?.textContent)
       .toBe("/admin/hackathons/hackathon-1/edit#overview");
 
@@ -557,6 +549,32 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
     expect(toast.error).toHaveBeenCalledWith("hackathons.editor.awardsNotifyIndeterminateError");
     expect(toast.error).toHaveBeenCalledWith("hackathons.editor.awardsNotifyPermanentError");
     expect(toast.success).not.toHaveBeenCalledWith(expect.stringContaining("hackathons.editor.awardsNotified"));
+
+    await view.cleanup();
+  });
+
+  it("blocks publishing when taxonomy is empty and redirects to taxonomy section", async () => {
+    const view = renderEditor("/admin/hackathons/hackathon-1/edit#danger");
+    await settle();
+
+    // Click publish CTA to change draft status to published
+    const publishButton = Array.from(view.container.querySelectorAll("button"))
+      .find((b) => b.textContent?.includes("hackathons.editor.statusDraftCta"));
+    expect(publishButton).toBeDefined();
+    await act(async () => publishButton?.click());
+    await settle();
+
+    // Click save in header
+    const saveButton = Array.from(view.container.querySelectorAll("button"))
+      .find((b) => b.textContent?.includes("hackathons.editor.saveSection"));
+    expect(saveButton).toBeDefined();
+    await act(async () => saveButton?.click());
+    await settle();
+
+    expect(toast.error).toHaveBeenCalledWith("hackathons.editor.validationTaxonomyRequired");
+    expect(updateContest).not.toHaveBeenCalled();
+    expect(view.container.querySelector('[data-testid="location"]')?.textContent)
+      .toBe("/admin/hackathons/hackathon-1/edit#taxonomy");
 
     await view.cleanup();
   });
