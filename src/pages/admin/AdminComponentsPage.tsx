@@ -215,35 +215,6 @@ export default function AdminComponentsPage() {
   return (
     <main className="container-app min-h-screen select-none space-y-8 py-6 sm:py-8">
       <header className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => navigate("/")}
-          >
-            <ArrowLeft aria-hidden />
-            Back to app
-          </Button>
-          <div className="flex items-center gap-2">
-            <p className="text-label-medium uppercase tracking-[0.08em] text-foreground-muted">
-              Admin component lab
-            </p>
-            {(["light", "dark"] as const).map((theme) => (
-              <Button
-                key={theme}
-                type="button"
-                size="sm"
-                variant="outline"
-                data-testid={`theme-toggle-${theme}`}
-                aria-pressed={resolvedTheme === theme}
-                onClick={() => setTheme(theme)}
-              >
-                {theme === "light" ? "Light" : "Dark"}
-              </Button>
-            ))}
-          </div>
-        </div>
         <div>
           <p className="text-label-medium uppercase tracking-[0.08em] text-primary">
             Design system review
@@ -256,8 +227,19 @@ export default function AdminComponentsPage() {
       </header>
 
       <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(12rem,16rem)_minmax(0,1fr)]">
-        <aside className="min-w-0 lg:sticky lg:top-6 lg:self-start">
-          <div className="rounded-lg border border-border-subtle bg-surface-base p-3">
+        <aside className="min-w-0 lg:sticky lg:top-6 lg:flex lg:h-[calc(100dvh-3rem)] lg:flex-col lg:self-start">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-fit justify-start"
+            onClick={() => navigate("/")}
+          >
+            <ArrowLeft aria-hidden />
+            Back to app
+          </Button>
+
+          <div className="mt-4 rounded-lg border border-border-subtle bg-surface-base p-3">
             <p className="px-3 pb-2 text-label-medium uppercase tracking-[0.08em] text-foreground-muted">
               Components
             </p>
@@ -291,6 +273,22 @@ export default function AdminComponentsPage() {
                 />
               ))}
             </nav>
+          </div>
+
+          <div className="mt-auto flex shrink-0 gap-2 pt-6">
+            {(["light", "dark"] as const).map((theme) => (
+              <Button
+                key={theme}
+                type="button"
+                size="sm"
+                variant="outline"
+                data-testid={`theme-toggle-${theme}`}
+                aria-pressed={resolvedTheme === theme}
+                onClick={() => setTheme(theme)}
+              >
+                {theme === "light" ? "Light" : "Dark"}
+              </Button>
+            ))}
           </div>
         </aside>
 
