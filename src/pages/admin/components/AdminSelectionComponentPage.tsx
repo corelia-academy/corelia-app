@@ -32,8 +32,12 @@ const cardSizes = [
 const cardStates = [
   { id: "default", label: "Default", controlLabel: "Unchecked", checked: false, disabled: false },
   { id: "selected", label: "Selected", controlLabel: "Checked", checked: true, disabled: false },
-  { id: "disabled", label: "Disabled", controlLabel: "Unchecked", checked: false, disabled: true },
 ] as const;
+const disabledCardStates = [
+  { id: "disabled-default", label: "Default", controlLabel: "Unchecked", checked: false, disabled: true },
+  { id: "disabled-selected", label: "Selected", controlLabel: "Checked", checked: true, disabled: true },
+] as const;
+const allCardStates = [...cardStates, ...disabledCardStates];
 const cardOrientations = ["horizontal", "vertical"] as const;
 
 type CheckboxMatrixValue = boolean | "indeterminate";
@@ -56,16 +60,20 @@ const radioMatrixInitialState = Object.fromEntries(
   ])),
 ) as Record<string, boolean>;
 const checkboxCardMatrixInitialState = Object.fromEntries(
-  cardOrientations.flatMap((orientation) => cardSizes.flatMap((size) => cardStates.map((state) => [
+  cardOrientations.flatMap((orientation) => cardSizes.flatMap((size) => allCardStates.map((state) => [
     `${orientation}-${size.id}-${state.id}`,
     state.checked,
   ]))),
 ) as Record<string, boolean>;
 const radioCardMatrixInitialState = Object.fromEntries(
-  cardOrientations.flatMap((orientation) => cardSizes.map((size) => [
-    `${orientation}-${size.id}`,
-    `${orientation}-${size.id}-selected`,
-  ])),
+  cardOrientations.flatMap((orientation) => cardSizes.flatMap((size) => {
+    const groupId = `${orientation}-${size.id}`;
+
+    return [
+      [groupId, `${groupId}-selected`],
+      [`${groupId}-disabled`, `${groupId}-disabled-selected`],
+    ];
+  })),
 ) as Record<string, string | undefined>;
 
 type AdminSelectionComponentPageProps = {
@@ -314,13 +322,13 @@ export default function AdminSelectionComponentPage({
 
                     <div className="space-y-3">
                       <p className="text-body-small text-foreground-muted">Checkbox</p>
-                      <div data-testid={`selection-checkbox-card-grid-${groupId}`} className="space-y-2">
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                      <div data-testid={`selection-checkbox-card-grid-${groupId}`} className="space-y-4">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                           {cardStates.map((state) => (
                             <p key={state.id} className="text-body-small text-foreground-muted">{state.label}</p>
                           ))}
                         </div>
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                           {cardStates.map((state) => {
                             const cellId = `${groupId}-${state.id}`;
 
@@ -340,13 +348,41 @@ export default function AdminSelectionComponentPage({
                             );
                           })}
                         </div>
+
+                        <div data-testid={`selection-checkbox-card-disabled-grid-${groupId}`} className="space-y-2 pt-2">
+                          <p className="text-body-small text-foreground-muted">Disabled</p>
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            {disabledCardStates.map((state) => (
+                              <p key={state.id} className="text-body-small text-foreground-muted">{state.label}</p>
+                            ))}
+                          </div>
+                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            {disabledCardStates.map((state) => {
+                              const cellId = `${groupId}-${state.id}`;
+
+                              return (
+                                <div key={state.id} data-testid={`selection-checkbox-card-state-${cellId}`} className="min-w-0">
+                                  <CheckboxCard
+                                    label={state.controlLabel}
+                                    supportingText="Supporting text for this selection"
+                                    orientation={orientation}
+                                    size={cardSize.size}
+                                    checked={checkboxCardMatrix[cellId]}
+                                    disabled
+                                    showSupportingText
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </div>
                     </div>
 
                     <div className="space-y-3">
                       <p className="text-body-small text-foreground-muted">Radio</p>
-                      <div data-testid={`selection-radio-card-grid-${groupId}`} className="space-y-2">
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                      <div data-testid={`selection-radio-card-grid-${groupId}`} className="space-y-4">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                           {cardStates.map((state) => (
                             <p key={state.id} className="text-body-small text-foreground-muted">{state.label}</p>
                           ))}
@@ -355,7 +391,7 @@ export default function AdminSelectionComponentPage({
                           value={radioCardMatrix[groupId] ?? ""}
                           onValueChange={(value) => handleRadioCardMatrixChange(groupId, value)}
                         >
-                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             {cardStates.map((state) => {
                               const cellId = `${groupId}-${state.id}`;
 
@@ -385,6 +421,40 @@ export default function AdminSelectionComponentPage({
                             })}
                           </div>
                         </RadioGroup>
+
+                        <div data-testid={`selection-radio-card-disabled-grid-${groupId}`} className="space-y-2 pt-2">
+                          <p className="text-body-small text-foreground-muted">Disabled</p>
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            {disabledCardStates.map((state) => (
+                              <p key={state.id} className="text-body-small text-foreground-muted">{state.label}</p>
+                            ))}
+                          </div>
+                          <RadioGroup value={radioCardMatrix[`${groupId}-disabled`] ?? ""}>
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                              {disabledCardStates.map((state) => {
+                                const cellId = `${groupId}-${state.id}`;
+
+                                return (
+                                  <div
+                                    key={state.id}
+                                    data-testid={`selection-radio-card-state-${cellId}`}
+                                    className="min-w-0"
+                                  >
+                                    <RadioCard
+                                      value={cellId}
+                                      label={state.controlLabel}
+                                      supportingText="Supporting text for this selection"
+                                      orientation={orientation}
+                                      size={cardSize.size}
+                                      disabled
+                                      showSupportingText
+                                    />
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </RadioGroup>
+                        </div>
                       </div>
                     </div>
                   </section>

@@ -41,10 +41,15 @@ describe("AdminComponentsPage", () => {
     expect(container.querySelector('[data-testid="component-section-title"]')?.textContent).toBe("Action");
     expect(container.textContent).toContain("Badge");
     expect(container.textContent).toContain("Selection");
-    expect(container.querySelector('button')?.textContent).toContain("Back to app");
-    expect(container.querySelector('[data-testid="theme-toggle-light"]')?.textContent).toContain("Light");
-    expect(container.querySelector('[data-testid="theme-toggle-dark"]')?.textContent).toContain("Dark");
-    expect(container.querySelectorAll('[data-testid^="theme-toggle-"]')).toHaveLength(2);
+    const header = container.querySelector("main > header");
+    const sidebar = container.querySelector("aside");
+
+    expect(header?.querySelector("button")).toBeNull();
+    expect(header?.querySelector('[data-testid^="theme-toggle-"]')).toBeNull();
+    expect(sidebar?.querySelector("button")?.textContent).toContain("Back to app");
+    expect(sidebar?.querySelector('[data-testid="theme-toggle-light"]')?.textContent).toContain("Light");
+    expect(sidebar?.querySelector('[data-testid="theme-toggle-dark"]')?.textContent).toContain("Dark");
+    expect(sidebar?.querySelectorAll('[data-testid^="theme-toggle-"]')).toHaveLength(2);
     expect(container.querySelector('[data-slot="sidebar"]')).toBeNull();
     expect(container.querySelector('[data-slot="sidebar-inset"]')).toBeNull();
 

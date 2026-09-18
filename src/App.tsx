@@ -27,7 +27,6 @@ import { useAuthStore } from "@/stores/authStore";
 import { ScrollToTop } from "@/components/navigation/ScrollToTop";
 
 // Lazy-load all routes not needed on the initial render
-const ScrollbarPage = lazy(() => import("@/pages/design-system/ScrollbarPage"));
 const Home = lazy(() => import("@/pages/home/index"));
 const FeedPage = lazy(() => import("@/pages/feed/FeedPage"));
 const Courses = lazy(() => import("@/pages/courses"));
@@ -192,7 +191,6 @@ function ApplicationRoutes() {
           <RecoveryGuard />
           <PendingCredentialsWelcomeModal />
           <Routes>
-            <Route path="/design-system/scrollbar" element={<Suspense fallback={<PageFallback />}><ScrollbarPage /></Suspense>} />
             <Route
               path="/login"
               element={

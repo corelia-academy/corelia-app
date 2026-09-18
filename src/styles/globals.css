@@ -164,9 +164,11 @@
   --color-action-disabled: var(--action-disabled);
   --color-action-active: var(--action-active);
   --color-action-active-foreground: var(--action-active-foreground);
+  --color-action-active-icon: var(--action-active-icon);
   --color-action-active-supporting: var(--action-active-supporting);
   --color-action-destructive-active: var(--action-destructive-active);
   --color-action-destructive-active-foreground: var(--action-destructive-active-foreground);
+  --color-action-destructive-active-icon: var(--action-destructive-active-icon);
   --color-action-destructive-active-supporting: var(--action-destructive-active-supporting);
 
   /* Toggle semantic color tokens for Toggle and IconToggle states. */
@@ -180,6 +182,7 @@
   --color-toggle-thumb-disabled: var(--toggle-thumb-disabled);
   --color-toggle-text: var(--toggle-text);
   --color-toggle-text-disabled: var(--toggle-text-disabled);
+  --color-toggle-supporting-text: var(--toggle-supporting-text);
   --color-toggle-pressed-background: var(--toggle-pressed-background);
   --color-toggle-pressed-foreground: var(--toggle-pressed-foreground);
   --color-toggle-icon-disabled: var(--toggle-icon-disabled);
@@ -703,14 +706,16 @@
   --action-disabled: var(--foreground-subtle);
   --action-active: var(--blue-900);
   --action-active-foreground: var(--neutral-50);
+  --action-active-icon: var(--neutral-50);
   --action-active-supporting: var(--neutral-200);
   --action-destructive-active: var(--error-700);
-  --action-destructive-active-foreground: var(--neutral-50);
+  --action-destructive-active-foreground: var(--neutral-200);
+  --action-destructive-active-icon: var(--neutral-50);
   --action-destructive-active-supporting: var(--neutral-200);
   /* Toggle semantic colors preserve the current light state mapping. */
   --toggle-track: var(--neutral-600);
-  --toggle-track-checked: var(--primary);
-  --toggle-track-alternative: var(--success);
+  --toggle-track-checked: var(--blue-600);
+  --toggle-track-alternative: var(--success-500);
   --toggle-track-disabled: var(--neutral-500);
   --toggle-track-checked-disabled: var(--blue-800);
   --toggle-track-alternative-disabled: var(--success-700);
@@ -718,18 +723,19 @@
   --toggle-thumb-disabled: var(--neutral-700);
   --toggle-text: var(--foreground);
   --toggle-text-disabled: var(--neutral-500);
-  --toggle-pressed-background: var(--primary);
+  --toggle-supporting-text: var(--text-secondary);
+  --toggle-pressed-background: var(--blue-600);
   --toggle-pressed-foreground: var(--neutral-50);
   --toggle-icon-disabled: var(--neutral-500);
   --toggle-pressed-disabled-background: var(--neutral-500);
   --toggle-pressed-disabled-foreground: var(--neutral-800);
   /* Selection semantic colors follow the primary theme in light mode. */
-  --selection-active: var(--primary);
+  --selection-active: var(--blue-600);
   --selection-unchecked: var(--foreground-muted);
-  --selection-disabled: var(--foreground-subtle);
-  --selection-feedback: color-mix(in srgb, var(--primary) 10%, transparent);
-  --selection-feedback-pressed: color-mix(in srgb, var(--primary) 20%, transparent);
-  --selection-card-selected-border: var(--primary);
+  --selection-disabled: var(--neutral-500);
+  --selection-feedback: color-mix(in srgb, var(--blue-600) 10%, transparent);
+  --selection-feedback-pressed: color-mix(in srgb, var(--blue-600) 20%, transparent);
+  --selection-card-selected-border: var(--blue-600);
   /* Badge semantic colors preserve the current light Figma mapping. */
   --badge-outline-background: color-mix(in srgb, var(--neutral-50) 5%, transparent);
   --badge-primary: var(--blue-400);
@@ -855,14 +861,16 @@
   --action-disabled: var(--neutral-500);
   --action-active: var(--blue-900);
   --action-active-foreground: var(--neutral-200);
+  --action-active-icon: var(--neutral-50);
   --action-active-supporting: var(--neutral-200);
   --action-destructive-active: var(--error-700);
   --action-destructive-active-foreground: var(--neutral-200);
+  --action-destructive-active-icon: var(--neutral-50);
   --action-destructive-active-supporting: var(--neutral-200);
   /* Toggle semantic colors preserve disabled mappings and follow dark primary/success. */
   --toggle-track: var(--neutral-600);
-  --toggle-track-checked: var(--primary);
-  --toggle-track-alternative: var(--success);
+  --toggle-track-checked: var(--blue-600);
+  --toggle-track-alternative: var(--success-500);
   --toggle-track-disabled: var(--neutral-500);
   --toggle-track-checked-disabled: var(--blue-800);
   --toggle-track-alternative-disabled: var(--success-700);
@@ -870,18 +878,19 @@
   --toggle-thumb-disabled: var(--neutral-700);
   --toggle-text: var(--neutral-200);
   --toggle-text-disabled: var(--neutral-500);
-  --toggle-pressed-background: var(--primary);
+  --toggle-supporting-text: #cdd5df;
+  --toggle-pressed-background: var(--blue-600);
   --toggle-pressed-foreground: var(--neutral-50);
   --toggle-icon-disabled: var(--neutral-500);
   --toggle-pressed-disabled-background: var(--neutral-500);
   --toggle-pressed-disabled-foreground: var(--neutral-800);
   /* Selection semantic colors follow the primary theme in dark mode. */
-  --selection-active: var(--primary);
+  --selection-active: var(--blue-600);
   --selection-unchecked: var(--foreground-muted);
-  --selection-disabled: var(--foreground-subtle);
-  --selection-feedback: color-mix(in srgb, var(--primary) 10%, transparent);
-  --selection-feedback-pressed: color-mix(in srgb, var(--primary) 20%, transparent);
-  --selection-card-selected-border: var(--primary);
+  --selection-disabled: var(--neutral-500);
+  --selection-feedback: color-mix(in srgb, var(--blue-600) 10%, transparent);
+  --selection-feedback-pressed: color-mix(in srgb, var(--blue-600) 20%, transparent);
+  --selection-card-selected-border: var(--blue-600);
   /* Badge semantic colors preserve the current dark Figma mapping. */
   --badge-outline-background: color-mix(in srgb, var(--neutral-50) 5%, transparent);
   --badge-primary: var(--blue-400);

@@ -89,6 +89,13 @@ describe("Checkbox", () => {
         )
         expect(indeterminateFrame?.querySelector("svg")).not.toBeNull()
       }
+
+      if (item.disabled && item.checked) {
+        const checkedMark = control.querySelector<SVGPathElement>(
+          '[data-slot="checkbox-checked-frame"] path',
+        )
+        expect(checkedMark?.getAttribute("stroke")).toBe("var(--neutral-400)")
+      }
     })
 
     await view.unmount()
@@ -294,7 +301,14 @@ describe("Radio", () => {
         expect(
           checkedIcon?.querySelector('[data-slot="radio-checked-dot"]'),
         ).not.toBeNull()
-        expect(checkedIcon?.querySelectorAll("svg")).toHaveLength(2)
+        expect(checkedIcon?.querySelectorAll("svg")).toHaveLength(1)
+        expect(checkedIcon?.querySelectorAll("circle")).toHaveLength(2)
+        expect(checkedIcon?.querySelector('circle[data-slot="radio-checked-dot"]')?.getAttribute("cx")).toBe(
+          item.size === "small" ? "10" : "12",
+        )
+        expect(checkedIcon?.querySelector('circle[data-slot="radio-checked-dot"]')?.getAttribute("cy")).toBe(
+          item.size === "small" ? "10" : "12",
+        )
       } else {
         expect(control.querySelector('[data-slot="radio-checked-icon"]')).toBeNull()
       }
