@@ -248,10 +248,10 @@ describe("admin component detail pages", () => {
     });
 
     expect(container.querySelectorAll('[data-testid^="selection-checkbox-state-"]')).toHaveLength(12);
-    expect(container.querySelectorAll('[data-testid^="selection-checkbox-card-state-"]')).toHaveLength(12);
+    expect(container.querySelectorAll('[data-testid^="selection-checkbox-card-state-"]')).toHaveLength(16);
     expect(container.querySelectorAll('[data-testid^="selection-radio-state-"]')).toHaveLength(8);
     expect(container.querySelectorAll('[data-testid^="selection-radio-option-"]')).toHaveLength(3);
-    expect(container.querySelectorAll('[data-testid^="selection-radio-card-state-"]')).toHaveLength(12);
+    expect(container.querySelectorAll('[data-testid^="selection-radio-card-state-"]')).toHaveLength(16);
     expect(container.querySelector('[data-testid="selection-checkbox-reference"]')?.textContent).toContain("Normal");
     expect(container.querySelector('[data-testid="selection-checkbox-reference"]')?.textContent).toContain("Indeterminate");
     expect(container.querySelector('[data-testid="selection-radio-reference"]')?.textContent).toContain("Free plan");
@@ -335,12 +335,15 @@ describe("admin component detail pages", () => {
     await act(async () => checkboxCard?.querySelector<HTMLElement>('[data-slot="select-card"]')?.click());
     expect(checkboxCardControl?.getAttribute("aria-checked")).toBe("true");
 
-    const disabledCheckboxCard = container.querySelector<HTMLElement>('[data-testid="selection-checkbox-card-state-horizontal-small-disabled"]');
+    const disabledCheckboxCard = container.querySelector<HTMLElement>('[data-testid="selection-checkbox-card-state-horizontal-small-disabled-default"]');
     const disabledCheckboxCardControl = disabledCheckboxCard?.querySelector<HTMLElement>('[role="checkbox"]');
     expect(disabledCheckboxCardControl?.getAttribute("aria-checked")).toBe("false");
 
     await act(async () => disabledCheckboxCard?.querySelector<HTMLElement>('[data-slot="select-card"]')?.click());
     expect(disabledCheckboxCardControl?.getAttribute("aria-checked")).toBe("false");
+
+    const disabledSelectedCheckboxCard = container.querySelector<HTMLElement>('[data-testid="selection-checkbox-card-state-horizontal-small-disabled-selected"]');
+    expect(disabledSelectedCheckboxCard?.querySelector<HTMLElement>('[role="checkbox"]')?.getAttribute("aria-checked")).toBe("true");
 
     const getRadioCardControl = () => container
       .querySelector<HTMLElement>('[data-testid="selection-radio-card-state-horizontal-small-selected"]')
@@ -356,11 +359,14 @@ describe("admin component detail pages", () => {
     await act(async () => radioCardDefault?.querySelector<HTMLElement>('[data-slot="select-card"]')?.click());
     expect(radioCardDefault?.querySelector<HTMLElement>('[role="radio"]')?.getAttribute("aria-checked")).toBe("false");
 
-    const disabledRadioCard = container.querySelector<HTMLElement>('[data-testid="selection-radio-card-state-horizontal-small-disabled"]');
+    const disabledRadioCard = container.querySelector<HTMLElement>('[data-testid="selection-radio-card-state-horizontal-small-disabled-default"]');
     expect(disabledRadioCard?.querySelector<HTMLElement>('[role="radio"]')?.getAttribute("aria-checked")).toBe("false");
 
     await act(async () => disabledRadioCard?.querySelector<HTMLElement>('[data-slot="select-card"]')?.click());
     expect(disabledRadioCard?.querySelector<HTMLElement>('[role="radio"]')?.getAttribute("aria-checked")).toBe("false");
+
+    const disabledSelectedRadioCard = container.querySelector<HTMLElement>('[data-testid="selection-radio-card-state-horizontal-small-disabled-selected"]');
+    expect(disabledSelectedRadioCard?.querySelector<HTMLElement>('[role="radio"]')?.getAttribute("aria-checked")).toBe("true");
 
     await act(async () => root.unmount());
     container.remove();
