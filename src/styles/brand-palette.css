@@ -111,23 +111,31 @@ body, .public-ui, .public-status {
   background-color: var(--background);
   color: var(--foreground);
 }
-body .text-primary { color: var(--public-link); }
-body :is(a, button, input, select, summary):focus-visible {
+.public-ui .public-content .text-primary,
+.public-status .text-primary {
+  color: var(--public-link);
+}
+.public-ui .public-content :is(a, button, input, select, summary):focus-visible,
+.public-status :is(a, button, input, select, summary):focus-visible {
   outline-color: var(--public-link);
 }
-body :is(input, select, textarea, [data-slot=button].border-border):not([aria-invalid=true]):not(.border-destructive) {
+.public-ui .public-content :is(input, select, textarea, [data-slot=button].border-border):not([aria-invalid=true]):not(.border-destructive),
+.public-status :is(input, select, textarea, [data-slot=button].border-border):not([aria-invalid=true]):not(.border-destructive) {
   border-color: var(--public-control-border);
 }
-body :is(button, a).bg-primary:hover:not(:disabled):not([aria-disabled=true]) {
+.public-ui .public-content :is(button, a).bg-primary:hover:not(:disabled):not([aria-disabled=true]),
+.public-status :is(button, a).bg-primary:hover:not(:disabled):not([aria-disabled=true]) {
   background-color: var(--public-cta-hover);
   color: var(--public-cta-hover-foreground);
   opacity: 1;
 }
-body :is(button, a).bg-primary:active:not(:disabled):not([aria-disabled=true]) {
+.public-ui .public-content :is(button, a).bg-primary:active:not(:disabled):not([aria-disabled=true]),
+.public-status :is(button, a).bg-primary:active:not(:disabled):not([aria-disabled=true]) {
   background-color: var(--public-cta-active);
   color: var(--public-cta-active-foreground);
 }
-body nav a[aria-current=page] {
+.public-ui .public-content nav a[aria-current=page],
+.public-status nav a[aria-current=page] {
   background-color: var(--sidebar-accent);
   color: var(--sidebar-accent-foreground);
 }

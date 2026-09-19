@@ -1,3 +1,5 @@
+import { normalizeArtifactDraft } from "@/features/learning/artifactDraft";
+import type { ArtifactField } from "@/features/learning/types";
 import { lessonText } from "@/features/learning/lessonCopy";
 import { recordLearningEvent } from "@/lib/learning";
 import { invalidateLearningProgress } from "@/features/learning/invalidateLearningProgress";
@@ -9,7 +11,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useMatch, useNavigate, useParams } from "react-router";
 import {
   ChevronLeft,
   List,
@@ -101,9 +103,23 @@ function LearnWorkspace() {
     courseId: string;
     lessonId?: string;
   }>();
+  const isFinalAssignment = Boolean(useMatch("/learn/:courseId/final-assignment"));
   const navigate = useNavigate();
   const { profile, user } = useAuth();
   const queryClient = useQueryClient();
+  // Keep completed practice artifacts across lesson/final routes even if storage is blocked.
+  // LearnWorkspace is keyed by course and identity, so this handoff cannot cross accounts.
+  const [practiceArtifacts, setPracticeArtifacts] = useState<Partial<Record<ArtifactField, string>>>({});
+  useEffect(() => {
+    const remember = (event: Event) => {
+      const detail = (event as CustomEvent<{ userId: string; courseId: string; artifacts: unknown }>).detail;
+      if (detail?.userId === user?.id && detail.courseId === courseId) {
+        setPracticeArtifacts(previous => ({ ...previous, ...normalizeArtifactDraft(detail.artifacts) }));
+      }
+    };
+    window.addEventListener("learning:final-artifacts", remember);
+    return () => window.removeEventListener("learning:final-artifacts", remember);
+  }, [courseId, user?.id]);
   const activeWorkspace = useRef(true);
   useEffect(() => {
     activeWorkspace.current = true;
@@ -285,14 +301,14 @@ function LearnWorkspace() {
   useEffect(() => {
     if (!courseId || visibleLessons.length === 0) return;
     // If URL already contains an explicit lessonId, do not auto-redirect
-    if (lessonId) return;
+    if (lessonId || isFinalAssignment) return;
 
     const next = getNextLesson(visibleLessons, progress.progressList);
     const target = next ?? visibleLessons[0];
     if (target) {
       navigate(`/learn/${courseId}/lesson/${target.id}`, { replace: true });
     }
-  }, [courseId, lessonId, navigate, progress.progressList, visibleLessons]);
+  }, [courseId, lessonId, isFinalAssignment, navigate, progress.progressList, visibleLessons]);
 
   const rawLesson = useMemo(() => {
     if (!lessonId || sortedLessons.length === 0) return null;
@@ -442,7 +458,9 @@ function LearnWorkspace() {
     visibleSectionCount,
     visibleLessonsCount: visibleLessons.length,
     sortedLessonsCount: sortedLessons.length,
-    currentLessonTitle: currentLesson?.title ?? null,
+    currentLessonTitle: isFinalAssignment ? translate("detail.learn.finalAssignmentTitle") : currentLesson?.title ?? null,
+    hasFinalAssignment: shouldShowFinalAssignment,
+    isFinalAssignment,
     currentLessonId: currentLesson?.id ?? null,
     progressPercent: progress.progressPercent,
     completedIds: progress.completedIds,
@@ -488,7 +506,7 @@ function LearnWorkspace() {
         />
       ) : null}
 
-      <LessonPlayerCard
+      {!isFinalAssignment && <LessonPlayerCard
         lesson={currentLesson}
         lessonIndex={lessonIndexForPlayer}
         isDraftLesson={!!currentLesson && isDraftLesson}
@@ -506,14 +524,15 @@ function LearnWorkspace() {
         onReset={resetMutation.mutateAsync}
         onNavigateToLesson={(id) => navigate(`/learn/${courseId}/lesson/${id}`)}
         courseId={courseId}
-      />
+      />}
 
-      {shouldShowFinalAssignment ? (
+      {isFinalAssignment && shouldShowFinalAssignment ? (
         <div className="px-4 pb-8 sm:px-6">
           <FinalAssignmentPanel
             courseId={courseId}
             course={course}
             profileId={profile?.id ?? ""}
+            initialArtifacts={practiceArtifacts}
             submission={submission.submission}
             submissionState={submission.state}
             onRetryLoad={() => void submission.refresh()}
@@ -524,6 +543,13 @@ function LearnWorkspace() {
           />
         </div>
       ) : null}
+      {isFinalAssignment && !shouldShowFinalAssignment && (
+        <div className="space-y-4 p-6">
+          <h1 className="text-heading-large font-display">{translate("detail.learn.finalAssignmentTitle")}</h1>
+          <p role="status">{translate(access.loading ? "learning.loading" : !hasFullCourseAccess ? "detail.learn.finalAssignmentAccessRequired" : "detail.learn.finalAssignmentUnavailable")}</p>
+          <Link className="text-primary underline" to={`/courses/${courseId}`}>{translate("detail.learn.backToCourse")}</Link>
+        </div>
+      )}
       <div className="pb-8" />
     </>
   );
@@ -563,11 +589,11 @@ function LearnWorkspace() {
         <span className="shrink-0 truncate font-medium text-foreground">
           {course.title}
         </span>
-        {currentLesson && (
+        {(currentLesson || isFinalAssignment) && (
           <>
             <span className="shrink-0 text-foreground-subtle">/</span>
             <span className="truncate text-foreground-muted">
-              {lessonText(currentLesson.title)}
+              {isFinalAssignment ? translate("detail.learn.finalAssignmentTitle") : lessonText(currentLesson?.title)}
             </span>
           </>
         )}

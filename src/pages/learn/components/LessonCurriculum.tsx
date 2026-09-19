@@ -88,6 +88,8 @@ function CurriculumList({
   currentLessonId,
   completedIds,
   hasFullCourseAccess,
+  hasFinalAssignment = false,
+  isFinalAssignment = false,
   hasSections,
   translate,
   scrollClassName,
@@ -97,11 +99,13 @@ function CurriculumList({
   currentLessonId: string | null;
   completedIds: Set<string>;
   hasFullCourseAccess: boolean;
+  hasFinalAssignment?: boolean;
+  isFinalAssignment?: boolean;
   hasSections: boolean;
   translate: TranslateFn;
   scrollClassName?: string;
 }) {
-  if (groups.length === 0) {
+  if (groups.length === 0 && !hasFinalAssignment) {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
         <div className="flex w-12 h-12 items-center justify-center rounded-full bg-surface-raised">
@@ -161,6 +165,11 @@ function CurriculumList({
               translate={translate}
             />
           ))}
+      {hasFinalAssignment && hasFullCourseAccess && <Link
+        to={`/learn/${courseId}/final-assignment`}
+        aria-current={isFinalAssignment ? "page" : undefined}
+        className={cn("flex items-center gap-3 border-t border-border-subtle border-l-[3px] px-4 py-3 text-sm", isFinalAssignment ? "border-l-brand-accent bg-primary-muted font-medium text-primary" : "border-l-transparent hover:bg-surface-raised")}
+      ><FileText className="size-4 shrink-0" aria-hidden />{translate("detail.learn.finalAssignmentTitle")}</Link>}
     </div>
   );
 }
@@ -179,6 +188,8 @@ export function LessonCurriculum({
   lessonTotal,
   nextLessonTitle,
   hasFullCourseAccess,
+  hasFinalAssignment = false,
+  isFinalAssignment = false,
   hasSections = true,
   translate,
   variant = "default",
@@ -196,6 +207,8 @@ export function LessonCurriculum({
   lessonTotal: number;
   nextLessonTitle: string | null;
   hasFullCourseAccess: boolean;
+  hasFinalAssignment?: boolean;
+  isFinalAssignment?: boolean;
   hasSections?: boolean;
   translate: TranslateFn;
   variant?: "default" | "tabPanel" | "sidebar";
@@ -230,6 +243,8 @@ export function LessonCurriculum({
         currentLessonId={currentLessonId}
         completedIds={completedIds}
         hasFullCourseAccess={hasFullCourseAccess}
+        hasFinalAssignment={hasFinalAssignment}
+        isFinalAssignment={isFinalAssignment}
         hasSections={hasSections}
         translate={translate}
         scrollClassName="max-h-[min(72vh,560px)] overflow-y-auto"
@@ -266,6 +281,8 @@ export function LessonCurriculum({
           currentLessonId={currentLessonId}
           completedIds={completedIds}
           hasFullCourseAccess={hasFullCourseAccess}
+          hasFinalAssignment={hasFinalAssignment}
+          isFinalAssignment={isFinalAssignment}
           hasSections={hasSections}
           translate={translate}
           scrollClassName="flex-1 overflow-y-auto"
@@ -316,6 +333,8 @@ export function LessonCurriculum({
             currentLessonId={currentLessonId}
             completedIds={completedIds}
             hasFullCourseAccess={hasFullCourseAccess}
+            hasFinalAssignment={hasFinalAssignment}
+            isFinalAssignment={isFinalAssignment}
             hasSections={hasSections}
             translate={translate}
             scrollClassName="max-h-[60vh] overflow-y-auto"

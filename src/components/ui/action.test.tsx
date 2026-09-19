@@ -20,6 +20,7 @@ describe("Action", () => {
     expect(markup).toContain("Personal info");
     expect(markup).toContain("Name, contact, avatar");
     expect(markup).toContain('data-testid="leading-icon"');
+    expect(markup).toContain("select-none");
     expect(markup).not.toContain("/icons/action/next.svg");
   });
 
@@ -29,7 +30,7 @@ describe("Action", () => {
       showTrailingIcon: true,
     });
 
-    expect(markup).toContain("/icons/action/next.svg");
+    expect(markup).toContain('data-slot="action-trailing-icon"');
   });
 
   it("uses the disabled trailing asset when disabled", () => {
@@ -40,7 +41,25 @@ describe("Action", () => {
       showTrailingIcon: true,
     });
 
-    expect(markup).toContain("/icons/action/next-disabled.svg");
+    expect(markup).toContain('data-slot="action-trailing-icon"');
+    expect(markup).toContain("text-neutral-500");
+    expect(markup).not.toContain("data-disabled:pointer-events-none");
+    expect(markup).toContain("data-disabled:cursor-not-allowed");
+    expect(markup).toContain("data-disabled:select-none");
+  });
+
+  it("does not add hover or pressed styles when disabled", () => {
+    const markup = renderAction({
+      label: "Disabled action",
+      disabled: true,
+      hoverAsActive: true,
+      showPressed: true,
+    });
+
+    expect(markup).toContain("data-disabled:cursor-not-allowed");
+    expect(markup).not.toContain("hover:bg-action-hover");
+    expect(markup).not.toContain("hover:bg-action-active");
+    expect(markup).not.toContain("max-lg:active:bg-action-active");
   });
 
   it("supports default/destructive variants and large/small sizes", () => {
@@ -72,8 +91,9 @@ describe("Action", () => {
     });
 
     expect(markup).toContain('data-active="true"');
-    expect(markup).toContain("bg-blue-900");
-    expect(markup).toContain("data-[active=true]:hover:bg-blue-900");
+    expect(markup).toContain("bg-action-active");
+    expect(markup).toContain("text-action-active-foreground");
+    expect(markup).toContain("data-[active=true]:hover:bg-action-active");
     expect(markup).not.toContain("hover:bg-action-hover");
   });
 
@@ -85,7 +105,7 @@ describe("Action", () => {
     });
 
     expect(markup).toContain('data-active="true"');
-    expect(markup).not.toContain("bg-blue-900");
+    expect(markup).not.toContain("bg-action-active");
     expect(markup).toContain("hover:bg-action-hover");
   });
 
@@ -96,19 +116,60 @@ describe("Action", () => {
       showPressed: true,
     });
 
-    expect(markup).toContain("max-lg:active:bg-blue-900");
+    expect(markup).toContain("max-lg:active:bg-action-active");
   });
 
   it("supports destructive hover-as-active behavior", () => {
     const markup = renderAction({
       label: "Sign out",
+      supportingText: "Sign out of this device",
       variant: "destructive",
       hoverAsActive: true,
       showPressed: true,
     });
 
-    expect(markup).toContain("hover:bg-error-700");
-    expect(markup).toContain("max-lg:active:bg-error-700");
+    expect(markup).toContain("hover:bg-action-destructive-active");
+    expect(markup).toContain("max-lg:active:bg-action-destructive-active");
+    expect(markup).toContain("group-hover/action:text-action-destructive-active-foreground");
+    expect(markup).not.toContain("group-hover/action:text-neutral-400");
+  });
+
+  it("uses the dedicated light icon token for destructive active actions", () => {
+    const markup = renderAction({
+      label: "Delete account",
+      variant: "destructive",
+      isActive: true,
+      icon: <UserRound />,
+      showTrailingIcon: true,
+    });
+
+    expect(markup).toContain("text-action-destructive-active-icon");
+    expect(markup).toContain('data-slot="action-trailing-icon"');
+  });
+
+  it("uses the active icon token for default active actions", () => {
+    const markup = renderAction({
+      label: "Open details",
+      isActive: true,
+      icon: <UserRound />,
+      showTrailingIcon: true,
+    });
+
+    expect(markup).toContain("text-action-active-icon");
+    expect(markup).toContain('data-slot="action-trailing-icon"');
+  });
+
+  it("keeps default supporting text on the supporting color during hover-as-active", () => {
+    const markup = renderAction({
+      label: "Open details",
+      supportingText: "Description",
+      hoverAsActive: true,
+      showPressed: true,
+    });
+
+    expect(markup).toContain("group-hover/action:text-neutral-400");
+    expect(markup).toContain("max-lg:group-active/action:text-neutral-400");
+    expect(markup.match(/group-hover\/action:text-action-active-foreground/g)).toHaveLength(1);
   });
 
   it("can render as a link for menu/list usage", () => {
@@ -119,5 +180,18 @@ describe("Action", () => {
     });
 
     expect(markup).toContain('href="/account/profile"');
+  });
+
+  it("uses isActive as the only visual active source", () => {
+    const markup = renderAction({
+      label: "Profile",
+      nativeButton: false,
+      render: <a href="/account/profile" aria-current="page" />,
+    });
+
+    expect(markup).toContain('aria-current="page"');
+    expect(markup).toContain('data-active="false"');
+    expect(markup).not.toContain("bg-action-active");
+    expect(markup).toContain("text-action-text");
   });
 });

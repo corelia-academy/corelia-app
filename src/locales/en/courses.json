@@ -324,6 +324,9 @@
           "unknown": "The certificate is waiting for eligibility confirmation."
         }
       },
+      "finalAssignmentTitle": "Final assignment",
+      "finalAssignmentAccessRequired": "Course access is required to open the final assignment.",
+      "finalAssignmentUnavailable": "This course has no final assignment.",
       "finalAssignment": {
         "status": {
           "approved": "Submission approved.",
@@ -583,7 +586,8 @@
     "startSeconds": "Start (seconds)",
     "endSeconds": "End (seconds, optional)",
     "addResource": "Add resource",
-    "fileName": "Rust file name",
+    "codeLanguage": "Programming language",
+    "fileName": "Source file name",
     "starter": "Starter source",
     "referenceSolution": "Reference solution",
     "acceptedAnswers": "Accepted answers (one per line)",
@@ -596,7 +600,7 @@
     "testValue": "Test value",
     "validateSolution": "Validate solution",
     "runStarter": "Run starter",
-    "textRulesNotice": "Text checks do not compile Rust. Comments may match and equivalent solutions may not match.",
+    "textRulesNotice": "Text checks do not compile or execute programs. Comments may match and equivalent solutions may not match.",
     "starterPassConfirm": "The starter already passes every required check. Publish anyway?",
     "makeBlank": "Make blank from selection",
     "fill": "Fill blanks",
@@ -661,9 +665,10 @@
       "invalid_steps": "Add project steps and map required artifacts to submission fields.",
       "invalid_artifact": "Choose supported artifact fields.",
       "config_required": "Configure the code exercise.",
-      "unsupported_config": "Use a supported Rust fill or edit configuration.",
+      "unsupported_config": "Choose a supported language and fill or edit configuration.",
       "invalid_revision": "Exercise revision must be a positive integer.",
-      "invalid_file": "Configure a single Rust source file.",
+      "invalid_file": "Enter a single source file name with an extension matching the selected language.",
+      "reference_required": "Add a reference solution.",
       "source_required": "Add starter source code.",
       "source_too_large": "Keep source code within 64 KiB.",
       "invalid_hints": "Each hint must be text.",

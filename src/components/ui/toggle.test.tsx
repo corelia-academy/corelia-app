@@ -8,6 +8,8 @@ import { IconToggle, Toggle } from "./toggle"
 
 ;(globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
+const testIcon = <span aria-hidden data-testid="test-icon" />
+
 function render(ui: React.ReactNode) {
   const container = document.createElement("div")
   document.body.appendChild(container)
@@ -83,14 +85,14 @@ describe("Toggle", () => {
         item.checked
           ? item.variant === "alternative"
             ? item.disabled
-              ? "data-[checked]:data-[variant=alternative]:data-[disabled]:bg-success-700"
-              : "data-[checked]:data-[variant=alternative]:bg-success-500"
+              ? "data-[checked]:data-[variant=alternative]:data-[disabled]:bg-toggle-track-alternative-disabled"
+              : "data-[checked]:data-[variant=alternative]:bg-toggle-track-alternative"
             : item.disabled
-              ? "data-[checked]:data-[disabled]:bg-blue-800"
-              : "data-[checked]:bg-blue-600"
+              ? "data-[checked]:data-[disabled]:bg-toggle-track-checked-disabled"
+              : "data-[checked]:bg-toggle-track-checked"
           : item.disabled
-            ? "data-[disabled]:bg-neutral-500"
-            : "bg-neutral-600",
+            ? "data-[disabled]:bg-toggle-track-disabled"
+            : "bg-toggle-track",
       )
       expect(thumb?.className).not.toContain("translate-x-3")
     })
@@ -209,6 +211,27 @@ describe("Toggle", () => {
 
     await view.unmount()
   })
+
+  it("supports Figma left and right label visibility", async () => {
+    const view = render(
+      <Toggle
+        aria-label="Right label toggle"
+        label="Label"
+        showLeftLabel={false}
+        showRightLabel
+      />,
+    )
+    await view.render()
+
+    const wrapper = view.container.querySelector('[data-slot="toggle-label"]')
+    const text = wrapper?.querySelector('[data-slot="toggle-text"]')
+
+    expect(wrapper?.querySelector('[data-side="left"]')).toBeNull()
+    expect(wrapper?.querySelector('[data-side="right"]')).toBe(text)
+    expect(text?.textContent).toBe("Label")
+
+    await view.unmount()
+  })
 })
 
 describe("IconToggle", () => {
@@ -222,19 +245,22 @@ describe("IconToggle", () => {
       {
         pressed: false,
         disabled: true,
-        stateClasses: ["data-[disabled]:text-neutral-500"],
+        stateClasses: ["data-[disabled]:text-toggle-icon-disabled"],
       },
       {
         pressed: true,
         disabled: false,
-        stateClasses: ["data-[pressed]:bg-blue-600", "data-[pressed]:text-neutral-50"],
+        stateClasses: [
+          "data-[pressed]:bg-toggle-pressed-background",
+          "data-[pressed]:text-toggle-pressed-foreground",
+        ],
       },
       {
         pressed: true,
         disabled: true,
         stateClasses: [
-          "data-[pressed]:data-[disabled]:bg-neutral-500",
-          "data-[pressed]:data-[disabled]:text-neutral-800",
+          "data-[pressed]:data-[disabled]:bg-toggle-pressed-disabled-background",
+          "data-[pressed]:data-[disabled]:text-toggle-pressed-disabled-foreground",
         ],
       },
     ]
@@ -247,6 +273,7 @@ describe("IconToggle", () => {
             data-testid={`icon-toggle-${index}`}
             defaultPressed={item.pressed}
             disabled={item.disabled}
+            icon={testIcon}
           />
         ))}
       </>,
@@ -271,7 +298,7 @@ describe("IconToggle", () => {
       })
       expect(control.className).toContain("size-10")
       expect(control.className).toContain("rounded-md")
-      expect(control.querySelector("svg")).not.toBeNull()
+      expect(control.querySelector('[data-testid="test-icon"]')).not.toBeNull()
     })
 
     await view.unmount()
@@ -283,6 +310,7 @@ describe("IconToggle", () => {
       <IconToggle
         aria-label="Default pressed filter"
         defaultPressed
+        icon={testIcon}
         onPressedChange={onPressedChange}
       />,
     )
@@ -303,6 +331,7 @@ describe("IconToggle", () => {
       return (
         <IconToggle
           aria-label="Controlled filter"
+          icon={testIcon}
           pressed={pressed}
           onPressedChange={(nextPressed) => setPressed(nextPressed)}
         />
@@ -353,12 +382,14 @@ describe("IconToggle", () => {
         <IconToggle
           aria-label="Enabled keyboard filter"
           data-testid="enabled-keyboard-toggle"
+          icon={testIcon}
           onPressedChange={onPressedChange}
         />
         <IconToggle
           aria-label="Disabled keyboard filter"
           data-testid="disabled-keyboard-toggle"
           disabled
+          icon={testIcon}
           onPressedChange={onPressedChange}
         />
       </>,

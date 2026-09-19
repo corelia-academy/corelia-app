@@ -12,6 +12,7 @@ import admin_vi from "@/locales/vi/admin.json";
 import career_vi from "@/locales/vi/career.json";
 import feed_vi from "@/locales/vi/feed.json";
 import jobs_vi from "@/locales/vi/jobs.json";
+import emailCenter_vi from "@/locales/vi/emailCenter.json";
 
 import common_en from "@/locales/en/common.json";
 import auth_en from "@/locales/en/auth.json";
@@ -23,6 +24,7 @@ import admin_en from "@/locales/en/admin.json";
 import career_en from "@/locales/en/career.json";
 import feed_en from "@/locales/en/feed.json";
 import jobs_en from "@/locales/en/jobs.json";
+import emailCenter_en from "@/locales/en/emailCenter.json";
 
 export const SUPPORTED_LANGUAGES = ["vi", "en"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
@@ -47,6 +49,7 @@ void i18n
       "admin",
       "feed",
       "jobs",
+      "emailCenter",
     ],
     resources: {
       vi: {
@@ -60,6 +63,7 @@ void i18n
         admin: admin_vi,
         feed: feed_vi,
         jobs: jobs_vi,
+        emailCenter: emailCenter_vi,
       },
       en: {
         common: common_en,
@@ -72,6 +76,7 @@ void i18n
         admin: admin_en,
         feed: feed_en,
         jobs: jobs_en,
+        emailCenter: emailCenter_en,
       },
     },
     interpolation: {

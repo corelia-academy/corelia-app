@@ -17,6 +17,11 @@ verify_jwt = false
 # Scheduler authenticates with the shared CORELIA_JOBS_CRON_SECRET header.
 verify_jwt = false
 
+[functions.cron-email-center]
+# Scheduler authenticates with EMAIL_WORKER_SECRET. The corelia-api worker
+# repeats this check before claiming any recipient rows.
+verify_jwt = false
+
 [functions.generate-description]
 verify_jwt = false
 

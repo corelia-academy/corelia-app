@@ -10,6 +10,7 @@ import admin from "@/locales/vi/admin.json";
 import career from "@/locales/vi/career.json";
 import feed from "@/locales/vi/feed.json";
 import jobs from "@/locales/vi/jobs.json";
+import emailCenter from "@/locales/vi/emailCenter.json";
 
 declare module "i18next" {
   interface CustomTypeOptions {
@@ -25,6 +26,7 @@ declare module "i18next" {
       admin: typeof admin;
       feed: typeof feed;
       jobs: typeof jobs;
+      emailCenter: typeof emailCenter;
     };
   }
 }

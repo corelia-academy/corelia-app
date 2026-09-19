@@ -24,6 +24,7 @@ interface FinalAssignmentPanelProps {
   submissionState?: "loading" | "error" | "ready";
   onRetryLoad?: () => void;
   translate: TranslateFn;
+  initialArtifacts?: Partial<Record<ArtifactField, string>>;
   onSubmit: (input: { content: string; fileUrls?: string[]; artifacts?: Partial<Record<ArtifactField, string>>; requestId?: string }) => Promise<void>;
 }
 
@@ -31,7 +32,7 @@ export function FinalAssignmentPanel(props: FinalAssignmentPanelProps) {
   return <FinalAssignmentForm key={`${props.courseId}:${props.profileId}`} {...props} />;
 }
 
-function FinalAssignmentForm({ courseId, course, profileId, submission, submissionState = "ready", onRetryLoad, translate, onSubmit }: FinalAssignmentPanelProps) {
+function FinalAssignmentForm({ courseId, course, profileId, initialArtifacts, submission, submissionState = "ready", onRetryLoad, translate, onSubmit }: FinalAssignmentPanelProps) {
   const { t } = useTranslation("courses");
   const [requestId, setRequestId] = useState(() => crypto.randomUUID());
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +41,7 @@ function FinalAssignmentForm({ courseId, course, profileId, submission, submissi
   const inFlight = useRef(false);
   const [awaitingResult, setAwaitingResult] = useState(false);
   const filesInput = useRef<HTMLInputElement>(null);
-  const [artifacts, setArtifacts] = useState(() => readArtifactDraft(`corelia:final-artifacts:${profileId}:${courseId}`));
+  const [artifacts, setArtifacts] = useState(() => ({ ...readArtifactDraft(`corelia:final-artifacts:${profileId}:${courseId}`), ...normalizeArtifactDraft(initialArtifacts) }));
   useEffect(() => {
     const restore = (event: Event) => {
       const detail = (event as CustomEvent<{ userId: string; courseId: string; artifacts: Partial<Record<ArtifactField, string>> }>).detail;
@@ -107,9 +108,9 @@ function FinalAssignmentForm({ courseId, course, profileId, submission, submissi
     <div id="final-assignment" className="mt-6 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-6">
       <div className="flex items-center gap-2">
         <FileText className="w-5 h-5 text-primary" aria-hidden />
-        <h2 className="text-heading-medium font-display text-foreground">
+        <h1 className="text-heading-medium font-display text-foreground">
           {course.final_assignment_title}
-        </h2>
+        </h1>
       </div>
       {course.final_assignment_description ? (
         <p className="mt-2 whitespace-pre-wrap text-[15px] leading-[1.7] text-foreground-muted">

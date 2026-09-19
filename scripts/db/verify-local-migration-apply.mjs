@@ -13,6 +13,7 @@ const sqlTestPaths = [
   "scripts/db/tests/project-localization.integration.sql",
   "scripts/db/tests/jobs-mvp.integration.sql",
   "scripts/db/tests/hackathon-taxonomy-contract.integration.sql",
+  "scripts/db/tests/email-center.integration.sql",
 ].map((path) => resolve(process.cwd(), path));
 
 console.log("===============================================================================");
@@ -89,6 +90,10 @@ execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "
 });
 execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
   input: readFileSync(resolve("scripts/db/tests/learning-translation.integration.sql")),
+  stdio: ["pipe", "inherit", "inherit"],
+});
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/learning-multilanguage.integration.sql")),
   stdio: ["pipe", "inherit", "inherit"],
 });
 execFileSync(process.execPath, ["scripts/db/tests/learning-policy-postgrest.integration.mjs"], { stdio: "inherit" });
