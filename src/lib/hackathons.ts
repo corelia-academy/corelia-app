@@ -7,7 +7,7 @@ import { deleteStorageObjectByPath } from "@/lib/storage";
 import { getProfileForUser } from "@/lib/profile";
 import { normalizeContentLocale, pickContentLocale } from "@/lib/entityLocales";
 import { calculateContestScoreTotal } from "@/lib/hackathonScoreValidation";
-import { applyHackathonLocaleContent } from "@/lib/hackathonContract";
+import { applyHackathonLocaleContent, validateHackathonTaxonomyContract } from "@/lib/hackathonContract";
 import {
   canManageContests,
   canReviewContestApplications,
@@ -799,6 +799,14 @@ export async function createContest(data: ContestInsert): Promise<Contest> {
   }) as Record<string, unknown>;
 
   const status = (data.status ?? "draft") as Contest["status"];
+  const validation = validateHackathonTaxonomyContract(status, data.sectors, data.tech_stacks);
+  if (!validation.valid) {
+    throw new Error(
+      validation.reason === "invalid_item"
+        ? "invalid_input:hackathon_taxonomy_invalid"
+        : "invalid_input:hackathon_taxonomy_required",
+    );
+  }
   const { error } = await supabase.from("hackathons").insert({
     id,
     status,
@@ -898,6 +906,16 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
 
   const nextDoc = { ...prevDoc, ...payload };
   const nextStatus = updates.status ?? (row.status as string);
+  const nextSectors = updates.sectors !== undefined ? updates.sectors : nextDoc.sectors;
+  const nextTechStacks = updates.tech_stacks !== undefined ? updates.tech_stacks : nextDoc.tech_stacks;
+  const validation = validateHackathonTaxonomyContract(nextStatus, nextSectors, nextTechStacks);
+  if (!validation.valid) {
+    throw new Error(
+      validation.reason === "invalid_item"
+        ? "invalid_input:hackathon_taxonomy_invalid"
+        : "invalid_input:hackathon_taxonomy_required",
+    );
+  }
   const now = new Date().toISOString();
   const { data: updatedRow, error } = await supabase
     .from("hackathons")

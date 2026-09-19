@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 
 import { Markdown } from "@/components/markdown/Markdown";
 import { ProjectManagementControls } from "@/components/projects/ProjectManagementControls";
+import { ProjectSelfLeaveButton } from "@/components/projects/ProjectSelfLeaveButton";
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
@@ -241,6 +242,7 @@ export default function ProjectDetailPage() {
   ];
   const resourceActions = actions.filter(action => action && action.key !== "source");
   const teamMembers = teamQuery.data?.[project.id]?.filter(member => member.user_id !== project.owner_id) ?? [];
+  const isCurrentUserCollaborator = Boolean(user?.id && teamMembers.some((member) => member.user_id === user.id));
   const ownerLink = owner.handle ? `/@${owner.handle}` : null;
   const back = sourceQuery.data?.slug ? `/hackathons/${sourceQuery.data.slug}/projects` : "/projects";
 
@@ -311,7 +313,10 @@ export default function ProjectDetailPage() {
           {(project.screenshot_urls?.length ?? 0) > 0 ? <section><h2 className="mb-3 text-heading-small font-display text-foreground">{t("projects.form.screenshots")}</h2><div className="grid gap-3 sm:grid-cols-2">{project.screenshot_urls?.map((url,index)=><a key={url} href={url} target="_blank" rel="noreferrer" className="overflow-hidden rounded-xl border border-border-subtle"><img src={url} alt={t("projects.form.screenshotAlt",{index:index+1})} className="aspect-video w-full object-cover" loading="lazy" /></a>)}</div></section> : null}
           <section className="rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="text-heading-small font-display text-foreground">{t("projects.detail.description")}</h2><div className="mt-4 break-words"><Markdown content={description} /></div></section>
           <section>
-            <h2 className="text-heading-small font-display text-foreground">{t("projects.team.publicTitle")}</h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-heading-small font-display text-foreground">{t("projects.team.publicTitle")}</h2>
+              {isCurrentUserCollaborator ? <ProjectSelfLeaveButton projectId={project.id} onLeft={() => void teamQuery.refetch()} /> : null}
+            </div>
             <div className="mt-3 flex flex-col items-start gap-3">
               {ownerLink ? <NavLink to={ownerLink} aria-label={`${owner.label || owner.handle}, ${t("projects.editor.teamLeader")}`} className="inline-flex max-w-full items-center gap-3 text-body-medium font-body hover:text-primary"><UserAvatar userId={entry.project.owner_id} avatarUrl={entry.owner?.avatar_url} avatarSeed={entry.owner?.avatar_seed} alt={owner.label || owner.handle || t("projects.editor.builder")} fallback={(owner.label || owner.handle || t("projects.editor.builder")).charAt(0).toUpperCase()} /><span className="min-w-0 truncate">{owner.label || owner.handle}</span></NavLink> : <div className="inline-flex max-w-full items-center gap-3 text-body-medium font-body"><UserAvatar userId={entry.project.owner_id} avatarUrl={entry.owner?.avatar_url} avatarSeed={entry.owner?.avatar_seed} alt={owner.label || t("projects.editor.builder")} fallback={(owner.label || t("projects.editor.builder")).charAt(0).toUpperCase()} /><span className="min-w-0 truncate">{owner.label || t("projects.editor.builder")}</span></div>}
               {teamMembers.map(member => { const label = member.full_name?.trim() || member.username?.trim() || t("projects.editor.builder"); const content = <><UserAvatar userId={member.user_id} avatarUrl={member.avatar_url} avatarSeed={member.avatar_seed} alt={label} fallback={label.charAt(0).toUpperCase()} /><span className="min-w-0 truncate">{label}</span></>; const handle = member.username?.trim() || member.id; return handle ? <NavLink key={member.user_id} to={`/@${handle}`} className="inline-flex max-w-full items-center gap-3 text-body-medium font-body hover:text-primary">{content}</NavLink> : <div key={member.user_id} className="inline-flex max-w-full items-center gap-3 text-body-medium font-body">{content}</div>; })}
