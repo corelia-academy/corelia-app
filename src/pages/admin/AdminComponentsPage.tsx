@@ -18,6 +18,7 @@ import AdminScrollbarComponentPage from "./components/AdminScrollbarComponentPag
 import AdminSelectionComponentPage from "./components/AdminSelectionComponentPage";
 import AdminSeparatorComponentPage from "./components/AdminSeparatorComponentPage";
 import AdminTagComponentPage from "./components/AdminTagComponentPage";
+import AdminTabsComponentPage from "./components/AdminTabsComponentPage";
 import AdminToggleComponentPage from "./components/AdminToggleComponentPage";
 
 const components = [
@@ -55,6 +56,11 @@ const components = [
     slug: "scrollbar",
     title: "Scrollbar",
     criterion: "Real vertical and horizontal overflow in three content-density examples.",
+  },
+  {
+    slug: "tabs",
+    title: "Tabs",
+    criterion: "Five Figma levels, horizontal/vertical orientation, active, disabled, badge, and keyboard behavior.",
   },
 ] as const;
 
@@ -313,6 +319,9 @@ export default function AdminComponentsPage() {
           </ComponentSection>
           <ComponentSection {...components[6]}>
             <AdminScrollbarComponentPage embedded />
+          </ComponentSection>
+          <ComponentSection {...components[7]}>
+            <AdminTabsComponentPage embedded />
           </ComponentSection>
         </div>
       </div>

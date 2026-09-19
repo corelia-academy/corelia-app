@@ -310,6 +310,7 @@ function ApplicationRoutes() {
               "toggle",
               "separator",
               "scrollbar",
+              "tabs",
             ].map((component) => (
               <Route
                 key={component}

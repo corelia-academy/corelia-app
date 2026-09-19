@@ -31,13 +31,14 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(7);
+    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(8);
     expect(container.querySelector('a[href="/components/action"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/scrollbar"]')).not.toBeNull();
+    expect(container.querySelector('a[href="/components/tabs"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components"]')).toBeNull();
     expect(container.querySelector('[data-testid="component-navigation"]')).not.toBeNull();
-    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(7);
-    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(7);
+    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(8);
+    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(8);
     expect(container.querySelector('[data-testid="component-section-title"]')?.textContent).toBe("Action");
     expect(container.textContent).toContain("Badge");
     expect(container.textContent).toContain("Selection");
