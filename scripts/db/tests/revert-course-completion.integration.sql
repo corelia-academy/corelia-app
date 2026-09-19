@@ -22,6 +22,19 @@ INSERT INTO public.course_lessons(course_id, id, section_id, sort_order, publish
   ('course-revert-test', 'lesson-revert-2', 'section-revert', 2, true, '{"title":"Lesson 2","lesson_format":"article","description_markdown":"Part 2"}')
 ON CONFLICT (course_id, id) DO NOTHING;
 
+-- Seed the stable certificate code before the enrollment completion trigger runs.
+INSERT INTO public.certificate_records (
+  code, user_id, course_id, holder_name, course_title, instructor_name, issued_at
+) VALUES (
+  'CERT-REVERT-333',
+  'eeee0000-0000-4000-8000-000000000333',
+  'course-revert-test',
+  'Revert Learner',
+  'Revert Test Course',
+  'Revert Learner',
+  now() - interval '1 day'
+) ON CONFLICT (code) DO NOTHING;
+
 -- V-07: Fixture creation order - insert lesson progress BEFORE completed enrollment
 INSERT INTO public.lesson_progress(id, user_id, course_id, lesson_id, completed_at) VALUES
   ('eeee0000-0000-4000-8000-000000000333_course-revert-test_lesson-revert-1', 'eeee0000-0000-4000-8000-000000000333', 'course-revert-test', 'lesson-revert-1', now() - interval '2 days'),
@@ -37,7 +50,8 @@ ON CONFLICT (id) DO UPDATE SET
 
 -- V-10: Seed credential template, certificate record, and credential issuance
 INSERT INTO public.credential_templates (
-  id, scope_type, course_id, name, description, image_url, achievement_type, identifier_prefix, collection_symbol
+  id, scope_type, course_id, name, description, image_url, achievement_type, identifier_prefix, collection_symbol,
+  trigger_type, trigger_rule, is_active
 ) VALUES (
   'eeee0000-0000-4000-8000-000000000334',
   'course',
@@ -47,20 +61,11 @@ INSERT INTO public.credential_templates (
   'https://corelia.local/badge.png',
   'Badge',
   'COR-REV',
-  'corelia-courses'
+  'ocbadge',
+  'auto',
+  '{"completion_pct":100}',
+  false
 ) ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO public.certificate_records (
-  code, user_id, course_id, holder_name, course_title, instructor_name, issued_at
-) VALUES (
-  'CERT-REVERT-333',
-  'eeee0000-0000-4000-8000-000000000333',
-  'course-revert-test',
-  'Revert Learner',
-  'Revert Test Course',
-  'Revert Learner',
-  now() - interval '1 day'
-) ON CONFLICT (code) DO NOTHING;
 
 INSERT INTO public.credential_issuances (
   id, template_id, user_id, course_id, issuer_reference_id, network, status, minted_at
@@ -144,7 +149,11 @@ END $$;
 -- V-07: Reset completion state for further tests: restore progress BEFORE enrollment
 RESET ROLE;
 UPDATE public.lesson_progress
-   SET completed_at = now() - interval '1 day'
+   SET completed_at = now() - interval '1 day',
+       completion_nonce = CASE
+         WHEN reset_epoch > 0 THEN gen_random_uuid()
+         ELSE completion_nonce
+       END
  WHERE course_id = 'course-revert-test' AND user_id = 'eeee0000-0000-4000-8000-000000000333';
 UPDATE public.enrollments
    SET completed_at = now() - interval '1 day'
@@ -216,7 +225,8 @@ END $$;
 RESET ROLE;
 -- Learner re-completes all lessons: progress first
 UPDATE public.lesson_progress
-   SET completed_at = clock_timestamp()
+   SET completed_at = clock_timestamp(),
+       completion_nonce = gen_random_uuid()
  WHERE course_id = 'course-revert-test' AND user_id = 'eeee0000-0000-4000-8000-000000000333';
 
 -- Learner re-completes course enrollment
@@ -227,7 +237,11 @@ UPDATE public.enrollments
 -- Trigger certificate issuance check on re-completion
 DO $$
 BEGIN
-  PERFORM private.ensure_certificate_record('eeee0000-0000-4000-8000-000000000333', 'course-revert-test');
+  PERFORM private.ensure_certificate_record(
+    'eeee0000-0000-4000-8000-000000000333'::uuid,
+    'course-revert-test'::text,
+    now()
+  );
 END $$;
 
 DO $$
