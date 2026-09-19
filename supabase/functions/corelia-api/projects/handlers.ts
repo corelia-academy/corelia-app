@@ -397,26 +397,59 @@ export async function handleProjectManage(req: Request, db: SupabaseClient): Pro
   }
 }
 
+function isProjectModerationBlocked(error: unknown): boolean {
+  if (error instanceof ProjectAiError) return error.code.startsWith("moderation_blocked:");
+  return error instanceof Error && error.message.startsWith("moderation_blocked:");
+}
+
 export async function handleProjectTranslate(req: Request, db: SupabaseClient): Promise<Response> {
   let requestId: string | undefined;
+  let actorId: string | undefined;
+  let projectId: string | undefined;
   try {
     const user = await verifyBearerUser(req, db);
+    actorId = user.id;
     const body = await req.json() as Record<string, unknown>;
     if (typeof body.project_id !== "string" || !isUuid(body.project_id)) throw new Error("invalid_input:project_id");
+    projectId = body.project_id;
     const source = contentLocale(body.source_locale);
     const target = contentLocale(body.target_locale);
     if (source === target) throw new Error("invalid_input:project_locale");
     const content = projectContent(body.content);
     if (!Object.values(content).some(text => /[\p{L}\p{N}]/u.test(text))) throw new Error("required_content:title");
-    const { data, error } = await db.rpc("reserve_project_translation", { p_actor_id: user.id, p_project_id: body.project_id });
+    const { data, error } = await db.rpc("reserve_project_translation_success", { p_actor_id: user.id, p_project_id: body.project_id });
     if (error) throw new Error(error.message);
-    requestId = String(data);
+    if (typeof data !== "string" || !isUuid(data)) throw new Error("invalid_input:project_translation_reservation");
+    requestId = data;
+    const { error: moderationGuardError } = await db.rpc("assert_project_translation_moderation_allowed", { p_actor_id: user.id });
+    if (moderationGuardError) throw new Error(moderationGuardError.message);
     await moderateProjectText(Object.entries(content).map(([field,text]) => ({ field, text })));
     const result = await translateProjectText(content, source, target);
+    const { error: commitError } = await db.rpc("commit_project_translation", { p_actor_id: user.id, p_request_id: requestId });
+    if (commitError) throw new Error(commitError.message);
     console.info("[projects.translate]", { requestId, status: "completed", usage: result.usage });
     return json({ content: result.content });
   } catch (error) {
+    let responseError = error;
+    if (requestId && actorId && projectId) {
+      if (isProjectModerationBlocked(error)) {
+        const { error: moderationRecordError } = await db.rpc("record_project_translation_moderation_block", {
+          p_actor_id: actorId,
+          p_project_id: projectId,
+        });
+        if (moderationRecordError?.message.startsWith("rate_limited:")) {
+          responseError = new Error(moderationRecordError.message);
+        } else if (moderationRecordError) {
+          console.warn("[projects.translate] moderation guard record failed", moderationRecordError.message);
+        }
+      }
+      const { error: releaseError } = await db.rpc("release_project_translation", {
+        p_actor_id: actorId,
+        p_request_id: requestId,
+      });
+      if (releaseError) console.warn("[projects.translate] reservation release failed", releaseError.message);
+    }
     console.info("[projects.translate]", { requestId, status: "failed" });
-    return errorResponse(error);
+    return errorResponse(responseError);
   }
 }

@@ -245,6 +245,13 @@ export async function removeProjectCollaborator(
   if (error) throw new Error(error.message);
 }
 
+export async function leaveProject(projectId: string): Promise<void> {
+  const { error } = await supabase.rpc("leave_project", {
+    p_project_id: projectId,
+  });
+  if (error) throw new Error(error.message);
+}
+
 export async function setMyProjectCollaborationVisibility(
   projectId: string,
   showInPortfolio: boolean,
