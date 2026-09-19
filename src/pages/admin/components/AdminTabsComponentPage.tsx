@@ -126,7 +126,7 @@ function TabsExample({
           tabsList
         )}
 
-        {/* <div className="min-w-0 space-y-3">
+        <div className="min-w-0 space-y-3">
           {tabItems.map((tab) => (
             <Tabs.Panel
               key={tab.value}
@@ -141,7 +141,7 @@ function TabsExample({
               </p>
             </Tabs.Panel>
           ))}
-        </div> */}
+        </div>
       </Tabs.Root>
     </div>
   );
