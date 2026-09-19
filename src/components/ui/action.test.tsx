@@ -27,9 +27,29 @@ describe("Action", () => {
   it("renders the trailing icon only when enabled", () => {
     const markup = renderAction({
       label: "Settings",
-      showTrailingIcon: true,
+      showIcon: "right",
     });
 
+    expect(markup).toContain('data-slot="action-trailing-icon"');
+  });
+
+  it("renders the leading directional icon when selected", () => {
+    const markup = renderAction({
+      label: "Back",
+      showIcon: "left",
+    });
+
+    expect(markup).toContain('data-slot="action-leading-icon"');
+    expect(markup).not.toContain('data-slot="action-trailing-icon"');
+  });
+
+  it("renders both directional icons when selected", () => {
+    const markup = renderAction({
+      label: "Navigate",
+      showIcon: "both",
+    });
+
+    expect(markup).toContain('data-slot="action-leading-icon"');
     expect(markup).toContain('data-slot="action-trailing-icon"');
   });
 
@@ -38,7 +58,7 @@ describe("Action", () => {
       label: "Delete account",
       variant: "destructive",
       disabled: true,
-      showTrailingIcon: true,
+      showIcon: "right",
     });
 
     expect(markup).toContain('data-slot="action-trailing-icon"');
@@ -140,7 +160,7 @@ describe("Action", () => {
       variant: "destructive",
       isActive: true,
       icon: <UserRound />,
-      showTrailingIcon: true,
+      showIcon: "right",
     });
 
     expect(markup).toContain("text-action-destructive-active-icon");
@@ -152,7 +172,7 @@ describe("Action", () => {
       label: "Open details",
       isActive: true,
       icon: <UserRound />,
-      showTrailingIcon: true,
+      showIcon: "right",
     });
 
     expect(markup).toContain("text-action-active-icon");
