@@ -58,7 +58,7 @@ export function RevertCourseCompletionDialog({
       <DialogContent className="max-w-md gap-5 sm:max-w-lg">
         <DialogHeader className="space-y-0 text-left">
           <div className="flex items-start gap-3.5">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
               <RotateCcw className="size-5" aria-hidden />
             </div>
             <div className="min-w-0 flex-1 space-y-1">
@@ -141,17 +141,15 @@ export function RevertCourseCompletionDialog({
           </RadioGroup>
 
           {certificateIssued && (
-            <div className="flex items-start gap-3 rounded-xl border border-success/30 bg-success/10 p-3.5 text-xs">
-              <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-success/20 text-success">
-                <ShieldCheck className="size-3.5" aria-hidden />
-              </div>
-              <div className="min-w-0 space-y-0.5 leading-relaxed">
-                <span className="block font-semibold text-success">
+            <div className="flex items-start gap-2.5 rounded-xl border border-success/25 bg-success/10 px-3 py-3">
+              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground">
                   {t("detail.learn.completion.revertPreserveCertificateTitle", {
                     defaultValue: "Chứng nhận được bảo lưu an toàn",
                   })}
-                </span>
-                <p className="text-foreground-muted">
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
                   {t("detail.learn.completion.revertPreserveCertificateNotice", {
                     defaultValue:
                       "Hoàn tác sẽ đưa tiến độ học tập về chưa hoàn thành để bạn tiếp tục ôn tập, chứng nhận đã cấp sẽ được bảo lưu. Bạn có muốn tiếp tục?",

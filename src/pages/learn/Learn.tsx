@@ -553,7 +553,7 @@ function LearnWorkspace() {
     <>
       {courseCompleted ? (
         <CourseCompletionCertificatePanel
-          className="mx-4 mb-4 sm:mx-6"
+          className="mx-4 mb-4 mt-4 sm:mx-6 sm:mt-5"
           hasCertificate={hasCourseCertificate}
           certificateIssued={certificateIssued}
           issuing={completionSyncing || certificateAutoIssuing || isIssuanceFlowActive}

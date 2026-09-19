@@ -96,6 +96,15 @@ describe("CourseCompletionCertificatePanel", () => {
     expect(bodyText).toContain("Hoàn tác trạng thái hoàn thành khóa học");
     expect(bodyText).toContain("chứng nhận đã cấp sẽ được bảo lưu");
 
+    const preservationTitle = Array.from(document.body.querySelectorAll("p")).find((item) =>
+      item.textContent?.includes("Chứng nhận được bảo lưu an toàn"),
+    );
+    expect(preservationTitle?.className).toContain("text-sm");
+    expect(preservationTitle?.className).toContain("text-foreground");
+    expect(preservationTitle?.className).not.toContain("text-success");
+    expect(preservationTitle?.parentElement?.parentElement?.className).toContain("px-3");
+    expect(preservationTitle?.parentElement?.parentElement?.className).toContain("py-3");
+
     const radioCards = document.body.querySelectorAll<HTMLElement>(
       '[data-slot="select-card"]',
     );

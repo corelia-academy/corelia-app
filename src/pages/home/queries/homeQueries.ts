@@ -110,6 +110,7 @@ export function homeDashboardQueryOptions(
             title: course.title,
             format,
             progress: percent,
+            completed: Boolean(enrollment.completed_at),
             nextStep:
               format === "online"
                 ? nextLesson?.title
