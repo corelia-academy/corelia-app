@@ -12,7 +12,6 @@ const sqlTestPaths = [
   "scripts/db/tests/project-submission.integration.sql",
   "scripts/db/tests/project-localization.integration.sql",
   "scripts/db/tests/jobs-mvp.integration.sql",
-  "scripts/db/tests/revert-course-completion.integration.sql",
   "scripts/db/tests/email-center.integration.sql",
 ].map((path) => resolve(process.cwd(), path));
 
@@ -69,6 +68,18 @@ for (const sqlTestPath of sqlTestPaths) {
     console.error(`\n[INTEGRATION_SQL_FAILURE] SQL assertion failed in ${sqlTestPath}.`);
     process.exit(1);
   }
+}
+// This suite contains explicit transaction control and multiple statements, so
+// run it through psql instead of the single prepared statement used by
+// `supabase db query --file`.
+try {
+  execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+    input: readFileSync(resolve("scripts/db/tests/revert-course-completion.integration.sql")),
+    stdio: ["pipe", "inherit", "inherit"],
+  });
+} catch {
+  console.error("\n[INTEGRATION_SQL_FAILURE] SQL assertion failed in scripts/db/tests/revert-course-completion.integration.sql.");
+  process.exit(1);
 }
 // This suite exercises JWT roles in a transaction and needs a multi-statement client.
 execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
