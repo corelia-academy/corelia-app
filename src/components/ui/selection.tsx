@@ -1,14 +1,6 @@
 import * as React from "react"
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox"
 import { Radio as RadioPrimitive } from "@base-ui/react/radio"
-import {
-  CheckSquare,
-  Circle,
-  MinusSquare,
-  RadioButton,
-  Square,
-} from "@phosphor-icons/react"
-
 import { cn } from "@/lib/utils"
 
 type SelectionSize = "small" | "large"
@@ -40,56 +32,218 @@ type SelectionIconProps = {
   state: SelectionIconState
 }
 
-function SelectionIcon({
-  className,
-  dataSlot,
-  kind,
-  size,
-  disabled,
-  state,
-}: SelectionIconProps) {
-  const iconSize = size === "small" ? 20 : 24
-  const color = disabled
-    ? "var(--neutral-500)"
-    : state === "unchecked"
-      ? "var(--foreground-muted)"
-      : "var(--blue-600)"
+// function SelectionIcon({
+//   className,
+//   dataSlot,
+//   kind,
+//   size,
+//   disabled,
+//   state,
+// }: SelectionIconProps) {
+//   const iconSize = size === "small" ? 20 : 24
+//   const color = disabled
+//     ? "var(--selection-disabled)"
+//     : state === "unchecked"
+//       ? "var(--selection-unchecked)"
+//       : "var(--selection-active)"
 
-  const iconMap: Record<
-    SelectionIconKind,
-    Record<SelectionIconState, React.ElementType | null>
-  > = {
-    checkbox: {
-      unchecked: Square,
-      checked: CheckSquare,
-      indeterminate: MinusSquare,
-    },
-    radio: {
-      unchecked: Circle,
-      checked: RadioButton,
-      indeterminate: null,
-    },
-  }
+//   const iconMap: Record<
+//     SelectionIconKind,
+//     Record<SelectionIconState, React.ElementType | null>
+//   > = {
+//     checkbox: {
+//       unchecked: Square,
+//       checked: CheckSquare,
+//       indeterminate: MinusSquare,
+//     },
+//     radio: {
+//       unchecked: Circle,
+//       checked: null,
+//       indeterminate: null,
+//     },
+//   }
 
-  const Icon = iconMap[kind][state]
+//   if (kind === "radio" && state === "checked") {
+//     const innerIconSize = Math.round(iconSize * 0.5)
 
-  if (!Icon) {
+//     return (
+//       <span
+//         aria-hidden
+//         className={cn(
+//           className,
+//           "pointer-events-none relative inline-flex size-full items-center justify-center",
+//         )}
+//         data-slot={dataSlot}
+//       >
+//         <Circle color={color} size={iconSize} weight="regular" />
+//         <span
+//           data-slot="radio-checked-dot"
+//           className="pointer-events-none absolute inset-0 inline-flex items-center justify-center"
+//           aria-hidden="true"
+//         >
+//           <Circle color={color} size={innerIconSize} weight="fill" />
+//         </span>
+//       </span>
+//     )
+//   }
+
+//   const Icon = iconMap[kind][state]
+
+//   if (!Icon) {
+//     return null
+//   }
+
+//   return (
+//     <span
+//       aria-hidden
+//       className={cn(
+//         "pointer-events-none inline-flex size-full items-center justify-center",
+//         className,
+//       )}
+//       data-slot={dataSlot}
+//     >
+//       <Icon color={color} size={iconSize} weight="regular" />
+//     </span>
+//   )
+// )}
+
+  function SelectionIcon({
+    className,
+    dataSlot,
+    kind,
+    size,
+    disabled,
+    state,
+  }: SelectionIconProps) {
+    const iconSize = size === "small" ? 20 : 24
+    const color = disabled
+      ? "var(--selection-disabled)"
+      : state === "unchecked"
+        ? "var(--selection-unchecked)"
+        : "var(--selection-active)"
+    const markColor = disabled ? "var(--neutral-400)" : "var(--blue-50)"
+
+    if (kind === "checkbox") {
+      const isSmall = size === "small"
+      const viewBox = isSmall ? "0 0 20 20" : "0 0 24 24"
+
+      return (
+        <span
+          aria-hidden
+          className={cn(
+            "pointer-events-none inline-flex size-full items-center justify-center",
+            className,
+          )}
+          data-slot={dataSlot}
+        >
+          <svg
+            viewBox={viewBox}
+            width={iconSize}
+            height={iconSize}
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="size-full"
+          >
+            {state === "unchecked" && (
+              <rect
+                x="0.75"
+                y="0.75"
+                width={isSmall ? "18.5" : "22.5"}
+                height={isSmall ? "18.5" : "22.5"}
+                rx={isSmall ? 4.25 : 5}
+                stroke={color}
+                strokeWidth="1.5"
+              />
+            )}
+
+            {state === "checked" && (
+              <>
+                <rect
+                  width={isSmall ? 20 : 24}
+                  height={isSmall ? 20 : 24}
+                  rx={5}
+                  fill={color}
+                />
+                <path
+                  d={isSmall ? "M15 6.25L8.125 13.125L5 10" : "M18 7.5L9.75 15.75L6 12"}
+                  stroke={markColor}
+                  strokeWidth="1.6666"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </>
+            )}
+
+            {state === "indeterminate" && (
+              <>
+                <rect
+                  x="0.75"
+                  y="0.75"
+                  width={isSmall ? "18.5" : "22.5"}
+                  height={isSmall ? "18.5" : "22.5"}
+                  rx={isSmall ? 4.25 : 5}
+                  stroke={color}
+                  strokeWidth="1.5"
+                />
+                <path
+                  d={isSmall ? "M5 10H15" : "M6 12H18"}
+                  stroke={color}
+                  strokeWidth="1.67"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </>
+            )}
+          </svg>
+        </span>
+      )
+    }
+
+    if (kind === "radio") {
+      const center = iconSize / 2
+      const radius = center - 0.75
+      const dotRadius = size === "small" ? 5 : 6
+
+      return (
+        <span
+          aria-hidden
+          className={cn(
+            "pointer-events-none inline-flex size-full items-center justify-center",
+            className,
+          )}
+          data-slot={dataSlot}
+        >
+          <svg
+            viewBox={`0 0 ${iconSize} ${iconSize}`}
+            width={iconSize}
+            height={iconSize}
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="block size-full"
+          >
+            <circle
+              cx={center}
+              cy={center}
+              r={radius}
+              fill="none"
+              stroke={color}
+              strokeWidth="1.5"
+            />
+            {state === "checked" && (
+              <circle
+                data-slot="radio-checked-dot"
+                cx={center}
+                cy={center}
+                r={dotRadius}
+                fill={color}
+              />
+            )}
+          </svg>
+        </span>
+      )
+    }
     return null
   }
-
-  return (
-    <span
-      aria-hidden
-      className={cn(
-        "pointer-events-none inline-flex size-full items-center justify-center",
-        className,
-      )}
-      data-slot={dataSlot}
-    >
-      <Icon color={color} size={iconSize} weight="regular" />
-    </span>
-  )
-}
 
 export type CheckboxProps = Omit<
   CheckboxPrimitive.Root.Props,
@@ -308,7 +462,7 @@ export const Checkbox = React.forwardRef<HTMLElement, CheckboxProps>(
         <span
           data-slot="checkbox-interaction-feedback"
           aria-hidden
-          className="pointer-events-none absolute -inset-2 scale-90 rounded-md bg-blue-600/10 opacity-0 transition-[opacity,transform,background-color] duration-150 ease-out group-hover/checkbox:scale-100 group-hover/checkbox:opacity-100 group-focus-visible/checkbox:scale-100 group-focus-visible/checkbox:opacity-100 group-active/checkbox:scale-100 group-active/checkbox:opacity-100 group-active/checkbox:bg-blue-600/20 group-data-[disabled]/checkbox:opacity-0 motion-reduce:transition-none"
+          className="pointer-events-none absolute -inset-2 scale-90 rounded-md bg-selection-feedback opacity-0 transition-[opacity,transform,background-color] duration-150 ease-out group-hover/checkbox:scale-100 group-hover/checkbox:opacity-100 group-focus-visible/checkbox:scale-100 group-focus-visible/checkbox:opacity-100 group-active/checkbox:scale-100 group-active/checkbox:opacity-100 group-active/checkbox:bg-selection-feedback-pressed group-data-[disabled]/checkbox:opacity-0 motion-reduce:transition-none"
         />
         <SelectionIcon
           dataSlot="checkbox-unchecked-frame"
@@ -503,7 +657,7 @@ function SelectionCardShell({
       data-orientation={orientation}
       data-size={size}
       className={cn(
-        "group/select-card flex w-full min-w-0 cursor-pointer rounded-md border border-transparent bg-surface-raised p-lg text-foreground outline-none transition-colors duration-150 ease-out select-none focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-background has-data-[checked]:border-blue-600 has-data-[disabled]:cursor-not-allowed has-data-[disabled]:border-transparent has-data-[disabled]:text-foreground-muted has-data-[disabled]:has-data-[checked]:border-transparent",
+        "group/select-card flex w-full min-w-0 cursor-pointer rounded-md border border-transparent bg-surface-raised p-lg text-foreground outline-none transition-colors duration-150 ease-out select-none focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-background has-data-[checked]:border-selection-card-selected-border has-data-[disabled]:cursor-not-allowed has-data-[disabled]:border-transparent has-data-[disabled]:text-foreground-muted has-data-[disabled]:has-data-[checked]:border-transparent",
         orientation === "horizontal" ? "flex-col gap-xs" : "flex-col gap-md",
         className,
       )}

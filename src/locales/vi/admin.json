@@ -47,11 +47,19 @@
         "label": "Hackathon",
         "tooltip": "Quản lý hackathon"
       },
+      "email": {
+        "label": "Trung tâm Email",
+        "tooltip": "Người nhận, template, chiến dịch và tự động hóa"
+      },
       "projects": {
         "label": "Projects"
       }
     },
     "pageMeta": {
+      "email": {
+        "title": "Trung tâm Email",
+        "description": "Vận hành email hệ thống, học tập, chương trình và marketing."
+      },
       "users": {
         "title": "Quản lý tài khoản",
         "description": "Kiểm soát vai trò và sức khoẻ truy cập của toàn bộ người dùng."

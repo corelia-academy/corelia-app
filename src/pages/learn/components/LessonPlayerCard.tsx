@@ -63,7 +63,7 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
     try {
       if (completed && mode === "learner") {
         if (nextLesson) onNavigateToLesson(nextLesson.id);
-        else { const final = document.getElementById("final-assignment"); if(final) final.scrollIntoView({ behavior: "smooth" }); else navigate(`/courses/${courseId}`); }
+        else navigate(hasFinalAssignment ? `/learn/${courseId}/final-assignment` : `/courses/${courseId}`);
       } else await action?.run();
     } catch (e) { if (active.current) setError(e instanceof Error ? e.message : t("learning.systemError")); }
     finally { inFlight.current = false; if (active.current) setBusy(false); }

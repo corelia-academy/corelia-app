@@ -18,3 +18,13 @@ it("validates only explicit video overrides in their locale and does not inherit
   expect(translationVideoIssues(master, { en: { youtube_url: "broken" } }, "vi")).toEqual([{ lessonId: "lesson", locale: "en", field: "youtube_url", code: "youtube_required" }]);
   expect(translationVideoIssues(master, { en: { youtube_url: "https://youtu.be/dQw4w9WgXcQ", youtube_start_seconds: 20, youtube_end_seconds: 10 } }, "vi")).toEqual([{ lessonId: "lesson", locale: "en", field: "youtube_end_seconds", code: "invalid_segment" }]);
 });
+
+it.each([{}, { vi: undefined, en: undefined }, { vi: null, en: null }, { vi: { title: "Gốc" }, en: undefined }, { vi: undefined, en: { title: "English" } }])("tolerates missing locale entries: %j", locales => {
+  expect(translationVideoIssues(master, locales, "vi")).toEqual([]);
+  expect(changedLessonLocales(locales, locales)).toEqual({});
+  expect(changedLessonLocales(locales, {})).toEqual(Object.fromEntries(Object.entries(locales).filter(([, copy]) => copy != null)));
+});
+
+it.each(["article", "practice", "code_exercise", "quiz"] as const)("does not validate video overrides for %s", lesson_format => {
+  expect(translationVideoIssues({ ...master, lesson_format }, { en: { youtube_url: "broken", youtube_end_seconds: -1 } }, "vi")).toEqual([]);
+});

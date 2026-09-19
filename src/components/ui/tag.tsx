@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 
 const tagVariants = cva(
-  "inline-flex shrink-0 items-center rounded-sm font-body text-sm font-medium leading-none tracking-[-0.07px] whitespace-nowrap",
+  "inline-flex shrink-0 items-center rounded-sm font-body text-sm font-medium leading-none tracking-[-0.07px] whitespace-nowrap select-none",
   {
     variants: {
       type: {
@@ -18,8 +18,8 @@ const tagVariants = cva(
         large: "p-md",
       },
       disabled: {
-        false: "bg-neutral-700 text-neutral-200",
-        true: "bg-neutral-800 text-neutral-500",
+        false: "bg-tag-background text-tag-foreground",
+        true: "bg-tag-disabled-background text-tag-disabled-foreground",
       },
       leadingVisual: {
         false: "",
@@ -86,6 +86,7 @@ function Tag({
   date,
   leadingVisual,
   time,
+  onClick,
   ...spanProps
 }: TagProps) {
   const hasLeadingVisual = type === "label" && leadingVisual != null
@@ -97,9 +98,12 @@ function Tag({
       {...spanProps}
       data-slot="tag"
       data-disabled={disabled ? "true" : undefined}
+      aria-disabled={disabled || undefined}
+      onClick={disabled ? undefined : onClick}
       data-has-leading-visual={hasLeadingVisual ? "true" : undefined}
       className={cn(
         tagVariants({ type, size, disabled, leadingVisual: hasLeadingVisual }),
+        disabled && "cursor-not-allowed select-none",
         className,
       )}
     >
@@ -133,7 +137,7 @@ function Tag({
           {hasDate && hasTime ? (
             <Separator
               orientation="vertical"
-              className="border-neutral-600"
+              className="border-border"
               aria-hidden="true"
             />
           ) : null}

@@ -22,6 +22,7 @@ describe("Tag", () => {
     expect(markup).toContain("text-sm")
     expect(markup).toContain("leading-none")
     expect(markup).toContain("tracking-[-0.07px]")
+    expect(markup).toContain("select-none")
   })
 
   it.each([
@@ -46,12 +47,15 @@ describe("Tag", () => {
       </Tag>,
     )
 
-    expect(active).toContain("bg-neutral-700")
-    expect(active).toContain("text-neutral-200")
+    expect(active).toContain("bg-tag-background")
+    expect(active).toContain("text-tag-foreground")
     expect(active).not.toContain("data-disabled")
-    expect(disabled).toContain("bg-neutral-800")
-    expect(disabled).toContain("text-neutral-500")
+    expect(disabled).toContain("bg-tag-disabled-background")
+    expect(disabled).toContain("text-tag-disabled-foreground")
     expect(disabled).toContain('data-disabled="true"')
+    expect(disabled).toContain('aria-disabled="true"')
+    expect(disabled).toContain("cursor-not-allowed")
+    expect(disabled).toContain("select-none")
   })
 
   it("renders label children and preserves valid span attributes", () => {
@@ -105,8 +109,8 @@ describe("Tag", () => {
       </Tag>,
     )
 
-    expect(markup).toContain("bg-neutral-800")
-    expect(markup).toContain("text-neutral-500")
+    expect(markup).toContain("bg-tag-disabled-background")
+    expect(markup).toContain("text-tag-disabled-foreground")
     expect(markup).toContain("opacity-50")
   })
 
@@ -123,7 +127,8 @@ describe("Tag", () => {
     expect(markup).toContain("9:15 AM")
     expect(markup).toContain('data-slot="separator"')
     expect(markup).toContain('data-orientation="vertical"')
-    expect(markup).toContain("border-neutral-600")
+    expect(markup).toContain("border-border")
+    expect(markup).not.toContain("border-neutral-600")
   })
 
   it("renders a date-only datetime Tag without a Separator", () => {

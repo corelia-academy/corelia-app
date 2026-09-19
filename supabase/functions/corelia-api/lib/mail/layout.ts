@@ -12,9 +12,15 @@ export function normalizeEmailLocale(locale?: string | null): EmailLocale {
 }
 
 export function resolveAppUrl(): string {
+  const getEnv = (name: string): string =>
+    typeof Deno !== "undefined"
+      ? Deno.env.get(name)?.trim() ?? ""
+      : typeof process !== "undefined"
+        ? process.env[name]?.trim() ?? ""
+        : "";
   const raw =
-    Deno.env.get("APP_URL")?.trim() ||
-    Deno.env.get("CORELIA_APP_ORIGIN")?.trim() ||
+    getEnv("APP_URL") ||
+    getEnv("CORELIA_APP_ORIGIN") ||
     "https://app.corelia.dev";
   return raw.replace(/\/+$/, "");
 }
@@ -22,48 +28,56 @@ export function resolveAppUrl(): string {
 const EMAIL_STYLES = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   .e-container {
-    max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 12px;
-    overflow: hidden; border: 1px solid #ddd7cf;
-    font-family: "Google Sans", "Google Sans Text", Roboto, Arial, sans-serif;
+    max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px;
+    overflow: hidden; border: 1px solid #d8dfed;
+    font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
   }
-  .e-header { background: #1e2440; padding: 20px 30px; }
+  .e-brand-line { height: 4px; background: #1759f1; font-size: 0; line-height: 0; }
+  .e-header { background: #0a0913; padding: 22px 32px; }
   .e-hero {
-    background: #f5f0eb; padding: 30px 30px 22px; border-bottom: 1px solid #ddd7cf;
+    background: #ffffff; padding: 36px 32px 18px;
   }
   .e-hero-tag {
-    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
-    text-transform: uppercase; color: #2ab89e; background: rgba(62, 207, 180, 0.1);
-    padding: 3px 11px; border-radius: 100px; margin-bottom: 13px;
+    display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #1749de; background: #eef5ff;
+    padding: 6px 10px; border-radius: 999px; margin-bottom: 16px;
   }
   .e-hero h2 {
-    font-family: "Lora", Georgia, serif; font-size: 25px; font-weight: 400;
-    font-style: italic; line-height: 1.25; color: #1e2440; margin-bottom: 9px;
+    font-family: Arial, "Helvetica Neue", Helvetica, sans-serif; font-size: 30px;
+    font-weight: 700; letter-spacing: -0.03em; line-height: 1.18; color: #171923;
+    margin-bottom: 10px;
   }
-  .e-hero p { font-size: 13px; line-height: 1.75; color: #3d4566; }
-  .e-body { padding: 22px 30px; }
+  .e-hero p { font-size: 15px; line-height: 1.55; color: #526079; }
+  .e-body { padding: 14px 32px 24px; }
   .e-body p {
-    font-size: 13px; line-height: 1.8; color: #3d4566; margin-bottom: 12px;
+    font-size: 16px; line-height: 1.55; color: #526079; margin-bottom: 16px;
   }
   .e-body p:last-child { margin-bottom: 0; }
-  .e-body a { color: #2ab89e; }
-  .e-body strong { color: #1e2440; }
-  .e-cta-wrap { padding: 4px 30px 22px; }
+  .e-body a { color: #1759f1; }
+  .e-body strong { color: #171923; }
+  .e-cta-wrap { padding: 0 32px 36px; }
   .e-btn {
-    display: inline-block; background: #1e2440; color: #ffffff;
-    font-size: 13px; font-weight: 600; padding: 12px 28px; border-radius: 8px;
-    text-decoration: none;
+    display: inline-block; background: #1759f1; color: #ffffff;
+    font-size: 15px; font-weight: 700; line-height: 1.2; padding: 14px 22px;
+    border-radius: 8px; text-decoration: none;
   }
-  .e-btn-teal {
-    background: linear-gradient(135deg, #3ecfb4, #2ab89e); color: #1e2440;
-  }
+  .e-btn-primary { background: #1759f1; color: #ffffff; }
   .e-footer {
-    background: #ede7df; padding: 16px 30px; text-align: center;
-    border-top: 1px solid #ddd7cf;
+    background: #f4f7ff; padding: 22px 32px; text-align: left;
+    border-top: 1px solid #d8dfed;
   }
   .e-footer p {
-    font-size: 11px; color: #8a8fa8; line-height: 1.7; margin-bottom: 3px;
+    font-size: 12px; color: #596587; line-height: 1.6; margin-bottom: 4px;
   }
-  .e-footer a { color: #8a8fa8; }
+  .e-footer a { color: #1759f1; }
+  @media only screen and (max-width: 620px) {
+    .e-header { padding: 20px 24px !important; }
+    .e-hero { padding: 30px 24px 16px !important; }
+    .e-hero h2 { font-size: 26px !important; }
+    .e-body { padding: 12px 24px 22px !important; }
+    .e-cta-wrap { padding: 0 24px 30px !important; }
+    .e-footer { padding: 20px 24px !important; }
+  }
 `;
 
 type TransactionalWrapParams = {
@@ -103,7 +117,7 @@ export function wrapTransactionalEmail(params: TransactionalWrapParams): string 
 
   const preheaderText = (params.preheader ?? params.heroSubtitle ?? params.heroTitle).trim();
   const preheaderBlock = preheaderText
-    ? `<div style="display:none!important;visibility:hidden;opacity:0;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#f5f0eb;">${escapeHtml(preheaderText)}</div>`
+    ? `<div style="display:none!important;visibility:hidden;opacity:0;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#f4f7ff;">${escapeHtml(preheaderText)}</div>`
     : "";
 
   return `<!doctype html>
@@ -114,11 +128,12 @@ export function wrapTransactionalEmail(params: TransactionalWrapParams): string 
     <title>${escapeHtml(params.heroTitle)}</title>
     <style>${EMAIL_STYLES}</style>
   </head>
-  <body style="margin:0;padding:28px 14px;background:#f5f0eb;font-family:Roboto,Arial,sans-serif;">
+  <body style="margin:0;padding:32px 14px;background:#f4f7ff;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;">
     ${preheaderBlock}
     <div class="e-container">
+      <div class="e-brand-line">&nbsp;</div>
       <div class="e-header">
-        <img src="${LOGO_URL}" alt="Corelia Academy" height="36" style="display:block;height:36px;width:auto" />
+        <img src="${LOGO_URL}" alt="Corelia Academy" height="34" style="display:block;height:34px;width:auto" />
       </div>
       <div class="e-hero">
         <span class="e-hero-tag">${escapeHtml(params.heroTag)}</span>
@@ -209,5 +224,5 @@ export function wrapBlastEmail(params: BlastWrapParams): string {
 
 /** Primary CTA button for transactional emails. */
 export function emailCtaButton(href: string, label: string): string {
-  return `<a href="${escapeHtml(href)}" class="e-btn e-btn-teal">${escapeHtml(label)}</a>`;
+  return `<a href="${escapeHtml(href)}" class="e-btn e-btn-primary" style="display:inline-block;background:#1759f1;color:#ffffff;font-size:15px;font-weight:700;line-height:1.2;padding:14px 22px;border-radius:8px;text-decoration:none;">${escapeHtml(label)}</a>`;
 }

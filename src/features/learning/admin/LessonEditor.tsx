@@ -163,7 +163,7 @@ function Editor({courseId,finalAssignment,initial,sections,nextLessonOrder,prima
     </div>}
     {issues.length>0&&<div role="alert" className="space-y-2 rounded-lg border border-destructive/30 p-3">
       <Button type="button" variant="outline" onClick={()=>fixIssue(issues[0])}>{t("learning.fixFirst")}</Button>
-      <ul className="space-y-1">{issues.map((issue,index)=><li key={`${issue.field}:${issue.code}:${index}`}><button type="button" className="text-left text-sm text-destructive underline" onClick={()=>fixIssue(issue)}>{t(`learning.validation.${issue.code}`,{defaultValue:issue.code})}</button></li>)}</ul>
+      <ul className="space-y-1">{issues.map((issue,index)=><li key={`${issue.field}:${issue.code}:${index}`}><button type="button" className="text-left text-sm text-destructive underline" onClick={()=>fixIssue(issue)}>{t(`learning.validation.${issue.code === "source_required" && issueField(issue,lesson) === "code-reference" ? "reference_required" : issue.code}`,{defaultValue:issue.code})}</button></li>)}</ul>
     </div>}
     {error&&<p role="alert" className="text-destructive">{error}</p>}<div className="sticky bottom-0 flex justify-end gap-3 border-t border-border bg-surface-float pt-4"><Button type="button" variant="outline" onClick={close}>{t("learning.cancel")}</Button><Button type="button" disabled={mutation.isPending} onClick={()=>void save()}>{t(mutation.isPending?"learning.saving":"learning.save")}</Button></div>
   </fieldset></DialogContent></Dialog>

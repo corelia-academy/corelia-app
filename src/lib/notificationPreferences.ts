@@ -70,7 +70,7 @@ export async function unsubscribeFromNotifications(input: {
   type: string;
   signal?: AbortSignal;
 }): Promise<void> {
-  const url = coreliaEdgeUrl("notifications.unsubscribe");
+  const url = coreliaEdgeUrl(input.type === "marketing" ? "email.unsubscribe" : "notifications.unsubscribe");
   if (!url || !input.token) throw new Error("invalid_unsubscribe_link");
   const response = await fetch(url, {
     method: "POST",
