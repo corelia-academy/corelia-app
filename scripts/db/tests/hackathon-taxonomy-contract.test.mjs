@@ -1,6 +1,7 @@
 ﻿import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -129,7 +130,22 @@ function resolvePostgresBinDir() {
   return null;
 }
 
-test("hackathon taxonomy contract executes on real PostgreSQL engine with fail-fast ON_ERROR_STOP=1, proves rollback and verifies audit script (V-01, V-02, V-05, V-06, V-09, V-10)", { timeout: 45000 }, (t) => {
+function findFreePort() {
+  return new Promise((resolve, reject) => {
+    const probe = net.createServer();
+    probe.once("error", reject);
+    probe.listen({ host: "127.0.0.1", port: 0 }, () => {
+      const address = probe.address();
+      if (!address || typeof address === "string") {
+        probe.close(() => reject(new Error("Could not determine a free PostgreSQL test port")));
+        return;
+      }
+      probe.close((error) => (error ? reject(error) : resolve(address.port)));
+    });
+  });
+}
+
+test("hackathon taxonomy contract executes on real PostgreSQL engine with fail-fast ON_ERROR_STOP=1, proves rollback and verifies audit script (V-01, V-02, V-05, V-06, V-09, V-10)", { timeout: 90000 }, async (t) => {
   const isWin = process.platform === "win32";
   const exe = (name) => (isWin ? `${name}.exe` : name);
   const binDir = resolvePostgresBinDir();
@@ -146,8 +162,8 @@ test("hackathon taxonomy contract executes on real PostgreSQL engine with fail-f
   const pg_ctl = path.join(binDir, exe("pg_ctl"));
   const psql = path.join(binDir, exe("psql"));
 
+  const port = await findFreePort();
   const tmpDir = mkdtempSync(path.join(os.tmpdir(), "pg_tax_failfast_"));
-  const port = 54393;
   const logFile = path.join(tmpDir, "pg.log");
 
   const runPsql = (args) => {
@@ -161,24 +177,31 @@ test("hackathon taxonomy contract executes on real PostgreSQL engine with fail-f
   try {
     execFileSync(initdb, ["-D", tmpDir, "-U", "postgres", "-A", "trust", "--no-locale", "-E", "UTF8"], { stdio: "ignore" });
 
-    spawnSync(pg_ctl, [
+    const startResult = spawnSync(pg_ctl, [
       "-D", tmpDir,
       "-l", logFile,
       "-o", `-p ${port} -F -c listen_addresses=127.0.0.1`,
       "start",
     ], { stdio: "ignore" });
+    assert.equal(
+      startResult.status,
+      0,
+      `PostgreSQL cluster failed to start: ${readFileSync(logFile, "utf8")}`,
+    );
 
     let ready = false;
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 100; i++) {
       const check = runPsql(["-c", "SELECT 1;"]);
       if (check.status === 0) {
         ready = true;
         break;
       }
-      const end = Date.now() + 200;
-      while (Date.now() < end) {}
+      await new Promise((resolve) => setTimeout(resolve, 200));
     }
-    assert.ok(ready, "Isolated PostgreSQL cluster failed to become ready");
+    assert.ok(
+      ready,
+      `Isolated PostgreSQL cluster failed to become ready: ${readFileSync(logFile, "utf8")}`,
+    );
 
     // 1. Setup base tables & Supabase standard roles using canonical schema (id, status, document)
     const setupSql = `
