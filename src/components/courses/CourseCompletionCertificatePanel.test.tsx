@@ -96,6 +96,20 @@ describe("CourseCompletionCertificatePanel", () => {
     expect(bodyText).toContain("Hoàn tác trạng thái hoàn thành khóa học");
     expect(bodyText).toContain("chứng nhận đã cấp sẽ được bảo lưu");
 
+    const radioCards = document.body.querySelectorAll<HTMLElement>(
+      '[data-slot="select-card"]',
+    );
+    const radios = document.body.querySelectorAll<HTMLElement>('[role="radio"]');
+    expect(radioCards).toHaveLength(2);
+    expect(radioCards[0]?.className).toContain("bg-surface-raised");
+    expect(radios).toHaveLength(2);
+    expect(radios[0]?.getAttribute("aria-checked")).toBe("true");
+    expect(radios[1]?.getAttribute("aria-checked")).toBe("false");
+
+    await act(async () => {
+      radioCards[1]?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
     // Click confirm button
     const confirmBtn = Array.from(document.body.querySelectorAll("button")).find((btn) =>
       btn.textContent?.includes("Xác nhận hoàn tác"),
@@ -106,7 +120,7 @@ describe("CourseCompletionCertificatePanel", () => {
       confirmBtn?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
-    expect(onRevert).toHaveBeenCalledWith("last_lesson");
+    expect(onRevert).toHaveBeenCalledWith("reset_all");
 
     await view.unmount();
   });

@@ -12,8 +12,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { RadioCard } from "@/components/ui/selection";
 import type { RevertCourseCompletionMode } from "@/lib/courses";
-import { cn } from "@/lib/utils";
 
 export interface RevertCourseCompletionDialogProps {
   open: boolean;
@@ -83,33 +83,11 @@ export function RevertCourseCompletionDialog({
             onValueChange={(val) => setMode(val as RevertCourseCompletionMode)}
             className="flex flex-col gap-2.5"
           >
-            {/* Option 1: last_lesson (Recommended) */}
-            <div
-              role="radio"
-              aria-checked={mode === "last_lesson"}
-              tabIndex={0}
-              onClick={() => setMode("last_lesson")}
-              onKeyDown={(e) => {
-                if (e.key === " " || e.key === "Enter") {
-                  e.preventDefault();
-                  setMode("last_lesson");
-                }
-              }}
-              className={cn(
-                "group relative flex cursor-pointer items-start gap-3.5 rounded-xl border p-4 transition-all duration-150 outline-none",
-                mode === "last_lesson"
-                  ? "border-primary bg-primary/[0.04] shadow-sm ring-1 ring-primary/30"
-                  : "border-border bg-surface hover:border-border-strong hover:bg-surface-raised",
-              )}
-            >
-              <div className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border border-border group-hover:border-border-strong">
-                {mode === "last_lesson" && (
-                  <div className="size-2 rounded-full bg-primary" />
-                )}
-              </div>
-              <div className="min-w-0 flex-1 space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-semibold text-foreground">
+            <RadioCard
+              value="last_lesson"
+              label={
+                <span className="flex flex-wrap items-center gap-2 font-semibold">
+                  <span>
                     {t("detail.learn.completion.revertLastLessonTitle", {
                       defaultValue: "Hoàn tác bài học gần nhất",
                     })}
@@ -119,43 +97,25 @@ export function RevertCourseCompletionDialog({
                       defaultValue: "Khuyên dùng",
                     })}
                   </span>
-                </div>
-                <p className="text-xs leading-relaxed text-foreground-muted">
+                </span>
+              }
+              supportingText={
+                <span className="leading-relaxed">
                   {t("detail.learn.completion.revertLastLessonDesc", {
                     defaultValue:
                       "Khóa học sẽ trở về trạng thái đang học với tiến độ trước đó để bạn tiếp tục ôn tập.",
                   })}
-                </p>
-              </div>
-            </div>
+                </span>
+              }
+              orientation="horizontal"
+              size="small"
+            />
 
-            {/* Option 2: reset_all */}
-            <div
-              role="radio"
-              aria-checked={mode === "reset_all"}
-              tabIndex={0}
-              onClick={() => setMode("reset_all")}
-              onKeyDown={(e) => {
-                if (e.key === " " || e.key === "Enter") {
-                  e.preventDefault();
-                  setMode("reset_all");
-                }
-              }}
-              className={cn(
-                "group relative flex cursor-pointer items-start gap-3.5 rounded-xl border p-4 transition-all duration-150 outline-none",
-                mode === "reset_all"
-                  ? "border-primary bg-primary/[0.04] shadow-sm ring-1 ring-primary/30"
-                  : "border-border bg-surface hover:border-border-strong hover:bg-surface-raised",
-              )}
-            >
-              <div className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border border-border group-hover:border-border-strong">
-                {mode === "reset_all" && (
-                  <div className="size-2 rounded-full bg-primary" />
-                )}
-              </div>
-              <div className="min-w-0 flex-1 space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-semibold text-foreground">
+            <RadioCard
+              value="reset_all"
+              label={
+                <span className="flex flex-wrap items-center gap-2 font-semibold">
+                  <span>
                     {t("detail.learn.completion.resetAllTitle", {
                       defaultValue: "Đặt lại toàn bộ khóa học",
                     })}
@@ -165,15 +125,19 @@ export function RevertCourseCompletionDialog({
                       defaultValue: "0%",
                     })}
                   </span>
-                </div>
-                <p className="text-xs leading-relaxed text-foreground-muted">
+                </span>
+              }
+              supportingText={
+                <span className="leading-relaxed">
                   {t("detail.learn.completion.resetAllDesc", {
                     defaultValue:
                       "Xóa tiến độ của tất cả bài học trong khóa này để bạn bắt đầu lại từ đầu.",
                   })}
-                </p>
-              </div>
-            </div>
+                </span>
+              }
+              orientation="horizontal"
+              size="small"
+            />
           </RadioGroup>
 
           {certificateIssued && (
