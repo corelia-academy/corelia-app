@@ -38,6 +38,25 @@
   --color-blue-700: var(--blue-700);
   --color-blue-800: var(--blue-800);
   --color-blue-900: var(--blue-900);
+  /* Issue #387 — Figma Tabs semantic aliases. */
+  --color-tabs-background: var(--tabs-background);
+  --color-tabs-badge-active: var(--tabs-badge-active);
+  --color-tabs-badge-background: var(--tabs-badge-background);
+  --color-tabs-badge-disabled: var(--tabs-badge-disabled);
+  --color-tabs-badge-text: var(--tabs-badge-text);
+  --color-tabs-border-active: var(--tabs-border-active);
+  --color-tabs-border-divider: var(--tabs-border-divider);
+  --color-tabs-border-input: var(--tabs-border-input);
+  --color-tabs-border-secondary: var(--tabs-border-secondary);
+  --color-tabs-surface-hover: var(--tabs-surface-hover);
+  --color-tabs-text-gray: var(--tabs-text-gray);
+  --color-tabs-text-invert: var(--tabs-text-invert);
+  --color-tabs-text-primary: var(--tabs-text-primary);
+  --color-tabs-text-disabled: var(--tabs-text-disabled);
+  --color-tabs-active-accent: var(--tabs-active-accent);
+  --color-tabs-active-text-level1: var(--tabs-active-text-level1);
+  --color-tabs-active-text-level2a: var(--tabs-active-text-level2a);
+  --shadow-tabs: var(--tabs-shadow);
   --color-error-50: var(--error-50);
   --color-error-100: var(--error-100);
   --color-error-300: var(--error-300);
@@ -618,6 +637,26 @@
   --text-primary-2: #121926;
   --text-secondary: #4b5565;
 
+  /* Exact Figma Tabs mappings for Light mode. */
+  --tabs-background: var(--background);
+  --tabs-badge-active: var(--blue-400);
+  --tabs-badge-background: var(--neutral-300);
+  --tabs-badge-disabled: var(--neutral-100);
+  --tabs-badge-text: var(--neutral-800);
+  --tabs-border-active: var(--neutral-700);
+  --tabs-border-divider: var(--neutral-300);
+  --tabs-border-input: var(--neutral-500);
+  --tabs-border-secondary: var(--blue-400);
+  --tabs-surface-hover: var(--neutral-100);
+  --tabs-text-gray: var(--neutral-500);
+  --tabs-text-invert: var(--neutral-50);
+  --tabs-text-primary: var(--neutral-900);
+  --tabs-text-disabled: var(--neutral-500);
+  --tabs-active-accent: var(--blue-500);
+  --tabs-active-text-level1: var(--blue-300);
+  --tabs-active-text-level2a: var(--blue-400);
+  --tabs-shadow: 0 1px 3px 0 #10182826;
+
   /* ==========================================
      LIGHT MODE: Material You (Google) — sáng, đơn giản, rực rỡ có kiểm soát
      ========================================== */
@@ -786,6 +825,26 @@
   --foreground: var(--neutral-50);
   --foreground-muted: var(--neutral-300);
   --foreground-subtle: var(--neutral-400);
+
+  /* Exact Figma Tabs mappings for Dark mode. */
+  --tabs-background: var(--background);
+  --tabs-badge-active: var(--blue-400);
+  --tabs-badge-background: var(--neutral-600);
+  --tabs-badge-disabled: var(--neutral-800);
+  --tabs-badge-text: var(--neutral-100);
+  --tabs-border-active: var(--neutral-200);
+  --tabs-border-divider: var(--neutral-600);
+  --tabs-border-input: var(--neutral-500);
+  --tabs-border-secondary: var(--blue-400);
+  --tabs-surface-hover: var(--neutral-800);
+  --tabs-text-gray: var(--neutral-400);
+  --tabs-text-invert: var(--neutral-900);
+  --tabs-text-primary: var(--neutral-50);
+  --tabs-text-disabled: var(--neutral-500);
+  --tabs-active-accent: var(--blue-500);
+  --tabs-active-text-level1: var(--blue-300);
+  --tabs-active-text-level2a: var(--blue-400);
+  --tabs-shadow: 0 1px 3px 0 #10182826;
 
   --card: color-mix(in srgb, var(--neutral-900) 92%, var(--neutral-300));
   --card-foreground: var(--neutral-50);

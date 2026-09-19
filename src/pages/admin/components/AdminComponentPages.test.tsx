@@ -16,6 +16,7 @@ import AdminScrollbarComponentPage from "./AdminScrollbarComponentPage";
 import AdminSelectionComponentPage from "./AdminSelectionComponentPage";
 import AdminSeparatorComponentPage from "./AdminSeparatorComponentPage";
 import AdminTagComponentPage from "./AdminTagComponentPage";
+import AdminTabsComponentPage from "./AdminTabsComponentPage";
 import AdminToggleComponentPage from "./AdminToggleComponentPage";
 
 const pages = [
@@ -26,6 +27,7 @@ const pages = [
   AdminToggleComponentPage,
   AdminSeparatorComponentPage,
   AdminScrollbarComponentPage,
+  AdminTabsComponentPage,
 ];
 
 describe("admin component detail pages", () => {
@@ -367,6 +369,91 @@ describe("admin component detail pages", () => {
 
     const disabledSelectedRadioCard = container.querySelector<HTMLElement>('[data-testid="selection-radio-card-state-horizontal-small-disabled-selected"]');
     expect(disabledSelectedRadioCard?.querySelector<HTMLElement>('[role="radio"]')?.getAttribute("aria-checked")).toBe("true");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("keeps the Tabs showcase interactive and controlled", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <AdminTabsComponentPage />
+        </MemoryRouter>,
+      );
+    });
+
+    expect(container.querySelectorAll('[data-testid^="tabs-standalone-level-"]')).toHaveLength(5);
+    expect(container.querySelectorAll('[data-testid^="tabs-grouped-level-"]')).toHaveLength(5);
+    expect(container.querySelectorAll('[data-slot="tabs-group"]')).toHaveLength(9);
+    expect(container.querySelectorAll('[data-testid$="-status"]')).toHaveLength(0);
+    expect(container.querySelector('[data-testid="tabs-standalone-1-vertical"]')).toBeNull();
+    expect(container.querySelector('[data-testid="tabs-standalone-2a-vertical"]')).toBeNull();
+    expect(container.querySelector('[data-testid="tabs-grouped-2a-vertical"]')).toBeNull();
+    expect(container.querySelector('[data-testid="tabs-standalone-2b-horizontal-keyboard"]')).toBeNull();
+    expect(container.querySelector('[data-testid="tabs-grouped-2b-horizontal-keyboard"]')).toBeNull();
+    expect(container.textContent).not.toContain("Controlled and keyboard behavior");
+
+    const standalone2a = container.querySelector<HTMLElement>(
+      '[data-testid="tabs-standalone-level-2a"]',
+    );
+    const standalone2b = container.querySelector<HTMLElement>(
+      '[data-testid="tabs-standalone-level-2b"]',
+    );
+    const standalone3a = container.querySelector<HTMLElement>(
+      '[data-testid="tabs-standalone-level-3a"]',
+    );
+    const standalone3b = container.querySelector<HTMLElement>(
+      '[data-testid="tabs-standalone-level-3b"]',
+    );
+
+    expect(standalone2a?.parentElement?.className).toContain("xl:grid-cols-2");
+    expect(standalone2a?.nextElementSibling).toBe(standalone2b);
+    expect(standalone3a?.parentElement?.className).toContain("xl:grid-cols-2");
+    expect(standalone3a?.nextElementSibling).toBe(standalone3b);
+
+    const example = container.querySelector<HTMLElement>(
+      '[data-testid="tabs-standalone-2b-horizontal"]',
+    );
+    const activityTab = example?.querySelector<HTMLButtonElement>(
+      '[data-testid="tabs-standalone-2b-horizontal-tab-activity"]',
+    );
+    const settingsTab = example?.querySelector<HTMLButtonElement>(
+      '[data-testid="tabs-standalone-2b-horizontal-tab-settings"]',
+    );
+    const overviewPanel = example?.querySelector<HTMLElement>(
+      '[data-testid="tabs-standalone-2b-horizontal-panel-overview"]',
+    );
+    const activityPanel = example?.querySelector<HTMLElement>(
+      '[data-testid="tabs-standalone-2b-horizontal-panel-activity"]',
+    );
+
+    expect(activityTab).not.toBeNull();
+    expect(example?.querySelector('[data-slot="tabs-group"]')).toBeNull();
+    expect(example?.querySelector('[data-slot="tabs-list"]')?.getAttribute("data-level")).toBe("2b");
+    expect(settingsTab?.getAttribute("aria-disabled")).toBe("true");
+    expect(overviewPanel?.hidden).toBe(false);
+    expect(activityPanel?.hidden).toBe(true);
+
+    await act(async () => activityTab?.click());
+
+    expect(activityTab?.getAttribute("aria-selected")).toBe("true");
+    expect(overviewPanel?.hidden).toBe(true);
+    expect(activityPanel?.hidden).toBe(false);
+
+    const groupedExample = container.querySelector<HTMLElement>(
+      '[data-testid="tabs-grouped-2b-horizontal"]',
+    );
+    expect(groupedExample?.querySelector('[data-slot="tabs-group"]')).not.toBeNull();
+    expect(groupedExample?.querySelector('[data-slot="tabs-list"]')?.getAttribute("data-level")).toBe("2b");
+
+    await act(async () => settingsTab?.click());
+
+    expect(activityTab?.getAttribute("aria-selected")).toBe("true");
 
     await act(async () => root.unmount());
     container.remove();
