@@ -322,7 +322,22 @@
           "assignment_not_approved": "The final assignment must be approved before the certificate can be issued.",
           "issued": "Your Corelia certificate is ready.",
           "unknown": "The certificate is waiting for eligibility confirmation."
-        }
+        },
+        "revertAction": "Revert completion",
+        "revertDialogTitle": "Revert course completion",
+        "revertDialogDescription": "Choose a revert option to return this course to in-progress.",
+        "revertLastLessonTitle": "Revert most recent lesson",
+        "revertRecommendedBadge": "Recommended",
+        "revertLastLessonDesc": "The course returns to in-progress with your previous progress so you can continue studying.",
+        "resetAllTitle": "Reset entire course",
+        "resetAllBadge": "0%",
+        "resetAllDesc": "Clears progress on all lessons in this course so you can start over from the beginning.",
+        "revertPreserveCertificateTitle": "Certificate safely preserved",
+        "revertPreserveCertificateNotice": "Reverting will mark your learning progress as incomplete so you can continue studying; any issued certificate will be preserved. Do you want to proceed?",
+        "revertSuccess": "Course completion status has been reverted.",
+        "revertError": "Unable to revert progress at this time.",
+        "revertCancel": "Cancel",
+        "revertConfirm": "Confirm revert"
       },
       "finalAssignmentTitle": "Final assignment",
       "finalAssignmentAccessRequired": "Course access is required to open the final assignment.",

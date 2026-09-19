@@ -97,7 +97,11 @@ export function HomeHeader({
                 nativeButton={false}
                 size="sm"
               >
-                {featuredFocus ? t("home.continueLearning") : t("home.exploreCourses")}
+                {featuredFocus
+                  ? featuredFocus.completed
+                    ? t("home.viewCourse")
+                    : t("home.continueLearning")
+                  : t("home.exploreCourses")}
                 <ArrowRight className="size-4 shrink-0" aria-hidden />
               </Button>
               <Button
