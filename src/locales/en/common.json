@@ -213,7 +213,8 @@
       "replaceHint": "Applying replaces the current translation with this preview.",
       "apply": "Apply translation",
       "discard": "Discard translation",
-      "rateLimited": "You have used 10 translations in one hour. Please try again later."
+      "rateLimited": "You have completed 10 translations in one hour. Please try again later.",
+      "moderationRateLimited": "Too many blocked translation requests in one hour. Please try again later."
     },
     "title": "Projects",
     "description": "A public gallery of projects across the Corelia ecosystem.",
