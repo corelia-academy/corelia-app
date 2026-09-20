@@ -3,8 +3,12 @@ import { Window } from "happy-dom";
 import { escapeHtml } from "../../supabase/functions/corelia-api/lib/html.ts";
 import { emailSection, inlineEmailHtml, renderEmailFrame } from "../../supabase/functions/corelia-api/lib/mail/render.ts";
 
-export const authNames = ["confirmation", "recovery", "reauthentication"];
-const localeAction = '{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}';
+export const authNames = [
+  "invite", "confirmation", "recovery", "magic_link", "email_change", "reauthentication",
+  "password_changed", "email_changed", "phone_changed", "mfa_factor_enrolled",
+  "mfa_factor_unenrolled", "identity_linked", "identity_unlinked",
+];
+const localeAction = '{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}';
 
 export function buildAuthTemplate(name) {
   if (!authNames.includes(name)) throw new Error("Unknown Auth template");
@@ -47,8 +51,8 @@ export function renderAuthFixture(html, { locale, token = "123456", appUrl, conf
     }
     const action = part.slice(2, -2).trim().replace(/\s+/g, " ");
     if (action.startsWith("if ")) {
-      const condition = action === 'if or (eq .Data.locale "vi") (eq .Data.locale "vn")'
-        ? ["vi", "vn"].includes(locale)
+      const condition = action === 'if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN")'
+        ? ["vi", "vn", "vi-VN", "vi-vn", "VI", "VN"].includes(locale)
         : action === "if .Token" ? Boolean(token) : undefined;
       if (condition === undefined) throw new Error(`Unsupported fixture action: ${action}`);
       branches.push({ active: condition, condition });

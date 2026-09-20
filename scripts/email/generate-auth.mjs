@@ -9,4 +9,4 @@ for (const name of authNames) {
     if (readFileSync(target, "utf8") !== html) throw new Error(`Auth template out of date: ${name}. Run pnpm email:auth:generate.`);
   } else writeFileSync(target, html);
 }
-console.log(check ? "Auth templates are in sync." : "Generated three Auth templates.");
+console.log(check ? "Auth templates are in sync." : `Generated ${authNames.length} Auth templates.`);

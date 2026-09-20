@@ -8,15 +8,15 @@
       </div>
       <div class="e-hero">
         <span class="e-hero-tag"
-          >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Xác nhận
+          >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Xác nhận
           tài khoản{{ else }}Account Confirmation{{ end }}</span
         >
         <h2>
-          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Xác nhận
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Xác nhận
           email của bạn ✉️{{ else }}Confirm your email ✉️{{ end }}
         </h2>
         <p>
-          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Cảm ơn bạn đã đăng ký Corelia Academy.
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Cảm ơn bạn đã đăng ký Corelia Academy.
           Nhấn vào nút bên dưới để xác nhận địa chỉ email và kích hoạt tài
           khoản.{{ else }}Thanks for signing up for Corelia
           Academy. Click the button below to confirm your email address and
@@ -25,39 +25,39 @@
       </div>
       <div class="e-body">
         <p>
-          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Link xác nhận sẽ hết hạn sau 24 giờ. Nếu bạn không
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Link xác nhận sẽ hết hạn sau 24 giờ. Nếu bạn không
           đăng ký tài khoản này, hãy bỏ qua email.{{ else }}The confirmation link expires in 24
           hours. If you didn't create this account, you can safely ignore this
           email.{{ end }}
         </p>
         {{ if .Token }}
         <p>
-          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Nếu nút không hoạt động (ví dụ do quét link an toàn), bạn có thể nhập mã một lần sau khi mở trang đăng nhập / xác nhận của Corelia: <strong>{{ .Token }}</strong>{{ else }}If the button fails (for example due to safe-link scanners), you can enter this one-time code after opening Corelia’s confirmation flow: <strong>{{ .Token }}</strong>{{ end }}
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Nếu nút không hoạt động (ví dụ do quét link an toàn), bạn có thể nhập mã một lần sau khi mở trang đăng nhập / xác nhận của Corelia: <strong>{{ .Token }}</strong>{{ else }}If the button fails (for example due to safe-link scanners), you can enter this one-time code after opening Corelia’s confirmation flow: <strong>{{ .Token }}</strong>{{ end }}
         </p>
         {{ end }}
       </div>
       <div class="e-cta-wrap">
         <!-- Opens app first (anti-prefetch); confirm URL is built on the page from token + redirect_to — avoids raw ConfirmationURL & breaking query strings in mail clients. -->
         <a href="{{ .SiteURL }}/confirm-signup?token={{ .TokenHash }}&type=signup&redirect_to={{ .RedirectTo }}" class="e-btn e-btn-teal"
-          >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Xác nhận email
+          >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Xác nhận email
           →{{ else }}Confirm Email →{{ end }}</a
         >
       </div>
       <div class="e-divider"></div>
       <div class="e-footer">
         <p>
-          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Bạn nhận email này vì vừa đăng
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Bạn nhận email này vì vừa đăng
           ký tài khoản tại app.corelia.academy{{ else }}You received this because an account was
           created at app.corelia.academy{{ end }}
         </p>
         <p>
           <a href="#"
-            >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Chính sách bảo
+            >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Chính sách bảo
             mật{{ else }}Privacy Policy{{ end }}</a
           >
           ·
           <a href="#"
-            >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Liên hệ{{ else }}Contact{{ end }}</a
+            >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Liên hệ{{ else }}Contact{{ end }}</a
           >
         </p>
       </div>

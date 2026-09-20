@@ -16,11 +16,18 @@ export function resolveAppUrl(): string {
   return raw.replace(/\/+$/, "");
 }
 
+export function resolveEmailAssetBaseUrl(): string {
+  const supabaseUrl = typeof Deno !== "undefined" ? Deno.env.get("SUPABASE_URL")?.trim() ?? "" : "";
+  return supabaseUrl
+    ? `${supabaseUrl.replace(/\/+$/, "")}/storage/v1/object/public/public_files/email-assets/v1`
+    : `${resolveAppUrl()}/email-assets`;
+}
+
 /** Environment and per-send identity stay on the server; the renderer is pure. */
 export function wrapTransactionalEmail(params: TransactionalWrapParams): string {
   const fingerprint = params.fingerprint?.trim()
     || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-  return renderTransactionalEmail({ ...params, fingerprint }, { appUrl: resolveAppUrl() });
+  return renderTransactionalEmail({ ...params, fingerprint }, { appUrl: resolveAppUrl(), assetBaseUrl: resolveEmailAssetBaseUrl() });
 }
 
 export type BlastEmailKind = "course" | "career_track" | "hackathon";

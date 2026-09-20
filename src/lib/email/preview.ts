@@ -24,7 +24,8 @@ export function emailPreviewValues(draft: EmailPreviewDraft, appUrl: string, ove
 /** Uses exactly the same pure renderer as the server; no transport or secrets. */
 export function buildEmailPreview(draft: EmailPreviewDraft, appUrl: string, values: Record<string, string>): { html: string; error: EmailPreviewError | null } {
   try {
-    return { html: renderEmailDocument({ ...draft, values }, { appUrl }, "preview").html, error: null };
+    const assetBaseUrl = `${import.meta.env.VITE_SUPABASE_URL?.replace(/\/+$/, "")}/storage/v1/object/public/public_files/email-assets/v1`;
+    return { html: renderEmailDocument({ ...draft, values }, { appUrl, assetBaseUrl }, "preview").html, error: null };
   } catch (error) {
     const code = error instanceof Error ? error.message : "";
     return { html: "", error: code === "unsafe_cta_url" ? "invalidCtaUrl" : code === "unsafe_image_url" ? "invalidImageUrl" : "previewFailed" };

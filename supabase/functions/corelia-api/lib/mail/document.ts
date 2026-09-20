@@ -1,5 +1,6 @@
 import { escapeHtml } from "../html.ts";
 import { emailCtaButton, renderTransactionalEmail, type EmailRenderContext } from "./render.ts";
+import { normalizeEmailLocale } from "./locale.ts";
 
 const TOKEN = /{{\s*([a-zA-Z0-9_.-]+)\s*}}/g;
 
@@ -54,7 +55,7 @@ export function renderEmailDocument(params: EmailDocumentParams, context: EmailR
     event: { vi: "Chương trình và sự kiện", en: "Programs and events" },
     marketing: { vi: "Tin mới từ Corelia", en: "News from Corelia" },
   };
-  const locale = params.locale === "en" ? "en" : "vi";
+  const locale = normalizeEmailLocale(params.locale);
   const footer = locale === "vi" ? "Email được gửi bởi Corelia." : "This email was sent by Corelia.";
   const unsubscribe = params.unsubscribeUrl
     ? `<p><a href="${escapeHtml(params.unsubscribeUrl)}">${locale === "vi" ? "Hủy đăng ký nhận email" : "Unsubscribe"}</a></p>`

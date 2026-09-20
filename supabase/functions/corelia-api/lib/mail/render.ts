@@ -1,12 +1,9 @@
 import { escapeHtml } from "../html.ts";
 import { EMAIL_BRAND as b, EMAIL_CLASS_STYLES, EMAIL_STYLES } from "./brand.ts";
+import { normalizeEmailLocale } from "./locale.ts";
+export { normalizeEmailLocale, parseEmailLocale, resolveRecipientEmailLocale, type EmailLocale, type EmailLocaleSource } from "./locale.ts";
 
-export type EmailLocale = "vi" | "en";
-export function normalizeEmailLocale(locale?: string | null): EmailLocale {
-  return ["vi", "vn"].includes((locale ?? "").trim().toLowerCase()) ? "vi" : "en";
-}
-
-export type EmailRenderContext = { appUrl: string; logoUrl?: string; backgroundUrl?: string };
+export type EmailRenderContext = { appUrl: string; assetBaseUrl?: string; logoUrl?: string; backgroundUrl?: string };
 export type TransactionalWrapParams = {
   locale?: string | null;
   heroTag: string;
@@ -57,12 +54,13 @@ export function renderEmailFrame(params: {
   fingerprint?: string;
 }, context: EmailRenderContext): string {
   const appUrl = context.appUrl.replace(/\/+$/, "");
-  const backgroundUrl = context.backgroundUrl ?? `${appUrl}${b.backgroundPath}`;
+  const assetBaseUrl = (context.assetBaseUrl ?? `${appUrl}/email-assets`).replace(/\/+$/, "");
+  const backgroundUrl = context.backgroundUrl ?? `${assetBaseUrl}/corelia-background-v1.jpg`;
   const fonts = `
-    @font-face { font-family:Akt;src:url('${appUrl}/email-assets/akt-medium.ttf') format('truetype');font-weight:500;font-style:normal;font-display:swap; }
-    @font-face { font-family:'TT Norms Pro Trial';src:url('${appUrl}/email-assets/tt-norms-pro-normal.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap; }
-    @font-face { font-family:'TT Norms Pro Trial';src:url('${appUrl}/email-assets/tt-norms-pro-medium.ttf') format('truetype');font-weight:500;font-style:normal;font-display:swap; }
-    @font-face { font-family:'PP Supply Sans';src:url('${appUrl}/email-assets/pp-supply-sans-regular.otf') format('opentype');font-weight:400;font-style:normal;font-display:swap; }
+    @font-face { font-family:Akt;src:url('${assetBaseUrl}/akt-medium.ttf') format('truetype');font-weight:500;font-style:normal;font-display:swap; }
+    @font-face { font-family:'TT Norms Pro Trial';src:url('${assetBaseUrl}/tt-norms-pro-normal.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap; }
+    @font-face { font-family:'TT Norms Pro Trial';src:url('${assetBaseUrl}/tt-norms-pro-medium.ttf') format('truetype');font-weight:500;font-style:normal;font-display:swap; }
+    @font-face { font-family:'PP Supply Sans';src:url('${assetBaseUrl}/pp-supply-sans-regular.otf') format('opentype');font-weight:400;font-style:normal;font-display:swap; }
   `.trim();
   const preheader = params.preheader ? `<div style="display:none!important;visibility:hidden;opacity:0;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:${b.background};">${escapeHtml(params.preheader)}</div>` : "";
   // The background is isolated from content styles so stripping it cannot erase typography.

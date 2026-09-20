@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}vi{{ else }}en{{ end }}">
+<html lang="{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}vi{{ else }}en{{ end }}">
 <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="color-scheme" content="dark" /><meta name="supported-color-schemes" content="dark" />
-<title>{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Đặt lại
+<title>{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Đặt lại
           mật khẩu 🔑{{ else }}Reset your password 🔑{{ end }}</title><style>@font-face { font-family:Akt;src:url('{{ .SiteURL }}/email-assets/akt-medium.ttf') format('truetype');font-weight:500;font-style:normal;font-display:swap; }
     @font-face { font-family:'TT Norms Pro Trial';src:url('{{ .SiteURL }}/email-assets/tt-norms-pro-normal.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap; }
     @font-face { font-family:'TT Norms Pro Trial';src:url('{{ .SiteURL }}/email-assets/tt-norms-pro-medium.ttf') format('truetype');font-weight:500;font-style:normal;font-display:swap; }
@@ -14,7 +14,7 @@
   }
 </style></head>
 <body bgcolor="#0a0913" style="margin:0;padding:0;background-color:#0a0913;color:#eae6e3;font-family:'TT Norms Pro Trial', Arial, 'Helvetica Neue', Helvetica, sans-serif;">
-<div style="display:none!important;visibility:hidden;opacity:0;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#0a0913;">{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Đặt lại
+<div style="display:none!important;visibility:hidden;opacity:0;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#0a0913;">{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Đặt lại
           mật khẩu 🔑{{ else }}Reset your password 🔑{{ end }}</div>
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#0a0913" style="width:100%;background-color:#0a0913;border-collapse:collapse;">
 <tr><td background="{{ .SiteURL }}/email-assets/corelia-background-v1.jpg" style="background-image:url('{{ .SiteURL }}/email-assets/corelia-background-v1.jpg');background-position:center;background-size:cover;background-repeat:no-repeat;">
@@ -23,53 +23,53 @@
 <table role="presentation" class="e-container" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#0a0913" style="width:100%;max-width:600px;table-layout:fixed;margin:0 auto;border:1px solid #2b2b3b;border-collapse:separate;border-spacing:0;background-color:#0a0913;color:#eae6e3;font-family:'TT Norms Pro Trial', Arial, 'Helvetica Neue', Helvetica, sans-serif;font-size:16px;line-height:1.6;overflow-wrap:anywhere;word-break:break-word;text-align:left;">
 <tr><td class="e-header" style="padding:12px 24px;background-color:#0a0913;border-bottom:1px solid #2b2b3b;"><img src="https://lawhkvyyoznwygzsycan.supabase.co/storage/v1/object/public/public_files/Corelia_Logo_White.png" alt="Corelia Academy" width="125" height="50" style="display:block;width:125px;max-width:100%;height:50px;object-fit:contain;border:0;color:#eae6e3;font-size:16px;" /></td></tr>
 <tr><td class="e-hero" style="padding:30px 24px 10px;">
-        <span class="e-hero-tag" style="display:block;font-family:'PP Supply Sans', 'Courier New', monospace;font-size:10px;font-weight:400;letter-spacing:0.05em;text-transform:uppercase;color:#cbd1e2;margin-bottom:14px;">{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Bảo mật tài
+        <span class="e-hero-tag" style="display:block;font-family:'PP Supply Sans', 'Courier New', monospace;font-size:10px;font-weight:400;letter-spacing:0.05em;text-transform:uppercase;color:#cbd1e2;margin-bottom:14px;">{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Bảo mật tài
           khoản{{ else }}Account Security{{ end }}</span>
         <h2 style="margin:0 0 14px;font-family:Akt, Arial, 'Helvetica Neue', Helvetica, sans-serif;font-size:30px;line-height:1.15;letter-spacing:-0.02em;font-weight:500;color:#eae6e3;">
-          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Đặt lại
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Đặt lại
           mật khẩu 🔑{{ else }}Reset your password 🔑{{ end }}
         </h2>
         <p style="margin:0 0 16px;line-height:1.6;color:#b6b8c8;">
-          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.
           Nhấn vào nút bên dưới để tiếp tục.{{ else }}We received a request to reset the
           password for your account. Click the button below to proceed.{{ end }}
         </p>
       </td></tr>
 <tr><td class="e-body" style="padding:16px 24px 24px;">
         <p style="margin:0 0 16px;line-height:1.6;color:#b6b8c8;">
-          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Link sẽ hết hạn sau 30 phút. Nếu bạn không yêu cầu,
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Link sẽ hết hạn sau 30 phút. Nếu bạn không yêu cầu,
           hãy bỏ qua email này — tài khoản vẫn an toàn.{{ else }}The link expires in 30 minutes. If you
           didn't request this, ignore this email — your account remains
           secure.{{ end }}
         </p>
       </td></tr>
 <tr><td class="e-cta-wrap" style="padding:0 24px 28px;border-bottom:1px solid #2b2b3b;">
-        <a href="{{ .ConfirmationURL }}" class="e-btn e-btn-teal" style="color:#9bbcff;text-decoration:underline;overflow-wrap:anywhere;word-break:break-word;display:inline-block;box-sizing:border-box;max-width:100%;background-color:#1759f1;color:#f4f7ff;font-size:16px;font-weight:400;line-height:1.4;padding:11px 16px;border:1px solid #5ba3ff;border-radius:8px;text-decoration:none;text-align:center;overflow-wrap:anywhere;word-break:break-word;">{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Đặt lại mật
+        <a href="{{ .ConfirmationURL }}" class="e-btn e-btn-teal" style="color:#9bbcff;text-decoration:underline;overflow-wrap:anywhere;word-break:break-word;display:inline-block;box-sizing:border-box;max-width:100%;background-color:#1759f1;color:#f4f7ff;font-size:16px;font-weight:400;line-height:1.4;padding:11px 16px;border:1px solid #5ba3ff;border-radius:8px;text-decoration:none;text-align:center;overflow-wrap:anywhere;word-break:break-word;">{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Đặt lại mật
           khẩu →{{ else }}Reset Password →{{ end }}</a>
       </td></tr>
 <tr><td class="e-info-card" style="padding:20px 24px;background-color:#12121e;border-top:1px solid #2b2b3b;border-bottom:1px solid #2b2b3b;">
         <div class="e-info-card-label" style="font-family:'PP Supply Sans', 'Courier New', monospace;font-size:10px;font-weight:400;letter-spacing:0.05em;text-transform:uppercase;color:#cbd1e2;margin-bottom:12px;">
-          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Thông tin bảo
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Thông tin bảo
           mật{{ else }}Security Details{{ end }}
         </div>
 
         <div class="e-info-row" style="font-size:14px;line-height:1.6;">
-          <span class="e-info-key" style="display:inline-block;margin-right:16px;color:#b6b8c8;">{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Hiệu lực{{ else }}Expires In{{ end
-            }}</span><span class="e-info-val" style="display:inline-block;color:#eae6e3;font-weight:700;">{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}30 phút{{ else }}30 minutes{{ end
+          <span class="e-info-key" style="display:inline-block;margin-right:16px;color:#b6b8c8;">{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Hiệu lực{{ else }}Expires In{{ end
+            }}</span><span class="e-info-val" style="display:inline-block;color:#eae6e3;font-weight:700;">{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}30 phút{{ else }}30 minutes{{ end
             }}</span>
         </div>
       </td></tr>
 <tr><td class="e-footer" style="padding:22px 24px;background-color:#0a0913;font-size:12px;color:#b6b8c8;line-height:1.6;">
         <p style="margin:0 0 16px;line-height:1.6;color:#b6b8c8;">
-          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Bạn nhận email này
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Bạn nhận email này
           vì có yêu cầu đặt lại mật khẩu tại app.corelia.academy{{ else }}You received this because a password
           reset was requested at app.corelia.academy{{ end }}
         </p>
         <p style="margin:0 0 16px;line-height:1.6;color:#b6b8c8;">
-          <a href="#" style="color:#9bbcff;text-decoration:underline;overflow-wrap:anywhere;word-break:break-word;">{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Chính sách bảo
+          <a href="#" style="color:#9bbcff;text-decoration:underline;overflow-wrap:anywhere;word-break:break-word;">{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Chính sách bảo
             mật{{ else }}Privacy Policy{{ end }}</a>
           ·
-          <a href="#" style="color:#9bbcff;text-decoration:underline;overflow-wrap:anywhere;word-break:break-word;">{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Liên hệ{{ else }}Contact{{ end }}</a>
+          <a href="#" style="color:#9bbcff;text-decoration:underline;overflow-wrap:anywhere;word-break:break-word;">{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Liên hệ{{ else }}Contact{{ end }}</a>
         </p>
       </td></tr>
 </table><!--[if mso]></td></tr></table><![endif]-->

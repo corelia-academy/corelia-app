@@ -6,6 +6,8 @@ import { isTransactionalEmailConfigured } from "../lib/mail/resend.ts";
 import type { SupabaseClient } from "../lib/supabase.ts";
 import { renderEmailDocument } from "./template.ts";
 import { processNextImportChunk } from "./importWorker.ts";
+import { selectLocalizedEmailContent } from "../lib/mail/localized.ts";
+import { normalizeEmailLocale } from "../lib/mail/locale.ts";
 
 type Recipient = {
   id: string;
@@ -15,6 +17,9 @@ type Recipient = {
   personalization: Record<string, unknown>;
   attempts: number;
   dispatch_batch_key: string;
+  resolved_locale?: string;
+  locale_source?: string;
+  request_snapshot?: Record<string, unknown> | null;
 };
 
 function env(name: string): string { return Deno.env.get(name)?.trim() ?? ""; }
@@ -53,18 +58,28 @@ async function dispatchBatch(db: SupabaseClient, campaign: Record<string, unknow
   if (!rows.length) return { accepted: 0, failed: 0 };
   const apiKey = env("RESEND_API_KEY");
   const { data: sender } = await db.from("email_senders").select("domain_status,active").eq("id", campaign.sender_id).single();
-  const { data: version } = await db.from("email_template_versions").select("subject,preheader,body_text,cta_label,cta_url,image_url,variables").eq("id", campaign.template_version_id).single();
+  const { data: version } = await db.from("email_template_versions").select("subject,preheader,body_text,cta_label,cta_url,image_url,localized_content,variables").eq("id", campaign.template_version_id).single();
   if (!apiKey || !sender?.active || sender.domain_status !== "verified" || !version) {
     await db.from("email_campaign_recipients").update({ status: "failed", lease_token: null, last_error: !apiKey ? "email_not_configured" : "sender_not_verified", updated_at: new Date().toISOString() }).eq("lease_token", lease);
     return { accepted: 0, failed: rows.length };
   }
-  const messages = rows.map((row) => {
+  const messages: Array<Record<string, unknown>> = [];
+  for (const row of rows) {
+    if (row.request_snapshot) { messages.push(row.request_snapshot); continue; }
     const values = { ...(campaign.frozen_values as Record<string, unknown> ?? {}), ...row.personalization, email: row.recipient_email };
+    const locale = normalizeEmailLocale(row.resolved_locale ?? values.locale);
     const unsubscribeUrl = campaign.purpose === "marketing" ? `${resolveAppUrl()}/email/unsubscribe?type=marketing&token=${encodeURIComponent(row.id)}` : undefined;
     const oneClickUrl = campaign.purpose === "marketing" ? `${env("SUPABASE_URL")}/functions/v1/corelia-api?op=email.unsubscribe&token=${encodeURIComponent(row.id)}` : undefined;
-    const rendered = renderEmailDocument({ subject: version.subject, preheader: version.preheader, bodyText: version.body_text, ctaLabel: version.cta_label, ctaUrl: version.cta_url, imageUrl: version.image_url, purpose: String(campaign.purpose), locale: String(values.locale ?? "vi"), values, unsubscribeUrl });
-    return { from: String(campaign.frozen_from), reply_to: String(campaign.frozen_reply_to), to: [row.recipient_email], subject: rendered.subject, html: rendered.html, headers: oneClickUrl ? { "List-Unsubscribe": `<${oneClickUrl}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } : undefined };
-  });
+    const copy = selectLocalizedEmailContent(version.localized_content, locale) ?? {
+      subject: version.subject, preheader: version.preheader, body_text: version.body_text,
+      cta_label: version.cta_label, cta_url: version.cta_url, image_url: version.image_url,
+    };
+    const rendered = renderEmailDocument({ subject: copy.subject, preheader: copy.preheader, bodyText: copy.body_text, ctaLabel: copy.cta_label, ctaUrl: copy.cta_url, imageUrl: copy.image_url, purpose: String(campaign.purpose), locale, values, unsubscribeUrl });
+    const snapshot = { from: String(campaign.frozen_from), reply_to: String(campaign.frozen_reply_to), to: [row.recipient_email], subject: rendered.subject, html: rendered.html, headers: oneClickUrl ? { "List-Unsubscribe": `<${oneClickUrl}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } : undefined };
+    const { error: snapshotError } = await db.from("email_campaign_recipients").update({ request_snapshot: snapshot, resolved_locale: locale, locale_source: row.locale_source ?? "contact", updated_at: new Date().toISOString() }).eq("id", row.id).eq("lease_token", lease).is("request_snapshot", null);
+    if (snapshotError) throw snapshotError;
+    messages.push(snapshot);
+  }
   const batchKey = rows[0]!.dispatch_batch_key;
   if (!batchKey || rows.some((row) => row.dispatch_batch_key !== batchKey)) throw new Error("mixed_campaign_dispatch_batch");
   const idempotencyKey = `campaign/${campaign.id}/${batchKey}`.slice(0, 256);
@@ -153,7 +168,14 @@ async function processAutomations(db: SupabaseClient, limit = 20): Promise<numbe
     if (!sender.active || sender.domain_status !== "verified") continue;
     const values = { ...(enrollment.context as Record<string, unknown>), name: contact.full_name ?? "", email: contact.email };
     const unsubscribeUrl = automation.purpose === "marketing" ? `${resolveAppUrl()}/email/unsubscribe?type=marketing&token=${encodeURIComponent(enrollment.id)}` : undefined;
-    const rendered = renderEmailDocument({ subject: String(version.subject), preheader: String(version.preheader ?? ""), bodyText: String(version.body_text), ctaLabel: version.cta_label ? String(version.cta_label) : null, ctaUrl: version.cta_url ? String(version.cta_url) : null, imageUrl: version.image_url ? String(version.image_url) : null, purpose: automation.purpose, locale: contact.locale, values, unsubscribeUrl });
+    const locale = normalizeEmailLocale(contact.locale);
+    const copy = selectLocalizedEmailContent(version.localized_content, locale);
+    if (!copy) {
+      await db.from("email_automations").update({ enabled: false, pause_reason: `missing_translation:${locale}`, updated_at: new Date().toISOString() }).eq("id", automation.id);
+      await db.from("email_automation_enrollments").update({ status: "stopped", context: { ...(enrollment.context as Record<string, unknown>), stop_reason: `missing_translation:${locale}` }, updated_at: new Date().toISOString() }).eq("id", enrollment.id);
+      continue;
+    }
+    const rendered = renderEmailDocument({ subject: copy.subject, preheader: copy.preheader, bodyText: copy.body_text, ctaLabel: copy.cta_label, ctaUrl: copy.cta_url, imageUrl: copy.image_url, purpose: automation.purpose, locale, values, unsubscribeUrl });
     const key = `automation/${enrollment.id}/${step.id}`;
     const from = `${String(sender.display_name)} <${String(sender.from_email)}>`;
     const claim = await claimOutboxLease({ db, idempotencyKey: key, eventType: "email_automation", recipientEmail: contact.email, buildSnapshot: () => ({ from, to: [contact.email], subject: rendered.subject, html: rendered.html, idempotency_key: key }) });
@@ -170,7 +192,8 @@ async function processAutomations(db: SupabaseClient, limit = 20): Promise<numbe
     const dispatch = await persistOutboxDispatch({ db, idempotencyKey: key, leaseToken: claim.leaseToken, existingFirstDispatchedAt: claim.event.first_dispatched_at });
     if (!dispatch.ok) continue;
     const oneClickUrl = automation.purpose === "marketing" ? `${env("SUPABASE_URL")}/functions/v1/corelia-api?op=email.unsubscribe&token=${encodeURIComponent(enrollment.id)}` : undefined;
-    const result = await sendTransactionalEmailViaResend({ db, mailType: `automation:${automation.id}`, to: [contact.email], subject: rendered.subject, html: rendered.html, from, replyTo: String(sender.reply_to), headers: oneClickUrl ? { "List-Unsubscribe": `<${oneClickUrl}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } : undefined, idempotencyKey: key });
+    const frozen = claim.event.request_payload;
+    const result = await sendTransactionalEmailViaResend({ db, mailType: `automation:${automation.id}`, to: frozen.to, subject: frozen.subject, html: frozen.html, from: frozen.from, replyTo: String(sender.reply_to), headers: oneClickUrl ? { "List-Unsubscribe": `<${oneClickUrl}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } : undefined, idempotencyKey: key });
     if (result.sent) {
       await commitOutboxSuccess({ db, idempotencyKey: key, leaseToken: claim.leaseToken, providerMessageId: result.providerMessageId });
       const nextPosition = enrollment.current_position + 1;

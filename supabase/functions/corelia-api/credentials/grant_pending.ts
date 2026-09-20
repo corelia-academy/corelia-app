@@ -7,6 +7,7 @@ import { issuerReferenceId, legacyIssuerReferenceId } from "./ids.ts";
 import { mintCredentialOnce } from "./mint.ts";
 import { resolveMintNetwork } from "./oc_payload.ts";
 import { getAppBaseUrl, getDefaultMintNetwork, type MintNetwork } from "./settings.ts";
+import { resolveRecipientEmailLocale } from "../lib/mail/locale.ts";
 
 /** Admin manual mint (activity_milestone scope only) targeting an email instead of
  *  a known userId. Two outcomes:
@@ -120,12 +121,14 @@ export async function handleGrantPendingCredential(req: Request, db: SupabaseCli
 
     const baseUrl = await getAppBaseUrl(db);
     const claimUrl = `${baseUrl}/claim?email=${encodeURIComponent(email)}`;
+    const { data: contact } = await db.from("email_contacts").select("locale").eq("email", email).maybeSingle();
+    const { locale } = resolveRecipientEmailLocale({ contactLocale: contact?.locale });
     const { subject, html } = buildCredentialMintEmail({
       kind: "pending_claim",
       badgeName: template.name,
       profileUrl: claimUrl,
       imageUrl: template.image_url,
-      locale: "vi",
+      locale,
     });
     const mailResult = await sendTransactionalEmailViaResend({
       db,

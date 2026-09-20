@@ -3,7 +3,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import i18n, { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
 import { updateProfileForUser } from "@/lib/profile";
-import { updateAuthLocale } from "@/lib/auth";
 import { useAuth } from "@/stores/authStore";
 import { currentProfileQueryOptions } from "@/features/auth/profileQueries";
 import {
@@ -42,9 +41,6 @@ export function useLocale() {
 
         try {
           await updateProfileForUser(user, { locale: lng });
-          await updateAuthLocale(lng).catch((error) => {
-            console.warn("[useLocale] update auth locale:", error);
-          });
           confirmManualLocaleSuccess(revision, lng);
           await refreshProfile(user);
         } catch (error) {

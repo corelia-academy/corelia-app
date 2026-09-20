@@ -40,14 +40,8 @@ vi.mock("@/stores/authStore", () => ({
 }));
 
 const updateProfileForUserMock = vi.hoisted(() => vi.fn());
-const updateAuthLocaleMock = vi.hoisted(() => vi.fn(async () => {}));
-
 vi.mock("@/lib/profile", () => ({
   updateProfileForUser: updateProfileForUserMock,
-}));
-
-vi.mock("@/lib/auth", () => ({
-  updateAuthLocale: updateAuthLocaleMock,
 }));
 
 import { useLocale } from "./useLocale";

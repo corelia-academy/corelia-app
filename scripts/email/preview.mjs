@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from "node:fs";
-import { buildAuthTemplate, renderAuthFixture } from "./auth.mjs";
+import { authNames, buildAuthTemplate, renderAuthFixture } from "./auth.mjs";
 import { renderEmailDocument } from "../../supabase/functions/corelia-api/lib/mail/document.ts";
 import { wrapBlastEmail } from "../../supabase/functions/corelia-api/lib/mail/layout.ts";
 import { buildCertificateIssuedEmail } from "../../supabase/functions/corelia-api/certificates/certificate_emails.ts";
@@ -25,7 +25,7 @@ function add(slug, group, title, result) {
   entries.push({ file, group, title });
 }
 
-for (const name of ["confirmation", "recovery", "reauthentication"]) {
+for (const name of authNames) {
   for (const locale of ["vi", "en"]) {
     add(`auth-${name}-${locale}`, "Supabase Auth", `${name} · ${locale.toUpperCase()}`,
       renderAuthFixture(buildAuthTemplate(name), { ...fixture, locale }));

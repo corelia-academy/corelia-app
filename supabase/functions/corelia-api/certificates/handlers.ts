@@ -6,6 +6,7 @@ import { getAppBaseUrl } from "../credentials/settings.ts";
 import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
 import { syncCourseCompletionIfReady } from "../courses/completion.ts";
 import { buildCertificateIssuedEmail } from "./certificate_emails.ts";
+import { resolveRecipientEmailLocale } from "../lib/mail/locale.ts";
 
 type CertificateIssueReason =
   | "no_certificate"
@@ -72,12 +73,12 @@ async function runCertificateIssuedSideEffects(
   try {
     const [{ data: authUser }, { data: profileRow }, baseUrl] = await Promise.all([
       db.auth.admin.getUserById(targetUserId),
-      db.from("profiles").select("full_name, username").eq("id", targetUserId).maybeSingle(),
+      db.from("profiles").select("full_name, username, locale").eq("id", targetUserId).maybeSingle(),
       getAppBaseUrl(db),
     ]);
     const email = (authUser?.user?.email ?? "").trim();
     const courseTitle = (course.title ?? "").trim();
-    const locale = (authUser?.user?.user_metadata?.locale as string | undefined) ?? "vi";
+    const { locale } = resolveRecipientEmailLocale({ profileLocale: profileRow?.locale, authMetadataLocale: authUser?.user?.user_metadata?.locale });
     const profilePath = profileRow?.username
       ? `/u/${encodeURIComponent(String(profileRow.username))}`
       : `/account`;
