@@ -64,12 +64,29 @@ BEGIN
        OR (SELECT marketing_status FROM public.email_contacts WHERE email = 'blocked@example.com') <> 'none' THEN
       RAISE EXCEPTION 'Denormalized marketing status is out of sync';
     END IF;
+    IF NOT has_function_privilege('service_role', 'private.email_localized_content_complete(jsonb)', 'EXECUTE')
+       OR has_function_privilege('anon', 'private.email_localized_content_complete(jsonb)', 'EXECUTE')
+       OR has_function_privilege('authenticated', 'private.email_localized_content_complete(jsonb)', 'EXECUTE') THEN
+      RAISE EXCEPTION 'Translation validation must be executable only by the backend role';
+    END IF;
+    PERFORM set_config('role', 'service_role', true);
     INSERT INTO public.email_templates(id, name, purpose, created_by) VALUES (v_template_id, 'Marketing', 'marketing', v_actor);
+    INSERT INTO public.email_template_versions(template_id, version, subject, body_text, created_by)
+      VALUES (v_template_id, 2, 'Draft without translations', 'Body', v_actor);
+    BEGIN
+      UPDATE public.email_template_versions SET status = 'published'
+      WHERE template_id = v_template_id AND version = 2;
+      RAISE EXCEPTION 'Publishing without translations should fail';
+    EXCEPTION WHEN raise_exception THEN
+      IF SQLERRM <> 'email_template_translations_incomplete' THEN RAISE; END IF;
+    END;
+    DELETE FROM public.email_template_versions WHERE template_id = v_template_id AND version = 2;
     INSERT INTO public.email_template_versions(id, template_id, version, status, subject, body_text, localized_content, created_by, published_at)
       VALUES (v_version_id, v_template_id, 1, 'published', 'Hello {{name}}', 'Body', jsonb_build_object(
         'vi', jsonb_build_object('subject','Chào {{name}}','body_text','Nội dung'),
         'en', jsonb_build_object('subject','Hello {{name}}','body_text','Body')
       ), v_actor, now());
+    PERFORM set_config('role', 'postgres', true);
     SELECT id INTO v_sender_id FROM public.email_senders WHERE purpose = 'marketing' AND is_default;
     INSERT INTO public.email_campaigns(id, name, purpose, list_id, sender_id, template_version_id, frozen_subject, frozen_html, frozen_from, frozen_reply_to, created_by)
       VALUES (v_campaign_id, 'Integration campaign', 'marketing', v_list_id, v_sender_id, v_version_id, 'Hello {{name}}', '<p>Body</p>', 'Corelia <hello@news.corelia.academy>', 'hello@corelia.academy', v_actor);
