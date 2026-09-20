@@ -30,6 +30,8 @@ describe("email renderer fallbacks", () => {
     expect(html).toContain("font-size:15px !important");
     expect(html).toContain("overflow-wrap:anywhere");
     expect(html).toContain("background-color:#1759f1");
+    expect(html).toContain("background-image:linear-gradient(#1759f1,#1759f1)");
+    expect(html).toContain("border:1px solid transparent");
   });
 
   it("remains readable when head styles and decorative images are unavailable", () => {
