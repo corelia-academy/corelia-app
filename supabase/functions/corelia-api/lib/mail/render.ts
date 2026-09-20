@@ -45,7 +45,7 @@ export function inlineEmailHtml(html: string): string {
 }
 
 export function emailSection(className: string, html: string): string {
-  const content = className === "e-header"
+  const content = className === "e-header" || className === "e-cta-wrap"
     ? html
     : `<div class="gmail-blend-screen"><div class="gmail-blend-difference">${html}</div></div>`;
   return `<tr><td class="${className}" style="${EMAIL_CLASS_STYLES[className] ?? ""}">${content}</td></tr>`;
@@ -117,5 +117,5 @@ export function renderTransactionalEmail(params: TransactionalWrapParams, contex
 }
 
 export function emailCtaButton(href: string, label: string): string {
-  return `<a href="${escapeHtml(href)}" class="e-btn e-btn-primary">${escapeHtml(label)}</a>`;
+  return `<a href="${escapeHtml(href)}" class="e-btn e-btn-primary"><span class="gmail-blend-screen"><span class="gmail-blend-difference">${escapeHtml(label)}</span></span></a>`;
 }

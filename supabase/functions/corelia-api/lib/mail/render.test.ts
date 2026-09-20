@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { renderTransactionalEmail } from "./render.ts";
+import { emailCtaButton, renderTransactionalEmail } from "./render.ts";
 
 describe("email renderer fallbacks", () => {
   const render = () => renderTransactionalEmail({
     locale: "vi", heroTag: "Thông báo", heroTitle: "Một tiêu đề rất dài ".repeat(8),
     bodyHtml: `<p>Nội dung <strong>quan trọng</strong>.</p><p><a href="https://example.com/${"long/".repeat(30)}">Liên kết dài</a></p>`,
-    ctaHtml: `<a class="e-btn" href="https://example.com">Tiếp tục</a>`,
+    ctaHtml: emailCtaButton("https://example.com", "Tiếp tục"),
     footerReason: "Bạn nhận được email này từ Corelia.", fingerprint: "test",
   }, { appUrl: "https://app.corelia.academy" });
 
@@ -21,7 +21,9 @@ describe("email renderer fallbacks", () => {
     expect(html).toContain("u + .body .gmail-blend-screen");
     expect(html).toContain('<div class="gmail-blend-screen"><div class="gmail-blend-difference">');
     expect(html).toContain(".e-outer { padding:0 !important; }");
-    expect(html).toContain("border-left:0 !important;border-right:0 !important");
+    expect(html).toContain("border:0 !important");
+    expect(html).toContain(".e-header,.e-cta-wrap,.e-info-card,.e-otp,.e-alert { border-top:0 !important;border-bottom:0 !important; }");
+    expect(html).toContain('<a href="https://example.com" class="e-btn e-btn-primary"');
     expect(html).toContain('class="e-canvas"');
     expect(html).toContain("font-size:15px !important");
     expect(html).toContain("overflow-wrap:anywhere");
