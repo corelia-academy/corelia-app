@@ -20,6 +20,9 @@ describe("email renderer fallbacks", () => {
     expect(html).toContain('class="body"');
     expect(html).toContain("u + .body .gmail-blend-screen");
     expect(html).toContain('<div class="gmail-blend-screen"><div class="gmail-blend-difference">');
+    expect(html).toContain(".e-outer { padding:0 !important; }");
+    expect(html).toContain("border-left:0 !important;border-right:0 !important");
+    expect(html).toContain('class="e-canvas"');
     expect(html).toContain("font-size:15px !important");
     expect(html).toContain("overflow-wrap:anywhere");
     expect(html).toContain("background-color:#1759f1");

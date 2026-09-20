@@ -48,7 +48,9 @@ export const EMAIL_STYLES = `
   u + .body .gmail-blend-screen { background:#000000;mix-blend-mode:screen; }
   u + .body .gmail-blend-difference { background:#000000;mix-blend-mode:difference; }
   @media only screen and (max-width:620px) {
-    .e-outer { padding:24px 12px !important; }
+    .e-canvas { background-image:linear-gradient(${b.background},${b.background}) !important; }
+    .e-outer { padding:0 !important; }
+    .e-container { width:100% !important;max-width:100% !important;border-left:0 !important;border-right:0 !important; }
     .e-container { font-size:15px !important; }
     .e-hero h2 { font-size:24px !important; }
   }

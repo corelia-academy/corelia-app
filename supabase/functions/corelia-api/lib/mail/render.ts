@@ -78,7 +78,7 @@ export function renderEmailFrame(params: {
 <body class="body" bgcolor="${b.background}" style="margin:0;padding:0;background-color:${b.background};color:${b.text};font-family:${b.font};">
 ${preheader}
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${b.background}" style="width:100%;background-color:${b.background};border-collapse:collapse;">
-<tr><td background="${escapeHtml(backgroundUrl)}" style="background-image:url('${escapeHtml(backgroundUrl)}');background-position:center;background-size:cover;background-repeat:no-repeat;">
+<tr><td class="e-canvas" background="${escapeHtml(backgroundUrl)}" style="background-color:${b.background};background-image:url('${escapeHtml(backgroundUrl)}');background-position:center;background-size:cover;background-repeat:no-repeat;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-collapse:collapse;"><tr><td class="e-outer" align="center" style="padding:32px 14px;">
 <!--[if mso]><table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"><tr><td><![endif]-->
 <table role="presentation" class="e-container" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${b.background}" style="width:100%;max-width:600px;table-layout:fixed;margin:0 auto;border:1px solid ${b.border};border-collapse:separate;border-spacing:0;background-color:${b.background};background-image:linear-gradient(${b.background},${b.background});color:${b.text};font-family:${b.font};font-size:16px;line-height:1.6;overflow-wrap:anywhere;word-break:break-word;text-align:left;">
