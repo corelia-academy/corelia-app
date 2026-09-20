@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "3f8307f372cb4e52c0b0b47f4d9fe5ecb41b742f",
-  "git_tree_sha": "e293fe26f50b5a5736e20a3e26cbe707df6a6a03",
+  "rc_sha": "b3b0142cad654ef009bf52e992596a8d0cc571d9",
+  "git_tree_sha": "95f7f92be32c4f8643da92e086c326fcf5d2b9fd",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 237,
-  "latest_migration": "20260916153501_learning_multilanguage_code.sql",
+  "migration_count": 238,
+  "latest_migration": "20260920083758_recipient_locale_email.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "3f8307f372cb4e52c0b0b47f4d9fe5ecb41b742f",
+  "source_sha": "b3b0142cad654ef009bf52e992596a8d0cc571d9",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "fa0460da9ce2f83fea8426fe586ad7710663b6bc8846545b96fb09683f6de817",
+  "candidate_tree_sha256": "77a065c8dd566dd49cf034f9d6adfbba389349c44e9fe023546d750a33dfcd22",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -55,7 +55,7 @@
     },
     {
       "path": ".gitignore",
-      "sha256": "49b479311e6a0cb578926898b4043331d1d36448f5744c04b3df77e4ce084a68"
+      "sha256": "9dd019ba35b5987dbbad2f6a52c2d7acacde85bbd8b7accebd20cfe11a4843bd"
     },
     {
       "path": "AGENTS.md",
@@ -851,7 +851,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "66ae0adccafdf3a8ba1bd49dd2e669d2087caeefdab5c2a1bd0b9d172839fa7d"
+      "sha256": "461cdddcb0e35293dc30f83a2a4ec63613d83ba343699d4ab964737d7b7e18a1"
     },
     {
       "path": "pnpm-lock.yaml",
@@ -862,12 +862,24 @@
       "sha256": "0697662983563e59122510ddd39a7b3c5af91059bb6167f25e3cd738b24c6af4"
     },
     {
-      "path": "public/icons/action/next-disabled.svg",
-      "sha256": "43e399c9d2f4b480ab9a6cc9f6ffb5a4e7b962f23c81440922713e461b678516"
+      "path": "public/email-assets/akt-medium.ttf",
+      "sha256": "4e5a7e9a372bca6d4ab59abd46b3b5e16131960cb612efc05d390e044ef79cd0"
     },
     {
-      "path": "public/icons/action/next.svg",
-      "sha256": "698fb3fcc5e524e940df8f1334636c19bd1b426c727fe3972380e60ac043ef44"
+      "path": "public/email-assets/corelia-background-v1.jpg",
+      "sha256": "e9335a50c2f3f29b2e4855afeca6a85ea15d5f6e0ccb327bdc0e0bd00347858e"
+    },
+    {
+      "path": "public/email-assets/pp-supply-sans-regular.otf",
+      "sha256": "066f335979c62915338e69257ee05e3be19ae99d9a6dc7dd602a0832dfad714f"
+    },
+    {
+      "path": "public/email-assets/tt-norms-pro-medium.ttf",
+      "sha256": "ea6067c034c379293c68e34e24b5da1a3d4146d073f01587f7fc25dc36dba4f8"
+    },
+    {
+      "path": "public/email-assets/tt-norms-pro-normal.ttf",
+      "sha256": "6a66c05e1c872a7ce52b9b62130579a56bb4067d1bb825b4ec182da20c51c2c0"
     },
     {
       "path": "public/sitemap.xml",
@@ -919,7 +931,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "2b3ba55d33d128efa1e31a64a84c1c568eb9811676fd61574dd961d61f2d63ef"
+      "sha256": "c000e75cdae86411dbd3be3b7a193575f50751025fcb38aa50fa485ccf456eac"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -951,7 +963,7 @@
     },
     {
       "path": "scripts/db/tests/email-center.integration.sql",
-      "sha256": "884aef2799ca0da25730d4518224438f051f7fabcf1752989c464ee327cd2715"
+      "sha256": "ae023d8f41ccf29add0234b44ff12be65e38237d6d1116411326746518bb1050"
     },
     {
       "path": "scripts/db/tests/financial-retirement.contract.test.mjs",
@@ -1150,6 +1162,18 @@
       "sha256": "12da6a0b223cd2b5498709f2782a725a3bb42a5590a889a2490dbf7a8daddf95"
     },
     {
+      "path": "scripts/email/auth.mjs",
+      "sha256": "8ffb071ce062183f04a1dabe30aa64a5a0fd406dfa5108cdf8cee7346ad3132d"
+    },
+    {
+      "path": "scripts/email/generate-auth.mjs",
+      "sha256": "ea4278053e94ec338a115bb4ab05d36b9ddbb8cc69b2ad153765967da2d6913b"
+    },
+    {
+      "path": "scripts/email/preview.mjs",
+      "sha256": "9c29e1a0499a166f89cbe4c4c66ae0321620e6b5f0a1e4c7ed67a58565aa0a3b"
+    },
+    {
       "path": "scripts/esm-loader.mjs",
       "sha256": "9f2ae627c2dfa7ea2d571871f95666198b0c52953cef131720303e7ea6e67364"
     },
@@ -1235,7 +1259,7 @@
     },
     {
       "path": "src/App.tsx",
-      "sha256": "8be049dd7bce0afd4b2372da62deb3b549a268975ba7047bc9241508eb61d095"
+      "sha256": "955439b4a24e13796c7d4125b2e0a0f9e09ee6091004688ae798035fdd5063c0"
     },
     {
       "path": "src/components/auth/AuthBootstrapScreen.tsx",
@@ -1288,6 +1312,10 @@
     {
       "path": "src/components/courses/PublicCourseCard.tsx",
       "sha256": "4659b45a8460c4fb1c701951f1964bb762b9876e4be287324ee07cf00443c0af"
+    },
+    {
+      "path": "src/components/email/AnnouncementBodyField.tsx",
+      "sha256": "cb31925c52fee5029420baef1bf6c546ecadb1afcd54bbbeddfab4ae06bc0ecc"
     },
     {
       "path": "src/components/ErrorBoundary.test.tsx",
@@ -1383,11 +1411,11 @@
     },
     {
       "path": "src/components/ui/action.test.tsx",
-      "sha256": "4ea41688b12ae7ab4178b9b05cf51bf2e5fe07c13edea9e2694603d255926f4f"
+      "sha256": "9edd45239b2098e4d586c35d148384e1143038f9087c8ada28288dfa07f1bf05"
     },
     {
       "path": "src/components/ui/action.tsx",
-      "sha256": "3ab1f7b22f586146b968be385f90633751f55fef77db05feac1ed32ee15d7796"
+      "sha256": "395dbef389d564b98338c936c0f625988fba27af120c5964b87405df03b95dfe"
     },
     {
       "path": "src/components/ui/avatar.tsx",
@@ -1395,11 +1423,11 @@
     },
     {
       "path": "src/components/ui/badge.test.tsx",
-      "sha256": "4a5c1a388caa0c717f5fbefd15950788016383ffbd9488aa4e169e90aec3088e"
+      "sha256": "f9d89cf3b4ec93d2bb1bd6b1262cd50e1141cf93759abe36595e385627b51100"
     },
     {
       "path": "src/components/ui/badge.tsx",
-      "sha256": "6f516488a85de1d110b7f0b33a98a28d9a5a24a933c33855d0ca0012d881c02b"
+      "sha256": "42f2352b1baa9578f0df8676ee4b1631c2a858b78c8a873a145a4905fe2d6c26"
     },
     {
       "path": "src/components/ui/breadcrumb.tsx",
@@ -1439,15 +1467,15 @@
     },
     {
       "path": "src/components/ui/selection.test.tsx",
-      "sha256": "f73515fc2b9ece5a5882ab7e1a10d5ff6e9c2fb833c3fa8b0b299348fed644b6"
+      "sha256": "5a4ad0d18547e8db34779ed88210c6df4a6f24d8f1a3903b4983b9399aa47230"
     },
     {
       "path": "src/components/ui/selection.tsx",
-      "sha256": "1501449d1fab8ba6e3a56725968d57753048925f788ddff5e7a39a7be2d25a37"
+      "sha256": "30c5194e39d2ca8ce2067627766227173a852145acea997a0c24817f53b30046"
     },
     {
       "path": "src/components/ui/separator.tsx",
-      "sha256": "d742a04776c3cbcc8af337645fcf5bf487f5a503ec4e8968024dbc555822a687"
+      "sha256": "d8d99eb9814e83e9237fc3214aadd91d5317884e49e5beaec4b205f82ec0eb06"
     },
     {
       "path": "src/components/ui/sheet.tsx",
@@ -1458,20 +1486,28 @@
       "sha256": "4877dde66410acd9f3cd5e5753fb98092aad86edc645cf99ac26da48445acb83"
     },
     {
+      "path": "src/components/ui/tabs.test.tsx",
+      "sha256": "d6b38e8311b73ac406881660566f6cabe584bbcba2910026e153db1d631c126f"
+    },
+    {
+      "path": "src/components/ui/tabs.tsx",
+      "sha256": "fa3b8e075f90f13329bf9e12721d6a26edb76d8c7366dca4a43c2d2f2259d73d"
+    },
+    {
       "path": "src/components/ui/tag.test.tsx",
-      "sha256": "1b544381c9da80428a89fc6da34aa1171116ce3fc8ee8235700f04b4696b8eb8"
+      "sha256": "97feb60575a9685888bc3b96b24020ac675ac49bb8f38cb2dd52bcffd557c02d"
     },
     {
       "path": "src/components/ui/tag.tsx",
-      "sha256": "cebe8af7cbeb8e3b755076b7f975190af49f7f76cdff3a3635bd3d084b9d6b5c"
+      "sha256": "2613c9531a1e9f7a759ef203c722583cae942e3bd29d62aaf650bc9ab9bb920e"
     },
     {
       "path": "src/components/ui/toggle.test.tsx",
-      "sha256": "e7def6f2e6ced22104fe632246ed445bd5c59b66045923dc8a8dfe53942465ef"
+      "sha256": "2c4362ee585f6ce6b3de93e11ff2bbf23392ac1918e9c2a3625646ed7eb31024"
     },
     {
       "path": "src/components/ui/toggle.tsx",
-      "sha256": "bf44210dec67fde9fdfe4bbb6d40c3a3df288fee2d05c1ce95455ddc20747b58"
+      "sha256": "6dd00e9e6646616a2bcf2af5f7caeae9b18b5bb5bda469a01639c62ad1edf2a3"
     },
     {
       "path": "src/components/ui/tooltip.tsx",
@@ -1519,11 +1555,11 @@
     },
     {
       "path": "src/features/admin/layout/adminPageMeta.ts",
-      "sha256": "d9a427453cea56730822d7e66b1f28e2281b5ee1264061c6c54ebd0464d97efe"
+      "sha256": "d4ff985e74aa650aa5e445a688cf6ea2f26307b7b5686593aead3e3f2917033c"
     },
     {
       "path": "src/features/admin/layout/AdminSidebar.tsx",
-      "sha256": "a761de155fe95d59c262ae31a67884986473bf0669e4137b956963c59359cd5e"
+      "sha256": "bb14b578ff46754f110bd6967d138294e193bfda8495a1a578ba0577d4630c30"
     },
     {
       "path": "src/features/admin/users/hooks/useAdminProfiles.ts",
@@ -2015,7 +2051,7 @@
     },
     {
       "path": "src/features/projects/ProjectMarkdownEditor.tsx",
-      "sha256": "a1cb167eb92db13fef69e51ccc10473eb7b19a8ba483ce1cb00d9f9cd2f68f6f"
+      "sha256": "027c6baee3f0e35c74a81c446eca6b0216664aad8a8b162fdb9045cc77d89b90"
     },
     {
       "path": "src/features/projects/ProjectMediaEditor.test.tsx",
@@ -2079,11 +2115,11 @@
     },
     {
       "path": "src/hooks/useLocale.test.tsx",
-      "sha256": "e243765c651082919e06c58b40b393aaa735bc0b62213672bc9334d8b62e8d6f"
+      "sha256": "7c40aece0fbf3b8011eec86009157365baaa853e1dc347e520006c09432153a4"
     },
     {
       "path": "src/hooks/useLocale.ts",
-      "sha256": "596eab1a9f09e0bfd7036cf4de2f1aaa6295b2a9b70dbae655a4b2300b64aae1"
+      "sha256": "7a6111935361322fcd1588b8fc929e2a6273229324daf5c604ffd7561863d183"
     },
     {
       "path": "src/hooks/usePageMeta.ts",
@@ -2099,7 +2135,7 @@
     },
     {
       "path": "src/lib/auth.ts",
-      "sha256": "a9d1e04efbe10596cc342ef6a4480e0864fab3e3e4887eb76db5803d8ea5d9d6"
+      "sha256": "19adfd9e618b8032fb12e51839a7423de128c32c9d8b0ac30136c1c5c18f878a"
     },
     {
       "path": "src/lib/authRedirect.test.ts",
@@ -2164,6 +2200,14 @@
     {
       "path": "src/lib/descriptionGenerator.ts",
       "sha256": "585f27f7226170881a708307cf2228cec1aaedf6d0e51c28e33398d6b6ee0b12"
+    },
+    {
+      "path": "src/lib/email/authTemplates.test.ts",
+      "sha256": "34f47846beeabeb1f68de56f24b291e34affaccb0da7d026bd9733c74390d002"
+    },
+    {
+      "path": "src/lib/email/preview.ts",
+      "sha256": "2e684b365e5209aa31990be1b8a62ede8a6198b5f34905b2391ce27d048c44c1"
     },
     {
       "path": "src/lib/emailCenter.ts",
@@ -2431,7 +2475,7 @@
     },
     {
       "path": "src/locales/en/common.json",
-      "sha256": "9229e82e985e43681da381717c40a5692f0a5f7dc5da17bd0feb0d77d155b552"
+      "sha256": "a1e73142c97b7f1b97571071a016a20c0c2b356ea0edae89e4d35d9a16a195cf"
     },
     {
       "path": "src/locales/en/contests.json",
@@ -2443,7 +2487,7 @@
     },
     {
       "path": "src/locales/en/emailCenter.json",
-      "sha256": "2847252c784c394b41b3459962d1833f6fba3a7bd9efce728370b2ccf4a0a296"
+      "sha256": "28623b53ef9362d972205063e7ab836b5be8a52122b1919cb44151dfff437e2c"
     },
     {
       "path": "src/locales/en/instructor.json",
@@ -2467,7 +2511,7 @@
     },
     {
       "path": "src/locales/vi/common.json",
-      "sha256": "aa6c135dddf773e5609db7be3eee75ec9066a5372a90574961345c807b150b0f"
+      "sha256": "c2dfc14408beb8a9a6a16ce64df0aa4b9cc98cda6483b36075f5a68068ae4fae"
     },
     {
       "path": "src/locales/vi/contests.json",
@@ -2479,7 +2523,7 @@
     },
     {
       "path": "src/locales/vi/emailCenter.json",
-      "sha256": "dc99bdf8d52dbf68514140c2c1893bc959e18c55d4943576b8f4c88c1fddb1c8"
+      "sha256": "1fd816f113f059f6a9eff829bb0bf5eaf47802b90a98ac1e2ea50f3e7bfc210a"
     },
     {
       "path": "src/locales/vi/instructor.json",
@@ -2495,7 +2539,7 @@
     },
     {
       "path": "src/pages/account/Account.tsx",
-      "sha256": "7b88ac4d754cc57d540f27ce5a2aec4c99c835d1dbf160d8b921e4b920de7a23"
+      "sha256": "03882c11354775e0390e7456862c62ae87e481f14e09a65d3657e9db5ec840f8"
     },
     {
       "path": "src/pages/account/AccountCvRoute.tsx",
@@ -2562,6 +2606,14 @@
       "sha256": "47949dc6054e0f21656880638faf710017780a1d927103257805b36fa1607cb2"
     },
     {
+      "path": "src/pages/admin/AdminComponentsPage.test.tsx",
+      "sha256": "bf4e95e9931e806963ce01bfffe71ae3b76712ab1c4cd9fd68ee99b230946e4a"
+    },
+    {
+      "path": "src/pages/admin/AdminComponentsPage.tsx",
+      "sha256": "0a91fb1954ffb2d65f49dd74d774bcbbe4c82daee072acc6755ca50db0bf2094"
+    },
+    {
       "path": "src/pages/admin/AdminInstructorDetail.tsx",
       "sha256": "4eebbdc5724eb0c14efd3fdc5af20f70dfbdcb5033e36a33793bb7baae0ee35d"
     },
@@ -2575,7 +2627,7 @@
     },
     {
       "path": "src/pages/admin/AdminLayout.tsx",
-      "sha256": "f3c46b80e3b5037fb482c6c87277d1c51faf1d0aa6c5a4076006d83f3425a1dc"
+      "sha256": "be92d9f8b1bebcc4a190d4e8ae26a3bcfa1696656d580d7e480f19502ea560b6"
     },
     {
       "path": "src/pages/admin/AdminManualMint.tsx",
@@ -2588,6 +2640,46 @@
     {
       "path": "src/pages/admin/AdminUsers.tsx",
       "sha256": "cfa99a6e2dfc15546c32559099fd217a21c27f0b88821700160211ed59f76e5f"
+    },
+    {
+      "path": "src/pages/admin/components/AdminActionComponentPage.tsx",
+      "sha256": "4d2d3fa083eb2be3e1d587c1536249a59f2f065d80edf5372d634cf5bf8278d1"
+    },
+    {
+      "path": "src/pages/admin/components/AdminBadgeComponentPage.tsx",
+      "sha256": "d866d8c19bf193bf518f6bbf0873319334139a2511e1eec42be0429d558025da"
+    },
+    {
+      "path": "src/pages/admin/components/AdminComponentPages.test.tsx",
+      "sha256": "4a9820aa9e4cdfe7fc4a3ea8304b7f2098c90fdf1e0a73bc9fded66809d811d9"
+    },
+    {
+      "path": "src/pages/admin/components/AdminScrollbarComponentPage.tsx",
+      "sha256": "a94c1cbb7b7cf8ad9fb174fb55beef779270b84554b8b854f52ab15828ae7a4d"
+    },
+    {
+      "path": "src/pages/admin/components/AdminSelectionComponentPage.tsx",
+      "sha256": "cf196e2277a575983798b97d17c75c05d79a813e9ed842f925faa644c4a0e094"
+    },
+    {
+      "path": "src/pages/admin/components/AdminSeparatorComponentPage.tsx",
+      "sha256": "5711e506f680e6c16a672272967df1b170159cbde196aca775cb5cf6039c12e0"
+    },
+    {
+      "path": "src/pages/admin/components/AdminTabsComponentPage.tsx",
+      "sha256": "7429b2c61fc9df515c620e7c257fc0d93f505a16904fe1aa16726bd8190f09d9"
+    },
+    {
+      "path": "src/pages/admin/components/AdminTagComponentPage.tsx",
+      "sha256": "cd5c29909035cf6a983ef963b2c88581a7b680e06dc94de193fbc7e8f9e05582"
+    },
+    {
+      "path": "src/pages/admin/components/AdminToggleComponentPage.tsx",
+      "sha256": "9b7347b1fa448fcdf266ac201c58c8a68b321698b915aa4bd41ad5ba35facb44"
+    },
+    {
+      "path": "src/pages/admin/components/ComponentShowcaseLayout.tsx",
+      "sha256": "0a195d8374ea2b55692a38a2126cd1e8d509de1e51c4cf22db1920ab2ee976aa"
     },
     {
       "path": "src/pages/admin/components/ManualMintCreateTemplateDialog.tsx",
@@ -2607,7 +2699,11 @@
     },
     {
       "path": "src/pages/admin/email/AdminEmailCenterPage.tsx",
-      "sha256": "33123b269ac5e02650afddb8e5db2ca4df32ea7954a6dfdcb4b091062e412863"
+      "sha256": "6bd4775142d57b0ee8995b83fafdf8021306189447fe3c5dc465124132c00992"
+    },
+    {
+      "path": "src/pages/admin/email/TemplatePreview.tsx",
+      "sha256": "091eda1b157fa59c44d77061fd5abc9a00e47cf176d19881e45979b17362449a"
     },
     {
       "path": "src/pages/admin/hackathons/AdminHackathonEditorPage.test.ts",
@@ -2772,10 +2868,6 @@
     {
       "path": "src/pages/courses/courses-page/utils/catalog.ts",
       "sha256": "76be8b7e2400722aac9faac23148bc497f04cc8def1a8af65acf8c875922f117"
-    },
-    {
-      "path": "src/pages/design-system/ScrollbarPage.tsx",
-      "sha256": "a922bd11d3675609bbf628dc35ff315458d9fa9a111e8d07c8c3b438f15acf53"
     },
     {
       "path": "src/pages/EmailUnsubscribePage.tsx",
@@ -3315,11 +3407,11 @@
     },
     {
       "path": "src/styles/brand-palette.css",
-      "sha256": "88da1bbedf922d0a173a938f3e26fcbb04f8994606da45880e4bcd2d19878a5a"
+      "sha256": "ddd26cc59887c238ee7e7c97a5fa187edc38a5cb242e5ce3c0b753da1cb19379"
     },
     {
       "path": "src/styles/globals.css",
-      "sha256": "176b65ada9ef6054fd3f0bfed21bf500695ec9372c53bc91f2d7bf24c2942c82"
+      "sha256": "71b898d8a827be9189171e499aba998a300f7e4c48958676e781192338a5fc43"
     },
     {
       "path": "src/styles/public-ui.css",
@@ -3371,15 +3463,19 @@
     },
     {
       "path": "supabase/config.toml",
-      "sha256": "4635e2f25ea9cebfb188389af8aac38079983ea701e44486ca1c61dd8ceae4a0"
+      "sha256": "ccef2ae9ea1ffbc5c9b63155db3375b1cc64fdff464256a83b717797a134cdfe"
     },
     {
       "path": "supabase/functions/.env.example",
       "sha256": "ff54cf8d2189e17a77104541eb2374af672fd762f09889ffd69a276c5f134430"
     },
     {
+      "path": "supabase/functions/corelia-api/certificates/certificate_emails.ts",
+      "sha256": "245f4e5e03bcf3c886d7a778797d321ea6dcf85bb8e36e509a8ede5c911951c5"
+    },
+    {
       "path": "supabase/functions/corelia-api/certificates/handlers.ts",
-      "sha256": "e6b3b93dc2cbe93d3ac34bf843ff1b30d438d26796702d5c4be702877897d422"
+      "sha256": "8170c8b7b34f0b34551870716cc59796f4c77032d6f2bc8a11e32cbae3265e63"
     },
     {
       "path": "supabase/functions/corelia-api/courses/completion.ts",
@@ -3387,7 +3483,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/courses/learning_reminders.ts",
-      "sha256": "c02e73bced1960c97578353e8d0791126f5c9ae63a4281b37e4441815b605cd0"
+      "sha256": "1c37f38b8dc125ee967f1f277fda24ebe36efbd099ae26bcf9b6655b03ab18e3"
     },
     {
       "path": "supabase/functions/corelia-api/credentials/check_activity.ts",
@@ -3396,6 +3492,14 @@
     {
       "path": "supabase/functions/corelia-api/credentials/check_course.ts",
       "sha256": "8243a297ade69cb69a8fb6f0e222fe54b5038a43068cbb2dc59583d7c4c9a548"
+    },
+    {
+      "path": "supabase/functions/corelia-api/credentials/emails.ts",
+      "sha256": "8b75ef9b0aee0c33913ff82f0a37c77977340db8ea9f8ebbda289348f8a4a906"
+    },
+    {
+      "path": "supabase/functions/corelia-api/credentials/grant_pending.ts",
+      "sha256": "2184b7f70694e25f082878d7d2122b0090eb044629f2d465aa1f4b7d3c4d54cf"
     },
     {
       "path": "supabase/functions/corelia-api/credentials/retry_pending.ts",
@@ -3407,7 +3511,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/email/automation.ts",
-      "sha256": "7e823e8f0a424f9ca775aa759710267751161f9e5c890332224b08d7293e3cc9"
+      "sha256": "38238d59cd9678a44bf9cc784e901bf2ba82b86d0d9b772e10bc4189a6a01a68"
     },
     {
       "path": "supabase/functions/corelia-api/email/batching.test.ts",
@@ -3427,19 +3531,19 @@
     },
     {
       "path": "supabase/functions/corelia-api/email/handler.ts",
-      "sha256": "a954c4be7267cc791a5b8dc60460f4e65efb9d97969180163e95fb3dbea71c24"
+      "sha256": "ca7afde33db0335c246d22fd8d11135e76b1c9c582479734805e6c5fa3c6afbc"
     },
     {
       "path": "supabase/functions/corelia-api/email/importWorker.ts",
-      "sha256": "f2115f65d8fe56d70704a42c80604a281fc4a3638c7f118899919e9297890abf"
+      "sha256": "69d3deb179706b71e6041ba79679a7b6a09c731f0210f54fffe870dca024dcc3"
     },
     {
       "path": "supabase/functions/corelia-api/email/template.test.ts",
-      "sha256": "1754875b4a6853bdcb7673c361d5d9770bd85fa084023ad8a6c7dd883529a8ce"
+      "sha256": "49042d8733465986a4fd32066f3516f809cc0e3c47d2d888cb640c7d2962fc7c"
     },
     {
       "path": "supabase/functions/corelia-api/email/template.ts",
-      "sha256": "747cfcbe20809529b41e0af6aa9b55aedbc0178781876bd58f2d7f355cd0d019"
+      "sha256": "b21f77f5649b1e375c93308993e6d6f0684424e7d6d0277be383408bb536ecaa"
     },
     {
       "path": "supabase/functions/corelia-api/email/webhook.ts",
@@ -3447,7 +3551,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/email/worker.ts",
-      "sha256": "570e1a2cfff781803bf8210a613b6f7a930a19411aef0e1cc563db675b4511cc"
+      "sha256": "b415e14a151fe7923b229b5db042ababb8d85e7afb83626f0be6f9b62b47e435"
     },
     {
       "path": "supabase/functions/corelia-api/hackathons/blast_email.ts",
@@ -3550,16 +3654,52 @@
       "sha256": "6118a68939110e97ae8b817cd9fbac18f98db604c9b758a553fa419b8c1475fe"
     },
     {
+      "path": "supabase/functions/corelia-api/lib/mail/brand.ts",
+      "sha256": "e5d62eb9ff4b09323d71adcdcef9f727479c3d86a8e381344c8adb787af0ed84"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/co_instructor_invite_body.ts",
+      "sha256": "5fd409365e6dd599fa488ef5db5e82b3802d4afa1ec64813cb02d7bff936dc07"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/document.ts",
+      "sha256": "1801b3a3bfb9bd0f8881715bf450aeacebac84d98d1d79c0fc86bbca93a4b8bb"
+    },
+    {
       "path": "supabase/functions/corelia-api/lib/mail/hackathon_winner_award_body.test.ts",
       "sha256": "48b4674da947924f0b3a130aea5a4fdf670518d7361690554b36b4234ed8c7ed"
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/hackathon_winner_award_body.ts",
-      "sha256": "b486a407cb4622c075eb42508691c0b7a43ee75e8eb205d0be099efe9516e046"
+      "sha256": "33d95abce6df01d4fab5ed794fe4097c7257e835e7fc07ccd6ec2a37d79ecefc"
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/layout.ts",
-      "sha256": "0ab8a95ef65a81db031b2c7bb297e8ccd8ecca184a20737d4810100a88c0160d"
+      "sha256": "47924489aa4dc9d5e6f63c994fe5a63217c9fdc24d3272b555e1c673f57c85cb"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/learning_reminder_body.test.ts",
+      "sha256": "08d7d62826767c6aced5d3cd63ebed138558699c9ca5a8889951d38e76274599"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/learning_reminder_body.ts",
+      "sha256": "1cf8eeb8d80d2346943463b472cd83f98c42e7d4e38990c2bcec561e0e358936"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/locale.test.ts",
+      "sha256": "8a8b06bfba59789b20d4da74ea413cc6432d969f4e706fa62eaefe5af5ea8c5a"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/locale.ts",
+      "sha256": "265f6b0b6c6ebb5df5fdcbb66908e9407e0629fefa0efec02a60a7372e861621"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/localized.test.ts",
+      "sha256": "e4060f947d05975253e328ffb3eb2a8d25619741379cce4600bb2c1a605f2d8f"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/localized.ts",
+      "sha256": "64ea1ad66aedca13b001bdb883a4efcf843eefd1b2492b916e42a72e884c380a"
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/outbox.test.ts",
@@ -3576,6 +3716,14 @@
     {
       "path": "supabase/functions/corelia-api/lib/mail/project_collaboration_invite_body.ts",
       "sha256": "1126e934348c013d45d10d491cb7b89172125d95e322229f9e42ad0065f6f501"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/render.test.ts",
+      "sha256": "bfb55d53e22669d82b244eb189464d32d864390a809bf8bf2a21d3f134eed2ce"
+    },
+    {
+      "path": "supabase/functions/corelia-api/lib/mail/render.ts",
+      "sha256": "57817cdc1daf4f4631617496f0461d7ea62a843de29253930dd9dc8f8bac4adc"
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/resend.test.ts",
@@ -4092,6 +4240,114 @@
     {
       "path": "supabase/migrations/20260916153501_learning_multilanguage_code.sql",
       "sha256": "2ffadf72ba163fa11c6dd2f5a36b99874cc4817fe13766b9a6210aaf6506d73d"
+    },
+    {
+      "path": "supabase/migrations/20260920083758_recipient_locale_email.sql",
+      "sha256": "8ded820d2728e66dd82001bdbbc03a8b65135f355650887dba273acd0c2d364a"
+    },
+    {
+      "path": "supabase/templates/confirmation.html",
+      "sha256": "ed252fc85ded7ff45fc2b55424004b39543547944d22c57b07a0b03d86a7fddd"
+    },
+    {
+      "path": "supabase/templates/email_change.html",
+      "sha256": "6bd371030de902f33024f0aa617cdd4d32f48992a2f63f47fbe26d05d67cb280"
+    },
+    {
+      "path": "supabase/templates/email_changed.html",
+      "sha256": "52b78f47985b41b5e8d123d285e0808e66a3b89ec86ee5c7b0b6d16bdb642bd0"
+    },
+    {
+      "path": "supabase/templates/identity_linked.html",
+      "sha256": "06dfb3a3bdb0145c91b81fbe604cfe664ab07a16dda5da9245dfce81e32761cb"
+    },
+    {
+      "path": "supabase/templates/identity_unlinked.html",
+      "sha256": "538599daf572f70d48c089b03e4c3db541aec3e25f1e58e6130cc96826b938b5"
+    },
+    {
+      "path": "supabase/templates/invite.html",
+      "sha256": "f03d13dc9c4fa346c4cb6973545da9d89ba7283b668fe3da07830303681068d5"
+    },
+    {
+      "path": "supabase/templates/magic_link.html",
+      "sha256": "8b580b4218ef13768800ea47efeb0f0588fef3e95346d14bd31e15fcdbbe47ac"
+    },
+    {
+      "path": "supabase/templates/mfa_factor_enrolled.html",
+      "sha256": "48ec4292d41769f1ed97ff8e4f926ed86d534a94e2e73aa93cd6a80b1f90adb4"
+    },
+    {
+      "path": "supabase/templates/mfa_factor_unenrolled.html",
+      "sha256": "92fc94b3be1e6b7028cadedeadd7026a753bbea8607194f09c84b3433c85b87f"
+    },
+    {
+      "path": "supabase/templates/password_changed.html",
+      "sha256": "71d24665afe509c3914482b7b56a39851d2725276a45ff29a1804d40c1fdc207"
+    },
+    {
+      "path": "supabase/templates/phone_changed.html",
+      "sha256": "fd909fb24a8f310ab2876bc6f79224c1f09512fbcdfa3c2e4cf8be831d013ad4"
+    },
+    {
+      "path": "supabase/templates/reauthentication.html",
+      "sha256": "bc23540dc66bb452c776a1f7fa796c394eea154ef865c2ed0b4da829e98d0410"
+    },
+    {
+      "path": "supabase/templates/recovery.html",
+      "sha256": "0987a8e43a559ce5bcb886f7e612065c9beebd63449ba7f85fc4675aa5c95994"
+    },
+    {
+      "path": "supabase/templates/source/confirmation.html",
+      "sha256": "ca533f641159f17b2b1d15c9bf56badfa78283997564168b42618ba4102f6727"
+    },
+    {
+      "path": "supabase/templates/source/email_change.html",
+      "sha256": "37d4d1c6751ef30b23bac24744b108348175d200e51400956c6e39d09c567769"
+    },
+    {
+      "path": "supabase/templates/source/email_changed.html",
+      "sha256": "cb95b1e2ce39d9ca866f5002f79247b6aeb931dbc8e8be5398e1ef7e36e2b496"
+    },
+    {
+      "path": "supabase/templates/source/identity_linked.html",
+      "sha256": "d24ad16e2d7f06596db4359b1738aed864bec0d4f5f3074920c43baae6c45fd9"
+    },
+    {
+      "path": "supabase/templates/source/identity_unlinked.html",
+      "sha256": "66e3623811fae0db0ecc9cc5605ffab61562dba1a155c5e261c14f815f94473a"
+    },
+    {
+      "path": "supabase/templates/source/invite.html",
+      "sha256": "978d90dd441f2a070ea75193f925f25ecfa750fd71ef9844c364d54aedc2333e"
+    },
+    {
+      "path": "supabase/templates/source/magic_link.html",
+      "sha256": "e8e371aedae692e0a30d57d6924815e00f4f4a5f5794da666230f8ff878a69ea"
+    },
+    {
+      "path": "supabase/templates/source/mfa_factor_enrolled.html",
+      "sha256": "09040fc0385610e1cb3ca930c22e437fc037a2bc27469467d146c375a366b77c"
+    },
+    {
+      "path": "supabase/templates/source/mfa_factor_unenrolled.html",
+      "sha256": "14ee55b72f5e0fdbf89618007e4c5acb71786d2d009df8e5eb9a7430469da36e"
+    },
+    {
+      "path": "supabase/templates/source/password_changed.html",
+      "sha256": "41b90c8b58cbd27eb22961c3416493354f8108ada9455779b7c86374575a02af"
+    },
+    {
+      "path": "supabase/templates/source/phone_changed.html",
+      "sha256": "2857d5e24133f40bd9559f83a53b6f5365d430e8e66ad614718f356c2547e20e"
+    },
+    {
+      "path": "supabase/templates/source/reauthentication.html",
+      "sha256": "676380425b72aaafd8491051768db626c1652ddbef973b570b096516a674e59e"
+    },
+    {
+      "path": "supabase/templates/source/recovery.html",
+      "sha256": "1bdc4a7ddaaf24505d17a788917f0673c45d40517a0e93744f09a78ff1fecaba"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -4642,6 +4898,10 @@
       {
         "path": "supabase/migrations/20260916153501_learning_multilanguage_code.sql",
         "sha256": "2ffadf72ba163fa11c6dd2f5a36b99874cc4817fe13766b9a6210aaf6506d73d"
+      },
+      {
+        "path": "supabase/migrations/20260920083758_recipient_locale_email.sql",
+        "sha256": "8ded820d2728e66dd82001bdbbc03a8b65135f355650887dba273acd0c2d364a"
       }
     ]
   }
