@@ -54,6 +54,8 @@ export const EMAIL_STYLES = `
     .e-outer { padding:0 !important; }
     .e-container { width:100% !important;max-width:100% !important;border:0 !important; }
     .e-header,.e-cta-wrap,.e-info-card,.e-otp,.e-alert { border-top:0 !important;border-bottom:0 !important; }
+    .e-header { background-image:linear-gradient(${b.border},${b.border}),linear-gradient(${b.background},${b.background}) !important;background-size:100% 1px,100% 100% !important;background-position:left bottom,left top !important;background-repeat:no-repeat !important; }
+    .e-footer { background-image:linear-gradient(${b.border},${b.border}),linear-gradient(${b.background},${b.background}) !important;background-size:100% 1px,100% 100% !important;background-position:left top,left top !important;background-repeat:no-repeat !important; }
     .e-container { font-size:15px !important; }
     .e-hero h2 { font-size:24px !important; }
   }
