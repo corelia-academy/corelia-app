@@ -17,6 +17,9 @@ describe("email renderer fallbacks", () => {
     expect(html).toContain("font-size:30px");
     expect(html).toContain("font-size:24px !important");
     expect(html).toContain("background-image:linear-gradient(#0a0913,#0a0913)");
+    expect(html).toContain('class="body"');
+    expect(html).toContain("u + .body .gmail-blend-screen");
+    expect(html).toContain('<div class="gmail-blend-screen"><div class="gmail-blend-difference">');
     expect(html).toContain("font-size:15px !important");
     expect(html).toContain("overflow-wrap:anywhere");
     expect(html).toContain("background-color:#1759f1");
