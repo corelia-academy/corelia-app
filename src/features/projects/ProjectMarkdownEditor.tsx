@@ -1,9 +1,9 @@
-import { Tabs } from "@base-ui/react/tabs";
 import { Bold, Code, Heading2, Italic, Link, List } from "lucide-react";
 import { useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Markdown } from "@/components/markdown/Markdown";
+import { Tabs, TabsGroup } from "@/components/ui/tabs";
 
 export function ProjectMarkdownEditor({ label, value, onChange, maxLength, required, placeholder, hint, rows = 10 }: {
   label: string; value: string; onChange: (value: string) => void; maxLength: number;
@@ -40,9 +40,11 @@ export function ProjectMarkdownEditor({ label, value, onChange, maxLength, requi
     <label htmlFor={id} className="text-label-medium font-body">{label}{required ? <span className="text-primary"> *</span> : null}</label>
     {hint ? <p id={`${id}-hint`} className="mt-2 text-body-small text-foreground-muted">{hint}</p> : null}
     <Tabs.Root value={mode} onValueChange={value => setMode(String(value))} className="mt-2 overflow-hidden rounded-lg border border-border bg-background">
-      <Tabs.List aria-label={`${label} — Markdown`} className="flex gap-1 border-b border-border p-2">
-        {(["write", "preview"] as const).map(tab => <Tabs.Tab key={tab} value={tab} className="min-h-10 rounded-md px-3 text-cta-medium font-body data-[active]:bg-primary/10 data-[active]:text-primary">{t(`projects.editor.${tab}`)}</Tabs.Tab>)}
-      </Tabs.List>
+      <TabsGroup level="2b">
+        <Tabs.List aria-label={`${label} — Markdown`}>
+          {(["write", "preview"] as const).map(tab => <Tabs.Tab key={tab} value={tab}>{t(`projects.editor.${tab}`)}</Tabs.Tab>)}
+        </Tabs.List>
+      </TabsGroup>
       <Tabs.Panel value="write">
         <div role="group" aria-label={t("projects.editor.formatting")} className="flex flex-wrap gap-1 border-b border-border p-2">
           {actions.map(action => <button key={action.key} type="button" onClick={() => format(action)} title={t(`projects.editor.markdown${action.key}`)} aria-label={t(`projects.editor.markdown${action.key}`)} className="flex size-10 items-center justify-center rounded-md hover:bg-surface-raised focus-visible:outline-2 focus-visible:outline-primary"><action.icon className="size-4" /></button>)}

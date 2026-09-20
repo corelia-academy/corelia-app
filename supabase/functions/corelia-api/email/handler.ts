@@ -4,7 +4,9 @@ import { resolveAppUrl } from "../lib/mail/layout.ts";
 import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 import { normalizeEmail } from "./csv.ts";
-import { isSafeEmailUrl, missingTemplateVariables, renderEmailDocument, renderTextTemplate, templateVariables } from "./template.ts";
+import { missingTemplateVariables, renderEmailDocument } from "./template.ts";
+import { localizedContentIssues, localizedVariables, readLocalizedEmailContent, selectLocalizedEmailContent } from "../lib/mail/localized.ts";
+import { normalizeEmailLocale } from "../lib/mail/locale.ts";
 
 const PURPOSES = new Set(["system", "learning", "event", "marketing"]);
 const SYSTEM_TRIGGERS = new Set(["account_verified", "course_enrolled", "learning_inactive", "object_registration_approved", "course_completed"]);
@@ -49,7 +51,7 @@ async function dashboard(db: SupabaseClient): Promise<Response> {
     db.from("email_campaigns").select("id", { count: "exact", head: true }),
     db.from("email_campaign_recipients").select("id", { count: "exact", head: true }).in("status", ["queued", "sending", "indeterminate"]),
     db.from("email_import_jobs").select("id,status,source_type,original_filename,total_rows,imported_count,duplicate_count,invalid_count,error_message,created_at").order("created_at", { ascending: false }).limit(10),
-    db.from("email_automations").select("id,name,trigger_type,purpose,enabled,updated_at").order("updated_at", { ascending: false }),
+    db.from("email_automations").select("id,name,trigger_type,purpose,enabled,pause_reason,updated_at").order("updated_at", { ascending: false }),
     db.from("email_senders").select("*").order("purpose"),
     db.from("email_settings").select("*").eq("singleton", true).single(),
   ]);
@@ -126,15 +128,12 @@ async function saveTemplate(db: SupabaseClient, actor: AdminContext, body: Recor
   if (!PURPOSES.has(purpose)) return json({ message: "invalid_input:purpose" }, 400);
   if (purpose === "system") requireFullAdmin(actor);
   const templateId = String(body.id ?? "") || crypto.randomUUID();
-  const subject = String(body.subject ?? "").trim();
-  const bodyText = String(body.body_text ?? "").trim();
-  if (!subject || !bodyText) return json({ message: "missing_fields:subject,body_text" }, 400);
-  const ctaUrl = String(body.cta_url ?? "").trim() || null;
-  const variables = templateVariables(subject, String(body.preheader ?? ""), bodyText, String(body.cta_label ?? ""), ctaUrl);
-  const urlValues = Object.fromEntries(variables.map((key) => [key, key.endsWith("url") ? "https://example.com" : "value"]));
-  if (ctaUrl && !isSafeEmailUrl(renderTextTemplate(ctaUrl, urlValues))) return json({ message: "unsafe_cta_url" }, 400);
-  const imageUrl = String(body.image_url ?? "").trim() || null;
-  if (imageUrl && !isSafeEmailUrl(renderTextTemplate(imageUrl, urlValues))) return json({ message: "unsafe_image_url" }, 400);
+  const localized = readLocalizedEmailContent(body.localized_content);
+  const compatibility = [localized.en, localized.vi].find((copy) => copy?.subject && copy?.body_text);
+  if (!compatibility) return json({ message: "missing_fields:subject,body_text" }, 400);
+  const issues = localizedContentIssues(localized).filter((issue) => issue.endsWith(".cta_url") || issue.endsWith(".image_url") || issue.endsWith(".cta"));
+  if (issues.length) return json({ message: "invalid_localized_content", issues }, 400);
+  const variables = localizedVariables(localized);
   const { data: existing } = await db.from("email_templates").select("id").eq("id", templateId).maybeSingle();
   if (existing) await db.from("email_templates").update({ name: String(body.name ?? "").trim(), purpose, description: String(body.description ?? "").trim() || null, updated_at: new Date().toISOString() }).eq("id", templateId);
   else {
@@ -143,7 +142,7 @@ async function saveTemplate(db: SupabaseClient, actor: AdminContext, body: Recor
   }
   const { data: versions } = await db.from("email_template_versions").select("version,status").eq("template_id", templateId).order("version", { ascending: false });
   const draft = versions?.find((v) => v.status === "draft");
-  const payload = { subject, preheader: String(body.preheader ?? ""), body_text: bodyText, cta_label: String(body.cta_label ?? "").trim() || null, cta_url: ctaUrl, image_url: imageUrl, variables, created_by: actor.id };
+  const payload = { subject: compatibility.subject, preheader: compatibility.preheader, body_text: compatibility.body_text, cta_label: compatibility.cta_label, cta_url: compatibility.cta_url, image_url: compatibility.image_url, localized_content: localized, variables, created_by: actor.id };
   let versionId: string;
   if (draft) {
     const { data, error } = await db.from("email_template_versions").update(payload).eq("template_id", templateId).eq("version", draft.version).select("id").single();
@@ -159,9 +158,11 @@ async function saveTemplate(db: SupabaseClient, actor: AdminContext, body: Recor
 
 async function publishTemplate(db: SupabaseClient, actor: AdminContext, body: Record<string, unknown>): Promise<Response> {
   const id = String(body.version_id ?? "");
-  const { data: version } = await db.from("email_template_versions").select("id,template_id,email_templates(purpose)").eq("id", id).single();
+  const { data: version } = await db.from("email_template_versions").select("id,template_id,localized_content,email_templates(purpose)").eq("id", id).single();
   const purpose = String((version?.email_templates as unknown as { purpose?: string } | null)?.purpose ?? "");
   if (!version) return json({ message: "template_version_not_found" }, 404);
+  const issues = localizedContentIssues(readLocalizedEmailContent(version.localized_content));
+  if (issues.length) return json({ message: "template_translations_incomplete", issues }, 409);
   if (purpose === "system") requireFullAdmin(actor);
   await db.from("email_template_versions").update({ status: "archived" }).eq("template_id", version.template_id).eq("status", "published");
   const { error } = await db.from("email_template_versions").update({ status: "published", published_at: new Date().toISOString() }).eq("id", id).eq("status", "draft");
@@ -179,16 +180,18 @@ async function saveCampaign(db: SupabaseClient, actor: AdminContext, body: Recor
   if (!await validateObject(db, objectType, objectId)) return json({ message: "invalid_object_context" }, 400);
   const { data: sender } = await db.from("email_senders").select("id,domain_status,purpose,display_name,from_email,reply_to").eq("id", String(body.sender_id ?? "")).eq("active", true).maybeSingle();
   if (!sender || sender.purpose !== purpose) return json({ message: "invalid_sender" }, 400);
-  const { data: version } = await db.from("email_template_versions").select("id,subject,preheader,body_text,cta_label,cta_url,image_url,variables,email_templates(purpose)").eq("id", String(body.template_version_id ?? "")).eq("status", "published").maybeSingle();
+  const { data: version } = await db.from("email_template_versions").select("id,subject,preheader,body_text,cta_label,cta_url,image_url,localized_content,variables,email_templates(purpose)").eq("id", String(body.template_version_id ?? "")).eq("status", "published").maybeSingle();
   if (!version) return json({ message: "published_template_required" }, 400);
+  if (localizedContentIssues(readLocalizedEmailContent(version.localized_content)).length) return json({ message: "template_translations_incomplete" }, 409);
   const templatePurpose = String((version.email_templates as unknown as { purpose?: string } | null)?.purpose ?? "");
   if (templatePurpose !== purpose) return json({ message: "template_purpose_mismatch" }, 400);
   const values = (body.preview_values ?? {}) as Record<string, unknown>;
-  const availableValues = { name: "Recipient", email: "recipient@example.com", locale: "vi", ...values };
+  const availableValues = { name: "Recipient", email: "recipient@example.com", locale: "en", ...values };
   const missing = missingTemplateVariables(version.variables ?? [], availableValues);
   if (missing.length) return json({ message: "missing_template_variables", missing }, 400);
   const genericValues = Object.fromEntries((version.variables ?? []).map((key: string) => [key, values[key] ?? `{{${key}}}`]));
-  const rendered = renderEmailDocument({ subject: version.subject, preheader: version.preheader, bodyText: version.body_text, ctaLabel: version.cta_label, ctaUrl: version.cta_url, imageUrl: version.image_url, purpose, values: genericValues });
+  const previewCopy = selectLocalizedEmailContent(version.localized_content, "en")!;
+  const rendered = renderEmailDocument({ subject: previewCopy.subject, preheader: previewCopy.preheader, bodyText: previewCopy.body_text, ctaLabel: previewCopy.cta_label, ctaUrl: previewCopy.cta_url, imageUrl: previewCopy.image_url, purpose, locale: "en", values: genericValues });
   const id = crypto.randomUUID();
   const { error } = await db.from("email_campaigns").insert({ id, name: String(body.name ?? "").trim(), purpose, object_type: objectType, object_id: objectId, list_id: String(body.list_id ?? ""), sender_id: sender.id, template_version_id: version.id, frozen_subject: rendered.subject, frozen_html: rendered.html, frozen_from: `${sender.display_name} <${sender.from_email}>`, frozen_reply_to: sender.reply_to, frozen_values: values, created_by: actor.id });
   if (error) throw error;
@@ -242,7 +245,10 @@ async function testEmail(db: SupabaseClient, actor: AdminContext, body: Record<s
   if (purpose === "system") requireFullAdmin(actor);
   const { data: sender } = await db.from("email_senders").select("display_name,from_email,reply_to,domain_status,active").eq("purpose", purpose).eq("is_default", true).maybeSingle();
   if (!sender?.active || sender.domain_status !== "verified") return json({ message: "sender_not_verified" }, 409);
-  const rendered = renderEmailDocument({ subject: version.subject, preheader: version.preheader, bodyText: version.body_text, ctaLabel: version.cta_label, ctaUrl: version.cta_url, imageUrl: version.image_url, purpose, values });
+  const locale = normalizeEmailLocale(body.locale ?? values.locale);
+  const copy = selectLocalizedEmailContent(version.localized_content, locale);
+  if (!copy) return json({ message: "template_translation_missing", locale }, 409);
+  const rendered = renderEmailDocument({ subject: copy.subject, preheader: copy.preheader, bodyText: copy.body_text, ctaLabel: copy.cta_label, ctaUrl: copy.cta_url, imageUrl: copy.image_url, purpose, locale, values });
   const result = await sendTransactionalEmailViaResend({ db, mailType: "email_center_test", to: [to], subject: `[TEST] ${rendered.subject}`, html: rendered.html, from: `${sender.display_name} <${sender.from_email}>`, replyTo: sender.reply_to, idempotencyKey: `email-center-test/${crypto.randomUUID()}` });
   await audit(db, actor, "test_send", "email_template_version", version.id, { to });
   return json({ ok: true, result });
@@ -264,13 +270,14 @@ async function saveAutomation(db: SupabaseClient, actor: AdminContext, body: Rec
   for (const step of stepsInput) {
     const [{ data: sender }, { data: version }] = await Promise.all([
       db.from("email_senders").select("purpose,active,domain_status").eq("id", String(step.sender_id ?? "")).maybeSingle(),
-      db.from("email_template_versions").select("status,email_templates(purpose)").eq("id", String(step.template_version_id ?? "")).maybeSingle(),
+      db.from("email_template_versions").select("status,localized_content,email_templates(purpose)").eq("id", String(step.template_version_id ?? "")).maybeSingle(),
     ]);
     const templatePurpose = String((version?.email_templates as unknown as { purpose?: string } | null)?.purpose ?? "");
     if (!sender || sender.purpose !== purpose || !version || version.status !== "published" || templatePurpose !== purpose) return json({ message: "invalid_automation_step" }, 400);
+    if (localizedContentIssues(readLocalizedEmailContent(version.localized_content)).length) return json({ message: "template_translations_incomplete" }, 409);
     if (enabled && (!sender.active || sender.domain_status !== "verified")) return json({ message: "sender_not_verified" }, 409);
   }
-  const payload = { id, name: String(body.name ?? "").trim(), trigger_type: trigger, purpose, object_type: objectType, object_id: objectId, enabled, stop_conditions: body.stop_conditions ?? [], created_by: actor.id, updated_at: new Date().toISOString() };
+  const payload = { id, name: String(body.name ?? "").trim(), trigger_type: trigger, purpose, object_type: objectType, object_id: objectId, enabled, pause_reason: null, stop_conditions: body.stop_conditions ?? [], created_by: actor.id, updated_at: new Date().toISOString() };
   const { error } = await db.from("email_automations").upsert(payload, { onConflict: "id" });
   if (error) throw error;
   if (Array.isArray(body.steps)) {
@@ -320,13 +327,13 @@ export async function handleEmailAdmin(req: Request, db: SupabaseClient): Promis
     if (action === "automations.toggle") {
       const id = String(body.id ?? "");
       const enabled = Boolean(body.enabled);
-      const { data: automation } = await db.from("email_automations").select("id,purpose,trigger_type,email_automation_steps(email_senders(active,domain_status),email_template_versions(status))").eq("id", id).maybeSingle();
+      const { data: automation } = await db.from("email_automations").select("id,purpose,trigger_type,email_automation_steps(email_senders(active,domain_status),email_template_versions(status,localized_content))").eq("id", id).maybeSingle();
       if (!automation) return json({ message: "automation_not_found" }, 404);
       if (actor.role !== "admin" && automation.purpose !== "marketing") return json({ message: "forbidden:marketing_automation_only" }, 403);
       if (SYSTEM_TRIGGERS.has(automation.trigger_type)) requireFullAdmin(actor);
-      const steps = automation.email_automation_steps as unknown as Array<{ email_senders?: { active?: boolean; domain_status?: string }; email_template_versions?: { status?: string } }>;
-      if (enabled && (!steps?.length || steps.some((step) => !step.email_senders?.active || step.email_senders.domain_status !== "verified" || step.email_template_versions?.status !== "published"))) return json({ message: "automation_not_ready" }, 409);
-      const { error } = await db.from("email_automations").update({ enabled, updated_at: new Date().toISOString() }).eq("id", id);
+      const steps = automation.email_automation_steps as unknown as Array<{ email_senders?: { active?: boolean; domain_status?: string }; email_template_versions?: { status?: string; localized_content?: unknown } }>;
+      if (enabled && (!steps?.length || steps.some((step) => !step.email_senders?.active || step.email_senders.domain_status !== "verified" || step.email_template_versions?.status !== "published" || localizedContentIssues(readLocalizedEmailContent(step.email_template_versions?.localized_content)).length > 0))) return json({ message: "automation_not_ready" }, 409);
+      const { error } = await db.from("email_automations").update({ enabled, pause_reason: null, updated_at: new Date().toISOString() }).eq("id", id);
       if (error) throw error;
       await audit(db, actor, enabled ? "enable" : "disable", "email_automation", id);
       return json({ ok: true });

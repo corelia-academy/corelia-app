@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "../lib/supabase.ts";
 import { normalizeEmail } from "./csv.ts";
+import { resolveRecipientEmailLocale } from "../lib/mail/locale.ts";
 
 export async function enqueueEmailAutomationForUser(params: {
   db: SupabaseClient;
@@ -14,7 +15,8 @@ export async function enqueueEmailAutomationForUser(params: {
   const email = normalizeEmail(authUser?.user?.email ?? "");
   if (!email) return 0;
   const { data: profile } = await params.db.from("profiles").select("full_name, locale").eq("id", params.userId).maybeSingle();
-  const { data: contact, error } = await params.db.from("email_contacts").upsert({ user_id: params.userId, email, full_name: profile?.full_name ?? null, locale: profile?.locale === "en" ? "en" : "vi", updated_at: new Date().toISOString() }, { onConflict: "email" }).select("id").single();
+  const resolved = resolveRecipientEmailLocale({ profileLocale: profile?.locale, authMetadataLocale: authUser?.user?.user_metadata?.locale });
+  const { data: contact, error } = await params.db.from("email_contacts").upsert({ user_id: params.userId, email, full_name: profile?.full_name ?? null, locale: resolved.locale, updated_at: new Date().toISOString() }, { onConflict: "email" }).select("id").single();
   if (error || !contact) return 0;
   let query = params.db.from("email_automations").select("id").eq("enabled", true).eq("trigger_type", params.triggerType);
   if (params.objectType && params.objectId) query = query.eq("object_type", params.objectType).eq("object_id", params.objectId);

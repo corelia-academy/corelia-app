@@ -1,0 +1,59 @@
+<div class="e-container">
+      <div class="e-header">
+        <img
+          src="https://lawhkvyyoznwygzsycan.supabase.co/storage/v1/object/public/public_files/Corelia_Logo_White.png"
+          alt="Corelia Academy"
+          height="36"
+        />
+      </div>
+      <div class="e-hero">
+        <span class="e-hero-tag"
+          >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Xác minh
+          danh tính{{ else }}Identity Verification{{ end }}</span
+        >
+        <h2>
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Mã xác
+          thực của bạn 🛡️{{ else }}Your verification code 🛡️{{ end }}
+        </h2>
+        <p>
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Bạn đang thực hiện một thao tác quan trọng yêu cầu xác thực
+          lại. Nhập mã OTP bên dưới để tiếp tục.{{ else }}You're performing a sensitive action that
+          requires re-authentication. Enter the OTP code below to continue.{{ end }}
+        </p>
+      </div>
+      <div class="e-otp">
+        <div class="e-otp-code">{{ .Token }}</div>
+        <div class="e-otp-hint">
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Mã có hiệu lực trong 10 phút · Không
+          chia sẻ mã này với bất kỳ ai{{ else }}Code valid for 10 minutes · Never share
+          this code with anyone{{ end }}
+        </div>
+      </div>
+      <div class="e-alert e-alert-warn">
+        <span class="e-alert-icon">🚨</span>
+        <div class="e-alert-text">
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Nếu bạn không thực hiện thao tác
+          này, hãy đổi mật khẩu ngay lập tức. Corelia Academy sẽ không bao giờ
+          yêu cầu mã OTP qua điện thoại hoặc chat.{{ else }}If you didn't initiate this action,
+          change your password immediately. Corelia Academy will never ask for
+          your OTP via phone or chat.{{ end }}
+        </div>
+      </div>
+      <div class="e-footer">
+        <p>
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Bạn
+          nhận email này vì có yêu cầu xác thực lại tại app.corelia.academy{{ else }}You received this because a
+          reauthentication was requested at app.corelia.academy{{ end }}
+        </p>
+        <p>
+          <a href="#"
+            >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Chính sách bảo
+            mật{{ else }}Privacy Policy{{ end }}</a
+          >
+          ·
+          <a href="#"
+            >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Liên hệ{{ else }}Contact{{ end }}</a
+          >
+        </p>
+      </div>
+    </div>

@@ -52,10 +52,10 @@ BEGIN
       RAISE EXCEPTION 'Account synchronization is not idempotent';
     END IF;
     INSERT INTO public.email_lists(id, name, created_by) VALUES (v_list_id, 'Integration list', v_actor);
-    INSERT INTO public.email_contacts(id, email, full_name) VALUES
-      ('ec000000-0000-4000-8000-000000000101', 'one@example.com', 'One'),
-      ('ec000000-0000-4000-8000-000000000102', 'two@example.com', 'Two'),
-      ('ec000000-0000-4000-8000-000000000103', 'blocked@example.com', 'Blocked');
+    INSERT INTO public.email_contacts(id, email, full_name, locale) VALUES
+      ('ec000000-0000-4000-8000-000000000101', 'one@example.com', 'One', 'vi'),
+      ('ec000000-0000-4000-8000-000000000102', 'two@example.com', 'Two', DEFAULT),
+      ('ec000000-0000-4000-8000-000000000103', 'blocked@example.com', 'Blocked', DEFAULT);
     INSERT INTO public.email_list_members(list_id, contact_id)
       SELECT v_list_id, id FROM public.email_contacts WHERE email IN ('one@example.com','two@example.com','blocked@example.com');
     INSERT INTO public.email_contact_consents(contact_id, topic, status, source)
@@ -65,8 +65,11 @@ BEGIN
       RAISE EXCEPTION 'Denormalized marketing status is out of sync';
     END IF;
     INSERT INTO public.email_templates(id, name, purpose, created_by) VALUES (v_template_id, 'Marketing', 'marketing', v_actor);
-    INSERT INTO public.email_template_versions(id, template_id, version, status, subject, body_text, created_by, published_at)
-      VALUES (v_version_id, v_template_id, 1, 'published', 'Hello {{name}}', 'Body', v_actor, now());
+    INSERT INTO public.email_template_versions(id, template_id, version, status, subject, body_text, localized_content, created_by, published_at)
+      VALUES (v_version_id, v_template_id, 1, 'published', 'Hello {{name}}', 'Body', jsonb_build_object(
+        'vi', jsonb_build_object('subject','Chào {{name}}','body_text','Nội dung'),
+        'en', jsonb_build_object('subject','Hello {{name}}','body_text','Body')
+      ), v_actor, now());
     SELECT id INTO v_sender_id FROM public.email_senders WHERE purpose = 'marketing' AND is_default;
     INSERT INTO public.email_campaigns(id, name, purpose, list_id, sender_id, template_version_id, frozen_subject, frozen_html, frozen_from, frozen_reply_to, created_by)
       VALUES (v_campaign_id, 'Integration campaign', 'marketing', v_list_id, v_sender_id, v_version_id, 'Hello {{name}}', '<p>Body</p>', 'Corelia <hello@news.corelia.academy>', 'hello@corelia.academy', v_actor);
@@ -75,6 +78,10 @@ BEGIN
     IF (SELECT prepared_recipients FROM public.email_campaigns WHERE id = v_campaign_id) <> 2
        OR (SELECT suppressed_count FROM public.email_campaigns WHERE id = v_campaign_id) <> 1 THEN
       RAISE EXCEPTION 'Campaign preparation eligibility counts are wrong';
+    END IF;
+    IF (SELECT count(*) FROM public.email_campaign_recipients WHERE campaign_id=v_campaign_id AND resolved_locale='vi') <> 1
+       OR (SELECT count(*) FROM public.email_campaign_recipients WHERE campaign_id=v_campaign_id AND resolved_locale='en') <> 2 THEN
+      RAISE EXCEPTION 'Campaign recipient locales were not frozen with English fallback';
     END IF;
 
     SELECT count(*), min(dispatch_batch_key) INTO claimed, v_batch_key
@@ -102,8 +109,11 @@ BEGIN
 
     INSERT INTO public.email_templates(id, name, purpose, created_by)
       VALUES ('ec000000-0000-4000-8000-000000000040', 'Welcome', 'system', v_actor);
-    INSERT INTO public.email_template_versions(id, template_id, version, status, subject, body_text, created_by, published_at)
-      VALUES ('ec000000-0000-4000-8000-000000000041', 'ec000000-0000-4000-8000-000000000040', 1, 'published', 'Welcome', 'Welcome', v_actor, now());
+    INSERT INTO public.email_template_versions(id, template_id, version, status, subject, body_text, localized_content, created_by, published_at)
+      VALUES ('ec000000-0000-4000-8000-000000000041', 'ec000000-0000-4000-8000-000000000040', 1, 'published', 'Welcome', 'Welcome', jsonb_build_object(
+        'vi', jsonb_build_object('subject','Chào mừng','body_text','Chào mừng'),
+        'en', jsonb_build_object('subject','Welcome','body_text','Welcome')
+      ), v_actor, now());
     INSERT INTO public.email_automations(id, name, trigger_type, purpose, enabled, created_by)
       VALUES ('ec000000-0000-4000-8000-000000000050', 'Welcome once', 'account_verified', 'system', true, v_actor);
     SELECT id INTO v_system_sender_id FROM public.email_senders WHERE purpose = 'system' AND is_default;

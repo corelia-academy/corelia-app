@@ -262,28 +262,64 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Uncomment to customize email template
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+[auth.email.template.invite]
+subject = '{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") }}Bạn được mời tham gia Corelia{{ else }}You are invited to Corelia{{ end }}'
+content_path = "./supabase/templates/invite.html"
 
 [auth.email.template.confirmation]
-subject = "Confirm Your Signup"
+subject = '{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") }}Xác nhận tài khoản Corelia{{ else }}Confirm your Corelia account{{ end }}'
 content_path = "./supabase/templates/confirmation.html"
 
 [auth.email.template.recovery]
-subject = "Reset Your Password"
+subject = '{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") }}Đặt lại mật khẩu Corelia{{ else }}Reset your Corelia password{{ end }}'
 content_path = "./supabase/templates/recovery.html"
 
+[auth.email.template.magic_link]
+subject = '{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") }}Liên kết đăng nhập Corelia{{ else }}Your Corelia sign-in link{{ end }}'
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.email_change]
+subject = '{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") }}Xác nhận thay đổi email{{ else }}Confirm your email change{{ end }}'
+content_path = "./supabase/templates/email_change.html"
+
 [auth.email.template.reauthentication]
-subject = "Confirm Reauthentication"
+subject = '{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") }}Mã xác thực Corelia{{ else }}Your Corelia verification code{{ end }}'
 content_path = "./supabase/templates/reauthentication.html"
 
-# Uncomment to customize notification email template
-# [auth.email.notification.password_changed]
-# enabled = true
-# subject = "Your password has been changed"
-# content_path = "./templates/password_changed_notification.html"
+[auth.email.notification.password_changed]
+enabled = true
+subject = '{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") }}Mật khẩu Corelia đã được thay đổi{{ else }}Your Corelia password was changed{{ end }}'
+content_path = "./templates/password_changed.html"
+
+[auth.email.notification.email_changed]
+enabled = true
+subject = '{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") }}Email Corelia đã được thay đổi{{ else }}Your Corelia email was changed{{ end }}'
+content_path = "./templates/email_changed.html"
+
+[auth.email.notification.phone_changed]
+enabled = true
+subject = '{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") }}Số điện thoại Corelia đã được thay đổi{{ else }}Your Corelia phone number was changed{{ end }}'
+content_path = "./templates/phone_changed.html"
+
+[auth.email.notification.mfa_factor_enrolled]
+enabled = true
+subject = '{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") }}Đã thêm phương thức xác thực{{ else }}A new authentication factor was added{{ end }}'
+content_path = "./templates/mfa_factor_enrolled.html"
+
+[auth.email.notification.mfa_factor_unenrolled]
+enabled = true
+subject = '{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") }}Đã gỡ phương thức xác thực{{ else }}An authentication factor was removed{{ end }}'
+content_path = "./templates/mfa_factor_unenrolled.html"
+
+[auth.email.notification.identity_linked]
+enabled = true
+subject = '{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") }}Danh tính mới đã được liên kết{{ else }}A new identity was linked{{ end }}'
+content_path = "./templates/identity_linked.html"
+
+[auth.email.notification.identity_unlinked]
+enabled = true
+subject = '{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") }}Danh tính đã được hủy liên kết{{ else }}An identity was unlinked{{ end }}'
+content_path = "./templates/identity_unlinked.html"
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.

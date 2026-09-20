@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "../lib/supabase.ts";
 import { contactColumnIndex, contactNameFromCsv, consentFromCsv, normalizeEmail, parseCsv, type ContactColumnMapping } from "./csv.ts";
+import { normalizeEmailLocale } from "../lib/mail/locale.ts";
 
 const CHUNK_SIZE = 250;
 
@@ -43,7 +44,7 @@ export async function processNextImportChunk(db: SupabaseClient): Promise<{ proc
       unique.set(email, {
         email,
         full_name: contactNameFromCsv(row, headers, mapping),
-        locale: (row[localeIndex] ?? "").trim().toLowerCase() === "en" ? "en" : "vi",
+        locale: normalizeEmailLocale(localeIndex >= 0 ? row[localeIndex] : null),
         consent: consentIndex >= 0 && consentFromCsv(row[consentIndex] ?? ""),
         row: index + 1,
       });

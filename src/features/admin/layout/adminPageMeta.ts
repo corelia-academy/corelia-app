@@ -1,12 +1,16 @@
 type AdminPageMeta = {
-  titleKey: string;
-  descriptionKey: string;
+  titleKey?: string;
+  descriptionKey?: string;
+  title?: string;
+  description?: string;
 };
 
 const PAGE_META: Array<{
   match: (pathname: string) => boolean;
-  titleKey: string;
-  descriptionKey: string;
+  titleKey?: string;
+  descriptionKey?: string;
+  title?: string;
+  description?: string;
 }> = [
   { match: pathname => pathname.startsWith("/admin/email"), titleKey: "layout.pageMeta.email.title", descriptionKey: "layout.pageMeta.email.description" },
   { match: pathname => pathname.startsWith("/admin/projects"), titleKey: "layout.pageMeta.projects.title", descriptionKey: "layout.pageMeta.projects.description" },
@@ -54,5 +58,10 @@ const PAGE_META: Array<{
 
 export function resolveAdminPageMeta(pathname: string): AdminPageMeta {
   const current = PAGE_META.find((item) => item.match(pathname)) ?? PAGE_META[0];
-  return { titleKey: current.titleKey, descriptionKey: current.descriptionKey };
+  return {
+    titleKey: current.titleKey,
+    descriptionKey: current.descriptionKey,
+    title: current.title,
+    description: current.description,
+  };
 }

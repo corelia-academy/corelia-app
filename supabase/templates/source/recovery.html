@@ -1,0 +1,74 @@
+<div class="e-container">
+      <div class="e-header">
+        <img
+          src="https://lawhkvyyoznwygzsycan.supabase.co/storage/v1/object/public/public_files/Corelia_Logo_White.png"
+          alt="Corelia Academy"
+          height="36"
+        />
+      </div>
+      <div class="e-hero">
+        <span class="e-hero-tag"
+          >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Bảo mật tài
+          khoản{{ else }}Account Security{{ end }}</span
+        >
+        <h2>
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Đặt lại
+          mật khẩu 🔑{{ else }}Reset your password 🔑{{ end }}
+        </h2>
+        <p>
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.
+          Nhấn vào nút bên dưới để tiếp tục.{{ else }}We received a request to reset the
+          password for your account. Click the button below to proceed.{{ end }}
+        </p>
+      </div>
+      <div class="e-body">
+        <p>
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Link sẽ hết hạn sau 30 phút. Nếu bạn không yêu cầu,
+          hãy bỏ qua email này — tài khoản vẫn an toàn.{{ else }}The link expires in 30 minutes. If you
+          didn't request this, ignore this email — your account remains
+          secure.{{ end }}
+        </p>
+              <p>
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Thời điểm yêu cầu:{{ else }}Requested at:{{ end }} <strong>{{ .SentAt }}</strong>
+        </p>
+</div>
+      <div class="e-cta-wrap">
+        <a href="{{ .ConfirmationURL }}" class="e-btn e-btn-teal"
+          >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Đặt lại mật
+          khẩu →{{ else }}Reset Password →{{ end }}</a
+        >
+      </div>
+      <div class="e-info-card">
+        <div class="e-info-card-label">
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Thông tin bảo
+          mật{{ else }}Security Details{{ end }}
+        </div>
+
+        <div class="e-info-row">
+          <span class="e-info-key"
+            >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Hiệu lực{{ else }}Expires In{{ end
+            }}</span
+          ><span class="e-info-val"
+            >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}30 phút{{ else }}30 minutes{{ end
+            }}</span
+          >
+        </div>
+      </div>
+      <div class="e-footer">
+        <p>
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Bạn nhận email này
+          vì có yêu cầu đặt lại mật khẩu tại app.corelia.academy{{ else }}You received this because a password
+          reset was requested at app.corelia.academy{{ end }}
+        </p>
+        <p>
+          <a href="#"
+            >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Chính sách bảo
+            mật{{ else }}Privacy Policy{{ end }}</a
+          >
+          ·
+          <a href="#"
+            >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Liên hệ{{ else }}Contact{{ end }}</a
+          >
+        </p>
+      </div>
+    </div>

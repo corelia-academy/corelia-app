@@ -123,11 +123,6 @@ export async function changePasswordWithReauthentication(input: {
   await updateAuthPassword(input.newPassword);
 }
 
-export async function updateAuthLocale(locale: string): Promise<void> {
-  const { error } = await supabase.auth.updateUser({ data: { locale } });
-  if (error) throw error;
-}
-
 export async function signOutFromSupabase() {
   return supabase.auth.signOut();
 }
