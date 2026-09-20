@@ -40,9 +40,12 @@ async function claimRecipients(db: SupabaseClient, campaignId: string, limit: nu
 
 async function dispatchBatch(db: SupabaseClient, campaign: Record<string, unknown>, rows: Recipient[], lease: string): Promise<{ accepted: number; failed: number }> {
   const contactIds = rows.map((row) => row.contact_id);
-  const { data: contacts } = await db.from("email_contacts").select("id,user_id,global_suppressed_at,email_contact_consents(topic,status)").in("id", contactIds);
+  const { data: contacts, error: contactsError } = await db.from("email_contacts").select("id,user_id,global_suppressed_at,email_contact_consents(topic,status)").in("id", contactIds);
+  if (contactsError) throw contactsError;
   const userIds = (contacts ?? []).map((contact) => contact.user_id).filter(Boolean);
-  const { data: preferences } = userIds.length ? await db.from("notification_preferences").select("user_id,email_course_blast,email_track_blast").in("user_id", userIds) : { data: [] };
+  const preferenceResult = userIds.length ? await db.from("notification_preferences").select("user_id,email_course_blast,email_track_blast").in("user_id", userIds) : { data: [], error: null };
+  if (preferenceResult.error) throw preferenceResult.error;
+  const preferences = preferenceResult.data;
   const preferenceByUser = new Map((preferences ?? []).map((preference) => [preference.user_id, preference]));
   const allowedIds = new Set((contacts ?? []).filter((contact) => {
     if (contact.global_suppressed_at) return false;
@@ -57,9 +60,15 @@ async function dispatchBatch(db: SupabaseClient, campaign: Record<string, unknow
   rows = rows.filter((row) => allowedIds.has(row.contact_id));
   if (!rows.length) return { accepted: 0, failed: 0 };
   const apiKey = env("RESEND_API_KEY");
-  const { data: sender } = await db.from("email_senders").select("domain_status,active").eq("id", campaign.sender_id).single();
-  const { data: version } = await db.from("email_template_versions").select("subject,preheader,body_text,cta_label,cta_url,image_url,localized_content,variables").eq("id", campaign.template_version_id).single();
-  if (!apiKey || !sender?.active || sender.domain_status !== "verified" || !version) {
+  const { data: sender, error: senderError } = await db.from("email_senders").select("domain_status,active").eq("id", campaign.sender_id).single();
+  if (senderError) throw senderError;
+  const needsRender = rows.some((row) => !row.request_snapshot);
+  const versionResult = needsRender
+    ? await db.from("email_template_versions").select("subject,preheader,body_text,cta_label,cta_url,image_url,localized_content,variables").eq("id", campaign.template_version_id).single()
+    : { data: null, error: null };
+  if (versionResult.error) throw versionResult.error;
+  const version = versionResult.data;
+  if (!apiKey || !sender?.active || sender.domain_status !== "verified" || (needsRender && !version)) {
     await db.from("email_campaign_recipients").update({ status: "failed", lease_token: null, last_error: !apiKey ? "email_not_configured" : "sender_not_verified", updated_at: new Date().toISOString() }).eq("lease_token", lease);
     return { accepted: 0, failed: rows.length };
   }
@@ -70,14 +79,18 @@ async function dispatchBatch(db: SupabaseClient, campaign: Record<string, unknow
     const locale = normalizeEmailLocale(row.resolved_locale ?? values.locale);
     const unsubscribeUrl = campaign.purpose === "marketing" ? `${resolveAppUrl()}/email/unsubscribe?type=marketing&token=${encodeURIComponent(row.id)}` : undefined;
     const oneClickUrl = campaign.purpose === "marketing" ? `${env("SUPABASE_URL")}/functions/v1/corelia-api?op=email.unsubscribe&token=${encodeURIComponent(row.id)}` : undefined;
-    const copy = selectLocalizedEmailContent(version.localized_content, locale) ?? {
-      subject: version.subject, preheader: version.preheader, body_text: version.body_text,
-      cta_label: version.cta_label, cta_url: version.cta_url, image_url: version.image_url,
-    };
+    const localized = selectLocalizedEmailContent(version!.localized_content, locale);
+    const legacy = !version!.localized_content
+      ? { subject: version!.subject, preheader: version!.preheader, body_text: version!.body_text,
+          cta_label: version!.cta_label, cta_url: version!.cta_url, image_url: version!.image_url }
+      : null;
+    const copy = localized ?? legacy;
+    if (!copy) throw new Error(`campaign_translation_missing:${locale}`);
     const rendered = renderEmailDocument({ subject: copy.subject, preheader: copy.preheader, bodyText: copy.body_text, ctaLabel: copy.cta_label, ctaUrl: copy.cta_url, imageUrl: copy.image_url, purpose: String(campaign.purpose), locale, values, unsubscribeUrl });
     const snapshot = { from: String(campaign.frozen_from), reply_to: String(campaign.frozen_reply_to), to: [row.recipient_email], subject: rendered.subject, html: rendered.html, headers: oneClickUrl ? { "List-Unsubscribe": `<${oneClickUrl}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } : undefined };
-    const { error: snapshotError } = await db.from("email_campaign_recipients").update({ request_snapshot: snapshot, resolved_locale: locale, locale_source: row.locale_source ?? "contact", updated_at: new Date().toISOString() }).eq("id", row.id).eq("lease_token", lease).is("request_snapshot", null);
+    const { data: snapshotRow, error: snapshotError } = await db.from("email_campaign_recipients").update({ request_snapshot: snapshot, resolved_locale: locale, locale_source: row.locale_source ?? "contact", updated_at: new Date().toISOString() }).eq("id", row.id).eq("lease_token", lease).is("request_snapshot", null).select("id").maybeSingle();
     if (snapshotError) throw snapshotError;
+    if (!snapshotRow) throw new Error("campaign_snapshot_fence_failed");
     messages.push(snapshot);
   }
   const batchKey = rows[0]!.dispatch_batch_key;
@@ -113,38 +126,44 @@ async function automationStillEligible(db: SupabaseClient, automation: Record<st
   const userId = String(contact.user_id ?? "");
   const context = (enrollment.context ?? {}) as Record<string, unknown>;
   if (userId && (automation.object_type === "course" || automation.object_type === "program")) {
-    const { data: preference } = await db.from("notification_preferences").select("email_course_blast,email_track_blast").eq("user_id", userId).maybeSingle();
+    const { data: preference, error } = await db.from("notification_preferences").select("email_course_blast,email_track_blast").eq("user_id", userId).maybeSingle();
+    if (error) throw error;
     if (automation.object_type === "course" && preference?.email_course_blast === false) return false;
     if (automation.object_type === "program" && preference?.email_track_blast === false) return false;
   }
   if (automation.trigger_type === "account_verified") {
     if (!userId) return false;
-    const { data } = await db.auth.admin.getUserById(userId);
+    const { data, error } = await db.auth.admin.getUserById(userId);
+    if (error) throw error;
     return Boolean(data.user?.email_confirmed_at && !data.user?.banned_until);
   }
   if (automation.trigger_type === "course_enrolled" || automation.trigger_type === "learning_inactive" || automation.trigger_type === "course_completed") {
     const courseId = String(automation.object_id ?? context.course_id ?? "");
     if (!userId || !courseId) return false;
-    const { data: enrollmentRow } = await db.from("enrollments").select("completed_at").eq("user_id", userId).eq("course_id", courseId).maybeSingle();
+    const { data: enrollmentRow, error } = await db.from("enrollments").select("completed_at").eq("user_id", userId).eq("course_id", courseId).maybeSingle();
+    if (error) throw error;
     if (!enrollmentRow) return false;
     if (automation.trigger_type === "course_completed") return Boolean(enrollmentRow.completed_at);
     if (Number(enrollment.current_position ?? 0) > 0) {
-      const { count } = await db.from("lesson_progress").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("course_id", courseId);
+      const { count, error: progressError } = await db.from("lesson_progress").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("course_id", courseId);
+      if (progressError) throw progressError;
       if ((count ?? 0) > 0) return false;
     }
   }
   if (automation.trigger_type === "object_registration_approved" && automation.object_type === "hackathon") {
     if (!userId || !automation.object_id) return false;
-    const { data } = await db.from("hackathon_registrations").select("id").eq("user_id", userId).eq("hackathon_id", automation.object_id).eq("document->>status", "approved").maybeSingle();
+    const { data, error } = await db.from("hackathon_registrations").select("id").eq("user_id", userId).eq("hackathon_id", automation.object_id).eq("document->>status", "approved").maybeSingle();
+    if (error) throw error;
     return Boolean(data);
   }
   return true;
 }
 
 async function processAutomations(db: SupabaseClient, limit = 20): Promise<number> {
-  const { data: enrollments } = await db.from("email_automation_enrollments")
+  const { data: enrollments, error: enrollmentsError } = await db.from("email_automation_enrollments")
     .select("*,email_automations!inner(id,name,purpose,trigger_type,object_type,object_id,enabled),email_contacts!inner(user_id,email,full_name,locale,global_suppressed_at,email_contact_consents(topic,status))")
     .eq("status", "active").lte("next_step_at", new Date().toISOString()).eq("email_automations.enabled", true).order("next_step_at").limit(limit);
+  if (enrollmentsError) throw enrollmentsError;
   let processed = 0;
   for (const enrollment of enrollments ?? []) {
     const automation = enrollment.email_automations as { id: string; purpose: string };
@@ -158,42 +177,61 @@ async function processAutomations(db: SupabaseClient, limit = 20): Promise<numbe
       await db.from("email_automation_enrollments").update({ status: "stopped", updated_at: new Date().toISOString() }).eq("id", enrollment.id);
       continue;
     }
-    const { data: step } = await db.from("email_automation_steps").select("*,email_template_versions(*),email_senders(*)").eq("automation_id", automation.id).eq("position", enrollment.current_position).maybeSingle();
+    const { data: step, error: stepError } = await db.from("email_automation_steps").select("*,email_template_versions(*),email_senders(*)").eq("automation_id", automation.id).eq("position", enrollment.current_position).maybeSingle();
+    if (stepError) throw stepError;
     if (!step) {
       await db.from("email_automation_enrollments").update({ status: "completed", updated_at: new Date().toISOString() }).eq("id", enrollment.id);
       continue;
     }
+    const key = `automation/${enrollment.id}/${step.id}`;
+    const { data: existingOutbox, error: existingOutboxError } = await db.from("email_outbox_events")
+      .select("request_payload").eq("idempotency_key", key).maybeSingle();
+    if (existingOutboxError) throw existingOutboxError;
     const version = step.email_template_versions as Record<string, unknown>;
     const sender = step.email_senders as Record<string, unknown>;
-    if (!sender.active || sender.domain_status !== "verified") continue;
-    const values = { ...(enrollment.context as Record<string, unknown>), name: contact.full_name ?? "", email: contact.email };
-    const unsubscribeUrl = automation.purpose === "marketing" ? `${resolveAppUrl()}/email/unsubscribe?type=marketing&token=${encodeURIComponent(enrollment.id)}` : undefined;
-    const locale = normalizeEmailLocale(contact.locale);
-    const copy = selectLocalizedEmailContent(version.localized_content, locale);
-    if (!copy) {
-      await db.from("email_automations").update({ enabled: false, pause_reason: `missing_translation:${locale}`, updated_at: new Date().toISOString() }).eq("id", automation.id);
-      await db.from("email_automation_enrollments").update({ status: "stopped", context: { ...(enrollment.context as Record<string, unknown>), stop_reason: `missing_translation:${locale}` }, updated_at: new Date().toISOString() }).eq("id", enrollment.id);
-      continue;
+    let snapshot = existingOutbox?.request_payload as {
+      from: string; to: string[]; subject: string; html: string; idempotency_key: string;
+      reply_to?: string; headers?: Record<string, string>;
+    } | null;
+    if (!snapshot) {
+      if (!sender.active || sender.domain_status !== "verified") continue;
+      const values = { ...(enrollment.context as Record<string, unknown>), name: contact.full_name ?? "", email: contact.email };
+      const unsubscribeUrl = automation.purpose === "marketing" ? `${resolveAppUrl()}/email/unsubscribe?type=marketing&token=${encodeURIComponent(enrollment.id)}` : undefined;
+      const locale = normalizeEmailLocale(contact.locale);
+      const copy = selectLocalizedEmailContent(version.localized_content, locale);
+      if (!copy) {
+        await db.from("email_automations").update({ enabled: false, pause_reason: `missing_translation:${locale}`, updated_at: new Date().toISOString() }).eq("id", automation.id);
+        await db.from("email_automation_enrollments").update({ status: "stopped", context: { ...(enrollment.context as Record<string, unknown>), stop_reason: `missing_translation:${locale}` }, updated_at: new Date().toISOString() }).eq("id", enrollment.id);
+        continue;
+      }
+      const rendered = renderEmailDocument({ subject: copy.subject, preheader: copy.preheader, bodyText: copy.body_text, ctaLabel: copy.cta_label, ctaUrl: copy.cta_url, imageUrl: copy.image_url, purpose: automation.purpose, locale, values, unsubscribeUrl });
+      const oneClickUrl = automation.purpose === "marketing" ? `${env("SUPABASE_URL")}/functions/v1/corelia-api?op=email.unsubscribe&token=${encodeURIComponent(enrollment.id)}` : undefined;
+      snapshot = {
+        from: `${String(sender.display_name)} <${String(sender.from_email)}>`,
+        reply_to: String(sender.reply_to),
+        to: [contact.email],
+        subject: rendered.subject,
+        html: rendered.html,
+        headers: oneClickUrl ? { "List-Unsubscribe": `<${oneClickUrl}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } : undefined,
+        idempotency_key: key,
+      };
     }
-    const rendered = renderEmailDocument({ subject: copy.subject, preheader: copy.preheader, bodyText: copy.body_text, ctaLabel: copy.cta_label, ctaUrl: copy.cta_url, imageUrl: copy.image_url, purpose: automation.purpose, locale, values, unsubscribeUrl });
-    const key = `automation/${enrollment.id}/${step.id}`;
-    const from = `${String(sender.display_name)} <${String(sender.from_email)}>`;
-    const claim = await claimOutboxLease({ db, idempotencyKey: key, eventType: "email_automation", recipientEmail: contact.email, buildSnapshot: () => ({ from, to: [contact.email], subject: rendered.subject, html: rendered.html, idempotency_key: key }) });
+    const frozenSnapshot = snapshot;
+    const claim = await claimOutboxLease({ db, idempotencyKey: key, eventType: "email_automation", recipientEmail: contact.email, buildSnapshot: () => frozenSnapshot });
     if (claim.type === "already_accepted") {
       await db.from("email_automation_enrollments").update({ current_position: enrollment.current_position + 1, next_step_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", enrollment.id);
       continue;
     }
     if (claim.type !== "claimed") continue;
-    if (!isTransactionalEmailConfigured(from)) {
+    if (!isTransactionalEmailConfigured(claim.event.request_payload.from)) {
       await releaseOutboxUnconfigured({ db, idempotencyKey: key, leaseToken: claim.leaseToken });
       continue;
     }
     await reserveProviderSlot(db);
     const dispatch = await persistOutboxDispatch({ db, idempotencyKey: key, leaseToken: claim.leaseToken, existingFirstDispatchedAt: claim.event.first_dispatched_at });
     if (!dispatch.ok) continue;
-    const oneClickUrl = automation.purpose === "marketing" ? `${env("SUPABASE_URL")}/functions/v1/corelia-api?op=email.unsubscribe&token=${encodeURIComponent(enrollment.id)}` : undefined;
     const frozen = claim.event.request_payload;
-    const result = await sendTransactionalEmailViaResend({ db, mailType: `automation:${automation.id}`, to: frozen.to, subject: frozen.subject, html: frozen.html, from: frozen.from, replyTo: String(sender.reply_to), headers: oneClickUrl ? { "List-Unsubscribe": `<${oneClickUrl}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } : undefined, idempotencyKey: key });
+    const result = await sendTransactionalEmailViaResend({ db, mailType: `automation:${automation.id}`, to: frozen.to, subject: frozen.subject, html: frozen.html, from: frozen.from, replyTo: frozen.reply_to, headers: frozen.headers, idempotencyKey: key });
     if (result.sent) {
       await commitOutboxSuccess({ db, idempotencyKey: key, leaseToken: claim.leaseToken, providerMessageId: result.providerMessageId });
       const nextPosition = enrollment.current_position + 1;

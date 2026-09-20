@@ -8,11 +8,23 @@ export const authNames = [
   "password_changed", "email_changed", "phone_changed", "mfa_factor_enrolled",
   "mfa_factor_unenrolled", "identity_linked", "identity_unlinked",
 ];
-const localeAction = '{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}';
+const vietnameseLocaleVariants = [
+  "vi", "vI", "Vi", "VI", "vn", "vN", "Vn", "VN",
+  ...["vi", "vI", "Vi", "VI"].flatMap((language) =>
+    ["vn", "vN", "Vn", "VN"].flatMap((region) => [`${language}-${region}`, `${language}_${region}`]),
+  ),
+];
+const localeCondition = `if or ${vietnameseLocaleVariants.map((locale) => `(eq .Data.locale "${locale}")`).join(" ")}`;
+const localeAction = `{{ ${localeCondition} }}`;
+
+function isVietnameseAuthLocale(locale) {
+  return typeof locale === "string" && ["vi", "vn"].includes(locale.trim().toLowerCase().replaceAll("_", "-").split("-")[0]);
+}
 
 export function buildAuthTemplate(name) {
   if (!authNames.includes(name)) throw new Error("Unknown Auth template");
-  const source = readFileSync(new URL(`../../supabase/templates/source/${name}.html`, import.meta.url), "utf8");
+  const source = readFileSync(new URL(`../../supabase/templates/source/${name}.html`, import.meta.url), "utf8")
+    .replace(/{{\s*if or \(eq \.Data\.locale[\s\S]*?\)\s*}}/g, localeAction);
   // HTML parsers must never interpret the quotes or branches inside Go actions.
   const actions = [];
   const mask = (html) => html.replace(/{{[\s\S]*?}}/g, (action) => {
@@ -56,8 +68,8 @@ export function renderAuthFixture(html, { locale, token = "123456", appUrl, conf
     }
     const action = part.slice(2, -2).trim().replace(/\s+/g, " ");
     if (action.startsWith("if ")) {
-      const condition = action === 'if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN")'
-        ? ["vi", "vn", "vi-VN", "vi-vn", "VI", "VN"].includes(locale)
+      const condition = action === localeCondition
+        ? isVietnameseAuthLocale(locale)
         : action === "if .Token" ? Boolean(token) : undefined;
       if (condition === undefined) throw new Error(`Unsupported fixture action: ${action}`);
       branches.push({ active: condition, condition });

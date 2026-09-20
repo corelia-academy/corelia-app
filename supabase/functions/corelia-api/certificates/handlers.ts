@@ -78,7 +78,7 @@ async function runCertificateIssuedSideEffects(
     ]);
     const email = (authUser?.user?.email ?? "").trim();
     const courseTitle = (course.title ?? "").trim();
-    const { locale } = resolveRecipientEmailLocale({ profileLocale: profileRow?.locale, authMetadataLocale: authUser?.user?.user_metadata?.locale });
+    const { locale } = resolveRecipientEmailLocale({ recipientKind: "account", profileLocale: profileRow?.locale, authMetadataLocale: authUser?.user?.user_metadata?.locale });
     const profilePath = profileRow?.username
       ? `/u/${encodeURIComponent(String(profileRow.username))}`
       : `/account`;
