@@ -9,8 +9,10 @@ import {
   checkAndIssueCertificate,
   courseHasCertificate,
   ensureEnrollmentForProgress,
+  revertCourseCompletion,
   sortLessonsByCurriculum,
   syncCourseCompletion,
+  type RevertCourseCompletionMode,
 } from "@/lib/courses";
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
 import { isLessonPublishedForLearners } from "@/lib/lessonFormat";
@@ -52,10 +54,12 @@ export default function CourseDetail() {
     [t],
   );
   const completionSyncAttemptedRef = useRef<Set<string>>(new Set());
+  const syncEpochRef = useRef(0);
   const [completionSyncing, setCompletionSyncing] = useState(false);
   const [completionJustSynced, setCompletionJustSynced] = useState(false);
   const [completionSyncError, setCompletionSyncError] = useState<string | null>(null);
   const [certificateIssuing, setCertificateIssuing] = useState(false);
+  const [isIssuanceFlowActive, setIsIssuanceFlowActive] = useState(false);
   const [certificateJustIssued, setCertificateJustIssued] = useState(false);
   const [certificateIssueReason, setCertificateIssueReason] =
     useState<CertificateIssueReason | null>(null);
@@ -71,6 +75,19 @@ export default function CourseDetail() {
     loadCourseErrorFallback: translate("detail.loadCourseErrorFallback"),
     viewer: user,
   });
+
+  // V-09: Reset transient completion/issuance state when navigated to a different course
+  useEffect(() => {
+    syncEpochRef.current += 1;
+    setCompletionJustSynced(false);
+    setCertificateJustIssued(false);
+    setCompletionSyncError(null);
+    setCertificateIssueError(null);
+    setCertificateIssueReason(null);
+    setCompletionSyncing(false);
+    setCertificateIssuing(false);
+    setIsIssuanceFlowActive(false);
+  }, [courseLoad.resolvedCourseId]);
 
   const access = useCourseEnrollmentAccess({
     resolvedCourseId: courseLoad.resolvedCourseId,
@@ -96,16 +113,19 @@ export default function CourseDetail() {
     if (!course || !courseId || !profile?.id || !isAuthenticated) {
       return null;
     }
+    const currentEpoch = ++syncEpochRef.current;
     let phase: "completion" | "certificate" = "completion";
     let completionConfirmed = false;
     setCertificateIssueReason(null);
     setCertificateIssueError(null);
+    setIsIssuanceFlowActive(true);
     try {
       const enrollment = await ensureEnrollmentForProgress(
         profile.id,
         courseId,
         new Date().toISOString(),
       );
+      if (syncEpochRef.current !== currentEpoch) return null;
       if (enrollment) {
         access.setEnrolled(true);
         access.setEnrollment(enrollment);
@@ -113,6 +133,7 @@ export default function CourseDetail() {
       setCompletionSyncing(true);
       setCompletionSyncError(null);
       const completion = await syncCourseCompletion(profile.id, courseId);
+      if (syncEpochRef.current !== currentEpoch) return null;
       let baseEnrollment = enrollment ?? access.enrollment;
       if (completion.completed) {
         completionConfirmed = true;
@@ -135,6 +156,7 @@ export default function CourseDetail() {
       const credentialCheck = await invokeCheckCourseCredential(courseId, undefined, {
         autoIssue: true,
       });
+      if (syncEpochRef.current !== currentEpoch) return null;
       if (credentialCheck.reason === "oca_requires_manual_claim") {
         toast.success(translate("detail.courseDetail.ocaReady"), {
           action: {
@@ -148,6 +170,7 @@ export default function CourseDetail() {
       }
       setCertificateIssuing(true);
       const result = await checkAndIssueCertificate(profile.id, courseId);
+      if (syncEpochRef.current !== currentEpoch) return null;
       setCertificateIssueReason(result.reason);
       if (result.issued) {
         const issuedAt = result.certificate_issued_at || new Date().toISOString();
@@ -168,6 +191,7 @@ export default function CourseDetail() {
       }
       return result;
     } catch (err) {
+      if (syncEpochRef.current !== currentEpoch) return null;
       const message = err instanceof Error
         ? err.message
         : translate("detail.courseDetail.claimCertificateFailed");
@@ -180,8 +204,11 @@ export default function CourseDetail() {
       });
       return null;
     } finally {
-      setCompletionSyncing(false);
-      setCertificateIssuing(false);
+      if (syncEpochRef.current === currentEpoch) {
+        setCompletionSyncing(false);
+        setCertificateIssuing(false);
+        setIsIssuanceFlowActive(false);
+      }
       if (completionConfirmed) await invalidateLearningProgress(queryClient, profile.id, courseId);
     }
   }, [
@@ -329,6 +356,49 @@ export default function CourseDetail() {
     void handleEnroll();
   }, [handleEnroll, isAuthenticated, location, navigate]);
 
+  const handleRevert = useCallback(
+    async (mode: RevertCourseCompletionMode) => {
+      const courseId = courseLoad.resolvedCourseId;
+      if (!courseId || !profile?.id) return;
+
+      // Invalidate any in-flight completion/issuance sync immediately
+      syncEpochRef.current += 1;
+      setIsIssuanceFlowActive(false);
+      setCompletionSyncing(false);
+      setCertificateIssuing(false);
+      setCertificateJustIssued(false);
+      setCompletionSyncError(null);
+      setCertificateIssueError(null);
+      setCertificateIssueReason(null);
+
+      await revertCourseCompletion(courseId, mode);
+      setCompletionJustSynced(false);
+      if (access.enrollment) {
+        access.setEnrollment({
+          ...access.enrollment,
+          completed_at: null,
+        });
+      }
+      const key = `${profile.id}:${courseId}`;
+      completionSyncAttemptedRef.current.delete(key);
+      await invalidateLearningProgress(queryClient, profile.id, courseId);
+      await progress.refresh();
+      toast.success(
+        translate("detail.learn.completion.revertSuccess", {
+          defaultValue: "Đã hoàn tác trạng thái hoàn thành khóa học.",
+        }),
+      );
+    },
+    [
+      access,
+      courseLoad.resolvedCourseId,
+      profile?.id,
+      progress,
+      queryClient,
+      translate,
+    ],
+  );
+
   if (courseLoad.loading) return <CourseDetailLoading />;
   if (courseLoad.error || !courseLoad.course)
     return <CourseDetailError message={courseLoad.error} />;
@@ -363,7 +433,7 @@ export default function CourseDetail() {
           className="mt-4"
           hasCertificate={hasCourseCertificate}
           certificateIssued={certificateIssued}
-          issuing={completionSyncing || certificateIssuing}
+          issuing={completionSyncing || certificateIssuing || isIssuanceFlowActive}
           issueReason={certificateIssueReason}
           issueError={completionSyncError || certificateIssueError}
           achievementsPath={achievementsPath}
@@ -372,6 +442,7 @@ export default function CourseDetail() {
               ? () => void syncCertificate()
               : undefined
           }
+          onRevert={handleRevert}
         />
       ) : null}
 

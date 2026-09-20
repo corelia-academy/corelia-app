@@ -322,7 +322,22 @@
           "assignment_not_approved": "Bài cuối khoá cần được duyệt trước khi cấp chứng nhận.",
           "issued": "Chứng nhận Corelia của bạn đã sẵn sàng.",
           "unknown": "Chứng nhận đang chờ hệ thống xác nhận đủ điều kiện."
-        }
+        },
+        "revertAction": "Hoàn tác hoàn thành",
+        "revertDialogTitle": "Hoàn tác trạng thái hoàn thành khóa học",
+        "revertDialogDescription": "Chọn hình thức hoàn tác để đưa khóa học trở lại trạng thái đang học.",
+        "revertLastLessonTitle": "Hoàn tác bài học gần nhất",
+        "revertRecommendedBadge": "Khuyên dùng",
+        "revertLastLessonDesc": "Khóa học sẽ trở về trạng thái đang học với tiến độ trước đó để bạn tiếp tục ôn tập.",
+        "resetAllTitle": "Đặt lại toàn bộ khóa học",
+        "resetAllBadge": "0%",
+        "resetAllDesc": "Xóa tiến độ của tất cả bài học trong khóa này để bạn bắt đầu lại từ đầu.",
+        "revertPreserveCertificateTitle": "Chứng nhận được bảo lưu an toàn",
+        "revertPreserveCertificateNotice": "Hoàn tác sẽ đưa tiến độ học tập về chưa hoàn thành để bạn tiếp tục ôn tập, chứng nhận đã cấp sẽ được bảo lưu. Bạn có muốn tiếp tục?",
+        "revertSuccess": "Đã hoàn tác trạng thái hoàn thành khóa học.",
+        "revertError": "Không thể hoàn tác tiến độ lúc này.",
+        "revertCancel": "Hủy bỏ",
+        "revertConfirm": "Xác nhận hoàn tác"
       },
       "finalAssignmentTitle": "Bài tập cuối khóa",
       "finalAssignmentAccessRequired": "Bạn cần quyền truy cập khóa học để mở bài tập cuối khóa.",
