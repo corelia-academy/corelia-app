@@ -15,7 +15,8 @@ describe("email renderer fallbacks", () => {
     expect(html).toContain('bgcolor="#0a0913"');
     expect(html).toContain("max-width:600px");
     expect(html).toContain("font-size:30px");
-    expect(html).toContain("font-size:26px !important");
+    expect(html).toContain("font-size:24px !important");
+    expect(html).toContain("background-image:linear-gradient(#0a0913,#0a0913)");
     expect(html).toContain("font-size:15px !important");
     expect(html).toContain("overflow-wrap:anywhere");
     expect(html).toContain("background-color:#1759f1");

@@ -10,7 +10,7 @@
   @media only screen and (max-width:620px) {
     .e-outer { padding:24px 12px !important; }
     .e-container { font-size:15px !important; }
-    .e-hero h2 { font-size:26px !important; }
+    .e-hero h2 { font-size:24px !important; }
   }
 </style></head>
 <body bgcolor="#0a0913" style="margin:0;padding:0;background-color:#0a0913;color:#eae6e3;font-family:'TT Norms Pro Trial', Arial, 'Helvetica Neue', Helvetica, sans-serif;">
@@ -20,8 +20,8 @@
 <tr><td background="{{ .SiteURL }}/email-assets/corelia-background-v1.jpg" style="background-image:url('{{ .SiteURL }}/email-assets/corelia-background-v1.jpg');background-position:center;background-size:cover;background-repeat:no-repeat;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-collapse:collapse;"><tr><td class="e-outer" align="center" style="padding:32px 14px;">
 <!--[if mso]><table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"><tr><td><![endif]-->
-<table role="presentation" class="e-container" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#0a0913" style="width:100%;max-width:600px;table-layout:fixed;margin:0 auto;border:1px solid #2b2b3b;border-collapse:separate;border-spacing:0;background-color:#0a0913;color:#eae6e3;font-family:'TT Norms Pro Trial', Arial, 'Helvetica Neue', Helvetica, sans-serif;font-size:16px;line-height:1.6;overflow-wrap:anywhere;word-break:break-word;text-align:left;">
-<tr><td class="e-header" style="padding:12px 24px;background-color:#0a0913;border-bottom:1px solid #2b2b3b;"><img src="https://lawhkvyyoznwygzsycan.supabase.co/storage/v1/object/public/public_files/Corelia_Logo_White.png" alt="Corelia Academy" width="125" height="50" style="display:block;width:125px;max-width:100%;height:50px;object-fit:contain;border:0;color:#eae6e3;font-size:16px;" /></td></tr>
+<table role="presentation" class="e-container" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#0a0913" style="width:100%;max-width:600px;table-layout:fixed;margin:0 auto;border:1px solid #2b2b3b;border-collapse:separate;border-spacing:0;background-color:#0a0913;background-image:linear-gradient(#0a0913,#0a0913);color:#eae6e3;font-family:'TT Norms Pro Trial', Arial, 'Helvetica Neue', Helvetica, sans-serif;font-size:16px;line-height:1.6;overflow-wrap:anywhere;word-break:break-word;text-align:left;">
+<tr><td class="e-header" style="padding:12px 24px;background-color:#0a0913;background-image:linear-gradient(#0a0913,#0a0913);border-bottom:1px solid #2b2b3b;"><img src="https://lawhkvyyoznwygzsycan.supabase.co/storage/v1/object/public/public_files/Corelia_Logo_White.png" alt="Corelia Academy" width="125" height="50" style="display:block;width:125px;max-width:100%;height:50px;object-fit:contain;border:0;color:#eae6e3;font-size:16px;" /></td></tr>
 <tr><td class="e-hero" style="padding:30px 24px 10px;">
         <span class="e-hero-tag" style="display:block;font-family:'PP Supply Sans', 'Courier New', monospace;font-size:10px;font-weight:400;letter-spacing:0.05em;text-transform:uppercase;color:#cbd1e2;margin-bottom:14px;">{{ if or (eq .Data.locale "vi") (eq .Data.locale "vI") (eq .Data.locale "Vi") (eq .Data.locale "VI") (eq .Data.locale "vn") (eq .Data.locale "vN") (eq .Data.locale "Vn") (eq .Data.locale "VN") (eq .Data.locale "vi-vn") (eq .Data.locale "vi_vn") (eq .Data.locale "vi-vN") (eq .Data.locale "vi_vN") (eq .Data.locale "vi-Vn") (eq .Data.locale "vi_Vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi_VN") (eq .Data.locale "vI-vn") (eq .Data.locale "vI_vn") (eq .Data.locale "vI-vN") (eq .Data.locale "vI_vN") (eq .Data.locale "vI-Vn") (eq .Data.locale "vI_Vn") (eq .Data.locale "vI-VN") (eq .Data.locale "vI_VN") (eq .Data.locale "Vi-vn") (eq .Data.locale "Vi_vn") (eq .Data.locale "Vi-vN") (eq .Data.locale "Vi_vN") (eq .Data.locale "Vi-Vn") (eq .Data.locale "Vi_Vn") (eq .Data.locale "Vi-VN") (eq .Data.locale "Vi_VN") (eq .Data.locale "VI-vn") (eq .Data.locale "VI_vn") (eq .Data.locale "VI-vN") (eq .Data.locale "VI_vN") (eq .Data.locale "VI-Vn") (eq .Data.locale "VI_Vn") (eq .Data.locale "VI-VN") (eq .Data.locale "VI_VN") }}Xác minh
           danh tính{{ else }}Identity Verification{{ end }}</span>
@@ -35,7 +35,7 @@
           requires re-authentication. Enter the OTP code below to continue.{{ end }}
         </p>
       </td></tr>
-<tr><td class="e-otp" style="padding:24px;background-color:#12121e;border-top:1px solid #2b2b3b;border-bottom:1px solid #2b2b3b;text-align:center;">
+<tr><td class="e-otp" style="padding:24px;background-color:#12121e;background-image:linear-gradient(#12121e,#12121e);border-top:1px solid #2b2b3b;border-bottom:1px solid #2b2b3b;text-align:center;">
         <div class="e-otp-code" style="font-family:monospace;font-size:32px;font-weight:700;letter-spacing:0.16em;line-height:1.5;color:#eae6e3;overflow-wrap:anywhere;">{{ .Token }}</div>
         <div class="e-otp-hint" style="font-size:12px;line-height:1.6;color:#b6b8c8;margin-top:8px;">
           {{ if or (eq .Data.locale "vi") (eq .Data.locale "vI") (eq .Data.locale "Vi") (eq .Data.locale "VI") (eq .Data.locale "vn") (eq .Data.locale "vN") (eq .Data.locale "Vn") (eq .Data.locale "VN") (eq .Data.locale "vi-vn") (eq .Data.locale "vi_vn") (eq .Data.locale "vi-vN") (eq .Data.locale "vi_vN") (eq .Data.locale "vi-Vn") (eq .Data.locale "vi_Vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi_VN") (eq .Data.locale "vI-vn") (eq .Data.locale "vI_vn") (eq .Data.locale "vI-vN") (eq .Data.locale "vI_vN") (eq .Data.locale "vI-Vn") (eq .Data.locale "vI_Vn") (eq .Data.locale "vI-VN") (eq .Data.locale "vI_VN") (eq .Data.locale "Vi-vn") (eq .Data.locale "Vi_vn") (eq .Data.locale "Vi-vN") (eq .Data.locale "Vi_vN") (eq .Data.locale "Vi-Vn") (eq .Data.locale "Vi_Vn") (eq .Data.locale "Vi-VN") (eq .Data.locale "Vi_VN") (eq .Data.locale "VI-vn") (eq .Data.locale "VI_vn") (eq .Data.locale "VI-vN") (eq .Data.locale "VI_vN") (eq .Data.locale "VI-Vn") (eq .Data.locale "VI_Vn") (eq .Data.locale "VI-VN") (eq .Data.locale "VI_VN") }}Mã có hiệu lực trong 10 phút · Không
@@ -43,7 +43,7 @@
           this code with anyone{{ end }}
         </div>
       </td></tr>
-<tr><td class="e-alert" style="padding:24px;background-color:#0a0913;border-bottom:1px solid #2b2b3b;">
+<tr><td class="e-alert" style="padding:24px;background-color:#0a0913;background-image:linear-gradient(#0a0913,#0a0913);border-bottom:1px solid #2b2b3b;">
         <span class="e-alert-icon" style="display:inline-block;margin-bottom:8px;">🚨</span>
         <div class="e-alert-text" style="font-size:14px;line-height:1.6;color:#eae6e3;">
           {{ if or (eq .Data.locale "vi") (eq .Data.locale "vI") (eq .Data.locale "Vi") (eq .Data.locale "VI") (eq .Data.locale "vn") (eq .Data.locale "vN") (eq .Data.locale "Vn") (eq .Data.locale "VN") (eq .Data.locale "vi-vn") (eq .Data.locale "vi_vn") (eq .Data.locale "vi-vN") (eq .Data.locale "vi_vN") (eq .Data.locale "vi-Vn") (eq .Data.locale "vi_Vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi_VN") (eq .Data.locale "vI-vn") (eq .Data.locale "vI_vn") (eq .Data.locale "vI-vN") (eq .Data.locale "vI_vN") (eq .Data.locale "vI-Vn") (eq .Data.locale "vI_Vn") (eq .Data.locale "vI-VN") (eq .Data.locale "vI_VN") (eq .Data.locale "Vi-vn") (eq .Data.locale "Vi_vn") (eq .Data.locale "Vi-vN") (eq .Data.locale "Vi_vN") (eq .Data.locale "Vi-Vn") (eq .Data.locale "Vi_Vn") (eq .Data.locale "Vi-VN") (eq .Data.locale "Vi_VN") (eq .Data.locale "VI-vn") (eq .Data.locale "VI_vn") (eq .Data.locale "VI-vN") (eq .Data.locale "VI_vN") (eq .Data.locale "VI-Vn") (eq .Data.locale "VI_Vn") (eq .Data.locale "VI-VN") (eq .Data.locale "VI_VN") }}Nếu bạn không thực hiện thao tác
@@ -53,7 +53,7 @@
           your OTP via phone or chat.{{ end }}
         </div>
       </td></tr>
-<tr><td class="e-footer" style="padding:16px 24px;background-color:#0a0913;font-size:12px;color:#b6b8c8;line-height:18px;text-align:left;">
+<tr><td class="e-footer" style="padding:16px 24px;background-color:#0a0913;background-image:linear-gradient(#0a0913,#0a0913);font-size:12px;color:#b6b8c8;line-height:18px;text-align:left;">
         <p class="e-footer-item-last" style="margin:0;line-height:18px;color:#b6b8c8;">
           {{ if or (eq .Data.locale "vi") (eq .Data.locale "vI") (eq .Data.locale "Vi") (eq .Data.locale "VI") (eq .Data.locale "vn") (eq .Data.locale "vN") (eq .Data.locale "Vn") (eq .Data.locale "VN") (eq .Data.locale "vi-vn") (eq .Data.locale "vi_vn") (eq .Data.locale "vi-vN") (eq .Data.locale "vi_vN") (eq .Data.locale "vi-Vn") (eq .Data.locale "vi_Vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi_VN") (eq .Data.locale "vI-vn") (eq .Data.locale "vI_vn") (eq .Data.locale "vI-vN") (eq .Data.locale "vI_vN") (eq .Data.locale "vI-Vn") (eq .Data.locale "vI_Vn") (eq .Data.locale "vI-VN") (eq .Data.locale "vI_VN") (eq .Data.locale "Vi-vn") (eq .Data.locale "Vi_vn") (eq .Data.locale "Vi-vN") (eq .Data.locale "Vi_vN") (eq .Data.locale "Vi-Vn") (eq .Data.locale "Vi_Vn") (eq .Data.locale "Vi-VN") (eq .Data.locale "Vi_VN") (eq .Data.locale "VI-vn") (eq .Data.locale "VI_vn") (eq .Data.locale "VI-vN") (eq .Data.locale "VI_vN") (eq .Data.locale "VI-Vn") (eq .Data.locale "VI_Vn") (eq .Data.locale "VI-VN") (eq .Data.locale "VI_VN") }}Bạn
           nhận email này vì có yêu cầu xác thực lại tại app.corelia.academy{{ else }}You received this because a
