@@ -1,4 +1,4 @@
-﻿-- Integration test for hackathon taxonomy contract
+-- Integration test for hackathon taxonomy contract
 -- Tests trigger and validation function against real PostgreSQL execution
 -- Strictly conforms to public.hackathons schema (id, status, document)
 
