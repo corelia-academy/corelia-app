@@ -69,7 +69,30 @@ BEGIN
        OR has_function_privilege('authenticated', 'private.email_localized_content_complete(jsonb)', 'EXECUTE') THEN
       RAISE EXCEPTION 'Translation validation must be executable only by the backend role';
     END IF;
+    IF NOT has_function_privilege('service_role', 'public.email_save_template_draft(uuid,text,text,text,jsonb,jsonb,text[],uuid)', 'EXECUTE')
+       OR has_function_privilege('authenticated', 'public.email_save_template_draft(uuid,text,text,text,jsonb,jsonb,text[],uuid)', 'EXECUTE')
+       OR NOT has_function_privilege('service_role', 'public.email_publish_template_version(uuid)', 'EXECUTE')
+       OR has_function_privilege('anon', 'public.email_publish_template_version(uuid)', 'EXECUTE') THEN
+      RAISE EXCEPTION 'Template transaction RPC permissions are incorrect';
+    END IF;
     PERFORM set_config('role', 'service_role', true);
+    PERFORM public.email_save_template_draft(
+      'ec000000-0000-4000-8000-000000000022',
+      'Atomic draft',
+      'marketing',
+      '',
+      jsonb_build_object('vi', jsonb_build_object('subject','Xin chào','body_text','Nội dung')),
+      jsonb_build_object('subject','Xin chào','body_text','Nội dung'),
+      ARRAY[]::text[],
+      v_actor
+    );
+    IF NOT EXISTS (
+      SELECT 1 FROM public.email_templates t
+      JOIN public.email_template_versions v ON v.template_id = t.id
+      WHERE t.id = 'ec000000-0000-4000-8000-000000000022' AND v.status = 'draft'
+    ) THEN
+      RAISE EXCEPTION 'Atomic template save did not create its draft';
+    END IF;
     INSERT INTO public.email_templates(id, name, purpose, created_by) VALUES (v_template_id, 'Marketing', 'marketing', v_actor);
     INSERT INTO public.email_template_versions(template_id, version, subject, body_text, created_by)
       VALUES (v_template_id, 2, 'Draft without translations', 'Body', v_actor);

@@ -102,6 +102,7 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260916153501_learning_multilanguage_code.sql",
   "supabase/migrations/20260920083758_recipient_locale_email.sql",
   "supabase/migrations/20260920104142_email_locale_trigger_permissions.sql",
+  "supabase/migrations/20260920201500_email_template_atomic_mutations.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
@@ -112,6 +113,7 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
 // the backend access to the translation validator used by the invoker trigger.
 const UNRELEASED_PENDING_VERSIONS = new Set([
   "20260920104142",
+  "20260920201500",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

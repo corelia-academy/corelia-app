@@ -92,10 +92,13 @@ test("Jobs and recipient-locale migrations are approved forward migrations", asy
     release.PREVIOUSLY_RELEASED_APPROVED_VERSIONS.at(-1),
     "20260920083758",
   );
-  assert.deepEqual(release.CURRENT_PENDING_VERSIONS, ["20260920104142"]);
+  assert.deepEqual(release.CURRENT_PENDING_VERSIONS, [
+    "20260920104142",
+    "20260920201500",
+  ]);
   assert.equal(
     release.EXPECTED_POST_MIGRATION_LATEST,
-    "20260920104142",
+    "20260920201500",
   );
   assert.ok(
     release.APPROVED_PENDING_VERSIONS.includes("20260903214029"),

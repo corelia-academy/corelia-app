@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { renderTransactionalEmail } from "./render.ts";
+import { emailCtaButton, renderTransactionalEmail } from "./render.ts";
 
 describe("email renderer fallbacks", () => {
   const render = () => renderTransactionalEmail({
     locale: "vi", heroTag: "Thông báo", heroTitle: "Một tiêu đề rất dài ".repeat(8),
     bodyHtml: `<p>Nội dung <strong>quan trọng</strong>.</p><p><a href="https://example.com/${"long/".repeat(30)}">Liên kết dài</a></p>`,
-    ctaHtml: `<a class="e-btn" href="https://example.com">Tiếp tục</a>`,
+    ctaHtml: emailCtaButton("https://example.com", "Tiếp tục"),
     footerReason: "Bạn nhận được email này từ Corelia.", fingerprint: "test",
   }, { appUrl: "https://app.corelia.academy" });
 
@@ -15,10 +15,21 @@ describe("email renderer fallbacks", () => {
     expect(html).toContain('bgcolor="#0a0913"');
     expect(html).toContain("max-width:600px");
     expect(html).toContain("font-size:30px");
-    expect(html).toContain("font-size:26px !important");
+    expect(html).toContain("font-size:24px !important");
+    expect(html).toContain("background-image:linear-gradient(#0a0913,#0a0913)");
+    expect(html).toContain('class="body"');
+    expect(html).toContain("u + .body .gmail-blend-screen");
+    expect(html).toContain('<div class="gmail-blend-screen"><div class="gmail-blend-difference">');
+    expect(html).toContain(".e-outer { padding:0 !important; }");
+    expect(html).toContain("border:0 !important");
+    expect(html).toContain("background-size:100% 1px,100% 100% !important");
+    expect(html).toContain("background-position:left bottom,left top !important");
+    expect(html).toContain('class="e-canvas"');
     expect(html).toContain("font-size:15px !important");
     expect(html).toContain("overflow-wrap:anywhere");
     expect(html).toContain("background-color:#1759f1");
+    expect(html).toContain("background-image:linear-gradient(#1759f1,#1759f1)");
+    expect(html).toContain("border:1px solid transparent");
   });
 
   it("remains readable when head styles and decorative images are unavailable", () => {
@@ -31,5 +42,21 @@ describe("email renderer fallbacks", () => {
     expect(fallback).toContain("color:#eae6e3");
     expect(fallback).toContain("Một tiêu đề rất dài");
     expect(fallback).toContain("Tiếp tục");
+  });
+
+  it("keeps footer rows compact and omits an empty reason", () => {
+    const html = renderTransactionalEmail({
+      locale: "en",
+      heroTag: "Update",
+      heroTitle: "Account update",
+      bodyHtml: "<p>Details</p>",
+      footerExtraHtml: '<p><a href="https://example.com/unsubscribe">Unsubscribe</a></p>',
+    }, { appUrl: "https://staging.corelia.academy/" });
+
+    expect(html).toContain("padding:16px 24px");
+    expect(html).toContain("margin:0 0 4px;line-height:18px");
+    expect(html).toContain(">staging.corelia.academy</a>");
+    expect(html).not.toContain("This email was sent by Corelia");
+    expect(html).not.toContain("<p></p>");
   });
 });
