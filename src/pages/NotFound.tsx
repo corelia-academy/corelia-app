@@ -1,9 +1,11 @@
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
+import { usePageTitleOverride } from "@/components/navigation/PageTitle";
 
 export default function NotFound() {
   const { t } = useTranslation("common");
+  usePageTitleOverride("notFound");
 
   return (
     <div className="container-app flex min-h-[50vh] flex-col items-center justify-center gap-4 py-16 text-center">

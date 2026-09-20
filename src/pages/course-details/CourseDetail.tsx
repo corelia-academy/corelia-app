@@ -41,6 +41,7 @@ import { CourseSponsorsPanel } from "./components/CourseSponsorsPanel";
 import { CourseInstructorSection } from "./components/CourseInstructorSection";
 import { useInstructorProfile } from "./hooks/useInstructorProfile";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 import { FollowerPreview } from "@/components/social/FollowerPreview";
 import { CourseCompletionCertificatePanel } from "@/components/courses/CourseCompletionCertificatePanel";
 import type { CertificateIssueReason } from "@/lib/courses";
@@ -284,6 +285,7 @@ export default function CourseDetail() {
     image: courseLoad.course?.thumbnail_url ?? undefined,
     url: window.location.href,
   });
+  useDynamicPageTitle(courseLoad.course?.title);
 
   const storedTotal = Number(courseLoad.course?.total_duration_seconds) || 0;
   // Header là thông tin tổng quan của toàn khoá; preview chỉ giới hạn curriculum.

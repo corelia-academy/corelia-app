@@ -22,6 +22,7 @@ import { useCareerTrackDetail } from "./hooks/useCareerTrackDetail";
 import { useCareerTrackProgress } from "./hooks/useCareerTrackProgress";
 import type { CareerCourseProgress } from "@/features/career/careerQueries";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 import { normalizeYoutubeVideoId } from "@/lib/youtubeVideoId";
 
 export default function CareerDetailPage() {
@@ -60,6 +61,7 @@ export default function CareerDetailPage() {
     image: track?.thumbnail_url ?? undefined,
     url: window.location.href,
   });
+  useDynamicPageTitle(track?.title);
 
   if (loading) {
     return (

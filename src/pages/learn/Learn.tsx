@@ -36,6 +36,7 @@ import {
 import { useAuth } from "@/stores/authStore";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 import {
   LearnErrorState,
   LearnLoadingState,
@@ -339,6 +340,13 @@ function LearnWorkspace() {
     if (visibleLessons.length === 0 || !lessonId) return null;
     return visibleLessons.find((lesson) => lesson.id === lessonId) ?? null;
   }, [lessonId, visibleLessons]);
+
+  useDynamicPageTitle(
+    isFinalAssignment
+      ? courseLoad.course?.final_assignment_title
+        || translate("detail.learn.finalAssignmentTitle")
+      : currentLesson?.title ?? courseLoad.course?.title,
+  );
 
   const isDraftLesson = currentLesson ? isLessonDraftForLearners(currentLesson) : false;
   useEffect(() => {

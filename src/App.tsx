@@ -25,6 +25,10 @@ import { ROLE_GROUPS } from "@/config/roles";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/authStore";
 import { ScrollToTop } from "@/components/navigation/ScrollToTop";
+import {
+  PageTitleProvider,
+  RoutePageTitleSync,
+} from "@/components/navigation/PageTitle";
 
 // Lazy-load all routes not needed on the initial render
 const Home = lazy(() => import("@/pages/home/index"));
@@ -150,27 +154,31 @@ export default function App() {
 
   if (import.meta.env.VITE_MAINTENANCE_MODE === "true") {
     return (
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <MaintenancePage />
-      </ThemeProvider>
+      <PageTitleProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <MaintenancePage />
+        </ThemeProvider>
+      </PageTitleProvider>
     );
   }
 
   return (
-    <ErrorBoundary>
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <LoadingBar />
-      <Toaster />
-      <AuthSync />
-      {authStatus === "booting" ? (
-        <AuthBootstrapScreen />
-      ) : (
-        <TooltipProvider>
-        <ApplicationRouter />
-        </TooltipProvider>
-      )}
-    </ThemeProvider>
-    </ErrorBoundary>
+    <PageTitleProvider>
+      <ErrorBoundary>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <LoadingBar />
+          <Toaster />
+          <AuthSync />
+          {authStatus === "booting" ? (
+            <AuthBootstrapScreen />
+          ) : (
+            <TooltipProvider>
+              <ApplicationRouter />
+            </TooltipProvider>
+          )}
+        </ThemeProvider>
+      </ErrorBoundary>
+    </PageTitleProvider>
   );
 }
 
@@ -186,6 +194,7 @@ function ApplicationRouter() {
 
 function ApplicationRoutes() {
   return <>
+          <RoutePageTitleSync />
           <CredentialRealtimeSync />
           <ScrollToTop />
           <RecoveryGuard />

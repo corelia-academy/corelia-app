@@ -38,6 +38,10 @@ import {
   readableProfileText,
 } from "./utils/profileDisplay";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import {
+  useDynamicPageTitle,
+  usePageTitleOverride,
+} from "@/components/navigation/PageTitle";
 
 function formatMemberSince(value: string | null | undefined, locale: string): string {
   if (!value) return "";
@@ -247,6 +251,9 @@ export default function UserProfileLayout() {
   const bio =
     readableProfileText(profile?.bio) ||
     readableProfileText(profile?.instructor_bio);
+
+  usePageTitleOverride(!loading && !profile ? "notFound" : null);
+  useDynamicPageTitle(profile ? profileTitle(profile) : null);
 
   usePageMeta({
     title: profile ? profileTitle(profile) : undefined,
