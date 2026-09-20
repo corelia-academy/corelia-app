@@ -174,6 +174,22 @@
   --color-surface-raised: var(--surface-raised);
   --color-surface-overlay: var(--surface-overlay);
   --color-surface-float: var(--surface-float);
+  /* Issue #385 — Figma Multiple Dropdown List semantic aliases. */
+  --color-dropdown-surface: var(--dropdown-surface);
+  --color-dropdown-hover: var(--dropdown-hover);
+  --color-dropdown-title: var(--dropdown-title);
+  --color-dropdown-supporting: var(--dropdown-supporting);
+  --color-dropdown-disabled: var(--dropdown-disabled);
+  --color-dropdown-container-border: var(--dropdown-container-border);
+  --color-dropdown-input-border: var(--dropdown-input-border);
+  --color-dropdown-divider: var(--dropdown-divider);
+  --color-dropdown-checkbox-unchecked: var(--dropdown-checkbox-unchecked);
+  --color-dropdown-checkbox-active: var(--dropdown-checkbox-active);
+  --color-dropdown-checkbox-mark: var(--dropdown-checkbox-mark);
+  --color-dropdown-focus: var(--dropdown-focus);
+  --color-dropdown-warning: var(--dropdown-warning);
+  --color-dropdown-warning-supporting: var(--dropdown-warning-supporting);
+  --shadow-dropdown: var(--dropdown-shadow);
   /* Action interaction token mapped from the Figma hover surface. */
   --color-action-hover: var(--action-hover);
   --color-action-text: var(--action-text);
@@ -811,6 +827,23 @@
   --tag-disabled-foreground: var(--neutral-500);
   --surface-overlay: var(--neutral-100);
   --surface-float: var(--popover);
+
+  /* Issue #385 — Figma Multiple Dropdown List, light mode. */
+  --dropdown-surface: var(--neutral-50);
+  --dropdown-hover: var(--neutral-100);
+  --dropdown-title: var(--neutral-700);
+  --dropdown-supporting: var(--neutral-500);
+  --dropdown-disabled: var(--neutral-500);
+  --dropdown-container-border: var(--neutral-500);
+  --dropdown-input-border: var(--neutral-500);
+  --dropdown-divider: var(--neutral-300);
+  --dropdown-checkbox-unchecked: var(--blue-50);
+  --dropdown-checkbox-active: var(--blue-600);
+  --dropdown-checkbox-mark: var(--blue-50);
+  --dropdown-focus: var(--blue-400);
+  --dropdown-warning: var(--error-500);
+  --dropdown-warning-supporting: var(--error-300);
+  --dropdown-shadow: 0 -1px 12px -2px #10182814, 0 4px 4px -2px #1018280f;
 }
 
 .dark {
@@ -989,6 +1022,23 @@
       var(--neutral-900) 82%,
       var(--neutral-300));
   --surface-float: color-mix(in srgb, var(--neutral-900) 78%, var(--neutral-300));
+
+  /* Issue #385 — Figma Multiple Dropdown List, dark mode. */
+  --dropdown-surface: var(--neutral-900);
+  --dropdown-hover: var(--neutral-800);
+  --dropdown-title: var(--neutral-200);
+  --dropdown-supporting: var(--neutral-400);
+  --dropdown-disabled: var(--neutral-500);
+  --dropdown-container-border: var(--neutral-400);
+  --dropdown-input-border: var(--neutral-500);
+  --dropdown-divider: var(--neutral-600);
+  --dropdown-checkbox-unchecked: var(--blue-50);
+  --dropdown-checkbox-active: var(--blue-600);
+  --dropdown-checkbox-mark: var(--blue-50);
+  --dropdown-focus: var(--blue-400);
+  --dropdown-warning: var(--error-500);
+  --dropdown-warning-supporting: var(--error-300);
+  --dropdown-shadow: 0 -1px 12px -2px #10182814, 0 4px 4px -2px #1018280f;
 }
 
 @layer base {
@@ -1124,6 +1174,18 @@
 
 .scrollbar-design::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+@layer components {
+  [data-slot="dropdown-menu-checkbox-item"][data-variant="warning"] {
+    --dropdown-title: var(--dropdown-warning);
+    --dropdown-supporting: var(--dropdown-warning-supporting);
+  }
+
+  [data-slot="dropdown-menu-checkbox-item"][data-disabled] {
+    --dropdown-title: var(--dropdown-disabled);
+    --dropdown-supporting: var(--dropdown-disabled);
+  }
 }
 
 @utility ds-h2 {

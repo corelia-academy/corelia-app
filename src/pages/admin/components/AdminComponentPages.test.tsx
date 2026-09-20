@@ -12,6 +12,7 @@ vi.mock("next-themes", () => ({
 
 import AdminActionComponentPage from "./AdminActionComponentPage";
 import AdminBadgeComponentPage from "./AdminBadgeComponentPage";
+import AdminDropdownMenuComponentPage from "./AdminDropdownMenuComponentPage";
 import AdminScrollbarComponentPage from "./AdminScrollbarComponentPage";
 import AdminSelectionComponentPage from "./AdminSelectionComponentPage";
 import AdminSeparatorComponentPage from "./AdminSeparatorComponentPage";
@@ -28,6 +29,7 @@ const pages = [
   AdminSeparatorComponentPage,
   AdminScrollbarComponentPage,
   AdminTabsComponentPage,
+  AdminDropdownMenuComponentPage,
 ];
 
 describe("admin component detail pages", () => {
@@ -454,6 +456,260 @@ describe("admin component detail pages", () => {
     await act(async () => settingsTab?.click());
 
     expect(activityTab?.getAttribute("aria-selected")).toBe("true");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("exposes the Dropdown Menu Base Items and six Figma-matched use cases", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <AdminDropdownMenuComponentPage />
+        </MemoryRouter>,
+      );
+    });
+
+    const baseItems = container.querySelector<HTMLElement>(
+      '[data-testid="dropdown-menu-base-items"]',
+    );
+    const useCasesContainer = container.querySelector<HTMLElement>(
+      '[data-testid="dropdown-menu-use-cases"]',
+    );
+
+    expect(baseItems).not.toBeNull();
+    expect(baseItems?.querySelectorAll('[data-slot="dropdown-menu-trigger"]')).toHaveLength(2);
+    expect(useCasesContainer).not.toBeNull();
+    expect(useCasesContainer?.querySelectorAll('[data-slot="dropdown-menu-trigger"]')).toHaveLength(6);
+    expect(document.body.querySelector('[data-layout="multiple-list"]')).toBeNull();
+
+    const noLeadingTrigger = container.querySelector<HTMLButtonElement>(
+      '[data-testid="dropdown-menu-base-items-no-leading-trigger"]',
+    );
+    expect(noLeadingTrigger).not.toBeNull();
+
+    await act(async () => noLeadingTrigger?.click());
+
+    expect(document.body.querySelector('input[aria-label="Search Leading icon = No"]')).not.toBeNull();
+    expect(document.body.querySelectorAll('[data-testid^="dropdown-menu-base-item-no-leading-"]')).toHaveLength(10);
+    expect(document.body.querySelector('[data-testid="dropdown-menu-base-item-no-leading-warning-default"]')).not.toBeNull();
+
+    const warningDefaultRow = document.body.querySelector<HTMLElement>(
+      '[data-testid="dropdown-menu-base-item-no-leading-warning-default"]',
+    );
+    expect(warningDefaultRow?.getAttribute("aria-checked")).toBe("false");
+    expect(warningDefaultRow?.className).not.toContain("ring-2 ring-dropdown-focus");
+
+    await act(async () => warningDefaultRow?.click());
+
+    expect(warningDefaultRow?.getAttribute("aria-checked")).toBe("true");
+
+    const disabledBaseRow = document.body.querySelector<HTMLElement>(
+      '[data-testid="dropdown-menu-base-item-no-leading-warning-disabled"]',
+    );
+    expect(disabledBaseRow?.hasAttribute("data-disabled")).toBe(true);
+    expect(disabledBaseRow?.className).toContain("data-disabled:cursor-not-allowed");
+
+    const hoverBaseRow = document.body.querySelector<HTMLElement>(
+      '[data-testid="dropdown-menu-base-item-no-leading-default-hover"]',
+    );
+    const focusBaseRow = document.body.querySelector<HTMLElement>(
+      '[data-testid="dropdown-menu-base-item-no-leading-default-focus"]',
+    );
+    expect(hoverBaseRow?.classList.contains("bg-dropdown-hover")).toBe(false);
+    expect(hoverBaseRow?.classList.contains("ring-2")).toBe(false);
+    expect(focusBaseRow?.classList.contains("ring-2")).toBe(false);
+    expect(focusBaseRow?.getAttribute("data-preview-state")).toBe("focus");
+
+    await act(async () => noLeadingTrigger?.click());
+
+    const leadingTrigger = container.querySelector<HTMLButtonElement>(
+      '[data-testid="dropdown-menu-base-items-leading-trigger"]',
+    );
+    await act(async () => leadingTrigger?.click());
+    expect(document.body.querySelector('input[aria-label="Search Leading icon = Yes"]')).not.toBeNull();
+    expect(document.body.querySelectorAll('[data-testid^="dropdown-menu-base-item-leading-"]')).toHaveLength(10);
+    await act(async () => leadingTrigger?.click());
+
+    const useCases = [
+      { id: "common-use", label: "Common use", rowCount: 5 },
+      { id: "include-select-all", label: "Include Select All", rowCount: 5 },
+      {
+        id: "many-single-list",
+        label: "Dropdown with many single list",
+        rowCount: 5,
+      },
+      {
+        id: "many-sub-list",
+        label: "Dropdown with many sub-list",
+        rowCount: 5,
+      },
+      {
+        id: "people-assignee",
+        label: "Dropdown list type: people/assignee",
+        rowCount: 5,
+      },
+      { id: "warning-case", label: "Warning case", rowCount: 5 },
+    ];
+
+    for (const { id: useCaseId, label, rowCount } of useCases) {
+      const trigger = container.querySelector<HTMLButtonElement>(
+        `[data-testid="dropdown-menu-use-case-${useCaseId}-trigger"]`,
+      );
+      expect(trigger).not.toBeNull();
+
+      await act(async () => trigger?.click());
+
+      expect(
+        document.body.querySelector(`input[aria-label="Search ${label}"]`),
+      ).not.toBeNull();
+
+      const rows = document.body.querySelectorAll(
+        `[data-testid^="dropdown-menu-use-case-row-${useCaseId}-"]`,
+      );
+      expect(rows, `rows for ${useCaseId}`).toHaveLength(rowCount);
+
+      if (useCaseId === "include-select-all") {
+        const selectAll = document.body.querySelector<HTMLElement>(
+          '[data-testid="dropdown-menu-use-case-include-select-all-select-all"]',
+        );
+
+        expect(selectAll).not.toBeNull();
+        expect(selectAll?.parentElement?.textContent).toContain("Select All");
+        expect(selectAll?.hasAttribute("data-indeterminate")).toBe(true);
+      }
+
+      if (useCaseId === "common-use") {
+        expect(
+          document.body.querySelector(
+            '[data-testid="dropdown-menu-use-case-row-common-use-discover"] [data-slot="dropdown-menu-item-supporting"]',
+          ),
+        ).toBeNull();
+        expect(
+          document.body.querySelector(
+            '[data-testid^="dropdown-menu-caret-icon-"]',
+          ),
+        ).toBeNull();
+
+        expect(
+          document.body
+            .querySelector<HTMLElement>(
+              '[data-testid="dropdown-menu-use-case-row-common-use-discover"]',
+            )
+            ?.getAttribute("aria-checked"),
+        ).toBe("true");
+        expect(
+          document.body
+            .querySelector<HTMLElement>(
+              '[data-testid="dropdown-menu-use-case-row-common-use-discover"]',
+            )
+            ?.getAttribute("data-card-action"),
+        ).toBe("checkbox");
+        expect(
+          document.body
+            .querySelector<HTMLElement>(
+              '[data-testid="dropdown-menu-use-case-row-common-use-participate"]',
+            )
+            ?.getAttribute("aria-checked"),
+        ).toBe("false");
+      }
+
+      if (useCaseId === "many-single-list") {
+        expect(
+          document.body.querySelectorAll(
+            '[data-slot="dropdown-menu-item-supporting"]',
+          ),
+        ).toHaveLength(5);
+        expect(
+          document.body.querySelector(
+            '[data-testid^="dropdown-menu-caret-icon-"]',
+          ),
+        ).toBeNull();
+      }
+
+      if (useCaseId === "many-sub-list") {
+        const parentRow = document.body.querySelector<HTMLElement>(
+          '[data-testid="dropdown-menu-use-case-row-many-sub-list-discover"]',
+        );
+        const caret = document.body.querySelector<HTMLButtonElement>(
+          '[data-testid="dropdown-menu-caret-icon-discover"]',
+        );
+
+        expect(
+          document.body.querySelectorAll('[data-depth="1"]'),
+        ).toHaveLength(2);
+        expect(parentRow?.hasAttribute("data-indeterminate")).toBe(true);
+        expect(caret?.getAttribute("aria-expanded")).toBe("true");
+        expect(parentRow?.getAttribute("data-card-action")).toBe("caret");
+        expect(parentRow?.getAttribute("data-selection-mode")).toBe("checkbox-only");
+        expect(
+          parentRow?.querySelector('[data-slot="dropdown-menu-item-trailing-icon"]')?.getAttribute("data-hit-area"),
+        ).toBe("control");
+        expect(caret?.className).toContain("justify-end");
+
+        const parentTitle = parentRow?.querySelector<HTMLElement>(
+          '[data-slot="dropdown-menu-item-title"]',
+        );
+        const parentIndicator = parentRow?.querySelector<HTMLElement>(
+          '[data-slot="dropdown-menu-checkbox-item-indicator"]',
+        );
+
+        await act(async () => {
+          parentTitle?.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+          parentTitle?.click();
+        });
+        expect(document.body.querySelectorAll('[data-depth="1"]')).toHaveLength(0);
+        expect(caret?.getAttribute("aria-expanded")).toBe("false");
+        expect(parentRow?.getAttribute("aria-checked")).toBe("mixed");
+
+        await act(async () => {
+          parentTitle?.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+          parentTitle?.click();
+        });
+        expect(document.body.querySelectorAll('[data-depth="1"]')).toHaveLength(2);
+        expect(caret?.getAttribute("aria-expanded")).toBe("true");
+
+        await act(async () => {
+          parentIndicator?.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+          parentIndicator?.click();
+        });
+        expect(parentRow?.getAttribute("aria-checked")).toBe("true");
+
+        await act(async () => caret?.click());
+        expect(document.body.querySelectorAll('[data-depth="1"]')).toHaveLength(0);
+        expect(caret?.getAttribute("aria-expanded")).toBe("false");
+
+        await act(async () => caret?.click());
+        expect(document.body.querySelectorAll('[data-depth="1"]')).toHaveLength(2);
+      }
+
+      if (useCaseId === "people-assignee") {
+        expect(
+          document.body.querySelectorAll('[data-testid^="dropdown-menu-user-icon-"]'),
+        ).toHaveLength(5);
+        expect(document.body.querySelector('[data-slot="dropdown-menu-item-badge"]')).toBeNull();
+      }
+
+      if (useCaseId === "warning-case") {
+        expect(
+          document.body.querySelectorAll('[data-testid^="dropdown-menu-warning-icon-"]'),
+        ).toHaveLength(1);
+        expect(
+          document.body.querySelector(
+            '[data-testid="dropdown-menu-use-case-row-warning-case-ui-ux"][data-variant="warning"]',
+          ),
+        ).not.toBeNull();
+        expect(
+          document.body.querySelector('[data-testid^="dropdown-menu-caret-icon-"]'),
+        ).toBeNull();
+      }
+
+      await act(async () => trigger?.click());
+    }
 
     await act(async () => root.unmount());
     container.remove();
