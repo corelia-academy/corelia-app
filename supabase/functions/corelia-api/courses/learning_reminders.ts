@@ -1,7 +1,7 @@
+import { buildLearningReminderEmail } from "../lib/mail/learning_reminder_body.ts";
 import { isAuthFailure } from "../lib/authz.ts";
-import { escapeHtml } from "../lib/html.ts";
 import { json } from "../lib/http.ts";
-import { normalizeEmailLocale, resolveAppUrl, wrapTransactionalEmail } from "../lib/mail/layout.ts";
+import { normalizeEmailLocale, resolveAppUrl } from "../lib/mail/layout.ts";
 import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 
@@ -114,87 +114,10 @@ export async function handleSendLearningReminders(
         continue;
       }
 
-      // Build email content based on stage
       const primaryCourse = userRecord.courses[0];
-      const primaryLink = `${appUrl}/learn/${primaryCourse.slug}`;
-
-      let heroTag = "NHẮC HỌC TẬP";
-      let heroTitle = "Tiếp tục bài học dở của bạn";
-      let heroSubtitle = `Chào ${escapeHtml(displayName)}, bạn đã tạm dừng việc học được vài ngày.`;
-      let bodyText = "";
-
-      if (locale === "vi") {
-        if (stage === 3) {
-          heroTag = "DUY TRÌ THÓI QUEN";
-          heroTitle = `Đừng quên bài học "${escapeHtml(primaryCourse.title)}"`;
-          heroSubtitle = `Chào ${escapeHtml(displayName)}, chỉ cần 10 phút hôm nay để giữ vững đà tiến bộ.`;
-          bodyText = `<p>Kiến thức sẽ dễ ghi nhớ nhất khi bạn ôn tập đều đặn. Hãy tiếp tục nội dung đang học để không bị gián đoạn mục tiêu.</p>`;
-        } else if (stage === 7) {
-          heroTag = "MỤC TIÊU TUẦN";
-          heroTitle = "Đã 1 tuần trôi qua kể từ bài học gần nhất";
-          heroSubtitle = `Chào ${escapeHtml(displayName)}, cùng kiểm tra lại tiến độ khóa học nhé.`;
-          bodyText = `<p>Bạn đang có ${userRecord.courses.length} khóa học đang tiến hành. Dành ra một khoảng thời gian ngắn để hoàn thành chương tiếp theo và mở khóa các kỹ năng mới.</p>`;
-        } else if (stage === 14) {
-          heroTag = "CỘNG ĐỒNG HỌC TẬP";
-          heroTitle = "Các bạn cùng khóa đang tiến rất nhanh";
-          heroSubtitle = `Chào ${escapeHtml(displayName)}, quay lại và hoàn tất mục tiêu nhé.`;
-          bodyText = `<p>Rất nhiều học viên vừa mở khóa chứng chỉ và huy hiệu kỹ năng mới. Hãy quay lại tiếp tục bài học của bạn ngay hôm nay!</p>`;
-        } else if (stage === 30) {
-          heroTag = "THÔNG BÁO CUỐI CÙNG";
-          heroTitle = "Chúng tôi sẽ tạm dừng gửi email nhắc học";
-          heroSubtitle = `Chào ${escapeHtml(displayName)}, chúng tôi tôn trọng hòm thư của bạn.`;
-          bodyText = `<p>Đây là email nhắc học cuối cùng cho các khóa học đang dở của bạn. Bất cứ khi nào bạn sẵn sàng, toàn bộ tiến độ và bài học vẫn luôn được lưu giữ an toàn tại Corelia.</p>`;
-        }
-      } else {
-        if (stage === 3) {
-          heroTag = "LEARNING REMINDER";
-          heroTitle = `Keep up with "${escapeHtml(primaryCourse.title)}"`;
-          heroSubtitle = `Hi ${escapeHtml(displayName)}, take 10 minutes today to maintain your momentum.`;
-          bodyText = `<p>Consistent practice is the key to mastering new skills. Jump back into your lesson to stay on track.</p>`;
-        } else if (stage === 7) {
-          heroTag = "WEEKLY CHECK-IN";
-          heroTitle = "It's been a week since your last lesson";
-          heroSubtitle = `Hi ${escapeHtml(displayName)}, let's keep your progress going strong.`;
-          bodyText = `<p>You have ${userRecord.courses.length} in-progress course(s). Resume now to make meaningful progress this week.</p>`;
-        } else if (stage === 14) {
-          heroTag = "LEARNING COMMUNITY";
-          heroTitle = "Pick up where you left off";
-          heroSubtitle = `Hi ${escapeHtml(displayName)}, your next milestones are waiting.`;
-          bodyText = `<p>Your fellow learners are progressing quickly and claiming course credentials. Continue your journey today!</p>`;
-        } else if (stage === 30) {
-          heroTag = "FINAL REMINDER";
-          heroTitle = "We're pausing learning reminders for you";
-          heroSubtitle = `Hi ${escapeHtml(displayName)}, we respect your inbox.`;
-          bodyText = `<p>This is the final automated reminder for your current courses. Whenever you are ready to learn again, your progress is safely saved on Corelia.</p>`;
-        }
-      }
-
-      // Course list HTML for multi-course digest
-      let courseListHtml = "";
-      if (userRecord.courses.length > 1) {
-        courseListHtml = `
-          <div style="margin: 16px 0; padding: 12px; background: #f7f9fb; border-radius: 8px; border: 1px solid #e2e8f0;">
-            <p style="font-size: 12px; font-weight: bold; color: #475569; margin-bottom: 8px;">
-              ${locale === "vi" ? "Các khóa học đang học:" : "Your in-progress courses:"}
-            </p>
-            <ul style="padding-left: 18px; margin: 0; font-size: 13px; color: #1e293b;">
-              ${userRecord.courses.map((c) => `<li><a href="${appUrl}/learn/${c.slug}" style="color: #1759f1; text-decoration: none;">${escapeHtml(c.title)}</a></li>`).join("")}
-            </ul>
-          </div>
-        `;
-      }
-
-      const emailHtml = wrapTransactionalEmail({
-        locale,
-        heroTag,
-        heroTitle,
-        heroSubtitle,
-        bodyHtml: `${bodyText}${courseListHtml}`,
-        ctaHtml: `<a href="${primaryLink}" class="e-btn e-btn-primary" style="display:inline-block;background:#1759f1;color:#ffffff;font-size:15px;font-weight:700;line-height:1.2;padding:14px 22px;border-radius:8px;text-decoration:none;">${locale === "vi" ? "Tiếp tục học ngay" : "Resume Learning"}</a>`,
-        footerReason: locale === "vi" ? "Bạn nhận được email này vì bạn đang ghi danh vào các khóa học trên Corelia." : "You received this email because you are enrolled in courses on Corelia.",
+      const { subject, html: emailHtml } = buildLearningReminderEmail({
+        courses: userRecord.courses, displayName, locale, stage, appUrl,
       });
-
-      const subject = `[Corelia] ${heroTitle}`;
 
       const resendRes = await sendTransactionalEmailViaResend({
         to: [email],

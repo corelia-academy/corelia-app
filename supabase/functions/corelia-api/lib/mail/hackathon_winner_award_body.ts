@@ -79,7 +79,7 @@ export function buildHackathonWinnerAwardEmail(args: {
       locale,
       heroTag: copy.tag,
       heroTitle: copy.title,
-      heroSubtitle: copy.subtitle(safeAward, safeHackathon),
+      heroSubtitle: escapeHtml(copy.subtitle(safeAward, safeHackathon)),
       bodyHtml,
       ctaHtml,
       footerReason: copy.reason,
