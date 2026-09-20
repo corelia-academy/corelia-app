@@ -289,8 +289,8 @@ function Action({
                     className={cn(
                         "block truncate font-body",
                         size === "large"
-                            ? "text-label-large"
-                            : "text-label-medium",
+                            ? "text-label-large leading-[22px]"
+                            : "text-label-medium leading-5",
                         disabled ? "text-action-disabled" : contentForegroundClass,
                         hoverAsActiveTextClass,
                     )}
