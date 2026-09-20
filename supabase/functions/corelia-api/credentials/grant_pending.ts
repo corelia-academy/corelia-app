@@ -122,7 +122,7 @@ export async function handleGrantPendingCredential(req: Request, db: SupabaseCli
     const baseUrl = await getAppBaseUrl(db);
     const claimUrl = `${baseUrl}/claim?email=${encodeURIComponent(email)}`;
     const { data: contact } = await db.from("email_contacts").select("locale").eq("email", email).maybeSingle();
-    const { locale } = resolveRecipientEmailLocale({ contactLocale: contact?.locale });
+    const { locale } = resolveRecipientEmailLocale({ recipientKind: "contact", contactLocale: contact?.locale });
     const { subject, html } = buildCredentialMintEmail({
       kind: "pending_claim",
       badgeName: template.name,

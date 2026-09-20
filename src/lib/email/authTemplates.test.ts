@@ -19,14 +19,18 @@ describe("Supabase Auth email templates", () => {
       for (const action of requiredActions[name] ?? []) expect(template).toContain(`{{ ${action} }}`);
       const fixture = { token: "123456", appUrl: "https://app.corelia.academy", confirmationUrl: "https://auth.example/verify", redirectTo: "https://app.corelia.academy" };
       const vi = renderAuthFixture(template, { ...fixture, locale: "vi-VN" });
+      const mixedCaseVi = renderAuthFixture(template, { ...fixture, locale: "vI_vN" });
       const en = renderAuthFixture(template, { ...fixture, locale: "en-US" });
       const fallback = renderAuthFixture(template, { ...fixture, locale: "" });
       expect(vi).toContain('lang="vi"');
+      expect(mixedCaseVi).toBe(vi);
       expect(en).toContain('lang="en"');
       expect(fallback).toBe(en);
       expect(vi).not.toContain("{{");
       expect(en).not.toContain("{{");
       expect(vi).toContain("Corelia Academy");
+      expect(vi).toContain("padding:16px 24px");
+      expect(vi).toContain("margin:0;line-height:18px");
     }
   });
 });

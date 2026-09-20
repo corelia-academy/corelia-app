@@ -10,6 +10,8 @@ export interface OutboxRequestPayload {
   subject: string;
   html: string;
   idempotency_key: string;
+  reply_to?: string;
+  headers?: Record<string, string>;
 }
 
 export interface OutboxEventRow {

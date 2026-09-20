@@ -12,9 +12,10 @@ describe("email locale", () => {
   });
 
   it("uses profile, metadata, contact, then fallback precedence", () => {
-    expect(resolveRecipientEmailLocale({ profileLocale: "vi", authMetadataLocale: "en", contactLocale: "en" })).toEqual({ locale: "vi", source: "profile" });
-    expect(resolveRecipientEmailLocale({ profileLocale: "fr", authMetadataLocale: "en-GB", contactLocale: "vi" })).toEqual({ locale: "en", source: "auth_metadata" });
-    expect(resolveRecipientEmailLocale({ contactLocale: "vn" })).toEqual({ locale: "vi", source: "contact" });
-    expect(resolveRecipientEmailLocale({ contactLocale: "fr" })).toEqual({ locale: "en", source: "fallback" });
+    expect(resolveRecipientEmailLocale({ recipientKind: "account", profileLocale: "vi", authMetadataLocale: "en", contactLocale: "en" })).toEqual({ locale: "vi", source: "profile" });
+    expect(resolveRecipientEmailLocale({ recipientKind: "account", profileLocale: "fr", authMetadataLocale: "en-GB", contactLocale: "vi" })).toEqual({ locale: "en", source: "auth_metadata" });
+    expect(resolveRecipientEmailLocale({ recipientKind: "account", contactLocale: "vn" })).toEqual({ locale: "en", source: "fallback" });
+    expect(resolveRecipientEmailLocale({ recipientKind: "contact", contactLocale: "vn" })).toEqual({ locale: "vi", source: "contact" });
+    expect(resolveRecipientEmailLocale({ recipientKind: "contact", contactLocale: "fr" })).toEqual({ locale: "en", source: "fallback" });
   });
 });
