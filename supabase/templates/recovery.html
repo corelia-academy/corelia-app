@@ -42,7 +42,10 @@
           didn't request this, ignore this email — your account remains
           secure.{{ end }}
         </p>
-      </td></tr>
+              <p style="margin:0 0 16px;line-height:1.6;color:#b6b8c8;">
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Thời điểm yêu cầu:{{ else }}Requested at:{{ end }} <strong style="color:#eae6e3;">{{ .SentAt }}</strong>
+        </p>
+</td></tr>
 <tr><td class="e-cta-wrap" style="padding:0 24px 28px;border-bottom:1px solid #2b2b3b;">
         <a href="{{ .ConfirmationURL }}" class="e-btn e-btn-teal" style="color:#9bbcff;text-decoration:underline;overflow-wrap:anywhere;word-break:break-word;display:inline-block;box-sizing:border-box;max-width:100%;background-color:#1759f1;color:#f4f7ff;font-size:16px;font-weight:400;line-height:1.4;padding:11px 16px;border:1px solid #5ba3ff;border-radius:8px;text-decoration:none;text-align:center;overflow-wrap:anywhere;word-break:break-word;">{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") (eq .Data.locale "vi-VN") (eq .Data.locale "vi-vn") (eq .Data.locale "VI") (eq .Data.locale "VN") }}Đặt lại mật
           khẩu →{{ else }}Reset Password →{{ end }}</a>

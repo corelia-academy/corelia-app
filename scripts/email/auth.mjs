@@ -41,7 +41,12 @@ export function buildAuthTemplate(name) {
 
 /** Fixture evaluator for the exact actions used here, not a general Go interpreter. */
 export function renderAuthFixture(html, { locale, token = "123456", appUrl, confirmationUrl, redirectTo }) {
-  const values = { ".Token": token, ".TokenHash": "sample-token-hash", ".SiteURL": appUrl, ".ConfirmationURL": confirmationUrl, ".RedirectTo": redirectTo };
+  const values = {
+    ".Token": token, ".TokenHash": "sample-token-hash", ".SiteURL": appUrl,
+    ".ConfirmationURL": confirmationUrl, ".RedirectTo": redirectTo, ".SentAt": "2026-09-20 08:00 UTC",
+    ".Email": "learner@example.com", ".NewEmail": "new@example.com", ".OldEmail": "old@example.com",
+    ".Phone": "+84900000001", ".OldPhone": "+84900000000", ".FactorType": "TOTP", ".Provider": "Google",
+  };
   const branches = [];
   let output = "";
   for (const part of html.split(/({{[\s\S]*?}})/g)) {
