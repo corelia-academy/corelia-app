@@ -11,7 +11,9 @@ const sqlTestPaths = [
   "scripts/db/tests/learner-ai-retirement.integration.sql",
   "scripts/db/tests/project-submission.integration.sql",
   "scripts/db/tests/project-localization.integration.sql",
+  "scripts/db/tests/project-translation-quota.integration.sql",
   "scripts/db/tests/jobs-mvp.integration.sql",
+  "scripts/db/tests/hackathon-taxonomy-contract.integration.sql",
   "scripts/db/tests/email-center.integration.sql",
 ].map((path) => resolve(process.cwd(), path));
 
