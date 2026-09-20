@@ -177,10 +177,15 @@ test("hackathon taxonomy contract executes on real PostgreSQL engine with fail-f
   try {
     execFileSync(initdb, ["-D", tmpDir, "-U", "postgres", "-A", "trust", "--no-locale", "-E", "UTF8"], { stdio: "ignore" });
 
+    const serverOptions = [`-p ${port}`, "-F", "-c listen_addresses=127.0.0.1"];
+    if (!isWin) {
+      serverOptions.push(`-c unix_socket_directories=${tmpDir}`);
+    }
+
     const startResult = spawnSync(pg_ctl, [
       "-D", tmpDir,
       "-l", logFile,
-      "-o", `-p ${port} -F -c listen_addresses=127.0.0.1`,
+      "-o", serverOptions.join(" "),
       "start",
     ], { stdio: "ignore" });
     assert.equal(
