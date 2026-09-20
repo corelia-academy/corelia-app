@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "489aec5f1ec5129b64e9b2ee2864c149ad72cf27",
+  "rc_sha": "1e185c57002b2ecbbe705f23ceb0e74d4faf2a28",
   "git_tree_sha": "f388b416aa9137e42428f840967f388208c5979c",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 238,
   "latest_migration": "20260920083758_recipient_locale_email.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "489aec5f1ec5129b64e9b2ee2864c149ad72cf27",
+  "source_sha": "1e185c57002b2ecbbe705f23ceb0e74d4faf2a28",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
   "candidate_tree_sha256": "f3e8341163f13b734681525605c8d9aa94de3fa43205ca7947b528920b57742a",
   "recipe": {

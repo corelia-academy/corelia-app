@@ -20,6 +20,7 @@ import { useContestDetail } from "@/pages/hackathon-detail/hooks/useContestDetai
 import { narrowContestDetailView } from "@/pages/hackathon-detail/viewModel";
 import { shouldShowParticipantRail } from "@/pages/hackathon-detail/utils/contestLifecycle";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 
 export default function ContestDetail({
   forceManageView,
@@ -43,6 +44,7 @@ export default function ContestDetail({
     image: ctx.contest?.cover_image_url ?? ctx.contest?.thumbnail_url ?? undefined,
     url: window.location.href,
   });
+  useDynamicPageTitle(ctx.contest?.title);
 
   if (ctx.loading) {
     return <ContestDetailLoadingCard translate={ctx.translate} />;

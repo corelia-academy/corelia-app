@@ -303,11 +303,11 @@ function handleRadioDeselect(
 
 type SelectionCardCommonProps = {
   className?: string
-  label: string
+  label: React.ReactNode
   orientation?: SelectionCardOrientation
   showSupportingText?: boolean
   size?: SelectionSize
-  supportingText?: string
+  supportingText?: React.ReactNode
 }
 
 export type CheckboxCardProps = SelectionCardCommonProps &

@@ -34,6 +34,10 @@ import { isHackathonProjectSource, projectSourceLabelKey } from "@/lib/projectSo
 import { useAuth } from "@/stores/authStore";
 import type { Project } from "@/types/projects";
 import { listProjectTaxonomyOptions, projectTaxonomyNames } from "@/lib/projectTaxonomy";
+import {
+  useDynamicPageTitle,
+  usePageTitleOverride,
+} from "@/components/navigation/PageTitle";
 
 function sourceLink(project: Project, hackathonSlug?: string | null): string | null {
   if (isHackathonProjectSource(project.source_type) && project.source_id) {
@@ -108,6 +112,8 @@ export default function ProjectDetailPage() {
   );
   const loading = query.isPending;
   const notFound = !slug || (query.isSuccess && entry === null);
+  usePageTitleOverride(notFound ? "notFound" : null);
+  useDynamicPageTitle(entry?.project.title);
   const error = query.error
     ? query.error instanceof Error
       ? query.error.message
