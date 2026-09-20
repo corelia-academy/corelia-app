@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "ce41b413d00573b92e3f7895c41e19e837e8e845",
-  "git_tree_sha": "4c1dbba4ae35d58e646bb35f02adf94bcd020752",
+  "rc_sha": "b0ddb5d1697d7af4e15480a42005ac630f0bdc85",
+  "git_tree_sha": "8526ccd5439b5e0bb6bf8cf7dbfbc09dd7b22537",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 239,
-  "latest_migration": "20260920104142_email_locale_trigger_permissions.sql",
+  "migration_count": 240,
+  "latest_migration": "20260920201500_email_template_atomic_mutations.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "ce41b413d00573b92e3f7895c41e19e837e8e845",
+  "source_sha": "b0ddb5d1697d7af4e15480a42005ac630f0bdc85",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "0ec073b6ae9e0d5000a3a9d2f43a90d9cfb28f56ec6b9b8dcaa48aecb39d58f0",
+  "candidate_tree_sha256": "e5872b848d3fdb5adfbb62c4c79c70b0e2d98e882a90e61248952c8653213362",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -931,7 +931,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "9e31eb072f63b0ce40a870e81f942345d2457162c483c9c00acb184a78345535"
+      "sha256": "7796acab6609ce722868186beffd3ccd6b34970b5466855736cd1057d8ffa8c9"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -963,7 +963,7 @@
     },
     {
       "path": "scripts/db/tests/email-center.integration.sql",
-      "sha256": "58d2b8b0c07f98517006e46fc7aa2daaa1c974639e11f26f57ec5fd98739af98"
+      "sha256": "ddb2849b68ff584e9ce6b66fb3615dbfc7ee9ad7ad6d8cc301b1b7bf6c507df1"
     },
     {
       "path": "scripts/db/tests/financial-retirement.contract.test.mjs",
@@ -1003,7 +1003,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "d2220a05e0b40146a607b0a7bdc218e47d461ed6bd09f381ef6521eb3c13c5af"
+      "sha256": "ca136174abc0ef126ab5eec844f6d7be0e5b61c211add37df6110ec66af07e05"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
@@ -1075,7 +1075,7 @@
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "ad7881daf5a8c417fcbd0be5908ecc3ab13d64a6a763dae070c65b9579a984d3"
+      "sha256": "032d466ec946259992c3164ae0ce380eac5b6dd085d0f5cbb19950146ed0d4b3"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
@@ -1163,7 +1163,7 @@
     },
     {
       "path": "scripts/email/auth.mjs",
-      "sha256": "8ffb071ce062183f04a1dabe30aa64a5a0fd406dfa5108cdf8cee7346ad3132d"
+      "sha256": "6822e24dda955100281bbc2584fce1d3ca8aeea00159de943ab0245a26a69388"
     },
     {
       "path": "scripts/email/generate-auth.mjs",
@@ -2203,7 +2203,7 @@
     },
     {
       "path": "src/lib/email/authTemplates.test.ts",
-      "sha256": "34f47846beeabeb1f68de56f24b291e34affaccb0da7d026bd9733c74390d002"
+      "sha256": "cabcd843c1851bb302d61b2f40b6da16e670f4bfab26de31aaf4ca6162e8f85a"
     },
     {
       "path": "src/lib/email/preview.ts",
@@ -3463,7 +3463,7 @@
     },
     {
       "path": "supabase/config.toml",
-      "sha256": "ccef2ae9ea1ffbc5c9b63155db3375b1cc64fdff464256a83b717797a134cdfe"
+      "sha256": "43a4227d7176c9dfb7b7e577f7ccb31d8369655965eb9c8bb63a08decc8a19a3"
     },
     {
       "path": "supabase/functions/.env.example",
@@ -3475,7 +3475,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/certificates/handlers.ts",
-      "sha256": "8170c8b7b34f0b34551870716cc59796f4c77032d6f2bc8a11e32cbae3265e63"
+      "sha256": "0c8fb427ed46278f211ddcef7fe44030c93649f7300e47f8d874f643295908a8"
     },
     {
       "path": "supabase/functions/corelia-api/courses/completion.ts",
@@ -3499,7 +3499,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/credentials/grant_pending.ts",
-      "sha256": "2184b7f70694e25f082878d7d2122b0090eb044629f2d465aa1f4b7d3c4d54cf"
+      "sha256": "daa84553a055616b140f85b039650fe618cc246ac4b948d3f8b37346ecbc8829"
     },
     {
       "path": "supabase/functions/corelia-api/credentials/retry_pending.ts",
@@ -3511,7 +3511,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/email/automation.ts",
-      "sha256": "38238d59cd9678a44bf9cc784e901bf2ba82b86d0d9b772e10bc4189a6a01a68"
+      "sha256": "9cca24ec35156e036596c10f891c5b2c8353681eaf73706902f4a6c3353d2076"
     },
     {
       "path": "supabase/functions/corelia-api/email/batching.test.ts",
@@ -3531,7 +3531,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/email/handler.ts",
-      "sha256": "ca7afde33db0335c246d22fd8d11135e76b1c9c582479734805e6c5fa3c6afbc"
+      "sha256": "9dd86fe6f967bc8321b076718ba44af3af8150df51b7c19ad3cf2fa7a0729461"
     },
     {
       "path": "supabase/functions/corelia-api/email/importWorker.ts",
@@ -3551,7 +3551,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/email/worker.ts",
-      "sha256": "b415e14a151fe7923b229b5db042ababb8d85e7afb83626f0be6f9b62b47e435"
+      "sha256": "0dbbb362e7d77610630b4c308a25f7ab9ea234d13a045daae83e486e1efc1abe"
     },
     {
       "path": "supabase/functions/corelia-api/hackathons/blast_email.ts",
@@ -3655,7 +3655,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/brand.ts",
-      "sha256": "e5d62eb9ff4b09323d71adcdcef9f727479c3d86a8e381344c8adb787af0ed84"
+      "sha256": "baf87384dd15af27798fd2b3e356a095aec300695e8e31d7bbfae453f3f7c09d"
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/co_instructor_invite_body.ts",
@@ -3663,7 +3663,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/document.ts",
-      "sha256": "1801b3a3bfb9bd0f8881715bf450aeacebac84d98d1d79c0fc86bbca93a4b8bb"
+      "sha256": "1d472ea8bdc91cc76abab2b80c2df57864d4dd9cde9d6a70728c40e4f9cfb51c"
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/hackathon_winner_award_body.test.ts",
@@ -3687,11 +3687,11 @@
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/locale.test.ts",
-      "sha256": "8a8b06bfba59789b20d4da74ea413cc6432d969f4e706fa62eaefe5af5ea8c5a"
+      "sha256": "ad60879d3f6b187761fda1c622bbadb87f0c237b739d0ea63c7c43b7d6cfd667"
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/locale.ts",
-      "sha256": "265f6b0b6c6ebb5df5fdcbb66908e9407e0629fefa0efec02a60a7372e861621"
+      "sha256": "236208f74128a441210db3385d1fc3175cb8468605ee23a1ecefadf922dc6d65"
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/localized.test.ts",
@@ -3707,7 +3707,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/outbox.ts",
-      "sha256": "f6f2df4959c53b54c9a61d97bac9cd4b963d73304cb588c47fe46eef29e9939a"
+      "sha256": "99bb4aa7b0d76647c8d0e709e005a62093c2fdf97b387056457426dbcf2b7d1e"
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/project_collaboration_invite_body.test.ts",
@@ -3719,11 +3719,11 @@
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/render.test.ts",
-      "sha256": "bfb55d53e22669d82b244eb189464d32d864390a809bf8bf2a21d3f134eed2ce"
+      "sha256": "ec612d364a9a0d764e975415a643ca9612749f98e87636c297afdcd3786bb44c"
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/render.ts",
-      "sha256": "57817cdc1daf4f4631617496f0461d7ea62a843de29253930dd9dc8f8bac4adc"
+      "sha256": "9fef5a1bad050e28d427a0165f63aa20bf31f539f5ae2e6a8ed25415a21edf7c"
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/resend.test.ts",
@@ -4250,108 +4250,112 @@
       "sha256": "9b6f21224621f47a6a9782a575eb131d83b1ba35fd0f2a3788ce8fa8de67d8e3"
     },
     {
+      "path": "supabase/migrations/20260920201500_email_template_atomic_mutations.sql",
+      "sha256": "01ff87953ea3cb5801bad6543225d51c3326700a7206255fb7056948fa7cc90e"
+    },
+    {
       "path": "supabase/templates/confirmation.html",
-      "sha256": "ed252fc85ded7ff45fc2b55424004b39543547944d22c57b07a0b03d86a7fddd"
+      "sha256": "8e6b81127aedd4362d888696f10b30760b5a5f0f24935029081f2be51756f4fa"
     },
     {
       "path": "supabase/templates/email_change.html",
-      "sha256": "6bd371030de902f33024f0aa617cdd4d32f48992a2f63f47fbe26d05d67cb280"
+      "sha256": "250b6ab8157ce26a79767a5c7dbbec613c4cdcee4cd3a1c38535e9e3b7524a69"
     },
     {
       "path": "supabase/templates/email_changed.html",
-      "sha256": "52b78f47985b41b5e8d123d285e0808e66a3b89ec86ee5c7b0b6d16bdb642bd0"
+      "sha256": "d0e7e37ee63cc0cdb6c5cb55777f0f5c5f9cf447cd21952a48ffe56735b45a7a"
     },
     {
       "path": "supabase/templates/identity_linked.html",
-      "sha256": "06dfb3a3bdb0145c91b81fbe604cfe664ab07a16dda5da9245dfce81e32761cb"
+      "sha256": "37275225893925dd323fecfa89acb7985058b6159ea480a709b9ab3d6ca9b56c"
     },
     {
       "path": "supabase/templates/identity_unlinked.html",
-      "sha256": "538599daf572f70d48c089b03e4c3db541aec3e25f1e58e6130cc96826b938b5"
+      "sha256": "fb6dd914982b6eabacc68c1c1b5a04ba980fbc8047cc5474372bd9c5d37db48c"
     },
     {
       "path": "supabase/templates/invite.html",
-      "sha256": "f03d13dc9c4fa346c4cb6973545da9d89ba7283b668fe3da07830303681068d5"
+      "sha256": "507f2b467e2d4028d621a400f99de6e426460fa405676c3f4bd34ec861b12fd2"
     },
     {
       "path": "supabase/templates/magic_link.html",
-      "sha256": "8b580b4218ef13768800ea47efeb0f0588fef3e95346d14bd31e15fcdbbe47ac"
+      "sha256": "0d7d0ae5d7f42d633b3ba849a9224430948fea0a1e368b428b209e326f5228d2"
     },
     {
       "path": "supabase/templates/mfa_factor_enrolled.html",
-      "sha256": "48ec4292d41769f1ed97ff8e4f926ed86d534a94e2e73aa93cd6a80b1f90adb4"
+      "sha256": "6700d74938152180640f80cb0d4962b76b36570dc716e6064b10b1841bbeb7a6"
     },
     {
       "path": "supabase/templates/mfa_factor_unenrolled.html",
-      "sha256": "92fc94b3be1e6b7028cadedeadd7026a753bbea8607194f09c84b3433c85b87f"
+      "sha256": "971ce9672fe834135b2bc9009b0fbffa32d0131bb2bae8a7bdc41bcc6ac60e8b"
     },
     {
       "path": "supabase/templates/password_changed.html",
-      "sha256": "71d24665afe509c3914482b7b56a39851d2725276a45ff29a1804d40c1fdc207"
+      "sha256": "55dc19a6697530969be18798c34f5ab306a2d9f1f0249459d6d391d645c36628"
     },
     {
       "path": "supabase/templates/phone_changed.html",
-      "sha256": "fd909fb24a8f310ab2876bc6f79224c1f09512fbcdfa3c2e4cf8be831d013ad4"
+      "sha256": "2a2b5277ab5594a041db323f714742df7ebaa5bc1eb5ed48801b95b951b20dcf"
     },
     {
       "path": "supabase/templates/reauthentication.html",
-      "sha256": "bc23540dc66bb452c776a1f7fa796c394eea154ef865c2ed0b4da829e98d0410"
+      "sha256": "2fafbc3e0cd4e34f0a431e6b14c866408e3e63f34742e7e4a83acfb35b318420"
     },
     {
       "path": "supabase/templates/recovery.html",
-      "sha256": "0987a8e43a559ce5bcb886f7e612065c9beebd63449ba7f85fc4675aa5c95994"
+      "sha256": "2689fe8c02d4e76e98f0a99bb576c2527e6bd839b3418f355e99d568b8025a3e"
     },
     {
       "path": "supabase/templates/source/confirmation.html",
-      "sha256": "ca533f641159f17b2b1d15c9bf56badfa78283997564168b42618ba4102f6727"
+      "sha256": "d76b535d8c5304dbb9122aba715ece2093a743d2a51acad36758899df85f73b2"
     },
     {
       "path": "supabase/templates/source/email_change.html",
-      "sha256": "37d4d1c6751ef30b23bac24744b108348175d200e51400956c6e39d09c567769"
+      "sha256": "ff1c4ced6df452e34e2c5487e9aea49b212e34dbbaf6f1dcf74bd7128eaa525a"
     },
     {
       "path": "supabase/templates/source/email_changed.html",
-      "sha256": "cb95b1e2ce39d9ca866f5002f79247b6aeb931dbc8e8be5398e1ef7e36e2b496"
+      "sha256": "8cbc30258a2e56caf930a655c5d2f951b496c8e2c58955031cd6e6e8b19d4403"
     },
     {
       "path": "supabase/templates/source/identity_linked.html",
-      "sha256": "d24ad16e2d7f06596db4359b1738aed864bec0d4f5f3074920c43baae6c45fd9"
+      "sha256": "3d8944d173033786616873ae277b30f8340d7e1ce173191ef5a9bc71a96b9c08"
     },
     {
       "path": "supabase/templates/source/identity_unlinked.html",
-      "sha256": "66e3623811fae0db0ecc9cc5605ffab61562dba1a155c5e261c14f815f94473a"
+      "sha256": "4bc561e89106538e5674ad5f09c7f5aba7082d3270dd72d76c5cb4d1ebd4ddc9"
     },
     {
       "path": "supabase/templates/source/invite.html",
-      "sha256": "978d90dd441f2a070ea75193f925f25ecfa750fd71ef9844c364d54aedc2333e"
+      "sha256": "f2d182b61fb30c60d764e22ad71bffbef79b24c662344195b0b6a029bc8ce211"
     },
     {
       "path": "supabase/templates/source/magic_link.html",
-      "sha256": "e8e371aedae692e0a30d57d6924815e00f4f4a5f5794da666230f8ff878a69ea"
+      "sha256": "a7a03bbfc8312c9d6e48831c86bd6ffa0d7bf5b2dddd0790b7bfbdf36ffa8be4"
     },
     {
       "path": "supabase/templates/source/mfa_factor_enrolled.html",
-      "sha256": "09040fc0385610e1cb3ca930c22e437fc037a2bc27469467d146c375a366b77c"
+      "sha256": "15503f08d4e655313d1b494c8775f083d521c4fd516f95517d1dbc5395bb1dda"
     },
     {
       "path": "supabase/templates/source/mfa_factor_unenrolled.html",
-      "sha256": "14ee55b72f5e0fdbf89618007e4c5acb71786d2d009df8e5eb9a7430469da36e"
+      "sha256": "b9e57c1457c100c610501fb1855133347e6bb6f816268bdd1d36d23c9ab496a0"
     },
     {
       "path": "supabase/templates/source/password_changed.html",
-      "sha256": "41b90c8b58cbd27eb22961c3416493354f8108ada9455779b7c86374575a02af"
+      "sha256": "83c001981afaa83c0cd49f4a44f971fa9100d6dbd77dfdb014e1598388f9b398"
     },
     {
       "path": "supabase/templates/source/phone_changed.html",
-      "sha256": "2857d5e24133f40bd9559f83a53b6f5365d430e8e66ad614718f356c2547e20e"
+      "sha256": "cd17e869f6fac2a83d1e3f73db9b5bb4a701b8aaccd43f8000f896c7ff6f5ace"
     },
     {
       "path": "supabase/templates/source/reauthentication.html",
-      "sha256": "676380425b72aaafd8491051768db626c1652ddbef973b570b096516a674e59e"
+      "sha256": "e7e4aa20a5440cd52af01e13a82f7c9626ba1e0f2473d9eb7971dd0fea414730"
     },
     {
       "path": "supabase/templates/source/recovery.html",
-      "sha256": "1bdc4a7ddaaf24505d17a788917f0673c45d40517a0e93744f09a78ff1fecaba"
+      "sha256": "b28a3c713f70cd6852cfcff27228442c95938394285b65b52cd8c67a9db33b96"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -4910,6 +4914,10 @@
       {
         "path": "supabase/migrations/20260920104142_email_locale_trigger_permissions.sql",
         "sha256": "9b6f21224621f47a6a9782a575eb131d83b1ba35fd0f2a3788ce8fa8de67d8e3"
+      },
+      {
+        "path": "supabase/migrations/20260920201500_email_template_atomic_mutations.sql",
+        "sha256": "01ff87953ea3cb5801bad6543225d51c3326700a7206255fb7056948fa7cc90e"
       }
     ]
   }
