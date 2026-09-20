@@ -44,7 +44,7 @@ DO $$ DECLARE original jsonb; candidate jsonb; failed boolean:=false; detail tex
 END $$;
 RESET ROLE;
 -- Simulate a formerly valid published reference becoming unavailable externally.
-INSERT INTO public.hackathons(id,status,document) VALUES('translation-reference','published','{"title":"Reference"}');
+INSERT INTO public.hackathons(id,status,document) VALUES('translation-reference','published','{"title":"Reference","sectors":[{"id":"reference-sector","name":"Reference sector"}],"tech_stacks":[{"id":"reference-tech","name":"Reference tech"}]}');
 INSERT INTO public.course_lessons(course_id,id,section_id,published,data) VALUES('translation-course','practice','s',true,'{"title":"Practice","lesson_format":"practice","description_markdown":"Instructions","practice_config":{"mode":"instruction","related_hackathon_id":"translation-reference"}}');
 UPDATE public.hackathons SET status='draft' WHERE id='translation-reference';
 SET LOCAL ROLE authenticated;
