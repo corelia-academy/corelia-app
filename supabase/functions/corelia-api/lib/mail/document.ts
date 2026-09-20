@@ -56,7 +56,6 @@ export function renderEmailDocument(params: EmailDocumentParams, context: EmailR
     marketing: { vi: "Tin mới từ Corelia", en: "News from Corelia" },
   };
   const locale = normalizeEmailLocale(params.locale);
-  const footer = locale === "vi" ? "Email được gửi bởi Corelia." : "This email was sent by Corelia.";
   const unsubscribe = params.unsubscribeUrl
     ? `<p><a href="${escapeHtml(params.unsubscribeUrl)}">${locale === "vi" ? "Hủy đăng ký nhận email" : "Unsubscribe"}</a></p>`
     : "";
@@ -70,7 +69,6 @@ export function renderEmailDocument(params: EmailDocumentParams, context: EmailR
       preheader: interpolate(params.preheader ?? ""),
       bodyHtml: `${renderedImageUrl ? `<p><img src="${escapeHtml(renderedImageUrl)}" alt="" style="display:block;width:100%;height:auto;border-radius:12px" /></p>` : ""}${body}`,
       ctaHtml: renderedUrl && params.ctaLabel ? emailCtaButton(renderedUrl, interpolate(params.ctaLabel)) : undefined,
-      footerReason: footer,
       footerExtraHtml: unsubscribe,
     }, context),
   };

@@ -12,7 +12,7 @@ export type TransactionalWrapParams = {
   heroSubtitle?: string;
   bodyHtml: string;
   ctaHtml?: string;
-  footerReason: string;
+  footerReason?: string;
   footerExtraHtml?: string;
   preheader?: string;
   fingerprint?: string;
@@ -33,7 +33,10 @@ const TAG_STYLES: Record<string, string> = {
 export function inlineEmailHtml(html: string): string {
   return html.replace(/<([a-z][a-z0-9]*)\b([^>]*?)>/gi, (tag, name: string, attrs: string) => {
     const classes = attrs.match(/\bclass="([^"]*)"/)?.[1]?.split(/\s+/) ?? [];
-    const defaults = (TAG_STYLES[name.toLowerCase()] ?? "") + classes.map((c) => EMAIL_CLASS_STYLES[c] ?? "").join("");
+    const tagDefaults = classes.some((className) => className.startsWith("e-footer-item"))
+      ? ""
+      : TAG_STYLES[name.toLowerCase()] ?? "";
+    const defaults = tagDefaults + classes.map((c) => EMAIL_CLASS_STYLES[c] ?? "").join("");
     if (!defaults) return tag;
     const existing = attrs.match(/\bstyle="([^"]*)"/)?.[1] ?? "";
     const rest = attrs.replace(/\s*style="[^"]*"/, "").replace(/\s*\/$/, "");
@@ -86,11 +89,24 @@ ${params.sectionsHtml}
 
 export function renderTransactionalEmail(params: TransactionalWrapParams, context: EmailRenderContext): string {
   const hero = `<span class="e-hero-tag">${escapeHtml(params.heroTag)}</span><h2>${escapeHtml(params.heroTitle)}</h2>${params.heroSubtitle?.trim() ? `<p>${params.heroSubtitle}</p>` : ""}`;
-  const footer = `<p>${escapeHtml(params.footerReason)}</p>${params.footerExtraHtml ?? ""}<p style="margin-bottom:0"><a href="${escapeHtml(context.appUrl.replace(/\/+$/, ""))}">app.corelia.academy</a></p>`;
+  const appUrl = context.appUrl.replace(/\/+$/, "");
+  let websiteLabel = appUrl;
+  try {
+    websiteLabel = new URL(appUrl).hostname;
+  } catch {
+    // Keep the environment origin visible if a preview passes a non-standard URL.
+  }
+  const reason = params.footerReason?.trim()
+    ? `<p class="e-footer-item">${escapeHtml(params.footerReason.trim())}</p>`
+    : "";
+  const extra = (params.footerExtraHtml ?? "").trim()
+    .replace(/<p\s*>/gi, '<p class="e-footer-item">');
+  const website = `<p class="e-footer-item-last"><a href="${escapeHtml(appUrl)}">${escapeHtml(websiteLabel)}</a></p>`;
+  const footer = `${reason}${extra}${website}`;
   const sectionsHtml = emailSection("e-hero", inlineEmailHtml(hero))
     + emailSection("e-body", inlineEmailHtml(params.bodyHtml))
     + (params.ctaHtml?.trim() ? emailSection("e-cta-wrap", inlineEmailHtml(params.ctaHtml)) : "")
-    + emailSection("e-footer", inlineEmailHtml(footer));
+    + (footer.trim() ? emailSection("e-footer", inlineEmailHtml(footer)) : "");
   return renderEmailFrame({
     locale: normalizeEmailLocale(params.locale), title: params.heroTitle, sectionsHtml,
     preheader: (params.preheader ?? params.heroSubtitle ?? params.heroTitle).trim(), fingerprint: params.fingerprint,

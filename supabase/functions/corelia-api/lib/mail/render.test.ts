@@ -32,4 +32,20 @@ describe("email renderer fallbacks", () => {
     expect(fallback).toContain("Một tiêu đề rất dài");
     expect(fallback).toContain("Tiếp tục");
   });
+
+  it("keeps footer rows compact and omits an empty reason", () => {
+    const html = renderTransactionalEmail({
+      locale: "en",
+      heroTag: "Update",
+      heroTitle: "Account update",
+      bodyHtml: "<p>Details</p>",
+      footerExtraHtml: '<p><a href="https://example.com/unsubscribe">Unsubscribe</a></p>',
+    }, { appUrl: "https://staging.corelia.academy/" });
+
+    expect(html).toContain("padding:16px 24px");
+    expect(html).toContain("margin:0 0 4px;line-height:18px");
+    expect(html).toContain(">staging.corelia.academy</a>");
+    expect(html).not.toContain("This email was sent by Corelia");
+    expect(html).not.toContain("<p></p>");
+  });
 });

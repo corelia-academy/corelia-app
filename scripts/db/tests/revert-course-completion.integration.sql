@@ -1,6 +1,21 @@
 -- Integration test: Reverting course completion (Issue #333)
 BEGIN;
 
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public' AND p.proname = 'learning_revert_completion' AND p.prosecdef
+  ) THEN
+    RAISE EXCEPTION 'Public learning revert wrapper must be SECURITY INVOKER';
+  END IF;
+  IF has_function_privilege('anon', 'private.learning_revert_completion_for_current_user(text,text)', 'EXECUTE')
+     OR NOT has_function_privilege('authenticated', 'private.learning_revert_completion_for_current_user(text,text)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'Private learning revert gate permissions are incorrect';
+  END IF;
+END $$;
+
 INSERT INTO auth.users(id, email, raw_user_meta_data) VALUES
   ('eeee0000-0000-4000-8000-000000000333', 'revert-user@corelia.local', '{"full_name":"Revert Learner"}')
 ON CONFLICT (id) DO NOTHING;
