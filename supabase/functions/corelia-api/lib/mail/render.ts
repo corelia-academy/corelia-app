@@ -45,7 +45,10 @@ export function inlineEmailHtml(html: string): string {
 }
 
 export function emailSection(className: string, html: string): string {
-  return `<tr><td class="${className}" style="${EMAIL_CLASS_STYLES[className] ?? ""}">${html}</td></tr>`;
+  const content = className === "e-header"
+    ? html
+    : `<div class="gmail-blend-screen"><div class="gmail-blend-difference">${html}</div></div>`;
+  return `<tr><td class="${className}" style="${EMAIL_CLASS_STYLES[className] ?? ""}">${content}</td></tr>`;
 }
 
 /** Pure document frame, also used by the local Auth template generator. */
@@ -72,10 +75,10 @@ export function renderEmailFrame(params: {
 <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="color-scheme" content="dark" /><meta name="supported-color-schemes" content="dark" />
 <title>${escapeHtml(params.title)}</title><style>${fonts}${EMAIL_STYLES}</style></head>
-<body bgcolor="${b.background}" style="margin:0;padding:0;background-color:${b.background};color:${b.text};font-family:${b.font};">
+<body class="body" bgcolor="${b.background}" style="margin:0;padding:0;background-color:${b.background};color:${b.text};font-family:${b.font};">
 ${preheader}
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${b.background}" style="width:100%;background-color:${b.background};border-collapse:collapse;">
-<tr><td background="${escapeHtml(backgroundUrl)}" style="background-image:url('${escapeHtml(backgroundUrl)}');background-position:center;background-size:cover;background-repeat:no-repeat;">
+<tr><td class="e-canvas" background="${escapeHtml(backgroundUrl)}" style="background-color:${b.background};background-image:url('${escapeHtml(backgroundUrl)}');background-position:center;background-size:cover;background-repeat:no-repeat;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-collapse:collapse;"><tr><td class="e-outer" align="center" style="padding:32px 14px;">
 <!--[if mso]><table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"><tr><td><![endif]-->
 <table role="presentation" class="e-container" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${b.background}" style="width:100%;max-width:600px;table-layout:fixed;margin:0 auto;border:1px solid ${b.border};border-collapse:separate;border-spacing:0;background-color:${b.background};background-image:linear-gradient(${b.background},${b.background});color:${b.text};font-family:${b.font};font-size:16px;line-height:1.6;overflow-wrap:anywhere;word-break:break-word;text-align:left;">
