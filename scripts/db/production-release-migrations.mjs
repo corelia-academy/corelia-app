@@ -107,10 +107,9 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production includes contact sync through successful workflow 35096851299.
-// This release expands code validation and adds recipient-locale email delivery.
+// Production already includes multilingual code validation. This release adds
+// recipient-locale email delivery.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260916153501",
   "20260920083758",
 ]);
 

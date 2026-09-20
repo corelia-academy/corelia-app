@@ -170,7 +170,7 @@ test("Production workflow structure safety", () => {
 test("Production multilingual release accepts the released chain and exact pending migrations", () => {
   const localVersions = [...realReleasedVersions, ...APPROVED_PENDING_VERSIONS];
   const observedRemote = localVersions.filter((v) => !CURRENT_PENDING_VERSIONS.includes(v));
-  assert.deepEqual(CURRENT_PENDING_VERSIONS, ["20260916153501", "20260920083758"]);
+  assert.deepEqual(CURRENT_PENDING_VERSIONS, ["20260920083758"]);
   assert.ok(observedRemote.includes("20260915052442"));
   assert.ok(observedRemote.includes("20260915054142"));
   assert.ok(observedRemote.includes("20260915062707"));
