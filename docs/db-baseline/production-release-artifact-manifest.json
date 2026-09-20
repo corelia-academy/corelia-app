@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "489aec5f1ec5129b64e9b2ee2864c149ad72cf27",
-  "git_tree_sha": "f388b416aa9137e42428f840967f388208c5979c",
+  "rc_sha": "ce41b413d00573b92e3f7895c41e19e837e8e845",
+  "git_tree_sha": "4c1dbba4ae35d58e646bb35f02adf94bcd020752",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 238,
-  "latest_migration": "20260920083758_recipient_locale_email.sql",
+  "migration_count": 239,
+  "latest_migration": "20260920104142_email_locale_trigger_permissions.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "489aec5f1ec5129b64e9b2ee2864c149ad72cf27",
+  "source_sha": "ce41b413d00573b92e3f7895c41e19e837e8e845",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "f3e8341163f13b734681525605c8d9aa94de3fa43205ca7947b528920b57742a",
+  "candidate_tree_sha256": "0ec073b6ae9e0d5000a3a9d2f43a90d9cfb28f56ec6b9b8dcaa48aecb39d58f0",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -931,7 +931,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "87780c4b0d79a9bd4ed8d761a06b0a35ae070402fa759c36beafb71609826299"
+      "sha256": "9e31eb072f63b0ce40a870e81f942345d2457162c483c9c00acb184a78345535"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -963,7 +963,7 @@
     },
     {
       "path": "scripts/db/tests/email-center.integration.sql",
-      "sha256": "ae023d8f41ccf29add0234b44ff12be65e38237d6d1116411326746518bb1050"
+      "sha256": "58d2b8b0c07f98517006e46fc7aa2daaa1c974639e11f26f57ec5fd98739af98"
     },
     {
       "path": "scripts/db/tests/financial-retirement.contract.test.mjs",
@@ -1003,7 +1003,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "6a862dcffdbff4693de9bd7a8760b2375ed59f0492499ffeea09649d98b07798"
+      "sha256": "d2220a05e0b40146a607b0a7bdc218e47d461ed6bd09f381ef6521eb3c13c5af"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
@@ -1075,7 +1075,7 @@
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "33bc0073e85632b09d430dfc253f609fc49791220d32850ccb1c8cb190650719"
+      "sha256": "ad7881daf5a8c417fcbd0be5908ecc3ab13d64a6a763dae070c65b9579a984d3"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
@@ -4246,6 +4246,10 @@
       "sha256": "8ded820d2728e66dd82001bdbbc03a8b65135f355650887dba273acd0c2d364a"
     },
     {
+      "path": "supabase/migrations/20260920104142_email_locale_trigger_permissions.sql",
+      "sha256": "9b6f21224621f47a6a9782a575eb131d83b1ba35fd0f2a3788ce8fa8de67d8e3"
+    },
+    {
       "path": "supabase/templates/confirmation.html",
       "sha256": "ed252fc85ded7ff45fc2b55424004b39543547944d22c57b07a0b03d86a7fddd"
     },
@@ -4902,6 +4906,10 @@
       {
         "path": "supabase/migrations/20260920083758_recipient_locale_email.sql",
         "sha256": "8ded820d2728e66dd82001bdbbc03a8b65135f355650887dba273acd0c2d364a"
+      },
+      {
+        "path": "supabase/migrations/20260920104142_email_locale_trigger_permissions.sql",
+        "sha256": "9b6f21224621f47a6a9782a575eb131d83b1ba35fd0f2a3788ce8fa8de67d8e3"
       }
     ]
   }
