@@ -101,16 +101,17 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260916120421_email_contact_sync_and_import_sources.sql",
   "supabase/migrations/20260916153501_learning_multilanguage_code.sql",
   "supabase/migrations/20260920083758_recipient_locale_email.sql",
+  "supabase/migrations/20260920104142_email_locale_trigger_permissions.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production already includes multilingual code validation. This release adds
-// recipient-locale email delivery.
+// Production already includes recipient-locale delivery. This release grants
+// the backend access to the translation validator used by the invoker trigger.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260920083758",
+  "20260920104142",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
