@@ -24,10 +24,12 @@ describe("Email Center template rendering", () => {
       values: {},
     });
 
-    expect(rendered.html).toContain("background:#f4f7ff");
-    expect(rendered.html).toContain("background: #0a0913");
-    expect(rendered.html).toContain("background:#1759f1");
-    expect(rendered.html).toContain("color:#ffffff");
+    expect(rendered.html).toContain("background-color:#0a0913");
+    expect(rendered.html).toContain("color:#eae6e3");
+    expect(rendered.html).toContain("background-color:#1759f1");
+    expect(rendered.html).toContain("color:#f4f7ff");
+    expect(rendered.html).toContain("font-family:Akt");
+    expect(rendered.html).toContain("font-family:'TT Norms Pro Trial'");
     expect(rendered.html).not.toContain("Lora");
     expect(rendered.html).not.toContain("#2ab89e");
   });

@@ -1,3 +1,4 @@
+import { EMAIL_BRAND } from "../lib/mail/brand.ts";
 import { escapeHtml } from "../lib/html.ts";
 import {
   emailCtaButton,
@@ -47,7 +48,7 @@ export function buildCertificateIssuedEmail(params: {
   const copy = COPY[locale];
 
   const img = params.certImageUrl?.trim()
-    ? `<p><img src="${escapeHtml(params.certImageUrl.trim())}" alt="" width="480" style="max-width:100%;border-radius:8px;border:1px solid #e5e7eb" /></p>`
+    ? `<p><img src="${escapeHtml(params.certImageUrl.trim())}" alt="" width="480" style="max-width:100%;border-radius:8px;border:1px solid ${EMAIL_BRAND.border}" /></p>`
     : "";
 
   const bodyHtml = `

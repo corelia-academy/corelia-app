@@ -1,3 +1,4 @@
+import { EMAIL_BRAND } from "./brand.ts";
 import {
   type EmailLocale,
   emailCtaButton,
@@ -82,7 +83,7 @@ function permissionList(permissions: string[], locale: EmailLocale): string {
   const items = permissions
     .map((p) => `<li>${escapeHtml(labels[p] ?? p)}</li>`)
     .join("");
-  return `<ul style="margin:0 0 12px 18px;padding:0;font-size:13px;color:#3d4566;line-height:1.8;">${items}</ul>`;
+  return `<ul style="margin:0 0 12px 18px;padding:0;font-size:13px;color:${EMAIL_BRAND.muted};line-height:1.8;">${items}</ul>`;
 }
 
 export function buildCoInstructorInviteEmail(args: {
@@ -110,7 +111,7 @@ export function buildCoInstructorInviteEmail(args: {
       locale,
       heroTag: copy.tag,
       heroTitle: copy.title,
-      heroSubtitle: copy.subtitle(safeCourse),
+      heroSubtitle: escapeHtml(copy.subtitle(safeCourse)),
       bodyHtml,
       ctaHtml: emailCtaButton(args.inviteUrl, copy.cta),
       footerReason: copy.reason,
