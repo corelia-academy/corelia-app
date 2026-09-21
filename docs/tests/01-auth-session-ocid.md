@@ -1,6 +1,6 @@
 # 01 — Auth, phiên, OCID
 
-Xem hub: [README.md](./README.md).
+Xem hub: [README.md](README.md).
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Xác minh đăng ký, đăng nhập, đăng xuất, giữ phiên, xác nhận em
 
 ## Tiền đề staging
 
-- Đã có URL staging và verify bundle ([README.md](./README.md)).
+- Đã có URL staging và verify bundle ([README.md](README.md)).
 - OCID: chỉ test khi team đã cấu hình `VITE_OCID_CLIENT_ID` / redirect URI cho staging ([README.md](../../README.md)).
 - *(Tuỳ chọn)* Tài khoản có MFA bật để test `LoginMfaChallenge`.
 

@@ -1,6 +1,6 @@
 # 03 — Khóa học (catalog, chi tiết, checkout, học)
 
-Xem hub: [README.md](./README.md).
+Xem hub: [README.md](README.md).
 
 ## Mục tiêu
 

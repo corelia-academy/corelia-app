@@ -5,8 +5,8 @@ tế khớp expected result. Mỗi bug cần kèm môi trường, commit/build, 
 role, company/source ID, crawler run ID, ảnh/video và Console/Network error đã
 redact secret.
 
-- Setup và troubleshooting: [README.md](./README.md)
-- Phạm vi sản phẩm: [corelia-jobs-complete-implementation-plan.md](./corelia-jobs-complete-implementation-plan.md)
+- Setup và troubleshooting: [README.md](README.md)
+- Phạm vi sản phẩm: [corelia-jobs-complete-implementation-plan.md](corelia-jobs-complete-implementation-plan.md)
 
 ## 0. Evidence của phiên test
 

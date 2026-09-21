@@ -5,8 +5,8 @@ vi hiện tại gồm catalog public, trang chi tiết, Saved/Applied/Hidden, ma
 snapshot, admin vận hành nguồn, bốn ATS adapter, sáu external feed adapter,
 generic RSS/Atom, pipeline phân loại, revalidation và lịch crawl.
 
-- Thiết kế và phạm vi đầy đủ: [corelia-jobs-complete-implementation-plan.md](./corelia-jobs-complete-implementation-plan.md)
-- Checklist kiểm thử: [TEST_CHECKLIST.md](./TEST_CHECKLIST.md)
+- Thiết kế và phạm vi đầy đủ: [corelia-jobs-complete-implementation-plan.md](corelia-jobs-complete-implementation-plan.md)
+- Checklist kiểm thử: [TEST_CHECKLIST.md](TEST_CHECKLIST.md)
 - Quy trình release chung: [../RELEASE_PROCESS.md](../RELEASE_PROCESS.md)
 
 ## 1. Những thành phần phải được setup
@@ -393,7 +393,7 @@ Sau automated checks, chạy smoke flow tối thiểu:
 6. Gọi cron với secret sai nhận `401`; secret đúng nhận `200` hoặc `207` có body
    giải thích từng company.
 
-Checklist đầy đủ và mẫu evidence nằm tại [TEST_CHECKLIST.md](./TEST_CHECKLIST.md).
+Checklist đầy đủ và mẫu evidence nằm tại [TEST_CHECKLIST.md](TEST_CHECKLIST.md).
 
 ## 10. Tài liệu nền tảng
 
