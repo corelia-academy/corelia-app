@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "fd847eee6fcdb39fe2c4a152c0eb02ee9b2e86ca",
-  "git_tree_sha": "5f2802a660877cf6b6e5ae1d2702e5e3690ecf13",
+  "rc_sha": "de3c22f1c1f9c33dbf6db3a87f320c80a253682a",
+  "git_tree_sha": "a4bc3e27211e1285b13087de2baa10a7e8ba5fc6",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 243,
   "latest_migration": "20260920201500_email_template_atomic_mutations.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "fd847eee6fcdb39fe2c4a152c0eb02ee9b2e86ca",
+  "source_sha": "de3c22f1c1f9c33dbf6db3a87f320c80a253682a",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "0ed4e6c379a00fcdf696a716adc1bf62a7b6053899d502d83550921bf90295f9",
+  "candidate_tree_sha256": "eb61daa9a395ed02ea9ce03778ee8999bbc67ab3e35f80533c54bd7cf444bcae",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -935,7 +935,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "9f76e7fc823e04d8537300a74fafa0512661de451c473b9ab51638cfbdf2e5cb"
+      "sha256": "04107588d825f8d52342bdd59f1fefc18623a62e376155a5da49825e63026175"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -1015,7 +1015,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "4b0a5e4909284eb6354d1b08f1dccf9a84a691923180caef07461ae055168eba"
+      "sha256": "10d3d169adfaa2919e6e3be743175b06f9f25954d7f1bf74c05ca23c06681f13"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
@@ -1087,7 +1087,7 @@
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "0aeb4e9ef77da70b39fd825429107b0fa7234b6b12c276152efc726e8109797f"
+      "sha256": "12dce636a055d650746c17d247c09cec0c87e3355a0ddbbeefe917ee2a4cfcb0"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
