@@ -419,7 +419,6 @@
     "translationMissing": "No translation yet. Enter content for this language.",
     "translationLoadError": "Could not load the translation. Retry before editing.",
     "savedRefreshFailed": "Content saved, but refreshing failed. Reload the page.",
-
     "invalidResourcesRecovery": "Some resource entries have an invalid structure. Remove the broken entries to continue editing.",
     "recoverResources": "Remove broken resource entries",
     "recoverResourcesConfirm": "Remove malformed resource entries and unpublish this lesson? Valid resources and other content will be kept.",
@@ -709,6 +708,13 @@
     "confirmTitle": "Confirm action",
     "confirmAction": "Confirm",
     "changePracticeModeConfirm": "Change practice mode? Checklist items, guided steps and required artifacts that do not apply to the new mode will be removed from this draft. Save is required to persist the change.",
-    "legacyPracticeArtifacts": "This legacy lesson still requires these artifacts. Clear them here if they should no longer block completion."
+    "legacyPracticeArtifacts": "This legacy lesson still requires these artifacts. Clear them here if they should no longer block completion.",
+    "xpEarned": "+{{count}} XP · Activity completed",
+    "xpSyncing": "Checking XP…",
+    "xpUnavailable": "XP status is temporarily unavailable.",
+    "xpLessonEarned": "10 XP already earned for this lesson",
+    "xpLessonAvailable": "Complete this lesson for the first time: +10 XP",
+    "xpQuizEarned": "XP already earned for this quiz",
+    "xpQuizAvailable": "Score at least 80% for the first time: +30 XP (lesson + quiz)"
   }
 }

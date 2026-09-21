@@ -18,6 +18,10 @@ You cannot create secrets starting with `SUPABASE_` in the Dashboard because thi
 
 ## Theo tính năng
 
+### OCID và ví liên kết
+
+`ocid.link` yêu cầu `OCID_CLIENT_ID` ở Edge Function, bằng `VITE_OCID_CLIENT_ID` của frontend. Đặt `OCID_SANDBOX=true` trên staging/local khi frontend dùng `VITE_OCID_SANDBOX=true`; production dùng `false`. Server xác minh chữ ký ES256, hạn token và audience trước khi ghi OCID và cộng XP. `wallets.challenge`/`wallets.verify` dùng Origin trong `CORELIA_CORS_ALLOWED_ORIGINS` hoặc `CORELIA_APP_ORIGIN`, challenge 5 phút và chữ ký Ethereum/Solana; không cần bật Supabase Web3 sign-in vì đây là liên kết ví với user hiện tại.
+
 ### Mail giao dịch — Resend (**dùng chung** cho mọi flow gọi `sendTransactionalEmailViaResend`, hiện có `hackathons.notifyRegistrationReview`)
 
 | Biến | Bắt buộc để gửi được mail? | Ghi chú |

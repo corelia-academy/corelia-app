@@ -4,6 +4,7 @@ import { uploadUserAvatar } from "@/lib/storage";
 import type { User } from "@supabase/supabase-js";
 import type { Profile, ProfileInsert, ProfileUpdate, PublicProfile } from "@/types/database";
 import { sortLocale } from "@/lib/intl";
+import { callCoreliaApi } from "@/lib/coreliaEdgeApi";
 
 function rowToProfile(row: Record<string, unknown>): Profile {
   return {
@@ -346,39 +347,14 @@ export async function updateCurrentProfile(updates: ProfileUpdate): Promise<Prof
   return updateProfileForUser(user, updates);
 }
 
-export async function updateOCIDProfileForUser(
-  user: User,
-  input: {
-    ocid: string | null;
-    ocid_eth_address: string | null;
-  },
-): Promise<void> {
-  const now = new Date().toISOString();
-  const willConnect = Boolean(input.ocid);
-  const { error } = await supabase
-    .from("profiles")
-    .update({
-      ocid: input.ocid,
-      ocid_eth_address: input.ocid_eth_address,
-      ocid_connected_at: willConnect ? now : null,
-      updated_at: now,
-    })
-    .eq("id", user.id);
-  if (error) {
-    if (error.code === "23505") throw new Error("OCID_ALREADY_LINKED");
-    throw new Error(error.message);
-  }
+export async function connectVerifiedOCID(idToken: string): Promise<boolean> {
+  const result = await callCoreliaApi<{ linked: boolean; awarded: boolean }>("ocid.link", { idToken });
+  return result.awarded;
 }
 
-export async function updateOCIDProfile(input: {
-  ocid: string | null;
-  ocid_eth_address: string | null;
-}): Promise<void> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Chưa đăng nhập");
-  await updateOCIDProfileForUser(user, input);
+export async function disconnectOCID(): Promise<void> {
+  const { error } = await supabase.rpc("xp_unlink_ocid");
+  if (error) throw new Error(error.message);
 }
 
 export async function getAllProfiles(): Promise<Profile[]> {

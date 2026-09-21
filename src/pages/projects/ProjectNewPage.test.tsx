@@ -20,6 +20,7 @@ vi.mock("@/lib/hackathons", () => ({
   upsertContestSubmission: mocks.save,
 }));
 vi.mock("@/lib/projectCollaboration", () => ({ createProjectCollaborationInvite: vi.fn() }));
+vi.mock("@/lib/xp", () => ({ withFirstHackathonXp: async (action: () => Promise<unknown>) => ({ value: await action(), awarded: false }) }));
 vi.mock("@/features/projects/ProjectEditor", () => ({ ProjectEditor: () => <div data-testid="new-editor">New editor</div> }));
 import ProjectNewPage from "./ProjectNewPage";
 

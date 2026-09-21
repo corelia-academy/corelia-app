@@ -98,8 +98,17 @@
       "resources": "Resources",
       "projects": "Projects"
     },
-    "mode": { "online": "Online", "offline": "Offline", "hybrid": "Hybrid" },
-    "status": { "draft": "Draft", "published": "Open", "running": "Running", "ended": "Ended" },
+    "mode": {
+      "online": "Online",
+      "offline": "Offline",
+      "hybrid": "Hybrid"
+    },
+    "status": {
+      "draft": "Draft",
+      "published": "Open",
+      "running": "Running",
+      "ended": "Ended"
+    },
     "overview": {
       "description": "Description",
       "summary": "At a glance",
@@ -108,7 +117,10 @@
       "registered": "Registered",
       "notRegistered": "Not registered"
     },
-    "prizes": { "total": "Total prize pool", "breakdown": "View breakdown" },
+    "prizes": {
+      "total": "Total prize pool",
+      "breakdown": "View breakdown"
+    },
     "prepare": {
       "title": "Prepare with AI",
       "description": "Copy this prompt into your AI assistant to understand the hackathon and plan your working demo.",
@@ -1167,7 +1179,8 @@
       "collabInviteRevoked": "Invite revoked.",
       "collabRevokeFailed": "Could not revoke invite.",
       "collaboratorRemoved": "Teammate removed.",
-      "collaboratorRemoveFailed": "Could not remove teammate."
+      "collaboratorRemoveFailed": "Could not remove teammate.",
+      "hackathonXpEarned": "+100 XP · First hackathon project submitted"
     },
     "forms": {
       "awards": {

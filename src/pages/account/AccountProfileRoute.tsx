@@ -9,6 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ConnectOCIDCard from "@/pages/account/ConnectOCIDCard";
 import { ChangePasswordCard } from "./ChangePasswordCard";
 import { ProfileSection } from "./ProfileSection";
+import { XpActivity } from "@/features/xp/XpActivity";
+import { ConnectedAccountsCard } from "./ConnectedAccountsCard";
 import { queryClient } from "@/lib/queryClient";
 import { publicProfileKeys } from "@/features/profiles/publicProfileQueries";
 import { socialKeys } from "@/features/social/socialQueries";
@@ -356,6 +358,9 @@ export function AccountProfileRoute() {
         onSubmit={onSubmitProfile}
       />
 
+      <XpActivity userId={user.id} own />
+
+      <ConnectedAccountsCard />
       <ConnectOCIDCard />
       <ChangePasswordCard user={user} />
     </div>

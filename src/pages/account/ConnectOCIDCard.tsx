@@ -11,7 +11,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/stores/authStore";
-import { updateOCIDProfileForUser } from "@/lib/profile";
+import { disconnectOCID } from "@/lib/profile";
 import { mintedCredentialCountQueryOptions } from "@/features/account/accountQueries";
 import { useTranslation } from "react-i18next";
 
@@ -73,10 +73,7 @@ export default function ConnectOCIDCard() {
     setLoading(true);
     try {
       if (!user) return;
-      await updateOCIDProfileForUser(user, {
-        ocid: null,
-        ocid_eth_address: null,
-      });
+      await disconnectOCID();
       await refreshProfile(user);
       setSuccess(t("ocid.toasts.disconnectSuccess"));
     } catch (e) {

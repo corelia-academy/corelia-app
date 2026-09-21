@@ -46,8 +46,13 @@ import { handleEmailAdmin, handleEmailUnsubscribe } from "./email/handler.ts";
 import { runEmailWorker } from "./email/worker.ts";
 import { handleResendWebhook } from "./email/webhook.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
+import { handleWalletChallenge, handleWalletVerify } from "./wallets/handlers.ts";
+import { handleOcidLink } from "./ocid/handlers.ts";
 
 const PROTECTED_OPS = new Set<string>([
+  "wallets.challenge",
+  "wallets.verify",
+  "ocid.link",
   "admin.emailOutbox.reconcile",
   "email.admin",
   "certificates.issue",
@@ -137,6 +142,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
     let response: Response;
     if (op === "health" && req.method === "GET") {
       response = json({ ok: true });
+    } else if (op === "wallets.challenge" && req.method === "POST") {
+      response = cors ? await handleWalletChallenge(req, db) : json({ message: "Origin not allowed" }, 403);
+    } else if (op === "wallets.verify" && req.method === "POST") {
+      response = cors ? await handleWalletVerify(req, db) : json({ message: "Origin not allowed" }, 403);
+    } else if (op === "ocid.link" && req.method === "POST") {
+      response = cors ? await handleOcidLink(req, db) : json({ message: "Origin not allowed" }, 403);
     } else if (op === "certificates.issue" && req.method === "POST") {
       response = await handleIssueCertificate(req, db);
     } else if (op === "certificates.backfillEligible" && req.method === "POST") {
