@@ -1,18 +1,15 @@
 import { normalizeContentLocale } from "@/lib/entityLocales";
-import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
+import { queryOptions } from "@tanstack/react-query";
 
 import { getProfileCourseSkills, getPublishedCoursesByInstructor } from "@/lib/courses";
 import {
   fetchPublicProfileCredentialIssuances,
   issuanceToBadgeItem,
 } from "@/lib/credentialIssuances";
-import { getActorActivity } from "@/lib/feed";
 import { getUserFollowingProfileCount } from "@/lib/follows";
 import { getPublicProfileByHandle, getPublicProfileById } from "@/lib/profile";
 import { listPublicPortfolioProjects } from "@/lib/projects";
 import { listPublicProfileContestPortfolio } from "@/lib/hackathons";
-
-const ACTIVITY_PAGE_SIZE = 5;
 
 export const publicProfileKeys = {
   all: ["public-profiles"] as const,
@@ -21,7 +18,6 @@ export const publicProfileKeys = {
     [...publicProfileKeys.all, "achievements", profileId] as const,
   skills: (profileId: string) => [...publicProfileKeys.all, "skills", profileId] as const,
   courses: (profileId: string, locale = "vi") => [...publicProfileKeys.all, "courses", profileId, normalizeContentLocale(locale)] as const,
-  activity: (profileId: string) => [...publicProfileKeys.all, "activity", profileId] as const,
   projects: (profileId: string, locale: string) =>
     [...publicProfileKeys.all, "projects", profileId, locale] as const,
   contests: (profileId: string, isSelf: boolean, locale: string) =>
@@ -81,24 +77,6 @@ export function publicInstructorCoursesQueryOptions(
     queryKey: publicProfileKeys.courses(profileId, locale),
     queryFn: () => getPublishedCoursesByInstructor(profileId, normalizeContentLocale(locale)),
     enabled,
-    staleTime: 60_000,
-    meta: publicMeta,
-  });
-}
-
-export function publicProfileActivityQueryOptions(profileId: string) {
-  return infiniteQueryOptions({
-    queryKey: publicProfileKeys.activity(profileId),
-    queryFn: ({ pageParam }) =>
-      getActorActivity(profileId, {
-        limit: ACTIVITY_PAGE_SIZE,
-        cursor: pageParam,
-      }),
-    initialPageParam: null as string | null,
-    getNextPageParam: (lastPage) =>
-      lastPage.length === ACTIVITY_PAGE_SIZE
-        ? lastPage[lastPage.length - 1]?.created_at ?? undefined
-        : undefined,
     staleTime: 60_000,
     meta: publicMeta,
   });

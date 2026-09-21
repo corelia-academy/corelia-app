@@ -14,7 +14,7 @@ import { ConnectedAccountsCard } from "./ConnectedAccountsCard";
 import { queryClient } from "@/lib/queryClient";
 import { publicProfileKeys } from "@/features/profiles/publicProfileQueries";
 import { socialKeys } from "@/features/social/socialQueries";
-import { feedKeys } from "@/features/feed/feedQueries";
+import { milestoneKeys } from "@/features/feed/milestoneQueries";
 import { projectKeys } from "@/features/projects/projectQueries";
 import { projectCollaborationKeys } from "@/features/projects/projectCollaborationQueries";
 import { instructorKeys } from "@/features/instructor/instructorQueries";
@@ -93,7 +93,7 @@ export function AccountProfileRoute() {
       refreshProfile(user),
       queryClient.invalidateQueries({ queryKey: publicProfileKeys.all }),
       queryClient.invalidateQueries({ queryKey: socialKeys.all }),
-      queryClient.invalidateQueries({ queryKey: feedKeys.all }),
+      queryClient.invalidateQueries({ queryKey: milestoneKeys.all }),
       queryClient.invalidateQueries({ queryKey: projectKeys.all }),
       queryClient.invalidateQueries({ queryKey: projectCollaborationKeys.all }),
       queryClient.invalidateQueries({ queryKey: instructorKeys.all }),

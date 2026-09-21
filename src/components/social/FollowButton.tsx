@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
 import type { FollowSubject } from "@/types/feed";
 import { followingStateQueryOptions, socialKeys } from "@/features/social/socialQueries";
+import { milestoneKeys } from "@/features/feed/milestoneQueries";
 
 interface FollowButtonProps {
   subject: FollowSubject;
@@ -73,6 +74,10 @@ export function FollowButton({
     onError: (cause, _next, context) => {
       if (context) queryClient.setQueryData(context.key, context.previous);
       setError(cause instanceof Error ? cause.message : t("follow.errors.save"));
+    },
+    onSuccess: () => {
+      if (user?.id) void queryClient.invalidateQueries({ queryKey: socialKeys.myFeedFollowing(user.id) });
+      void queryClient.invalidateQueries({ queryKey: milestoneKeys.all });
     },
   });
 

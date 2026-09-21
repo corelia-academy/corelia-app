@@ -12,16 +12,20 @@ export interface FollowerPreviewRow {
   followed_at: string;
 }
 
-export async function followSubject(subject: FollowSubject): Promise<void> {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (userError) throw new Error(userError.message);
+export type FeedSuggestedProfile = Omit<FollowerPreviewRow, "followed_at">;
+
+async function requireFollowerId(): Promise<string> {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error) throw new Error(error.message);
   if (!user) throw new Error("Sign in required");
+  return user.id;
+}
+
+export async function followSubject(subject: FollowSubject): Promise<void> {
+  const followerId = await requireFollowerId();
 
   const { error } = await supabase.from("follows").insert({
-    follower_id: user.id,
+    follower_id: followerId,
     subject_type: subject.type,
     subject_id: subject.id,
   });
@@ -29,9 +33,11 @@ export async function followSubject(subject: FollowSubject): Promise<void> {
 }
 
 export async function unfollowSubject(subject: FollowSubject): Promise<void> {
+  const followerId = await requireFollowerId();
   const { error } = await supabase
     .from("follows")
     .delete()
+    .eq("follower_id", followerId)
     .eq("subject_type", subject.type)
     .eq("subject_id", subject.id);
   if (error) throw new Error(error.message);
@@ -41,18 +47,22 @@ export async function muteSubject(
   subject: FollowSubject,
   mutedUntil: string | null,
 ): Promise<void> {
+  const followerId = await requireFollowerId();
   const { error } = await supabase
     .from("follows")
     .update({ muted_until: mutedUntil })
+    .eq("follower_id", followerId)
     .eq("subject_type", subject.type)
     .eq("subject_id", subject.id);
   if (error) throw new Error(error.message);
 }
 
 export async function listFollowing(signal?: AbortSignal): Promise<FollowRow[]> {
+  const followerId = await requireFollowerId();
   let request = supabase
     .from("follows")
     .select("follower_id,subject_type,subject_id,created_at,muted_until")
+    .eq("follower_id", followerId)
     .order("created_at", { ascending: false });
   if (signal) request = request.abortSignal(signal);
   const { data, error } = await request;
@@ -89,6 +99,43 @@ export async function listUserFollowing(
   return rows.map((row) => ({ ...row, avatar_seed: seeds.get(row.id) ?? null }));
 }
 
+export async function listMyFeedFollowingProfiles(
+  userId: string,
+  cursor: Pick<FollowerPreviewRow, "id" | "followed_at"> | null = null,
+  limit = 20,
+): Promise<FollowerPreviewRow[]> {
+  const followerId = await requireFollowerId();
+  if (followerId !== userId) throw new Error("Forbidden following list");
+  const { data, error } = await supabase.rpc("list_my_feed_following_profiles_v1", {
+    p_cursor_at: cursor?.followed_at ?? null,
+    p_cursor_id: cursor?.id ?? null,
+    p_limit: limit,
+  });
+  if (error) throw new Error(error.message);
+  const rows = (data ?? []) as Omit<FollowerPreviewRow, "avatar_seed">[];
+  const seeds = await getPublicAvatarSeeds(rows.map((row) => row.id));
+  return rows.map((row) => ({ ...row, avatar_seed: seeds.get(row.id) ?? null }));
+}
+
+export async function listSuggestedFeedProfiles(userId: string, limit = 4): Promise<FeedSuggestedProfile[]> {
+  const publicProfiles = () => supabase.from("public_profiles")
+    .select("id,username,ocid,full_name,avatar_url,avatar_seed")
+    .eq("profile_public", true)
+    .neq("id", userId)
+    .or("username.not.is.null,ocid.not.is.null,full_name.not.is.null");
+  const { count, error: countError } = await supabase.from("public_profiles")
+    .select("id", { count: "exact", head: true })
+    .eq("profile_public", true)
+    .neq("id", userId)
+    .or("username.not.is.null,ocid.not.is.null,full_name.not.is.null");
+  if (countError) throw new Error(countError.message);
+  if (!count) return [];
+  const offset = Math.floor(Math.random() * (Math.max(0, count - limit) + 1));
+  const { data, error } = await publicProfiles().order("id").range(offset, offset + limit - 1);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as FeedSuggestedProfile[];
+}
+
 export async function getUserFollowingProfileCount(userId: string): Promise<number> {
   const { data, error } = await supabase.rpc("get_user_following_profile_count_v1", {
     p_user_id: userId,
@@ -98,9 +145,11 @@ export async function getUserFollowingProfileCount(userId: string): Promise<numb
 }
 
 export async function isFollowing(subject: FollowSubject): Promise<boolean> {
+  const followerId = await requireFollowerId();
   const { data, error } = await supabase
     .from("follows")
     .select("subject_id")
+    .eq("follower_id", followerId)
     .eq("subject_type", subject.type)
     .eq("subject_id", subject.id)
     .maybeSingle();
