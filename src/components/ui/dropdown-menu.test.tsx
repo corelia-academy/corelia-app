@@ -233,10 +233,24 @@ describe("Dropdown Menu multiple list", () => {
       </DropdownMenuCheckboxItem>,
     )
 
+    const checkedDisabledMarkup = renderMenuItem(
+      <DropdownMenuCheckboxItem checked disabled>
+        <DropdownMenuItemContent supportingText="Active disabled detail">
+          Active disabled item
+        </DropdownMenuItemContent>
+      </DropdownMenuCheckboxItem>,
+    )
+
     expect(warningMarkup).toContain('data-variant="warning"')
     expect(disabledMarkup).toContain("data-disabled")
     expect(disabledMarkup).toContain("data-disabled:cursor-not-allowed")
     expect(disabledMarkup).not.toContain("data-disabled:pointer-events-none")
+    expect(checkedDisabledMarkup).toContain("bg-dropdown-checkbox-disabled-active")
+    expect(checkedDisabledMarkup).toContain("border-0")
+    expect(checkedDisabledMarkup).toContain("text-dropdown-checkbox-disabled-mark")
+    expect(checkedDisabledMarkup).not.toContain(
+      "group-data-[disabled]/dropdown-menu-checkbox-item:bg-transparent",
+    )
   })
 
   it("renders a mixed checkbox state for nested parent items", () => {

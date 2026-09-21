@@ -272,6 +272,7 @@ function DropdownMenuCheckboxItem({
   className,
   children,
   checked,
+  disabled,
   indeterminate = false,
   inset,
   variant = "default",
@@ -287,6 +288,7 @@ function DropdownMenuCheckboxItem({
   selectionMode?: "full-row" | "checkbox-only"
 }) {
   const selectionTargetRef = React.useRef(false)
+  const isCheckedAndDisabled = checked === true && disabled === true
 
   function handlePointerDown(
     event: Parameters<DropdownMenuCheckboxItemPointerDownHandler>[0],
@@ -343,6 +345,7 @@ function DropdownMenuCheckboxItem({
         className
       )}
       checked={checked}
+      disabled={disabled}
       {...(indeterminate ? { "aria-checked": "mixed" } : {})}
       onCheckedChange={handleCheckedChange}
       onPointerDown={handlePointerDown}
@@ -352,7 +355,10 @@ function DropdownMenuCheckboxItem({
       <span
         data-slot="dropdown-menu-checkbox-item-indicator"
         className={cn(
-          "flex size-5 shrink-0 items-center justify-center rounded-[5px] border-[1.5px] border-dropdown-checkbox-unchecked text-dropdown-checkbox-mark group-data-[checked]/dropdown-menu-checkbox-item:border-dropdown-checkbox-active group-data-[checked]/dropdown-menu-checkbox-item:bg-dropdown-checkbox-active group-data-[disabled]/dropdown-menu-checkbox-item:border-dropdown-disabled group-data-[disabled]/dropdown-menu-checkbox-item:bg-transparent",
+          "flex size-5 shrink-0 items-center justify-center rounded-[5px]",
+          isCheckedAndDisabled
+            ? "border-0 bg-dropdown-checkbox-disabled-active text-dropdown-checkbox-disabled-mark"
+            : "border-[1.5px] border-dropdown-checkbox-unchecked text-dropdown-checkbox-mark group-data-[checked]/dropdown-menu-checkbox-item:border-dropdown-checkbox-active group-data-[checked]/dropdown-menu-checkbox-item:bg-dropdown-checkbox-active group-data-[disabled]/dropdown-menu-checkbox-item:border-dropdown-disabled group-data-[disabled]/dropdown-menu-checkbox-item:bg-transparent",
           selectionMode === "checkbox-only"
             ? "pointer-events-auto cursor-pointer"
             : "pointer-events-none",

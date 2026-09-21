@@ -186,6 +186,8 @@
   --color-dropdown-checkbox-unchecked: var(--dropdown-checkbox-unchecked);
   --color-dropdown-checkbox-active: var(--dropdown-checkbox-active);
   --color-dropdown-checkbox-mark: var(--dropdown-checkbox-mark);
+  --color-dropdown-checkbox-disabled-active: var(--dropdown-checkbox-disabled-active);
+  --color-dropdown-checkbox-disabled-mark: var(--dropdown-checkbox-disabled-mark);
   --color-dropdown-focus: var(--dropdown-focus);
   --color-dropdown-warning: var(--dropdown-warning);
   --color-dropdown-warning-supporting: var(--dropdown-warning-supporting);
@@ -258,6 +260,7 @@
   --color-selection-active: var(--selection-active);
   --color-selection-unchecked: var(--selection-unchecked);
   --color-selection-disabled: var(--selection-disabled);
+  --color-selection-disabled-mark: var(--selection-disabled-mark);
   --color-selection-feedback: var(--selection-feedback);
   --color-selection-feedback-pressed: var(--selection-feedback-pressed);
   --color-selection-card-selected-border: var(--selection-card-selected-border);
@@ -788,6 +791,7 @@
   --selection-active: var(--blue-600);
   --selection-unchecked: var(--neutral-600);
   --selection-disabled: var(--neutral-400);
+  --selection-disabled-mark: var(--neutral-50);
   --selection-feedback: color-mix(in srgb, var(--blue-600) 10%, transparent);
   --selection-feedback-pressed: color-mix(in srgb, var(--blue-600) 20%, transparent);
   --selection-card-selected-border: var(--blue-600);
@@ -840,6 +844,8 @@
   --dropdown-checkbox-unchecked: var(--neutral-600);
   --dropdown-checkbox-active: var(--blue-600);
   --dropdown-checkbox-mark: var(--blue-50);
+  --dropdown-checkbox-disabled-active: var(--selection-disabled);
+  --dropdown-checkbox-disabled-mark: var(--selection-disabled-mark);
   --dropdown-focus: var(--blue-400);
   --dropdown-warning: var(--error-500);
   --dropdown-warning-supporting: var(--error-300);
@@ -980,6 +986,7 @@
   --selection-active: var(--blue-600);
   --selection-unchecked: var(--foreground-muted);
   --selection-disabled: var(--neutral-500);
+  --selection-disabled-mark: var(--neutral-400);
   --selection-feedback: color-mix(in srgb, var(--blue-600) 10%, transparent);
   --selection-feedback-pressed: color-mix(in srgb, var(--blue-600) 20%, transparent);
   --selection-card-selected-border: var(--blue-600);
@@ -1035,6 +1042,8 @@
   --dropdown-checkbox-unchecked: var(--blue-50);
   --dropdown-checkbox-active: var(--blue-600);
   --dropdown-checkbox-mark: var(--blue-50);
+  --dropdown-checkbox-disabled-active: var(--selection-disabled);
+  --dropdown-checkbox-disabled-mark: var(--selection-disabled-mark);
   --dropdown-focus: var(--blue-400);
   --dropdown-warning: var(--error-500);
   --dropdown-warning-supporting: var(--error-300);

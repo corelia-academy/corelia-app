@@ -495,7 +495,7 @@ describe("admin component detail pages", () => {
     await act(async () => noLeadingTrigger?.click());
 
     expect(document.body.querySelector('input[aria-label="Search Leading icon = No"]')).not.toBeNull();
-    expect(document.body.querySelectorAll('[data-testid^="dropdown-menu-base-item-no-leading-"]')).toHaveLength(10);
+    expect(document.body.querySelectorAll('[data-testid^="dropdown-menu-base-item-no-leading-"]')).toHaveLength(12);
     expect(document.body.querySelector('[data-testid="dropdown-menu-base-item-no-leading-warning-default"]')).not.toBeNull();
 
     const warningDefaultRow = document.body.querySelector<HTMLElement>(
@@ -513,6 +513,12 @@ describe("admin component detail pages", () => {
     );
     expect(disabledBaseRow?.hasAttribute("data-disabled")).toBe(true);
     expect(disabledBaseRow?.className).toContain("data-disabled:cursor-not-allowed");
+
+    const activeDisabledBaseRow = document.body.querySelector<HTMLElement>(
+      '[data-testid="dropdown-menu-base-item-no-leading-warning-active-disabled"]',
+    );
+    expect(activeDisabledBaseRow?.hasAttribute("data-disabled")).toBe(true);
+    expect(activeDisabledBaseRow?.getAttribute("aria-checked")).toBe("true");
 
     const hoverBaseRow = document.body.querySelector<HTMLElement>(
       '[data-testid="dropdown-menu-base-item-no-leading-default-hover"]',
@@ -532,7 +538,7 @@ describe("admin component detail pages", () => {
     );
     await act(async () => leadingTrigger?.click());
     expect(document.body.querySelector('input[aria-label="Search Leading icon = Yes"]')).not.toBeNull();
-    expect(document.body.querySelectorAll('[data-testid^="dropdown-menu-base-item-leading-"]')).toHaveLength(10);
+    expect(document.body.querySelectorAll('[data-testid^="dropdown-menu-base-item-leading-"]')).toHaveLength(12);
     await act(async () => leadingTrigger?.click());
 
     const useCases = [

@@ -54,6 +54,7 @@ const baseItemStatuses = [
   { id: "focus", label: "Focused" },
   { id: "selected", label: "Selected" },
   { id: "disabled", label: "Disabled" },
+  { id: "active-disabled", label: "Active + Disabled" },
 ] as const;
 
 const baseItemVariants = [
@@ -72,7 +73,13 @@ function BaseItemPreview({ id, label, showLeading }: BaseItemPreviewProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
-    () => new Set(["default-selected", "warning-selected"]),
+    () =>
+      new Set([
+        "default-selected",
+        "warning-selected",
+        "default-active-disabled",
+        "warning-active-disabled",
+      ]),
   );
 
   const visibleGroups = useMemo(() => {
@@ -110,7 +117,7 @@ function BaseItemPreview({ id, label, showLeading }: BaseItemPreviewProps) {
       <div>
         <h3 className="text-title-medium font-display">{label}</h3>
         <p className="mt-1 text-body-small text-foreground-muted">
-          Default and Warning, each with five Figma states. Hover an enabled row or press Tab to inspect the real Hover and Focused states.
+          Default and Warning, each with six Figma states. Hover an enabled row or press Tab to inspect the real Hover and Focused states.
         </p>
       </div>
 
@@ -154,7 +161,8 @@ function BaseItemPreview({ id, label, showLeading }: BaseItemPreviewProps) {
                   </DropdownMenuLabel>
                   {group.statuses.map((status) => {
                     const itemId = `${group.id}-${status.id}`;
-                    const isDisabled = status.id === "disabled";
+                    const isDisabled =
+                      status.id === "disabled" || status.id === "active-disabled";
 
                     return (
                       <DropdownMenuCheckboxItem
