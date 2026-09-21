@@ -1,17 +1,17 @@
 # 07 — Account hub (`/account/*`)
 
-Xem hub: [README.md](./README.md).
+Xem hub: [README.md](README.md).
 
 ## Mục tiêu
 
 Phủ các route con account: `profile`, `cv`, `billing`, `settings`, `projects`, `instructor`.
 Toàn bộ learner-facing AI và các route cũ liên quan đã được gỡ bỏ theo Epic #332.
 
-**Lưu ý:** `/account/projects` là **editor i18n/translation** cho project (`AccountProjectsRoute`), **không** phải gallery công khai `/projects` ([05](./05-projects-invites-search.md)).
+**Lưu ý:** `/account/projects` là **editor i18n/translation** cho project (`AccountProjectsRoute`), **không** phải gallery công khai `/projects` ([05](05-projects-invites-search.md)).
 
 ## Tiền đề staging
 
-- Đăng nhập ổn định ([01-auth-session-ocid.md](./01-auth-session-ocid.md)).
+- Đăng nhập ổn định ([01-auth-session-ocid.md](01-auth-session-ocid.md)).
 
 ## Tài khoản cần dùng
 
@@ -24,7 +24,7 @@ Toàn bộ learner-facing AI và các route cũ liên quan đã được gỡ b�
 2. **`/account/profile`**: cập nhật họ tên/avatar (nếu có) — lưu và reload giữ được.
 3. **`/account/cv`**: chỉnh sửa/lưu hoặc upload theo UI — không crash.
 4. **`/account/billing`**: hiển thị lịch sử giao dịch và thanh toán lịch sử; không hard fail khi empty.
-5. **`/account/settings`**: đổi locale/email/password (theo phạm vi staging); OCID section nếu bật ([01](./01-auth-session-ocid.md)).
+5. **`/account/settings`**: đổi locale/email/password (theo phạm vi staging); OCID section nếu bật ([01](01-auth-session-ocid.md)).
 6. **`/account/projects`**: editor dịch/i18n project — load danh sách project user có quyền chỉnh; **không** nhầm với `/projects` gallery.
 7. **`/account/instructor`**:
    - **Student_1**: empty, upsell, hoặc redirect (ghi nhận spec).

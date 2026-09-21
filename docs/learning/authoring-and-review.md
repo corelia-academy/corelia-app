@@ -1,6 +1,6 @@
 # Hướng dẫn soạn bài và review Learning
 
-Tài liệu cho bản local đang triển khai. Xem [Local QA](./local-qa.md) để biết các phần đã kiểm thử và phần chưa nghiệm thu; chưa dùng bản này làm release candidate.
+Tài liệu cho bản local đang triển khai. Xem [Local QA](local-qa.md) để biết các phần đã kiểm thử và phần chưa nghiệm thu; chưa dùng bản này làm release candidate.
 
 ## Vào đúng workspace
 

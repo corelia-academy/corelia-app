@@ -1,6 +1,6 @@
 # Instructor Learning Authoring UI
 
-> **Cập nhật phạm vi 11/09/2026:** Giữ route `/instructor/courses`, `/instructor/courses/new`, `/instructor/courses/:id/edit` và quyền quản lý hiện hữu của instructor. Chỉ bổ sung tính năng vào editor hiện tại. Yêu cầu này thay thế phương án chuyển sang admin-only trong kế hoạch cũ; xem [quyết định hiện hành](./README.md#điều-chỉnh-phạm-vi-ngày-11092026).
+> **Cập nhật phạm vi 11/09/2026:** Giữ route `/instructor/courses`, `/instructor/courses/new`, `/instructor/courses/:id/edit` và quyền quản lý hiện hữu của instructor. Chỉ bổ sung tính năng vào editor hiện tại. Yêu cầu này thay thế phương án chuyển sang admin-only trong kế hoạch cũ; xem [quyết định hiện hành](README.md#điều-chỉnh-phạm-vi-ngày-11092026).
 
 Tài liệu này định nghĩa tính năng bổ sung cho editor instructor hiện hữu. Giữ ownership, quyền co-instructor theo feature và các panel vận hành đang có.
 
@@ -336,7 +336,7 @@ Lesson-level review: unavailable
 
 ## 12. Code exercise editor
 
-Dùng một builder theo [Code Exercise](./code-exercise.md).
+Dùng một builder theo [Code Exercise](code-exercise.md).
 
 Desktop:
 

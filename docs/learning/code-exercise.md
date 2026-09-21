@@ -1,6 +1,6 @@
 # Code Exercise Implementation Plan
 
-Tài liệu này mở rộng [Learning System](./learning-system.md), [Learner UI](./learner-ui.md) và [Admin UI](./admin-ui.md).
+Tài liệu này mở rộng [Learning System](learning-system.md), [Learner UI](learner-ui.md) và [Admin UI](admin-ui.md).
 
 Quyền authoring áp dụng theo hợp đồng hiện hành: owner, co-instructor có feature content và staff được cấp quyền. Các nhãn “admin builder/UI” bên dưới chỉ giao diện authoring, không áp đặt admin-only hoặc thay route instructor.
 ## 1. Product decision

@@ -4,12 +4,12 @@ Thư mục này là nguồn chuẩn duy nhất cho kiến trúc frontend của C
 
 ## Thứ tự đọc
 
-1. [Architecture and code organization](./architecture.md)
-2. [Authentication and session](./auth-and-session.md)
-3. [Data and state](./data-and-state.md)
-4. [Supabase and Realtime](./supabase-and-realtime.md)
-5. [Performance and loading](./performance-and-loading.md)
-6. [Migration, testing, and cleanup](./migration-testing-and-cleanup.md)
+1. [Architecture and code organization](architecture.md)
+2. [Authentication and session](auth-and-session.md)
+3. [Data and state](data-and-state.md)
+4. [Supabase and Realtime](supabase-and-realtime.md)
+5. [Performance and loading](performance-and-loading.md)
+6. [Migration, testing, and cleanup](migration-testing-and-cleanup.md)
 
 `src/AGENTS.md` quy định cách làm việc trong source tree. Tài liệu trong thư mục này quy định kiến trúc đích và các invariant phải giữ trong quá trình migration.
 

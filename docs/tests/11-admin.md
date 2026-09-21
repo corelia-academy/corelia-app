@@ -1,6 +1,6 @@
 # 11 — Admin (`/admin/*`)
 
-Xem hub: [README.md](./README.md).
+Xem hub: [README.md](README.md).
 
 ## Mục tiêu
 
@@ -40,7 +40,7 @@ Phủ `/admin` (index users), `/admin/instructors`, `/admin/instructors/:id`, `/
 
 ### Đổi role (nếu UI cho phép)
 
-10. Từ admin users, thử đổi role test user staging (chỉ user test) — xác nhận sau khi đổi, user vào đúng/không vào đúng khu vực ([README matrix](./README.md)).
+10. Từ admin users, thử đổi role test user staging (chỉ user test) — xác nhận sau khi đổi, user vào đúng/không vào đúng khu vực ([README matrix](README.md)).
 
 ### Route không tồn tại
 

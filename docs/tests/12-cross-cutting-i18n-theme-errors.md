@@ -1,6 +1,6 @@
 # 12 — Cross-cutting: i18n, theme, 404, lỗi
 
-Xem hub: [README.md](./README.md).
+Xem hub: [README.md](README.md).
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Kiểm tra trải nghiệm xuyên suốt: ngôn ngữ (vi/en), dark/light mode, 
 
 ## Tiền đề staging
 
-- Bundle đã verify ([README.md](./README.md)).
+- Bundle đã verify ([README.md](README.md)).
 
 ## Tài khoản cần dùng
 

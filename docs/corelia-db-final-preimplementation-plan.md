@@ -1,6 +1,6 @@
 # Corelia DB Refactoring & Optimization — Final Pre-Implementation Plan
 
-> **Superseded for hackathon:** các phần mô tả score, access invite, judging, review registration và metrics snapshot là kế hoạch tại thời điểm 2026-08-23. Chúng không còn là target contract; xem [docs/hackathon](./hackathon/README.md). Dữ liệu legacy này được xóa trực tiếp, không export.
+> **Superseded for hackathon:** các phần mô tả score, access invite, judging, review registration và metrics snapshot là kế hoạch tại thời điểm 2026-08-23. Chúng không còn là target contract; xem [docs/hackathon](hackathon/README.md). Dữ liệu legacy này được xóa trực tiếp, không export.
 
 > Date: 2026-08-23  
 > Scope: `corelia-app` / Main Production (`lawhkvyyoznwygzsycan`) and `corelia-staging` (`opoozbmfbezkrpzxsusx`).  
