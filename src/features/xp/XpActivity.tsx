@@ -86,7 +86,7 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
     if (previous?.date.slice(0, 7) === day.date.slice(0, 7)) return [];
     const month = new Intl.DateTimeFormat(locale, { month: "short", timeZone: "UTC" }).format(new Date(`${day.date}T00:00:00Z`));
     return [{ month, left: Math.floor(index / 7) * cellWidth }];
-  });
+  }).filter((marker, index, markers) => !markers[index + 1] || markers[index + 1].left - marker.left >= 48);
   const sourceLabels: Record<string, string> = {
     daily_streak_claim: t("xp.sources.daily_streak_claim"),
     ocid_connected: t("xp.sources.ocid_connected"),
@@ -113,26 +113,27 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
 
     <div>
       <h3 className="mb-2 text-sm font-semibold">{t("xp.calendar")}</h3>
-      <div className="hidden overflow-x-auto md:block">
-        <div className="ml-5 relative h-5 text-[10px] text-foreground-muted">{monthMarkers(desktopCells, 16).map((marker) => <span key={marker.left} className="absolute whitespace-nowrap" style={{ left: marker.left }}>{marker.month}</span>)}</div>
-        <div className="flex gap-2">
-          <div className="grid grid-rows-7 gap-1 text-[10px] text-foreground-muted">{weekdayLabels.map((label, index) => <span key={index} className="h-3 leading-3">{index % 2 === 0 ? label : ""}</span>)}</div>
-          <div className="grid w-max grid-flow-col grid-rows-7 gap-1" role="group" aria-label={t("xp.calendar")}>
-            {desktopCells.map((day, index) => day ? <button key={day.date} type="button" onClick={() => setSelectedDay(day.date)} title={dayLabel(day)} aria-label={dayLabel(day)} className={`size-3 rounded-sm border focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${day.noData ? noDataClass : intensityClass[xpIntensity(day.xp)]}`} /> : <span key={`pad-${index}`} className="size-3" aria-hidden />)}
+      {/* Compact heatmap cells override the public shell’s 44px minimum button height. */}
+      <div className="hidden overflow-x-auto overflow-y-hidden md:block">
+        <div className="ml-5 relative h-5 text-[10px] text-foreground-muted">{monthMarkers(desktopCells, 13).map((marker) => <span key={marker.left} className="absolute whitespace-nowrap" style={{ left: marker.left }}>{marker.month}</span>)}</div>
+        <div className="flex items-start gap-2">
+          <div className="grid grid-rows-[repeat(7,10px)] gap-[3px] text-[10px] text-foreground-muted">{weekdayLabels.map((label, index) => <span key={index} className="h-[10px] leading-[10px]">{index % 2 === 0 ? label : ""}</span>)}</div>
+          <div className="grid w-max shrink-0 grid-flow-col grid-rows-[repeat(7,10px)] gap-[3px]" role="group" aria-label={t("xp.calendar")}>
+            {desktopCells.map((day, index) => day ? <button key={day.date} type="button" onClick={() => setSelectedDay(day.date)} title={dayLabel(day)} aria-label={dayLabel(day)} style={{ minHeight: 0 }} className={`size-[10px] rounded-[2px] border focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${day.noData ? noDataClass : intensityClass[xpIntensity(day.xp)]}`} /> : <span key={`pad-${index}`} className="size-[10px]" aria-hidden />)}
           </div>
         </div>
       </div>
-      <div className="overflow-x-auto md:hidden">
+      <div className="overflow-x-auto overflow-y-hidden md:hidden">
         <div className="ml-5 relative h-5 text-[10px] text-foreground-muted">{monthMarkers(mobileCells, 18).map((marker) => <span key={marker.left} className="absolute whitespace-nowrap" style={{ left: marker.left }}>{marker.month}</span>)}</div>
-        <div className="flex gap-2">
+        <div className="flex items-start gap-2">
           <div className="grid grid-rows-7 gap-1 text-[10px] text-foreground-muted">{weekdayLabels.map((label, index) => <span key={index} className="h-3.5 leading-[14px]">{index % 2 === 0 ? label : ""}</span>)}</div>
           <div className="grid w-max grid-flow-col grid-rows-7 gap-1" role="group" aria-label={t("xp.calendar")}>
-            {mobileCells.map((day, index) => day ? <button key={day.date} type="button" onClick={() => setSelectedDay(day.date)} title={dayLabel(day)} aria-label={dayLabel(day)} className={`size-3.5 rounded-sm border focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${day.noData ? noDataClass : intensityClass[xpIntensity(day.xp)]}`} /> : <span key={`pad-${index}`} className="size-3.5" aria-hidden />)}
+            {mobileCells.map((day, index) => day ? <button key={day.date} type="button" onClick={() => setSelectedDay(day.date)} title={dayLabel(day)} aria-label={dayLabel(day)} style={{ minHeight: 0 }} className={`size-3.5 rounded-[2px] border focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${day.noData ? noDataClass : intensityClass[xpIntensity(day.xp)]}`} /> : <span key={`pad-${index}`} className="size-3.5" aria-hidden />)}
           </div>
         </div>
       </div>
-      <div className="mt-2 flex items-center gap-1 text-xs text-foreground-muted" aria-hidden>{t("xp.less")}{intensityClass.map((color) => <span key={color} className={`size-3 rounded-sm border ${color}`} />)}{t("xp.more")}</div>
-      <p className="mt-1 flex items-center gap-1 text-xs text-foreground-muted"><span className={`size-3 rounded-sm border ${noDataClass}`} aria-hidden />{t("xp.noData")}</p>
+      <div className="mt-2 flex items-center gap-1 text-xs text-foreground-muted" aria-hidden>{t("xp.less")}{intensityClass.map((color) => <span key={color} className={`size-3 rounded-[3px] border ${color}`} />)}{t("xp.more")}</div>
+      <p className="mt-1 flex items-center gap-1 text-xs text-foreground-muted"><span className={`size-3 rounded-[3px] border ${noDataClass}`} aria-hidden />{t("xp.noData")}</p>
       {selectedDay ? <p className="mt-2 text-sm" role="status">{dayLabel(days.find((day) => day.date === selectedDay) ?? { date: selectedDay, xp: 0 })}</p> : null}
       {own && selectedDay && breakdown.data?.length ? <ul className="mt-1 text-sm text-foreground-muted">{breakdown.data.map((item) => <li key={item.source}>{sourceLabels[item.source] ?? item.source}: {item.xp > 0 ? "+" : ""}{formatted(item.xp)} XP</li>)}</ul> : null}
       {summary.data.total === 0 ? <p className="mt-2 text-sm text-foreground-muted">{t("xp.empty")}</p> : null}
