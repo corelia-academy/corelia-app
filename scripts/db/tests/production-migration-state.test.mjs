@@ -171,8 +171,8 @@ test("Production multilingual release accepts the released chain and exact pendi
   const localVersions = [...realReleasedVersions, ...APPROVED_PENDING_VERSIONS];
   const observedRemote = localVersions.filter((v) => !CURRENT_PENDING_VERSIONS.includes(v));
   assert.deepEqual(CURRENT_PENDING_VERSIONS, [
-    "20260920104142",
-    "20260920201500",
+    "20260916110000",
+    "20260920112758",
   ]);
   assert.ok(observedRemote.includes("20260915052442"));
   assert.ok(observedRemote.includes("20260915054142"));

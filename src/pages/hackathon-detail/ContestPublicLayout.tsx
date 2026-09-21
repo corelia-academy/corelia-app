@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
 import type { Contest, ContestRegistration } from "@/types/hackathons";
 import { ContestDetailLoadingCard } from "@/pages/hackathon-detail/components/ContestDetailGateStates";
+import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 import { formatPrizeAmount } from "./utils/formatPrizeAmount";
 
 const TABS = ["overview", "prizes", "timeline", "resources", "projects"] as const;
@@ -74,6 +75,7 @@ export default function ContestPublicLayout() {
     (!previewRequested || previewAuthorized)
       ? loaded
       : null;
+  useDynamicPageTitle(contest?.title);
 
   useEffect(() => {
     if (contest?.slug && slug && slug !== contest.slug) {

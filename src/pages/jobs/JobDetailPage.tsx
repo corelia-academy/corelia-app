@@ -11,6 +11,10 @@ import { jobDetailQueryOptions, jobKeys, userJobStateQueryOptions } from "@/feat
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { setUserJobState } from "@/lib/jobs";
 import { useAuth } from "@/stores/authStore";
+import {
+  useDynamicPageTitle,
+  usePageTitleOverride,
+} from "@/components/navigation/PageTitle";
 
 export default function JobDetailPage() {
   const { slug } = useParams();
@@ -20,6 +24,8 @@ export default function JobDetailPage() {
   const jobQuery = useQuery(jobDetailQueryOptions(slug));
   const stateQuery = useQuery(userJobStateQueryOptions(user?.id, jobQuery.data?.id));
   const metaJob = jobQuery.data;
+  usePageTitleOverride(jobQuery.isSuccess && !metaJob ? "notFound" : null);
+  useDynamicPageTitle(metaJob ? `${metaJob.title} · ${metaJob.company_name}` : null);
   const pageUrl = typeof window === "undefined"
     ? `https://app.corelia.academy/jobs/${slug ?? ""}`
     : `${window.location.origin}${window.location.pathname}`;

@@ -98,10 +98,12 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260915130736_learning_redo_stale_clients.sql",
   "supabase/migrations/20260916045248_add_profile_avatar_seed.sql",
   "supabase/migrations/20260916093549_email_center.sql",
+  "supabase/migrations/20260916110000_revert_course_completion.sql",
   "supabase/migrations/20260916120421_email_contact_sync_and_import_sources.sql",
   "supabase/migrations/20260916153501_learning_multilanguage_code.sql",
   "supabase/migrations/20260920083758_recipient_locale_email.sql",
   "supabase/migrations/20260920104142_email_locale_trigger_permissions.sql",
+  "supabase/migrations/20260920112758_email_reliability_and_learning_security.sql",
   "supabase/migrations/20260920201500_email_template_atomic_mutations.sql",
 ]);
 
@@ -109,11 +111,11 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production already includes recipient-locale delivery. This release grants
-// the backend access to the translation validator used by the invoker trigger.
+// Production already includes the email locale and atomic mutation releases.
+// This release adds course-completion reversal and its invoker boundary fix.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260920104142",
-  "20260920201500",
+  "20260916110000",
+  "20260920112758",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

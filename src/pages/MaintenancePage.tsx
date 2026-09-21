@@ -1,7 +1,9 @@
 import { useTranslation } from "react-i18next";
+import { usePageTitleOverride } from "@/components/navigation/PageTitle";
 
 export default function MaintenancePage() {
   const { t } = useTranslation("common");
+  usePageTitleOverride("maintenance");
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background px-4 text-center">

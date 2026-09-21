@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { useTranslation } from "react-i18next";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 
 const InstructorDetail = () => {
   const { t, i18n } = useTranslation("courses");
@@ -48,6 +49,7 @@ const InstructorDetail = () => {
     image: profile?.avatar_url ?? undefined,
     url: window.location.href,
   });
+  useDynamicPageTitle(profile?.full_name);
 
   if (!id) {
     return (

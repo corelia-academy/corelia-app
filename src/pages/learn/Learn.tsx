@@ -23,9 +23,11 @@ import {
   ensureEnrollmentForProgress,
   getNextLesson,
   resetLessonProgress,
+  revertCourseCompletion,
   setLessonProgress,
   sortLessonsByCurriculum,
   syncCourseCompletion,
+  type RevertCourseCompletionMode,
 } from "@/lib/courses";
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
 import {
@@ -34,6 +36,7 @@ import {
 import { useAuth } from "@/stores/authStore";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 import {
   LearnErrorState,
   LearnLoadingState,
@@ -133,14 +136,29 @@ function LearnWorkspace() {
   const [curricOpen, setCurricOpen] = useState(true);
   const curriculumPanelRef = useRef<ResizablePanelHandle | null>(null);
   const completionSyncAttemptedRef = useRef<Set<string>>(new Set());
+  const syncEpochRef = useRef(0);
   const [completionSyncing, setCompletionSyncing] = useState(false);
   const [completionJustSynced, setCompletionJustSynced] = useState(false);
   const [completionSyncError, setCompletionSyncError] = useState<string | null>(null);
   const [certificateAutoIssuing, setCertificateAutoIssuing] = useState(false);
+  const [isIssuanceFlowActive, setIsIssuanceFlowActive] = useState(false);
   const [certificateJustIssued, setCertificateJustIssued] = useState(false);
   const [certificateIssueReason, setCertificateIssueReason] =
     useState<CertificateIssueReason | null>(null);
   const [certificateIssueError, setCertificateIssueError] = useState<string | null>(null);
+
+  // V-09: Reset transient completion/issuance state when navigated to a different course
+  useEffect(() => {
+    syncEpochRef.current += 1;
+    setCompletionJustSynced(false);
+    setCertificateJustIssued(false);
+    setCompletionSyncError(null);
+    setCertificateIssueError(null);
+    setCertificateIssueReason(null);
+    setCompletionSyncing(false);
+    setCertificateAutoIssuing(false);
+    setIsIssuanceFlowActive(false);
+  }, [courseId]);
 
   const courseLoad = useLearnCourseLoad({
     courseId,
@@ -174,23 +192,25 @@ function LearnWorkspace() {
   const syncCertificate = useCallback(async () => {
     const course = courseLoad.course;
     if (!courseId || !profile?.id || !course) return null;
+    const currentEpoch = ++syncEpochRef.current;
     let phase: "completion" | "certificate" = "completion";
     let completionConfirmed = false;
     setCertificateIssueReason(null);
     setCertificateIssueError(null);
+    setIsIssuanceFlowActive(true);
     try {
       const enrollment = await ensureEnrollmentForProgress(
         profile.id,
         courseId,
         new Date().toISOString(),
       );
-      if (!activeWorkspace.current) return null;
+      if (!activeWorkspace.current || syncEpochRef.current !== currentEpoch) return null;
       if (enrollment) access.setEnrollment(enrollment);
       setCompletionSyncing(true);
       setCompletionSyncError(null);
       const completion = await syncCourseCompletion(profile.id, courseId);
+      if (!activeWorkspace.current || syncEpochRef.current !== currentEpoch) return null;
       completionConfirmed = completion.completed;
-      if (!activeWorkspace.current) return null;
       let baseEnrollment = enrollment ?? access.enrollment;
       if (completion.completed) {
         completionConfirmed = true;
@@ -212,7 +232,7 @@ function LearnWorkspace() {
       const credentialCheck = await invokeCheckCourseCredential(courseId, undefined, {
         autoIssue: true,
       });
-      if (!activeWorkspace.current) return null;
+      if (!activeWorkspace.current || syncEpochRef.current !== currentEpoch) return null;
       if (credentialCheck.reason === "oca_requires_manual_claim") {
         toast.success(translate("detail.courseDetail.ocaReady"), {
           action: {
@@ -226,7 +246,7 @@ function LearnWorkspace() {
       }
       setCertificateAutoIssuing(true);
       const result = await checkAndIssueCertificate(profile.id, courseId);
-      if (!activeWorkspace.current) return null;
+      if (!activeWorkspace.current || syncEpochRef.current !== currentEpoch) return null;
       setCertificateIssueReason(result.reason);
       if (result.issued) {
         const issuedAt = result.certificate_issued_at || new Date().toISOString();
@@ -246,7 +266,7 @@ function LearnWorkspace() {
       }
       return result;
     } catch (err) {
-      if (!activeWorkspace.current) return null;
+      if (!activeWorkspace.current || syncEpochRef.current !== currentEpoch) return null;
       const message = err instanceof Error
         ? err.message
         : translate("detail.courseDetail.claimCertificateFailed");
@@ -259,9 +279,10 @@ function LearnWorkspace() {
       });
       return null;
     } finally {
-      if (activeWorkspace.current) {
+      if (activeWorkspace.current && syncEpochRef.current === currentEpoch) {
         setCompletionSyncing(false);
         setCertificateAutoIssuing(false);
+        setIsIssuanceFlowActive(false);
       }
       if (completionConfirmed) await invalidateLearningProgress(queryClient, profile.id, courseId);
     }
@@ -319,6 +340,13 @@ function LearnWorkspace() {
     if (visibleLessons.length === 0 || !lessonId) return null;
     return visibleLessons.find((lesson) => lesson.id === lessonId) ?? null;
   }, [lessonId, visibleLessons]);
+
+  useDynamicPageTitle(
+    isFinalAssignment
+      ? courseLoad.course?.final_assignment_title
+        || translate("detail.learn.finalAssignmentTitle")
+      : currentLesson?.title ?? courseLoad.course?.title,
+  );
 
   const isDraftLesson = currentLesson ? isLessonDraftForLearners(currentLesson) : false;
   useEffect(() => {
@@ -398,6 +426,48 @@ function LearnWorkspace() {
     if (profile?.id) await invalidateLearningProgress(queryClient, profile.id, courseId);
   }});
 
+  const handleRevert = useCallback(
+    async (mode: RevertCourseCompletionMode) => {
+      if (!courseId || !profile?.id) return;
+
+      // Invalidate any in-flight completion/issuance sync immediately
+      syncEpochRef.current += 1;
+      setIsIssuanceFlowActive(false);
+      setCompletionSyncing(false);
+      setCertificateAutoIssuing(false);
+      setCertificateJustIssued(false);
+      setCompletionSyncError(null);
+      setCertificateIssueError(null);
+      setCertificateIssueReason(null);
+
+      await revertCourseCompletion(courseId, mode);
+      setCompletionJustSynced(false);
+      if (access.enrollment) {
+        access.setEnrollment({
+          ...access.enrollment,
+          completed_at: null,
+        });
+      }
+      const key = `${profile.id}:${courseId}:${submission.submission?.status ?? "none"}`;
+      completionSyncAttemptedRef.current.delete(key);
+      await invalidateLearningProgress(queryClient, profile.id, courseId);
+      await progress.refresh();
+      toast.success(
+        translate("detail.learn.completion.revertSuccess", {
+          defaultValue: "Đã hoàn tác trạng thái hoàn thành khóa học.",
+        }),
+      );
+    },
+    [
+      access,
+      courseId,
+      profile?.id,
+      progress,
+      queryClient,
+      submission.submission?.status,
+      translate,
+    ],
+  );
 
   if (!courseId) {
     return <LearnMissingCourseIdState translate={translate} />;
@@ -491,10 +561,10 @@ function LearnWorkspace() {
     <>
       {courseCompleted ? (
         <CourseCompletionCertificatePanel
-          className="mx-4 mb-4 sm:mx-6"
+          className="mx-4 mb-4 mt-4 sm:mx-6 sm:mt-5"
           hasCertificate={hasCourseCertificate}
           certificateIssued={certificateIssued}
-          issuing={completionSyncing || certificateAutoIssuing}
+          issuing={completionSyncing || certificateAutoIssuing || isIssuanceFlowActive}
           issueReason={certificateIssueReason}
           issueError={completionSyncError || certificateIssueError}
           achievementsPath={achievementsPath}
@@ -503,6 +573,7 @@ function LearnWorkspace() {
               ? () => void syncCertificate()
               : undefined
           }
+          onRevert={handleRevert}
         />
       ) : null}
 
