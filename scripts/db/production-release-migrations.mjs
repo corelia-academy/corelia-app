@@ -112,12 +112,10 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production already includes the email locale and atomic mutation releases.
-// This release adds course-completion reversal and its invoker boundary fix.
+// Production includes the prior email and course-completion releases. This
+// release adds the hackathon taxonomy contract.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260916110000",
   "20260916160000",
-  "20260920112758",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
