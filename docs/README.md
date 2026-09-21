@@ -6,7 +6,7 @@ Bắt đầu từ mục tương ứng với công việc. Code và migrations l�
 
 | Chủ đề | Điểm vào |
 |---|---|
-| Feed cộng đồng | [Feed — tài liệu triển khai](feed/README.md): thiết kế, kiến trúc, chuyển đổi và nghiệm thu trong một file |
+| Feed mốc thành tựu | [Đặc tả Feed và QA](feed/README.md): nội dung, quyền hiển thị, kiến trúc và nghiệm thu trong một file |
 | Learning | [Learning](learning/README.md) |
 | Hackathon | [Hackathon](hackathon/README.md) |
 | Jobs | [Jobs](jobs/README.md) |

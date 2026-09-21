@@ -132,7 +132,7 @@
   },
   "header": {
     "publicProfile": "Public profile",
-    "feedAria": "Open activity feed",
+    "feedAria": "Open Feed",
     "notifications": "Notifications",
     "notificationsAria": "Open notifications",
     "noNotifications": "No notifications yet.",
@@ -236,8 +236,8 @@
       "empty": "No skills yet."
     },
     "activity": {
-      "title": "Activity",
-      "empty": "No public activity yet."
+      "title": "Achievements",
+      "empty": "No public milestones yet."
     },
     "private": {
       "title": "Private profile",

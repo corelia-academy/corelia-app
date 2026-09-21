@@ -132,7 +132,7 @@
   },
   "header": {
     "publicProfile": "Hồ sơ công khai",
-    "feedAria": "Mở feed hoạt động",
+    "feedAria": "Mở Feed",
     "notifications": "Thông báo",
     "notificationsAria": "Mở thông báo",
     "noNotifications": "Chưa có thông báo.",
@@ -236,8 +236,8 @@
       "empty": "Chưa có skill nào."
     },
     "activity": {
-      "title": "Hoạt động",
-      "empty": "Chưa có hoạt động public nào."
+      "title": "Thành tựu",
+      "empty": "Chưa có mốc thành tựu công khai."
     },
     "private": {
       "title": "Hồ sơ riêng tư",

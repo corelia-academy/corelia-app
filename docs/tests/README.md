@@ -82,5 +82,5 @@ Module dùng public tabs và editor tại `/admin/hackathons`. Dùng dữ liệu
 | [10-instructor-workspace.md](10-instructor-workspace.md) | Workspace instructor |
 | [11-admin.md](11-admin.md) | Admin (`admin` / `support_staff`), activity milestones |
 | [12-cross-cutting-i18n-theme-errors.md](12-cross-cutting-i18n-theme-errors.md) | i18n, theme, 404, lỗi |
-| [Feed replacement](../feed/README.md#migration) | Tiêu chí nghiệm thu thay thế; [QA legacy](../feed/archive/legacy-qa.md) chỉ để đối chiếu hệ thống cũ |
+| [Feed thành tựu](../feed/README.md#điều-kiện-nghiệm-thu) | Tiêu chí nghiệm thu đề xuất; [QA legacy](../feed/archive/legacy-qa.md) chỉ để đối chiếu hệ thống cũ |
 | [14-oca-mint-course-flow.md](14-oca-mint-course-flow.md) | Mint OCA (course credential): happy path, case biên, idempotency |
