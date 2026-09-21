@@ -443,7 +443,7 @@
       "correction": "Điều chỉnh XP"
     },
     "connections": {
-      "title": "Tài khoản đã kết nối",
+      "title": "Tài khoản & ví",
       "description": "Liên kết GitHub để nhận 50 XP một lần.",
       "connected": "Đã kết nối",
       "connectGithub": "Kết nối GitHub",
@@ -463,7 +463,16 @@
         "wallet_already_linked_or_challenge_expired": "Ví này đã liên kết với tài khoản khác hoặc yêu cầu đã hết hạn.",
         "origin_mismatch": "Nguồn kết nối không khớp. Hãy thử lại từ trang Corelia.",
         "unauthenticated": "Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại."
-      }
+      },
+      "loading": "Đang kiểm tra…",
+      "loadFailed": "Chưa kiểm tra được trạng thái",
+      "notConnected": "Chưa kết nối",
+      "walletCount": "Đã kết nối · {{count}} ví",
+      "addWallet": "Kết nối thêm ví",
+      "chooseWallet": "Chọn ví để kết nối",
+      "confirmWallet": "Đang chờ xác nhận trong ví…",
+      "oauthFailed": "Kết nối tài khoản chưa thành công. Vui lòng thử lại. Nếu vẫn lỗi, liên hệ hỗ trợ để kiểm tra kết nối Google/GitHub.",
+      "oauthCancelled": "Bạn đã hủy kết nối tài khoản. Bạn có thể kết nối lại bên dưới."
     },
     "noData": "Chưa có dữ liệu XP đáng tin"
   }
