@@ -65,7 +65,7 @@ for (const sqlTestPath of sqlTestPaths) {
   }
 
   try {
-    if (sqlTestPath.endsWith("project-moderation.integration.sql")) {
+    if (["project-moderation.integration.sql", "xp-rpc-boundary.integration.sql"].some((name) => sqlTestPath.endsWith(name))) {
       execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
         input: readFileSync(resolve(sqlTestPath)), stdio: ["pipe", "inherit", "inherit"],
       });
