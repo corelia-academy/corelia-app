@@ -34,7 +34,8 @@ it("shows actual awards after invalidation and does not repeat after remount or 
   mocks.rows = [10, 20, 100].map((points, index) => ({ id: `award-${index}`, points, source: ["lesson_completed", "quiz_passed", "course_completed"][index], created_at: "2026-09-22T00:00:00+00:00", occurred_at: "2026-09-22T00:00:00+00:00", entity_id: null, entity_type: null, reason: null }));
   await act(async () => { await client.invalidateQueries({ queryKey: ["xp"] }); await new Promise(resolve => setTimeout(resolve, 20)); });
   expect(mocks.toast).toHaveBeenCalledOnce();
-  expect(mocks.toast).toHaveBeenCalledWith("+130 XP", expect.objectContaining({ description: expect.stringContaining("(+100 XP)"), duration: 6500 }));
+  expect(mocks.toast).toHaveBeenCalledWith("+130 XP", expect.objectContaining({ duration: 6500 }));
+  expect(mocks.toast.mock.calls[0][1]).not.toHaveProperty("description");
   await act(async () => { await client.invalidateQueries({ queryKey: ["xp"] }); });
   expect(mocks.toast).toHaveBeenCalledOnce();
   act(() => root.unmount()); client.clear();

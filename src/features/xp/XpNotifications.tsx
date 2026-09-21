@@ -44,7 +44,6 @@ function UserXpNotifications({ userId }: { userId: string }) {
       const total = next.awards.reduce((sum, row) => sum + row.points, 0);
       toast.success(t("xp.earned", { count: total }), {
         id: `xp:${userId}:${next.awards.map((row) => row.id).join(":")}`,
-        description: next.awards.map((row) => `${t(`xp.sources.${row.source}`, { defaultValue: t("xp.activityCompleted") })} (+${row.points} XP)`).join(" · "),
         duration: 6500,
         closeButton: true,
       });
