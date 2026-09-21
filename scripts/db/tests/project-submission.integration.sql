@@ -50,6 +50,19 @@ BEGIN
 
   BEGIN
     PERFORM * FROM public.save_ai_gated_project(
+      p_actor_id => v_user_id, p_project_id => v_project_id,
+      p_slug => 'project-gate-test', p_title => 'Project gate test'
+    );
+    RAISE EXCEPTION 'New standalone project was accepted';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM NOT LIKE '%forbidden:project_source_create%' THEN RAISE; END IF;
+  END;
+  -- A pre-existing standalone project remains editable after the source gate.
+  INSERT INTO public.projects (id, owner_id, slug, title, source_type)
+  VALUES (v_project_id, v_user_id, 'project-gate-test', 'Legacy project', 'standalone');
+
+  BEGIN
+    PERFORM * FROM public.save_ai_gated_project(
       p_actor_id => v_user_id,
       p_project_id => v_project_id,
       p_slug => 'project-gate-test',

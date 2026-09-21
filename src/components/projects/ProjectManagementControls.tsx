@@ -19,7 +19,7 @@ export function ProjectManagementControls({ project, onDeleted, moderation = fal
   const [action, setAction] = useState<ProjectManagementAction>("delete");
   const [reason, setReason] = useState("");
   const mutation = useProjectManagement(project.id);
-  const admin = moderation && profile?.role === "admin";
+  const admin = moderation && (profile?.role === "admin" || profile?.role === "support_staff");
   if (!user || (!admin && user.id !== project.owner_id)) return null;
   const label = (value: ProjectManagementAction) => t(`projects.management.${value}`);
   const actions: ProjectManagementAction[] = admin

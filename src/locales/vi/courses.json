@@ -423,7 +423,7 @@
     "invalidResourcesRecovery": "Danh sách tài liệu có mục sai cấu trúc. Bạn có thể bỏ các mục hỏng để tiếp tục chỉnh sửa.",
     "recoverResources": "Bỏ mục tài liệu hỏng",
     "recoverResourcesConfirm": "Bỏ các mục tài liệu sai cấu trúc và chuyển bài về nháp? Tài liệu hợp lệ và nội dung khác được giữ.",
-    "portfolioOptional": "Tùy chọn: tự tạo dự án portfolio hoặc cập nhật hồ sơ. Bài nộp không tự được công khai.",
+    "portfolioOptional": "Tùy chọn: cập nhật hồ sơ để giới thiệu kết quả học tập. Bài nộp không tự được công khai.",
     "createPortfolioProject": "Tạo dự án portfolio",
     "openProfile": "Cập nhật hồ sơ",
     "relatedProject": "Dự án tham khảo",

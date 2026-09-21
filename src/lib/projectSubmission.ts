@@ -35,6 +35,18 @@ export type ProjectSaveResult = {
   project_slug: string;
 };
 
+export async function transferProjectHackathon(input: {
+  project_id: string;
+  target_hackathon_id: string;
+  track_ids: string[];
+  reason: string;
+}): Promise<{ project_id: string; hackathon_id: string }> {
+  const response = await authenticatedRequest("projects.transferHackathon", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input),
+  });
+  return parseResponse(response);
+}
+
 async function authenticatedRequest(op: string, init: RequestInit): Promise<Response> {
   const url = coreliaEdgeUrl(op);
   if (!url) throw new Error("edge_url_not_configured");

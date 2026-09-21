@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { ChevronDown, Package, Plus, ShieldAlert, X } from "lucide-react";
+import { ChevronDown, Package, ShieldAlert, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useSearchParams } from "react-router";
 
@@ -185,7 +185,7 @@ export default function ProjectsPage() {
         </div>
         <p className="mt-1 text-sm text-foreground-muted">{t("projects.description")}</p>
         </div>
-        <div className="flex gap-2"><Button variant="outline" render={<NavLink to="/account/projects" />} nativeButton={false}>{t("projects.editor.myProjects")}</Button><Button render={<NavLink to={selectedHackathon?.slug ? `/projects/new?hackathon=${encodeURIComponent(selectedHackathon.slug)}` : hackathonParam ? `/projects/new?hackathon=${encodeURIComponent(hackathonParam)}` : "/projects/new"} />} nativeButton={false}><Plus className="size-4" />{t("projects.form.create")}</Button></div>
+        <Button variant="outline" render={<NavLink to="/account/projects" />} nativeButton={false}>{t("projects.editor.myProjects")}</Button>
       </header>
 
       <section className="space-y-5 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card">
