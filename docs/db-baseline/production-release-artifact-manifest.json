@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "b0ddb5d1697d7af4e15480a42005ac630f0bdc85",
-  "git_tree_sha": "8526ccd5439b5e0bb6bf8cf7dbfbc09dd7b22537",
+  "rc_sha": "8801db09005046f2ccb161791c8a5216e6aa948d",
+  "git_tree_sha": "439311b0d5d86497b975726e1c3029d1a4cd5fc2",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 240,
+  "migration_count": 242,
   "latest_migration": "20260920201500_email_template_atomic_mutations.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "b0ddb5d1697d7af4e15480a42005ac630f0bdc85",
+  "source_sha": "8801db09005046f2ccb161791c8a5216e6aa948d",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "e5872b848d3fdb5adfbb62c4c79c70b0e2d98e882a90e61248952c8653213362",
+  "candidate_tree_sha256": "e271f574669ac6fa191a00fe63d96a68c38a1fdc79f1e76fd439c54614ec15ac",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -931,7 +931,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "7796acab6609ce722868186beffd3ccd6b34970b5466855736cd1057d8ffa8c9"
+      "sha256": "35e39b0a29f05af31ccae8124766eecda191fc761f0c9dd0b8b7822cec79a268"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -1003,7 +1003,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "ca136174abc0ef126ab5eec844f6d7be0e5b61c211add37df6110ec66af07e05"
+      "sha256": "0ab7eb00ba28a291e35f81366309c888e5bc6a9e5f8714552c35a9187f98b4bc"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
@@ -1075,7 +1075,7 @@
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "032d466ec946259992c3164ae0ce380eac5b6dd085d0f5cbb19950146ed0d4b3"
+      "sha256": "9b9141c04c3b96cf453840a6a66a73925912974fd7dc5411d942d8b74682bd49"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
@@ -1110,6 +1110,10 @@
       "sha256": "e70bd8963cd71ade43c409684ab78bf2d9876a4e49b152f6b43c48435a4a622c"
     },
     {
+      "path": "scripts/db/tests/revert-course-completion.integration.sql",
+      "sha256": "4e8de08e6358ebfeb7eb8924410a4bc0fba3a87b44b1797714e3981d4039de02"
+    },
+    {
       "path": "scripts/db/tests/rollout-compatibility.test.mjs",
       "sha256": "9f1883ca6c64d83d24ada4666794ddbfa11c88ba9c7296cd64a10e41bd2f87b6"
     },
@@ -1139,7 +1143,7 @@
     },
     {
       "path": "scripts/db/verify-local-migration-apply.mjs",
-      "sha256": "b8401d4b806c3c9cbb99b59087c338f4b6e4fe7777d61c0b2305192be4e6a72b"
+      "sha256": "dfcd25b321cb799732aa8181248540b5b1bf49413111414392698d1ab52c4f54"
     },
     {
       "path": "scripts/db/verify-migration-baseline.mjs",
@@ -1218,6 +1222,10 @@
       "sha256": "96a46ea6afcb7052c1a0ad13a3052be3e58662a3b34c40b8a2b27cdb644e6293"
     },
     {
+      "path": "scripts/learning/seed-issue-333.mjs",
+      "sha256": "eadc58bb1df30deb483b3a06dbb1569edbbdb26ba447975deeb824b2b43dce8c"
+    },
+    {
       "path": "scripts/learning/seed-local.mjs",
       "sha256": "50c2d8c781b26c55126b7960e2758fead9e11e5d0475c34273557b2e0a2a9b13"
     },
@@ -1259,7 +1267,7 @@
     },
     {
       "path": "src/App.tsx",
-      "sha256": "955439b4a24e13796c7d4125b2e0a0f9e09ee6091004688ae798035fdd5063c0"
+      "sha256": "e23cbc11d92215ce624cb486bb7c838d91cee1b6fa44862fd7fe6a7835281213"
     },
     {
       "path": "src/components/auth/AuthBootstrapScreen.tsx",
@@ -1306,12 +1314,20 @@
       "sha256": "c06b1f17e2a03243de404dcd8216cbac5ae915ffb112ceaf02717349eaf6667f"
     },
     {
+      "path": "src/components/courses/CourseCompletionCertificatePanel.test.tsx",
+      "sha256": "44ec05b7da61dcf76e4b282e98ed51a50041b203c5c8c5c1f273549761f80e80"
+    },
+    {
       "path": "src/components/courses/CourseCompletionCertificatePanel.tsx",
-      "sha256": "6e5dbf7c526fcdc493dafb7abf59398d1834d622a568153b1a9e961ea6fb8a3e"
+      "sha256": "9c05641ac6f924ac59659081782979ac5e66309bd1b9f50ade587a9ce5a22afd"
     },
     {
       "path": "src/components/courses/PublicCourseCard.tsx",
       "sha256": "4659b45a8460c4fb1c701951f1964bb762b9876e4be287324ee07cf00443c0af"
+    },
+    {
+      "path": "src/components/courses/RevertCourseCompletionDialog.tsx",
+      "sha256": "351a56b0c89b1b13f05db07d976e8d9289e4c79799ef030e30abb55da7f58ec3"
     },
     {
       "path": "src/components/email/AnnouncementBodyField.tsx",
@@ -1323,7 +1339,7 @@
     },
     {
       "path": "src/components/ErrorBoundary.tsx",
-      "sha256": "dfb86bd352811334915e34bba74eff73f34fdfaa9945ab1f3ba93659d19a90c8"
+      "sha256": "4ff8032b08dd755e01a0ab0235b1faef4f2da0e6d2f2ccafb683698f586f74e3"
     },
     {
       "path": "src/components/i18n/TranslationSideBySidePanel.tsx",
@@ -1360,6 +1376,14 @@
     {
       "path": "src/components/markdown/Markdown.tsx",
       "sha256": "7b6ee432e2f0ddf51386a5dccc33b735767c2214599827454d84de1b46966528"
+    },
+    {
+      "path": "src/components/navigation/PageTitle.test.tsx",
+      "sha256": "cc83bcc7b87ac452e7cc54583ac6144ea35992c047768757c02c7f3b6c833ac5"
+    },
+    {
+      "path": "src/components/navigation/PageTitle.tsx",
+      "sha256": "7eef7611d9e1e515b535d39be2cadaa21b86992176dd856d73d65e68ac674748"
     },
     {
       "path": "src/components/navigation/ScrollToTop.test.tsx",
@@ -1471,7 +1495,7 @@
     },
     {
       "path": "src/components/ui/selection.tsx",
-      "sha256": "30c5194e39d2ca8ce2067627766227173a852145acea997a0c24817f53b30046"
+      "sha256": "2e1c3953391bae1e0a34f89bbddcd9e086f886afaa17e96b7ccf3f252219ebc7"
     },
     {
       "path": "src/components/ui/separator.tsx",
@@ -2123,7 +2147,7 @@
     },
     {
       "path": "src/hooks/usePageMeta.ts",
-      "sha256": "5d23135ad103074c24f711bbf0ecf9a53ec68f04137f85871afefcb0498fa90b"
+      "sha256": "24a0d465513f9a529ba9b231806ae6b8945aeed8d5c4b5bcf58a0aaf8c58fdc9"
     },
     {
       "path": "src/i18n-types.d.ts",
@@ -2175,11 +2199,11 @@
     },
     {
       "path": "src/lib/courses.test.ts",
-      "sha256": "69e2c92f20de6b167a6e610f2f6dff775aa55daf5a1fc066427d01a6833e2b28"
+      "sha256": "0ece5edd85d6e5586b9e941fa00308262dfdee5506bab29d39deaf83f332e833"
     },
     {
       "path": "src/lib/courses.ts",
-      "sha256": "2bb85b1ac0a2de96d6291dbfcd0c23786fcb81949f6c4036528b4fc3907fc60c"
+      "sha256": "c2f409286a779afb26df90f56e3819927e61b53ec4f550427ec5919295bdb6cc"
     },
     {
       "path": "src/lib/credentialIssuances.ts",
@@ -2475,7 +2499,7 @@
     },
     {
       "path": "src/locales/en/common.json",
-      "sha256": "a1e73142c97b7f1b97571071a016a20c0c2b356ea0edae89e4d35d9a16a195cf"
+      "sha256": "591a890201746b049583c64ca73552cd3851679bd7c9f9fe9e72b3f260446b41"
     },
     {
       "path": "src/locales/en/contests.json",
@@ -2483,7 +2507,7 @@
     },
     {
       "path": "src/locales/en/courses.json",
-      "sha256": "377d9285175460b0500c5f0f0c65f6535c6548db36039fa93937f66b5506486e"
+      "sha256": "a49305ccce14b403684b86126f4994ca89f3673adcc1e58f37288b3f3cc5d124"
     },
     {
       "path": "src/locales/en/emailCenter.json",
@@ -2511,7 +2535,7 @@
     },
     {
       "path": "src/locales/vi/common.json",
-      "sha256": "c2dfc14408beb8a9a6a16ce64df0aa4b9cc98cda6483b36075f5a68068ae4fae"
+      "sha256": "54cd216b925e07a30653a5aa0a6ed595ac534008002d0eaa6fc1944f27a19dc0"
     },
     {
       "path": "src/locales/vi/contests.json",
@@ -2519,7 +2543,7 @@
     },
     {
       "path": "src/locales/vi/courses.json",
-      "sha256": "24498fba1d694f574cbbaa62f7466a559dadffbe39c3aa35629c5350ba0d2cb6"
+      "sha256": "251266289e13d118a1dc1700c37c5a99bb0f814cdf9ab12a7f67edb46c19ddd7"
     },
     {
       "path": "src/locales/vi/emailCenter.json",
@@ -2747,7 +2771,7 @@
     },
     {
       "path": "src/pages/career/CareerDetailPage.tsx",
-      "sha256": "d356a1fd80b30518f5ffdacbb855e2b41bd01098c356f17ed9ea151b310c2ba7"
+      "sha256": "7250b05a2bffff6476f1b63fc7cedcd2791cd98579f17dc0a8829f78915afa02"
     },
     {
       "path": "src/pages/career/CareerListPage.tsx",
@@ -2830,8 +2854,12 @@
       "sha256": "925da87bf97b268f5d9b2b99872e794213e4443f31d37b5b988e2aeba1eb1803"
     },
     {
+      "path": "src/pages/course-details/CourseDetail.context.test.tsx",
+      "sha256": "08d7e9610cd54d489ca51a2ebf6e8c968662c2945ba112a0723e33f720b0fb83"
+    },
+    {
       "path": "src/pages/course-details/CourseDetail.tsx",
-      "sha256": "71ab03be32fc5b1a947f7eeb004ddea08d72a3916383ccb00dccbde33c0175b2"
+      "sha256": "fd474d93a42943941df833f2e0ad983deeda3feb6a5af78e0b587e5c6185d4f3"
     },
     {
       "path": "src/pages/course-details/hooks/useCourseEnrollmentAccess.ts",
@@ -2966,6 +2994,10 @@
       "sha256": "c00fbb593f7bee3abe9af3f853908476e1d4c5bf8d8fde795eff456782bc673e"
     },
     {
+      "path": "src/pages/hackathon-detail/ContestDetail.tsx",
+      "sha256": "f8d35997f6f11d5b58c03a27a2d3d65abc7d42e2ffe86d912c4c6d06963158e9"
+    },
+    {
       "path": "src/pages/hackathon-detail/ContestNew.tsx",
       "sha256": "5ea800c6ab32279a04280a3bb66a79114e638be9aeeb57c6b6c8556eb095a72d"
     },
@@ -2975,7 +3007,7 @@
     },
     {
       "path": "src/pages/hackathon-detail/ContestPublicLayout.tsx",
-      "sha256": "bea6b1964bcd38765d269e58f4cda8610b416b751e664f66c437af300308a919"
+      "sha256": "1721244df49ba0c39396b684df91389a4ea872c278c4b1c8b51307e7a44294be"
     },
     {
       "path": "src/pages/hackathon-detail/ContestPublicPage.tsx",
@@ -3050,8 +3082,12 @@
       "sha256": "39138628e52b37aadc0c4d03bf6c6646491541feec2c210388d6264b9be5e9f3"
     },
     {
+      "path": "src/pages/home/components/HomeHeader.test.tsx",
+      "sha256": "6fc5a506d937b0de2025541c79a9514ce5a25f1d1ea6a0b0bf0fe45b154a0db6"
+    },
+    {
       "path": "src/pages/home/components/HomeHeader.tsx",
-      "sha256": "db83ad707900ae5fac6cd7fac6dd14f60e7439148ff4c8ee12a746c6bfdf4c49"
+      "sha256": "98be07f233fadc7f28a304dc9b040829d9f5c6f9bcfdcedf97e2bcb32ef163c0"
     },
     {
       "path": "src/pages/home/Home.tsx",
@@ -3067,11 +3103,11 @@
     },
     {
       "path": "src/pages/home/queries/homeQueries.ts",
-      "sha256": "ba5173f7506d8eb25bf2dfc870f98f6f25a972a958470d548fd4a80eea473d9d"
+      "sha256": "f130615e11c7fb62dcebc9df81c855de28f1afcbb40fc58577f53f08d9f05695"
     },
     {
       "path": "src/pages/home/utils/homeTypes.ts",
-      "sha256": "c753fb2f96a2828d80f56bd842728b1f54940e49e77a85669dac26a321c0ddb3"
+      "sha256": "a41d6c63483f36e620f6e4698ebc6f099aa0fccd03c74750da4339e39b43c86e"
     },
     {
       "path": "src/pages/instructor-career-tracks/CareerTrackBlastEmailPanel.tsx",
@@ -3191,7 +3227,7 @@
     },
     {
       "path": "src/pages/InstructorDetail.tsx",
-      "sha256": "aa8734ca9a068f7acb3bae1c07577c81d5e4c510e794bec8a637e8608f0e1e81"
+      "sha256": "5969fc0b948e8a4026558fdb011b851016da3de0ebd6a0428b5c0293b1d6e06e"
     },
     {
       "path": "src/pages/invites/CoInstructorInvitePage.tsx",
@@ -3203,7 +3239,7 @@
     },
     {
       "path": "src/pages/jobs/JobDetailPage.tsx",
-      "sha256": "88dd056b1ae15e08d9ef7a52de2f93125235a64208f8df3e6a5b8e91af27f351"
+      "sha256": "fc2b0575999bb3e8d3cf29ddb6c6d99a0ac50e4350665209cd82ee7002e7042a"
     },
     {
       "path": "src/pages/jobs/jobFilterUtils.test.ts",
@@ -3295,7 +3331,7 @@
     },
     {
       "path": "src/pages/learn/Learn.tsx",
-      "sha256": "dc5c3690c5d769b55e66a2dd1c271a49173cf22afd46959094469b0ccdaa0554"
+      "sha256": "e9173d04d59b8e6e532998e89fd47a3b4973a45649b5677510193a54217f39d6"
     },
     {
       "path": "src/pages/learn/LearnLayout.tsx",
@@ -3315,11 +3351,11 @@
     },
     {
       "path": "src/pages/MaintenancePage.tsx",
-      "sha256": "855a851176510017b948ae76d701c42a2f095dc9a6482a6f5fa8088fd92b0c11"
+      "sha256": "0f6ed4193b52dc53e23e00599a90e35d30136f95de6fdfdb041201f895844535"
     },
     {
       "path": "src/pages/NotFound.tsx",
-      "sha256": "0262f4cbd0aaf8795e405efe72a927a03717b600e0109a7eb4acd01ae3dcee98"
+      "sha256": "432c451064fccfdd8f3ea62aec92a12408974c32495635cd837b5b2bda33b390"
     },
     {
       "path": "src/pages/OCIDRedirect.tsx",
@@ -3327,7 +3363,7 @@
     },
     {
       "path": "src/pages/projects/ProjectDetailPage.tsx",
-      "sha256": "78960ce365037bcc3c9145064b50bea8be43d82ec2e3b46b5019302ba70edf52"
+      "sha256": "34bace8526e27ce9f6709ac78f39f17825e6fa178d985721b150c83dd356cde5"
     },
     {
       "path": "src/pages/projects/ProjectEditPage.tsx",
@@ -3391,7 +3427,7 @@
     },
     {
       "path": "src/pages/users/user-profile/UserProfilePage.tsx",
-      "sha256": "933e911c0461dbf45d68b7d5591ebae9cfcebe67fd6ce997c3115eb7b8ffdac6"
+      "sha256": "317bbdba3b99cee89a40010835f144801274bcdba2840f454d1cfb98528e8bf2"
     },
     {
       "path": "src/pages/users/UserHandleRedirect.tsx",
@@ -3719,7 +3755,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/render.test.ts",
-      "sha256": "ec612d364a9a0d764e975415a643ca9612749f98e87636c297afdcd3786bb44c"
+      "sha256": "a365806dadd7e8a0f1a1436c04a5c1b44893d95e98deb3dbadbfa1c11f517d40"
     },
     {
       "path": "supabase/functions/corelia-api/lib/mail/render.ts",
@@ -4234,6 +4270,10 @@
       "sha256": "d363c8ad6a8e0f75ea738d52b3b31ccef01f7c803bd822d3de6d7c5fcddf55b6"
     },
     {
+      "path": "supabase/migrations/20260916110000_revert_course_completion.sql",
+      "sha256": "56bddb2e1fd4ac6f9c9eeea5e5afa0d966b19e544b7e3f82323643acabd865b3"
+    },
+    {
       "path": "supabase/migrations/20260916120421_email_contact_sync_and_import_sources.sql",
       "sha256": "c74d53a37615db80a8d1c41857b778c7883a99bb88119438426ec97f86e66ab7"
     },
@@ -4248,6 +4288,10 @@
     {
       "path": "supabase/migrations/20260920104142_email_locale_trigger_permissions.sql",
       "sha256": "9b6f21224621f47a6a9782a575eb131d83b1ba35fd0f2a3788ce8fa8de67d8e3"
+    },
+    {
+      "path": "supabase/migrations/20260920112758_email_reliability_and_learning_security.sql",
+      "sha256": "32ec80f00044cb515eecd671c9e81a2bac6b423596f34bb57f3916369d2cfa97"
     },
     {
       "path": "supabase/migrations/20260920201500_email_template_atomic_mutations.sql",
@@ -4900,6 +4944,10 @@
         "sha256": "d363c8ad6a8e0f75ea738d52b3b31ccef01f7c803bd822d3de6d7c5fcddf55b6"
       },
       {
+        "path": "supabase/migrations/20260916110000_revert_course_completion.sql",
+        "sha256": "56bddb2e1fd4ac6f9c9eeea5e5afa0d966b19e544b7e3f82323643acabd865b3"
+      },
+      {
         "path": "supabase/migrations/20260916120421_email_contact_sync_and_import_sources.sql",
         "sha256": "c74d53a37615db80a8d1c41857b778c7883a99bb88119438426ec97f86e66ab7"
       },
@@ -4914,6 +4962,10 @@
       {
         "path": "supabase/migrations/20260920104142_email_locale_trigger_permissions.sql",
         "sha256": "9b6f21224621f47a6a9782a575eb131d83b1ba35fd0f2a3788ce8fa8de67d8e3"
+      },
+      {
+        "path": "supabase/migrations/20260920112758_email_reliability_and_learning_security.sql",
+        "sha256": "32ec80f00044cb515eecd671c9e81a2bac6b423596f34bb57f3916369d2cfa97"
       },
       {
         "path": "supabase/migrations/20260920201500_email_template_atomic_mutations.sql",
