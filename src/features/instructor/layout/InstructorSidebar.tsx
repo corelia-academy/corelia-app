@@ -16,6 +16,7 @@ import {
   UserCircle,
   Video,
   Layers,
+  BookOpen,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -50,6 +51,13 @@ export function InstructorSidebar() {
         <SidebarGroup>
           <SidebarGroupContent className="flex flex-col gap-2 px-1">
             <SidebarMenu className="flex flex-col gap-2">
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="rounded-xl"
+                  tooltip={t("learningPrinciples.title")}
+                  render={<NavLink to="/learning-principles" className="flex w-full items-center gap-2"><BookOpen className="size-4" aria-hidden /><span>{t("learningPrinciples.title")}</span></NavLink>}
+                />
+              </SidebarMenuItem>
               <SidebarMenuItem className="flex items-center gap-2">
                 <NavLink to="/instructor/courses/new" className="flex w-full">
                   <SidebarMenuButton

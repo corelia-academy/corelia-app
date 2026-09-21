@@ -34,6 +34,7 @@ import {
 const Home = lazy(() => import("@/pages/home/index"));
 const FeedPage = lazy(() => import("@/pages/feed/FeedPage"));
 const Courses = lazy(() => import("@/pages/courses"));
+const LearningPrinciplesPage = lazy(() => import("@/pages/learning-principles/LearningPrinciplesPage"));
 const Auth = lazy(() => import("@/pages/login/Auth"));
 const OCIDRedirect = lazy(() => import("@/pages/OCIDRedirect"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
@@ -385,6 +386,7 @@ function ApplicationRoutes() {
                 }
               />
               <Route path="cohorts" element={<Navigate to="/courses" replace />} />
+              <Route path="learning-principles" element={<Suspense fallback={<PageFallback />}><LearningPrinciplesPage /></Suspense>} />
               <Route
                 path="career"
                 element={
