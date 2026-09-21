@@ -423,7 +423,7 @@
     "invalidResourcesRecovery": "Some resource entries have an invalid structure. Remove the broken entries to continue editing.",
     "recoverResources": "Remove broken resource entries",
     "recoverResourcesConfirm": "Remove malformed resource entries and unpublish this lesson? Valid resources and other content will be kept.",
-    "portfolioOptional": "Optional: create a portfolio project or update your profile. Your submission is not published automatically.",
+    "portfolioOptional": "Optional: update your profile to showcase your learning. Your submission is not published automatically.",
     "createPortfolioProject": "Create portfolio project",
     "openProfile": "Update profile",
     "relatedProject": "Reference project",

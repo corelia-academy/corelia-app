@@ -62,7 +62,7 @@ export function AdminSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent className="px-1">
             <SidebarMenu className="gap-2">
-              {profile?.role === "admin" ? <SidebarMenuItem><SidebarMenuButton tooltip={t("layout.sidebar.projects.label")} isActive={pathname.startsWith("/admin/projects")} render={<NavLink to="/admin/projects" className="flex w-full items-center gap-2"><Package className="size-4" aria-hidden /><span>{t("layout.sidebar.projects.label")}</span></NavLink>} /></SidebarMenuItem> : null}
+              {profile?.role === "admin" || profile?.role === "support_staff" ? <SidebarMenuItem><SidebarMenuButton tooltip={t("layout.sidebar.projects.label")} isActive={pathname.startsWith("/admin/projects")} render={<NavLink to="/admin/projects" className="flex w-full items-center gap-2"><Package className="size-4" aria-hidden /><span>{t("layout.sidebar.projects.label")}</span></NavLink>} /></SidebarMenuItem> : null}
               {profile?.role === "admin" ? <SidebarMenuItem><SidebarMenuButton className="rounded-md" tooltip="Inspect design system components" isActive={pathname.startsWith("/components")} render={<NavLink to="/components" className="flex w-full items-center gap-2"><Blocks className="size-4" aria-hidden /><span>Components</span></NavLink>} /></SidebarMenuItem> : null}
               <SidebarMenuItem>
                 <SidebarMenuButton className="rounded-md" tooltip={t("layout.sidebar.email.tooltip")} isActive={pathname.startsWith("/admin/email")} render={<NavLink to="/admin/email" className="flex w-full items-center gap-2"><Mail className="size-4" aria-hidden /><span>{t("layout.sidebar.email.label")}</span></NavLink>} />

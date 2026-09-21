@@ -62,6 +62,12 @@ for (const sqlTestPath of sqlTestPaths) {
   }
 
   try {
+    if (sqlTestPath.endsWith("project-moderation.integration.sql")) {
+      execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+        input: readFileSync(resolve(sqlTestPath)), stdio: ["pipe", "inherit", "inherit"],
+      });
+      continue;
+    }
     const queryArgs = ["exec", "supabase", "db", "query", "--local", "--file", sqlTestPath];
     execFileSync(command, queryArgs, { stdio: "inherit", shell: pnpmShell });
   } catch (sqlErr) {

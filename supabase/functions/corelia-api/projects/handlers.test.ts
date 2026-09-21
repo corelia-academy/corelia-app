@@ -12,7 +12,7 @@ const db = {
   from: () => { const chain = { select: () => chain, eq: () => chain, maybeSingle: mocks.existing, lt: () => chain, limit: async () => ({ data: [], error: null }) }; return chain; },
   rpc: mocks.rpc,
 } as unknown as SupabaseClient;
-const base = { project_id: "22222222-2222-4222-8222-222222222222", slug: "project", title: "Project", summary: "A project summary", description: "A detailed project story" };
+const base = { project_id: "22222222-2222-4222-8222-222222222222", source_type: "hackathon", source_id: "event", slug: "project", title: "Project", summary: "A project summary", description: "A detailed project story" };
 function request(extra: Record<string,unknown>) { return new Request("http://localhost/projects", { method:"POST", body: JSON.stringify({...base,...extra}), headers:{"Content-Type":"application/json"} }); }
 describe("project story save handler", () => {
   beforeEach(()=> { vi.clearAllMocks(); mocks.existing.mockResolvedValue({ data: null, error: null }); mocks.rpc.mockResolvedValue({ data: [{ project_id: base.project_id, project_slug: "project" }], error: null }); });
@@ -26,7 +26,6 @@ describe("project story save handler", () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it.each([
-    { source: "standalone", existing: false },
     { source: "standalone", existing: true },
     { source: "hackathon", existing: false },
     { source: "hackathon", existing: true },
@@ -56,6 +55,7 @@ describe("project story save handler", () => {
   });
 
   it("preserves omitted story fields but forwards explicit clearing", async () => {
+    mocks.existing.mockResolvedValue({ data: { source_type: "standalone" }, error: null });
     await handleProjectSave(request({description:null,visibility:"private"}),db);
     expect(mocks.rpc).toHaveBeenLastCalledWith("save_ai_gated_project_taxonomy",expect.objectContaining({p_description:null,p_progress:null,p_pitch_video_url:null}));
     await handleProjectSave(request({description:"",progress:"",pitch_video_url:"",visibility:"private"}),db);
@@ -78,7 +78,17 @@ describe("project story save handler", () => {
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
   it("allows incomplete private standalone drafts", async () => {
+    mocks.existing.mockResolvedValue({ data: { source_type: "standalone" }, error: null });
     expect((await handleProjectSave(request({summary:"",description:"",visibility:"private"}),db)).status).toBe(200);
+  });
+  it("rejects new non-hackathon projects before moderation", async () => {
+    const response = await handleProjectSave(request({ source_type: "standalone" }), db);
+    expect(response.status).toBe(403);
+    expect(mocks.moderate).not.toHaveBeenCalled();
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+  it("requires a hackathon id for a new project", async () => {
+    expect((await handleProjectSave(request({ source_id: null }), db)).status).toBe(400);
   });
   it("cannot exempt a hackathon by spoofing the source and private visibility", async () => {
     mocks.existing.mockResolvedValue({data:{source_type:"hackathon"},error:null});

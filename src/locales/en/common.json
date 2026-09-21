@@ -574,6 +574,17 @@
       }
     },
     "management": {
+      "edit": "Edit",
+      "transfer": "Move to hackathon",
+      "transferDescription": "The project and submission will move to the selected hackathon. Historical awards remain in place.",
+      "currentHackathon": "Current hackathon",
+      "noHackathon": "No hackathon",
+      "targetHackathon": "Destination hackathon",
+      "selectHackathon": "Select a hackathon",
+      "transferImpact": "Choose new tracks. The owner will be registered and approved at the destination if needed; the current submission moves with the project.",
+      "transferSuccess": "Project moved to hackathon.",
+      "transferConflict": "The project owner already has another submission in this hackathon. Choose another destination.",
+      "transferFailed": "Could not move the project. Check the hackathon, tracks, and permissions, then try again.",
       "manage": "Manage projects",
       "title": "Manage “{{title}}”",
       "delete": "Delete project",
