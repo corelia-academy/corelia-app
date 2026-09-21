@@ -108,17 +108,17 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260920104142_email_locale_trigger_permissions.sql",
   "supabase/migrations/20260920112758_email_reliability_and_learning_security.sql",
   "supabase/migrations/20260920201500_email_template_atomic_mutations.sql",
+  "supabase/migrations/20260921145248_project_hackathon_staff_transfer.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production includes the prior email, learning and taxonomy releases. This
-// release adds the project collaboration and translation quota contracts.
+// Production includes the prior email, learning, taxonomy, collaboration and
+// translation releases. This release adds hackathon project governance.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260920090000",
-  "20260920100000",
+  "20260921145248",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
