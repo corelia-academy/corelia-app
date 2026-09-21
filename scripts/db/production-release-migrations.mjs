@@ -98,19 +98,27 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260915130736_learning_redo_stale_clients.sql",
   "supabase/migrations/20260916045248_add_profile_avatar_seed.sql",
   "supabase/migrations/20260916093549_email_center.sql",
+  "supabase/migrations/20260916110000_revert_course_completion.sql",
   "supabase/migrations/20260916120421_email_contact_sync_and_import_sources.sql",
   "supabase/migrations/20260916153501_learning_multilanguage_code.sql",
+  "supabase/migrations/20260916160000_enforce_hackathon_taxonomy_contract.sql",
   "supabase/migrations/20260920083758_recipient_locale_email.sql",
+  "supabase/migrations/20260920090000_project_collaborator_self_leave.sql",
+  "supabase/migrations/20260920100000_project_translation_quota_semantics.sql",
+  "supabase/migrations/20260920104142_email_locale_trigger_permissions.sql",
+  "supabase/migrations/20260920112758_email_reliability_and_learning_security.sql",
+  "supabase/migrations/20260920201500_email_template_atomic_mutations.sql",
+  "supabase/migrations/20260921145248_project_hackathon_staff_transfer.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production already includes multilingual code validation. This release adds
-// recipient-locale email delivery.
+// Production includes the prior email, learning, taxonomy, collaboration and
+// translation releases. This release adds hackathon project governance.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260920083758",
+  "20260921145248",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

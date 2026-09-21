@@ -86,16 +86,18 @@ test("Jobs scheduler keeps JWT verification off only because both hops enforce t
   assert.match(handlers, /provided !== expected/);
 });
 
-test("Jobs and recipient-locale migrations are approved forward migrations", async () => {
+test("Production release migrations distinguish deployed and pending versions", async () => {
   const release = await import("../production-release-migrations.mjs");
   assert.equal(
     release.PREVIOUSLY_RELEASED_APPROVED_VERSIONS.at(-1),
-    "20260916153501",
+    "20260920201500",
   );
-  assert.deepEqual(release.CURRENT_PENDING_VERSIONS, ["20260920083758"]);
+  assert.deepEqual(release.CURRENT_PENDING_VERSIONS, [
+    "20260921145248",
+  ]);
   assert.equal(
     release.EXPECTED_POST_MIGRATION_LATEST,
-    "20260920083758",
+    "20260921145248",
   );
   assert.ok(
     release.APPROVED_PENDING_VERSIONS.includes("20260903214029"),

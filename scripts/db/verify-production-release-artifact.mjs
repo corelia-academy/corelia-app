@@ -4,14 +4,20 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   APPROVED_PENDING_MIGRATION_PATHS,
-  EXPECTED_POST_MIGRATION_COUNT,
   PRODUCTION_BASELINE_COUNT,
 } from "./production-release-migrations.mjs";
 
 export const DEFAULT_MANIFEST_PATH = "docs/db-baseline/production-release-artifact-manifest.json";
 export const EXPECTED_BASE_MAIN_SHA = "66981c2044b515a6fa07a71d06f8265d171d6a74";
 export const EXPECTED_BASELINE_MIGRATION_COUNT = PRODUCTION_BASELINE_COUNT;
-export const EXPECTED_FORWARD_MIGRATIONS = APPROVED_PENDING_MIGRATION_PATHS;
+// This manifest records the historical R5 artifact, not each subsequent
+// Production release. Keep its migration boundary fixed as approval advances.
+const R5_LATEST_MIGRATION = "supabase/migrations/20260920201500_email_template_atomic_mutations.sql";
+export const EXPECTED_FORWARD_MIGRATIONS = APPROVED_PENDING_MIGRATION_PATHS.slice(
+  0,
+  APPROVED_PENDING_MIGRATION_PATHS.indexOf(R5_LATEST_MIGRATION) + 1,
+);
+const EXPECTED_ARTIFACT_MIGRATION_COUNT = PRODUCTION_BASELINE_COUNT + EXPECTED_FORWARD_MIGRATIONS.length;
 
 const SHA1_RE = /^[0-9a-f]{40}$/;
 const SHA256_RE = /^[0-9a-f]{64}$/;
@@ -112,8 +118,8 @@ export function validateManifestSchema(manifest) {
   if (manifest.rc_sha !== manifest.source_sha) throw new Error("rc_sha must equal source_sha.");
   if (manifest.production_base_sha !== manifest.base_sha) throw new Error("production_base_sha must equal base_sha.");
   if (manifest.target_production_project_ref !== "lawhkvyyoznwygzsycan") throw new Error("Unexpected target Production project ref.");
-  if (manifest.migration_count !== EXPECTED_POST_MIGRATION_COUNT) {
-    throw new Error(`Release migration_count must equal ${EXPECTED_POST_MIGRATION_COUNT}.`);
+  if (manifest.migration_count !== EXPECTED_ARTIFACT_MIGRATION_COUNT) {
+    throw new Error(`Release migration_count must equal ${EXPECTED_ARTIFACT_MIGRATION_COUNT}.`);
   }
   if (manifest.latest_migration !== EXPECTED_FORWARD_MIGRATIONS.at(-1).split("/").at(-1)) {
     throw new Error("Unexpected release latest_migration.");
