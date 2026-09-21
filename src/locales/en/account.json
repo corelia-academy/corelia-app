@@ -443,7 +443,7 @@
       "correction": "XP correction"
     },
     "connections": {
-      "title": "Connected accounts",
+      "title": "Accounts & wallets",
       "description": "Link GitHub to earn 50 XP once.",
       "connected": "Connected",
       "connectGithub": "Connect GitHub",
@@ -463,7 +463,16 @@
         "wallet_already_linked_or_challenge_expired": "This wallet is linked to another account or the request expired.",
         "origin_mismatch": "The connection origin does not match. Try again from Corelia.",
         "unauthenticated": "Your session expired. Please sign in again."
-      }
+      },
+      "loading": "Checking…",
+      "loadFailed": "Could not check connection status",
+      "notConnected": "Not connected",
+      "walletCount": "Connected · {{count}} wallet(s)",
+      "addWallet": "Connect another wallet",
+      "chooseWallet": "Choose a wallet",
+      "confirmWallet": "Waiting for confirmation in your wallet…",
+      "oauthFailed": "Account connection failed. Please try again. If the problem persists, contact support to check the Google/GitHub connection.",
+      "oauthCancelled": "Account connection was cancelled. You can try connecting again below."
     },
     "noData": "No reliable XP data"
   }
