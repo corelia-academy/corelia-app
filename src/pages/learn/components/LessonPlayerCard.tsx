@@ -11,6 +11,7 @@ import type { CourseLesson } from "@/types/courses";
 import type { SectionQuestion } from "@/types/questions";
 import { getLessonFormat } from "@/lib/lessonFormat";
 import { useLearningConfirm } from "@/features/learning/useLearningConfirm";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Props = {
   lesson: CourseLesson | null; lessonIndex: number | null; isDraftLesson: boolean; completed: boolean;
@@ -29,6 +30,7 @@ export function LessonPlayerCard(props: Props) {
 function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, completed, previousLesson, nextLesson, onMarkComplete, onReset, onNavigateToLesson, courseId, mode = "learner", questions, contentLocale, hasFinalAssignment = false, resetEpoch = 0, draftEpoch = 0 }: Props) {
   const { t } = useTranslation("courses");
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { confirm, confirmation } = useLearningConfirm();
   const active = useRef(true);
@@ -50,9 +52,10 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
   const complete = useCallback(async () => {
     if (mode === "preview") return;
     await onMarkComplete();
+    void queryClient.invalidateQueries({ queryKey: ["xp"] });
     if (!active.current) return;
     if (nextLesson && lesson && ["article","video","practice"].includes(getLessonFormat(lesson))) onNavigateToLesson(nextLesson.id);
-  }, [mode, onMarkComplete, nextLesson, lesson, onNavigateToLesson]);
+  }, [mode, onMarkComplete, lesson, queryClient, nextLesson, onNavigateToLesson]);
   if (!lesson || !courseId) return <p className="p-6">{t("learning.unavailable")}</p>;
   const resources = validateLessonResources(lesson.resources ?? [], lesson.id, "vi", true).length ? [] : lesson.resources ?? [];
   const run = async () => {

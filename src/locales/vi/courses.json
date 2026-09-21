@@ -419,7 +419,6 @@
     "translationMissing": "Chưa có bản dịch. Nhập nội dung cho ngôn ngữ này.",
     "translationLoadError": "Không tải được bản dịch. Hãy thử lại trước khi chỉnh sửa.",
     "savedRefreshFailed": "Đã lưu nội dung, nhưng chưa tải lại được dữ liệu. Hãy tải lại trang.",
-
     "invalidResourcesRecovery": "Danh sách tài liệu có mục sai cấu trúc. Bạn có thể bỏ các mục hỏng để tiếp tục chỉnh sửa.",
     "recoverResources": "Bỏ mục tài liệu hỏng",
     "recoverResourcesConfirm": "Bỏ các mục tài liệu sai cấu trúc và chuyển bài về nháp? Tài liệu hợp lệ và nội dung khác được giữ.",
@@ -709,6 +708,13 @@
     "confirmTitle": "Xác nhận thao tác",
     "confirmAction": "Xác nhận",
     "changePracticeModeConfirm": "Đổi chế độ thực hành? Các mục checklist, bước hướng dẫn và artifact bắt buộc không dùng trong chế độ mới sẽ bị bỏ khỏi bản nháp. Bạn cần Save để lưu thay đổi.",
-    "legacyPracticeArtifacts": "Bài legacy này vẫn yêu cầu các artifact dưới đây. Bỏ chọn nếu chúng không còn là điều kiện hoàn thành."
+    "legacyPracticeArtifacts": "Bài legacy này vẫn yêu cầu các artifact dưới đây. Bỏ chọn nếu chúng không còn là điều kiện hoàn thành.",
+    "xpEarned": "+{{count}} XP · Hoàn thành hoạt động",
+    "xpSyncing": "Đang kiểm tra XP…",
+    "xpUnavailable": "Chưa kiểm tra được trạng thái XP.",
+    "xpLessonEarned": "Đã nhận 10 XP cho bài học này",
+    "xpLessonAvailable": "Hoàn thành bài học lần đầu: +10 XP",
+    "xpQuizEarned": "Đã nhận XP cho quiz này",
+    "xpQuizAvailable": "Đạt ít nhất 80% lần đầu: +30 XP (bài học + quiz)"
   }
 }

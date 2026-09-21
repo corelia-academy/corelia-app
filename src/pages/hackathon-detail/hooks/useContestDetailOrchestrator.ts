@@ -1616,6 +1616,7 @@ export function useContestDetailOrchestrator({
       setMySubmission(saved);
       await loadCollaboration();
       toast.success(translate("detail.toasts.submissionSaved"));
+      void queryClient.invalidateQueries({ queryKey: ["xp"] });
     } catch (err) {
       toast.error(translateApiError(err, translate, "detail.toasts.submissionSaveFailed"));
     } finally {
@@ -1638,6 +1639,7 @@ export function useContestDetailOrchestrator({
     translate,
     loadCollaboration,
     submissionWorkspaceEditable,
+    queryClient,
   ]);
 
   const handleScoreSave = useCallback(
