@@ -114,7 +114,7 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
     <div>
       <h3 className="mb-2 text-sm font-semibold">{t("xp.calendar")}</h3>
       {/* Compact heatmap cells override the public shell’s 44px minimum button height. */}
-      <div className="hidden overflow-x-auto md:block">
+      <div className="hidden overflow-x-auto overflow-y-hidden md:block">
         <div className="ml-5 relative h-5 text-[10px] text-foreground-muted">{monthMarkers(desktopCells, 13).map((marker) => <span key={marker.left} className="absolute whitespace-nowrap" style={{ left: marker.left }}>{marker.month}</span>)}</div>
         <div className="flex items-start gap-2">
           <div className="grid grid-rows-[repeat(7,10px)] gap-[3px] text-[10px] text-foreground-muted">{weekdayLabels.map((label, index) => <span key={index} className="h-[10px] leading-[10px]">{index % 2 === 0 ? label : ""}</span>)}</div>
@@ -123,7 +123,7 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
           </div>
         </div>
       </div>
-      <div className="overflow-x-auto md:hidden">
+      <div className="overflow-x-auto overflow-y-hidden md:hidden">
         <div className="ml-5 relative h-5 text-[10px] text-foreground-muted">{monthMarkers(mobileCells, 18).map((marker) => <span key={marker.left} className="absolute whitespace-nowrap" style={{ left: marker.left }}>{marker.month}</span>)}</div>
         <div className="flex items-start gap-2">
           <div className="grid grid-rows-7 gap-1 text-[10px] text-foreground-muted">{weekdayLabels.map((label, index) => <span key={index} className="h-3.5 leading-[14px]">{index % 2 === 0 ? label : ""}</span>)}</div>
