@@ -24,7 +24,6 @@ function setMeta(selector: string, value: string) {
  */
 export function usePageMeta({ title, description, image, url, canonicalUrl, robots }: PageMeta) {
   useEffect(() => {
-    const prevTitle = document.title;
     const prevOgTitle = getMeta('meta[property="og:title"]');
     const prevOgDesc = getMeta('meta[property="og:description"]');
     const prevOgImage = getMeta('meta[property="og:image"]');
@@ -47,7 +46,6 @@ export function usePageMeta({ title, description, image, url, canonicalUrl, robo
     if (robots && robotsMeta && !existingRobots) robotsMeta.name = "robots";
 
     if (title) {
-      document.title = `${title} · Corelia Academy`;
       setMeta('meta[property="og:title"]', title);
       setMeta('meta[name="twitter:title"]', title);
     }
@@ -67,7 +65,6 @@ export function usePageMeta({ title, description, image, url, canonicalUrl, robo
     if (robots && robotsMeta) robotsMeta.content = robots;
 
     return () => {
-      document.title = prevTitle;
       setMeta('meta[property="og:title"]', prevOgTitle);
       setMeta('meta[property="og:description"]', prevOgDesc);
       setMeta('meta[property="og:image"]', prevOgImage);

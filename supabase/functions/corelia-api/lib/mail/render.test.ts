@@ -24,6 +24,8 @@ describe("email renderer fallbacks", () => {
     expect(html).toContain("border:0 !important");
     expect(html).toContain("background-size:100% 1px,100% 100% !important");
     expect(html).toContain("background-position:left bottom,left top !important");
+    expect(html).toContain(".e-header,.e-cta-wrap,.e-info-card,.e-otp,.e-alert { border-top:0 !important;border-bottom:0 !important; }");
+    expect(html).toContain('<a href="https://example.com" class="e-btn e-btn-primary"');
     expect(html).toContain('class="e-canvas"');
     expect(html).toContain("font-size:15px !important");
     expect(html).toContain("overflow-wrap:anywhere");
