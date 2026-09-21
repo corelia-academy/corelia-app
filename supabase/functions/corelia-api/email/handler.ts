@@ -134,24 +134,19 @@ async function saveTemplate(db: SupabaseClient, actor: AdminContext, body: Recor
   const issues = localizedContentIssues(localized).filter((issue) => issue.endsWith(".cta_url") || issue.endsWith(".image_url") || issue.endsWith(".cta"));
   if (issues.length) return json({ message: "invalid_localized_content", issues }, 400);
   const variables = localizedVariables(localized);
-  const { data: existing } = await db.from("email_templates").select("id").eq("id", templateId).maybeSingle();
-  if (existing) await db.from("email_templates").update({ name: String(body.name ?? "").trim(), purpose, description: String(body.description ?? "").trim() || null, updated_at: new Date().toISOString() }).eq("id", templateId);
-  else {
-    const { error } = await db.from("email_templates").insert({ id: templateId, name: String(body.name ?? "").trim(), purpose, description: String(body.description ?? "").trim() || null, created_by: actor.id });
-    if (error) throw error;
-  }
-  const { data: versions } = await db.from("email_template_versions").select("version,status").eq("template_id", templateId).order("version", { ascending: false });
-  const draft = versions?.find((v) => v.status === "draft");
-  const payload = { subject: compatibility.subject, preheader: compatibility.preheader, body_text: compatibility.body_text, cta_label: compatibility.cta_label, cta_url: compatibility.cta_url, image_url: compatibility.image_url, localized_content: localized, variables, created_by: actor.id };
-  let versionId: string;
-  if (draft) {
-    const { data, error } = await db.from("email_template_versions").update(payload).eq("template_id", templateId).eq("version", draft.version).select("id").single();
-    if (error) throw error; versionId = data.id;
-  } else {
-    const version = Number(versions?.[0]?.version ?? 0) + 1;
-    const { data, error } = await db.from("email_template_versions").insert({ template_id: templateId, version, ...payload }).select("id").single();
-    if (error) throw error; versionId = data.id;
-  }
+  const { data: saved, error } = await db.rpc("email_save_template_draft", {
+    p_template_id: templateId,
+    p_name: String(body.name ?? "").trim(),
+    p_purpose: purpose,
+    p_description: String(body.description ?? "").trim(),
+    p_localized_content: localized,
+    p_compatibility: compatibility,
+    p_variables: variables,
+    p_actor_id: actor.id,
+  });
+  if (error) throw error;
+  const versionId = String((saved as { version_id?: unknown } | null)?.version_id ?? "");
+  if (!versionId) throw new Error("template_save_missing_version");
   await audit(db, actor, "save", "email_template", templateId);
   return json({ ok: true, id: templateId, version_id: versionId, variables });
 }
@@ -164,8 +159,8 @@ async function publishTemplate(db: SupabaseClient, actor: AdminContext, body: Re
   const issues = localizedContentIssues(readLocalizedEmailContent(version.localized_content));
   if (issues.length) return json({ message: "template_translations_incomplete", issues }, 409);
   if (purpose === "system") requireFullAdmin(actor);
-  await db.from("email_template_versions").update({ status: "archived" }).eq("template_id", version.template_id).eq("status", "published");
-  const { error } = await db.from("email_template_versions").update({ status: "published", published_at: new Date().toISOString() }).eq("id", id).eq("status", "draft");
+  const { error } = await db.rpc("email_publish_template_version", { p_version_id: id });
+  if (error?.message.includes("template_version_not_draft")) return json({ message: "template_version_not_draft" }, 409);
   if (error) throw error;
   await audit(db, actor, "publish", "email_template_version", id);
   return json({ ok: true });
@@ -237,7 +232,9 @@ async function controlCampaign(db: SupabaseClient, actor: AdminContext, body: Re
 async function testEmail(db: SupabaseClient, actor: AdminContext, body: Record<string, unknown>): Promise<Response> {
   const to = normalizeEmail(String(body.to ?? ""));
   if (!to) return json({ message: "invalid_recipient" }, 400);
-  const { data: version } = await db.from("email_template_versions").select("*,email_templates(purpose)").eq("id", String(body.template_version_id ?? "")).single();
+  const { data: version, error: versionError } = await db.from("email_template_versions").select("*,email_templates(purpose)").eq("id", String(body.template_version_id ?? "")).maybeSingle();
+  if (versionError) throw versionError;
+  if (!version) return json({ message: "template_version_not_found" }, 404);
   const values = (body.values ?? {}) as Record<string, unknown>;
   const missing = missingTemplateVariables(version.variables ?? [], values);
   if (missing.length) return json({ message: "missing_template_variables", missing }, 400);
@@ -250,8 +247,17 @@ async function testEmail(db: SupabaseClient, actor: AdminContext, body: Record<s
   if (!copy) return json({ message: "template_translation_missing", locale }, 409);
   const rendered = renderEmailDocument({ subject: copy.subject, preheader: copy.preheader, bodyText: copy.body_text, ctaLabel: copy.cta_label, ctaUrl: copy.cta_url, imageUrl: copy.image_url, purpose, locale, values });
   const result = await sendTransactionalEmailViaResend({ db, mailType: "email_center_test", to: [to], subject: `[TEST] ${rendered.subject}`, html: rendered.html, from: `${sender.display_name} <${sender.from_email}>`, replyTo: sender.reply_to, idempotencyKey: `email-center-test/${crypto.randomUUID()}` });
-  await audit(db, actor, "test_send", "email_template_version", version.id, { to });
-  return json({ ok: true, result });
+  await audit(db, actor, "test_send", "email_template_version", version.id, {
+    to,
+    outcome: result.sent ? "provider_accepted" : "skipped" in result ? "skipped" : "provider_error",
+  });
+  if (result.sent) return json({ ok: true, status: "provider_accepted", provider_message_id: result.providerMessageId });
+  if ("skipped" in result) return json({ message: result.reason, status: "skipped" }, 503);
+  return json({
+    message: "email_provider_error",
+    status: result.isRetryable ? "retryable_error" : "permanent_error",
+    provider_status: result.httpStatus,
+  }, result.isRetryable ? 503 : 502);
 }
 
 async function saveAutomation(db: SupabaseClient, actor: AdminContext, body: Record<string, unknown>): Promise<Response> {

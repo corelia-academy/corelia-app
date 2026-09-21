@@ -98,6 +98,11 @@ describe("formatProjectError & projectErrorMessage", () => {
     expect(formatProjectError(new Error("ai_unavailable:timeout"), t)).toBe("projects.form.errors.aiUnavailable");
   });
 
+  it("keeps the translation success quota separate from the moderation abuse guard", () => {
+    expect(projectErrorMessage(new Error("rate_limited:project_translation"), t)).toBe("projects.translation.rateLimited");
+    expect(projectErrorMessage(new Error("rate_limited:project_translation_moderation"), t)).toBe("projects.translation.moderationRateLimited");
+  });
+
   it("never exposes raw backend code to the user and falls back safely to saveFailed", () => {
     expect(formatProjectError(new Error("some_other_unmapped_server_error"), t)).toBe("projects.form.saveFailed");
     expect(projectErrorMessage(new Error("internal_pg_error: 500"), t)).toBe("projects.form.saveFailed");

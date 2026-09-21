@@ -288,7 +288,8 @@
       "replaceHint": "Áp dụng sẽ thay nội dung bản dịch hiện tại bằng bản xem trước này.",
       "apply": "Áp dụng bản dịch",
       "discard": "Bỏ bản dịch",
-      "rateLimited": "Bạn đã dùng hết 10 lượt dịch trong một giờ. Vui lòng thử lại sau."
+      "rateLimited": "Bạn đã hoàn thành 10 bản dịch trong một giờ. Vui lòng thử lại sau.",
+      "moderationRateLimited": "Bạn đã gửi quá nhiều nội dung bị chặn trong một giờ. Vui lòng thử lại sau."
     },
     "title": "Dự án",
     "description": "Trang tổng hợp dự án public của toàn bộ cộng đồng Corelia.",
@@ -434,7 +435,18 @@
       "emailIndeterminateError": "Trạng thái gửi email chưa được xác định. Cần đối soát thủ công.",
       "emailRetryableError": "Không thể gửi email mời. Vui lòng thử lại sau.",
       "actionFailed": "Không cập nhật được thành viên.",
-      "publicTitle": "Nhóm thực hiện"
+      "publicTitle": "Nhóm thực hiện",
+      "removeMemberTitle": "Loại khỏi team hiện tại",
+      "removeMemberConfirm": "Thành viên này sẽ bị loại khỏi team hiện tại. Sau đó Corelia sẽ không còn ghi nhận họ là thành viên của team.",
+      "removeMemberAction": "Loại khỏi team",
+      "removingMember": "Đang loại khỏi team…",
+      "leaveProject": "Rời nhóm",
+      "leaveProjectTitle": "Rời khỏi team hiện tại",
+      "leaveProjectConfirm": "Bạn sẽ rời khỏi team hiện tại. Sau đó Corelia sẽ không còn ghi nhận bạn là thành viên của team.",
+      "leaveProjectAction": "Rời khỏi team",
+      "leavingProject": "Đang rời khỏi team…",
+      "leftProject": "Bạn đã rời nhóm dự án.",
+      "leaveProjectFailed": "Không thể rời nhóm dự án. Vui lòng thử lại."
     },
     "social": {
       "heart": "Thả tim",

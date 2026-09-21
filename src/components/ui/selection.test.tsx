@@ -94,7 +94,9 @@ describe("Checkbox", () => {
         const checkedMark = control.querySelector<SVGPathElement>(
           '[data-slot="checkbox-checked-frame"] path',
         )
-        expect(checkedMark?.getAttribute("stroke")).toBe("var(--neutral-400)")
+        expect(checkedMark?.getAttribute("stroke")).toBe(
+          "var(--selection-disabled-mark)",
+        )
       }
     })
 

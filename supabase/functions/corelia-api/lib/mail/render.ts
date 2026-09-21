@@ -12,7 +12,7 @@ export type TransactionalWrapParams = {
   heroSubtitle?: string;
   bodyHtml: string;
   ctaHtml?: string;
-  footerReason: string;
+  footerReason?: string;
   footerExtraHtml?: string;
   preheader?: string;
   fingerprint?: string;
@@ -33,7 +33,10 @@ const TAG_STYLES: Record<string, string> = {
 export function inlineEmailHtml(html: string): string {
   return html.replace(/<([a-z][a-z0-9]*)\b([^>]*?)>/gi, (tag, name: string, attrs: string) => {
     const classes = attrs.match(/\bclass="([^"]*)"/)?.[1]?.split(/\s+/) ?? [];
-    const defaults = (TAG_STYLES[name.toLowerCase()] ?? "") + classes.map((c) => EMAIL_CLASS_STYLES[c] ?? "").join("");
+    const tagDefaults = classes.some((className) => className.startsWith("e-footer-item"))
+      ? ""
+      : TAG_STYLES[name.toLowerCase()] ?? "";
+    const defaults = tagDefaults + classes.map((c) => EMAIL_CLASS_STYLES[c] ?? "").join("");
     if (!defaults) return tag;
     const existing = attrs.match(/\bstyle="([^"]*)"/)?.[1] ?? "";
     const rest = attrs.replace(/\s*style="[^"]*"/, "").replace(/\s*\/$/, "");
@@ -42,7 +45,10 @@ export function inlineEmailHtml(html: string): string {
 }
 
 export function emailSection(className: string, html: string): string {
-  return `<tr><td class="${className}" style="${EMAIL_CLASS_STYLES[className] ?? ""}">${html}</td></tr>`;
+  const content = className === "e-header" || className === "e-cta-wrap"
+    ? html
+    : `<div class="gmail-blend-screen"><div class="gmail-blend-difference">${html}</div></div>`;
+  return `<tr><td class="${className}" style="${EMAIL_CLASS_STYLES[className] ?? ""}">${content}</td></tr>`;
 }
 
 /** Pure document frame, also used by the local Auth template generator. */
@@ -69,13 +75,13 @@ export function renderEmailFrame(params: {
 <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="color-scheme" content="dark" /><meta name="supported-color-schemes" content="dark" />
 <title>${escapeHtml(params.title)}</title><style>${fonts}${EMAIL_STYLES}</style></head>
-<body bgcolor="${b.background}" style="margin:0;padding:0;background-color:${b.background};color:${b.text};font-family:${b.font};">
+<body class="body" bgcolor="${b.background}" style="margin:0;padding:0;background-color:${b.background};color:${b.text};font-family:${b.font};">
 ${preheader}
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${b.background}" style="width:100%;background-color:${b.background};border-collapse:collapse;">
-<tr><td background="${escapeHtml(backgroundUrl)}" style="background-image:url('${escapeHtml(backgroundUrl)}');background-position:center;background-size:cover;background-repeat:no-repeat;">
+<tr><td class="e-canvas" background="${escapeHtml(backgroundUrl)}" style="background-color:${b.background};background-image:url('${escapeHtml(backgroundUrl)}');background-position:center;background-size:cover;background-repeat:no-repeat;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-collapse:collapse;"><tr><td class="e-outer" align="center" style="padding:32px 14px;">
 <!--[if mso]><table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"><tr><td><![endif]-->
-<table role="presentation" class="e-container" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${b.background}" style="width:100%;max-width:600px;table-layout:fixed;margin:0 auto;border:1px solid ${b.border};border-collapse:separate;border-spacing:0;background-color:${b.background};color:${b.text};font-family:${b.font};font-size:16px;line-height:1.6;overflow-wrap:anywhere;word-break:break-word;text-align:left;">
+<table role="presentation" class="e-container" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${b.background}" style="width:100%;max-width:600px;table-layout:fixed;margin:0 auto;border:1px solid ${b.border};border-collapse:separate;border-spacing:0;background-color:${b.background};background-image:linear-gradient(${b.background},${b.background});color:${b.text};font-family:${b.font};font-size:16px;line-height:1.6;overflow-wrap:anywhere;word-break:break-word;text-align:left;">
 ${emailSection("e-header", `<img src="${escapeHtml(context.logoUrl ?? b.logoUrl)}" alt="Corelia Academy" width="125" height="50" style="display:block;width:125px;max-width:100%;height:50px;object-fit:contain;border:0;color:${b.text};font-size:16px;" />`)}
 ${params.sectionsHtml}
 </table><!--[if mso]></td></tr></table><![endif]-->
@@ -86,11 +92,24 @@ ${params.sectionsHtml}
 
 export function renderTransactionalEmail(params: TransactionalWrapParams, context: EmailRenderContext): string {
   const hero = `<span class="e-hero-tag">${escapeHtml(params.heroTag)}</span><h2>${escapeHtml(params.heroTitle)}</h2>${params.heroSubtitle?.trim() ? `<p>${params.heroSubtitle}</p>` : ""}`;
-  const footer = `<p>${escapeHtml(params.footerReason)}</p>${params.footerExtraHtml ?? ""}<p style="margin-bottom:0"><a href="${escapeHtml(context.appUrl.replace(/\/+$/, ""))}">app.corelia.academy</a></p>`;
+  const appUrl = context.appUrl.replace(/\/+$/, "");
+  let websiteLabel = appUrl;
+  try {
+    websiteLabel = new URL(appUrl).hostname;
+  } catch {
+    // Keep the environment origin visible if a preview passes a non-standard URL.
+  }
+  const reason = params.footerReason?.trim()
+    ? `<p class="e-footer-item">${escapeHtml(params.footerReason.trim())}</p>`
+    : "";
+  const extra = (params.footerExtraHtml ?? "").trim()
+    .replace(/<p\s*>/gi, '<p class="e-footer-item">');
+  const website = `<p class="e-footer-item-last"><a href="${escapeHtml(appUrl)}">${escapeHtml(websiteLabel)}</a></p>`;
+  const footer = `${reason}${extra}${website}`;
   const sectionsHtml = emailSection("e-hero", inlineEmailHtml(hero))
     + emailSection("e-body", inlineEmailHtml(params.bodyHtml))
     + (params.ctaHtml?.trim() ? emailSection("e-cta-wrap", inlineEmailHtml(params.ctaHtml)) : "")
-    + emailSection("e-footer", inlineEmailHtml(footer));
+    + (footer.trim() ? emailSection("e-footer", inlineEmailHtml(footer)) : "");
   return renderEmailFrame({
     locale: normalizeEmailLocale(params.locale), title: params.heroTitle, sectionsHtml,
     preheader: (params.preheader ?? params.heroSubtitle ?? params.heroTitle).trim(), fingerprint: params.fingerprint,
@@ -98,5 +117,5 @@ export function renderTransactionalEmail(params: TransactionalWrapParams, contex
 }
 
 export function emailCtaButton(href: string, label: string): string {
-  return `<a href="${escapeHtml(href)}" class="e-btn e-btn-primary">${escapeHtml(label)}</a>`;
+  return `<a href="${escapeHtml(href)}" class="e-btn e-btn-primary"><span class="gmail-blend-screen"><span class="gmail-blend-difference">${escapeHtml(label)}</span></span></a>`;
 }
