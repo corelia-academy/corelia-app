@@ -32,6 +32,7 @@ import {
   handleProjectSave,
   handleProjectTranslate,
   handleProjectManage,
+  handleProjectTransferHackathon,
 } from "./projects/handlers.ts";
 import {
   handleJobsAdmin,
@@ -75,6 +76,7 @@ const PROTECTED_OPS = new Set<string>([
   "projects.save",
   "projects.translate",
   "projects.manage",
+  "projects.transferHackathon",
   "projects.media.upload",
   "projects.media.delete",
   "jobs.run",
@@ -185,6 +187,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleClaimLookup(req, db);
     } else if (op === "projects.manage" && req.method === "POST") {
       response = await handleProjectManage(req, db);
+    } else if (op === "projects.transferHackathon" && req.method === "POST") {
+      response = await handleProjectTransferHackathon(req, db);
     } else if (op === "projects.translate" && req.method === "POST") {
       response = await handleProjectTranslate(req, db);
     } else if (op === "projects.save" && req.method === "POST") {

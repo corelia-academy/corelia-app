@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { ProjectEditor, type ProjectEditorSave } from "@/features/projects/ProjectEditor";
 import { getContestBySlug, getMyContestRegistration, getMyContestSubmission, upsertContestSubmission } from "@/lib/hackathons";
 import { createProjectCollaborationInvite } from "@/lib/projectCollaboration";
-import { saveProject } from "@/lib/projectSubmission";
 import { useAuth } from "@/stores/authStore";
 
 export default function ProjectNewPage() {
@@ -41,6 +40,8 @@ export default function ProjectNewPage() {
     enabled: Boolean(contest && user),
     staleTime: 0,
   });
+
+  if (!hackathonSlug) return <Navigate replace to="/hackathons" />;
 
   if (hackathonSlug && (contestQuery.isPending || (contest && contextQuery.isPending))) {
     return <div className="container-app py-16 text-body-medium font-body" role="status">{t("projects.loading")}</div>;
@@ -94,23 +95,17 @@ export default function ProjectNewPage() {
       custom_tech_stack_names: draft.customTech,
     };
     let savedId: string = projectId;
-    let savedSlug = draft.slug;
-    if (contest) {
-      const submission = await upsertContestSubmission(contest.id, input);
-      savedId = submission.project_id ?? projectId;
-    } else {
-      const result = await saveProject({ ...input, visibility: draft.visibility, source_type: "standalone" });
-      savedId = result.project_id;
-      savedSlug = result.project_slug;
-    }
+    if (!contest) throw new Error("not_found:hackathon");
+    const submission = await upsertContestSubmission(contest.id, input);
+    savedId = submission.project_id ?? projectId;
     const invites = await Promise.allSettled(teamIds.map((id) => createProjectCollaborationInvite(savedId, id)));
     if (invites.some((item) => item.status === "rejected")) toast.warning(t("projects.team.someInvitesFailed"));
-    return savedSlug || savedId;
+    return draft.slug || savedId;
   }
 
   return (
     <ProjectEditor
-      key={contest?.id ?? "standalone"}
+      key={contest?.id ?? "hackathon"}
       projectId={projectId}
       userId={user!.id}
       contest={contest}

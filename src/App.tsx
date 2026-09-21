@@ -585,7 +585,7 @@ function ApplicationRoutes() {
                 <Route path="hackathons" element={<Suspense fallback={<PageFallback />}><AdminHackathons /></Suspense>} />
                 <Route path="hackathons/new" element={<Suspense fallback={<PageFallback />}><AdminHackathonEditor /></Suspense>} />
                 <Route path="hackathons/:id/edit" element={<Suspense fallback={<PageFallback />}><AdminHackathonEditor /></Suspense>} />
-                <Route path="projects" element={<RequireRole roles={ROLE_GROUPS.projectModerators}><Suspense fallback={<PageFallback />}><AdminProjectsPage /></Suspense></RequireRole>} />
+                <Route path="projects" element={<RequireRole roles={ROLE_GROUPS.projectManagers}><Suspense fallback={<PageFallback />}><AdminProjectsPage /></Suspense></RequireRole>} />
                 <Route path="jobs" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
                 <Route path="jobs/review" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
                 <Route path="jobs/sources" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />

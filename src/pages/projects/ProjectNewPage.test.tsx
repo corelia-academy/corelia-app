@@ -19,7 +19,6 @@ vi.mock("@/lib/hackathons", () => ({
   getMyContestSubmission: mocks.submission,
   upsertContestSubmission: mocks.save,
 }));
-vi.mock("@/lib/projectSubmission", () => ({ saveProject: mocks.save }));
 vi.mock("@/lib/projectCollaboration", () => ({ createProjectCollaborationInvite: vi.fn() }));
 vi.mock("@/features/projects/ProjectEditor", () => ({ ProjectEditor: () => <div data-testid="new-editor">New editor</div> }));
 import ProjectNewPage from "./ProjectNewPage";
@@ -28,11 +27,11 @@ let root: Root;
 let host: HTMLDivElement;
 let client: QueryClient;
 function Destination() { return <output>{useLocation().pathname}</output>; }
-async function render() {
+async function render(path = "/projects/new?hackathon=event") {
   host = document.createElement("div"); document.body.appendChild(host);
   root = createRoot(host);
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  await act(async () => root.render(<QueryClientProvider client={client}><MemoryRouter initialEntries={["/projects/new?hackathon=event"]}><Routes><Route path="/projects/new" element={<ProjectNewPage />} /><Route path="/projects/:id/edit" element={<Destination />} /></Routes></MemoryRouter></QueryClientProvider>));
+  await act(async () => root.render(<QueryClientProvider client={client}><MemoryRouter initialEntries={[path]}><Routes><Route path="/projects/new" element={<ProjectNewPage />} /><Route path="/projects/:id/edit" element={<Destination />} /><Route path="/hackathons" element={<Destination />} /></Routes></MemoryRouter></QueryClientProvider>));
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
 }
@@ -42,6 +41,13 @@ beforeEach(() => {
   mocks.save.mockClear();
 });
 afterEach(async () => { if (root) await act(async () => root.unmount()); client?.clear(); host?.remove(); });
+
+it("redirects a project creation URL without hackathon context", async () => {
+  await render("/projects/new");
+  expect(host.querySelector("output")?.textContent).toBe("/hackathons");
+  expect(host.querySelector('[data-testid="new-editor"]')).toBeNull();
+  expect(mocks.save).not.toHaveBeenCalled();
+});
 
 it("redirects an existing submission to its editor without mounting a blank form or saving", async () => {
   mocks.submission.mockResolvedValue({ project_id: "original-project" });

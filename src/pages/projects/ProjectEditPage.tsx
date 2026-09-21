@@ -53,7 +53,8 @@ export default function ProjectEditPage() {
       </div>
     );
   }
-  if (project.blocked) {
+  const staff = profile?.role === "admin" || profile?.role === "support_staff";
+  if (project.blocked && !staff) {
     return (
       <div className="container-app space-y-4 py-8">
         <p className="text-body-medium font-body" role="status">{t("projects.management.blockedError")}</p>
@@ -69,6 +70,7 @@ export default function ProjectEditPage() {
       userId={user!.id}
       project={project}
       contest={contestQuery.data}
+      bypassDeadline={staff}
       onSave={async ({ draft, removedPaths }) => {
         await updateMyProject(project.id, {
           ...projectLocalePayload(draft),

@@ -25,8 +25,9 @@ import { useProjectDraft } from "./useProjectDraft";
 
 export type ProjectEditorSave = { draft: ProjectDraft; teamIds: string[]; removedPaths: string[] };
 
-export function ProjectEditor({ projectId, userId, project, contest, onSave, onSaved }: {
+export function ProjectEditor({ projectId, userId, project, contest, bypassDeadline = false, onSave, onSaved }: {
   projectId: string; userId: string; project?: Project; contest?: Contest | null;
+  bypassDeadline?: boolean;
   onSave: (value: ProjectEditorSave) => Promise<string>;
   onSaved: (slug: string) => void;
 }) {
@@ -42,14 +43,14 @@ export function ProjectEditor({ projectId, userId, project, contest, onSave, onS
   const isPrimary = contentLocale === draft.primaryLocale;
   const [slugTouched, setSlugTouched] = useState(Boolean(draft.slug));
   const [uploading, setUploading] = useState(false);
-  const [closed, setClosed] = useState(() => Boolean(contest && isPastContestSubmissionDeadline(contest)));
+  const [closed, setClosed] = useState(() => Boolean(contest && !bypassDeadline && isPastContestSubmissionDeadline(contest)));
   useEffect(() => {
-    if (!contest || closed) return;
+    if (!contest || closed || bypassDeadline) return;
     const deadline = getEffectiveContestSubmissionDeadline(contest);
     if (!deadline || !Number.isFinite(Date.parse(deadline))) return;
     const timer = window.setInterval(() => setClosed(isPastContestSubmissionDeadline(contest)), 1000);
     return () => window.clearInterval(timer);
-  }, [contest, closed]);
+  }, [contest, closed, bypassDeadline]);
   const [teamIds, setTeamIds] = useState<string[]>([]);
   const [removedPaths, setRemovedPaths] = useState<string[]>([]);
   const errorRef = useRef<HTMLDivElement>(null);

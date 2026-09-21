@@ -476,7 +476,8 @@ export async function listPublicProjects(
   const winnerIds = Array.from(new Set(options.winnerProjectIds ?? [])).filter(isUuidLike);
   let winnerRows: Project[] = [];
   if (winnerIds.length > 0 && options.hackathonId) {
-    const { data: winners, error: winnerError } = await applyFilters().in("id", winnerIds);
+    const { data: winners, error: winnerError } = await supabase.from("projects").select(select)
+      .eq("visibility", "public").in("id", winnerIds);
     if (winnerError) throw new Error(winnerError.message);
     const winnerOrder = new Map(winnerIds.map((id, index) => [id, index]));
     winnerRows = ((winners ?? []) as Project[]).sort((a, b) => (winnerOrder.get(a.id) ?? 0) - (winnerOrder.get(b.id) ?? 0));
@@ -680,14 +681,14 @@ export const getProjectById = getProjectBySlugOrId;
 
 export async function listProjectsForModeration(page: number, status: string) {
   let query = supabase.from("projects")
-    .select("id,slug,owner_id,title,visibility,blocked", { count: "exact" })
+    .select("id,slug,owner_id,title,visibility,blocked,source_type,source_id", { count: "exact" })
     .order("updated_at", { ascending: false }).order("id")
     .range(page * 20, page * 20 + 19);
   if (status === "blocked") query = query.eq("blocked", true);
   else if (["public", "unlisted", "private"].includes(status)) query = query.eq("visibility", status).eq("blocked", false);
   const { data, error, count } = await query;
   if (error) throw new Error(error.message);
-  return { items: (data ?? []) as Pick<Project, "id" | "slug" | "owner_id" | "title" | "visibility" | "blocked">[], count: count ?? 0 };
+  return { items: (data ?? []) as Pick<Project, "id" | "slug" | "owner_id" | "title" | "visibility" | "blocked" | "source_type" | "source_id">[], count: count ?? 0 };
 }
 
 export type ProjectUpdateInput = Pick<

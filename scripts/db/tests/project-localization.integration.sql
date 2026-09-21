@@ -4,6 +4,8 @@ DECLARE
   hackathon text := gen_random_uuid()::text; event_project uuid := gen_random_uuid(); i integer;
 BEGIN
   INSERT INTO auth.users(id) VALUES(actor),(other_actor);
+  INSERT INTO public.projects(id,owner_id,slug,title,source_type,visibility)
+    VALUES(project,actor,'localized-test','Legacy project','standalone','private');
   PERFORM set_config('role','service_role',true);
   PERFORM * FROM public.save_ai_gated_project(p_actor_id=>actor,p_project_id=>project,p_slug=>'localized-test',
     p_title=>'English title',p_summary=>'English summary',p_description=>'English story',p_progress=>'English progress',

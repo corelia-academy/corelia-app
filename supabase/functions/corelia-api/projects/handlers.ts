@@ -291,7 +291,13 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
     const { data: existing, error: existingError } = await db.from("projects")
       .select("source_type,description,progress,pitch_video_url,blocked").eq("id", projectId).maybeSingle();
     if (existingError) throw new Error(existingError.message);
-    if (existing?.blocked) throw new Error("forbidden:project_blocked");
+    if (!existing && String(body.source_type ?? "").trim() !== "hackathon") throw new Error("forbidden:project_source_create");
+    if (!existing && !String(body.source_id ?? "").trim()) throw new Error("invalid_input:hackathon_id");
+    if (existing?.blocked) {
+      const { data: profile, error: profileError } = await db.from("profiles").select("role").eq("id", user.id).maybeSingle();
+      if (profileError) throw new Error(profileError.message);
+      if (profile?.role !== "admin" && profile?.role !== "support_staff") throw new Error("forbidden:project_blocked");
+    }
     const source = existing?.source_type ?? (String(body.source_type ?? "").trim() || "standalone");
     const hackathon = source === "hackathon" || source === "contest";
     const publishing = hackathon || String(body.visibility ?? "public") !== "private";
@@ -392,6 +398,32 @@ export async function handleProjectManage(req: Request, db: SupabaseClient): Pro
       catch (error) { console.warn("[projects.manage] media cleanup deferred", error); }
     }
     return json({ ok: true });
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
+
+export async function handleProjectTransferHackathon(req: Request, db: SupabaseClient): Promise<Response> {
+  try {
+    const user = await verifyBearerUser(req, db);
+    const body = await req.json().catch(() => ({})) as Record<string, unknown>;
+    if (typeof body.project_id !== "string" || !isUuid(body.project_id) ||
+      typeof body.target_hackathon_id !== "string" || !body.target_hackathon_id.trim() ||
+      !Array.isArray(body.track_ids) || body.track_ids.length === 0 ||
+      body.track_ids.some((id: unknown) => typeof id !== "string" || !id.trim()) ||
+      typeof body.reason !== "string" || !body.reason.trim() || body.reason.length > 1000) {
+      return json({ message: "invalid_input:project_transfer" }, 400);
+    }
+    const { data, error } = await db.rpc("transfer_project_hackathon", {
+      p_actor_id: user.id,
+      p_project_id: body.project_id,
+      p_target_hackathon_id: body.target_hackathon_id.trim(),
+      p_track_ids: body.track_ids,
+      p_reason: body.reason.trim(),
+    });
+    if (error) throw new Error(error.message);
+    const result = Array.isArray(data) ? data[0] : data;
+    return json({ project_id: result?.project_id, hackathon_id: result?.hackathon_id });
   } catch (error) {
     return errorResponse(error);
   }

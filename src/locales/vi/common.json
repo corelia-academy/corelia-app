@@ -586,6 +586,17 @@
       }
     },
     "management": {
+      "edit": "Chỉnh sửa",
+      "transfer": "Chuyển vào hackathon",
+      "transferDescription": "Project và bài nộp sẽ chuyển sang hackathon đích. Giải thưởng cũ được giữ lại.",
+      "currentHackathon": "Hackathon hiện tại",
+      "noHackathon": "Chưa thuộc hackathon",
+      "targetHackathon": "Hackathon đích",
+      "selectHackathon": "Chọn hackathon",
+      "transferImpact": "Chọn track mới. Chủ project sẽ được đăng ký và duyệt ở hackathon đích nếu cần; bài nộp hiện tại được chuyển đi.",
+      "transferSuccess": "Đã chuyển project vào hackathon.",
+      "transferConflict": "Chủ project đã có bài nộp khác trong hackathon này. Hãy chọn hackathon khác.",
+      "transferFailed": "Không thể chuyển project. Kiểm tra hackathon, track và quyền truy cập rồi thử lại.",
       "manage": "Quản lý project",
       "title": "Quản lý “{{title}}”",
       "delete": "Xoá project",
