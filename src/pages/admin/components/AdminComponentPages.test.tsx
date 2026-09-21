@@ -482,6 +482,13 @@ describe("admin component detail pages", () => {
     );
 
     expect(baseItems).not.toBeNull();
+    expect(container.textContent).toContain("Base Items");
+    expect(container.textContent).toContain("Six Figma dropdown use cases");
+    expect(container.textContent).not.toContain("Inspect the Figma Base Items states");
+    expect(container.textContent).not.toContain("Two independent dropdowns reproduce");
+    expect(container.textContent).not.toContain("Each Figma use case is an independent closed-by-default dropdown");
+    expect(container.textContent).not.toContain("Five title-only selectable items");
+    expect(container.textContent).not.toContain("Default and Warning, each with six Figma states");
     expect(baseItems?.querySelectorAll('[data-slot="dropdown-menu-trigger"]')).toHaveLength(2);
     expect(useCasesContainer).not.toBeNull();
     expect(useCasesContainer?.querySelectorAll('[data-slot="dropdown-menu-trigger"]')).toHaveLength(6);

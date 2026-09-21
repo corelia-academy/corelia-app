@@ -116,9 +116,6 @@ function BaseItemPreview({ id, label, showLeading }: BaseItemPreviewProps) {
     >
       <div>
         <h3 className="text-title-medium font-display">{label}</h3>
-        <p className="mt-1 text-body-small text-foreground-muted">
-          Default and Warning, each with six Figma states. Hover an enabled row or press Tab to inspect the real Hover and Focused states.
-        </p>
       </div>
 
       <DropdownMenu
@@ -228,7 +225,6 @@ type ShowcaseRow = {
 type UseCaseDefinition = {
   id: string;
   label: string;
-  criterion: string;
   rows: readonly ShowcaseRow[];
   showSelectAll?: boolean;
   listClassName?: string;
@@ -426,14 +422,12 @@ const useCaseDefinitions: readonly UseCaseDefinition[] = [
   {
     id: "common-use",
     label: "Common use",
-    criterion: "Five title-only selectable items with no leading or trailing icon.",
     placement: "xl:[grid-column-start:1] xl:[grid-row-start:1]",
     rows: courseTitleRows,
   },
   {
     id: "include-select-all",
     label: "Include Select All",
-    criterion: "The same five title-only items with a real Select All control and divider.",
     showSelectAll: true,
     placement: "xl:[grid-column-start:2] xl:[grid-row-start:1]",
     rows: courseTitleRows,
@@ -441,28 +435,24 @@ const useCaseDefinitions: readonly UseCaseDefinition[] = [
   {
     id: "many-single-list",
     label: "Dropdown with many single list",
-    criterion: "Five supporting-text items with the list body constrained for scrolling.",
     placement: "xl:[grid-column-start:1] xl:[grid-row-start:2]",
     rows: courseDetailRows,
   },
   {
     id: "many-sub-list",
     label: "Dropdown with many sub-list",
-    criterion: "One expanded parent with two indented child items in the same dropdown list.",
     placement: "xl:[grid-column-start:2] xl:[grid-row-start:2]",
     rows: manySubRows,
   },
   {
     id: "people-assignee",
     label: "Dropdown list type: people/assignee",
-    criterion: "The same five supporting-text items with a 24px User icon before the content.",
     placement: "xl:[grid-column-start:3] xl:[grid-row-start:2]",
     rows: peopleAssigneeRows,
   },
   {
     id: "warning-case",
     label: "Warning case",
-    criterion: "Five tall supporting-text items; only UI/UX Design Principles uses warning semantics.",
     listClassName: "!max-h-[370px]",
     placement: "xl:[grid-column-start:1] xl:[grid-row-start:3]",
     rows: warningRows,
@@ -737,9 +727,6 @@ function UseCaseDropdown({ definition }: { definition: UseCaseDefinition }) {
     >
       <div>
         <h3 className="text-title-medium font-display">{definition.label}</h3>
-        <p className="mt-1 text-body-small text-foreground-muted">
-          {definition.criterion}
-        </p>
       </div>
 
       <DropdownMenu
@@ -804,13 +791,9 @@ export default function AdminDropdownMenuComponentPage({
   return (
     <ComponentShowcaseLayout
       title="Dropdown Menu"
-      description="Inspect the Figma Base Items states and six Multiple Dropdown List use cases with exact content, selection, search, nested rows, and warning semantics."
       embedded={embedded}
     >
-      <ShowcaseSection
-        title="Base Items"
-        criterion="Two independent dropdowns reproduce the Figma Base Item reference: one without a leading icon and one with a leading icon. Each contains Default and Warning groups with Default, Hover, Focused, Selected, and Disabled states."
-      >
+      <ShowcaseSection title="Base Items">
         <div
           data-testid="dropdown-menu-base-items"
           className="grid min-w-0 gap-8 xl:grid-cols-2"
@@ -821,10 +804,7 @@ export default function AdminDropdownMenuComponentPage({
         </div>
       </ShowcaseSection>
 
-      <ShowcaseSection
-        title="Six Figma dropdown use cases"
-        criterion="Each Figma use case is an independent closed-by-default dropdown with a search field. Open them separately to verify common use, Select All, long flat lists, nested lists, people/assignee content, and the Warning case."
-      >
+      <ShowcaseSection title="Six Figma dropdown use cases">
         <div
           data-testid="dropdown-menu-use-cases"
           className="grid min-w-0 gap-8 xl:grid-cols-3"
