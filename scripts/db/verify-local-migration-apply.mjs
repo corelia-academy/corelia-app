@@ -6,6 +6,7 @@ const command = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const pnpmShell = process.platform === "win32";
 const sqlTestPaths = [
   "scripts/db/tests/project-moderation.integration.sql",
+  "scripts/db/tests/xp-rpc-boundary.integration.sql",
   "scripts/db/tests/profile-name-integrity.integration.sql",
   "scripts/db/tests/avatar-seed.integration.sql",
   "scripts/db/tests/learner-ai-retirement.integration.sql",
