@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "8801db09005046f2ccb161791c8a5216e6aa948d",
-  "git_tree_sha": "439311b0d5d86497b975726e1c3029d1a4cd5fc2",
+  "rc_sha": "fd847eee6fcdb39fe2c4a152c0eb02ee9b2e86ca",
+  "git_tree_sha": "5f2802a660877cf6b6e5ae1d2702e5e3690ecf13",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 242,
+  "migration_count": 243,
   "latest_migration": "20260920201500_email_template_atomic_mutations.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "8801db09005046f2ccb161791c8a5216e6aa948d",
+  "source_sha": "fd847eee6fcdb39fe2c4a152c0eb02ee9b2e86ca",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "e271f574669ac6fa191a00fe63d96a68c38a1fdc79f1e76fd439c54614ec15ac",
+  "candidate_tree_sha256": "0ed4e6c379a00fcdf696a716adc1bf62a7b6053899d502d83550921bf90295f9",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -39,7 +39,7 @@
     },
     {
       "path": ".github/workflows/db-guardrails.yml",
-      "sha256": "e1829a59a3b53c6f29aa671fa4c8f8da9c5d58e10d9da8da1262f52e492ff810"
+      "sha256": "6dbc53e9ae155d4f7868fdb485534e358727829bfdac1b457262e560dc01e978"
     },
     {
       "path": ".github/workflows/db-live-history-verify.yml",
@@ -51,7 +51,7 @@
     },
     {
       "path": ".github/workflows/deploy-staging.yml",
-      "sha256": "8552f2ca8c417bba30ebcb99855724aa3a03cc5613d3fa100ad9057af9b6dfaf"
+      "sha256": "02ff35f323e8fe62eb392a5dd6d3e5b6763829afa70b02a29e7534bf28e76ffb"
     },
     {
       "path": ".gitignore",
@@ -890,6 +890,10 @@
       "sha256": "23850b0497be165c61bf36ba9ec2947e0dd8581b09a75e3542c20216ad9e469b"
     },
     {
+      "path": "scripts/db/audit-hackathon-taxonomy-state.sql",
+      "sha256": "9b7dbab9e3ca7dae111ce741d2a0195896fa39629cc1852bd6fcd0f17c1d4ca4"
+    },
+    {
       "path": "scripts/db/audit-production-ai-state.sql",
       "sha256": "c5d5319eae2895264dfb9dc9522274e491dae992748fd27c1eec85c7e241f15f"
     },
@@ -931,7 +935,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "35e39b0a29f05af31ccae8124766eecda191fc761f0c9dd0b8b7822cec79a268"
+      "sha256": "9f76e7fc823e04d8537300a74fafa0512661de451c473b9ab51638cfbdf2e5cb"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -990,6 +994,14 @@
       "sha256": "899d5fad15590bfdfba3a574c04de32a4839cef5f9abe890fd1752ff635af93b"
     },
     {
+      "path": "scripts/db/tests/hackathon-taxonomy-contract.integration.sql",
+      "sha256": "4288b77d7262e24e7917e2881783ce3b1755ba58b762a0bf7d29ec288ab13d37"
+    },
+    {
+      "path": "scripts/db/tests/hackathon-taxonomy-contract.test.mjs",
+      "sha256": "d562c54b55b780e79e9656f91335466bfeb172972c8d718a5906580a8c423472"
+    },
+    {
       "path": "scripts/db/tests/incremental-upgrade-proof.mjs",
       "sha256": "ba3702b7525559a9aa563d3488598c3c435fcdcc9563f9e0189bc804ceeecbee"
     },
@@ -1003,7 +1015,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "0ab7eb00ba28a291e35f81366309c888e5bc6a9e5f8714552c35a9187f98b4bc"
+      "sha256": "4b0a5e4909284eb6354d1b08f1dccf9a84a691923180caef07461ae055168eba"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
@@ -1027,7 +1039,7 @@
     },
     {
       "path": "scripts/db/tests/learning-course-save.integration.sql",
-      "sha256": "c386dcf95aaccfbed23f3d827b1f4eb5f42d3b6f418c7a832a48b7fe635c351f"
+      "sha256": "aa5fbe9103a42a07661ffc8e5a0358911ad4b4eca7c2ba81165c41fb7abdc86c"
     },
     {
       "path": "scripts/db/tests/learning-edge.integration.mjs",
@@ -1055,7 +1067,7 @@
     },
     {
       "path": "scripts/db/tests/learning-translation.integration.sql",
-      "sha256": "80dcf8783497c1cbbae1b2e5932cfa989badf881154f50ccbc801a6191bb351a"
+      "sha256": "9d4fd35b7f101bc668831626889268bc8dd4ebd173cac45b66b4b46c5f6f5b4d"
     },
     {
       "path": "scripts/db/tests/master-enrollment-security.contract.test.mjs",
@@ -1075,7 +1087,7 @@
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "9b9141c04c3b96cf453840a6a66a73925912974fd7dc5411d942d8b74682bd49"
+      "sha256": "0aeb4e9ef77da70b39fd825429107b0fa7234b6b12c276152efc726e8109797f"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
@@ -1091,7 +1103,7 @@
     },
     {
       "path": "scripts/db/tests/project-localization.integration.sql",
-      "sha256": "e167ef4587d9eb523d2c5892f245f9b3b358ffdf29c96b1aa7543cf86369524c"
+      "sha256": "54c0d080ec3b9f5140357aa7fde850313682e5649c53133292dcb4ce99ef5c89"
     },
     {
       "path": "scripts/db/tests/project-moderation.integration.sql",
@@ -1143,7 +1155,7 @@
     },
     {
       "path": "scripts/db/verify-local-migration-apply.mjs",
-      "sha256": "dfcd25b321cb799732aa8181248540b5b1bf49413111414392698d1ab52c4f54"
+      "sha256": "31e32fa3851951e5cff814c944a962933e87e52dd0b266c2715ec439e2a79737"
     },
     {
       "path": "scripts/db/verify-migration-baseline.mjs",
@@ -2263,11 +2275,11 @@
     },
     {
       "path": "src/lib/hackathonContract.test.ts",
-      "sha256": "e17e3b147deb83b60523e6b1d7aaf09993fcd0248773b079600b47116d8bc1f6"
+      "sha256": "916dbb0431c2f1f43db339a55a71b7ff876febf1eea0eaafd22840718c7bf5ce"
     },
     {
       "path": "src/lib/hackathonContract.ts",
-      "sha256": "a7141f4c755b7e45fc2acea45a5b6dd8903deaf41e49a192c4a66f69073c40c5"
+      "sha256": "d0f4291d6c4bc85429ebc2891a7ecf3ce5387231ac4217ac5b6603c4b8606628"
     },
     {
       "path": "src/lib/hackathonLearning.ts",
@@ -2283,11 +2295,11 @@
     },
     {
       "path": "src/lib/hackathons.test.ts",
-      "sha256": "872500613571756e7aafdd042ad52d4f16e11e4b4772657d7996dee652ddfd40"
+      "sha256": "9b3ac987f40b0099e31ce5fa4960055a1c7363615c211cd0a4e9cfd46899ba1b"
     },
     {
       "path": "src/lib/hackathons.ts",
-      "sha256": "961adc4d7b17f5ac33931f80108d7cb5a96aa3a24fd4c119cfa06cfab09340dc"
+      "sha256": "77e21259abf3cfe156169b1cafc944d99665aa4b9214bd6b8440b5ac39fef682"
     },
     {
       "path": "src/lib/jobs.ts",
@@ -2491,7 +2503,7 @@
     },
     {
       "path": "src/locales/en/admin.json",
-      "sha256": "3af10d4754d16babdc2fa1bc65f601b9492bc7a1b2fb98219f06da783f12e0be"
+      "sha256": "f12f3516335736a256ad6c85955303a7f8a2022924f6f7768ba93304ea8afac3"
     },
     {
       "path": "src/locales/en/career.json",
@@ -2527,7 +2539,7 @@
     },
     {
       "path": "src/locales/vi/admin.json",
-      "sha256": "12d49ed57fff8fac32ea33a14132510419792182b7b395ee44777f2bed5953f1"
+      "sha256": "a8cc21bec30c0f194fd1b204d9cb236bd6b630019b2e1968a43c3f91e6b43fa9"
     },
     {
       "path": "src/locales/vi/career.json",
@@ -2731,11 +2743,11 @@
     },
     {
       "path": "src/pages/admin/hackathons/AdminHackathonEditorPage.test.ts",
-      "sha256": "54bb17abcd185035de5d00eeef3c25359f1aafb9d43f41bfa600865bb7a90755"
+      "sha256": "98df64696bc511831d800b5956fa8509ba902c9e381e229f2210d25e25a71864"
     },
     {
       "path": "src/pages/admin/hackathons/AdminHackathonEditorPage.tsx",
-      "sha256": "b086ce50c95343f1c4b704e59745874442003703cd66e382b20b094b65e7d17e"
+      "sha256": "76e4e7294a26c92c3568082734ce91ceb1dc7b031b7dcada9c3a75ed0adf9d9d"
     },
     {
       "path": "src/pages/admin/hackathons/AdminHackathonsPage.test.tsx",
@@ -4282,6 +4294,10 @@
       "sha256": "2ffadf72ba163fa11c6dd2f5a36b99874cc4817fe13766b9a6210aaf6506d73d"
     },
     {
+      "path": "supabase/migrations/20260916160000_enforce_hackathon_taxonomy_contract.sql",
+      "sha256": "4550c7c73bcdafd8c14473ad2a883895f91f613aa2cd4cc8f1e5b0b6b55c8f1f"
+    },
+    {
       "path": "supabase/migrations/20260920083758_recipient_locale_email.sql",
       "sha256": "8ded820d2728e66dd82001bdbbc03a8b65135f355650887dba273acd0c2d364a"
     },
@@ -4954,6 +4970,10 @@
       {
         "path": "supabase/migrations/20260916153501_learning_multilanguage_code.sql",
         "sha256": "2ffadf72ba163fa11c6dd2f5a36b99874cc4817fe13766b9a6210aaf6506d73d"
+      },
+      {
+        "path": "supabase/migrations/20260916160000_enforce_hackathon_taxonomy_contract.sql",
+        "sha256": "4550c7c73bcdafd8c14473ad2a883895f91f613aa2cd4cc8f1e5b0b6b55c8f1f"
       },
       {
         "path": "supabase/migrations/20260920083758_recipient_locale_email.sql",
