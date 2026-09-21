@@ -5,6 +5,8 @@ import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 
 import { UserAvatar } from "@/components/UserAvatar";
+import { XpBadge } from "@/features/xp/XpBadge";
+import { getXpTotals } from "@/lib/xp";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -141,10 +143,12 @@ function FeedItem({
   bundle,
   actor,
   locale,
+  xpTotal,
 }: {
   bundle: FeedBundle;
   actor: FeedActor | undefined;
   locale: string;
+  xpTotal?: number;
 }) {
   const { t } = useTranslation("feed");
   const event = bundle.events[0];
@@ -183,6 +187,7 @@ function FeedItem({
           />
         </NavLink>
         <div className="min-w-0 flex-1">
+          <XpBadge total={xpTotal} className="mb-1" />
           <p className="text-sm leading-6 text-foreground">
             {text}
           </p>
@@ -227,6 +232,13 @@ export default function FeedPage() {
     () => Object.assign({}, ...(timelineQuery.data?.pages.map((page) => page.actors) ?? [])) as Record<string, FeedActor>,
     [timelineQuery.data],
   );
+  const actorIds = useMemo(() => Object.keys(actors).slice(0, 100), [actors]);
+  const actorXpQuery = useQuery({
+    queryKey: ["xp", "feedTotals", actorIds],
+    queryFn: () => getXpTotals(actorIds),
+    enabled: actorIds.length > 0,
+    staleTime: 60_000,
+  });
   const followedSubjects = useMemo(
     () => buildFollowedSubjects(followingQuery.data ?? []),
     [followingQuery.data],
@@ -342,6 +354,7 @@ export default function FeedPage() {
             <FeedItem
               key={bundle.key}
               bundle={bundle}
+              xpTotal={actorXpQuery.data?.[bundle.events[0]?.actor_id ?? ""]}
               actor={actors[bundle.events[0]?.actor_id ?? ""]}
               locale={i18n.resolvedLanguage ?? i18n.language}
             />

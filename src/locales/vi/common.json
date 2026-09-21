@@ -405,7 +405,8 @@
         "aiUnavailable": "Hệ thống kiểm duyệt tự động tạm thời gián đoạn. Vui lòng thử lại sau.",
         "logoSize": "Kích thước ảnh logo không được vượt quá 2 MB.",
         "invalidSlug": "Đường dẫn định danh (slug) chỉ chứa chữ thường, số và dấu gạch nối."
-      }
+      },
+      "hackathonXpEarned": "+100 XP · Nộp project đầu tiên vào hackathon"
     },
     "team": {
       "title": "Thành viên nhóm",
@@ -452,7 +453,11 @@
       "heart": "Thả tim",
       "unheart": "Bỏ tim",
       "loginToInteract": "Đăng nhập để thả tim.",
-      "heartFailed": "Không cập nhật được tim."
+      "heartFailed": "Không cập nhật được tim.",
+      "xpEarned": "+2 XP · Like project",
+      "xpHint": "Like hợp lệ lần đầu: +2 XP (tối đa 5 project/ngày UTC)",
+      "xpHintRemaining": "Like hợp lệ lần đầu: +2 XP · còn {{count}} lượt thưởng hôm nay (UTC)",
+      "xpLimitReached": "Đã hết 5 lượt nhận XP từ like hôm nay (UTC); vẫn có thể like."
     },
     "errors": {
       "loadFailed": "Không tải được danh sách dự án",

@@ -10,6 +10,7 @@ import { ProjectEditor, type ProjectEditorSave } from "@/features/projects/Proje
 import { getContestBySlug, getMyContestRegistration, getMyContestSubmission, upsertContestSubmission } from "@/lib/hackathons";
 import { createProjectCollaborationInvite } from "@/lib/projectCollaboration";
 import { useAuth } from "@/stores/authStore";
+import { withFirstHackathonXp } from "@/lib/xp";
 
 export default function ProjectNewPage() {
   const { t, i18n } = useTranslation("common");
@@ -96,7 +97,8 @@ export default function ProjectNewPage() {
     };
     let savedId: string = projectId;
     if (!contest) throw new Error("not_found:hackathon");
-    const submission = await upsertContestSubmission(contest.id, input);
+    const { value: submission, awarded } = await withFirstHackathonXp(() => upsertContestSubmission(contest.id, input));
+    if (awarded) toast.success(t("projects.form.hackathonXpEarned"));
     savedId = submission.project_id ?? projectId;
     const invites = await Promise.allSettled(teamIds.map((id) => createProjectCollaborationInvite(savedId, id)));
     if (invites.some((item) => item.status === "rejected")) toast.warning(t("projects.team.someInvitesFailed"));

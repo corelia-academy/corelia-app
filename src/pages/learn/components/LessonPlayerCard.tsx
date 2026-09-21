@@ -1,6 +1,6 @@
 import { lessonText } from "@/features/learning/lessonCopy";
 import { validateLessonResources } from "@/features/learning/resourceValidation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,9 @@ import type { CourseLesson } from "@/types/courses";
 import type { SectionQuestion } from "@/types/questions";
 import { getLessonFormat } from "@/lib/lessonFormat";
 import { useLearningConfirm } from "@/features/learning/useLearningConfirm";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getLessonXpState } from "@/lib/xp";
 
 type Props = {
   lesson: CourseLesson | null; lessonIndex: number | null; isDraftLesson: boolean; completed: boolean;
@@ -29,6 +32,14 @@ export function LessonPlayerCard(props: Props) {
 function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, completed, previousLesson, nextLesson, onMarkComplete, onReset, onNavigateToLesson, courseId, mode = "learner", questions, contentLocale, hasFinalAssignment = false, resetEpoch = 0, draftEpoch = 0 }: Props) {
   const { t } = useTranslation("courses");
   const { user } = useAuth();
+  const userId = user?.id;
+  const queryClient = useQueryClient();
+  const rewardQueryKey = useMemo(() => ["xp", "lessonReward", userId, courseId, lesson?.id], [userId, courseId, lesson?.id]);
+  const reward = useQuery({
+    queryKey: rewardQueryKey,
+    queryFn: () => getLessonXpState(userId!, courseId!, lesson!.id),
+    enabled: mode === "learner" && Boolean(userId && courseId && lesson?.id),
+  });
   const navigate = useNavigate();
   const { confirm, confirmation } = useLearningConfirm();
   const active = useRef(true);
@@ -49,10 +60,28 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
   };
   const complete = useCallback(async () => {
     if (mode === "preview") return;
+    const beforePromise = userId && courseId && lesson
+      ? reward.data ? Promise.resolve(reward.data) : getLessonXpState(userId, courseId, lesson.id).catch(() => null)
+      : Promise.resolve(null);
     await onMarkComplete();
     if (!active.current) return;
+    const before = await beforePromise;
+    if (userId && courseId && lesson && before) {
+      try {
+        const after = await getLessonXpState(userId, courseId, lesson.id);
+        const gained = (after.lesson && !before.lesson ? 10 : 0)
+          + (after.quiz && !before.quiz ? 20 : 0)
+          + (after.course && !before.course ? 100 : 0);
+        queryClient.setQueryData(rewardQueryKey, after);
+        if (gained > 0) {
+          toast.success(t("learning.xpEarned", { count: gained }));
+          void queryClient.invalidateQueries({ queryKey: ["xp"] });
+        }
+      } catch { void queryClient.invalidateQueries({ queryKey: rewardQueryKey }); }
+    }
+    if (!active.current) return;
     if (nextLesson && lesson && ["article","video","practice"].includes(getLessonFormat(lesson))) onNavigateToLesson(nextLesson.id);
-  }, [mode, onMarkComplete, nextLesson, lesson, onNavigateToLesson]);
+  }, [mode, reward.data, onMarkComplete, userId, courseId, lesson, queryClient, rewardQueryKey, t, nextLesson, onNavigateToLesson]);
   if (!lesson || !courseId) return <p className="p-6">{t("learning.unavailable")}</p>;
   const resources = validateLessonResources(lesson.resources ?? [], lesson.id, "vi", true).length ? [] : lesson.resources ?? [];
   const run = async () => {
@@ -73,6 +102,7 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
     <div className="mx-auto w-full max-w-5xl flex-1 space-y-5 px-4 py-6 sm:px-6">
       {mode === "preview" && <p className="rounded-lg bg-primary/10 p-3 text-sm">{t("learning.previewBanner")}</p>}
       <div><p className="text-sm text-foreground-muted">{t(`learning.formats.${getLessonFormat(lesson)}`)} {completed && `· ${t("learning.completed")}`}</p><h1 className="mt-2 text-heading-large font-display">{lessonText(lesson.title)}</h1>{lesson.short_description && <p className="mt-2 text-foreground-muted">{lessonText(lesson.short_description)}</p>}</div>
+      {mode === "learner" && user && !isDraftLesson && <p className="text-sm text-primary">{reward.isPending ? t("learning.xpSyncing") : reward.isError ? t("learning.xpUnavailable") : t(getLessonFormat(lesson) === "quiz" ? (reward.data?.quiz ? "learning.xpQuizEarned" : "learning.xpQuizAvailable") : (reward.data?.lesson ? "learning.xpLessonEarned" : "learning.xpLessonAvailable"))}</p>}
       <LessonRenderer lesson={lesson} courseId={courseId} mode={mode} contentLocale={contentLocale} completed={completed} onComplete={complete} onAction={registerAction} questions={questions} resetEpoch={resetEpoch} draftEpoch={draftEpoch} />
       {!!resources.length && <section className="rounded-xl border border-border p-4"><h2 className="mb-2 font-medium">{t("learning.resources")}</h2>{resources.map((r,i) => <a key={i} href={r.url} target="_blank" rel="noreferrer" className="block text-primary underline">{r.title}</a>)}</section>}
     </div>
