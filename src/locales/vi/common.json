@@ -288,7 +288,8 @@
       "replaceHint": "Áp dụng sẽ thay nội dung bản dịch hiện tại bằng bản xem trước này.",
       "apply": "Áp dụng bản dịch",
       "discard": "Bỏ bản dịch",
-      "rateLimited": "Bạn đã dùng hết 10 lượt dịch trong một giờ. Vui lòng thử lại sau."
+      "rateLimited": "Bạn đã hoàn thành 10 bản dịch trong một giờ. Vui lòng thử lại sau.",
+      "moderationRateLimited": "Bạn đã gửi quá nhiều nội dung bị chặn trong một giờ. Vui lòng thử lại sau."
     },
     "title": "Dự án",
     "description": "Trang tổng hợp dự án public của toàn bộ cộng đồng Corelia.",
