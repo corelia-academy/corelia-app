@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 
 import AdminActionComponentPage from "./components/AdminActionComponentPage";
 import AdminBadgeComponentPage from "./components/AdminBadgeComponentPage";
+import AdminDropdownMenuComponentPage from "./components/AdminDropdownMenuComponentPage";
 import AdminScrollbarComponentPage from "./components/AdminScrollbarComponentPage";
 import AdminSelectionComponentPage from "./components/AdminSelectionComponentPage";
 import AdminSeparatorComponentPage from "./components/AdminSeparatorComponentPage";
@@ -61,6 +62,11 @@ const components = [
     slug: "tabs",
     title: "Tabs",
     criterion: "Five Figma levels, horizontal/vertical orientation, active, disabled, badge, and keyboard behavior.",
+  },
+  {
+    slug: "dropdown-menu",
+    title: "Dropdown Menu",
+    criterion: "Figma Base Items with five real states, two leading-icon variants, and six independent dropdown use cases with search, Select All, warning, disabled, and nested-list behavior.",
   },
 ] as const;
 
@@ -322,6 +328,9 @@ export default function AdminComponentsPage() {
           </ComponentSection>
           <ComponentSection {...components[7]}>
             <AdminTabsComponentPage embedded />
+          </ComponentSection>
+          <ComponentSection {...components[8]}>
+            <AdminDropdownMenuComponentPage embedded />
           </ComponentSection>
         </div>
       </div>

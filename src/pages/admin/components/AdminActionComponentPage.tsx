@@ -54,7 +54,7 @@ export default function AdminActionComponentPage({
                       label={stateLabels[state]}
                       icon={<Settings />}
                       supportingText="Supporting information for this action"
-                      showTrailingIcon
+                      showIcon="right"
                       hoverAsActive={state === "hoverAsActive"}
                       showPressed={state === "pressed"}
                       showActive

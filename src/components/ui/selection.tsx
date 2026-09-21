@@ -121,7 +121,9 @@ type SelectionIconProps = {
       : state === "unchecked"
         ? "var(--selection-unchecked)"
         : "var(--selection-active)"
-    const markColor = disabled ? "var(--neutral-400)" : "var(--blue-50)"
+    const markColor = disabled
+      ? "var(--selection-disabled-mark)"
+      : "var(--blue-50)"
 
     if (kind === "checkbox") {
       const isSmall = size === "small"

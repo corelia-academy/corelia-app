@@ -9,14 +9,14 @@ import { Separator } from "@/components/ui/separator";
 
 type ComponentShowcaseLayoutProps = {
   title: string;
-  description: string;
+  description?: string;
   children: ReactNode;
   embedded?: boolean;
 };
 
 type ShowcaseSectionProps = {
   title: string;
-  criterion: string;
+  criterion?: string;
   children: ReactNode;
 };
 
@@ -59,9 +59,11 @@ export function ComponentShowcaseLayout({
         </div>
         <div>
           <h1 className="text-heading-large font-display">{title}</h1>
-          <p className="mt-2 max-w-3xl text-body-medium text-foreground-muted">
-            {description}
-          </p>
+          {description ? (
+            <p className="mt-2 max-w-3xl text-body-medium text-foreground-muted">
+              {description}
+            </p>
+          ) : null}
         </div>
       </header>
       <div className="space-y-6">{children}</div>
@@ -80,9 +82,11 @@ export function ShowcaseSection({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 className="text-heading-small font-display">{title}</h2>
-            <p className="mt-1 max-w-3xl text-body-small text-foreground-muted">
-              {criterion}
-            </p>
+            {criterion ? (
+              <p className="mt-1 max-w-3xl text-body-small text-foreground-muted">
+                {criterion}
+              </p>
+            ) : null}
           </div>
           <Badge color="warning" size="small" variant="outline">
             Token review

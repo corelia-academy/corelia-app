@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CaretRight } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
 
@@ -122,7 +122,7 @@ type ActionProps = Omit<ButtonPrimitive.Props, "children"> &
         dateTime?: ReactNode;
         badge?: ReactNode;
         trailingGroup?: ReactNode;
-        showTrailingIcon?: boolean;
+        showIcon?: "left" | "right" | "both";
         isActive?: boolean;
 
         // Toggle active visual state (bật/tắt hiển thị trạng thái đang chọn).
@@ -147,7 +147,7 @@ function Action({
     dateTime,
     badge,
     trailingGroup,
-    showTrailingIcon = false,
+    showIcon,
     isActive = false,
     showActive = true,
     hoverAsActive = false,
@@ -178,7 +178,7 @@ function Action({
         : variant === "destructive"
             ? "text-action-destructive-supporting"
             : "text-neutral-400";
-    const trailingIconClass = disabled
+    const directionalIconClass = disabled
         ? "text-neutral-500"
         : visualIsActive
             ? activeIconClass
@@ -246,7 +246,21 @@ function Action({
             )}
             {...props}
         >
-            {/* Leading icon slot (icon phía trước, optional). */}
+            {/* Fixed directional icon at the leading edge (icon điều hướng cố định phía trước). */}
+            {showIcon === "left" || showIcon === "both" ? (
+                <CaretLeft
+                    weight="duotone"
+                    aria-hidden
+                    data-slot="action-leading-icon"
+                    className={cn(
+                        "size-4 shrink-0",
+                        directionalIconClass,
+                        hoverAsActiveIconClass,
+                    )}
+                />
+            ) : null}
+
+            {/* Caller-provided leading icon slot (icon phía trước do nơi dùng truyền vào, optional). */}
             {icon !== undefined && icon !== null ? (
                 <span
                     className={cn(
@@ -275,8 +289,8 @@ function Action({
                     className={cn(
                         "block truncate font-body",
                         size === "large"
-                            ? "text-label-large"
-                            : "text-label-medium",
+                            ? "text-label-large leading-[22px]"
+                            : "text-label-medium leading-5",
                         disabled ? "text-action-disabled" : contentForegroundClass,
                         hoverAsActiveTextClass,
                     )}
@@ -324,15 +338,15 @@ function Action({
                 </span>
             ) : null}
 
-            {/* Trailing icon opt-in (chỉ hiển thị khi nơi dùng khai báo). */}
-            {showTrailingIcon ? (
+            {/* Fixed directional icon at the trailing edge (icon điều hướng cố định phía sau). */}
+            {showIcon === "right" || showIcon === "both" ? (
                 <CaretRight
                     weight="duotone"
                     aria-hidden
                     data-slot="action-trailing-icon"
                     className={cn(
                         "size-4 shrink-0",
-                        trailingIconClass,
+                        directionalIconClass,
                         hoverAsActiveIconClass,
                     )}
                 />
