@@ -101,6 +101,7 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260916110000_revert_course_completion.sql",
   "supabase/migrations/20260916120421_email_contact_sync_and_import_sources.sql",
   "supabase/migrations/20260916153501_learning_multilanguage_code.sql",
+  "supabase/migrations/20260916160000_enforce_hackathon_taxonomy_contract.sql",
   "supabase/migrations/20260920083758_recipient_locale_email.sql",
   "supabase/migrations/20260920104142_email_locale_trigger_permissions.sql",
   "supabase/migrations/20260920112758_email_reliability_and_learning_security.sql",
@@ -115,6 +116,7 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
 // This release adds course-completion reversal and its invoker boundary fix.
 const UNRELEASED_PENDING_VERSIONS = new Set([
   "20260916110000",
+  "20260916160000",
   "20260920112758",
 ]);
 

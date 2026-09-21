@@ -55,7 +55,7 @@ BEGIN
     PERFORM public.update_ai_gated_project_i18n(actor,project,'{}');
     RAISE EXCEPTION 'Blocked config edit allowed';
   EXCEPTION WHEN OTHERS THEN IF SQLERRM NOT LIKE '%forbidden:project_blocked%' THEN RAISE; END IF; END;
-  INSERT INTO public.hackathons(id,status,document) VALUES(hackathon,'published',jsonb_build_object('slug','locale-deadline-test','status','published','submission_deadline',clock_timestamp()+interval '1 day','tracks','[{"id":"track"}]'::jsonb,'sectors','[{"id":"sector"}]'::jsonb,'tech_stacks','[{"id":"tech"}]'::jsonb));
+  INSERT INTO public.hackathons(id,status,document) VALUES(hackathon,'published',jsonb_build_object('slug','locale-deadline-test','status','published','submission_deadline',clock_timestamp()+interval '1 day','tracks','[{"id":"track"}]'::jsonb,'sectors','[{"id":"sector","name":"Sector"}]'::jsonb,'tech_stacks','[{"id":"tech","name":"Tech"}]'::jsonb));
   INSERT INTO public.hackathon_registrations(id,hackathon_id,user_id,document) VALUES(hackathon||'_'||actor::text,hackathon,actor,'{"status":"registered"}');
   INSERT INTO public.projects(id,owner_id,slug,title,source_type,source_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids) VALUES(event_project,actor,'locale-deadline-project','Deadline','hackathon',hackathon,ARRAY['track'],ARRAY['sector'],ARRAY['tech']);
   -- Hackathon progress can be omitted, entered, and explicitly cleared in the primary locale.

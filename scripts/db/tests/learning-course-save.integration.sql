@@ -5,7 +5,7 @@ UPDATE public.profiles SET role=CASE right(id::text,1) WHEN '6' THEN 'support_st
 INSERT INTO public.courses(id,instructor_id,slug,published,data) VALUES('atomic-course-save','cccc3333-0000-4000-8000-000000000001','atomic-course-save',false,'{"title":"Original","instructors":[{"profile_id":"cccc3333-0000-4000-8000-000000000005"}],"co_instructor_permissions":{"cccc3333-0000-4000-8000-000000000003":{"content":true},"cccc3333-0000-4000-8000-000000000004":{"submissions":true}}}');
 INSERT INTO public.course_locales(course_id,locale,data) VALUES('atomic-course-save','vi','{"title":"Original","short_description":"Keep"}');
 INSERT INTO public.course_sections(course_id,id,data) VALUES('atomic-course-save','s','{"title":"Section"}');
-INSERT INTO public.hackathons(id,status,document) VALUES('atomic-course-reference','published','{"title":"Reference"}');
+INSERT INTO public.hackathons(id,status,document) VALUES('atomic-course-reference','published','{"title":"Reference","sectors":[{"id":"reference-sector","name":"Reference sector"}],"tech_stacks":[{"id":"reference-tech","name":"Reference tech"}]}');
 INSERT INTO public.course_lessons(course_id,id,section_id,published,data) VALUES('atomic-course-save','l','s',true,'{"title":"Practice","lesson_format":"practice","description_markdown":"Instructions","practice_config":{"mode":"instruction","related_hackathon_id":"atomic-course-reference"}}');
 UPDATE public.courses SET published=true WHERE id='atomic-course-save';
 SET CONSTRAINTS ALL IMMEDIATE;
