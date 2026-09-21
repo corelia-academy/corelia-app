@@ -74,6 +74,7 @@ describe("ProjectTeamEditor UI resend email", () => {
 
     listProjectCollaborators.mockResolvedValue([]);
     listProjectTeamCandidates.mockResolvedValue([]);
+    removeProjectCollaborator.mockResolvedValue(undefined);
     listCollaborationProfiles.mockResolvedValue({
       "user-invitee-1": {
         id: "user-invitee-1",
@@ -192,5 +193,42 @@ describe("ProjectTeamEditor UI resend email", () => {
     });
 
     expect(toastError).toHaveBeenCalledWith("projects.team.emailRateLimited");
+  });
+
+  it("asks before removing a member and uses direct current-team wording", async () => {
+    listProjectCollaborators.mockResolvedValue([{ user_id: "user-member-1" }]);
+    listProjectCollaborationInvites.mockResolvedValue([]);
+    listCollaborationProfiles.mockResolvedValue({
+      "user-member-1": { id: "user-member-1", username: "member", full_name: "Team Member" },
+    });
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <ProjectTeamEditor projectId="proj-1" sourceType="hackathon" persisted={true} />
+        </QueryClientProvider>,
+      );
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+
+    const removeButton = Array.from(container.querySelectorAll("button")).find(
+      (button) => button.textContent?.includes("projects.team.remove"),
+    );
+    expect(removeButton).toBeDefined();
+    await act(async () => removeButton?.click());
+
+    const dialog = document.body.querySelector('[data-slot="dialog-content"]') as HTMLElement;
+    expect(dialog.textContent).toContain("projects.team.removeMemberConfirm");
+    expect(removeProjectCollaborator).not.toHaveBeenCalled();
+
+    await act(async () => {
+      Array.from(dialog.querySelectorAll("button")).find(
+        (button) => button.textContent?.includes("projects.team.removeMemberAction"),
+      )?.click();
+      await new Promise((r) => setTimeout(r, 20));
+    });
+    expect(removeProjectCollaborator).toHaveBeenCalledWith("proj-1", "user-member-1");
   });
 });

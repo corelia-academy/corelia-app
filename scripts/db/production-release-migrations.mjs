@@ -103,6 +103,8 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260916153501_learning_multilanguage_code.sql",
   "supabase/migrations/20260916160000_enforce_hackathon_taxonomy_contract.sql",
   "supabase/migrations/20260920083758_recipient_locale_email.sql",
+  "supabase/migrations/20260920090000_project_collaborator_self_leave.sql",
+  "supabase/migrations/20260920100000_project_translation_quota_semantics.sql",
   "supabase/migrations/20260920104142_email_locale_trigger_permissions.sql",
   "supabase/migrations/20260920112758_email_reliability_and_learning_security.sql",
   "supabase/migrations/20260920201500_email_template_atomic_mutations.sql",
@@ -112,10 +114,11 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production includes the prior email and course-completion releases. This
-// release adds the hackathon taxonomy contract.
+// Production includes the prior email, learning and taxonomy releases. This
+// release adds the project collaboration and translation quota contracts.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260916160000",
+  "20260920090000",
+  "20260920100000",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { ProfileCombobox } from "@/components/ui/profile-combobox";
 import {
   createProjectCollaborationInvite,
@@ -75,11 +76,15 @@ export function ProjectTeamEditor({
   });
   const removeMutation = useMutation({
     mutationFn: (userId: string) => removeProjectCollaborator(projectId, userId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: key }),
+    onSuccess: async () => {
+      setRemovingUserId(null);
+      await queryClient.invalidateQueries({ queryKey: key });
+    },
     onError: (error) => toast.error(error instanceof Error ? error.message : t("projects.team.actionFailed")),
   });
 
   const [resendingInviteId, setResendingInviteId] = useState<string | null>(null);
+  const [removingUserId, setRemovingUserId] = useState<string | null>(null);
 
   const resendInviteMutation = useMutation({
     mutationFn: async (inviteId: string) => {
@@ -189,12 +194,29 @@ export function ProjectTeamEditor({
               const profile = team.profiles[member.user_id];
               return <li key={member.user_id} className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 text-sm">
                 <span className="inline-flex items-center gap-2"><UserPlus className="size-4" />{profile?.full_name || profile?.username || member.user_id}</span>
-                <Button type="button" size="sm" variant="ghost" disabled={removeMutation.isPending} onClick={() => removeMutation.mutate(member.user_id)}><Trash2 className="size-4" />{t("projects.team.remove")}</Button>
+                <Button type="button" size="sm" variant="ghost" disabled={removeMutation.isPending} onClick={() => setRemovingUserId(member.user_id)}><Trash2 className="size-4" />{t("projects.team.remove")}</Button>
               </li>;
             })}
           </ul>
         </div>
       ) : null}
+      <Dialog open={removingUserId !== null} onOpenChange={(next) => { if (!removeMutation.isPending && !next) setRemovingUserId(null); }}>
+        <DialogContent className="sm:max-w-lg" showCloseButton={!removeMutation.isPending}>
+          <DialogTitle>{t("projects.team.removeMemberTitle")}</DialogTitle>
+          <DialogDescription>{t("projects.team.removeMemberConfirm")}</DialogDescription>
+          <DialogFooter>
+            <Button type="button" variant="outline" disabled={removeMutation.isPending} onClick={() => setRemovingUserId(null)}>
+              {t("actions.cancel")}
+            </Button>
+            <Button type="button" variant="destructive" disabled={removeMutation.isPending} onClick={() => {
+              if (removingUserId) removeMutation.mutate(removingUserId);
+            }}>
+              {removeMutation.isPending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
+              {t(removeMutation.isPending ? "projects.team.removingMember" : "projects.team.removeMemberAction")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </fieldset>
   );
 }

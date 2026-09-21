@@ -97,7 +97,7 @@ export default function Account() {
                   label={item.title}
                   isActive={activeNavItem.to === item.to}
                   supportingText={item.description}
-                  showTrailingIcon
+                  showIcon="right"
                   showPressed
                   size="small"
                   className={cn(
