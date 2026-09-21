@@ -434,7 +434,18 @@
       "emailIndeterminateError": "Trạng thái gửi email chưa được xác định. Cần đối soát thủ công.",
       "emailRetryableError": "Không thể gửi email mời. Vui lòng thử lại sau.",
       "actionFailed": "Không cập nhật được thành viên.",
-      "publicTitle": "Nhóm thực hiện"
+      "publicTitle": "Nhóm thực hiện",
+      "removeMemberTitle": "Loại khỏi team hiện tại",
+      "removeMemberConfirm": "Thành viên này sẽ bị loại khỏi team hiện tại. Sau đó Corelia sẽ không còn ghi nhận họ là thành viên của team.",
+      "removeMemberAction": "Loại khỏi team",
+      "removingMember": "Đang loại khỏi team…",
+      "leaveProject": "Rời nhóm",
+      "leaveProjectTitle": "Rời khỏi team hiện tại",
+      "leaveProjectConfirm": "Bạn sẽ rời khỏi team hiện tại. Sau đó Corelia sẽ không còn ghi nhận bạn là thành viên của team.",
+      "leaveProjectAction": "Rời khỏi team",
+      "leavingProject": "Đang rời khỏi team…",
+      "leftProject": "Bạn đã rời nhóm dự án.",
+      "leaveProjectFailed": "Không thể rời nhóm dự án. Vui lòng thử lại."
     },
     "social": {
       "heart": "Thả tim",

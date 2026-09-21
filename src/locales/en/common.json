@@ -434,7 +434,18 @@
       "emailIndeterminateError": "Email delivery status is indeterminate. Manual reconciliation is required.",
       "emailRetryableError": "Could not send invitation email. Please try again later.",
       "actionFailed": "Could not update the team.",
-      "publicTitle": "Project team"
+      "publicTitle": "Project team",
+      "removeMemberTitle": "Remove from the current team",
+      "removeMemberConfirm": "This member will be removed from the current team. Corelia will no longer recognize them as a member of this team.",
+      "removeMemberAction": "Remove from team",
+      "removingMember": "Removing from team…",
+      "leaveProject": "Leave team",
+      "leaveProjectTitle": "Leave the current team",
+      "leaveProjectConfirm": "You will leave the current team. Corelia will no longer recognize you as a member of this team.",
+      "leaveProjectAction": "Leave team",
+      "leavingProject": "Leaving team…",
+      "leftProject": "You left the project team.",
+      "leaveProjectFailed": "Could not leave the project team. Please try again."
     },
     "social": {
       "heart": "Like",

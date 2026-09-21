@@ -3,6 +3,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 const state = vi.hoisted(() => ({
   collaboratorIds: [] as string[],
   collaboratorSelect: "",
+  rpc: vi.fn(),
   rows: [
     { project_id: "project-a", user_id: "user-2", added_at: "2026-01-02T00:00:00Z" },
     { project_id: "project-a", user_id: "user-1", added_at: "2026-01-01T00:00:00Z" },
@@ -15,6 +16,7 @@ const state = vi.hoisted(() => ({
 
 vi.mock("@/lib/supabase", () => ({
   supabase: {
+    rpc: state.rpc,
     from: (table: string) => {
       if (table === "project_collaborators") {
         const chain = {
@@ -42,11 +44,12 @@ vi.mock("@/lib/supabase", () => ({
   },
 }));
 
-import { listPublicProjectTeam, listPublicProjectTeams } from "./projectCollaboration";
+import { leaveProject, listPublicProjectTeam, listPublicProjectTeams } from "./projectCollaboration";
 
 beforeEach(() => {
   state.collaboratorIds = [];
   state.collaboratorSelect = "";
+  state.rpc.mockReset();
 });
 
 it("normalizes project IDs and batch-loads accepted members without a portfolio filter", async () => {
@@ -62,4 +65,18 @@ it("uses the batch loader for a single project", async () => {
   const result = await listPublicProjectTeam(" project-a ");
   expect(state.collaboratorIds).toEqual(["project-a"]);
   expect(result).toHaveLength(2);
+});
+
+it("calls the authenticated self-leave RPC with the selected project", async () => {
+  state.rpc.mockResolvedValue({ error: null });
+
+  await leaveProject("project-a");
+
+  expect(state.rpc).toHaveBeenCalledWith("leave_project", { p_project_id: "project-a" });
+});
+
+it("surfaces self-leave RPC errors", async () => {
+  state.rpc.mockResolvedValue({ error: { message: "forbidden:project_owner" } });
+
+  await expect(leaveProject("project-a")).rejects.toThrow("forbidden:project_owner");
 });
