@@ -560,6 +560,12 @@ DO $$ BEGIN
  IF NOT EXISTS(SELECT 1 FROM public.section_question_attempts WHERE course_id='learning-test') THEN RAISE EXCEPTION 'instructor cannot inspect own course attempts'; END IF;
 END $$;
 RESET ROLE;
+-- A course without co-instructor metadata still awards once after repeated final approval.
+DO $$ BEGIN
+ IF (SELECT count(*) FROM public.user_point_ledger WHERE user_id='eeee0000-0000-4000-8000-000000000002'
+     AND source_key='course_completed:learning-test' AND points=100)<>1
+ THEN RAISE EXCEPTION 'course completion XP missing or duplicated without co-instructor metadata'; END IF;
+END $$;
 -- Narrow roster access: student operators versus submission-only reviewers.
 INSERT INTO auth.users(id,email,raw_user_meta_data) VALUES
  ('eeee0000-0000-4000-8000-000000000004','learning-reviewer@corelia.local','{"full_name":"Learning Reviewer"}');

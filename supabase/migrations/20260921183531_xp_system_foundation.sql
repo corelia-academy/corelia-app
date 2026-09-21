@@ -124,7 +124,7 @@ BEGIN
   SELECT * INTO c FROM public.courses WHERE id = NEW.course_id;
   SELECT * INTO l FROM public.course_lessons WHERE course_id = NEW.course_id AND id = NEW.lesson_id;
   IF NOT FOUND OR NOT c.published OR c.archived_at IS NOT NULL OR NOT l.published OR l.archived_at IS NOT NULL
-     OR c.instructor_id = NEW.user_id OR (c.data->'co_instructor_permissions') ? NEW.user_id::text
+     OR c.instructor_id = NEW.user_id OR COALESCE(c.data->'co_instructor_permissions','{}'::jsonb) ? NEW.user_id::text
      OR l.data->>'lesson_format' = 'quiz'
      OR NOT EXISTS(SELECT 1 FROM public.enrollments WHERE user_id=NEW.user_id AND course_id=NEW.course_id)
      THEN RETURN NEW; END IF;
@@ -146,7 +146,7 @@ BEGIN
   SELECT * INTO c FROM public.courses WHERE id = NEW.course_id;
   SELECT * INTO l FROM public.course_lessons WHERE course_id = NEW.course_id AND id = NEW.lesson_id;
   IF NOT FOUND OR NOT c.published OR c.archived_at IS NOT NULL OR NOT l.published OR l.archived_at IS NOT NULL
-     OR c.instructor_id = NEW.user_id OR (c.data->'co_instructor_permissions') ? NEW.user_id::text
+     OR c.instructor_id = NEW.user_id OR COALESCE(c.data->'co_instructor_permissions','{}'::jsonb) ? NEW.user_id::text
      OR l.data->>'lesson_format' <> 'quiz'
      OR NOT EXISTS(SELECT 1 FROM public.enrollments WHERE user_id=NEW.user_id AND course_id=NEW.course_id)
      THEN RETURN NEW; END IF;
@@ -166,8 +166,8 @@ DECLARE c public.courses%ROWTYPE;
 BEGIN
   IF NEW.completed_at IS NULL OR (TG_OP = 'UPDATE' AND OLD.completed_at IS NOT NULL) THEN RETURN NEW; END IF;
   SELECT * INTO c FROM public.courses WHERE id=NEW.course_id;
-  IF c.published AND c.archived_at IS NULL AND c.instructor_id <> NEW.user_id
-     AND NOT ((c.data->'co_instructor_permissions') ? NEW.user_id::text) THEN
+  IF c.published AND c.archived_at IS NULL AND c.instructor_id IS DISTINCT FROM NEW.user_id
+     AND NOT (COALESCE(c.data->'co_instructor_permissions','{}'::jsonb) ? NEW.user_id::text) THEN
     PERFORM private.xp_award(NEW.user_id,'course_completed','course_completed:'||NEW.course_id,
       100,'course',NEW.course_id,NEW.completed_at);
   END IF;
