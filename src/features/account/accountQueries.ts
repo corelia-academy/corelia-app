@@ -1,3 +1,5 @@
+import { getConnectedIdentities } from "@/lib/auth";
+import { getConnectedWallets } from "@/lib/walletConnections";
 import { queryOptions } from "@tanstack/react-query";
 
 import {
@@ -70,6 +72,24 @@ export function mintedCredentialCountQueryOptions(
     queryFn: () => countMintedCredentials(userId!),
     enabled: Boolean(userId && enabled),
     staleTime: 60_000,
+    meta: privateMeta(userId || "missing"),
+  });
+}
+
+export function connectedIdentitiesQueryOptions(userId: string | undefined) {
+  return queryOptions({
+    queryKey: ["account", "identities", userId || "missing"],
+    queryFn: getConnectedIdentities,
+    enabled: Boolean(userId),
+    meta: privateMeta(userId || "missing"),
+  });
+}
+
+export function connectedWalletsQueryOptions(userId: string | undefined) {
+  return queryOptions({
+    queryKey: ["account", "wallets", userId || "missing"],
+    queryFn: getConnectedWallets,
+    enabled: Boolean(userId),
     meta: privateMeta(userId || "missing"),
   });
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { NavLink, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
@@ -16,6 +17,9 @@ import {
 } from "lucide-react";
 
 import { UserAvatar } from "@/components/UserAvatar";
+import { XpBadge } from "@/features/xp/XpBadge";
+import { getXpTotals } from "@/lib/xp";
+import { XpActivity } from "@/features/xp/XpActivity";
 import { Button } from "@/components/ui/button";
 import { FollowButton } from "@/components/social/FollowButton";
 import { FollowerPreview } from "@/components/social/FollowerPreview";
@@ -239,6 +243,12 @@ export default function UserProfileLayout() {
   } | null>(null);
   const effectiveIsSelf = isSelf && !previewAsGuest;
   const profile = (effectiveIsSelf && currentUserProfile ? currentUserProfile : fetchedProfile) as PublicProfile | null;
+  const xpTotalQuery = useQuery({
+    queryKey: ["xp", "total", profile?.id],
+    queryFn: () => getXpTotals([profile!.id]),
+    enabled: Boolean(profile?.id && (profile.profile_public || effectiveIsSelf)),
+    staleTime: 60_000,
+  });
   const followerCount =
     followerCountOverride && followerCountOverride.profileId === profile?.id
       ? followerCountOverride.count
@@ -298,6 +308,7 @@ export default function UserProfileLayout() {
                     <h1 className="text-display-small font-display text-foreground [overflow-wrap:anywhere]">
                       {profileTitle(profile)}
                     </h1>
+                    <XpBadge total={xpTotalQuery.data?.[profile.id]} className="mt-2" />
                     <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm text-foreground-muted">
                       {headerHandle ? (
                         <span className="truncate">{headerHandle}</span>
@@ -483,6 +494,7 @@ export default function UserProfileLayout() {
             <main className="min-w-0 space-y-6">
               {profile.profile_public || effectiveIsSelf ? (
                 <>
+                  <XpActivity userId={profile.id} own={effectiveIsSelf} />
                   <UserProfileProjectsSection profile={profile} />
                   <UserProfileActivitySection profile={profile} />
                 </>

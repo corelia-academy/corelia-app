@@ -132,7 +132,7 @@
   },
   "header": {
     "publicProfile": "Public profile",
-    "feedAria": "Open activity feed",
+    "feedAria": "Open Feed",
     "notifications": "Notifications",
     "notificationsAria": "Open notifications",
     "noNotifications": "No notifications yet.",
@@ -236,8 +236,8 @@
       "empty": "No skills yet."
     },
     "activity": {
-      "title": "Activity",
-      "empty": "No public activity yet."
+      "title": "Achievements",
+      "empty": "No public milestones yet."
     },
     "private": {
       "title": "Private profile",
@@ -405,7 +405,8 @@
         "aiUnavailable": "Automated verification is temporarily unavailable. Please try again shortly.",
         "logoSize": "Logo file size must not exceed 2 MB.",
         "invalidSlug": "Slug must consist of lowercase letters, numbers, and hyphens."
-      }
+      },
+      "hackathonXpEarned": "+100 XP · First hackathon project submitted"
     },
     "team": {
       "title": "Team members",
@@ -452,7 +453,11 @@
       "heart": "Like",
       "unheart": "Unlike",
       "loginToInteract": "Sign in to like.",
-      "heartFailed": "Could not update like."
+      "heartFailed": "Could not update like.",
+      "xpEarned": "+2 XP · Project liked",
+      "xpHint": "First eligible like: +2 XP (up to 5 projects per UTC day)",
+      "xpHintRemaining": "First eligible like: +2 XP · {{count}} rewarded likes left today (UTC)",
+      "xpLimitReached": "Today’s 5 rewarded likes are used (UTC); you can still like."
     },
     "errors": {
       "loadFailed": "Could not load projects",

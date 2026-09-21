@@ -1,6 +1,6 @@
 # Learner UI Implementation Spec
 
-Tài liệu này định nghĩa UI target cho `/learn/:courseId` và `/learn/:courseId/lesson/:lessonId`. Product rules và data ownership nằm tại [Learning System](./learning-system.md).
+Tài liệu này định nghĩa UI target cho `/learn/:courseId` và `/learn/:courseId/lesson/:lessonId`. Product rules và data ownership nằm tại [Learning System](learning-system.md).
 
 ## 1. Design constraints
 
@@ -277,7 +277,7 @@ Submission
 
 ## 12. Code exercise lesson
 
-Chi tiết validation/model tại [Code Exercise](./code-exercise.md). UI target:
+Chi tiết validation/model tại [Code Exercise](code-exercise.md). UI target:
 
 ### Fill
 

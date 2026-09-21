@@ -4,15 +4,15 @@ Thư mục này là nguồn thiết kế chính cho hệ thống học tập c�
 
 ## Tài liệu
 
-- [Learning system](./learning-system.md): kiến trúc tổng thể, phạm vi sản phẩm, data flow, migration và tiêu chí hoàn thành.
-- [Learner UI](./learner-ui.md): shell, responsive layouts, từng lesson renderer, navigation và UI states.
-- [Instructor authoring UI](./admin-ui.md): editor hiện hữu, curriculum, instructor list, YouTube video và publish flow.
-- [Local QA](./local-qa.md): evidence kiểm thử và phần chưa nghiệm thu.
-- [Trạng thái nghiệm thu](./acceptance-status.md): đối chiếu toàn bộ phạm vi, bằng chứng và các gate còn thiếu.
-- [Release runbook](./release-runbook.md): chuẩn bị rollout sau local delivery, thứ tự tương thích và xử lý lỗi.
-- [Authoring và review](./authoring-and-review.md): sử dụng editor instructor hiện hữu, cấu hình format và review final assignment.
-- [Code exercise](./code-exercise.md): thiết kế chi tiết cho bài tập code với hai mode `fill` và `edit`.
-- [Competitive positioning](./competitive-positioning.md): Corelia so với HackQuest, lý do sử dụng và cách kiểm chứng product wedge.
+- [Learning system](learning-system.md): kiến trúc tổng thể, phạm vi sản phẩm, data flow, migration và tiêu chí hoàn thành.
+- [Learner UI](learner-ui.md): shell, responsive layouts, từng lesson renderer, navigation và UI states.
+- [Instructor authoring UI](admin-ui.md): editor hiện hữu, curriculum, instructor list, YouTube video và publish flow.
+- [Local QA](local-qa.md): evidence kiểm thử và phần chưa nghiệm thu.
+- [Trạng thái nghiệm thu](acceptance-status.md): đối chiếu toàn bộ phạm vi, bằng chứng và các gate còn thiếu.
+- [Release runbook](release-runbook.md): chuẩn bị rollout sau local delivery, thứ tự tương thích và xử lý lỗi.
+- [Authoring và review](authoring-and-review.md): sử dụng editor instructor hiện hữu, cấu hình format và review final assignment.
+- [Code exercise](code-exercise.md): thiết kế chi tiết cho bài tập code với hai mode `fill` và `edit`.
+- [Competitive positioning](competitive-positioning.md): Corelia so với HackQuest, lý do sử dụng và cách kiểm chứng product wedge.
 
 ## Thứ tự ưu tiên
 

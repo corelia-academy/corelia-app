@@ -68,10 +68,10 @@ export default function AppSidebar({
         );
         await queryClient.prefetchQuery(homeCatalogQueryOptions(user, locale));
       } else if (href === "/feed" && user?.id) {
-        const { feedTimelineQueryOptions } = await import(
-          "@/features/feed/feedQueries"
+        const { milestoneFeedQuery } = await import(
+          "@/features/feed/milestoneQueries"
         );
-        await queryClient.prefetchInfiniteQuery(feedTimelineQueryOptions(user.id));
+        await queryClient.prefetchInfiniteQuery(milestoneFeedQuery(user.id, false));
       } else if (href === "/courses") {
         const { coursesCatalogQueryOptions } = await import(
           "@/features/courses/courseQueries"

@@ -126,3 +126,17 @@ export async function changePasswordWithReauthentication(input: {
 export async function signOutFromSupabase() {
   return supabase.auth.signOut();
 }
+
+export async function getConnectedIdentities() {
+  const { data, error } = await supabase.auth.getUserIdentities();
+  if (error) throw error;
+  return data.identities;
+}
+
+export async function connectAccountIdentity(provider: "github" | "google") {
+  const { error } = await supabase.auth.linkIdentity({
+    provider,
+    options: { redirectTo: `${window.location.origin}/account/profile` },
+  });
+  if (error) throw error;
+}

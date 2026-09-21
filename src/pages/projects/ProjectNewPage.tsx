@@ -97,6 +97,7 @@ export default function ProjectNewPage() {
     let savedId: string = projectId;
     if (!contest) throw new Error("not_found:hackathon");
     const submission = await upsertContestSubmission(contest.id, input);
+    void queryClient.invalidateQueries({ queryKey: ["xp"] });
     savedId = submission.project_id ?? projectId;
     const invites = await Promise.allSettled(teamIds.map((id) => createProjectCollaborationInvite(savedId, id)));
     if (invites.some((item) => item.status === "rejected")) toast.warning(t("projects.team.someInvitesFailed"));

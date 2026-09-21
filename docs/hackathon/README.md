@@ -16,11 +16,11 @@ Các tài liệu audit trước migration chỉ là bằng chứng lịch sử. 
 
 ## Tài liệu
 
-1. [Phạm vi sản phẩm](./product-scope.md)
-2. [Routes, luồng và quyền](./flows-and-permissions.md)
-3. [Data contract và migration](./simplification-plan.md)
-4. [Checklist nghiệm thu](./acceptance-checklist.md)
-5. [Checklist test Hackathon & Project](./test-checklist.md)
+1. [Phạm vi sản phẩm](product-scope.md)
+2. [Routes, luồng và quyền](flows-and-permissions.md)
+3. [Data contract và migration](simplification-plan.md)
+4. [Checklist nghiệm thu](acceptance-checklist.md)
+5. [Checklist test Hackathon & Project](test-checklist.md)
 
 ## Contract chính
 

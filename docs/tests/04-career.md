@@ -1,6 +1,6 @@
 # 04 — Career
 
-Xem hub: [README.md](./README.md).
+Xem hub: [README.md](README.md).
 
 ## Mục tiêu
 

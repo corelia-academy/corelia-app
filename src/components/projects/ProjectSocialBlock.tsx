@@ -42,7 +42,10 @@ export function ProjectSocialBlock({
   const heartMutation = useMutation({
     mutationFn: () => toggleProjectHeart(projectId),
     onSuccess: (next) => {
-      if (user?.id) queryClient.setQueryData(projectSocialKeys.heart(user.id, projectId), next);
+      if (user?.id) queryClient.setQueryData(projectSocialKeys.heart(user.id, projectId), next.hearted);
+      if (next.awarded) {
+        void queryClient.invalidateQueries({ queryKey: ["xp"] });
+      }
       void queryClient.invalidateQueries({ queryKey: ["project-social", "hearts"] });
       void queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
@@ -63,8 +66,8 @@ export function ProjectSocialBlock({
     });
 
     try {
-      const nowHearted = await heartMutation.mutateAsync();
-      if (nowHearted !== !wasHearted) setOptimisticLike(null);
+      const result = await heartMutation.mutateAsync();
+      if (result.hearted !== !wasHearted) setOptimisticLike(null);
     } catch (error) {
       setOptimisticLike(null);
       toast.error(error instanceof Error ? error.message : t("projects.social.heartFailed"));

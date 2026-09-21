@@ -98,8 +98,17 @@
       "resources": "Tài nguyên",
       "projects": "Dự án"
     },
-    "mode": { "online": "Online", "offline": "Offline", "hybrid": "Hybrid" },
-    "status": { "draft": "Bản nháp", "published": "Đang mở", "running": "Đang diễn ra", "ended": "Đã kết thúc" },
+    "mode": {
+      "online": "Online",
+      "offline": "Offline",
+      "hybrid": "Hybrid"
+    },
+    "status": {
+      "draft": "Bản nháp",
+      "published": "Đang mở",
+      "running": "Đang diễn ra",
+      "ended": "Đã kết thúc"
+    },
     "overview": {
       "description": "Giới thiệu",
       "summary": "Thông tin nhanh",
@@ -108,7 +117,10 @@
       "registered": "Đã đăng ký",
       "notRegistered": "Chưa đăng ký"
     },
-    "prizes": { "total": "Tổng giải thưởng", "breakdown": "Xem cơ cấu giải" },
+    "prizes": {
+      "total": "Tổng giải thưởng",
+      "breakdown": "Xem cơ cấu giải"
+    },
     "prepare": {
       "title": "Chuẩn bị cùng AI",
       "description": "Sao chép prompt vào trợ lý AI để tìm hiểu cuộc thi và lên kế hoạch xây dựng sản phẩm demo.",
@@ -1167,7 +1179,8 @@
       "collabInviteRevoked": "Đã thu hồi lời mời.",
       "collabRevokeFailed": "Không thể thu hồi lời mời.",
       "collaboratorRemoved": "Đã gỡ thành viên.",
-      "collaboratorRemoveFailed": "Không thể gỡ thành viên."
+      "collaboratorRemoveFailed": "Không thể gỡ thành viên.",
+      "hackathonXpEarned": "+100 XP · Nộp project đầu tiên vào hackathon"
     },
     "forms": {
       "awards": {

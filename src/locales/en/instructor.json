@@ -997,5 +997,149 @@
       "systemUnavailable": "The email system is currently unavailable. No emails were sent. Please contact a system administrator for assistance.",
       "notConfigured": "Email not configured. Please check RESEND_API_KEY."
     }
+  },
+  "learningPrinciples": {
+    "eyebrow": "CORELIA · AUTHORING GUIDE",
+    "title": "Learning design principles",
+    "intro": "Design content that helps learners understand, work independently and apply their skills. Start with a concrete outcome, provide practice, and use learner work to improve instruction.",
+    "scope": "For instructors and content authors · Research reviewed September 22, 2026",
+    "contents": "On this page",
+    "sections": {
+      "principles": "7 core principles",
+      "example": "A sample chapter",
+      "formats": "Choose a lesson format",
+      "checklist": "Before publishing",
+      "sources": "Research sources"
+    },
+    "evidenceNote": "The evidence summaries describe research. “Apply in Corelia” boxes are authoring recommendations for the current system, not findings from trials with Corelia learners.",
+    "sourceLink": "Research basis",
+    "application": "Apply in Corelia",
+    "watchFor": "Keep in mind:",
+    "principles": {
+      "outcome": {
+        "title": "Start with what learners will be able to do",
+        "evidence": "Objectives, learning activities and assessment should address the same capability. [CMU: design guidance]",
+        "application": "Use an observable action: “Handle invalid input without crashing the program.” Choose work that demonstrates this outcome, then prepare learners for that work.",
+        "limit": "An objective about writing programs needs writing and execution practice. A definitions quiz measures only part of it."
+      },
+      "prior": {
+        "title": "Check the starting point",
+        "evidence": "Prior knowledge can support or hinder new learning. [CMU: research synthesis]",
+        "application": "State required knowledge and tools. Begin with a small question or task, and link to a refresher where beginners may lack a prerequisite.",
+        "limit": "Use this to guide learning, not exclude learners. Do not assume everyone knows the terminal or Git."
+      },
+      "model": {
+        "title": "Show the reasoning, then make room for practice",
+        "evidence": "IES recommends alternating worked solutions and independent problems, with moderate evidence in its 2007 guide.",
+        "application": "Explain why each step matters in an article. Follow with a missing step, a debugging task, and a less guided variation in Practice.",
+        "limit": "Adjust support to experience. Proficient learners may not need another worked example."
+      },
+      "retrieve": {
+        "title": "Ask learners to recall and explain",
+        "evidence": "IES rates quizzes that revisit content and deep explanatory questions as strong evidence in its 2007 guide.",
+        "application": "Ask for a prediction or explanation before revealing the answer. Use quiz distractors based on common misunderstandings, then explain the answer.",
+        "limit": "Recognizing an answer does not establish independent problem solving. Include self-explanation prompts in Practice."
+      },
+      "space": {
+        "title": "Revisit knowledge after a break",
+        "evidence": "IES recommends spacing learning over time, with moderate evidence in its 2007 guide.",
+        "application": "Revisit an earlier chapter in a later quiz and reuse the skill in the final assignment. Suggest returning after a break in the instructions.",
+        "limit": "A chapter boundary does not guarantee a time gap. This page adds no review scheduler; one fixed day schedule is not optimal for everyone."
+      },
+      "feedback": {
+        "title": "Make feedback useful for revision",
+        "evidence": "Goal-directed practice and feedback tied to criteria support learning. [CMU: research synthesis]",
+        "application": "Explain quiz answers and provide relevant hints. In final-assignment reviews, name what works, the specific issue and the next check. Use the existing revision flow.",
+        "limit": "“Wrong” or “try harder” gives no next step. Arrange reviewer capacity and a response time that fits the course."
+      },
+      "transfer": {
+        "title": "Check application and self-assessment",
+        "evidence": "Mastery involves integrating skills and knowing when to apply them. Learners also need to monitor their approach. [CMU: research synthesis]",
+        "application": "Change the requirements from the worked example in the final assignment. Publish criteria and request an artifact plus notes explaining decisions and remaining difficulties.",
+        "limit": "Lesson completion, XP and credentials alone do not establish independent ability. Examine the artifact and the explanation."
+      }
+    },
+    "example": {
+      "label": "AUTHORING EXAMPLE · INTRODUCTORY RUST",
+      "title": "Keep data between program runs",
+      "goal": "Prerequisites: functions, Vec, Result and a working Cargo setup. Outcome: add a task, close the app, reopen it with the data intact, and handle a damaged file. This is a proposed chapter, not a published course.",
+      "read": {
+        "title": "Article with a worked example",
+        "body": "Compare data in memory with data in a file. Explain read → change → write using a small example and show the expected result."
+      },
+      "predict": {
+        "title": "Quiz: predict before seeing the solution",
+        "body": "“If the app only updates a Vec and exits, will the next run still contain the task? Why?” Explain memory versus persistent storage in the answer."
+      },
+      "build": {
+        "title": "Guided project: run and check independently",
+        "body": "Provide starter code and ask learners to implement reading and writing. Run add, exit, and run list in a new process. Have learners try a missing path and a damaged file."
+      },
+      "submit": {
+        "title": "Final assignment: submit and get feedback",
+        "body": "Request a GitHub URL and notes in the course final assignment. Review reproducibility, data across fresh runs and error messages. Give specific revision feedback when needed."
+      },
+      "revisit": {
+        "title": "Review through a new requirement",
+        "body": "In the next chapter, add a completion status that survives reopening the app. Ask learners to explain which step makes the data persistent."
+      },
+      "rubricTitle": "Example criteria for the submission instructions",
+      "rubric": "Correct behavior · Data survives a new run · Clear error handling · Reproducible README · Notes explaining decisions. These are proposed criteria for this assignment, not Corelia’s default grading scale."
+    },
+    "formats": {
+      "article": {
+        "title": "Article",
+        "body": "Explain, illustrate and support reference use. State the objective, organize by idea, define new terms, and identify sources and tool versions."
+      },
+      "video": {
+        "title": "Video",
+        "body": "Show actions or changes over time. Include a written summary and resources. Segment by task rather than imposing a fixed duration on every lesson."
+      },
+      "quiz": {
+        "title": "Quiz",
+        "body": "Use recall, prediction and misconception checks. Include explanations, plausible distractors and opportunities to retry."
+      },
+      "code": {
+        "title": "Code exercise",
+        "body": "Currently supports single-file Rust fill or edit exercises with browser text validation. Use for small practice tasks. Passing does not establish successful compilation or execution."
+      },
+      "practice": {
+        "title": "Guided practice",
+        "body": "Use instructions, checklists or guided projects for real tasks. Give each step a checkable outcome. Cargo and other tools run on the learner’s machine."
+      },
+      "final": {
+        "title": "Final assignment",
+        "body": "Submit artifacts, receive feedback and revise at course level. Explain requirements and criteria. Submissions do not automatically become public projects; learners choose what to share."
+      }
+    },
+    "formatsNote": "These applications reflect Corelia code and documentation in the workspace on September 22, 2026, not confirmation of production availability. A chapter does not need all six formats.",
+    "checklistNote": "An editorial checklist for a lesson or chapter. Selections last only while this page is open; this is not an automated evaluation or publishing action.",
+    "checked": "Reviewed {{count}} / {{total}} items",
+    "reset": "Clear selections",
+    "checks": {
+      "outcome": "The objective describes observable behavior; assessment measures what was taught.",
+      "entry": "Prerequisites, tools and setup instructions allow the intended beginner to start.",
+      "accuracy": "The author reran the examples and checked sources, versions and resource links.",
+      "practice": "Learners have independent work and expected results, beyond reading or copying.",
+      "feedback": "Answer explanations give reasons; hints and review comments identify actionable next steps.",
+      "review": "Learners revisit earlier knowledge and apply it in a changed situation.",
+      "access": "Narrow-screen preview is checked; videos have written support; terminology and VI/EN versions agree where translations exist.",
+      "pilot": "A learner at the intended entry level tried the material; observed difficulties informed revisions."
+    },
+    "sourcesNote": "Foundational sources reviewed September 22, 2026. IES evidence levels refer to its 2007 guide, not an evaluation of online programming instruction. The examples, checklist and format choices here are Corelia applications to validate with real learners.",
+    "sources": {
+      "alignment": {
+        "title": "CMU Eberly Center — Align Assessments, Objectives, Instructional Strategies",
+        "description": "Guidance on aligning goals, learning activities and assessment. Supports principle 1."
+      },
+      "learning": {
+        "title": "CMU Eberly Center — Learning Principles",
+        "description": "Research synthesis covering prior knowledge, practice, feedback, mastery and self-regulation. Supports principles 2, 6 and 7."
+      },
+      "ies": {
+        "title": "IES / What Works Clearinghouse — Organizing Instruction and Study to Improve Student Learning (2007)",
+        "description": "Evidence-rated guidance on worked examples, quizzes, spacing and explanatory questions. Supports principles 3, 4 and 5."
+      }
+    }
   }
 }

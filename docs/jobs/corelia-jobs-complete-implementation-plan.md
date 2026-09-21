@@ -5,7 +5,7 @@
 **Primary stack assumption:** React/TypeScript + Supabase/PostgreSQL
 **Core operating principle:** Curated sources, deterministic filtering first, AI for new/changed jobs or a new classifier version, daily market analytics.
 
-**Operator docs:** [Setup và vận hành](./README.md) · [Test checklist](./TEST_CHECKLIST.md)
+**Operator docs:** [Setup và vận hành](README.md) · [Test checklist](TEST_CHECKLIST.md)
 
 ---
 

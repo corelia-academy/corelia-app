@@ -1,6 +1,6 @@
 # Corelia Learning System
 
-> **Cập nhật phạm vi 11/09/2026:** Giữ route `/instructor/courses`, `/instructor/courses/new`, `/instructor/courses/:id/edit` và quyền quản lý hiện hữu của instructor. Chỉ bổ sung tính năng vào editor hiện tại. Yêu cầu này thay thế phương án chuyển sang admin-only trong kế hoạch cũ; xem [quyết định hiện hành](./README.md#điều-chỉnh-phạm-vi-ngày-11092026).
+> **Cập nhật phạm vi 11/09/2026:** Giữ route `/instructor/courses`, `/instructor/courses/new`, `/instructor/courses/:id/edit` và quyền quản lý hiện hữu của instructor. Chỉ bổ sung tính năng vào editor hiện tại. Yêu cầu này thay thế phương án chuyển sang admin-only trong kế hoạch cũ; xem [quyết định hiện hành](README.md#điều-chỉnh-phạm-vi-ngày-11092026).
 
 ## 1. Mục tiêu
 
@@ -29,8 +29,8 @@ Tiêu chí thành công của lần tối ưu:
 
 UI implementation specs:
 
-- [Learner UI](./learner-ui.md)
-- [Admin authoring UI](./admin-ui.md)
+- [Learner UI](learner-ui.md)
+- [Admin authoring UI](admin-ui.md)
 
 ## 2. Baseline trước đợt Learning
 
@@ -138,7 +138,7 @@ Managed video hosting như Bunny Stream được hoãn đến khi có nhu cầu 
 
 ## 5. Learner experience
 
-Wireframes, responsive behavior, renderer states và component mapping được khóa tại [Learner UI](./learner-ui.md). Phần dưới đây là architecture contract, không thay thế UI spec.
+Wireframes, responsive behavior, renderer states và component mapping được khóa tại [Learner UI](learner-ui.md). Phần dưới đây là architecture contract, không thay thế UI spec.
 
 ### Learning shell
 
@@ -203,7 +203,7 @@ Completion policy:
 - Article/video: learner chủ động nhấn Complete; video watch seconds không chặn completion.
 - Quiz: server xác định pass dựa trên saved questions và configured threshold; mặc định hiện hữu là 70%.
 - Practice: learner tự hoàn thành nếu không yêu cầu review; bài cuối khóa tiếp tục dùng `final_assignment_submissions` và review flow hiện hữu.
-- Code exercise: required tests pass; xem [Code Exercise](./code-exercise.md).
+- Code exercise: required tests pass; xem [Code Exercise](code-exercise.md).
 - Course: mọi required lesson hoàn thành và final assignment được approve nếu course có final assignment.
 
 `lesson_progress.completed_at` là trạng thái hoàn thành canonical. Không thêm một progress table thứ hai. Quiz và reviewed practice dùng trusted completion; code exercise là self-practice nên client validation có thể gọi progress flow hiện hữu khi pass.
@@ -263,11 +263,11 @@ Completion:
 
 ### Code exercise
 
-Một lesson type với `fill | edit`, single-file Rust và client-side text validation trong MVP. Chi tiết data model, draft, accessibility và publish validation nằm tại [Code Exercise](./code-exercise.md).
+Một lesson type với `fill | edit`, single-file Rust và client-side text validation trong MVP. Chi tiết data model, draft, accessibility và publish validation nằm tại [Code Exercise](code-exercise.md).
 
 ## 8. Admin authoring
 
-Wireframes, form behavior, YouTube video flow và component mapping được khóa tại [Admin Authoring UI](./admin-ui.md).
+Wireframes, form behavior, YouTube video flow và component mapping được khóa tại [Admin Authoring UI](admin-ui.md).
 
 Mở rộng course editor hiện hữu tại `/instructor/courses/:id/edit`, giữ route và mô hình quyền đang chạy. Không tạo course editor thứ hai.
 

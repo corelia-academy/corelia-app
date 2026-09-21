@@ -1,18 +1,19 @@
 import { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import type { User } from "@supabase/supabase-js";
 import { useNavigate } from "react-router";
 import { LoginCallBack, useOCAuth } from "@opencampus/ocid-connect-js";
-import { updateOCIDProfileForUser } from "@/lib/profile";
+import { connectVerifiedOCID } from "@/lib/profile";
 import { getAuthSession } from "@/lib/auth";
 import { invokeCoreliaApi } from "@/lib/coreliaEdgeApi";
 import { useAuth, useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { queryClient } from "@/lib/queryClient";
 
 type OCAuthStateMaybe = {
   OCId?: string;
   ethAddress?: string;
+  idToken?: string;
 } | null | undefined;
 
 function Loading() {
@@ -47,18 +48,12 @@ export default function OCIDRedirect() {
   const { t } = useTranslation("account");
   const navigate = useNavigate();
   const { refreshProfile } = useAuth();
-  const { OCId, ethAddress, ocAuth } = useOCAuth();
+  const { OCId, ocAuth } = useOCAuth();
   const [error, setError] = useState<string | null>(null);
   const { mutateAsync: linkOcid } = useMutation({
-    mutationFn: async (input: {
-      user: User;
-      ocid: string;
-      ethAddress: string | null;
-    }) => {
-      await updateOCIDProfileForUser(input.user, {
-        ocid: input.ocid,
-        ocid_eth_address: input.ethAddress,
-      });
+    mutationFn: async (idToken: string) => {
+      await connectVerifiedOCID(idToken);
+      void queryClient.invalidateQueries({ queryKey: ["xp"] });
       void invokeCoreliaApi("credentials.retryPending", {});
     },
   });
@@ -86,19 +81,16 @@ export default function OCIDRedirect() {
           (maybe?.OCId ?? undefined) ??
           OCId ??
           null;
-        const resolvedEth =
-          (maybe?.ethAddress ?? undefined) ??
-          ethAddress ??
-          null;
+        const idToken = maybe?.idToken ?? null;
 
-        if (!resolvedOCId) {
+        if (!resolvedOCId || !idToken) {
           setError(t("ocid.redirect.missingOcidFromSession"));
           navigate("/account", { replace: true });
           return;
         }
 
         try {
-          await linkOcid({ user, ocid: resolvedOCId, ethAddress: resolvedEth });
+          await linkOcid(idToken);
           await refreshProfile(user);
           navigate("/account", { replace: true });
         } catch (e) {
@@ -117,7 +109,7 @@ export default function OCIDRedirect() {
         setError(message);
       },
     };
-  }, [OCId, ethAddress, linkOcid, navigate, ocAuth, refreshProfile, t]);
+  }, [OCId, linkOcid, navigate, ocAuth, refreshProfile, t]);
 
   return (
     <div className="min-h-[60vh]">

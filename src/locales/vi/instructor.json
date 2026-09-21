@@ -997,5 +997,149 @@
       "systemUnavailable": "Hệ thống gửi email đang gặp sự cố. Chưa email nào được gửi. Vui lòng liên hệ quản trị viên hệ thống để được hỗ trợ.",
       "notConfigured": "Chưa cấu hình email. Vui lòng kiểm tra RESEND_API_KEY."
     }
+  },
+  "learningPrinciples": {
+    "eyebrow": "CORELIA · CẨM NANG BIÊN SOẠN",
+    "title": "Nguyên tắc thiết kế bài học",
+    "intro": "Thiết kế nội dung để người học hiểu, tự làm và vận dụng được. Bắt đầu từ một đầu ra cụ thể, tạo cơ hội thực hành, rồi dùng bài làm để cải thiện cách dạy.",
+    "scope": "Dành cho giảng viên và người biên soạn · Nghiên cứu cập nhật ngày 22/09/2026",
+    "contents": "Trong trang này",
+    "sections": {
+      "principles": "7 nguyên tắc cốt lõi",
+      "example": "Một chương học mẫu",
+      "formats": "Chọn loại bài học",
+      "checklist": "Trước khi xuất bản",
+      "sources": "Nguồn nghiên cứu"
+    },
+    "evidenceNote": "Phần cơ sở tóm tắt nghiên cứu; các ô “Áp dụng tại Corelia” là đề xuất biên soạn cho hệ thống hiện tại, chưa phải kết quả thử nghiệm với học viên Corelia.",
+    "sourceLink": "Cơ sở nghiên cứu",
+    "application": "Áp dụng tại Corelia",
+    "watchFor": "Lưu ý:",
+    "principles": {
+      "outcome": {
+        "title": "Bắt đầu từ việc người học sẽ làm được",
+        "evidence": "Mục tiêu, hoạt động học và đánh giá cần cùng hướng tới một năng lực. [CMU: hướng dẫn thiết kế]",
+        "application": "Viết mục tiêu bằng hành động: “Xử lý đầu vào sai mà chương trình không dừng đột ngột”. Chọn bài làm chứng minh mục tiêu đó, rồi soạn nội dung chuẩn bị cho bài làm.",
+        "limit": "Mục tiêu “viết được chương trình” cần có thực hành viết và chạy; quiz định nghĩa chỉ kiểm tra một phần."
+      },
+      "prior": {
+        "title": "Kiểm tra điểm xuất phát",
+        "evidence": "Kiến thức nền có thể hỗ trợ hoặc cản trở việc học mới. [CMU: tổng hợp nghiên cứu]",
+        "application": "Ghi rõ kiến thức và công cụ cần có. Mở đầu bằng một câu hỏi hoặc tác vụ nhỏ; thêm liên kết ôn tập ngay chỗ người mới có thể thiếu nền tảng.",
+        "limit": "Đây là cách định hướng học, không phải bài thi loại người học. Không mặc định mọi người đã biết terminal hay Git."
+      },
+      "model": {
+        "title": "Cho xem cách làm, rồi tạo chỗ để tự làm",
+        "evidence": "IES khuyến nghị xen kẽ lời giải mẫu với bài tự giải; mức bằng chứng vừa trong hướng dẫn 2007.",
+        "application": "Trong bài đọc, giải thích vì sao từng bước cần thiết. Tiếp theo cho điền phần thiếu, sửa một lỗi, rồi làm biến thể ít gợi ý hơn bằng Practice.",
+        "limit": "Điều chỉnh hỗ trợ theo trình độ. Người đã thành thạo có thể không cần thêm lời giải mẫu."
+      },
+      "retrieve": {
+        "title": "Yêu cầu nhớ lại và giải thích",
+        "evidence": "IES xếp quiz ôn lại kiến thức và câu hỏi giải thích sâu ở mức bằng chứng mạnh trong hướng dẫn 2007.",
+        "application": "Trước khi xem đáp án, yêu cầu dự đoán kết quả hoặc giải thích lựa chọn. Dùng quiz có phương án nhiễu từ lỗi hiểu thường gặp, rồi giải thích đáp án.",
+        "limit": "Chọn đúng nhờ nhận ra đáp án chưa chứng minh có thể tự tạo lời giải. Bổ sung câu hỏi tự giải thích trong Practice."
+      },
+      "space": {
+        "title": "Đưa kiến thức cũ trở lại sau một khoảng nghỉ",
+        "evidence": "IES khuyến nghị phân bố việc học theo thời gian; mức bằng chứng vừa trong hướng dẫn 2007.",
+        "application": "Đưa một câu hỏi của chương trước vào chương sau; yêu cầu dùng lại kỹ năng đó trong bài cuối khóa. Gợi ý quay lại ôn sau một khoảng nghỉ trong hướng dẫn.",
+        "limit": "Đổi chương không bảo đảm có khoảng cách thời gian. Chưa có lịch ôn tự động ở trang này; không coi một lịch ngày cố định là tối ưu cho mọi người."
+      },
+      "feedback": {
+        "title": "Phản hồi phải giúp sửa được bài",
+        "evidence": "Thực hành có mục tiêu và phản hồi theo tiêu chí hỗ trợ việc học. [CMU: tổng hợp nghiên cứu]",
+        "application": "Với quiz, viết giải thích và gợi ý liên quan đến lỗi. Với bài cuối khóa, nêu phần đã đúng, lỗi cụ thể và bước thử lại; dùng luồng yêu cầu chỉnh sửa hiện có.",
+        "limit": "“Sai rồi” hoặc “cần cố gắng hơn” không chỉ ra cách tiến bộ. Bố trí người review và thời gian phản hồi phù hợp quy mô khóa."
+      },
+      "transfer": {
+        "title": "Kiểm tra khả năng vận dụng và tự đánh giá",
+        "evidence": "Thành thạo đòi hỏi kết hợp kỹ năng và biết khi nào áp dụng. Người học cũng cần tự theo dõi cách học. [CMU: tổng hợp nghiên cứu]",
+        "application": "Bài cuối khóa dùng yêu cầu khác ví dụ mẫu. Công bố tiêu chí, yêu cầu sản phẩm cùng notes giải thích lựa chọn; hỏi người học phần nào còn cần hỗ trợ.",
+        "limit": "Hoàn thành lesson, có XP hoặc nhận chứng chỉ chưa đủ để kết luận năng lực độc lập. Đọc sản phẩm và cách giải thích trước khi đánh giá."
+      }
+    },
+    "example": {
+      "label": "VÍ DỤ BIÊN SOẠN · RUST CƠ BẢN",
+      "title": "Lưu dữ liệu qua nhiều lần chạy",
+      "goal": "Đầu vào: đã biết hàm, Vec và Result; đã chạy được Cargo. Đầu ra: thêm công việc, đóng ứng dụng, mở lại vẫn đọc được dữ liệu và xử lý được file lỗi. Đây là đề xuất chương học, không phải khóa đã xuất bản.",
+      "read": {
+        "title": "Bài đọc + ví dụ có giải thích",
+        "body": "So sánh dữ liệu trong bộ nhớ với dữ liệu trong file. Giải thích luồng đọc → thay đổi → ghi bằng một ví dụ nhỏ; nêu kết quả mong đợi."
+      },
+      "predict": {
+        "title": "Quiz: dự đoán trước khi xem lời giải",
+        "body": "“Nếu ứng dụng chỉ cập nhật Vec rồi thoát, lần chạy sau còn công việc không? Vì sao?” Đáp án giải thích sự khác biệt giữa bộ nhớ và lưu trữ."
+      },
+      "build": {
+        "title": "Guided project: tự chạy và kiểm tra",
+        "body": "Cho starter; yêu cầu thêm bước ghi/đọc. Hướng dẫn chạy add, thoát rồi chạy list ở process mới. Để người học tự thử đường dẫn không tồn tại và file hỏng."
+      },
+      "submit": {
+        "title": "Bài cuối khóa: nộp và nhận phản hồi",
+        "body": "Yêu cầu GitHub URL và notes trong bài cuối khóa cấp course. Reviewer kiểm tra khả năng chạy lại, dữ liệu qua lần chạy mới và thông báo lỗi. Chưa đạt thì nhận xét cụ thể để nộp lại."
+      },
+      "revisit": {
+        "title": "Ôn lại bằng một thay đổi mới",
+        "body": "Ở chương tiếp theo, thêm chức năng đánh dấu hoàn thành và yêu cầu trạng thái vẫn còn sau khi mở lại. Người học giải thích bước nào bảo đảm dữ liệu được lưu."
+      },
+      "rubricTitle": "Tiêu chí minh họa để đưa vào hướng dẫn bài nộp",
+      "rubric": "Chức năng chạy đúng · Dữ liệu giữ được qua lần chạy mới · Lỗi được xử lý rõ ràng · README đủ để chạy lại · Notes giải thích lựa chọn. Đây là tiêu chí đề xuất cho bài này, không phải thang đánh giá mặc định của Corelia."
+    },
+    "formats": {
+      "article": {
+        "title": "Bài đọc",
+        "body": "Dùng cho giải thích, ví dụ và tra cứu. Đặt mục tiêu đầu bài; chia theo ý; định nghĩa thuật ngữ khi xuất hiện lần đầu; ghi nguồn và phiên bản công cụ."
+      },
+      "video": {
+        "title": "Video",
+        "body": "Dùng khi cần nhìn thấy thao tác hoặc thay đổi theo thời gian. Có tóm tắt bằng chữ và tài nguyên đi kèm. Chia theo nhiệm vụ; không áp một số phút cố định cho mọi bài."
+      },
+      "quiz": {
+        "title": "Trắc nghiệm",
+        "body": "Dùng để gọi lại kiến thức, dự đoán và nhận diện hiểu nhầm. Có giải thích đáp án, phương án nhiễu hợp lý và cơ hội thử lại."
+      },
+      "code": {
+        "title": "Bài tập code",
+        "body": "Hiện hỗ trợ Rust một file, điền hoặc sửa code; kiểm tra văn bản trong browser. Phù hợp luyện tập nhỏ. Không dùng kết quả này để khẳng định code đã biên dịch hay chạy đúng."
+      },
+      "practice": {
+        "title": "Thực hành theo bước",
+        "body": "Dùng instruction, checklist hoặc guided project cho tác vụ thực tế. Mỗi bước có kết quả tự kiểm tra; bài cần Cargo hay công cụ khác chạy trên máy người học."
+      },
+      "final": {
+        "title": "Bài cuối khóa",
+        "body": "Nộp artifact, nhận xét và chỉnh sửa tại cấp course. Nêu rõ yêu cầu và tiêu chí. Bài nộp không tự trở thành project công khai; người học quyết định việc chia sẻ."
+      }
+    },
+    "formatsNote": "Các cách áp dụng dựa trên code và tài liệu Corelia ở workspace ngày 22/09/2026; không phải xác nhận mọi tính năng đã được triển khai trên production. Không cần dùng đủ sáu loại trong mỗi chương.",
+    "checklistNote": "Checklist biên tập đề xuất cho một bài hoặc chương. Dấu chọn chỉ giữ khi đang mở trang; đây không phải kiểm định tự động hay thao tác xuất bản.",
+    "checked": "Đã rà soát {{count}} / {{total}} mục",
+    "reset": "Bỏ dấu chọn",
+    "checks": {
+      "outcome": "Mục tiêu mô tả hành động quan sát được; bài kiểm tra đo đúng điều đã dạy.",
+      "entry": "Kiến thức nền, công cụ và hướng dẫn chuẩn bị đủ để người mới bắt đầu.",
+      "accuracy": "Ví dụ đã được tác giả chạy lại; nguồn, phiên bản và liên kết tài nguyên đã kiểm tra.",
+      "practice": "Người học có việc tự làm và kết quả mong đợi, không chỉ đọc hoặc chép mẫu.",
+      "feedback": "Đáp án giải thích được lý do; gợi ý và nhận xét chỉ ra bước sửa cụ thể.",
+      "review": "Có cơ hội gọi lại kiến thức cũ và vận dụng trong một tình huống thay đổi.",
+      "access": "Đã xem trước trên màn hình hẹp; video có hỗ trợ bằng chữ; thuật ngữ và bản VI/EN nhất quán khi có bản dịch.",
+      "pilot": "Có người đúng trình độ đầu vào học thử; đã ghi chỗ mắc và sửa hướng dẫn theo bài làm thực tế."
+    },
+    "sourcesNote": "Nguồn nền tảng được đọc ngày 22/09/2026. Mức bằng chứng của IES là đánh giá trong hướng dẫn năm 2007, không phải đánh giá riêng cho học lập trình trực tuyến. Ví dụ, checklist và lựa chọn định dạng trên trang là phần áp dụng do Corelia đề xuất; cần kiểm chứng với người học thật.",
+    "sources": {
+      "alignment": {
+        "title": "CMU Eberly Center — Align Assessments, Objectives, Instructional Strategies",
+        "description": "Hướng dẫn gắn mục tiêu với hoạt động học và cách đánh giá. Cơ sở cho nguyên tắc 1."
+      },
+      "learning": {
+        "title": "CMU Eberly Center — Learning Principles",
+        "description": "Tổng hợp nghiên cứu về kiến thức nền, thực hành, phản hồi, thành thạo và tự điều chỉnh. Cơ sở cho nguyên tắc 2, 6 và 7."
+      },
+      "ies": {
+        "title": "IES / What Works Clearinghouse — Organizing Instruction and Study to Improve Student Learning (2007)",
+        "description": "Hướng dẫn có phân mức bằng chứng về lời giải mẫu, quiz, ôn cách quãng và câu hỏi giải thích. Cơ sở cho nguyên tắc 3, 4 và 5."
+      }
+    }
   }
 }

@@ -15,6 +15,8 @@ import {
   UserCircle,
 } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
+import { XpBadge } from "@/features/xp/XpBadge";
+import { getXpTotals } from "@/lib/xp";
 import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
@@ -142,6 +144,14 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
     "U"
   ).charAt(0);
   const isOcidConnected = Boolean(profile?.ocid);
+  const xpQuery = useQuery({
+    queryKey: ["xp", "total", user?.id],
+    queryFn: async () => {
+      return getXpTotals([user!.id]);
+    },
+    enabled: Boolean(user?.id),
+    staleTime: 60_000,
+  });
 
   const accountDropdownItems = useMemo(
     () => [
@@ -503,6 +513,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                   }
                 />
                 <DropdownMenuContent align="end" className="z-20 min-w-64">
+                  {user?.id ? <div className="flex items-center justify-between gap-2 px-3 py-2 text-sm"><span className="truncate font-medium">{displayName}</span><XpBadge total={xpQuery.data?.[user.id]} /></div> : null}
                   {accountDropdownItems.map((item) => (
                     <Action
                       key={item.to}

@@ -15,6 +15,7 @@ import {
   useNavigate,
 } from "react-router";
 import { ThemeProvider } from "next-themes";
+import { XpNotifications } from "@/features/xp/XpNotifications";
 import { AuthSync } from "@/components/auth/AuthSync";
 import { AuthBootstrapScreen } from "@/components/auth/AuthBootstrapScreen";
 import CredentialRealtimeSync from "@/components/base/CredentialRealtimeSync";
@@ -34,6 +35,7 @@ import {
 const Home = lazy(() => import("@/pages/home/index"));
 const FeedPage = lazy(() => import("@/pages/feed/FeedPage"));
 const Courses = lazy(() => import("@/pages/courses"));
+const LearningPrinciplesPage = lazy(() => import("@/pages/learning-principles/LearningPrinciplesPage"));
 const Auth = lazy(() => import("@/pages/login/Auth"));
 const OCIDRedirect = lazy(() => import("@/pages/OCIDRedirect"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
@@ -169,6 +171,7 @@ export default function App() {
           <LoadingBar />
           <Toaster />
           <AuthSync />
+          <XpNotifications />
           {authStatus === "booting" ? (
             <AuthBootstrapScreen />
           ) : (
@@ -385,6 +388,7 @@ function ApplicationRoutes() {
                 }
               />
               <Route path="cohorts" element={<Navigate to="/courses" replace />} />
+              <Route path="learning-principles" element={<Suspense fallback={<PageFallback />}><LearningPrinciplesPage /></Suspense>} />
               <Route
                 path="career"
                 element={

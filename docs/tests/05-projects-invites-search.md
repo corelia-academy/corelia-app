@@ -1,12 +1,12 @@
 # 05 — Projects, invite, Search
 
-Xem hub: [README.md](./README.md).
+Xem hub: [README.md](README.md).
 
 ## Mục tiêu
 
 Phủ `/projects` (gallery công khai), `/invites/project/:token`, `/search?q=...`.
 
-**Lưu ý:** Chỉnh sửa project i18n nằm ở `/account/projects` ([07](./07-account-hub.md)), không phải `/projects`.
+**Lưu ý:** Chỉnh sửa project i18n nằm ở `/account/projects` ([07](07-account-hub.md)), không phải `/projects`.
 
 ## Tiền đề staging
 

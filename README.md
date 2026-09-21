@@ -14,6 +14,10 @@ This update changes CI/CD release controls only. It does not change application 
 - **Production release control:** Production is not push-triggered. The [`Deploy Production`](.github/workflows/deploy-prod.yml) workflow must be dispatched manually from `main` and runs its verification job before any Supabase deployment.
 - **Failure containment:** Release jobs use bounded local cleanup and controlled concurrency; migration rollouts that require destructive changes can deploy a compatible backend before applying the migration.
 
+## Documentation
+
+See the [documentation index](docs/README.md) for feature guides, QA, and operations. The [Feed guide](docs/feed/README.md) describes the proposed community feed and retirement of the legacy activity stream.
+
 ## Release process
 
 See [Release process](docs/RELEASE_PROCESS.md) for the staging and production flow, release gates, current triggers, and failure handling.
