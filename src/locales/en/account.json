@@ -411,6 +411,8 @@
     }
   },
   "xp": {
+    "earned": "+{{count}} XP",
+    "activityCompleted": "Activity completed",
     "title": "XP activity",
     "loading": "Loading XP…",
     "error": "Unable to load XP.",
@@ -444,10 +446,10 @@
       "title": "Connected accounts",
       "description": "Link GitHub to earn 50 XP once.",
       "connected": "Connected",
-      "connectGithub": "Connect · +50 XP",
+      "connectGithub": "Connect GitHub",
       "failed": "Unable to connect GitHub.",
-      "connectEthereum": "Connect {{wallet}} · +30 XP for the first Ethereum wallet",
-      "connectSolana": "Connect {{wallet}} · +30 XP for the first Solana wallet",
+      "connectEthereum": "Connect {{wallet}}",
+      "connectSolana": "Connect {{wallet}}",
       "noSolanaWallet": "No Solana wallet with message signing was found.",
       "connectGoogle": "Connect Google",
       "noEthereumWallet": "No Ethereum wallet was found.",

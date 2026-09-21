@@ -3,15 +3,12 @@ import { Github, Wallet, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getWallets } from "@wallet-standard/app";
-import { toast } from "sonner";
 
 import { supabase } from "@/lib/supabase";
 import { availableSolanaWallets, connectEthereumWallet, connectSolanaWallet, getConnectedWallets, injectedEthereumWallet } from "@/lib/walletConnections";
 import type { DiscoveredEthereumWallet, EthereumProvider } from "@/lib/walletConnections";
 import { queryClient } from "@/lib/queryClient";
-import { hasMyXpAward } from "@/lib/xp";
 
-const OAUTH_XP_PENDING_KEY = "corelia.oauth-xp-pending";
 
 export function ConnectedAccountsCard() {
   const { t } = useTranslation("account");
@@ -57,32 +54,13 @@ export function ConnectedAccountsCard() {
   });
   const githubConnected = identities.data?.some((identity) => identity.provider === "github") ?? false;
   const googleConnected = identities.data?.some((identity) => identity.provider === "google") ?? false;
-  useEffect(() => {
-    const raw = sessionStorage.getItem(OAUTH_XP_PENDING_KEY);
-    if (!raw || !identities.data) return;
-    let pending: { provider: "github" | "google"; hadAward: boolean | null; at: number };
-    try { pending = JSON.parse(raw) as typeof pending; } catch { sessionStorage.removeItem(OAUTH_XP_PENDING_KEY); return; }
-    if (Date.now() - pending.at > 10 * 60_000) { sessionStorage.removeItem(OAUTH_XP_PENDING_KEY); return; }
-    if (!identities.data.some((identity) => identity.provider === pending.provider)) return;
-    sessionStorage.removeItem(OAUTH_XP_PENDING_KEY);
-    if (pending.provider === "github" && pending.hadAward === false) {
-      void (async () => {
-        await supabase.rpc("xp_sync_connections");
-        if (await hasMyXpAward("github_connected")) {
-          toast.success(t("xp.connections.githubXpEarned"));
-          void queryClient.invalidateQueries({ queryKey: ["xp"] });
-        }
-      })().catch(() => undefined);
-    }
-  }, [identities.data, t]);
   const wallets = useQuery({ queryKey: ["account", "wallets"], queryFn: getConnectedWallets });
 
   async function connectWallet(action: () => Promise<boolean>) {
     setError(null);
     setWalletBusy(true);
     try {
-      const awarded = await action();
-      if (awarded) toast.success(t("xp.connections.walletXpEarned"));
+      await action();
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["account", "wallets"] }),
         queryClient.invalidateQueries({ queryKey: ["xp"] }),
@@ -107,16 +85,12 @@ export function ConnectedAccountsCard() {
     setError(null);
     setConnecting(true);
     try {
-      let hadAward: boolean | null = null;
-      if (provider === "github") hadAward = await hasMyXpAward("github_connected").catch(() => null);
-      sessionStorage.setItem(OAUTH_XP_PENDING_KEY, JSON.stringify({ provider, hadAward, at: Date.now() }));
       const { error: linkError } = await supabase.auth.linkIdentity({
         provider,
         options: { redirectTo: `${window.location.origin}/account/profile` },
       });
       if (linkError) throw linkError;
     } catch (cause) {
-      sessionStorage.removeItem(OAUTH_XP_PENDING_KEY);
       setError(cause instanceof Error ? cause.message : t("xp.connections.failed"));
       setConnecting(false);
     }
@@ -124,7 +98,6 @@ export function ConnectedAccountsCard() {
 
   return <section className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card">
     <h2 className="font-display text-heading-medium">{t("xp.connections.title")}</h2>
-    <p className="mt-1 text-sm text-foreground-muted">{t("xp.connections.description")}</p>
     <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-border-subtle p-3">
       <div className="flex items-center gap-2"><Github className="size-5" aria-hidden /><span className="font-medium">GitHub</span></div>
       {identities.isPending ? <span className="text-sm text-foreground-muted">{t("xp.loading")}</span> : githubConnected ? <span className="text-sm text-primary">{t("xp.connections.connected")}</span> : <button type="button" disabled={connecting} onClick={() => void connectIdentity("github")} className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">{connecting ? t("xp.loading") : t("xp.connections.connectGithub")}</button>}

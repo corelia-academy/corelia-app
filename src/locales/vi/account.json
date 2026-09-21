@@ -411,6 +411,8 @@
     }
   },
   "xp": {
+    "earned": "+{{count}} XP",
+    "activityCompleted": "Hoàn thành hoạt động",
     "title": "Hoạt động kiếm XP",
     "loading": "Đang tải XP…",
     "error": "Không tải được XP.",
@@ -444,10 +446,10 @@
       "title": "Tài khoản đã kết nối",
       "description": "Liên kết GitHub để nhận 50 XP một lần.",
       "connected": "Đã kết nối",
-      "connectGithub": "Kết nối · +50 XP",
+      "connectGithub": "Kết nối GitHub",
       "failed": "Không thể kết nối GitHub.",
-      "connectEthereum": "Kết nối {{wallet}} · +30 XP cho ví Ethereum đầu tiên",
-      "connectSolana": "Kết nối {{wallet}} · +30 XP cho ví Solana đầu tiên",
+      "connectEthereum": "Kết nối {{wallet}}",
+      "connectSolana": "Kết nối {{wallet}}",
       "noSolanaWallet": "Chưa phát hiện ví Solana hỗ trợ ký thông điệp.",
       "connectGoogle": "Kết nối Google",
       "noEthereumWallet": "Chưa phát hiện ví Ethereum.",

@@ -9,7 +9,6 @@ import { projectHeartQueryOptions, projectSocialKeys } from "@/features/projects
 import { toggleProjectHeart } from "@/lib/projectSocial";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
-import { getTodayLikeXpRemaining, utcDate } from "@/lib/xp";
 
 export type ProjectSocialBlockProps = {
   projectId: string;
@@ -39,19 +38,12 @@ export function ProjectSocialBlock({
   const heartQuery = useQuery(
     projectHeartQueryOptions(user?.id, projectId, heartedProp === undefined),
   );
-  const likeBudget = useQuery({
-    queryKey: ["xp", "likeBudget", user?.id, utcDate(new Date())],
-    queryFn: () => getTodayLikeXpRemaining(user!.id),
-    enabled: Boolean(user?.id),
-    staleTime: 30_000,
-  });
   const hearted = heartQuery.data ?? heartedProp ?? false;
   const heartMutation = useMutation({
     mutationFn: () => toggleProjectHeart(projectId),
     onSuccess: (next) => {
       if (user?.id) queryClient.setQueryData(projectSocialKeys.heart(user.id, projectId), next.hearted);
       if (next.awarded) {
-        toast.success(t("projects.social.xpEarned"));
         void queryClient.invalidateQueries({ queryKey: ["xp"] });
       }
       void queryClient.invalidateQueries({ queryKey: ["project-social", "hearts"] });
@@ -97,7 +89,6 @@ export function ProjectSocialBlock({
         <Heart className={cn("size-4", hearted && "fill-current")} aria-hidden />
         <span className="tabular-nums text-label-medium font-body">{likeCount}</span>
       </Button>
-      {!hearted && user && <span className="text-xs text-foreground-muted">{likeBudget.data === undefined ? t("projects.social.xpHint") : likeBudget.data > 0 ? t("projects.social.xpHintRemaining", { count: likeBudget.data }) : t("projects.social.xpLimitReached")}</span>}
     </div>
   );
 }

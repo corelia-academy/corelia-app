@@ -8,7 +8,7 @@ import { invokeCoreliaApi } from "@/lib/coreliaEdgeApi";
 import { useAuth, useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { queryClient } from "@/lib/queryClient";
 
 type OCAuthStateMaybe = {
   OCId?: string;
@@ -52,8 +52,8 @@ export default function OCIDRedirect() {
   const [error, setError] = useState<string | null>(null);
   const { mutateAsync: linkOcid } = useMutation({
     mutationFn: async (idToken: string) => {
-      const awarded = await connectVerifiedOCID(idToken);
-      if (awarded) toast.success(t("xp.connections.ocidXpEarned"));
+      await connectVerifiedOCID(idToken);
+      void queryClient.invalidateQueries({ queryKey: ["xp"] });
       void invokeCoreliaApi("credentials.retryPending", {});
     },
   });

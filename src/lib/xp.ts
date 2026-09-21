@@ -13,11 +13,7 @@ export type XpEntry = {
   reason: string | null;
 };
 
-export async function getXpSummary(userId: string, from: string, to: string, own = false): Promise<XpSummary | null> {
-  if (own) {
-    const { error } = await supabase.rpc("xp_sync_connections");
-    if (error) throw new Error(error.message);
-  }
+export async function getXpSummary(userId: string, from: string, to: string): Promise<XpSummary | null> {
   const { data, error } = await supabase.rpc("xp_summary", { p_user_id: userId, p_from: from, p_to: to });
   if (error) throw new Error(error.message);
   if (!data) return null;

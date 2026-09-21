@@ -15,6 +15,7 @@ import {
   useNavigate,
 } from "react-router";
 import { ThemeProvider } from "next-themes";
+import { XpNotifications } from "@/features/xp/XpNotifications";
 import { AuthSync } from "@/components/auth/AuthSync";
 import { AuthBootstrapScreen } from "@/components/auth/AuthBootstrapScreen";
 import CredentialRealtimeSync from "@/components/base/CredentialRealtimeSync";
@@ -170,6 +171,7 @@ export default function App() {
           <LoadingBar />
           <Toaster />
           <AuthSync />
+          <XpNotifications />
           {authStatus === "booting" ? (
             <AuthBootstrapScreen />
           ) : (

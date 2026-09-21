@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
-import { withFirstHackathonXp } from "@/lib/xp";
 import {
   blastContestEmail,
   buildContestLeaderboard,
@@ -1602,7 +1601,7 @@ export function useContestDetailOrchestrator({
     }
     setSavingSubmission(true);
     try {
-      const { value: saved, awarded } = await withFirstHackathonXp(() => executeWrite(() =>
+      const saved = await executeWrite(() =>
         upsertContestSubmission(id, {
           title: submissionTitle,
           summary: submissionSummary,
@@ -1613,11 +1612,11 @@ export function useContestDetailOrchestrator({
           screenshot_paths: mySubmission?.screenshot_paths ?? [],
           video_url: submissionVideoUrl,
         }),
-      ));
+      );
       setMySubmission(saved);
       await loadCollaboration();
       toast.success(translate("detail.toasts.submissionSaved"));
-      if (awarded) toast.success(translate("detail.toasts.hackathonXpEarned"));
+      void queryClient.invalidateQueries({ queryKey: ["xp"] });
     } catch (err) {
       toast.error(translateApiError(err, translate, "detail.toasts.submissionSaveFailed"));
     } finally {
@@ -1640,6 +1639,7 @@ export function useContestDetailOrchestrator({
     translate,
     loadCollaboration,
     submissionWorkspaceEditable,
+    queryClient,
   ]);
 
   const handleScoreSave = useCallback(
