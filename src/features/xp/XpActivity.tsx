@@ -44,7 +44,7 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
   const today = utcDate(now);
   const summary = useQuery({
     queryKey: ["xp", "summary", userId, start, today, own],
-    queryFn: () => getXpSummary(userId, start, today, own),
+    queryFn: () => getXpSummary(userId, start, today),
     enabled: Boolean(userId),
     staleTime: 60_000,
   });

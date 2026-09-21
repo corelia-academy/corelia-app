@@ -17,7 +17,6 @@ import {
 import { UserAvatar } from "@/components/UserAvatar";
 import { XpBadge } from "@/features/xp/XpBadge";
 import { getXpTotals } from "@/lib/xp";
-import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
@@ -148,8 +147,6 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
   const xpQuery = useQuery({
     queryKey: ["xp", "total", user?.id],
     queryFn: async () => {
-      const { error } = await supabase.rpc("xp_sync_connections");
-      if (error) throw new Error(error.message);
       return getXpTotals([user!.id]);
     },
     enabled: Boolean(user?.id),
