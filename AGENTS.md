@@ -60,7 +60,7 @@ Database changes additionally use `pnpm db:verify`; schema/migration changes req
 - `.github/workflows/deploy-staging.yml` auto-runs only for pushes to `staging` matching its Supabase path filters; it verifies and deploys Supabase migrations/functions, not the frontend.
 - `.github/workflows/db-guardrails.yml` runs on matching PR changes. The live-history workflow is manual and read-only.
 - Production Supabase deployment is a manual dispatch of `.github/workflows/deploy-prod.yml` from `main`; merging to `main` does not trigger it automatically.
-- Frontend publication to Cloudflare is a separate pipeline not defined in this repository. Require external pipeline/deployment evidence before claiming frontend deployment success.
+- Frontend publication to Cloudflare uses the separate manual `.github/workflows/deploy-frontend.yml` workflow. Dispatch it from `staging` or `main` with the matching target after the Supabase workflow succeeds; require its live-domain verification before claiming frontend deployment success. Never use the ambiguous default `wrangler deploy` command.
 - For remote delivery, follow `docs/RELEASE_PROCESS.md` and watch every applicable run to a terminal result. Inspect the failed step before retrying; fix only task-related failures and report unrelated failures as blockers.
 
 ## Definition of Done
