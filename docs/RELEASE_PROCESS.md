@@ -15,7 +15,7 @@ Tài liệu này không mô tả hành vi của từng feature trong app. Các k
 | Database pull-request guardrails | Pull Request chạm vào database hoặc các path kiểm soát release | Kiểm tra migration declaration, frozen baseline, drift và local migration recreation | Không ghi vào các môi trường được bảo vệ |
 | Staging backend release | Push vào `staging` khi khớp path filter, hoặc manual dispatch | Verify repository, apply Supabase migrations và deploy Edge Functions | Không publish frontend Vite/Cloudflare Workers |
 | Production Supabase release | Manual dispatch từ `main` | Verify artifact, apply migrations, deploy Edge Functions và chạy live-state gates | Không thay thế pipeline publish frontend riêng |
-| Frontend publication | Pipeline riêng ngoài các workflow trong repository | Publish Vite build lên Cloudflare Workers khi đủ điều kiện release | Không có workflow trong repository để xác minh trigger hoặc trạng thái publish |
+| Frontend publication | Manual dispatch [`Deploy Frontend`](../.github/workflows/deploy-frontend.yml) từ `staging` hoặc `main` | Build đúng Supabase/CDN, publish đúng Worker và kiểm tra asset đang phục vụ trên domain | Chạy sau backend gate tương ứng; không dùng lệnh deploy mặc định ở terminal |
 
 ## Vì sao có các ranh giới này
 
@@ -43,7 +43,7 @@ Job `verify` phải pass trước khi job `deploy` được chạy. Job này cà
 - lint và staging build; và
 - clean local migration-chain recreation.
 
-Sau khi verify, job `deploy` apply migrations vào Staging project được link và deploy các Edge Functions đã cấu hình. Khi rollout có destructive migration, backend tương thích phải được deploy theo thứ tự release đã định trước khi migration được apply. Workflow không publish frontend Vite/Cloudflare Workers. Dùng [Staging bundle verification](STAGING_BUILD_VERIFY.md) khi cần kiểm tra frontend và backend cùng nhau.
+Sau khi verify, job `deploy` apply migrations vào Staging project được link và deploy các Edge Functions đã cấu hình. Khi rollout có destructive migration, backend tương thích phải được deploy theo thứ tự release đã định trước khi migration được apply. Workflow này không publish frontend. Khi backend đã xanh, dispatch `Deploy Frontend` từ ref `staging` với target `staging`; workflow buộc Worker `corelia-staging`, Supabase project staging và xác nhận domain phục vụ đúng asset đã build. Dùng [Staging bundle verification](STAGING_BUILD_VERIFY.md) khi cần kiểm tra frontend và backend cùng nhau.
 
 ## Release Production
 
@@ -57,7 +57,7 @@ Production workflow hiện có trigger `workflow_dispatch` không khai báo inpu
 4. deploy các Edge Functions cần thiết; và
 5. chạy post-Edge runtime và database check cuối cùng.
 
-Frontend artifact được build và verify trong Production gate, nhưng việc publish lên Cloudflare Workers vẫn thuộc deployment path riêng. Repository hiện không chứa workflow cho pipeline publish đó, vì vậy phải lấy evidence từ hệ thống Cloudflare/pipeline bên ngoài trước khi kết luận một thay đổi frontend đã deploy thành công.
+Frontend artifact được build và verify trong Production gate, nhưng việc publish lên Cloudflare Workers vẫn thuộc deployment path riêng. Sau khi Production Supabase workflow xanh, dispatch `Deploy Frontend` từ ref `main` với target `production`; workflow buộc Worker `corelia-app`, Supabase project production, kiểm tra artifact rồi so khớp asset thực tế tại `app.corelia.academy`. Hai GitHub Environment phải cung cấp `VITE_SUPABASE_PUBLISHABLE_KEY`, `CLOUDFLARE_API_TOKEN` và `VITE_CDN_BASE_URL`; token Cloudflare phải được giới hạn vào tài khoản Corelia. Không publish production bằng terminal.
 
 ## Kiểm tra migration history trên môi trường live
 

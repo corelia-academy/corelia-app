@@ -42,13 +42,13 @@ Expected results:
 ### Cross-deployment staging acceptance
 
 1. Open staging build A, record `window.__CORELIA_BUILD__`, and keep the tab open.
-2. Publish build B through the external frontend pipeline with at least one changed lazy chunk hash.
+2. Publish build B through the `Deploy Frontend` workflow on `staging` with at least one changed lazy chunk hash.
 3. In the build A tab, navigate to a lazy-loaded route that has not been opened in that tab.
 4. Confirm the tab reloads no more than once, preserves the full URL, loads build B, and retains the signed-in session.
 5. Simulate or retain an unavailable chunk long enough to confirm a repeated failure shows the localized fallback instead of entering a reload loop.
 6. In Cloudflare observability, confirm the old path is logged as `missing_static_asset` without query parameters or user data.
 
-The frontend publication system is outside this repository. Before staging or Production acceptance, confirm it runs `wrangler deploy` from this repository so the Worker entry and static assets are published together.
+The manual [`Deploy Frontend`](../.github/workflows/deploy-frontend.yml) workflow builds from the selected branch, pins the generated Worker name, and publishes its entry and static assets together. Require its live-domain verification to pass before staging or Production acceptance.
 
 ## Auth lock re-audit checklist
 

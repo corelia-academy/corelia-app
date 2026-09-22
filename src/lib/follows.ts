@@ -12,7 +12,7 @@ export interface FollowerPreviewRow {
   followed_at: string;
 }
 
-export type FeedSuggestedProfile = Omit<FollowerPreviewRow, "followed_at">;
+export type FeedSuggestedProfile = Omit<FollowerPreviewRow, "followed_at"> & { total_xp: number };
 
 async function requireFollowerId(): Promise<string> {
   const { data: { user }, error } = await supabase.auth.getUser();
@@ -118,22 +118,14 @@ export async function listMyFeedFollowingProfiles(
 }
 
 export async function listSuggestedFeedProfiles(userId: string, limit = 4): Promise<FeedSuggestedProfile[]> {
-  const publicProfiles = () => supabase.from("public_profiles")
-    .select("id,username,ocid,full_name,avatar_url,avatar_seed")
-    .eq("profile_public", true)
-    .neq("id", userId)
-    .or("username.not.is.null,ocid.not.is.null,full_name.not.is.null");
-  const { count, error: countError } = await supabase.from("public_profiles")
-    .select("id", { count: "exact", head: true })
-    .eq("profile_public", true)
-    .neq("id", userId)
-    .or("username.not.is.null,ocid.not.is.null,full_name.not.is.null");
-  if (countError) throw new Error(countError.message);
-  if (!count) return [];
-  const offset = Math.floor(Math.random() * (Math.max(0, count - limit) + 1));
-  const { data, error } = await publicProfiles().order("id").range(offset, offset + limit - 1);
+  const followerId = await requireFollowerId();
+  if (followerId !== userId) throw new Error("Forbidden suggestions list");
+  const { data, error } = await supabase.rpc("list_feed_xp_suggestions_v1", { p_limit: limit });
   if (error) throw new Error(error.message);
-  return (data ?? []) as FeedSuggestedProfile[];
+  return ((data ?? []) as FeedSuggestedProfile[]).map((row) => ({
+    ...row,
+    total_xp: Number(row.total_xp),
+  }));
 }
 
 export async function getUserFollowingProfileCount(userId: string): Promise<number> {
