@@ -77,7 +77,7 @@ export function feedSuggestionsQueryOptions(userId: string, enabled: boolean) {
     queryKey: socialKeys.feedSuggestions(userId),
     queryFn: () => listSuggestedFeedProfiles(userId),
     enabled: Boolean(userId && enabled),
-    staleTime: 5 * 60_000,
+    staleTime: 60_000,
     meta: { scope: "private", userId, showInGlobalLoading: false },
   });
 }

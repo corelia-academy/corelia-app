@@ -21,6 +21,7 @@ interface FollowButtonProps {
   size?: "sm" | "default" | "lg";
   showCount?: boolean;
   onFollowerCountChange?: (nextCount: number) => void;
+  onFollowChange?: (following: boolean) => void;
 }
 
 export function FollowButton({
@@ -32,6 +33,7 @@ export function FollowButton({
   size = "default",
   showCount = true,
   onFollowerCountChange,
+  onFollowChange,
 }: FollowButtonProps) {
   const { t } = useTranslation("feed");
   const { isAuthenticated, user } = useAuth();
@@ -77,6 +79,7 @@ export function FollowButton({
     },
     onSuccess: () => {
       if (user?.id) void queryClient.invalidateQueries({ queryKey: socialKeys.myFeedFollowing(user.id) });
+      if (user?.id) void queryClient.invalidateQueries({ queryKey: socialKeys.feedSuggestions(user.id) });
       void queryClient.invalidateQueries({ queryKey: milestoneKeys.all });
     },
   });
@@ -100,6 +103,7 @@ export function FollowButton({
     try {
       await mutation.mutateAsync(nextFollowing);
       if (nextCount !== null) onFollowerCountChange?.(nextCount);
+      onFollowChange?.(nextFollowing);
     } catch (e) {
       setCountOverride({ contextKey: countContextKey, baseline: baselineCount, value: previousCount });
       if (!(e instanceof Error)) setError(t("follow.errors.save"));
@@ -114,6 +118,7 @@ export function FollowButton({
     location,
     navigate,
     onFollowerCountChange,
+    onFollowChange,
     mutation,
     t,
   ]);
