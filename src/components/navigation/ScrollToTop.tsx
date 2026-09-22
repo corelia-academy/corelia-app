@@ -12,6 +12,20 @@ export function ScrollToTop() {
       hash: location.hash,
     };
 
+    const componentPathRe = /^\/components(?:\/[^/]+)?$/;
+    const componentDetailPathRe = /^\/components\/[^/]+$/;
+    const prevIsComponentPath = prev
+      ? componentPathRe.test(prev.pathname)
+      : false;
+    const nextIsComponentPath = componentPathRe.test(location.pathname);
+
+    if (
+      componentDetailPathRe.test(location.pathname) ||
+      (prevIsComponentPath && nextIsComponentPath)
+    ) {
+      return;
+    }
+
     if (
       prev &&
       prev.pathname === location.pathname &&

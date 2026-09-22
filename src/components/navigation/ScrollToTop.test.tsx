@@ -18,6 +18,20 @@ function NavigationControls() {
   );
 }
 
+function ComponentNavigationControls() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <button type="button" onClick={() => navigate("/components/tag")}>
+        Tag
+      </button>
+      <button type="button" onClick={() => navigate("/components")}>
+        Components overview
+      </button>
+    </>
+  );
+}
+
 describe("ScrollToTop", () => {
   afterEach(() => {
     document.body.innerHTML = "";
@@ -47,6 +61,34 @@ describe("ScrollToTop", () => {
 
     await act(async () => otherPageButton.click());
     expect(scrollTo).toHaveBeenCalledOnce();
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("preserves page scroll while navigating between component sections", async () => {
+    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter initialEntries={["/components/action"]}>
+          <ScrollToTop />
+          <ComponentNavigationControls />
+        </MemoryRouter>,
+      );
+    });
+
+    expect(scrollTo).not.toHaveBeenCalled();
+    const [tagButton, overviewButton] = container.querySelectorAll("button");
+
+    await act(async () => tagButton.click());
+    expect(scrollTo).not.toHaveBeenCalled();
+
+    await act(async () => overviewButton.click());
+    expect(scrollTo).not.toHaveBeenCalled();
 
     await act(async () => root.unmount());
     container.remove();
