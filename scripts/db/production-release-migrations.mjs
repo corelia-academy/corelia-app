@@ -109,16 +109,23 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260920112758_email_reliability_and_learning_security.sql",
   "supabase/migrations/20260920201500_email_template_atomic_mutations.sql",
   "supabase/migrations/20260921145248_project_hackathon_staff_transfer.sql",
+  "supabase/migrations/20260921183531_xp_system_foundation.sql",
+  "supabase/migrations/20260921194118_xp_private_rpc_boundary.sql",
+  "supabase/migrations/20260921212407_feed_verified_milestones.sql",
+  "supabase/migrations/20260921223803_feed_automatic_public_milestones.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production includes the prior email, learning, taxonomy, collaboration and
-// translation releases. This release adds hackathon project governance.
+// Production includes the prior hackathon project governance release. This
+// release adds the four XP and verified-feed migrations validated in Staging.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260921145248",
+  "20260921183531",
+  "20260921194118",
+  "20260921212407",
+  "20260921223803",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
