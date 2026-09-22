@@ -1,0 +1,91 @@
+name: Deploy Frontend
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Frontend environment to publish
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-frontend-${{ inputs.target }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.target }}
+    env:
+      TARGET: ${{ inputs.target }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_CDN_BASE_URL: ${{ vars.VITE_CDN_BASE_URL }}
+      CLOUDFLARE_ACCOUNT_ID: d982b6ea7fca20bb1cb1ad64d3fd3aa6
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Pin branch, Supabase project, and Worker
+        id: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$TARGET" == "staging" ]]; then
+            test "$GITHUB_REF" = "refs/heads/staging"
+            test "$SUPABASE_PROJECT_REF" = "opoozbmfbezkrpzxsusx"
+            worker="corelia-staging"
+          elif [[ "$TARGET" == "production" ]]; then
+            test "$GITHUB_REF" = "refs/heads/main"
+            test "$SUPABASE_PROJECT_REF" = "lawhkvyyoznwygzsycan"
+            worker="corelia-app"
+          else
+            exit 1
+          fi
+          test -n "$VITE_SUPABASE_PUBLISHABLE_KEY"
+          test -n "$VITE_CDN_BASE_URL"
+          test -n "$CLOUDFLARE_API_TOKEN"
+          echo "worker=$worker" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Enable pnpm and install dependencies
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+
+      - name: Build and verify exact frontend target
+        env:
+          VITE_SUPABASE_URL: https://${{ secrets.SUPABASE_PROJECT_REF }}.supabase.co
+          EXPECTED_PRODUCTION_SUPABASE_URL: https://lawhkvyyoznwygzsycan.supabase.co
+          EXPECTED_PRODUCTION_CDN_URL: ${{ vars.VITE_CDN_BASE_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$TARGET" == "staging" ]]; then
+            pnpm build:staging
+          else
+            pnpm build:prod
+            node scripts/db/verify-production-frontend-artifact.mjs dist/client "$RUNNER_TEMP/production-frontend-artifact.json"
+          fi
+          node scripts/deploy/verify-frontend-target.mjs "$TARGET"
+
+      - name: Publish verified build to the pinned Worker
+        env:
+          WORKER: ${{ steps.target.outputs.worker }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm exec wrangler deploy --name "$WORKER" --message "GitHub Actions $GITHUB_SHA"
+
+      - name: Verify the custom domain serves this exact build
+        run: node scripts/deploy/verify-live-frontend.mjs "$TARGET" "$GITHUB_SHA"
