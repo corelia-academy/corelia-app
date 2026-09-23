@@ -38,7 +38,8 @@ export default function AdminEmailCenterPage() {
   const [page, setPage] = useState(0);
   const current = sections.includes(params.get("section") as Section) ? params.get("section") as Section : "overview";
   const queryClient = useQueryClient();
-  const dashboard = useQuery({ queryKey: ["email-center", "dashboard"], queryFn: () => emailAdmin<EmailDashboard>("dashboard"), refetchInterval: 5000 });
+  const dashboard = useQuery({ queryKey: ["email-center", "dashboard"], queryFn: () => emailAdmin<EmailDashboard>("dashboard"), refetchInterval: 5000,
+    meta: { showInGlobalLoading: false } });
   const [contactSearch, setContactSearch] = useState("");
   const [contactSource, setContactSource] = useState("");
   const [contactMarketing, setContactMarketing] = useState("");

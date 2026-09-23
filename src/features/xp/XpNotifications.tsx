@@ -29,9 +29,9 @@ function UserXpNotifications({ userId }: { userId: string }) {
       }
       return getXpNotificationEntries(userId, cursor);
     },
-    refetchInterval: 5000,
     refetchOnWindowFocus: "always",
     staleTime: 0,
+    meta: { scope: "private", userId, showInGlobalLoading: false },
   });
 
   useEffect(() => {
