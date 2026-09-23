@@ -11,6 +11,10 @@ vi.mock("next-themes", () => ({
   useTheme: () => ({ resolvedTheme: "light", setTheme: vi.fn() }),
 }));
 
+vi.mock("@/stores/authStore", () => ({
+  useAuth: () => ({ user: null, profile: null }),
+}));
+
 import AdminComponentsPage from "./AdminComponentsPage";
 
 function LocationProbe({
