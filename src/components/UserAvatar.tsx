@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import {
   Avatar,
@@ -32,7 +32,10 @@ export function UserAvatar({
   fallbackClassName,
   size,
 }: UserAvatarProps) {
-  const generatedUrl = getGeneratedAvatarDataUrl(userId, avatarSeed);
+  const generatedUrl = useMemo(
+    () => getGeneratedAvatarDataUrl(userId, avatarSeed),
+    [userId, avatarSeed],
+  );
   const customUrl = avatarUrl?.trim() || null;
   const primaryUrl = customUrl ?? generatedUrl;
   const [resolvedUrl, setResolvedUrl] = useState(primaryUrl);

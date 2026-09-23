@@ -13,7 +13,10 @@ import { useTranslation } from "react-i18next";
 import { useAdminProfiles } from "@/features/admin/users/hooks/useAdminProfiles";
 import { AdminStatsCard } from "@/features/admin/ui/AdminStatsCard";
 import { AdminErrorBanner } from "@/features/admin/ui/AdminErrorBanner";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { UserAvatar } from "@/components/UserAvatar";
+
+const PAGE_SIZE = 25;
 
 export default function AdminUsers() {
   const { t } = useTranslation("admin");
@@ -21,6 +24,8 @@ export default function AdminUsers() {
   const { profiles, setProfiles, loading, error, refresh } = useAdminProfiles({
     fallbackErrorMessage: t("users.unknownError"),
   });
+  const isMobile = useIsMobile();
+  const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
 
@@ -73,6 +78,16 @@ export default function AdminUsers() {
       );
     });
   }, [profiles, query, roleFilter, currentUser]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const visibleProfiles = filtered.slice(pageStart, pageStart + PAGE_SIZE);
+
+  function changeRoleFilter(role: UserRole | "all") {
+    setRoleFilter(role);
+    setPage(1);
+  }
 
   const stats = useMemo(() => {
     const total = profiles.length;
@@ -141,13 +156,13 @@ export default function AdminUsers() {
             <div className="w-full sm:w-[320px]">
               <Input
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => { setQuery(e.target.value); setPage(1); }}
                 placeholder={t("users.searchPlaceholder")}
               />
             </div>
             <select
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value as UserRole | "all")}
+              onChange={(e) => changeRoleFilter(e.target.value as UserRole | "all")}
               className="h-10 rounded-md border border-border bg-surface-base px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
             >
               <option value="all">{t("users.allRoles")}</option>
@@ -173,7 +188,7 @@ export default function AdminUsers() {
             type="button"
             size="sm"
             variant={roleFilter === "all" ? "default" : "outline"}
-            onClick={() => setRoleFilter("all")}
+            onClick={() => changeRoleFilter("all")}
           >
             {t("users.allRoles")}
           </Button>
@@ -183,7 +198,7 @@ export default function AdminUsers() {
               type="button"
               size="sm"
               variant={roleFilter === role ? "default" : "outline"}
-              onClick={() => setRoleFilter(role)}
+              onClick={() => changeRoleFilter(role)}
             >
               {getRoleLabel(role)}
             </Button>
@@ -195,7 +210,7 @@ export default function AdminUsers() {
               variant="ghost"
               onClick={() => {
                 setQuery("");
-                setRoleFilter("all");
+                changeRoleFilter("all");
               }}
             >
               {t("users.clearFilters")}
@@ -211,13 +226,13 @@ export default function AdminUsers() {
           <p className="text-sm text-foreground-muted">
             {loading
               ? t("users.syncing")
-              : t("users.showing", { shown: filtered.length, total: profiles.length }) +
+              : t("users.showingRange", { start: filtered.length ? pageStart + 1 : 0, end: pageStart + visibleProfiles.length, total: filtered.length }) +
                 (roleFilter !== "all"
                   ? t("users.showingRoleSuffix", { role: getRoleLabel(roleFilter) })
                   : "")}
           </p>
         </div>
-        <div className="divide-y divide-border-subtle md:hidden">
+        {isMobile ? <div className="divide-y divide-border-subtle">
           {loading ? (
             <div className="space-y-4 p-4">
               {[0, 1, 2].map((idx) => (
@@ -253,7 +268,7 @@ export default function AdminUsers() {
               </div>
             </div>
           ) : (
-            filtered.map((p) => (
+            visibleProfiles.map((p) => (
               <article key={p.id} className="space-y-4 p-4">
                 <div className="flex items-center gap-3">
                   <UserAvatar
@@ -345,8 +360,7 @@ export default function AdminUsers() {
               </article>
             ))
           )}
-        </div>
-        <div className="scrollbar-design hidden overflow-x-auto md:block">
+        </div> : <div className="scrollbar-design overflow-x-auto">
           <table className="w-full text-left">
             <thead className="border-b border-border-subtle bg-surface-raised">
               <tr>
@@ -418,7 +432,7 @@ export default function AdminUsers() {
                   </td>
                 </tr>
               ) : (
-                filtered.map((p) => (
+                visibleProfiles.map((p) => (
                   <tr key={p.id} className="transition-colors hover:bg-surface-raised">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -500,7 +514,20 @@ export default function AdminUsers() {
               )}
             </tbody>
           </table>
-        </div>
+        </div>}
+        <nav aria-label={t("users.pagination.label")} className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle px-4 py-3">
+          <p className="text-sm text-foreground-muted" aria-live="polite">
+            {t("users.pagination.page", { page: currentPage, total: pageCount })}
+          </p>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" size="sm" disabled={loading || currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
+              {t("users.pagination.previous")}
+            </Button>
+            <Button type="button" variant="outline" size="sm" disabled={loading || currentPage >= pageCount} onClick={() => setPage(currentPage + 1)}>
+              {t("users.pagination.next")}
+            </Button>
+          </div>
+        </nav>
       </div>
     </div>
   );
