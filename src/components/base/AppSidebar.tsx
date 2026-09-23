@@ -71,7 +71,7 @@ export default function AppSidebar({
         const { milestoneFeedQuery } = await import(
           "@/features/feed/milestoneQueries"
         );
-        await queryClient.prefetchInfiniteQuery(milestoneFeedQuery(user.id, false));
+        await queryClient.prefetchInfiniteQuery(milestoneFeedQuery(user.id, "explore"));
       } else if (href === "/courses") {
         const { coursesCatalogQueryOptions } = await import(
           "@/features/courses/courseQueries"

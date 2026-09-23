@@ -1,7 +1,8 @@
 // @vitest-environment happy-dom
-import { act } from "react";
+import { act, useEffect } from "react";
+import { gsap } from "gsap";
 import { createRoot } from "react-dom/client";
-import { MemoryRouter } from "react-router";
+import { MemoryRouter, useLocation } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -10,7 +11,25 @@ vi.mock("next-themes", () => ({
   useTheme: () => ({ resolvedTheme: "light", setTheme: vi.fn() }),
 }));
 
+vi.mock("@/stores/authStore", () => ({
+  useAuth: () => ({ user: null, profile: null }),
+}));
+
 import AdminComponentsPage from "./AdminComponentsPage";
+
+function LocationProbe({
+  onPathnameChange,
+}: {
+  onPathnameChange: (pathname: string) => void;
+}) {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    onPathnameChange(pathname);
+  }, [onPathnameChange, pathname]);
+
+  return null;
+}
 
 describe("AdminComponentsPage", () => {
   afterEach(() => {
@@ -31,14 +50,15 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(9);
+    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(10);
     expect(container.querySelector('a[href="/components/action"]')).not.toBeNull();
+    expect(container.querySelector('a[href="/components/avatar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/scrollbar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/tabs"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components"]')).toBeNull();
     expect(container.querySelector('[data-testid="component-navigation"]')).not.toBeNull();
-    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(9);
-    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(9);
+    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(10);
+    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(10);
     expect(container.querySelector('[data-testid="component-section-title"]')?.textContent).toBe("Action");
     expect(container.textContent).toContain("Badge");
     expect(container.textContent).toContain("Selection");
@@ -167,6 +187,279 @@ describe("AdminComponentsPage", () => {
 
     await act(async () => root.unmount());
     container.remove();
+  });
+
+  it("animates one shared active indicator between menu items", async () => {
+    class MockIntersectionObserver {
+      static instances: MockIntersectionObserver[] = [];
+      private readonly callback: IntersectionObserverCallback;
+
+      constructor(callback: IntersectionObserverCallback) {
+        this.callback = callback;
+        MockIntersectionObserver.instances.push(this);
+      }
+
+      observe() {}
+
+      disconnect() {}
+
+      emit(entries: IntersectionObserverEntry[]) {
+        this.callback(entries, this as unknown as IntersectionObserver);
+      }
+    }
+
+    vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+    const gsapToSpy = vi.spyOn(gsap, "to");
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter initialEntries={["/components"]}>
+          <AdminComponentsPage />
+        </MemoryRouter>,
+      );
+    });
+
+    const observer = MockIntersectionObserver.instances[0];
+    const selectionSection = container.querySelector<HTMLElement>(
+      "#component-selection",
+    );
+    const selectionItem = container.querySelector<HTMLElement>(
+      '[data-component-nav-item="selection"]',
+    );
+    const activeIndicator = container.querySelector<HTMLElement>(
+      '[data-testid="component-active-indicator"]',
+    );
+
+    expect(observer).toBeDefined();
+    expect(selectionSection).not.toBeNull();
+    expect(selectionItem).not.toBeNull();
+    expect(activeIndicator).not.toBeNull();
+
+    Object.defineProperties(selectionItem as HTMLElement, {
+      offsetLeft: { configurable: true, value: 0 },
+      offsetTop: { configurable: true, value: 128 },
+      offsetWidth: { configurable: true, value: 240 },
+      offsetHeight: { configurable: true, value: 50 },
+    });
+
+    for (const section of container.querySelectorAll<HTMLElement>(
+      'section[id^="component-"]',
+    )) {
+      Object.defineProperty(section, "getBoundingClientRect", {
+        configurable: true,
+        value: () => ({
+          top: section === selectionSection ? 24 : 200,
+        }),
+      });
+    }
+
+    await act(async () => {
+      observer.emit([]);
+    });
+
+    expect(gsapToSpy).toHaveBeenCalledWith(
+      activeIndicator,
+      expect.objectContaining({
+        x: 0,
+        y: 128,
+        width: 240,
+        height: 50,
+        duration: 0.32,
+        ease: "power3.out",
+        overwrite: "auto",
+      }),
+    );
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("scrolls the active menu item into view without centering it", async () => {
+    class MockIntersectionObserver {
+      static instances: MockIntersectionObserver[] = [];
+      private readonly callback: IntersectionObserverCallback;
+
+      constructor(callback: IntersectionObserverCallback) {
+        this.callback = callback;
+        MockIntersectionObserver.instances.push(this);
+      }
+
+      observe() {}
+
+      disconnect() {}
+
+      emit(entries: IntersectionObserverEntry[]) {
+        this.callback(entries, this as unknown as IntersectionObserver);
+      }
+    }
+
+    vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+    const gsapToSpy = vi.spyOn(gsap, "to");
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter initialEntries={["/components"]}>
+          <AdminComponentsPage />
+        </MemoryRouter>,
+      );
+    });
+
+    const observer = MockIntersectionObserver.instances[0];
+    const tagSection = container.querySelector<HTMLElement>("#component-tag");
+    const activeMenuItem = container.querySelector<HTMLElement>(
+      '[data-component-nav-item="tag"]',
+    );
+    const navigation = container.querySelector<HTMLElement>(
+      '[data-testid="component-navigation"]',
+    );
+    expect(observer).toBeDefined();
+    expect(tagSection).not.toBeNull();
+    expect(activeMenuItem).not.toBeNull();
+    expect(navigation).not.toBeNull();
+    Object.defineProperty(navigation as HTMLElement, "clientHeight", {
+      configurable: true,
+      value: 100,
+    });
+    Object.defineProperty(navigation as HTMLElement, "scrollHeight", {
+      configurable: true,
+      value: 200,
+    });
+    Object.defineProperty(navigation as HTMLElement, "scrollTop", {
+      configurable: true,
+      writable: true,
+      value: 100,
+    });
+    Object.defineProperty(navigation as HTMLElement, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ top: 0, bottom: 100 }),
+    });
+    Object.defineProperty(activeMenuItem as HTMLElement, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ top: -20, bottom: 30 }),
+    });
+
+    for (const section of container.querySelectorAll<HTMLElement>(
+      'section[id^="component-"]',
+    )) {
+      Object.defineProperty(section, "getBoundingClientRect", {
+        configurable: true,
+        value: () => ({
+          top: section === tagSection ? 24 : 200,
+        }),
+      });
+    }
+
+    await act(async () => {
+      observer.emit([]);
+    });
+
+    expect(activeMenuItem?.getAttribute("data-active")).toBe("true");
+    expect(gsapToSpy).toHaveBeenCalledWith(
+      navigation,
+      expect.objectContaining({
+        scrollTop: 68,
+        duration: 0.35,
+        ease: "power2.out",
+        overwrite: "auto",
+      }),
+    );
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("updates the URL through SPA navigation when scrolling to a section", async () => {
+    class MockIntersectionObserver {
+      static instances: MockIntersectionObserver[] = [];
+      private readonly callback: IntersectionObserverCallback;
+
+      constructor(callback: IntersectionObserverCallback) {
+        this.callback = callback;
+        MockIntersectionObserver.instances.push(this);
+      }
+
+      observe() {}
+
+      disconnect() {}
+
+      emit(entries: IntersectionObserverEntry[]) {
+        this.callback(entries, this as unknown as IntersectionObserver);
+      }
+    }
+
+    vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+
+    const pathnames: string[] = [];
+    const onPathnameChange = (pathname: string) => {
+      pathnames.push(pathname);
+    };
+    const originalScrollIntoView = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      "scrollIntoView",
+    );
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+      configurable: true,
+      value: vi.fn(),
+    });
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter initialEntries={["/components"]}>
+          <LocationProbe onPathnameChange={onPathnameChange} />
+          <AdminComponentsPage />
+        </MemoryRouter>,
+      );
+    });
+
+    const observer = MockIntersectionObserver.instances[0];
+    const selectionSection = container.querySelector<HTMLElement>(
+      "#component-selection",
+    );
+    expect(observer).toBeDefined();
+    expect(selectionSection).not.toBeNull();
+
+    for (const section of container.querySelectorAll<HTMLElement>(
+      'section[id^="component-"]',
+    )) {
+      Object.defineProperty(section, "getBoundingClientRect", {
+        configurable: true,
+        value: () => ({
+          top: section === selectionSection ? 24 : 200,
+        }),
+      });
+    }
+
+    await act(async () => {
+      observer.emit([]);
+    });
+
+    expect(pathnames).toContain("/components/selection");
+    expect(container.isConnected).toBe(true);
+    expect(MockIntersectionObserver.instances).toHaveLength(1);
+
+    await act(async () => root.unmount());
+    container.remove();
+    if (originalScrollIntoView) {
+      Object.defineProperty(
+        HTMLElement.prototype,
+        "scrollIntoView",
+        originalScrollIntoView,
+      );
+    } else {
+      Reflect.deleteProperty(HTMLElement.prototype, "scrollIntoView");
+    }
   });
 
   it("keeps the clicked component active during smooth scrolling", async () => {

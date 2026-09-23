@@ -316,6 +316,7 @@ function ApplicationRoutes() {
             />
             {[
               "action",
+              "avatar",
               "badge",
               "tag",
               "selection",
@@ -362,6 +363,10 @@ function ApplicationRoutes() {
                     </Suspense>
                   </RequireAuth>
                 }
+              />
+              <Route
+                path="leaderboard"
+                element={<Navigate to="/feed?tab=leaderboard" replace />}
               />
               <Route
                 path="courses"

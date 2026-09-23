@@ -3,6 +3,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import "@/i18n";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -10,7 +11,22 @@ vi.mock("next-themes", () => ({
   useTheme: () => ({ resolvedTheme: "light", setTheme: vi.fn() }),
 }));
 
+vi.mock("@/stores/authStore", () => ({
+  useAuth: () => ({
+    user: {
+      id: "auth-user-id",
+      user_metadata: {
+        full_name: "tesst",
+        avatar_url: "https://example.com/metadata-avatar.png",
+      },
+    },
+    profile: null,
+    signOut: vi.fn(async () => undefined),
+  }),
+}));
+
 import AdminActionComponentPage from "./AdminActionComponentPage";
+import AdminAvatarComponentPage from "./AdminAvatarComponentPage";
 import AdminBadgeComponentPage from "./AdminBadgeComponentPage";
 import AdminDropdownMenuComponentPage from "./AdminDropdownMenuComponentPage";
 import AdminScrollbarComponentPage from "./AdminScrollbarComponentPage";
@@ -19,9 +35,11 @@ import AdminSeparatorComponentPage from "./AdminSeparatorComponentPage";
 import AdminTagComponentPage from "./AdminTagComponentPage";
 import AdminTabsComponentPage from "./AdminTabsComponentPage";
 import AdminToggleComponentPage from "./AdminToggleComponentPage";
+import { AVATAR_TYPES } from "@/components/ui/avatar";
 
 const pages = [
   AdminActionComponentPage,
+  AdminAvatarComponentPage,
   AdminBadgeComponentPage,
   AdminTagComponentPage,
   AdminSelectionComponentPage,
@@ -52,6 +70,66 @@ describe("admin component detail pages", () => {
 
     expect(container.querySelector("h1")).not.toBeNull();
     expect(container.querySelectorAll('[data-slot="card"]').length).toBeGreaterThan(0);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders all Avatar variants and an interactive authenticated Header-style User", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <AdminAvatarComponentPage />
+        </MemoryRouter>,
+      );
+    });
+
+    expect(container.querySelectorAll('[data-testid^="avatar-case-"]')).toHaveLength(54);
+    expect(container.querySelectorAll('[data-testid^="avatar-type-row-"]')).toHaveLength(6);
+    expect(container.querySelectorAll('[data-testid^="avatar-user-trigger-"]')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-slot="avatar-action"]')).toHaveLength(15);
+    expect(
+      container.querySelectorAll('[data-testid^="avatar-case-text-"] [data-slot="avatar-action"]'),
+    ).toHaveLength(5);
+    const userTrigger = container.querySelector<HTMLButtonElement>(
+      '[data-testid="avatar-user-trigger-interactive"]',
+    );
+
+    expect(userTrigger).not.toBeNull();
+    expect(userTrigger?.textContent).toContain("tesst");
+    expect(userTrigger?.getAttribute("data-state")).toBe("Default");
+    expect(userTrigger?.getAttribute("aria-haspopup")).toBe("menu");
+    expect(userTrigger?.querySelector('[data-slot="user-dropdown"]')).toBeNull();
+    expect(userTrigger?.className).not.toContain("!bg-transparent");
+    expect(userTrigger?.className).not.toContain("!p-0");
+    expect(
+      userTrigger?.querySelector('[data-slot="avatar-image"]')?.getAttribute("src"),
+    ).toBe("https://example.com/metadata-avatar.png");
+
+    await act(async () => userTrigger?.click());
+    expect(userTrigger?.getAttribute("data-state")).toBe("Clicked");
+    expect(document.body.querySelector('[data-testid="avatar-user-menu"]')).not.toBeNull();
+    expect(
+      document.body.querySelectorAll('[data-testid="avatar-user-menu"] [role="menuitem"]'),
+    ).toHaveLength(6);
+    expect(
+      document.body.querySelectorAll('[data-testid="avatar-user-menu"] a'),
+    ).toHaveLength(0);
+
+    await act(async () => userTrigger?.click());
+    expect(userTrigger?.getAttribute("data-state")).toBe("Default");
+    expect(document.body.querySelector('[data-testid="avatar-user-menu"]')).toBeNull();
+
+    expect(
+      Array.from(container.querySelectorAll<HTMLElement>('[data-testid^="avatar-type-row-"]')).map(
+        (row) => row.dataset.testid,
+      ),
+    ).toEqual(AVATAR_TYPES.map((type) => `avatar-type-row-${type.toLowerCase().replace(" ", "-")}`));
+    expect(container.textContent).not.toContain("Implementation contract");
 
     await act(async () => root.unmount());
     container.remove();

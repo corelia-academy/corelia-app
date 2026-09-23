@@ -474,6 +474,45 @@
       "oauthFailed": "Account connection failed. Please try again. If the problem persists, contact support to check the Google/GitHub connection.",
       "oauthCancelled": "Account connection was cancelled. You can try connecting again below."
     },
-    "noData": "No reliable XP data"
+    "noData": "No reliable XP data",
+    "rank": {
+      "title": "XP rank",
+      "names": {
+        "starter": "Starter",
+        "bronze": "Bronze",
+        "silver": "Silver",
+        "gold": "Gold",
+        "platinum": "Platinum",
+        "diamond": "Diamond"
+      },
+      "progress": "Progress to next rank",
+      "remaining": "{{xp}} XP to {{rank}}",
+      "highest": "Highest rank reached",
+      "allRanks": "View all ranks",
+      "description": "Rank reflects accumulated activity on Corelia. It is not a professional certification or a reward entitlement."
+    },
+    "leaderboard": {
+      "title": "XP leaderboard",
+      "description": "Celebrate progress with the Corelia learning community. Public student and instructor profiles participate.",
+      "period": "Leaderboard period",
+      "week": "This week",
+      "allTime": "All time",
+      "weekRange": "{{start}} – {{end}} · UTC",
+      "lifetime": "All valid XP earned on Corelia, including historical activity.",
+      "yourPosition": "Your position",
+      "position": "Position {{rank}}",
+      "empty": "No eligible XP activity in this period yet.",
+      "error": "Could not load the leaderboard. Please try again.",
+      "member": "Corelia member",
+      "pagination": "Leaderboard pages",
+      "page": "{{page}} / {{total}}",
+      "top": "Top {{count}} of {{eligible}} participants",
+      "reasons": {
+        "private_profile": "Your profile is private, so it does not appear on the leaderboard. Your personal rank is still available.",
+        "ineligible_role": "Admin and support accounts do not participate in the leaderboard. Your personal rank is still available.",
+        "no_xp": "You have no positive XP balance in this period yet.",
+        "missing_profile": "Your profile is not available yet."
+      }
+    }
   }
 }

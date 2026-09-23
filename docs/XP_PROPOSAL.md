@@ -206,3 +206,16 @@ Tham khảo: [Supabase Identity Linking](https://supabase.com/docs/guides/auth/a
 - Liên kết Google/GitHub qua Supabase Auth identity linking. OCID được xác minh bằng ID token ở Edge trước khi ghi hồ sơ/thưởng; browser không được tự ghi trường OCID. Ethereum/Solana dùng challenge 5 phút, chữ ký ví và lưu nhiều địa chỉ; thêm ví sau cùng hệ không cộng XP. Chưa hỗ trợ đăng nhập bằng ví, chuyển tài sản, chọn ví credential chính hoặc đổi vật phẩm.
 - OCID đã lưu trước bản triển khai nhưng chưa có điểm lịch sử cần kết nối lại bằng luồng có ID token để nhận XP; không thưởng hồi tố chỉ dựa trên trường hồ sơ do browser từng ghi.
 - Trước triển khai từ local lên staging/production: đặt `OCID_CLIENT_ID` và `OCID_SANDBOX` đúng với cấu hình frontend, bật manual OAuth identity linking trong Supabase Auth, xác nhận CORS origin, chạy migration và kiểm tra thực tế với ví/OAuth trên staging. Migration được kiểm tra trên Supabase local; production chưa được thay đổi.
+
+## 12. XP Rank và bảng xếp hạng — triển khai local 2026-09-23
+
+Phần mở rộng này thay thế giới hạn “chưa có level/ranking” của MVP ở trên, không thay đổi cách thưởng XP.
+
+- Cấp bậc dùng tổng XP hợp lệ: Khởi đầu 0, Đồng 250, Bạc 1.000, Vàng 2.500, Bạch kim 10.000, Kim cương 25.000. Cấu hình duy nhất ở `src/lib/xpRanks.ts`; không lưu rank riêng trong database. Thu hồi điểm có thể giảm hạng.
+- Badge xuất hiện trong hồ sơ, menu tài khoản và Suggested People. Khối hoạt động XP có tiến độ và bảng các mốc. Không thêm phần thưởng, quyền lợi hay thông báo lên hạng.
+- Bảng xếp hạng nằm trong tab BXH XP tại `/feed?tab=leaderboard`, dùng cùng trang Feed đã yêu cầu đăng nhập; không có mục điều hướng hoặc trang BXH riêng. Có tuần UTC từ thứ Hai và toàn thời gian. Top 100 chia 20 hàng/trang; vị trí bản thân được tính cả khi ngoài top 100. Đồng điểm dùng thứ hạng thi đấu `1, 2, 2, 4`, ID chỉ ổn định thứ tự hàng.
+- Chỉ hồ sơ công khai có vai trò student/instructor và XP trong kỳ dương tham gia. Tài khoản riêng tư/admin/support vẫn xem cấp bậc cá nhân và lý do không được xếp hạng.
+- `xp_leaderboard_v1` là public invoker wrapper gọi helper private, chỉ trả danh tính công khai và tổng điểm. Ledger giữ nguyên quyền riêng tư. Khoản thu hồi quy về `occurred_at` của khoản gốc; điểm lịch sử thiếu timestamp và khoản thu hồi tương ứng chỉ tính vào tổng, không tính tuần hiện tại.
+- Query nằm trong nhóm `xp`, tách theo viewer/kỳ/tuần, cache 60 giây; refresh khi vào trang, đổi kỳ, focus, nhận XP hoặc đổi quyền công khai hồ sơ. Rollover thứ Hai UTC đưa BXH tuần về trang đầu.
+- Kiểm thử SQL: `scripts/db/tests/xp-leaderboard.integration.sql`, được nối vào local migration gate. Không chỉnh frozen baseline. Release staging chạy backend trước frontend theo quy trình hiện có.
+- Đã xử lý blocker PostgreSQL của stack QA: checkout tạm thiếu file ignored `supabase/.temp/postgres-version`, nên dùng image mặc định cũ của CLI và crash ở permission-denial probe `learning_reset_lesson`. Ghim `17.6.1.156` giống CI giúp toàn bộ `db:verify:local` qua, gồm Learning authorization/concurrency và PostgREST smoke; không sửa hoặc bỏ qua test.
