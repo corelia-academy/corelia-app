@@ -8,6 +8,7 @@ project_id = "corelia-app"
 # Mixed surface: public webhook ops + authenticated user ops in one function.
 # Keep gateway JWT check off and enforce op-level auth in handler/router.
 verify_jwt = false
+import_map = "./functions/corelia-api/deno.json"
 static_files = ["./functions/corelia-api/og/assets/*"]
 
 [functions.cron-learning-reminders]

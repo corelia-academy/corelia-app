@@ -153,7 +153,7 @@ jobs:
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
           test "$SUPABASE_PROJECT_REF" = "lawhkvyyoznwygzsycan"
-          supabase functions deploy corelia-api --project-ref "$SUPABASE_PROJECT_REF"
+          supabase functions deploy corelia-api --project-ref "$SUPABASE_PROJECT_REF" --import-map supabase/functions/corelia-api/deno.json
 
       - name: Purge retired financial Storage objects
         env:
