@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { CourseResource } from "@/types/courses";
+import { COURSE_RESOURCE_ICONS } from "@/features/courses/courseResources";
+import { CourseResourceIcon } from "@/components/courses/CourseResourceIcon";
 
 export function CourseResourcesEditor({ value, onChange, disabled }: {
   value: CourseResource[];
@@ -22,6 +24,21 @@ export function CourseResourcesEditor({ value, onChange, disabled }: {
       <div className="space-y-3">
         {value.map((resource, index) => (
           <div key={index} className="flex flex-wrap items-end gap-2 rounded-lg border border-border-subtle p-3">
+            <label className="min-w-0 flex-[0_1_170px] space-y-1 text-sm">
+              <span>{t("courseResources.icon", { count: index + 1 })}</span>
+              <span className="flex items-center gap-2">
+                <span className="grid size-10 shrink-0 place-items-center rounded-lg border border-border-subtle bg-surface-raised text-foreground-muted">
+                  <CourseResourceIcon icon={resource.icon} />
+                </span>
+                <select
+                  className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  value={resource.icon ?? "link"}
+                  onChange={event => onChange(value.map((item, i) => i === index ? { ...item, icon: event.target.value as CourseResource["icon"] } : item))}
+                >
+                  {COURSE_RESOURCE_ICONS.map(icon => <option key={icon} value={icon}>{t(`courseResources.icons.${icon}`)}</option>)}
+                </select>
+              </span>
+            </label>
             <label className="min-w-0 flex-[1_1_180px] space-y-1 text-sm">
               <span>{t("courseResources.name", { count: index + 1 })}</span>
               <Input value={resource.title} onChange={event => onChange(value.map((item, i) => i === index ? { ...item, title: event.target.value } : item))} />
@@ -38,7 +55,7 @@ export function CourseResourcesEditor({ value, onChange, disabled }: {
           </div>
         ))}
       </div>
-      <Button type="button" variant="outline" className="mt-3" onClick={() => onChange([...value, { title: "", url: "" }])}><Plus className="size-4" aria-hidden />{t("courseResources.add")}</Button>
+      <Button type="button" variant="outline" className="mt-3" onClick={() => onChange([...value, { title: "", url: "", icon: "link" }])}><Plus className="size-4" aria-hidden />{t("courseResources.add")}</Button>
     </fieldset>
   );
 }

@@ -1294,7 +1294,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
 
   const saveCourseInfo = async (successMessage = t("courseEdit.toasts.saved")) => {
     if (!id || !course || !localeQuery.isSuccess) return;
-    const courseResources = form.course_resources.map(resource => ({ title: resource.title.trim(), url: resource.url.trim() }));
+    const courseResources = form.course_resources.map(resource => ({ title: resource.title.trim(), url: resource.url.trim(), icon: resource.icon ?? "link" }));
     if (!isValidCourseResources(courseResources)) {
       setError(courseT("courseResources.invalid"));
       return;

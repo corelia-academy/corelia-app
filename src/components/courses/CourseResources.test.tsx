@@ -5,6 +5,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { CourseResources } from "./CourseResources";
 import { LearnSidebar } from "@/pages/learn/components/LearnSidebar";
 import { CourseResourcesEditor } from "@/pages/instructor-course-edit/components/CourseResourcesEditor";
+import type { CourseResource } from "@/types/courses";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string, options?: { count: number }) => options ? `${key}-${options.count}` : key }) }));
@@ -18,7 +19,7 @@ async function render(ui: ReactNode) {
   await act(async () => root.render(ui));
   return host;
 }
-const resources = [{ title: "Docs", url: "https://example.com/docs" }, { title: "Community", url: "https://example.com/community" }];
+const resources: CourseResource[] = [{ title: "Docs", url: "https://example.com/docs", icon: "document" }, { title: "Community", url: "https://example.com/community", icon: "discord" }];
 
 it("hides an empty public section and filters malformed resources", async () => {
   const host = await render(<><CourseResources resources={undefined} /><CourseResources resources={[null, { title: "Unsafe", url: "javascript:alert(1)" }, ...resources]} /></>);
@@ -26,6 +27,7 @@ it("hides an empty public section and filters malformed resources", async () => 
   expect(Array.from(host.querySelectorAll("a")).map(link => link.getAttribute("href"))).toEqual(resources.map(resource => resource.url));
   expect(host.querySelector("a")?.target).toBe("_blank");
   expect(host.querySelector("a")?.rel).toContain("noopener");
+  expect(host.querySelectorAll('[data-slot="course-resource-icon"]')).toHaveLength(2);
 });
 
 it.each([{ items: resources }, { items: [] }])("opens curriculum first and switches to shared resources (%j)", async ({ items }) => {
@@ -55,6 +57,12 @@ it("adds, reorders and removes resources in the authoring form", async () => {
   await act(async () => add.click());
   expect(host.querySelectorAll("input")).toHaveLength(4);
   expect(host.querySelectorAll("input")[2].value).toBe("");
+  const iconSelect = host.querySelectorAll<HTMLSelectElement>("select")[1];
+  await act(async () => {
+    iconSelect.value = "github";
+    iconSelect.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  expect(host.querySelectorAll<HTMLSelectElement>("select")[1].value).toBe("github");
 });
 
 it("disables the resources fieldset during save", async () => {

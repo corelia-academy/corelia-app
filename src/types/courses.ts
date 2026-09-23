@@ -103,7 +103,19 @@ export interface CourseLocaleContent {
 export interface CourseResource {
   title: string;
   url: string;
+  icon?: CourseResourceIcon;
 }
+
+export type CourseResourceIcon =
+  | "link"
+  | "github"
+  | "discord"
+  | "telegram"
+  | "youtube"
+  | "document"
+  | "code"
+  | "community"
+  | "website";
 
 export interface Course {
   course_resources?: CourseResource[];

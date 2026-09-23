@@ -6,6 +6,18 @@
     "editorHint": "Thêm liên kết công khai tới tài liệu, kho mã nguồn hoặc cộng đồng thảo luận. Các liên kết này dùng chung cho mọi ngôn ngữ của khóa học.",
     "name": "Tên liên kết {{count}}",
     "url": "URL liên kết {{count}}",
+    "icon": "Biểu tượng liên kết {{count}}",
+    "icons": {
+      "link": "Liên kết",
+      "github": "GitHub",
+      "discord": "Discord",
+      "telegram": "Telegram",
+      "youtube": "YouTube",
+      "document": "Tài liệu",
+      "code": "Mã nguồn",
+      "community": "Cộng đồng",
+      "website": "Website"
+    },
     "moveUp": "Đưa liên kết {{count}} lên",
     "moveDown": "Đưa liên kết {{count}} xuống",
     "remove": "Xóa liên kết {{count}}",

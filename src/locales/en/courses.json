@@ -6,6 +6,18 @@
     "editorHint": "Add public links to course materials, repositories or community discussions. These links are shared across all course languages.",
     "name": "Link {{count}} name",
     "url": "Link {{count}} URL",
+    "icon": "Link {{count}} icon",
+    "icons": {
+      "link": "Link",
+      "github": "GitHub",
+      "discord": "Discord",
+      "telegram": "Telegram",
+      "youtube": "YouTube",
+      "document": "Document",
+      "code": "Source code",
+      "community": "Community",
+      "website": "Website"
+    },
     "moveUp": "Move link {{count}} up",
     "moveDown": "Move link {{count}} down",
     "remove": "Remove link {{count}}",
