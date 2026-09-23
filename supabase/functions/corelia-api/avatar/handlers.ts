@@ -1,5 +1,5 @@
 import { createAvatar } from "@humation/core";
-import { avatarAssets } from "../../../../shared/avatarAssets.ts";
+import { avatarAssets } from "./assets.ts";
 import type { SupabaseClient } from "../lib/supabase.ts";
 import { verifyBearerUser } from "../lib/supabase.ts";
 import { parseAvatarConfig, safeAvatarConfig } from "../../../../shared/avatarConfig.ts";

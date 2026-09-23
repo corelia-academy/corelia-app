@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "../lib/supabase.ts";
-import { avatarAssets } from "../../../../shared/avatarAssets.ts";
+import { avatarAssets } from "../avatar/assets.ts";
 import { safeAvatarConfig } from "../../../../shared/avatarConfig.ts";
 import { contentRevision, dateLabel, plainText, safeId } from "./text.ts";
 import { OG_TEMPLATE_REVISION, type OgCard, type OgEntity, type OgPublicMeta } from "./types.ts";

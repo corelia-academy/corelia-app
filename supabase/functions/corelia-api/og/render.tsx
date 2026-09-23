@@ -2,7 +2,7 @@ import React from "react";
 import { createAvatar } from "@humation/core";
 import satori from "satori";
 import { initWasm, Resvg } from "@resvg/resvg-wasm";
-import { avatarAssets } from "../../../../shared/avatarAssets.ts";
+import { avatarAssets } from "../avatar/assets.ts";
 import { EMAIL_BRAND } from "../lib/mail/brand.ts";
 import { CourseOG, EventOG, ProfileOG, ProjectOG } from "./cards.tsx";
 import type { OgCard } from "./types.ts";
