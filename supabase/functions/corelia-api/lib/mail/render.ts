@@ -20,7 +20,7 @@ export type TransactionalWrapParams = {
 
 const TAG_STYLES: Record<string, string> = {
   p: `margin:0 0 16px;line-height:1.6;color:${b.muted};`,
-  h2: `margin:0 0 14px;font-family:${b.headingFont};font-size:30px;line-height:1.15;letter-spacing:-0.02em;font-weight:500;color:${b.text};`,
+  h2: `margin:0 0 12px;font-family:${b.headingFont};font-size:30px;line-height:1.15;letter-spacing:-0.02em;font-weight:500;color:${b.text};`,
   a: `color:${b.link};text-decoration:underline;overflow-wrap:anywhere;word-break:break-word;`,
   strong: `color:${b.text};`,
   ul: "margin:0 0 16px;padding-left:20px;",
