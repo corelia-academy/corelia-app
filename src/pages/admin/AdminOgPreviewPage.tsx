@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 import { OgImagePreview } from "@/features/og/OgImagePreview";
 import { ogPreviewQueryOptions, probeOgImage, type OgEntity } from "@/features/og/ogPreviewQueries";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -22,7 +23,8 @@ export default function AdminOgPreviewPage() {
     staleTime: 0,
     retry: false,
   });
-  usePageMeta({ robots: "noindex, nofollow" });
+  useDynamicPageTitle(t("ogPreview.title"));
+  usePageMeta({ title: t("ogPreview.title"), description: t("ogPreview.description"), robots: "noindex, nofollow" });
 
   const meta = metaQuery.data;
   return <main className="container-app max-w-6xl space-y-6 py-6">
@@ -32,7 +34,7 @@ export default function AdminOgPreviewPage() {
       event.preventDefault(); setImageFailed(false); setId(draft.trim());
     }}>
       <label className="space-y-1 text-sm"><span>{t("ogPreview.entity")}</span>
-        <select value={entity} onChange={event => { setEntity(event.target.value as OgEntity); setId(""); }}
+        <select value={entity} onChange={event => { setEntity(event.target.value as OgEntity); setId(""); setImageFailed(false); }}
           className="h-10 w-full rounded-md border border-border bg-background px-3">
           {(["project", "course", "hackathon", "profile"] as const).map(item =>
             <option key={item} value={item}>{t(`ogPreview.entities.${item}`)}</option>)}</select></label>
@@ -41,7 +43,13 @@ export default function AdminOgPreviewPage() {
           placeholder={t("ogPreview.identifierPlaceholder")} /></label>
       <Button type="submit" className="self-end">{t("ogPreview.load")}</Button>
     </form>
-    {!id ? <p className="rounded-lg border border-border p-6 text-foreground-muted">{t("ogPreview.enterIdentifier")}</p>
+    {!id ? <div className="space-y-4">
+        <p className="text-sm text-foreground-muted">{t("ogPreview.defaultImageDescription")}</p>
+        <OgImagePreview imageUrl="/corelia-og-default-background.png" dark={dark} onToggleDark={() => setDark(value => !value)}
+          onError={() => setImageFailed(true)} />
+        {imageFailed ? <p role="alert" className="text-destructive">{t("ogPreview.imageError")}</p> : null}
+        <p className="text-sm text-foreground-muted">{t("ogPreview.enterIdentifier")}</p>
+      </div>
       : metaQuery.isPending ? <p role="status">{t("ogPreview.loading")}</p>
       : metaQuery.isError ? <div role="alert" className="space-y-2"><p>{t("ogPreview.metadataError")}</p>
         <Button type="button" variant="outline" onClick={() => void metaQuery.refetch()}>{t("ogPreview.retry")}</Button></div>
@@ -51,7 +59,7 @@ export default function AdminOgPreviewPage() {
           ? <div role="alert" className="space-y-2"><p>{t("ogPreview.imageError")}</p>
             <Button type="button" variant="outline" onClick={() => { setImageFailed(false); void imageQuery.refetch(); }}>
               {t("ogPreview.retry")}</Button></div>
-          : <OgImagePreview meta={meta} dark={dark} onToggleDark={() => setDark(value => !value)}
+          : <OgImagePreview imageUrl={meta.imageUrl} dark={dark} onToggleDark={() => setDark(value => !value)}
               onError={() => setImageFailed(true)} />}
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" onClick={() => { setImageFailed(false); void metaQuery.refetch(); }}>

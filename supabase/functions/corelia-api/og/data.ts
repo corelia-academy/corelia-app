@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "../lib/supabase.ts";
+import { avatarAssets } from "../../../../shared/avatarAssets.ts";
+import { safeAvatarConfig } from "../../../../shared/avatarConfig.ts";
 import { contentRevision, dateLabel, plainText, safeId } from "./text.ts";
-import type { OgCard, OgEntity, OgPublicMeta } from "./types.ts";
+import { OG_TEMPLATE_REVISION, type OgCard, type OgEntity, type OgPublicMeta } from "./types.ts";
 
 const EVENT_STATUSES = ["published", "running", "ended"];
 
@@ -112,12 +114,12 @@ async function profileCard(db: SupabaseClient, id: string): Promise<Omit<OgCard,
   const handle = id.replace(/^@/, "");
   const escapedHandle = handle.replace(/[\\%_]/g, character => `\\${character}`);
   let { data: row, error } = await db.from("public_profiles")
-    .select("id,username,ocid,full_name,bio,avatar_url,updated_at")
+    .select("id,username,ocid,full_name,bio,avatar_url,avatar_seed,avatar_config,updated_at")
     .eq("profile_public", true).ilike("username", escapedHandle).maybeSingle();
   if (error) throw error;
   if (!row) {
     ({ data: row, error } = await db.from("public_profiles")
-      .select("id,username,ocid,full_name,bio,avatar_url,updated_at")
+      .select("id,username,ocid,full_name,bio,avatar_url,avatar_seed,avatar_config,updated_at")
       .eq("profile_public", true).ilike("ocid", escapedHandle).maybeSingle());
     if (error) throw error;
   }
@@ -133,6 +135,8 @@ async function profileCard(db: SupabaseClient, id: string): Promise<Omit<OgCard,
     tags: (skills ?? []).map((item: { skill: string }) => plainText(item.skill, 32))
       .filter((item: string | null): item is string => Boolean(item)).slice(0, 3),
     imagePath: internalAvatarPath(row.avatar_url, row.id),
+    avatar: { seed: typeof row.avatar_seed === "string" && /^[0-9a-f-]{36}$/i.test(row.avatar_seed)
+      ? row.avatar_seed : row.id, config: safeAvatarConfig(row.avatar_config, avatarAssets) },
     dateLabel: null,
     updatedAt: row.updated_at, canonicalUrl: `${canonicalOrigin()}/@${encodeURIComponent(canonicalId)}`,
   };
@@ -147,8 +151,8 @@ export async function loadOgCard(db: SupabaseClient, entity: OgEntity, rawId: st
     : await profileCard(db, id);
   if (!card) return null;
   const revision = await contentRevision([
-    card.entity, card.canonicalId, card.title, card.description, card.subtitle,
-    card.tags, card.imagePath, card.dateLabel, card.canonicalUrl,
+    OG_TEMPLATE_REVISION, card.entity, card.title, card.description, card.subtitle,
+    card.tags, card.imagePath, card.avatar, card.dateLabel,
   ]);
   return { ...card, revision };
 }

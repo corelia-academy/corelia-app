@@ -66,12 +66,19 @@ describe("public OG DTO", () => {
     expect(await loadOgCard(database({ hackathons: { ...event, status: "draft" } }), "hackathon", "hackathon")).toBeNull();
   });
 
-  it("uses public skills and refuses external profile avatars", async () => {
+  it("uses public skills and generates the same profile avatar seed as the app", async () => {
     const profile = { id: "profile-id", username: "alice", ocid: null, full_name: "Alice",
       bio: "Học viên", avatar_url: "https://external.example/avatar.png", profile_public: true,
       updated_at: "2026-09-24T00:00:00Z" };
     const card = await loadOgCard(database({ public_profiles: profile }), "profile", "alice");
-    expect(card).toMatchObject({ imagePath: null, subtitle: "@alice", tags: ["Solana", "React"] });
+    expect(card).toMatchObject({ imagePath: null, subtitle: "@alice", tags: ["Solana", "React"],
+      avatar: { seed: "profile-id", config: { selections: {}, colors: {} } } });
+    const customized = await loadOgCard(database({ public_profiles: { ...profile,
+      avatar_seed: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", avatar_config: { selections: {}, colors: { hair: "#123456" } } } }),
+    "profile", "alice");
+    expect(customized?.avatar).toMatchObject({ seed: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      config: { colors: { hair: "#123456" } } });
+    expect(customized?.revision).not.toBe(card?.revision);
     const ownAvatar = await loadOgCard(database({ public_profiles: { ...profile,
       avatar_url: "http://127.0.0.1:54321/storage/v1/object/public/app/avatars/profile-id/avatar.png" } }), "profile", "alice");
     expect(ownAvatar?.imagePath).toBe("avatars/profile-id/avatar.png");

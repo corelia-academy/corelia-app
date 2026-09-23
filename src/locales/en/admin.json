@@ -8,6 +8,7 @@
     "identifierPlaceholder": "Enter a public identifier",
     "load": "Preview",
     "enterIdentifier": "Choose a content type and enter its identifier to preview the image.",
+    "defaultImageDescription": "Default share image used for Corelia pages without an entity card.",
     "loading": "Loading share image…",
     "metadataError": "Could not load metadata. Please try again.",
     "unavailable": "This content is not public or has no share image.",

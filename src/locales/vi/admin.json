@@ -8,6 +8,7 @@
     "identifierPlaceholder": "Nhập định danh công khai",
     "load": "Xem trước",
     "enterIdentifier": "Chọn loại nội dung và nhập định danh để xem ảnh.",
+    "defaultImageDescription": "Ảnh chia sẻ mặc định cho trang Corelia không có card riêng.",
     "loading": "Đang tải ảnh chia sẻ…",
     "metadataError": "Không tải được metadata. Hãy thử lại.",
     "unavailable": "Nội dung này chưa công khai hoặc không có ảnh chia sẻ.",

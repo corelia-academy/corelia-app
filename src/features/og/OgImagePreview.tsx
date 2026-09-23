@@ -1,9 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import type { OgPreviewMeta } from "./ogPreviewQueries";
 
-export function OgImagePreview({ meta, onError, dark, onToggleDark }: {
-  meta: OgPreviewMeta; onError: () => void; dark: boolean; onToggleDark: () => void;
+export function OgImagePreview({ imageUrl, onError, dark, onToggleDark }: {
+  imageUrl: string; onError: () => void; dark: boolean; onToggleDark: () => void;
 }) {
   const { t } = useTranslation("admin");
   return <div className="space-y-4">
@@ -14,7 +13,7 @@ export function OgImagePreview({ meta, onError, dark, onToggleDark }: {
       </Button>
     </div>
     <div className={`rounded-xl p-3 sm:p-6 ${dark ? "bg-[#090b16]" : "bg-white"}`}>
-      <img src={meta.imageUrl} alt={t("ogPreview.imageAlt")} onError={onError}
+      <img src={imageUrl} alt={t("ogPreview.imageAlt")} onError={onError}
         className="mx-auto block w-full max-w-[1200px] rounded-lg object-contain"
         style={{ aspectRatio: "1200 / 630" }} />
     </div>

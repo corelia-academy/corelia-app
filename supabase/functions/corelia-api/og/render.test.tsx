@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { renderOgImage } from "./render.tsx";
+import { renderDefaultOgImage, renderOgImage } from "./render.tsx";
 import type { OgCard, OgEntity } from "./types.ts";
 
 function card(entity: OgEntity): OgCard {
@@ -13,6 +13,13 @@ function card(entity: OgEntity): OgCard {
 }
 
 describe("OG PNG renderer", () => {
+  it("renders the simple default logo image at 1200×630", async () => {
+    const png = await renderDefaultOgImage();
+    const view = new DataView(png.buffer, png.byteOffset, png.byteLength);
+    expect(view.getUint32(16)).toBe(1200);
+    expect(view.getUint32(20)).toBe(630);
+  });
+
   it.each(["project", "course", "hackathon", "profile"] as const)("renders %s at 1200×630", async entity => {
     const png = await renderOgImage(card(entity), null);
     expect(Array.from(png.slice(0, 8))).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -28,5 +35,15 @@ describe("OG PNG renderer", () => {
     const png = await renderOgImage(input, null);
     expect(new DataView(png.buffer, png.byteOffset, png.byteLength).getUint32(16)).toBe(1200);
     expect(png.byteLength).toBeGreaterThan(10000);
+  });
+
+  it("renders a generated profile avatar from its saved configuration", async () => {
+    const profile = card("profile");
+    profile.avatar = { seed: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      config: { selections: {}, colors: { hair: "#123456" } } };
+    const generated = await renderOgImage(profile, null);
+    const fallback = await renderOgImage({ ...profile, avatar: null }, null);
+    expect(generated).not.toEqual(fallback);
+    expect(new DataView(generated.buffer, generated.byteOffset, generated.byteLength).getUint32(16)).toBe(1200);
   });
 });
