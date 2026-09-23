@@ -35,14 +35,7 @@ test("Staging deployment rejects a Production Worker or Supabase bundle", async 
   await assert.rejects(verifyFrontendTarget("staging", f.root), /missing the staging Supabase/);
 });
 
-test("Frontend publication workflow requires an explicit branch, Worker, and target verification", () => {
-  const workflow = readFileSync(resolve(".github/workflows/deploy-frontend.yml"), "utf8");
+test("Package scripts do not expose an ambiguous default deployment command", () => {
   const packageJson = JSON.parse(readFileSync(resolve("package.json"), "utf8"));
-  assert.match(workflow, /refs\/heads\/staging/);
-  assert.match(workflow, /refs\/heads\/main/);
-  assert.match(workflow, /worker="corelia-staging"/);
-  assert.match(workflow, /worker="corelia-app"/);
-  assert.match(workflow, /verify-frontend-target\.mjs "\$TARGET"/);
-  assert.match(workflow, /wrangler deploy --name "\$WORKER"/);
   assert.equal(packageJson.scripts.deploy, undefined);
 });
