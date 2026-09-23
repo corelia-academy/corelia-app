@@ -252,7 +252,7 @@ export default function AdminInstructors() {
                     <UserAvatar
                       userId={p.id}
                       avatarUrl={p.avatar_url}
-                      avatarSeed={p.avatar_seed}
+                      avatarSeed={p.avatar_seed} avatarConfig={p.avatar_config}
                       alt={p.full_name || "Instructor"}
                       fallback={(p.full_name || "I")[0]}
                       className="size-10"
@@ -392,7 +392,7 @@ export default function AdminInstructors() {
                           <UserAvatar
                             userId={p.id}
                             avatarUrl={p.avatar_url}
-                            avatarSeed={p.avatar_seed}
+                            avatarSeed={p.avatar_seed} avatarConfig={p.avatar_config}
                             alt={p.full_name || "Instructor"}
                             fallback={(p.full_name || "I")[0]}
                             className="size-9"

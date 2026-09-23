@@ -323,10 +323,3 @@ export function uploadCoursePartnerBrandLogo(
   const ext = buildSafeExt(file.name, "png");
   return uploadToPath(`course-partner-brand/${cid}/${crypto.randomUUID()}.${ext}`, file, previousPath, true);
 }
-
-/** ảnh đại diện: avatars/{userId}/{timestamp}.{ext} */
-export function uploadUserAvatar(userId: string, file: File): Promise<{ url: string; path: string }> {
-  if (!userId) throw new Error("Thiếu userId");
-  const ext = buildSafeExt(file.name, "jpg");
-  return uploadToPath(`avatars/${userId}/${Date.now()}.${ext}`, file);
-}

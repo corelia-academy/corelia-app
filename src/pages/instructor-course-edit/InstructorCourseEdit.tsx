@@ -8488,7 +8488,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                                 <UserAvatar
                                   userId={e.user_id}
                                   avatarUrl={profile?.avatar_url}
-                                  avatarSeed={profile?.avatar_seed}
+                                  avatarSeed={profile?.avatar_seed} avatarConfig={profile?.avatar_config}
                                   alt={profile?.full_name || e.user_id}
                                   fallback={(profile?.full_name || e.user_id)
                                     .charAt(0)

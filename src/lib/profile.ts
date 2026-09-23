@@ -1,10 +1,11 @@
 import { profileNameFromMetadata, validateProfileName } from "@/lib/profileName";
 import { supabase } from "@/lib/supabase";
-import { uploadUserAvatar } from "@/lib/storage";
 import type { User } from "@supabase/supabase-js";
 import type { Profile, ProfileInsert, ProfileUpdate, PublicProfile } from "@/types/database";
 import { sortLocale } from "@/lib/intl";
 import { callCoreliaApi } from "@/lib/coreliaEdgeApi";
+import { avatarAssets } from "@/lib/avatarAssets";
+import { safeAvatarConfig, EMPTY_AVATAR_CONFIG } from "../../shared/avatarConfig";
 
 function rowToProfile(row: Record<string, unknown>): Profile {
   return {
@@ -14,6 +15,7 @@ function rowToProfile(row: Record<string, unknown>): Profile {
     full_name: (row.full_name as string | null) ?? null,
     avatar_url: (row.avatar_url as string | null) ?? null,
     avatar_seed: (row.avatar_seed as string | null) ?? null,
+    avatar_config: safeAvatarConfig(row.avatar_config, avatarAssets),
     phone: (row.phone as string | null) ?? null,
     email: (row.email as string | null) ?? null,
     bio: (row.bio as string | null) ?? null,
@@ -46,6 +48,7 @@ function rowToPublicProfile(row: Record<string, unknown>): PublicProfile {
     full_name: (row.full_name as string | null) ?? null,
     avatar_url: (row.avatar_url as string | null) ?? null,
     avatar_seed: (row.avatar_seed as string | null) ?? null,
+    avatar_config: safeAvatarConfig(row.avatar_config, avatarAssets),
     bio: (row.bio as string | null) ?? null,
     website: (row.website as string | null) ?? null,
     instructor_origin: (row.instructor_origin as PublicProfile["instructor_origin"]) ?? null,
@@ -83,6 +86,7 @@ async function _fetchProfileForUser(user: User): Promise<Profile | null> {
       full_name: profileNameFromMetadata(user.user_metadata?.full_name ?? user.user_metadata?.name),
       avatar_url: user.user_metadata?.avatar_url ?? null,
       avatar_seed: null,
+      avatar_config: EMPTY_AVATAR_CONFIG,
       phone: user.phone ?? null,
       email: user.email ?? null,
       created_at: new Date().toISOString(),
@@ -212,6 +216,7 @@ function fallbackProfile(user: { id: string; email?: string | null; user_metadat
     full_name: profileNameFromMetadata(user.user_metadata?.full_name),
     avatar_url: (user.user_metadata?.avatar_url as string) ?? null,
     avatar_seed: null,
+      avatar_config: EMPTY_AVATAR_CONFIG,
     phone: null,
     email: user.email ?? null,
     bio: null,
@@ -284,6 +289,7 @@ export async function setNewUserProfileForUser(
       email: data.email ?? user.email ?? null,
       avatar_url: (user.user_metadata?.avatar_url as string) ?? null,
       avatar_seed: null,
+      avatar_config: EMPTY_AVATAR_CONFIG,
       phone: user.phone ?? null,
       created_at: now,
       updated_at: now,
@@ -313,6 +319,7 @@ export async function updateProfileForUser(
   if (updates.full_name !== undefined) safeUpdates.full_name = validateProfileName(updates.full_name);
   if (updates.avatar_url !== undefined) safeUpdates.avatar_url = updates.avatar_url;
   if (updates.avatar_seed !== undefined) safeUpdates.avatar_seed = updates.avatar_seed;
+  if (updates.avatar_config !== undefined) safeUpdates.avatar_config = updates.avatar_config;
   if (updates.phone !== undefined) safeUpdates.phone = updates.phone;
   if (updates.email !== undefined) safeUpdates.email = updates.email;
   if (updates.bio !== undefined) safeUpdates.bio = updates.bio;
@@ -393,19 +400,6 @@ export async function listCourseCoInstructorCandidates(courseId: string): Promis
   });
   if (error) throw new Error(error.message);
   return (data ?? []).map((row: unknown) => rowToProfile(row as Record<string, unknown>));
-}
-
-export async function uploadAvatarForUser(user: User, file: File): Promise<string> {
-  const { url } = await uploadUserAvatar(user.id, file);
-  return url;
-}
-
-export async function uploadAvatar(file: File): Promise<string> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Chưa đăng nhập");
-  return uploadAvatarForUser(user, file);
 }
 
 // Admin-only profile mutation (can set `role`/`tier`). Authorization is enforced

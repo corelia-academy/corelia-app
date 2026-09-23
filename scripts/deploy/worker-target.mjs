@@ -33,6 +33,12 @@ export async function prepareWorkerTarget(mode, configPath) {
     throw new Error("Generated Worker does not point at the client assets");
   }
   config.name = target.worker;
+  config.vars = {
+    ...config.vars,
+    CORELIA_API_URL: `https://${target.projectRef}.supabase.co/functions/v1/corelia-api`,
+    CORELIA_OG_FUNCTION_URL: `https://${target.projectRef}.supabase.co/functions/v1/corelia-api`,
+    CORELIA_APP_ORIGIN: target.appUrl,
+  };
   await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
   return target;
 }

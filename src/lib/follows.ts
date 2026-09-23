@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import type { FollowRow, FollowSubject } from "@/types/feed";
-import { getPublicAvatarSeeds } from "@/lib/publicProfileAvatars";
+import { getPublicAvatarDetails } from "@/lib/publicProfileAvatars";
 
 export interface FollowerPreviewRow {
   id: string;
@@ -8,7 +8,7 @@ export interface FollowerPreviewRow {
   ocid: string | null;
   full_name: string | null;
   avatar_url: string | null;
-  avatar_seed: string | null;
+  avatar_seed: string | null; avatar_config?: import("../../shared/avatarConfig").AvatarConfig | null;
   followed_at: string;
 }
 
@@ -81,8 +81,8 @@ export async function listFollowers(
   });
   if (error) throw new Error(error.message);
   const rows = (data ?? []) as Omit<FollowerPreviewRow, "avatar_seed">[];
-  const seeds = await getPublicAvatarSeeds(rows.map((row) => row.id));
-  return rows.map((row) => ({ ...row, avatar_seed: seeds.get(row.id) ?? null }));
+  const avatars = await getPublicAvatarDetails(rows.map((row) => row.id));
+  return rows.map((row) => ({ ...row, avatar_seed: avatars.get(row.id)?.avatar_seed ?? null, avatar_config: avatars.get(row.id)?.avatar_config ?? null }));
 }
 
 export async function listUserFollowing(
@@ -95,8 +95,8 @@ export async function listUserFollowing(
   });
   if (error) throw new Error(error.message);
   const rows = (data ?? []) as Omit<FollowerPreviewRow, "avatar_seed">[];
-  const seeds = await getPublicAvatarSeeds(rows.map((row) => row.id));
-  return rows.map((row) => ({ ...row, avatar_seed: seeds.get(row.id) ?? null }));
+  const avatars = await getPublicAvatarDetails(rows.map((row) => row.id));
+  return rows.map((row) => ({ ...row, avatar_seed: avatars.get(row.id)?.avatar_seed ?? null, avatar_config: avatars.get(row.id)?.avatar_config ?? null }));
 }
 
 export async function listMyFeedFollowingProfiles(
@@ -113,8 +113,8 @@ export async function listMyFeedFollowingProfiles(
   });
   if (error) throw new Error(error.message);
   const rows = (data ?? []) as Omit<FollowerPreviewRow, "avatar_seed">[];
-  const seeds = await getPublicAvatarSeeds(rows.map((row) => row.id));
-  return rows.map((row) => ({ ...row, avatar_seed: seeds.get(row.id) ?? null }));
+  const avatars = await getPublicAvatarDetails(rows.map((row) => row.id));
+  return rows.map((row) => ({ ...row, avatar_seed: avatars.get(row.id)?.avatar_seed ?? null, avatar_config: avatars.get(row.id)?.avatar_config ?? null }));
 }
 
 export async function listSuggestedFeedProfiles(userId: string, limit = 4): Promise<FeedSuggestedProfile[]> {

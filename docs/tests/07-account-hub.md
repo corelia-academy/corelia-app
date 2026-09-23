@@ -21,16 +21,17 @@ Toàn bộ learner-facing AI và các route cũ liên quan đã được gỡ b�
 ## Checklist
 
 1. Đăng nhập, vào `/account` — redirect về `/account/profile`.
-2. **`/account/profile`**: cập nhật họ tên/avatar (nếu có) — lưu và reload giữ được.
-3. **`/account/cv`**: chỉnh sửa/lưu hoặc upload theo UI — không crash.
-4. **`/account/billing`**: hiển thị lịch sử giao dịch và thanh toán lịch sử; không hard fail khi empty.
-5. **`/account/settings`**: đổi locale/email/password (theo phạm vi staging); OCID section nếu bật ([01](01-auth-session-ocid.md)).
-6. **`/account/projects`**: editor dịch/i18n project — load danh sách project user có quyền chỉnh; **không** nhầm với `/projects` gallery.
-7. **`/account/instructor`**:
+2. **`/account/profile`**: cập nhật họ tên; liên kết avatar mở `/settings/avatar`.
+3. **`/settings/avatar`**: randomize, chọn bộ phận/màu, Save và reload giữ cấu hình; `/avatar/<username>.svg` trả SVG cho hồ sơ công khai và 404 cho hồ sơ riêng tư.
+4. **`/account/cv`**: chỉnh sửa/lưu hoặc upload theo UI — không crash.
+5. **`/account/billing`**: hiển thị lịch sử giao dịch và thanh toán lịch sử; không hard fail khi empty.
+6. **`/account/settings`**: đổi locale/email/password (theo phạm vi staging); OCID section nếu bật ([01](01-auth-session-ocid.md)).
+7. **`/account/projects`**: editor dịch/i18n project — load danh sách project user có quyền chỉnh; **không** nhầm với `/projects` gallery.
+8. **`/account/instructor`**:
    - **Student_1**: empty, upsell, hoặc redirect (ghi nhận spec).
    - **Instructor_1**: form instructor hiển thị và lưu được.
-8. **`/achievements`**: redirect về `/account` (top-level route dự phòng).
-9. **OC Vault (Badges & Credentials)**: UI hiển thị trên trang public profile `/u/<username>` → section "Huy hiệu & Thành tích" → tabs OCA / Badges / Milestones. Test: mint ít nhất 1 credential trên staging → kiểm tra hiện trên profile. *(Route `/account/achievements` chưa có — in-app notification bell hiện link tạm về đây; sẽ wired ở sprint sau.)*
+9. **`/achievements`**: redirect về `/account` (top-level route dự phòng).
+10. **OC Vault (Badges & Credentials)**: UI hiển thị trên trang public profile `/u/<username>` → section "Huy hiệu & Thành tích" → tabs OCA / Badges / Milestones. Test: mint ít nhất 1 credential trên staging → kiểm tra hiện trên profile. *(Route `/account/achievements` chưa có — in-app notification bell hiện link tạm về đây; sẽ wired ở sprint sau.)*
 
 ## Kết quả mong đợi
 

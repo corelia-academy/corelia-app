@@ -108,7 +108,7 @@ describe("admin component detail pages", () => {
     expect(userTrigger?.className).not.toContain("!p-0");
     expect(
       userTrigger?.querySelector('[data-slot="avatar-image"]')?.getAttribute("src"),
-    ).toBe("https://example.com/metadata-avatar.png");
+    ).toMatch(/^data:image\/svg\+xml/);
 
     await act(async () => userTrigger?.click());
     expect(userTrigger?.getAttribute("data-state")).toBe("Clicked");

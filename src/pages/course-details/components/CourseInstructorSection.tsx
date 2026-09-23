@@ -74,6 +74,7 @@ function InstructorCard({
   userId,
   avatarUrl,
   avatarSeed,
+  avatarConfig,
   name,
   meta,
   bio,
@@ -83,6 +84,7 @@ function InstructorCard({
   userId: string;
   avatarUrl?: string | null;
   avatarSeed?: string | null;
+  avatarConfig?: import("../../../../shared/avatarConfig").AvatarConfig | null;
   name: string;
   meta?: string;
   bio?: string;
@@ -96,6 +98,7 @@ function InstructorCard({
           userId={userId}
           avatarUrl={avatarUrl}
           avatarSeed={avatarSeed}
+          avatarConfig={avatarConfig}
           alt={name}
           fallback={initials(name)}
           className="mt-0.5 size-12 shrink-0 rounded-full border border-border-subtle"
@@ -190,7 +193,7 @@ export function CourseInstructorSection({
       <div className="mt-4 grid gap-3 sm:grid-cols-2">{attribution.map((item, index) => {
         const person = attributionQuery.data?.[index];
         if (!person) return null;
-        return <InstructorCard key={item.profile_id} userId={person.id} avatarUrl={person.avatar_url} avatarSeed={person.avatar_seed}
+        return <InstructorCard key={item.profile_id} userId={person.id} avatarUrl={person.avatar_url} avatarSeed={person.avatar_seed} avatarConfig={person.avatar_config}
           name={person.full_name?.trim() || translate("detail.courseDetail.instructor.fallbackName")}
           meta={item.role_label} bio={person.instructor_bio?.trim() || person.bio?.trim()}
           profileLink={person.role === "instructor" ? `/instructors/${person.id}` : person.username ? `/@${encodeURIComponent(person.username)}` : undefined} />;
@@ -228,7 +231,7 @@ export function CourseInstructorSection({
         <InstructorCard
           userId={profile.id}
           avatarUrl={profile.avatar_url}
-          avatarSeed={profile.avatar_seed}
+          avatarSeed={profile.avatar_seed} avatarConfig={profile.avatar_config}
           name={mainName}
           meta={mainMeta}
           bio={mainBio}
@@ -254,6 +257,7 @@ export function CourseInstructorSection({
                   userId={p.id}
                   avatarUrl={currentProfile?.avatar_url ?? p.avatar_url}
                   avatarSeed={currentProfile?.avatar_seed ?? p.avatar_seed}
+                  avatarConfig={currentProfile?.avatar_config ?? p.avatar_config}
                   name={label}
                   meta={meta}
                   bio={p.bio?.trim()}

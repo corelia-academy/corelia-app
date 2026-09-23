@@ -1,7 +1,6 @@
 import { PROFILE_NAME_MAX_LENGTH } from "@/lib/profileName";
-import { useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Image as ImageIcon, Loader2, Shuffle } from "lucide-react";
+import { Link } from "react-router";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,8 +13,8 @@ export function ProfileSection(props: {
   phone: string;
   avatarUrl: string;
   avatarSeed: string | null;
+  avatarConfig: import("../../../shared/avatarConfig").AvatarConfig;
   userId: string | null;
-  previewAvatarSeed: string | null;
   bio: string;
   website: string;
   profilePublic: boolean;
@@ -28,12 +27,6 @@ export function ProfileSection(props: {
   onProfileVisibilityChange: (v: boolean) => void | Promise<void>;
   visibilitySaving: boolean;
   saving: boolean;
-  uploadingAvatar: boolean;
-  savingAvatar: boolean;
-  onAvatarUpload: (file: File) => Promise<void>;
-  onGenerateAvatarPreview: () => void;
-  onSaveGeneratedAvatar: () => Promise<void>;
-  onCancelGeneratedAvatar: () => void;
   error: string | null;
   success: string | null;
   onSubmit: (e: React.FormEvent) => void;
@@ -45,8 +38,8 @@ export function ProfileSection(props: {
     phone,
     avatarUrl,
     avatarSeed,
+    avatarConfig,
     userId,
-    previewAvatarSeed,
     bio,
     website,
     profilePublic,
@@ -59,26 +52,11 @@ export function ProfileSection(props: {
     onProfileVisibilityChange,
     visibilitySaving,
     saving,
-    uploadingAvatar,
-    savingAvatar,
-    onAvatarUpload,
-    onGenerateAvatarPreview,
-    onSaveGeneratedAvatar,
-    onCancelGeneratedAvatar,
     error,
     success,
     onSubmit,
   } = props;
   const { t } = useTranslation("account");
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !file.type.startsWith("image/")) return;
-    void onAvatarUpload(file);
-    e.target.value = "";
-  };
-
   return (
     <form onSubmit={(e) => void onSubmit(e)} className="space-y-5">
       <div className="grid gap-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
@@ -104,7 +82,7 @@ export function ProfileSection(props: {
             </div>
             <button
               type="button"
-              disabled={saving || uploadingAvatar || visibilitySaving}
+              disabled={saving || visibilitySaving}
               onClick={() => void onProfileVisibilityChange(!profilePublic)}
               className={[
                 "min-h-11 rounded-full border px-3 py-1 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
@@ -124,79 +102,13 @@ export function ProfileSection(props: {
 
         <div className="grid gap-3">
           <Label className="text-sm font-medium">{t("profile.avatar.label")}</Label>
-          <div className="flex flex-wrap items-center gap-4">
-            <UserAvatar
-              userId={userId}
-              avatarUrl={previewAvatarSeed ? null : avatarUrl}
-              avatarSeed={previewAvatarSeed ?? avatarSeed}
-              alt={t("profile.avatar.alt")}
-              fallback={fullName.trim() ? fullName.trim().slice(0, 2).toUpperCase() : "?"}
-              className="size-20 shrink-0 rounded-full"
-              fallbackClassName="text-lg"
-            />
-            <div className="flex min-w-0 flex-col gap-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={onFileChange}
-                disabled={uploadingAvatar || saving || savingAvatar}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploadingAvatar || saving || savingAvatar}
-                className="inline-flex items-center gap-2"
-              >
-                {uploadingAvatar ? (
-                  <>
-                    <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
-                    {t("profile.avatar.uploading")}
-                  </>
-                ) : (
-                  <>
-                    <ImageIcon className="size-4 shrink-0" aria-hidden />
-                    {t("profile.avatar.upload")}
-                  </>
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onGenerateAvatarPreview}
-                disabled={uploadingAvatar || saving || savingAvatar}
-                className="inline-flex items-center gap-2"
-              >
-                <Shuffle className="size-4 shrink-0" aria-hidden />
-                {previewAvatarSeed
-                  ? t("profile.avatar.tryAnother")
-                  : t("profile.avatar.randomize")}
-              </Button>
-              {previewAvatarSeed ? (
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    onClick={() => void onSaveGeneratedAvatar()}
-                    disabled={savingAvatar || uploadingAvatar || saving}
-                  >
-                    {savingAvatar ? t("profile.avatar.saving") : t("profile.avatar.useThis")}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={onCancelGeneratedAvatar}
-                    disabled={savingAvatar}
-                  >
-                    {t("profile.avatar.cancel")}
-                  </Button>
-                </div>
-              ) : null}
-              <p className="text-xs text-foreground-muted">
-                {t("profile.avatar.hint")}
-              </p>
-            </div>
+          <div className="flex items-center gap-4">
+            <UserAvatar userId={userId} avatarUrl={avatarUrl} avatarSeed={avatarSeed} avatarConfig={avatarConfig}
+              alt={t("profile.avatar.alt")} fallback={fullName.trim().slice(0, 2).toUpperCase() || "?"}
+              className="size-20 shrink-0 rounded-full" />
+            <Button type="button" variant="outline" nativeButton={false} render={<Link to="/settings/avatar" />}>
+              {t("avatarEditor.edit")}
+            </Button>
           </div>
         </div>
 

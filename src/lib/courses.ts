@@ -1191,7 +1191,7 @@ export function toCoInstructorSnapshot(profile: {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
-  avatar_seed?: string | null;
+  avatar_seed?: string | null; avatar_config?: import("../../shared/avatarConfig").AvatarConfig | null;
   instructor_headline?: string | null;
   instructor_bio?: string | null;
   instructor_organization?: string | null;
@@ -1202,6 +1202,7 @@ export function toCoInstructorSnapshot(profile: {
     name: profile.full_name ?? "",
     avatar_url: profile.avatar_url ?? null,
     avatar_seed: profile.avatar_seed ?? null,
+    avatar_config: profile.avatar_config ?? null,
     headline: profile.instructor_headline ?? null,
     organization: profile.instructor_organization ?? null,
     website: profile.instructor_website ?? null,

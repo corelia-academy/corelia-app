@@ -274,7 +274,7 @@ export default function AdminUsers() {
                   <UserAvatar
                     userId={p.id}
                     avatarUrl={p.avatar_url}
-                    avatarSeed={p.avatar_seed}
+                    avatarSeed={p.avatar_seed} avatarConfig={p.avatar_config}
                     alt={p.full_name || p.username || "User"}
                     fallback={(p.full_name || p.username || "U")[0].toUpperCase()}
                     className="size-10"
@@ -439,7 +439,7 @@ export default function AdminUsers() {
                         <UserAvatar
                           userId={p.id}
                           avatarUrl={p.avatar_url}
-                          avatarSeed={p.avatar_seed}
+                          avatarSeed={p.avatar_seed} avatarConfig={p.avatar_config}
                           alt={p.full_name || p.username || "User"}
                           fallback={(p.full_name || p.username || "U")[0].toUpperCase()}
                           className="size-9"

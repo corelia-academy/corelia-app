@@ -47,7 +47,7 @@ export function ManualMintProfilePreviewDialog({
               <UserAvatar
                 userId={profile.id}
                 avatarUrl={profile.avatar_url}
-                avatarSeed={profile.avatar_seed}
+                avatarSeed={profile.avatar_seed} avatarConfig={profile.avatar_config}
                 alt={profile.full_name ?? ""}
                 fallback={(profile.full_name ?? "?").slice(0, 1).toUpperCase()}
                 size="lg"

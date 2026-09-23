@@ -31,7 +31,7 @@ describe("course roster", () => {
     seedQuery.select.mockReturnValue(seedQuery);
     seedQuery.in.mockReturnValue(seedQuery);
     seedQuery.abortSignal.mockResolvedValue({
-      data: [{ id: "learner", avatar_seed: "seed" }],
+      data: [{ id: "learner", avatar_seed: "seed", avatar_config: { selections: {}, colors: {} } }],
       error: null,
     });
     vi.mocked(supabase.from).mockReturnValue(
@@ -39,7 +39,7 @@ describe("course roster", () => {
     );
     const controller = new AbortController();
     expect(await getLearningCourseRoster("course", controller.signal)).toEqual([
-      { ...participant, avatar_seed: "seed" },
+      { ...participant, avatar_seed: "seed", avatar_config: { selections: {}, colors: {} } },
     ]);
     expect(supabase.rpc).toHaveBeenCalledWith("learning_course_roster", { p_course: "course" });
     expect(abortSignal).toHaveBeenCalledWith(controller.signal);

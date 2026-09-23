@@ -151,6 +151,11 @@ export function AdminSidebar() {
                 />
               </SidebarMenuItem>
               <SidebarMenuItem>
+                <SidebarMenuButton className="rounded-md" tooltip={t("layout.sidebar.ogPreview.label")}
+                  isActive={pathname === "/admin/og-preview"}
+                  render={<NavLink to="/admin/og-preview" className="flex w-full items-center gap-2"><ImageIcon className="size-4" aria-hidden /><span>{t("layout.sidebar.ogPreview.label")}</span></NavLink>} />
+              </SidebarMenuItem>
+              <SidebarMenuItem>
                 <SidebarMenuButton
                   className="rounded-md"
                   tooltip={t("layout.sidebar.manualMint.tooltip")}

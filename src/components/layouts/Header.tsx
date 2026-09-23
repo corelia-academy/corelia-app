@@ -31,7 +31,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BetaAnnouncementBanner } from "@/components/layouts/BetaAnnouncementBanner";
 import {
   searchResultsQueryOptions,
   trendingSearchesQueryOptions,
@@ -270,7 +269,6 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border-subtle bg-surface-raised">
-      <BetaAnnouncementBanner />
       <div className="mx-auto flex h-14 w-full max-w-[1990px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="size-7 shrink-0 lg:hidden">
@@ -502,7 +500,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                         <UserAvatar
                           userId={profile?.id ?? user?.id}
                           avatarUrl={avatarUrl}
-                          avatarSeed={profile?.avatar_seed}
+                          avatarSeed={profile?.avatar_seed} avatarConfig={profile?.avatar_config}
                           alt={displayName}
                           fallback={avatarFallback}
                           size="Large"

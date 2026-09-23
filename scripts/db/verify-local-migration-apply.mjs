@@ -12,6 +12,7 @@ const sqlTestPaths = [
   "scripts/db/tests/xp-leaderboard.integration.sql",
   "scripts/db/tests/profile-name-integrity.integration.sql",
   "scripts/db/tests/avatar-seed.integration.sql",
+  "scripts/db/tests/avatar-config.integration.sql",
   "scripts/db/tests/learner-ai-retirement.integration.sql",
   "scripts/db/tests/project-submission.integration.sql",
   "scripts/db/tests/project-localization.integration.sql",

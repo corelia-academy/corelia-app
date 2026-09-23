@@ -21,6 +21,7 @@ type ProjectCardProps = {
   ownerHandle?: string | null;
   ownerAvatarUrl?: string | null;
   ownerAvatarSeed?: string | null;
+  ownerAvatarConfig?: import("../../../shared/avatarConfig").AvatarConfig | null;
   teamMembers?: PublicProjectTeamMember[];
   taxonomy?: Contest | null;
   awardLabel?: string | null;
@@ -35,6 +36,7 @@ export function ProjectCard({
   ownerHandle,
   ownerAvatarUrl,
   ownerAvatarSeed,
+  ownerAvatarConfig,
   teamMembers = [],
   taxonomy,
   awardLabel,
@@ -56,6 +58,7 @@ export function ProjectCard({
       href: ownerHandle ? `/@${ownerHandle}` : null,
       avatarUrl: ownerAvatarUrl,
       avatarSeed: ownerAvatarSeed,
+      avatarConfig: ownerAvatarConfig,
     },
     ...teamMembers
       .filter((member) => member.user_id !== project.owner_id)
@@ -65,6 +68,7 @@ export function ProjectCard({
         href: `/@${member.username?.trim() || member.id}`,
         avatarUrl: member.avatar_url,
         avatarSeed: member.avatar_seed,
+        avatarConfig: member.avatar_config,
       })),
   ];
   const visiblePeople = people.slice(0, 3);
@@ -128,6 +132,7 @@ export function ProjectCard({
                   userId={project.owner_id}
                   avatarUrl={ownerAvatarUrl}
                   avatarSeed={ownerAvatarSeed}
+                  avatarConfig={ownerAvatarConfig}
                   alt={ownerName}
                   fallback={ownerName.charAt(0).toUpperCase()}
                 />
@@ -147,6 +152,7 @@ export function ProjectCard({
                       userId={person.id}
                       avatarUrl={person.avatarUrl}
                       avatarSeed={person.avatarSeed}
+                      avatarConfig={person.avatarConfig}
                       alt={person.label}
                       fallback={person.label.charAt(0).toUpperCase()}
                     />

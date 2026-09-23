@@ -1,4 +1,31 @@
 {
+  "ogPreview": {
+    "title": "Share image preview",
+    "description": "Inspect Open Graph images generated from published content.",
+    "entity": "Content type",
+    "entities": { "project": "Project", "course": "Course", "hackathon": "Hackathon", "profile": "Profile" },
+    "identifier": "Slug, ID or handle",
+    "identifierPlaceholder": "Enter a public identifier",
+    "load": "Preview",
+    "enterIdentifier": "Choose a content type and enter its identifier to preview the image.",
+    "loading": "Loading share image…",
+    "metadataError": "Could not load metadata. Please try again.",
+    "unavailable": "This content is not public or has no share image.",
+    "imageError": "The share image could not be loaded. Retry or open the original image to inspect it.",
+    "retry": "Retry",
+    "refresh": "Refresh preview",
+    "copy": "Copy image URL",
+    "openPage": "Open public page",
+    "openImage": "Open raw PNG",
+    "image": "Open Graph image 1200 × 630",
+    "imageAlt": "Open Graph share image preview",
+    "lightBackground": "Light background",
+    "darkBackground": "Dark background",
+    "canonicalUrl": "Canonical URL",
+    "imageUrl": "Image URL",
+    "updatedAt": "Updated at",
+    "revision": "Revision"
+  },
   "layout": {
     "activityMilestones": {
       "uploading": "Uploading image...",
@@ -8,6 +35,7 @@
       "preview": "Preview"
     },
     "sidebar": {
+      "ogPreview": { "label": "Open Graph preview" },
       "brandTitle": "Corelia Admin",
       "brandSubtitle": "Roles, instructors, and daily system operations in one place.",
       "primaryNavigation": "Primary navigation",

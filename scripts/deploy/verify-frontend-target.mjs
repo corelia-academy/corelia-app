@@ -15,6 +15,13 @@ export async function verifyFrontendTarget(mode, distRoot = resolve("dist")) {
   if (config.name !== target.worker || config.assets?.directory !== "../client") {
     throw new Error(`Worker configuration does not target ${target.worker}`);
   }
+  if (config.vars?.CORELIA_API_URL !== `https://${target.projectRef}.supabase.co/functions/v1/corelia-api`) {
+    throw new Error(`Worker avatar API does not target ${mode} Supabase`);
+  }
+  if (config.vars?.CORELIA_OG_FUNCTION_URL !== `https://${target.projectRef}.supabase.co/functions/v1/corelia-api` ||
+      config.vars?.CORELIA_APP_ORIGIN !== target.appUrl) {
+    throw new Error(`Worker OG configuration does not target ${mode}`);
+  }
 
   const html = await readFile(resolve(distRoot, "client/index.html"), "utf8");
   const assetPath = entryAssetPath(html);

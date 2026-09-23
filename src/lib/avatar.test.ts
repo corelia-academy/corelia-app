@@ -26,6 +26,13 @@ describe("generated avatars", () => {
     );
   });
 
+  it("renders saved selections and colors deterministically", () => {
+    const config = { selections: { head: "fluffy-bob" }, colors: { hair: "#123456" } };
+    const first = getGeneratedAvatarDataUrl("user-id", null, config);
+    expect(first).toBe(getGeneratedAvatarDataUrl("user-id", null, config));
+    expect(first).not.toBe(getGeneratedAvatarDataUrl("user-id", null));
+  });
+
   it("returns null when no stable identity is available", () => {
     expect(getGeneratedAvatarDataUrl(null, null)).toBeNull();
   });

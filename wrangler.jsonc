@@ -6,15 +6,30 @@
   "observability": {
     "enabled": true
   },
+  "vars": {
+    "CORELIA_API_URL": "https://lawhkvyyoznwygzsycan.supabase.co/functions/v1/corelia-api",
+    "CORELIA_OG_FUNCTION_URL": "https://lawhkvyyoznwygzsycan.supabase.co/functions/v1/corelia-api",
+    "CORELIA_APP_ORIGIN": "https://app.corelia.academy"
+  },
   "env": {
     "staging": {
-      "name": "corelia-staging"
+      "name": "corelia-staging",
+      "vars": {
+        "CORELIA_API_URL": "https://opoozbmfbezkrpzxsusx.supabase.co/functions/v1/corelia-api",
+        "CORELIA_OG_FUNCTION_URL": "https://opoozbmfbezkrpzxsusx.supabase.co/functions/v1/corelia-api",
+        "CORELIA_APP_ORIGIN": "https://staging.corelia.academy"
+      }
     }
   },
   "assets": {
     "binding": "ASSETS",
     "not_found_handling": "single-page-application"
   },
+  "ratelimits": [{
+    "name": "OG_RATE_LIMITER",
+    "namespace_id": "648271",
+    "simple": { "limit": 120, "period": 60 }
+  }],
   "compatibility_flags": [
     "nodejs_compat"
   ]

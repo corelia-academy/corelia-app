@@ -22,7 +22,7 @@ function MilestoneCard({ milestone, actor, sources, likes, liked, own, now, onLi
   const primary = sources[0];
   const absoluteTime = new Intl.DateTimeFormat(i18n.language, { dateStyle: "medium", timeStyle: "short" }).format(new Date(milestone.created_at));
   return <article className="flex items-start gap-3 px-4 py-4 sm:gap-4 sm:px-5">
-    <NavLink to={href} aria-label={actorName} className="shrink-0"><UserAvatar userId={milestone.actor_id} avatarUrl={actor?.avatar_url} avatarSeed={actor?.avatar_seed} alt={actorName} fallback={actorName[0]?.toUpperCase() ?? "C"} className="size-11" /></NavLink>
+    <NavLink to={href} aria-label={actorName} className="shrink-0"><UserAvatar userId={milestone.actor_id} avatarUrl={actor?.avatar_url} avatarSeed={actor?.avatar_seed} avatarConfig={actor?.avatar_config} alt={actorName} fallback={actorName[0]?.toUpperCase() ?? "C"} className="size-11" /></NavLink>
     <div className="min-w-0 flex-1">
       <p className="text-sm leading-6 text-foreground sm:text-base">
         <NavLink to={href} className="font-semibold hover:underline">{actorName}</NavLink>{" "}

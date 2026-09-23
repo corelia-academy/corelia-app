@@ -514,5 +514,37 @@
         "missing_profile": "Your profile is not available yet."
       }
     }
+  },
+  "avatarEditor": {
+    "title": "Edit avatar",
+    "description": "Choose your look, then save it to your profile.",
+    "edit": "Edit avatar",
+    "back": "Back to profile",
+    "preview": "Avatar preview",
+    "randomize": "Randomize",
+    "reset": "Reset to default",
+    "parts": "Parts",
+    "colors": "Colors",
+    "fromSeed": "From seed",
+    "clear": "Clear",
+    "save": "Save avatar",
+    "saving": "Saving…",
+    "saved": "Avatar saved.",
+    "saveFailed": "Could not save avatar. Try again.",
+    "slots": {
+      "head": "Head and hair",
+      "body": "Body",
+      "bottom": "Bottom",
+      "item": "Accessory",
+      "glasses": "Glasses"
+    },
+    "colorsBySlot": {
+      "background": "Background",
+      "stroke": "Outline",
+      "hair": "Hair",
+      "skin": "Skin",
+      "clothes": "Clothes",
+      "bottom": "Bottom"
+    }
   }
 }
