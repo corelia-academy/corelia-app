@@ -10,6 +10,7 @@ import { ProjectEditor, type ProjectEditorSave } from "@/features/projects/Proje
 import { getContestBySlug, getMyContestRegistration, getMyContestSubmission, upsertContestSubmission } from "@/lib/hackathons";
 import { createProjectCollaborationInvite } from "@/lib/projectCollaboration";
 import { useAuth } from "@/stores/authStore";
+import { xpAwardNotificationQueryKey } from "@/features/xp/xpNotificationKeys";
 
 export default function ProjectNewPage() {
   const { t, i18n } = useTranslation("common");
@@ -98,6 +99,7 @@ export default function ProjectNewPage() {
     if (!contest) throw new Error("not_found:hackathon");
     const submission = await upsertContestSubmission(contest.id, input);
     void queryClient.invalidateQueries({ queryKey: ["xp"] });
+    void queryClient.invalidateQueries({ queryKey: xpAwardNotificationQueryKey });
     savedId = submission.project_id ?? projectId;
     const invites = await Promise.allSettled(teamIds.map((id) => createProjectCollaborationInvite(savedId, id)));
     if (invites.some((item) => item.status === "rejected")) toast.warning(t("projects.team.someInvitesFailed"));

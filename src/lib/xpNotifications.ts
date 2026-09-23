@@ -2,6 +2,9 @@ import { supabase } from "@/lib/supabase";
 import type { XpEntry } from "@/lib/xp";
 
 export type XpNotificationCursor = { createdAt: string | null; ids: string[] };
+const NOTIFIABLE_SOURCES = new Set([
+  "lesson_completed", "quiz_passed", "course_completed", "first_hackathon_submission",
+]);
 const memory = new Map<string, XpNotificationCursor>();
 const storageKey = (userId: string) => `corelia.xp-notifications:${userId}`;
 
@@ -31,7 +34,7 @@ export function advanceXpNotifications(cursor: XpNotificationCursor, rows: XpEnt
     cursor: { createdAt: latest, ids: [...ids] },
     fresh,
     // Historical backfills have no trustworthy activity timestamp.
-    awards: fresh.filter((row) => row.points > 0 && row.occurred_at !== null),
+    awards: fresh.filter((row) => row.points > 0 && row.occurred_at !== null && NOTIFIABLE_SOURCES.has(row.source)),
   };
 }
 

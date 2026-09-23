@@ -12,6 +12,7 @@ import type { SectionQuestion } from "@/types/questions";
 import { getLessonFormat } from "@/lib/lessonFormat";
 import { useLearningConfirm } from "@/features/learning/useLearningConfirm";
 import { useQueryClient } from "@tanstack/react-query";
+import { xpAwardNotificationQueryKey } from "@/features/xp/xpNotificationKeys";
 
 type Props = {
   lesson: CourseLesson | null; lessonIndex: number | null; isDraftLesson: boolean; completed: boolean;
@@ -53,6 +54,7 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
     if (mode === "preview") return;
     await onMarkComplete();
     void queryClient.invalidateQueries({ queryKey: ["xp"] });
+    void queryClient.invalidateQueries({ queryKey: xpAwardNotificationQueryKey });
     if (!active.current) return;
     if (nextLesson && lesson && ["article","video","practice"].includes(getLessonFormat(lesson))) onNavigateToLesson(nextLesson.id);
   }, [mode, onMarkComplete, lesson, queryClient, nextLesson, onNavigateToLesson]);

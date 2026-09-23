@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/stores/authStore";
 import { supabase } from "@/lib/supabase";
 import { advanceXpNotifications, getXpNotificationEntries, initializeXpNotifications, readXpNotificationCursor, saveXpNotificationCursor } from "@/lib/xpNotifications";
+import { xpAwardNotificationQueryKey } from "./xpNotificationKeys";
 
 /** Stays mounted across routes and recovers awards after OAuth redirects. */
 export function XpNotifications() {
@@ -17,8 +18,9 @@ function UserXpNotifications({ userId }: { userId: string }) {
   const { t } = useTranslation("account");
   const queryClient = useQueryClient();
   const connectionsSynced = useRef(false);
+  const initialFetchObserved = useRef(false);
   const sync = useQuery({
-    queryKey: ["xp", "notifications", userId],
+    queryKey: [...xpAwardNotificationQueryKey, userId],
     queryFn: async () => {
       const cursor = await initializeXpNotifications(userId);
       // Baseline first: old history stays quiet, newly synchronized identities notify.
@@ -29,7 +31,6 @@ function UserXpNotifications({ userId }: { userId: string }) {
       }
       return getXpNotificationEntries(userId, cursor);
     },
-    refetchOnWindowFocus: "always",
     staleTime: 0,
     meta: { scope: "private", userId, showInGlobalLoading: false },
   });
@@ -40,6 +41,10 @@ function UserXpNotifications({ userId }: { userId: string }) {
     if (!cursor) return;
     const next = advanceXpNotifications(cursor, sync.data);
     saveXpNotificationCursor(userId, next.cursor);
+    if (!initialFetchObserved.current) {
+      initialFetchObserved.current = true;
+      return;
+    }
     if (next.awards.length) {
       const total = next.awards.reduce((sum, row) => sum + row.points, 0);
       toast.success(t("xp.earned", { count: total }), {
