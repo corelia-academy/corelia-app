@@ -3,11 +3,11 @@ import { useTranslation } from "react-i18next";
 export function LoginTerms() {
   const { t } = useTranslation("auth");
   return (
-    <p className="px-2 text-center text-xs text-foreground-muted">
+    <p className="px-2 text-center text-xs text-white/75">
       {t("login.terms.prefix")}
       <a
         href="https://corelia.academy/terms"
-        className="underline underline-offset-2 hover:no-underline"
+        className="text-white underline underline-offset-2 hover:no-underline"
         target="_blank"
         rel="noreferrer"
       >
@@ -16,7 +16,7 @@ export function LoginTerms() {
       {t("login.terms.and")}
       <a
         href="https://corelia.academy/policy"
-        className="underline underline-offset-2 hover:no-underline"
+        className="text-white underline underline-offset-2 hover:no-underline"
         target="_blank"
         rel="noreferrer"
       >
@@ -26,4 +26,3 @@ export function LoginTerms() {
     </p>
   );
 }
-

@@ -94,15 +94,15 @@ export default function SignupVerified() {
         <div className="mb-4 flex items-center justify-between gap-3">
           <NavLink
             to="/"
-            className="inline-flex items-center gap-1 text-sm font-medium text-foreground-muted transition-colors duration-150 hover:text-foreground"
+            className="inline-flex items-center gap-1 text-sm font-medium text-white/80 transition-colors duration-150 hover:text-white"
           >
             <ArrowLeft className="size-4" aria-hidden />
             <span>{t("confirmSignup.backHome")}</span>
           </NavLink>
-          <LanguageSwitcher />
+          <LanguageSwitcher className="text-white/80 hover:bg-white/10 hover:text-white" />
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <div className="rounded-xl border border-border bg-surface-base p-6 shadow-sm">
           {phase === "waiting" ? (
             <>
               <h1 className="text-heading-medium font-display text-foreground">
