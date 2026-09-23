@@ -50,20 +50,23 @@
     "error": "Không thể tải hoặc lưu feed.",
     "retry": "Thử lại",
     "empty": "Chưa có cột mốc",
-    "emptyHint": "Các thành tựu được xác minh sẽ xuất hiện tại đây.",
-    "followingHint": "Hãy theo dõi người, khóa học, dự án hoặc hackathon bạn quan tâm.",
+    "emptyHint": "Hiện chưa có thành tựu mới để khám phá. Bạn có thể tìm người trong danh sách gợi ý.",
+    "followingHint": "Thành tựu được chia sẻ từ những người bạn theo dõi sẽ xuất hiện tại đây.",
     "followedTitle": "Bạn đang theo dõi",
     "peopleTitle": "Mọi người",
     "followedTab": "Đang theo dõi",
     "followedEmpty": "Bạn chưa theo dõi ai.",
     "followedDescription": "Các hồ sơ công khai bạn đang theo dõi, mới nhất trước.",
-    "suggestedTitle": "Gợi ý theo dõi",
+    "suggestedTitle": "Người bạn có thể theo dõi",
     "suggestedEmpty": "Chưa có hồ sơ công khai nào để gợi ý.",
     "suggestedError": "Không tải được gợi ý theo dõi.",
     "followedError": "Không tải được danh sách đang theo dõi.",
     "followedAll": "Xem tất cả",
     "loadMore": "Xem thêm",
     "profileTitle": "Thành tựu",
-    "profileEmpty": "Chưa có mốc thành tựu công khai."
+    "profileEmpty": "Chưa có mốc thành tựu công khai.",
+    "exploreDescription": "Khám phá thành tựu từ những người bạn chưa theo dõi.",
+    "followingDescription": "Thành tựu mới nhất từ những người bạn đang theo dõi.",
+    "findPeople": "Tìm người để theo dõi"
   }
 }

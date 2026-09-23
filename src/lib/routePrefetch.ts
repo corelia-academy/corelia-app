@@ -8,6 +8,7 @@ const routeLoaders: Array<{
   load: () => Promise<unknown>;
 }> = [
   { matches: (path) => path === "/", load: () => import("@/pages/home/index") },
+  { matches: (path) => path === "/leaderboard", load: () => import("@/pages/leaderboard/LeaderboardPage") },
   { matches: (path) => path.startsWith("/feed"), load: () => import("@/pages/feed/FeedPage") },
   { matches: (path) => path.startsWith("/courses"), load: () => import("@/pages/courses") },
   { matches: (path) => path.startsWith("/career"), load: () => import("@/pages/career") },

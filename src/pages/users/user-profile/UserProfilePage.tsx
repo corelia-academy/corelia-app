@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { UserAvatar } from "@/components/UserAvatar";
+import { XpRankBadge } from "@/features/xp/XpRankBadge";
 import { XpBadge } from "@/features/xp/XpBadge";
 import { getXpTotals } from "@/lib/xp";
 import { XpActivity } from "@/features/xp/XpActivity";
@@ -308,7 +309,7 @@ export default function UserProfileLayout() {
                     <h1 className="text-display-small font-display text-foreground [overflow-wrap:anywhere]">
                       {profileTitle(profile)}
                     </h1>
-                    <XpBadge total={xpTotalQuery.data?.[profile.id]} className="mt-2" />
+                    <div className="mt-2 flex flex-wrap items-center gap-2"><XpBadge total={xpTotalQuery.data?.[profile.id]} /><XpRankBadge total={xpTotalQuery.data?.[profile.id]} /></div>
                     <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm text-foreground-muted">
                       {headerHandle ? (
                         <span className="truncate">{headerHandle}</span>

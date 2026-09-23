@@ -1,5 +1,7 @@
 import { supabase } from "@/lib/supabase";
 
+export type FeedMode = "explore" | "following";
+
 export type FeedMilestone = {
   id: number;
   actor_id: string;
@@ -24,11 +26,16 @@ function titleFrom(value: unknown, fallback: string): string {
   if (locale && typeof locale === "object" && typeof (locale as { title?: unknown }).title === "string") return (locale as { title: string }).title;
   return fallback;
 }
-export async function getMilestonePage(userId: string, following: boolean, actorId?: string, cursor?: FeedMilestone | null): Promise<MilestonePage> {
-  const { data, error } = await supabase.rpc("get_feed_milestones_v1", {
-    p_following: following, p_cursor_at: cursor?.created_at ?? null, p_cursor_id: cursor?.id ?? null,
-    p_limit: 20, p_actor_id: actorId ?? null,
-  });
+export async function getMilestonePage(userId: string, mode: FeedMode | "profile", actorId?: string, cursor?: FeedMilestone | null): Promise<MilestonePage> {
+  const pagination = {
+    p_cursor_at: cursor?.created_at ?? null,
+    p_cursor_id: cursor?.id ?? null,
+    p_limit: 20,
+  };
+  if (mode === "profile" && !actorId) throw new Error("Profile actor is required");
+  const { data, error } = mode === "profile"
+    ? await supabase.rpc("get_feed_milestones_v1", { ...pagination, p_following: false, p_actor_id: actorId })
+    : await supabase.rpc("get_feed_milestones_v2", { ...pagination, p_mode: mode });
   if (error) throw error;
   const milestones = (data ?? []) as FeedMilestone[];
   const ids = milestones.map((item) => item.id);

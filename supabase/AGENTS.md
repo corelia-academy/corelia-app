@@ -32,7 +32,7 @@ Use the smallest relevant checks, then broaden:
 
 1. Edge/helper test: `pnpm vitest run supabase/functions/<path>.test.ts`
 2. Static database governance: `pnpm db:verify`
-3. For migration/schema changes, start the isolated local Supabase stack and run `pnpm db:verify:local`; stop it with `pnpm exec supabase stop --no-backup`.
+3. For migration/schema changes, start the isolated local Supabase stack and run `pnpm db:verify:local`; stop it with `pnpm exec supabase stop --no-backup`. Before starting a fresh checkout/copy, write `17.6.1.156` to `supabase/.temp/postgres-version`, matching the CI workflows. This ignored file is not copied by Git; the CLI's older default image crashes on reserved-role permission-denial probes such as `learning_reset_lesson`. Keep those tests enabled.
 4. Run `pnpm test`, `pnpm lint`, and the relevant build when the contract affects frontend consumers or release parity.
 
 Before remote rollout, verify migration ordering/state and follow `docs/RELEASE_PROCESS.md`. Staging must succeed before Production; a partially applied migration requires investigation and usually a forward fix, not history rewriting or blind reruns.
