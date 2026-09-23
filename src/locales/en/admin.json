@@ -391,6 +391,13 @@
     }
   },
   "users": {
+    "showingRange": "Showing {{start}}–{{end}} of {{total}} accounts",
+    "pagination": {
+      "label": "Account pagination",
+      "page": "Page {{page}} of {{total}}",
+      "previous": "Previous",
+      "next": "Next"
+    },
     "title": "Access control dashboard",
     "subtitle": "Search by name, email, or UID and adjust roles directly in the table for day-to-day operations.",
     "stats": {

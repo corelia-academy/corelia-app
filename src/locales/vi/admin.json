@@ -391,6 +391,13 @@
     }
   },
   "users": {
+    "showingRange": "Hiển thị {{start}}–{{end}} trên {{total}} tài khoản",
+    "pagination": {
+      "label": "Phân trang tài khoản",
+      "page": "Trang {{page}} / {{total}}",
+      "previous": "Trang trước",
+      "next": "Trang sau"
+    },
     "title": "Bảng điều phối quyền truy cập",
     "subtitle": "Tìm nhanh theo tên, email hoặc UID và điều chỉnh vai trò ngay trong bảng để xử lý các yêu cầu vận hành thường ngày.",
     "stats": {
