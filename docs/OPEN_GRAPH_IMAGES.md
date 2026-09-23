@@ -181,7 +181,7 @@ Với mỗi detail route đã được cho phép trong bảng policy (ví dụ `
 https://app.corelia.academy/api/og/project/custos?v=<content-revision>
 ```
 
-Nếu metadata lookup trả 404 hoặc lỗi, Worker trả SPA HTML nguyên bản với generic site metadata; không inject slug/raw request into HTML. Với lookup `404`, thêm `X-Robots-Tag: noindex` cho URL detail unavailable; lỗi backend tạm thời vẫn giữ generic metadata và log sự cố. Cả HTML đã rewrite và fallback trên detail route đều trả `Cache-Control: no-store` để không giữ metadata của project vừa chuyển private/blocked. Worker chỉ rewrite response HTML thành công của `ASSETS.fetch`, không rewrite asset, non-HTML response, hay route admin. Không tạo duplicate tag và không dùng Host/request origin để dựng canonical/OG URL.
+Nếu metadata lookup trả 404 hoặc lỗi, Worker trả SPA HTML nguyên bản với generic site metadata; không inject slug/raw request into HTML và không gắn `X-Robots-Tag: noindex` lên route công khai. Lỗi backend tạm thời được log. Cả HTML đã rewrite và fallback trên detail route đều trả `Cache-Control: no-store` để không giữ metadata của project vừa chuyển private/blocked. Worker chỉ rewrite response HTML thành công của `ASSETS.fetch`, không rewrite asset, non-HTML response, hay route admin. Không tạo duplicate tag và không dùng Host/request origin để dựng canonical/OG URL.
 
 ## Preview để kiểm tra khi sửa
 
@@ -229,7 +229,7 @@ Text được làm sạch và giới hạn ở DTO (title 96 ký tự, descripti
 4. Thử `GET /api/og/project/:slug/meta`, lấy `imageUrl` rồi thử `GET` và `HEAD` trên ảnh. Các entity còn lại dùng `course`, `hackathon`, `profile` trong endpoint. Mở `/admin/og-preview` bằng tài khoản thuộc `ROLE_GROUPS.admin` để kiểm tra ảnh thực tế.
 5. Thử lại URL ảnh cũ sau khi chuyển entity sang private/draft/archived: phải trả `404`. Sửa field hiển thị trên card rồi lấy metadata mới: `revision` phải đổi và URL revision cũ trả `404`.
 
-Worker cần `OG_RATE_LIMITER` binding. Cấu hình `wrangler.jsonc` đã khai báo binding và origin/function URL cố định cho production/staging; `OG_PROXY_SECRET` vẫn phải là secret tương ứng ở cả Cloudflare và Supabase khi triển khai remote. Lần triển khai này chỉ xác nhận local, chưa push hay deploy.
+Worker cần `OG_RATE_LIMITER` binding. Cấu hình `wrangler.jsonc` đã khai báo binding và origin/function URL cố định cho production/staging; `OG_PROXY_SECRET` phải là secret tương ứng ở cả Cloudflare và Supabase khi triển khai remote. Staging đã được kiểm tra với metadata và PNG thật; bot có thể vẫn bị Cloudflare Bot Fight Mode challenge trước khi đến Worker.
 
 ## Kết quả kiểm thử local
 
