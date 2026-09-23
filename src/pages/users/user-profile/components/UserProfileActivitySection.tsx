@@ -4,14 +4,14 @@ import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { milestoneFeedQuery } from "@/features/feed/milestoneQueries";
+import { profileMilestonesQuery } from "@/features/feed/milestoneQueries";
 import { useAuth } from "@/stores/authStore";
 import type { PublicProfile } from "@/types/database";
 
 export function UserProfileActivitySection({ profile }: { profile: PublicProfile }) {
   const { t } = useTranslation("feed");
   const { user } = useAuth();
-  const query = useInfiniteQuery(milestoneFeedQuery(user?.id ?? "",false,profile.id));
+  const query = useInfiniteQuery(profileMilestonesQuery(user?.id ?? "",profile.id));
   const milestones = query.data?.pages.flatMap((page) => page.milestones) ?? [];
   const sources = Object.assign({}, ...(query.data?.pages.map((page) => page.sources) ?? []));
   return <section className="space-y-3"><h2 className="flex items-center gap-2 text-heading-small font-display"><Trophy className="size-4" />{t("milestones.profileTitle")}</h2>

@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
 import type { FollowSubject } from "@/types/feed";
 import { followingStateQueryOptions, socialKeys } from "@/features/social/socialQueries";
-import { milestoneKeys } from "@/features/feed/milestoneQueries";
+import { resetFeedTimelines } from "@/features/feed/milestoneQueries";
 
 interface FollowButtonProps {
   subject: FollowSubject;
@@ -77,10 +77,13 @@ export function FollowButton({
       if (context) queryClient.setQueryData(context.key, context.previous);
       setError(cause instanceof Error ? cause.message : t("follow.errors.save"));
     },
-    onSuccess: () => {
-      if (user?.id) void queryClient.invalidateQueries({ queryKey: socialKeys.myFeedFollowing(user.id) });
-      if (user?.id) void queryClient.invalidateQueries({ queryKey: socialKeys.feedSuggestions(user.id) });
-      void queryClient.invalidateQueries({ queryKey: milestoneKeys.all });
+    onSuccess: async () => {
+      if (!user?.id) return;
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: socialKeys.myFeedFollowing(user.id) }),
+        queryClient.invalidateQueries({ queryKey: socialKeys.feedSuggestions(user.id) }),
+        resetFeedTimelines(queryClient, user.id),
+      ]);
     },
   });
 
@@ -129,6 +132,7 @@ export function FollowButton({
   const title = error ?? label;
 
   return (
+    <span className="inline-flex min-w-0 flex-col items-start gap-1">
     <Button
       type="button"
       size={size}
@@ -151,5 +155,7 @@ export function FollowButton({
         <span className="text-xs text-foreground-muted">{count}</span>
       ) : null}
     </Button>
+    {error && <span role="alert" className="max-w-48 text-xs text-destructive">{t("follow.errors.save")}</span>}
+    </span>
   );
 }

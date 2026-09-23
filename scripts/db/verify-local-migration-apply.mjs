@@ -8,6 +8,8 @@ const sqlTestPaths = [
   "scripts/db/tests/project-moderation.integration.sql",
   "scripts/db/tests/xp-rpc-boundary.integration.sql",
   "scripts/db/tests/feed-xp-suggestions.integration.sql",
+  "scripts/db/tests/feed-people-timelines.integration.sql",
+  "scripts/db/tests/xp-leaderboard.integration.sql",
   "scripts/db/tests/profile-name-integrity.integration.sql",
   "scripts/db/tests/avatar-seed.integration.sql",
   "scripts/db/tests/learner-ai-retirement.integration.sql",
@@ -66,7 +68,7 @@ for (const sqlTestPath of sqlTestPaths) {
   }
 
   try {
-    if (["project-moderation.integration.sql", "xp-rpc-boundary.integration.sql", "feed-xp-suggestions.integration.sql"].some((name) => sqlTestPath.endsWith(name))) {
+    if (["project-moderation.integration.sql", "xp-rpc-boundary.integration.sql", "feed-xp-suggestions.integration.sql", "feed-people-timelines.integration.sql", "xp-leaderboard.integration.sql"].some((name) => sqlTestPath.endsWith(name))) {
       execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
         input: readFileSync(resolve(sqlTestPath)), stdio: ["pipe", "inherit", "inherit"],
       });

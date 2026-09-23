@@ -1,3 +1,4 @@
+import { XpRankProgress } from "./XpRankProgress";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -110,6 +111,8 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
       <div className="flex items-center gap-2 text-foreground"><Sparkles className="size-5 text-primary" aria-hidden /><h2 className="font-display text-heading-medium">{t("xp.title")}</h2></div>
       <p className="mt-1 text-sm text-foreground-muted">{t("xp.total", { count: formatted(summary.data.total) })} · {t("xp.utc")}</p>
     </div>
+
+    <XpRankProgress total={summary.data.total} />
 
     <div>
       <h3 className="mb-2 text-sm font-semibold">{t("xp.calendar")}</h3>

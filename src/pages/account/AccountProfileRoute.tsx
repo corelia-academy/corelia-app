@@ -92,6 +92,7 @@ export function AccountProfileRoute() {
     const results = await Promise.allSettled([
       refreshProfile(user),
       queryClient.invalidateQueries({ queryKey: publicProfileKeys.all }),
+      queryClient.invalidateQueries({ queryKey: ["xp"] }),
       queryClient.invalidateQueries({ queryKey: socialKeys.all }),
       queryClient.invalidateQueries({ queryKey: milestoneKeys.all }),
       queryClient.invalidateQueries({ queryKey: projectKeys.all }),
@@ -184,6 +185,7 @@ export function AccountProfileRoute() {
       });
       setProfilePublic(updated.profile_public ?? nextProfilePublic);
       await refreshProfile(user);
+      await queryClient.invalidateQueries({ queryKey: ["xp"] });
       setSuccess(t("profile.success.visibilityUpdated"));
     } catch (err) {
       setProfilePublic(previousProfilePublic);
@@ -221,6 +223,7 @@ export function AccountProfileRoute() {
       });
       setFullName(current => current === fullName ? savedProfile.full_name ?? "" : current);
       await refreshProfile(user);
+      await queryClient.invalidateQueries({ queryKey: ["xp"] });
       setSuccess(t("profile.success.updated"));
     } catch (err) {
       const raw = err instanceof Error ? err.message : "";
