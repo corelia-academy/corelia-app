@@ -1,4 +1,4 @@
-import React, { type ReactElement } from "react";
+import React, { type ReactElement } from "npm:react@19.2.0";
 import { EMAIL_BRAND } from "../lib/mail/brand.ts";
 import type { OgCard } from "./types.ts";
 

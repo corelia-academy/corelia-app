@@ -1,4 +1,4 @@
-import { createAvatar } from "@humation/core";
+import { createAvatar } from "npm:@humation/core@1.0.3";
 import { avatarAssets } from "./assets.ts";
 import type { SupabaseClient } from "../lib/supabase.ts";
 import { verifyBearerUser } from "../lib/supabase.ts";

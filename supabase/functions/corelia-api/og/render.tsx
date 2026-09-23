@@ -1,7 +1,7 @@
-import React from "react";
-import { createAvatar } from "@humation/core";
-import satori from "satori";
-import { initWasm, Resvg } from "@resvg/resvg-wasm";
+import React from "npm:react@19.2.0";
+import { createAvatar } from "npm:@humation/core@1.0.3";
+import satori from "npm:satori@0.33.5";
+import { initWasm, Resvg } from "npm:@resvg/resvg-wasm@2.6.2";
 import { avatarAssets } from "../avatar/assets.ts";
 import { EMAIL_BRAND } from "../lib/mail/brand.ts";
 import { CourseOG, EventOG, ProfileOG, ProjectOG } from "./cards.tsx";
