@@ -1,0 +1,14 @@
+{
+  "imports": {
+    "react": "npm:react@19.2.0",
+    "react/jsx-runtime": "npm:react@19.2.0/jsx-runtime",
+    "satori": "npm:satori@0.33.5",
+    "@resvg/resvg-wasm": "npm:@resvg/resvg-wasm@2.6.2",
+    "@humation/core": "npm:@humation/core@1.0.3",
+    "@humation/assets-humation-1": "npm:@humation/assets-humation-1@1.0.3"
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
+  }
+}

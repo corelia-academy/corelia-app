@@ -76,7 +76,7 @@ export function FollowingListDialog({
                     <UserAvatar
                       userId={row.id}
                       avatarUrl={row.avatar_url}
-                      avatarSeed={row.avatar_seed}
+                      avatarSeed={row.avatar_seed} avatarConfig={row.avatar_config}
                       alt={label}
                       fallback={label.charAt(0).toUpperCase()}
                     />

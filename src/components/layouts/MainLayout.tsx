@@ -20,7 +20,7 @@ const MainLayout = () => {
       defaultOpen
       mobileBreakpoint={1024}
       className="public-ui flex-col"
-      style={{ "--app-header-height": "4.75rem", "--sidebar-width": "14rem" } as CSSProperties}
+      style={{ "--sidebar-width": "14rem" } as CSSProperties}
     >
       <Header publicUI />
       <div className="flex min-h-0 flex-1">

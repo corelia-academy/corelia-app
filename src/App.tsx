@@ -94,6 +94,9 @@ const AccountCvRoute = lazy(() =>
 const AccountSettingsRoute = lazy(() =>
   import("@/pages/account/AccountSettingsRoute").then((m) => ({ default: m.AccountSettingsRoute })),
 );
+const AvatarSettingsRoute = lazy(() =>
+  import("@/pages/account/AvatarSettingsRoute").then((m) => ({ default: m.AvatarSettingsRoute })),
+);
 const AccountInstructorProfileRoute = lazy(() =>
   import("@/pages/account/AccountInstructorRoutes").then((m) => ({
     default: m.AccountInstructorProfileRoute,
@@ -128,6 +131,8 @@ const AdminProjectsPage = lazy(() => import("@/pages/admin/AdminProjectsPage"));
 const AdminJobsPage = lazy(() => import("@/pages/admin/jobs/AdminJobsPage"));
 const AdminComponentsPage = lazy(() => import("@/pages/admin/AdminComponentsPage"));
 const AdminEmailCenterPage = lazy(() => import("@/pages/admin/email/AdminEmailCenterPage"));
+const AdminEmailPreviewPage = lazy(() => import("@/pages/admin/email/AdminEmailPreviewPage"));
+const AdminOgPreviewPage = lazy(() => import("@/pages/admin/AdminOgPreviewPage"));
 
 const PageFallback = () => <AuthGateLoading />;
 
@@ -533,6 +538,7 @@ function ApplicationRoutes() {
                   }
                 />
               </Route>
+              <Route path="settings/avatar" element={<RequireAuth><Suspense fallback={<PageFallback />}><AvatarSettingsRoute /></Suspense></RequireAuth>} />
               <Route
                 path="admin"
                 element={
@@ -601,6 +607,8 @@ function ApplicationRoutes() {
                 <Route path="jobs/companies" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
                 <Route path="jobs/crawlers" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
                 <Route path="jobs/analytics" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="email/previews" element={<Suspense fallback={<PageFallback />}><AdminEmailPreviewPage /></Suspense>} />
+                <Route path="og-preview" element={<Suspense fallback={<PageFallback />}><AdminOgPreviewPage /></Suspense>} />
                 <Route path="email" element={<Suspense fallback={<PageFallback />}><AdminEmailCenterPage /></Suspense>} />
               </Route>
               <Route

@@ -46,7 +46,7 @@ const InstructorDetail = () => {
   usePageMeta({
     title: profile?.full_name?.trim() ?? undefined,
     description: instructorBio,
-    image: profile?.avatar_url ?? undefined,
+    image: profile?.profile_public && profile.username ? `${window.location.origin}/avatar/${encodeURIComponent(profile.username)}.svg` : undefined,
     url: window.location.href,
   });
   useDynamicPageTitle(profile?.full_name);
@@ -139,7 +139,7 @@ const InstructorDetail = () => {
             <UserAvatar
               userId={profile.id}
               avatarUrl={profile.avatar_url}
-              avatarSeed={profile.avatar_seed}
+              avatarSeed={profile.avatar_seed} avatarConfig={profile.avatar_config}
               alt={profile.full_name ?? ""}
               fallback={initials}
               className="size-20 rounded-full border border-border-subtle"

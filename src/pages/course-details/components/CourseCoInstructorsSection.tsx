@@ -53,7 +53,7 @@ export function CourseCoInstructorsSection({
                 <UserAvatar
                   userId={p.id}
                   avatarUrl={p.avatar_url}
-                  avatarSeed={p.avatar_seed}
+                  avatarSeed={p.avatar_seed} avatarConfig={p.avatar_config}
                   alt={label}
                   fallback={fallback}
                   className="mt-0.5 size-10 rounded-full border border-border-subtle"

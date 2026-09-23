@@ -22,7 +22,7 @@ function SuggestedPerson({ row }: { row: FeedSuggestedProfile }) {
   const handle = row.username?.trim() || row.ocid?.trim() || row.id;
   return <div className="flex min-w-0 items-center gap-2 py-2">
     <NavLink to={`/@${handle}`} className="flex min-w-0 flex-1 items-center gap-2 rounded-lg hover:bg-surface-raised">
-      <UserAvatar userId={row.id} avatarUrl={row.avatar_url} avatarSeed={row.avatar_seed} alt={name} fallback={name[0]?.toUpperCase() ?? "C"} className="size-9 shrink-0" />
+      <UserAvatar userId={row.id} avatarUrl={row.avatar_url} avatarSeed={row.avatar_seed} avatarConfig={row.avatar_config} alt={name} fallback={name[0]?.toUpperCase() ?? "C"} className="size-9 shrink-0" />
       <span className="min-w-0"><span className="block truncate text-sm font-medium text-foreground">{name}</span><span className="mt-1 flex flex-wrap items-center gap-1"><XpBadge total={row.total_xp} /><XpRankBadge total={row.total_xp} /></span></span>
     </NavLink>
     <FollowButton subject={{ type: "user", id: row.id }} size="sm" showCount={false} className="shrink-0 px-2 text-xs" />
@@ -33,7 +33,7 @@ function FollowingPerson({ row, onOpen }: { row: FollowerPreviewRow; onOpen?: ()
   const name = profileName(row);
   const handle = row.username?.trim() || row.ocid?.trim() || row.id;
   return <NavLink to={`/@${handle}`} onClick={onOpen} className="flex min-w-0 items-center gap-3 rounded-lg py-2 hover:bg-surface-raised">
-    <UserAvatar userId={row.id} avatarUrl={row.avatar_url} avatarSeed={row.avatar_seed} alt={name} fallback={name[0]?.toUpperCase() ?? "C"} className="size-9 shrink-0" />
+    <UserAvatar userId={row.id} avatarUrl={row.avatar_url} avatarSeed={row.avatar_seed} avatarConfig={row.avatar_config} alt={name} fallback={name[0]?.toUpperCase() ?? "C"} className="size-9 shrink-0" />
     <span className="min-w-0"><span className="block truncate text-sm font-medium text-foreground">{name}</span>{(row.username || row.ocid) && <span className="block truncate text-xs text-foreground-muted">{row.username ? `@${row.username}` : row.ocid}</span>}</span>
   </NavLink>;
 }

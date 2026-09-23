@@ -1,0 +1,3 @@
+CORELIA_APP_ORIGIN=http://localhost:5173
+CORELIA_OG_FUNCTION_URL=http://127.0.0.1:54321/functions/v1/corelia-api
+OG_PROXY_SECRET=replace-with-the-same-local-value-as-supabase-functions-env

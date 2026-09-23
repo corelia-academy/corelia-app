@@ -33,6 +33,7 @@ export interface Profile {
   full_name: string | null;
   avatar_url: string | null;
   avatar_seed: string | null;
+  avatar_config: import("../../shared/avatarConfig").AvatarConfig;
   phone: string | null;
   /** Email đăng nhập (từ Supabase Auth), lưu khi tạo profile */
   email: string | null;
@@ -77,6 +78,7 @@ export interface ProfileInsert {
   full_name?: string | null;
   avatar_url?: string | null;
   avatar_seed?: string | null;
+  avatar_config?: import("../../shared/avatarConfig").AvatarConfig;
   phone?: string | null;
   email?: string | null;
   bio?: string | null;
@@ -102,6 +104,7 @@ export interface ProfileUpdate {
   full_name?: string | null;
   avatar_url?: string | null;
   avatar_seed?: string | null;
+  avatar_config?: import("../../shared/avatarConfig").AvatarConfig;
   phone?: string | null;
   email?: string | null;
   bio?: string | null;
@@ -156,6 +159,7 @@ export interface PublicProfile {
   full_name: string | null;
   avatar_url: string | null;
   avatar_seed: string | null;
+  avatar_config: import("../../shared/avatarConfig").AvatarConfig;
   bio: string | null;
   website: string | null;
   instructor_origin: Profile["instructor_origin"] | null;

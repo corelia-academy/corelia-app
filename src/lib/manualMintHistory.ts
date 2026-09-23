@@ -78,7 +78,7 @@ type ProfileQueryResult = {
   email: string | null;
   ocid: string | null;
   avatar_url: string | null;
-  avatar_seed: string | null;
+  avatar_seed: string | null; avatar_config?: import("../../shared/avatarConfig").AvatarConfig | null;
 };
 
 export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistoryRow[]> {
@@ -170,7 +170,7 @@ export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistory
   if (userIds.length > 0) {
     const { data: profiles, error: profErr } = await supabase
       .from("profiles")
-      .select("id, full_name, email, ocid, avatar_url, avatar_seed")
+      .select("id, full_name, email, ocid, avatar_url, avatar_seed,avatar_config")
       .in("id", userIds);
 
     if (!profErr && profiles) {

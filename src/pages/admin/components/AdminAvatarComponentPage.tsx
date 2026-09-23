@@ -274,7 +274,7 @@ function UserStatesShowcase({
                   <UserAvatar
                     userId={profile?.id ?? user?.id}
                     avatarUrl={avatarUrl}
-                    avatarSeed={profile?.avatar_seed}
+                    avatarSeed={profile?.avatar_seed} avatarConfig={profile?.avatar_config}
                     alt={displayName}
                     fallback={avatarFallback}
                     size="Medium"

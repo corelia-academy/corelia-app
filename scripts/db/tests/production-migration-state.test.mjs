@@ -167,14 +167,13 @@ test("Production workflow structure safety", () => {
   assert.match(applyStep, /supabase migration up --linked --dns-resolver https --include-all/);
 });
 
-test("Production Feed and XP rank release accepts only its exact two pending migrations", () => {
+test("Production avatar release accepts only its exact pending migration", () => {
   const localVersions = [...realReleasedVersions, ...APPROVED_PENDING_VERSIONS];
   const observedRemote = localVersions.filter((v) => !CURRENT_PENDING_VERSIONS.includes(v));
   assert.deepEqual(CURRENT_PENDING_VERSIONS, [
-    "20260923085047",
-    "20260923092129",
+    "20260923191903",
   ]);
-  assert.ok(observedRemote.includes("20260922021208"));
+  assert.ok(observedRemote.includes("20260923092129"));
   assert.ok(observedRemote.includes("20260915052442"));
   assert.ok(observedRemote.includes("20260915054142"));
   assert.ok(observedRemote.includes("20260915062707"));

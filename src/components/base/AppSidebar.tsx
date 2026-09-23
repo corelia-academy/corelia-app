@@ -105,7 +105,7 @@ export default function AppSidebar({
             <img
               src={
                 resolvedTheme === "dark"
-                  ? "/logo/corelia-full-logo-white.png"
+                  ? "/logo/Corelia_Logo_White.svg"
                   : "/logo/corelia-full-logo-black.png"
               }
               alt="Corelia Academy"

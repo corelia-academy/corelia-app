@@ -139,8 +139,4 @@ body, .public-ui, .public-status {
   background-color: var(--sidebar-accent);
   color: var(--sidebar-accent-foreground);
 }
-.public-status.bg-auth-page {
-  background-image: radial-gradient(ellipse at top, color-mix(in srgb, var(--primary) 12%, transparent), transparent 65%);
-}
-
 .public-ui .public-content, .public-ui [data-slot=sidebar-inset] { background-color: var(--background); }

@@ -48,8 +48,11 @@ import { handleResendWebhook } from "./email/webhook.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
 import { handleWalletChallenge, handleWalletVerify } from "./wallets/handlers.ts";
 import { handleOcidLink } from "./ocid/handlers.ts";
+import { authorizedOgRequest, handleOgRequest, isOgOp } from "./og/handlers.ts";
+import { handleAvatarSave, handleAvatarSvg } from "./avatar/handlers.ts";
 
 const PROTECTED_OPS = new Set<string>([
+  "avatar.save",
   "wallets.challenge",
   "wallets.verify",
   "ocid.link",
@@ -125,6 +128,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
   try {
     const url = new URL(req.url);
     const op = url.searchParams.get("op") ?? "";
+    if (isOgOp(op) && !authorizedOgRequest(req)) {
+      return new Response("Forbidden", { status: 403, headers: { "Cache-Control": "no-store" } });
+    }
     const isLearningReminderCron = op === "courses.sendLearningReminders" && hasLearningReminderCronSecret(req);
     const isJobsCron = op === "jobs.runScheduled" && hasJobsCronSecret(req);
     const isEmailWorker = op === "email.worker" && hasEmailWorkerSecret(req);
@@ -140,8 +146,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     let response: Response;
-    if (op === "health" && req.method === "GET") {
+    if (isOgOp(op)) {
+      response = await handleOgRequest(req, db, op);
+    } else if (op === "health" && req.method === "GET") {
       response = json({ ok: true });
+    } else if (op === "avatar.save" && req.method === "PATCH") {
+      response = await handleAvatarSave(req, db);
+    } else if (op === "avatar.svg" && req.method === "GET") {
+      response = await handleAvatarSvg(req, db);
     } else if (op === "wallets.challenge" && req.method === "POST") {
       response = cors ? await handleWalletChallenge(req, db) : json({ message: "Origin not allowed" }, 403);
     } else if (op === "wallets.verify" && req.method === "POST") {

@@ -31,6 +31,7 @@ describe("email renderer fallbacks", () => {
     expect(html).toContain("overflow-wrap:anywhere");
     expect(html).toContain("background-color:#1759f1");
     expect(html).toContain("background-image:linear-gradient(#1759f1,#1759f1)");
+    expect(html).toContain("-webkit-text-fill-color:#f4f7ff!important");
     expect(html).toContain("border:1px solid transparent");
     expect(html).toContain('class="e-hero" style="padding:24px 24px 0;"');
     expect(html).toContain('class="e-body" style="padding:0 24px 8px;"');

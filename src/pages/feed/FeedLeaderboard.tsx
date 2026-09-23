@@ -64,7 +64,7 @@ function LeaderboardResults({ userId, period, week }: { userId: string; period: 
           return <li key={person.id} className={`flex items-center gap-3 p-3 sm:gap-4 sm:p-4 ${person.id === userId ? "bg-primary/5" : ""}`}>
             <span className="w-10 shrink-0 text-center text-sm font-semibold tabular-nums" aria-label={t("xp.leaderboard.position", { rank: person.position })}>#{format(person.position)}</span>
             <NavLink to={`/@${handle}`} className="flex min-w-0 flex-1 items-center gap-3 rounded-lg focus-visible:outline-2">
-              <UserAvatar userId={person.id} avatarUrl={person.avatar_url} avatarSeed={person.avatar_seed} alt={name} fallback={name[0]?.toUpperCase() ?? "C"} className="size-10 shrink-0" />
+              <UserAvatar userId={person.id} avatarUrl={person.avatar_url} avatarSeed={person.avatar_seed} avatarConfig={person.avatar_config} alt={name} fallback={name[0]?.toUpperCase() ?? "C"} className="size-10 shrink-0" />
               <span className="min-w-0"><span className="block truncate text-sm font-semibold">{name}</span><XpRankBadge total={person.total_xp} className="mt-1" /></span>
             </NavLink>
             <span className="shrink-0 text-right text-sm font-semibold tabular-nums">{format(person.period_xp)}<span className="block text-xs font-normal text-foreground-muted">XP</span></span>

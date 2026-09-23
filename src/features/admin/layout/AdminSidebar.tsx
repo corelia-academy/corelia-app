@@ -65,7 +65,10 @@ export function AdminSidebar() {
               {profile?.role === "admin" || profile?.role === "support_staff" ? <SidebarMenuItem><SidebarMenuButton tooltip={t("layout.sidebar.projects.label")} isActive={pathname.startsWith("/admin/projects")} render={<NavLink to="/admin/projects" className="flex w-full items-center gap-2"><Package className="size-4" aria-hidden /><span>{t("layout.sidebar.projects.label")}</span></NavLink>} /></SidebarMenuItem> : null}
               {profile?.role === "admin" ? <SidebarMenuItem><SidebarMenuButton className="rounded-md" tooltip="Inspect design system components" isActive={pathname.startsWith("/components")} render={<NavLink to="/components" className="flex w-full items-center gap-2"><Blocks className="size-4" aria-hidden /><span>Components</span></NavLink>} /></SidebarMenuItem> : null}
               <SidebarMenuItem>
-                <SidebarMenuButton className="rounded-md" tooltip={t("layout.sidebar.email.tooltip")} isActive={pathname.startsWith("/admin/email")} render={<NavLink to="/admin/email" className="flex w-full items-center gap-2"><Mail className="size-4" aria-hidden /><span>{t("layout.sidebar.email.label")}</span></NavLink>} />
+                <SidebarMenuButton className="rounded-md" tooltip={t("layout.sidebar.email.tooltip")} isActive={pathname === "/admin/email"} render={<NavLink to="/admin/email" className="flex w-full items-center gap-2"><Mail className="size-4" aria-hidden /><span>{t("layout.sidebar.email.label")}</span></NavLink>} />
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton className="rounded-md" tooltip={t("layout.sidebar.emailPreview.tooltip")} isActive={pathname.startsWith("/admin/email/previews")} render={<NavLink to="/admin/email/previews" className="flex w-full items-center gap-2"><Mail className="size-4" aria-hidden /><span>{t("layout.sidebar.emailPreview.label")}</span></NavLink>} />
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
@@ -146,6 +149,11 @@ export function AdminSidebar() {
                     </NavLink>
                   }
                 />
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton className="rounded-md" tooltip={t("layout.sidebar.ogPreview.label")}
+                  isActive={pathname === "/admin/og-preview"}
+                  render={<NavLink to="/admin/og-preview" className="flex w-full items-center gap-2"><ImageIcon className="size-4" aria-hidden /><span>{t("layout.sidebar.ogPreview.label")}</span></NavLink>} />
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton

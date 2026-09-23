@@ -42,17 +42,9 @@ describe("UserAvatar", () => {
     expect(image?.src).toMatch(/^data:image\/svg\+xml/);
   });
 
-  it("falls back from a broken custom image to the generated avatar, then to initials", () => {
+  it("replaces a legacy uploaded image with a generated avatar", () => {
     const container = mount("https://example.com/missing.png");
-    const customImage = container.querySelector<HTMLImageElement>('img[alt="Profile avatar"]')!;
-    expect(customImage.src).toBe("https://example.com/missing.png");
-
-    act(() => customImage.dispatchEvent(new Event("error")));
     const generatedImage = container.querySelector<HTMLImageElement>('img[alt="Profile avatar"]')!;
     expect(generatedImage.src).toMatch(/^data:image\/svg\+xml/);
-
-    act(() => generatedImage.dispatchEvent(new Event("error")));
-    expect(container.querySelector('img[alt="Profile avatar"]')).toBeNull();
-    expect(container.textContent).toContain("PA");
   });
 });

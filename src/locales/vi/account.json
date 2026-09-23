@@ -514,5 +514,39 @@
         "missing_profile": "Hồ sơ của bạn chưa khả dụng."
       }
     }
+  },
+  "avatarEditor": {
+    "title": "Chỉnh sửa avatar",
+    "description": "Chọn diện mạo rồi lưu vào hồ sơ của bạn.",
+    "edit": "Chỉnh sửa avatar",
+    "back": "Quay lại hồ sơ",
+    "preview": "Xem trước avatar",
+    "randomize": "Tạo ngẫu nhiên",
+    "randomizeHelp": "Tạo ngẫu nhiên đổi mã tạo avatar để thử diện mạo khác. Bộ phận và màu bạn chọn thủ công vẫn được giữ; thay đổi chỉ được lưu khi bấm Lưu avatar.",
+    "reset": "Khôi phục mặc định",
+    "parts": "Bộ phận",
+    "colors": "Màu sắc",
+    "fromSeed": "Tự động theo mẫu",
+    "autoPartHelp": "Mỗi tài khoản có một mã tạo avatar riêng. Chọn “Tự động theo mẫu” để bộ phận này luôn được tạo từ mã đó; chọn một mẫu cụ thể để giữ cố định bộ phận này.",
+    "clear": "Bỏ chọn",
+    "save": "Lưu avatar",
+    "saving": "Đang lưu…",
+    "saved": "Đã lưu avatar.",
+    "saveFailed": "Không thể lưu avatar. Vui lòng thử lại.",
+    "slots": {
+      "head": "Đầu và tóc",
+      "body": "Thân",
+      "bottom": "Phần dưới",
+      "item": "Phụ kiện",
+      "glasses": "Kính"
+    },
+    "colorsBySlot": {
+      "background": "Nền",
+      "stroke": "Viền",
+      "hair": "Tóc",
+      "skin": "Da",
+      "clothes": "Trang phục",
+      "bottom": "Phần dưới"
+    }
   }
 }

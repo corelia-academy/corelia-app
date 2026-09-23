@@ -269,7 +269,7 @@ export default function UserProfileLayout() {
   usePageMeta({
     title: profile ? profileTitle(profile) : undefined,
     description: bio ?? undefined,
-    image: profile?.avatar_url ?? undefined,
+    image: profile?.profile_public && profile.username ? `${window.location.origin}/avatar/${encodeURIComponent(profile.username)}.svg` : undefined,
     url: window.location.href,
   });
 
@@ -282,18 +282,18 @@ export default function UserProfileLayout() {
           <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] lg:items-start">
             <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-start">
               {loading ? (
-                <Skeleton className="size-20 rounded-2xl sm:size-28" />
+                <Skeleton className="size-20 rounded-full sm:size-28" />
               ) : (
                 <UserAvatar
                   userId={profile?.id}
                   avatarUrl={profile?.avatar_url}
-                  avatarSeed={profile?.avatar_seed}
+                  avatarSeed={profile?.avatar_seed} avatarConfig={profile?.avatar_config}
                   alt={profile ? profileTitle(profile) : ""}
                   fallback={<User className="size-7" aria-hidden />}
                   size="lg"
-                  className="size-20 rounded-2xl ring-4 ring-surface-base/80 sm:size-28"
-                  imageClassName="rounded-2xl"
-                  fallbackClassName="rounded-2xl"
+                  className="size-20 rounded-full ring-4 ring-surface-base/80 sm:size-28"
+                  imageClassName="rounded-full"
+                  fallbackClassName="rounded-full"
                 />
               )}
 

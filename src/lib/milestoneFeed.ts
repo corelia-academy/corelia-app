@@ -13,7 +13,7 @@ export type FeedMilestone = {
   xp_total: number | null;
   created_at: string;
 };
-export type FeedProfile = { id: string; username: string | null; ocid: string | null; full_name: string | null; avatar_url: string | null; avatar_seed: string | null };
+export type FeedProfile = { id: string; username: string | null; ocid: string | null; full_name: string | null; avatar_url: string | null; avatar_seed: string | null; avatar_config?: import("../../shared/avatarConfig").AvatarConfig | null };
 export type FeedSource = { label: string; href: string };
 export type MilestonePage = { milestones: FeedMilestone[]; profiles: Record<string, FeedProfile>; sources: Record<number, FeedSource[]>; likes: Record<number, number>; liked: Set<number> };
 
@@ -43,7 +43,7 @@ export async function getMilestonePage(userId: string, mode: FeedMode | "profile
   const courses = [...new Set(milestones.flatMap((item) => item.course_id ? [item.course_id] : []))];
   const hackathons = [...new Set(milestones.flatMap((item) => item.hackathon_id ? [item.hackathon_id] : []))];
   const [profileResult, courseResult, hackathonResult, likeResult] = await Promise.all([
-    actors.length ? supabase.from("public_profiles").select("id,username,ocid,full_name,avatar_url,avatar_seed").in("id", actors) : Promise.resolve({ data: [], error: null }),
+    actors.length ? supabase.from("public_profiles").select("id,username,ocid,full_name,avatar_url,avatar_seed,avatar_config").in("id", actors) : Promise.resolve({ data: [], error: null }),
     courses.length ? supabase.from("courses").select("id,slug,data").in("id", courses) : Promise.resolve({ data: [], error: null }),
     hackathons.length ? supabase.from("hackathons").select("id,document").in("id", hackathons) : Promise.resolve({ data: [], error: null }),
     ids.length ? supabase.from("feed_milestone_likes").select("milestone_id,user_id").in("milestone_id", ids) : Promise.resolve({ data: [], error: null }),

@@ -317,7 +317,7 @@ export type ProjectOwnerPublicProfile = {
   ocid: string | null;
   full_name: string | null;
   avatar_url: string | null;
-  avatar_seed: string | null;
+  avatar_seed: string | null; avatar_config?: import("../../shared/avatarConfig").AvatarConfig | null;
 };
 
 export type PublicProjectEntry = {
@@ -402,7 +402,7 @@ async function attachOwners(projects: Project[]): Promise<PublicProjectEntry[]> 
 
   const { data: owners, error: ownerErr } = await supabase
     .from("public_profiles")
-    .select("id,username,ocid,full_name,avatar_url,avatar_seed")
+    .select("id,username,ocid,full_name,avatar_url,avatar_seed,avatar_config")
     .in("id", ownerIds);
   if (ownerErr) throw new Error(ownerErr.message);
 

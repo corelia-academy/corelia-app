@@ -41,6 +41,7 @@ import {
   uploadContestThumbnail,
 } from "@/lib/storage";
 import { useAuth } from "@/stores/authStore";
+import { xpAwardNotificationQueryKey } from "@/features/xp/xpNotificationKeys";
 import type {
   Contest,
   ContestAccessInvite,
@@ -1617,6 +1618,7 @@ export function useContestDetailOrchestrator({
       await loadCollaboration();
       toast.success(translate("detail.toasts.submissionSaved"));
       void queryClient.invalidateQueries({ queryKey: ["xp"] });
+      void queryClient.invalidateQueries({ queryKey: xpAwardNotificationQueryKey });
     } catch (err) {
       toast.error(translateApiError(err, translate, "detail.toasts.submissionSaveFailed"));
     } finally {

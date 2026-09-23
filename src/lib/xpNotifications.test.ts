@@ -29,4 +29,12 @@ describe("XP notification ledger cursor", () => {
     expect(readXpNotificationCursor("other-user")).toBeNull();
     expect(advanceXpNotifications(readXpNotificationCursor("oauth-user")!, [row("github", 50)]).awards).toEqual([]);
   });
+  it("only announces meaningful learning and project awards", () => {
+    const entries = [
+      { ...row("profile"), source: "profile_completed" },
+      { ...row("heart"), source: "project_liked" },
+      { ...row("project", 50), source: "first_hackathon_submission" },
+    ];
+    expect(advanceXpNotifications({ createdAt: null, ids: [] }, entries).awards.map(entry => entry.id)).toEqual(["project"]);
+  });
 });

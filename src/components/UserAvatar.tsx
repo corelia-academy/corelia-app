@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 
 import {
   Avatar,
@@ -7,12 +7,14 @@ import {
   type AvatarSize,
 } from "@/components/ui/avatar";
 import { getGeneratedAvatarDataUrl } from "@/lib/avatar";
+import type { AvatarConfig } from "@/lib/avatar";
 import { cn } from "@/lib/utils";
 
 type UserAvatarProps = {
   userId?: string | null;
   avatarUrl?: string | null;
   avatarSeed?: string | null;
+  avatarConfig?: AvatarConfig | null;
   alt: string;
   fallback?: ReactNode;
   className?: string;
@@ -25,6 +27,7 @@ export function UserAvatar({
   userId,
   avatarUrl,
   avatarSeed,
+  avatarConfig,
   alt,
   fallback,
   className,
@@ -33,39 +36,21 @@ export function UserAvatar({
   size,
 }: UserAvatarProps) {
   const generatedUrl = useMemo(
-    () => getGeneratedAvatarDataUrl(userId, avatarSeed),
-    [userId, avatarSeed],
+    () => getGeneratedAvatarDataUrl(userId, avatarSeed, avatarConfig),
+    [userId, avatarSeed, avatarConfig],
   );
-  const customUrl = avatarUrl?.trim() || null;
-  const primaryUrl = customUrl ?? generatedUrl;
-  const [resolvedUrl, setResolvedUrl] = useState(primaryUrl);
-
-  useEffect(() => {
-    setResolvedUrl(primaryUrl);
-  }, [primaryUrl]);
-
-  function handleImageError() {
-    if (customUrl && resolvedUrl === customUrl && generatedUrl) {
-      setResolvedUrl(generatedUrl);
-      return;
-    }
-    setResolvedUrl(null);
-  }
+  void avatarUrl; // Legacy prop retained until all consumers stop supplying uploaded images.
 
   return (
     <Avatar className={className} size={size}>
       <AvatarFallback className={cn(fallbackClassName)}>
         {fallback}
       </AvatarFallback>
-      {resolvedUrl ? (
+      {generatedUrl ? (
         <AvatarImage
-          key={resolvedUrl}
-          src={resolvedUrl}
+          key={generatedUrl}
+          src={generatedUrl}
           alt={alt}
-          onError={handleImageError}
-          onLoadingStatusChange={(status) => {
-            if (status === "error") handleImageError();
-          }}
           className={cn(
             imageClassName,
           )}

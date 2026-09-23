@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/stores/authStore";
 import { useTheme } from "next-themes";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { LanguageSettingsCard } from "./LanguageSettingsCard";
 import { NotificationPreferencesCard } from "./NotificationPreferencesCard";
@@ -28,6 +28,11 @@ function AccountSettingsSection() {
 
   return (
     <div className="space-y-4">
+      <section className="rounded-2xl border border-border-subtle bg-surface-base p-4">
+        <h2 className="text-heading-medium font-display">{t("avatarEditor.title")}</h2>
+        <p className="mt-1 text-foreground-muted">{t("avatarEditor.description")}</p>
+        <Button className="mt-3" type="button" variant="outline" nativeButton={false} render={<Link to="/settings/avatar" />}>{t("avatarEditor.edit")}</Button>
+      </section>
       <LanguageSettingsCard />
       <NotificationPreferencesCard />
       <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
@@ -106,4 +111,3 @@ function AccountSettingsSection() {
 export function AccountSettingsRoute() {
   return <AccountSettingsSection />;
 }
-

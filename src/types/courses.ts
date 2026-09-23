@@ -26,7 +26,7 @@ export interface CourseCoInstructorSnapshot {
   id: string;
   name: string;
   avatar_url?: string | null;
-  avatar_seed?: string | null;
+  avatar_seed?: string | null; avatar_config?: import("../../shared/avatarConfig").AvatarConfig | null;
   headline?: string | null;
   organization?: string | null;
   website?: string | null;
