@@ -15,6 +15,7 @@ import { Action } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 
 import AdminActionComponentPage from "./components/AdminActionComponentPage";
+import AdminAvatarComponentPage from "./components/AdminAvatarComponentPage";
 import AdminBadgeComponentPage from "./components/AdminBadgeComponentPage";
 import AdminDropdownMenuComponentPage from "./components/AdminDropdownMenuComponentPage";
 import AdminScrollbarComponentPage from "./components/AdminScrollbarComponentPage";
@@ -29,6 +30,11 @@ const components = [
     slug: "action",
     title: "Action",
     criterion: "Variants, active state, pressed state, content slots, and disabled behavior.",
+  },
+  {
+    slug: "avatar",
+    title: "Avatar",
+    criterion: "Nine Figma sizes, six avatar types, image/text/icon fallbacks, brand logos, actions, and User states.",
   },
   {
     slug: "badge",
@@ -489,27 +495,30 @@ export default function AdminComponentsPage() {
             <AdminActionComponentPage embedded />
           </ComponentSection>
           <ComponentSection {...components[1]}>
-            <AdminBadgeComponentPage embedded />
+            <AdminAvatarComponentPage embedded />
           </ComponentSection>
           <ComponentSection {...components[2]}>
-            <AdminTagComponentPage embedded />
+            <AdminBadgeComponentPage embedded />
           </ComponentSection>
           <ComponentSection {...components[3]}>
-            <AdminSelectionComponentPage embedded />
+            <AdminTagComponentPage embedded />
           </ComponentSection>
           <ComponentSection {...components[4]}>
-            <AdminToggleComponentPage embedded />
+            <AdminSelectionComponentPage embedded />
           </ComponentSection>
           <ComponentSection {...components[5]}>
-            <AdminSeparatorComponentPage embedded />
+            <AdminToggleComponentPage embedded />
           </ComponentSection>
           <ComponentSection {...components[6]}>
-            <AdminScrollbarComponentPage embedded />
+            <AdminSeparatorComponentPage embedded />
           </ComponentSection>
           <ComponentSection {...components[7]}>
-            <AdminTabsComponentPage embedded />
+            <AdminScrollbarComponentPage embedded />
           </ComponentSection>
           <ComponentSection {...components[8]}>
+            <AdminTabsComponentPage embedded />
+          </ComponentSection>
+          <ComponentSection {...components[9]}>
             <AdminDropdownMenuComponentPage embedded />
           </ComponentSection>
         </div>

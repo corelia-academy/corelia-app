@@ -46,14 +46,15 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(9);
+    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(10);
     expect(container.querySelector('a[href="/components/action"]')).not.toBeNull();
+    expect(container.querySelector('a[href="/components/avatar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/scrollbar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/tabs"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components"]')).toBeNull();
     expect(container.querySelector('[data-testid="component-navigation"]')).not.toBeNull();
-    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(9);
-    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(9);
+    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(10);
+    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(10);
     expect(container.querySelector('[data-testid="component-section-title"]')?.textContent).toBe("Action");
     expect(container.textContent).toContain("Badge");
     expect(container.textContent).toContain("Selection");

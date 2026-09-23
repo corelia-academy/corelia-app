@@ -23,6 +23,9 @@ importers:
       '@fontsource/be-vietnam-pro':
         specifier: ^5.3.0
         version: 5.3.0
+      '@fontsource/noto-sans':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@hcaptcha/react-hcaptcha':
         specifier: ^2.0.2
         version: 2.0.2
@@ -655,6 +658,9 @@ packages:
 
   '@fontsource/be-vietnam-pro@5.3.0':
     resolution: {integrity: sha512-xhAQBGHDxP5BF8IJxedy5MoWUmc1DlPCcZbMLhvnPkf8TaYCbbUVs3LjpuJ4BYdTrdiCLaewNaY8z+owq/FqFw==}
+
+  '@fontsource/noto-sans@5.3.0':
+    resolution: {integrity: sha512-fBCog2PY7DiVVTEEqtI/Qdinx/knobHYfoGpjFXdfBX5RoJaBp1Prw2G75p0OIsdlMZg3cLo0c+YbIUYOxnQJw==}
 
   '@hcaptcha/react-hcaptcha@2.0.2':
     resolution: {integrity: sha512-VbuH6VJ6m3BHmVBHs0fL9t+suZd7PQEqCzqL2BiUbBvbHI3XfvSgdiug2QiEPN8zskbPTIV/FfGPF53JCckrow==}
@@ -4326,6 +4332,8 @@ snapshots:
   '@fontsource/akt@5.3.0': {}
 
   '@fontsource/be-vietnam-pro@5.3.0': {}
+
+  '@fontsource/noto-sans@5.3.0': {}
 
   '@hcaptcha/react-hcaptcha@2.0.2': {}
 

@@ -316,6 +316,7 @@ function ApplicationRoutes() {
             />
             {[
               "action",
+              "avatar",
               "badge",
               "tag",
               "selection",

@@ -15,6 +15,7 @@ import {
   UserCircle,
 } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
+import { User } from "@/components/ui/user";
 import { XpBadge } from "@/features/xp/XpBadge";
 import { getXpTotals } from "@/lib/xp";
 import { useAuth } from "@/stores/authStore";
@@ -490,26 +491,28 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
               >
                 <DropdownMenuTrigger
                   render={
-                    <button
-                      type="button"
-                      className={`group inline-flex size-10 items-center justify-center rounded-full border-0 bg-transparent p-0 text-left text-sm transition-colors duration-150 hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:h-10 md:w-auto md:gap-2 md:border md:pr-3 md:hover:bg-surface-raised ${
-                        isOcidConnected
-                          ? "text-primary md:bg-primary-muted md:hover:bg-primary-muted"
-                          : "text-foreground md:bg-surface-base"
-                      } cursor-pointer`}
+                    <User
+                      showDropdown={false}
+                      state={accountMenuOpen ? "Clicked" : "Default"}
+                      className={`group duration-150 focus-visible:ring-primary/20 max-md:[&>span[data-slot=user-label]]:hidden max-md:border-0 max-md:data-[state=Clicked]:bg-transparent ${
+                        isOcidConnected ? "text-primary" : "text-foreground"
+                      }`}
+                      avatar={
+                        <UserAvatar
+                          userId={profile?.id ?? user?.id}
+                          avatarUrl={avatarUrl}
+                          avatarSeed={profile?.avatar_seed}
+                          alt={displayName}
+                          fallback={avatarFallback}
+                          size="Large"
+                          className="transition-[box-shadow,background-color] group-hover/user:bg-surface-raised group-hover/user:ring-2 group-hover/user:ring-primary/20"
+                        />
+                      }
                     >
-                      <UserAvatar
-                        userId={profile?.id ?? user?.id}
-                        avatarUrl={avatarUrl}
-                        avatarSeed={profile?.avatar_seed}
-                        alt={displayName}
-                        fallback={avatarFallback}
-                        className="size-10 transition-[box-shadow,background-color] group-hover:bg-surface-raised group-hover:ring-2 group-hover:ring-primary/20 md:-ml-1"
-                      />
                       <span className="hidden max-w-48 truncate md:inline">
                         {displayName}
                       </span>
-                    </button>
+                    </User>
                   }
                 />
                 <DropdownMenuContent align="end" className="z-20 min-w-64">
