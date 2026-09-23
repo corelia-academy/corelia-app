@@ -13,13 +13,13 @@ import { useXpWeek } from "@/features/xp/useXpWeek";
 import type { XpPeriod } from "@/lib/xpLeaderboard";
 import { useAuth } from "@/stores/authStore";
 
-export default function LeaderboardPage() {
+export default function FeedLeaderboard() {
   const { t } = useTranslation("account");
   const { user } = useAuth();
   const [period, setPeriod] = useState<XpPeriod>("week");
   const week = useXpWeek();
-  return <div className="container-app py-6 sm:py-8"><div className="mx-auto max-w-4xl space-y-5">
-    <header><h1 className="flex items-center gap-2 font-display text-display-small"><Trophy className="size-7 shrink-0 text-primary" aria-hidden />{t("xp.leaderboard.title")}</h1><p className="mt-2 text-sm text-foreground-muted">{t("xp.leaderboard.description")}</p></header>
+  return <section className="space-y-5" aria-label={t("xp.leaderboard.title")}>
+    <header><h2 className="flex items-center gap-2 text-lg font-semibold"><Trophy className="size-5 shrink-0 text-primary" aria-hidden />{t("xp.leaderboard.title")}</h2><p className="mt-2 text-sm text-foreground-muted">{t("xp.leaderboard.description")}</p></header>
     <Tabs.Root value={period} onValueChange={value => { if (value === "week" || value === "all_time") setPeriod(value); }}>
       <Tabs.List activateOnFocus level="2a" aria-label={t("xp.leaderboard.period")}>
         <Tabs.Tab value="week">{t("xp.leaderboard.week")}</Tabs.Tab>
@@ -29,7 +29,7 @@ export default function LeaderboardPage() {
         <LeaderboardResults key={`${user?.id}:${period}:${period === "week" ? week : "all"}`} userId={user?.id ?? ""} period={period} week={week} />
       </Tabs.Panel>
     </Tabs.Root>
-  </div></div>;
+  </section>;
 }
 
 function LeaderboardResults({ userId, period, week }: { userId: string; period: XpPeriod; week: string }) {

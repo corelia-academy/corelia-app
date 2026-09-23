@@ -73,8 +73,7 @@
     "editCourse": "Edit course",
     "notFound": "Page not found",
     "maintenance": "System maintenance",
-    "applicationError": "Application error",
-    "leaderboard": "XP Leaderboard"
+    "applicationError": "Application error"
   },
   "language": {
     "switchLabel": "Change language",
@@ -122,8 +121,7 @@
     "account": "Account",
     "admin": "Admin",
     "instructor": "Teaching",
-    "instructorManagement": "Teaching management",
-    "leaderboard": "XP Leaderboard"
+    "instructorManagement": "Teaching management"
   },
   "account": {
     "signedInViaEmail": "(signed in via email)"
