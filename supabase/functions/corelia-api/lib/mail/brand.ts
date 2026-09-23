@@ -26,7 +26,9 @@ export const EMAIL_CLASS_STYLES: Record<string, string> = {
   "e-hero-tag": `display:block;font-family:${b.labelFont};font-size:10px;font-weight:400;letter-spacing:0.05em;text-transform:uppercase;color:#cbd1e2;margin-bottom:12px;`,
   "e-body": "padding:0 24px 8px;",
   "e-cta-wrap": `padding:0 24px 24px;border-bottom:1px solid ${b.border};`,
-  "e-btn": `display:inline-block;box-sizing:border-box;max-width:100%;background-color:${b.primary};background-image:linear-gradient(${b.primary},${b.primary});color:#f4f7ff;font-size:16px;font-weight:400;line-height:1.4;padding:11px 16px;border:1px solid transparent;border-radius:8px;text-decoration:none;text-align:center;overflow-wrap:anywhere;word-break:break-word;`,
+  // Apple Mail can recolor link text in dark mode even when `color` is inline.
+  // Locking WebKit's text fill keeps CTA copy legible against the blue surface.
+  "e-btn": `display:inline-block;box-sizing:border-box;max-width:100%;background-color:${b.primary};background-image:linear-gradient(${b.primary},${b.primary});color:#f4f7ff!important;-webkit-text-fill-color:#f4f7ff!important;font-size:16px;font-weight:400;line-height:1.4;padding:11px 16px;border:1px solid transparent;border-radius:8px;text-decoration:none;text-align:center;overflow-wrap:anywhere;word-break:break-word;`,
   "e-footer": `padding:16px 24px;${darkSurface}font-size:12px;color:${b.muted};line-height:18px;text-align:left;`,
   "e-footer-item": `margin:0 0 4px;line-height:18px;color:${b.muted};`,
   "e-footer-item-last": `margin:0;line-height:18px;color:${b.muted};`,
