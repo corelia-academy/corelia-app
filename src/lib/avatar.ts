@@ -21,7 +21,7 @@ export function getGeneratedAvatarDataUrl(
 
   try {
     const config = safeAvatarConfig(avatarConfig, avatarAssets);
-    const svg = createAvatar(avatarAssets, { seed, ...config }).toString();
+    const svg = createAvatar(avatarAssets, { seed, ...config, background: config.colors.background }).toString();
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
   } catch {
     return null;

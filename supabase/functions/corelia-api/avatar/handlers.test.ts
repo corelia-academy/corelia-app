@@ -31,11 +31,12 @@ describe("avatar API", () => {
   });
 
   it("returns SVG for public profiles and 404 for private profiles", async () => {
-    const publicDb = db({ id: "11111111-1111-4111-8111-111111111111", avatar_seed: null, avatar_config: { selections: {}, colors: {} }, profile_public: true });
+    const publicDb = db({ id: "11111111-1111-4111-8111-111111111111", avatar_seed: null,
+      avatar_config: { selections: {}, colors: { background: "#D9E8FB" } }, profile_public: true });
     const request = new Request("https://example.com?username=alice");
     const response = await handleAvatarSvg(request, publicDb.client);
     expect(response.headers.get("Content-Type")).toContain("image/svg+xml");
-    expect(await response.text()).toContain("<svg");
+    expect(await response.text()).toContain('fill="#D9E8FB"');
     expect((await handleAvatarSvg(request, db({ profile_public: false }).client)).status).toBe(404);
     expect((await handleAvatarSvg(new Request("https://example.com?username=bad-name"), publicDb.client)).status).toBe(404);
   });

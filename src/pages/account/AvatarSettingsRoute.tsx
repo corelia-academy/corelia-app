@@ -62,6 +62,7 @@ export function AvatarSettingsRoute() {
         <section className="space-y-4 rounded-2xl border border-border-subtle bg-surface-base p-5">
           <div className="mx-auto size-52 overflow-hidden rounded-full" aria-label={t("avatarEditor.preview")}>
             <HumationAvatar assets={avatarAssets} seed={effectiveSeed} selections={config.selections} colors={config.colors}
+              background={config.colors.background}
               size="100%" title={t("avatarEditor.preview")} />
           </div>
           <div className="flex flex-wrap gap-2">
@@ -72,14 +73,16 @@ export function AvatarSettingsRoute() {
               {t("avatarEditor.reset")}
             </Button>
           </div>
+          <p className="text-sm text-foreground-muted">{t("avatarEditor.randomizeHelp")}</p>
         </section>
         <section className="space-y-5 rounded-2xl border border-border-subtle bg-surface-base p-5">
           <h2 className="text-heading-medium font-display">{t("avatarEditor.parts")}</h2>
+          <p id="avatar-parts-help" className="text-sm text-foreground-muted">{t("avatarEditor.autoPartHelp")}</p>
           <div className="grid gap-4 sm:grid-cols-2">
             {avatarAssets.selectionSlots.map((slot) => (
               <div key={slot.id} className="space-y-1.5">
                 <Label htmlFor={`avatar-${slot.id}`}>{t(`avatarEditor.slots.${slot.id}` as "avatarEditor.slots.head")}</Label>
-                <select id={`avatar-${slot.id}`} value={config.selections[slot.id] ?? ""}
+                <select id={`avatar-${slot.id}`} aria-describedby="avatar-parts-help" value={config.selections[slot.id] ?? ""}
                   onChange={(event) => setConfig((current) => {
                     const selections = { ...current.selections };
                     if (event.target.value) selections[slot.id] = event.target.value;

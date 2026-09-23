@@ -63,7 +63,8 @@ export async function handleAvatarSvg(req: Request, db: SupabaseClient): Promise
   if (!data || data.profile_public !== true) return new Response("Not Found", { status: 404, headers: { "Cache-Control": "no-store" } });
   try {
     const config = safeAvatarConfig(data.avatar_config, avatarAssets);
-    const svg = createAvatar(avatarAssets, { seed: data.avatar_seed ?? data.id, ...config }).toString();
+    const svg = createAvatar(avatarAssets, { seed: data.avatar_seed ?? data.id, ...config,
+      background: config.colors.background }).toString();
     return new Response(svg, { headers: {
       "Content-Type": "image/svg+xml; charset=utf-8",
       "X-Content-Type-Options": "nosniff",
