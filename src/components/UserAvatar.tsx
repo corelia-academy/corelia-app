@@ -1,6 +1,11 @@
 import { useEffect, useState, type ReactNode } from "react";
 
-import { Avatar } from "@/components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  type AvatarSize,
+} from "@/components/ui/avatar";
 import { getGeneratedAvatarDataUrl } from "@/lib/avatar";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +18,7 @@ type UserAvatarProps = {
   className?: string;
   imageClassName?: string;
   fallbackClassName?: string;
-  size?: "default" | "sm" | "lg";
+  size?: AvatarSize;
 };
 
 export function UserAvatar({
@@ -46,24 +51,19 @@ export function UserAvatar({
 
   return (
     <Avatar className={className} size={size}>
-      <span
-        data-slot="avatar-fallback"
-        className={cn(
-          "absolute inset-0 z-0 flex size-full items-center justify-center overflow-hidden rounded-full bg-surface-raised text-sm text-foreground-muted group-data-[size=sm]/avatar:text-xs",
-          fallbackClassName,
-        )}
-      >
+      <AvatarFallback className={cn(fallbackClassName)}>
         {fallback}
-      </span>
+      </AvatarFallback>
       {resolvedUrl ? (
-        <img
+        <AvatarImage
           key={resolvedUrl}
-          data-slot="avatar-image"
           src={resolvedUrl}
           alt={alt}
           onError={handleImageError}
+          onLoadingStatusChange={(status) => {
+            if (status === "error") handleImageError();
+          }}
           className={cn(
-            "pointer-events-none absolute inset-0 z-10 aspect-square size-full rounded-full object-cover",
             imageClassName,
           )}
         />

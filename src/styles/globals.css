@@ -9,12 +9,32 @@
 @import "@fontsource/be-vietnam-pro/400.css";
 @import "@fontsource/be-vietnam-pro/400-italic.css";
 @import "@fontsource/be-vietnam-pro/500.css";
+@import "@fontsource/noto-sans/600.css";
 
 /* Keep Google Sans for the existing certificate-rendering flow. */
 @import "@fontsource-variable/google-sans";
 @import "@fontsource-variable/jetbrains-mono";
 
 @custom-variant dark (&:is(.dark *));
+
+/* Issue #382 — Avatar content follows the Figma size contract through
+   inherited custom properties. This keeps the type/size selectors stable
+   without relying on compound Tailwind variants. */
+[data-slot="avatar"][data-avatar-type="text"] > [data-slot="avatar-fallback"] {
+  padding: var(--avatar-text-padding);
+  color: var(--avatar-text);
+  font-family: var(--avatar-text-font-family);
+  font-size: var(--avatar-text-font-size);
+  font-weight: var(--avatar-text-font-weight);
+  letter-spacing: var(--avatar-text-letter-spacing);
+  line-height: var(--avatar-text-line-height);
+}
+
+[data-slot="avatar"][data-avatar-type="icon"] > [data-slot="avatar-fallback"] > svg,
+[data-slot="avatar"][data-avatar-type="set-avatar"] > [data-slot="avatar-fallback"] > svg {
+  width: var(--avatar-icon-size);
+  height: var(--avatar-icon-size);
+}
 
 @theme inline {
   /* Figma Color 🟢 (node 12:3) → Tailwind color tokens */
@@ -103,12 +123,24 @@
   --color-foreground: var(--foreground);
   --color-foreground-muted: var(--foreground-muted);
   --color-foreground-subtle: var(--foreground-subtle);
+  --color-background: var(--background);
 
   --color-primary: var(--primary);
   --color-primary-muted: var(--primary-muted);
   --color-primary-container: var(--primary-container);
   --color-on-primary-container: var(--on-primary-container);
   --color-primary-foreground: var(--primary-foreground);
+  /* Issue #382 — Figma Avatar semantic aliases. */
+  --color-avatar-text: var(--avatar-text);
+  --color-avatar-icon: var(--avatar-icon);
+  --color-avatar-brand: var(--avatar-brand);
+  --color-avatar-filled: var(--avatar-filled);
+  --color-avatar-set: var(--avatar-set);
+  --color-avatar-action-edit: var(--avatar-action-edit);
+  --color-avatar-action-edit-border: var(--avatar-action-edit-border);
+  --color-avatar-action-add: var(--avatar-action-add);
+  --color-avatar-action-focus: var(--avatar-action-focus);
+  --shadow-avatar-action: var(--avatar-action-shadow);
 
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -203,6 +235,10 @@
   --color-action-active-foreground: var(--action-active-foreground);
   --color-action-active-icon: var(--action-active-icon);
   --color-action-active-supporting: var(--action-active-supporting);
+  /* User Clicked state tokens mapped from the Figma User component. */
+  --color-user-clicked: var(--user-clicked);
+  --color-user-clicked-border: var(--user-clicked-border);
+  --color-user-clicked-foreground: var(--user-clicked-foreground);
   --color-action-destructive-active: var(--action-destructive-active);
   --color-action-destructive-active-foreground: var(--action-destructive-active-foreground);
   --color-action-destructive-active-icon: var(--action-destructive-active-icon);
@@ -604,6 +640,18 @@
   --blue-800: #193cb4;
   --blue-900: #1a378e;
 
+  /* Issue #382 — Figma Avatar primitive tokens. */
+  --avatar-text: var(--neutral-50);
+  --avatar-icon: var(--neutral-50);
+  --avatar-brand: var(--background);
+  --avatar-filled: var(--blue-500);
+  --avatar-set: var(--neutral-600);
+  --avatar-action-edit: var(--neutral-900);
+  --avatar-action-edit-border: var(--blue-300);
+  --avatar-action-add: var(--blue-500);
+  --avatar-action-focus: var(--blue-500);
+  --avatar-action-shadow: 0px 1px 1.5px rgb(16 24 40 / 15%);
+
   --error-50: #fef3f2;
   --error-100: #fed9d5;
   --error-300: #fda59b;
@@ -766,6 +814,10 @@
   --action-active-foreground: var(--neutral-50);
   --action-active-icon: var(--neutral-50);
   --action-active-supporting: var(--neutral-200);
+  /* Light User Clicked state uses a pale blue fill and border. */
+  --user-clicked: var(--blue-100);
+  --user-clicked-border: var(--blue-200);
+  --user-clicked-foreground: var(--neutral-50);
   --action-destructive-active: var(--error-700);
   --action-destructive-active-foreground: var(--neutral-200);
   --action-destructive-active-icon: var(--neutral-50);
@@ -897,6 +949,14 @@
   --primary-container: var(--blue-900);
   --on-primary-container: var(--blue-100);
 
+  /* Issue #382 — Avatar semantic aliases follow dark mode. */
+  --avatar-filled: var(--blue-500);
+  --avatar-set: var(--neutral-600);
+  --avatar-action-edit: var(--neutral-900);
+  --avatar-action-edit-border: var(--blue-300);
+  --avatar-action-add: var(--blue-500);
+  --avatar-action-focus: var(--blue-500);
+
   /* ── Secondary / Muted ── */
   --secondary: var(--blue-900);
   --secondary-foreground: var(--neutral-50);
@@ -961,6 +1021,10 @@
   --action-active-foreground: var(--neutral-200);
   --action-active-icon: var(--neutral-50);
   --action-active-supporting: var(--neutral-200);
+  /* Keep User Clicked theme mapping semantic for Dark mode. */
+  --user-clicked: var(--neutral-700);
+  --user-clicked-border: var(--neutral-600);
+  --user-clicked-foreground: var(--neutral-50);
   --action-destructive-active: var(--error-700);
   --action-destructive-active-foreground: var(--neutral-200);
   --action-destructive-active-icon: var(--neutral-50);
