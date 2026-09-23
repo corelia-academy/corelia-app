@@ -1,6 +1,6 @@
 # Quy trình release Corelia
 
-Tài liệu này là phần hướng dẫn vận hành đi kèm README gốc. Nội dung mô tả mô hình kiểm soát release của `corelia-app`; các file workflow vẫn là nguồn thực thi chính xác.
+Tài liệu này là phần hướng dẫn vận hành đi kèm README gốc. Nội dung mô tả mô hình kiểm soát release của `corelia-app`; các file workflow là nguồn thực thi cho backend/CI; cấu hình tích hợp Git trong Cloudflare điều khiển frontend tự deploy.
 
 ## Phạm vi
 
@@ -15,14 +15,14 @@ Tài liệu này không mô tả hành vi của từng feature trong app. Các k
 | Database pull-request guardrails | Pull Request chạm vào database hoặc các path kiểm soát release | Kiểm tra migration declaration, frozen baseline, drift và local migration recreation | Không ghi vào các môi trường được bảo vệ |
 | Staging backend release | Push vào `staging` khi khớp path filter, hoặc manual dispatch | Verify repository, apply Supabase migrations và deploy Edge Functions | Không publish frontend Vite/Cloudflare Workers |
 | Production Supabase release | Manual dispatch từ `main` | Verify artifact, apply migrations, deploy Edge Functions và chạy live-state gates | Không thay thế pipeline publish frontend riêng |
-| Frontend publication | Manual dispatch [`Deploy Frontend`](../.github/workflows/deploy-frontend.yml) từ `staging` hoặc `main` | Build đúng Supabase/CDN, publish đúng Worker và kiểm tra asset đang phục vụ trên domain | Chạy sau backend gate tương ứng; không dùng lệnh deploy mặc định ở terminal |
+| Frontend publication | Cloudflare tự build/deploy từ nhánh Git đã kết nối (`staging` / `main`) | Build đúng Supabase/CDN và publish đúng Worker | Xác minh deployment của đúng commit và domain thật; không có workflow GitHub publish frontend |
 
 ## Vì sao có các ranh giới này
 
 - **Tách deployment path:** Thay đổi database và Edge Function có thể cần cách validate và rollback khác với frontend. Tách workflow tránh việc một backend release kéo theo frontend publication không liên quan.
 - **Guardrails ở Pull Request:** Thay đổi database có thể ảnh hưởng migration history dùng chung ngay cả khi app vẫn build thành công. Các kiểm tra baseline, declaration và isolated recreation giúp schema change được khai báo rõ trước khi đi vào môi trường được bảo vệ.
 - **Pre-deploy verification:** Nếu migration chỉ fail sau khi đã ghi vào project được link, việc khắc phục có thể phải dùng forward fix. Recreate migration chain ở local và chạy application checks trước giúp phát hiện failure trong môi trường có thể tạo lại.
-- **Production release thủ công:** Merge vào `main` chỉ cập nhật lịch sử code; operator vẫn phải dispatch workflow Production từ đúng ref `main` và theo dõi cả job verify lẫn deploy.
+- **Production backend thủ công:** Operator vẫn phải dispatch workflow Supabase Production từ đúng ref `main` và theo dõi cả job verify lẫn deploy. Frontend do Cloudflare tự deploy khi nhánh đã kết nối thay đổi; cần chuẩn bị backend tương thích trước khi đưa frontend phụ thuộc API mới lên nhánh đó.
 - **Kiểm tra trạng thái live:** Migration files mô tả trạng thái dự kiến nhưng không chứng minh trạng thái thật của remote project. Read-only history check cùng pre- và post-deployment database check giúp phát hiện drift mà không tạo thêm write path.
 - **Kiểm soát failure:** Deployment chồng lấn và local cleanup không có giới hạn có thể làm kết quả CI không rõ ràng. Concurrency control và cleanup có giới hạn giúp failure được quan sát đúng nguyên nhân.
 
@@ -43,11 +43,11 @@ Job `verify` phải pass trước khi job `deploy` được chạy. Job này cà
 - lint và staging build; và
 - clean local migration-chain recreation.
 
-Sau khi verify, job `deploy` apply migrations vào Staging project được link và deploy các Edge Functions đã cấu hình. Khi rollout có destructive migration, backend tương thích phải được deploy theo thứ tự release đã định trước khi migration được apply. Workflow này không publish frontend. Khi backend đã xanh, dispatch `Deploy Frontend` từ ref `staging` với target `staging`; workflow buộc Worker `corelia-staging`, Supabase project staging và xác nhận domain phục vụ đúng asset đã build. Dùng [Staging bundle verification](STAGING_BUILD_VERIFY.md) khi cần kiểm tra frontend và backend cùng nhau.
+Sau khi verify, job `deploy` apply migrations vào Staging project được link và deploy các Edge Functions đã cấu hình. Khi rollout có destructive migration, backend tương thích phải được deploy theo thứ tự release đã định trước khi migration được apply. Workflow này không publish frontend. Cloudflare tự build/deploy frontend khi nhánh `staging` thay đổi. Kiểm tra deployment tương ứng commit trong Cloudflare và xác minh `staging.corelia.academy`; không dispatch workflow frontend trên GitHub. Với frontend phụ thuộc API mới, cần có backend tương thích trước khi đưa thay đổi frontend lên nhánh tự deploy. Dùng [Staging bundle verification](STAGING_BUILD_VERIFY.md) khi cần kiểm tra frontend và backend cùng nhau.
 
 ## Release Production
 
-Production không tự trigger theo push. Merge `staging` vào `main` không tự chạy [`Deploy Production`](../.github/workflows/deploy-prod.yml).
+Backend Production không tự trigger theo push. Merge `staging` vào `main` không tự chạy [`Deploy Production`](../.github/workflows/deploy-prod.yml).
 
 Production workflow hiện có trigger `workflow_dispatch` không khai báo input. Operator phải chọn workflow trên ref `main`; merge hoặc push vào `main` không tự chạy workflow. Trước khi ghi vào Production, job `verify` chạy migration governance, test, lint, Production frontend artifact build và local migration recreation. Chỉ khi job này thành công, job `deploy` mới:
 
@@ -57,7 +57,7 @@ Production workflow hiện có trigger `workflow_dispatch` không khai báo inpu
 4. deploy các Edge Functions cần thiết; và
 5. chạy post-Edge runtime và database check cuối cùng.
 
-Frontend artifact được build và verify trong Production gate, nhưng việc publish lên Cloudflare Workers vẫn thuộc deployment path riêng. Sau khi Production Supabase workflow xanh, dispatch `Deploy Frontend` từ ref `main` với target `production`; workflow buộc Worker `corelia-app`, Supabase project production, kiểm tra artifact rồi so khớp asset thực tế tại `app.corelia.academy`. Hai GitHub Environment phải cung cấp `VITE_SUPABASE_PUBLISHABLE_KEY`, `CLOUDFLARE_API_TOKEN` và `VITE_CDN_BASE_URL`; token Cloudflare phải được giới hạn vào tài khoản Corelia. Không publish production bằng terminal.
+Frontend artifact được build và verify trong Production gate; Cloudflare tự build/deploy frontend từ nhánh `main` qua tích hợp Git hiện có. Kiểm tra deployment của đúng commit và asset/hành vi tại `app.corelia.academy`. Biến môi trường build frontend được cấu hình trong Cloudflare; GitHub không cần token Cloudflare để publish. Các biến phục vụ kiểm tra artifact trong GitHub Actions vẫn theo workflow backend hiện có. Không publish production bằng terminal.
 
 ## Kiểm tra migration history trên môi trường live
 

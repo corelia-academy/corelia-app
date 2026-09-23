@@ -114,16 +114,19 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260921212407_feed_verified_milestones.sql",
   "supabase/migrations/20260921223803_feed_automatic_public_milestones.sql",
   "supabase/migrations/20260922021208_feed_xp_suggestions.sql",
+  "supabase/migrations/20260923085047_feed_people_timelines.sql",
+  "supabase/migrations/20260923092129_xp_leaderboard.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production already includes the XP and verified-feed migrations. This release
-// adds the feed suggestions RPC validated in Staging.
+// Production history was verified read-only at 251 migrations through 20260922021208.
+// This release adds only the Feed v2 and XP leaderboard RPCs validated in Staging.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260922021208",
+  "20260923085047",
+  "20260923092129",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
