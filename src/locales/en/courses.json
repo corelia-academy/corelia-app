@@ -1,4 +1,30 @@
 {
+  "courseResources": {
+    "title": "Course resources & discussions",
+    "sidebarTitle": "Course navigation",
+    "empty": "No shared resources yet.",
+    "editorHint": "Add public links to course materials, repositories or community discussions. These links are shared across all course languages.",
+    "name": "Link {{count}} name",
+    "url": "Link {{count}} URL",
+    "icon": "Link {{count}} icon",
+    "icons": {
+      "link": "Link",
+      "github": "GitHub",
+      "discord": "Discord",
+      "telegram": "Telegram",
+      "youtube": "YouTube",
+      "document": "Document",
+      "code": "Source code",
+      "community": "Community",
+      "website": "Website"
+    },
+    "moveUp": "Move link {{count}} up",
+    "moveDown": "Move link {{count}} down",
+    "remove": "Remove link {{count}}",
+    "add": "Add link",
+    "invalid": "Each course resource needs a name and a valid HTTP/HTTPS URL without login credentials.",
+    "opensNewTab": "(opens in a new tab)"
+  },
   "inviteCoInstructor": {
     "title": "Co-instructor invite",
     "summary": "{{inviter}} invited you to co-teach \"{{course}}\".",

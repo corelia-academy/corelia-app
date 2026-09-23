@@ -1,3 +1,4 @@
+import { LearnSidebar } from "./components/LearnSidebar";
 import { normalizeArtifactDraft } from "@/features/learning/artifactDraft";
 import type { ArtifactField } from "@/features/learning/types";
 import { lessonText } from "@/features/learning/lessonCopy";
@@ -15,7 +16,7 @@ import { Link, useMatch, useNavigate, useParams } from "react-router";
 import {
   ChevronLeft,
   List,
-  PanelLeft,
+  PanelRight,
 } from "lucide-react";
 import {
   checkAndIssueCertificate,
@@ -632,20 +633,6 @@ function LearnWorkspace() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={toggleCurriculumPanel}
-          aria-label={translate("detail.learn.toggleCurriculum")}
-          className={cn(
-            "hidden xl:inline-flex",
-            curricOpen &&
-              "bg-primary-muted text-primary hover:bg-primary-muted hover:text-primary",
-          )}
-        >
-          <PanelLeft className="size-4" aria-hidden />
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="icon"
           render={<Link to={`/courses/${courseId}`} />}
           nativeButton={false}
           aria-label={translate("detail.learn.backToCourse")}
@@ -672,6 +659,19 @@ function LearnWorkspace() {
 
       {/* Right */}
       <div className="ml-auto flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleCurriculumPanel}
+          aria-label={translate("detail.learn.toggleCurriculum")}
+          className={cn(
+            "hidden xl:inline-flex",
+            curricOpen &&
+              "bg-primary-muted text-primary hover:bg-primary-muted hover:text-primary",
+          )}
+        >
+          <PanelRight className="size-4" aria-hidden />
+        </Button>
         {/* Mobile: Sheet for curriculum */}
         <Sheet>
           <SheetTrigger
@@ -680,13 +680,13 @@ function LearnWorkspace() {
           >
             <List className="size-4" aria-hidden />
           </SheetTrigger>
-          <SheetContent side="left" className="w-80 p-0">
-            <SheetHeader className="sr-only">
+          <SheetContent side="right" className="w-80 p-0">
+            <SheetHeader className="shrink-0 border-b border-border-subtle px-4 py-3 pr-14">
               <SheetTitle>
-                {translate("detail.learn.curriculumTitle")}
+                {translate("courseResources.sidebarTitle")}
               </SheetTitle>
             </SheetHeader>
-            <LessonCurriculum variant="sidebar" {...curriculumProps} />
+            <LearnSidebar resources={course.course_resources} curriculum={<LessonCurriculum variant="sidebar" {...curriculumProps} />} />
           </SheetContent>
         </Sheet>
       </div>
@@ -700,8 +700,18 @@ function LearnWorkspace() {
         <div className="flex flex-1 overflow-hidden">
           <ResizablePanelGroup
             orientation="horizontal"
-            autoSaveId="learn-layout-curriculum"
+            autoSaveId="learn-layout-curriculum-right-v1"
           >
+            <ResizablePanel
+              defaultSize={76}
+              minSize={40}
+              className="min-w-0 bg-background"
+            >
+              <main className="h-full min-w-0 overflow-y-auto">
+                {lessonContent}
+              </main>
+            </ResizablePanel>
+            <ResizableHandle />
             <ResizablePanel
               ref={curriculumPanelRef}
               defaultSize={24}
@@ -713,17 +723,7 @@ function LearnWorkspace() {
               onExpand={() => setCurricOpen(true)}
               className="flex flex-col bg-surface-base"
             >
-              <LessonCurriculum variant="sidebar" {...curriculumProps} />
-            </ResizablePanel>
-            <ResizableHandle />
-            <ResizablePanel
-              defaultSize={76}
-              minSize={40}
-              className="min-w-0 bg-background"
-            >
-              <main className="h-full min-w-0 overflow-y-auto">
-                {lessonContent}
-              </main>
+              <LearnSidebar resources={course.course_resources} curriculum={<LessonCurriculum variant="sidebar" {...curriculumProps} />} />
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>

@@ -1,4 +1,30 @@
 {
+  "courseResources": {
+    "title": "Tài nguyên & thảo luận",
+    "sidebarTitle": "Điều hướng khóa học",
+    "empty": "Chưa có tài nguyên chung cho khóa học.",
+    "editorHint": "Thêm liên kết công khai tới tài liệu, kho mã nguồn hoặc cộng đồng thảo luận. Các liên kết này dùng chung cho mọi ngôn ngữ của khóa học.",
+    "name": "Tên liên kết {{count}}",
+    "url": "URL liên kết {{count}}",
+    "icon": "Biểu tượng liên kết {{count}}",
+    "icons": {
+      "link": "Liên kết",
+      "github": "GitHub",
+      "discord": "Discord",
+      "telegram": "Telegram",
+      "youtube": "YouTube",
+      "document": "Tài liệu",
+      "code": "Mã nguồn",
+      "community": "Cộng đồng",
+      "website": "Website"
+    },
+    "moveUp": "Đưa liên kết {{count}} lên",
+    "moveDown": "Đưa liên kết {{count}} xuống",
+    "remove": "Xóa liên kết {{count}}",
+    "add": "Thêm liên kết",
+    "invalid": "Mỗi tài nguyên cần có tên và URL HTTP/HTTPS hợp lệ, không chứa thông tin đăng nhập.",
+    "opensNewTab": "(mở trong tab mới)"
+  },
   "inviteCoInstructor": {
     "title": "Lời mời đồng giảng viên",
     "summary": "{{inviter}} đã mời bạn cùng giảng khoá \"{{course}}\".",

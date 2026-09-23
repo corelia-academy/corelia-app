@@ -28,10 +28,10 @@ vi.mock("./hooks/useLearnSubmission", () => ({ useLearnSubmission: () => ({ stat
 vi.mock("./components/LessonPlayerCard", () => ({ LessonPlayerCard: ({ lesson }: { lesson: { description_markdown: string } }) => <p data-testid="article">{lesson?.description_markdown}</p> }));
 vi.mock("@/components/ui/sheet", () => {
   const Wrapper = ({ children }: { children: ReactNode }) => <div>{children}</div>;
-  return { Sheet: Wrapper, SheetContent: Wrapper, SheetHeader: Wrapper, SheetTitle: Wrapper, SheetTrigger: Wrapper };
+  return { Sheet: Wrapper, SheetContent: ({ side, children }: { side: string; children: ReactNode }) => <div data-sheet-side={side}>{children}</div>, SheetHeader: Wrapper, SheetTitle: Wrapper, SheetTrigger: Wrapper };
 });
 let cleanup: (() => void) | undefined;
-afterEach(() => { cleanup?.(); vi.clearAllMocks(); vi.restoreAllMocks(); state.access = true; state.course.final_assignment_title = "Task Manager"; state.submission = null; });
+afterEach(() => { cleanup?.(); window.localStorage.clear(); vi.clearAllMocks(); vi.restoreAllMocks(); state.access = true; state.course.final_assignment_title = "Task Manager"; state.submission = null; });
 
 async function mount(path: string) {
   const router = createMemoryRouter(["/learn/:courseId", "/learn/:courseId/lesson/:lessonId", "/learn/:courseId/final-assignment"].map(path => ({ path, element: <Learn /> })), { initialEntries: [path] });
@@ -98,4 +98,42 @@ it("keeps the practice handoff across routes when browser storage is blocked", a
   });
   await act(async () => { await router.navigate("/learn/course/final-assignment"); });
   expect(host.querySelector<HTMLInputElement>("#final-assignment input")?.value).toBe("Completed practice");
+});
+
+
+it("keeps the resizable curriculum on the right and ignores old left-sidebar sizes", async () => {
+  const match = window.matchMedia.bind(window);
+  vi.spyOn(window, "matchMedia").mockImplementation(query => Object.defineProperty(match(query), "matches", { value: true }));
+  localStorage.setItem("resizable-panels:learn-layout-curriculum", "[24,76]");
+  const { host } = await mount("/learn/course/lesson/article");
+  const panels = host.querySelectorAll<HTMLElement>('[data-slot="resizable-panel"]');
+  expect(panels).toHaveLength(2);
+  expect(panels[0].querySelector("main")).not.toBeNull();
+  expect(panels[1].querySelector('[role="tablist"]')).not.toBeNull();
+  expect(panels[0].style.flexGrow).toBe("76");
+  expect(panels[1].style.flexGrow).toBe("24");
+  const toggle = host.querySelector<HTMLButtonElement>('[aria-label="detail.learn.toggleCurriculum"]')!;
+  await act(async () => toggle.click());
+  expect(panels[1].hasAttribute("data-collapsed")).toBe(true);
+  await act(async () => toggle.click());
+  expect(panels[1].hasAttribute("data-collapsed")).toBe(false);
+  expect(panels[1].style.flexGrow).toBe("24");
+  const group = host.querySelector<HTMLElement>('[data-slot="resizable-panel-group"]')!;
+  vi.spyOn(group, "getBoundingClientRect").mockReturnValue({ width: 1000 } as DOMRect);
+  const handle = host.querySelector<HTMLElement>('[role="separator"]')!;
+  handle.setPointerCapture = vi.fn();
+  await act(async () => handle.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, clientX: 760, pointerId: 1 })));
+  await act(async () => window.dispatchEvent(new PointerEvent("pointermove", { clientX: 700, pointerId: 1 })));
+  await act(async () => window.dispatchEvent(new PointerEvent("pointerup", { pointerId: 1 })));
+  expect(panels[1].style.flexGrow).toBe("30");
+  cleanup?.();
+  const reloaded = await mount("/learn/course/lesson/article");
+  expect(reloaded.host.querySelectorAll<HTMLElement>('[data-slot="resizable-panel"]')[1].style.flexGrow).toBe("30");
+});
+
+it("opens the mobile navigation from the right with both sidebar tabs", async () => {
+  const { host } = await mount("/learn/course/lesson/article");
+  const sheet = host.querySelector('[data-sheet-side="right"]')!;
+  expect(sheet).not.toBeNull();
+  expect(sheet.querySelectorAll('[role="tab"]')).toHaveLength(2);
 });

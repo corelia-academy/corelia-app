@@ -1,3 +1,4 @@
+import { CourseResources } from "@/components/courses/CourseResources";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateLearningProgress } from "@/features/learning/invalidateLearningProgress";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -475,6 +476,8 @@ export default function CourseDetail() {
             isPreviewOnlyCurriculum={false}
             hasSections={courseLoad.course?.has_sections ?? true}
           />
+
+          <CourseResources resources={course.course_resources} className="mt-6" />
 
           {instructorProfile || course.instructors !== undefined ? (
             <CourseInstructorSection

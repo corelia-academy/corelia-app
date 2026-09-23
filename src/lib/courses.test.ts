@@ -10,7 +10,7 @@ vi.mock("@/lib/supabase", () => ({
   supabase: { from: vi.fn(), rpc: vi.fn() },
 }));
 
-import { saveCourseWithLocale, updateCourse, updateSection, addLesson, updateLesson, applyCourseLessonLocaleContent, deleteCourse, deleteLesson, getLearnerCourseProgressSnapshot, revertCourseCompletion } from "./courses";
+import { getCourse, applyCourseLocaleContent, saveCourseWithLocale, updateCourse, updateSection, addLesson, updateLesson, applyCourseLessonLocaleContent, deleteCourse, deleteLesson, getLearnerCourseProgressSnapshot, revertCourseCompletion } from "./courses";
 import { supabase } from "./supabase";
 
 const masterVideoLesson: CourseLesson = {
@@ -265,4 +265,20 @@ describe("revertCourseCompletion", () => {
 
     await expect(revertCourseCompletion("course-1")).rejects.toThrow("NOT_ENROLLED");
   });
+});
+
+
+it("saves shared resources as course metadata and keeps them across content languages", async () => {
+  const course_resources = [{ title: "Docs", url: "https://example.com/docs" }];
+  vi.mocked(supabase.rpc).mockResolvedValueOnce({ error: null } as never);
+  await saveCourseWithLocale("course", { course_resources }, "en", { title: "English" });
+  expect(supabase.rpc).toHaveBeenLastCalledWith("learning_save_course_info", {
+    p_course: "course", p_patch: { course_resources }, p_locale: "en", p_copy: { title: "English" },
+  });
+  vi.mocked(supabase.from).mockReturnValue({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { id: "course", data: { title: "Original", course_resources } }, error: null }) }) }) } as never);
+  const course = await getCourse("course");
+  expect(course?.course_resources).toEqual(course_resources);
+  expect(applyCourseLocaleContent(course!, { locale: "en", title: "English", description: "Translated" }).course_resources).toEqual(course_resources);
+  vi.mocked(supabase.rpc).mockResolvedValueOnce({ error: { message: "COURSE_MANAGE_PERMISSION_REQUIRED" } } as never);
+  await expect(saveCourseWithLocale("course", { course_resources }, "en", {})).rejects.toThrow("COURSE_MANAGE_PERMISSION_REQUIRED");
 });

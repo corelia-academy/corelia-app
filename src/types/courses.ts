@@ -100,7 +100,25 @@ export interface CourseLocaleContent {
   updated_at?: string;
 }
 
+export interface CourseResource {
+  title: string;
+  url: string;
+  icon?: CourseResourceIcon;
+}
+
+export type CourseResourceIcon =
+  | "link"
+  | "github"
+  | "discord"
+  | "telegram"
+  | "youtube"
+  | "document"
+  | "code"
+  | "community"
+  | "website";
+
 export interface Course {
+  course_resources?: CourseResource[];
   archived_at?: string | null;
   instructors?: CourseInstructorRef[];
   final_assignment_fields?: ArtifactField[];
@@ -352,6 +370,7 @@ export interface CourseInsert {
 
 /** Cập nhật một phần thông tin khoá (instructor/admin) */
 export interface CourseUpdate {
+  course_resources?: CourseResource[];
   instructors?: CourseInstructorRef[];
   title?: string;
   slug?: string;
