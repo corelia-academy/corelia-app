@@ -50,4 +50,23 @@ describe("OG Worker routing", () => {
     const response = await handleOgWorkerRequest(new Request(`${base}/admin/og-preview`), env());
     expect(response?.headers.get("X-Robots-Tag")).toBe("noindex, nofollow");
   });
+
+  it("keeps public pages indexable when metadata is unavailable", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 404 }));
+    const response = await handleOgWorkerRequest(new Request(`${base}/projects/example`, {
+      headers: { Accept: "text/html" },
+    }), env());
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("X-Robots-Tag")).toBeNull();
+  });
+
+  it("keeps public pages indexable when the metadata request fails", async () => {
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("upstream unavailable"));
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const response = await handleOgWorkerRequest(new Request(`${base}/projects/example`, {
+      headers: { Accept: "text/html" },
+    }), env());
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("X-Robots-Tag")).toBeNull();
+  });
 });

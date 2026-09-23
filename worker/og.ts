@@ -171,9 +171,9 @@ export async function handleOgWorkerRequest(request: Request, env: OgWorkerEnv):
   if (!asset.ok || !asset.headers.get("Content-Type")?.includes("text/html")) return asset;
   try {
     const data = await metadata(env, page.entity, page.id);
-    return data ? rewriteOgHtml(asset, data) : noStore(asset, "noindex");
+    return data ? rewriteOgHtml(asset, data) : noStore(asset);
   } catch (error) {
     console.error("[og-worker] metadata", { entity: page.entity, error: error instanceof Error ? error.message : "unknown" });
-    return noStore(asset, "noindex");
+    return noStore(asset);
   }
 }
