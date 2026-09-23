@@ -213,7 +213,7 @@ Phần mở rộng này thay thế giới hạn “chưa có level/ranking” c�
 
 - Cấp bậc dùng tổng XP hợp lệ: Khởi đầu 0, Đồng 250, Bạc 1.000, Vàng 2.500, Bạch kim 10.000, Kim cương 25.000. Cấu hình duy nhất ở `src/lib/xpRanks.ts`; không lưu rank riêng trong database. Thu hồi điểm có thể giảm hạng.
 - Badge xuất hiện trong hồ sơ, menu tài khoản và Suggested People. Khối hoạt động XP có tiến độ và bảng các mốc. Không thêm phần thưởng, quyền lợi hay thông báo lên hạng.
-- `/leaderboard` yêu cầu đăng nhập, có tuần UTC từ thứ Hai và toàn thời gian. Top 100 chia 20 hàng/trang; vị trí bản thân được tính cả khi ngoài top 100. Đồng điểm dùng thứ hạng thi đấu `1, 2, 2, 4`, ID chỉ ổn định thứ tự hàng.
+- Bảng xếp hạng nằm trong tab BXH XP tại `/feed?tab=leaderboard`, dùng cùng trang Feed đã yêu cầu đăng nhập; không có mục điều hướng hoặc trang BXH riêng. Có tuần UTC từ thứ Hai và toàn thời gian. Top 100 chia 20 hàng/trang; vị trí bản thân được tính cả khi ngoài top 100. Đồng điểm dùng thứ hạng thi đấu `1, 2, 2, 4`, ID chỉ ổn định thứ tự hàng.
 - Chỉ hồ sơ công khai có vai trò student/instructor và XP trong kỳ dương tham gia. Tài khoản riêng tư/admin/support vẫn xem cấp bậc cá nhân và lý do không được xếp hạng.
 - `xp_leaderboard_v1` là public invoker wrapper gọi helper private, chỉ trả danh tính công khai và tổng điểm. Ledger giữ nguyên quyền riêng tư. Khoản thu hồi quy về `occurred_at` của khoản gốc; điểm lịch sử thiếu timestamp và khoản thu hồi tương ứng chỉ tính vào tổng, không tính tuần hiện tại.
 - Query nằm trong nhóm `xp`, tách theo viewer/kỳ/tuần, cache 60 giây; refresh khi vào trang, đổi kỳ, focus, nhận XP hoặc đổi quyền công khai hồ sơ. Rollover thứ Hai UTC đưa BXH tuần về trang đầu.

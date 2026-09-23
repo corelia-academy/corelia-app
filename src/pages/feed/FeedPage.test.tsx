@@ -6,11 +6,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { MilestonePage } from "@/lib/milestoneFeed";
 
-const mocks = vi.hoisted(() => ({ followed: false, failFollow: false, failFeed: false }));
+const mocks = vi.hoisted(() => ({ followed: false, failFollow: false, failFeed: false, leaderboard: vi.fn() }));
 vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: { id: "viewer" }, isAuthenticated: true }) }));
 vi.mock("@/components/UserAvatar", () => ({ UserAvatar: () => <span>avatar</span> }));
 vi.mock("@/features/xp/XpBadge", () => ({ XpBadge: ({ total }: { total: number }) => <span>{total} XP</span> }));
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key, i18n: { language: "en" } }) }));
+vi.mock("@/lib/xpLeaderboard", () => ({ getXpLeaderboard: mocks.leaderboard }));
 vi.mock("@/lib/follows", () => ({
   isFollowing: async () => mocks.followed,
   listMyFeedFollowingProfiles: async () => mocks.followed ? [{ id: "actor", full_name: "New Person", username: "actor" }] : [],
@@ -36,13 +37,17 @@ const settle = async () => { await act(async () => { await new Promise(resolve =
 const button = (label: string) => [...host.querySelectorAll<HTMLButtonElement>("button")].find(item => item.textContent === label)!;
 const click = async (element: HTMLElement) => { await act(async () => element.click()); await settle(); };
 beforeEach(async () => {
+  mocks.leaderboard.mockReset().mockImplementation(async (period: string) => ({
+    period, calculated_at: "2026-09-23T00:00:00Z", period_start: null, period_end: null,
+    eligible_count: 0, rows: [], viewer: { position: null, total_xp: 1000, period_xp: 0, reason: "no_xp" },
+  }));
   mocks.followed = false; mocks.failFollow = false; mocks.failFeed = false;
   host = document.createElement("div"); document.body.append(host); root = createRoot(host);
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 });
 afterEach(() => { act(() => root.unmount()); client.clear(); host.remove(); });
-async function render(withProfileFollow = false) {
-  await act(async () => root.render(<MemoryRouter><QueryClientProvider client={client}><FeedPage />{withProfileFollow && <FollowButton subject={{ type: "user", id: "actor" }} showCount={false} />}</QueryClientProvider></MemoryRouter>));
+async function render(withProfileFollow = false, initialEntry = "/feed") {
+  await act(async () => root.render(<MemoryRouter initialEntries={[initialEntry]}><QueryClientProvider client={client}><FeedPage />{withProfileFollow && <FollowButton subject={{ type: "user", id: "actor" }} showCount={false} />}</QueryClientProvider></MemoryRouter>));
   await settle();
 }
 it("shows independent suggestions, moves followed activity between tabs, and offers discovery from Following", async () => {
@@ -93,4 +98,24 @@ it("moves activity back to Explore after unfollow from a profile control", async
   await click(button("milestones.explore"));
   expect(host.querySelectorAll("article")).toHaveLength(1);
   expect(host.textContent).not.toContain("milestones.suggestedEmpty");
+});
+
+it("loads XP ranking inside Feed on demand and keeps its period tabs separate from timeline tabs", async () => {
+  await render();
+  expect(mocks.leaderboard).not.toHaveBeenCalled();
+  await click(button("milestones.leaderboard"));
+  expect(host.querySelectorAll("article")).toHaveLength(0);
+  expect(button("milestones.leaderboard").getAttribute("aria-selected")).toBe("true");
+  expect(host.textContent).toContain("xp.leaderboard.yourPosition");
+  await click(button("xp.leaderboard.allTime"));
+  expect(mocks.leaderboard).toHaveBeenLastCalledWith("all_time", expect.any(AbortSignal));
+  expect(button("milestones.leaderboard").getAttribute("aria-selected")).toBe("true");
+  expect(host.querySelectorAll('[aria-label="milestones.suggestedTitle"]')).toHaveLength(1);
+  await click(button("milestones.explore"));
+  expect(host.querySelectorAll("article")).toHaveLength(1);
+});
+it("opens the Feed ranking tab directly from a profile link", async () => {
+  await render(false, "/feed?tab=leaderboard");
+  expect(button("milestones.leaderboard").getAttribute("aria-selected")).toBe("true");
+  expect(host.textContent).toContain("xp.leaderboard.yourPosition");
 });

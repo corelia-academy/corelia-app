@@ -19,7 +19,7 @@ export function XpRankProgress({ total }: { total: number }) {
     <p className="text-sm text-foreground-muted">{rank.next ? t("xp.rank.remaining", { xp: format(rank.remaining), rank: t(`xp.rank.names.${rank.next.code}`) }) : t("xp.rank.highest")}</p>
     <div className="flex flex-wrap items-center gap-3">
       <Button type="button" size="sm" variant="outline" onClick={() => setOpen(true)}>{t("xp.rank.allRanks")}</Button>
-      <NavLink to="/leaderboard" className="rounded text-sm text-primary underline underline-offset-4 focus-visible:outline-2">{t("xp.leaderboard.title")}</NavLink>
+      <NavLink to="/feed?tab=leaderboard" className="rounded text-sm text-primary underline underline-offset-4 focus-visible:outline-2">{t("xp.leaderboard.title")}</NavLink>
     </div>
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-md">

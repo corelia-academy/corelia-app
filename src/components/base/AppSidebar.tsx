@@ -7,7 +7,6 @@ import {
   FolderKanban,
   Home,
   Rss,
-  Medal,
   Settings,
   Trophy,
 } from "lucide-react";
@@ -35,7 +34,6 @@ import { canSpeculativelyPrefetch, prefetchRouteChunk } from "@/lib/routePrefetc
 const primaryNav = [
   { labelKey: "nav.home" as const, href: "/", icon: Home, end: true },
   { labelKey: "nav.feed" as const, href: "/feed", icon: Rss },
-  { labelKey: "nav.leaderboard" as const, href: "/leaderboard", icon: Medal },
   { labelKey: "nav.courses" as const, href: "/courses", icon: BookOpen },
   { labelKey: "nav.career" as const, href: "/career", icon: Briefcase },
   { labelKey: "nav.contests" as const, href: "/hackathons", icon: Trophy },
@@ -74,9 +72,6 @@ export default function AppSidebar({
           "@/features/feed/milestoneQueries"
         );
         await queryClient.prefetchInfiniteQuery(milestoneFeedQuery(user.id, "explore"));
-      } else if (href === "/leaderboard" && user?.id) {
-        const { xpLeaderboardQuery } = await import("@/features/xp/xpQueries");
-        await queryClient.prefetchQuery(xpLeaderboardQuery(user.id, "week"));
       } else if (href === "/courses") {
         const { coursesCatalogQueryOptions } = await import(
           "@/features/courses/courseQueries"

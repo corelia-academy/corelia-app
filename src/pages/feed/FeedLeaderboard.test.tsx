@@ -12,7 +12,7 @@ vi.mock("@/components/UserAvatar", () => ({ UserAvatar: () => <span>avatar</span
 vi.mock("@/features/xp/useXpWeek", () => ({ useXpWeek: () => mocks.week }));
 vi.mock("@/lib/xpLeaderboard", () => ({ getXpLeaderboard: mocks.get }));
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string, args?: Record<string, unknown>) => args ? `${key} ${JSON.stringify(args)}` : key, i18n: { language: "en" } }) }));
-import LeaderboardPage from "./LeaderboardPage";
+import FeedLeaderboard from "./FeedLeaderboard";
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let host: HTMLDivElement;
 let root: ReturnType<typeof createRoot>;
@@ -26,7 +26,7 @@ function response(period: XpPeriod = "week", reason: XpLeaderboard["viewer"]["re
     viewer: { position: reason ? null : 140, total_xp: 1000, period_xp: 10, reason },
   };
 }
-async function render() { await act(async () => root.render(<MemoryRouter><QueryClientProvider client={client}><LeaderboardPage /></QueryClientProvider></MemoryRouter>)); await settle(); }
+async function render() { await act(async () => root.render(<MemoryRouter><QueryClientProvider client={client}><FeedLeaderboard /></QueryClientProvider></MemoryRouter>)); await settle(); }
 beforeEach(() => {
   mocks.week = "2026-09-21T00:00:00.000Z";
   mocks.get.mockReset().mockImplementation(async (period: XpPeriod) => response(period));
