@@ -55,7 +55,7 @@ export default function ResetPasswordPage() {
     return (
       <div className="flex min-h-svh flex-col items-center justify-center public-status bg-auth-page p-6 md:p-10">
         <div className="w-full max-w-md">
-          <div className="rounded-xl border border-border bg-card p-6 shadow-sm text-center space-y-4">
+          <div className="rounded-xl border border-border bg-surface-base p-6 shadow-sm text-center space-y-4">
             <p className="text-foreground-muted text-sm">{t("resetPassword.sessionExpired")}</p>
             <NavLink
               to="/login"
@@ -75,15 +75,15 @@ export default function ResetPasswordPage() {
         <div className="mb-4 flex items-center justify-between gap-3">
           <NavLink
             to="/"
-            className="inline-flex items-center gap-1 text-sm font-medium text-foreground-muted transition-colors duration-150 hover:text-foreground"
+            className="inline-flex items-center gap-1 text-sm font-medium text-white/80 transition-colors duration-150 hover:text-white"
           >
             <ArrowLeft className="size-4" aria-hidden />
             <span>{t("resetPassword.backHome")}</span>
           </NavLink>
-          <LanguageSwitcher />
+          <LanguageSwitcher className="text-white/80 hover:bg-white/10 hover:text-white" />
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
+        <div className="rounded-xl border border-border bg-surface-base p-6 shadow-sm space-y-4">
           <div>
             <h1 className="text-heading-medium font-display text-foreground">
               {t("resetPassword.title")}
