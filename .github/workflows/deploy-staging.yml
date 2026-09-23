@@ -20,6 +20,11 @@ jobs:
   verify:
     name: Full pre-deploy verification
     runs-on: ubuntu-latest
+    env:
+      SUPABASE_INTERNAL_IMAGE_REGISTRY: ghcr.io
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@v5
         with:
@@ -40,6 +45,13 @@ jobs:
         with:
           version: 2.98.1
 
+      - name: Authenticate to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Provision PostgreSQL server binaries in PATH
         run: |
           PG_BIN_DIR=$(dirname "$(find /usr/lib/postgresql -name initdb -type f 2>/dev/null | sort -V | tail -n 1)")
@@ -58,6 +70,14 @@ jobs:
         run: |
           pnpm lint
           pnpm build:staging
+
+      - name: Pre-pull Supabase Postgres image
+        run: |
+          for delay in 0 15 45; do
+            if [ "$delay" -gt 0 ]; then sleep "$delay"; fi
+            if docker pull ghcr.io/supabase/postgres:17.6.1.156; then exit 0; fi
+          done
+          exit 1
 
       - name: Cleanly recreate isolated local migration chain
         timeout-minutes: 15
