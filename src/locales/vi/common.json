@@ -73,7 +73,8 @@
     "editCourse": "Chỉnh sửa khóa học",
     "notFound": "Không tìm thấy trang",
     "maintenance": "Bảo trì hệ thống",
-    "applicationError": "Lỗi ứng dụng"
+    "applicationError": "Lỗi ứng dụng",
+    "leaderboard": "Bảng xếp hạng XP"
   },
   "language": {
     "switchLabel": "Đổi ngôn ngữ",
@@ -121,7 +122,8 @@
     "account": "Tài khoản",
     "admin": "Admin",
     "instructor": "Giảng dạy",
-    "instructorManagement": "Quản lý giảng dạy"
+    "instructorManagement": "Quản lý giảng dạy",
+    "leaderboard": "Bảng xếp hạng XP"
   },
   "account": {
     "signedInViaEmail": "(đăng nhập bằng email)"

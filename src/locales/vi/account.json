@@ -474,6 +474,45 @@
       "oauthFailed": "Kết nối tài khoản chưa thành công. Vui lòng thử lại. Nếu vẫn lỗi, liên hệ hỗ trợ để kiểm tra kết nối Google/GitHub.",
       "oauthCancelled": "Bạn đã hủy kết nối tài khoản. Bạn có thể kết nối lại bên dưới."
     },
-    "noData": "Chưa có dữ liệu XP đáng tin"
+    "noData": "Chưa có dữ liệu XP đáng tin",
+    "rank": {
+      "title": "Cấp bậc XP",
+      "names": {
+        "starter": "Khởi đầu",
+        "bronze": "Đồng",
+        "silver": "Bạc",
+        "gold": "Vàng",
+        "platinum": "Bạch kim",
+        "diamond": "Kim cương"
+      },
+      "progress": "Tiến độ lên hạng",
+      "remaining": "Còn {{xp}} XP để đạt hạng {{rank}}",
+      "highest": "Đã đạt cấp cao nhất",
+      "allRanks": "Xem tất cả cấp bậc",
+      "description": "Cấp bậc ghi nhận hoạt động tích lũy trên Corelia, không phải chứng nhận chuyên môn hay quyền nhận thưởng."
+    },
+    "leaderboard": {
+      "title": "Bảng xếp hạng XP",
+      "description": "Ghi nhận tiến bộ cùng cộng đồng học tập Corelia. Dành cho hồ sơ công khai của học viên và giảng viên.",
+      "period": "Chu kỳ xếp hạng",
+      "week": "Tuần này",
+      "allTime": "Toàn thời gian",
+      "weekRange": "{{start}} – {{end}} · UTC",
+      "lifetime": "Toàn bộ XP hợp lệ đã tích lũy trên Corelia, gồm hoạt động trước đây.",
+      "yourPosition": "Vị trí của bạn",
+      "position": "Vị trí {{rank}}",
+      "empty": "Chưa có hoạt động XP đủ điều kiện trong kỳ này.",
+      "error": "Không tải được bảng xếp hạng. Vui lòng thử lại.",
+      "member": "Thành viên Corelia",
+      "pagination": "Các trang bảng xếp hạng",
+      "page": "{{page}} / {{total}}",
+      "top": "Top {{count}} trong {{eligible}} người tham gia",
+      "reasons": {
+        "private_profile": "Hồ sơ của bạn đang riêng tư nên không xuất hiện trên bảng xếp hạng. Bạn vẫn xem được cấp bậc cá nhân.",
+        "ineligible_role": "Tài khoản quản trị và hỗ trợ không tham gia bảng xếp hạng. Bạn vẫn xem được cấp bậc cá nhân.",
+        "no_xp": "Bạn chưa có số dư XP dương trong kỳ này.",
+        "missing_profile": "Hồ sơ của bạn chưa khả dụng."
+      }
+    }
   }
 }

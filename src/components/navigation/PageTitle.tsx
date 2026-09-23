@@ -28,6 +28,7 @@ export type PageTitleKey =
   | "finalAssignment"
   | "componentLibrary"
   | "feed"
+  | "leaderboard"
   | "courses"
   | "courseDetail"
   | "projectInvite"
@@ -115,6 +116,7 @@ export const PAGE_TITLE_ROUTES: PageTitleRoute[] = [
   { path: "/components/*", handle: "componentLibrary" },
   { path: "/", handle: "home" },
   { path: "/feed", handle: "feed" },
+  { path: "/leaderboard", handle: "leaderboard" },
   { path: "/courses", handle: "courses" },
   { path: "/cohorts", handle: "courses" },
   { path: "/courses/:id", handle: "courseDetail" },

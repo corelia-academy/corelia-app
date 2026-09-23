@@ -15,6 +15,7 @@ import {
   UserCircle,
 } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
+import { XpRankBadge } from "@/features/xp/XpRankBadge";
 import { XpBadge } from "@/features/xp/XpBadge";
 import { getXpTotals } from "@/lib/xp";
 import { useAuth } from "@/stores/authStore";
@@ -513,7 +514,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                   }
                 />
                 <DropdownMenuContent align="end" className="z-20 min-w-64">
-                  {user?.id ? <div className="flex items-center justify-between gap-2 px-3 py-2 text-sm"><span className="truncate font-medium">{displayName}</span><XpBadge total={xpQuery.data?.[user.id]} /></div> : null}
+                  {user?.id ? <div className="flex items-center justify-between gap-2 px-3 py-2 text-sm"><span className="truncate font-medium">{displayName}</span><span className="flex shrink-0 flex-col items-end gap-1"><XpBadge total={xpQuery.data?.[user.id]} /><XpRankBadge total={xpQuery.data?.[user.id]} /></span></div> : null}
                   {accountDropdownItems.map((item) => (
                     <Action
                       key={item.to}

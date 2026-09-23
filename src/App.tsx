@@ -33,6 +33,7 @@ import {
 
 // Lazy-load all routes not needed on the initial render
 const Home = lazy(() => import("@/pages/home/index"));
+const LeaderboardPage = lazy(() => import("@/pages/leaderboard/LeaderboardPage"));
 const FeedPage = lazy(() => import("@/pages/feed/FeedPage"));
 const Courses = lazy(() => import("@/pages/courses"));
 const LearningPrinciplesPage = lazy(() => import("@/pages/learning-principles/LearningPrinciplesPage"));
@@ -362,6 +363,10 @@ function ApplicationRoutes() {
                     </Suspense>
                   </RequireAuth>
                 }
+              />
+              <Route
+                path="leaderboard"
+                element={<RequireAuth><Suspense fallback={<PageFallback />}><LeaderboardPage /></Suspense></RequireAuth>}
               />
               <Route
                 path="courses"
