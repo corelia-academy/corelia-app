@@ -1,3 +1,6 @@
+import { CourseResourcesEditor } from "./components/CourseResourcesEditor";
+import { courseResourceDraft, isValidCourseResources } from "@/features/courses/courseResources";
+import type { CourseResource } from "@/types/courses";
 import { lessonDraftPatch, type LessonDraft } from "./lessonDraft";
 import { TranslationReference } from "@/features/learning/admin/TranslationReference";
 import { changedLocaleFields, translationVideoIssues, type LessonLocales } from "@/features/learning/translationDraft";
@@ -240,6 +243,7 @@ type CoverageFieldKey =
 
 const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLesson, onEditLearningLesson, renderLearningReadiness }: { learningTools?: ReactNode | ((focusIssue: (issue: PublishValidationIssue) => void) => ReactNode); onDirtyChange?: (dirty: boolean) => void; onCreateLearningLesson?: (lesson: CourseLesson) => void; onEditLearningLesson?: (lesson: CourseLesson, locale?: SupportedCourseLocale) => void; renderLearningReadiness?: (lesson: CourseLesson, openEditor: () => void) => ReactNode } = {}) => {
   const { t, i18n } = useTranslation("instructor");
+  const { t: courseT } = useTranslation("courses");
   const { confirm, confirmation } = useLearningConfirm();
 
   const formatHumanVideoDuration = (totalSeconds: number) => {
@@ -495,6 +499,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
     onchain_certificate_template_url: "",
     onchain_certificate_template_path: "",
     owner_type: "corelia" as CourseOwnerType,
+    course_resources: [] as CourseResource[],
     external_source_urls_text: "",
     external_source_attribution_note: "",
   });
@@ -1134,6 +1139,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
         onchain_certificate_template_url: course.onchain_certificate_template_url ?? "",
         onchain_certificate_template_path: course.onchain_certificate_template_path ?? "",
         owner_type: course.owner_type ?? "corelia",
+        course_resources: courseResourceDraft(course.course_resources),
         external_source_urls_text: (course.external_source_urls ?? []).join("\n"),
         external_source_attribution_note:
           course.external_source_attribution_note ?? "",
@@ -1288,6 +1294,11 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
 
   const saveCourseInfo = async (successMessage = t("courseEdit.toasts.saved")) => {
     if (!id || !course || !localeQuery.isSuccess) return;
+    const courseResources = form.course_resources.map(resource => ({ title: resource.title.trim(), url: resource.url.trim() }));
+    if (!isValidCourseResources(courseResources)) {
+      setError(courseT("courseResources.invalid"));
+      return;
+    }
     if (form.is_external_aggregated) {
       const externalSources = form.external_source_urls_text
         .split("\n")
@@ -1473,6 +1484,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       };
 
       await saveCourseWithLocale(id, {
+        course_resources: courseResources,
         slug: form.slug,
         thumbnail_url: form.thumbnail_url,
         level: form.level,
@@ -1520,6 +1532,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
         prev
           ? {
               ...prev,
+              course_resources: courseResources,
               slug: form.slug,
               thumbnail_url: form.thumbnail_url,
               level: form.level,
@@ -4623,6 +4636,11 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                 {t("courseEdit.sidebar.nav.info")}
               </h2>
               <FieldGroup className="mt-4">
+                <CourseResourcesEditor
+                  value={form.course_resources}
+                  onChange={course_resources => setForm(previous => ({ ...previous, course_resources }))}
+                  disabled={saving}
+                />
                 {/* Locale config — advanced, collapsed into a summary row */}
                 <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border-subtle bg-surface-raised px-3 py-2">
                   <div className="flex items-center gap-2 text-xs text-foreground-muted">
