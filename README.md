@@ -83,7 +83,7 @@ Workflows under [.github/workflows](.github/workflows) build with Vite and expec
 - `VITE_SUPABASE_PUBLISHABLE_KEY` and/or `VITE_SUPABASE_ANON_KEY` (at least one must be set for the client key)
 - Optional: `VITE_OCID_CLIENT_ID`, `VITE_OCID_REDIRECT_URI`, `VITE_YOUTUBE_API_KEY`
 
-The workflows in this repository do not publish the frontend. Treat Cloudflare frontend publication as a separate pipeline and verify it independently when a release contains browser-app changes.
+The workflows in this repository do not publish the frontend. Cloudflare automatically builds and deploys the frontend from its connected Git branches. Verify the Cloudflare deployment and live domain independently when a release contains browser-app changes; no GitHub frontend deployment workflow or Cloudflare API token is required.
 
 ## React Compiler
 
