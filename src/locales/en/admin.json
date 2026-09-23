@@ -51,6 +51,10 @@
         "label": "Email Center",
         "tooltip": "Recipients, templates, campaigns, and automations"
       },
+      "emailPreview": {
+        "label": "Email review",
+        "tooltip": "Review every email template on desktop and mobile"
+      },
       "projects": {
         "label": "Projects"
       }

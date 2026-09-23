@@ -51,6 +51,10 @@
         "label": "Trung tâm Email",
         "tooltip": "Người nhận, template, chiến dịch và tự động hóa"
       },
+      "emailPreview": {
+        "label": "Review Email",
+        "tooltip": "Xem toàn bộ email template trên desktop và mobile"
+      },
       "projects": {
         "label": "Projects"
       }
