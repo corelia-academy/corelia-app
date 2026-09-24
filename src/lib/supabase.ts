@@ -68,7 +68,7 @@ supabase.auth.getSession = async () => {
         if (error) {
           // Refresh token itself is expired (many days of inactivity).
           // Signal AuthSync to sign the user out gracefully.
-          console.warn("[supabase] Token refresh failed — session expired.", error.message);
+          console.warn("[supabase] Token refresh failed: session expired.", error.message);
           if (typeof window !== "undefined") {
             window.dispatchEvent(new CustomEvent("corelia:session-expired"));
           }

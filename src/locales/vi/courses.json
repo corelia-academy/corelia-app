@@ -147,7 +147,7 @@
       "thumbnailFallback": "Chưa có hình ảnh khoá học",
       "backToCoursesList": "Quay lại danh sách",
       "backToCourses": "Quay lại khoá học",
-      "previewDraftNotice": "Chế độ xem trước — Khoá học đang nháp (chưa xuất bản)",
+      "previewDraftNotice": "Chế độ xem trước: Khoá học đang nháp (chưa xuất bản)",
       "editCourse": "Chỉnh sửa khoá học",
       "lessonDraftBadge": "Đang cập nhật",
       "courseUpdatingNotice": {
@@ -372,7 +372,7 @@
         "status": {
           "approved": "Bài nộp đã được duyệt.",
           "rejected": "Cần chỉnh sửa. Bạn có thể nộp lại.",
-          "pending": "Đã nộp — Đang chờ giảng viên duyệt."
+          "pending": "Đã nộp: Đang chờ giảng viên duyệt."
         },
         "contentPlaceholder": "Nhập nội dung bài làm của bạn...",
         "attachmentsLabel": "File đính kèm (tuỳ chọn)",
@@ -468,7 +468,7 @@
     "resetPracticeConfirm": "Thay toàn bộ checklist, các bước và thiết lập thực hành bằng cấu hình hướng dẫn trống, đồng thời chuyển bài về bản nháp? Tiêu đề, nội dung và bản dịch được giữ. Chỉ ghi thay đổi khi bạn bấm Lưu.",
     "editMasterConfig": "Mở cấu hình ngôn ngữ gốc",
     "retryProgress": "Thử lưu tiến độ lại",
-    "readinessRetry": "Chưa kiểm tra được — thử lại",
+    "readinessRetry": "Chưa kiểm tra được: thử lại",
     "readinessIssues": "Cần sửa ({{count}})",
     "loading": "Đang tải…",
     "loadError": "Không tải được dữ liệu.",

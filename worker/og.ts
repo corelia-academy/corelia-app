@@ -59,11 +59,28 @@ async function edge(env: OgWorkerEnv, entity: Entity, action: "meta" | "image", 
   url.searchParams.set("id", id);
   if (revision) url.searchParams.set("v", revision);
   return fetch(url, { method, headers: { "x-corelia-og-proxy-secret": env.OG_PROXY_SECRET },
-    redirect: "manual", signal: AbortSignal.timeout(action === "image" ? 12000 : 4000) });
+    redirect: "manual", signal: AbortSignal.timeout(action === "image" ? 12000 : 5000) });
 }
 
 async function metadata(env: OgWorkerEnv, entity: Entity, id: string): Promise<Metadata | null> {
-  const response = await edge(env, entity, "meta", id);
+  let response: Response | undefined;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const startedAt = Date.now();
+    try {
+      response = await edge(env, entity, "meta", id);
+      if (response.status < 500) break;
+      console.warn("[og-worker] metadata attempt", {
+        entity, attempt, reason: "upstream_5xx", status: response.status, durationMs: Date.now() - startedAt,
+      });
+    } catch (error) {
+      console.warn("[og-worker] metadata attempt", {
+        entity, attempt, reason: error instanceof DOMException && error.name === "TimeoutError" ? "timeout" : "network",
+        durationMs: Date.now() - startedAt,
+      });
+      if (attempt === 2) throw error;
+    }
+  }
+  if (!response) throw new Error("OG metadata unavailable");
   if (response.status === 404) return null;
   if (!response.ok) throw new Error(`OG metadata ${response.status}`);
   const data = await response.json() as Metadata;
@@ -173,6 +190,8 @@ export async function handleOgWorkerRequest(request: Request, env: OgWorkerEnv):
     return data ? rewriteOgHtml(asset, data) : noStore(asset);
   } catch (error) {
     console.error("[og-worker] metadata", { entity: page.entity, error: error instanceof Error ? error.message : "unknown" });
-    return noStore(asset);
+    return new Response("OG metadata temporarily unavailable", {
+      status: 503, headers: { ...NO_STORE, "Retry-After": "5" },
+    });
   }
 }

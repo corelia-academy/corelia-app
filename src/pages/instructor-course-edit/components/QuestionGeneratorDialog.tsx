@@ -458,7 +458,7 @@ export function QuestionGeneratorDialog({
           </DialogTitle>
           <DialogDescription>
             {dialogDescription}
-            {copyOnly && ` — ${t("courseEdit.i18n.translationModeBadge")}`}
+            {copyOnly && `: ${t("courseEdit.i18n.translationModeBadge")}`}
           </DialogDescription>
         </DialogHeader>
 

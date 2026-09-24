@@ -391,7 +391,7 @@
       "profile": "Thông tin giảng viên"
     },
     "common": {
-      "dash": "—",
+      "dash": "-",
       "notUpdated": "Chưa cập nhật"
     },
     "profile": {
@@ -467,7 +467,7 @@
       "createdAt": "Ngày tạo",
       "changeRole": "Thay đổi vai trò",
       "notUpdated": "Chưa cập nhật",
-      "dash": "—"
+      "dash": "-"
     }
   },
   "branding": {
@@ -490,10 +490,10 @@
     },
     "appBaseUrl": {
       "title": "Đường dẫn ứng dụng",
-      "subtitle": "Domain gốc dùng để build link trong email hệ thống (chứng nhận, mời claim...). Ví dụ staging: https://staging.corelia.academy — production: https://app.corelia.academy. Sai domain này sẽ khiến link trong mọi email gửi đi trỏ nhầm môi trường.",
+      "subtitle": "Domain gốc dùng để build link trong email hệ thống (chứng nhận, mời claim...). Staging: https://staging.corelia.academy; production: https://app.corelia.academy. Sai domain này sẽ khiến link trong mọi email gửi đi trỏ nhầm môi trường.",
       "urlLabel": "Base URL",
       "saveUrl": "Lưu URL",
-      "invalidUrl": "URL không hợp lệ — phải dạng https://domain, không có dấu / hoặc ký tự thừa ở cuối."
+      "invalidUrl": "URL không hợp lệ: phải dạng https://domain, không có dấu / hoặc ký tự thừa ở cuối."
     }
   },
   "activityMilestones": {

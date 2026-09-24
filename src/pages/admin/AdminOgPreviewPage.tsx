@@ -76,7 +76,7 @@ export default function AdminOgPreviewPage() {
           <div><dt className="font-medium">{t("ogPreview.imageUrl")}</dt><dd>{meta.imageUrl}</dd></div>
           <div><dt className="font-medium">{t("ogPreview.updatedAt")}</dt><dd>{meta.updatedAt}</dd></div>
           <div><dt className="font-medium">{t("ogPreview.revision")}</dt><dd>{meta.revision}</dd></div>
-          <div><dt className="font-medium">HTTP</dt><dd>{imageQuery.data?.status ?? "—"} · {imageQuery.data?.contentType ?? "—"}</dd></div>
+          <div><dt className="font-medium">HTTP</dt><dd>{imageQuery.data?.status ?? "-"} · {imageQuery.data?.contentType ?? "-"}</dd></div>
         </dl>
       </div>}
   </main>;

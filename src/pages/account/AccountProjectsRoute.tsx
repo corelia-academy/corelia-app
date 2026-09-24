@@ -433,7 +433,7 @@ export function AccountProjectsRoute() {
                               {t("account:projects.fieldTitle")}
                             </div>
                             <div className="mt-1 whitespace-pre-wrap text-foreground">
-                              {selected.title || "—"}
+                              {selected.title || "-"}
                             </div>
                           </div>
                           <div>
@@ -441,7 +441,7 @@ export function AccountProjectsRoute() {
                               {t("account:projects.fieldSummary")}
                             </div>
                             <div className="mt-1 whitespace-pre-wrap text-foreground-muted">
-                              {selected.summary || "—"}
+                              {selected.summary || "-"}
                             </div>
                           </div>
                         </div>

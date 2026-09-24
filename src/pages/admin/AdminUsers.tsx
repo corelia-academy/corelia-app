@@ -306,8 +306,8 @@ export default function AdminUsers() {
                     </p>
                     <p className="mt-1 text-sm text-foreground">
                       {p.id === currentUser?.id
-                        ? currentUser?.email ?? p.email ?? "—"
-                        : p.email ?? "—"}
+                        ? currentUser?.email ?? p.email ?? "-"
+                        : p.email ?? "-"}
                     </p>
                   </div>
                   <div>
@@ -477,8 +477,8 @@ export default function AdminUsers() {
                         }
                       >
                         {p.id === currentUser?.id
-                          ? currentUser?.email ?? p.email ?? "—"
-                          : p.email ?? "—"}
+                          ? currentUser?.email ?? p.email ?? "-"
+                          : p.email ?? "-"}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -487,12 +487,12 @@ export default function AdminUsers() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-foreground-muted">
-                      {p.phone || "—"}
+                      {p.phone || "-"}
                     </td>
                     <td className="px-4 py-3 text-sm text-foreground-muted">
                       {p.created_at
                         ? new Date(p.created_at).toLocaleDateString(intlLocale())
-                        : "—"}
+                        : "-"}
                     </td>
                     <td className="px-4 py-3">
                       <select

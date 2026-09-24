@@ -369,7 +369,7 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate, usernam
     nftCollection: tpl?.collection_symbol === "ocbadge" ? "ocbadge" : "occredential",
   });
   const issuedAt = row.minted_at ?? row.display_snapshot?.issued_at ?? row.created_at;
-  const minted = issuedAt ? new Date(issuedAt).toLocaleDateString() : "—";
+  const minted = issuedAt ? new Date(issuedAt).toLocaleDateString() : "-";
 
   // Admin Manual Mint reuses scope_type="activity_milestone" for OCA/OCB grants with
   // no course/hackathon anchor (see saveActivityMilestoneTemplate) — but those are not

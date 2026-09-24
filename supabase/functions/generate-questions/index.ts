@@ -455,7 +455,7 @@ Nhiệm vụ: Tạo đúng ${count} câu hỏi MCQ từ nội dung bài học d�
 Yêu cầu:
 - Mỗi câu có đúng 4 lựa chọn với id "a", "b", "c", "d".
 - Chỉ 1 lựa chọn đúng. correct_index là số nguyên 0-3 (0=a, 1=b, 2=c, 3=d).
-- Độ khó: trung bình — học viên vừa xem xong video có thể trả lời nếu chú ý.
+- Độ khó: trung bình: học viên vừa xem xong video có thể trả lời nếu chú ý.
 - Câu hỏi bám sát nội dung, không hỏi kiến thức ngoài phạm vi bài học.
 - Mỗi câu có giải thích ngắn (1-2 câu) vì sao đáp án đúng.
 - ${langInstruction}

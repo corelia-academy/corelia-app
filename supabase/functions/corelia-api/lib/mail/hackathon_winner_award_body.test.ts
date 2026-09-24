@@ -14,7 +14,7 @@ describe("buildHackathonWinnerAwardEmail", () => {
       locale: "vi",
     });
 
-    expect(result.subject).toContain("Chúc mừng! Dự án \"AI Doc Assistant\" đạt giải Giải Nhất — Corelia AI Hackathon 2026");
+    expect(result.subject).toContain("Chúc mừng! Dự án \"AI Doc Assistant\" đạt giải Giải Nhất: Corelia AI Hackathon 2026");
     expect(result.html).toContain("AI Doc Assistant");
     expect(result.html).toContain("Giải Nhất");
     expect(result.html).toContain("Corelia AI Hackathon 2026");
@@ -31,7 +31,7 @@ describe("buildHackathonWinnerAwardEmail", () => {
       locale: "en",
     });
 
-    expect(result.subject).toContain("Congratulations! \"DeFi Lending Protocol\" won First Prize — Global Web3 Hackathon");
+    expect(result.subject).toContain("Congratulations! \"DeFi Lending Protocol\" won First Prize: Global Web3 Hackathon");
     expect(result.html).toContain("DeFi Lending Protocol");
     expect(result.html).toContain("First Prize");
     expect(result.html).toContain("Global Web3 Hackathon");

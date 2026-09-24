@@ -70,7 +70,7 @@ export default function AdminActionComponentPage({
         </div>
 
         <p role="status" aria-live="polite" className="text-body-small text-foreground-muted">
-          Active state: {activeAction ?? "—"}
+          Active state: {activeAction ?? "-"}
         </p>
       </ShowcaseSection>
     </ComponentShowcaseLayout>

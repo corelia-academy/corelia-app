@@ -178,7 +178,7 @@ export function AuthSync() {
     // many days of inactivity).
     const handleSessionExpired = () => {
       if (!mounted) return;
-      console.warn("[AuthSync] Session expired and could not be refreshed — signing out.");
+      console.warn("[AuthSync] Session expired and could not be refreshed: signing out.");
       void useAuthStore.getState().signOut();
       // Redirect to login without reloading the SPA bundle.
       try {

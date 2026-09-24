@@ -70,8 +70,8 @@ export function buildHackathonWinnerAwardEmail(args: {
     : undefined;
 
   const subject = locale === "vi"
-    ? `[Corelia] Chúc mừng! Dự án "${safeProject}" đạt giải ${safeAward} — ${safeHackathon}`
-    : `[Corelia] Congratulations! "${safeProject}" won ${safeAward} — ${safeHackathon}`;
+    ? `[Corelia] Chúc mừng! Dự án "${safeProject}" đạt giải ${safeAward}: ${safeHackathon}`
+    : `[Corelia] Congratulations! "${safeProject}" won ${safeAward}: ${safeHackathon}`;
 
   return {
     subject,

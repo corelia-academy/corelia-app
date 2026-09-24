@@ -247,7 +247,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
   const { confirm, confirmation } = useLearningConfirm();
 
   const formatHumanVideoDuration = (totalSeconds: number) => {
-    if (!(totalSeconds > 0)) return "—";
+    if (!(totalSeconds > 0)) return "-";
     const loc = i18n.resolvedLanguage ?? i18n.language;
     if (loc.startsWith("vi")) return formatDuration(totalSeconds);
     const h = Math.floor(totalSeconds / 3600);
@@ -8014,7 +8014,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                                 <td className="px-4 py-3">
                                   <div>
                                     <span className="font-medium text-foreground">
-                                      {profile?.full_name || "—"}
+                                      {profile?.full_name || "-"}
                                     </span>
                                     <span className="block text-xs text-foreground-muted">
                                       {t("courseEdit.assignments.lessonProgress" as never, { progress: prog })}
@@ -8497,12 +8497,12 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                                   size="sm"
                                 />
                                 <span className="font-medium text-foreground">
-                                  {profile?.full_name || "—"}
+                                  {profile?.full_name || "-"}
                                 </span>
                               </div>
                             </td>
                             <td className="px-4 py-3 text-foreground-muted">
-                              {profile?.email || "—"}
+                              {profile?.email || "-"}
                             </td>
                             <td className="px-4 py-3">
                               <span className="tabular-nums">{prog}%</span>
@@ -8530,13 +8530,13 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                                 )
                               ) : (
                                 <span className="text-foreground-muted text-xs">
-                                  —
+                                  -
                                 </span>
                               )}
                             </td>
                             <td className="px-4 py-3">
                               {!courseHasCertificate(course) ? (
-                                <span className="text-foreground-muted text-xs">—</span>
+                                <span className="text-foreground-muted text-xs">-</span>
                               ) : hasCert ? (
                                 <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
                                   <CheckCircle2 className="size-3.5" aria-hidden /> {t("courseEdit.students.status.issued")}
@@ -8559,14 +8559,14 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                             <td className="px-4 py-3 text-foreground-muted">
                               {e.enrolled_at
                                 ? new Date(e.enrolled_at).toLocaleDateString(intlLocale())
-                                : "—"}
+                                : "-"}
                             </td>
                             <td className="px-4 py-3 text-foreground-muted">
                               {e.last_accessed_at
                                 ? new Date(
                                     e.last_accessed_at,
                                   ).toLocaleDateString(intlLocale())
-                                : "—"}
+                                : "-"}
                             </td>
                           </tr>
                         );

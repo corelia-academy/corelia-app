@@ -106,7 +106,7 @@ export function buildCoInstructorInviteEmail(args: {
   `;
 
   return {
-    subject: `${copy.title} — ${safeCourse}`,
+    subject: `${copy.title}: ${safeCourse}`,
     html: wrapTransactionalEmail({
       locale,
       heroTag: copy.tag,

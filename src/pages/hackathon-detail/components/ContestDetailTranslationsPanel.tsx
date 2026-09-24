@@ -373,23 +373,23 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
             <div className="mt-3 space-y-3 text-sm">
               <div>
                 <div className="text-xs font-medium text-foreground-muted">Title</div>
-                <div className="mt-1 whitespace-pre-wrap text-foreground">{primarySnapshot.title || "—"}</div>
+                <div className="mt-1 whitespace-pre-wrap text-foreground">{primarySnapshot.title || "-"}</div>
               </div>
               <div>
                 <div className="text-xs font-medium text-foreground-muted">Tagline</div>
-                <div className="mt-1 whitespace-pre-wrap text-foreground-muted">{primarySnapshot.tagline || "—"}</div>
+                <div className="mt-1 whitespace-pre-wrap text-foreground-muted">{primarySnapshot.tagline || "-"}</div>
               </div>
               <div>
                 <div className="text-xs font-medium text-foreground-muted">Description</div>
-                <div className="mt-1 whitespace-pre-wrap text-foreground-muted">{primarySnapshot.description || "—"}</div>
+                <div className="mt-1 whitespace-pre-wrap text-foreground-muted">{primarySnapshot.description || "-"}</div>
               </div>
               <div>
                 <div className="text-xs font-medium text-foreground-muted">Rules</div>
-                <div className="mt-1 whitespace-pre-wrap text-foreground-muted">{primarySnapshot.rules || "—"}</div>
+                <div className="mt-1 whitespace-pre-wrap text-foreground-muted">{primarySnapshot.rules || "-"}</div>
               </div>
               <div>
                 <div className="text-xs font-medium text-foreground-muted">Prize pool summary</div>
-                <div className="mt-1 whitespace-pre-wrap text-foreground-muted">{primarySnapshot.prize_pool_summary || "—"}</div>
+                <div className="mt-1 whitespace-pre-wrap text-foreground-muted">{primarySnapshot.prize_pool_summary || "-"}</div>
               </div>
             </div>
           </div>

@@ -116,7 +116,7 @@ export default function ConnectOCIDCard() {
               {t("ocid.card.ocidLabel")}
             </div>
             <div className="font-mono text-foreground">
-              {ocidDisplay ?? profile?.ocid ?? "—"}
+              {ocidDisplay ?? profile?.ocid ?? "-"}
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -124,7 +124,7 @@ export default function ConnectOCIDCard() {
               {t("ocid.card.ethAddressLabel")}
             </div>
             <div className="font-mono text-foreground">
-              {ethDisplay ?? profile?.ocid_eth_address ?? "—"}
+              {ethDisplay ?? profile?.ocid_eth_address ?? "-"}
             </div>
           </div>
         </div>

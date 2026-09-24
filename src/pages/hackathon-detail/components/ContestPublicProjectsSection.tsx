@@ -99,7 +99,7 @@ export function ContestPublicProjectsSection(props: {
                     names:
                       teamBySubmission[row.submissionId] ||
                       row.contestant_fallback ||
-                      "—",
+                      "-",
                   })}
                 </div>
                 {typeof row.average_score === "number" &&
