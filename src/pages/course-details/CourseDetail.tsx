@@ -34,6 +34,7 @@ import {
   CourseCurriculum,
   type CurriculumGroup,
 } from "./components/CourseCurriculum";
+import { getCourseContentLessons } from "./utils/contentLessons";
 import { CourseAccessPanel } from "./components/CourseAccessPanel";
 import { CourseSpotlightSection } from "./components/CourseSpotlightSection";
 import { CourseLanguagePanel } from "./components/CourseLanguagePanel";
@@ -252,23 +253,24 @@ export default function CourseDetail() {
     () => sortLessonsByCurriculum(lessons.filter(isLessonPublishedForLearners), courseLoad.sections),
     [lessons, courseLoad.sections],
   );
+  const contentLessons = useMemo(() => getCourseContentLessons(sortedLessons), [sortedLessons]);
   const lessonsBySection = useMemo<CurriculumGroup[]>(
     () =>
       courseLoad.sections.map((section) => ({
         section,
-        lessons: sortedLessons.filter(
+        lessons: contentLessons.filter(
           (lesson) =>
             lesson.section_id === section.id,
         ),
       })),
-    [courseLoad.sections, sortedLessons],
+    [courseLoad.sections, contentLessons],
   );
   const visibleLessonGroups = lessonsBySection.filter(
     ({ lessons: sectionLessons }) => sectionLessons.length > 0,
   );
 
   const curriculumCountLabel = translate("detail.courseDetail.lessonCount", {
-    count: sortedLessons.length,
+    count: contentLessons.length,
   });
 
   const { profile: instructorProfile } = useInstructorProfile(courseLoad.course?.instructor_id);
