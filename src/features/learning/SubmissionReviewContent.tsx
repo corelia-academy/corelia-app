@@ -12,7 +12,7 @@ export function SubmissionReviewContent({ content, artifacts, fileUrls, comment 
   const attachments = Array.isArray(fileUrls) ? fileUrls : fileUrls == null ? [] : [""];
   return <details className="min-w-48 max-w-xl">
     <summary className="cursor-pointer py-2 text-primary underline">{t("courseEdit.assignments.viewSubmission")}</summary>
-    <p className="whitespace-pre-wrap break-words text-foreground-muted">{content || "—"}</p>
+    <p className="whitespace-pre-wrap break-words text-foreground-muted">{content || "-"}</p>
     <SubmissionArtifacts artifacts={artifacts} />
     {!!attachments.length && <ul className="mt-3 space-y-2">
       {attachments.map((url, index) => {

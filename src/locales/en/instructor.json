@@ -162,7 +162,7 @@
       "subjectPlaceholder": "Enter subject...",
       "bodyLabel": "Message",
       "bodyPlaceholder": "Write your announcement here. Use a blank line between paragraphs.",
-      "bodyHint": "Plain text only — line breaks are kept. You do not need to write HTML.",
+      "bodyHint": "Plain text only: line breaks are kept. You do not need to write HTML.",
       "bodyPreviewToggle": "Preview",
       "bodyPreviewBrandedNote": "Preview (header and footer are added automatically when sent):",
       "sendButton": "Send announcement",
@@ -578,7 +578,7 @@
     },
     "ocb": {
       "title": "Open Campus On-chain Credential",
-      "subtitle": "Learners who meet the requirements can claim their own verifiable on-chain credential from the Achievements page. They review their name and OCID before minting — nothing is issued automatically.",
+      "subtitle": "Learners who meet the requirements can claim their own verifiable on-chain credential from the Achievements page. They review their name and OCID before minting: nothing is issued automatically.",
       "loading": "Loading credential configuration…",
       "loadFailed": "Could not load credential configuration.",
       "adminManagedTitle": "Configuration managed by administrators",
@@ -591,17 +591,17 @@
       "kind": {
         "label": "Credential type",
         "oca": {
-          "label": "OCA — Certificate of Achievement",
+          "label": "OCA: Certificate of Achievement",
           "desc": "A certificate-style on-chain credential. Ideal for course completions and certifications."
         },
         "ocb": {
-          "label": "OCB — Open Campus Badge",
+          "label": "OCB: Open Campus Badge",
           "desc": "A skill badge credential. Ideal for shorter achievements and topic mastery."
         }
       },
       "configTitle": "Credential details",
       "requirementsTitle": "Eligibility requirements",
-      "confirmDeactivateWithIssuances": "{{count}} learner(s) already hold this credential. Turning it off stops issuing to new learners — it does NOT revoke what's already been issued. Continue turning it off?",
+      "confirmDeactivateWithIssuances": "{{count}} learner(s) already hold this credential. Turning it off stops issuing to new learners: it does NOT revoke what's already been issued. Continue turning it off?",
       "leaveWithoutSavingWarning": "You have unsaved OpenCampus Credentials changes. Leaving now will NOT issue the on-chain credential to learners. Leave anyway?",
       "noPermission": "You don't have permission to configure credentials for this course.",
       "nameLabel": "Credential name",
@@ -673,7 +673,7 @@
       "sectionsToggleHint": "Enable to group lessons into chapters. Disable for a flat lesson list.",
       "addSectionHeading": "Add new section",
       "lessonTitlePlaceholder": "Lesson title (optional)",
-      "lessonMinutesPlaceholder": "Duration (minutes) — if YouTube duration can't be fetched, enter it here",
+      "lessonMinutesPlaceholder": "Duration (minutes): if YouTube duration can't be fetched, enter it here",
       "sectionTitlePlaceholder": "Section title"
     },
     "questions": {
@@ -797,7 +797,7 @@
       "formatArticle": "Text lesson",
       "formatQuiz": "Quiz",
       "formatPractice": "Practice",
-      "formatHint": "Text lessons use written content only — no YouTube video required.",
+      "formatHint": "Text lessons use written content only: no YouTube video required.",
       "articleContentRequired": "Add lesson content (markdown or short description) for a text lesson.",
       "practiceContentRequired": "Add practice instructions for this practice lesson.",
       "practiceSourceLabel": "Source lesson",
@@ -857,7 +857,7 @@
     },
     "longVideo": {
       "title": "Long YouTube video",
-      "editReplaceTitle": "Long video — replace this lesson?",
+      "editReplaceTitle": "Long video: replace this lesson?",
       "editReplaceIntro": "You switched to a different video (about {{duration}}). Keep this as one lesson, split from description chapters, or define segments manually. Splitting removes the current lesson and inserts new ones in the same place.",
       "intro": "This video runs about {{duration}}. Keep one lesson, split automatically from description timestamps, or define segments manually.",
       "foundChapters": "Timestamps found in the video description:",
@@ -981,7 +981,7 @@
       "subjectPlaceholder": "Enter subject...",
       "bodyLabel": "Message",
       "bodyPlaceholder": "Write your announcement here. Use a blank line between paragraphs.",
-      "bodyHint": "Plain text only — line breaks are kept. You do not need to write HTML.",
+      "bodyHint": "Plain text only: line breaks are kept. You do not need to write HTML.",
       "bodyPreviewToggle": "Preview",
       "bodyPreviewBrandedNote": "Preview (header and footer are added automatically when sent):",
       "sendButton": "Send announcement",
@@ -1129,15 +1129,15 @@
     "sourcesNote": "Foundational sources reviewed September 22, 2026. IES evidence levels refer to its 2007 guide, not an evaluation of online programming instruction. The examples, checklist and format choices here are Corelia applications to validate with real learners.",
     "sources": {
       "alignment": {
-        "title": "CMU Eberly Center — Align Assessments, Objectives, Instructional Strategies",
+        "title": "CMU Eberly Center: Align Assessments, Objectives, Instructional Strategies",
         "description": "Guidance on aligning goals, learning activities and assessment. Supports principle 1."
       },
       "learning": {
-        "title": "CMU Eberly Center — Learning Principles",
+        "title": "CMU Eberly Center: Learning Principles",
         "description": "Research synthesis covering prior knowledge, practice, feedback, mastery and self-regulation. Supports principles 2, 6 and 7."
       },
       "ies": {
-        "title": "IES / What Works Clearinghouse — Organizing Instruction and Study to Improve Student Learning (2007)",
+        "title": "IES / What Works Clearinghouse: Organizing Instruction and Study to Improve Student Learning (2007)",
         "description": "Evidence-rated guidance on worked examples, quizzes, spacing and explanatory questions. Supports principles 3, 4 and 5."
       }
     }

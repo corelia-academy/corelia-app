@@ -391,7 +391,7 @@
       "profile": "Instructor details"
     },
     "common": {
-      "dash": "—",
+      "dash": "-",
       "notUpdated": "Not updated"
     },
     "profile": {
@@ -467,7 +467,7 @@
       "createdAt": "Created",
       "changeRole": "Change role",
       "notUpdated": "Not updated",
-      "dash": "—"
+      "dash": "-"
     }
   },
   "branding": {
@@ -490,10 +490,10 @@
     },
     "appBaseUrl": {
       "title": "App base URL",
-      "subtitle": "Root domain used to build links in system emails (certificates, claim invites...). Example staging: https://staging.corelia.academy — production: https://app.corelia.academy. A wrong value here sends every outgoing email link to the wrong environment.",
+      "subtitle": "Root domain used to build links in system emails (certificates, claim invites...). Staging: https://staging.corelia.academy; production: https://app.corelia.academy. A wrong value here sends every outgoing email link to the wrong environment.",
       "urlLabel": "Base URL",
       "saveUrl": "Save URL",
-      "invalidUrl": "Invalid URL — must look like https://domain, with no trailing slash or extra characters."
+      "invalidUrl": "Invalid URL: must look like https://domain, with no trailing slash or extra characters."
     }
   },
   "activityMilestones": {
@@ -555,7 +555,7 @@
   },
   "manualMint": {
     "heading": "Manual OCA/OCB grant",
-    "subheading": "Grant an OCA/OCB to a specific individual as a reward outside course completion — does not affect course/hackathon state.",
+    "subheading": "Grant an OCA/OCB to a specific individual as a reward outside course completion: does not affect course/hackathon state.",
     "tabs": {
       "grant": "Grant Credential / Badge",
       "history": "Grant History & Pending",

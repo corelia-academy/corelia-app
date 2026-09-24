@@ -4,20 +4,20 @@
     "published": "Accepting applications",
     "running": "Running",
     "ended": "Ended",
-    "unknown": "—"
+    "unknown": "-"
   },
   "location": {
     "online": "Online",
     "offline": "Offline",
     "hybrid": "Hybrid",
-    "unknown": "—"
+    "unknown": "-"
   },
   "registrationStatus": {
     "registered": "Registered",
     "pending": "Pending",
     "approved": "Approved",
     "rejected": "Rejected",
-    "unknown": "—"
+    "unknown": "-"
   },
   "catalog": {
     "heroEyebrow": "Hackathons & ecosystem activities",
@@ -26,7 +26,7 @@
     "missingSlug": "This hackathon is missing a slug. Run the slug backfill migration or set a slug in workspace settings.",
     "pillReviewed": "Instant registration",
     "pillTeamBased": "Team submissions",
-    "sectionWhyTitle": "Hackathons aren't just for winning — they're for learning and building in the real world",
+    "sectionWhyTitle": "Hackathons aren't just for winning: they're for learning and building in the real world",
     "loadingTitle": "Loading hackathons...",
     "loadingDescription": "Hackathons will appear here once syncing is complete.",
     "howItWorksEyebrow": "How Corelia runs hackathons",
@@ -75,10 +75,10 @@
     "sidebar": {
       "leaderboardHint": "Judges score using a rubric; the leaderboard and winners are shown only after results are published."
     },
-    "listCardImageAlt": "Contest thumbnail — {{title}}"
+    "listCardImageAlt": "Contest thumbnail: {{title}}"
   },
   "public": {
-    "previewNotice": "Preview — this hackathon is not public yet.",
+    "previewNotice": "Preview: this hackathon is not public yet.",
     "registered": "Registration complete.",
     "registerFailed": "Could not register for this hackathon.",
     "register": "Register now",
@@ -155,7 +155,7 @@
   "workspace": {
     "access": {
       "cardTitle": "You can manage this hackathon",
-      "cardDescription": "Your role grants workspace access — review applications, score submissions, edit content, or send announcements.",
+      "cardDescription": "Your role grants workspace access: review applications, score submissions, edit content, or send announcements.",
       "roleReviewer": "Application reviewer",
       "roleAnalytics": "Analytics viewer"
     },
@@ -227,7 +227,7 @@
       "eligibilityStatusMinted": "Minted ✓",
       "eligibilityStatusPending": "Pending",
       "eligibilityStatusFailed": "Failed",
-      "eligibilityNoOcid": "No OCID — mint will be deferred",
+      "eligibilityNoOcid": "No OCID: mint will be deferred",
       "eligibilityGrantOk": "Grant request processed.",
       "eligibilityGrantFailed": "Grant failed.",
       "fieldCredentialKind": "Credential type",
@@ -265,10 +265,10 @@
       "recipientCount": "{{count}} recipients selected",
       "recipientCountZero": "No recipients match this filter",
       "subjectLabel": "Subject",
-      "subjectPlaceholder": "e.g. Submission reminder — 48h left",
+      "subjectPlaceholder": "e.g. Submission reminder: 48h left",
       "bodyLabel": "Message",
       "bodyPlaceholder": "Hello everyone,\n\nYour message here…",
-      "bodyHint": "Plain text only — line breaks are kept. You do not need to write HTML.",
+      "bodyHint": "Plain text only: line breaks are kept. You do not need to write HTML.",
       "bodyPreviewToggle": "Preview",
       "bodyPreviewBrandedNote": "Preview (header and footer are added automatically when sent):",
       "sendButton": "Send email blast",
@@ -283,7 +283,7 @@
       "toastSuccess": "Email blast sent",
       "toastError": "Failed to send email blast",
       "systemUnavailable": "The email system is currently unavailable. No emails were sent. Please contact a system administrator for assistance.",
-      "notConfigured": "Email not configured — set RESEND_API_KEY and MAIL_FROM in your Supabase environment."
+      "notConfigured": "Email not configured: set RESEND_API_KEY and MAIL_FROM in your Supabase environment."
     },
     "manage": {
       "backToContests": "Back to hackathons",
@@ -314,7 +314,7 @@
       },
       "heroEyebrow": "Organizer workspace",
       "heroSurfaceBadge": "Manage mode",
-      "heroSurfaceHint": "You are on the organizer workspace — visitors see the public hackathon page.",
+      "heroSurfaceHint": "You are on the organizer workspace: visitors see the public hackathon page.",
       "heroSurfaceAria": "Manage workspace mode active",
       "fallback": {
         "label": "Hackathon workspace",
@@ -335,7 +335,7 @@
         }
       },
       "operatingModelTitle": "Operating model",
-      "operatingModelDescription": "This contest runs as a multi-party workspace—not a single content editor.",
+      "operatingModelDescription": "This contest runs as a multi-party workspace, not a single content editor.",
       "lanes": {
         "ops": {
           "title": "Corelia operations",
@@ -514,7 +514,7 @@
       "prizeValuePlaceholder": "e.g. $2,000",
       "prizeDescriptionPlaceholder": "Optional description",
       "organizationalPartnerLogoUploadLabel": "Partner logo",
-      "organizationalPartnerLogoUploadHint": "PNG, JPG, or WebP — under 2MB recommended. Saved as soon as upload finishes.",
+      "organizationalPartnerLogoUploadHint": "PNG, JPG, or WebP: under 2MB recommended. Saved as soon as upload finishes.",
       "uploadingPartnerLogo": "Uploading logo…",
       "organizationalPartnerLogoPreviewAlt": "{{title}} logo",
       "organizationalPartnerRemoveLogo": "Remove logo",
@@ -531,7 +531,7 @@
       "dangerZoneDescription": "Deleting a hackathon removes all registrations, invites, submissions, and scores. This cannot be undone.",
       "settingsLayoutNavAria": "Hackathon settings sections",
       "settingsLayoutNavTitle": "Settings sections",
-      "settingsLayoutNavDescription": "Jump between configuration groups instead of scrolling through one long page—the same pattern as course editing.",
+      "settingsLayoutNavDescription": "Jump between configuration groups instead of scrolling through one long page: the same pattern as course editing.",
       "settingsSectionGeneral": "Status & URL",
       "settingsSectionJudging": "Judging setup",
       "settingsSectionAccess": "Access & invites",
@@ -562,13 +562,13 @@
       "published": "Accepting applications",
       "running": "Running",
       "ended": "Ended",
-      "unknown": "—"
+      "unknown": "-"
     },
     "locationLabel": {
       "online": "Online",
       "offline": "Offline",
       "hybrid": "Hybrid",
-      "unknown": "—"
+      "unknown": "-"
     },
     "dateRangeUnknown": "Schedule not announced yet",
     "dateStartPrefix": "Starts {{date}}",
@@ -823,7 +823,7 @@
         "resultsIn": "Results in {{time}}"
       },
       "hero": {
-        "upcomingBody": "Save the date — registration has not opened yet.",
+        "upcomingBody": "Save the date: registration has not opened yet.",
         "judgingBody": "Submissions are closed; judges are reviewing entries."
       },
       "cta": {
@@ -834,16 +834,16 @@
         "pendingReview": "Application pending review",
         "pendingReviewHelper": "Corelia is reviewing your application.",
         "goToDashboard": "Open participant workspace",
-        "dashboardHelper": "Your application was approved — continue from your participant workspace.",
+        "dashboardHelper": "Your application was approved: continue from your participant workspace.",
         "applicationNotApproved": "Application not approved",
         "applicationNotApprovedHelper": "See FAQs or explore other hackathons.",
         "registerWithProfile": "Register with my profile",
-        "registerWithProfileHelper": "Applications are open — submit yours for Corelia review.",
-        "registerWithProfileHelperInstant": "Registration is open — join immediately with your Corelia profile.",
+        "registerWithProfileHelper": "Applications are open: submit yours for Corelia review.",
+        "registerWithProfileHelperInstant": "Registration is open: join immediately with your Corelia profile.",
         "viewSubmission": "View submitted work",
         "viewSubmissionHelper": "Review or update your submission before the deadline.",
         "submitWork": "Submit your project",
-        "submitWorkHelper": "Your application is approved — add your demo, repo, and slides.",
+        "submitWorkHelper": "Your application is approved: add your demo, repo, and slides.",
         "followBuildPhase": "Follow the hackathon",
         "followBuildPhaseHelper": "See timeline and showcase updates while the build phase runs.",
         "viewSubmissionsGallery": "View submissions",
@@ -956,9 +956,9 @@
       "bulletMint": "Mint readiness checklist (EDU Chain)"
     },
     "visual": {
-      "bannerAlt": "Banner — {{title}}",
-      "thumbnailAlt": "Thumbnail — {{title}}",
-      "listThumbAlt": "Contest thumbnail — {{title}}"
+      "bannerAlt": "Banner: {{title}}",
+      "thumbnailAlt": "Thumbnail: {{title}}",
+      "listThumbAlt": "Contest thumbnail: {{title}}"
     },
     "hero": {
       "backToContests": "Back to hackathons",
@@ -981,7 +981,7 @@
       "slotsUnlimited": "No fixed capacity limit",
       "submissionDeadline": "Submission deadline",
       "submissionsLockAtEndHint": "Unless a separate deadline is set, submissions lock when the contest ends.",
-      "implausibleStartWarning": "Start date is earlier than the contest record creation date — check schedule data.",
+      "implausibleStartWarning": "Start date is earlier than the contest record creation date: check schedule data.",
       "share": "Share",
       "shareCopyLink": "Copy link",
       "shareFacebook": "Share on Facebook",
@@ -1018,7 +1018,7 @@
       },
       "overviewTeasers": {
         "sectionTitle": "Go deeper",
-        "sectionDescription": "Long-form details live on dedicated tabs—open one when you need it.",
+        "sectionDescription": "Long-form details live on dedicated tabs: open one when you need it.",
         "prizesTitle": "Prizes",
         "prizesBody_one": "{{count}} award tier announced.",
         "prizesBody_other": "{{count}} award tiers announced.",
@@ -1073,7 +1073,7 @@
       "registerOneClickCta": "Register with my profile",
       "optionalNoteSummary": "Optional: note for reviewers",
       "draftNotReadyHint": "We could not find an email on your account. Add one under account settings, then try again.",
-      "teamViaInvitesHint": "Teammates must each apply and be approved. After you save a submission, invite approved participants from your submission workspace — they accept via notifications or your invite link."
+      "teamViaInvitesHint": "Teammates must each apply and be approved. After you save a submission, invite approved participants from your submission workspace: they accept via notifications or your invite link."
     },
     "inviteProject": {
       "title": "Project invitation",
@@ -1259,7 +1259,7 @@
       "sectionDescription": "Public project cards from contest submissions. Rankings and judge scores appear after Corelia publishes results.",
       "emptyTitle": "No projects to show yet",
       "emptyHint": "When approved teams save a submission, their public project card appears here.",
-      "emptyHintSyncing": "Submissions exist but project cards are still syncing—try refreshing in a moment.",
+      "emptyHintSyncing": "Submissions exist but project cards are still syncing: try refreshing in a moment.",
       "viewDemo": "Demo",
       "viewRepo": "Repository",
       "viewSlides": "Slides",
@@ -1293,7 +1293,7 @@
       "defaultSoloRegistration": "Solo application",
       "contact": "Contact:",
       "notProvided": "Not provided",
-      "noDataDash": "—",
+      "noDataDash": "-",
       "noDemo": "Not available",
       "saving": "Saving...",
       "saveScore": "Save score",

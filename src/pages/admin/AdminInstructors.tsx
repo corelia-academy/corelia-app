@@ -272,7 +272,7 @@ export default function AdminInstructors() {
                         Email
                       </p>
                       <p className="mt-1 text-sm text-foreground">
-                        {p.email ?? "—"}
+                        {p.email ?? "-"}
                       </p>
                     </div>
                     <div>
@@ -412,7 +412,7 @@ export default function AdminInstructors() {
                       </td>
                       <td className="min-w-[180px] px-4 py-3">
                         <span className="block max-w-[260px] truncate text-sm text-foreground">
-                          {p.email ?? "—"}
+                          {p.email ?? "-"}
                         </span>
                       </td>
                       <td className="px-4 py-3">

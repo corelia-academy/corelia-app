@@ -62,14 +62,14 @@ export function formatJobSalary(job: Job, locale: string): string | null {
 }
 
 export function formatJobDate(value: string | null, locale: string): string {
-  if (!value) return "—";
+  if (!value) return "-";
   const days = Math.round((new Date(value).getTime() - Date.now()) / 86_400_000);
   if (Math.abs(days) <= 30) return new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(days, "day");
   return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(value));
 }
 
 export function humanizeJobSlug(value: string | null | undefined): string {
-  if (!value) return "—";
+  if (!value) return "-";
   const brands: Record<string, string> = { aws: "AWS", ai: "AI", api: "API", typescript: "TypeScript", javascript: "JavaScript", devops: "DevOps", mysql: "MySQL", postgresql: "PostgreSQL", saas: "SaaS", web3: "Web3" };
   return value.replace(/[_-]/g, " ").split(" ").map(word => brands[word.toLowerCase()] ?? word.replace(/^\w/, letter => letter.toUpperCase())).join(" ");
 }

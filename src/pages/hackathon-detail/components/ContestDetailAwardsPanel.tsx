@@ -307,7 +307,7 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
                       <td className="px-3 py-2 font-mono text-xs">{trow.hackathon_role}</td>
                       <td className="px-3 py-2">{trow.name}</td>
                       <td className="px-3 py-2">{counts[trow.id] ?? 0}</td>
-                      <td className="px-3 py-2">{trow.is_active ? "✓" : "—"}</td>
+                      <td className="px-3 py-2">{trow.is_active ? "✓" : "-"}</td>
                       <td className="px-3 py-2 text-right">
                         <Button type="button" variant="outline" size="sm" onClick={() => openEdit(trow)}>
                           {translate("workspace.awards.edit")}
@@ -331,7 +331,7 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
             >
               {templates.filter((x) => x.is_active).map((x) => (
                 <option key={x.id} value={x.id}>
-                  {x.hackathon_role} — {x.name}
+                  {x.hackathon_role} - {x.name}
                 </option>
               ))}
             </select>
@@ -376,7 +376,7 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
                 >
                   {templates.map((x) => (
                     <option key={x.id} value={x.id}>
-                      {x.hackathon_role} — {x.name}
+                      {x.hackathon_role} - {x.name}
                     </option>
                   ))}
                 </select>
@@ -450,7 +450,7 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
                                 />
                               </td>
                               <td className="px-3 py-2">{u.displayName}</td>
-                              <td className="px-3 py-2 text-foreground-muted">{u.teamName ?? "—"}</td>
+                              <td className="px-3 py-2 text-foreground-muted">{u.teamName ?? "-"}</td>
                               <td className="px-3 py-2">
                                 {u.hasOcid ? (
                                   <span className="text-success">✓</span>

@@ -4,20 +4,20 @@
     "published": "Đang nhận hồ sơ",
     "running": "Đang diễn ra",
     "ended": "Đã kết thúc",
-    "unknown": "—"
+    "unknown": "-"
   },
   "location": {
     "online": "Online",
     "offline": "Offline",
     "hybrid": "Hybrid",
-    "unknown": "—"
+    "unknown": "-"
   },
   "registrationStatus": {
     "registered": "Đã đăng ký",
     "pending": "Chờ duyệt",
     "approved": "Đã duyệt",
     "rejected": "Từ chối",
-    "unknown": "—"
+    "unknown": "-"
   },
   "catalog": {
     "heroEyebrow": "Hackathon & hoạt động hệ sinh thái",
@@ -75,10 +75,10 @@
     "sidebar": {
       "leaderboardHint": "Ban giám khảo chấm theo rubric; bảng xếp hạng và danh sách người thắng chỉ hiện sau khi được công bố chính thức."
     },
-    "listCardImageAlt": "Ảnh đại diện contest — {{title}}"
+    "listCardImageAlt": "Ảnh đại diện contest: {{title}}"
   },
   "public": {
-    "previewNotice": "Bản xem trước — hackathon này chưa được công khai.",
+    "previewNotice": "Bản xem trước: hackathon này chưa được công khai.",
     "registered": "Đăng ký thành công.",
     "registerFailed": "Không thể đăng ký hackathon.",
     "register": "Đăng ký ngay",
@@ -155,7 +155,7 @@
   "workspace": {
     "access": {
       "cardTitle": "Bạn có quyền quản lý hackathon này",
-      "cardDescription": "Vai trò của bạn cho phép truy cập workspace — duyệt đơn, chấm bài, chỉnh sửa nội dung hoặc gửi thông báo.",
+      "cardDescription": "Vai trò của bạn cho phép truy cập workspace: duyệt đơn, chấm bài, chỉnh sửa nội dung hoặc gửi thông báo.",
       "roleReviewer": "Người duyệt đơn",
       "roleAnalytics": "Xem phân tích"
     },
@@ -227,7 +227,7 @@
       "eligibilityStatusMinted": "Đã mint ✓",
       "eligibilityStatusPending": "Đang xử lý",
       "eligibilityStatusFailed": "Thất bại",
-      "eligibilityNoOcid": "Chưa có OCID — sẽ mint sau khi kết nối",
+      "eligibilityNoOcid": "Chưa có OCID: sẽ mint sau khi kết nối",
       "eligibilityGrantOk": "Đã gửi yêu cầu cấp giải.",
       "eligibilityGrantFailed": "Cấp giải thất bại.",
       "fieldCredentialKind": "Loại credential",
@@ -265,10 +265,10 @@
       "recipientCount": "{{count}} người nhận được chọn",
       "recipientCountZero": "Không có người nhận nào",
       "subjectLabel": "Tiêu đề",
-      "subjectPlaceholder": "Vd: Nhắc nhở nộp bài — còn 48h",
+      "subjectPlaceholder": "Vd: Nhắc nhở nộp bài: còn 48h",
       "bodyLabel": "Nội dung",
       "bodyPlaceholder": "Xin chào các bạn,\n\nNội dung thông báo…",
-      "bodyHint": "Chỉ nhập văn bản thường — xuống dòng được giữ nguyên. Không cần viết HTML.",
+      "bodyHint": "Chỉ nhập văn bản thường: xuống dòng được giữ nguyên. Không cần viết HTML.",
       "bodyPreviewToggle": "Xem trước",
       "bodyPreviewBrandedNote": "Xem trước (header và footer sẽ được thêm tự động khi gửi):",
       "sendButton": "Gửi email hàng loạt",
@@ -283,7 +283,7 @@
       "toastSuccess": "Đã gửi email hàng loạt thành công",
       "toastError": "Không thể gửi email hàng loạt",
       "systemUnavailable": "Hệ thống gửi email đang gặp sự cố. Chưa email nào được gửi. Vui lòng liên hệ quản trị viên hệ thống để được hỗ trợ.",
-      "notConfigured": "Email chưa được cấu hình — hãy set RESEND_API_KEY và MAIL_FROM trong môi trường Supabase."
+      "notConfigured": "Email chưa được cấu hình: hãy set RESEND_API_KEY và MAIL_FROM trong môi trường Supabase."
     },
     "manage": {
       "backToContests": "Quay lại danh sách hackathon",
@@ -314,7 +314,7 @@
       },
       "heroEyebrow": "Workspace ban tổ chức",
       "heroSurfaceBadge": "Chế độ quản trị",
-      "heroSurfaceHint": "Bạn đang ở workspace organizer — người xem chỉ thấy trang hackathon công khai.",
+      "heroSurfaceHint": "Bạn đang ở workspace organizer: người xem chỉ thấy trang hackathon công khai.",
       "heroSurfaceAria": "Đang bật chế độ workspace quản trị",
       "fallback": {
         "label": "Hackathon workspace",
@@ -335,7 +335,7 @@
         }
       },
       "operatingModelTitle": "Operating model",
-      "operatingModelDescription": "This contest runs as a multi-party workspace—not a single content editor.",
+      "operatingModelDescription": "This contest runs as a multi-party workspace, not a single content editor.",
       "lanes": {
         "ops": {
           "title": "Corelia operations",
@@ -514,7 +514,7 @@
       "prizeValuePlaceholder": "vd: 50 triệu VND",
       "prizeDescriptionPlaceholder": "Mô tả (tuỳ chọn)",
       "organizationalPartnerLogoUploadLabel": "Logo đối tác",
-      "organizationalPartnerLogoUploadHint": "PNG, JPG hoặc WebP — nên dưới 2MB. Lưu ngay sau khi tải lên xong.",
+      "organizationalPartnerLogoUploadHint": "PNG, JPG hoặc WebP: nên dưới 2MB. Lưu ngay sau khi tải lên xong.",
       "uploadingPartnerLogo": "Đang tải logo…",
       "organizationalPartnerLogoPreviewAlt": "Logo {{title}}",
       "organizationalPartnerRemoveLogo": "Gỡ logo",
@@ -531,7 +531,7 @@
       "dangerZoneDescription": "Deleting a hackathon removes all registrations, invites, submissions, and scores. This cannot be undone.",
       "settingsLayoutNavAria": "Các nhóm cài đặt hackathon",
       "settingsLayoutNavTitle": "Nhóm cài đặt",
-      "settingsLayoutNavDescription": "Chuyển giữa từng nhóm thay vì kéo một form dài—giống giao diện chỉnh sửa khóa học.",
+      "settingsLayoutNavDescription": "Chuyển giữa từng nhóm thay vì kéo một form dài: giống giao diện chỉnh sửa khóa học.",
       "settingsSectionGeneral": "Trạng thái & URL",
       "settingsSectionJudging": "Thiết lập chấm điểm",
       "settingsSectionAccess": "Quyền truy cập & lời mời",
@@ -562,13 +562,13 @@
       "published": "Đang nhận hồ sơ",
       "running": "Đang diễn ra",
       "ended": "Đã kết thúc",
-      "unknown": "—"
+      "unknown": "-"
     },
     "locationLabel": {
       "online": "Online",
       "offline": "Offline",
       "hybrid": "Hybrid",
-      "unknown": "—"
+      "unknown": "-"
     },
     "dateRangeUnknown": "Chưa công bố lịch thi",
     "dateStartPrefix": "Bắt đầu {{date}}",
@@ -823,7 +823,7 @@
         "resultsIn": "Công bố kết quả sau {{time}}"
       },
       "hero": {
-        "upcomingBody": "Lưu lịch — đăng ký chưa mở.",
+        "upcomingBody": "Lưu lịch: đăng ký chưa mở.",
         "judgingBody": "Đã đóng nộp bài; ban giám khảo đang đánh giá."
       },
       "cta": {
@@ -834,16 +834,16 @@
         "pendingReview": "Đang chờ duyệt",
         "pendingReviewHelper": "Corelia đang xét hồ sơ của bạn.",
         "goToDashboard": "Vào không gian người tham gia",
-        "dashboardHelper": "Hồ sơ đã được duyệt — tiếp tục từ khu participant.",
+        "dashboardHelper": "Hồ sơ đã được duyệt: tiếp tục từ khu participant.",
         "applicationNotApproved": "Hồ sơ chưa được duyệt",
         "applicationNotApprovedHelper": "Xem FAQ hoặc khám phá hackathon khác.",
         "registerWithProfile": "Đăng ký bằng hồ sơ của tôi",
-        "registerWithProfileHelper": "Đang mở nhận hồ sơ — gửi đơn để Corelia xét duyệt.",
-        "registerWithProfileHelperInstant": "Đang mở đăng ký — vào ngay bằng hồ sơ Corelia của bạn.",
+        "registerWithProfileHelper": "Đang mở nhận hồ sơ: gửi đơn để Corelia xét duyệt.",
+        "registerWithProfileHelperInstant": "Đang mở đăng ký: vào ngay bằng hồ sơ Corelia của bạn.",
         "viewSubmission": "Xem bài đã nộp",
         "viewSubmissionHelper": "Xem hoặc cập nhật bài nộp trước hạn.",
         "submitWork": "Nộp bài",
-        "submitWorkHelper": "Bạn đã được duyệt — thêm demo, repo và slide.",
+        "submitWorkHelper": "Bạn đã được duyệt: thêm demo, repo và slide.",
         "followBuildPhase": "Theo dõi hackathon",
         "followBuildPhaseHelper": "Xem lịch và showcase trong giai đoạn build.",
         "viewSubmissionsGallery": "Xem các bài dự thi",
@@ -956,9 +956,9 @@
       "bulletMint": "Checklist chuẩn bị mint (EDU Chain)"
     },
     "visual": {
-      "bannerAlt": "Banner — {{title}}",
-      "thumbnailAlt": "Thumbnail — {{title}}",
-      "listThumbAlt": "Ảnh đại diện contest — {{title}}"
+      "bannerAlt": "Banner: {{title}}",
+      "thumbnailAlt": "Thumbnail: {{title}}",
+      "listThumbAlt": "Ảnh đại diện contest: {{title}}"
     },
     "hero": {
       "backToContests": "Quay lại hackathon",
@@ -981,7 +981,7 @@
       "slotsUnlimited": "Không giới hạn số đội được duyệt",
       "submissionDeadline": "Hạn chót nộp bài",
       "submissionsLockAtEndHint": "Nếu không cấu hình hạn riêng, bài nộp sẽ khóa khi cuộc thi kết thúc (cùng mốc “Kết thúc” phía trên).",
-      "implausibleStartWarning": "Ngày bắt đầu sớm hơn thời điểm tạo contest — hãy kiểm tra lại lịch trong dữ liệu.",
+      "implausibleStartWarning": "Ngày bắt đầu sớm hơn thời điểm tạo contest: hãy kiểm tra lại lịch trong dữ liệu.",
       "share": "Chia sẻ",
       "shareCopyLink": "Sao chép liên kết",
       "shareFacebook": "Chia sẻ Facebook",
@@ -1018,7 +1018,7 @@
       },
       "overviewTeasers": {
         "sectionTitle": "Khám phá thêm",
-        "sectionDescription": "Nội dung chi tiết nằm ở từng mục — mở khi bạn cần.",
+        "sectionDescription": "Nội dung chi tiết nằm ở từng mục: mở khi bạn cần.",
         "prizesTitle": "Giải thưởng",
         "prizesBody_one": "Đã công bố {{count}} hạng giải.",
         "prizesBody_other": "Đã công bố {{count}} hạng giải.",
@@ -1073,7 +1073,7 @@
       "registerOneClickCta": "Đăng ký bằng hồ sơ của tôi",
       "optionalNoteSummary": "Tuỳ chọn: ghi chú cho người duyệt",
       "draftNotReadyHint": "Chưa thấy email trên tài khoản. Thêm email trong cài đặt tài khoản rồi thử lại.",
-      "teamViaInvitesHint": "Mỗi thành viên cần tự đăng ký và được duyệt. Sau khi bạn lưu submission, hãy mời người đã được duyệt trong khu vực nộp bài — họ chấp nhận qua thông báo hoặc link mời."
+      "teamViaInvitesHint": "Mỗi thành viên cần tự đăng ký và được duyệt. Sau khi bạn lưu submission, hãy mời người đã được duyệt trong khu vực nộp bài: họ chấp nhận qua thông báo hoặc link mời."
     },
     "inviteProject": {
       "title": "Lời mời dự án",
@@ -1259,7 +1259,7 @@
       "sectionDescription": "Thẻ dự án công khai từ bài nộp. Thứ hạng và điểm chấm hiển thị sau khi Corelia công bố kết quả.",
       "emptyTitle": "Chưa có dự án để hiển thị",
       "emptyHint": "Khi các đội được duyệt lưu bài nộp, thẻ dự án công khai sẽ hiển thị tại đây.",
-      "emptyHintSyncing": "Đã có bài nộp nhưng thẻ dự án đang đồng bộ — thử tải lại trang sau ít phút.",
+      "emptyHintSyncing": "Đã có bài nộp nhưng thẻ dự án đang đồng bộ: thử tải lại trang sau ít phút.",
       "viewDemo": "Demo",
       "viewRepo": "Mã nguồn",
       "viewSlides": "Slide",
@@ -1293,7 +1293,7 @@
       "defaultSoloRegistration": "Đăng ký cá nhân",
       "contact": "Liên hệ:",
       "notProvided": "Chưa cung cấp",
-      "noDataDash": "—",
+      "noDataDash": "-",
       "noDemo": "Chưa có",
       "saving": "Đang lưu...",
       "saveScore": "Lưu điểm",

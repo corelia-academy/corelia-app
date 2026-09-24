@@ -41,7 +41,7 @@ export function ProjectMarkdownEditor({ label, value, onChange, maxLength, requi
     {hint ? <p id={`${id}-hint`} className="mt-2 text-body-small text-foreground-muted">{hint}</p> : null}
     <Tabs.Root value={mode} onValueChange={value => setMode(String(value))} className="mt-2 overflow-hidden rounded-lg border border-border bg-background">
       <TabsGroup level="2b">
-        <Tabs.List aria-label={`${label} — Markdown`}>
+        <Tabs.List aria-label={`${label}: Markdown`}>
           {(["write", "preview"] as const).map(tab => <Tabs.Tab key={tab} value={tab}>{t(`projects.editor.${tab}`)}</Tabs.Tab>)}
         </Tabs.List>
       </TabsGroup>

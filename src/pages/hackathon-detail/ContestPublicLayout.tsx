@@ -32,7 +32,7 @@ export type HackathonOutletContext = {
 };
 
 function formatDate(value: string | null, locale: string): string {
-  if (!value) return "—";
+  if (!value) return "-";
   return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
@@ -226,7 +226,7 @@ export default function ContestPublicLayout() {
             <div className="grid gap-3 text-sm text-foreground-muted sm:grid-cols-2 xl:grid-cols-4">
               <div className="flex min-w-0 items-center gap-2">
                 {contest.host?.logo_url ? <img src={contest.host.logo_url} alt="" className="size-8 rounded-md bg-white object-contain p-0.5" /> : <Globe2 className="size-5" aria-hidden />}
-                <div className="min-w-0"><div className="text-xs">{t("public.hostedBy")}</div>{contest.host?.website_url ? <a href={contest.host.website_url} target="_blank" rel="noreferrer" className="truncate font-medium text-foreground hover:underline">{contest.host.name || "—"}</a> : <div className="truncate font-medium text-foreground">{contest.host?.name || "—"}</div>}</div>
+                <div className="min-w-0"><div className="text-xs">{t("public.hostedBy")}</div>{contest.host?.website_url ? <a href={contest.host.website_url} target="_blank" rel="noreferrer" className="truncate font-medium text-foreground hover:underline">{contest.host.name || "-"}</a> : <div className="truncate font-medium text-foreground">{contest.host?.name || "-"}</div>}</div>
               </div>
               <div className="flex items-center gap-2"><Users className="size-5" aria-hidden /><div><div className="text-xs">{t("public.participants")}</div><div className="font-medium text-foreground">{contest.participants_count ?? 0}</div></div></div>
               <div className="flex items-center gap-2"><CalendarClock className="size-5" aria-hidden /><div><div className="text-xs">{t("public.registrationDeadline")}</div><div className="font-medium text-foreground">{formatDate(contest.registration_deadline, locale)}</div></div></div>

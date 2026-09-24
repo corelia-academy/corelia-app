@@ -70,7 +70,7 @@ export function buildHackathonRegistrationReviewEmail(params: {
   const copy = COPY[locale];
   const statusCopy = params.isApproved ? copy.approved : copy.rejected;
 
-  const subject = `[Corelia] ${statusCopy.subject} — ${params.hackathonTitle}`;
+  const subject = `[Corelia] ${statusCopy.subject}: ${params.hackathonTitle}`;
 
   const noteHtml =
     params.reviewNote?.trim()

@@ -189,7 +189,7 @@ describe("admin component detail pages", () => {
 
     expect(hoverAction?.className).toContain("hover:bg-action-active");
     expect(container.querySelector('[data-testid="action-playground"]')).toBeNull();
-    expect(status?.textContent).toContain("Active state: —");
+    expect(status?.textContent).toContain("Active state: -");
 
     const smallAction = container.querySelector<HTMLButtonElement>(
       '[data-testid="action-state-default-small-default"]',
@@ -197,7 +197,7 @@ describe("admin component detail pages", () => {
     expect(smallAction?.textContent).toContain("Supporting information for this action");
 
     await act(async () => disabledAction?.click());
-    expect(status?.textContent).toContain("Active state: —");
+    expect(status?.textContent).toContain("Active state: -");
 
     await act(async () => smallAction?.click());
     expect(smallAction?.getAttribute("data-active")).toBe("true");

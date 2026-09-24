@@ -162,7 +162,7 @@
       "subjectPlaceholder": "Nhập tiêu đề...",
       "bodyLabel": "Nội dung",
       "bodyPlaceholder": "Soạn nội dung thông báo tại đây. Dùng dòng trống để tách đoạn.",
-      "bodyHint": "Chỉ nhập văn bản thường — xuống dòng được giữ nguyên. Không cần viết HTML.",
+      "bodyHint": "Chỉ nhập văn bản thường: xuống dòng được giữ nguyên. Không cần viết HTML.",
       "bodyPreviewToggle": "Xem trước",
       "bodyPreviewBrandedNote": "Xem trước (header và footer sẽ được thêm tự động khi gửi):",
       "sendButton": "Gửi thông báo",
@@ -578,7 +578,7 @@
     },
     "ocb": {
       "title": "Open Campus Credential (On-chain)",
-      "subtitle": "Học viên đạt điều kiện tự vào trang Thành tích để claim credential on-chain. Họ sẽ xác nhận tên và OCID trước khi mint — không có gì được tự động phát hành.",
+      "subtitle": "Học viên đạt điều kiện tự vào trang Thành tích để claim credential on-chain. Họ sẽ xác nhận tên và OCID trước khi mint: không có gì được tự động phát hành.",
       "loading": "Đang tải cấu hình credential…",
       "loadFailed": "Không tải được cấu hình credential.",
       "adminManagedTitle": "Cấu hình do quản trị viên quản lý",
@@ -591,11 +591,11 @@
       "kind": {
         "label": "Loại credential",
         "oca": {
-          "label": "OCA — Chứng nhận hoàn thành",
+          "label": "OCA: Chứng nhận hoàn thành",
           "desc": "Credential dạng chứng nhận on-chain. Phù hợp cho hoàn thành khoá học và các chứng nhận."
         },
         "ocb": {
-          "label": "OCB — Open Campus Badge",
+          "label": "OCB: Open Campus Badge",
           "desc": "Credential dạng huy hiệu kỹ năng. Phù hợp cho các thành tích ngắn hạn và thành thạo chủ đề."
         }
       },
@@ -673,7 +673,7 @@
       "sectionsToggleHint": "Bật nếu khoá học cần nhóm bài học theo chương/phần. Tắt để hiển thị danh sách bài học phẳng.",
       "addSectionHeading": "Thêm chương mới",
       "lessonTitlePlaceholder": "Tên bài (tùy chọn)",
-      "lessonMinutesPlaceholder": "Thời lượng (phút) — nếu không lấy được từ YouTube, nhập vào đây",
+      "lessonMinutesPlaceholder": "Thời lượng (phút): nếu không lấy được từ YouTube, nhập vào đây",
       "sectionTitlePlaceholder": "Tên chương"
     },
     "questions": {
@@ -797,7 +797,7 @@
       "formatArticle": "Bài đọc (chữ)",
       "formatQuiz": "Trắc nghiệm",
       "formatPractice": "Thực hành",
-      "formatHint": "Bài đọc chỉ dùng nội dung viết — không bắt buộc link YouTube.",
+      "formatHint": "Bài đọc chỉ dùng nội dung viết: không bắt buộc link YouTube.",
       "articleContentRequired": "Hãy thêm nội dung bài học (markdown hoặc mô tả ngắn) cho bài đọc.",
       "practiceContentRequired": "Hãy thêm hướng dẫn cho bài thực hành này.",
       "practiceSourceLabel": "Bài học nguồn",
@@ -845,8 +845,8 @@
       "previewEmpty": "Chưa có mô tả chi tiết.",
       "cancel": "Huỷ",
       "save": "Lưu",
-      "segmentStartLabel": "Đoạn — thời điểm bắt đầu",
-      "segmentEndLabel": "Đoạn — thời điểm kết thúc",
+      "segmentStartLabel": "Đoạn: thời điểm bắt đầu",
+      "segmentEndLabel": "Đoạn: thời điểm kết thúc",
       "segmentStartPlaceholder": "VD: 0:00",
       "segmentEndPlaceholder": "VD: 15:30 (để trống = đến hết video)",
       "segmentHint": "Mốc thời gian áp cho đoạn video YouTube của bài học này (M:SS hoặc G:MM:SS).",
@@ -857,7 +857,7 @@
     },
     "longVideo": {
       "title": "Video YouTube dài",
-      "editReplaceTitle": "Video dài — thay thế bài học này?",
+      "editReplaceTitle": "Video dài: thay thế bài học này?",
       "editReplaceIntro": "Bạn đã đổi sang video khác (khoảng {{duration}}). Giữ một bài học, tách theo chapter trong mô tả, hoặc nhập đoạn thủ công. Nếu tách: bài hiện tại bị xóa và các bài mới được chèn đúng vị trí đó.",
       "intro": "Video này khoảng {{duration}}. Giữ một bài học, tự tách theo timestamp trong mô tả, hoặc tự nhập các đoạn.",
       "foundChapters": "Tìm thấy timestamp trong mô tả video:",
@@ -981,7 +981,7 @@
       "subjectPlaceholder": "Nhập tiêu đề...",
       "bodyLabel": "Nội dung",
       "bodyPlaceholder": "Soạn nội dung thông báo tại đây. Dùng dòng trống để tách đoạn.",
-      "bodyHint": "Chỉ nhập văn bản thường — xuống dòng được giữ nguyên. Không cần viết HTML.",
+      "bodyHint": "Chỉ nhập văn bản thường: xuống dòng được giữ nguyên. Không cần viết HTML.",
       "bodyPreviewToggle": "Xem trước",
       "bodyPreviewBrandedNote": "Xem trước (header và footer sẽ được thêm tự động khi gửi):",
       "sendButton": "Gửi thông báo",
@@ -1129,15 +1129,15 @@
     "sourcesNote": "Nguồn nền tảng được đọc ngày 22/09/2026. Mức bằng chứng của IES là đánh giá trong hướng dẫn năm 2007, không phải đánh giá riêng cho học lập trình trực tuyến. Ví dụ, checklist và lựa chọn định dạng trên trang là phần áp dụng do Corelia đề xuất; cần kiểm chứng với người học thật.",
     "sources": {
       "alignment": {
-        "title": "CMU Eberly Center — Align Assessments, Objectives, Instructional Strategies",
+        "title": "CMU Eberly Center: Align Assessments, Objectives, Instructional Strategies",
         "description": "Hướng dẫn gắn mục tiêu với hoạt động học và cách đánh giá. Cơ sở cho nguyên tắc 1."
       },
       "learning": {
-        "title": "CMU Eberly Center — Learning Principles",
+        "title": "CMU Eberly Center: Learning Principles",
         "description": "Tổng hợp nghiên cứu về kiến thức nền, thực hành, phản hồi, thành thạo và tự điều chỉnh. Cơ sở cho nguyên tắc 2, 6 và 7."
       },
       "ies": {
-        "title": "IES / What Works Clearinghouse — Organizing Instruction and Study to Improve Student Learning (2007)",
+        "title": "IES / What Works Clearinghouse: Organizing Instruction and Study to Improve Student Learning (2007)",
         "description": "Hướng dẫn có phân mức bằng chứng về lời giải mẫu, quiz, ôn cách quãng và câu hỏi giải thích. Cơ sở cho nguyên tắc 3, 4 và 5."
       }
     }

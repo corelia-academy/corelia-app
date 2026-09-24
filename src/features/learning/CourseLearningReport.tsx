@@ -34,7 +34,7 @@ export function CourseLearningReport({ courseId }: { courseId: string }) {
             <td className="px-3 py-2">{lesson.started}</td>
             <td className="px-3 py-2">{lesson.completed}</td>
             <td className="px-3 py-2">{lesson.dropoff}</td>
-            <td className="whitespace-nowrap px-3 py-2">{lesson.quiz_attempts ? `${Math.round(100 * lesson.quiz_passes / lesson.quiz_attempts)}% (${lesson.quiz_passes}/${lesson.quiz_attempts})` : "—"}</td>
+            <td className="whitespace-nowrap px-3 py-2">{lesson.quiz_attempts ? `${Math.round(100 * lesson.quiz_passes / lesson.quiz_attempts)}% (${lesson.quiz_passes}/${lesson.quiz_attempts})` : "-"}</td>
           </tr>)}</tbody>
         </table>
       </div>

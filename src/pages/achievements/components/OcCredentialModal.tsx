@@ -90,7 +90,7 @@ export function OcCredentialModal({
   const issued =
     item.kind === "cert"
       ? item.data.issuedAt
-      : (item.data as BadgeItem).earnedAt ?? "—";
+      : (item.data as BadgeItem).earnedAt ?? "-";
   const credId =
     item.kind === "cert"
       ? item.data.credentialId
@@ -173,7 +173,7 @@ export function OcCredentialModal({
                 <p className="text-sm font-medium text-foreground">
                   {holderOcid
                     ? (holderOcid.endsWith(".edu") ? holderOcid : `${holderOcid}.edu`)
-                    : "—"}
+                    : "-"}
                 </p>
               </div>
             </div>

@@ -110,7 +110,7 @@ export default function AdminActivityMilestones() {
 
   function describeRule(row: CredentialTemplateRow): string {
     const rule = row.trigger_rule as Record<string, unknown> | null;
-    if (!rule) return "—";
+    if (!rule) return "-";
     if (rule.manual === true) return t("activityMilestones.rule.manual");
     const ev = String(rule.event ?? "");
     if (ev === "courses_completed") {
@@ -224,7 +224,7 @@ export default function AdminActivityMilestones() {
                   <td className="max-w-xs truncate px-3 py-2 text-foreground-muted">{describeRule(r)}</td>
                   <td className="px-3 py-2">{r.trigger_type}</td>
                   <td className="px-3 py-2">{counts[r.id] ?? 0}</td>
-                  <td className="px-3 py-2">{r.is_active ? "✓" : "—"}</td>
+                  <td className="px-3 py-2">{r.is_active ? "✓" : "-"}</td>
                   <td className="space-x-2 px-3 py-2 text-right">
                     <Button type="button" variant="outline" size="sm" onClick={() => openEdit(r)}>
                       {t("activityMilestones.edit")}

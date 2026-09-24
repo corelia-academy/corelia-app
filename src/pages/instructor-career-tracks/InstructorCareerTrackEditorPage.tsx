@@ -590,7 +590,7 @@ export default function InstructorCareerTrackEditorPage() {
         <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-warning/20 bg-warning/10 px-4 py-3">
           <p className="text-sm text-foreground">
             <span className="font-semibold">{activeContentLocale.toUpperCase()}</span>
-            {" — "}{t("careerTracks.editor.translationModeHint", { locale: activeContentLocale.toUpperCase() })}
+            {": "}{t("careerTracks.editor.translationModeHint", { locale: activeContentLocale.toUpperCase() })}
           </p>
           <Button
             type="button"
@@ -1142,7 +1142,7 @@ export default function InstructorCareerTrackEditorPage() {
 
           <FieldSeparator>Legacy partner brand (single)</FieldSeparator>
           <FieldDescription>
-            Hỗ trợ shape cũ — chỉ điền nếu cần. Khuyến nghị dùng &ldquo;Partner&rdquo; ở trên.
+            Hỗ trợ shape cũ: chỉ điền nếu cần. Khuyến nghị dùng &ldquo;Partner&rdquo; ở trên.
           </FieldDescription>
           <div className="grid gap-2 sm:grid-cols-2">
             <Input

@@ -94,7 +94,7 @@ export function HackathonTimelineTab() {
           <span className="absolute -left-[2.15rem] top-1 size-3 rounded-full border-2 border-background bg-primary" />
           <div className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card">
             <h2 className="text-heading-small font-display text-foreground">{item.title}</h2>
-            <time className="mt-1 block text-xs text-foreground-muted">{new Date(item.starts_at).toLocaleString(locale)}{item.ends_at ? ` — ${new Date(item.ends_at).toLocaleString(locale)}` : ""}</time>
+            <time className="mt-1 block text-xs text-foreground-muted">{new Date(item.starts_at).toLocaleString(locale)}{item.ends_at ? `: ${new Date(item.ends_at).toLocaleString(locale)}` : ""}</time>
             {item.description_markdown ? <div className="mt-3"><Markdown content={item.description_markdown} compact /></div> : null}
           </div>
         </li>

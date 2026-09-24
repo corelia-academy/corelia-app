@@ -141,7 +141,7 @@ export function ContestDetailJudgingPanel({
                     <div>
                       <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                         {translate("workspace.manage.rankCurrent", {
-                          rank: boardEntry?.rank ?? "—",
+                          rank: boardEntry?.rank ?? "-",
                         })}
                       </div>
                       <div className="mt-1 text-lg font-medium text-foreground">

@@ -147,7 +147,7 @@
       "thumbnailFallback": "No course image yet",
       "backToCoursesList": "Back to course list",
       "backToCourses": "Back to courses",
-      "previewDraftNotice": "Preview mode — this course is a draft (not published)",
+      "previewDraftNotice": "Preview mode: this course is a draft (not published)",
       "editCourse": "Edit course",
       "lessonDraftBadge": "Updating",
       "courseUpdatingNotice": {
@@ -372,7 +372,7 @@
         "status": {
           "approved": "Submission approved.",
           "rejected": "Changes requested. You can resubmit.",
-          "pending": "Submitted — waiting for instructor review."
+          "pending": "Submitted: waiting for instructor review."
         },
         "contentPlaceholder": "Enter your assignment content...",
         "attachmentsLabel": "Attachments (optional)",
@@ -468,7 +468,7 @@
     "resetPracticeConfirm": "Replace all checklist items, steps and practice settings with an empty instruction configuration and switch this lesson to draft? Title, content and translations are kept. Changes are only written when you click Save.",
     "editMasterConfig": "Open primary-language configuration",
     "retryProgress": "Retry saving progress",
-    "readinessRetry": "Readiness unavailable — retry",
+    "readinessRetry": "Readiness unavailable: retry",
     "readinessIssues": "Needs attention ({{count}})",
     "loading": "Loading…",
     "loadError": "Could not load data.",

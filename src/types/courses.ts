@@ -535,7 +535,7 @@ export function getYoutubeEmbedUrlForLesson(lesson: Pick<CourseLesson, "youtube_
 
 /** Format thời lượng (giây) sang text. Trả về "—" khi 0 hoặc không hợp lệ (tránh "0 phút"). */
 export function formatDuration(seconds: number): string {
-  if (seconds == null || typeof seconds !== "number" || seconds <= 0) return "—";
+  if (seconds == null || typeof seconds !== "number" || seconds <= 0) return "-";
   if (seconds < 60) return i18n.t("detail.duration.lessThanOneMinute", { ns: "courses" });
   const roundedTotalMinutes = Math.round(seconds / 60);
   const h = Math.floor(roundedTotalMinutes / 60);
