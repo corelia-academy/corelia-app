@@ -41,7 +41,6 @@ export default function ContestDetail({
   usePageMeta({
     title: ctx.contest?.title ?? undefined,
     description: ctx.contest?.description ?? undefined,
-    image: ctx.contest?.cover_image_url ?? ctx.contest?.thumbnail_url ?? undefined,
     url: window.location.href,
   });
   useDynamicPageTitle(ctx.contest?.title);

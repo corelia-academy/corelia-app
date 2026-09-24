@@ -161,8 +161,7 @@ export async function handleOgWorkerRequest(request: Request, env: OgWorkerEnv):
   if (url.pathname === "/admin/og-preview") {
     return noStore(await env.ASSETS.fetch(request), "noindex, nofollow");
   }
-  const page = request.method === "GET" && request.headers.get("Accept")?.includes("text/html")
-    ? pageRoute(url.pathname) : null;
+  const page = request.method === "GET" ? pageRoute(url.pathname) : null;
   if (!page) return null;
   const assetRequest = url.pathname.startsWith("/@")
     ? new Request(new URL(url.pathname.replace(/^\/@/, "/%40") + url.search, url.origin), request)
