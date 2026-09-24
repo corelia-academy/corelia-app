@@ -44,7 +44,7 @@ Ngoài ra, `@resvg/resvg-js` là package native N-API cho Node. Nó không phả
 ```text
 share bot / browser
   │
-  ├─ GET /<public-detail-route> (Accept: text/html)
+  ├─ GET /<public-detail-route> (kể cả Accept: */* từ share bot)
   │    Cloudflare Worker lấy public OG metadata từ corelia-api
   │    và thay các thẻ trong <head> trước khi trả index.html
   │
@@ -167,7 +167,7 @@ Sai method trả `405` với `Allow: GET, HEAD`; slug malformed, unavailable, re
 
 `index.html` hiện có generic `og:image` và `twitter:card`, nhưng `usePageMeta` chỉ chạy sau hydration. Share crawler thường không chạy React, nên **không** coi hook này là hoàn tất OG.
 
-Với mỗi detail route đã được cho phép trong bảng policy (ví dụ `GET /projects/:slug`) có `Accept: text/html`, Worker gọi metadata op tương ứng rồi dùng `HTMLRewriter` để thay các thẻ đã có:
+Với mỗi detail route đã được cho phép trong bảng policy (ví dụ `GET /projects/:slug`), Worker gọi metadata op tương ứng khi asset response là HTML rồi dùng `HTMLRewriter` để thay các thẻ đã có, kể cả khi share bot gửi `Accept: */*`:
 
 - `title`, `meta[name=description]`
 - `meta[property=og:title]`, `og:description`, `og:url`, `og:image`, `og:image:alt`
@@ -180,6 +180,8 @@ Với mỗi detail route đã được cho phép trong bảng policy (ví dụ `
 ```text
 https://app.corelia.academy/api/og/project/custos?v=<content-revision>
 ```
+
+Các trang detail có OG động không ghi đè `og:image` hoặc `twitter:image` bằng thumbnail, cover hay avatar trong `usePageMeta` sau khi React tải xong; Worker đã đặt URL ảnh OG canonical trong HTML ban đầu.
 
 Nếu metadata lookup trả 404 hoặc lỗi, Worker trả SPA HTML nguyên bản với generic site metadata; không inject slug/raw request into HTML và không gắn `X-Robots-Tag: noindex` lên route công khai. Lỗi backend tạm thời được log. Cả HTML đã rewrite và fallback trên detail route đều trả `Cache-Control: no-store` để không giữ metadata của project vừa chuyển private/blocked. Worker chỉ rewrite response HTML thành công của `ASSETS.fetch`, không rewrite asset, non-HTML response, hay route admin. Không tạo duplicate tag và không dùng Host/request origin để dựng canonical/OG URL.
 

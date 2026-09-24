@@ -283,7 +283,6 @@ export default function CourseDetail() {
   usePageMeta({
     title: courseLoad.course?.title ?? undefined,
     description: courseLoad.course?.description ?? undefined,
-    image: courseLoad.course?.thumbnail_url ?? undefined,
     url: window.location.href,
   });
   useDynamicPageTitle(courseLoad.course?.title);

@@ -60,6 +60,21 @@ describe("OG Worker routing", () => {
     expect(response?.headers.get("X-Robots-Tag")).toBeNull();
   });
 
+  it.each([
+    ["projects/example", "project"],
+    ["courses/typescript-tu-co-ban-den-thuc-hanh-mau", "course"],
+    ["hackathons/unihackfest-2026", "hackathon"],
+    ["@example", "profile"],
+  ])("loads %s metadata for Telegram requests that accept any content type", async (path, entity) => {
+    const upstream = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 404 }));
+    const response = await handleOgWorkerRequest(new Request(`${base}/${path}`, {
+      headers: { Accept: "*/*", "User-Agent": "TelegramBot" },
+    }), env());
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("Cache-Control")).toBe("no-store");
+    expect(upstream.mock.calls[0]?.[0].toString()).toContain(`op=og.${entity}.meta`);
+  });
+
   it("keeps public pages indexable when the metadata request fails", async () => {
     vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("upstream unavailable"));
     vi.spyOn(console, "error").mockImplementation(() => undefined);

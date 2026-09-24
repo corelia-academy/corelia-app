@@ -269,7 +269,6 @@ export default function UserProfileLayout() {
   usePageMeta({
     title: profile ? profileTitle(profile) : undefined,
     description: bio ?? undefined,
-    image: profile?.profile_public && profile.username ? `${window.location.origin}/avatar/${encodeURIComponent(profile.username)}.svg` : undefined,
     url: window.location.href,
   });
 
