@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { achievementIdentifier, issuerReferenceId, legacyIssuerReferenceId } from "./ids.ts";
 
-describe("Open Campus identifier v2", () => {
+describe("Open Campus identifiers", () => {
   const userId = "37514c42-4327-4a3e-895a-3ef9eab82e3b";
 
   it("separates templates that reused the same legacy prefix", async () => {
@@ -22,7 +22,22 @@ describe("Open Campus identifier v2", () => {
       "9e6a77cb-6e22-48d5-b78d-be3914d53593",
       userId,
     );
-    expect(firstAchievement).toHaveLength(48);
+    expect(firstAchievement).toMatch(/^corelia:ocb:[a-f0-9]{24}$/);
     expect(firstAchievement).not.toBe(secondAchievement);
+  });
+
+  it("keeps the program recognizable within the public 50-character limit", async () => {
+    const identifier = await achievementIdentifier(
+      "corelia:unihackfest-2026-training-program",
+      "a42feaad-cdbe-47c8-988d-d8a6f63685d4",
+      userId,
+    );
+    expect(identifier).toMatch(/^corelia:unihackfest-2026:[a-f0-9]{24}$/);
+    expect(identifier.length).toBeLessThanOrEqual(50);
+    expect(await achievementIdentifier(
+      "corelia:unihackfest-2026-training-program",
+      "a42feaad-cdbe-47c8-988d-d8a6f63685d4",
+      userId,
+    )).toBe(identifier);
   });
 });

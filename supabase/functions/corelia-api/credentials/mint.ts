@@ -3,6 +3,7 @@ import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
 import { buildCredentialMintEmail, type CredentialMintEmailKind } from "./emails.ts";
 import { buildOpenCampusPayload, resolveMintNetwork, type CredentialTemplateRow } from "./oc_payload.ts";
 import { extractOcCredentialId } from "./oc_response.ts";
+import { credentialExplorerUrl } from "./explorer.ts";
 import {
   getAppBaseUrl,
   getCoreliaLogoUrl,
@@ -103,12 +104,14 @@ function resolveMintEmailKind(
 }
 
 async function sendMintEmail(params: {
+  db: SupabaseClient;
+  issuanceId: string;
   to: string;
   scopeType: string;
   isOCA: boolean;
   triggerType?: string | null;
   badgeName: string;
-  profileUrl: string;
+  credentialUrl: string;
   credentialId?: string | null;
   imageUrl?: string | null;
   locale?: string | null;
@@ -117,7 +120,7 @@ async function sendMintEmail(params: {
   const { subject, html } = buildCredentialMintEmail({
     kind,
     badgeName: params.badgeName,
-    profileUrl: params.profileUrl,
+    profileUrl: params.credentialUrl,
     credentialId: params.credentialId,
     imageUrl: params.imageUrl,
     locale: params.locale,
@@ -129,6 +132,7 @@ async function sendMintEmail(params: {
     to: [params.to],
     subject,
     html,
+    idempotencyKey: `credential-minted-${params.issuanceId}`,
   });
 }
 
@@ -145,6 +149,8 @@ async function insertCredentialNotification(
     thumbnailUrl: string | null | undefined;
     ocCredentialId: string | null;
     isOCA: boolean;
+    holderOcid: string | null;
+    network: MintNetwork;
   },
 ): Promise<void> {
   try {
@@ -158,6 +164,8 @@ async function insertCredentialNotification(
         image_url: params.thumbnailUrl?.trim() || params.imageUrl,
         oc_credential_id: params.ocCredentialId,
         is_oca: params.isOCA,
+        holder_ocid: params.holderOcid,
+        network: params.network,
       },
     });
   } catch (e) {
@@ -329,12 +337,14 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
         await Promise.all([
           email
             ? sendMintEmail({
+              db,
+              issuanceId,
               to: email,
               scopeType: template.scope_type,
               isOCA,
               triggerType: template.trigger_type,
               badgeName: template.name,
-              profileUrl,
+              credentialUrl: credentialExplorerUrl({ credentialId: ocCredentialId!, holderOcid: holderOcId, network, isBadge: Boolean(template.collection_symbol) }),
               credentialId: ocCredentialId,
               imageUrl: mintEmailImageUrl,
               locale: emailLocale,
@@ -348,6 +358,8 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
             thumbnailUrl: template.thumbnail_url,
             ocCredentialId,
             isOCA,
+            holderOcid,
+            network,
           }),
         ]);
         return { ok: true, duplicate: true };
@@ -377,12 +389,14 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
     await Promise.all([
       email
         ? sendMintEmail({
+          db,
+          issuanceId,
           to: email,
           scopeType: template.scope_type,
           isOCA,
           triggerType: template.trigger_type,
           badgeName: template.name,
-          profileUrl,
+          credentialUrl: credentialExplorerUrl({ credentialId: ocCredentialId!, holderOcid: holderOcId, network, isBadge: Boolean(template.collection_symbol) }),
           credentialId: ocCredentialId,
           imageUrl: mintEmailImageUrl,
           locale: emailLocale,
@@ -396,6 +410,8 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
         thumbnailUrl: template.thumbnail_url,
         ocCredentialId,
         isOCA,
+        holderOcid,
+        network,
       }),
     ]);
 
