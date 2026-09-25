@@ -131,6 +131,7 @@ const AdminProjectsPage = lazy(() => import("@/pages/admin/AdminProjectsPage"));
 const AdminJobsPage = lazy(() => import("@/pages/admin/jobs/AdminJobsPage"));
 const AdminComponentsPage = lazy(() => import("@/pages/admin/AdminComponentsPage"));
 const AdminEmailCenterPage = lazy(() => import("@/pages/admin/email/AdminEmailCenterPage"));
+const AdminCertificateAnalytics = lazy(() => import("@/pages/admin/AdminCertificateAnalytics"));
 const AdminEmailPreviewPage = lazy(() => import("@/pages/admin/email/AdminEmailPreviewPage"));
 const AdminOgPreviewPage = lazy(() => import("@/pages/admin/AdminOgPreviewPage"));
 
@@ -588,6 +589,10 @@ function ApplicationRoutes() {
                       <AdminManualMint />
                     </Suspense>
                   }
+                />
+                <Route
+                  path="certificates"
+                  element={<RequireRole roles={ROLE_GROUPS.adminOnly}><Suspense fallback={<PageFallback />}><AdminCertificateAnalytics /></Suspense></RequireRole>}
                 />
                 <Route
                   path="branding"

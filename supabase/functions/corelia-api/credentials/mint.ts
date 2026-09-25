@@ -28,6 +28,24 @@ type IssuanceRow = {
   credential_templates: CredentialTemplateRow | null;
 };
 
+async function recordMintAttempt(
+  db: SupabaseClient,
+  issuanceId: string,
+  outcome: "accepted" | "rejected" | "network_error",
+  httpStatus?: number,
+): Promise<void> {
+  try {
+    const { error } = await db.from("credential_mint_attempts").insert({
+      issuance_id: issuanceId,
+      outcome,
+      provider_http_status: httpStatus ?? null,
+    });
+    if (error) console.error("[corelia-api] mint attempt audit failed", error);
+  } catch (error) {
+    console.error("[corelia-api] mint attempt audit exception", error);
+  }
+}
+
 async function fetchIssuanceWithTemplate(
   db: SupabaseClient,
   issuanceId: string,
@@ -139,6 +157,7 @@ async function sendMintEmail(params: {
     subject,
     html,
     idempotencyKey: `credential-minted-${params.issuanceId}`,
+    context: { type: "oc_issuance", id: params.issuanceId },
   });
 }
 
@@ -157,6 +176,7 @@ async function insertCredentialNotification(
     isOCA: boolean;
     holderOcid: string | null;
     network: MintNetwork;
+    issuanceId: string;
   },
 ): Promise<void> {
   try {
@@ -172,6 +192,7 @@ async function insertCredentialNotification(
         is_oca: params.isOCA,
         holder_ocid: params.holderOcid,
         network: params.network,
+        issuance_id: params.issuanceId,
       },
     });
   } catch (e) {
@@ -224,6 +245,7 @@ async function deliverMintNotices(
       isOCA,
       holderOcid: holderOcId,
       network,
+      issuanceId: row.id,
     }),
   ]);
   for (const result of results) {
@@ -305,6 +327,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
 
   let ocResponseJson: unknown = null;
   let ocCredentialId: string | null = null;
+  let postStarted = false;
   try {
     const defaultNet = await getDefaultMintNetwork(db);
     const network = resolveMintNetwork(template.network_override, defaultNet);
@@ -360,6 +383,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
     }).eq("id", issuanceId);
     if (pendingErr) throw new Error(pendingErr.message);
 
+    postStarted = true;
     const res = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -369,6 +393,8 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
       body: JSON.stringify(ocBody),
     });
     const text = await res.text();
+    await recordMintAttempt(db, issuanceId, res.ok ? "accepted" : "rejected", res.status);
+    postStarted = false;
     try {
       ocResponseJson = JSON.parse(text);
     } catch {
@@ -435,6 +461,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
 
     return { ok: true };
   } catch (e) {
+    if (postStarted) await recordMintAttempt(db, issuanceId, "network_error");
     const msg = e instanceof Error ? e.message : String(e);
     await db.from("credential_issuances").update({
       status: "failed",

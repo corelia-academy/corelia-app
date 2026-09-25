@@ -1,6 +1,7 @@
 import type { UserRole } from "../types/database";
 
 export const ROLE_GROUPS = {
+  adminOnly: ["admin"] as UserRole[],
   projectModerators: ["admin"] as UserRole[],
   projectManagers: ["admin", "support_staff"] as UserRole[],
   /** Admin and support staff. */
