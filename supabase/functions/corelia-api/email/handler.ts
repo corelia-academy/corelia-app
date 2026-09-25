@@ -5,7 +5,7 @@ import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 import { normalizeEmail } from "./csv.ts";
 import { missingTemplateVariables, renderEmailDocument } from "./template.ts";
-import { localizedContentIssues, localizedVariables, readLocalizedEmailContent, selectLocalizedEmailContent } from "../lib/mail/localized.ts";
+import { localizedContentIssues, localizedVariables, readLocalizedEmailContent, resolveLocalizedEmailContent } from "../lib/mail/localized.ts";
 import { normalizeEmailLocale } from "../lib/mail/locale.ts";
 
 const PURPOSES = new Set(["system", "learning", "event", "marketing"]);
@@ -185,8 +185,9 @@ async function saveCampaign(db: SupabaseClient, actor: AdminContext, body: Recor
   const missing = missingTemplateVariables(version.variables ?? [], availableValues);
   if (missing.length) return json({ message: "missing_template_variables", missing }, 400);
   const genericValues = Object.fromEntries((version.variables ?? []).map((key: string) => [key, values[key] ?? `{{${key}}}`]));
-  const previewCopy = selectLocalizedEmailContent(version.localized_content, "en")!;
-  const rendered = renderEmailDocument({ subject: previewCopy.subject, preheader: previewCopy.preheader, bodyText: previewCopy.body_text, ctaLabel: previewCopy.cta_label, ctaUrl: previewCopy.cta_url, imageUrl: previewCopy.image_url, purpose, locale: "en", values: genericValues });
+  const preview = resolveLocalizedEmailContent(version.localized_content, "en")!;
+  const previewCopy = preview.copy;
+  const rendered = renderEmailDocument({ subject: previewCopy.subject, preheader: previewCopy.preheader, bodyText: previewCopy.body_text, ctaLabel: previewCopy.cta_label, ctaUrl: previewCopy.cta_url, imageUrl: previewCopy.image_url, purpose, locale: preview.locale, values: genericValues });
   const id = crypto.randomUUID();
   const { error } = await db.from("email_campaigns").insert({ id, name: String(body.name ?? "").trim(), purpose, object_type: objectType, object_id: objectId, list_id: String(body.list_id ?? ""), sender_id: sender.id, template_version_id: version.id, frozen_subject: rendered.subject, frozen_html: rendered.html, frozen_from: `${sender.display_name} <${sender.from_email}>`, frozen_reply_to: sender.reply_to, frozen_values: values, created_by: actor.id });
   if (error) throw error;
@@ -243,9 +244,10 @@ async function testEmail(db: SupabaseClient, actor: AdminContext, body: Record<s
   const { data: sender } = await db.from("email_senders").select("display_name,from_email,reply_to,domain_status,active").eq("purpose", purpose).eq("is_default", true).maybeSingle();
   if (!sender?.active || sender.domain_status !== "verified") return json({ message: "sender_not_verified" }, 409);
   const locale = normalizeEmailLocale(body.locale ?? values.locale);
-  const copy = selectLocalizedEmailContent(version.localized_content, locale);
-  if (!copy) return json({ message: "template_translation_missing", locale }, 409);
-  const rendered = renderEmailDocument({ subject: copy.subject, preheader: copy.preheader, bodyText: copy.body_text, ctaLabel: copy.cta_label, ctaUrl: copy.cta_url, imageUrl: copy.image_url, purpose, locale, values });
+  const localized = resolveLocalizedEmailContent(version.localized_content, locale);
+  if (!localized) return json({ message: "template_translation_missing", locale }, 409);
+  const copy = localized.copy;
+  const rendered = renderEmailDocument({ subject: copy.subject, preheader: copy.preheader, bodyText: copy.body_text, ctaLabel: copy.cta_label, ctaUrl: copy.cta_url, imageUrl: copy.image_url, purpose, locale: localized.locale, values });
   const result = await sendTransactionalEmailViaResend({ db, mailType: "email_center_test", to: [to], subject: `[TEST] ${rendered.subject}`, html: rendered.html, from: `${sender.display_name} <${sender.from_email}>`, replyTo: sender.reply_to, idempotencyKey: `email-center-test/${crypto.randomUUID()}` });
   await audit(db, actor, "test_send", "email_template_version", version.id, {
     to,
