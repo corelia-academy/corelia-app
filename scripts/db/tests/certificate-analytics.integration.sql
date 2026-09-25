@@ -16,14 +16,17 @@ UPDATE public.profiles SET role = 'admin' WHERE id = 'caaa0000-0000-4000-8000-00
 
 INSERT INTO public.courses(id, instructor_id, slug, published, data) VALUES
   ('certificate-analytics-test', 'caaa0000-0000-4000-8000-000000000001', 'certificate-analytics-test', false,
-    '{"title":"Certificate analytics test","has_certificate":true}');
+    '{"title":"Certificate analytics test","has_certificate":true}'),
+  ('certificate-analytics-ocb-only', 'caaa0000-0000-4000-8000-000000000001', 'certificate-analytics-ocb-only', false,
+    '{"title":"OCB only test","has_certificate":false}');
 
 -- Seed historical completion snapshots without replaying the course curriculum.
 ALTER TABLE public.enrollments DISABLE TRIGGER trg_guard_enrollment_completion_mutation;
 INSERT INTO public.enrollments(id, user_id, course_id, enrolled_at, last_accessed_at, completed_at, certificate_issued_at) VALUES
   ('caaa0000-0000-4000-8000-000000000002_certificate-analytics-test', 'caaa0000-0000-4000-8000-000000000002', 'certificate-analytics-test', now() - interval '2 days', now(), now() - interval '1 day', now() - interval '1 day'),
   ('caaa0000-0000-4000-8000-000000000003_certificate-analytics-test', 'caaa0000-0000-4000-8000-000000000003', 'certificate-analytics-test', now() - interval '2 days', now(), now() - interval '1 day', null),
-  ('caaa0000-0000-4000-8000-000000000004_certificate-analytics-test', 'caaa0000-0000-4000-8000-000000000004', 'certificate-analytics-test', now() - interval '2 days', now(), now() - interval '1 day', null);
+  ('caaa0000-0000-4000-8000-000000000004_certificate-analytics-test', 'caaa0000-0000-4000-8000-000000000004', 'certificate-analytics-test', now() - interval '2 days', now(), now() - interval '1 day', null),
+  ('caaa0000-0000-4000-8000-000000000004_certificate-analytics-ocb-only', 'caaa0000-0000-4000-8000-000000000004', 'certificate-analytics-ocb-only', now() - interval '2 days', now(), now() - interval '1 day', null);
 ALTER TABLE public.enrollments ENABLE TRIGGER trg_guard_enrollment_completion_mutation;
 
 INSERT INTO public.credential_templates(
@@ -34,7 +37,7 @@ INSERT INTO public.credential_templates(
   'OCA test', 'OCA test', 'https://corelia.local/certificate.png', 'Badge',
   'corelia:analytics-test', null, 'auto', '{}', false
 ), (
-  'caaa0000-0000-4000-8000-000000000020', 'course', 'certificate-analytics-test',
+  'caaa0000-0000-4000-8000-000000000020', 'course', 'certificate-analytics-ocb-only',
   'OCB test', 'OCB test', 'https://corelia.local/badge.png', 'Badge',
   'corelia:analytics-badge', 'ocbadge', 'auto', '{}', false
 );
@@ -46,7 +49,7 @@ INSERT INTO public.credential_issuances(
   ('caaa0000-0000-4000-8000-000000000011', 'caaa0000-0000-4000-8000-000000000010', 'caaa0000-0000-4000-8000-000000000002', 'certificate-analytics-test', 'cert-analytics-staging', 'staging', 'failed', null, null, 'API_AUTH_FAILED'),
   ('caaa0000-0000-4000-8000-000000000012', 'caaa0000-0000-4000-8000-000000000010', 'caaa0000-0000-4000-8000-000000000002', 'certificate-analytics-test', 'cert-analytics-mainnet', 'mainnet', 'minted', '123456', now() - interval '1 day', null),
   ('caaa0000-0000-4000-8000-000000000013', 'caaa0000-0000-4000-8000-000000000010', 'caaa0000-0000-4000-8000-000000000003', 'certificate-analytics-test', 'cert-analytics-pending', 'mainnet', 'pending', null, null, 'awaiting_holder_id'),
-  ('caaa0000-0000-4000-8000-000000000021', 'caaa0000-0000-4000-8000-000000000020', 'caaa0000-0000-4000-8000-000000000004', 'certificate-analytics-test', 'badge-analytics-mainnet', 'mainnet', 'minted', 'badge-123', now(), null);
+  ('caaa0000-0000-4000-8000-000000000021', 'caaa0000-0000-4000-8000-000000000020', 'caaa0000-0000-4000-8000-000000000004', 'certificate-analytics-ocb-only', 'badge-analytics-mainnet', 'mainnet', 'minted', 'badge-123', now(), null);
 
 INSERT INTO public.credential_mint_attempts(issuance_id, outcome, provider_http_status) VALUES
   ('caaa0000-0000-4000-8000-000000000011', 'rejected', 401),
@@ -75,6 +78,9 @@ BEGIN
     OR (v->'summary'->>'oca_failed')::int <> 0
     OR (v->>'mint_attempts_logged')::int <> 2 THEN
     RAISE EXCEPTION 'Unexpected aggregate: %', v;
+  END IF;
+  IF (public.admin_certificate_analytics('certificate-analytics-ocb-only')->>'total')::int <> 0 THEN
+    RAISE EXCEPTION 'OCB-only course leaked into certificate analytics';
   END IF;
   SELECT value INTO one_row FROM jsonb_array_elements(v->'rows')
     WHERE value->>'user_id' = 'caaa0000-0000-4000-8000-000000000002';
