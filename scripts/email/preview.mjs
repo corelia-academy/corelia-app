@@ -58,7 +58,7 @@ for (const locale of ["vi", "en"]) {
     hackathonTitle: "UniHackFest 2026", projectTitle: "AI Learning Companion", awardLabel: "First Prize", hackathonHref: `${appUrl}/hackathons/example`, locale, fingerprint: "preview",
   }));
   add(`certificate-${locale}`, "Credentials", `Certificate · ${locale.toUpperCase()}`, buildCertificateIssuedEmail({
-    courseTitle: "AI Product Engineering", certImageUrl: `${appUrl}/Corelia_Banner_Square.png`, profileUrl: `${appUrl}/profile`, locale,
+    courseTitle: "AI Product Engineering", certificateUrl: `${appUrl}/verify/CRL-0123456789`, locale,
   }));
   add(`credential-${locale}`, "Credentials", `Credential · ${locale.toUpperCase()}`, buildCredentialMintEmail({
     kind: "course_oca", badgeName: "Corelia Product Builder", profileUrl: `${appUrl}/profile`, credentialId: "CORELIA-2026-DEMO", imageUrl: `${appUrl}/Corelia_Banner_Square.png`, locale,

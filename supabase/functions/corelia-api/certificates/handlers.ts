@@ -71,23 +71,22 @@ async function runCertificateIssuedSideEffects(
 
   // Send congratulatory email (non-fatal).
   try {
-    const [{ data: authUser }, { data: profileRow }, baseUrl] = await Promise.all([
+    const [{ data: authUser }, { data: profileRow }, { data: certificateRecord }, baseUrl] = await Promise.all([
       db.auth.admin.getUserById(targetUserId),
-      db.from("profiles").select("full_name, username, locale").eq("id", targetUserId).maybeSingle(),
+      db.from("profiles").select("locale").eq("id", targetUserId).maybeSingle(),
+      db.from("certificate_records").select("code").eq("user_id", targetUserId).eq("course_id", courseId).maybeSingle(),
       getAppBaseUrl(db),
     ]);
     const email = (authUser?.user?.email ?? "").trim();
     const courseTitle = (course.title ?? "").trim();
     const { locale } = resolveRecipientEmailLocale({ recipientKind: "account", profileLocale: profileRow?.locale, authMetadataLocale: authUser?.user?.user_metadata?.locale });
-    const profilePath = profileRow?.username
-      ? `/u/${encodeURIComponent(String(profileRow.username))}`
-      : `/account`;
-    const profileUrl = `${baseUrl}${profilePath}`;
+    const certificateUrl = certificateRecord?.code
+      ? `${baseUrl}/verify/${encodeURIComponent(String(certificateRecord.code))}`
+      : `${baseUrl}/achievements`;
     if (email && courseTitle) {
       const { subject, html } = buildCertificateIssuedEmail({
         courseTitle,
-        certImageUrl: course.certificate_template_url ?? null,
-        profileUrl,
+        certificateUrl,
         locale,
       });
       await sendTransactionalEmailViaResend({
@@ -96,6 +95,7 @@ async function runCertificateIssuedSideEffects(
         to: [email],
         subject,
         html,
+        idempotencyKey: `certificate-issued-${targetUserId}-${courseId}`,
       });
     }
   } catch (mailErr) {
@@ -188,18 +188,35 @@ export async function issueCourseCertificateIfReady(
   }
 
   const issuedAt = nowIso();
-  const { error: upErr } = await db.from("enrollments").update({ certificate_issued_at: issuedAt }).eq(
-    "id",
-    enrollmentId,
-  );
+  const { data: updatedRows, error: upErr } = await db.from("enrollments")
+    .update({ certificate_issued_at: issuedAt })
+    .eq("id", enrollmentId)
+    .is("certificate_issued_at", null)
+    .select("certificate_issued_at");
   if (upErr) throw new Error(upErr.message);
+
+  // Only the request that actually changed the enrollment may send mail and
+  // notifications. A second request can have read the same stale null value.
+  if (!updatedRows?.length) {
+    const { data: latest, error: latestErr } = await db.from("enrollments")
+      .select("certificate_issued_at")
+      .eq("id", enrollmentId)
+      .maybeSingle();
+    if (latestErr) throw new Error(latestErr.message);
+    return {
+      issued: Boolean(latest?.certificate_issued_at),
+      reason: latest?.certificate_issued_at ? "already_issued" : "no_enrollment",
+      certificate_issued_at: latest?.certificate_issued_at ?? null,
+      course_title: course.title ?? null,
+    };
+  }
 
   await runCertificateIssuedSideEffects(db, { courseId, targetUserId, course });
 
   return {
     issued: true,
     reason: "issued",
-    certificate_issued_at: issuedAt,
+    certificate_issued_at: updatedRows[0].certificate_issued_at,
     course_title: course.title ?? null,
   };
 }
