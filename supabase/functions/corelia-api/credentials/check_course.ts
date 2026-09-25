@@ -154,7 +154,7 @@ export async function runCourseCredentialCheck(
   const legacyIssuerRef = legacyIssuerReferenceId(identifierPrefix, targetUserId);
 
   const { data: existing } = await db.from("credential_issuances").select(
-    "id, status, retry_count, oc_credential_id, oc_response",
+    "id, status, retry_count, oc_credential_id, oc_response, minted_at",
   ).in("issuer_reference_id", [issuerRef, legacyIssuerRef]).eq("network", network).limit(1).maybeSingle();
   if (existing) {
     if (existing.status === "minted" || existing.status === "pending") {
@@ -179,15 +179,18 @@ export async function runCourseCredentialCheck(
         status: existing.status,
       };
     }
-    // status === "failed" or "awaiting_holder_id" — reset and retry
-    const { error: resetErr } = await db.from("credential_issuances").update({
-      status: "pending",
-      error_message: null,
-      oc_request_payload: null,
-      oc_response: null,
-      retry_count: Number(existing.retry_count ?? 0) + 1,
-    }).eq("id", existing.id);
-    if (resetErr) throw new Error(resetErr.message);
+    // A post-mint failure can leave an on-chain ID on a row marked failed.
+    // Preserve its response so mintCredentialOnce can reconcile without POSTing again.
+    if (!existing.oc_credential_id || !existing.minted_at) {
+      const { error: resetErr } = await db.from("credential_issuances").update({
+        status: "pending",
+        error_message: null,
+        oc_request_payload: null,
+        oc_response: null,
+        retry_count: Number(existing.retry_count ?? 0) + 1,
+      }).eq("id", existing.id);
+      if (resetErr) throw new Error(resetErr.message);
+    }
     await mintCredentialOnce(db, existing.id);
     const { data: after } = await db.from("credential_issuances").select("status").eq("id", existing.id).maybeSingle();
     return {

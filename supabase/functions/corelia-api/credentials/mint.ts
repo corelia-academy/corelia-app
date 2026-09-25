@@ -23,6 +23,8 @@ type IssuanceRow = {
   network: MintNetwork;
   status: string;
   retry_count: number;
+  oc_credential_id: string | null;
+  minted_at: string | null;
   credential_templates: CredentialTemplateRow | null;
 };
 
@@ -40,6 +42,8 @@ async function fetchIssuanceWithTemplate(
     network,
     status,
     retry_count,
+    oc_credential_id,
+    minted_at,
     credential_templates (
       id,
       scope_type,
@@ -72,6 +76,8 @@ async function fetchIssuanceWithTemplate(
     network: row.network as MintNetwork,
     status: String(row.status),
     retry_count: Number(row.retry_count ?? 0),
+    oc_credential_id: row.oc_credential_id != null ? String(row.oc_credential_id) : null,
+    minted_at: row.minted_at != null ? String(row.minted_at) : null,
     credential_templates: template,
   };
 }
@@ -174,6 +180,60 @@ async function insertCredentialNotification(
   }
 }
 
+async function deliverMintNotices(
+  db: SupabaseClient,
+  row: IssuanceRow,
+  template: CredentialTemplateRow,
+  email: string,
+  holderOcId: string | null,
+  credentialId: string,
+  network: MintNetwork,
+): Promise<void> {
+  const isOCA = !template.collection_symbol;
+  const results = await Promise.allSettled([
+    email
+      ? (async () => {
+        const locale = await getUserEmailLocale(db, row.user_id);
+        await sendMintEmail({
+          db,
+          issuanceId: row.id,
+          to: email,
+          scopeType: template.scope_type,
+          isOCA,
+          triggerType: template.trigger_type,
+          badgeName: template.name,
+          credentialUrl: credentialExplorerUrl({
+            credentialId,
+            holderOcid: holderOcId,
+            network,
+            isBadge: Boolean(template.collection_symbol),
+          }),
+          credentialId,
+          imageUrl: template.image_url,
+          locale,
+        });
+      })()
+      : Promise.resolve(),
+    insertCredentialNotification(db, {
+      userId: row.user_id,
+      credentialName: template.name,
+      scopeType: template.scope_type,
+      imageUrl: template.image_url,
+      thumbnailUrl: template.thumbnail_url,
+      ocCredentialId: credentialId,
+      isOCA,
+      holderOcid: holderOcId,
+      network,
+    }),
+  ]);
+  for (const result of results) {
+    if (result.status === "rejected") {
+      // An irreversible mint must never become retryable because a notice failed.
+      console.error("[corelia-api] post-mint notice failed", result.reason);
+    }
+  }
+}
+
 /** POST OpenCampus issuer VC once; updates issuance row. */
 export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string): Promise<{
   ok: boolean;
@@ -218,6 +278,20 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
   const email = profile?.email != null ? String(profile.email).trim() : "";
   const holderName = profile?.full_name != null ? String(profile.full_name).trim() || null : null;
 
+  // A prior response may have minted successfully before a post-mint notice
+  // threw. Reconcile that issuance without posting to Open Campus a second time.
+  if (row.oc_credential_id?.trim() && row.minted_at) {
+    const { error: reconcileErr } = await db.from("credential_issuances").update({
+      status: "minted",
+      error_message: null,
+    }).eq("id", issuanceId);
+    if (reconcileErr) return { ok: false, error: reconcileErr.message };
+    await deliverMintNotices(
+      db, row, template, email, holderOcId, row.oc_credential_id, row.network,
+    );
+    return { ok: true, duplicate: true };
+  }
+
   // If user has neither OC ID nor wallet address, hold the issuance instead of
   // calling the OC API and receiving a guaranteed rejection.
   // The issuance stays 'pending' with error_message='awaiting_holder_id' so that
@@ -245,11 +319,10 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
       return { ok: false, error: "Missing API key" };
     }
 
-    const [logoUrl, baseUrl, endpoint, emailLocale] = await Promise.all([
+    const [logoUrl, baseUrl, endpoint] = await Promise.all([
       getCoreliaLogoUrl(db),
       getAppBaseUrl(db),
       getMintEndpoint(db, network),
-      getUserEmailLocale(db, row.user_id),
     ]);
 
     const profilePath = username ? `/u/${encodeURIComponent(username)}` : `/account`;
@@ -260,7 +333,6 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
     // image attached to an immutable on-chain credential would leak PII
     // permanently onto the public ledger.
     const isOCA = !template.collection_symbol;
-    const mintEmailImageUrl = template.image_url;
 
     const awardedIso = new Date().toISOString();
     const { body: ocBody } = await buildOpenCampusPayload({
@@ -334,34 +406,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
         // cannot safely send a success notification or expose retry until its
         // on-chain id has been reconciled from a response/lookup.
         if (credentialIdUnresolved) return { ok: true, duplicate: true };
-        await Promise.all([
-          email
-            ? sendMintEmail({
-              db,
-              issuanceId,
-              to: email,
-              scopeType: template.scope_type,
-              isOCA,
-              triggerType: template.trigger_type,
-              badgeName: template.name,
-              credentialUrl: credentialExplorerUrl({ credentialId: ocCredentialId!, holderOcid: holderOcId, network, isBadge: Boolean(template.collection_symbol) }),
-              credentialId: ocCredentialId,
-              imageUrl: mintEmailImageUrl,
-              locale: emailLocale,
-            })
-            : Promise.resolve(),
-          insertCredentialNotification(db, {
-            userId: row.user_id,
-            credentialName: template.name,
-            scopeType: template.scope_type,
-            imageUrl: template.image_url,
-            thumbnailUrl: template.thumbnail_url,
-            ocCredentialId,
-            isOCA,
-            holderOcid,
-            network,
-          }),
-        ]);
+        await deliverMintNotices(db, row, template, email, holderOcId, ocCredentialId!, network);
         return { ok: true, duplicate: true };
       }
       return { ok: false, error: msg };
@@ -386,34 +431,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
       return { ok: true };
     }
 
-    await Promise.all([
-      email
-        ? sendMintEmail({
-          db,
-          issuanceId,
-          to: email,
-          scopeType: template.scope_type,
-          isOCA,
-          triggerType: template.trigger_type,
-          badgeName: template.name,
-          credentialUrl: credentialExplorerUrl({ credentialId: ocCredentialId!, holderOcid: holderOcId, network, isBadge: Boolean(template.collection_symbol) }),
-          credentialId: ocCredentialId,
-          imageUrl: mintEmailImageUrl,
-          locale: emailLocale,
-        })
-        : Promise.resolve(),
-      insertCredentialNotification(db, {
-        userId: row.user_id,
-        credentialName: template.name,
-        scopeType: template.scope_type,
-        imageUrl: template.image_url,
-        thumbnailUrl: template.thumbnail_url,
-        ocCredentialId,
-        isOCA,
-        holderOcid,
-        network,
-      }),
-    ]);
+    await deliverMintNotices(db, row, template, email, holderOcId, ocCredentialId!, network);
 
     return { ok: true };
   } catch (e) {
