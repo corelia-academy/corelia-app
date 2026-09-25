@@ -5,6 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 const command = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const pnpmShell = process.platform === "win32";
 const sqlTestPaths = [
+  "scripts/db/tests/certificate-analytics.integration.sql",
   "scripts/db/tests/project-moderation.integration.sql",
   "scripts/db/tests/xp-rpc-boundary.integration.sql",
   "scripts/db/tests/feed-xp-suggestions.integration.sql",
@@ -69,7 +70,7 @@ for (const sqlTestPath of sqlTestPaths) {
   }
 
   try {
-    if (["project-moderation.integration.sql", "xp-rpc-boundary.integration.sql", "feed-xp-suggestions.integration.sql", "feed-people-timelines.integration.sql", "xp-leaderboard.integration.sql"].some((name) => sqlTestPath.endsWith(name))) {
+    if (["certificate-analytics.integration.sql", "project-moderation.integration.sql", "xp-rpc-boundary.integration.sql", "feed-xp-suggestions.integration.sql", "feed-people-timelines.integration.sql", "xp-leaderboard.integration.sql"].some((name) => sqlTestPath.endsWith(name))) {
       execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
         input: readFileSync(resolve(sqlTestPath)), stdio: ["pipe", "inherit", "inherit"],
       });

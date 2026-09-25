@@ -1,4 +1,21 @@
 {
+  "certificateAnalytics": {
+    "title": "Certificates",
+    "description": "Issuance and delivery metrics for Corelia course certificates and Open Campus OCAs.",
+    "course": "Course", "allCourses": "All courses", "from": "From", "to": "To",
+    "network": "Open Campus network", "allNetworks": "All networks", "invalidRange": "The start date must be before the end date.",
+    "loading": "Loading analytics…", "loadError": "Could not load certificate analytics.", "forbidden": "Only admins can view this report.",
+    "mintAttempts": "{{count}} OC mint calls logged since analytics was enabled",
+    "hint": "Dates filter by Corelia issue or course completion time (Vietnam time). Provider acceptance does not prove inbox delivery.",
+    "learnerRows": "{{count}} reconciliation rows", "refresh": "Refresh", "exportCsv": "Export CSV", "exporting": "Exporting…", "exportError": "Could not export CSV. Try again.",
+    "tableLabel": "Certificates by learner and course", "empty": "No matching records.",
+    "page": "Page {{page}} / {{pages}}", "previous": "Previous", "next": "Next", "unknown": "Unknown",
+    "issued": "Issued", "revoked": "Revoked", "created": "Created", "missing": "Missing", "unresolved": "ID needs reconciliation",
+    "summary": { "completed": "Completed", "corelia_issued": "Corelia issued", "corelia_revoked": "Corelia revoked", "oca_minted": "OCA minted", "oca_unresolved": "OCA unresolved", "oca_pending": "OCA pending", "oca_failed": "OCA failed", "unique_learners": "Learners" },
+    "columns": { "learner": "Learner", "course": "Course", "completed": "Completed", "corelia": "Corelia", "coreEmail": "Corelia email", "coreNotice": "Corelia notification", "oca": "Open Campus OCA", "ocEmail": "OCA email", "ocNotice": "OCA notification" },
+    "status": { "minted": "Minted", "pending": "Pending", "failed": "Failed" },
+    "mail": { "accepted": "Accepted by provider", "provider_error": "Provider error", "skipped": "Skipped" }
+  },
   "ogPreview": {
     "title": "Share image preview",
     "description": "Inspect Open Graph images generated from published content.",

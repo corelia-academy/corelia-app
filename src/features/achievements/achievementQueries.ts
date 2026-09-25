@@ -127,7 +127,7 @@ export function achievementVaultQueryOptions(input: {
           .filter((courseId): courseId is string => Boolean(courseId)),
       );
       const badges = [
-        ...issuanceRows.map((row) => issuanceToBadgeItem(row, holderOcid)),
+        ...issuanceRows.filter((row) => row.status !== "failed").map((row) => issuanceToBadgeItem(row, holderOcid)),
         ...buildStandaloneCourseCredentialBadges(
           courseIds,
           courseMap,

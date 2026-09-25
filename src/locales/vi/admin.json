@@ -1,4 +1,21 @@
 {
+  "certificateAnalytics": {
+    "title": "Chứng nhận",
+    "description": "Số liệu cấp và giao nhận chứng nhận khóa học Corelia, Open Campus OCA.",
+    "course": "Khóa học", "allCourses": "Tất cả khóa học", "from": "Từ ngày", "to": "Đến ngày",
+    "network": "Mạng Open Campus", "allNetworks": "Tất cả mạng", "invalidRange": "Ngày bắt đầu phải trước ngày kết thúc.",
+    "loading": "Đang tải số liệu…", "loadError": "Không tải được số liệu chứng nhận.", "forbidden": "Chỉ admin được xem báo cáo này.",
+    "mintAttempts": "{{count}} lượt gọi mint OC đã được ghi log kể từ khi bật analytics",
+    "hint": "Lọc ngày theo thời điểm cấp Corelia hoặc hoàn thành khóa học (giờ Việt Nam). Email được chấp nhận chưa chứng minh đã vào hộp thư.",
+    "learnerRows": "{{count}} dòng đối soát", "refresh": "Làm mới", "exportCsv": "Xuất CSV", "exporting": "Đang xuất…", "exportError": "Không xuất được CSV. Hãy thử lại.",
+    "tableLabel": "Danh sách chứng nhận theo người học và khóa học", "empty": "Không có dữ liệu phù hợp.",
+    "page": "Trang {{page}} / {{pages}}", "previous": "Trước", "next": "Sau", "unknown": "Không xác định",
+    "issued": "Đã cấp", "revoked": "Đã thu hồi", "created": "Đã tạo", "missing": "Chưa có", "unresolved": "Cần đối soát ID",
+    "summary": { "completed": "Hoàn thành", "corelia_issued": "Corelia đã cấp", "corelia_revoked": "Corelia thu hồi", "oca_minted": "OCA đã mint", "oca_unresolved": "OCA cần đối soát", "oca_pending": "OCA đang chờ", "oca_failed": "OCA lỗi", "unique_learners": "Người học" },
+    "columns": { "learner": "Người học", "course": "Khóa học", "completed": "Hoàn thành", "corelia": "Corelia", "coreEmail": "Email Corelia", "coreNotice": "Thông báo Corelia", "oca": "Open Campus OCA", "ocEmail": "Email OCA", "ocNotice": "Thông báo OCA" },
+    "status": { "minted": "Đã mint", "pending": "Đang chờ", "failed": "Lỗi" },
+    "mail": { "accepted": "Nhà cung cấp đã nhận", "provider_error": "Nhà cung cấp báo lỗi", "skipped": "Bỏ qua" }
+  },
   "ogPreview": {
     "title": "Xem trước ảnh chia sẻ",
     "description": "Kiểm tra ảnh Open Graph từ nội dung đã công khai.",
