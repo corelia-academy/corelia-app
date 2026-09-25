@@ -167,11 +167,11 @@ test("Production workflow structure safety", () => {
   assert.match(applyStep, /supabase migration up --linked --dns-resolver https --include-all/);
 });
 
-test("Production UniHackfest OCA release accepts only its exact pending migration", () => {
+test("Production single-locale email release accepts only its exact pending migration", () => {
   const localVersions = [...realReleasedVersions, ...APPROVED_PENDING_VERSIONS];
   const observedRemote = localVersions.filter((v) => !CURRENT_PENDING_VERSIONS.includes(v));
   assert.deepEqual(CURRENT_PENDING_VERSIONS, [
-    "20260925080949",
+    "20260925113445",
   ]);
   assert.ok(observedRemote.includes("20260923191903"));
   assert.ok(observedRemote.includes("20260923092129"));
