@@ -149,6 +149,8 @@ async function insertCredentialNotification(
     thumbnailUrl: string | null | undefined;
     ocCredentialId: string | null;
     isOCA: boolean;
+    holderOcid: string | null;
+    network: MintNetwork;
   },
 ): Promise<void> {
   try {
@@ -162,6 +164,8 @@ async function insertCredentialNotification(
         image_url: params.thumbnailUrl?.trim() || params.imageUrl,
         oc_credential_id: params.ocCredentialId,
         is_oca: params.isOCA,
+        holder_ocid: params.holderOcid,
+        network: params.network,
       },
     });
   } catch (e) {
@@ -354,6 +358,8 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
             thumbnailUrl: template.thumbnail_url,
             ocCredentialId,
             isOCA,
+            holderOcid,
+            network,
           }),
         ]);
         return { ok: true, duplicate: true };
@@ -404,6 +410,8 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
         thumbnailUrl: template.thumbnail_url,
         ocCredentialId,
         isOCA,
+        holderOcid,
+        network,
       }),
     ]);
 
