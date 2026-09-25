@@ -103,6 +103,45 @@ async function listRows(db: SupabaseClient, action: string, body: Record<string,
   return json({ items: data ?? [], total: count ?? 0, page: Math.floor(from / PAGE_SIZE), page_size: PAGE_SIZE });
 }
 
+async function snapshotAllContacts(db: SupabaseClient, actor: AdminContext): Promise<Response> {
+  requireFullAdmin(actor);
+  const { data: settings, error: settingsError } = await db.from("email_settings").select("max_recipients_per_campaign").eq("singleton", true).single();
+  if (settingsError) throw settingsError;
+  const limit = Number(settings.max_recipients_per_campaign);
+  const contactIds: string[] = [];
+  let cursor = "";
+  while (true) {
+    let query = db.from("email_contacts").select("id").order("id", { ascending: true }).limit(500);
+    if (cursor) query = query.gt("id", cursor);
+    const { data, error } = await query;
+    if (error) throw error;
+    const batch = data ?? [];
+    contactIds.push(...batch.map((contact) => String(contact.id)));
+    if (contactIds.length > limit) return json({ message: "campaign_operational_limit_exceeded" }, 409);
+    if (batch.length < 500) break;
+    cursor = String(batch[batch.length - 1]!.id);
+  }
+  if (!contactIds.length) return json({ message: "no_contacts" }, 409);
+  const stamp = new Date().toISOString().slice(0, 16).replace("T", " ");
+  const { data: list, error: listError } = await db.from("email_lists").insert({ name: `All contacts · ${stamp} UTC`, description: "Snapshot of all Email Center contacts for campaign review", source_type: "manual", created_by: actor.id }).select("id,name").single();
+  if (listError) throw listError;
+  try {
+    for (let index = 0; index < contactIds.length; index += 500) {
+      const { error } = await db.from("email_list_members").insert(contactIds.slice(index, index + 500).map((contact_id) => ({ list_id: list.id, contact_id })));
+      if (error) throw error;
+    }
+    const { count, error } = await db.from("email_list_members").select("contact_id", { count: "exact", head: true }).eq("list_id", list.id);
+    if (error) throw error;
+    if (count !== contactIds.length) throw new Error("contact_snapshot_incomplete");
+  } catch (cause) {
+    const { error } = await db.from("email_lists").delete().eq("id", list.id);
+    if (error) console.error("[email-center] snapshot cleanup", error);
+    throw cause;
+  }
+  await audit(db, actor, "snapshot_all", "email_list", list.id, { recipients: contactIds.length });
+  return json({ id: list.id, name: list.name, count: contactIds.length });
+}
+
 async function createImport(db: SupabaseClient, actor: AdminContext, body: Record<string, unknown>): Promise<Response> {
   const filename = String(body.filename ?? "contacts.csv").replace(/[^a-zA-Z0-9._-]/g, "_");
   const listName = String(body.list_name ?? filename.replace(/\.csv$/i, "")).trim();
@@ -322,6 +361,7 @@ export async function handleEmailAdmin(req: Request, db: SupabaseClient): Promis
     const action = String(body.action ?? "dashboard");
     if (action === "dashboard") return dashboard(db);
     if (["contacts.list", "lists.list", "templates.list", "campaigns.list", "campaigns.recipients"].includes(action)) return listRows(db, action, body);
+    if (action === "lists.snapshot_all") return snapshotAllContacts(db, actor);
     if (action === "imports.create") return createImport(db, actor, body);
     if (action === "imports.process") return processImport(db, actor, body);
     if (action === "imports.report") {
