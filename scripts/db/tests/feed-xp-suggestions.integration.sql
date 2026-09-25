@@ -11,18 +11,22 @@ INSERT INTO auth.users(id, email) VALUES
   ('eebe0000-0000-4000-8000-000000000002', 'feed-high@corelia.local'),
   ('eebe0000-0000-4000-8000-000000000003', 'feed-low@corelia.local'),
   ('eebe0000-0000-4000-8000-000000000004', 'feed-private@corelia.local'),
-  ('eebe0000-0000-4000-8000-000000000005', 'feed-followed@corelia.local');
+  ('eebe0000-0000-4000-8000-000000000005', 'feed-followed@corelia.local'),
+  ('eebe0000-0000-4000-8000-000000000006', 'feed-admin@corelia.local');
 
 UPDATE public.profiles
 SET full_name = 'Feed Test ' || right(id::text, 1),
   profile_public = id <> 'eebe0000-0000-4000-8000-000000000004'
 WHERE id::text LIKE 'eebe0000-%';
+UPDATE public.profiles SET role = 'admin'
+WHERE id = 'eebe0000-0000-4000-8000-000000000006';
 
 INSERT INTO public.user_point_ledger(user_id, source, source_key, points) VALUES
   ('eebe0000-0000-4000-8000-000000000002', 'lesson_completed', 'feed-test-high', 1000000),
   ('eebe0000-0000-4000-8000-000000000003', 'lesson_completed', 'feed-test-low', 50),
   ('eebe0000-0000-4000-8000-000000000004', 'lesson_completed', 'feed-test-private', 2000),
-  ('eebe0000-0000-4000-8000-000000000005', 'lesson_completed', 'feed-test-followed', 3000);
+  ('eebe0000-0000-4000-8000-000000000005', 'lesson_completed', 'feed-test-followed', 3000),
+  ('eebe0000-0000-4000-8000-000000000006', 'lesson_completed', 'feed-test-admin', 2000000);
 
 INSERT INTO public.follows(follower_id, subject_type, subject_id)
 VALUES ('eebe0000-0000-4000-8000-000000000001', 'user', 'eebe0000-0000-4000-8000-000000000005');
@@ -49,10 +53,11 @@ DO $$ BEGIN
     WHERE id IN (
       'eebe0000-0000-4000-8000-000000000001',
       'eebe0000-0000-4000-8000-000000000004',
-      'eebe0000-0000-4000-8000-000000000005'
+      'eebe0000-0000-4000-8000-000000000005',
+      'eebe0000-0000-4000-8000-000000000006'
     )
   ) THEN
-    RAISE EXCEPTION 'self, private, or followed user was suggested';
+    RAISE EXCEPTION 'self, private, followed, or staff user was suggested';
   END IF;
 END $$;
 
