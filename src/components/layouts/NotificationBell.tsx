@@ -23,6 +23,7 @@ import {
   declineCoInstructorInviteById,
 } from "@/lib/coInstructorInvites";
 import { useNavigate } from "react-router";
+import { openCampusCredentialExplorerUrl } from "@/lib/credentialIssuances";
 import {
   notificationInviteContextsQueryOptions,
   notificationKeys,
@@ -223,6 +224,13 @@ export function NotificationBell() {
                 const isCourseCompleted = n.type === "course_completed";
                 const isCourseCertificateIssued = n.type === "course_certificate_issued";
                 const isOcCredential = n.type === "oc_credential_minted";
+                const ocCredentialUrl = isOcCredential
+                  ? openCampusCredentialExplorerUrl(payloadString(n.payload, "oc_credential_id"), {
+                      username: payloadString(n.payload, "holder_ocid") || profile?.ocid,
+                      nftCollection: n.payload.is_oca ? "occredential" : "ocbadge",
+                      network: payloadString(n.payload, "network") || undefined,
+                    })
+                  : null;
                 const resolved = Boolean(n.resolved_at);
                 const pid =
                   typeof n.payload.project_id === "string" ? n.payload.project_id : "";
@@ -564,7 +572,9 @@ export function NotificationBell() {
                             variant="ghost"
                             size="xs"
                             className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
-                            render={<NavLink to={achievementsPath} />}
+                            render={ocCredentialUrl
+                              ? <a href={ocCredentialUrl} target="_blank" rel="noopener noreferrer" />
+                              : <NavLink to="/achievements" />}
                             nativeButton={false}
                             onClick={() => {
                               setOpen(false);
