@@ -624,7 +624,7 @@
       "requireAssignmentLabel": "Yêu cầu duyệt bài tập cuối khóa",
       "minScoreLabel": "Điểm bài tập tối thiểu",
       "identifierPrefixLabel": "Tiền tố identifier",
-      "identifierHint": "Chữ thường, phân tách bằng gạch ngang, tối đa 40 ký tự. Hậu tố học viên được thêm tự động.",
+      "identifierHint": "Dùng tiền tố dễ nhận diện chương trình (ví dụ corelia:unihackfest-2026). Open Campus hiển thị tối đa 25 ký tự đầu, sau đó là mã duy nhất.",
       "identifierLocked": "Đã có {{count}} credential được tạo. Tiền tố đã bị khóa để tránh mint trùng.",
       "save": "Lưu cấu hình credential",
       "saving": "Đang lưu…",

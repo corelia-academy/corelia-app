@@ -624,7 +624,7 @@
       "requireAssignmentLabel": "Require final assignment approval",
       "minScoreLabel": "Minimum assignment score",
       "identifierPrefixLabel": "Identifier prefix",
-      "identifierHint": "Lowercase, hyphen-separated, max 40 characters. A unique learner suffix is appended automatically.",
+      "identifierHint": "Use a recognizable program prefix (e.g. corelia:unihackfest-2026). The first 25 characters appear in Open Campus, followed by a unique code.",
       "identifierLocked": "{{count}} credential(s) already exist. The prefix is locked to prevent duplicate minting.",
       "save": "Save credential configuration",
       "saving": "Saving…",
