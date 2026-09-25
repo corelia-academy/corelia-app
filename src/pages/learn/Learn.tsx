@@ -4,7 +4,6 @@ import type { ArtifactField } from "@/features/learning/types";
 import { lessonText } from "@/features/learning/lessonCopy";
 import { recordLearningEvent } from "@/lib/learning";
 import { invalidateLearningProgress } from "@/features/learning/invalidateLearningProgress";
-import { courseKeys } from "@/features/courses/courseQueries";
 import {
   useCallback,
   useEffect,
@@ -371,7 +370,7 @@ function LearnWorkspace() {
     // Serialize navigation writes so a slower request cannot overwrite a later lesson.
     rememberLessonQueue.current = rememberLessonQueue.current.then(async () => {
       await rememberRecentLesson(enrollmentId, currentLessonId);
-      queryClient.setQueryData<Enrollment>(courseKeys.enrollment(user.id, courseId), (previous) =>
+      queryClient.setQueryData<Enrollment>(["courses", "enrollment", user.id, courseId], (previous) =>
         previous ? { ...previous, last_lesson_id: currentLessonId } : previous,
       );
       void queryClient.invalidateQueries({ queryKey: ["home", "dashboard", user.id] });
