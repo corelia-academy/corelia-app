@@ -30,6 +30,7 @@ export function CampaignDeliveryDetails({ campaignId }: { campaignId: string }) 
     queryKey: ["email-center", "campaign-recipients", campaignId, status, page],
     queryFn: () => emailAdmin<Paginated<Recipient>>("campaigns.recipients", { campaign_id: campaignId, status, page }),
     refetchInterval: 5000,
+    meta: { showInGlobalLoading: false },
   });
   return <div className="border-t border-border-subtle bg-surface-base p-4">
     <div className="mb-3 flex flex-wrap items-center gap-2">
