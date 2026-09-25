@@ -675,7 +675,7 @@
       "offlinePrefix": "lớp trực tiếp"
     },
     "focus": {
-      "nextLesson": "Bài tiếp theo: {{title}}",
+      "nextLesson": "Bài tiếp tục: {{title}}",
       "allLessonsCompleted": "Bạn đã hoàn thành toàn bộ bài học hiện có",
       "lastAccessed": "Lần truy cập gần nhất: {{date}}"
     },

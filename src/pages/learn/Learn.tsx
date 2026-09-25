@@ -22,7 +22,8 @@ import {
   checkAndIssueCertificate,
   courseHasCertificate,
   ensureEnrollmentForProgress,
-  getNextLesson,
+  getResumeLesson,
+  rememberRecentLesson,
   resetLessonProgress,
   revertCourseCompletion,
   setLessonProgress,
@@ -57,6 +58,7 @@ import { Button } from "@/components/ui/button";
 import { CourseCompletionCertificatePanel } from "@/components/courses/CourseCompletionCertificatePanel";
 import { cn } from "@/lib/utils";
 import type { CertificateIssueReason } from "@/lib/courses";
+import type { Enrollment } from "@/types/courses";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -111,6 +113,7 @@ function LearnWorkspace() {
   const navigate = useNavigate();
   const { profile, user } = useAuth();
   const queryClient = useQueryClient();
+  const rememberLessonQueue = useRef(Promise.resolve());
   // Keep completed practice artifacts across lesson/final routes even if storage is blocked.
   // LearnWorkspace is keyed by course and identity, so this handoff cannot cross accounts.
   const [practiceArtifacts, setPracticeArtifacts] = useState<Partial<Record<ArtifactField, string>>>({});
@@ -321,16 +324,16 @@ function LearnWorkspace() {
   ]);
 
   useEffect(() => {
-    if (!courseId || visibleLessons.length === 0) return;
+    if (!courseId || courseLoad.loading || access.loading || !progress.loaded || visibleLessons.length === 0) return;
     // If URL already contains an explicit lessonId, do not auto-redirect
     if (lessonId || isFinalAssignment) return;
 
-    const next = getNextLesson(visibleLessons, progress.progressList);
+    const next = getResumeLesson(visibleLessons, progress.progressList, access.enrollment?.last_lesson_id);
     const target = next ?? visibleLessons[0];
     if (target) {
       navigate(`/learn/${courseId}/lesson/${target.id}`, { replace: true });
     }
-  }, [courseId, lessonId, isFinalAssignment, navigate, progress.progressList, visibleLessons]);
+  }, [access.enrollment?.last_lesson_id, access.loading, courseId, courseLoad.loading, lessonId, isFinalAssignment, navigate, progress.loaded, progress.progressList, visibleLessons]);
 
   const rawLesson = useMemo(() => {
     if (!lessonId || sortedLessons.length === 0) return null;
@@ -358,6 +361,23 @@ function LearnWorkspace() {
   useEffect(() => {
     if (user && currentLesson && courseId) void recordLearningEvent(courseId, currentLesson.id, "lesson_started");
   }, [user, courseId, currentLesson]);
+
+  useEffect(() => {
+    const enrollmentId = access.enrollment?.id;
+    const currentLessonId = currentLesson?.id;
+    if (!user || !courseId || !enrollmentId || !currentLessonId || !progress.loaded || progress.completedIds.has(currentLessonId)) return;
+
+    // Serialize navigation writes so a slower request cannot overwrite a later lesson.
+    rememberLessonQueue.current = rememberLessonQueue.current.then(async () => {
+      await rememberRecentLesson(enrollmentId, currentLessonId);
+      queryClient.setQueryData<Enrollment>(["courses", "enrollment", user.id, courseId], (previous) =>
+        previous ? { ...previous, last_lesson_id: currentLessonId } : previous,
+      );
+      void queryClient.invalidateQueries({ queryKey: ["home", "dashboard", user.id] });
+    }).catch((error) => {
+      console.error("[Learn] Could not save recent lesson", error);
+    });
+  }, [access.enrollment?.id, courseId, currentLesson?.id, progress.completedIds, progress.loaded, queryClient, user]);
 
   const nextLesson = progress.nextLesson;
   const currentLessonIndex = currentLesson
