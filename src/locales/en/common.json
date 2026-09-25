@@ -675,7 +675,7 @@
       "offlinePrefix": "offline class"
     },
     "focus": {
-      "nextLesson": "Next lesson: {{title}}",
+      "nextLesson": "Resume lesson: {{title}}",
       "allLessonsCompleted": "You’ve completed all available lessons",
       "lastAccessed": "Last accessed: {{date}}"
     },

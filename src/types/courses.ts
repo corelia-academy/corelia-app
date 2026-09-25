@@ -298,6 +298,8 @@ export interface Enrollment {
   course_id: string;
   enrolled_at: string;
   last_accessed_at: string;
+  /** Bài chưa hoàn thành được mở gần nhất trong khóa học. */
+  last_lesson_id?: string | null;
   /** Thời điểm hoàn thành toàn bộ bài học trong khoá (không phụ thuộc chứng nhận) */
   completed_at?: string | null;
   /** Thời điểm cấp chứng nhận hoàn thành (null = chưa đủ điều kiện) */
