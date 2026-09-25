@@ -63,6 +63,21 @@ async function dashboard(db: SupabaseClient): Promise<Response> {
 
 async function listRows(db: SupabaseClient, action: string, body: Record<string, unknown>): Promise<Response> {
   const [from, to] = pageRange(body.page);
+  if (action === "campaigns.recipients") {
+    const campaignId = String(body.campaign_id ?? "");
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(campaignId)) return json({ message: "invalid_campaign_id" }, 400);
+    const { data: campaign, error: campaignError } = await db.from("email_campaigns").select("id").eq("id", campaignId).maybeSingle();
+    if (campaignError) throw campaignError;
+    if (!campaign) return json({ message: "campaign_not_found" }, 404);
+    let query = db.from("email_campaign_recipients")
+      .select("id,recipient_email,status,first_dispatched_at,updated_at,provider_message_id,last_error", { count: "exact" })
+      .eq("campaign_id", campaignId);
+    const status = String(body.status ?? "");
+    if (["queued", "sending", "accepted", "delivered", "failed", "bounced", "complained", "unsubscribed", "suppressed", "indeterminate", "cancelled"].includes(status)) query = query.eq("status", status);
+    const { data, error, count } = await query.order("created_at", { ascending: true }).range(from, to);
+    if (error) throw error;
+    return json({ items: data ?? [], total: count ?? 0, page: Math.floor(from / PAGE_SIZE), page_size: PAGE_SIZE });
+  }
   if (action === "contacts.list") {
     let query = db.from("email_contacts").select("*, email_contact_consents(topic,status,source,changed_at)", { count: "exact" }).order("created_at", { ascending: false }).range(from, to);
     const search = String(body.search ?? "").trim();
@@ -241,7 +256,10 @@ async function testEmail(db: SupabaseClient, actor: AdminContext, body: Record<s
   if (missing.length) return json({ message: "missing_template_variables", missing }, 400);
   const purpose = String((version.email_templates as unknown as { purpose?: string } | null)?.purpose ?? "system");
   if (purpose === "system") requireFullAdmin(actor);
-  const { data: sender } = await db.from("email_senders").select("display_name,from_email,reply_to,domain_status,active").eq("purpose", purpose).eq("is_default", true).maybeSingle();
+  const senderId = String(body.sender_id ?? "").trim();
+  let senderQuery = db.from("email_senders").select("display_name,from_email,reply_to,domain_status,active").eq("purpose", purpose);
+  senderQuery = senderId ? senderQuery.eq("id", senderId) : senderQuery.eq("is_default", true);
+  const { data: sender } = await senderQuery.maybeSingle();
   if (!sender?.active || sender.domain_status !== "verified") return json({ message: "sender_not_verified" }, 409);
   const locale = normalizeEmailLocale(body.locale ?? values.locale);
   const localized = resolveLocalizedEmailContent(version.localized_content, locale);
@@ -303,7 +321,7 @@ export async function handleEmailAdmin(req: Request, db: SupabaseClient): Promis
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
     const action = String(body.action ?? "dashboard");
     if (action === "dashboard") return dashboard(db);
-    if (["contacts.list", "lists.list", "templates.list", "campaigns.list"].includes(action)) return listRows(db, action, body);
+    if (["contacts.list", "lists.list", "templates.list", "campaigns.list", "campaigns.recipients"].includes(action)) return listRows(db, action, body);
     if (action === "imports.create") return createImport(db, actor, body);
     if (action === "imports.process") return processImport(db, actor, body);
     if (action === "imports.report") {
