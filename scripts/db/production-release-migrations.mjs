@@ -119,16 +119,17 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260923191903_add_humation_avatar_config.sql",
   "supabase/migrations/20260925080949_unihackfest_2026_oca_mainnet.sql",
   "supabase/migrations/20260925113445_allow_single_locale_email_template.sql",
+  "supabase/migrations/20260925171211_exclude_staff_from_feed.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production history was verified through 20260925080949 by the pre-deploy
-// guard. This release adds only the single-locale email migration validated in Staging.
+// Production history was verified through 20260925113445 by the pre-deploy
+// guard. This release adds only the staff Feed exclusion validated in Staging.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260925113445",
+  "20260925171211",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
