@@ -117,16 +117,17 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260923085047_feed_people_timelines.sql",
   "supabase/migrations/20260923092129_xp_leaderboard.sql",
   "supabase/migrations/20260923191903_add_humation_avatar_config.sql",
+  "supabase/migrations/20260925080949_unihackfest_2026_oca_mainnet.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production history was verified read-only through 20260923092129.
-// This release adds only the Humation avatar configuration validated in Staging.
+// Production history was verified read-only through 20260923191903.
+// This release adds only the UniHackfest OCA network reconciliation validated in Staging.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260923191903",
+  "20260925080949",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
