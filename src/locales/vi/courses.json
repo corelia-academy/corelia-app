@@ -71,6 +71,7 @@
     "emptyDescription": "Thử bỏ bớt bộ lọc hoặc tìm theo tên giảng viên, lĩnh vực và hình thức học.",
     "card": {
       "courseProgress": "Tiến độ khoá học",
+      "completed": "Đã hoàn thành",
       "continueLearning": "Tiếp tục học",
       "startLearning": "Bắt đầu học"
     }
