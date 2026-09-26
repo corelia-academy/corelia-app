@@ -71,6 +71,7 @@
     "emptyDescription": "Try removing some filters or search by instructor, topic, and learning format.",
     "card": {
       "courseProgress": "Course progress",
+      "completed": "Completed",
       "continueLearning": "Continue learning",
       "startLearning": "Start learning"
     }

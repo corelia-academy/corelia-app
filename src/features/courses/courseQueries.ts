@@ -293,7 +293,11 @@ export function userCoursesProgressQueryOptions(userId: string | undefined) {
           const sorted = sortLessonsByCurriculum(lessons, sections);
           return [
             enrollment.course_id,
-            { enrolled: true, percent: computeProgressPercent(sorted, progress) },
+            {
+              enrolled: true,
+              percent: computeProgressPercent(sorted, progress),
+              completed: Boolean(enrollment.completed_at),
+            },
           ] as const;
         }),
       );
