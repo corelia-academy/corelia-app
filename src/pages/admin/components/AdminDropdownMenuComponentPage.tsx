@@ -3,6 +3,7 @@ import { CaretDown, CaretUp } from "@phosphor-icons/react";
 import { AlertTriangle, Diamond, UserRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -121,7 +122,7 @@ function BaseItemPreview({ id, label, showLeading }: BaseItemPreviewProps) {
       <DropdownMenu
         open={open}
         onOpenChange={setOpen}
-        modal={false}
+        modal={true}
         highlightItemOnHover={false}
       >
         <DropdownMenuTrigger
@@ -140,12 +141,20 @@ function BaseItemPreview({ id, label, showLeading }: BaseItemPreviewProps) {
           align="start"
           className="max-w-[calc(100vw-2rem)]"
         >
-          <DropdownMenuSearch
-            value={search}
-            onChange={(event) => setSearch(event.currentTarget.value)}
-            placeholder="Search states"
-            aria-label={`Search ${label}`}
-          />
+          <DropdownMenuSearch>
+            <Input
+              type="search"
+              variant="icon-leading"
+              leadingIconClassName="text-dropdown-supporting"
+              statusIcon={null}
+              value={search}
+              onChange={(event) => setSearch(event.currentTarget.value)}
+              placeholder="Search states"
+              aria-label={`Search ${label}`}
+              controlClassName="h-10 gap-sm rounded-lg border-dropdown-input-border bg-dropdown-surface px-md"
+              className="text-[16px] text-dropdown-title placeholder:text-dropdown-supporting"
+            />
+          </DropdownMenuSearch>
           <DropdownMenuList className="gap-[18px]">
             {visibleGroups.map((group, groupIndex) => (
               <Fragment key={group.id}>
@@ -649,7 +658,6 @@ function UseCaseDropdown({ definition }: { definition: UseCaseDefinition }) {
         ) : undefined;
 
       const rowClassName = cn(
-        row.size === "compact" && "!min-h-[42px]",
         row.size === "warning" && "!min-h-[74px]",
         depth > 0 && "!pl-[20px]",
         cardAction === "caret" && canExpand && "cursor-pointer",
@@ -682,6 +690,7 @@ function UseCaseDropdown({ definition }: { definition: UseCaseDefinition }) {
           checked={isRowChecked(row)}
           indeterminate={isRowIndeterminate(row)}
           disabled={row.disabled}
+          size={row.size === "compact" ? "compact" : "default"}
           variant={row.variant ?? "default"}
           selectionMode={cardAction === "checkbox" ? "full-row" : "checkbox-only"}
           className={rowClassName}
@@ -732,7 +741,7 @@ function UseCaseDropdown({ definition }: { definition: UseCaseDefinition }) {
       <DropdownMenu
         open={open}
         onOpenChange={setOpen}
-        modal={false}
+        modal={true}
         highlightItemOnHover={false}
       >
         <DropdownMenuTrigger
@@ -751,12 +760,20 @@ function UseCaseDropdown({ definition }: { definition: UseCaseDefinition }) {
           align="start"
           className="!w-[386px] max-w-[calc(100vw-2rem)]"
         >
-          <DropdownMenuSearch
-            value={search}
-            onChange={(event) => setSearch(event.currentTarget.value)}
-            placeholder="Search"
-            aria-label={`Search ${definition.label}`}
-          />
+          <DropdownMenuSearch>
+            <Input
+              type="search"
+              variant="icon-leading"
+              leadingIconClassName="text-dropdown-supporting"
+              statusIcon={null}
+              value={search}
+              onChange={(event) => setSearch(event.currentTarget.value)}
+              placeholder="Search"
+              aria-label={`Search ${definition.label}`}
+              controlClassName="h-10 gap-sm rounded-lg border-dropdown-input-border bg-dropdown-surface px-md"
+              className="text-[16px] text-dropdown-title placeholder:text-dropdown-supporting"
+            />
+          </DropdownMenuSearch>
 
           {definition.showSelectAll ? (
             <DropdownMenuSelectAll

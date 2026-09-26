@@ -1,8 +1,7 @@
 import * as React from "react"
 import { Menu as MenuPrimitive } from "@base-ui/react/menu"
-import { Check, ChevronRight, Minus, Search } from "lucide-react"
+import { Check, ChevronRight, Minus } from "lucide-react"
 
-import { Input } from "@/components/ui/input"
 import { Checkbox, type CheckboxProps } from "@/components/ui/selection"
 import { cn } from "@/lib/utils"
 
@@ -156,10 +155,10 @@ function DropdownMenuContent({
           data-slot="dropdown-menu-content"
           data-layout={layout}
           className={cn(
-            "z-50 origin-(--transform-origin) text-body-small font-body duration-100 outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-hidden data-closed:fade-out-0 data-closed:zoom-out-95",
+            "z-50 origin-(--transform-origin) text-body-small font-body duration-100 outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-y-hidden data-closed:fade-out-0 data-closed:zoom-out-95",
             layout === "multiple-list"
-              ? "flex max-h-(--available-height) w-[296px] min-w-0 flex-col gap-2 overflow-hidden rounded-xl border-[0.5px] border-dropdown-container-border bg-dropdown-surface px-[6px] py-3 text-dropdown-title shadow-dropdown"
-              : "max-h-(--available-height) w-(--anchor-width) min-w-32 overflow-x-hidden overflow-y-auto scrollbar-design rounded-lg border border-border bg-surface-overlay text-foreground",
+              ? "flex max-h-(--available-height) w-[296px] min-w-0 flex-col gap-2 overflow-x-auto overflow-y-hidden rounded-xl border-[0.5px] border-dropdown-container-border bg-dropdown-surface px-[6px] py-3 text-dropdown-title shadow-dropdown"
+              : "max-h-(--available-height) w-(--anchor-width) min-w-32 overflow-x-auto overflow-y-auto scrollbar-design rounded-lg border border-border bg-surface-overlay text-foreground",
             className
           )}
           {...props}
@@ -275,6 +274,7 @@ function DropdownMenuCheckboxItem({
   disabled,
   indeterminate = false,
   inset,
+  size = "default",
   variant = "default",
   selectionMode = "full-row",
   onCheckedChange,
@@ -283,6 +283,7 @@ function DropdownMenuCheckboxItem({
   ...props
 }: MenuPrimitive.CheckboxItem.Props & {
   inset?: boolean
+  size?: "default" | "compact"
   variant?: "default" | "warning"
   indeterminate?: boolean
   selectionMode?: "full-row" | "checkbox-only"
@@ -341,6 +342,7 @@ function DropdownMenuCheckboxItem({
       data-selection-mode={selectionMode}
       className={cn(
         "group/dropdown-menu-checkbox-item relative flex min-h-[59px] w-full items-center gap-lg rounded-xl px-lg py-2md text-body-small font-body outline-hidden select-none hover:rounded-xl hover:bg-dropdown-hover focus-visible:z-10 focus-visible:rounded-xl focus-visible:after:pointer-events-none focus-visible:after:absolute focus-visible:after:inset-[-1px] focus-visible:after:z-10 focus-visible:after:rounded-xl focus-visible:after:border-2 focus-visible:after:border-dropdown-focus focus-visible:after:content-[''] data-checked:rounded-xl data-inset:pl-4xl data-disabled:cursor-not-allowed data-disabled:hover:rounded-xl data-disabled:hover:bg-transparent [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        size === "compact" && "!min-h-[42px]",
         selectionMode === "checkbox-only" ? "cursor-default" : "cursor-pointer",
         className
       )}
@@ -379,26 +381,17 @@ function DropdownMenuCheckboxItem({
 }
 
 function DropdownMenuSearch({
+  children,
   className,
-  type = "search",
   ...props
-}: React.ComponentProps<typeof Input>) {
+}: React.ComponentProps<"div">) {
   return (
-    <div className="w-full px-1">
-      <div className="relative">
-        <Search
-          className="pointer-events-none absolute left-3 top-1/2 z-10 size-5 -translate-y-1/2 text-dropdown-supporting"
-          aria-hidden
-        />
-        <Input
-          {...props}
-          type={type}
-          className={cn(
-            "h-10 rounded-lg border-dropdown-input-border bg-dropdown-surface pl-10 text-[16px] text-dropdown-title placeholder:text-dropdown-supporting",
-            className
-          )}
-        />
-      </div>
+    <div
+      data-slot="dropdown-menu-search"
+      className={cn("w-full px-1", className)}
+      {...props}
+    >
+      {children}
     </div>
   )
 }

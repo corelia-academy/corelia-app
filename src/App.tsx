@@ -325,6 +325,7 @@ function ApplicationRoutes() {
               "scrollbar",
               "tabs",
               "dropdown-menu",
+              "input-field",
             ].map((component) => (
               <Route
                 key={component}

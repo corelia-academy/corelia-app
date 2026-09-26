@@ -91,6 +91,7 @@ function AvatarCase({
 }: { fallbackText: string; size: ShowcaseSize; type: AvatarType }) {
   const canShowAction = actionSizes.has(size);
   const avatarUrl = userImage(size);
+  const isCoreliaLogo = size === "Xsmall" || size === "Medium";
 
   return (
     <div
@@ -138,8 +139,8 @@ function AvatarCase({
         {type === "Brand Logos" ? (
           <>
             <AvatarImage
-              src={size === "Xsmall" || size === "Medium" ? "/corelia_favicon.svg" : "/logo/OC-square-logo.svg"}
-              alt="Corelia brand logo"
+              src={isCoreliaLogo ? "/corelia_favicon.svg" : "/logo/OC-square-logo.svg"}
+              alt={isCoreliaLogo ? "Corelia logo" : "Open Campus logo"}
             />
             <AvatarFallback>
               <ImageIcon aria-hidden="true" />

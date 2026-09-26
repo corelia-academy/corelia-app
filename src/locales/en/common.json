@@ -1010,6 +1010,14 @@
   "combobox": {
     "searchPlaceholder": "Search by name or email",
     "emptyLabel": "No matching results.",
+    "searchLabel": "Search {{label}}",
+    "tagsLabel": "tags",
+    "selectOptionLabel": "Select an option",
+    "selectionLabel": "{{label}} selection",
+    "tagOptionsLabel": "Tag options",
+    "tagOptionsForLabel": "{{label}} tag options",
+    "hiddenTagsLabel_one": "{{count}} hidden tag",
+    "hiddenTagsLabel_other": "{{count}} hidden tags",
     "done": "Done",
     "loadMore": "Load more",
     "loadingMore": "Loading more..."
