@@ -614,23 +614,24 @@ export default function AdminInputFieldComponentPage({
       </ShowcaseSection>
 
       <ShowcaseSection
-        title="Required and text input"
-        criterion="Required marker and regular text input remain available as supporting field features."
+        title="Chat and search"
+        criterion="Chat and search examples using auto-growing text areas."
       >
         <div className="grid min-w-0 gap-6 xl:grid-cols-2">
-          <Field
-            label="Required field"
-            hint="Use the address connected to your account."
-            required
-          >
+          <Field label="Chat message">
             <Input
               fieldType="auto-grow"
-              inputMode="email"
-              placeholder="Enter your email"
+              placeholder="Write a message"
             />
           </Field>
-          <Field label="Text input">
-            <Input fieldType="auto-grow" defaultValue="Corelia learner" />
+          <Field label="Search courses">
+            <Input
+              fieldType="auto-grow"
+              variant="icon-leading"
+              role="searchbox"
+              aria-multiline="true"
+              placeholder="Search courses"
+            />
           </Field>
         </div>
       </ShowcaseSection>
