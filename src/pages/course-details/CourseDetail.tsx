@@ -139,6 +139,7 @@ export default function CourseDetail() {
       const completion = await syncCourseCompletion(profile.id, courseId);
       if (syncEpochRef.current !== currentEpoch) return null;
       let baseEnrollment = enrollment ?? access.enrollment;
+      const wasCompleted = Boolean(baseEnrollment?.completed_at);
       if (completion.completed) {
         completionConfirmed = true;
         const completedAt = completion.completed_at || baseEnrollment?.completed_at || new Date().toISOString();
@@ -161,7 +162,7 @@ export default function CourseDetail() {
         autoIssue: true,
       });
       if (syncEpochRef.current !== currentEpoch) return null;
-      if (credentialCheck.reason === "oca_requires_manual_claim") {
+      if (!wasCompleted && credentialCheck.reason === "oca_requires_manual_claim") {
         toast.success(translate("detail.courseDetail.ocaReady"), {
           action: {
             label: translate("detail.courseDetail.viewAchievements"),
@@ -183,13 +184,15 @@ export default function CourseDetail() {
           access.setEnrollment({ ...baseEnrollment, certificate_issued_at: issuedAt });
         }
         setCertificateJustIssued(true);
-        void progress.refresh();
-        toast.success(translate("detail.courseDetail.certificateIssuedSuccess"), {
-          action: {
-            label: translate("detail.courseDetail.viewCertificate"),
-            onClick: () => navigate("/achievements"),
-          },
-        });
+        if (result.reason === "issued") {
+          void progress.refresh();
+          toast.success(translate("detail.courseDetail.certificateIssuedSuccess"), {
+            action: {
+              label: translate("detail.courseDetail.viewCertificate"),
+              onClick: () => navigate("/achievements"),
+            },
+          });
+        }
       } else if (result.message) {
         setCertificateIssueError(result.message);
       }
@@ -231,6 +234,7 @@ export default function CourseDetail() {
     const course = courseLoad.course;
     const courseId = courseLoad.resolvedCourseId;
     if (!course || !courseId || !profile?.id || !isAuthenticated) return;
+    if (access.loading) return;
     if (progress.progressPercent < 100) return;
     if (access.enrollment?.completed_at && (!courseHasCertificate(course) || access.enrollment.certificate_issued_at)) {
       return;
@@ -242,6 +246,7 @@ export default function CourseDetail() {
     void syncCertificate();
   }, [
     access.enrollment,
+    access.loading,
     courseLoad.course,
     courseLoad.resolvedCourseId,
     isAuthenticated,

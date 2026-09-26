@@ -11,12 +11,18 @@ import CourseDetail from "./CourseDetail";
 const state = vi.hoisted(() => ({
   sync: vi.fn(),
   credential: vi.fn(),
+  issue: vi.fn(),
+  toast: vi.fn(),
   setEnrollment: vi.fn(),
+  enrollmentLoading: false,
+  enrollment: null as { completed_at: string; certificate_issued_at: string | null } | null,
   courses: {
     a: { id: "a", title: "A", published: true },
     b: { id: "b", title: "B", published: true },
   } as Record<string, { id: string; title: string; published: boolean }>,
 }));
+
+vi.mock("sonner", () => ({ toast: { success: state.toast } }));
 
 vi.mock("@/lib/supabase", () => ({ supabase: { from: vi.fn(), rpc: vi.fn() } }));
 vi.mock("@/stores/authStore", () => ({
@@ -34,10 +40,10 @@ vi.mock("react-i18next", async (importOriginal) => ({
 
 vi.mock("@/lib/courses", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/courses")>()),
-  courseHasCertificate: () => false,
+  courseHasCertificate: (course: { has_certificate?: boolean }) => course.has_certificate === true,
   ensureEnrollmentForProgress: async () => null,
   syncCourseCompletion: (...args: unknown[]) => state.sync(...args),
-  checkAndIssueCertificate: vi.fn(),
+  checkAndIssueCertificate: (...args: unknown[]) => state.issue(...args),
   sortLessonsByCurriculum: () => [],
   isLessonPublishedForLearners: () => true,
   revertCourseCompletion: vi.fn(),
@@ -64,7 +70,8 @@ vi.mock("./hooks/useCourseLoad", () => ({
 
 vi.mock("./hooks/useCourseEnrollmentAccess", () => ({
   useCourseEnrollmentAccess: () => ({
-    enrollment: null,
+    enrollment: state.enrollment,
+    loading: state.enrollmentLoading,
     hasFullCourseAccess: true,
     setEnrollment: state.setEnrollment,
     setEnrolled: vi.fn(),
@@ -132,6 +139,8 @@ let cleanup: (() => void) | undefined;
 afterEach(() => {
   cleanup?.();
   vi.clearAllMocks();
+  state.enrollment = null;
+  state.enrollmentLoading = false;
 });
 
 it.each([false, true])(
@@ -182,3 +191,62 @@ it.each([false, true])(
     expect(state.credential).toHaveBeenCalledTimes(switchCourse ? 0 : 1);
   },
 );
+
+it("waits for enrollment before syncing an already issued certificate", async () => {
+  state.courses.a = { ...state.courses.a, has_certificate: true } as typeof state.courses.a;
+  state.enrollmentLoading = true;
+  const router = createMemoryRouter(
+    [{ path: "/courses/:id", element: <CourseDetail /> }],
+    { initialEntries: ["/courses/a"] },
+  );
+  const client = new QueryClient();
+  const host = document.createElement("div");
+  const root = createRoot(host);
+  const view = () => <QueryClientProvider client={client}><RouterProvider router={router} /></QueryClientProvider>;
+  cleanup = () => {
+    act(() => root.unmount());
+    router.dispose();
+    client.clear();
+    state.courses.a = { id: "a", title: "A", published: true };
+  };
+
+  await act(async () => root.render(view()));
+  expect(state.sync).not.toHaveBeenCalled();
+
+  state.enrollmentLoading = false;
+  state.enrollment = { completed_at: "2026-09-12", certificate_issued_at: "2026-09-13" };
+  await act(async () => root.render(view()));
+
+  expect(state.sync).not.toHaveBeenCalled();
+  expect(state.issue).not.toHaveBeenCalled();
+  expect(state.toast).not.toHaveBeenCalled();
+});
+
+it("does not announce a previously issued certificate as new", async () => {
+  state.courses.a = { ...state.courses.a, has_certificate: true } as typeof state.courses.a;
+  state.enrollment = { completed_at: "2026-09-12", certificate_issued_at: null };
+  state.sync.mockResolvedValue({ completed: true, completed_at: "2026-09-12" });
+  state.credential.mockResolvedValue({ reason: "no_active_template" });
+  state.issue.mockResolvedValue({ issued: true, reason: "already_issued", certificate_issued_at: "2026-09-13" });
+  const router = createMemoryRouter(
+    [{ path: "/courses/:id", element: <CourseDetail /> }],
+    { initialEntries: ["/courses/a"] },
+  );
+  const client = new QueryClient();
+  const host = document.createElement("div");
+  const root = createRoot(host);
+  cleanup = () => {
+    act(() => root.unmount());
+    router.dispose();
+    client.clear();
+    state.courses.a = { id: "a", title: "A", published: true };
+  };
+
+  await act(async () => root.render(
+    <QueryClientProvider client={client}><RouterProvider router={router} /></QueryClientProvider>,
+  ));
+
+  expect(state.issue).toHaveBeenCalledWith("learner", "a");
+  expect(state.setEnrollment).toHaveBeenCalledWith(expect.objectContaining({ certificate_issued_at: "2026-09-13" }));
+  expect(state.toast).not.toHaveBeenCalled();
+});
