@@ -213,6 +213,7 @@ function LearnWorkspace() {
       if (!activeWorkspace.current || syncEpochRef.current !== currentEpoch) return null;
       completionConfirmed = completion.completed;
       let baseEnrollment = enrollment ?? access.enrollment;
+      const wasCompleted = Boolean(baseEnrollment?.completed_at);
       if (completion.completed) {
         completionConfirmed = true;
         const completedAt = completion.completed_at || baseEnrollment?.completed_at || new Date().toISOString();
@@ -234,7 +235,7 @@ function LearnWorkspace() {
         autoIssue: true,
       });
       if (!activeWorkspace.current || syncEpochRef.current !== currentEpoch) return null;
-      if (credentialCheck.reason === "oca_requires_manual_claim") {
+      if (!wasCompleted && credentialCheck.reason === "oca_requires_manual_claim") {
         toast.success(translate("detail.courseDetail.ocaReady"), {
           action: {
             label: translate("detail.courseDetail.viewAchievements"),
@@ -255,13 +256,15 @@ function LearnWorkspace() {
           access.setEnrollment({ ...baseEnrollment, certificate_issued_at: issuedAt });
         }
         setCertificateJustIssued(true);
-        void progress.refresh();
-        toast.success(translate("detail.courseDetail.certificateIssuedSuccess"), {
-          action: {
-            label: translate("detail.courseDetail.viewCertificate"),
-            onClick: () => navigate("/achievements"),
-          },
-        });
+        if (result.reason === "issued") {
+          void progress.refresh();
+          toast.success(translate("detail.courseDetail.certificateIssuedSuccess"), {
+            action: {
+              label: translate("detail.courseDetail.viewCertificate"),
+              onClick: () => navigate("/achievements"),
+            },
+          });
+        }
       } else if (result.message) {
         setCertificateIssueError(result.message);
       }
@@ -301,6 +304,7 @@ function LearnWorkspace() {
   useEffect(() => {
     const course = courseLoad.course;
     if (!courseId || !profile?.id || !course) return;
+    if (access.loading) return;
     if (progress.progressPercent < 100) return;
     if (course.final_assignment_title && submission.submission?.status !== "approved") return;
     if (access.enrollment?.completed_at && (!courseHasCertificate(course) || access.enrollment.certificate_issued_at)) {
@@ -312,6 +316,7 @@ function LearnWorkspace() {
     void syncCertificate();
   }, [
     access.enrollment,
+    access.loading,
     courseId,
     courseLoad.course,
     profile?.id,
