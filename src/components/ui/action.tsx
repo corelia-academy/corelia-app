@@ -164,7 +164,7 @@ function Action({
         : "text-action-active-icon";
     const activeSupportingClass = variant === "destructive"
         ? "text-action-destructive-active-supporting"
-        : "text-neutral-400";
+        : "text-action-active-supporting";
     const contentForegroundClass = visualIsActive
         ? activeForegroundClass
         : variant === "destructive"
@@ -177,12 +177,12 @@ function Action({
         ? activeSupportingClass
         : variant === "destructive"
             ? "text-action-destructive-supporting"
-            : "text-neutral-400";
+            : "text-action-supporting";
     const directionalIconClass = disabled
-        ? "text-neutral-500"
+        ? "text-action-disabled-icon"
         : visualIsActive
             ? activeIconClass
-            : "text-neutral-400";
+            : "text-action-supporting";
     const pressedClass = showPressed && !disabled
         ? visualIsActive || hoverAsActive
             ? variant === "destructive"
@@ -221,8 +221,8 @@ function Action({
         ? variant === "destructive"
             ? hoverAsActiveTextClass
             : cn(
-                "group-hover/action:text-neutral-400",
-                showPressed && "max-lg:group-active/action:text-neutral-400",
+                "group-hover/action:text-action-supporting",
+                showPressed && "max-lg:group-active/action:text-action-supporting",
             )
         : undefined;
 

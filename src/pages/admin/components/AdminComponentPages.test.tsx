@@ -29,6 +29,7 @@ import AdminActionComponentPage from "./AdminActionComponentPage";
 import AdminAvatarComponentPage from "./AdminAvatarComponentPage";
 import AdminBadgeComponentPage from "./AdminBadgeComponentPage";
 import AdminDropdownMenuComponentPage from "./AdminDropdownMenuComponentPage";
+import AdminInputFieldComponentPage from "./AdminInputFieldComponentPage";
 import AdminScrollbarComponentPage from "./AdminScrollbarComponentPage";
 import AdminSelectionComponentPage from "./AdminSelectionComponentPage";
 import AdminSeparatorComponentPage from "./AdminSeparatorComponentPage";
@@ -48,6 +49,7 @@ const pages = [
   AdminScrollbarComponentPage,
   AdminTabsComponentPage,
   AdminDropdownMenuComponentPage,
+  AdminInputFieldComponentPage,
 ];
 
 describe("admin component detail pages", () => {
@@ -70,6 +72,77 @@ describe("admin component detail pages", () => {
 
     expect(container.querySelector("h1")).not.toBeNull();
     expect(container.querySelectorAll('[data-slot="card"]').length).toBeGreaterThan(0);
+    expect(container.querySelector("main")?.classList.contains("select-none")).toBe(false);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("blocks invalid sale amounts and accepts decimal values", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <AdminInputFieldComponentPage />
+        </MemoryRouter>,
+      );
+    });
+
+    const saleAmount = Array.from(
+      container.querySelectorAll<HTMLInputElement>('input[data-slot="input"]'),
+    ).find(
+      (input) =>
+        !input.disabled &&
+        input.value === "3000" &&
+        input.inputMode === "decimal",
+    );
+    const setNativeValue = Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      "value",
+    )?.set;
+
+    expect(saleAmount).not.toBeUndefined();
+    expect(saleAmount?.type).toBe("text");
+    expect(saleAmount?.inputMode).toBe("decimal");
+
+    await act(async () => {
+      if (saleAmount && setNativeValue) {
+        setNativeValue.call(saleAmount, "1000000000");
+        saleAmount.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    });
+
+    expect(saleAmount?.value).toBe("3000");
+
+    await act(async () => {
+      if (saleAmount && setNativeValue) {
+        setNativeValue.call(saleAmount, "3000x");
+        saleAmount.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    });
+
+    expect(saleAmount?.value).toBe("3000");
+
+    await act(async () => {
+      if (saleAmount && setNativeValue) {
+        setNativeValue.call(saleAmount, "3000.5");
+        saleAmount.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    });
+
+    expect(saleAmount?.value).toBe("3000.5");
+
+    await act(async () => {
+      if (saleAmount && setNativeValue) {
+        setNativeValue.call(saleAmount, "1000000000");
+        saleAmount.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    });
+
+    expect(saleAmount?.value).toBe("3000.5");
 
     await act(async () => root.unmount());
     container.remove();
@@ -92,6 +165,16 @@ describe("admin component detail pages", () => {
     expect(container.querySelectorAll('[data-testid^="avatar-type-row-"]')).toHaveLength(6);
     expect(container.querySelectorAll('[data-testid^="avatar-user-trigger-"]')).toHaveLength(1);
     expect(container.querySelectorAll('[data-slot="avatar-action"]')).toHaveLength(15);
+    expect(
+      container
+        .querySelector('[data-testid="avatar-case-brand-logos-xsmall"] [data-slot="avatar-image"]')
+        ?.getAttribute("alt"),
+    ).toBe("Corelia logo");
+    expect(
+      container
+        .querySelector('[data-testid="avatar-case-brand-logos-large"] [data-slot="avatar-image"]')
+        ?.getAttribute("alt"),
+    ).toBe("Open Campus logo");
     expect(
       container.querySelectorAll('[data-testid^="avatar-case-text-"] [data-slot="avatar-action"]'),
     ).toHaveLength(5);

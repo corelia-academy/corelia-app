@@ -1000,6 +1000,14 @@
   "combobox": {
     "searchPlaceholder": "Tìm theo tên hoặc email",
     "emptyLabel": "Không có kết quả phù hợp.",
+    "searchLabel": "Tìm kiếm {{label}}",
+    "tagsLabel": "thẻ",
+    "selectOptionLabel": "Chọn một tùy chọn",
+    "selectionLabel": "Lựa chọn {{label}}",
+    "tagOptionsLabel": "Tùy chọn tag",
+    "tagOptionsForLabel": "Tùy chọn tag cho {{label}}",
+    "hiddenTagsLabel_one": "{{count}} tag đang ẩn",
+    "hiddenTagsLabel_other": "{{count}} tag đang ẩn",
     "done": "Xong",
     "loadMore": "Tải thêm",
     "loadingMore": "Đang tải thêm..."
