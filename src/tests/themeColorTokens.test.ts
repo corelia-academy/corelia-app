@@ -30,19 +30,19 @@ describe("semantic theme color tokens", () => {
     const lightMode = readCssRule(":root")
     const darkMode = readCssRule(".dark")
     const roles = [
-      ["loading-bar-end", "var(--blue-700)", "var(--blue-700)"],
-      ["hackathon-unpublish-surface", "var(--blue-600)", "var(--blue-600)"],
-      ["hackathon-unpublish-hover-surface", "var(--blue-700)", "var(--blue-700)"],
+      ["loading-bar-end", "var(--blue-800)", "var(--blue-800)"],
+      ["hackathon-unpublish-surface", "var(--blue-700)", "var(--blue-700)"],
+      ["hackathon-unpublish-hover-surface", "var(--blue-800)", "var(--blue-800)"],
       ["mint-pending-filter-text", "var(--neutral-900)", "var(--neutral-900)"],
       ["mint-pending-count-surface", "var(--neutral-900)", "var(--neutral-900)"],
       ["mint-pending-count-text", "var(--neutral-900)", "var(--neutral-900)"],
-      ["mint-oca-badge-surface", "var(--blue-500)", "var(--blue-500)"],
-      ["mint-oca-badge-text", "var(--blue-600)", "var(--blue-400)"],
-      ["mint-oca-badge-border", "var(--blue-500)", "var(--blue-500)"],
+      ["mint-oca-badge-surface", "var(--blue-600)", "var(--blue-600)"],
+      ["mint-oca-badge-text", "var(--blue-700)", "var(--blue-500)"],
+      ["mint-oca-badge-border", "var(--blue-600)", "var(--blue-600)"],
       ["mint-revoked-badge-surface", "var(--neutral-500)", "var(--neutral-500)"],
       ["mint-revoked-badge-text", "var(--neutral-400)", "var(--neutral-400)"],
       ["mint-revoked-badge-border", "var(--neutral-500)", "var(--neutral-500)"],
-      ["selection-mark", "var(--blue-50)", "var(--blue-50)"],
+      ["selection-mark", "var(--blue-100)", "var(--blue-100)"],
     ] as const
 
     for (const [name, lightValue, darkValue] of roles) {
