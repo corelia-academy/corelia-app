@@ -646,6 +646,14 @@ export async function touchEnrollment(courseId: string, viewer?: User | null): P
     .eq("id", enr.id);
 }
 
+export async function rememberRecentLesson(enrollmentId: string, lessonId: string): Promise<void> {
+  const { error } = await supabase
+    .from("enrollments")
+    .update({ last_lesson_id: lessonId, last_accessed_at: new Date().toISOString() })
+    .eq("id", enrollmentId);
+  if (error) throw new Error(error.message);
+}
+
 const LESSON_LEARNER_COUNT_PAGE = 1000;
 
 /** Distinct learner count per lesson_id for a course (any lesson_progress row). */
@@ -1125,6 +1133,19 @@ export function computeProgressPercent(lessons: CourseLesson[], progressList: Le
 export function getNextLesson(lessons: CourseLesson[], progressList: LessonProgress[]): CourseLesson | null {
   const completedIds = getCompletedLessonIds(lessons, progressList);
   return lessons.find((l) => l.published !== false && !l.archived_at && !completedIds.has(l.id)) ?? null;
+}
+
+export function getResumeLesson(
+  lessons: CourseLesson[],
+  progressList: LessonProgress[],
+  lastLessonId?: string | null,
+): CourseLesson | null {
+  const completedIds = getCompletedLessonIds(lessons, progressList);
+  const recent = lessons.find((lesson) => lesson.id === lastLessonId);
+  if (recent && recent.published !== false && !recent.archived_at && !completedIds.has(recent.id)) {
+    return recent;
+  }
+  return getNextLesson(lessons, progressList);
 }
 
 export async function createCourse(data: CourseInsert, viewer?: User | null): Promise<Course> {

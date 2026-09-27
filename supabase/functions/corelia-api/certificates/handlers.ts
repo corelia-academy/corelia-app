@@ -74,7 +74,7 @@ async function runCertificateIssuedSideEffects(
     const [{ data: authUser }, { data: profileRow }, { data: certificateRecord }, baseUrl] = await Promise.all([
       db.auth.admin.getUserById(targetUserId),
       db.from("profiles").select("locale").eq("id", targetUserId).maybeSingle(),
-      db.from("certificate_records").select("code").eq("user_id", targetUserId).eq("course_id", courseId).maybeSingle(),
+      db.from("certificate_records").select("id, code").eq("user_id", targetUserId).eq("course_id", courseId).maybeSingle(),
       getAppBaseUrl(db),
     ]);
     const email = (authUser?.user?.email ?? "").trim();
@@ -96,6 +96,7 @@ async function runCertificateIssuedSideEffects(
         subject,
         html,
         idempotencyKey: `certificate-issued-${targetUserId}-${courseId}`,
+        context: certificateRecord?.id ? { type: "corelia_certificate", id: certificateRecord.id } : undefined,
       });
     }
   } catch (mailErr) {

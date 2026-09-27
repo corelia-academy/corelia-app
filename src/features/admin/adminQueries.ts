@@ -10,6 +10,7 @@ import {
 } from "@/lib/credentialTemplates";
 import { listManualMintHistoryForAdmin } from "@/lib/manualMintHistory";
 import { getSystemSetting } from "@/lib/systemSettings";
+import { getCertificateAnalytics, type CertificateAnalyticsFilters } from "@/lib/certificateAnalytics";
 
 export const adminKeys = {
   all: ["admin"] as const,
@@ -22,6 +23,8 @@ export const adminKeys = {
   branding: (userId: string) => [...adminKeys.all, userId, "branding"] as const,
   activityMilestones: (userId: string) =>
     [...adminKeys.all, userId, "activity-milestones"] as const,
+  certificateAnalytics: (userId: string, filters: CertificateAnalyticsFilters, page: number) =>
+    [...adminKeys.all, userId, "certificate-analytics", filters, page] as const,
 };
 
 const adminMeta = (userId: string | undefined) => ({
@@ -29,6 +32,16 @@ const adminMeta = (userId: string | undefined) => ({
   userId: userId ?? "missing",
   showInGlobalLoading: false,
 }) as const;
+
+export function certificateAnalyticsQueryOptions(userId: string | undefined, filters: CertificateAnalyticsFilters, page: number, enabled: boolean) {
+  return queryOptions({
+    queryKey: adminKeys.certificateAnalytics(userId ?? "missing", filters, page),
+    queryFn: () => getCertificateAnalytics(filters, page * 25, 25),
+    enabled: Boolean(userId && enabled),
+    staleTime: 30_000,
+    meta: adminMeta(userId),
+  });
+}
 
 export function adminProfilesQueryOptions(userId: string | undefined) {
   return queryOptions({

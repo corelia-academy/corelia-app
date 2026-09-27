@@ -14,6 +14,7 @@ const PAGE_META: Array<{
 }> = [
   { match: pathname => pathname === "/admin/og-preview", titleKey: "ogPreview.title", descriptionKey: "ogPreview.description" },
   { match: pathname => pathname.startsWith("/admin/email"), titleKey: "layout.pageMeta.email.title", descriptionKey: "layout.pageMeta.email.description" },
+  { match: pathname => pathname === "/admin/certificates", titleKey: "certificateAnalytics.title", descriptionKey: "certificateAnalytics.description" },
   { match: pathname => pathname.startsWith("/admin/projects"), titleKey: "layout.pageMeta.projects.title", descriptionKey: "layout.pageMeta.projects.description" },
   {
     match: (pathname) => pathname.startsWith("/admin/jobs"),

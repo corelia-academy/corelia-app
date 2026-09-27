@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest"
 import { CaretDown } from "@phosphor-icons/react"
 import { UserRound } from "lucide-react"
 
+import { Input } from "./input"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -110,12 +111,18 @@ describe("Dropdown Menu multiple list", () => {
 
   it("renders the multiple-list popup layout and composed controls", () => {
     const searchMarkup = renderToStaticMarkup(
-      <DropdownMenuSearch
-        placeholder="Search"
-        aria-label="Search"
-        value=""
-        readOnly
-      />,
+      <DropdownMenuSearch>
+        <Input
+          type="search"
+          variant="icon-leading"
+          statusIcon={null}
+          placeholder="Search"
+          aria-label="Search"
+          value=""
+          readOnly
+          controlClassName="border-dropdown-input-border bg-dropdown-surface"
+        />
+      </DropdownMenuSearch>,
     )
     const selectAllMarkup = renderToStaticMarkup(
       <DropdownMenuSelectAll
@@ -188,7 +195,16 @@ describe("Dropdown Menu multiple list", () => {
         <DropdownMenu open>
           <DropdownMenuTrigger>Open</DropdownMenuTrigger>
           <DropdownMenuContent layout="multiple-list">
-            <DropdownMenuSearch placeholder="Search" aria-label="Search" />
+            <DropdownMenuSearch>
+              <Input
+                type="search"
+                variant="icon-leading"
+                statusIcon={null}
+                placeholder="Search"
+                aria-label="Search"
+                controlClassName="border-dropdown-input-border bg-dropdown-surface"
+              />
+            </DropdownMenuSearch>
             <DropdownMenuSelectAll label="Select All" />
             <DropdownMenuList>
               <DropdownMenuCheckboxItem>
@@ -208,9 +224,37 @@ describe("Dropdown Menu multiple list", () => {
 
     expect(content).not.toBeNull()
     expect(content?.className).toContain("w-[296px]")
+    expect(content?.className).toContain("overflow-x-auto")
+    expect(content?.className).toContain("overflow-y-hidden")
+    expect(content?.className).not.toContain("overflow-hidden")
     expect(content?.querySelector('input[type="search"]')).not.toBeNull()
     expect(content?.textContent).toContain("Select All")
     expect(content?.querySelector('[data-slot="dropdown-menu-list"]')).not.toBeNull()
+
+    await act(async () => root.unmount())
+    container.remove()
+  })
+
+  it("allows horizontal overflow in the default popup instead of clipping it", async () => {
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+    const root = createRoot(container)
+
+    await act(async () => {
+      root.render(
+        <DropdownMenu open>
+          <DropdownMenuTrigger>Open</DropdownMenuTrigger>
+          <DropdownMenuContent>Default menu</DropdownMenuContent>
+        </DropdownMenu>,
+      )
+    })
+
+    const content = document.body.querySelector<HTMLElement>(
+      '[data-slot="dropdown-menu-content"][data-layout="default"]',
+    )
+
+    expect(content?.className).toContain("overflow-x-auto")
+    expect(content?.className).not.toContain("overflow-x-hidden")
 
     await act(async () => root.unmount())
     container.remove()

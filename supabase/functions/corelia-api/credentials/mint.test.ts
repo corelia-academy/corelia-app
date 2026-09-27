@@ -43,6 +43,7 @@ function makeDb(postMintFailed = false) {
     },
   };
   const notifications: Array<Record<string, unknown>> = [];
+  const attempts: Array<Record<string, unknown>> = [];
   const db = {
     from(table: string) {
       if (table === "credential_issuances") return {
@@ -60,11 +61,14 @@ function makeDb(postMintFailed = false) {
       if (table === "user_notifications") return {
         insert: async (values: Record<string, unknown>) => { notifications.push(values); return { error: null }; },
       };
+      if (table === "credential_mint_attempts") return {
+        insert: async (values: Record<string, unknown>) => { attempts.push(values); return { error: null }; },
+      };
       throw new Error(`Unexpected table ${table}`);
     },
     auth: { admin: { getUserById: async () => ({ data: { user: { user_metadata: { locale: "en" } } } }) } },
   };
-  return { db: db as unknown as SupabaseClient, issuance, notifications };
+  return { db: db as unknown as SupabaseClient, issuance, notifications, attempts };
 }
 
 describe("mintCredentialOnce post-mint handling", () => {
@@ -75,7 +79,7 @@ describe("mintCredentialOnce post-mint handling", () => {
   afterEach(() => { vi.unstubAllGlobals(); vi.resetAllMocks(); vi.restoreAllMocks(); });
 
   it("keeps a successful mainnet mint minted and sends notices with the holder OCID", async () => {
-    const { db, issuance, notifications } = makeDb();
+    const { db, issuance, notifications, attempts } = makeDb();
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       text: async () => JSON.stringify({ vc: { id: "urn:uuid:00000000-0000-0000-0000-000000003039" } }),
@@ -88,17 +92,21 @@ describe("mintCredentialOnce post-mint handling", () => {
     expect(issuance.oc_credential_id).toBe("12345");
     expect(notifications).toHaveLength(1);
     expect(notifications[0].payload).toMatchObject({ holder_ocid: "corelia.edu", network: "mainnet", oc_credential_id: "12345" });
+    expect(notifications[0].payload).toMatchObject({ issuance_id: issuance.id });
+    expect(attempts).toMatchObject([{ issuance_id: issuance.id, outcome: "accepted" }]);
     expect(mail.send).toHaveBeenCalledTimes(1);
+    expect(mail.send.mock.calls[0][0].context).toEqual({ type: "oc_issuance", id: issuance.id });
     expect(mail.send.mock.calls[0][0].html).toContain("id.opencampus.xyz");
   });
 
   it("reconciles an already minted row without posting to Open Campus again", async () => {
-    const { db, issuance, notifications } = makeDb(true);
+    const { db, issuance, notifications, attempts } = makeDb(true);
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
     expect(await mintCredentialOnce(db, issuance.id)).toEqual({ ok: true, duplicate: true });
     expect(fetchMock).not.toHaveBeenCalled();
+    expect(attempts).toHaveLength(0);
     expect(issuance.status).toBe("minted");
     expect(notifications).toHaveLength(1);
     expect(mail.send).toHaveBeenCalledTimes(1);

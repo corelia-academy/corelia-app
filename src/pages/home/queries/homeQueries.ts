@@ -87,7 +87,7 @@ export function homeDashboardQueryOptions(
         getCourseSections,
         getLessonProgressForCourse,
         getMyEnrollments,
-        getNextLesson,
+        getResumeLesson,
         sortLessonsByCurriculum,
       } = await import("@/lib/courses");
 
@@ -103,7 +103,7 @@ export function homeDashboardQueryOptions(
           if (!course) return null;
           const sortedLessons = sortLessonsByCurriculum(lessons, sections);
           const percent = computeProgressPercent(sortedLessons, progress);
-          const nextLesson = getNextLesson(sortedLessons, progress);
+          const nextLesson = getResumeLesson(sortedLessons, progress, enrollment.last_lesson_id);
           const format = pickCourseFormat(course);
           return {
             id: course.id,

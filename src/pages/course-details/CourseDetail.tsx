@@ -106,6 +106,7 @@ export default function CourseDetail() {
     profileId: profile?.id,
     lessons,
     sections: courseLoad.sections,
+    lastLessonId: access.enrollment?.last_lesson_id,
   });
 
   const spotlightContests = useSpotlightContests();
