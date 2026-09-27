@@ -106,7 +106,7 @@ export function ProfileSection(props: {
             <UserAvatar userId={userId} avatarUrl={avatarUrl} avatarSeed={avatarSeed} avatarConfig={avatarConfig}
               alt={t("profile.avatar.alt")} fallback={fullName.trim().slice(0, 2).toUpperCase() || "?"}
               className="size-20 shrink-0 rounded-full" />
-            <Button type="button" variant="outline" nativeButton={false} render={<Link to="/settings/avatar" />}>
+            <Button type="button" variant="cta" hierarchy="secondary" nativeButton={false} render={<Link to="/settings/avatar" />}>
               {t("avatarEditor.edit")}
             </Button>
           </div>

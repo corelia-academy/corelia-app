@@ -83,8 +83,8 @@ export default function Contests() {
             <Button
               render={<NavLink to="/admin/hackathons" />}
               nativeButton={false}
-              size="sm"
-              variant="outline"
+              size="small"
+              variant="cta" hierarchy="secondary"
               className="min-h-11"
             >
               {t("catalog.openWorkspace")}
@@ -157,8 +157,8 @@ export default function Contests() {
                   <Button
                     render={<NavLink to="/admin/hackathons" />}
                     nativeButton={false}
-                    size="sm"
-                    variant="outline"
+                    size="small"
+                    variant="cta" hierarchy="secondary"
                     className="min-h-11"
                   >
                     {t("catalog.openWorkspace")}

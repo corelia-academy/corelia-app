@@ -381,8 +381,8 @@ export default function InstructorCourseNewPage() {
                         />
                         <Button
                           type="button"
-                          variant="outline"
-                          size="sm"
+                          variant="cta" hierarchy="secondary"
+                          size="small"
                           className="h-9 px-3"
                           onClick={() =>
                             setForm((p) => {
@@ -399,8 +399,8 @@ export default function InstructorCourseNewPage() {
                   </div>
                   <Button
                     type="button"
-                    variant="outline"
-                    size="sm"
+                    variant="cta" hierarchy="secondary"
+                    size="small"
                     className="mt-3 inline-flex items-center gap-2"
                     onClick={() =>
                       setForm((p) => ({
@@ -434,8 +434,8 @@ export default function InstructorCourseNewPage() {
                         />
                         <Button
                           type="button"
-                          variant="outline"
-                          size="sm"
+                          variant="cta" hierarchy="secondary"
+                          size="small"
                           className="h-9 px-3"
                           onClick={() =>
                             setForm((p) => {
@@ -452,8 +452,8 @@ export default function InstructorCourseNewPage() {
                   </div>
                   <Button
                     type="button"
-                    variant="outline"
-                    size="sm"
+                    variant="cta" hierarchy="secondary"
+                    size="small"
                     className="mt-3 inline-flex items-center gap-2"
                     onClick={() =>
                       setForm((p) => ({
@@ -478,8 +478,8 @@ export default function InstructorCourseNewPage() {
                     />
                     <Button
                       type="button"
-                      variant="outline"
-                      size="sm"
+                      variant="cta" hierarchy="secondary"
+                      size="small"
                       disabled={uploadingThumb}
                       onClick={() => fileInputRef.current?.click()}
                     >
@@ -601,7 +601,7 @@ export default function InstructorCourseNewPage() {
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="cta" hierarchy="secondary"
                   onClick={() => navigate("/instructor/courses")}
                   disabled={saving || uploadingThumb}
                 >

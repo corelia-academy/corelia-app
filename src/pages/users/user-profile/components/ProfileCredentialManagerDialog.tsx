@@ -236,7 +236,7 @@ export function ProfileCredentialManagerDialog({
           <p className="self-start rounded-full bg-surface-raised px-2.5 py-1 text-xs font-medium text-foreground-muted sm:absolute sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2">
             {t("achievements.profileVisibility.selectedCount", { count: draftIds.size })}
           </p>
-          <Button type="button" variant="outline" onClick={closeWithoutSaving} disabled={saving}>
+          <Button type="button" variant="cta" hierarchy="secondary" onClick={closeWithoutSaving} disabled={saving}>
             {t("actions.cancel")}
           </Button>
           {isDirty ? (

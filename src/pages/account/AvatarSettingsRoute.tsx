@@ -66,10 +66,10 @@ export function AvatarSettingsRoute() {
               size="100%" title={t("avatarEditor.preview")} />
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="outline" onClick={() => { setSeed(crypto.randomUUID()); setMessage(null); }}>
+            <Button type="button" variant="cta" hierarchy="secondary" onClick={() => { setSeed(crypto.randomUUID()); setMessage(null); }}>
               {t("avatarEditor.randomize")}
             </Button>
-            <Button type="button" variant="outline" onClick={() => { setSeed(null); setConfig(EMPTY_AVATAR_CONFIG); setMessage(null); }}>
+            <Button type="button" variant="cta" hierarchy="secondary" onClick={() => { setSeed(null); setConfig(EMPTY_AVATAR_CONFIG); setMessage(null); }}>
               {t("avatarEditor.reset")}
             </Button>
           </div>

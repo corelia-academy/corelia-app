@@ -185,7 +185,7 @@ export default function ProjectsPage() {
         </div>
         <p className="mt-1 text-sm text-foreground-muted">{t("projects.description")}</p>
         </div>
-        <Button variant="outline" render={<NavLink to="/account/projects" />} nativeButton={false}>{t("projects.editor.myProjects")}</Button>
+        <Button variant="cta" hierarchy="secondary" render={<NavLink to="/account/projects" />} nativeButton={false}>{t("projects.editor.myProjects")}</Button>
       </header>
 
       <section className="space-y-5 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card">
@@ -213,7 +213,7 @@ export default function ProjectsPage() {
             <TaxonomyFilter label={t("projects.filters.techStacks")} options={filterOptions("technology", selectedHackathon.tech_stacks ?? [])} selected={techStackIds} onChange={(ids) => update("tech", ids)} />
           </div>
         ) : null}
-        {(hackathonParam || trackIds.length || sectorIds.length || techStackIds.length || sort !== "newest") ? <Button type="button" variant="ghost" size="sm" onClick={() => setParams(new URLSearchParams())}><X className="size-4" />{t("projects.editor.clearFilters")}</Button> : null}
+        {(hackathonParam || trackIds.length || sectorIds.length || techStackIds.length || sort !== "newest") ? <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => setParams(new URLSearchParams())}><X className="size-4" />{t("projects.editor.clearFilters")}</Button> : null}
       </section>
 
       <div className="mt-6">
@@ -253,7 +253,7 @@ export default function ProjectsPage() {
             </div>
             {projectsQuery.hasNextPage ? (
               <div className="mt-6 flex justify-center">
-                <Button type="button" variant="outline" disabled={projectsQuery.isFetchingNextPage} onClick={() => void projectsQuery.fetchNextPage()}>
+                <Button type="button" variant="cta" hierarchy="secondary" disabled={projectsQuery.isFetchingNextPage} onClick={() => void projectsQuery.fetchNextPage()}>
                   {projectsQuery.isFetchingNextPage ? t("projects.loading") : t("projects.loadMore")}
                 </Button>
               </div>

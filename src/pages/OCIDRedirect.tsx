@@ -119,7 +119,7 @@ export default function OCIDRedirect() {
             {error}
           </div>
           <div>
-            <Button variant="outline" onClick={() => navigate("/")}>
+            <Button variant="cta" hierarchy="secondary" onClick={() => navigate("/")}>
               {t("ocid.redirect.backToHome")}
             </Button>
           </div>

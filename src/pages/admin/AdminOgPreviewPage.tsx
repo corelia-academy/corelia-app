@@ -52,23 +52,23 @@ export default function AdminOgPreviewPage() {
       </div>
       : metaQuery.isPending ? <p role="status">{t("ogPreview.loading")}</p>
       : metaQuery.isError ? <div role="alert" className="space-y-2"><p>{t("ogPreview.metadataError")}</p>
-        <Button type="button" variant="outline" onClick={() => void metaQuery.refetch()}>{t("ogPreview.retry")}</Button></div>
+        <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void metaQuery.refetch()}>{t("ogPreview.retry")}</Button></div>
       : !meta ? <p className="rounded-lg border border-border p-6 text-foreground-muted">{t("ogPreview.unavailable")}</p>
       : <div className="space-y-5">
         {imageFailed || imageQuery.data?.status !== 200 && !imageQuery.isPending
           ? <div role="alert" className="space-y-2"><p>{t("ogPreview.imageError")}</p>
-            <Button type="button" variant="outline" onClick={() => { setImageFailed(false); void imageQuery.refetch(); }}>
+            <Button type="button" variant="cta" hierarchy="secondary" onClick={() => { setImageFailed(false); void imageQuery.refetch(); }}>
               {t("ogPreview.retry")}</Button></div>
           : <OgImagePreview imageUrl={meta.imageUrl} dark={dark} onToggleDark={() => setDark(value => !value)}
               onError={() => setImageFailed(true)} />}
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" onClick={() => { setImageFailed(false); void metaQuery.refetch(); }}>
+          <Button type="button" variant="cta" hierarchy="secondary" onClick={() => { setImageFailed(false); void metaQuery.refetch(); }}>
             {t("ogPreview.refresh")}</Button>
-          <Button type="button" variant="outline" onClick={() => void navigator.clipboard.writeText(meta.imageUrl)}>
+          <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void navigator.clipboard.writeText(meta.imageUrl)}>
             {t("ogPreview.copy")}</Button>
-          <Button render={<a href={meta.canonicalUrl} target="_blank" rel="noreferrer" />} variant="outline">
+          <Button render={<a href={meta.canonicalUrl} target="_blank" rel="noreferrer" />} variant="cta" hierarchy="secondary">
             {t("ogPreview.openPage")}</Button>
-          <Button render={<a href={meta.imageUrl} target="_blank" rel="noreferrer" />} variant="outline">
+          <Button render={<a href={meta.imageUrl} target="_blank" rel="noreferrer" />} variant="cta" hierarchy="secondary">
             {t("ogPreview.openImage")}</Button>
         </div>
         <dl className="grid gap-2 break-all rounded-lg border border-border p-4 text-sm">

@@ -204,7 +204,7 @@ export function LessonQuiz({
                   : t("detail.learn.quiz.scoreRetry")}
               </p>
             </div>
-            <Button type="button" variant="ghost" size="sm" onClick={handleRetry} className="shrink-0">
+            <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={handleRetry} className="shrink-0">
               <RotateCcw className="size-3.5 mr-1.5" aria-hidden />
               {t("detail.learn.quiz.retry")}
             </Button>

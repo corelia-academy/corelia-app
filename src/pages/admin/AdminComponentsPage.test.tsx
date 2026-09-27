@@ -50,12 +50,13 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(11);
+    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(12);
     expect(container.querySelector('a[href="/components/action"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/avatar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/scrollbar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/tabs"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/input-field"]')).not.toBeNull();
+    expect(container.querySelector('a[href="/components/button"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components"]')).toBeNull();
     const navigation = container.querySelector<HTMLElement>(
       '[data-testid="component-navigation"]',
@@ -64,11 +65,22 @@ describe("AdminComponentsPage", () => {
     expect(navigation?.classList.contains("overflow-x-auto")).toBe(true);
     expect(navigation?.classList.contains("overflow-x-hidden")).toBe(false);
     expect(container.querySelector("main")?.classList.contains("select-none")).toBe(false);
-    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(11);
-    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(11);
+    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(12);
+    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(12);
     expect(container.querySelector('[data-testid="component-section-title"]')?.textContent).toBe("Action");
     expect(container.textContent).toContain("Badge");
     expect(container.textContent).toContain("Selection");
+
+    const buttonSection = container.querySelector<HTMLElement>("#component-button");
+    expect(buttonSection).not.toBeNull();
+    expect(buttonSection?.textContent).toContain("CTA");
+    expect(buttonSection?.textContent).toContain("Destructive");
+    expect(buttonSection?.textContent).toContain("Floating");
+    expect(buttonSection?.textContent).toContain("Icon only");
+    expect(buttonSection?.querySelectorAll("button:disabled").length).toBeGreaterThan(0);
+    expect(buttonSection?.querySelector('form input[type="email"]')).not.toBeNull();
+    expect(buttonSection?.querySelector('form button[type="submit"]')).not.toBeNull();
+
     const header = container.querySelector("main > header");
     const sidebar = container.querySelector("aside");
 

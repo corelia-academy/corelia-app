@@ -18,7 +18,7 @@ interface FollowButtonProps {
   followerCount?: number | null;
   disabled?: boolean;
   className?: string;
-  size?: "sm" | "default" | "lg";
+  size?: "large" | "medium" | "small" | "xsmall";
   showCount?: boolean;
   onFollowerCountChange?: (nextCount: number) => void;
   onFollowChange?: (following: boolean) => void;
@@ -30,7 +30,7 @@ export function FollowButton({
   followerCount = null,
   disabled = false,
   className,
-  size = "default",
+  size = "small",
   showCount = true,
   onFollowerCountChange,
   onFollowChange,
@@ -136,7 +136,8 @@ export function FollowButton({
     <Button
       type="button"
       size={size}
-      variant={following ? "secondary" : "outline"}
+      variant="cta"
+      hierarchy={following ? "primary" : "secondary"}
       className={cn("gap-1.5", className)}
       aria-pressed={following}
       title={title}

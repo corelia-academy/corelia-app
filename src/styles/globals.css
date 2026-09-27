@@ -219,6 +219,41 @@
   --color-input-field-disabled-icon: var(--input-field-disabled-icon);
   --color-input-field-divider: var(--input-field-divider);
   --color-input-field-divider-focus: var(--input-field-divider-focus);
+  /* Màu ngữ nghĩa cho Button theo Figma; giá trị được ánh xạ theo từng giao diện bên dưới. */
+  --color-button-primary: var(--button-primary);
+  --color-button-primary-foreground: var(--button-primary-foreground);
+  --color-button-primary-hover: var(--button-primary-hover);
+  --color-button-primary-active: var(--button-primary-active);
+  --color-button-primary-disabled: var(--button-primary-disabled);
+  --color-button-primary-disabled-foreground: var(--button-primary-disabled-foreground);
+  --color-button-secondary-foreground: var(--button-secondary-foreground);
+  --color-button-secondary-border: var(--button-secondary-border);
+  --color-button-secondary-hover: var(--button-secondary-hover);
+  --color-button-secondary-active: var(--button-secondary-active);
+  --color-button-secondary-disabled-border: var(--button-secondary-disabled-border);
+  --color-button-secondary-disabled-foreground: var(--button-secondary-disabled-foreground);
+  --color-button-tertiary-foreground: var(--button-tertiary-foreground);
+  --color-button-tertiary-hover: var(--button-tertiary-hover);
+  --color-button-tertiary-active: var(--button-tertiary-active);
+  --color-button-tertiary-disabled-foreground: var(--button-tertiary-disabled-foreground);
+  --color-button-destructive-primary: var(--button-destructive-primary);
+  --color-button-destructive-primary-foreground: var(--button-destructive-primary-foreground);
+  --color-button-destructive-primary-hover: var(--button-destructive-primary-hover);
+  --color-button-destructive-primary-active: var(--button-destructive-primary-active);
+  --color-button-destructive-primary-disabled: var(--button-destructive-primary-disabled);
+  --color-button-destructive-primary-disabled-foreground: var(--button-destructive-primary-disabled-foreground);
+  --color-button-destructive-secondary-foreground: var(--button-destructive-secondary-foreground);
+  --color-button-destructive-secondary-border: var(--button-destructive-secondary-border);
+  --color-button-destructive-secondary-hover: var(--button-destructive-secondary-hover);
+  --color-button-destructive-secondary-active: var(--button-destructive-secondary-active);
+  --color-button-destructive-secondary-disabled-border: var(--button-destructive-secondary-disabled-border);
+  --color-button-destructive-secondary-disabled-foreground: var(--button-destructive-secondary-disabled-foreground);
+  --color-button-destructive-tertiary-foreground: var(--button-destructive-tertiary-foreground);
+  --color-button-destructive-tertiary-hover: var(--button-destructive-tertiary-hover);
+  --color-button-destructive-tertiary-active: var(--button-destructive-tertiary-active);
+  --color-button-destructive-tertiary-disabled-foreground: var(--button-destructive-tertiary-disabled-foreground);
+  --shadow-button-floating-large: var(--button-floating-shadow-large);
+  --shadow-button-floating-medium: var(--button-floating-shadow-medium);
   /* Issue #385 — Figma Multiple Dropdown List semantic aliases. */
   --color-dropdown-surface: var(--dropdown-surface);
   --color-dropdown-hover: var(--dropdown-hover);
@@ -763,6 +798,42 @@
   --input-field-divider: var(--text-secondary);
   --input-field-divider-focus: var(--accent-purple-700);
 
+  /* Màu Button theo Figma được điều chỉnh cho giao diện sáng. */
+  --button-primary: var(--blue-600);
+  --button-primary-foreground: var(--neutral-50);
+  --button-primary-hover: var(--blue-500);
+  --button-primary-active: var(--blue-800);
+  --button-primary-disabled: var(--neutral-200);
+  --button-primary-disabled-foreground: var(--neutral-500);
+  --button-secondary-foreground: var(--blue-700);
+  --button-secondary-border: var(--blue-700);
+  --button-secondary-hover: var(--neutral-100);
+  --button-secondary-active: var(--blue-100);
+  --button-secondary-disabled-border: var(--neutral-300);
+  --button-secondary-disabled-foreground: var(--neutral-400);
+  --button-tertiary-foreground: var(--foreground);
+  --button-tertiary-hover: var(--neutral-100);
+  --button-tertiary-active: var(--neutral-200);
+  --button-tertiary-disabled-foreground: var(--neutral-400);
+  --button-destructive-primary: var(--error-700);
+  --button-destructive-primary-foreground: var(--neutral-50);
+  --button-destructive-primary-hover: var(--error-500);
+  --button-destructive-primary-active: var(--error-900);
+  --button-destructive-primary-disabled: var(--neutral-200);
+  --button-destructive-primary-disabled-foreground: var(--neutral-500);
+  --button-destructive-secondary-foreground: var(--error-700);
+  --button-destructive-secondary-border: var(--error-700);
+  --button-destructive-secondary-hover: var(--neutral-100);
+  --button-destructive-secondary-active: var(--neutral-200);
+  --button-destructive-secondary-disabled-border: var(--neutral-300);
+  --button-destructive-secondary-disabled-foreground: var(--neutral-400);
+  --button-destructive-tertiary-foreground: var(--error-700);
+  --button-destructive-tertiary-hover: var(--neutral-100);
+  --button-destructive-tertiary-active: var(--neutral-200);
+  --button-destructive-tertiary-disabled-foreground: var(--neutral-400);
+  --button-floating-shadow-large: 4px 12px 40px -4px rgb(97 64 182 / 24%);
+  --button-floating-shadow-medium: 2px 8px 32px -4px rgb(97 64 182 / 20%);
+
   /* Thẻ Card trắng thuần */
   --card: var(--neutral-50);
   --card-foreground: var(--text-primary-2);
@@ -958,6 +1029,42 @@
   --input-field-disabled-icon: #697586;
   --input-field-divider: var(--text-secondary);
   --input-field-divider-focus: #8b6fe8;
+
+  /* Bảng màu Button khớp Figma, ánh xạ qua các biến màu toàn cục hiện có. */
+  --button-primary: var(--blue-600);
+  --button-primary-foreground: var(--neutral-50);
+  --button-primary-hover: var(--blue-500);
+  --button-primary-active: var(--blue-800);
+  --button-primary-disabled: var(--neutral-600);
+  --button-primary-disabled-foreground: var(--neutral-400);
+  --button-secondary-foreground: var(--blue-300);
+  --button-secondary-border: var(--blue-300);
+  --button-secondary-hover: var(--neutral-700);
+  --button-secondary-active: var(--neutral-800);
+  --button-secondary-disabled-border: var(--neutral-500);
+  --button-secondary-disabled-foreground: var(--neutral-500);
+  --button-tertiary-foreground: var(--neutral-50);
+  --button-tertiary-hover: var(--neutral-700);
+  --button-tertiary-active: var(--neutral-800);
+  --button-tertiary-disabled-foreground: var(--neutral-500);
+  --button-destructive-primary: var(--error-700);
+  --button-destructive-primary-foreground: var(--neutral-50);
+  --button-destructive-primary-hover: var(--error-500);
+  --button-destructive-primary-active: var(--error-900);
+  --button-destructive-primary-disabled: var(--neutral-600);
+  --button-destructive-primary-disabled-foreground: var(--neutral-400);
+  --button-destructive-secondary-foreground: var(--error-500);
+  --button-destructive-secondary-border: var(--error-500);
+  --button-destructive-secondary-hover: var(--neutral-800);
+  --button-destructive-secondary-active: var(--neutral-900);
+  --button-destructive-secondary-disabled-border: var(--neutral-600);
+  --button-destructive-secondary-disabled-foreground: var(--neutral-500);
+  --button-destructive-tertiary-foreground: var(--error-500);
+  --button-destructive-tertiary-hover: var(--neutral-700);
+  --button-destructive-tertiary-active: var(--neutral-800);
+  --button-destructive-tertiary-disabled-foreground: var(--neutral-500);
+  --button-floating-shadow-large: 4px 12px 40px -4px rgb(97 64 182 / 24%);
+  --button-floating-shadow-medium: 2px 8px 32px -4px rgb(97 64 182 / 20%);
 
   /* Exact Figma Tabs mappings for Dark mode. */
   --tabs-background: var(--background);

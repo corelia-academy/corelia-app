@@ -42,7 +42,7 @@ export function ProjectTaxonomyPicker({ label, options, selectedIds, customValue
         {[...selected.map((item) => ({ key: item.id, name: item.name, custom: false })), ...customValues.map((name) => ({ key: `custom:${name}`, name, custom: true }))].map((item) => (
           <span key={item.key} className="inline-flex min-h-9 items-center gap-1 rounded-full border border-primary/30 bg-primary/5 pl-3 pr-1 text-sm text-primary">
             {item.name}
-            <Button type="button" variant="ghost" size="icon" className="size-8 rounded-full" aria-label={`${label}: ${item.name}`} onClick={() => item.custom ? onChange(selectedIds, customValues.filter((value) => value !== item.name)) : onChange(selectedIds.filter((id) => id !== item.key), customValues)}><X className="size-4" /></Button>
+            <Button type="button" variant="cta" hierarchy="tertiary" iconOnly size="small" className="size-8 rounded-full" aria-label={`${label}: ${item.name}`} onClick={() => item.custom ? onChange(selectedIds, customValues.filter((value) => value !== item.name)) : onChange(selectedIds.filter((id) => id !== item.key), customValues)}><X className="size-4" /></Button>
           </span>
         ))}
       </div> : null}

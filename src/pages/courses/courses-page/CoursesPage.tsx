@@ -55,7 +55,7 @@ export default function CoursesPage() {
           <p className="mt-2 text-sm leading-relaxed text-destructive/90">
             {error}
           </p>
-          <Button className="mt-4" variant="outline" onClick={() => void retry()}>{tCommon("actions.retry")}</Button>
+          <Button className="mt-4" variant="cta" hierarchy="secondary" onClick={() => void retry()}>{tCommon("actions.retry")}</Button>
         </div>
       </div>
     );
@@ -82,8 +82,8 @@ export default function CoursesPage() {
         {hasActiveFilters ? (
           <Button
             type="button"
-            variant="ghost"
-            size="sm"
+            variant="cta" hierarchy="tertiary"
+            size="small"
             className="h-8 rounded-full px-3 text-xs"
             onClick={resetFilters}
           >
@@ -108,8 +108,8 @@ export default function CoursesPage() {
           {hasActiveFilters ? (
             <Button
               type="button"
-              size="sm"
-              variant="outline"
+              size="small"
+              variant="cta" hierarchy="secondary"
               onClick={resetFilters}
             >
               {t("catalog.clearFilters")}
@@ -118,8 +118,8 @@ export default function CoursesPage() {
             <Button
               render={<Link to="/" />}
               nativeButton={false}
-              size="sm"
-              variant="outline"
+              size="small"
+              variant="cta" hierarchy="secondary"
             >
               {t("catalog.backHome", { defaultValue: "Về trang chủ" })}
             </Button>

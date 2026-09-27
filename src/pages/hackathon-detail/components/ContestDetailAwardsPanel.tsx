@@ -243,13 +243,13 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2 border-b border-border-subtle pb-3">
-        <Button type="button" variant={tab === "templates" ? "secondary" : "ghost"} onClick={() => setTab("templates")}>
+        <Button type="button" variant="cta" hierarchy={tab === "templates" ? "primary" : "tertiary"} onClick={() => setTab("templates")}>
           {translate("workspace.awards.tabTemplates")}
         </Button>
-        <Button type="button" variant={tab === "grant" ? "secondary" : "ghost"} onClick={() => setTab("grant")}>
+        <Button type="button" variant="cta" hierarchy={tab === "grant" ? "primary" : "tertiary"} onClick={() => setTab("grant")}>
           {translate("workspace.awards.tabGrant")}
         </Button>
-        <Button type="button" variant={tab === "eligibility" ? "secondary" : "ghost"} onClick={() => setTab("eligibility")}>
+        <Button type="button" variant="cta" hierarchy={tab === "eligibility" ? "primary" : "tertiary"} onClick={() => setTab("eligibility")}>
           {translate("workspace.awards.tabEligibility")}
         </Button>
       </div>
@@ -309,7 +309,7 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
                       <td className="px-3 py-2">{counts[trow.id] ?? 0}</td>
                       <td className="px-3 py-2">{trow.is_active ? "✓" : "-"}</td>
                       <td className="px-3 py-2 text-right">
-                        <Button type="button" variant="outline" size="sm" onClick={() => openEdit(trow)}>
+                        <Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={() => openEdit(trow)}>
                           {translate("workspace.awards.edit")}
                         </Button>
                       </td>
@@ -396,16 +396,16 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
               ) : (
                 <>
                   <div className="flex flex-wrap gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={selectAllUnissued}>
+                    <Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={selectAllUnissued}>
                       {translate("workspace.awards.eligibilitySelectAll")}
                     </Button>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => setEligSelected(new Set())}>
+                    <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => setEligSelected(new Set())}>
                       {translate("workspace.awards.eligibilityDeselectAll")}
                     </Button>
                     {eligSelected.size > 0 && (
                       <Button
                         type="button"
-                        size="sm"
+                        size="small"
                         disabled={eligGranting}
                         onClick={() => void handleEligGrant()}
                       >
@@ -608,7 +608,7 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
             </label>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+            <Button type="button" variant="cta" hierarchy="secondary" onClick={() => setDialogOpen(false)}>
               {translate("workspace.awards.cancel")}
             </Button>
             <Button type="button" disabled={saving || !formName.trim() || !formImageUrl.trim()} onClick={() => void handleSaveTemplate()}>

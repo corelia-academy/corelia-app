@@ -307,7 +307,7 @@ export function ContestDetailManagerSettingsCard({
           <Button
             type="button"
             className="mt-4 w-full"
-            variant="outline"
+            variant="cta" hierarchy="secondary"
             disabled={savingSlug}
             onClick={() => void handleSlugSave()}
           >
@@ -374,7 +374,7 @@ export function ContestDetailManagerSettingsCard({
           <Button
             type="button"
             className="mt-4 w-full"
-            variant="outline"
+            variant="cta" hierarchy="secondary"
             disabled={savingRubric}
             onClick={() => void handleRubricSave()}
           >
@@ -454,8 +454,8 @@ export function ContestDetailManagerSettingsCard({
                   <div className="sm:col-span-2">
                     <Button
                       type="button"
-                      variant="ghost"
-                      size="sm"
+                      variant="cta" hierarchy="tertiary"
+                      size="small"
                       onClick={() =>
                         setTracksDraft((prev) =>
                           prev.filter((_, i) => i !== index),
@@ -469,8 +469,8 @@ export function ContestDetailManagerSettingsCard({
               ))}
               <Button
                 type="button"
-                variant="outline"
-                size="sm"
+                variant="cta" hierarchy="secondary"
+                size="small"
                 onClick={() =>
                   setTracksDraft((prev) => [
                     ...prev,
@@ -524,8 +524,8 @@ export function ContestDetailManagerSettingsCard({
                   <div className="sm:col-span-2">
                     <Button
                       type="button"
-                      variant="ghost"
-                      size="sm"
+                      variant="cta" hierarchy="tertiary"
+                      size="small"
                       onClick={() =>
                         setRoundsDraft((prev) =>
                           prev.filter((_, i) => i !== index),
@@ -539,8 +539,8 @@ export function ContestDetailManagerSettingsCard({
               ))}
               <Button
                 type="button"
-                variant="outline"
-                size="sm"
+                variant="cta" hierarchy="secondary"
+                size="small"
                 onClick={() =>
                   setRoundsDraft((prev) => [
                     ...prev,
@@ -573,7 +573,7 @@ export function ContestDetailManagerSettingsCard({
           <Button
             type="button"
             className="mt-4 w-full"
-            variant="outline"
+            variant="cta" hierarchy="secondary"
             disabled={savingTracksRounds}
             onClick={() => void handleTracksRoundsSave()}
           >
@@ -721,8 +721,8 @@ export function ContestDetailManagerSettingsCard({
                   )}
                   <Button
                     type="button"
-                    size="sm"
-                    variant="outline"
+                    size="small"
+                    variant="cta" hierarchy="secondary"
                     className="mt-3"
                     disabled={inviteActionId === invite.email}
                     onClick={() => void handleInviteRevoke(invite.email)}
@@ -732,8 +732,8 @@ export function ContestDetailManagerSettingsCard({
                   <div className="mt-2 flex flex-wrap gap-2">
                     <Button
                       type="button"
-                      size="sm"
-                      variant="ghost"
+                      size="small"
+                      variant="cta" hierarchy="tertiary"
                       disabled={inviteActionId === invite.email}
                       onClick={() => void handleCopyInviteLink(invite.email)}
                     >
@@ -741,8 +741,8 @@ export function ContestDetailManagerSettingsCard({
                     </Button>
                     <Button
                       type="button"
-                      size="sm"
-                      variant="ghost"
+                      size="small"
+                      variant="cta" hierarchy="tertiary"
                       disabled={inviteActionId === invite.email}
                       onClick={() => handleInviteMailTo(invite)}
                     >
@@ -953,8 +953,8 @@ export function ContestDetailManagerSettingsCard({
                   <div className="sm:col-span-2">
                     <Button
                       type="button"
-                      variant="ghost"
-                      size="sm"
+                      variant="cta" hierarchy="tertiary"
+                      size="small"
                       onClick={() =>
                         setPublicDraft((prev) => ({
                           ...prev,
@@ -970,8 +970,8 @@ export function ContestDetailManagerSettingsCard({
             </div>
             <Button
               type="button"
-              variant="outline"
-              size="sm"
+              variant="cta" hierarchy="secondary"
+              size="small"
               className="mt-3"
               onClick={() =>
                 setPublicDraft((prev) => ({
@@ -1035,8 +1035,8 @@ export function ContestDetailManagerSettingsCard({
                   />
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="sm"
+                    variant="cta" hierarchy="tertiary"
+                    size="small"
                     onClick={() =>
                       setPublicDraft((prev) => ({
                         ...prev,
@@ -1051,8 +1051,8 @@ export function ContestDetailManagerSettingsCard({
             </div>
             <Button
               type="button"
-              variant="outline"
-              size="sm"
+              variant="cta" hierarchy="secondary"
+              size="small"
               className="mt-3"
               onClick={() =>
                 setPublicDraft((prev) => ({
@@ -1133,8 +1133,8 @@ export function ContestDetailManagerSettingsCard({
                         </div>
                         <Button
                           type="button"
-                          variant="outline"
-                          size="sm"
+                          variant="cta" hierarchy="secondary"
+                          size="small"
                           disabled={partnerLogoUploadingIndex === index}
                           onClick={() =>
                             void handleOrganizationalPartnerLogoRemove(index)
@@ -1213,8 +1213,8 @@ export function ContestDetailManagerSettingsCard({
                   <div className="sm:col-span-2">
                     <Button
                       type="button"
-                      variant="ghost"
-                      size="sm"
+                      variant="cta" hierarchy="tertiary"
+                      size="small"
                       onClick={() =>
                         setPublicDraft((prev) => ({
                           ...prev,
@@ -1233,8 +1233,8 @@ export function ContestDetailManagerSettingsCard({
             </div>
             <Button
               type="button"
-              variant="outline"
-              size="sm"
+              variant="cta" hierarchy="secondary"
+              size="small"
               className="mt-3"
               onClick={() =>
                 setPublicDraft((prev) => ({
@@ -1394,8 +1394,8 @@ export function ContestDetailManagerSettingsCard({
                   <div className="sm:col-span-2">
                     <Button
                       type="button"
-                      variant="ghost"
-                      size="sm"
+                      variant="cta" hierarchy="tertiary"
+                      size="small"
                       onClick={() =>
                         setPublicDraft((prev) => ({
                           ...prev,
@@ -1413,8 +1413,8 @@ export function ContestDetailManagerSettingsCard({
             </div>
             <Button
               type="button"
-              variant="outline"
-              size="sm"
+              variant="cta" hierarchy="secondary"
+              size="small"
               className="mt-3"
               onClick={() =>
                 setPublicDraft((prev) => ({

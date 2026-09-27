@@ -272,8 +272,8 @@ export function NotificationBell() {
                           <div className="mt-1">
                             <Button
                               type="button"
-                              variant="ghost"
-                              size="xs"
+                              variant="cta" hierarchy="tertiary"
+                              size="xsmall"
                               className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
                               render={<NavLink to={inviteCtx.hackathonHref} />}
                               nativeButton={false}
@@ -287,7 +287,7 @@ export function NotificationBell() {
                           <div className="mt-2 flex flex-wrap gap-2">
                             <Button
                               type="button"
-                              size="sm"
+                              size="small"
                               className="min-h-8"
                               disabled={busyId === n.id}
                               onClick={() =>
@@ -301,8 +301,8 @@ export function NotificationBell() {
                             </Button>
                             <Button
                               type="button"
-                              size="sm"
-                              variant="outline"
+                              size="small"
+                              variant="cta" hierarchy="secondary"
                               className="min-h-8"
                               disabled={busyId === n.id}
                               onClick={() =>
@@ -350,7 +350,7 @@ export function NotificationBell() {
                           <div className="mt-2 flex flex-wrap gap-2">
                             <Button
                               type="button"
-                              size="sm"
+                              size="small"
                               className="min-h-8"
                               disabled={busyId === n.id}
                               onClick={() =>
@@ -364,8 +364,8 @@ export function NotificationBell() {
                             </Button>
                             <Button
                               type="button"
-                              size="sm"
-                              variant="outline"
+                              size="small"
+                              variant="cta" hierarchy="secondary"
                               className="min-h-8"
                               disabled={busyId === n.id}
                               onClick={() =>
@@ -411,8 +411,8 @@ export function NotificationBell() {
                           <div className="mt-2">
                             <Button
                               type="button"
-                              variant="ghost"
-                              size="xs"
+                              variant="cta" hierarchy="tertiary"
+                              size="xsmall"
                               className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
                               render={<NavLink to={`/hackathons/${hackathonSlug}`} />}
                               nativeButton={false}
@@ -444,8 +444,8 @@ export function NotificationBell() {
                           <div className="mt-2">
                             <Button
                               type="button"
-                              variant="ghost"
-                              size="xs"
+                              variant="cta" hierarchy="tertiary"
+                              size="xsmall"
                               className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
                               render={
                                 <NavLink
@@ -487,8 +487,8 @@ export function NotificationBell() {
                         <div className="mt-2">
                           <Button
                             type="button"
-                            variant="ghost"
-                            size="xs"
+                            variant="cta" hierarchy="tertiary"
+                            size="xsmall"
                             className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
                             render={
                               <NavLink
@@ -527,8 +527,8 @@ export function NotificationBell() {
                         <div className="mt-2">
                           <Button
                             type="button"
-                            variant="ghost"
-                            size="xs"
+                            variant="cta" hierarchy="tertiary"
+                            size="xsmall"
                             className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
                             render={
                               <NavLink
@@ -569,8 +569,8 @@ export function NotificationBell() {
                         <div className="mt-2">
                           <Button
                             type="button"
-                            variant="ghost"
-                            size="xs"
+                            variant="cta" hierarchy="tertiary"
+                            size="xsmall"
                             className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
                             render={ocCredentialUrl
                               ? <a href={ocCredentialUrl} target="_blank" rel="noopener noreferrer" />
@@ -601,8 +601,8 @@ export function NotificationBell() {
                           <div className="mt-2">
                             <Button
                               type="button"
-                              variant="ghost"
-                              size="xs"
+                              variant="cta" hierarchy="tertiary"
+                              size="xsmall"
                               className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
                               onClick={() => markRead(n.id)}
                             >

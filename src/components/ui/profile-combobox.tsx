@@ -91,7 +91,7 @@ export function ProfileCombobox({
     <>
       <Button
         type="button"
-        variant="outline"
+        variant="cta" hierarchy="secondary"
         className="h-auto min-h-10 w-full items-center justify-between gap-3 px-3 py-2 text-left"
         onClick={() => setOpen(true)}
       >
@@ -177,8 +177,8 @@ export function ProfileCombobox({
                 <div className="pt-2 text-center">
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="sm"
+                    variant="cta" hierarchy="tertiary"
+                    size="small"
                     className="w-full text-xs text-foreground-muted hover:text-foreground"
                     disabled={isLoadingMore}
                     onClick={onLoadMore}

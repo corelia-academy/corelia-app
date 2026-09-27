@@ -8,7 +8,7 @@ export function OgImagePreview({ imageUrl, onError, dark, onToggleDark }: {
   return <div className="space-y-4">
     <div className="flex items-center justify-between gap-3">
       <span className="text-sm text-foreground-muted">{t("ogPreview.image")}</span>
-      <Button type="button" variant="outline" size="sm" onClick={onToggleDark}>
+      <Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={onToggleDark}>
         {dark ? t("ogPreview.lightBackground") : t("ogPreview.darkBackground")}
       </Button>
     </div>

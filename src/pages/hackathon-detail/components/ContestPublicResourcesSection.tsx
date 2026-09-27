@@ -72,8 +72,8 @@ export function ContestPublicResourcesSection(props: {
           </div>
           <Button
             type="button"
-            variant="outline"
-            size="sm"
+            variant="cta" hierarchy="secondary"
+            size="small"
             className="mt-auto w-full"
             nativeButton={false}
             render={
@@ -113,7 +113,7 @@ export function ContestPublicResourcesSection(props: {
                 </div>
                 <Button
                   type="button"
-                  size="sm"
+                  size="small"
                   nativeButton={false}
                   render={
                     <a href={r.url} target="_blank" rel="noopener noreferrer" />

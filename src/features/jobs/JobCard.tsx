@@ -37,7 +37,7 @@ export function JobCard({ publicAppearance = false, job, state, busy, onToggleSa
             <p className="mt-1 truncate text-sm text-foreground-muted">{job.company_name}</p>
           </div>
           {onToggleSaved ? (
-            <Button type="button" size="icon-sm" variant="ghost" disabled={busy} aria-label={state?.saved ? t("actions.unsave") : t("actions.save")} onClick={onToggleSaved}>
+            <Button type="button" size="small" variant="cta" hierarchy="tertiary" iconOnly disabled={busy} aria-label={state?.saved ? t("actions.unsave") : t("actions.save")} onClick={onToggleSaved}>
               <Bookmark className={`size-4 ${state?.saved ? "fill-current text-primary" : ""}`} aria-hidden />
             </Button>
           ) : null}
@@ -56,8 +56,8 @@ export function JobCard({ publicAppearance = false, job, state, busy, onToggleSa
         <div className="mt-auto flex items-end justify-between gap-3 pt-5">
           <div className="text-sm font-semibold text-foreground">{salary ?? t("card.salaryNotShown")}</div>
           <div className="flex gap-1">
-            {onToggleApplied ? <Button type="button" size="sm" variant={state?.applied ? "secondary" : "outline"} disabled={busy} onClick={onToggleApplied}>{state?.applied ? t("actions.applied") : t("actions.markApplied")}</Button> : null}
-            {onToggleHidden ? <Button type="button" size="icon-sm" variant="ghost" disabled={busy} aria-label={state?.hidden ? t("actions.unhide") : t("actions.hide")} title={state?.hidden ? t("actions.unhide") : t("actions.hide")} onClick={onToggleHidden}>{state?.hidden ? <Eye className="size-4" aria-hidden /> : <EyeOff className="size-4" aria-hidden />}</Button> : null}
+            {onToggleApplied ? <Button type="button" size="small" variant="cta" hierarchy={state?.applied ? "primary" : "secondary"} disabled={busy} onClick={onToggleApplied}>{state?.applied ? t("actions.applied") : t("actions.markApplied")}</Button> : null}
+            {onToggleHidden ? <Button type="button" size="small" variant="cta" hierarchy="tertiary" iconOnly disabled={busy} aria-label={state?.hidden ? t("actions.unhide") : t("actions.hide")} title={state?.hidden ? t("actions.unhide") : t("actions.hide")} onClick={onToggleHidden}>{state?.hidden ? <Eye className="size-4" aria-hidden /> : <EyeOff className="size-4" aria-hidden />}</Button> : null}
           </div>
         </div>
       </CardContent>

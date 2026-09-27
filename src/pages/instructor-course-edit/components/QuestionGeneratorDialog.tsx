@@ -524,7 +524,7 @@ export function QuestionGeneratorDialog({
 
             <Button
               type="button"
-              size="sm"
+              size="small"
               className="w-full"
               disabled={
                 copyOnly ||
@@ -587,8 +587,8 @@ export function QuestionGeneratorDialog({
                 <p className="text-sm font-medium text-destructive">{loadError}</p>
                 <Button
                   type="button"
-                  variant="outline"
-                  size="sm"
+                  variant="cta" hierarchy="secondary"
+                  size="small"
                   onClick={() => void questionsQuery.refetch()}
                 >
                   {t("courseEdit.questions.retry", { defaultValue: "Thử lại" })}
@@ -616,8 +616,8 @@ export function QuestionGeneratorDialog({
 
             <Button
               type="button"
-              variant="outline"
-              size="sm"
+              variant="cta" hierarchy="secondary"
+              size="small"
               className="w-full"
               disabled={copyOnly || loading || loadError !== null}
               onClick={addBlankQuestion}
@@ -633,7 +633,7 @@ export function QuestionGeneratorDialog({
         <DialogFooter className="px-6 py-4 border-t border-border-subtle shrink-0">
           <Button
             type="button"
-            variant="outline"
+            variant="cta" hierarchy="secondary"
             onClick={() => requestClose(false)}
             disabled={saving || generating}
           >

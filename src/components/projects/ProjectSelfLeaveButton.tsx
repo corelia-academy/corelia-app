@@ -30,8 +30,8 @@ export function ProjectSelfLeaveButton({ projectId, onLeft }: ProjectSelfLeaveBu
     <>
       <Button
         type="button"
-        variant="outline"
-        size="sm"
+        variant="cta" hierarchy="secondary"
+        size="small"
         onClick={() => { mutation.reset(); setOpen(true); }}
         disabled={mutation.isPending}
       >
@@ -43,7 +43,7 @@ export function ProjectSelfLeaveButton({ projectId, onLeft }: ProjectSelfLeaveBu
           <DialogTitle>{t("projects.team.leaveProjectTitle")}</DialogTitle>
           <DialogDescription>{t("projects.team.leaveProjectConfirm")}</DialogDescription>
           <DialogFooter>
-            <Button type="button" variant="outline" disabled={mutation.isPending} onClick={() => setOpen(false)}>
+            <Button type="button" variant="cta" hierarchy="secondary" disabled={mutation.isPending} onClick={() => setOpen(false)}>
               {t("actions.cancel")}
             </Button>
             <Button type="button" variant="destructive" disabled={mutation.isPending} onClick={() => mutation.mutate()}>

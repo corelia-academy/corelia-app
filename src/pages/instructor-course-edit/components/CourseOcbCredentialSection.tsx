@@ -459,7 +459,7 @@ export function CourseOcbCredentialSection({
         </p>
         <Button
           type="button"
-          variant="outline"
+          variant="cta" hierarchy="secondary"
           className="mt-3"
           onClick={() => void credentialQuery.refetch()}
         >
@@ -574,8 +574,8 @@ export function CourseOcbCredentialSection({
               <div className="mt-1 flex flex-wrap items-center gap-3">
                 <Button
                   type="button"
-                  variant="outline"
-                  size="sm"
+                  variant="cta" hierarchy="secondary"
+                  size="small"
                   disabled={!canEdit || uploadingOnchain}
                   onClick={() => onchainFileRef.current?.click()}
                 >
@@ -610,8 +610,8 @@ export function CourseOcbCredentialSection({
               <div className="mt-1 flex flex-wrap items-center gap-3">
                 <Button
                   type="button"
-                  variant="outline"
-                  size="sm"
+                  variant="cta" hierarchy="secondary"
+                  size="small"
                   disabled={!canEdit || uploading}
                   onClick={() => fileRef.current?.click()}
                 >
@@ -725,7 +725,7 @@ export function CourseOcbCredentialSection({
           once everything is actually persisted. */}
       <Button
         type="button"
-        variant={isDirty ? "outline" : "default"}
+        variant="cta" hierarchy={(isDirty ? "secondary" : "primary")}
         className={isDirty ? "hover:!border-primary hover:!bg-primary hover:!text-primary-foreground" : ""}
         disabled={!canEdit || saving}
         onClick={() => {

@@ -359,8 +359,8 @@ export default function UserProfileLayout() {
                 
                 {!loading && profile && isSelf ? (
                   <Button
-                    variant="outline"
-                    size={previewAsGuest ? "sm" : "lg"}
+                    variant="cta" hierarchy="secondary"
+                    size={(previewAsGuest ? "small" : "large")}
                     onClick={() => setPreviewAsGuest(!previewAsGuest)}
                     aria-label={previewAsGuest ? t("userProfile.actions.exitPreview") : undefined}
                     className={previewAsGuest
@@ -383,7 +383,7 @@ export default function UserProfileLayout() {
 
                 {!loading && profile && effectiveIsSelf ? (
                   <NavLink to="/account/profile">
-                    <Button variant="outline" size="lg" type="button">
+                    <Button variant="cta" hierarchy="secondary" size="large" type="button">
                       {t("userProfile.actions.editProfile")}
                     </Button>
                   </NavLink>
@@ -392,7 +392,7 @@ export default function UserProfileLayout() {
                   <FollowButton
                     subject={{ type: "user", id: profile.id }}
                     followerCount={followerCount}
-                    size="lg"
+                    size="large"
                     onFollowerCountChange={(count) =>
                       setFollowerCountOverride({ profileId: profile.id, count })
                     }

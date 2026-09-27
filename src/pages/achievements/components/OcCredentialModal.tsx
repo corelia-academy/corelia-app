@@ -209,7 +209,7 @@ export function OcCredentialModal({
               {!hasOcid ? (
                 <Button
                   className="w-full gap-3 text-base font-semibold"
-                  size="lg"
+                  size="large"
                   onClick={onConnectOcid}
                 >
                   <img
@@ -222,7 +222,7 @@ export function OcCredentialModal({
               ) : (
                 <Button
                   className="w-full gap-3 text-base font-semibold"
-                  size="lg"
+                  size="large"
                   disabled={
                     claiming ||
                     (item.kind === "cert" && !hasName) ||
@@ -424,7 +424,7 @@ export function OcCredentialModal({
             {isAwaitingHolder && (
               <Button
                 className="w-full gap-3 text-base font-semibold"
-                size="lg"
+                size="large"
                 onClick={onConnectOcid}
               >
                 <img
@@ -439,7 +439,7 @@ export function OcCredentialModal({
             {(isUnclaimed || isFailed) && (
               <Button
                 className="w-full gap-3 text-base font-semibold"
-                size="lg"
+                size="large"
                 disabled={claiming}
                 onClick={() => {
                   if (!hasOcid) {
@@ -477,7 +477,7 @@ export function OcCredentialModal({
             )}
 
             {isPending && (
-              <Button disabled className="w-full gap-3 text-base" size="lg">
+              <Button disabled className="w-full gap-3 text-base" size="large">
                 <Loader2
                   className="size-5 shrink-0 animate-spin"
                   aria-hidden
@@ -489,9 +489,9 @@ export function OcCredentialModal({
             {isClaimed && (
               <div className="flex w-full gap-3">
                 <Button
-                  variant="outline"
+                  variant="cta" hierarchy="secondary"
                   className="flex-1 gap-2 text-sm sm:text-base"
-                  size="lg"
+                  size="large"
                   disabled={downloading}
                   onClick={async () => {
                     setDownloading(true);
@@ -521,9 +521,9 @@ export function OcCredentialModal({
                   </span>
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="cta" hierarchy="secondary"
                   className="flex-1 gap-2 text-sm sm:text-base"
-                  size="lg"
+                  size="large"
                   onClick={async () => {
                     const shareUrl = d.ocCredentialUrl || `${window.location.origin}/u/${profile?.username || ""}`;
                     const shareTitle = item.kind === "cert" ? (d as CertificateItem).course : (d as BadgeItem).title;

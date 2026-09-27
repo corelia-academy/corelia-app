@@ -89,7 +89,7 @@ export default function AdminCertificateAnalytics() {
       <p className="text-sm text-foreground-muted">{t("certificateAnalytics.mintAttempts", { count: result.mint_attempts_logged })} · {t("certificateAnalytics.hint")}</p>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-medium">{t("certificateAnalytics.learnerRows", { count: result.total })}</h2>
-        <div className="flex gap-2"><Button type="button" variant="outline" onClick={() => void query.refetch()} disabled={query.isFetching}>{t("certificateAnalytics.refresh")}</Button><Button type="button" onClick={() => void exportCsv()} disabled={exporting || result.total === 0}>{exporting ? t("certificateAnalytics.exporting") : t("certificateAnalytics.exportCsv")}</Button></div>
+        <div className="flex gap-2"><Button type="button" variant="cta" hierarchy="secondary" onClick={() => void query.refetch()} disabled={query.isFetching}>{t("certificateAnalytics.refresh")}</Button><Button type="button" onClick={() => void exportCsv()} disabled={exporting || result.total === 0}>{exporting ? t("certificateAnalytics.exporting") : t("certificateAnalytics.exportCsv")}</Button></div>
       </div>
       {exportError && <p role="alert" className="text-sm text-destructive">{t("certificateAnalytics.exportError")}</p>}
       <div className="overflow-x-auto rounded-lg border border-border" role="region" aria-label={t("certificateAnalytics.tableLabel")} tabIndex={0}>
@@ -106,7 +106,7 @@ export default function AdminCertificateAnalytics() {
           </tr>)}</tbody>
         </table>
       </div>
-      <div className="flex items-center justify-between gap-3"><span className="text-sm text-foreground-muted">{t("certificateAnalytics.page", { page: page + 1, pages: Math.max(1, Math.ceil(result.total / PAGE_SIZE)) })}</span><div className="flex gap-2"><Button type="button" variant="outline" disabled={page === 0} onClick={() => setPage(current => current - 1)}>{t("certificateAnalytics.previous")}</Button><Button type="button" variant="outline" disabled={(page + 1) * PAGE_SIZE >= result.total} onClick={() => setPage(current => current + 1)}>{t("certificateAnalytics.next")}</Button></div></div>
+      <div className="flex items-center justify-between gap-3"><span className="text-sm text-foreground-muted">{t("certificateAnalytics.page", { page: page + 1, pages: Math.max(1, Math.ceil(result.total / PAGE_SIZE)) })}</span><div className="flex gap-2"><Button type="button" variant="cta" hierarchy="secondary" disabled={page === 0} onClick={() => setPage(current => current - 1)}>{t("certificateAnalytics.previous")}</Button><Button type="button" variant="cta" hierarchy="secondary" disabled={(page + 1) * PAGE_SIZE >= result.total} onClick={() => setPage(current => current + 1)}>{t("certificateAnalytics.next")}</Button></div></div>
     </>}
   </div>;
 }

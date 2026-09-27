@@ -104,7 +104,7 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
   }
 
   return <div className="container-app py-6 sm:py-8">
-    <Button variant="ghost" render={<NavLink to={back} />} nativeButton={false}><ArrowLeft className="size-4" />{t("projects.form.back")}</Button>
+    <Button variant="cta" hierarchy="tertiary" render={<NavLink to={back} />} nativeButton={false}><ArrowLeft className="size-4" />{t("projects.form.back")}</Button>
     <header className="my-6 flex flex-wrap items-start justify-between gap-4">
       <div><p className="text-label-small font-body uppercase tracking-widest text-primary">{t("projects.editor.workspace")}</p><h1 className="mt-2 text-heading-large font-display">{t(project ? "projects.form.editTitle" : "projects.form.createTitle")}</h1><p className="mt-2 max-w-2xl text-body-medium font-body text-foreground-muted">{t("projects.editor.intro")}</p></div>
       {contest ? <NavLink to={`/hackathons/${contest.slug}`} className="inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-surface-base px-4 py-2 text-cta-medium font-body"><span className="truncate">{contest.title}</span><ExternalLink className="size-4 shrink-0" /></NavLink> : null}
@@ -116,10 +116,10 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
         <section className="space-y-4 rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7">
           <h2 className="text-lg font-semibold">{t("projects.translation.languages")}</h2>
           <div role="group" aria-label={t("projects.translation.languages")} className="flex flex-wrap gap-2">
-            {(["vi", "en"] as const).map(locale => <Button key={locale} type="button" variant={contentLocale === locale ? "default" : "outline"} aria-pressed={contentLocale === locale} onClick={() => setContentLocale(locale)}>{locale === "vi" ? "Tiếng Việt" : "English"}{draft.primaryLocale === locale ? ` · ${t("projects.translation.primary")}` : ""}</Button>)}
+            {(["vi", "en"] as const).map(locale => <Button key={locale} type="button" variant="cta" hierarchy={(contentLocale === locale ? "primary" : "secondary")} aria-pressed={contentLocale === locale} onClick={() => setContentLocale(locale)}>{locale === "vi" ? "Tiếng Việt" : "English"}{draft.primaryLocale === locale ? ` · ${t("projects.translation.primary")}` : ""}</Button>)}
           </div>
           <p className="text-sm text-foreground-muted">{t("projects.translation.optional")}</p>
-          {!isPrimary ? <Button type="button" variant="outline" onClick={() => { dismissRecovery(); setDraft(current => changePrimaryLocale(current, contentLocale)); }}>{t("projects.translation.makePrimary")}</Button> : null}
+          {!isPrimary ? <Button type="button" variant="cta" hierarchy="secondary" onClick={() => { dismissRecovery(); setDraft(current => changePrimaryLocale(current, contentLocale)); }}>{t("projects.translation.makePrimary")}</Button> : null}
           <ProjectTranslationEditor projectId={projectId} draft={draft} disabled={closed || mutation.isPending} onApply={(locale, translated) => { dismissRecovery(); setDraft(current => ({ ...current, locales: { ...current.locales, [locale]: translated } })); setContentLocale(locale); }} />
         </section>
         <section id="project-basics" className="scroll-mt-24 rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7">

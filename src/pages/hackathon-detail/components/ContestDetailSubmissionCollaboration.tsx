@@ -153,8 +153,8 @@ export function ContestDetailSubmissionCollaboration({
                     <span className="text-foreground">{label}</span>
                     <Button
                       type="button"
-                      size="sm"
-                      variant="outline"
+                      size="small"
+                      variant="cta" hierarchy="secondary"
                       disabled={Boolean(inviteSendingUserId)}
                       onClick={() => void handleRevokeCollabInvite(inv.id)}
                     >
@@ -189,8 +189,8 @@ export function ContestDetailSubmissionCollaboration({
                   <span className="text-foreground">{label}</span>
                   <Button
                     type="button"
-                    size="sm"
-                    variant="ghost"
+                    size="small"
+                    variant="cta" hierarchy="tertiary"
                     className="text-destructive hover:text-destructive"
                     onClick={() => void handleRemoveCollaborator(m.user_id)}
                   >

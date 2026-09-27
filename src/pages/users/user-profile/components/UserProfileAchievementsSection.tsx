@@ -84,8 +84,8 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
         {isSelf ? (
           <Button
             type="button"
-            variant="outline"
-            size="sm"
+            variant="cta" hierarchy="secondary"
+            size="small"
             className="gap-2"
             onClick={() => navigate("/achievements")}
           >
@@ -103,8 +103,8 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
           <p className="text-sm text-foreground">{loadError}</p>
           <Button
             type="button"
-            variant="outline"
-            size="sm"
+            variant="cta" hierarchy="secondary"
+            size="small"
             className="shrink-0 gap-2"
             disabled={loading}
             onClick={() => void reloadAchievements()}
@@ -147,8 +147,8 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
           {isSelf ? (
             <Button
               type="button"
-              variant="outline"
-              size="sm"
+              variant="cta" hierarchy="secondary"
+              size="small"
               className="shrink-0 gap-2 sm:self-start"
               onClick={() => setCredentialManagerOpen(true)}
               disabled={loading}

@@ -18,7 +18,7 @@ export default function NotFound() {
         </h1>
         <p className="text-sm text-foreground-muted">{t("notFound.description")}</p>
       </div>
-      <Button render={<Link to="/" />} nativeButton={false} variant="default">
+      <Button render={<Link to="/" />} nativeButton={false} variant="cta">
         {t("notFound.backHome")}
       </Button>
     </div>

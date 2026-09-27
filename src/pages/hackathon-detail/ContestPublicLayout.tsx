@@ -142,7 +142,7 @@ export default function ContestPublicLayout() {
       <PageContainer width="default">
         <div className="flex min-h-[260px] flex-col items-center justify-center gap-3 py-16 text-center" role="alert">
           <p className="text-sm font-medium text-foreground">{contestQuery.error ? t("detail.errors.loadFailed") : t("detail.errors.notFound")}</p>
-          <Button render={<NavLink to="/hackathons" />} nativeButton={false} variant="outline">{t("detail.errorState.backToList")}</Button>
+          <Button render={<NavLink to="/hackathons" />} nativeButton={false} variant="cta" hierarchy="secondary">{t("detail.errorState.backToList")}</Button>
         </div>
       </PageContainer>
     );
@@ -233,9 +233,9 @@ export default function ContestPublicLayout() {
               <div className="flex items-center gap-2"><MapPin className="size-5" aria-hidden /><div><div className="text-xs">{t("public.submissionDeadline")}</div><div className="font-medium text-foreground">{formatDate(contest.submission_deadline, locale)}</div></div></div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              {contest.social_links?.telegram ? <Button render={<a href={contest.social_links.telegram} target="_blank" rel="noreferrer" aria-label="Telegram" />} nativeButton={false} size="icon" variant="outline"><Send className="size-4" /></Button> : null}
-              {contest.social_links?.x ? <Button render={<a href={contest.social_links.x} target="_blank" rel="noreferrer" aria-label="X" />} nativeButton={false} size="icon" variant="outline"><XLogo className="size-4" /></Button> : null}
-              {contest.social_links?.facebook ? <Button render={<a href={contest.social_links.facebook} target="_blank" rel="noreferrer" aria-label="Facebook" />} nativeButton={false} size="icon" variant="outline"><Facebook className="size-4" /></Button> : null}
+              {contest.social_links?.telegram ? <Button render={<a href={contest.social_links.telegram} target="_blank" rel="noreferrer" aria-label="Telegram" />} nativeButton={false} size="small" variant="cta" hierarchy="secondary" iconOnly><Send className="size-4" /></Button> : null}
+              {contest.social_links?.x ? <Button render={<a href={contest.social_links.x} target="_blank" rel="noreferrer" aria-label="X" />} nativeButton={false} size="small" variant="cta" hierarchy="secondary" iconOnly><XLogo className="size-4" /></Button> : null}
+              {contest.social_links?.facebook ? <Button render={<a href={contest.social_links.facebook} target="_blank" rel="noreferrer" aria-label="Facebook" />} nativeButton={false} size="small" variant="cta" hierarchy="secondary" iconOnly><Facebook className="size-4" /></Button> : null}
               {cta}
             </div>
           </div>

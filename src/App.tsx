@@ -332,6 +332,7 @@ function ApplicationRoutes() {
               "tabs",
               "dropdown-menu",
               "input-field",
+              "button",
             ].map((component) => (
               <Route
                 key={component}

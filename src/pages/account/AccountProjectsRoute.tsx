@@ -256,7 +256,7 @@ export function AccountProjectsRoute() {
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border-subtle bg-surface-base p-4">
                   <h1 className="min-w-0 break-words text-lg font-semibold">{selected.title}</h1>
                   <div className="flex flex-wrap gap-2">
-                    <Button variant="outline" render={<NavLink to={`/projects/${selected.slug}`} />} nativeButton={false}>{t("projects.editor.viewProject")}</Button>
+                    <Button variant="cta" hierarchy="secondary" render={<NavLink to={`/projects/${selected.slug}`} />} nativeButton={false}>{t("projects.editor.viewProject")}</Button>
                     {selectedIsOwner ? <Button render={<NavLink to={`/projects/${selected.slug}/edit`} />} nativeButton={false}>{t("projects.detail.edit")}</Button> : null}
                   </div>
                 </div>
@@ -353,7 +353,7 @@ export function AccountProjectsRoute() {
                     <div className="mt-3">
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="cta" hierarchy="secondary"
                         disabled={saveConfigMutation.isPending}
                         onClick={() => void handleSaveConfig()}
                       >
@@ -392,7 +392,7 @@ export function AccountProjectsRoute() {
                           <option value="vi">vi</option>
                           <option value="en">en</option>
                         </select>
-                        <Button type="button" variant="outline" onClick={copyFromPrimary}>
+                        <Button type="button" variant="cta" hierarchy="secondary" onClick={copyFromPrimary}>
                           <Copy className="size-4" aria-hidden />
                           {t("account:projects.copyFromPrimary")}
                         </Button>
