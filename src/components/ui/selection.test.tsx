@@ -90,12 +90,14 @@ describe("Checkbox", () => {
         expect(indeterminateFrame?.querySelector("svg")).not.toBeNull()
       }
 
-      if (item.disabled && item.checked) {
+      if (item.checked) {
         const checkedMark = control.querySelector<SVGPathElement>(
           '[data-slot="checkbox-checked-frame"] path',
         )
         expect(checkedMark?.getAttribute("stroke")).toBe(
-          "var(--selection-disabled-mark)",
+          item.disabled
+            ? "var(--selection-disabled-mark)"
+            : "var(--selection-mark)",
         )
       }
     })

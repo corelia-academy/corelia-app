@@ -123,7 +123,7 @@ type SelectionIconProps = {
         : "var(--selection-active)"
     const markColor = disabled
       ? "var(--selection-disabled-mark)"
-      : "var(--blue-50)"
+      : "var(--selection-mark)"
 
     if (kind === "checkbox") {
       const isSmall = size === "small"
