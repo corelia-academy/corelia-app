@@ -38,7 +38,7 @@
 
 @theme inline {
   /* Figma Color 🟢 (node 12:3) → Tailwind color tokens */
-  --color-neutral-50: var(--neutral-50);
+  /* --color-neutral-50: var(--neutral-50);
   --color-neutral-100: var(--neutral-100);
   --color-neutral-200: var(--neutral-200);
   --color-neutral-300: var(--neutral-300);
@@ -57,7 +57,7 @@
   --color-blue-600: var(--blue-600);
   --color-blue-700: var(--blue-700);
   --color-blue-800: var(--blue-800);
-  --color-blue-900: var(--blue-900);
+  --color-blue-900: var(--blue-900); */
   /* Issue #387 — Figma Tabs semantic aliases. */
   --color-tabs-background: var(--tabs-background);
   --color-tabs-badge-active: var(--tabs-badge-active);
@@ -77,7 +77,7 @@
   --color-tabs-active-text-level1: var(--tabs-active-text-level1);
   --color-tabs-active-text-level2a: var(--tabs-active-text-level2a);
   --shadow-tabs: var(--tabs-shadow);
-  --color-error-50: var(--error-50);
+  /* --color-error-50: var(--error-50);
   --color-error-100: var(--error-100);
   --color-error-300: var(--error-300);
   --color-error-500: var(--error-500);
@@ -118,7 +118,21 @@
   --color-accent-sky-300: var(--accent-sky-300);
   --color-accent-sky-500: var(--accent-sky-500);
   --color-accent-sky-700: var(--accent-sky-700);
-  --color-accent-sky-900: var(--accent-sky-900);
+  --color-accent-sky-900: var(--accent-sky-900); */
+
+  /* Semantic color aliases for consumers moved off raw palette utilities. */
+  --color-loading-bar-end: var(--loading-bar-end);
+  --color-hackathon-unpublish-surface: var(--hackathon-unpublish-surface);
+  --color-hackathon-unpublish-hover-surface: var(--hackathon-unpublish-hover-surface);
+  --color-mint-pending-filter-text: var(--mint-pending-filter-text);
+  --color-mint-pending-count-surface: var(--mint-pending-count-surface);
+  --color-mint-pending-count-text: var(--mint-pending-count-text);
+  --color-mint-oca-badge-surface: var(--mint-oca-badge-surface);
+  --color-mint-oca-badge-text: var(--mint-oca-badge-text);
+  --color-mint-oca-badge-border: var(--mint-oca-badge-border);
+  --color-mint-revoked-badge-surface: var(--mint-revoked-badge-surface);
+  --color-mint-revoked-badge-text: var(--mint-revoked-badge-text);
+  --color-mint-revoked-badge-border: var(--mint-revoked-badge-border);
 
   --color-foreground: var(--foreground);
   --color-foreground-muted: var(--foreground-muted);
@@ -1003,6 +1017,21 @@
   --dropdown-warning: var(--error-500);
   --dropdown-warning-supporting: var(--error-300);
   --dropdown-shadow: 0 -1px 12px -2px #10182814, 0 4px 4px -2px #1018280f;
+
+  /* Color roles for former palette utility consumers; kept explicit per mode. */
+  --loading-bar-end: var(--blue-700);
+  --hackathon-unpublish-surface: var(--blue-600);
+  --hackathon-unpublish-hover-surface: var(--blue-700);
+  --mint-pending-filter-text: var(--neutral-900);
+  --mint-pending-count-surface: var(--neutral-900);
+  --mint-pending-count-text: var(--neutral-900);
+  --mint-oca-badge-surface: var(--blue-500);
+  --mint-oca-badge-text: var(--blue-600);
+  --mint-oca-badge-border: var(--blue-500);
+  --mint-revoked-badge-surface: var(--neutral-500);
+  --mint-revoked-badge-text: var(--neutral-400);
+  --mint-revoked-badge-border: var(--neutral-500);
+  --selection-mark: var(--blue-50);
 }
 
 .dark {
@@ -1264,6 +1293,21 @@
   --dropdown-warning: var(--error-500);
   --dropdown-warning-supporting: var(--error-300);
   --dropdown-shadow: 0 -1px 12px -2px #10182814, 0 4px 4px -2px #1018280f;
+
+  /* Color roles for former palette utility consumers; kept explicit per mode. */
+  --loading-bar-end: var(--blue-700);
+  --hackathon-unpublish-surface: var(--blue-600);
+  --hackathon-unpublish-hover-surface: var(--blue-700);
+  --mint-pending-filter-text: var(--neutral-900);
+  --mint-pending-count-surface: var(--neutral-900);
+  --mint-pending-count-text: var(--neutral-900);
+  --mint-oca-badge-surface: var(--blue-500);
+  --mint-oca-badge-text: var(--blue-400);
+  --mint-oca-badge-border: var(--blue-500);
+  --mint-revoked-badge-surface: var(--neutral-500);
+  --mint-revoked-badge-text: var(--neutral-400);
+  --mint-revoked-badge-border: var(--neutral-500);
+  --selection-mark: var(--blue-50);
 }
 
 @layer base {
