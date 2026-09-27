@@ -39,6 +39,19 @@ test("exact learner-AI-free production state passes", () => {
   assert.equal(result.ok, true, result.errors.join("\n"));
 });
 
+test("post-migration audit rejects a missing remote migration", () => {
+  const result = verifyProductionPostMigration({
+    migrationOutput: migrationOutput.replace(
+      "20260830212012 | 20260830212012 | x\n",
+      "20260830212012 |                | x\n",
+    ),
+    inspectionOutput: JSON.stringify([{ learner_ai_retirement_audit: audit }]),
+    localVersions: ["20260828060630", "20260830212012", "20260830230917"],
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /ledger does not exactly match/);
+});
+
 test("remaining AI objects, data, quota columns, or missing course tables fail closed", () => {
   for (const mutation of [
     { learner_ai_relations: [{ object_name: "ai_chat_sessions" }] },
