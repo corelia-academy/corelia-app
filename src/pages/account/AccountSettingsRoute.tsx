@@ -31,7 +31,7 @@ function AccountSettingsSection() {
       <section className="rounded-2xl border border-border-subtle bg-surface-base p-4">
         <h2 className="text-heading-medium font-display">{t("avatarEditor.title")}</h2>
         <p className="mt-1 text-foreground-muted">{t("avatarEditor.description")}</p>
-        <Button className="mt-3" type="button" variant="outline" nativeButton={false} render={<Link to="/settings/avatar" />}>{t("avatarEditor.edit")}</Button>
+        <Button className="mt-3" type="button" variant="cta" hierarchy="secondary" nativeButton={false} render={<Link to="/settings/avatar" />}>{t("avatarEditor.edit")}</Button>
       </section>
       <LanguageSettingsCard />
       <NotificationPreferencesCard />

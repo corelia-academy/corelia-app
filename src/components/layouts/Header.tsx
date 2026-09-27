@@ -533,7 +533,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                       onClick={() => setAccountMenuOpen(false)}
                     />
                   ))}
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator  className="mx-0"/>
                   <Action
                     role="menuitem"
                     type="button"

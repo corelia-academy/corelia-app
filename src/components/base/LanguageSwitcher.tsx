@@ -24,7 +24,7 @@ export function LanguageSwitcher({ compact = true, className }: { compact?: bool
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button size={compact ? "icon" : "default"} variant="ghost" className={cn(compact ? undefined : "min-h-11 px-2", className)} aria-label={t("language.switchLabel")}>
+          <Button size="small" variant="cta" hierarchy="tertiary" iconOnly={compact} className={cn(compact ? undefined : "min-h-11 px-2", className)} aria-label={t("language.switchLabel")}>
             <Globe className="size-4" />
             {!compact ? <span className="text-xs font-semibold uppercase">{language}</span> : null}
           </Button>

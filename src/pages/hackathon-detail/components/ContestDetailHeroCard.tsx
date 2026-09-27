@@ -100,8 +100,8 @@ function HackathonShareMenu({
         render={
           <Button
             type="button"
-            variant="outline"
-            size="sm"
+            variant="cta" hierarchy="secondary"
+            size="small"
             className="min-h-11 gap-2"
           >
             <Share2 className="size-4" aria-hidden />
@@ -208,8 +208,9 @@ function PublicHero({
                   {publicCta ? (
                     <Button
                       type="button"
-                      size="lg"
+                      size="large"
                       variant={publicCta.variant}
+                      hierarchy={publicCta.hierarchy}
                       className="min-h-11 gap-2"
                       disabled={Boolean(publicCta.disabled)}
                       onClick={() => {
@@ -347,8 +348,8 @@ function ManageHero({
             </span>
             <Button
               type="button"
-              variant="outline"
-              size="sm"
+              variant="cta" hierarchy="secondary"
+              size="small"
               className="min-h-11"
               onClick={() =>
                 navigate(

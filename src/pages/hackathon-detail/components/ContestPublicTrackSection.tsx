@@ -20,7 +20,7 @@ export function ContestPublicTrackSection(props: {
       action={
         <Button
           type="button"
-          variant="secondary"
+          variant="cta" hierarchy="secondary"
           className="min-h-11"
           disabled
         >

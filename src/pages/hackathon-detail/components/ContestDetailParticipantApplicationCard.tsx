@@ -114,7 +114,7 @@ export function ContestDetailParticipantApplicationCard({
             </p>
             <Button
               type="button"
-              variant="outline"
+              variant="cta" hierarchy="secondary"
               className="mt-4 min-h-11 w-full sm:w-auto"
               onClick={() =>
                 navigate(
@@ -153,7 +153,7 @@ export function ContestDetailParticipantApplicationCard({
             </p>
             <Button
               type="button"
-              variant="outline"
+              variant="cta" hierarchy="secondary"
               className="mt-4 min-h-11 w-full sm:w-auto"
               onClick={() =>
                 navigate(

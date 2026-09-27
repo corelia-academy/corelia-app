@@ -183,7 +183,7 @@ export function HackathonProjectsTab() {
             </div>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2">
-            {activeFilterCount > 0 ? <Button type="button" variant="ghost" size="sm" className="min-h-10 px-2 text-foreground-muted" onClick={clearFilters}><X className="size-4" />{t("public.projects.clearFilters")}</Button> : null}
+            {activeFilterCount > 0 ? <Button type="button" variant="cta" hierarchy="tertiary" size="small" className="min-h-10 px-2 text-foreground-muted" onClick={clearFilters}><X className="size-4" />{t("public.projects.clearFilters")}</Button> : null}
             <label className="flex items-center gap-2 text-sm text-foreground-muted"><span className="sr-only sm:not-sr-only">{t("public.projects.sort")}</span><select className="min-h-10 rounded-md border border-border bg-background px-2.5 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/40" value={sort} onChange={(event) => { const next = new URLSearchParams(params); if (event.target.value === "oldest") next.set("sort", "oldest"); else next.delete("sort"); setParams(next, { preventScrollReset: true }); }}><option value="newest">{t("public.projects.newest")}</option><option value="oldest">{t("public.projects.oldest")}</option></select></label>
           </div>
         </div>
@@ -197,10 +197,10 @@ export function HackathonProjectsTab() {
       {query.isPending ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div> : query.isError ? <div role="alert" className="py-8 text-center"><p>{t("detail.errors.loadFailed")}</p><Button className="mt-3" onClick={() => void query.refetch()}>{t("projects.retry", { ns: "common" })}</Button></div> : projects.length === 0 ? <EmptyTab icon={<Package className="size-6" />} title={t("public.empty.projects")} /> : (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{projects.map(({ project, owner }) => <div key={project.id} className="relative">{awards.has(project.id) ? <div className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950 shadow"><Sparkles className="size-3" />{awards.get(project.id)}</div> : null}<ProjectCard systemTaxonomy={systemTaxonomy} hearted={hearts.data?.has(project.id) ?? false} taxonomy={contest} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} ownerAvatarUrl={owner?.avatar_url} ownerAvatarSeed={owner?.avatar_seed} ownerAvatarConfig={owner?.avatar_config} teamMembers={teamsQuery.data?.[project.id] ?? []} /></div>)}</div>
-          {query.hasNextPage ? <div className="flex justify-center"><Button type="button" variant="outline" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>{query.isFetchingNextPage ? t("public.projects.loading") : t("public.projects.loadMore")}</Button></div> : null}
+          {query.hasNextPage ? <div className="flex justify-center"><Button type="button" variant="cta" hierarchy="secondary" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>{query.isFetchingNextPage ? t("public.projects.loading") : t("public.projects.loadMore")}</Button></div> : null}
         </>
       )}
-      <div className="text-center"><Button render={<NavLink to={`/projects?hackathon=${encodeURIComponent(contest.slug ?? "")}`} />} nativeButton={false} variant="ghost">{t("public.projects.openCatalog")}</Button></div>
+      <div className="text-center"><Button render={<NavLink to={`/projects?hackathon=${encodeURIComponent(contest.slug ?? "")}`} />} nativeButton={false} variant="cta" hierarchy="tertiary">{t("public.projects.openCatalog")}</Button></div>
     </div>
   );
 }

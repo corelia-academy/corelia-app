@@ -42,7 +42,7 @@ export function GuestHome({
                 {t("home.exploreCourses")}
                 <ArrowRight className="size-4" aria-hidden />
               </Button>
-              <Button render={<NavLink to="/login" />} nativeButton={false} variant="outline">
+              <Button render={<NavLink to="/login" />} nativeButton={false} variant="cta" hierarchy="secondary">
                 {t("home.guest.signIn")}
               </Button>
             </div>
@@ -98,8 +98,8 @@ export function GuestHome({
               <Button
                 render={<NavLink to="/courses" />}
                 nativeButton={false}
-                variant="ghost"
-                size="sm"
+                variant="cta" hierarchy="tertiary"
+                size="small"
                 className="-mr-2"
               >
                 {t("home.sections.seeAll")}
@@ -121,7 +121,7 @@ export function GuestHome({
                       {t("home.sections.startFromCatalogSubtitle")}
                     </p>
                   </div>
-                  <Button size="sm" variant="outline" render={<NavLink to="/courses" />} nativeButton={false}>
+                  <Button size="small" variant="cta" hierarchy="secondary" render={<NavLink to="/courses" />} nativeButton={false}>
                     {t("home.exploreCourses")}
                   </Button>
                 </div>

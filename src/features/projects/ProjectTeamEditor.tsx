@@ -163,8 +163,8 @@ export function ProjectTeamEditor({
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
-                    size="sm"
-                    variant="outline"
+                    size="small"
+                    variant="cta" hierarchy="secondary"
                     disabled={isResending}
                     onClick={() => resendInviteMutation.mutate(invite.id)}
                   >
@@ -173,8 +173,8 @@ export function ProjectTeamEditor({
                   </Button>
                   <Button
                     type="button"
-                    size="sm"
-                    variant="ghost"
+                    size="small"
+                    variant="cta" hierarchy="tertiary"
                     disabled={revokeMutation.isPending}
                     onClick={() => revokeMutation.mutate(invite.id)}
                   >
@@ -194,7 +194,7 @@ export function ProjectTeamEditor({
               const profile = team.profiles[member.user_id];
               return <li key={member.user_id} className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 text-sm">
                 <span className="inline-flex items-center gap-2"><UserPlus className="size-4" />{profile?.full_name || profile?.username || member.user_id}</span>
-                <Button type="button" size="sm" variant="ghost" disabled={removeMutation.isPending} onClick={() => setRemovingUserId(member.user_id)}><Trash2 className="size-4" />{t("projects.team.remove")}</Button>
+                <Button type="button" size="small" variant="cta" hierarchy="tertiary" disabled={removeMutation.isPending} onClick={() => setRemovingUserId(member.user_id)}><Trash2 className="size-4" />{t("projects.team.remove")}</Button>
               </li>;
             })}
           </ul>
@@ -205,7 +205,7 @@ export function ProjectTeamEditor({
           <DialogTitle>{t("projects.team.removeMemberTitle")}</DialogTitle>
           <DialogDescription>{t("projects.team.removeMemberConfirm")}</DialogDescription>
           <DialogFooter>
-            <Button type="button" variant="outline" disabled={removeMutation.isPending} onClick={() => setRemovingUserId(null)}>
+            <Button type="button" variant="cta" hierarchy="secondary" disabled={removeMutation.isPending} onClick={() => setRemovingUserId(null)}>
               {t("actions.cancel")}
             </Button>
             <Button type="button" variant="destructive" disabled={removeMutation.isPending} onClick={() => {

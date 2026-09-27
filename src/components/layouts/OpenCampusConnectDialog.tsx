@@ -68,7 +68,7 @@ export default function OpenCampusConnectDialog(props: Props) {
         <DialogFooter>
           <Button
             type="button"
-            variant="outline"
+            variant="cta" hierarchy="secondary"
             onClick={() => onOpenChange(false)}
             disabled={loading}
             className="h-11"

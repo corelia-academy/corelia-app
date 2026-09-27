@@ -81,8 +81,8 @@ export default function CareerListPage() {
           <Button
             render={<Link to="/courses" />}
             nativeButton={false}
-            size="sm"
-            variant="outline"
+            size="small"
+            variant="cta" hierarchy="secondary"
           >
             {t("list.browseCourses")}
           </Button>

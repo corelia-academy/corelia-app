@@ -18,8 +18,8 @@ export function ContinueLearningSection({
         <Button
           render={<NavLink to="/courses" />}
           nativeButton={false}
-          variant="ghost"
-          size="sm"
+          variant="cta" hierarchy="tertiary"
+          size="small"
           className="-mr-2"
         >
           {t("home.sections.seeAll")}
@@ -71,8 +71,8 @@ export function ContinueLearningSection({
             <p className="mt-0.5 text-xs text-foreground-muted">{t("home.sections.enrollHint")}</p>
           </div>
           <Button
-            size="sm"
-            variant="outline"
+            size="small"
+            variant="cta" hierarchy="secondary"
             render={<NavLink to="/courses" />}
             nativeButton={false}
           >

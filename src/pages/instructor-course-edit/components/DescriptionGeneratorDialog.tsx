@@ -203,7 +203,7 @@ export function DescriptionGeneratorDialog({
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="cta" hierarchy="secondary" onClick={() => onOpenChange(false)}>
             {t("courseEdit.descriptionGenerator.cancel")}
           </Button>
           <Button

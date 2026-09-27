@@ -386,8 +386,8 @@ export function ManualMintHistoryTable() {
           {hasActiveFilters && (
             <Button
               type="button"
-              variant="ghost"
-              size="sm"
+              variant="cta" hierarchy="tertiary"
+              size="small"
               onClick={handleResetFilters}
               className="h-8.5 px-2 text-xs text-foreground-muted hover:text-foreground cursor-pointer"
             >
@@ -399,8 +399,8 @@ export function ManualMintHistoryTable() {
           {/* Refresh button */}
           <Button
             type="button"
-            variant="outline"
-            size="sm"
+            variant="cta" hierarchy="secondary"
+            size="small"
             onClick={() => void historyQuery.refetch()}
             disabled={historyQuery.isFetching}
             className="h-8.5 px-2.5 text-xs cursor-pointer"
@@ -431,8 +431,8 @@ export function ManualMintHistoryTable() {
             {hasActiveFilters && (
               <Button
                 type="button"
-                variant="outline"
-                size="sm"
+                variant="cta" hierarchy="secondary"
+                size="small"
                 onClick={handleResetFilters}
                 className="mt-3 text-xs cursor-pointer"
               >
@@ -616,8 +616,8 @@ export function ManualMintHistoryTable() {
                         {isFailed && (
                           <Button
                             type="button"
-                            variant="outline"
-                            size="xs"
+                            variant="cta" hierarchy="secondary"
+                            size="xsmall"
                             disabled={retryingId === row.id || revokingId === row.id}
                             onClick={() => void handleRetry(row)}
                             className="h-7 px-2 text-xs font-medium text-foreground hover:bg-surface-raised shrink-0 cursor-pointer"
@@ -639,7 +639,7 @@ export function ManualMintHistoryTable() {
                           <Button
                             type="button"
                             variant="destructive"
-                            size="xs"
+                            size="xsmall"
                             disabled={revokingId === row.id || retryingId === row.id}
                             onClick={() => void handleRevoke(row)}
                             className="h-7 px-2 text-xs font-medium shrink-0 cursor-pointer"

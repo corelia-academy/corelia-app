@@ -212,7 +212,7 @@ export function LoginMfaChallenge({
       ) : null}
       <Button
         type="button"
-        variant="outline"
+        variant="cta" hierarchy="secondary"
         className="w-full border-warning/30 bg-surface-base"
         disabled={busy || resendEmailBusy}
         onClick={() => void handleResendConfirmationEmail()}
@@ -259,7 +259,7 @@ export function LoginMfaChallenge({
           <div className="flex flex-col gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="cta" hierarchy="secondary"
               disabled={busy}
               className="w-full"
               onClick={() => void startChallenge()}
@@ -319,7 +319,7 @@ export function LoginMfaChallenge({
 
         <Button
           type="button"
-          variant="ghost"
+          variant="cta" hierarchy="tertiary"
           className="w-full text-foreground-muted"
           disabled={busy}
           onClick={() => void onCancel()}

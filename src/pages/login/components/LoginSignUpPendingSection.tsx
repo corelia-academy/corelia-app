@@ -25,7 +25,7 @@ export function LoginSignUpPendingSection({
       </div>
 
       <Field>
-        <Button type="button" variant="outline" className="w-full rounded-md" onClick={onBackToSignIn}>
+        <Button type="button" variant="cta" hierarchy="secondary" className="w-full rounded-md" onClick={onBackToSignIn}>
           {t("login.signUpAfterSubmit.backToSignIn")}
         </Button>
       </Field>

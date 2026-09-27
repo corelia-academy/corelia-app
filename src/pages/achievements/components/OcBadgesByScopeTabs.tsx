@@ -81,8 +81,9 @@ export function OcBadgesByScopeTabs({
           <Button
             key={x.key}
             type="button"
-            variant={tab === x.key ? "secondary" : "ghost"}
-            size="sm"
+            variant="cta"
+            hierarchy={tab === x.key ? "primary" : "tertiary"}
+            size="small"
             className={cn(
               "rounded-full",
               tab === x.key ? "" : "text-foreground-muted",

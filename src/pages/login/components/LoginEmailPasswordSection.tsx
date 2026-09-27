@@ -177,7 +177,7 @@ export function LoginEmailPasswordSection({
             {onResendConfirmation ? (
               <Button
                 type="button"
-                variant="outline"
+                variant="cta" hierarchy="secondary"
             className="w-full border-warning/30 bg-surface-base"
                 disabled={Boolean(loading || resendLoading)}
                 onClick={() => void onResendConfirmation()}

@@ -174,8 +174,8 @@ const InstructorCourses = () => {
             action={
               <Button
                 type="button"
-                size="sm"
-                variant="outline"
+                size="small"
+                variant="cta" hierarchy="secondary"
                 onClick={() => navigate("/instructor/courses/new")}
               >
                 {t("courseListPage.empty.createFirst")}
@@ -250,8 +250,8 @@ const InstructorCourses = () => {
 
               <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border-subtle px-4 py-3">
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant="cta" hierarchy="tertiary"
+                  size="small"
                   type="button"
                   onClick={() => {
                     window.open(`/courses/${course.slug || course.id}`, "_blank", "noopener");
@@ -267,8 +267,8 @@ const InstructorCourses = () => {
                     : t("courseListPage.actions.preview")}
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant="cta" hierarchy="secondary"
+                  size="small"
                   type="button"
                   onClick={() => navigate(`/instructor/courses/${course.id}/edit`)}
                   className="inline-flex items-center gap-1"

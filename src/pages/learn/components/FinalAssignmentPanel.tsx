@@ -126,7 +126,7 @@ function FinalAssignmentForm({ courseId, course, profileId, initialArtifacts, su
       ) : null}
 
       {submissionState === "loading" && <p role="status" className="mt-4 text-sm">{t("learning.loading")}</p>}
-      {submissionState === "error" && <div role="alert" className="mt-4 space-y-2"><p>{t("learning.loadError")}</p>{onRetryLoad && <Button type="button" variant="outline" onClick={onRetryLoad}>{t("learning.retry")}</Button>}</div>}
+      {submissionState === "error" && <div role="alert" className="mt-4 space-y-2"><p>{t("learning.loadError")}</p>{onRetryLoad && <Button type="button" variant="cta" hierarchy="secondary" onClick={onRetryLoad}>{t("learning.retry")}</Button>}</div>}
       {submission ? (
         <div className="mt-4 rounded-md bg-surface-raised p-4">
           <p className="text-sm font-medium text-foreground">

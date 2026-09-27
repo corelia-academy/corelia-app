@@ -290,7 +290,7 @@ export function CanvasCropperModal({
           </p>
         </div>
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="ghost" onClick={onCancel} disabled={loading}>
+          <Button variant="cta" hierarchy="tertiary" onClick={onCancel} disabled={loading}>
             {t("cropper.cancel")}
           </Button>
           <Button onClick={handleCrop} disabled={loading} className="gap-2">

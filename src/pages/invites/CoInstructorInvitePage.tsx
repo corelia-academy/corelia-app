@@ -216,7 +216,7 @@ export default function CoInstructorInvitePage() {
                   </Button>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="cta" hierarchy="secondary"
                     className="flex-1"
                     disabled={busy !== null}
                     onClick={() => void onDecline()}
@@ -236,7 +236,7 @@ export default function CoInstructorInvitePage() {
 
           <Button
             type="button"
-            variant="ghost"
+            variant="cta" hierarchy="tertiary"
             className="w-full"
             onClick={() => navigate("/")}
           >

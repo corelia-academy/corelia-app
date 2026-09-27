@@ -161,7 +161,7 @@ export function CareerTrackBlastEmailPanel({ trackId }: Props) {
               <span className="text-foreground-muted">{subject.trim()}</span>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setConfirmOpen(false)}>
+              <Button type="button" variant="cta" hierarchy="secondary" onClick={() => setConfirmOpen(false)}>
                 {t("careerTracks.announcements.cancelButton")}
               </Button>
               <Button

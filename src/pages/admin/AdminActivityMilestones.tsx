@@ -226,7 +226,7 @@ export default function AdminActivityMilestones() {
                   <td className="px-3 py-2">{counts[r.id] ?? 0}</td>
                   <td className="px-3 py-2">{r.is_active ? "✓" : "-"}</td>
                   <td className="space-x-2 px-3 py-2 text-right">
-                    <Button type="button" variant="outline" size="sm" onClick={() => openEdit(r)}>
+                    <Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={() => openEdit(r)}>
                       {t("activityMilestones.edit")}
                     </Button>
                   </td>
@@ -375,7 +375,7 @@ export default function AdminActivityMilestones() {
             </label>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+            <Button type="button" variant="cta" hierarchy="secondary" onClick={() => setDialogOpen(false)}>
               {t("activityMilestones.cancel")}
             </Button>
             <Button type="button" disabled={saveMutation.isPending || !name.trim() || !imageUrl.trim()} onClick={() => void handleSave()}>

@@ -25,7 +25,7 @@ export function useLearningConfirm() {
       <DialogTitle>{t("learning.confirmTitle")}</DialogTitle>
       <DialogDescription>{message}</DialogDescription>
       <DialogFooter>
-        <Button ref={cancelButton} type="button" variant="outline" onClick={() => settle(false)}>{t("learning.cancel")}</Button>
+        <Button ref={cancelButton} type="button" variant="cta" hierarchy="secondary" onClick={() => settle(false)}>{t("learning.cancel")}</Button>
         <Button type="button" onClick={() => settle(true)}>{t("learning.confirmAction")}</Button>
       </DialogFooter>
     </DialogContent>

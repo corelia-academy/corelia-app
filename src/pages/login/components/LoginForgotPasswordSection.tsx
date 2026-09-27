@@ -58,7 +58,7 @@ export function LoginForgotPasswordSection({
         {successMessage ? (
           <Button
             type="button"
-            variant="outline"
+            variant="cta" hierarchy="secondary"
             className="w-full rounded-md"
             onClick={onBackToSignIn}
           >

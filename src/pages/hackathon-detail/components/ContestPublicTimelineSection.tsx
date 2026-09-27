@@ -27,8 +27,8 @@ export function ContestPublicTimelineSection(props: {
       action={
         <Button
           type="button"
-          variant="outline"
-          size="sm"
+          variant="cta" hierarchy="secondary"
+          size="small"
           className="gap-2"
           onClick={() => downloadContestCalendarIcs(contest)}
         >

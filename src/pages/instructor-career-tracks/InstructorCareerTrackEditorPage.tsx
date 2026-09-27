@@ -512,7 +512,7 @@ export default function InstructorCareerTrackEditorPage() {
           <div className="mt-4">
             <Button
               type="button"
-              variant="ghost"
+              variant="cta" hierarchy="tertiary"
               render={<Link to="/instructor/career-tracks" />}
               nativeButton={false}
             >
@@ -568,7 +568,7 @@ export default function InstructorCareerTrackEditorPage() {
             )}
             <Button
               type="button"
-              variant="ghost"
+              variant="cta" hierarchy="tertiary"
               render={<Link to="/instructor/career-tracks" />}
               nativeButton={false}
             >
@@ -594,8 +594,8 @@ export default function InstructorCareerTrackEditorPage() {
           </p>
           <Button
             type="button"
-            size="sm"
-            variant="outline"
+            size="small"
+            variant="cta" hierarchy="secondary"
             disabled={translating || !form.title}
             onClick={() => void handleTranslateAll()}
           >
@@ -779,8 +779,8 @@ export default function InstructorCareerTrackEditorPage() {
                       {form.thumbnailUrl ? (
                         <Button
                           type="button"
-                          size="sm"
-                          variant="ghost"
+                          size="small"
+                          variant="cta" hierarchy="tertiary"
                           onClick={() =>
                             setForm((p) => ({ ...p, thumbnailUrl: "", thumbnailPath: "" }))
                           }
@@ -919,7 +919,7 @@ export default function InstructorCareerTrackEditorPage() {
 
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="cta" hierarchy="secondary"
                   className="w-full"
                   disabled={savingI18nConfig}
                   onClick={() => void handleSaveLocalizationSettings()}
@@ -950,7 +950,7 @@ export default function InstructorCareerTrackEditorPage() {
                       </option>
                     ))}
                 </select>
-                <Button type="button" variant="outline" onClick={addCourse} disabled={!courseToAdd}>
+                <Button type="button" variant="cta" hierarchy="secondary" onClick={addCourse} disabled={!courseToAdd}>
                   <Plus className="size-4" aria-hidden />
                 </Button>
               </div>
@@ -975,8 +975,8 @@ export default function InstructorCareerTrackEditorPage() {
                     <div className="flex shrink-0 items-center gap-1">
                       <Button
                         type="button"
-                        size="icon"
-                        variant="ghost"
+                        size="small"
+                        variant="cta" hierarchy="tertiary" iconOnly
                         onClick={() => moveCourse(course.id, -1)}
                         disabled={idx === 0}
                       >
@@ -984,8 +984,8 @@ export default function InstructorCareerTrackEditorPage() {
                       </Button>
                       <Button
                         type="button"
-                        size="icon"
-                        variant="ghost"
+                        size="small"
+                        variant="cta" hierarchy="tertiary" iconOnly
                         onClick={() => moveCourse(course.id, 1)}
                         disabled={idx === orderedCourses.length - 1}
                       >
@@ -993,8 +993,8 @@ export default function InstructorCareerTrackEditorPage() {
                       </Button>
                       <Button
                         type="button"
-                        size="icon"
-                        variant="ghost"
+                        size="small"
+                        variant="cta" hierarchy="tertiary" iconOnly
                         onClick={() => removeCourse(course.id)}
                       >
                         <Trash2 className="size-4 text-destructive" aria-hidden />
@@ -1030,8 +1030,8 @@ export default function InstructorCareerTrackEditorPage() {
                   </div>
                   <Button
                     type="button"
-                    size="sm"
-                    variant="ghost"
+                    size="small"
+                    variant="cta" hierarchy="tertiary"
                     onClick={() => removeSponsor(idx)}
                   >
                     <Trash2 className="size-3.5" aria-hidden />
@@ -1069,8 +1069,8 @@ export default function InstructorCareerTrackEditorPage() {
             ))}
             <Button
               type="button"
-              variant="outline"
-              size="sm"
+              variant="cta" hierarchy="secondary"
+              size="small"
               onClick={addSponsor}
             >
               <Plus className="size-3.5" aria-hidden />
@@ -1092,8 +1092,8 @@ export default function InstructorCareerTrackEditorPage() {
                   </div>
                   <Button
                     type="button"
-                    size="sm"
-                    variant="ghost"
+                    size="small"
+                    variant="cta" hierarchy="tertiary"
                     onClick={() => removePartner(idx)}
                   >
                     <Trash2 className="size-3.5" aria-hidden />
@@ -1131,8 +1131,8 @@ export default function InstructorCareerTrackEditorPage() {
             ))}
             <Button
               type="button"
-              variant="outline"
-              size="sm"
+              variant="cta" hierarchy="secondary"
+              size="small"
               onClick={addPartner}
             >
               <Plus className="size-3.5" aria-hidden />
@@ -1189,8 +1189,8 @@ export default function InstructorCareerTrackEditorPage() {
           {partnerBrand?.name?.trim() ? (
             <Button
               type="button"
-              size="sm"
-              variant="ghost"
+              size="small"
+              variant="cta" hierarchy="tertiary"
               onClick={() => setPartnerBrand(null)}
             >
               <Trash2 className="size-3.5" aria-hidden />

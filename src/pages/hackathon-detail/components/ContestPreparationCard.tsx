@@ -29,7 +29,7 @@ export function ContestPreparationCard({ contest }: { contest: Pick<Contest, "ti
         className="mt-4 min-h-52 w-full resize-y rounded-lg border border-border-subtle bg-background p-3 text-sm leading-6 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
         value={prompt}
       />
-      <Button type="button" variant="outline" className="mt-3 min-h-11 w-full" onClick={() => void copy()}><Copy className="size-4" aria-hidden />{t("public.prepare.copy")}</Button>
+      <Button type="button" variant="cta" hierarchy="secondary" className="mt-3 min-h-11 w-full" onClick={() => void copy()}><Copy className="size-4" aria-hidden />{t("public.prepare.copy")}</Button>
     </section>
   );
 }

@@ -15,8 +15,8 @@ export function CopyButton({ text }: { text: string }) {
   return (
     <Button
       type="button"
-      variant="ghost"
-      size="icon-xs"
+      variant="cta" hierarchy="tertiary" iconOnly
+      size="xsmall"
       onClick={handleCopy}
       title={t("actions.copy")}
     >

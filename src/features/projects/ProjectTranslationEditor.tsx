@@ -22,7 +22,7 @@ export function ProjectTranslationEditor({ projectId, draft, disabled, onApply }
     onSuccess: setPreview,
   });
   return <div className="space-y-3">
-    <Button type="button" variant="outline" disabled={disabled || mutation.isPending || !draft.title.trim()} onClick={() => { setPreview(null); mutation.mutate(draft); }}>
+    <Button type="button" variant="cta" hierarchy="secondary" disabled={disabled || mutation.isPending || !draft.title.trim()} onClick={() => { setPreview(null); mutation.mutate(draft); }}>
       {t(mutation.isPending ? "projects.translation.translating" : "projects.translation.translate", { target: target.toUpperCase() })}
     </Button>
     <p className="text-xs text-foreground-muted">{t("projects.translation.hint")}</p>
@@ -37,7 +37,7 @@ export function ProjectTranslationEditor({ projectId, draft, disabled, onApply }
       <p className="text-xs text-foreground-muted">{t("projects.translation.replaceHint")}</p>
       <div className="flex gap-2">
         <Button type="button" disabled={disabled || draft !== preview.draft} onClick={() => { onApply(preview.target, preview.content); setPreview(null); }}>{t("projects.translation.apply")}</Button>
-        <Button type="button" variant="ghost" onClick={() => setPreview(null)}>{t("projects.translation.discard")}</Button>
+        <Button type="button" variant="cta" hierarchy="tertiary" onClick={() => setPreview(null)}>{t("projects.translation.discard")}</Button>
       </div>
     </section> : null}
   </div>;

@@ -41,7 +41,7 @@ export function ProjectResourcesEditor({ draft, onChange }: {
             <div className="flex items-center gap-2">
               <Icon className="size-4 shrink-0 text-primary" aria-hidden />
               <label htmlFor={inputId} className="flex-1 text-label-medium">{t(`projects.editor.resourceFields.${key}.label`)}</label>
-              <Button type="button" variant="ghost" size="icon-sm" aria-label={t("projects.editor.removeResource", { resource: t(`projects.editor.resourceFields.${key}.label`) })} onClick={() => {
+              <Button type="button" variant="cta" hierarchy="tertiary" iconOnly size="small" aria-label={t("projects.editor.removeResource", { resource: t(`projects.editor.resourceFields.${key}.label`) })} onClick={() => {
                 onChange(key, "");
                 setExpanded(current => current.filter(item => item !== key));
                 setTouched(current => current.filter(item => item !== key));

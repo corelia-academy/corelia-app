@@ -50,7 +50,7 @@ function Player({ url, title, watchUrl }: Props) {
     <div ref={container} />
     {failed && <p role="alert">{t("learning.videoError")}</p>}
     <div className="flex gap-3">
-      <Button type="button" variant="ghost" onClick={() => { setFailed(false); setRetry(value => value + 1); }}>{t("learning.retryVideo")}</Button>
+      <Button type="button" variant="cta" hierarchy="tertiary" onClick={() => { setFailed(false); setRetry(value => value + 1); }}>{t("learning.retryVideo")}</Button>
       <a href={watchUrl} target="_blank" rel="noreferrer" className="self-center text-sm text-primary underline">{t("learning.openYoutube")}</a>
     </div>
   </div>;

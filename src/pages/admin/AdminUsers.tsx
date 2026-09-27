@@ -175,8 +175,8 @@ export default function AdminUsers() {
             <Button
               onClick={() => void refresh()}
               disabled={loading}
-              variant="ghost"
-              size="sm"
+              variant="cta" hierarchy="tertiary"
+              size="small"
               className="text-foreground-muted hover:text-foreground"
             >
               {t("users.refresh")}
@@ -186,8 +186,8 @@ export default function AdminUsers() {
         <div className="mt-4 flex flex-wrap gap-2">
           <Button
             type="button"
-            size="sm"
-            variant={roleFilter === "all" ? "default" : "outline"}
+            size="small"
+            variant="cta" hierarchy={(roleFilter === "all" ? "primary" : "secondary")}
             onClick={() => changeRoleFilter("all")}
           >
             {t("users.allRoles")}
@@ -196,8 +196,8 @@ export default function AdminUsers() {
             <Button
               key={role}
               type="button"
-              size="sm"
-              variant={roleFilter === role ? "default" : "outline"}
+              size="small"
+              variant="cta" hierarchy={(roleFilter === role ? "primary" : "secondary")}
               onClick={() => changeRoleFilter(role)}
             >
               {getRoleLabel(role)}
@@ -206,8 +206,8 @@ export default function AdminUsers() {
           {(query || roleFilter !== "all") && (
             <Button
               type="button"
-              size="sm"
-              variant="ghost"
+              size="small"
+              variant="cta" hierarchy="tertiary"
               onClick={() => {
                 setQuery("");
                 changeRoleFilter("all");
@@ -520,10 +520,10 @@ export default function AdminUsers() {
             {t("users.pagination.page", { page: currentPage, total: pageCount })}
           </p>
           <div className="flex gap-2">
-            <Button type="button" variant="outline" size="sm" disabled={loading || currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
+            <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={loading || currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
               {t("users.pagination.previous")}
             </Button>
-            <Button type="button" variant="outline" size="sm" disabled={loading || currentPage >= pageCount} onClick={() => setPage(currentPage + 1)}>
+            <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={loading || currentPage >= pageCount} onClick={() => setPage(currentPage + 1)}>
               {t("users.pagination.next")}
             </Button>
           </div>

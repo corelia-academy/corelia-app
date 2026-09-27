@@ -159,8 +159,8 @@ export default function AdminInstructors() {
                 void refreshCourseCounts();
               }}
               disabled={loading}
-              variant="ghost"
-              size="sm"
+              variant="cta" hierarchy="tertiary"
+              size="small"
               className="text-foreground-muted hover:text-foreground"
             >
               {t("instructors.actions.refresh")}
@@ -170,24 +170,24 @@ export default function AdminInstructors() {
         <div className="mt-4 flex flex-wrap gap-2">
           <Button
             type="button"
-            size="sm"
-            variant={originFilter === "all" ? "default" : "outline"}
+            size="small"
+            variant="cta" hierarchy={(originFilter === "all" ? "primary" : "secondary")}
             onClick={() => setOriginFilter("all")}
           >
             {t("instructors.filters.quick.all")}
           </Button>
           <Button
             type="button"
-            size="sm"
-            variant={originFilter === "corelia" ? "default" : "outline"}
+            size="small"
+            variant="cta" hierarchy={(originFilter === "corelia" ? "primary" : "secondary")}
             onClick={() => setOriginFilter("corelia")}
           >
             {t("instructors.filters.quick.corelia")}
           </Button>
           <Button
             type="button"
-            size="sm"
-            variant={originFilter === "external" ? "default" : "outline"}
+            size="small"
+            variant="cta" hierarchy={(originFilter === "external" ? "primary" : "secondary")}
             onClick={() => setOriginFilter("external")}
           >
             {t("instructors.filters.quick.external")}
@@ -195,8 +195,8 @@ export default function AdminInstructors() {
           {(query || originFilter !== "all") && (
             <Button
               type="button"
-              size="sm"
-              variant="ghost"
+              size="small"
+              variant="cta" hierarchy="tertiary"
               onClick={() => {
                 setQuery("");
                 setOriginFilter("all");
@@ -299,8 +299,8 @@ export default function AdminInstructors() {
                   <div className="flex flex-wrap gap-2">
                     <Button
                       type="button"
-                      variant={currentOrigin === "corelia" ? "default" : "outline"}
-                      size="sm"
+                      variant="cta" hierarchy={(currentOrigin === "corelia" ? "primary" : "secondary")}
+                      size="small"
                       disabled={savingId === p.id}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -311,8 +311,8 @@ export default function AdminInstructors() {
                     </Button>
                     <Button
                       type="button"
-                      variant={currentOrigin === "external" ? "default" : "outline"}
-                      size="sm"
+                      variant="cta" hierarchy={(currentOrigin === "external" ? "primary" : "secondary")}
+                      size="small"
                       disabled={savingId === p.id}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -323,8 +323,8 @@ export default function AdminInstructors() {
                     </Button>
                     <Button
                       type="button"
-                      size="sm"
-                      variant="ghost"
+                      size="small"
+                      variant="cta" hierarchy="tertiary"
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/admin/instructors/${p.id}`);
@@ -429,8 +429,8 @@ export default function AdminInstructors() {
                         <div className="flex flex-wrap items-center gap-2">
                           <Button
                             type="button"
-                            variant={currentOrigin === "corelia" ? "default" : "outline"}
-                            size="sm"
+                            variant="cta" hierarchy={(currentOrigin === "corelia" ? "primary" : "secondary")}
+                            size="small"
                             disabled={savingId === p.id}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -441,8 +441,8 @@ export default function AdminInstructors() {
                           </Button>
                           <Button
                             type="button"
-                            variant={currentOrigin === "external" ? "default" : "outline"}
-                            size="sm"
+                            variant="cta" hierarchy={(currentOrigin === "external" ? "primary" : "secondary")}
+                            size="small"
                             disabled={savingId === p.id}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -453,8 +453,8 @@ export default function AdminInstructors() {
                           </Button>
                           <Button
                             type="button"
-                            size="sm"
-                            variant="ghost"
+                            size="small"
+                            variant="cta" hierarchy="tertiary"
                             onClick={(e) => {
                               e.stopPropagation();
                               navigate(`/admin/instructors/${p.id}`);

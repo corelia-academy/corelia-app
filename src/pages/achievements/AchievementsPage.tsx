@@ -64,7 +64,7 @@ export default function AchievementsPage() {
       {loadError && (
         <div role="alert" className="mb-4 flex flex-col gap-3 rounded-xl border border-warning/30 bg-warning/8 p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-foreground">{loadError}</p>
-          <Button type="button" variant="outline" size="sm" className="shrink-0 gap-2" disabled={loading} onClick={() => void reloadAchievements()}>
+          <Button type="button" variant="cta" hierarchy="secondary" size="small" className="shrink-0 gap-2" disabled={loading} onClick={() => void reloadAchievements()}>
             <RefreshCw className={cn("size-4", loading && "animate-spin")} aria-hidden />
             {t("achievements.loadError.retry")}
           </Button>
@@ -108,7 +108,7 @@ export default function AchievementsPage() {
                       {certificateSyncCandidates.map((item) => {
                         const syncing = syncingCourseId === item.courseId;
                         return (
-                          <Button key={item.courseId} type="button" size="sm" variant="secondary" disabled={!!syncingCourseId} onClick={() => void handleSyncCertificate(item.courseId)}>
+                          <Button key={item.courseId} type="button" size="small" variant="cta" hierarchy="secondary" disabled={!!syncingCourseId} onClick={() => void handleSyncCertificate(item.courseId)}>
                             {syncing ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <RefreshCw className="size-4" aria-hidden />}
                             {t("achievements.vaults.certificates.syncCourse", { course: item.courseTitle })}
                           </Button>

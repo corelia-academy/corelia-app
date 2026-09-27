@@ -189,7 +189,7 @@ export function CourseInstructorSection({
     return <section className="mt-6 rounded-2xl border border-border-subtle bg-surface-base p-4 sm:p-6">
       <h2 className="text-heading-small font-display">{translate("detail.courseDetail.instructor.titlePlural")}</h2>
       {attributionQuery.isPending ? <p role="status">{translate("learning.loading")}</p> : null}
-      {attributionQuery.isError ? <div role="alert"><p>{translate("learning.loadError")}</p><Button type="button" variant="outline" onClick={() => void attributionQuery.refetch()}>{translate("learning.retry")}</Button></div> : null}
+      {attributionQuery.isError ? <div role="alert"><p>{translate("learning.loadError")}</p><Button type="button" variant="cta" hierarchy="secondary" onClick={() => void attributionQuery.refetch()}>{translate("learning.retry")}</Button></div> : null}
       <div className="mt-4 grid gap-3 sm:grid-cols-2">{attribution.map((item, index) => {
         const person = attributionQuery.data?.[index];
         if (!person) return null;

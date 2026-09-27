@@ -19,8 +19,8 @@ export function PracticeProjectField({ value, onChange }: { value?: string; onCh
         {projects.map(project => <option key={project.id} value={project.id}>{project.title}</option>)}
       </select>
     </label>
-    {query.hasNextPage && <Button type="button" variant="outline" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>{t("learning.moreProjects")}</Button>}
-    {(query.isError || selected.isError) && <p role="alert">{t("learning.loadError")} <Button type="button" variant="outline" onClick={() => { void query.refetch(); if (value) void selected.refetch(); }}>{t("learning.retry")}</Button></p>}
+    {query.hasNextPage && <Button type="button" variant="cta" hierarchy="secondary" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>{t("learning.moreProjects")}</Button>}
+    {(query.isError || selected.isError) && <p role="alert">{t("learning.loadError")} <Button type="button" variant="cta" hierarchy="secondary" onClick={() => { void query.refetch(); if (value) void selected.refetch(); }}>{t("learning.retry")}</Button></p>}
   </div>;
 }
 
@@ -28,7 +28,7 @@ export function PracticeProjectLink({ id, locale }: { id: string; locale?: strin
   const { t, i18n } = useLearningTranslation();
   const query = useQuery(publicProjectDetailQueryOptions(id, locale ?? i18n.language));
   if (query.isPending) return <p role="status">{t("learning.loading")}</p>;
-  if (query.isError) return <p role="alert">{t("learning.loadError")} <Button type="button" variant="outline" onClick={() => void query.refetch()}>{t("learning.retry")}</Button></p>;
+  if (query.isError) return <p role="alert">{t("learning.loadError")} <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void query.refetch()}>{t("learning.retry")}</Button></p>;
   const project = query.data?.project;
   if (!project || project.visibility !== "public" || project.blocked) return <p className="text-sm text-foreground-muted">{t("learning.relatedUnavailable")}</p>;
   return <Link to={`/projects/${encodeURIComponent(project.slug || project.id)}`} className="block rounded-xl border border-border p-4 text-primary underline">{t("learning.relatedProject")}: {project.title}</Link>;

@@ -44,8 +44,8 @@ export function AnnouncementBodyField({
         </label>
         <Button
           type="button"
-          variant="ghost"
-          size="sm"
+          variant="cta" hierarchy="tertiary"
+          size="small"
           className="h-auto gap-1.5 px-2 py-1 text-xs text-foreground-muted hover:text-foreground"
           onClick={() => setShowPreview((v) => !v)}
           aria-pressed={showPreview}

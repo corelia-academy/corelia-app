@@ -72,7 +72,7 @@ export function ContestPublicLearningSection(props: {
             ) : officialCourse ? (
               <Button
                 type="button"
-                variant="secondary"
+                variant="cta" hierarchy="secondary"
                 className="mt-4 min-h-11"
                 nativeButton={false}
                 render={
@@ -82,7 +82,7 @@ export function ContestPublicLearningSection(props: {
                 {t("detail.learn.openCourse")}
               </Button>
             ) : (
-              <Button type="button" variant="secondary" className="mt-4 min-h-11" disabled>
+              <Button type="button" variant="cta" hierarchy="secondary" className="mt-4 min-h-11" disabled>
                 {t("detail.learn.courseUnavailable")}
               </Button>
             )}

@@ -47,8 +47,8 @@ export function ComponentShowcaseLayout({
               <Button
                 key={theme}
                 type="button"
-                size="sm"
-                variant="outline"
+                size="small"
+                variant="cta" hierarchy="secondary"
                 aria-pressed={resolvedTheme === theme}
                 onClick={() => setTheme(theme)}
               >

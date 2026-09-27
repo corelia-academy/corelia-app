@@ -284,7 +284,7 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
               <option value="vi">vi</option>
               <option value="en">en</option>
             </select>
-            <Button type="button" variant="outline" onClick={copyAllFromPrimary}>
+            <Button type="button" variant="cta" hierarchy="secondary" onClick={copyAllFromPrimary}>
               <Copy className="size-4" aria-hidden />
               {translate("actions.copy", { defaultValue: "Copy" })}
             </Button>
@@ -343,7 +343,7 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
           <div className="mt-3">
             <Button
               type="button"
-              variant="outline"
+              variant="cta" hierarchy="secondary"
               disabled={configMutation.isPending || !configDirty}
               onClick={() => void handleSaveConfig()}
             >

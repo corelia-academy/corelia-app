@@ -320,7 +320,7 @@ function CareerActionPanel({
             render={<Link to={`/learn/${continueCourseId}`} />}
             nativeButton={false}
             className="w-full"
-            size="default"
+            size="small"
           >
             {t("detail.continueButton")}
             <ArrowRight className="size-4" />
@@ -330,8 +330,8 @@ function CareerActionPanel({
             render={<Link to="/courses" />}
             nativeButton={false}
             className="w-full"
-            size="default"
-            variant="outline"
+            size="small"
+            variant="cta" hierarchy="secondary"
           >
             <BookOpen className="size-4" />
             {t("actions.browseCourses")}
@@ -434,8 +434,8 @@ function CourseRow({
           <Button
             render={<Link to={primaryHref} />}
             nativeButton={false}
-            size="sm"
-            variant={progress && !isCompleted ? "default" : "outline"}
+            size="small"
+            variant="cta" hierarchy={(progress && !isCompleted ? "primary" : "secondary")}
           >
             {primaryLabel}
             <ArrowRight className="size-3.5" />
