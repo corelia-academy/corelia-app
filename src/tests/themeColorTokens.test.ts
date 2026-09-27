@@ -42,6 +42,7 @@ describe("semantic theme color tokens", () => {
       ["mint-revoked-badge-surface", "var(--neutral-500)", "var(--neutral-500)"],
       ["mint-revoked-badge-text", "var(--neutral-400)", "var(--neutral-400)"],
       ["mint-revoked-badge-border", "var(--neutral-500)", "var(--neutral-500)"],
+      ["stroke-divider", "var(--border)", "var(--neutral-600)"],
       ["selection-mark", "var(--blue-100)", "var(--blue-100)"],
     ] as const
 
@@ -66,6 +67,7 @@ describe("semantic theme color tokens", () => {
       "mint-revoked-badge-surface",
       "mint-revoked-badge-text",
       "mint-revoked-badge-border",
+      "stroke-divider",
     ]
 
     for (const name of utilityRoles) {

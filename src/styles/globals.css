@@ -179,6 +179,7 @@
   --color-border: var(--border);
   --color-border-subtle: var(--border-subtle);
   --color-border-strong: var(--border-strong);
+  --color-stroke-divider: var(--stroke-divider);
   --color-tag-background: var(--tag-background);
   --color-tag-foreground: var(--tag-foreground);
   --color-tag-disabled-background: var(--tag-disabled-background);
@@ -885,6 +886,7 @@
 
   /* ── Borders & Inputs ── */
   --border: var(--neutral-200);
+  --stroke-divider: var(--neutral-500);
   --border-subtle: var(--neutral-100);
   --border-strong: var(--neutral-400);
   --input: var(--neutral-400);
@@ -1159,6 +1161,7 @@
 
   /* ── Borders & Inputs ── */
   --border: color-mix(in srgb, var(--neutral-900) 70%, var(--neutral-400));
+  --stroke-divider: var(--neutral-600);
   --border-subtle: color-mix(in srgb, var(--neutral-900) 82%, var(--neutral-400));
   --border-strong: var(--neutral-400);
   --input: var(--neutral-400);
