@@ -19,7 +19,7 @@ export function verifyProductionPostMigration({ migrationOutput, inspectionOutpu
   let remoteVersions = [];
   let audit;
   try {
-    remoteVersions = parseMigrationList(migrationOutput);
+    remoteVersions = parseMigrationList(migrationOutput).remoteVersions;
   } catch (error) {
     errors.push(error.message);
   }
