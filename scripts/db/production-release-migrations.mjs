@@ -123,6 +123,7 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260925095643_certificate_analytics_scope_fix.sql",
   "supabase/migrations/20260925113445_allow_single_locale_email_template.sql",
   "supabase/migrations/20260925171211_exclude_staff_from_feed.sql",
+  "supabase/migrations/20260928063404_campaign_all_contacts_audience.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
@@ -135,6 +136,7 @@ const UNRELEASED_PENDING_VERSIONS = new Set([
   "20260925022405",
   "20260925091927",
   "20260925095643",
+  "20260928063404",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

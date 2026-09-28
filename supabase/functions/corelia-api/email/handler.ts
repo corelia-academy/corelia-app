@@ -224,6 +224,10 @@ async function saveCampaign(db: SupabaseClient, actor: AdminContext, body: Recor
   const purpose = String(body.purpose ?? "");
   if (!PURPOSES.has(purpose)) return json({ message: "invalid_input:purpose" }, 400);
   if (purpose === "system") requireFullAdmin(actor);
+  const audienceType = body.audience_type === "all_contacts" ? "all_contacts" : "list";
+  if (audienceType === "all_contacts") requireFullAdmin(actor);
+  const listId = String(body.list_id ?? "").trim();
+  if (audienceType === "list" && !listId) return json({ message: "invalid_input:list_id" }, 400);
   const objectType = String(body.object_type ?? "").trim() || null;
   const objectId = String(body.object_id ?? "").trim() || null;
   if (!await validateObject(db, objectType, objectId)) return json({ message: "invalid_object_context" }, 400);
@@ -243,7 +247,7 @@ async function saveCampaign(db: SupabaseClient, actor: AdminContext, body: Recor
   const previewCopy = preview.copy;
   const rendered = renderEmailDocument({ subject: previewCopy.subject, preheader: previewCopy.preheader, bodyText: previewCopy.body_text, ctaLabel: previewCopy.cta_label, ctaUrl: previewCopy.cta_url, imageUrl: previewCopy.image_url, purpose, locale: preview.locale, values: genericValues });
   const id = crypto.randomUUID();
-  const { error } = await db.from("email_campaigns").insert({ id, name: String(body.name ?? "").trim(), purpose, object_type: objectType, object_id: objectId, list_id: String(body.list_id ?? ""), sender_id: sender.id, template_version_id: version.id, frozen_subject: rendered.subject, frozen_html: rendered.html, frozen_from: `${sender.display_name} <${sender.from_email}>`, frozen_reply_to: sender.reply_to, frozen_values: values, created_by: actor.id });
+  const { error } = await db.from("email_campaigns").insert({ id, name: String(body.name ?? "").trim(), purpose, object_type: objectType, object_id: objectId, audience_type: audienceType, list_id: audienceType === "list" ? listId : null, sender_id: sender.id, template_version_id: version.id, frozen_subject: rendered.subject, frozen_html: rendered.html, frozen_from: `${sender.display_name} <${sender.from_email}>`, frozen_reply_to: sender.reply_to, frozen_values: values, created_by: actor.id });
   if (error) throw error;
   await audit(db, actor, "create", "email_campaign", id, { missing_preview_variables: missing });
   return json({ ok: true, id });

@@ -96,10 +96,11 @@ test("Production release migrations distinguish deployed and pending versions", 
     "20260925022405",
     "20260925091927",
     "20260925095643",
+    "20260928063404",
   ]);
   assert.equal(
     release.EXPECTED_POST_MIGRATION_LATEST,
-    "20260925171211",
+    "20260928063404",
   );
   assert.ok(
     release.APPROVED_PENDING_VERSIONS.includes("20260903214029"),
