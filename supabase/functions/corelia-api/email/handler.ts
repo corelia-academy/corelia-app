@@ -70,7 +70,7 @@ async function listRows(db: SupabaseClient, action: string, body: Record<string,
     if (campaignError) throw campaignError;
     if (!campaign) return json({ message: "campaign_not_found" }, 404);
     let query = db.from("email_campaign_recipients")
-      .select("id,recipient_email,status,first_dispatched_at,updated_at,provider_message_id,last_error", { count: "exact" })
+      .select("id,recipient_email,status,first_dispatched_at,updated_at,provider_message_id,last_error,email_contacts(global_suppressed_at,suppression_reason)", { count: "exact" })
       .eq("campaign_id", campaignId);
     const status = String(body.status ?? "");
     if (["queued", "sending", "accepted", "delivered", "failed", "bounced", "complained", "unsubscribed", "suppressed", "indeterminate", "cancelled"].includes(status)) query = query.eq("status", status);
@@ -97,7 +97,7 @@ async function listRows(db: SupabaseClient, action: string, body: Record<string,
     return json({ items: data ?? [], total: count ?? 0, page: Math.floor(from / PAGE_SIZE), page_size: PAGE_SIZE });
   }
   const table = action === "lists.list" ? "email_lists" : action === "templates.list" ? "email_templates" : "email_campaigns";
-  const selection = action === "templates.list" ? "*, email_template_versions(*)" : action === "campaigns.list" ? "*, email_senders(display_name,from_email), email_templates:email_template_versions(subject,version,email_templates(name))" : "*";
+  const selection = action === "templates.list" ? "*, email_template_versions(*)" : action === "campaigns.list" ? "*, email_senders(display_name,from_email), email_lists(name), email_templates:email_template_versions(subject,version,email_templates(name))" : "*";
   const { data, error, count } = await db.from(table).select(selection, { count: "exact" }).order("created_at", { ascending: false }).range(from, to);
   if (error) throw error;
   return json({ items: data ?? [], total: count ?? 0, page: Math.floor(from / PAGE_SIZE), page_size: PAGE_SIZE });
@@ -382,6 +382,19 @@ export async function handleEmailAdmin(req: Request, db: SupabaseClient): Promis
     if (action === "campaigns.create") return saveCampaign(db, actor, body);
     if (action === "campaigns.prepare") return prepareCampaign(db, actor, body);
     if (action === "campaigns.control") return controlCampaign(db, actor, body);
+    if (action === "campaigns.exclude_recipient") {
+      requireFullAdmin(actor);
+      const recipientId = String(body.recipient_id ?? "");
+      const { data: recipient, error: recipientError } = await db.from("email_campaign_recipients").select("id,contact_id,campaign_id,status").eq("id", recipientId).maybeSingle();
+      if (recipientError) throw recipientError;
+      if (!recipient || !["failed", "bounced", "complained"].includes(recipient.status)) return json({ message: "recipient_not_failed" }, 409);
+      const now = new Date().toISOString();
+      const { data: contact, error } = await db.from("email_contacts").update({ global_suppressed_at: now, suppression_reason: `manual_campaign_failure:${recipient.campaign_id}`, updated_at: now }).eq("id", recipient.contact_id).is("global_suppressed_at", null).select("id").maybeSingle();
+      if (error) throw error;
+      if (!contact) return json({ message: "recipient_already_excluded" }, 409);
+      await audit(db, actor, "exclude_failed_recipient", "email_contact", contact.id, { campaign_id: recipient.campaign_id, recipient_id: recipientId });
+      return json({ ok: true });
+    }
     if (action === "campaigns.reconcile") {
       requireFullAdmin(actor);
       const outcome = String(body.outcome ?? "");
