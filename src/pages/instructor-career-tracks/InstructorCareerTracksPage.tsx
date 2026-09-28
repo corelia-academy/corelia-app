@@ -140,8 +140,8 @@ export default function InstructorCareerTracksPage() {
                 <div className="flex shrink-0 flex-col gap-2">
                   <Button
                     type="button"
-                    size="sm"
-                    variant="outline"
+                    size="small"
+                    variant="cta" hierarchy="secondary"
                     render={<Link to={`/instructor/career-tracks/${track.id}/edit`} />}
                     nativeButton={false}
                   >
@@ -150,8 +150,8 @@ export default function InstructorCareerTracksPage() {
                   </Button>
                   <Button
                     type="button"
-                    size="sm"
-                    variant="ghost"
+                    size="small"
+                    variant="cta" hierarchy="tertiary"
                     onClick={() => void togglePublish(track.id, !track.published)}
                   >
                     {track.published ? (

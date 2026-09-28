@@ -19,8 +19,8 @@ export function ExploreCoursesSection({
         <Button
           render={<NavLink to="/courses" />}
           nativeButton={false}
-          variant="ghost"
-          size="sm"
+          variant="cta" hierarchy="tertiary"
+          size="small"
           className="-mr-2"
         >
           {t("home.sections.goToLibrary")}
@@ -39,7 +39,7 @@ export function ExploreCoursesSection({
                 {t("home.sections.startFromCatalogSubtitle")}
               </p>
             </div>
-            <Button size="sm" render={<NavLink to="/courses" />} nativeButton={false}>
+            <Button size="small" render={<NavLink to="/courses" />} nativeButton={false}>
               {t("home.exploreCourses")}
             </Button>
           </div>

@@ -54,7 +54,7 @@ export function ContestDetailSettingsInviteCard({
             </Button>
             <Button
               type="button"
-              variant="outline"
+              variant="cta" hierarchy="secondary"
               disabled={inviteActionId === myInvite.id}
               onClick={() => void handleInviteResponse("declined")}
             >

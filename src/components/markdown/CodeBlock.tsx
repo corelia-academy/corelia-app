@@ -98,8 +98,8 @@ export function CodeBlock({ language, code }: Props) {
         <div className="flex items-center gap-0.5">
           <Button
             type="button"
-            variant="ghost"
-            size="icon-xs"
+            variant="cta" hierarchy="tertiary" iconOnly
+            size="xsmall"
             onClick={() => void handleCopy()}
             title={t("actions.copy")}
             aria-label={t("actions.copy")}
@@ -114,8 +114,8 @@ export function CodeBlock({ language, code }: Props) {
             <a href={remixUrl} target="_blank" rel="noreferrer">
               <Button
                 type="button"
-                variant="ghost"
-                size="xs"
+                variant="cta" hierarchy="tertiary"
+                size="xsmall"
                 className="gap-1 text-[11px] font-medium"
               >
                 <ExternalLink className="size-3" aria-hidden />

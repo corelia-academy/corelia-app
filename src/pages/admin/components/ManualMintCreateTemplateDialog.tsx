@@ -231,7 +231,7 @@ export function ManualMintCreateTemplateDialog({
         <DialogFooter className="gap-2 sm:gap-0">
           <Button
             type="button"
-            variant="outline"
+            variant="cta" hierarchy="secondary"
             onClick={() => handleClose(false)}
             disabled={saving}
           >

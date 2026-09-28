@@ -95,7 +95,7 @@ export function HomeHeader({
                   <NavLink to={featuredFocus?.action ?? "/courses"} />
                 }
                 nativeButton={false}
-                size="sm"
+                size="small"
               >
                 {featuredFocus
                   ? featuredFocus.completed
@@ -107,8 +107,8 @@ export function HomeHeader({
               <Button
                 render={<NavLink to="/courses" />}
                 nativeButton={false}
-                variant="outline"
-                size="sm"
+                variant="cta" hierarchy="secondary"
+                size="small"
               >
                 {t("home.allCourses")}
               </Button>

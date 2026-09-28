@@ -161,8 +161,8 @@ export function UserProfileProjectsSection({
                   <div className="mt-4 flex flex-wrap gap-2">
                     {href ? (
                       <Button
-                        size="sm"
-                        variant="outline"
+                        size="small"
+                        variant="cta" hierarchy="secondary"
                         render={<NavLink to={href} />}
                         nativeButton={false}
                       >
@@ -171,8 +171,8 @@ export function UserProfileProjectsSection({
                     ) : null}
                     {project.demo_url ? (
                       <Button
-                        size="sm"
-                        variant="outline"
+                        size="small"
+                        variant="cta" hierarchy="secondary"
                         render={
                           <a href={project.demo_url} target="_blank" rel="noreferrer" />
                         }
@@ -185,8 +185,8 @@ export function UserProfileProjectsSection({
                     ) : null}
                     {project.repo_url ? (
                       <Button
-                        size="sm"
-                        variant="outline"
+                        size="small"
+                        variant="cta" hierarchy="secondary"
                         render={
                           <a href={project.repo_url} target="_blank" rel="noreferrer" />
                         }
@@ -199,8 +199,8 @@ export function UserProfileProjectsSection({
                     ) : null}
                     {project.slide_url ? (
                       <Button
-                        size="sm"
-                        variant="outline"
+                        size="small"
+                        variant="cta" hierarchy="secondary"
                         render={
                           <a href={project.slide_url} target="_blank" rel="noreferrer" />
                         }
@@ -213,8 +213,8 @@ export function UserProfileProjectsSection({
                     ) : null}
                     {project.video_url ? (
                       <Button
-                        size="sm"
-                        variant="outline"
+                        size="small"
+                        variant="cta" hierarchy="secondary"
                         render={
                           <a href={project.video_url} target="_blank" rel="noreferrer" />
                         }

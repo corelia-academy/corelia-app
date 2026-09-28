@@ -20,7 +20,7 @@ export function LoginProviderButtons({
 
       <Field className="grid grid-cols-2 gap-3">
         <Button
-          variant="outline"
+          variant="cta" hierarchy="secondary"
           type="button"
           disabled={loading}
           onClick={() => onProvider("google")}
@@ -39,7 +39,7 @@ export function LoginProviderButtons({
           <span>Google</span>
         </Button>
         <Button
-          variant="outline"
+          variant="cta" hierarchy="secondary"
           type="button"
           disabled={loading}
           onClick={() => onProvider("github")}

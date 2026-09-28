@@ -38,7 +38,7 @@
 
 @theme inline {
   /* Figma Color 🟢 (node 12:3) → Tailwind color tokens */
-  --color-neutral-50: var(--neutral-50);
+  /* --color-neutral-50: var(--neutral-50);
   --color-neutral-100: var(--neutral-100);
   --color-neutral-200: var(--neutral-200);
   --color-neutral-300: var(--neutral-300);
@@ -48,7 +48,6 @@
   --color-neutral-700: var(--neutral-700);
   --color-neutral-800: var(--neutral-800);
   --color-neutral-900: var(--neutral-900);
-  --color-blue-50: var(--blue-50);
   --color-blue-100: var(--blue-100);
   --color-blue-200: var(--blue-200);
   --color-blue-300: var(--blue-300);
@@ -58,6 +57,7 @@
   --color-blue-700: var(--blue-700);
   --color-blue-800: var(--blue-800);
   --color-blue-900: var(--blue-900);
+  --color-blue-950: var(--blue-950); */
   /* Issue #387 — Figma Tabs semantic aliases. */
   --color-tabs-background: var(--tabs-background);
   --color-tabs-badge-active: var(--tabs-badge-active);
@@ -77,48 +77,62 @@
   --color-tabs-active-text-level1: var(--tabs-active-text-level1);
   --color-tabs-active-text-level2a: var(--tabs-active-text-level2a);
   --shadow-tabs: var(--tabs-shadow);
-  --color-error-50: var(--error-50);
-  --color-error-100: var(--error-100);
+  /* --color-error-100: var(--error-100);
+  --color-error-200: var(--error-200);
   --color-error-300: var(--error-300);
+  --color-error-400: var(--error-400);
   --color-error-500: var(--error-500);
-  --color-error-700: var(--error-700);
-  --color-error-900: var(--error-900);
-  --color-warning-50: var(--warning-50);
+  --color-error-600: var(--error-600);
   --color-warning-100: var(--warning-100);
+  --color-warning-200: var(--warning-200);
   --color-warning-300: var(--warning-300);
+  --color-warning-400: var(--warning-400);
   --color-warning-500: var(--warning-500);
-  --color-warning-700: var(--warning-700);
-  --color-warning-900: var(--warning-900);
-  --color-success-50: var(--success-50);
+  --color-warning-600: var(--warning-600);
   --color-success-100: var(--success-100);
+  --color-success-200: var(--success-200);
   --color-success-300: var(--success-300);
+  --color-success-400: var(--success-400);
   --color-success-500: var(--success-500);
-  --color-success-700: var(--success-700);
-  --color-success-900: var(--success-900);
-  --color-accent-yellow-50: var(--accent-yellow-50);
+  --color-success-600: var(--success-600);
   --color-accent-yellow-100: var(--accent-yellow-100);
+  --color-accent-yellow-200: var(--accent-yellow-200);
   --color-accent-yellow-300: var(--accent-yellow-300);
+  --color-accent-yellow-400: var(--accent-yellow-400);
   --color-accent-yellow-500: var(--accent-yellow-500);
-  --color-accent-yellow-700: var(--accent-yellow-700);
-  --color-accent-yellow-900: var(--accent-yellow-900);
-  --color-accent-teal-50: var(--accent-teal-50);
+  --color-accent-yellow-600: var(--accent-yellow-600);
   --color-accent-teal-100: var(--accent-teal-100);
+  --color-accent-teal-200: var(--accent-teal-200);
   --color-accent-teal-300: var(--accent-teal-300);
+  --color-accent-teal-400: var(--accent-teal-400);
   --color-accent-teal-500: var(--accent-teal-500);
-  --color-accent-teal-700: var(--accent-teal-700);
-  --color-accent-teal-900: var(--accent-teal-900);
-  --color-accent-purple-50: var(--accent-purple-50);
+  --color-accent-teal-600: var(--accent-teal-600);
   --color-accent-purple-100: var(--accent-purple-100);
+  --color-accent-purple-200: var(--accent-purple-200);
   --color-accent-purple-300: var(--accent-purple-300);
+  --color-accent-purple-400: var(--accent-purple-400);
   --color-accent-purple-500: var(--accent-purple-500);
-  --color-accent-purple-700: var(--accent-purple-700);
-  --color-accent-purple-900: var(--accent-purple-900);
-  --color-accent-sky-50: var(--accent-sky-50);
+  --color-accent-purple-600: var(--accent-purple-600);
   --color-accent-sky-100: var(--accent-sky-100);
+  --color-accent-sky-200: var(--accent-sky-200);
   --color-accent-sky-300: var(--accent-sky-300);
+  --color-accent-sky-400: var(--accent-sky-400);
   --color-accent-sky-500: var(--accent-sky-500);
-  --color-accent-sky-700: var(--accent-sky-700);
-  --color-accent-sky-900: var(--accent-sky-900);
+  --color-accent-sky-600: var(--accent-sky-600); */
+
+  /* Semantic color aliases for consumers moved off raw palette utilities. */
+  --color-loading-bar-end: var(--loading-bar-end);
+  --color-hackathon-unpublish-surface: var(--hackathon-unpublish-surface);
+  --color-hackathon-unpublish-hover-surface: var(--hackathon-unpublish-hover-surface);
+  --color-mint-pending-filter-text: var(--mint-pending-filter-text);
+  --color-mint-pending-count-surface: var(--mint-pending-count-surface);
+  --color-mint-pending-count-text: var(--mint-pending-count-text);
+  --color-mint-oca-badge-surface: var(--mint-oca-badge-surface);
+  --color-mint-oca-badge-text: var(--mint-oca-badge-text);
+  --color-mint-oca-badge-border: var(--mint-oca-badge-border);
+  --color-mint-revoked-badge-surface: var(--mint-revoked-badge-surface);
+  --color-mint-revoked-badge-text: var(--mint-revoked-badge-text);
+  --color-mint-revoked-badge-border: var(--mint-revoked-badge-border);
 
   --color-foreground: var(--foreground);
   --color-foreground-muted: var(--foreground-muted);
@@ -165,6 +179,7 @@
   --color-border: var(--border);
   --color-border-subtle: var(--border-subtle);
   --color-border-strong: var(--border-strong);
+  --color-stroke-divider: var(--stroke-divider);
   --color-tag-background: var(--tag-background);
   --color-tag-foreground: var(--tag-foreground);
   --color-tag-disabled-background: var(--tag-disabled-background);
@@ -219,6 +234,41 @@
   --color-input-field-disabled-icon: var(--input-field-disabled-icon);
   --color-input-field-divider: var(--input-field-divider);
   --color-input-field-divider-focus: var(--input-field-divider-focus);
+  /* Màu ngữ nghĩa cho Button theo Figma; giá trị được ánh xạ theo từng giao diện bên dưới. */
+  --color-button-primary: var(--button-primary);
+  --color-button-primary-foreground: var(--button-primary-foreground);
+  --color-button-primary-hover: var(--button-primary-hover);
+  --color-button-primary-active: var(--button-primary-active);
+  --color-button-primary-disabled: var(--button-primary-disabled);
+  --color-button-primary-disabled-foreground: var(--button-primary-disabled-foreground);
+  --color-button-secondary-foreground: var(--button-secondary-foreground);
+  --color-button-secondary-border: var(--button-secondary-border);
+  --color-button-secondary-hover: var(--button-secondary-hover);
+  --color-button-secondary-active: var(--button-secondary-active);
+  --color-button-secondary-disabled-border: var(--button-secondary-disabled-border);
+  --color-button-secondary-disabled-foreground: var(--button-secondary-disabled-foreground);
+  --color-button-tertiary-foreground: var(--button-tertiary-foreground);
+  --color-button-tertiary-hover: var(--button-tertiary-hover);
+  --color-button-tertiary-active: var(--button-tertiary-active);
+  --color-button-tertiary-disabled-foreground: var(--button-tertiary-disabled-foreground);
+  --color-button-destructive-primary: var(--button-destructive-primary);
+  --color-button-destructive-primary-foreground: var(--button-destructive-primary-foreground);
+  --color-button-destructive-primary-hover: var(--button-destructive-primary-hover);
+  --color-button-destructive-primary-active: var(--button-destructive-primary-active);
+  --color-button-destructive-primary-disabled: var(--button-destructive-primary-disabled);
+  --color-button-destructive-primary-disabled-foreground: var(--button-destructive-primary-disabled-foreground);
+  --color-button-destructive-secondary-foreground: var(--button-destructive-secondary-foreground);
+  --color-button-destructive-secondary-border: var(--button-destructive-secondary-border);
+  --color-button-destructive-secondary-hover: var(--button-destructive-secondary-hover);
+  --color-button-destructive-secondary-active: var(--button-destructive-secondary-active);
+  --color-button-destructive-secondary-disabled-border: var(--button-destructive-secondary-disabled-border);
+  --color-button-destructive-secondary-disabled-foreground: var(--button-destructive-secondary-disabled-foreground);
+  --color-button-destructive-tertiary-foreground: var(--button-destructive-tertiary-foreground);
+  --color-button-destructive-tertiary-hover: var(--button-destructive-tertiary-hover);
+  --color-button-destructive-tertiary-active: var(--button-destructive-tertiary-active);
+  --color-button-destructive-tertiary-disabled-foreground: var(--button-destructive-tertiary-disabled-foreground);
+  --shadow-button-floating-large: var(--button-floating-shadow-large);
+  --shadow-button-floating-medium: var(--button-floating-shadow-medium);
   /* Issue #385 — Figma Multiple Dropdown List semantic aliases. */
   --color-dropdown-surface: var(--dropdown-surface);
   --color-dropdown-hover: var(--dropdown-hover);
@@ -639,81 +689,81 @@
   --neutral-400: #8f99b5;
   --neutral-500: #596587;
   --neutral-600: #354467;
-  --neutral-700: #1f3050;
+  --neutral-700: #172540;
   --neutral-800: #0b1528;
   --neutral-900: #060b14;
 
-  --blue-50: #eef5ff;
-  --blue-100: #dae9ff;
-  --blue-200: #bddaff;
-  --blue-300: #90c3ff;
-  --blue-400: #5ba3ff;
-  --blue-500: #357efc;
-  --blue-600: #1759f1;
-  --blue-700: #1749de;
-  --blue-800: #193cb4;
-  --blue-900: #1a378e;
+  --blue-100: #eef5ff;
+  --blue-200: #dae9ff;
+  --blue-300: #bddaff;
+  --blue-400: #90c3ff;
+  --blue-500: #5ba3ff;
+  --blue-600: #357efc;
+  --blue-700: #1759f1;
+  --blue-800: #1749de;
+  --blue-900: #193cb4;
+  --blue-950: #1a378e;
 
   /* Issue #382 — Figma Avatar primitive tokens. */
   --avatar-text: var(--neutral-50);
   --avatar-icon: var(--neutral-50);
   --avatar-brand: var(--background);
-  --avatar-filled: var(--blue-500);
+  --avatar-filled: var(--blue-600);
   --avatar-set: var(--neutral-600);
   --avatar-action-edit: var(--neutral-900);
-  --avatar-action-edit-border: var(--blue-300);
-  --avatar-action-add: var(--blue-500);
-  --avatar-action-focus: var(--blue-500);
+  --avatar-action-edit-border: var(--blue-400);
+  --avatar-action-add: var(--blue-600);
+  --avatar-action-focus: var(--blue-600);
   --avatar-action-shadow: 0px 1px 1.5px rgb(16 24 40 / 15%);
 
-  --error-50: #fef3f2;
-  --error-100: #fed9d5;
+  --error-100: #fef3f2;
+  --error-200: #fed9d5;
   --error-300: #fda59b;
-  --error-500: #eb5146;
-  --error-700: #be211c;
-  --error-900: #8d0e0e;
+  --error-400: #eb5146;
+  --error-500: #be211c;
+  --error-600: #8d0e0e;
 
-  --warning-50: #fffae7;
-  --warning-100: #ffe0a2;
+  --warning-100: #fffae7;
+  --warning-200: #ffe0a2;
   --warning-300: #ffc465;
-  --warning-500: #f08d14;
-  --warning-700: #cc6f13;
-  --warning-900: #8b3603;
+  --warning-400: #f08d14;
+  --warning-500: #cc6f13;
+  --warning-600: #8b3603;
 
-  --success-50: #e0ffeb;
-  --success-100: #9ff9c1;
+  --success-100: #e0ffeb;
+  --success-200: #9ff9c1;
   --success-300: #4be18a;
-  --success-500: #13c05d;
-  --success-700: #079047;
-  --success-900: #036034;
+  --success-400: #13c05d;
+  --success-500: #079047;
+  --success-600: #036034;
 
-  --accent-yellow-50: #fff7e0;
-  --accent-yellow-100: #fae69e;
+  --accent-yellow-100: #fff7e0;
+  --accent-yellow-200: #fae69e;
   --accent-yellow-300: #f4cc38;
-  --accent-yellow-500: #f5c000;
-  --accent-yellow-700: #d6a800;
-  --accent-yellow-900: #947400;
+  --accent-yellow-400: #f5c000;
+  --accent-yellow-500: #d6a800;
+  --accent-yellow-600: #947400;
 
-  --accent-teal-50: #e9fdfb;
-  --accent-teal-100: #a9f8ef;
+  --accent-teal-100: #e9fdfb;
+  --accent-teal-200: #a9f8ef;
   --accent-teal-300: #71f3e4;
-  --accent-teal-500: #12d9c2;
-  --accent-teal-700: #0c9787;
-  --accent-teal-900: #097165;
+  --accent-teal-400: #12d9c2;
+  --accent-teal-500: #0c9787;
+  --accent-teal-600: #097165;
 
-  --accent-purple-50: #f8f2fe;
-  --accent-purple-100: #e8d5fe;
+  --accent-purple-100: #f8f2fe;
+  --accent-purple-200: #e8d5fe;
   --accent-purple-300: #c99bfd;
-  --accent-purple-500: #9346eb;
-  --accent-purple-700: #681cbe;
-  --accent-purple-900: #490e8d;
+  --accent-purple-400: #9346eb;
+  --accent-purple-500: #681cbe;
+  --accent-purple-600: #490e8d;
 
-  --accent-sky-50: #e0f6ff;
-  --accent-sky-100: #9fdff9;
+  --accent-sky-100: #e0f6ff;
+  --accent-sky-200: #9fdff9;
   --accent-sky-300: #42baea;
-  --accent-sky-500: #00b7ff;
-  --accent-sky-700: #006c97;
-  --accent-sky-900: #004763;
+  --accent-sky-400: #00b7ff;
+  --accent-sky-500: #006c97;
+  --accent-sky-600: #004763;
 
   --text-primary-2: #121926;
   --text-secondary: #4b5565;
@@ -721,22 +771,22 @@
 
   /* Exact Figma Tabs mappings for Light mode. */
   --tabs-background: var(--background);
-  --tabs-badge-active: var(--blue-400);
+  --tabs-badge-active: var(--blue-500);
   --tabs-badge-background: var(--neutral-300);
   --tabs-badge-disabled: var(--neutral-100);
   --tabs-badge-text: var(--neutral-800);
   --tabs-border-active: var(--neutral-700);
   --tabs-border-divider: var(--neutral-300);
   --tabs-border-input: var(--neutral-500);
-  --tabs-border-secondary: var(--blue-400);
+  --tabs-border-secondary: var(--blue-500);
   --tabs-surface-hover: var(--neutral-100);
   --tabs-text-gray: var(--neutral-500);
   --tabs-text-invert: var(--neutral-50);
   --tabs-text-primary: var(--neutral-900);
   --tabs-text-disabled: var(--neutral-500);
-  --tabs-active-accent: var(--blue-500);
-  --tabs-active-text-level1: var(--blue-300);
-  --tabs-active-text-level2a: var(--blue-400);
+  --tabs-active-accent: var(--blue-600);
+  --tabs-active-text-level1: var(--blue-400);
+  --tabs-active-text-level2a: var(--blue-500);
   --tabs-shadow: 0 1px 3px 0 #10182826;
 
   /* ==========================================
@@ -754,14 +804,50 @@
 
   /* Issue #391 — Input Field colors for light mode. */
   --input-field-border: var(--neutral-500);
-  --input-field-focus-ring: var(--blue-600);
-  --input-field-error: var(--error-700);
+  --input-field-focus-ring: var(--blue-700);
+  --input-field-error: var(--error-500);
   --input-field-disabled-border: var(--neutral-200);
   --input-field-disabled-surface: var(--neutral-100);
   --input-field-disabled-foreground: var(--neutral-500);
   --input-field-disabled-icon: var(--neutral-500);
   --input-field-divider: var(--text-secondary);
-  --input-field-divider-focus: var(--accent-purple-700);
+  --input-field-divider-focus: var(--accent-purple-500);
+
+  /* Màu Button theo Figma được điều chỉnh cho giao diện sáng. */
+  --button-primary: var(--blue-700);
+  --button-primary-foreground: var(--neutral-50);
+  --button-primary-hover: var(--blue-600);
+  --button-primary-active: var(--blue-900);
+  --button-primary-disabled: var(--neutral-200);
+  --button-primary-disabled-foreground: var(--neutral-500);
+  --button-secondary-foreground: var(--blue-800);
+  --button-secondary-border: var(--blue-800);
+  --button-secondary-hover: var(--blue-200);
+  --button-secondary-active: var(--blue-300);
+  --button-secondary-disabled-border: var(--neutral-300);
+  --button-secondary-disabled-foreground: var(--neutral-400);
+  --button-tertiary-foreground: var(--foreground);
+  --button-tertiary-hover: var(--neutral-100);
+  --button-tertiary-active: var(--neutral-200);
+  --button-tertiary-disabled-foreground: var(--neutral-400);
+  --button-destructive-primary: var(--error-500);
+  --button-destructive-primary-foreground: var(--neutral-50);
+  --button-destructive-primary-hover: var(--error-400);
+  --button-destructive-primary-active: var(--error-600);
+  --button-destructive-primary-disabled: var(--neutral-200);
+  --button-destructive-primary-disabled-foreground: var(--neutral-500);
+  --button-destructive-secondary-foreground: var(--error-500);
+  --button-destructive-secondary-border: var(--error-500);
+  --button-destructive-secondary-hover: var(--neutral-100);
+  --button-destructive-secondary-active: var(--neutral-200);
+  --button-destructive-secondary-disabled-border: var(--neutral-300);
+  --button-destructive-secondary-disabled-foreground: var(--neutral-400);
+  --button-destructive-tertiary-foreground: var(--error-500);
+  --button-destructive-tertiary-hover: var(--neutral-100);
+  --button-destructive-tertiary-active: var(--neutral-200);
+  --button-destructive-tertiary-disabled-foreground: var(--neutral-400);
+  --button-floating-shadow-large: 4px 12px 40px -4px rgb(97 64 182 / 24%);
+  --button-floating-shadow-medium: 2px 8px 32px -4px rgb(97 64 182 / 20%);
 
   /* Thẻ Card trắng thuần */
   --card: var(--neutral-50);
@@ -770,40 +856,41 @@
   --popover-foreground: var(--text-primary-2);
 
   /* ── Brand Colors (Google Blue) ── */
-  --primary: var(--blue-600);
+  --primary: var(--blue-700);
   --primary-foreground: var(--neutral-50);
-  --primary-muted: var(--blue-100);
-  --primary-container: var(--blue-100);
-  --on-primary-container: var(--blue-900);
+  --primary-muted: var(--blue-200);
+  --primary-container: var(--blue-200);
+  --on-primary-container: var(--blue-950);
 
   /* ── Secondary / Muted (Xám nhạt kiểu Google buttons) ── */
   --secondary: var(--neutral-100);
   --secondary-foreground: var(--text-primary-2);
   --muted: var(--neutral-100);
   --muted-foreground: var(--text-secondary);
-  --accent: var(--blue-100);
-  --accent-foreground: var(--blue-900);
-  --accent-muted: var(--blue-50);
+  --accent: var(--blue-200);
+  --accent-foreground: var(--blue-950);
+  --accent-muted: var(--blue-100);
 
   /* ── Semantic Colors (Bộ màu logo Google) ── */
-  --destructive: var(--error-500);
+  --destructive: var(--error-400);
   --destructive-foreground: var(--neutral-50);
-  --destructive-muted: var(--error-50);
+  --destructive-muted: var(--error-100);
 
-  --success: var(--success-500);
+  --success: var(--success-400);
   --success-foreground: var(--neutral-50);
-  --success-muted: var(--success-50);
+  --success-muted: var(--success-100);
 
-  --warning: var(--warning-500);
+  --warning: var(--warning-400);
   --warning-foreground: var(--neutral-900);
-  --warning-muted: var(--warning-50);
+  --warning-muted: var(--warning-100);
 
   /* ── Borders & Inputs ── */
   --border: var(--neutral-200);
+  --stroke-divider: var(--neutral-500);
   --border-subtle: var(--neutral-100);
   --border-strong: var(--neutral-400);
   --input: var(--neutral-400);
-  --ring: var(--blue-600);
+  --ring: var(--blue-700);
 
   /* ── Shadows (rất nhẹ, đúng chất Material) ── */
   --elevation-1: 0 1px 2px 0 oklch(0.22 0.02 260 / 0.05);
@@ -815,23 +902,23 @@
 
   /* ── Brand ── */
   --brand-navy: var(--neutral-900);
-  --brand-accent: var(--blue-600);
+  --brand-accent: var(--blue-700);
 
   /* ── Sidebar ── */
   --sidebar: var(--neutral-50);
   --sidebar-foreground: var(--text-primary-2);
-  --sidebar-primary: var(--blue-600);
+  --sidebar-primary: var(--blue-700);
   --sidebar-primary-foreground: var(--neutral-50);
-  --sidebar-accent: var(--blue-100);
-  --sidebar-accent-foreground: var(--blue-900);
+  --sidebar-accent: var(--blue-200);
+  --sidebar-accent-foreground: var(--blue-950);
   --sidebar-border: var(--neutral-200);
-  --sidebar-ring: var(--blue-600);
+  --sidebar-ring: var(--blue-700);
 
   /* ── Corelia DS v2 surfaces ── */
   --surface-base: var(--card);
   --surface-raised: var(--neutral-50);
   /* Light hover uses a visible neutral layer instead of the page background. */
-  --action-hover: var(--neutral-100);
+  --action-hover: var(--neutral-200);
   --action-text: var(--foreground);
   --action-supporting: var(--neutral-400);
   --action-destructive: var(--destructive);
@@ -843,60 +930,60 @@
   --action-active-icon: var(--neutral-50);
   --action-active-supporting: var(--neutral-400);
   /* Light User Clicked state uses a pale blue fill and border. */
-  --user-clicked: var(--blue-100);
-  --user-clicked-border: var(--blue-200);
+  --user-clicked: var(--blue-200);
+  --user-clicked-border: var(--blue-300);
   --user-clicked-foreground: var(--neutral-50);
-  --action-destructive-active: var(--error-700);
+  --action-destructive-active: var(--error-500);
   --action-destructive-active-foreground: var(--neutral-200);
   --action-destructive-active-icon: var(--neutral-50);
   --action-destructive-active-supporting: var(--neutral-200);
   /* Toggle semantic colors preserve the current light state mapping. */
   --toggle-track: var(--neutral-600);
-  --toggle-track-checked: var(--blue-600);
-  --toggle-track-alternative: var(--success-500);
+  --toggle-track-checked: var(--blue-700);
+  --toggle-track-alternative: var(--success-400);
   --toggle-track-disabled: var(--neutral-500);
-  --toggle-track-checked-disabled: var(--blue-800);
-  --toggle-track-alternative-disabled: var(--success-700);
+  --toggle-track-checked-disabled: var(--blue-900);
+  --toggle-track-alternative-disabled: var(--success-500);
   --toggle-thumb: var(--neutral-50);
   --toggle-thumb-disabled: var(--neutral-700);
   --toggle-text: var(--foreground);
   --toggle-text-disabled: var(--neutral-500);
   --toggle-supporting-text: var(--text-secondary);
-  --toggle-pressed-background: var(--blue-600);
+  --toggle-pressed-background: var(--blue-700);
   --toggle-pressed-foreground: var(--neutral-50);
   --toggle-icon-disabled: var(--neutral-500);
   --toggle-pressed-disabled-background: var(--neutral-500);
   --toggle-pressed-disabled-foreground: var(--neutral-800);
   /* Selection semantic colors follow the primary theme in light mode. */
-  --selection-active: var(--blue-600);
+  --selection-active: var(--blue-700);
   --selection-unchecked: var(--neutral-600);
   --selection-disabled: var(--neutral-400);
   --selection-disabled-mark: var(--neutral-50);
-  --selection-feedback: color-mix(in srgb, var(--blue-600) 10%, transparent);
-  --selection-feedback-pressed: color-mix(in srgb, var(--blue-600) 20%, transparent);
-  --selection-card-selected-border: var(--blue-600);
+  --selection-feedback: color-mix(in srgb, var(--blue-700) 10%, transparent);
+  --selection-feedback-pressed: color-mix(in srgb, var(--blue-700) 20%, transparent);
+  --selection-card-selected-border: var(--blue-700);
   /* Badge semantic colors preserve the current light Figma mapping. */
   --badge-outline-background: color-mix(in srgb, var(--neutral-50) 5%, transparent);
-  --badge-primary: var(--blue-400);
-  --badge-primary-filled: var(--blue-400);
+  --badge-primary: var(--blue-500);
+  --badge-primary-filled: var(--blue-500);
   --badge-primary-filled-foreground: var(--neutral-900);
-  --badge-warning: var(--warning-500);
-  --badge-warning-filled: var(--warning-700);
+  --badge-warning: var(--warning-400);
+  --badge-warning-filled: var(--warning-500);
   --badge-warning-filled-foreground: var(--neutral-50);
-  --badge-success: var(--success-500);
-  --badge-success-filled: var(--success-700);
+  --badge-success: var(--success-400);
+  --badge-success-filled: var(--success-500);
   --badge-success-filled-foreground: var(--neutral-50);
-  --badge-gold: var(--accent-yellow-500);
-  --badge-gold-filled: var(--accent-yellow-500);
+  --badge-gold: var(--accent-yellow-400);
+  --badge-gold-filled: var(--accent-yellow-400);
   --badge-gold-filled-foreground: var(--neutral-900);
-  --badge-lime-green: var(--accent-teal-500);
-  --badge-lime-green-filled: var(--accent-teal-900);
-  --badge-lime-green-filled-foreground: var(--accent-teal-50);
-  --badge-cyan: var(--accent-sky-500);
-  --badge-cyan-filled: var(--accent-sky-100);
+  --badge-lime-green: var(--accent-teal-400);
+  --badge-lime-green-filled: var(--accent-teal-600);
+  --badge-lime-green-filled-foreground: var(--accent-teal-100);
+  --badge-cyan: var(--accent-sky-400);
+  --badge-cyan-filled: var(--accent-sky-200);
   --badge-cyan-filled-foreground: var(--neutral-900);
-  --badge-error: var(--error-500);
-  --badge-error-filled: var(--error-700);
+  --badge-error: var(--error-400);
+  --badge-error-filled: var(--error-500);
   --badge-error-filled-foreground: var(--neutral-50);
   --badge-gray: var(--neutral-600);
   --badge-gray-filled: var(--neutral-200);
@@ -924,14 +1011,29 @@
   --dropdown-input-border: var(--neutral-500);
   --dropdown-divider: var(--neutral-300);
   --dropdown-checkbox-unchecked: var(--neutral-600);
-  --dropdown-checkbox-active: var(--blue-600);
-  --dropdown-checkbox-mark: var(--blue-50);
+  --dropdown-checkbox-active: var(--blue-700);
+  --dropdown-checkbox-mark: var(--blue-100);
   --dropdown-checkbox-disabled-active: var(--selection-disabled);
   --dropdown-checkbox-disabled-mark: var(--selection-disabled-mark);
-  --dropdown-focus: var(--blue-400);
-  --dropdown-warning: var(--error-500);
+  --dropdown-focus: var(--blue-500);
+  --dropdown-warning: var(--error-400);
   --dropdown-warning-supporting: var(--error-300);
   --dropdown-shadow: 0 -1px 12px -2px #10182814, 0 4px 4px -2px #1018280f;
+
+  /* Color roles for former palette utility consumers; kept explicit per mode. */
+  --loading-bar-end: var(--blue-800);
+  --hackathon-unpublish-surface: var(--blue-700);
+  --hackathon-unpublish-hover-surface: var(--blue-800);
+  --mint-pending-filter-text: var(--neutral-900);
+  --mint-pending-count-surface: var(--neutral-900);
+  --mint-pending-count-text: var(--neutral-900);
+  --mint-oca-badge-surface: var(--blue-600);
+  --mint-oca-badge-text: var(--blue-700);
+  --mint-oca-badge-border: var(--blue-600);
+  --mint-revoked-badge-surface: var(--neutral-500);
+  --mint-revoked-badge-text: var(--neutral-400);
+  --mint-revoked-badge-border: var(--neutral-500);
+  --selection-mark: var(--blue-100);
 }
 
 .dark {
@@ -950,8 +1052,8 @@
 
   /* Issue #391 — Input Field colors for dark mode. */
   --input-field-border: var(--neutral-500);
-  --input-field-focus-ring: var(--blue-400);
-  --input-field-error: var(--error-500);
+  --input-field-focus-ring: var(--blue-500);
+  --input-field-error: var(--error-400);
   --input-field-disabled-border: var(--neutral-700);
   --input-field-disabled-surface: var(--neutral-800);
   --input-field-disabled-foreground: var(--neutral-500);
@@ -959,24 +1061,60 @@
   --input-field-divider: var(--text-secondary);
   --input-field-divider-focus: #8b6fe8;
 
+  /* Bảng màu Button khớp Figma, ánh xạ qua các biến màu toàn cục hiện có. */
+  --button-primary: var(--blue-700);
+  --button-primary-foreground: var(--neutral-50);
+  --button-primary-hover: var(--blue-600);
+  --button-primary-active: var(--blue-900);
+  --button-primary-disabled: var(--neutral-600);
+  --button-primary-disabled-foreground: var(--neutral-400);
+  --button-secondary-foreground: var(--blue-400);
+  --button-secondary-border: var(--blue-400);
+  --button-secondary-hover: var(--neutral-700);
+  --button-secondary-active: var(--neutral-800);
+  --button-secondary-disabled-border: var(--neutral-500);
+  --button-secondary-disabled-foreground: var(--neutral-500);
+  --button-tertiary-foreground: var(--neutral-50);
+  --button-tertiary-hover: var(--neutral-700);
+  --button-tertiary-active: var(--neutral-800);
+  --button-tertiary-disabled-foreground: var(--neutral-500);
+  --button-destructive-primary: var(--error-500);
+  --button-destructive-primary-foreground: var(--neutral-50);
+  --button-destructive-primary-hover: var(--error-400);
+  --button-destructive-primary-active: var(--error-600);
+  --button-destructive-primary-disabled: var(--neutral-600);
+  --button-destructive-primary-disabled-foreground: var(--neutral-400);
+  --button-destructive-secondary-foreground: var(--error-400);
+  --button-destructive-secondary-border: var(--error-400);
+  --button-destructive-secondary-hover: var(--neutral-800);
+  --button-destructive-secondary-active: var(--neutral-900);
+  --button-destructive-secondary-disabled-border: var(--neutral-600);
+  --button-destructive-secondary-disabled-foreground: var(--neutral-500);
+  --button-destructive-tertiary-foreground: var(--error-400);
+  --button-destructive-tertiary-hover: var(--neutral-700);
+  --button-destructive-tertiary-active: var(--neutral-800);
+  --button-destructive-tertiary-disabled-foreground: var(--neutral-500);
+  --button-floating-shadow-large: 4px 12px 40px -4px rgb(97 64 182 / 24%);
+  --button-floating-shadow-medium: 2px 8px 32px -4px rgb(97 64 182 / 20%);
+
   /* Exact Figma Tabs mappings for Dark mode. */
   --tabs-background: var(--background);
-  --tabs-badge-active: var(--blue-400);
+  --tabs-badge-active: var(--blue-500);
   --tabs-badge-background: var(--neutral-600);
   --tabs-badge-disabled: var(--neutral-800);
   --tabs-badge-text: var(--neutral-100);
   --tabs-border-active: var(--neutral-200);
   --tabs-border-divider: var(--neutral-600);
   --tabs-border-input: var(--neutral-500);
-  --tabs-border-secondary: var(--blue-400);
+  --tabs-border-secondary: var(--blue-500);
   --tabs-surface-hover: var(--neutral-800);
   --tabs-text-gray: var(--neutral-400);
   --tabs-text-invert: var(--neutral-900);
   --tabs-text-primary: var(--neutral-50);
   --tabs-text-disabled: var(--neutral-500);
-  --tabs-active-accent: var(--blue-500);
-  --tabs-active-text-level1: var(--blue-300);
-  --tabs-active-text-level2a: var(--blue-400);
+  --tabs-active-accent: var(--blue-600);
+  --tabs-active-text-level1: var(--blue-400);
+  --tabs-active-text-level2a: var(--blue-500);
   --tabs-shadow: 0 1px 3px 0 #10182826;
 
   --card: color-mix(in srgb, var(--neutral-900) 92%, var(--neutral-300));
@@ -985,48 +1123,49 @@
   --popover-foreground: var(--neutral-50);
 
   /* ── Brand Colors (Google Blue sáng hơn cho nền tối) ── */
-  --primary: var(--blue-400);
+  --primary: var(--blue-500);
   --primary-foreground: var(--neutral-900);
-  --primary-muted: var(--blue-900);
-  --primary-container: var(--blue-900);
-  --on-primary-container: var(--blue-100);
+  --primary-muted: var(--blue-950);
+  --primary-container: var(--blue-950);
+  --on-primary-container: var(--blue-200);
 
   /* Issue #382 — Avatar semantic aliases follow dark mode. */
-  --avatar-filled: var(--blue-500);
+  --avatar-filled: var(--blue-600);
   --avatar-set: var(--neutral-600);
   --avatar-action-edit: var(--neutral-900);
-  --avatar-action-edit-border: var(--blue-300);
-  --avatar-action-add: var(--blue-500);
-  --avatar-action-focus: var(--blue-500);
+  --avatar-action-edit-border: var(--blue-400);
+  --avatar-action-add: var(--blue-600);
+  --avatar-action-focus: var(--blue-600);
 
   /* ── Secondary / Muted ── */
-  --secondary: var(--blue-900);
+  --secondary: var(--blue-950);
   --secondary-foreground: var(--neutral-50);
-  --muted: var(--blue-900);
+  --muted: var(--blue-950);
   --muted-foreground: var(--neutral-300);
-  --accent: var(--blue-900);
-  --accent-foreground: var(--blue-100);
-  --accent-muted: var(--blue-900);
+  --accent: var(--blue-950);
+  --accent-foreground: var(--blue-200);
+  --accent-muted: var(--blue-950);
 
   /* ── Semantic Colors (Bộ màu Google, sáng hơn cho Dark Mode) ── */
   --destructive: var(--error-300);
-  --destructive-foreground: var(--error-900);
-  --destructive-muted: var(--error-900);
+  --destructive-foreground: var(--error-600);
+  --destructive-muted: var(--error-600);
 
   --success: var(--success-300);
-  --success-foreground: var(--success-900);
-  --success-muted: var(--success-900);
+  --success-foreground: var(--success-600);
+  --success-muted: var(--success-600);
 
   --warning: var(--warning-300);
-  --warning-foreground: var(--warning-900);
-  --warning-muted: var(--warning-900);
+  --warning-foreground: var(--warning-600);
+  --warning-muted: var(--warning-600);
 
   /* ── Borders & Inputs ── */
   --border: color-mix(in srgb, var(--neutral-900) 70%, var(--neutral-400));
+  --stroke-divider: var(--neutral-600);
   --border-subtle: color-mix(in srgb, var(--neutral-900) 82%, var(--neutral-400));
   --border-strong: var(--neutral-400);
   --input: var(--neutral-400);
-  --ring: var(--blue-400);
+  --ring: var(--blue-500);
 
   /* ── Shadows ── */
   --elevation-1: 0 1px 2px 0 oklch(0 0 0 / 0.35);
@@ -1037,30 +1176,30 @@
 
   /* ── Brand ── */
   --brand-navy: var(--neutral-900);
-  --brand-accent: var(--blue-400);
+  --brand-accent: var(--blue-500);
 
   /* ── Sidebar ── */
   --sidebar: var(--card);
   --sidebar-foreground: var(--neutral-50);
-  --sidebar-primary: var(--blue-400);
+  --sidebar-primary: var(--blue-500);
   --sidebar-primary-foreground: var(--neutral-900);
-  --sidebar-accent: var(--blue-900);
-  --sidebar-accent-foreground: var(--blue-100);
+  --sidebar-accent: var(--blue-950);
+  --sidebar-accent-foreground: var(--blue-200);
   --sidebar-border: var(--border);
-  --sidebar-ring: var(--blue-400);
+  --sidebar-ring: var(--blue-500);
 
   /* ── Corelia DS v2 surfaces ── */
   --surface-base: var(--background);
   --surface-raised: var(--card);
   /* Dark hover maps to the Figma neutral raised surface. */
-  --action-hover: var(--neutral-800);
+  --action-hover: var(--neutral-700);
   --action-text: var(--neutral-200);
   --action-supporting: var(--neutral-400);
-  --action-destructive: var(--error-500);
+  --action-destructive: var(--error-400);
   --action-destructive-supporting: var(--neutral-400);
   --action-disabled: var(--neutral-500);
   --action-disabled-icon: var(--neutral-500);
-  --action-active: var(--blue-900);
+  --action-active: var(--blue-950);
   --action-active-foreground: var(--neutral-200);
   --action-active-icon: var(--neutral-50);
   --action-active-supporting: var(--neutral-400);
@@ -1068,57 +1207,57 @@
   --user-clicked: var(--neutral-700);
   --user-clicked-border: var(--neutral-600);
   --user-clicked-foreground: var(--neutral-50);
-  --action-destructive-active: var(--error-700);
+  --action-destructive-active: var(--error-500);
   --action-destructive-active-foreground: var(--neutral-200);
   --action-destructive-active-icon: var(--neutral-50);
   --action-destructive-active-supporting: var(--neutral-200);
   /* Toggle semantic colors preserve disabled mappings and follow dark primary/success. */
   --toggle-track: var(--neutral-600);
-  --toggle-track-checked: var(--blue-600);
-  --toggle-track-alternative: var(--success-500);
+  --toggle-track-checked: var(--blue-700);
+  --toggle-track-alternative: var(--success-400);
   --toggle-track-disabled: var(--neutral-500);
-  --toggle-track-checked-disabled: var(--blue-800);
-  --toggle-track-alternative-disabled: var(--success-700);
+  --toggle-track-checked-disabled: var(--blue-900);
+  --toggle-track-alternative-disabled: var(--success-500);
   --toggle-thumb: var(--neutral-50);
   --toggle-thumb-disabled: var(--neutral-700);
   --toggle-text: var(--neutral-200);
   --toggle-text-disabled: var(--neutral-500);
   --toggle-supporting-text: #cdd5df;
-  --toggle-pressed-background: var(--blue-600);
+  --toggle-pressed-background: var(--blue-700);
   --toggle-pressed-foreground: var(--neutral-50);
   --toggle-icon-disabled: var(--neutral-500);
   --toggle-pressed-disabled-background: var(--neutral-500);
   --toggle-pressed-disabled-foreground: var(--neutral-800);
   /* Selection semantic colors follow the primary theme in dark mode. */
-  --selection-active: var(--blue-600);
+  --selection-active: var(--blue-700);
   --selection-unchecked: var(--foreground-muted);
   --selection-disabled: var(--neutral-500);
   --selection-disabled-mark: var(--neutral-400);
-  --selection-feedback: color-mix(in srgb, var(--blue-600) 10%, transparent);
-  --selection-feedback-pressed: color-mix(in srgb, var(--blue-600) 20%, transparent);
-  --selection-card-selected-border: var(--blue-600);
+  --selection-feedback: color-mix(in srgb, var(--blue-700) 10%, transparent);
+  --selection-feedback-pressed: color-mix(in srgb, var(--blue-700) 20%, transparent);
+  --selection-card-selected-border: var(--blue-700);
   /* Badge semantic colors preserve the current dark Figma mapping. */
   --badge-outline-background: color-mix(in srgb, var(--neutral-50) 5%, transparent);
-  --badge-primary: var(--blue-400);
-  --badge-primary-filled: var(--blue-400);
+  --badge-primary: var(--blue-500);
+  --badge-primary-filled: var(--blue-500);
   --badge-primary-filled-foreground: var(--neutral-900);
-  --badge-warning: var(--warning-500);
-  --badge-warning-filled: var(--warning-700);
+  --badge-warning: var(--warning-400);
+  --badge-warning-filled: var(--warning-500);
   --badge-warning-filled-foreground: var(--neutral-50);
-  --badge-success: var(--success-500);
-  --badge-success-filled: var(--success-700);
+  --badge-success: var(--success-400);
+  --badge-success-filled: var(--success-500);
   --badge-success-filled-foreground: var(--neutral-50);
-  --badge-gold: var(--accent-yellow-500);
-  --badge-gold-filled: var(--accent-yellow-500);
+  --badge-gold: var(--accent-yellow-400);
+  --badge-gold-filled: var(--accent-yellow-400);
   --badge-gold-filled-foreground: var(--neutral-900);
-  --badge-lime-green: var(--accent-teal-500);
-  --badge-lime-green-filled: var(--accent-teal-900);
-  --badge-lime-green-filled-foreground: var(--accent-teal-50);
-  --badge-cyan: var(--accent-sky-500);
-  --badge-cyan-filled: var(--accent-sky-100);
+  --badge-lime-green: var(--accent-teal-400);
+  --badge-lime-green-filled: var(--accent-teal-600);
+  --badge-lime-green-filled-foreground: var(--accent-teal-100);
+  --badge-cyan: var(--accent-sky-400);
+  --badge-cyan-filled: var(--accent-sky-200);
   --badge-cyan-filled-foreground: var(--neutral-900);
-  --badge-error: var(--error-500);
-  --badge-error-filled: var(--error-700);
+  --badge-error: var(--error-400);
+  --badge-error-filled: var(--error-500);
   --badge-error-filled-foreground: var(--neutral-50);
   --badge-gray: var(--neutral-200);
   --badge-gray-filled: var(--neutral-600);
@@ -1133,7 +1272,7 @@
   --tag-disabled-foreground: var(--neutral-500);
   --tag-overflow-background: var(--neutral-600);
   --tag-overflow-foreground: var(--neutral-200);
-  /* --surface-overlay: var(--blue-900); */
+  /* --surface-overlay: var(--blue-950); */
   --surface-overlay: color-mix(in srgb,
       var(--neutral-900) 82%,
       var(--neutral-300));
@@ -1148,15 +1287,30 @@
   --dropdown-container-border: var(--neutral-400);
   --dropdown-input-border: var(--neutral-500);
   --dropdown-divider: var(--neutral-600);
-  --dropdown-checkbox-unchecked: var(--blue-50);
-  --dropdown-checkbox-active: var(--blue-600);
-  --dropdown-checkbox-mark: var(--blue-50);
+  --dropdown-checkbox-unchecked: var(--blue-100);
+  --dropdown-checkbox-active: var(--blue-700);
+  --dropdown-checkbox-mark: var(--blue-100);
   --dropdown-checkbox-disabled-active: var(--selection-disabled);
   --dropdown-checkbox-disabled-mark: var(--selection-disabled-mark);
-  --dropdown-focus: var(--blue-400);
-  --dropdown-warning: var(--error-500);
+  --dropdown-focus: var(--blue-500);
+  --dropdown-warning: var(--error-400);
   --dropdown-warning-supporting: var(--error-300);
   --dropdown-shadow: 0 -1px 12px -2px #10182814, 0 4px 4px -2px #1018280f;
+
+  /* Color roles for former palette utility consumers; kept explicit per mode. */
+  --loading-bar-end: var(--blue-800);
+  --hackathon-unpublish-surface: var(--blue-700);
+  --hackathon-unpublish-hover-surface: var(--blue-800);
+  --mint-pending-filter-text: var(--neutral-900);
+  --mint-pending-count-surface: var(--neutral-900);
+  --mint-pending-count-text: var(--neutral-900);
+  --mint-oca-badge-surface: var(--blue-600);
+  --mint-oca-badge-text: var(--blue-500);
+  --mint-oca-badge-border: var(--blue-600);
+  --mint-revoked-badge-surface: var(--neutral-500);
+  --mint-revoked-badge-text: var(--neutral-400);
+  --mint-revoked-badge-border: var(--neutral-500);
+  --selection-mark: var(--blue-100);
 }
 
 @layer base {

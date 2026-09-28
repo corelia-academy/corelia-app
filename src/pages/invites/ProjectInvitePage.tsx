@@ -149,7 +149,7 @@ export default function ProjectInvitePage() {
               <p className="text-sm text-destructive">{previewError}</p>
               <Button
                 type="button"
-                variant="outline"
+                variant="cta" hierarchy="secondary"
                 className="w-full"
                 onClick={() => void previewQuery.refetch()}
               >
@@ -176,7 +176,7 @@ export default function ProjectInvitePage() {
               </Button>
               <Button
                 type="button"
-                variant="outline"
+                variant="cta" hierarchy="secondary"
                 className="flex-1"
                 disabled={busy !== null}
                 onClick={() => void onDecline()}
@@ -186,7 +186,7 @@ export default function ProjectInvitePage() {
             </div>
           ) : null}
 
-          <Button type="button" variant="ghost" className="w-full" onClick={() => navigate("/")}>
+          <Button type="button" variant="cta" hierarchy="tertiary" className="w-full" onClick={() => navigate("/")}>
             {tc("nav.home")}
           </Button>
         </CardContent>

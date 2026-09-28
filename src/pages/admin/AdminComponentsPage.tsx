@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import AdminActionComponentPage from "./components/AdminActionComponentPage";
 import AdminAvatarComponentPage from "./components/AdminAvatarComponentPage";
 import AdminBadgeComponentPage from "./components/AdminBadgeComponentPage";
+import AdminButtonComponentPage from "./components/AdminButtonComponentPage";
 import AdminDropdownMenuComponentPage from "./components/AdminDropdownMenuComponentPage";
 import AdminInputFieldComponentPage from "./components/AdminInputFieldComponentPage";
 import AdminScrollbarComponentPage from "./components/AdminScrollbarComponentPage";
@@ -81,6 +82,12 @@ const components = [
     slug: "input-field",
     title: "Input Field",
     criterion: "Five field compositions, validation, counters, selectable tags, dropdown selectors, icons, and disabled/focused states.",
+  },
+  {
+    slug: "button",
+    title: "Button",
+    criterion:
+      "Review hierarchy, sizing, states, and composition with the existing form controls.",
   },
 ] as const;
 
@@ -423,11 +430,11 @@ export default function AdminComponentsPage() {
       </header>
 
       <div className="grid min-w-0 gap-8 lg:grid-cols-[28vh_minmax(0,1fr)]">
-        <aside className="flex h-[70dvh] w-full min-h-0 min-w-0 flex-col overflow-y-clip lg:sticky lg:top-6 lg:w-[28vh] lg:self-start">
+        <aside className="flex h-[70dvh] w-full min-h-0 min-w-0 flex-col lg:sticky lg:top-6 lg:w-[28vh] lg:self-start">
           <Button
             type="button"
-            variant="outline"
-            size="sm"
+            variant="cta" hierarchy="secondary"
+            size="small"
             className="w-fit justify-start"
             onClick={() => navigate("/")}
           >
@@ -484,8 +491,8 @@ export default function AdminComponentsPage() {
               <Button
                 key={theme}
                 type="button"
-                size="sm"
-                variant="outline"
+                size="small"
+                variant="cta" hierarchy="secondary"
                 data-testid={`theme-toggle-${theme}`}
                 aria-pressed={resolvedTheme === theme}
                 onClick={() => setTheme(theme)}
@@ -529,6 +536,9 @@ export default function AdminComponentsPage() {
           </ComponentSection>
           <ComponentSection {...components[10]}>
             <AdminInputFieldComponentPage embedded />
+          </ComponentSection>
+          <ComponentSection {...components[11]}>
+            <AdminButtonComponentPage />
           </ComponentSection>
         </div>
       </div>

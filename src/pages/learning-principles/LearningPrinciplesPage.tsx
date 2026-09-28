@@ -81,7 +81,7 @@ export default function LearningPrinciplesPage() {
           <section id="checklist" aria-labelledby="checklist-title" className="scroll-mt-28 rounded-2xl border border-border-subtle bg-surface-raised p-5 sm:p-7">
             <h2 id="checklist-title" className="font-display text-2xl font-semibold">{t("sections.checklist")}</h2>
             <p className="mt-2 text-sm leading-6 text-foreground-muted">{t("checklistNote")}</p>
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><p role="status" className="text-sm font-medium">{t("checked", { count: checked.length, total: checks.length })}</p><Button type="button" variant="outline" size="sm" disabled={!checked.length} onClick={() => setChecked([])}>{t("reset")}</Button></div>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><p role="status" className="text-sm font-medium">{t("checked", { count: checked.length, total: checks.length })}</p><Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={!checked.length} onClick={() => setChecked([])}>{t("reset")}</Button></div>
             <ul className="mt-3 divide-y divide-border-subtle">{checks.map(key => <li key={key}><label className="flex cursor-pointer items-start gap-3 py-4 text-sm leading-6"><input type="checkbox" className="mt-1 size-4 shrink-0 accent-primary" checked={checked.includes(key)} onChange={event => setChecked(previous => event.target.checked ? [...previous, key] : previous.filter(item => item !== key))} /><span>{t(`checks.${key}`)}</span></label></li>)}</ul>
           </section>
 

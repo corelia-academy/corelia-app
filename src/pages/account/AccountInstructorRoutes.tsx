@@ -374,7 +374,7 @@ function InstructorProfileSection() {
               placeholder={t("instructorProfile.socialLinks.labelPlaceholder")}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddLink(); }}}
             />
-            <Button type="button" variant="outline" size="sm" onClick={handleAddLink}>
+            <Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={handleAddLink}>
               <Plus className="size-4" aria-hidden />
               <span className="sr-only">{t("instructorProfile.socialLinks.addButton")}</span>
             </Button>

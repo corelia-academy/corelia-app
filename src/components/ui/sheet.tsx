@@ -64,9 +64,9 @@ function SheetContent({
             data-slot="sheet-close"
             render={
               <Button
-                variant="ghost"
+                variant="cta" hierarchy="tertiary" iconOnly
                 className="absolute top-lg right-lg"
-                size="icon-sm"
+                size="small"
               />
             }
           >

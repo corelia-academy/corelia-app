@@ -120,7 +120,7 @@ export default function ConfirmSignup() {
           </p>
 
           {!invalid ? (
-            <Button type="button" className="mt-6 w-full" size="lg" onClick={confirmClick}>
+            <Button type="button" className="mt-6 w-full" size="large" onClick={confirmClick}>
               {t("confirmSignup.confirmCta")}
             </Button>
           ) : null}

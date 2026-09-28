@@ -564,6 +564,11 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
     await act(async () => publishButton?.click());
     await settle();
 
+    const unpublishButton = Array.from(view.container.querySelectorAll("button"))
+      .find((b) => b.textContent?.includes("hackathons.editor.statusPublishedCta"));
+    expect(unpublishButton?.className).toContain("bg-hackathon-unpublish-surface");
+    expect(unpublishButton?.className).toContain("hover:bg-hackathon-unpublish-hover-surface");
+
     // Click save in header
     const saveButton = Array.from(view.container.querySelectorAll("button"))
       .find((b) => b.textContent?.includes("hackathons.editor.saveSection"));

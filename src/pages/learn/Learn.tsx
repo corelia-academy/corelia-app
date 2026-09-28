@@ -529,7 +529,7 @@ function LearnWorkspace() {
                 {translate("detail.learn.goToFirstLesson", { defaultValue: "Vào bài học đầu tiên" })}
               </Button>
             )}
-            <Button variant="outline" onClick={() => navigate(`/courses/${courseId}`)}>
+            <Button variant="cta" hierarchy="secondary" onClick={() => navigate(`/courses/${courseId}`)}>
               {translate("detail.learn.backToCourse")}
             </Button>
           </div>
@@ -656,8 +656,8 @@ function LearnWorkspace() {
       {/* Left */}
       <div className="flex items-center gap-1">
         <Button
-          variant="ghost"
-          size="icon"
+          variant="cta" hierarchy="tertiary" iconOnly
+          size="small"
           render={<Link to={`/courses/${courseId}`} />}
           nativeButton={false}
           aria-label={translate("detail.learn.backToCourse")}
@@ -685,8 +685,8 @@ function LearnWorkspace() {
       {/* Right */}
       <div className="ml-auto flex items-center gap-1">
         <Button
-          variant="ghost"
-          size="icon"
+          variant="cta" hierarchy="tertiary" iconOnly
+          size="small"
           onClick={toggleCurriculumPanel}
           aria-label={translate("detail.learn.toggleCurriculum")}
           className={cn(

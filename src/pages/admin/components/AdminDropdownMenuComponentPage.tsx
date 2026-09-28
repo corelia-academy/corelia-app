@@ -129,7 +129,7 @@ function BaseItemPreview({ id, label, showLeading }: BaseItemPreviewProps) {
           render={
             <Button
               type="button"
-              variant="outline"
+              variant="cta" hierarchy="secondary"
               data-testid={`dropdown-menu-base-items-${id}-trigger`}
             >
               Open {label}
@@ -748,7 +748,7 @@ function UseCaseDropdown({ definition }: { definition: UseCaseDefinition }) {
           render={
             <Button
               type="button"
-              variant="outline"
+              variant="cta" hierarchy="secondary"
               data-testid={`dropdown-menu-use-case-${definition.id}-trigger`}
             >
               Open {definition.label}

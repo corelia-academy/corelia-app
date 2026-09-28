@@ -171,7 +171,7 @@ export default function ContestNew() {
     <PageContainer width="narrow">
       <div className="mb-4">
         <Button
-          variant="ghost"
+          variant="cta" hierarchy="tertiary"
           className="-ml-2 text-foreground-muted hover:text-foreground"
           onClick={() => navigate("/hackathons/manage")}
         >
@@ -544,7 +544,7 @@ export default function ContestNew() {
             </FieldGroup>
 
             <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-end">
-              <Button variant="ghost" onClick={() => navigate("/hackathons/manage")}>
+              <Button variant="cta" hierarchy="tertiary" onClick={() => navigate("/hackathons/manage")}>
                 {t("instructorNew.actions.back")}
               </Button>
               <Button disabled={!canSubmit || submitting} onClick={handleCreate}>

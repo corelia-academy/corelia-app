@@ -45,7 +45,7 @@ export function RequireRole({
     return (
       <div className="flex min-h-[240px] flex-col items-center justify-center gap-3 px-4 text-center">
         <p className="text-sm text-foreground-muted">{t("userProfile.errors.loadFailed")}</p>
-        <Button type="button" variant="outline" size="sm" onClick={() => void refreshProfile(user)}>
+        <Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={() => void refreshProfile(user)}>
           {t("actions.retry")}
         </Button>
       </div>

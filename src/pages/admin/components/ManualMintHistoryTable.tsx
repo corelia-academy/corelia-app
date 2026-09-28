@@ -289,7 +289,7 @@ export function ManualMintHistoryTable() {
           className={cn(
             "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer",
             statusFilter === "pending"
-              ? "bg-yellow-400 text-neutral-900 font-bold shadow-xs"
+              ? "bg-yellow-400 text-mint-pending-filter-text font-bold shadow-xs"
               : "bg-surface-raised/60 text-foreground-muted hover:bg-surface-raised hover:text-foreground",
           )}
         >
@@ -299,7 +299,7 @@ export function ManualMintHistoryTable() {
             className={cn(
               "rounded-full px-1.5 py-0.2 text-[10px]",
               statusFilter === "pending"
-                ? "bg-neutral-900/20 text-neutral-900 font-bold"
+                ? "bg-mint-pending-count-surface/20 text-mint-pending-count-text font-bold"
                 : "bg-surface-base text-foreground-muted",
             )}
           >
@@ -386,8 +386,8 @@ export function ManualMintHistoryTable() {
           {hasActiveFilters && (
             <Button
               type="button"
-              variant="ghost"
-              size="sm"
+              variant="cta" hierarchy="tertiary"
+              size="small"
               onClick={handleResetFilters}
               className="h-8.5 px-2 text-xs text-foreground-muted hover:text-foreground cursor-pointer"
             >
@@ -399,8 +399,8 @@ export function ManualMintHistoryTable() {
           {/* Refresh button */}
           <Button
             type="button"
-            variant="outline"
-            size="sm"
+            variant="cta" hierarchy="secondary"
+            size="small"
             onClick={() => void historyQuery.refetch()}
             disabled={historyQuery.isFetching}
             className="h-8.5 px-2.5 text-xs cursor-pointer"
@@ -431,8 +431,8 @@ export function ManualMintHistoryTable() {
             {hasActiveFilters && (
               <Button
                 type="button"
-                variant="outline"
-                size="sm"
+                variant="cta" hierarchy="secondary"
+                size="small"
                 onClick={handleResetFilters}
                 className="mt-3 text-xs cursor-pointer"
               >
@@ -525,7 +525,7 @@ export function ManualMintHistoryTable() {
                                 "rounded px-1.5 py-0.5 text-[10px] font-bold uppercase shrink-0",
                                 row.templateKind === "ocb"
                                   ? "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20"
-                                  : "bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20",
+                                  : "bg-mint-oca-badge-surface/15 text-mint-oca-badge-text border border-mint-oca-badge-border/20",
                               )}
                             >
                               {row.templateKind.toUpperCase()}
@@ -573,7 +573,7 @@ export function ManualMintHistoryTable() {
                           {t("manualMint.history.statusPending")}
                         </span>
                       ) : row.status === "revoked" ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-neutral-500/10 text-neutral-400 border border-neutral-500/20 px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-mint-revoked-badge-surface/10 text-mint-revoked-badge-text border border-mint-revoked-badge-border/20 px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap">
                           {t("manualMint.history.statusRevoked")}
                         </span>
                       ) : (
@@ -616,8 +616,8 @@ export function ManualMintHistoryTable() {
                         {isFailed && (
                           <Button
                             type="button"
-                            variant="outline"
-                            size="xs"
+                            variant="cta" hierarchy="secondary"
+                            size="xsmall"
                             disabled={retryingId === row.id || revokingId === row.id}
                             onClick={() => void handleRetry(row)}
                             className="h-7 px-2 text-xs font-medium text-foreground hover:bg-surface-raised shrink-0 cursor-pointer"
@@ -639,7 +639,7 @@ export function ManualMintHistoryTable() {
                           <Button
                             type="button"
                             variant="destructive"
-                            size="xs"
+                            size="xsmall"
                             disabled={revokingId === row.id || retryingId === row.id}
                             onClick={() => void handleRevoke(row)}
                             className="h-7 px-2 text-xs font-medium shrink-0 cursor-pointer"

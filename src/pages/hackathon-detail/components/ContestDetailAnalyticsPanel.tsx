@@ -75,8 +75,8 @@ export function ContestDetailAnalyticsPanel({ vm }: { vm: ContestDetailViewModel
             {contest.published_leaderboard.length > 0 && (
               <Button
                 type="button"
-                size="sm"
-                variant="outline"
+                size="small"
+                variant="cta" hierarchy="secondary"
                 onClick={handleExportLeaderboardCsv}
               >
                 {translate("workspace.manage.exportCsv")}

@@ -39,8 +39,8 @@ export function LessonFormatSelector({
       >
         <Button
           type="button"
-          size="sm"
-          aria-pressed={value === "video"} variant={value === "video" ? "default" : "outline"}
+          size="small"
+          aria-pressed={value === "video"} variant="cta" hierarchy={(value === "video" ? "primary" : "secondary")}
           disabled={disabled}
           className="gap-1.5"
           onClick={() => onChange("video")}
@@ -50,8 +50,8 @@ export function LessonFormatSelector({
         </Button>
         <Button
           type="button"
-          size="sm"
-          aria-pressed={value === "article"} variant={value === "article" ? "default" : "outline"}
+          size="small"
+          aria-pressed={value === "article"} variant="cta" hierarchy={(value === "article" ? "primary" : "secondary")}
           disabled={disabled}
           className="gap-1.5"
           onClick={() => onChange("article")}
@@ -62,8 +62,8 @@ export function LessonFormatSelector({
         {quizLabel && (
           <Button
             type="button"
-            size="sm"
-            aria-pressed={value === "quiz"} variant={value === "quiz" ? "default" : "outline"}
+            size="small"
+            aria-pressed={value === "quiz"} variant="cta" hierarchy={(value === "quiz" ? "primary" : "secondary")}
             disabled={disabled}
             className="gap-1.5"
             onClick={() => onChange("quiz")}
@@ -75,8 +75,8 @@ export function LessonFormatSelector({
         {practiceLabel && (
           <Button
             type="button"
-            size="sm"
-            aria-pressed={value === "practice"} variant={value === "practice" ? "default" : "outline"}
+            size="small"
+            aria-pressed={value === "practice"} variant="cta" hierarchy={(value === "practice" ? "primary" : "secondary")}
             disabled={disabled}
             className="gap-1.5"
             onClick={() => onChange("practice")}
@@ -86,7 +86,7 @@ export function LessonFormatSelector({
           </Button>
         )}
         {codeExerciseLabel && (
-          <Button type="button" size="sm" aria-pressed={value === "code_exercise"} variant={value === "code_exercise" ? "default" : "outline"} disabled={disabled} className="gap-1.5" onClick={() => onChange("code_exercise")}>
+          <Button type="button" size="small" aria-pressed={value === "code_exercise"} variant="cta" hierarchy={(value === "code_exercise" ? "primary" : "secondary")} disabled={disabled} className="gap-1.5" onClick={() => onChange("code_exercise")}>
             <Code2 className="size-4" aria-hidden />
             {codeExerciseLabel}
           </Button>

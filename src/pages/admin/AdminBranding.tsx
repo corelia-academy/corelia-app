@@ -133,8 +133,8 @@ export default function AdminBranding() {
             />
             <Button
               type="button"
-              variant="outline"
-              size="sm"
+              variant="cta" hierarchy="secondary"
+              size="small"
               disabled={uploadMutation.isPending}
               onClick={() => fileRef.current?.click()}
               className="gap-2"

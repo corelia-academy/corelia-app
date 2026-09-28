@@ -344,7 +344,7 @@ export default function AdminManualMint() {
                   </p>
                   <p className="truncate text-xs text-foreground-muted">{matchedProfile.email}</p>
                 </div>
-                <Button type="button" variant="outline" size="sm" onClick={() => setPreviewOpen(true)}>
+                <Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={() => setPreviewOpen(true)}>
                   {t("manualMint.lookup.previewProfile")}
                 </Button>
               </div>
@@ -370,8 +370,8 @@ export default function AdminManualMint() {
               </h3>
               <Button
                 type="button"
-                variant="outline"
-                size="sm"
+                variant="cta" hierarchy="secondary"
+                size="small"
                 className="h-7 text-xs"
                 onClick={() => setActiveTab("templates")}
               >

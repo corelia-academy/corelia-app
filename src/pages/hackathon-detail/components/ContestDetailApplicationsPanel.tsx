@@ -143,7 +143,7 @@ export function ContestDetailApplicationsPanel({
           </div>
           <Button
             type="button"
-            variant="outline"
+            variant="cta" hierarchy="secondary"
             onClick={() => void handleRefreshMetrics()}
           >
             {refreshingMetrics
@@ -166,8 +166,8 @@ export function ContestDetailApplicationsPanel({
                   <Button
                     key={fb.id}
                     type="button"
-                    size="sm"
-                    variant={statusFilter === fb.id ? "default" : "outline"}
+                    size="small"
+                    variant="cta" hierarchy={(statusFilter === fb.id ? "primary" : "secondary")}
                     onClick={() => {
                       setStatusFilter(fb.id);
                       setPage(1);
@@ -262,12 +262,8 @@ export function ContestDetailApplicationsPanel({
                           <div className="flex flex-wrap gap-2">
                             <Button
                               type="button"
-                              size="sm"
-                              variant={
-                                item.status === "approved"
-                                  ? "default"
-                                  : "outline"
-                              }
+                              size="small"
+                              variant="cta" hierarchy={(item.status === "approved" ? "primary" : "secondary")}
                               disabled={savingReviewId === item.user_id}
                               onClick={() =>
                                 void handleReview(item.user_id, "approved")
@@ -277,12 +273,8 @@ export function ContestDetailApplicationsPanel({
                             </Button>
                             <Button
                               type="button"
-                              size="sm"
-                              variant={
-                                item.status === "rejected"
-                                  ? "destructive"
-                                  : "outline"
-                              }
+                              size="small"
+                              variant={(item.status === "rejected" ? "destructive" : "cta")} hierarchy={(item.status === "rejected" ? "primary" : "secondary")}
                               disabled={savingReviewId === item.user_id}
                               onClick={() =>
                                 void handleReview(item.user_id, "rejected")
@@ -301,8 +293,8 @@ export function ContestDetailApplicationsPanel({
                             {motivationLong ? (
                               <Button
                                 type="button"
-                                variant="ghost"
-                                size="sm"
+                                variant="cta" hierarchy="tertiary"
+                                size="small"
                                 className="mt-1 h-auto px-0 py-0 text-primary underline-offset-4 hover:bg-transparent hover:text-primary hover:underline"
                                 onClick={() =>
                                   setMotivationExpanded((prev) => ({
@@ -380,8 +372,8 @@ export function ContestDetailApplicationsPanel({
                     <div className="flex flex-wrap gap-2">
                       <Button
                         type="button"
-                        variant="outline"
-                        size="sm"
+                        variant="cta" hierarchy="secondary"
+                        size="small"
                         disabled={safePage <= 1}
                         onClick={() => setPage((p) => Math.max(1, p - 1))}
                       >
@@ -389,8 +381,8 @@ export function ContestDetailApplicationsPanel({
                       </Button>
                       <Button
                         type="button"
-                        variant="outline"
-                        size="sm"
+                        variant="cta" hierarchy="secondary"
+                        size="small"
                         disabled={safePage >= totalPages}
                         onClick={() =>
                           setPage((p) => Math.min(totalPages, p + 1))

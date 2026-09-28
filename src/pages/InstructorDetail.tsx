@@ -197,8 +197,8 @@ const InstructorDetail = () => {
               {translate("detail.instructorDetail.courses.title")}
             </h2>
             <Button
-              variant="outline"
-              size="sm"
+              variant="cta" hierarchy="secondary"
+              size="small"
               type="button"
               render={<Link to="/courses" />}
             >

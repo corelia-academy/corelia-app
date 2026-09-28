@@ -133,8 +133,8 @@ export function SectionQuiz({
             </div>
             <Button
               type="button"
-              variant="ghost"
-              size="sm"
+              variant="cta" hierarchy="tertiary"
+              size="small"
               onClick={handleRetry}
               className="shrink-0"
             >

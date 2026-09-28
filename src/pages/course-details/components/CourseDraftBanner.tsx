@@ -20,7 +20,7 @@ export function CourseDraftBanner({ courseId }: CourseDraftBannerProps) {
       <Button
         render={<Link to={`/instructor/courses/${courseId}/edit`} />}
         nativeButton={false}
-        size="sm"
+        size="small"
         className="inline-flex items-center gap-2"
       >
         <Pencil className="size-4 shrink-0" aria-hidden />{" "}

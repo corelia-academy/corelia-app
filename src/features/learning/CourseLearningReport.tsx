@@ -18,7 +18,7 @@ export function CourseLearningReport({ courseId }: { courseId: string }) {
   return <section className="mb-6 space-y-4" aria-label={t("learning.reports")}>
     <div className="flex items-center justify-between gap-3">
       <h3 className="font-medium">{t("learning.reports")}</h3>
-      <Button type="button" variant="outline" size="sm" disabled={query.isFetching} onClick={() => void query.refetch()}>{t("learning.refresh")}</Button>
+      <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={query.isFetching} onClick={() => void query.refetch()}>{t("learning.refresh")}</Button>
     </div>
     {query.isPending ? <p role="status">{t("learning.loading")}</p> : query.isError ? <p role="alert">{t("learning.loadError")}</p> : <>
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-5">

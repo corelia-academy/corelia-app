@@ -26,6 +26,7 @@ export function ContestPublicFinalCtaSection() {
               type="button"
               className="min-h-11 min-w-[200px]"
               variant={publicCta.variant}
+              hierarchy={publicCta.hierarchy}
               disabled={Boolean(publicCta.disabled)}
               onClick={() => {
                 if ("action" in publicCta && publicCta.action === "apply") {
@@ -40,7 +41,7 @@ export function ContestPublicFinalCtaSection() {
           ) : null}
           <Button
             type="button"
-            variant="outline"
+            variant="cta" hierarchy="secondary"
             className="min-h-11 gap-2"
             onClick={() => {
               void navigator.clipboard.writeText(shareUrl).then(

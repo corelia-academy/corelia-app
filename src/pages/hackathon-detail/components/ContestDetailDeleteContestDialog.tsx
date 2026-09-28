@@ -69,7 +69,7 @@ export function ContestDetailDeleteContestDialog({
         <DialogFooter>
           <Button
             type="button"
-            variant="outline"
+            variant="cta" hierarchy="secondary"
             onClick={() => setDeleteDialogOpen(false)}
             disabled={deletingContest}
           >

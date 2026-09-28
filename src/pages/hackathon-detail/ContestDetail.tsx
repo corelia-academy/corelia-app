@@ -132,7 +132,7 @@ export default function ContestDetail({
       {!vm.isManageView && vm.canAccessWorkspace ? (
         <Button
           type="button"
-          variant="secondary"
+          variant="cta" hierarchy="secondary"
           className="fixed bottom-20 right-4 z-40 min-h-11 gap-2 border border-border-strong md:bottom-6 md:right-6"
           onClick={() =>
             vm.navigate(

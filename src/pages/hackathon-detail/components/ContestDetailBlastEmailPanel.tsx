@@ -118,8 +118,8 @@ export function ContestDetailBlastEmailPanel({
                   <Button
                     key={opt.id}
                     type="button"
-                    size="sm"
-                    variant={recipientFilter === opt.id ? "default" : "outline"}
+                    size="small"
+                    variant="cta" hierarchy={(recipientFilter === opt.id ? "primary" : "secondary")}
                     onClick={() => setRecipientFilter(opt.id)}
                   >
                     {translate(opt.labelKey)} ({count})
@@ -231,7 +231,7 @@ export function ContestDetailBlastEmailPanel({
                 <DialogFooter>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="cta" hierarchy="secondary"
                     onClick={() => setConfirmOpen(false)}
                   >
                     {translate("workspace.email.cancelButton")}

@@ -95,7 +95,7 @@ export default function SearchPage() {
             </div>
             <div className="max-w-lg">
               <p className="text-sm font-medium text-foreground">{error}</p>
-              <Button className="mt-4" variant="outline" onClick={() => void resultsQuery.refetch()}>{t("actions.retry")}</Button>
+              <Button className="mt-4" variant="cta" hierarchy="secondary" onClick={() => void resultsQuery.refetch()}>{t("actions.retry")}</Button>
             </div>
           </div>
         ) : !q ? null : items.length === 0 ? (

@@ -176,7 +176,7 @@ export default function ProjectDetailPage() {
             <Button type="button" onClick={() => void query.refetch()}>
               {t("projects.retry")}
             </Button>
-            <Button variant="outline" render={<NavLink to="/projects" />} nativeButton={false}>
+            <Button variant="cta" hierarchy="secondary" render={<NavLink to="/projects" />} nativeButton={false}>
               {t("projects.detail.goBack")}
             </Button>
           </div>
@@ -255,7 +255,7 @@ export default function ProjectDetailPage() {
   return (
     <div className="container-app py-6 sm:py-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <Button variant="ghost" size="sm" render={<NavLink to={back} />} nativeButton={false}>
+        <Button variant="cta" hierarchy="tertiary" size="small" render={<NavLink to={back} />} nativeButton={false}>
           <ArrowLeft className="size-4" />
           {t("projects.detail.backToProjects")}
         </Button>
@@ -263,8 +263,8 @@ export default function ProjectDetailPage() {
           <ProjectManagementControls project={project} onDeleted={() => navigate("/projects", { replace: true })} />
           <ProjectSocialBlock projectId={project.id} likeCount={Number(project.like_count ?? 0)} className="border-0 pt-0" />
           <Button
-            variant="outline"
-            size="sm"
+            variant="cta" hierarchy="secondary"
+            size="small"
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(`${window.location.origin}/projects/${project.slug}`);
@@ -278,7 +278,7 @@ export default function ProjectDetailPage() {
             {t("projects.editor.share")}
           </Button>
           {canEdit ? (
-            <Button size="sm" render={<NavLink to={`/projects/${project.slug}/edit`} />} nativeButton={false}>
+            <Button size="small" render={<NavLink to={`/projects/${project.slug}/edit`} />} nativeButton={false}>
               {t("projects.detail.edit")}
             </Button>
           ) : null}
@@ -327,7 +327,7 @@ export default function ProjectDetailPage() {
               {ownerLink ? <NavLink to={ownerLink} aria-label={`${owner.label || owner.handle}, ${t("projects.editor.teamLeader")}`} className="inline-flex max-w-full items-center gap-3 text-body-medium font-body hover:text-primary"><UserAvatar userId={entry.project.owner_id} avatarUrl={entry.owner?.avatar_url} avatarSeed={entry.owner?.avatar_seed} avatarConfig={entry.owner?.avatar_config} alt={owner.label || owner.handle || t("projects.editor.builder")} fallback={(owner.label || owner.handle || t("projects.editor.builder")).charAt(0).toUpperCase()} /><span className="min-w-0 truncate">{owner.label || owner.handle}</span></NavLink> : <div className="inline-flex max-w-full items-center gap-3 text-body-medium font-body"><UserAvatar userId={entry.project.owner_id} avatarUrl={entry.owner?.avatar_url} avatarSeed={entry.owner?.avatar_seed} avatarConfig={entry.owner?.avatar_config} alt={owner.label || t("projects.editor.builder")} fallback={(owner.label || t("projects.editor.builder")).charAt(0).toUpperCase()} /><span className="min-w-0 truncate">{owner.label || t("projects.editor.builder")}</span></div>}
               {teamMembers.map(member => { const label = member.full_name?.trim() || member.username?.trim() || t("projects.editor.builder"); const content = <><UserAvatar userId={member.user_id} avatarUrl={member.avatar_url} avatarSeed={member.avatar_seed} avatarConfig={member.avatar_config} alt={label} fallback={label.charAt(0).toUpperCase()} /><span className="min-w-0 truncate">{label}</span></>; const handle = member.username?.trim() || member.id; return handle ? <NavLink key={member.user_id} to={`/@${handle}`} className="inline-flex max-w-full items-center gap-3 text-body-medium font-body hover:text-primary">{content}</NavLink> : <div key={member.user_id} className="inline-flex max-w-full items-center gap-3 text-body-medium font-body">{content}</div>; })}
             </div>
-            {teamQuery.isPending ? <p className="mt-2 text-body-small font-body text-foreground-muted" role="status">{t("projects.team.loading")}</p> : teamQuery.isError ? <Button className="mt-2" size="sm" variant="ghost" onClick={() => void teamQuery.refetch()}>{t("projects.retry")}</Button> : null}
+            {teamQuery.isPending ? <p className="mt-2 text-body-small font-body text-foreground-muted" role="status">{t("projects.team.loading")}</p> : teamQuery.isError ? <Button className="mt-2" size="small" variant="cta" hierarchy="tertiary" onClick={() => void teamQuery.refetch()}>{t("projects.retry")}</Button> : null}
           </section>
           {project.progress ? <section className="rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="text-heading-small font-display text-foreground">{t("projects.editor.progress")}</h2><div className="mt-4 break-words"><Markdown content={project.progress} /></div></section> : null}
           {href && sourceQuery.data ? <NavLink to={href} className="flex flex-col gap-4 rounded-2xl border border-border-subtle bg-surface-base p-5 hover:border-primary/40 sm:flex-row">{sourceQuery.data.cover_image_url ? <img src={sourceQuery.data.cover_image_url} alt="" className="h-24 w-full rounded-lg object-cover sm:w-36" /> : null}<div className="min-w-0"><p className="text-label-small font-body uppercase tracking-wide text-foreground-muted">{t("projects.editor.hackathon")}</p><h2 className="mt-2 text-title-large font-display">{sourceQuery.data.title}</h2><p className="mt-1 line-clamp-2 text-body-medium font-body text-foreground-muted">{sourceQuery.data.short_description || sourceQuery.data.tagline}</p></div></NavLink> : null}
@@ -336,11 +336,11 @@ export default function ProjectDetailPage() {
       </Tabs.Root>
       <aside className="min-w-0 space-y-5 lg:sticky lg:top-24">
         <section className="rounded-2xl border border-border-subtle bg-surface-base p-5">
-          {resourceActions.length ? <div className="flex flex-wrap gap-2">{resourceActions.map(action => action ? <Button key={action.key} variant="outline" size="sm" render={<a href={action.href} target="_blank" rel="noreferrer" />} nativeButton={false}><action.icon className="size-4" />{action.label}</Button> : null)}</div> : null}
+          {resourceActions.length ? <div className="flex flex-wrap gap-2">{resourceActions.map(action => action ? <Button key={action.key} variant="cta" hierarchy="secondary" size="small" render={<a href={action.href} target="_blank" rel="noreferrer" />} nativeButton={false}><action.icon className="size-4" />{action.label}</Button> : null)}</div> : null}
           <div className={resourceActions.length ? "mt-5 border-t border-border-subtle pt-4" : ""}><p className="text-label-small font-body text-foreground-muted">{t("projects.editor.updated")}</p><time className="mt-1 block text-body-medium font-body" dateTime={project.updated_at}>{new Intl.DateTimeFormat(locale,{dateStyle:"medium"}).format(new Date(project.updated_at))}</time></div>
         </section>
         {taxonomy.some(group=>group.values.length) ? <section className="space-y-5 rounded-2xl border border-border-subtle bg-surface-base p-5">{taxonomy.filter(group=>group.values.length).map(group=><div key={group.label}><h2 className="text-label-small font-body text-foreground-muted">{group.label}</h2><div className="mt-2 flex flex-wrap gap-2">{group.values.map(option=><span key={option.id} className="rounded-full bg-surface-raised px-3 py-1.5 text-body-small font-body">{option.name}</span>)}</div></div>)}</section> : null}
-        {href ? <Button className="w-full" variant="outline" render={<NavLink to={href} />} nativeButton={false}>{sourceQuery.data?.title || t("projects.detail.viewSource")}<ExternalLink className="size-4" /></Button> : null}
+        {href ? <Button className="w-full" variant="cta" hierarchy="secondary" render={<NavLink to={href} />} nativeButton={false}>{sourceQuery.data?.title || t("projects.detail.viewSource")}<ExternalLink className="size-4" /></Button> : null}
       </aside>
     </div>
   </div>
