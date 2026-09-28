@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Mail, Trash2, UserPlus, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { ProfileCombobox } from "@/components/ui/profile-combobox";
+import type { ProfileComboboxOption } from "@/components/ui/profile-combobox";
 import {
   createProjectCollaborationInvite,
   listCollaborationProfiles,
@@ -38,9 +39,18 @@ export function ProjectTeamEditor({
   const { t } = useTranslation("common");
   const queryClient = useQueryClient();
   const key = ["project-team", projectId] as const;
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedOptions, setSelectedOptions] = useState<ProfileComboboxOption[]>([]);
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedSearch(search.trim().replace(/^@+/, ""));
+    }, 250);
+    return () => window.clearTimeout(timeout);
+  }, [search]);
   const candidatesQuery = useQuery({
-    queryKey: [...key, "candidates", sourceType, sourceId],
-    queryFn: () => listProjectTeamCandidates({ projectId, sourceType, sourceId }),
+    queryKey: [...key, "candidates", sourceType, sourceId, debouncedSearch],
+    queryFn: () => listProjectTeamCandidates({ projectId, sourceType, sourceId, search: debouncedSearch }),
     staleTime: 30_000,
   });
   const teamQuery = useQuery({
@@ -55,11 +65,18 @@ export function ProjectTeamEditor({
     },
     enabled: persisted,
   });
-  const options = useMemo(() => (candidatesQuery.data ?? []).map((profile) => ({
+  const candidateOptions = useMemo(() => (candidatesQuery.data ?? []).map((profile) => ({
     id: profile.user_id,
     label: profile.full_name?.trim() || profile.username?.trim() || profile.user_id,
     description: profile.username ? `@${profile.username}` : null,
   })), [candidatesQuery.data]);
+  const options = useMemo(() => {
+    const candidateIds = new Set(candidateOptions.map((option) => option.id));
+    return [
+      ...selectedOptions.filter((option) => selectedIds.includes(option.id) && !candidateIds.has(option.id)),
+      ...candidateOptions,
+    ];
+  }, [candidateOptions, selectedIds, selectedOptions]);
 
   const inviteMutation = useMutation({
     mutationFn: (userId: string) => createProjectCollaborationInvite(projectId, userId),
@@ -133,9 +150,11 @@ export function ProjectTeamEditor({
         title={t("projects.team.pickTitle")}
         description={sourceType === "hackathon" ? t("projects.team.hackathonPickDescription") : t("projects.team.pickDescription")}
         options={options}
+        onSearchChange={setSearch}
+        errorMessage={candidatesQuery.isError ? t("projects.team.loadError") : undefined}
         placeholder={t("projects.team.placeholder")}
         searchPlaceholder={t("projects.team.searchPlaceholder")}
-        emptyLabel={candidatesQuery.isPending ? t("projects.team.loading") : t("projects.team.empty")}
+        emptyLabel={candidatesQuery.isPending || search.trim().replace(/^@+/, "") !== debouncedSearch ? t("projects.team.loading") : t("projects.team.empty")}
         value={persisted ? "" : selectedIds}
         multiple={!persisted}
         onChange={(value) => {
@@ -143,7 +162,9 @@ export function ProjectTeamEditor({
             const id = Array.isArray(value) ? value[0] : value;
             if (id) inviteMutation.mutate(id);
           } else {
-            onSelectedIdsChange?.(Array.isArray(value) ? value : value ? [value] : []);
+            const ids = Array.isArray(value) ? value : value ? [value] : [];
+            setSelectedOptions(options.filter((option) => ids.includes(option.id)));
+            onSelectedIdsChange?.(ids);
           }
         }}
       />
