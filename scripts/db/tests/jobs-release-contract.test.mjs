@@ -93,9 +93,6 @@ test("Production release migrations distinguish deployed and pending versions", 
     "20260925171211",
   );
   assert.deepEqual(release.CURRENT_PENDING_VERSIONS, [
-    "20260925022405",
-    "20260925091927",
-    "20260925095643",
     "20260928063404",
   ]);
   assert.equal(
