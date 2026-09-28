@@ -1,9 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { emailAdmin, type Paginated } from "@/lib/emailCenter";
+import { useAuth } from "@/stores/authStore";
 
 type Recipient = {
   id: string;
@@ -13,6 +15,7 @@ type Recipient = {
   updated_at: string;
   provider_message_id: string | null;
   last_error: string | null;
+  email_contacts: { global_suppressed_at: string | null; suppression_reason: string | null } | null;
 };
 
 const sentStatuses = new Set(["accepted", "delivered", "bounced", "complained"]);
@@ -22,10 +25,13 @@ function localTime(value: string | null): string {
   return value ? new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(value)) : "—";
 }
 
-export function CampaignDeliveryDetails({ campaignId }: { campaignId: string }) {
+export function CampaignDeliveryDetails({ campaignId, initialStatus = "" }: { campaignId: string; initialStatus?: string }) {
   const { t } = useTranslation("emailCenter");
+  const { profile } = useAuth();
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState(initialStatus);
+  const exclude = useMutation({ mutationFn: (recipientId: string) => emailAdmin("campaigns.exclude_recipient", { recipient_id: recipientId }), onSuccess: async () => { toast.success(t("campaigns.excluded")); await queryClient.invalidateQueries({ queryKey: ["email-center"] }); }, onError: () => toast.error(t("messages.failed")) });
   const recipients = useQuery({
     queryKey: ["email-center", "campaign-recipients", campaignId, status, page],
     queryFn: () => emailAdmin<Paginated<Recipient>>("campaigns.recipients", { campaign_id: campaignId, status, page }),
@@ -42,7 +48,7 @@ export function CampaignDeliveryDetails({ campaignId }: { campaignId: string }) 
     </div>
     {recipients.isError && <p className="text-sm text-destructive">{t("campaigns.recipientsFailed")}</p>}
     {recipients.isLoading && <p className="text-sm text-foreground-muted">{t("loading")}</p>}
-    {recipients.data && <div className="overflow-x-auto"><table className="min-w-full text-left text-sm"><thead><tr className="border-b border-border-subtle text-foreground-muted"><th className="px-2 py-2">Email</th><th className="px-2 py-2">{t("campaigns.deliveryStatus")}</th><th className="px-2 py-2">{t("campaigns.firstDispatched")}</th><th className="px-2 py-2">{t("campaigns.providerId")}</th></tr></thead><tbody>{recipients.data.items.map((item) => <tr key={item.id} className="border-b border-border-subtle"><td className="px-2 py-2">{item.recipient_email}</td><td className="px-2 py-2">{t(`campaigns.status.${item.status}`, { defaultValue: item.status })}{item.last_error ? <span className="block text-xs text-destructive">{item.last_error}</span> : null}</td><td className="px-2 py-2">{sentStatuses.has(item.status) || item.first_dispatched_at ? localTime(item.first_dispatched_at) : "—"}</td><td className="px-2 py-2 font-mono text-xs">{item.provider_message_id ?? "—"}</td></tr>)}</tbody></table>{!recipients.data.items.length && <p className="p-3 text-sm text-foreground-muted">{t("empty")}</p>}</div>}
+    {recipients.data && <div className="overflow-x-auto"><table className="min-w-full text-left text-sm"><thead><tr className="border-b border-border-subtle text-foreground-muted"><th className="px-2 py-2">Email</th><th className="px-2 py-2">{t("campaigns.deliveryStatus")}</th><th className="px-2 py-2">{t("campaigns.firstDispatched")}</th><th className="px-2 py-2">{t("campaigns.providerId")}</th><th className="px-2 py-2">{t("campaigns.exclusion")}</th></tr></thead><tbody>{recipients.data.items.map((item) => <tr key={item.id} className="border-b border-border-subtle"><td className="px-2 py-2">{item.recipient_email}</td><td className="px-2 py-2">{t(`campaigns.status.${item.status}`, { defaultValue: item.status })}{item.last_error ? <span className="block text-xs text-destructive">{item.last_error}</span> : null}</td><td className="px-2 py-2">{sentStatuses.has(item.status) || item.first_dispatched_at ? localTime(item.first_dispatched_at) : "—"}</td><td className="px-2 py-2 font-mono text-xs">{item.provider_message_id ?? "—"}</td><td className="px-2 py-2">{item.email_contacts?.global_suppressed_at ? <span className="text-xs">{t("contacts.suppressed")}</span> : profile?.role === "admin" && ["failed", "bounced", "complained"].includes(item.status) ? <Button type="button" size="small" variant="cta" hierarchy="secondary" disabled={exclude.isPending} onClick={() => exclude.mutate(item.id)}>{t("campaigns.exclude")}</Button> : "—"}</td></tr>)}</tbody></table>{!recipients.data.items.length && <p className="p-3 text-sm text-foreground-muted">{t("empty")}</p>}</div>}
     {(recipients.data?.total ?? 0) > 50 && <div className="mt-3 flex items-center justify-end gap-2"><Button type="button" size="small" variant="cta" hierarchy="secondary" disabled={page === 0} onClick={() => setPage((value) => value - 1)}>{t("previous")}</Button><span className="text-sm">{page + 1}</span><Button type="button" size="small" variant="cta" hierarchy="secondary" disabled={(page + 1) * 50 >= (recipients.data?.total ?? 0)} onClick={() => setPage((value) => value + 1)}>{t("next")}</Button></div>}
   </div>;
 }
