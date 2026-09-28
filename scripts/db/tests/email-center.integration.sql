@@ -5,6 +5,8 @@ DECLARE
   v_template_id uuid := 'ec000000-0000-4000-8000-000000000020';
   v_version_id uuid := 'ec000000-0000-4000-8000-000000000021';
   v_campaign_id uuid := 'ec000000-0000-4000-8000-000000000030';
+  v_all_campaign_id uuid := 'ec000000-0000-4000-8000-000000000031';
+  v_all_total bigint;
   v_sender_id uuid;
   v_system_sender_id uuid;
   lease_one uuid := gen_random_uuid();
@@ -128,6 +130,20 @@ BEGIN
     IF (SELECT count(*) FROM public.email_campaign_recipients WHERE campaign_id=v_campaign_id AND resolved_locale='vi') <> 1
        OR (SELECT count(*) FROM public.email_campaign_recipients WHERE campaign_id=v_campaign_id AND resolved_locale='en') <> 2 THEN
       RAISE EXCEPTION 'Campaign recipient locales were not frozen with English fallback';
+    END IF;
+
+    SELECT count(*) INTO v_all_total FROM public.email_contacts;
+    INSERT INTO public.email_campaigns(id, name, purpose, audience_type, sender_id, template_version_id, frozen_subject, frozen_html, frozen_from, frozen_reply_to, created_by)
+      VALUES (v_all_campaign_id, 'All contacts campaign', 'marketing', 'all_contacts', v_sender_id, v_version_id, 'Hello {{name}}', '<p>Body</p>', 'Corelia <hello@news.corelia.academy>', 'hello@corelia.academy', v_actor);
+    PERFORM public.email_prepare_campaign(v_all_campaign_id);
+    IF (SELECT estimated_recipients FROM public.email_campaigns WHERE id = v_all_campaign_id) <> v_all_total
+       OR (SELECT prepared_recipients FROM public.email_campaigns WHERE id = v_all_campaign_id) <> 2
+       OR (SELECT count(*) FROM public.email_campaign_recipients WHERE campaign_id = v_all_campaign_id) <> v_all_total THEN
+      RAISE EXCEPTION 'All contacts campaign did not freeze every current contact';
+    END IF;
+    INSERT INTO public.email_contacts(email) VALUES ('later@example.com');
+    IF EXISTS (SELECT 1 FROM public.email_campaign_recipients WHERE campaign_id = v_all_campaign_id AND recipient_email = 'later@example.com') THEN
+      RAISE EXCEPTION 'Prepared all contacts campaign changed after a new contact arrived';
     END IF;
 
     SELECT count(*), min(dispatch_batch_key) INTO claimed, v_batch_key

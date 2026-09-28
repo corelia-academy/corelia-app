@@ -123,18 +123,17 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260925095643_certificate_analytics_scope_fix.sql",
   "supabase/migrations/20260925113445_allow_single_locale_email_template.sql",
   "supabase/migrations/20260925171211_exclude_staff_from_feed.sql",
+  "supabase/migrations/20260928063404_campaign_all_contacts_audience.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production history was verified through 20260925171211 by the pre-deploy
-// guard. These three earlier-versioned migrations were validated in Staging.
+// Production history was verified through 20260925171211 by the latest
+// successful Production deploy. Only the Email Center migration is pending.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260925022405",
-  "20260925091927",
-  "20260925095643",
+  "20260928063404",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

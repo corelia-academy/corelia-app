@@ -42,8 +42,8 @@ Màn hình import hỗ trợ nguồn CSV thường hoặc Luma, xem trước 10 
 
 1. Tạo template đúng mục đích; dùng biến `{{name}}`, `{{course_name}}`, `{{event_url}}` khi cần.
 2. Xuất bản một version. Chiến dịch đóng băng version và sender, nên chỉnh template sau đó không làm đổi chiến dịch đang chờ.
-3. Chọn danh sách, sender đã xác thực và ngữ cảnh khóa học/chương trình/hackathon nếu có.
-4. Chuẩn bị chiến dịch để server chốt danh sách và loại contact thiếu consent hoặc đang bị suppression.
+3. Chọn danh sách hoặc **Toàn bộ contacts hiện tại**, sender đã xác thực và ngữ cảnh khóa học/chương trình/hackathon nếu có. Lựa chọn toàn bộ contacts dành cho admin và không tạo thêm danh sách lưu trữ.
+4. Chuẩn bị chiến dịch để server chốt người nhận tại thời điểm đó và loại contact thiếu consent hoặc đang bị suppression.
 5. Gửi thử đến danh sách nội bộ. Kiểm tra From, Reply-To, CTA và hiển thị Gmail/Outlook.
 6. Đặt lịch hoặc bắt đầu. Worker tiếp tục chạy khi admin đóng trình duyệt.
 
