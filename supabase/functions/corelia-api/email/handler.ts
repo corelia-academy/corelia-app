@@ -247,7 +247,8 @@ async function saveCampaign(db: SupabaseClient, actor: AdminContext, body: Recor
   const previewCopy = preview.copy;
   const rendered = renderEmailDocument({ subject: previewCopy.subject, preheader: previewCopy.preheader, bodyText: previewCopy.body_text, ctaLabel: previewCopy.cta_label, ctaUrl: previewCopy.cta_url, imageUrl: previewCopy.image_url, purpose, locale: preview.locale, values: genericValues });
   const id = crypto.randomUUID();
-  const { error } = await db.from("email_campaigns").insert({ id, name: String(body.name ?? "").trim(), purpose, object_type: objectType, object_id: objectId, audience_type: audienceType, list_id: audienceType === "list" ? listId : null, sender_id: sender.id, template_version_id: version.id, frozen_subject: rendered.subject, frozen_html: rendered.html, frozen_from: `${sender.display_name} <${sender.from_email}>`, frozen_reply_to: sender.reply_to, frozen_values: values, created_by: actor.id });
+  const audience = audienceType === "all_contacts" ? { audience_type: "all_contacts", list_id: null } : { list_id: listId };
+  const { error } = await db.from("email_campaigns").insert({ id, name: String(body.name ?? "").trim(), purpose, object_type: objectType, object_id: objectId, ...audience, sender_id: sender.id, template_version_id: version.id, frozen_subject: rendered.subject, frozen_html: rendered.html, frozen_from: `${sender.display_name} <${sender.from_email}>`, frozen_reply_to: sender.reply_to, frozen_values: values, created_by: actor.id });
   if (error) throw error;
   await audit(db, actor, "create", "email_campaign", id, { missing_preview_variables: missing });
   return json({ ok: true, id });
