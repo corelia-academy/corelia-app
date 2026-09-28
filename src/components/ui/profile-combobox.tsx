@@ -29,6 +29,8 @@ interface ProfileComboboxProps {
   onLoadMore?: () => void;
   hasMore?: boolean;
   isLoadingMore?: boolean;
+  onSearchChange?: (query: string) => void;
+  errorMessage?: string;
 }
 
 function normalize(text: string) {
@@ -48,6 +50,8 @@ export function ProfileCombobox({
   onLoadMore,
   hasMore = false,
   isLoadingMore = false,
+  onSearchChange,
+  errorMessage,
 }: ProfileComboboxProps) {
   const { t } = useTranslation("common");
   const [open, setOpen] = useState(false);
@@ -126,13 +130,18 @@ export function ProfileCombobox({
           <div className="px-5 py-4">
             <input
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                onSearchChange?.(e.target.value);
+              }}
               className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm text-foreground placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 outline-none"
               placeholder={searchPlaceholder ?? t("combobox.searchPlaceholder")}
             />
 
+            {errorMessage ? <p role="alert" className="mt-3 text-sm text-destructive">{errorMessage}</p> : null}
+
             <div className="scrollbar-design mt-4 max-h-[min(60vh,28rem)] space-y-2 overflow-y-auto pr-1">
-              {filtered.length === 0 ? (
+              {filtered.length === 0 && !errorMessage ? (
                 <div className="rounded-lg border border-dashed border-border-subtle bg-surface-base px-4 py-5 text-sm text-foreground-muted">
                   {emptyLabel ?? t("combobox.emptyLabel")}
                 </div>

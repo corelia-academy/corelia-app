@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { act } from "react";
+import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -12,6 +13,7 @@ const {
   listProjectCollaborationInvites,
   listCollaborationProfiles,
   listProjectTeamCandidates,
+  createProjectCollaborationInvite,
   sendProjectCollaborationInviteEmail,
   revokeProjectCollaborationInvite,
   removeProjectCollaborator,
@@ -23,6 +25,7 @@ const {
   listProjectCollaborationInvites: vi.fn(),
   listCollaborationProfiles: vi.fn(),
   listProjectTeamCandidates: vi.fn(),
+  createProjectCollaborationInvite: vi.fn(),
   sendProjectCollaborationInviteEmail: vi.fn(),
   revokeProjectCollaborationInvite: vi.fn(),
   removeProjectCollaborator: vi.fn(),
@@ -50,10 +53,10 @@ vi.mock("@/lib/projectCollaboration", () => ({
   listProjectCollaborationInvites,
   listCollaborationProfiles,
   listProjectTeamCandidates,
+  createProjectCollaborationInvite,
   sendProjectCollaborationInviteEmail,
   revokeProjectCollaborationInvite,
   removeProjectCollaborator,
-  createProjectCollaborationInvite: vi.fn(),
 }));
 
 describe("ProjectTeamEditor UI resend email", () => {
@@ -230,5 +233,96 @@ describe("ProjectTeamEditor UI resend email", () => {
       await new Promise((r) => setTimeout(r, 20));
     });
     expect(removeProjectCollaborator).toHaveBeenCalledWith("proj-1", "user-member-1");
+  });
+
+  it("searches beyond the first 50 candidates by @username and can invite the result", async () => {
+    listProjectCollaborationInvites.mockResolvedValue([]);
+    listProjectTeamCandidates.mockImplementation(async ({ search }: { search?: string }) => {
+      if (search === "trieuquocbao") {
+        return [{ user_id: "user-76", username: "trieuquocbao", full_name: "Triệu Quốc Bảo" }];
+      }
+      return Array.from({ length: 50 }, (_, index) => ({
+        user_id: `user-${index}`,
+        username: `user${index}`,
+        full_name: `User ${index}`,
+      }));
+    });
+    createProjectCollaborationInvite.mockResolvedValue({ invite_id: "invite-76", token: "token" });
+
+    await act(async () => {
+      root.render(<QueryClientProvider client={queryClient}>
+        <ProjectTeamEditor projectId="proj-1" sourceType="hackathon" persisted />
+      </QueryClientProvider>);
+    });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+    await act(async () => {
+      Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("projects.team.placeholder"))?.click();
+    });
+    const dialog = document.body.querySelector('[data-slot="dialog-content"]') as HTMLElement;
+    const input = dialog.querySelector("input") as HTMLInputElement;
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "@trieuquocbao");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 300)); });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 30)); });
+
+    expect(listProjectTeamCandidates).toHaveBeenCalledWith(expect.objectContaining({ search: "trieuquocbao" }));
+    const candidate = Array.from(dialog.querySelectorAll("button")).find((button) => button.textContent?.includes("@trieuquocbao"));
+    expect(candidate, dialog.textContent ?? "").toBeDefined();
+    await act(async () => { candidate?.click(); });
+    expect(createProjectCollaborationInvite).toHaveBeenCalledWith("proj-1", "user-76");
+  });
+
+  it("keeps selected names when searching for another candidate before saving", async () => {
+    listProjectTeamCandidates.mockImplementation(async ({ search }: { search?: string }) => {
+      if (search === "second") return [{ user_id: "second", username: "second", full_name: "Second Member" }];
+      return [{ user_id: "first", username: "first", full_name: "First Member" }];
+    });
+    function DraftTeam() {
+      const [selectedIds, setSelectedIds] = useState<string[]>([]);
+      return <><ProjectTeamEditor projectId="proj-1" sourceType="hackathon" persisted={false} selectedIds={selectedIds} onSelectedIdsChange={setSelectedIds} /><output data-testid="selected">{selectedIds.join(",")}</output></>;
+    }
+    await act(async () => {
+      root.render(<QueryClientProvider client={queryClient}><DraftTeam /></QueryClientProvider>);
+    });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+    await act(async () => {
+      Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("projects.team.placeholder"))?.click();
+    });
+    const dialog = document.body.querySelector('[data-slot="dialog-content"]') as HTMLElement;
+    await act(async () => {
+      Array.from(dialog.querySelectorAll("button")).find((button) => button.textContent?.includes("First Member"))?.click();
+    });
+    const input = dialog.querySelector("input") as HTMLInputElement;
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "second");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 300)); });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 30)); });
+    const second = Array.from(dialog.querySelectorAll("button")).find((button) => button.textContent?.includes("Second Member"));
+    expect(second, dialog.textContent ?? "").toBeDefined();
+    await act(async () => {
+      second?.click();
+    });
+    expect(container.querySelector('[data-testid="selected"]')?.textContent).toBe("first,second");
+    expect(container.textContent).toContain("First Member");
+    expect(container.textContent, dialog.textContent ?? "").toContain("Second Member");
+  });
+
+  it("shows a load error inside the member picker", async () => {
+    listProjectTeamCandidates.mockRejectedValue(new Error("network failure"));
+    listProjectCollaborationInvites.mockResolvedValue([]);
+    await act(async () => {
+      root.render(<QueryClientProvider client={queryClient}>
+        <ProjectTeamEditor projectId="proj-1" sourceType="hackathon" persisted />
+      </QueryClientProvider>);
+    });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+    await act(async () => {
+      Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.includes("projects.team.placeholder"))?.click();
+    });
+    expect(document.body.querySelector('[role="alert"]')?.textContent).toBe("projects.team.loadError");
   });
 });
