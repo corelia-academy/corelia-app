@@ -167,11 +167,12 @@ test("Production workflow structure safety", () => {
   assert.match(applyStep, /supabase migration up --linked --dns-resolver https --include-all/);
 });
 
-test("Production backend release accepts only its new pending migration", () => {
+test("Production backend release accepts only the approved pending migrations", () => {
   const localVersions = [...realReleasedVersions, ...APPROVED_PENDING_VERSIONS];
   const observedRemote = localVersions.filter((v) => !CURRENT_PENDING_VERSIONS.includes(v));
   assert.deepEqual(CURRENT_PENDING_VERSIONS, [
     "20260929134936",
+    "20260929183423",
   ]);
   assert.ok(observedRemote.includes("20260925022405"));
   assert.ok(observedRemote.includes("20260925091927"));

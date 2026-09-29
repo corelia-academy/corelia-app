@@ -25,6 +25,14 @@ export function learningSaveError(error: unknown, t: Translate, lessons: Pick<Co
   return title ? `${title}: ${details}` : details;
 }
 
+/** Show publication diagnostics during an upload, but hide raw storage/database errors. */
+export function learningUploadError(error: unknown, t: Translate, lessons: Pick<CourseLesson, "id" | "title">[], fallback: string): string {
+  const message = error instanceof Error ? error.message :
+    error && typeof error === "object" && "message" in error && typeof error.message === "string" ? error.message : "";
+  const readable = learningSaveError(error, t, lessons, fallback);
+  return readable === message || readable.includes(fallback) ? fallback : readable;
+}
+
 /** Accept only the location contract; ordinary Postgres/network details stay opaque. */
 export function learningMutationIssues(error: unknown, lessonId: string): import("./types").PublishValidationIssue[] {
   if (!error || typeof error !== "object" || !("details" in error) || typeof error.details !== "string") return [];

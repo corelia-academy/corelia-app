@@ -16,7 +16,7 @@ import { useSectionDrafts } from "./hooks/useSectionDrafts";
 import { useCourseFieldDraft } from "./hooks/useCourseFieldDraft";
 import { useCourseSettingsDraft } from "./hooks/useCourseSettingsDraft";
 import { useCourseContentDraft } from "./hooks/useCourseContentDraft";
-import { learningSaveError, learningMutationIssues } from "@/features/learning/publishError";
+import { learningSaveError, learningUploadError, learningMutationIssues } from "@/features/learning/publishError";
 import { ARTIFACT_FIELDS, type ArtifactField } from "@/features/learning/types";
 import { SubmissionReviewContent } from "@/features/learning/SubmissionReviewContent";
 import { CourseLearningReport } from "@/features/learning/CourseLearningReport";
@@ -1267,7 +1267,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       );
       setForm((p) => ({ ...p, thumbnail_url: result.url }));
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("courseEdit.errors.uploadThumbnailFailed"));
+      setError(learningUploadError(e, learningT, lessons, t("courseEdit.errors.uploadThumbnailFailed")));
     } finally {
       setUploadingThumb(false);
       e.target.value = "";

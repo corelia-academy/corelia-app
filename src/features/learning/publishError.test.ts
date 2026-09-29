@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { learningSaveError, learningMutationIssues } from "./publishError";
+import { learningSaveError, learningUploadError, learningMutationIssues } from "./publishError";
 
 const t = (key: string, options?: Record<string, unknown>) => ({
   "learning.saveError": "Save failed",
   "learning.validation.invalid_final_artifact_mapping": "Update final assignment fields",
   "learning.validation.title_required": "Enter a title",
+  "learning.validation.youtube_required": "Enter a valid YouTube URL",
 }[key] ?? String(options?.defaultValue ?? key));
 
 describe("publication errors from deferred writes", () => {
@@ -23,6 +24,16 @@ describe("publication errors from deferred writes", () => {
     expect(learningSaveError(new Error("COURSE_NOT_PUBLISHABLE"), t)).toBe("Nội dung khóa học không được để trống.");
     expect(learningSaveError({ message: "Postgres error: COURSE_NOT_PUBLISHABLE" }, t)).toBe("Nội dung khóa học không được để trống.");
   });
+});
+
+it("formats publication errors during an upload and hides unrelated raw errors", () => {
+  const lessons = [{ id: "video-1", title: "Video lesson" }];
+  expect(learningUploadError(new Error("LESSON_NOT_PUBLISHABLE: video-1: youtube_required"), t, lessons, "Cover upload failed"))
+    .toBe("Video lesson: Enter a valid YouTube URL");
+  expect(learningUploadError(new Error("Storage object upload failed: private details"), t, lessons, "Cover upload failed"))
+    .toBe("Cover upload failed");
+  expect(learningUploadError(new Error("LESSON_NOT_PUBLISHABLE: video-1: future_rule"), t, lessons, "Cover upload failed"))
+    .toBe("Cover upload failed");
 });
 
 
