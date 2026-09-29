@@ -282,8 +282,6 @@ export interface Contest {
   officialCourseId?: string | null;
   related_course_ids?: string[];
   relatedCourseIds?: string[];
-  related_career_track_ids?: string[];
-  relatedCareerTrackIds?: string[];
   track_id?: string | null;
   trackId?: string | null;
   /** Text-only content localization config */

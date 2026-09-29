@@ -43,7 +43,7 @@ async function dispatchBatch(db: SupabaseClient, campaign: Record<string, unknow
   const { data: contacts, error: contactsError } = await db.from("email_contacts").select("id,user_id,global_suppressed_at,email_contact_consents(topic,status)").in("id", contactIds);
   if (contactsError) throw contactsError;
   const userIds = (contacts ?? []).map((contact) => contact.user_id).filter(Boolean);
-  const preferenceResult = userIds.length ? await db.from("notification_preferences").select("user_id,email_course_blast,email_track_blast").in("user_id", userIds) : { data: [], error: null };
+  const preferenceResult = userIds.length ? await db.from("notification_preferences").select("user_id,email_course_blast").in("user_id", userIds) : { data: [], error: null };
   if (preferenceResult.error) throw preferenceResult.error;
   const preferences = preferenceResult.data;
   const preferenceByUser = new Map((preferences ?? []).map((preference) => [preference.user_id, preference]));
@@ -51,7 +51,6 @@ async function dispatchBatch(db: SupabaseClient, campaign: Record<string, unknow
     if (contact.global_suppressed_at) return false;
     const preference = contact.user_id ? preferenceByUser.get(contact.user_id) : null;
     if (campaign.object_type === "course" && preference?.email_course_blast === false) return false;
-    if (campaign.object_type === "program" && preference?.email_track_blast === false) return false;
     if (campaign.purpose !== "marketing") return true;
     return contact.email_contact_consents?.some((consent: { topic: string; status: string }) => consent.topic === "marketing" && consent.status === "subscribed");
   }).map((contact) => contact.id));
@@ -126,11 +125,10 @@ async function dispatchBatch(db: SupabaseClient, campaign: Record<string, unknow
 async function automationStillEligible(db: SupabaseClient, automation: Record<string, unknown>, enrollment: Record<string, unknown>, contact: Record<string, unknown>): Promise<boolean> {
   const userId = String(contact.user_id ?? "");
   const context = (enrollment.context ?? {}) as Record<string, unknown>;
-  if (userId && (automation.object_type === "course" || automation.object_type === "program")) {
-    const { data: preference, error } = await db.from("notification_preferences").select("email_course_blast,email_track_blast").eq("user_id", userId).maybeSingle();
+  if (userId && automation.object_type === "course") {
+    const { data: preference, error } = await db.from("notification_preferences").select("email_course_blast").eq("user_id", userId).maybeSingle();
     if (error) throw error;
     if (automation.object_type === "course" && preference?.email_course_blast === false) return false;
-    if (automation.object_type === "program" && preference?.email_track_blast === false) return false;
   }
   if (automation.trigger_type === "account_verified") {
     if (!userId) return false;

@@ -555,18 +555,15 @@
       "event": "Sự kiện",
       "days": "Số ngày",
       "count": "Số lượng",
-      "track": "Slug learning track",
       "active": "Kích hoạt"
     },
     "event": {
       "coursesCompleted": "Hoàn thành khóa học",
-      "trackCourses": "Hoàn thành khóa trong track",
       "projects": "Nộp project"
     },
     "rule": {
       "manual": "Cấp thủ công",
       "coursesCompleted": "Hoàn thành {{count}} khóa học",
-      "trackCourses": "{{count}} khóa trong track “{{track}}”",
       "projects": "{{count}} project đã nộp"
     }
   },

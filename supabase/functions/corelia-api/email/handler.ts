@@ -33,7 +33,7 @@ async function audit(db: SupabaseClient, actor: AdminContext, action: string, ty
 async function validateObject(db: SupabaseClient, type: string | null, id: string | null): Promise<boolean> {
   if (!type && !id) return true;
   if (!type || !id) return false;
-  const table = type === "course" ? "courses" : type === "hackathon" ? "hackathons" : type === "program" ? "career_tracks" : "";
+  const table = type === "course" ? "courses" : type === "hackathon" ? "hackathons" : "";
   if (!table) return false;
   const { data, error } = await db.from(table).select("id").eq("id", id).maybeSingle();
   return !error && Boolean(data);
@@ -229,6 +229,7 @@ async function saveCampaign(db: SupabaseClient, actor: AdminContext, body: Recor
   const listId = String(body.list_id ?? "").trim();
   if (audienceType === "list" && !listId) return json({ message: "invalid_input:list_id" }, 400);
   const objectType = String(body.object_type ?? "").trim() || null;
+  if (objectType === "program") return json({ message: "career_tracks_retired" }, 410);
   const objectId = String(body.object_id ?? "").trim() || null;
   if (!await validateObject(db, objectType, objectId)) return json({ message: "invalid_object_context" }, 400);
   const { data: sender } = await db.from("email_senders").select("id,domain_status,purpose,display_name,from_email,reply_to").eq("id", String(body.sender_id ?? "")).eq("active", true).maybeSingle();
@@ -332,6 +333,7 @@ async function saveAutomation(db: SupabaseClient, actor: AdminContext, body: Rec
   if (!PURPOSES.has(purpose)) return json({ message: "invalid_purpose" }, 400);
   if (actor.role !== "admin" && purpose !== "marketing") return json({ message: "forbidden:marketing_automation_only" }, 403);
   const objectType = String(body.object_type ?? "").trim() || null;
+  if (objectType === "program") return json({ message: "career_tracks_retired" }, 410);
   const objectId = String(body.object_id ?? "").trim() || null;
   if (!await validateObject(db, objectType, objectId)) return json({ message: "invalid_object_context" }, 400);
   const enabled = Boolean(body.enabled);

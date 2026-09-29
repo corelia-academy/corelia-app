@@ -1,6 +1,5 @@
 import i18n from "@/i18n";
 import { getContestBySlug, setHackathonLocaleContent } from "@/lib/hackathons";
-import { getCareerTrackBySlug, setCareerTrackLocaleContent } from "@/lib/careerTracks";
 import { setProjectLocaleContent } from "@/lib/projects";
 
 /**
@@ -9,7 +8,6 @@ import { setProjectLocaleContent } from "@/lib/projects";
  *
  * Usage examples (in devtools console):
  * - await seedHackathonEn("my-hackathon-slug")
- * - await seedCareerTrackEn({ owner_scope: "corelia", slug: "frontend" })
  * - await seedProjectEn("project-uuid")
  */
 
@@ -24,21 +22,6 @@ export async function seedHackathonEn(slug: string) {
   });
   // Refetch in EN to verify apply+fallback.
   return await getContestBySlug(slug, "en");
-}
-
-export async function seedCareerTrackEn(slug: string) {
-  const track = await getCareerTrackBySlug(slug, "vi");
-  if (!track) throw new Error("Career track not found");
-  await setCareerTrackLocaleContent(track.id, "en", {
-    title: `${track.title} (EN)`,
-    description: `${track.description}\n\n(English translation)`,
-    what_youll_learn: track.what_youll_learn.map((s) => `${s} (EN)`),
-    prerequisites: track.prerequisites.map((s) => `${s} (EN)`),
-  });
-  return {
-    vi: track,
-    en: await getCareerTrackBySlug(slug, "en"),
-  };
 }
 
 export async function seedProjectEn(projectId: string) {

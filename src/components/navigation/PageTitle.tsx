@@ -32,8 +32,6 @@ export type PageTitleKey =
   | "courseDetail"
   | "projectInvite"
   | "coInstructorInvite"
-  | "careerTracks"
-  | "careerTrackDetail"
   | "instructorDetail"
   | "achievements"
   | "hackathons"
@@ -78,9 +76,6 @@ export type PageTitleKey =
   | "emailCenter"
   | "teaching"
   | "manageCourses"
-  | "manageCareerTracks"
-  | "newCareerTrack"
-  | "editCareerTrack"
   | "newCourse"
   | "previewCourse"
   | "editCourse"
@@ -121,8 +116,6 @@ export const PAGE_TITLE_ROUTES: PageTitleRoute[] = [
   { path: "/cohorts/:id", handle: "courses" },
   { path: "/invites/project/:token", handle: "projectInvite" },
   { path: "/invites/co-instructor/:token", handle: "coInstructorInvite" },
-  { path: "/career", handle: "careerTracks" },
-  { path: "/career/:slug", handle: "careerTrackDetail" },
   { path: "/instructors/:id", handle: "instructorDetail" },
   { path: "/achievements", handle: "achievements" },
   { path: "/hackathons", handle: "hackathons" },
@@ -188,9 +181,6 @@ export const PAGE_TITLE_ROUTES: PageTitleRoute[] = [
   { path: "/instructor/cohorts", handle: "manageCourses" },
   { path: "/instructor/cohorts/new", handle: "manageCourses" },
   { path: "/instructor/cohorts/:id/manage", handle: "manageCourses" },
-  { path: "/instructor/career-tracks", handle: "manageCareerTracks" },
-  { path: "/instructor/career-tracks/new", handle: "newCareerTrack" },
-  { path: "/instructor/career-tracks/:id/edit", handle: "editCareerTrack" },
   { path: "/instructor/courses/new", handle: "newCourse" },
   { path: "/instructor/courses/:id/preview/:lessonId?", handle: "previewCourse" },
   { path: "/instructor/courses/:id/edit", handle: "editCourse" },

@@ -1,10 +1,9 @@
 import { getBatchCourseLocaleContent } from "@/lib/courses";
-import { getBatchCareerTrackLocaleContent } from "@/lib/careerTracks";
 import { getBatchHackathonLocaleContent } from "@/lib/hackathons";
 import { normalizeContentLocale } from "@/lib/entityLocales";
 import { supabase } from "@/lib/supabase";
 
-export type SearchEntityType = "project" | "hackathon" | "course" | "career_track" | "profile";
+export type SearchEntityType = "project" | "hackathon" | "course" | "profile";
 
 export interface SearchResultRow {
   entity_type: SearchEntityType;
@@ -31,14 +30,12 @@ export async function searchPublic(query: string, limit: number, offset = 0, loc
   if (!locale) return rows;
   const language = normalizeContentLocale(locale);
   const ids = (type: SearchEntityType) => rows.filter(row => row.entity_type === type).map(row => row.entity_id);
-  const [courses, tracks, hackathons] = await Promise.all([
+  const [courses, hackathons] = await Promise.all([
     getBatchCourseLocaleContent(ids("course"), language),
-    getBatchCareerTrackLocaleContent(ids("career_track"), language),
     getBatchHackathonLocaleContent(ids("hackathon"), language),
   ]);
   return rows.map(row => {
     const localized = row.entity_type === "course" ? courses.get(row.entity_id)
-      : row.entity_type === "career_track" ? tracks.get(row.entity_id)
       : row.entity_type === "hackathon" ? hackathons.get(row.entity_id) : null;
     return localized ? { ...row, title: localized.title ?? row.title } : row;
   });

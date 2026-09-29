@@ -108,20 +108,6 @@ export function uploadCourseThumbnail(
   return uploadToPath(`course-thumbnails/${courseId}/${crypto.randomUUID()}.${ext}`, file, previousPath, true);
 }
 
-export function uploadCareerTrackThumbnail(
-  trackId: string,
-  file: File,
-  previousPath?: string | null,
-): Promise<{ url: string; path: string }> {
-  if (!trackId) throw new Error("Thiếu trackId khi upload ảnh bìa");
-  const ext = buildSafeExt(file.name);
-  return uploadToPath(
-    `career-track-thumbnails/${trackId}/${Date.now()}.${ext}`,
-    file,
-    previousPath,
-  );
-}
-
 export function uploadContestBanner(
   contestId: string,
   file: File,

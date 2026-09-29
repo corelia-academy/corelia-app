@@ -15,7 +15,6 @@ import {
   PlusCircle,
   UserCircle,
   Video,
-  Layers,
   BookOpen,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -86,23 +85,6 @@ export function InstructorSidebar() {
                     >
                       <Video className="size-4" aria-hidden />
                       <span>{t("sidebar.courseList")}</span>
-                    </NavLink>
-                  }
-                />
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  className="rounded-xl"
-                  tooltip={t("sidebar.careerTracks")}
-                  isActive={pathname.startsWith("/instructor/career-tracks")}
-                  render={
-                    <NavLink
-                      to="/instructor/career-tracks"
-                      end
-                      className="flex w-full items-center gap-2"
-                    >
-                      <Layers className="size-4" aria-hidden />
-                      <span>{t("sidebar.careerTracks")}</span>
                     </NavLink>
                   }
                 />

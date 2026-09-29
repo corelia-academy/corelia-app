@@ -911,26 +911,21 @@
       "noPreview": "Chưa có ảnh"
     },
     "track": {
-      "eyebrow": "Career track",
+      "eyebrow": "Hạng mục thi",
       "ctaSoon": "Khám phá track (sắp có)"
     },
     "learn": {
       "sectionTitle": "Học liên quan",
-      "sectionDescription": "Khóa học và career track phù hợp với hackathon.",
+      "sectionDescription": "Các khóa học phù hợp với hackathon này.",
       "officialBadge": "Khóa chính thức",
       "officialHint": "Gợi ý chuẩn bị từ ban tổ chức.",
       "loading": "Đang tải liên kết…",
       "courseUnavailable": "Khóa học chưa khả dụng công khai.",
-      "trackUnavailable": "Track chưa có liên kết công khai.",
       "openCourse": "Mở khóa học",
-      "openTrack": "Mở track",
       "courseLinkSoon": "Mở khóa học (sắp có)",
       "relatedCoursesTitle": "Khóa học liên quan",
       "relatedCoursesHint_one": "Đã liên kết {{count}} khóa học.",
-      "relatedCoursesHint_other": "Đã liên kết {{count}} khóa học.",
-      "relatedTracksTitle": "Career tracks",
-      "relatedTracksHint_one": "Đã gắn {{count}} track.",
-      "relatedTracksHint_other": "Đã gắn {{count}} track."
+      "relatedCoursesHint_other": "Đã liên kết {{count}} khóa học."
     },
     "people": {
       "sectionTitle": "Con người",
