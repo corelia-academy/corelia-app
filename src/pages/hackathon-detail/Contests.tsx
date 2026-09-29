@@ -148,9 +148,11 @@ export default function Contests() {
                 aria-label={`${t("catalog.viewContest")}: ${contest.title}`}
               >
                 <article className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base transition-[border-color,box-shadow] duration-200 group-hover:border-primary/30 group-hover:shadow-md">
-                  <div className="relative flex aspect-[21/9] items-center justify-center overflow-hidden bg-surface-raised">
-                    {bannerUrl ? <img src={bannerUrl} alt="" className="absolute inset-0 size-full object-cover" /> : <Trophy className="size-12 text-primary/30" aria-hidden />}
-                  </div>
+                  {bannerUrl ? (
+                    <div className="relative aspect-[21/9] overflow-hidden bg-surface-raised">
+                      <img src={bannerUrl} alt="" className="absolute inset-0 size-full object-cover" />
+                    </div>
+                  ) : null}
                   <div className="flex min-w-0 flex-col p-4 sm:p-6">
                     <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-primary"><span className="size-1.5 rounded-full bg-current" />{contestListStatusLabel(contest.status, translate, "catalog")}</span>
