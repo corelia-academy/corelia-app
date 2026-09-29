@@ -292,17 +292,21 @@ export default function ProjectDetailPage() {
       <header className="flex flex-col gap-5 border-b border-border-subtle pb-8 sm:flex-row sm:items-start">
         <ProjectLogo project={project} />
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-label-small font-body uppercase tracking-widest text-primary">
-              {t(projectSourceLabelKey(project.source_type))}
-            </span>
-            {winnerAward ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-xs font-semibold text-amber-950 shadow">
-                <Sparkles className="size-3" aria-hidden />
-                {winnerAward.label}
-              </span>
-            ) : null}
-          </div>
+          {!isHackathonProjectSource(project.source_type) || winnerAward ? (
+            <div className="flex flex-wrap items-center gap-2">
+              {!isHackathonProjectSource(project.source_type) ? (
+                <span className="text-label-small font-body uppercase tracking-widest text-primary">
+                  {t(projectSourceLabelKey(project.source_type))}
+                </span>
+              ) : null}
+              {winnerAward ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-xs font-semibold text-amber-950 shadow">
+                  <Sparkles className="size-3" aria-hidden />
+                  {winnerAward.label}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
           <h1 className="mt-2 break-words text-display-small font-display text-foreground">{project.title}</h1>
           <p className="mt-3 max-w-3xl whitespace-pre-wrap break-words text-body-medium font-body text-foreground-muted">
             {project.summary || t("projects.card.noSummary")}
@@ -316,7 +320,7 @@ export default function ProjectDetailPage() {
         </Tabs.List>
         <Tabs.Panel value="overview" className="space-y-6">
           {videoEmbed || pitchEmbed ? <Tabs.Root defaultValue={videoEmbed ? "demo" : "pitch"} className="mobile-bleed-surface overflow-hidden rounded-2xl border border-border-subtle bg-surface-base"><Tabs.List className="flex gap-4 border-b border-border-subtle p-3" aria-label={t("projects.editor.videos")}>{videoEmbed ? <Tabs.Tab value="demo" className="rounded-lg px-3 py-2 text-label-medium font-body data-[active]:bg-primary/10 data-[active]:text-primary">{t("projects.detail.video")}</Tabs.Tab> : null}{pitchEmbed ? <Tabs.Tab value="pitch" className="rounded-lg px-3 py-2 text-label-medium font-body data-[active]:bg-primary/10 data-[active]:text-primary">{t("projects.editor.pitchVideo")}</Tabs.Tab> : null}</Tabs.List>{[["demo",videoEmbed],["pitch",pitchEmbed]].map(([value,embed])=> typeof value === 'string' && embed && typeof embed !== 'string' ? <Tabs.Panel key={value} value={value}><iframe className="aspect-video w-full" src={embed.src} title={value === 'demo' ? t("projects.detail.video") : t("projects.editor.pitchVideo")} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen /></Tabs.Panel> : null)}</Tabs.Root> : null}
-          {(project.screenshot_urls?.length ?? 0) > 0 ? <section><h2 className="mb-3 text-heading-small font-display text-foreground">{t("projects.form.screenshots")}</h2><div className="grid gap-3 sm:grid-cols-2">{project.screenshot_urls?.map((url,index)=><a key={url} href={url} target="_blank" rel="noreferrer" className="overflow-hidden rounded-xl border border-border-subtle"><img src={url} alt={t("projects.form.screenshotAlt",{index:index+1})} className="aspect-video w-full object-cover" loading="lazy" /></a>)}</div></section> : null}
+          {(project.screenshot_urls?.length ?? 0) > 0 ? <section><h2 className="mb-3 text-heading-small font-display text-foreground">{t("projects.form.screenshots")}</h2><div className="mobile-bleed-grid grid gap-3 sm:grid-cols-2">{project.screenshot_urls?.map((url,index)=><a key={url} href={url} target="_blank" rel="noreferrer" className="block overflow-hidden border-y border-border-subtle sm:rounded-xl sm:border"><img src={url} alt={t("projects.form.screenshotAlt",{index:index+1})} className="block h-auto w-full object-contain sm:aspect-video sm:object-cover" loading="lazy" /></a>)}</div></section> : null}
           <section className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="text-heading-small font-display text-foreground">{t("projects.detail.description")}</h2><div className="mt-4 break-words"><Markdown content={description} /></div></section>
           <section>
             <div className="flex flex-wrap items-center justify-between gap-3">

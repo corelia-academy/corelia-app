@@ -622,7 +622,7 @@
     "placeholder": "Tìm kiếm nội dung public...",
     "title": "Tìm kiếm",
     "queryLine": "Kết quả cho “{{query}}”",
-    "enterQueryHint": "Nhập từ khoá ở ô search trên header để khám phá nội dung public.",
+    "enterQueryHint": "Nhập từ khóa vào ô bên dưới để tìm nội dung công khai.",
     "suggest": {
       "recent": "Tìm kiếm gần đây",
       "trending": "Xu hướng",

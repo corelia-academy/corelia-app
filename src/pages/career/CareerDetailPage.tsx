@@ -132,12 +132,12 @@ export default function CareerDetailPage() {
             </Card>
           ) : null}
 
-          <Card>
+          <Card className="max-sm:border-x-0">
             <CardContent className="p-6">
               <h2 className="text-heading-medium font-display text-foreground">
                 {t("detail.includedCourses")}
               </h2>
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-4 divide-y divide-border-subtle">
                 {track.includedCourses.map((item) => {
                   const progress = progressByCourse.get(item.course.id) ?? null;
                   return (
@@ -208,8 +208,8 @@ function CareerHero({
 
   return (
     <section className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base shadow-card">
-      <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-        <div className="min-w-0">
+      <div className="grid gap-0 sm:gap-6 sm:p-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        <div className="min-w-0 p-4 sm:p-0">
           <div className="flex flex-wrap items-center gap-2 text-xs">
             {track.has_certificate ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-primary-muted px-2.5 py-1 text-[11px] font-medium text-primary">
@@ -252,7 +252,7 @@ function CareerHero({
         </div>
 
         {youtubeVideoId ? (
-          <div className="aspect-video w-full self-start overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
+          <div className="order-first aspect-video w-full self-start overflow-hidden bg-surface-raised sm:order-last sm:rounded-md">
             <iframe
               src={`https://www.youtube.com/embed/${youtubeVideoId}?rel=0`}
               title={`${track.title} video`}
@@ -262,7 +262,7 @@ function CareerHero({
             />
           </div>
         ) : (
-          <div className="relative aspect-video w-full self-start overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
+          <div className="relative order-first aspect-video w-full self-start overflow-hidden bg-surface-raised sm:order-last sm:rounded-md">
             <img
               src="/Corelia_Banner_Square.png"
               alt=""
@@ -274,10 +274,11 @@ function CareerHero({
               <img
                 src={thumbnailSrc}
                 alt={track.title}
-                loading="lazy"
+                loading="eager"
+                fetchPriority="high"
                 decoding="async"
                 onError={() => setThumbnailFailed(true)}
-                className="absolute inset-0 size-full object-cover"
+                className="absolute inset-0 size-full object-contain sm:object-cover"
               />
             ) : (
               <div className="absolute inset-0 grid place-items-center">
@@ -374,7 +375,7 @@ function CourseRow({
       : t("detail.viewCourseButton");
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-border-subtle bg-surface-base p-3 sm:flex-row sm:items-stretch">
+    <div className="flex flex-col gap-4 bg-surface-base p-3 sm:flex-row sm:items-stretch">
       <Link
         to={detailHref}
         className="block aspect-video w-full shrink-0 overflow-hidden rounded-md bg-surface-raised sm:w-40"

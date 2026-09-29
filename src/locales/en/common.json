@@ -622,7 +622,7 @@
     "placeholder": "Search public content...",
     "title": "Search",
     "queryLine": "Results for “{{query}}”",
-    "enterQueryHint": "Type a keyword in the header search to discover public content.",
+    "enterQueryHint": "Enter a keyword below to discover public content.",
     "suggest": {
       "recent": "Recent searches",
       "trending": "Trending",
