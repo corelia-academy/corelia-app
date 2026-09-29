@@ -35,8 +35,8 @@ export default function CoursesPage() {
           </div>
           <Skeleton className="mt-1 h-4 w-72 max-w-full rounded" />
         </div>
-        <Skeleton className="h-40 w-full rounded-md border border-border-subtle" />
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Skeleton className="mobile-bleed-surface h-40 rounded-md border border-border-subtle" />
+        <div className="mobile-bleed-grid mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="aspect-[4/5] w-full rounded-2xl" />
           ))}
@@ -92,7 +92,7 @@ export default function CoursesPage() {
       </div>
 
       {filteredOnlineCourses.length === 0 ? (
-        <div className="mt-5 flex flex-col items-center gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card py-16 text-center">
+        <div className="mobile-bleed-surface mt-5 flex flex-col items-center gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card py-16 text-center">
           <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
             <BookOpen className="size-6 text-foreground-subtle" aria-hidden />
           </div>
@@ -125,7 +125,7 @@ export default function CoursesPage() {
           )}
         </div>
       ) : (
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mobile-bleed-grid mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredOnlineCourses.map((course) => (
             <PublicCourseCard
               key={course.id}

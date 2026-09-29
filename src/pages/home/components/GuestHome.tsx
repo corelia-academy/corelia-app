@@ -24,7 +24,7 @@ export function GuestHome({
     <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
       <div className="grid gap-6 ">
         <div className="min-w-0 space-y-8">
-          <section className="rounded-2xl border border-primary/15 bg-linear-to-br from-primary-muted to-surface-base p-5 sm:p-10">
+          <section className="mobile-bleed-surface rounded-2xl border border-primary/15 bg-linear-to-br from-primary-muted to-surface-base p-5 sm:p-10">
             <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               Corelia Academy
             </div>
@@ -107,7 +107,7 @@ export function GuestHome({
               </Button>
             </div>
 
-            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mobile-bleed-grid mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {featuredCourses.length === 0 ? (
                 <div className="col-span-full flex flex-col items-center gap-3 py-12 text-center sm:py-16">
                   <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">

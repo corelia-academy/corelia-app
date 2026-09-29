@@ -117,7 +117,7 @@ export default function Account() {
         </div>
 
         <div className="flex w-full min-w-0 flex-col gap-4">
-          <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 lg:hidden">
+          <section className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 lg:hidden">
             <div className="flex items-start gap-3">
               <div className="mt-0.5 shrink-0 text-primary">
                 {activeNavItem.icon}

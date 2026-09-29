@@ -118,7 +118,7 @@ export default function Contests() {
       ) : null}
 
       <div
-        className="grid gap-4 sm:gap-6"
+        className="mobile-bleed-grid grid gap-4 sm:gap-6"
         aria-busy={loading}
         aria-live={
           loading
