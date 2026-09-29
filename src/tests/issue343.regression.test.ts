@@ -102,7 +102,6 @@ import { useLearnEnrollmentAccess } from "@/pages/learn/hooks/useLearnEnrollment
 import { QuestionGeneratorDialog } from "@/pages/instructor-course-edit/components/QuestionGeneratorDialog";
 import { getSectionQuestions } from "@/lib/sectionQuestions";
 import { peekProjectInviteByToken } from "@/lib/notifications";
-import { getCareerTrackBySlug, listCareerTracks } from "@/lib/careerTracks";
 import { CourseSpotlightSection } from "@/pages/course-details/components/CourseSpotlightSection";
 import { invokeGenerateQuestions } from "@/lib/questionGenerator";
 import { supabase } from "@/lib/supabase";
@@ -272,7 +271,7 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
   });
 
   describe("BUG-014: CourseSpotlightSection route verification", () => {
-    it("renders spotlight card with href strictly pointing to /career", async () => {
+    it("renders spotlight card pointing to the course catalog", async () => {
       const container = document.createElement("div");
       document.body.appendChild(container);
       const root = createRoot(container);
@@ -292,7 +291,7 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
         );
       });
 
-      const link = container.querySelector("a[href='/career']");
+      const link = container.querySelector("a[href='/courses']");
       expect(link).not.toBeNull();
       expect(container.querySelector("a[href='/hackathons']")).toBeNull();
 
@@ -300,122 +299,6 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
         root.unmount();
       });
       container.remove();
-    });
-  });
-
-  describe("BUG-013: Career tracks multi-session cache & localization integrity", () => {
-    it("invalidates list cache when track A is replaced by track B (same count)", async () => {
-      let currentRows = [{ id: "track-A", slug: "track-a", title: "Track A", updated_at: "2026-08-01T00:00:00Z", published: true, courses: [] }];
-
-      supabase.from = vi.fn().mockImplementation(() => createMockChain(currentRows));
-
-      const first = await listCareerTracks("vi");
-      expect(first[0]?.slug).toBe("track-a");
-
-      currentRows = [{ id: "track-B", slug: "track-b", title: "Track B", updated_at: "2026-08-01T00:00:00Z", published: true, courses: [] }];
-
-      const second = await listCareerTracks("vi");
-      expect(second[0]?.slug).toBe("track-b");
-    });
-
-    it("retains translated title on cache hit in listCareerTracks", async () => {
-      const trackRows = [{ id: "track-ai", slug: "ai-engineer", title: "Kỹ sư AI Fallback", updated_at: "2026-08-01T00:00:00Z", published: true, courses: [] }];
-      const localeRows = [
-        {
-          career_track_id: "track-ai",
-          locale: "vi",
-          data: { title: "Kỹ sư AI" },
-          updated_at: "2026-08-01T00:00:00Z",
-        },
-      ];
-
-      supabase.from = vi.fn().mockImplementation((table: string) => {
-        if (table === "career_tracks") {
-          return createMockChain(trackRows);
-        }
-        if (table === "career_track_locales") {
-          return createMockChain(localeRows);
-        }
-        return createMockChain([]);
-      });
-
-      const first = await listCareerTracks("vi");
-      expect(first[0]?.title).toBe("Kỹ sư AI");
-
-      const second = await listCareerTracks("vi");
-      expect(second[0]?.title).toBe("Kỹ sư AI");
-    });
-
-    it("refreshes list translation when another session updates only locale data (parent updated_at unchanged)", async () => {
-      const trackRows = [{ id: "track-ai", slug: "ai-engineer", title: "AI Track", updated_at: "2026-08-01T00:00:00Z", published: true, courses: [] }];
-      let currentLocaleRows = [
-        {
-          career_track_id: "track-ai",
-          locale: "vi",
-          data: { title: "Kỹ sư AI (Ban đầu)", updated_at: "2026-08-01T00:00:00Z" },
-        },
-      ];
-
-      supabase.from = vi.fn().mockImplementation((table: string) => {
-        if (table === "career_tracks") {
-          return createMockChain(trackRows);
-        }
-        if (table === "career_track_locales") {
-          return createMockChain(currentLocaleRows);
-        }
-        return createMockChain([]);
-      });
-
-      const initial = await listCareerTracks("vi");
-      expect(initial[0]?.title).toBe("Kỹ sư AI (Ban đầu)");
-
-      // Writer B updates locale content and timestamp
-      currentLocaleRows = [
-        {
-          career_track_id: "track-ai",
-          locale: "vi",
-          data: { title: "Kỹ sư AI (Đã cập nhật từ Writer B)", updated_at: "2026-08-01T12:00:00Z" },
-        },
-      ];
-
-      const updated = await listCareerTracks("vi");
-      expect(updated[0]?.title).toBe("Kỹ sư AI (Đã cập nhật từ Writer B)");
-    });
-
-    it("refreshes detail translation when another session updates only locale data", async () => {
-      const trackRow = {
-        id: "track-fe",
-        slug: "frontend-dev",
-        updated_at: "2026-08-01T00:00:00Z",
-        published: true,
-        title: "Frontend Track Fallback",
-      };
-
-      let localeUpdatedAt = "2026-08-01T00:00:00Z";
-      let localeTitle = "Lộ trình Frontend (Gốc)";
-
-      supabase.from = vi.fn().mockImplementation((table: string) => {
-        if (table === "career_tracks") {
-          return createMockChain(trackRow);
-        }
-        if (table === "career_track_locales") {
-          return createMockChain({
-            career_track_id: "track-fe",
-            locale: "vi",
-            data: { title: localeTitle, updated_at: localeUpdatedAt },
-          });
-        }
-        return createMockChain([]);
-      });
-
-      const initial = await getCareerTrackBySlug("frontend-dev", "vi");
-      expect(initial?.title).toBe("Lộ trình Frontend (Gốc)");
-
-      localeUpdatedAt = "2026-08-02T12:00:00Z";
-      localeTitle = "Lộ trình Frontend (Mới từ Session B)";
-
-      const updated = await getCareerTrackBySlug("frontend-dev", "vi");
-      expect(updated?.title).toBe("Lộ trình Frontend (Mới từ Session B)");
     });
   });
 

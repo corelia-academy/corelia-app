@@ -470,11 +470,6 @@ function normalizeContest(data: Contest): Contest {
       : Array.isArray(data.relatedCourseIds)
         ? data.relatedCourseIds.map(String)
         : undefined,
-    related_career_track_ids: Array.isArray(data.related_career_track_ids)
-      ? data.related_career_track_ids.map(String)
-      : Array.isArray(data.relatedCareerTrackIds)
-        ? data.relatedCareerTrackIds.map(String)
-        : undefined,
     track_id:
       [data.track_id, data.trackId]
         .map((x) => (typeof x === "string" ? x.trim() : ""))

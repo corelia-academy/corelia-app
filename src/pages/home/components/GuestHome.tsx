@@ -1,7 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { careerCatalogQueryOptions } from "@/features/career/careerQueries";
-import { CareerTrackListCard } from "@/components/career/CareerTrackListCard";
 import { ArrowRight, BookOpen, Trophy } from "lucide-react";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
@@ -16,8 +12,6 @@ export function GuestHome({
   t: TFunction<"common">;
   courseCatalog: Course[];
 }) {
-  const { t: tCareer, i18n } = useTranslation("career");
-  const tracksQuery = useQuery({ ...careerCatalogQueryOptions(i18n.language), meta: { scope: "public", showInGlobalLoading: false } });
   const featuredCourses = (courseCatalog ?? []).slice(0, 6);
 
   return (
@@ -133,10 +127,6 @@ export function GuestHome({
             </div>
           </section>
 
-          {tracksQuery.data?.length ? <section className="space-y-4">
-            <h2 className="text-heading-large font-display">{tCareer("list.title")}</h2>
-            {tracksQuery.data.slice(0, 2).map(track => <CareerTrackListCard key={track.id} track={track} />)}
-          </section> : null}
         </div>
 
       </div>

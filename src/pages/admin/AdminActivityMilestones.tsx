@@ -28,19 +28,15 @@ import { useAuth } from "@/stores/authStore";
 
 type MilestoneEventKey =
   | "courses_completed"
-  | "courses_completed_in_track"
   | "projects_submitted";
 
 function buildTriggerRule(
   event: MilestoneEventKey,
   count: number,
-  track: string,
 ): Record<string, unknown> | null {
   switch (event) {
     case "courses_completed":
       return { event: "courses_completed", count };
-    case "courses_completed_in_track":
-      return { event: "courses_completed_in_track", track: track.trim(), count };
     case "projects_submitted":
       return { event: "projects_submitted", count };
     default:
@@ -63,7 +59,6 @@ export default function AdminActivityMilestones() {
   const [identifierPrefix, setIdentifierPrefix] = useState("");
   const [eventKey, setEventKey] = useState<MilestoneEventKey>("courses_completed");
   const [count, setCount] = useState(5);
-  const [track, setTrack] = useState("ai");
   const [isActive, setIsActive] = useState(true);
 
   const uploadMutation = useMutation({
@@ -116,12 +111,6 @@ export default function AdminActivityMilestones() {
     if (ev === "courses_completed") {
       return t("activityMilestones.rule.coursesCompleted", { count: Number(rule.count ?? 0) });
     }
-    if (ev === "courses_completed_in_track") {
-      return t("activityMilestones.rule.trackCourses", {
-        track: String(rule.track ?? ""),
-        count: Number(rule.count ?? 0),
-      });
-    }
     if (ev === "projects_submitted") {
       return t("activityMilestones.rule.projects", { count: Number(rule.count ?? 0) });
     }
@@ -136,7 +125,6 @@ export default function AdminActivityMilestones() {
     setIdentifierPrefix("");
     setEventKey("courses_completed");
     setCount(5);
-    setTrack("ai");
     setIsActive(true);
     setDialogOpen(true);
   };
@@ -151,7 +139,6 @@ export default function AdminActivityMilestones() {
     const ev = String(rule?.event ?? "courses_completed") as MilestoneEventKey;
     if (
       ev === "courses_completed" ||
-      ev === "courses_completed_in_track" ||
       ev === "projects_submitted"
     ) {
       setEventKey(ev);
@@ -159,14 +146,13 @@ export default function AdminActivityMilestones() {
       setEventKey("courses_completed");
     }
     setCount(Number(rule?.count ?? 5));
-    setTrack(String(rule?.track ?? "ai"));
     setIsActive(row.is_active);
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
     try {
-      const triggerRule = buildTriggerRule(eventKey, count, track);
+      const triggerRule = buildTriggerRule(eventKey, count);
       await saveMutation.mutateAsync({
         templateId: editId,
         isActive,
@@ -329,7 +315,6 @@ export default function AdminActivityMilestones() {
                 }
               >
                 <option value="courses_completed">{t("activityMilestones.event.coursesCompleted")}</option>
-                <option value="courses_completed_in_track">{t("activityMilestones.event.trackCourses")}</option>
                 <option value="projects_submitted">{t("activityMilestones.event.projects")}</option>
               </select>
             </Field>
@@ -343,27 +328,6 @@ export default function AdminActivityMilestones() {
                   onChange={(e: ChangeEvent<HTMLInputElement>) => setCount(Number(e.target.value))}
                 />
               </Field>
-            ) : null}
-            {eventKey === "courses_completed_in_track" ? (
-              <>
-                <Field>
-                  <FieldLabel>{t("activityMilestones.field.track")}</FieldLabel>
-                  <Input
-                    value={track}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setTrack(e.target.value)}
-                    placeholder="ai | app | blockchain"
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel>{t("activityMilestones.field.count")}</FieldLabel>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={count}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setCount(Number(e.target.value))}
-                  />
-                </Field>
-              </>
             ) : null}
             <label className="flex items-center gap-2 text-sm">
               <input

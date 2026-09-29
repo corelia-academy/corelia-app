@@ -67,7 +67,7 @@ for (const locale of ["vi", "en"]) {
     courses: [{ slug: "ai-product", title: "AI Product Engineering" }, { slug: "blockchain", title: "Blockchain Foundations" }],
     displayName: "Nguyễn Minh An", locale, stage: 7, appUrl,
   }));
-  for (const kind of ["course", "career_track", "hackathon"]) {
+  for (const kind of ["course", "hackathon"]) {
     add(`blast-${kind}-${locale}`, "Announcements", `${kind.replace("_", " ")} · ${locale.toUpperCase()}`, wrapBlastEmail({
       kind, locale, bodyHtml: `<p>${locale === "vi" ? "Thông báo mới từ Corelia Academy." : "A new update from Corelia Academy."}</p>`, unsubUrl: `${appUrl}/settings`,
     }));

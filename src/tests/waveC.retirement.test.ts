@@ -218,35 +218,6 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issues #328 and #331)", 
       expect(questionDialog).toMatch(/invokeGenerateQuestions\s*\(\s*req\s*\)/);
     });
 
-    it("retains the Career Track AI Translate caller", () => {
-      const careerTrackEditor = readSource(
-        rootDir,
-        "src/pages/instructor-career-tracks/InstructorCareerTrackEditorPage.tsx",
-      );
-
-      expect(careerTrackEditor).toMatch(/invokeGenerateDescription\s*\(\s*\{/);
-      expect(careerTrackEditor).toMatch(/action:\s*["']translate["']/);
-      expect(careerTrackEditor).toMatch(/bundleKind:\s*["']course_info["']/);
-      expect(careerTrackEditor).toMatch(/careerTrackId:\s*id/);
-      expect(careerTrackEditor).not.toMatch(
-        /invokeGenerateDescription\s*\(\s*\{[\s\S]*?bundleKind:\s*["']course_info["'][\s\S]*?courseId:\s*id[\s\S]*?\}\s*\)/,
-      );
-    });
-
-    it("statically enforces the Career Track translation resource contract", () => {
-      const content = readSource(
-        rootDir,
-        "supabase/functions/generate-description/index.ts",
-      );
-
-      expect(content).toContain('parseOptionalResourceId(body.careerTrackId, "careerTrackId")');
-      expect(content).toContain("Không được gửi đồng thời courseId và careerTrackId.");
-      expect(content).toContain("careerTrackId chỉ hợp lệ cho luồng dịch toàn bộ Career Track.");
-      expect(content).toMatch(
-        /async function ensureCanManageCareerTrack[\s\S]*?\.from\("career_tracks"\)[\s\S]*?\.eq\("id", careerTrackId\)[\s\S]*?if \(error\)[\s\S]*?if \(!data\)[\s\S]*?if \(role === "admin" \|\| role === "support_staff"\) return/,
-      );
-    });
-
     it("statically proves privileged course bypass happens only after course existence lookup", () => {
       const descriptionFunction = readSource(
         rootDir,

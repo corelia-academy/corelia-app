@@ -24,14 +24,3 @@ export async function blastCourseEmail(
     html: params.html,
   });
 }
-
-export async function blastCareerTrackEmail(
-  trackId: string,
-  params: { subject: string; html: string },
-): Promise<BlastEmailResult> {
-  return callCoreliaApi<BlastEmailResult>("careerTracks.blastEmail", {
-    track_id: trackId,
-    subject: params.subject,
-    html: params.html,
-  });
-}

@@ -10,7 +10,6 @@ const routeLoaders: Array<{
   { matches: (path) => path === "/", load: () => import("@/pages/home/index") },
   { matches: (path) => path.startsWith("/feed"), load: () => import("@/pages/feed/FeedPage") },
   { matches: (path) => path.startsWith("/courses"), load: () => import("@/pages/courses") },
-  { matches: (path) => path.startsWith("/career"), load: () => import("@/pages/career") },
   { matches: (path) => path.startsWith("/jobs/market"), load: () => import("@/pages/jobs/JobMarketPage") },
   { matches: (path) => path.startsWith("/jobs/saved") || path.startsWith("/jobs/applied") || path.startsWith("/jobs/hidden"), load: () => import("@/pages/jobs/UserJobsPage") },
   { matches: (path) => /^\/jobs\/[^/]+/.test(path), load: () => import("@/pages/jobs/JobDetailPage") },

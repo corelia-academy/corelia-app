@@ -56,24 +56,5 @@ describe("Wave B Retirement Contract Tests (Epic #332 / Issues #326, #327, #329,
       expect(typeof qModule.invokeGenerateQuestions).toBe("function");
     });
 
-    it("confirms career tracks translation payload correctly serializes careerTrackId", async () => {
-      const descModule = await import("@/lib/descriptionGenerator");
-      const serialized = descModule.serializeGenerateDescriptionRequest({
-        action: "translate",
-        type: "course",
-        targetField: "description",
-        locale: "en",
-        sourceLocale: "vi",
-        bundleKind: "course_info",
-        careerTrackId: "track_test_123",
-        sourceBundle: {
-          title: "Khóa học AI",
-          description: "Mô tả khóa học",
-        },
-      });
-      const parsed = JSON.parse(serialized) as { careerTrackId?: string; action?: string };
-      expect(parsed.careerTrackId).toBe("track_test_123");
-      expect(parsed.action).toBe("translate");
-    });
   });
 });

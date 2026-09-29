@@ -19,8 +19,6 @@
     "courseDetail": "Course details",
     "projectInvite": "Project invitation",
     "coInstructorInvite": "Co-instructor invitation",
-    "careerTracks": "Career tracks",
-    "careerTrackDetail": "Career track details",
     "instructorDetail": "Instructor details",
     "achievements": "Achievements",
     "hackathons": "Hackathons",
@@ -65,9 +63,6 @@
     "emailCenter": "Email center",
     "teaching": "Teaching",
     "manageCourses": "Manage courses",
-    "manageCareerTracks": "Manage career tracks",
-    "newCareerTrack": "Create career track",
-    "editCareerTrack": "Edit career track",
     "newCourse": "Create course",
     "previewCourse": "Preview course",
     "editCourse": "Edit course",
@@ -113,7 +108,6 @@
     "someone": "Someone",
     "courses": "Courses",
     "feed": "Feed",
-    "career": "Roadmap",
     "contests": "Hackathons",
     "projects": "Projects",
     "jobs": "Jobs",
@@ -640,7 +634,6 @@
       "project": "Project",
       "contest": "Hackathon",
       "course": "Course",
-      "career_track": "Career track",
       "profile": "Profile"
     }
   },
@@ -698,7 +691,7 @@
     },
     "guest": {
       "heroTitle": "Start your Web3 learning journey with Corelia",
-      "heroSubtitle": "Explore courses, programs, and open hackathons. When you want to save progress or enroll, just sign in.",
+      "heroSubtitle": "Explore courses and open hackathons. When you want to save progress or enroll, just sign in.",
       "featuredCoursesTitle": "Featured courses",
       "signIn": "Sign in",
       "openContestsTitle": "Open hackathons",

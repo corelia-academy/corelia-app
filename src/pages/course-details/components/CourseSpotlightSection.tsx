@@ -60,18 +60,6 @@ export function CourseSpotlightSection({
       });
     }
 
-    list.push({
-      id: "career-tracks",
-      badge: translate("detail.spotlight.careerTrackBadge"),
-      title: translate("detail.spotlight.careerTrackTitle"),
-      description: translate("detail.spotlight.careerTrackDescription"),
-      href: "/career",
-      ctaLabel: translate("detail.spotlight.exploreCareerTracks"),
-      meta: translate("detail.spotlight.careerTrackMeta"),
-      icon: <Rocket className="size-5 shrink-0" aria-hidden />,
-      accent: "amber",
-    });
-
     if (list.length < 2) {
       list.push({
         id: "courses-library",
