@@ -16,6 +16,7 @@ const RESERVED_HANDLES = new Set([
   "cohorts",
   "learn",
   "career",
+  "career-tracks",
   "contests",
   "hackathons",
   "projects",

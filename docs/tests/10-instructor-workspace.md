@@ -4,7 +4,7 @@ Xem hub: [README.md](README.md).
 
 ## Mục tiêu
 
-Phủ RequireRole `instructorWorkspace`: khóa học, career tracks, partner finance, profile workspace.
+Phủ RequireRole `instructorWorkspace`: khóa học, partner finance, profile workspace.
 
 ## Gate
 
@@ -32,11 +32,6 @@ Phủ RequireRole `instructorWorkspace`: khóa học, career tracks, partner fin
 2. **Instructor_1**: `/instructor/courses` — danh sách khóa của mình.
 3. `/instructor/courses/new` — form tạo khóa; lưu nháp/submit.
 4. `/instructor/courses/:id/edit` — với `id` seed — chỉnh và lưu.
-
-### Career tracks
-
-5. `/instructor/career-tracks` — list.
-6. `/instructor/career-tracks/new` và `/instructor/career-tracks/:id/edit` — flow CRUD cơ bản.
 
 ### Partner finance
 

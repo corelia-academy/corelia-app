@@ -6,7 +6,6 @@ export async function invalidateLearningProgress(client: QueryClient, userId: st
     ["courses", "enrollment", userId, courseId],
     ["courses", "catalog-progress", userId],
     ["courses", "spotlight", userId],
-    ["career", "progress", userId],
     ["achievements", "vault", userId],
   ].map(queryKey => client.invalidateQueries({ queryKey })));
 }

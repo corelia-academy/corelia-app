@@ -164,7 +164,6 @@
     "projectFallback": "your project",
     "viewAwardDetails": "View results",
     "courseAnnouncementTitle": "Course announcement",
-    "trackAnnouncementTitle": "Learning path announcement",
     "markRead": "Mark as read",
     "courseCompletedTitle": "Course completed",
     "courseCompletedBody": "Congratulations! Your progress for \"{{course}}\" has been saved as complete.",
