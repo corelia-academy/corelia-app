@@ -37,11 +37,7 @@ function buildNavItems(contest: Contest, lifecycle: HackathonLifecycle | null): 
     "";
   const relCourses =
     contest.related_course_ids?.length ?? contest.relatedCourseIds?.length ?? 0;
-  const relTracks =
-    contest.related_career_track_ids?.length ??
-    contest.relatedCareerTrackIds?.length ??
-    0;
-  if (official.length > 0 || relCourses > 0 || relTracks > 0) {
+  if (official.length > 0 || relCourses > 0) {
     items.push({ key: "learn", id: "learn", hash: "#learn" });
   }
   const mentors = contest.mentor_emails?.length ?? 0;

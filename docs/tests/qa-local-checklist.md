@@ -197,14 +197,8 @@
 
 ---
 
-### 4.4. Lộ Trình Nghề Nghiệp & Profile Giảng Viên (BUG-005, BUG-008, BUG-013)
-- [x] **[TC-CAREER-01] Truy cập trình chỉnh sửa lộ trình nghề nghiệp với ID sai (BUG-005)**
-  - **Thao tác:** Truy cập URL: `/career-tracks/00000000-0000-0000-0000-000000000000/edit`.
-  - **Kỳ vọng:** Trang hiển thị thông báo "Không tìm thấy lộ trình nghề nghiệp"; toàn bộ form và các nút bấm Lưu/Xóa bị ẩn hoàn toàn.
-- [x] **[TC-CAREER-02] Invalidate cache danh mục khi cập nhật lộ trình (BUG-013)**
-  - **Thao tác:** Giảng viên chỉnh sửa tên một lộ trình nghề nghiệp và lưu lại; sau đó truy cập ngay trang danh mục lộ trình `/career-tracks`.
-  - **Kỳ vọng:** Tên mới cập nhật hiển thị ngay lập tức trên danh mục mà không cần người dùng phải xóa cache trình duyệt.
-- [x] **[TC-CAREER-03] Validate UUID trang profile giảng viên (BUG-008)**
+### 4.4. Profile Giảng Viên (BUG-008)
+- [x] **[TC-PROFILE-01] Validate UUID trang profile giảng viên (BUG-008)**
   - **Thao tác:** Nhập URL trang giảng viên với ID không phải UUID: `/instructors/invalid-instructor-param`.
   - **Kỳ vọng:** Giao diện trả về trang 404 thân thiện, không làm phát sinh exception SQL trong DevTools console.
 

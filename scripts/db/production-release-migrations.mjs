@@ -126,16 +126,17 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260928063404_campaign_all_contacts_audience.sql",
   "supabase/migrations/20260929134936_block_updating_course_completion.sql",
   "supabase/migrations/20260929183423_skip_publication_check_for_course_thumbnail.sql",
+  "supabase/migrations/20260929220304_retire_career_tracks.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production history was verified through 20260929134936 by the read-only
-// pre-deploy ledger check. Only the cover migration is pending.
+// Production history was verified through 20260929183423 by the read-only
+// pre-deploy ledger check. Only Career Tracks retirement is pending.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260929183423",
+  "20260929220304",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

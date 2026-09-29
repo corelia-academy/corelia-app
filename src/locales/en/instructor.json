@@ -4,7 +4,6 @@
     "subtitle": "Manage courses, profile, and operations in one place.",
     "createCourse": "Create course",
     "courseList": "Course list",
-    "careerTracks": "Career tracks",
     "offlineClasses": "Offline classes",
     "profile": "Instructor profile",
     "contests": "Contests"
@@ -14,8 +13,6 @@
       "home": "Home",
       "teaching": "Teaching",
       "createCourse": "Create course",
-      "careerTracks": "Career tracks",
-      "createCareerTrack": "Create track",
       "offlineClasses": "Offline classes",
       "createCohort": "Create cohort",
       "cohortWorkspace": "Cohort workspace",
@@ -30,18 +27,6 @@
       "newCourse": {
         "title": "Create a new course",
         "description": "Set up content and a free learning journey from scratch."
-      },
-      "careerTracks": {
-        "title": "Manage career tracks",
-        "description": "Create and publish learning tracks based on the courses you build."
-      },
-      "careerTracksNew": {
-        "title": "Create a career track",
-        "description": "Create a draft/published track and order the included courses."
-      },
-      "careerTracksEdit": {
-        "title": "Edit a career track",
-        "description": "Update track content and the included course list."
       },
       "offlineList": {
         "title": "Offline classes",
@@ -88,95 +73,6 @@
       "coreliaInstructor": "Corelia instructor",
       "adminMode": "Admin mode",
       "teachingMode": "Teaching tasks"
-    }
-  },
-  "careerTracks": {
-    "list": {
-      "title": "Career tracks",
-      "subtitle": "Total {{total}} · Published {{published}} · Drafts {{drafts}}",
-      "emptyTitle": "No tracks yet",
-      "emptyDescription": "Create your first track from the courses you’ve created."
-    },
-    "editor": {
-      "newTitle": "Create track",
-      "editTitle": "Edit track",
-      "subtitle": "Set up content and order the courses in the learning path.",
-      "translationModeHint": "Editing translation for {{locale}}. Empty fields fall back to the primary locale."
-    },
-    "sections": {
-      "learning": "Content",
-      "includedCourses": "Included courses"
-    },
-    "fields": {
-      "title": "Title",
-      "slug": "Slug",
-      "description": "Description",
-      "whatYoullLearn": "What you'll learn",
-      "prerequisites": "Prerequisites",
-      "settings": "Settings",
-      "hasCertificate": "Certificate available",
-      "published": "Published",
-      "addCourse": "Add course"
-    },
-    "placeholders": {
-      "title": "e.g. Frontend Engineer",
-      "description": "A short description of the track…",
-      "whatYoullLearn": "One item per line…",
-      "prerequisites": "One item per line…",
-      "pickCourse": "Pick a course"
-    },
-    "hints": {
-      "slug": "Use lowercase letters, numbers, and hyphens. Example: frontend-engineer",
-      "lines": "One line equals one item."
-    },
-    "labels": {
-      "loading": "Loading…",
-      "draft": "Draft",
-      "published": "Published",
-      "noCourses": "No courses included yet.",
-      "courseCount": "{{count}} course",
-      "courseCount_plural": "{{count}} courses"
-    },
-    "actions": {
-      "create": "Create track",
-      "edit": "Edit",
-      "publish": "Publish",
-      "unpublish": "Unpublish",
-      "back": "Back",
-      "save": "Save",
-      "saving": "Saving…",
-      "translationSaved": "Translation saved.",
-      "saveLocalizationSettings": "Save localization settings"
-    },
-    "errors": {
-      "loadFailed": "Could not load tracks.",
-      "saveFailed": "Could not save track.",
-      "missingRequired": "Please enter a title and slug.",
-      "notFound": "Track not found."
-    },
-    "announcements": {
-      "title": "Send track announcement",
-      "heroTitle": "Send announcement to track learners",
-      "heroDescription": "Compose an email and send it to all learners enrolled in any course within this track.",
-      "subjectLabel": "Email subject",
-      "subjectPlaceholder": "Enter subject...",
-      "bodyLabel": "Message",
-      "bodyPlaceholder": "Write your announcement here. Use a blank line between paragraphs.",
-      "bodyHint": "Plain text only: line breaks are kept. You do not need to write HTML.",
-      "bodyPreviewToggle": "Preview",
-      "bodyPreviewBrandedNote": "Preview (header and footer are added automatically when sent):",
-      "sendButton": "Send announcement",
-      "confirmTitle": "Send announcement?",
-      "confirmSubjectLabel": "Subject:",
-      "confirmDescription": "Email will be sent to all learners in this track.",
-      "confirmButton": "Send now",
-      "cancelButton": "Cancel",
-      "resultSent": "Successfully sent {{sent}}/{{total}} emails.",
-      "resultFailed": "{{failed}} emails failed to send.",
-      "resultSkipped": "Could not send to {{skipped}} recipients.",
-      "resultError": "Send error: {{reason}}",
-      "systemUnavailable": "The email system is currently unavailable. No emails were sent. Please contact a system administrator for assistance.",
-      "notConfigured": "Email not configured. Please check RESEND_API_KEY."
     }
   },
   "courseNew": {
@@ -554,20 +450,6 @@
       "explanationToggle": "Answer explanation",
       "explanationPlaceholder": "Explain why the answer is correct (optional)...",
       "replaceDraftConfirm": "Generate new questions and replace the current draft? Unsaved edits will be lost."
-    },
-    "careerTracks": {
-      "shortDescriptionLabel": "Short description",
-      "shortDescriptionDesc": "Displayed directly below title on detail page. ~1–2 sentences.",
-      "shortDescriptionPlaceholder": "8-week Web3 learning journey…",
-      "uploading": "Uploading…",
-      "saveBeforeUpload": "Please save track before uploading image.",
-      "uploadFailed": "Upload failed",
-      "namePlaceholder": "Name",
-      "shortDescOptionalPlaceholder": "Short description (optional)",
-      "labels": {
-        "courseCount": "{{count}} course",
-        "courseCount_plural": "{{count}} courses"
-      }
     },
     "certificateGuide": {
       "title": "How to create a template",

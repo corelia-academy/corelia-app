@@ -74,7 +74,6 @@ Module dùng public tabs và editor tại `/admin/hackathons`. Dùng dữ liệu
 | [01-auth-session-ocid.md](01-auth-session-ocid.md) | Đăng ký, đăng nhập, phiên, OCID |
 | [02-home-discovery.md](02-home-discovery.md) | Trang chủ (khách / đã login) |
 | [03-courses-catalog-detail-checkout-learn.md](03-courses-catalog-detail-checkout-learn.md) | Khóa học, checkout, học |
-| [04-career.md](04-career.md) | Career |
 | [05-projects-invites-search.md](05-projects-invites-search.md) | Projects, invite, search |
 | [06-public-profiles.md](06-public-profiles.md) | Hồ sơ công khai `/u/:handle` |
 | [07-account-hub.md](07-account-hub.md) | `/account/*` |

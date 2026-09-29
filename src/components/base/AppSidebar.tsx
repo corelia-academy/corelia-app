@@ -1,6 +1,5 @@
 import { NavLink, useLocation } from "react-router";
 import {
-  Briefcase,
   BriefcaseBusiness,
   BookOpen,
   GraduationCap,
@@ -35,7 +34,6 @@ const primaryNav = [
   { labelKey: "nav.home" as const, href: "/", icon: Home, end: true },
   { labelKey: "nav.feed" as const, href: "/feed", icon: Rss },
   { labelKey: "nav.courses" as const, href: "/courses", icon: BookOpen },
-  { labelKey: "nav.career" as const, href: "/career", icon: Briefcase },
   { labelKey: "nav.contests" as const, href: "/hackathons", icon: Trophy },
   { labelKey: "nav.projects" as const, href: "/projects", icon: FolderKanban },
   { labelKey: "nav.jobs" as const, href: "/jobs", icon: BriefcaseBusiness },
@@ -77,11 +75,6 @@ export default function AppSidebar({
           "@/features/courses/courseQueries"
         );
         await queryClient.prefetchQuery(coursesCatalogQueryOptions(locale));
-      } else if (href === "/career") {
-        const { careerCatalogQueryOptions } = await import(
-          "@/features/career/careerQueries"
-        );
-        await queryClient.prefetchQuery(careerCatalogQueryOptions(locale));
       } else if (href === "/jobs") {
         const { jobsInfiniteCatalogQueryOptions } = await import(
           "@/features/jobs/jobQueries"

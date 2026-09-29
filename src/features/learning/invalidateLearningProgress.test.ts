@@ -9,13 +9,11 @@ it("invalidates every locale of the learner's dashboard progress without touchin
     ["courses", "catalog-progress", "learner"],
     ["courses", "spotlight", "learner", "vi"],
     ["courses", "spotlight", "learner", "en"],
-    ["career", "progress", "learner", "course"],
     ["achievements", "vault", "learner", "vi", "ocid", "Name"],
   ];
   const unchanged = [
     ["courses", "enrollment", "other", "course"],
     ["courses", "enrollment", "learner", "other-course"],
-    ["career", "progress", "other", "course"],
     ["courses", "spotlight", "anonymous", "vi"],
     ["courses", "catalog", "vi"],
     ["courses", "progress", "learner", "course"],
@@ -30,7 +28,7 @@ it("invalidates every locale of the learner's dashboard progress without touchin
 
 it("waits for an active dashboard refresh without turning a read failure into a failed completion", async () => {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  const key = ["career", "progress", "learner", "course"];
+  const key = ["courses", "spotlight", "learner", "vi"];
   client.setQueryData(key, { completed: false });
   let reject!: (reason: Error) => void;
   const observer = new QueryObserver(client, {

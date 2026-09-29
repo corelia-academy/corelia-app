@@ -72,18 +72,6 @@ type GenerateDescriptionRequestCommon = {
   lessonTitle?: string;
 };
 
-type CareerTrackTranslationRequest = GenerateDescriptionRequestCommon & {
-  action: "translate";
-  type: "course";
-  targetField: "description";
-  bundleKind: "course_info";
-  careerTrackId: string;
-  hackathonId?: never;
-  courseId?: never;
-  sectionId?: never;
-  lessonId?: never;
-};
-
 type HackathonTranslationRequest = GenerateDescriptionRequestCommon & {
   action: "translate";
   type: "hackathon";
@@ -91,7 +79,6 @@ type HackathonTranslationRequest = GenerateDescriptionRequestCommon & {
   bundleKind: "hackathon";
   hackathonId: string;
   sourceBundle: DescriptionTranslationBundle;
-  careerTrackId?: never;
   courseId?: never;
   sectionId?: never;
   lessonId?: never;
@@ -101,7 +88,6 @@ type CourseOrLessonDescriptionRequest = GenerateDescriptionRequestCommon & {
   action?: DescriptionGeneratorAction;
   type: "course" | "lesson";
   bundleKind?: DescriptionTranslationBundleKind;
-  careerTrackId?: never;
   hackathonId?: never;
   courseId?: string;
   sectionId?: string;
@@ -109,7 +95,6 @@ type CourseOrLessonDescriptionRequest = GenerateDescriptionRequestCommon & {
 };
 
 export type GenerateDescriptionRequest =
-  | CareerTrackTranslationRequest
   | HackathonTranslationRequest
   | CourseOrLessonDescriptionRequest;
 

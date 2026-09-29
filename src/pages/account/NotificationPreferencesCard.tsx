@@ -112,22 +112,10 @@ export function NotificationPreferencesCard() {
           label={t("settings.notifications.emailCourseBlast")}
         />
         <Toggle
-          id="pref-email-track"
-          checked={prefs.email_track_blast}
-          onChange={() => !saveMutation.isPending && toggle("email_track_blast")}
-          label={t("settings.notifications.emailTrackBlast")}
-        />
-        <Toggle
           id="pref-inapp-course"
           checked={prefs.in_app_course_blast}
           onChange={() => !saveMutation.isPending && toggle("in_app_course_blast")}
           label={t("settings.notifications.inAppCourseBlast")}
-        />
-        <Toggle
-          id="pref-inapp-track"
-          checked={prefs.in_app_track_blast}
-          onChange={() => !saveMutation.isPending && toggle("in_app_track_blast")}
-          label={t("settings.notifications.inAppTrackBlast")}
         />
       </div>
     </section>

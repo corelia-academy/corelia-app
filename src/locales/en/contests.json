@@ -911,26 +911,21 @@
       "noPreview": "No preview"
     },
     "track": {
-      "eyebrow": "Career track",
+      "eyebrow": "Hackathon track",
       "ctaSoon": "Explore track (soon)"
     },
     "learn": {
       "sectionTitle": "Related learning",
-      "sectionDescription": "Courses and tracks that pair well with this hackathon.",
+      "sectionDescription": "Courses that pair well with this hackathon.",
       "officialBadge": "Official course",
       "officialHint": "Recommended preparation from the organizers.",
       "loading": "Loading links…",
       "courseUnavailable": "This course is not available publicly yet.",
-      "trackUnavailable": "This track does not have a public link yet.",
       "openCourse": "Open course",
-      "openTrack": "Open track",
       "courseLinkSoon": "Open course (soon)",
       "relatedCoursesTitle": "Related courses",
       "relatedCoursesHint_one": "{{count}} curated course linked.",
-      "relatedCoursesHint_other": "{{count}} curated courses linked.",
-      "relatedTracksTitle": "Career tracks",
-      "relatedTracksHint_one": "{{count}} track highlighted.",
-      "relatedTracksHint_other": "{{count}} tracks highlighted."
+      "relatedCoursesHint_other": "{{count}} curated courses linked."
     },
     "people": {
       "sectionTitle": "People",

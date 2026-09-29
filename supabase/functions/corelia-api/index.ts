@@ -6,7 +6,6 @@ import { handleBackfillEligibleCertificates, handleIssueCertificate } from "./ce
 import { handleRevokeCertificate } from "./certificates/revoke.ts";
 import { handleVerifyCertificate } from "./certificates/verify.ts";
 import { handleHackathonListEligible } from "./credentials/hackathon_eligible.ts";
-import { handleCareerTrackBlastEmail } from "./career-tracks/blast_email.ts";
 import { handleCheckActivityMilestones } from "./credentials/check_activity.ts";
 import { handleCheckCourseCompletion } from "./credentials/check_course.ts";
 import { handleClaimLookup } from "./credentials/claim_lookup.ts";
@@ -69,7 +68,6 @@ const PROTECTED_OPS = new Set<string>([
   "courses.blastEmail",
   "courses.coInstructorInvite.sendEmail",
   "courses.sendLearningReminders",
-  "careerTracks.blastEmail",
   "projects.collaborationInvite.sendEmail",
   // notifications.unsubscribe is PUBLIC — intentionally omitted from PROTECTED_OPS
   "credentials.checkCourseCompletion",
@@ -128,6 +126,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
   try {
     const url = new URL(req.url);
     const op = url.searchParams.get("op") ?? "";
+    if (op === "careerTracks.blastEmail") {
+      return withCors(req, json({ message: "career_tracks_retired" }, 410));
+    }
     if (isOgOp(op) && !authorizedOgRequest(req)) {
       return new Response("Forbidden", { status: 403, headers: { "Cache-Control": "no-store" } });
     }
@@ -184,8 +185,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleProjectCollaborationInviteEmail(req, db);
     } else if (op === "courses.sendLearningReminders" && req.method === "POST") {
       response = await handleSendLearningReminders(req, db, { allowCron: isLearningReminderCron });
-    } else if (op === "careerTracks.blastEmail" && req.method === "POST") {
-      response = await handleCareerTrackBlastEmail(req, db);
     } else if (op === "notifications.unsubscribe" && req.method === "POST") {
       response = await handleNotificationsUnsubscribe(req, db);
     } else if (op === "credentials.checkCourseCompletion" && req.method === "POST") {

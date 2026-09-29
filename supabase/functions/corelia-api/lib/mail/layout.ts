@@ -30,7 +30,7 @@ export function wrapTransactionalEmail(params: TransactionalWrapParams): string 
   return renderTransactionalEmail({ ...params, fingerprint }, { appUrl: resolveAppUrl(), assetBaseUrl: resolveEmailAssetBaseUrl() });
 }
 
-export type BlastEmailKind = "course" | "career_track" | "hackathon";
+export type BlastEmailKind = "course" | "hackathon";
 
 const BLAST_COPY: Record<
   BlastEmailKind,
@@ -46,18 +46,6 @@ const BLAST_COPY: Record<
       tag: "Course announcement",
       title: "Message from your instructor",
       reason: "You received this because you enrolled in a course on Corelia.",
-    },
-  },
-  career_track: {
-    vi: {
-      tag: "Thông báo lộ trình",
-      title: "Tin từ lộ trình học",
-      reason: "Bạn nhận email này vì đã đăng ký khóa học trong lộ trình học trên Corelia.",
-    },
-    en: {
-      tag: "Learning path update",
-      title: "Message from your learning path",
-      reason: "You received this because you enrolled in courses on a Corelia learning path.",
     },
   },
   hackathon: {

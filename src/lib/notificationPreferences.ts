@@ -4,18 +4,14 @@ import { supabasePublicClientKey } from "@/lib/supabase";
 
 export interface NotificationPreferences {
   email_course_blast: boolean;
-  email_track_blast: boolean;
   email_learning_reminders: boolean;
   in_app_course_blast: boolean;
-  in_app_track_blast: boolean;
 }
 
 export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
   email_course_blast: true,
-  email_track_blast: true,
   email_learning_reminders: true,
   in_app_course_blast: true,
-  in_app_track_blast: true,
 };
 
 export async function getNotificationPreferences(
@@ -23,19 +19,15 @@ export async function getNotificationPreferences(
 ): Promise<NotificationPreferences> {
   const { data, error } = await supabase
     .from("notification_preferences")
-    .select(
-      "email_course_blast, email_track_blast, email_learning_reminders, in_app_course_blast, in_app_track_blast",
-    )
+    .select("email_course_blast, email_learning_reminders, in_app_course_blast")
     .eq("user_id", userId)
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) return DEFAULT_NOTIFICATION_PREFERENCES;
   return {
     email_course_blast: data.email_course_blast ?? true,
-    email_track_blast: data.email_track_blast ?? true,
     email_learning_reminders: data.email_learning_reminders ?? true,
     in_app_course_blast: data.in_app_course_blast ?? true,
-    in_app_track_blast: data.in_app_track_blast ?? true,
   };
 }
 
