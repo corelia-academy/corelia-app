@@ -114,7 +114,7 @@ export default function CourseDetail() {
   const syncCertificate = useCallback(async () => {
     const course = courseLoad.course;
     const courseId = courseLoad.resolvedCourseId;
-    if (!course || !courseId || !profile?.id || !isAuthenticated) {
+    if (!course || course.is_updating || !courseId || !profile?.id || !isAuthenticated) {
       return null;
     }
     const currentEpoch = ++syncEpochRef.current;
@@ -150,7 +150,7 @@ export default function CourseDetail() {
         }
         setCompletionJustSynced(true);
       } else {
-        if (completion.reason === "final_assignment_pending") return null;
+        if (completion.reason === "final_assignment_pending" || completion.reason === "course_updating") return null;
         setCompletionSyncError(
           completion.message || translate("detail.learn.completion.completionSyncFailed"),
         );
@@ -233,7 +233,7 @@ export default function CourseDetail() {
   useEffect(() => {
     const course = courseLoad.course;
     const courseId = courseLoad.resolvedCourseId;
-    if (!course || !courseId || !profile?.id || !isAuthenticated) return;
+    if (!course || course.is_updating || !courseId || !profile?.id || !isAuthenticated) return;
     if (access.loading) return;
     if (progress.progressPercent < 100) return;
     if (access.enrollment?.completed_at && (!courseHasCertificate(course) || access.enrollment.certificate_issued_at)) {
@@ -448,7 +448,7 @@ export default function CourseDetail() {
           issueError={completionSyncError || certificateIssueError}
           achievementsPath={achievementsPath}
           onRetry={
-            hasCourseCertificate || !completionSynced || completionSyncError
+            !course.is_updating && (hasCourseCertificate || !completionSynced || completionSyncError)
               ? () => void syncCertificate()
               : undefined
           }
