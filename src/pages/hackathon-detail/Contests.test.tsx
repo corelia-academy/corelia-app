@@ -118,4 +118,15 @@ describe("Hackathon catalog card", () => {
     expect(container.querySelector("a[href='/admin/hackathons']")).toBeNull();
     await view.cleanup();
   });
+
+  it("omits the banner frame when a hackathon has no image", async () => {
+    state.items = [{ id: "no-banner", slug: "no-banner", title: "No Banner", status: "published" } as Contest];
+    const view = await renderPage();
+
+    expect(container.textContent).toContain("No Banner");
+    expect(container.querySelector("article img")).toBeNull();
+    expect(Array.from(container.querySelectorAll("article div")).some((element) => element.className.includes("aspect-[21/9]"))).toBe(false);
+
+    await view.cleanup();
+  });
 });
