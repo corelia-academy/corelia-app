@@ -16,10 +16,10 @@ export function HomeHeader({
   firstName: string;
   featuredFocus: FocusCard | null;
 }) {
-  const featuredWrapperClassName = "rounded-lg border border-border-subtle";
+  const featuredWrapperClassName = "sm:rounded-lg sm:bg-surface-raised/50";
 
   return (
-    <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-5">
+    <section className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-5">
       <div className="flex flex-col gap-2">
         <div className="text-[11px] font-medium uppercase tracking-wide text-foreground-muted">
           {loading ? t("home.syncing") : t("home.dashboard")}
@@ -50,7 +50,7 @@ export function HomeHeader({
           </div>
         ) : featuredFocus ? (
           <div className={featuredWrapperClassName}>
-            <div className="p-4">
+            <div className="px-0 py-3 sm:p-4">
               <div className="inline-flex items-center rounded-full border border-border bg-surface-raised px-3 py-1 text-xs font-medium text-foreground-muted">
                 {featuredFocus.format === "online"
                   ? t("home.sections.featuredOnline")

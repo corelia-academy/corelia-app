@@ -13,13 +13,13 @@ export function MomentumCards({
   items: MomentumCard[];
 }) {
   return (
-    <section className="mobile-bleed-grid grid gap-3 sm:grid-cols-2">
+    <section className="mobile-bleed-grid grid sm:grid-cols-2 sm:gap-3">
       {items.map((item) => {
         const Icon = item.icon;
         return (
           <div
             key={item.label}
-            className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:bg-surface-raised"
+            className="border-b border-border-subtle bg-surface-base p-4 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:bg-surface-raised sm:rounded-2xl sm:border sm:shadow-card"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -41,4 +41,3 @@ export function MomentumCards({
     </section>
   );
 }
-
