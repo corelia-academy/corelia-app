@@ -44,7 +44,7 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="container-app py-6 sm:py-8">
+    <div className="container-app pb-6 pt-4 sm:py-8">
       <div className="flex items-start gap-3">
         <Search className="mt-1 size-5 text-primary" aria-hidden />
         <div className="min-w-0 flex-1">
@@ -99,11 +99,11 @@ export default function SearchPage() {
             </div>
           </div>
         ) : !q ? null : items.length === 0 ? (
-          <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted sm:p-6">
+          <div className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted sm:p-6">
             {t("search.empty")}
           </div>
         ) : (
-          <div className="divide-y divide-border-subtle">
+          <div className="mobile-bleed-grid divide-y divide-border-subtle">
             {items.map((item) => (
               <NavLink
                 key={`${item.entity_type}:${item.entity_id}`}

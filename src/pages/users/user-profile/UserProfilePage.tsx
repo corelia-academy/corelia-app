@@ -271,8 +271,8 @@ export default function UserProfileLayout() {
   });
 
   return (
-    <div className="container-app py-6 sm:py-8 lg:py-10">
-      <section className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
+    <div className="container-app pb-6 pt-0 sm:py-8 lg:py-10">
+      <section className="mobile-bleed-surface overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
         <div className="relative p-4 sm:p-6 lg:p-8">
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,color-mix(in_oklch,var(--primary-container)_72%,transparent),transparent_44%),radial-gradient(circle_at_top_right,color-mix(in_oklch,var(--primary)_16%,transparent),transparent_38%)]" />
 

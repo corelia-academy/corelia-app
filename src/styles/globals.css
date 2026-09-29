@@ -1351,6 +1351,29 @@
     padding-left: var(--content-px);
     padding-right: var(--content-px);
   }
+
+  /* Keep text in the page gutter while letting mobile surfaces reach the viewport. */
+  @media (max-width: 639px) {
+    .container-app .container-app {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .mobile-bleed-surface,
+    .mobile-bleed-grid {
+      margin-left: calc(-1 * var(--content-px));
+      margin-right: calc(-1 * var(--content-px));
+      width: calc(100% + 2 * var(--content-px));
+    }
+
+    .mobile-bleed-surface,
+    .mobile-bleed-grid :is([data-slot="card"], article, .rounded-2xl),
+    .mobile-bleed-grid > .rounded-xl {
+      border-left-width: 0;
+      border-right-width: 0;
+      border-radius: 0;
+    }
+  }
 }
 
 /* Shared background for public authentication pages. */

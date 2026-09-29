@@ -416,7 +416,7 @@ export default function CourseDetail() {
   const course = courseLoad.course;
 
   return (
-    <div className="container-app py-6 sm:py-8">
+    <div className="container-app pb-6 pt-0 sm:py-8">
       {canReviewDraft ? (
         <CourseDraftBanner
           courseId={courseLoad.resolvedCourseId ?? id ?? ""}
@@ -465,7 +465,7 @@ export default function CourseDetail() {
         </div>
       ) : null}
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="mobile-bleed-grid mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
           <CourseLearningOutcomes outcomes={course.learning_outcomes ?? []} />
           <CourseSkills skills={course.skills ?? []} />

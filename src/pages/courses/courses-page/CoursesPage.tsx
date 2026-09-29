@@ -27,7 +27,7 @@ export default function CoursesPage() {
 
   if (loading) {
     return (
-      <div className="container-app py-6 sm:py-8">
+      <div className="container-app pb-6 pt-4 sm:py-8">
         <div className="mb-4">
           <div className="flex items-center gap-2">
             <Skeleton className="size-5 shrink-0 rounded-sm" />
@@ -35,8 +35,8 @@ export default function CoursesPage() {
           </div>
           <Skeleton className="mt-1 h-4 w-72 max-w-full rounded" />
         </div>
-        <Skeleton className="h-40 w-full rounded-md border border-border-subtle" />
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Skeleton className="mobile-bleed-surface h-40 rounded-md border border-border-subtle" />
+        <div className="mobile-bleed-grid mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="aspect-[4/5] w-full rounded-2xl" />
           ))}
@@ -47,7 +47,7 @@ export default function CoursesPage() {
 
   if (error) {
     return (
-      <div className="container-app py-6 sm:py-8">
+      <div className="container-app pb-6 pt-4 sm:py-8">
         <div className="rounded-lg border border-destructive/20 bg-destructive-muted p-5">
           <p className="text-sm font-medium text-destructive">
             {t("catalog.loadErrorTitle")}
@@ -63,7 +63,7 @@ export default function CoursesPage() {
 
 
   return (
-    <div className="container-app py-6 sm:py-8">
+    <div className="container-app pb-6 pt-4 sm:py-8">
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -92,7 +92,7 @@ export default function CoursesPage() {
       </div>
 
       {filteredOnlineCourses.length === 0 ? (
-        <div className="mt-5 flex flex-col items-center gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card py-16 text-center">
+        <div className="mobile-bleed-surface mt-5 flex flex-col items-center gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card py-16 text-center">
           <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
             <BookOpen className="size-6 text-foreground-subtle" aria-hidden />
           </div>
@@ -125,7 +125,7 @@ export default function CoursesPage() {
           )}
         </div>
       ) : (
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mobile-bleed-grid mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredOnlineCourses.map((course) => (
             <PublicCourseCard
               key={course.id}

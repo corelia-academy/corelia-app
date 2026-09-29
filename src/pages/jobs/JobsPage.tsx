@@ -158,10 +158,10 @@ export default function JobsPage() {
   }, [fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError]);
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-7xl px-4 pb-6 pt-4 sm:px-6 sm:py-6 lg:px-8">
       <div className="flex flex-col gap-5">
         <JobsNav />
-        <header className="rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7">
+        <header className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7">
           <div className="flex items-center gap-2 text-sm font-semibold text-primary"><BriefcaseBusiness className="size-4" aria-hidden />{t("eyebrow")}</div>
           <h1 className="mt-3 text-foreground text-heading-medium font-display">{landing ? t("landing.title", { label: landing.label }) : t("title")}</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground-muted sm:text-base">{landing ? t("landing.subtitle", { label: landing.label }) : t("subtitle")}</p>
@@ -174,7 +174,7 @@ export default function JobsPage() {
             <Button type="submit"><Search className="size-4" aria-hidden />{t("search")}</Button>
           </form>
         </header>
-        <section className="rounded-xl border border-border-subtle bg-surface-base p-4" aria-label={t("filters.label")}>
+        <section className="mobile-bleed-surface rounded-xl border border-border-subtle bg-surface-base p-4" aria-label={t("filters.label")}>
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold"><SlidersHorizontal className="size-4" aria-hidden />{t("filters.label")}</div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             <select className={SELECT_CLASS} value={filters.jobType ?? ""} onChange={(e) => updateParam("type", e.target.value)} aria-label={t("filters.jobType")}><option value="">{t("filters.allJobTypes")}</option>{(["tech", "non_tech"] as const).map((value) => <option key={value} value={value}>{t(`values.${value}`)}</option>)}</select>
@@ -225,10 +225,10 @@ export default function JobsPage() {
           </details>
         </section>
         <div className="flex items-center justify-between gap-3"><p className="text-sm text-foreground-muted">{t("results", { count: latestPage?.total ?? 0 })}{latestPage?.hiddenCount ? <> · <Link to="/jobs/hidden" className="underline-offset-4 hover:underline">{t("hiddenCount", { count: latestPage.hiddenCount })}</Link></> : null}</p></div>
-        {jobsQuery.isPending ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-72 animate-pulse rounded-2xl bg-surface-raised" />)}</div> : jobsQuery.isError && !jobsQuery.data ? <div className="rounded-xl border border-destructive/30 p-8 text-center text-sm text-destructive" role="alert">{t("messages.loadFailed")} <Button type="button" variant="cta" hierarchy="secondary" className="ml-2" onClick={() => void jobsQuery.refetch()}>{t("retry")}</Button></div> : jobs.length ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{jobs.map((job) => {
+        {jobsQuery.isPending ? <div className="mobile-bleed-grid grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-72 animate-pulse rounded-2xl bg-surface-raised" />)}</div> : jobsQuery.isError && !jobsQuery.data ? <div className="mobile-bleed-surface rounded-xl border border-destructive/30 p-8 text-center text-sm text-destructive" role="alert">{t("messages.loadFailed")} <Button type="button" variant="cta" hierarchy="secondary" className="ml-2" onClick={() => void jobsQuery.refetch()}>{t("retry")}</Button></div> : jobs.length ? <div className="mobile-bleed-grid grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{jobs.map((job) => {
           const state = stateByJobId[job.id];
           return <JobCard publicAppearance key={job.id} job={job} state={state} busy={stateMutation.isPending && stateMutation.variables?.jobId === job.id} onToggleSaved={() => mutateState(job.id, { saved: !state?.saved })} onToggleApplied={() => mutateState(job.id, { applied: !state?.applied })} onToggleHidden={() => mutateState(job.id, { hidden: true })} />;
-        })}</div> : <div className="rounded-xl border border-border-subtle bg-surface-base p-12 text-center"><BriefcaseBusiness className="mx-auto size-8 text-foreground-subtle" aria-hidden /><h2 className="mt-3 text-heading-small font-display">{t("empty.title")}</h2><p className="mt-1 text-sm text-foreground-muted">{t("empty.description")}</p></div>}
+        })}</div> : <div className="mobile-bleed-surface rounded-xl border border-border-subtle bg-surface-base p-12 text-center"><BriefcaseBusiness className="mx-auto size-8 text-foreground-subtle" aria-hidden /><h2 className="mt-3 text-heading-small font-display">{t("empty.title")}</h2><p className="mt-1 text-sm text-foreground-muted">{t("empty.description")}</p></div>}
         {jobsQuery.hasNextPage ? <div ref={loadMoreRef} className="flex min-h-10 items-center justify-center text-sm text-foreground-muted" role="status" aria-live="polite">{jobsQuery.isFetchingNextPage ? t("infinite.loading") : jobsQuery.isFetchNextPageError ? <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void jobsQuery.fetchNextPage()}>{t("infinite.retry")}</Button> : typeof IntersectionObserver === "undefined" ? <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void jobsQuery.fetchNextPage()}>{t("infinite.loadMore")}</Button> : <span className="sr-only">{t("infinite.ready")}</span>}</div> : null}
       </div>
     </div>

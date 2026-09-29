@@ -24,7 +24,7 @@ export default function LearningPrinciplesPage() {
   usePageMeta({ title: t("title"), description: t("intro") });
 
   return (
-    <div className="container-app min-w-0 py-6 sm:py-10">
+    <div className="container-app min-w-0 pb-6 pt-4 sm:py-10">
       <header className="max-w-3xl pb-8">
         <p className="mb-3 flex items-center gap-2 text-sm font-medium text-primary"><BookOpen className="size-4" aria-hidden />{t("eyebrow")}</p>
         <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">{t("title")}</h1>

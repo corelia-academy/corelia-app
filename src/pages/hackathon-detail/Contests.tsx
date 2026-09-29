@@ -66,7 +66,7 @@ export default function Contests() {
   const showError = !loading && Boolean(error);
 
   return (
-    <div className="container-app py-5 sm:py-8">
+    <div className="container-app pb-5 pt-4 sm:py-8">
       <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -118,7 +118,7 @@ export default function Contests() {
       ) : null}
 
       <div
-        className="grid gap-4 sm:gap-6"
+        className="mobile-bleed-grid grid gap-4 sm:gap-6"
         aria-busy={loading}
         aria-live={
           loading
