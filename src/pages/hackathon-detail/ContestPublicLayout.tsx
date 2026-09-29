@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowUpRight, CalendarClock, Globe2, Users } from "lucide-react";
+import { ArrowUpRight, CalendarClock, Globe2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 
 import { PageContainer } from "@/components/layouts/PagePrimitives";
 import { Button } from "@/components/ui/button";
-import { hackathonPreviewQueryOptions, publicHackathonDetailQueryOptions } from "@/features/hackathons/hackathonQueries";
+import { HackathonApplicantPreview } from "@/components/hackathons/HackathonApplicantPreview";
+import { hackathonPreviewQueryOptions, publicHackathonApplicantPreviewsQueryOptions, publicHackathonDetailQueryOptions } from "@/features/hackathons/hackathonQueries";
 import {
   getMyContestRegistration,
   getMyContestSubmission,
@@ -79,6 +80,7 @@ export default function ContestPublicLayout() {
     (!previewRequested || previewAuthorized)
       ? loaded
       : null;
+  const applicantsQuery = useQuery(publicHackathonApplicantPreviewsQueryOptions(contest && contest.status !== "draft" ? [contest.id] : []));
   useDynamicPageTitle(contest?.title);
 
   useEffect(() => {
@@ -221,7 +223,7 @@ export default function ContestPublicLayout() {
           ) : null}
           <dl className="grid min-w-0 grid-cols-2 gap-x-4 gap-y-4 rounded-xl border border-border-subtle bg-surface-base p-4 text-sm sm:grid-cols-4">
             {contest.host?.name ? <div className="col-span-2 flex min-w-0 items-center gap-2 sm:col-span-1">{contest.host.logo_url ? <img src={contest.host.logo_url} alt="" className="size-8 shrink-0 rounded-md bg-white object-contain p-0.5" /> : <Globe2 className="size-5 shrink-0 text-foreground-muted" aria-hidden />}<div className="min-w-0"><dt className="text-xs text-foreground-muted">{t("public.hostedBy")}</dt><dd className="truncate font-medium text-foreground">{contest.host.website_url ? <a href={contest.host.website_url} target="_blank" rel="noreferrer" className="hover:underline">{contest.host.name}</a> : contest.host.name}</dd></div></div> : null}
-            <div className="min-w-0"><dt className="flex items-center gap-1 text-xs text-foreground-muted"><Users className="size-3.5" aria-hidden />{t("public.participants")}</dt><dd className="mt-1 font-medium text-foreground tabular-nums">{contest.participants_count ?? 0}</dd></div>
+            <div className="min-w-0"><dt className="sr-only">{t("public.applications")}</dt><dd><HackathonApplicantPreview applicants={applicantsQuery.data?.[contest.id]} count={contest.participants_count ?? 0} label={t("public.applications")} /></dd></div>
             {contest.registration_deadline ? <div className="min-w-0"><dt className="flex items-center gap-1 text-xs text-foreground-muted"><CalendarClock className="size-3.5 shrink-0" aria-hidden />{t("public.registrationDeadline")}</dt><dd className="mt-1 font-medium text-foreground"><time dateTime={contest.registration_deadline}>{formatVietnamDateTime(contest.registration_deadline, locale)}</time></dd></div> : null}
             {contest.submission_deadline ? <div className="min-w-0"><dt className="flex items-center gap-1 text-xs text-foreground-muted"><CalendarClock className="size-3.5 shrink-0" aria-hidden />{t("public.submissionDeadline")}</dt><dd className="mt-1 font-medium text-foreground"><time dateTime={contest.submission_deadline}>{formatVietnamDateTime(contest.submission_deadline, locale)}</time></dd></div> : null}
           </dl>

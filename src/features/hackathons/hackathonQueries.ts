@@ -11,6 +11,7 @@ import {
 } from "@/lib/hackathons";
 import { listContestShowcasePortfolio } from "@/lib/projects";
 import { resolveContestLearningLinks } from "@/lib/hackathonLearning";
+import { listPublicHackathonApplicantPreviews } from "@/lib/hackathonApplicants";
 
 export const hackathonKeys = {
   all: ["hackathons"] as const,
@@ -22,6 +23,8 @@ export const hackathonKeys = {
     [...hackathonKeys.all, "co-organizer-access", userId, email] as const,
   publicDetail: (slug: string, locale: string) =>
     [...hackathonKeys.all, "public-detail", slug, locale] as const,
+  applicantPreviews: (contestIds: string[]) =>
+    [...hackathonKeys.all, "applicant-previews", ...contestIds] as const,
   preview: (slug: string, locale: string, userId: string) =>
     [...hackathonKeys.all, "preview", slug, locale, userId] as const,
   showcase: (contestId: string) =>
@@ -82,6 +85,17 @@ export function publicHackathonCatalogQueryOptions(locale: string, enabled = tru
     queryKey: hackathonKeys.publicCatalog(locale),
     queryFn: () => listPublicContests(locale),
     enabled,
+    staleTime: 60_000,
+    meta: { scope: "public", showInGlobalLoading: false },
+  });
+}
+
+export function publicHackathonApplicantPreviewsQueryOptions(contestIds: string[]) {
+  const ids = Array.from(new Set(contestIds.map((id) => id.trim()).filter(Boolean))).sort();
+  return queryOptions({
+    queryKey: hackathonKeys.applicantPreviews(ids),
+    queryFn: () => listPublicHackathonApplicantPreviews(ids),
+    enabled: ids.length > 0,
     staleTime: 60_000,
     meta: { scope: "public", showInGlobalLoading: false },
   });

@@ -127,16 +127,17 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260929134936_block_updating_course_completion.sql",
   "supabase/migrations/20260929183423_skip_publication_check_for_course_thumbnail.sql",
   "supabase/migrations/20260929220304_retire_career_tracks.sql",
+  "supabase/migrations/20260929222933_public_hackathon_applicant_avatars.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production history was verified through 20260929183423 by the read-only
-// pre-deploy ledger check. Only Career Tracks retirement is pending.
+// Production deployment at 3ecfedbe applied Career Tracks retirement.
+// Only the public hackathon applicant preview RPC is pending.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260929220304",
+  "20260929222933",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

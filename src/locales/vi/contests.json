@@ -50,8 +50,6 @@
     "registrationNoLimit": "Không giới hạn thời gian đăng ký",
     "viewDetails": "Xem chi tiết",
     "viewContest": "Xem hackathon",
-    "openWorkspace": "Mở hackathon workspace",
-    "statsSummary": "{{total}} tổng · {{accepting}} đang nhận hồ sơ · {{running}} đang diễn ra · {{ended}} đã kết thúc",
     "stats": {
       "total": "Tổng hackathon",
       "accepting": "Đang nhận hồ sơ",
@@ -87,7 +85,7 @@
     "createProject": "Tạo / xem dự án",
     "submissionClosed": "Đã đóng nộp dự án",
     "hostedBy": "Tổ chức bởi",
-    "participants": "Người đăng ký",
+    "applications": "Hồ sơ đăng ký",
     "registrationDeadline": "Hạn đăng ký",
     "submissionDeadline": "Hạn nộp dự án",
     "tabsLabel": "Nội dung hackathon",
