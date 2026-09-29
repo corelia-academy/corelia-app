@@ -69,6 +69,19 @@ vi.mock("@/lib/hackathons", () => ({
   sanitizeSlug: (value: unknown) => (typeof value === "string" ? value.trim().toLowerCase() : null),
 }));
 vi.mock("@/features/hackathons/hackathonQueries", () => ({
+  publicHackathonApplicantPreviewsQueryOptions: (ids: string[]) => ({
+    queryKey: ["hackathons", "applicant-test", ...ids],
+    queryFn: async () => ({
+      "hackathon-2": [{
+        user_id: "applicant-1",
+        username: "applicant",
+        full_name: "Applicant One",
+        avatar_seed: null,
+        avatar_config: null,
+      }],
+    }),
+    enabled: ids.length > 0,
+  }),
   publicHackathonDetailQueryOptions: (_slug: string, _locale: string, enabled: boolean) => ({
     queryKey: ["hackathons", "public-test"],
     queryFn: async () => state.publicContest ?? publishedContest,
@@ -179,6 +192,19 @@ describe("draft hackathon preview", () => {
     expect(status?.parentElement?.querySelector("h1")).not.toBeNull();
     expect(status?.parentElement?.querySelector("img")).toBeNull();
     expect(view.container.querySelector(".bg-gradient-to-t")).toBeNull();
+
+    await view.cleanup();
+  });
+
+  it("shows applicant avatars with the total in the public detail", async () => {
+    state.publicContest = { ...publishedContest, participants_count: 119 };
+    const view = renderRoute("/hackathons/published-demo/overview");
+    await settle();
+
+    expect(view.container.querySelector("[data-slot='avatar-group']")).not.toBeNull();
+    expect(view.container.querySelector("[data-slot='avatar-group-count']")?.textContent).toBe("+118");
+    expect(view.container.textContent).toContain("public.applications");
+    expect(view.container.textContent).toContain("119");
 
     await view.cleanup();
   });
