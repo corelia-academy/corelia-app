@@ -12,6 +12,28 @@ vi.mock("../credentials/settings.ts", () => ({ getAppBaseUrl: async () => "https
 import { issueCourseCertificateIfReady } from "./handlers.ts";
 
 describe("issueCourseCertificateIfReady", () => {
+  it("does not issue a new certificate for an updating course", async () => {
+    const rpc = vi.fn();
+    const db = {
+      from(table: string) {
+        return {
+          select() { return this; },
+          eq() { return this; },
+          async maybeSingle() {
+            return { data: table === "courses"
+              ? { data: { title: "Digital Assets Market", has_certificate: true, is_updating: true } }
+              : { certificate_issued_at: null }, error: null };
+          },
+        };
+      },
+      rpc,
+    } as unknown as SupabaseClient;
+
+    await expect(issueCourseCertificateIfReady(db, { courseId: "course", targetUserId: "learner" }))
+      .resolves.toMatchObject({ issued: false, reason: "course_updating" });
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
   it("sends one email and notification when two requests issue concurrently", async () => {
     sendMail.mockClear();
     let issuedAt: string | null = null;

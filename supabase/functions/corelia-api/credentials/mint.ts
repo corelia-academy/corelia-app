@@ -272,6 +272,21 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
 
   const template = row.credential_templates as CredentialTemplateRow & { network_override?: string | null };
 
+  // Pending course issuances can also be retried directly, outside the normal
+  // eligibility check. Keep them pending until the course is ready again.
+  const courseId = row.course_id ?? template.course_id;
+  if (template.scope_type === "course" && courseId) {
+    const { data: course, error: courseErr } = await db.from("courses")
+      .select("data")
+      .eq("id", courseId)
+      .maybeSingle();
+    if (courseErr) return { ok: false, error: courseErr.message };
+    if ((course?.data as { is_updating?: boolean } | null)?.is_updating === true) {
+      await db.from("credential_issuances").update({ error_message: "course_updating" }).eq("id", issuanceId);
+      return { ok: false, error: "course_updating" };
+    }
+  }
+
   // Resolve the holder before touching any settings lookup (network, mint
   // endpoint, logo, base URL, email locale) — those calls throw on missing
   // config, and doing them ahead of the holder check used to leave a
