@@ -245,6 +245,10 @@ describe("draft hackathon preview", () => {
       expect(view.container.querySelectorAll("time")).toHaveLength(2);
       expect(view.container.textContent).toContain("public.registrationDeadline");
       expect(view.container.textContent).toContain("public.submissionDeadline");
+      const deadlines = Array.from(view.container.querySelectorAll("time"));
+      expect(deadlines[0]?.textContent).toContain("12:00");
+      expect(deadlines[0]?.textContent).toContain("ICT (UTC+7)");
+      expect(deadlines[0]?.getAttribute("datetime")).toBe("2026-09-30T05:00:00.000Z");
     } finally {
       await view.cleanup();
     }

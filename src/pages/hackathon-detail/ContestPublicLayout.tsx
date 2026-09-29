@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowUpRight, CalendarClock, Facebook, Globe2, Send, Users } from "lucide-react";
+import { ArrowUpRight, CalendarClock, Globe2, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ import type { Contest, ContestRegistration } from "@/types/hackathons";
 import { ContestDetailLoadingCard } from "@/pages/hackathon-detail/components/ContestDetailGateStates";
 import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 import { formatPrizeAmount } from "./utils/formatPrizeAmount";
+import { formatVietnamDateTime } from "./utils/formatVietnamDateTime";
 
 const TABS = ["overview", "prizes", "timeline", "resources", "projects"] as const;
 
@@ -31,8 +32,8 @@ export type HackathonOutletContext = {
   registration: ContestRegistration | null;
 };
 
-function formatDate(value: string, locale: string): string {
-  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+function TelegramLogo({ className }: { className?: string }) {
+  return <svg viewBox="0 0 24 24" aria-hidden className={className}><path fill="currentColor" d="M21.94 4.67c.24-1.1-.4-1.54-1.38-1.18L2.1 10.61c-1.26.5-1.25 1.2-.23 1.51l4.74 1.48 1.82 5.67c.22.63.11.88.78.88.52 0 .75-.24 1.04-.52l2.53-2.46 5.26 3.88c.97.54 1.67.26 1.91-.9l2-15.48ZM7.35 13.25l10.99-6.94c.55-.33 1.05-.15.64.22l-9.44 8.52-.37 3.96-1.82-5.76Z" /></svg>;
 }
 
 function XLogo({ className }: { className?: string }) {
@@ -49,6 +50,10 @@ function XLogo({ className }: { className?: string }) {
       />
     </svg>
   );
+}
+
+function FacebookLogo({ className }: { className?: string }) {
+  return <svg viewBox="0 0 24 24" aria-hidden className={className}><path fill="currentColor" d="M13.5 21v-8.2h2.76l.41-3.2H13.5V7.56c0-.93.26-1.56 1.59-1.56h1.7V3.14A22.7 22.7 0 0 0 14.3 3c-2.46 0-4.15 1.5-4.15 4.26V9.6H7.37v3.2h2.78V21h3.35Z" /></svg>;
 }
 
 export default function ContestPublicLayout() {
@@ -196,10 +201,10 @@ export default function ContestPublicLayout() {
               {cta || contest.social_links?.telegram || contest.social_links?.x || contest.social_links?.facebook ? (
                 <div className="flex w-full flex-col gap-3 border-t border-border-subtle pt-4 sm:w-auto sm:flex-row sm:items-center lg:shrink-0 lg:border-0 lg:pt-0">
                   {cta}
-                  <div className="flex items-center gap-2">
-                    {contest.social_links?.telegram ? <Button render={<a href={contest.social_links.telegram} target="_blank" rel="noreferrer" aria-label="Telegram" />} nativeButton={false} size="small" variant="cta" hierarchy="secondary" iconOnly><Send className="size-4" /></Button> : null}
-                    {contest.social_links?.x ? <Button render={<a href={contest.social_links.x} target="_blank" rel="noreferrer" aria-label="X" />} nativeButton={false} size="small" variant="cta" hierarchy="secondary" iconOnly><XLogo className="size-4" /></Button> : null}
-                    {contest.social_links?.facebook ? <Button render={<a href={contest.social_links.facebook} target="_blank" rel="noreferrer" aria-label="Facebook" />} nativeButton={false} size="small" variant="cta" hierarchy="secondary" iconOnly><Facebook className="size-4" /></Button> : null}
+                  <div className="flex items-center gap-2.5">
+                    {contest.social_links?.telegram ? <Button render={<a href={contest.social_links.telegram} target="_blank" rel="noopener noreferrer" aria-label="Telegram" />} nativeButton={false} size="small" variant="cta" hierarchy="secondary" iconOnly className="size-10 rounded-full bg-surface-raised text-foreground-muted hover:border-primary/40 hover:text-primary"><TelegramLogo className="size-5" /></Button> : null}
+                    {contest.social_links?.x ? <Button render={<a href={contest.social_links.x} target="_blank" rel="noopener noreferrer" aria-label="X" />} nativeButton={false} size="small" variant="cta" hierarchy="secondary" iconOnly className="size-10 rounded-full bg-surface-raised text-foreground-muted hover:border-primary/40 hover:text-primary"><XLogo className="size-[18px]" /></Button> : null}
+                    {contest.social_links?.facebook ? <Button render={<a href={contest.social_links.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" />} nativeButton={false} size="small" variant="cta" hierarchy="secondary" iconOnly className="size-10 rounded-full bg-surface-raised text-foreground-muted hover:border-primary/40 hover:text-primary"><FacebookLogo className="size-5" /></Button> : null}
                   </div>
                 </div>
               ) : null}
@@ -217,8 +222,8 @@ export default function ContestPublicLayout() {
           <dl className="grid min-w-0 grid-cols-2 gap-x-4 gap-y-4 rounded-xl border border-border-subtle bg-surface-base p-4 text-sm sm:grid-cols-4">
             {contest.host?.name ? <div className="col-span-2 flex min-w-0 items-center gap-2 sm:col-span-1">{contest.host.logo_url ? <img src={contest.host.logo_url} alt="" className="size-8 shrink-0 rounded-md bg-white object-contain p-0.5" /> : <Globe2 className="size-5 shrink-0 text-foreground-muted" aria-hidden />}<div className="min-w-0"><dt className="text-xs text-foreground-muted">{t("public.hostedBy")}</dt><dd className="truncate font-medium text-foreground">{contest.host.website_url ? <a href={contest.host.website_url} target="_blank" rel="noreferrer" className="hover:underline">{contest.host.name}</a> : contest.host.name}</dd></div></div> : null}
             <div className="min-w-0"><dt className="flex items-center gap-1 text-xs text-foreground-muted"><Users className="size-3.5" aria-hidden />{t("public.participants")}</dt><dd className="mt-1 font-medium text-foreground tabular-nums">{contest.participants_count ?? 0}</dd></div>
-            {contest.registration_deadline ? <div className="min-w-0"><dt className="flex items-center gap-1 text-xs text-foreground-muted"><CalendarClock className="size-3.5 shrink-0" aria-hidden />{t("public.registrationDeadline")}</dt><dd className="mt-1 font-medium text-foreground"><time dateTime={contest.registration_deadline}>{formatDate(contest.registration_deadline, locale)}</time></dd></div> : null}
-            {contest.submission_deadline ? <div className="min-w-0"><dt className="flex items-center gap-1 text-xs text-foreground-muted"><CalendarClock className="size-3.5 shrink-0" aria-hidden />{t("public.submissionDeadline")}</dt><dd className="mt-1 font-medium text-foreground"><time dateTime={contest.submission_deadline}>{formatDate(contest.submission_deadline, locale)}</time></dd></div> : null}
+            {contest.registration_deadline ? <div className="min-w-0"><dt className="flex items-center gap-1 text-xs text-foreground-muted"><CalendarClock className="size-3.5 shrink-0" aria-hidden />{t("public.registrationDeadline")}</dt><dd className="mt-1 font-medium text-foreground"><time dateTime={contest.registration_deadline}>{formatVietnamDateTime(contest.registration_deadline, locale)}</time></dd></div> : null}
+            {contest.submission_deadline ? <div className="min-w-0"><dt className="flex items-center gap-1 text-xs text-foreground-muted"><CalendarClock className="size-3.5 shrink-0" aria-hidden />{t("public.submissionDeadline")}</dt><dd className="mt-1 font-medium text-foreground"><time dateTime={contest.submission_deadline}>{formatVietnamDateTime(contest.submission_deadline, locale)}</time></dd></div> : null}
           </dl>
         </div>
       </PageContainer>
