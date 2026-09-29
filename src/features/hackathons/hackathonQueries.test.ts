@@ -16,6 +16,7 @@ vi.mock("@/lib/hackathons", () => ({
 
 vi.mock("@/lib/projects", () => ({ listContestShowcasePortfolio: vi.fn() }));
 vi.mock("@/lib/hackathonLearning", () => ({ resolveContestLearningLinks: vi.fn() }));
+vi.mock("@/lib/hackathonApplicants", () => ({ listPublicHackathonApplicantPreviews: vi.fn() }));
 
 import {
   hackathonCatalogQueryOptions,

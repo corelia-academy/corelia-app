@@ -54,7 +54,7 @@ export function HackathonOverviewTab() {
           <h2 className="text-heading-small font-display text-foreground">{t("public.overview.summary")}</h2>
           <dl className="mt-4 space-y-3 text-sm">
             <div className="flex flex-wrap justify-between gap-x-4 gap-y-1"><dt className="text-foreground-muted">{t("public.overview.mode")}</dt><dd className="font-medium">{t(`public.mode.${contest.mode ?? contest.location}`)}</dd></div>
-            <div className="flex flex-wrap justify-between gap-x-4 gap-y-1"><dt className="text-foreground-muted">{t("public.participants")}</dt><dd className="font-medium">{contest.participants_count ?? 0}</dd></div>
+            <div className="flex flex-wrap justify-between gap-x-4 gap-y-1"><dt className="text-foreground-muted">{t("public.applications")}</dt><dd className="font-medium tabular-nums">{contest.participants_count ?? 0}</dd></div>
             <div className="flex flex-wrap justify-between gap-x-4 gap-y-1"><dt className="text-foreground-muted">{t("public.overview.registration")}</dt><dd className="font-medium">{registration ? t("public.overview.registered") : t("public.overview.notRegistered")}</dd></div>
           </dl>
         </aside>
