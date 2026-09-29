@@ -465,8 +465,8 @@ export default function CourseDetail() {
         </div>
       ) : null}
 
-      <div className="mobile-bleed-grid mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="min-w-0">
+      <div className="mobile-bleed-grid mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6">
+        <div className="order-3 min-w-0 lg:order-none">
           <CourseLearningOutcomes outcomes={course.learning_outcomes ?? []} />
           <CourseSkills skills={course.skills ?? []} />
 
@@ -503,21 +503,29 @@ export default function CourseDetail() {
           />
         </div>
 
-        <aside className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
-          <CourseAccessPanel
-            resolvedCourseId={courseLoad.resolvedCourseId}
-            enrolled={access.enrolled}
-            progressPercent={progress.progressPercent}
-            isPublicEmptyCurriculum={isPublicEmptyCurriculum}
-            hasStarted={progress.hasStarted}
-            nextLesson={progress.nextLesson}
-            enrolling={access.enrolling}
-            onContinue={handleContinue}
-            onEnroll={handleEnrollClick}
-          />
-          <CourseLanguagePanel course={course} lessons={lessons} />
-          <CoursePartnerBrandPanel course={course} />
-          <CourseSponsorsPanel sponsors={course.sponsors} />
+        <aside className="contents lg:sticky lg:top-24 lg:flex lg:flex-col lg:gap-4 lg:self-start">
+          <div className="order-1 lg:order-none">
+            <CourseAccessPanel
+              resolvedCourseId={courseLoad.resolvedCourseId}
+              enrolled={access.enrolled}
+              progressPercent={progress.progressPercent}
+              isPublicEmptyCurriculum={isPublicEmptyCurriculum}
+              hasStarted={progress.hasStarted}
+              nextLesson={progress.nextLesson}
+              enrolling={access.enrolling}
+              onContinue={handleContinue}
+              onEnroll={handleEnrollClick}
+            />
+          </div>
+          <div className="order-2 lg:order-none">
+            <CourseLanguagePanel course={course} lessons={lessons} />
+          </div>
+          <div className="order-4 lg:order-none">
+            <CoursePartnerBrandPanel course={course} />
+          </div>
+          <div className="order-5 lg:order-none">
+            <CourseSponsorsPanel sponsors={course.sponsors} />
+          </div>
         </aside>
       </div>
     </div>
