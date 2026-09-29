@@ -834,6 +834,7 @@ export type CertificateIssueReason =
   | "already_issued"
   | "no_course"
   | "no_enrollment"
+  | "course_updating"
   | "final_assignment_pending"
   | "lessons_incomplete"
   | "assignment_not_approved"
@@ -853,6 +854,7 @@ export type CourseCompletionReason =
   | "already_completed"
   | "no_course"
   | "no_enrollment"
+  | "course_updating"
   | "final_assignment_pending"
   | "lessons_incomplete"
   | "unknown";
