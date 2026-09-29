@@ -223,7 +223,7 @@ export default function ContestPublicLayout() {
         </div>
       </PageContainer>
 
-      <div className="sticky top-(--app-header-height) z-20 mt-4 border-y border-border-subtle bg-background/95 backdrop-blur">
+      <div className="mobile-bleed-surface sticky top-(--app-header-height) z-20 mt-4 border-y border-border-subtle bg-background/95 backdrop-blur">
         <div ref={tabsScrollerRef} className="overflow-x-auto overscroll-x-contain scroll-px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <PageContainer width="default" className="py-0">
             <nav className="flex min-w-max" aria-label={t("public.tabsLabel")}>
@@ -247,8 +247,10 @@ export default function ContestPublicLayout() {
         </div>
       </div>
 
-      <PageContainer width="default" className="pt-6">
-        <Outlet context={{ contest, registration } satisfies HackathonOutletContext} />
+      <PageContainer width="default" className="px-0 pt-6 sm:px-6 lg:px-8">
+        <div className="mobile-bleed-grid">
+          <Outlet context={{ contest, registration } satisfies HackathonOutletContext} />
+        </div>
       </PageContainer>
     </div>
   );
