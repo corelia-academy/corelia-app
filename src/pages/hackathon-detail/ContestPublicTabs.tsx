@@ -19,6 +19,7 @@ import type { ContestTrack, HackathonTaxonomyOption } from "@/types/hackathons";
 import type { HackathonOutletContext } from "./ContestPublicLayout";
 import { ContestPreparationCard } from "./components/ContestPreparationCard";
 import { formatPrizeAmount } from "./utils/formatPrizeAmount";
+import { formatVietnamDateTime } from "./utils/formatVietnamDateTime";
 import { listProjectTaxonomyOptions } from "@/lib/projectTaxonomy";
 
 function EmptyTab({ icon, title }: { icon: React.ReactNode; title: string }) {
@@ -102,7 +103,7 @@ export function HackathonTimelineTab() {
           <span className="absolute -left-[2.15rem] top-1 size-3 rounded-full border-2 border-background bg-primary" />
           <div className="min-w-0 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-5">
             <h2 className="text-heading-small font-display text-foreground">{item.title}</h2>
-            <time className="mt-1 block text-xs text-foreground-muted">{new Date(item.starts_at).toLocaleString(locale)}{item.ends_at ? `: ${new Date(item.ends_at).toLocaleString(locale)}` : ""}</time>
+            <time dateTime={item.starts_at} className="mt-1 block text-xs text-foreground-muted">{formatVietnamDateTime(item.starts_at, locale)}{item.ends_at ? ` – ${formatVietnamDateTime(item.ends_at, locale)}` : ""}</time>
             {item.description_markdown ? <div className="mt-3"><Markdown content={item.description_markdown} compact /></div> : null}
           </div>
         </li>
