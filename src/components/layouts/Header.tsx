@@ -1,4 +1,3 @@
-import { LanguageSwitcher } from "@/components/base/LanguageSwitcher";
 import { Action } from "@/components/ui/action";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -82,6 +81,7 @@ function addRecentSearch(query: string) {
 export default function Header({ publicUI = false }: { publicUI?: boolean }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const hideLogo = location.pathname === "/search" || location.pathname === "/search/";
   const {
     isAuthenticated,
     profile,
@@ -270,26 +270,28 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border-subtle bg-surface-raised">
       <div className="mx-auto flex h-14 w-full max-w-[1990px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <SidebarTrigger className="size-7 shrink-0 lg:hidden">
             <MenuIcon className="size-5" aria-hidden />
           </SidebarTrigger>
-          <NavLink
-            to="/"
-            className="flex h-10 items-center gap-2 text-sm font-medium"
-            onPointerEnter={() => prefetchRouteChunk("/")}
-            onFocus={() => prefetchRouteChunk("/")}
-          >
-            <img
-              src={
-                isDarkMode
-                  ? "/logo/Corelia_Logo_White.svg"
-                  : "/logo/corelia-full-logo-black.png"
-              }
-              alt="Corelia"
-              className="h-9"
-            />
-          </NavLink>
+          {!hideLogo ? (
+            <NavLink
+              to="/"
+              className="flex h-10 items-center gap-2 text-sm font-medium"
+              onPointerEnter={() => prefetchRouteChunk("/")}
+              onFocus={() => prefetchRouteChunk("/")}
+            >
+              <img
+                src={
+                  isDarkMode
+                    ? "/logo/Corelia_Logo_White.svg"
+                    : "/logo/corelia-full-logo-black.png"
+                }
+                alt="Corelia"
+                className="h-9"
+              />
+            </NavLink>
+          ) : null}
         </div>
 
         <form
@@ -478,7 +480,6 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
         </form>
 
         <div className="flex items-center gap-2">
-          {publicUI ? <LanguageSwitcher compact={false} /> : null}
           {!authInitialized ? (
             <div className="h-9 w-28 animate-pulse rounded-full bg-surface-raised md:h-10" />
           ) : isAuthenticated ? (
@@ -586,7 +587,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
             <NavLink
               to="/login"
               state={{ from: location }}
-              className="inline-flex items-center rounded-full border border-border bg-surface-base px-3 py-1.5 text-sm text-foreground transition-colors duration-150 hover:bg-surface-raised"
+              className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-border bg-surface-base px-3 py-1.5 text-sm text-foreground transition-colors duration-150 hover:bg-surface-raised"
               onPointerEnter={() => prefetchRouteChunk("/login")}
               onFocus={() => prefetchRouteChunk("/login")}
             >

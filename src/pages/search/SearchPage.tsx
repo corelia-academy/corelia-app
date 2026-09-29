@@ -57,7 +57,7 @@ export default function SearchPage() {
               : t("search.enterQueryHint")}
           </p>
 
-          <form onSubmit={handleSearch} className="mt-4 flex w-full max-w-xl items-center gap-2">
+          <form onSubmit={handleSearch} className="mt-4 flex w-full max-w-xl items-center gap-2 max-[359px]:flex-col max-[359px]:items-stretch">
             <div className="relative flex-1 min-w-0">
               <Search
                 className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-foreground-muted"
@@ -71,7 +71,7 @@ export default function SearchPage() {
                 className="h-10 pl-9"
               />
             </div>
-            <Button type="submit" className="shrink-0">
+            <Button type="submit" className="shrink-0 max-[359px]:w-full">
               {t("actions.search", "Tìm kiếm")}
             </Button>
           </form>
