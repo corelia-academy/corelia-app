@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { appendFileSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -125,6 +125,9 @@ function run() {
   }
 
   console.log(`Production migration pre-deploy guard passed: ${PRODUCTION_BASELINE_COUNT} released migrations and exact pending set ${result.pendingVersions.join(", ")}.`);
+  if (process.env.GITHUB_OUTPUT) {
+    appendFileSync(process.env.GITHUB_OUTPUT, `career_retirement_required=${result.pendingVersions.includes("20260929220304")}\n`);
+  }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) run();
