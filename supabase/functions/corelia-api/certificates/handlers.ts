@@ -13,11 +13,13 @@ type CertificateIssueReason =
   | "already_issued"
   | "no_course"
   | "no_enrollment"
+  | "course_updating"
   | "lessons_incomplete"
   | "assignment_not_approved"
   | "issued";
 
 type CourseCertificateData = {
+  is_updating?: boolean;
   final_assignment_title?: string | null;
   has_certificate?: boolean;
   title?: string | null;
@@ -165,6 +167,9 @@ export async function issueCourseCertificateIfReady(
       course_title: course.title ?? null,
     };
   }
+  if (course.is_updating) {
+    return { issued: false, reason: "course_updating", course_title: course.title ?? null };
+  }
 
   const { data: readinessRaw, error: readyErr } = await db.rpc("corelia_certificate_readiness", {
     p_course_id: courseId,
@@ -194,6 +199,9 @@ export async function issueCourseCertificateIfReady(
     .eq("id", enrollmentId)
     .is("certificate_issued_at", null)
     .select("certificate_issued_at");
+  if (upErr?.message.includes("COURSE_UPDATING")) {
+    return { issued: false, reason: "course_updating", course_title: course.title ?? null };
+  }
   if (upErr) throw new Error(upErr.message);
 
   // Only the request that actually changed the enrollment may send mail and
@@ -352,6 +360,7 @@ async function issueCourseCertificateIfReadyDryRun(
   if (enrollment.certificate_issued_at) {
     return { issued: true, reason: "already_issued", certificate_issued_at: enrollment.certificate_issued_at };
   }
+  if (course.is_updating) return { issued: false, reason: "course_updating" };
   const { data: readinessRaw, error: readyErr } = await db.rpc("corelia_certificate_readiness", {
     p_course_id: courseId,
     p_user_id: targetUserId,
