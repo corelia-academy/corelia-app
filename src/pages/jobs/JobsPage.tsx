@@ -165,13 +165,13 @@ export default function JobsPage() {
           <div className="flex items-center gap-2 text-sm font-semibold text-primary"><BriefcaseBusiness className="size-4" aria-hidden />{t("eyebrow")}</div>
           <h1 className="mt-3 text-foreground text-heading-medium font-display">{landing ? t("landing.title", { label: landing.label }) : t("title")}</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground-muted sm:text-base">{landing ? t("landing.subtitle", { label: landing.label }) : t("subtitle")}</p>
-          <form className="mt-5 flex max-w-2xl gap-2" onSubmit={(event) => {
+          <form className="mt-5 flex max-w-2xl gap-2 max-[359px]:flex-col" onSubmit={(event) => {
             event.preventDefault();
             const form = new FormData(event.currentTarget);
             updateParam("q", String(form.get("q") ?? "").trim());
           }}>
             <Input name="q" defaultValue={params.get("q") ?? ""} placeholder={t("searchPlaceholder")} aria-label={t("searchPlaceholder")} />
-            <Button type="submit"><Search className="size-4" aria-hidden />{t("search")}</Button>
+            <Button type="submit" className="max-[359px]:w-full"><Search className="size-4" aria-hidden />{t("search")}</Button>
           </form>
         </header>
         <section className="mobile-bleed-surface rounded-xl border border-border-subtle bg-surface-base p-4" aria-label={t("filters.label")}>
