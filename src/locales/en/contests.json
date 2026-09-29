@@ -50,8 +50,6 @@
     "registrationNoLimit": "No registration deadline",
     "viewDetails": "View details",
     "viewContest": "View hackathon",
-    "openWorkspace": "Open hackathons workspace",
-    "statsSummary": "{{total}} total · {{accepting}} accepting · {{running}} running · {{ended}} ended",
     "stats": {
       "total": "Total hackathons",
       "accepting": "Accepting applications",
@@ -87,7 +85,7 @@
     "createProject": "Create / view project",
     "submissionClosed": "Submissions closed",
     "hostedBy": "Hosted by",
-    "participants": "Participants",
+    "applications": "Applications",
     "registrationDeadline": "Registration deadline",
     "submissionDeadline": "Submission deadline",
     "tabsLabel": "Hackathon content",
