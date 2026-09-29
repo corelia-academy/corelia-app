@@ -125,6 +125,7 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260925171211_exclude_staff_from_feed.sql",
   "supabase/migrations/20260928063404_campaign_all_contacts_audience.sql",
   "supabase/migrations/20260929134936_block_updating_course_completion.sql",
+  "supabase/migrations/20260929183423_skip_publication_check_for_course_thumbnail.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
@@ -132,9 +133,10 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
 );
 
 // Production history was verified through 20260928063404 by the latest
-// successful Production deploy. Only the course completion migration is pending.
+// successful Production deploy. The course completion and cover migrations are pending.
 const UNRELEASED_PENDING_VERSIONS = new Set([
   "20260929134936",
+  "20260929183423",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
