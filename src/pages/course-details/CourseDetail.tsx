@@ -465,7 +465,7 @@ export default function CourseDetail() {
         </div>
       ) : null}
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="mobile-bleed-grid mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
           <CourseLearningOutcomes outcomes={course.learning_outcomes ?? []} />
           <CourseSkills skills={course.skills ?? []} />

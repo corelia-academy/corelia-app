@@ -22,7 +22,7 @@ export default function CareerListPage() {
           </div>
           <Skeleton className="mt-1 h-4 w-72 max-w-full rounded" />
         </div>
-        <div className="mt-5 space-y-4">
+        <div className="mobile-bleed-grid mt-5 space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton
               key={i}
@@ -65,7 +65,7 @@ export default function CareerListPage() {
       </div>
 
       {!hasTracks ? (
-        <div className="mt-5 flex flex-col items-center gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card py-16 text-center">
+        <div className="mobile-bleed-surface mt-5 flex flex-col items-center gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card py-16 text-center">
           <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
             <Layers className="size-6 text-foreground-subtle" aria-hidden />
           </div>

@@ -178,7 +178,7 @@ export default function ContestPublicLayout() {
     <div className="pb-10">
       {previewAuthorized ? <div className="border-b border-warning/30 bg-warning-muted px-4 py-2 text-center text-sm font-medium text-foreground" role="status">{t("public.previewNotice")}</div> : null}
       <PageContainer width="default" className="pb-0">
-        <header className="min-w-0 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
+        <header className="mobile-bleed-surface min-w-0 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
           {contest.cover_image_url ? (
             <div className="relative aspect-[21/9] w-full overflow-hidden bg-surface-raised">
               <img src={contest.cover_image_url} alt="" className="h-full w-full object-cover" />
@@ -207,7 +207,7 @@ export default function ContestPublicLayout() {
           </div>
         </header>
 
-        <div className={cn("mt-3 grid gap-3", contest.prize_pool?.amount && Number(contest.prize_pool.amount) !== 0 && "lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]")}>
+        <div className={cn("mobile-bleed-grid mt-3 grid gap-3", contest.prize_pool?.amount && Number(contest.prize_pool.amount) !== 0 && "lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]")}>
           {contest.prize_pool?.amount && Number(contest.prize_pool.amount) !== 0 ? (
             <NavLink to={`/hackathons/${slug}/prizes${previewRequested ? "?preview=1" : ""}`} className="group flex min-w-0 flex-col items-start gap-2 rounded-xl border border-border-subtle bg-surface-base p-4 outline-none transition-colors hover:border-primary/30 focus-visible:ring-2 focus-visible:ring-primary/40 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
               <div className="min-w-0"><div className="text-xs font-medium text-foreground-muted">{t("public.prizes.total")}</div><div className="mt-1 flex flex-wrap items-baseline gap-x-2"><span className="text-xl font-semibold tracking-tight text-foreground tabular-nums [overflow-wrap:anywhere] sm:text-2xl">{formatPrizeAmount(contest.prize_pool.amount, locale)}</span><span className="text-sm text-foreground-muted">{contest.prize_pool.currency}</span></div></div>

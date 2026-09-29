@@ -13,7 +13,7 @@ export function ExploreCoursesSection({
   courseCatalog: Course[];
 }) {
   return (
-    <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
+    <section className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-heading-medium font-display text-foreground">{t("home.sections.exploreTitle")}</h2>
         <Button

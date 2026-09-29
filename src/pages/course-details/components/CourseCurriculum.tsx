@@ -89,7 +89,7 @@ export function CourseCurriculum({
 
   return (
     <section className="mt-8">
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mb-4 flex flex-col gap-3 px-4 sm:flex-row sm:items-end sm:justify-between sm:px-0">
         <div>
           <h2 className="text-heading-medium font-display text-foreground">
             {translate("detail.courseDetail.curriculum.title")}

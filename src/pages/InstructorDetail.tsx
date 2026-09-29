@@ -133,7 +133,7 @@ const InstructorDetail = () => {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.1fr)]">
+      <div className="mobile-bleed-grid mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.1fr)]">
         <section className="rounded-2xl border border-border-subtle bg-surface-base p-6">
           <div className="flex flex-wrap items-center gap-4">
             <UserAvatar
