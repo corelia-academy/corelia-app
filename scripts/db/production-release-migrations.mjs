@@ -132,10 +132,9 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production history was verified through 20260928063404 by the latest
-// successful Production deploy. The course completion and cover migrations are pending.
+// Production history was verified through 20260929134936 by the read-only
+// pre-deploy ledger check. Only the cover migration is pending.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260929134936",
   "20260929183423",
 ]);
 
