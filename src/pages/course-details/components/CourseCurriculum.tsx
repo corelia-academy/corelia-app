@@ -1,6 +1,6 @@
 import { lessonText } from "@/features/learning/lessonCopy";
 import { useState } from "react";
-import { BookOpen, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { CourseBadge } from "./CourseBadge";
@@ -91,8 +91,7 @@ export function CourseCurriculum({
     <section className="mt-8">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-        <h2 className="flex items-center gap-2 text-heading-medium font-display text-foreground">
-            <BookOpen className="size-5 shrink-0" aria-hidden />{" "}
+          <h2 className="text-heading-medium font-display text-foreground">
             {translate("detail.courseDetail.curriculum.title")}
           </h2>
           <p className="mt-1 text-[13px] text-foreground-muted">

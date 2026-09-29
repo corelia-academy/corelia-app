@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Trophy } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,7 +18,7 @@ export default function FeedLeaderboard() {
   const [period, setPeriod] = useState<XpPeriod>("week");
   const week = useXpWeek();
   return <section className="space-y-5" aria-label={t("xp.leaderboard.title")}>
-    <header><h2 className="flex items-center gap-2 text-lg font-semibold"><Trophy className="size-5 shrink-0 text-primary" aria-hidden />{t("xp.leaderboard.title")}</h2><p className="mt-2 text-sm text-foreground-muted">{t("xp.leaderboard.description")}</p></header>
+    <header><h2 className="text-lg font-semibold">{t("xp.leaderboard.title")}</h2><p className="mt-2 text-sm text-foreground-muted">{t("xp.leaderboard.description")}</p></header>
     <Tabs.Root value={period} onValueChange={value => { if (value === "week" || value === "all_time") setPeriod(value); }}>
       <Tabs.List activateOnFocus level="2a" aria-label={t("xp.leaderboard.period")}>
         <Tabs.Tab value="week">{t("xp.leaderboard.week")}</Tabs.Tab>

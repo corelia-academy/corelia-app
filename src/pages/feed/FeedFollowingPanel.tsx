@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
-import { UsersRound } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -42,7 +41,7 @@ export function FeedSuggestedPeople({ userId }: { userId: string }) {
   const { t } = useTranslation("feed");
   const suggestions = useQuery(feedSuggestionsQueryOptions(userId, true));
   return <section className="rounded-xl border border-border-subtle bg-surface-base p-4" aria-label={t("milestones.suggestedTitle")}>
-    <h2 className="flex items-center gap-2 font-semibold"><UsersRound className="size-4 shrink-0 text-primary" aria-hidden />{t("milestones.suggestedTitle")}</h2>
+    <h2 className="font-semibold">{t("milestones.suggestedTitle")}</h2>
     {suggestions.isPending ? <div className="mt-3 space-y-2"><Skeleton className="h-12" /><Skeleton className="h-12" /></div>
       : suggestions.isError ? <div role="alert" className="mt-3 text-sm text-destructive">{t("milestones.suggestedError")} <Button type="button" size="small" variant="cta" hierarchy="tertiary" onClick={() => void suggestions.refetch()}>{t("milestones.retry")}</Button></div>
       : suggestions.data?.length ? <div className="mt-2 space-y-1">{suggestions.data.map((row) => <SuggestedPerson key={row.id} row={row} />)}</div>
@@ -59,7 +58,7 @@ export function FeedFollowingPanel({ userId }: { userId: string }) {
   const hasMore = rows.length > 6 || query.hasNextPage;
   return <>
     <section className="rounded-xl border border-border-subtle bg-surface-base p-4" aria-label={t("milestones.followedTitle")}>
-      <h2 className="flex items-center gap-2 font-semibold"><UsersRound className="size-4 text-primary" aria-hidden />{t("milestones.followedTitle")}</h2>
+      <h2 className="font-semibold">{t("milestones.followedTitle")}</h2>
       {query.isPending ? <div className="mt-3 space-y-2"><Skeleton className="h-12" /><Skeleton className="h-12" /></div>
         : query.isError ? <div role="alert" className="mt-3 text-sm text-destructive">{t("milestones.followedError")} <Button type="button" size="small" variant="cta" hierarchy="tertiary" onClick={() => void query.refetch()}>{t("milestones.retry")}</Button></div>
         : <><div className="mt-2 space-y-1">{preview.map((row) => <FollowingPerson key={row.id} row={row} />)}</div>

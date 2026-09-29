@@ -8,7 +8,6 @@ import {
   IdCard,
   Link as LinkIcon,
   ShieldAlert,
-  Sparkles,
   User,
   Users,
   Eye,
@@ -154,7 +153,6 @@ function ProfileSidebar({
     <aside className="space-y-4 lg:sticky lg:top-24">
       <section className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-5">
         <div className="flex items-center gap-2">
-          <Sparkles className="size-4 text-foreground-muted" aria-hidden />
           <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.overview.title")}
           </h2>
@@ -356,7 +354,7 @@ export default function UserProfileLayout() {
             <div className="flex min-w-0 flex-col gap-4">
               <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                 {loading ? <Skeleton className="h-9 w-28 rounded" /> : null}
-                
+
                 {!loading && profile && isSelf ? (
                   <Button
                     variant="cta" hierarchy="secondary"
@@ -511,9 +509,9 @@ export default function UserProfileLayout() {
                   </p>
                 </div>
               )}
-              
+
               <UserProfileAchievementsSection isSelf={effectiveIsSelf} profileId={profile.id} />
-              
+
               {profile.profile_public || effectiveIsSelf ? (
                 <>
                   <UserProfileCoursesSection profile={profile} />
