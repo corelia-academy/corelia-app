@@ -180,7 +180,6 @@ export default function ProjectsPage() {
       <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
         <div className="flex items-center gap-2">
-          <Package className="size-5 text-primary" aria-hidden />
           <h1 className="text-heading-large font-display text-foreground">{t("projects.title")}</h1>
         </div>
         <p className="mt-1 text-sm text-foreground-muted">{t("projects.description")}</p>

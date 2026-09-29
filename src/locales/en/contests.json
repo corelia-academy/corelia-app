@@ -111,6 +111,7 @@
     },
     "overview": {
       "description": "Description",
+      "readMore": "Read overview",
       "summary": "At a glance",
       "mode": "Mode",
       "registration": "Your status",

@@ -43,7 +43,7 @@ vi.mock("@/lib/projectTaxonomy", () => ({ listProjectTaxonomyOptions: async () =
 vi.mock("@/components/projects/ProjectCard", () => ({ ProjectCard: () => null }));
 vi.mock("@/components/projects/ProjectCardSkeleton", () => ({ ProjectCardSkeleton: () => null }));
 
-import { HackathonPrizesTab, HackathonProjectsTab } from "./ContestPublicTabs";
+import { HackathonOverviewTab, HackathonPrizesTab, HackathonProjectsTab } from "./ContestPublicTabs";
 
 const contest = {
   id: "hackathon-1",
@@ -159,6 +159,32 @@ describe("HackathonProjectsTab filters", () => {
     expect(view.container.textContent).toContain("public.empty.projects");
 
     await view.cleanup();
+  });
+});
+
+describe("HackathonOverviewTab", () => {
+  it("keeps the full short description available when the main description differs", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={{ contest: { ...contest, short_description: "A complete summary for participants", description_markdown: "Detailed rules and schedule" }, registration: null }} />}>
+              <Route index element={<HackathonOverviewTab />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>,
+      );
+    });
+    try {
+      expect(container.textContent).toContain("A complete summary for participants");
+      expect(container.textContent).toContain("Detailed rules and schedule");
+    } finally {
+      await act(async () => root.unmount());
+      container.remove();
+    }
   });
 });
 

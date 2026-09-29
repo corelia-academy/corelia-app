@@ -111,6 +111,7 @@
     },
     "overview": {
       "description": "Giới thiệu",
+      "readMore": "Đọc tổng quan",
       "summary": "Thông tin nhanh",
       "mode": "Hình thức",
       "registration": "Trạng thái của bạn",

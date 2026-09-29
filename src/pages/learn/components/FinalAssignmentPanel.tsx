@@ -3,7 +3,6 @@ import type { ArtifactField } from "@/features/learning/types";
 import { validArtifact } from "@/features/learning/validation";
 import { normalizeArtifactDraft, readArtifactDraft } from "@/features/learning/artifactDraft";
 import { useEffect, useId, useRef, useState } from "react";
-import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { uploadFinalAssignmentFile } from "@/lib/storage";
@@ -107,7 +106,6 @@ function FinalAssignmentForm({ courseId, course, profileId, initialArtifacts, su
   return (
     <div id="final-assignment" className="mt-6 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-6">
       <div className="flex items-center gap-2">
-        <FileText className="w-5 h-5 text-primary" aria-hidden />
         <h1 className="text-heading-medium font-display text-foreground">
           {course.final_assignment_title}
         </h1>

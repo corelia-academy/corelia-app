@@ -16,6 +16,7 @@ const state = vi.hoisted(() => ({
     profileLoading: false,
     authInitialized: true,
   } as Record<string, unknown>,
+  publicContest: null as Contest | null,
 }));
 
 const draftContest = {
@@ -70,7 +71,7 @@ vi.mock("@/lib/hackathons", () => ({
 vi.mock("@/features/hackathons/hackathonQueries", () => ({
   publicHackathonDetailQueryOptions: (_slug: string, _locale: string, enabled: boolean) => ({
     queryKey: ["hackathons", "public-test"],
-    queryFn: async () => publishedContest,
+    queryFn: async () => state.publicContest ?? publishedContest,
     enabled,
   }),
   hackathonPreviewQueryOptions: (_slug: string, _locale: string, _userId: string, enabled: boolean) => ({
@@ -118,6 +119,7 @@ async function settle() {
 
 describe("draft hackathon preview", () => {
   beforeEach(() => {
+    state.publicContest = null;
     state.auth = {
       user: { id: "admin-1" },
       profile: { id: "admin-1", role: "admin" },
@@ -167,14 +169,15 @@ describe("draft hackathon preview", () => {
     await view.cleanup();
   });
 
-  it("places the public status on the banner without a gradient overlay", async () => {
+  it("places the public status by the title without covering the banner", async () => {
     const view = renderRoute("/hackathons/published-demo/overview");
     await settle();
 
     const status = view.container.querySelector<HTMLElement>("[data-hackathon-hero-status]");
     expect(status?.textContent).toBe("public.status.published");
-    expect(status?.className).toContain("absolute");
-    expect(status?.parentElement?.querySelector("img")).not.toBeNull();
+    expect(status?.closest("header")?.querySelector("img")).not.toBeNull();
+    expect(status?.parentElement?.querySelector("h1")).not.toBeNull();
+    expect(status?.parentElement?.querySelector("img")).toBeNull();
     expect(view.container.querySelector(".bg-gradient-to-t")).toBeNull();
 
     await view.cleanup();
@@ -187,9 +190,61 @@ describe("draft hackathon preview", () => {
     const view = renderRoute(entry);
     await settle();
     try {
-      const summary = view.container.querySelector(`header a[href='${target}']`);
-      expect(summary?.textContent).toContain("100.000.000 VND");
+      const summary = view.container.querySelector(`a[href='${target}']`);
+      expect(summary?.textContent).toContain("100.000.000");
+      expect(summary?.textContent).toContain("VND");
       expect(summary?.textContent).toContain("public.prizes.breakdown");
+      expect(summary?.closest("header")).toBeNull();
+    } finally {
+      await view.cleanup();
+    }
+  });
+
+  it("puts the primary action ahead of prize details and keeps the full summary reachable", async () => {
+    const view = renderRoute("/hackathons/published-demo/overview");
+    await settle();
+    try {
+      const hero = view.container.querySelector("header");
+      const action = Array.from(hero?.querySelectorAll("button") ?? []).find((button) => button.textContent === "public.register");
+      const prize = view.container.querySelector("a[href='/hackathons/published-demo/prizes']");
+      const overview = hero?.querySelector("a[href='/hackathons/published-demo/overview#overview-content']");
+      expect(action).toBeDefined();
+      expect(prize).not.toBeNull();
+      expect(action?.compareDocumentPosition(prize!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+      expect(overview?.textContent).toContain("public.overview.readMore");
+      expect(hero?.querySelector("p")?.className).toContain("line-clamp-2");
+    } finally {
+      await view.cleanup();
+    }
+  });
+
+  it("omits unset deadlines instead of showing placeholder dates", async () => {
+    const view = renderRoute("/hackathons/published-demo/overview");
+    await settle();
+    try {
+      expect(view.container.textContent).not.toContain("public.registrationDeadline");
+      expect(view.container.textContent).not.toContain("public.submissionDeadline");
+      expect(view.container.querySelectorAll("time")).toHaveLength(0);
+    } finally {
+      await view.cleanup();
+    }
+  });
+
+  it("shows configured dates and leaves the registration action disabled after closing", async () => {
+    state.publicContest = {
+      ...publishedContest,
+      status: "ended",
+      registration_deadline: "2026-09-30T05:00:00.000Z",
+      submission_deadline: "2026-10-01T05:00:00.000Z",
+    };
+    const view = renderRoute("/hackathons/published-demo/overview");
+    await settle();
+    try {
+      const action = Array.from(view.container.querySelectorAll("header button")).find((button) => button.textContent === "public.registrationClosed");
+      expect(action?.hasAttribute("disabled")).toBe(true);
+      expect(view.container.querySelectorAll("time")).toHaveLength(2);
+      expect(view.container.textContent).toContain("public.registrationDeadline");
+      expect(view.container.textContent).toContain("public.submissionDeadline");
     } finally {
       await view.cleanup();
     }

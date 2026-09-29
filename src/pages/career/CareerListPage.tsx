@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Briefcase, Layers } from "lucide-react";
+import { Layers } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,6 @@ export default function CareerListPage() {
       <div className="mb-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <Briefcase className="size-5 text-primary" aria-hidden />
             <h1 className="truncate text-heading-large font-display text-foreground">
               {t("list.title")}
             </h1>

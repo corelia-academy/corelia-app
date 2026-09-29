@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
-import { Award, ExternalLink, Lock, RefreshCw, SlidersHorizontal } from "lucide-react";
+import { ExternalLink, Lock, RefreshCw, SlidersHorizontal } from "lucide-react";
 
 import OpenCampusConnectDialog from "@/components/layouts/OpenCampusConnectDialog";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -76,7 +76,6 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Award className="size-4 text-foreground-muted" aria-hidden />
           <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.tabs.achievements")}
           </h2>

@@ -30,7 +30,7 @@ export default function AdminHackathonsPage() {
   return (
     <div className="mx-auto w-full max-w-7xl p-4 sm:p-6 lg:p-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div><div className="flex items-center gap-2"><Trophy className="size-6 text-primary" /><h1 className="text-heading-medium font-display">{t("hackathons.title")}</h1></div><p className="mt-1 text-sm text-foreground-muted">{t("hackathons.description")}</p></div>
+        <div><div className="flex items-center gap-2"><h1 className="text-heading-medium font-display">{t("hackathons.title")}</h1></div><p className="mt-1 text-sm text-foreground-muted">{t("hackathons.description")}</p></div>
         <Button render={<NavLink to="/admin/hackathons/new" />} nativeButton={false}><Plus className="size-4" />{t("hackathons.new")}</Button>
       </header>
       {query.isPending ? <p className="py-16 text-center text-sm text-foreground-muted">{t("hackathons.loading")}</p> : items.length === 0 ? <Card className="mt-6"><CardContent className="p-12 text-center text-sm text-foreground-muted">{t("hackathons.empty")}</CardContent></Card> : (

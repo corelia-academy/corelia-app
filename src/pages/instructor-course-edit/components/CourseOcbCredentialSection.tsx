@@ -2,7 +2,7 @@ import { useLearningConfirm } from "@/features/learning/useLearningConfirm";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { CheckCircle2, Loader2, LockKeyhole, Shield } from "lucide-react";
+import { CheckCircle2, Loader2, LockKeyhole } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -474,8 +474,8 @@ export function CourseOcbCredentialSection({
       {/* Header row */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="text-heading-small font-display text-foreground flex items-center gap-2">
-            <Shield className="size-4 shrink-0 text-primary" aria-hidden />
+          <h3 className="text-heading-small font-display text-foreground">
+
             {t("courseEdit.ocb.title")}
           </h3>
           <p className="mt-1 text-sm text-foreground-muted">{t("courseEdit.ocb.subtitle")}</p>

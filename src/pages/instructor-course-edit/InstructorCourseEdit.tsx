@@ -6051,8 +6051,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
           {activeSection === "content" && canAccessContent && (
             <section id="learning-course-curriculum" tabIndex={-1} className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-heading-medium font-display text-foreground flex items-center gap-2">
-                  <List className="size-5" /> {t("courseEdit.content.heading")}
+                <h2 className="text-heading-medium font-display text-foreground">
+                  {t("courseEdit.content.heading")}
                 </h2>
                 <div className="flex flex-wrap items-center justify-end gap-2">
                   {typeof learningTools === "function" ? learningTools(focusLearningIssue) : learningTools}
@@ -7827,8 +7827,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
               {localeQuery.isError && <p role="alert">{learningT("learning.translationLoadError")} <Button type="button" onClick={() => void localeQuery.refetch()}>{learningT("learning.retry")}</Button></p>}
               <fieldset disabled={!localeQuery.isSuccess} className="contents">
               <div className="mb-2 flex items-center justify-between gap-3">
-                <h2 className="flex items-center gap-2 text-heading-medium font-display text-foreground">
-                  <FileText className="size-5" aria-hidden /> {t("courseEdit.sidebar.nav.assignments")}
+                <h2 className="text-heading-medium font-display text-foreground">
+                  {t("courseEdit.sidebar.nav.assignments")}
                 </h2>
                 <div className="flex flex-wrap items-center justify-end gap-2">
                   {activeContentLocale !== primaryContentLocale ? (
@@ -8118,8 +8118,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
             <div className="space-y-4">
               {/* PDF certificate template — enabled through General info. */}
               <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
-                <h2 className="text-heading-medium font-display text-foreground flex items-center gap-2 mb-1">
-                  <Award className="size-5" aria-hidden /> {t("courseEdit.certificate.sectionTitle")}
+                <h2 className="text-heading-medium font-display text-foreground mb-1">
+                  {t("courseEdit.certificate.sectionTitle")}
                 </h2>
                 <p className="mb-6 text-sm text-foreground-muted">
                   {t("courseEdit.certificate.sectionDescription")}
@@ -8351,8 +8351,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                 </div>
 
                 <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
-                  <h3 className="text-heading-small font-display text-foreground mb-2 flex items-center gap-2">
-                    <FileText className="size-4" /> {t("courseEdit.certificateGuide.title")}
+                  <h3 className="text-heading-small font-display text-foreground mb-2">
+                    {t("courseEdit.certificateGuide.title")}
                   </h3>
                   <ul className="list-inside list-disc space-y-1 text-sm text-foreground-muted">
                     <li>{t("courseEdit.certificateGuide.sizeHint")}</li>
@@ -8436,8 +8436,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
 
           {activeSection === "students" && canAccessStudents && (
             <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
-              <h2 className="text-heading-medium font-display text-foreground flex items-center gap-2 mb-4">
-                <Users className="size-5" /> {t("courseEdit.sidebar.nav.students")}
+              <h2 className="text-heading-medium font-display text-foreground mb-4">
+                {t("courseEdit.sidebar.nav.students")}
               </h2>
               {course && <CourseLearningReport courseId={course.id} />}
               {enrollments.length === 0 ? (
@@ -8587,8 +8587,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                   {learningT(course?.archived_at ? "learning.restoreDraft" : "learning.archive")}
                 </Button>
               </div>
-              <h2 className="text-heading-medium font-display text-foreground flex items-center gap-2 mb-2">
-                <AlertTriangle className="size-5" aria-hidden /> {t("courseEdit.danger.dangerZoneTitle")}
+              <h2 className="text-heading-medium font-display text-foreground mb-2">
+                {t("courseEdit.danger.dangerZoneTitle")}
               </h2>
               <p className="text-sm text-foreground-muted mb-4">
                 {t("courseEdit.danger.deleteWarning")}
