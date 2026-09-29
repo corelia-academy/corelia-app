@@ -22,14 +22,14 @@ const course = { id: "course", title: "Learning", has_certificate: true } as Cou
 let cleanup: (() => void) | undefined;
 afterEach(() => { cleanup?.(); vi.clearAllMocks(); });
 
-function mount(enrollment: Enrollment | null) {
+function mount(enrollment: Enrollment | null, courseOverride: Course = course) {
   const client = new QueryClient();
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);
   const claimed = vi.fn();
   cleanup = () => { act(() => root.unmount()); client.clear(); container.remove(); };
-  act(() => root.render(<QueryClientProvider client={client}><CourseHero course={course} enrollment={enrollment} isPaidUpfront={false} isFreeWithPaidCertificate={false} previewLessons={[]} displayTotalDuration={0} curriculumCountLabel="12 lessons" onCertificateClaimed={claimed} /></QueryClientProvider>));
+  act(() => root.render(<QueryClientProvider client={client}><CourseHero course={courseOverride} enrollment={enrollment} isPaidUpfront={false} isFreeWithPaidCertificate={false} previewLessons={[]} displayTotalDuration={0} curriculumCountLabel="12 lessons" onCertificateClaimed={claimed} /></QueryClientProvider>));
   return { client, container, claimed };
 }
 
@@ -53,6 +53,16 @@ it("offers historical completion a claim without consulting current lesson perce
   await act(async () => resolve({ issued: true, certificate_issued_at: "2026-01-01", reason: "issued" }));
   expect(claimed).toHaveBeenCalledWith("2026-01-01");
   expect(client.getQueryState(vaultKey)?.isInvalidated).toBe(true);
+});
+
+it("keeps an existing completion but pauses certificate claiming during an update", () => {
+  const { container } = mount(
+    { user_id: "learner", course_id: "course", completed_at: "2025-01-01" } as Enrollment,
+    { ...course, is_updating: true },
+  );
+  expect(container.querySelector("button")).toBeNull();
+  expect(container.textContent).toContain("detail.courseDetail.courseUpdatingNotice.title");
+  expect(checkAndIssueCertificate).not.toHaveBeenCalled();
 });
 
 it("keeps completion and allows retry when credential issuance fails", async () => {

@@ -195,7 +195,7 @@ function LearnWorkspace() {
 
   const syncCertificate = useCallback(async () => {
     const course = courseLoad.course;
-    if (!courseId || !profile?.id || !course) return null;
+    if (!courseId || !profile?.id || !course || course.is_updating) return null;
     const currentEpoch = ++syncEpochRef.current;
     let phase: "completion" | "certificate" = "completion";
     let completionConfirmed = false;
@@ -226,7 +226,7 @@ function LearnWorkspace() {
         }
         setCompletionJustSynced(true);
       } else {
-        if (completion.reason === "final_assignment_pending") return null;
+        if (completion.reason === "final_assignment_pending" || completion.reason === "course_updating") return null;
         setCompletionSyncError(
           completion.message || translate("detail.learn.completion.completionSyncFailed"),
         );
@@ -306,7 +306,7 @@ function LearnWorkspace() {
 
   useEffect(() => {
     const course = courseLoad.course;
-    if (!courseId || !profile?.id || !course) return;
+    if (!courseId || !profile?.id || !course || course.is_updating) return;
     if (access.loading) return;
     if (progress.progressPercent < 100) return;
     if (course.final_assignment_title && submission.submission?.status !== "approved") return;
@@ -585,6 +585,11 @@ function LearnWorkspace() {
 
   const lessonContent = (
     <>
+      {course.is_updating ? (
+        <p role="status" className="mx-4 mt-4 rounded-md border border-border-subtle bg-surface-raised p-4 text-sm text-foreground-muted sm:mx-6 sm:mt-5">
+          {translate("detail.courseDetail.courseUpdatingCompletionNotice")}
+        </p>
+      ) : null}
       {courseCompleted ? (
         <CourseCompletionCertificatePanel
           className="mx-4 mb-4 mt-4 sm:mx-6 sm:mt-5"
@@ -595,7 +600,7 @@ function LearnWorkspace() {
           issueError={completionSyncError || certificateIssueError}
           achievementsPath={achievementsPath}
           onRetry={
-            hasCourseCertificate || !completionSynced || completionSyncError
+            !course.is_updating && (hasCourseCertificate || !completionSynced || completionSyncError)
               ? () => void syncCertificate()
               : undefined
           }

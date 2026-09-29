@@ -153,8 +153,9 @@
       "lessonDraftBadge": "Đang cập nhật",
       "courseUpdatingNotice": {
         "title": "Khoá học đang được cập nhật",
-        "body": "Một số nội dung có thể thay đổi trong thời gian tới. Nếu gặp bài chưa sẵn sàng, vui lòng quay lại sau."
+        "body": "Bạn vẫn có thể học các bài đã sẵn sàng. Việc hoàn thành khoá học và cấp thành tích mới sẽ mở lại khi khoá học cập nhật xong."
       },
+      "courseUpdatingCompletionNotice": "Khoá học đang được cập nhật. Tiến độ bài học của bạn vẫn được lưu; trạng thái hoàn thành và thành tích mới sẽ được ghi nhận khi khoá học sẵn sàng.",
       "learningOutcomes": {
         "title": "Bạn sẽ học được gì",
         "subtitle": "Khoá học này sẽ giúp bạn:"

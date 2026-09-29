@@ -6,24 +6,25 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, expect, it, vi } from "vitest";
 import Learn from "./Learn";
 import { recordLearningEvent } from "@/lib/learning";
+import { syncCourseCompletion } from "@/lib/courses";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const state = vi.hoisted(() => ({
-  course: { id: "course", title: "TypeScript", published: true, final_assignment_title: "Task Manager", final_assignment_fields: ["notes"] },
+  course: { id: "course", title: "TypeScript", published: true, is_updating: false, final_assignment_title: "Task Manager", final_assignment_fields: ["notes"] },
   lessons: [{ id: "article", section_id: "section", title: "Reading", description_markdown: "Article body", lesson_format: "article", published: true, order: 0, duration_seconds: 0 }],
   sections: [{ id: "section", title: "Section", order: 0 }],
-  access: true, submission: null as { status: string } | null, submit: vi.fn(),
+  access: true, progressPercent: 0, submission: null as { status: string } | null, submit: vi.fn(),
 }));
 vi.mock("react-i18next", async importOriginal => ({ ...await importOriginal<typeof import("react-i18next")>(), useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock("@/features/learning/useLearningTranslation", () => ({ useLearningTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: { id: "learner" }, profile: { id: "learner" } }) }));
-vi.mock("@/lib/courses", () => ({ courseHasCertificate: () => false, sortLessonsByCurriculum: (lessons: unknown) => lessons, getNextLesson: () => state.lessons[0], resetLessonProgress: vi.fn(), setLessonProgress: vi.fn() }));
+vi.mock("@/lib/courses", () => ({ courseHasCertificate: () => false, sortLessonsByCurriculum: (lessons: unknown) => lessons, getNextLesson: () => state.lessons[0], resetLessonProgress: vi.fn(), setLessonProgress: vi.fn(), syncCourseCompletion: vi.fn() }));
 vi.mock("@/lib/learning", () => ({ recordLearningEvent: vi.fn() }));
 vi.mock("@/lib/credentialsEdge", () => ({ invokeCheckCourseCredential: vi.fn() }));
 vi.mock("@/lib/storage", () => ({ uploadFinalAssignmentFile: vi.fn() }));
 vi.mock("./hooks/useLearnCourseLoad", () => ({ useLearnCourseLoad: () => ({ course: state.course, lessons: state.lessons, sections: state.sections, loading: false }) }));
 vi.mock("./hooks/useLearnEnrollmentAccess", () => ({ useLearnEnrollmentAccess: () => ({ hasFullCourseAccess: state.access, enrollment: null }) }));
-vi.mock("./hooks/useLearnProgress", () => ({ useLearnProgress: () => ({ progressPercent: 0, completedIds: new Set(), progressList: [] }) }));
+vi.mock("./hooks/useLearnProgress", () => ({ useLearnProgress: () => ({ progressPercent: state.progressPercent, completedIds: new Set(), progressList: [] }) }));
 vi.mock("./hooks/useLearnSubmission", () => ({ useLearnSubmission: () => ({ state: "ready", submission: state.submission, submit: state.submit }) }));
 vi.mock("./components/LessonPlayerCard", () => ({ LessonPlayerCard: ({ lesson }: { lesson: { description_markdown: string } }) => <p data-testid="article">{lesson?.description_markdown}</p> }));
 vi.mock("@/components/ui/sheet", () => {
@@ -31,7 +32,7 @@ vi.mock("@/components/ui/sheet", () => {
   return { Sheet: Wrapper, SheetContent: ({ side, children }: { side: string; children: ReactNode }) => <div data-sheet-side={side}>{children}</div>, SheetHeader: Wrapper, SheetTitle: Wrapper, SheetTrigger: Wrapper };
 });
 let cleanup: (() => void) | undefined;
-afterEach(() => { cleanup?.(); window.localStorage.clear(); vi.clearAllMocks(); vi.restoreAllMocks(); state.access = true; state.course.final_assignment_title = "Task Manager"; state.submission = null; });
+afterEach(() => { cleanup?.(); window.localStorage.clear(); vi.clearAllMocks(); vi.restoreAllMocks(); state.access = true; state.progressPercent = 0; state.course.is_updating = false; state.course.final_assignment_title = "Task Manager"; state.submission = null; });
 
 async function mount(path: string) {
   const router = createMemoryRouter(["/learn/:courseId", "/learn/:courseId/lesson/:lessonId", "/learn/:courseId/final-assignment"].map(path => ({ path, element: <Learn /> })), { initialEntries: [path] });
@@ -61,6 +62,14 @@ it.each([false, true])("separates article and final assignment with Back/Forward
   expect(host.querySelector("#final-assignment")).toBeNull();
   await act(async () => { await router.navigate(1); });
   expect(host.querySelector("#final-assignment")).not.toBeNull();
+});
+
+it("shows saved progress without syncing completion while the course is updating", async () => {
+  state.course.is_updating = true;
+  state.progressPercent = 100;
+  const { host } = await mount("/learn/course/lesson/article");
+  expect(host.querySelector('[role="status"]')?.textContent).toContain("detail.courseDetail.courseUpdatingCompletionNotice");
+  expect(syncCourseCompletion).not.toHaveBeenCalled();
 });
 
 it("opens the final assignment directly, submits, and restores its status on reload", async () => {
