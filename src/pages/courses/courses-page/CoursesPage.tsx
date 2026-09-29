@@ -27,7 +27,7 @@ export default function CoursesPage() {
 
   if (loading) {
     return (
-      <div className="container-app py-6 sm:py-8">
+      <div className="container-app pb-6 pt-4 sm:py-8">
         <div className="mb-4">
           <div className="flex items-center gap-2">
             <Skeleton className="size-5 shrink-0 rounded-sm" />
@@ -47,7 +47,7 @@ export default function CoursesPage() {
 
   if (error) {
     return (
-      <div className="container-app py-6 sm:py-8">
+      <div className="container-app pb-6 pt-4 sm:py-8">
         <div className="rounded-lg border border-destructive/20 bg-destructive-muted p-5">
           <p className="text-sm font-medium text-destructive">
             {t("catalog.loadErrorTitle")}
@@ -63,7 +63,7 @@ export default function CoursesPage() {
 
 
   return (
-    <div className="container-app py-6 sm:py-8">
+    <div className="container-app pb-6 pt-4 sm:py-8">
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2">

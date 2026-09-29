@@ -78,7 +78,7 @@ function ProjectLogo({ project }: { project: Project }) {
 
 function DetailSkeleton() {
   return (
-    <div className="container-app py-6 sm:py-8">
+    <div className="container-app pb-6 pt-4 sm:py-8">
       <Skeleton className="mb-4 h-8 w-40" />
       <Skeleton className="h-72 w-full rounded-lg" />
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -136,7 +136,7 @@ export default function ProjectDetailPage() {
 
   if (notFound) {
     return (
-      <div className="container-app py-6 sm:py-8">
+      <div className="container-app pb-6 pt-4 sm:py-8">
         <div className="flex flex-col items-center gap-3 py-20 text-center">
           <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
             <Package className="size-6 text-foreground-subtle" aria-hidden />
@@ -161,7 +161,7 @@ export default function ProjectDetailPage() {
 
   if (error || !entry) {
     return (
-      <div className="container-app py-6 sm:py-8">
+      <div className="container-app pb-6 pt-4 sm:py-8">
         <div className="flex flex-col items-center gap-3 py-20 text-center">
           <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
             <ShieldAlert className="size-6 text-foreground-subtle" aria-hidden />
@@ -253,7 +253,7 @@ export default function ProjectDetailPage() {
   const back = sourceQuery.data?.slug ? `/hackathons/${sourceQuery.data.slug}/projects` : "/projects";
 
   return (
-    <div className="container-app py-6 sm:py-8">
+    <div className="container-app pb-6 pt-4 sm:py-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <Button variant="cta" hierarchy="tertiary" size="small" render={<NavLink to={back} />} nativeButton={false}>
           <ArrowLeft className="size-4" />

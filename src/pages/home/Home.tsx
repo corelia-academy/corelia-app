@@ -65,7 +65,7 @@ export default function Home() {
   }
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="mx-auto w-full min-w-0 max-w-7xl px-4 pb-6 pt-0 sm:px-6 sm:py-8 lg:px-8">
       <div className="min-w-0 space-y-6">
         <HomeHeader
           t={t}

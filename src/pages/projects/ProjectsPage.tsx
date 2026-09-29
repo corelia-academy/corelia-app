@@ -176,7 +176,7 @@ export default function ProjectsPage() {
   const error = projectsQuery.isError || hackathonsQuery.isError ? t("projects.errorDescription") : hackathonParam && hackathonsQuery.isSuccess && !selectedHackathon ? t("projects.errors.hackathonMissing") : null;
 
   return (
-    <div className="container-app py-6 sm:py-8">
+    <div className="container-app pb-6 pt-4 sm:py-8">
       <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
         <div className="flex items-center gap-2">

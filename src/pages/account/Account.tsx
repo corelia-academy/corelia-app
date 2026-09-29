@@ -59,7 +59,7 @@ export default function Account() {
 
   // Layout cho khu vực account, nội dung từng tab được render qua nested routes (Outlet)
   return (
-    <div className="container-app py-6 sm:py-8">
+    <div className="container-app pb-6 pt-4 sm:py-8">
       <div className="flex w-full min-w-0 flex-col gap-6 lg:flex-row">
         <div className="w-full lg:w-72 lg:shrink-0">
           <div className="mb-4 hidden text-xs font-semibold uppercase tracking-widest text-foreground-muted lg:block">

@@ -44,7 +44,7 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="container-app py-6 sm:py-8">
+    <div className="container-app pb-6 pt-4 sm:py-8">
       <div className="flex items-start gap-3">
         <Search className="mt-1 size-5 text-primary" aria-hidden />
         <div className="min-w-0 flex-1">
