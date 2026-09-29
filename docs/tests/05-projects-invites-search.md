@@ -31,7 +31,7 @@ Phủ `/projects` (gallery công khai), `/invites/project/:token`, `/search?q=..
 
 ### Search
 
-5. `/search?q=<từ_khóa>` — kết quả đa loại (projects, hackathons, courses, career tracks, profiles) hoặc empty state.
+5. `/search?q=<từ_khóa>` — kết quả đa loại (projects, hackathons, courses, profiles) hoặc empty state.
 6. `/search` không có query — UI search load, submit query hoạt động.
 7. Click một kết quả — điều hướng đúng entity.
 

@@ -17,7 +17,7 @@ OpenGraph là năng lực share của các route **public, canonical và có n�
 | Course đã publish `/courses/:slug` (`/courses/:id` là alias) | `CourseOG` động | Nội dung học là public/shareable và có thumbnail/instructor riêng; canonical luôn trỏ về slug hiện hành. |
 | Hackathon public `/hackathons/:slug` | `EventOG` động | Cần title, thời gian, cover và host riêng khi chia sẻ. |
 | Public profile `/@:handle` | `ProfileOG` động | Chỉ khi public profile; không đưa dữ liệu account riêng tư vào card. |
-| Certificate/credential verify, job detail, career-track | Quyết định từng entity trước khi thêm | Chỉ làm khi product xác nhận page đó được chủ động chia sẻ và field hiển thị không lộ PII/nguồn có giới hạn attribution. |
+| Certificate/credential verify, job detail | Quyết định từng entity trước khi thêm | Chỉ làm khi product xác nhận page đó được chủ động chia sẻ và field hiển thị không lộ PII/nguồn có giới hạn attribution. |
 | Account, admin, editor, draft, invite, checkout, auth, private/unlisted/blocked entities | Không dynamic OG; `noindex` khi phù hợp | Không có canonical public resource và không được lộ metadata. |
 
 Với entity dynamic, URL endpoint là `/api/og/<entity>/<canonical-id>`. Riêng project dùng `/api/og/project/:slug`; URL trang là `/projects/:slug` (không phải `/project/:slug`). `unlisted`, `private`, `blocked`, slug không tồn tại và dữ liệu lỗi đều không có OG endpoint: trả cùng một `404` để không tiết lộ trạng thái riêng tư.

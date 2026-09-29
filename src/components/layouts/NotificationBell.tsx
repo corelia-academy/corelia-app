@@ -220,7 +220,6 @@ export function NotificationBell() {
                 const isHackathonRegistrationReview = isRegApproved || isRegRejected;
                 const isHackathonWinnerAward = n.type === "hackathon_winner_award";
                 const isCourseAnnouncement = n.type === "course_announcement";
-                const isTrackAnnouncement = n.type === "track_announcement";
                 const isCourseCompleted = n.type === "course_completed";
                 const isCourseCertificateIssued = n.type === "course_certificate_issued";
                 const isOcCredential = n.type === "oc_credential_minted";
@@ -585,12 +584,10 @@ export function NotificationBell() {
                           </Button>
                         </div>
                       </>
-                    ) : isCourseAnnouncement || isTrackAnnouncement ? (
+                    ) : isCourseAnnouncement ? (
                       <>
                         <div className="font-medium text-foreground">
-                          {isCourseAnnouncement
-                            ? t("notifications.courseAnnouncementTitle")
-                            : t("notifications.trackAnnouncementTitle")}
+                          {t("notifications.courseAnnouncementTitle")}
                         </div>
                         {typeof n.payload.subject === "string" && n.payload.subject ? (
                           <p className="mt-1 text-xs leading-relaxed text-foreground-muted line-clamp-2">

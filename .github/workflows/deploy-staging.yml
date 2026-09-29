@@ -173,6 +173,36 @@ jobs:
             [[ -z "$remaining" ]] || [[ "$(jq 'length' <<<"$remaining")" = "0" ]]
           done
 
+      - name: Detect Career Tracks retirement migration
+        id: career_retirement
+        env:
+          EVENT_BEFORE: ${{ github.event.before }}
+          EVENT_SHA: ${{ github.sha }}
+        run: |
+          if [[ -n "$EVENT_BEFORE" && ! "$EVENT_BEFORE" =~ ^0+$ ]] && \
+             git diff --name-only "$EVENT_BEFORE" "$EVENT_SHA" | grep -Eq '^supabase/migrations/[0-9]+_retire_career_tracks\.sql$'; then
+            echo "required=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "required=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Inventory and purge Career Track Storage before migration
+        if: steps.career_retirement.outputs.required == 'true'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          test "$SUPABASE_PROJECT_REF" = "opoozbmfbezkrpzxsusx"
+          supabase link --project-ref "$SUPABASE_PROJECT_REF" --dns-resolver https
+          supabase db query --linked --file scripts/db/career-tracks-preflight.sql --agent=no
+          objects="$(supabase storage ls "ss:///app/career-track-thumbnails" --recursive --linked --experimental --output json)"
+          if [[ -n "$objects" ]] && [[ "$(jq 'length' <<<"$objects")" != "0" ]]; then
+            supabase storage rm --recursive "ss:///app/career-track-thumbnails" --linked --experimental --yes
+          fi
+          remaining="$(supabase storage ls "ss:///app/career-track-thumbnails" --recursive --linked --experimental --output json)"
+          [[ -z "$remaining" ]] || [[ "$(jq 'length' <<<"$remaining")" = "0" ]]
+
       - name: Apply Supabase migrations
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -181,6 +211,14 @@ jobs:
         run: |
           supabase link --project-ref "$SUPABASE_PROJECT_REF" --dns-resolver https
           supabase migration up --linked --dns-resolver https --include-all
+
+      - name: Verify Career Tracks retirement
+        if: steps.career_retirement.outputs.required == 'true'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase db query --linked --file scripts/db/career-tracks-postcheck.sql --agent=no
 
       - name: Verify Jobs scheduler Vault configuration
         env:
