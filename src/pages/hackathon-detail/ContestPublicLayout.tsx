@@ -177,7 +177,7 @@ export default function ContestPublicLayout() {
   return (
     <div className="pb-10">
       {previewAuthorized ? <div className="border-b border-warning/30 bg-warning-muted px-4 py-2 text-center text-sm font-medium text-foreground" role="status">{t("public.previewNotice")}</div> : null}
-      <PageContainer width="default" className="pb-0">
+      <PageContainer width="default" className="pb-0 pt-0 sm:pt-5">
         <header className="mobile-bleed-surface min-w-0 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
           {contest.cover_image_url ? (
             <div className="relative aspect-[21/9] w-full overflow-hidden bg-surface-raised">

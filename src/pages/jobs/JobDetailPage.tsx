@@ -96,7 +96,7 @@ export default function JobDetailPage() {
     mutation.mutate(patch);
   };
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-6xl px-4 pb-6 pt-4 sm:px-6 sm:py-6 lg:px-8">
       {canIndex ? <script type="application/ld+json">{serializedStructuredData}</script> : null}
       <Link to="/jobs" className="inline-flex items-center gap-2 text-sm text-foreground-muted hover:text-foreground"><ArrowLeft className="size-4" aria-hidden />{t("detail.back")}</Link>
       <div className="mobile-bleed-grid mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">

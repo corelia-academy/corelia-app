@@ -158,7 +158,7 @@ export default function JobsPage() {
   }, [fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError]);
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-7xl px-4 pb-6 pt-4 sm:px-6 sm:py-6 lg:px-8">
       <div className="flex flex-col gap-5">
         <JobsNav />
         <header className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7">

@@ -65,7 +65,7 @@ export default function CareerDetailPage() {
 
   if (loading) {
     return (
-      <div className="container-app py-6 sm:py-8">
+      <div className="container-app pb-6 pt-0 sm:py-8">
         <Skeleton className="h-48 w-full rounded-2xl border border-border-subtle" />
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <Skeleton className="h-72 w-full rounded-2xl" />
@@ -77,7 +77,7 @@ export default function CareerDetailPage() {
 
   if (error) {
     return (
-      <div className="container-app py-6 sm:py-8">
+      <div className="container-app pb-6 pt-0 sm:py-8">
         <div className="rounded-md border border-destructive/20 bg-destructive/10 p-5">
           <p className="text-sm font-medium text-destructive">
             {t("errors.loadErrorTitle")}
@@ -93,7 +93,7 @@ export default function CareerDetailPage() {
   if (!track) return <NotFound />;
 
   return (
-    <div className="container-app py-6 sm:py-8">
+    <div className="container-app pb-6 pt-0 sm:py-8">
       <CareerHero track={track} />
 
       <div className="mobile-bleed-grid mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">

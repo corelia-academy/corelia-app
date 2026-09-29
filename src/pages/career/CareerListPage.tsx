@@ -14,7 +14,7 @@ export default function CareerListPage() {
 
   if (loading) {
     return (
-      <div className="container-app py-6 sm:py-8">
+      <div className="container-app pb-6 pt-4 sm:py-8">
         <div className="mb-4">
           <div className="flex items-center gap-2">
             <Skeleton className="size-5 shrink-0 rounded-sm" />
@@ -36,7 +36,7 @@ export default function CareerListPage() {
 
   if (error) {
     return (
-      <div className="container-app py-6 sm:py-8">
+      <div className="container-app pb-6 pt-4 sm:py-8">
         <div className="rounded-md border border-destructive/20 bg-destructive/10 p-5">
           <p className="text-sm font-medium text-destructive">
             {t("errors.loadErrorTitle")}
@@ -50,7 +50,7 @@ export default function CareerListPage() {
   }
 
   return (
-    <div className="container-app py-6 sm:py-8">
+    <div className="container-app pb-6 pt-4 sm:py-8">
       <div className="mb-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">

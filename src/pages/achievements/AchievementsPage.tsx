@@ -60,7 +60,7 @@ export default function AchievementsPage() {
   };
 
   return (
-    <div className="container-app min-w-0 py-6 sm:py-8">
+    <div className="container-app min-w-0 pb-6 pt-0 sm:py-8">
       {loadError && (
         <div role="alert" className="mb-4 flex flex-col gap-3 rounded-xl border border-warning/30 bg-warning/8 p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-foreground">{loadError}</p>

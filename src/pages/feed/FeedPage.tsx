@@ -51,7 +51,7 @@ export default function FeedPage() {
     return params;
   });
 
-  return <div className="container-app py-6 sm:py-8"><div className="mx-auto max-w-6xl">
+  return <div className="container-app pb-6 pt-4 sm:py-8"><div className="mx-auto max-w-6xl">
     <div><h1 className="text-display-small font-display">{t("milestones.title")}</h1><p className="mt-1 text-sm text-foreground-muted">{t("milestones.description")}</p></div>
     <Tabs.Root value={view} onValueChange={value => { if (value === "explore" || value === "following" || value === "leaderboard") setView(value); }}>
       <Tabs.List activateOnFocus className="mt-6 border-b border-border-subtle" level="2a" aria-label={t("milestones.tabs")}>

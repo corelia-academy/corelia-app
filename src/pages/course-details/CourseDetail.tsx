@@ -416,7 +416,7 @@ export default function CourseDetail() {
   const course = courseLoad.course;
 
   return (
-    <div className="container-app py-6 sm:py-8">
+    <div className="container-app pb-6 pt-0 sm:py-8">
       {canReviewDraft ? (
         <CourseDraftBanner
           courseId={courseLoad.resolvedCourseId ?? id ?? ""}
