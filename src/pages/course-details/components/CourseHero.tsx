@@ -54,9 +54,9 @@ export function CourseHero({
   const hasCourseCertificate = courseHasCertificate(course);
   const isCertificateIssued = !!enrollment?.certificate_issued_at;
   const canClaimCertificate =
-    !isCertificateIssued && hasCourseCertificate && Boolean(enrollment?.completed_at);
+    !course.is_updating && !isCertificateIssued && hasCourseCertificate && Boolean(enrollment?.completed_at);
   const showCertificateAvailableBadge =
-    hasCourseCertificate && !isCertificateIssued && !canClaimCertificate;
+    !course.is_updating && hasCourseCertificate && !isCertificateIssued && !canClaimCertificate;
 
   const handleClaimCertificate = async () => {
     if (!enrollment || !canClaimCertificate || claimInFlight.current) return;
