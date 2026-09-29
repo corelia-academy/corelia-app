@@ -12,7 +12,7 @@ vi.mock("./settings.ts", () => ({
   openCampusApiKey: () => "test-key",
 }));
 
-function makeDb(postMintFailed = false) {
+function makeDb(postMintFailed = false, courseUpdating = false) {
   const issuance = {
     id: "issuance-1",
     template_id: "template-1",
@@ -58,6 +58,9 @@ function makeDb(postMintFailed = false) {
           error: null,
         }) }) }),
       };
+      if (table === "courses") return {
+        select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { data: { is_updating: courseUpdating } }, error: null }) }) }),
+      };
       if (table === "user_notifications") return {
         insert: async (values: Record<string, unknown>) => { notifications.push(values); return { error: null }; },
       };
@@ -77,6 +80,16 @@ describe("mintCredentialOnce post-mint handling", () => {
     mail.send.mockResolvedValue({ sent: true, providerMessageId: "mail-1" });
   });
   afterEach(() => { vi.unstubAllGlobals(); vi.resetAllMocks(); vi.restoreAllMocks(); });
+
+  it("keeps a pending course issuance unminted while the course is updating", async () => {
+    const { db, issuance } = makeDb(false, true);
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    expect(await mintCredentialOnce(db, issuance.id)).toEqual({ ok: false, error: "course_updating" });
+    expect(issuance.status).toBe("pending");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 
   it("keeps a successful mainnet mint minted and sends notices with the holder OCID", async () => {
     const { db, issuance, notifications, attempts } = makeDb();

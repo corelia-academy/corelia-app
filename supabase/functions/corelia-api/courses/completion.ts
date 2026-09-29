@@ -9,6 +9,7 @@ type CourseCompletionReason =
   | "already_completed"
   | "no_course"
   | "no_enrollment"
+  | "course_updating"
   | "lessons_incomplete"
   | "final_assignment_pending";
 
@@ -24,6 +25,7 @@ type CourseCompletionResult = {
 };
 
 type CourseCompletionData = {
+  is_updating?: boolean;
   has_certificate?: boolean;
   title?: string | null;
   certificate_template_url?: string | null;
@@ -92,7 +94,7 @@ export async function syncCourseCompletionIfReady(
   const hasCertificate = courseHasCertificate(course);
 
   if (enrollment.completed_at) {
-    await evaluateCourseCompletionMilestones(db, targetUserId, courseId);
+    if (!course.is_updating) await evaluateCourseCompletionMilestones(db, targetUserId, courseId);
     return {
       ok: true,
       completed: true,
@@ -101,6 +103,10 @@ export async function syncCourseCompletionIfReady(
       course_title: courseTitle,
       has_certificate: hasCertificate,
     };
+  }
+
+  if (course.is_updating) {
+    return { ok: true, completed: false, reason: "course_updating", course_title: courseTitle, has_certificate: hasCertificate };
   }
 
   const { data: readinessRaw, error: readyErr } = await db.rpc("corelia_certificate_readiness", {
@@ -139,6 +145,9 @@ export async function syncCourseCompletionIfReady(
     .eq("id", enrollmentId)
     .is("completed_at", null)
     .select("completed_at");
+  if (updateErr?.message.includes("COURSE_UPDATING")) {
+    return { ok: true, completed: false, reason: "course_updating", course_title: courseTitle, has_certificate: hasCertificate };
+  }
   if (updateErr) throw new Error(updateErr.message);
 
   const updatedAt = updatedRows?.[0]?.completed_at ?? null;
