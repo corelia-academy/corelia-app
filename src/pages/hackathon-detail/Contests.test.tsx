@@ -105,6 +105,7 @@ describe("Hackathon catalog card", () => {
     expect(container.querySelector("img[src='https://cdn.example.com/thumbnail.png']")).toBeNull();
     expect(container.querySelector("[data-slot='avatar-group']")).not.toBeNull();
     expect(container.querySelector("[data-slot='avatar-group-count']")?.textContent).toBe("+118");
+    expect(container.querySelector("[data-slot='avatar-group']")?.closest(".basis-full")).toBeNull();
     expect(container.textContent).not.toContain("catalog.statsSummary");
     expect(container.textContent).not.toContain("catalog.openWorkspace");
     expect(container.querySelector("a[href='/admin/hackathons']")).toBeNull();
