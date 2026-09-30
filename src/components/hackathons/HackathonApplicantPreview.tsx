@@ -1,8 +1,9 @@
-import { useLayoutEffect, useRef, useState } from "react";
 import { Users } from "lucide-react";
 import { AvatarGroup, AvatarGroupCount } from "@/components/ui/avatar";
 import { UserAvatar } from "@/components/UserAvatar";
 import type { PublicHackathonApplicant } from "@/lib/hackathonApplicants";
+
+const MAX_VISIBLE_APPLICANTS = 5;
 
 type Props = {
   applicants?: PublicHackathonApplicant[];
@@ -11,31 +12,13 @@ type Props = {
 };
 
 export function HackathonApplicantPreview({ applicants = [], count, label }: Props) {
-  const rowRef = useRef<HTMLDivElement>(null);
-  const [rowWidth, setRowWidth] = useState(0);
-
-  useLayoutEffect(() => {
-    const row = rowRef.current;
-    if (!row) return;
-    const measure = () => setRowWidth(row.getBoundingClientRect().width);
-    measure();
-    if (typeof ResizeObserver === "undefined") return;
-    const observer = new ResizeObserver(measure);
-    observer.observe(row);
-    return () => observer.disconnect();
-  }, []);
-
   const total = Math.max(0, count);
-  const badgeWidth = Math.max(32, 12 + (`+${total}`).length * 8);
-  const maxWithBadge = Math.max(1, Math.floor((rowWidth - 32 - (badgeWidth - 8)) / 24) + 1);
-  const maxWithoutBadge = Math.max(1, Math.floor((rowWidth - 32) / 24) + 1);
-  const visibleCount = total <= maxWithoutBadge ? maxWithoutBadge : maxWithBadge;
-  const visible = applicants.slice(0, visibleCount);
+  const visible = applicants.slice(0, Math.min(MAX_VISIBLE_APPLICANTS, total));
   const remaining = Math.max(0, total - visible.length);
   return (
-    <div className="min-w-0 w-full">
+    <div className="w-fit max-w-full min-w-0">
       <p className="text-xs text-foreground-muted">{label}</p>
-      <div ref={rowRef} className="mt-1 flex min-h-8 min-w-0 items-center">
+      <div className="mt-1 flex min-h-8 min-w-0 items-center">
         {visible.length ? (
           <AvatarGroup aria-label={`${label}: ${total}`} className="min-w-0">
             {visible.map((applicant) => {
