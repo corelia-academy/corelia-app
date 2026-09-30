@@ -39,6 +39,12 @@ describe("feed RPC routing", () => {
       p_mode: mode, p_cursor_at: null, p_cursor_id: null, p_limit: 20,
     });
   });
+  it("passes a custom page size to the feed RPC", async () => {
+    await getMilestonePage("viewer", "explore", undefined, null, 10);
+    expect(mocks.rpc).toHaveBeenCalledWith("get_feed_milestones_v2", {
+      p_mode: "explore", p_cursor_at: null, p_cursor_id: null, p_limit: 10,
+    });
+  });
   it("retains unfiltered v1 profile activity", async () => {
     await getMilestonePage("viewer", "profile", "actor");
     expect(mocks.rpc).toHaveBeenCalledWith("get_feed_milestones_v1", {

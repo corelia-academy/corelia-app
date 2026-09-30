@@ -205,6 +205,8 @@ describe("draft hackathon preview", () => {
     expect(view.container.querySelector("[data-slot='avatar-group-count']")?.textContent).toBe("+118");
     expect(view.container.textContent).toContain("public.applications");
     expect(view.container.querySelector("[data-slot='avatar-group']")?.getAttribute("aria-label")).toBe("public.applications: 119");
+    expect(view.container.querySelector("[data-hackathon-metadata]")?.className).toContain("sm:grid-cols-4");
+    expect(view.container.querySelector("[data-slot='avatar-group']")?.closest(".col-span-2")?.className).toContain("sm:col-span-1");
 
     await view.cleanup();
   });

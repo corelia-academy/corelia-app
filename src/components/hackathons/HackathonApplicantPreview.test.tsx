@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import { afterEach, expect, it, vi } from "vitest";
+import { expect, it } from "vitest";
 
 import { HackathonApplicantPreview } from "./HackathonApplicantPreview";
 
@@ -15,38 +15,51 @@ const applicants = Array.from({ length: 20 }, (_, index) => ({
   avatar_config: null,
 }));
 
-afterEach(() => vi.restoreAllMocks());
-
-it("uses the available row width and puts only hidden applicants in +N", async () => {
-  let width = 120;
-  let onResize = () => {};
-  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(() => ({ width }) as DOMRect);
-  vi.stubGlobal("ResizeObserver", class {
-    constructor(callback: () => void) { onResize = callback; }
-    observe() {}
-    disconnect() {}
-  });
-
+async function renderPreview(count: number, available = applicants) {
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
-  await act(async () => root.render(<HackathonApplicantPreview applicants={applicants} count={20} label="Applications" />));
+  await act(async () => root.render(<HackathonApplicantPreview applicants={available} count={count} label="Applications" />));
+  return {
+    container,
+    cleanup: async () => {
+      await act(async () => root.unmount());
+      container.remove();
+    },
+  };
+}
 
-  expect(container.querySelectorAll("[data-slot='avatar']")).toHaveLength(3);
-  expect(container.querySelector("[data-slot='avatar-group-count']")?.textContent).toBe("+17");
+it.each([
+  { count: 3, avatars: 3, remainder: null },
+  { count: 5, avatars: 5, remainder: null },
+  { count: 20, avatars: 5, remainder: "+15" },
+])("shows at most five of $count applicants", async ({ count, avatars, remainder }) => {
+  const view = await renderPreview(count);
 
-  width = 320;
-  await act(async () => onResize());
-  expect(container.querySelectorAll("[data-slot='avatar']")).toHaveLength(11);
-  expect(container.querySelector("[data-slot='avatar-group-count']")?.textContent).toBe("+9");
+  expect(view.container.querySelectorAll("[data-slot='avatar']")).toHaveLength(avatars);
+  expect(view.container.querySelector("[data-slot='avatar-group-count']")?.textContent ?? null).toBe(remainder);
+  expect(view.container.querySelector("[data-slot='avatar-group']")?.getAttribute("aria-label")).toBe("Applications: " + count);
 
-  width = 600;
-  await act(async () => onResize());
-  expect(container.querySelectorAll("[data-slot='avatar']")).toHaveLength(20);
-  expect(container.querySelector("[data-slot='avatar-group-count']")).toBeNull();
-  expect(container.querySelector("[data-slot='avatar-group']")?.getAttribute("aria-label")).toBe("Applications: 20");
+  await view.cleanup();
+});
 
-  await act(async () => root.unmount());
-  container.remove();
-  vi.unstubAllGlobals();
+it("counts applicants without public avatars in the remainder", async () => {
+  const view = await renderPreview(20, applicants.slice(0, 2));
+
+  expect(view.container.querySelectorAll("[data-slot='avatar']")).toHaveLength(2);
+  expect(view.container.querySelector("[data-slot='avatar-group-count']")?.textContent).toBe("+18");
+
+  await view.cleanup();
+});
+
+it.each([
+  { count: 0, displayed: "0" },
+  { count: 20, displayed: "20" },
+])("shows $displayed without an avatar group when no public avatars are available", async ({ count, displayed }) => {
+  const view = await renderPreview(count, []);
+
+  expect(view.container.querySelector("[data-slot='avatar-group']")).toBeNull();
+  expect(view.container.textContent).toContain(displayed);
+
+  await view.cleanup();
 });
