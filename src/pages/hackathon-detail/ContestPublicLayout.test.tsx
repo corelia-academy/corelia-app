@@ -204,7 +204,7 @@ describe("draft hackathon preview", () => {
     expect(view.container.querySelector("[data-slot='avatar-group']")).not.toBeNull();
     expect(view.container.querySelector("[data-slot='avatar-group-count']")?.textContent).toBe("+118");
     expect(view.container.textContent).toContain("public.applications");
-    expect(view.container.textContent).toContain("119");
+    expect(view.container.querySelector("[data-slot='avatar-group']")?.getAttribute("aria-label")).toBe("public.applications: 119");
 
     await view.cleanup();
   });
