@@ -128,16 +128,17 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260929183423_skip_publication_check_for_course_thumbnail.sql",
   "supabase/migrations/20260929220304_retire_career_tracks.sql",
   "supabase/migrations/20260929222933_public_hackathon_applicant_avatars.sql",
+  "supabase/migrations/20260930004829_expand_hackathon_applicant_preview.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production deployment at 3ecfedbe applied Career Tracks retirement.
-// Only the public hackathon applicant preview RPC is pending.
+// Production deployment at 02a86e92 applied the public applicant preview RPC.
+// Only the wider avatar preview limit is pending.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260929222933",
+  "20260930004829",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
