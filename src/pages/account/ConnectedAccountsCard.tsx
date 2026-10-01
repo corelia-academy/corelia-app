@@ -80,7 +80,7 @@ export function ConnectedAccountsCard() {
         wallet_missing: t("xp.connections.errors.wallet_missing"),
         invalid_signature: t("xp.connections.errors.invalid_signature"),
         challenge_expired: t("xp.connections.errors.challenge_expired"),
-        wallet_already_linked_or_challenge_expired: t("xp.connections.errors.wallet_already_linked_or_challenge_expired"),
+        wallet_linked_to_another_account: t("xp.connections.errors.wallet_linked_to_another_account"),
         origin_mismatch: t("xp.connections.errors.origin_mismatch"),
         unauthenticated: t("xp.connections.errors.unauthenticated"),
       };

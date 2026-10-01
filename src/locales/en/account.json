@@ -460,7 +460,7 @@
         "wallet_missing": "No wallet found. Install or unlock a wallet and try again.",
         "invalid_signature": "The signature was invalid or declined.",
         "challenge_expired": "The verification request expired. Please try again.",
-        "wallet_already_linked_or_challenge_expired": "This wallet is linked to another account or the request expired.",
+        "wallet_linked_to_another_account": "This wallet is already linked to another account.",
         "origin_mismatch": "The connection origin does not match. Try again from Corelia.",
         "unauthenticated": "Your session expired. Please sign in again."
       },
