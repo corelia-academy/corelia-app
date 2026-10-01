@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { Heart, Trophy } from "lucide-react";
 import { NavLink, useSearchParams } from "react-router";
@@ -17,6 +17,7 @@ import FeedLeaderboard from "./FeedLeaderboard";
 type CardProps = { milestone: FeedMilestone; actor?: FeedProfile; sources: FeedSource[]; likes: number; liked: boolean; own: boolean; now: number; onLike: () => void };
 function MilestoneCard({ milestone, actor, sources, likes, liked, own, now, onLike }: CardProps) {
   const { t, i18n } = useTranslation("feed");
+  const tooltipId = useId();
   const actorName = actor?.full_name?.trim() || actor?.username || actor?.ocid || t("milestones.member");
   const href = `/@${actor?.username || actor?.ocid || milestone.actor_id}`;
   const primary = sources[0];
@@ -29,7 +30,10 @@ function MilestoneCard({ milestone, actor, sources, likes, liked, own, now, onLi
         {milestone.kind === "course_completed" ? t("milestones.completed") : milestone.kind === "xp_reached" ? t("milestones.reached", { count: milestone.xp_total ?? 0 }) : t("milestones.submitted")}
         {primary && <> <NavLink to={primary.href} className="font-semibold text-primary hover:underline">{primary.label}</NavLink></>}
       </p>
-      <time className="mt-1 block text-xs text-foreground-muted" dateTime={milestone.created_at} title={absoluteTime} tabIndex={0}>{feedRelativeTime(milestone.created_at, now, i18n.language, t("milestones.justNow"))}</time>
+      <span className="group relative mt-1 inline-block">
+        <time className="block text-xs text-foreground-muted" dateTime={milestone.created_at} aria-describedby={tooltipId} tabIndex={0}>{feedRelativeTime(milestone.created_at, now, i18n.language, t("milestones.justNow"))}</time>
+        <span id={tooltipId} role="tooltip" className="pointer-events-none absolute left-0 top-full z-10 mt-1 hidden whitespace-nowrap rounded-md border border-border-subtle bg-surface-raised px-2 py-1 text-xs text-foreground shadow group-focus-within:block group-hover:block">{absoluteTime}</span>
+      </span>
     </div>
     <Button type="button" size="sm" variant="ghost" className="shrink-0 gap-1 text-foreground-muted" aria-label={liked ? t("milestones.unlike") : t("milestones.like")} aria-pressed={liked} disabled={own} onClick={onLike}><Heart className="size-4" fill={liked ? "currentColor" : "none"} /><span className="text-xs">{likes}</span></Button>
   </article>;
@@ -63,6 +67,10 @@ export default function FeedPage() {
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="min-w-0">
             {view === "leaderboard" ? <FeedLeaderboard /> : <FeedTimeline userId={userId} mode={view} onFindPeople={() => setView("explore")} />}
+            {view !== "leaderboard" && <details className="mt-5 rounded-xl border border-border-subtle bg-surface-base lg:hidden">
+              <summary className="flex min-h-11 cursor-pointer items-center px-4 font-semibold">{t("milestones.followedTitle")}</summary>
+              <div className="p-4 pt-0"><FeedFollowingPanel userId={userId} /></div>
+            </details>}
           </div>
           <aside className="hidden space-y-5 lg:block"><FeedSuggestedPeople userId={userId} /><FeedFollowingPanel userId={userId} /></aside>
         </div>

@@ -53,7 +53,7 @@ async function render(withProfileFollow = false, initialEntry = "/feed") {
 it("shows independent suggestions, moves followed activity between tabs, and offers discovery from Following", async () => {
   await render();
   expect(host.querySelectorAll("article")).toHaveLength(1);
-  expect(host.querySelector("details")).toBeNull();
+  expect(host.querySelector("details")?.textContent).toContain("milestones.followedTitle");
   expect(host.querySelectorAll('[aria-label="milestones.suggestedTitle"]')).toHaveLength(2);
   await click(button("follow.follow"));
   expect(host.querySelectorAll("article")).toHaveLength(0);
