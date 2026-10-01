@@ -454,6 +454,12 @@
       "connectGoogle": "Kết nối Google",
       "noEthereumWallet": "Chưa phát hiện ví Ethereum.",
       "walletXpEarned": "+30 XP · Kết nối ví đầu tiên",
+      "walletDisconnect": "Ngắt kết nối",
+      "walletDisconnectTitle": "Ngắt kết nối ví này?",
+      "walletDisconnectBody": "Bạn có thể kết nối lại sau hoặc kết nối với tài khoản khác. XP đã nhận được giữ nguyên, và ví này sẽ không nhận XP thêm lần nữa.",
+      "walletDisconnectConfirm": "Ngắt kết nối ví",
+      "walletDisconnectCancel": "Hủy",
+      "walletDisconnected": "Đã ngắt kết nối ví.",
       "ocidXpEarned": "+50 XP · Kết nối OCID",
       "githubXpEarned": "+50 XP · Kết nối GitHub",
       "errors": {

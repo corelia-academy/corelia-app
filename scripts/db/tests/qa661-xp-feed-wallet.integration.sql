@@ -121,4 +121,90 @@ BEGIN
 END $$;
 RESET ROLE;
 
+-- B-02: only the owner unlinks; the address can then move to another account without a second reward.
+SELECT set_config('request.jwt.claim.sub','a6610000-0000-4000-8000-000000000004',true);
+SET LOCAL ROLE authenticated;
+DO $$ BEGIN
+  IF public.xp_unlink_wallet('ethereum','0xqa661') THEN RAISE EXCEPTION 'B-02: non-owner unlinked a wallet'; END IF;
+END $$;
+RESET ROLE;
+DO $$ BEGIN
+  IF NOT EXISTS(SELECT 1 FROM public.connected_wallets WHERE chain='ethereum' AND address='0xqa661' AND user_id='a6610000-0000-4000-8000-000000000001') THEN
+    RAISE EXCEPTION 'B-02: wallet removed by non-owner';
+  END IF;
+END $$;
+SELECT set_config('request.jwt.claim.sub','a6610000-0000-4000-8000-000000000001',true);
+SET LOCAL ROLE authenticated;
+DO $$ BEGIN
+  IF NOT public.xp_unlink_wallet('ethereum','0xqa661') THEN RAISE EXCEPTION 'B-02: owner could not unlink'; END IF;
+END $$;
+RESET ROLE;
+INSERT INTO public.wallet_link_challenges(id,user_id,chain,address,message,expires_at) VALUES
+  ('a6610000-0000-4000-8000-0000000000c5','a6610000-0000-4000-8000-000000000004','ethereum','0xqa661','m',now()+interval '5 minutes'),
+  ('a6610000-0000-4000-8000-0000000000c6','a6610000-0000-4000-8000-000000000001','ethereum','0xqa661','m',now()+interval '5 minutes');
+SET LOCAL ROLE service_role;
+DO $$
+DECLARE r jsonb;
+BEGIN
+  r:=public.xp_consume_wallet_challenge('a6610000-0000-4000-8000-0000000000c5','a6610000-0000-4000-8000-000000000004');
+  IF r->>'linked'<>'true' OR r->>'awarded'<>'false' THEN RAISE EXCEPTION 'B-02: moved wallet must link without a second reward %',r; END IF;
+  r:=public.xp_consume_wallet_challenge('a6610000-0000-4000-8000-0000000000c6','a6610000-0000-4000-8000-000000000001');
+  IF r->>'linked'<>'false' OR r->>'reason'<>'wallet_taken' THEN RAISE EXCEPTION 'B-02: previous owner re-link must see wallet_taken %',r; END IF;
+END $$;
+RESET ROLE;
+DO $$ BEGIN
+  IF (SELECT coalesce(sum(points),0) FROM public.user_point_ledger WHERE user_id='a6610000-0000-4000-8000-000000000004' AND source='ethereum_wallet')<>0
+     OR (SELECT coalesce(sum(points),0) FROM public.user_point_ledger WHERE user_id='a6610000-0000-4000-8000-000000000001' AND source='ethereum_wallet')<>30 THEN
+    RAISE EXCEPTION 'B-02/B-10: wallet XP must be granted once to the first account only';
+  END IF;
+END $$;
+
+-- B-10: one OCID and one GitHub identity reward in total, across accounts, including through sync.
+SET LOCAL ROLE service_role;
+DO $$
+BEGIN
+  IF NOT public.xp_link_verified_ocid('a6610000-0000-4000-8000-000000000001','qa661-ocid',NULL) THEN RAISE EXCEPTION 'B-10: first OCID link must reward'; END IF;
+END $$;
+RESET ROLE;
+SELECT set_config('request.jwt.claim.sub','a6610000-0000-4000-8000-000000000001',true);
+SET LOCAL ROLE authenticated;
+SELECT public.xp_unlink_ocid();
+RESET ROLE;
+SET LOCAL ROLE service_role;
+DO $$
+BEGIN
+  IF public.xp_link_verified_ocid('a6610000-0000-4000-8000-000000000004','qa661-ocid',NULL) THEN RAISE EXCEPTION 'B-10: same OCID rewarded on a second account'; END IF;
+END $$;
+RESET ROLE;
+SELECT set_config('request.jwt.claim.sub','a6610000-0000-4000-8000-000000000004',true);
+SET LOCAL ROLE authenticated;
+SELECT public.xp_sync_connections();
+RESET ROLE;
+DO $$ BEGIN
+  IF EXISTS(SELECT 1 FROM public.user_point_ledger WHERE user_id='a6610000-0000-4000-8000-000000000004' AND source='ocid_connected') THEN
+    RAISE EXCEPTION 'B-10: sync rewarded an already rewarded OCID';
+  END IF;
+  IF (SELECT coalesce(sum(points),0) FROM public.user_point_ledger WHERE user_id='a6610000-0000-4000-8000-000000000001' AND source='ocid_connected')<>50 THEN
+    RAISE EXCEPTION 'B-10: first account lost or duplicated its OCID reward';
+  END IF;
+END $$;
+INSERT INTO auth.identities(provider_id,user_id,identity_data,provider)
+VALUES('qa661-gh','a6610000-0000-4000-8000-000000000001','{"sub":"qa661-gh"}','github');
+SELECT set_config('request.jwt.claim.sub','a6610000-0000-4000-8000-000000000001',true);
+SET LOCAL ROLE authenticated;
+SELECT public.xp_sync_connections();
+RESET ROLE;
+DELETE FROM auth.identities WHERE provider_id='qa661-gh';
+INSERT INTO auth.identities(provider_id,user_id,identity_data,provider)
+VALUES('qa661-gh','a6610000-0000-4000-8000-000000000004','{"sub":"qa661-gh"}','github');
+SELECT set_config('request.jwt.claim.sub','a6610000-0000-4000-8000-000000000004',true);
+SET LOCAL ROLE authenticated;
+SELECT public.xp_sync_connections();
+RESET ROLE;
+DO $$ BEGIN
+  IF (SELECT coalesce(sum(points),0) FROM public.user_point_ledger WHERE source='github_connected' AND user_id IN ('a6610000-0000-4000-8000-000000000001','a6610000-0000-4000-8000-000000000004'))<>50 THEN
+    RAISE EXCEPTION 'B-10: GitHub identity rewarded more than once';
+  END IF;
+END $$;
+
 ROLLBACK;

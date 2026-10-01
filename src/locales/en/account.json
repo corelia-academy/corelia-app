@@ -454,6 +454,12 @@
       "connectGoogle": "Connect Google",
       "noEthereumWallet": "No Ethereum wallet was found.",
       "walletXpEarned": "+30 XP · First wallet connected",
+      "walletDisconnect": "Disconnect",
+      "walletDisconnectTitle": "Disconnect this wallet?",
+      "walletDisconnectBody": "You can connect it again later or to another account. XP already earned is kept, and this wallet will not earn XP again.",
+      "walletDisconnectConfirm": "Disconnect wallet",
+      "walletDisconnectCancel": "Cancel",
+      "walletDisconnected": "Wallet disconnected.",
       "ocidXpEarned": "+50 XP · OCID connected",
       "githubXpEarned": "+50 XP · GitHub connected",
       "errors": {
