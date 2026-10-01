@@ -20,7 +20,7 @@ XP dùng các mốc tổng **250, 500, 1.000, 2.500, 5.000, 10.000, 25.000, 50.0
 
 ## Trải nghiệm
 
-- `/feed` có **Khám phá** (mốc công khai mới nhất) và **Đang theo dõi** (mốc của người hoặc nguồn course/hackathon/project mà mình follow). Thứ tự mới nhất trước, không chấm điểm/ranking người dùng.
+- `/feed` có **Khám phá** (mốc công khai mới nhất) và **Đang theo dõi** (mốc của người mà mình follow). Thứ tự mới nhất trước, không chấm điểm/ranking người dùng.
 - Trên desktop, cột bên phải có hai tab **Đang theo dõi** và **Gợi ý theo dõi**, luôn có thể chuyển qua lại. Tab đầu hiển thị tối đa 6 hồ sơ công khai mà chính người xem đang follow, gồm ảnh, tên, link mở hồ sơ và nút **Xem tất cả** để mở danh sách đầy đủ có tải thêm. Danh sách sắp theo lần follow gần nhất, chỉ gồm người; course/hackathon/project vẫn dùng cho tab Đang theo dõi của feed nhưng không trộn vào mục này. Khi chưa follow hồ sơ công khai nào, cột phải mở tab gợi ý mặc định.
 - Tab **Gợi ý theo dõi** chọn tối đa 4 người chưa follow từ nhóm 20 hồ sơ công khai có XP cao nhất, ưu tiên người đạt ít nhất 250 XP, rồi xáo trộn trong từng nhóm. Hiển thị tổng XP cạnh tên và nút Follow; không gợi ý chính người xem, người đã follow hoặc hồ sơ private. Nếu chưa ai có XP, vẫn gợi ý ngẫu nhiên từ các hồ sơ công khai đủ điều kiện.
 - Trên mobile, mục **Bạn đang theo dõi** nằm sau danh sách card dưới dạng khối thu gọn; không chiếm phần đầu màn hình hay làm hẹp card. Danh sách của chính mình phải hoạt động cả khi hồ sơ của mình private; không lấy danh sách follow của tài khoản khác chỉ vì quyền staff hoặc cache dùng chung.
