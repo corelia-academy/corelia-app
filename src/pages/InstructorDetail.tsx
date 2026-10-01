@@ -53,7 +53,7 @@ const InstructorDetail = () => {
 
   if (!id) {
     return (
-      <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <div className="mx-auto w-full min-w-0 max-w-7xl px-4 pb-6 pt-4 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5">
           <p className="text-sm font-medium text-destructive">
             {translate("detail.instructorDetail.errors.missingId")}
@@ -71,7 +71,7 @@ const InstructorDetail = () => {
 
   if (isActuallyLoading) {
     return (
-      <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <div className="mx-auto w-full min-w-0 max-w-7xl px-4 pb-6 pt-4 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-2xl border border-border-subtle bg-surface-base p-8 text-center">
           <Loader2 className="size-8 animate-spin text-foreground-muted" aria-hidden />
           <p className="mt-4 text-sm text-foreground-muted">
@@ -84,7 +84,7 @@ const InstructorDetail = () => {
 
   if (activeError || !profile) {
     return (
-      <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <div className="mx-auto w-full min-w-0 max-w-7xl px-4 pb-6 pt-4 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5">
           <p className="text-sm font-medium text-destructive">
             {activeError ?? translate("detail.instructorDetail.errors.notFound")}
@@ -110,7 +110,7 @@ const InstructorDetail = () => {
     "?";
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+    <div className="mx-auto w-full min-w-0 max-w-7xl px-4 pb-6 pt-4 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       <Breadcrumb className="mb-3">
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -133,7 +133,7 @@ const InstructorDetail = () => {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.1fr)]">
+      <div className="mobile-bleed-grid mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.1fr)]">
         <section className="rounded-2xl border border-border-subtle bg-surface-base p-6">
           <div className="flex flex-wrap items-center gap-4">
             <UserAvatar
@@ -197,8 +197,8 @@ const InstructorDetail = () => {
               {translate("detail.instructorDetail.courses.title")}
             </h2>
             <Button
-              variant="outline"
-              size="sm"
+              variant="cta" hierarchy="secondary"
+              size="small"
               type="button"
               render={<Link to="/courses" />}
             >

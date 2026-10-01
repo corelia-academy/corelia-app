@@ -48,14 +48,14 @@ export function CourseResourcesEditor({ value, onChange, disabled }: {
               <Input type="url" value={resource.url} placeholder="https://" onChange={event => onChange(value.map((item, i) => i === index ? { ...item, url: event.target.value } : item))} />
             </label>
             <div className="flex gap-1">
-              <Button type="button" variant="outline" size="icon" disabled={index === 0} aria-label={t("courseResources.moveUp", { count: index + 1 })} onClick={() => move(index, -1)}><ArrowUp className="size-4" aria-hidden /></Button>
-              <Button type="button" variant="outline" size="icon" disabled={index === value.length - 1} aria-label={t("courseResources.moveDown", { count: index + 1 })} onClick={() => move(index, 1)}><ArrowDown className="size-4" aria-hidden /></Button>
-              <Button type="button" variant="outline" size="icon" aria-label={t("courseResources.remove", { count: index + 1 })} onClick={() => onChange(value.filter((_, i) => i !== index))}><Trash2 className="size-4" aria-hidden /></Button>
+              <Button type="button" variant="cta" hierarchy="secondary" iconOnly size="small" disabled={index === 0} aria-label={t("courseResources.moveUp", { count: index + 1 })} onClick={() => move(index, -1)}><ArrowUp className="size-4" aria-hidden /></Button>
+              <Button type="button" variant="cta" hierarchy="secondary" iconOnly size="small" disabled={index === value.length - 1} aria-label={t("courseResources.moveDown", { count: index + 1 })} onClick={() => move(index, 1)}><ArrowDown className="size-4" aria-hidden /></Button>
+              <Button type="button" variant="cta" hierarchy="secondary" iconOnly size="small" aria-label={t("courseResources.remove", { count: index + 1 })} onClick={() => onChange(value.filter((_, i) => i !== index))}><Trash2 className="size-4" aria-hidden /></Button>
             </div>
           </div>
         ))}
       </div>
-      <Button type="button" variant="outline" className="mt-3" onClick={() => onChange([...value, { title: "", url: "", icon: "link" }])}><Plus className="size-4" aria-hidden />{t("courseResources.add")}</Button>
+      <Button type="button" variant="cta" hierarchy="secondary" className="mt-3" onClick={() => onChange([...value, { title: "", url: "", icon: "link" }])}><Plus className="size-4" aria-hidden />{t("courseResources.add")}</Button>
     </fieldset>
   );
 }

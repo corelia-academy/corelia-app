@@ -204,7 +204,7 @@ export default function ConnectOCIDCard() {
 
           <DialogFooter>
             <Button
-              variant="outline"
+              variant="cta" hierarchy="secondary"
               onClick={() => setShowDisconnectDialog(false)}
             >
               {t("common.cancel")}

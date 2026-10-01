@@ -5,7 +5,7 @@ import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 import { normalizeEmail } from "./csv.ts";
 import { missingTemplateVariables, renderEmailDocument } from "./template.ts";
-import { localizedContentIssues, localizedVariables, readLocalizedEmailContent, selectLocalizedEmailContent } from "../lib/mail/localized.ts";
+import { localizedContentIssues, localizedVariables, readLocalizedEmailContent, resolveLocalizedEmailContent } from "../lib/mail/localized.ts";
 import { normalizeEmailLocale } from "../lib/mail/locale.ts";
 
 const PURPOSES = new Set(["system", "learning", "event", "marketing"]);
@@ -33,7 +33,7 @@ async function audit(db: SupabaseClient, actor: AdminContext, action: string, ty
 async function validateObject(db: SupabaseClient, type: string | null, id: string | null): Promise<boolean> {
   if (!type && !id) return true;
   if (!type || !id) return false;
-  const table = type === "course" ? "courses" : type === "hackathon" ? "hackathons" : type === "program" ? "career_tracks" : "";
+  const table = type === "course" ? "courses" : type === "hackathon" ? "hackathons" : "";
   if (!table) return false;
   const { data, error } = await db.from(table).select("id").eq("id", id).maybeSingle();
   return !error && Boolean(data);
@@ -63,6 +63,21 @@ async function dashboard(db: SupabaseClient): Promise<Response> {
 
 async function listRows(db: SupabaseClient, action: string, body: Record<string, unknown>): Promise<Response> {
   const [from, to] = pageRange(body.page);
+  if (action === "campaigns.recipients") {
+    const campaignId = String(body.campaign_id ?? "");
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(campaignId)) return json({ message: "invalid_campaign_id" }, 400);
+    const { data: campaign, error: campaignError } = await db.from("email_campaigns").select("id").eq("id", campaignId).maybeSingle();
+    if (campaignError) throw campaignError;
+    if (!campaign) return json({ message: "campaign_not_found" }, 404);
+    let query = db.from("email_campaign_recipients")
+      .select("id,recipient_email,status,first_dispatched_at,updated_at,provider_message_id,last_error,email_contacts(global_suppressed_at,suppression_reason)", { count: "exact" })
+      .eq("campaign_id", campaignId);
+    const status = String(body.status ?? "");
+    if (["queued", "sending", "accepted", "delivered", "failed", "bounced", "complained", "unsubscribed", "suppressed", "indeterminate", "cancelled"].includes(status)) query = query.eq("status", status);
+    const { data, error, count } = await query.order("created_at", { ascending: true }).range(from, to);
+    if (error) throw error;
+    return json({ items: data ?? [], total: count ?? 0, page: Math.floor(from / PAGE_SIZE), page_size: PAGE_SIZE });
+  }
   if (action === "contacts.list") {
     let query = db.from("email_contacts").select("*, email_contact_consents(topic,status,source,changed_at)", { count: "exact" }).order("created_at", { ascending: false }).range(from, to);
     const search = String(body.search ?? "").trim();
@@ -82,10 +97,49 @@ async function listRows(db: SupabaseClient, action: string, body: Record<string,
     return json({ items: data ?? [], total: count ?? 0, page: Math.floor(from / PAGE_SIZE), page_size: PAGE_SIZE });
   }
   const table = action === "lists.list" ? "email_lists" : action === "templates.list" ? "email_templates" : "email_campaigns";
-  const selection = action === "templates.list" ? "*, email_template_versions(*)" : action === "campaigns.list" ? "*, email_senders(display_name,from_email), email_templates:email_template_versions(subject,version,email_templates(name))" : "*";
+  const selection = action === "templates.list" ? "*, email_template_versions(*)" : action === "campaigns.list" ? "*, email_senders(display_name,from_email), email_lists(name), email_templates:email_template_versions(subject,version,email_templates(name))" : "*";
   const { data, error, count } = await db.from(table).select(selection, { count: "exact" }).order("created_at", { ascending: false }).range(from, to);
   if (error) throw error;
   return json({ items: data ?? [], total: count ?? 0, page: Math.floor(from / PAGE_SIZE), page_size: PAGE_SIZE });
+}
+
+async function snapshotAllContacts(db: SupabaseClient, actor: AdminContext): Promise<Response> {
+  requireFullAdmin(actor);
+  const { data: settings, error: settingsError } = await db.from("email_settings").select("max_recipients_per_campaign").eq("singleton", true).single();
+  if (settingsError) throw settingsError;
+  const limit = Number(settings.max_recipients_per_campaign);
+  const contactIds: string[] = [];
+  let cursor = "";
+  while (true) {
+    let query = db.from("email_contacts").select("id").order("id", { ascending: true }).limit(500);
+    if (cursor) query = query.gt("id", cursor);
+    const { data, error } = await query;
+    if (error) throw error;
+    const batch = data ?? [];
+    contactIds.push(...batch.map((contact) => String(contact.id)));
+    if (contactIds.length > limit) return json({ message: "campaign_operational_limit_exceeded" }, 409);
+    if (batch.length < 500) break;
+    cursor = String(batch[batch.length - 1]!.id);
+  }
+  if (!contactIds.length) return json({ message: "no_contacts" }, 409);
+  const stamp = new Date().toISOString().slice(0, 16).replace("T", " ");
+  const { data: list, error: listError } = await db.from("email_lists").insert({ name: `All contacts · ${stamp} UTC`, description: "Snapshot of all Email Center contacts for campaign review", source_type: "manual", created_by: actor.id }).select("id,name").single();
+  if (listError) throw listError;
+  try {
+    for (let index = 0; index < contactIds.length; index += 500) {
+      const { error } = await db.from("email_list_members").insert(contactIds.slice(index, index + 500).map((contact_id) => ({ list_id: list.id, contact_id })));
+      if (error) throw error;
+    }
+    const { count, error } = await db.from("email_list_members").select("contact_id", { count: "exact", head: true }).eq("list_id", list.id);
+    if (error) throw error;
+    if (count !== contactIds.length) throw new Error("contact_snapshot_incomplete");
+  } catch (cause) {
+    const { error } = await db.from("email_lists").delete().eq("id", list.id);
+    if (error) console.error("[email-center] snapshot cleanup", error);
+    throw cause;
+  }
+  await audit(db, actor, "snapshot_all", "email_list", list.id, { recipients: contactIds.length });
+  return json({ id: list.id, name: list.name, count: contactIds.length });
 }
 
 async function createImport(db: SupabaseClient, actor: AdminContext, body: Record<string, unknown>): Promise<Response> {
@@ -170,7 +224,12 @@ async function saveCampaign(db: SupabaseClient, actor: AdminContext, body: Recor
   const purpose = String(body.purpose ?? "");
   if (!PURPOSES.has(purpose)) return json({ message: "invalid_input:purpose" }, 400);
   if (purpose === "system") requireFullAdmin(actor);
+  const audienceType = body.audience_type === "all_contacts" ? "all_contacts" : "list";
+  if (audienceType === "all_contacts") requireFullAdmin(actor);
+  const listId = String(body.list_id ?? "").trim();
+  if (audienceType === "list" && !listId) return json({ message: "invalid_input:list_id" }, 400);
   const objectType = String(body.object_type ?? "").trim() || null;
+  if (objectType === "program") return json({ message: "career_tracks_retired" }, 410);
   const objectId = String(body.object_id ?? "").trim() || null;
   if (!await validateObject(db, objectType, objectId)) return json({ message: "invalid_object_context" }, 400);
   const { data: sender } = await db.from("email_senders").select("id,domain_status,purpose,display_name,from_email,reply_to").eq("id", String(body.sender_id ?? "")).eq("active", true).maybeSingle();
@@ -185,10 +244,12 @@ async function saveCampaign(db: SupabaseClient, actor: AdminContext, body: Recor
   const missing = missingTemplateVariables(version.variables ?? [], availableValues);
   if (missing.length) return json({ message: "missing_template_variables", missing }, 400);
   const genericValues = Object.fromEntries((version.variables ?? []).map((key: string) => [key, values[key] ?? `{{${key}}}`]));
-  const previewCopy = selectLocalizedEmailContent(version.localized_content, "en")!;
-  const rendered = renderEmailDocument({ subject: previewCopy.subject, preheader: previewCopy.preheader, bodyText: previewCopy.body_text, ctaLabel: previewCopy.cta_label, ctaUrl: previewCopy.cta_url, imageUrl: previewCopy.image_url, purpose, locale: "en", values: genericValues });
+  const preview = resolveLocalizedEmailContent(version.localized_content, "en")!;
+  const previewCopy = preview.copy;
+  const rendered = renderEmailDocument({ subject: previewCopy.subject, preheader: previewCopy.preheader, bodyText: previewCopy.body_text, ctaLabel: previewCopy.cta_label, ctaUrl: previewCopy.cta_url, imageUrl: previewCopy.image_url, purpose, locale: preview.locale, values: genericValues });
   const id = crypto.randomUUID();
-  const { error } = await db.from("email_campaigns").insert({ id, name: String(body.name ?? "").trim(), purpose, object_type: objectType, object_id: objectId, list_id: String(body.list_id ?? ""), sender_id: sender.id, template_version_id: version.id, frozen_subject: rendered.subject, frozen_html: rendered.html, frozen_from: `${sender.display_name} <${sender.from_email}>`, frozen_reply_to: sender.reply_to, frozen_values: values, created_by: actor.id });
+  const audience = audienceType === "all_contacts" ? { audience_type: "all_contacts", list_id: null } : { list_id: listId };
+  const { error } = await db.from("email_campaigns").insert({ id, name: String(body.name ?? "").trim(), purpose, object_type: objectType, object_id: objectId, ...audience, sender_id: sender.id, template_version_id: version.id, frozen_subject: rendered.subject, frozen_html: rendered.html, frozen_from: `${sender.display_name} <${sender.from_email}>`, frozen_reply_to: sender.reply_to, frozen_values: values, created_by: actor.id });
   if (error) throw error;
   await audit(db, actor, "create", "email_campaign", id, { missing_preview_variables: missing });
   return json({ ok: true, id });
@@ -240,12 +301,16 @@ async function testEmail(db: SupabaseClient, actor: AdminContext, body: Record<s
   if (missing.length) return json({ message: "missing_template_variables", missing }, 400);
   const purpose = String((version.email_templates as unknown as { purpose?: string } | null)?.purpose ?? "system");
   if (purpose === "system") requireFullAdmin(actor);
-  const { data: sender } = await db.from("email_senders").select("display_name,from_email,reply_to,domain_status,active").eq("purpose", purpose).eq("is_default", true).maybeSingle();
+  const senderId = String(body.sender_id ?? "").trim();
+  let senderQuery = db.from("email_senders").select("display_name,from_email,reply_to,domain_status,active").eq("purpose", purpose);
+  senderQuery = senderId ? senderQuery.eq("id", senderId) : senderQuery.eq("is_default", true);
+  const { data: sender } = await senderQuery.maybeSingle();
   if (!sender?.active || sender.domain_status !== "verified") return json({ message: "sender_not_verified" }, 409);
   const locale = normalizeEmailLocale(body.locale ?? values.locale);
-  const copy = selectLocalizedEmailContent(version.localized_content, locale);
-  if (!copy) return json({ message: "template_translation_missing", locale }, 409);
-  const rendered = renderEmailDocument({ subject: copy.subject, preheader: copy.preheader, bodyText: copy.body_text, ctaLabel: copy.cta_label, ctaUrl: copy.cta_url, imageUrl: copy.image_url, purpose, locale, values });
+  const localized = resolveLocalizedEmailContent(version.localized_content, locale);
+  if (!localized) return json({ message: "template_translation_missing", locale }, 409);
+  const copy = localized.copy;
+  const rendered = renderEmailDocument({ subject: copy.subject, preheader: copy.preheader, bodyText: copy.body_text, ctaLabel: copy.cta_label, ctaUrl: copy.cta_url, imageUrl: copy.image_url, purpose, locale: localized.locale, values });
   const result = await sendTransactionalEmailViaResend({ db, mailType: "email_center_test", to: [to], subject: `[TEST] ${rendered.subject}`, html: rendered.html, from: `${sender.display_name} <${sender.from_email}>`, replyTo: sender.reply_to, idempotencyKey: `email-center-test/${crypto.randomUUID()}` });
   await audit(db, actor, "test_send", "email_template_version", version.id, {
     to,
@@ -268,6 +333,7 @@ async function saveAutomation(db: SupabaseClient, actor: AdminContext, body: Rec
   if (!PURPOSES.has(purpose)) return json({ message: "invalid_purpose" }, 400);
   if (actor.role !== "admin" && purpose !== "marketing") return json({ message: "forbidden:marketing_automation_only" }, 403);
   const objectType = String(body.object_type ?? "").trim() || null;
+  if (objectType === "program") return json({ message: "career_tracks_retired" }, 410);
   const objectId = String(body.object_id ?? "").trim() || null;
   if (!await validateObject(db, objectType, objectId)) return json({ message: "invalid_object_context" }, 400);
   const enabled = Boolean(body.enabled);
@@ -301,7 +367,8 @@ export async function handleEmailAdmin(req: Request, db: SupabaseClient): Promis
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
     const action = String(body.action ?? "dashboard");
     if (action === "dashboard") return dashboard(db);
-    if (["contacts.list", "lists.list", "templates.list", "campaigns.list"].includes(action)) return listRows(db, action, body);
+    if (["contacts.list", "lists.list", "templates.list", "campaigns.list", "campaigns.recipients"].includes(action)) return listRows(db, action, body);
+    if (action === "lists.snapshot_all") return snapshotAllContacts(db, actor);
     if (action === "imports.create") return createImport(db, actor, body);
     if (action === "imports.process") return processImport(db, actor, body);
     if (action === "imports.report") {
@@ -317,6 +384,19 @@ export async function handleEmailAdmin(req: Request, db: SupabaseClient): Promis
     if (action === "campaigns.create") return saveCampaign(db, actor, body);
     if (action === "campaigns.prepare") return prepareCampaign(db, actor, body);
     if (action === "campaigns.control") return controlCampaign(db, actor, body);
+    if (action === "campaigns.exclude_recipient") {
+      requireFullAdmin(actor);
+      const recipientId = String(body.recipient_id ?? "");
+      const { data: recipient, error: recipientError } = await db.from("email_campaign_recipients").select("id,contact_id,campaign_id,status").eq("id", recipientId).maybeSingle();
+      if (recipientError) throw recipientError;
+      if (!recipient || !["failed", "bounced", "complained"].includes(recipient.status)) return json({ message: "recipient_not_failed" }, 409);
+      const now = new Date().toISOString();
+      const { data: contact, error } = await db.from("email_contacts").update({ global_suppressed_at: now, suppression_reason: `manual_campaign_failure:${recipient.campaign_id}`, updated_at: now }).eq("id", recipient.contact_id).is("global_suppressed_at", null).select("id").maybeSingle();
+      if (error) throw error;
+      if (!contact) return json({ message: "recipient_already_excluded" }, 409);
+      await audit(db, actor, "exclude_failed_recipient", "email_contact", contact.id, { campaign_id: recipient.campaign_id, recipient_id: recipientId });
+      return json({ ok: true });
+    }
     if (action === "campaigns.reconcile") {
       requireFullAdmin(actor);
       const outcome = String(body.outcome ?? "");

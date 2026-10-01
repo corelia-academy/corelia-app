@@ -1,4 +1,3 @@
-import { EMAIL_BRAND } from "../lib/mail/brand.ts";
 import { escapeHtml } from "../lib/html.ts";
 import {
   emailCtaButton,
@@ -13,6 +12,7 @@ const COPY: Record<
     heroTitle: string;
     heroSubtitle: string;
     bodyIntro: string;
+    bodyHint: string;
     ctaLabel: string;
     footerReason: string;
     subjectLine: string;
@@ -23,6 +23,7 @@ const COPY: Record<
     heroTitle: "Chúc mừng! Bạn đã nhận được chứng nhận",
     heroSubtitle: "Chứng nhận hoàn thành khoá học đã được cấp cho bạn.",
     bodyIntro: "Bạn đã hoàn thành xuất sắc khoá học:",
+    bodyHint: "Mở chứng nhận đã điền tên, ngày cấp và mã xác thực bằng nút bên dưới. Bạn có thể tải về trong mục Thành tích.",
     ctaLabel: "Xem chứng nhận của tôi →",
     footerReason: "Bạn nhận email này vì vừa được cấp chứng nhận hoàn thành khoá học trên Corelia Academy.",
     subjectLine: "🎓 Chúc mừng! Chứng nhận hoàn thành khoá học của bạn đã sẵn sàng",
@@ -32,6 +33,7 @@ const COPY: Record<
     heroTitle: "Congratulations! Your certificate is ready",
     heroSubtitle: "Your course completion certificate has been issued.",
     bodyIntro: "You have successfully completed:",
+    bodyHint: "Use the button below to view the certificate with your name, issue date and verification code. You can download it in Achievements.",
     ctaLabel: "View my certificate →",
     footerReason: "You received this because a course certificate was issued on Corelia Academy.",
     subjectLine: "🎓 Congratulations! Your course certificate is ready",
@@ -40,21 +42,16 @@ const COPY: Record<
 
 export function buildCertificateIssuedEmail(params: {
   courseTitle: string;
-  certImageUrl?: string | null;
-  profileUrl: string;
+  certificateUrl: string;
   locale?: string | null;
 }): { subject: string; html: string } {
   const locale = normalizeEmailLocale(params.locale);
   const copy = COPY[locale];
 
-  const img = params.certImageUrl?.trim()
-    ? `<p><img src="${escapeHtml(params.certImageUrl.trim())}" alt="" width="480" style="max-width:100%;border-radius:8px;border:1px solid ${EMAIL_BRAND.border}" /></p>`
-    : "";
-
   const bodyHtml = `
     <p>${escapeHtml(copy.bodyIntro)}</p>
     <p><strong>${escapeHtml(params.courseTitle)}</strong></p>
-    ${img}
+    <p>${escapeHtml(copy.bodyHint)}</p>
   `.trim();
 
   const html = wrapTransactionalEmail({
@@ -63,7 +60,7 @@ export function buildCertificateIssuedEmail(params: {
     heroTitle: copy.heroTitle,
     heroSubtitle: copy.heroSubtitle,
     bodyHtml,
-    ctaHtml: emailCtaButton(params.profileUrl, copy.ctaLabel),
+    ctaHtml: emailCtaButton(params.certificateUrl, copy.ctaLabel),
     footerReason: copy.footerReason,
   });
 

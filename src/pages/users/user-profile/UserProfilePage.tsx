@@ -8,7 +8,6 @@ import {
   IdCard,
   Link as LinkIcon,
   ShieldAlert,
-  Sparkles,
   User,
   Users,
   Eye,
@@ -154,7 +153,6 @@ function ProfileSidebar({
     <aside className="space-y-4 lg:sticky lg:top-24">
       <section className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-5">
         <div className="flex items-center gap-2">
-          <Sparkles className="size-4 text-foreground-muted" aria-hidden />
           <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.overview.title")}
           </h2>
@@ -273,8 +271,8 @@ export default function UserProfileLayout() {
   });
 
   return (
-    <div className="container-app py-6 sm:py-8 lg:py-10">
-      <section className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
+    <div className="container-app pb-6 pt-0 sm:py-8 lg:py-10">
+      <section className="mobile-bleed-surface overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
         <div className="relative p-4 sm:p-6 lg:p-8">
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,color-mix(in_oklch,var(--primary-container)_72%,transparent),transparent_44%),radial-gradient(circle_at_top_right,color-mix(in_oklch,var(--primary)_16%,transparent),transparent_38%)]" />
 
@@ -356,11 +354,11 @@ export default function UserProfileLayout() {
             <div className="flex min-w-0 flex-col gap-4">
               <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                 {loading ? <Skeleton className="h-9 w-28 rounded" /> : null}
-                
+
                 {!loading && profile && isSelf ? (
                   <Button
-                    variant="outline"
-                    size={previewAsGuest ? "sm" : "lg"}
+                    variant="cta" hierarchy="secondary"
+                    size={(previewAsGuest ? "small" : "large")}
                     onClick={() => setPreviewAsGuest(!previewAsGuest)}
                     aria-label={previewAsGuest ? t("userProfile.actions.exitPreview") : undefined}
                     className={previewAsGuest
@@ -383,7 +381,7 @@ export default function UserProfileLayout() {
 
                 {!loading && profile && effectiveIsSelf ? (
                   <NavLink to="/account/profile">
-                    <Button variant="outline" size="lg" type="button">
+                    <Button variant="cta" hierarchy="secondary" size="large" type="button">
                       {t("userProfile.actions.editProfile")}
                     </Button>
                   </NavLink>
@@ -392,7 +390,7 @@ export default function UserProfileLayout() {
                   <FollowButton
                     subject={{ type: "user", id: profile.id }}
                     followerCount={followerCount}
-                    size="lg"
+                    size="large"
                     onFollowerCountChange={(count) =>
                       setFollowerCountOverride({ profileId: profile.id, count })
                     }
@@ -511,9 +509,9 @@ export default function UserProfileLayout() {
                   </p>
                 </div>
               )}
-              
+
               <UserProfileAchievementsSection isSelf={effectiveIsSelf} profileId={profile.id} />
-              
+
               {profile.profile_public || effectiveIsSelf ? (
                 <>
                   <UserProfileCoursesSection profile={profile} />

@@ -18,7 +18,7 @@ export function PracticeHackathonField({ value, onChange }: { value?: string; on
       </select>
     </label>
     <p className="text-sm text-foreground-muted">{t("learning.relatedHackathonHint")}</p>
-    {query.isError && <p role="alert">{t("learning.loadError")} <Button type="button" variant="outline" onClick={() => void query.refetch()}>{t("learning.retry")}</Button></p>}
+    {query.isError && <p role="alert">{t("learning.loadError")} <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void query.refetch()}>{t("learning.retry")}</Button></p>}
   </div>;
 }
 
@@ -27,7 +27,7 @@ export function PracticeHackathonLink({ id, locale }: { id: string; locale?: str
   const query = useQuery(publicHackathonCatalogQueryOptions(locale ?? i18n.language));
   const contest = query.data?.find(item => item.id === id);
   if (query.isPending) return <p role="status">{t("learning.loading")}</p>;
-  if (query.isError) return <p role="alert">{t("learning.loadError")} <Button type="button" variant="outline" onClick={() => void query.refetch()}>{t("learning.retry")}</Button></p>;
+  if (query.isError) return <p role="alert">{t("learning.loadError")} <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void query.refetch()}>{t("learning.retry")}</Button></p>;
   if (!contest?.slug) return <p className="text-sm text-foreground-muted">{t("learning.relatedUnavailable")}</p>;
   return <Link to={`/hackathons/${encodeURIComponent(contest.slug)}`} className="block rounded-xl border border-border p-4 text-primary underline">{t("learning.relatedHackathon")}: {contest.title}</Link>;
 }

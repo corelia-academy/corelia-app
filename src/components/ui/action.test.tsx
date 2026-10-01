@@ -51,6 +51,7 @@ describe("Action", () => {
 
     expect(markup).toContain('data-slot="action-leading-icon"');
     expect(markup).toContain('data-slot="action-trailing-icon"');
+    expect(markup).toContain("text-action-supporting");
   });
 
   it("uses the disabled trailing asset when disabled", () => {
@@ -62,7 +63,8 @@ describe("Action", () => {
     });
 
     expect(markup).toContain('data-slot="action-trailing-icon"');
-    expect(markup).toContain("text-neutral-500");
+    expect(markup).toContain("text-action-disabled");
+    expect(markup).toContain("text-action-disabled-icon");
     expect(markup).not.toContain("data-disabled:pointer-events-none");
     expect(markup).toContain("data-disabled:cursor-not-allowed");
     expect(markup).toContain("data-disabled:select-none");
@@ -153,7 +155,7 @@ describe("Action", () => {
     expect(markup).toContain("hover:bg-action-destructive-active");
     expect(markup).toContain("max-lg:active:bg-action-destructive-active");
     expect(markup).toContain("group-hover/action:text-action-destructive-active-foreground");
-    expect(markup).not.toContain("group-hover/action:text-neutral-400");
+    expect(markup).not.toContain("group-hover/action:text-action-supporting");
   });
 
   it("uses the dedicated light icon token for destructive active actions", () => {
@@ -189,8 +191,8 @@ describe("Action", () => {
       showPressed: true,
     });
 
-    expect(markup).toContain("group-hover/action:text-neutral-400");
-    expect(markup).toContain("max-lg:group-active/action:text-neutral-400");
+    expect(markup).toContain("group-hover/action:text-action-supporting");
+    expect(markup).toContain("max-lg:group-active/action:text-action-supporting");
     expect(markup.match(/group-hover\/action:text-action-active-foreground/g)).toHaveLength(1);
   });
 

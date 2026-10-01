@@ -146,11 +146,11 @@ export function ConnectedAccountsCard() {
             {wallets.isPending ? t("xp.connections.loading") : wallets.isError ? t("xp.connections.loadFailed") : linked.length ? t("xp.connections.walletCount", { count: linked.length }) : t("xp.connections.notConnected")}
           </span>
         </div>
-        {linked.map((wallet) => <div key={wallet.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-surface-raised p-3"><p className="min-w-0 break-all font-mono text-sm">{wallet.address}</p><Button type="button" size="sm" variant="outline" disabled={walletBusy} onClick={() => setUnlinking(wallet)}>{t("xp.connections.walletDisconnect")}</Button></div>)}
-        {wallets.isError ? <Button type="button" variant="outline" onClick={() => void wallets.refetch()}>{t("profile.retry")}</Button> : !wallets.isPending ? <>
-          <Button type="button" variant="outline" disabled={walletBusy} aria-expanded={addingWallet === chain} onClick={() => setAddingWallet(addingWallet === chain ? null : chain)}>{t(linked.length ? "xp.connections.addWallet" : "xp.connections.chooseWallet")}</Button>
+        {linked.map((wallet) => <div key={wallet.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-surface-raised p-3"><p className="min-w-0 break-all font-mono text-sm">{wallet.address}</p><Button type="button" size="small" variant="cta" hierarchy="secondary" disabled={walletBusy} onClick={() => setUnlinking(wallet)}>{t("xp.connections.walletDisconnect")}</Button></div>)}
+        {wallets.isError ? <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void wallets.refetch()}>{t("profile.retry")}</Button> : !wallets.isPending ? <>
+          <Button type="button" variant="cta" hierarchy="secondary" disabled={walletBusy} aria-expanded={addingWallet === chain} onClick={() => setAddingWallet(addingWallet === chain ? null : chain)}>{t(linked.length ? "xp.connections.addWallet" : "xp.connections.chooseWallet")}</Button>
           {addingWallet === chain ? <div className="flex flex-wrap gap-2">
-            {chain === "ethereum" ? ethereumWallets.length === 0 ? <p className="text-sm text-foreground-muted">{t("xp.connections.noEthereumWallet")}</p> : ethereumWallets.map((wallet) => <Button key={wallet.id} type="button" variant="secondary" disabled={walletBusy} onClick={() => void connectWallet(() => connectEthereumWallet(wallet.provider))}>{wallet.name}</Button>) : solanaWallets.length === 0 ? <p className="text-sm text-foreground-muted">{t("xp.connections.noSolanaWallet")}</p> : solanaWallets.map((wallet) => <Button key={wallet.name} type="button" variant="secondary" disabled={walletBusy} onClick={() => void connectWallet(() => connectSolanaWallet(wallet))}>{wallet.name}</Button>)}
+            {chain === "ethereum" ? ethereumWallets.length === 0 ? <p className="text-sm text-foreground-muted">{t("xp.connections.noEthereumWallet")}</p> : ethereumWallets.map((wallet) => <Button key={wallet.id} type="button" variant="cta" hierarchy="secondary" disabled={walletBusy} onClick={() => void connectWallet(() => connectEthereumWallet(wallet.provider))}>{wallet.name}</Button>) : solanaWallets.length === 0 ? <p className="text-sm text-foreground-muted">{t("xp.connections.noSolanaWallet")}</p> : solanaWallets.map((wallet) => <Button key={wallet.name} type="button" variant="cta" hierarchy="secondary" disabled={walletBusy} onClick={() => void connectWallet(() => connectSolanaWallet(wallet))}>{wallet.name}</Button>)}
             {walletBusy ? <p role="status" className="w-full text-sm text-foreground-muted">{t("xp.connections.confirmWallet")}</p> : null}
           </div> : null}
         </> : null}
@@ -164,7 +164,7 @@ export function ConnectedAccountsCard() {
         <DialogHeader><DialogTitle>{t("xp.connections.walletDisconnectTitle")}</DialogTitle><DialogDescription>{t("xp.connections.walletDisconnectBody")}</DialogDescription></DialogHeader>
         {unlinking ? <p className="break-all rounded-lg bg-surface-raised p-3 font-mono text-sm">{unlinking.address}</p> : null}
         <DialogFooter>
-          <Button type="button" variant="outline" disabled={walletBusy} onClick={() => setUnlinking(null)}>{t("xp.connections.walletDisconnectCancel")}</Button>
+          <Button type="button" variant="cta" hierarchy="secondary" disabled={walletBusy} onClick={() => setUnlinking(null)}>{t("xp.connections.walletDisconnectCancel")}</Button>
           <Button type="button" disabled={walletBusy} onClick={() => void confirmDisconnect()}>{t("xp.connections.walletDisconnectConfirm")}</Button>
         </DialogFooter>
       </DialogContent>

@@ -362,7 +362,7 @@ export function CertificateCard({
             {canViewOnchainCredential ? (
               <Button
                 type="button"
-                variant="outline"
+                variant="cta" hierarchy="secondary"
                 className="border-success/20 bg-success/10 text-success hover:bg-success/15"
                 onClick={() =>
                   window.open(cert.ocCredentialUrl, "_blank", "noopener,noreferrer")
@@ -380,7 +380,7 @@ export function CertificateCard({
             ) : canClaimOnchainCredential ? (
               <Button
                 type="button"
-                variant="outline"
+                variant="cta" hierarchy="secondary"
                 onClick={() => onOpenModal({ kind: "cert", data: cert })}
                 className="border-border bg-surface-base hover:bg-surface-raised"
               >
@@ -396,7 +396,7 @@ export function CertificateCard({
             ) : cert.ocClaimStatus === "awaiting_holder_id" ? (
               <Button
                 type="button"
-                variant="outline"
+                variant="cta" hierarchy="secondary"
                 onClick={() => onOpenModal({ kind: "cert", data: cert })}
                 className="border-warning/30 bg-warning/10 text-warning-foreground hover:bg-warning/15"
               >

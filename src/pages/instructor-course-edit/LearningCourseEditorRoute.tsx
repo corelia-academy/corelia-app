@@ -73,8 +73,8 @@ function LearningCourseEditorWorkspace() {
   };
   return <>
     <InstructorCourseEdit onDirtyChange={setCourseDirty} onCreateLearningLesson={lesson => void openEditor({ isNew: true, lesson: { ...lesson, code_exercise_config: defaultCodeConfig() } })} renderLearningReadiness={(lesson, openEditor) => lesson.archived_at ? null : <LessonReadinessBadge issues={readinessByLesson.get(lesson.id)} failed={readiness.isError} onOpen={openEditor} onRetry={() => void readiness.refetch()} />} onEditLearningLesson={(lesson, locale) => void openEditor({ lesson, locale, isNew: false })} learningTools={focusCourseIssue => <>
-      <Button type="button" variant="outline" size="sm" onClick={() => setCheckingContent(true)}>{t("learning.contentCheck")}</Button>
-      {publication.isError && <Button type="button" variant="outline" size="sm" onClick={() => void publication.refetch()}>{t("learning.retryPublication")}</Button>}
+      <Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={() => setCheckingContent(true)}>{t("learning.contentCheck")}</Button>
+      {publication.isError && <Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={() => void publication.refetch()}>{t("learning.retryPublication")}</Button>}
       <Link to={`/instructor/courses/${id}/preview`} state={{ editorLocation }} className="text-sm text-primary underline">{t("learning.preview")}</Link>
       <Dialog open={checkingContent} onOpenChange={setCheckingContent}>
         <DialogContent><DialogTitle>{t("learning.contentCheckTitle")}</DialogTitle><DialogDescription>{issues.length ? t("learning.reviewCourseOnly") : t("learning.noContentIssues")}</DialogDescription>
@@ -88,7 +88,7 @@ function LearningCourseEditorWorkspace() {
     {editing && !editorBundle && <Dialog open onOpenChange={open => { if (!open) closeEditor(); }}>
       <DialogContent><DialogTitle>{t("learning.edit")}</DialogTitle><DialogDescription>{t(editorLoadError ? "learning.translationLoadError" : "learning.loading")}</DialogDescription>
         {editorLoadError && <Button type="button" onClick={() => void openEditor(editing)}>{t("learning.retry")}</Button>}
-        <Button type="button" variant="outline" onClick={closeEditor}>{t("learning.cancel")}</Button>
+        <Button type="button" variant="cta" hierarchy="secondary" onClick={closeEditor}>{t("learning.cancel")}</Button>
       </DialogContent>
     </Dialog>}
     {editing && id && editorBundle?.course && <LessonEditor key={editing.lesson.id} onDirtyChange={setLessonDirty} courseId={id} finalAssignment={editorBundle.course} initial={editing.lesson} isNew={editing.isNew} initialIssueCodes={editing.issueCodes} initialIssues={editing.issues} sections={editorBundle.sections}
@@ -102,7 +102,7 @@ function LearningCourseEditorWorkspace() {
       onClose={closeEditor} onSaved={refresh} />}
     <Dialog open={navigationBlocker.state==="blocked"} onOpenChange={open=>{if(!open&&navigationBlocker.state==="blocked")navigationBlocker.reset();}}>
       <DialogContent><DialogTitle>{t("learning.unsavedTitle")}</DialogTitle><DialogDescription>{t("learning.dirtyConfirm")}</DialogDescription>
-        <div className="flex justify-end gap-3"><Button type="button" variant="outline" onClick={()=>{if(navigationBlocker.state==="blocked")navigationBlocker.reset();}}>{t("learning.keepEditing")}</Button><Button type="button" onClick={()=>{if(navigationBlocker.state==="blocked")navigationBlocker.proceed();}}>{t("learning.discardAndLeave")}</Button></div>
+        <div className="flex justify-end gap-3"><Button type="button" variant="cta" hierarchy="secondary" onClick={()=>{if(navigationBlocker.state==="blocked")navigationBlocker.reset();}}>{t("learning.keepEditing")}</Button><Button type="button" onClick={()=>{if(navigationBlocker.state==="blocked")navigationBlocker.proceed();}}>{t("learning.discardAndLeave")}</Button></div>
       </DialogContent>
     </Dialog>
   </>;

@@ -18,12 +18,22 @@ export function issuerReferenceId(templateId: string, userId: string): string {
   return `ocv2:${idFragment(templateId)}:${idFragment(userId)}`;
 }
 
-/** Achievement identifier in VC payload (max 50 chars per Corelia spec). */
+/** Public VC identifier: readable program prefix plus a stable 96-bit digest.
+ * OC limits this field to 50 characters. The digest includes both UUIDs so
+ * templates and learners stay distinct even when their prefixes match.
+ * issuerReferenceId remains unchanged for issuance/idempotency lookups.
+ */
 export async function achievementIdentifier(
   identifierPrefix: string,
   templateId: string,
   userId: string,
 ): Promise<string> {
-  const prefix = identifierPrefix.trim().slice(0, 14);
-  return `${prefix}:v2:${idFragment(templateId)}:${idFragment(userId)}`.slice(0, 50);
+  const prefix = identifierPrefix.trim().toLowerCase()
+    .replace(/[^a-z0-9:-]+/g, "-")
+    .slice(0, 25)
+    .replace(/[-:]+$/, "") || "corelia";
+  const input = new TextEncoder().encode(`${templateId.toLowerCase()}:${userId.toLowerCase()}`);
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", input));
+  const suffix = Array.from(digest.slice(0, 12), (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${prefix}:${suffix}`;
 }

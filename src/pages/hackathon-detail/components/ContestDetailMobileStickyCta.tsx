@@ -41,6 +41,7 @@ export function ContestDetailMobileStickyCta() {
           type="button"
           className="min-h-11 shrink-0 px-4"
           variant={publicCta.variant}
+          hierarchy={publicCta.hierarchy}
           disabled={Boolean(publicCta.disabled)}
           onClick={() => {
             if ("action" in publicCta && publicCta.action === "apply") {

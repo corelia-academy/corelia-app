@@ -1,8 +1,8 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { ChevronDown, CalendarDays, Coins, FolderOpen, Package, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { NavLink, useOutletContext, useSearchParams } from "react-router";
+import { NavLink, useLocation, useOutletContext, useSearchParams } from "react-router";
 
 import { Markdown } from "@/components/markdown/Markdown";
 import { ProjectCard } from "@/components/projects/ProjectCard";
@@ -19,6 +19,7 @@ import type { ContestTrack, HackathonTaxonomyOption } from "@/types/hackathons";
 import type { HackathonOutletContext } from "./ContestPublicLayout";
 import { ContestPreparationCard } from "./components/ContestPreparationCard";
 import { formatPrizeAmount } from "./utils/formatPrizeAmount";
+import { formatVietnamDateTime } from "./utils/formatVietnamDateTime";
 import { listProjectTaxonomyOptions } from "@/lib/projectTaxonomy";
 
 function EmptyTab({ icon, title }: { icon: React.ReactNode; title: string }) {
@@ -33,20 +34,28 @@ function EmptyTab({ icon, title }: { icon: React.ReactNode; title: string }) {
 export function HackathonOverviewTab() {
   const { contest, registration } = useOutletContext<HackathonOutletContext>();
   const { t } = useTranslation("contests");
+  const location = useLocation();
   const content = contest.description_markdown || contest.description || "";
+  const summary = contest.short_description || contest.tagline || "";
+  useEffect(() => {
+    if (location.hash !== "#overview-content") return;
+    const frame = window.requestAnimationFrame(() => document.getElementById("overview-content")?.scrollIntoView({ block: "start" }));
+    return () => window.cancelAnimationFrame(frame);
+  }, [location.hash]);
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]">
-      <section className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-7">
+    <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)] lg:gap-6">
+      <section id="overview-content" className="min-w-0 scroll-mt-32 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-7">
         <h2 className="text-heading-medium font-display text-foreground">{t("public.overview.description")}</h2>
-        {content ? <div className="mt-4"><Markdown content={content} /></div> : <p className="mt-4 text-sm text-foreground-muted">{t("public.empty.overview")}</p>}
+        {summary && !content.includes(summary) ? <p className="mt-4 max-w-prose text-sm leading-6 text-foreground-muted sm:text-base">{summary}</p> : null}
+        {content ? <div className="mt-4 min-w-0 [overflow-wrap:anywhere]"><Markdown content={content} /></div> : !summary ? <p className="mt-4 text-sm text-foreground-muted">{t("public.empty.overview")}</p> : null}
       </section>
       <div className="min-w-0 space-y-6 lg:self-start">
-        <aside className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card">
+        <aside className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-5">
           <h2 className="text-heading-small font-display text-foreground">{t("public.overview.summary")}</h2>
           <dl className="mt-4 space-y-3 text-sm">
-            <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.overview.mode")}</dt><dd className="font-medium">{t(`public.mode.${contest.mode ?? contest.location}`)}</dd></div>
-            <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.participants")}</dt><dd className="font-medium">{contest.participants_count ?? 0}</dd></div>
-            <div className="flex justify-between gap-4"><dt className="text-foreground-muted">{t("public.overview.registration")}</dt><dd className="font-medium">{registration ? t("public.overview.registered") : t("public.overview.notRegistered")}</dd></div>
+            <div className="flex flex-wrap justify-between gap-x-4 gap-y-1"><dt className="text-foreground-muted">{t("public.overview.mode")}</dt><dd className="font-medium">{t(`public.mode.${contest.mode ?? contest.location}`)}</dd></div>
+            <div className="flex flex-wrap justify-between gap-x-4 gap-y-1"><dt className="text-foreground-muted">{t("public.applications")}</dt><dd className="font-medium tabular-nums">{contest.participants_count ?? 0}</dd></div>
+            <div className="flex flex-wrap justify-between gap-x-4 gap-y-1"><dt className="text-foreground-muted">{t("public.overview.registration")}</dt><dd className="font-medium">{registration ? t("public.overview.registered") : t("public.overview.notRegistered")}</dd></div>
           </dl>
         </aside>
         {contest.slug && contest.status !== "draft" ? <ContestPreparationCard contest={contest} /> : null}
@@ -63,16 +72,16 @@ export function HackathonPrizesTab() {
   const tracks = [...(contest.tracks ?? [])].filter((track) => track.active !== false).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
   if (!pool && tracks.length === 0) return <EmptyTab icon={<Coins className="size-6" />} title={t("public.empty.prizes")} />;
   return (
-    <div className="space-y-6">
-      <section className="rounded-2xl border border-border-subtle bg-surface-base p-6 shadow-card">
+    <div className="min-w-0 space-y-4 sm:space-y-6">
+      <section className="min-w-0 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-6">
         <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">{t("public.prizes.total")}</div>
-        <div className="mt-2 break-words text-3xl font-bold text-foreground">{formatAmount(pool?.amount || "0")} <span className="text-lg text-foreground-muted">{pool?.currency}</span></div>
+        <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground tabular-nums [overflow-wrap:anywhere] sm:text-3xl">{formatAmount(pool?.amount || "0")} <span className="text-base font-medium text-foreground-muted">{pool?.currency}</span></div>
         {pool?.description_markdown ? <div className="mt-4"><Markdown content={pool.description_markdown} /></div> : null}
       </section>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid min-w-0 gap-3 md:grid-cols-2 md:gap-4">
         {tracks.map((track) => (
-          <article key={track.id} className="min-w-0 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card">
-            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2"><h2 className="min-w-0 break-words text-heading-small font-display text-foreground">{track.name}</h2>{track.prize_amount ? <span className="break-words font-semibold text-primary">{formatAmount(track.prize_amount)} {pool?.currency}</span> : null}</div>
+          <article key={track.id} className="min-w-0 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-5">
+            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2"><h2 className="min-w-0 break-words text-heading-small font-display text-foreground">{track.name}</h2>{track.prize_amount ? <span className="font-semibold text-primary tabular-nums [overflow-wrap:anywhere]">{formatAmount(track.prize_amount)} {pool?.currency}</span> : null}</div>
             {track.description ? <div className="mt-3 break-words text-foreground-muted"><Markdown content={track.description} compact /></div> : null}
           </article>
         ))}
@@ -90,11 +99,11 @@ export function HackathonTimelineTab() {
   return (
     <ol className="relative ml-3 border-l border-border pl-7">
       {timeline.map((item) => (
-        <li key={item.id} className="relative pb-8 last:pb-0">
+        <li key={item.id} className="relative pb-5 last:pb-0 sm:pb-8">
           <span className="absolute -left-[2.15rem] top-1 size-3 rounded-full border-2 border-background bg-primary" />
-          <div className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card">
+          <div className="min-w-0 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-5">
             <h2 className="text-heading-small font-display text-foreground">{item.title}</h2>
-            <time className="mt-1 block text-xs text-foreground-muted">{new Date(item.starts_at).toLocaleString(locale)}{item.ends_at ? `: ${new Date(item.ends_at).toLocaleString(locale)}` : ""}</time>
+            <time dateTime={item.starts_at} className="mt-1 block text-xs text-foreground-muted">{formatVietnamDateTime(item.starts_at, locale)}{item.ends_at ? ` – ${formatVietnamDateTime(item.ends_at, locale)}` : ""}</time>
             {item.description_markdown ? <div className="mt-3"><Markdown content={item.description_markdown} compact /></div> : null}
           </div>
         </li>
@@ -107,7 +116,7 @@ export function HackathonResourcesTab() {
   const { contest } = useOutletContext<HackathonOutletContext>();
   const { t } = useTranslation("contests");
   if (!contest.resources_markdown?.trim()) return <EmptyTab icon={<FolderOpen className="size-6" />} title={t("public.empty.resources")} />;
-  return <section className="rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-7"><Markdown content={contest.resources_markdown} /></section>;
+  return <section className="min-w-0 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card [overflow-wrap:anywhere] sm:p-7"><Markdown content={contest.resources_markdown} /></section>;
 }
 
 type FilterOption = Pick<HackathonTaxonomyOption, "id" | "name"> & { active?: boolean };
@@ -172,8 +181,8 @@ export function HackathonProjectsTab() {
     setParams(next, { preventScrollReset: true });
   };
   return (
-    <div className="space-y-6">
-      <section className="rounded-xl border border-border-subtle bg-surface-base px-4 sm:px-5">
+    <div className="min-w-0 space-y-4 sm:space-y-6">
+      <section className="rounded-xl border border-border-subtle bg-surface-base px-3 sm:px-5">
         <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-border-subtle py-3">
           <div className="flex min-w-0 items-center gap-2.5">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-surface-raised text-foreground-muted"><SlidersHorizontal className="size-4" /></span>
@@ -183,7 +192,7 @@ export function HackathonProjectsTab() {
             </div>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2">
-            {activeFilterCount > 0 ? <Button type="button" variant="ghost" size="sm" className="min-h-10 px-2 text-foreground-muted" onClick={clearFilters}><X className="size-4" />{t("public.projects.clearFilters")}</Button> : null}
+            {activeFilterCount > 0 ? <Button type="button" variant="cta" hierarchy="tertiary" size="small" className="min-h-10 px-2 text-foreground-muted" onClick={clearFilters}><X className="size-4" />{t("public.projects.clearFilters")}</Button> : null}
             <label className="flex items-center gap-2 text-sm text-foreground-muted"><span className="sr-only sm:not-sr-only">{t("public.projects.sort")}</span><select className="min-h-10 rounded-md border border-border bg-background px-2.5 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/40" value={sort} onChange={(event) => { const next = new URLSearchParams(params); if (event.target.value === "oldest") next.set("sort", "oldest"); else next.delete("sort"); setParams(next, { preventScrollReset: true }); }}><option value="newest">{t("public.projects.newest")}</option><option value="oldest">{t("public.projects.oldest")}</option></select></label>
           </div>
         </div>
@@ -197,10 +206,10 @@ export function HackathonProjectsTab() {
       {query.isPending ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div> : query.isError ? <div role="alert" className="py-8 text-center"><p>{t("detail.errors.loadFailed")}</p><Button className="mt-3" onClick={() => void query.refetch()}>{t("projects.retry", { ns: "common" })}</Button></div> : projects.length === 0 ? <EmptyTab icon={<Package className="size-6" />} title={t("public.empty.projects")} /> : (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{projects.map(({ project, owner }) => <div key={project.id} className="relative">{awards.has(project.id) ? <div className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950 shadow"><Sparkles className="size-3" />{awards.get(project.id)}</div> : null}<ProjectCard systemTaxonomy={systemTaxonomy} hearted={hearts.data?.has(project.id) ?? false} taxonomy={contest} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} ownerAvatarUrl={owner?.avatar_url} ownerAvatarSeed={owner?.avatar_seed} ownerAvatarConfig={owner?.avatar_config} teamMembers={teamsQuery.data?.[project.id] ?? []} /></div>)}</div>
-          {query.hasNextPage ? <div className="flex justify-center"><Button type="button" variant="outline" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>{query.isFetchingNextPage ? t("public.projects.loading") : t("public.projects.loadMore")}</Button></div> : null}
+          {query.hasNextPage ? <div className="flex justify-center"><Button type="button" variant="cta" hierarchy="secondary" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>{query.isFetchingNextPage ? t("public.projects.loading") : t("public.projects.loadMore")}</Button></div> : null}
         </>
       )}
-      <div className="text-center"><Button render={<NavLink to={`/projects?hackathon=${encodeURIComponent(contest.slug ?? "")}`} />} nativeButton={false} variant="ghost">{t("public.projects.openCatalog")}</Button></div>
+      <div className="text-center"><Button render={<NavLink to={`/projects?hackathon=${encodeURIComponent(contest.slug ?? "")}`} />} nativeButton={false} variant="cta" hierarchy="tertiary">{t("public.projects.openCatalog")}</Button></div>
     </div>
   );
 }

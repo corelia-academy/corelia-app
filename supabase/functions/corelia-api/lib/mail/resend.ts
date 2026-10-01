@@ -42,6 +42,7 @@ async function recordMailAttempts(params: {
   status: MailAttemptStatus;
   httpStatus?: number;
   providerMessageIds?: Array<string | null>;
+  context?: { type: "corelia_certificate" | "oc_issuance"; id: string };
 }): Promise<void> {
   if (!params.recipients.length) return;
 
@@ -54,6 +55,8 @@ async function recordMailAttempts(params: {
         provider_message_id: params.providerMessageIds?.[index] ?? null,
         provider_status: params.status,
         provider_http_status: params.httpStatus ?? null,
+        context_type: params.context?.type ?? null,
+        context_id: params.context?.id ?? null,
       })),
     );
     if (error) {
@@ -93,6 +96,7 @@ export async function sendTransactionalEmailViaResend(params: {
   replyTo?: string;
   headers?: Record<string, string>;
   idempotencyKey?: string;
+  context?: { type: "corelia_certificate" | "oc_issuance"; id: string };
 }): Promise<TransactionalMailResult> {
   const apiKey = Deno.env.get("RESEND_API_KEY")?.trim() ?? "";
   const mailFrom = params.from?.trim() || Deno.env.get("MAIL_FROM")?.trim() || "";
@@ -103,6 +107,7 @@ export async function sendTransactionalEmailViaResend(params: {
       mailType: params.mailType,
       recipients: params.to,
       status: "skipped",
+      context: params.context,
     });
     return { sent: false, skipped: true, reason: "email_not_configured" };
   }
@@ -159,6 +164,7 @@ export async function sendTransactionalEmailViaResend(params: {
         mailType: params.mailType,
         recipients: params.to,
         status: "provider_error",
+        context: params.context,
         httpStatus: res.status,
       });
       return {
@@ -179,6 +185,7 @@ export async function sendTransactionalEmailViaResend(params: {
       mailType: params.mailType,
       recipients: params.to,
       status: "accepted",
+      context: params.context,
       httpStatus: res.status,
       providerMessageIds: params.to.map(() => providerMessageId),
     });
@@ -190,6 +197,7 @@ export async function sendTransactionalEmailViaResend(params: {
       mailType: params.mailType,
       recipients: params.to,
       status: "provider_error",
+      context: params.context,
     });
     return {
       sent: false,

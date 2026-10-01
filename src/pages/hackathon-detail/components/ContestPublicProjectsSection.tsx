@@ -123,8 +123,8 @@ export function ContestPublicProjectsSection(props: {
                         <a href={row.demo_url} target="_blank" rel="noreferrer" />
                       }
                       nativeButton={false}
-                      size="sm"
-                      variant="outline"
+                      size="small"
+                      variant="cta" hierarchy="secondary"
                       className="gap-1"
                     >
                       <ExternalLink className="size-3.5" aria-hidden />
@@ -137,8 +137,8 @@ export function ContestPublicProjectsSection(props: {
                         <a href={row.repo_url} target="_blank" rel="noreferrer" />
                       }
                       nativeButton={false}
-                      size="sm"
-                      variant="outline"
+                      size="small"
+                      variant="cta" hierarchy="secondary"
                       className="gap-1"
                     >
                       <ExternalLink className="size-3.5" aria-hidden />
@@ -151,8 +151,8 @@ export function ContestPublicProjectsSection(props: {
                         <a href={row.slide_url} target="_blank" rel="noreferrer" />
                       }
                       nativeButton={false}
-                      size="sm"
-                      variant="outline"
+                      size="small"
+                      variant="cta" hierarchy="secondary"
                       className="gap-1"
                     >
                       <ExternalLink className="size-3.5" aria-hidden />
@@ -165,8 +165,8 @@ export function ContestPublicProjectsSection(props: {
                         <a href={row.video_url} target="_blank" rel="noreferrer" />
                       }
                       nativeButton={false}
-                      size="sm"
-                      variant="outline"
+                      size="small"
+                      variant="cta" hierarchy="secondary"
                       className="gap-1"
                     >
                       <ExternalLink className="size-3.5" aria-hidden />

@@ -50,8 +50,6 @@
     "registrationNoLimit": "Không giới hạn thời gian đăng ký",
     "viewDetails": "Xem chi tiết",
     "viewContest": "Xem hackathon",
-    "openWorkspace": "Mở hackathon workspace",
-    "statsSummary": "{{total}} tổng · {{accepting}} đang nhận hồ sơ · {{running}} đang diễn ra · {{ended}} đã kết thúc",
     "stats": {
       "total": "Tổng hackathon",
       "accepting": "Đang nhận hồ sơ",
@@ -87,7 +85,7 @@
     "createProject": "Tạo / xem dự án",
     "submissionClosed": "Đã đóng nộp dự án",
     "hostedBy": "Tổ chức bởi",
-    "participants": "Người đăng ký",
+    "applications": "Hồ sơ đăng ký",
     "registrationDeadline": "Hạn đăng ký",
     "submissionDeadline": "Hạn nộp dự án",
     "tabsLabel": "Nội dung hackathon",
@@ -111,6 +109,7 @@
     },
     "overview": {
       "description": "Giới thiệu",
+      "readMore": "Đọc tổng quan",
       "summary": "Thông tin nhanh",
       "mode": "Hình thức",
       "registration": "Trạng thái của bạn",
@@ -910,26 +909,21 @@
       "noPreview": "Chưa có ảnh"
     },
     "track": {
-      "eyebrow": "Career track",
+      "eyebrow": "Hạng mục thi",
       "ctaSoon": "Khám phá track (sắp có)"
     },
     "learn": {
       "sectionTitle": "Học liên quan",
-      "sectionDescription": "Khóa học và career track phù hợp với hackathon.",
+      "sectionDescription": "Các khóa học phù hợp với hackathon này.",
       "officialBadge": "Khóa chính thức",
       "officialHint": "Gợi ý chuẩn bị từ ban tổ chức.",
       "loading": "Đang tải liên kết…",
       "courseUnavailable": "Khóa học chưa khả dụng công khai.",
-      "trackUnavailable": "Track chưa có liên kết công khai.",
       "openCourse": "Mở khóa học",
-      "openTrack": "Mở track",
       "courseLinkSoon": "Mở khóa học (sắp có)",
       "relatedCoursesTitle": "Khóa học liên quan",
       "relatedCoursesHint_one": "Đã liên kết {{count}} khóa học.",
-      "relatedCoursesHint_other": "Đã liên kết {{count}} khóa học.",
-      "relatedTracksTitle": "Career tracks",
-      "relatedTracksHint_one": "Đã gắn {{count}} track.",
-      "relatedTracksHint_other": "Đã gắn {{count}} track."
+      "relatedCoursesHint_other": "Đã liên kết {{count}} khóa học."
     },
     "people": {
       "sectionTitle": "Con người",

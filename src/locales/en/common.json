@@ -19,8 +19,6 @@
     "courseDetail": "Course details",
     "projectInvite": "Project invitation",
     "coInstructorInvite": "Co-instructor invitation",
-    "careerTracks": "Career tracks",
-    "careerTrackDetail": "Career track details",
     "instructorDetail": "Instructor details",
     "achievements": "Achievements",
     "hackathons": "Hackathons",
@@ -65,9 +63,6 @@
     "emailCenter": "Email center",
     "teaching": "Teaching",
     "manageCourses": "Manage courses",
-    "manageCareerTracks": "Manage career tracks",
-    "newCareerTrack": "Create career track",
-    "editCareerTrack": "Edit career track",
     "newCourse": "Create course",
     "previewCourse": "Preview course",
     "editCourse": "Edit course",
@@ -113,7 +108,6 @@
     "someone": "Someone",
     "courses": "Courses",
     "feed": "Feed",
-    "career": "Roadmap",
     "contests": "Hackathons",
     "projects": "Projects",
     "jobs": "Jobs",
@@ -170,7 +164,6 @@
     "projectFallback": "your project",
     "viewAwardDetails": "View results",
     "courseAnnouncementTitle": "Course announcement",
-    "trackAnnouncementTitle": "Learning path announcement",
     "markRead": "Mark as read",
     "courseCompletedTitle": "Course completed",
     "courseCompletedBody": "Congratulations! Your progress for \"{{course}}\" has been saved as complete.",
@@ -404,11 +397,12 @@
       "hackathonEligibleHint": "Only users who have registered for this hackathon are eligible.",
       "pickTitle": "Choose team members",
       "pickDescription": "Find Corelia accounts to invite to this project.",
-      "hackathonPickDescription": "Only users who have registered for this hackathon are eligible.",
+      "hackathonPickDescription": "Only registered participants are eligible. Search by name or @username to find people beyond the first 50 shown.",
       "placeholder": "Search by name or @username",
       "searchPlaceholder": "Search by name or @username…",
       "loading": "Loading members…",
       "empty": "No eligible members found.",
+      "loadError": "Could not load members. Please try searching again.",
       "inviteAfterSave": "Invitations are sent after the project passes moderation and is saved.",
       "invited": "Invitation sent.",
       "someInvitesFailed": "The project was created, but some invitations could not be sent.",
@@ -621,7 +615,7 @@
     "placeholder": "Search public content...",
     "title": "Search",
     "queryLine": "Results for “{{query}}”",
-    "enterQueryHint": "Type a keyword in the header search to discover public content.",
+    "enterQueryHint": "Enter a keyword below to discover public content.",
     "suggest": {
       "recent": "Recent searches",
       "trending": "Trending",
@@ -639,7 +633,6 @@
       "project": "Project",
       "contest": "Hackathon",
       "course": "Course",
-      "career_track": "Career track",
       "profile": "Profile"
     }
   },
@@ -675,7 +668,7 @@
       "offlinePrefix": "offline class"
     },
     "focus": {
-      "nextLesson": "Next lesson: {{title}}",
+      "nextLesson": "Resume lesson: {{title}}",
       "allLessonsCompleted": "You’ve completed all available lessons",
       "lastAccessed": "Last accessed: {{date}}"
     },
@@ -697,7 +690,7 @@
     },
     "guest": {
       "heroTitle": "Start your Web3 learning journey with Corelia",
-      "heroSubtitle": "Explore courses, programs, and open hackathons. When you want to save progress or enroll, just sign in.",
+      "heroSubtitle": "Explore courses and open hackathons. When you want to save progress or enroll, just sign in.",
       "featuredCoursesTitle": "Featured courses",
       "signIn": "Sign in",
       "openContestsTitle": "Open hackathons",
@@ -1000,6 +993,14 @@
   "combobox": {
     "searchPlaceholder": "Search by name or email",
     "emptyLabel": "No matching results.",
+    "searchLabel": "Search {{label}}",
+    "tagsLabel": "tags",
+    "selectOptionLabel": "Select an option",
+    "selectionLabel": "{{label}} selection",
+    "tagOptionsLabel": "Tag options",
+    "tagOptionsForLabel": "{{label}} tag options",
+    "hiddenTagsLabel_one": "{{count}} hidden tag",
+    "hiddenTagsLabel_other": "{{count}} hidden tags",
     "done": "Done",
     "loadMore": "Load more",
     "loadingMore": "Loading more..."

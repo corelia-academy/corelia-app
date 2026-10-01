@@ -22,6 +22,7 @@ interface UseLearnProgressInput {
 }
 
 interface UseLearnProgressResult {
+  loaded: boolean;
   progressList: LessonProgress[];
   completedIds: Set<string>;
   progressPercent: number;
@@ -79,6 +80,7 @@ export function useLearnProgress({
     );
 
   return {
+    loaded: !hasContext || !progressQuery.isPending,
     progressList,
     completedIds,
     progressPercent,

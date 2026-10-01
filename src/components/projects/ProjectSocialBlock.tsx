@@ -78,8 +78,8 @@ export function ProjectSocialBlock({
     <div className={cn("border-t border-border-subtle pt-3", className)}>
       <Button
         type="button"
-        variant="ghost"
-        size="sm"
+        variant="cta" hierarchy="tertiary"
+        size="small"
         disabled={heartMutation.isPending}
         className={cn("gap-1.5", hearted && "text-rose-600")}
         onClick={() => void handleHeart()}

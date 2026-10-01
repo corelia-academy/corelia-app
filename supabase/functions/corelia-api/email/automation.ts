@@ -7,7 +7,7 @@ export async function enqueueEmailAutomationForUser(params: {
   triggerType: string;
   userId: string;
   triggerKey: string;
-  objectType?: "course" | "program" | "hackathon";
+  objectType?: "course" | "hackathon";
   objectId?: string;
   context?: Record<string, unknown>;
 }): Promise<number> {

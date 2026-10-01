@@ -6,7 +6,7 @@ import { isTransactionalEmailConfigured } from "../lib/mail/resend.ts";
 import type { SupabaseClient } from "../lib/supabase.ts";
 import { renderEmailDocument } from "./template.ts";
 import { processNextImportChunk } from "./importWorker.ts";
-import { selectLocalizedEmailContent } from "../lib/mail/localized.ts";
+import { resolveLocalizedEmailContent } from "../lib/mail/localized.ts";
 import { normalizeEmailLocale } from "../lib/mail/locale.ts";
 
 type Recipient = {
@@ -43,7 +43,7 @@ async function dispatchBatch(db: SupabaseClient, campaign: Record<string, unknow
   const { data: contacts, error: contactsError } = await db.from("email_contacts").select("id,user_id,global_suppressed_at,email_contact_consents(topic,status)").in("id", contactIds);
   if (contactsError) throw contactsError;
   const userIds = (contacts ?? []).map((contact) => contact.user_id).filter(Boolean);
-  const preferenceResult = userIds.length ? await db.from("notification_preferences").select("user_id,email_course_blast,email_track_blast").in("user_id", userIds) : { data: [], error: null };
+  const preferenceResult = userIds.length ? await db.from("notification_preferences").select("user_id,email_course_blast").in("user_id", userIds) : { data: [], error: null };
   if (preferenceResult.error) throw preferenceResult.error;
   const preferences = preferenceResult.data;
   const preferenceByUser = new Map((preferences ?? []).map((preference) => [preference.user_id, preference]));
@@ -51,7 +51,6 @@ async function dispatchBatch(db: SupabaseClient, campaign: Record<string, unknow
     if (contact.global_suppressed_at) return false;
     const preference = contact.user_id ? preferenceByUser.get(contact.user_id) : null;
     if (campaign.object_type === "course" && preference?.email_course_blast === false) return false;
-    if (campaign.object_type === "program" && preference?.email_track_blast === false) return false;
     if (campaign.purpose !== "marketing") return true;
     return contact.email_contact_consents?.some((consent: { topic: string; status: string }) => consent.topic === "marketing" && consent.status === "subscribed");
   }).map((contact) => contact.id));
@@ -79,16 +78,17 @@ async function dispatchBatch(db: SupabaseClient, campaign: Record<string, unknow
     const locale = normalizeEmailLocale(row.resolved_locale ?? values.locale);
     const unsubscribeUrl = campaign.purpose === "marketing" ? `${resolveAppUrl()}/email/unsubscribe?type=marketing&token=${encodeURIComponent(row.id)}` : undefined;
     const oneClickUrl = campaign.purpose === "marketing" ? `${env("SUPABASE_URL")}/functions/v1/corelia-api?op=email.unsubscribe&token=${encodeURIComponent(row.id)}` : undefined;
-    const localized = selectLocalizedEmailContent(version!.localized_content, locale);
+    const localized = resolveLocalizedEmailContent(version!.localized_content, locale);
     const legacy = !version!.localized_content
       ? { subject: version!.subject, preheader: version!.preheader, body_text: version!.body_text,
           cta_label: version!.cta_label, cta_url: version!.cta_url, image_url: version!.image_url }
       : null;
-    const copy = localized ?? legacy;
+    const copy = localized?.copy ?? legacy;
     if (!copy) throw new Error(`campaign_translation_missing:${locale}`);
-    const rendered = renderEmailDocument({ subject: copy.subject, preheader: copy.preheader, bodyText: copy.body_text, ctaLabel: copy.cta_label, ctaUrl: copy.cta_url, imageUrl: copy.image_url, purpose: String(campaign.purpose), locale, values, unsubscribeUrl });
+    const renderedLocale = localized?.locale ?? locale;
+    const rendered = renderEmailDocument({ subject: copy.subject, preheader: copy.preheader, bodyText: copy.body_text, ctaLabel: copy.cta_label, ctaUrl: copy.cta_url, imageUrl: copy.image_url, purpose: String(campaign.purpose), locale: renderedLocale, values, unsubscribeUrl });
     const snapshot = { from: String(campaign.frozen_from), reply_to: String(campaign.frozen_reply_to), to: [row.recipient_email], subject: rendered.subject, html: rendered.html, headers: oneClickUrl ? { "List-Unsubscribe": `<${oneClickUrl}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } : undefined };
-    const { data: snapshotRow, error: snapshotError } = await db.from("email_campaign_recipients").update({ request_snapshot: snapshot, resolved_locale: locale, locale_source: row.locale_source ?? "contact", updated_at: new Date().toISOString() }).eq("id", row.id).eq("lease_token", lease).is("request_snapshot", null).select("id").maybeSingle();
+    const { data: snapshotRow, error: snapshotError } = await db.from("email_campaign_recipients").update({ request_snapshot: snapshot, resolved_locale: renderedLocale, locale_source: renderedLocale === locale ? row.locale_source ?? "contact" : "fallback", updated_at: new Date().toISOString() }).eq("id", row.id).eq("lease_token", lease).is("request_snapshot", null).select("id").maybeSingle();
     if (snapshotError) throw snapshotError;
     if (!snapshotRow) throw new Error("campaign_snapshot_fence_failed");
     messages.push(snapshot);
@@ -125,11 +125,10 @@ async function dispatchBatch(db: SupabaseClient, campaign: Record<string, unknow
 async function automationStillEligible(db: SupabaseClient, automation: Record<string, unknown>, enrollment: Record<string, unknown>, contact: Record<string, unknown>): Promise<boolean> {
   const userId = String(contact.user_id ?? "");
   const context = (enrollment.context ?? {}) as Record<string, unknown>;
-  if (userId && (automation.object_type === "course" || automation.object_type === "program")) {
-    const { data: preference, error } = await db.from("notification_preferences").select("email_course_blast,email_track_blast").eq("user_id", userId).maybeSingle();
+  if (userId && automation.object_type === "course") {
+    const { data: preference, error } = await db.from("notification_preferences").select("email_course_blast").eq("user_id", userId).maybeSingle();
     if (error) throw error;
     if (automation.object_type === "course" && preference?.email_course_blast === false) return false;
-    if (automation.object_type === "program" && preference?.email_track_blast === false) return false;
   }
   if (automation.trigger_type === "account_verified") {
     if (!userId) return false;
@@ -198,13 +197,14 @@ async function processAutomations(db: SupabaseClient, limit = 20): Promise<numbe
       const values = { ...(enrollment.context as Record<string, unknown>), name: contact.full_name ?? "", email: contact.email };
       const unsubscribeUrl = automation.purpose === "marketing" ? `${resolveAppUrl()}/email/unsubscribe?type=marketing&token=${encodeURIComponent(enrollment.id)}` : undefined;
       const locale = normalizeEmailLocale(contact.locale);
-      const copy = selectLocalizedEmailContent(version.localized_content, locale);
-      if (!copy) {
+      const localized = resolveLocalizedEmailContent(version.localized_content, locale);
+      if (!localized) {
         await db.from("email_automations").update({ enabled: false, pause_reason: `missing_translation:${locale}`, updated_at: new Date().toISOString() }).eq("id", automation.id);
         await db.from("email_automation_enrollments").update({ status: "stopped", context: { ...(enrollment.context as Record<string, unknown>), stop_reason: `missing_translation:${locale}` }, updated_at: new Date().toISOString() }).eq("id", enrollment.id);
         continue;
       }
-      const rendered = renderEmailDocument({ subject: copy.subject, preheader: copy.preheader, bodyText: copy.body_text, ctaLabel: copy.cta_label, ctaUrl: copy.cta_url, imageUrl: copy.image_url, purpose: automation.purpose, locale, values, unsubscribeUrl });
+      const copy = localized.copy;
+      const rendered = renderEmailDocument({ subject: copy.subject, preheader: copy.preheader, bodyText: copy.body_text, ctaLabel: copy.cta_label, ctaUrl: copy.cta_url, imageUrl: copy.image_url, purpose: automation.purpose, locale: localized.locale, values, unsubscribeUrl });
       const oneClickUrl = automation.purpose === "marketing" ? `${env("SUPABASE_URL")}/functions/v1/corelia-api?op=email.unsubscribe&token=${encodeURIComponent(enrollment.id)}` : undefined;
       snapshot = {
         from: `${String(sender.display_name)} <${String(sender.from_email)}>`,

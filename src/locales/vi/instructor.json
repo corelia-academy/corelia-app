@@ -4,7 +4,6 @@
     "subtitle": "Quản lý khoá học, hồ sơ và các tác vụ vận hành trong một nơi.",
     "createCourse": "Tạo khoá học",
     "courseList": "Danh sách khoá học",
-    "careerTracks": "Lộ trình học",
     "offlineClasses": "Lớp học trực tiếp",
     "profile": "Hồ sơ giảng viên",
     "contests": "Cuộc thi"
@@ -14,8 +13,6 @@
       "home": "Home",
       "teaching": "Quản lý giảng dạy",
       "createCourse": "Tạo khoá học",
-      "careerTracks": "Lộ trình học",
-      "createCareerTrack": "Tạo lộ trình",
       "offlineClasses": "Lớp học trực tiếp",
       "createCohort": "Tạo cohort",
       "cohortWorkspace": "Khu vực vận hành cohort",
@@ -30,18 +27,6 @@
       "newCourse": {
         "title": "Tạo khoá học mới",
         "description": "Khởi tạo nội dung và hành trình học miễn phí ngay từ đầu."
-      },
-      "careerTracks": {
-        "title": "Quản lý lộ trình học",
-        "description": "Tạo và xuất bản lộ trình học dựa trên các khoá học bạn xây dựng."
-      },
-      "careerTracksNew": {
-        "title": "Tạo lộ trình học",
-        "description": "Tạo lộ trình (draft/published) và sắp xếp các khoá học theo thứ tự."
-      },
-      "careerTracksEdit": {
-        "title": "Chỉnh sửa lộ trình học",
-        "description": "Cập nhật nội dung lộ trình và danh sách khoá học kèm theo."
       },
       "offlineList": {
         "title": "Danh sách lớp trực tiếp",
@@ -88,95 +73,6 @@
       "coreliaInstructor": "Giảng viên Corelia",
       "adminMode": "Chế độ quản trị",
       "teachingMode": "Tác vụ giảng dạy"
-    }
-  },
-  "careerTracks": {
-    "list": {
-      "title": "Lộ trình học",
-      "subtitle": "Tổng {{total}} · Đã xuất bản {{published}} · Bản nháp {{drafts}}",
-      "emptyTitle": "Chưa có lộ trình nào",
-      "emptyDescription": "Tạo lộ trình đầu tiên của bạn dựa trên các khoá học bạn đã tạo."
-    },
-    "editor": {
-      "newTitle": "Tạo lộ trình",
-      "editTitle": "Chỉnh sửa lộ trình",
-      "subtitle": "Thiết lập nội dung và sắp xếp khoá học theo thứ tự học.",
-      "translationModeHint": "Đang chỉnh sửa bản dịch {{locale}}. Trường nào để trống sẽ dùng ngôn ngữ gốc làm fallback."
-    },
-    "sections": {
-      "learning": "Nội dung",
-      "includedCourses": "Khoá học trong lộ trình"
-    },
-    "fields": {
-      "title": "Tiêu đề",
-      "slug": "Slug",
-      "description": "Mô tả",
-      "whatYoullLearn": "Bạn sẽ học được gì",
-      "prerequisites": "Yêu cầu trước khi học",
-      "settings": "Thiết lập",
-      "hasCertificate": "Có certificate",
-      "published": "Xuất bản",
-      "addCourse": "Thêm khoá học"
-    },
-    "placeholders": {
-      "title": "Ví dụ: Frontend Engineer",
-      "description": "Mô tả ngắn về lộ trình…",
-      "whatYoullLearn": "Mỗi dòng là một mục…",
-      "prerequisites": "Mỗi dòng là một mục…",
-      "pickCourse": "Chọn một khoá học"
-    },
-    "hints": {
-      "slug": "Dùng chữ thường, số và dấu gạch ngang. Ví dụ: frontend-engineer",
-      "lines": "Mỗi dòng tương ứng một item."
-    },
-    "labels": {
-      "loading": "Đang tải…",
-      "draft": "Draft",
-      "published": "Published",
-      "noCourses": "Chưa có khoá học nào trong lộ trình.",
-      "courseCount": "{{count}} khoá học",
-      "courseCount_plural": "{{count}} khoá học"
-    },
-    "actions": {
-      "create": "Tạo lộ trình",
-      "edit": "Chỉnh sửa",
-      "publish": "Xuất bản",
-      "unpublish": "Gỡ xuất bản",
-      "back": "Quay lại",
-      "save": "Lưu",
-      "saving": "Đang lưu…",
-      "translationSaved": "Đã lưu bản dịch.",
-      "saveLocalizationSettings": "Lưu thiết lập ngôn ngữ"
-    },
-    "errors": {
-      "loadFailed": "Không thể tải dữ liệu lộ trình.",
-      "saveFailed": "Không thể lưu lộ trình.",
-      "missingRequired": "Vui lòng nhập tiêu đề và slug.",
-      "notFound": "Không tìm thấy lộ trình."
-    },
-    "announcements": {
-      "title": "Gửi thông báo lộ trình",
-      "heroTitle": "Gửi thông báo tới học viên trong lộ trình",
-      "heroDescription": "Soạn email và gửi tới tất cả học viên đã đăng ký bất kỳ khoá học nào trong lộ trình này.",
-      "subjectLabel": "Tiêu đề email",
-      "subjectPlaceholder": "Nhập tiêu đề...",
-      "bodyLabel": "Nội dung",
-      "bodyPlaceholder": "Soạn nội dung thông báo tại đây. Dùng dòng trống để tách đoạn.",
-      "bodyHint": "Chỉ nhập văn bản thường: xuống dòng được giữ nguyên. Không cần viết HTML.",
-      "bodyPreviewToggle": "Xem trước",
-      "bodyPreviewBrandedNote": "Xem trước (header và footer sẽ được thêm tự động khi gửi):",
-      "sendButton": "Gửi thông báo",
-      "confirmTitle": "Xác nhận gửi thông báo?",
-      "confirmSubjectLabel": "Tiêu đề:",
-      "confirmDescription": "Email sẽ được gửi tới tất cả học viên trong lộ trình này.",
-      "confirmButton": "Gửi ngay",
-      "cancelButton": "Huỷ",
-      "resultSent": "Đã gửi thành công {{sent}}/{{total}} email.",
-      "resultFailed": "{{failed}} email gửi thất bại.",
-      "resultSkipped": "Không gửi được cho {{skipped}} người nhận.",
-      "resultError": "Lỗi gửi email: {{reason}}",
-      "systemUnavailable": "Hệ thống gửi email đang gặp sự cố. Chưa email nào được gửi. Vui lòng liên hệ quản trị viên hệ thống để được hỗ trợ.",
-      "notConfigured": "Chưa cấu hình email. Vui lòng kiểm tra RESEND_API_KEY."
     }
   },
   "courseNew": {
@@ -555,20 +451,6 @@
       "explanationPlaceholder": "Giải thích vì sao đáp án đúng (tùy chọn)...",
       "replaceDraftConfirm": "Tạo câu hỏi mới và thay thế bản nháp hiện tại? Các chỉnh sửa chưa lưu sẽ bị mất."
     },
-    "careerTracks": {
-      "shortDescriptionLabel": "Mô tả ngắn",
-      "shortDescriptionDesc": "Hiển thị ngay dưới tiêu đề ở trang chi tiết. ~1–2 câu.",
-      "shortDescriptionPlaceholder": "Hành trình học Web3 trong 8 tuần…",
-      "uploading": "Đang tải lên…",
-      "saveBeforeUpload": "Hãy lưu lộ trình trước khi tải ảnh.",
-      "uploadFailed": "Upload thất bại",
-      "namePlaceholder": "Tên",
-      "shortDescOptionalPlaceholder": "Mô tả ngắn (tuỳ chọn)",
-      "labels": {
-        "courseCount": "{{count}} khóa học",
-        "courseCount_plural": "{{count}} khóa học"
-      }
-    },
     "certificateGuide": {
       "title": "Hướng dẫn tạo template",
       "sizeHint": "Kích thước khuyến nghị: 1600×1200 px (4:3 ngang) hoặc 1200×1600 px (3:4 dọc).",
@@ -624,7 +506,7 @@
       "requireAssignmentLabel": "Yêu cầu duyệt bài tập cuối khóa",
       "minScoreLabel": "Điểm bài tập tối thiểu",
       "identifierPrefixLabel": "Tiền tố identifier",
-      "identifierHint": "Chữ thường, phân tách bằng gạch ngang, tối đa 40 ký tự. Hậu tố học viên được thêm tự động.",
+      "identifierHint": "Dùng tiền tố dễ nhận diện chương trình (ví dụ corelia:unihackfest-2026). Open Campus hiển thị tối đa 25 ký tự đầu, sau đó là mã duy nhất.",
       "identifierLocked": "Đã có {{count}} credential được tạo. Tiền tố đã bị khóa để tránh mint trùng.",
       "save": "Lưu cấu hình credential",
       "saving": "Đang lưu…",

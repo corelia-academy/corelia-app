@@ -47,7 +47,6 @@ export function UserProfileProjectsSection({
     return (
       <section className="space-y-3">
         <div className="flex items-center gap-2">
-          <FolderGit2 className="size-4 text-foreground-muted" aria-hidden />
           <h2 className="text-heading-small font-display text-foreground">
             {t("projects.title")}
           </h2>
@@ -62,7 +61,6 @@ export function UserProfileProjectsSection({
     return (
       <section className="space-y-3">
         <div className="flex items-center gap-2">
-          <FolderGit2 className="size-4 text-foreground-muted" aria-hidden />
           <h2 className="text-heading-small font-display text-foreground">
             {t("projects.title")}
           </h2>
@@ -78,7 +76,6 @@ export function UserProfileProjectsSection({
     return (
       <section className="space-y-3">
         <div className="flex items-center gap-2">
-          <FolderGit2 className="size-4 text-foreground-muted" aria-hidden />
           <h2 className="text-heading-small font-display text-foreground">
             {t("projects.title")}
           </h2>
@@ -94,7 +91,6 @@ export function UserProfileProjectsSection({
     <section className="space-y-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <FolderGit2 className="size-4 text-foreground-muted" aria-hidden />
           <h2 className="text-heading-small font-display text-foreground">
             {t("projects.title")}
           </h2>
@@ -161,8 +157,8 @@ export function UserProfileProjectsSection({
                   <div className="mt-4 flex flex-wrap gap-2">
                     {href ? (
                       <Button
-                        size="sm"
-                        variant="outline"
+                        size="small"
+                        variant="cta" hierarchy="secondary"
                         render={<NavLink to={href} />}
                         nativeButton={false}
                       >
@@ -171,8 +167,8 @@ export function UserProfileProjectsSection({
                     ) : null}
                     {project.demo_url ? (
                       <Button
-                        size="sm"
-                        variant="outline"
+                        size="small"
+                        variant="cta" hierarchy="secondary"
                         render={
                           <a href={project.demo_url} target="_blank" rel="noreferrer" />
                         }
@@ -185,8 +181,8 @@ export function UserProfileProjectsSection({
                     ) : null}
                     {project.repo_url ? (
                       <Button
-                        size="sm"
-                        variant="outline"
+                        size="small"
+                        variant="cta" hierarchy="secondary"
                         render={
                           <a href={project.repo_url} target="_blank" rel="noreferrer" />
                         }
@@ -199,8 +195,8 @@ export function UserProfileProjectsSection({
                     ) : null}
                     {project.slide_url ? (
                       <Button
-                        size="sm"
-                        variant="outline"
+                        size="small"
+                        variant="cta" hierarchy="secondary"
                         render={
                           <a href={project.slide_url} target="_blank" rel="noreferrer" />
                         }
@@ -213,8 +209,8 @@ export function UserProfileProjectsSection({
                     ) : null}
                     {project.video_url ? (
                       <Button
-                        size="sm"
-                        variant="outline"
+                        size="small"
+                        variant="cta" hierarchy="secondary"
                         render={
                           <a href={project.video_url} target="_blank" rel="noreferrer" />
                         }

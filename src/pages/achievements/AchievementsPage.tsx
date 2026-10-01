@@ -60,11 +60,11 @@ export default function AchievementsPage() {
   };
 
   return (
-    <div className="container-app min-w-0 py-6 sm:py-8">
+    <div className="container-app min-w-0 pb-6 pt-0 sm:py-8">
       {loadError && (
         <div role="alert" className="mb-4 flex flex-col gap-3 rounded-xl border border-warning/30 bg-warning/8 p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-foreground">{loadError}</p>
-          <Button type="button" variant="outline" size="sm" className="shrink-0 gap-2" disabled={loading} onClick={() => void reloadAchievements()}>
+          <Button type="button" variant="cta" hierarchy="secondary" size="small" className="shrink-0 gap-2" disabled={loading} onClick={() => void reloadAchievements()}>
             <RefreshCw className={cn("size-4", loading && "animate-spin")} aria-hidden />
             {t("achievements.loadError.retry")}
           </Button>
@@ -72,7 +72,7 @@ export default function AchievementsPage() {
       )}
 
       <main className="space-y-4">
-        <section className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
+        <section className="mobile-bleed-surface overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
           <button type="button" aria-expanded={openVault === "certificates"} aria-controls="certificate-vault" onClick={() => toggleVault("certificates")} className="flex w-full min-w-0 items-center justify-between gap-3 p-4 text-left transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:p-6">
             <span className="flex min-w-0 items-center gap-3">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary sm:size-11">
@@ -108,7 +108,7 @@ export default function AchievementsPage() {
                       {certificateSyncCandidates.map((item) => {
                         const syncing = syncingCourseId === item.courseId;
                         return (
-                          <Button key={item.courseId} type="button" size="sm" variant="secondary" disabled={!!syncingCourseId} onClick={() => void handleSyncCertificate(item.courseId)}>
+                          <Button key={item.courseId} type="button" size="small" variant="cta" hierarchy="secondary" disabled={!!syncingCourseId} onClick={() => void handleSyncCertificate(item.courseId)}>
                             {syncing ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <RefreshCw className="size-4" aria-hidden />}
                             {t("achievements.vaults.certificates.syncCourse", { course: item.courseTitle })}
                           </Button>
@@ -127,7 +127,7 @@ export default function AchievementsPage() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
+        <section className="mobile-bleed-surface overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
           <button type="button" aria-expanded={openVault === "onchain"} aria-controls="onchain-vault" onClick={() => toggleVault("onchain")} className="flex w-full min-w-0 items-center justify-between gap-3 p-4 text-left transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:p-6">
             <span className="flex min-w-0 items-center gap-3">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 sm:size-11">

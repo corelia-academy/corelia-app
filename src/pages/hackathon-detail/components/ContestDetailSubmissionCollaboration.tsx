@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProfileCombobox } from "@/components/ui/profile-combobox";
 import { Input } from "@/components/ui/input";
@@ -88,7 +87,6 @@ export function ContestDetailSubmissionCollaboration({
   return (
     <div className="space-y-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div className="flex items-center gap-2">
-        <Users className="size-5 text-primary" aria-hidden />
         <h3 className="text-heading-small font-display text-foreground">
           {translate("detail.collaboration.sectionTitle")}
         </h3>
@@ -153,8 +151,8 @@ export function ContestDetailSubmissionCollaboration({
                     <span className="text-foreground">{label}</span>
                     <Button
                       type="button"
-                      size="sm"
-                      variant="outline"
+                      size="small"
+                      variant="cta" hierarchy="secondary"
                       disabled={Boolean(inviteSendingUserId)}
                       onClick={() => void handleRevokeCollabInvite(inv.id)}
                     >
@@ -189,8 +187,8 @@ export function ContestDetailSubmissionCollaboration({
                   <span className="text-foreground">{label}</span>
                   <Button
                     type="button"
-                    size="sm"
-                    variant="ghost"
+                    size="small"
+                    variant="cta" hierarchy="tertiary"
                     className="text-destructive hover:text-destructive"
                     onClick={() => void handleRemoveCollaborator(m.user_id)}
                   >

@@ -106,6 +106,7 @@ export default function CourseDetail() {
     profileId: profile?.id,
     lessons,
     sections: courseLoad.sections,
+    lastLessonId: access.enrollment?.last_lesson_id,
   });
 
   const spotlightContests = useSpotlightContests();
@@ -113,7 +114,7 @@ export default function CourseDetail() {
   const syncCertificate = useCallback(async () => {
     const course = courseLoad.course;
     const courseId = courseLoad.resolvedCourseId;
-    if (!course || !courseId || !profile?.id || !isAuthenticated) {
+    if (!course || course.is_updating || !courseId || !profile?.id || !isAuthenticated) {
       return null;
     }
     const currentEpoch = ++syncEpochRef.current;
@@ -138,6 +139,7 @@ export default function CourseDetail() {
       const completion = await syncCourseCompletion(profile.id, courseId);
       if (syncEpochRef.current !== currentEpoch) return null;
       let baseEnrollment = enrollment ?? access.enrollment;
+      const wasCompleted = Boolean(baseEnrollment?.completed_at);
       if (completion.completed) {
         completionConfirmed = true;
         const completedAt = completion.completed_at || baseEnrollment?.completed_at || new Date().toISOString();
@@ -148,7 +150,7 @@ export default function CourseDetail() {
         }
         setCompletionJustSynced(true);
       } else {
-        if (completion.reason === "final_assignment_pending") return null;
+        if (completion.reason === "final_assignment_pending" || completion.reason === "course_updating") return null;
         setCompletionSyncError(
           completion.message || translate("detail.learn.completion.completionSyncFailed"),
         );
@@ -160,7 +162,7 @@ export default function CourseDetail() {
         autoIssue: true,
       });
       if (syncEpochRef.current !== currentEpoch) return null;
-      if (credentialCheck.reason === "oca_requires_manual_claim") {
+      if (!wasCompleted && credentialCheck.reason === "oca_requires_manual_claim") {
         toast.success(translate("detail.courseDetail.ocaReady"), {
           action: {
             label: translate("detail.courseDetail.viewAchievements"),
@@ -182,13 +184,15 @@ export default function CourseDetail() {
           access.setEnrollment({ ...baseEnrollment, certificate_issued_at: issuedAt });
         }
         setCertificateJustIssued(true);
-        void progress.refresh();
-        toast.success(translate("detail.courseDetail.certificateIssuedSuccess"), {
-          action: {
-            label: translate("detail.courseDetail.viewCertificate"),
-            onClick: () => navigate("/achievements"),
-          },
-        });
+        if (result.reason === "issued") {
+          void progress.refresh();
+          toast.success(translate("detail.courseDetail.certificateIssuedSuccess"), {
+            action: {
+              label: translate("detail.courseDetail.viewCertificate"),
+              onClick: () => navigate("/achievements"),
+            },
+          });
+        }
       } else if (result.message) {
         setCertificateIssueError(result.message);
       }
@@ -229,7 +233,8 @@ export default function CourseDetail() {
   useEffect(() => {
     const course = courseLoad.course;
     const courseId = courseLoad.resolvedCourseId;
-    if (!course || !courseId || !profile?.id || !isAuthenticated) return;
+    if (!course || course.is_updating || !courseId || !profile?.id || !isAuthenticated) return;
+    if (access.loading) return;
     if (progress.progressPercent < 100) return;
     if (access.enrollment?.completed_at && (!courseHasCertificate(course) || access.enrollment.certificate_issued_at)) {
       return;
@@ -241,6 +246,7 @@ export default function CourseDetail() {
     void syncCertificate();
   }, [
     access.enrollment,
+    access.loading,
     courseLoad.course,
     courseLoad.resolvedCourseId,
     isAuthenticated,
@@ -410,7 +416,7 @@ export default function CourseDetail() {
   const course = courseLoad.course;
 
   return (
-    <div className="container-app py-6 sm:py-8">
+    <div className="container-app pb-6 pt-0 sm:py-8">
       {canReviewDraft ? (
         <CourseDraftBanner
           courseId={courseLoad.resolvedCourseId ?? id ?? ""}
@@ -442,7 +448,7 @@ export default function CourseDetail() {
           issueError={completionSyncError || certificateIssueError}
           achievementsPath={achievementsPath}
           onRetry={
-            hasCourseCertificate || !completionSynced || completionSyncError
+            !course.is_updating && (hasCourseCertificate || !completionSynced || completionSyncError)
               ? () => void syncCertificate()
               : undefined
           }
@@ -459,8 +465,8 @@ export default function CourseDetail() {
         </div>
       ) : null}
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="min-w-0">
+      <div className="mobile-bleed-grid mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6">
+        <div className="order-3 min-w-0 lg:order-none">
           <CourseLearningOutcomes outcomes={course.learning_outcomes ?? []} />
           <CourseSkills skills={course.skills ?? []} />
 
@@ -497,21 +503,29 @@ export default function CourseDetail() {
           />
         </div>
 
-        <aside className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
-          <CourseAccessPanel
-            resolvedCourseId={courseLoad.resolvedCourseId}
-            enrolled={access.enrolled}
-            progressPercent={progress.progressPercent}
-            isPublicEmptyCurriculum={isPublicEmptyCurriculum}
-            hasStarted={progress.hasStarted}
-            nextLesson={progress.nextLesson}
-            enrolling={access.enrolling}
-            onContinue={handleContinue}
-            onEnroll={handleEnrollClick}
-          />
-          <CourseLanguagePanel course={course} lessons={lessons} />
-          <CoursePartnerBrandPanel course={course} />
-          <CourseSponsorsPanel sponsors={course.sponsors} />
+        <aside className="contents lg:sticky lg:top-24 lg:flex lg:flex-col lg:gap-4 lg:self-start">
+          <div className="order-1 lg:order-none">
+            <CourseAccessPanel
+              resolvedCourseId={courseLoad.resolvedCourseId}
+              enrolled={access.enrolled}
+              progressPercent={progress.progressPercent}
+              isPublicEmptyCurriculum={isPublicEmptyCurriculum}
+              hasStarted={progress.hasStarted}
+              nextLesson={progress.nextLesson}
+              enrolling={access.enrolling}
+              onContinue={handleContinue}
+              onEnroll={handleEnrollClick}
+            />
+          </div>
+          <div className="order-2 lg:order-none">
+            <CourseLanguagePanel course={course} lessons={lessons} />
+          </div>
+          <div className="order-4 lg:order-none">
+            <CoursePartnerBrandPanel course={course} />
+          </div>
+          <div className="order-5 lg:order-none">
+            <CourseSponsorsPanel sponsors={course.sponsors} />
+          </div>
         </aside>
       </div>
     </div>

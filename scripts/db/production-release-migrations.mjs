@@ -117,16 +117,29 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260923085047_feed_people_timelines.sql",
   "supabase/migrations/20260923092129_xp_leaderboard.sql",
   "supabase/migrations/20260923191903_add_humation_avatar_config.sql",
+  "supabase/migrations/20260925022405_remember_recent_lesson.sql",
+  "supabase/migrations/20260925080949_unihackfest_2026_oca_mainnet.sql",
+  "supabase/migrations/20260925091927_certificate_analytics.sql",
+  "supabase/migrations/20260925095643_certificate_analytics_scope_fix.sql",
+  "supabase/migrations/20260925113445_allow_single_locale_email_template.sql",
+  "supabase/migrations/20260925171211_exclude_staff_from_feed.sql",
+  "supabase/migrations/20260928063404_campaign_all_contacts_audience.sql",
+  "supabase/migrations/20260929134936_block_updating_course_completion.sql",
+  "supabase/migrations/20260929183423_skip_publication_check_for_course_thumbnail.sql",
+  "supabase/migrations/20260929220304_retire_career_tracks.sql",
+  "supabase/migrations/20260929222933_public_hackathon_applicant_avatars.sql",
+  "supabase/migrations/20260930004829_expand_hackathon_applicant_preview.sql",
+  "supabase/migrations/20260930033151_compact_hackathon_applicant_preview.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production history was verified read-only through 20260923092129.
-// This release adds only the Humation avatar configuration validated in Staging.
+// Production ledger is verified through the wider avatar preview limit.
+// Only the compact five-avatar preview limit is pending.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260923191903",
+  "20260930033151",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

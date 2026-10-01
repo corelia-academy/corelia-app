@@ -81,7 +81,7 @@ export function CourseCompletionCertificatePanel({
           {hasCertificate && certificateIssued ? (
             <Button
               type="button"
-              size="sm"
+              size="small"
               render={<Link to={achievementsPath} />}
               nativeButton={false}
             >
@@ -89,7 +89,7 @@ export function CourseCompletionCertificatePanel({
             </Button>
           ) : null}
           {showRetry ? (
-            <Button type="button" size="sm" variant="secondary" onClick={onRetry}>
+            <Button type="button" size="small" variant="cta" hierarchy="secondary" onClick={onRetry}>
               <RefreshCw className="size-4" aria-hidden />
               {t("detail.learn.completion.retryCertificateSync")}
             </Button>
@@ -98,8 +98,8 @@ export function CourseCompletionCertificatePanel({
             <>
               <Button
                 type="button"
-                size="sm"
-                variant="outline"
+                size="small"
+                variant="cta" hierarchy="secondary"
                 disabled={issuing}
                 onClick={() => setRevertDialogOpen(true)}
               >

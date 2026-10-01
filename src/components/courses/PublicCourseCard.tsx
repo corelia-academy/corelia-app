@@ -6,7 +6,7 @@ import { formatDuration, getCourseLevelLabel, type Course } from "@/types/course
 
 export function PublicCourseCard({ course, progress }: {
   course: Course;
-  progress?: { enrolled: boolean; percent: number };
+  progress?: { enrolled: boolean; percent: number; completed: boolean };
 }) {
   const { t } = useTranslation("courses");
   const [failedImage, setFailedImage] = useState<string | null>(null);
@@ -24,7 +24,7 @@ export function PublicCourseCard({ course, progress }: {
         <div className="mt-auto flex flex-wrap items-center gap-2 pt-2 text-sm text-foreground-muted"><Clock className="size-4" aria-hidden />{formatDuration(Number(course.total_duration_seconds) || 0)}</div>
         {progress?.enrolled ? <div className="space-y-2 border-t border-border-subtle pt-3">
           <div className="h-1 overflow-hidden rounded-full bg-surface-raised" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100} aria-label={course.title}><div className="h-full bg-primary" style={{width: `${percent}%`}} /></div>
-          <span className="flex items-center justify-between gap-2 text-sm font-medium text-primary">{t(percent > 0 ? "catalog.card.continueLearning" : "catalog.card.startLearning")}<ArrowRight className="size-4 shrink-0" aria-hidden /></span>
+          <span className="flex items-center justify-between gap-2 text-sm font-medium text-primary">{t(progress.completed ? "catalog.card.completed" : percent > 0 ? "catalog.card.continueLearning" : "catalog.card.startLearning")}<ArrowRight className="size-4 shrink-0" aria-hidden /></span>
         </div> : null}
       </div>
     </Link>

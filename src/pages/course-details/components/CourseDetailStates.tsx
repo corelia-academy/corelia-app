@@ -5,8 +5,8 @@ import { useTranslation } from "react-i18next";
 export function CourseDetailLoading() {
   const { t } = useTranslation("courses");
   return (
-    <div className="container-app py-6 sm:py-8">
-      <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-2xl border border-border-subtle bg-surface-base shadow-card p-8 text-center">
+    <div className="container-app pb-6 pt-0 sm:py-8">
+      <div className="mobile-bleed-surface flex min-h-[40vh] flex-col items-center justify-center rounded-2xl border border-border-subtle bg-surface-base shadow-card p-8 text-center">
         <Loader2
           className="size-8 animate-spin text-foreground-muted"
           aria-hidden
@@ -22,7 +22,7 @@ export function CourseDetailLoading() {
 export function CourseDetailError({ message }: { message?: string | null }) {
   const { t } = useTranslation("courses");
   return (
-    <div className="container-app py-6 sm:py-8">
+    <div className="container-app pb-6 pt-0 sm:py-8">
       <div className="rounded-md border border-destructive/20 bg-destructive/10 p-5 shadow-sm">
         <p className="text-sm font-medium text-destructive">
           {message ?? String(t("detail.notFound"))}

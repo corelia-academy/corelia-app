@@ -53,11 +53,20 @@ DO $$ DECLARE candidate jsonb; failed boolean:=false; BEGIN
  PERFORM public.learning_save_lesson('translation-course',candidate,NULL,'{"en":{"title":"English"}}');
  PERFORM public.refresh_course_total_duration('translation-course');
  IF (SELECT (data->>'total_duration_seconds')::int FROM public.courses WHERE id='translation-course')<>15 THEN RAISE EXCEPTION 'Duration not synchronized'; END IF;
+ UPDATE public.courses SET data=data||'{"thumbnail_url":"https://example.com/cover.png","thumbnail_path":"course-thumbnails/translation-course/cover.png"}'::jsonb WHERE id='translation-course';
+ IF (SELECT data->>'thumbnail_path' FROM public.courses WHERE id='translation-course')<>'course-thumbnails/translation-course/cover.png' THEN RAISE EXCEPTION 'Cover update did not persist'; END IF;
  BEGIN
-  PERFORM public.learning_save_course_info('translation-course','{"title":"Must rollback"}','vi','{}');
+  PERFORM public.learning_save_course_info('translation-course','{"title":"Must rollback","thumbnail_url":"https://example.com/another-cover.png"}','vi','{}');
  EXCEPTION WHEN raise_exception THEN failed:=true; END;
- IF NOT failed THEN RAISE EXCEPTION 'Publication guard bypassed for content change'; END IF;
+ IF NOT failed THEN RAISE EXCEPTION 'Publication guard bypassed for content change with cover'; END IF;
  IF (SELECT data->>'title' FROM public.courses WHERE id='translation-course')<>'Khóa gốc' THEN RAISE EXCEPTION 'Invalid course edit committed'; END IF;
+ IF (SELECT data->>'thumbnail_url' FROM public.courses WHERE id='translation-course')<>'https://example.com/cover.png' THEN RAISE EXCEPTION 'Failed course edit changed cover'; END IF;
+ UPDATE public.courses SET published=false WHERE id='translation-course';
+ failed:=false;
+ BEGIN
+  UPDATE public.courses SET published=true WHERE id='translation-course';
+ EXCEPTION WHEN raise_exception THEN failed:=true; END;
+ IF NOT failed OR (SELECT published FROM public.courses WHERE id='translation-course') THEN RAISE EXCEPTION 'Invalid course was republished'; END IF;
 END $$;
 RESET ROLE;
 ROLLBACK;

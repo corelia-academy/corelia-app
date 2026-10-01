@@ -71,6 +71,7 @@
     "emptyDescription": "Thử bỏ bớt bộ lọc hoặc tìm theo tên giảng viên, lĩnh vực và hình thức học.",
     "card": {
       "courseProgress": "Tiến độ khoá học",
+      "completed": "Đã hoàn thành",
       "continueLearning": "Tiếp tục học",
       "startLearning": "Bắt đầu học"
     }
@@ -121,27 +122,22 @@
       "myCourseBadge": "Khoá học của bạn",
       "resumeTitle": "Quay lại đúng bài đang dở",
       "enterSpaceTitle": "Vào lại không gian học tập",
-      "resumeDescription": "Bạn đang học {{courseTitle}} và có thể tiếp tục ngay với bài tiếp theo.",
+      "resumeDescription": "Bạn đang học {{courseTitle}} và có thể tiếp tục bài đang dở.",
       "enterSpaceDescription": "Khoá {{courseTitle}} đã sẵn sàng để bạn bắt đầu hoặc xem lại.",
       "continueLearning": "Tiếp tục học",
       "enterLearningPage": "Vào trang học",
-      "nextLessonMeta": "Bài tiếp theo: {{title}}",
+      "nextLessonMeta": "Bài tiếp tục: {{title}}",
       "progressEverywhereMeta": "Tiến độ sẽ được lưu trên mọi thiết bị",
       "runningContestBadge": "Contest đang chạy",
       "newContestBadge": "Contest mới",
       "exploreContest": "Khám phá contest",
       "contestDeadlineMeta": "Hạn đăng ký: {{date}}",
       "contestMetaNoDeadline": "Một nhịp tiếp theo trong hệ sinh thái Corelia",
-      "careerTrackBadge": "Lộ trình nghề nghiệp",
-      "careerTrackTitle": "Khám phá lộ trình chuyên sâu",
-      "careerTrackDescription": "Học theo lộ trình bài bản từ cơ bản đến nâng cao để phát triển sự nghiệp.",
-      "exploreCareerTracks": "Xem lộ trình",
-      "careerTrackMeta": "Lộ trình học chuẩn hoá",
       "exploreMoreBadge": "Khám phá thêm",
       "exploreMoreTitle": "Mở rộng lộ trình học tập của bạn cùng Corelia",
-      "exploreMoreDescription": "Khi hoàn thành một nhịp học, bạn có thể nối sang các lộ trình hoặc khoá học thực hành khác.",
+      "exploreMoreDescription": "Tiếp tục phát triển kỹ năng với một khoá học thực hành khác.",
       "seeMoreCourses": "Xem thêm khoá học",
-      "ecosystemMeta": "Lộ trình học và hệ sinh thái Web3 thực chiến"
+      "ecosystemMeta": "Khoá học thực hành và hệ sinh thái Web3"
     },
     "courseDetail": {
       "thumbnailFallback": "Chưa có hình ảnh khoá học",
@@ -152,8 +148,9 @@
       "lessonDraftBadge": "Đang cập nhật",
       "courseUpdatingNotice": {
         "title": "Khoá học đang được cập nhật",
-        "body": "Một số nội dung có thể thay đổi trong thời gian tới. Nếu gặp bài chưa sẵn sàng, vui lòng quay lại sau."
+        "body": "Bạn vẫn có thể học các bài đã sẵn sàng. Việc hoàn thành khoá học và cấp thành tích mới sẽ mở lại khi khoá học cập nhật xong."
       },
+      "courseUpdatingCompletionNotice": "Khoá học đang được cập nhật. Tiến độ bài học của bạn vẫn được lưu; trạng thái hoàn thành và thành tích mới sẽ được ghi nhận khi khoá học sẵn sàng.",
       "learningOutcomes": {
         "title": "Bạn sẽ học được gì",
         "subtitle": "Khoá học này sẽ giúp bạn:"

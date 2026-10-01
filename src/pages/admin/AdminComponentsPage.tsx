@@ -17,7 +17,9 @@ import { Button } from "@/components/ui/button";
 import AdminActionComponentPage from "./components/AdminActionComponentPage";
 import AdminAvatarComponentPage from "./components/AdminAvatarComponentPage";
 import AdminBadgeComponentPage from "./components/AdminBadgeComponentPage";
+import AdminButtonComponentPage from "./components/AdminButtonComponentPage";
 import AdminDropdownMenuComponentPage from "./components/AdminDropdownMenuComponentPage";
+import AdminInputFieldComponentPage from "./components/AdminInputFieldComponentPage";
 import AdminScrollbarComponentPage from "./components/AdminScrollbarComponentPage";
 import AdminSelectionComponentPage from "./components/AdminSelectionComponentPage";
 import AdminSeparatorComponentPage from "./components/AdminSeparatorComponentPage";
@@ -75,6 +77,17 @@ const components = [
     slug: "dropdown-menu",
     title: "Dropdown Menu",
     criterion: "Figma Base Items with five real states, two leading-icon variants, and six independent dropdown use cases with search, Select All, warning, disabled, and nested-list behavior.",
+  },
+  {
+    slug: "input-field",
+    title: "Input Field",
+    criterion: "Five field compositions, validation, counters, selectable tags, dropdown selectors, icons, and disabled/focused states.",
+  },
+  {
+    slug: "button",
+    title: "Button",
+    criterion:
+      "Review hierarchy, sizing, states, and composition with the existing form controls.",
   },
 ] as const;
 
@@ -403,7 +416,7 @@ export default function AdminComponentsPage() {
   }, []);
 
   return (
-    <main className="container-app min-h-screen select-none space-y-8 py-6 sm:py-8">
+    <main className="container-app min-h-screen space-y-8 py-6 sm:py-8">
       <header className="space-y-4">
         <div>
           <p className="text-label-medium uppercase tracking-[0.08em] text-primary">
@@ -417,11 +430,11 @@ export default function AdminComponentsPage() {
       </header>
 
       <div className="grid min-w-0 gap-8 lg:grid-cols-[28vh_minmax(0,1fr)]">
-        <aside className="flex h-[70dvh] w-full min-h-0 min-w-0 flex-col overflow-hidden lg:sticky lg:top-6 lg:w-[28vh] lg:self-start">
+        <aside className="flex h-[70dvh] w-full min-h-0 min-w-0 flex-col lg:sticky lg:top-6 lg:w-[28vh] lg:self-start">
           <Button
             type="button"
-            variant="outline"
-            size="sm"
+            variant="cta" hierarchy="secondary"
+            size="small"
             className="w-fit justify-start"
             onClick={() => navigate("/")}
           >
@@ -429,14 +442,14 @@ export default function AdminComponentsPage() {
             Back to app
           </Button>
 
-          <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border-subtle bg-surface-base p-3">
+          <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-y-clip rounded-lg border border-border-subtle bg-surface-base p-3">
             <p className="px-3 pb-2 text-label-medium uppercase tracking-[0.08em] text-foreground-muted">
               Components
             </p>
             <nav
               ref={componentNavigationRef}
               aria-label="Component navigation"
-              className="scrollbar-design relative flex min-h-0 flex-1 flex-col gap-1 overflow-x-hidden overflow-y-auto overscroll-contain"
+              className="scrollbar-design relative flex min-h-0 flex-1 flex-col gap-1 overflow-x-auto overflow-y-auto overscroll-contain"
               data-testid="component-navigation"
             >
               <span
@@ -478,8 +491,8 @@ export default function AdminComponentsPage() {
               <Button
                 key={theme}
                 type="button"
-                size="sm"
-                variant="outline"
+                size="small"
+                variant="cta" hierarchy="secondary"
                 data-testid={`theme-toggle-${theme}`}
                 aria-pressed={resolvedTheme === theme}
                 onClick={() => setTheme(theme)}
@@ -520,6 +533,12 @@ export default function AdminComponentsPage() {
           </ComponentSection>
           <ComponentSection {...components[9]}>
             <AdminDropdownMenuComponentPage embedded />
+          </ComponentSection>
+          <ComponentSection {...components[10]}>
+            <AdminInputFieldComponentPage embedded />
+          </ComponentSection>
+          <ComponentSection {...components[11]}>
+            <AdminButtonComponentPage />
           </ComponentSection>
         </div>
       </div>

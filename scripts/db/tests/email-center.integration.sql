@@ -5,6 +5,8 @@ DECLARE
   v_template_id uuid := 'ec000000-0000-4000-8000-000000000020';
   v_version_id uuid := 'ec000000-0000-4000-8000-000000000021';
   v_campaign_id uuid := 'ec000000-0000-4000-8000-000000000030';
+  v_all_campaign_id uuid := 'ec000000-0000-4000-8000-000000000031';
+  v_all_total bigint;
   v_sender_id uuid;
   v_system_sender_id uuid;
   lease_one uuid := gen_random_uuid();
@@ -13,6 +15,13 @@ DECLARE
   claimed integer;
 BEGIN
   BEGIN
+    IF NOT private.email_localized_content_complete('{"vi":{"subject":"Chào","body_text":"Nội dung"}}'::jsonb)
+       OR NOT private.email_localized_content_complete('{"en":{"subject":"Hello","body_text":"Body"}}'::jsonb)
+       OR NOT private.email_localized_content_complete('{"vi":{"subject":"Chào","body_text":"Nội dung"},"en":{"subject":"","body_text":""}}'::jsonb)
+       OR private.email_localized_content_complete('{"vi":{"subject":"Chào","body_text":"Nội dung"},"en":{"subject":"Draft"}}'::jsonb)
+       OR private.email_localized_content_complete('{}'::jsonb) THEN
+      RAISE EXCEPTION 'Single-language template readiness is wrong';
+    END IF;
     IF has_table_privilege('anon', 'public.email_contacts', 'SELECT')
        OR has_table_privilege('authenticated', 'public.email_campaigns', 'INSERT') THEN
       RAISE EXCEPTION 'Email Center tables leaked to browser roles';
@@ -105,9 +114,8 @@ BEGIN
     END;
     DELETE FROM public.email_template_versions WHERE template_id = v_template_id AND version = 2;
     INSERT INTO public.email_template_versions(id, template_id, version, status, subject, body_text, localized_content, created_by, published_at)
-      VALUES (v_version_id, v_template_id, 1, 'published', 'Hello {{name}}', 'Body', jsonb_build_object(
-        'vi', jsonb_build_object('subject','Chào {{name}}','body_text','Nội dung'),
-        'en', jsonb_build_object('subject','Hello {{name}}','body_text','Body')
+      VALUES (v_version_id, v_template_id, 1, 'published', 'Chào {{name}}', 'Nội dung', jsonb_build_object(
+        'vi', jsonb_build_object('subject','Chào {{name}}','body_text','Nội dung')
       ), v_actor, now());
     PERFORM set_config('role', 'postgres', true);
     SELECT id INTO v_sender_id FROM public.email_senders WHERE purpose = 'marketing' AND is_default;
@@ -122,6 +130,20 @@ BEGIN
     IF (SELECT count(*) FROM public.email_campaign_recipients WHERE campaign_id=v_campaign_id AND resolved_locale='vi') <> 1
        OR (SELECT count(*) FROM public.email_campaign_recipients WHERE campaign_id=v_campaign_id AND resolved_locale='en') <> 2 THEN
       RAISE EXCEPTION 'Campaign recipient locales were not frozen with English fallback';
+    END IF;
+
+    SELECT count(*) INTO v_all_total FROM public.email_contacts;
+    INSERT INTO public.email_campaigns(id, name, purpose, audience_type, sender_id, template_version_id, frozen_subject, frozen_html, frozen_from, frozen_reply_to, created_by)
+      VALUES (v_all_campaign_id, 'All contacts campaign', 'marketing', 'all_contacts', v_sender_id, v_version_id, 'Hello {{name}}', '<p>Body</p>', 'Corelia <hello@news.corelia.academy>', 'hello@corelia.academy', v_actor);
+    PERFORM public.email_prepare_campaign(v_all_campaign_id);
+    IF (SELECT estimated_recipients FROM public.email_campaigns WHERE id = v_all_campaign_id) <> v_all_total
+       OR (SELECT prepared_recipients FROM public.email_campaigns WHERE id = v_all_campaign_id) <> 2
+       OR (SELECT count(*) FROM public.email_campaign_recipients WHERE campaign_id = v_all_campaign_id) <> v_all_total THEN
+      RAISE EXCEPTION 'All contacts campaign did not freeze every current contact';
+    END IF;
+    INSERT INTO public.email_contacts(email) VALUES ('later@example.com');
+    IF EXISTS (SELECT 1 FROM public.email_campaign_recipients WHERE campaign_id = v_all_campaign_id AND recipient_email = 'later@example.com') THEN
+      RAISE EXCEPTION 'Prepared all contacts campaign changed after a new contact arrived';
     END IF;
 
     SELECT count(*), min(dispatch_batch_key) INTO claimed, v_batch_key

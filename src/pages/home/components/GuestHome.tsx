@@ -1,7 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { careerCatalogQueryOptions } from "@/features/career/careerQueries";
-import { CareerTrackListCard } from "@/components/career/CareerTrackListCard";
 import { ArrowRight, BookOpen, Trophy } from "lucide-react";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
@@ -16,15 +12,13 @@ export function GuestHome({
   t: TFunction<"common">;
   courseCatalog: Course[];
 }) {
-  const { t: tCareer, i18n } = useTranslation("career");
-  const tracksQuery = useQuery({ ...careerCatalogQueryOptions(i18n.language), meta: { scope: "public", showInGlobalLoading: false } });
   const featuredCourses = (courseCatalog ?? []).slice(0, 6);
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="mx-auto w-full min-w-0 max-w-7xl px-4 pb-6 pt-0 sm:px-6 sm:py-8 lg:px-8">
       <div className="grid gap-6 ">
-        <div className="min-w-0 space-y-8">
-          <section className="rounded-2xl border border-primary/15 bg-linear-to-br from-primary-muted to-surface-base p-5 sm:p-10">
+        <div className="min-w-0 space-y-4 sm:space-y-8">
+          <section className="mobile-bleed-surface rounded-2xl border border-primary/15 bg-linear-to-br from-primary-muted to-surface-base p-5 sm:p-10">
             <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               Corelia Academy
             </div>
@@ -42,7 +36,7 @@ export function GuestHome({
                 {t("home.exploreCourses")}
                 <ArrowRight className="size-4" aria-hidden />
               </Button>
-              <Button render={<NavLink to="/login" />} nativeButton={false} variant="outline">
+              <Button render={<NavLink to="/login" />} nativeButton={false} variant="cta" hierarchy="secondary">
                 {t("home.guest.signIn")}
               </Button>
             </div>
@@ -90,7 +84,7 @@ export function GuestHome({
             </div>
           </section>
 
-          <section className="py-4">
+          <section className="pb-4 pt-0 sm:py-4">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-heading-medium font-display text-foreground">
                 {t("home.guest.featuredCoursesTitle")}
@@ -98,8 +92,8 @@ export function GuestHome({
               <Button
                 render={<NavLink to="/courses" />}
                 nativeButton={false}
-                variant="ghost"
-                size="sm"
+                variant="cta" hierarchy="tertiary"
+                size="small"
                 className="-mr-2"
               >
                 {t("home.sections.seeAll")}
@@ -107,7 +101,7 @@ export function GuestHome({
               </Button>
             </div>
 
-            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mobile-bleed-grid mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {featuredCourses.length === 0 ? (
                 <div className="col-span-full flex flex-col items-center gap-3 py-12 text-center sm:py-16">
                   <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
@@ -121,7 +115,7 @@ export function GuestHome({
                       {t("home.sections.startFromCatalogSubtitle")}
                     </p>
                   </div>
-                  <Button size="sm" variant="outline" render={<NavLink to="/courses" />} nativeButton={false}>
+                  <Button size="small" variant="cta" hierarchy="secondary" render={<NavLink to="/courses" />} nativeButton={false}>
                     {t("home.exploreCourses")}
                   </Button>
                 </div>
@@ -133,14 +127,9 @@ export function GuestHome({
             </div>
           </section>
 
-          {tracksQuery.data?.length ? <section className="space-y-4">
-            <h2 className="text-heading-large font-display">{tCareer("list.title")}</h2>
-            {tracksQuery.data.slice(0, 2).map(track => <CareerTrackListCard key={track.id} track={track} />)}
-          </section> : null}
         </div>
 
       </div>
     </div>
   );
 }
-

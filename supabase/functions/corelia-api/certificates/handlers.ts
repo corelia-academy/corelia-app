@@ -13,11 +13,13 @@ type CertificateIssueReason =
   | "already_issued"
   | "no_course"
   | "no_enrollment"
+  | "course_updating"
   | "lessons_incomplete"
   | "assignment_not_approved"
   | "issued";
 
 type CourseCertificateData = {
+  is_updating?: boolean;
   final_assignment_title?: string | null;
   has_certificate?: boolean;
   title?: string | null;
@@ -71,23 +73,22 @@ async function runCertificateIssuedSideEffects(
 
   // Send congratulatory email (non-fatal).
   try {
-    const [{ data: authUser }, { data: profileRow }, baseUrl] = await Promise.all([
+    const [{ data: authUser }, { data: profileRow }, { data: certificateRecord }, baseUrl] = await Promise.all([
       db.auth.admin.getUserById(targetUserId),
-      db.from("profiles").select("full_name, username, locale").eq("id", targetUserId).maybeSingle(),
+      db.from("profiles").select("locale").eq("id", targetUserId).maybeSingle(),
+      db.from("certificate_records").select("id, code").eq("user_id", targetUserId).eq("course_id", courseId).maybeSingle(),
       getAppBaseUrl(db),
     ]);
     const email = (authUser?.user?.email ?? "").trim();
     const courseTitle = (course.title ?? "").trim();
     const { locale } = resolveRecipientEmailLocale({ recipientKind: "account", profileLocale: profileRow?.locale, authMetadataLocale: authUser?.user?.user_metadata?.locale });
-    const profilePath = profileRow?.username
-      ? `/u/${encodeURIComponent(String(profileRow.username))}`
-      : `/account`;
-    const profileUrl = `${baseUrl}${profilePath}`;
+    const certificateUrl = certificateRecord?.code
+      ? `${baseUrl}/verify/${encodeURIComponent(String(certificateRecord.code))}`
+      : `${baseUrl}/achievements`;
     if (email && courseTitle) {
       const { subject, html } = buildCertificateIssuedEmail({
         courseTitle,
-        certImageUrl: course.certificate_template_url ?? null,
-        profileUrl,
+        certificateUrl,
         locale,
       });
       await sendTransactionalEmailViaResend({
@@ -96,6 +97,8 @@ async function runCertificateIssuedSideEffects(
         to: [email],
         subject,
         html,
+        idempotencyKey: `certificate-issued-${targetUserId}-${courseId}`,
+        context: certificateRecord?.id ? { type: "corelia_certificate", id: certificateRecord.id } : undefined,
       });
     }
   } catch (mailErr) {
@@ -164,6 +167,9 @@ export async function issueCourseCertificateIfReady(
       course_title: course.title ?? null,
     };
   }
+  if (course.is_updating) {
+    return { issued: false, reason: "course_updating", course_title: course.title ?? null };
+  }
 
   const { data: readinessRaw, error: readyErr } = await db.rpc("corelia_certificate_readiness", {
     p_course_id: courseId,
@@ -188,18 +194,38 @@ export async function issueCourseCertificateIfReady(
   }
 
   const issuedAt = nowIso();
-  const { error: upErr } = await db.from("enrollments").update({ certificate_issued_at: issuedAt }).eq(
-    "id",
-    enrollmentId,
-  );
+  const { data: updatedRows, error: upErr } = await db.from("enrollments")
+    .update({ certificate_issued_at: issuedAt })
+    .eq("id", enrollmentId)
+    .is("certificate_issued_at", null)
+    .select("certificate_issued_at");
+  if (upErr?.message.includes("COURSE_UPDATING")) {
+    return { issued: false, reason: "course_updating", course_title: course.title ?? null };
+  }
   if (upErr) throw new Error(upErr.message);
+
+  // Only the request that actually changed the enrollment may send mail and
+  // notifications. A second request can have read the same stale null value.
+  if (!updatedRows?.length) {
+    const { data: latest, error: latestErr } = await db.from("enrollments")
+      .select("certificate_issued_at")
+      .eq("id", enrollmentId)
+      .maybeSingle();
+    if (latestErr) throw new Error(latestErr.message);
+    return {
+      issued: Boolean(latest?.certificate_issued_at),
+      reason: latest?.certificate_issued_at ? "already_issued" : "no_enrollment",
+      certificate_issued_at: latest?.certificate_issued_at ?? null,
+      course_title: course.title ?? null,
+    };
+  }
 
   await runCertificateIssuedSideEffects(db, { courseId, targetUserId, course });
 
   return {
     issued: true,
     reason: "issued",
-    certificate_issued_at: issuedAt,
+    certificate_issued_at: updatedRows[0].certificate_issued_at,
     course_title: course.title ?? null,
   };
 }
@@ -334,6 +360,7 @@ async function issueCourseCertificateIfReadyDryRun(
   if (enrollment.certificate_issued_at) {
     return { issued: true, reason: "already_issued", certificate_issued_at: enrollment.certificate_issued_at };
   }
+  if (course.is_updating) return { issued: false, reason: "course_updating" };
   const { data: readinessRaw, error: readyErr } = await db.rpc("corelia_certificate_readiness", {
     p_course_id: courseId,
     p_user_id: targetUserId,

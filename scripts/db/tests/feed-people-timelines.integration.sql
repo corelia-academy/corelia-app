@@ -1,9 +1,11 @@
 BEGIN;
 INSERT INTO auth.users(id,email)
 SELECT ('efee0000-0000-4000-8000-' || lpad(n::text,12,'0'))::uuid, 'feed-v2-' || n || '@corelia.local'
-FROM generate_series(1,9) n;
+FROM generate_series(1,10) n;
 UPDATE public.profiles SET profile_public = id <> 'efee0000-0000-4000-8000-000000000005'
 WHERE id::text LIKE 'efee0000-%';
+UPDATE public.profiles SET role='admin'
+WHERE id='efee0000-0000-4000-8000-000000000010';
 INSERT INTO public.user_point_ledger(user_id,source,source_key,points)
 SELECT id,'lesson_completed','feed-v2-test',100 FROM public.profiles WHERE id::text LIKE 'efee0000-%';
 INSERT INTO public.feed_milestones(actor_id,kind,source_key,xp_total,created_at)
@@ -16,7 +18,8 @@ UPDATE public.feed_milestones SET xp_total=200 WHERE actor_id='efee0000-0000-400
 INSERT INTO public.follows(follower_id,subject_type,subject_id,muted_until) VALUES
 ('efee0000-0000-4000-8000-000000000001','user','efee0000-0000-4000-8000-000000000003',null),
 ('efee0000-0000-4000-8000-000000000001','user','efee0000-0000-4000-8000-000000000004',now()+interval '1 day'),
-('efee0000-0000-4000-8000-000000000001','user','efee0000-0000-4000-8000-000000000009',now()-interval '1 day');
+('efee0000-0000-4000-8000-000000000001','user','efee0000-0000-4000-8000-000000000009',now()-interval '1 day'),
+('efee0000-0000-4000-8000-000000000001','user','efee0000-0000-4000-8000-000000000010',null);
 INSERT INTO public.courses(id,slug,instructor_id,published,data) VALUES
 ('feed-v2-course','feed-v2-course','efee0000-0000-4000-8000-000000000002',true,'{"title":"Feed test"}');
 INSERT INTO public.course_sections(course_id,id,data) VALUES ('feed-v2-course','section','{"title":"Section"}');
@@ -49,6 +52,10 @@ BEGIN
   ) THEN RAISE EXCEPTION 'Following must contain only active followed people'; END IF;
   IF EXISTS(SELECT id FROM public.get_feed_milestones_v2('explore') INTERSECT SELECT id FROM public.get_feed_milestones_v2('following')) THEN
     RAISE EXCEPTION 'Timelines overlap'; END IF;
+  IF EXISTS(SELECT 1 FROM public.get_feed_milestones_v2('explore',p_limit=>50) WHERE actor_id='efee0000-0000-4000-8000-000000000010') OR
+     EXISTS(SELECT 1 FROM public.get_feed_milestones_v2('following',p_limit=>50) WHERE actor_id='efee0000-0000-4000-8000-000000000010') OR
+     EXISTS(SELECT 1 FROM public.list_my_feed_following_profiles_v1() WHERE id='efee0000-0000-4000-8000-000000000010') THEN
+    RAISE EXCEPTION 'Staff account appeared in Feed'; END IF;
   IF NOT EXISTS(SELECT 1 FROM public.get_feed_milestones_v2('explore',p_limit=>50) WHERE course_id='feed-v2-course') THEN
     RAISE EXCEPTION 'Following a course must not remove its actor from Explore'; END IF;
   SELECT array_agg(id ORDER BY created_at DESC,id DESC) INTO page1 FROM public.get_feed_milestones_v2('explore');

@@ -42,12 +42,14 @@ Màn hình import hỗ trợ nguồn CSV thường hoặc Luma, xem trước 10 
 
 1. Tạo template đúng mục đích; dùng biến `{{name}}`, `{{course_name}}`, `{{event_url}}` khi cần.
 2. Xuất bản một version. Chiến dịch đóng băng version và sender, nên chỉnh template sau đó không làm đổi chiến dịch đang chờ.
-3. Chọn danh sách, sender đã xác thực và ngữ cảnh khóa học/chương trình/hackathon nếu có.
-4. Chuẩn bị chiến dịch để server chốt danh sách và loại contact thiếu consent hoặc đang bị suppression.
+3. Chọn danh sách hoặc **Toàn bộ contacts hiện tại**, sender đã xác thực và ngữ cảnh khóa học/chương trình/hackathon nếu có. Lựa chọn toàn bộ contacts dành cho admin và không tạo thêm danh sách lưu trữ.
+4. Chuẩn bị chiến dịch để server chốt người nhận tại thời điểm đó và loại contact thiếu consent hoặc đang bị suppression.
 5. Gửi thử đến danh sách nội bộ. Kiểm tra From, Reply-To, CTA và hiển thị Gmail/Outlook.
-6. Đặt lịch hoặc bắt đầu. Worker tiếp tục chạy khi admin đóng trình duyệt.
+6. Trên từng campaign, kiểm tra lại phiên bản template, tiêu đề mẫu, From, Reply-To, audience và số người đủ điều kiện. Chọn **Gửi ngay** hoặc **Đặt lịch** rồi xác nhận. Lịch của từng campaign hiển thị trực tiếp trên thẻ; worker tiếp tục chạy khi admin đóng trình duyệt.
 
 `Accepted` chỉ có nghĩa Resend đã nhận request; `Delivered` đến từ webhook. Pause/cancel chỉ ngăn phần chưa dispatch.
+
+Campaign đang chạy hiển thị tiến độ được Resend nhận và số email lỗi. Mở **Xem email lỗi** để xem lý do theo địa chỉ. Bounce và complaint tự đưa contact vào danh sách loại trừ; với trạng thái `failed` do lỗi gửi hoặc cấu hình, admin kiểm tra lý do rồi dùng **Đưa vào loại trừ** cho từng địa chỉ cần chặn. Danh sách loại trừ xem tại **Người nhận → Đã chặn gửi**, kèm lý do. Không chặn tự động toàn bộ email `failed` vì một lỗi nhà cung cấp có thể ảnh hưởng cả campaign.
 
 ## 4. Scheduler và chiến dịch lớn
 

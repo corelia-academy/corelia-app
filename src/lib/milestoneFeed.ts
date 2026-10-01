@@ -26,11 +26,11 @@ function titleFrom(value: unknown, fallback: string): string {
   if (locale && typeof locale === "object" && typeof (locale as { title?: unknown }).title === "string") return (locale as { title: string }).title;
   return fallback;
 }
-export async function getMilestonePage(userId: string, mode: FeedMode | "profile", actorId?: string, cursor?: FeedMilestone | null): Promise<MilestonePage> {
+export async function getMilestonePage(userId: string, mode: FeedMode | "profile", actorId?: string, cursor?: FeedMilestone | null, pageSize = 20): Promise<MilestonePage> {
   const pagination = {
     p_cursor_at: cursor?.created_at ?? null,
     p_cursor_id: cursor?.id ?? null,
-    p_limit: 20,
+    p_limit: pageSize,
   };
   if (mode === "profile" && !actorId) throw new Error("Profile actor is required");
   const { data, error } = mode === "profile"

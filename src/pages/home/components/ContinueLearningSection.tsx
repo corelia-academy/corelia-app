@@ -12,14 +12,14 @@ export function ContinueLearningSection({
   focusCards: FocusCard[];
 }) {
   return (
-    <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
+    <section className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-heading-medium font-display text-foreground">{t("home.continueLearning")}</h2>
         <Button
           render={<NavLink to="/courses" />}
           nativeButton={false}
-          variant="ghost"
-          size="sm"
+          variant="cta" hierarchy="tertiary"
+          size="small"
           className="-mr-2"
         >
           {t("home.sections.seeAll")}
@@ -71,8 +71,8 @@ export function ContinueLearningSection({
             <p className="mt-0.5 text-xs text-foreground-muted">{t("home.sections.enrollHint")}</p>
           </div>
           <Button
-            size="sm"
-            variant="outline"
+            size="small"
+            variant="cta" hierarchy="secondary"
             render={<NavLink to="/courses" />}
             nativeButton={false}
           >

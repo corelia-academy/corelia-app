@@ -44,8 +44,6 @@ const CourseDetail = lazy(() => import("@/pages/course-details"));
 const Learn = lazy(() => import("@/pages/learn"));
 const LearnLayout = lazy(() => import("@/pages/learn/LearnLayout"));
 const InstructorDetail = lazy(() => import("@/pages/InstructorDetail"));
-const CareerList = lazy(() => import("@/pages/career"));
-const CareerDetail = lazy(() => import("@/pages/career/CareerDetailPage"));
 const ProjectInvitePage = lazy(() => import("@/pages/invites/ProjectInvitePage"));
 const CoInstructorInvitePage = lazy(() => import("@/pages/invites/CoInstructorInvitePage"));
 const SearchPage = lazy(() => import("@/pages/search"));
@@ -113,10 +111,6 @@ const InstructorCourses = lazy(() => import("@/pages/InstructorCourses"));
 const InstructorCourseNew = lazy(() => import("@/pages/instructor-course-new"));
 const LearningPreview = lazy(() => import("@/pages/instructor-course-edit/LearningPreview"));
 const InstructorCourseEdit = lazy(() => import("@/pages/instructor-course-edit"));
-const InstructorCareerTracks = lazy(() => import("@/pages/instructor-career-tracks"));
-const InstructorCareerTrackEditor = lazy(
-  () => import("@/pages/instructor-career-tracks/InstructorCareerTrackEditorPage"),
-);
 
 const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout"));
 const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers"));
@@ -131,6 +125,7 @@ const AdminProjectsPage = lazy(() => import("@/pages/admin/AdminProjectsPage"));
 const AdminJobsPage = lazy(() => import("@/pages/admin/jobs/AdminJobsPage"));
 const AdminComponentsPage = lazy(() => import("@/pages/admin/AdminComponentsPage"));
 const AdminEmailCenterPage = lazy(() => import("@/pages/admin/email/AdminEmailCenterPage"));
+const AdminCertificateAnalytics = lazy(() => import("@/pages/admin/AdminCertificateAnalytics"));
 const AdminEmailPreviewPage = lazy(() => import("@/pages/admin/email/AdminEmailPreviewPage"));
 const AdminOgPreviewPage = lazy(() => import("@/pages/admin/AdminOgPreviewPage"));
 
@@ -330,6 +325,8 @@ function ApplicationRoutes() {
               "scrollbar",
               "tabs",
               "dropdown-menu",
+              "input-field",
+              "button",
             ].map((component) => (
               <Route
                 key={component}
@@ -399,22 +396,6 @@ function ApplicationRoutes() {
               />
               <Route path="cohorts" element={<Navigate to="/courses" replace />} />
               <Route path="learning-principles" element={<Suspense fallback={<PageFallback />}><LearningPrinciplesPage /></Suspense>} />
-              <Route
-                path="career"
-                element={
-                  <Suspense fallback={<PageFallback />}>
-                    <CareerList />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="career/:slug"
-                element={
-                  <Suspense fallback={<PageFallback />}>
-                    <CareerDetail />
-                  </Suspense>
-                }
-              />
               <Route
                 path="courses/:id"
                 element={
@@ -590,6 +571,10 @@ function ApplicationRoutes() {
                   }
                 />
                 <Route
+                  path="certificates"
+                  element={<RequireRole roles={ROLE_GROUPS.adminOnly}><Suspense fallback={<PageFallback />}><AdminCertificateAnalytics /></Suspense></RequireRole>}
+                />
+                <Route
                   path="branding"
                   element={
                     <Suspense fallback={<PageFallback />}>
@@ -626,30 +611,6 @@ function ApplicationRoutes() {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <InstructorCourses />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="career-tracks"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <InstructorCareerTracks />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="career-tracks/new"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <InstructorCareerTrackEditor />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="career-tracks/:id/edit"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <InstructorCareerTrackEditor />
                     </Suspense>
                   }
                 />

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { CourseLesson } from "@/types/courses";
+import type { CourseLesson, LessonProgress } from "@/types/courses";
 
 vi.mock("@/lib/coreliaEdgeApi", () => ({
   coreliaEdgeUrl: (name: string) => name,
@@ -10,7 +10,7 @@ vi.mock("@/lib/supabase", () => ({
   supabase: { from: vi.fn(), rpc: vi.fn() },
 }));
 
-import { getCourse, applyCourseLocaleContent, saveCourseWithLocale, updateCourse, updateSection, addLesson, updateLesson, applyCourseLessonLocaleContent, deleteCourse, deleteLesson, getLearnerCourseProgressSnapshot, revertCourseCompletion } from "./courses";
+import { getCourse, getResumeLesson, applyCourseLocaleContent, saveCourseWithLocale, updateCourse, updateSection, addLesson, updateLesson, applyCourseLessonLocaleContent, deleteCourse, deleteLesson, getLearnerCourseProgressSnapshot, revertCourseCompletion } from "./courses";
 import { supabase } from "./supabase";
 
 const masterVideoLesson: CourseLesson = {
@@ -24,6 +24,25 @@ const masterVideoLesson: CourseLesson = {
   duration_seconds: 30,
   order: 0,
 };
+
+describe("getResumeLesson", () => {
+  const lessons = [
+    { ...masterVideoLesson, id: "first" },
+    { ...masterVideoLesson, id: "second" },
+    { ...masterVideoLesson, id: "third" },
+  ];
+  const completed = [{ lesson_id: "third", completed_at: "2026-09-25T00:00:00Z" }] as LessonProgress[];
+
+  it("resumes the most recently opened unfinished lesson even when earlier lessons are unfinished", () => {
+    expect(getResumeLesson(lessons, [], "third")?.id).toBe("third");
+  });
+
+  it("falls back to the first unfinished lesson when the recent lesson is completed or unavailable", () => {
+    expect(getResumeLesson(lessons, completed, "third")?.id).toBe("first");
+    expect(getResumeLesson(lessons, [], "missing")?.id).toBe("first");
+    expect(getResumeLesson([{ ...lessons[0], archived_at: "2026-09-25" }, ...lessons.slice(1)], [], "first")?.id).toBe("second");
+  });
+});
 
 it("loads requested curriculum even before a learner has progress", async () => {
   const inCourses = vi.fn().mockReturnValue({ order: vi.fn().mockResolvedValue({ data: [{ id: "first", course_id: "new", section_id: "section", sort_order: 0, published: true, archived_at: null, data: { title: "First" } }], error: null }) });

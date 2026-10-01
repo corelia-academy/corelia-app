@@ -16,7 +16,7 @@ import { useSectionDrafts } from "./hooks/useSectionDrafts";
 import { useCourseFieldDraft } from "./hooks/useCourseFieldDraft";
 import { useCourseSettingsDraft } from "./hooks/useCourseSettingsDraft";
 import { useCourseContentDraft } from "./hooks/useCourseContentDraft";
-import { learningSaveError, learningMutationIssues } from "@/features/learning/publishError";
+import { learningSaveError, learningUploadError, learningMutationIssues } from "@/features/learning/publishError";
 import { ARTIFACT_FIELDS, type ArtifactField } from "@/features/learning/types";
 import { SubmissionReviewContent } from "@/features/learning/SubmissionReviewContent";
 import { CourseLearningReport } from "@/features/learning/CourseLearningReport";
@@ -1267,7 +1267,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       );
       setForm((p) => ({ ...p, thumbnail_url: result.url }));
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("courseEdit.errors.uploadThumbnailFailed"));
+      setError(learningUploadError(e, learningT, lessons, t("courseEdit.errors.uploadThumbnailFailed")));
     } finally {
       setUploadingThumb(false);
       e.target.value = "";
@@ -4721,8 +4721,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                         <div className="flex flex-wrap justify-end gap-2">
                           <Button
                             type="button"
-                            variant="secondary"
-                            size="sm"
+                            variant="cta" hierarchy="secondary"
+                            size="small"
                             className="inline-flex items-center gap-1.5"
                             disabled={
                               translatingBundle === "course_info" ||
@@ -4803,8 +4803,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                               {!item.currentFilled && item.sourceFilled ? (
                                 <Button
                                   type="button"
-                                  variant="secondary"
-                                  size="sm"
+                                  variant="cta" hierarchy="secondary"
+                                  size="small"
                                   className="h-7"
                                   onClick={(event) => {
                                     event.stopPropagation();
@@ -4866,8 +4866,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     </span>
                     <Button
                       type="button"
-                      variant="outline"
-                      size="sm"
+                      variant="cta" hierarchy="secondary"
+                      size="small"
                       className="ml-2 inline-flex items-center gap-1"
                       onClick={() => handleGenerateCourseDescription("short_description")}
                     >
@@ -4877,8 +4877,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     {activeContentLocale !== primaryContentLocale ? (
                       <Button
                         type="button"
-                        variant="secondary"
-                        size="sm"
+                        variant="cta" hierarchy="secondary"
+                        size="small"
                         className="ml-2 inline-flex items-center gap-1"
                         onClick={() => openTranslateCourseField("short_description")}
                       >
@@ -4912,8 +4912,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     </span>
                     <Button
                       type="button"
-                      variant="outline"
-                      size="sm"
+                      variant="cta" hierarchy="secondary"
+                      size="small"
                       className="ml-2 inline-flex items-center gap-1"
                       onClick={() => handleGenerateCourseDescription("description")}
                     >
@@ -4923,8 +4923,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     {activeContentLocale !== primaryContentLocale ? (
                       <Button
                         type="button"
-                        variant="secondary"
-                        size="sm"
+                        variant="cta" hierarchy="secondary"
+                        size="small"
                         className="ml-2 inline-flex items-center gap-1"
                         onClick={() => openTranslateCourseField("description")}
                       >
@@ -4960,8 +4960,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     {activeContentLocale !== primaryContentLocale ? (
                       <Button
                         type="button"
-                        variant="secondary"
-                        size="sm"
+                        variant="cta" hierarchy="secondary"
+                        size="small"
                         className="ml-2 inline-flex items-center gap-1"
                         disabled={
                           translatingBundle === "learning_outcomes" ||
@@ -4999,8 +4999,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                         />
                         <Button
                           type="button"
-                          variant="outline"
-                          size="sm"
+                          variant="cta" hierarchy="secondary"
+                          size="small"
                           className="h-9 px-3"
                           aria-label={t("courseEdit.a11y.removeOutcome", { number: idx + 1 })}
                           onClick={() =>
@@ -5018,8 +5018,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                   </div>
                   <Button
                     type="button"
-                    variant="outline"
-                    size="sm"
+                    variant="cta" hierarchy="secondary"
+                    size="small"
                     className="mt-3 inline-flex items-center gap-2"
                     onClick={() =>
                       setContentForm((p) => ({
@@ -5053,8 +5053,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                         />
                         <Button
                           type="button"
-                          variant="outline"
-                          size="sm"
+                          variant="cta" hierarchy="secondary"
+                          size="small"
                           className="h-9 px-3"
                           aria-label={t("courseEdit.a11y.removeSkill", { number: idx + 1 })}
                           onClick={() =>
@@ -5068,8 +5068,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                   </div>
                   <Button
                     type="button"
-                    variant="outline"
-                    size="sm"
+                    variant="cta" hierarchy="secondary"
+                    size="small"
                     className="mt-3 inline-flex items-center gap-2"
                     onClick={() => setCourseSkills((prev) => [...prev, ""])}
                   >
@@ -5199,8 +5199,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                                 </div>
                                 <Button
                                   type="button"
-                                  variant="outline"
-                                  size="sm"
+                                  variant="cta" hierarchy="secondary"
+                                  size="small"
                                   className="h-8 px-2"
                                   onClick={() => handleRevokeCoInstructorInvite(inv.id)}
                                 >
@@ -5245,8 +5245,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                                   </div>
                                   <Button
                                     type="button"
-                                    variant="outline"
-                                    size="sm"
+                                    variant="cta" hierarchy="secondary"
+                                    size="small"
                                     className="h-8 px-2"
                                     onClick={() => {
                                       setCoInstructorIds((prev) =>
@@ -5330,8 +5330,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <Button
                         type="button"
-                        variant="outline"
-                        size="sm"
+                        variant="cta" hierarchy="secondary"
+                        size="small"
                         className="inline-flex items-center gap-2"
                         onClick={openAddSponsor}
                       >
@@ -5403,8 +5403,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                               <div className="flex items-center gap-2">
                                 <Button
                                   type="button"
-                                  variant="outline"
-                                  size="sm"
+                                  variant="cta" hierarchy="secondary"
+                                  size="small"
                                   className="h-9 px-3"
                                   aria-label={t("courseEdit.a11y.editSponsor", { title: name })}
                                   onClick={() => openEditSponsor(s)}
@@ -5413,8 +5413,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                                 </Button>
                                 <Button
                                   type="button"
-                                  variant="outline"
-                                  size="sm"
+                                  variant="cta" hierarchy="secondary"
+                                  size="small"
                                   className="h-9 px-3 text-destructive hover:text-destructive"
                                   aria-label={t("courseEdit.a11y.removeSponsor", { title: name })}
                                   onClick={() => void removeSponsor(s)}
@@ -5456,8 +5456,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                             />
                             <Button
                               type="button"
-                              variant="outline"
-                              size="sm"
+                              variant="cta" hierarchy="secondary"
+                              size="small"
                               disabled={uploadingSponsorLogo || !id}
                               onClick={() => sponsorLogoInputRef.current?.click()}
                             >
@@ -5552,7 +5552,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       <DialogFooter className="mt-2">
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="cta" hierarchy="secondary"
                           onClick={() => setSponsorDialogOpen(false)}
                         >
                           {t("courseEdit.sponsors.actions.cancel")}
@@ -5581,8 +5581,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <Button
                         type="button"
-                        variant="outline"
-                        size="sm"
+                        variant="cta" hierarchy="secondary"
+                        size="small"
                         className="inline-flex items-center gap-2"
                         onClick={openAddPartner}
                         disabled={!canEdit}
@@ -5655,8 +5655,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                               <div className="flex items-center gap-2">
                                 <Button
                                   type="button"
-                                  variant="outline"
-                                  size="sm"
+                                  variant="cta" hierarchy="secondary"
+                                  size="small"
                                   className="h-9 px-3"
                                   aria-label={t("courseEdit.a11y.editPartner", { title: name })}
                                   onClick={() => openEditPartner(p)}
@@ -5666,8 +5666,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                                 </Button>
                                 <Button
                                   type="button"
-                                  variant="outline"
-                                  size="sm"
+                                  variant="cta" hierarchy="secondary"
+                                  size="small"
                                   className="h-9 px-3 text-destructive hover:text-destructive"
                                   aria-label={t("courseEdit.a11y.removePartner", { title: name })}
                                   onClick={() => void removePartner(p)}
@@ -5710,8 +5710,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                             />
                             <Button
                               type="button"
-                              variant="outline"
-                              size="sm"
+                              variant="cta" hierarchy="secondary"
+                              size="small"
                               disabled={uploadingPartnerLogo || !canEdit}
                               onClick={() => partnerLogoInputRef.current?.click()}
                             >
@@ -5803,7 +5803,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       <DialogFooter className="mt-2">
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="cta" hierarchy="secondary"
                           onClick={() => setPartnerDialogOpen(false)}
                         >
                           {t("courseEdit.partners.actions.cancel")}
@@ -5832,8 +5832,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     />
                     <Button
                       type="button"
-                      variant="outline"
-                      size="sm"
+                      variant="cta" hierarchy="secondary"
+                      size="small"
                       disabled={uploadingThumb}
                       onClick={() => fileInputRef.current?.click()}
                     >
@@ -6051,8 +6051,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
           {activeSection === "content" && canAccessContent && (
             <section id="learning-course-curriculum" tabIndex={-1} className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-heading-medium font-display text-foreground flex items-center gap-2">
-                  <List className="size-5" /> {t("courseEdit.content.heading")}
+                <h2 className="text-heading-medium font-display text-foreground">
+                  {t("courseEdit.content.heading")}
                 </h2>
                 <div className="flex flex-wrap items-center justify-end gap-2">
                   {typeof learningTools === "function" ? learningTools(focusLearningIssue) : learningTools}
@@ -6062,7 +6062,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     </span>
                   )}
                   <DropdownMenu>
-                    <DropdownMenuTrigger render={<Button type="button" variant="outline" size="icon-sm" aria-label={learningT("learning.moreActions")}><MoreHorizontal className="size-4" aria-hidden /></Button>} />
+                    <DropdownMenuTrigger render={<Button type="button" variant="cta" hierarchy="secondary" iconOnly size="small" aria-label={learningT("learning.moreActions")}><MoreHorizontal className="size-4" aria-hidden /></Button>} />
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem disabled={refreshingTotal || lessons.length === 0 || !canEdit} onClick={() => void handleRefreshTotalDuration()}>
                         {refreshingTotal ? t("courseEdit.labels.updating") : learningT("learning.recalculateDuration")}
@@ -6092,7 +6092,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     {t("courseEdit.content.sectionsToggleHint")}
                   </span>
                 </label>
-                <Button type="button" variant="outline" disabled={saving} onClick={() => void saveCourseStructure()}>
+                <Button type="button" variant="cta" hierarchy="secondary" disabled={saving} onClick={() => void saveCourseStructure()}>
                   {t(saving ? "courseEdit.labels.saving" : "courseEdit.content.saveStructure")}
                 </Button>
               </div>
@@ -6160,8 +6160,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       <div className="flex shrink-0 flex-wrap items-center gap-1">
                         <Button
                           type="button"
-                          variant="ghost"
-                          size="icon-xs"
+                          variant="cta" hierarchy="tertiary" iconOnly
+                          size="xsmall"
                           disabled={reorderingSections || sectionIndex === 0}
                           onClick={() => void handleMoveSection(section.id, -1)}
                           aria-label={t("courseEdit.a11y.moveSectionUp", { title: section.title })}
@@ -6171,8 +6171,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                         </Button>
                         <Button
                           type="button"
-                          variant="ghost"
-                          size="icon-xs"
+                          variant="cta" hierarchy="tertiary" iconOnly
+                          size="xsmall"
                           disabled={
                             reorderingSections ||
                             sectionIndex === lessonsBySection.length - 1
@@ -6185,15 +6185,15 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                         </Button>
                         <Button
                           type="button"
-                          variant="ghost"
-                          size="sm"
+                          variant="cta" hierarchy="tertiary"
+                          size="small"
                           onClick={() => openEditSection(section)}
                         >
                           {t("courseEdit.sections.edit")}
                         </Button>
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant="cta" hierarchy="tertiary"
+                          size="small"
                           className="text-destructive hover:text-destructive"
                           type="button"
                           aria-label={t("courseEdit.a11y.deleteSection", { title: lessonText(section.title) })}
@@ -6297,15 +6297,15 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                             <div className="flex flex-wrap items-center gap-2 md:justify-end">
                               <Button
                                 type="button"
-                                variant="ghost"
-                                size="sm"
+                                variant="cta" hierarchy="tertiary"
+                                size="small"
                                 onClick={() => openEditLesson(lesson)}
                               >
                                 {t("courseEdit.lessons.edit")}
                               </Button>
-                              <Button type="button" variant="ghost" size="sm" onClick={() => navigate(`/instructor/courses/${id}/preview/${lesson.id}`, { state: { editorLocation } })}>{learningT("learning.preview")}</Button>
+                              <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => navigate(`/instructor/courses/${id}/preview/${lesson.id}`, { state: { editorLocation } })}>{learningT("learning.preview")}</Button>
                               <DropdownMenu>
-                                <DropdownMenuTrigger render={<Button type="button" variant="ghost" size="icon-sm" aria-label={`${learningT("learning.moreActions")} · ${lesson.title}`}><MoreHorizontal className="size-4" aria-hidden /></Button>} />
+                                <DropdownMenuTrigger render={<Button type="button" variant="cta" hierarchy="tertiary" iconOnly size="small" aria-label={`${learningT("learning.moreActions")} · ${lesson.title}`}><MoreHorizontal className="size-4" aria-hidden /></Button>} />
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem disabled={reorderingLessons || lessonIndex === 0} onClick={() => void handleMoveLesson(section.id, lesson.id, -1)}>{learningT("learning.moveUp")}</DropdownMenuItem>
                                   <DropdownMenuItem disabled={reorderingLessons || lessonIndex === secLessons.length - 1} onClick={() => void handleMoveLesson(section.id, lesson.id, 1)}>{learningT("learning.moveDown")}</DropdownMenuItem>
@@ -6322,8 +6322,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     {form.has_sections && (
                     <div className="border-t border-border-subtle p-3">
                       <Button
-                        variant="ghost"
-                        size="sm"
+                        variant="cta" hierarchy="tertiary"
+                        size="small"
                         onClick={() => {
                           setAddingLessonDraftSectionId(section.id);
                           setNewLessonTitle("");
@@ -6402,8 +6402,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     {dialogSectionLocale !== primaryContentLocale ? (
                       <Button
                         type="button"
-                        variant="secondary"
-                        size="sm"
+                        variant="cta" hierarchy="secondary"
+                        size="small"
                         className="inline-flex items-center gap-1.5"
                         disabled={translatingBundle === "section"}
                         onClick={handleTranslateSectionBundle}
@@ -6475,8 +6475,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     </span>
                     <Button
                       type="button"
-                      variant="outline"
-                      size="sm"
+                      variant="cta" hierarchy="secondary"
+                      size="small"
                       className="ml-2 inline-flex items-center gap-1"
                       onClick={handleGenerateSectionDescription}
                     >
@@ -6495,9 +6495,9 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                 </Field>
               </div>
               {sectionSaveError && <p role="alert" className="text-sm text-destructive">{sectionSaveError}</p>}
-              {sectionLoadError && <p role="alert" className="text-sm text-destructive">{sectionLoadError} <Button type="button" variant="outline" onClick={() => retrySectionLoadRef.current()}>{learningT("learning.retry")}</Button></p>}
+              {sectionLoadError && <p role="alert" className="text-sm text-destructive">{sectionLoadError} <Button type="button" variant="cta" hierarchy="secondary" onClick={() => retrySectionLoadRef.current()}>{learningT("learning.retry")}</Button></p>}
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={closeEditSection}>
+                <Button type="button" variant="cta" hierarchy="secondary" onClick={closeEditSection}>
                   {t("courseEdit.sections.cancel")}
                 </Button>
                 <Button type="button" disabled={savingSection || loadingSectionLocales || Boolean(sectionLoadError) || translatingBundle === "section"} onClick={() => void handleSaveSectionDetails()}>
@@ -6511,7 +6511,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
           <Dialog open={!!editingLesson} onOpenChange={(open) => !open && closeEditLesson()}>
             <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden p-0">
               {loadingLessonLocales && <p role="status" className="p-3">{learningT("learning.loading")}</p>}
-              {(loadingLessonLocales || lessonLoadError) && <Button type="button" variant="outline" onClick={() => void closeEditLesson()}>{learningT("learning.cancel")}</Button>}
+              {(loadingLessonLocales || lessonLoadError) && <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void closeEditLesson()}>{learningT("learning.cancel")}</Button>}
               {lessonLoadError && <p role="alert" className="p-3">{lessonLoadError} <Button type="button" onClick={() => retryLessonLoadRef.current()}>{learningT("learning.retry")}</Button></p>}
               <fieldset disabled={loadingLessonLocales || Boolean(lessonLoadError) || savingLesson || translatingBundle === "lesson"} className="flex min-h-0 max-h-[85vh] flex-col">
                 <DialogHeader className="sticky top-0 z-10 border-b border-border-subtle bg-surface-float/95 p-4 backdrop-blur">
@@ -6527,8 +6527,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       {dialogLessonLocale !== primaryContentLocale ? (
                         <Button
                           type="button"
-                          variant="secondary"
-                          size="sm"
+                          variant="cta" hierarchy="secondary"
+                          size="small"
                           className="inline-flex items-center gap-1.5"
                           disabled={translatingBundle === "lesson"}
                           onClick={handleTranslateLessonBundle}
@@ -6715,8 +6715,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       {editingLessonFormat === "practice" && editingPracticeSourceLessonIds.size > 0 ? (
                         <Button
                           type="button"
-                          variant="outline"
-                          size="sm"
+                          variant="cta" hierarchy="secondary"
+                          size="small"
                           className="ml-2 inline-flex items-center gap-1"
                           onClick={() =>
                             handleGeneratePracticeTitle({
@@ -6769,8 +6769,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       </span>
                       <Button
                         type="button"
-                        variant="outline"
-                        size="sm"
+                        variant="cta" hierarchy="secondary"
+                        size="small"
                         className="ml-2 inline-flex items-center gap-1"
                         onClick={() =>
                           handleGenerateLessonDescription({
@@ -6845,8 +6845,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                         </div>
                         <Button
                           type="button"
-                          variant="outline"
-                          size="sm"
+                          variant="cta" hierarchy="secondary"
+                          size="small"
                           className="shrink-0"
                           onClick={() => openLessonQuizGenerator(editingLesson)}
                         >
@@ -6871,8 +6871,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       </span>
                       <Button
                         type="button"
-                        variant="outline"
-                        size="sm"
+                        variant="cta" hierarchy="secondary"
+                        size="small"
                         className="ml-2 inline-flex items-center gap-1"
                         onClick={() =>
                           handleGenerateLessonDescription({
@@ -6943,8 +6943,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                           />
                           <Button
                             type="button"
-                            variant="outline"
-                            size="sm"
+                            variant="cta" hierarchy="secondary"
+                            size="small"
                             className="h-9"
                             onClick={() =>
                               setEditingLessonResources((prev) => {
@@ -6961,8 +6961,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     </div>
                     <Button
                       type="button"
-                      variant="outline"
-                      size="sm"
+                      variant="cta" hierarchy="secondary"
+                      size="small"
                       className="mt-3 inline-flex items-center gap-2"
                       onClick={() =>
                         setEditingLessonResources((prev) => [...prev, { title: "", url: "" }])
@@ -7027,7 +7027,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                 </div>
                 {lessonSaveError && <p role="alert" className="px-4 text-sm text-destructive">{lessonSaveError}</p>}
                 <DialogFooter className="sticky bottom-0 z-10 border-t border-border-subtle bg-surface-float/95 p-4 backdrop-blur">
-                  <Button type="button" variant="outline" onClick={() => void closeEditLesson()}>
+                  <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void closeEditLesson()}>
                     {t("courseEdit.lessons.cancel")}
                   </Button>
                   <Button type="button" onClick={() => void handleSaveLessonDetails()}>
@@ -7095,7 +7095,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       <DialogFooter className="gap-2 sm:justify-between">
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="cta" hierarchy="secondary"
                           onClick={() => handleCancelLongVideoSplit()}
                           disabled={addingLessonInProgress}
                         >
@@ -7104,7 +7104,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                         <div className="flex flex-wrap justify-end gap-2">
                           <Button
                             type="button"
-                            variant="secondary"
+                            variant="cta" hierarchy="secondary"
                             disabled={addingLessonInProgress}
                             onClick={() => setLongVideoSplitUiMode("manual")}
                           >
@@ -7137,8 +7137,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                         {longVideoSplitPayload.autoSegments.length >= 2 ? (
                           <Button
                             type="button"
-                            variant="ghost"
-                            size="sm"
+                            variant="cta" hierarchy="tertiary"
+                            size="small"
                             disabled={addingLessonInProgress}
                             onClick={() => setLongVideoSplitUiMode("choose")}
                           >
@@ -7187,8 +7187,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                             />
                             <Button
                               type="button"
-                              variant="outline"
-                              size="sm"
+                              variant="cta" hierarchy="secondary"
+                              size="small"
                               className="h-9 shrink-0"
                               disabled={manualSegmentRows.length <= 1 || addingLessonInProgress}
                               onClick={() =>
@@ -7202,8 +7202,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       </div>
                       <Button
                         type="button"
-                        variant="outline"
-                        size="sm"
+                        variant="cta" hierarchy="secondary"
+                        size="small"
                         disabled={addingLessonInProgress}
                         onClick={() =>
                           setManualSegmentRows((prev) => [
@@ -7218,7 +7218,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       <DialogFooter className="gap-2">
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="cta" hierarchy="secondary"
                           disabled={addingLessonInProgress}
                           onClick={() =>
                             longVideoSplitPayload.autoSegments.length >= 2
@@ -7348,8 +7348,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       {newLessonFormat === "practice" && newPracticeSourceLessonIds.size > 0 ? (
                         <Button
                           type="button"
-                          variant="outline"
-                          size="sm"
+                          variant="cta" hierarchy="secondary"
+                          size="small"
                           className="ml-2 inline-flex items-center gap-1"
                           onClick={() =>
                             handleGeneratePracticeTitle({
@@ -7386,8 +7386,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       </span>
                       <Button
                         type="button"
-                        variant="outline"
-                        size="sm"
+                        variant="cta" hierarchy="secondary"
+                        size="small"
                         className="ml-2 inline-flex items-center gap-1"
                         onClick={() =>
                           handleGenerateLessonDescription({
@@ -7424,8 +7424,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                         </div>
                         <Button
                           type="button"
-                          variant="outline"
-                          size="sm"
+                          variant="cta" hierarchy="secondary"
+                          size="small"
                           className="shrink-0"
                           onClick={() =>
                             setNewQuizQuestions((prev) => [
@@ -7491,8 +7491,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                             </select>
                             <Button
                               type="button"
-                              variant="outline"
-                              size="sm"
+                              variant="cta" hierarchy="secondary"
+                              size="small"
                               disabled={
                                 newQuizGenerating || newQuizSourceLessonIds.size === 0
                               }
@@ -7535,8 +7535,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                                 />
                                 <Button
                                   type="button"
-                                  variant="ghost"
-                                  size="icon-xs"
+                                  variant="cta" hierarchy="tertiary" iconOnly
+                                  size="xsmall"
                                   className="mt-1 shrink-0 text-destructive"
                                   onClick={() =>
                                     setNewQuizQuestions((prev) =>
@@ -7645,8 +7645,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       </span>
                       <Button
                         type="button"
-                        variant="outline"
-                        size="sm"
+                        variant="cta" hierarchy="secondary"
+                        size="small"
                         className="ml-2 inline-flex items-center gap-1"
                         onClick={() =>
                           handleGenerateLessonDescription({
@@ -7716,8 +7716,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                           />
                           <Button
                             type="button"
-                            variant="outline"
-                            size="sm"
+                            variant="cta" hierarchy="secondary"
+                            size="small"
                             className="h-9"
                             onClick={() =>
                               setNewLessonResources((prev) => {
@@ -7734,8 +7734,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     </div>
                     <Button
                       type="button"
-                      variant="outline"
-                      size="sm"
+                      variant="cta" hierarchy="secondary"
+                      size="small"
                       className="mt-3 inline-flex items-center gap-2"
                       onClick={() =>
                         setNewLessonResources((prev) => [...prev, { title: "", url: "" }])
@@ -7801,7 +7801,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                 <DialogFooter className="sticky bottom-0 z-10 border-t border-border-subtle bg-surface-float/95 p-4 backdrop-blur">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="cta" hierarchy="secondary"
                     onClick={closeNewLessonDialog}
                   >
                     {t("courseEdit.lessons.cancel")}
@@ -7827,15 +7827,15 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
               {localeQuery.isError && <p role="alert">{learningT("learning.translationLoadError")} <Button type="button" onClick={() => void localeQuery.refetch()}>{learningT("learning.retry")}</Button></p>}
               <fieldset disabled={!localeQuery.isSuccess} className="contents">
               <div className="mb-2 flex items-center justify-between gap-3">
-                <h2 className="flex items-center gap-2 text-heading-medium font-display text-foreground">
-                  <FileText className="size-5" aria-hidden /> {t("courseEdit.sidebar.nav.assignments")}
+                <h2 className="text-heading-medium font-display text-foreground">
+                  {t("courseEdit.sidebar.nav.assignments")}
                 </h2>
                 <div className="flex flex-wrap items-center justify-end gap-2">
                   {activeContentLocale !== primaryContentLocale ? (
                     <Button
                       type="button"
-                      variant="secondary"
-                      size="sm"
+                      variant="cta" hierarchy="secondary"
+                      size="small"
                       className="inline-flex items-center gap-1.5"
                       disabled={
                         translatingBundle === "assignment" ||
@@ -7970,7 +7970,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                 <h3 className="text-heading-small font-display text-foreground">
                   {t("courseEdit.assignments.submissionsTitle")}
                 </h3>
-                <Button type="button" variant="outline" size="sm" disabled={workspaceQuery.isFetching} onClick={() => void workspaceQuery.refetch()}>
+                <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={workspaceQuery.isFetching} onClick={() => void workspaceQuery.refetch()}>
                   {learningT("learning.refresh")}
                 </Button>
               </div>
@@ -8058,8 +8058,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                                       </label>
                                       <div className="flex gap-1">
                                       <Button
-                                        size="sm"
-                                        variant="outline"
+                                        size="small"
+                                        variant="cta" hierarchy="secondary"
                                         className="border-success/30 text-success"
                                         disabled={
                                           reviewingSubmissionId !== null
@@ -8077,8 +8077,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                                           : t("courseEdit.assignments.reviewApprove")}
                                       </Button>
                                       <Button
-                                        size="sm"
-                                        variant="outline"
+                                        size="small"
+                                        variant="cta" hierarchy="secondary"
                                         className="border-destructive/30 text-destructive"
                                         disabled={
                                           reviewingSubmissionId !== null
@@ -8118,8 +8118,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
             <div className="space-y-4">
               {/* PDF certificate template — enabled through General info. */}
               <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
-                <h2 className="text-heading-medium font-display text-foreground flex items-center gap-2 mb-1">
-                  <Award className="size-5" aria-hidden /> {t("courseEdit.certificate.sectionTitle")}
+                <h2 className="text-heading-medium font-display text-foreground mb-1">
+                  {t("courseEdit.certificate.sectionTitle")}
                 </h2>
                 <p className="mb-6 text-sm text-foreground-muted">
                   {t("courseEdit.certificate.sectionDescription")}
@@ -8139,8 +8139,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                     <div className="mt-1 flex flex-wrap items-center gap-3">
                       <Button
                         type="button"
-                        variant="outline"
-                        size="sm"
+                        variant="cta" hierarchy="secondary"
+                        size="small"
                         disabled={uploadingCert}
                         onClick={() => certificateInputRef.current?.click()}
                       >
@@ -8351,8 +8351,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                 </div>
 
                 <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
-                  <h3 className="text-heading-small font-display text-foreground mb-2 flex items-center gap-2">
-                    <FileText className="size-4" /> {t("courseEdit.certificateGuide.title")}
+                  <h3 className="text-heading-small font-display text-foreground mb-2">
+                    {t("courseEdit.certificateGuide.title")}
                   </h3>
                   <ul className="list-inside list-disc space-y-1 text-sm text-foreground-muted">
                     <li>{t("courseEdit.certificateGuide.sizeHint")}</li>
@@ -8436,8 +8436,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
 
           {activeSection === "students" && canAccessStudents && (
             <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
-              <h2 className="text-heading-medium font-display text-foreground flex items-center gap-2 mb-4">
-                <Users className="size-5" /> {t("courseEdit.sidebar.nav.students")}
+              <h2 className="text-heading-medium font-display text-foreground mb-4">
+                {t("courseEdit.sidebar.nav.students")}
               </h2>
               {course && <CourseLearningReport courseId={course.id} />}
               {enrollments.length === 0 ? (
@@ -8583,12 +8583,12 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
               <div className="mb-6 space-y-3">
                 <h2 className="font-medium">{learningT(course?.archived_at ? "learning.archived" : "learning.archive")}</h2>
                 <p className="text-sm text-foreground-muted">{learningT("learning.archiveHint")}</p>
-                <Button type="button" variant="outline" disabled={Boolean(archivingId)} onClick={() => void handleArchiveCourse()}>
+                <Button type="button" variant="cta" hierarchy="secondary" disabled={Boolean(archivingId)} onClick={() => void handleArchiveCourse()}>
                   {learningT(course?.archived_at ? "learning.restoreDraft" : "learning.archive")}
                 </Button>
               </div>
-              <h2 className="text-heading-medium font-display text-foreground flex items-center gap-2 mb-2">
-                <AlertTriangle className="size-5" aria-hidden /> {t("courseEdit.danger.dangerZoneTitle")}
+              <h2 className="text-heading-medium font-display text-foreground mb-2">
+                {t("courseEdit.danger.dangerZoneTitle")}
               </h2>
               <p className="text-sm text-foreground-muted mb-4">
                 {t("courseEdit.danger.deleteWarning")}
@@ -8597,7 +8597,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                 <DialogTrigger
                   render={
                     <Button
-                      variant="outline"
+                      variant="cta" hierarchy="secondary"
                       className="text-destructive border-destructive/50 hover:bg-destructive/10"
                       type="button"
                       disabled={Boolean(course?.published || course?.archived_at || enrollments.length || submissions.length)}

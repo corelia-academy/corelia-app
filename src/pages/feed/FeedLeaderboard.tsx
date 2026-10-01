@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Trophy } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,7 +18,7 @@ export default function FeedLeaderboard() {
   const [period, setPeriod] = useState<XpPeriod>("week");
   const week = useXpWeek();
   return <section className="space-y-5" aria-label={t("xp.leaderboard.title")}>
-    <header><h2 className="flex items-center gap-2 text-lg font-semibold"><Trophy className="size-5 shrink-0 text-primary" aria-hidden />{t("xp.leaderboard.title")}</h2><p className="mt-2 text-sm text-foreground-muted">{t("xp.leaderboard.description")}</p></header>
+    <header><h2 className="text-lg font-semibold">{t("xp.leaderboard.title")}</h2><p className="mt-2 text-sm text-foreground-muted">{t("xp.leaderboard.description")}</p></header>
     <Tabs.Root value={period} onValueChange={value => { if (value === "week" || value === "all_time") setPeriod(value); }}>
       <Tabs.List activateOnFocus level="2a" aria-label={t("xp.leaderboard.period")}>
         <Tabs.Tab value="week">{t("xp.leaderboard.week")}</Tabs.Tab>
@@ -40,7 +39,7 @@ function LeaderboardResults({ userId, period, week }: { userId: string; period: 
   const date = (value: string) => new Intl.DateTimeFormat(i18n.language, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(value));
   if (query.isPending) return <div aria-label={t("xp.loading")} className="space-y-3"><Skeleton className="h-24 rounded-xl" /><Skeleton className="h-64 rounded-xl" /></div>;
   // Never keep showing a possibly private identity after a failed eligibility refresh.
-  if (query.isError) return <div role="alert" className="rounded-xl border border-border-subtle p-5"><p>{t("xp.leaderboard.error")}</p><Button type="button" variant="outline" className="mt-3" onClick={() => void query.refetch()}>{t("profile.retry")}</Button></div>;
+  if (query.isError) return <div role="alert" className="rounded-xl border border-border-subtle p-5"><p>{t("xp.leaderboard.error")}</p><Button type="button" variant="cta" hierarchy="secondary" className="mt-3" onClick={() => void query.refetch()}>{t("profile.retry")}</Button></div>;
   const data = query.data;
   const maxPage = Math.max(0, Math.ceil(data.rows.length / 20) - 1);
   const page = Math.min(requestedPage, maxPage);
@@ -72,9 +71,9 @@ function LeaderboardResults({ userId, period, week }: { userId: string; period: 
         })}
       </ol>
       {maxPage > 0 && <nav aria-label={t("xp.leaderboard.pagination")} className="flex items-center justify-between gap-3">
-        <Button type="button" variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(page - 1)}>{t("xp.previous")}</Button>
+        <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={page === 0} onClick={() => setPage(page - 1)}>{t("xp.previous")}</Button>
         <span role="status" className="text-sm">{t("xp.leaderboard.page", { page: page + 1, total: maxPage + 1 })}</span>
-        <Button type="button" variant="outline" size="sm" disabled={page === maxPage} onClick={() => setPage(page + 1)}>{t("xp.next")}</Button>
+        <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={page === maxPage} onClick={() => setPage(page + 1)}>{t("xp.next")}</Button>
       </nav>}
     </>}
     <p className="text-xs text-foreground-muted">{t("xp.rank.description")}</p>

@@ -102,7 +102,7 @@ export function ContestDetailErrorCard({
           <Button
             render={<NavLink to="/hackathons" />}
             nativeButton={false}
-            variant="ghost"
+            variant="cta" hierarchy="tertiary"
             className="mt-4"
           >
             {translate("detail.errorState.backToList")}
@@ -130,7 +130,7 @@ export function ContestDetailWorkspaceAccessDenied({
           <Button
             render={<NavLink to={`/hackathons/${contestId}`} />}
             nativeButton={false}
-            variant="ghost"
+            variant="cta" hierarchy="tertiary"
             className="mt-4"
           >
             {translate("workspace.manage.backToContestPage")}

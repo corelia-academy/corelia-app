@@ -171,6 +171,14 @@ export function AdminSidebar() {
                   }
                 />
               </SidebarMenuItem>
+              {profile?.role === "admin" && <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="rounded-md"
+                  tooltip={t("certificateAnalytics.title")}
+                  isActive={pathname === "/admin/certificates"}
+                  render={<NavLink to="/admin/certificates" className="flex w-full items-center gap-2"><Award className="size-4" aria-hidden /><span>{t("certificateAnalytics.title")}</span></NavLink>}
+                />
+              </SidebarMenuItem>}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   className="rounded-md"

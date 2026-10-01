@@ -23,7 +23,6 @@ type RequestBody = {
   sourceInputs?: unknown;
   bundleKind?: unknown;
   sourceBundle?: unknown;
-  careerTrackId?: unknown;
   hackathonId?: unknown;
   courseId?: unknown;
   sectionId?: unknown;
@@ -35,10 +34,6 @@ type RequestBody = {
 type CourseRow = {
   instructor_id: string;
   data: Record<string, unknown> | null;
-};
-
-type CareerTrackRow = {
-  instructor_id: string;
 };
 
 type LessonRow = {
@@ -232,7 +227,6 @@ function parseBody(body: RequestBody): {
   sourceInputs: SourceInput[] | null;
   bundleKind: BundleKind | null;
   sourceBundle: TranslationBundle | null;
-  careerTrackId: string | null;
   hackathonId: string | null;
   courseId: string | null;
   sectionId: string | null;
@@ -269,7 +263,6 @@ function parseBody(body: RequestBody): {
       ? body.bundleKind
       : null;
   const sourceBundle = parseTranslationBundle(body.sourceBundle);
-  const careerTrackId = parseOptionalResourceId(body.careerTrackId, "careerTrackId");
   const hackathonId = parseOptionalResourceId(body.hackathonId, "hackathonId");
   const courseId = typeof body.courseId === "string" && body.courseId.trim() ? body.courseId.trim() : null;
   const sectionId = typeof body.sectionId === "string" && body.sectionId.trim() ? body.sectionId.trim() : null;
@@ -281,25 +274,6 @@ function parseBody(body: RequestBody): {
   if (!action || !type || !targetField || !locale) {
     throw new Error("Thiếu action, type, targetField hoặc locale hợp lệ.");
   }
-  if (careerTrackId) {
-    if (body.courseId != null) throw new Error("Không được gửi đồng thời courseId và careerTrackId.");
-    if (body.hackathonId != null) throw new Error("Không được gửi đồng thời hackathonId và careerTrackId.");
-    const isCareerTrackTranslation =
-      action === "translate" &&
-      type === "course" &&
-      targetField === "description" &&
-      bundleKind === "course_info";
-    const hasCourseResourceInputs =
-      body.sectionId != null ||
-      body.lessonId != null ||
-      body.youtubeUrl != null ||
-      body.lessonTitle != null ||
-      body.intent != null ||
-      body.sourceInputs != null;
-    if (!isCareerTrackTranslation || hasCourseResourceInputs) {
-      throw new Error("careerTrackId chỉ hợp lệ cho luồng dịch toàn bộ Career Track.");
-    }
-  }
   if (hackathonId) {
     const isHackathonTranslation =
       action === "translate" &&
@@ -308,7 +282,6 @@ function parseBody(body: RequestBody): {
       bundleKind === "hackathon";
     const hasOtherResourceIds =
       body.courseId != null ||
-      body.careerTrackId != null ||
       body.sectionId != null ||
       body.lessonId != null ||
       body.youtubeUrl != null ||
@@ -331,7 +304,6 @@ function parseBody(body: RequestBody): {
     sourceInputs,
     bundleKind,
     sourceBundle,
-    careerTrackId,
     hackathonId,
     courseId,
     sectionId,
@@ -584,28 +556,6 @@ async function ensureCanManageCourse(
     {};
   if (coInstructorPermissions[userId]?.content) return;
   throw new Error("Bạn không có quyền generate mô tả cho khoá học này.");
-}
-
-async function ensureCanManageCareerTrack(
-  db: SupabaseClient,
-  userId: string,
-  role: Role,
-  careerTrackId: string,
-): Promise<void> {
-  const { data, error } = await db
-    .from("career_tracks")
-    .select("instructor_id")
-    .eq("id", careerTrackId)
-    .maybeSingle();
-  if (error) {
-    console.error("[generate-description] db error in career_tracks:", error);
-    throw new Error("Không thể kết nối cơ sở dữ liệu.");
-  }
-  if (!data) throw new HttpStatusError(404, "Không tìm thấy lộ trình nghề nghiệp.");
-  if (role === "admin" || role === "support_staff") return;
-  const row = data as CareerTrackRow;
-  if (row.instructor_id === userId) return;
-  throw new Error("Bạn không có quyền dịch lộ trình nghề nghiệp này.");
 }
 
 async function ensureCanTranslateHackathon(
@@ -1246,14 +1196,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (!rawBody || typeof rawBody !== "object" || Array.isArray(rawBody)) {
       throw new HttpStatusError(400, "Payload JSON phải là một object.");
     }
+    if (Object.hasOwn(rawBody, "careerTrackId")) {
+      throw new HttpStatusError(410, "Career Tracks đã ngừng hoạt động.");
+    }
     const parsed = parseBody(rawBody as RequestBody);
     const normalizedYoutubeVideoId = parsed.youtubeUrl ? normalizeYoutubeVideoId(parsed.youtubeUrl) : null;
 
     let guardCourseId: string | null = null;
     if (parsed.hackathonId) {
       await ensureCanTranslateHackathon(db, role, parsed.hackathonId);
-    } else if (parsed.careerTrackId) {
-      await ensureCanManageCareerTrack(db, user.id, role, parsed.careerTrackId);
     } else {
       guardCourseId = await resolveAndValidateCourseScope(db, parsed);
       await ensureCanManageCourse(db, user.id, role, guardCourseId);

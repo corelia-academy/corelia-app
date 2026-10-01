@@ -22,7 +22,8 @@ import {
   checkAndIssueCertificate,
   courseHasCertificate,
   ensureEnrollmentForProgress,
-  getNextLesson,
+  getResumeLesson,
+  rememberRecentLesson,
   resetLessonProgress,
   revertCourseCompletion,
   setLessonProgress,
@@ -57,6 +58,7 @@ import { Button } from "@/components/ui/button";
 import { CourseCompletionCertificatePanel } from "@/components/courses/CourseCompletionCertificatePanel";
 import { cn } from "@/lib/utils";
 import type { CertificateIssueReason } from "@/lib/courses";
+import type { Enrollment } from "@/types/courses";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -111,6 +113,7 @@ function LearnWorkspace() {
   const navigate = useNavigate();
   const { profile, user } = useAuth();
   const queryClient = useQueryClient();
+  const rememberLessonQueue = useRef(Promise.resolve());
   // Keep completed practice artifacts across lesson/final routes even if storage is blocked.
   // LearnWorkspace is keyed by course and identity, so this handoff cannot cross accounts.
   const [practiceArtifacts, setPracticeArtifacts] = useState<Partial<Record<ArtifactField, string>>>({});
@@ -192,7 +195,7 @@ function LearnWorkspace() {
 
   const syncCertificate = useCallback(async () => {
     const course = courseLoad.course;
-    if (!courseId || !profile?.id || !course) return null;
+    if (!courseId || !profile?.id || !course || course.is_updating) return null;
     const currentEpoch = ++syncEpochRef.current;
     let phase: "completion" | "certificate" = "completion";
     let completionConfirmed = false;
@@ -213,6 +216,7 @@ function LearnWorkspace() {
       if (!activeWorkspace.current || syncEpochRef.current !== currentEpoch) return null;
       completionConfirmed = completion.completed;
       let baseEnrollment = enrollment ?? access.enrollment;
+      const wasCompleted = Boolean(baseEnrollment?.completed_at);
       if (completion.completed) {
         completionConfirmed = true;
         const completedAt = completion.completed_at || baseEnrollment?.completed_at || new Date().toISOString();
@@ -222,7 +226,7 @@ function LearnWorkspace() {
         }
         setCompletionJustSynced(true);
       } else {
-        if (completion.reason === "final_assignment_pending") return null;
+        if (completion.reason === "final_assignment_pending" || completion.reason === "course_updating") return null;
         setCompletionSyncError(
           completion.message || translate("detail.learn.completion.completionSyncFailed"),
         );
@@ -234,7 +238,7 @@ function LearnWorkspace() {
         autoIssue: true,
       });
       if (!activeWorkspace.current || syncEpochRef.current !== currentEpoch) return null;
-      if (credentialCheck.reason === "oca_requires_manual_claim") {
+      if (!wasCompleted && credentialCheck.reason === "oca_requires_manual_claim") {
         toast.success(translate("detail.courseDetail.ocaReady"), {
           action: {
             label: translate("detail.courseDetail.viewAchievements"),
@@ -255,13 +259,15 @@ function LearnWorkspace() {
           access.setEnrollment({ ...baseEnrollment, certificate_issued_at: issuedAt });
         }
         setCertificateJustIssued(true);
-        void progress.refresh();
-        toast.success(translate("detail.courseDetail.certificateIssuedSuccess"), {
-          action: {
-            label: translate("detail.courseDetail.viewCertificate"),
-            onClick: () => navigate("/achievements"),
-          },
-        });
+        if (result.reason === "issued") {
+          void progress.refresh();
+          toast.success(translate("detail.courseDetail.certificateIssuedSuccess"), {
+            action: {
+              label: translate("detail.courseDetail.viewCertificate"),
+              onClick: () => navigate("/achievements"),
+            },
+          });
+        }
       } else if (result.message) {
         setCertificateIssueError(result.message);
       }
@@ -300,7 +306,8 @@ function LearnWorkspace() {
 
   useEffect(() => {
     const course = courseLoad.course;
-    if (!courseId || !profile?.id || !course) return;
+    if (!courseId || !profile?.id || !course || course.is_updating) return;
+    if (access.loading) return;
     if (progress.progressPercent < 100) return;
     if (course.final_assignment_title && submission.submission?.status !== "approved") return;
     if (access.enrollment?.completed_at && (!courseHasCertificate(course) || access.enrollment.certificate_issued_at)) {
@@ -312,6 +319,7 @@ function LearnWorkspace() {
     void syncCertificate();
   }, [
     access.enrollment,
+    access.loading,
     courseId,
     courseLoad.course,
     profile?.id,
@@ -321,16 +329,16 @@ function LearnWorkspace() {
   ]);
 
   useEffect(() => {
-    if (!courseId || visibleLessons.length === 0) return;
+    if (!courseId || courseLoad.loading || access.loading || !progress.loaded || visibleLessons.length === 0) return;
     // If URL already contains an explicit lessonId, do not auto-redirect
     if (lessonId || isFinalAssignment) return;
 
-    const next = getNextLesson(visibleLessons, progress.progressList);
+    const next = getResumeLesson(visibleLessons, progress.progressList, access.enrollment?.last_lesson_id);
     const target = next ?? visibleLessons[0];
     if (target) {
       navigate(`/learn/${courseId}/lesson/${target.id}`, { replace: true });
     }
-  }, [courseId, lessonId, isFinalAssignment, navigate, progress.progressList, visibleLessons]);
+  }, [access.enrollment?.last_lesson_id, access.loading, courseId, courseLoad.loading, lessonId, isFinalAssignment, navigate, progress.loaded, progress.progressList, visibleLessons]);
 
   const rawLesson = useMemo(() => {
     if (!lessonId || sortedLessons.length === 0) return null;
@@ -358,6 +366,23 @@ function LearnWorkspace() {
   useEffect(() => {
     if (user && currentLesson && courseId) void recordLearningEvent(courseId, currentLesson.id, "lesson_started");
   }, [user, courseId, currentLesson]);
+
+  useEffect(() => {
+    const enrollmentId = access.enrollment?.id;
+    const currentLessonId = currentLesson?.id;
+    if (!user || !courseId || !enrollmentId || !currentLessonId || !progress.loaded || progress.completedIds.has(currentLessonId)) return;
+
+    // Serialize navigation writes so a slower request cannot overwrite a later lesson.
+    rememberLessonQueue.current = rememberLessonQueue.current.then(async () => {
+      await rememberRecentLesson(enrollmentId, currentLessonId);
+      queryClient.setQueryData<Enrollment>(["courses", "enrollment", user.id, courseId], (previous) =>
+        previous ? { ...previous, last_lesson_id: currentLessonId } : previous,
+      );
+      void queryClient.invalidateQueries({ queryKey: ["home", "dashboard", user.id] });
+    }).catch((error) => {
+      console.error("[Learn] Could not save recent lesson", error);
+    });
+  }, [access.enrollment?.id, courseId, currentLesson?.id, progress.completedIds, progress.loaded, queryClient, user]);
 
   const nextLesson = progress.nextLesson;
   const currentLessonIndex = currentLesson
@@ -504,7 +529,7 @@ function LearnWorkspace() {
                 {translate("detail.learn.goToFirstLesson", { defaultValue: "Vào bài học đầu tiên" })}
               </Button>
             )}
-            <Button variant="outline" onClick={() => navigate(`/courses/${courseId}`)}>
+            <Button variant="cta" hierarchy="secondary" onClick={() => navigate(`/courses/${courseId}`)}>
               {translate("detail.learn.backToCourse")}
             </Button>
           </div>
@@ -560,6 +585,11 @@ function LearnWorkspace() {
 
   const lessonContent = (
     <>
+      {course.is_updating ? (
+        <p role="status" className="mx-4 mt-4 rounded-md border border-border-subtle bg-surface-raised p-4 text-sm text-foreground-muted sm:mx-6 sm:mt-5">
+          {translate("detail.courseDetail.courseUpdatingCompletionNotice")}
+        </p>
+      ) : null}
       {courseCompleted ? (
         <CourseCompletionCertificatePanel
           className="mx-4 mb-4 mt-4 sm:mx-6 sm:mt-5"
@@ -570,7 +600,7 @@ function LearnWorkspace() {
           issueError={completionSyncError || certificateIssueError}
           achievementsPath={achievementsPath}
           onRetry={
-            hasCourseCertificate || !completionSynced || completionSyncError
+            !course.is_updating && (hasCourseCertificate || !completionSynced || completionSyncError)
               ? () => void syncCertificate()
               : undefined
           }
@@ -631,8 +661,8 @@ function LearnWorkspace() {
       {/* Left */}
       <div className="flex items-center gap-1">
         <Button
-          variant="ghost"
-          size="icon"
+          variant="cta" hierarchy="tertiary" iconOnly
+          size="small"
           render={<Link to={`/courses/${courseId}`} />}
           nativeButton={false}
           aria-label={translate("detail.learn.backToCourse")}
@@ -660,8 +690,8 @@ function LearnWorkspace() {
       {/* Right */}
       <div className="ml-auto flex items-center gap-1">
         <Button
-          variant="ghost"
-          size="icon"
+          variant="cta" hierarchy="tertiary" iconOnly
+          size="small"
           onClick={toggleCurriculumPanel}
           aria-label={translate("detail.learn.toggleCurriculum")}
           className={cn(

@@ -2,7 +2,7 @@ import { useLearningConfirm } from "@/features/learning/useLearningConfirm";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { CheckCircle2, Loader2, LockKeyhole, Shield } from "lucide-react";
+import { CheckCircle2, Loader2, LockKeyhole } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -459,7 +459,7 @@ export function CourseOcbCredentialSection({
         </p>
         <Button
           type="button"
-          variant="outline"
+          variant="cta" hierarchy="secondary"
           className="mt-3"
           onClick={() => void credentialQuery.refetch()}
         >
@@ -474,8 +474,8 @@ export function CourseOcbCredentialSection({
       {/* Header row */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="text-heading-small font-display text-foreground flex items-center gap-2">
-            <Shield className="size-4 shrink-0 text-primary" aria-hidden />
+          <h3 className="text-heading-small font-display text-foreground">
+
             {t("courseEdit.ocb.title")}
           </h3>
           <p className="mt-1 text-sm text-foreground-muted">{t("courseEdit.ocb.subtitle")}</p>
@@ -574,8 +574,8 @@ export function CourseOcbCredentialSection({
               <div className="mt-1 flex flex-wrap items-center gap-3">
                 <Button
                   type="button"
-                  variant="outline"
-                  size="sm"
+                  variant="cta" hierarchy="secondary"
+                  size="small"
                   disabled={!canEdit || uploadingOnchain}
                   onClick={() => onchainFileRef.current?.click()}
                 >
@@ -610,8 +610,8 @@ export function CourseOcbCredentialSection({
               <div className="mt-1 flex flex-wrap items-center gap-3">
                 <Button
                   type="button"
-                  variant="outline"
-                  size="sm"
+                  variant="cta" hierarchy="secondary"
+                  size="small"
                   disabled={!canEdit || uploading}
                   onClick={() => fileRef.current?.click()}
                 >
@@ -725,7 +725,7 @@ export function CourseOcbCredentialSection({
           once everything is actually persisted. */}
       <Button
         type="button"
-        variant={isDirty ? "outline" : "default"}
+        variant="cta" hierarchy={(isDirty ? "secondary" : "primary")}
         className={isDirty ? "hover:!border-primary hover:!bg-primary hover:!text-primary-foreground" : ""}
         disabled={!canEdit || saving}
         onClick={() => {

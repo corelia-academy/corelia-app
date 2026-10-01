@@ -58,7 +58,7 @@ for (const locale of ["vi", "en"]) {
     hackathonTitle: "UniHackFest 2026", projectTitle: "AI Learning Companion", awardLabel: "First Prize", hackathonHref: `${appUrl}/hackathons/example`, locale, fingerprint: "preview",
   }));
   add(`certificate-${locale}`, "Credentials", `Certificate · ${locale.toUpperCase()}`, buildCertificateIssuedEmail({
-    courseTitle: "AI Product Engineering", certImageUrl: `${appUrl}/Corelia_Banner_Square.png`, profileUrl: `${appUrl}/profile`, locale,
+    courseTitle: "AI Product Engineering", certificateUrl: `${appUrl}/verify/CRL-0123456789`, locale,
   }));
   add(`credential-${locale}`, "Credentials", `Credential · ${locale.toUpperCase()}`, buildCredentialMintEmail({
     kind: "course_oca", badgeName: "Corelia Product Builder", profileUrl: `${appUrl}/profile`, credentialId: "CORELIA-2026-DEMO", imageUrl: `${appUrl}/Corelia_Banner_Square.png`, locale,
@@ -67,7 +67,7 @@ for (const locale of ["vi", "en"]) {
     courses: [{ slug: "ai-product", title: "AI Product Engineering" }, { slug: "blockchain", title: "Blockchain Foundations" }],
     displayName: "Nguyễn Minh An", locale, stage: 7, appUrl,
   }));
-  for (const kind of ["course", "career_track", "hackathon"]) {
+  for (const kind of ["course", "hackathon"]) {
     add(`blast-${kind}-${locale}`, "Announcements", `${kind.replace("_", " ")} · ${locale.toUpperCase()}`, wrapBlastEmail({
       kind, locale, bodyHtml: `<p>${locale === "vi" ? "Thông báo mới từ Corelia Academy." : "A new update from Corelia Academy."}</p>`, unsubUrl: `${appUrl}/settings`,
     }));

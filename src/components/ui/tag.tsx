@@ -137,7 +137,7 @@ function Tag({
           {hasDate && hasTime ? (
             <Separator
               orientation="vertical"
-              className="border-border"
+              className="border-stroke-divider"
               aria-hidden="true"
             />
           ) : null}

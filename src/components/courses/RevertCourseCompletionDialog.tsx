@@ -169,7 +169,7 @@ export function RevertCourseCompletionDialog({
         <DialogFooter className="gap-2 sm:gap-2">
           <Button
             type="button"
-            variant="outline"
+            variant="cta" hierarchy="secondary"
             onClick={() => onOpenChange(false)}
             disabled={submitting}
           >
@@ -177,7 +177,7 @@ export function RevertCourseCompletionDialog({
           </Button>
           <Button
             type="button"
-            variant="default"
+            variant="cta"
             onClick={handleConfirm}
             disabled={submitting}
           >

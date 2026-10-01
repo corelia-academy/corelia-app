@@ -1,4 +1,4 @@
-import { BarChart3, Trophy } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
@@ -75,8 +75,8 @@ export function ContestDetailAnalyticsPanel({ vm }: { vm: ContestDetailViewModel
             {contest.published_leaderboard.length > 0 && (
               <Button
                 type="button"
-                size="sm"
-                variant="outline"
+                size="small"
+                variant="cta" hierarchy="secondary"
                 onClick={handleExportLeaderboardCsv}
               >
                 {translate("workspace.manage.exportCsv")}
@@ -121,7 +121,6 @@ export function ContestDetailAnalyticsPanel({ vm }: { vm: ContestDetailViewModel
 
         <div className="mt-6">
           <div className="flex items-center gap-3">
-            <Trophy className="size-5 text-primary" aria-hidden />
             <h3 className="text-heading-small font-display text-foreground">
               {translate("workspace.manage.winnersHeading")}
             </h3>
@@ -163,4 +162,3 @@ export function ContestDetailAnalyticsPanel({ vm }: { vm: ContestDetailViewModel
     </Card>
   );
 }
-

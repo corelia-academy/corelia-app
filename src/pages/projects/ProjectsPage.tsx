@@ -176,19 +176,18 @@ export default function ProjectsPage() {
   const error = projectsQuery.isError || hackathonsQuery.isError ? t("projects.errorDescription") : hackathonParam && hackathonsQuery.isSuccess && !selectedHackathon ? t("projects.errors.hackathonMissing") : null;
 
   return (
-    <div className="container-app py-6 sm:py-8">
+    <div className="container-app pb-6 pt-4 sm:py-8">
       <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
         <div className="flex items-center gap-2">
-          <Package className="size-5 text-primary" aria-hidden />
           <h1 className="text-heading-large font-display text-foreground">{t("projects.title")}</h1>
         </div>
         <p className="mt-1 text-sm text-foreground-muted">{t("projects.description")}</p>
         </div>
-        <Button variant="outline" render={<NavLink to="/account/projects" />} nativeButton={false}>{t("projects.editor.myProjects")}</Button>
+        <Button variant="cta" hierarchy="secondary" render={<NavLink to="/account/projects" />} nativeButton={false}>{t("projects.editor.myProjects")}</Button>
       </header>
 
-      <section className="space-y-5 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card">
+      <section className="mobile-bleed-surface space-y-5 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="text-sm font-medium text-foreground">
             {t("projects.filters.hackathon")}
@@ -213,12 +212,12 @@ export default function ProjectsPage() {
             <TaxonomyFilter label={t("projects.filters.techStacks")} options={filterOptions("technology", selectedHackathon.tech_stacks ?? [])} selected={techStackIds} onChange={(ids) => update("tech", ids)} />
           </div>
         ) : null}
-        {(hackathonParam || trackIds.length || sectorIds.length || techStackIds.length || sort !== "newest") ? <Button type="button" variant="ghost" size="sm" onClick={() => setParams(new URLSearchParams())}><X className="size-4" />{t("projects.editor.clearFilters")}</Button> : null}
+        {(hackathonParam || trackIds.length || sectorIds.length || techStackIds.length || sort !== "newest") ? <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => setParams(new URLSearchParams())}><X className="size-4" />{t("projects.editor.clearFilters")}</Button> : null}
       </section>
 
       <div className="mt-6">
         {projectsQuery.isPending && !error ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div>
+          <div className="mobile-bleed-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div>
         ) : error && items.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-14 text-center" role="alert">
             <ShieldAlert className="size-8 text-foreground-subtle" aria-hidden />
@@ -226,14 +225,14 @@ export default function ProjectsPage() {
             <Button type="button" onClick={() => { void projectsQuery.refetch(); void hackathonsQuery.refetch(); }}>{t("projects.retry")}</Button>
           </div>
         ) : items.length === 0 ? (
-          <div className="rounded-2xl border border-border-subtle bg-surface-base px-4 py-14 text-center shadow-card">
+          <div className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base px-4 py-14 text-center shadow-card">
             <Package className="mx-auto size-8 text-foreground-subtle" aria-hidden />
             <h2 className="mt-3 text-heading-small font-display text-foreground">{t("projects.emptyTitle")}</h2>
             <p className="mt-1 text-sm text-foreground-muted">{t("projects.emptyDescription")}</p>
           </div>
         ) : (
           <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mobile-bleed-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {items.map(({ project, owner }) => (
                 <ProjectCard
                   systemTaxonomy={systemTaxonomy}
@@ -253,7 +252,7 @@ export default function ProjectsPage() {
             </div>
             {projectsQuery.hasNextPage ? (
               <div className="mt-6 flex justify-center">
-                <Button type="button" variant="outline" disabled={projectsQuery.isFetchingNextPage} onClick={() => void projectsQuery.fetchNextPage()}>
+                <Button type="button" variant="cta" hierarchy="secondary" disabled={projectsQuery.isFetchingNextPage} onClick={() => void projectsQuery.fetchNextPage()}>
                   {projectsQuery.isFetchingNextPage ? t("projects.loading") : t("projects.loadMore")}
                 </Button>
               </div>

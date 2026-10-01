@@ -1,25 +1,4 @@
 {
-  "tracks": [
-    {
-      "id": "52670f47-b044-4eae-8646-0830c6e6826d",
-      "slug": "unihackfest-2026",
-      "title": "UniHackfest 2026",
-      "description": "",
-      "what_youll_learn": [],
-      "prerequisites": []
-    }
-  ],
-  "trackLocales": [
-    {
-      "career_track_id": "52670f47-b044-4eae-8646-0830c6e6826d",
-      "locale": "en",
-      "data": {
-        "updated_at": "2026-06-09T08:09:55.610Z",
-        "prerequisites": [],
-        "what_youll_learn": []
-      }
-    }
-  ],
   "hackathons": [
     {
       "id": "1c26476e-ed30-413f-ae34-897f9843731c",

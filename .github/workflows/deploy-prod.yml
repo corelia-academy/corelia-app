@@ -136,6 +136,7 @@ jobs:
           version: 2.98.1
 
       - name: Verify exact Production migration state before deployment
+        id: migration_state
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
@@ -155,6 +156,14 @@ jobs:
           test "$SUPABASE_PROJECT_REF" = "lawhkvyyoznwygzsycan"
           supabase functions deploy corelia-api --project-ref "$SUPABASE_PROJECT_REF" --import-map supabase/functions/corelia-api/deno.json
 
+      - name: Deploy Edge Function (generate-description)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          test "$SUPABASE_PROJECT_REF" = "lawhkvyyoznwygzsycan"
+          supabase functions deploy generate-description --project-ref "$SUPABASE_PROJECT_REF"
+
       - name: Purge retired financial Storage objects
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -171,6 +180,23 @@ jobs:
             [[ -z "$remaining" ]] || [[ "$(jq 'length' <<<"$remaining")" = "0" ]]
           done
 
+      - name: Inventory and purge Career Track Storage before migration
+        if: steps.migration_state.outputs.career_retirement_required == 'true'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          test "$SUPABASE_PROJECT_REF" = "lawhkvyyoznwygzsycan"
+          supabase link --project-ref "$SUPABASE_PROJECT_REF" --dns-resolver https
+          supabase db query --linked --file scripts/db/career-tracks-preflight.sql --agent=no
+          objects="$(supabase storage ls "ss:///app/career-track-thumbnails" --recursive --linked --experimental --output json)"
+          if [[ -n "$objects" ]] && [[ "$(jq 'length' <<<"$objects")" != "0" ]]; then
+            supabase storage rm --recursive "ss:///app/career-track-thumbnails" --linked --experimental --yes
+          fi
+          remaining="$(supabase storage ls "ss:///app/career-track-thumbnails" --recursive --linked --experimental --output json)"
+          [[ -z "$remaining" ]] || [[ "$(jq 'length' <<<"$remaining")" = "0" ]]
+
       - name: Re-verify exact Production migration state and apply approved migrations
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -184,6 +210,13 @@ jobs:
           # The exact-state guard above permits only the currently approved
           # migration set (or an empty retry).
           supabase migration up --linked --dns-resolver https --include-all
+
+      - name: Verify Career Tracks retirement
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase db query --linked --file scripts/db/career-tracks-postcheck.sql --agent=no
 
       - name: Verify Jobs scheduler Vault configuration
         env:
@@ -241,12 +274,6 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: supabase functions deploy cron-email-center --project-ref "$SUPABASE_PROJECT_REF"
-
-      - name: Deploy Edge Function (generate-description)
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-        run: supabase functions deploy generate-description --project-ref "$SUPABASE_PROJECT_REF"
 
       - name: Deploy Edge Function (generate-questions)
         env:

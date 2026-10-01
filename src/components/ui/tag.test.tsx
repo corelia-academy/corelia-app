@@ -127,7 +127,7 @@ describe("Tag", () => {
     expect(markup).toContain("9:15 AM")
     expect(markup).toContain('data-slot="separator"')
     expect(markup).toContain('data-orientation="vertical"')
-    expect(markup).toContain("border-border")
+    expect(markup).toContain("border-stroke-divider")
     expect(markup).not.toContain("border-neutral-600")
   })
 

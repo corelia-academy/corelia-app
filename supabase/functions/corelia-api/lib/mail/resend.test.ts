@@ -26,6 +26,7 @@ describe("Resend mail transport", () => {
         to: ["learner@example.com"],
         subject: "Certificate",
         html: "<p>Ready</p>",
+        context: { type: "corelia_certificate", id: "caaa0000-0000-4000-8000-000000000100" },
       }),
     ).resolves.toEqual({ sent: false, skipped: true, reason: "email_not_configured" });
 
@@ -35,6 +36,8 @@ describe("Resend mail transport", () => {
         mail_type: "certificate_issued",
         recipient_email: "learner@example.com",
         provider_status: "skipped",
+        context_type: "corelia_certificate",
+        context_id: "caaa0000-0000-4000-8000-000000000100",
       }),
     ]);
   });
@@ -56,6 +59,7 @@ describe("Resend mail transport", () => {
         to: ["learner@example.com"],
         subject: "Certificate",
         html: "<p>Ready</p>",
+        context: { type: "corelia_certificate", id: "caaa0000-0000-4000-8000-000000000100" },
       }),
     ).resolves.toEqual({ sent: true, providerMessageId: "mail_123" });
 
@@ -64,6 +68,8 @@ describe("Resend mail transport", () => {
         provider_status: "accepted",
         provider_message_id: "mail_123",
         provider_http_status: 202,
+        context_type: "corelia_certificate",
+        context_id: "caaa0000-0000-4000-8000-000000000100",
       }),
     ]);
   });

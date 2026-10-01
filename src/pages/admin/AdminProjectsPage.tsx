@@ -34,7 +34,7 @@ function TransferProject({ project }: { project: Pick<Project, "id" | "source_id
     },
   });
   return <>
-    <Button type="button" size="sm" variant="outline" onClick={() => setOpen(true)}>{t("projects.management.transfer")}</Button>
+    <Button type="button" size="small" variant="cta" hierarchy="secondary" onClick={() => setOpen(true)}>{t("projects.management.transfer")}</Button>
     <Dialog open={open} onOpenChange={next => { if (!mutation.isPending) setOpen(next); }}>
       <DialogContent className="sm:max-w-lg" showCloseButton={!mutation.isPending}>
         <DialogTitle>{t("projects.management.transfer")}</DialogTitle>
@@ -54,7 +54,7 @@ function TransferProject({ project }: { project: Pick<Project, "id" | "source_id
         </label>
         <p className="text-sm text-foreground-muted">{t("projects.management.transferImpact")}</p>
         {contests.isError || mutation.isError ? <p role="alert" className="text-sm text-destructive">{mutation.error?.message.includes("conflict:hackathon_project_exists") ? t("projects.management.transferConflict") : t("projects.management.transferFailed")}</p> : null}
-        <div className="flex justify-end gap-2"><Button type="button" variant="outline" disabled={mutation.isPending} onClick={() => setOpen(false)}>{t("projects.management.cancel")}</Button>
+        <div className="flex justify-end gap-2"><Button type="button" variant="cta" hierarchy="secondary" disabled={mutation.isPending} onClick={() => setOpen(false)}>{t("projects.management.cancel")}</Button>
           <Button type="button" disabled={!target || !tracks.length || !/[\p{L}\p{N}]/u.test(reason) || mutation.isPending} onClick={() => mutation.mutate()}>{t("projects.management.transfer")}</Button></div>
       </DialogContent>
     </Dialog>
@@ -85,10 +85,10 @@ export default function AdminProjectsPage() {
       <ul className="mt-4 divide-y divide-border">
         {query.data.items.map(project => <li key={project.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
           <div className="min-w-0 flex-1"><NavLink className="block truncate underline" to={`/projects/${project.slug}`}>{project.title}</NavLink><p className="text-xs text-foreground-muted">{t(`projects.management.${project.blocked ? "blocked" : project.visibility}`)}</p></div>
-          <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" render={<NavLink to={`/projects/${project.slug}/edit`} />} nativeButton={false}>{t("projects.management.edit")}</Button><TransferProject project={project} /><ProjectManagementControls moderation project={project} /></div>
+          <div className="flex flex-wrap gap-2"><Button size="small" variant="cta" hierarchy="secondary" render={<NavLink to={`/projects/${project.slug}/edit`} />} nativeButton={false}>{t("projects.management.edit")}</Button><TransferProject project={project} /><ProjectManagementControls moderation project={project} /></div>
         </li>)}
       </ul>
-      <div className="mt-4 flex gap-2"><Button variant="outline" disabled={page === 0} onClick={() => setPage(p => p - 1)}>{t("projects.management.previous")}</Button><Button variant="outline" disabled={(page + 1) * 20 >= query.data.count} onClick={() => setPage(p => p + 1)}>{t("projects.management.next")}</Button></div>
+      <div className="mt-4 flex gap-2"><Button variant="cta" hierarchy="secondary" disabled={page === 0} onClick={() => setPage(p => p - 1)}>{t("projects.management.previous")}</Button><Button variant="cta" hierarchy="secondary" disabled={(page + 1) * 20 >= query.data.count} onClick={() => setPage(p => p + 1)}>{t("projects.management.next")}</Button></div>
     </>}
   </section>;
 }

@@ -2,7 +2,7 @@ import { XpRankProgress } from "./XpRankProgress";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { getMyXpDayBreakdown, getMyXpHistory, getXpSummary, utcDate, xpIntensity } from "@/lib/xp";
 import type { XpEntry } from "@/lib/xp";
@@ -108,7 +108,7 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
 
   return <section className="space-y-5 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card" aria-label={t("xp.title")}>
     <div>
-      <div className="flex items-center gap-2 text-foreground"><Sparkles className="size-5 text-primary" aria-hidden /><h2 className="font-display text-heading-medium">{t("xp.title")}</h2></div>
+      <div className="flex items-center gap-2 text-foreground"><h2 className="font-display text-heading-medium">{t("xp.title")}</h2></div>
       <p className="mt-1 text-sm text-foreground-muted">{t("xp.total", { count: formatted(summary.data.total) })} · {t("xp.utc")}</p>
     </div>
 

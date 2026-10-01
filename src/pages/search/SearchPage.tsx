@@ -44,7 +44,7 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="container-app py-6 sm:py-8">
+    <div className="container-app pb-6 pt-4 sm:py-8">
       <div className="flex items-start gap-3">
         <Search className="mt-1 size-5 text-primary" aria-hidden />
         <div className="min-w-0 flex-1">
@@ -57,7 +57,7 @@ export default function SearchPage() {
               : t("search.enterQueryHint")}
           </p>
 
-          <form onSubmit={handleSearch} className="mt-4 flex w-full max-w-xl items-center gap-2">
+          <form onSubmit={handleSearch} className="mt-4 flex w-full max-w-xl items-center gap-2 max-[359px]:flex-col max-[359px]:items-stretch">
             <div className="relative flex-1 min-w-0">
               <Search
                 className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-foreground-muted"
@@ -71,7 +71,7 @@ export default function SearchPage() {
                 className="h-10 pl-9"
               />
             </div>
-            <Button type="submit" className="shrink-0">
+            <Button type="submit" className="shrink-0 max-[359px]:w-full">
               {t("actions.search", "Tìm kiếm")}
             </Button>
           </form>
@@ -95,15 +95,15 @@ export default function SearchPage() {
             </div>
             <div className="max-w-lg">
               <p className="text-sm font-medium text-foreground">{error}</p>
-              <Button className="mt-4" variant="outline" onClick={() => void resultsQuery.refetch()}>{t("actions.retry")}</Button>
+              <Button className="mt-4" variant="cta" hierarchy="secondary" onClick={() => void resultsQuery.refetch()}>{t("actions.retry")}</Button>
             </div>
           </div>
         ) : !q ? null : items.length === 0 ? (
-          <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted sm:p-6">
+          <div className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted sm:p-6">
             {t("search.empty")}
           </div>
         ) : (
-          <div className="divide-y divide-border-subtle">
+          <div className="mobile-bleed-grid divide-y divide-border-subtle">
             {items.map((item) => (
               <NavLink
                 key={`${item.entity_type}:${item.entity_id}`}

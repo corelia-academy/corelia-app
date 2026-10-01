@@ -11,6 +11,7 @@ import {
 } from "@/lib/hackathons";
 import { listContestShowcasePortfolio } from "@/lib/projects";
 import { resolveContestLearningLinks } from "@/lib/hackathonLearning";
+import { listPublicHackathonApplicantPreviews } from "@/lib/hackathonApplicants";
 
 export const hackathonKeys = {
   all: ["hackathons"] as const,
@@ -22,12 +23,14 @@ export const hackathonKeys = {
     [...hackathonKeys.all, "co-organizer-access", userId, email] as const,
   publicDetail: (slug: string, locale: string) =>
     [...hackathonKeys.all, "public-detail", slug, locale] as const,
+  applicantPreviews: (contestIds: string[]) =>
+    [...hackathonKeys.all, "applicant-previews", ...contestIds] as const,
   preview: (slug: string, locale: string, userId: string) =>
     [...hackathonKeys.all, "preview", slug, locale, userId] as const,
   showcase: (contestId: string) =>
     [...hackathonKeys.all, "showcase", contestId] as const,
-  learning: (courseIds: string[], trackIds: string[]) =>
-    [...hackathonKeys.all, "learning", ...courseIds, "tracks", ...trackIds] as const,
+  learning: (courseIds: string[]) =>
+    [...hackathonKeys.all, "learning", ...courseIds] as const,
   localeContent: (contestId: string, locale: string, userId: string) =>
     [...hackathonKeys.all, "locale-content", contestId, locale, userId] as const,
 };
@@ -87,6 +90,17 @@ export function publicHackathonCatalogQueryOptions(locale: string, enabled = tru
   });
 }
 
+export function publicHackathonApplicantPreviewsQueryOptions(contestIds: string[]) {
+  const ids = Array.from(new Set(contestIds.map((id) => id.trim()).filter(Boolean))).sort();
+  return queryOptions({
+    queryKey: hackathonKeys.applicantPreviews(ids),
+    queryFn: () => listPublicHackathonApplicantPreviews(ids),
+    enabled: ids.length > 0,
+    staleTime: 60_000,
+    meta: { scope: "public", showInGlobalLoading: false },
+  });
+}
+
 export function publicHackathonShowcaseQueryOptions(contestId: string) {
   return queryOptions({
     queryKey: hackathonKeys.showcase(contestId),
@@ -98,14 +112,12 @@ export function publicHackathonShowcaseQueryOptions(contestId: string) {
 
 export function hackathonLearningLinksQueryOptions(
   courseIds: string[],
-  trackIds: string[],
 ) {
   const normalizedCourseIds = Array.from(new Set(courseIds.filter(Boolean))).sort();
-  const normalizedTrackIds = Array.from(new Set(trackIds.filter(Boolean))).sort();
   return queryOptions({
-    queryKey: hackathonKeys.learning(normalizedCourseIds, normalizedTrackIds),
-    queryFn: () => resolveContestLearningLinks(normalizedCourseIds, normalizedTrackIds),
-    enabled: normalizedCourseIds.length > 0 || normalizedTrackIds.length > 0,
+    queryKey: hackathonKeys.learning(normalizedCourseIds),
+    queryFn: () => resolveContestLearningLinks(normalizedCourseIds),
+    enabled: normalizedCourseIds.length > 0,
     staleTime: 5 * 60_000,
     meta: { scope: "public", showInGlobalLoading: false },
   });

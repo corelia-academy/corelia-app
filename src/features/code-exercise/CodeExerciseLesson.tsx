@@ -88,7 +88,7 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); void check(); }
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") { e.preventDefault(); save(); }
   }}>
-    {config.mode === "edit" && <><p className="text-sm text-foreground-muted lg:hidden">{t("learning.desktopRecommended")}</p><div className="flex gap-2 lg:hidden">{["code", "tests"].map(value => <Button type="button" key={value} variant={tab === value ? "default" : "outline"} onClick={() => setTab(value)}>{t(`learning.${value}`)}</Button>)}</div></>}
+    {config.mode === "edit" && <><p className="text-sm text-foreground-muted lg:hidden">{t("learning.desktopRecommended")}</p><div className="flex gap-2 lg:hidden">{["code", "tests"].map(value => <Button type="button" key={value} variant="cta" hierarchy={(tab === value ? "primary" : "secondary")} onClick={() => setTab(value)}>{t(`learning.${value}`)}</Button>)}</div></>}
     <div className={config.mode === "edit" ? "grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(240px,1fr)]" : "space-y-4"}>
       <div className={config.mode === "edit" && tab !== "code" ? "hidden lg:block" : "min-w-0"}>
         <p className="mb-2 text-sm font-mono">{config.file.path}</p>
@@ -101,9 +101,9 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
     </div>
     {error && <p role="alert" className="text-destructive">{error}</p>}
     <div className="flex flex-wrap items-center gap-2">
-      {confirmation}<Button type="button" variant="outline" disabled={busy} onClick={reset}>{t("learning.reset")}</Button>
-      <Button type="button" variant="ghost" onClick={() => setHints(v => !v)}>{t("learning.hints")}</Button>
-      <Button type="button" variant="ghost" onClick={() => setSolution(v => !v)}>{t("learning.solution")}</Button>
+      {confirmation}<Button type="button" variant="cta" hierarchy="secondary" disabled={busy} onClick={reset}>{t("learning.reset")}</Button>
+      <Button type="button" variant="cta" hierarchy="tertiary" onClick={() => setHints(v => !v)}>{t("learning.hints")}</Button>
+      <Button type="button" variant="cta" hierarchy="tertiary" onClick={() => setSolution(v => !v)}>{t("learning.solution")}</Button>
       {key && saved !== null && <span role="status" className="text-xs text-foreground-muted">{t(saved ? "learning.draftSaved" : "learning.draftUnavailable")}</span>}
     </div>
     {hints && <ul className="list-disc pl-5">{(copy.hints ?? config.hints ?? []).map((hint,i) => <li key={i}>{hint}</li>)}</ul>}

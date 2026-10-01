@@ -54,9 +54,9 @@ export function CourseHero({
   const hasCourseCertificate = courseHasCertificate(course);
   const isCertificateIssued = !!enrollment?.certificate_issued_at;
   const canClaimCertificate =
-    !isCertificateIssued && hasCourseCertificate && Boolean(enrollment?.completed_at);
+    !course.is_updating && !isCertificateIssued && hasCourseCertificate && Boolean(enrollment?.completed_at);
   const showCertificateAvailableBadge =
-    hasCourseCertificate && !isCertificateIssued && !canClaimCertificate;
+    !course.is_updating && hasCourseCertificate && !isCertificateIssued && !canClaimCertificate;
 
   const handleClaimCertificate = async () => {
     if (!enrollment || !canClaimCertificate || claimInFlight.current) return;
@@ -100,9 +100,9 @@ export function CourseHero({
       : null;
 
   return (
-    <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card">
-      <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)] lg:items-start">
-        <div className="min-w-0">
+    <section className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base shadow-card">
+      <div className="grid gap-0 sm:gap-6 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)] lg:items-start">
+        <div className="min-w-0 p-4 sm:p-0">
           <div className="flex flex-wrap items-center gap-2 text-xs text-foreground-muted">
             <CourseBadge variant="secondary">
               {getCourseLevelLabel(course.level)}
@@ -220,7 +220,7 @@ export function CourseHero({
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
+        <div className="order-first overflow-hidden bg-surface-raised sm:order-last sm:rounded-md">
           <div className="relative aspect-video">
             <img
               src="/Corelia_Banner_Square.png"
@@ -234,10 +234,11 @@ export function CourseHero({
               <img
                 src={courseThumbnailSrc}
                 alt={course.title}
-                loading="lazy"
+                loading="eager"
+                fetchPriority="high"
                 decoding="async"
                 onError={() => setFailedThumbnailSrc(course.thumbnail_url)}
-                className="absolute inset-0 size-full object-cover"
+                className="absolute inset-0 size-full object-contain sm:object-cover"
               />
             ) : null}
 

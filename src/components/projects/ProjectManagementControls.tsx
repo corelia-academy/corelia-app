@@ -30,7 +30,7 @@ export function ProjectManagementControls({ project, onDeleted, moderation = fal
       mutation.error.message.includes("required_content") ? "projects.management.contentError" : "projects.management.failed",
   ) : null;
   return <>
-    <Button type="button" size="sm" variant="outline" onClick={() => {
+    <Button type="button" size="small" variant="cta" hierarchy="secondary" onClick={() => {
       setAction(admin ? (project.blocked ? "unblock" : "block") : "delete");
       setReason(""); mutation.reset(); setOpen(true);
     }}>{t(admin ? "projects.management.manage" : "projects.management.delete")}</Button>
@@ -49,8 +49,8 @@ export function ProjectManagementControls({ project, onDeleted, moderation = fal
         </label> : null}
         {error ? <p role="alert" className="text-body-medium font-body text-destructive">{error}</p> : null}
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" disabled={mutation.isPending} onClick={() => setOpen(false)}>{t("projects.management.cancel")}</Button>
-          <Button type="button" variant={action === "delete" ? "destructive" : "default"} disabled={mutation.isPending || ((admin || profile?.role === "admin") && !/[\p{L}\p{N}]/u.test(reason))} onClick={async () => {
+          <Button type="button" variant="cta" hierarchy="secondary" disabled={mutation.isPending} onClick={() => setOpen(false)}>{t("projects.management.cancel")}</Button>
+          <Button type="button" variant={(action === "delete" ? "destructive" : "cta")} disabled={mutation.isPending || ((admin || profile?.role === "admin") && !/[\p{L}\p{N}]/u.test(reason))} onClick={async () => {
             try {
               await mutation.mutateAsync({ action, reason: reason.trim() });
               setOpen(false); toast.success(t("projects.management.success"));

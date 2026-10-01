@@ -16,6 +16,7 @@ interface UseCourseEnrollmentAccessInput {
 }
 
 interface UseCourseEnrollmentAccessResult {
+  loading: boolean;
   enrolled: boolean;
   enrollment: Enrollment | null;
   enrolling: boolean;
@@ -65,6 +66,7 @@ export function useCourseEnrollmentAccess({
   );
 
   return {
+    loading: Boolean(profileId && resolvedCourseId) && enrollmentQuery.isPending,
     enrolled: Boolean(enrollmentQuery.data),
     enrollment: enrollmentQuery.data ?? null,
     enrolling: enrollMutation.isPending,

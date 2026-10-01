@@ -83,7 +83,7 @@ export function ManualMintTemplatesTab({ onSelectTemplate }: ManualMintTemplates
           </p>
           <Button
             type="button"
-            size="sm"
+            size="small"
             onClick={() => setCreateOpen(true)}
             className="h-9 gap-1.5 text-xs font-semibold"
           >
@@ -108,7 +108,7 @@ export function ManualMintTemplatesTab({ onSelectTemplate }: ManualMintTemplates
           </p>
           <Button
             type="button"
-            size="sm"
+            size="small"
             onClick={() => setCreateOpen(true)}
             className="mt-4 h-8 gap-1.5 text-xs"
           >
@@ -175,8 +175,8 @@ export function ManualMintTemplatesTab({ onSelectTemplate }: ManualMintTemplates
                 <div className="mt-4 flex items-center justify-between border-t border-border-subtle/60 pt-3">
                   <Button
                     type="button"
-                    variant="default"
-                    size="sm"
+                    variant="cta"
+                    size="small"
                     className="h-8 text-xs font-semibold"
                     onClick={() => onSelectTemplate(tpl)}
                   >
@@ -185,8 +185,8 @@ export function ManualMintTemplatesTab({ onSelectTemplate }: ManualMintTemplates
                   </Button>
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="sm"
+                    variant="cta" hierarchy="tertiary"
+                    size="small"
                     className="h-8 text-xs text-destructive hover:bg-destructive/10"
                     disabled={deleteMutation.isPending && deleteMutation.variables === tpl.id}
                     onClick={() => handleDelete(tpl.id, tpl.name)}

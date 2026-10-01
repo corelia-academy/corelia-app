@@ -6,6 +6,7 @@ import { useAuth } from "@/stores/authStore";
 export interface CourseProgressEntry {
   enrolled: boolean;
   percent: number;
+  completed: boolean;
 }
 
 export function useUserCoursesProgress() {

@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Trophy } from "lucide-react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PublicProfile } from "@/types/database";
@@ -27,7 +26,6 @@ export function UserProfileContestsSection({
     return (
       <section className="space-y-3">
         <div className="flex items-center gap-2">
-          <Trophy className="size-4 text-foreground-muted" aria-hidden />
           <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.tabs.contests")}
           </h2>
@@ -42,7 +40,6 @@ export function UserProfileContestsSection({
     return (
       <section className="space-y-3">
         <div className="flex items-center gap-2">
-          <Trophy className="size-4 text-foreground-muted" aria-hidden />
           <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.tabs.contests")}
           </h2>
@@ -58,7 +55,6 @@ export function UserProfileContestsSection({
     return (
       <section className="space-y-3">
         <div className="flex items-center gap-2">
-          <Trophy className="size-4 text-foreground-muted" aria-hidden />
           <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.tabs.contests")}
           </h2>
@@ -74,7 +70,6 @@ export function UserProfileContestsSection({
     <section className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Trophy className="size-4 text-foreground-muted" aria-hidden />
           <h2 className="text-heading-small font-display text-foreground">
             {t("userProfile.tabs.contests")}
           </h2>

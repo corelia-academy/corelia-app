@@ -10,10 +10,10 @@ export async function handleNotificationsUnsubscribe(
     const token = String(body.token ?? "").trim();
     const type = String(body.type ?? "").trim();
 
+    if (type === "track_blast") return json({ message: "career_tracks_retired" }, 410);
     if (!token) return json({ message: "missing_fields:token" }, 400);
-
-    const column =
-      type === "track_blast" ? "email_track_blast" : "email_course_blast";
+    if (type !== "course_blast") return json({ message: "invalid_type" }, 400);
+    const column = "email_course_blast";
 
     const { data, error } = await db
       .from("notification_preferences")

@@ -71,6 +71,7 @@
     "emptyDescription": "Try removing some filters or search by instructor, topic, and learning format.",
     "card": {
       "courseProgress": "Course progress",
+      "completed": "Completed",
       "continueLearning": "Continue learning",
       "startLearning": "Start learning"
     }
@@ -121,27 +122,22 @@
       "myCourseBadge": "Your course",
       "resumeTitle": "Resume where you left off",
       "enterSpaceTitle": "Back to the learning space",
-      "resumeDescription": "You're learning {{courseTitle}} and can continue with the next lesson.",
+      "resumeDescription": "You're learning {{courseTitle}} and can continue where you left off.",
       "enterSpaceDescription": "{{courseTitle}} is ready for you to start or revisit.",
       "continueLearning": "Continue learning",
       "enterLearningPage": "Go to learning",
-      "nextLessonMeta": "Next lesson: {{title}}",
+      "nextLessonMeta": "Resume lesson: {{title}}",
       "progressEverywhereMeta": "Progress is synced across your devices",
       "runningContestBadge": "Live contest",
       "newContestBadge": "New contest",
       "exploreContest": "Explore contest",
       "contestDeadlineMeta": "Registration deadline: {{date}}",
       "contestMetaNoDeadline": "A relevant next step in the Corelia ecosystem",
-      "careerTrackBadge": "Career Track",
-      "careerTrackTitle": "Explore comprehensive career tracks",
-      "careerTrackDescription": "Learn structured paths from fundamentals to advanced skills.",
-      "exploreCareerTracks": "Explore tracks",
-      "careerTrackMeta": "Standardized learning tracks",
       "exploreMoreBadge": "Explore more",
       "exploreMoreTitle": "Expand your learning journey with Corelia",
-      "exploreMoreDescription": "After finishing a learning step, you can move on to other career tracks or practical courses.",
+      "exploreMoreDescription": "Keep building your skills with another practical course.",
       "seeMoreCourses": "See more courses",
-      "ecosystemMeta": "Learning paths and hands-on Web3 ecosystem"
+      "ecosystemMeta": "Practical courses and the Web3 ecosystem"
     },
     "courseDetail": {
       "thumbnailFallback": "No course image yet",
@@ -152,8 +148,9 @@
       "lessonDraftBadge": "Updating",
       "courseUpdatingNotice": {
         "title": "This course is being updated",
-        "body": "Some content may change over time. If a lesson isn’t ready yet, please check back later."
+        "body": "You can keep learning the available lessons. Course completion and new awards will resume when the update is finished."
       },
+      "courseUpdatingCompletionNotice": "This course is being updated. Your lesson progress is saved; course completion and new awards will be recorded when the course is ready.",
       "learningOutcomes": {
         "title": "What you'll learn",
         "subtitle": "This course will help you learn:"

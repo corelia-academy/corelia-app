@@ -703,7 +703,8 @@ export function useContestDetailOrchestrator({
         return {
           label: translate("detail.lifecycle.cta.loginToRegister"),
           helper: translate("detail.lifecycle.cta.loginToRegisterHelper"),
-          variant: "default" as const,
+          variant: "cta" as const,
+          hierarchy: "primary" as const,
           navigateTo: loginRedirect(participantWorkspaceHash),
         };
       }
@@ -711,7 +712,8 @@ export function useContestDetailOrchestrator({
         return {
           label: translate("detail.lifecycle.cta.pendingReview"),
           helper: translate("detail.lifecycle.cta.pendingReviewHelper"),
-          variant: "outline" as const,
+          variant: "cta" as const,
+          hierarchy: "secondary" as const,
           navigateTo: participantWorkspaceHash,
           disabled: true,
         };
@@ -720,7 +722,8 @@ export function useContestDetailOrchestrator({
         return {
           label: translate("detail.lifecycle.cta.goToDashboard"),
           helper: translate("detail.lifecycle.cta.dashboardHelper"),
-          variant: "default" as const,
+          variant: "cta" as const,
+          hierarchy: "primary" as const,
           navigateTo: participantSubmissionHash,
         };
       }
@@ -728,7 +731,8 @@ export function useContestDetailOrchestrator({
         return {
           label: translate("detail.lifecycle.cta.applicationNotApproved"),
           helper: translate("detail.lifecycle.cta.applicationNotApprovedHelper"),
-          variant: "outline" as const,
+          variant: "cta" as const,
+          hierarchy: "secondary" as const,
           navigateTo: `${base}#faq`,
         };
       }
@@ -739,7 +743,8 @@ export function useContestDetailOrchestrator({
             ? "detail.lifecycle.cta.registerWithProfileHelperInstant"
             : "detail.lifecycle.cta.registerWithProfileHelper",
         ),
-        variant: "default" as const,
+        variant: "cta" as const,
+        hierarchy: "primary" as const,
         action: "apply" as const,
         navigateTo: participantWorkspaceHash,
       };
@@ -749,7 +754,8 @@ export function useContestDetailOrchestrator({
       return {
         label: translate("detail.lifecycle.cta.notifyWhenOpen"),
         helper: translate("detail.lifecycle.cta.notifyWhenOpenHelper"),
-        variant: "outline" as const,
+        variant: "cta" as const,
+        hierarchy: "secondary" as const,
         navigateTo: isAuthenticated ? "/account/settings" : loginRedirect(base),
         disabled: false as boolean | undefined,
       };
@@ -768,21 +774,24 @@ export function useContestDetailOrchestrator({
           return {
             label: translate("detail.lifecycle.cta.viewSubmission"),
             helper: translate("detail.lifecycle.cta.viewSubmissionHelper"),
-            variant: "default" as const,
+            variant: "cta" as const,
+            hierarchy: "primary" as const,
             navigateTo: participantSubmissionHash,
           };
         }
         return {
           label: translate("detail.lifecycle.cta.submitWork"),
           helper: translate("detail.lifecycle.cta.submitWorkHelper"),
-          variant: "default" as const,
+          variant: "cta" as const,
+          hierarchy: "primary" as const,
           navigateTo: participantSubmissionHash,
         };
       }
       return {
         label: translate("detail.lifecycle.cta.followBuildPhase"),
         helper: translate("detail.lifecycle.cta.followBuildPhaseHelper"),
-        variant: "outline" as const,
+        variant: "cta" as const,
+        hierarchy: "secondary" as const,
         navigateTo: showProjects ? `${base}#projects` : `${base}#timeline`,
       };
     }
@@ -791,7 +800,8 @@ export function useContestDetailOrchestrator({
       return {
         label: translate("detail.lifecycle.cta.viewSubmissionsGallery"),
         helper: translate("detail.lifecycle.cta.viewSubmissionsGalleryHelper"),
-        variant: "outline" as const,
+        variant: "cta" as const,
+        hierarchy: "secondary" as const,
         navigateTo: showProjects ? `${base}#projects` : `${base}#timeline`,
       };
     }
@@ -799,7 +809,8 @@ export function useContestDetailOrchestrator({
     return {
       label: translate("detail.lifecycle.cta.viewWinners"),
       helper: translate("detail.lifecycle.cta.viewWinnersHelper"),
-      variant: "outline" as const,
+      variant: "cta" as const,
+      hierarchy: "secondary" as const,
       navigateTo: showProjects ? `${base}#projects` : `${base}#results`,
     };
   }, [

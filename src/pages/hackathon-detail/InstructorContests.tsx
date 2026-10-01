@@ -313,7 +313,7 @@ export default function InstructorContests() {
             action={
               <Button
                 type="button"
-                size="sm"
+                size="small"
                 onClick={() => navigate("/hackathons/new")}
               >
                 {t("instructor.empty.createFirst")}
@@ -409,7 +409,7 @@ export default function InstructorContests() {
                 <div className="flex flex-wrap gap-2">
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="cta" hierarchy="tertiary"
                     onClick={() =>
                       navigate(
                         contestSlug ? `/hackathons/${contestSlug}/overview` : "/hackathons",
@@ -420,7 +420,7 @@ export default function InstructorContests() {
                   </Button>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="cta" hierarchy="secondary"
                     onClick={() =>
                       navigate(contestSlug ? `/hackathons/${contestSlug}/manage/overview` : "/hackathons/manage")
                     }
@@ -491,7 +491,7 @@ export default function InstructorContests() {
           <DialogFooter>
             <Button
               type="button"
-              variant="outline"
+              variant="cta" hierarchy="secondary"
               onClick={() => setContestToDelete(null)}
               disabled={deletingId != null}
             >

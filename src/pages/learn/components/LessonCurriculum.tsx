@@ -120,8 +120,8 @@ function CurriculumList({
           </p>
         </div>
         <Button
-          size="sm"
-          variant="outline"
+          size="small"
+          variant="cta" hierarchy="secondary"
           render={<Link to={`/courses/${courseId}`} />}
           nativeButton={false}
         >

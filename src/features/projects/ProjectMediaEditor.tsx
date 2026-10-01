@@ -128,8 +128,8 @@ export function ProjectMediaEditor({
           </div>
           <div className="flex flex-wrap gap-2">
             <input ref={logoInput} hidden type="file" accept={ACCEPT} disabled={uploading} aria-label={t("projects.form.chooseLogo")} onChange={event => { void uploadLogo(event.target.files?.[0]); event.target.value = ""; }} />
-            <Button type="button" variant="outline" disabled={uploading} onClick={() => logoInput.current?.click()}>{t("projects.form.chooseLogo")}</Button>
-            {logo ? <Button type="button" variant="ghost" disabled={uploading} onClick={() => void remove(logo, "logo")}><Trash2 className="size-4" />{t("projects.form.remove")}</Button> : null}
+            <Button type="button" variant="cta" hierarchy="secondary" disabled={uploading} onClick={() => logoInput.current?.click()}>{t("projects.form.chooseLogo")}</Button>
+            {logo ? <Button type="button" variant="cta" hierarchy="tertiary" disabled={uploading} onClick={() => void remove(logo, "logo")}><Trash2 className="size-4" />{t("projects.form.remove")}</Button> : null}
           </div>
         </div>
       </fieldset>
@@ -138,7 +138,7 @@ export function ProjectMediaEditor({
         <legend className="text-label-medium font-body">{t("projects.form.screenshots")}</legend>
         <p className="mt-1 text-body-small font-body text-foreground-muted">{t("projects.form.screenshotsHint")}</p>
         <input ref={screenshotsInput} hidden type="file" accept={ACCEPT} multiple disabled={uploading || screenshots.length >= 6} aria-label={t("projects.form.addScreenshots")} onChange={event => { void uploadScreenshots(Array.from(event.target.files ?? [])); event.target.value = ""; }} />
-        <Button className="mt-3" type="button" variant="outline" disabled={uploading || screenshots.length >= 6} onClick={() => screenshotsInput.current?.click()}><ImagePlus className="size-4" />{t("projects.form.addScreenshots")}</Button>
+        <Button className="mt-3" type="button" variant="cta" hierarchy="secondary" disabled={uploading || screenshots.length >= 6} onClick={() => screenshotsInput.current?.click()}><ImagePlus className="size-4" />{t("projects.form.addScreenshots")}</Button>
         {uploading ? <p className="mt-3 text-body-medium font-body text-foreground-muted" role="status">{t("projects.editor.uploading")}</p> : null}
         {screenshots.length ? (
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -146,9 +146,9 @@ export function ProjectMediaEditor({
               <div key={item.path} className="overflow-hidden rounded-lg border border-border bg-surface-raised">
                 <img src={item.url} alt={t("projects.form.screenshotAlt", { index: index + 1 })} className="aspect-video w-full object-cover" />
                 <div className="flex justify-end gap-1 p-2">
-                  <Button type="button" size="icon-sm" variant="ghost" aria-label={t("projects.form.moveUp")} disabled={uploading || index === 0} onClick={() => move(index, -1)}><ArrowUp className="size-4" /></Button>
-                  <Button type="button" size="icon-sm" variant="ghost" aria-label={t("projects.form.moveDown")} disabled={uploading || index === screenshots.length - 1} onClick={() => move(index, 1)}><ArrowDown className="size-4" /></Button>
-                  <Button type="button" size="icon-sm" variant="ghost" aria-label={t("projects.form.remove")} disabled={uploading} onClick={() => void remove(item, "screenshot")}><Trash2 className="size-4" /></Button>
+                  <Button type="button" size="small" variant="cta" hierarchy="tertiary" iconOnly aria-label={t("projects.form.moveUp")} disabled={uploading || index === 0} onClick={() => move(index, -1)}><ArrowUp className="size-4" /></Button>
+                  <Button type="button" size="small" variant="cta" hierarchy="tertiary" iconOnly aria-label={t("projects.form.moveDown")} disabled={uploading || index === screenshots.length - 1} onClick={() => move(index, 1)}><ArrowDown className="size-4" /></Button>
+                  <Button type="button" size="small" variant="cta" hierarchy="tertiary" iconOnly aria-label={t("projects.form.remove")} disabled={uploading} onClick={() => void remove(item, "screenshot")}><Trash2 className="size-4" /></Button>
                 </div>
               </div>
             ))}

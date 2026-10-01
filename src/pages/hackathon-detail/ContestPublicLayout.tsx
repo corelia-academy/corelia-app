@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowUpRight, CalendarClock, Facebook, Globe2, MapPin, Send, Users } from "lucide-react";
+import { ArrowUpRight, CalendarClock, Globe2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 
 import { PageContainer } from "@/components/layouts/PagePrimitives";
 import { Button } from "@/components/ui/button";
-import { hackathonPreviewQueryOptions, publicHackathonDetailQueryOptions } from "@/features/hackathons/hackathonQueries";
+import { HackathonApplicantPreview } from "@/components/hackathons/HackathonApplicantPreview";
+import { hackathonPreviewQueryOptions, publicHackathonApplicantPreviewsQueryOptions, publicHackathonDetailQueryOptions } from "@/features/hackathons/hackathonQueries";
 import {
   getMyContestRegistration,
   getMyContestSubmission,
@@ -23,6 +24,7 @@ import type { Contest, ContestRegistration } from "@/types/hackathons";
 import { ContestDetailLoadingCard } from "@/pages/hackathon-detail/components/ContestDetailGateStates";
 import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 import { formatPrizeAmount } from "./utils/formatPrizeAmount";
+import { formatVietnamDateTime } from "./utils/formatVietnamDateTime";
 
 const TABS = ["overview", "prizes", "timeline", "resources", "projects"] as const;
 
@@ -31,9 +33,8 @@ export type HackathonOutletContext = {
   registration: ContestRegistration | null;
 };
 
-function formatDate(value: string | null, locale: string): string {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+function TelegramLogo({ className }: { className?: string }) {
+  return <svg viewBox="0 0 24 24" aria-hidden className={className}><path fill="currentColor" d="M21.94 4.67c.24-1.1-.4-1.54-1.38-1.18L2.1 10.61c-1.26.5-1.25 1.2-.23 1.51l4.74 1.48 1.82 5.67c.22.63.11.88.78.88.52 0 .75-.24 1.04-.52l2.53-2.46 5.26 3.88c.97.54 1.67.26 1.91-.9l2-15.48ZM7.35 13.25l10.99-6.94c.55-.33 1.05-.15.64.22l-9.44 8.52-.37 3.96-1.82-5.76Z" /></svg>;
 }
 
 function XLogo({ className }: { className?: string }) {
@@ -50,6 +51,10 @@ function XLogo({ className }: { className?: string }) {
       />
     </svg>
   );
+}
+
+function FacebookLogo({ className }: { className?: string }) {
+  return <svg viewBox="0 0 24 24" aria-hidden className={className}><path fill="currentColor" d="M13.5 21v-8.2h2.76l.41-3.2H13.5V7.56c0-.93.26-1.56 1.59-1.56h1.7V3.14A22.7 22.7 0 0 0 14.3 3c-2.46 0-4.15 1.5-4.15 4.26V9.6H7.37v3.2h2.78V21h3.35Z" /></svg>;
 }
 
 export default function ContestPublicLayout() {
@@ -75,6 +80,7 @@ export default function ContestPublicLayout() {
     (!previewRequested || previewAuthorized)
       ? loaded
       : null;
+  const applicantsQuery = useQuery(publicHackathonApplicantPreviewsQueryOptions(contest && contest.status !== "draft" ? [contest.id] : []));
   useDynamicPageTitle(contest?.title);
 
   useEffect(() => {
@@ -142,7 +148,7 @@ export default function ContestPublicLayout() {
       <PageContainer width="default">
         <div className="flex min-h-[260px] flex-col items-center justify-center gap-3 py-16 text-center" role="alert">
           <p className="text-sm font-medium text-foreground">{contestQuery.error ? t("detail.errors.loadFailed") : t("detail.errors.notFound")}</p>
-          <Button render={<NavLink to="/hackathons" />} nativeButton={false} variant="outline">{t("detail.errorState.backToList")}</Button>
+          <Button render={<NavLink to="/hackathons" />} nativeButton={false} variant="cta" hierarchy="secondary">{t("detail.errorState.backToList")}</Button>
         </div>
       </PageContainer>
     );
@@ -151,6 +157,7 @@ export default function ContestPublicLayout() {
   const cta = previewRequested ? null : registration ? (
     <Button
       type="button"
+      className="min-h-11 w-full sm:w-auto"
       disabled={!submissionQuery.data?.project_id && submissionClosed}
       onClick={() => navigate(submissionQuery.data?.project_id ? `/projects/${submissionQuery.data.project_id}` : `/projects/new?hackathon=${encodeURIComponent(slug)}`)}
     >
@@ -159,6 +166,7 @@ export default function ContestPublicLayout() {
   ) : (
     <Button
       type="button"
+      className="min-h-11 w-full sm:w-auto"
       disabled={!canRegister || registerMutation.isPending}
       onClick={() => {
         if (!user) {
@@ -171,78 +179,58 @@ export default function ContestPublicLayout() {
       {!canRegister ? t("public.registrationClosed") : t("public.register")}
     </Button>
   );
+  const summary = contest.short_description || contest.tagline;
 
   return (
     <div className="pb-10">
       {previewAuthorized ? <div className="border-b border-warning/30 bg-warning-muted px-4 py-2 text-center text-sm font-medium text-foreground" role="status">{t("public.previewNotice")}</div> : null}
-      <PageContainer width="default" className="pb-0">
-        <header className="min-w-0 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
+      <PageContainer width="default" className="px-0 pb-0 pt-0 sm:px-6 sm:pt-5 lg:px-8">
+        <header className="mobile-bleed-surface min-w-0 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
           {contest.cover_image_url ? (
-            <div className="relative aspect-[21/9] w-full overflow-hidden bg-surface-raised">
-              <img src={contest.cover_image_url} alt="" className="h-full w-full object-cover" />
-              {!previewRequested ? (
-                <span
-                  data-hackathon-hero-status
-                  className="absolute bottom-4 left-4 rounded-full border border-border bg-background/90 px-3 py-1 text-xs font-medium uppercase tracking-wide text-foreground shadow-sm backdrop-blur-sm sm:bottom-5 sm:left-5"
-                >
-                  {t(`public.status.${contest.status}`)}
-                </span>
-              ) : null}
+            <div className="w-full overflow-hidden bg-surface-raised sm:aspect-[21/9]">
+              <img src={contest.cover_image_url} alt="" className="block h-auto w-full object-contain sm:h-full sm:object-cover" fetchPriority="high" />
             </div>
           ) : null}
 
-          <div className="min-w-0 border-b border-border-subtle p-5 sm:p-6">
-            {!previewRequested && !contest.cover_image_url ? (
-              <div className="mb-3 flex flex-wrap gap-2 text-xs font-medium uppercase tracking-wide text-foreground-muted">
-                <span className="rounded-full bg-surface-raised px-3 py-1">{t(`public.status.${contest.status}`)}</span>
-              </div>
-            ) : null}
-            <div className="flex min-w-0 flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
+          <div className="min-w-0 p-4 sm:p-6">
+            <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
               <div className="min-w-0 flex-1">
-                <h1 className="min-w-0 max-w-4xl break-words text-display-small font-display text-foreground [overflow-wrap:anywhere]">{contest.title}</h1>
-                {contest.short_description || contest.tagline ? (
-                  <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground-muted sm:text-base">{contest.short_description || contest.tagline}</p>
-                ) : null}
+                {!previewRequested ? <span data-hackathon-hero-status className="mb-2 inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">{t(`public.status.${contest.status}`)}</span> : null}
+                <h1 className="max-w-4xl text-2xl font-semibold leading-tight tracking-tight text-foreground [overflow-wrap:anywhere] sm:text-3xl lg:text-4xl">{contest.title}</h1>
+                {summary ? <p className="mt-2 line-clamp-2 max-w-3xl text-sm leading-6 text-foreground-muted sm:text-base">{summary}</p> : null}
+                {summary ? <NavLink to={`/hackathons/${slug}/overview${previewRequested ? "?preview=1" : ""}#overview-content`} className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-medium text-primary hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">{t("public.overview.readMore")}<ArrowUpRight className="size-4" aria-hidden /></NavLink> : null}
               </div>
-              {contest.prize_pool?.amount && Number(contest.prize_pool.amount) !== 0 ? (
-                <NavLink
-                  to={`/hackathons/${slug}/prizes${previewRequested ? "?preview=1" : ""}`}
-                  className="group flex min-w-0 flex-col items-start gap-1 border-t border-border-subtle pt-4 outline-none focus-visible:rounded-lg focus-visible:ring-2 focus-visible:ring-primary/40 lg:max-w-xs lg:shrink-0 lg:border-l lg:border-t-0 lg:py-1 lg:pl-8"
-                >
-                  <div className="min-w-0">
-                    <div className="text-xs font-medium text-foreground-muted">{t("public.prizes.total")}</div>
-                    <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                      <span className="break-words text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{formatPrizeAmount(contest.prize_pool.amount, locale)}</span>
-                      <span className="text-sm font-medium text-foreground-muted"> {contest.prize_pool.currency}</span>
-                    </div>
+              {cta || contest.social_links?.telegram || contest.social_links?.x || contest.social_links?.facebook ? (
+                <div className="flex w-full flex-col gap-3 border-t border-border-subtle pt-4 sm:w-auto sm:flex-row sm:items-center lg:shrink-0 lg:border-0 lg:pt-0">
+                  {cta}
+                  <div className="flex items-center gap-2.5">
+                    {contest.social_links?.telegram ? <Button render={<a href={contest.social_links.telegram} target="_blank" rel="noopener noreferrer" aria-label="Telegram" />} nativeButton={false} size="small" variant="cta" hierarchy="secondary" iconOnly className="size-10 rounded-full bg-surface-raised text-foreground-muted hover:border-primary/40 hover:text-primary"><TelegramLogo className="size-5" /></Button> : null}
+                    {contest.social_links?.x ? <Button render={<a href={contest.social_links.x} target="_blank" rel="noopener noreferrer" aria-label="X" />} nativeButton={false} size="small" variant="cta" hierarchy="secondary" iconOnly className="size-10 rounded-full bg-surface-raised text-foreground-muted hover:border-primary/40 hover:text-primary"><XLogo className="size-[18px]" /></Button> : null}
+                    {contest.social_links?.facebook ? <Button render={<a href={contest.social_links.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" />} nativeButton={false} size="small" variant="cta" hierarchy="secondary" iconOnly className="size-10 rounded-full bg-surface-raised text-foreground-muted hover:border-primary/40 hover:text-primary"><FacebookLogo className="size-5" /></Button> : null}
                   </div>
-                  <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-primary group-hover:underline mt-1">{t("public.prizes.breakdown")}<ArrowUpRight className="size-3.5" aria-hidden /></span>
-                </NavLink>
+                </div>
               ) : null}
             </div>
           </div>
-
-          <div className="grid gap-5 p-5 lg:grid-cols-[1fr_auto] lg:items-center sm:p-6">
-            <div className="grid gap-3 text-sm text-foreground-muted sm:grid-cols-2 xl:grid-cols-4">
-              <div className="flex min-w-0 items-center gap-2">
-                {contest.host?.logo_url ? <img src={contest.host.logo_url} alt="" className="size-8 rounded-md bg-white object-contain p-0.5" /> : <Globe2 className="size-5" aria-hidden />}
-                <div className="min-w-0"><div className="text-xs">{t("public.hostedBy")}</div>{contest.host?.website_url ? <a href={contest.host.website_url} target="_blank" rel="noreferrer" className="truncate font-medium text-foreground hover:underline">{contest.host.name || "-"}</a> : <div className="truncate font-medium text-foreground">{contest.host?.name || "-"}</div>}</div>
-              </div>
-              <div className="flex items-center gap-2"><Users className="size-5" aria-hidden /><div><div className="text-xs">{t("public.participants")}</div><div className="font-medium text-foreground">{contest.participants_count ?? 0}</div></div></div>
-              <div className="flex items-center gap-2"><CalendarClock className="size-5" aria-hidden /><div><div className="text-xs">{t("public.registrationDeadline")}</div><div className="font-medium text-foreground">{formatDate(contest.registration_deadline, locale)}</div></div></div>
-              <div className="flex items-center gap-2"><MapPin className="size-5" aria-hidden /><div><div className="text-xs">{t("public.submissionDeadline")}</div><div className="font-medium text-foreground">{formatDate(contest.submission_deadline, locale)}</div></div></div>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {contest.social_links?.telegram ? <Button render={<a href={contest.social_links.telegram} target="_blank" rel="noreferrer" aria-label="Telegram" />} nativeButton={false} size="icon" variant="outline"><Send className="size-4" /></Button> : null}
-              {contest.social_links?.x ? <Button render={<a href={contest.social_links.x} target="_blank" rel="noreferrer" aria-label="X" />} nativeButton={false} size="icon" variant="outline"><XLogo className="size-4" /></Button> : null}
-              {contest.social_links?.facebook ? <Button render={<a href={contest.social_links.facebook} target="_blank" rel="noreferrer" aria-label="Facebook" />} nativeButton={false} size="icon" variant="outline"><Facebook className="size-4" /></Button> : null}
-              {cta}
-            </div>
-          </div>
         </header>
+
+        <div className={cn("mobile-bleed-grid mt-3 grid gap-3", contest.prize_pool?.amount && Number(contest.prize_pool.amount) !== 0 && "lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]")}>
+          {contest.prize_pool?.amount && Number(contest.prize_pool.amount) !== 0 ? (
+            <NavLink to={`/hackathons/${slug}/prizes${previewRequested ? "?preview=1" : ""}`} className="group flex min-w-0 flex-col items-start gap-2 rounded-xl border border-border-subtle bg-surface-base p-4 outline-none transition-colors hover:border-primary/30 focus-visible:ring-2 focus-visible:ring-primary/40 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+              <div className="min-w-0"><div className="text-xs font-medium text-foreground-muted">{t("public.prizes.total")}</div><div className="mt-1 flex flex-wrap items-baseline gap-x-2"><span className="text-xl font-semibold tracking-tight text-foreground tabular-nums [overflow-wrap:anywhere] sm:text-2xl">{formatPrizeAmount(contest.prize_pool.amount, locale)}</span><span className="text-sm text-foreground-muted">{contest.prize_pool.currency}</span></div></div>
+              <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-primary group-hover:underline">{t("public.prizes.breakdown")}<ArrowUpRight className="size-4" aria-hidden /></span>
+            </NavLink>
+          ) : null}
+          <dl data-hackathon-metadata className="grid min-w-0 grid-cols-2 gap-x-4 gap-y-4 rounded-xl border border-border-subtle bg-surface-base p-4 text-sm sm:grid-cols-4">
+            {contest.host?.name ? <div className="col-span-2 flex min-w-0 items-center gap-2 sm:col-span-1">{contest.host.logo_url ? <img src={contest.host.logo_url} alt="" className="size-8 shrink-0 rounded-md bg-white object-contain p-0.5" /> : <Globe2 className="size-5 shrink-0 text-foreground-muted" aria-hidden />}<div className="min-w-0"><dt className="text-xs text-foreground-muted">{t("public.hostedBy")}</dt><dd className="truncate font-medium text-foreground">{contest.host.website_url ? <a href={contest.host.website_url} target="_blank" rel="noreferrer" className="hover:underline">{contest.host.name}</a> : contest.host.name}</dd></div></div> : null}
+            <div className="col-span-2 min-w-0 sm:col-span-1"><dt className="sr-only">{t("public.applications")}</dt><dd><HackathonApplicantPreview applicants={applicantsQuery.data?.[contest.id]} count={contest.participants_count ?? 0} label={t("public.applications")} /></dd></div>
+            {contest.registration_deadline ? <div className="min-w-0"><dt className="flex items-center gap-1 text-xs text-foreground-muted"><CalendarClock className="size-3.5 shrink-0" aria-hidden />{t("public.registrationDeadline")}</dt><dd className="mt-1 font-medium text-foreground"><time dateTime={contest.registration_deadline}>{formatVietnamDateTime(contest.registration_deadline, locale)}</time></dd></div> : null}
+            {contest.submission_deadline ? <div className="min-w-0"><dt className="flex items-center gap-1 text-xs text-foreground-muted"><CalendarClock className="size-3.5 shrink-0" aria-hidden />{t("public.submissionDeadline")}</dt><dd className="mt-1 font-medium text-foreground"><time dateTime={contest.submission_deadline}>{formatVietnamDateTime(contest.submission_deadline, locale)}</time></dd></div> : null}
+          </dl>
+        </div>
       </PageContainer>
 
-      <div className="sticky top-(--app-header-height) z-20 mt-4 border-y border-border-subtle bg-background/95 backdrop-blur">
+      <div className="mobile-bleed-surface sticky top-(--app-header-height) z-20 mt-4 border-y border-border-subtle bg-background/95 backdrop-blur">
         <div ref={tabsScrollerRef} className="overflow-x-auto overscroll-x-contain scroll-px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <PageContainer width="default" className="py-0">
             <nav className="flex min-w-max" aria-label={t("public.tabsLabel")}>
@@ -266,8 +254,10 @@ export default function ContestPublicLayout() {
         </div>
       </div>
 
-      <PageContainer width="default" className="pt-6">
-        <Outlet context={{ contest, registration } satisfies HackathonOutletContext} />
+      <PageContainer width="default" className="px-0 pt-6 sm:px-6 lg:px-8">
+        <div className="mobile-bleed-grid">
+          <Outlet context={{ contest, registration } satisfies HackathonOutletContext} />
+        </div>
       </PageContainer>
     </div>
   );
