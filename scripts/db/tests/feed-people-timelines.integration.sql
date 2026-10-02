@@ -56,6 +56,12 @@ BEGIN
      EXISTS(SELECT 1 FROM public.get_feed_milestones_v2('following',p_limit=>50) WHERE actor_id='efee0000-0000-4000-8000-000000000010') OR
      EXISTS(SELECT 1 FROM public.list_my_feed_following_profiles_v1() WHERE id='efee0000-0000-4000-8000-000000000010') THEN
     RAISE EXCEPTION 'Staff account appeared in Feed'; END IF;
+  -- Non-staff viewer must see followed public learners (muted still listed), never staff.
+  IF (SELECT array_agg(id ORDER BY id) FROM public.list_my_feed_following_profiles_v1()) IS DISTINCT FROM
+     ARRAY['efee0000-0000-4000-8000-000000000003','efee0000-0000-4000-8000-000000000004','efee0000-0000-4000-8000-000000000009']::uuid[] THEN
+    RAISE EXCEPTION 'Following people list must contain followed public non-staff profiles'; END IF;
+  IF (SELECT count(*) FROM public.list_my_feed_following_profiles_v1(p_limit=>2)) <> 2 THEN
+    RAISE EXCEPTION 'Following people limit not applied'; END IF;
   IF NOT EXISTS(SELECT 1 FROM public.get_feed_milestones_v2('explore',p_limit=>50) WHERE course_id='feed-v2-course') THEN
     RAISE EXCEPTION 'Following a course must not remove its actor from Explore'; END IF;
   SELECT array_agg(id ORDER BY created_at DESC,id DESC) INTO page1 FROM public.get_feed_milestones_v2('explore');
