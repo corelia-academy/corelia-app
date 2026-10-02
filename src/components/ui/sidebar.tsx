@@ -502,6 +502,7 @@ const sidebarMenuButtonVariants = cva(
         default: "h-8 text-xs",
         sm: "h-7 text-xs",
         lg: "h-12 text-xs group-data-[collapsible=icon]:p-0!",
+        appNav: "text-label-medium leading-5 hover:bg-action-hover data-open:hover:bg-action-hover data-active:hover:bg-sidebar-accent",
       },
     },
     defaultVariants: {

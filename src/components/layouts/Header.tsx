@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, NavLink, useLocation } from "react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Input } from "@/components/ui/input";
 import {
   Award,
   GraduationCap,
@@ -20,8 +21,8 @@ import { XpBadge } from "@/features/xp/XpBadge";
 import { getXpTotals } from "@/lib/xp";
 import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
-import { useOCAuth } from "@opencampus/ocid-connect-js";
-import OpenCampusConnectDialog from "@/components/layouts/OpenCampusConnectDialog";
+// import { useOCAuth } from "@opencampus/ocid-connect-js";
+// import OpenCampusConnectDialog from "@/components/layouts/OpenCampusConnectDialog";
 import { NotificationBell } from "@/components/layouts/NotificationBell";
 import { useTheme } from "next-themes";
 import {
@@ -91,12 +92,12 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
   } = useAuth();
   const { t, i18n } = useTranslation("common");
   const { t: tAccount } = useTranslation("account");
-  const { isInitialized, authState, ocAuth } = useOCAuth();
+  // const { isInitialized, authState, ocAuth } = useOCAuth();
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
-  const [ocConnectOpen, setOcConnectOpen] = useState(false);
-  const [ocConnectLoading, setOcConnectLoading] = useState(false);
-  const [ocConnectError, setOcConnectError] = useState<string | null>(null);
+  // const [ocConnectOpen, setOcConnectOpen] = useState(false);
+  // const [ocConnectLoading, setOcConnectLoading] = useState(false);
+  // const [ocConnectError, setOcConnectError] = useState<string | null>(null);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
@@ -174,14 +175,14 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
       },
       ...(profile?.role === "instructor"
         ? [
-            {
-              to: "/account/instructor",
-              label: tAccount("nav.instructor.title"),
-              icon: (
-                <GraduationCap aria-hidden />
-              ),
-            },
-          ]
+          {
+            to: "/account/instructor",
+            label: tAccount("nav.instructor.title"),
+            icon: (
+              <GraduationCap aria-hidden />
+            ),
+          },
+        ]
         : []),
       {
         to: "/account/cv",
@@ -205,38 +206,38 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
     [profile, t, tAccount],
   );
 
-  const ocConnectDisabled = useMemo(() => {
-    if (!isInitialized) return true;
-    if (!ocAuth) return true;
-    return false;
-  }, [isInitialized, ocAuth]);
+  // const ocConnectDisabled = useMemo(() => {
+  //   if (!isInitialized) return true;
+  //   if (!ocAuth) return true;
+  //   return false;
+  // }, [isInitialized, ocAuth]);
 
-  async function handleOcConnect() {
-    setOcConnectError(null);
-    try {
-      if (ocConnectDisabled) return;
-      setOcConnectLoading(true);
-      await ocAuth!.signInWithRedirect({ state: "corelia-ocid-connect" });
-    } catch (e) {
-      const message =
-        e instanceof Error
-          ? e.message
-          : t("openCampusConnect.modal.startFailed");
-      setOcConnectError(message);
-      setOcConnectLoading(false);
-    }
-  }
+  // async function handleOcConnect() {
+  //   setOcConnectError(null);
+  //   try {
+  //     if (ocConnectDisabled) return;
+  //     setOcConnectLoading(true);
+  //     await ocAuth!.signInWithRedirect({ state: "corelia-ocid-connect" });
+  //   } catch (e) {
+  //     const message =
+  //       e instanceof Error
+  //         ? e.message
+  //         : t("openCampusConnect.modal.startFailed");
+  //     setOcConnectError(message);
+  //     setOcConnectLoading(false);
+  //   }
+  // }
 
-  function handleOcLogoClick() {
-    if (!isAuthenticated) return;
-    if (isOcidConnected) {
-      navigate("/account");
-      return;
-    }
-    setOcConnectError(null);
-    setOcConnectLoading(false);
-    setOcConnectOpen(true);
-  }
+  // function handleOcLogoClick() {
+  //   if (!isAuthenticated) return;
+  //   if (isOcidConnected) {
+  //     navigate("/account");
+  //     return;
+  //   }
+  //   setOcConnectError(null);
+  //   setOcConnectLoading(false);
+  //   setOcConnectOpen(true);
+  // }
 
   useEffect(() => {
     function onPointerDown(e: PointerEvent) {
@@ -268,8 +269,8 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
   }
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border-subtle bg-surface-raised">
-      <div className="mx-auto flex h-14 w-full max-w-[1990px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-background">
+      <div className="mx-auto flex h-16 w-full max-w-[1990px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-5xl">
         <div className="flex items-center gap-2 sm:gap-4">
           <SidebarTrigger className="size-7 shrink-0 lg:hidden">
             <MenuIcon className="size-5" aria-hidden />
@@ -294,7 +295,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
           ) : null}
         </div>
 
-        <form
+        {/* <form
           className="hidden flex-1 items-center justify-center md:flex"
           onSubmit={(e) => {
             e.preventDefault();
@@ -477,6 +478,190 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
               </div>
             ) : null}
           </div>
+        </form> */}
+
+        <form
+          className="hidden min-w-0 flex-1 items-center justify-center md:flex xl:absolute xl:left-1/2 xl:w-[500px] xl:-translate-x-1/2 xl:flex-none"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleSearchSubmit(searchText);
+          }}
+        >
+          <div
+            ref={searchWrapRef}
+            className="relative min-w-0 w-full max-w-[500px]"
+          >
+            <Input
+              variant="icon-leading"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              onFocus={() => {
+                const hasAnything =
+                  searchText.trim().length > 0 ||
+                  readRecentSearches().length > 0 ||
+                  trending.length > 0;
+
+                setSearchOpen(hasAnything);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  setSearchOpen(false);
+                }
+              }}
+              placeholder={t("search.placeholder")}
+              aria-label={t("search.placeholder")}
+            />
+            {searchOpen &&
+            (searchText.trim().length > 0 ||
+              recentSearches.length > 0 ||
+              trending.length > 0 ||
+              suggestionsLoading) ? (
+              <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-xl border border-border bg-surface-overlay">
+                <div className="scrollbar-design max-h-[60vh] overflow-auto p-2">
+                  {searchText.trim() ? (
+                    <button
+                      type="button"
+                      className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 hover:bg-surface-raised"
+                      onClick={() => void handleSearchSubmit(searchText)}
+                    >
+                      <div className="min-w-0">
+                        <div className="truncate font-medium text-foreground">
+                          {t("search.suggest.searchFor", {
+                            query: searchText.trim(),
+                          })}
+                        </div>
+                        <div className="mt-0.5 text-xs text-foreground-muted">
+                          {t("search.suggest.enterToSeeAll")}
+                        </div>
+                      </div>
+                      <Search
+                        className="size-4 text-foreground-muted"
+                        aria-hidden
+                      />
+                    </button>
+                  ) : null}
+
+                  {!searchText.trim() ? (
+                    <div className="grid gap-3 p-1">
+                      {recentSearches.length ? (
+                        <div>
+                          <div className="px-2 py-1 text-xs font-medium text-foreground-muted">
+                            {t("search.suggest.recent")}
+                          </div>
+                          <div className="grid">
+                            {recentSearches.map((q) => (
+                              <button
+                                key={`recent:${q}`}
+                                type="button"
+                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 hover:bg-surface-raised"
+                                onClick={() => void handleSearchSubmit(q)}
+                              >
+                                <Search
+                                  className="size-4 text-foreground-muted"
+                                  aria-hidden
+                                />
+                                <span className="truncate text-foreground">
+                                  {q}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {trending.length ? (
+                        <div>
+                          <div className="px-2 py-1 text-xs font-medium text-foreground-muted">
+                            {t("search.suggest.trending")}
+                          </div>
+                          <div className="grid">
+                            {trending.map((row) => (
+                              <button
+                                key={`trend:${row.query}`}
+                                type="button"
+                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 hover:bg-surface-raised"
+                                onClick={() =>
+                                  void handleSearchSubmit(row.query)
+                                }
+                              >
+                                <Search
+                                  className="size-4 text-foreground-muted"
+                                  aria-hidden
+                                />
+                                <span className="truncate text-foreground">
+                                  {row.query}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : suggestionsLoading ? (
+                    <div className="px-3 py-2 text-sm text-foreground-muted">
+                      {t("status.loading")}
+                    </div>
+                  ) : suggestionsError ? (
+                    <div className="px-3 py-2 text-sm text-foreground-muted">
+                      {suggestionsError}
+                    </div>
+                  ) : suggestions.length ? (
+                    <div className="mt-1 grid">
+                      <div className="px-2 py-1 text-xs font-medium text-foreground-muted">
+                        {t("search.suggest.suggestions")}
+                      </div>
+                      {suggestions.map((item) => (
+                        <button
+                          key={`${item.entity_type}:${item.entity_id}`}
+                          type="button"
+                          className="flex w-full items-start gap-3 rounded-lg px-3 py-2 text-left transition-colors duration-150 hover:bg-surface-raised"
+                          onClick={() => {
+                            addRecentSearch(searchText.trim());
+                            setRecentSearches(readRecentSearches());
+                            setSearchOpen(false);
+                            navigate(item.href);
+                          }}
+                        >
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-medium text-foreground">
+                              {item.title}
+                            </div>
+                            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-foreground-muted">
+                              <span className="rounded-full border border-border bg-surface-base px-2 py-0.5">
+                                {t(
+                                  `search.group.${item.entity_type}` as never,
+                                  {
+                                    defaultValue: item.entity_type,
+                                  },
+                                )}
+                              </span>
+                              {item.subtitle ? (
+                                <span className="truncate">
+                                  {item.subtitle}
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+
+                      <button
+                        type="button"
+                        className="mt-1 flex w-full items-center justify-center rounded-lg px-3 py-2 text-sm text-foreground-muted transition-colors duration-150 hover:bg-surface-raised"
+                        onClick={() => void handleSearchSubmit(searchText)}
+                      >
+                        {t("search.suggest.viewAllResults")}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="px-3 py-2 text-sm text-foreground-muted">
+                      {t("search.suggest.noQuickResults")}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : null}
+          </div>
         </form>
 
         <div className="flex items-center gap-2">
@@ -494,9 +679,8 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                     <User
                       showDropdown={false}
                       state={accountMenuOpen ? "Clicked" : "Default"}
-                      className={`group duration-150 focus-visible:ring-primary/20 max-md:[&>span[data-slot=user-label]]:hidden max-md:border-0 max-md:data-[state=Clicked]:bg-transparent ${
-                        isOcidConnected ? "text-primary" : "text-foreground"
-                      }`}
+                      className={`group duration-150 focus-visible:ring-primary/20 max-md:[&>span[data-slot=user-label]]:hidden max-md:border-0 max-md:data-[state=Clicked]:bg-transparent ${isOcidConnected ? "text-primary" : "text-foreground"
+                        }`}
                       avatar={
                         <UserAvatar
                           userId={profile?.id ?? user?.id}
@@ -504,7 +688,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                           avatarSeed={profile?.avatar_seed} avatarConfig={profile?.avatar_config}
                           alt={displayName}
                           fallback={avatarFallback}
-                          size="Large"
+                          size="Medium"
                           className="transition-[box-shadow,background-color] group-hover/user:bg-surface-raised group-hover/user:ring-2 group-hover/user:ring-primary/20"
                         />
                       }
@@ -534,7 +718,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                       onClick={() => setAccountMenuOpen(false)}
                     />
                   ))}
-                  <DropdownMenuSeparator  className="mx-0"/>
+                  <DropdownMenuSeparator className="mx-0" />
                   <Action
                     role="menuitem"
                     type="button"
@@ -556,7 +740,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {!isOcidConnected && (
+              {/* {!isOcidConnected && (
                 <button
                   type="button"
                   onClick={handleOcLogoClick}
@@ -581,7 +765,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                 disabled={ocConnectDisabled}
                 loading={ocConnectLoading}
                 error={ocConnectError ?? authState?.error?.message ?? null}
-              />
+              /> */}
             </div>
           ) : (
             <NavLink

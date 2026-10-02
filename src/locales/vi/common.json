@@ -104,10 +104,18 @@
     "backHome": "Về trang chủ"
   },
   "nav": {
+    "groups": {
+      "learning": "Học tập",
+      "building": "Xây dựng",
+      "career": "Sự nghiệp"
+    },
+    "changelog": "Nhật ký cập nhật",
+    "productRoadmap": "Lộ trình sản phẩm",
+    "feedback": "Đóng góp ý kiến",
     "someone": "Một người dùng",
     "home": "Trang chủ",
     "courses": "Khóa học",
-    "feed": "Feed",
+    "feed": "Bảng tin",
     "contests": "Hackathon",
     "projects": "Dự án",
     "jobs": "Việc làm",

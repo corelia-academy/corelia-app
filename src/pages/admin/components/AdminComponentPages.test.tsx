@@ -148,6 +148,34 @@ describe("admin component detail pages", () => {
     container.remove();
   });
 
+  it("supplies explicit information and warning icons in the Input showcase", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <AdminInputFieldComponentPage />
+        </MemoryRouter>,
+      );
+    });
+
+    expect(
+      container.querySelector(
+        '[data-slot="input-field-control"]:not([data-invalid="true"]) [data-slot="input-field-status-icon"] svg',
+      ),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(
+        '[data-slot="input-field-control"][data-invalid="true"] [data-slot="input-field-status-icon"] svg',
+      ),
+    ).not.toBeNull();
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
   it("renders all Avatar variants and an interactive authenticated Header-style User", async () => {
     const container = document.createElement("div");
     document.body.appendChild(container);

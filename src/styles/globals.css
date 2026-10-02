@@ -1160,7 +1160,7 @@
   --warning-muted: var(--warning-600);
 
   /* ── Borders & Inputs ── */
-  --border: color-mix(in srgb, var(--neutral-900) 70%, var(--neutral-400));
+  --border: var(--neutral-600);
   --stroke-divider: var(--neutral-600);
   --border-subtle: color-mix(in srgb, var(--neutral-900) 82%, var(--neutral-400));
   --border-strong: var(--neutral-400);
@@ -1179,13 +1179,13 @@
   --brand-accent: var(--blue-500);
 
   /* ── Sidebar ── */
-  --sidebar: var(--card);
+  --sidebar: var(--neutral-800);
   --sidebar-foreground: var(--neutral-50);
   --sidebar-primary: var(--blue-500);
   --sidebar-primary-foreground: var(--neutral-900);
   --sidebar-accent: var(--blue-950);
   --sidebar-accent-foreground: var(--blue-200);
-  --sidebar-border: var(--border);
+  --sidebar-border: var(--neutral-600);
   --sidebar-ring: var(--blue-500);
 
   /* ── Corelia DS v2 surfaces ── */

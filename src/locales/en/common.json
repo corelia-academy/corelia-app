@@ -104,6 +104,14 @@
     "backHome": "Back to home"
   },
   "nav": {
+    "groups": {
+      "learning": "Learning",
+      "building": "Build",
+      "career": "Career"
+    },
+    "changelog": "Changelog",
+    "productRoadmap": "Product Roadmap",
+    "feedback": "Feedbacks",
     "home": "Home",
     "someone": "Someone",
     "courses": "Courses",

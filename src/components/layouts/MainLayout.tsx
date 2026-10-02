@@ -20,7 +20,7 @@ const MainLayout = () => {
       defaultOpen
       mobileBreakpoint={1024}
       className="public-ui flex-col"
-      style={{ "--sidebar-width": "14rem" } as CSSProperties}
+      style={{ "--sidebar-width": "15rem" } as CSSProperties}
     >
       <Header publicUI />
       <div className="flex min-h-0 flex-1">
@@ -43,7 +43,7 @@ function MainAppSidebar() {
   return (
     <AppSidebar
       collapsible={isMobile ? "icon" : "none"}
-      className="sticky top-(--app-header-height) h-[calc(100svh-var(--app-header-height))] self-start overflow-hidden border-r border-sidebar-border"
+      className="sticky top-(--app-header-height) h-[calc(100svh-var(--app-header-height))] self-start overflow-hidden border-r border-border"
     />
   );
 }
