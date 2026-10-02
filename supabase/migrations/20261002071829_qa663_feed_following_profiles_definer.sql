@@ -1,4 +1,4 @@
--- QA #661: list_my_feed_following_profiles_v1 returned no rows because the
+-- QA #663: list_my_feed_following_profiles_v1 returned no rows because the
 -- security invoker join on public.profiles is filtered by profiles RLS.
 -- Run as definer; rows stay scoped to auth.uid() follows of public student/instructor profiles.
 create or replace function public.list_my_feed_following_profiles_v1(
