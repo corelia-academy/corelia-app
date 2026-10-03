@@ -19,6 +19,7 @@ import AdminAvatarComponentPage from "./components/AdminAvatarComponentPage";
 import AdminBadgeComponentPage from "./components/AdminBadgeComponentPage";
 import AdminButtonComponentPage from "./components/AdminButtonComponentPage";
 import AdminDropdownMenuComponentPage from "./components/AdminDropdownMenuComponentPage";
+import AdminEmptyStateIllustrationComponentPage from "./components/AdminEmptyStateIllustrationComponentPage";
 import AdminInputFieldComponentPage from "./components/AdminInputFieldComponentPage";
 import AdminScrollbarComponentPage from "./components/AdminScrollbarComponentPage";
 import AdminSelectionComponentPage from "./components/AdminSelectionComponentPage";
@@ -88,6 +89,11 @@ const components = [
     title: "Button",
     criterion:
       "Review hierarchy, sizing, states, and composition with the existing form controls.",
+  },
+  {
+    slug: "empty-state-illustration",
+    title: "Empty State Illustration",
+    criterion: "Two illustration types across tiny, medium, and large sizes.",
   },
 ] as const;
 
@@ -539,6 +545,9 @@ export default function AdminComponentsPage() {
           </ComponentSection>
           <ComponentSection {...components[11]}>
             <AdminButtonComponentPage />
+          </ComponentSection>
+          <ComponentSection {...components[12]}>
+            <AdminEmptyStateIllustrationComponentPage embedded />
           </ComponentSection>
         </div>
       </div>

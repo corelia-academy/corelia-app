@@ -54,12 +54,6 @@ export default function Home() {
     [focusCards, issuedCertificates, t],
   );
 
-  const featuredFocus = focusCards[0] ?? null;
-
-  // The header surfaces the most recently accessed course, so avoid rendering
-  // the same course again in the continuation strip.
-  const continueLearningCards = focusCards.slice(1);
-
   if (!isAuthenticated) {
     return <GuestHome t={t} courseCatalog={courseCatalog} />;
   }
@@ -71,13 +65,12 @@ export default function Home() {
           t={t}
           loading={loading}
           firstName={firstName}
-          featuredFocus={featuredFocus}
         />
 
         <MomentumCards items={momentumCards} />
 
-        {continueLearningCards.length > 0 ? (
-          <ContinueLearningSection t={t} focusCards={continueLearningCards} />
+        {!loading ? (
+          <ContinueLearningSection t={t} focusCards={focusCards} />
         ) : null}
 
         <ExploreCoursesSection t={t} courseCatalog={courseCatalog} />

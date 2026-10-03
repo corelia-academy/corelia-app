@@ -1,7 +1,8 @@
-import { ArrowRight, BookOpen } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
 import { Button } from "@/components/ui/button";
+import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
 import type { FocusCard } from "../utils/homeTypes";
 
 export function ContinueLearningSection({
@@ -60,24 +61,12 @@ export function ContinueLearningSection({
           ))}
         </div>
       ) : (
-        <div className="mt-3 flex flex-col items-center gap-3 py-8 text-center sm:py-12">
-          <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
-            <BookOpen className="size-6 text-foreground-subtle" aria-hidden />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-foreground">
-              {t("home.sections.startFromCatalogTitle")}
-            </p>
-            <p className="mt-0.5 text-xs text-foreground-muted">{t("home.sections.enrollHint")}</p>
-          </div>
-          <Button
-            size="small"
-            variant="cta" hierarchy="secondary"
-            render={<NavLink to="/courses" />}
-            nativeButton={false}
-          >
-            {t("home.exploreCourses")}
-          </Button>
+        <div className="flex h-[200px] w-full items-center justify-center p-6">
+          <EmptyStateIllustration
+            type="empty"
+            size="tiny"
+            description={t("home.sections.startFromCatalogTitle")}
+          />
         </div>
       )}
     </section>

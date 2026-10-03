@@ -327,6 +327,7 @@ function ApplicationRoutes() {
               "dropdown-menu",
               "input-field",
               "button",
+              "empty-state-illustration",
             ].map((component) => (
               <Route
                 key={component}

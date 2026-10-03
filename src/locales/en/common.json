@@ -733,7 +733,7 @@
       "seeAll": "See all",
       "exploreTitle": "Explore",
       "goToLibrary": "Go to library",
-      "startFromCatalogTitle": "Start from the course library",
+      "startFromCatalogTitle": "You haven't enrolled in any courses yet.",
       "startFromCatalogSubtitle": "Pick a foundational course to build momentum.",
       "enrollHint": "Once you enroll in or purchase your first course, this area will show progress and quick entry points.",
       "profileSetupHintPrefix": "Please update your full name and phone number so Corelia, instructors, or"

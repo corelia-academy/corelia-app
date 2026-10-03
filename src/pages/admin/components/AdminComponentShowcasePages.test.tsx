@@ -29,6 +29,7 @@ import AdminActionComponentPage from "./AdminActionComponentPage";
 import AdminAvatarComponentPage from "./AdminAvatarComponentPage";
 import AdminBadgeComponentPage from "./AdminBadgeComponentPage";
 import AdminDropdownMenuComponentPage from "./AdminDropdownMenuComponentPage";
+import AdminEmptyStateIllustrationComponentPage from "./AdminEmptyStateIllustrationComponentPage";
 import AdminInputFieldComponentPage from "./AdminInputFieldComponentPage";
 import AdminScrollbarComponentPage from "./AdminScrollbarComponentPage";
 import AdminSelectionComponentPage from "./AdminSelectionComponentPage";
@@ -49,6 +50,7 @@ const pages = [
   AdminScrollbarComponentPage,
   AdminTabsComponentPage,
   AdminDropdownMenuComponentPage,
+  AdminEmptyStateIllustrationComponentPage,
   AdminInputFieldComponentPage,
 ];
 
