@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
 import { Button } from "@/components/ui/button";
+import { ProgressBar } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { FocusCard } from "../utils/homeTypes";
 
@@ -19,10 +20,10 @@ export function HomeHeader({
   const featuredWrapperClassName = "sm:rounded-lg sm:bg-surface-raised/50";
 
   return (
-    <section className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-5">
+    <section className="mobile-bleed-surface bg-surface-base shadow-card px-5 pt-5 pb-4 sm:px-0 sm:py-0">
       <div className="flex flex-col gap-2">
         <div className="text-[11px] font-medium uppercase tracking-wide text-foreground-muted">
-          {loading ? t("home.syncing") : t("home.dashboard")}
+          {loading ? t("home.syncing") : null} {/*t("home.dashboard")*/}
         </div>
         {loading ? (
           <div className="space-y-2">
@@ -68,12 +69,13 @@ export function HomeHeader({
                     <span>{t("home.sections.progress")}</span>
                     <span>{featuredFocus.progress}%</span>
                   </div>
-                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-raised">
-                    <div
-                      className="h-full rounded-full bg-primary"
-                      style={{ width: `${featuredFocus.progress}%` }}
-                    />
-                  </div>
+                  <ProgressBar
+                    aria-label={t("home.sections.progress")}
+                    className="mt-2 h-2 w-full"
+                    label={false}
+                    progress={featuredFocus.progress}
+                    theme="Accent"
+                  />
                 </div>
               </div>
             </div>

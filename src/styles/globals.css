@@ -224,6 +224,8 @@
   --color-surface-raised: var(--surface-raised);
   --color-surface-overlay: var(--surface-overlay);
   --color-surface-float: var(--surface-float);
+  --color-home-xp-panel-surface: var(--home-xp-panel-surface);
+  --color-home-xp-progress-track: var(--home-xp-progress-track);
   /* Issue #391 — Figma Input Field semantic color aliases. */
   --color-input-field-border: var(--input-field-border);
   --color-input-field-focus-ring: var(--input-field-focus-ring);
@@ -677,6 +679,33 @@
   --radius: 0.65rem;
   --content-px: clamp(1rem, 3vw, 2rem);
   --app-max-width: 80rem;
+  /* Light mode: use shared palette shades with stronger contrast on the light surface. */
+  --progress-track: var(--neutral-400);
+  --progress-neutral: var(--neutral-700);
+  --progress-neutral-fill: var(--neutral-600);
+  --progress-accent-fill: var(--blue-600);
+  --progress-status-low: var(--error-400);
+  --progress-status-medium: var(--accent-yellow-400);
+  --progress-status-good: var(--accent-teal-500);
+  --progress-status-done: var(--success-400);
+  --progress-circle-success: var(--success-500);
+  --progress-circle-error: var(--error-500);
+  --progress-circle-blue: var(--blue-600);
+  --progress-circle-purple: var(--accent-purple-400);
+  --progress-circle-sky: var(--accent-sky-400);
+  --progress-circle-yellow: var(--accent-yellow-500);
+  --progress-circle-neutral: var(--neutral-500);
+  --progress-circle-done-neutral: var(--neutral-500);
+  --progress-circle-icon: var(--neutral-50);
+  --progress-circle-icon-on-bright: var(--neutral-50);
+  --progress-circle-ring-default: color-mix(in srgb, var(--progress-neutral) 40%, var(--background));
+  --progress-circle-ring-success: color-mix(in srgb, var(--progress-circle-success) 40%, var(--background));
+  --progress-circle-ring-blue: color-mix(in srgb, var(--progress-circle-blue) 40%, var(--background));
+  --progress-circle-ring-purple: color-mix(in srgb, var(--progress-circle-purple) 40%, var(--background));
+  --progress-circle-ring-sky: color-mix(in srgb, var(--progress-circle-sky) 40%, var(--background));
+  --progress-circle-ring-yellow: color-mix(in srgb, var(--progress-circle-yellow) 40%, var(--background));
+  --progress-circle-ring-neutral: color-mix(in srgb, var(--progress-circle-neutral) 40%, var(--background));
+
 
   /*
      Issue #380 — Figma Color 🟢 (node 12:3) → CSS token mapping.
@@ -917,6 +946,9 @@
   /* ── Corelia DS v2 surfaces ── */
   --surface-base: var(--card);
   --surface-raised: var(--neutral-50);
+  --home-xp-panel-surface: var(--neutral-50);
+  --home-xp-panel-art-opacity: 1;
+  --home-xp-progress-track: var(--neutral-200);
   /* Light hover uses a visible neutral layer instead of the page background. */
   --action-hover: var(--neutral-200);
   --action-text: var(--foreground);
@@ -1042,6 +1074,34 @@
      ========================================== */
   --content-px: clamp(1rem, 3vw, 2rem);
   --app-max-width: 80rem;
+  /* Dark mode: preserve the exact Figma palette mappings. */
+  --progress-track: var(--neutral-700);
+  --progress-neutral: var(--neutral-50);
+  --progress-neutral-fill: var(--neutral-200);
+  --progress-accent-fill: var(--blue-600);
+  --progress-status-low: var(--error-400);
+  --progress-status-medium: var(--accent-yellow-400);
+  --progress-status-good: var(--accent-teal-500);
+  --progress-status-done: var(--success-400);
+  --progress-circle-success: var(--success-400);
+  --progress-circle-error: var(--error-400);
+  --progress-circle-blue: var(--blue-600);
+  --progress-circle-purple: var(--accent-purple-400);
+  --progress-circle-sky: var(--accent-sky-400);
+  --progress-circle-yellow: var(--accent-yellow-500);
+  --progress-circle-neutral: var(--neutral-300);
+  --progress-circle-done-neutral: var(--neutral-500);
+  --progress-circle-icon: var(--neutral-50);
+  --progress-circle-icon-on-bright: var(--neutral-50);
+  --progress-circle-ring-default: color-mix(in srgb, var(--progress-neutral) 40%, var(--background));
+  --progress-circle-ring-success: color-mix(in srgb, var(--progress-circle-success) 40%, var(--background));
+  --progress-circle-ring-blue: color-mix(in srgb, var(--progress-circle-blue) 40%, var(--background));
+  --progress-circle-ring-purple: color-mix(in srgb, var(--progress-circle-purple) 40%, var(--background));
+  --progress-circle-ring-sky: color-mix(in srgb, var(--progress-circle-sky) 40%, var(--background));
+  --progress-circle-ring-yellow: color-mix(in srgb, var(--progress-circle-yellow) 40%, var(--background));
+  --progress-circle-ring-neutral: color-mix(in srgb, var(--progress-circle-neutral) 40%, var(--background));
+
+
 
   /* ── Background & Surfaces ── */
   --background: var(--neutral-900);
@@ -1191,6 +1251,9 @@
   /* ── Corelia DS v2 surfaces ── */
   --surface-base: var(--background);
   --surface-raised: var(--card);
+  --home-xp-panel-surface: var(--surface-base);
+  --home-xp-panel-art-opacity: 1;
+  --home-xp-progress-track: var(--surface-raised);
   /* Dark hover maps to the Figma neutral raised surface. */
   --action-hover: var(--neutral-700);
   --action-text: var(--neutral-200);
@@ -1420,29 +1483,38 @@
 /* Shared native scrollbar styles */
 .scrollbar-design {
   scrollbar-width: thin;
-  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-color: var(--neutral-400) transparent;
 }
 
-.scrollbar-design::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+@supports selector(::-webkit-scrollbar) {
+  .scrollbar-design {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
 
-.scrollbar-design::-webkit-scrollbar-track {
-  background: transparent;
-}
+  .scrollbar-design::-webkit-scrollbar {
+    width: 16px;
+    height: 16px;
+  }
 
-.scrollbar-design::-webkit-scrollbar-thumb {
-  background-color: var(--border-strong);
-  border-radius: 8px;
-}
+  .scrollbar-design::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
-.scrollbar-design::-webkit-scrollbar-thumb:hover {
-  background-color: var(--foreground-muted);
-}
+  .scrollbar-design::-webkit-scrollbar-thumb {
+    background-color: var(--neutral-400);
+    border: 6px solid transparent;
+    background-clip: content-box;
+    border-radius: 8px;
+  }
 
-.scrollbar-design::-webkit-scrollbar-corner {
-  background: transparent;
+  .scrollbar-design::-webkit-scrollbar-thumb:hover {
+    background-color: var(--foreground-muted);
+  }
+
+  .scrollbar-design::-webkit-scrollbar-corner {
+    background: transparent;
+  }
 }
 
 @layer components {

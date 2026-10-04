@@ -67,6 +67,20 @@ export async function hasMyXpAward(sourceKey: string): Promise<boolean> {
   return Boolean(data);
 }
 
+export async function hasAnyMyXpAward(
+  userId: string,
+  source: "lesson_completed" | "quiz_passed" | "course_completed",
+): Promise<boolean> {
+  const { data, error } = await supabase.from("user_point_ledger")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("source", source)
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return Boolean(data);
+}
+
 export async function withFirstHackathonXp<T>(action: () => Promise<T>): Promise<{ value: T; awarded: boolean }> {
   const before = hasMyXpAward("first_hackathon_submission").catch(() => null);
   const value = await action();

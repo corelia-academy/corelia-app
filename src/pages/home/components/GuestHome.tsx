@@ -1,8 +1,10 @@
+import { useMemo } from "react";
 import { ArrowRight, BookOpen, Trophy } from "lucide-react";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
 import { Button } from "@/components/ui/button";
 import { PublicCourseCard } from "@/components/courses/PublicCourseCard";
+import { createMockParticipantPreview } from "@/components/participants/participantPreview";
 import type { Course } from "@/types/courses";
 
 export function GuestHome({
@@ -12,7 +14,14 @@ export function GuestHome({
   t: TFunction<"common">;
   courseCatalog: Course[];
 }) {
-  const featuredCourses = (courseCatalog ?? []).slice(0, 6);
+  const featuredCourses = useMemo(() => (courseCatalog ?? []).slice(0, 6), [courseCatalog]);
+  const participantPreviewByCourse = useMemo(
+    () => new Map(featuredCourses.map((course) => [
+      course.id,
+      createMockParticipantPreview(course.id),
+    ])),
+    [featuredCourses],
+  );
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-7xl px-4 pb-6 pt-0 sm:px-6 sm:py-8 lg:px-8">
@@ -121,7 +130,11 @@ export function GuestHome({
                 </div>
               ) : (
                 featuredCourses.map((course) => (
-                  <PublicCourseCard key={course.id} course={course} />
+                  <PublicCourseCard
+                    key={course.id}
+                    course={course}
+                    participantPreview={participantPreviewByCourse.get(course.id)!}
+                  />
                 ))
               )}
             </div>

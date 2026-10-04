@@ -1,61 +1,97 @@
-import { ArrowRight } from "lucide-react";
+import { Clock, FileText } from "lucide-react";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
+import { ProgressBar } from "@/components/ui/progress";
 import type { FocusCard } from "../utils/homeTypes";
 
 export function ContinueLearningSection({
   t,
   focusCards,
+  enrolledCourseCount,
 }: {
   t: TFunction<"common">;
   focusCards: FocusCard[];
+  enrolledCourseCount: number;
 }) {
+  const formatRemainingDuration = (seconds: number) => {
+    const totalMinutes = Math.ceil(seconds / 60);
+
+    return t("home.meta.remainingDuration", {
+      hours: Math.floor(totalMinutes / 60),
+      minutes: totalMinutes % 60,
+    });
+  };
+
   return (
-    <section className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-heading-medium font-display text-foreground">{t("home.continueLearning")}</h2>
-        <Button
-          render={<NavLink to="/courses" />}
-          nativeButton={false}
-          variant="cta" hierarchy="tertiary"
-          size="small"
-          className="-mr-2"
-        >
-          {t("home.sections.seeAll")}
-          <ArrowRight className="size-4" />
-        </Button>
+    <section className="mobile-bleed-surface px-5 sm:px-0">
+      <div className="flex items-center gap-2 border-b border-border pb-3">
+        <h2 className="text-body-medium font-body font-medium text-foreground">
+          {t("home.sections.enrolledCourses")}
+        </h2>
+        {enrolledCourseCount > 0 ? (
+          <Badge color="gray" variant="filled" size="xsmall">
+            {enrolledCourseCount}
+          </Badge>
+        ) : null}
       </div>
 
       {focusCards.length > 0 ? (
-        <div className="scrollbar-design mt-3 flex gap-3 overflow-x-auto pb-1">
+        <div className="mt-4 flex flex-wrap items-start gap-6">
           {focusCards.map((item) => (
             <NavLink
               key={item.id}
               to={item.action}
-              className="min-w-[240px] max-w-[240px] cursor-pointer rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:bg-surface-raised hover:-translate-y-0.5"
+              className="group min-w-[240px] max-w-none sm:max-w-[335px] flex-[1_1_100%] sm:flex-[1_1_240px] overflow-hidden rounded-xl transition-transform duration-200 ease-out hover:-translate-y-0.5"
             >
-              <div className="line-clamp-2 text-sm font-medium text-foreground">
-                {item.title}
-              </div>
-              <div className="mt-1 line-clamp-1 text-xs text-foreground-muted">
-                {item.meta}
-              </div>
-              <div className="mt-2">
-                <div className="flex items-center justify-between text-xs text-foreground-muted">
-                  <span>{t("home.sections.progress")}</span>
-                  <span>{item.progress}%</span>
-                </div>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-raised">
-                  <div
-                    className="h-full rounded-full bg-primary"
-                    style={{ width: `${item.progress}%` }}
+              <div className="aspect-video overflow-hidden rounded-lg border border-border bg-surface-raised">
+                {item.thumbnailUrl ? (
+                  <img
+                    src={item.thumbnailUrl}
+                    alt=""
+                    loading="lazy"
+                    className="size-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
                   />
-                </div>
+                ) : null}
               </div>
-              <div className="mt-2 line-clamp-2 text-xs leading-relaxed text-foreground-muted">
-                {item.nextStep}
+              <div className="flex flex-col gap-4 p-4">
+                <div className="flex h-[50px] flex-col gap-2 overflow-hidden">
+                  <h3 className="line-clamp-1 text-lg font-display font-medium leading-tight text-foreground">
+                    {item.title}
+                  </h3>
+                  <div className="flex min-w-0 items-center gap-3 text-xs text-foreground-muted">
+                    {typeof item.lessonCount === "number" ? (
+                      <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
+                        <FileText className="size-4" aria-hidden />
+                        {t("home.meta.lessonCount", { count: item.lessonCount })}
+                      </span>
+                    ) : null}
+                    {typeof item.remainingDurationSeconds === "number" ? (
+                      <>
+                        {typeof item.lessonCount === "number" ? (
+                          <span className="h-4 w-px shrink-0 bg-border" aria-hidden />
+                        ) : null}
+                        <span className="inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap">
+                          <Clock className="size-4 shrink-0" aria-hidden />
+                          {formatRemainingDuration(item.remainingDurationSeconds)}
+                        </span>
+                      </>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <div className="min-w-0 flex-1">
+                    <ProgressBar
+                      aria-label={t("home.sections.progress")}
+                      className="h-2 w-full"
+                      label={false}
+                      progress={item.progress}
+                      theme="Neutral"
+                    />
+                  </div>
+                  <span className="shrink-0">{item.progress}%</span>
+                </div>
               </div>
             </NavLink>
           ))}

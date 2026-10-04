@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, NavLink, useLocation } from "react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
+import { BackspaceIcon } from "@phosphor-icons/react";
 import {
   Award,
   GraduationCap,
@@ -82,7 +83,6 @@ function addRecentSearch(query: string) {
 export default function Header({ publicUI = false }: { publicUI?: boolean }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const hideLogo = location.pathname === "/search" || location.pathname === "/search/";
   const {
     isAuthenticated,
     profile,
@@ -256,6 +256,15 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
     return () => window.clearTimeout(handle);
   }, [searchText]);
 
+  useEffect(() => {
+    if (location.pathname !== "/search" && location.pathname !== "/search/") {
+      return;
+    }
+
+    setSearchText(new URLSearchParams(location.search).get("q") ?? "");
+    setSearchOpen(false);
+  }, [location.pathname, location.search]);
+
   async function handleSearchSubmit(query: string) {
     const q = query.trim();
     if (!q) return;
@@ -275,24 +284,22 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
           <SidebarTrigger className="size-7 shrink-0 lg:hidden">
             <MenuIcon className="size-5" aria-hidden />
           </SidebarTrigger>
-          {!hideLogo ? (
-            <NavLink
-              to="/"
-              className="flex h-10 items-center gap-2 text-sm font-medium"
-              onPointerEnter={() => prefetchRouteChunk("/")}
-              onFocus={() => prefetchRouteChunk("/")}
-            >
-              <img
-                src={
-                  isDarkMode
-                    ? "/logo/Corelia_Logo_White.svg"
-                    : "/logo/corelia-full-logo-black.png"
-                }
-                alt="Corelia"
-                className="h-9"
-              />
-            </NavLink>
-          ) : null}
+          <NavLink
+            to="/"
+            className="flex h-10 items-center gap-2 text-sm font-medium"
+            onPointerEnter={() => prefetchRouteChunk("/")}
+            onFocus={() => prefetchRouteChunk("/")}
+          >
+            <img
+              src={
+                isDarkMode
+                  ? "/logo/Corelia_Logo_White.svg"
+                  : "/logo/corelia-full-logo-black.png"
+              }
+              alt="Corelia"
+              className="h-9"
+            />
+          </NavLink>
         </div>
 
         {/* <form
@@ -481,7 +488,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
         </form> */}
 
         <form
-          className="hidden min-w-0 flex-1 items-center justify-center md:flex xl:absolute xl:left-1/2 xl:w-[500px] xl:-translate-x-1/2 xl:flex-none"
+          className="hidden min-w-0 flex-1 items-center justify-center md:flex xl:absolute xl:left-1/2 xl:w-[400px] xl:-translate-x-1/2 xl:flex-none"
           onSubmit={(e) => {
             e.preventDefault();
             void handleSearchSubmit(searchText);
@@ -489,7 +496,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
         >
           <div
             ref={searchWrapRef}
-            className="relative min-w-0 w-full max-w-[500px]"
+            className="relative min-w-0 w-full max-w-[400px]"
           >
             <Input
               variant="icon-leading"
@@ -508,6 +515,20 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                   setSearchOpen(false);
                 }
               }}
+              renderTrailingContent={({ disabled }) =>
+                searchText.length > 0 ? (
+                  <button
+                    type="button"
+                    aria-label={t("search.clear")}
+                    disabled={disabled}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => setSearchText("")}
+                    className="inline-flex size-6 shrink-0 items-center justify-center rounded text-foreground-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  >
+                    <BackspaceIcon size={20} weight="duotone" aria-hidden />
+                  </button>
+                ) : null
+              }
               placeholder={t("search.placeholder")}
               aria-label={t("search.placeholder")}
             />
