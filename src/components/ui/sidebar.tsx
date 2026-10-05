@@ -156,6 +156,7 @@ function Sidebar({
   side = "left",
   variant = "sidebar",
   collapsible = "offcanvas",
+  stickyContext = "app-shell",
   className,
   children,
   dir,
@@ -164,8 +165,13 @@ function Sidebar({
   side?: "left" | "right"
   variant?: "sidebar" | "floating" | "inset"
   collapsible?: "offcanvas" | "icon" | "none"
+  stickyContext?: "app-shell" | "main-content"
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+  const stickyContextClasses =
+    stickyContext === "main-content"
+      ? "top-0 h-[calc(100svh-var(--main-shell-header-height))]"
+      : "top-(--app-header-height) h-[calc(100svh-var(--app-header-height))]"
 
   if (collapsible === "none") {
     return (
@@ -234,7 +240,8 @@ function Sidebar({
         data-slot="sidebar-container"
         data-side={side}
         className={cn(
-          "sticky top-(--app-header-height) z-10 hidden h-[calc(100svh-var(--app-header-height))] self-start w-(--sidebar-width) transition-[width] duration-200 ease-linear md:flex",
+          "sticky z-10 hidden self-start w-(--sidebar-width) transition-[width] duration-200 ease-linear md:flex",
+          stickyContextClasses,
           // Adjust the padding for floating and inset variants.
           variant === "floating" || variant === "inset"
             ? "p-md group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+var(--corelia-spacing-xl)+2px)]"

@@ -23,6 +23,7 @@ describe("EmptyStateIllustration", () => {
     ["tiny", "size-[120px]"],
     ["medium", "size-[200px]"],
     ["large", "size-[280px]"],
+    ["fullPage", "size-[240px]"],
   ] as const)("uses the Figma frame size for %s", (size, sizeClass) => {
     const markup = renderToStaticMarkup(
       <EmptyStateIllustration type="search" size={size} />,
@@ -47,7 +48,7 @@ describe("EmptyStateIllustration", () => {
     expect(markup).toContain("Visible description");
   });
 
-  it.each(["medium", "large"] as const)(
+  it.each(["medium", "large", "fullPage"] as const)(
     "shows title and description for %s size",
     (size) => {
       const markup = renderToStaticMarkup(
