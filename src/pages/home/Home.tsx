@@ -43,7 +43,7 @@ export default function Home() {
         </div>
 
         <aside
-          className="min-w-0 space-y-4 md:col-start-2 md:row-start-1 md:row-span-2 md:self-start @max-[807px]:col-auto! @max-[807px]:row-start-auto! @max-[807px]:row-span-1! @min-[504px]:@max-[807px]:grid @min-[504px]:@max-[807px]:grid-cols-2! @min-[504px]:@max-[807px]:items-start! @min-[504px]:@max-[807px]:gap-4! @min-[504px]:@max-[807px]:space-y-0!"
+          className="min-w-0 space-y-4 md:col-start-2 md:row-start-1 md:row-span-2 md:self-start @max-[807px]:col-auto! @max-[807px]:row-start-auto! @max-[807px]:row-span-1! @min-[504px]:@max-[807px]:grid @min-[504px]:@max-[807px]:grid-cols-2! @min-[504px]:@max-[807px]:items-start! @min-[504px]:@max-[807px]:gap-4! @min-[504px]:@max-[807px]:space-y-0! @min-[808px]:sticky @min-[808px]:top-[calc(var(--app-header-height)_+_1rem)] lg:@min-[808px]:top-4!"
           aria-label={t("home.xpMissions.sidebarLabel")}
         >
           <HomeXpPanel userId={user?.id} />
