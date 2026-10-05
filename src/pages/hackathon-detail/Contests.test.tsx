@@ -27,15 +27,13 @@ vi.mock("@/features/hackathons/hackathonQueries", () => ({
   }),
   publicHackathonApplicantPreviewsQueryOptions: (ids: string[]) => ({
     queryKey: ["hackathons", "applicant-test", ...ids],
-    queryFn: async () => ({
-      unihackfest: [{
+    queryFn: async () => Object.fromEntries(ids.map((id) => [id, [{
         user_id: "applicant-1",
         username: "applicant",
         full_name: "Applicant One",
         avatar_seed: null,
         avatar_config: null,
-      }],
-    }),
+      }]])),
     enabled: ids.length > 0,
   }),
 }));
@@ -121,11 +119,12 @@ describe("Hackathon catalog card", () => {
   });
 
   it("omits the banner frame when a hackathon has no image", async () => {
-    state.items = [{ id: "no-banner", slug: "no-banner", title: "No Banner", status: "published" } as Contest];
+    state.items = [{ id: "no-banner", slug: "no-banner", title: "No Banner", status: "published", participants_count: 1 } as Contest];
     const view = await renderPage();
 
     expect(container.textContent).toContain("No Banner");
-    expect(container.querySelector("article img")).toBeNull();
+    expect(container.querySelector("[data-slot='avatar']")).not.toBeNull();
+    expect(container.querySelector("article > div > img")).toBeNull();
     expect(Array.from(container.querySelectorAll("article div")).some((element) => element.className.includes("aspect-[21/9]"))).toBe(false);
 
     await view.cleanup();

@@ -58,7 +58,7 @@ describe("AppSidebar navigation", () => {
     expect(activeCourseLink?.getAttribute("aria-current")).toBe("page");
     expect(activeCourseLink?.className).toContain("hover:bg-action-hover");
     expect(container.querySelector('a[href="https://corelia.academy/blog/"]')).not.toBeNull();
-    expect(container.querySelector('a[href="https://corelia.academy/roadmap/"]')).not.toBeNull();
+    expect(container.querySelector('a[href="https://github.com/corelia-academy/corelia-app/releases"]')).not.toBeNull();
     expect(container.querySelector('a[href="https://corelia.academy/contact/"]')).not.toBeNull();
     expect(
       activeCourseLink?.querySelector('svg path[opacity="0.2"]'),
