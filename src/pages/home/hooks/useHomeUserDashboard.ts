@@ -9,6 +9,7 @@ export function useHomeUserDashboard(user: User | null, t: TFunction<"common">) 
   return {
     loading: user != null && query.isPending,
     focusCards: query.data?.focusCards ?? [],
+    enrolledCourseCount: query.data?.enrolledCourseCount ?? 0,
     issuedCertificates: query.data?.issuedCertificates ?? 0,
     error: query.error,
   };

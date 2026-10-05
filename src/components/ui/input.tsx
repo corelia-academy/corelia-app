@@ -1,8 +1,6 @@
 import * as React from "react"
 
-import { Info } from "@phosphor-icons/react/dist/csr/Info"
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass"
-import { Warning } from "@phosphor-icons/react/dist/csr/Warning"
 import {
   FIELD_CONTROL_MARKER,
   FieldContextConsumer,
@@ -468,26 +466,7 @@ function InputImplementationContent({
       : isInvalid
         ? "text-input-field-error"
         : "text-foreground-subtle"
-    const resolvedStatusIcon =
-      statusIcon === undefined ? (
-        isInvalid ? (
-          <Warning
-            aria-hidden="true"
-            className={statusIconClass}
-            size={20}
-            weight="duotone"
-          />
-        ) : (
-          <Info
-            aria-hidden="true"
-            className={statusIconClass}
-            size={20}
-            weight="duotone"
-          />
-        )
-      ) : (
-        statusIcon
-      )
+    const resolvedStatusIcon = statusIcon
 
     const tagTrigger = (
       <span

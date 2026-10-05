@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell } from "lucide-react";
+import { Bell } from "@phosphor-icons/react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -185,10 +185,10 @@ export function NotificationBell() {
         render={
           <button
             type="button"
-            className="relative inline-flex size-10 items-center justify-center rounded-full border border-border bg-surface-base text-foreground transition-colors duration-150 hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+            className="relative inline-flex size-10 items-center justify-center rounded-full bg-surface-base text-foreground transition-colors duration-150 hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
             aria-label={t("header.notificationsAria")}
           >
-            <Bell className="size-5" aria-hidden />
+            <Bell className="size-5" weight="duotone" aria-hidden />
             {unreadCount > 0 ? (
               <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
                 {unreadCount > 9 ? "9+" : unreadCount}

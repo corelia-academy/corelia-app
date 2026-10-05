@@ -30,6 +30,7 @@ describe("semantic theme color tokens", () => {
     const lightMode = readCssRule(":root")
     const darkMode = readCssRule(".dark")
     const roles = [
+      ["border", "var(--neutral-200)", "var(--neutral-600)"],
       ["loading-bar-end", "var(--blue-800)", "var(--blue-800)"],
       ["hackathon-unpublish-surface", "var(--blue-700)", "var(--blue-700)"],
       ["hackathon-unpublish-hover-surface", "var(--blue-800)", "var(--blue-800)"],
@@ -55,6 +56,7 @@ describe("semantic theme color tokens", () => {
   it("exposes the utility tokens through Tailwind aliases", () => {
     const theme = readCssRule("@theme inline")
     const utilityRoles = [
+      "border",
       "loading-bar-end",
       "hackathon-unpublish-surface",
       "hackathon-unpublish-hover-surface",

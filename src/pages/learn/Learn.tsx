@@ -291,7 +291,15 @@ function LearnWorkspace() {
         setCertificateAutoIssuing(false);
         setIsIssuanceFlowActive(false);
       }
-      if (completionConfirmed) await invalidateLearningProgress(queryClient, profile.id, courseId);
+      if (completionConfirmed) {
+        await Promise.all([
+          invalidateLearningProgress(queryClient, profile.id, courseId),
+          queryClient.invalidateQueries({
+            queryKey: ["xp", "total", profile.id],
+            refetchType: "all",
+          }),
+        ]);
+      }
     }
   }, [
     queryClient,

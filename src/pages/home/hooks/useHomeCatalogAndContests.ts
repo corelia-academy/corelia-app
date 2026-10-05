@@ -8,6 +8,7 @@ export function useHomeCatalogAndContests() {
   const query = useQuery(homeCatalogQueryOptions(user, i18n.language));
   return {
     courseCatalog: query.data?.courseCatalog ?? [],
+    courseLessonCounts: query.data?.courseLessonCounts ?? {},
     contests: query.data?.contests ?? [],
     loading: query.isPending,
     error: query.error,

@@ -104,10 +104,18 @@
     "backHome": "Về trang chủ"
   },
   "nav": {
+    "groups": {
+      "learning": "Học tập",
+      "building": "Xây dựng",
+      "career": "Sự nghiệp"
+    },
+    "changelog": "Nhật ký cập nhật",
+    "productRoadmap": "Lộ trình sản phẩm",
+    "feedback": "Đóng góp ý kiến",
     "someone": "Một người dùng",
     "home": "Trang chủ",
     "courses": "Khóa học",
-    "feed": "Feed",
+    "feed": "Bảng tin",
     "contests": "Hackathon",
     "projects": "Dự án",
     "jobs": "Việc làm",
@@ -616,6 +624,8 @@
     "title": "Tìm kiếm",
     "queryLine": "Kết quả cho “{{query}}”",
     "enterQueryHint": "Nhập từ khóa vào ô bên dưới để tìm nội dung công khai.",
+    "categories": "Loại kết quả tìm kiếm",
+    "clear": "Xóa nội dung tìm kiếm",
     "suggest": {
       "recent": "Tìm kiếm gần đây",
       "trending": "Xu hướng",
@@ -625,13 +635,18 @@
       "viewAllResults": "Xem tất cả kết quả",
       "noQuickResults": "Chưa có kết quả nhanh."
     },
+    "emptyTitle": "Không tìm thấy kết quả",
     "empty": "Không tìm thấy kết quả phù hợp.",
+    "filteredEmptyTitle": "Không có kết quả trong nhóm này",
+    "filteredEmpty": "Hãy chọn nhóm khác hoặc thử từ khóa khác.",
     "errors": {
       "loadFailed": "Không tải được kết quả tìm kiếm"
     },
     "group": {
+      "all": "Tất cả",
       "project": "Dự án",
       "contest": "Hackathon",
+      "hackathon": "Hackathon",
       "course": "Khoá học",
       "profile": "Hồ sơ"
     }
@@ -662,8 +677,71 @@
     "exploreCourses": "Khám phá khoá học",
     "allCourses": "Tất cả khoá học",
     "studentFallback": "Học viên",
+    "xp": {
+      "title": "XP hiện tại",
+      "unranked": "Chưa xếp hạng",
+      "noData": "Chưa có dữ liệu XP",
+      "loading": "Đang tải XP...",
+      "loadingDescription": "Đang lấy dữ liệu điểm của bạn.",
+      "joinRank": "Thu thập {{xp}} XP để gia nhập hạng {{rank}}",
+      "nextRank": "Thu thập {{xp}} XP để nâng hạng {{rank}}",
+      "highest": "Bạn đã đạt cấp cao nhất",
+      "loadFailed": "Không thể tải thông tin XP."
+    },
+    "xpMissions": {
+      "title": "Nhiệm vụ XP",
+      "sidebarLabel": "XP và nhiệm vụ",
+      "loading": "Đang kiểm tra...",
+      "statusUnavailable": "Chưa kiểm tra được",
+      "statusChecking": "Đang kiểm tra",
+      "statusComplete": "Đã hoàn thành",
+      "statusNotComplete": "Chưa hoàn thành",
+      "repeatable": "Có thể làm lại",
+      "dailyProgress": "{{count}}/5 hôm nay",
+      "tasks": {
+        "lesson": {
+          "title": "Hoàn thành bài học",
+          "detail": "+10 XP/bài hợp lệ · 1 lần"
+        },
+        "quiz": {
+          "title": "Vượt qua quiz",
+          "detail": "Đạt ≥80%: +20 XP và +10 XP bài học"
+        },
+        "course": {
+          "title": "Hoàn thành khóa",
+          "detail": "+100 XP/khóa đủ điều kiện · 1 lần"
+        },
+        "projectLike": {
+          "title": "Thích dự án",
+          "detail": "+2 XP/dự án · tối đa 5 dự án/ngày"
+        },
+        "firstHackathonSubmission": {
+          "title": "Nộp dự án Hackathon",
+          "detail": "+100 XP lần đầu đủ điều kiện"
+        },
+        "ocidConnected": {
+          "title": "Liên kết OCID",
+          "detail": "+50 XP một lần"
+        },
+        "githubConnected": {
+          "title": "Liên kết GitHub",
+          "detail": "+50 XP một lần"
+        },
+        "ethereumWallet": {
+          "title": "Kết nối ví Ethereum",
+          "detail": "+30 XP một lần mỗi mạng"
+        },
+        "solanaWallet": {
+          "title": "Kết nối ví Solana",
+          "detail": "+30 XP một lần mỗi mạng"
+        }
+      }
+    },
     "meta": {
       "hours": "{{count}} giờ",
+      "lessonCount": "{{count}} bài",
+      "learners": "{{displayCount}} người đang học",
+      "remainingDuration": "Còn {{hours}} giờ {{minutes}} phút",
       "selfPaced": "tự học",
       "offlinePrefix": "lớp trực tiếp"
     },
@@ -723,9 +801,11 @@
       "featuredOffline": "Lớp đang theo",
       "progress": "Tiến độ",
       "seeAll": "Xem tất cả",
+      "enrolledCourses": "Khóa đang học",
       "exploreTitle": "Khám phá",
+      "recommendedTitle": "Đề xuất cho bạn",
       "goToLibrary": "Tới thư viện",
-      "startFromCatalogTitle": "Bắt đầu từ thư viện khoá học",
+      "startFromCatalogTitle": "Bạn chưa tham gia khoá học nào.",
       "startFromCatalogSubtitle": "Chọn một khoá học nền tảng để tạo nhịp học tập.",
       "enrollHint": "Khi bạn ghi danh hoặc mua khoá học đầu tiên, khu vực này sẽ hiện tiến độ và lối vào nhanh.",
       "profileSetupHintPrefix": "Hãy cập nhật họ tên và số điện thoại để Corelia, giảng viên hoặc"
@@ -1078,6 +1158,65 @@
     "title": "Bạn vừa nhận thành công các chứng nhận!",
     "body": "Các chứng nhận đã được cấp cho email của bạn giờ đã lưu vào tài khoản Corelia.",
     "cta": "Xem chứng nhận của tôi"
+  },
+  "componentShowcase": {
+    "xpRank": {
+      "title": "Huy hiệu bậc XP",
+      "criterion": "Đủ sáu bậc hạng ở cỡ 80, 160 và 200 px; bậc chưa có ảnh dùng huy hiệu dấu hỏi.",
+      "description": "Đối chiếu huy hiệu theo từng bậc và kích thước.",
+      "combinationsTitle": "Tất cả bậc hạng và kích thước",
+      "tableLabel": "Huy hiệu XP theo bậc hạng và kích thước",
+      "rank": "Bậc hạng",
+      "sizes": {
+        "small": "Nhỏ · 80 px",
+        "medium": "Vừa · 160 px",
+        "large": "Lớn · 200 px"
+      }
+    },
+    "progress": {
+      "title": "Tiến độ",
+      "criterion": "Kích thước, mức tiến độ và mô hình màu theo Figma cho thanh và vòng tròn.",
+      "description": "Đối chiếu kích thước, trạng thái và màu của các thanh và vòng tròn với Figma.",
+      "standardTitle": "Thanh tiến độ tiêu chuẩn",
+      "standardCriterion": "Thành phần 376 × 20 px, phần thanh 328 × 8 px.",
+      "liveTitle": "Mô phỏng thao tác tiến độ thực tế",
+      "liveCriterion": "Dùng nút −/+ hoặc nhập tỷ lệ. Vòng tròn chỉ hoàn tất ở đúng 100%; trên 100% sẽ chuyển sang thất bại.",
+      "liveRangeLabel": "Điều chỉnh tỷ lệ tiến độ",
+      "liveDecrease": "Giảm tiến độ 1%",
+      "liveIncrease": "Tăng tiến độ 1%",
+      "liveInputLabel": "Phần trăm tiến độ",
+      "liveOverrunHint": "Thanh vẫn đầy ở mức trên 100%; vòng tròn hiện dấu X.",
+      "liveValue": "{{percentage}}%",
+      "liveBarSample": "{{theme}} · {{percentage}}%",
+      "compactTitle": "Tiến độ bài học dạng gọn",
+      "compactCriterion": "Thành phần 252 × 15 px, phần thanh 210 × 4 px.",
+      "circleTitle": "Vòng tròn tiến độ",
+      "circleCriterion": "Kích thước 24 × 24 px; mỗi tỷ lệ dùng biến thể màu tương ứng trong Figma.",
+      "label": "Nhãn",
+      "noFill": "Không tô màu",
+      "barSample": "{{theme}} · {{level}} · {{percentage}}% · {{color}}",
+      "circleSample": "{{state}} · {{percentage}}%{{colorText}}",
+      "defaultValue": "Mặc định",
+      "theme": {
+        "neutral": "Trung tính",
+        "accent": "Nhấn",
+        "status": "Trạng thái"
+      },
+      "level": {
+        "none": "Chưa bắt đầu",
+        "low": "Thấp",
+        "medium": "Trung bình",
+        "good": "Tốt",
+        "done": "Hoàn tất"
+      },
+      "circleState": {
+        "notStarted": "Chưa bắt đầu",
+        "failed": "Thất bại",
+        "neutralProgress": "Đang tiến hành · trung tính",
+        "coloredProgress": "Đang tiến hành · có màu",
+        "done": "Hoàn tất"
+      }
+    }
   },
   "maintenance": {
     "title": "Đang bảo trì hệ thống",

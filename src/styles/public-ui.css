@@ -18,7 +18,7 @@
 .public-ui .public-content :is(button, select, input:not([type=checkbox]):not([type=radio])) { min-height: 44px; }
 .public-ui [data-sidebar=menu-button] { min-height: 44px; }
 .public-ui [data-sidebar=menu-button][data-active=true] { box-shadow: none; }
-.public-ui :is(a, button, input, select, summary):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.public-ui :is(a, button, input:not([data-slot="input"]), select, summary):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .public-ui .public-content [role=tablist] { max-width: 100%; overflow-x: auto; }
 .public-ui .public-content :is(input, select) { min-width: 0; }
 @media (min-width: 640px) {
@@ -63,4 +63,4 @@
 .public-ui .public-content article[role=link] a[class*="size-8"] { min-width: 44px; min-height: 44px; }
 .public-ui .public-content article[role=link] h2 { font-size: 18px; }
 /* Secondary public labels remain readable in both themes. */
-.public-ui, .public-status { --foreground-subtle: var(--foreground-muted); }
+/* .public-ui, .public-status { --foreground-subtle: var(--foreground-muted); } */

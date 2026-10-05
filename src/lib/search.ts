@@ -1,7 +1,12 @@
-import { getBatchCourseLocaleContent } from "@/lib/courses";
+import {
+  getBatchCourseLocaleContent,
+  getCoursesByIds,
+  getLessonCountsByCourseIds,
+} from "@/lib/courses";
 import { getBatchHackathonLocaleContent } from "@/lib/hackathons";
 import { normalizeContentLocale } from "@/lib/entityLocales";
 import { supabase } from "@/lib/supabase";
+import type { Course } from "@/types/courses";
 
 export type SearchEntityType = "project" | "hackathon" | "course" | "profile";
 
@@ -12,6 +17,8 @@ export interface SearchResultRow {
   subtitle: string | null;
   href: string;
   rank: number;
+  course?: Pick<Course, "thumbnail_url" | "level" | "total_duration_seconds">;
+  lessonCount?: number;
 }
 
 export interface TrendingSearchRow {
@@ -27,17 +34,44 @@ export async function searchPublic(query: string, limit: number, offset = 0, loc
   });
   if (error) throw new Error(error.message);
   const rows = (data ?? []) as SearchResultRow[];
-  if (!locale) return rows;
-  const language = normalizeContentLocale(locale);
-  const ids = (type: SearchEntityType) => rows.filter(row => row.entity_type === type).map(row => row.entity_id);
-  const [courses, hackathons] = await Promise.all([
-    getBatchCourseLocaleContent(ids("course"), language),
-    getBatchHackathonLocaleContent(ids("hackathon"), language),
+  const courseIds = rows
+    .filter((row) => row.entity_type === "course")
+    .map((row) => row.entity_id);
+  const language = locale ? normalizeContentLocale(locale) : null;
+  const localizationPromise = language
+    ? Promise.all([
+        getBatchCourseLocaleContent(courseIds, language),
+        getBatchHackathonLocaleContent(
+          rows.filter((row) => row.entity_type === "hackathon").map((row) => row.entity_id),
+          language,
+        ),
+      ])
+    : Promise.resolve(null);
+  const [courseDetails, lessonCounts, localization] = await Promise.all([
+    getCoursesByIds(courseIds),
+    getLessonCountsByCourseIds(courseIds),
+    localizationPromise,
   ]);
+
   return rows.map(row => {
-    const localized = row.entity_type === "course" ? courses.get(row.entity_id)
-      : row.entity_type === "hackathon" ? hackathons.get(row.entity_id) : null;
-    return localized ? { ...row, title: localized.title ?? row.title } : row;
+    const course = row.entity_type === "course" ? courseDetails.get(row.entity_id) : null;
+    const localized = row.entity_type === "course" ? localization?.[0].get(row.entity_id)
+      : row.entity_type === "hackathon" ? localization?.[1].get(row.entity_id) : null;
+
+    return {
+      ...row,
+      ...(course
+        ? {
+            course: {
+              thumbnail_url: course.thumbnail_url,
+              level: course.level,
+              total_duration_seconds: course.total_duration_seconds,
+            },
+            lessonCount: lessonCounts.get(row.entity_id) ?? 0,
+          }
+        : {}),
+      ...(localized?.title ? { title: localized.title } : {}),
+    };
   });
 }
 

@@ -104,6 +104,14 @@
     "backHome": "Back to home"
   },
   "nav": {
+    "groups": {
+      "learning": "Learning",
+      "building": "Build",
+      "career": "Career"
+    },
+    "changelog": "Changelog",
+    "productRoadmap": "Product Roadmap",
+    "feedback": "Feedbacks",
     "home": "Home",
     "someone": "Someone",
     "courses": "Courses",
@@ -616,6 +624,8 @@
     "title": "Search",
     "queryLine": "Results for “{{query}}”",
     "enterQueryHint": "Enter a keyword below to discover public content.",
+    "categories": "Search result categories",
+    "clear": "Clear search",
     "suggest": {
       "recent": "Recent searches",
       "trending": "Trending",
@@ -625,13 +635,18 @@
       "viewAllResults": "View all results",
       "noQuickResults": "No quick results."
     },
+    "emptyTitle": "No results found",
     "empty": "No results found.",
+    "filteredEmptyTitle": "No results in this category",
+    "filteredEmpty": "Choose another category or try a different keyword.",
     "errors": {
       "loadFailed": "Could not load search results"
     },
     "group": {
+      "all": "All",
       "project": "Project",
       "contest": "Hackathon",
+      "hackathon": "Hackathon",
       "course": "Course",
       "profile": "Profile"
     }
@@ -662,8 +677,71 @@
     "exploreCourses": "Explore courses",
     "allCourses": "All courses",
     "studentFallback": "Student",
+    "xp": {
+      "title": "Current XP",
+      "unranked": "Unranked",
+      "noData": "XP data unavailable",
+      "loading": "Loading XP...",
+      "loadingDescription": "Fetching your XP total.",
+      "joinRank": "Earn {{xp}} XP to join {{rank}} rank",
+      "nextRank": "Earn {{xp}} XP to reach {{rank}} rank",
+      "highest": "You have reached the highest rank",
+      "loadFailed": "Could not load XP information."
+    },
+    "xpMissions": {
+      "title": "XP tasks",
+      "sidebarLabel": "XP and tasks",
+      "loading": "Checking...",
+      "statusUnavailable": "Status unavailable",
+      "statusChecking": "Checking",
+      "statusComplete": "Completed",
+      "statusNotComplete": "Not completed",
+      "repeatable": "Can be repeated",
+      "dailyProgress": "{{count}}/5 today",
+      "tasks": {
+        "lesson": {
+          "title": "Complete a lesson",
+          "detail": "+10 XP/eligible lesson · once"
+        },
+        "quiz": {
+          "title": "Pass a quiz",
+          "detail": "Score ≥80%: +20 XP and +10 lesson XP"
+        },
+        "course": {
+          "title": "Complete a course",
+          "detail": "+100 XP/eligible course · once"
+        },
+        "projectLike": {
+          "title": "Like a project",
+          "detail": "+2 XP/project · up to 5 projects/day"
+        },
+        "firstHackathonSubmission": {
+          "title": "Submit a Hackathon project",
+          "detail": "+100 XP for your first eligible submission"
+        },
+        "ocidConnected": {
+          "title": "Link OCID",
+          "detail": "+50 XP once"
+        },
+        "githubConnected": {
+          "title": "Link GitHub",
+          "detail": "+50 XP once"
+        },
+        "ethereumWallet": {
+          "title": "Connect an Ethereum wallet",
+          "detail": "+30 XP once per network"
+        },
+        "solanaWallet": {
+          "title": "Connect a Solana wallet",
+          "detail": "+30 XP once per network"
+        }
+      }
+    },
     "meta": {
       "hours": "{{count}}h",
+      "lessonCount": "{{count}} lessons",
+      "learners": "{{displayCount}} learners",
+      "remainingDuration": "{{hours}}h {{minutes}}m remaining",
       "selfPaced": "self-paced",
       "offlinePrefix": "offline class"
     },
@@ -723,9 +801,11 @@
       "featuredOffline": "Following now",
       "progress": "Progress",
       "seeAll": "See all",
+      "enrolledCourses": "Enrolled Courses",
       "exploreTitle": "Explore",
+      "recommendedTitle": "Recommended for you",
       "goToLibrary": "Go to library",
-      "startFromCatalogTitle": "Start from the course library",
+      "startFromCatalogTitle": "You haven't enrolled in any courses yet.",
       "startFromCatalogSubtitle": "Pick a foundational course to build momentum.",
       "enrollHint": "Once you enroll in or purchase your first course, this area will show progress and quick entry points.",
       "profileSetupHintPrefix": "Please update your full name and phone number so Corelia, instructors, or"
@@ -1078,6 +1158,65 @@
     "title": "You just received your credentials!",
     "body": "The credentials granted to your email are now saved to your Corelia account.",
     "cta": "View my credentials"
+  },
+  "componentShowcase": {
+    "xpRank": {
+      "title": "XP rank badges",
+      "criterion": "All six ranks at 80, 160, and 200 px; ranks without artwork use the question-mark badge.",
+      "description": "Compare badge artwork by rank and size.",
+      "combinationsTitle": "All rank and size combinations",
+      "tableLabel": "XP badges by rank and size",
+      "rank": "Rank",
+      "sizes": {
+        "small": "Small · 80 px",
+        "medium": "Medium · 160 px",
+        "large": "Large · 200 px"
+      }
+    },
+    "progress": {
+      "title": "Progress",
+      "criterion": "Figma sizes, progress levels, and color models for progress bars and circles.",
+      "description": "Compare the exact bar and circle sizes, states, and colors from Figma.",
+      "standardTitle": "Standard progress bars",
+      "standardCriterion": "376 × 20 px component with a 328 × 8 px track.",
+      "liveTitle": "Hands-on progress demo",
+      "liveCriterion": "Use −/+ or enter a percentage. Exactly 100% completes the circles; values above 100% mark them failed.",
+      "liveRangeLabel": "Adjust progress percentage",
+      "liveDecrease": "Decrease progress by 1%",
+      "liveIncrease": "Increase progress by 1%",
+      "liveInputLabel": "Progress percentage",
+      "liveOverrunHint": "Bars stay full above 100%; circles show a failure mark.",
+      "liveValue": "{{percentage}}%",
+      "liveBarSample": "{{theme}} · {{percentage}}%",
+      "compactTitle": "Compact lesson progress",
+      "compactCriterion": "252 × 15 px component with a 210 × 4 px track.",
+      "circleTitle": "Progress circles",
+      "circleCriterion": "24 × 24 px; each percentage follows its Figma color variant.",
+      "label": "Label",
+      "noFill": "No fill",
+      "barSample": "{{theme}} · {{level}} · {{percentage}}% · {{color}}",
+      "circleSample": "{{state}} · {{percentage}}%{{colorText}}",
+      "defaultValue": "Default",
+      "theme": {
+        "neutral": "Neutral",
+        "accent": "Accent",
+        "status": "Status"
+      },
+      "level": {
+        "none": "None",
+        "low": "Low",
+        "medium": "Medium",
+        "good": "Good",
+        "done": "Done"
+      },
+      "circleState": {
+        "notStarted": "Not started",
+        "failed": "Failed",
+        "neutralProgress": "In progress · neutral",
+        "coloredProgress": "In progress · colored",
+        "done": "Done"
+      }
+    }
   },
   "maintenance": {
     "title": "System under maintenance",

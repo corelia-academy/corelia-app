@@ -9,6 +9,7 @@ import {
 import { ArrowLeft } from "lucide-react";
 import { gsap } from "gsap";
 import { useTheme } from "next-themes";
+import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router";
 
 import { Action } from "@/components/ui/action";
@@ -19,6 +20,9 @@ import AdminAvatarComponentPage from "./components/AdminAvatarComponentPage";
 import AdminBadgeComponentPage from "./components/AdminBadgeComponentPage";
 import AdminButtonComponentPage from "./components/AdminButtonComponentPage";
 import AdminDropdownMenuComponentPage from "./components/AdminDropdownMenuComponentPage";
+import AdminEmptyStateIllustrationComponentPage from "./components/AdminEmptyStateIllustrationComponentPage";
+import AdminProgressComponentPage from "./components/AdminProgressComponentPage";
+import AdminXpRankComponentPage from "./components/AdminXpRankComponentPage";
 import AdminInputFieldComponentPage from "./components/AdminInputFieldComponentPage";
 import AdminScrollbarComponentPage from "./components/AdminScrollbarComponentPage";
 import AdminSelectionComponentPage from "./components/AdminSelectionComponentPage";
@@ -89,6 +93,21 @@ const components = [
     criterion:
       "Review hierarchy, sizing, states, and composition with the existing form controls.",
   },
+  {
+    slug: "empty-state-illustration",
+    title: "Empty State Illustration",
+    criterion: "Two illustration types across tiny, medium, and large sizes.",
+  },
+  {
+    slug: "progress",
+    title: "Progress",
+    criterion: "Figma sizes, progress levels, and color models for progress bars and circles.",
+  },
+  {
+    slug: "xp-rank",
+    title: "XP Rank",
+    criterion: "All six ranks at 80, 160, and 200 px sizes.",
+  },
 ] as const;
 
 type ComponentSlug = (typeof components)[number]["slug"];
@@ -136,6 +155,7 @@ function scrollToComponent(slug: ComponentSlug) {
 }
 
 export default function AdminComponentsPage() {
+  const { t } = useTranslation("common");
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { resolvedTheme, setTheme } = useTheme();
@@ -471,7 +491,13 @@ export default function AdminComponentsPage() {
                       }
                     />
                   }
-                  label={title}
+                  label={
+                    slug === "progress"
+                      ? t("componentShowcase.progress.title")
+                      : slug === "xp-rank"
+                        ? t("componentShowcase.xpRank.title")
+                        : title
+                  }
                   size="small"
                   isActive={activeComponent === slug}
                   className="relative z-10 justify-start bg-transparent data-[active=true]:bg-transparent data-[active=true]:hover:bg-transparent"
@@ -539,6 +565,15 @@ export default function AdminComponentsPage() {
           </ComponentSection>
           <ComponentSection {...components[11]}>
             <AdminButtonComponentPage />
+          </ComponentSection>
+          <ComponentSection {...components[12]}>
+            <AdminEmptyStateIllustrationComponentPage embedded />
+          </ComponentSection>
+          <ComponentSection {...components[13]} title={t("componentShowcase.progress.title")} criterion={t("componentShowcase.progress.criterion")}>
+            <AdminProgressComponentPage embedded />
+          </ComponentSection>
+          <ComponentSection {...components[14]} title={t("componentShowcase.xpRank.title")} criterion={t("componentShowcase.xpRank.criterion")}>
+            <AdminXpRankComponentPage embedded />
           </ComponentSection>
         </div>
       </div>

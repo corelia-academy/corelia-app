@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { Link, useParams } from "react-router";
 import { Globe, GraduationCap, Loader2, MapPin } from "lucide-react";
 import { publicInstructorDetailQueryOptions } from "@/features/instructor/instructorQueries";
 import { PublicCourseCard } from "@/components/courses/PublicCourseCard";
+import { createMockParticipantPreview } from "@/components/participants/participantPreview";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +19,8 @@ import { useTranslation } from "react-i18next";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 
+const EMPTY_COURSES: never[] = [];
+
 const InstructorDetail = () => {
   const { t, i18n } = useTranslation("courses");
   const translate = useCallback(
@@ -31,7 +34,14 @@ const InstructorDetail = () => {
 
   const detailQuery = useQuery(publicInstructorDetailQueryOptions(id, isValidUuid, i18n.language));
   const profile = detailQuery.data?.profile ?? null;
-  const courses = detailQuery.data?.courses ?? [];
+  const courses = detailQuery.data?.courses ?? EMPTY_COURSES;
+  const participantPreviewByCourse = useMemo(
+    () => new Map(courses.map((course) => [
+      course.id,
+      createMockParticipantPreview(course.id),
+    ])),
+    [courses],
+  );
 
   const instructorBio =
     profile?.instructor_bio?.trim() || profile?.bio?.trim() || undefined;
@@ -219,7 +229,11 @@ const InstructorDetail = () => {
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {courses.map((course) => (
-                <PublicCourseCard key={course.id} course={course} />
+                <PublicCourseCard
+                  key={course.id}
+                  course={course}
+                  participantPreview={participantPreviewByCourse.get(course.id)!}
+                />
               ))}
             </div>
           )}

@@ -19,7 +19,7 @@ export function MomentumCards({
         return (
           <div
             key={item.label}
-            className="border-b border-border-subtle bg-surface-base p-4 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:bg-surface-raised sm:rounded-2xl sm:border sm:shadow-card"
+            className="border-b border-border bg-surface-base p-4 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:bg-surface-raised sm:rounded-2xl sm:border sm:shadow-card"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">

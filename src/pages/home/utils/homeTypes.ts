@@ -3,6 +3,8 @@ export type FocusCard = {
   title: string;
   format: "online" | "offline";
   progress: number;
+  lessonCount?: number;
+  remainingDurationSeconds?: number | null;
   completed: boolean;
   nextStep: string;
   meta: string;

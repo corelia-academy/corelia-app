@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link } from "react-router";
 import { BookOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -5,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PublicCourseCard } from "@/components/courses/PublicCourseCard";
+import { createMockParticipantPreview } from "@/components/participants/participantPreview";
 
 import { useCoursesCatalog } from "./hooks/useCoursesCatalog";
 import {
@@ -24,6 +26,13 @@ export default function CoursesPage() {
     retry,
   } = useCoursesCatalog();
   const { progressByCourse } = useUserCoursesProgress();
+  const participantPreviewByCourse = useMemo(
+    () => new Map(filteredOnlineCourses.map((course) => [
+      course.id,
+      createMockParticipantPreview(course.id),
+    ])),
+    [filteredOnlineCourses],
+  );
 
   if (loading) {
     return (
@@ -131,6 +140,7 @@ export default function CoursesPage() {
               key={course.id}
               course={course}
               progress={progressByCourse.get(course.id)}
+              participantPreview={participantPreviewByCourse.get(course.id)!}
             />
           ))}
         </div>
