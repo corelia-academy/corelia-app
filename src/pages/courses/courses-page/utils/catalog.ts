@@ -10,6 +10,41 @@ export type CatalogTranslate = (
   options?: { price?: string; count?: number },
 ) => string;
 
+export interface CatalogInstructorOption {
+  id: string;
+  name: string;
+}
+
+export function getCatalogSkillOptions(courses: Course[]): string[] {
+  return Array.from(
+    new Set(courses.flatMap((course) => course.skills ?? []).map((skill) => skill.trim()).filter(Boolean)),
+  ).sort((a, b) => a.localeCompare(b, sortLocale()));
+}
+
+export function getCatalogInstructorOptions(courses: Course[]): CatalogInstructorOption[] {
+  const instructors = new Map<string, string>();
+  for (const course of courses) {
+    const primaryName =
+      typeof course.instructor_name === "string"
+        ? course.instructor_name.trim()
+        : "";
+    if (course.instructor_id && primaryName && !instructors.has(course.instructor_id)) {
+      instructors.set(course.instructor_id, primaryName);
+    }
+
+    for (const instructor of course.co_instructors ?? []) {
+      const name = instructor.name.trim();
+      if (instructor.id && name && !instructors.has(instructor.id)) {
+        instructors.set(instructor.id, name);
+      }
+    }
+  }
+
+  return Array.from(instructors, ([id, name]) => ({ id, name })).sort((a, b) =>
+    a.name.localeCompare(b.name, sortLocale()),
+  );
+}
+
 export function normalizeText(value: string | null | undefined): string {
   return (value ?? "").trim().toLowerCase();
 }
@@ -51,16 +86,33 @@ export function filterAndSortCourses(
   courses: Course[],
   opts: {
     query: string;
-    levelFilter: "all" | CourseLevel;
+    levelFilter: readonly Exclude<CourseLevel, "all">[];
+    selectedSkills: readonly string[];
+    selectedInstructorIds: readonly string[];
     ownerFilter: OwnerFilter;
     sortMode: SortMode;
   },
 ): Course[] {
   const normalizedQuery = normalizeText(opts.query);
+  const selectedSkills = new Set(opts.selectedSkills.map(normalizeText));
+  const selectedInstructorIds = new Set(opts.selectedInstructorIds);
   const base = courses.filter((course) => {
-    if (opts.levelFilter !== "all" && course.level !== opts.levelFilter) {
+    if (opts.levelFilter.length > 0 && !opts.levelFilter.some((level) => level === course.level)) {
       return false;
     }
+    if (
+      selectedSkills.size > 0 &&
+      !(course.skills ?? []).some((skill) => selectedSkills.has(normalizeText(skill)))
+    ) return false;
+
+    if (selectedInstructorIds.size > 0) {
+      const courseInstructorIds = [
+        course.instructor_id,
+        ...(course.co_instructors ?? []).map((instructor) => instructor.id),
+      ];
+      if (!courseInstructorIds.some((id) => selectedInstructorIds.has(id))) return false;
+    }
+
     if (
       opts.ownerFilter !== "all" &&
       (course.owner_type ?? "corelia") !== opts.ownerFilter
@@ -74,6 +126,8 @@ export function filterAndSortCourses(
       course.short_description,
       course.description,
       course.instructor_name,
+      ...(course.co_instructors ?? []).map((instructor) => instructor.name),
+      ...(course.skills ?? []),
       getCourseOwnerTypeLabel(course.owner_type),
     ]
       .map(normalizeText)

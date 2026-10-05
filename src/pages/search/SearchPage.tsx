@@ -2,8 +2,8 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
-import { BookOpen, FileText, Search, ShieldAlert } from "lucide-react";
-import { TimerIcon } from "@phosphor-icons/react";
+import { Search, ShieldAlert } from "lucide-react";
+import { FileText, TimerIcon } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
@@ -51,7 +51,7 @@ function SearchCourseResultCard({
   return (
     <NavLink
       to={item.href}
-      className="group block min-w-0 rounded-xl transition-transform duration-200 ease-out hover:-translate-y-0.5 focus-visible:outline-primary"
+      className="motion-hover-course-card block min-w-0 rounded-xl focus-visible:outline-primary"
     >
       <div className="aspect-video overflow-hidden rounded-lg border border-border bg-surface-raised">
         {course.thumbnail_url && !failedImage ? (
@@ -60,11 +60,11 @@ function SearchCourseResultCard({
             alt=""
             loading="lazy"
             onError={() => setFailedImage(true)}
-            className="size-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+            className="size-full object-cover"
           />
         ) : (
           <div className="flex size-full items-center justify-center">
-            <BookOpen className="size-10 text-foreground-muted" aria-hidden />
+            <FileText className="size-10 text-foreground-muted" aria-hidden weight="duotone" />
           </div>
         )}
       </div>
@@ -78,7 +78,7 @@ function SearchCourseResultCard({
           </span>
           {typeof item.lessonCount === "number" ? (
             <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-              <FileText className="size-4" aria-hidden />
+              <FileText className="size-4" aria-hidden weight="duotone" />
               {t("home.meta.lessonCount", { count: item.lessonCount })}
             </span>
           ) : null}

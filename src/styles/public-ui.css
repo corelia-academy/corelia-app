@@ -28,6 +28,27 @@
 @media (min-width: 1024px) {
   .public-ui .public-content > :is(div, main, section) { padding-inline: 32px; }
 }
+@media (min-width: 1024px) {
+  .public-ui .public-content > .course-catalog-page {
+    padding-inline: 64px;
+    padding-block: 48px;
+  }
+}
+.public-ui .public-content .course-catalog h1 {
+  font-size: 28px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+.public-ui .public-content .course-catalog h2.course-catalog-section-title {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.32px;
+}
+.public-ui .public-content .course-catalog-filters :is(button, select, input:not([type=checkbox]):not([type=radio])) {
+  min-height: 40px;
+  height: 40px;
+}
 @media (prefers-reduced-motion: reduce) {
   .public-ui *, .public-ui *::before, .public-ui *::after {
     animation-duration: 0.01ms !important;

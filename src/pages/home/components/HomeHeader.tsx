@@ -22,9 +22,11 @@ export function HomeHeader({
   return (
     <section className="mobile-bleed-surface bg-surface-base shadow-card px-5 pt-5 pb-4 sm:px-0 sm:py-0">
       <div className="flex flex-col gap-2">
-        <div className="text-[11px] font-medium uppercase tracking-wide text-foreground-muted">
-          {loading ? t("home.syncing") : null} {/*t("home.dashboard")*/}
-        </div>
+        {loading ? (
+          <div className="text-[11px] font-medium uppercase tracking-wide text-foreground-muted">
+            {t("home.syncing")} {/*t("home.dashboard")*/}
+          </div>
+        ) : null}
         {loading ? (
           <div className="space-y-2">
             <Skeleton className="h-8 w-48 rounded-md" />
@@ -35,7 +37,7 @@ export function HomeHeader({
             <h1 className="text-heading-large font-display text-foreground">
               {t("home.sections.greeting", { name: firstName })}
             </h1>
-            <p className="text-body-medium font-body text-foreground-muted">
+            <p className="text-body-large text-catalog-subtitle">
               {t("home.sections.greetingSubtitle")}
             </p>
           </>

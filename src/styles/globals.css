@@ -136,6 +136,7 @@
 
   --color-foreground: var(--foreground);
   --color-foreground-muted: var(--foreground-muted);
+  --color-catalog-subtitle: var(--catalog-subtitle);
   --color-foreground-subtle: var(--foreground-subtle);
   --color-foreground-tertiary: var(--foreground-tertiary);
   --color-background: var(--background);
@@ -828,6 +829,7 @@
   /* Chữ xám đậm trung tính kiểu Google (#202124) */
   --foreground: var(--text-primary-2);
   --foreground-muted: var(--text-secondary);
+  --catalog-subtitle: var(--text-secondary);
   --foreground-subtle: var(--neutral-400);
   --foreground-tertiary: var(--text-secondary);
 
@@ -1107,6 +1109,7 @@
   --background: var(--neutral-900);
   --foreground: var(--neutral-50);
   --foreground-muted: var(--neutral-300);
+  --catalog-subtitle: var(--neutral-200);
   --foreground-subtle: var(--neutral-400);
   --foreground-tertiary: var(--text-tertiary);
 

@@ -188,7 +188,7 @@ const InstructorCourses = () => {
           {visibleCourses.map((course) => (
             <article
               key={course.id}
-              className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card transition-[transform,background-color,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-surface-raised"
+              className="motion-hover-course-card flex h-full flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card"
             >
               <button
                 type="button"
@@ -199,7 +199,7 @@ const InstructorCourses = () => {
                   <img
                     src={course.thumbnail_url}
                     alt=""
-                    className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-95"
+                    className="h-full w-full object-cover"
                   />
                   <div className="absolute inset-x-0 bottom-0 flex flex-wrap gap-2 p-3">
                     <span className="inline-flex items-center rounded-full bg-surface-base/90 px-3 py-1 text-xs font-medium text-foreground">

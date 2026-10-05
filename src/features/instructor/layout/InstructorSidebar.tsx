@@ -25,7 +25,7 @@ export function InstructorSidebar() {
   const pathname = location.pathname;
 
   return (
-    <Sidebar collapsible="icon" variant="sidebar">
+    <Sidebar stickyContext="main-content" collapsible="icon" variant="sidebar">
       <div className="px-3 pb-2 pt-3 transition-[padding] duration-200 ease-linear group-data-[collapsible=icon]:px-1 group-data-[collapsible=icon]:pb-1">
         <div className="rounded-lg border border-sidebar-border/70 bg-sidebar-accent/45 p-4 transition-[padding,border-radius] duration-200 ease-linear group-data-[collapsible=icon]:rounded-md group-data-[collapsible=icon]:p-1">
           <div className="flex items-start gap-3 transition-[gap] duration-200 ease-linear group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0">

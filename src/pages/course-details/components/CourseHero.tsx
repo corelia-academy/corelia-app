@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateLearningProgress } from "@/features/learning/invalidateLearningProgress";
-import { BookOpen, Info } from "lucide-react";
+import { Info } from "lucide-react";
+import { FileText } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { CourseBadge } from "./CourseBadge";
@@ -245,7 +246,7 @@ export function CourseHero({
             {!courseThumbnailSrc ? (
               <div className="absolute inset-0 grid place-items-center bg-linear-to-br from-transparent via-transparent to-background/10">
                 <div className="flex items-center gap-2 rounded-full bg-surface-base/70 px-3 py-1 text-xs font-medium text-foreground-muted backdrop-blur">
-                  <BookOpen className="size-4" aria-hidden />
+                  <FileText className="size-4" aria-hidden weight="duotone" />
                   {translate("detail.courseDetail.thumbnailFallback", {
                     defaultValue: "Chưa có hình ảnh khoá học",
                   })}
