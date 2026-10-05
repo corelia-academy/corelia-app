@@ -71,7 +71,7 @@
     "loadErrorFallback": "Failed to load courses",
     "lessonCountLoadErrorTitle": "Unable to load course lesson counts.",
     "lessonCountLoadErrorFallback": "Failed to load course lesson counts",
-    "results": "{{count}} results",
+    "results": "{{count}} results found",
     "activeFilters": " · {{count}} filters",
     "clearFilters": "Clear filters",
     "searchPlaceholder": "Search by keyword, skill, or instructor...",
@@ -88,6 +88,8 @@
     "sort": "Sort",
     "emptyTitle": "No matching results.",
     "emptyDescription": "Expand your search or clear the filters.",
+    "noCoursesTitle": "No data.",
+    "noCoursesDescription": "No courses have been published recently.",
     "card": {
       "courseProgress": "Course progress",
       "completed": "Completed",

@@ -71,7 +71,7 @@
     "loadErrorFallback": "Lỗi tải khoá học",
     "lessonCountLoadErrorTitle": "Không thể tải số bài học của khóa học.",
     "lessonCountLoadErrorFallback": "Lỗi tải số bài học của khóa học",
-    "results": "{{count}} kết quả",
+    "results": "{{count}} kết quả được tìm thấy",
     "activeFilters": " · {{count}} bộ lọc",
     "clearFilters": "Xoá bộ lọc",
     "searchPlaceholder": "Tìm kiếm theo từ khoá, kỹ năng, giảng viên...",
@@ -88,6 +88,8 @@
     "sort": "Sắp xếp",
     "emptyTitle": "Không có dữ liệu phù hợp.",
     "emptyDescription": "Hãy mở rộng tìm kiếm hoặc xóa bộ lọc.",
+    "noCoursesTitle": "Không có dữ liệu.",
+    "noCoursesDescription": "Chưa có khoá học nào được đăng tải gần đây,",
     "card": {
       "courseProgress": "Tiến độ khoá học",
       "completed": "Đã hoàn thành",

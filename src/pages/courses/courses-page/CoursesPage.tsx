@@ -133,6 +133,7 @@ export default function CoursesPage() {
     lessonCounts,
     query,
     setQuery,
+    hasActiveFilters,
     levelFilter,
     setLevelFilter,
     selectedSkills,
@@ -159,6 +160,31 @@ export default function CoursesPage() {
     }));
   const skillFilterOptions = skillOptions.map((skill) => ({ value: skill, label: skill }));
   const instructorFilterOptions = instructorOptions.map(({ id, name }) => ({ value: id, label: name }));
+  const isSearching = query.trim().length > 0;
+  const courseCardGrid = filteredOnlineCourses.length > 0 ? (
+    <div className="mobile-bleed-grid grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[repeat(3,335px)]">
+      {filteredOnlineCourses.map((course) => (
+        <PublicCourseCard
+          key={course.id}
+          course={course}
+          progress={progressByCourse.get(course.id)}
+          participantPreview={participantPreviewByCourse.get(course.id)!}
+          variant="catalog"
+          lessonCount={lessonCounts.get(course.id)}
+        />
+      ))}
+    </div>
+  ) : null;
+  const emptySearchState = (
+    <div className="mt-4 flex min-h-[31.25rem] items-center justify-center">
+      <EmptyStateIllustration
+        type="search"
+        size="medium"
+        title={t("catalog.emptyTitle")}
+        description={t("catalog.emptyDescription")}
+      />
+    </div>
+  );
 
   if (loading) {
     return (
@@ -213,6 +239,21 @@ export default function CoursesPage() {
             {tCommon("actions.retry")}
           </Button>
         </div>
+      </div>
+    );
+  }
+
+  if (catalogCourses.length === 0) {
+    return (
+      <div className="course-catalog-page container-app flex min-h-[calc(100svh-var(--app-header-height))] items-center justify-center">
+        <main className="flex w-full items-center justify-center">
+          <EmptyStateIllustration
+            type="empty"
+            size="fullPage"
+            title={t("catalog.noCoursesTitle")}
+            description={t("catalog.noCoursesDescription")}
+          />
+        </main>
       </div>
     );
   }
@@ -274,59 +315,55 @@ export default function CoursesPage() {
           </div>
         </section>
 
-        <section className="mt-8" aria-labelledby="catalog-all-heading">
-          <div className="flex min-h-6 items-center gap-2.5">
-            <MonitorPlay className="size-5 shrink-0 text-foreground" aria-hidden />
-            <h2 id="catalog-all-heading" className="course-catalog-section-title text-body-large font-medium text-foreground">
-              {t("catalog.sections.all")}
-            </h2>
-            <Badge
-              color="gray"
-              variant="filled"
-              size="small"
-              className="min-w-6 px-1"
-              aria-label={t("catalog.sections.allCount", { count: filteredOnlineCourses.length })}
-            >
-              {filteredOnlineCourses.length}
-            </Badge>
-          </div>
-          <Separator className="mt-3" />
+        {isSearching ? (
+          filteredOnlineCourses.length > 0 ? (
+            <>
+              <p role="status" className="mt-5xl text-body-small text-foreground-muted">
+                {t("catalog.results", { count: filteredOnlineCourses.length })}
+              </p>
+              <div className="mt-5xl">{courseCardGrid}</div>
+            </>
+          ) : emptySearchState
+        ) : (
+          <>
+            {(filteredOnlineCourses.length > 0 || !hasActiveFilters) && (
+              <section className="mt-8" aria-labelledby="catalog-all-heading">
+                <div className="flex min-h-6 items-center gap-2.5">
+                  <MonitorPlay className="size-5 shrink-0 text-foreground" weight="duotone" aria-hidden />
+                  <h2 id="catalog-all-heading" className="course-catalog-section-title text-body-large font-medium text-foreground">
+                    {t("catalog.sections.all")}
+                  </h2>
+                  <Badge
+                    color="gray"
+                    variant="filled"
+                    size="small"
+                    className="min-w-6 px-1"
+                    aria-label={t("catalog.sections.allCount", { count: filteredOnlineCourses.length })}
+                  >
+                    {filteredOnlineCourses.length}
+                  </Badge>
+                </div>
+                <Separator className="mt-3" />
+                {courseCardGrid ? <div className="mt-4">{courseCardGrid}</div> : emptySearchState}
+              </section>
+            )}
 
-          {filteredOnlineCourses.length === 0 ? (
-            <div className="mt-4 flex min-h-[31.25rem] items-center justify-center">
-              <EmptyStateIllustration
-                type="search"
-                size="medium"
-                title={t("catalog.emptyTitle")}
-                description={t("catalog.emptyDescription")}
-              />
-            </div>
-          ) : (
-            <div className="mobile-bleed-grid mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[repeat(3,335px)]">
-              {filteredOnlineCourses.map((course) => (
-                <PublicCourseCard
-                  key={course.id}
-                  course={course}
-                  progress={progressByCourse.get(course.id)}
-                  participantPreview={participantPreviewByCourse.get(course.id)!}
-                  variant="catalog"
-                  lessonCount={lessonCounts.get(course.id)}
-                />
-              ))}
-            </div>
-          )}
-        </section>
+            {!hasActiveFilters && (
+              <section className="mt-12" aria-labelledby="catalog-upcoming-heading">
+                <div className="flex min-h-6 items-center gap-2.5">
+                  <MonitorPlay className="size-5 shrink-0 text-foreground" weight="duotone" aria-hidden />
+                  <h2 id="catalog-upcoming-heading" className="course-catalog-section-title text-body-large font-medium text-foreground">
+                    {t("catalog.sections.upcoming")}
+                  </h2>
+                </div>
+                <Separator className="mt-3" />
+                {/* TODO(course-catalog-upcoming): render the upcoming section after its business flow and data are available. */}
+              </section>
+            )}
 
-        <section className="mt-12" aria-labelledby="catalog-upcoming-heading">
-          <div className="flex min-h-6 items-center gap-2.5">
-            <MonitorPlay className="size-5 shrink-0 text-foreground" aria-hidden />
-            <h2 id="catalog-upcoming-heading" className="course-catalog-section-title text-body-large font-medium text-foreground">
-              {t("catalog.sections.upcoming")}
-            </h2>
-          </div>
-          <Separator className="mt-3" />
-          {/* TODO(course-catalog-upcoming): render the upcoming section after its business flow and data are available. */}
-        </section>
+            {hasActiveFilters && filteredOnlineCourses.length === 0 && emptySearchState}
+          </>
+        )}
       </main>
     </div>
   );

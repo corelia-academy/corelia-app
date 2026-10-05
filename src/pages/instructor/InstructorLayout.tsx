@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { InstructorSidebar } from "@/features/instructor/layout/InstructorSidebar";
 import { buildInstructorCrumbs } from "@/features/instructor/layout/instructorLayoutResolvers";
 import { useInstructorCourseTitle } from "@/features/instructor/layout/hooks/useInstructorCourseTitle";
+import { GsapAnimationController } from "@/components/animations/GsapAnimationController";
 
 export default function InstructorLayout() {
   const { t } = useTranslation("instructor");
@@ -54,6 +55,7 @@ export default function InstructorLayout() {
       defaultOpen
       style={{ "--app-header-height": "2.75rem" } as React.CSSProperties}
     >
+      <GsapAnimationController />
       <InstructorSidebar />
       <SidebarInset>
         <div className="sticky top-0 z-30 border-b border-border-subtle bg-surface-raised/90 backdrop-blur supports-backdrop-filter:bg-surface-raised/70">

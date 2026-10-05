@@ -3,7 +3,7 @@ import emptyNoDataSvg from "@/assets/illustrations/empty-state/empty-no-data.svg
 import searchNoDataSvg from "@/assets/illustrations/empty-state/search-no-data.svg";
 
 export type EmptyStateIllustrationType = "search" | "empty";
-export type EmptyStateIllustrationSize = "tiny" | "medium" | "large";
+export type EmptyStateIllustrationSize = "tiny" | "medium" | "large" | "fullPage";
 
 type EmptyStateIllustrationProps = {
   type: EmptyStateIllustrationType;
@@ -21,6 +21,7 @@ const illustrationSizes: Record<EmptyStateIllustrationSize, string> = {
   tiny: "size-[120px]",
   medium: "size-[200px]",
   large: "size-[280px]",
+  fullPage: "size-[240px]",
 };
 
 const illustrationInsets: Record<EmptyStateIllustrationType, string> = {
@@ -32,17 +33,20 @@ const contentWidths: Record<EmptyStateIllustrationSize, string> = {
   tiny: "w-[240px]",
   medium: "w-[240px]",
   large: "w-[320px]",
+  fullPage: "w-[320px]",
 };
 
 const titleStyles: Partial<Record<EmptyStateIllustrationSize, string>> = {
   medium: "text-heading-medium font-display",
   large: "text-heading-large font-display",
+  fullPage: "text-heading-large font-display",
 };
 
 const descriptionStyles: Record<EmptyStateIllustrationSize, string> = {
   tiny: "text-sm leading-[1.4] tracking-[0.02em]",
   medium: "text-sm leading-[1.4] tracking-[0.02em]",
   large: "text-base leading-[1.4] tracking-[0.02em]",
+  fullPage: "text-base leading-[1.4] tracking-[0.02em]",
 };
 
 export function EmptyStateIllustration({

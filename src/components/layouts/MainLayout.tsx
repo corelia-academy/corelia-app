@@ -9,6 +9,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/base/AppSidebar";
+import { GsapAnimationController } from "@/components/animations/GsapAnimationController";
 import Header from "./Header";
 
 const MainLayout = () => {
@@ -25,6 +26,7 @@ const MainLayout = () => {
         "--app-header-height": "calc(4rem + 1px)",
       } as CSSProperties}
     >
+      <GsapAnimationController />
       <Header publicUI />
       <div className="flex min-h-0 flex-1">
         <MainAppSidebar />

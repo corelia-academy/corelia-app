@@ -1,6 +1,5 @@
 import { useMemo } from "react";
-import { BookOpen, FileText } from "lucide-react";
-import { TimerIcon } from "@phosphor-icons/react";
+import { FileText, TimerIcon } from "@phosphor-icons/react";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
 import { Button } from "@/components/ui/button";
@@ -62,7 +61,7 @@ export function ExploreCoursesSection({
         {(courseCatalog ?? []).length === 0 ? (
           <div className="flex w-full flex-col items-center gap-3 py-12 text-center sm:py-16">
             <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
-              <BookOpen className="size-6 text-foreground-subtle" aria-hidden />
+              <FileText className="size-6 text-foreground-subtle" aria-hidden weight="duotone" />
             </div>
             <div>
               <p className="text-sm font-medium text-foreground">{t("home.sections.exploreTitle")}</p>
@@ -82,7 +81,7 @@ export function ExploreCoursesSection({
               <NavLink
                 key={course.id}
                 to={`/courses/${course.slug || course.id}`}
-                className="group min-w-[240px] max-w-none sm:max-w-[335px] flex-[1_1_100%] sm:flex-[1_1_240px] @min-[504px]:@max-[807px]:flex-[1_1_240px]! overflow-hidden rounded-xl transition-transform duration-200 ease-out hover:-translate-y-0.5"
+                className="motion-hover-course-card min-w-[240px] max-w-none sm:max-w-[335px] flex-[1_1_100%] sm:flex-[1_1_240px] @min-[504px]:@max-[807px]:flex-[1_1_240px]! overflow-hidden rounded-xl"
               >
                 <div className="aspect-video overflow-hidden rounded-lg border border-border bg-surface-raised">
                   {course.thumbnail_url ? (
@@ -90,7 +89,7 @@ export function ExploreCoursesSection({
                       src={course.thumbnail_url}
                       alt=""
                       loading="lazy"
-                      className="size-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+                      className="size-full object-cover"
                     />
                   ) : null}
                 </div>
@@ -105,7 +104,7 @@ export function ExploreCoursesSection({
                       </span>
                       {typeof lessonCount === "number" ? (
                         <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-                          <FileText className="size-4" aria-hidden />
+                          <FileText className="size-4" aria-hidden weight="duotone" />
                           {t("home.meta.lessonCount", { count: lessonCount })}
                         </span>
                       ) : null}
