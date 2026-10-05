@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { ParticipantSummary } from "@/components/participants/ParticipantSummary";
 import {
   createMockParticipantPreview,
-  formatCompactParticipantCount,
 } from "@/components/participants/participantPreview";
 import type { Course } from "@/types/courses";
 import { getCourseLevelLabel } from "@/types/courses";
