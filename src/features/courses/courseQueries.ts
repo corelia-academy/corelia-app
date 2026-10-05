@@ -13,6 +13,7 @@ import {
   getCourseSectionLocaleContentMap,
   getCourseSections,
   getBatchCourseLocaleContent,
+  getLessonCountsByCourseIds,
   getEnrollment,
   getLessonProgressForCourse,
   getMyEnrollments,
@@ -138,6 +139,8 @@ export const courseKeys = {
   spotlight: (userId: string | null, locale: string) =>
     [...courseKeys.all, "spotlight", userId ?? "anonymous", locale] as const,
   catalog: (locale: string) => [...courseKeys.all, "catalog", locale] as const,
+  catalogLessonCounts: (courseIds: string[]) =>
+    [...courseKeys.all, "catalog-lesson-counts", ...courseIds] as const,
   userCatalogProgress: (userId: string) =>
     [...courseKeys.all, "catalog-progress", userId] as const,
 };
@@ -275,6 +278,17 @@ export function coursesCatalogQueryOptions(locale: string) {
     },
     staleTime: 60_000,
     meta: { scope: "public", showInGlobalLoading: true },
+  });
+}
+
+export function coursesCatalogLessonCountsQueryOptions(courseIds: string[]) {
+  const normalizedCourseIds = Array.from(new Set(courseIds.filter(Boolean))).sort();
+  return queryOptions<Map<string, number>>({
+    queryKey: courseKeys.catalogLessonCounts(normalizedCourseIds),
+    queryFn: () => getLessonCountsByCourseIds(normalizedCourseIds),
+    enabled: normalizedCourseIds.length > 0,
+    staleTime: 60_000,
+    meta: { scope: "public", showInGlobalLoading: false },
   });
 }
 
