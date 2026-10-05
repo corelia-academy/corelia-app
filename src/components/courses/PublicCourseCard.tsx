@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { ArrowRight, BookOpen, Clock } from "lucide-react";
+import { ArrowRight, BookOpen } from "lucide-react";
+import { TimerIcon } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 import { ParticipantSummary } from "@/components/participants/ParticipantSummary";
 import {
@@ -28,7 +29,7 @@ export function PublicCourseCard({ course, progress, participantPreview }: {
         <span className="self-start rounded-full bg-primary-muted px-3 py-1 text-xs font-medium text-foreground">{getCourseLevelLabel(course.level)}</span>
         <h3 className="line-clamp-2 min-h-12 text-heading-medium font-display">{course.title}</h3>
         {course.short_description ? <p className="line-clamp-3 text-sm leading-6 text-foreground-muted">{course.short_description}</p> : null}
-        <div className="mt-auto flex flex-wrap items-center gap-2 pt-2 text-sm text-foreground-muted"><Clock className="size-4" aria-hidden />{formatDuration(Number(course.total_duration_seconds) || 0)}</div>
+        <div className="mt-auto flex flex-wrap items-center gap-2 pt-2 text-sm text-foreground-muted"><TimerIcon className="size-4" aria-hidden weight="duotone" />{formatDuration(Number(course.total_duration_seconds) || 0)}</div>
         <ParticipantSummary
           count={participantPreview.count}
           participants={participantPreview.participants}

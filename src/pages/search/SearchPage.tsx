@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
-import { BookOpen, Clock, FileText, Search, ShieldAlert } from "lucide-react";
+import { BookOpen, FileText, Search, ShieldAlert } from "lucide-react";
+import { TimerIcon } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
@@ -85,7 +86,7 @@ function SearchCourseResultCard({
             <span className="h-4 w-px shrink-0 bg-border" aria-hidden />
           ) : null}
           <span className="inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap">
-            <Clock className="size-4" aria-hidden />
+            <TimerIcon className="size-4" aria-hidden weight="duotone" />
             {formatDuration(Number(course.total_duration_seconds) || 0)}
           </span>
         </div>
