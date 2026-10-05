@@ -1,4 +1,4 @@
-import { Clock, FileText } from "lucide-react";
+import { FileText, MonitorPlay, TimerIcon } from "@phosphor-icons/react";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +27,12 @@ export function ContinueLearningSection({
   return (
     <section className="mobile-bleed-surface px-5 sm:px-0">
       <div className="flex items-center gap-2 border-b border-border pb-3">
-        <h2 className="text-body-medium font-body font-medium text-foreground">
+        <MonitorPlay
+          aria-hidden="true"
+          className="size-5 shrink-0 text-foreground-muted"
+          weight="duotone"
+        />
+        <h2 className="text-body-large font-body font-medium text-foreground">
           {t("home.sections.enrolledCourses")}
         </h2>
         {enrolledCourseCount > 0 ? (
@@ -63,7 +68,7 @@ export function ContinueLearningSection({
                   <div className="flex min-w-0 items-center gap-3 text-xs text-foreground-muted">
                     {typeof item.lessonCount === "number" ? (
                       <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-                        <FileText className="size-4" aria-hidden />
+                        <FileText className="size-4" aria-hidden weight="duotone" />
                         {t("home.meta.lessonCount", { count: item.lessonCount })}
                       </span>
                     ) : null}
@@ -73,7 +78,7 @@ export function ContinueLearningSection({
                           <span className="h-4 w-px shrink-0 bg-border" aria-hidden />
                         ) : null}
                         <span className="inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap">
-                          <Clock className="size-4 shrink-0" aria-hidden />
+                          <TimerIcon className="size-4 shrink-0" aria-hidden weight="duotone" />
                           {formatRemainingDuration(item.remainingDurationSeconds)}
                         </span>
                       </>
