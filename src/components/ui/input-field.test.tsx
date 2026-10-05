@@ -247,7 +247,7 @@ describe("Input", () => {
     expect(markup).toContain('type="email"')
   })
 
-  it("uses exact default icon slots and permits ReactNode overrides or null", () => {
+  it("renders the default leading icon and only renders an optional status icon when provided", () => {
     const defaultMarkup = renderToStaticMarkup(
       <Field label="Search">
         <Input variant="icon-leading" />
@@ -273,7 +273,7 @@ describe("Input", () => {
     )
 
     expect(defaultMarkup).toContain('data-slot="input-field-leading-icon"')
-    expect(defaultMarkup).toContain('data-slot="input-field-status-icon"')
+    expect(defaultMarkup).not.toContain('data-slot="input-field-status-icon"')
     expect(defaultMarkup).toContain("text-foreground-subtle")
 
     const defaultHost = document.createElement("div")
@@ -283,8 +283,8 @@ describe("Input", () => {
       defaultHost.querySelector('[data-slot="input-field-leading-icon"] svg'),
     ).not.toBeNull()
     expect(
-      defaultHost.querySelector('[data-slot="input-field-status-icon"] svg'),
-    ).not.toBeNull()
+      defaultHost.querySelector('[data-slot="input-field-status-icon"]'),
+    ).toBeNull()
 
     expect(customMarkup).toContain('data-testid="custom-leading-icon"')
     expect(customMarkup).toContain('data-testid="custom-status-icon"')
@@ -306,7 +306,11 @@ describe("Input", () => {
   it("marks errors invalid and links the error text to the input", () => {
     const markup = renderToStaticMarkup(
       <Field label="Email address" error="Enter a valid email address">
-        <Input id="email-address" aria-invalid={false} />
+        <Input
+          id="email-address"
+          aria-invalid={false}
+          statusIcon={<span aria-hidden="true" />}
+        />
       </Field>,
     )
     const host = document.createElement("div")
@@ -324,6 +328,10 @@ describe("Input", () => {
         "data-invalid",
       ),
     ).toBe("true")
+    expect(host.querySelector('[data-slot="input-field-control"]')?.className).toContain(
+      "focus-within:ring-2",
+    )
+    expect(input?.className).toContain("focus-visible:ring-0")
     expect(host.querySelector('[data-slot="input-field-status-icon"]')?.className).toContain(
       "text-input-field-error",
     )

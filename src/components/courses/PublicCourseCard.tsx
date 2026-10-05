@@ -1,14 +1,22 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { ArrowRight, BookOpen, Clock } from "lucide-react";
+import { ArrowRight, BookOpen } from "lucide-react";
+import { TimerIcon } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
+import { ParticipantSummary } from "@/components/participants/ParticipantSummary";
+import {
+  formatCompactParticipantCount,
+  type ParticipantPreviewData,
+} from "@/components/participants/participantPreview";
 import { formatDuration, getCourseLevelLabel, type Course } from "@/types/courses";
 
-export function PublicCourseCard({ course, progress }: {
+export function PublicCourseCard({ course, progress, participantPreview }: {
   course: Course;
   progress?: { enrolled: boolean; percent: number; completed: boolean };
+  participantPreview: ParticipantPreviewData;
 }) {
   const { t } = useTranslation("courses");
+  const { t: tCommon } = useTranslation("common");
   const [failedImage, setFailedImage] = useState<string | null>(null);
   const percent = Math.max(0, Math.min(100, progress?.percent ?? 0));
   return (
@@ -21,7 +29,14 @@ export function PublicCourseCard({ course, progress }: {
         <span className="self-start rounded-full bg-primary-muted px-3 py-1 text-xs font-medium text-foreground">{getCourseLevelLabel(course.level)}</span>
         <h3 className="line-clamp-2 min-h-12 text-heading-medium font-display">{course.title}</h3>
         {course.short_description ? <p className="line-clamp-3 text-sm leading-6 text-foreground-muted">{course.short_description}</p> : null}
-        <div className="mt-auto flex flex-wrap items-center gap-2 pt-2 text-sm text-foreground-muted"><Clock className="size-4" aria-hidden />{formatDuration(Number(course.total_duration_seconds) || 0)}</div>
+        <div className="mt-auto flex flex-wrap items-center gap-2 pt-2 text-sm text-foreground-muted"><TimerIcon className="size-4" aria-hidden weight="duotone" />{formatDuration(Number(course.total_duration_seconds) || 0)}</div>
+        <ParticipantSummary
+          count={participantPreview.count}
+          participants={participantPreview.participants}
+          summary={tCommon("home.meta.learners", {
+            displayCount: formatCompactParticipantCount(participantPreview.count),
+          })}
+        />
         {progress?.enrolled ? <div className="space-y-2 border-t border-border-subtle pt-3">
           <div className="h-1 overflow-hidden rounded-full bg-surface-raised" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100} aria-label={course.title}><div className="h-full bg-primary" style={{width: `${percent}%`}} /></div>
           <span className="flex items-center justify-between gap-2 text-sm font-medium text-primary">{t(progress.completed ? "catalog.card.completed" : percent > 0 ? "catalog.card.continueLearning" : "catalog.card.startLearning")}<ArrowRight className="size-4 shrink-0" aria-hidden /></span>

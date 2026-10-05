@@ -23,7 +23,7 @@ function UserXpNotifications({ userId }: { userId: string }) {
     queryKey: [...xpAwardNotificationQueryKey, userId],
     queryFn: async () => {
       const cursor = await initializeXpNotifications(userId);
-      // Baseline first: old history stays quiet, newly synchronized identities notify.
+      // Baseline first: old history stays quiet. Connection awards (OCID, GitHub, wallet) are not notifiable sources; they appear in XP history only.
       if (!connectionsSynced.current) {
         const { error } = await supabase.rpc("xp_sync_connections");
         if (error) throw new Error(error.message);

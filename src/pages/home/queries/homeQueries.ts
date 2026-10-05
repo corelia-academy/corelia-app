@@ -3,6 +3,7 @@ import type { User } from "@supabase/supabase-js";
 import type { TFunction } from "i18next";
 
 import { intlLocale } from "@/lib/intl";
+import { isActivityLesson, isLessonPublishedForLearners } from "@/lib/lessonFormat";
 import type { Contest } from "@/types/hackathons";
 import type { Course } from "@/types/courses";
 import { formatCourseMeta, pickCourseFormat } from "../utils/homeFormat";
@@ -10,15 +11,21 @@ import type { FocusCard } from "../utils/homeTypes";
 
 type HomeCatalogPayload = {
   courseCatalog: Course[];
+  courseLessonCounts: Record<string, number | null>;
   contests: Contest[];
 };
 
 type HomeDashboardPayload = {
   focusCards: FocusCard[];
+  enrolledCourseCount: number;
   issuedCertificates: number;
 };
 
-const EMPTY_DASHBOARD: HomeDashboardPayload = { focusCards: [], issuedCertificates: 0 };
+const EMPTY_DASHBOARD: HomeDashboardPayload = {
+  focusCards: [],
+  enrolledCourseCount: 0,
+  issuedCertificates: 0,
+};
 
 export const homeKeys = {
   all: ["home"] as const,
@@ -56,9 +63,23 @@ export function homeCatalogQueryOptions(user: User | null, locale: string) {
           coursesModule.applyCourseLocaleContent(course, localeMap.get(course.id) ?? null),
         ]),
       );
+      const lessonCountEntries = await Promise.all(
+        (user ? publishedCourses.slice(0, 2) : []).map(async (course) => {
+          try {
+            const lessons = await coursesModule.getCourseLessons(course.id);
+            const visibleContentLessonCount = lessons
+              .filter(isLessonPublishedForLearners)
+              .filter((lesson) => !isActivityLesson(lesson)).length;
+            return [course.id, visibleContentLessonCount] as const;
+          } catch {
+            return [course.id, null] as const;
+          }
+        }),
+      );
 
       return {
         courseCatalog: publishedCourses.map((course) => localizedMap.get(course.id) ?? course),
+        courseLessonCounts: Object.fromEntries(lessonCountEntries),
         contests: contestList.filter(
           (contest) => contest.status === "published" || contest.status === "running",
         ),
@@ -83,6 +104,7 @@ export function homeDashboardQueryOptions(
       const {
         computeProgressPercent,
         getCourse,
+        getCompletedLessonIds,
         getCourseLessons,
         getCourseSections,
         getLessonProgressForCourse,
@@ -103,6 +125,18 @@ export function homeDashboardQueryOptions(
           if (!course) return null;
           const sortedLessons = sortLessonsByCurriculum(lessons, sections);
           const percent = computeProgressPercent(sortedLessons, progress);
+          const requiredLessons = sortedLessons.filter(
+            (lesson) => lesson.published !== false && !lesson.archived_at,
+          );
+          const completedLessonIds = getCompletedLessonIds(requiredLessons, progress);
+          const remainingLessons = requiredLessons.filter(
+            (lesson) => !completedLessonIds.has(lesson.id),
+          );
+          const remainingDurationSeconds = remainingLessons.every((lesson) =>
+            Number.isFinite(lesson.duration_seconds),
+          )
+            ? remainingLessons.reduce((total, lesson) => total + lesson.duration_seconds, 0)
+            : null;
           const nextLesson = getResumeLesson(sortedLessons, progress, enrollment.last_lesson_id);
           const format = pickCourseFormat(course);
           return {
@@ -110,6 +144,8 @@ export function homeDashboardQueryOptions(
             title: course.title,
             format,
             progress: percent,
+            lessonCount: requiredLessons.length,
+            remainingDurationSeconds,
             completed: Boolean(enrollment.completed_at),
             nextStep:
               format === "online"
@@ -129,6 +165,7 @@ export function homeDashboardQueryOptions(
 
       return {
         focusCards: enrollmentCards.filter((item): item is FocusCard => item != null),
+        enrolledCourseCount: enrollments.length,
         issuedCertificates: enrollments.filter((item) => !!item.certificate_issued_at).length,
       };
     },

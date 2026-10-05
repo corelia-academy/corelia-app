@@ -4,6 +4,7 @@ import { gsap } from "gsap";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter, useLocation } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import "@/i18n";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -50,13 +51,16 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(12);
+    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(15);
     expect(container.querySelector('a[href="/components/action"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/avatar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/scrollbar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/tabs"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/input-field"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/button"]')).not.toBeNull();
+    expect(
+      container.querySelector('a[href="/components/empty-state-illustration"]'),
+    ).not.toBeNull();
     expect(container.querySelector('a[href="/components"]')).toBeNull();
     const navigation = container.querySelector<HTMLElement>(
       '[data-testid="component-navigation"]',
@@ -65,11 +69,21 @@ describe("AdminComponentsPage", () => {
     expect(navigation?.classList.contains("overflow-x-auto")).toBe(true);
     expect(navigation?.classList.contains("overflow-x-hidden")).toBe(false);
     expect(container.querySelector("main")?.classList.contains("select-none")).toBe(false);
-    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(12);
-    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(12);
+    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(15);
+    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(15);
     expect(container.querySelector('[data-testid="component-section-title"]')?.textContent).toBe("Action");
     expect(container.textContent).toContain("Badge");
     expect(container.textContent).toContain("Selection");
+
+    const emptyStateSection = container.querySelector<HTMLElement>(
+      "#component-empty-state-illustration",
+    );
+    expect(emptyStateSection).not.toBeNull();
+    expect(
+      emptyStateSection?.querySelectorAll(
+        '[data-testid^="empty-state-illustration-"]',
+      ),
+    ).toHaveLength(6);
 
     const buttonSection = container.querySelector<HTMLElement>("#component-button");
     expect(buttonSection).not.toBeNull();

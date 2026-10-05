@@ -29,6 +29,7 @@ import AdminActionComponentPage from "./AdminActionComponentPage";
 import AdminAvatarComponentPage from "./AdminAvatarComponentPage";
 import AdminBadgeComponentPage from "./AdminBadgeComponentPage";
 import AdminDropdownMenuComponentPage from "./AdminDropdownMenuComponentPage";
+import AdminEmptyStateIllustrationComponentPage from "./AdminEmptyStateIllustrationComponentPage";
 import AdminInputFieldComponentPage from "./AdminInputFieldComponentPage";
 import AdminScrollbarComponentPage from "./AdminScrollbarComponentPage";
 import AdminSelectionComponentPage from "./AdminSelectionComponentPage";
@@ -49,6 +50,7 @@ const pages = [
   AdminScrollbarComponentPage,
   AdminTabsComponentPage,
   AdminDropdownMenuComponentPage,
+  AdminEmptyStateIllustrationComponentPage,
   AdminInputFieldComponentPage,
 ];
 
@@ -143,6 +145,34 @@ describe("admin component detail pages", () => {
     });
 
     expect(saleAmount?.value).toBe("3000.5");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("supplies explicit information and warning icons in the Input showcase", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <AdminInputFieldComponentPage />
+        </MemoryRouter>,
+      );
+    });
+
+    expect(
+      container.querySelector(
+        '[data-slot="input-field-control"]:not([data-invalid="true"]) [data-slot="input-field-status-icon"] svg',
+      ),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(
+        '[data-slot="input-field-control"][data-invalid="true"] [data-slot="input-field-status-icon"] svg',
+      ),
+    ).not.toBeNull();
 
     await act(async () => root.unmount());
     container.remove();

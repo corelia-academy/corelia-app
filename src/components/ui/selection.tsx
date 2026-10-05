@@ -127,7 +127,7 @@ type SelectionIconProps = {
 
     if (kind === "checkbox") {
       const isSmall = size === "small"
-      const viewBox = isSmall ? "0 0 20 20" : "0 0 24 24"
+      const viewBox = isSmall ? "-1 -1 22 22" : "-1 -1 26 26"
 
       return (
         <span
@@ -216,7 +216,7 @@ type SelectionIconProps = {
           data-slot={dataSlot}
         >
           <svg
-            viewBox={`0 0 ${iconSize} ${iconSize}`}
+            viewBox={`-1 -1 ${iconSize + 2} ${iconSize + 2}`}
             width={iconSize}
             height={iconSize}
             fill="none"

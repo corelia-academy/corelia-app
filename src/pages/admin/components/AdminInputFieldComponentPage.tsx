@@ -5,6 +5,8 @@ import {
 } from "react";
 
 import { CaretDown } from "@phosphor-icons/react/dist/csr/CaretDown";
+import { Info } from "@phosphor-icons/react/dist/csr/Info";
+import { Warning } from "@phosphor-icons/react/dist/csr/Warning";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -462,6 +464,11 @@ function InputShowcaseExample({
     variant: inputVariant,
     fieldType: "single-line",
     type: inputTypeByVariant[variant],
+    statusIcon: isDestructive ? (
+      <Warning size={20} weight="duotone" />
+    ) : (
+      <Info size={20} weight="duotone" />
+    ),
     inputMode: variant === "trailing-dropdown" ? "decimal" : undefined,
     maxLength: variant === "leading-dropdown" ? 10 : undefined,
     placeholder: placeholderByVariant[variant],

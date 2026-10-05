@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { getXpRank, XP_RANKS } from "@/lib/xpRanks";
+import { getXpRank } from "@/lib/xpRanks";
+import { XpRankCatalog } from "./XpRankCatalog";
 import { XpRankBadge } from "./XpRankBadge";
 
 export function XpRankProgress({ total }: { total: number }) {
@@ -24,7 +25,7 @@ export function XpRankProgress({ total }: { total: number }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-md">
         <DialogHeader><DialogTitle>{t("xp.rank.allRanks")}</DialogTitle><DialogDescription>{t("xp.rank.description")}</DialogDescription></DialogHeader>
-        <ul className="space-y-3">{XP_RANKS.map(item => <li key={item.code} className="flex items-center justify-between gap-3"><XpRankBadge total={item.minimum} /><span className="text-sm tabular-nums">{format(item.minimum)} XP</span></li>)}</ul>
+        <XpRankCatalog />
       </DialogContent>
     </Dialog>
   </section>;

@@ -130,16 +130,23 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260929222933_public_hackathon_applicant_avatars.sql",
   "supabase/migrations/20260930004829_expand_hackathon_applicant_preview.sql",
   "supabase/migrations/20260930033151_compact_hackathon_applicant_preview.sql",
+  "supabase/migrations/20261001070125_qa661_xp_feed_wallet_fixes.sql",
+  "supabase/migrations/20261001122504_qa661_identity_reward_once_wallet_unlink.sql",
+  "supabase/migrations/20261002071829_qa663_feed_following_profiles_definer.sql",
+  "supabase/migrations/20261002082123_qa663_following_profiles_private_wrapper.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production deployment at 270e6101 applied the wider avatar preview limit.
-// Only the compact applicant preview RPC is pending.
+// Production ledger is verified through the compact five-avatar preview limit.
+// The October QA fixes are the exact pending set for this release.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20260930033151",
+  "20261001070125",
+  "20261001122504",
+  "20261002071829",
+  "20261002082123",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

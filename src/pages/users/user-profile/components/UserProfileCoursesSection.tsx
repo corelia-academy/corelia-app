@@ -1,10 +1,14 @@
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PublicCourseCard } from "@/components/courses/PublicCourseCard";
+import { createMockParticipantPreview } from "@/components/participants/participantPreview";
 import { useTranslation } from "react-i18next";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { publicInstructorCoursesQueryOptions } from "@/features/profiles/publicProfileQueries";
 import type { PublicProfile } from "@/types/database";
+
+const EMPTY_COURSES: never[] = [];
 
 export function UserProfileCoursesSection({
   profile,
@@ -14,7 +18,14 @@ export function UserProfileCoursesSection({
   const { t, i18n } = useTranslation("common");
   const canShow = profile.role === "instructor";
   const query = useQuery(publicInstructorCoursesQueryOptions(profile.id, canShow, i18n.language));
-  const courses = query.data ?? [];
+  const courses = query.data ?? EMPTY_COURSES;
+  const participantPreviewByCourse = useMemo(
+    () => new Map(courses.map((course) => [
+      course.id,
+      createMockParticipantPreview(course.id),
+    ])),
+    [courses],
+  );
   const loading = canShow && query.isPending;
   const error = query.error ? t("userProfile.errors.loadFailed") : null;
 
@@ -92,7 +103,11 @@ export function UserProfileCoursesSection({
 
       <div className="grid gap-3 sm:grid-cols-2">
         {courses.map((c) => (
-          <PublicCourseCard key={c.id} course={c} />
+          <PublicCourseCard
+            key={c.id}
+            course={c}
+            participantPreview={participantPreviewByCourse.get(c.id)!}
+          />
         ))}
       </div>
     </section>

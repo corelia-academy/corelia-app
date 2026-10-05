@@ -10,7 +10,9 @@ import { getWallets } from "@wallet-standard/app";
 import { connectAccountIdentity } from "@/lib/auth";
 import { useAuth } from "@/stores/authStore";
 import { connectedIdentitiesQueryOptions, connectedWalletsQueryOptions } from "@/features/account/accountQueries";
-import { availableSolanaWallets, connectEthereumWallet, connectSolanaWallet, injectedEthereumWallet } from "@/lib/walletConnections";
+import { availableSolanaWallets, connectEthereumWallet, connectSolanaWallet, disconnectWallet, injectedEthereumWallet } from "@/lib/walletConnections";
+import type { ConnectedWallet } from "@/lib/walletConnections";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { DiscoveredEthereumWallet, EthereumProvider } from "@/lib/walletConnections";
 import { queryClient } from "@/lib/queryClient";
 
@@ -29,6 +31,8 @@ export function ConnectedAccountsCard() {
   const [connecting, setConnecting] = useState(false);
   const [walletBusy, setWalletBusy] = useState(false);
   const [addingWallet, setAddingWallet] = useState<string | null>(null);
+  const [unlinking, setUnlinking] = useState<ConnectedWallet | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [solanaWallets, setSolanaWallets] = useState(availableSolanaWallets);
   const [ethereumWallets, setEthereumWallets] = useState<DiscoveredEthereumWallet[]>(() => {
     const fallback = injectedEthereumWallet();
@@ -63,6 +67,24 @@ export function ConnectedAccountsCard() {
   const googleIdentity = identities.data?.find((identity) => identity.provider === "google");
   const wallets = useQuery(connectedWalletsQueryOptions(user?.id));
 
+  async function confirmDisconnect() {
+    if (!unlinking) return;
+    setError(null);
+    setNotice(null);
+    setWalletBusy(true);
+    try {
+      await disconnectWallet(unlinking);
+      setUnlinking(null);
+      setNotice(t("xp.connections.walletDisconnected"));
+      await queryClient.invalidateQueries({ queryKey: ["account", "wallets"] });
+    } catch {
+      setUnlinking(null);
+      setError(t("xp.connections.failed"));
+    } finally {
+      setWalletBusy(false);
+    }
+  }
+
   async function connectWallet(action: () => Promise<boolean>) {
     setError(null);
     setCallbackError(null);
@@ -80,7 +102,7 @@ export function ConnectedAccountsCard() {
         wallet_missing: t("xp.connections.errors.wallet_missing"),
         invalid_signature: t("xp.connections.errors.invalid_signature"),
         challenge_expired: t("xp.connections.errors.challenge_expired"),
-        wallet_already_linked_or_challenge_expired: t("xp.connections.errors.wallet_already_linked_or_challenge_expired"),
+        wallet_linked_to_another_account: t("xp.connections.errors.wallet_linked_to_another_account"),
         origin_mismatch: t("xp.connections.errors.origin_mismatch"),
         unauthenticated: t("xp.connections.errors.unauthenticated"),
       };
@@ -124,7 +146,7 @@ export function ConnectedAccountsCard() {
             {wallets.isPending ? t("xp.connections.loading") : wallets.isError ? t("xp.connections.loadFailed") : linked.length ? t("xp.connections.walletCount", { count: linked.length }) : t("xp.connections.notConnected")}
           </span>
         </div>
-        {linked.map((wallet) => <p key={wallet.id} className="break-all rounded-lg bg-surface-raised p-3 font-mono text-sm">{wallet.address}</p>)}
+        {linked.map((wallet) => <div key={wallet.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-surface-raised p-3"><p className="min-w-0 break-all font-mono text-sm">{wallet.address}</p><Button type="button" size="small" variant="cta" hierarchy="secondary" disabled={walletBusy} onClick={() => setUnlinking(wallet)}>{t("xp.connections.walletDisconnect")}</Button></div>)}
         {wallets.isError ? <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void wallets.refetch()}>{t("profile.retry")}</Button> : !wallets.isPending ? <>
           <Button type="button" variant="cta" hierarchy="secondary" disabled={walletBusy} aria-expanded={addingWallet === chain} onClick={() => setAddingWallet(addingWallet === chain ? null : chain)}>{t(linked.length ? "xp.connections.addWallet" : "xp.connections.chooseWallet")}</Button>
           {addingWallet === chain ? <div className="flex flex-wrap gap-2">
@@ -136,5 +158,16 @@ export function ConnectedAccountsCard() {
     })}
     {identities.isError ? <button type="button" onClick={() => void identities.refetch()} className="mt-2 text-sm text-primary underline">{t("profile.retry")}</button> : null}
     {error ? <p role="alert" className="mt-2 text-sm text-destructive">{error}</p> : null}
+    {notice ? <p role="status" className="mt-2 text-sm text-primary">{notice}</p> : null}
+    <Dialog open={unlinking !== null} onOpenChange={(open) => { if (!open && !walletBusy) setUnlinking(null); }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader><DialogTitle>{t("xp.connections.walletDisconnectTitle")}</DialogTitle><DialogDescription>{t("xp.connections.walletDisconnectBody")}</DialogDescription></DialogHeader>
+        {unlinking ? <p className="break-all rounded-lg bg-surface-raised p-3 font-mono text-sm">{unlinking.address}</p> : null}
+        <DialogFooter>
+          <Button type="button" variant="cta" hierarchy="secondary" disabled={walletBusy} onClick={() => setUnlinking(null)}>{t("xp.connections.walletDisconnectCancel")}</Button>
+          <Button type="button" disabled={walletBusy} onClick={() => void confirmDisconnect()}>{t("xp.connections.walletDisconnectConfirm")}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </section>;
 }

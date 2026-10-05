@@ -50,3 +50,8 @@ export async function connectSolanaWallet(wallet: Wallet): Promise<boolean> {
   const verified = await callCoreliaApi<{ linked: boolean; awarded: boolean }>("wallets.verify", { challengeId, signature: bs58.encode(result.signature), signedMessage: bs58.encode(result.signedMessage) });
   return verified.awarded;
 }
+
+export async function disconnectWallet(wallet: Pick<ConnectedWallet, "chain" | "address">): Promise<void> {
+  const { error } = await supabase.rpc("xp_unlink_wallet", { p_chain: wallet.chain, p_address: wallet.address });
+  if (error) throw new Error(error.message);
+}

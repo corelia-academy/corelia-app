@@ -70,6 +70,6 @@ export async function handleWalletVerify(req: Request, db: SupabaseClient): Prom
   if (!valid) return json({ message: "invalid_signature" }, 400);
   const { data: result, error: linkError } = await db.rpc("xp_consume_wallet_challenge", { p_challenge_id: challenge.id, p_user_id: user.id });
   if (linkError) return json({ message: "wallet_link_failed" }, 500);
-  if (!result?.linked) return json({ message: "wallet_already_linked_or_challenge_expired" }, 409);
+  if (!result?.linked) return json({ message: result?.reason === "wallet_taken" ? "wallet_linked_to_another_account" : "challenge_expired" }, 409);
   return json({ linked: true, awarded: Boolean(result.awarded) });
 }
