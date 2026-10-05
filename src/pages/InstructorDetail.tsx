@@ -19,6 +19,8 @@ import { useTranslation } from "react-i18next";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 
+const EMPTY_COURSES: never[] = [];
+
 const InstructorDetail = () => {
   const { t, i18n } = useTranslation("courses");
   const translate = useCallback(
@@ -32,7 +34,7 @@ const InstructorDetail = () => {
 
   const detailQuery = useQuery(publicInstructorDetailQueryOptions(id, isValidUuid, i18n.language));
   const profile = detailQuery.data?.profile ?? null;
-  const courses = detailQuery.data?.courses ?? [];
+  const courses = detailQuery.data?.courses ?? EMPTY_COURSES;
   const participantPreviewByCourse = useMemo(
     () => new Map(courses.map((course) => [
       course.id,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -19,6 +19,7 @@ import type { SearchEntityType, SearchResultRow } from "@/lib/search";
 import { formatDuration, getCourseLevelLabel } from "@/types/courses";
 
 const SEARCH_FILTERS = ["all", "course", "hackathon", "project", "profile"] as const;
+const EMPTY_SEARCH_RESULTS: SearchResultRow[] = [];
 type SearchFilter = "all" | SearchEntityType;
 
 function isSearchFilter(value: string): value is SearchFilter {
@@ -104,8 +105,9 @@ export default function SearchPage() {
   const { t, i18n } = useTranslation("common");
   const q = useQueryParam("q").trim();
   const [activeFilter, setActiveFilter] = useState<SearchFilter>("all");
+  const [previousQuery, setPreviousQuery] = useState(q);
   const resultsQuery = useQuery(searchResultsQueryOptions(q, 30, true, i18n.language));
-  const items = resultsQuery.data ?? [];
+  const items = resultsQuery.data ?? EMPTY_SEARCH_RESULTS;
   const participantPreviewByCourse = useMemo(
     () => new Map(items
       .filter((item) => item.entity_type === "course" && item.course)
@@ -120,9 +122,10 @@ export default function SearchPage() {
     ? resultsQuery.error.message
     : resultsQuery.error ? t("search.errors.loadFailed") : null;
 
-  useEffect(() => {
+  if (previousQuery !== q) {
+    setPreviousQuery(q);
     setActiveFilter("all");
-  }, [q]);
+  }
 
   return (
     <div className="container-app pb-6 pt-4 sm:py-8">

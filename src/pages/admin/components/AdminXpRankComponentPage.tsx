@@ -46,7 +46,7 @@ export default function AdminXpRankComponentPage({
                 </th>
                 {sizes.map(({ size, key }) => (
                   <th key={size} scope="col" className="px-4 py-2 text-center">
-                    {t("componentShowcase.xpRank.sizes." + key)}
+                    {t(`componentShowcase.xpRank.sizes.${key}`)}
                   </th>
                 ))}
               </tr>

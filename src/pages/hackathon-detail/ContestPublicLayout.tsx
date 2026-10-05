@@ -81,9 +81,10 @@ export default function ContestPublicLayout() {
     (!previewRequested || previewAuthorized)
       ? loaded
       : null;
+  const contestId = contest?.id;
   const participantPreview = useMemo(
-    () => contest ? createMockParticipantPreview(contest.id, 5) : null,
-    [contest?.id],
+    () => contestId ? createMockParticipantPreview(contestId, 5) : null,
+    [contestId],
   );
   useDynamicPageTitle(contest?.title);
 

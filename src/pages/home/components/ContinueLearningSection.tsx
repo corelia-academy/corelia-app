@@ -43,7 +43,7 @@ export function ContinueLearningSection({
             <NavLink
               key={item.id}
               to={item.action}
-              className="group min-w-[240px] max-w-none sm:max-w-[335px] flex-[1_1_100%] sm:flex-[1_1_240px] overflow-hidden rounded-xl transition-transform duration-200 ease-out hover:-translate-y-0.5"
+              className="group min-w-[240px] max-w-none sm:max-w-[335px] flex-[1_1_100%] sm:flex-[1_1_240px] @min-[504px]:@max-[807px]:flex-[1_1_240px]! overflow-hidden rounded-xl transition-transform duration-200 ease-out hover:-translate-y-0.5"
             >
               <div className="aspect-video overflow-hidden rounded-lg border border-border bg-surface-raised">
                 {item.thumbnailUrl ? (

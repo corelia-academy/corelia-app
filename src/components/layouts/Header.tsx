@@ -95,13 +95,19 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
   // const { isInitialized, authState, ocAuth } = useOCAuth();
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
+  const isSearchRoute = location.pathname === "/search" || location.pathname === "/search/";
+  const searchRouteKey = isSearchRoute ? `${location.pathname}${location.search}` : null;
+  const initialSearchText = searchRouteKey === null
+    ? ""
+    : new URLSearchParams(location.search).get("q") ?? "";
   // const [ocConnectOpen, setOcConnectOpen] = useState(false);
   // const [ocConnectLoading, setOcConnectLoading] = useState(false);
   // const [ocConnectError, setOcConnectError] = useState<string | null>(null);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState(initialSearchText);
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [previousSearchRouteKey, setPreviousSearchRouteKey] = useState(searchRouteKey);
   const [recentSearches, setRecentSearches] = useState<string[]>(() =>
     readRecentSearches(),
   );
@@ -117,6 +123,14 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
   const suggestionsError = suggestionsQuery.error instanceof Error
     ? suggestionsQuery.error.message
     : suggestionsQuery.error ? t("search.errors.loadFailed") : null;
+
+  if (previousSearchRouteKey !== searchRouteKey) {
+    setPreviousSearchRouteKey(searchRouteKey);
+    if (searchRouteKey !== null) {
+      setSearchText(new URLSearchParams(location.search).get("q") ?? "");
+      setSearchOpen(false);
+    }
+  }
 
   const metaName =
     typeof user?.user_metadata?.full_name === "string"
@@ -255,15 +269,6 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
     const handle = window.setTimeout(() => setDebouncedSearchText(searchText.trim()), 180);
     return () => window.clearTimeout(handle);
   }, [searchText]);
-
-  useEffect(() => {
-    if (location.pathname !== "/search" && location.pathname !== "/search/") {
-      return;
-    }
-
-    setSearchText(new URLSearchParams(location.search).get("q") ?? "");
-    setSearchOpen(false);
-  }, [location.pathname, location.search]);
 
   async function handleSearchSubmit(query: string) {
     const q = query.trim();

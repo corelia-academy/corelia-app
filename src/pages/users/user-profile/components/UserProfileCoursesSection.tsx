@@ -8,6 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { publicInstructorCoursesQueryOptions } from "@/features/profiles/publicProfileQueries";
 import type { PublicProfile } from "@/types/database";
 
+const EMPTY_COURSES: never[] = [];
+
 export function UserProfileCoursesSection({
   profile,
 }: {
@@ -16,7 +18,7 @@ export function UserProfileCoursesSection({
   const { t, i18n } = useTranslation("common");
   const canShow = profile.role === "instructor";
   const query = useQuery(publicInstructorCoursesQueryOptions(profile.id, canShow, i18n.language));
-  const courses = query.data ?? [];
+  const courses = query.data ?? EMPTY_COURSES;
   const participantPreviewByCourse = useMemo(
     () => new Map(courses.map((course) => [
       course.id,
