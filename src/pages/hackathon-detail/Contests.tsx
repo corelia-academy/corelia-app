@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
 import { ArrowUpRight, CalendarDays, Trophy } from "lucide-react";
@@ -6,14 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HackathonApplicantPreview } from "@/components/hackathons/HackathonApplicantPreview";
-import { createMockParticipantPreview } from "@/components/participants/participantPreview";
 import { canManageContests } from "@/lib/permissions";
 import { useAuth } from "@/stores/authStore";
 import type { Contest } from "@/types/hackathons";
 import { formatPrizeAmount } from "./utils/formatPrizeAmount";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { publicHackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
+import { publicHackathonApplicantPreviewsQueryOptions, publicHackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
 import {
   contestListLocationLabel,
   contestListStatusLabel,
@@ -42,13 +41,7 @@ export default function Contests() {
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const catalogQuery = useQuery(publicHackathonCatalogQueryOptions(locale));
   const items = catalogQuery.data ?? EMPTY_CONTESTS;
-  const participantPreviewByContest = useMemo(
-    () => new Map(items.map((item) => [
-      item.id,
-      createMockParticipantPreview(item.id, 5),
-    ])),
-    [items],
-  );
+  const applicantsQuery = useQuery(publicHackathonApplicantPreviewsQueryOptions(items.map((item) => item.id)));
   const loading = catalogQuery.isPending;
   const error = catalogQuery.error
     ? catalogQuery.error instanceof Error
@@ -142,7 +135,6 @@ export default function Contests() {
           items.map((contest) => {
             const bannerUrl = contest.cover_image_url?.trim() || contest.thumbnail_url?.trim() || null;
             const contestSlug = contest.slug?.trim() || null;
-            const participantPreview = participantPreviewByContest.get(contest.id)!;
             return (
               <NavLink
                 key={contest.id}
@@ -171,7 +163,7 @@ export default function Contests() {
                     <div className="my-4 flex flex-wrap gap-x-6 gap-y-3">
                       {contest.prize_pool?.amount && Number(contest.prize_pool.amount) !== 0 ? <div className="min-w-0"><p className="text-xs text-foreground-muted">{t("public.prizes.total")}</p><p className="mt-1 text-lg font-semibold tracking-tight text-foreground tabular-nums [overflow-wrap:anywhere]">{formatPrizeAmount(contest.prize_pool.amount, locale)} <span className="text-xs font-medium text-foreground-muted">{contest.prize_pool.currency}</span></p></div> : null}
                       {contest.host?.name ? <div className="min-w-0"><p className="text-xs text-foreground-muted">{t("public.hostedBy")}</p><p className="mt-1 break-words text-sm font-medium text-foreground">{contest.host.name}</p></div> : null}
-                      <div className="min-w-0"><HackathonApplicantPreview participantPreview={participantPreview} summary={t("detail.hero.applicationsLine", { total: participantPreview.count })} label={t("public.applications")} /></div>
+                      <div className="min-w-0"><HackathonApplicantPreview applicants={applicantsQuery.data?.[contest.id]} count={contest.participants_count ?? 0} summary={t("detail.hero.applicationsLine", { total: contest.participants_count ?? 0 })} label={t("public.applications")} /></div>
                     </div>
                     <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-foreground-muted">
                       {contest.registration_deadline ? <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 shrink-0" aria-hidden />{t("catalog.registrationDeadlinePrefix", { date: new Date(contest.registration_deadline).toLocaleDateString(locale) })}</span> : contest.starts_at || contest.ends_at ? <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 shrink-0" aria-hidden />{formatContestListDateRange(contest.starts_at, contest.ends_at, translate, "catalog")}</span> : null}

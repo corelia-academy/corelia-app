@@ -79,7 +79,7 @@ const sidebarUtilityLinks = [
   },
   {
     labelKey: "nav.productRoadmap",
-    href: "https://corelia.academy/roadmap/",
+    href: "https://github.com/corelia-academy/corelia-app/releases",
     icon: Compass,
     showArrow: true,
   },
