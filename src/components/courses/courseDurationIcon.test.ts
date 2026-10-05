@@ -24,3 +24,14 @@ describe.each(components)("%s course duration icon", (_name, fileUrl) => {
     expect(source).toMatch(/<TimerIcon\b[^>]*\bweight="duotone"/);
   });
 });
+
+describe("PublicCourseCard thumbnail placeholder icon", () => {
+  const source = readFileSync(new URL("./PublicCourseCard.tsx", import.meta.url), "utf8");
+
+  it("uses the Phosphor BookOpen icon with duotone weight", () => {
+    expect(source).toMatch(
+      /import\s*\{[^}]*\bBookOpen\b[^}]*\}\s*from\s*"@phosphor-icons\/react"/,
+    );
+    expect(source).toMatch(/<BookOpen\b[^>]*\bweight="duotone"/);
+  });
+});

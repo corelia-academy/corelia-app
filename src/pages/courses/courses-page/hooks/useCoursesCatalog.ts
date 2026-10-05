@@ -14,7 +14,7 @@ export function useCoursesCatalog() {
   const { t, i18n } = useTranslation("courses");
   const locale: SupportedCourseLocale = i18n.language?.startsWith("en") ? "en" : "vi";
   const catalogQuery = useQuery(coursesCatalogQueryOptions(locale));
-  const courses = catalogQuery.data ?? [];
+  const courses = useMemo(() => catalogQuery.data ?? [], [catalogQuery.data]);
   const courseIds = useMemo(() => courses.map((course) => course.id), [courses]);
   const lessonCountsQuery = useQuery(coursesCatalogLessonCountsQueryOptions(courseIds));
   const [query, setQuery] = useState("");
