@@ -46,7 +46,7 @@ export function HackathonApplicantPreview({
             <span className="text-lg font-semibold text-foreground tabular-nums">{total}</span>
           </div>
         )}
-        className="mt-1 min-h-8"
+        className="mt-1 min-h-8 flex-col items-start gap-1"
       />
     </div>
   );
