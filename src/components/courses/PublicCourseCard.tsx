@@ -71,10 +71,10 @@ export function PublicCourseCard({ course, progress, participantPreview, variant
               className="mt-4"
               count={participantPreview.count}
               participants={participantPreview.participants}
-              summary={tCommon("home.meta.learners", {
-                displayCount: formatCompactParticipantCount(participantPreview.count),
-              })}
             />
+            {/* summary={tCommon("home.meta.learners", {
+                displayCount: formatCompactParticipantCount(participantPreview.count),
+              })} */}
           </>
         ) : (
           <>

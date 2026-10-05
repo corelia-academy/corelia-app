@@ -127,10 +127,10 @@ export function ExploreCoursesSection({
                   <ParticipantSummary
                     count={participantPreview.count}
                     participants={participantPreview.participants}
-                    summary={t("home.meta.learners", {
-                      displayCount: formatCompactParticipantCount(participantPreview.count),
-                    })}
                   />
+                  {/* summary={t("home.meta.learners", {
+                      displayCount: formatCompactParticipantCount(participantPreview.count),
+                    })} */}
                 </div>
               </NavLink>
             );
