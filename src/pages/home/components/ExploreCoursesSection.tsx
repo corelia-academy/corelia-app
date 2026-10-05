@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { BookOpen, Clock, FileText } from "lucide-react";
+import { BookOpen, FileText } from "lucide-react";
+import { TimerIcon } from "@phosphor-icons/react";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
 import { Button } from "@/components/ui/button";
@@ -112,7 +113,7 @@ export function ExploreCoursesSection({
                         <span className="h-4 w-px shrink-0 bg-border" aria-hidden />
                       ) : null}
                       <span className="inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap">
-                        <Clock className="size-4 shrink-0" aria-hidden />
+                        <TimerIcon className="size-4 shrink-0" aria-hidden weight="duotone" />
                         {course.total_duration_seconds > 0
                           ? t("home.meta.hours", {
                               count: Math.max(
