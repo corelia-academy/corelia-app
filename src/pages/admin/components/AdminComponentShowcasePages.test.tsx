@@ -30,6 +30,7 @@ import AdminAvatarComponentPage from "./AdminAvatarComponentPage";
 import AdminBadgeComponentPage from "./AdminBadgeComponentPage";
 import AdminDropdownMenuComponentPage from "./AdminDropdownMenuComponentPage";
 import AdminEmptyStateIllustrationComponentPage from "./AdminEmptyStateIllustrationComponentPage";
+import AdminFullPageEmptyStateComponentPage from "./AdminFullPageEmptyStateComponentPage";
 import AdminInputFieldComponentPage from "./AdminInputFieldComponentPage";
 import AdminScrollbarComponentPage from "./AdminScrollbarComponentPage";
 import AdminSelectionComponentPage from "./AdminSelectionComponentPage";
@@ -75,6 +76,29 @@ describe("admin component detail pages", () => {
     expect(container.querySelector("h1")).not.toBeNull();
     expect(container.querySelectorAll('[data-slot="card"]').length).toBeGreaterThan(0);
     expect(container.querySelector("main")?.classList.contains("select-none")).toBe(false);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders only the full-page empty-state component", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <AdminFullPageEmptyStateComponentPage />
+        </MemoryRouter>,
+      );
+    });
+
+    expect(container.querySelector(".full-page-empty-state")).not.toBeNull();
+    expect(container.querySelector('[data-slot="card"]')).toBeNull();
+    expect(container.querySelector('a[href="/components"]')).toBeNull();
+    expect(container.querySelector("h1")).toBeNull();
+    expect(container.querySelector("button")).toBeNull();
 
     await act(async () => root.unmount());
     container.remove();

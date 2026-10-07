@@ -51,7 +51,7 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(15);
+    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(16);
     expect(container.querySelector('a[href="/components/action"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/avatar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/scrollbar"]')).not.toBeNull();
@@ -60,6 +60,9 @@ describe("AdminComponentsPage", () => {
     expect(container.querySelector('a[href="/components/button"]')).not.toBeNull();
     expect(
       container.querySelector('a[href="/components/empty-state-illustration"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('a[href="/components/full-page-empty-state"]'),
     ).not.toBeNull();
     expect(container.querySelector('a[href="/components"]')).toBeNull();
     const navigation = container.querySelector<HTMLElement>(
@@ -70,6 +73,7 @@ describe("AdminComponentsPage", () => {
     expect(navigation?.classList.contains("overflow-x-hidden")).toBe(false);
     expect(container.querySelector("main")?.classList.contains("select-none")).toBe(false);
     expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(15);
+    expect(container.querySelector("#component-full-page-empty-state")).toBeNull();
     expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(15);
     expect(container.querySelector('[data-testid="component-section-title"]')?.textContent).toBe("Action");
     expect(container.textContent).toContain("Badge");
