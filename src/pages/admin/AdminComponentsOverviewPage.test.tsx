@@ -51,7 +51,7 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(15);
+    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(16);
     expect(container.querySelector('a[href="/components/action"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/avatar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/scrollbar"]')).not.toBeNull();
@@ -60,6 +60,9 @@ describe("AdminComponentsPage", () => {
     expect(container.querySelector('a[href="/components/button"]')).not.toBeNull();
     expect(
       container.querySelector('a[href="/components/empty-state-illustration"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('a[href="/components/full-page-empty-state"]'),
     ).not.toBeNull();
     expect(container.querySelector('a[href="/components"]')).toBeNull();
     const navigation = container.querySelector<HTMLElement>(
@@ -70,6 +73,7 @@ describe("AdminComponentsPage", () => {
     expect(navigation?.classList.contains("overflow-x-hidden")).toBe(false);
     expect(container.querySelector("main")?.classList.contains("select-none")).toBe(false);
     expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(15);
+    expect(container.querySelector("#component-full-page-empty-state")).toBeNull();
     expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(15);
     expect(container.querySelector('[data-testid="component-section-title"]')?.textContent).toBe("Action");
     expect(container.textContent).toContain("Badge");
@@ -106,6 +110,49 @@ describe("AdminComponentsPage", () => {
     expect(sidebar?.querySelectorAll('[data-testid^="theme-toggle-"]')).toHaveLength(2);
     expect(container.querySelector('[data-slot="sidebar"]')).toBeNull();
     expect(container.querySelector('[data-slot="sidebar-inset"]')).toBeNull();
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("keeps the showcase sidebar mounted when navigating to the full-page empty state", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter initialEntries={["/components"]}>
+          <AdminComponentsPage />
+        </MemoryRouter>,
+      );
+    });
+
+    const sidebarBefore = container.querySelector("aside");
+    const fullPageEmptyStateLink = container.querySelector<HTMLAnchorElement>(
+      'a[href="/components/full-page-empty-state"]',
+    );
+
+    expect(sidebarBefore).not.toBeNull();
+    expect(fullPageEmptyStateLink).not.toBeNull();
+
+    await act(async () => {
+      fullPageEmptyStateLink?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+    });
+
+    expect(container.querySelector("aside")).toBe(sidebarBefore);
+    expect(
+      container
+        .querySelector<HTMLAnchorElement>(
+          'a[href="/components/full-page-empty-state"]',
+        )
+        ?.getAttribute("aria-current"),
+    ).toBe("page");
+    expect(container.querySelector(".full-page-empty-state")).not.toBeNull();
+    expect(container.querySelector("main > header")).toBeNull();
+    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(0);
 
     await act(async () => root.unmount());
     container.remove();

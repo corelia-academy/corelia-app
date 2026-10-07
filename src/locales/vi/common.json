@@ -1173,6 +1173,9 @@
         "large": "Lớn · 200 px"
       }
     },
+    "fullPageEmptyState": {
+      "title": "Trạng thái trống toàn trang"
+    },
     "progress": {
       "title": "Tiến độ",
       "criterion": "Kích thước, mức tiến độ và mô hình màu theo Figma cho thanh và vòng tròn.",

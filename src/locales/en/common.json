@@ -1173,6 +1173,9 @@
         "large": "Large · 200 px"
       }
     },
+    "fullPageEmptyState": {
+      "title": "Full Page Empty State"
+    },
     "progress": {
       "title": "Progress",
       "criterion": "Figma sizes, progress levels, and color models for progress bars and circles.",

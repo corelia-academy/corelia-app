@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { CaretDown, MonitorPlay } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 
+import { FullPageEmptyState } from "@/components/layouts/FullPageEmptyState";
 import { PublicCourseCard } from "@/components/courses/PublicCourseCard";
 import { createMockParticipantPreview } from "@/components/participants/participantPreview";
 import { Badge } from "@/components/ui/badge";
@@ -245,16 +246,10 @@ export default function CoursesPage() {
 
   if (catalogCourses.length === 0) {
     return (
-      <div className="course-catalog-page container-app flex min-h-[calc(100svh-var(--app-header-height))] items-center justify-center">
-        <main className="flex w-full items-center justify-center">
-          <EmptyStateIllustration
-            type="empty"
-            size="fullPage"
-            title={t("catalog.noCoursesTitle")}
-            description={t("catalog.noCoursesDescription")}
-          />
-        </main>
-      </div>
+      <FullPageEmptyState
+        title={t("catalog.noCoursesTitle")}
+        description={t("catalog.noCoursesDescription")}
+      />
     );
   }
 

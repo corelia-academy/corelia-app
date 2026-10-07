@@ -6,14 +6,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ArrowLeft } from "lucide-react";
 import { gsap } from "gsap";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
-import { Link, useLocation, useNavigate } from "react-router";
-
-import { Action } from "@/components/ui/action";
-import { Button } from "@/components/ui/button";
+import { useLocation, useNavigate } from "react-router";
 
 import AdminActionComponentPage from "./components/AdminActionComponentPage";
 import AdminAvatarComponentPage from "./components/AdminAvatarComponentPage";
@@ -21,6 +17,7 @@ import AdminBadgeComponentPage from "./components/AdminBadgeComponentPage";
 import AdminButtonComponentPage from "./components/AdminButtonComponentPage";
 import AdminDropdownMenuComponentPage from "./components/AdminDropdownMenuComponentPage";
 import AdminEmptyStateIllustrationComponentPage from "./components/AdminEmptyStateIllustrationComponentPage";
+import AdminFullPageEmptyStateComponentPage from "./components/AdminFullPageEmptyStateComponentPage";
 import AdminProgressComponentPage from "./components/AdminProgressComponentPage";
 import AdminXpRankComponentPage from "./components/AdminXpRankComponentPage";
 import AdminInputFieldComponentPage from "./components/AdminInputFieldComponentPage";
@@ -30,6 +27,7 @@ import AdminSeparatorComponentPage from "./components/AdminSeparatorComponentPag
 import AdminTagComponentPage from "./components/AdminTagComponentPage";
 import AdminTabsComponentPage from "./components/AdminTabsComponentPage";
 import AdminToggleComponentPage from "./components/AdminToggleComponentPage";
+import AdminComponentsSidebar from "./components/AdminComponentsSidebar";
 
 const components = [
   {
@@ -108,6 +106,10 @@ const components = [
     title: "XP Rank",
     criterion: "All six ranks at 80, 160, and 200 px sizes.",
   },
+  {
+    slug: "full-page-empty-state",
+    title: "Full Page Empty State",
+  },
 ] as const;
 
 type ComponentSlug = (typeof components)[number]["slug"];
@@ -161,6 +163,7 @@ export default function AdminComponentsPage() {
   const { resolvedTheme, setTheme } = useTheme();
   const pathnameSlug = pathname.split("/").at(-1);
   const routeSlug = components.find(({ slug }) => slug === pathnameSlug)?.slug ?? null;
+  const isFullPageEmptyState = routeSlug === "full-page-empty-state";
   const [activeComponent, setActiveComponent] = useState<ActiveComponent>(
     routeSlug ?? "overview",
   );
@@ -177,6 +180,17 @@ export default function AdminComponentsPage() {
   const componentNavigationRef = useRef<HTMLElement | null>(null);
   const routeSlugRef = useRef<ComponentSlug | null>(routeSlug);
   const navigateRef = useRef(navigate);
+
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    const previousScrollbarGutter = root.style.scrollbarGutter;
+
+    root.style.scrollbarGutter = "stable";
+
+    return () => {
+      root.style.scrollbarGutter = previousScrollbarGutter;
+    };
+  }, []);
 
   const beginProgrammaticScroll = useCallback((slug: ComponentSlug) => {
     scrollCleanupRef.current?.();
@@ -309,7 +323,7 @@ export default function AdminComponentsPage() {
       return;
     }
 
-    if (!routeSlug) return;
+    if (!routeSlug || routeSlug === "full-page-empty-state") return;
 
     const timeoutId = window.setTimeout(
       () => beginProgrammaticScroll(routeSlug),
@@ -384,7 +398,12 @@ export default function AdminComponentsPage() {
   }, []);
 
   useEffect(() => {
-    if (typeof IntersectionObserver === "undefined") return;
+    if (
+      isFullPageEmptyState ||
+      typeof IntersectionObserver === "undefined"
+    ) {
+      return;
+    }
 
     const observer = new IntersectionObserver(
       () => {
@@ -433,148 +452,113 @@ export default function AdminComponentsPage() {
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [isFullPageEmptyState]);
 
   return (
-    <main className="container-app min-h-screen space-y-8 py-6 sm:py-8">
-      <header className="space-y-4">
-        <div>
-          <p className="text-label-medium uppercase tracking-[0.08em] text-primary">
-            Design system review
-          </p>
-          <h1 className="mt-2 text-heading-large font-display">All Components</h1>
-          <p className="mt-2 max-w-3xl text-body-medium text-foreground-muted">
-            Browse every component in one page. Use the menu to jump to a section and test its interactive states.
-          </p>
-        </div>
-      </header>
-
-      <div className="grid min-w-0 gap-8 lg:grid-cols-[28vh_minmax(0,1fr)]">
-        <aside className="flex h-[70dvh] w-full min-h-0 min-w-0 flex-col lg:sticky lg:top-6 lg:w-[28vh] lg:self-start">
-          <Button
-            type="button"
-            variant="cta" hierarchy="secondary"
-            size="small"
-            className="w-fit justify-start"
-            onClick={() => navigate("/")}
-          >
-            <ArrowLeft aria-hidden />
-            Back to app
-          </Button>
-
-          <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-y-clip rounded-lg border border-border-subtle bg-surface-base p-3">
-            <p className="px-3 pb-2 text-label-medium uppercase tracking-[0.08em] text-foreground-muted">
-              Components
+    <main
+      className={
+        isFullPageEmptyState
+          ? "container-app min-h-svh"
+          : "container-app min-h-screen space-y-8 py-6 sm:py-8"
+      }
+    >
+      {!isFullPageEmptyState ? (
+        <header className="space-y-4">
+          <div>
+            <p className="text-label-medium uppercase tracking-[0.08em] text-primary">
+              Design system review
             </p>
-            <nav
-              ref={componentNavigationRef}
-              aria-label="Component navigation"
-              className="scrollbar-design relative flex min-h-0 flex-1 flex-col gap-1 overflow-x-auto overflow-y-auto overscroll-contain"
-              data-testid="component-navigation"
-            >
-              <span
-                ref={activeIndicatorRef}
-                aria-hidden
-                data-testid="component-active-indicator"
-                className="pointer-events-none absolute left-0 top-0 z-0 rounded-lg bg-action-active opacity-0 will-change-transform"
-              />
-              {components.map(({ slug, title }) => (
-                <Action
-                  key={slug}
-                  data-component-nav-item={slug}
-                  nativeButton={false}
-                  render={
-                    <Link
-                      to={`/components/${slug}`}
-                      aria-current={
-                        activeComponent === slug ? "page" : undefined
-                      }
-                    />
-                  }
-                  label={
-                    slug === "progress"
-                      ? t("componentShowcase.progress.title")
-                      : slug === "xp-rank"
-                        ? t("componentShowcase.xpRank.title")
-                        : title
-                  }
-                  size="small"
-                  isActive={activeComponent === slug}
-                  className="relative z-10 justify-start bg-transparent data-[active=true]:bg-transparent data-[active=true]:hover:bg-transparent"
-                  onClick={() => {
-                    setActiveComponent(slug);
-                    if (routeSlug === slug) {
-                      beginProgrammaticScroll(slug);
-                    }
-                  }}
-                />
-              ))}
-            </nav>
+            <h1 className="mt-2 text-heading-large font-display">All Components</h1>
+            <p className="mt-2 max-w-3xl text-body-medium text-foreground-muted">
+              Browse every component in one page. Use the menu to jump to a section and test its interactive states.
+            </p>
           </div>
+        </header>
+      ) : null}
 
-          <div className="mt-auto flex shrink-0 gap-2 pt-6">
-            {(["light", "dark"] as const).map((theme) => (
-              <Button
-                key={theme}
-                type="button"
-                size="small"
-                variant="cta" hierarchy="secondary"
-                data-testid={`theme-toggle-${theme}`}
-                aria-pressed={resolvedTheme === theme}
-                onClick={() => setTheme(theme)}
-              >
-                {theme === "light" ? "Light" : "Dark"}
-              </Button>
-            ))}
-          </div>
-        </aside>
+      <div
+        className={`grid min-w-0 gap-8 lg:grid-cols-[28vh_minmax(0,1fr)] ${
+          isFullPageEmptyState ? "min-h-svh" : ""
+        }`}
+      >
+        <AdminComponentsSidebar
+          components={components}
+          activeComponent={activeComponent}
+          componentNavigationRef={componentNavigationRef}
+          activeIndicatorRef={activeIndicatorRef}
+          resolvedTheme={resolvedTheme}
+          onBack={() => navigate("/")}
+          onThemeChange={setTheme}
+          onSelectComponent={(slug) => {
+            setActiveComponent(slug);
+            if (
+              routeSlug === slug &&
+              slug !== "full-page-empty-state"
+            ) {
+              beginProgrammaticScroll(slug);
+            }
+          }}
+        />
 
-        <div className="min-w-0 space-y-10" data-testid="component-sections">
-          <ComponentSection {...components[0]}>
-            <AdminActionComponentPage embedded />
-          </ComponentSection>
-          <ComponentSection {...components[1]}>
-            <AdminAvatarComponentPage embedded />
-          </ComponentSection>
-          <ComponentSection {...components[2]}>
-            <AdminBadgeComponentPage embedded />
-          </ComponentSection>
-          <ComponentSection {...components[3]}>
-            <AdminTagComponentPage embedded />
-          </ComponentSection>
-          <ComponentSection {...components[4]}>
-            <AdminSelectionComponentPage embedded />
-          </ComponentSection>
-          <ComponentSection {...components[5]}>
-            <AdminToggleComponentPage embedded />
-          </ComponentSection>
-          <ComponentSection {...components[6]}>
-            <AdminSeparatorComponentPage embedded />
-          </ComponentSection>
-          <ComponentSection {...components[7]}>
-            <AdminScrollbarComponentPage embedded />
-          </ComponentSection>
-          <ComponentSection {...components[8]}>
-            <AdminTabsComponentPage embedded />
-          </ComponentSection>
-          <ComponentSection {...components[9]}>
-            <AdminDropdownMenuComponentPage embedded />
-          </ComponentSection>
-          <ComponentSection {...components[10]}>
-            <AdminInputFieldComponentPage embedded />
-          </ComponentSection>
-          <ComponentSection {...components[11]}>
-            <AdminButtonComponentPage />
-          </ComponentSection>
-          <ComponentSection {...components[12]}>
-            <AdminEmptyStateIllustrationComponentPage embedded />
-          </ComponentSection>
-          <ComponentSection {...components[13]} title={t("componentShowcase.progress.title")} criterion={t("componentShowcase.progress.criterion")}>
-            <AdminProgressComponentPage embedded />
-          </ComponentSection>
-          <ComponentSection {...components[14]} title={t("componentShowcase.xpRank.title")} criterion={t("componentShowcase.xpRank.criterion")}>
-            <AdminXpRankComponentPage embedded />
-          </ComponentSection>
+        <div
+          className={
+            isFullPageEmptyState
+              ? "min-w-0"
+              : "min-w-0 space-y-10"
+          }
+          data-testid="component-sections"
+        >
+          {isFullPageEmptyState ? (
+            <AdminFullPageEmptyStateComponentPage />
+          ) : (
+            <>
+              <ComponentSection {...components[0]}>
+                <AdminActionComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[1]}>
+                <AdminAvatarComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[2]}>
+                <AdminBadgeComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[3]}>
+                <AdminTagComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[4]}>
+                <AdminSelectionComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[5]}>
+                <AdminToggleComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[6]}>
+                <AdminSeparatorComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[7]}>
+                <AdminScrollbarComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[8]}>
+                <AdminTabsComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[9]}>
+                <AdminDropdownMenuComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[10]}>
+                <AdminInputFieldComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[11]}>
+                <AdminButtonComponentPage />
+              </ComponentSection>
+              <ComponentSection {...components[12]}>
+                <AdminEmptyStateIllustrationComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[13]} title={t("componentShowcase.progress.title")} criterion={t("componentShowcase.progress.criterion")}>
+                <AdminProgressComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[14]} title={t("componentShowcase.xpRank.title")} criterion={t("componentShowcase.xpRank.criterion")}>
+                <AdminXpRankComponentPage embedded />
+              </ComponentSection>
+            </>
+          )}
         </div>
       </div>
     </main>
