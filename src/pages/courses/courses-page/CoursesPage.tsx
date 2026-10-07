@@ -163,7 +163,7 @@ export default function CoursesPage() {
   const instructorFilterOptions = instructorOptions.map(({ id, name }) => ({ value: id, label: name }));
   const isSearching = query.trim().length > 0;
   const courseCardGrid = filteredOnlineCourses.length > 0 ? (
-    <div className="mobile-bleed-grid grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[repeat(3,335px)]">
+    <div className="mobile-bleed-grid grid grid-cols-[minmax(0,335px)] gap-6 sm:grid-cols-[repeat(2,minmax(0,335px))] lg:grid-cols-[repeat(3,minmax(0,335px))]">
       {filteredOnlineCourses.map((course) => (
         <PublicCourseCard
           key={course.id}
