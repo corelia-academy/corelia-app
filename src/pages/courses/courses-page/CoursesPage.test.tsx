@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
+import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Course } from "@/types/courses";
@@ -66,7 +67,11 @@ function createCatalogState(overrides: Partial<CatalogState> = {}): CatalogState
 function renderPage(state: CatalogState) {
   mocks.useCoursesCatalog.mockReturnValue(state);
   mocks.useUserCoursesProgress.mockReturnValue({ progressByCourse: new Map() });
-  return renderToStaticMarkup(<CoursesPage />);
+  return renderToStaticMarkup(
+    <MemoryRouter>
+      <CoursesPage />
+    </MemoryRouter>,
+  );
 }
 
 describe("CoursesPage catalog states", () => {
@@ -81,6 +86,19 @@ describe("CoursesPage catalog states", () => {
     expect(markup).toContain("catalog.noCoursesTitle");
     expect(markup).not.toContain("catalog.emptyTitle");
     expect(markup).not.toContain("catalog.loadErrorTitle");
+  });
+
+  it("keeps course-card columns capped and responsive", () => {
+    const markup = renderPage(createCatalogState({
+      catalogCourses: [existingCourse],
+      filteredOnlineCourses: [existingCourse],
+    }));
+
+    expect(markup).toContain("max-w-[1072px]");
+    expect(markup).toContain("grid-cols-[minmax(0,335px)]");
+    expect(markup).toContain("sm:grid-cols-[repeat(2,minmax(0,335px))]");
+    expect(markup).toContain("lg:grid-cols-[repeat(3,minmax(0,335px))]");
+    expect(markup).not.toContain("xl:grid-cols-[repeat(3,335px)]");
   });
 
   it.each([
