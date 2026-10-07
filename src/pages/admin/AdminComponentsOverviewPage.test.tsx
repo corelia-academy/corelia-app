@@ -115,6 +115,49 @@ describe("AdminComponentsPage", () => {
     container.remove();
   });
 
+  it("keeps the showcase sidebar mounted when navigating to the full-page empty state", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter initialEntries={["/components"]}>
+          <AdminComponentsPage />
+        </MemoryRouter>,
+      );
+    });
+
+    const sidebarBefore = container.querySelector("aside");
+    const fullPageEmptyStateLink = container.querySelector<HTMLAnchorElement>(
+      'a[href="/components/full-page-empty-state"]',
+    );
+
+    expect(sidebarBefore).not.toBeNull();
+    expect(fullPageEmptyStateLink).not.toBeNull();
+
+    await act(async () => {
+      fullPageEmptyStateLink?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+    });
+
+    expect(container.querySelector("aside")).toBe(sidebarBefore);
+    expect(
+      container
+        .querySelector<HTMLAnchorElement>(
+          'a[href="/components/full-page-empty-state"]',
+        )
+        ?.getAttribute("aria-current"),
+    ).toBe("page");
+    expect(container.querySelector(".full-page-empty-state")).not.toBeNull();
+    expect(container.querySelector("main > header")).toBeNull();
+    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(0);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
   it("scrolls to the component section for a deep-link URL", async () => {
     const scrollTargets: string[] = [];
     const originalScrollIntoView = Object.getOwnPropertyDescriptor(
