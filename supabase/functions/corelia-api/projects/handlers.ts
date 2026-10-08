@@ -51,7 +51,12 @@ async function actorCanManageProject(db: SupabaseClient, user: User, projectId: 
   if (profileError) throw new Error(profileError.message);
   if (!project) return { allowed: true, ownerId: user.id };
   const staff = profile?.role === "admin" || profile?.role === "support_staff";
-  return { allowed: project.owner_id === user.id || staff, ownerId: String(project.owner_id) };
+  const allowed = project.owner_id === user.id || staff;
+  if (allowed) {
+    const { error } = await db.rpc("assert_project_content_editable", { p_actor_id: user.id, p_project_id: projectId });
+    if (error) throw new Error(error.message);
+  }
+  return { allowed, ownerId: String(project.owner_id) };
 }
 
 export async function handleProjectMediaUpload(req: Request, db: SupabaseClient): Promise<Response> {
