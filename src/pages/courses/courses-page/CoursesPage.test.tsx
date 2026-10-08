@@ -98,6 +98,7 @@ describe("CoursesPage catalog states", () => {
     expect(markup).toContain("grid-cols-[minmax(0,335px)]");
     expect(markup).toContain("sm:grid-cols-[repeat(2,minmax(0,335px))]");
     expect(markup).toContain("lg:grid-cols-[repeat(3,minmax(0,335px))]");
+    expect(markup).toContain("justify-center");
     expect(markup).not.toContain("xl:grid-cols-[repeat(3,335px)]");
   });
 
