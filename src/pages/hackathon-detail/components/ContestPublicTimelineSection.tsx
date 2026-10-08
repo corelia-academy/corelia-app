@@ -45,13 +45,11 @@ export function ContestPublicTimelineSection(props: {
       ) : (
         <ContestTimeline
           items={buildDefaultContestTimelineItems({
-            registrationDeadline: contest.registration_deadline,
             startsAt: contest.starts_at,
             submissionDeadline: contest.submission_deadline,
             endsAt: contest.ends_at,
             formatDate: formatDateTime,
             labels: {
-              registrationDeadline: t("detail.timeline.registrationDeadline"),
               kickoff: t("detail.timeline.kickoff"),
               submissionDeadline: t("detail.timeline.submissionDeadline"),
               end: t("detail.timeline.end"),

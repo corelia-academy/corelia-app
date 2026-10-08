@@ -19,7 +19,7 @@ import { canonicalizeSlug, normalizeSlugDraft } from "@/lib/slug";
 import { cn } from "@/lib/utils";
 import { datetimeLocalToIso, isoToDatetimeLocal } from "@/lib/datetime";
 import type { Contest, ContestI18nContent, ContestLocation, ContestStatus, ContestTrack, HackathonTaxonomyOption, HackathonTimelineItem, HackathonWinnerAward } from "@/types/hackathons";
-import { areHackathonDeadlinesValid, isPrizeAllocationValid, validateHackathonTaxonomyContract } from "@/lib/hackathonContract";
+import { isPrizeAllocationValid, validateHackathonTaxonomyContract } from "@/lib/hackathonContract";
 import { isValidHackathonSocialLink, normalizeHackathonSocialLink } from "./utils/socialLinks";
 
 type Locale = "vi" | "en";
@@ -48,8 +48,9 @@ type Draft = {
   telegram: string;
   x: string;
   facebook: string;
-  registration_deadline: string;
   submission_deadline: string;
+  winners_announced: boolean;
+  allow_project_edits_after_deadline: boolean;
   prize_amount: string;
   prize_currency: string;
   winner_awards: HackathonWinnerAward[];
@@ -126,7 +127,7 @@ function emptyLocale(): LocaleDraft {
 }
 
 function emptyDraft(): Draft {
-  return { slug: "", status: "draft", cover_image_url: "", cover_image_path: "", mode: "online", host_name: "", host_logo_url: "", host_logo_path: "", host_website_url: "", telegram: "", x: "", facebook: "", registration_deadline: "", submission_deadline: "", prize_amount: "0", prize_currency: "VND", winner_awards: [], locales: { vi: emptyLocale(), en: emptyLocale() } };
+  return { slug: "", status: "draft", cover_image_url: "", cover_image_path: "", mode: "online", host_name: "", host_logo_url: "", host_logo_path: "", host_website_url: "", telegram: "", x: "", facebook: "", submission_deadline: "", winners_announced: false, allow_project_edits_after_deadline: false, prize_amount: "0", prize_currency: "VND", winner_awards: [], locales: { vi: emptyLocale(), en: emptyLocale() } };
 }
 
 function EditorSection({ title, description, children, onSave, saving, saveLabel, secondaryAction }: { title: string; description?: string; children: React.ReactNode; onSave: () => void; saving: boolean; saveLabel: string; secondaryAction?: { label: string; onClick: () => void } }) {
@@ -228,8 +229,9 @@ export default function AdminHackathonEditorPage() {
       telegram: contest.social_links?.telegram ?? "",
       x: contest.social_links?.x ?? "",
       facebook: contest.social_links?.facebook ?? "",
-      registration_deadline: dateInput(contest.registration_deadline),
       submission_deadline: dateInput(contest.submission_deadline),
+      winners_announced: contest.winners_announced === true,
+      allow_project_edits_after_deadline: contest.allow_project_edits_after_deadline === true,
       prize_amount: contest.prize_pool?.amount ?? "0",
       prize_currency: contest.prize_pool?.currency ?? "VND",
       winner_awards: contest.winner_awards ?? [],
@@ -301,9 +303,6 @@ export default function AdminHackathonEditorPage() {
         );
       }
     }
-    if (!areHackathonDeadlinesValid(datetimeLocalToIso(draft.registration_deadline), datetimeLocalToIso(draft.submission_deadline))) {
-      throw new EditorValidationError(t("hackathons.editor.validationDeadlines"), "overview", "hackathon-registration-deadline");
-    }
     if (!isValidHackathonSocialLink("telegram", draft.telegram)) {
       throw new EditorValidationError(t("hackathons.editor.validationTelegram"), "overview", "hackathon-telegram");
     }
@@ -345,7 +344,7 @@ export default function AdminHackathonEditorPage() {
     tech_stacks: draft.locales[target].tech_stacks,
     timeline: draft.locales[target].timeline,
   });
-  const deadlinePayload = (key: "registration_deadline" | "submission_deadline") => draft[key] === loadedDraft?.[key]
+  const deadlinePayload = (key: "submission_deadline") => draft[key] === loadedDraft?.[key]
     ? editorQuery.data?.contest[key] ?? null
     : datetimeLocalToIso(draft[key]);
   const payload = () => ({
@@ -356,8 +355,9 @@ export default function AdminHackathonEditorPage() {
     description_markdown: draft.locales.vi.description_markdown,
     resources_markdown: draft.locales.vi.resources_markdown,
     status: draft.status,
-    registration_deadline: deadlinePayload("registration_deadline"),
     submission_deadline: deadlinePayload("submission_deadline"),
+    winners_announced: draft.winners_announced,
+    allow_project_edits_after_deadline: draft.allow_project_edits_after_deadline,
     location: draft.mode,
     mode: draft.mode,
     cover_image_url: bannerRemoved ? null : draft.cover_image_url || null,
@@ -420,8 +420,9 @@ export default function AdminHackathonEditorPage() {
     onSuccess: async ({ contest, banner, hostLogo }) => {
       setDraft((current) => ({
         ...current,
-        registration_deadline: dateInput(contest.registration_deadline),
         submission_deadline: dateInput(contest.submission_deadline),
+        winners_announced: contest.winners_announced === true,
+        allow_project_edits_after_deadline: contest.allow_project_edits_after_deadline === true,
         cover_image_url: banner?.url ?? (bannerRemoved ? "" : current.cover_image_url),
         cover_image_path: banner?.path ?? (bannerRemoved ? "" : current.cover_image_path),
         host_logo_url: hostLogo?.url ?? (hostLogoRemoved ? "" : current.host_logo_url),
@@ -727,8 +728,18 @@ export default function AdminHackathonEditorPage() {
               </Field>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field><FieldLabel htmlFor="hackathon-registration-deadline">{t("hackathons.editor.fields.registration_deadline")}</FieldLabel><Input id="hackathon-registration-deadline" type="datetime-local" value={draft.registration_deadline} onChange={(event) => change({ registration_deadline: event.target.value })} /></Field>
               <Field><FieldLabel htmlFor="hackathon-submission-deadline">{t("hackathons.editor.fields.submission_deadline")}</FieldLabel><Input id="hackathon-submission-deadline" type="datetime-local" value={draft.submission_deadline} onChange={(event) => change({ submission_deadline: event.target.value })} /></Field>
+              <Field>
+                <FieldLabel htmlFor="hackathon-winners_announced">{t("hackathons.editor.fields.winners_announced")}</FieldLabel>
+                <input id="hackathon-winners_announced" type="checkbox" role="switch" checked={draft.winners_announced} onChange={(event) => change({ winners_announced: event.target.checked })} className="size-5 accent-primary" />
+                <FieldDescription>{t("hackathons.editor.fields.winners_announcedHint")}</FieldDescription>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="hackathon-allow_project_edits_after_deadline">{t("hackathons.editor.fields.allow_project_edits_after_deadline")}</FieldLabel>
+                <input id="hackathon-allow_project_edits_after_deadline" type="checkbox" role="switch" checked={draft.allow_project_edits_after_deadline} disabled={draft.winners_announced} onChange={(event) => change({ allow_project_edits_after_deadline: event.target.checked })} className="size-5 accent-primary" />
+                <FieldDescription>{t("hackathons.editor.fields.allow_project_edits_after_deadlineHint")}</FieldDescription>
+              </Field>
+              {draft.winners_announced ? <p className="text-sm text-foreground-muted">{t("hackathons.editor.fields.editsAutomaticallyOpen")}</p> : null}
             </div>
           </EditorSection> : null}
 

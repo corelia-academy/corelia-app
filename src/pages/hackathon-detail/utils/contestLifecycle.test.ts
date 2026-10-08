@@ -14,7 +14,7 @@ function contestWithBounds(overrides: Partial<Contest>): Contest {
     starts_at: "2026-08-20T00:00:00.000Z",
     ends_at: "2026-08-30T00:00:00.000Z",
     location: "online",
-    registration_deadline: null,
+
     submission_deadline: null,
     max_participants: null,
     judge_emails: [],
@@ -43,7 +43,6 @@ function contestWithBounds(overrides: Partial<Contest>): Contest {
 describe("canonical hackathon lifecycle", () => {
   it("uses only starts_at and ends_at for the top-level lifecycle", () => {
     const contest = contestWithBounds({
-      registration_deadline: "2026-08-22T00:00:00.000Z",
       submission_deadline: "2026-08-28T00:00:00.000Z",
     });
 

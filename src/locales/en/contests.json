@@ -46,8 +46,7 @@
     "emptyTitle": "No hackathons yet.",
     "emptyDescriptionManager": "No public hackathons yet. Create and run hackathons in the instructor workspace before they appear here.",
     "emptyDescriptionUser": "When Corelia announces new hackathons, you'll see the schedule and application requirements here.",
-    "registrationDeadlinePrefix": "Registration deadline {{date}}",
-    "registrationNoLimit": "No registration deadline",
+    "registrationNoLimit": "No submission deadline",
     "viewDetails": "View details",
     "viewContest": "View hackathon",
     "stats": {
@@ -73,7 +72,8 @@
     "sidebar": {
       "leaderboardHint": "Judges score using a rubric; the leaderboard and winners are shown only after results are published."
     },
-    "listCardImageAlt": "Contest thumbnail: {{title}}"
+    "listCardImageAlt": "Contest thumbnail: {{title}}",
+    "submissionDeadlinePrefix": "Submission deadline {{date}}"
   },
   "public": {
     "previewNotice": "Preview: this hackathon is not public yet.",
@@ -86,7 +86,6 @@
     "submissionClosed": "Submissions closed",
     "hostedBy": "Hosted by",
     "applications": "Applications",
-    "registrationDeadline": "Registration deadline",
     "submissionDeadline": "Submission deadline",
     "tabsLabel": "Hackathon content",
     "tabs": {
@@ -699,9 +698,8 @@
       },
       "startsAtLabel": "Starts",
       "endsAtLabel": "Ends",
-      "registrationDeadlineLabel": "Registration deadline",
       "submissionDeadlineLabel": "Submission deadline (optional)",
-      "submissionDeadlineDescription": "When submissions lock for participants. If empty, locks at contest end time.",
+      "submissionDeadlineDescription": "Closes registration and new submissions. If empty, uses the contest end time.",
       "autoApproveRegistrationsLabel": "Public registration (no approval required)",
       "autoApproveRegistrationsDescription": "Participants who register while the window is open will be approved instantly and can move straight into the participant workspace.",
       "maxParticipantsLabel": "Approved applications limit",
@@ -1043,7 +1041,7 @@
       "tabSubmissionDisabledHint": "Opens after Corelia approves your application.",
       "submissionWorkspaceTitle": "Submission workspace",
       "submissionWorkspaceApprovedBody": "Your application was approved. You can submit and update your submission here.",
-      "submissionDeadlineLockedBanner": "The submission deadline has passed. Your submission and linked project card are read-only.",
+      "submissionDeadlineLockedBanner": "The submission deadline has passed and editing has not been reopened. Your submission and linked project card are read-only.",
       "submissionDirtyWarning": "You have unsaved changes. Leaving now may lose your latest edits.",
       "submissionFooterHint": "Use a clear title, a detailed summary, and at least one demo or repo link when ready.",
       "applicationCardTitle": "Your application",
@@ -1262,13 +1260,12 @@
     },
     "sections": {
       "timeline": "Timeline",
-      "timelineDescription": "Key milestones for registration, kickoff, submission deadline, and contest end.",
+      "timelineDescription": "Key milestones for kickoff, submission deadline, and contest end.",
       "howToParticipate": "How to participate",
       "timelineUtcNote": "Times are shown in your local timezone.",
       "addToCalendar": "Add to calendar (.ics)"
     },
     "timeline": {
-      "registrationDeadline": "Registration deadline",
       "kickoff": "Kickoff",
       "submissionDeadline": "Submission deadline",
       "end": "End"

@@ -140,7 +140,7 @@ const contest = {
   cover_image_path: null,
   host: { name: "Corelia", logo_url: null, logo_path: null, website_url: null },
   social_links: { telegram: null, x: null, facebook: null },
-  registration_deadline: null,
+
   submission_deadline: null,
   prize_pool: { amount: "0", currency: "VND", description_markdown: "" },
   tracks: [],
@@ -213,18 +213,18 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
 
   it("displays local deadlines and preserves their exact instants when saving other content", async () => {
     const deadline = new Date(2026, 8, 29, 22, 0, 35).toISOString();
-    getContest.mockResolvedValue({ ...contest, registration_deadline: deadline, submission_deadline: deadline });
+    getContest.mockResolvedValue({ ...contest, submission_deadline: deadline });
     const view = renderEditor("/admin/hackathons/hackathon-1/edit#overview");
     await settle();
     try {
       const dates = view.container.querySelectorAll<HTMLInputElement>('input[type="datetime-local"]');
-      expect(Array.from(dates, (input) => input.value)).toEqual(["2026-09-29T22:00", "2026-09-29T22:00"]);
+      expect(Array.from(dates, (input) => input.value)).toEqual(["2026-09-29T22:00"]);
       await act(async () => changeInput(view.container.querySelector("input")!, "Updated title"));
       const save = Array.from(view.container.querySelectorAll("button")).find((button) => button.textContent?.includes("hackathons.editor.saveSection"));
       await act(async () => save?.click());
       await settle();
       expect(updateContest).toHaveBeenCalledWith("hackathon-1", expect.objectContaining({
-        title: "Updated title", registration_deadline: deadline, submission_deadline: deadline,
+        title: "Updated title", submission_deadline: deadline,
       }));
     } finally {
       await view.cleanup();
@@ -361,20 +361,17 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
     await view.cleanup();
   });
 
-  it("saves updated registration_deadline and submission_deadline when edited in Overview", async () => {
+  it("saves updated submission_deadline when edited in Overview", async () => {
     const { updateContest } = await import("@/lib/hackathons");
     (updateContest as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(contest);
 
     const view = renderEditor("/admin/hackathons/hackathon-1/edit#overview");
     await settle();
 
-    const regInput = view.container.querySelector<HTMLInputElement>("#hackathon-registration-deadline");
     const subInput = view.container.querySelector<HTMLInputElement>("#hackathon-submission-deadline");
-    expect(regInput).toBeDefined();
     expect(subInput).toBeDefined();
 
     await act(async () => {
-      changeInput(regInput!, "2026-10-01T20:00");
       changeInput(subInput!, "2026-10-20T20:00");
     });
 
@@ -388,7 +385,6 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
     expect(updateContest).toHaveBeenCalledWith(
       "hackathon-1",
       expect.objectContaining({
-        registration_deadline: expect.stringMatching(/^2026-10-01T/),
         submission_deadline: expect.stringMatching(/^2026-10-20T/),
       }),
     );
@@ -396,31 +392,22 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
     await view.cleanup();
   });
 
-  it("rejects saving when registration_deadline is strictly after submission_deadline", async () => {
+  it("saves independent edit toggles and keeps early-edit preference when announcing results", async () => {
     const { updateContest } = await import("@/lib/hackathons");
-    const { toast } = await import("sonner");
-    (updateContest as unknown as ReturnType<typeof vi.fn>).mockClear();
-    (toast.error as unknown as ReturnType<typeof vi.fn>).mockClear();
-
     const view = renderEditor("/admin/hackathons/hackathon-1/edit#overview");
     await settle();
-
-    const regInput = view.container.querySelector<HTMLInputElement>("#hackathon-registration-deadline");
-    const subInput = view.container.querySelector<HTMLInputElement>("#hackathon-submission-deadline");
-
-    await act(async () => {
-      changeInput(regInput!, "2026-10-25T20:00");
-      changeInput(subInput!, "2026-10-10T20:00");
-    });
-
-    const saveButton = Array.from(view.container.querySelectorAll("button"))
-      .find((button) => button.textContent?.includes("hackathons.editor.saveSection"));
-    await act(async () => saveButton?.click());
+    const early = view.container.querySelector<HTMLInputElement>("#hackathon-allow_project_edits_after_deadline")!;
+    const announced = view.container.querySelector<HTMLInputElement>("#hackathon-winners_announced")!;
+    expect(early.checked).toBe(false);
+    expect(announced.checked).toBe(false);
+    await act(async () => early.click());
+    await act(async () => announced.click());
+    expect(early.checked).toBe(true);
+    expect(early.disabled).toBe(true);
+    const save = Array.from(view.container.querySelectorAll("button")).find(button => button.textContent?.includes("hackathons.editor.saveSection"));
+    await act(async () => save?.click());
     await settle();
-
-    expect(updateContest).not.toHaveBeenCalled();
-    expect(toast.error).toHaveBeenCalledWith("hackathons.editor.validationDeadlines");
-
+    expect(updateContest).toHaveBeenCalledWith("hackathon-1", expect.objectContaining({ winners_announced: true, allow_project_edits_after_deadline: true }));
     await view.cleanup();
   });
 

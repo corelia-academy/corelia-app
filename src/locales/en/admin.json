@@ -228,7 +228,6 @@
       "validationRequired": "Vietnamese title and slug are required.",
       "validationCurrency": "Currency must be 2–10 uppercase letters or numbers.",
       "validationPrize": "Track allocations cannot exceed the prize pool.",
-      "validationDeadlines": "Registration deadline must precede submission deadline.",
       "validationTelegram": "Telegram must be a valid t.me URL or @username.",
       "validationX": "X must be a full x.com or twitter.com URL.",
       "validationFacebook": "Facebook must be a full facebook.com URL.",
@@ -316,8 +315,12 @@
         "changeHostLogo": "Upload or change host logo",
         "hostLogoPreviewAlt": "Host logo preview",
         "totalPrize": "Total prize pool",
-        "registration_deadline": "Registration deadline",
         "submission_deadline": "Submission deadline",
+        "winners_announced": "Winners announced",
+        "winners_announcedHint": "After results are announced, teams can continue updating their projects and members.",
+        "allow_project_edits_after_deadline": "Allow edits after the submission deadline",
+        "allow_project_edits_after_deadlineHint": "Allow teams to update projects and members before results are announced. Changes may affect content being judged.",
+        "editsAutomaticallyOpen": "Editing is automatically open because results have been announced.",
         "sectors": "Engineering areas",
         "tech_stacks": "Technologies"
       }

@@ -1,4 +1,4 @@
-import { Calendar, Flag, Timer, Upload } from "lucide-react";
+import { Flag, Timer, Upload } from "lucide-react";
 import type { ReactNode } from "react";
 import type { ContestTimelineMilestone } from "@/types/hackathons";
 import type { ContestTimelineRow } from "./ContestTimeline";
@@ -11,32 +11,23 @@ type TimelineItem = {
 };
 
 export function buildDefaultContestTimelineItems({
-  registrationDeadline,
   startsAt,
   submissionDeadline,
   endsAt,
   formatDate,
   labels,
 }: {
-  registrationDeadline: string | null;
   startsAt: string | null;
   submissionDeadline: string | null;
   endsAt: string | null;
   formatDate: (value: string | null) => string;
   labels: {
-    registrationDeadline: string;
     kickoff: string;
     submissionDeadline: string;
     end: string;
   };
 }): TimelineItem[] {
   const items: TimelineItem[] = [
-    {
-      key: "registration_deadline",
-      label: labels.registrationDeadline,
-      value: formatDate(registrationDeadline),
-      icon: <Calendar className="size-5" aria-hidden />,
-    },
     {
       key: "kickoff",
       label: labels.kickoff,
@@ -63,7 +54,6 @@ export function buildDefaultContestTimelineItems({
 
 export function buildContestTimelineRows({
   milestones,
-  registrationDeadline,
   startsAt,
   submissionDeadline,
   endsAt,
@@ -71,13 +61,11 @@ export function buildContestTimelineRows({
   defaultLabels,
 }: {
   milestones: ContestTimelineMilestone[];
-  registrationDeadline: string | null;
   startsAt: string | null;
   submissionDeadline: string | null;
   endsAt: string | null;
   formatDateTime: (value: string | null) => string;
   defaultLabels: {
-    registrationDeadline: string;
     kickoff: string;
     submissionDeadline: string;
     end: string;
@@ -108,11 +96,6 @@ export function buildContestTimelineRows({
   }
 
   const rows: ContestTimelineRow[] = [
-    {
-      key: "registration_deadline",
-      title: defaultLabels.registrationDeadline,
-      datetimeLabel: formatDateTime(registrationDeadline),
-    },
     {
       key: "kickoff",
       title: defaultLabels.kickoff,

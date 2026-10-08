@@ -36,7 +36,6 @@ export default function ContestNew() {
   const [status, setStatus] = useState<ContestStatus>("draft");
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
-  const [registrationDeadline, setRegistrationDeadline] = useState("");
   const [submissionDeadline, setSubmissionDeadline] = useState("");
   const [autoApproveRegistrations, setAutoApproveRegistrations] = useState(false);
   const [maxParticipants, setMaxParticipants] = useState("");
@@ -58,7 +57,6 @@ export default function ContestNew() {
         status,
         starts_at: datetimeLocalToIso(startsAt),
         ends_at: datetimeLocalToIso(endsAt),
-        registration_deadline: datetimeLocalToIso(registrationDeadline),
         submission_deadline: datetimeLocalToIso(submissionDeadline),
         config: { auto_approve_registrations: autoApproveRegistrations },
         max_participants: maxParticipants.trim() ? Number(maxParticipants) : null,
@@ -375,17 +373,6 @@ export default function ContestNew() {
                   />
                 </Field>
 
-                <Field>
-                  <FieldLabel htmlFor="contest-registration-deadline">
-                    {t("instructorNew.form.registrationDeadlineLabel")}
-                  </FieldLabel>
-                  <Input
-                    id="contest-registration-deadline"
-                    type="datetime-local"
-                    value={registrationDeadline}
-                    onChange={(e) => setRegistrationDeadline(e.target.value)}
-                  />
-                </Field>
 
                 <Field>
                   <FieldLabel htmlFor="contest-submission-deadline">

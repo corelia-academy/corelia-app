@@ -28,8 +28,7 @@ describe("canRegisterForContest registration policy matrix", () => {
       (status) => {
         const contest = {
           status,
-          registration_deadline: future,
-          submission_deadline: null,
+          submission_deadline: future,
           ends_at: null,
         };
 
@@ -47,8 +46,7 @@ describe("canRegisterForContest registration policy matrix", () => {
       (status) => {
         const contest = {
           status,
-          registration_deadline: past,
-          submission_deadline: null,
+          submission_deadline: past,
           ends_at: null,
         };
 
@@ -58,10 +56,9 @@ describe("canRegisterForContest registration policy matrix", () => {
   });
 
   describe("Deadline variations for allowed statuses (published / running)", () => {
-    it("allows registration when registration_deadline is null but submission_deadline is in future", () => {
+    it("allows registration when submission_deadline is in future", () => {
       const contestPublished = {
         status: "published" as const,
-        registration_deadline: null,
         submission_deadline: future,
         ends_at: null,
       };
@@ -69,17 +66,15 @@ describe("canRegisterForContest registration policy matrix", () => {
 
       const contestRunning = {
         status: "running" as const,
-        registration_deadline: null,
         submission_deadline: future,
         ends_at: null,
       };
       expect(canRegisterForContest(contestRunning)).toBe(true);
     });
 
-    it("rejects registration when registration_deadline is null and submission_deadline is in past", () => {
+    it("rejects registration when submission_deadline is in past", () => {
       const contest = {
         status: "published" as const,
-        registration_deadline: null,
         submission_deadline: past,
         ends_at: null,
       };
@@ -90,7 +85,6 @@ describe("canRegisterForContest registration policy matrix", () => {
       // In Corelia, if no deadline is specified, registration remains open
       const contest = {
         status: "published" as const,
-        registration_deadline: null,
         submission_deadline: null,
         ends_at: null,
       };
@@ -100,8 +94,7 @@ describe("canRegisterForContest registration policy matrix", () => {
     it("rejects boundary edge when deadline is past by 1ms", () => {
       const contest = {
         status: "published" as const,
-        registration_deadline: new Date(Date.now() - 1).toISOString(),
-        submission_deadline: null,
+        submission_deadline: new Date(Date.now() - 1).toISOString(),
         ends_at: null,
       };
       expect(canRegisterForContest(contest)).toBe(false);
@@ -114,7 +107,6 @@ describe("canRegisterForContest registration policy matrix", () => {
       (status) => {
         const contest = {
           status,
-          registration_deadline: null,
           submission_deadline: null,
           ends_at: null,
         };

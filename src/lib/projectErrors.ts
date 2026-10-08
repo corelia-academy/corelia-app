@@ -3,7 +3,6 @@ import type { TFunction } from "i18next";
 export type SemanticErrorCode =
   | "already_registered"
   | "submission_deadline_passed"
-  | "registration_deadline_passed"
   | "project_already_exists"
   | "submission_unauthorized"
   | "moderation_flagged"
@@ -51,9 +50,6 @@ export function resolveSemanticProjectError(error: unknown): SemanticProjectErro
   }
   if (clean === "submission_deadline_passed" || clean === "forbidden:submission_deadline_passed") {
     return { code: "submission_deadline_passed" };
-  }
-  if (clean === "registration_deadline_passed" || clean === "forbidden:registration_deadline_passed") {
-    return { code: "registration_deadline_passed" };
   }
   if (
     clean === "project_already_exists" ||
@@ -214,8 +210,6 @@ export function projectErrorMessage(error: unknown, t: TFunction<"common">): str
       return t("projects.errors.alreadyRegistered");
     case "submission_deadline_passed":
       return t("projects.errors.deadline");
-    case "registration_deadline_passed":
-      return t("projects.errors.registrationDeadlinePassed");
     case "project_already_exists":
       return t("projects.errors.existing");
     case "submission_unauthorized":
@@ -283,8 +277,6 @@ export function formatProjectError(error: unknown, t: TFunction): string {
       return t("projects.errors.alreadyRegistered");
     case "submission_deadline_passed":
       return t("projects.errors.deadline");
-    case "registration_deadline_passed":
-      return t("projects.errors.registrationDeadlinePassed");
     case "project_already_exists":
       return t("projects.errors.existing");
     case "submission_unauthorized":

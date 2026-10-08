@@ -46,8 +46,7 @@
     "emptyTitle": "Chưa có hackathon nào.",
     "emptyDescriptionManager": "Chưa có hackathon public nào. Hãy tạo và vận hành hackathon trong instructor workspace trước khi nó xuất hiện tại đây.",
     "emptyDescriptionUser": "Khi Corelia công bố hackathon mới, bạn sẽ thấy lịch và yêu cầu đăng ký tại đây.",
-    "registrationDeadlinePrefix": "Hạn đăng ký {{date}}",
-    "registrationNoLimit": "Không giới hạn thời gian đăng ký",
+    "registrationNoLimit": "Không có hạn nộp dự án",
     "viewDetails": "Xem chi tiết",
     "viewContest": "Xem hackathon",
     "stats": {
@@ -73,7 +72,8 @@
     "sidebar": {
       "leaderboardHint": "Ban giám khảo chấm theo rubric; bảng xếp hạng và danh sách người thắng chỉ hiện sau khi được công bố chính thức."
     },
-    "listCardImageAlt": "Ảnh đại diện contest: {{title}}"
+    "listCardImageAlt": "Ảnh đại diện contest: {{title}}",
+    "submissionDeadlinePrefix": "Hạn nộp dự án {{date}}"
   },
   "public": {
     "previewNotice": "Bản xem trước: hackathon này chưa được công khai.",
@@ -86,7 +86,6 @@
     "submissionClosed": "Đã đóng nộp dự án",
     "hostedBy": "Tổ chức bởi",
     "applications": "Hồ sơ đăng ký",
-    "registrationDeadline": "Hạn đăng ký",
     "submissionDeadline": "Hạn nộp dự án",
     "tabsLabel": "Nội dung hackathon",
     "tabs": {
@@ -653,7 +652,7 @@
       "judgingTitle": "Chấm điểm",
       "judgingDescription": "Rubric và chấm điểm theo vai trò",
       "timelineTitle": "Timeline",
-      "timelineDescription": "Hạn đăng ký, khai mạc, công bố"
+      "timelineDescription": "Hạn nộp dự án, khai mạc, công bố"
     },
     "readiness": {
       "publicTitle": "Trang công khai",
@@ -699,9 +698,8 @@
       },
       "startsAtLabel": "Bắt đầu",
       "endsAtLabel": "Kết thúc",
-      "registrationDeadlineLabel": "Hạn đăng ký",
       "submissionDeadlineLabel": "Hạn chót nộp bài (tuỳ chọn)",
-      "submissionDeadlineDescription": "Thời điểm khóa submission đối với người tham gia. Để trống thì khóa khi contest kết thúc.",
+      "submissionDeadlineDescription": "Thời điểm đóng đăng ký và nhận dự án mới. Để trống thì dùng thời điểm kết thúc cuộc thi.",
       "autoApproveRegistrationsLabel": "Đăng ký công khai, không cần duyệt",
       "autoApproveRegistrationsDescription": "Người tham gia đăng ký trong thời gian mở sẽ được duyệt ngay và vào thẳng participant workspace.",
       "maxParticipantsLabel": "Giới hạn số hồ sơ được duyệt",
@@ -859,7 +857,7 @@
       "hero": {
         "registrationsCount": "{{count}} hồ sơ đã nộp",
         "noApplicationsYet": "Chưa có hồ sơ",
-        "registrationWindowClosed": "Đã hết thời hạn đăng ký",
+        "registrationWindowClosed": "Đăng ký đã đóng",
         "kickoffCountdown": "Khai mạc sau {{time}}",
         "approvedTeams": "{{count}} đội đã được duyệt",
         "noApprovedTeamsYet": "Đội tham gia sẽ hiển thị sau khi duyệt hồ sơ",
@@ -964,8 +962,8 @@
       "applicationsLine": "{{total}} hồ sơ đăng ký",
       "pendingLine": "{{count}} đang chờ duyệt",
       "approvedLine": "{{count}} đã duyệt",
-      "registrationCountdown": "Hạn đăng ký còn {{time}}",
-      "registrationClosed": "Đã quá hạn đăng ký",
+      "registrationCountdown": "Hạn nộp dự án còn {{time}}",
+      "registrationClosed": "Đã quá hạn nộp dự án",
       "contestEndsCountdown": "Contest kết thúc sau {{time}}",
       "contestEnded": "Contest đã kết thúc",
       "countdownDays": "{{count}} ngày",
@@ -1043,7 +1041,7 @@
       "tabSubmissionDisabledHint": "Mở sau khi Corelia duyệt hồ sơ của bạn.",
       "submissionWorkspaceTitle": "Khu vực nộp bài",
       "submissionWorkspaceApprovedBody": "Hồ sơ của bạn đã được duyệt. Bạn có thể nộp và cập nhật submission tại đây.",
-      "submissionDeadlineLockedBanner": "Đã quá hạn nộp/chỉnh submission. Submission và thẻ dự án liên kết chỉ xem, không chỉnh được.",
+      "submissionDeadlineLockedBanner": "Đã quá hạn nộp và quyền chỉnh sửa chưa được mở. Submission và thẻ dự án liên kết chỉ xem, không chỉnh được.",
       "submissionDirtyWarning": "Bạn có thay đổi chưa lưu. Nếu rời trang lúc này, nội dung mới có thể bị mất.",
       "submissionFooterHint": "Submission nên có tiêu đề rõ ràng, phần tóm tắt đủ chi tiết và ít nhất một đường dẫn demo hoặc repo nếu đã sẵn sàng.",
       "applicationCardTitle": "Hồ sơ tham gia",
@@ -1262,13 +1260,12 @@
     },
     "sections": {
       "timeline": "Lịch trình",
-      "timelineDescription": "Các mốc quan trọng: hạn đăng ký, khai mạc, hạn chót nộp bài và kết thúc cuộc thi.",
+      "timelineDescription": "Các mốc quan trọng: khai mạc, hạn nộp dự án và kết thúc cuộc thi.",
       "howToParticipate": "Cách tham gia",
       "timelineUtcNote": "Thời gian hiển thị theo múi giờ trên thiết bị của bạn.",
       "addToCalendar": "Thêm vào lịch (.ics)"
     },
     "timeline": {
-      "registrationDeadline": "Hạn đăng ký",
       "kickoff": "Khai mạc",
       "submissionDeadline": "Hạn chót nộp bài",
       "end": "Kết thúc"

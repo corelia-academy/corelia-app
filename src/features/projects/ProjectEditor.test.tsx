@@ -8,10 +8,12 @@ import type { Project } from "@/types/projects";
 import type { Contest } from "@/types/hackathons";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+vi.mock("@/i18n", () => ({ default: { language: "en", resolvedLanguage: "en" } }));
+vi.mock("@/lib/supabase", () => ({ supabase: {} }));
 const translate = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/projectSubmission", () => ({ translateProjectContent: translate }));
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
-vi.mock("@/lib/hackathons", () => ({ getEffectiveContestSubmissionDeadline: () => null, isPastContestSubmissionDeadline: () => false }));
+
 vi.mock("@/lib/projectTaxonomy", () => ({
   listProjectTaxonomyOptions: async () => [
     { id: "area", kind: "sector", name: "Area", sort_order: 0 },
@@ -47,6 +49,18 @@ async function submit() {
 afterEach(async () => { if(root) await act(async()=>root.unmount()); client?.clear(); host?.remove(); sessionStorage.clear(); vi.restoreAllMocks(); });
 
 describe("ProjectEditor", () => {
+  it.each([
+    { editing: true, announced: false, early: false, locked: true },
+    { editing: true, announced: true, early: false, locked: false },
+    { editing: true, announced: false, early: true, locked: false },
+    { editing: false, announced: true, early: true, locked: true },
+  ])("reflects reopening without reopening create: %j", async ({ editing, announced, early, locked }) => {
+    await render(undefined, editing, { ...contest, submission_deadline: "2020-01-01T00:00:00Z", winners_announced: announced, allow_project_edits_after_deadline: early });
+    const contentFieldset = host.querySelector("form fieldset") as HTMLFieldSetElement;
+    expect(contentFieldset.disabled).toBe(locked);
+    expect(host.textContent?.includes("projects.errors.deadline")).toBe(locked);
+  });
+
   it("retains entered text and selections when the server rejects a save", async () => {
     const save = await render(vi.fn(async () => { throw new Error("link_unverifiable:demo_url"); }));
     await input("textarea", "Unsaved changes must survive");

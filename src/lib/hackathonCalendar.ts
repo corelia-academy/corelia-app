@@ -80,13 +80,6 @@ export function buildContestCalendarIcs(contest: Contest): string {
       });
     });
   } else {
-    if (contest.registration_deadline) {
-      events.push({
-        uidSuffix: `${base}-reg`,
-        summary: `${contest.title}: Registration deadline`,
-        startIso: contest.registration_deadline,
-      });
-    }
     if (contest.starts_at) {
       events.push({
         uidSuffix: `${base}-start`,
@@ -101,6 +94,10 @@ export function buildContestCalendarIcs(contest: Contest): string {
         startIso: contest.ends_at,
       });
     }
+  }
+
+  if (contest.submission_deadline || contest.ends_at) {
+    events.push({ uidSuffix: `${base}-submission`, summary: `${contest.title}: Submission deadline`, startIso: contest.submission_deadline || contest.ends_at! });
   }
 
   const body = [

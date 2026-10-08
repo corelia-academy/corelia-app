@@ -92,7 +92,7 @@ describe("Hackathon catalog card", () => {
       status: "published",
       cover_image_url: "https://cdn.example.com/banner.png",
       thumbnail_url: "https://cdn.example.com/thumbnail.png",
-      registration_deadline: new Date(Date.now() + 86400000).toISOString(),
+
       participants_count: 119,
     } as Contest];
 

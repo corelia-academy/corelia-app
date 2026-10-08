@@ -143,13 +143,6 @@ export function isPrizeAllocationValid(total: string, tracks: ContestTrack[]): b
   return Number.isFinite(allocated) && allocated <= totalValue;
 }
 
-export function areHackathonDeadlinesValid(registration: string | null, submission: string | null): boolean {
-  if (!registration || !submission) return true;
-  const registrationTime = Date.parse(registration);
-  const submissionTime = Date.parse(submission);
-  return Number.isFinite(registrationTime) && Number.isFinite(submissionTime) && registrationTime <= submissionTime;
-}
-
 export function sortHackathonTimeline(items: HackathonTimelineItem[]): HackathonTimelineItem[] {
   return [...items].sort((a, b) => a.sort_order - b.sort_order || Date.parse(a.starts_at) - Date.parse(b.starts_at));
 }

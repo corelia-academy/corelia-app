@@ -349,41 +349,30 @@ export function getEffectiveContestSubmissionDeadline(
 
 export function isPastContestSubmissionDeadline(
   contest: Pick<Contest, "submission_deadline" | "ends_at">,
+  nowMs: number = Date.now(),
 ): boolean {
   const iso = getEffectiveContestSubmissionDeadline(contest);
   if (!iso) return false;
   const ms = new Date(iso).getTime();
   if (!Number.isFinite(ms)) return false;
-  return Date.now() > ms;
+  return nowMs > ms;
 }
 
-/** Effective ISO deadline for locking registrations; explicit `registration_deadline` or fallback `submission_deadline`/`ends_at`. */
-export function getEffectiveContestRegistrationDeadline(
-  contest: Pick<Contest, "registration_deadline" | "submission_deadline" | "ends_at">,
-): string | null {
-  const explicit = contest.registration_deadline?.trim();
-  if (explicit) return explicit;
-  const submission = contest.submission_deadline?.trim();
-  if (submission) return submission;
-  const end = contest.ends_at?.trim();
-  return end || null;
-}
-
-export function isPastContestRegistrationDeadline(
-  contest: Pick<Contest, "registration_deadline" | "submission_deadline" | "ends_at">,
+/** Editing an existing project may reopen; registering/submitting a new one never does. */
+export function canEditContestProject(
+  contest: Pick<Contest, "submission_deadline" | "ends_at" | "winners_announced" | "allow_project_edits_after_deadline">,
+  nowMs: number = Date.now(),
 ): boolean {
-  const iso = getEffectiveContestRegistrationDeadline(contest);
-  if (!iso) return false;
-  const ms = new Date(iso).getTime();
-  if (!Number.isFinite(ms)) return false;
-  return Date.now() > ms;
+  return !isPastContestSubmissionDeadline(contest, nowMs)
+    || contest.winners_announced === true
+    || contest.allow_project_edits_after_deadline === true;
 }
 
 export function canRegisterForContest(
-  contest: Pick<Contest, "status" | "registration_deadline" | "submission_deadline" | "ends_at">,
+  contest: Pick<Contest, "status" | "submission_deadline" | "ends_at">,
 ): boolean {
   const allowedStatus = contest.status === "published" || contest.status === "running";
-  return allowedStatus && !isPastContestRegistrationDeadline(contest);
+  return allowedStatus && !isPastContestSubmissionDeadline(contest);
 }
 
 function normalizeContest(data: Contest): Contest {
@@ -475,6 +464,8 @@ function normalizeContest(data: Contest): Contest {
         .map((x) => (typeof x === "string" ? x.trim() : ""))
         .find((s) => s.length > 0) ?? null,
     submission_deadline: data.submission_deadline?.trim() || null,
+    winners_announced: data.winners_announced === true,
+    allow_project_edits_after_deadline: data.allow_project_edits_after_deadline === true,
   };
 }
 
@@ -763,8 +754,9 @@ export async function createContest(data: ContestInsert): Promise<Contest> {
     cover_image_path: data.cover_image_path ?? null,
     thumbnail_url: data.thumbnail_url ?? null,
     thumbnail_path: data.thumbnail_path ?? null,
-    registration_deadline: data.registration_deadline ?? null,
     submission_deadline: data.submission_deadline ?? null,
+    winners_announced: data.winners_announced === true,
+    allow_project_edits_after_deadline: data.allow_project_edits_after_deadline === true,
     max_participants: data.max_participants ?? null,
     judge_emails: sanitizeEmailList(data.judge_emails),
     co_organizer_emails: sanitizeEmailList(data.co_organizer_emails),
@@ -848,8 +840,9 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
     cover_image_path: updates.cover_image_path,
     thumbnail_url: updates.thumbnail_url,
     thumbnail_path: updates.thumbnail_path,
-    registration_deadline: updates.registration_deadline,
     submission_deadline: updates.submission_deadline,
+    winners_announced: updates.winners_announced,
+    allow_project_edits_after_deadline: updates.allow_project_edits_after_deadline,
     max_participants: updates.max_participants,
     judge_emails: updates.judge_emails && sanitizeEmailList(updates.judge_emails),
     co_organizer_emails:
@@ -1334,11 +1327,10 @@ export async function upsertContestSubmission(
     throw new Error("forbidden:submission_not_approved");
   }
 
-  if (isPastContestSubmissionDeadline(contest)) {
+  const existing = await getMyContestSubmission(contestId, user);
+  if (existing?.project_id ? !canEditContestProject(contest) : isPastContestSubmissionDeadline(contest)) {
     throw new Error("forbidden:submission_deadline_passed");
   }
-
-  const existing = await getMyContestSubmission(contestId, user);
   // A new form owns its upload/project ID. Never silently swap that ID for an
   // existing submission: doing so overwrites content and misroutes team invites.
   if (existing?.project_id && input.project_id && existing.project_id !== input.project_id) {

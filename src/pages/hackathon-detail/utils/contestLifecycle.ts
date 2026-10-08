@@ -51,7 +51,7 @@ export function parseLifecycleInstantMs(iso: string | null | undefined): number 
 
 /**
  * Reads lifecycle timestamps from contest JSON (`document` merged onto row) with fallbacks
- * to legacy flat columns (`registration_deadline`, `submission_deadline`, etc.).
+ * to submission and event dates.
  */
 export function getContestLifecycleDatetimes(contest: Contest): ContestLifecycleDatetimes {
   const r = contest as unknown as Record<string, unknown>;
@@ -60,28 +60,16 @@ export function getContestLifecycleDatetimes(contest: Contest): ContestLifecycle
     firstIso(r.registrationOpenAt as string, r.registration_open_at as string) ??
     contest.created_at;
 
-  const registrationCloseAt =
-    firstIso(
-      r.registrationCloseAt as string,
-      r.registration_close_at as string,
-      contest.registration_deadline,
-      contest.starts_at,
-      contest.ends_at,
-    ) ??
-    contest.ends_at ??
-    contest.starts_at ??
-    contest.created_at;
-
   const submissionCloseAt =
     firstIso(
-      r.submissionCloseAt as string,
-      r.submission_close_at as string,
       contest.submission_deadline,
       contest.ends_at,
     ) ??
     contest.ends_at ??
     contest.starts_at ??
     contest.created_at;
+
+  const registrationCloseAt = submissionCloseAt;
 
   const judgingEndAt = firstIso(
     r.judgingEndAt as string,
