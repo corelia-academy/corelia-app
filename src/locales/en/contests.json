@@ -1040,6 +1040,7 @@
       "teamViaInvitesHint": "Teammates must each apply and be approved. After you save a submission, invite approved participants from your submission workspace: they accept via notifications or your invite link."
     },
     "inviteProject": {
+      "teamFull": "This project already has 6 people. You cannot accept this invitation yet.",
       "title": "Project invitation",
       "description": "Accept to join the team on this hackathon project.",
       "previewSummary": "You have been invited to join the project \"{{project}}\".",

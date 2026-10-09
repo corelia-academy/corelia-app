@@ -19,8 +19,11 @@ import {
   sendProjectCollaborationInviteEmail,
 } from "@/lib/projectCollaboration";
 
+import { MAX_PROJECT_TEAM_SIZE } from "@/types/projects";
+
 type Props = {
   projectId: string;
+  ownerId?: string;
   sourceType: string;
   sourceId?: string | null;
   persisted: boolean;
@@ -32,6 +35,7 @@ type Props = {
 
 export function ProjectTeamEditor({
   projectId,
+  ownerId,
   sourceType,
   sourceId,
   persisted,
@@ -90,7 +94,14 @@ export function ProjectTeamEditor({
       toast.success(t("projects.team.invited"));
       await queryClient.invalidateQueries({ queryKey: key });
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : t("projects.team.actionFailed")),
+    onError: (error) => {
+      if (error instanceof Error && error.message.includes("project_team_full")) {
+        toast.error(t("projects.team.full"));
+        void queryClient.invalidateQueries({ queryKey: key });
+        return;
+      }
+      toast.error(error instanceof Error ? error.message : t("projects.team.actionFailed"));
+    },
   });
   const revokeMutation = useMutation({
     mutationFn: revokeProjectCollaborationInvite,
@@ -141,6 +152,8 @@ export function ProjectTeamEditor({
   });
 
   const team = teamQuery.data;
+  const memberCount = 1 + (persisted ? (team?.members.filter((member) => member.user_id !== ownerId).length ?? 0) : selectedIds.length);
+  const atCapacity = memberCount >= MAX_PROJECT_TEAM_SIZE;
   const pending = team?.invites.filter((invite) => invite.status === "pending") ?? [];
 
   return (
@@ -148,11 +161,13 @@ export function ProjectTeamEditor({
       <div>
         <legend className="text-sm font-medium">{t("projects.team.title")}</legend>
         <p className="mt-1 text-xs text-foreground-muted">{t("projects.team.hint")}</p>
+        <p className="mt-1 text-xs text-foreground-muted">{t("projects.team.limit", { count: MAX_PROJECT_TEAM_SIZE })}</p>
+        {persisted && atCapacity ? <p role="status" className="mt-1 text-xs text-foreground-muted">{t("projects.team.full")}</p> : null}
         {hackathon ? (
           <p className="mt-1 text-xs text-foreground-muted">{t(lateMembersAllowed ? "projects.team.lateMembersHint" : "projects.team.hackathonEligibleHint")}</p>
         ) : null}
       </div>
-      {!editsClosed ? <ProfileCombobox
+      {!editsClosed && (!persisted || (!atCapacity && teamQuery.isSuccess)) ? <ProfileCombobox
         title={t("projects.team.pickTitle")}
         description={hackathon && !lateMembersAllowed ? t("projects.team.hackathonPickDescription") : t("projects.team.pickDescription")}
         options={options}
@@ -169,6 +184,10 @@ export function ProjectTeamEditor({
             if (id) inviteMutation.mutate(id);
           } else {
             const ids = Array.isArray(value) ? value : value ? [value] : [];
+            if (ids.length >= MAX_PROJECT_TEAM_SIZE) {
+              toast.error(t("projects.team.full"));
+              return;
+            }
             setSelectedOptions(options.filter((option) => ids.includes(option.id)));
             onSelectedIdsChange?.(ids);
           }

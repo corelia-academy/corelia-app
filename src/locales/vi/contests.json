@@ -1040,6 +1040,7 @@
       "teamViaInvitesHint": "Mỗi thành viên cần tự đăng ký và được duyệt. Sau khi bạn lưu submission, hãy mời người đã được duyệt trong khu vực nộp bài: họ chấp nhận qua thông báo hoặc link mời."
     },
     "inviteProject": {
+      "teamFull": "Dự án đã đủ 6 người. Bạn chưa thể nhận lời mời này.",
       "title": "Lời mời dự án",
       "description": "Chấp nhận để tham gia nhóm trong dự án hackathon này.",
       "previewSummary": "Bạn đã được mời tham gia dự án \"{{project}}\".",

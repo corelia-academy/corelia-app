@@ -427,6 +427,8 @@
       "emailPermanentError": "Email delivery permanently rejected. Please verify the recipient address.",
       "emailIndeterminateError": "Email delivery status is indeterminate. Manual reconciliation is required.",
       "emailRetryableError": "Could not send invitation email. Please try again later.",
+      "limit": "Up to {{count}} people, including the project owner.",
+      "full": "This project has reached its 6-person limit. Remove a member before adding someone new.",
       "actionFailed": "Could not update the team.",
       "publicTitle": "Project team",
       "removeMemberTitle": "Remove from the current team",

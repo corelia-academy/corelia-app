@@ -153,7 +153,7 @@ export function NotificationBell() {
             : action === "accept-course"
               ? "notifications.coInstructorInviteAcceptFailed"
               : "notifications.coInstructorInviteDeclineFailed";
-      toast.error(error instanceof Error ? error.message : t(fallbackKey));
+      toast.error(error instanceof Error && error.message.includes("project_team_full") ? t("projects.team.full") : error instanceof Error ? error.message : t(fallbackKey));
     },
   });
   const busyId = inviteMutation.isPending
