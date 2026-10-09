@@ -72,9 +72,9 @@ describe("Tag", () => {
   })
 
   it.each([
-    ["small", "h-6", "pl-xs", "gap-[5px]"],
-    ["medium", "h-7", "pl-sm", "gap-sm"],
-    ["large", "h-8", "p-md", "gap-sm"],
+    ["small", "h-6", "px-sm py-xxs", "gap-[5px]"],
+    ["medium", "h-7", "px-md py-xs", "gap-sm"],
+    ["large", "h-8", "px-2md py-sm", "gap-sm"],
   ] as const)("renders the Figma leading visual layout for %s", (size, heightClass, paddingClass, contentGap) => {
     const markup = renderToStaticMarkup(
       <Tag

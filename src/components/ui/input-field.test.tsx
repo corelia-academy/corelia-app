@@ -712,7 +712,8 @@ describe("Input", () => {
     const tagList = trigger?.querySelector<HTMLElement>("span")
 
     expect(trigger?.textContent).toContain("+3")
-    expect(trigger?.querySelectorAll('[data-slot="tag"]')).toHaveLength(2)
+    expect(trigger?.querySelectorAll('[data-slot="tag"]')).toHaveLength(1)
+    expect(trigger?.querySelectorAll('[data-slot="chip"]')).toHaveLength(1)
 
     await act(async () => trigger?.click())
 
@@ -878,11 +879,13 @@ describe("Input", () => {
     )
     const trigger = host.querySelector<HTMLButtonElement>("button")
 
-    expect(tags).toHaveLength(2)
+    const overflow = host.querySelector<HTMLElement>('[data-slot="chip"]')
+    expect(tags).toHaveLength(1)
     expect(tags[0]?.className).toContain("bg-tag-background")
     expect(tags[0]?.className).toContain("text-tag-foreground")
-    expect(tags[1]?.className).toContain("bg-tag-overflow-background")
-    expect(tags[1]?.className).toContain("text-tag-overflow-foreground")
+    expect(overflow?.textContent).toBe("+2")
+    expect(overflow?.className).toContain("bg-tag-overflow-background")
+    expect(overflow?.className).toContain("text-tag-overflow-foreground")
     expect(tags.every((tag) => !tag.hasAttribute("data-disabled"))).toBe(true)
     expect(avatar?.classList.contains("opacity-50")).toBe(false)
     expect(trigger?.disabled).toBe(true)

@@ -30,7 +30,9 @@ describe("EmptyStateIllustration", () => {
 
     expect(markup).toContain(sizeClass);
     expect(markup).toContain("select-none");
-    expect(markup).toContain('draggable="false"');
+    expect(markup).toContain('aria-hidden="true"');
+    expect(markup).toContain("<svg");
+    expect(markup).not.toContain("<img");
   });
 
   it("shows description but hides title for tiny size", () => {
@@ -69,6 +71,6 @@ describe("EmptyStateIllustration", () => {
       <EmptyStateIllustration type="search" size="large" />,
     );
 
-    expect(markup).not.toContain("<p");
+    expect(markup).not.toMatch(/<p(?:\s|>)/);
   });
 });
