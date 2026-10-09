@@ -5,9 +5,9 @@ import { Tag } from "./tag"
 
 describe("Tag", () => {
   it.each([
-    ["small", "pl-md pr-sm py-xs"],
-    ["medium", "pl-md pr-sm py-sm"],
-    ["large", "p-md"],
+    ["small", "px-sm py-xxs"],
+    ["medium", "px-md py-xs"],
+    ["large", "px-2md py-sm"],
   ] as const)("uses the Figma label padding for %s", (size, paddingClasses) => {
     const markup = renderToStaticMarkup(
       <Tag type="label" size={size}>
@@ -26,9 +26,9 @@ describe("Tag", () => {
   })
 
   it.each([
-    ["small", "h-6", "pl-md pr-sm py-xs"],
-    ["medium", "h-7", "pl-md pr-sm py-sm"],
-    ["large", "h-8", "p-md"],
+    ["small", "h-6", "px-sm py-xxs"],
+    ["medium", "h-7", "px-md py-xs"],
+    ["large", "h-8", "px-2md py-sm"],
   ] as const)("uses the Figma datetime dimensions for %s", (size, heightClass, paddingClasses) => {
     const markup = renderToStaticMarkup(
       <Tag type="datetime" size={size} date="02 Jun 2026" time="9:15 AM" />,

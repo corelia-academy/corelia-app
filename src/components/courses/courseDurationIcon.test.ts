@@ -23,6 +23,13 @@ describe.each(components)("%s course duration icon", (_name, fileUrl) => {
     );
     expect(source).toMatch(/<TimerIcon\b[^>]*\bweight="duotone"/);
   });
+
+  it("uses the shared Timestamp component for course metadata", () => {
+    expect(source).toMatch(
+      /import\s*\{\s*Timestamp\s*\}\s*from\s*"@\/components\/ui\/timestamp"/,
+    );
+    expect(source).toMatch(/<Timestamp\b/);
+  });
 });
 
 describe("PublicCourseCard thumbnail placeholder icon", () => {

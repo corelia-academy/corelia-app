@@ -98,12 +98,13 @@ describe("Hackathon catalog card", () => {
 
     const view = await renderPage();
     const banner = container.querySelector<HTMLImageElement>("img[src='https://cdn.example.com/banner.png']");
-    expect(banner?.parentElement?.className).toContain("aspect-[21/9]");
+    expect(banner?.parentElement?.className).toContain("aspect-[44/25]");
     expect(banner?.className).toContain("object-cover");
     expect(container.querySelector("img[src='https://cdn.example.com/thumbnail.png']")).toBeNull();
     expect(container.querySelector("[data-slot='avatar-group']")).not.toBeNull();
     expect(container.querySelector("[data-slot='avatar-group-count']")?.textContent).toBe("+118");
     expect(container.querySelector("[data-slot='avatar-group']")?.closest(".basis-full")).toBeNull();
+    expect(container.querySelector('[data-slot="timestamp"][data-type="full"]')).not.toBeNull();
     expect(container.textContent).not.toContain("catalog.statsSummary");
     expect(container.textContent).not.toContain("catalog.openWorkspace");
     expect(container.querySelector("a[href='/admin/hackathons']")).toBeNull();
@@ -125,7 +126,7 @@ describe("Hackathon catalog card", () => {
     expect(container.textContent).toContain("No Banner");
     expect(container.querySelector("[data-slot='avatar']")).not.toBeNull();
     expect(container.querySelector("article > div > img")).toBeNull();
-    expect(Array.from(container.querySelectorAll("article div")).some((element) => element.className.includes("aspect-[21/9]"))).toBe(false);
+    expect(Array.from(container.querySelectorAll("article div")).some((element) => element.className.includes("aspect-[44/25]"))).toBe(false);
 
     await view.cleanup();
   });

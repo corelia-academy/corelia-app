@@ -20,22 +20,19 @@
     "unknown": "-"
   },
   "catalog": {
-    "heroEyebrow": "Hackathons & ecosystem activities",
     "heroTitle": "Corelia hackathons",
-    "heroDescription": "Explore open hackathons and register instantly to start building your project.",
+    "pageTitle": "Hackathons",
+    "heroDescription": "Learning milestones and projects worth sharing with the community.",
+    "searchHeroDescription": "Discover open hackathons and register now to start building your project.",
+    "searchPlaceholder": "Search by organizer, title, or description",
+    "openApplications": "Open applications",
+    "closedApplications": "Closed",
+    "searchEmptyTitle": "No data found.",
+    "searchEmptyDescription": "Try a different keyword.",
+    "hostedBy": "By {{name}}",
+    "participantsCount": "{{displayCount}} participants",
+    "registrationDeadlinePrefix": "<label>Registration deadline</label> <date>{{date}}</date>",
     "missingSlug": "This hackathon is missing a slug. Run the slug backfill migration or set a slug in workspace settings.",
-    "pillReviewed": "Instant registration",
-    "pillTeamBased": "Team submissions",
-    "sectionWhyTitle": "Hackathons aren't just for winning: they're for learning and building in the real world",
-    "loadingTitle": "Loading hackathons...",
-    "loadingDescription": "Hackathons will appear here once syncing is complete.",
-    "howItWorksEyebrow": "How Corelia runs hackathons",
-    "howItWorksDescription": "Each Corelia hackathon is designed like a hands-on real-world experience: an entry review round, mentors or judges, clear submission requirements, and outcomes strong enough to turn into a portfolio piece, workshop, or demo day.",
-    "whyBullets": {
-      "reviewFirst": "Applications are reviewed before official participation",
-      "realJourney": "Submissions and results reflect real learning progress",
-      "ecosystem": "Can extend to portfolios and ecosystem opportunities"
-    },
     "dateRangeUnknown": "Schedule not announced yet",
     "dateStartPrefix": "Starts {{date}}",
     "dateEndPrefix": "Ends {{date}}",
@@ -43,37 +40,9 @@
     "errorTitle": "We couldn’t load hackathons",
     "errorDescription": "Check your connection and try again.",
     "retry": "Retry",
-    "emptyTitle": "No hackathons yet.",
-    "emptyDescriptionManager": "No public hackathons yet. Create and run hackathons in the instructor workspace before they appear here.",
-    "emptyDescriptionUser": "When Corelia announces new hackathons, you'll see the schedule and application requirements here.",
-    "registrationNoLimit": "No submission deadline",
-    "viewDetails": "View details",
-    "viewContest": "View hackathon",
-    "stats": {
-      "total": "Total hackathons",
-      "accepting": "Accepting applications",
-      "running": "Running",
-      "ended": "Ended"
-    },
-    "featuredEyebrow": "Featured",
-    "featured": {
-      "schedule": "Schedule",
-      "format": "Format",
-      "registrations": "Applications",
-      "submissions": "Submissions",
-      "registrationsCount": "{{count}} applications",
-      "submissionsCount": "{{count}} submissions"
-    },
-    "item": {
-      "formatPrefix": "Format: {{format}}",
-      "registrationsCount": "{{count}} applications",
-      "submissionsCount": "{{count}} submissions"
-    },
-    "sidebar": {
-      "leaderboardHint": "Judges score using a rubric; the leaderboard and winners are shown only after results are published."
-    },
-    "listCardImageAlt": "Contest thumbnail: {{title}}",
-    "submissionDeadlinePrefix": "Submission deadline {{date}}"
+    "emptyTitle": "No data.",
+    "emptyDescription": "No hackathons have been posted recently.",
+    "viewContest": "View hackathon"
   },
   "public": {
     "previewNotice": "Preview: this hackathon is not public yet.",

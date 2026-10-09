@@ -144,6 +144,9 @@ describe("AdminHackathonsPage localization", () => {
     const view = await renderPage();
     expect(view.container.textContent).toContain("Published");
     expect(view.container.textContent).toContain("Hybrid");
+    expect(
+      view.container.querySelector('[data-slot="timestamp"][data-size="medium"]'),
+    ).not.toBeNull();
     expect(view.container.textContent).not.toContain("published");
     expect(view.container.textContent).not.toContain("hybrid");
 

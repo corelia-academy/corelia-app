@@ -2,9 +2,9 @@ import { useEffect } from "react";
 import { gsap } from "gsap";
 
 const HOVER_PRESETS = {
-  "motion-hover-course-card": {
-    enter: { y: -4, scale: 1.012, duration: 0.24 },
-    leave: { y: 0, scale: 1, duration: 0.18 },
+  "motion-hover-card": {
+    enter: { y: -4, duration: 0.24 },
+    leave: { y: 0, duration: 0.18 },
   },
 } as const;
 

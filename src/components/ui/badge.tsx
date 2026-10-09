@@ -22,6 +22,7 @@ const badgeVariants = cva(
         cyan: "border-badge-cyan text-badge-cyan",
         error: "border-badge-error text-badge-error",
         gray: "border-badge-gray text-badge-gray",
+        white: "border-badge-white text-badge-white-foreground",
         disabled: "border-badge-disabled text-badge-disabled",
       },
       variant: {
@@ -71,6 +72,11 @@ const badgeVariants = cva(
         className: "border-transparent bg-badge-gray-filled text-badge-gray-filled-foreground",
       },
       {
+        color: "white",
+        variant: "filled",
+        className: "border-transparent bg-badge-white-filled text-badge-white-filled-foreground",
+      },
+      {
         color: "disabled",
         variant: "filled",
         className: "border-transparent bg-badge-disabled-filled text-badge-disabled-filled-foreground",
@@ -94,6 +100,7 @@ type BadgeColor =
   | "cyan"
   | "error"
   | "gray"
+  | "white"
   | "disabled"
 type BadgeVariant = "outline" | "filled"
 

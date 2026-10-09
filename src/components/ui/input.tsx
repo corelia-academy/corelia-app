@@ -6,6 +6,7 @@ import {
   FieldContextConsumer,
   type FieldContextValue,
 } from "@/components/ui/field"
+import { Chip } from "@/components/ui/chip"
 import { Tag } from "@/components/ui/tag"
 import { cn } from "@/lib/utils"
 import { useTranslation } from "react-i18next"
@@ -497,16 +498,14 @@ function InputImplementationContent({
           </Tag>
         ))}
         {hiddenTagCount > 0 ? (
-          <Tag
-            type="label"
-            size="small"
-            className="shrink-0 pl-md pr-md py-xs leading-[1.4] bg-tag-overflow-background text-tag-overflow-foreground"
+          <Chip
+            size="xsmall"
             aria-label={t("combobox.hiddenTagsLabel", {
               count: hiddenTagCount,
             })}
           >
             +{hiddenTagCount}
-          </Tag>
+          </Chip>
         ) : null}
         {selectedTags.length === 0 && placeholder ? (
           <span
