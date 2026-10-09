@@ -427,6 +427,8 @@
       "emailPermanentError": "Email bị nhà cung cấp từ chối vĩnh viễn. Vui lòng kiểm tra lại địa chỉ người nhận.",
       "emailIndeterminateError": "Trạng thái gửi email chưa được xác định. Cần đối soát thủ công.",
       "emailRetryableError": "Không thể gửi email mời. Vui lòng thử lại sau.",
+      "limit": "Tối đa {{count}} người, bao gồm chủ dự án.",
+      "full": "Dự án đã đủ 6 người. Hãy giảm số thành viên trước khi thêm người mới.",
       "actionFailed": "Không cập nhật được thành viên.",
       "publicTitle": "Nhóm thực hiện",
       "removeMemberTitle": "Loại khỏi team hiện tại",
