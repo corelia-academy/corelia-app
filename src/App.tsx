@@ -340,6 +340,7 @@ function ApplicationRoutes() {
               "empty-state-illustration",
               "progress",
               "xp-rank",
+              "timestamp",
             ].map((component) => (
               <Route
                 key={component}

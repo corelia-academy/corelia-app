@@ -13,9 +13,9 @@ const tagVariants = cva(
         datetime: "gap-md",
       },
       size: {
-        small: "pl-md pr-sm py-xs",
-        medium: "pl-md pr-sm py-sm",
-        large: "p-md",
+        small: "px-sm py-xxs",
+        medium: "px-md py-xs",
+        large: "px-2md py-sm",
       },
       disabled: {
         false: "bg-tag-background text-tag-foreground",
@@ -30,8 +30,8 @@ const tagVariants = cva(
       { type: "datetime", size: "small", className: "h-6" },
       { type: "datetime", size: "medium", className: "h-7" },
       { type: "datetime", size: "large", className: "h-8" },
-      { type: "label", size: "small", leadingVisual: true, className: "h-6 pl-xs" },
-      { type: "label", size: "medium", leadingVisual: true, className: "h-7 pl-sm" },
+      { type: "label", size: "small", leadingVisual: true, className: "h-6" },
+      { type: "label", size: "medium", leadingVisual: true, className: "h-7" },
       { type: "label", size: "large", leadingVisual: true, className: "h-8" },
     ],
     defaultVariants: {

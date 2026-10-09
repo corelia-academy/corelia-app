@@ -6,6 +6,7 @@ import { FullPageEmptyState } from "@/components/layouts/FullPageEmptyState";
 import { PublicCourseCard } from "@/components/courses/PublicCourseCard";
 import { createMockParticipantPreview } from "@/components/participants/participantPreview";
 import { Badge } from "@/components/ui/badge";
+import { Chip } from "@/components/ui/chip";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -67,9 +68,14 @@ function CatalogMultiSelectFilter({
           <span className="min-w-0 truncate">{label}</span>
           <span className="flex shrink-0 items-center gap-2">
             {selectedValues.length > 0 ? (
-              <span aria-hidden className="rounded-full bg-primary-muted px-1.5 py-0.5 text-xs text-foreground">
+              <Badge
+                size="xsmall"
+                color="primary"
+                className="border-transparent bg-primary-muted px-1.5 py-0.5 text-xs leading-none text-foreground"
+                aria-hidden
+              >
                 {selectedValues.length}
-              </span>
+              </Badge>
             ) : null}
             <CaretDown
               className={`size-4 text-foreground-muted transition-transform duration-200 ${open ? "rotate-180" : ""}`}
@@ -328,15 +334,13 @@ export default function CoursesPage() {
                   <h2 id="catalog-all-heading" className="course-catalog-section-title text-body-large font-medium text-foreground">
                     {t("catalog.sections.all")}
                   </h2>
-                  <Badge
-                    color="gray"
-                    variant="filled"
-                    size="small"
-                    className="min-w-6 px-1"
+                  <Chip
+                    size="xsmall"
+                    shape="circle"
                     aria-label={t("catalog.sections.allCount", { count: filteredOnlineCourses.length })}
                   >
                     {filteredOnlineCourses.length}
-                  </Badge>
+                  </Chip>
                 </div>
                 <Separator className="mt-3" />
                 {courseCardGrid ? <div className="mt-4">{courseCardGrid}</div> : emptySearchState}

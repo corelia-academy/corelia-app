@@ -4,7 +4,7 @@ import { Badge, type BadgeColor, type BadgeSize, type BadgeVariant } from "@/com
 
 import { ComponentShowcaseLayout, ShowcaseSection } from "./ComponentShowcaseLayout";
 
-const colors: BadgeColor[] = ["disabled", "gray", "primary", "error", "warning", "success", "cyan", "gold", "limeGreen"];
+const colors: BadgeColor[] = ["disabled", "gray", "white", "primary", "error", "warning", "success", "cyan", "gold", "limeGreen"];
 const sizes: BadgeSize[] = ["xsmall", "small", "medium", "large"];
 const variants: BadgeVariant[] = ["outline", "filled"];
 const colorLabels: Record<BadgeColor, string> = {
@@ -16,6 +16,7 @@ const colorLabels: Record<BadgeColor, string> = {
   cyan: "Cyan",
   error: "Error",
   gray: "Gray",
+  white: "White",
   disabled: "Disabled",
 };
 const sizeLabels: Record<BadgeSize, string> = {

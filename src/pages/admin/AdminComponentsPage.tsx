@@ -25,6 +25,7 @@ import AdminScrollbarComponentPage from "./components/AdminScrollbarComponentPag
 import AdminSelectionComponentPage from "./components/AdminSelectionComponentPage";
 import AdminSeparatorComponentPage from "./components/AdminSeparatorComponentPage";
 import AdminTagComponentPage from "./components/AdminTagComponentPage";
+import AdminTimestampComponentPage from "./components/AdminTimestampComponentPage";
 import AdminTabsComponentPage from "./components/AdminTabsComponentPage";
 import AdminToggleComponentPage from "./components/AdminToggleComponentPage";
 import AdminComponentsSidebar from "./components/AdminComponentsSidebar";
@@ -109,6 +110,11 @@ const components = [
   {
     slug: "full-page-empty-state",
     title: "Full Page Empty State",
+  },
+  {
+    slug: "timestamp",
+    title: "Timestamp",
+    criterion: "Dynamic date, time, relative text, size, and destructive color combinations.",
   },
 ] as const;
 
@@ -556,6 +562,9 @@ export default function AdminComponentsPage() {
               </ComponentSection>
               <ComponentSection {...components[14]} title={t("componentShowcase.xpRank.title")} criterion={t("componentShowcase.xpRank.criterion")}>
                 <AdminXpRankComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[16]}>
+                <AdminTimestampComponentPage embedded />
               </ComponentSection>
             </>
           )}

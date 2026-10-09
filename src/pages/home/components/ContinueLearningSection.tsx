@@ -1,9 +1,10 @@
 import { FileText, MonitorPlay, TimerIcon } from "@phosphor-icons/react";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
-import { Badge } from "@/components/ui/badge";
+import { Chip } from "@/components/ui/chip";
 import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
 import { ProgressBar } from "@/components/ui/progress";
+import { Timestamp } from "@/components/ui/timestamp";
 import type { FocusCard } from "../utils/homeTypes";
 
 export function ContinueLearningSection({
@@ -36,9 +37,9 @@ export function ContinueLearningSection({
           {t("home.sections.enrolledCourses")}
         </h2>
         {enrolledCourseCount > 0 ? (
-          <Badge color="gray" variant="filled" size="xsmall">
+          <Chip size="xsmall" shape="circle">
             {enrolledCourseCount}
-          </Badge>
+          </Chip>
         ) : null}
       </div>
 
@@ -48,7 +49,7 @@ export function ContinueLearningSection({
             <NavLink
               key={item.id}
               to={item.action}
-              className="motion-hover-course-card min-w-[240px] max-w-none sm:max-w-[335px] flex-[1_1_100%] sm:flex-[1_1_240px] @min-[504px]:@max-[807px]:flex-[1_1_240px]! overflow-hidden rounded-xl"
+              className="motion-hover-card min-w-[240px] max-w-none sm:max-w-[335px] flex-[1_1_100%] sm:flex-[1_1_240px] @min-[504px]:@max-[807px]:flex-[1_1_240px]! overflow-hidden rounded-xl"
             >
               <div className="aspect-video overflow-hidden rounded-lg border border-border bg-surface-raised">
                 {item.thumbnailUrl ? (
@@ -65,25 +66,26 @@ export function ContinueLearningSection({
                   <h3 className="line-clamp-1 text-lg font-display font-medium leading-tight text-foreground">
                     {item.title}
                   </h3>
-                  <div className="flex min-w-0 items-center gap-3 text-xs text-foreground-muted">
-                    {typeof item.lessonCount === "number" ? (
-                      <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-                        <FileText className="size-4" aria-hidden weight="duotone" />
-                        {t("home.meta.lessonCount", { count: item.lessonCount })}
-                      </span>
-                    ) : null}
-                    {typeof item.remainingDurationSeconds === "number" ? (
-                      <>
-                        {typeof item.lessonCount === "number" ? (
-                          <span className="h-4 w-px shrink-0 bg-border" aria-hidden />
-                        ) : null}
-                        <span className="inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap">
+                  <Timestamp
+                    type="full"
+                    className="min-w-0 flex-wrap gap-3 whitespace-normal"
+                    date={
+                      typeof item.lessonCount === "number" ? (
+                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                          <FileText className="size-4" aria-hidden weight="duotone" />
+                          {t("home.meta.lessonCount", { count: item.lessonCount })}
+                        </span>
+                      ) : null
+                    }
+                    time={
+                      typeof item.remainingDurationSeconds === "number" ? (
+                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                           <TimerIcon className="size-4 shrink-0" aria-hidden weight="duotone" />
                           {formatRemainingDuration(item.remainingDurationSeconds)}
                         </span>
-                      </>
-                    ) : null}
-                  </div>
+                      ) : null
+                    }
+                  />
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <div className="min-w-0 flex-1">

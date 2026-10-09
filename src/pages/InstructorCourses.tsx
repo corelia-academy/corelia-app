@@ -188,7 +188,7 @@ const InstructorCourses = () => {
           {visibleCourses.map((course) => (
             <article
               key={course.id}
-              className="motion-hover-course-card flex h-full flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card"
+              className="motion-hover-card flex h-full flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card"
             >
               <button
                 type="button"

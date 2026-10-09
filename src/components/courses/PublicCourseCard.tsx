@@ -5,7 +5,7 @@ import { BookOpen, FileText, TimerIcon } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 import { ParticipantSummary } from "@/components/participants/ParticipantSummary";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Timestamp } from "@/components/ui/timestamp";
 import {
   formatCompactParticipantCount,
   type ParticipantPreviewData,
@@ -28,7 +28,7 @@ export function PublicCourseCard({ course, progress, participantPreview, variant
     <Link
       to={`/courses/${course.slug || course.id}`}
       className={cn(
-        "motion-hover-course-card flex min-w-0 flex-col overflow-hidden focus-visible:outline-primary",
+        "motion-hover-card flex min-w-0 flex-col overflow-hidden focus-visible:outline-primary",
         variant === "catalog"
           ? "rounded-xl"
           : "rounded-2xl border border-border-subtle bg-surface-base",
@@ -48,24 +48,29 @@ export function PublicCourseCard({ course, progress, participantPreview, variant
           <>
             <div className="space-y-2">
               <h3 className="line-clamp-1 text-heading-medium font-display">{course.title}</h3>
-              <div className="flex min-h-5 items-center gap-2 text-xs text-foreground-muted">
-                <Badge size="xsmall" color="primary">
-                  {getCourseLevelLabel(course.level)}
-                </Badge>
-                {lessonCount !== undefined ? (
-                  <>
-                    <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                      <FileText className="size-4" aria-hidden weight="duotone" />
-                      {tCommon("home.meta.lessonCount", { count: lessonCount })}
-                    </span>
-                    <Separator orientation="vertical" className="h-5" />
-                  </>
-                ) : null}
-                <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                  <TimerIcon className="size-4" aria-hidden weight="duotone" />
-                  {formatDuration(Number(course.total_duration_seconds) || 0)}
-                </span>
-              </div>
+              <Timestamp
+                type="full"
+                className="min-h-5"
+                date={(
+                  <span className="inline-flex items-center gap-2">
+                    <Badge size="xsmall" color="primary">
+                      {getCourseLevelLabel(course.level)}
+                    </Badge>
+                    {lessonCount !== undefined ? (
+                      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                        <FileText className="size-4" aria-hidden weight="duotone" />
+                        {tCommon("home.meta.lessonCount", { count: lessonCount })}
+                      </span>
+                    ) : null}
+                  </span>
+                )}
+                time={(
+                  <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                    <TimerIcon className="size-4" aria-hidden weight="duotone" />
+                    {formatDuration(Number(course.total_duration_seconds) || 0)}
+                  </span>
+                )}
+              />
             </div>
             <ParticipantSummary
               className="mt-4"
@@ -78,10 +83,25 @@ export function PublicCourseCard({ course, progress, participantPreview, variant
           </>
         ) : (
           <>
-            <span className="self-start rounded-full bg-primary-muted px-3 py-1 text-xs font-medium text-foreground">{getCourseLevelLabel(course.level)}</span>
+            <Badge
+              size="small"
+              color="primary"
+              className="self-start border-transparent bg-primary-muted px-3 py-1 text-xs leading-4 text-foreground"
+            >
+              {getCourseLevelLabel(course.level)}
+            </Badge>
             <h3 className="line-clamp-2 min-h-12 text-heading-medium font-display">{course.title}</h3>
             {course.short_description ? <p className="line-clamp-3 text-sm leading-6 text-foreground-muted">{course.short_description}</p> : null}
-            <div className="mt-auto flex flex-wrap items-center gap-2 pt-2 text-sm text-foreground-muted"><TimerIcon className="size-4" aria-hidden weight="duotone" />{formatDuration(Number(course.total_duration_seconds) || 0)}</div>
+            <Timestamp
+              type="time-only"
+              className="mt-auto flex-wrap gap-2 pt-2"
+              time={(
+                <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                  <TimerIcon className="size-4" aria-hidden weight="duotone" />
+                  {formatDuration(Number(course.total_duration_seconds) || 0)}
+                </span>
+              )}
+            />
             <ParticipantSummary
               count={participantPreview.count}
               participants={participantPreview.participants}

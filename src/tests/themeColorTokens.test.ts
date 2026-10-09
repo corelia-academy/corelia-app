@@ -53,6 +53,25 @@ describe("semantic theme color tokens", () => {
     }
   })
 
+  it("maps Gray and White Badge colors to the inspected Figma tokens in dark mode", () => {
+    const darkMode = readCssRule(".dark")
+    const badgeRoles = [
+      ["badge-gray", "var(--neutral-400)"],
+      ["badge-gray-filled", "var(--neutral-600)"],
+      ["badge-gray-filled-foreground", "var(--neutral-100)"],
+      ["badge-white", "var(--neutral-100)"],
+      ["badge-white-foreground", "var(--neutral-200)"],
+      ["badge-white-filled", "var(--neutral-300)"],
+      ["badge-white-filled-foreground", "var(--neutral-900)"],
+    ] as const
+
+    for (const [name, value] of badgeRoles) {
+      expectSingleDeclaration(darkMode, name, value)
+    }
+
+    expectSingleDeclaration(readCssRule(":root"), "neutral-400", "#8f99b5")
+  })
+
   it("exposes the utility tokens through Tailwind aliases", () => {
     const theme = readCssRule("@theme inline")
     const utilityRoles = [
@@ -70,6 +89,13 @@ describe("semantic theme color tokens", () => {
       "mint-revoked-badge-text",
       "mint-revoked-badge-border",
       "stroke-divider",
+      "badge-gray",
+      "badge-gray-filled",
+      "badge-gray-filled-foreground",
+      "badge-white",
+      "badge-white-foreground",
+      "badge-white-filled",
+      "badge-white-filled-foreground",
     ]
 
     for (const name of utilityRoles) {

@@ -35,6 +35,7 @@ import AdminInputFieldComponentPage from "./AdminInputFieldComponentPage";
 import AdminScrollbarComponentPage from "./AdminScrollbarComponentPage";
 import AdminSelectionComponentPage from "./AdminSelectionComponentPage";
 import AdminSeparatorComponentPage from "./AdminSeparatorComponentPage";
+import AdminTimestampComponentPage from "./AdminTimestampComponentPage";
 import AdminTagComponentPage from "./AdminTagComponentPage";
 import AdminTabsComponentPage from "./AdminTabsComponentPage";
 import AdminToggleComponentPage from "./AdminToggleComponentPage";
@@ -48,6 +49,7 @@ const pages = [
   AdminSelectionComponentPage,
   AdminToggleComponentPage,
   AdminSeparatorComponentPage,
+  AdminTimestampComponentPage,
   AdminScrollbarComponentPage,
   AdminTabsComponentPage,
   AdminDropdownMenuComponentPage,
@@ -363,6 +365,13 @@ describe("admin component detail pages", () => {
 
     expect(container.innerHTML).not.toContain("min-w-[44rem]");
     expect(container.innerHTML).not.toContain("min-w-[42rem]");
+    expect(container.querySelectorAll('[data-slot="chip"]')).toHaveLength(16);
+    expect(
+      container.querySelectorAll('[data-slot="chip"][data-disabled="true"]'),
+    ).toHaveLength(8);
+    expect(
+      container.querySelectorAll('[data-slot="chip"].rounded-full'),
+    ).toHaveLength(8);
 
     const toggleReference = container.querySelector(
       '[data-testid="toggle-variants-reference"]',
@@ -443,9 +452,11 @@ describe("admin component detail pages", () => {
       );
     });
 
-    expect(container.querySelectorAll('[data-testid^="badge-outline-color-row-"]')).toHaveLength(9);
-    expect(container.querySelectorAll('[data-testid^="badge-filled-color-row-"]')).toHaveLength(9);
-    expect(container.querySelector('[data-testid="badge-matrix"]')?.querySelectorAll('[data-slot="badge"]')).toHaveLength(72);
+    expect(container.querySelectorAll('[data-testid^="badge-outline-color-row-"]')).toHaveLength(10);
+    expect(container.querySelectorAll('[data-testid^="badge-filled-color-row-"]')).toHaveLength(10);
+    expect(container.querySelector('[data-testid="badge-matrix"]')?.querySelectorAll('[data-slot="badge"]')).toHaveLength(80);
+    expect(container.querySelector('[data-testid="badge-outline-color-row-white"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="badge-filled-color-row-white"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="badge-outline-color-row-primary"]')?.querySelectorAll("svg")).toHaveLength(6);
     expect(container.querySelector('[data-testid="badge-filled-color-row-primary"]')?.querySelectorAll("svg")).toHaveLength(6);
 

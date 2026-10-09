@@ -5,10 +5,13 @@ import { useTranslation } from "react-i18next";
 import { Search, ShieldAlert } from "lucide-react";
 import { FileText, TimerIcon } from "@phosphor-icons/react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Chip } from "@/components/ui/chip";
 import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
+import { Timestamp } from "@/components/ui/timestamp";
 import { ParticipantSummary } from "@/components/participants/ParticipantSummary";
 import {
   createMockParticipantPreview,
@@ -51,7 +54,7 @@ function SearchCourseResultCard({
   return (
     <NavLink
       to={item.href}
-      className="motion-hover-course-card block min-w-0 rounded-xl focus-visible:outline-primary"
+      className="motion-hover-card block min-w-0 rounded-xl focus-visible:outline-primary"
     >
       <div className="aspect-video overflow-hidden rounded-lg border border-border bg-surface-raised">
         {course.thumbnail_url && !failedImage ? (
@@ -72,24 +75,29 @@ function SearchCourseResultCard({
         <h2 className="line-clamp-2 text-lg font-display font-medium leading-tight text-foreground">
           {item.title}
         </h2>
-        <div className="flex min-w-0 flex-wrap items-center gap-3 text-xs text-foreground-muted">
-          <span className="shrink-0 rounded-full border border-blue-400 px-1.5 py-1 text-[10px] leading-3 text-blue-400">
-            {getCourseLevelLabel(course.level)}
-          </span>
-          {typeof item.lessonCount === "number" ? (
-            <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-              <FileText className="size-4" aria-hidden weight="duotone" />
-              {t("home.meta.lessonCount", { count: item.lessonCount })}
+        <Timestamp
+          type="full"
+          className="min-w-0 flex-wrap gap-3 whitespace-normal"
+          date={(
+            <span className="inline-flex flex-wrap items-center gap-2">
+              <Badge size="xsmall" color="primary">
+                {getCourseLevelLabel(course.level)}
+              </Badge>
+              {typeof item.lessonCount === "number" ? (
+                <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
+                  <FileText className="size-4" aria-hidden weight="duotone" />
+                  {t("home.meta.lessonCount", { count: item.lessonCount })}
+                </span>
+              ) : null}
             </span>
-          ) : null}
-          {typeof item.lessonCount === "number" ? (
-            <span className="h-4 w-px shrink-0 bg-border" aria-hidden />
-          ) : null}
-          <span className="inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap">
-            <TimerIcon className="size-4" aria-hidden weight="duotone" />
-            {formatDuration(Number(course.total_duration_seconds) || 0)}
-          </span>
-        </div>
+          )}
+          time={(
+            <span className="inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap">
+              <TimerIcon className="size-4" aria-hidden weight="duotone" />
+              {formatDuration(Number(course.total_duration_seconds) || 0)}
+            </span>
+          )}
+        />
         <ParticipantSummary
           count={participantPreview.count}
           participants={participantPreview.participants}
@@ -231,11 +239,11 @@ export default function SearchPage() {
                             {item.title}
                           </div>
                           <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-foreground-muted">
-                            <span className="rounded-full border border-border bg-surface-raised px-2 py-0.5">
+                            <Chip size="xsmall" shape="circle">
                               {t(`search.group.${item.entity_type}` as never, {
                                 defaultValue: item.entity_type,
                               })}
-                            </span>
+                            </Chip>
                             {item.subtitle ? (
                               <span className="truncate">{item.subtitle}</span>
                             ) : null}

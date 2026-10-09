@@ -8,7 +8,7 @@
   },
   "location": {
     "online": "Online",
-    "offline": "Offline",
+    "offline": "Tại chỗ",
     "hybrid": "Hybrid",
     "unknown": "-"
   },
@@ -20,22 +20,22 @@
     "unknown": "-"
   },
   "catalog": {
-    "heroEyebrow": "Hackathon & hoạt động hệ sinh thái",
     "heroTitle": "Hackathon của Corelia",
-    "heroDescription": "Khám phá hackathon đang mở và đăng ký tức thời để bắt đầu xây dựng dự án.",
-    "missingSlug": "Hackathon này chưa có slug. Hãy chạy migration backfill slug hoặc set slug trong workspace settings.",
-    "pillReviewed": "Đăng ký tức thời",
-    "pillTeamBased": "Bài nộp theo đội",
-    "sectionWhyTitle": "Hackathon không chỉ để thi, mà còn để học, xây dựng và va chạm thực tế",
-    "loadingTitle": "Đang tải danh sách hackathon...",
-    "loadingDescription": "Các chương trình hackathon sẽ xuất hiện ngay khi đồng bộ xong.",
-    "howItWorksEyebrow": "Cách Corelia vận hành hackathon",
-    "howItWorksDescription": "Mỗi hackathon tại Corelia được thiết kế như một lớp trải nghiệm thực chiến: có vòng duyệt đầu vào, có mentor hoặc ban giám khảo, có bài nộp rõ ràng và có kết quả đủ tốt để bạn mang vào portfolio, workshop hoặc demo day sau đó.",
-    "whyBullets": {
-      "reviewFirst": "Hồ sơ được duyệt trước khi tham gia chính thức",
-      "realJourney": "Bài nộp và kết quả gắn với hành trình học thật",
-      "ecosystem": "Có thể mở rộng sang portfolio và cơ hội hệ sinh thái"
+    "pageTitle": "Hackathons",
+    "heroDescription": "Những cột mốc học tập và dự án đáng chia sẻ từ cộng đồng.",
+    "searchHeroDescription": "Khám phá các hackathon mở và đăng ký ngay để bắt đầu xây dựng dự án của bạn.",
+    "searchPlaceholder": "Tìm kiếm theo tổ chức, tiêu đề, mô tả",
+    "sort": {
+      "deadlineSoonest": "Sắp hết hạn"
     },
+    "openApplications": "Đang mở đơn",
+    "closedApplications": "Đã đóng",
+    "searchEmptyTitle": "Không tìm thấy dữ liệu.",
+    "searchEmptyDescription": "Thử lại với từ khóa khác.",
+    "hostedBy": "Bởi {{name}}",
+    "participantsCount": "{{displayCount}} người tham gia",
+    "registrationDeadlinePrefix": "<label>Hạn đăng ký</label> <date>{{date}}</date>",
+    "missingSlug": "Hackathon này chưa có slug. Hãy chạy migration backfill slug hoặc set slug trong workspace settings.",
     "dateRangeUnknown": "Chưa công bố lịch thi",
     "dateStartPrefix": "Bắt đầu {{date}}",
     "dateEndPrefix": "Kết thúc {{date}}",
@@ -43,37 +43,9 @@
     "errorTitle": "Không tải được danh sách hackathon",
     "errorDescription": "Hãy kiểm tra kết nối và thử lại.",
     "retry": "Thử lại",
-    "emptyTitle": "Chưa có hackathon nào.",
-    "emptyDescriptionManager": "Chưa có hackathon public nào. Hãy tạo và vận hành hackathon trong instructor workspace trước khi nó xuất hiện tại đây.",
-    "emptyDescriptionUser": "Khi Corelia công bố hackathon mới, bạn sẽ thấy lịch và yêu cầu đăng ký tại đây.",
-    "registrationNoLimit": "Không có hạn nộp dự án",
-    "viewDetails": "Xem chi tiết",
-    "viewContest": "Xem hackathon",
-    "stats": {
-      "total": "Tổng hackathon",
-      "accepting": "Đang nhận hồ sơ",
-      "running": "Đang diễn ra",
-      "ended": "Đã kết thúc"
-    },
-    "featuredEyebrow": "Đang được quan tâm",
-    "featured": {
-      "schedule": "Lịch thi",
-      "format": "Hình thức",
-      "registrations": "Hồ sơ",
-      "submissions": "Bài nộp",
-      "registrationsCount": "{{count}} đăng ký",
-      "submissionsCount": "{{count}} bài nộp"
-    },
-    "item": {
-      "formatPrefix": "Hình thức: {{format}}",
-      "registrationsCount": "{{count}} hồ sơ",
-      "submissionsCount": "{{count}} bài nộp"
-    },
-    "sidebar": {
-      "leaderboardHint": "Ban giám khảo chấm theo rubric; bảng xếp hạng và danh sách người thắng chỉ hiện sau khi được công bố chính thức."
-    },
-    "listCardImageAlt": "Ảnh đại diện contest: {{title}}",
-    "submissionDeadlinePrefix": "Hạn nộp dự án {{date}}"
+    "emptyTitle": "Không có dữ liệu.",
+    "emptyDescription": "Chưa có cuộc thi nào được đăng tải gần đây,",
+    "viewContest": "Xem hackathon"
   },
   "public": {
     "previewNotice": "Bản xem trước: hackathon này chưa được công khai.",

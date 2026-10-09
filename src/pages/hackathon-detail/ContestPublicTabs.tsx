@@ -7,6 +7,7 @@ import { NavLink, useLocation, useOutletContext, useSearchParams } from "react-r
 import { Markdown } from "@/components/markdown/Markdown";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/projects/ProjectCardSkeleton";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   publicProjectDirectoryQueryOptions,
@@ -128,7 +129,15 @@ function FilterGroup({ label, options, selected, toggle }: { label: string; opti
     <details className="relative min-w-0 rounded-lg border border-border bg-background">
       <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3 text-sm font-medium">
         <span>{label}</span>
-        {selected.length > 0 ? <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] tabular-nums text-primary">{selected.length}</span> : null}
+        {selected.length > 0 ? (
+          <Badge
+            size="xsmall"
+            color="primary"
+            className="border-transparent bg-primary/10 px-1.5 text-[11px] tabular-nums text-primary"
+          >
+            {selected.length}
+          </Badge>
+        ) : null}
         <ChevronDown className="ml-auto size-4" />
       </summary>
       <div role="group" aria-label={label} className="scrollbar-design z-20 flex max-h-72 flex-col gap-1 overflow-y-auto border-t border-border bg-surface-base p-2 sm:absolute sm:top-full sm:mt-2 sm:w-72 sm:rounded-xl sm:border sm:shadow-lg">
