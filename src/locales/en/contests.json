@@ -25,6 +25,9 @@
     "heroDescription": "Learning milestones and projects worth sharing with the community.",
     "searchHeroDescription": "Discover open hackathons and register now to start building your project.",
     "searchPlaceholder": "Search by organizer, title, or description",
+    "sort": {
+      "deadlineSoonest": "Expiring soon"
+    },
     "openApplications": "Open applications",
     "closedApplications": "Closed",
     "searchEmptyTitle": "No data found.",

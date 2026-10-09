@@ -35,6 +35,7 @@ type TimestampType =
 type TimestampSize = "large" | "medium" | "small"
 
 type TimestampProps = Omit<ComponentProps<"div">, "children"> & {
+  "data-testid"?: string
   type?: TimestampType
   size?: TimestampSize
   date?: ReactNode

@@ -31,10 +31,11 @@ import {
 } from "@/features/hackathons/list/contestListFormatters";
 
 const EMPTY_CONTESTS: Contest[] = [];
+type CatalogSort = "newest" | "oldest" | "deadlineSoonest";
 
 function CatalogGridSkeleton() {
   return <>{Array.from({ length: 3 }).map((_, index) => (
-    <div key={index} className="grid min-h-[202px] overflow-hidden rounded-xl border border-border xl:h-[202px] xl:grid-rows-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_352px] xl:gap-x-10">
+    <div key={index} className="grid min-h-[202px] overflow-hidden rounded-xl border border-border xl:h-[202px] xl:grid-rows-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_352px] xl:gap-x-20">
       <div className="space-y-4 p-6">
         <Skeleton className="h-7 w-3/4" />
         <Skeleton className="h-10 w-full" />
@@ -58,7 +59,7 @@ export default function Contests() {
   const catalogQuery = useQuery(publicHackathonCatalogQueryOptions(locale));
   const items: Contest[] = catalogQuery.data ?? EMPTY_CONTESTS;
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<"newest" | "oldest">("newest");
+  const [sort, setSort] = useState<CatalogSort>("newest");
   const applicantsQuery = useQuery(publicHackathonApplicantPreviewsQueryOptions(items.map((item) => item.id)));
   const loading = catalogQuery.isPending;
   const error = catalogQuery.error
@@ -88,13 +89,28 @@ export default function Contests() {
       })
       .sort((a, b) => {
         const difference = Date.parse(b.updated_at) - Date.parse(a.updated_at);
-        return sort === "newest" ? difference : -difference;
+        return sort === "oldest" ? -difference : difference;
       });
   }, [items, locale, search, sort]);
   const openItems = filteredItems.filter(canRegisterForContest);
+  if (sort === "deadlineSoonest") {
+    openItems.sort((a, b) => {
+      const deadlineA = getEffectiveContestSubmissionDeadline(a);
+      const deadlineB = getEffectiveContestSubmissionDeadline(b);
+      const timeA = deadlineA ? Date.parse(deadlineA) : Number.NaN;
+      const timeB = deadlineB ? Date.parse(deadlineB) : Number.NaN;
+      const hasDeadlineA = Number.isFinite(timeA);
+      const hasDeadlineB = Number.isFinite(timeB);
+
+      if (!hasDeadlineA) return hasDeadlineB ? 1 : 0;
+      if (!hasDeadlineB) return -1;
+
+      return timeA - timeB;
+    });
+  }
   const closedItems = filteredItems.filter((contest) => !canRegisterForContest(contest));
   const showSearchEmpty =
-    !loading && Boolean(search.trim()) && filteredItems.length === 0;
+    showData && Boolean(search.trim()) && filteredItems.length === 0;
 
   if (showEmpty) {
     return (
@@ -135,7 +151,7 @@ export default function Contests() {
         className="motion-hover-card group block min-w-0 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         aria-label={`${t("catalog.viewContest")}: ${contest.title}`}
       >
-        <article className="grid min-h-[202px] overflow-hidden rounded-md border border-border bg-surface-base transition-[border-color,box-shadow] duration-200 group-hover:border-primary/30 group-hover:shadow-md xl:h-[202px] xl:grid-rows-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_352px] xl:gap-x-10">
+        <article className="grid min-h-[202px] overflow-hidden rounded-md border border-border bg-surface-base transition-shadow duration-200 group-hover:shadow-md xl:h-[202px] xl:grid-rows-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_352px] xl:gap-x-20">
           <div className="order-2 flex min-w-0 flex-col px-3xl py-2xl xl:order-none">
             <h3 className="line-clamp-1 text-heading-medium font-display text-foreground">
               {contest.title}
@@ -274,7 +290,11 @@ export default function Contests() {
                 className="flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-3 text-left font-body text-body-large text-foreground transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               >
                 <span>
-                  {commonT(sort === "newest" ? "projects.sort.newest" : "projects.sort.oldest")}
+                  {sort === "newest"
+                    ? commonT("projects.sort.newest")
+                    : sort === "oldest"
+                      ? commonT("projects.sort.oldest")
+                      : t("catalog.sort.deadlineSoonest")}
                 </span>
                 <ChevronDown className="size-4 shrink-0 text-foreground-muted" aria-hidden />
               </DropdownMenuTrigger>
@@ -284,15 +304,24 @@ export default function Contests() {
               >
                 <DropdownMenuRadioGroup
                   value={sort}
-                  onValueChange={(value) =>
-                    setSort(value === "oldest" ? "oldest" : "newest")
-                  }
+                  onValueChange={(value) => {
+                    if (
+                      value === "newest" ||
+                      value === "oldest" ||
+                      value === "deadlineSoonest"
+                    ) {
+                      setSort(value);
+                    }
+                  }}
                 >
                   <DropdownMenuRadioItem className="text-body-large" value="newest">
                     {commonT("projects.sort.newest")}
                   </DropdownMenuRadioItem>
                   <DropdownMenuRadioItem className="text-body-large" value="oldest">
                     {commonT("projects.sort.oldest")}
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem className="text-body-large" value="deadlineSoonest">
+                    {t("catalog.sort.deadlineSoonest")}
                   </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>

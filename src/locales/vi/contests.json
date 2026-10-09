@@ -25,6 +25,9 @@
     "heroDescription": "Những cột mốc học tập và dự án đáng chia sẻ từ cộng đồng.",
     "searchHeroDescription": "Khám phá các hackathon mở và đăng ký ngay để bắt đầu xây dựng dự án của bạn.",
     "searchPlaceholder": "Tìm kiếm theo tổ chức, tiêu đề, mô tả",
+    "sort": {
+      "deadlineSoonest": "Sắp hết hạn"
+    },
     "openApplications": "Đang mở đơn",
     "closedApplications": "Đã đóng",
     "searchEmptyTitle": "Không tìm thấy dữ liệu.",
