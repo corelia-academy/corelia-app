@@ -134,19 +134,19 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20261001122504_qa661_identity_reward_once_wallet_unlink.sql",
   "supabase/migrations/20261002071829_qa663_feed_following_profiles_definer.sql",
   "supabase/migrations/20261002082123_qa663_following_profiles_private_wrapper.sql",
+  "supabase/migrations/20261008055659_hackathon_project_edit_policy.sql",
+  "supabase/migrations/20261008162131_project_team_member_limit.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production ledger is verified through the compact five-avatar preview limit.
-// The October QA fixes are the exact pending set for this release.
+// Production ledger is verified through the October QA fixes.
+// Only the Staging-validated project policy and team capacity migrations are pending.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20261001070125",
-  "20261001122504",
-  "20261002071829",
-  "20261002082123",
+  "20261008055659",
+  "20261008162131",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

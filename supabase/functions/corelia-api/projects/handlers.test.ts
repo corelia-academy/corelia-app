@@ -7,7 +7,7 @@ vi.mock("./openai.ts", () => ({
   moderateProjectImage: vi.fn(),
   ProjectAiError: class extends Error {},
 }));
-import { handleProjectSave } from "./handlers.ts";
+import { handleProjectSave, handleProjectMediaUpload, handleProjectMediaDelete } from "./handlers.ts";
 const db = {
   from: () => { const chain = { select: () => chain, eq: () => chain, maybeSingle: mocks.existing, lt: () => chain, limit: async () => ({ data: [], error: null }) }; return chain; },
   rpc: mocks.rpc,
@@ -16,6 +16,26 @@ const base = { project_id: "22222222-2222-4222-8222-222222222222", source_type: 
 function request(extra: Record<string,unknown>) { return new Request("http://localhost/projects", { method:"POST", body: JSON.stringify({...base,...extra}), headers:{"Content-Type":"application/json"} }); }
 describe("project story save handler", () => {
   beforeEach(()=> { vi.clearAllMocks(); mocks.existing.mockResolvedValue({ data: null, error: null }); mocks.rpc.mockResolvedValue({ data: [{ project_id: base.project_id, project_slug: "project" }], error: null }); });
+
+  it.each(["upload", "delete"])("blocks media %s through the shared edit policy", async action => {
+    mocks.existing.mockResolvedValue({ data: { owner_id: "11111111-1111-4111-8111-111111111111" }, error: null });
+    mocks.rpc.mockResolvedValue({ error: { message: "forbidden:submission_deadline_passed" } });
+    let response: Response;
+    if (action === "upload") {
+      const form = new FormData();
+      form.set("project_id", base.project_id);
+      form.set("kind", "logo");
+      form.set("file", new File([new Uint8Array([1])], "logo.png", { type: "image/png" }));
+      response = await handleProjectMediaUpload(new Request("http://localhost/projects", { method: "POST", body: form }), db);
+    } else {
+      response = await handleProjectMediaDelete(request({ path: "project-media/owner/logo/test.png" }), db);
+    }
+    expect(response.status).toBe(403);
+    expect((await response.json()).message).toBe("forbidden:submission_deadline_passed");
+    expect(mocks.rpc).toHaveBeenCalledWith("assert_project_content_editable", {
+      p_actor_id: "11111111-1111-4111-8111-111111111111", p_project_id: base.project_id,
+    });
+  });
   it("moderates the complete story and persists both videos without sending videos to AI", async () => {
     const response = await handleProjectSave(request({ description: "Detailed story", progress:"Built a prototype", video_url:"https://youtu.be/demo", pitch_video_url:"https://youtu.be/pitch" }),db);
     expect(response.status).toBe(200);
