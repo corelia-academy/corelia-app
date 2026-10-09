@@ -90,6 +90,11 @@ execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "
   input: readFileSync(resolve("scripts/db/tests/hackathon-edit-policy.integration.sql")),
   stdio: ["pipe", "inherit", "inherit"],
 });
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/project-team-capacity.integration.sql")),
+  stdio: ["pipe", "inherit", "inherit"],
+});
+execFileSync(process.execPath, ["scripts/db/tests/project-team-capacity-concurrency.mjs"], { stdio: "inherit" });
 // This suite contains explicit transaction control and multiple statements, so
 // run it through psql instead of the single prepared statement used by
 // `supabase db query --file`.
