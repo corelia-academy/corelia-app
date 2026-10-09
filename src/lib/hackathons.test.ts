@@ -117,8 +117,7 @@ describe("canRegisterForContest registration policy", () => {
     expect(
       canRegisterForContest({
         status: "published",
-        registration_deadline: future,
-        submission_deadline: null,
+        submission_deadline: future,
         ends_at: null,
       }),
     ).toBe(true);
@@ -126,19 +125,17 @@ describe("canRegisterForContest registration policy", () => {
     expect(
       canRegisterForContest({
         status: "running",
-        registration_deadline: future,
-        submission_deadline: null,
+        submission_deadline: future,
         ends_at: null,
       }),
     ).toBe(true);
   });
 
-  it("returns false for hackathons after registration deadline", () => {
+  it("returns false for hackathons after submission deadline", () => {
     expect(
       canRegisterForContest({
         status: "published",
-        registration_deadline: past,
-        submission_deadline: future,
+        submission_deadline: past,
         ends_at: future,
       }),
     ).toBe(false);
@@ -146,38 +143,34 @@ describe("canRegisterForContest registration policy", () => {
     expect(
       canRegisterForContest({
         status: "running",
-        registration_deadline: past,
-        submission_deadline: future,
-        ends_at: future,
-      }),
-    ).toBe(false);
-  });
-
-  it("falls back to submission_deadline when registration_deadline is empty", () => {
-    expect(
-      canRegisterForContest({
-        status: "published",
-        registration_deadline: null,
-        submission_deadline: future,
-        ends_at: null,
-      }),
-    ).toBe(true);
-
-    expect(
-      canRegisterForContest({
-        status: "published",
-        registration_deadline: null,
         submission_deadline: past,
         ends_at: future,
       }),
     ).toBe(false);
   });
 
-  it("falls back to ends_at when both registration and submission deadlines are empty", () => {
+  it("uses submission_deadline", () => {
     expect(
       canRegisterForContest({
         status: "published",
-        registration_deadline: null,
+        submission_deadline: future,
+        ends_at: null,
+      }),
+    ).toBe(true);
+
+    expect(
+      canRegisterForContest({
+        status: "published",
+        submission_deadline: past,
+        ends_at: future,
+      }),
+    ).toBe(false);
+  });
+
+  it("falls back to ends_at when submission deadline is empty", () => {
+    expect(
+      canRegisterForContest({
+        status: "published",
         submission_deadline: null,
         ends_at: future,
       }),
@@ -186,7 +179,6 @@ describe("canRegisterForContest registration policy", () => {
     expect(
       canRegisterForContest({
         status: "published",
-        registration_deadline: null,
         submission_deadline: null,
         ends_at: past,
       }),
@@ -197,7 +189,6 @@ describe("canRegisterForContest registration policy", () => {
     expect(
       canRegisterForContest({
         status: "published",
-        registration_deadline: null,
         submission_deadline: null,
         ends_at: null,
       }),
@@ -206,7 +197,6 @@ describe("canRegisterForContest registration policy", () => {
     expect(
       canRegisterForContest({
         status: "running",
-        registration_deadline: null,
         submission_deadline: null,
         ends_at: null,
       }),
@@ -217,7 +207,6 @@ describe("canRegisterForContest registration policy", () => {
     expect(
       canRegisterForContest({
         status: "draft",
-        registration_deadline: future,
         submission_deadline: future,
         ends_at: future,
       }),
@@ -226,7 +215,6 @@ describe("canRegisterForContest registration policy", () => {
     expect(
       canRegisterForContest({
         status: "ended",
-        registration_deadline: future,
         submission_deadline: future,
         ends_at: future,
       }),

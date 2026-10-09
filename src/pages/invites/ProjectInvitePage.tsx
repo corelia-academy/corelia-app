@@ -19,6 +19,7 @@ import type { TFunction } from "i18next";
 
 function formatInviteError(err: unknown, t: TFunction<"contests">): string {
   const raw = err instanceof Error ? err.message : String(err ?? "");
+  if (raw.includes("project_team_full")) return t("detail.inviteProject.teamFull");
   if (raw.startsWith("wrong_account")) {
     const email = raw.split(":")[1] || "";
     return t("detail.inviteProject.wrongAccountBody", { email });

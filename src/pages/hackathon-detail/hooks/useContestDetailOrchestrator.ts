@@ -18,6 +18,7 @@ import {
   updateContest,
   upsertContestSubmission,
   isPastContestSubmissionDeadline,
+  canEditContestProject,
   canRegisterForContest,
   type BlastEmailFilter,
   type BlastEmailResult,
@@ -526,13 +527,11 @@ export function useContestDetailOrchestrator({
     if (!contest) return [];
     return buildContestTimelineRows({
       milestones: contest.timeline_milestones ?? [],
-      registrationDeadline: contest.registration_deadline,
       startsAt: contest.starts_at,
       submissionDeadline: contest.submission_deadline,
       endsAt: contest.ends_at,
       formatDateTime,
       defaultLabels: {
-        registrationDeadline: translate("detail.timeline.registrationDeadline"),
         kickoff: translate("detail.timeline.kickoff"),
         submissionDeadline: translate("detail.timeline.submissionDeadline"),
         end: translate("detail.timeline.end"),
@@ -838,8 +837,8 @@ export function useContestDetailOrchestrator({
   const submissionWorkspaceEditable = useMemo(() => {
     void countdownTick;
     if (!contest || registration?.status !== "approved") return false;
-    return !isPastContestSubmissionDeadline(contest);
-  }, [contest, countdownTick, registration?.status]);
+    return mySubmission?.project_id ? canEditContestProject(contest) : !isPastContestSubmissionDeadline(contest);
+  }, [contest, countdownTick, registration?.status, mySubmission?.project_id]);
 
   const submissionDraftDirty = useMemo(
     () =>
@@ -1025,9 +1024,6 @@ export function useContestDetailOrchestrator({
       auto_approve_registrations: Boolean(
         contest.config?.auto_approve_registrations,
       ),
-      registration_deadline_local: contest.registration_deadline
-        ? isoToDatetimeLocal(contest.registration_deadline)
-        : "",
       submission_deadline_local: contest.submission_deadline
         ? isoToDatetimeLocal(contest.submission_deadline)
         : "",
@@ -2021,7 +2017,6 @@ export function useContestDetailOrchestrator({
             ...(contest.config ?? {}),
             auto_approve_registrations: publicDraft.auto_approve_registrations,
           },
-          registration_deadline: datetimeLocalToIso(publicDraft.registration_deadline_local),
           submission_deadline: datetimeLocalToIso(publicDraft.submission_deadline_local),
           starts_at: datetimeLocalToIso(publicDraft.starts_at_local),
           ends_at: datetimeLocalToIso(publicDraft.ends_at_local),
@@ -2049,7 +2044,6 @@ export function useContestDetailOrchestrator({
     onContestSynced,
     publicDraft.auto_approve_registrations,
     publicDraft.faqs,
-    publicDraft.registration_deadline_local,
     publicDraft.submission_deadline_local,
     publicDraft.starts_at_local,
     publicDraft.ends_at_local,

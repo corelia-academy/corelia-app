@@ -11,8 +11,6 @@ describe("resolveSemanticProjectError", () => {
     ["conflict:already_registered", "already_registered"],
     ["submission_deadline_passed", "submission_deadline_passed"],
     ["forbidden:submission_deadline_passed", "submission_deadline_passed"],
-    ["registration_deadline_passed", "registration_deadline_passed"],
-    ["forbidden:registration_deadline_passed", "registration_deadline_passed"],
     ["project_already_exists", "project_already_exists"],
     ["conflict:project_already_exists", "project_already_exists"],
     ["conflict:hackathon_project_exists", "project_already_exists"],
@@ -67,7 +65,6 @@ describe("formatProjectError & projectErrorMessage", () => {
   it.each([
     ["already_registered", "projects.errors.alreadyRegistered"],
     ["submission_deadline_passed", "projects.errors.deadline"],
-    ["registration_deadline_passed", "projects.errors.registrationDeadlinePassed"],
     ["project_already_exists", "projects.errors.existing"],
     ["submission_unauthorized", "projects.errors.submissionUnauthorized"],
     ["moderation_flagged", "projects.errors.moderationFlagged"],

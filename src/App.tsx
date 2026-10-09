@@ -314,6 +314,16 @@ function ApplicationRoutes() {
                 </RequireRole>
               }
             />
+            <Route
+              path="/components/full-page-empty-state"
+              element={
+                <RequireRole roles={ROLE_GROUPS.projectModerators}>
+                  <Suspense fallback={<PageFallback />}>
+                    <AdminComponentsPage />
+                  </Suspense>
+                </RequireRole>
+              }
+            />
             {[
               "action",
               "avatar",
@@ -330,6 +340,7 @@ function ApplicationRoutes() {
               "empty-state-illustration",
               "progress",
               "xp-rank",
+              "timestamp",
             ].map((component) => (
               <Route
                 key={component}

@@ -2,9 +2,11 @@ import { useMemo, useState } from "react";
 import { CaretDown, MonitorPlay } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 
+import { FullPageEmptyState } from "@/components/layouts/FullPageEmptyState";
 import { PublicCourseCard } from "@/components/courses/PublicCourseCard";
 import { createMockParticipantPreview } from "@/components/participants/participantPreview";
 import { Badge } from "@/components/ui/badge";
+import { Chip } from "@/components/ui/chip";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -66,9 +68,14 @@ function CatalogMultiSelectFilter({
           <span className="min-w-0 truncate">{label}</span>
           <span className="flex shrink-0 items-center gap-2">
             {selectedValues.length > 0 ? (
-              <span aria-hidden className="rounded-full bg-primary-muted px-1.5 py-0.5 text-xs text-foreground">
+              <Badge
+                size="xsmall"
+                color="primary"
+                className="border-transparent bg-primary-muted px-1.5 py-0.5 text-xs leading-none text-foreground"
+                aria-hidden
+              >
                 {selectedValues.length}
-              </span>
+              </Badge>
             ) : null}
             <CaretDown
               className={`size-4 text-foreground-muted transition-transform duration-200 ${open ? "rotate-180" : ""}`}
@@ -162,7 +169,7 @@ export default function CoursesPage() {
   const instructorFilterOptions = instructorOptions.map(({ id, name }) => ({ value: id, label: name }));
   const isSearching = query.trim().length > 0;
   const courseCardGrid = filteredOnlineCourses.length > 0 ? (
-    <div className="mobile-bleed-grid grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[repeat(3,335px)]">
+    <div className="mobile-bleed-grid grid grid-cols-[minmax(0,335px)] gap-6 sm:grid-cols-[repeat(2,minmax(0,335px))] lg:grid-cols-[repeat(3,minmax(0,335px))] justify-center">
       {filteredOnlineCourses.map((course) => (
         <PublicCourseCard
           key={course.id}
@@ -245,16 +252,10 @@ export default function CoursesPage() {
 
   if (catalogCourses.length === 0) {
     return (
-      <div className="course-catalog-page container-app flex min-h-[calc(100svh-var(--app-header-height))] items-center justify-center">
-        <main className="flex w-full items-center justify-center">
-          <EmptyStateIllustration
-            type="empty"
-            size="fullPage"
-            title={t("catalog.noCoursesTitle")}
-            description={t("catalog.noCoursesDescription")}
-          />
-        </main>
-      </div>
+      <FullPageEmptyState
+        title={t("catalog.noCoursesTitle")}
+        description={t("catalog.noCoursesDescription")}
+      />
     );
   }
 
@@ -333,15 +334,13 @@ export default function CoursesPage() {
                   <h2 id="catalog-all-heading" className="course-catalog-section-title text-body-large font-medium text-foreground">
                     {t("catalog.sections.all")}
                   </h2>
-                  <Badge
-                    color="gray"
-                    variant="filled"
-                    size="small"
-                    className="min-w-6 px-1"
+                  <Chip
+                    size="xsmall"
+                    shape="circle"
                     aria-label={t("catalog.sections.allCount", { count: filteredOnlineCourses.length })}
                   >
                     {filteredOnlineCourses.length}
-                  </Badge>
+                  </Chip>
                 </div>
                 <Separator className="mt-3" />
                 {courseCardGrid ? <div className="mt-4">{courseCardGrid}</div> : emptySearchState}

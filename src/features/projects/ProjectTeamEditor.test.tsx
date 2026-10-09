@@ -325,4 +325,59 @@ describe("ProjectTeamEditor UI resend email", () => {
     });
     expect(document.body.querySelector('[role="alert"]')?.textContent).toBe("projects.team.loadError");
   });
+  it("blocks invitations at six people but keeps member removal available", async () => {
+    listProjectCollaborators.mockResolvedValue(Array.from({ length: 5 }, (_, index) => ({ user_id: `member-${index}` })));
+    listProjectCollaborationInvites.mockResolvedValue([]);
+    await act(async () => {
+      root.render(<QueryClientProvider client={queryClient}>
+        <ProjectTeamEditor projectId="proj-1" sourceType="standalone" persisted />
+      </QueryClientProvider>);
+    });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 50)); });
+    expect(container.textContent).toContain("projects.team.full");
+    expect(Array.from(container.querySelectorAll("button")).some(button => button.textContent?.includes("projects.team.placeholder"))).toBe(false);
+    expect(Array.from(container.querySelectorAll("button")).filter(button => button.textContent?.includes("projects.team.remove"))).toHaveLength(5);
+  });
+
+  it("rejects a sixth collaborator selection before saving", async () => {
+    const change = vi.fn();
+    listProjectTeamCandidates.mockResolvedValue([{ user_id: "sixth", username: "sixth", full_name: "Sixth Member" }]);
+    await act(async () => {
+      root.render(<QueryClientProvider client={queryClient}>
+        <ProjectTeamEditor projectId="proj-1" sourceType="standalone" persisted={false} selectedIds={["a", "b", "c", "d", "e"]} onSelectedIdsChange={change} />
+      </QueryClientProvider>);
+    });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+    await act(async () => {
+      Array.from(container.querySelectorAll("button")).find(button => button.textContent?.includes("projects.team.placeholder"))?.click();
+    });
+    const dialog = document.body.querySelector('[data-slot="dialog-content"]') as HTMLElement;
+    await act(async () => {
+      Array.from(dialog.querySelectorAll("button")).find(button => button.textContent?.includes("Sixth Member"))?.click();
+    });
+    expect(change).not.toHaveBeenCalled();
+    expect(toastError).toHaveBeenCalledWith("projects.team.full");
+  });
+
+  it("shows a localized error when another member fills the last seat", async () => {
+    listProjectCollaborationInvites.mockResolvedValue([]);
+    listProjectTeamCandidates.mockResolvedValue([{ user_id: "candidate", username: "candidate", full_name: "Candidate" }]);
+    createProjectCollaborationInvite.mockRejectedValue(new Error("conflict:project_team_full"));
+    await act(async () => {
+      root.render(<QueryClientProvider client={queryClient}>
+        <ProjectTeamEditor projectId="proj-1" sourceType="standalone" persisted />
+      </QueryClientProvider>);
+    });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+    await act(async () => {
+      Array.from(container.querySelectorAll("button")).find(button => button.textContent?.includes("projects.team.placeholder"))?.click();
+    });
+    const dialog = document.body.querySelector('[data-slot="dialog-content"]') as HTMLElement;
+    await act(async () => {
+      Array.from(dialog.querySelectorAll("button")).find(button => button.textContent?.includes("Candidate"))?.click();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    expect(toastError).toHaveBeenCalledWith("projects.team.full");
+  });
+
 });

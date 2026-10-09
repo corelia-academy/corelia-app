@@ -120,6 +120,9 @@ it("keeps continue-learning cards at the intended tablet container width", async
   );
 
   expect(card?.className).toContain("@min-[504px]:@max-[807px]:flex-[1_1_240px]!");
+  const chip = container.querySelector<HTMLElement>('[data-slot="chip"]');
+  expect(chip?.textContent).toBe("1");
+  expect(chip?.className).toContain("text-xs");
 });
 
 it("keeps recommended-course cards at the intended tablet container width", async () => {

@@ -253,9 +253,10 @@ export interface Contest {
   /** Square-ish image for catalog cards & compact surfaces */
   thumbnail_url?: string | null;
   thumbnail_path?: string | null;
-  registration_deadline: string | null;
-  /** Last moment participants may create/update contest submission (mirrors to projects). Empty = use `ends_at`. */
+  /** Registration and new submission deadline. Empty = use `ends_at`. */
   submission_deadline: string | null;
+  winners_announced?: boolean;
+  allow_project_edits_after_deadline?: boolean;
   max_participants: number | null;
   judge_emails: string[];
   co_organizer_emails?: string[];
@@ -317,8 +318,9 @@ export interface ContestInsert {
   cover_image_path?: string | null;
   thumbnail_url?: string | null;
   thumbnail_path?: string | null;
-  registration_deadline?: string | null;
   submission_deadline?: string | null;
+  winners_announced?: boolean;
+  allow_project_edits_after_deadline?: boolean;
   max_participants?: number | null;
   judge_emails?: string[];
   co_organizer_emails?: string[];
@@ -363,8 +365,9 @@ export interface ContestUpdate {
   cover_image_path?: string | null;
   thumbnail_url?: string | null;
   thumbnail_path?: string | null;
-  registration_deadline?: string | null;
   submission_deadline?: string | null;
+  winners_announced?: boolean;
+  allow_project_edits_after_deadline?: boolean;
   max_participants?: number | null;
   judge_emails?: string[];
   co_organizer_emails?: string[];

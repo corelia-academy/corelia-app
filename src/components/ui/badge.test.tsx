@@ -42,7 +42,7 @@ describe("Badge", () => {
     expect(outline).toContain("bg-badge-outline-background")
   })
 
-  it("maps Lime Green, Gray, and Disabled to the theme-aware Figma colors", () => {
+  it("maps Lime Green, Gray, White, and Disabled to the theme-aware Figma colors", () => {
     const limeGreen = renderToStaticMarkup(
       <Badge color="limeGreen" variant="filled">
         Lime Green
@@ -56,6 +56,11 @@ describe("Badge", () => {
     const grayFilled = renderToStaticMarkup(
       <Badge color="gray" variant="filled">
         Gray
+      </Badge>,
+    )
+    const whiteOutline = renderToStaticMarkup(
+      <Badge color="white" variant="outline">
+        White
       </Badge>,
     )
     const disabledOutline = renderToStaticMarkup(
@@ -75,6 +80,8 @@ describe("Badge", () => {
     expect(grayOutline).toContain("text-badge-gray")
     expect(grayFilled).toContain("bg-badge-gray-filled")
     expect(grayFilled).toContain("text-badge-gray-filled-foreground")
+    expect(whiteOutline).toContain("border-badge-white")
+    expect(whiteOutline).toContain("text-badge-white-foreground")
     expect(disabledOutline).toContain("border-badge-disabled")
     expect(disabledOutline).toContain("text-badge-disabled")
     expect(disabledOutline).toContain('data-disabled="true"')
@@ -94,6 +101,7 @@ describe("Badge", () => {
     ["cyan", "border-badge-cyan", "bg-badge-cyan-filled", "text-badge-cyan-filled-foreground"],
     ["error", "border-badge-error", "bg-badge-error-filled", "text-badge-error-filled-foreground"],
     ["gray", "border-badge-gray", "bg-badge-gray-filled", "text-badge-gray-filled-foreground"],
+    ["white", "border-badge-white", "bg-badge-white-filled", "text-badge-white-filled-foreground"],
     ["disabled", "border-badge-disabled", "bg-badge-disabled-filled", "text-badge-disabled-filled-foreground"],
   ] as const)("maps %s to the current Figma color tokens", (color, outlineClass, filledClass, filledTextClass) => {
     const outline = renderToStaticMarkup(

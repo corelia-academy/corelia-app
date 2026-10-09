@@ -19,24 +19,33 @@ import {
   sendProjectCollaborationInviteEmail,
 } from "@/lib/projectCollaboration";
 
+import { MAX_PROJECT_TEAM_SIZE } from "@/types/projects";
+
 type Props = {
   projectId: string;
+  ownerId?: string;
   sourceType: string;
   sourceId?: string | null;
   persisted: boolean;
+  editsClosed?: boolean;
+  lateMembersAllowed?: boolean;
   selectedIds?: string[];
   onSelectedIdsChange?: (ids: string[]) => void;
 };
 
 export function ProjectTeamEditor({
   projectId,
+  ownerId,
   sourceType,
   sourceId,
   persisted,
+  editsClosed = false,
+  lateMembersAllowed = false,
   selectedIds = [],
   onSelectedIdsChange,
 }: Props) {
   const { t } = useTranslation("common");
+  const hackathon = sourceType === "hackathon" || sourceType === "contest";
   const queryClient = useQueryClient();
   const key = ["project-team", projectId] as const;
   const [search, setSearch] = useState("");
@@ -49,9 +58,10 @@ export function ProjectTeamEditor({
     return () => window.clearTimeout(timeout);
   }, [search]);
   const candidatesQuery = useQuery({
-    queryKey: [...key, "candidates", sourceType, sourceId, debouncedSearch],
+    queryKey: [...key, "candidates", sourceType, sourceId, debouncedSearch, lateMembersAllowed],
     queryFn: () => listProjectTeamCandidates({ projectId, sourceType, sourceId, search: debouncedSearch }),
     staleTime: 30_000,
+    enabled: !editsClosed,
   });
   const teamQuery = useQuery({
     queryKey: key,
@@ -84,7 +94,14 @@ export function ProjectTeamEditor({
       toast.success(t("projects.team.invited"));
       await queryClient.invalidateQueries({ queryKey: key });
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : t("projects.team.actionFailed")),
+    onError: (error) => {
+      if (error instanceof Error && error.message.includes("project_team_full")) {
+        toast.error(t("projects.team.full"));
+        void queryClient.invalidateQueries({ queryKey: key });
+        return;
+      }
+      toast.error(error instanceof Error ? error.message : t("projects.team.actionFailed"));
+    },
   });
   const revokeMutation = useMutation({
     mutationFn: revokeProjectCollaborationInvite,
@@ -135,6 +152,8 @@ export function ProjectTeamEditor({
   });
 
   const team = teamQuery.data;
+  const memberCount = 1 + (persisted ? (team?.members.filter((member) => member.user_id !== ownerId).length ?? 0) : selectedIds.length);
+  const atCapacity = memberCount >= MAX_PROJECT_TEAM_SIZE;
   const pending = team?.invites.filter((invite) => invite.status === "pending") ?? [];
 
   return (
@@ -142,13 +161,15 @@ export function ProjectTeamEditor({
       <div>
         <legend className="text-sm font-medium">{t("projects.team.title")}</legend>
         <p className="mt-1 text-xs text-foreground-muted">{t("projects.team.hint")}</p>
-        {sourceType === "hackathon" ? (
-          <p className="mt-1 text-xs text-foreground-muted">{t("projects.team.hackathonEligibleHint")}</p>
+        <p className="mt-1 text-xs text-foreground-muted">{t("projects.team.limit", { count: MAX_PROJECT_TEAM_SIZE })}</p>
+        {persisted && atCapacity ? <p role="status" className="mt-1 text-xs text-foreground-muted">{t("projects.team.full")}</p> : null}
+        {hackathon ? (
+          <p className="mt-1 text-xs text-foreground-muted">{t(lateMembersAllowed ? "projects.team.lateMembersHint" : "projects.team.hackathonEligibleHint")}</p>
         ) : null}
       </div>
-      <ProfileCombobox
+      {!editsClosed && (!persisted || (!atCapacity && teamQuery.isSuccess)) ? <ProfileCombobox
         title={t("projects.team.pickTitle")}
-        description={sourceType === "hackathon" ? t("projects.team.hackathonPickDescription") : t("projects.team.pickDescription")}
+        description={hackathon && !lateMembersAllowed ? t("projects.team.hackathonPickDescription") : t("projects.team.pickDescription")}
         options={options}
         onSearchChange={setSearch}
         errorMessage={candidatesQuery.isError ? t("projects.team.loadError") : undefined}
@@ -163,11 +184,15 @@ export function ProjectTeamEditor({
             if (id) inviteMutation.mutate(id);
           } else {
             const ids = Array.isArray(value) ? value : value ? [value] : [];
+            if (ids.length >= MAX_PROJECT_TEAM_SIZE) {
+              toast.error(t("projects.team.full"));
+              return;
+            }
             setSelectedOptions(options.filter((option) => ids.includes(option.id)));
             onSelectedIdsChange?.(ids);
           }
         }}
-      />
+      /> : null}
       {!persisted && selectedIds.length ? (
         <p className="text-xs text-foreground-muted">{t("projects.team.inviteAfterSave")}</p>
       ) : null}
@@ -215,7 +240,7 @@ export function ProjectTeamEditor({
               const profile = team.profiles[member.user_id];
               return <li key={member.user_id} className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 text-sm">
                 <span className="inline-flex items-center gap-2"><UserPlus className="size-4" />{profile?.full_name || profile?.username || member.user_id}</span>
-                <Button type="button" size="small" variant="cta" hierarchy="tertiary" disabled={removeMutation.isPending} onClick={() => setRemovingUserId(member.user_id)}><Trash2 className="size-4" />{t("projects.team.remove")}</Button>
+                <Button type="button" size="small" variant="cta" hierarchy="tertiary" disabled={editsClosed || removeMutation.isPending} onClick={() => setRemovingUserId(member.user_id)}><Trash2 className="size-4" />{t("projects.team.remove")}</Button>
               </li>;
             })}
           </ul>
@@ -226,11 +251,11 @@ export function ProjectTeamEditor({
           <DialogTitle>{t("projects.team.removeMemberTitle")}</DialogTitle>
           <DialogDescription>{t("projects.team.removeMemberConfirm")}</DialogDescription>
           <DialogFooter>
-            <Button type="button" variant="cta" hierarchy="secondary" disabled={removeMutation.isPending} onClick={() => setRemovingUserId(null)}>
+            <Button type="button" variant="cta" hierarchy="secondary" disabled={editsClosed || removeMutation.isPending} onClick={() => setRemovingUserId(null)}>
               {t("actions.cancel")}
             </Button>
-            <Button type="button" variant="destructive" disabled={removeMutation.isPending} onClick={() => {
-              if (removingUserId) removeMutation.mutate(removingUserId);
+            <Button type="button" variant="destructive" disabled={editsClosed || removeMutation.isPending} onClick={() => {
+              if (removingUserId && !editsClosed) removeMutation.mutate(removingUserId);
             }}>
               {removeMutation.isPending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
               {t(removeMutation.isPending ? "projects.team.removingMember" : "projects.team.removeMemberAction")}

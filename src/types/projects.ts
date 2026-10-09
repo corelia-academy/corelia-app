@@ -1,3 +1,5 @@
+export const MAX_PROJECT_TEAM_SIZE = 6;
+
 export type ProjectContent = { title: string; summary: string; description: string; progress: string };
 export type ProjectLocales = Partial<Record<"vi" | "en", Partial<ProjectContent>>>;
 

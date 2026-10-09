@@ -18,7 +18,7 @@ vi.mock("gsap", () => ({
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const FINE_POINTER_QUERY = "(hover: hover) and (pointer: fine)";
-const COURSE_CARD_CLASS = "motion-hover-course-card";
+const CARD_CLASS = "motion-hover-card";
 
 type MediaQueryMock = {
   media: MediaQueryList;
@@ -93,7 +93,7 @@ function mountController() {
   const cardHost = document.createElement("div");
   const card = document.createElement("article");
   const button = document.createElement("button");
-  card.className = COURSE_CARD_CLASS;
+  card.className = CARD_CLASS;
   card.append(button);
   document.body.append(container, cardHost);
   cardHost.append(card);
@@ -125,7 +125,7 @@ afterEach(() => {
 });
 
 describe("GsapAnimationController", () => {
-  it("animates a course card on pointer enter and restores it on pointer leave", () => {
+  it("animates a card on pointer enter and restores it on pointer leave", () => {
     mockMatchMedia({ [FINE_POINTER_QUERY]: true });
     const { card } = mountController();
 
@@ -135,13 +135,14 @@ describe("GsapAnimationController", () => {
     expect(gsap.to).toHaveBeenNthCalledWith(
       1,
       card,
-      expect.objectContaining({ y: -4, scale: 1.012, duration: 0.24 }),
+      expect.objectContaining({ y: -4, duration: 0.24 }),
     );
     expect(gsap.to).toHaveBeenNthCalledWith(
       2,
       card,
-      expect.objectContaining({ y: 0, scale: 1, duration: 0.18 }),
+      expect.objectContaining({ y: 0, duration: 0.18 }),
     );
+    expect(vi.mocked(gsap.to).mock.calls[0]?.[1]).not.toHaveProperty("scale");
   });
 
   it("does not restart the animation when the pointer moves within a card", () => {
@@ -171,7 +172,7 @@ describe("GsapAnimationController", () => {
     expect(gsap.to).toHaveBeenCalledTimes(1);
     expect(gsap.to).toHaveBeenCalledWith(
       card,
-      expect.objectContaining({ y: -4, scale: 1.012 }),
+      expect.objectContaining({ y: -4 }),
     );
   });
 

@@ -427,6 +427,8 @@
       "emailPermanentError": "Email bị nhà cung cấp từ chối vĩnh viễn. Vui lòng kiểm tra lại địa chỉ người nhận.",
       "emailIndeterminateError": "Trạng thái gửi email chưa được xác định. Cần đối soát thủ công.",
       "emailRetryableError": "Không thể gửi email mời. Vui lòng thử lại sau.",
+      "limit": "Tối đa {{count}} người, bao gồm chủ dự án.",
+      "full": "Dự án đã đủ 6 người. Hãy giảm số thành viên trước khi thêm người mới.",
       "actionFailed": "Không cập nhật được thành viên.",
       "publicTitle": "Nhóm thực hiện",
       "removeMemberTitle": "Loại khỏi team hiện tại",
@@ -439,7 +441,8 @@
       "leaveProjectAction": "Rời khỏi team",
       "leavingProject": "Đang rời khỏi team…",
       "leftProject": "Bạn đã rời nhóm dự án.",
-      "leaveProjectFailed": "Không thể rời nhóm dự án. Vui lòng thử lại."
+      "leaveProjectFailed": "Không thể rời nhóm dự án. Vui lòng thử lại.",
+      "lateMembersHint": "Có thể mời mọi tài khoản tham gia cộng tác sau hạn nộp. Thành viên mới không tự động được nhận giải hoặc chứng nhận."
     },
     "social": {
       "heart": "Thả tim",
@@ -457,7 +460,7 @@
       "moderation": "{{field}} chưa vượt qua kiểm duyệt nội dung. Hãy chỉnh sửa và thử lại.",
       "existing": "Bạn đã có dự án trong hackathon này. Hãy mở dự án hiện có để chỉnh sửa.",
       "slug": "Đường dẫn dự án này không khả dụng. Hãy chọn slug khác.",
-      "deadline": "Đã hết hạn nộp bài. Không thể lưu thay đổi.",
+      "deadline": "Đã quá hạn nộp. Hiện không thể lưu thay đổi này.",
       "session": "Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại để lưu dự án.",
       "forbidden": "Bạn không có quyền thực hiện thay đổi này.",
       "taxonomy": "Chọn ít nhất một track, chuyên môn kỹ thuật và công nghệ.",
@@ -467,7 +470,6 @@
       "resourceRequired": "Thêm ít nhất một demo, repo, slide hoặc video trước khi nộp dự án hackathon.",
       "contentRequired": "Điền {{field}} trước khi chia sẻ dự án. Chỉ khoảng trắng hoặc dấu câu không được tính là nội dung.",
       "alreadyRegistered": "Bạn đã đăng ký tham gia hackathon này rồi.",
-      "registrationDeadlinePassed": "Đã hết hạn đăng ký tham gia. Cổng đăng ký đã đóng.",
       "submissionUnauthorized": "Bạn không có quyền nộp dự án vào hackathon này.",
       "moderationFlagged": "Nội dung bị hệ thống kiểm duyệt cảnh báo. Vui lòng chỉnh sửa và thử lại.",
       "userBlocked": "Tài khoản của bạn đang bị giới hạn thực hiện thao tác này.",
@@ -483,7 +485,7 @@
       "summaryPlaceholder": "Ví dụ: StudyBuddy giúp sinh viên tìm nhóm học phù hợp theo môn học và lịch rảnh.",
       "media": "Logo & ảnh sản phẩm",
       "links": "Demo & tài liệu",
-      "linksHint": "Chọn loại tài liệu bạn muốn bổ sung. Chỉ cần điền những gì đã có; có thể thêm sau trước hạn nộp.",
+      "linksHint": "Chọn loại tài liệu bạn muốn bổ sung. Chỉ cần điền những gì đã có; có thể bổ sung khi dự án được phép chỉnh sửa.",
       "categories": "Tracks & công nghệ",
       "categoriesHint": "Chọn ít nhất một Track. Chuyên môn kỹ thuật và Công nghệ là tùy chọn; bạn có thể tìm kiếm hoặc nhập mục riêng.",
       "taxonomySearch": "Tìm kiếm hoặc nhập mục riêng…",
@@ -495,7 +497,7 @@
       "checklist": "Sẵn sàng chia sẻ?",
       "complete": "Đã hoàn thành",
       "missing": "Bắt buộc",
-      "publicHint": "Dự án hackathon được hiển thị công khai và gắn với cuộc thi. Bạn có thể quay lại chỉnh sửa trước hạn nộp bài.",
+      "publicHint": "Dự án hackathon được hiển thị công khai và gắn với cuộc thi. Sau hạn nộp, quyền chỉnh sửa phụ thuộc vào thiết lập cuộc thi.",
       "public": "Công khai",
       "unlisted": "Không liệt kê",
       "private": "Riêng tư",
@@ -1172,6 +1174,9 @@
         "medium": "Vừa · 160 px",
         "large": "Lớn · 200 px"
       }
+    },
+    "fullPageEmptyState": {
+      "title": "Trạng thái trống toàn trang"
     },
     "progress": {
       "title": "Tiến độ",

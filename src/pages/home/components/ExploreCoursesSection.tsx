@@ -3,6 +3,8 @@ import { FileText, TimerIcon } from "@phosphor-icons/react";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Timestamp } from "@/components/ui/timestamp";
 import { ParticipantSummary } from "@/components/participants/ParticipantSummary";
 import {
   createMockParticipantPreview,
@@ -80,7 +82,7 @@ export function ExploreCoursesSection({
               <NavLink
                 key={course.id}
                 to={`/courses/${course.slug || course.id}`}
-                className="motion-hover-course-card min-w-[240px] max-w-none sm:max-w-[335px] flex-[1_1_100%] sm:flex-[1_1_240px] @min-[504px]:@max-[807px]:flex-[1_1_240px]! overflow-hidden rounded-xl"
+                className="motion-hover-card min-w-[240px] max-w-none sm:max-w-[335px] flex-[1_1_100%] sm:flex-[1_1_240px] @min-[504px]:@max-[807px]:flex-[1_1_240px]! overflow-hidden rounded-xl"
               >
                 <div className="aspect-video overflow-hidden rounded-lg border border-border bg-surface-raised">
                   {course.thumbnail_url ? (
@@ -97,31 +99,36 @@ export function ExploreCoursesSection({
                     <h3 className="line-clamp-1 text-lg font-display font-medium leading-tight text-foreground">
                       {course.title}
                     </h3>
-                    <div className="flex min-w-0 items-center gap-3 text-xs text-foreground-muted">
-                      <span className="shrink-0 rounded-full border border-blue-400 px-1.5 py-1 text-[10px] leading-3 text-blue-400">
-                        {getCourseLevelLabel(course.level)}
-                      </span>
-                      {typeof lessonCount === "number" ? (
-                        <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-                          <FileText className="size-4" aria-hidden weight="duotone" />
-                          {t("home.meta.lessonCount", { count: lessonCount })}
+                    <Timestamp
+                      type="full"
+                      className="min-w-0 flex-wrap gap-3 whitespace-normal"
+                      date={(
+                        <span className="inline-flex flex-wrap items-center gap-2">
+                          <Badge size="xsmall" color="primary">
+                            {getCourseLevelLabel(course.level)}
+                          </Badge>
+                          {typeof lessonCount === "number" ? (
+                            <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
+                              <FileText className="size-4" aria-hidden weight="duotone" />
+                              {t("home.meta.lessonCount", { count: lessonCount })}
+                            </span>
+                          ) : null}
                         </span>
-                      ) : null}
-                      {typeof lessonCount === "number" ? (
-                        <span className="h-4 w-px shrink-0 bg-border" aria-hidden />
-                      ) : null}
-                      <span className="inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap">
-                        <TimerIcon className="size-4 shrink-0" aria-hidden weight="duotone" />
-                        {course.total_duration_seconds > 0
-                          ? t("home.meta.hours", {
-                              count: Math.max(
-                                1,
-                                Math.round(course.total_duration_seconds / 3600),
-                              ),
-                            })
-                          : t("home.meta.selfPaced")}
-                      </span>
-                    </div>
+                      )}
+                      time={(
+                        <span className="inline-flex min-w-0 items-center gap-1.5 whitespace-nowrap">
+                          <TimerIcon className="size-4 shrink-0" aria-hidden weight="duotone" />
+                          {course.total_duration_seconds > 0
+                            ? t("home.meta.hours", {
+                                count: Math.max(
+                                  1,
+                                  Math.round(course.total_duration_seconds / 3600),
+                                ),
+                              })
+                            : t("home.meta.selfPaced")}
+                        </span>
+                      )}
+                    />
                   </div>
                   <ParticipantSummary
                     count={participantPreview.count}

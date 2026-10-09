@@ -228,7 +228,6 @@
       "validationRequired": "Tiêu đề tiếng Việt và slug là bắt buộc.",
       "validationCurrency": "Đơn vị tiền tệ phải gồm 2–10 ký tự A–Z hoặc số.",
       "validationPrize": "Tổng giải theo hạng mục không được vượt tổng giải thưởng.",
-      "validationDeadlines": "Hạn đăng ký phải trước hạn nộp dự án.",
       "validationTelegram": "Telegram phải là link t.me hoặc @username hợp lệ.",
       "validationX": "X phải là URL đầy đủ trên x.com hoặc twitter.com.",
       "validationFacebook": "Facebook phải là URL đầy đủ trên facebook.com.",
@@ -316,8 +315,12 @@
         "changeHostLogo": "Tải lên hoặc đổi logo đơn vị tổ chức",
         "hostLogoPreviewAlt": "Xem trước logo đơn vị tổ chức",
         "totalPrize": "Tổng prize pool",
-        "registration_deadline": "Hạn đăng ký",
         "submission_deadline": "Hạn nộp dự án",
+        "winners_announced": "Đã công bố kết quả",
+        "winners_announcedHint": "Sau khi công bố kết quả, các đội có thể tiếp tục cập nhật dự án và thành viên.",
+        "allow_project_edits_after_deadline": "Cho phép chỉnh sửa sau hạn nộp",
+        "allow_project_edits_after_deadlineHint": "Cho phép các đội cập nhật dự án và thành viên trước khi công bố kết quả. Thay đổi có thể ảnh hưởng đến nội dung đang được chấm.",
+        "editsAutomaticallyOpen": "Quyền chỉnh sửa đã tự động mở vì kết quả đã được công bố.",
         "sectors": "Chuyên môn kỹ thuật",
         "tech_stacks": "Công nghệ"
       }

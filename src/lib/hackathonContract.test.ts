@@ -4,7 +4,6 @@ import type { Contest } from "@/types/hackathons";
 
 import {
   applyHackathonLocaleContent,
-  areHackathonDeadlinesValid,
   generateCanonicalProjectSlug,
   isPrizeAllocationValid,
   matchesHackathonTaxonomy,
@@ -32,8 +31,6 @@ describe("simplified hackathon contract", () => {
     expect(isPrizeAllocationValid("100", [{ id: "a", name: "A", prize_amount: "-50" }, { id: "b", name: "B", prize_amount: "100" }])).toBe(false);
     expect(isPrizeAllocationValid("100", [{ id: "a", name: "A", prize_amount: "NaN" }])).toBe(false);
     expect(isPrizeAllocationValid("100", [{ id: "a", name: "A", prize_amount: "-0.01" }])).toBe(false);
-    expect(areHackathonDeadlinesValid("2026-01-01T00:00:00Z", "2026-01-02T00:00:00Z")).toBe(true);
-    expect(areHackathonDeadlinesValid("2026-01-03T00:00:00Z", "2026-01-02T00:00:00Z")).toBe(false);
   });
 
   it("sorts timeline by authored order then time", () => {
@@ -77,7 +74,6 @@ describe("simplified hackathon contract", () => {
       rules: "Quy định",
       status: "published" as const,
       location: "online" as const,
-      registration_deadline: null,
       submission_deadline: null,
       max_participants: null,
       judge_emails: [],

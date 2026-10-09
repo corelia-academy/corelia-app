@@ -34,7 +34,7 @@ const draftContest = {
   cover_image_url: "https://cdn.example.com/banner.png",
   host: { name: "Corelia", logo_url: null, website_url: null },
   social_links: { x: "https://x.com/corelia" },
-  registration_deadline: null,
+
   submission_deadline: null,
   tracks: [],
   sectors: [],
@@ -64,7 +64,6 @@ vi.mock("@/lib/hackathons", () => ({
   getMyContestSubmission: vi.fn(async () => null),
   registerForContest: vi.fn(),
   canRegisterForContest: vi.fn((c) => c?.status === "published" || c?.status === "running"),
-  isPastContestRegistrationDeadline: vi.fn(() => false),
   isPastContestSubmissionDeadline: vi.fn(() => false),
   sanitizeSlug: (value: unknown) => (typeof value === "string" ? value.trim().toLowerCase() : null),
 }));
@@ -262,7 +261,6 @@ describe("draft hackathon preview", () => {
     state.publicContest = {
       ...publishedContest,
       status: "ended",
-      registration_deadline: "2026-09-30T05:00:00.000Z",
       submission_deadline: "2026-10-01T05:00:00.000Z",
     };
     const view = renderRoute("/hackathons/published-demo/overview");
@@ -270,13 +268,13 @@ describe("draft hackathon preview", () => {
     try {
       const action = Array.from(view.container.querySelectorAll("header button")).find((button) => button.textContent === "public.registrationClosed");
       expect(action?.hasAttribute("disabled")).toBe(true);
-      expect(view.container.querySelectorAll("time")).toHaveLength(2);
-      expect(view.container.textContent).toContain("public.registrationDeadline");
+      expect(view.container.querySelectorAll("time")).toHaveLength(1);
+      expect(view.container.textContent).not.toContain("public.registrationDeadline");
       expect(view.container.textContent).toContain("public.submissionDeadline");
       const deadlines = Array.from(view.container.querySelectorAll("time"));
       expect(deadlines[0]?.textContent).toContain("12:00");
       expect(deadlines[0]?.textContent).toContain("ICT (UTC+7)");
-      expect(deadlines[0]?.getAttribute("datetime")).toBe("2026-09-30T05:00:00.000Z");
+      expect(deadlines[0]?.getAttribute("datetime")).toBe("2026-10-01T05:00:00.000Z");
     } finally {
       await view.cleanup();
     }

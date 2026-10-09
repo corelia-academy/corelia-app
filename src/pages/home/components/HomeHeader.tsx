@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
 import { Button } from "@/components/ui/button";
+import { Chip } from "@/components/ui/chip";
 import { ProgressBar } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { FocusCard } from "../utils/homeTypes";
@@ -55,11 +56,11 @@ export function HomeHeader({
           ) : featuredFocus ? (
             <div className={featuredWrapperClassName}>
               <div className="px-0 py-3 sm:p-4">
-                <div className="inline-flex items-center rounded-full border border-border bg-surface-raised px-3 py-1 text-xs font-medium text-foreground-muted">
+                <Chip size="xsmall" shape="circle">
                   {featuredFocus.format === "online"
                     ? t("home.sections.featuredOnline")
                     : t("home.sections.featuredOffline")}
-                </div>
+                </Chip>
                 <div className="mt-2 line-clamp-2 text-sm font-medium text-foreground">
                   {featuredFocus.title}
                 </div>

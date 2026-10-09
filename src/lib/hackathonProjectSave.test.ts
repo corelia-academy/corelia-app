@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   submission: null as Record<string, unknown> | null,
   lookupError: false,
+  policy: {} as Record<string, unknown>,
   save: vi.fn(),
 }));
 vi.mock("@/i18n", () => ({ default: { language: "en", resolvedLanguage: "en" } }));
@@ -9,7 +10,7 @@ vi.mock("@/lib/projectSubmission", () => ({ saveProject: mocks.save }));
 vi.mock("@/lib/supabase", () => ({ supabase: {
   auth: { getUser: async () => ({ data: { user: { id: "owner" } } }) },
   from: (table: string) => {
-    const data = table === "hackathons" ? { id: "event", status: "published", document: { title: "Event", submission_deadline: "2099-01-01", tracks: [] } }
+    const data = table === "hackathons" ? { id: "event", status: "published", document: { title: "Event", submission_deadline: "2099-01-01", tracks: [], ...mocks.policy } }
       : table === "hackathon_registrations" ? { id: "event_owner", hackathon_id: "event", user_id: "owner", document: { status: "approved" } }
       : table === "hackathon_submissions" ? mocks.submission : null;
     const chain = { select: () => chain, eq: () => chain, maybeSingle: async () => ({ data, error: table === "hackathon_submissions" && mocks.lookupError ? { message: "connection failed" } : null }) };
@@ -22,6 +23,7 @@ const input = { project_id: "new-project", title: "New title", slug: "new-title"
 describe("hackathon project save identity", () => {
   beforeEach(() => {
     mocks.lookupError = false;
+    mocks.policy = {};
     mocks.submission = { id: "event_owner", hackathon_id: "event", user_id: "owner", project_id: "original-project", document: { title: "Original", summary: "Keep this" } };
     mocks.save.mockReset();
   });
@@ -33,6 +35,16 @@ describe("hackathon project save identity", () => {
   it("allows an explicit edit of the existing project", async () => {
     await upsertContestSubmission("event", { ...input, project_id: "original-project" });
     expect(mocks.save).toHaveBeenCalledWith(expect.objectContaining({ project_id: "original-project", title: "New title" }));
+  });
+
+  it.each(["winners_announced", "allow_project_edits_after_deadline"])("%s opens updates but blocks new submissions", async flag => {
+    mocks.policy = { submission_deadline: "2020-01-01", [flag]: true };
+    await upsertContestSubmission("event", { ...input, project_id: "original-project" });
+    expect(mocks.save).toHaveBeenCalledOnce();
+    mocks.submission = null;
+    mocks.save.mockClear();
+    await expect(upsertContestSubmission("event", input)).rejects.toThrow("submission_deadline_passed");
+    expect(mocks.save).not.toHaveBeenCalled();
   });
   it("fails closed when the submission lookup fails", async () => {
     mocks.lookupError = true;

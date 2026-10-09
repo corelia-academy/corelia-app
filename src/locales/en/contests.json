@@ -20,22 +20,22 @@
     "unknown": "-"
   },
   "catalog": {
-    "heroEyebrow": "Hackathons & ecosystem activities",
     "heroTitle": "Corelia hackathons",
-    "heroDescription": "Explore open hackathons and register instantly to start building your project.",
-    "missingSlug": "This hackathon is missing a slug. Run the slug backfill migration or set a slug in workspace settings.",
-    "pillReviewed": "Instant registration",
-    "pillTeamBased": "Team submissions",
-    "sectionWhyTitle": "Hackathons aren't just for winning: they're for learning and building in the real world",
-    "loadingTitle": "Loading hackathons...",
-    "loadingDescription": "Hackathons will appear here once syncing is complete.",
-    "howItWorksEyebrow": "How Corelia runs hackathons",
-    "howItWorksDescription": "Each Corelia hackathon is designed like a hands-on real-world experience: an entry review round, mentors or judges, clear submission requirements, and outcomes strong enough to turn into a portfolio piece, workshop, or demo day.",
-    "whyBullets": {
-      "reviewFirst": "Applications are reviewed before official participation",
-      "realJourney": "Submissions and results reflect real learning progress",
-      "ecosystem": "Can extend to portfolios and ecosystem opportunities"
+    "pageTitle": "Hackathons",
+    "heroDescription": "Learning milestones and projects worth sharing with the community.",
+    "searchHeroDescription": "Discover open hackathons and register now to start building your project.",
+    "searchPlaceholder": "Search by organizer, title, or description",
+    "sort": {
+      "deadlineSoonest": "Expiring soon"
     },
+    "openApplications": "Open applications",
+    "closedApplications": "Closed",
+    "searchEmptyTitle": "No data found.",
+    "searchEmptyDescription": "Try a different keyword.",
+    "hostedBy": "By {{name}}",
+    "participantsCount": "{{displayCount}} participants",
+    "registrationDeadlinePrefix": "<label>Registration deadline</label> <date>{{date}}</date>",
+    "missingSlug": "This hackathon is missing a slug. Run the slug backfill migration or set a slug in workspace settings.",
     "dateRangeUnknown": "Schedule not announced yet",
     "dateStartPrefix": "Starts {{date}}",
     "dateEndPrefix": "Ends {{date}}",
@@ -43,37 +43,9 @@
     "errorTitle": "We couldn’t load hackathons",
     "errorDescription": "Check your connection and try again.",
     "retry": "Retry",
-    "emptyTitle": "No hackathons yet.",
-    "emptyDescriptionManager": "No public hackathons yet. Create and run hackathons in the instructor workspace before they appear here.",
-    "emptyDescriptionUser": "When Corelia announces new hackathons, you'll see the schedule and application requirements here.",
-    "registrationDeadlinePrefix": "Registration deadline {{date}}",
-    "registrationNoLimit": "No registration deadline",
-    "viewDetails": "View details",
-    "viewContest": "View hackathon",
-    "stats": {
-      "total": "Total hackathons",
-      "accepting": "Accepting applications",
-      "running": "Running",
-      "ended": "Ended"
-    },
-    "featuredEyebrow": "Featured",
-    "featured": {
-      "schedule": "Schedule",
-      "format": "Format",
-      "registrations": "Applications",
-      "submissions": "Submissions",
-      "registrationsCount": "{{count}} applications",
-      "submissionsCount": "{{count}} submissions"
-    },
-    "item": {
-      "formatPrefix": "Format: {{format}}",
-      "registrationsCount": "{{count}} applications",
-      "submissionsCount": "{{count}} submissions"
-    },
-    "sidebar": {
-      "leaderboardHint": "Judges score using a rubric; the leaderboard and winners are shown only after results are published."
-    },
-    "listCardImageAlt": "Contest thumbnail: {{title}}"
+    "emptyTitle": "No data.",
+    "emptyDescription": "No hackathons have been posted recently.",
+    "viewContest": "View hackathon"
   },
   "public": {
     "previewNotice": "Preview: this hackathon is not public yet.",
@@ -86,7 +58,6 @@
     "submissionClosed": "Submissions closed",
     "hostedBy": "Hosted by",
     "applications": "Applications",
-    "registrationDeadline": "Registration deadline",
     "submissionDeadline": "Submission deadline",
     "tabsLabel": "Hackathon content",
     "tabs": {
@@ -699,9 +670,8 @@
       },
       "startsAtLabel": "Starts",
       "endsAtLabel": "Ends",
-      "registrationDeadlineLabel": "Registration deadline",
       "submissionDeadlineLabel": "Submission deadline (optional)",
-      "submissionDeadlineDescription": "When submissions lock for participants. If empty, locks at contest end time.",
+      "submissionDeadlineDescription": "Closes registration and new submissions. If empty, uses the contest end time.",
       "autoApproveRegistrationsLabel": "Public registration (no approval required)",
       "autoApproveRegistrationsDescription": "Participants who register while the window is open will be approved instantly and can move straight into the participant workspace.",
       "maxParticipantsLabel": "Approved applications limit",
@@ -1043,7 +1013,7 @@
       "tabSubmissionDisabledHint": "Opens after Corelia approves your application.",
       "submissionWorkspaceTitle": "Submission workspace",
       "submissionWorkspaceApprovedBody": "Your application was approved. You can submit and update your submission here.",
-      "submissionDeadlineLockedBanner": "The submission deadline has passed. Your submission and linked project card are read-only.",
+      "submissionDeadlineLockedBanner": "The submission deadline has passed and editing has not been reopened. Your submission and linked project card are read-only.",
       "submissionDirtyWarning": "You have unsaved changes. Leaving now may lose your latest edits.",
       "submissionFooterHint": "Use a clear title, a detailed summary, and at least one demo or repo link when ready.",
       "applicationCardTitle": "Your application",
@@ -1070,6 +1040,7 @@
       "teamViaInvitesHint": "Teammates must each apply and be approved. After you save a submission, invite approved participants from your submission workspace: they accept via notifications or your invite link."
     },
     "inviteProject": {
+      "teamFull": "This project already has 6 people. You cannot accept this invitation yet.",
       "title": "Project invitation",
       "description": "Accept to join the team on this hackathon project.",
       "previewSummary": "You have been invited to join the project \"{{project}}\".",
@@ -1262,13 +1233,12 @@
     },
     "sections": {
       "timeline": "Timeline",
-      "timelineDescription": "Key milestones for registration, kickoff, submission deadline, and contest end.",
+      "timelineDescription": "Key milestones for kickoff, submission deadline, and contest end.",
       "howToParticipate": "How to participate",
       "timelineUtcNote": "Times are shown in your local timezone.",
       "addToCalendar": "Add to calendar (.ics)"
     },
     "timeline": {
-      "registrationDeadline": "Registration deadline",
       "kickoff": "Kickoff",
       "submissionDeadline": "Submission deadline",
       "end": "End"

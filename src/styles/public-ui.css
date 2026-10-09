@@ -29,7 +29,7 @@
   .public-ui .public-content > :is(div, main, section) { padding-inline: 32px; }
 }
 @media (min-width: 1024px) {
-  .public-ui .public-content > .course-catalog-page {
+  .public-ui .public-content > :is(.course-catalog-page, .full-page-empty-state) {
     padding-inline: 64px;
     padding-block: 48px;
   }

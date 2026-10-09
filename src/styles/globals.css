@@ -181,6 +181,8 @@
   --color-border-subtle: var(--border-subtle);
   --color-border-strong: var(--border-strong);
   --color-stroke-divider: var(--stroke-divider);
+  --color-hackathon-tag-background: var(--hackathon-tag-background);
+  --color-hackathon-tag-foreground: var(--hackathon-tag-foreground);
   --color-tag-background: var(--tag-background);
   --color-tag-foreground: var(--tag-foreground);
   --color-tag-disabled-background: var(--tag-disabled-background);
@@ -355,6 +357,10 @@
   --color-badge-gray: var(--badge-gray);
   --color-badge-gray-filled: var(--badge-gray-filled);
   --color-badge-gray-filled-foreground: var(--badge-gray-filled-foreground);
+  --color-badge-white: var(--badge-white);
+  --color-badge-white-foreground: var(--badge-white-foreground);
+  --color-badge-white-filled: var(--badge-white-filled);
+  --color-badge-white-filled-foreground: var(--badge-white-filled-foreground);
   --color-badge-disabled: var(--badge-disabled);
   --color-badge-disabled-filled: var(--badge-disabled-filled);
   --color-badge-disabled-filled-foreground: var(--badge-disabled-filled-foreground);
@@ -1022,6 +1028,10 @@
   --badge-gray: var(--neutral-600);
   --badge-gray-filled: var(--neutral-200);
   --badge-gray-filled-foreground: var(--neutral-800);
+  --badge-white: var(--neutral-100);
+  --badge-white-foreground: var(--neutral-200);
+  --badge-white-filled: var(--neutral-300);
+  --badge-white-filled-foreground: var(--neutral-900);
   --badge-disabled: var(--neutral-400);
   --badge-disabled-filled: var(--neutral-100);
   --badge-disabled-filled-foreground: var(--neutral-400);
@@ -1055,6 +1065,12 @@
   --dropdown-shadow: 0 -1px 12px -2px #10182814, 0 4px 4px -2px #1018280f;
 
   /* Color roles for former palette utility consumers; kept explicit per mode. */
+  --empty-state-art-surface: var(--neutral-100);
+  --empty-state-art-detail: var(--neutral-200);
+  --empty-state-art-accent: var(--blue-700);
+  --empty-state-art-accent-muted: var(--blue-950);
+  --hackathon-tag-background: color-mix(in srgb, var(--neutral-900) 5%, transparent);
+  --hackathon-tag-foreground: var(--neutral-700);
   --loading-bar-end: var(--blue-800);
   --hackathon-unpublish-surface: var(--blue-700);
   --hackathon-unpublish-hover-surface: var(--blue-800);
@@ -1325,9 +1341,13 @@
   --badge-error: var(--error-400);
   --badge-error-filled: var(--error-500);
   --badge-error-filled-foreground: var(--neutral-50);
-  --badge-gray: var(--neutral-200);
+  --badge-gray: var(--neutral-400);
   --badge-gray-filled: var(--neutral-600);
   --badge-gray-filled-foreground: var(--neutral-100);
+  --badge-white: var(--neutral-100);
+  --badge-white-foreground: var(--neutral-200);
+  --badge-white-filled: var(--neutral-300);
+  --badge-white-filled-foreground: var(--neutral-900);
   --badge-disabled: var(--neutral-500);
   --badge-disabled-filled: var(--neutral-800);
   --badge-disabled-filled-foreground: var(--neutral-500);
@@ -1364,6 +1384,12 @@
   --dropdown-shadow: 0 -1px 12px -2px #10182814, 0 4px 4px -2px #1018280f;
 
   /* Color roles for former palette utility consumers; kept explicit per mode. */
+  --empty-state-art-surface: var(--neutral-800);
+  --empty-state-art-detail: var(--neutral-700);
+  --empty-state-art-accent: var(--blue-700);
+  --empty-state-art-accent-muted: var(--blue-950);
+  --hackathon-tag-background: var(--badge-outline-background);
+  --hackathon-tag-foreground: var(--neutral-200);
   --loading-bar-end: var(--blue-800);
   --hackathon-unpublish-surface: var(--blue-700);
   --hackathon-unpublish-hover-surface: var(--blue-800);

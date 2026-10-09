@@ -1,46 +1,65 @@
-import { useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
-import { ArrowUpRight, CalendarDays, Trophy } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Chip } from "@/components/ui/chip";
+import { Badge } from "@/components/ui/badge";
+import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
+import { FullPageEmptyState } from "@/components/layouts/FullPageEmptyState";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import { HackathonApplicantPreview } from "@/components/hackathons/HackathonApplicantPreview";
-import { canManageContests } from "@/lib/permissions";
-import { useAuth } from "@/stores/authStore";
+import { Separator } from "@/components/ui/separator";
+import { Timestamp } from "@/components/ui/timestamp";
+import { ParticipantSummary } from "@/components/participants/ParticipantSummary";
+import type { PublicHackathonApplicant } from "@/lib/hackathonApplicants";
+import { canRegisterForContest, getEffectiveContestSubmissionDeadline } from "@/lib/hackathons";
 import type { Contest } from "@/types/hackathons";
 import { formatPrizeAmount } from "./utils/formatPrizeAmount";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { publicHackathonApplicantPreviewsQueryOptions, publicHackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
 import {
   contestListLocationLabel,
-  contestListStatusLabel,
-  formatContestListDateRange,
 } from "@/features/hackathons/list/contestListFormatters";
 
 const EMPTY_CONTESTS: Contest[] = [];
+type CatalogSort = "newest" | "oldest" | "deadlineSoonest";
 
 function CatalogGridSkeleton() {
   return <>{Array.from({ length: 3 }).map((_, index) => (
-    <div key={index} className="overflow-hidden rounded-2xl border border-border-subtle">
-      <Skeleton className="aspect-[21/9] w-full rounded-none" />
-      <div className="space-y-3 p-4 sm:p-6"><Skeleton className="h-5 w-28" /><Skeleton className="h-8 w-3/4" /><Skeleton className="h-12 w-full" /><Skeleton className="h-9 w-40" /></div>
+    <div key={index} className="grid min-h-[202px] overflow-hidden rounded-xl border border-border xl:h-[202px] xl:grid-rows-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_352px] xl:gap-x-20">
+      <div className="space-y-4 p-6">
+        <Skeleton className="h-7 w-3/4" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-6 w-2/3" />
+        <div className="border-t border-border-subtle pt-4"><Skeleton className="h-6 w-40" /></div>
+      </div>
+      <Skeleton className="aspect-[44/25] w-full rounded-none xl:aspect-auto xl:self-stretch" />
     </div>
   ))}</>;
 }
 
 export default function Contests() {
   const { t, i18n } = useTranslation("contests");
+  const { t: commonT } = useTranslation("common");
   const translate = useCallback(
     (key: string, options?: Record<string, unknown>) =>
       String(t(key as never, options as never)),
     [t],
   );
-  const { profile } = useAuth();
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const catalogQuery = useQuery(publicHackathonCatalogQueryOptions(locale));
-  const items = catalogQuery.data ?? EMPTY_CONTESTS;
+  const items: Contest[] = catalogQuery.data ?? EMPTY_CONTESTS;
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<CatalogSort>("newest");
   const applicantsQuery = useQuery(publicHackathonApplicantPreviewsQueryOptions(items.map((item) => item.id)));
   const loading = catalogQuery.isPending;
   const error = catalogQuery.error
@@ -49,135 +68,351 @@ export default function Contests() {
       : translate("catalog.loadErrorFallback")
     : null;
 
-  const isManager = canManageContests(profile);
   const showData = !loading && !error;
-  const showEmpty = showData && items.length === 0;
+  const showEmpty = showData && items.length === 0 && !search.trim();
   const showGrid = showData && items.length > 0;
   const showError = !loading && Boolean(error);
+  const filteredItems = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase(locale);
+
+    return items
+      .filter((contest) => {
+        const searchableText = [
+          contest.title,
+          contest.host?.name ?? "",
+          contest.short_description ?? contest.tagline ?? "",
+        ];
+
+        return searchableText.some((value) =>
+          value.toLocaleLowerCase(locale).includes(query),
+        );
+      })
+      .sort((a, b) => {
+        const difference = Date.parse(b.updated_at) - Date.parse(a.updated_at);
+        return sort === "oldest" ? -difference : difference;
+      });
+  }, [items, locale, search, sort]);
+  const openItems = filteredItems.filter(canRegisterForContest);
+  if (sort === "deadlineSoonest") {
+    openItems.sort((a, b) => {
+      const deadlineA = getEffectiveContestSubmissionDeadline(a);
+      const deadlineB = getEffectiveContestSubmissionDeadline(b);
+      const timeA = deadlineA ? Date.parse(deadlineA) : Number.NaN;
+      const timeB = deadlineB ? Date.parse(deadlineB) : Number.NaN;
+      const hasDeadlineA = Number.isFinite(timeA);
+      const hasDeadlineB = Number.isFinite(timeB);
+
+      if (!hasDeadlineA) return hasDeadlineB ? 1 : 0;
+      if (!hasDeadlineB) return -1;
+
+      return timeA - timeB;
+    });
+  }
+  const closedItems = filteredItems.filter((contest) => !canRegisterForContest(contest));
+  const showSearchEmpty =
+    showData && Boolean(search.trim()) && filteredItems.length === 0;
+
+  if (showEmpty) {
+    return (
+      <FullPageEmptyState
+        title={t("catalog.emptyTitle")}
+        description={t("catalog.emptyDescription")}
+        size="large"
+      />
+    );
+  }
+
+  const renderContestCard = (contest: Contest) => {
+    const bannerUrl = contest.cover_image_url?.trim() || contest.thumbnail_url?.trim() || null;
+    const contestSlug = contest.slug?.trim() || null;
+    const registrationDeadline = getEffectiveContestSubmissionDeadline(contest);
+    const participantCount = contest.participants_count ?? 0;
+    const compactParticipantCount = new Intl.NumberFormat("en-US", {
+      notation: "compact",
+      maximumFractionDigits: 1,
+    }).format(participantCount).toLowerCase();
+    const applicantRows: PublicHackathonApplicant[] = applicantsQuery.data?.[contest.id] ?? [];
+    const participants = applicantRows.slice(0, 3).map((applicant) => ({
+      userId: applicant.user_id,
+      avatarSeed: applicant.avatar_seed,
+      avatarConfig: applicant.avatar_config,
+      label: applicant.full_name?.trim() || applicant.username?.trim() || "",
+    }));
+
+    return (
+      <NavLink
+        key={contest.id}
+        to={contestSlug ? `/hackathons/${contestSlug}/overview` : "/hackathons"}
+        onClick={(event) => {
+          if (contestSlug) return;
+          event.preventDefault();
+          toast.error(t("catalog.missingSlug"));
+        }}
+        className="motion-hover-card group block min-w-0 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        aria-label={`${t("catalog.viewContest")}: ${contest.title}`}
+      >
+        <article className="grid min-h-[202px] overflow-hidden rounded-md border border-border bg-surface-base transition-shadow duration-200 group-hover:shadow-md xl:h-[202px] xl:grid-rows-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_352px] xl:gap-x-20">
+          <div className="order-2 flex min-w-0 flex-col px-3xl py-2xl xl:order-none">
+            <h3 className="line-clamp-1 text-heading-medium font-display text-foreground">
+              {contest.title}
+            </h3>
+            {contest.short_description || contest.tagline ? (
+              <p className="mt-2 line-clamp-1 font-body text-body-medium leading-[1.4] tracking-[0.02em] text-foreground-subtle">
+                {contest.short_description || contest.tagline}
+              </p>
+            ) : null}
+
+            <Timestamp
+              type="full"
+              size="medium"
+              className="mt-3 w-full flex-wrap gap-3 whitespace-normal"
+              date={(
+                <span className="inline-flex flex-wrap items-center gap-2">
+                  <Badge size="xsmall" color="gray" variant="outline">
+                    {contestListLocationLabel(contest.mode ?? contest.location, translate, "catalog")}
+                  </Badge>
+                  {contest.host?.name ? (
+                    <span className="inline-flex items-center gap-2 text-foreground-subtle">
+                      {contest.host.logo_url ? (
+                        <img src={contest.host.logo_url} alt="" className="size-5 rounded-full object-cover" />
+                      ) : null}
+                      {t("catalog.hostedBy", { name: contest.host.name })}
+                    </span>
+                  ) : null}
+                </span>
+              )}
+              time={(
+                <ParticipantSummary
+                  count={participantCount}
+                  participants={participants}
+                  summary={t("catalog.participantsCount", { displayCount: compactParticipantCount })}
+                  maxVisible={3}
+                  avatarSize="Small"
+                  groupLabel={t("catalog.participantsCount", { displayCount: participantCount })}
+                  className="[&>span]:text-foreground-subtle"
+                />
+              )}
+            />
+
+            <div className="my-xl border-t border-border" />
+
+            <div className="flex flex-wrap items-center gap-x-5xl gap-y-2md">
+              {contest.prize_pool?.amount && Number(contest.prize_pool.amount) !== 0 ? (
+                <div className="inline-flex min-w-0 flex-wrap items-center gap-2md">
+                  <p className="text-body-small leading-[1.25] text-foreground-subtle">{t("public.prizes.total")}</p>
+                  <p className="text-title-large font-body text-foreground tabular-nums">
+                    {formatPrizeAmount(contest.prize_pool.amount, locale)} {contest.prize_pool.currency}
+                  </p>
+                </div>
+              ) : null}
+
+              {canRegisterForContest(contest) && registrationDeadline ? (
+                <span className="inline-flex items-center gap-2md whitespace-nowrap">
+                  <Trans
+                    ns="contests"
+                    i18nKey="catalog.registrationDeadlinePrefix"
+                    values={{ date: new Date(registrationDeadline).toLocaleDateString(locale) }}
+                    components={{
+                      label: <span className="text-body-small leading-[1.25] text-foreground-subtle" />,
+                      date: <span className="text-title-large font-body text-foreground" />,
+                    }}
+                  />
+                </span>
+              ) : null}
+            </div>
+          </div>
+
+          <div
+            className={`relative order-first w-full overflow-hidden bg-surface-raised xl:order-none ${bannerUrl ? "aspect-[44/25] xl:h-full xl:aspect-auto" : "min-h-[202px] xl:h-full xl:min-h-0"
+              }`}
+          >
+            {bannerUrl ? (
+              <img
+                src={bannerUrl}
+                alt=""
+                className="absolute inset-0 size-full object-cover object-center"
+              />
+            ) : null}
+          </div>
+        </article>
+      </NavLink>
+    );
+  };
 
   return (
-    <div className="container-app pb-5 pt-4 sm:py-8">
-      <div className="mb-6 sm:mb-8">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-display-small sm:font-display">
-              {t("catalog.heroTitle")}
-            </h1>
-          </div>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-foreground-muted sm:mt-3 sm:text-base">{t("catalog.heroDescription")}</p>
-        </div>
-      </div>
-
-      {showError ? (
-        <div
-          className="mt-6 rounded-lg border border-destructive/25 bg-destructive-muted p-6"
-          role="alert"
-          aria-live="assertive"
-        >
-          <p className="text-sm font-semibold text-foreground">
-            {t("catalog.errorTitle")}
-          </p>
-          <p className="mt-1 text-sm text-foreground-muted">
-            {t("catalog.errorDescription")}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Button
-              type="button"
-              className="min-h-11"
-              onClick={() => void catalogQuery.refetch()}
-            >
-              {t("catalog.retry")}
-            </Button>
-          </div>
-          <p className="mt-3 text-xs text-foreground-muted">{error}</p>
-        </div>
-      ) : null}
-
-      <div
-        className="mobile-bleed-grid grid gap-4 sm:gap-6"
-        aria-busy={loading}
-        aria-live={
-          loading
-            ? "polite"
-            : showEmpty
-              ? "polite"
-              : showGrid
-                ? "polite"
-                : undefined
-        }
+    <div
+      className={`course-catalog-page container-app pb-8 pt-6 sm:py-8 ${showSearchEmpty
+          ? "flex min-h-[calc(100svh-var(--app-header-height))] flex-col"
+          : ""
+        }`}
+    >
+      <main
+        className={`course-catalog mx-auto w-full max-w-[1072px] ${showSearchEmpty ? "flex flex-1 flex-col" : ""
+          }`}
       >
-        {loading ? (
-          <div className="contents">{CatalogGridSkeleton()}</div>
-        ) : showEmpty ? (
-          <Card className="w-full">
-            <CardContent className="p-8 text-center">
-              <div className="flex flex-col items-center gap-3 py-8 text-center">
-                <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
-                  <Trophy
-                    className="size-6 text-foreground-subtle"
-                    aria-hidden
-                  />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {t("catalog.emptyTitle")}
-                  </p>
-                  <p className="mt-0.5 text-xs text-foreground-muted">
-                    {isManager
-                      ? t("catalog.emptyDescriptionManager")
-                      : t("catalog.emptyDescriptionUser")}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          items.map((contest) => {
-            const bannerUrl = contest.cover_image_url?.trim() || contest.thumbnail_url?.trim() || null;
-            const contestSlug = contest.slug?.trim() || null;
-            return (
-              <NavLink
-                key={contest.id}
-                to={contestSlug ? `/hackathons/${contestSlug}/overview` : "/hackathons"}
-                onClick={(e) => {
-                  if (contestSlug) return;
-                  e.preventDefault();
-                  toast.error(t("catalog.missingSlug"));
-                }}
-                className="group block min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                aria-label={`${t("catalog.viewContest")}: ${contest.title}`}
+        <header className="mb-6">
+          <h1 className="text-heading-large font-display text-foreground">
+            {t("catalog.pageTitle")}
+            <span className="ml-2 text-body-large font-body font-normal text-foreground-subtle">
+              ({items.length})
+            </span>
+          </h1>
+          <p className="mt-2 text-body-large text-catalog-subtitle">
+            {search.trim() ? t("catalog.searchHeroDescription") : t("catalog.heroDescription")}
+          </p>
+
+          <div className="course-catalog-filters mt-6 grid grid-cols-1 gap-3 xl:grid-cols-[520px_352px] xl:gap-2">
+            <div className="min-w-0">
+              <Input
+                type="text"
+                variant="icon-leading"
+                value={search}
+                onChange={(event) => setSearch(event.currentTarget.value)}
+                placeholder={t("catalog.searchPlaceholder")}
+                aria-label={t("catalog.searchPlaceholder")}
+                renderTrailingContent={() => search ? (
+                  <button
+                    type="button"
+                    aria-label={commonT("search.clear")}
+                    onClick={() => setSearch("")}
+                    className="flex size-8 items-center justify-center rounded-full text-foreground-muted hover:bg-surface-raised hover:text-foreground"
+                  >
+                    <X className="size-4" aria-hidden />
+                  </button>
+                ) : null}
+              />
+            </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                type="button"
+                aria-label={commonT("projects.sort.label")}
+                className="flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-3 text-left font-body text-body-large text-foreground transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               >
-                <article className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base transition-[border-color,box-shadow] duration-200 group-hover:border-primary/30 group-hover:shadow-md">
-                  {bannerUrl ? (
-                    <div className="relative aspect-[21/9] overflow-hidden bg-surface-raised">
-                      <img src={bannerUrl} alt="" className="absolute inset-0 size-full object-cover" />
-                    </div>
-                  ) : null}
-                  <div className="flex min-w-0 flex-col p-4 sm:p-6">
-                    <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-primary"><span className="size-1.5 rounded-full bg-current" />{contestListStatusLabel(contest.status, translate, "catalog")}</span>
-                      <span className="text-foreground-muted">{contestListLocationLabel(contest.mode ?? contest.location, translate, "catalog")}</span>
-                    </div>
-                    <h2 className="mt-3 text-xl font-semibold leading-tight tracking-tight text-foreground [overflow-wrap:anywhere] sm:text-2xl">{contest.title}</h2>
-                    {contest.short_description || contest.tagline ? <p className="mt-2 line-clamp-2 text-sm leading-6 text-foreground-muted sm:line-clamp-3">{contest.short_description || contest.tagline}</p> : null}
-                    <div className="my-4 flex flex-wrap gap-x-6 gap-y-3">
-                      {contest.prize_pool?.amount && Number(contest.prize_pool.amount) !== 0 ? <div className="min-w-0"><p className="text-xs text-foreground-muted">{t("public.prizes.total")}</p><p className="mt-1 text-lg font-semibold tracking-tight text-foreground tabular-nums [overflow-wrap:anywhere]">{formatPrizeAmount(contest.prize_pool.amount, locale)} <span className="text-xs font-medium text-foreground-muted">{contest.prize_pool.currency}</span></p></div> : null}
-                      {contest.host?.name ? <div className="min-w-0"><p className="text-xs text-foreground-muted">{t("public.hostedBy")}</p><p className="mt-1 break-words text-sm font-medium text-foreground">{contest.host.name}</p></div> : null}
-                      <div className="min-w-0"><HackathonApplicantPreview applicants={applicantsQuery.data?.[contest.id]} count={contest.participants_count ?? 0} summary={t("detail.hero.applicationsLine", { total: contest.participants_count ?? 0 })} label={t("public.applications")} /></div>
-                    </div>
-                    <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-foreground-muted">
-                      {contest.registration_deadline ? <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 shrink-0" aria-hidden />{t("catalog.registrationDeadlinePrefix", { date: new Date(contest.registration_deadline).toLocaleDateString(locale) })}</span> : contest.starts_at || contest.ends_at ? <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4 shrink-0" aria-hidden />{formatContestListDateRange(contest.starts_at, contest.ends_at, translate, "catalog")}</span> : null}
-                    </div>
-                    <div className="mt-4 flex justify-end">
-                      <span className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-primary group-hover:underline">{t("catalog.viewContest")}<ArrowUpRight className="size-4" aria-hidden /></span>
-                    </div>
+                <span>
+                  {sort === "newest"
+                    ? commonT("projects.sort.newest")
+                    : sort === "oldest"
+                      ? commonT("projects.sort.oldest")
+                      : t("catalog.sort.deadlineSoonest")}
+                </span>
+                <ChevronDown className="size-4 shrink-0 text-foreground-muted" aria-hidden />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="start"
+                className="min-w-0 max-w-[calc(100vw-2rem)]"
+              >
+                <DropdownMenuRadioGroup
+                  value={sort}
+                  onValueChange={(value) => {
+                    if (
+                      value === "newest" ||
+                      value === "oldest" ||
+                      value === "deadlineSoonest"
+                    ) {
+                      setSort(value);
+                    }
+                  }}
+                >
+                  <DropdownMenuRadioItem className="text-body-large" value="newest">
+                    {commonT("projects.sort.newest")}
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem className="text-body-large" value="oldest">
+                    {commonT("projects.sort.oldest")}
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem className="text-body-large" value="deadlineSoonest">
+                    {t("catalog.sort.deadlineSoonest")}
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
+
+        {showError ? (
+          <div
+            className="mt-6 rounded-lg border border-destructive/25 bg-destructive-muted p-6"
+            role="alert"
+            aria-live="assertive"
+          >
+            <p className="text-sm font-semibold text-foreground">
+              {t("catalog.errorTitle")}
+            </p>
+            <p className="mt-1 text-sm text-foreground-muted">
+              {t("catalog.errorDescription")}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Button
+                type="button"
+                className="min-h-11"
+                onClick={() => void catalogQuery.refetch()}
+              >
+                {t("catalog.retry")}
+              </Button>
+            </div>
+            <p className="mt-3 text-xs text-foreground-muted">{error}</p>
+          </div>
+        ) : null}
+
+        <div
+          className={`mobile-bleed-grid grid gap-4 sm:gap-6 ${showSearchEmpty ? "flex-1" : ""
+            }`}
+          aria-busy={loading}
+          aria-live={
+            loading
+              ? "polite"
+              : search.trim() && filteredItems.length === 0
+                ? "polite"
+                : showGrid
+                  ? "polite"
+                  : undefined
+          }
+        >
+          {loading ? (
+            <div className="contents">{CatalogGridSkeleton()}</div>
+          ) : showSearchEmpty ? (
+            <div className="flex items-center justify-center">
+              <EmptyStateIllustration
+                type="search"
+                size="medium"
+                title={t("catalog.searchEmptyTitle")}
+                description={t("catalog.searchEmptyDescription")}
+              />
+            </div>
+          ) : (
+            <>
+              {openItems.length > 0 ? (
+                <section className="grid">
+                  <div className="flex min-h-6 items-center gap-2.5">
+                    <h2 className="course-catalog-section-title text-body-large font-medium text-foreground">
+                      {t("catalog.openApplications")}
+                    </h2>
+                    <Chip size="xsmall" shape="circle">
+                      {openItems.length}
+                    </Chip>
                   </div>
-                </article>
-              </NavLink>
-            );
-          })
-        )}
-      </div>
+                  <Separator className="mt-3" />
+                  <div className="mt-4 grid gap-3">{openItems.map(renderContestCard)}</div>
+                </section>
+              ) : null}
+              {closedItems.length > 0 ? (
+                <section className="mt-8 grid">
+                  <div className="flex min-h-6 items-center gap-2.5">
+                    <h2 className="course-catalog-section-title text-body-large font-medium text-foreground">
+                      {t("catalog.closedApplications")}
+                    </h2>
+                    <Chip size="xsmall" shape="circle">
+                      {closedItems.length}
+                    </Chip>
+                  </div>
+                  <Separator className="mt-3" />
+                  <div className="mt-4 grid gap-3">{closedItems.map(renderContestCard)}</div>
+                </section>
+              ) : null}
+            </>
+          )}
+        </div>
+      </main>
     </div>
   );
 }

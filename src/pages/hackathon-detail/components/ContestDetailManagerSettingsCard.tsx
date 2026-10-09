@@ -1285,22 +1285,6 @@ export function ContestDetailManagerSettingsCard({
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-foreground-muted">
-                    {translate("instructorNew.form.registrationDeadlineLabel")}
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={publicDraft.registration_deadline_local}
-                    onChange={(e) =>
-                      setPublicDraft((prev) => ({
-                        ...prev,
-                        registration_deadline_local: e.target.value,
-                      }))
-                    }
-                    className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-foreground-muted">
                     {translate("instructorNew.form.startsAtLabel")}
                   </label>
                   <input

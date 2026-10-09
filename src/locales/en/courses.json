@@ -152,7 +152,7 @@
       "runningContestBadge": "Live contest",
       "newContestBadge": "New contest",
       "exploreContest": "Explore contest",
-      "contestDeadlineMeta": "Registration deadline: {{date}}",
+      "contestDeadlineMeta": "Submission deadline: {{date}}",
       "contestMetaNoDeadline": "A relevant next step in the Corelia ecosystem",
       "exploreMoreBadge": "Explore more",
       "exploreMoreTitle": "Expand your learning journey with Corelia",

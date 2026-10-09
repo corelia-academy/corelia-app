@@ -427,6 +427,8 @@
       "emailPermanentError": "Email delivery permanently rejected. Please verify the recipient address.",
       "emailIndeterminateError": "Email delivery status is indeterminate. Manual reconciliation is required.",
       "emailRetryableError": "Could not send invitation email. Please try again later.",
+      "limit": "Up to {{count}} people, including the project owner.",
+      "full": "This project has reached its 6-person limit. Remove a member before adding someone new.",
       "actionFailed": "Could not update the team.",
       "publicTitle": "Project team",
       "removeMemberTitle": "Remove from the current team",
@@ -439,7 +441,8 @@
       "leaveProjectAction": "Leave team",
       "leavingProject": "Leaving team…",
       "leftProject": "You left the project team.",
-      "leaveProjectFailed": "Could not leave the project team. Please try again."
+      "leaveProjectFailed": "Could not leave the project team. Please try again.",
+      "lateMembersHint": "After the deadline, you can invite any account to collaborate. New members do not automatically receive awards or certificates."
     },
     "social": {
       "heart": "Like",
@@ -457,7 +460,7 @@
       "moderation": "{{field}} did not pass content review. Please revise it and try again.",
       "existing": "You already have a project for this hackathon. Open your existing project to edit it.",
       "slug": "This project URL is unavailable. Please choose a different slug.",
-      "deadline": "The submission deadline has passed. Changes cannot be saved.",
+      "deadline": "The submission deadline has passed. These changes cannot be saved.",
       "session": "Your session has expired. Sign in again to save your project.",
       "forbidden": "You do not have permission to make this change.",
       "taxonomy": "Select at least one track, engineering area and technology.",
@@ -467,7 +470,6 @@
       "resourceRequired": "Add at least one demo, repository, slide or video before submitting to a hackathon.",
       "contentRequired": "Complete {{field}} before sharing this project. Whitespace or punctuation alone is not content.",
       "alreadyRegistered": "You are already registered for this hackathon.",
-      "registrationDeadlinePassed": "The registration deadline has passed. New registrations are closed.",
       "submissionUnauthorized": "You are not authorized to submit to this hackathon.",
       "moderationFlagged": "Content was flagged by automated moderation. Please revise it and try again.",
       "userBlocked": "Your account is restricted from performing this action.",
@@ -483,7 +485,7 @@
       "summaryPlaceholder": "Example: StudyBuddy helps students find study groups that match their subjects and schedules.",
       "media": "Logo & screenshots",
       "links": "Demo & resources",
-      "linksHint": "Choose the resources you want to add. Include only what you already have; you can add more before the deadline.",
+      "linksHint": "Choose the resources you want to add. Include only what you already have; you can add more whenever project editing is open.",
       "categories": "Tracks & technologies",
       "categoriesHint": "Choose at least one Track. Engineering areas and Technologies are optional; search the suggestions or add your own.",
       "taxonomySearch": "Search or add your own…",
@@ -495,7 +497,7 @@
       "checklist": "Ready to share?",
       "complete": "Complete",
       "missing": "Required",
-      "publicHint": "Hackathon projects are public and linked to this event. You can return to edit your submission before the deadline.",
+      "publicHint": "Hackathon projects are public and linked to this event. After the deadline, editing depends on the event settings.",
       "public": "Public",
       "unlisted": "Unlisted",
       "private": "Private",
@@ -1172,6 +1174,9 @@
         "medium": "Medium · 160 px",
         "large": "Large · 200 px"
       }
+    },
+    "fullPageEmptyState": {
+      "title": "Full Page Empty State"
     },
     "progress": {
       "title": "Progress",

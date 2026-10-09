@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
-import emptyNoDataSvg from "@/assets/illustrations/empty-state/empty-no-data.svg";
-import searchNoDataSvg from "@/assets/illustrations/empty-state/search-no-data.svg";
+import emptyNoDataSvg from "@/assets/illustrations/empty-state/empty-no-data.svg?raw";
+import searchNoDataSvg from "@/assets/illustrations/empty-state/search-no-data.svg?raw";
 
 export type EmptyStateIllustrationType = "search" | "empty";
 export type EmptyStateIllustrationSize = "tiny" | "medium" | "large" | "fullPage";
@@ -12,7 +12,7 @@ type EmptyStateIllustrationProps = {
   description?: string;
 };
 
-const illustrationSources: Record<EmptyStateIllustrationType, string> = {
+const illustrationMarkup: Record<EmptyStateIllustrationType, string> = {
   search: searchNoDataSvg,
   empty: emptyNoDataSvg,
 };
@@ -66,15 +66,14 @@ export function EmptyStateIllustration({
           illustrationSizes[size],
         )}
       >
-        <div className={cn("absolute", illustrationInsets[type])}>
-          <img
-            src={illustrationSources[type]}
-            alt=""
-            aria-hidden="true"
-            draggable={false}
-            className="absolute inset-0 block max-w-none size-full"
-          />
-        </div>
+        <div
+          aria-hidden="true"
+          className={cn(
+            "absolute [&_svg]:block [&_svg]:max-w-none [&_svg]:size-full",
+            illustrationInsets[type],
+          )}
+          dangerouslySetInnerHTML={{ __html: illustrationMarkup[type] }}
+        />
       </div>
       {(description || (size !== "tiny" && title)) && (
         <div

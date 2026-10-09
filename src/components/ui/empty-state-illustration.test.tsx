@@ -1,22 +1,21 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import emptyNoDataSvg from "@/assets/illustrations/empty-state/empty-no-data.svg";
-import searchNoDataSvg from "@/assets/illustrations/empty-state/search-no-data.svg";
 import { EmptyStateIllustration } from "./empty-state-illustration";
 
 describe("EmptyStateIllustration", () => {
   it.each([
-    ["search", searchNoDataSvg],
-    ["empty", emptyNoDataSvg],
-  ] as const)("renders the %s illustration", (type, source) => {
+    ["search", 'id="Empty Illustration"'],
+    ["empty", 'id="Group 2"'],
+  ] as const)("renders the %s illustration", (type, expectedSvgId) => {
     const markup = renderToStaticMarkup(
       <EmptyStateIllustration type={type} size="medium" />,
     );
 
-    expect(markup).toContain(`src="${source.replaceAll("'", "&#x27;")}"`);
-    expect(markup).toContain('alt=""');
-    expect(markup).toContain('aria-hidden="true"');
+    expect(markup).toContain("<svg");
+    expect(markup).toContain(expectedSvgId);
+    expect(markup).toContain('fill="var(--empty-state-art-surface)"');
+    expect(markup).not.toContain("#0B1528");
   });
 
   it.each([
@@ -31,7 +30,9 @@ describe("EmptyStateIllustration", () => {
 
     expect(markup).toContain(sizeClass);
     expect(markup).toContain("select-none");
-    expect(markup).toContain('draggable="false"');
+    expect(markup).toContain('aria-hidden="true"');
+    expect(markup).toContain("<svg");
+    expect(markup).not.toContain("<img");
   });
 
   it("shows description but hides title for tiny size", () => {
@@ -70,6 +71,6 @@ describe("EmptyStateIllustration", () => {
       <EmptyStateIllustration type="search" size="large" />,
     );
 
-    expect(markup).not.toContain("<p");
+    expect(markup).not.toMatch(/<p(?:\s|>)/);
   });
 });
