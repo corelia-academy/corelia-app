@@ -14,8 +14,33 @@
 }
 .public-ui .public-content :is(h1, h2) { font-family: var(--font-display); }
 .public-ui .public-content h2 { line-height: 1.35; }
+.public-ui .public-content [data-hackathon-title] { font-size: 28px; line-height: 1.2; }
+.public-ui .public-content [data-hackathon-overview-title] { font-size: 28px; line-height: 1.2; }
+.public-ui .public-content [data-hackathon-card-title] {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+}
+.public-ui .public-content [data-hackathon-prompt-card] {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--surface-base), var(--surface-base)) padding-box,
+    linear-gradient(
+      40.8deg,
+      var(--hackathon-prompt-border-start) 0%,
+      var(--hackathon-prompt-border-middle) 49.7176%,
+      var(--hackathon-prompt-border-end) 100%
+    ) border-box;
+}
+.public-ui .public-content [data-hackathon-overview-body] > div {
+  font-size: 16px;
+  line-height: 1.4;
+  letter-spacing: 0.32px;
+}
+.public-ui .public-content [data-hackathon-overview-body] li { line-height: 1.4; }
 .public-ui .public-content .shadow-card { box-shadow: none; }
-.public-ui .public-content :is(button, select, input:not([type=checkbox]):not([type=radio])) { min-height: 44px; }
+.public-ui .public-content :is(button:not([data-hackathon-share]), select, input:not([type=checkbox]):not([type=radio])) { min-height: 44px; }
 .public-ui [data-sidebar=menu-button] { min-height: 44px; }
 .public-ui [data-sidebar=menu-button][data-active=true] { box-shadow: none; }
 .public-ui :is(a, button, input:not([data-slot="input"]), select, summary):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
@@ -59,12 +84,21 @@
 }
 
 .public-ui .public-content h2 { font-size: 22px; }
-.public-ui .public-content [data-slot=button] { min-height: 44px; }
+.public-ui .public-content [data-slot=button]:not([data-hackathon-share]) { min-height: 44px; }
 .public-ui .public-content [data-slot=card] { box-shadow: none; }
 .public-ui .public-content :is(article, section) { min-width: 0; }
 .public-ui .public-content .prose { max-width: 720px; overflow-wrap: anywhere; }
 .public-ui .public-content [data-slot=card-content] { padding: 20px; }
 .public-ui .public-content [data-slot=button][data-size^=icon] { min-width: 44px; }
+@media (min-width: 1280px) {
+  .public-ui .public-content button[data-slot="button"][data-hackathon-control] {
+    height: 32px;
+    min-height: 32px;
+    padding: 6px 16px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+}
 @media (min-width: 640px) {
   .public-ui .public-content [data-slot=card-content] { padding: 24px; }
 }

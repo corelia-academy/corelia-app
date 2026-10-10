@@ -324,6 +324,7 @@
     },
     "card": {
       "noSummary": "No summary provided yet.",
+      "publishedAt": "Posted on {{date}}",
       "links": "Project links",
       "moreLinks": "{{count}} more links"
     },
@@ -1219,6 +1220,81 @@
         "coloredProgress": "In progress · colored",
         "done": "Done"
       }
+    },
+    "tooltip": {
+      "title": "Tooltip",
+      "criterion": "All nine Figma arrow placements with and without supporting text; callers provide the message content.",
+      "description": "Compare all 18 arrow and supporting-text variants from Figma.",
+      "withoutSupportingText": "Without supporting text",
+      "withSupportingText": "With supporting text",
+      "sampleTitle": "This is a tooltip",
+      "sampleSupportingText": "Tooltips explain the meaning or function of an element without adding permanent text to the page.",
+      "arrows": {
+        "none": "No arrow",
+        "bottomCenter": "Bottom center",
+        "bottomLeft": "Bottom left",
+        "bottomRight": "Bottom right",
+        "topCenter": "Top center",
+        "topLeft": "Top left",
+        "topRight": "Top right",
+        "left": "Left",
+        "right": "Right"
+      }
+    },
+    "stepper": {
+      "title": "Stepper",
+      "criterion": "Horizontal and vertical progress tracking; the consuming page supplies each step state.",
+      "description": "A visual progress tracker. The parent page controls step state and decides when the flow moves.",
+      "liveTitle": "Interactive, parent-controlled flow",
+      "liveCriterion": "Use Previous and Next to see the parent page update the step states.",
+      "orientationLabel": "Orientation",
+      "orientation": {
+        "horizontal": "Horizontal",
+        "vertical": "Vertical"
+      },
+      "styleLabel": "Marker style",
+      "style": {
+        "text": "Numbers",
+        "icon": "Icons"
+      },
+      "steps": {
+        "account": "Account",
+        "accountCaption": "Required details",
+        "profile": "Profile",
+        "profileCaption": "Your information",
+        "review": "Review",
+        "reviewCaption": "Confirm details"
+      },
+      "state": {
+        "default": "Not started",
+        "focused": "Current step",
+        "passed": "Complete",
+        "error": "Needs attention"
+      },
+      "liveAccessibleLabel": "Account setup progress",
+      "currentStep": "Step {{current}} of {{total}}",
+      "previous": "Previous",
+      "next": "Next",
+      "parentOwnsState": "The page decides each step state and when to move; Stepper only displays the supplied state.",
+      "statesTitle": "Figma state and layout comparison",
+      "statesCriterion": "Compare all four states in both orientations and marker styles.",
+      "statesAccessibleLabel": "Stepper state examples",
+      "samples": {
+        "waiting": "Waiting",
+        "current": "In progress",
+        "complete": "Complete",
+        "problem": "Needs attention",
+        "optional": "Not started",
+        "inProgress": "Current step",
+        "done": "Finished",
+        "checkDetails": "Review the details"
+      },
+      "configuration": {
+        "horizontal": "{{style}} style · horizontal",
+        "vertical": "{{style}} style · vertical"
+      },
+      "usageTitle": "Controlled usage example",
+      "usageCriterion": "The page derives each state from its own current-step value and passes the result into Stepper."
     }
   },
   "maintenance": {

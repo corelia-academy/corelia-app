@@ -341,6 +341,8 @@ function ApplicationRoutes() {
               "progress",
               "xp-rank",
               "timestamp",
+              "tooltip",
+              "stepper",
             ].map((component) => (
               <Route
                 key={component}

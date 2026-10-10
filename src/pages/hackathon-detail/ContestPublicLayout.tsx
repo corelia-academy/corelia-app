@@ -1,24 +1,41 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowUpRight, CalendarClock, Globe2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Clock,
+  FacebookLogo as PhosphorFacebookLogo,
+  Globe,
+  Info,
+  ShareFat,
+  TelegramLogo as PhosphorTelegramLogo,
+  UsersThree,
+  XLogo as PhosphorXLogo,
+} from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 
 import { PageContainer } from "@/components/layouts/PagePrimitives";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Tabs } from "@/components/ui/tabs";
+import { Timestamp } from "@/components/ui/timestamp";
+import { TooltipPreview } from "@/components/ui/tooltip";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { HackathonApplicantPreview } from "@/components/hackathons/HackathonApplicantPreview";
 import { hackathonPreviewQueryOptions, publicHackathonApplicantPreviewsQueryOptions, publicHackathonDetailQueryOptions } from "@/features/hackathons/hackathonQueries";
 import {
   getMyContestRegistration,
   getMyContestSubmission,
   registerForContest,
+  getEffectiveContestSubmissionDeadline,
   canRegisterForContest,
   isPastContestSubmissionDeadline,
   sanitizeSlug,
 } from "@/lib/hackathons";
 import { canManageContests } from "@/lib/permissions";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
 import type { Contest, ContestRegistration } from "@/types/hackathons";
 import { ContestDetailLoadingCard } from "@/pages/hackathon-detail/components/ContestDetailGateStates";
@@ -26,35 +43,26 @@ import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 import { formatPrizeAmount } from "./utils/formatPrizeAmount";
 import { formatVietnamDateTime } from "./utils/formatVietnamDateTime";
 
-const TABS = ["overview", "prizes", "timeline", "resources", "projects"] as const;
+const TABS = ["overview", "prizes", "timeline", "projects", "resources"] as const;
 
 export type HackathonOutletContext = {
   contest: Contest;
   registration: ContestRegistration | null;
+  submission: Awaited<ReturnType<typeof getMyContestSubmission>> | null;
+  submissionLoading: boolean;
+  submissionClosed: boolean;
 };
 
 function TelegramLogo({ className }: { className?: string }) {
-  return <svg viewBox="0 0 24 24" aria-hidden className={className}><path fill="currentColor" d="M21.94 4.67c.24-1.1-.4-1.54-1.38-1.18L2.1 10.61c-1.26.5-1.25 1.2-.23 1.51l4.74 1.48 1.82 5.67c.22.63.11.88.78.88.52 0 .75-.24 1.04-.52l2.53-2.46 5.26 3.88c.97.54 1.67.26 1.91-.9l2-15.48ZM7.35 13.25l10.99-6.94c.55-.33 1.05-.15.64.22l-9.44 8.52-.37 3.96-1.82-5.76Z" /></svg>;
+  return <PhosphorTelegramLogo className={className} weight="duotone" aria-hidden />;
 }
 
 function XLogo({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden
-      className={className}
-      data-social-icon="x"
-    >
-      <path
-        fill="currentColor"
-        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.657l-5.214-6.817-5.967 6.817H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"
-      />
-    </svg>
-  );
+  return <PhosphorXLogo className={className} weight="duotone" aria-hidden />;
 }
 
 function FacebookLogo({ className }: { className?: string }) {
-  return <svg viewBox="0 0 24 24" aria-hidden className={className}><path fill="currentColor" d="M13.5 21v-8.2h2.76l.41-3.2H13.5V7.56c0-.93.26-1.56 1.59-1.56h1.7V3.14A22.7 22.7 0 0 0 14.3 3c-2.46 0-4.15 1.5-4.15 4.26V9.6H7.37v3.2h2.78V21h3.35Z" /></svg>;
+  return <PhosphorFacebookLogo className={className} weight="duotone" aria-hidden />;
 }
 
 export default function ContestPublicLayout() {
@@ -103,6 +111,30 @@ export default function ContestPublicLayout() {
   const submissionQuery = useQuery({ queryKey: ["projects", "my-submission", contest?.id, user?.id], queryFn: () => getMyContestSubmission(contest!.id, user), enabled: Boolean(contest && user && !previewRequested), staleTime: 0 });
   const registration = registrationQuery.data ?? null;
   const canRegister = Boolean(contest && canRegisterForContest(contest));
+  const [nowMs] = useState(() => Date.now());
+  const effectiveDeadline = contest
+    ? getEffectiveContestSubmissionDeadline(contest)
+    : null;
+  const deadlineMs = effectiveDeadline ? Date.parse(effectiveDeadline) : Number.NaN;
+  const remainingMs = Number.isFinite(deadlineMs) ? deadlineMs - nowMs : null;
+  const closingSoon = Boolean(
+    canRegister &&
+      remainingMs !== null &&
+      remainingMs > 0 &&
+      remainingMs <= 24 * 60 * 60 * 1000,
+  );
+  const detailStatus = !canRegister
+    ? "closed"
+    : closingSoon
+      ? "closingSoon"
+      : "open";
+  const deadlineCountdown = canRegister && remainingMs !== null && remainingMs > 0
+    ? t("public.registrationCountdown", {
+        time: t("detail.hero.countdownDays", {
+          count: Math.ceil(remainingMs / (24 * 60 * 60 * 1000)),
+        }),
+      })
+    : null;
   const submissionClosed = Boolean(
     contest && isPastContestSubmissionDeadline(contest),
   );
@@ -123,9 +155,12 @@ export default function ContestPublicLayout() {
   );
 
   const tabsScrollerRef = useRef<HTMLDivElement>(null);
-  const tabRefs = useRef(new Map<(typeof TABS)[number], HTMLAnchorElement>());
+  const tabRefs = useRef(new Map<(typeof TABS)[number], HTMLElement>());
   const activeTab = TABS.find((tab) => location.pathname.endsWith(`/${tab}`)) ?? "overview";
-  const revealTabHorizontally = useCallback((element: HTMLAnchorElement | null) => {
+  const tabsListRef = useRef<HTMLDivElement>(null);
+  const tabIndicatorRef = useRef<HTMLSpanElement>(null);
+  const indicatorInitializedRef = useRef(false);
+  const revealTabHorizontally = useCallback((element: HTMLElement | null) => {
     const scroller = tabsScrollerRef.current;
     if (!scroller || !element) return;
     const scrollerRect = scroller.getBoundingClientRect();
@@ -142,6 +177,57 @@ export default function ContestPublicLayout() {
     return () => window.cancelAnimationFrame(frame);
   }, [activeTab, contest?.id, revealTabHorizontally]);
 
+  useLayoutEffect(() => {
+    const list = tabsListRef.current;
+    const indicator = tabIndicatorRef.current;
+    const activeElement = tabRefs.current.get(activeTab);
+
+    if (!list || !indicator || !activeElement) return;
+
+    const listRect = list.getBoundingClientRect();
+    const tabRect = activeElement.getBoundingClientRect();
+    const target = {
+      x: tabRect.left - listRect.left,
+      y: tabRect.top - listRect.top,
+      width: tabRect.width,
+      height: tabRect.height,
+    };
+
+    if (
+      !indicatorInitializedRef.current ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      gsap.set(indicator, target);
+      indicatorInitializedRef.current = true;
+      return;
+    }
+
+    const currentRect = indicator.getBoundingClientRect();
+    gsap.set(indicator, {
+      width: target.width,
+      height: target.height,
+      transformOrigin: "left top",
+      x: currentRect.left - listRect.left,
+      y: currentRect.top - listRect.top,
+      scaleX: currentRect.width / target.width,
+      scaleY: currentRect.height / target.height,
+    });
+
+    const tween = gsap.to(indicator, {
+      x: target.x,
+      y: target.y,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 0.28,
+      ease: "power2.out",
+      overwrite: "auto",
+    });
+
+    return () => {
+      tween.kill();
+    };
+  }, [activeTab, contest?.id]);
+
   if (previewAccessPending || (!previewRequested && publicContestQuery.isPending) || (previewAuthorized && previewContestQuery.isPending)) return <ContestDetailLoadingCard translate={translate} />;
   if (contestQuery.error || !contest || !slug) {
     return (
@@ -157,17 +243,20 @@ export default function ContestPublicLayout() {
   const cta = previewRequested ? null : registration ? (
     <Button
       type="button"
-      className="min-h-11 w-full sm:w-auto"
-      disabled={!submissionQuery.data?.project_id && submissionClosed}
-      onClick={() => navigate(submissionQuery.data?.project_id ? `/projects/${submissionQuery.data.project_id}` : `/projects/new?hackathon=${encodeURIComponent(slug)}`)}
+      size="small"
+      className="min-h-11 w-full sm:w-auto lg:min-h-0"
+      data-hackathon-control
+      disabled
     >
-      {submissionQuery.data?.project_id ? t("projects.editor.viewProject", { ns: "common" }) : submissionClosed ? t("public.submissionClosed") : t("public.createProject")}
+      {t("public.detailStatus.registered")}
     </Button>
-  ) : (
+  ) : !canRegister ? null : (
     <Button
       type="button"
-      className="min-h-11 w-full sm:w-auto"
-      disabled={!canRegister || registerMutation.isPending}
+      size="small"
+      className="min-h-11 w-full sm:w-auto lg:min-h-0"
+      data-hackathon-control
+      disabled={registerMutation.isPending}
       onClick={() => {
         if (!user) {
           navigate(`/login?redirect=${encodeURIComponent(`${location.pathname}${location.search}${location.hash}`)}`);
@@ -176,88 +265,219 @@ export default function ContestPublicLayout() {
         registerMutation.mutate();
       }}
     >
-      {!canRegister ? t("public.registrationClosed") : t("public.register")}
+      {t("public.register")}
     </Button>
   );
   const summary = contest.short_description || contest.tagline;
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const participantCount = contest.participants_count ?? 0;
+  const displayParticipantCount = new Intl.NumberFormat(locale, {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(participantCount);
 
   return (
     <div className="pb-10">
       {previewAuthorized ? <div className="border-b border-warning/30 bg-warning-muted px-4 py-2 text-center text-sm font-medium text-foreground" role="status">{t("public.previewNotice")}</div> : null}
-      <PageContainer width="default" className="px-0 pb-0 pt-0 sm:px-6 sm:pt-5 lg:px-8">
-        <header className="mobile-bleed-surface min-w-0 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
+      <PageContainer width="default" className="px-0 pb-0 pt-0 sm:px-6 sm:pt-5 lg:px-8 lg:pt-12 lg:pb-0">
+        <NavLink
+          to="/hackathons"
+          className="mb-4xl inline-flex min-h-8 items-center gap-1 text-xs font-medium text-foreground hover:text-foreground-muted focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        >
+          <ArrowLeft className="size-3" weight="duotone" aria-hidden />
+          {t("detail.errorState.backToList")}
+        </NavLink>
+        <header className="mobile-bleed-surface min-w-0">
           {contest.cover_image_url ? (
-            <div className="w-full overflow-hidden bg-surface-raised sm:aspect-[21/9]">
-              <img src={contest.cover_image_url} alt="" className="block h-auto w-full object-contain sm:h-full sm:object-cover" fetchPriority="high" />
+            <div className="aspect-[21/9] w-full overflow-hidden rounded-xl bg-surface-raised">
+              <img src={contest.cover_image_url} alt="" className="block h-full w-full rounded-xl object-cover" fetchPriority="high" />
             </div>
           ) : null}
 
-          <div className="min-w-0 p-4 sm:p-6">
+          <div className="min-w-0 pt-6">
             <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
               <div className="min-w-0 flex-1">
-                {!previewRequested ? <span data-hackathon-hero-status className="mb-2 inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">{t(`public.status.${contest.status}`)}</span> : null}
-                <h1 className="max-w-4xl text-2xl font-semibold leading-tight tracking-tight text-foreground [overflow-wrap:anywhere] sm:text-3xl lg:text-4xl">{contest.title}</h1>
-                {summary ? <p className="mt-2 line-clamp-2 max-w-3xl text-sm leading-6 text-foreground-muted sm:text-base">{summary}</p> : null}
-                {summary ? <NavLink to={`/hackathons/${slug}/overview${previewRequested ? "?preview=1" : ""}#overview-content`} className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-medium text-primary hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">{t("public.overview.readMore")}<ArrowUpRight className="size-4" aria-hidden /></NavLink> : null}
-              </div>
-              {cta || contest.social_links?.telegram || contest.social_links?.x || contest.social_links?.facebook ? (
-                <div className="flex w-full flex-col gap-3 border-t border-border-subtle pt-4 sm:w-auto sm:flex-row sm:items-center lg:shrink-0 lg:border-0 lg:pt-0">
-                  {cta}
-                  <div className="flex items-center gap-2.5">
-                    {contest.social_links?.telegram ? <Button render={<a href={contest.social_links.telegram} target="_blank" rel="noopener noreferrer" aria-label="Telegram" />} nativeButton={false} size="small" variant="cta" hierarchy="secondary" iconOnly className="size-10 rounded-full bg-surface-raised text-foreground-muted hover:border-primary/40 hover:text-primary"><TelegramLogo className="size-5" /></Button> : null}
-                    {contest.social_links?.x ? <Button render={<a href={contest.social_links.x} target="_blank" rel="noopener noreferrer" aria-label="X" />} nativeButton={false} size="small" variant="cta" hierarchy="secondary" iconOnly className="size-10 rounded-full bg-surface-raised text-foreground-muted hover:border-primary/40 hover:text-primary"><XLogo className="size-[18px]" /></Button> : null}
-                    {contest.social_links?.facebook ? <Button render={<a href={contest.social_links.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" />} nativeButton={false} size="small" variant="cta" hierarchy="secondary" iconOnly className="size-10 rounded-full bg-surface-raised text-foreground-muted hover:border-primary/40 hover:text-primary"><FacebookLogo className="size-5" /></Button> : null}
-                  </div>
+                <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 lg:gap-x-4">
+                  <h1 data-hackathon-title className="max-w-4xl text-[28px] font-display font-medium leading-[1.2] text-foreground [overflow-wrap:anywhere]">{contest.title}</h1>
+                  {!previewRequested ? <Badge data-hackathon-hero-status size="small" color={detailStatus === "open" ? "success" : detailStatus === "closingSoon" ? "warning" : "gray"} className="h-auto leading-[1.4]">{t(`public.detailStatus.${detailStatus}`)}</Badge> : null}
                 </div>
-              ) : null}
+                <div className="mt-3 flex min-w-0 flex-col gap-3 lg:mt-4 lg:flex-row lg:items-center lg:justify-between">
+                  {summary ? <p className="max-w-[640px] text-sm leading-[1.4] tracking-[0.32px] text-foreground-subtle lg:text-base">{summary}</p> : <span />}
+                </div>
+                <Timestamp
+                  type="full"
+                  size="large"
+                  className="mt-4 w-full flex-wrap gap-3 whitespace-normal lg:mt-8 [&>[data-slot=separator]]:hidden sm:[&>[data-slot=separator]]:block"
+                  date={(
+                    <span className="inline-flex min-w-0 flex-wrap items-center gap-3 text-foreground-subtle">
+                      <Badge size="small" color="white" variant="outline" className="h-auto leading-[1.4]">
+                        {t(`public.mode.${contest.mode ?? contest.location}`)}
+                      </Badge>
+                      {contest.host?.name ? (
+                        <span className="inline-flex min-w-0 items-center gap-1.5">
+                          {contest.host.logo_url ? (
+                            <img src={contest.host.logo_url} alt="" className="size-6 shrink-0 rounded-full bg-white object-contain p-0.5" />
+                          ) : (
+                            <Globe className="size-4 shrink-0" weight="duotone" aria-hidden />
+                          )}
+                          <span className="truncate">
+                            {contest.host.website_url
+                              ? <a href={contest.host.website_url} target="_blank" rel="noreferrer" className="hover:underline">{t("catalog.hostedBy", { name: contest.host.name })}</a>
+                              : t("catalog.hostedBy", { name: contest.host.name })}
+                          </span>
+                        </span>
+                      ) : null}
+                    </span>
+                  )}
+                  time={(
+                    <HackathonApplicantPreview
+                      applicants={applicantsQuery.data?.[contest.id]}
+                      count={participantCount}
+                      summary={t("catalog.participantsCount", { displayCount: displayParticipantCount })}
+                      label={t("public.applications")}
+                      emptyIcon={<UsersThree className="size-5 text-foreground-muted" weight="duotone" aria-hidden />}
+                    />
+                  )}
+                />
+              </div>
+              <Separator className="lg:hidden" />
+              <div className="flex w-full flex-col items-end gap-3 sm:w-auto lg:shrink-0">
+                <div className="flex w-full items-center justify-end gap-4 sm:w-auto">
+                  {cta}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button
+                          type="button"
+                          size="medium"
+                          variant="cta"
+                          hierarchy="tertiary"
+                          iconOnly
+                          aria-label={t("detail.hero.share")}
+                          data-hackathon-share
+                          className="rounded-full"
+                        >
+                          <ShareFat className="size-4" weight="duotone" aria-hidden />
+                        </Button>
+                      }
+                    />
+                    <DropdownMenuContent align="end" className="min-w-[200px]">
+                      <DropdownMenuItem onClick={() => {
+                        void navigator.clipboard.writeText(shareUrl).then(
+                          () => toast.success(t("detail.hero.shareCopied")),
+                          () => toast.error(t("detail.hero.shareCopyFailed")),
+                        );
+                      }}>{t("detail.hero.shareCopyLink")}</DropdownMenuItem>
+                      {contest.social_links?.telegram ? <DropdownMenuItem onClick={() => window.open(contest.social_links!.telegram!, "_blank", "noopener,noreferrer")}><TelegramLogo className="mr-2 size-4" />Telegram</DropdownMenuItem> : null}
+                      {contest.social_links?.x ? <DropdownMenuItem onClick={() => window.open(contest.social_links!.x!, "_blank", "noopener,noreferrer")}><XLogo className="mr-2 size-4" />X</DropdownMenuItem> : null}
+                      {contest.social_links?.facebook ? <DropdownMenuItem onClick={() => window.open(contest.social_links!.facebook!, "_blank", "noopener,noreferrer")}><FacebookLogo className="mr-2 size-4" />Facebook</DropdownMenuItem> : null}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                {deadlineCountdown ? (
+                  <p
+                    className={`inline-flex shrink-0 items-center gap-2 font-body text-xs leading-[1.25] tracking-[0.24px] ${
+                      detailStatus === "closingSoon" ? "text-warning-300" : "text-foreground"
+                    }`}
+                  >
+                    <Clock className="size-5" weight="duotone" aria-hidden />
+                    {deadlineCountdown}
+                  </p>
+                ) : null}
+              </div>
             </div>
           </div>
         </header>
 
-        <div className={cn("mobile-bleed-grid mt-3 grid gap-3", contest.prize_pool?.amount && Number(contest.prize_pool.amount) !== 0 && "lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]")}>
-          {contest.prize_pool?.amount && Number(contest.prize_pool.amount) !== 0 ? (
-            <NavLink to={`/hackathons/${slug}/prizes${previewRequested ? "?preview=1" : ""}`} className="group flex min-w-0 flex-col items-start gap-2 rounded-xl border border-border-subtle bg-surface-base p-4 outline-none transition-colors hover:border-primary/30 focus-visible:ring-2 focus-visible:ring-primary/40 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-              <div className="min-w-0"><div className="text-xs font-medium text-foreground-muted">{t("public.prizes.total")}</div><div className="mt-1 flex flex-wrap items-baseline gap-x-2"><span className="text-xl font-semibold tracking-tight text-foreground tabular-nums [overflow-wrap:anywhere] sm:text-2xl">{formatPrizeAmount(contest.prize_pool.amount, locale)}</span><span className="text-sm text-foreground-muted">{contest.prize_pool.currency}</span></div></div>
-              <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-primary group-hover:underline">{t("public.prizes.breakdown")}<ArrowUpRight className="size-4" aria-hidden /></span>
-            </NavLink>
-          ) : null}
-          <dl data-hackathon-metadata className="grid min-w-0 grid-cols-2 gap-x-4 gap-y-4 rounded-xl border border-border-subtle bg-surface-base p-4 text-sm sm:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
-            {contest.host?.name ? <div className="col-span-2 flex min-w-0 items-center gap-2 sm:col-span-1">{contest.host.logo_url ? <img src={contest.host.logo_url} alt="" className="size-8 shrink-0 rounded-md bg-white object-contain p-0.5" /> : <Globe2 className="size-5 shrink-0 text-foreground-muted" aria-hidden />}<div className="min-w-0"><dt className="text-xs text-foreground-muted">{t("public.hostedBy")}</dt><dd className="truncate font-medium text-foreground">{contest.host.website_url ? <a href={contest.host.website_url} target="_blank" rel="noreferrer" className="hover:underline">{contest.host.name}</a> : contest.host.name}</dd></div></div> : null}
-            <div className="col-span-2 min-w-0 sm:col-span-1"><dt className="sr-only">{t("public.applications")}</dt><dd><HackathonApplicantPreview applicants={applicantsQuery.data?.[contest.id]} count={contest.participants_count ?? 0} summary={t("detail.hero.applicationsLine", { total: contest.participants_count ?? 0 })} label={t("public.applications")} /></dd></div>
-            {contest.submission_deadline ? <div className="min-w-0"><dt className="flex items-center gap-1 text-xs text-foreground-muted"><CalendarClock className="size-3.5 shrink-0" aria-hidden />{t("public.submissionDeadline")}</dt><dd className="mt-1 font-medium text-foreground"><time dateTime={contest.submission_deadline}>{formatVietnamDateTime(contest.submission_deadline, locale)}</time></dd></div> : null}
-          </dl>
-        </div>
-      </PageContainer>
-
-      <div className="mobile-bleed-surface sticky top-(--app-header-height) z-20 mt-4 border-y border-border-subtle bg-background/95 backdrop-blur">
-        <div ref={tabsScrollerRef} className="overflow-x-auto overscroll-x-contain scroll-px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <PageContainer width="default" className="py-0">
-            <nav className="flex min-w-max" aria-label={t("public.tabsLabel")}>
-              {TABS.map((tab) => (
-                <NavLink
-                  key={tab}
-                  ref={(node) => { if (node) tabRefs.current.set(tab, node); else tabRefs.current.delete(tab); }}
-                  to={`/hackathons/${slug}/${tab}${previewRequested ? "?preview=1" : ""}`}
-                  onFocus={(event) => {
-                    const scrollY = window.scrollY;
-                    event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" });
-                    if (window.scrollY !== scrollY) window.scrollTo({ top: scrollY });
-                  }}
-                  className={({ isActive }) => cn("flex min-h-11 items-center border-b-2 px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40", isActive ? "border-primary text-primary" : "border-transparent text-foreground-muted hover:text-foreground")}
+        <div data-hackathon-metadata className="mobile-bleed-grid mt-8 grid min-w-0 gap-y-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-x-4 sm:gap-y-0 lg:gap-x-8">
+          <NavLink to={`/hackathons/${slug}/prizes${previewRequested ? "?preview=1" : ""}`} className="group min-w-0 px-4 py-4 outline-none transition-colors hover:bg-surface-base focus-visible:rounded-lg focus-visible:ring-2 focus-visible:ring-primary/40 sm:px-0 lg:py-0">
+            <div className="font-display text-lg font-medium leading-[1.2] text-blue-400">{t("public.prizes.total")}</div>
+            <div className="mt-2 flex flex-wrap items-baseline gap-x-2"><span className="font-display text-[28px] font-medium leading-[1.2] tracking-tight text-foreground tabular-nums [overflow-wrap:anywhere]">{contest.prize_pool?.amount ? formatPrizeAmount(contest.prize_pool.amount, locale) : "—"}</span>{contest.prize_pool?.currency ? <span className="text-sm text-foreground-muted lg:font-display lg:text-[28px] lg:font-medium lg:leading-[1.2]">{contest.prize_pool.currency}</span> : null}</div>
+          </NavLink>
+          <Separator className="sm:hidden" />
+          <Separator orientation="vertical" className="hidden sm:block" />
+          <div className="min-w-0 px-4 py-4 sm:px-0 lg:py-0">
+            <div className="flex items-center gap-2 font-display text-lg font-medium leading-[1.2] text-blue-400">
+              {t("public.registrationDeadline")}
+              <span className="relative h-5 w-6 shrink-0">
+                <TooltipPreview
+                  arrow="none"
+                  side="bottom"
+                  trigger={<Info className="size-3.5 shrink-0" weight="duotone" aria-hidden />}
+                  triggerLabel={t("public.registrationDeadline")}
+                  triggerClassName="absolute left-1/2 top-1/2 size-6 -translate-x-1/2 -translate-y-1/2 [@media(pointer:coarse)]:size-11"
                 >
-                  {t(`public.tabs.${tab}`)}
-                </NavLink>
-              ))}
-            </nav>
-          </PageContainer>
-        </div>
-      </div>
-
-      <PageContainer width="default" className="px-0 pt-6 sm:px-6 lg:px-8">
-        <div className="mobile-bleed-grid">
-          <Outlet context={{ contest, registration } satisfies HackathonOutletContext} />
+                  {t("public.timezoneLabel")}
+                </TooltipPreview>
+              </span>
+            </div>
+            <div className="mt-2 font-display text-[28px] font-medium leading-[1.2] text-foreground">{effectiveDeadline ? <time dateTime={effectiveDeadline}>{formatVietnamDateTime(effectiveDeadline, locale, { includeTimezone: false, compact: true })}</time> : "—"}</div>
+          </div>
+          <Separator className="sm:hidden" />
+          <Separator orientation="vertical" className="hidden sm:block" />
+          <div className="min-w-0 px-4 py-4 sm:px-0 lg:py-0">
+            <div className="flex items-center gap-2 font-display text-lg font-medium leading-[1.2] text-blue-400">
+              {t("public.submissionDeadline")}
+              <span className="relative h-5 w-6 shrink-0">
+                <TooltipPreview
+                  arrow="none"
+                  side="bottom"
+                  trigger={<Info className="size-3.5 shrink-0" weight="duotone" aria-hidden />}
+                  triggerLabel={t("public.submissionDeadline")}
+                  triggerClassName="absolute left-1/2 top-1/2 size-6 -translate-x-1/2 -translate-y-1/2 [@media(pointer:coarse)]:size-11"
+                >
+                  {t("public.timezoneLabel")}
+                </TooltipPreview>
+              </span>
+            </div>
+            <div className="mt-2 font-display text-[28px] font-medium leading-[1.2] text-foreground">{effectiveDeadline ? <time dateTime={effectiveDeadline}>{formatVietnamDateTime(effectiveDeadline, locale, { includeTimezone: false, compact: true })}</time> : "—"}</div>
+          </div>
         </div>
       </PageContainer>
+
+      <Tabs.Root
+        value={activeTab}
+        onValueChange={(value) => {
+          const nextTab = TABS.find((candidate) => candidate === value);
+          if (nextTab) {
+            navigate(`/hackathons/${slug}/${nextTab}${previewRequested ? "?preview=1" : ""}`);
+          }
+        }}
+      >
+  <div className="mobile-bleed-surface sticky top-[calc(var(--app-header-height)_+_0.5rem)] z-30 mt-6 bg-background lg:top-0 lg:mt-8 lg:pt-0 after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-10 after:bg-linear-to-b after:from-background/90 after:via-background/30 after:to-transparent after:content-['']">
+          <div ref={tabsScrollerRef} className="overflow-x-auto overscroll-x-contain scroll-px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <PageContainer width="default" className="py-0">
+              <Tabs.List ref={tabsListRef} level="3a" className="relative min-w-max gap-2 py-1 lg:py-0" aria-label={t("public.tabsLabel")}>
+                <Tabs.Indicator
+                  ref={tabIndicatorRef}
+                  className="pointer-events-none absolute left-0 top-0 z-0 rounded-full border border-tabs-border-active"
+                />
+                {TABS.map((tab) => (
+                  <Tabs.Tab
+                    key={tab}
+                    value={tab}
+                    ref={(node) => { if (node) tabRefs.current.set(tab, node); else tabRefs.current.delete(tab); }}
+                    className="relative z-10 data-[active]:ring-transparent"
+                    onFocus={(event) => {
+                      const scrollY = window.scrollY;
+                      event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" });
+                      if (window.scrollY !== scrollY) window.scrollTo({ top: scrollY });
+                    }}
+                  >
+                    {t(`public.tabs.${tab}`)}
+                  </Tabs.Tab>
+                ))}
+              </Tabs.List>
+            </PageContainer>
+          </div>
+        </div>
+
+        <PageContainer width="default" className="px-0 pt-3xl sm:px-6 sm:pt-3xl lg:px-8">
+          <Tabs.Panel value={activeTab} className="mobile-bleed-grid">
+            <Outlet context={{ contest, registration, submission: submissionQuery.data ?? null, submissionLoading: Boolean(user && !previewRequested && submissionQuery.isPending), submissionClosed } satisfies HackathonOutletContext} />
+          </Tabs.Panel>
+        </PageContainer>
+      </Tabs.Root>
     </div>
   );
 }

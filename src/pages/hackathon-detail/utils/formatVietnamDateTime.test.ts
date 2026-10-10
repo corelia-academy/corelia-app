@@ -8,4 +8,14 @@ describe("formatVietnamDateTime", () => {
     expect(formatVietnamDateTime(deadline, "vi-VN")).toContain("30 thg 9, 2026 · 12:00");
     expect(formatVietnamDateTime(deadline, "en-US")).toContain("ICT (UTC+7)");
   });
+
+  it("can omit the timezone when the deadline timezone is shown in a tooltip", () => {
+    const deadline = "2026-09-30T05:00:00.000Z";
+    const formatted = formatVietnamDateTime(deadline, "en-US", {
+      includeTimezone: false,
+    });
+
+    expect(formatted).toContain("12:00");
+    expect(formatted).not.toContain("ICT (UTC+7)");
+  });
 });

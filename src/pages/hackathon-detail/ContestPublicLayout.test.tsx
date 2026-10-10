@@ -62,6 +62,8 @@ vi.mock("@/stores/authStore", () => ({ useAuth: () => state.auth }));
 vi.mock("@/lib/hackathons", () => ({
   getMyContestRegistration: vi.fn(async () => null),
   getMyContestSubmission: vi.fn(async () => null),
+  getEffectiveContestSubmissionDeadline: (contest: { submission_deadline?: string | null; ends_at?: string | null }) =>
+    contest.submission_deadline?.trim() || contest.ends_at?.trim() || null,
   registerForContest: vi.fn(),
   canRegisterForContest: vi.fn((c) => c?.status === "published" || c?.status === "running"),
   isPastContestSubmissionDeadline: vi.fn(() => false),
@@ -257,6 +259,51 @@ describe("draft hackathon preview", () => {
     }
   });
 
+  it("shows the timezone in an arrowless tooltip below each configured deadline", async () => {
+    state.publicContest = {
+      ...publishedContest,
+      submission_deadline: "2026-10-01T05:00:00.000Z",
+    };
+    const view = renderRoute("/hackathons/published-demo/overview");
+    await settle();
+    try {
+      const deadlines = Array.from(view.container.querySelectorAll("time"));
+      expect(deadlines).toHaveLength(2);
+      expect(deadlines.every((deadline) => !deadline.textContent?.includes("ICT (UTC+7)"))).toBe(true);
+
+      const trigger = view.container.querySelector<HTMLButtonElement>(
+        'button[aria-label="public.submissionDeadline"]',
+      );
+      if (!trigger) throw new Error("Submission deadline tooltip trigger was not rendered");
+
+      await act(async () => {
+        trigger.dispatchEvent(new PointerEvent("pointerdown", {
+          bubbles: true,
+          cancelable: true,
+          pointerId: 1,
+          pointerType: "touch",
+          button: 0,
+        }));
+        trigger.dispatchEvent(new PointerEvent("pointerup", {
+          bubbles: true,
+          cancelable: true,
+          pointerId: 1,
+          pointerType: "touch",
+          button: 0,
+        }));
+      });
+
+      const tooltip = document.body.querySelector<HTMLElement>(
+        '[data-slot="tooltip-content"]',
+      );
+      expect(tooltip?.textContent).toBe("public.timezoneLabel");
+      expect(tooltip?.getAttribute("data-side")).toBe("bottom");
+      expect(document.body.querySelector('[data-slot="tooltip-arrow"]')).toBeNull();
+    } finally {
+      await view.cleanup();
+    }
+  });
+
   it("shows configured dates and leaves the registration action disabled after closing", async () => {
     state.publicContest = {
       ...publishedContest,
@@ -273,7 +320,7 @@ describe("draft hackathon preview", () => {
       expect(view.container.textContent).toContain("public.submissionDeadline");
       const deadlines = Array.from(view.container.querySelectorAll("time"));
       expect(deadlines[0]?.textContent).toContain("12:00");
-      expect(deadlines[0]?.textContent).toContain("ICT (UTC+7)");
+      expect(deadlines[0]?.textContent).not.toContain("ICT (UTC+7)");
       expect(deadlines[0]?.getAttribute("datetime")).toBe("2026-10-01T05:00:00.000Z");
     } finally {
       await view.cleanup();

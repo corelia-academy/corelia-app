@@ -51,21 +51,34 @@
     "previewNotice": "Bản xem trước: hackathon này chưa được công khai.",
     "registered": "Đăng ký thành công.",
     "registerFailed": "Không thể đăng ký hackathon.",
-    "register": "Đăng ký ngay",
+    "register": "Ghi Danh",
     "registeredLabel": "Đã đăng ký",
     "registrationClosed": "Đã đóng đăng ký",
     "createProject": "Tạo / xem dự án",
     "submissionClosed": "Đã đóng nộp dự án",
     "hostedBy": "Tổ chức bởi",
     "applications": "Hồ sơ đăng ký",
+    "participantsCount": "{{displayCount}} người tham gia",
     "submissionDeadline": "Hạn nộp dự án",
+    "registrationDeadline": "Hạn đăng ký",
+    "timezoneLabel": "ICT (UTC+7)",
+    "registrationCountdown": "Còn {{time}} đến hạn đóng form",
+    "timeUnit": {
+      "hours": "giờ"
+    },
+    "detailStatus": {
+      "open": "Đang mở đơn",
+      "closingSoon": "Sắp hết hạn",
+      "closed": "Đã đóng đơn",
+      "registered": "Đã ghi danh"
+    },
     "tabsLabel": "Nội dung hackathon",
     "tabs": {
-      "overview": "Tổng quan",
+      "overview": "Về cuộc thi",
       "prizes": "Giải thưởng",
       "timeline": "Timeline",
       "resources": "Tài nguyên",
-      "projects": "Dự án"
+      "projects": "Dự án của ứng viên"
     },
     "mode": {
       "online": "Online",
@@ -89,10 +102,22 @@
     },
     "prizes": {
       "total": "Tổng giải thưởng",
-      "breakdown": "Xem cơ cấu giải"
+      "breakdown": "Xem cơ cấu giải",
+      "structure": "Cơ cấu giải thưởng"
+    },
+    "myProject": {
+      "title": "Dự án của bạn",
+      "registerRequiredDescription": "Đăng ký hackathon trước khi tạo dự án.",
+      "registerRequired": "Cần đăng ký trước",
+      "loading": "Đang tải dự án của bạn",
+      "untitled": "Dự án chưa có tiêu đề",
+      "edit": "Chỉnh sửa dự án",
+      "view": "Xem dự án",
+      "emptyDescription": "Tạo dự án để bắt đầu chuẩn bị bài nộp của bạn.",
+      "create": "Tạo dự án"
     },
     "prepare": {
-      "title": "Chuẩn bị cùng AI",
+      "title": "Tìm hiểu cuộc thi",
       "description": "Sao chép prompt vào trợ lý AI để tìm hiểu cuộc thi và lên kế hoạch xây dựng sản phẩm demo.",
       "promptLabel": "Prompt chuẩn bị hackathon",
       "copy": "Sao chép prompt",
@@ -101,6 +126,10 @@
       "prompt": "Tôi đang chuẩn bị tham gia {{title}}. Hãy đọc tổng quan tại {{url}}/overview, giải thưởng và tiêu chí chấm điểm tại {{url}}/prizes, tài nguyên chính thức tại {{url}}/resources. Tóm tắt đối tượng tham gia, các track, yêu cầu nộp bài, hệ sinh thái/công nghệ và tiêu chí chấm điểm. Dẫn nguồn và chỉ rõ thông tin thiếu hoặc mâu thuẫn, không tự suy đoán. Hỏi tôi về kỹ năng, đội nhóm và thời gian có thể dành cho cuộc thi, sau đó đề xuất ba ý tưởng phù hợp cùng kế hoạch thực tế trong 7 ngày để xây dựng demo hoạt động được và chuẩn bị pitching."
     },
     "projects": {
+      "title": "Dự án tham gia",
+      "count": "({{count}})",
+      "description": "Tổng hợp dự án public của những ứng viên tham gia cuộc thi.",
+      "searchPlaceholder": "Tìm kiếm theo từ khóa, công nghệ, tác giả",
       "filters": "Lọc dự án",
       "sort": "Sắp xếp",
       "newest": "Mới nhất",
@@ -715,7 +744,7 @@
     },
     "errorState": {
       "description": "Liên kết có thể đã thay đổi, cuộc thi chưa được công bố, hoặc bạn đang truy cập một bề mặt không còn tồn tại.",
-      "backToList": "Quay lại danh sách hackathon"
+      "backToList": "Tất Cả Hackathon"
     },
     "manage": {
       "validation": {
@@ -1231,7 +1260,7 @@
       "teamLine": "Nhóm: {{names}}"
     },
     "sections": {
-      "timeline": "Lịch trình",
+      "timeline": "Timeline cuộc thi",
       "timelineDescription": "Các mốc quan trọng: khai mạc, hạn nộp dự án và kết thúc cuộc thi.",
       "howToParticipate": "Cách tham gia",
       "timelineUtcNote": "Thời gian hiển thị theo múi giờ trên thiết bị của bạn.",
