@@ -81,7 +81,11 @@ export default function AdminComponentsSidebar<TSlug extends string>({
                     ? t("componentShowcase.xpRank.title")
                     : slug === "full-page-empty-state"
                       ? t("componentShowcase.fullPageEmptyState.title")
-                      : title
+                      : slug === "tooltip"
+                        ? t("componentShowcase.tooltip.title")
+                        : slug === "stepper"
+                          ? t("componentShowcase.stepper.title")
+                          : title
               }
               size="small"
               isActive={activeComponent === slug}

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { Heart as PhosphorHeart } from "@phosphor-icons/react";
 import { Heart } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -15,6 +16,7 @@ export type ProjectSocialBlockProps = {
   likeCount: number;
   hearted?: boolean;
   className?: string;
+  phosphorDuotone?: boolean;
 };
 
 export function ProjectSocialBlock({
@@ -22,6 +24,7 @@ export function ProjectSocialBlock({
   likeCount: initialLikeCount,
   hearted: heartedProp,
   className,
+  phosphorDuotone = false,
 }: ProjectSocialBlockProps) {
   const { t } = useTranslation("common");
   const { user } = useAuth();
@@ -86,7 +89,11 @@ export function ProjectSocialBlock({
         aria-pressed={hearted}
         aria-label={hearted ? t("projects.social.unheart") : t("projects.social.heart")}
       >
-        <Heart className={cn("size-4", hearted && "fill-current")} aria-hidden />
+        {phosphorDuotone ? (
+          <PhosphorHeart className={cn("size-4", hearted && "fill-current")} weight="duotone" aria-hidden />
+        ) : (
+          <Heart className={cn("size-4", hearted && "fill-current")} aria-hidden />
+        )}
         <span className="tabular-nums text-label-medium font-body">{likeCount}</span>
       </Button>
     </div>

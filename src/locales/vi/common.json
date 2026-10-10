@@ -324,6 +324,7 @@
     },
     "card": {
       "noSummary": "Dự án chưa có mô tả ngắn.",
+      "publishedAt": "Đăng vào {{date}}",
       "links": "Liên kết dự án",
       "moreLinks": "Còn {{count}} liên kết"
     },
@@ -1221,6 +1222,81 @@
         "coloredProgress": "Đang tiến hành · có màu",
         "done": "Hoàn tất"
       }
+    },
+    "tooltip": {
+      "title": "Tooltip (chú giải nhanh)",
+      "criterion": "Đủ chín vị trí mũi tên theo Figma, có và không có văn bản bổ trợ; nơi sử dụng truyền nội dung vào.",
+      "description": "Đối chiếu đủ 18 biến thể mũi tên và văn bản bổ trợ theo Figma.",
+      "withoutSupportingText": "Không có văn bản bổ trợ",
+      "withSupportingText": "Có văn bản bổ trợ",
+      "sampleTitle": "Đây là một tooltip",
+      "sampleSupportingText": "Tooltip giúp giải thích ý nghĩa hoặc chức năng của một phần tử mà không cần đặt văn bản cố định trên trang.",
+      "arrows": {
+        "none": "Không có mũi tên",
+        "bottomCenter": "Mũi tên ở mép dưới, giữa",
+        "bottomLeft": "Mũi tên ở mép dưới, trái",
+        "bottomRight": "Mũi tên ở mép dưới, phải",
+        "topCenter": "Mũi tên ở mép trên, giữa",
+        "topLeft": "Mũi tên ở mép trên, trái",
+        "topRight": "Mũi tên ở mép trên, phải",
+        "left": "Mũi tên hướng trái",
+        "right": "Mũi tên hướng phải"
+      }
+    },
+    "stepper": {
+      "title": "Stepper (thanh chỉ bước)",
+      "criterion": "Theo dõi tiến độ ngang hoặc dọc; trang sử dụng truyền trạng thái cho từng bước.",
+      "description": "Thành phần hiển thị tiến độ. Trang cha quản lý trạng thái và quyết định khi nào luồng chuyển bước.",
+      "liveTitle": "Luồng bước do trang cha điều khiển",
+      "liveCriterion": "Bấm Trước và Sau để xem trang cha cập nhật trạng thái các bước.",
+      "orientationLabel": "Hướng hiển thị",
+      "orientation": {
+        "horizontal": "Ngang",
+        "vertical": "Dọc"
+      },
+      "styleLabel": "Kiểu dấu bước",
+      "style": {
+        "text": "Số thứ tự",
+        "icon": "Biểu tượng"
+      },
+      "steps": {
+        "account": "Tài khoản",
+        "accountCaption": "Thông tin bắt buộc",
+        "profile": "Hồ sơ",
+        "profileCaption": "Thông tin cá nhân",
+        "review": "Xác nhận",
+        "reviewCaption": "Kiểm tra thông tin"
+      },
+      "state": {
+        "default": "Chưa bắt đầu",
+        "focused": "Bước hiện tại",
+        "passed": "Đã hoàn tất",
+        "error": "Cần kiểm tra"
+      },
+      "liveAccessibleLabel": "Tiến độ thiết lập tài khoản",
+      "currentStep": "Bước {{current}} trên {{total}}",
+      "previous": "Trước",
+      "next": "Sau",
+      "parentOwnsState": "Trang sử dụng quyết định trạng thái và thời điểm chuyển bước; Stepper chỉ hiển thị trạng thái được truyền vào.",
+      "statesTitle": "Đối chiếu trạng thái và cách bố trí theo Figma",
+      "statesCriterion": "Xem đủ bốn trạng thái ở cả hai hướng và hai kiểu dấu bước.",
+      "statesAccessibleLabel": "Ví dụ các trạng thái của Stepper",
+      "samples": {
+        "waiting": "Đang chờ",
+        "current": "Đang thực hiện",
+        "complete": "Hoàn tất",
+        "problem": "Cần kiểm tra",
+        "optional": "Chưa bắt đầu",
+        "inProgress": "Bước hiện tại",
+        "done": "Đã xong",
+        "checkDetails": "Xem lại thông tin"
+      },
+      "configuration": {
+        "horizontal": "Kiểu {{style}} · bố trí ngang",
+        "vertical": "Kiểu {{style}} · bố trí dọc"
+      },
+      "usageTitle": "Ví dụ sử dụng có điều khiển",
+      "usageCriterion": "Trang tự tính trạng thái từ bước hiện tại rồi truyền danh sách vào Stepper."
     }
   },
   "maintenance": {

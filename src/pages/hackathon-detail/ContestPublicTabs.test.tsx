@@ -9,7 +9,8 @@ import type { Contest } from "@/types/hackathons";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const { projectQueryFn } = vi.hoisted(() => ({
+const { projectQueryFn, directoryOptionsSpy } = vi.hoisted(() => ({
+  directoryOptionsSpy: vi.fn(),
   projectQueryFn: vi.fn(async () => ({ items: [], nextCursor: null })),
 }));
 const locale = vi.hoisted(() => ({ value: "vi" }));
@@ -22,17 +23,22 @@ vi.mock("react-i18next", () => ({
 }));
 
 vi.mock("@/features/projects/projectQueries", () => ({
-  publicProjectDirectoryQueryOptions: () => ({
-    queryKey: ["projects", "hackathon-filter-test"],
-    queryFn: projectQueryFn,
-    initialPageParam: null,
-    getNextPageParam: () => undefined,
-  }),
+  publicProjectDirectoryQueryOptions: (...args: unknown[]) => {
+    directoryOptionsSpy(...args);
+    return {
+      queryKey: ["projects", "hackathon-filter-test"],
+      queryFn: projectQueryFn,
+      initialPageParam: null,
+      getNextPageParam: () => undefined,
+    };
+  },
   publicProjectTeamsQueryOptions: () => ({
     queryKey: ["projects", "teams", "test"],
     queryFn: async () => ({}),
   }),
 }));
+
+vi.mock("@/lib/hackathons", () => ({ canEditContestProject: vi.fn(() => false) }));
 
 vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: null }) }));
 vi.mock("@/lib/projectSocial", () => ({ listMyProjectHeartIds: async () => new Set() }));
@@ -98,26 +104,36 @@ describe("HackathonProjectsTab filters", () => {
     document.body.innerHTML = "";
   });
 
-  it("shows a compact selected count and clears taxonomy filters without dropping other params", async () => {
+  it("retains URL taxonomy filters and unrelated params when changing the sort", async () => {
     const view = renderProjectsTab("/hackathons/demo-hackathon/projects?tracks=general&sectors=sector-ai-engineering&tech=tech-solana&sort=oldest&preview=1");
-
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    });
-
-    expect(view.container.textContent).toContain("public.projects.selectedCount:3");
-    expect(view.container.querySelectorAll('button[aria-pressed="true"]')).toHaveLength(3);
-
-    const clearButton = Array.from(view.container.querySelectorAll("button"))
-      .find((button) => button.textContent?.includes("public.projects.clearFilters"));
-    expect(clearButton).toBeDefined();
-
-    await act(async () => clearButton?.click());
-
-    expect(view.container.querySelector('[data-testid="location"]')?.textContent).toBe("?sort=oldest&preview=1");
-    expect(view.container.textContent).not.toContain("public.projects.selectedCount");
-
-    await view.cleanup();
+    try {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+      expect(directoryOptionsSpy).toHaveBeenCalledWith("vi", "hackathon", "oldest", {
+        hackathonId: contest.id,
+        trackIds: ["general"],
+        sectorIds: ["sector-ai-engineering"],
+        techStackIds: ["tech-solana"],
+        winnerProjectIds: [],
+      });
+      const sort = Array.from(view.container.querySelectorAll("button"))
+        .find((button) => button.textContent === "public.projects.oldest");
+      expect(sort).toBeDefined();
+      await act(async () => sort!.click());
+      const newest = Array.from(document.body.querySelectorAll<HTMLElement>('[role="menuitemradio"]'))
+        .find((item) => item.textContent === "public.projects.newest");
+      expect(newest).toBeDefined();
+      await act(async () => newest!.click());
+      expect(view.container.querySelector('[data-testid="location"]')?.textContent).toBe(
+        "?tracks=general&sectors=sector-ai-engineering&tech=tech-solana&preview=1",
+      );
+      expect(directoryOptionsSpy).toHaveBeenLastCalledWith("vi", "hackathon", "newest", expect.objectContaining({
+        trackIds: ["general"], sectorIds: ["sector-ai-engineering"], techStackIds: ["tech-solana"],
+      }));
+    } finally {
+      await view.cleanup();
+    }
   });
 
   it("renders role='alert' and retry button when projects query errors", async () => {
