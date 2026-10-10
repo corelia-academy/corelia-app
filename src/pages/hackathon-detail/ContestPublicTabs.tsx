@@ -96,7 +96,12 @@ function HackathonProjectSidebar() {
           </div>
         )}
       </aside>
-      {contest.slug && contest.status !== "draft" ? <><Separator className="my-6" /><ContestPreparationCard contest={contest} /></> : null}
+      {contest.slug && contest.status !== "draft" ? (
+        <div className="mx-4 sm:mx-0">
+          <Separator className="my-6" />
+          <ContestPreparationCard contest={contest} />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -104,7 +109,7 @@ function HackathonProjectSidebar() {
 function HackathonPublicTabLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_280px] xl:gap-12">
-      <div className="min-w-0">{children}</div>
+      <div className="min-w-0 px-4 sm:px-0">{children}</div>
       <HackathonProjectSidebar />
     </div>
   );

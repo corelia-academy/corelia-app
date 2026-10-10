@@ -294,7 +294,7 @@ export default function ContestPublicLayout() {
             </div>
           ) : null}
 
-          <div className="min-w-0 pt-6">
+          <div className="min-w-0 px-4 pt-6 sm:px-0">
             <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
               <div className="min-w-0 flex-1">
                 <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 lg:gap-x-4">
@@ -376,11 +376,11 @@ export default function ContestPublicLayout() {
                 </div>
                 {deadlineCountdown ? (
                   <p
-                    className={`inline-flex shrink-0 items-center gap-2 font-body text-xs leading-[1.25] tracking-[0.24px] ${
+                    className={`inline-flex min-w-0 max-w-full flex-wrap items-center gap-2 font-body text-xs leading-[1.25] tracking-[0.24px] lg:shrink-0 lg:flex-nowrap ${
                       detailStatus === "closingSoon" ? "text-warning-300" : "text-foreground"
                     }`}
                   >
-                    <Clock className="size-5" weight="duotone" aria-hidden />
+                    <Clock className="size-5 shrink-0" weight="duotone" aria-hidden />
                     {deadlineCountdown}
                   </p>
                 ) : null}
@@ -444,7 +444,7 @@ export default function ContestPublicLayout() {
           }
         }}
       >
-  <div className="mobile-bleed-surface sticky top-[calc(var(--app-header-height)_+_0.5rem)] z-30 mt-6 bg-background lg:top-0 lg:mt-8 lg:pt-0 after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-10 after:bg-linear-to-b after:from-background/90 after:via-background/30 after:to-transparent after:content-['']">
+  <div className="mobile-bleed-surface sticky top-[var(--app-header-height)] z-30 mt-6 bg-background lg:top-0 lg:mt-8 lg:pt-0 after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-10 after:bg-linear-to-b after:from-background/90 after:via-background/30 after:to-transparent after:content-['']">
           <div ref={tabsScrollerRef} className="overflow-x-auto overscroll-x-contain scroll-px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <PageContainer width="default" className="py-0">
               <Tabs.List ref={tabsListRef} level="3a" className="relative min-w-max gap-2 py-1 lg:py-0" aria-label={t("public.tabsLabel")}>

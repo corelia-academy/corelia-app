@@ -1474,7 +1474,7 @@
     }
 
     .mobile-bleed-surface,
-    .mobile-bleed-grid :is([data-slot="card"], article, .rounded-2xl),
+    .mobile-bleed-grid :is([data-slot="card"], article, .rounded-2xl):not([data-hackathon-prompt-card]),
     .mobile-bleed-grid > .rounded-xl {
       border-left-width: 0;
       border-right-width: 0;
