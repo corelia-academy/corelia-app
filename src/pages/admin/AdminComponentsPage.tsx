@@ -27,7 +27,9 @@ import AdminSeparatorComponentPage from "./components/AdminSeparatorComponentPag
 import AdminTagComponentPage from "./components/AdminTagComponentPage";
 import AdminTimestampComponentPage from "./components/AdminTimestampComponentPage";
 import AdminTabsComponentPage from "./components/AdminTabsComponentPage";
+import AdminTooltipComponentPage from "./components/AdminTooltipComponentPage";
 import AdminToggleComponentPage from "./components/AdminToggleComponentPage";
+import AdminStepperComponentPage from "./components/AdminStepperComponentPage";
 import AdminComponentsSidebar from "./components/AdminComponentsSidebar";
 
 const components = [
@@ -115,6 +117,16 @@ const components = [
     slug: "timestamp",
     title: "Timestamp",
     criterion: "Dynamic date, time, relative text, size, and destructive color combinations.",
+  },
+  {
+    slug: "tooltip",
+    title: "Tooltip",
+    criterion: "All nine Figma arrow placements with and without supporting text.",
+  },
+  {
+    slug: "stepper",
+    title: "Stepper",
+    criterion: "Horizontal and vertical step states; the consuming page controls state and transitions.",
   },
 ] as const;
 
@@ -565,6 +577,20 @@ export default function AdminComponentsPage() {
               </ComponentSection>
               <ComponentSection {...components[16]}>
                 <AdminTimestampComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection
+                {...components[17]}
+                title={t("componentShowcase.tooltip.title")}
+                criterion={t("componentShowcase.tooltip.criterion")}
+              >
+                <AdminTooltipComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection
+                {...components[18]}
+                title={t("componentShowcase.stepper.title")}
+                criterion={t("componentShowcase.stepper.criterion")}
+              >
+                <AdminStepperComponentPage embedded />
               </ComponentSection>
             </>
           )}

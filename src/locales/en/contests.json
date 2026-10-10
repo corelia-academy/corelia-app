@@ -51,21 +51,34 @@
     "previewNotice": "Preview: this hackathon is not public yet.",
     "registered": "Registration complete.",
     "registerFailed": "Could not register for this hackathon.",
-    "register": "Register now",
+    "register": "Register",
     "registeredLabel": "Registered",
     "registrationClosed": "Registration closed",
     "createProject": "Create / view project",
     "submissionClosed": "Submissions closed",
     "hostedBy": "Hosted by",
     "applications": "Applications",
+    "participantsCount": "{{displayCount}} participants",
     "submissionDeadline": "Submission deadline",
+    "registrationDeadline": "Registration deadline",
+    "timezoneLabel": "ICT (UTC+7)",
+    "registrationCountdown": "Registration closes in {{time}}",
+    "timeUnit": {
+      "hours": "hours"
+    },
+    "detailStatus": {
+      "open": "Open",
+      "closingSoon": "Closing soon",
+      "closed": "Closed",
+      "registered": "Registered"
+    },
     "tabsLabel": "Hackathon content",
     "tabs": {
-      "overview": "Overview",
+      "overview": "About",
       "prizes": "Prizes",
       "timeline": "Timeline",
       "resources": "Resources",
-      "projects": "Projects"
+      "projects": "Applicants' projects"
     },
     "mode": {
       "online": "Online",
@@ -89,10 +102,22 @@
     },
     "prizes": {
       "total": "Total prize pool",
-      "breakdown": "View breakdown"
+      "breakdown": "View breakdown",
+      "structure": "Prize structure"
+    },
+    "myProject": {
+      "title": "Your project",
+      "registerRequiredDescription": "Register for this hackathon before creating a project.",
+      "registerRequired": "Registration required",
+      "loading": "Loading your project",
+      "untitled": "Untitled project",
+      "edit": "Edit project",
+      "view": "View project",
+      "emptyDescription": "Create a project to start preparing your submission.",
+      "create": "Create project"
     },
     "prepare": {
-      "title": "Prepare with AI",
+      "title": "Explore the hackathon",
       "description": "Copy this prompt into your AI assistant to understand the hackathon and plan your working demo.",
       "promptLabel": "Hackathon preparation prompt",
       "copy": "Copy prompt",
@@ -101,6 +126,10 @@
       "prompt": "I am preparing for {{title}}. Read the overview at {{url}}/overview, prizes and judging criteria at {{url}}/prizes, and official resources at {{url}}/resources. Summarize eligibility, tracks, submission requirements, ecosystem and technology expectations, and judging criteria. Cite the sources and flag missing or conflicting information instead of guessing. Ask about my skills, team and available time, then suggest three suitable project ideas and a practical 7-day plan to build a working demo and prepare the pitch."
     },
     "projects": {
+      "title": "Applicant projects",
+      "count": "({{count}})",
+      "description": "A collection of public projects from hackathon applicants.",
+      "searchPlaceholder": "Search by keyword, technology, or author",
       "filters": "Filter projects",
       "sort": "Sort",
       "newest": "Newest",
@@ -256,7 +285,7 @@
       "notConfigured": "Email not configured: set RESEND_API_KEY and MAIL_FROM in your Supabase environment."
     },
     "manage": {
-      "backToContests": "Back to hackathons",
+      "backToContests": "All Hackathons",
       "backToContestPage": "Back to hackathon page",
       "roleCoreliaOps": "Corelia operations",
       "roleJudgePanel": "Judge panel",
@@ -715,7 +744,7 @@
     },
     "errorState": {
       "description": "The link may have changed, the contest may not be published yet, or you're accessing a surface that no longer exists.",
-      "backToList": "Back to hackathons"
+      "backToList": "All Hackathons"
     },
     "manage": {
       "validation": {
@@ -1232,7 +1261,7 @@
       "teamLine": "Team: {{names}}"
     },
     "sections": {
-      "timeline": "Timeline",
+      "timeline": "Hackathon Timeline",
       "timelineDescription": "Key milestones for kickoff, submission deadline, and contest end.",
       "howToParticipate": "How to participate",
       "timelineUtcNote": "Times are shown in your local timezone.",

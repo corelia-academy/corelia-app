@@ -135,6 +135,7 @@
   --color-mint-revoked-badge-border: var(--mint-revoked-badge-border);
 
   --color-foreground: var(--foreground);
+  --color-hackathon-timeline-title: var(--hackathon-timeline-title);
   --color-foreground-muted: var(--foreground-muted);
   --color-catalog-subtitle: var(--catalog-subtitle);
   --color-foreground-subtle: var(--foreground-subtle);
@@ -197,7 +198,7 @@
   /*
    * Figma token -> Tailwind v4/CSS variable mapping:
    * spacing: none=0, xxs=2, xs=4, sm=6, md=8, 2md=10, lg=12,
-   *          xl=16, 2xl=20, 3xl=24, 4xl=28, 5xl=32, 6xl=40,
+   *          xl=16, 2xl=20, 3xl=24, 4xl=32, 5xl=32, 6xl=40,
    *          7xl=48, 8xl=64, 9xl=80, 10xl=96, 11xl=128,
    *          12xl=160, 13xl=192, 14xl=224, 15xl=256px.
    * radius: sm=6, md=8, lg=10, xl=12, 2xl=16, 3xl=20,
@@ -515,7 +516,7 @@
   --corelia-spacing-xl: 1rem;
   --corelia-spacing-2xl: 1.25rem;
   --corelia-spacing-3xl: 1.5rem;
-  --corelia-spacing-4xl: 1.75rem;
+  --corelia-spacing-4xl: 2rem;
   --corelia-spacing-5xl: 2rem;
   --corelia-spacing-6xl: 2.5rem;
   --corelia-spacing-7xl: 3rem;
@@ -683,6 +684,10 @@
 }
 
 :root {
+  --hackathon-prompt-border-start: #f5cc38;
+  --hackathon-prompt-border-middle: #eb5146;
+  --hackathon-prompt-border-end: var(--blue-600);
+
   --radius: 0.65rem;
   --content-px: clamp(1rem, 3vw, 2rem);
   --app-max-width: 80rem;
@@ -728,6 +733,10 @@
   --neutral-700: #172540;
   --neutral-800: #0b1528;
   --neutral-900: #060b14;
+
+  /* Figma Tooltip: Neutral/200 surface and text/invert foreground. */
+  --tooltip-surface: var(--neutral-200);
+  --tooltip-foreground: var(--neutral-900);
 
   --blue-100: #eef5ff;
   --blue-200: #dae9ff;
@@ -834,6 +843,7 @@
   --background: var(--neutral-50);
   /* Chữ xám đậm trung tính kiểu Google (#202124) */
   --foreground: var(--text-primary-2);
+  --hackathon-timeline-title: var(--foreground);
   --foreground-muted: var(--text-secondary);
   --catalog-subtitle: var(--text-secondary);
   --foreground-subtle: var(--neutral-400);
@@ -1124,6 +1134,7 @@
   /* ── Background & Surfaces ── */
   --background: var(--neutral-900);
   --foreground: var(--neutral-50);
+  --hackathon-timeline-title: var(--neutral-200);
   --foreground-muted: var(--neutral-300);
   --catalog-subtitle: var(--neutral-200);
   --foreground-subtle: var(--neutral-400);
@@ -1364,6 +1375,10 @@
       var(--neutral-300));
   --surface-float: color-mix(in srgb, var(--neutral-900) 78%, var(--neutral-300));
 
+  /* Figma Base Colors/Darkmode keeps Tooltip on Neutral/200 + text/invert. */
+  --tooltip-surface: var(--neutral-200);
+  --tooltip-foreground: var(--neutral-900);
+
   /* Issue #385 — Figma Multiple Dropdown List, dark mode. */
   --dropdown-surface: var(--neutral-900);
   --dropdown-hover: var(--neutral-800);
@@ -1459,7 +1474,7 @@
     }
 
     .mobile-bleed-surface,
-    .mobile-bleed-grid :is([data-slot="card"], article, .rounded-2xl),
+    .mobile-bleed-grid :is([data-slot="card"], article, .rounded-2xl):not([data-hackathon-prompt-card]),
     .mobile-bleed-grid > .rounded-xl {
       border-left-width: 0;
       border-right-width: 0;

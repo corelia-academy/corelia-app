@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Users } from "lucide-react";
 import { ParticipantSummary } from "@/components/participants/ParticipantSummary";
 import type { ParticipantPreviewData } from "@/components/participants/participantPreview";
@@ -11,6 +12,7 @@ type Props = {
   label: string;
   participantPreview?: ParticipantPreviewData;
   summary?: string;
+  emptyIcon?: ReactNode;
 };
 
 export function HackathonApplicantPreview({
@@ -19,6 +21,7 @@ export function HackathonApplicantPreview({
   label,
   participantPreview,
   summary,
+  emptyIcon,
 }: Props) {
   const total = Math.max(0, participantPreview?.count ?? count);
   const participants = participantPreview?.participants
@@ -30,23 +33,22 @@ export function HackathonApplicantPreview({
     }));
 
   return (
-    <div className="w-fit max-w-full min-w-0">
-      <p className="text-xs text-foreground-muted">{label}</p>
+    <div className="max-w-full min-w-0">
       <ParticipantSummary
         count={total}
         participants={participants}
-        summary={summary}
+        summary={summary ? <span className="text-sm">{summary}</span> : undefined}
         maxVisible={MAX_VISIBLE_APPLICANTS}
         showOverflow
-        avatarSize="default"
+        avatarSize="Small"
         groupLabel={`${label}: ${total}`}
         emptyContent={(
           <div className="flex items-center gap-2">
-            <Users className="size-5 text-foreground-muted" aria-hidden />
+            {emptyIcon ?? <Users className="size-5 text-foreground-muted" aria-hidden />}
             <span className="text-lg font-semibold text-foreground tabular-nums">{total}</span>
           </div>
         )}
-        className="mt-1 min-h-8 flex-col items-start gap-1"
+        className="min-h-6 gap-1.5"
       />
     </div>
   );

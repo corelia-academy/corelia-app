@@ -23,7 +23,7 @@ const MainLayout = () => {
       className="public-ui flex-col lg:h-svh"
       style={{
         "--sidebar-width": "15rem",
-        "--app-header-height": "calc(4rem + 1px)",
+        "--app-header-height": "72px",
       } as CSSProperties}
     >
       <GsapAnimationController />
