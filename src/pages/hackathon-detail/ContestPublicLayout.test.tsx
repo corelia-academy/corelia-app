@@ -2,7 +2,7 @@
 import { act } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRoot } from "react-dom/client";
-import { MemoryRouter, Route, Routes } from "react-router";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Contest } from "@/types/hackathons";
@@ -97,6 +97,11 @@ vi.mock("@/features/hackathons/hackathonQueries", () => ({
 
 import ContestPublicLayout from "./ContestPublicLayout";
 
+function RouteLocation() {
+  const location = useLocation();
+  return <output data-route-location>{location.pathname}{location.search}</output>;
+}
+
 function renderRoute(entry: string) {
   const container = document.createElement("div");
   document.body.appendChild(container);
@@ -108,7 +113,9 @@ function renderRoute(entry: string) {
         <MemoryRouter initialEntries={[entry]}>
           <Routes>
             <Route path="/hackathons/:slug" element={<ContestPublicLayout />}>
-              <Route path="overview" element={<div>Overview content</div>} />
+              {["overview", "prizes", "timeline", "projects", "resources"].map((tab) => (
+                <Route key={tab} path={tab} element={<><div>{tab} content</div><RouteLocation /></>} />
+              ))}
             </Route>
           </Routes>
         </MemoryRouter>
@@ -156,12 +163,17 @@ describe("draft hackathon preview", () => {
     expect(view.container.textContent).toContain("Draft Demo");
     expect(view.container.textContent).toContain("Preview notice");
     expect(view.container.textContent).not.toContain("public.status.draft");
-    expect(view.container.textContent).not.toContain("public.mode.online");
+    expect(view.container.textContent).toContain("public.mode.online");
     expect(view.container.textContent).not.toContain("public.register");
     expect(view.container.textContent).not.toContain("public.createProject");
-    const tabLinks = Array.from(view.container.querySelectorAll("nav a"));
-    expect(tabLinks).toHaveLength(5);
-    expect(tabLinks.every((link) => link.getAttribute("href")?.endsWith("?preview=1"))).toBe(true);
+    const tabs = Array.from(view.container.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    expect(tabs).toHaveLength(5);
+    for (const [index, tab] of tabs.entries()) {
+      await act(async () => tab.click());
+      expect(view.container.querySelector("[data-route-location]")?.textContent).toBe(
+        `/hackathons/draft-demo/${["overview", "prizes", "timeline", "projects", "resources"][index]}?preview=1`,
+      );
+    }
 
     await view.cleanup();
   });
@@ -175,10 +187,18 @@ describe("draft hackathon preview", () => {
     expect(view.container.querySelector(".bg-gradient-to-t")).toBeNull();
     expect(view.container.querySelector("h1")?.closest(".absolute")).toBeNull();
 
-    const xLink = view.container.querySelector<HTMLAnchorElement>('a[aria-label="X"]');
-    expect(xLink?.href).toBe("https://x.com/corelia");
-    expect(xLink?.querySelector('[data-social-icon="x"]')).not.toBeNull();
-    expect(xLink?.querySelector(".lucide-external-link")).toBeNull();
+    const share = view.container.querySelector<HTMLButtonElement>('button[aria-label="detail.hero.share"]');
+    expect(share).not.toBeNull();
+    await act(async () => share!.click());
+    const xItem = Array.from(document.body.querySelectorAll<HTMLElement>('[role="menuitem"]')).find((item) => item.textContent === "X");
+    expect(xItem?.querySelector("svg")).not.toBeNull();
+    const open = vi.spyOn(window, "open").mockImplementation(() => null);
+    try {
+      await act(async () => xItem!.click());
+      expect(open).toHaveBeenCalledWith("https://x.com/corelia", "_blank", "noopener,noreferrer");
+    } finally {
+      open.mockRestore();
+    }
 
     await view.cleanup();
   });
@@ -188,7 +208,7 @@ describe("draft hackathon preview", () => {
     await settle();
 
     const status = view.container.querySelector<HTMLElement>("[data-hackathon-hero-status]");
-    expect(status?.textContent).toBe("public.status.published");
+    expect(status?.textContent).toBe("public.detailStatus.open");
     expect(status?.closest("header")?.querySelector("img")).not.toBeNull();
     expect(status?.parentElement?.querySelector("h1")).not.toBeNull();
     expect(status?.parentElement?.querySelector("img")).toBeNull();
@@ -204,10 +224,9 @@ describe("draft hackathon preview", () => {
 
     expect(view.container.querySelector("[data-slot='avatar-group']")).not.toBeNull();
     expect(view.container.querySelector("[data-slot='avatar-group-count']")?.textContent).toBe("+118");
-    expect(view.container.textContent).toContain("public.applications");
+    expect(view.container.textContent).toContain("catalog.participantsCount");
     expect(view.container.querySelector("[data-slot='avatar-group']")?.getAttribute("aria-label")).toBe("public.applications: 119");
-    expect(view.container.querySelector("[data-hackathon-metadata]")?.className).toContain("sm:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]");
-    expect(view.container.querySelector("[data-slot='avatar-group']")?.closest(".col-span-2")?.className).toContain("sm:col-span-1");
+    expect(view.container.querySelector("[data-slot='avatar-group']")?.closest("header")).not.toBeNull();
 
     await view.cleanup();
   });
@@ -222,37 +241,37 @@ describe("draft hackathon preview", () => {
       const summary = view.container.querySelector(`a[href='${target}']`);
       expect(summary?.textContent).toContain("100.000.000");
       expect(summary?.textContent).toContain("VND");
-      expect(summary?.textContent).toContain("public.prizes.breakdown");
+      expect(summary?.textContent).toContain("public.prizes.total");
       expect(summary?.closest("header")).toBeNull();
     } finally {
       await view.cleanup();
     }
   });
 
-  it("puts the primary action ahead of prize details and keeps the full summary reachable", async () => {
+  it("puts the primary action ahead of prize details and shows the full summary", async () => {
     const view = renderRoute("/hackathons/published-demo/overview");
     await settle();
     try {
       const hero = view.container.querySelector("header");
       const action = Array.from(hero?.querySelectorAll("button") ?? []).find((button) => button.textContent === "public.register");
       const prize = view.container.querySelector("a[href='/hackathons/published-demo/prizes']");
-      const overview = hero?.querySelector("a[href='/hackathons/published-demo/overview#overview-content']");
       expect(action).toBeDefined();
       expect(prize).not.toBeNull();
       expect(action?.compareDocumentPosition(prize!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
-      expect(overview?.textContent).toContain("public.overview.readMore");
-      expect(hero?.querySelector("p")?.className).toContain("line-clamp-2");
+      expect(hero?.querySelector("p")?.textContent).toBe("Draft summary");
+      expect(hero?.querySelector("p")?.className).not.toContain("line-clamp");
     } finally {
       await view.cleanup();
     }
   });
 
-  it("omits unset deadlines instead of showing placeholder dates", async () => {
+  it("shows placeholders for unset deadlines without creating invalid time elements", async () => {
     const view = renderRoute("/hackathons/published-demo/overview");
     await settle();
     try {
-      expect(view.container.textContent).not.toContain("public.registrationDeadline");
-      expect(view.container.textContent).not.toContain("public.submissionDeadline");
+      expect(view.container.textContent).toContain("public.registrationDeadline");
+      expect(view.container.textContent).toContain("public.submissionDeadline");
+      expect(view.container.querySelector("[data-hackathon-metadata]")?.textContent).toContain("—");
       expect(view.container.querySelectorAll("time")).toHaveLength(0);
     } finally {
       await view.cleanup();
@@ -304,7 +323,7 @@ describe("draft hackathon preview", () => {
     }
   });
 
-  it("shows configured dates and leaves the registration action disabled after closing", async () => {
+  it("shows configured dates and hides registration after closing", async () => {
     state.publicContest = {
       ...publishedContest,
       status: "ended",
@@ -313,10 +332,10 @@ describe("draft hackathon preview", () => {
     const view = renderRoute("/hackathons/published-demo/overview");
     await settle();
     try {
-      const action = Array.from(view.container.querySelectorAll("header button")).find((button) => button.textContent === "public.registrationClosed");
-      expect(action?.hasAttribute("disabled")).toBe(true);
-      expect(view.container.querySelectorAll("time")).toHaveLength(1);
-      expect(view.container.textContent).not.toContain("public.registrationDeadline");
+      expect(view.container.querySelector("[data-hackathon-control]")).toBeNull();
+      expect(view.container.querySelector("[data-hackathon-hero-status]")?.textContent).toBe("public.detailStatus.closed");
+      expect(view.container.querySelectorAll("time")).toHaveLength(2);
+      expect(view.container.textContent).toContain("public.registrationDeadline");
       expect(view.container.textContent).toContain("public.submissionDeadline");
       const deadlines = Array.from(view.container.querySelectorAll("time"));
       expect(deadlines[0]?.textContent).toContain("12:00");
