@@ -11,6 +11,7 @@ import type { Project } from "@/types/projects";
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
+    i18n: { language: "en", resolvedLanguage: "en" },
     t: (key: string, options?: { count?: number }) =>
       key === "projects.team.moreMembers" ? `${options?.count} more members` : key,
   }),
