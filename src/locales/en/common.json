@@ -1119,6 +1119,8 @@
   },
   "claim": {
     "loading": "Looking up...",
+    "legacyTitle": "Claim your pending credentials",
+    "legacyBody": "Sign up with the email address in your invitation to claim your credentials. Credential previews are available from newer invitation links.",
     "title": "You have credentials waiting",
     "subtitle": "The following credentials are waiting to be saved to {{email}}'s account.",
     "pendingBadge": "Pending",

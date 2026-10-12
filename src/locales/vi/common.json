@@ -1119,6 +1119,8 @@
   },
   "claim": {
     "loading": "Đang tra cứu...",
+    "legacyTitle": "Nhận chứng nhận đang chờ",
+    "legacyBody": "Đăng ký bằng địa chỉ email trong thư mời để nhận chứng nhận. Thư mời mới sẽ hiển thị bản xem trước.",
     "title": "Bạn có chứng nhận đang chờ",
     "subtitle": "Các chứng nhận sau đang chờ được lưu vào tài khoản của {{email}}.",
     "pendingBadge": "Đang chờ",

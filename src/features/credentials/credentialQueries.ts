@@ -5,12 +5,12 @@ import { invokeClaimLookup } from "@/lib/credentialsEdge";
 
 export const credentialKeys = {
   all: ["credentials"] as const,
-  claim: (email: string) => [...credentialKeys.all, "claim", email] as const,
+  claim: (token: string) => [...credentialKeys.all, "claim", token] as const,
   verify: (code: string) => [...credentialKeys.all, "verify", code] as const,
 };
 
-export function pendingCredentialClaimQueryOptions(email: string) {
-  const normalized = email.trim().toLowerCase();
+export function pendingCredentialClaimQueryOptions(token: string) {
+  const normalized = token.trim();
   return queryOptions({
     queryKey: credentialKeys.claim(normalized || "missing"),
     queryFn: () => invokeClaimLookup(normalized),
