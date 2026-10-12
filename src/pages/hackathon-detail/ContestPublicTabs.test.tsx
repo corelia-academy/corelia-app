@@ -11,11 +11,12 @@ import type { Contest } from "@/types/hackathons";
 
 const { projectQueryFn, directoryOptionsSpy } = vi.hoisted(() => ({
   directoryOptionsSpy: vi.fn(),
-  projectQueryFn: vi.fn(async () => ({ items: [], nextCursor: null })),
+  projectQueryFn: vi.fn(async (): Promise<{ items: Array<{ project: { id: string; title: string }; owner: null }>; nextCursor: string | null }> => ({ items: [], nextCursor: null })),
 }));
 const locale = vi.hoisted(() => ({ value: "vi" }));
 
-vi.mock("react-i18next", () => ({
+vi.mock("react-i18next", async (importOriginal) => ({
+  ...await importOriginal<typeof import("react-i18next")>(),
   useTranslation: () => ({
     t: (key: string, options?: { count?: number }) => options?.count === undefined ? key : `${key}:${options.count}`,
     i18n: { resolvedLanguage: locale.value, language: locale.value },
@@ -51,7 +52,7 @@ vi.mock("@/lib/projectTaxonomy", () => ({ listProjectTaxonomyOptions: async () =
   { id: "sector-ai-engineering", kind: "sector", name: "Kỹ thuật AI & Machine Learning", sort_order: 0 },
   { id: "tech-solana", kind: "technology", name: "Solana", sort_order: 0 },
 ] }));
-vi.mock("@/components/projects/ProjectCard", () => ({ ProjectCard: () => null }));
+vi.mock("@/components/projects/ProjectCard", () => ({ ProjectCard: ({ project }: { project: { title: string } }) => <article>{project.title}</article> }));
 vi.mock("@/components/projects/ProjectCardSkeleton", () => ({ ProjectCardSkeleton: () => null }));
 
 import { HackathonOverviewTab, HackathonPostsTab, HackathonPrizesTab, HackathonProjectsTab, HackathonResourcesTab } from "./ContestPublicTabs";
@@ -216,6 +217,30 @@ it("embeds organizer posts on the direct Posts route and shows an empty state wi
     expect(view.container.textContent).toContain("public.empty.projects");
 
     await view.cleanup();
+  });
+
+  it("renders one card per winning project in first-award order", async () => {
+    contest.winner_awards = [
+      { id: "a1", project_id: "p1", label: "Product", sort_order: 0 },
+      { id: "b1", project_id: "p2", label: "Business", sort_order: 1 },
+      { id: "a2", project_id: "p1", label: "UX", sort_order: 2 },
+    ];
+    projectQueryFn.mockResolvedValueOnce({
+      items: [
+        { project: { id: "p2", title: "Project 2" }, owner: null },
+        { project: { id: "p1", title: "Project 1" }, owner: null },
+      ],
+      nextCursor: null,
+    });
+    const view = renderProjectsTab("/hackathons/demo-hackathon/projects");
+    try {
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+      expect(Array.from(view.container.querySelectorAll("article"), (card) => card.textContent)).toEqual(["Project 1", "Project 2"]);
+      expect(directoryOptionsSpy).toHaveBeenLastCalledWith("vi", "hackathon", "newest", expect.objectContaining({ winnerProjectIds: ["p1", "p2", "p1"] }));
+    } finally {
+      contest.winner_awards = [];
+      await view.cleanup();
+    }
   });
 });
 

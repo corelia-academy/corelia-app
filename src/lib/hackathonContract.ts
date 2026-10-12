@@ -158,7 +158,7 @@ export function matchesHackathonTaxonomy(
 }
 
 export function orderWinnerFirst<T extends { id: string }>(items: T[], awards: HackathonWinnerAward[]): T[] {
-  const order = new Map(awards.map((award) => [award.project_id, award.sort_order]));
+  const order = winnerProjectOrder(awards);
   return [...items].sort((a, b) => {
     const left = order.get(a.id);
     const right = order.get(b.id);
@@ -167,6 +167,15 @@ export function orderWinnerFirst<T extends { id: string }>(items: T[], awards: H
     if (right == null) return -1;
     return left - right;
   });
+}
+
+export function winnerProjectOrder(awards: HackathonWinnerAward[]): Map<string, number> {
+  const order = new Map<string, number>();
+  for (const award of awards) {
+    const previous = order.get(award.project_id);
+    if (previous === undefined || award.sort_order < previous) order.set(award.project_id, award.sort_order);
+  }
+  return order;
 }
 
 export function generateCanonicalProjectSlug(title: string, suffix = ""): string {
