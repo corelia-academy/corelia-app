@@ -39,6 +39,8 @@ import { ContestPreparationCard } from "./components/ContestPreparationCard";
 import { formatPrizeAmount } from "./utils/formatPrizeAmount";
 import { formatVietnamDateTime } from "./utils/formatVietnamDateTime";
 import { listProjectTaxonomyOptions, projectTaxonomyNames } from "@/lib/projectTaxonomy";
+import { getHackathonSocialPostEmbed } from "@/lib/hackathonSocialPosts";
+import { useContestLearningLinks } from "./hooks/useContestLearningLinks";
 
 const HACKATHON_TAB_TITLE_CLASS =
   "text-heading-large font-display text-foreground";
@@ -241,7 +243,12 @@ export function HackathonTimelineTab() {
 export function HackathonResourcesTab() {
   const { contest } = useOutletContext<HackathonOutletContext>();
   const { t } = useTranslation("contests");
-  if (!contest.resources_markdown?.trim()) {
+  const { officialId, coursesById, loading } = useContestLearningLinks(contest);
+  const courseIds = [officialId, ...(contest.related_course_ids ?? [])].filter((id): id is string => Boolean(id));
+  const socialPosts = (contest.social_post_urls ?? [])
+    .map((url) => ({ url, embed: getHackathonSocialPostEmbed(url) }))
+    .filter((post): post is { url: string; embed: { url: string; platform: string } } => post.embed !== null);
+  if (!contest.resources_markdown?.trim() && courseIds.length === 0 && socialPosts.length === 0) {
     return (
       <HackathonPublicTabLayout>
         <EmptyTab icon={<FolderOpen className="size-6" weight="duotone" />} title={t("public.empty.resources")} />
@@ -255,7 +262,7 @@ export function HackathonResourcesTab() {
           {t("public.tabs.resources")}
         </h2>
 
-        <div
+        {contest.resources_markdown?.trim() ? <div
           className="
             min-w-0 [overflow-wrap:anywhere]
             [&>div]:space-y-[10px] [&>div]:text-base [&>div]:leading-[1.4]
@@ -276,7 +283,30 @@ export function HackathonResourcesTab() {
           "
         >
           <Markdown content={contest.resources_markdown} />
-        </div>
+        </div> : null}
+        {courseIds.length > 0 ? (
+          <div className="space-y-3">
+            <h3 className="text-heading-small font-display text-foreground">{t("public.resources.coursesTitle")}</h3>
+            <p className="text-sm text-foreground-muted">{t("public.resources.coursesDescription")}</p>
+            <ul className="space-y-2">
+              {Array.from(new Set(courseIds)).map((id) => {
+                const course = coursesById.get(id);
+                return <li key={id}>{course ? <NavLink className="text-primary hover:underline" to={`/courses/${encodeURIComponent(course.slug)}`}>{course.title}</NavLink> : loading ? <Skeleton className="h-5 w-48" /> : <span className="text-sm text-foreground-muted">{t("detail.learn.courseUnavailable")}</span>}</li>;
+              })}
+            </ul>
+          </div>
+        ) : null}
+        {socialPosts.length > 0 ? (
+          <div className="space-y-4">
+            <h3 className="text-heading-small font-display text-foreground">{t("public.resources.socialPostsTitle")}</h3>
+            <div className="grid gap-4 lg:grid-cols-2">
+              {socialPosts.map(({ url, embed }) => <div key={url} className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface-base">
+                <iframe title={`${embed.platform}: ${url}`} src={embed.url} loading="lazy" className="h-[520px] w-full" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox" referrerPolicy="strict-origin-when-cross-origin" />
+                <a href={url} target="_blank" rel="noopener noreferrer" className="block p-3 text-sm text-primary hover:underline">{t("public.resources.openSocialPost", { platform: embed.platform })}</a>
+              </div>)}
+            </div>
+          </div>
+        ) : null}
       </section>
     </HackathonPublicTabLayout>
   );

@@ -13,6 +13,8 @@ import { ProfileCombobox } from "@/components/ui/profile-combobox";
 import { PageContainer, PageSectionCard } from "@/components/layouts/PagePrimitives";
 import { publicProjectDirectoryQueryOptions } from "@/features/projects/projectQueries";
 import { createContest, deleteContest, getContest, getHackathonLocaleContent, notifyHackathonWinnerAwards, setHackathonLocaleContent, updateContest } from "@/lib/hackathons";
+import { getPublishedCourses } from "@/lib/courses";
+import { getHackathonSocialPostEmbed } from "@/lib/hackathonSocialPosts";
 import { deleteStorageObjectByPath, uploadContestBanner, uploadContestHostLogo } from "@/lib/storage";
 import { invokeGenerateDescription, type DescriptionTranslationBundle, type HackathonTranslationItem } from "@/lib/descriptionGenerator";
 import { canonicalizeSlug, normalizeSlugDraft } from "@/lib/slug";
@@ -48,6 +50,9 @@ type Draft = {
   telegram: string;
   x: string;
   facebook: string;
+  official_course_id: string;
+  related_course_ids: string[];
+  social_post_urls: string;
   submission_deadline: string;
   winners_announced: boolean;
   allow_project_edits_after_deadline: boolean;
@@ -127,7 +132,7 @@ function emptyLocale(): LocaleDraft {
 }
 
 function emptyDraft(): Draft {
-  return { slug: "", status: "draft", cover_image_url: "", cover_image_path: "", mode: "online", host_name: "", host_logo_url: "", host_logo_path: "", host_website_url: "", telegram: "", x: "", facebook: "", submission_deadline: "", winners_announced: false, allow_project_edits_after_deadline: false, prize_amount: "0", prize_currency: "VND", winner_awards: [], locales: { vi: emptyLocale(), en: emptyLocale() } };
+  return { slug: "", status: "draft", cover_image_url: "", cover_image_path: "", mode: "online", host_name: "", host_logo_url: "", host_logo_path: "", host_website_url: "", telegram: "", x: "", facebook: "", official_course_id: "", related_course_ids: [], social_post_urls: "", submission_deadline: "", winners_announced: false, allow_project_edits_after_deadline: false, prize_amount: "0", prize_currency: "VND", winner_awards: [], locales: { vi: emptyLocale(), en: emptyLocale() } };
 }
 
 function EditorSection({ title, description, children, onSave, saving, saveLabel, secondaryAction }: { title: string; description?: string; children: React.ReactNode; onSave: () => void; saving: boolean; saveLabel: string; secondaryAction?: { label: string; onClick: () => void } }) {
@@ -212,6 +217,11 @@ export default function AdminHackathonEditorPage() {
     },
     enabled: Boolean(id),
   });
+  const coursesQuery = useQuery({
+    queryKey: ["published-courses", "hackathon-editor"],
+    queryFn: getPublishedCourses,
+    enabled: activeSection === "resources",
+  });
   const loadedDraft = useMemo<Draft | null>(() => {
     const data = editorQuery.data;
     if (!data) return null;
@@ -229,6 +239,9 @@ export default function AdminHackathonEditorPage() {
       telegram: contest.social_links?.telegram ?? "",
       x: contest.social_links?.x ?? "",
       facebook: contest.social_links?.facebook ?? "",
+      official_course_id: contest.official_course_id ?? "",
+      related_course_ids: contest.related_course_ids ?? [],
+      social_post_urls: (contest.social_post_urls ?? []).join("\n"),
       submission_deadline: dateInput(contest.submission_deadline),
       winners_announced: contest.winners_announced === true,
       allow_project_edits_after_deadline: contest.allow_project_edits_after_deadline === true,
@@ -312,6 +325,9 @@ export default function AdminHackathonEditorPage() {
     if (!isValidHackathonSocialLink("facebook", draft.facebook)) {
       throw new EditorValidationError(t("hackathons.editor.validationFacebook"), "overview", "hackathon-facebook");
     }
+    if (draft.social_post_urls.split(/\r?\n/).some((url) => url.trim() && !getHackathonSocialPostEmbed(url))) {
+      throw new EditorValidationError(t("hackathons.editor.validationSocialPost"), "resources", "hackathon-social-posts");
+    }
     if (draft.status === "published" || draft.status === "running") {
       const taxonomyResult = validateHackathonTaxonomyContract(
         draft.status,
@@ -368,6 +384,9 @@ export default function AdminHackathonEditorPage() {
       x: normalizeHackathonSocialLink("x", draft.x) || null,
       facebook: normalizeHackathonSocialLink("facebook", draft.facebook) || null,
     },
+    official_course_id: draft.official_course_id || null,
+    related_course_ids: draft.related_course_ids.filter((courseId) => courseId !== draft.official_course_id),
+    social_post_urls: Array.from(new Set(draft.social_post_urls.split(/\r?\n/).map((url) => url.trim()).filter(Boolean))),
     prize_pool: { amount: draft.prize_amount || "0", currency: draft.prize_currency.trim().toUpperCase(), description_markdown: draft.locales.vi.prize_description_markdown },
     tracks: draft.locales.vi.tracks.filter((item) => item.name?.trim()),
     sectors: draft.locales.vi.sectors,
@@ -749,7 +768,40 @@ export default function AdminHackathonEditorPage() {
 
           {activeSection === "timeline" && !isNew ? <EditorSection title={t("hackathons.editor.sections.timeline")} description={t("hackathons.editor.sectionDescriptions.timeline")} onSave={save} saving={saveMutation.isPending} saveLabel={t("hackathons.editor.saveSection")}><div className="flex justify-end"><Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={addTimeline}><Plus className="size-4" />{t("hackathons.editor.add")}</Button></div>{localized.timeline.length === 0 ? <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-foreground-muted">{t("hackathons.editor.noTimeline")}</div> : null}{localized.timeline.map((item, index) => <div key={item.id} className="rounded-xl border border-border-subtle bg-surface-raised p-4"><div className="flex items-start justify-between gap-3"><span className="text-sm font-semibold">{t("hackathons.editor.timelineNumber", { number: index + 1 })}</span><Button type="button" variant="cta" hierarchy="tertiary" iconOnly size="small" className="text-foreground-muted hover:text-destructive" aria-label={t("hackathons.editor.removeTimeline")} onClick={() => removeTimeline(item.id)}><Trash2 className="size-4" /></Button></div><Field className="mt-3"><FieldLabel>{t("hackathons.editor.timelineTitle")} ({locale.toUpperCase()})</FieldLabel><Input value={item.title} onChange={(event) => changeLocale({ timeline: localized.timeline.map((row) => row.id === item.id ? { ...row, title: event.target.value } : row) })} /></Field><div className="mt-4 grid gap-3 sm:grid-cols-2"><Field><FieldLabel>{t("hackathons.editor.timelineStarts")}</FieldLabel><Input type="datetime-local" disabled={locale !== "vi"} value={dateInput(draft.locales.vi.timeline[index]?.starts_at)} onChange={(event) => { const timeline = draft.locales.vi.timeline.map((row) => row.id === item.id ? { ...row, starts_at: new Date(event.target.value).toISOString() } : row); setDraft((current) => ({ ...current, locales: { ...current.locales, vi: { ...current.locales.vi, timeline } } })); setDirty(true); }} /></Field><Field><FieldLabel>{t("hackathons.editor.timelineEnds")}</FieldLabel><Input type="datetime-local" disabled={locale !== "vi"} value={dateInput(draft.locales.vi.timeline[index]?.ends_at)} onChange={(event) => { const timeline = draft.locales.vi.timeline.map((row) => row.id === item.id ? { ...row, ends_at: event.target.value ? new Date(event.target.value).toISOString() : null } : row); setDraft((current) => ({ ...current, locales: { ...current.locales, vi: { ...current.locales.vi, timeline } } })); setDirty(true); }} /></Field></div><Field className="mt-4"><FieldLabel>{t("hackathons.editor.fields.timelineDescription")} ({locale.toUpperCase()})</FieldLabel><textarea className={textareaClass} value={item.description_markdown ?? ""} onChange={(event) => changeLocale({ timeline: localized.timeline.map((row) => row.id === item.id ? { ...row, description_markdown: event.target.value } : row) })} /></Field></div>)}</EditorSection> : null}
 
-          {activeSection === "resources" && !isNew ? <EditorSection title={t("hackathons.editor.sections.resources")} description={t("hackathons.editor.sectionDescriptions.resources")} onSave={save} saving={saveMutation.isPending} saveLabel={t("hackathons.editor.saveSection")}><Field><FieldLabel>{t("hackathons.editor.fields.markdown")} <span className="rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">{locale.toUpperCase()}</span></FieldLabel><textarea className={`${textareaClass} min-h-80 font-mono leading-6`} value={localized.resources_markdown} onChange={(event) => changeLocale({ resources_markdown: event.target.value })} /></Field></EditorSection> : null}
+          {activeSection === "resources" && !isNew ? (
+            <EditorSection title={t("hackathons.editor.sections.resources")} description={t("hackathons.editor.sectionDescriptions.resources")} onSave={save} saving={saveMutation.isPending} saveLabel={t("hackathons.editor.saveSection")}>
+              <Field>
+                <FieldLabel>{t("hackathons.editor.fields.markdown")} ({locale.toUpperCase()})</FieldLabel>
+                <textarea className={`${textareaClass} min-h-80 font-mono leading-6`} value={localized.resources_markdown} onChange={(event) => changeLocale({ resources_markdown: event.target.value })} />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="hackathon-official-course">{t("hackathons.editor.fields.officialCourse")}</FieldLabel>
+                <select id="hackathon-official-course" className={inputClass} value={draft.official_course_id} onChange={(event) => change({ official_course_id: event.target.value })}>
+                  <option value="">{t("hackathons.editor.fields.noCourse")}</option>
+                  {draft.official_course_id && !coursesQuery.data?.some((course) => course.id === draft.official_course_id) ? <option value={draft.official_course_id}>{draft.official_course_id}</option> : null}
+                  {coursesQuery.data?.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
+                </select>
+                {coursesQuery.isError ? <FieldDescription>{t("hackathons.editor.fields.coursesLoadFailed")}</FieldDescription> : null}
+              </Field>
+              <Field>
+                <FieldLabel>{t("hackathons.editor.fields.relatedCourses")}</FieldLabel>
+                <div className="max-h-56 space-y-2 overflow-y-auto rounded-md border border-border p-3">
+                  {coursesQuery.data?.filter((course) => course.id !== draft.official_course_id).map((course) => (
+                    <label key={course.id} className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" className="size-4 accent-primary" checked={draft.related_course_ids.includes(course.id)} onChange={(event) => change({ related_course_ids: event.target.checked ? [...draft.related_course_ids, course.id] : draft.related_course_ids.filter((id) => id !== course.id) })} />
+                      {course.title}
+                    </label>
+                  ))}
+                  {!coursesQuery.isPending && !coursesQuery.data?.length ? <p className="text-sm text-foreground-muted">{t("hackathons.editor.fields.noPublishedCourses")}</p> : null}
+                </div>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="hackathon-social-posts">{t("hackathons.editor.fields.socialPosts")}</FieldLabel>
+                <textarea id="hackathon-social-posts" className={textareaClass} value={draft.social_post_urls} placeholder={t("hackathons.editor.fields.socialPostsPlaceholder")} onChange={(event) => change({ social_post_urls: event.target.value })} />
+                <FieldDescription>{t("hackathons.editor.fields.socialPostsHint")}</FieldDescription>
+              </Field>
+            </EditorSection>
+          ) : null}
 
           {activeSection === "taxonomy" && !isNew ? <EditorSection title={t("hackathons.editor.sections.taxonomy")} description={t("hackathons.editor.taxonomyHint")} onSave={save} saving={saveMutation.isPending} saveLabel={t("hackathons.editor.saveSection")}>{(["sectors", "tech_stacks"] as const).map((key) => <div key={key} className="space-y-3"><div className="flex items-center justify-between"><h3 className="text-foreground text-heading-small font-display">{t(`hackathons.editor.fields.${key}`)}</h3><Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={() => addTaxonomy(key)}><Plus className="size-4" />{t("hackathons.editor.add")}</Button></div>{localized[key].length === 0 ? <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-foreground-muted">{t(`hackathons.editor.fields.${key}`)}</div> : null}<div className="grid gap-3 sm:grid-cols-2">{localized[key].map((option) => <div key={option.id} className={cn("flex gap-2 rounded-xl border border-border-subtle bg-surface-raised p-3", option.active === false && "opacity-60")}><Input value={option.name} placeholder={t(`hackathons.editor.fields.${key}`)} onChange={(event) => changeLocale({ [key]: localized[key].map((row) => row.id === option.id ? { ...row, name: event.target.value } : row) })} /><Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={() => { const update = (target: Locale) => draft.locales[target][key].map((row) => row.id === option.id ? { ...row, active: row.active === false } : row); setDraft((current) => ({ ...current, locales: { vi: { ...current.locales.vi, [key]: update("vi") }, en: { ...current.locales.en, [key]: update("en") } } })); setDirty(true); }}>{option.active === false ? <><Check className="size-4" />{t("hackathons.editor.restore")}</> : t("hackathons.editor.archive")}</Button></div>)}</div></div>)}</EditorSection> : null}
 

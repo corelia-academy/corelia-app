@@ -80,6 +80,12 @@
       "resources": "Tài nguyên",
       "projects": "Dự án của ứng viên"
     },
+    "resources": {
+      "coursesTitle": "Chuẩn bị kỹ năng",
+      "coursesDescription": "Các khóa học ban tổ chức đề xuất để chuẩn bị cho hackathon.",
+      "socialPostsTitle": "Bài đăng từ ban tổ chức",
+      "openSocialPost": "Mở bài đăng trên {{platform}}"
+    },
     "mode": {
       "online": "Online",
       "offline": "Offline",
