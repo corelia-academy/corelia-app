@@ -22,6 +22,7 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+          package-manager-cache: false
 
       - name: Install read-only PostgreSQL client
         run: sudo apt-get update && sudo apt-get install --yes postgresql-client
