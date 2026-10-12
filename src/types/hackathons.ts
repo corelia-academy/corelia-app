@@ -283,6 +283,7 @@ export interface Contest {
   officialCourseId?: string | null;
   related_course_ids?: string[];
   relatedCourseIds?: string[];
+  social_post_urls?: string[];
   track_id?: string | null;
   trackId?: string | null;
   /** Text-only content localization config */
@@ -338,6 +339,9 @@ export interface ContestInsert {
   faqs?: ContestFaqEntry[];
   timeline_milestones?: ContestTimelineMilestone[];
   organizational_partners?: ContestOrganizationalPartner[];
+  official_course_id?: string | null;
+  related_course_ids?: string[];
+  social_post_urls?: string[];
 }
 
 export interface ContestUpdate {
@@ -388,6 +392,9 @@ export interface ContestUpdate {
   faqs?: ContestFaqEntry[];
   timeline_milestones?: ContestTimelineMilestone[];
   organizational_partners?: ContestOrganizationalPartner[];
+  official_course_id?: string | null;
+  related_course_ids?: string[];
+  social_post_urls?: string[];
   /** Text-only content localization config */
   i18n?: import("@/types/entityLocales").EntityI18nConfig;
 }

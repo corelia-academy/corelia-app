@@ -44,6 +44,11 @@ vi.mock("@/lib/hackathons", () => ({
   updateContest,
 }));
 
+vi.mock("@/lib/courses", () => ({ getPublishedCourses: vi.fn(async () => [
+  { id: "course-1", slug: "skill-course", title: "Skill course" },
+  { id: "course-2", slug: "demo-course", title: "Demo course" },
+]) }));
+
 vi.mock("@/lib/storage", () => ({
   deleteStorageObjectByPath: vi.fn(),
   uploadContestBanner: vi.fn(),
@@ -123,6 +128,11 @@ function changeInput(input: HTMLInputElement, value: string) {
   input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
+function changeTextarea(input: HTMLTextAreaElement, value: string) {
+  Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")?.set?.call(input, value);
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
 const contest = {
   id: "hackathon-1",
   slug: "demo-hackathon",
@@ -169,6 +179,32 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
 
   afterEach(() => {
     document.body.innerHTML = "";
+  });
+
+  it("saves preparation courses and organizer post links from Resources", async () => {
+    const view = renderEditor("/admin/hackathons/hackathon-1/edit#resources");
+    await settle();
+    try {
+      const official = view.container.querySelector<HTMLSelectElement>("#hackathon-official-course")!;
+      await act(async () => {
+        official.value = "course-1";
+        official.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      await act(async () => {
+        view.container.querySelector<HTMLInputElement>('input[type="checkbox"]')?.click();
+        changeTextarea(view.container.querySelector<HTMLTextAreaElement>("#hackathon-social-posts")!, "https://x.com/corelia/status/123");
+      });
+      const save = Array.from(view.container.querySelectorAll("button")).find((button) => button.textContent?.includes("hackathons.editor.saveSection"));
+      await act(async () => save?.click());
+      await settle();
+      expect(updateContest).toHaveBeenCalledWith("hackathon-1", expect.objectContaining({
+        official_course_id: "course-1",
+        related_course_ids: ["course-2"],
+        social_post_urls: ["https://x.com/corelia/status/123"],
+      }));
+    } finally {
+      await view.cleanup();
+    }
   });
 
   it("opens the new flow immediately on Overview and locks later sections until a draft exists", async () => {

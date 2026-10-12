@@ -40,6 +40,11 @@ vi.mock("@/features/projects/projectQueries", () => ({
 
 vi.mock("@/lib/hackathons", () => ({ canEditContestProject: vi.fn(() => false) }));
 
+vi.mock("./hooks/useContestLearningLinks", () => ({ useContestLearningLinks: (contest: Contest) => ({
+  officialId: contest.official_course_id ?? null,
+  coursesById: new Map([["course-1", { id: "course-1", slug: "skill-course", title: "Skill course" }]]),
+  loading: false,
+}) }));
 vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: null }) }));
 vi.mock("@/lib/projectSocial", () => ({ listMyProjectHeartIds: async () => new Set() }));
 vi.mock("@/lib/projectTaxonomy", () => ({ listProjectTaxonomyOptions: async () => [
@@ -49,7 +54,7 @@ vi.mock("@/lib/projectTaxonomy", () => ({ listProjectTaxonomyOptions: async () =
 vi.mock("@/components/projects/ProjectCard", () => ({ ProjectCard: () => null }));
 vi.mock("@/components/projects/ProjectCardSkeleton", () => ({ ProjectCardSkeleton: () => null }));
 
-import { HackathonOverviewTab, HackathonPrizesTab, HackathonProjectsTab } from "./ContestPublicTabs";
+import { HackathonOverviewTab, HackathonPrizesTab, HackathonProjectsTab, HackathonResourcesTab } from "./ContestPublicTabs";
 
 const contest = {
   id: "hackathon-1",
@@ -100,6 +105,23 @@ function renderProjectsTab(initialEntry: string) {
 }
 
 describe("HackathonProjectsTab filters", () => {
+it("shows linked preparation courses and embedded organizer posts in Resources", async () => {
+  const resourceContest = { ...contest, resources_markdown: "", official_course_id: "course-1", social_post_urls: ["https://x.com/corelia/status/123"] };
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+  await act(async () => root.render(
+    <MemoryRouter initialEntries={["/hackathons/demo-hackathon/resources"]}>
+      <Routes><Route element={<Outlet context={{ contest: resourceContest }} />}><Route path="/hackathons/:slug/resources" element={<HackathonResourcesTab />} /></Route></Routes>
+    </MemoryRouter>,
+  ));
+  expect(container.querySelector<HTMLAnchorElement>('a[href="/courses/skill-course"]')?.textContent).toBe("Skill course");
+  expect(container.querySelector<HTMLIFrameElement>("iframe")?.src).toContain("platform.twitter.com/embed/Tweet.html?id=123");
+  expect(container.querySelector<HTMLAnchorElement>('a[href="https://x.com/corelia/status/123"]')).not.toBeNull();
+  await act(async () => root.unmount());
+  container.remove();
+});
+
   afterEach(() => {
     document.body.innerHTML = "";
   });

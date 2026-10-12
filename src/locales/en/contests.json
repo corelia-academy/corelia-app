@@ -80,6 +80,12 @@
       "resources": "Resources",
       "projects": "Applicants' projects"
     },
+    "resources": {
+      "coursesTitle": "Prepare your skills",
+      "coursesDescription": "Courses recommended by the organizers for this hackathon.",
+      "socialPostsTitle": "From the organizers",
+      "openSocialPost": "Open post on {{platform}}"
+    },
     "mode": {
       "online": "Online",
       "offline": "Offline",
