@@ -181,7 +181,7 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
     document.body.innerHTML = "";
   });
 
-  it("saves preparation courses and organizer post links from Resources", async () => {
+  it("saves preparation courses from Resources", async () => {
     const view = renderEditor("/admin/hackathons/hackathon-1/edit#resources");
     await settle();
     try {
@@ -192,16 +192,29 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
       });
       await act(async () => {
         view.container.querySelector<HTMLInputElement>('input[type="checkbox"]')?.click();
-        changeTextarea(view.container.querySelector<HTMLTextAreaElement>("#hackathon-social-posts")!, "https://x.com/corelia/status/123");
       });
+      expect(view.container.querySelector("#hackathon-social-posts")).toBeNull();
       const save = Array.from(view.container.querySelectorAll("button")).find((button) => button.textContent?.includes("hackathons.editor.saveSection"));
       await act(async () => save?.click());
       await settle();
       expect(updateContest).toHaveBeenCalledWith("hackathon-1", expect.objectContaining({
         official_course_id: "course-1",
         related_course_ids: ["course-2"],
-        social_post_urls: ["https://x.com/corelia/status/123"],
       }));
+    } finally {
+      await view.cleanup();
+    }
+  });
+
+  it("saves organizer post links from General information", async () => {
+    const view = renderEditor("/admin/hackathons/hackathon-1/edit#overview");
+    await settle();
+    try {
+      await act(async () => changeTextarea(view.container.querySelector<HTMLTextAreaElement>("#hackathon-social-posts")!, "https://x.com/corelia/status/123"));
+      const save = Array.from(view.container.querySelectorAll("button")).find((button) => button.textContent?.includes("hackathons.editor.saveSection"));
+      await act(async () => save?.click());
+      await settle();
+      expect(updateContest).toHaveBeenCalledWith("hackathon-1", expect.objectContaining({ social_post_urls: ["https://x.com/corelia/status/123"] }));
     } finally {
       await view.cleanup();
     }

@@ -277,11 +277,11 @@
         "danger": "Publish, end & delete"
       },
       "sectionDescriptions": {
-        "overview": "Identity, host information, contact channels, and deadlines.",
+        "overview": "Identity, host information, contact channels, organizer posts, and deadlines.",
         "description": "The full Markdown introduction for the hackathon.",
         "prizes": "Define the total prize pool and add tracks only when prizes need to be split.",
         "timeline": "Hackathon stages ordered from earliest to latest.",
-        "resources": "Supporting documents, preparation courses, and organizer posts.",
+        "resources": "Supporting documents and preparation courses.",
         "projects": "Select winning projects and assign award labels manually.",
         "danger": "Change the public status or permanently delete this hackathon."
       },

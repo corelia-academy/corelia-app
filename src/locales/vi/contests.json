@@ -75,6 +75,7 @@
     "tabsLabel": "Nội dung hackathon",
     "tabs": {
       "overview": "Về cuộc thi",
+      "posts": "Bài đăng",
       "prizes": "Giải thưởng",
       "timeline": "Timeline",
       "resources": "Tài nguyên",
@@ -82,8 +83,10 @@
     },
     "resources": {
       "coursesTitle": "Chuẩn bị kỹ năng",
-      "coursesDescription": "Các khóa học ban tổ chức đề xuất để chuẩn bị cho hackathon.",
-      "socialPostsTitle": "Bài đăng từ ban tổ chức",
+      "coursesDescription": "Các khóa học ban tổ chức đề xuất để chuẩn bị cho hackathon."
+    },
+    "posts": {
+      "title": "Bài đăng từ ban tổ chức",
       "openSocialPost": "Mở bài đăng trên {{platform}}"
     },
     "mode": {
@@ -151,6 +154,7 @@
     },
     "empty": {
       "overview": "Nội dung giới thiệu sẽ được cập nhật.",
+      "posts": "Ban tổ chức chưa thêm bài đăng.",
       "prizes": "Thông tin giải thưởng sẽ được cập nhật.",
       "timeline": "Timeline sẽ được cập nhật.",
       "resources": "Tài nguyên sẽ được cập nhật.",

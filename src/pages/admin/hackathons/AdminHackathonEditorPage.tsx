@@ -746,6 +746,11 @@ export default function AdminHackathonEditorPage() {
                 <FieldDescription>{t("hackathons.editor.fields.fullUrlHint")}</FieldDescription>
               </Field>
             </div>
+            <Field>
+              <FieldLabel htmlFor="hackathon-social-posts">{t("hackathons.editor.fields.socialPosts")}</FieldLabel>
+              <textarea id="hackathon-social-posts" className={textareaClass} value={draft.social_post_urls} placeholder={t("hackathons.editor.fields.socialPostsPlaceholder")} onChange={(event) => change({ social_post_urls: event.target.value })} />
+              <FieldDescription>{t("hackathons.editor.fields.socialPostsHint")}</FieldDescription>
+            </Field>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field><FieldLabel htmlFor="hackathon-submission-deadline">{t("hackathons.editor.fields.submission_deadline")}</FieldLabel><Input id="hackathon-submission-deadline" type="datetime-local" value={draft.submission_deadline} onChange={(event) => change({ submission_deadline: event.target.value })} /></Field>
               <Field>
@@ -794,11 +799,6 @@ export default function AdminHackathonEditorPage() {
                   ))}
                   {!coursesQuery.isPending && !coursesQuery.data?.length ? <p className="text-sm text-foreground-muted">{t("hackathons.editor.fields.noPublishedCourses")}</p> : null}
                 </div>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="hackathon-social-posts">{t("hackathons.editor.fields.socialPosts")}</FieldLabel>
-                <textarea id="hackathon-social-posts" className={textareaClass} value={draft.social_post_urls} placeholder={t("hackathons.editor.fields.socialPostsPlaceholder")} onChange={(event) => change({ social_post_urls: event.target.value })} />
-                <FieldDescription>{t("hackathons.editor.fields.socialPostsHint")}</FieldDescription>
               </Field>
             </EditorSection>
           ) : null}

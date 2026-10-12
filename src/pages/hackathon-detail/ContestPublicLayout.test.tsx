@@ -113,7 +113,7 @@ function renderRoute(entry: string) {
         <MemoryRouter initialEntries={[entry]}>
           <Routes>
             <Route path="/hackathons/:slug" element={<ContestPublicLayout />}>
-              {["overview", "prizes", "timeline", "projects", "resources"].map((tab) => (
+              {["overview", "posts", "prizes", "timeline", "projects", "resources"].map((tab) => (
                 <Route key={tab} path={tab} element={<><div>{tab} content</div><RouteLocation /></>} />
               ))}
             </Route>
@@ -176,6 +176,29 @@ describe("draft hackathon preview", () => {
     }
 
     await view.cleanup();
+  });
+
+  it("shows the Posts tab only when there is a valid organizer post", async () => {
+    const withoutPosts = renderRoute("/hackathons/published-demo/overview");
+    await settle();
+    expect(withoutPosts.container.querySelectorAll('[role="tab"]')).toHaveLength(5);
+    await withoutPosts.cleanup();
+
+    const directRoute = renderRoute("/hackathons/published-demo/posts");
+    await settle();
+    expect(directRoute.container.querySelectorAll('[role="tab"]')).toHaveLength(5);
+    expect(directRoute.container.querySelector("[data-route-location]")?.textContent).toBe("/hackathons/published-demo/posts");
+    await directRoute.cleanup();
+
+    state.publicContest = { ...publishedContest, social_post_urls: ["https://x.com/corelia/status/123"] };
+    const withPosts = renderRoute("/hackathons/published-demo/overview");
+    await settle();
+    const tabs = Array.from(withPosts.container.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    expect(tabs).toHaveLength(6);
+    expect(tabs[1].textContent).toBe("public.tabs.posts");
+    await act(async () => tabs[1].click());
+    expect(withPosts.container.querySelector("[data-route-location]")?.textContent).toBe("/hackathons/published-demo/posts");
+    await withPosts.cleanup();
   });
 
   it("shows the full banner without a dark content overlay and uses the X brand icon", async () => {

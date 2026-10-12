@@ -54,7 +54,7 @@ vi.mock("@/lib/projectTaxonomy", () => ({ listProjectTaxonomyOptions: async () =
 vi.mock("@/components/projects/ProjectCard", () => ({ ProjectCard: () => null }));
 vi.mock("@/components/projects/ProjectCardSkeleton", () => ({ ProjectCardSkeleton: () => null }));
 
-import { HackathonOverviewTab, HackathonPrizesTab, HackathonProjectsTab, HackathonResourcesTab } from "./ContestPublicTabs";
+import { HackathonOverviewTab, HackathonPostsTab, HackathonPrizesTab, HackathonProjectsTab, HackathonResourcesTab } from "./ContestPublicTabs";
 
 const contest = {
   id: "hackathon-1",
@@ -105,7 +105,7 @@ function renderProjectsTab(initialEntry: string) {
 }
 
 describe("HackathonProjectsTab filters", () => {
-it("shows linked preparation courses and embedded organizer posts in Resources", async () => {
+it("shows linked preparation courses without organizer posts in Resources", async () => {
   const resourceContest = { ...contest, resources_markdown: "", official_course_id: "course-1", social_post_urls: ["https://x.com/corelia/status/123"] };
   const container = document.createElement("div");
   document.body.appendChild(container);
@@ -116,8 +116,27 @@ it("shows linked preparation courses and embedded organizer posts in Resources",
     </MemoryRouter>,
   ));
   expect(container.querySelector<HTMLAnchorElement>('a[href="/courses/skill-course"]')?.textContent).toBe("Skill course");
+  expect(container.querySelector("iframe")).toBeNull();
+  expect(container.querySelector<HTMLAnchorElement>('a[href="https://x.com/corelia/status/123"]')).toBeNull();
+  await act(async () => root.unmount());
+  container.remove();
+});
+
+it("embeds organizer posts on the direct Posts route and shows an empty state without posts", async () => {
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+  const render = async (social_post_urls: string[]) => act(async () => root.render(
+    <MemoryRouter initialEntries={["/hackathons/demo-hackathon/posts"]}>
+      <Routes><Route element={<Outlet context={{ contest: { ...contest, social_post_urls } }} />}><Route path="/hackathons/:slug/posts" element={<HackathonPostsTab />} /></Route></Routes>
+    </MemoryRouter>,
+  ));
+  await render(["https://x.com/corelia/status/123"]);
   expect(container.querySelector<HTMLIFrameElement>("iframe")?.src).toContain("platform.twitter.com/embed/Tweet.html?id=123");
   expect(container.querySelector<HTMLAnchorElement>('a[href="https://x.com/corelia/status/123"]')).not.toBeNull();
+  await render([]);
+  expect(container.textContent).toContain("public.empty.posts");
+  expect(container.querySelector("iframe")).toBeNull();
   await act(async () => root.unmount());
   container.remove();
 });
