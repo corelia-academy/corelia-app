@@ -344,7 +344,7 @@ export default function AdminHackathonEditorPage() {
     navigate({ pathname: location.pathname, search: location.search, hash: "overview" }, { replace: true });
   }, [isNew, location.hash, location.pathname, location.search, navigate]);
 
-  const projectsQuery = useInfiniteQuery({ ...publicProjectDirectoryQueryOptions("vi", "hackathon", "newest", { hackathonId: id ?? null, winnerProjectIds: draft.winner_awards.map((award) => award.project_id) }), enabled: Boolean(id) });
+  const projectsQuery = useInfiniteQuery({ ...publicProjectDirectoryQueryOptions("vi", "hackathon", "newest", { hackathonId: id ?? null, winnerProjectIds: draft.winner_awards.map((award) => award.project_id) }), enabled: Boolean(id), placeholderData: (previousData) => previousData });
   const { hasNextPage: hasMoreProjects, isFetchingNextPage: isFetchingMoreProjects, fetchNextPage: fetchNextProjectsPage } = projectsQuery;
   useEffect(() => {
     if (activeSection === "projects" && hasMoreProjects && !isFetchingMoreProjects) {
