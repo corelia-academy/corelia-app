@@ -26,6 +26,7 @@ it("keeps segment/no-autoplay, handles player errors, and recreates the player o
   expect(url.searchParams.get("end")).toBe("15");
   expect(url.searchParams.get("autoplay")).toBe("0");
   expect(url.searchParams.get("origin")).toBe(window.location.origin);
+  expect(frame.referrerPolicy).toBe("strict-origin-when-cross-origin");
   act(() => events[0].onError());
   expect(host.querySelector('[role="alert"]')?.textContent).toBe("learning.videoError");
   await act(async () => host.querySelector("button")!.click());
