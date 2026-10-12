@@ -10,12 +10,13 @@ import type { Contest } from "@/types/hackathons";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const { createContest, getContest, getHackathonLocaleContent, invokeGenerateDescription, notifyHackathonWinnerAwards, projectQueryFn, setHackathonLocaleContent, updateContest } = vi.hoisted(() => ({
+const { createContest, getContest, getHackathonLocaleContent, invokeGenerateDescription, notifyHackathonWinnerAwards, projectDirectoryOptions, projectQueryFn, setHackathonLocaleContent, updateContest } = vi.hoisted(() => ({
   createContest: vi.fn(),
   getContest: vi.fn(),
   getHackathonLocaleContent: vi.fn(),
   invokeGenerateDescription: vi.fn(),
   notifyHackathonWinnerAwards: vi.fn(),
+  projectDirectoryOptions: vi.fn(),
   projectQueryFn: vi.fn(
     async (): Promise<{
       items: Array<{ project: { id: string; title: string }; owner?: { username?: string; full_name?: string | null } | null }>;
@@ -30,6 +31,7 @@ vi.mock("react-i18next", async (importOriginal) => ({
   ...await importOriginal<typeof import("react-i18next")>(),
   useTranslation: () => ({
     t: (key: string, options?: { number?: number }) => options?.number ? `${key}:${options.number}` : key,
+    i18n: { language: "en", resolvedLanguage: "en" },
   }),
 }));
 
@@ -59,12 +61,15 @@ vi.mock("@/lib/storage", () => ({
 vi.mock("@/lib/descriptionGenerator", () => ({ invokeGenerateDescription }));
 
 vi.mock("@/features/projects/projectQueries", () => ({
-  publicProjectDirectoryQueryOptions: () => ({
-    queryKey: ["projects", "hackathon-editor-test"],
-    queryFn: projectQueryFn,
-    initialPageParam: null,
-    getNextPageParam: (lastPage: { nextCursor?: string | null }) => lastPage?.nextCursor ?? undefined,
-  }),
+  publicProjectDirectoryQueryOptions: (...args: unknown[]) => {
+    projectDirectoryOptions(...args);
+    return {
+      queryKey: ["projects", "hackathon-editor-test"],
+      queryFn: projectQueryFn,
+      initialPageParam: null,
+      getNextPageParam: (lastPage: { nextCursor?: string | null }) => lastPage?.nextCursor ?? undefined,
+    };
+  },
 }));
 
 import AdminHackathonEditorPage from "./AdminHackathonEditorPage";
@@ -462,7 +467,7 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
     await view.cleanup();
   });
 
-  it("fetches next pages of candidate submissions when viewing projects section", async () => {
+  it("finds a translated project on a later page and awards it", async () => {
     const { toast } = await import("sonner");
     (toast.success as unknown as ReturnType<typeof vi.fn>).mockClear();
 
@@ -473,7 +478,7 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
         nextCursor: "cursor-page-2",
       })
       .mockResolvedValueOnce({
-        items: [{ project: { id: "p2", title: "Project 2" }, owner: { username: "user2" } }],
+        items: [{ project: { id: "p2", title: "Check-Di" }, owner: { username: "user2" } }],
         nextCursor: null,
       });
 
@@ -482,6 +487,7 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
 
     // Verify both pages were queried automatically
     expect(projectQueryFn).toHaveBeenCalledTimes(2);
+    expect(projectDirectoryOptions).toHaveBeenCalledWith("en", "hackathon", "newest", expect.objectContaining({ hackathonId: "hackathon-1" }));
 
     // Open the project picker combobox
     const comboboxTrigger = Array.from(view.container.querySelectorAll("button"))
@@ -491,12 +497,15 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
     await act(async () => comboboxTrigger?.click());
     await settle();
 
-    // Find and verify page 2 project option in the dialog DOM
+    const projectSearch = document.body.querySelector<HTMLInputElement>('input[placeholder="hackathons.editor.searchProjectPlaceholder"]')!;
+    await act(async () => changeInput(projectSearch, "Check-Di"));
+
+    // Find the translated project from page 2 using its English title.
     const dialogButtons = Array.from(document.body.querySelectorAll("button"));
-    const page2Option = dialogButtons.find((button) => button.textContent?.includes("Project 2"));
+    const page2Option = dialogButtons.find((button) => button.textContent?.includes("Check-Di"));
     expect(page2Option).toBeDefined();
 
-    // Select Project 2 from page 2
+    // Select the project from page 2.
     await act(async () => page2Option?.click());
     await settle();
 
@@ -517,8 +526,8 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
 
     expect(toast.success).toHaveBeenCalledWith("hackathons.editor.awardAdded");
 
-    // Verify DOM now renders the newly added award with Project 2
-    expect(view.container.textContent).toContain("Project 2");
+    // Verify the newly added award uses the translated project title.
+    expect(view.container.textContent).toContain("Check-Di");
     const addedAwardInput = Array.from(view.container.querySelectorAll("input"))
       .find((input) => input.value === "Second Place");
     expect(addedAwardInput).toBeDefined();

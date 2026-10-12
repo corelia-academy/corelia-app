@@ -489,9 +489,8 @@ export async function listPublicProjects(
   const regularLimit = limit - winnerSlice.length;
   const rangeStart = regularOffset;
   const rangeSize = regularLimit;
-  const { data, error } = regularLimit > 0
-    ? await query.range(rangeStart, rangeStart + rangeSize)
-    : { data: [] as Project[], error: null };
+  // The inclusive range fetches one lookahead row even when winners fill this page.
+  const { data, error } = await query.range(rangeStart, rangeStart + rangeSize);
   if (error) throw new Error(error.message);
 
   const fetchedProjects = (data ?? []) as Project[];
