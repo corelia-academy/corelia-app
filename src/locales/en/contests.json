@@ -75,10 +75,19 @@
     "tabsLabel": "Hackathon content",
     "tabs": {
       "overview": "About",
+      "posts": "Posts",
       "prizes": "Prizes",
       "timeline": "Timeline",
       "resources": "Resources",
       "projects": "Applicants' projects"
+    },
+    "resources": {
+      "coursesTitle": "Prepare your skills",
+      "coursesDescription": "Courses recommended by the organizers for this hackathon."
+    },
+    "posts": {
+      "title": "From the organizers",
+      "openSocialPost": "Open post on {{platform}}"
     },
     "mode": {
       "online": "Online",
@@ -145,6 +154,7 @@
     },
     "empty": {
       "overview": "Description will be added soon.",
+      "posts": "No organizer posts yet.",
       "prizes": "Prize details will be added soon.",
       "timeline": "Timeline will be added soon.",
       "resources": "Resources will be added soon.",

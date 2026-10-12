@@ -123,9 +123,9 @@ export default function ProjectDetailPage() {
 
   const owner = useMemo(() => ownerDisplay(entry?.owner ?? null), [entry?.owner]);
   const projectId = entry?.project.id;
-  const winnerAward = useMemo(() => {
+  const winnerAwards = useMemo(() => {
     const awards = sourceQuery.data?.winner_awards ?? [];
-    return awards.find((item) => item.project_id === projectId) ?? null;
+    return awards.filter((item) => item.project_id === projectId).sort((a, b) => a.sort_order - b.sort_order);
   }, [sourceQuery.data?.winner_awards, projectId]);
 
   useEffect(() => {
@@ -292,19 +292,19 @@ export default function ProjectDetailPage() {
       <header className="flex flex-col gap-5 border-b border-border-subtle pb-8 sm:flex-row sm:items-start">
         <ProjectLogo project={project} />
         <div className="min-w-0 flex-1">
-          {!isHackathonProjectSource(project.source_type) || winnerAward ? (
+          {!isHackathonProjectSource(project.source_type) || winnerAwards.length > 0 ? (
             <div className="flex flex-wrap items-center gap-2">
               {!isHackathonProjectSource(project.source_type) ? (
                 <span className="text-label-small font-body uppercase tracking-widest text-primary">
                   {t(projectSourceLabelKey(project.source_type))}
                 </span>
               ) : null}
-              {winnerAward ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-xs font-semibold text-amber-950 shadow">
+              {winnerAwards.map((award) => (
+                <span key={award.id} className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-0.5 text-xs font-semibold text-amber-950 shadow">
                   <Sparkles className="size-3" aria-hidden />
-                  {winnerAward.label}
+                  {award.label}
                 </span>
-              ) : null}
+              ))}
             </div>
           ) : null}
           <h1 className="mt-2 break-words text-display-small font-display text-foreground">{project.title}</h1>

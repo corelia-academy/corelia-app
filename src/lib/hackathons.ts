@@ -459,6 +459,9 @@ function normalizeContest(data: Contest): Contest {
       : Array.isArray(data.relatedCourseIds)
         ? data.relatedCourseIds.map(String)
         : undefined,
+    social_post_urls: Array.isArray(data.social_post_urls)
+      ? data.social_post_urls.filter((url): url is string => typeof url === "string")
+      : [],
     track_id:
       [data.track_id, data.trackId]
         .map((x) => (typeof x === "string" ? x.trim() : ""))
@@ -779,6 +782,9 @@ export async function createContest(data: ContestInsert): Promise<Contest> {
     faqs: sanitizeFaqEntries(data.faqs),
     timeline_milestones: sanitizeTimelineMilestones(data.timeline_milestones ?? []),
     organizational_partners: sanitizeOrganizationalPartners(data.organizational_partners),
+    official_course_id: data.official_course_id?.trim() || null,
+    related_course_ids: data.related_course_ids ?? [],
+    social_post_urls: data.social_post_urls ?? [],
     created_by: uid,
     updated_by: uid,
     created_at: now,
@@ -887,6 +893,9 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
       updates.organizational_partners !== undefined
         ? sanitizeOrganizationalPartners(updates.organizational_partners)
         : undefined,
+    official_course_id: updates.official_course_id,
+    related_course_ids: updates.related_course_ids,
+    social_post_urls: updates.social_post_urls,
     i18n: updates.i18n,
     updated_by: uid,
     updated_at: new Date().toISOString(),

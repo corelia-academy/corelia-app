@@ -11,11 +11,12 @@ import type { Contest } from "@/types/hackathons";
 
 const { projectQueryFn, directoryOptionsSpy } = vi.hoisted(() => ({
   directoryOptionsSpy: vi.fn(),
-  projectQueryFn: vi.fn(async () => ({ items: [], nextCursor: null })),
+  projectQueryFn: vi.fn(async (): Promise<{ items: Array<{ project: { id: string; title: string }; owner: null }>; nextCursor: string | null }> => ({ items: [], nextCursor: null })),
 }));
 const locale = vi.hoisted(() => ({ value: "vi" }));
 
-vi.mock("react-i18next", () => ({
+vi.mock("react-i18next", async (importOriginal) => ({
+  ...await importOriginal<typeof import("react-i18next")>(),
   useTranslation: () => ({
     t: (key: string, options?: { count?: number }) => options?.count === undefined ? key : `${key}:${options.count}`,
     i18n: { resolvedLanguage: locale.value, language: locale.value },
@@ -40,16 +41,21 @@ vi.mock("@/features/projects/projectQueries", () => ({
 
 vi.mock("@/lib/hackathons", () => ({ canEditContestProject: vi.fn(() => false) }));
 
+vi.mock("./hooks/useContestLearningLinks", () => ({ useContestLearningLinks: (contest: Contest) => ({
+  officialId: contest.official_course_id ?? null,
+  coursesById: new Map([["course-1", { id: "course-1", slug: "skill-course", title: "Skill course" }]]),
+  loading: false,
+}) }));
 vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: null }) }));
 vi.mock("@/lib/projectSocial", () => ({ listMyProjectHeartIds: async () => new Set() }));
 vi.mock("@/lib/projectTaxonomy", () => ({ listProjectTaxonomyOptions: async () => [
   { id: "sector-ai-engineering", kind: "sector", name: "Kỹ thuật AI & Machine Learning", sort_order: 0 },
   { id: "tech-solana", kind: "technology", name: "Solana", sort_order: 0 },
 ] }));
-vi.mock("@/components/projects/ProjectCard", () => ({ ProjectCard: () => null }));
+vi.mock("@/components/projects/ProjectCard", () => ({ ProjectCard: ({ project }: { project: { title: string } }) => <article>{project.title}</article> }));
 vi.mock("@/components/projects/ProjectCardSkeleton", () => ({ ProjectCardSkeleton: () => null }));
 
-import { HackathonOverviewTab, HackathonPrizesTab, HackathonProjectsTab } from "./ContestPublicTabs";
+import { HackathonOverviewTab, HackathonPostsTab, HackathonPrizesTab, HackathonProjectsTab, HackathonResourcesTab } from "./ContestPublicTabs";
 
 const contest = {
   id: "hackathon-1",
@@ -100,6 +106,42 @@ function renderProjectsTab(initialEntry: string) {
 }
 
 describe("HackathonProjectsTab filters", () => {
+it("shows linked preparation courses without organizer posts in Resources", async () => {
+  const resourceContest = { ...contest, resources_markdown: "", official_course_id: "course-1", social_post_urls: ["https://x.com/corelia/status/123"] };
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+  await act(async () => root.render(
+    <MemoryRouter initialEntries={["/hackathons/demo-hackathon/resources"]}>
+      <Routes><Route element={<Outlet context={{ contest: resourceContest }} />}><Route path="/hackathons/:slug/resources" element={<HackathonResourcesTab />} /></Route></Routes>
+    </MemoryRouter>,
+  ));
+  expect(container.querySelector<HTMLAnchorElement>('a[href="/courses/skill-course"]')?.textContent).toBe("Skill course");
+  expect(container.querySelector("iframe")).toBeNull();
+  expect(container.querySelector<HTMLAnchorElement>('a[href="https://x.com/corelia/status/123"]')).toBeNull();
+  await act(async () => root.unmount());
+  container.remove();
+});
+
+it("embeds organizer posts on the direct Posts route and shows an empty state without posts", async () => {
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+  const render = async (social_post_urls: string[]) => act(async () => root.render(
+    <MemoryRouter initialEntries={["/hackathons/demo-hackathon/posts"]}>
+      <Routes><Route element={<Outlet context={{ contest: { ...contest, social_post_urls } }} />}><Route path="/hackathons/:slug/posts" element={<HackathonPostsTab />} /></Route></Routes>
+    </MemoryRouter>,
+  ));
+  await render(["https://x.com/corelia/status/123"]);
+  expect(container.querySelector<HTMLIFrameElement>("iframe")?.src).toContain("platform.twitter.com/embed/Tweet.html?id=123");
+  expect(container.querySelector<HTMLAnchorElement>('a[href="https://x.com/corelia/status/123"]')).not.toBeNull();
+  await render([]);
+  expect(container.textContent).toContain("public.empty.posts");
+  expect(container.querySelector("iframe")).toBeNull();
+  await act(async () => root.unmount());
+  container.remove();
+});
+
   afterEach(() => {
     document.body.innerHTML = "";
   });
@@ -175,6 +217,30 @@ describe("HackathonProjectsTab filters", () => {
     expect(view.container.textContent).toContain("public.empty.projects");
 
     await view.cleanup();
+  });
+
+  it("renders one card per winning project in first-award order", async () => {
+    contest.winner_awards = [
+      { id: "a1", project_id: "p1", label: "Product", sort_order: 0 },
+      { id: "b1", project_id: "p2", label: "Business", sort_order: 1 },
+      { id: "a2", project_id: "p1", label: "UX", sort_order: 2 },
+    ];
+    projectQueryFn.mockResolvedValueOnce({
+      items: [
+        { project: { id: "p2", title: "Project 2" }, owner: null },
+        { project: { id: "p1", title: "Project 1" }, owner: null },
+      ],
+      nextCursor: null,
+    });
+    const view = renderProjectsTab("/hackathons/demo-hackathon/projects");
+    try {
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+      expect(Array.from(view.container.querySelectorAll("article"), (card) => card.textContent)).toEqual(["Project 1", "Project 2"]);
+      expect(directoryOptionsSpy).toHaveBeenLastCalledWith("vi", "hackathon", "newest", expect.objectContaining({ winnerProjectIds: ["p1", "p2", "p1"] }));
+    } finally {
+      contest.winner_awards = [];
+      await view.cleanup();
+    }
   });
 });
 

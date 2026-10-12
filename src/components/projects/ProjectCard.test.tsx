@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { PublicProjectTeamMember } from "@/lib/projectCollaboration";
 import type { Project } from "@/types/projects";
+import type { Contest } from "@/types/hackathons";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -58,7 +59,7 @@ function member(id: string): PublicProjectTeamMember {
   };
 }
 
-function renderCard(teamMembers: PublicProjectTeamMember[] = []) {
+function renderCard(teamMembers: PublicProjectTeamMember[] = [], taxonomy?: Contest) {
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
@@ -70,6 +71,7 @@ function renderCard(teamMembers: PublicProjectTeamMember[] = []) {
           ownerLabel="Owner Name"
           ownerHandle="owner"
           teamMembers={teamMembers}
+          taxonomy={taxonomy}
         />
       </MemoryRouter>,
     );
@@ -96,6 +98,22 @@ describe("ProjectCard team preview", () => {
     const overflow = container.querySelector('[data-slot="avatar-group-count"]');
     expect(overflow?.textContent).toBe("+2");
     expect(overflow?.getAttribute("aria-label")).toBe("2 more members");
+    act(() => root.unmount());
+  });
+
+  it("shows every award for a project in saved order", () => {
+    const taxonomy = {
+      winner_awards: [
+        { id: "second", project_id: project.id, label: "Best UX", sort_order: 2 },
+        { id: "first", project_id: project.id, label: "Best Product", sort_order: 0 },
+        { id: "other", project_id: "another-project", label: "Other", sort_order: 1 },
+      ],
+    } as Contest;
+    const { container, root } = renderCard([], taxonomy);
+    const awards = Array.from(container.querySelectorAll("span"))
+      .map((span) => span.textContent)
+      .filter((text) => text === "Best Product" || text === "Best UX" || text === "Other");
+    expect(awards).toEqual(["Best Product", "Best UX"]);
     act(() => root.unmount());
   });
 });

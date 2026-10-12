@@ -42,8 +42,9 @@ import { ContestDetailLoadingCard } from "@/pages/hackathon-detail/components/Co
 import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 import { formatPrizeAmount } from "./utils/formatPrizeAmount";
 import { formatVietnamDateTime } from "./utils/formatVietnamDateTime";
+import { getHackathonSocialPostEmbed } from "@/lib/hackathonSocialPosts";
 
-const TABS = ["overview", "prizes", "timeline", "projects", "resources"] as const;
+const TABS = ["overview", "posts", "prizes", "timeline", "projects", "resources"] as const;
 
 export type HackathonOutletContext = {
   contest: Contest;
@@ -157,6 +158,9 @@ export default function ContestPublicLayout() {
   const tabsScrollerRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef(new Map<(typeof TABS)[number], HTMLElement>());
   const activeTab = TABS.find((tab) => location.pathname.endsWith(`/${tab}`)) ?? "overview";
+  const visibleTabs = contest?.social_post_urls?.some((url) => getHackathonSocialPostEmbed(url))
+    ? TABS
+    : TABS.filter((tab) => tab !== "posts");
   const tabsListRef = useRef<HTMLDivElement>(null);
   const tabIndicatorRef = useRef<HTMLSpanElement>(null);
   const indicatorInitializedRef = useRef(false);
@@ -452,7 +456,7 @@ export default function ContestPublicLayout() {
                   ref={tabIndicatorRef}
                   className="pointer-events-none absolute left-0 top-0 z-0 rounded-full border border-tabs-border-active"
                 />
-                {TABS.map((tab) => (
+                {visibleTabs.map((tab) => (
                   <Tabs.Tab
                     key={tab}
                     value={tab}
