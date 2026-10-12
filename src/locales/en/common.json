@@ -708,7 +708,7 @@
         },
         "quiz": {
           "title": "Pass a quiz",
-          "detail": "Score ≥80%: +20 XP and +10 lesson XP"
+          "detail": "Score ≥70%: +20 XP and +10 lesson XP"
         },
         "course": {
           "title": "Complete a course",

@@ -759,6 +759,6 @@
     "xpLessonEarned": "Đã nhận 10 XP cho bài học này",
     "xpLessonAvailable": "Hoàn thành bài học lần đầu: +10 XP",
     "xpQuizEarned": "Đã nhận XP cho quiz này",
-    "xpQuizAvailable": "Đạt ít nhất 80% lần đầu: +30 XP (bài học + quiz)"
+    "xpQuizAvailable": "Đạt ít nhất 70% lần đầu: +30 XP (bài học + quiz)"
   }
 }
