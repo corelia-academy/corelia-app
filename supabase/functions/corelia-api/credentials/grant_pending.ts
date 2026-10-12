@@ -54,7 +54,7 @@ export async function handleGrantPendingCredential(req: Request, db: SupabaseCli
 
     const { data: existingProfile, error: profErr } = await db.from("profiles").select("id").ilike(
       "email",
-      email,
+      email.replace(/[\\%_]/g, "\\$&"),
     ).maybeSingle();
     if (profErr) throw new Error(profErr.message);
 
@@ -107,7 +107,7 @@ export async function handleGrantPendingCredential(req: Request, db: SupabaseCli
     // No account yet — stage the grant. Re-submitting the same email+template
     // pair (e.g. admin fixes a typo in the reason) updates the staged row instead
     // of erroring, per the table's UNIQUE (email, template_id) constraint.
-    const { error: pendErr } = await db.from("pending_credential_issuances").upsert(
+    const { data: pending, error: pendErr } = await db.from("pending_credential_issuances").upsert(
       {
         email,
         template_id: templateId,
@@ -116,11 +116,12 @@ export async function handleGrantPendingCredential(req: Request, db: SupabaseCli
         granted_reason: grantedReason,
       },
       { onConflict: "email,template_id" },
-    );
+    ).select("id").single();
     if (pendErr) throw new Error(pendErr.message);
+    if (!pending?.id) throw new Error("Pending issuance missing ID");
 
     const baseUrl = await getAppBaseUrl(db);
-    const claimUrl = `${baseUrl}/claim?email=${encodeURIComponent(email)}`;
+    const claimUrl = `${baseUrl}/claim?token=${encodeURIComponent(pending.id)}&email=${encodeURIComponent(email)}`;
     const { data: contact } = await db.from("email_contacts").select("locale").eq("email", email).maybeSingle();
     const { locale } = resolveRecipientEmailLocale({ recipientKind: "contact", contactLocale: contact?.locale });
     const { subject, html } = buildCredentialMintEmail({
