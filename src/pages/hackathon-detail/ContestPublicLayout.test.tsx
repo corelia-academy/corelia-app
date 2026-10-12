@@ -220,9 +220,12 @@ describe("draft hackathon preview", () => {
   it("shows applicant avatars with the total in the public detail", async () => {
     state.publicContest = { ...publishedContest, participants_count: 119 };
     const view = renderRoute("/hackathons/published-demo/overview");
-    await settle();
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(view.container.querySelector("[data-slot='avatar-group']")).not.toBeNull();
+      });
+    });
 
-    expect(view.container.querySelector("[data-slot='avatar-group']")).not.toBeNull();
     expect(view.container.querySelector("[data-slot='avatar-group-count']")?.textContent).toBe("+118");
     expect(view.container.textContent).toContain("catalog.participantsCount");
     expect(view.container.querySelector("[data-slot='avatar-group']")?.getAttribute("aria-label")).toBe("public.applications: 119");
