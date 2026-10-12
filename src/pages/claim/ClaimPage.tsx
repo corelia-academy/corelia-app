@@ -7,18 +7,18 @@ import { Loader2 } from "lucide-react";
 import { CERT_PLACEHOLDER } from "@/pages/achievements/constants";
 import { pendingCredentialClaimQueryOptions } from "@/features/credentials/credentialQueries";
 
-type Status = "loading" | "loaded" | "error";
+type Status = "loading" | "loaded" | "legacy" | "error";
 
 export function ClaimPage() {
   const { t } = useTranslation("common");
   const [params] = useSearchParams();
-  const email = (params.get("email") ?? "").trim();
-  const claimQuery = useQuery(pendingCredentialClaimQueryOptions(email));
-  const status: Status = !email || claimQuery.isError
-    ? "error"
-    : claimQuery.isPending
-      ? "loading"
-      : "loaded";
+  const token = (params.get("token") ?? "").trim();
+  const legacyEmail = (params.get("email") ?? "").trim();
+  const claimQuery = useQuery(pendingCredentialClaimQueryOptions(token));
+  const status: Status = !token
+    ? legacyEmail ? "legacy" : "error"
+    : claimQuery.isError ? "error" : claimQuery.isPending ? "loading" : "loaded";
+  const email = claimQuery.data?.email ?? legacyEmail;
   const items = claimQuery.data?.items ?? [];
 
   const signupUrl = `/login?mode=signup&email=${encodeURIComponent(email)}`;
@@ -37,6 +37,16 @@ export function ClaimPage() {
           <>
             <h1 className="text-heading-medium font-display text-foreground">{t("claim.errorTitle")}</h1>
             <p className="mt-2 text-sm text-foreground-muted">{t("claim.errorBody")}</p>
+          </>
+        )}
+
+        {status === "legacy" && (
+          <>
+            <h1 className="text-heading-medium font-display">{t("claim.legacyTitle")}</h1>
+            <p className="mt-2 text-sm text-foreground-muted">{t("claim.legacyBody")}</p>
+            <Link to={signupUrl} className="mt-6 inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-80">
+              {t("claim.cta")}
+            </Link>
           </>
         )}
 

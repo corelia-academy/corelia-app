@@ -177,6 +177,6 @@ export async function invokeGrantPendingCredential(params: {
 
 export type PendingClaimItem = { name: string; imageUrl: string | null; isOCA: boolean };
 
-export async function invokeClaimLookup(email: string): Promise<{ ok: boolean; items?: PendingClaimItem[]; message?: string }> {
-  return await postPublicJson("credentials.claimLookup", { email });
+export async function invokeClaimLookup(token: string): Promise<{ ok: boolean; email?: string; items?: PendingClaimItem[]; message?: string }> {
+  return await postPublicJson("credentials.claimLookup", { token });
 }
