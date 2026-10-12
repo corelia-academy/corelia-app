@@ -6,7 +6,6 @@ import {
   Coins,
   FolderOpen,
   Package,
-  Sparkle,
 } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation, useOutletContext, useSearchParams } from "react-router";
@@ -33,6 +32,7 @@ import {
 } from "@/features/projects/projectQueries";
 import { useAuth } from "@/stores/authStore";
 import { projectHeartsQueryOptions } from "@/features/projects/projectSocialQueries";
+import { winnerProjectOrder } from "@/lib/hackathonContract";
 import { canEditContestProject } from "@/lib/hackathons";
 import type { HackathonOutletContext } from "./ContestPublicLayout";
 import { ContestPreparationCard } from "./components/ContestPreparationCard";
@@ -342,8 +342,7 @@ export function HackathonProjectsTab() {
   const tech = read("tech");
   const sort = params.get("sort") === "oldest" ? "oldest" : "newest";
   const query = useInfiniteQuery(publicProjectDirectoryQueryOptions(locale, "hackathon", sort, { hackathonId: contest.id, trackIds: tracks, sectorIds: sectors, techStackIds: tech, winnerProjectIds: (contest.winner_awards ?? []).map((award) => award.project_id) }));
-  const winnerOrder = useMemo(() => new Map((contest.winner_awards ?? []).map((award) => [award.project_id, award.sort_order])), [contest.winner_awards]);
-  const awards = useMemo(() => new Map((contest.winner_awards ?? []).map((award) => [award.project_id, award.label])), [contest.winner_awards]);
+  const winnerOrder = useMemo(() => winnerProjectOrder(contest.winner_awards ?? []), [contest.winner_awards]);
   const projects = useMemo(() => [...(query.data?.pages.flatMap((page) => page.items) ?? [])].sort((a, b) => (winnerOrder.get(a.project.id) ?? Number.MAX_SAFE_INTEGER) - (winnerOrder.get(b.project.id) ?? Number.MAX_SAFE_INTEGER)), [query.data?.pages, winnerOrder]);
   const filteredProjects = useMemo(() => {
     const term = search.trim().toLocaleLowerCase(locale);
@@ -434,7 +433,7 @@ export function HackathonProjectsTab() {
 
         {query.isPending ? <div className="grid gap-6 sm:grid-cols-2">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div> : query.isError ? <div role="alert" className="py-8 text-center"><p>{t("detail.errors.loadFailed")}</p><Button className="mt-3" onClick={() => void query.refetch()}>{t("projects.retry", { ns: "common" })}</Button></div> : filteredProjects.length === 0 ? <EmptyTab icon={<Package className="size-6" weight="duotone" />} title={t("public.empty.projects")} /> : (
           <>
-            <div className="grid gap-6 sm:grid-cols-2">{filteredProjects.map(({ project, owner }) => <div key={project.id} className="relative">{awards.has(project.id) ? <div className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950 shadow"><Sparkle className="size-3" weight="duotone" />{awards.get(project.id)}</div> : null}<ProjectCard variant="hackathon" phosphorDuotone systemTaxonomy={systemTaxonomy} hearted={hearts.data?.has(project.id) ?? false} taxonomy={contest} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} ownerAvatarUrl={owner?.avatar_url} ownerAvatarSeed={owner?.avatar_seed} ownerAvatarConfig={owner?.avatar_config} teamMembers={teamsQuery.data?.[project.id] ?? []} /></div>)}</div>
+            <div className="grid gap-6 sm:grid-cols-2">{filteredProjects.map(({ project, owner }) => <ProjectCard key={project.id} variant="hackathon" phosphorDuotone systemTaxonomy={systemTaxonomy} hearted={hearts.data?.has(project.id) ?? false} taxonomy={contest} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} ownerAvatarUrl={owner?.avatar_url} ownerAvatarSeed={owner?.avatar_seed} ownerAvatarConfig={owner?.avatar_config} teamMembers={teamsQuery.data?.[project.id] ?? []} />)}</div>
             {query.hasNextPage ? <div className="flex justify-center"><Button type="button" variant="cta" hierarchy="secondary" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>{query.isFetchingNextPage ? t("public.projects.loading") : t("public.projects.loadMore")}</Button></div> : null}
           </>
         )}

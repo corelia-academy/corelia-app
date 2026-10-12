@@ -26,7 +26,8 @@ const { createContest, getContest, getHackathonLocaleContent, invokeGenerateDesc
   updateContest: vi.fn(),
 }));
 
-vi.mock("react-i18next", () => ({
+vi.mock("react-i18next", async (importOriginal) => ({
+  ...await importOriginal<typeof import("react-i18next")>(),
   useTranslation: () => ({
     t: (key: string, options?: { number?: number }) => options?.number ? `${key}:${options.number}` : key,
   }),
@@ -163,6 +164,7 @@ const contest = {
 describe("AdminHackathonEditorPage course-aligned navigation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    projectQueryFn.mockResolvedValue({ items: [], nextCursor: null });
     window.scrollTo = vi.fn();
     window.confirm = vi.fn(() => true);
     getContest.mockResolvedValue(contest);
@@ -521,6 +523,107 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
       .find((input) => input.value === "Second Place");
     expect(addedAwardInput).toBeDefined();
 
+    await view.cleanup();
+  });
+
+  it("groups legacy awards, adds to the same project, reorders both levels, and saves their order", async () => {
+    getContest.mockResolvedValue({
+      ...contest,
+      winner_awards: [
+        { id: "a1", project_id: "p1", label: "First", sort_order: 0 },
+        { id: "b1", project_id: "p2", label: "Second", sort_order: 1 },
+        { id: "a2", project_id: "p1", label: "Third", sort_order: 2 },
+      ],
+    });
+    projectQueryFn.mockResolvedValue({
+      items: [
+        { project: { id: "p1", title: "Project 1" } },
+        { project: { id: "p2", title: "Project 2" } },
+      ],
+      nextCursor: null,
+    });
+
+    const view = renderEditor("/admin/hackathons/hackathon-1/edit#projects");
+    await settle();
+    const groups = () => Array.from(view.container.querySelectorAll("[data-award-project]"));
+    expect(groups().map((group) => group.querySelector("h3")?.textContent)).toEqual(["Project 1", "Project 2"]);
+    expect(Array.from(groups()[0].querySelectorAll("input"), (input) => input.value)).toEqual(["First", "Third"]);
+    expect(view.container.textContent?.match(/hackathons.editor.selectProject/g)).toHaveLength(2);
+
+    const picker = Array.from(view.container.querySelectorAll("button")).find((button) => button.textContent?.includes("hackathons.editor.selectProject"));
+    await act(async () => picker?.click());
+    await settle();
+    const projectOption = Array.from(document.body.querySelectorAll("button")).find((button) => button.textContent?.includes("Project 1"));
+    await act(async () => projectOption?.click());
+    await act(async () => changeInput(view.container.querySelector<HTMLInputElement>("#hackathon-winner-award-label")!, "Fourth"));
+    const add = Array.from(view.container.querySelectorAll("button")).find((button) => button.textContent === "hackathons.editor.add");
+    await act(async () => add?.click());
+    expect(groups()).toHaveLength(2);
+    expect(Array.from(groups()[0].querySelectorAll("input"), (input) => input.value)).toEqual(["First", "Third", "Fourth"]);
+
+    await act(async () => groups()[0].querySelector<HTMLButtonElement>('[aria-label="hackathons.editor.moveAwardDown"]')?.click());
+    expect(Array.from(groups()[0].querySelectorAll("input"), (input) => input.value)).toEqual(["Third", "First", "Fourth"]);
+    await act(async () => groups()[0].querySelector<HTMLButtonElement>('[aria-label="hackathons.editor.moveProjectDown"]')?.click());
+    expect(groups().map((group) => group.querySelector("h3")?.textContent)).toEqual(["Project 2", "Project 1"]);
+
+    const save = Array.from(view.container.querySelectorAll("button")).find((button) => button.textContent?.includes("hackathons.editor.saveSection"));
+    await act(async () => save?.click());
+    await settle();
+    expect(updateContest).toHaveBeenCalledWith("hackathon-1", expect.objectContaining({
+      winner_awards: [
+        expect.objectContaining({ id: "b1", sort_order: 0 }),
+        expect.objectContaining({ id: "a2", sort_order: 1 }),
+        expect.objectContaining({ id: "a1", sort_order: 2 }),
+        expect.objectContaining({ label: "Fourth", project_id: "p1", sort_order: 3 }),
+      ],
+    }));
+    await view.cleanup();
+
+    const savedAwards = updateContest.mock.lastCall?.[1].winner_awards;
+    getContest.mockResolvedValue({ ...contest, winner_awards: savedAwards });
+    const reloaded = renderEditor("/admin/hackathons/hackathon-1/edit#projects");
+    await settle();
+    const reloadedGroups = Array.from(reloaded.container.querySelectorAll("[data-award-project]"));
+    expect(reloadedGroups.map((group) => group.getAttribute("data-award-project"))).toEqual(["p2", "p1"]);
+    expect(Array.from(reloadedGroups[1].querySelectorAll("input"), (input) => input.value)).toEqual(["Third", "First", "Fourth"]);
+    await act(async () => changeInput(reloadedGroups[1].querySelector("input")!, "Renamed"));
+    await act(async () => reloadedGroups[1].querySelectorAll<HTMLButtonElement>('[aria-label="hackathons.editor.remove"]')[2].click());
+    expect(Array.from(reloadedGroups[1].querySelectorAll("input"), (input) => input.value)).toEqual(["Renamed", "First"]);
+    expect(reloaded.container.querySelectorAll("[data-award-project]")).toHaveLength(2);
+    await reloaded.cleanup();
+  });
+
+  it("moves awards and projects by drag and blocks blank award labels", async () => {
+    getContest.mockResolvedValue({
+      ...contest,
+      winner_awards: [
+        { id: "a1", project_id: "p1", label: "First", sort_order: 0 },
+        { id: "a2", project_id: "p1", label: "Second", sort_order: 1 },
+        { id: "b1", project_id: "p2", label: "Third", sort_order: 2 },
+      ],
+    });
+    const view = renderEditor("/admin/hackathons/hackathon-1/edit#projects");
+    await settle();
+    const groups = () => Array.from(view.container.querySelectorAll("[data-award-project]"));
+    const drag = async (source: Element, target: Element) => {
+      const start = new Event("dragstart", { bubbles: true, cancelable: true });
+      Object.defineProperty(start, "dataTransfer", { value: { setData: vi.fn(), effectAllowed: "move" } });
+      await act(async () => source.dispatchEvent(start));
+      await act(async () => target.dispatchEvent(new Event("dragover", { bubbles: true, cancelable: true })));
+      await act(async () => target.dispatchEvent(new Event("drop", { bubbles: true, cancelable: true })));
+    };
+
+    await drag(groups()[0].querySelector('[aria-label="hackathons.editor.dragAward"]')!, groups()[0].querySelectorAll("input")[1].parentElement!);
+    expect(Array.from(groups()[0].querySelectorAll("input"), (input) => input.value)).toEqual(["Second", "First"]);
+    await drag(groups()[0].querySelector('[aria-label="hackathons.editor.dragProject"]')!, groups()[1]);
+    expect(groups().map((group) => group.querySelector("h3")?.textContent)).toEqual(["p2", "p1"]);
+
+    await act(async () => changeInput(groups()[1].querySelector("input")!, "  "));
+    const save = Array.from(view.container.querySelectorAll("button")).find((button) => button.textContent?.includes("hackathons.editor.saveSection"));
+    await act(async () => save?.click());
+    await settle();
+    expect(updateContest).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith("hackathons.editor.awardLabelRequired");
     await view.cleanup();
   });
 

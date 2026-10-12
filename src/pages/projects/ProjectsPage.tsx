@@ -18,6 +18,7 @@ import { useAuth } from "@/stores/authStore";
 import { cn } from "@/lib/utils";
 import type { HackathonTaxonomyOption, HackathonWinnerAward } from "@/types/hackathons";
 import { listProjectTaxonomyOptions } from "@/lib/projectTaxonomy";
+import { winnerProjectOrder } from "@/lib/hackathonContract";
 
 type FilterOption = Pick<HackathonTaxonomyOption, "id" | "name"> & { active?: boolean };
 
@@ -75,9 +76,7 @@ function TaxonomyFilter({
 }
 
 function winnerFirst(items: PublicProjectEntry[], awards: HackathonWinnerAward[]): PublicProjectEntry[] {
-  const order = new Map(
-    awards.map((award) => [award.project_id, award.sort_order]),
-  );
+  const order = winnerProjectOrder(awards);
   return [...items].sort((a, b) => {
     const aOrder = order.get(a.project.id);
     const bOrder = order.get(b.project.id);
@@ -133,14 +132,6 @@ export default function ProjectsPage() {
     }
     return hackathons.flatMap((h) => h.winner_awards ?? []);
   }, [selectedHackathon, hackathons]);
-
-  const awardsMap = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const award of allWinnerAwards) {
-      map.set(award.project_id, award.label);
-    }
-    return map;
-  }, [allWinnerAwards]);
 
   const directoryOptions = publicProjectDirectoryQueryOptions(locale, "all", sort, {
     hackathonId: selectedHackathon?.id ?? null,
@@ -246,7 +237,6 @@ export default function ProjectsPage() {
                   ownerAvatarSeed={owner?.avatar_seed}
                   ownerAvatarConfig={owner?.avatar_config}
                   teamMembers={teamsQuery.data?.[project.id] ?? []}
-                  awardLabel={awardsMap.get(project.id)}
                 />
               ))}
             </div>
