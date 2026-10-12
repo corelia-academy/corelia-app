@@ -20,6 +20,7 @@ function Player({ url, title, watchUrl }: Props) {
     src.searchParams.set("origin", window.location.origin);
     src.searchParams.set("autoplay", "0");
     src.searchParams.set("playsinline", "1");
+    frame.referrerPolicy = "strict-origin-when-cross-origin";
     frame.src = src.toString();
     frame.title = title;
     frame.className = "aspect-video min-h-[200px] w-full rounded-xl bg-black";
