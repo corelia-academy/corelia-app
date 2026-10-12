@@ -277,11 +277,11 @@
         "danger": "Xuất bản, kết thúc & xóa"
       },
       "sectionDescriptions": {
-        "overview": "Thông tin nhận diện, đơn vị tổ chức, kênh liên hệ và deadline.",
+        "overview": "Thông tin nhận diện, đơn vị tổ chức, kênh liên hệ, bài đăng và deadline.",
         "description": "Nội dung Markdown giới thiệu đầy đủ về hackathon.",
         "prizes": "Khai báo tổng giải thưởng và chỉ tạo hạng mục khi thật sự cần chia giải.",
         "timeline": "Các giai đoạn diễn ra theo thứ tự từ sớm đến muộn.",
-        "resources": "Tài liệu, khóa học chuẩn bị và bài đăng của ban tổ chức.",
+        "resources": "Tài liệu và khóa học chuẩn bị.",
         "projects": "Chọn dự án thắng giải và đặt nhãn giải thủ công.",
         "danger": "Thay đổi trạng thái công khai hoặc xóa vĩnh viễn hackathon."
       },

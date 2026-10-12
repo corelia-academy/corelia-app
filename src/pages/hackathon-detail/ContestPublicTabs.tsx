@@ -245,10 +245,7 @@ export function HackathonResourcesTab() {
   const { t } = useTranslation("contests");
   const { officialId, coursesById, loading } = useContestLearningLinks(contest);
   const courseIds = [officialId, ...(contest.related_course_ids ?? [])].filter((id): id is string => Boolean(id));
-  const socialPosts = (contest.social_post_urls ?? [])
-    .map((url) => ({ url, embed: getHackathonSocialPostEmbed(url) }))
-    .filter((post): post is { url: string; embed: { url: string; platform: string } } => post.embed !== null);
-  if (!contest.resources_markdown?.trim() && courseIds.length === 0 && socialPosts.length === 0) {
+  if (!contest.resources_markdown?.trim() && courseIds.length === 0) {
     return (
       <HackathonPublicTabLayout>
         <EmptyTab icon={<FolderOpen className="size-6" weight="duotone" />} title={t("public.empty.resources")} />
@@ -296,18 +293,33 @@ export function HackathonResourcesTab() {
             </ul>
           </div>
         ) : null}
-        {socialPosts.length > 0 ? (
-          <div className="space-y-4">
-            <h3 className="text-heading-small font-display text-foreground">{t("public.resources.socialPostsTitle")}</h3>
-            <div className="grid gap-4 lg:grid-cols-2">
-              {socialPosts.map(({ url, embed }) => <div key={url} className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface-base">
-                <iframe title={`${embed.platform}: ${url}`} src={embed.url} loading="lazy" className="h-[520px] w-full" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox" referrerPolicy="strict-origin-when-cross-origin" />
-                <a href={url} target="_blank" rel="noopener noreferrer" className="block p-3 text-sm text-primary hover:underline">{t("public.resources.openSocialPost", { platform: embed.platform })}</a>
-              </div>)}
-            </div>
-          </div>
-        ) : null}
       </section>
+    </HackathonPublicTabLayout>
+  );
+}
+
+export function HackathonPostsTab() {
+  const { contest } = useOutletContext<HackathonOutletContext>();
+  const { t } = useTranslation("contests");
+  const socialPosts = (contest.social_post_urls ?? [])
+    .map((url) => ({ url, embed: getHackathonSocialPostEmbed(url) }))
+    .filter((post): post is { url: string; embed: { url: string; platform: string } } => post.embed !== null);
+
+  return (
+    <HackathonPublicTabLayout>
+      {socialPosts.length === 0 ? (
+        <EmptyTab icon={<FolderOpen className="size-6" weight="duotone" />} title={t("public.empty.posts")} />
+      ) : (
+        <section className="min-w-0 space-y-4 [overflow-wrap:anywhere]">
+          <h2 data-hackathon-title className={HACKATHON_TAB_TITLE_CLASS}>{t("public.posts.title")}</h2>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {socialPosts.map(({ url, embed }) => <div key={url} className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface-base">
+              <iframe title={`${embed.platform}: ${url}`} src={embed.url} loading="lazy" className="h-[520px] w-full" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox" referrerPolicy="strict-origin-when-cross-origin" />
+              <a href={url} target="_blank" rel="noopener noreferrer" className="block p-3 text-sm text-primary hover:underline">{t("public.posts.openSocialPost", { platform: embed.platform })}</a>
+            </div>)}
+          </div>
+        </section>
+      )}
     </HackathonPublicTabLayout>
   );
 }

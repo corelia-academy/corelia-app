@@ -64,6 +64,7 @@ const AchievementsPage = lazy(() => import("@/pages/achievements"));
 const Hackathons = lazy(() => import("@/pages/hackathon-detail/Contests"));
 const HackathonPublicLayout = lazy(() => import("@/pages/hackathon-detail/ContestPublicLayout"));
 const HackathonOverviewTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonOverviewTab })));
+const HackathonPostsTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonPostsTab })));
 const HackathonPrizesTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonPrizesTab })));
 const HackathonTimelineTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonTimelineTab })));
 const HackathonResourcesTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonResourcesTab })));
@@ -446,6 +447,7 @@ function ApplicationRoutes() {
               <Route path="hackathons/:slug" element={<Suspense fallback={<PageFallback />}><HackathonPublicLayout /></Suspense>}>
                 <Route index element={<Navigate to="overview" replace />} />
                 <Route path="overview" element={<Suspense fallback={<PageFallback />}><HackathonOverviewTab /></Suspense>} />
+                <Route path="posts" element={<Suspense fallback={<PageFallback />}><HackathonPostsTab /></Suspense>} />
                 <Route path="prizes" element={<Suspense fallback={<PageFallback />}><HackathonPrizesTab /></Suspense>} />
                 <Route path="timeline" element={<Suspense fallback={<PageFallback />}><HackathonTimelineTab /></Suspense>} />
                 <Route path="resources" element={<Suspense fallback={<PageFallback />}><HackathonResourcesTab /></Suspense>} />
