@@ -707,8 +707,8 @@
           "detail": "+10 XP/eligible lesson · once"
         },
         "quiz": {
-          "title": "Pass a quiz",
-          "detail": "+30 XP the first time you complete a quiz"
+          "title": "Complete a quiz",
+          "detail": "+30 XP/completed quiz · once"
         },
         "course": {
           "title": "Complete a course",

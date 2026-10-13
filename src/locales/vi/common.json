@@ -707,8 +707,8 @@
           "detail": "+10 XP/bài hợp lệ · 1 lần"
         },
         "quiz": {
-          "title": "Vượt qua quiz",
-          "detail": "+30 XP khi hoàn thành quiz lần đầu"
+          "title": "Hoàn thành quiz",
+          "detail": "+30 XP/quiz hoàn thành · 1 lần"
         },
         "course": {
           "title": "Hoàn thành khóa",
