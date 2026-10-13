@@ -68,7 +68,8 @@
     "editCourse": "Edit course",
     "notFound": "Page not found",
     "maintenance": "System maintenance",
-    "applicationError": "Application error"
+    "applicationError": "Application error",
+    "notifications": "Notifications"
   },
   "language": {
     "switchLabel": "Change language",
@@ -185,7 +186,32 @@
     "ocCredentialMintedTitle": "Open Campus credential issued 🎉",
     "ocCredentialMintedBody": "You just received: {{name}}",
     "ocCredentialMintedBodyOca": "Your certificate is ready: {{name}}",
-    "viewCredential": "View achievements"
+    "viewCredential": "View achievements",
+    "all": "All",
+    "unread": "Unread",
+    "markAllRead": "Mark all as read",
+    "loadError": "Could not load notifications.",
+    "retry": "Retry",
+    "loadMore": "Load more",
+    "viewAll": "View all notifications",
+    "member": "A member",
+    "actorGroup": "{{name}} and {{count}} others",
+    "newActivity": "You have new activity",
+    "social": {
+      "project_liked": "{{actors}} liked your team’s project {{title}}.",
+      "project_followed": "{{actors}} followed your team’s project {{title}}.",
+      "milestone_liked": "{{actors}} liked your achievement.",
+      "user_followed": "{{actors}} followed you.",
+      "project_invite_accepted": "{{actors}} accepted your invitation to project {{title}}.",
+      "project_invite_declined": "{{actors}} declined your invitation to project {{title}}.",
+      "course_invite_accepted": "{{actors}} accepted your co-instructor invitation for {{title}}.",
+      "course_invite_declined": "{{actors}} declined your co-instructor invitation for {{title}}.",
+      "submission_received": "{{title}} has {{count}} submissions awaiting review.",
+      "submission_approved": "Your final assignment for {{title}} was approved.",
+      "submission_rejected": "Your final assignment for {{title}} needs revision. Open it to see the feedback.",
+      "hackathon_announcement": "Organizer announcement: {{title}}"
+    },
+    "updateError": "Could not update the notification. Please try again."
   },
   "userProfile": {
     "tabs": {
