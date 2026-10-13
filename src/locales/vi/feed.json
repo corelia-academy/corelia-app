@@ -68,6 +68,7 @@
     "profileEmpty": "Chưa có mốc thành tựu công khai.",
     "exploreDescription": "Khám phá thành tựu từ những người bạn chưa theo dõi.",
     "followingDescription": "Thành tựu mới nhất từ những người bạn đang theo dõi.",
-    "findPeople": "Tìm người để theo dõi"
+    "findPeople": "Tìm người để theo dõi",
+    "unavailable": "Thành tựu này không còn khả dụng."
   }
 }

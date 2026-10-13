@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useState } from "react";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Heart, Trophy } from "lucide-react";
 import { NavLink, useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { milestoneFeedQuery, milestoneKeys } from "@/features/feed/milestoneQueries";
-import { setMilestoneLike, subscribeToMilestones, type FeedMode, type FeedMilestone, type FeedProfile, type FeedSource } from "@/lib/milestoneFeed";
+import { getMilestoneById, setMilestoneLike, subscribeToMilestones, type FeedMode, type FeedMilestone, type FeedProfile, type FeedSource } from "@/lib/milestoneFeed";
 import { feedRelativeTime } from "@/lib/feedRelativeTime";
 import { useAuth } from "@/stores/authStore";
 import { FeedFollowingPanel, FeedSuggestedPeople } from "./FeedFollowingPanel";
+import { markNotificationFeedSeen } from "@/lib/notifications";
 import FeedLeaderboard from "./FeedLeaderboard";
 
 type CardProps = { milestone: FeedMilestone; actor?: FeedProfile; sources: FeedSource[]; likes: number; liked: boolean; own: boolean; now: number; onLike: () => void };
@@ -47,6 +48,7 @@ export default function FeedPage() {
   const userId = user?.id ?? "";
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get("tab");
+  const targetMilestone = Number(searchParams.get("milestone"));
   const view: FeedView = requestedTab === "following" || requestedTab === "leaderboard" ? requestedTab : "explore";
   const setView = (next: FeedView) => setSearchParams(previous => {
     const params = new URLSearchParams(previous);
@@ -66,7 +68,8 @@ export default function FeedPage() {
       <Tabs.Panel value={view} className="pt-5">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="min-w-0">
-            {view === "leaderboard" ? <FeedLeaderboard /> : <FeedTimeline userId={userId} mode={view} onFindPeople={() => setView("explore")} />}
+            {Number.isSafeInteger(targetMilestone) && targetMilestone > 0 && <TargetMilestone userId={userId} id={targetMilestone} />}
+            {view === "leaderboard" ? <FeedLeaderboard /> : <FeedTimeline userId={userId} targetId={targetMilestone} mode={view} onFindPeople={() => setView("explore")} />}
             {view !== "leaderboard" && <details className="mt-5 rounded-xl border border-border-subtle bg-surface-base lg:hidden">
               <summary className="flex min-h-11 cursor-pointer items-center px-4 font-semibold">{t("milestones.followedTitle")}</summary>
               <div className="p-4 pt-0"><FeedFollowingPanel userId={userId} /></div>
@@ -79,7 +82,7 @@ export default function FeedPage() {
   </div></div>;
 }
 
-function FeedTimeline({ userId, mode, onFindPeople }: { userId: string; mode: FeedMode; onFindPeople: () => void }) {
+function FeedTimeline({ userId, mode, onFindPeople, targetId }: { userId: string; targetId?: number; mode: FeedMode; onFindPeople: () => void }) {
   const { t } = useTranslation("feed");
   const client = useQueryClient();
   const following = mode === "following";
@@ -87,9 +90,12 @@ function FeedTimeline({ userId, mode, onFindPeople }: { userId: string; mode: Fe
   const [error,setError] = useState("");
   const [now,setNow] = useState(() => Date.now());
   const feed = useInfiniteQuery(milestoneFeedQuery(userId,mode));
+  useEffect(() => {
+    if (feed.isSuccess && userId && document.visibilityState === "visible") void markNotificationFeedSeen().catch(() => undefined);
+  }, [feed.isSuccess, feed.dataUpdatedAt, userId]);
   useEffect(() => subscribeToMilestones(() => setNewAvailable(true)), []);
   useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 60_000); return () => window.clearInterval(timer); }, []);
-  const items = useMemo(() => feed.data?.pages.flatMap((page) => page.milestones) ?? [], [feed.data]);
+  const items = useMemo(() => feed.data?.pages.flatMap((page) => page.milestones).filter(item => item.id !== targetId) ?? [], [feed.data, targetId]);
   const profiles = Object.assign({}, ...(feed.data?.pages.map((page) => page.profiles) ?? []));
   const sources = Object.assign({}, ...(feed.data?.pages.map((page) => page.sources) ?? []));
   const likes = Object.assign({}, ...(feed.data?.pages.map((page) => page.likes) ?? []));
@@ -102,5 +108,21 @@ function FeedTimeline({ userId, mode, onFindPeople }: { userId: string; mode: Fe
     {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
     {!following && <div className="mb-5 lg:hidden"><FeedSuggestedPeople userId={userId} /></div>}
       {feed.isPending ? <><Skeleton className="h-20 rounded-2xl" /><Skeleton className="h-20 rounded-2xl" /></> : feed.isError && !feed.data ? <div role="alert" className="mobile-bleed-surface rounded-xl border border-border-subtle p-5"><p>{t("milestones.error")}</p><Button type="button" variant="cta" hierarchy="secondary" className="mt-3" onClick={() => void feed.refetch()}>{t("milestones.retry")}</Button></div> : items.length===0 ? <div className="mobile-bleed-surface rounded-xl border border-border-subtle p-8 text-center"><Trophy className="mx-auto size-8 text-foreground-muted" /><h2 className="mt-3 font-semibold">{t("milestones.empty")}</h2><p className="mt-2 text-sm text-foreground-muted">{following ? t("milestones.followingHint") : t("milestones.emptyHint")}</p></div> : <><div className="mobile-bleed-surface divide-y divide-border-subtle rounded-2xl border border-border-subtle bg-surface-base">{items.map((item) => <MilestoneCard key={item.id} milestone={item} actor={profiles[item.actor_id]} sources={sources[item.id] ?? []} likes={likes[item.id] ?? 0} liked={liked.has(item.id)} own={item.actor_id===userId} now={now} onLike={() => void mutate(() => setMilestoneLike(item.id,userId,!liked.has(item.id)))} />)}</div>{feed.isFetchNextPageError && <p role="alert" className="text-sm text-destructive">{t("milestones.error")}</p>}{feed.hasNextPage && <div className="flex justify-center pt-2"><Button type="button" variant="cta" hierarchy="secondary" disabled={feed.isFetchingNextPage} onClick={() => void feed.fetchNextPage()}>{t(feed.isFetchNextPageError ? "milestones.retry" : "milestones.loadMore")}</Button></div>}</>}
+  </div>;
+}
+
+function TargetMilestone({ userId, id }: { userId: string; id: number }) {
+  const { t } = useTranslation("feed");
+  const [error, setError] = useState(false);
+  const [now] = useState(() => Date.now());
+  const client = useQueryClient();
+  const query = useQuery({ queryKey: [...milestoneKeys.all, "target", userId, id], queryFn: () => getMilestoneById(userId, id), enabled: Boolean(userId), meta: { scope: "private", userId } });
+  const item = query.data?.milestones[0];
+  if (query.isPending) return <Skeleton className="mb-4 h-24" />;
+  if (query.isError || !item) return <p role="status" className="mb-4 rounded-xl border border-border-subtle p-4">{t("milestones.unavailable")}</p>;
+  const liked = query.data!.liked.has(id);
+  return <div className="mb-4 rounded-xl border border-primary bg-surface-base">
+    <MilestoneCard milestone={item} actor={query.data!.profiles[item.actor_id]} sources={query.data!.sources[id] ?? []} likes={query.data!.likes[id] ?? 0} liked={liked} own={item.actor_id === userId} now={now} onLike={() => { void setMilestoneLike(id, userId, !liked).then(() => client.invalidateQueries({ queryKey: milestoneKeys.all })).catch(() => setError(true)); }} />
+    {error && <p role="alert" className="p-3 text-destructive">{t("milestones.error")}</p>}
   </div>;
 }

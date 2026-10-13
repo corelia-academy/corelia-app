@@ -72,7 +72,11 @@
       "emailTrackBlast": "Receive learning path announcement emails",
       "inAppCourseBlast": "Show course announcements in-app",
       "inAppTrackBlast": "Show learning path announcements in-app",
-      "saved": "Notification preferences saved"
+      "saved": "Notification preferences saved",
+      "likes": "Likes on your work",
+      "follows": "New followers",
+      "digest": "Daily social activity email",
+      "digestDescription": "Sent only when there is new activity, at 09:00 ({{timezone}}). Unsubscribe at any time."
     }
   },
   "common": {

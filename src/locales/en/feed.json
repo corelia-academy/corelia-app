@@ -68,6 +68,7 @@
     "profileEmpty": "No public milestones yet.",
     "exploreDescription": "Discover achievements from people you do not follow yet.",
     "followingDescription": "Latest achievements from people you follow.",
-    "findPeople": "Find people to follow"
+    "findPeople": "Find people to follow",
+    "unavailable": "This achievement is no longer available."
   }
 }

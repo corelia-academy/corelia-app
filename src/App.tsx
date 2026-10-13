@@ -15,6 +15,7 @@ import {
   useNavigate,
 } from "react-router";
 import { ThemeProvider } from "next-themes";
+import { NotificationSync } from "@/features/notifications/NotificationSync";
 import { XpNotifications } from "@/features/xp/XpNotifications";
 import { AuthSync } from "@/components/auth/AuthSync";
 import { AuthBootstrapScreen } from "@/components/auth/AuthBootstrapScreen";
@@ -33,6 +34,7 @@ import {
 
 // Lazy-load all routes not needed on the initial render
 const Home = lazy(() => import("@/pages/home/index"));
+const NotificationsPage = lazy(() => import("@/pages/notifications/NotificationsPage"));
 const FeedPage = lazy(() => import("@/pages/feed/FeedPage"));
 const Courses = lazy(() => import("@/pages/courses"));
 const LearningPrinciplesPage = lazy(() => import("@/pages/learning-principles/LearningPrinciplesPage"));
@@ -173,6 +175,7 @@ export default function App() {
           <Toaster />
           <AuthSync />
           <XpNotifications />
+          <NotificationSync />
           {authStatus === "booting" ? (
             <AuthBootstrapScreen />
           ) : (
@@ -373,6 +376,7 @@ function ApplicationRoutes() {
                   </Suspense>
                 }
               />
+              <Route path="notifications" element={<RequireAuth><Suspense fallback={<PageFallback />}><NotificationsPage /></Suspense></RequireAuth>} />
               <Route
                 path="feed"
                 element={
