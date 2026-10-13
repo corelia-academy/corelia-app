@@ -1,6 +1,24 @@
 BEGIN;
 INSERT INTO auth.users(id,email,email_confirmed_at)
 SELECT ('aabc0000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,'notice-'||n||'@corelia.local',now() FROM generate_series(1,7) n;
+-- First preference save must work under the browser role; another user's row must remain protected.
+SELECT set_config('request.jwt.claim.sub','aabc0000-0000-4000-8000-000000000001',true);
+SET LOCAL ROLE authenticated;
+INSERT INTO public.notification_preferences(user_id,in_app_likes)
+ VALUES('aabc0000-0000-4000-8000-000000000001',false)
+ ON CONFLICT(user_id) DO UPDATE SET in_app_likes=false;
+DO $$ BEGIN
+ IF NOT EXISTS(SELECT 1 FROM public.notification_preferences WHERE user_id=auth.uid() AND NOT in_app_likes) THEN RAISE EXCEPTION 'Own preference upsert failed'; END IF;
+ BEGIN
+  INSERT INTO public.notification_preferences(user_id,in_app_likes)
+   VALUES('aabc0000-0000-4000-8000-000000000007',false)
+   ON CONFLICT(user_id) DO UPDATE SET in_app_likes=false;
+  RAISE EXCEPTION 'Cross-account preference upsert allowed';
+ EXCEPTION WHEN insufficient_privilege THEN NULL;
+ END;
+END $$;
+UPDATE public.notification_preferences SET in_app_likes=true WHERE user_id=auth.uid();
+RESET ROLE;
 UPDATE public.profiles SET profile_public=true WHERE id::text LIKE 'aabc0000-%';
 INSERT INTO public.projects(id,owner_id,slug,title,source_type,visibility)
  VALUES('aabc9999-0000-4000-8000-000000000001','aabc0000-0000-4000-8000-000000000002','notification-project','Team project','standalone','public');
