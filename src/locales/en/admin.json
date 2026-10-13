@@ -245,6 +245,7 @@
       "awardMissingFields": "Please select a project and enter the award name.",
       "awardAdded": "Award added to list.",
       "notifyAwardsAction": "Notify winners via email",
+      "saveBeforeNotifyAwards": "Save award changes before notifying winners.",
       "validationSocialPost": "Enter public Facebook, Instagram, or X post URLs, one per line.",
       "notifyAwardsConfirm": "Send award notification emails to all winning project teams now?",
       "awardsNotified": "Award notifications sent ({{count}} emails delivered).",

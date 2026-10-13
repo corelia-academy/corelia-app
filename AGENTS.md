@@ -36,6 +36,7 @@ Use progressive disclosure: this file → nearest nested `AGENTS.md` → one rel
 - Implement the smallest coherent change and keep unrelated formatting/refactors out of the diff.
 - Follow neighboring naming, imports, error handling, and test patterns before introducing an abstraction.
 - Prefer modifying existing APIs and components; preserve public behavior unless the task requires a contract change.
+- For each Save action, trace every awaited step and keep only required persistence on its critical path. Give notifications, email, and bulk work an explicit action or tracked background job; await cache refresh only when the next UI step needs fresh data. Test when pending ends and how partial failures are shown.
 - Do not add dependencies unless existing tooling cannot reasonably solve the task. Keep dependency versions and `pnpm-lock.yaml` consistent.
 - Client environment variables use `import.meta.env` and the `VITE_` prefix. Never commit credentials, service-role keys, or populated `.env` files.
 

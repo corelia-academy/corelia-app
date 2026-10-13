@@ -323,6 +323,7 @@ export default function AdminHackathonEditorPage() {
     };
   }, [editorQuery.data]);
   const draft = draftState ?? loadedDraft ?? emptyDraft();
+  const savedWinnerAwards = editorQuery.data?.contest.winner_awards ?? [];
   const setDraft = (next: Draft | ((current: Draft) => Draft)) => {
     setDraftState((current) => {
       const base = current ?? loadedDraft ?? emptyDraft();
@@ -495,23 +496,9 @@ export default function AdminHackathonEditorPage() {
         bannerRemoved && !bannerFile ? deleteStorageObjectByPath(draft.cover_image_path) : Promise.resolve(),
         hostLogoRemoved && !hostLogoFile ? deleteStorageObjectByPath(draft.host_logo_path) : Promise.resolve(),
       ]);
-      if (draft.winner_awards.length > 0) {
-        try {
-          const awardRes = await notifyHackathonWinnerAwards(
-            contest.id,
-            draft.winner_awards.map((award) => ({
-              project_id: award.project_id,
-              label: award.label,
-            })),
-          );
-          notifyAwardDeliveryResults(awardRes, t);
-        } catch (awardErr) {
-          console.warn("[AdminHackathonEditor] Failed to notify winner awards:", awardErr);
-        }
-      }
       return { contest, banner, hostLogo };
     },
-    onSuccess: async ({ contest, banner, hostLogo }) => {
+    onSuccess: ({ contest, banner, hostLogo }) => {
       setDraft((current) => ({
         ...current,
         winner_awards: flattenAwards(groupAwards(current.winner_awards)),
@@ -536,7 +523,7 @@ export default function AdminHackathonEditorPage() {
         (old: { contest: Contest; vi: ContestI18nContent; en: ContestI18nContent } | undefined) =>
           old ? { ...old, contest } : undefined,
       );
-      await Promise.all([
+      void Promise.all([
         queryClient.invalidateQueries({ queryKey: ["admin", "hackathons"] }),
         queryClient.invalidateQueries({ queryKey: ["hackathons"] }),
         queryClient.invalidateQueries({ queryKey: ["hackathon", contest.id] }),
@@ -565,10 +552,10 @@ export default function AdminHackathonEditorPage() {
 
   const notifyAwardsMutation = useMutation({
     mutationFn: async () => {
-      if (!id || draft.winner_awards.length === 0) return null;
+      if (!id || savedWinnerAwards.length === 0) return null;
       return await notifyHackathonWinnerAwards(
         id,
-        draft.winner_awards.map((award) => ({
+        savedWinnerAwards.map((award) => ({
           project_id: award.project_id,
           label: award.label,
         })),
@@ -909,7 +896,7 @@ export default function AdminHackathonEditorPage() {
               {draft.winner_awards.length === 0 ? <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-foreground-muted">{t("hackathons.editor.noAwards")}</div> : (
                 <WinnerAwardsList awards={draft.winner_awards} projectNames={projectNames} onChange={(winner_awards) => change({ winner_awards })} />
               )}
-              {draft.winner_awards.length > 0 ? <div className="mt-4 flex justify-end"><Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={notifyAwardsMutation.isPending} onClick={() => { if (!window.confirm(t("hackathons.editor.notifyAwardsConfirm"))) return; notifyAwardsMutation.mutate(); }}>{notifyAwardsMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Mail className="size-4" />}{t("hackathons.editor.notifyAwardsAction")}</Button></div> : null}
+              {draft.winner_awards.length > 0 ? <div className="mt-4 flex flex-col items-end gap-2"><Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={dirty || saveMutation.isPending || notifyAwardsMutation.isPending || savedWinnerAwards.length === 0} onClick={() => { if (!window.confirm(t("hackathons.editor.notifyAwardsConfirm"))) return; notifyAwardsMutation.mutate(); }}>{notifyAwardsMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Mail className="size-4" />}{t("hackathons.editor.notifyAwardsAction")}</Button>{dirty ? <p className="text-sm text-foreground-muted">{t("hackathons.editor.saveBeforeNotifyAwards")}</p> : null}</div> : null}
             </EditorSection>
           ) : null}
 

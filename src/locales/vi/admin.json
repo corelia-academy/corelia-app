@@ -245,6 +245,7 @@
       "awardMissingFields": "Vui lòng chọn bài thi và nhập tên giải thưởng.",
       "awardAdded": "Đã thêm giải thưởng vào danh sách.",
       "notifyAwardsAction": "Gửi thông báo trao giải qua email",
+      "saveBeforeNotifyAwards": "Lưu thay đổi giải thưởng trước khi gửi thông báo.",
       "validationSocialPost": "Nhập link bài đăng Facebook, Instagram hoặc X công khai, mỗi dòng một link.",
       "notifyAwardsConfirm": "Gửi email thông báo trao giải tới toàn bộ nhóm dự án đạt giải ngay bây giờ?",
       "awardsNotified": "Đã gửi thông báo trao giải ({{count}} email thành công).",

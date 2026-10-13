@@ -28,9 +28,9 @@ function TransferProject({ project }: { project: Pick<Project, "id" | "source_id
   const selected = contests.data?.find(item => item.id === target);
   const mutation = useMutation({
     mutationFn: () => transferProjectHackathon({ project_id: project.id, target_hackathon_id: target, track_ids: tracks, reason: reason.trim() }),
-    onSuccess: async () => {
+    onSuccess: () => {
       setOpen(false); toast.success(t("projects.management.transferSuccess"));
-      await client.invalidateQueries();
+      void client.invalidateQueries();
     },
   });
   return <>
