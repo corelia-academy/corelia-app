@@ -31,7 +31,7 @@ export function CampaignDeliveryDetails({ campaignId, initialStatus = "" }: { ca
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
   const [status, setStatus] = useState(initialStatus);
-  const exclude = useMutation({ mutationFn: (recipientId: string) => emailAdmin("campaigns.exclude_recipient", { recipient_id: recipientId }), onSuccess: async () => { toast.success(t("campaigns.excluded")); await queryClient.invalidateQueries({ queryKey: ["email-center"] }); }, onError: () => toast.error(t("messages.failed")) });
+  const exclude = useMutation({ mutationFn: (recipientId: string) => emailAdmin("campaigns.exclude_recipient", { recipient_id: recipientId }), onSuccess: async () => { toast.success(t("campaigns.excluded")); await queryClient.invalidateQueries({ queryKey: ["email-center", "campaign-recipients", campaignId] }); }, onError: () => toast.error(t("messages.failed")) });
   const recipients = useQuery({
     queryKey: ["email-center", "campaign-recipients", campaignId, status, page],
     queryFn: () => emailAdmin<Paginated<Recipient>>("campaigns.recipients", { campaign_id: campaignId, status, page }),

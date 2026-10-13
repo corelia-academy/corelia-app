@@ -2958,7 +2958,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
     }
     const saved = await saveLearningLesson(id, candidate, undefined, locales);
     setLessons(previous => previous.map(lesson => lesson.id === lessonId ? saved : lesson));
-    await queryClient.invalidateQueries({ queryKey: ["courses"] }).catch(() => toast.error(learningT("learning.savedRefreshFailed")));
+    void queryClient.invalidateQueries({ queryKey: ["courses"] }).catch(() => toast.error(learningT("learning.savedRefreshFailed")));
     void getLessonDistinctLearnerCountsForCourse(id)
       .then(setLessonLearnerCounts)
       .catch(() => {});
@@ -3657,7 +3657,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       const savedLesson = await saveLearningLesson(id, candidate, undefined, localePatches);
       setLessons(previous => previous.map(lesson => lesson.id === savedLesson.id ? savedLesson : lesson));
       // The save transaction also synchronizes duration. Refresh failures must not be reported as failed writes.
-      await queryClient.invalidateQueries({ queryKey: ["courses"] }).catch(() => toast.error(learningT("learning.savedRefreshFailed")));
+      void queryClient.invalidateQueries({ queryKey: ["courses"] }).catch(() => toast.error(learningT("learning.savedRefreshFailed")));
 
       void getLessonDistinctLearnerCountsForCourse(id)
         .then(setLessonLearnerCounts)

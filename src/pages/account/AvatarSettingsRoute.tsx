@@ -42,7 +42,7 @@ export function AvatarSettingsRoute() {
       setSeed(saved.seed);
       setConfig({ selections: saved.selections, colors: saved.colors });
       await refreshProfile(user);
-      await queryClient.invalidateQueries();
+      void queryClient.invalidateQueries();
       setMessage(t("avatarEditor.saved"));
     } catch {
       setError(t("avatarEditor.saveFailed"));

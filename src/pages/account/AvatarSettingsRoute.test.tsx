@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router";
 import { AvatarSettingsRoute } from "./AvatarSettingsRoute";
 import { saveMyAvatar } from "@/lib/avatarProfile";
+import { queryClient } from "@/lib/queryClient";
 
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock("@/stores/authStore", () => {
@@ -39,5 +40,22 @@ describe("avatar editor", () => {
     expect(saveMyAvatar).not.toHaveBeenCalled();
     await act(async () => save.click());
     expect(saveMyAvatar).toHaveBeenCalledWith(expect.stringMatching(/^[0-9a-f-]{36}$/), expect.objectContaining({ selections: { head: "fluffy-bob" } }));
+  });
+
+  it("finishes Save while the cache refresh is still pending", async () => {
+    vi.mocked(saveMyAvatar).mockResolvedValue({ seed: "saved-seed", selections: {}, colors: {} });
+    vi.mocked(queryClient.invalidateQueries).mockImplementation(() => new Promise(() => {}));
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    cleanup = () => { act(() => root.unmount()); container.remove(); };
+    await act(async () => { root.render(<MemoryRouter><AvatarSettingsRoute /></MemoryRouter>); });
+
+    const save = [...container.querySelectorAll("button")].find((button) => button.textContent === "avatarEditor.save")!;
+    await act(async () => save.click());
+
+    expect(queryClient.invalidateQueries).toHaveBeenCalled();
+    expect(save.disabled).toBe(false);
+    expect(container.textContent).toContain("avatarEditor.saved");
   });
 });
