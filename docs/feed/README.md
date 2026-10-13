@@ -54,3 +54,41 @@ XP dùng các mốc tổng **250, 500, 1.000, 2.500, 5.000, 10.000, 25.000, 50.0
 - Khám phá, Đang theo dõi, hồ sơ, tim, trạng thái lỗi/rỗng/tải thêm, cursor trùng timestamp và VI/EN hoạt động trên desktop/mobile. SQL smoke, RLS nhiều tài khoản, migration sạch, lint, test và build đều qua trước khi đề nghị phát hành.
 
 Tài liệu cũ ở [archive](archive/) chỉ để đối chiếu và tháo phụ thuộc; không phải đặc tả sản phẩm mới.
+
+## Thông báo tương tác
+
+Thông báo cá nhân được đọc ở chuông và `/notifications`, tách khỏi feed thành tựu.
+Like dự án, follow dự án báo cho chủ và thành viên hiện tại; like thành tựu báo
+cho người đạt mốc; follow người dùng báo cho người được theo dõi. Không báo cho
+người thực hiện. Tim/follow được gộp theo nội dung và ngày UTC; lặp lại cùng
+thao tác trong 24 giờ không tạo lượt chưa đọc mới. Khi đọc lại, hệ thống bỏ các
+lượt đã gỡ, che hồ sơ riêng tư và kiểm tra lại quyền với nội dung nguồn.
+
+Migration `social_notifications` tạo hàng đợi private và Cron
+`corelia-notifications` chạy mỗi 10 giây, tối đa 100 sự kiện/lượt. Trigger chỉ
+ghi sự kiện; worker phân phối, thử lại với thời gian chờ tăng dần và lưu lỗi.
+Không backfill tương tác cũ. Realtime yêu cầu publication `user_notifications`
+được migration cấu hình; client vẫn tải lại khi reconnect và mỗi 60 giây.
+
+Email tổng hợp mặc định tắt, được bật ở cài đặt cùng múi giờ IANA của trình
+duyệt. Email Center worker hiện có chạy phần digest sau chiến dịch: cần lịch
+`corelia-email-center`, `EMAIL_WORKER_SECRET`, cấu hình Resend và
+`email_settings.sending_enabled`. Không cần scheduler hoặc secret mới cho
+email. Chọn tối đa 25 người/lượt từ 09:00 giờ địa phương, tối đa một lần trong
+24 giờ. Mỗi bản có tối đa 10 mục, ưu tiên thông báo trực tiếp chưa đọc rồi đến
+thành tựu mới hơn lần mở feed thành công gần nhất. Không đưa bài nộp, nhận xét
+riêng hay thông báo đã có email riêng vào bản tổng hợp.
+
+Outbox giữ nguyên nội dung và idempotency key khi thử lại, kể cả qua ngày mới.
+Nội dung bị thu hồi, đã đọc hoặc người nhận đã tắt email sẽ không được gửi lại;
+bản cũ bị hủy và kỳ đó được đóng. Timeout ngoài cửa sổ chống trùng của provider
+cần đối soát theo công cụ outbox hiện có. `accepted` là provider nhận yêu cầu,
+không phải bằng chứng `delivered`; webhook tiếp tục ghi nhận bounce/complaint.
+Liên kết hủy nhận `type=social_digest` tắt riêng email tổng hợp.
+
+Admin/support có thể gọi RPC `notifications_metrics()` để xem số nhóm được
+mở, follow lại, like dự án trong 24 giờ sau khi mở, trạng thái cài đặt, độ trễ
+và lỗi hàng đợi, cùng trạng thái outbox email. Đây là số liệu quan sát, không
+chứng minh quan hệ nhân quả; so sánh cùng định nghĩa trong 2–4 tuần sau phát
+hành. Kiểm thử SQL nằm trong `social-notifications.integration.sql` và chạy
+cùng `pnpm db:verify:local`.
