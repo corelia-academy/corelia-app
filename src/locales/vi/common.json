@@ -708,7 +708,7 @@
         },
         "quiz": {
           "title": "Vượt qua quiz",
-          "detail": "Đạt quiz: +20 XP và +10 XP bài học"
+          "detail": "Vượt qua quiz lần đầu để nhận 20 XP, cộng thêm 10 XP cho bài học"
         },
         "course": {
           "title": "Hoàn thành khóa",

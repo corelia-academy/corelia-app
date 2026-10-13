@@ -708,7 +708,7 @@
         },
         "quiz": {
           "title": "Pass a quiz",
-          "detail": "Pass the quiz: +20 XP and +10 lesson XP"
+          "detail": "Pass a quiz for the first time to earn 20 XP, plus 10 XP for the lesson"
         },
         "course": {
           "title": "Complete a course",
