@@ -8,6 +8,8 @@ import "@/i18n";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
+vi.mock("@/components/social/FollowButton", () => ({ FollowButton: () => null }));
+
 vi.mock("@/stores/authStore", () => ({
   useAuth: () => ({
     isAuthenticated: true,
@@ -21,7 +23,10 @@ vi.mock("@/features/notifications/notificationQueries", () => ({
   notificationKeys: { list: () => ["notification-test"] },
   notificationsQueryOptions: () => ({
     queryKey: ["notification-test", "list"],
-    queryFn: async () => [],
+    queryFn: async () => ({ items: [], unread_count: 65 }),
+    initialPageParam: null,
+    initialData: { pages: [{ items: [], unread_count: 65 }], pageParams: [null] },
+    getNextPageParam: () => undefined,
   }),
   notificationInviteContextsQueryOptions: () => ({
     queryKey: ["notification-test", "invite-contexts"],
@@ -72,6 +77,7 @@ describe("NotificationBell icon treatment", () => {
 
     const button = container.querySelector<HTMLButtonElement>("button[aria-label]");
     expect(button).not.toBeNull();
+    expect(button?.textContent).toContain("65");
     expect(button?.className).not.toContain("border");
     expect(button?.querySelector("svg path[opacity='0.2']")).not.toBeNull();
 

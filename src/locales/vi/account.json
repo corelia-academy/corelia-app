@@ -72,7 +72,11 @@
       "emailTrackBlast": "Nhận email thông báo từ lộ trình học",
       "inAppCourseBlast": "Hiển thị thông báo khoá học trong ứng dụng",
       "inAppTrackBlast": "Hiển thị thông báo lộ trình trong ứng dụng",
-      "saved": "Đã lưu tuỳ chọn thông báo"
+      "saved": "Đã lưu tuỳ chọn thông báo",
+      "likes": "Thông báo lượt thích",
+      "follows": "Thông báo người theo dõi mới",
+      "digest": "Email tổng hợp tương tác hằng ngày",
+      "digestDescription": "Chỉ gửi khi có hoạt động mới, lúc 09:00 ({{timezone}}). Bạn có thể hủy nhận bất cứ lúc nào."
     }
   },
   "common": {

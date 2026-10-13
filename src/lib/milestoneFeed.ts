@@ -38,6 +38,16 @@ export async function getMilestonePage(userId: string, mode: FeedMode | "profile
     : await supabase.rpc("get_feed_milestones_v2", { ...pagination, p_mode: mode });
   if (error) throw error;
   const milestones = (data ?? []) as FeedMilestone[];
+  return hydrateMilestones(userId, milestones);
+}
+
+export async function getMilestoneById(userId: string, id: number): Promise<MilestonePage> {
+  const { data, error } = await supabase.from("feed_milestones").select("*").eq("id", id).maybeSingle();
+  if (error) throw error;
+  return hydrateMilestones(userId, data ? [data as FeedMilestone] : []);
+}
+
+async function hydrateMilestones(userId: string, milestones: FeedMilestone[]): Promise<MilestonePage> {
   const ids = milestones.map((item) => item.id);
   const actors = [...new Set(milestones.map((item) => item.actor_id))];
   const courses = [...new Set(milestones.flatMap((item) => item.course_id ? [item.course_id] : []))];
