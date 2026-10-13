@@ -708,7 +708,7 @@
         },
         "quiz": {
           "title": "Vượt qua quiz",
-          "detail": "+30 XP khi vượt qua quiz lần đầu"
+          "detail": "+30 XP khi hoàn thành quiz lần đầu"
         },
         "course": {
           "title": "Hoàn thành khóa",
