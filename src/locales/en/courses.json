@@ -759,6 +759,6 @@
     "xpLessonEarned": "10 XP already earned for this lesson",
     "xpLessonAvailable": "Complete this lesson for the first time: +10 XP",
     "xpQuizEarned": "XP already earned for this quiz",
-    "xpQuizAvailable": "Score at least 70% for the first time: +30 XP (lesson + quiz)"
+    "xpQuizAvailable": "Pass the quiz for the first time: +30 XP (lesson + quiz)"
   }
 }
