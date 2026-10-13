@@ -94,7 +94,7 @@ export function AccountProfileRoute() {
       });
       setProfilePublic(updated.profile_public ?? nextProfilePublic);
       await refreshProfile(user);
-      await queryClient.invalidateQueries({ queryKey: ["xp"] });
+      void queryClient.invalidateQueries({ queryKey: ["xp"] });
       setSuccess(t("profile.success.visibilityUpdated"));
     } catch (err) {
       setProfilePublic(previousProfilePublic);
@@ -132,7 +132,7 @@ export function AccountProfileRoute() {
       });
       setFullName(current => current === fullName ? savedProfile.full_name ?? "" : current);
       await refreshProfile(user);
-      await queryClient.invalidateQueries({ queryKey: ["xp"] });
+      void queryClient.invalidateQueries({ queryKey: ["xp"] });
       setSuccess(t("profile.success.updated"));
     } catch (err) {
       const raw = err instanceof Error ? err.message : "";

@@ -112,6 +112,7 @@ function renderEditor(initialEntry: string) {
 
   return {
     container,
+    queryClient,
     async cleanup() {
       await act(async () => root.unmount());
       queryClient.clear();
@@ -633,6 +634,92 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
     await settle();
     expect(updateContest).not.toHaveBeenCalled();
     expect(toast.error).toHaveBeenCalledWith("hackathons.editor.awardLabelRequired");
+    await view.cleanup();
+  });
+
+  it("finishes saving many awards without sending email or waiting for background refresh", async () => {
+    const awards = Array.from({ length: 22 }, (_, index) => ({
+      id: `award-${index}`,
+      project_id: `project-${index}`,
+      label: "Honorable Mention",
+      sort_order: index,
+    }));
+    getContest.mockResolvedValue({ ...contest, winner_awards: awards });
+    updateContest.mockResolvedValue({ ...contest, winner_awards: awards });
+    const view = renderEditor("/admin/hackathons/hackathon-1/edit#projects");
+    await settle();
+    vi.spyOn(view.queryClient, "invalidateQueries").mockImplementation(() => new Promise(() => {}));
+
+    const save = Array.from(view.container.querySelectorAll("button"))
+      .find((button) => button.textContent?.includes("hackathons.editor.saveSection"))!;
+    await act(async () => save.click());
+    await settle();
+
+    expect(updateContest).toHaveBeenCalledWith("hackathon-1", expect.objectContaining({ winner_awards: awards }));
+    expect(setHackathonLocaleContent).toHaveBeenCalledTimes(2);
+    expect(notifyHackathonWinnerAwards).not.toHaveBeenCalled();
+    expect(save.disabled).toBe(false);
+    expect(save.textContent).toContain("hackathons.editor.saveSection");
+    expect(toast.success).toHaveBeenCalledWith("hackathons.editor.saved");
+    await view.cleanup();
+  });
+
+  it("notifies from saved awards only after unsaved changes are saved", async () => {
+    let storedContest = {
+      ...contest,
+      winner_awards: [{ id: "award-1", project_id: "project-1", label: "First Place", sort_order: 0 }],
+    };
+    getContest.mockImplementation(async () => storedContest);
+    updateContest.mockImplementation(async (_id, updates) => {
+      storedContest = { ...storedContest, winner_awards: updates.winner_awards };
+      return storedContest;
+    });
+    notifyHackathonWinnerAwards.mockResolvedValueOnce({ ok: true, emails_sent_count: 1, failures_count: 0, failures: [] });
+    const view = renderEditor("/admin/hackathons/hackathon-1/edit#projects");
+    await settle();
+
+    const awardLabel = view.container.querySelector<HTMLInputElement>("[data-award-project] input")!;
+    await act(async () => changeInput(awardLabel, "Updated Place"));
+    const notify = Array.from(view.container.querySelectorAll("button"))
+      .find((button) => button.textContent?.includes("hackathons.editor.notifyAwardsAction"))!;
+    expect(notify.disabled).toBe(true);
+    expect(view.container.textContent).toContain("hackathons.editor.saveBeforeNotifyAwards");
+    const save = Array.from(view.container.querySelectorAll("button"))
+      .find((button) => button.textContent?.includes("hackathons.editor.saveSection"))!;
+    await act(async () => save.click());
+    await settle();
+    expect(notify.disabled).toBe(false);
+    expect(notifyHackathonWinnerAwards).not.toHaveBeenCalled();
+
+    await act(async () => notify.click());
+    await settle();
+    expect(window.confirm).toHaveBeenCalledWith("hackathons.editor.notifyAwardsConfirm");
+    expect(notifyHackathonWinnerAwards).toHaveBeenCalledWith("hackathon-1", [
+      { project_id: "project-1", label: "Updated Place" },
+    ]);
+    await view.cleanup();
+  });
+
+  it("keeps notification disabled and shows the save error when award persistence fails", async () => {
+    getContest.mockResolvedValue({
+      ...contest,
+      winner_awards: [{ id: "award-1", project_id: "project-1", label: "First Place", sort_order: 0 }],
+    });
+    updateContest.mockRejectedValue(new Error("save failed"));
+    const view = renderEditor("/admin/hackathons/hackathon-1/edit#projects");
+    await settle();
+    await act(async () => changeInput(view.container.querySelector<HTMLInputElement>("[data-award-project] input")!, "Updated Place"));
+    const save = Array.from(view.container.querySelectorAll("button"))
+      .find((button) => button.textContent?.includes("hackathons.editor.saveSection"))!;
+    await act(async () => save.click());
+    await settle();
+
+    const notify = Array.from(view.container.querySelectorAll("button"))
+      .find((button) => button.textContent?.includes("hackathons.editor.notifyAwardsAction"))!;
+    expect(save.disabled).toBe(false);
+    expect(notify.disabled).toBe(true);
+    expect(notifyHackathonWinnerAwards).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith("save failed");
     await view.cleanup();
   });
 

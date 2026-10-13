@@ -6,11 +6,11 @@ export function useProjectManagement(projectId: string) {
   return useMutation({
     mutationFn: ({ action, reason }: { action: ProjectManagementAction; reason: string }) =>
       manageProject(projectId, action, reason),
-    onSuccess: async () => {
+    onSuccess: () => {
       // Project cards also appear in account, profile and hackathon queries.
       // Remove stale private detail data before refetching affected surfaces.
       client.removeQueries({ queryKey: ["projects", "editor", projectId] });
-      await client.invalidateQueries();
+      void client.invalidateQueries();
     },
   });
 }

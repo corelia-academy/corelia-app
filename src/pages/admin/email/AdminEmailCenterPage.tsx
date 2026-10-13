@@ -82,7 +82,11 @@ export default function AdminEmailCenterPage() {
   });
   const lists = useQuery({ queryKey: ["email-center", "lists"], queryFn: () => emailAdmin<Paginated>("lists.list") });
   const templates = useQuery({ queryKey: ["email-center", "template-options"], queryFn: () => emailAdmin<Paginated>("templates.list") });
-  const refresh = async () => { await queryClient.invalidateQueries({ queryKey: ["email-center"] }); };
+  const refresh = () => { void queryClient.invalidateQueries({ queryKey: ["email-center"] }); };
+  const refreshTemplates = () => {
+    void queryClient.invalidateQueries({ queryKey: ["email-center", "template-options"] });
+    return queryClient.invalidateQueries({ queryKey: ["email-center", "templates"] });
+  };
   const [file, setFile] = useState<File | null>(null);
   const [listName, setListName] = useState("");
   const [importSource, setImportSource] = useState<"csv" | "luma">("csv");
@@ -103,7 +107,7 @@ export default function AdminEmailCenterPage() {
   const importMutation = useMutation({ mutationFn: () => {
     if (!file || !columnMapping.email) throw new Error("file_or_email_required");
     return uploadContactCsv(file, { listName: listName || file.name.replace(/\.csv$/i, ""), listId: importListId || undefined, sourceType: importSource, columnMapping });
-  }, onSuccess: async () => { toast.success(t("messages.imported")); setFile(null); setCsvPreview(null); setColumnMapping({}); await refresh(); }, onError: () => toast.error(t("messages.failed")) });
+  }, onSuccess: () => { toast.success(t("messages.imported")); setFile(null); setCsvPreview(null); setColumnMapping({}); refresh(); }, onError: () => toast.error(t("messages.failed")) });
   const [editorLocale, setEditorLocale] = useState<"vi" | "en">("vi");
   const [template, setTemplate] = useState(emptyTemplate);
   const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
@@ -112,22 +116,22 @@ export default function AdminEmailCenterPage() {
   const copyRequired = !otherCopy.subject.trim() || !otherCopy.body_text.trim();
   const previewUsesFallback = !Object.values(copy).some((field) => field.trim()) && Boolean(otherCopy.subject.trim() && otherCopy.body_text.trim());
   const updateCopy = (patch: Partial<EmailCopyDraft>) => setTemplate((currentTemplate) => ({ ...currentTemplate, localized_content: { ...currentTemplate.localized_content, [editorLocale]: { ...currentTemplate.localized_content[editorLocale], ...patch } } }));
-  const templateMutation = useMutation({ mutationFn: () => emailAdmin<{ id: string; version_id: string }>("templates.save", { ...template, ...(editingTemplateId ? { id: editingTemplateId } : {}) }), onSuccess: async (saved) => { toast.success(t("messages.saved")); if (!editingTemplateId) setEditingTemplateId(saved.id); await refresh(); }, onError: () => toast.error(t("messages.failed")) });
-  const publishMutation = useMutation({ mutationFn: (version_id: string) => emailAdmin("templates.publish", { version_id }), onSuccess: async () => { toast.success(t("templates.published")); await refresh(); }, onError: () => toast.error(t("messages.failed")) });
+  const templateMutation = useMutation({ mutationFn: () => emailAdmin<{ id: string; version_id: string }>("templates.save", { ...template, ...(editingTemplateId ? { id: editingTemplateId } : {}) }), onSuccess: async (saved) => { toast.success(t("messages.saved")); if (!editingTemplateId) setEditingTemplateId(saved.id); await refreshTemplates(); }, onError: () => toast.error(t("messages.failed")) });
+  const publishMutation = useMutation({ mutationFn: (version_id: string) => emailAdmin("templates.publish", { version_id }), onSuccess: async () => { toast.success(t("templates.published")); await refreshTemplates(); }, onError: () => toast.error(t("messages.failed")) });
   const [testRecipient, setTestRecipient] = useState("");
   const [previewMobile, setPreviewMobile] = useState(false);
   const [testSenderByPurpose, setTestSenderByPurpose] = useState<Record<string, string>>({});
   const testMutation = useMutation({ mutationFn: ({ version, senderId }: { version: Record<string, unknown>; senderId: string }) => emailAdmin("templates.test", { template_version_id: version.id, to: testRecipient.trim(), locale: editorLocale, sender_id: senderId, values: testValues(version, testRecipient.trim(), editorLocale) }), onSuccess: () => toast.success(t("templates.testSent", { email: testRecipient.trim() })), onError: (error) => toast.error(t(emailErrorKey(error) as "templates.errors.generic")) });
-  const controlMutation = useMutation({ mutationFn: ({ id, command, scheduledAt }: { id: string; command: string; scheduledAt?: string }) => emailAdmin("campaigns.control", { id, command, scheduled_at: scheduledAt }), onSuccess: refresh, onError: () => toast.error(t("messages.failed")) });
+  const controlMutation = useMutation({ mutationFn: ({ id, command, scheduledAt }: { id: string; command: string; scheduledAt?: string }) => emailAdmin("campaigns.control", { id, command, scheduled_at: scheduledAt }), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["email-center", "campaigns"] }), onError: () => toast.error(t("messages.failed")) });
   const [campaign, setCampaign] = useState({ name: "", purpose: "marketing", list_id: "", sender_id: "", template_version_id: "" });
-  const campaignMutation = useMutation({ mutationFn: async () => { const created = await emailAdmin<{ id: string }>("campaigns.create", { ...campaign, audience_type: campaign.list_id === allContactsValue ? "all_contacts" : "list", list_id: campaign.list_id === allContactsValue ? null : campaign.list_id }); return emailAdmin("campaigns.prepare", { id: created.id }); }, onSuccess: async () => { toast.success(t("campaigns.prepared")); setCampaign({ name: "", purpose: "marketing", list_id: "", sender_id: "", template_version_id: "" }); await refresh(); }, onError: () => toast.error(t("messages.failed")) });
-  const settingsMutation = useMutation({ mutationFn: (sending_enabled: boolean) => emailAdmin("settings.save", { sending_enabled }), onSuccess: refresh, onError: () => toast.error(t("messages.failed")) });
+  const campaignMutation = useMutation({ mutationFn: async () => { const created = await emailAdmin<{ id: string }>("campaigns.create", { ...campaign, audience_type: campaign.list_id === allContactsValue ? "all_contacts" : "list", list_id: campaign.list_id === allContactsValue ? null : campaign.list_id }); return emailAdmin("campaigns.prepare", { id: created.id }); }, onSuccess: () => { toast.success(t("campaigns.prepared")); setCampaign({ name: "", purpose: "marketing", list_id: "", sender_id: "", template_version_id: "" }); refresh(); }, onError: () => toast.error(t("messages.failed")) });
+  const settingsMutation = useMutation({ mutationFn: (sending_enabled: boolean) => emailAdmin("settings.save", { sending_enabled }), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["email-center", "dashboard"] }), onError: () => toast.error(t("messages.failed")) });
   const openImportReport = async (id: string) => { try { const report = await emailAdmin<{ url: string }>("imports.report", { id }); window.open(report.url, "_blank", "noopener,noreferrer"); } catch { toast.error(t("messages.failed")); } };
   const [automation, setAutomation] = useState({ name: "", trigger_type: "marketing_consent", purpose: "marketing", sender_id: "", template_version_id: "", delay_minutes: 0 });
-  const automationMutation = useMutation({ mutationFn: () => emailAdmin("automations.save", { name: automation.name, trigger_type: automation.trigger_type, purpose: automation.purpose, enabled: false, steps: [{ sender_id: automation.sender_id, template_version_id: automation.template_version_id, delay_minutes: automation.delay_minutes }] }), onSuccess: async () => { toast.success(t("messages.saved")); setAutomation({ name: "", trigger_type: "marketing_consent", purpose: "marketing", sender_id: "", template_version_id: "", delay_minutes: 0 }); await refresh(); }, onError: () => toast.error(t("messages.failed")) });
-  const automationToggle = useMutation({ mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) => emailAdmin("automations.toggle", { id, enabled }), onSuccess: refresh, onError: () => toast.error(t("messages.failed")) });
+  const automationMutation = useMutation({ mutationFn: () => emailAdmin("automations.save", { name: automation.name, trigger_type: automation.trigger_type, purpose: automation.purpose, enabled: false, steps: [{ sender_id: automation.sender_id, template_version_id: automation.template_version_id, delay_minutes: automation.delay_minutes }] }), onSuccess: async () => { toast.success(t("messages.saved")); setAutomation({ name: "", trigger_type: "marketing_consent", purpose: "marketing", sender_id: "", template_version_id: "", delay_minutes: 0 }); await queryClient.invalidateQueries({ queryKey: ["email-center", "dashboard"] }); }, onError: () => toast.error(t("messages.failed")) });
+  const automationToggle = useMutation({ mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) => emailAdmin("automations.toggle", { id, enabled }), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["email-center", "dashboard"] }), onError: () => toast.error(t("messages.failed")) });
   const [sender, setSender] = useState({ display_name: "", purpose: "event", from_email: "", reply_to: "", domain: "", domain_status: "pending" });
-  const senderMutation = useMutation({ mutationFn: () => emailAdmin("senders.save", sender), onSuccess: async () => { toast.success(t("messages.saved")); setSender({ display_name: "", purpose: "event", from_email: "", reply_to: "", domain: "", domain_status: "pending" }); await refresh(); }, onError: () => toast.error(t("messages.failed")) });
+  const senderMutation = useMutation({ mutationFn: () => emailAdmin("senders.save", sender), onSuccess: async () => { toast.success(t("messages.saved")); setSender({ display_name: "", purpose: "event", from_email: "", reply_to: "", domain: "", domain_status: "pending" }); await queryClient.invalidateQueries({ queryKey: ["email-center", "dashboard"] }); }, onError: () => toast.error(t("messages.failed")) });
 
   const saveTemplate = (event: FormEvent) => { event.preventDefault(); templateMutation.mutate(); };
   const editTemplate = (row: Record<string, unknown>, version: Record<string, unknown>) => {
