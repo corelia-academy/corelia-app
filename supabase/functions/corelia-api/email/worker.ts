@@ -1,3 +1,4 @@
+import { sendSocialDigests } from "../notifications/digest.ts";
 import { json } from "../lib/http.ts";
 import { resolveAppUrl } from "../lib/mail/layout.ts";
 import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
@@ -281,6 +282,7 @@ export async function runEmailWorker(req: Request, db: SupabaseClient): Promise<
     await db.rpc("email_refresh_campaign_counts", { p_campaign_id: campaign.id });
     await db.rpc("email_apply_campaign_guardrails", { p_campaign_id: campaign.id });
   }
+  const socialDigests = await sendSocialDigests(db);
   const automationSteps = await processAutomations(db);
-  return json({ ok: true, campaigns: campaigns?.length ?? 0, accepted, failed, automation_steps: automationSteps, import_rows: importRows });
+  return json({ ok: true, social_digests: socialDigests, campaigns: campaigns?.length ?? 0, accepted, failed, automation_steps: automationSteps, import_rows: importRows });
 }

@@ -7,13 +7,14 @@ export async function handleNotificationsUnsubscribe(
 ): Promise<Response> {
   try {
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
-    const token = String(body.token ?? "").trim();
-    const type = String(body.type ?? "").trim();
+    const url = new URL(req.url);
+    const token = String(body.token ?? url.searchParams.get("token") ?? "").trim();
+    const type = String(body.type ?? url.searchParams.get("type") ?? "").trim();
 
     if (type === "track_blast") return json({ message: "career_tracks_retired" }, 410);
     if (!token) return json({ message: "missing_fields:token" }, 400);
-    if (type !== "course_blast") return json({ message: "invalid_type" }, 400);
-    const column = "email_course_blast";
+    if (type !== "course_blast" && type !== "social_digest") return json({ message: "invalid_type" }, 400);
+    const column = type === "social_digest" ? "email_social_digest" : "email_course_blast";
 
     const { data, error } = await db
       .from("notification_preferences")
