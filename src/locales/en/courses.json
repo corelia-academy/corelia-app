@@ -171,7 +171,6 @@
         "title": "This course is being updated",
         "body": "You can keep learning the available lessons. Course completion and new awards will resume when the update is finished."
       },
-      "courseUpdatingCompletionNotice": "This course is being updated. Your lesson progress is saved; course completion and new awards will be recorded when the course is ready.",
       "learningOutcomes": {
         "title": "What you'll learn",
         "subtitle": "This course will help you learn:"
@@ -521,8 +520,6 @@
     "noContentIssues": "There are no content issues.",
     "moreActions": "More actions",
     "recalculateDuration": "Recalculate duration",
-    "retryVideo": "Reload video",
-    "openYoutube": "Open on YouTube",
     "previewBanner": "PREVIEW · Progress, submissions and drafts are not saved.",
     "completed": "Completed",
     "markIncomplete": "Mark as incomplete",
