@@ -81,19 +81,19 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
       <LessonRenderer lesson={lesson} courseId={courseId} mode={mode} contentLocale={contentLocale} completed={completed} onComplete={complete} onAction={registerAction} questions={questions} resetEpoch={resetEpoch} draftEpoch={draftEpoch} />
       {!!resources.length && <section className="rounded-xl border border-border p-4"><h2 className="mb-2 font-medium">{t("learning.resources")}</h2>{resources.map((r,i) => <a key={i} href={r.url} target="_blank" rel="noreferrer" className="block text-primary underline">{r.title}</a>)}</section>}
     </div>
-    <footer className="sticky bottom-0 z-10 border-t border-border bg-surface-base px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6">
+    <footer className="sticky bottom-0 z-10 border-t border-border bg-surface-base px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-3">
       {error && <p role="alert" className="mb-2 text-sm text-destructive">{error}</p>}
       {confirmation}
-      <div className="grid grid-cols-[auto_1fr] items-center gap-3 sm:grid-cols-[auto_1fr_auto]">
-        <Button type="button" variant="cta" hierarchy="secondary" disabled={!previousLesson || busy} onClick={() => previousLesson && onNavigateToLesson(previousLesson.id)}>{t("learning.previous")}</Button>
-        <span className="hidden text-center text-sm text-foreground-muted sm:block">{t("learning.lessonNumber", { number: (lessonIndex ?? 0)+1 })}</span>
-        <div className="col-span-2 flex flex-wrap items-center justify-end gap-2 sm:col-auto">
-          {mode === "learner" && user && onReset && hasFullCourseAccess && !isDraftLesson && <>
-            {completed && <Button type="button" variant="cta" hierarchy="secondary" disabled={busy || action?.pending} onClick={() => void reset(false)}>{t("learning.markIncomplete")}</Button>}
-            {["quiz", "practice", "code_exercise"].includes(getLessonFormat(lesson)) && <Button type="button" variant="cta" hierarchy="secondary" disabled={busy || action?.pending} onClick={() => void reset(true)}>{t("learning.redoFromStart")}</Button>}
-          </>}
-          <Button type="button" disabled={busy || action?.pending || (!(completed && mode === "learner") && (!action || (action.disabled && (mode === "preview" || !!user))))} onClick={() => void run()}>{label}</Button>
+      {mode === "learner" && user && onReset && hasFullCourseAccess && !isDraftLesson && (completed || ["quiz", "practice", "code_exercise"].includes(getLessonFormat(lesson))) && (
+        <div className="mb-2 flex flex-wrap justify-end gap-2">
+          {completed && <Button type="button" variant="cta" hierarchy="secondary" className="min-h-11 min-w-0 whitespace-normal text-center leading-tight" disabled={busy || action?.pending} onClick={() => void reset(false)}>{t("learning.markIncomplete")}</Button>}
+          {["quiz", "practice", "code_exercise"].includes(getLessonFormat(lesson)) && <Button type="button" variant="cta" hierarchy="secondary" className="min-h-11 min-w-0 whitespace-normal text-center leading-tight" disabled={busy || action?.pending} onClick={() => void reset(true)}>{t("learning.redoFromStart")}</Button>}
         </div>
+      )}
+      <div className="grid grid-cols-2 items-center gap-2 sm:grid-cols-[auto_1fr_auto] sm:gap-3">
+        <Button type="button" variant="cta" hierarchy="secondary" className="min-h-11 min-w-0 w-full whitespace-normal px-2 text-center leading-tight sm:w-auto sm:px-6" disabled={!previousLesson || busy} onClick={() => previousLesson && onNavigateToLesson(previousLesson.id)}>{t("learning.previous")}</Button>
+        <span className="hidden text-center text-sm text-foreground-muted sm:block">{t("learning.lessonNumber", { number: (lessonIndex ?? 0)+1 })}</span>
+        <Button type="button" className="min-h-11 min-w-0 w-full whitespace-normal px-2 text-center leading-tight sm:w-auto sm:px-6" disabled={busy || action?.pending || (!(completed && mode === "learner") && (!action || (action.disabled && (mode === "preview" || !!user))))} onClick={() => void run()}>{label}</Button>
       </div>
     </footer>
   </div>;
