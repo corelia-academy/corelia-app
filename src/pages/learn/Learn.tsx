@@ -593,11 +593,6 @@ function LearnWorkspace() {
 
   const lessonContent = (
     <>
-      {course.is_updating ? (
-        <p role="status" className="mx-4 mt-4 rounded-md border border-border-subtle bg-surface-raised p-4 text-sm text-foreground-muted sm:mx-6 sm:mt-5">
-          {translate("detail.courseDetail.courseUpdatingCompletionNotice")}
-        </p>
-      ) : null}
       {courseCompleted ? (
         <CourseCompletionCertificatePanel
           className="mx-4 mb-4 mt-4 sm:mx-6 sm:mt-5"
@@ -680,15 +675,14 @@ function LearnWorkspace() {
         </Button>
       </div>
 
-      {/* Center — absolutely centered */}
-      <div className="absolute left-1/2 -translate-x-1/2 flex max-w-[50%] items-center gap-1.5 overflow-hidden text-sm">
-        <span className="shrink-0 truncate font-medium text-foreground">
+      <div className="mx-auto flex min-w-0 flex-1 flex-col px-1 text-center text-xs leading-4 sm:absolute sm:left-1/2 sm:max-w-[50%] sm:-translate-x-1/2 sm:flex-row sm:items-center sm:gap-1.5 sm:overflow-hidden sm:text-sm">
+        <span className="min-w-0 truncate font-medium text-foreground sm:shrink-0">
           {course.title}
         </span>
         {(currentLesson || isFinalAssignment) && (
           <>
-            <span className="shrink-0 text-foreground-subtle">/</span>
-            <span className="truncate text-foreground-muted">
+            <span className="hidden shrink-0 text-foreground-subtle sm:inline">/</span>
+            <span className="min-w-0 truncate text-foreground-muted">
               {isFinalAssignment ? translate("detail.learn.finalAssignmentTitle") : lessonText(currentLesson?.title)}
             </span>
           </>
@@ -711,14 +705,14 @@ function LearnWorkspace() {
           <PanelRight className="size-4" aria-hidden />
         </Button>
         {/* Mobile: Sheet for curriculum */}
-        <Sheet>
+        <Sheet key={`${courseId}:${lessonId ?? ""}:${isFinalAssignment}`}>
           <SheetTrigger
             className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md text-foreground-muted hover:bg-surface-raised hover:text-foreground xl:hidden"
             aria-label={translate("detail.learn.openCurriculum")}
           >
             <List className="size-4" aria-hidden />
           </SheetTrigger>
-          <SheetContent side="right" className="w-80 p-0">
+          <SheetContent side="right" className="h-dvh min-h-0 w-[min(24rem,calc(100vw-1rem))]! max-w-none! p-0">
             <SheetHeader className="shrink-0 border-b border-border-subtle px-4 py-3 pr-14">
               <SheetTitle>
                 {translate("courseResources.sidebarTitle")}
