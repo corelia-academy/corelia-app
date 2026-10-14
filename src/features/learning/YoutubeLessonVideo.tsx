@@ -1,17 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { loadYoutubePlayerApi, type YoutubePlayer } from "@/lib/youtubePlayerApi";
 import { useLearningTranslation } from "./useLearningTranslation";
 
-type Props = { url: string; title: string; watchUrl?: string };
+type Props = { url: string; title: string };
 export function YoutubeLessonVideo(props: Props) {
   return <Player key={props.url} {...props} />;
 }
-function Player({ url, title, watchUrl }: Props) {
+function Player({ url, title }: Props) {
   const { t } = useLearningTranslation();
   const container = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
-  const [retry, setRetry] = useState(0);
   useEffect(() => {
     const host = container.current!;
     const frame = document.createElement("iframe");
@@ -23,7 +21,7 @@ function Player({ url, title, watchUrl }: Props) {
     frame.referrerPolicy = "strict-origin-when-cross-origin";
     frame.src = src.toString();
     frame.title = title;
-    frame.className = "aspect-video min-h-[200px] w-full rounded-xl bg-black";
+    frame.className = "block h-full w-full";
     frame.allow = "encrypted-media; picture-in-picture";
     frame.allowFullscreen = true;
     host.append(frame);
@@ -46,13 +44,9 @@ function Player({ url, title, watchUrl }: Props) {
       player?.destroy();
       host.replaceChildren();
     };
-  }, [url, title, retry]);
+  }, [url, title]);
   return <div className="space-y-3">
-    <div ref={container} />
+    <div ref={container} className="aspect-video w-full overflow-hidden rounded-xl bg-black" />
     {failed && <p role="alert">{t("learning.videoError")}</p>}
-    <div className="flex gap-3">
-      <Button type="button" variant="cta" hierarchy="tertiary" onClick={() => { setFailed(false); setRetry(value => value + 1); }}>{t("learning.retryVideo")}</Button>
-      <a href={watchUrl} target="_blank" rel="noreferrer" className="self-center text-sm text-primary underline">{t("learning.openYoutube")}</a>
-    </div>
   </div>;
 }

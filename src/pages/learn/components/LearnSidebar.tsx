@@ -6,7 +6,7 @@ import { CourseResources } from "@/components/courses/CourseResources";
 export function LearnSidebar({ curriculum, resources }: { curriculum: ReactNode; resources: unknown }) {
   const { t } = useTranslation("courses");
   return (
-    <Tabs.Root defaultValue="curriculum" className="flex h-full min-h-0 flex-col">
+    <Tabs.Root defaultValue="curriculum" className="flex min-h-0 flex-1 flex-col">
       <Tabs.List className="grid shrink-0 grid-cols-2 gap-1 border-b border-border-subtle p-2" aria-label={t("courseResources.sidebarTitle")}>
         <Tabs.Tab value="curriculum" className="min-w-0 whitespace-normal px-2 text-xs">{t("detail.learn.curriculumTitle")}</Tabs.Tab>
         <Tabs.Tab value="resources" className="min-w-0 whitespace-normal px-2 text-xs">{t("courseResources.title")}</Tabs.Tab>

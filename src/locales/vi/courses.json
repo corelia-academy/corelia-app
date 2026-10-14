@@ -171,7 +171,6 @@
         "title": "Khoá học đang được cập nhật",
         "body": "Bạn vẫn có thể học các bài đã sẵn sàng. Việc hoàn thành khoá học và cấp thành tích mới sẽ mở lại khi khoá học cập nhật xong."
       },
-      "courseUpdatingCompletionNotice": "Khoá học đang được cập nhật. Tiến độ bài học của bạn vẫn được lưu; trạng thái hoàn thành và thành tích mới sẽ được ghi nhận khi khoá học sẵn sàng.",
       "learningOutcomes": {
         "title": "Bạn sẽ học được gì",
         "subtitle": "Khoá học này sẽ giúp bạn:"
@@ -521,8 +520,6 @@
     "noContentIssues": "Không có nội dung cần sửa.",
     "moreActions": "Thao tác khác",
     "recalculateDuration": "Tính lại thời lượng",
-    "retryVideo": "Tải lại video",
-    "openYoutube": "Mở trên YouTube",
     "previewBanner": "XEM THỬ · Không lưu tiến độ, bài nộp hoặc nháp.",
     "completed": "Đã hoàn thành",
     "markIncomplete": "Đánh dấu chưa hoàn thành",
