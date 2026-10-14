@@ -9,35 +9,49 @@ export type UserNotificationRow = {
   read_at: string | null;
   resolved_at: string | null;
   created_at: string;
+  activity_at: string;
+  opened_at?: string | null;
+  group_key?: string | null;
 };
 
-export async function listMyNotifications(limit = 30): Promise<UserNotificationRow[]> {
-  const { data, error } = await supabase
-    .from("user_notifications")
-    .select("id,user_id,type,payload,read_at,resolved_at,created_at")
-    .order("created_at", { ascending: false })
-    .limit(limit);
-  if (error) throw new Error(error.message);
-  return (data ?? []) as UserNotificationRow[];
+export type NotificationPage = { items: UserNotificationRow[]; unread_count: number };
+export type NotificationCursor = { activity_at: string; id: string };
+
+export async function listNotificationPage(cursor: NotificationCursor | null = null, unread = false): Promise<NotificationPage> {
+  const { data, error } = await supabase.rpc("notifications_page", {
+    p_cursor_at: cursor?.activity_at ?? null, p_cursor_id: cursor?.id ?? null,
+    p_unread: unread, p_limit: 20,
+  });
+  if (error) throw error;
+  return data as NotificationPage;
 }
 
-export async function markNotificationRead(notificationId: string): Promise<void> {
-  const { error } = await supabase
-    .from("user_notifications")
-    .update({ read_at: new Date().toISOString() })
-    .eq("id", notificationId);
-  if (error) throw new Error(error.message);
+export async function listMyNotifications(): Promise<UserNotificationRow[]> {
+  return (await listNotificationPage()).items;
+}
+
+export async function markNotificationRead(notificationId: string, opened = false, activityAt?: string): Promise<void> {
+  const { error } = await supabase.rpc("notifications_read", {
+    p_id: notificationId, p_opened: opened, p_activity_at: activityAt ?? null,
+  });
+  if (error) throw error;
 }
 
 export async function markAllNotificationsRead(): Promise<void> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user?.id) return;
-  const { error } = await supabase
-    .from("user_notifications")
-    .update({ read_at: new Date().toISOString() })
-    .eq("user_id", session.user.id)
-    .is("read_at", null);
-  if (error) throw new Error(error.message);
+  const { error } = await supabase.rpc("notifications_read");
+  if (error) throw error;
+}
+
+export async function markNotificationFeedSeen(): Promise<void> {
+  const { error } = await supabase.rpc("notifications_feed_seen");
+  if (error) throw error;
+}
+
+export function subscribeToNotifications(userId: string, onChange: () => void): () => void {
+  const channel = supabase.channel(`notifications:${userId}`).on("postgres_changes", {
+    event: "*", schema: "public", table: "user_notifications", filter: `user_id=eq.${userId}`,
+  }, onChange).subscribe(status => { if (status === "SUBSCRIBED") onChange(); });
+  return () => { void supabase.removeChannel(channel); };
 }
 
 export type AcceptProjectInviteRpcPayload = {
