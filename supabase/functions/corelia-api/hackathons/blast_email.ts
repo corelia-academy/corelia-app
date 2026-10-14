@@ -77,6 +77,18 @@ export async function handleHackathonBlastEmail(
       return json({ ok: true, sent: 0, failed: 0, skipped: 0, total: 0 }, 200);
     }
 
+    const bodyHtml = normalizeAnnouncementBodyHtml(html);
+    if (!bodyHtml) {
+      return json({ message: "invalid_input:empty_body" }, 400);
+    }
+
+    const { error: notificationError } = await db.rpc("enqueue_hackathon_notification", {
+      p_key: crypto.randomUUID(), p_hackathon: hackathonId, p_subject: subject,
+      p_body: html.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").trim(),
+      p_recipients: [...new Set(filtered.map(row => row.user_id))],
+    });
+    if (notificationError) throw notificationError;
+
     // Collect emails in parallel: prefer contact_email, fall back to auth email
     const emailResults = await Promise.all(
       filtered.map(async (r) => {
@@ -100,11 +112,6 @@ export async function handleHackathonBlastEmail(
         { ok: true, sent: 0, failed: 0, skipped: filtered.length, total: filtered.length },
         200,
       );
-    }
-
-    const bodyHtml = normalizeAnnouncementBodyHtml(html);
-    if (!bodyHtml) {
-      return json({ message: "invalid_input:empty_body" }, 400);
     }
 
     const unsubUrl = `${resolveAppUrl()}/account/settings`;
