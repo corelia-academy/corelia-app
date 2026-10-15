@@ -10,6 +10,7 @@ AS $$
   SELECT ARRAY['en', 'zh-CN', 'ko', 'es', 'zh-TW', 'vi', 'ja']
 $$;
 REVOKE ALL ON FUNCTION private.supported_content_locales() FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION private.supported_content_locales() TO service_role;
 
 -- Region-aware: zh-TW/zh-Hant/zh-HK/zh-MO -> zh-TW; other zh (zh, zh-CN, zh-Hans, zh-SG) -> zh-CN.
 CREATE OR REPLACE FUNCTION private.normalize_content_locale(p_locale text)
