@@ -2,7 +2,9 @@ import type { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-export type RouteSkeletonVariant = "list" | "detail" | "form" | "table" | "learn";
+import type { RouteSkeletonVariant } from "./routeSkeletonVariant";
+
+export type { RouteSkeletonVariant };
 
 type RouteSkeletonProps = {
   variant: RouteSkeletonVariant;
@@ -11,11 +13,38 @@ type RouteSkeletonProps = {
   bare?: boolean;
 };
 
-function LoadingStatus({ className, children }: { className?: string; children: ReactNode }) {
+function LoadingStatus({
+  className,
+  children,
+  immediate = false,
+}: {
+  className?: string;
+  children: ReactNode;
+  /** Show at once (first paint) instead of after the anti-flash delay. */
+  immediate?: boolean;
+}) {
   return (
-    <div className={className} role="status" aria-live="polite" aria-busy="true">
+    <div
+      className={cn(!immediate && "animate-skeleton-reveal", className)}
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
       <span className="sr-only">Loading</span>
       {children}
+    </div>
+  );
+}
+
+function HomeContent() {
+  return (
+    <div className="space-y-6">
+      <Skeleton className="h-48 w-full rounded-2xl" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Skeleton className="h-32 rounded-2xl" />
+        <Skeleton className="h-32 rounded-2xl" />
+        <Skeleton className="h-32 rounded-2xl" />
+      </div>
     </div>
   );
 }
@@ -111,9 +140,9 @@ function TableContent() {
 }
 
 /** Lesson player shell: h-12 top bar plus content and curriculum panes (matches `Learn`). */
-export function LearnShellSkeleton({ className }: { className?: string }) {
+export function LearnShellSkeleton({ className, immediate }: { className?: string; immediate?: boolean }) {
   return (
-    <LoadingStatus className={cn("flex h-full flex-col", className)}>
+    <LoadingStatus className={cn("flex h-full flex-col", className)} immediate={immediate}>
       <div className="flex h-12 shrink-0 items-center gap-3 border-b border-border-subtle bg-surface-raised px-3">
         <Skeleton className="size-8 rounded-md" />
         <Skeleton className="mx-auto h-4 w-48 max-w-[50%]" />
@@ -138,6 +167,7 @@ export function LearnShellSkeleton({ className }: { className?: string }) {
 }
 
 const CONTENT_BY_VARIANT: Record<Exclude<RouteSkeletonVariant, "learn">, () => ReactNode> = {
+  home: HomeContent,
   list: ListContent,
   detail: DetailContent,
   form: FormContent,
@@ -174,4 +204,10 @@ export function ListRowsSkeleton({ rows = 5, className }: { rows?: number; class
       ))}
     </LoadingStatus>
   );
+}
+
+/** Variant content without container or status wrapper (for shells that provide both). */
+export function RouteSkeletonContent({ variant }: { variant: Exclude<RouteSkeletonVariant, "learn"> }) {
+  const Content = CONTENT_BY_VARIANT[variant];
+  return <Content />;
 }

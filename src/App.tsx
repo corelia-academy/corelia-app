@@ -136,6 +136,7 @@ const AdminOgPreviewPage = lazy(() => import("@/pages/admin/AdminOgPreviewPage")
 
 const PageFallback = () => <AuthGateLoading />;
 const ShellFallback = () => <AppShellSkeleton />;
+const HomeFallback = () => <RouteSkeleton variant="home" />;
 const ListFallback = () => <RouteSkeleton variant="list" />;
 const DetailFallback = () => <RouteSkeleton variant="detail" />;
 const FormFallback = () => <RouteSkeleton variant="form" />;
@@ -381,7 +382,7 @@ function ApplicationRoutes() {
               <Route
                 index
                 element={
-                  <Suspense fallback={<ListFallback />}>
+                  <Suspense fallback={<HomeFallback />}>
                     <Home />
                   </Suspense>
                 }

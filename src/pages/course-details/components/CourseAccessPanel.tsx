@@ -44,7 +44,7 @@ export function CourseAccessPanel({
       </div>
       <div className="p-4">
         {loading && !isPublicEmptyCurriculum ? (
-          <div role="status" aria-busy="true" aria-label={translate("detail.loadingCourse")}>
+          <div className="animate-skeleton-reveal" role="status" aria-busy="true" aria-label={translate("detail.loadingCourse")}>
             <Skeleton className="mb-4 h-4 w-full" />
             <Skeleton className="mb-4 h-14 w-full rounded-md" />
             <Skeleton className="h-10 w-full rounded-lg" />

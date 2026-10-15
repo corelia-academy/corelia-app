@@ -1,4 +1,6 @@
 import { AppShellSkeleton } from "@/components/loading/AppShellSkeleton";
+import { LearnShellSkeleton } from "@/components/loading/RouteSkeleton";
+import { routeSkeletonVariantForPath } from "@/components/loading/routeSkeletonVariant";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const MINIMAL_ROUTE_PREFIXES = [
@@ -34,5 +36,13 @@ export function AuthBootstrapScreen() {
     );
   }
 
+  // Match the route about to render so the shape does not change again after boot.
+  if (routeSkeletonVariantForPath(window.location.pathname) === "learn") {
+    return (
+      <div className="h-dvh overflow-hidden bg-background">
+        <LearnShellSkeleton immediate />
+      </div>
+    );
+  }
   return <AppShellSkeleton />;
 }

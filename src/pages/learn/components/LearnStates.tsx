@@ -30,7 +30,7 @@ export function LearnMissingCourseIdState({
 /** Placeholder for the lesson player area while the resume redirect resolves. */
 export function LessonPlayerSkeleton() {
   return (
-    <div className="space-y-4 p-4 sm:p-6" role="status" aria-busy="true">
+    <div className="animate-skeleton-reveal space-y-4 p-4 sm:p-6" role="status" aria-busy="true">
       <span className="sr-only">Loading</span>
       <Skeleton className="aspect-video w-full max-w-5xl rounded-2xl" />
       <Skeleton className="h-7 w-2/3 max-w-xl rounded-lg" />
