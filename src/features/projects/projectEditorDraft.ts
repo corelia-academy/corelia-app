@@ -1,8 +1,9 @@
 import type { Project, ProjectContent, ProjectLocales } from "@/types/projects";
 import type { ProjectMediaItem } from "./ProjectMediaEditor";
+import { normalizeLocale, type ContentLocale } from "@/lib/locales";
 
 export type ProjectDraft = {
-  primaryLocale: "vi" | "en";
+  primaryLocale: ContentLocale;
   locales: ProjectLocales;
   title: string; slug: string; summary: string;
   description: string; progress: string; pitchVideo: string;
@@ -14,7 +15,7 @@ export type ProjectDraft = {
 };
 
 export function projectDraft(project?: Project | null, uiLocale = "vi"): ProjectDraft {
-  const primary = project ? project.i18n?.primary_content_locale ?? "vi" : uiLocale.startsWith("en") ? "en" : "vi";
+  const primary = project ? normalizeLocale(project.i18n?.primary_content_locale) : normalizeLocale(uiLocale);
   const localized = project?.content_locales?.[primary];
   return {
     primaryLocale: primary,
@@ -34,12 +35,12 @@ export function projectDraft(project?: Project | null, uiLocale = "vi"): Project
 export function primaryProjectContent(draft: ProjectDraft): ProjectContent {
   return { title: draft.title, summary: draft.summary, description: draft.description, progress: draft.progress };
 }
-export function contentForLocale(draft: ProjectDraft, locale: "vi" | "en"): ProjectContent {
+export function contentForLocale(draft: ProjectDraft, locale: ContentLocale): ProjectContent {
   return locale === draft.primaryLocale ? primaryProjectContent(draft) : { title: "", summary: "", description: "", progress: "", ...draft.locales[locale] };
 }
 export function projectLocalePayload(draft: ProjectDraft) {
   return { primary_content_locale: draft.primaryLocale, locales: { ...draft.locales, [draft.primaryLocale]: primaryProjectContent(draft) } };
 }
-export function changePrimaryLocale(draft: ProjectDraft, locale: "vi" | "en"): ProjectDraft {
+export function changePrimaryLocale(draft: ProjectDraft, locale: ContentLocale): ProjectDraft {
   return { ...draft, ...contentForLocale(draft, locale), primaryLocale: locale, locales: { ...draft.locales, [draft.primaryLocale]: primaryProjectContent(draft) } };
 }

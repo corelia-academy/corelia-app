@@ -1,0 +1,74 @@
+{
+  "follow": {
+    "follow": "Seguir",
+    "following": "Siguiendo",
+    "errors": {
+      "check": "No se pudo comprobar el estado de seguimiento.",
+      "save": "No se pudo actualizar el estado de seguimiento."
+    }
+  },
+  "followers": {
+    "summary": "{{count}} seguidores",
+    "title": "Seguidores",
+    "description": "Perfiles públicos que siguen este elemento.",
+    "loading": "Cargando seguidores...",
+    "empty": "Aún no hay seguidores públicos.",
+    "errors": {
+      "load": "No se pudieron cargar los seguidores."
+    }
+  },
+  "following": {
+    "title": "Siguiendo",
+    "description": "Perfiles públicos que sigue este usuario.",
+    "loading": "Cargando seguidos...",
+    "empty": "Aún no sigue a ningún perfil público.",
+    "errors": {
+      "load": "No se pudo cargar la lista de seguidos."
+    }
+  },
+  "milestones": {
+    "eyebrow": "Logros verificados",
+    "title": "Novedades",
+    "description": "Hitos de aprendizaje y proyectos que vale la pena celebrar.",
+    "member": "Miembro de Corelia",
+    "kind": {
+      "course_completed": "Curso completado",
+      "xp_reached": "Hito de XP",
+      "project_submitted": "Proyecto de hackathon"
+    },
+    "completed": "completó un curso",
+    "reached": "alcanzó {{count}} XP",
+    "submitted": "envió un proyecto a",
+    "atHackathon": "En {{name}}",
+    "like": "Me gusta",
+    "unlike": "Quitar me gusta",
+    "justNow": "Justo ahora",
+    "tabs": "Vista de novedades",
+    "explore": "Explorar",
+    "leaderboard": "Ranking de XP",
+    "following": "Siguiendo",
+    "new": "Hay nuevos hitos disponibles",
+    "error": "No se pudo cargar o guardar el feed.",
+    "retry": "Reintentar",
+    "empty": "Aún no hay hitos",
+    "emptyHint": "No hay logros nuevos por descubrir ahora mismo. Conoce gente en las sugerencias.",
+    "followingHint": "Cuando las personas que sigues compartan logros, aparecerán aquí.",
+    "followedTitle": "Personas que sigues",
+    "peopleTitle": "Personas",
+    "followedTab": "Siguiendo",
+    "followedEmpty": "Aún no sigues a nadie.",
+    "followedDescription": "Perfiles públicos que sigues, los más recientes primero.",
+    "suggestedTitle": "Personas que quizá quieras seguir",
+    "suggestedEmpty": "Aún no hay perfiles públicos que sugerir.",
+    "suggestedError": "No se pudieron cargar las personas sugeridas.",
+    "followedError": "No se pudieron cargar las personas que sigues.",
+    "followedAll": "Ver todo",
+    "loadMore": "Cargar más",
+    "profileTitle": "Logros",
+    "profileEmpty": "Aún no hay hitos públicos.",
+    "exploreDescription": "Descubre logros de personas a las que todavía no sigues.",
+    "followingDescription": "Últimos logros de las personas que sigues.",
+    "findPeople": "Encontrar personas a las que seguir",
+    "unavailable": "Este logro ya no está disponible."
+  }
+}

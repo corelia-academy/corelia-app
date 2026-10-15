@@ -1,4 +1,5 @@
 import type { CourseLesson } from "@/types/courses";
+import { isContentLocale } from "@/lib/locales";
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -42,7 +43,7 @@ export function learningMutationIssues(error: unknown, lessonId: string): import
   return payload.issues.flatMap((issue: unknown) => {
     if (!issue || typeof issue !== "object" || !("lessonId" in issue) || issue.lessonId !== lessonId || !("code" in issue) || typeof issue.code !== "string" || !("field" in issue) || typeof issue.field !== "string") return [];
     const location: import("./types").PublishValidationIssue = { lessonId, code: issue.code, field: issue.field };
-    if ("locale" in issue && (issue.locale === "vi" || issue.locale === "en")) location.locale = issue.locale;
+    if ("locale" in issue && isContentLocale(issue.locale)) location.locale = issue.locale;
     if ("panel" in issue && (issue.panel === "info" || issue.panel === "content" || issue.panel === "assignments")) location.panel = issue.panel;
     if ("fieldPath" in issue && Array.isArray(issue.fieldPath) && issue.fieldPath.every(part => typeof part === "string" || (typeof part === "number" && Number.isSafeInteger(part) && part >= 0))) location.fieldPath = issue.fieldPath;
     return [location];

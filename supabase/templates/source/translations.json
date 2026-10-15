@@ -1,0 +1,373 @@
+{
+  "Account Confirmation": {
+    "zh-CN": "账户确认",
+    "ko": "계정 확인",
+    "es": "Confirmación de cuenta",
+    "zh-TW": "帳戶確認",
+    "ja": "アカウントの確認"
+  },
+  "Confirm your email ✉️": {
+    "zh-CN": "确认您的邮箱 ✉️",
+    "ko": "이메일을 확인해 주세요 ✉️",
+    "es": "Confirma tu correo ✉️",
+    "zh-TW": "確認您的電子郵件 ✉️",
+    "ja": "メールアドレスを確認してください ✉️"
+  },
+  "Thanks for signing up for Corelia Academy. Click the button below to confirm your email address and activate your account.": {
+    "zh-CN": "感谢您注册 Corelia Academy。点击下方按钮确认您的邮箱地址并激活账户。",
+    "ko": "Corelia Academy에 가입해 주셔서 감사합니다. 아래 버튼을 눌러 이메일 주소를 확인하고 계정을 활성화하세요.",
+    "es": "Gracias por registrarte en Corelia Academy. Haz clic en el botón de abajo para confirmar tu correo electrónico y activar tu cuenta.",
+    "zh-TW": "感謝您註冊 Corelia Academy。點擊下方按鈕確認您的電子郵件地址並啟用帳戶。",
+    "ja": "Corelia Academy にご登録いただきありがとうございます。下のボタンをクリックしてメールアドレスを確認し、アカウントを有効にしてください。"
+  },
+  "The confirmation link expires in 24 hours. If you didn't create this account, you can safely ignore this email.": {
+    "zh-CN": "确认链接将在 24 小时后失效。如果这不是您创建的账户，可以放心忽略此邮件。",
+    "ko": "확인 링크는 24시간 후에 만료됩니다. 본인이 만든 계정이 아니라면 이 이메일을 무시하셔도 됩니다.",
+    "es": "El enlace de confirmación caduca en 24 horas. Si no creaste esta cuenta, puedes ignorar este correo.",
+    "zh-TW": "確認連結將在 24 小時後失效。如果這不是您建立的帳戶，可以放心忽略此郵件。",
+    "ja": "確認リンクは 24 時間で有効期限が切れます。このアカウントを作成した覚えがない場合は、このメールを無視してください。"
+  },
+  "If the button fails (for example due to safe-link scanners), you can enter this one-time code after opening Corelia’s confirmation flow: <strong>{{ .Token }}</strong>": {
+    "zh-CN": "如果按钮无法使用（例如被安全链接扫描器拦截），您可以在打开 Corelia 的确认流程后输入此一次性验证码：<strong>{{ .Token }}</strong>",
+    "ko": "버튼이 작동하지 않는 경우(예: 보안 링크 검사기 때문에) Corelia 확인 화면을 연 후 다음 일회용 코드를 입력할 수 있습니다: <strong>{{ .Token }}</strong>",
+    "es": "Si el botón no funciona (por ejemplo, por escáneres de enlaces seguros), puedes introducir este código de un solo uso tras abrir el flujo de confirmación de Corelia: <strong>{{ .Token }}</strong>",
+    "zh-TW": "如果按鈕無法使用（例如被安全連結掃描器攔截），您可以在開啟 Corelia 的確認流程後輸入此一次性驗證碼：<strong>{{ .Token }}</strong>",
+    "ja": "ボタンが動作しない場合（セーフリンクのスキャナーなどが原因）、Corelia の確認画面を開いたあとに、次のワンタイムコードを入力できます：<strong>{{ .Token }}</strong>"
+  },
+  "Confirm Email →": {
+    "zh-CN": "确认邮箱 →",
+    "ko": "이메일 확인 →",
+    "es": "Confirmar correo →",
+    "zh-TW": "確認電子郵件 →",
+    "ja": "メールを確認 →"
+  },
+  "You received this because an account was created at app.corelia.academy": {
+    "zh-CN": "您收到此邮件是因为有人在 app.corelia.academy 创建了账户",
+    "ko": "app.corelia.academy에서 계정이 생성되어 이 이메일을 받으셨습니다",
+    "es": "Recibes esto porque se creó una cuenta en app.corelia.academy",
+    "zh-TW": "您收到此郵件是因為有人在 app.corelia.academy 建立了帳戶",
+    "ja": "app.corelia.academy でアカウントが作成されたため、このメールをお送りしています"
+  },
+  "Privacy Policy": {
+    "zh-CN": "隐私政策",
+    "ko": "개인정보 처리방침",
+    "es": "Política de privacidad",
+    "zh-TW": "隱私權政策",
+    "ja": "プライバシーポリシー"
+  },
+  "Contact": {
+    "zh-CN": "联系我们",
+    "ko": "문의하기",
+    "es": "Contacto",
+    "zh-TW": "聯絡我們",
+    "ja": "お問い合わせ"
+  },
+  "Account security": {
+    "zh-CN": "账户安全",
+    "ko": "계정 보안",
+    "es": "Seguridad de la cuenta",
+    "zh-TW": "帳戶安全",
+    "ja": "アカウントのセキュリティ"
+  },
+  "Confirm your new email address": {
+    "zh-CN": "确认您的新邮箱地址",
+    "ko": "새 이메일 주소를 확인해 주세요",
+    "es": "Confirma tu nueva dirección de correo",
+    "zh-TW": "確認您的新電子郵件地址",
+    "ja": "新しいメールアドレスを確認してください"
+  },
+  "Confirm the email address change for your Corelia account.": {
+    "zh-CN": "确认您 Corelia 账户的邮箱地址变更。",
+    "ko": "Corelia 계정의 이메일 주소 변경을 확인하세요.",
+    "es": "Confirma el cambio de correo electrónico de tu cuenta de Corelia.",
+    "zh-TW": "確認您 Corelia 帳戶的電子郵件地址變更。",
+    "ja": "Corelia アカウントのメールアドレス変更を確認してください。"
+  },
+  "This link is for you only. If you did not request this email, you can ignore it.": {
+    "zh-CN": "此链接仅供您本人使用。如果您没有请求此邮件，请忽略。",
+    "ko": "이 링크는 본인만 사용할 수 있습니다. 이 이메일을 요청하지 않았다면 무시하셔도 됩니다.",
+    "es": "Este enlace es solo para ti. Si no solicitaste este correo, puedes ignorarlo.",
+    "zh-TW": "此連結僅供您本人使用。如果您沒有請求此郵件，請忽略。",
+    "ja": "このリンクはあなた専用です。このメールをリクエストしていない場合は無視してください。"
+  },
+  "Confirm change →": {
+    "zh-CN": "确认变更 →",
+    "ko": "변경 확인 →",
+    "es": "Confirmar cambio →",
+    "zh-TW": "確認變更 →",
+    "ja": "変更を確認 →"
+  },
+  "You received this because there was activity on your Corelia account.": {
+    "zh-CN": "您收到此邮件是因为您的 Corelia 账户有新的活动。",
+    "ko": "Corelia 계정에 활동이 있어 이 이메일을 받으셨습니다.",
+    "es": "Recibes esto porque hubo actividad en tu cuenta de Corelia.",
+    "zh-TW": "您收到此郵件是因為您的 Corelia 帳戶有新的活動。",
+    "ja": "Corelia アカウントでアクティビティがあったため、このメールをお送りしています。"
+  },
+  "Your email was changed": {
+    "zh-CN": "您的邮箱已被更改",
+    "ko": "이메일이 변경되었습니다",
+    "es": "Tu correo fue cambiado",
+    "zh-TW": "您的電子郵件已被變更",
+    "ja": "メールアドレスが変更されました"
+  },
+  "The email address for your Corelia account was just changed. If you did not make this change, contact support immediately.": {
+    "zh-CN": "您 Corelia 账户的邮箱地址刚刚被更改。如果这不是您本人的操作，请立即联系客服。",
+    "ko": "Corelia 계정의 이메일 주소가 방금 변경되었습니다. 본인이 변경하지 않았다면 즉시 고객지원에 문의하세요.",
+    "es": "La dirección de correo de tu cuenta de Corelia acaba de cambiarse. Si no hiciste este cambio, contacta con soporte de inmediato.",
+    "zh-TW": "您 Corelia 帳戶的電子郵件地址剛剛被變更。如果這不是您本人的操作，請立即聯絡客服。",
+    "ja": "Corelia アカウントのメールアドレスがたった今変更されました。心当たりがない場合は、すぐにサポートへご連絡ください。"
+  },
+  "A new identity was linked": {
+    "zh-CN": "已关联新的登录身份",
+    "ko": "새 로그인 ID가 연결되었습니다",
+    "es": "Se vinculó una nueva identidad",
+    "zh-TW": "已連結新的登入身分",
+    "ja": "新しいログイン ID が連携されました"
+  },
+  "A new sign-in identity was just linked to your Corelia account.": {
+    "zh-CN": "一个新的登录身份刚刚关联到您的 Corelia 账户。",
+    "ko": "새 로그인 ID가 방금 Corelia 계정에 연결되었습니다.",
+    "es": "Se acaba de vincular una nueva identidad de inicio de sesión a tu cuenta de Corelia.",
+    "zh-TW": "一個新的登入身分剛剛連結到您的 Corelia 帳戶。",
+    "ja": "新しいログイン ID がたった今 Corelia アカウントに連携されました。"
+  },
+  "An identity was unlinked": {
+    "zh-CN": "已取消关联登录身份",
+    "ko": "로그인 ID 연결이 해제되었습니다",
+    "es": "Se desvinculó una identidad",
+    "zh-TW": "已取消連結登入身分",
+    "ja": "ログイン ID の連携が解除されました"
+  },
+  "A sign-in identity was just unlinked from your Corelia account.": {
+    "zh-CN": "一个登录身份刚刚从您的 Corelia 账户中取消关联。",
+    "ko": "로그인 ID가 방금 Corelia 계정에서 연결 해제되었습니다.",
+    "es": "Se acaba de desvincular una identidad de inicio de sesión de tu cuenta de Corelia.",
+    "zh-TW": "一個登入身分剛剛從您的 Corelia 帳戶中取消連結。",
+    "ja": "ログイン ID がたった今 Corelia アカウントから連携解除されました。"
+  },
+  "Invitation": {
+    "zh-CN": "邀请",
+    "ko": "초대",
+    "es": "Invitación",
+    "zh-TW": "邀請",
+    "ja": "招待"
+  },
+  "You are invited to join Corelia": {
+    "zh-CN": "邀请您加入 Corelia",
+    "ko": "Corelia에 초대받았습니다",
+    "es": "Te invitaron a unirte a Corelia",
+    "zh-TW": "邀請您加入 Corelia",
+    "ja": "Corelia に招待されました"
+  },
+  "A Corelia account is waiting for you. Confirm the invitation to get started.": {
+    "zh-CN": "一个 Corelia 账户正在等您。确认邀请即可开始使用。",
+    "ko": "Corelia 계정이 준비되어 있습니다. 초대를 확인하고 시작하세요.",
+    "es": "Una cuenta de Corelia te está esperando. Confirma la invitación para comenzar.",
+    "zh-TW": "一個 Corelia 帳戶正在等您。確認邀請即可開始使用。",
+    "ja": "Corelia アカウントがあなたを待っています。招待を確認して始めましょう。"
+  },
+  "Accept invitation →": {
+    "zh-CN": "接受邀请 →",
+    "ko": "초대 수락 →",
+    "es": "Aceptar invitación →",
+    "zh-TW": "接受邀請 →",
+    "ja": "招待を承諾 →"
+  },
+  "Sign in": {
+    "zh-CN": "登录",
+    "ko": "로그인",
+    "es": "Iniciar sesión",
+    "zh-TW": "登入",
+    "ja": "ログイン"
+  },
+  "Your sign-in link": {
+    "zh-CN": "您的登录链接",
+    "ko": "로그인 링크",
+    "es": "Tu enlace de inicio de sesión",
+    "zh-TW": "您的登入連結",
+    "ja": "ログインリンク"
+  },
+  "Use the secure link below to sign in to Corelia.": {
+    "zh-CN": "使用下方的安全链接登录 Corelia。",
+    "ko": "아래 보안 링크로 Corelia에 로그인하세요.",
+    "es": "Usa el enlace seguro de abajo para iniciar sesión en Corelia.",
+    "zh-TW": "使用下方的安全連結登入 Corelia。",
+    "ja": "下の安全なリンクから Corelia にログインしてください。"
+  },
+  "Sign in →": {
+    "zh-CN": "登录 →",
+    "ko": "로그인 →",
+    "es": "Iniciar sesión →",
+    "zh-TW": "登入 →",
+    "ja": "ログイン →"
+  },
+  "A new authentication factor was added": {
+    "zh-CN": "已添加新的验证方式",
+    "ko": "새 인증 수단이 추가되었습니다",
+    "es": "Se añadió un nuevo factor de autenticación",
+    "zh-TW": "已新增新的驗證方式",
+    "ja": "新しい認証要素が追加されました"
+  },
+  "A multi-factor authentication method was just added to your Corelia account.": {
+    "zh-CN": "一种多重身份验证方式刚刚添加到您的 Corelia 账户。",
+    "ko": "다중 인증 수단이 방금 Corelia 계정에 추가되었습니다.",
+    "es": "Se acaba de añadir un método de autenticación multifactor a tu cuenta de Corelia.",
+    "zh-TW": "一種多重身分驗證方式剛剛新增到您的 Corelia 帳戶。",
+    "ja": "多要素認証の方法がたった今 Corelia アカウントに追加されました。"
+  },
+  "An authentication factor was removed": {
+    "zh-CN": "已移除验证方式",
+    "ko": "인증 수단이 제거되었습니다",
+    "es": "Se eliminó un factor de autenticación",
+    "zh-TW": "已移除驗證方式",
+    "ja": "認証要素が削除されました"
+  },
+  "A multi-factor authentication method was just removed from your Corelia account.": {
+    "zh-CN": "一种多重身份验证方式刚刚从您的 Corelia 账户中移除。",
+    "ko": "다중 인증 수단이 방금 Corelia 계정에서 제거되었습니다.",
+    "es": "Se acaba de eliminar un método de autenticación multifactor de tu cuenta de Corelia.",
+    "zh-TW": "一種多重身分驗證方式剛剛從您的 Corelia 帳戶中移除。",
+    "ja": "多要素認証の方法がたった今 Corelia アカウントから削除されました。"
+  },
+  "Your password was changed": {
+    "zh-CN": "您的密码已被更改",
+    "ko": "비밀번호가 변경되었습니다",
+    "es": "Tu contraseña fue cambiada",
+    "zh-TW": "您的密碼已被變更",
+    "ja": "パスワードが変更されました"
+  },
+  "The password for your Corelia account was just changed. If you did not make this change, contact support immediately.": {
+    "zh-CN": "您 Corelia 账户的密码刚刚被更改。如果这不是您本人的操作，请立即联系客服。",
+    "ko": "Corelia 계정의 비밀번호가 방금 변경되었습니다. 본인이 변경하지 않았다면 즉시 고객지원에 문의하세요.",
+    "es": "La contraseña de tu cuenta de Corelia acaba de cambiarse. Si no hiciste este cambio, contacta con soporte de inmediato.",
+    "zh-TW": "您 Corelia 帳戶的密碼剛剛被變更。如果這不是您本人的操作，請立即聯絡客服。",
+    "ja": "Corelia アカウントのパスワードがたった今変更されました。心当たりがない場合は、すぐにサポートへご連絡ください。"
+  },
+  "Your phone number was changed": {
+    "zh-CN": "您的手机号码已被更改",
+    "ko": "전화번호가 변경되었습니다",
+    "es": "Tu número de teléfono fue cambiado",
+    "zh-TW": "您的手機號碼已被變更",
+    "ja": "電話番号が変更されました"
+  },
+  "The phone number for your Corelia account was just changed. If you did not make this change, contact support immediately.": {
+    "zh-CN": "您 Corelia 账户的手机号码刚刚被更改。如果这不是您本人的操作，请立即联系客服。",
+    "ko": "Corelia 계정의 전화번호가 방금 변경되었습니다. 본인이 변경하지 않았다면 즉시 고객지원에 문의하세요.",
+    "es": "El número de teléfono de tu cuenta de Corelia acaba de cambiarse. Si no hiciste este cambio, contacta con soporte de inmediato.",
+    "zh-TW": "您 Corelia 帳戶的手機號碼剛剛被變更。如果這不是您本人的操作，請立即聯絡客服。",
+    "ja": "Corelia アカウントの電話番号がたった今変更されました。心当たりがない場合は、すぐにサポートへご連絡ください。"
+  },
+  "Identity Verification": {
+    "zh-CN": "身份验证",
+    "ko": "본인 확인",
+    "es": "Verificación de identidad",
+    "zh-TW": "身分驗證",
+    "ja": "本人確認"
+  },
+  "Your verification code 🛡️": {
+    "zh-CN": "您的验证码 🛡️",
+    "ko": "인증 코드 🛡️",
+    "es": "Tu código de verificación 🛡️",
+    "zh-TW": "您的驗證碼 🛡️",
+    "ja": "認証コード 🛡️"
+  },
+  "You're performing a sensitive action that requires re-authentication. Enter the OTP code below to continue.": {
+    "zh-CN": "您正在执行需要重新验证身份的敏感操作。请输入下方的一次性验证码（OTP）以继续。",
+    "ko": "재인증이 필요한 중요한 작업을 수행 중입니다. 아래 OTP 코드를 입력하여 계속하세요.",
+    "es": "Estás realizando una acción sensible que requiere volver a autenticarte. Introduce el código OTP de abajo para continuar.",
+    "zh-TW": "您正在執行需要重新驗證身分的敏感操作。請輸入下方的一次性驗證碼（OTP）以繼續。",
+    "ja": "再認証が必要な重要な操作を行っています。続行するには、下の OTP コードを入力してください。"
+  },
+  "Code valid for 10 minutes · Never share this code with anyone": {
+    "zh-CN": "验证码 10 分钟内有效 · 请勿向任何人透露此验证码",
+    "ko": "코드는 10분간 유효합니다 · 이 코드를 누구와도 공유하지 마세요",
+    "es": "Código válido durante 10 minutos · No compartas este código con nadie",
+    "zh-TW": "驗證碼 10 分鐘內有效 · 請勿向任何人透露此驗證碼",
+    "ja": "コードの有効期限は 10 分です · このコードは誰にも共有しないでください"
+  },
+  "If you didn't initiate this action, change your password immediately. Corelia Academy will never ask for your OTP via phone or chat.": {
+    "zh-CN": "如果这不是您本人发起的操作，请立即更改密码。Corelia Academy 绝不会通过电话或聊天向您索要 OTP。",
+    "ko": "본인이 시작한 작업이 아니라면 즉시 비밀번호를 변경하세요. Corelia Academy는 전화나 채팅으로 OTP를 절대 요청하지 않습니다.",
+    "es": "Si no iniciaste esta acción, cambia tu contraseña de inmediato. Corelia Academy nunca te pedirá tu OTP por teléfono ni chat.",
+    "zh-TW": "如果這不是您本人發起的操作，請立即變更密碼。Corelia Academy 絕不會透過電話或聊天向您索取 OTP。",
+    "ja": "この操作に心当たりがない場合は、すぐにパスワードを変更してください。Corelia Academy が電話やチャットで OTP をお尋ねすることはありません。"
+  },
+  "You received this because a reauthentication was requested at app.corelia.academy": {
+    "zh-CN": "您收到此邮件是因为有人在 app.corelia.academy 请求了重新验证",
+    "ko": "app.corelia.academy에서 재인증이 요청되어 이 이메일을 받으셨습니다",
+    "es": "Recibes esto porque se solicitó una reautenticación en app.corelia.academy",
+    "zh-TW": "您收到此郵件是因為有人在 app.corelia.academy 請求了重新驗證",
+    "ja": "app.corelia.academy で再認証がリクエストされたため、このメールをお送りしています"
+  },
+  "Account Security": {
+    "zh-CN": "账户安全",
+    "ko": "계정 보안",
+    "es": "Seguridad de la cuenta",
+    "zh-TW": "帳戶安全",
+    "ja": "アカウントのセキュリティ"
+  },
+  "Reset your password 🔑": {
+    "zh-CN": "重置您的密码 🔑",
+    "ko": "비밀번호 재설정 🔑",
+    "es": "Restablece tu contraseña 🔑",
+    "zh-TW": "重設您的密碼 🔑",
+    "ja": "パスワードをリセット 🔑"
+  },
+  "We received a request to reset the password for your account. Click the button below to proceed.": {
+    "zh-CN": "我们收到了重置您账户密码的请求。请点击下方按钮继续。",
+    "ko": "계정의 비밀번호 재설정 요청을 받았습니다. 아래 버튼을 눌러 계속하세요.",
+    "es": "Recibimos una solicitud para restablecer la contraseña de tu cuenta. Haz clic en el botón de abajo para continuar.",
+    "zh-TW": "我們收到了重設您帳戶密碼的請求。請點擊下方按鈕繼續。",
+    "ja": "アカウントのパスワードリセットのリクエストを受け付けました。下のボタンをクリックして続行してください。"
+  },
+  "The link expires in 30 minutes. If you didn't request this, ignore this email — your account remains secure.": {
+    "zh-CN": "此链接将在 30 分钟后失效。如果这不是您的请求，请忽略此邮件——您的账户依然安全。",
+    "ko": "링크는 30분 후에 만료됩니다. 요청하지 않으셨다면 이 이메일을 무시하세요. 계정은 안전합니다.",
+    "es": "El enlace caduca en 30 minutos. Si no lo solicitaste, ignora este correo: tu cuenta sigue segura.",
+    "zh-TW": "此連結將在 30 分鐘後失效。如果這不是您的請求，請忽略此郵件——您的帳戶依然安全。",
+    "ja": "リンクの有効期限は 30 分です。リクエストしていない場合は、このメールを無視してください。アカウントは安全です。"
+  },
+  "Requested at:": {
+    "zh-CN": "请求时间：",
+    "ko": "요청 시각:",
+    "es": "Solicitado el:",
+    "zh-TW": "請求時間：",
+    "ja": "リクエスト日時："
+  },
+  "Reset Password →": {
+    "zh-CN": "重置密码 →",
+    "ko": "비밀번호 재설정 →",
+    "es": "Restablecer contraseña →",
+    "zh-TW": "重設密碼 →",
+    "ja": "パスワードをリセット →"
+  },
+  "Security Details": {
+    "zh-CN": "安全详情",
+    "ko": "보안 정보",
+    "es": "Detalles de seguridad",
+    "zh-TW": "安全詳情",
+    "ja": "セキュリティ情報"
+  },
+  "Expires In": {
+    "zh-CN": "有效期",
+    "ko": "유효 시간",
+    "es": "Caduca en",
+    "zh-TW": "有效期限",
+    "ja": "有効期限"
+  },
+  "30 minutes": {
+    "zh-CN": "30 分钟",
+    "ko": "30분",
+    "es": "30 minutos",
+    "zh-TW": "30 分鐘",
+    "ja": "30 分"
+  },
+  "You received this because a password reset was requested at app.corelia.academy": {
+    "zh-CN": "您收到此邮件是因为有人在 app.corelia.academy 请求了重置密码",
+    "ko": "app.corelia.academy에서 비밀번호 재설정이 요청되어 이 이메일을 받으셨습니다",
+    "es": "Recibes esto porque se solicitó restablecer la contraseña en app.corelia.academy",
+    "zh-TW": "您收到此郵件是因為有人在 app.corelia.academy 請求了重設密碼",
+    "ja": "app.corelia.academy でパスワードのリセットがリクエストされたため、このメールをお送りしています"
+  }
+}

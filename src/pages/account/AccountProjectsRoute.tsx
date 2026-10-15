@@ -21,10 +21,8 @@ import {
   accountProjectsQueryOptions,
 } from "@/features/account/accountQueries";
 import { useAuth } from "@/stores/authStore";
+import { CONTENT_LOCALES, LOCALE_META, normalizeLocale } from "@/lib/locales";
 
-function normalizeLocale(value: string | null | undefined): Locale {
-  return value === "en" ? "en" : "vi";
-}
 
 function configPrimary(config: EntityI18nConfig | null | undefined): Locale {
   return normalizeLocale(config?.primary_content_locale);
@@ -33,7 +31,7 @@ function configPrimary(config: EntityI18nConfig | null | undefined): Locale {
 function configSupported(config: EntityI18nConfig | null | undefined): Locale[] {
   const raw = config?.supported_locales;
   const fallback: Locale[] = ["vi", "en"];
-  const list = Array.isArray(raw) && raw.length ? raw.map(normalizeLocale) : fallback;
+  const list = Array.isArray(raw) && raw.length ? raw.map((value) => normalizeLocale(value)) : fallback;
   return Array.from(new Set(list));
 }
 
@@ -77,7 +75,7 @@ export function AccountProjectsRoute() {
       primary_content_locale: configPrimary(cfg),
     };
     setI18nDraft(normalized);
-    setTargetLocale(normalized.primary_content_locale === "vi" ? "en" : "vi");
+    setTargetLocale(normalized.primary_content_locale === "en" ? "vi" : "en");
   }, [selected?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const localeQuery = useQuery(
@@ -321,8 +319,9 @@ export function AccountProjectsRoute() {
                             }))
                           }
                         >
-                          <option value="vi">vi</option>
-                          <option value="en">en</option>
+                          {CONTENT_LOCALES.map((lng) => (
+                <option key={lng} value={lng}>{LOCALE_META[lng].endonym}</option>
+              ))}
                         </select>
                       </label>
                       <div>
@@ -330,7 +329,7 @@ export function AccountProjectsRoute() {
                           {t("account:projects.supportedLocalesLabel")}
                         </div>
                         <div className="mt-2 flex flex-wrap gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3 text-sm">
-                          {(["vi", "en"] as const).map((lng) => (
+                          {CONTENT_LOCALES.map((lng) => (
                             <label key={lng} className="inline-flex items-center gap-2 text-foreground">
                               <input
                                 type="checkbox"
@@ -344,7 +343,7 @@ export function AccountProjectsRoute() {
                                   });
                                 }}
                               />
-                              {lng}
+                              {LOCALE_META[lng].endonym}
                             </label>
                           ))}
                         </div>
@@ -389,8 +388,9 @@ export function AccountProjectsRoute() {
                           value={targetLocale}
                           onChange={(e) => setTargetLocale(normalizeLocale(e.target.value))}
                         >
-                          <option value="vi">vi</option>
-                          <option value="en">en</option>
+                          {CONTENT_LOCALES.map((lng) => (
+                <option key={lng} value={lng}>{LOCALE_META[lng].endonym}</option>
+              ))}
                         </select>
                         <Button type="button" variant="cta" hierarchy="secondary" onClick={copyFromPrimary}>
                           <Copy className="size-4" aria-hidden />

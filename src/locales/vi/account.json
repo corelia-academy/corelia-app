@@ -43,10 +43,16 @@
     "language": {
       "title": "Ngôn ngữ",
       "description": "Thay đổi ngôn ngữ hiển thị cho toàn bộ ứng dụng. Với tài khoản đã đăng nhập, lựa chọn này sẽ được đồng bộ trên các thiết bị.",
-      "viMeta": "Vietnamese (VI)",
-      "enMeta": "English (EN)",
-      "active_vi": "Đang dùng",
-      "active_en": "Đang dùng"
+      "meta": {
+        "en": "Tiếng Anh (EN)",
+        "zh-CN": "Tiếng Trung giản thể (zh-CN)",
+        "ko": "Tiếng Hàn (KO)",
+        "es": "Tiếng Tây Ban Nha (ES)",
+        "zh-TW": "Tiếng Trung phồn thể (zh-TW)",
+        "vi": "Tiếng Việt (VI)",
+        "ja": "Tiếng Nhật (JA)"
+      },
+      "active": "Đang dùng"
     },
     "appearance": {
       "title": "Giao diện",

@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { LessonReadinessBadge } from "@/features/learning/admin/LessonReadinessBadge";
 import type { CourseLesson, SupportedCourseLocale } from "@/types/courses";
 import { validateLesson } from "@/features/learning/validation";
+import { CONTENT_LOCALES } from "@/lib/locales";
 
 /** Extend the existing instructor editor without replacing its operational panels. */
 export default function LearningCourseEditorRoute() {
@@ -95,8 +96,8 @@ function LearningCourseEditorWorkspace() {
       nextLessonOrder={Math.max(-1, ...editorBundle.lessons.map(lesson => lesson.order)) + 1}
       initialLocale={editing.locale}
       primaryLocale={editorBundle.course.i18n?.primary_content_locale ?? "vi"}
-      locales={Object.fromEntries((["vi", "en"] as const).flatMap(locale => {
-        const copy = editorBundle.locales[locale].get(editing.lesson.id);
+      locales={Object.fromEntries(CONTENT_LOCALES.flatMap(locale => {
+        const copy = editorBundle.locales[locale]?.get(editing.lesson.id);
         return copy == null ? [] : [[locale, copy]];
       }))}
       onClose={closeEditor} onSaved={refresh} />}

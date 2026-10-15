@@ -9,10 +9,11 @@ import {
 import { getCatalogInstructorOptions, getCatalogSkillOptions } from "../utils/catalog";
 import type { CourseLevel, SupportedCourseLocale } from "@/types/courses";
 import { filterAndSortCourses, type OwnerFilter, type SortMode } from "../utils/catalog";
+import { normalizeLocale } from "@/lib/locales";
 
 export function useCoursesCatalog() {
   const { t, i18n } = useTranslation("courses");
-  const locale: SupportedCourseLocale = i18n.language?.startsWith("en") ? "en" : "vi";
+  const locale: SupportedCourseLocale = normalizeLocale(i18n.language);
   const catalogQuery = useQuery(coursesCatalogQueryOptions(locale));
   const courses = useMemo(() => catalogQuery.data ?? [], [catalogQuery.data]);
   const courseIds = useMemo(() => courses.map((course) => course.id), [courses]);

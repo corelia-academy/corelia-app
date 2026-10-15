@@ -1,14 +1,11 @@
-export type EmailLocale = "vi" | "en";
+import { parseContentLocale, type ContentLocale } from "../locale.ts";
+
+export type EmailLocale = ContentLocale;
 export type EmailLocaleSource = "profile" | "auth_metadata" | "contact" | "fallback";
 export type EmailRecipientKind = "account" | "contact";
 
 export function parseEmailLocale(value?: unknown): EmailLocale | null {
-  if (typeof value !== "string") return null;
-  const normalized = value.trim().toLowerCase().replaceAll("_", "-");
-  const language = normalized.split("-")[0];
-  if (language === "vi" || language === "vn") return "vi";
-  if (language === "en") return "en";
-  return null;
+  return parseContentLocale(value);
 }
 
 /** Email locale always falls back to English. Website locale defaults are separate. */

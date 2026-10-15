@@ -34,6 +34,7 @@ import { useAuth } from "@/stores/authStore";
 import { duplicateLesson } from "./duplicateLesson";
 import type { PublishValidationIssue } from "../types";
 import { validateQuizQuestions } from "./quizValidation";
+import { CONTENT_LOCALES, LOCALE_META } from "@/lib/locales";
 
 function issueControl(field: string): HTMLElement | null {
   const target = document.getElementById(`learning-${field}`);
@@ -67,7 +68,7 @@ function Editor({courseId,finalAssignment,initial,sections,nextLessonOrder,prima
     if(finalAssignment)result.push(...validatePracticeFinalMapping(initial,finalAssignment));
     if(getLessonFormat(initial)==="quiz")result.push(...validateQuizQuestions(initial.id,initialQuestions));
     result.push(...validateLessonResources(initial.resources??[],initial.id,primaryLocale,true));
-    for(const lang of ["vi","en"] as const)if(lang!==primaryLocale)result.push(...validateLessonResources(initialLocales[lang]?.resources??[],initial.id,lang,true));
+    for(const lang of CONTENT_LOCALES)if(lang!==primaryLocale)result.push(...validateLessonResources(initialLocales[lang]?.resources??[],initial.id,lang,true));
     // Directory availability is server-only; retain those issue codes even when
     // local structural validation cannot reproduce them.
     for(const code of initialIssueCodes)if(!result.some(issue=>issue.code===code)){
@@ -119,8 +120,8 @@ function Editor({courseId,finalAssignment,initial,sections,nextLessonOrder,prima
     if(invalidPractice&&!lesson.published)nextIssues.push({lessonId:lesson.id,field:"practice_config",code:"invalid_config"});
     if(lesson.published&&lesson.lesson_format==="quiz")nextIssues.push(...validateQuizQuestions(lesson.id,questions));
     nextIssues.push(...validateLessonResources(lesson.resources??[],lesson.id,primaryLocale,Boolean(lesson.published)));
-    for(const lang of ["vi","en"] as const)if(lang!==primaryLocale)nextIssues.push(...validateLessonResources(locales[lang]?.resources??[],lesson.id,lang,Boolean(lesson.published)));
-    for(const [lang, source] of [[primaryLocale,lesson],...(["vi","en"] as const).map(lang=>[lang,locales[lang]??{}] as const)] as const){
+    for(const lang of CONTENT_LOCALES)if(lang!==primaryLocale)nextIssues.push(...validateLessonResources(locales[lang]?.resources??[],lesson.id,lang,Boolean(lesson.published)));
+    for(const [lang, source] of [[primaryLocale,lesson],...CONTENT_LOCALES.map(lang=>[lang,locales[lang]??{}] as const)] as const){
       if(normalizeLessonCopy(source).invalid||normalizeCodeLocale(source.code_exercise_locale).invalid||normalizeVideoLocale(source).invalid)nextIssues.push({lessonId:lesson.id,locale:lang,panel:"content",field:"locale_copy",code:"invalid_locale_copy"});
     }
     nextIssues.push(...translationVideoIssues(lesson,locales,primaryLocale));
@@ -139,7 +140,7 @@ function Editor({courseId,finalAssignment,initial,sections,nextLessonOrder,prima
   return <>{confirmation}<Dialog open onOpenChange={open=>!open&&close()}><DialogContent initialFocus={() => issues[0] ? issueControl(issueField(issues[0],initial)) ?? true : true} className="w-full max-w-5xl"><DialogTitle>{isNew?t("learning.addLesson"):`${t("learning.edit")} · ${lesson.title}`}</DialogTitle><DialogDescription>{t("learning.reviewCourseOnly")}</DialogDescription>
     {!isNew&&lesson.id===initial.id&&<Button type="button" variant="cta" hierarchy="secondary" disabled={mutation.isPending} onClick={duplicate}>{t("learning.duplicateDraft")}</Button>}
     {lesson.id!==initial.id&&<p role="status">{t("learning.duplicateUnsaved")}</p>}
-    <fieldset disabled={mutation.isPending} className="contents"><div className="flex flex-wrap items-center gap-3"><select aria-label={t("learning.localization")} className={`${inputClass} w-auto`} value={locale} onChange={e=>setLocale(e.target.value as SupportedCourseLocale)}><option value="vi">Tiếng Việt</option><option value="en">English</option></select><Button type="button" variant="cta" hierarchy="secondary" disabled={invalidPractice||invalidCode||invalidQuestions||invalidQuiz} onClick={()=>setPreview(p=>!p)}>{t("learning.preview")}</Button>{master&&<Toggle label={t("learning.published")} checked={lesson.published??false} onChange={published=>patch({published})}/>}</div>
+    <fieldset disabled={mutation.isPending} className="contents"><div className="flex flex-wrap items-center gap-3"><select aria-label={t("learning.localization")} className={`${inputClass} w-auto`} value={locale} onChange={e=>setLocale(e.target.value as SupportedCourseLocale)}>{CONTENT_LOCALES.map(code=><option key={code} value={code}>{LOCALE_META[code].endonym}</option>)}</select><Button type="button" variant="cta" hierarchy="secondary" disabled={invalidPractice||invalidCode||invalidQuestions||invalidQuiz} onClick={()=>setPreview(p=>!p)}>{t("learning.preview")}</Button>{master&&<Toggle label={t("learning.published")} checked={lesson.published??false} onChange={published=>patch({published})}/>}</div>
     {preview?<><p>{t("learning.unsavedPreview")}</p><LessonPlayerCard lesson={previewDisplay} lessonIndex={0} courseId={courseId} mode="preview" contentLocale={locale} completed={false} isDraftLesson={false} hasFullCourseAccess previousLesson={null} nextLesson={null} translate={key=>String(t(key))} onMarkComplete={async()=>{}} onNavigateToLesson={()=>{}} questions={lesson.lesson_format==="quiz"?previewQuestions:undefined}/></>:<div className="space-y-5">
       {invalidCopy&&<div id="learning-locale_copy" tabIndex={-1} className="space-y-3 rounded-lg border border-destructive/30 p-3"><p role="alert">{t("learning.invalidCopyRecovery")}</p><Button type="button" variant="cta" hierarchy="secondary" onClick={async()=>{
         if(!await confirm(t("learning.recoverCopyConfirm")))return;

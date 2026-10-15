@@ -148,7 +148,7 @@ describe("ProjectEditor", () => {
     expect(save).toHaveBeenCalledOnce();
     save.mockClear();
     await act(async () => {
-      const select = host.querySelector('select')!;
+      const select = host.querySelector('label select') as HTMLSelectElement;
       select.value = 'public';
       select.dispatchEvent(new Event('change',{bubbles:true}));
     });

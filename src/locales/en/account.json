@@ -43,10 +43,16 @@
     "language": {
       "title": "Language",
       "description": "Change the app display language. When signed in, this preference is synced across your devices.",
-      "viMeta": "Vietnamese (VI)",
-      "enMeta": "English (EN)",
-      "active_vi": "Active",
-      "active_en": "Active"
+      "meta": {
+        "en": "English (EN)",
+        "zh-CN": "Simplified Chinese (zh-CN)",
+        "ko": "Korean (KO)",
+        "es": "Spanish (ES)",
+        "zh-TW": "Traditional Chinese (zh-TW)",
+        "vi": "Vietnamese (VI)",
+        "ja": "Japanese (JA)"
+      },
+      "active": "Active"
     },
     "appearance": {
       "title": "Appearance",

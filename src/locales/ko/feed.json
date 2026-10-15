@@ -1,0 +1,74 @@
+{
+  "follow": {
+    "follow": "팔로우",
+    "following": "팔로잉",
+    "errors": {
+      "check": "팔로우 상태를 확인할 수 없습니다.",
+      "save": "팔로우 상태를 업데이트할 수 없습니다."
+    }
+  },
+  "followers": {
+    "summary": "팔로워 {{count}}명",
+    "title": "팔로워",
+    "description": "이 항목을 팔로우하는 공개 프로필입니다.",
+    "loading": "팔로워를 불러오는 중...",
+    "empty": "아직 공개 팔로워가 없습니다.",
+    "errors": {
+      "load": "팔로워를 불러올 수 없습니다."
+    }
+  },
+  "following": {
+    "title": "팔로잉",
+    "description": "이 사용자가 팔로우하는 공개 프로필입니다.",
+    "loading": "팔로잉 목록을 불러오는 중...",
+    "empty": "아직 팔로우한 공개 프로필이 없습니다.",
+    "errors": {
+      "load": "팔로잉 목록을 불러올 수 없습니다."
+    }
+  },
+  "milestones": {
+    "eyebrow": "인증된 성과",
+    "title": "피드",
+    "description": "함께 축하할 만한 학습 및 프로젝트 마일스톤입니다.",
+    "member": "Corelia 회원",
+    "kind": {
+      "course_completed": "강의 수료",
+      "xp_reached": "XP 마일스톤",
+      "project_submitted": "해커톤 프로젝트"
+    },
+    "completed": "강의를 수료했습니다",
+    "reached": "{{count}} XP에 도달했습니다",
+    "submitted": "프로젝트를 제출했습니다:",
+    "atHackathon": "{{name}}에서",
+    "like": "좋아요",
+    "unlike": "좋아요 취소",
+    "justNow": "방금 전",
+    "tabs": "피드 보기",
+    "explore": "탐색",
+    "leaderboard": "XP 순위",
+    "following": "팔로잉",
+    "new": "새로운 마일스톤이 있습니다",
+    "error": "피드를 불러오거나 저장할 수 없습니다.",
+    "retry": "다시 시도",
+    "empty": "아직 마일스톤이 없습니다",
+    "emptyHint": "지금은 새로 발견할 성과가 없습니다. 추천에서 새로운 사람을 만나 보세요.",
+    "followingHint": "팔로우하는 사람이 성과를 공유하면 여기에 표시됩니다.",
+    "followedTitle": "내가 팔로우하는 사람",
+    "peopleTitle": "사람",
+    "followedTab": "팔로잉",
+    "followedEmpty": "아직 아무도 팔로우하지 않았습니다.",
+    "followedDescription": "내가 팔로우하는 공개 프로필 (최신순)입니다.",
+    "suggestedTitle": "팔로우할 만한 사람",
+    "suggestedEmpty": "아직 추천할 공개 프로필이 없습니다.",
+    "suggestedError": "추천 사용자를 불러올 수 없습니다.",
+    "followedError": "팔로우 중인 사용자를 불러올 수 없습니다.",
+    "followedAll": "모두 보기",
+    "loadMore": "더 보기",
+    "profileTitle": "성과",
+    "profileEmpty": "아직 공개된 마일스톤이 없습니다.",
+    "exploreDescription": "아직 팔로우하지 않은 사람들의 성과를 찾아보세요.",
+    "followingDescription": "팔로우하는 사람들의 최신 성과입니다.",
+    "findPeople": "팔로우할 사람 찾기",
+    "unavailable": "이 성과는 더 이상 이용할 수 없습니다."
+  }
+}

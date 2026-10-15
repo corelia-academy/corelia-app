@@ -1,0 +1,567 @@
+{
+  "nav": {
+    "sectionTitle": "账户设置",
+    "currentSectionLabel": "当前查看",
+    "settings": {
+      "title": "设置",
+      "description": "主题、退出登录"
+    },
+    "profile": {
+      "title": "个人信息",
+      "description": "姓名、联系方式、头像"
+    },
+    "instructor": {
+      "title": "讲师资料",
+      "description": "对学员可见的信息"
+    },
+    "cv": {
+      "title": "学习档案与简历",
+      "description": "用于辅导与职业支持的信息"
+    },
+    "achievements": {
+      "title": "成就库",
+      "description": "管理证书和徽章"
+    }
+  },
+  "header": {
+    "roleLabel": {
+      "instructor": "讲师账户",
+      "admin": "管理员账户",
+      "support_staff": "支持账户",
+      "student": "学员账户"
+    },
+    "subtitle": "在一处管理您的个人信息、安全设置和职业档案。",
+    "summary": {
+      "profileLabel": "资料",
+      "roleLabel": "角色",
+      "statusLabel": "状态",
+      "missingDisplayName": "尚未设置显示名称",
+      "statusReady": "已就绪，可以开始学习并跟踪进度"
+    }
+  },
+  "settings": {
+    "language": {
+      "title": "语言",
+      "description": "更改应用显示语言。登录后，此偏好会在您的各台设备间同步。",
+      "meta": {
+        "en": "英语 (EN)",
+        "zh-CN": "简体中文 (zh-CN)",
+        "ko": "韩语 (KO)",
+        "es": "西班牙语 (ES)",
+        "zh-TW": "繁体中文 (zh-TW)",
+        "vi": "越南语 (VI)",
+        "ja": "日语 (JA)"
+      },
+      "active": "当前使用"
+    },
+    "appearance": {
+      "title": "外观",
+      "description": "选择适合您使用环境的主题。",
+      "themeLabel": "主题",
+      "light": "浅色",
+      "dark": "深色",
+      "system": "跟随系统"
+    },
+    "session": {
+      "title": "会话",
+      "description": "管理此设备上的登录状态。",
+      "signOutTitle": "退出登录",
+      "signOutDescription": "结束此设备上的当前会话。",
+      "signOutButton": "退出登录"
+    },
+    "notifications": {
+      "title": "通知偏好",
+      "description": "选择您希望通过邮件和应用内接收的通知。",
+      "emailLearningReminders": "接收定期的学习提醒邮件",
+      "emailLearningRemindersDesc": "当您暂停正在学习的课程时，按间隔发送提醒。",
+      "emailCourseBlast": "接收课程公告邮件",
+      "emailTrackBlast": "接收学习路径公告邮件",
+      "inAppCourseBlast": "在应用内显示课程公告",
+      "inAppTrackBlast": "在应用内显示学习路径公告",
+      "saved": "通知偏好已保存",
+      "likes": "您的作品收到的赞",
+      "follows": "新关注者",
+      "digest": "每日社交动态邮件",
+      "digestDescription": "仅在有新动态时于 09:00（{{timezone}}）发送。可随时退订。"
+    }
+  },
+  "common": {
+    "loading": "处理中…",
+    "continue": "继续",
+    "cancel": "取消",
+    "finish": "完成"
+  },
+  "errors": {
+    "notLoggedIn": "尚未登录"
+  },
+  "projects": {
+    "pageTitle": "项目工作区",
+    "listTitle": "我的项目",
+    "ownerBadge": "所有者",
+    "collaboratorBadge": "协作者",
+    "publicListingLabel": "公开展示：",
+    "collaboratorCardTitle": "协作者可见性",
+    "collaboratorCardBody": "您被列为此项目的协作者。您可以选择此项目是否显示在您的公开资料中。",
+    "showOnProfileLabel": "在我的资料中显示此项目",
+    "showOnProfileHint": "启用后，此项目可显示在您的公开资料和账户项目列表中。",
+    "ownerOnlyTitle": "由所有者管理的内容",
+    "ownerOnlyBody": "目前只有项目所有者可以编辑项目主要内容和翻译。作为协作者，您只能控制它是否显示在您的资料中。",
+    "localizationSettingsTitle": "本地化设置",
+    "primaryLocaleLabel": "主要内容语言",
+    "supportedLocalesLabel": "支持的语言",
+    "saveSettings": "保存设置",
+    "translationEditorTitle": "翻译编辑器",
+    "translationEditorHint": "空字段将回退到主要语言（{{primaryLocale}}）。",
+    "updatedAt": "更新时间：{{datetime}}",
+    "copyFromPrimary": "从主要语言复制",
+    "saveTranslation": "保存翻译",
+    "savingTranslation": "正在保存…",
+    "targetLocaleDisabled": "目标语言 {{locale}} 未在支持的语言中启用。",
+    "primaryColumnTitle": "主要（{{locale}}）",
+    "translationColumnTitle": "翻译（{{locale}}）",
+    "fieldTitle": "标题",
+    "fieldSummary": "摘要",
+    "titleFallback": "回退：{{title}}",
+    "titlePlaceholder": "输入标题",
+    "summaryPlaceholder": "留空则回退到主要语言",
+    "errors": {
+      "visibilityFailed": "无法更新此项目的资料可见性。"
+    }
+  },
+  "password": {
+    "title": "修改密码",
+    "subtitle": "仅适用于使用邮箱和密码登录的账户。",
+    "fields": {
+      "current": {
+        "label": "当前密码",
+        "placeholder": "输入当前密码"
+      },
+      "next": {
+        "label": "新密码",
+        "placeholder": "至少 8 个字符，包含大写字母、小写字母、数字和符号"
+      },
+      "confirm": {
+        "label": "确认新密码",
+        "placeholder": "再次输入新密码"
+      }
+    },
+    "actions": {
+      "submit": "修改密码"
+    },
+    "success": {
+      "changed": "密码修改成功。"
+    },
+    "errors": {
+      "confirmMismatch": "新密码与确认密码不一致。",
+      "minLength": "新密码至少需要 8 个字符。",
+      "policy": "新密码至少需要 8 个字符，并包含大写字母、小写字母、数字和符号。",
+      "missingEmail": "未找到邮箱。只有基于邮箱的账户才能修改密码。",
+      "changeFailed": "无法修改密码。"
+    }
+  },
+  "mfa": {
+    "title": "双重验证安全 (MFA)",
+    "subtitle": "添加手机号，以便登录时接收短信验证码，让您的账户更安全。",
+    "factorLabel": "验证手机号",
+    "providers": {
+      "google": "Google",
+      "github": "GitHub"
+    },
+    "enrolled": {
+      "title": "已绑定的验证方式："
+    },
+    "actions": {
+      "addPhone": "添加验证手机号",
+      "sending": "正在发送…",
+      "sendSms": "发送短信验证码"
+    },
+    "reauth": {
+      "hint": "出于安全原因，添加手机号前请重新验证身份。",
+      "passwordLabel": "当前密码",
+      "passwordPlaceholder": "输入密码",
+      "popupHint": "点击下方按钮，使用 {{provider}} 重新登录。"
+    },
+    "phone": {
+      "label": "手机号（E.164 格式，例如 +84901234567）",
+      "placeholder": "+84 901 234 567"
+    },
+    "code": {
+      "hint": "验证码已发送。请在下方输入 6 位验证码。",
+      "label": "验证码",
+      "placeholder": "000000"
+    },
+    "success": {
+      "enabled": "双重验证（短信）已启用。"
+    },
+    "errors": {
+      "reauthFailed": "重新验证失败，请重试。",
+      "invalidPhone": "手机号无效（例如 0901234567 或 +84901234567）。",
+      "sendCodeFailed": "无法发送验证码，请重试。",
+      "enrollFailed": "绑定失败，请重试。"
+    }
+  },
+  "profile": {
+    "loading": "正在加载资料…",
+    "mustLogin": "您需要登录才能查看此页面。",
+    "tabs": {
+      "info": "资料",
+      "ocid": "OCID",
+      "security": "安全"
+    },
+    "emailLoginLabel": "登录邮箱",
+    "publicProfile": {
+      "label": "公开资料",
+      "status": {
+        "public": "公开",
+        "private": "私密"
+      },
+      "hint": "您的公开资料链接：/@{{handle}}",
+      "actions": {
+        "makePrivate": "设为私密",
+        "makePublic": "设为公开",
+        "saving": "正在保存..."
+      }
+    },
+    "setupWarning": {
+      "title": "您的资料还需要补充一些信息。",
+      "body": "请更新您的姓名和手机号，以便 Corelia、讲师或支持人员更好地帮助您。"
+    },
+    "avatar": {
+      "label": "头像",
+      "alt": "头像",
+      "upload": "上传图片",
+      "uploading": "正在上传…",
+      "randomize": "试试随机头像",
+      "tryAnother": "换一个",
+      "useThis": "使用此头像",
+      "cancel": "取消",
+      "saving": "正在保存…",
+      "hint": "支持 JPG、PNG 或 WebP。图片将立即保存并更新。"
+    },
+    "fullName": {
+      "label": "姓名",
+      "placeholder": "张三",
+      "hint": "用于证书和成绩单。",
+      "limit": "最多 {{count}} / {{max}} 个字符。"
+    },
+    "username": {
+      "label": "用户名",
+      "placeholder": "例如 terrrancrypt",
+      "hint": "用于您的公开资料网址。"
+    },
+    "bio": {
+      "label": "个人简介",
+      "placeholder": "简短介绍一下您自己…",
+      "hint": "将显示在您的公开资料中。"
+    },
+    "website": {
+      "label": "网站",
+      "placeholder": "https://…",
+      "hint": "作品集 / LinkedIn / 个人网站。"
+    },
+    "phone": {
+      "label": "联系电话",
+      "placeholder": "例如 09xxxxxxxx",
+      "hint": "必要时支持人员会通过此号码联系您。"
+    },
+    "actions": {
+      "saving": "正在保存...",
+      "save": "保存更改"
+    },
+    "success": {
+      "avatarUpdated": "头像已更新。",
+      "updated": "账户信息已更新。",
+      "visibilityUpdated": "资料可见性已更新。"
+    },
+    "errors": {
+      "avatarUploadFailed": "无法上传图片。",
+      "avatarUpdateFailed": "无法更新头像。",
+      "updateFailed": "无法更新信息。",
+      "visibilityUpdateFailed": "无法更新资料可见性。",
+      "usernameTaken": "此用户名已被占用，请换一个。",
+      "loadFailed": "无法加载您的资料，请检查网络连接。",
+      "invalidName": "姓名最多 160 个字符，且不能包含隐藏的控制字符。",
+      "invalidText": "某个资料字段过长或包含隐藏的控制字符，请缩短或重新输入。"
+    },
+    "retry": "重试"
+  },
+  "cv": {
+    "title": "学习档案与简历",
+    "subtitle": "用于职业辅导、岗位内推和奖学金支持的综合档案。",
+    "comingSoon": {
+      "title": "简历管理（即将推出）",
+      "body": "您将可以在此上传简历（PDF）并更新职业信息，帮助讲师和支持人员了解您的背景，更好地支持您的学习路径。",
+      "note": "目前在此功能完善期间，您可以将简历链接（Google Drive、Notion 等）添加到扩展资料描述中。"
+    },
+    "prep": {
+      "title": "建议准备的信息",
+      "items": {
+        "0": "工作经历 / 重要的个人项目。",
+        "1": "已完成的课程及相关证书。",
+        "2": "专业技能和软技能。"
+      }
+    }
+  },
+  "instructorProfile": {
+    "onlyInstructors": "只有讲师可以编辑教学资料。",
+    "title": "讲师资料",
+    "subtitle": "这是显示给学员的公开资料，会出现在讲师页面和课程页面上。",
+    "completion": "已完成 {{percent}}%",
+    "common": {
+      "notUpdated": "未更新"
+    },
+    "origin": {
+      "corelia": "Corelia 讲师",
+      "external": "合作讲师（外部）",
+      "unknown": "未分类"
+    },
+    "cards": {
+      "originLabel": "讲师类型",
+      "organizationLabel": "所属机构",
+      "headlineLabel": "头衔",
+      "websiteLabel": "网站 / 作品集"
+    },
+    "tips": {
+      "organization": {
+        "title": "展示您所在的机构",
+        "body": "所在机构能让学员更了解您的专业背景。"
+      },
+      "intro": {
+        "title": "简短介绍",
+        "body": "您的头衔和简介应突出优势、经验和授课领域。"
+      },
+      "externalProfile": {
+        "title": "关联外部资料",
+        "body": "在学员考虑报名时，LinkedIn 或作品集有助于建立信任。"
+      }
+    },
+    "fields": {
+      "origin": {
+        "label": "讲师类型",
+        "hint": "讲师类型只能由支持人员/管理员更新。"
+      },
+      "organization": {
+        "label": "所属机构",
+        "placeholder": "例如 Corelia、ABC 公司、XYZ 大学…"
+      },
+      "headline": {
+        "label": "头衔",
+        "placeholder": "例如 高级前端工程师、数据分析导师…"
+      },
+      "bio": {
+        "label": "讲师简介",
+        "placeholder": "分享教学经验、实际项目、合作过的公司和您的主要专长…"
+      },
+      "website": {
+        "label": "网站 / LinkedIn / 作品集",
+        "placeholder": "https://…、linkedin.com/in/…、个人作品集"
+      }
+    },
+    "socialLinks": {
+      "title": "社交媒体与链接",
+      "subtitle": "添加您的社交媒体账号或链接，显示在课程页面上。",
+      "empty": "尚未添加链接。请在下方添加您的第一个链接。",
+      "addTitle": "添加新链接",
+      "urlPlaceholder": "https://...",
+      "labelPlaceholder": "可选标签（例如 个人博客）",
+      "addButton": "添加",
+      "removeLabel": "移除链接",
+      "errors": {
+        "urlRequired": "请输入网址。",
+        "urlInvalid": "网址必须以 https:// 或 http:// 开头"
+      }
+    },
+    "actions": {
+      "saving": "正在保存...",
+      "save": "保存讲师资料"
+    },
+    "success": {
+      "updated": "讲师资料已更新。"
+    },
+    "errors": {
+      "updateFailed": "无法更新讲师资料。"
+    }
+  },
+  "ocid": {
+    "card": {
+      "title": "连接 OCID",
+      "description": "关联您的 Open Campus ID，在 Open Campus 生态系统中同步身份和钱包（如有）。",
+      "statusConnected": "已连接",
+      "statusDisconnected": "未连接",
+      "initializing": "正在初始化 OCID SDK…",
+      "connectHint": "点击下方按钮，将 OCID 关联到您的 Corelia 账户。",
+      "ocidLabel": "OCID",
+      "ethAddressLabel": "ETH 地址",
+      "disconnect": "断开连接",
+      "connect": "使用 OCID 连接",
+      "loadingDisconnect": "处理中…",
+      "loadingConnect": "正在跳转…"
+    },
+    "redirect": {
+      "finishing": "正在完成 OCID 关联…",
+      "connectFailedFallback": "无法关联 OCID，请重试。",
+      "alreadyLinkedToOtherAccount": "此 OCID 已关联到另一个账户。请先在该账户中断开连接。",
+      "mustLoginFirst": "关联 OCID 前，您需要先登录 Corelia。",
+      "missingOcidFromSession": "无法从登录会话中获取 OCID，请重新连接。",
+      "backToHome": "返回首页"
+    },
+    "toasts": {
+      "startConnectFailed": "无法开始 OCID 连接。",
+      "disconnectSuccess": "OCID 已断开连接。",
+      "disconnectFailed": "无法断开 OCID 连接。"
+    },
+    "disconnectDialog": {
+      "title": "断开 OCID 连接？",
+      "body": "确定要将 OCID 与此账户断开连接吗？",
+      "bodyWithCredentials_other": "已有 {{count}} 个链上凭证铸造到您当前的 OCID。",
+      "warningTitle": "这些凭证不会转移。",
+      "warningBody": "如果之后连接其他 OCID，已铸造的凭证仍将绑定在旧 OCID 上，无法转移到新的 OCID。",
+      "confirm": "仍然断开连接"
+    }
+  },
+  "xp": {
+    "earned": "+{{count}} 经验值",
+    "activityCompleted": "活动已完成",
+    "title": "经验值动态",
+    "loading": "正在加载经验值…",
+    "error": "无法加载经验值。",
+    "total": "累计 {{count}} 经验值",
+    "utc": "日期按 UTC 计算",
+    "calendar": "活动日历",
+    "less": "较少",
+    "more": "较多",
+    "empty": "暂无经验值动态。",
+    "weekTotal": "本周：{{count}} 经验值",
+    "weekChart": "本周每日经验值",
+    "previousWeek": "上一周",
+    "nextWeek": "下一周",
+    "history": "经验值历史",
+    "previous": "上一页",
+    "next": "下一页",
+    "sources": {
+      "daily_streak_claim": "之前的每日签到",
+      "ocid_connected": "已连接 OCID",
+      "github_connected": "已连接 GitHub",
+      "ethereum_wallet": "已连接以太坊钱包",
+      "solana_wallet": "已连接 Solana 钱包",
+      "lesson_completed": "完成了一节课程",
+      "quiz_passed": "通过了测验",
+      "course_completed": "完成了一门课程",
+      "first_hackathon_submission": "首次提交黑客松项目",
+      "project_liked": "点赞了一个项目",
+      "correction": "经验值更正"
+    },
+    "connections": {
+      "title": "账户与钱包",
+      "description": "关联 GitHub 可一次性获得 50 经验值。",
+      "connected": "已连接",
+      "connectGithub": "连接 GitHub",
+      "failed": "无法连接 GitHub。",
+      "connectEthereum": "连接 {{wallet}}",
+      "connectSolana": "连接 {{wallet}}",
+      "noSolanaWallet": "未找到支持消息签名的 Solana 钱包。",
+      "connectGoogle": "连接 Google",
+      "noEthereumWallet": "未找到以太坊钱包。",
+      "walletXpEarned": "+30 经验值 · 首次连接钱包",
+      "walletDisconnect": "断开连接",
+      "walletDisconnectTitle": "断开此钱包？",
+      "walletDisconnectBody": "您之后可以重新连接，或连接到其他账户。已获得的经验值会保留，且此钱包不会再次获得经验值。",
+      "walletDisconnectConfirm": "断开钱包",
+      "walletDisconnectCancel": "取消",
+      "walletDisconnected": "钱包已断开连接。",
+      "ocidXpEarned": "+50 经验值 · 已连接 OCID",
+      "githubXpEarned": "+50 经验值 · 已连接 GitHub",
+      "errors": {
+        "wallet_missing": "未找到钱包。请安装或解锁钱包后重试。",
+        "invalid_signature": "签名无效或已被拒绝。",
+        "challenge_expired": "验证请求已过期，请重试。",
+        "wallet_linked_to_another_account": "此钱包已关联到另一个账户。",
+        "origin_mismatch": "连接来源不匹配。请从 Corelia 重新尝试。",
+        "unauthenticated": "您的会话已过期，请重新登录。"
+      },
+      "loading": "检查中…",
+      "loadFailed": "无法检查连接状态",
+      "notConnected": "未连接",
+      "walletCount": "已连接 · {{count}} 个钱包",
+      "addWallet": "连接另一个钱包",
+      "chooseWallet": "选择钱包",
+      "confirmWallet": "正在等待您在钱包中确认…",
+      "oauthFailed": "账户连接失败，请重试。如果问题仍然存在，请联系客服检查 Google/GitHub 连接。",
+      "oauthCancelled": "账户连接已取消。您可以在下方重新尝试连接。"
+    },
+    "noData": "没有可靠的经验值数据",
+    "rank": {
+      "title": "经验值等级",
+      "names": {
+        "starter": "新手",
+        "bronze": "青铜",
+        "silver": "白银",
+        "gold": "黄金",
+        "platinum": "铂金",
+        "diamond": "钻石"
+      },
+      "progress": "距离下一等级的进度",
+      "remaining": "距离 {{rank}} 还需 {{xp}} 经验值",
+      "highest": "已达到最高等级",
+      "allRanks": "查看所有等级",
+      "description": "等级反映您在 Corelia 上累积的活动。它不是专业认证，也不代表享有奖励权益。"
+    },
+    "leaderboard": {
+      "title": "经验值排行榜",
+      "description": "与 Corelia 学习社区一起庆祝进步。公开的学员和讲师资料参与排名。",
+      "period": "排行榜周期",
+      "week": "本周",
+      "allTime": "历史总榜",
+      "weekRange": "{{start}} – {{end}} · UTC",
+      "lifetime": "在 Corelia 获得的所有有效经验值，包括历史活动。",
+      "yourPosition": "您的名次",
+      "position": "第 {{rank}} 名",
+      "empty": "此周期内暂无符合条件的经验值活动。",
+      "error": "无法加载排行榜，请重试。",
+      "member": "Corelia 成员",
+      "pagination": "排行榜分页",
+      "page": "{{page}} / {{total}}",
+      "top": "{{eligible}} 位参与者中的前 {{count}} 名",
+      "reasons": {
+        "private_profile": "您的资料为私密，因此不会出现在排行榜上。您仍可查看个人等级。",
+        "ineligible_role": "管理员和支持账户不参与排行榜。您仍可查看个人等级。",
+        "no_xp": "您在此周期内还没有正的经验值余额。",
+        "missing_profile": "您的资料暂不可用。"
+      }
+    }
+  },
+  "avatarEditor": {
+    "title": "编辑头像",
+    "description": "选择您的形象，然后保存到您的资料。",
+    "edit": "编辑头像",
+    "back": "返回资料",
+    "preview": "头像预览",
+    "randomize": "随机生成",
+    "randomizeHelp": "“随机生成”会更改头像代码以尝试另一种外观。您选择的部件和颜色保持不变；只有选择“保存头像”后更改才会保存。",
+    "reset": "恢复默认",
+    "parts": "部件",
+    "colors": "颜色",
+    "fromSeed": "按图案自动生成",
+    "autoPartHelp": "每个账户都有自己的头像代码。选择“按图案自动生成”可根据该代码稳定生成此部件，或选择特定部件将其固定。",
+    "clear": "清除",
+    "save": "保存头像",
+    "saving": "正在保存…",
+    "saved": "头像已保存。",
+    "saveFailed": "无法保存头像，请重试。",
+    "slots": {
+      "head": "头部与发型",
+      "body": "身体",
+      "bottom": "下装",
+      "item": "配饰",
+      "glasses": "眼镜"
+    },
+    "colorsBySlot": {
+      "background": "背景",
+      "stroke": "轮廓",
+      "hair": "头发",
+      "skin": "肤色",
+      "clothes": "衣服",
+      "bottom": "下装"
+    }
+  }
+}

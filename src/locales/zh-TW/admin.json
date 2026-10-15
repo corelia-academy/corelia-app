@@ -1,0 +1,762 @@
+{
+  "certificateAnalytics": {
+    "title": "證書",
+    "description": "Corelia 課程證書和 Open Campus OCA 的頒發與送達指標。",
+    "course": "課程",
+    "allCourses": "所有課程",
+    "from": "起始",
+    "to": "截止",
+    "network": "Open Campus 網路",
+    "allNetworks": "所有網路",
+    "invalidRange": "開始日期必須早於結束日期。",
+    "loading": "正在載入分析…",
+    "loadError": "無法載入證書分析。",
+    "forbidden": "僅管理員可以檢視此報告。",
+    "mintAttempts": "自啟用分析以來，已記錄 {{count}} 次 OC 鑄造呼叫",
+    "hint": "日期依 Corelia 頒發或課程完成時間（越南時間）篩選。服務供應商已接受並不代表郵件已送達收件匣。",
+    "learnerRows": "{{count}} 筆對帳紀錄",
+    "refresh": "重新整理",
+    "exportCsv": "匯出 CSV",
+    "exporting": "正在匯出…",
+    "exportError": "無法匯出 CSV，請再試一次。",
+    "tableLabel": "依學員和課程劃分的證書",
+    "empty": "沒有符合的紀錄。",
+    "page": "第 {{page}} / {{pages}} 頁",
+    "previous": "上一頁",
+    "next": "下一頁",
+    "unknown": "未知",
+    "issued": "已頒發",
+    "revoked": "已撤銷",
+    "created": "已建立",
+    "missing": "缺少",
+    "unresolved": "ID 需要對帳",
+    "summary": {
+      "completed": "已完成",
+      "corelia_issued": "Corelia 已頒發",
+      "corelia_revoked": "Corelia 已撤銷",
+      "oca_minted": "OCA 已鑄造",
+      "oca_unresolved": "OCA 未解決",
+      "oca_pending": "OCA 待處理",
+      "oca_failed": "OCA 失敗",
+      "unique_learners": "學員"
+    },
+    "columns": {
+      "learner": "學員",
+      "course": "課程",
+      "completed": "完成時間",
+      "corelia": "Corelia",
+      "coreEmail": "Corelia 郵件",
+      "coreNotice": "Corelia 通知",
+      "oca": "Open Campus OCA",
+      "ocEmail": "OCA 郵件",
+      "ocNotice": "OCA 通知"
+    },
+    "status": {
+      "minted": "已鑄造",
+      "pending": "待處理",
+      "failed": "失敗"
+    },
+    "mail": {
+      "accepted": "服務供應商已接受",
+      "provider_error": "服務供應商錯誤",
+      "skipped": "已略過"
+    }
+  },
+  "ogPreview": {
+    "title": "分享圖片預覽",
+    "description": "檢查根據已發布內容產生的 Open Graph 圖片。",
+    "entity": "內容類型",
+    "entities": {
+      "project": "專案",
+      "course": "課程",
+      "hackathon": "黑客松",
+      "profile": "資料"
+    },
+    "identifier": "Slug、ID 或帳號",
+    "identifierPlaceholder": "輸入公開識別碼",
+    "load": "預覽",
+    "enterIdentifier": "請選擇內容類型並輸入其識別碼以預覽圖片。",
+    "defaultImageDescription": "用於沒有實體卡片的 Corelia 頁面的預設分享圖片。",
+    "loading": "正在載入分享圖片…",
+    "metadataError": "無法載入中繼資料，請再試一次。",
+    "unavailable": "此內容未公開或沒有分享圖片。",
+    "imageError": "無法載入分享圖片。請重試，或開啟原圖進行檢查。",
+    "retry": "重試",
+    "refresh": "重新整理預覽",
+    "copy": "複製圖片網址",
+    "openPage": "開啟公開頁面",
+    "openImage": "開啟原始 PNG",
+    "image": "Open Graph 圖片 1200 × 630",
+    "imageAlt": "Open Graph 分享圖片預覽",
+    "lightBackground": "淺色背景",
+    "darkBackground": "深色背景",
+    "canonicalUrl": "標準網址",
+    "imageUrl": "圖片網址",
+    "updatedAt": "更新時間",
+    "revision": "修訂版本"
+  },
+  "layout": {
+    "activityMilestones": {
+      "uploading": "正在上傳圖片...",
+      "clickToUpload": "點擊上傳",
+      "orDragDrop": "或拖放到此處",
+      "supportFormats": "支援 PNG、JPG 格式",
+      "preview": "預覽"
+    },
+    "sidebar": {
+      "ogPreview": {
+        "label": "Open Graph 預覽"
+      },
+      "brandTitle": "Corelia 管理後台",
+      "brandSubtitle": "角色、講師和日常系統營運集中管理。",
+      "primaryNavigation": "主要導覽",
+      "users": {
+        "label": "使用者",
+        "tooltip": "使用者"
+      },
+      "jobs": {
+        "label": "職缺",
+        "tooltip": "職缺擷取與審核"
+      },
+      "instructors": {
+        "label": "講師",
+        "tooltip": "講師"
+      },
+      "activityMilestones": {
+        "label": "活動里程碑",
+        "tooltip": "全域 Open Campus 里程碑徽章"
+      },
+      "manualMint": {
+        "label": "手動發放 OCA/OCB",
+        "tooltip": "手動向個人發放 OCA/OCB，與課程無關"
+      },
+      "branding": {
+        "label": "品牌",
+        "tooltip": "Corelia 標誌和品牌資產"
+      },
+      "offlineClasses": {
+        "label": "實體課程",
+        "tooltip": "實體課程"
+      },
+      "contests": {
+        "label": "競賽",
+        "tooltip": "競賽"
+      },
+      "hackathons": {
+        "label": "黑客松",
+        "tooltip": "管理黑客松"
+      },
+      "email": {
+        "label": "郵件中心",
+        "tooltip": "收件人、範本、行銷活動和自動化"
+      },
+      "emailPreview": {
+        "label": "郵件審閱",
+        "tooltip": "在桌面版和行動版審閱每個郵件範本"
+      },
+      "projects": {
+        "label": "專案"
+      }
+    },
+    "pageMeta": {
+      "email": {
+        "title": "郵件中心",
+        "description": "營運系統、學習、專案和行銷郵件。"
+      },
+      "users": {
+        "title": "使用者管理",
+        "description": "管理所有使用者的角色和存取狀況。"
+      },
+      "jobs": {
+        "title": "職缺營運",
+        "description": "管理來源、公司、審核佇列、爬蟲執行和市場分析。"
+      },
+      "instructors": {
+        "title": "講師管理",
+        "description": "追蹤資料、講師類型和合作夥伴協作資料。"
+      },
+      "activityMilestones": {
+        "title": "活動里程碑",
+        "description": "設定與單一課程無關的自動和手動 Open Campus 徽章。"
+      },
+      "manualMint": {
+        "title": "手動發放憑證",
+        "description": "手動向特定個人發放 OCA 或 OCB，與任何課程或黑客松無關。"
+      },
+      "branding": {
+        "title": "品牌",
+        "description": "管理用於證書和鏈上憑證的 Corelia 標誌。"
+      },
+      "contests": {
+        "title": "競賽營運",
+        "description": "建立和管理競賽、審核申請、為提交評分並發布結果。"
+      },
+      "hackathons": {
+        "title": "黑客松管理",
+        "description": "編輯內容、分類、專案和得獎者。"
+      },
+      "instructorDetail": {
+        "title": "講師詳情",
+        "description": "更新資料和講師資訊。"
+      },
+      "projects": {
+        "title": "專案",
+        "description": "專案審核"
+      }
+    },
+    "hero": {
+      "eyebrow": "管理區",
+      "pills": {
+        "sensitive": "敏感權限",
+        "manualAudit": "人工稽核"
+      }
+    }
+  },
+  "hackathons": {
+    "title": "黑客松",
+    "description": "建立和管理公開的黑客松頁面。",
+    "new": "新增黑客松",
+    "edit": "編輯",
+    "view": "檢視公開頁面",
+    "preview": "預覽",
+    "loading": "正在載入黑客松…",
+    "empty": "尚無黑客松。",
+    "editor": {
+      "back": "返回清單",
+      "newTitle": "新增黑客松",
+      "editTitle": "編輯黑客松",
+      "newIntro": "請先建立基本資訊；草稿建立後，再完善內容、獎金、時間軸和專案。",
+      "editIntro": "每次編輯黑客松的一個部分，儲存後再進行其他工作。",
+      "participants": "筆報名",
+      "saveAll": "全部儲存",
+      "saveSection": "儲存變更",
+      "createDraft": "建立草稿",
+      "cancel": "取消",
+      "saved": "黑客松已儲存。",
+      "saveFailed": "無法儲存黑客松。",
+      "notFound": "找不到黑客松。",
+      "unsaved": "未儲存的變更",
+      "leaveConfirm": "您有未儲存的變更。要離開編輯器並捨棄這些變更嗎？",
+      "add": "新增",
+      "archive": "封存",
+      "restore": "還原",
+      "activate": "啟用",
+      "remove": "移除",
+      "removeImage": "移除圖片",
+      "removeTrack": "刪除賽道",
+      "removeTrackConfirm": "刪除此賽道？變更將在儲存後生效。",
+      "noTracks": "尚無賽道。僅在需要依賽道劃分獎金時才新增。",
+      "trackNumber": "賽道 {{number}}",
+      "trackName": "賽道名稱",
+      "trackNamePlaceholder": "例如：消費型、基礎設施…",
+      "trackPrize": "獎金分配",
+      "trackDescription": "說明",
+      "trackDescriptionPlaceholder": "描述此賽道的範圍和評選標準…",
+      "noTimeline": "尚無時間軸階段。",
+      "timelineNumber": "階段 {{number}}",
+      "timelineTitle": "階段標題",
+      "timelineStarts": "開始",
+      "timelineEnds": "結束",
+      "removeTimeline": "刪除階段",
+      "saveBeforeWinners": "請先儲存黑客松，再選擇得獎者。",
+      "selectProject": "選擇專案",
+      "selectProjectHint": "搜尋並選擇要頒獎的已提交專案。",
+      "searchProjectPlaceholder": "依專案標題或 @使用者名稱搜尋…",
+      "loadingProjects": "正在載入專案…",
+      "noEligibleProjects": "找不到符合資格的專案。",
+      "awardLabel": "獎項名稱",
+      "awardLabelRequired": "儲存前請為每個獎項輸入名稱。",
+      "dragProject": "拖曳專案 {{name}} 以重新排序",
+      "dragAward": "拖曳獎項 {{name}} 以重新排序",
+      "moveProjectUp": "上移專案 {{name}}",
+      "moveProjectDown": "下移專案 {{name}}",
+      "moveAwardUp": "上移獎項 {{name}}",
+      "moveAwardDown": "下移獎項 {{name}}",
+      "noAwards": "尚未選擇得獎專案。",
+      "deleteConfirm": "永久刪除此黑客松？",
+      "applyStatus": "套用狀態",
+      "publish": "發布",
+      "unpublish": "取消發布",
+      "statusPublishedCta": "已發布（點擊還原為草稿）",
+      "statusDraftCta": "草稿（點擊發布）",
+      "end": "結束",
+      "delete": "刪除黑客松",
+      "editingLanguage": "編輯語言",
+      "primaryBadge": "主要",
+      "sidebarTitle": "黑客松設定",
+      "taxonomyHint": "新建的黑客松包含常用的產業和技術預設。可重新命名、新增或封存未使用的選項；正在使用的分類無法刪除。",
+      "validationRequired": "越南語標題和 slug 為必填。",
+      "validationCurrency": "幣別必須是 2–10 位大寫字母或數字。",
+      "validationPrize": "賽道分配的獎金不能超過獎金池。",
+      "validationTelegram": "Telegram 必須是有效的 t.me 網址或 @使用者名稱。",
+      "validationX": "X 必須是完整的 x.com 或 twitter.com 網址。",
+      "validationFacebook": "Facebook 必須是完整的 facebook.com 網址。",
+      "validationTrackNameRequired": "賽道 {{number}} 缺少名稱。請在儲存前輸入名稱或將其移除。",
+      "validationTaxonomyRequired": "已發布或進行中的黑客松必須至少有一個啟用的產業和一個啟用的技術。",
+      "validationTaxonomyItemInvalid": "每個產業或技術都必須有有效的識別碼和名稱。",
+      "trackAdded": "新賽道已新增到草稿。",
+      "awardMissingFields": "請選擇專案並輸入獎項名稱。",
+      "awardAdded": "獎項已新增到清單。",
+      "notifyAwardsAction": "透過郵件通知得獎者",
+      "saveBeforeNotifyAwards": "通知得獎者前，請先儲存獎項變更。",
+      "validationSocialPost": "請輸入公開的 Facebook、Instagram 或 X 貼文網址，每行一個。",
+      "notifyAwardsConfirm": "現在向所有得獎專案團隊寄送得獎通知郵件？",
+      "awardsNotified": "得獎通知已寄出（已送達 {{count}} 封郵件）。",
+      "awardsNotifyRetryableError": "部分得獎郵件因暫時性錯誤無法寄出。您可以稍後重試。",
+      "awardsNotifyPermanentError": "部分得獎郵件被服務供應商永久拒絕。請確認收件人電子郵件。",
+      "awardsNotifyIndeterminateError": "部分得獎郵件的送達狀態不確定。重試前需要對帳。",
+      "awardsNotifyNotConfigured": "尚未設定郵件寄送。已建立應用程式內通知，但未寄出郵件。",
+      "awardsNotifyFailed": "寄送得獎通知郵件失敗。",
+      "status": {
+        "draft": "草稿",
+        "published": "已發布",
+        "running": "進行中",
+        "ended": "已結束"
+      },
+      "modes": {
+        "online": "線上",
+        "offline": "實體",
+        "hybrid": "混合"
+      },
+      "aiTranslation": {
+        "action": "使用 AI 將{{source}}翻譯為{{target}}",
+        "translating": "AI 正在翻譯…",
+        "noSource": "還沒有可翻譯的{{source}}內容。",
+        "overwriteConfirm": "{{target}}草稿已有內容。要用 AI 翻譯取代嗎？",
+        "invalidResponse": "AI 傳回了無效的黑客松翻譯。",
+        "applied": "已套用從{{source}}到{{target}}的 AI 翻譯。儲存前請先檢查。",
+        "failed": "無法翻譯黑客松內容。"
+      },
+      "sections": {
+        "overview": "概覽",
+        "description": "說明",
+        "prizes": "獎金與賽道",
+        "timeline": "時間軸",
+        "resources": "資源",
+        "taxonomy": "專案分類",
+        "projects": "專案與得獎者",
+        "danger": "發布、結束與刪除"
+      },
+      "sectionDescriptions": {
+        "overview": "身分資訊、主辦單位資訊、聯絡管道、主辦單位貼文和截止時間。",
+        "description": "黑客松的完整 Markdown 介紹。",
+        "prizes": "設定總獎金池；僅在需要劃分獎金時才新增賽道。",
+        "timeline": "黑客松各階段，依由早到晚排序。",
+        "resources": "輔助文件和預備課程。",
+        "projects": "選擇得獎專案並手動指定獎項名稱。",
+        "danger": "變更公開狀態，或永久刪除此黑客松。"
+      },
+      "fields": {
+        "title": "標題",
+        "slug": "Slug",
+        "shortDescription": "簡短說明",
+        "mode": "模式",
+        "host": "主辦單位",
+        "hostWebsite": "主辦單位網站",
+        "telegram": "Telegram（網址或 @使用者名稱）",
+        "telegramPlaceholder": "https://t.me/corelia_builders 或 @corelia_builders",
+        "telegramHint": "@使用者名稱會在您離開該欄位時轉換為其 t.me 網址。",
+        "x": "X 個人檔案網址",
+        "xPlaceholder": "https://x.com/unihackfest",
+        "facebook": "Facebook 粉絲專頁網址",
+        "facebookPlaceholder": "https://facebook.com/unihackfest",
+        "fullUrlHint": "請輸入以 https:// 開頭的完整網址",
+        "currency": "幣別",
+        "markdown": "Markdown 內容",
+        "prizeDescription": "獎金說明 Markdown",
+        "timelineDescription": "階段說明 Markdown",
+        "tracks": "賽道",
+        "banner": "黑客松橫幅",
+        "bannerHint": "建議尺寸：2100 × 900 px（21:9）。最小：1680 × 720 px。",
+        "bannerEmpty": "新增封面圖片",
+        "uploadBanner": "上傳橫幅",
+        "officialCourse": "推薦的預備課程",
+        "relatedCourses": "其他預備課程",
+        "noCourse": "未選擇課程",
+        "noPublishedCourses": "沒有可用的已發布課程。",
+        "coursesLoadFailed": "無法載入已發布的課程。",
+        "socialPosts": "主辦單位社群貼文",
+        "socialPostsPlaceholder": "每行一個 Facebook、Instagram 或 X 貼文網址",
+        "socialPostsHint": "僅限公開貼文連結。私人或受限的貼文可能無法嵌入。",
+        "changeBanner": "更換橫幅",
+        "bannerPreviewAlt": "黑客松橫幅預覽",
+        "hostLogo": "主辦單位標誌",
+        "hostLogoHint": "請上傳方形或透明背景的標誌。",
+        "changeHostLogo": "上傳或更換主辦單位標誌",
+        "hostLogoPreviewAlt": "主辦單位標誌預覽",
+        "totalPrize": "總獎金池",
+        "submission_deadline": "提交截止時間",
+        "winners_announced": "已公布得獎者",
+        "winners_announcedHint": "公布結果後，團隊可以繼續更新其專案和成員。",
+        "allow_project_edits_after_deadline": "允許在提交截止後編輯",
+        "allow_project_edits_after_deadlineHint": "允許團隊在結果公布前更新專案和成員。變更可能會影響正在評審的內容。",
+        "editsAutomaticallyOpen": "由於結果已公布，編輯功能已自動開放。",
+        "sectors": "工程領域",
+        "tech_stacks": "技術"
+      }
+    }
+  },
+  "instructors": {
+    "errors": {
+      "generic": "發生錯誤",
+      "updateFailed": "無法更新"
+    },
+    "toasts": {
+      "originUpdated": "講師類型已更新。"
+    },
+    "stats": {
+      "total": "講師總數",
+      "corelia": "Corelia",
+      "external": "外部合作夥伴",
+      "unclassified": "未分類",
+      "managedCourses": "管理的課程",
+      "loadingValue": "..."
+    },
+    "hero": {
+      "title": "講師網絡營運",
+      "description": "開啟每份資料以管理講師資訊和分類。"
+    },
+    "filters": {
+      "searchPlaceholder": "依姓名、電子郵件、機構、頭銜、UID 搜尋…",
+      "originOptions": {
+        "all": "全部",
+        "corelia": "Corelia",
+        "external": "外部"
+      },
+      "quick": {
+        "all": "全部",
+        "corelia": "Corelia",
+        "external": "外部"
+      }
+    },
+    "actions": {
+      "refresh": "重新整理",
+      "clearFilters": "清除篩選"
+    },
+    "list": {
+      "syncing": "正在同步講師...",
+      "showing": "顯示 {{shown}} / {{total}} 位講師",
+      "showingOriginSuffix": " · {{origin}}",
+      "loading": "正在載入清單...",
+      "empty": "沒有符合目前篩選條件的講師。",
+      "notUpdated": "未更新"
+    },
+    "originLabel": {
+      "corelia": "Corelia",
+      "external": "外部",
+      "unclassified": "未分類"
+    }
+  },
+  "instructorDetailPage": {
+    "errors": {
+      "loadFailed": "無法載入資料",
+      "saveFailed": "無法儲存變更"
+    },
+    "toasts": {
+      "detailsSaved": "講師詳情已儲存。"
+    },
+    "loading": "正在載入講師詳情...",
+    "empty": {
+      "notFound": "找不到講師。"
+    },
+    "actions": {
+      "backToList": "返回清單",
+      "backToInstructors": "← 返回講師列表"
+    },
+    "summary": {
+      "profileCompletion": "資料完整度"
+    },
+    "hero": {
+      "eyebrow": "講師工作區",
+      "description": "透過清晰的營運流程管理講師資料資訊。",
+      "rolePrefix": "角色：{{role}}",
+      "partnerInstructor": "合作講師",
+      "coreliaInstructor": "Corelia 講師"
+    },
+    "nav": {
+      "title": "資料導覽",
+      "subtitle": "檢視並更新講師資料資訊。"
+    },
+    "sections": {
+      "profile": "講師詳情"
+    },
+    "common": {
+      "dash": "-",
+      "notUpdated": "未更新"
+    },
+    "profile": {
+      "title": "講師詳情",
+      "description": "更新公開資料、系統角色和專業資訊。",
+      "completionLabel": "已完成 {{percent}}%",
+      "fields": {
+        "role": "角色",
+        "origin": "講師類型",
+        "fullName": "姓名",
+        "phone": "電話",
+        "organization": "機構"
+      },
+      "roleOptions": {
+        "instructor": "講師",
+        "supportStaff": "支援",
+        "student": "學員"
+      },
+      "originOptions": {
+        "external": "外部"
+      },
+      "actions": {
+        "save": "儲存變更",
+        "saving": "正在儲存..."
+      }
+    }
+  },
+  "users": {
+    "showingRange": "顯示第 {{start}}–{{end}} 個帳戶，共 {{total}} 個",
+    "pagination": {
+      "label": "帳戶分頁",
+      "page": "第 {{page}} 頁，共 {{total}} 頁",
+      "previous": "上一頁",
+      "next": "下一頁"
+    },
+    "title": "存取控制面板",
+    "subtitle": "依姓名、電子郵件或 UID 搜尋，並直接在表格中調整角色，滿足日常營運需要。",
+    "stats": {
+      "totalUsers": "使用者總數",
+      "admin": "管理員",
+      "support": "支援",
+      "instructor": "講師",
+      "student": "學員",
+      "opencampusConnected": "已連結 OpenCampus"
+    },
+    "searchPlaceholder": "依姓名、電子郵件、角色、UID 搜尋…",
+    "allRoles": "所有角色",
+    "refresh": "重新整理",
+    "clearFilters": "清除篩選",
+    "loadingList": "正在載入清單...",
+    "syncing": "正在同步使用者...",
+    "empty": "沒有符合目前篩選條件的使用者。",
+    "unknownError": "發生錯誤",
+    "confirmChangeRole": "確定要將角色變更為{{role}}嗎？",
+    "updateRoleSuccess": "角色更新成功！",
+    "updateRoleErrorPrefix": "更新角色失敗：",
+    "unknown": "未知錯誤",
+    "showing": "顯示 {{shown}} / {{total}} 個帳戶",
+    "showingRoleSuffix": " · {{role}}",
+    "table": {
+      "name": "姓名",
+      "email": "電子郵件",
+      "role": "角色",
+      "phone": "電話",
+      "createdAt": "建立時間",
+      "actions": "操作"
+    },
+    "mobile": {
+      "uid": "UID：{{uid}}…",
+      "emailLabel": "電子郵件",
+      "currentRole": "目前角色",
+      "phone": "電話",
+      "createdAt": "建立時間",
+      "changeRole": "變更角色",
+      "notUpdated": "未更新",
+      "dash": "-"
+    }
+  },
+  "branding": {
+    "loading": "正在載入品牌設定…",
+    "loadFailed": "無法載入品牌設定。",
+    "uploading": "正在上傳…",
+    "uploaded": "標誌已上傳並儲存。",
+    "uploadFailed": "標誌上傳失敗。",
+    "saving": "正在儲存…",
+    "saved": "已儲存。",
+    "saveFailed": "無法儲存。",
+    "logo": {
+      "title": "Corelia 標誌",
+      "subtitle": "用作證書和 OpenCampus 鏈上憑證上的頒發者圖片。建議：透明背景的方形或寬幅 PNG/SVG。",
+      "uploadButton": "上傳標誌",
+      "hint": "PNG、JPG 或 SVG。永久儲存在公開 CDN 上。",
+      "urlLabel": "標誌網址",
+      "saveUrl": "儲存網址",
+      "urlHint": "上傳後自動設定。您也可以直接貼上 CDN 網址。"
+    },
+    "appBaseUrl": {
+      "title": "應用程式基礎網址",
+      "subtitle": "用於產生系統郵件（證書、領取邀請等）中連結的根網域。測試環境：https://staging.corelia.academy；正式環境：https://app.corelia.academy。此處填寫錯誤會導致所有寄出的郵件連結指向錯誤的環境。",
+      "urlLabel": "基礎網址",
+      "saveUrl": "儲存網址",
+      "invalidUrl": "網址無效：必須形如 https://網域，且不能有結尾斜線或多餘字元。"
+    }
+  },
+  "activityMilestones": {
+    "heading": "活動里程碑",
+    "subheading": "透過 Open Campus 鑄造的全域徽章（OCB）。",
+    "add": "新增里程碑",
+    "loading": "載入中…",
+    "loadFailed": "無法載入里程碑。",
+    "empty": "尚未設定里程碑。",
+    "saved": "已儲存。",
+    "saveFailed": "儲存失敗。",
+    "edit": "編輯",
+    "grant": "發放",
+    "createTitle": "新增里程碑",
+    "editTitle": "編輯里程碑",
+    "cancel": "取消",
+    "save": "儲存",
+    "saving": "正在儲存…",
+    "grantTitle": "發放里程碑",
+    "grantUsersLabel": "學員使用者 ID（以逗號或換行分隔）",
+    "grantReasonLabel": "原因（選填）",
+    "grantNeedUsers": "請至少輸入一個使用者 ID。",
+    "grantOk": "發放已處理。",
+    "grantFailed": "發放失敗。",
+    "granting": "正在發放…",
+    "grantSubmit": "發放並鑄造",
+    "col": {
+      "name": "名稱",
+      "rule": "規則",
+      "trigger": "觸發方式",
+      "issued": "已發放",
+      "active": "啟用",
+      "actions": "操作"
+    },
+    "field": {
+      "name": "標題",
+      "description": "說明",
+      "image": "徽章圖片",
+      "prefix": "識別碼前綴",
+      "triggerAuto": "自動",
+      "triggerManual": "手動（管理員發放）",
+      "event": "事件",
+      "days": "天數",
+      "count": "數量",
+      "active": "啟用"
+    },
+    "event": {
+      "coursesCompleted": "完成的課程",
+      "projects": "提交的專案"
+    },
+    "rule": {
+      "manual": "手動發放",
+      "coursesCompleted": "完成 {{count}} 門課程",
+      "projects": "提交 {{count}} 個專案"
+    }
+  },
+  "manualMint": {
+    "heading": "手動發放 OCA/OCB",
+    "subheading": "作為課程完成之外的獎勵，向特定個人發放 OCA/OCB：不影響課程/黑客松狀態。",
+    "tabs": {
+      "grant": "發放憑證 / 徽章",
+      "history": "發放紀錄與待處理",
+      "templates": "徽章範本"
+    },
+    "lookup": {
+      "heading": "查找學員",
+      "uidPlaceholder": "UID（從帳戶頁面複製）",
+      "emailPlaceholder": "學員電子郵件",
+      "submit": "查找",
+      "loading": "正在查找…",
+      "notFoundUid": "找不到此 UID 對應的使用者。",
+      "invalidEmailFormat": "電子郵件格式無效（例如 name@example.com）。請重新輸入。",
+      "ghostNotice": "{{email}} 還沒有帳戶。發放後，我們會寄信邀請其加入 Corelia 並領取。",
+      "error": "查找失敗。",
+      "previewProfile": "預覽資料"
+    },
+    "preview": {
+      "title": "資料預覽",
+      "loading": "載入中…",
+      "notFound": "無法載入此資料。",
+      "noName": "未設定姓名",
+      "role": "角色",
+      "followers": "追蹤者",
+      "fullPageLink": "檢視完整頁面 →"
+    },
+    "templates": {
+      "searchPlaceholder": "依名稱、說明搜尋徽章範本...",
+      "totalCount": "共 {{count}} 個範本",
+      "emptyTitle": "範本庫中還沒有範本",
+      "emptySubtitle": "手動發放徽章時，開啟「儲存到範本庫」，以便日後快速重複使用。",
+      "useTemplate": "使用範本",
+      "deleteConfirm": "確定要從庫中刪除範本「{{name}}」嗎？",
+      "deleteSuccess": "範本已從庫中移除",
+      "deleteFailed": "無法刪除範本",
+      "deleteForbidden": "系統自動範本無法刪除",
+      "loadFailed": "無法載入徽章範本",
+      "ocbBadge": "OCB 徽章",
+      "ocaCertificate": "OCA 證書",
+      "hidden": "已隱藏",
+      "createTemplate": "建立範本",
+      "createDialogTitle": "建立新的徽章 / 證書範本",
+      "createDialogDescription": "建立徽章範本並儲存到庫中，便於手動發放時快速重複使用。",
+      "createSuccess": "徽章範本已成功儲存到庫中！",
+      "createFailed": "無法儲存徽章範本，請再試一次。",
+      "saveTemplateBtn": "儲存到庫",
+      "templateNamePlaceholder": "例如：第三季最佳貢獻者、黑客松得獎者...",
+      "templateDescriptionPlaceholder": "此獎項的評選標準或原因說明..."
+    },
+    "form": {
+      "kind": "憑證類型",
+      "name": "憑證/徽章名稱",
+      "image": "範本圖片",
+      "uploadCta": "點擊上傳",
+      "uploading": "正在上傳…",
+      "imagePreview": "預覽",
+      "invalidPng": "此檔案不是有效的 PNG。請去除背景，或前往以下網址轉換圖片：",
+      "uploadFailed": "圖片上傳失敗。",
+      "reason": "發放原因",
+      "grantSectionTitle": "徽章 / 證書詳情",
+      "chooseFromTemplates": "從範本中選擇…",
+      "saveAsTemplate": "儲存到範本庫以便日後重複使用",
+      "appliedTemplate": "已套用範本「{{name}}」",
+      "submit": "發放",
+      "submitting": "正在發放…",
+      "success": "發放成功。",
+      "successGhost": "已儲存為待處理，並已寄出邀請郵件給收件人。",
+      "submitFailed": "發放失敗。"
+    },
+    "history": {
+      "heading": "手動鑄造紀錄與待處理發放",
+      "subheading": "追蹤所有手動發放的憑證、Open Campus 鑄造進度和待領取項。",
+      "searchPlaceholder": "依收件人、電子郵件、OCID、徽章名稱或原因搜尋...",
+      "statusFilterLabel": "狀態",
+      "kindFilterLabel": "類型",
+      "dateFilterLabel": "日期",
+      "filterStatusAll": "所有狀態",
+      "filterStatusMinted": "已鑄造",
+      "filterStatusPending": "待處理 / 等待註冊",
+      "filterStatusFailed": "失敗",
+      "filterKindAll": "所有類型",
+      "filterKindOca": "OCA（證書）",
+      "filterKindOcb": "OCB（徽章）",
+      "filterDateAll": "所有時間",
+      "filterDateToday": "今天",
+      "filterDate7Days": "最近 7 天",
+      "filterDate30Days": "最近 30 天",
+      "filterDateThisMonth": "本月",
+      "resetFilters": "重設篩選",
+      "refresh": "重新整理",
+      "recipientCol": "收件人",
+      "badgeCol": "徽章 / 憑證",
+      "granterCol": "發放者",
+      "dateCol": "日期",
+      "statusCol": "狀態",
+      "statusMinted": "已鑄造",
+      "statusPending": "待處理",
+      "statusAwaitingSignup": "等待註冊",
+      "statusFailed": "失敗",
+      "statusRevoked": "已撤銷",
+      "reasonCol": "發放原因",
+      "actionsCol": "操作",
+      "viewOnOpenCampus": "瀏覽器",
+      "retryBtn": "重試",
+      "retrying": "正在重試…",
+      "retrySuccess": "已成功發起鑄造重試。",
+      "retryFailed": "重試失敗。",
+      "revokeBtn": "撤銷",
+      "revokeConfirm": "撤銷對「{{recipient}}」的此次發放？此操作無法復原。",
+      "revokeSuccess": "已成功撤銷發放。",
+      "revokeFailed": "撤銷失敗。",
+      "empty": "尚未手動發放任何憑證。",
+      "emptyFiltered": "沒有符合目前篩選條件的憑證。",
+      "loadFailed": "無法載入手動鑄造紀錄。"
+    }
+  }
+}

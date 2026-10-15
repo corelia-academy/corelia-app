@@ -1,4 +1,15 @@
 import type { Job } from "@/types/jobs";
+import { parseContentLocale, type ContentLocale } from "@/lib/locales";
+
+const SALARY_PERIODS: Record<ContentLocale, Record<string, string>> = {
+  en: {},
+  "zh-CN": { hour: "小时", day: "天", week: "周", month: "月", year: "年" },
+  ko: { hour: "시간", day: "일", week: "주", month: "월", year: "년" },
+  es: { hour: "hora", day: "día", week: "semana", month: "mes", year: "año" },
+  "zh-TW": { hour: "小時", day: "天", week: "週", month: "月", year: "年" },
+  vi: { hour: "giờ", day: "ngày", week: "tuần", month: "tháng", year: "năm" },
+  ja: { hour: "時間", day: "日", week: "週", month: "月", year: "年" },
+};
 
 export function formatJobDescription(value: string | null | undefined): string {
   if (!value) return "";
@@ -54,7 +65,7 @@ export function formatJobSalary(job: Job, locale: string): string | null {
     const max = job.salary_max == null ? null : formatter.format(job.salary_max);
     const range = min && max ? `${min}–${max}` : min ?? max;
     if (!range) return null;
-    const periods: Record<string, string> = locale.toLowerCase().startsWith("vi") ? { hour: "giờ", day: "ngày", week: "tuần", month: "tháng", year: "năm" } : {};
+    const periods: Record<string, string> = SALARY_PERIODS[parseContentLocale(locale) ?? "en"];
     return job.salary_period ? `${range}/${periods[job.salary_period] ?? job.salary_period}` : range;
   } catch {
     return null;

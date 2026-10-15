@@ -1,3 +1,4 @@
+import type { ContentLocale } from "@/lib/locales";
 export type ContestStatus = "draft" | "published" | "running" | "ended";
 
 export type ContestLocation = "online" | "offline" | "hybrid";
@@ -486,7 +487,7 @@ export interface ContestSubmission {
 }
 
 export interface ContestSubmissionInsert {
-  primary_content_locale?: "vi" | "en";
+  primary_content_locale?: ContentLocale;
   locales?: import("@/types/projects").ProjectLocales;
   project_id?: string;
   title: string;

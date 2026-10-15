@@ -5,6 +5,9 @@ describe("email locale", () => {
   it.each([
     ["vi", "vi"], ["vn", "vi"], ["vi-VN", "vi"], ["VI_vn", "vi"],
     ["en", "en"], ["en-US", "en"], ["EN_gb", "en"],
+    ["zh", "zh-CN"], ["zh-CN", "zh-CN"], ["zh_Hans", "zh-CN"], ["zh-SG", "zh-CN"],
+    ["zh-TW", "zh-TW"], ["zh-HK", "zh-TW"], ["zh-Hant", "zh-TW"], ["zh_Hant_TW", "zh-TW"],
+    ["ko", "ko"], ["ko-KR", "ko"], ["ja-JP", "ja"], ["es-MX", "es"],
   ])("normalizes %s", (input, expected) => expect(parseEmailLocale(input)).toBe(expected));
 
   it.each([null, undefined, "", "fr", " vietnamese "])("falls back to English for %s", (input) => {

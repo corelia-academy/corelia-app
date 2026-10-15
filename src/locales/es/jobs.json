@@ -1,0 +1,310 @@
+{
+  "eyebrow": "Corelia Empleos",
+  "title": "Empleos en tecnología y Web3",
+  "subtitle": "Explora puestos técnicos y no técnicos seleccionados en empresas de tecnología y Web3.",
+  "landing": {
+    "title": "Empleos de {{label}}",
+    "subtitle": "Explora oportunidades de {{label}} seleccionadas de fuentes de tecnología y Web3 revisadas."
+  },
+  "search": "Buscar",
+  "searchPlaceholder": "Puesto, habilidad, empresa o ubicación",
+  "results": "{{count}} empleos",
+  "hiddenCount": "{{count}} ocultos",
+  "sources": {
+    "connected": "Fuentes de empleo conectadas: {{sources}}"
+  },
+  "retry": "Reintentar",
+  "nav": {
+    "label": "Navegación de empleos",
+    "find": "Buscar empleos",
+    "saved": "Guardados",
+    "applied": "Postulados",
+    "hidden": "Ocultos",
+    "market": "Mercado"
+  },
+  "filters": {
+    "label": "Filtros",
+    "jobType": "Tipo de empleo",
+    "role": "Puesto",
+    "domain": "Ámbito",
+    "skill": "Habilidad",
+    "seniority": "Nivel de experiencia",
+    "workMode": "Modalidad de trabajo",
+    "region": "Región",
+    "employmentType": "Tipo de contrato",
+    "minimumSalary": "Salario mínimo",
+    "salaryCurrency": "Moneda del salario",
+    "postedDate": "Fecha de publicación",
+    "allRoles": "Todos los puestos",
+    "allJobTypes": "Todos los tipos de empleo",
+    "allDomains": "Todos los ámbitos",
+    "allSkills": "Todas las habilidades",
+    "allSeniorities": "Todos los niveles",
+    "allWorkModes": "Todas las modalidades",
+    "allRegions": "Todas las regiones",
+    "allEmploymentTypes": "Todos los tipos de contrato",
+    "allCurrencies": "Todas las monedas",
+    "anyDate": "Cualquier fecha",
+    "last7Days": "Últimos 7 días",
+    "last30Days": "Últimos 30 días",
+    "clear": "Borrar",
+    "more": "Más filtros"
+  },
+  "values": {
+    "tech": "Tecnología",
+    "non_tech": "No técnico",
+    "intern": "Becario",
+    "fresher": "Recién graduado",
+    "junior": "Junior",
+    "mid": "Nivel medio",
+    "senior": "Senior",
+    "lead": "Líder / Staff",
+    "manager": "Gerente",
+    "remote": "Remoto",
+    "hybrid": "Híbrido",
+    "onsite": "Presencial",
+    "full_time": "Jornada completa",
+    "part_time": "Media jornada",
+    "contract": "Contrato",
+    "temporary": "Temporal",
+    "internship": "Prácticas"
+  },
+  "actions": {
+    "save": "Guardar empleo",
+    "unsave": "Quitar empleo guardado",
+    "markApplied": "Marcar como postulado",
+    "applied": "Postulado",
+    "hide": "Ocultar empleo",
+    "unhide": "Volver a mostrar empleo",
+    "apply": "Postular en el sitio de la empresa"
+  },
+  "card": {
+    "salaryNotShown": "Salario no indicado"
+  },
+  "empty": {
+    "title": "No hay empleos que coincidan",
+    "description": "Prueba a ampliar la búsqueda o a quitar algunos filtros."
+  },
+  "infinite": {
+    "loading": "Cargando más empleos…",
+    "loadMore": "Cargar más empleos",
+    "retry": "Reintentar cargar más empleos",
+    "ready": "Se cargan más empleos automáticamente al desplazarte."
+  },
+  "messages": {
+    "loginRequired": "Inicia sesión para guardar, ocultar o seguir tus postulaciones.",
+    "updateFailed": "No se pudo actualizar este empleo.",
+    "loadFailed": "No se pudieron cargar los empleos.",
+    "hidden": "Empleo oculto.",
+    "viewHidden": "Ver ocultos",
+    "unhidden": "El empleo volvió a la lista principal."
+  },
+  "detail": {
+    "back": "Volver a empleos",
+    "notFound": "Este empleo no está disponible o ha caducado.",
+    "about": "Sobre el puesto",
+    "noDescription": "La fuente no proporcionó una descripción completa.",
+    "requiredSkills": "Habilidades requeridas",
+    "preferredSkills": "Habilidades deseables",
+    "overview": "Resumen del empleo",
+    "salary": "Salario",
+    "jobType": "Tipo de empleo",
+    "seniority": "Nivel de experiencia",
+    "role": "Puesto",
+    "source": "Fuente",
+    "sourceAttribution": "Oferta proporcionada por {{source}}."
+  },
+  "user": {
+    "saved": {
+      "title": "Empleos guardados",
+      "description": "Guarda los puestos que te interesan en un solo lugar y vuelve cuando estés listo.",
+      "empty": "Aún no has guardado ningún empleo activo."
+    },
+    "applied": {
+      "title": "Postulaciones",
+      "description": "Un registro sencillo de los empleos a los que te has postulado.",
+      "empty": "No has marcado ningún empleo activo como postulado."
+    },
+    "hidden": {
+      "title": "Empleos ocultos",
+      "description": "Revisa los empleos que ocultaste y devuelve cualquiera a la lista principal.",
+      "empty": "No tienes empleos ocultos."
+    }
+  },
+  "market": {
+    "eyebrow": "Inteligencia de mercado",
+    "title": "Qué están contratando las empresas tecnológicas que seguimos",
+    "subtitle": "Agregados diarios de puestos técnicos y no técnicos de las fuentes seleccionadas por Corelia. Las métricas de crecimiento y comparables usan fuentes observadas en ambas ventanas de comparación.",
+    "cards": {
+      "active": "Empleos activos",
+      "new": "Nuevos hoy",
+      "remote": "Proporción remota",
+      "entry": "Empleos de nivel inicial"
+    },
+    "topRoles": "Puestos más demandados",
+    "topSkills": "Habilidades más solicitadas",
+    "topDomains": "Contratación por ámbito",
+    "activity": "Actividad de nuevos empleos",
+    "activityDescription": "Empleos nuevos y caducados por día en las últimas 30 observaciones",
+    "newJobs": "Empleos nuevos",
+    "expiredJobs": "Empleos caducados",
+    "roleGrowth": "Crecimiento por puesto (fuentes comparables)",
+    "skillGrowth": "Crecimiento por habilidad (fuentes comparables)",
+    "seniorityMix": "Distribución por nivel",
+    "growthPending": "Se necesitan al menos 14 instantáneas diarias para mostrar el crecimiento.",
+    "disclaimer": "Observado en las fuentes que sigue Corelia; es un conjunto de datos de mercado muestreado, no un censo.",
+    "empty": {
+      "title": "Se están preparando los datos de mercado",
+      "description": "Un administrador debe rastrear al menos una empresa verificada y actualizar los análisis diarios."
+    },
+    "chartScale": "Empleos · escala 0–{{count}}"
+  },
+  "admin": {
+    "title": "Operaciones de empleos",
+    "subtitle": "Gestiona feeds de empleo directos y destinos ATS, revisa clasificaciones, ejecuta rastreadores e inspecciona los agregados de mercado.",
+    "loading": "Cargando operaciones de empleos…",
+    "nav": {
+      "overview": "Resumen",
+      "review": "Revisión",
+      "sources": "Fuentes",
+      "companies": "Destinos ATS",
+      "crawlers": "Ejecuciones del rastreador",
+      "analytics": "Analítica"
+    },
+    "overview": {
+      "active": "Empleos activos",
+      "review": "Requieren revisión",
+      "companies": "Destinos ATS",
+      "sources": "Fuentes",
+      "failedRuns": "Ejecuciones fallidas"
+    },
+    "actions": {
+      "run": "Ejecutar ahora",
+      "runAll": "Ejecutar todas las fuentes",
+      "addTarget": "Añadir destino ATS",
+      "publish": "Publicar",
+      "reject": "Rechazar",
+      "enable": "Activar",
+      "disable": "Desactivar",
+      "verify": "Verificar",
+      "unverify": "Quitar verificación",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "edit": "Editar",
+      "logs": "Ver registros",
+      "careerPage": "Página de empleo",
+      "clearLogFilter": "Mostrar todas las ejecuciones",
+      "revalidate": "Revalidar",
+      "revalidateAll": "Revalidar fuentes pendientes",
+      "resolve": "Resolver",
+      "refreshAnalytics": "Actualizar analítica"
+    },
+    "confirm": {
+      "runAll": "¿Ejecutar ahora todas las fuentes de empleo activadas y pendientes? Esto puede consumir cuota de API externa y de IA.",
+      "revalidateAll": "¿Revalidar ahora todas las fuentes de empleo activadas y pendientes? Se obtienen instantáneas actuales de las fuentes, pero no se invoca la IA."
+    },
+    "messages": {
+      "runComplete": "Ejecución del rastreador completada.",
+      "runPartial": "El rastreador terminó con {{failures}} destino(s) fallido(s). Revisa los registros de la ejecución para más detalles.",
+      "noEligibleCompanies": "No hay ningún destino elegible listo. Los feeds directos pueden ejecutarse de inmediato; los conectores ATS necesitan una URL de empleo activa.",
+      "policyRequired": "Revisa la política de la fuente antes de activarla.",
+      "saved": "Cambios guardados.",
+      "analyticsRefreshed": "Analítica de mercado actualizada.",
+      "actionFailed": "No se pudo completar la operación."
+    },
+    "review": {
+      "reason": "Motivo de revisión",
+      "title": "Título del empleo",
+      "summary": "Resumen fáctico",
+      "primaryRole": "Slug del puesto principal",
+      "seniority": "Slug del nivel",
+      "roles": "Slugs de puestos, separados por comas",
+      "domains": "Slugs de ámbitos, separados por comas",
+      "requiredSkills": "Slugs de habilidades requeridas, separados por comas",
+      "preferredSkills": "Slugs de habilidades deseables, separados por comas",
+      "empty": "Ningún empleo requiere revisión por ahora."
+    },
+    "columns": {
+      "source": "Fuente",
+      "type": "Tipo",
+      "cadence": "Frecuencia",
+      "jobsFound": "Empleos encontrados",
+      "targets": "Destinos ATS",
+      "credential": "Credencial",
+      "policy": "Política revisada",
+      "lastRun": "Último éxito",
+      "lastError": "Último error",
+      "status": "Estado",
+      "actions": "Acciones",
+      "started": "Inicio",
+      "trigger": "Disparador",
+      "target": "Destino",
+      "fetched": "Obtenidos",
+      "published": "Publicados",
+      "review": "Revisión",
+      "rejected": "Rechazados",
+      "aiFailed": "Alternativa de IA",
+      "failed": "Fallidos"
+    },
+    "status": {
+      "enabled": "Activada",
+      "disabled": "Desactivada",
+      "error": "Error"
+    },
+    "company": {
+      "title": "Destinos ATS por empresa",
+      "description": "Greenhouse, Lever, Ashby y SmartRecruiters no ofrecen un único feed global de empleos. Pega aquí una URL pública de empleo para que Corelia detecte su ATS y el identificador del tablero. Los feeds de empleo directos no necesitan entradas en esta pestaña.",
+      "empty": "Aún no hay destinos ATS. Añade una URL pública de empleo de Greenhouse, Lever, Ashby o SmartRecruiters para empezar.",
+      "add": "Añadir destino ATS",
+      "name": "Nombre de la empresa",
+      "slug": "Slug",
+      "websiteUrl": "URL del sitio web",
+      "logoUrl": "URL del logotipo (opcional)",
+      "careersUrl": "Página de empleo o URL del ATS",
+      "source": "Fuente / adaptador",
+      "identifier": "Identificador del tablero/sitio ATS",
+      "domains": "Ámbitos, separados por comas",
+      "cadence": "Frecuencia de rastreo en horas",
+      "priority": "Prioridad 0–100",
+      "detected": "Se detectó {{source}} / {{identifier}}. Puedes cambiarlo.",
+      "openJobs": "{{count}} empleos abiertos",
+      "priorityValue": "Prioridad {{priority}}",
+      "verified": "Verificado",
+      "unverified": "Sin verificar",
+      "neverRun": "Nunca rastreado",
+      "lastRevalidated": "Última revalidación"
+    },
+    "source": {
+      "feedTitle": "Feeds de empleo directos",
+      "feedDescription": "Estos agregadores y feeds RSS obtienen empleos directamente. No necesitas añadir una empresa.",
+      "atsTitle": "Conectores ATS",
+      "atsDescription": "Estos adaptadores solo se ejecutan para las URL de empleo configuradas en Destinos ATS.",
+      "direct": "Directo",
+      "targetCount": "{{active}} activos / {{total}}",
+      "credentialConfigured": "Configurada",
+      "credentialMissing": "Falta",
+      "addRss": "Conectar feed RSS",
+      "name": "Nombre del proveedor",
+      "slug": "Slug del proveedor",
+      "baseUrl": "URL del sitio web del proveedor",
+      "feedUrls": "URL RSS/Atom, una por línea",
+      "termsUrl": "URL de términos o documentación del feed",
+      "priority": "Prioridad 0–100",
+      "attributionText": "Texto de atribución",
+      "redistributionNotes": "Notas de redistribución/política",
+      "policyReviewed": "Política revisada",
+      "attributionRequired": "Atribución obligatoria",
+      "canonicalRequired": "Enlace canónico obligatorio",
+      "allowDescription": "Permitir mostrar la descripción",
+      "allowSeo": "Permitir indexación SEO"
+    },
+    "analytics": {
+      "comparableNew": "Empleos nuevos comparables",
+      "comparableTotal": "Empleos activos comparables"
+    },
+    "alerts": {
+      "title": "Alertas operativas abiertas",
+      "occurrences": "{{count}} ocurrencia(s)"
+    }
+  }
+}

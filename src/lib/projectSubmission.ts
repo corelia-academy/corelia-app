@@ -1,9 +1,10 @@
 import { coreliaEdgeUrl, supabaseFunctionHeaders } from "@/lib/coreliaEdgeApi";
 import { supabase } from "@/lib/supabase";
 import type { ProjectSourceType, ProjectVisibility, ProjectContent, ProjectLocales } from "@/types/projects";
+import type { ContentLocale } from "@/lib/locales";
 
 export type ProjectSaveInput = {
-  primary_content_locale?: "vi" | "en";
+  primary_content_locale?: ContentLocale;
   locales?: ProjectLocales;
   project_id: string;
   slug: string;
@@ -135,7 +136,7 @@ export async function manageProject(projectId: string, action: ProjectManagement
   await parseResponse(response);
 }
 
-export async function translateProjectContent(projectId: string, sourceLocale: "vi" | "en", targetLocale: "vi" | "en", content: ProjectContent): Promise<ProjectContent> {
+export async function translateProjectContent(projectId: string, sourceLocale: ContentLocale, targetLocale: ContentLocale, content: ProjectContent): Promise<ProjectContent> {
   const response = await authenticatedRequest("projects.translate", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ project_id: projectId, source_locale: sourceLocale, target_locale: targetLocale, content }),

@@ -1,0 +1,762 @@
+{
+  "certificateAnalytics": {
+    "title": "Certificados",
+    "description": "Métricas de emisión y entrega de los certificados de cursos de Corelia y los OCA de Open Campus.",
+    "course": "Curso",
+    "allCourses": "Todos los cursos",
+    "from": "Desde",
+    "to": "Hasta",
+    "network": "Red de Open Campus",
+    "allNetworks": "Todas las redes",
+    "invalidRange": "La fecha de inicio debe ser anterior a la de fin.",
+    "loading": "Cargando analítica…",
+    "loadError": "No se pudo cargar la analítica de certificados.",
+    "forbidden": "Solo los administradores pueden ver este informe.",
+    "mintAttempts": "{{count}} llamadas de emisión de OC registradas desde que se activó la analítica",
+    "hint": "Las fechas filtran por la emisión en Corelia o la finalización del curso (hora de Vietnam). Que el proveedor lo acepte no prueba que llegue a la bandeja de entrada.",
+    "learnerRows": "{{count}} filas de conciliación",
+    "refresh": "Actualizar",
+    "exportCsv": "Exportar CSV",
+    "exporting": "Exportando…",
+    "exportError": "No se pudo exportar el CSV. Inténtalo de nuevo.",
+    "tableLabel": "Certificados por estudiante y curso",
+    "empty": "No hay registros que coincidan.",
+    "page": "Página {{page}} / {{pages}}",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "unknown": "Desconocido",
+    "issued": "Emitido",
+    "revoked": "Revocado",
+    "created": "Creado",
+    "missing": "Falta",
+    "unresolved": "ID por conciliar",
+    "summary": {
+      "completed": "Completados",
+      "corelia_issued": "Emitidos por Corelia",
+      "corelia_revoked": "Revocados por Corelia",
+      "oca_minted": "OCA emitidos",
+      "oca_unresolved": "OCA sin resolver",
+      "oca_pending": "OCA pendientes",
+      "oca_failed": "OCA fallidos",
+      "unique_learners": "Estudiantes"
+    },
+    "columns": {
+      "learner": "Estudiante",
+      "course": "Curso",
+      "completed": "Completado",
+      "corelia": "Corelia",
+      "coreEmail": "Correo de Corelia",
+      "coreNotice": "Notificación de Corelia",
+      "oca": "Open Campus OCA",
+      "ocEmail": "Correo de OCA",
+      "ocNotice": "Notificación de OCA"
+    },
+    "status": {
+      "minted": "Emitido",
+      "pending": "Pendiente",
+      "failed": "Fallido"
+    },
+    "mail": {
+      "accepted": "Aceptado por el proveedor",
+      "provider_error": "Error del proveedor",
+      "skipped": "Omitido"
+    }
+  },
+  "ogPreview": {
+    "title": "Vista previa de imagen para compartir",
+    "description": "Inspecciona las imágenes Open Graph generadas a partir del contenido publicado.",
+    "entity": "Tipo de contenido",
+    "entities": {
+      "project": "Proyecto",
+      "course": "Curso",
+      "hackathon": "Hackathon",
+      "profile": "Perfil"
+    },
+    "identifier": "Slug, ID o alias",
+    "identifierPlaceholder": "Introduce un identificador público",
+    "load": "Vista previa",
+    "enterIdentifier": "Elige un tipo de contenido e introduce su identificador para previsualizar la imagen.",
+    "defaultImageDescription": "Imagen para compartir predeterminada de las páginas de Corelia sin tarjeta de entidad.",
+    "loading": "Cargando imagen para compartir…",
+    "metadataError": "No se pudieron cargar los metadatos. Inténtalo de nuevo.",
+    "unavailable": "Este contenido no es público o no tiene imagen para compartir.",
+    "imageError": "No se pudo cargar la imagen para compartir. Reintenta o abre la imagen original para inspeccionarla.",
+    "retry": "Reintentar",
+    "refresh": "Actualizar vista previa",
+    "copy": "Copiar URL de la imagen",
+    "openPage": "Abrir página pública",
+    "openImage": "Abrir PNG original",
+    "image": "Imagen Open Graph 1200 × 630",
+    "imageAlt": "Vista previa de la imagen Open Graph para compartir",
+    "lightBackground": "Fondo claro",
+    "darkBackground": "Fondo oscuro",
+    "canonicalUrl": "URL canónica",
+    "imageUrl": "URL de la imagen",
+    "updatedAt": "Actualizado el",
+    "revision": "Revisión"
+  },
+  "layout": {
+    "activityMilestones": {
+      "uploading": "Subiendo imagen...",
+      "clickToUpload": "Haz clic para subir",
+      "orDragDrop": "o arrastra y suelta aquí",
+      "supportFormats": "Formatos admitidos: PNG, JPG",
+      "preview": "Vista previa"
+    },
+    "sidebar": {
+      "ogPreview": {
+        "label": "Vista previa de Open Graph"
+      },
+      "brandTitle": "Administración de Corelia",
+      "brandSubtitle": "Roles, instructores y operaciones diarias del sistema en un solo lugar.",
+      "primaryNavigation": "Navegación principal",
+      "users": {
+        "label": "Usuarios",
+        "tooltip": "Usuarios"
+      },
+      "jobs": {
+        "label": "Empleos",
+        "tooltip": "Ingesta y revisión de empleos"
+      },
+      "instructors": {
+        "label": "Instructores",
+        "tooltip": "Instructores"
+      },
+      "activityMilestones": {
+        "label": "Hitos de actividad",
+        "tooltip": "Insignias globales de hitos de Open Campus"
+      },
+      "manualMint": {
+        "label": "Concesión manual de OCA/OCB",
+        "tooltip": "Concede manualmente OCA/OCB a una persona, sin relación con un curso"
+      },
+      "branding": {
+        "label": "Marca",
+        "tooltip": "Logotipo y recursos de marca de Corelia"
+      },
+      "offlineClasses": {
+        "label": "Clases presenciales",
+        "tooltip": "Clases presenciales"
+      },
+      "contests": {
+        "label": "Concursos",
+        "tooltip": "Concursos"
+      },
+      "hackathons": {
+        "label": "Hackathons",
+        "tooltip": "Gestionar hackathons"
+      },
+      "email": {
+        "label": "Centro de correo",
+        "tooltip": "Destinatarios, plantillas, campañas y automatizaciones"
+      },
+      "emailPreview": {
+        "label": "Revisión de correos",
+        "tooltip": "Revisa cada plantilla de correo en escritorio y móvil"
+      },
+      "projects": {
+        "label": "Proyectos"
+      }
+    },
+    "pageMeta": {
+      "email": {
+        "title": "Centro de correo",
+        "description": "Gestiona los correos del sistema, de aprendizaje, de programas y de marketing."
+      },
+      "users": {
+        "title": "Gestión de usuarios",
+        "description": "Controla los roles y el estado de acceso de todos los usuarios."
+      },
+      "jobs": {
+        "title": "Operaciones de empleos",
+        "description": "Gestiona fuentes, empresas, colas de revisión, ejecuciones del rastreador y analítica de mercado."
+      },
+      "instructors": {
+        "title": "Gestión de instructores",
+        "description": "Sigue perfiles, tipos de instructor y datos de colaboración con socios."
+      },
+      "activityMilestones": {
+        "title": "Hitos de actividad",
+        "description": "Configura insignias de Open Campus automáticas y manuales no relacionadas con un solo curso."
+      },
+      "manualMint": {
+        "title": "Concesión manual de credenciales",
+        "description": "Concede manualmente un OCA u OCB a una persona concreta, sin relación con ningún curso ni hackathon."
+      },
+      "branding": {
+        "title": "Marca",
+        "description": "Gestiona el logotipo de Corelia que se usa en los certificados y las credenciales on-chain."
+      },
+      "contests": {
+        "title": "Operaciones de concursos",
+        "description": "Crea y gestiona concursos, revisa solicitudes, puntúa envíos y publica resultados."
+      },
+      "hackathons": {
+        "title": "Gestión de hackathons",
+        "description": "Edita el contenido, la taxonomía, los proyectos y los ganadores."
+      },
+      "instructorDetail": {
+        "title": "Detalle del instructor",
+        "description": "Actualiza el perfil y la información del instructor."
+      },
+      "projects": {
+        "title": "Proyectos",
+        "description": "Moderación de proyectos"
+      }
+    },
+    "hero": {
+      "eyebrow": "Área de administración",
+      "pills": {
+        "sensitive": "Permisos sensibles",
+        "manualAudit": "Auditoría manual"
+      }
+    }
+  },
+  "hackathons": {
+    "title": "Hackathons",
+    "description": "Crea y gestiona páginas públicas de hackathons.",
+    "new": "Nuevo hackathon",
+    "edit": "Editar",
+    "view": "Ver público",
+    "preview": "Vista previa",
+    "loading": "Cargando hackathons…",
+    "empty": "Aún no hay hackathons.",
+    "editor": {
+      "back": "Volver a la lista",
+      "newTitle": "Nuevo hackathon",
+      "editTitle": "Editar hackathon",
+      "newIntro": "Crea primero la información general; cuando exista el borrador, completa el contenido, los premios, el cronograma y los proyectos.",
+      "editIntro": "Edita una sección del hackathon cada vez y guarda antes de pasar a otra tarea.",
+      "participants": "inscripciones",
+      "saveAll": "Guardar todo",
+      "saveSection": "Guardar cambios",
+      "createDraft": "Crear borrador",
+      "cancel": "Cancelar",
+      "saved": "Hackathon guardado.",
+      "saveFailed": "No se pudo guardar el hackathon.",
+      "notFound": "Hackathon no encontrado.",
+      "unsaved": "Cambios sin guardar",
+      "leaveConfirm": "Tienes cambios sin guardar. ¿Salir del editor y descartarlos?",
+      "add": "Añadir",
+      "archive": "Archivar",
+      "restore": "Restaurar",
+      "activate": "Activar",
+      "remove": "Quitar",
+      "removeImage": "Quitar imagen",
+      "removeTrack": "Eliminar categoría",
+      "removeTrackConfirm": "¿Eliminar esta categoría? El cambio se aplica después de guardar.",
+      "noTracks": "Aún no hay categorías. Añádelas solo cuando los premios deban repartirse por categoría.",
+      "trackNumber": "Categoría {{number}}",
+      "trackName": "Nombre de la categoría",
+      "trackNamePlaceholder": "Por ejemplo: consumo, infraestructura…",
+      "trackPrize": "Reparto del premio",
+      "trackDescription": "Descripción",
+      "trackDescriptionPlaceholder": "Describe el alcance y los criterios de esta categoría…",
+      "noTimeline": "Aún no hay etapas en el cronograma.",
+      "timelineNumber": "Etapa {{number}}",
+      "timelineTitle": "Título de la etapa",
+      "timelineStarts": "Inicio",
+      "timelineEnds": "Fin",
+      "removeTimeline": "Eliminar etapa",
+      "saveBeforeWinners": "Guarda el hackathon antes de elegir ganadores.",
+      "selectProject": "Selecciona un proyecto",
+      "selectProjectHint": "Busca y selecciona un proyecto enviado para premiarlo.",
+      "searchProjectPlaceholder": "Busca por título del proyecto o @usuario…",
+      "loadingProjects": "Cargando proyectos…",
+      "noEligibleProjects": "No se encontraron proyectos elegibles.",
+      "awardLabel": "Nombre del premio",
+      "awardLabelRequired": "Introduce un nombre para cada premio antes de guardar.",
+      "dragProject": "Arrastra el proyecto {{name}} para reordenarlo",
+      "dragAward": "Arrastra el premio {{name}} para reordenarlo",
+      "moveProjectUp": "Subir el proyecto {{name}}",
+      "moveProjectDown": "Bajar el proyecto {{name}}",
+      "moveAwardUp": "Subir el premio {{name}}",
+      "moveAwardDown": "Bajar el premio {{name}}",
+      "noAwards": "Aún no se han seleccionado proyectos ganadores.",
+      "deleteConfirm": "¿Eliminar este hackathon de forma permanente?",
+      "applyStatus": "Aplicar estado",
+      "publish": "Publicar",
+      "unpublish": "Despublicar",
+      "statusPublishedCta": "Publicado (clic para volver a borrador)",
+      "statusDraftCta": "Borrador (clic para publicar)",
+      "end": "Finalizar",
+      "delete": "Eliminar hackathon",
+      "editingLanguage": "Idioma de edición",
+      "primaryBadge": "Principal",
+      "sidebarTitle": "Ajustes del hackathon",
+      "taxonomyHint": "Los hackathons nuevos incluyen ámbitos y tecnologías predefinidos habituales. Renombra, añade o archiva las opciones sin usar; la taxonomía en uso no se puede eliminar.",
+      "validationRequired": "El título y el slug en vietnamita son obligatorios.",
+      "validationCurrency": "La moneda debe tener entre 2 y 10 letras mayúsculas o números.",
+      "validationPrize": "Los repartos por categoría no pueden superar el fondo de premios.",
+      "validationTelegram": "Telegram debe ser una URL t.me válida o un @usuario.",
+      "validationX": "X debe ser una URL completa de x.com o twitter.com.",
+      "validationFacebook": "Facebook debe ser una URL completa de facebook.com.",
+      "validationTrackNameRequired": "A la categoría {{number}} le falta el nombre. Introduce un nombre o quítala antes de guardar.",
+      "validationTaxonomyRequired": "Los hackathons publicados o en curso deben tener al menos un ámbito activo y una tecnología activa.",
+      "validationTaxonomyItemInvalid": "Cada ámbito o tecnología debe tener un identificador y un nombre válidos.",
+      "trackAdded": "Se añadió una categoría nueva al borrador.",
+      "awardMissingFields": "Selecciona un proyecto e introduce el nombre del premio.",
+      "awardAdded": "Premio añadido a la lista.",
+      "notifyAwardsAction": "Notificar a los ganadores por correo",
+      "saveBeforeNotifyAwards": "Guarda los cambios de los premios antes de notificar a los ganadores.",
+      "validationSocialPost": "Introduce URL públicas de publicaciones de Facebook, Instagram o X, una por línea.",
+      "notifyAwardsConfirm": "¿Enviar ahora los correos de notificación de premio a todos los equipos de los proyectos ganadores?",
+      "awardsNotified": "Notificaciones de premio enviadas ({{count}} correos entregados).",
+      "awardsNotifyRetryableError": "Algunos correos de premio no se pudieron enviar por errores temporales. Puedes reintentarlo en breve.",
+      "awardsNotifyPermanentError": "El proveedor rechazó definitivamente algunos correos de premio. Verifica los correos de los destinatarios.",
+      "awardsNotifyIndeterminateError": "La entrega de algunos correos de premio es indeterminada. Hace falta conciliar antes de reintentar.",
+      "awardsNotifyNotConfigured": "El envío de correo no está configurado. Se crearon notificaciones en la aplicación, pero no se enviaron correos.",
+      "awardsNotifyFailed": "No se pudieron enviar los correos de notificación de premio.",
+      "status": {
+        "draft": "Borrador",
+        "published": "Publicado",
+        "running": "En curso",
+        "ended": "Finalizado"
+      },
+      "modes": {
+        "online": "En línea",
+        "offline": "Presencial",
+        "hybrid": "Híbrido"
+      },
+      "aiTranslation": {
+        "action": "Traducir {{source}} → {{target}} con IA",
+        "translating": "La IA está traduciendo…",
+        "noSource": "Aún no hay contenido en {{source}} para traducir.",
+        "overwriteConfirm": "El borrador en {{target}} ya tiene contenido. ¿Reemplazarlo con la traducción de la IA?",
+        "invalidResponse": "La IA devolvió una traducción del hackathon no válida.",
+        "applied": "Se aplicó la traducción de IA de {{source}} a {{target}}. Revísala antes de guardar.",
+        "failed": "No se pudo traducir el contenido del hackathon."
+      },
+      "sections": {
+        "overview": "Resumen",
+        "description": "Descripción",
+        "prizes": "Premios y categorías",
+        "timeline": "Cronograma",
+        "resources": "Recursos",
+        "taxonomy": "Taxonomía de proyectos",
+        "projects": "Proyectos y ganadores",
+        "danger": "Publicar, finalizar y eliminar"
+      },
+      "sectionDescriptions": {
+        "overview": "Identidad, información del organizador, canales de contacto, publicaciones del organizador y plazos.",
+        "description": "La introducción completa del hackathon en Markdown.",
+        "prizes": "Define el fondo total de premios y añade categorías solo cuando los premios deban repartirse.",
+        "timeline": "Etapas del hackathon ordenadas de la más temprana a la más tardía.",
+        "resources": "Documentos de apoyo y cursos de preparación.",
+        "projects": "Selecciona los proyectos ganadores y asigna manualmente los nombres de los premios.",
+        "danger": "Cambia el estado público o elimina este hackathon de forma permanente."
+      },
+      "fields": {
+        "title": "Título",
+        "slug": "Slug",
+        "shortDescription": "Descripción breve",
+        "mode": "Modalidad",
+        "host": "Organizador",
+        "hostWebsite": "Sitio web del organizador",
+        "telegram": "Telegram (URL o @usuario)",
+        "telegramPlaceholder": "https://t.me/corelia_builders o @corelia_builders",
+        "telegramHint": "Un @usuario se convierte en su URL de t.me al salir del campo.",
+        "x": "URL del perfil de X",
+        "xPlaceholder": "https://x.com/unihackfest",
+        "facebook": "URL de la página de Facebook",
+        "facebookPlaceholder": "https://facebook.com/unihackfest",
+        "fullUrlHint": "Introduce la URL completa, empezando por https://",
+        "currency": "Moneda",
+        "markdown": "Contenido en Markdown",
+        "prizeDescription": "Descripción del premio en Markdown",
+        "timelineDescription": "Descripción de la etapa en Markdown",
+        "tracks": "Categorías",
+        "banner": "Banner del hackathon",
+        "bannerHint": "Tamaño recomendado: 2100 × 900 px (21:9). Mínimo: 1680 × 720 px.",
+        "bannerEmpty": "Añade una imagen de portada",
+        "uploadBanner": "Subir banner",
+        "officialCourse": "Curso de preparación recomendado",
+        "relatedCourses": "Otros cursos de preparación",
+        "noCourse": "Ningún curso seleccionado",
+        "noPublishedCourses": "No hay cursos publicados disponibles.",
+        "coursesLoadFailed": "No se pudieron cargar los cursos publicados.",
+        "socialPosts": "Publicaciones del organizador en redes sociales",
+        "socialPostsPlaceholder": "Una URL de publicación de Facebook, Instagram o X por línea",
+        "socialPostsHint": "Solo enlaces a publicaciones públicas. Las publicaciones privadas o restringidas pueden no insertarse.",
+        "changeBanner": "Cambiar banner",
+        "bannerPreviewAlt": "Vista previa del banner del hackathon",
+        "hostLogo": "Logotipo del organizador",
+        "hostLogoHint": "Sube un logotipo cuadrado o con fondo transparente.",
+        "changeHostLogo": "Subir o cambiar logotipo del organizador",
+        "hostLogoPreviewAlt": "Vista previa del logotipo del organizador",
+        "totalPrize": "Fondo total de premios",
+        "submission_deadline": "Fecha límite de envío",
+        "winners_announced": "Ganadores anunciados",
+        "winners_announcedHint": "Tras anunciar los resultados, los equipos pueden seguir actualizando sus proyectos y miembros.",
+        "allow_project_edits_after_deadline": "Permitir ediciones después de la fecha límite de envío",
+        "allow_project_edits_after_deadlineHint": "Permite que los equipos actualicen proyectos y miembros antes de anunciar los resultados. Los cambios pueden afectar al contenido que se está evaluando.",
+        "editsAutomaticallyOpen": "La edición se abre automáticamente porque ya se anunciaron los resultados.",
+        "sectors": "Áreas de ingeniería",
+        "tech_stacks": "Tecnologías"
+      }
+    }
+  },
+  "instructors": {
+    "errors": {
+      "generic": "Algo salió mal",
+      "updateFailed": "No se pudo actualizar"
+    },
+    "toasts": {
+      "originUpdated": "Tipo de instructor actualizado."
+    },
+    "stats": {
+      "total": "Total de instructores",
+      "corelia": "Corelia",
+      "external": "Socios externos",
+      "unclassified": "Sin clasificar",
+      "managedCourses": "Cursos gestionados",
+      "loadingValue": "..."
+    },
+    "hero": {
+      "title": "Operaciones de la red de instructores",
+      "description": "Abre cada perfil para gestionar la información y la clasificación del instructor."
+    },
+    "filters": {
+      "searchPlaceholder": "Busca por nombre, correo, organización, titular, UID…",
+      "originOptions": {
+        "all": "Todos",
+        "corelia": "Corelia",
+        "external": "Externos"
+      },
+      "quick": {
+        "all": "Todos",
+        "corelia": "Corelia",
+        "external": "Externos"
+      }
+    },
+    "actions": {
+      "refresh": "Actualizar",
+      "clearFilters": "Borrar filtros"
+    },
+    "list": {
+      "syncing": "Sincronizando instructores...",
+      "showing": "Mostrando {{shown}} / {{total}} instructores",
+      "showingOriginSuffix": " · {{origin}}",
+      "loading": "Cargando lista...",
+      "empty": "Ningún instructor coincide con los filtros actuales.",
+      "notUpdated": "Sin actualizar"
+    },
+    "originLabel": {
+      "corelia": "Corelia",
+      "external": "Externo",
+      "unclassified": "Sin clasificar"
+    }
+  },
+  "instructorDetailPage": {
+    "errors": {
+      "loadFailed": "No se pudieron cargar los datos",
+      "saveFailed": "No se pudieron guardar los cambios"
+    },
+    "toasts": {
+      "detailsSaved": "Datos del instructor guardados."
+    },
+    "loading": "Cargando detalle del instructor...",
+    "empty": {
+      "notFound": "Instructor no encontrado."
+    },
+    "actions": {
+      "backToList": "Volver a la lista",
+      "backToInstructors": "← Volver a instructores"
+    },
+    "summary": {
+      "profileCompletion": "Perfil completado"
+    },
+    "hero": {
+      "eyebrow": "Espacio de trabajo del instructor",
+      "description": "Gestiona la información del perfil del instructor en un flujo de operaciones claro.",
+      "rolePrefix": "Rol: {{role}}",
+      "partnerInstructor": "Instructor asociado",
+      "coreliaInstructor": "Instructor de Corelia"
+    },
+    "nav": {
+      "title": "Navegación del perfil",
+      "subtitle": "Revisa y actualiza la información del perfil del instructor."
+    },
+    "sections": {
+      "profile": "Datos del instructor"
+    },
+    "common": {
+      "dash": "-",
+      "notUpdated": "Sin actualizar"
+    },
+    "profile": {
+      "title": "Datos del instructor",
+      "description": "Actualiza el perfil público, el rol del sistema y la información profesional.",
+      "completionLabel": "{{percent}}% completado",
+      "fields": {
+        "role": "Rol",
+        "origin": "Tipo de instructor",
+        "fullName": "Nombre completo",
+        "phone": "Teléfono",
+        "organization": "Organización"
+      },
+      "roleOptions": {
+        "instructor": "Instructor",
+        "supportStaff": "Soporte",
+        "student": "Estudiante"
+      },
+      "originOptions": {
+        "external": "Externo"
+      },
+      "actions": {
+        "save": "Guardar cambios",
+        "saving": "Guardando..."
+      }
+    }
+  },
+  "users": {
+    "showingRange": "Mostrando {{start}}–{{end}} de {{total}} cuentas",
+    "pagination": {
+      "label": "Paginación de cuentas",
+      "page": "Página {{page}} de {{total}}",
+      "previous": "Anterior",
+      "next": "Siguiente"
+    },
+    "title": "Panel de control de acceso",
+    "subtitle": "Busca por nombre, correo o UID y ajusta los roles directamente en la tabla para las operaciones diarias.",
+    "stats": {
+      "totalUsers": "Total de usuarios",
+      "admin": "Administrador",
+      "support": "Soporte",
+      "instructor": "Instructor",
+      "student": "Estudiante",
+      "opencampusConnected": "OpenCampus conectado"
+    },
+    "searchPlaceholder": "Busca por nombre, correo, rol, UID…",
+    "allRoles": "Todos los roles",
+    "refresh": "Actualizar",
+    "clearFilters": "Borrar filtros",
+    "loadingList": "Cargando lista...",
+    "syncing": "Sincronizando usuarios...",
+    "empty": "Ningún usuario coincide con los filtros actuales.",
+    "unknownError": "Algo salió mal",
+    "confirmChangeRole": "¿Seguro que quieres cambiar el rol a {{role}}?",
+    "updateRoleSuccess": "¡Rol actualizado correctamente!",
+    "updateRoleErrorPrefix": "Error al actualizar el rol: ",
+    "unknown": "Error desconocido",
+    "showing": "Mostrando {{shown}} / {{total}} cuentas",
+    "showingRoleSuffix": " · {{role}}",
+    "table": {
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "role": "Rol",
+      "phone": "Teléfono",
+      "createdAt": "Creado",
+      "actions": "Acciones"
+    },
+    "mobile": {
+      "uid": "UID: {{uid}}…",
+      "emailLabel": "Correo electrónico",
+      "currentRole": "Rol actual",
+      "phone": "Teléfono",
+      "createdAt": "Creado",
+      "changeRole": "Cambiar rol",
+      "notUpdated": "Sin actualizar",
+      "dash": "-"
+    }
+  },
+  "branding": {
+    "loading": "Cargando ajustes de marca…",
+    "loadFailed": "No se pudieron cargar los ajustes de marca.",
+    "uploading": "Subiendo…",
+    "uploaded": "Logotipo subido y guardado.",
+    "uploadFailed": "Falló la subida del logotipo.",
+    "saving": "Guardando…",
+    "saved": "Guardado.",
+    "saveFailed": "No se pudo guardar.",
+    "logo": {
+      "title": "Logotipo de Corelia",
+      "subtitle": "Se usa como imagen del emisor en los certificados y las credenciales on-chain de OpenCampus. Recomendado: un PNG/SVG cuadrado o ancho con fondo transparente.",
+      "uploadButton": "Subir logotipo",
+      "hint": "PNG, JPG o SVG. Se almacena de forma permanente en el CDN público.",
+      "urlLabel": "URL del logotipo",
+      "saveUrl": "Guardar URL",
+      "urlHint": "Se establece automáticamente tras la subida. También puedes pegar directamente una URL del CDN."
+    },
+    "appBaseUrl": {
+      "title": "URL base de la aplicación",
+      "subtitle": "Dominio raíz que se usa para construir los enlaces de los correos del sistema (certificados, invitaciones para reclamar...). Staging: https://staging.corelia.academy; producción: https://app.corelia.academy. Un valor incorrecto aquí envía todos los enlaces de los correos salientes al entorno equivocado.",
+      "urlLabel": "URL base",
+      "saveUrl": "Guardar URL",
+      "invalidUrl": "URL no válida: debe tener la forma https://dominio, sin barra final ni caracteres adicionales."
+    }
+  },
+  "activityMilestones": {
+    "heading": "Hitos de actividad",
+    "subheading": "Insignias globales emitidas a través de Open Campus (OCB).",
+    "add": "Añadir hito",
+    "loading": "Cargando…",
+    "loadFailed": "No se pudieron cargar los hitos.",
+    "empty": "No hay hitos configurados.",
+    "saved": "Guardado.",
+    "saveFailed": "Error al guardar.",
+    "edit": "Editar",
+    "grant": "Conceder",
+    "createTitle": "Hito nuevo",
+    "editTitle": "Editar hito",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "grantTitle": "Conceder hito",
+    "grantUsersLabel": "ID de usuario de estudiantes (separados por coma o salto de línea)",
+    "grantReasonLabel": "Motivo (opcional)",
+    "grantNeedUsers": "Introduce al menos un ID de usuario.",
+    "grantOk": "Concesión procesada.",
+    "grantFailed": "Error al conceder.",
+    "granting": "Concediendo…",
+    "grantSubmit": "Conceder y emitir",
+    "col": {
+      "name": "Nombre",
+      "rule": "Regla",
+      "trigger": "Disparador",
+      "issued": "Emitidas",
+      "active": "Activo",
+      "actions": "Acciones"
+    },
+    "field": {
+      "name": "Título",
+      "description": "Descripción",
+      "image": "Imagen de la insignia",
+      "prefix": "Prefijo del identificador",
+      "triggerAuto": "Automático",
+      "triggerManual": "Manual (concesión del administrador)",
+      "event": "Evento",
+      "days": "Días",
+      "count": "Cantidad",
+      "active": "Activo"
+    },
+    "event": {
+      "coursesCompleted": "Cursos completados",
+      "projects": "Proyectos enviados"
+    },
+    "rule": {
+      "manual": "Concesión manual",
+      "coursesCompleted": "{{count}} cursos completados",
+      "projects": "{{count}} proyectos enviados"
+    }
+  },
+  "manualMint": {
+    "heading": "Concesión manual de OCA/OCB",
+    "subheading": "Concede un OCA/OCB a una persona concreta como recompensa fuera de la finalización de un curso: no afecta al estado del curso ni del hackathon.",
+    "tabs": {
+      "grant": "Conceder credencial / insignia",
+      "history": "Historial de concesiones y pendientes",
+      "templates": "Plantillas de insignias"
+    },
+    "lookup": {
+      "heading": "Buscar estudiante",
+      "uidPlaceholder": "UID (cópialo de la página de la cuenta)",
+      "emailPlaceholder": "Correo del estudiante",
+      "submit": "Buscar",
+      "loading": "Buscando…",
+      "notFoundUid": "No se encontró ningún usuario con este UID.",
+      "invalidEmailFormat": "Formato de correo no válido (p. ej. nombre@ejemplo.com). Vuelve a introducirlo.",
+      "ghostNotice": "{{email}} aún no tiene cuenta. Tras la concesión, le enviaremos por correo una invitación para unirse a Corelia y reclamarla.",
+      "error": "Error en la búsqueda.",
+      "previewProfile": "Ver perfil"
+    },
+    "preview": {
+      "title": "Vista previa del perfil",
+      "loading": "Cargando…",
+      "notFound": "No se pudo cargar este perfil.",
+      "noName": "Sin nombre",
+      "role": "Rol",
+      "followers": "Seguidores",
+      "fullPageLink": "Ver página completa →"
+    },
+    "templates": {
+      "searchPlaceholder": "Busca plantillas de insignias por nombre o descripción...",
+      "totalCount": "Total: {{count}} plantilla(s)",
+      "emptyTitle": "Aún no hay plantillas en la biblioteca",
+      "emptySubtitle": "Al conceder una insignia manual, activa «Guardar en la biblioteca de plantillas» para reutilizarla rápidamente después.",
+      "useTemplate": "Usar plantilla",
+      "deleteConfirm": "¿Seguro que quieres eliminar la plantilla «{{name}}» de la biblioteca?",
+      "deleteSuccess": "Plantilla eliminada de la biblioteca",
+      "deleteFailed": "No se pudo eliminar la plantilla",
+      "deleteForbidden": "Las plantillas automáticas del sistema no se pueden eliminar",
+      "loadFailed": "No se pudieron cargar las plantillas de insignias",
+      "ocbBadge": "Insignia OCB",
+      "ocaCertificate": "Certificado OCA",
+      "hidden": "Oculta",
+      "createTemplate": "Crear plantilla",
+      "createDialogTitle": "Crear plantilla de insignia / certificado nueva",
+      "createDialogDescription": "Crea y guarda una plantilla de insignia en la biblioteca para reutilizarla rápidamente al conceder manualmente.",
+      "createSuccess": "¡Plantilla de insignia guardada en la biblioteca!",
+      "createFailed": "No se pudo guardar la plantilla de insignia. Inténtalo de nuevo.",
+      "saveTemplateBtn": "Guardar en la biblioteca",
+      "templateNamePlaceholder": "P. ej., Mayor colaborador del T3, Ganador del hackathon...",
+      "templateDescriptionPlaceholder": "Descripción de los criterios o del motivo de este premio..."
+    },
+    "form": {
+      "kind": "Tipo de credencial",
+      "name": "Nombre de la credencial/insignia",
+      "image": "Imagen de la plantilla",
+      "uploadCta": "Haz clic para subir",
+      "uploading": "Subiendo…",
+      "imagePreview": "Vista previa",
+      "invalidPng": "Este archivo no es un PNG válido. Quita el fondo o convierte la imagen en",
+      "uploadFailed": "Falló la subida de la imagen.",
+      "reason": "Motivo de la concesión",
+      "grantSectionTitle": "Detalles de la insignia / certificado",
+      "chooseFromTemplates": "Elegir de las plantillas…",
+      "saveAsTemplate": "Guardar en la biblioteca de plantillas para reutilizarla en el futuro",
+      "appliedTemplate": "Plantilla «{{name}}» aplicada",
+      "submit": "Conceder",
+      "submitting": "Concediendo…",
+      "success": "Concedido correctamente.",
+      "successGhost": "Guardado como pendiente y se envió una invitación por correo al destinatario.",
+      "submitFailed": "Error al conceder."
+    },
+    "history": {
+      "heading": "Historial de emisiones manuales y concesiones pendientes",
+      "subheading": "Sigue todas las credenciales concedidas manualmente, el progreso de emisión en Open Campus y las reclamaciones pendientes.",
+      "searchPlaceholder": "Busca por destinatario, correo, OCID, nombre de la insignia o motivo...",
+      "statusFilterLabel": "Estado",
+      "kindFilterLabel": "Tipo",
+      "dateFilterLabel": "Fecha",
+      "filterStatusAll": "Todos los estados",
+      "filterStatusMinted": "Emitida",
+      "filterStatusPending": "Pendiente / En espera de registro",
+      "filterStatusFailed": "Fallida",
+      "filterKindAll": "Todos los tipos",
+      "filterKindOca": "OCA (Certificado)",
+      "filterKindOcb": "OCB (Insignia)",
+      "filterDateAll": "Todo el tiempo",
+      "filterDateToday": "Hoy",
+      "filterDate7Days": "Últimos 7 días",
+      "filterDate30Days": "Últimos 30 días",
+      "filterDateThisMonth": "Este mes",
+      "resetFilters": "Restablecer filtros",
+      "refresh": "Actualizar",
+      "recipientCol": "Destinatario",
+      "badgeCol": "Insignia / Credencial",
+      "granterCol": "Concedida por",
+      "dateCol": "Fecha",
+      "statusCol": "Estado",
+      "statusMinted": "Emitida",
+      "statusPending": "Pendiente",
+      "statusAwaitingSignup": "En espera de registro",
+      "statusFailed": "Fallida",
+      "statusRevoked": "Revocada",
+      "reasonCol": "Motivo de la concesión",
+      "actionsCol": "Acciones",
+      "viewOnOpenCampus": "Explorador",
+      "retryBtn": "Reintentar",
+      "retrying": "Reintentando…",
+      "retrySuccess": "Reintento de emisión iniciado correctamente.",
+      "retryFailed": "Falló el reintento.",
+      "revokeBtn": "Revocar",
+      "revokeConfirm": "¿Revocar esta concesión para «{{recipient}}»? Esta acción no se puede deshacer.",
+      "revokeSuccess": "Concesión revocada correctamente.",
+      "revokeFailed": "No se pudo revocar.",
+      "empty": "Aún no se ha concedido ninguna credencial manualmente.",
+      "emptyFiltered": "Ninguna credencial coincide con el filtro actual.",
+      "loadFailed": "No se pudo cargar el historial de emisiones manuales."
+    }
+  }
+}
