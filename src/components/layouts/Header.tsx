@@ -506,7 +506,10 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
             <Input
               variant="icon-leading"
               value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              onChange={(e) => {
+                setSearchText(e.target.value);
+                setSearchOpen(true);
+              }}
               onFocus={() => {
                 const hasAnything =
                   searchText.trim().length > 0 ||
@@ -691,6 +694,17 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
         </form>
 
         <div className="flex items-center gap-2">
+          {!isSearchRoute ? (
+            <NavLink
+              to="/search"
+              aria-label={t("search.title")}
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-foreground transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:hidden"
+              onPointerEnter={() => prefetchRouteChunk("/search")}
+              onFocus={() => prefetchRouteChunk("/search")}
+            >
+              <Search className="size-5" aria-hidden />
+            </NavLink>
+          ) : null}
           {!authInitialized ? (
             <div className="h-9 w-28 animate-pulse rounded-full bg-surface-raised md:h-10" />
           ) : isAuthenticated ? (

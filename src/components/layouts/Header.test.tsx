@@ -95,4 +95,78 @@ describe("Header search and OpenCampus placement", () => {
     queryClient.clear();
     container.remove();
   });
+
+  it("opens search suggestions while typing even without recent or trending searches", async () => {
+    window.localStorage.clear();
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <Header publicUI />
+          </MemoryRouter>
+        </QueryClientProvider>,
+      );
+    });
+
+    const input = container.querySelector<HTMLInputElement>('input[data-slot="input"]')!;
+    const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+    const type = async (value: string) => {
+      await act(async () => {
+        setValue.call(input, value);
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+    };
+
+    await act(async () => input.focus());
+    expect(container.textContent).not.toContain("Search for");
+
+    await type("type");
+    expect(container.textContent).toContain("Search for “type”");
+
+    await act(async () => {
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    });
+    expect(container.textContent).not.toContain("Search for");
+
+    await type("types");
+    expect(container.textContent).toContain("Search for “types”");
+
+    await act(async () => root.unmount());
+    queryClient.clear();
+    container.remove();
+  });
+
+  it("renders a mobile search entry outside the search route", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter initialEntries={["/courses"]}>
+            <Header publicUI />
+          </MemoryRouter>
+        </QueryClientProvider>,
+      );
+    });
+
+    const entry = container.querySelector<HTMLAnchorElement>('a[href="/search"]');
+    expect(entry?.getAttribute("aria-label")).toBe("Search");
+    expect(entry?.className).toContain("md:hidden");
+
+    await act(async () => root.unmount());
+    queryClient.clear();
+    container.remove();
+  });
 });
