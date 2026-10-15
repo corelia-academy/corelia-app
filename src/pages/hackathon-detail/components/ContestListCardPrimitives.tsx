@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import type { ReactNode } from "react";
 import { Calendar, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -22,7 +23,7 @@ export function ContestListCardThumbnail({
     <div className={cn("relative w-full", aspectClassName, surfaceClassName)}>
       {src ? (
         <img
-          src={src}
+          src={optimizedImageUrl(src, { width: 480 })} srcSet={optimizedImageSrcSet(src, 480)} decoding="async"
           alt={alt}
           className="h-full w-full object-cover"
           aria-hidden={!alt.trim()}

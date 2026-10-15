@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
 import { ChevronDown, X } from "lucide-react";
@@ -174,7 +175,7 @@ export default function Contests() {
                   {contest.host?.name ? (
                     <span className="inline-flex items-center gap-2 text-foreground-subtle">
                       {contest.host.logo_url ? (
-                        <img src={contest.host.logo_url} alt="" className="size-5 rounded-full object-cover" />
+                        <img src={optimizedImageUrl(contest.host.logo_url, { width: 20 })} srcSet={optimizedImageSrcSet(contest.host.logo_url, 20)} decoding="async" alt="" className="size-5 rounded-full object-cover" />
                       ) : null}
                       {t("catalog.hostedBy", { name: contest.host.name })}
                     </span>
@@ -228,7 +229,7 @@ export default function Contests() {
           >
             {bannerUrl ? (
               <img
-                src={bannerUrl}
+                src={optimizedImageUrl(bannerUrl, { width: 480 })} srcSet={optimizedImageSrcSet(bannerUrl, 480)} decoding="async"
                 alt=""
                 className="absolute inset-0 size-full object-cover object-center"
               />

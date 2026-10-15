@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { FileText, TimerIcon } from "@phosphor-icons/react";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
@@ -106,7 +107,9 @@ export function ExploreCoursesSection({
                 <div className="aspect-video overflow-hidden rounded-lg border border-border bg-surface-raised">
                   {course.thumbnail_url ? (
                     <img
-                      src={course.thumbnail_url}
+                      src={optimizedImageUrl(course.thumbnail_url, { width: 335 })}
+                      srcSet={optimizedImageSrcSet(course.thumbnail_url, 335)}
+                      decoding="async"
                       alt=""
                       loading="lazy"
                       className="size-full object-cover"
