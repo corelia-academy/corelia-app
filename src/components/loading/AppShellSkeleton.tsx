@@ -1,18 +1,7 @@
 import type { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-
-function DefaultShellContent() {
-  return (
-    <div className="space-y-6">
-      <Skeleton className="h-48 w-full rounded-2xl" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Skeleton className="h-32 rounded-2xl" />
-        <Skeleton className="h-32 rounded-2xl" />
-        <Skeleton className="h-32 rounded-2xl" />
-      </div>
-    </div>
-  );
-}
+import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
+import { routeSkeletonVariantForPath } from "@/components/loading/routeSkeletonVariant";
 
 /**
  * Header + sidebar + content placeholder sized like `MainLayout` (72px header, 15rem sidebar
@@ -20,6 +9,7 @@ function DefaultShellContent() {
  * paint stays one continuous skeleton.
  */
 export function AppShellSkeleton({ children }: { children?: ReactNode }) {
+  const variant = typeof window === "undefined" ? "home" : routeSkeletonVariantForPath(window.location.pathname);
   return (
     <div className="min-h-svh bg-background" role="status" aria-live="polite" aria-busy="true">
       <span className="sr-only">Loading</span>
@@ -36,8 +26,9 @@ export function AppShellSkeleton({ children }: { children?: ReactNode }) {
             <Skeleton className="h-10 w-full rounded-lg" />
           </div>
         </aside>
-        <main className="mx-auto w-full max-w-7xl p-4 sm:p-6 lg:p-8">
-          {children ?? <DefaultShellContent />}
+        {/* Like MainLayout's SidebarInset: pages bring their own container. */}
+        <main className="min-w-0 flex-1">
+          {children ?? <RouteSkeleton variant={variant === "learn" ? "home" : variant} />}
         </main>
       </div>
     </div>
