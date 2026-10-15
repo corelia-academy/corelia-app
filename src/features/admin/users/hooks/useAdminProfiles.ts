@@ -26,6 +26,8 @@ export function useAdminProfiles({
     profiles: query.data ?? [],
     setProfiles,
     loading: query.isPending,
+    loadFailed: query.isError && !query.data,
+    refreshing: query.isFetching,
     error: mutationError ?? (query.error instanceof Error ? query.error.message : query.error ? fallbackErrorMessage : null),
     refresh: async () => { await query.refetch(); },
     setError: setMutationError,

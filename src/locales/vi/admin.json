@@ -168,6 +168,7 @@
     "preview": "Xem trước",
     "loading": "Đang tải hackathon…",
     "empty": "Chưa có hackathon nào.",
+    "loadFailed": "Không tải được danh sách hackathon.",
     "editor": {
       "back": "Quay lại danh sách",
       "newTitle": "Hackathon mới",
@@ -378,7 +379,8 @@
     },
     "actions": {
       "refresh": "Làm mới",
-      "clearFilters": "Xoá bộ lọc"
+      "clearFilters": "Xoá bộ lọc",
+      "detail": "Chi tiết"
     },
     "list": {
       "syncing": "Đang đồng bộ danh sách giảng viên...",
@@ -387,6 +389,13 @@
       "loading": "Đang tải danh sách...",
       "empty": "Chưa có giảng viên nào khớp bộ lọc hiện tại.",
       "notUpdated": "Chưa cập nhật"
+    },
+    "columns": {
+      "instructor": "Giảng viên",
+      "email": "Email",
+      "origin": "Phân loại",
+      "courses": "Khoá học",
+      "actions": "Tác vụ"
     },
     "originLabel": {
       "corelia": "Corelia",

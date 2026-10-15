@@ -842,7 +842,8 @@
       "startFromCatalogTitle": "You haven't enrolled in any courses yet.",
       "startFromCatalogSubtitle": "Pick a foundational course to build momentum.",
       "enrollHint": "Once you enroll in or purchase your first course, this area will show progress and quick entry points.",
-      "profileSetupHintPrefix": "Please update your full name and phone number so Corelia, instructors, or"
+      "profileSetupHintPrefix": "Please update your full name and phone number so Corelia, instructors, or",
+      "loadFailed": "Could not load courses."
     }
   },
   "achievements": {
@@ -992,7 +993,8 @@
     },
     "loadError": {
       "body": "We could not refresh your achievements. Your last confirmed credential status is still shown.",
-      "retry": "Retry"
+      "retry": "Retry",
+      "vaultUnavailable": "Achievements could not be loaded. Use Retry above."
     },
     "stats": {
       "certificates": "Certificates",

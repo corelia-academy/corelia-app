@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousDataForUser } from "@/lib/queryClient";
+import { cn } from "@/lib/utils";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -11,6 +13,7 @@ import { transferProjectHackathon } from "@/lib/projectSubmission";
 import { listProjectsForModeration } from "@/lib/projects";
 import { useAuth } from "@/stores/authStore";
 import type { Project } from "@/types/projects";
+import { ListRowsSkeleton } from "@/components/loading/RouteSkeleton";
 
 function TransferProject({ project }: { project: Pick<Project, "id" | "source_id" | "source_type"> }) {
   const { t, i18n } = useTranslation("common");
@@ -70,6 +73,7 @@ export default function AdminProjectsPage() {
     queryKey: ["projects", "moderation", user?.id, status, page],
     queryFn: () => listProjectsForModeration(page, status),
     enabled: profile?.role === "admin" || profile?.role === "support_staff",
+    placeholderData: keepPreviousDataForUser(user?.id),
     meta: { scope: "private", userId: user?.id },
   });
   if (profile?.role !== "admin" && profile?.role !== "support_staff") return null;
@@ -80,15 +84,15 @@ export default function AdminProjectsPage() {
         {(["all", "blocked", "public", "unlisted", "private"] as const).map(value => <option key={value} value={value}>{t(`projects.management.${value}`)}</option>)}
       </select>
     </label>
-    {query.isPending ? <p role="status" className="mt-4">{t("projects.loading")}</p> : query.isError ? <div role="alert" className="mt-4"><p>{t("projects.management.failed")}</p><Button onClick={() => void query.refetch()}>{t("projects.retry")}</Button></div> : <>
+    {query.isPending ? <ListRowsSkeleton rows={8} className="mt-4" /> : query.isError && !query.data ? <div role="alert" className="mt-4"><p>{t("projects.management.failed")}</p><Button onClick={() => void query.refetch()}>{t("projects.retry")}</Button></div> : <>
       {!query.data.items.length ? <p className="mt-4">{t("projects.empty")}</p> : null}
-      <ul className="mt-4 divide-y divide-border">
+      <ul className={cn("mt-4 divide-y divide-border transition-opacity", query.isPlaceholderData && "opacity-60")} aria-busy={query.isPlaceholderData || undefined}>
         {query.data.items.map(project => <li key={project.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
           <div className="min-w-0 flex-1"><NavLink className="block truncate underline" to={`/projects/${project.slug}`}>{project.title}</NavLink><p className="text-xs text-foreground-muted">{t(`projects.management.${project.blocked ? "blocked" : project.visibility}`)}</p></div>
           <div className="flex flex-wrap gap-2"><Button size="small" variant="cta" hierarchy="secondary" render={<NavLink to={`/projects/${project.slug}/edit`} />} nativeButton={false}>{t("projects.management.edit")}</Button><TransferProject project={project} /><ProjectManagementControls moderation project={project} /></div>
         </li>)}
       </ul>
-      <div className="mt-4 flex gap-2"><Button variant="cta" hierarchy="secondary" disabled={page === 0} onClick={() => setPage(p => p - 1)}>{t("projects.management.previous")}</Button><Button variant="cta" hierarchy="secondary" disabled={(page + 1) * 20 >= query.data.count} onClick={() => setPage(p => p + 1)}>{t("projects.management.next")}</Button></div>
+      <div className="mt-4 flex gap-2"><Button variant="cta" hierarchy="secondary" disabled={page === 0} onClick={() => setPage(p => p - 1)}>{t("projects.management.previous")}</Button><Button variant="cta" hierarchy="secondary" disabled={query.isPlaceholderData || (page + 1) * 20 >= query.data.count} onClick={() => setPage(p => p + 1)}>{t("projects.management.next")}</Button></div>
     </>}
   </section>;
 }

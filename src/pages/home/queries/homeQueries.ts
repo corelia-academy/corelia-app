@@ -4,7 +4,6 @@ import type { TFunction } from "i18next";
 
 import { intlLocale } from "@/lib/intl";
 import { isActivityLesson, isLessonPublishedForLearners } from "@/lib/lessonFormat";
-import type { Contest } from "@/types/hackathons";
 import type { Course } from "@/types/courses";
 import { formatCourseMeta, pickCourseFormat } from "../utils/homeFormat";
 import type { FocusCard } from "../utils/homeTypes";
@@ -12,7 +11,6 @@ import type { FocusCard } from "../utils/homeTypes";
 type HomeCatalogPayload = {
   courseCatalog: Course[];
   courseLessonCounts: Record<string, number | null>;
-  contests: Contest[];
 };
 
 type HomeDashboardPayload = {
@@ -39,50 +37,44 @@ export function homeCatalogQueryOptions(user: User | null, locale: string) {
   return queryOptions<HomeCatalogPayload>({
     queryKey: homeKeys.catalog(user?.id ?? null, locale),
     queryFn: async () => {
-      const [coursesModule, hackathonsModule] = await Promise.all([
-        import("@/lib/courses"),
-        import("@/lib/hackathons"),
-      ]);
-      const [publishedCourses, contestList] = await Promise.all([
-        coursesModule.getPublishedCourses(),
-        hackathonsModule.listPublicContests(locale),
-      ]);
+      const coursesModule = await import("@/lib/courses");
+      const publishedCourses = await coursesModule.getPublishedCourses();
       const previewCourses = publishedCourses.slice(0, 8);
       const contentLocale = coursesModule.pickCourseContentLocale(previewCourses[0], locale);
-      const localeMap = previewCourses.length
-        ? await coursesModule
-            .getBatchCourseLocaleContent(
-              previewCourses.map((course) => course.id),
-              contentLocale,
-            )
-            .catch(() => new Map())
-        : new Map();
+      // Locale content and lesson counts only depend on the course list: fetch them together.
+      const [localeMap, lessonCountEntries] = await Promise.all([
+        previewCourses.length
+          ? coursesModule
+              .getBatchCourseLocaleContent(
+                previewCourses.map((course) => course.id),
+                contentLocale,
+              )
+              .catch(() => new Map())
+          : Promise.resolve(new Map()),
+        Promise.all(
+          (user ? publishedCourses.slice(0, 2) : []).map(async (course) => {
+            try {
+              const lessons = await coursesModule.getCourseLessons(course.id);
+              const visibleContentLessonCount = lessons
+                .filter(isLessonPublishedForLearners)
+                .filter((lesson) => !isActivityLesson(lesson)).length;
+              return [course.id, visibleContentLessonCount] as const;
+            } catch {
+              return [course.id, null] as const;
+            }
+          }),
+        ),
+      ]);
       const localizedMap = new Map(
         previewCourses.map((course) => [
           course.id,
           coursesModule.applyCourseLocaleContent(course, localeMap.get(course.id) ?? null),
         ]),
       );
-      const lessonCountEntries = await Promise.all(
-        (user ? publishedCourses.slice(0, 2) : []).map(async (course) => {
-          try {
-            const lessons = await coursesModule.getCourseLessons(course.id);
-            const visibleContentLessonCount = lessons
-              .filter(isLessonPublishedForLearners)
-              .filter((lesson) => !isActivityLesson(lesson)).length;
-            return [course.id, visibleContentLessonCount] as const;
-          } catch {
-            return [course.id, null] as const;
-          }
-        }),
-      );
 
       return {
         courseCatalog: publishedCourses.map((course) => localizedMap.get(course.id) ?? course),
         courseLessonCounts: Object.fromEntries(lessonCountEntries),
-        contests: contestList.filter(
-          (contest) => contest.status === "published" || contest.status === "running",
-        ),
       };
     },
     staleTime: 60_000,

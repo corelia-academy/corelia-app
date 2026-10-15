@@ -82,7 +82,8 @@
       "likes": "Thông báo lượt thích",
       "follows": "Thông báo người theo dõi mới",
       "digest": "Email tổng hợp tương tác hằng ngày",
-      "digestDescription": "Chỉ gửi khi có hoạt động mới, lúc 09:00 ({{timezone}}). Bạn có thể hủy nhận bất cứ lúc nào."
+      "digestDescription": "Chỉ gửi khi có hoạt động mới, lúc 09:00 ({{timezone}}). Bạn có thể hủy nhận bất cứ lúc nào.",
+      "loadFailed": "Không tải được cài đặt thông báo của bạn."
     }
   },
   "common": {

@@ -24,6 +24,7 @@ import type { Contest, ContestI18nContent, ContestLocation, ContestStatus, Conte
 import { isPrizeAllocationValid, validateHackathonTaxonomyContract } from "@/lib/hackathonContract";
 import { isValidHackathonSocialLink, normalizeHackathonSocialLink } from "./utils/socialLinks";
 import { CONTENT_LOCALES, LOCALE_META, type ContentLocale } from "@/lib/locales";
+import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 
 type Locale = ContentLocale;
 type LocaleDraft = {
@@ -764,7 +765,7 @@ export default function AdminHackathonEditorPage() {
     }
   };
 
-  if (!isNew && editorQuery.isPending) return <div className="p-12 text-center text-sm text-foreground-muted">{t("hackathons.loading")}</div>;
+  if (!isNew && editorQuery.isPending) return <RouteSkeleton variant="form" />;
   if (!isNew && !editorQuery.data) return <div className="p-12 text-center">{t("hackathons.editor.notFound")}</div>;
 
   return (

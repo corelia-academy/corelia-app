@@ -59,7 +59,7 @@ function createCatalogState(overrides: Partial<CatalogState> = {}): CatalogState
     hasActiveFilters: false,
     activeFilterCount: 0,
     resetFilters: () => undefined,
-    retry: async () => [],
+    retry: async () => undefined,
     ...overrides,
   };
 }

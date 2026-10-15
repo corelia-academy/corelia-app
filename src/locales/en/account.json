@@ -82,7 +82,8 @@
       "likes": "Likes on your work",
       "follows": "New followers",
       "digest": "Daily social activity email",
-      "digestDescription": "Sent only when there is new activity, at 09:00 ({{timezone}}). Unsubscribe at any time."
+      "digestDescription": "Sent only when there is new activity, at 09:00 ({{timezone}}). Unsubscribe at any time.",
+      "loadFailed": "Could not load your notification settings."
     }
   },
   "common": {

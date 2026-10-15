@@ -842,7 +842,8 @@
       "startFromCatalogTitle": "Bạn chưa tham gia khoá học nào.",
       "startFromCatalogSubtitle": "Chọn một khoá học nền tảng để tạo nhịp học tập.",
       "enrollHint": "Khi bạn ghi danh hoặc mua khoá học đầu tiên, khu vực này sẽ hiện tiến độ và lối vào nhanh.",
-      "profileSetupHintPrefix": "Hãy cập nhật họ tên và số điện thoại để Corelia, giảng viên hoặc"
+      "profileSetupHintPrefix": "Hãy cập nhật họ tên và số điện thoại để Corelia, giảng viên hoặc",
+      "loadFailed": "Không thể tải danh sách khóa học."
     }
   },
   "achievements": {
@@ -992,7 +993,8 @@
     },
     "loadError": {
       "body": "Không thể làm mới thành tích. Hệ thống vẫn đang hiển thị trạng thái credential đã xác nhận gần nhất.",
-      "retry": "Thử lại"
+      "retry": "Thử lại",
+      "vaultUnavailable": "Chưa tải được thành tích. Hãy bấm Thử lại ở trên."
     },
     "stats": {
       "certificates": "Chứng nhận",

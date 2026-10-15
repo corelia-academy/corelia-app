@@ -1,6 +1,8 @@
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { skeletonRevealClass } from "@/components/loading/skeletonReveal";
 import { cn } from "@/lib/utils";
 import type { CourseLesson } from "@/types/courses";
 
@@ -12,6 +14,8 @@ interface CourseAccessPanelProps {
   hasStarted: boolean;
   nextLesson: CourseLesson | null;
   enrolling: boolean;
+  /** Enrollment status still resolving: hold the CTA so "Enroll" never flashes for enrolled users. */
+  loading?: boolean;
   onContinue: () => void;
   onEnroll: () => void;
   className?: string;
@@ -25,6 +29,7 @@ export function CourseAccessPanel({
   hasStarted,
   nextLesson,
   enrolling,
+  loading = false,
   onContinue,
   onEnroll,
   className,
@@ -39,7 +44,13 @@ export function CourseAccessPanel({
         <h3 className="text-heading-small font-display text-foreground">{translate("detail.accessPanel.ready")}</h3>
       </div>
       <div className="p-4">
-        {isPublicEmptyCurriculum ? (
+        {loading && !isPublicEmptyCurriculum ? (
+          <div className={skeletonRevealClass()} role="status" aria-busy="true" aria-label={translate("detail.loadingCourse")}>
+            <Skeleton className="mb-4 h-4 w-full" />
+            <Skeleton className="mb-4 h-14 w-full rounded-md" />
+            <Skeleton className="h-10 w-full rounded-lg" />
+          </div>
+        ) : isPublicEmptyCurriculum ? (
           <p className="text-sm leading-relaxed text-foreground-muted">{translate("detail.accessPanel.contentComingSoon")}</p>
         ) : enrolled ? (
           <>

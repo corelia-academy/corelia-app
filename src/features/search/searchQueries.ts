@@ -1,5 +1,5 @@
 import { normalizeContentLocale } from "@/lib/entityLocales";
-import { queryOptions } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions } from "@tanstack/react-query";
 
 import { listTrendingSearches, searchPublic } from "@/lib/search";
 
@@ -16,6 +16,8 @@ export function searchResultsQueryOptions(query: string, limit: number, enabled 
     queryFn: () => searchPublic(normalized, limit, 0, locale),
     enabled: enabled && normalized.length > 0,
     staleTime: 30_000,
+    // A new query keeps the previous results (dimmed) instead of blanking to skeletons.
+    placeholderData: keepPreviousData,
     meta: { scope: "public", showInGlobalLoading: false },
   });
 }

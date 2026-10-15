@@ -154,6 +154,8 @@ export default function AppSidebar({
                   : "/logo/corelia-full-logo-black.png"
               }
               alt="Corelia Academy"
+              width={108}
+              height={36}
               className="h-9 w-auto"
             />
           </NavLink>

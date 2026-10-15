@@ -22,6 +22,7 @@ import {
 } from "@/features/account/accountQueries";
 import { useAuth } from "@/stores/authStore";
 import { CONTENT_LOCALES, LOCALE_META, normalizeLocale } from "@/lib/locales";
+import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 
 
 function configPrimary(config: EntityI18nConfig | null | undefined): Locale {
@@ -188,7 +189,7 @@ export function AccountProjectsRoute() {
   }
 
   if (projectsQuery.isPending) {
-    return <div className="text-sm text-foreground-muted">{t("status.loading")}</div>;
+    return <RouteSkeleton variant="list" bare />;
   }
   if (projectsQuery.error) {
     return <div className="text-sm text-destructive">{projectsQuery.error instanceof Error ? projectsQuery.error.message : t("projects.errors.loadFailed")}</div>;

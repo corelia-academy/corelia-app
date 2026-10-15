@@ -3,6 +3,7 @@ import { normalizeCodeLocale } from "./locale";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLearningTranslation } from "@/features/learning/useLearningTranslation";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
 import { recordLearningEvent } from "@/lib/learning";
 import type { LessonRendererProps } from "@/features/learning/types";
@@ -10,7 +11,7 @@ import { CodeEditor } from "./CodeEditor";
 import { validateCodeConfig } from "./config";
 import { evaluateCodeExercise, MAX_SOURCE_BYTES, sourceBytes } from "./evaluate";
 import { codeDraftKey, readCodeDraft, saveCodeDraft } from "./drafts";
-import { parseMarkers } from "./markers";
+import { parseMarkers, type FillSegment } from "./markers";
 import type { CodeExerciseConfig, CodeExerciseResult } from "./types";
 
 export function CodeExerciseLesson(props: LessonRendererProps) {
@@ -42,6 +43,11 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
   const [hints, setHints] = useState(false);
   const [tab, setTab] = useState("code");
   const segments = useMemo(() => config.mode === "fill" ? parseMarkers(config.file.starter_source) : [], [config]);
+  const lines = useMemo(() => { const out = segments.reduce<FillSegment[][]>((acc, s) => {
+    if (s.type === "blank") { acc[acc.length - 1].push(s); return acc; }
+    s.value.split("\n").forEach((part, i) => { if (i) acc.push([]); if (part) acc[acc.length - 1].push({ type: "source", value: part }); });
+    return acc;
+  }, [[]]); if (out.length > 1 && !out[out.length - 1].length) out.pop(); return out; }, [segments]);
   const save = useCallback(() => {
     if (!key) return;
     setSaved(saveCodeDraft(key, config.mode === "fill" ? { mode: "fill", answers, updated_at: new Date().toISOString() } : { mode: "edit", source, updated_at: new Date().toISOString() }));
@@ -88,15 +94,25 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); void check(); }
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") { e.preventDefault(); save(); }
   }}>
-    {config.mode === "edit" && <><p className="text-sm text-foreground-muted lg:hidden">{t("learning.desktopRecommended")}</p><div className="flex gap-2 lg:hidden">{["code", "tests"].map(value => <Button type="button" key={value} variant="cta" hierarchy={(tab === value ? "primary" : "secondary")} onClick={() => setTab(value)}>{t(`learning.${value}`)}</Button>)}</div></>}
+    {config.mode === "edit" && <><p className="text-sm text-foreground-muted lg:hidden">{t("learning.desktopRecommended")}</p><div className="flex gap-2 lg:hidden" role="group">{["code", "tests"].map(value => <Button type="button" key={value} variant="cta" hierarchy={(tab === value ? "primary" : "secondary")} onClick={() => setTab(value)}>{t(`learning.${value}`)}</Button>)}</div></>}
     <div className={config.mode === "edit" ? "grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(240px,1fr)]" : "space-y-4"}>
       <div className={config.mode === "edit" && tab !== "code" ? "hidden lg:block" : "min-w-0"}>
-        <p className="mb-2 text-sm font-mono">{config.file.path}</p>
-        {config.mode === "fill" ? <pre className="overflow-x-auto whitespace-pre rounded-lg border border-border p-4 font-mono text-sm leading-9">{segments.map((s, i) => s.type === "source" ? <span key={i}>{s.value}</span> : <input key={s.id} disabled={busy} aria-label={s.id} aria-invalid={result?.results.find(r => r.test_id === s.id)?.passed === false} value={answers[s.id] ?? ""} onChange={e => { setAnswers(a => ({ ...a, [s.id]: e.target.value.slice(0, 1024) })); setResult(null); setError(null); setCompletionPending(false); }} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); e.stopPropagation(); void check(); } }} className="mx-1 min-h-11 w-28 rounded border border-border bg-surface-raised px-2 font-mono" />)}</pre> : <CodeEditor language={config.language} source={source} readOnly={busy} onChange={value => { if (sourceBytes(value) <= MAX_SOURCE_BYTES) { setSource(value); setResult(null); setError(null); setCompletionPending(false); } else setError(t("learning.sourceLimit")); }} />}
+        {config.mode === "fill" ? <div className="overflow-hidden rounded-xl border border-border-subtle bg-surface-raised">
+          <p className="border-b border-border-subtle px-4 py-2 font-mono text-xs text-foreground-muted">{config.file.path}</p>
+          <pre className="overflow-x-auto py-3 font-mono text-sm leading-9 max-sm:leading-[2.75rem]">{lines.map((line, n) => <div key={n} className="flex min-h-9 max-sm:min-h-11">
+            <span aria-hidden="true" className="w-10 shrink-0 select-none pr-3 text-right text-foreground-subtle">{n + 1}</span>
+            <code className="whitespace-pre pr-4">{line.map((s, i) => {
+              if (s.type === "source") return <span key={i}>{s.value}</span>;
+              const value = answers[s.id] ?? "";
+              const passed = result?.results.find(r => r.test_id === s.id)?.passed;
+              return <input key={s.id} disabled={busy} aria-label={s.id} aria-invalid={passed === false} value={value} placeholder="…" spellCheck={false} autoCapitalize="off" autoCorrect="off" autoComplete="off" style={{ width: `calc(${Math.max(6, value.length + 1)}ch + 1rem)` }} onChange={e => { setAnswers(a => ({ ...a, [s.id]: e.target.value.slice(0, 1024) })); setResult(null); setError(null); setCompletionPending(false); }} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); e.stopPropagation(); void check(); } }} className={cn("mx-0.5 h-8 max-w-full rounded-md border border-dashed px-2 align-middle font-mono text-sm text-foreground outline-none transition-colors placeholder:text-foreground-subtle focus:border-solid focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60 max-sm:h-10", passed === undefined ? "border-primary/40 bg-surface-base" : passed ? "border-solid border-success bg-success/10" : "border-solid border-destructive bg-destructive/10")} />;
+            })}</code>
+          </div>)}</pre>
+        </div> : <div className="overflow-hidden rounded-xl border border-border-subtle bg-surface-raised"><p className="border-b border-border-subtle px-4 py-2 font-mono text-xs text-foreground-muted">{config.file.path}</p><CodeEditor language={config.language} source={source} readOnly={busy} onChange={value => { if (sourceBytes(value) <= MAX_SOURCE_BYTES) { setSource(value); setResult(null); setError(null); setCompletionPending(false); } else setError(t("learning.sourceLimit")); }} /></div>}
       </div>
-      <div aria-live="polite" className={config.mode === "edit" && tab !== "tests" ? "hidden lg:block" : "space-y-2"}>
+      <div aria-live="polite" className={cn(config.mode === "edit" && tab !== "tests" ? "hidden lg:block" : "space-y-2", config.mode === "edit" && "lg:sticky lg:top-4 lg:self-start lg:max-h-[70vh] lg:overflow-y-auto")}>
         <h3 className="font-medium">{t("learning.tests")}</h3>
-        {result ? <><p className={result.passed ? "text-success" : "text-destructive"}>{t(result.passed ? "learning.passed" : "learning.failed")}</p>{[...result.results].sort((a,b) => Number(b.required)-Number(a.required)).map(r => <div key={r.test_id} className="rounded-lg border border-border p-3 text-sm"><p>{r.passed ? "✓" : "✕"} {copy.test_copy?.[r.test_id]?.description ?? r.description}</p>{!r.passed && <p>{copy.blank_feedback?.[r.test_id] ?? copy.test_copy?.[r.test_id]?.failure_message ?? r.message}</p>}{!r.passed && r.hint && <p>{copy.test_copy?.[r.test_id]?.hint ?? r.hint}</p>}</div>)}</> : <p className="text-foreground-muted">{t("learning.checkPrompt")}</p>}
+        {result ? <><p className={cn("font-medium", result.passed ? "text-success" : "text-destructive")}>{t(result.passed ? "learning.passed" : "learning.failed")}</p>{[...result.results].sort((a,b) => Number(b.required)-Number(a.required)).map(r => <div key={r.test_id} className={cn("space-y-1 rounded-lg border p-3 text-sm", r.passed ? "border-success/25 bg-success/10" : "border-destructive/30 bg-destructive/10")}><p className="font-medium"><span aria-hidden="true" className={r.passed ? "text-success" : "text-destructive"}>{r.passed ? "✓" : "✕"}</span> {copy.test_copy?.[r.test_id]?.description ?? r.description}</p>{!r.passed && <p className="text-foreground-muted">{copy.blank_feedback?.[r.test_id] ?? copy.test_copy?.[r.test_id]?.failure_message ?? r.message}</p>}{!r.passed && r.hint && <p className="text-foreground-muted">{copy.test_copy?.[r.test_id]?.hint ?? r.hint}</p>}</div>)}</> : <p className="text-foreground-muted">{t("learning.checkPrompt")}</p>}
       </div>
     </div>
     {error && <p role="alert" className="text-destructive">{error}</p>}
@@ -106,7 +122,7 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
       <Button type="button" variant="cta" hierarchy="tertiary" onClick={() => setSolution(v => !v)}>{t("learning.solution")}</Button>
       {key && saved !== null && <span role="status" className="text-xs text-foreground-muted">{t(saved ? "learning.draftSaved" : "learning.draftUnavailable")}</span>}
     </div>
-    {hints && <ul className="list-disc pl-5">{(copy.hints ?? config.hints ?? []).map((hint,i) => <li key={i}>{hint}</li>)}</ul>}
-    {solution && <pre className="overflow-x-auto rounded-lg bg-surface-raised p-4 text-sm">{config.reference_solution}</pre>}
+    {hints && <ul className="list-disc space-y-1 rounded-xl border border-border-subtle bg-surface-raised py-3 pl-8 pr-4 text-sm">{(copy.hints ?? config.hints ?? []).map((hint,i) => <li key={i}>{hint}</li>)}</ul>}
+    {solution && <pre className="overflow-x-auto rounded-xl border border-border-subtle bg-surface-raised p-4 font-mono text-sm leading-6">{config.reference_solution}</pre>}
   </div>;
 }

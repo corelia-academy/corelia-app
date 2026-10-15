@@ -1,4 +1,5 @@
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
+import { keepPreviousDataForUser } from "@/lib/queryClient";
 
 import {
   getJobBySlug,
@@ -44,6 +45,8 @@ export function jobsInfiniteCatalogQueryOptions(filters: JobFilters, userId?: st
     initialPageParam: 1,
     getNextPageParam: getNextJobsPageParam,
     staleTime: 60_000,
+    // Filter changes keep the current cards (dimmed) instead of blanking to skeletons.
+    placeholderData: keepPreviousDataForUser(userId),
     meta: userId
       ? { scope: "private", userId, showInGlobalLoading: false }
       : publicMeta,

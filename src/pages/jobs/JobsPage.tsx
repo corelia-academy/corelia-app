@@ -1,5 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BriefcaseBusiness, Search, SlidersHorizontal } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router";
@@ -225,7 +226,7 @@ export default function JobsPage() {
           </details>
         </section>
         <div className="flex items-center justify-between gap-3"><p className="text-sm text-foreground-muted">{t("results", { count: latestPage?.total ?? 0 })}{latestPage?.hiddenCount ? <> · <Link to="/jobs/hidden" className="underline-offset-4 hover:underline">{t("hiddenCount", { count: latestPage.hiddenCount })}</Link></> : null}</p></div>
-        {jobsQuery.isPending ? <div className="mobile-bleed-grid grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-72 animate-pulse rounded-2xl bg-surface-raised" />)}</div> : jobsQuery.isError && !jobsQuery.data ? <div className="mobile-bleed-surface rounded-xl border border-destructive/30 p-8 text-center text-sm text-destructive" role="alert">{t("messages.loadFailed")} <Button type="button" variant="cta" hierarchy="secondary" className="ml-2" onClick={() => void jobsQuery.refetch()}>{t("retry")}</Button></div> : jobs.length ? <div className="mobile-bleed-grid grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{jobs.map((job) => {
+        {jobsQuery.isPending ? <div className="mobile-bleed-grid grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-72 animate-pulse rounded-2xl bg-surface-raised" />)}</div> : jobsQuery.isError && !jobsQuery.data ? <div className="mobile-bleed-surface rounded-xl border border-destructive/30 p-8 text-center text-sm text-destructive" role="alert">{t("messages.loadFailed")} <Button type="button" variant="cta" hierarchy="secondary" className="ml-2" onClick={() => void jobsQuery.refetch()}>{t("retry")}</Button></div> : jobs.length ? <div className={cn("mobile-bleed-grid grid gap-4 transition-opacity sm:grid-cols-2 xl:grid-cols-3", jobsQuery.isPlaceholderData && "opacity-60")} aria-busy={jobsQuery.isPlaceholderData || undefined}>{jobs.map((job) => {
           const state = stateByJobId[job.id];
           return <JobCard publicAppearance key={job.id} job={job} state={state} busy={stateMutation.isPending && stateMutation.variables?.jobId === job.id} onToggleSaved={() => mutateState(job.id, { saved: !state?.saved })} onToggleApplied={() => mutateState(job.id, { applied: !state?.applied })} onToggleHidden={() => mutateState(job.id, { hidden: true })} />;
         })}</div> : <div className="mobile-bleed-surface rounded-xl border border-border-subtle bg-surface-base p-12 text-center"><BriefcaseBusiness className="mx-auto size-8 text-foreground-subtle" aria-hidden /><h2 className="mt-3 text-heading-small font-display">{t("empty.title")}</h2><p className="mt-1 text-sm text-foreground-muted">{t("empty.description")}</p></div>}

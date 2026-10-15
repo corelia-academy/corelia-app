@@ -20,9 +20,8 @@ describe("App router context", () => {
 
   it("renders a neutral bootstrap screen before mounting auth-aware routes", () => {
     expect(appSource).toContain('authStatus === "booting"');
-    expect(appSource).toContain("<AuthBootstrapScreen />");
     expect(appSource).toMatch(
-      /authStatus === "booting"[\s\S]*?<AuthBootstrapScreen \/>[\s\S]*?<ApplicationRouter \/>/,
+      /authStatus === "booting"[\s\S]*?<AuthBootstrapScreen\b[\s\S]*?\/>[\s\S]*?<ApplicationRouter \/>/,
     );
   });
 });

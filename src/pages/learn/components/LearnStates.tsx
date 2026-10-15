@@ -1,5 +1,8 @@
 import { Link } from "react-router";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { LessonPlayerSkeletonBody } from "@/components/loading/RouteSkeleton";
+import { skeletonRevealClass } from "@/components/loading/skeletonReveal";
+import { cn } from "@/lib/utils";
 
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
@@ -26,15 +29,12 @@ export function LearnMissingCourseIdState({
   );
 }
 
-export function LearnLoadingState({ translate }: { translate: TranslateFn }) {
+/** Placeholder for the lesson player area while the resume redirect resolves. */
+export function LessonPlayerSkeleton() {
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="flex min-h-96 flex-col items-center justify-center rounded-2xl border border-border-subtle bg-surface-base p-8 text-center shadow-card">
-        <Loader2 className="w-8 h-8 animate-spin text-foreground-muted" aria-hidden />
-        <p className="mt-4 text-sm text-foreground-muted">
-          {translate("detail.learn.loadingPage")}
-        </p>
-      </div>
+    <div className={cn("h-full", skeletonRevealClass())} role="status" aria-busy="true">
+      <span className="sr-only">Loading</span>
+      <LessonPlayerSkeletonBody />
     </div>
   );
 }

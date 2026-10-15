@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Loader2, Plus, Upload, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 
+import { QueryErrorState } from "@/components/QueryErrorState";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,6 +26,7 @@ import { uploadActivityMilestoneBadgeImage } from "@/lib/storage";
 import { validatePngSignature } from "@/lib/imageValidation";
 import { activityMilestonesQueryOptions, adminKeys } from "@/features/admin/adminQueries";
 import { useAuth } from "@/stores/authStore";
+import { ListRowsSkeleton } from "@/components/loading/RouteSkeleton";
 
 type MilestoneEventKey =
   | "courses_completed"
@@ -184,10 +186,13 @@ export default function AdminActivityMilestones() {
       </div>
 
       {milestonesQuery.isPending ? (
-        <div className="flex items-center gap-2 text-sm text-foreground-muted">
-          <Loader2 className="size-4 animate-spin" aria-hidden />
-          {t("activityMilestones.loading")}
-        </div>
+        <ListRowsSkeleton rows={6} />
+      ) : milestonesQuery.isError && !milestonesQuery.data ? (
+        <QueryErrorState
+          message={t("activityMilestones.loadFailed")}
+          retrying={milestonesQuery.isFetching}
+          onRetry={() => void milestonesQuery.refetch()}
+        />
       ) : rows.length === 0 ? (
         <p className="text-sm text-foreground-muted">{t("activityMilestones.empty")}</p>
       ) : (
