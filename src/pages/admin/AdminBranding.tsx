@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 import { useTranslation } from "react-i18next";
 import { ImageIcon, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -98,14 +99,7 @@ export default function AdminBranding() {
     } finally { /* mutation owns pending state */ }
   };
 
-  if (brandingQuery.isPending) {
-    return (
-      <div className="flex items-center gap-2 p-6 text-sm text-foreground-muted">
-        <Loader2 className="size-4 animate-spin" aria-hidden />
-        {t("branding.loading")}
-      </div>
-    );
-  }
+  if (brandingQuery.isPending) return <RouteSkeleton variant="form" />;
 
   // Without loaded settings the form would show blanks that an admin could save over real values.
   if (brandingQuery.isError && !brandingQuery.data) {

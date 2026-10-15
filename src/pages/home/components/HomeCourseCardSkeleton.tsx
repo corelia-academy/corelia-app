@@ -1,9 +1,11 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { skeletonRevealClass } from "@/components/loading/skeletonReveal";
+import { cn } from "@/lib/utils";
 
 /** Placeholder sized like the Home course cards (continue learning / recommendations). */
 export function HomeCourseCardSkeletonRow({ count = 2 }: { count?: number }) {
   return (
-    <div className="mt-4 flex animate-skeleton-reveal flex-wrap items-start gap-6" role="status" aria-busy="true">
+    <div className={cn("mt-4 flex flex-wrap items-start gap-6", skeletonRevealClass())} role="status" aria-busy="true">
       <span className="sr-only">Loading</span>
       {Array.from({ length: count }, (_, index) => (
         <div

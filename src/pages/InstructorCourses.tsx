@@ -21,8 +21,7 @@ import { useTranslation } from "react-i18next";
 import { EmptyState, PageContainer, PageSectionCard } from "@/components/layouts/PagePrimitives";
 import { useLearningTranslation } from "@/features/learning/useLearningTranslation";
 import { Input } from "@/components/ui/input";
-import { ListRowsSkeleton } from "@/components/loading/RouteSkeleton";
-import { Skeleton } from "@/components/ui/skeleton";
+import { InstructorCoursesSkeleton } from "@/pages/instructor/InstructorCoursesSkeleton";
 
 const InstructorCourses = () => {
   const { t } = useTranslation("instructor");
@@ -60,18 +59,7 @@ const InstructorCourses = () => {
     return { total: courses.length, published, drafts, free: courses.length };
   }, [courses]);
 
-  if (loading) {
-    return (
-      <PageContainer>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-hidden>
-          {Array.from({ length: 4 }, (_, index) => (
-            <Skeleton key={index} className="h-[5.75rem] rounded-2xl" />
-          ))}
-        </div>
-        <ListRowsSkeleton rows={6} className="mt-6 rounded-2xl border border-border-subtle px-4" />
-      </PageContainer>
-    );
-  }
+  if (loading) return <InstructorCoursesSkeleton />;
 
   // Nothing loaded: show the failure with a retry instead of zeroed stats and an empty list.
   if (error && !coursesQuery.data) {

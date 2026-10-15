@@ -2,12 +2,14 @@ import { Link } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
+import { skeletonRevealClass } from "@/components/loading/skeletonReveal";
+import { cn } from "@/lib/utils";
 
 export function CourseDetailLoading() {
   const { t } = useTranslation("courses");
   return (
     <div
-      className="container-app animate-skeleton-reveal pb-6 pt-0 sm:py-8"
+      className={cn("container-app pb-6 pt-0 sm:py-8", skeletonRevealClass())}
       role="status"
       aria-live="polite"
       aria-busy="true"
