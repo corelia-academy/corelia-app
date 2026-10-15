@@ -8,6 +8,7 @@ import { XpRankEmblem } from "@/components/ui/XpRankEmblem";
 
 import { getXpTotals } from "@/lib/xp";
 import { getXpRank, XP_RANKS } from "@/lib/xpRanks";
+import { intlLocaleFor } from "@/lib/locales";
 
 export function HomeXpPanel({ userId }: { userId: string | undefined }) {
   const { t: tCommon, i18n } = useTranslation("common");
@@ -28,7 +29,7 @@ export function HomeXpPanel({ userId }: { userId: string | undefined }) {
   const isUnavailable = query.isError && !hasData;
   const isLoading = query.isPending && !hasData;
   const nextRank = rank.next;
-  const locale = i18n.language === "vi" ? "vi-VN" : "en-US";
+  const locale = intlLocaleFor(i18n.language);
   const formatNumber = (value: number) => new Intl.NumberFormat(locale).format(value);
   const rankName = nextRank
     ? tAccount(`xp.rank.names.${nextRank.code}`)

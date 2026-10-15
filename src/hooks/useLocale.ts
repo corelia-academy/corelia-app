@@ -7,6 +7,7 @@ import { useAuth } from "@/stores/authStore";
 import { currentProfileQueryOptions } from "@/features/auth/profileQueries";
 import {
   confirmManualLocaleSuccess,
+  isLatestManualLocaleRevision,
   rollbackManualLocaleChange,
   startManualLocaleChange,
 } from "@/lib/localeSyncGuard";
@@ -15,6 +16,9 @@ import type { Profile } from "@/types/database";
 function isSupportedLanguage(value: string): value is SupportedLanguage {
   return (SUPPORTED_LANGUAGES as readonly string[]).includes(value);
 }
+
+// Profile writes run one at a time so rapid switches cannot land out of order.
+let persistQueue: Promise<unknown> = Promise.resolve();
 
 export function useLocale() {
   const { i18n: i18nFromHook } = useTranslation();
@@ -40,7 +44,11 @@ export function useLocale() {
         );
 
         try {
-          await updateProfileForUser(user, { locale: lng });
+          const write = persistQueue.then(() =>
+            isLatestManualLocaleRevision(revision) ? updateProfileForUser(user, { locale: lng }) : undefined,
+          );
+          persistQueue = write.catch(() => undefined);
+          await write;
           confirmManualLocaleSuccess(revision, lng);
           await refreshProfile(user);
         } catch (error) {

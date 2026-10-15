@@ -1,0 +1,771 @@
+{
+  "certificateAnalytics": {
+    "title": "证书",
+    "description": "Corelia 课程证书和 Open Campus OCA 的颁发与送达指标。",
+    "course": "课程",
+    "allCourses": "所有课程",
+    "from": "起始",
+    "to": "截止",
+    "network": "Open Campus 网络",
+    "allNetworks": "所有网络",
+    "invalidRange": "开始日期必须早于结束日期。",
+    "loading": "正在加载分析…",
+    "loadError": "无法加载证书分析。",
+    "forbidden": "仅管理员可以查看此报告。",
+    "mintAttempts": "自启用分析以来，已记录 {{count}} 次 OC 铸造调用",
+    "hint": "日期按 Corelia 颁发或课程完成时间（越南时间）筛选。服务商已接受并不代表邮件已送达收件箱。",
+    "learnerRows": "{{count}} 条对账记录",
+    "refresh": "刷新",
+    "exportCsv": "导出 CSV",
+    "exporting": "正在导出…",
+    "exportError": "无法导出 CSV，请重试。",
+    "tableLabel": "按学员和课程划分的证书",
+    "empty": "没有匹配的记录。",
+    "page": "第 {{page}} / {{pages}} 页",
+    "previous": "上一页",
+    "next": "下一页",
+    "unknown": "未知",
+    "issued": "已颁发",
+    "revoked": "已撤销",
+    "created": "已创建",
+    "missing": "缺失",
+    "unresolved": "ID 需要对账",
+    "summary": {
+      "completed": "已完成",
+      "corelia_issued": "Corelia 已颁发",
+      "corelia_revoked": "Corelia 已撤销",
+      "oca_minted": "OCA 已铸造",
+      "oca_unresolved": "OCA 未解决",
+      "oca_pending": "OCA 待处理",
+      "oca_failed": "OCA 失败",
+      "unique_learners": "学员"
+    },
+    "columns": {
+      "learner": "学员",
+      "course": "课程",
+      "completed": "完成时间",
+      "corelia": "Corelia",
+      "coreEmail": "Corelia 邮件",
+      "coreNotice": "Corelia 通知",
+      "oca": "Open Campus OCA",
+      "ocEmail": "OCA 邮件",
+      "ocNotice": "OCA 通知"
+    },
+    "status": {
+      "minted": "已铸造",
+      "pending": "待处理",
+      "failed": "失败"
+    },
+    "mail": {
+      "accepted": "服务商已接受",
+      "provider_error": "服务商错误",
+      "skipped": "已跳过"
+    }
+  },
+  "ogPreview": {
+    "title": "分享图片预览",
+    "description": "检查根据已发布内容生成的 Open Graph 图片。",
+    "entity": "内容类型",
+    "entities": {
+      "project": "项目",
+      "course": "课程",
+      "hackathon": "黑客松",
+      "profile": "资料"
+    },
+    "identifier": "Slug、ID 或用户名",
+    "identifierPlaceholder": "输入公开标识符",
+    "load": "预览",
+    "enterIdentifier": "请选择内容类型并输入其标识符以预览图片。",
+    "defaultImageDescription": "用于没有实体卡片的 Corelia 页面的默认分享图片。",
+    "loading": "正在加载分享图片…",
+    "metadataError": "无法加载元数据，请重试。",
+    "unavailable": "此内容未公开或没有分享图片。",
+    "imageError": "无法加载分享图片。请重试，或打开原图进行检查。",
+    "retry": "重试",
+    "refresh": "刷新预览",
+    "copy": "复制图片网址",
+    "openPage": "打开公开页面",
+    "openImage": "打开原始 PNG",
+    "image": "Open Graph 图片 1200 × 630",
+    "imageAlt": "Open Graph 分享图片预览",
+    "lightBackground": "浅色背景",
+    "darkBackground": "深色背景",
+    "canonicalUrl": "规范网址",
+    "imageUrl": "图片网址",
+    "updatedAt": "更新时间",
+    "revision": "修订版本"
+  },
+  "layout": {
+    "activityMilestones": {
+      "uploading": "正在上传图片...",
+      "clickToUpload": "点击上传",
+      "orDragDrop": "或拖放到此处",
+      "supportFormats": "支持 PNG、JPG 格式",
+      "preview": "预览"
+    },
+    "sidebar": {
+      "ogPreview": {
+        "label": "Open Graph 预览"
+      },
+      "brandTitle": "Corelia 管理后台",
+      "brandSubtitle": "角色、讲师和日常系统运营集中管理。",
+      "primaryNavigation": "主导航",
+      "users": {
+        "label": "用户",
+        "tooltip": "用户"
+      },
+      "jobs": {
+        "label": "职位",
+        "tooltip": "职位采集与审核"
+      },
+      "instructors": {
+        "label": "讲师",
+        "tooltip": "讲师"
+      },
+      "activityMilestones": {
+        "label": "活动里程碑",
+        "tooltip": "全局 Open Campus 里程碑徽章"
+      },
+      "manualMint": {
+        "label": "手动发放 OCA/OCB",
+        "tooltip": "手动向个人发放 OCA/OCB，与课程无关"
+      },
+      "branding": {
+        "label": "品牌",
+        "tooltip": "Corelia 徽标和品牌资产"
+      },
+      "offlineClasses": {
+        "label": "线下课程",
+        "tooltip": "线下课程"
+      },
+      "contests": {
+        "label": "竞赛",
+        "tooltip": "竞赛"
+      },
+      "hackathons": {
+        "label": "黑客松",
+        "tooltip": "管理黑客松"
+      },
+      "email": {
+        "label": "邮件中心",
+        "tooltip": "收件人、模板、营销活动和自动化"
+      },
+      "emailPreview": {
+        "label": "邮件审阅",
+        "tooltip": "在桌面端和移动端审阅每个邮件模板"
+      },
+      "projects": {
+        "label": "项目"
+      }
+    },
+    "pageMeta": {
+      "email": {
+        "title": "邮件中心",
+        "description": "运营系统、学习、项目和营销邮件。"
+      },
+      "users": {
+        "title": "用户管理",
+        "description": "管理所有用户的角色和访问状况。"
+      },
+      "jobs": {
+        "title": "职位运营",
+        "description": "管理来源、公司、审核队列、爬虫运行和市场分析。"
+      },
+      "instructors": {
+        "title": "讲师管理",
+        "description": "跟踪资料、讲师类型和合作伙伴协作数据。"
+      },
+      "activityMilestones": {
+        "title": "活动里程碑",
+        "description": "配置与单一课程无关的自动和手动 Open Campus 徽章。"
+      },
+      "manualMint": {
+        "title": "手动发放凭证",
+        "description": "手动向特定个人发放 OCA 或 OCB，与任何课程或黑客松无关。"
+      },
+      "branding": {
+        "title": "品牌",
+        "description": "管理用于证书和链上凭证的 Corelia 徽标。"
+      },
+      "contests": {
+        "title": "竞赛运营",
+        "description": "创建和管理竞赛、审核申请、为提交评分并发布结果。"
+      },
+      "hackathons": {
+        "title": "黑客松管理",
+        "description": "编辑内容、分类、项目和获奖者。"
+      },
+      "instructorDetail": {
+        "title": "讲师详情",
+        "description": "更新资料和讲师信息。"
+      },
+      "projects": {
+        "title": "项目",
+        "description": "项目审核"
+      }
+    },
+    "hero": {
+      "eyebrow": "管理区",
+      "pills": {
+        "sensitive": "敏感权限",
+        "manualAudit": "人工审计"
+      }
+    }
+  },
+  "hackathons": {
+    "title": "黑客松",
+    "description": "创建和管理公开的黑客松页面。",
+    "new": "新建黑客松",
+    "edit": "编辑",
+    "view": "查看公开页面",
+    "preview": "预览",
+    "loading": "正在加载黑客松…",
+    "empty": "暂无黑客松。",
+    "editor": {
+      "back": "返回列表",
+      "newTitle": "新建黑客松",
+      "editTitle": "编辑黑客松",
+      "newIntro": "请先创建基本信息；草稿创建后，再完善内容、奖金、时间线和项目。",
+      "editIntro": "每次编辑黑客松的一个部分，保存后再进行其他工作。",
+      "participants": "个报名",
+      "saveAll": "全部保存",
+      "saveSection": "保存更改",
+      "createDraft": "创建草稿",
+      "cancel": "取消",
+      "saved": "黑客松已保存。",
+      "saveFailed": "无法保存黑客松。",
+      "notFound": "未找到黑客松。",
+      "unsaved": "未保存的更改",
+      "leaveConfirm": "您有未保存的更改。要离开编辑器并放弃这些更改吗？",
+      "add": "添加",
+      "archive": "归档",
+      "restore": "恢复",
+      "activate": "启用",
+      "remove": "移除",
+      "removeImage": "移除图片",
+      "removeTrack": "删除赛道",
+      "removeTrackConfirm": "删除此赛道？更改将在保存后生效。",
+      "noTracks": "暂无赛道。仅在需要按赛道划分奖金时才添加。",
+      "trackNumber": "赛道 {{number}}",
+      "trackName": "赛道名称",
+      "trackNamePlaceholder": "例如：消费级、基础设施…",
+      "trackPrize": "奖金分配",
+      "trackDescription": "描述",
+      "trackDescriptionPlaceholder": "描述此赛道的范围和评选标准…",
+      "noTimeline": "暂无时间线阶段。",
+      "timelineNumber": "阶段 {{number}}",
+      "timelineTitle": "阶段标题",
+      "timelineStarts": "开始",
+      "timelineEnds": "结束",
+      "removeTimeline": "删除阶段",
+      "saveBeforeWinners": "请先保存黑客松，再选择获奖者。",
+      "selectProject": "选择项目",
+      "selectProjectHint": "搜索并选择要授奖的已提交项目。",
+      "searchProjectPlaceholder": "按项目标题或 @用户名搜索…",
+      "loadingProjects": "正在加载项目…",
+      "noEligibleProjects": "未找到符合条件的项目。",
+      "awardLabel": "奖项名称",
+      "awardLabelRequired": "保存前请为每个奖项输入名称。",
+      "dragProject": "拖动项目 {{name}} 以重新排序",
+      "dragAward": "拖动奖项 {{name}} 以重新排序",
+      "moveProjectUp": "上移项目 {{name}}",
+      "moveProjectDown": "下移项目 {{name}}",
+      "moveAwardUp": "上移奖项 {{name}}",
+      "moveAwardDown": "下移奖项 {{name}}",
+      "noAwards": "尚未选择获奖项目。",
+      "deleteConfirm": "永久删除此黑客松？",
+      "applyStatus": "应用状态",
+      "publish": "发布",
+      "unpublish": "取消发布",
+      "statusPublishedCta": "已发布（点击恢复为草稿）",
+      "statusDraftCta": "草稿（点击发布）",
+      "end": "结束",
+      "delete": "删除黑客松",
+      "editingLanguage": "编辑语言",
+      "primaryBadge": "主要",
+      "sidebarTitle": "黑客松设置",
+      "taxonomyHint": "新建的黑客松包含常用的行业和技术预设。可重命名、添加或归档未使用的选项；正在使用的分类无法删除。",
+      "validationRequired": "越南语标题和 slug 为必填项。",
+      "validationCurrency": "币种必须是 2–10 位大写字母或数字。",
+      "validationPrize": "赛道分配的奖金不能超过奖金池。",
+      "validationTelegram": "Telegram 必须是有效的 t.me 网址或 @用户名。",
+      "validationX": "X 必须是完整的 x.com 或 twitter.com 网址。",
+      "validationFacebook": "Facebook 必须是完整的 facebook.com 网址。",
+      "validationTrackNameRequired": "赛道 {{number}} 缺少名称。请在保存前输入名称或将其移除。",
+      "validationTaxonomyRequired": "已发布或进行中的黑客松必须至少有一个启用的行业和一个启用的技术。",
+      "validationTaxonomyItemInvalid": "每个行业或技术都必须有有效的标识符和名称。",
+      "trackAdded": "新赛道已添加到草稿。",
+      "awardMissingFields": "请选择项目并输入奖项名称。",
+      "awardAdded": "奖项已添加到列表。",
+      "notifyAwardsAction": "通过邮件通知获奖者",
+      "saveBeforeNotifyAwards": "通知获奖者前，请先保存奖项更改。",
+      "validationSocialPost": "请输入公开的 Facebook、Instagram 或 X 帖子网址，每行一个。",
+      "notifyAwardsConfirm": "现在向所有获奖项目团队发送获奖通知邮件？",
+      "awardsNotified": "获奖通知已发送（已送达 {{count}} 封邮件）。",
+      "awardsNotifyRetryableError": "部分获奖邮件因临时错误无法发送。您可以稍后重试。",
+      "awardsNotifyPermanentError": "部分获奖邮件被服务商永久拒绝。请核实收件人邮箱。",
+      "awardsNotifyIndeterminateError": "部分获奖邮件的送达状态不确定。重试前需要对账。",
+      "awardsNotifyNotConfigured": "尚未配置邮件发送。已创建应用内通知，但未发送邮件。",
+      "awardsNotifyFailed": "发送获奖通知邮件失败。",
+      "status": {
+        "draft": "草稿",
+        "published": "已发布",
+        "running": "进行中",
+        "ended": "已结束"
+      },
+      "modes": {
+        "online": "线上",
+        "offline": "线下",
+        "hybrid": "混合"
+      },
+      "aiTranslation": {
+        "action": "使用 AI 将{{source}}翻译为{{target}}",
+        "translating": "AI 正在翻译…",
+        "noSource": "还没有可翻译的{{source}}内容。",
+        "overwriteConfirm": "{{target}}草稿已有内容。要用 AI 翻译替换吗？",
+        "invalidResponse": "AI 返回了无效的黑客松翻译。",
+        "applied": "已应用从{{source}}到{{target}}的 AI 翻译。保存前请先检查。",
+        "failed": "无法翻译黑客松内容。"
+      },
+      "sections": {
+        "overview": "概览",
+        "description": "描述",
+        "prizes": "奖金与赛道",
+        "timeline": "时间线",
+        "resources": "资源",
+        "taxonomy": "项目分类",
+        "projects": "项目与获奖者",
+        "danger": "发布、结束与删除"
+      },
+      "sectionDescriptions": {
+        "overview": "身份信息、主办方信息、联系渠道、主办方帖子和截止时间。",
+        "description": "黑客松的完整 Markdown 介绍。",
+        "prizes": "设置总奖金池；仅在需要划分奖金时才添加赛道。",
+        "timeline": "黑客松各阶段，按从早到晚排序。",
+        "resources": "辅助文档和预备课程。",
+        "projects": "选择获奖项目并手动指定奖项名称。",
+        "danger": "更改公开状态，或永久删除此黑客松。"
+      },
+      "fields": {
+        "title": "标题",
+        "slug": "Slug",
+        "shortDescription": "简短描述",
+        "mode": "模式",
+        "host": "主办方",
+        "hostWebsite": "主办方网站",
+        "telegram": "Telegram（网址或 @用户名）",
+        "telegramPlaceholder": "https://t.me/corelia_builders 或 @corelia_builders",
+        "telegramHint": "@用户名会在您离开该字段时转换为其 t.me 网址。",
+        "x": "X 主页网址",
+        "xPlaceholder": "https://x.com/unihackfest",
+        "facebook": "Facebook 主页网址",
+        "facebookPlaceholder": "https://facebook.com/unihackfest",
+        "fullUrlHint": "请输入以 https:// 开头的完整网址",
+        "currency": "币种",
+        "markdown": "Markdown 内容",
+        "prizeDescription": "奖金说明 Markdown",
+        "timelineDescription": "阶段说明 Markdown",
+        "tracks": "赛道",
+        "banner": "黑客松横幅",
+        "bannerHint": "建议尺寸：2100 × 900 px（21:9）。最小：1680 × 720 px。",
+        "bannerEmpty": "添加封面图片",
+        "uploadBanner": "上传横幅",
+        "officialCourse": "推荐的预备课程",
+        "relatedCourses": "其他预备课程",
+        "noCourse": "未选择课程",
+        "noPublishedCourses": "没有可用的已发布课程。",
+        "coursesLoadFailed": "无法加载已发布的课程。",
+        "socialPosts": "主办方社交帖子",
+        "socialPostsPlaceholder": "每行一个 Facebook、Instagram 或 X 帖子网址",
+        "socialPostsHint": "仅限公开帖子链接。私密或受限的帖子可能无法嵌入。",
+        "changeBanner": "更换横幅",
+        "bannerPreviewAlt": "黑客松横幅预览",
+        "hostLogo": "主办方徽标",
+        "hostLogoHint": "请上传方形或透明背景的徽标。",
+        "changeHostLogo": "上传或更换主办方徽标",
+        "hostLogoPreviewAlt": "主办方徽标预览",
+        "totalPrize": "总奖金池",
+        "submission_deadline": "提交截止时间",
+        "winners_announced": "已公布获奖者",
+        "winners_announcedHint": "公布结果后，团队可以继续更新其项目和成员。",
+        "allow_project_edits_after_deadline": "允许在提交截止后编辑",
+        "allow_project_edits_after_deadlineHint": "允许团队在结果公布前更新项目和成员。更改可能会影响正在评审的内容。",
+        "editsAutomaticallyOpen": "由于结果已公布，编辑功能已自动开放。",
+        "sectors": "工程领域",
+        "tech_stacks": "技术"
+      }
+    },
+    "loadFailed": "无法加载黑客松列表。"
+  },
+  "instructors": {
+    "errors": {
+      "generic": "出了点问题",
+      "updateFailed": "无法更新"
+    },
+    "toasts": {
+      "originUpdated": "讲师类型已更新。"
+    },
+    "stats": {
+      "total": "讲师总数",
+      "corelia": "Corelia",
+      "external": "外部合作伙伴",
+      "unclassified": "未分类",
+      "managedCourses": "管理的课程",
+      "loadingValue": "..."
+    },
+    "hero": {
+      "title": "讲师网络运营",
+      "description": "打开每份资料以管理讲师信息和分类。"
+    },
+    "filters": {
+      "searchPlaceholder": "按姓名、邮箱、机构、头衔、UID 搜索…",
+      "originOptions": {
+        "all": "全部",
+        "corelia": "Corelia",
+        "external": "外部"
+      },
+      "quick": {
+        "all": "全部",
+        "corelia": "Corelia",
+        "external": "外部"
+      }
+    },
+    "actions": {
+      "refresh": "刷新",
+      "clearFilters": "清除筛选",
+      "detail": "详情"
+    },
+    "list": {
+      "syncing": "正在同步讲师...",
+      "showing": "显示 {{shown}} / {{total}} 位讲师",
+      "showingOriginSuffix": " · {{origin}}",
+      "loading": "正在加载列表...",
+      "empty": "没有符合当前筛选条件的讲师。",
+      "notUpdated": "未更新"
+    },
+    "originLabel": {
+      "corelia": "Corelia",
+      "external": "外部",
+      "unclassified": "未分类"
+    },
+    "columns": {
+      "instructor": "讲师",
+      "email": "邮箱",
+      "origin": "分类",
+      "courses": "课程",
+      "actions": "操作"
+    }
+  },
+  "instructorDetailPage": {
+    "errors": {
+      "loadFailed": "无法加载数据",
+      "saveFailed": "无法保存更改"
+    },
+    "toasts": {
+      "detailsSaved": "讲师详情已保存。"
+    },
+    "loading": "正在加载讲师详情...",
+    "empty": {
+      "notFound": "未找到讲师。"
+    },
+    "actions": {
+      "backToList": "返回列表",
+      "backToInstructors": "← 返回讲师列表"
+    },
+    "summary": {
+      "profileCompletion": "资料完整度"
+    },
+    "hero": {
+      "eyebrow": "讲师工作区",
+      "description": "通过清晰的运营流程管理讲师资料信息。",
+      "rolePrefix": "角色：{{role}}",
+      "partnerInstructor": "合作讲师",
+      "coreliaInstructor": "Corelia 讲师"
+    },
+    "nav": {
+      "title": "资料导航",
+      "subtitle": "查看并更新讲师资料信息。"
+    },
+    "sections": {
+      "profile": "讲师详情"
+    },
+    "common": {
+      "dash": "-",
+      "notUpdated": "未更新"
+    },
+    "profile": {
+      "title": "讲师详情",
+      "description": "更新公开资料、系统角色和专业信息。",
+      "completionLabel": "已完成 {{percent}}%",
+      "fields": {
+        "role": "角色",
+        "origin": "讲师类型",
+        "fullName": "姓名",
+        "phone": "电话",
+        "organization": "机构"
+      },
+      "roleOptions": {
+        "instructor": "讲师",
+        "supportStaff": "支持",
+        "student": "学员"
+      },
+      "originOptions": {
+        "external": "外部"
+      },
+      "actions": {
+        "save": "保存更改",
+        "saving": "正在保存..."
+      }
+    }
+  },
+  "users": {
+    "showingRange": "显示第 {{start}}–{{end}} 个账户，共 {{total}} 个",
+    "pagination": {
+      "label": "账户分页",
+      "page": "第 {{page}} 页，共 {{total}} 页",
+      "previous": "上一页",
+      "next": "下一页"
+    },
+    "title": "访问控制面板",
+    "subtitle": "按姓名、邮箱或 UID 搜索，并直接在表格中调整角色，满足日常运营需要。",
+    "stats": {
+      "totalUsers": "用户总数",
+      "admin": "管理员",
+      "support": "支持",
+      "instructor": "讲师",
+      "student": "学员",
+      "opencampusConnected": "已连接 OpenCampus"
+    },
+    "searchPlaceholder": "按姓名、邮箱、角色、UID 搜索…",
+    "allRoles": "所有角色",
+    "refresh": "刷新",
+    "clearFilters": "清除筛选",
+    "loadingList": "正在加载列表...",
+    "syncing": "正在同步用户...",
+    "empty": "没有符合当前筛选条件的用户。",
+    "unknownError": "出了点问题",
+    "confirmChangeRole": "确定要将角色更改为{{role}}吗？",
+    "updateRoleSuccess": "角色更新成功！",
+    "updateRoleErrorPrefix": "更新角色失败：",
+    "unknown": "未知错误",
+    "showing": "显示 {{shown}} / {{total}} 个账户",
+    "showingRoleSuffix": " · {{role}}",
+    "table": {
+      "name": "姓名",
+      "email": "邮箱",
+      "role": "角色",
+      "phone": "电话",
+      "createdAt": "创建时间",
+      "actions": "操作"
+    },
+    "mobile": {
+      "uid": "UID：{{uid}}…",
+      "emailLabel": "邮箱",
+      "currentRole": "当前角色",
+      "phone": "电话",
+      "createdAt": "创建时间",
+      "changeRole": "更改角色",
+      "notUpdated": "未更新",
+      "dash": "-"
+    }
+  },
+  "branding": {
+    "loading": "正在加载品牌设置…",
+    "loadFailed": "无法加载品牌设置。",
+    "uploading": "正在上传…",
+    "uploaded": "徽标已上传并保存。",
+    "uploadFailed": "徽标上传失败。",
+    "saving": "正在保存…",
+    "saved": "已保存。",
+    "saveFailed": "无法保存。",
+    "logo": {
+      "title": "Corelia 徽标",
+      "subtitle": "用作证书和 OpenCampus 链上凭证上的颁发方图片。推荐：透明背景的方形或宽幅 PNG/SVG。",
+      "uploadButton": "上传徽标",
+      "hint": "PNG、JPG 或 SVG。永久存储在公共 CDN 上。",
+      "urlLabel": "徽标网址",
+      "saveUrl": "保存网址",
+      "urlHint": "上传后自动设置。您也可以直接粘贴 CDN 网址。"
+    },
+    "appBaseUrl": {
+      "title": "应用基础网址",
+      "subtitle": "用于生成系统邮件（证书、领取邀请等）中链接的根域名。测试环境：https://staging.corelia.academy；生产环境：https://app.corelia.academy。此处填写错误会导致所有发出的邮件链接指向错误的环境。",
+      "urlLabel": "基础网址",
+      "saveUrl": "保存网址",
+      "invalidUrl": "网址无效：必须形如 https://域名，且不能有结尾斜杠或多余字符。"
+    }
+  },
+  "activityMilestones": {
+    "heading": "活动里程碑",
+    "subheading": "通过 Open Campus 铸造的全局徽章（OCB）。",
+    "add": "添加里程碑",
+    "loading": "加载中…",
+    "loadFailed": "无法加载里程碑。",
+    "empty": "尚未配置里程碑。",
+    "saved": "已保存。",
+    "saveFailed": "保存失败。",
+    "edit": "编辑",
+    "grant": "发放",
+    "createTitle": "新建里程碑",
+    "editTitle": "编辑里程碑",
+    "cancel": "取消",
+    "save": "保存",
+    "saving": "正在保存…",
+    "grantTitle": "发放里程碑",
+    "grantUsersLabel": "学员用户 ID（以逗号或换行分隔）",
+    "grantReasonLabel": "原因（可选）",
+    "grantNeedUsers": "请至少输入一个用户 ID。",
+    "grantOk": "发放已处理。",
+    "grantFailed": "发放失败。",
+    "granting": "正在发放…",
+    "grantSubmit": "发放并铸造",
+    "col": {
+      "name": "名称",
+      "rule": "规则",
+      "trigger": "触发方式",
+      "issued": "已发放",
+      "active": "启用",
+      "actions": "操作"
+    },
+    "field": {
+      "name": "标题",
+      "description": "描述",
+      "image": "徽章图片",
+      "prefix": "标识符前缀",
+      "triggerAuto": "自动",
+      "triggerManual": "手动（管理员发放）",
+      "event": "事件",
+      "days": "天数",
+      "count": "数量",
+      "active": "启用"
+    },
+    "event": {
+      "coursesCompleted": "完成的课程",
+      "projects": "提交的项目"
+    },
+    "rule": {
+      "manual": "手动发放",
+      "coursesCompleted": "完成 {{count}} 门课程",
+      "projects": "提交 {{count}} 个项目"
+    }
+  },
+  "manualMint": {
+    "heading": "手动发放 OCA/OCB",
+    "subheading": "作为课程完成之外的奖励，向特定个人发放 OCA/OCB：不影响课程/黑客松状态。",
+    "tabs": {
+      "grant": "发放凭证 / 徽章",
+      "history": "发放历史与待处理",
+      "templates": "徽章模板"
+    },
+    "lookup": {
+      "heading": "查找学员",
+      "uidPlaceholder": "UID（从账户页面复制）",
+      "emailPlaceholder": "学员邮箱",
+      "submit": "查找",
+      "loading": "正在查找…",
+      "notFoundUid": "未找到此 UID 对应的用户。",
+      "invalidEmailFormat": "邮箱格式无效（例如 name@example.com）。请重新输入。",
+      "ghostNotice": "{{email}} 还没有账户。发放后，我们会向其发送邮件，邀请加入 Corelia 并领取。",
+      "error": "查找失败。",
+      "previewProfile": "预览资料"
+    },
+    "preview": {
+      "title": "资料预览",
+      "loading": "加载中…",
+      "notFound": "无法加载此资料。",
+      "noName": "未设置姓名",
+      "role": "角色",
+      "followers": "关注者",
+      "fullPageLink": "查看完整页面 →"
+    },
+    "templates": {
+      "searchPlaceholder": "按名称、描述搜索徽章模板...",
+      "totalCount": "共 {{count}} 个模板",
+      "emptyTitle": "模板库中还没有模板",
+      "emptySubtitle": "手动发放徽章时，开启“保存到模板库”，以便日后快速复用。",
+      "useTemplate": "使用模板",
+      "deleteConfirm": "确定要从库中删除模板“{{name}}”吗？",
+      "deleteSuccess": "模板已从库中移除",
+      "deleteFailed": "无法删除模板",
+      "deleteForbidden": "系统自动模板无法删除",
+      "loadFailed": "无法加载徽章模板",
+      "ocbBadge": "OCB 徽章",
+      "ocaCertificate": "OCA 证书",
+      "hidden": "已隐藏",
+      "createTemplate": "创建模板",
+      "createDialogTitle": "创建新的徽章 / 证书模板",
+      "createDialogDescription": "创建徽章模板并保存到库中，便于手动发放时快速复用。",
+      "createSuccess": "徽章模板已成功保存到库中！",
+      "createFailed": "无法保存徽章模板，请重试。",
+      "saveTemplateBtn": "保存到库",
+      "templateNamePlaceholder": "例如：第三季度最佳贡献者、黑客松获奖者...",
+      "templateDescriptionPlaceholder": "此奖项的评选标准或原因说明..."
+    },
+    "form": {
+      "kind": "凭证类型",
+      "name": "凭证/徽章名称",
+      "image": "模板图片",
+      "uploadCta": "点击上传",
+      "uploading": "正在上传…",
+      "imagePreview": "预览",
+      "invalidPng": "此文件不是有效的 PNG。请去除背景，或前往以下网址转换图片：",
+      "uploadFailed": "图片上传失败。",
+      "reason": "发放原因",
+      "grantSectionTitle": "徽章 / 证书详情",
+      "chooseFromTemplates": "从模板中选择…",
+      "saveAsTemplate": "保存到模板库以便日后复用",
+      "appliedTemplate": "已应用模板“{{name}}”",
+      "submit": "发放",
+      "submitting": "正在发放…",
+      "success": "发放成功。",
+      "successGhost": "已保存为待处理，并已向收件人发送邀请邮件。",
+      "submitFailed": "发放失败。"
+    },
+    "history": {
+      "heading": "手动铸造历史与待处理发放",
+      "subheading": "跟踪所有手动发放的凭证、Open Campus 铸造进度和待领取项。",
+      "searchPlaceholder": "按收件人、邮箱、OCID、徽章名称或原因搜索...",
+      "statusFilterLabel": "状态",
+      "kindFilterLabel": "类型",
+      "dateFilterLabel": "日期",
+      "filterStatusAll": "所有状态",
+      "filterStatusMinted": "已铸造",
+      "filterStatusPending": "待处理 / 等待注册",
+      "filterStatusFailed": "失败",
+      "filterKindAll": "所有类型",
+      "filterKindOca": "OCA（证书）",
+      "filterKindOcb": "OCB（徽章）",
+      "filterDateAll": "所有时间",
+      "filterDateToday": "今天",
+      "filterDate7Days": "最近 7 天",
+      "filterDate30Days": "最近 30 天",
+      "filterDateThisMonth": "本月",
+      "resetFilters": "重置筛选",
+      "refresh": "刷新",
+      "recipientCol": "收件人",
+      "badgeCol": "徽章 / 凭证",
+      "granterCol": "发放人",
+      "dateCol": "日期",
+      "statusCol": "状态",
+      "statusMinted": "已铸造",
+      "statusPending": "待处理",
+      "statusAwaitingSignup": "等待注册",
+      "statusFailed": "失败",
+      "statusRevoked": "已撤销",
+      "reasonCol": "发放原因",
+      "actionsCol": "操作",
+      "viewOnOpenCampus": "浏览器",
+      "retryBtn": "重试",
+      "retrying": "正在重试…",
+      "retrySuccess": "已成功发起铸造重试。",
+      "retryFailed": "重试失败。",
+      "revokeBtn": "撤销",
+      "revokeConfirm": "撤销对“{{recipient}}”的此次发放？此操作无法撤销。",
+      "revokeSuccess": "已成功撤销发放。",
+      "revokeFailed": "撤销失败。",
+      "empty": "尚未手动发放任何凭证。",
+      "emptyFiltered": "没有符合当前筛选条件的凭证。",
+      "loadFailed": "无法加载手动铸造历史。"
+    }
+  }
+}

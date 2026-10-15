@@ -1,0 +1,74 @@
+{
+  "follow": {
+    "follow": "关注",
+    "following": "已关注",
+    "errors": {
+      "check": "无法检查关注状态。",
+      "save": "无法更新关注状态。"
+    }
+  },
+  "followers": {
+    "summary": "{{count}} 位关注者",
+    "title": "关注者",
+    "description": "关注此内容的公开用户。",
+    "loading": "正在加载关注者…",
+    "empty": "暂无公开关注者。",
+    "errors": {
+      "load": "无法加载关注者。"
+    }
+  },
+  "following": {
+    "title": "正在关注",
+    "description": "该用户关注的公开用户。",
+    "loading": "正在加载关注列表…",
+    "empty": "尚未关注任何公开用户。",
+    "errors": {
+      "load": "无法加载关注列表。"
+    }
+  },
+  "milestones": {
+    "eyebrow": "已验证的成就",
+    "title": "动态",
+    "description": "值得庆祝的学习与项目里程碑。",
+    "member": "Corelia 成员",
+    "kind": {
+      "course_completed": "完成课程",
+      "xp_reached": "经验值里程碑",
+      "project_submitted": "黑客松项目"
+    },
+    "completed": "完成了一门课程",
+    "reached": "达到了 {{count}} 经验值",
+    "submitted": "提交了项目至",
+    "atHackathon": "在 {{name}}",
+    "like": "赞",
+    "unlike": "取消赞",
+    "justNow": "刚刚",
+    "tabs": "动态视图",
+    "explore": "发现",
+    "leaderboard": "经验值排行",
+    "following": "关注中",
+    "new": "有新的里程碑",
+    "error": "无法加载或保存动态。",
+    "retry": "重试",
+    "empty": "暂无里程碑",
+    "emptyHint": "目前没有可发现的新成就。去推荐中认识一些人吧。",
+    "followingHint": "当您关注的人分享成就时，会显示在这里。",
+    "followedTitle": "您关注的人",
+    "peopleTitle": "用户",
+    "followedTab": "关注中",
+    "followedEmpty": "您还没有关注任何人。",
+    "followedDescription": "您关注的公开用户，按最新排序。",
+    "suggestedTitle": "您可能想关注的人",
+    "suggestedEmpty": "暂无可推荐的公开用户。",
+    "suggestedError": "无法加载推荐用户。",
+    "followedError": "无法加载您关注的用户。",
+    "followedAll": "查看全部",
+    "loadMore": "加载更多",
+    "profileTitle": "成就",
+    "profileEmpty": "暂无公开里程碑。",
+    "exploreDescription": "发现您尚未关注的用户的成就。",
+    "followingDescription": "您关注的人的最新成就。",
+    "findPeople": "寻找可关注的人",
+    "unavailable": "该成就已不可用。"
+  }
+}

@@ -12,6 +12,7 @@ import {
 import { listContestShowcasePortfolio } from "@/lib/projects";
 import { resolveContestLearningLinks } from "@/lib/hackathonLearning";
 import { listPublicHackathonApplicantPreviews } from "@/lib/hackathonApplicants";
+import type { ContentLocale } from "@/lib/locales";
 
 export const hackathonKeys = {
   all: ["hackathons"] as const,
@@ -37,7 +38,7 @@ export const hackathonKeys = {
 
 export function hackathonLocaleContentQueryOptions(input: {
   contestId: string;
-  locale: "vi" | "en";
+  locale: ContentLocale;
   userId: string | undefined;
   enabled: boolean;
 }) {

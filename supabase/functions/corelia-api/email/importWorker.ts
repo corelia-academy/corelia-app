@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "../lib/supabase.ts";
 import { contactColumnIndex, contactNameFromCsv, consentFromCsv, normalizeEmail, parseCsv, type ContactColumnMapping } from "./csv.ts";
-import { normalizeEmailLocale } from "../lib/mail/locale.ts";
+import { normalizeEmailLocale, type EmailLocale } from "../lib/mail/locale.ts";
 
 const CHUNK_SIZE = 250;
 
@@ -28,7 +28,7 @@ export async function processNextImportChunk(db: SupabaseClient): Promise<{ proc
 
     const start = Math.max(1, Number(job.cursor_row ?? 0) + 1);
     const end = Math.min(rows.length, start + CHUNK_SIZE);
-    const unique = new Map<string, { email: string; full_name: string | null; locale: "vi" | "en"; consent: boolean; row: number }>();
+    const unique = new Map<string, { email: string; full_name: string | null; locale: EmailLocale; consent: boolean; row: number }>();
     const errors: string[] = [];
     let invalid = 0;
     let duplicate = 0;

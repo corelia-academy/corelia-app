@@ -4,9 +4,10 @@
  */
 
 import i18n from "@/i18n";
+import type { ContentLocale } from "@/lib/locales";
 
 export type UserRole = "student" | "instructor" | "support_staff" | "admin";
-export type Locale = "vi" | "en";
+export type Locale = ContentLocale;
 
 export type InstructorSocialPlatform =
   | "twitter"

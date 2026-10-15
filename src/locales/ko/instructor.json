@@ -1,0 +1,1027 @@
+{
+  "sidebar": {
+    "title": "Corelia 강사",
+    "subtitle": "강의, 프로필, 운영을 한곳에서 관리하세요.",
+    "createCourse": "강의 만들기",
+    "courseList": "강의 목록",
+    "offlineClasses": "오프라인 강의",
+    "profile": "강사 프로필",
+    "contests": "대회"
+  },
+  "layout": {
+    "crumbs": {
+      "home": "홈",
+      "teaching": "강의 운영",
+      "createCourse": "강의 만들기",
+      "offlineClasses": "오프라인 강의",
+      "createCohort": "기수 만들기",
+      "cohortWorkspace": "기수 작업 공간",
+      "contests": "대회",
+      "createContest": "대회 만들기",
+      "contestWorkspace": "대회 작업 공간",
+      "profile": "강사 프로필",
+      "course": "강의",
+      "edit": "편집"
+    },
+    "shell": {
+      "newCourse": {
+        "title": "새 강의 만들기",
+        "description": "콘텐츠와 무료 학습 여정을 처음부터 설정하세요."
+      },
+      "offlineList": {
+        "title": "오프라인 강의",
+        "description": "오프라인 기수, 일정, 장소, 회차별 녹화본을 조율하세요."
+      },
+      "newCohort": {
+        "title": "새 기수 만들기",
+        "description": "일정, Google Meet, 학습자 로드맵이 포함된 오프라인 기수를 만드세요."
+      },
+      "cohortWorkspace": {
+        "title": "기수 작업 공간",
+        "description": "회차 일정, 명단, 학습자 로드맵을 한곳에서 관리하세요."
+      },
+      "contestsList": {
+        "title": "대회",
+        "description": "해커톤과 대회를 강의 운영의 일부로 관리하세요."
+      },
+      "newContest": {
+        "title": "새 대회 만들기",
+        "description": "작업 공간에서 활동, 일정, 운영 흐름을 설정하세요."
+      },
+      "contestWorkspace": {
+        "title": "대회 작업 공간",
+        "description": "신청, 심사위원, 제출물, 결과를 한곳에서 조율하세요."
+      },
+      "profile": {
+        "title": "강사 프로필",
+        "description": "전문 프로필과 협업 정보를 명확하고 최신 상태로 유지하세요."
+      },
+      "editCourse": {
+        "titleFallback": "강의 편집",
+        "description": "콘텐츠, 학습자, 비즈니스 설정을 한곳에서 조정하세요."
+      },
+      "courseList": {
+        "title": "강의",
+        "description": "모든 교육 상품, 게시 상태, 다음 단계를 추적하세요."
+      }
+    },
+    "hero": {
+      "eyebrow": "강의 영역"
+    },
+    "badges": {
+      "externalPartner": "외부 파트너",
+      "coreliaInstructor": "Corelia 강사",
+      "adminMode": "관리자 모드",
+      "teachingMode": "강의 업무"
+    }
+  },
+  "courseNew": {
+    "errors": {
+      "missingProfileName": "계정에서 이름을 업데이트하세요.",
+      "missingTitle": "강의 제목을 입력하세요.",
+      "createFailed": "강의를 만들지 못했습니다"
+    },
+    "toasts": {
+      "created": "강의가 만들어졌습니다. 계속 편집할 수 있습니다."
+    },
+    "header": {
+      "subtitle": "상세 편집 화면으로 이동하기 전에 초기 설정을 빠르게 마치세요.",
+      "step1": "1단계: 설정"
+    },
+    "stats": {
+      "statusLabel": "상태",
+      "accessLabel": "접근 유형",
+      "ownerLabel": "강의 출처",
+      "levelLabel": "수준"
+    },
+    "nav": {
+      "heading": "설정 로드맵",
+      "description": "이 초기 설정을 마치면 콘텐츠와 고급 설정을 계속 완성하게 됩니다.",
+      "generalInfo": "일반 정보",
+      "content": "콘텐츠 및 레슨",
+      "finalAssignment": "최종 과제",
+      "certificate": "수료증",
+      "studentManagement": "수강생 관리",
+      "deleteCourse": "강의 삭제"
+    },
+    "tip": {
+      "title": "빠른 설정 팁",
+      "description": "섹션과 레슨을 추가하기 전에 제목, 슬러그, 콘텐츠 언어를 선택하세요."
+    },
+    "section": {
+      "description": "기본 정보를 입력하세요. 만들고 나면 편집 페이지로 이동해 챕터, 레슨, 고급 설정을 추가할 수 있습니다.",
+      "startBadge": "시작 단계"
+    },
+    "labels": {
+      "draft": "초안",
+      "originExternal": "외부 파트너",
+      "originCorelia": "Corelia 강사",
+      "title": "강의 제목",
+      "slug": "슬러그",
+      "shortDescription": "짧은 설명",
+      "description": "설명",
+      "descriptionMarkdownHint": "Markdown을 지원합니다 (제목, 목록, 링크, 코드 블록).",
+      "sources": "출처 (외부 URL)",
+      "sourceAttributionNote": "출처 표기 메모",
+      "learningOutcomes": "배울 내용",
+      "learningOutcomesSubtitle": "이 강의는 학습자가 이러한 목표를 달성하도록 돕습니다.",
+      "learningOutcomesAdd": "목표 추가",
+      "skills": "얻게 될 스킬",
+      "skillsSubtitle": "강의를 수료하면 이 스킬이 학습자의 프로필에 표시됩니다.",
+      "skillsAdd": "스킬 추가",
+      "thumbnail": "강의 커버 이미지",
+      "ownerType": "강의 출처",
+      "level": "수준",
+      "contentLocales": "강의 콘텐츠 언어",
+      "contentLocalesHint": "이 강의에서 별도의 콘텐츠를 제공할 언어를 선택하세요.",
+      "primaryContentLocale": "기본 콘텐츠 언어 (대체)",
+      "defaultVideoLocale": "기본 영상 주 언어",
+      "publishedCheckbox": "게시됨 (강의 페이지에 표시)",
+      "externalAggregatedCheckbox": "공개 외부 강의"
+    },
+    "hints": {
+      "businessSettingsRestricted": "학사 담당자/관리자만 강의 출처를 변경할 수 있습니다.",
+      "externalAggregatedDescription": "이 강의는 외부 출처의 콘텐츠를 모은 것입니다 (YouTube/제작자 채널 참고 링크)."
+    },
+    "placeholders": {
+      "title": "예: 초보부터 고급까지 React",
+      "slug": "react-from-beginner-to-advanced",
+      "shortDescription": "한 줄 설명 (선택)",
+      "description": "전체 강의 설명...",
+      "sources": "한 줄에 URL 하나\nhttps://youtube.com/...\nhttps://youtube.com/...",
+      "sourceAttributionNote": "모은 출처에 대한 공개 메모 (예: 제작자의 YouTube 재생목록에서 선별).",
+      "learningOutcomesItem": "예: Web3 지갑과 온체인 트랜잭션의 작동 방식 설명하기",
+      "skillItem": "예: 블록체인 기초"
+    },
+    "actions": {
+      "uploadThumb": "커버 이미지 업로드",
+      "uploadingThumb": "업로드 중...",
+      "create": "강의 만들기",
+      "creating": "만드는 중...",
+      "cancel": "취소"
+    }
+  },
+  "courseListPage": {
+    "errors": {
+      "loadFailed": "목록을 불러오지 못했습니다"
+    },
+    "stats": {
+      "total": "전체 강의",
+      "published": "게시됨",
+      "drafts": "초안",
+      "free": "무료 강의"
+    },
+    "hero": {
+      "title": "내 강의 카탈로그",
+      "description": "게시 상태를 확인하고 한 번의 클릭으로 편집으로 이동하세요.",
+      "create": "새 강의 만들기"
+    },
+    "empty": {
+      "title": "이 작업 공간에는 아직 강의가 없습니다.",
+      "description": "첫 강의를 만들어 카탈로그를 구성해 보세요.",
+      "createFirst": "첫 강의 만들기"
+    },
+    "coursePills": {
+      "published": "게시됨",
+      "draft": "초안"
+    },
+    "courseCards": {
+      "pricingLabel": "가격 모델",
+      "free": "무료",
+      "instructorLabel": "강사",
+      "you": "나"
+    },
+    "actions": {
+      "viewCourseTitle": "강의 페이지 열기",
+      "previewDraftTitle": "초안 미리보기",
+      "viewCourse": "강의 보기",
+      "preview": "미리보기",
+      "edit": "편집"
+    }
+  },
+  "courseEdit": {
+    "i18n": {
+      "supportedLocalesLabel": "콘텐츠 언어",
+      "supportedLocalesHint": "이 강의의 콘텐츠 언어를 사용/사용 안 함으로 설정합니다. 학습 진도는 언어 간에 공유됩니다.",
+      "primaryLocaleLabel": "기본 콘텐츠 언어",
+      "editingLocaleLabel": "편집 중인 콘텐츠 언어",
+      "editingNonPrimaryHint": "번역을 편집하고 있습니다. 기본 언어 콘텐츠는 별도로 유지됩니다.",
+      "translationModeBadge": "번역 모드",
+      "currentLocaleBadge": "현재",
+      "primaryEditingHint": "원본 언어를 직접 편집하고 있습니다.",
+      "translationEditingHint": "{{source}}에서 {{target}}(으)로 번역을 편집하고 있습니다."
+    },
+    "defaults": {
+      "lessonTitle": "레슨"
+    },
+    "coInstructors": {
+      "label": "공동 강사",
+      "hint": "강의 페이지에 표시할 공동 강사를 추가하고, 원하면 제한된 접근 권한을 부여하세요.",
+      "dialogTitle": "공동 강사 선택",
+      "dialogDescription": "디렉터리에 있는 강사만 선택할 수 있습니다.",
+      "fallbackName": "강사",
+      "placeholder": "공동 강사 선택…",
+      "searchPlaceholder": "이름/이메일로 검색…",
+      "emptyLabel": "일치하는 강사가 없습니다.",
+      "loadingDirectory": "강사를 불러오는 중…",
+      "permissions": {
+        "students": "수강생 보기",
+        "submissions": "제출물 검토",
+        "content": "콘텐츠 보기",
+        "certificates": "수료증 보기",
+        "pricing": "가격 보기"
+      },
+      "showOnCoursePage": "강의 상세 페이지에 표시",
+      "willInviteBadge": "저장 시 초대함",
+      "inviteSent": "공동 강사 초대 {{count}}건을 보냈습니다",
+      "inviteFailed": "공동 강사 초대 {{count}}건이 실패했습니다",
+      "inviteEmailFailed": "앱 내 초대는 생성되었지만 수신자 {{count}}명에게 이메일을 보내지 못했습니다.",
+      "inviteRevoked": "초대가 취소되었습니다",
+      "pendingTitle": "대기 중인 초대",
+      "pendingHint": "이 사람들은 초대를 받았지만 아직 수락하지 않았습니다. 수락하기 전에는 강의에 접근할 수 없습니다.",
+      "pendingExpiresAt": "{{date}} 만료",
+      "revokeInvite": "취소"
+    },
+    "sponsors": {
+      "label": "후원사",
+      "hint": "강의 사이드바에 표시할 후원사를 추가하세요 (로고, 이름, 웹사이트, 설명).",
+      "countLabel": "후원사 {{count}}곳",
+      "empty": "아직 후원사가 없습니다.",
+      "actions": {
+        "add": "후원사 추가",
+        "uploadLogo": "로고 업로드",
+        "uploading": "업로드 중...",
+        "save": "후원사 저장",
+        "cancel": "취소"
+      },
+      "fields": {
+        "logo": "로고",
+        "name": "후원사 이름",
+        "website": "웹사이트",
+        "description": "설명"
+      },
+      "dialog": {
+        "title": "후원사"
+      },
+      "confirm": {
+        "remove": "이 후원사를 삭제할까요?"
+      },
+      "errors": {
+        "missingName": "후원사 이름을 입력하세요.",
+        "invalidWebsite": "웹사이트는 올바른 URL(https://...)이어야 합니다.",
+        "uploadLogoFailed": "후원사 로고를 업로드하지 못했습니다."
+      },
+      "toasts": {
+        "saved": "후원사가 저장되었습니다.",
+        "removed": "후원사가 삭제되었습니다.",
+        "logoUploaded": "로고가 업로드되었습니다."
+      }
+    },
+    "partners": {
+      "label": "파트너",
+      "hint": "강의 사이드바에 표시할 파트너를 추가하세요 (로고, 이름, 웹사이트, 설명).",
+      "countLabel": "파트너 {{count}}곳",
+      "empty": "아직 파트너가 없습니다.",
+      "actions": {
+        "add": "파트너 추가",
+        "uploadLogo": "로고 업로드",
+        "uploading": "업로드 중...",
+        "save": "파트너 저장",
+        "cancel": "취소"
+      },
+      "fields": {
+        "logo": "로고",
+        "name": "파트너 이름",
+        "website": "웹사이트",
+        "description": "설명"
+      },
+      "dialog": {
+        "title": "파트너"
+      },
+      "confirm": {
+        "remove": "이 파트너를 삭제할까요?"
+      },
+      "errors": {
+        "missingName": "파트너 이름을 입력하세요.",
+        "invalidWebsite": "웹사이트는 올바른 URL(https://...)이어야 합니다.",
+        "uploadLogoFailed": "파트너 로고를 업로드하지 못했습니다."
+      },
+      "toasts": {
+        "saved": "파트너가 저장되었습니다.",
+        "removed": "파트너가 삭제되었습니다.",
+        "logoUploaded": "로고가 업로드되었습니다."
+      }
+    },
+    "partnerBrand": {
+      "label": "제공 / 파트너",
+      "hint": "파트너 소유 강의의 경우 이 정보가 강의 사이드바에 표시됩니다.",
+      "actions": {
+        "uploadLogo": "로고 업로드",
+        "uploading": "업로드 중...",
+        "save": "파트너 정보 저장"
+      },
+      "fields": {
+        "name": "파트너 이름",
+        "website": "웹사이트",
+        "description": "설명"
+      },
+      "errors": {
+        "invalidWebsite": "웹사이트는 올바른 URL(https://...)이어야 합니다.",
+        "uploadLogoFailed": "파트너 로고를 업로드하지 못했습니다."
+      },
+      "toasts": {
+        "saved": "파트너 정보가 저장되었습니다.",
+        "logoUploaded": "로고가 업로드되었습니다."
+      }
+    },
+    "errors": {
+      "loadCourseFailed": "강의를 불러오지 못했습니다",
+      "refreshTotalFailed": "업데이트 실패",
+      "uploadThumbnailFailed": "강의 커버 이미지를 업로드하지 못했습니다",
+      "updateFailed": "업데이트 실패",
+      "processFailed": "작업 실패",
+      "missingCertificateTemplate": "수료증 발급을 사용하는 경우 수료증 템플릿 이미지를 업로드하세요.",
+      "missingCertificateTemplateCta": "수료증",
+      "uploadCertTemplateFailed": "수료증 템플릿을 업로드하지 못했습니다",
+      "clearCertTemplateFailed": "수료증을 취소하지 못했습니다",
+      "addSectionFailed": "섹션을 추가하지 못했습니다",
+      "addLessonFailed": "레슨을 추가하지 못했습니다",
+      "deleteSectionFailed": "섹션을 삭제하지 못했습니다",
+      "deleteLessonFailed": "레슨을 삭제하지 못했습니다",
+      "deleteCourseFailed": "강의를 삭제하지 못했습니다",
+      "reorderLessonsFailed": "레슨 순서를 업데이트할 수 없습니다",
+      "reorderSectionsFailed": "섹션 순서를 업데이트할 수 없습니다",
+      "prepareLessonFailed": "레슨을 준비하지 못했습니다.",
+      "externalSourcesRequired": "공개 외부 강의를 사용하는 경우 출처 URL을 하나 이상 입력하세요."
+    },
+    "page": {
+      "back": "뒤로"
+    },
+    "business": {
+      "ownershipLabel": "강의 출처",
+      "ownershipAdminOnly": "관리자만 강의 출처를 업데이트할 수 있습니다.",
+      "ownershipCurrent": "현재: {{type}}"
+    },
+    "externalCourse": {
+      "toggleLabel": "공개 외부 강의",
+      "toggleHint": "이 강의가 외부 출처를 모은 것이라면 사용하세요. 출처와 표기가 공개 페이지에 표시됩니다.",
+      "sourcesLabel": "참고 출처 (URL) *",
+      "sourcesPlaceholder": "한 줄에 URL 하나\nhttps://youtube.com/...\nhttps://youtube.com/...",
+      "sourcesRequired": "공개 외부 강의를 사용할 때 필수입니다.",
+      "attributionLabel": "출처 표기 메모",
+      "attributionPlaceholder": "모은 출처에 대한 공개 메모 (예: 제작자의 YouTube 재생목록에서 선별)."
+    },
+    "toasts": {
+      "totalDurationRefreshed": "총 시간이 업데이트되었습니다. 이제 강의 목록 페이지에 올바르게 표시됩니다.",
+      "saved": "변경 사항이 저장되었습니다.",
+      "assignmentApproved": "제출이 승인되었습니다.",
+      "assignmentRejected": "제출이 거부되었습니다.",
+      "certificateIssued": "수료증이 발급되었습니다.",
+      "assignmentConfigSaved": "과제 설정이 저장되었습니다.",
+      "certTemplateUploaded": "수료증 템플릿이 업로드되었습니다.",
+      "certTemplateCleared": "수료증이 취소되었습니다."
+    },
+    "confirm": {
+      "deleteSection": "이 섹션과 안의 모든 레슨을 삭제할까요?",
+      "deleteLesson": "이 레슨을 삭제할까요?",
+      "deleteCourse": "전체 강의와 모든 콘텐츠를 삭제할까요? 이 작업은 되돌릴 수 없습니다."
+    },
+    "labels": {
+      "published": "게시됨",
+      "draft": "초안",
+      "uploadThumb": "커버 이미지 업로드",
+      "uploadingThumb": "업로드 중...",
+      "save": "변경 사항 저장",
+      "saving": "저장 중...",
+      "saveInfo": "일반 정보가 저장되었습니다.",
+      "saveAssignment": "과제 설정 저장",
+      "saveCertificate": "수료증 설정이 저장되었습니다.",
+      "reload": "다시 불러오기",
+      "loading": "불러오는 중...",
+      "updating": "업데이트 중…",
+      "updateTotalDuration": "총 시간 새로 고침",
+      "add": "추가",
+      "adding": "추가하는 중…",
+      "addSection": "섹션 추가",
+      "addingSection": "추가하는 중...",
+      "uploadTemplate": "템플릿 업로드",
+      "uploadingTemplate": "업로드 중..."
+    },
+    "certificate": {
+      "sectionTitle": "수료증 템플릿",
+      "sectionDescription": "수료증 배경(PNG/JPG)을 업로드하세요. 학습자 이름이 설정한 위치에 들어가 학습자가 다운로드하여 소셜 미디어에 공유할 수 있습니다.",
+      "templateLabel": "수료증 템플릿",
+      "uploadTemplate": "템플릿 업로드",
+      "uploadingTemplate": "업로드 중...",
+      "viewCurrentTemplate": "현재 템플릿 보기",
+      "nameXLabel": "학습자 이름 위치 (왼쪽에서 %)",
+      "nameYLabel": "학습자 이름 위치 (위에서 %)",
+      "nameColorLabel": "이름 글자 색상",
+      "nameColorHint": "수료증에 겹쳐 표시되는 학습자 이름의 색상입니다.",
+      "afterUploadHintPrefix": "업로드한 후 두 개의 \"이름 위치\" 필드(왼쪽에서 % / 위에서 %)를 조정하세요.",
+      "fileFormatHint": "형식: PNG 또는 JPG.",
+      "disabledHint": "수료증 템플릿을 설정하기 전에 일반 정보 탭에서 \"이 강의는 수료증을 발급합니다\"를 사용 설정하세요.",
+      "disabledCta": "일반 정보로 이동",
+      "setupLeaveWarning": "수료증 설정이 취소됩니다. 처음부터 다시 시작해야 합니다. 이 페이지를 나갈까요?",
+      "saveLayout": "수료증 레이아웃 저장",
+      "nameGroupTitle": "학습자 이름",
+      "nameSizeLabel": "이름 글자 크기 (너비의 %)",
+      "footerGroupTitle": "하단 블록 (발급일 / 수료증 ID)",
+      "footerGroupHint": "Google Sans로 인쇄됩니다. 여기에 표시되는 인증 코드가 QR이 연결되는 대상입니다.",
+      "footerXLabel": "하단 위치 (왼쪽에서 %)",
+      "footerYLabel": "하단 위치 (위에서 %)",
+      "footerSizeLabel": "하단 글자 크기 (너비의 %)",
+      "footerColorLabel": "하단 글자 색상",
+      "qrGroupTitle": "인증 QR 코드",
+      "qrGroupHint": "QR 코드를 스캔하여 수료증을 확인할 수 있습니다. 최소 크기는 3%, 최대는 30%입니다.",
+      "qrXLabel": "QR 중심 (왼쪽에서 %)",
+      "qrYLabel": "QR 중심 (위에서 %)",
+      "qrSizeLabel": "QR 크기 (너비의 %)",
+      "previewTitle": "레이아웃 미리보기",
+      "previewNoTemplate": "수료증 템플릿을 업로드하면 미리보기를 볼 수 있습니다.",
+      "previewHint": "샘플 데이터입니다. 실제 수료증에는 학습자 이름, 발급일, 인증 코드가 사용됩니다.",
+      "previewSampleName": "홍길동"
+    },
+    "questionGenerator": {
+      "deleteQuestion": "문제 삭제",
+      "questionContentPlaceholder": "문제 내용...",
+      "optionIsCorrect": "선택지 {{id}}이(가) 정답",
+      "optionPlaceholder": "선택지 {{id}}...",
+      "explanationToggle": "정답 해설",
+      "explanationPlaceholder": "정답인 이유를 설명하세요 (선택)...",
+      "replaceDraftConfirm": "새 문제를 생성하고 현재 초안을 교체할까요? 저장하지 않은 수정 사항은 사라집니다."
+    },
+    "certificateGuide": {
+      "title": "템플릿 만드는 방법",
+      "sizeHint": "권장 크기: 1600×1200 px (4:3 가로) 또는 1200×1600 px (3:4 세로).",
+      "nameAreaHint": "이미지에 학습자 이름을 위한 빈 영역을 남겨 두세요 (예: 중앙 또는 하단 1/3).",
+      "afterUploadHint": "업로드한 후 두 개의 \"이름 위치\" 필드(왼쪽에서 % / 위에서 %)를 조정하여 학습자 이름이 빈 영역에 오도록 하세요. 50%는 가운데입니다.",
+      "downloadSample": "샘플 템플릿 다운로드 (SVG)"
+    },
+    "ocb": {
+      "title": "Open Campus 온체인 자격 증명",
+      "subtitle": "요건을 충족한 학습자는 성과 페이지에서 자신의 검증 가능한 온체인 자격 증명을 직접 받을 수 있습니다. 발행 전에 이름과 OCID를 확인하며, 자동으로 발급되지 않습니다.",
+      "loading": "자격 증명 설정을 불러오는 중…",
+      "loadFailed": "자격 증명 설정을 불러올 수 없습니다.",
+      "adminManagedTitle": "관리자가 관리하는 설정",
+      "adminManagedDescription": "이 강의의 Open Campus 자격 증명은 관리자만 설정하고 사용/사용 안 함으로 전환할 수 있습니다. 학습자 자격 증명을 발급하거나 변경하려면 관리자에게 문의하세요.",
+      "unsupportedCourseTitle": "이 강의는 Open Campus 자격 증명을 지원하지 않습니다",
+      "unsupportedCourseDescription": "Open Campus 자격 증명은 현재 Corelia 소유 강의에서만 설정할 수 있습니다.",
+      "statusActive": "사용 중",
+      "statusInactive": "설정 안 됨",
+      "mintToggleLabel": "온체인 발행 허용",
+      "kind": {
+        "label": "자격 증명 유형",
+        "oca": {
+          "label": "OCA: 성취 수료증",
+          "desc": "수료증 형태의 온체인 자격 증명입니다. 강의 수료와 인증에 적합합니다."
+        },
+        "ocb": {
+          "label": "OCB: Open Campus 배지",
+          "desc": "스킬 배지 형태의 자격 증명입니다. 짧은 성과와 주제 숙달에 적합합니다."
+        }
+      },
+      "configTitle": "자격 증명 상세",
+      "requirementsTitle": "자격 요건",
+      "confirmDeactivateWithIssuances": "이미 {{count}}명의 학습자가 이 자격 증명을 보유하고 있습니다. 끄면 새 학습자에게 더 이상 발급되지 않으며, 이미 발급된 자격 증명은 취소되지 않습니다. 계속 끌까요?",
+      "leaveWithoutSavingWarning": "저장하지 않은 OpenCampus 자격 증명 변경 사항이 있습니다. 지금 나가면 학습자에게 온체인 자격 증명이 발급되지 않습니다. 그래도 나갈까요?",
+      "noPermission": "이 강의의 자격 증명을 설정할 권한이 없습니다.",
+      "nameLabel": "자격 증명 이름",
+      "descriptionLabel": "설명",
+      "badgeImageLabel": "배지 이미지",
+      "imageHint": "권장: 1600×1200 px (가로) 또는 1200×1600 px (세로). OpenCampus의 온체인 배지 이미지로 사용됩니다.",
+      "uploadBadge": "이미지 업로드",
+      "uploading": "업로드 중…",
+      "uploadOk": "이미지가 업로드되었습니다.",
+      "uploadFailed": "업로드에 실패했습니다.",
+      "onchainCertLabel": "온체인 수료증 템플릿 (Web3)",
+      "onchainCertHint": "자격 증명을 온체인에 발행할 때 사용됩니다. 학습자의 개인정보 보호를 위해 이름을 위한 공간이 없어야 합니다.",
+      "uploadOnchainCert": "온체인 템플릿 업로드",
+      "onchainCertUploaded": "온체인 OCA 템플릿이 업로드되었습니다.",
+      "onchainCertUploadFailed": "온체인 템플릿을 업로드하지 못했습니다.",
+      "onchainCertRequired": "OCA 설정을 저장하기 전에 온체인 템플릿을 업로드하세요.",
+      "imageRequired": "저장하기 전에 자격 증명 이미지를 업로드하세요.",
+      "completionPctLabel": "최소 레슨 수료율",
+      "requireAssignmentPassLabel": "최종 과제 승인 필요",
+      "requireAssignmentLabel": "최종 과제 승인 필요",
+      "minScoreLabel": "최소 과제 점수",
+      "identifierPrefixLabel": "식별자 접두사",
+      "identifierHint": "알아보기 쉬운 프로그램 접두사를 사용하세요 (예: corelia:unihackfest-2026). 앞 25자가 Open Campus에 표시되고 뒤에 고유 코드가 붙습니다.",
+      "identifierLocked": "이미 자격 증명 {{count}}개가 있습니다. 중복 발행을 막기 위해 접두사가 잠겨 있습니다.",
+      "save": "자격 증명 설정 저장",
+      "saving": "저장 중…",
+      "saved": "자격 증명 설정이 저장되었습니다.",
+      "saveFailed": "자격 증명 설정을 저장할 수 없습니다."
+    },
+    "form": {
+      "titleLabel": "강의 제목",
+      "shortDescriptionLabel": "짧은 설명",
+      "shortDescriptionPlaceholder": "한 줄 설명 (선택)",
+      "descriptionLabel": "설명",
+      "descriptionMarkdownHint": "Markdown을 지원합니다 (제목, 목록, 링크, 코드 블록).",
+      "learningOutcomesLabel": "배울 내용",
+      "learningOutcomesSubtitle": "이 강의는 학습자가 이러한 목표를 달성하도록 돕습니다.",
+      "learningOutcomesItemPlaceholder": "예: Web3 지갑과 온체인 트랜잭션의 작동 방식 설명하기",
+      "learningOutcomesAdd": "목표 추가",
+      "skillsLabel": "얻게 될 스킬",
+      "skillsSubtitle": "넓은 분야 수준의 스킬을 사용하세요 (예: Web3, 블록체인, DeFi). 수료 후 학습자의 프로필에 표시됩니다.",
+      "skillsItemPlaceholder": "예: Web3",
+      "skillsAdd": "스킬 추가",
+      "thumbnailLabel": "강의 커버 이미지",
+      "levelLabel": "수준"
+    },
+    "sidebar": {
+      "editingLanguage": "편집 언어",
+      "primaryBadge": "기본",
+      "navTitle": "편집기 탐색",
+      "navHint": "게시하기 전에 각 설정 그룹을 차례로 확인하며 강의를 완성하세요.",
+      "nav": {
+        "info": "일반 정보",
+        "content": "콘텐츠 및 레슨",
+        "assignments": "최종 과제",
+        "certificate": "수료증",
+        "credentials": "OpenCampus 자격 증명",
+        "students": "수강생 관리",
+        "danger": "강의 삭제",
+        "announcements": "공지"
+      }
+    },
+    "content": {
+      "heading": "강의 콘텐츠",
+      "savingOrder": "레슨 순서를 저장하는 중...",
+      "dragHint": "점 아이콘을 끌어 섹션 안에서 레슨 순서를 바꾸거나, 필요하면 위/아래 화살표를 사용하세요.",
+      "sectionsToggleLabel": "챕터별로 구성",
+      "saveStructure": "구조 저장",
+      "sectionsToggleHint": "사용하면 레슨을 챕터로 묶습니다. 사용하지 않으면 평평한 레슨 목록이 됩니다.",
+      "addSectionHeading": "새 섹션 추가",
+      "lessonTitlePlaceholder": "레슨 제목 (선택)",
+      "lessonMinutesPlaceholder": "시간(분): YouTube 시간을 가져올 수 없으면 여기에 입력하세요",
+      "sectionTitlePlaceholder": "섹션 제목"
+    },
+    "questions": {
+      "number": "문제 {{number}}",
+      "loadFailed": "기존 문제를 불러오지 못했습니다.",
+      "loadFailedBeforeGenerate": "기존 문제를 불러오지 못한 상태에서는 문제를 생성할 수 없습니다.",
+      "loadFailedBeforeSave": "문제 불러오기가 오류 상태인 동안에는 문제를 저장할 수 없습니다.",
+      "retry": "다시 시도",
+      "generateFailed": "문제를 생성할 수 없습니다.",
+      "fillRequired": "문제와 선택지를 두 개 이상 입력하세요.",
+      "saveFailed": "문제를 저장할 수 없습니다.",
+      "lessonTitle": "레슨 문제: {{title}}",
+      "sectionTitle": "퀴즈 문제: {{title}}",
+      "lessonDescription": "이 레슨의 퀴즈 문제를 만드세요. 같은 섹션의 다른 레슨을 콘텐츠 출처로 선택할 수 있습니다.",
+      "sectionDescription": "AI로 레슨 콘텐츠에서 퀴즈 문제를 생성하세요. 저장하기 전에 편집할 수 있습니다.",
+      "sourceLessons": "출처 레슨",
+      "currentLesson": "이 레슨",
+      "count": "문제 수",
+      "generate": "문제 생성",
+      "generating": "생성 중...",
+      "sources": "콘텐츠 출처",
+      "loading": "문제를 불러오는 중...",
+      "empty": "레슨 콘텐츠로 문제를 생성하거나, 아래에서 A/B/C/D 문제를 직접 추가하세요.",
+      "emptyInline": "아직 문제가 없습니다. 지금 추가하거나, 먼저 퀴즈를 만든 뒤 문제를 생성하세요.",
+      "add": "문제 추가",
+      "remove": "문제 삭제",
+      "questionPlaceholder": "문제 텍스트...",
+      "optionPlaceholder": "선택지 {{option}}...",
+      "correctAnswer": "선택지 {{option}}이(가) 정답",
+      "explanationPlaceholder": "정답 해설 (선택)",
+      "cancel": "취소",
+      "saving": "저장 중...",
+      "saveCount": "문제 {{count}}개 저장",
+      "savedLesson": "이 레슨의 문제 {{count}}개를 저장했습니다.",
+      "savedSection": "이 섹션의 문제 {{count}}개를 저장했습니다."
+    },
+    "sections": {
+      "notTranslated": "번역 안 됨",
+      "edit": "편집",
+      "questions": "문제",
+      "editTitle": "섹션 편집",
+      "titleLabel": "제목",
+      "descriptionLabel": "설명",
+      "descriptionPlaceholder": "짧은 섹션 설명 (선택)",
+      "cancel": "취소",
+      "save": "저장"
+    },
+    "descriptionGenerator": {
+      "trigger": "생성",
+      "translateTrigger": "AI로 번역",
+      "courseTitle": "강의 설명 생성",
+      "courseDescription": "이 강의에 이미 있는 레슨을 바탕으로 설명을 작성합니다.",
+      "translateCourseTitle": "AI로 강의 설명 번역",
+      "translateCourseDescription": "저장하기 전에 기존 콘텐츠를 {{source}}에서 {{target}}(으)로 번역합니다.",
+      "sectionTitle": "섹션 설명 생성",
+      "sectionDescription": "이 섹션 안의 레슨을 바탕으로 설명을 작성합니다.",
+      "translateSectionTitle": "AI로 섹션 설명 번역",
+      "translateSectionDescription": "저장하기 전에 기존 콘텐츠를 {{source}}에서 {{target}}(으)로 번역합니다.",
+      "lessonTitle": "레슨 설명 생성",
+      "lessonDescription": "레슨의 영상 콘텐츠와 기존 레슨 문구를 함께 사용해 설명을 작성합니다.",
+      "translateLessonTitle": "AI로 레슨 콘텐츠 번역",
+      "translateLessonDescription": "저장하기 전에 기존 콘텐츠를 {{source}}에서 {{target}}(으)로 번역합니다.",
+      "currentCourseSource": "기존 원본 콘텐츠",
+      "translateDialogHint": "원본 언어에서 빠르게 번역한 뒤 저장하기 전에 결과를 다듬을 수 있습니다.",
+      "sourcesTitle": "생성에 사용된 원본 콘텐츠",
+      "emptySources": "사용할 수 있는 원본 콘텐츠가 아직 없습니다.",
+      "previewTitle": "설명 초안",
+      "previewPlaceholder": "생성을 클릭하여 초안을 만드세요...",
+      "generate": "설명 생성",
+      "generating": "생성 중...",
+      "translating": "번역 중...",
+      "translateApplied": "번역이 적용되었습니다. 준비되면 검토하고 저장하세요.",
+      "cancel": "취소",
+      "useDescription": "이 설명 사용",
+      "warnings": {
+        "limited": "현재 원본 콘텐츠가 부족합니다. 고품질 설명을 생성할 만큼 콘텐츠가 충분한지 확인하세요.",
+        "notEnough": "고품질 설명을 생성할 만큼 콘텐츠가 충분한지 확인하세요."
+      },
+      "sourceKinds": {
+        "shortDescription": "짧은 설명",
+        "longDescription": "긴 설명",
+        "transcript": "영상 콘텐츠",
+        "missing": "원본 없음"
+      },
+      "errors": {
+        "generic": "지금은 설명을 생성할 수 없습니다.",
+        "noBundle": "번역 응답에 콘텐츠 묶음이 포함되어 있지 않습니다."
+      }
+    },
+    "translationCoverage": {
+      "title": "번역 현황",
+      "description": "{{target}} 버전에서 채워진 부분과 {{source}}에서 번역할 수 있는 부분을 한눈에 확인하세요.",
+      "completed": "필드 {{completed}} / {{total}}개 입력됨",
+      "readyToTranslate": "번역 가능한 필드 {{count}}개",
+      "states": {
+        "done": "입력됨",
+        "ready": "준비됨",
+        "missing": "원본 없음"
+      },
+      "messages": {
+        "filled": "이 필드는 {{locale}} 언어에 이미 콘텐츠가 있습니다.",
+        "sourceAvailable": "이 필드는 현재 언어에서 비어 있지만 {{locale}}에 원본 콘텐츠가 있습니다.",
+        "noSource": "자동으로 번역할 만큼 명확한 원본 콘텐츠가 아직 부족합니다."
+      },
+      "actions": {
+        "openField": "이 필드 열기"
+      },
+      "fields": {
+        "title": "강의 제목",
+        "shortDescription": "짧은 설명",
+        "description": "설명",
+        "learningOutcomes": "배울 내용",
+        "assignmentTitle": "과제 제목",
+        "assignmentDescription": "과제 설명",
+        "assignmentInstructions": "과제 안내"
+      }
+    },
+    "lessons": {
+      "formatLabel": "레슨 유형",
+      "formatVideo": "영상 레슨",
+      "formatArticle": "텍스트 레슨",
+      "formatQuiz": "퀴즈",
+      "formatPractice": "실습",
+      "formatHint": "텍스트 레슨은 글 콘텐츠만 사용합니다. YouTube 영상이 필요하지 않습니다.",
+      "articleContentRequired": "텍스트 레슨에는 레슨 콘텐츠(Markdown 또는 짧은 설명)를 추가하세요.",
+      "practiceContentRequired": "이 실습 레슨에는 실습 안내를 추가하세요.",
+      "practiceSourceLabel": "원본 레슨",
+      "practiceSourceNone": "원본 레슨 없음",
+      "practiceSourceHint": "이 실습 활동의 바탕이 되는 레슨을 선택하세요.",
+      "lessonQuestions": "문제",
+      "lessonQuestionsTitle": "레슨 문제",
+      "lessonQuestionsHint": "문제는 이 레슨에 연결되며 레슨 유형이나 기존 영상은 바뀌지 않습니다.",
+      "quizConversionBlocked": "콘텐츠 레슨은 퀴즈로 변환할 수 없습니다. 대신 문제를 열어 이 레슨에 퀴즈를 연결하세요.",
+      "quizSetupTitle": "퀴즈 문제",
+      "quizSetupHint": "이 섹션의 레슨으로 문제를 생성하거나, A/B/C/D 문제를 직접 추가하세요.",
+      "quizCreateHint": "이 퀴즈 레슨을 만든 후 기존 레슨에서 문제를 생성하거나 직접 추가할 수 있습니다.",
+      "notTranslated": "번역 안 됨",
+      "edit": "편집",
+      "editTitle": "레슨 상세 편집",
+      "create": "레슨 추가",
+      "createTitle": "레슨 만들기",
+      "createAction": "레슨 만들기",
+      "creating": "만드는 중...",
+      "titleLabel": "제목",
+      "youtubeLabel": "YouTube 링크",
+      "showPreview": "미리보기",
+      "hidePreview": "숨기기",
+      "draftBadge": "업데이트 중",
+      "youtubePlaceholder": "YouTube 링크 (선택)",
+      "videoPrimaryLocaleLabel": "영상 주 언어",
+      "videoPrimaryLocaleHint": "영상의 오디오/내레이션 언어를 나타냅니다. 콘텐츠 언어와 다를 수 있습니다.",
+      "durationMinutesLabel": "시간 (분)",
+      "durationHint": "비워 두면 가능한 경우 시스템이 YouTube에서 시간을 가져오려고 시도합니다.",
+      "nonVideoDurationHint": "강의 시간과 학습 계획에 사용되는 선택 사항 추정치입니다.",
+      "previewFreeLabel": "무료 미리보기 레슨 사용",
+      "previewBadge": "미리보기",
+      "previewFreeBadge": "무료 미리보기",
+      "shortDescriptionLabel": "짧은 설명",
+      "shortDescriptionPlaceholder": "한두 문장 (선택)",
+      "markdownLabel": "긴 설명 (Markdown)",
+      "markdownHint": "Markdown을 지원합니다 (제목, 목록, 링크, 코드 블록).",
+      "practiceMarkdownLabel": "실습 안내 (Markdown)",
+      "practiceMarkdownHint": "학습자가 완료해야 할 과제, 결과물, 프롬프트 또는 성찰 단계를 작성하세요.",
+      "resourcesLabel": "자료",
+      "resourceTitlePlaceholder": "자료 제목",
+      "resourceUrlPlaceholder": "https://...",
+      "addResource": "자료 추가",
+      "previewTitle": "미리보기",
+      "previewEmpty": "아직 긴 설명이 없습니다.",
+      "cancel": "취소",
+      "save": "저장",
+      "segmentStartLabel": "구간 시작",
+      "segmentEndLabel": "구간 종료",
+      "segmentStartPlaceholder": "예: 0:00",
+      "segmentEndPlaceholder": "예: 15:30 (비워 두면 영상 끝까지)",
+      "segmentHint": "타임스탬프는 같은 YouTube 영상에서 이 레슨이 차지하는 구간을 정합니다 (M:SS 또는 H:MM:SS).",
+      "progressLockBanner": "이미 {{count}}명의 학습자가 이 레슨에 진도가 있습니다. 텍스트와 구간 타임스탬프는 편집할 수 있지만 다른 영상으로 바꿀 수는 없습니다.",
+      "youtubeLockedHint": "학습자가 이 레슨에 진도가 있어 YouTube 링크가 잠겨 있습니다.",
+      "cannotChangeVideoWithProgress": "학습자가 이 레슨에 진도가 있는 동안에는 다른 YouTube 영상으로 바꿀 수 없습니다.",
+      "segmentEndInvalid": "구간 종료는 시작 시간 이후의 올바른 타임스탬프여야 합니다."
+    },
+    "longVideo": {
+      "title": "긴 YouTube 영상",
+      "editReplaceTitle": "긴 영상: 이 레슨을 교체할까요?",
+      "editReplaceIntro": "다른 영상(약 {{duration}})으로 바꾸셨습니다. 하나의 레슨으로 유지하거나, 설명의 챕터에 따라 나누거나, 구간을 직접 정의할 수 있습니다. 나누면 현재 레슨이 삭제되고 같은 위치에 새 레슨이 삽입됩니다.",
+      "intro": "이 영상은 약 {{duration}}입니다. 하나의 레슨으로 유지하거나, 설명의 타임스탬프로 자동 분할하거나, 구간을 직접 정의할 수 있습니다.",
+      "foundChapters": "영상 설명에서 찾은 타임스탬프:",
+      "noChapters": "설명에서 타임스탬프 챕터를 찾지 못했습니다. 직접 나누거나 하나의 레슨으로 유지하세요.",
+      "keepSingle": "하나의 레슨으로 유지",
+      "autoSplit": "챕터로 레슨 만들기",
+      "manualSplit": "직접 나누기",
+      "manualTitle": "구간 정의",
+      "manualAddRow": "구간 추가",
+      "manualConfirm": "레슨 만들기",
+      "manualStartPlaceholder": "시작 (예: 0:00)",
+      "manualEndPlaceholder": "종료 (선택)",
+      "back": "뒤로",
+      "dismiss": "취소",
+      "manual": {
+        "invalidTimestamp": "15:30 또는 1:20:00처럼 올바른 타임스탬프를 입력하세요.",
+        "invalidEnd": "종료 시간은 시작 시간 이후여야 합니다.",
+        "invalidRange": "각 구간에는 올바른 길이가 필요합니다.",
+        "overlap": "구간이 겹치면 안 됩니다.",
+        "needRow": "구간을 하나 이상 추가하세요."
+      }
+    },
+    "assignments": {
+      "completionRequirement": "최종 과제를 설정하면 학습자는 과제를 제출하고 승인을 받아야 강의를 수료할 수 있습니다.",
+      "titleLabel": "과제 제목",
+      "titlePlaceholder": "예: 최종 프로젝트 (비워 두면 필수 아님)",
+      "descriptionLabel": "설명 / 요구 사항",
+      "descriptionPlaceholder": "학습자가 제출해야 할 내용을 설명하세요...",
+      "instructionsLabel": "안내 (선택)",
+      "instructionsPlaceholder": "학습자를 위한 추가 안내...",
+      "reviewApprove": "승인",
+      "reviewReject": "거부",
+      "settingsTitle": "과제 설정",
+      "submissionsTitle": "수강생 제출물",
+      "noSubmissions": "아직 제출물이 없습니다.",
+      "noSubmissionsHint": "아직 제출물이 없습니다. 위의 \"과제 설정\"에서 과제 제목을 추가하고 저장하면 제출 요건이 활성화됩니다.",
+      "columns": {
+        "student": "학습자",
+        "content": "내용",
+        "submittedAt": "제출 시각",
+        "status": "상태",
+        "actions": "작업"
+      },
+      "lessonProgress": "레슨 {{progress}}%",
+      "attachments": "첨부 파일 {{count}}개",
+      "viewSubmission": "전체 제출물 보기",
+      "attachment": "첨부 파일 {{number}}",
+      "unavailableAttachment": "첨부 파일 {{number}}의 링크가 올바르지 않습니다",
+      "feedback": "검토 피드백"
+    },
+    "publishing": {
+      "publishedHint": "게시됨 (강의 페이지에 표시)",
+      "hasCertificateHint": "이 강의는 수료증을 발급합니다",
+      "certificateConfiguredLockedHint": "수료증 템플릿이 설정되어 있습니다. 여기에서는 수료증 발급을 끌 수 없습니다.",
+      "updatingHint": "이 강의는 업데이트 중입니다 (학습자에게 안내 표시)"
+    },
+    "students": {
+      "empty": "이 강의에 등록한 학습자가 아직 없습니다.",
+      "columns": {
+        "student": "학습자",
+        "progress": "진도",
+        "assignment": "과제",
+        "certificate": "수료증",
+        "enrolledAt": "등록일",
+        "lastAccess": "마지막 접속"
+      },
+      "status": {
+        "approved": "승인됨",
+        "rejected": "수정 요청됨",
+        "pending": "대기 중",
+        "notSubmitted": "미제출",
+        "notEligible": "자격 없음",
+        "issue": "발급",
+        "issued": "발급됨"
+      }
+    },
+    "danger": {
+      "deleteCourseTitle": "강의를 삭제할까요?",
+      "dangerZoneTitle": "위험 구역",
+      "deleteWarning": "강의를 삭제하면 모든 콘텐츠(섹션, 레슨)가 삭제됩니다. 이 작업은 되돌릴 수 없습니다.",
+      "deleteConfirmWarning": "모든 콘텐츠(섹션, 레슨)가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.",
+      "deleteButton": "삭제"
+    },
+    "stats": {
+      "sections": "섹션",
+      "lessons": "레슨",
+      "students": "학생",
+      "submissions": "제출물"
+    },
+    "tooltips": {
+      "dragReorder": "끌어서 순서 변경",
+      "moveUp": "위로 이동",
+      "moveDown": "아래로 이동"
+    },
+    "a11y": {
+      "dragSection": "섹션 {{title}} 순서를 바꾸려면 끌기",
+      "moveSectionUp": "섹션 {{title}} 위로 이동",
+      "moveSectionDown": "섹션 {{title}} 아래로 이동",
+      "dragLesson": "레슨 {{title}} 순서를 바꾸려면 끌기",
+      "moveLessonUp": "레슨 {{title}} 위로 이동",
+      "moveLessonDown": "레슨 {{title}} 아래로 이동",
+      "removeOutcome": "학습 목표 {{number}} 삭제",
+      "removeSkill": "스킬 {{number}} 삭제",
+      "deleteSection": "섹션 {{title}} 삭제",
+      "editSponsor": "후원사 {{title}} 편집",
+      "removeSponsor": "후원사 {{title}} 삭제",
+      "editPartner": "파트너 {{title}} 편집",
+      "removePartner": "파트너 {{title}} 삭제"
+    },
+    "access": {
+      "noPermission": "이 강의를 편집할 권한이 없습니다.",
+      "backToTeaching": "강의 운영"
+    },
+    "announcements": {
+      "sectionTitle": "공지",
+      "heroTitle": "학습자에게 공지 보내기",
+      "heroDescription": "이메일을 작성해 이 강의에 등록한 모든 학습자에게 보냅니다.",
+      "recipientCount": "학습자 {{count}}명이 이메일을 받습니다",
+      "recipientCountZero": "아직 등록한 학습자가 없습니다",
+      "subjectLabel": "이메일 제목",
+      "subjectPlaceholder": "제목을 입력하세요...",
+      "bodyLabel": "메시지",
+      "bodyPlaceholder": "여기에 공지를 작성하세요. 문단 사이에 빈 줄을 넣으세요.",
+      "bodyHint": "일반 텍스트만 가능합니다. 줄바꿈은 유지됩니다. HTML을 작성할 필요는 없습니다.",
+      "bodyPreviewToggle": "미리보기",
+      "bodyPreviewBrandedNote": "미리보기 (발송 시 머리글과 바닥글이 자동으로 추가됩니다):",
+      "sendButton": "공지 보내기",
+      "confirmTitle": "공지를 보낼까요?",
+      "confirmSubjectLabel": "제목:",
+      "confirmDescription": "등록한 학습자 {{count}}명에게 이메일이 발송됩니다.",
+      "confirmButton": "지금 보내기",
+      "cancelButton": "취소",
+      "resultSent": "이메일 {{total}}건 중 {{sent}}건을 보냈습니다.",
+      "resultFailed": "이메일 {{failed}}건을 보내지 못했습니다.",
+      "resultSkipped": "수신자 {{skipped}}명에게 보낼 수 없었습니다.",
+      "resultError": "발송 오류: {{reason}}",
+      "systemUnavailable": "이메일 시스템을 현재 사용할 수 없습니다. 이메일이 발송되지 않았습니다. 도움이 필요하면 시스템 관리자에게 문의하세요.",
+      "notConfigured": "이메일이 설정되지 않았습니다. RESEND_API_KEY를 확인하세요."
+    }
+  },
+  "learningPrinciples": {
+    "eyebrow": "CORELIA · 제작 가이드",
+    "title": "학습 설계 원칙",
+    "intro": "학습자가 이해하고, 스스로 해내고, 기술을 응용하도록 돕는 콘텐츠를 설계하세요. 구체적인 성과에서 출발해 연습을 제공하고, 학습자의 결과물로 수업을 개선하세요.",
+    "scope": "강사 및 콘텐츠 제작자용 · 연구 검토일 2026년 9월 22일",
+    "contents": "이 페이지의 내용",
+    "sections": {
+      "principles": "핵심 원칙 7가지",
+      "example": "챕터 예시",
+      "formats": "레슨 형식 고르기",
+      "checklist": "게시 전 점검",
+      "sources": "연구 출처"
+    },
+    "evidenceNote": "증거 요약은 연구 내용을 설명합니다. \"Corelia에 적용\" 상자는 현재 시스템에 대한 제작 권장 사항이며, Corelia 학습자를 대상으로 한 시험 결과가 아닙니다.",
+    "sourceLink": "연구 근거",
+    "application": "Corelia에 적용",
+    "watchFor": "유의할 점:",
+    "principles": {
+      "outcome": {
+        "title": "학습자가 무엇을 할 수 있게 되는지에서 시작하세요",
+        "evidence": "목표, 학습 활동, 평가는 같은 역량을 다루어야 합니다. [CMU: 설계 지침]",
+        "application": "관찰 가능한 행동을 사용하세요. \"잘못된 입력을 프로그램이 멈추지 않고 처리한다.\" 이 성과를 보여 주는 과제를 선택한 뒤 그 과제를 준비하도록 학습자를 이끄세요.",
+        "limit": "프로그램 작성에 관한 목표에는 작성과 실행 연습이 필요합니다. 정의를 묻는 퀴즈는 일부만 측정합니다."
+      },
+      "prior": {
+        "title": "출발점 확인하기",
+        "evidence": "사전 지식은 새로운 학습을 돕기도 하고 방해하기도 합니다. [CMU: 연구 종합]",
+        "application": "필요한 지식과 도구를 밝히세요. 작은 질문이나 과제로 시작하고, 초보자에게 선수 지식이 부족할 수 있는 곳에는 복습 자료를 연결하세요.",
+        "limit": "학습을 안내하는 용도로 쓰고 학습자를 배제하는 데 쓰지 마세요. 모두가 터미널이나 Git을 안다고 가정하지 마세요."
+      },
+      "model": {
+        "title": "사고 과정을 보여 준 뒤 연습할 여지를 두세요",
+        "evidence": "IES는 2007년 지침에서 풀이 예시와 독립 문제를 번갈아 제공할 것을 중간 수준의 근거와 함께 권장합니다.",
+        "application": "글에서 각 단계가 왜 중요한지 설명하세요. 이어서 실습에서 빠진 단계, 디버깅 과제, 지원이 적은 변형 문제를 제시하세요.",
+        "limit": "경험에 맞게 지원을 조절하세요. 숙련된 학습자에게는 또 다른 풀이 예시가 필요하지 않을 수 있습니다."
+      },
+      "retrieve": {
+        "title": "학습자가 떠올리고 설명하게 하세요",
+        "evidence": "IES는 2007년 지침에서 내용을 다시 다루는 퀴즈와 깊이 있는 설명형 질문을 강한 근거로 평가합니다.",
+        "application": "정답을 공개하기 전에 예측이나 설명을 요청하세요. 퀴즈의 오답 선택지는 흔한 오해를 바탕으로 만들고, 정답을 설명하세요.",
+        "limit": "정답을 알아보는 것만으로는 독립적인 문제 해결을 보장하지 않습니다. 실습에 자기 설명 프롬프트를 포함하세요."
+      },
+      "space": {
+        "title": "쉬었다가 다시 지식을 복습하세요",
+        "evidence": "IES는 2007년 지침에서 학습을 시간에 걸쳐 분산할 것을 중간 수준의 근거와 함께 권장합니다.",
+        "application": "이후 퀴즈에서 앞선 챕터를 다시 다루고 최종 과제에서 그 기술을 다시 활용하세요. 안내에서 쉬었다가 돌아오도록 권해 보세요.",
+        "limit": "챕터의 경계가 시간 간격을 보장하지는 않습니다. 이 페이지에는 복습 스케줄러가 없으며, 고정된 일 단위 일정이 모두에게 최적인 것은 아닙니다."
+      },
+      "feedback": {
+        "title": "수정에 도움이 되는 피드백을 주세요",
+        "evidence": "목표 지향적인 연습과 기준에 연결된 피드백은 학습을 돕습니다. [CMU: 연구 종합]",
+        "application": "퀴즈 정답을 설명하고 관련 힌트를 제공하세요. 최종 과제 검토에서는 잘된 점, 구체적인 문제, 다음 점검 사항을 알려 주세요. 기존 수정 요청 흐름을 사용하세요.",
+        "limit": "\"틀렸습니다\"나 \"더 노력하세요\"는 다음 단계를 알려 주지 않습니다. 강의에 맞는 검토 인력과 응답 시간을 마련하세요."
+      },
+      "transfer": {
+        "title": "응용력과 자기 평가 확인하기",
+        "evidence": "숙달에는 기술을 통합하고 언제 적용할지 아는 것이 포함됩니다. 학습자는 자신의 접근 방식도 점검해야 합니다. [CMU: 연구 종합]",
+        "application": "최종 과제에서 풀이 예시와 요구 사항을 바꿔 보세요. 평가 기준을 공개하고, 결과물과 함께 결정 이유와 남은 어려움을 설명하는 메모를 요청하세요.",
+        "limit": "레슨 수료, XP, 자격 증명만으로는 독립적인 능력을 입증할 수 없습니다. 결과물과 설명을 살펴보세요."
+      }
+    },
+    "example": {
+      "label": "제작 예시 · Rust 입문",
+      "title": "프로그램을 다시 실행해도 데이터 유지하기",
+      "goal": "선수 지식: 함수, Vec, Result, 동작하는 Cargo 환경. 성과: 작업을 추가하고 앱을 닫았다가 다시 열어도 데이터가 그대로이며, 손상된 파일을 처리합니다. 이는 제안된 챕터이며 게시된 강의가 아닙니다.",
+      "read": {
+        "title": "풀이 예시가 있는 글",
+        "body": "메모리의 데이터와 파일의 데이터를 비교하세요. 작은 예시로 읽기 → 변경 → 쓰기를 설명하고 예상 결과를 보여 주세요."
+      },
+      "predict": {
+        "title": "퀴즈: 풀이를 보기 전에 예측하기",
+        "body": "\"앱이 Vec만 업데이트하고 종료하면 다음 실행에도 작업이 남아 있을까요? 왜 그럴까요?\" 답에서 메모리와 영속 저장소를 설명하세요."
+      },
+      "build": {
+        "title": "가이드 프로젝트: 스스로 실행하고 확인하기",
+        "body": "시작 코드를 제공하고 학습자에게 읽기와 쓰기를 구현하게 하세요. add를 실행하고 종료한 뒤 새 프로세스에서 list를 실행합니다. 존재하지 않는 경로와 손상된 파일도 시도하게 하세요."
+      },
+      "submit": {
+        "title": "최종 과제: 제출하고 피드백 받기",
+        "body": "강의 최종 과제에서 GitHub URL과 메모를 요청하세요. 재현 가능성, 새로 실행했을 때의 데이터, 오류 메시지를 검토하세요. 필요하면 구체적인 수정 피드백을 주세요."
+      },
+      "revisit": {
+        "title": "새로운 요구 사항으로 복습하기",
+        "body": "다음 챕터에서 앱을 다시 열어도 유지되는 완료 상태를 추가하세요. 어느 단계가 데이터를 영속적으로 만드는지 학습자에게 설명하게 하세요."
+      },
+      "rubricTitle": "제출 안내용 기준 예시",
+      "rubric": "올바른 동작 · 새 실행에서도 데이터 유지 · 명확한 오류 처리 · 재현 가능한 README · 결정을 설명하는 메모. 이 과제를 위해 제안하는 기준이며 Corelia의 기본 채점 척도가 아닙니다."
+    },
+    "formats": {
+      "article": {
+        "title": "글",
+        "body": "설명하고, 예시를 들고, 참고 용도를 지원합니다. 목표를 밝히고 아이디어별로 구성하며, 새 용어를 정의하고 출처와 도구 버전을 표시하세요."
+      },
+      "video": {
+        "title": "영상",
+        "body": "시간에 따른 동작이나 변화를 보여 줍니다. 글 요약과 자료를 포함하세요. 모든 레슨에 고정된 길이를 강요하지 말고 과제 단위로 나누세요."
+      },
+      "quiz": {
+        "title": "퀴즈",
+        "body": "떠올리기, 예측, 오해 점검에 사용하세요. 해설, 그럴듯한 오답 선택지, 재시도 기회를 포함하세요."
+      },
+      "code": {
+        "title": "코드 실습",
+        "body": "현재는 브라우저 텍스트 검증을 사용하는 단일 파일 Rust 빈칸 채우기 또는 편집 실습을 지원합니다. 작은 연습 과제에 사용하세요. 통과했다고 해서 컴파일이나 실행에 성공했다는 뜻은 아닙니다."
+      },
+      "practice": {
+        "title": "가이드 실습",
+        "body": "실제 과제에는 안내, 체크리스트 또는 가이드 프로젝트를 사용하세요. 각 단계에 확인 가능한 결과를 주세요. Cargo 등의 도구는 학습자의 컴퓨터에서 실행됩니다."
+      },
+      "final": {
+        "title": "최종 과제",
+        "body": "강의 수준에서 결과물을 제출하고, 피드백을 받고, 수정합니다. 요구 사항과 기준을 설명하세요. 제출물이 자동으로 공개 프로젝트가 되지는 않으며, 공유할 내용은 학습자가 선택합니다."
+      }
+    },
+    "formatsNote": "이 적용 사례는 2026년 9월 22일 작업 공간의 Corelia 코드와 문서를 반영한 것이며, 운영 환경에서의 제공 여부를 확인한 것이 아닙니다. 챕터에 6가지 형식이 모두 필요하지는 않습니다.",
+    "checklistNote": "레슨 또는 챕터를 위한 편집 체크리스트입니다. 선택 사항은 이 페이지가 열려 있는 동안만 유지되며, 자동 평가나 게시 작업이 아닙니다.",
+    "checked": "{{total}}개 중 {{count}}개 항목 검토함",
+    "reset": "선택 해제",
+    "checks": {
+      "outcome": "목표가 관찰 가능한 행동을 설명하며, 평가는 가르친 내용을 측정합니다.",
+      "entry": "선수 지식, 도구, 설정 안내가 의도한 초보자가 시작하기에 충분합니다.",
+      "accuracy": "제작자가 예시를 다시 실행하고 출처, 버전, 자료 링크를 확인했습니다.",
+      "practice": "학습자에게는 읽기나 따라 하기를 넘어서는 독립 과제와 기대 결과가 있습니다.",
+      "feedback": "정답 해설은 이유를 설명하고, 힌트와 검토 의견은 실행 가능한 다음 단계를 알려 줍니다.",
+      "review": "학습자가 이전 지식을 다시 살펴보고 달라진 상황에서 적용합니다.",
+      "access": "좁은 화면 미리보기를 확인했고, 영상에 글 보조 자료가 있으며, 번역이 있는 경우 용어와 언어별 버전이 일치합니다.",
+      "pilot": "의도한 입문 수준의 학습자가 자료를 사용해 보았고, 관찰된 어려움이 수정에 반영되었습니다."
+    },
+    "sourcesNote": "기초 출처는 2026년 9월 22일에 검토했습니다. IES의 증거 수준은 2007년 지침을 가리키며 온라인 프로그래밍 교육에 대한 평가가 아닙니다. 여기의 예시, 체크리스트, 형식 선택은 Corelia의 적용 사례로, 실제 학습자와 함께 검증해야 합니다.",
+    "sources": {
+      "alignment": {
+        "title": "CMU Eberly Center: 평가, 목표, 교수 전략 일치시키기",
+        "description": "목표, 학습 활동, 평가를 일치시키는 지침입니다. 원칙 1을 뒷받침합니다."
+      },
+      "learning": {
+        "title": "CMU Eberly Center: 학습 원칙",
+        "description": "사전 지식, 연습, 피드백, 숙달, 자기 조절을 다룬 연구 종합입니다. 원칙 2, 6, 7을 뒷받침합니다."
+      },
+      "ies": {
+        "title": "IES / What Works Clearinghouse: 학생 학습 향상을 위한 수업 및 학습 조직 (2007)",
+        "description": "풀이 예시, 퀴즈, 분산 학습, 설명형 질문에 관한 증거 등급 지침입니다. 원칙 3, 4, 5를 뒷받침합니다."
+      }
+    }
+  }
+}

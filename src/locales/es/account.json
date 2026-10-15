@@ -1,0 +1,574 @@
+{
+  "nav": {
+    "sectionTitle": "Configuración de la cuenta",
+    "currentSectionLabel": "Estás viendo",
+    "settings": {
+      "title": "Ajustes",
+      "description": "Tema, cerrar sesión"
+    },
+    "profile": {
+      "title": "Información personal",
+      "description": "Nombre, contacto, avatar"
+    },
+    "instructor": {
+      "title": "Perfil de instructor",
+      "description": "Información visible para los estudiantes"
+    },
+    "cv": {
+      "title": "Perfil de aprendizaje y CV",
+      "description": "Información para asesoría y apoyo profesional"
+    },
+    "projects": {
+      "title": "Proyectos",
+      "description": "Gestiona tus proyectos y traducciones"
+    },
+    "achievements": {
+      "title": "Caja de logros",
+      "description": "Gestiona certificados e insignias"
+    }
+  },
+  "header": {
+    "roleLabel": {
+      "instructor": "Cuenta de instructor",
+      "admin": "Cuenta de administrador",
+      "support_staff": "Cuenta de soporte",
+      "student": "Cuenta de estudiante"
+    },
+    "subtitle": "Gestiona tu información personal, seguridad y perfil profesional en un solo lugar.",
+    "summary": {
+      "profileLabel": "Perfil",
+      "roleLabel": "Rol",
+      "statusLabel": "Estado",
+      "missingDisplayName": "Nombre visible no configurado",
+      "statusReady": "Listo para aprender y seguir tu progreso"
+    }
+  },
+  "settings": {
+    "language": {
+      "title": "Idioma",
+      "description": "Cambia el idioma de la aplicación. Si has iniciado sesión, esta preferencia se sincroniza entre tus dispositivos.",
+      "meta": {
+        "en": "Inglés (EN)",
+        "zh-CN": "Chino simplificado (zh-CN)",
+        "ko": "Coreano (KO)",
+        "es": "Español (ES)",
+        "zh-TW": "Chino tradicional (zh-TW)",
+        "vi": "Vietnamita (VI)",
+        "ja": "Japonés (JA)"
+      },
+      "active": "Activo"
+    },
+    "appearance": {
+      "title": "Apariencia",
+      "description": "Elige un tema que se adapte a tu entorno.",
+      "themeLabel": "Tema",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "system": "Sistema"
+    },
+    "session": {
+      "title": "Sesión",
+      "description": "Gestiona el estado de inicio de sesión en este dispositivo.",
+      "signOutTitle": "Cerrar sesión",
+      "signOutDescription": "Finaliza la sesión actual en este dispositivo.",
+      "signOutButton": "Cerrar sesión"
+    },
+    "notifications": {
+      "title": "Preferencias de notificaciones",
+      "description": "Elige qué notificaciones quieres recibir por correo y dentro de la aplicación.",
+      "emailLearningReminders": "Recibir correos periódicos de recordatorio de aprendizaje",
+      "emailLearningRemindersDesc": "Envía recordatorios espaciados cuando pausas un curso en progreso.",
+      "emailCourseBlast": "Recibir correos con anuncios de cursos",
+      "emailTrackBlast": "Recibir correos con anuncios de rutas de aprendizaje",
+      "inAppCourseBlast": "Mostrar anuncios de cursos en la aplicación",
+      "inAppTrackBlast": "Mostrar anuncios de rutas de aprendizaje en la aplicación",
+      "saved": "Preferencias de notificaciones guardadas",
+      "likes": "Me gusta en tu trabajo",
+      "follows": "Nuevos seguidores",
+      "digest": "Correo diario de actividad social",
+      "digestDescription": "Se envía solo cuando hay actividad nueva, a las 09:00 ({{timezone}}). Puedes darte de baja en cualquier momento.",
+      "loadFailed": "No se pudieron cargar tus ajustes de notificaciones."
+    }
+  },
+  "common": {
+    "loading": "Procesando…",
+    "continue": "Continuar",
+    "cancel": "Cancelar",
+    "finish": "Finalizar"
+  },
+  "errors": {
+    "notLoggedIn": "Sin sesión iniciada"
+  },
+  "projects": {
+    "pageTitle": "Espacio de proyectos",
+    "listTitle": "Mis proyectos",
+    "ownerBadge": "Propietario",
+    "collaboratorBadge": "Colaborador",
+    "publicListingLabel": "Listado público:",
+    "collaboratorCardTitle": "Visibilidad del colaborador",
+    "collaboratorCardBody": "Figuras como colaborador en este proyecto. Puedes elegir si el proyecto aparece en tu perfil público.",
+    "showOnProfileLabel": "Mostrar este proyecto en mi perfil",
+    "showOnProfileHint": "Si lo activas, este proyecto puede aparecer en tu perfil público y en la lista de proyectos de tu cuenta.",
+    "ownerOnlyTitle": "Contenido gestionado por el propietario",
+    "ownerOnlyBody": "Por ahora solo el propietario del proyecto puede editar el contenido principal y las traducciones. Como colaborador, solo puedes controlar si aparece en tu perfil.",
+    "localizationSettingsTitle": "Ajustes de localización",
+    "primaryLocaleLabel": "Idioma principal del contenido",
+    "supportedLocalesLabel": "Idiomas admitidos",
+    "saveSettings": "Guardar ajustes",
+    "translationEditorTitle": "Editor de traducciones",
+    "translationEditorHint": "Los campos vacíos usan el idioma principal ({{primaryLocale}}).",
+    "updatedAt": "Actualizado: {{datetime}}",
+    "copyFromPrimary": "Copiar del principal",
+    "saveTranslation": "Guardar traducción",
+    "savingTranslation": "Guardando…",
+    "targetLocaleDisabled": "El idioma de destino {{locale}} no está habilitado en los idiomas admitidos.",
+    "primaryColumnTitle": "Principal ({{locale}})",
+    "translationColumnTitle": "Traducción ({{locale}})",
+    "fieldTitle": "Título",
+    "fieldSummary": "Resumen",
+    "titleFallback": "Alternativa: {{title}}",
+    "titlePlaceholder": "Introduce el título",
+    "summaryPlaceholder": "Si está vacío, se usa el principal",
+    "errors": {
+      "visibilityFailed": "No se pudo actualizar la visibilidad en el perfil de este proyecto."
+    }
+  },
+  "password": {
+    "title": "Cambiar contraseña",
+    "subtitle": "Solo se aplica a cuentas que inician sesión con correo y contraseña.",
+    "fields": {
+      "current": {
+        "label": "Contraseña actual",
+        "placeholder": "Introduce la contraseña actual"
+      },
+      "next": {
+        "label": "Nueva contraseña",
+        "placeholder": "8 o más caracteres con mayúscula, minúscula, número y símbolo"
+      },
+      "confirm": {
+        "label": "Confirmar nueva contraseña",
+        "placeholder": "Vuelve a introducir la nueva contraseña"
+      }
+    },
+    "actions": {
+      "submit": "Cambiar contraseña"
+    },
+    "success": {
+      "changed": "Contraseña cambiada correctamente."
+    },
+    "errors": {
+      "confirmMismatch": "La nueva contraseña y su confirmación no coinciden.",
+      "minLength": "La nueva contraseña debe tener al menos 8 caracteres.",
+      "policy": "La nueva contraseña debe tener al menos 8 caracteres e incluir mayúsculas, minúsculas, un número y un símbolo.",
+      "missingEmail": "No se encontró el correo. Solo las cuentas basadas en correo pueden cambiar la contraseña.",
+      "changeFailed": "No se pudo cambiar la contraseña."
+    }
+  },
+  "mfa": {
+    "title": "Seguridad en dos pasos (MFA)",
+    "subtitle": "Añade un número de teléfono para recibir códigos SMS al iniciar sesión y mantener tu cuenta más segura.",
+    "factorLabel": "Teléfono de verificación",
+    "providers": {
+      "google": "Google",
+      "github": "GitHub"
+    },
+    "enrolled": {
+      "title": "Factores registrados:"
+    },
+    "actions": {
+      "addPhone": "Añadir teléfono de verificación",
+      "sending": "Enviando…",
+      "sendSms": "Enviar código SMS"
+    },
+    "reauth": {
+      "hint": "Por seguridad, vuelve a autenticarte antes de añadir un número de teléfono.",
+      "passwordLabel": "Contraseña actual",
+      "passwordPlaceholder": "Introduce la contraseña",
+      "popupHint": "Haz clic en el botón de abajo para volver a iniciar sesión con {{provider}}."
+    },
+    "phone": {
+      "label": "Número de teléfono (E.164, p. ej. +84901234567)",
+      "placeholder": "+84 901 234 567"
+    },
+    "code": {
+      "hint": "Código enviado. Introduce el código de 6 dígitos abajo.",
+      "label": "Código de verificación",
+      "placeholder": "000000"
+    },
+    "success": {
+      "enabled": "Autenticación en dos pasos (SMS) activada."
+    },
+    "errors": {
+      "reauthFailed": "Falló la reautenticación. Inténtalo de nuevo.",
+      "invalidPhone": "Número de teléfono no válido (p. ej. 0901234567 o +84901234567).",
+      "sendCodeFailed": "No se pudo enviar el código. Inténtalo de nuevo.",
+      "enrollFailed": "Falló el registro. Inténtalo de nuevo."
+    }
+  },
+  "profile": {
+    "loading": "Cargando perfil…",
+    "mustLogin": "Debes iniciar sesión para ver esta página.",
+    "tabs": {
+      "info": "Perfil",
+      "ocid": "OCID",
+      "security": "Seguridad"
+    },
+    "emailLoginLabel": "Correo de inicio de sesión",
+    "publicProfile": {
+      "label": "Perfil público",
+      "status": {
+        "public": "Público",
+        "private": "Privado"
+      },
+      "hint": "Enlace de tu perfil público: /@{{handle}}",
+      "actions": {
+        "makePrivate": "Hacer privado",
+        "makePublic": "Hacer público",
+        "saving": "Guardando..."
+      }
+    },
+    "setupWarning": {
+      "title": "Tu perfil necesita un poco más de información.",
+      "body": "Actualiza tu nombre completo y tu teléfono para que Corelia, los instructores o el personal de soporte puedan ayudarte mejor."
+    },
+    "avatar": {
+      "label": "Avatar",
+      "alt": "Avatar",
+      "upload": "Subir imagen",
+      "uploading": "Subiendo…",
+      "randomize": "Probar un avatar aleatorio",
+      "tryAnother": "Probar otro",
+      "useThis": "Usar este avatar",
+      "cancel": "Cancelar",
+      "saving": "Guardando…",
+      "hint": "JPG, PNG o WebP. La imagen se guardará y actualizará de inmediato."
+    },
+    "fullName": {
+      "label": "Nombre completo",
+      "placeholder": "María Pérez",
+      "hint": "Se usa en certificados y expedientes académicos.",
+      "limit": "Máximo {{count}} / {{max}} caracteres."
+    },
+    "username": {
+      "label": "Nombre de usuario",
+      "placeholder": "p. ej. terrrancrypt",
+      "hint": "Se usa en la URL de tu perfil público."
+    },
+    "bio": {
+      "label": "Biografía",
+      "placeholder": "Una breve presentación sobre ti…",
+      "hint": "Se mostrará en tu perfil público."
+    },
+    "website": {
+      "label": "Sitio web",
+      "placeholder": "https://…",
+      "hint": "Portafolio / LinkedIn / sitio web personal."
+    },
+    "phone": {
+      "label": "Teléfono de contacto",
+      "placeholder": "p. ej. 09xxxxxxxx",
+      "hint": "El personal de soporte lo usa para contactarte cuando sea necesario."
+    },
+    "actions": {
+      "saving": "Guardando...",
+      "save": "Guardar cambios"
+    },
+    "success": {
+      "avatarUpdated": "Avatar actualizado.",
+      "updated": "Información de la cuenta actualizada.",
+      "visibilityUpdated": "Visibilidad del perfil actualizada."
+    },
+    "errors": {
+      "avatarUploadFailed": "No se pudo subir la imagen.",
+      "avatarUpdateFailed": "No se pudo actualizar el avatar.",
+      "updateFailed": "No se pudo actualizar la información.",
+      "visibilityUpdateFailed": "No se pudo actualizar la visibilidad del perfil.",
+      "usernameTaken": "Este nombre de usuario ya está en uso. Elige otro.",
+      "loadFailed": "No se pudo cargar tu perfil. Revisa tu conexión.",
+      "invalidName": "Usa un nombre de 160 caracteres como máximo y sin caracteres de control ocultos.",
+      "invalidText": "Un campo del perfil es demasiado largo o contiene caracteres de control ocultos. Acórtalo o vuelve a escribirlo."
+    },
+    "retry": "Reintentar"
+  },
+  "cv": {
+    "title": "Perfil de aprendizaje y CV",
+    "subtitle": "Un perfil consolidado para asesoría profesional, recomendaciones laborales y apoyo con becas.",
+    "comingSoon": {
+      "title": "Gestión de CV (próximamente)",
+      "body": "Podrás subir un CV (PDF) y actualizar tu información profesional aquí. Así los instructores y el personal de soporte entenderán tu contexto y podrán apoyar mejor tu ruta de aprendizaje.",
+      "note": "Por ahora, puedes añadir un enlace a tu CV (Google Drive, Notion, etc.) en la descripción de tu perfil ampliado mientras terminamos esta función."
+    },
+    "prep": {
+      "title": "Información sugerida para preparar",
+      "items": {
+        "0": "Experiencia laboral / proyectos personales destacados.",
+        "1": "Cursos completados y certificados relevantes.",
+        "2": "Habilidades técnicas y habilidades blandas."
+      }
+    }
+  },
+  "instructorProfile": {
+    "onlyInstructors": "Solo los instructores pueden editar el perfil docente.",
+    "title": "Perfil de instructor",
+    "subtitle": "Este es tu perfil público que ven los estudiantes en la página del instructor y en las páginas de los cursos.",
+    "completion": "{{percent}}% completado",
+    "common": {
+      "notUpdated": "Sin actualizar"
+    },
+    "origin": {
+      "corelia": "Instructor de Corelia",
+      "external": "Instructor asociado (externo)",
+      "unknown": "Sin categoría"
+    },
+    "cards": {
+      "originLabel": "Tipo de instructor",
+      "organizationLabel": "Organización",
+      "headlineLabel": "Titular",
+      "websiteLabel": "Sitio web / Portafolio"
+    },
+    "tips": {
+      "organization": {
+        "title": "Muestra tu organización",
+        "body": "Tu organización ofrece a los estudiantes más contexto sobre tu experiencia."
+      },
+      "intro": {
+        "title": "Presentación breve",
+        "body": "Tu titular y tu biografía deben destacar tus fortalezas, experiencia y áreas de enseñanza."
+      },
+      "externalProfile": {
+        "title": "Enlaza un perfil externo",
+        "body": "LinkedIn o un portafolio ayuda a generar confianza cuando los estudiantes consideran inscribirse."
+      }
+    },
+    "fields": {
+      "origin": {
+        "label": "Tipo de instructor",
+        "hint": "El tipo de instructor solo puede actualizarlo el personal de soporte o los administradores."
+      },
+      "organization": {
+        "label": "Organización",
+        "placeholder": "p. ej. Corelia, Empresa ABC, Universidad XYZ..."
+      },
+      "headline": {
+        "label": "Titular",
+        "placeholder": "p. ej. Ingeniero frontend sénior, Mentor de análisis de datos..."
+      },
+      "bio": {
+        "label": "Biografía del instructor",
+        "placeholder": "Comparte tu experiencia docente, proyectos reales, empresas con las que has trabajado y tu principal especialidad..."
+      },
+      "website": {
+        "label": "Sitio web / LinkedIn / portafolio",
+        "placeholder": "https://..., linkedin.com/in/..., portafolio personal"
+      }
+    },
+    "socialLinks": {
+      "title": "Redes sociales y enlaces",
+      "subtitle": "Añade tus cuentas de redes sociales o enlaces para mostrarlos en las páginas de los cursos.",
+      "empty": "Aún no has añadido enlaces. Añade tu primer enlace abajo.",
+      "addTitle": "Añadir enlace nuevo",
+      "urlPlaceholder": "https://...",
+      "labelPlaceholder": "Etiqueta opcional (p. ej. Blog personal)",
+      "addButton": "Añadir",
+      "removeLabel": "Quitar enlace",
+      "errors": {
+        "urlRequired": "Introduce una URL.",
+        "urlInvalid": "La URL debe empezar por https:// o http://"
+      }
+    },
+    "actions": {
+      "saving": "Guardando...",
+      "save": "Guardar perfil de instructor"
+    },
+    "success": {
+      "updated": "Perfil de instructor actualizado."
+    },
+    "errors": {
+      "updateFailed": "No se pudo actualizar el perfil de instructor."
+    }
+  },
+  "ocid": {
+    "card": {
+      "title": "Conectar OCID",
+      "description": "Vincula tu Open Campus ID para sincronizar tu identidad y tu billetera (si tienes) dentro del ecosistema de Open Campus.",
+      "statusConnected": "Conectado",
+      "statusDisconnected": "No conectado",
+      "initializing": "Inicializando el SDK de OCID…",
+      "connectHint": "Haz clic en el botón de abajo para vincular OCID con tu cuenta de Corelia.",
+      "ocidLabel": "OCID",
+      "ethAddressLabel": "Dirección ETH",
+      "disconnect": "Desconectar",
+      "connect": "Conectar con OCID",
+      "loadingDisconnect": "Procesando…",
+      "loadingConnect": "Redirigiendo…"
+    },
+    "redirect": {
+      "finishing": "Finalizando la vinculación de OCID…",
+      "connectFailedFallback": "No se pudo vincular OCID. Inténtalo de nuevo.",
+      "alreadyLinkedToOtherAccount": "Este OCID ya está vinculado a otra cuenta. Desconéctalo primero de esa cuenta.",
+      "mustLoginFirst": "Debes iniciar sesión en Corelia antes de vincular OCID.",
+      "missingOcidFromSession": "No se pudo obtener el OCID de la sesión de inicio de sesión. Vuelve a conectar.",
+      "backToHome": "Volver al inicio"
+    },
+    "toasts": {
+      "startConnectFailed": "No se pudo iniciar la conexión con OCID.",
+      "disconnectSuccess": "OCID desconectado.",
+      "disconnectFailed": "No se pudo desconectar OCID."
+    },
+    "disconnectDialog": {
+      "title": "¿Desconectar OCID?",
+      "body": "¿Seguro que quieres desconectar tu OCID de esta cuenta?",
+      "bodyWithCredentials_one": "Ya se emitió 1 credencial on-chain a tu OCID actual.",
+      "bodyWithCredentials_other": "Ya se emitieron {{count}} credenciales on-chain a tu OCID actual.",
+      "bodyWithCredentials_many": "Ya se emitieron {{count}} credenciales on-chain a tu OCID actual.",
+      "warningTitle": "Estas credenciales no se transferirán.",
+      "warningBody": "Si después conectas otro OCID, las credenciales ya emitidas seguirán vinculadas a tu OCID anterior y no podrán moverse al nuevo.",
+      "confirm": "Desconectar de todos modos"
+    }
+  },
+  "xp": {
+    "earned": "+{{count}} XP",
+    "activityCompleted": "Actividad completada",
+    "title": "Actividad de XP",
+    "loading": "Cargando XP…",
+    "error": "No se pudo cargar el XP.",
+    "total": "{{count}} XP acumulados",
+    "utc": "Los días usan UTC",
+    "calendar": "Calendario de actividad",
+    "less": "Menos",
+    "more": "Más",
+    "empty": "Aún no hay actividad de XP.",
+    "weekTotal": "Esta semana: {{count}} XP",
+    "weekChart": "XP diario de esta semana",
+    "previousWeek": "Semana anterior",
+    "nextWeek": "Semana siguiente",
+    "history": "Historial de XP",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "sources": {
+      "daily_streak_claim": "Registro diario anterior",
+      "ocid_connected": "OCID conectado",
+      "github_connected": "GitHub conectado",
+      "ethereum_wallet": "Billetera de Ethereum conectada",
+      "solana_wallet": "Billetera de Solana conectada",
+      "lesson_completed": "Completó una lección",
+      "quiz_passed": "Aprobó un cuestionario",
+      "course_completed": "Completó un curso",
+      "first_hackathon_submission": "Primer envío de proyecto de hackathon",
+      "project_liked": "Dio me gusta a un proyecto",
+      "correction": "Corrección de XP"
+    },
+    "connections": {
+      "title": "Cuentas y billeteras",
+      "description": "Vincula GitHub para ganar 50 XP una sola vez.",
+      "connected": "Conectado",
+      "connectGithub": "Conectar GitHub",
+      "failed": "No se pudo conectar GitHub.",
+      "connectEthereum": "Conectar {{wallet}}",
+      "connectSolana": "Conectar {{wallet}}",
+      "noSolanaWallet": "No se encontró ninguna billetera de Solana con firma de mensajes.",
+      "connectGoogle": "Conectar Google",
+      "noEthereumWallet": "No se encontró ninguna billetera de Ethereum.",
+      "walletXpEarned": "+30 XP · Primera billetera conectada",
+      "walletDisconnect": "Desconectar",
+      "walletDisconnectTitle": "¿Desconectar esta billetera?",
+      "walletDisconnectBody": "Puedes volver a conectarla más tarde o a otra cuenta. El XP ya ganado se conserva y esta billetera no volverá a ganar XP.",
+      "walletDisconnectConfirm": "Desconectar billetera",
+      "walletDisconnectCancel": "Cancelar",
+      "walletDisconnected": "Billetera desconectada.",
+      "ocidXpEarned": "+50 XP · OCID conectado",
+      "githubXpEarned": "+50 XP · GitHub conectado",
+      "errors": {
+        "wallet_missing": "No se encontró ninguna billetera. Instala o desbloquea una billetera e inténtalo de nuevo.",
+        "invalid_signature": "La firma no era válida o fue rechazada.",
+        "challenge_expired": "La solicitud de verificación caducó. Inténtalo de nuevo.",
+        "wallet_linked_to_another_account": "Esta billetera ya está vinculada a otra cuenta.",
+        "origin_mismatch": "El origen de la conexión no coincide. Inténtalo de nuevo desde Corelia.",
+        "unauthenticated": "Tu sesión caducó. Inicia sesión de nuevo."
+      },
+      "loading": "Comprobando…",
+      "loadFailed": "No se pudo comprobar el estado de la conexión",
+      "notConnected": "No conectado",
+      "walletCount": "Conectado · {{count}} billetera(s)",
+      "addWallet": "Conectar otra billetera",
+      "chooseWallet": "Elige una billetera",
+      "confirmWallet": "Esperando la confirmación en tu billetera…",
+      "oauthFailed": "Falló la conexión de la cuenta. Inténtalo de nuevo. Si el problema persiste, contacta con soporte para revisar la conexión de Google/GitHub.",
+      "oauthCancelled": "Se canceló la conexión de la cuenta. Puedes volver a intentarlo abajo."
+    },
+    "noData": "No hay datos de XP fiables",
+    "rank": {
+      "title": "Rango de XP",
+      "names": {
+        "starter": "Principiante",
+        "bronze": "Bronce",
+        "silver": "Plata",
+        "gold": "Oro",
+        "platinum": "Platino",
+        "diamond": "Diamante"
+      },
+      "progress": "Progreso hacia el siguiente rango",
+      "remaining": "{{xp}} XP para {{rank}}",
+      "highest": "Rango más alto alcanzado",
+      "allRanks": "Ver todos los rangos",
+      "description": "El rango refleja la actividad acumulada en Corelia. No es una certificación profesional ni un derecho a recompensas."
+    },
+    "leaderboard": {
+      "title": "Clasificación de XP",
+      "description": "Celebra el progreso con la comunidad de aprendizaje de Corelia. Participan los perfiles públicos de estudiantes e instructores.",
+      "period": "Periodo de la clasificación",
+      "week": "Esta semana",
+      "allTime": "Histórico",
+      "weekRange": "{{start}} – {{end}} · UTC",
+      "lifetime": "Todo el XP válido obtenido en Corelia, incluida la actividad histórica.",
+      "yourPosition": "Tu posición",
+      "position": "Posición {{rank}}",
+      "empty": "Aún no hay actividad de XP elegible en este periodo.",
+      "error": "No se pudo cargar la clasificación. Inténtalo de nuevo.",
+      "member": "Miembro de Corelia",
+      "pagination": "Páginas de la clasificación",
+      "page": "{{page}} / {{total}}",
+      "top": "Los {{count}} primeros de {{eligible}} participantes",
+      "reasons": {
+        "private_profile": "Tu perfil es privado, por lo que no aparece en la clasificación. Tu rango personal sigue disponible.",
+        "ineligible_role": "Las cuentas de administrador y de soporte no participan en la clasificación. Tu rango personal sigue disponible.",
+        "no_xp": "Aún no tienes un saldo de XP positivo en este periodo.",
+        "missing_profile": "Tu perfil aún no está disponible."
+      }
+    }
+  },
+  "avatarEditor": {
+    "title": "Editar avatar",
+    "description": "Elige tu aspecto y luego guárdalo en tu perfil.",
+    "edit": "Editar avatar",
+    "back": "Volver al perfil",
+    "preview": "Vista previa del avatar",
+    "randomize": "Aleatorio",
+    "randomizeHelp": "Aleatorio cambia el código del avatar para probar otro aspecto. Las partes y los colores que elegiste se mantienen; los cambios solo se guardan al seleccionar Guardar avatar.",
+    "reset": "Restablecer valores predeterminados",
+    "parts": "Partes",
+    "colors": "Colores",
+    "fromSeed": "Automático según el patrón",
+    "autoPartHelp": "Cada cuenta tiene su propio código de avatar. Elige «Automático según el patrón» para generar esta parte de forma coherente a partir de ese código, o elige una parte concreta para mantenerla fija.",
+    "clear": "Quitar",
+    "save": "Guardar avatar",
+    "saving": "Guardando…",
+    "saved": "Avatar guardado.",
+    "saveFailed": "No se pudo guardar el avatar. Inténtalo de nuevo.",
+    "slots": {
+      "head": "Cabeza y pelo",
+      "body": "Cuerpo",
+      "bottom": "Parte inferior",
+      "item": "Accesorio",
+      "glasses": "Gafas"
+    },
+    "colorsBySlot": {
+      "background": "Fondo",
+      "stroke": "Contorno",
+      "hair": "Pelo",
+      "skin": "Piel",
+      "clothes": "Ropa",
+      "bottom": "Parte inferior"
+    }
+  }
+}

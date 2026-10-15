@@ -1,8 +1,9 @@
 export const PROJECT_CONTENT_LIMITS = { title: 160, summary: 1000, description: 20000, progress: 10000 } as const;
 export type ProjectContent = Record<keyof typeof PROJECT_CONTENT_LIMITS, string>;
-export type ContentLocale = "vi" | "en";
+import { isContentLocale, type ContentLocale } from "../lib/locale.ts";
+export type { ContentLocale };
 export function contentLocale(value: unknown): ContentLocale {
-  if (value !== "vi" && value !== "en") throw new Error("invalid_input:project_locale");
+  if (!isContentLocale(value)) throw new Error("invalid_input:project_locale");
   return value;
 }
 export function projectContent(value: unknown, partial = false): Partial<ProjectContent> {

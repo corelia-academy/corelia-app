@@ -22,6 +22,7 @@ import { ProjectTeamEditor } from "./ProjectTeamEditor";
 import { ProjectTaxonomyPicker } from "./ProjectTaxonomyPicker";
 import { projectDraft, contentForLocale, changePrimaryLocale, type ProjectDraft } from "./projectEditorDraft";
 import { useProjectDraft } from "./useProjectDraft";
+import { CONTENT_LOCALES, LOCALE_META, type ContentLocale } from "@/lib/locales";
 
 export type ProjectEditorSave = { draft: ProjectDraft; teamIds: string[]; removedPaths: string[] };
 
@@ -38,7 +39,7 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
     `corelia:project-draft:${userId}:${project?.id ?? contest?.id ?? "new"}`,
     initial, t("projects.editor.leave"),
   );
-  const [contentLocale, setContentLocale] = useState<"vi" | "en">(draft.primaryLocale);
+  const [contentLocale, setContentLocale] = useState<ContentLocale>(draft.primaryLocale);
   const content = contentForLocale(draft, contentLocale);
   const isPrimary = contentLocale === draft.primaryLocale;
   const [slugTouched, setSlugTouched] = useState(Boolean(draft.slug));
@@ -80,7 +81,7 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
     ...(contest ? [{ label: t("projects.filters.tracks"), done: draft.tracks.length > 0, href: "#project-categories" }] : []),
   ];
   const withinLimits = draft.title.length <= 160 && draft.slug.length <= 160
-    && (["vi", "en"] as const).every(locale => { const value = contentForLocale(draft, locale); return value.title.length <= 160 && value.summary.length <= 1000 && value.description.length <= 20000 && value.progress.length <= 10000; })
+    && CONTENT_LOCALES.every(locale => { const value = contentForLocale(draft, locale); return value.title.length <= 160 && value.summary.length <= 1000 && value.description.length <= 20000 && value.progress.length <= 10000; })
     && [draft.demo, draft.repo, draft.slide, draft.video, draft.pitchVideo].every(value => value.length <= 2048);
   const complete = requirements.every(item => item.done) && withinLimits;
   const mutation = useMutation({
@@ -116,7 +117,7 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
           <section className="space-y-4 rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7">
             <h2 className="text-lg font-semibold">{t("projects.translation.languages")}</h2>
             <div role="group" aria-label={t("projects.translation.languages")} className="flex flex-wrap gap-2">
-              {(["vi", "en"] as const).map(locale => <Button key={locale} type="button" variant="cta" hierarchy={(contentLocale === locale ? "primary" : "secondary")} aria-pressed={contentLocale === locale} onClick={() => setContentLocale(locale)}>{locale === "vi" ? "Tiếng Việt" : "English"}{draft.primaryLocale === locale ? ` · ${t("projects.translation.primary")}` : ""}</Button>)}
+              {CONTENT_LOCALES.map(locale => <Button key={locale} type="button" variant="cta" hierarchy={(contentLocale === locale ? "primary" : "secondary")} aria-pressed={contentLocale === locale} onClick={() => setContentLocale(locale)}><span lang={locale}>{LOCALE_META[locale].endonym}</span>{draft.primaryLocale === locale ? ` · ${t("projects.translation.primary")}` : ""}</Button>)}
             </div>
             <p className="text-sm text-foreground-muted">{t("projects.translation.optional")}</p>
             {!isPrimary ? <Button type="button" variant="cta" hierarchy="secondary" onClick={() => { dismissRecovery(); setDraft(current => changePrimaryLocale(current, contentLocale)); }}>{t("projects.translation.makePrimary")}</Button> : null}

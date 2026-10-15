@@ -1,0 +1,311 @@
+{
+  "eyebrow": "Corelia 채용",
+  "title": "기술 및 Web3 분야 채용",
+  "subtitle": "기술 및 Web3 기업의 엄선된 기술·비기술 직무를 살펴보세요.",
+  "landing": {
+    "title": "{{label}} 채용",
+    "subtitle": "검토를 거친 기술 및 Web3 출처의 엄선된 {{label}} 기회를 둘러보세요."
+  },
+  "search": "검색",
+  "searchPlaceholder": "직무, 스킬, 회사 또는 지역",
+  "results": "채용 {{count}}건",
+  "hiddenCount": "숨김 {{count}}건",
+  "sources": {
+    "connected": "연결된 채용 출처: {{sources}}"
+  },
+  "retry": "다시 시도",
+  "nav": {
+    "label": "채용 탐색",
+    "find": "채용 찾기",
+    "saved": "저장됨",
+    "applied": "지원함",
+    "hidden": "숨김",
+    "market": "시장"
+  },
+  "filters": {
+    "label": "필터",
+    "jobType": "채용 유형",
+    "role": "직무",
+    "domain": "분야",
+    "skill": "스킬",
+    "seniority": "경력 수준",
+    "workMode": "근무 방식",
+    "region": "지역",
+    "employmentType": "고용 형태",
+    "minimumSalary": "최소 급여",
+    "salaryCurrency": "급여 통화",
+    "postedDate": "게시일",
+    "allRoles": "모든 직무",
+    "allJobTypes": "모든 채용 유형",
+    "allDomains": "모든 분야",
+    "allSkills": "모든 스킬",
+    "allSeniorities": "모든 경력 수준",
+    "allWorkModes": "모든 근무 방식",
+    "allRegions": "모든 지역",
+    "allEmploymentTypes": "모든 고용 형태",
+    "allCurrencies": "모든 통화",
+    "anyDate": "전체 기간",
+    "last7Days": "최근 7일",
+    "last30Days": "최근 30일",
+    "clear": "초기화",
+    "more": "필터 더 보기"
+  },
+  "values": {
+    "tech": "기술",
+    "non_tech": "비기술",
+    "intern": "인턴",
+    "fresher": "신입",
+    "junior": "주니어",
+    "mid": "미들급",
+    "senior": "시니어",
+    "lead": "리드 / 스태프",
+    "manager": "매니저",
+    "remote": "원격",
+    "hybrid": "하이브리드",
+    "onsite": "현장 근무",
+    "full_time": "정규직",
+    "part_time": "파트타임",
+    "contract": "계약직",
+    "temporary": "임시직",
+    "internship": "인턴십"
+  },
+  "actions": {
+    "save": "채용 저장",
+    "unsave": "저장 해제",
+    "markApplied": "지원함으로 표시",
+    "applied": "지원함",
+    "hide": "채용 숨기기",
+    "unhide": "채용 다시 표시",
+    "apply": "회사 사이트에서 지원"
+  },
+  "card": {
+    "salaryNotShown": "급여 미공개"
+  },
+  "empty": {
+    "title": "일치하는 채용이 없습니다",
+    "description": "검색 범위를 넓히거나 일부 필터를 해제해 보세요."
+  },
+  "infinite": {
+    "loading": "채용을 더 불러오는 중…",
+    "loadMore": "채용 더 보기",
+    "retry": "채용 다시 불러오기",
+    "ready": "스크롤하면 채용이 자동으로 더 로드됩니다."
+  },
+  "messages": {
+    "loginRequired": "저장, 숨기기, 지원 현황 관리는 로그인 후 이용할 수 있습니다.",
+    "updateFailed": "이 채용을 업데이트할 수 없습니다.",
+    "loadFailed": "채용을 불러올 수 없습니다.",
+    "hidden": "채용을 숨겼습니다.",
+    "viewHidden": "숨긴 채용 보기",
+    "unhidden": "채용이 메인 목록으로 돌아왔습니다."
+  },
+  "detail": {
+    "back": "채용 목록으로 돌아가기",
+    "notFound": "이 채용은 이용할 수 없거나 마감되었습니다.",
+    "about": "직무 소개",
+    "noDescription": "출처에서 전체 설명을 제공하지 않았습니다.",
+    "requiredSkills": "필수 스킬",
+    "preferredSkills": "우대 스킬",
+    "overview": "채용 개요",
+    "salary": "급여",
+    "jobType": "채용 유형",
+    "seniority": "경력 수준",
+    "role": "직무",
+    "source": "출처",
+    "sourceAttribution": "{{source}}에서 제공한 공고입니다."
+  },
+  "user": {
+    "saved": {
+      "title": "저장한 채용",
+      "description": "관심 있는 직무를 한곳에 모아 두고 준비가 되면 다시 확인하세요.",
+      "empty": "아직 저장한 활성 채용이 없습니다."
+    },
+    "applied": {
+      "title": "지원 내역",
+      "description": "지원한 채용을 간단히 기록합니다.",
+      "empty": "지원함으로 표시한 활성 채용이 없습니다."
+    },
+    "hidden": {
+      "title": "숨긴 채용",
+      "description": "숨긴 채용을 확인하고 원하는 채용을 메인 목록으로 되돌리세요.",
+      "empty": "숨긴 채용이 없습니다."
+    }
+  },
+  "market": {
+    "eyebrow": "시장 인사이트",
+    "title": "추적 중인 기술 기업이 채용하는 직무",
+    "subtitle": "Corelia가 엄선한 출처의 기술·비기술 직무에 대한 일일 집계입니다. 성장률 및 비교 지표는 두 비교 기간 모두에서 관측된 출처를 사용합니다.",
+    "cards": {
+      "active": "활성 채용",
+      "new": "오늘 신규",
+      "remote": "원격 비중",
+      "entry": "신입급 채용"
+    },
+    "topRoles": "수요가 많은 직무",
+    "topSkills": "가장 많이 요구되는 스킬",
+    "topDomains": "분야별 채용",
+    "activity": "신규 채용 활동",
+    "activityDescription": "최근 30회 관측 기준 일별 신규 및 마감 채용",
+    "newJobs": "신규 채용",
+    "expiredJobs": "마감된 채용",
+    "roleGrowth": "직무 성장 (비교 가능한 출처)",
+    "skillGrowth": "스킬 성장 (비교 가능한 출처)",
+    "seniorityMix": "경력 수준 구성",
+    "growthPending": "성장률을 표시하려면 일일 스냅샷이 14개 이상 필요합니다.",
+    "disclaimer": "Corelia가 추적하는 출처에서 관측한 데이터이며, 표본 기반 시장 데이터셋으로 전수 조사가 아닙니다.",
+    "empty": {
+      "title": "시장 데이터를 준비하고 있습니다",
+      "description": "관리자가 검증된 회사를 하나 이상 크롤링하고 일일 분석을 새로 고쳐야 합니다."
+    },
+    "chartScale": "채용 · 눈금 0–{{count}}"
+  },
+  "admin": {
+    "title": "채용 운영",
+    "subtitle": "직접 채용 피드와 ATS 대상을 관리하고, 분류를 검토하고, 크롤러를 실행하며, 시장 집계를 확인합니다.",
+    "loading": "채용 운영을 불러오는 중…",
+    "nav": {
+      "overview": "개요",
+      "review": "검토",
+      "sources": "출처",
+      "companies": "ATS 대상",
+      "crawlers": "크롤러 실행",
+      "analytics": "분석"
+    },
+    "overview": {
+      "active": "활성 채용",
+      "review": "검토 필요",
+      "companies": "ATS 대상",
+      "sources": "출처",
+      "failedRuns": "실패한 실행"
+    },
+    "actions": {
+      "run": "지금 실행",
+      "runAll": "모든 출처 실행",
+      "addTarget": "ATS 대상 추가",
+      "publish": "게시",
+      "reject": "거부",
+      "enable": "사용",
+      "disable": "사용 안 함",
+      "verify": "인증",
+      "unverify": "인증 해제",
+      "save": "저장",
+      "cancel": "취소",
+      "edit": "편집",
+      "logs": "로그 보기",
+      "careerPage": "채용 페이지",
+      "clearLogFilter": "모든 실행 표시",
+      "revalidate": "재검증",
+      "revalidateAll": "기한이 된 출처 재검증",
+      "resolve": "해결",
+      "refreshAnalytics": "분석 새로 고침"
+    },
+    "confirm": {
+      "runAll": "사용 설정되었고 기한이 된 모든 채용 출처를 지금 실행할까요? 외부 API 및 AI 할당량이 사용될 수 있습니다.",
+      "revalidateAll": "사용 설정되었고 기한이 된 모든 채용 출처를 지금 재검증할까요? 현재 출처 스냅샷을 가져오지만 AI는 호출하지 않습니다."
+    },
+    "messages": {
+      "runComplete": "크롤러 실행이 완료되었습니다.",
+      "runPartial": "크롤러가 종료되었으며 {{failures}}개 대상이 실패했습니다. 자세한 내용은 실행 로그를 확인하세요.",
+      "noEligibleCompanies": "준비된 적격 대상이 없습니다. 직접 피드는 바로 실행할 수 있으며, ATS 커넥터에는 활성 채용 페이지 URL이 필요합니다.",
+      "policyRequired": "이 출처를 사용하기 전에 출처 정책을 검토하세요.",
+      "saved": "변경 사항이 저장되었습니다.",
+      "analyticsRefreshed": "시장 분석이 새로 고쳐졌습니다.",
+      "actionFailed": "작업을 완료할 수 없습니다."
+    },
+    "review": {
+      "reason": "검토 사유",
+      "title": "채용 제목",
+      "summary": "사실 요약",
+      "primaryRole": "주요 직무 슬러그",
+      "seniority": "경력 수준 슬러그",
+      "roles": "직무 슬러그 (쉼표로 구분)",
+      "domains": "분야 슬러그 (쉼표로 구분)",
+      "requiredSkills": "필수 스킬 슬러그 (쉼표로 구분)",
+      "preferredSkills": "우대 스킬 슬러그 (쉼표로 구분)",
+      "empty": "현재 검토가 필요한 채용이 없습니다."
+    },
+    "columns": {
+      "source": "출처",
+      "type": "유형",
+      "cadence": "주기",
+      "jobsFound": "발견된 채용",
+      "targets": "ATS 대상",
+      "credential": "자격 증명",
+      "policy": "정책 검토됨",
+      "lastRun": "마지막 성공",
+      "lastError": "마지막 오류",
+      "status": "상태",
+      "actions": "작업",
+      "started": "시작",
+      "trigger": "트리거",
+      "target": "대상",
+      "fetched": "가져옴",
+      "published": "게시됨",
+      "review": "검토",
+      "rejected": "거부됨",
+      "aiFailed": "AI 폴백",
+      "failed": "실패"
+    },
+    "status": {
+      "enabled": "사용",
+      "disabled": "사용 안 함",
+      "error": "오류"
+    },
+    "company": {
+      "title": "회사별 ATS 대상",
+      "description": "Greenhouse, Lever, Ashby, SmartRecruiters는 하나의 전역 채용 피드를 제공하지 않습니다. 공개 채용 페이지 URL을 붙여넣으면 Corelia가 ATS와 보드 식별자를 감지합니다. 직접 채용 피드는 이 탭에 항목이 필요하지 않습니다.",
+      "empty": "아직 ATS 대상이 없습니다. 공개된 Greenhouse, Lever, Ashby 또는 SmartRecruiters 채용 페이지 URL을 추가하여 시작하세요.",
+      "add": "ATS 대상 추가",
+      "name": "회사 이름",
+      "slug": "슬러그",
+      "websiteUrl": "웹사이트 URL",
+      "logoUrl": "로고 URL (선택)",
+      "careersUrl": "채용 페이지 또는 ATS URL",
+      "source": "출처 / 어댑터",
+      "identifier": "ATS 보드/사이트 식별자",
+      "domains": "분야 (쉼표로 구분)",
+      "cadence": "크롤링 주기 (시간)",
+      "priority": "우선순위 0–100",
+      "detected": "{{source}} / {{identifier}}을(를) 감지했습니다. 직접 수정할 수 있습니다.",
+      "openJobs": "진행 중인 채용 {{count}}건",
+      "priorityValue": "우선순위 {{priority}}",
+      "verified": "인증됨",
+      "unverified": "미인증",
+      "neverRun": "크롤링한 적 없음",
+      "lastRevalidated": "마지막 재검증"
+    },
+    "source": {
+      "feedTitle": "직접 채용 피드",
+      "feedDescription": "이 어그리게이터와 RSS 피드는 채용을 직접 가져옵니다. 회사를 추가할 필요가 없습니다.",
+      "atsTitle": "ATS 커넥터",
+      "atsDescription": "이 어댑터는 ATS 대상에 설정된 채용 페이지 URL에 대해서만 실행됩니다.",
+      "direct": "직접",
+      "targetCount": "활성 {{active}} / 전체 {{total}}",
+      "credentialConfigured": "설정됨",
+      "credentialMissing": "누락",
+      "addRss": "RSS 피드 연결",
+      "name": "제공자 이름",
+      "slug": "제공자 슬러그",
+      "baseUrl": "제공자 웹사이트 URL",
+      "feedUrls": "RSS/Atom URL (한 줄에 하나씩)",
+      "termsUrl": "약관 또는 피드 문서 URL",
+      "priority": "우선순위 0–100",
+      "attributionText": "출처 표기 문구",
+      "redistributionNotes": "재배포/정책 메모",
+      "policyReviewed": "정책 검토됨",
+      "attributionRequired": "출처 표기 필요",
+      "canonicalRequired": "표준 링크 필요",
+      "allowDescription": "설명 표시 허용",
+      "allowSeo": "SEO 색인 허용"
+    },
+    "analytics": {
+      "comparableNew": "비교 가능한 신규 채용",
+      "comparableTotal": "비교 가능한 활성 채용"
+    },
+    "alerts": {
+      "title": "미해결 운영 알림",
+      "occurrences": "{{count}}회 발생"
+    },
+    "loadFailed": "채용 운영 데이터를 불러올 수 없습니다."
+  }
+}

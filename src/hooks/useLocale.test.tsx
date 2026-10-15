@@ -144,39 +144,35 @@ describe("useLocale hook with revision guard and rollback", () => {
     container.remove();
   });
 
-  it("does not rollback if user made a newer change before earlier request failed", async () => {
-    let rejectFirstCall: ((err: Error) => void) | null = null;
+  it("persists only the latest locale when the user switches quickly", async () => {
+    let releaseFirstCall: (() => void) | null = null;
     updateProfileForUserMock
-      .mockImplementationOnce(
-        () =>
-          new Promise((_, reject) => {
-            rejectFirstCall = reject;
-          }),
-      )
-      .mockResolvedValueOnce({});
+      .mockImplementationOnce(() => new Promise((resolve) => { releaseFirstCall = () => resolve({}); }))
+      .mockResolvedValue({});
 
     await renderTestHook();
 
-    // User clicks 'en' (slow request)
+    // First switch is already writing when the user clicks again.
     let p1: Promise<void> | null = null;
     act(() => {
       p1 = hookValue!.setLanguage("en" as SupportedLanguage);
     });
-
-    // User quickly clicks 'vi' (fast request)
-    await act(async () => {
-      await hookValue!.setLanguage("vi" as SupportedLanguage);
+    let p2: Promise<void> | null = null;
+    act(() => {
+      p2 = hookValue!.setLanguage("vi" as SupportedLanguage);
     });
 
     expect(i18nMock.language).toBe("vi");
 
-    // First request fails now
     await act(async () => {
-      rejectFirstCall?.(new Error("Delayed network failure"));
-      await expect(p1).rejects.toThrow("Delayed network failure");
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      releaseFirstCall?.();
+      await Promise.all([p1, p2]);
     });
 
-    // Language must STILL be 'vi' and not rolled back to something obsolete
+    // Writes are serialized: the superseded one is skipped, the latest lands last.
+    const written = updateProfileForUserMock.mock.calls.map((call) => call[1]);
+    expect(written.at(-1)).toEqual({ locale: "vi" });
     expect(i18nMock.language).toBe("vi");
     const cached = queryClient.getQueryData<{ locale: string }>(
       currentProfileQueryOptions(authUser.current as User).queryKey,

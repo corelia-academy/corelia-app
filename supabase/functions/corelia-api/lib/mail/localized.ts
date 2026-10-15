@@ -1,4 +1,5 @@
 import { isSafeEmailUrl, renderTextTemplate, templateVariables } from "./document.ts";
+import { CONTENT_LOCALES } from "../locale.ts";
 import { normalizeEmailLocale, type EmailLocale } from "./locale.ts";
 
 export type LocalizedEmailCopy = {
@@ -14,7 +15,7 @@ export type LocalizedEmailContent = Partial<Record<EmailLocale, LocalizedEmailCo
 export function readLocalizedEmailContent(value: unknown): LocalizedEmailContent {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
   const result: LocalizedEmailContent = {};
-  for (const locale of ["vi", "en"] as const) {
+  for (const locale of CONTENT_LOCALES) {
     const raw = (value as Record<string, unknown>)[locale];
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
     const row = raw as Record<string, unknown>;
@@ -30,8 +31,8 @@ export function readLocalizedEmailContent(value: unknown): LocalizedEmailContent
 
 export function localizedContentIssues(content: LocalizedEmailContent): string[] {
   const issues: string[] = [];
-  if (!content.vi && !content.en) return ["content.required"];
-  for (const locale of ["vi", "en"] as const) {
+  if (!CONTENT_LOCALES.some((locale) => content[locale])) return ["content.required"];
+  for (const locale of CONTENT_LOCALES) {
     const copy = content[locale];
     if (!copy) continue;
     if (!copy.subject) issues.push(`${locale}.subject`);
@@ -46,7 +47,7 @@ export function localizedContentIssues(content: LocalizedEmailContent): string[]
 }
 
 export function localizedVariables(content: LocalizedEmailContent): string[] {
-  return [...new Set((["vi", "en"] as const).flatMap((locale) => {
+  return [...new Set(CONTENT_LOCALES.flatMap((locale) => {
     const copy = content[locale];
     return copy ? templateVariables(copy.subject, copy.preheader, copy.body_text, copy.cta_label, copy.cta_url, copy.image_url) : [];
   }))];
@@ -60,7 +61,10 @@ export function resolveLocalizedEmailContent(value: unknown, locale: unknown): {
   const content = readLocalizedEmailContent(value);
   const requested = normalizeEmailLocale(locale);
   if (content[requested]) return { copy: content[requested], locale: requested };
-  if (content.vi) return { copy: content.vi, locale: "vi" };
-  if (content.en) return { copy: content.en, locale: "en" };
+  // Fallback order: requested, then English, Vietnamese, then any other authored copy.
+  for (const locale of ["en", "vi", ...CONTENT_LOCALES] as const) {
+    const copy = content[locale];
+    if (copy) return { copy, locale };
+  }
   return null;
 }

@@ -73,8 +73,13 @@
   },
   "language": {
     "switchLabel": "Change language",
-    "vi": "Vietnamese",
-    "en": "English"
+    "en": "English",
+    "zh-CN": "简体中文",
+    "ko": "한국어",
+    "es": "Español",
+    "zh-TW": "繁體中文",
+    "vi": "Tiếng Việt",
+    "ja": "日本語"
   },
   "cropper": {
     "title": "Crop image to 1:1 (Square)",

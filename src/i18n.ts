@@ -1,6 +1,8 @@
-import i18n from "i18next";
+import i18n, { type BackendModule, type ResourceKey } from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
+
+import { CONTENT_LOCALES, parseContentLocale, type ContentLocale } from "@/lib/locales";
 
 import common_vi from "@/locales/vi/common.json";
 import auth_vi from "@/locales/vi/auth.json";
@@ -24,17 +26,43 @@ import feed_en from "@/locales/en/feed.json";
 import jobs_en from "@/locales/en/jobs.json";
 import emailCenter_en from "@/locales/en/emailCenter.json";
 
-export const SUPPORTED_LANGUAGES = ["vi", "en"] as const;
-export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
+export const SUPPORTED_LANGUAGES = CONTENT_LOCALES;
+export type SupportedLanguage = ContentLocale;
 
 export const DEFAULT_LANGUAGE: SupportedLanguage = "vi";
 
+// vi and en ship in the main bundle; every other language loads on demand.
+const lazyBundles = import.meta.glob<ResourceKey>(
+  ["./locales/*/*.json", "!./locales/vi/*.json", "!./locales/en/*.json"],
+  { import: "default" },
+);
+
+const lazyBackend: BackendModule = {
+  type: "backend",
+  init() {},
+  read(language, namespace, callback) {
+    const load = lazyBundles[`./locales/${language}/${namespace}.json`];
+    if (!load) {
+      callback(null, {});
+      return;
+    }
+    load().then(
+      (data) => callback(null, data),
+      (error: unknown) => callback(error instanceof Error ? error : new Error(String(error)), null),
+    );
+  },
+};
+
 void i18n
+  .use(lazyBackend)
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     supportedLngs: [...SUPPORTED_LANGUAGES],
-    fallbackLng: DEFAULT_LANGUAGE,
+    // Keep regional tags intact so zh-CN and zh-TW never collapse into "zh".
+    load: "currentOnly",
+    partialBundledLanguages: true,
+    fallbackLng: { "zh-TW": ["zh-CN", "en"], default: ["en", DEFAULT_LANGUAGE] },
     defaultNS: "common",
     ns: [
       "common",
@@ -81,6 +109,7 @@ void i18n
       order: ["localStorage", "navigator", "htmlTag"],
       lookupLocalStorage: "i18nextLng",
       caches: ["localStorage"],
+      convertDetectedLanguage: (lng: string) => parseContentLocale(lng) ?? lng,
     },
     react: {
       useSuspense: false,

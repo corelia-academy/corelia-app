@@ -1,4 +1,5 @@
 import { contentLocale, projectContent, projectLocales } from "./localization.ts";
+import { isContentLocale } from "../lib/locale.ts";
 import { json } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient, type User } from "../lib/supabase.ts";
 import {
@@ -176,11 +177,11 @@ function normalizeProjectI18n(value: unknown): Record<string, unknown> | null {
   if (typeof value !== "object" || Array.isArray(value)) throw new Error("invalid_input:project_i18n");
   const raw = value as Record<string, unknown>;
   const supported = stringList(raw.supported_locales);
-  if (supported.some((locale) => !["vi", "en"].includes(locale))) {
+  if (supported.some((locale) => !isContentLocale(locale))) {
     throw new Error("invalid_input:project_i18n");
   }
   const primary = String(raw.primary_content_locale ?? "").trim();
-  if (primary && !["vi", "en"].includes(primary)) throw new Error("invalid_input:project_i18n");
+  if (primary && !isContentLocale(primary)) throw new Error("invalid_input:project_i18n");
   if (primary && supported.length && !supported.includes(primary)) {
     throw new Error("invalid_input:project_i18n");
   }

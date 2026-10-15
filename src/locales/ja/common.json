@@ -1,0 +1,1340 @@
+{
+  "appName": "Corelia",
+  "pageTitles": {
+    "home": "ホーム",
+    "login": "ログイン / 新規登録",
+    "confirmSignup": "登録の確認",
+    "signupVerified": "アカウント認証完了",
+    "resetPassword": "パスワードをリセット",
+    "connectingAccount": "アカウントを接続",
+    "unsubscribe": "メールの配信停止",
+    "claimCertificate": "修了証を受け取る",
+    "verifyCertificate": "修了証を確認",
+    "learnCourse": "コースを学習",
+    "learnLesson": "レッスンを学習",
+    "finalAssignment": "最終課題",
+    "componentLibrary": "コンポーネントライブラリ",
+    "feed": "フィード",
+    "courses": "コース",
+    "courseDetail": "コースの詳細",
+    "projectInvite": "プロジェクトへの招待",
+    "coInstructorInvite": "共同講師への招待",
+    "instructorDetail": "講師の詳細",
+    "achievements": "実績",
+    "hackathons": "ハッカソン",
+    "hackathonOverview": "ハッカソンの概要",
+    "hackathonPrizes": "賞",
+    "hackathonTimeline": "タイムライン",
+    "hackathonResources": "リソース",
+    "hackathonProjects": "ハッカソンのプロジェクト",
+    "projects": "プロジェクト",
+    "newProject": "プロジェクトを作成",
+    "editProject": "プロジェクトを編集",
+    "projectDetail": "プロジェクトの詳細",
+    "jobs": "求人",
+    "savedJobs": "保存した求人",
+    "appliedJobs": "応募した求人",
+    "hiddenJobs": "非表示の求人",
+    "jobMarket": "求人マーケット",
+    "jobDetail": "求人の詳細",
+    "search": "検索",
+    "publicProfile": "公開プロフィール",
+    "accountProfile": "プロフィール",
+    "accountCv": "履歴書",
+    "accountSettings": "設定",
+    "accountProjects": "マイプロジェクト",
+    "instructorProfile": "講師プロフィール",
+    "users": "ユーザー",
+    "instructors": "講師",
+    "instructorReview": "講師のレビュー",
+    "activityMilestones": "アクティビティのマイルストーン",
+    "manualMint": "修了証を発行",
+    "branding": "ブランディング",
+    "manageHackathons": "ハッカソンを管理",
+    "newHackathon": "ハッカソンを作成",
+    "editHackathon": "ハッカソンを編集",
+    "manageProjects": "プロジェクトを管理",
+    "manageJobs": "求人を管理",
+    "reviewJobs": "求人をレビュー",
+    "jobSources": "求人の情報源",
+    "companies": "企業",
+    "crawlers": "求人クローラー",
+    "jobAnalytics": "求人分析",
+    "emailCenter": "メールセンター",
+    "teaching": "指導",
+    "manageCourses": "コースを管理",
+    "newCourse": "コースを作成",
+    "previewCourse": "コースをプレビュー",
+    "editCourse": "コースを編集",
+    "notFound": "ページが見つかりません",
+    "maintenance": "システムメンテナンス",
+    "applicationError": "アプリケーションエラー",
+    "notifications": "通知"
+  },
+  "language": {
+    "switchLabel": "言語を変更",
+    "en": "English",
+    "zh-CN": "简体中文",
+    "ko": "한국어",
+    "es": "Español",
+    "zh-TW": "繁體中文",
+    "vi": "Tiếng Việt",
+    "ja": "日本語"
+  },
+  "cropper": {
+    "title": "画像を 1:1（正方形）にトリミング",
+    "hint": "ドラッグして画像を移動し、スライダーで拡大縮小します。",
+    "cancel": "キャンセル",
+    "confirm": "確認"
+  },
+  "actions": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "close": "閉じる",
+    "back": "戻る",
+    "continue": "続行",
+    "confirm": "確認",
+    "edit": "編集",
+    "delete": "削除",
+    "submit": "提出",
+    "retry": "再試行",
+    "copy": "コピー",
+    "download": "ダウンロード",
+    "share": "共有",
+    "search": "検索",
+    "runInRemix": "Remix で実行"
+  },
+  "notFound": {
+    "title": "ページが見つかりません",
+    "description": "このページは存在しないか、移動されました。",
+    "backHome": "ホームに戻る"
+  },
+  "nav": {
+    "groups": {
+      "learning": "学習",
+      "building": "ビルド",
+      "career": "キャリア"
+    },
+    "changelog": "ブログ",
+    "productRoadmap": "リリース",
+    "feedback": "フィードバック",
+    "home": "ホーム",
+    "someone": "誰か",
+    "courses": "コース",
+    "feed": "フィード",
+    "contests": "ハッカソン",
+    "projects": "プロジェクト",
+    "jobs": "求人",
+    "achievements": "実績",
+    "account": "アカウント",
+    "admin": "管理",
+    "instructor": "指導",
+    "instructorManagement": "指導管理"
+  },
+  "account": {
+    "signedInViaEmail": "（メールでログイン中）"
+  },
+  "user": {
+    "fallbackName": "ユーザー",
+    "accountSettings": "アカウント設定"
+  },
+  "header": {
+    "publicProfile": "公開プロフィール",
+    "feedAria": "フィードを開く",
+    "notifications": "通知",
+    "notificationsAria": "通知を開く",
+    "noNotifications": "通知はまだありません。",
+    "accept": "承諾",
+    "decline": "辞退"
+  },
+  "notifications": {
+    "projectInviteTitle": "チームへの招待",
+    "projectInviteBody": "ハッカソンのプロジェクトに招待されました。",
+    "projectInviteProjectLabel": "プロジェクト：{{title}}",
+    "projectInviteHackathonLabel": "ハッカソン：{{title}}",
+    "openHackathon": "ハッカソンを開く",
+    "inviteResolved": "対応済み",
+    "inviteAccepted": "プロジェクトに参加しました。",
+    "inviteDeclined": "招待を辞退しました。",
+    "inviteAcceptFailed": "招待を承諾できませんでした。",
+    "inviteDeclineFailed": "招待を辞退できませんでした。",
+    "coInstructorInviteTitle": "共同講師への招待",
+    "coInstructorInviteBody": "「{{course}}」の共同講師に招待されました。",
+    "coInstructorInviteCourseFallback": "コース",
+    "coInstructorInvitePermissions": "権限：{{list}}",
+    "coInstructorInviteAccepted": "共同講師になりました。",
+    "coInstructorInviteDeclined": "共同講師への招待を辞退しました。",
+    "coInstructorInviteAcceptFailed": "共同講師への招待を承諾できませんでした。",
+    "coInstructorInviteDeclineFailed": "共同講師への招待を辞退できませんでした。",
+    "hackathonRegistrationApprovedTitle": "登録が承認されました",
+    "hackathonRegistrationApprovedBody": "{{hackathonTitle}} への応募が承認されました。",
+    "hackathonRegistrationRejectedTitle": "登録は承認されませんでした",
+    "hackathonRegistrationRejectedBody": "{{hackathonTitle}} への応募は承認されませんでした。",
+    "hackathonRegistrationReviewNote": "レビュアーからのメモ：{{note}}",
+    "hackathonRegistrationFallbackTitle": "ハッカソン",
+    "viewHackathon": "ハッカソンを見る",
+    "hackathonWinnerAwardTitle": "ハッカソンの受賞",
+    "hackathonWinnerAwardBody": "あなたのプロジェクト「{{project}}」が「{{hackathon}}」で「{{award}}」を受賞しました。",
+    "projectFallback": "あなたのプロジェクト",
+    "viewAwardDetails": "結果を見る",
+    "courseAnnouncementTitle": "コースのお知らせ",
+    "markRead": "既読にする",
+    "courseCompletedTitle": "コース修了",
+    "courseCompletedBody": "おめでとうございます！「{{course}}」の進捗が修了として保存されました。",
+    "courseCompletedWithCertificateBody": "おめでとうございます！「{{course}}」を修了しました。Corelia の修了証は、発行されると修了証ボックスに表示されます。",
+    "courseCompletedCourseFallback": "あなたのコース",
+    "viewCompletion": "実績を見る",
+    "courseCertificateIssuedTitle": "コース修了 🎉",
+    "courseCertificateIssuedBody": "「{{course}}」の修了証の準備ができました。OCID を接続すると、Open Campus の修了証を発行できます。",
+    "courseCertificateIssuedCourseFallback": "あなたのコース",
+    "viewCertificate": "修了証を見る",
+    "ocCredentialMintedTitle": "Open Campus 資格情報を発行しました 🎉",
+    "ocCredentialMintedBody": "たった今受け取りました：{{name}}",
+    "ocCredentialMintedBodyOca": "修了証の準備ができました：{{name}}",
+    "viewCredential": "実績を見る",
+    "all": "すべて",
+    "unread": "未読",
+    "markAllRead": "すべて既読にする",
+    "loadError": "通知を読み込めませんでした。",
+    "retry": "再試行",
+    "loadMore": "さらに読み込む",
+    "viewAll": "すべての通知を見る",
+    "member": "メンバー",
+    "actorGroup": "{{name}} さんほか {{count}} 人",
+    "newActivity": "新しいアクティビティがあります",
+    "social": {
+      "project_liked": "{{actors}} があなたのチームのプロジェクト {{title}} に「いいね」しました。",
+      "project_followed": "{{actors}} があなたのチームのプロジェクト {{title}} をフォローしました。",
+      "milestone_liked": "{{actors}} があなたの実績に「いいね」しました。",
+      "user_followed": "{{actors}} があなたをフォローしました。",
+      "project_invite_accepted": "{{actors}} がプロジェクト {{title}} への招待を承諾しました。",
+      "project_invite_declined": "{{actors}} がプロジェクト {{title}} への招待を辞退しました。",
+      "course_invite_accepted": "{{actors}} が {{title}} の共同講師への招待を承諾しました。",
+      "course_invite_declined": "{{actors}} が {{title}} の共同講師への招待を辞退しました。",
+      "submission_received": "{{title}} にレビュー待ちの提出物が {{count}} 件あります。",
+      "submission_approved": "{{title}} の最終課題が承認されました。",
+      "submission_rejected": "{{title}} の最終課題は修正が必要です。開いてフィードバックをご確認ください。",
+      "hackathon_announcement": "主催者からのお知らせ：{{title}}"
+    },
+    "updateError": "通知を更新できませんでした。もう一度お試しください。"
+  },
+  "userProfile": {
+    "tabs": {
+      "overview": "概要",
+      "achievements": "実績",
+      "courses": "コース",
+      "contests": "ハッカソン"
+    },
+    "actions": {
+      "editProfile": "プロフィールを編集",
+      "previewAsGuest": "ゲストとしてプレビュー",
+      "exitPreview": "プレビューを終了",
+      "exitPreviewShort": "プレビューを終了",
+      "viewFollowers": "フォロワーを見る",
+      "viewFollowing": "このユーザーがフォローしているプロフィールを見る"
+    },
+    "labels": {
+      "ocid": "OCID：{{ocid}}",
+      "website": "ウェブサイト",
+      "role": "ロール",
+      "memberSince": "登録日",
+      "followers": "フォロワー",
+      "following": "フォロー中",
+      "profile": "プロフィール"
+    },
+    "errors": {
+      "notFound": "ユーザーが見つかりません",
+      "loadFailed": "プロフィールを読み込めませんでした",
+      "tryAnother": "別のハンドル（ユーザー名または OCID）をお試しください。"
+    },
+    "overview": {
+      "title": "概要",
+      "quickInfo": "基本情報",
+      "empty": "公開されている情報はまだありません。",
+      "instructorHeadlineFallback": "講師"
+    },
+    "skills": {
+      "title": "身につけたスキル",
+      "empty": "スキルはまだありません。"
+    },
+    "activity": {
+      "title": "実績",
+      "empty": "公開マイルストーンはまだありません。"
+    },
+    "private": {
+      "title": "非公開プロフィール",
+      "description": "このアカウントは非公開です。プロフィールの所有者が公開として選んだコンテンツのみここに表示されます。"
+    },
+    "achievements": {
+      "selfOnly": "現在、実績はアカウントの所有者にのみ表示されます。",
+      "openInAchievementsPage": "「実績」を開いて、修了証やバッジをご確認ください。",
+      "cta": "実績を開く",
+      "privateTitle": "実績の詳細は非公開です",
+      "privateDescription": "実績の詳細は、このプロフィールでは公開表示されません。",
+      "openVault": "実績ボックスを開く"
+    },
+    "courses": {
+      "privateByDefault": "受講生のコースは既定で非公開です。",
+      "empty": "公開済みのコースはまだありません。",
+      "updatedAt": "{{date}} 更新"
+    },
+    "contests": {
+      "empty": "公開されているハッカソンはまだありません。",
+      "organizedTitle": "主催したハッカソン",
+      "participatedTitle": "参加したハッカソン",
+      "participatedEmpty": "参加履歴はまだありません。",
+      "fallbackTitle": "ハッカソン",
+      "updatedAt": "{{date}} 更新"
+    },
+    "projects": {
+      "empty": "公開されているプロジェクトはまだありません。",
+      "viewSource": "ソースを見る",
+      "demo": "デモ",
+      "repo": "リポジトリ",
+      "slides": "スライド",
+      "screenshot": "スクリーンショット",
+      "video": "動画"
+    }
+  },
+  "projects": {
+    "translation": {
+      "languages": "コンテンツ言語",
+      "primary": "メイン",
+      "optional": "必須のコンテンツがすべて必要なのはメイン言語のみです。翻訳は任意で、空のフィールドにはメインのコンテンツが表示されます。",
+      "makePrimary": "メイン言語に設定",
+      "translate": "AI で{{target}}に翻訳",
+      "translating": "翻訳中…",
+      "hint": "AI がメインのコンテンツを翻訳します。適用する前に確認して編集してください。翻訳はプロジェクトとともに保存されます。",
+      "preview": "翻訳のプレビュー",
+      "stale": "プロジェクトが変更されました。新しい編集内容を上書きしないよう、もう一度翻訳してください。",
+      "replaceHint": "適用すると、現在の翻訳がこのプレビューに置き換えられます。",
+      "apply": "翻訳を適用",
+      "discard": "翻訳を破棄",
+      "rateLimited": "1 時間に 10 回の翻訳を完了しました。しばらくしてからもう一度お試しください。",
+      "moderationRateLimited": "1 時間内にブロックされた翻訳リクエストが多すぎます。しばらくしてからもう一度お試しください。"
+    },
+    "title": "プロジェクト",
+    "description": "Corelia のエコシステム全体のプロジェクトを集めた公開ギャラリーです。",
+    "empty": "プロジェクトはまだありません。",
+    "loading": "プロジェクトを読み込み中...",
+    "loadMore": "さらに読み込む",
+    "emptyTitle": "プロジェクトが見つかりません",
+    "emptyDescription": "現在のフィルターに一致する公開コンテンツはまだありません。",
+    "emptyHackathonDescription": "この表示で利用できる公開ハッカソンはまだありません。",
+    "emptyCourseDescription": "この表示で利用できる公開コースはまだありません。",
+    "emptyShowcaseDescription": "この表示で利用できる公開ショーケースはまだありません。",
+    "errorTitle": "プロジェクトを読み込めませんでした",
+    "errorDescription": "プロジェクトギャラリーの読み込み中に問題が発生しました。",
+    "retry": "再試行",
+    "byPrefix": "作者：",
+    "viewSource": "ソースを見る",
+    "demo": "デモ",
+    "repo": "リポジトリ",
+    "slides": "スライド",
+    "screenshot": "スクリーンショット",
+    "video": "動画",
+    "sourceHackathon": "ハッカソン",
+    "sourceCourse": "コース",
+    "sourceShowcase": "ショーケース",
+    "filters": {
+      "label": "プロジェクトの出典",
+      "all": "すべて",
+      "hackathon": "ハッカソン",
+      "allHackathons": "すべてのハッカソン",
+      "tracks": "トラック",
+      "sectors": "エンジニアリング分野",
+      "techStacks": "技術",
+      "course": "コース",
+      "showcase": "ショーケース"
+    },
+    "sort": {
+      "label": "並べ替え",
+      "newest": "新しい順",
+      "oldest": "古い順",
+      "mostLiked": "いいねの多い順"
+    },
+    "card": {
+      "noSummary": "要約はまだありません。",
+      "publishedAt": "{{date}} に投稿",
+      "links": "プロジェクトのリンク",
+      "moreLinks": "ほか {{count}} 件のリンク"
+    },
+    "detail": {
+      "backToProjects": "プロジェクトに戻る",
+      "viewSource": "ソースを見る",
+      "demo": "デモ",
+      "repo": "リポジトリ",
+      "slides": "スライド",
+      "screenshot": "スクリーンショット",
+      "video": "動画",
+      "description": "説明",
+      "noDescription": "説明はまだありません。",
+      "notFoundTitle": "プロジェクトが見つかりません",
+      "notFoundDescription": "このプロジェクトは存在しないか、公開されていない可能性があります。",
+      "goBack": "プロジェクトに戻る",
+      "edit": "プロジェクトを編集"
+    },
+    "form": {
+      "back": "戻る",
+      "createTitle": "プロジェクトを作成",
+      "editTitle": "プロジェクトを編集",
+      "title": "プロジェクトのタイトル",
+      "slug": "スラッグ",
+      "summary": "要約",
+      "demoUrl": "デモの URL",
+      "repoUrl": "リポジトリの URL",
+      "slideUrl": "スライドの URL",
+      "videoUrl": "デモ動画の URL",
+      "logo": "プロジェクトのロゴ",
+      "logoHint": "PNG、JPEG、WebP、最大 2 MB。画像はアップロード前に審査されます。",
+      "chooseLogo": "ロゴを選択",
+      "screenshots": "プロジェクトのスクリーンショット",
+      "screenshotsHint": "画像は最大 6 枚、各 5 MB まで。並べ替えができます。",
+      "addScreenshots": "画像を追加",
+      "screenshotAlt": "プロジェクトのスクリーンショット {{index}}",
+      "remove": "削除",
+      "moveUp": "上へ移動",
+      "moveDown": "下へ移動",
+      "logoInvalid": "ロゴは PNG、JPEG、WebP のいずれかで、2 MB 以下にしてください。",
+      "screenshotInvalid": "画像は PNG、JPEG、WebP のいずれかで、5 MB 以下にしてください。",
+      "screenshotLimit": "スクリーンショットは最大 6 枚までアップロードできます。",
+      "mediaUploadFailed": "画像をアップロードできませんでした。",
+      "mediaDeleteFailed": "画像を削除できませんでした。",
+      "visibility": "公開範囲",
+      "create": "プロジェクトを作成",
+      "save": "変更を保存",
+      "saving": "保存中…",
+      "created": "プロジェクトを作成しました。",
+      "saved": "プロジェクトを保存しました。",
+      "saveFailed": "プロジェクトを保存できませんでした。",
+      "notEligible": "まだプロジェクトを作成できません",
+      "notEligibleDescription": "先にハッカソンに登録するか、提出締め切りをご確認ください。",
+      "cannotEdit": "このプロジェクトを編集する権限がありません。",
+      "errors": {
+        "invalidUrl": "入力された URL が無効、または安全ではありません。",
+        "invalidDemoUrl": "デモの URL が無効です（https:// で始まる安全な URL にしてください）。",
+        "invalidRepoUrl": "リポジトリの URL が無効です（https://github.com/owner/repo のような GitHub の URL にしてください）。",
+        "invalidSlideUrl": "スライドの URL が無効です（https:// で始まる安全な URL にしてください）。",
+        "invalidVideoUrl": "動画の URL が無効です（https:// で始まる安全な URL にしてください）。",
+        "unverifiableLink": "リンク先を確認できませんでした。",
+        "unverifiableDemoUrl": "デモの URL にアクセスまたは確認できませんでした。",
+        "unverifiableRepoUrl": "GitHub のリポジトリを確認できませんでした（非公開の可能性があります）。",
+        "unverifiableSlideUrl": "発表スライドの URL にアクセスまたは確認できませんでした。",
+        "linkBlocked": "このリンクは自動のコンテンツモデレーションでブロックされました。",
+        "moderationTitle": "プロジェクトのタイトルがコミュニティガイドラインに適合していません。",
+        "moderationSummary": "プロジェクトの要約がコミュニティガイドラインに適合していません。",
+        "moderationLogo": "ロゴがコミュニティガイドラインに適合していません。",
+        "moderationImage": "アップロードされた画像がコミュニティガイドラインに適合していません。",
+        "aiUnavailable": "自動検証は一時的に利用できません。しばらくしてからもう一度お試しください。",
+        "logoSize": "ロゴのファイルサイズは 2 MB を超えないようにしてください。",
+        "invalidSlug": "スラッグは、英小文字、数字、ハイフンで構成してください。"
+      },
+      "hackathonXpEarned": "+100 XP · 初めてハッカソンのプロジェクトを提出"
+    },
+    "team": {
+      "title": "チームメンバー",
+      "hint": "メンバーは招待を承諾するとプロジェクトに公開表示されますが、プロジェクトを編集することはできません。ポートフォリオの設定は、そのプロジェクトを自分のプロフィールに表示するかどうかのみを制御します。",
+      "hackathonEligibleHint": "このハッカソンに登録したユーザーのみが対象です。",
+      "pickTitle": "チームメンバーを選択",
+      "pickDescription": "このプロジェクトに招待する Corelia アカウントを探します。",
+      "hackathonPickDescription": "登録済みの参加者のみが対象です。最初に表示される 50 人以外は、氏名または @ユーザー名 で検索してください。",
+      "placeholder": "氏名または @ユーザー名 で検索",
+      "searchPlaceholder": "氏名または @ユーザー名 で検索…",
+      "loading": "メンバーを読み込み中…",
+      "empty": "対象のメンバーが見つかりません。",
+      "loadError": "メンバーを読み込めませんでした。もう一度検索してください。",
+      "inviteAfterSave": "招待は、プロジェクトがモデレーションを通過して保存された後に送信されます。",
+      "invited": "招待を送信しました。",
+      "someInvitesFailed": "プロジェクトは作成されましたが、一部の招待を送信できませんでした。",
+      "pending": "保留中の招待",
+      "members": "承諾したメンバー",
+      "moreMembers": "ほか {{count}} 人のメンバー",
+      "revoke": "取り消す",
+      "remove": "削除",
+      "resendEmail": "メールを再送信",
+      "emailSent": "招待メールを送信しました。",
+      "emailAlreadySent": "招待メールはすでに送信済みです。",
+      "emailSkipped": "招待を記録しました。メールの送信はスキップされました。",
+      "emailRateLimited": "メールの配信が制限されています。しばらくしてからもう一度お試しください。",
+      "emailPermanentError": "メールの配信が恒久的に拒否されました。受信者のアドレスをご確認ください。",
+      "emailIndeterminateError": "メールの配信状況が不明です。手動での突合が必要です。",
+      "emailRetryableError": "招待メールを送信できませんでした。しばらくしてからもう一度お試しください。",
+      "limit": "プロジェクトオーナーを含めて最大 {{count}} 人です。",
+      "full": "このプロジェクトは 6 人の上限に達しています。新しい人を追加する前に、メンバーを削除してください。",
+      "actionFailed": "チームを更新できませんでした。",
+      "publicTitle": "プロジェクトチーム",
+      "removeMemberTitle": "現在のチームから削除",
+      "removeMemberConfirm": "このメンバーは現在のチームから削除されます。Corelia は、このチームのメンバーとして認識しなくなります。",
+      "removeMemberAction": "チームから削除",
+      "removingMember": "チームから削除中…",
+      "leaveProject": "チームを抜ける",
+      "leaveProjectTitle": "現在のチームを抜ける",
+      "leaveProjectConfirm": "現在のチームを抜けます。Corelia は、あなたをこのチームのメンバーとして認識しなくなります。",
+      "leaveProjectAction": "チームを抜ける",
+      "leavingProject": "チームを抜けています…",
+      "leftProject": "プロジェクトチームを抜けました。",
+      "leaveProjectFailed": "プロジェクトチームを抜けられませんでした。もう一度お試しください。",
+      "lateMembersHint": "締め切り後は、任意のアカウントを共同作業に招待できます。新しいメンバーが賞や修了証を自動的に受け取ることはありません。"
+    },
+    "social": {
+      "heart": "いいね",
+      "unheart": "いいねを取り消す",
+      "loginToInteract": "いいねするにはログインしてください。",
+      "heartFailed": "いいねを更新できませんでした。",
+      "xpEarned": "+2 XP · プロジェクトにいいね",
+      "xpHint": "最初の対象のいいね：+2 XP（UTC の 1 日あたり最大 5 プロジェクト）",
+      "xpHintRemaining": "最初の対象のいいね：+2 XP · 本日（UTC）の報酬付きいいねは残り {{count}} 回",
+      "xpLimitReached": "本日（UTC）の報酬付きいいね 5 回を使い切りました。いいね自体は引き続きできます。"
+    },
+    "errors": {
+      "loadFailed": "プロジェクトを読み込めませんでした",
+      "link": "{{field}}を確認できませんでした。ログイン不要でアクセスできる HTTPS のリンクを使って、もう一度お試しください。",
+      "moderation": "{{field}}がコンテンツ審査を通過しませんでした。修正してもう一度お試しください。",
+      "existing": "このハッカソンには、すでにプロジェクトがあります。既存のプロジェクトを開いて編集してください。",
+      "slug": "このプロジェクトの URL は利用できません。別のスラッグを選んでください。",
+      "deadline": "提出締め切りを過ぎています。これらの変更は保存できません。",
+      "session": "セッションの有効期限が切れました。プロジェクトを保存するには、もう一度ログインしてください。",
+      "forbidden": "この変更を行う権限がありません。",
+      "taxonomy": "トラック、エンジニアリング分野、技術をそれぞれ 1 つ以上選択してください。",
+      "unavailable": "コンテンツ審査は一時的に利用できません。変更内容は保持されています。しばらくしてからもう一度お試しください。",
+      "hackathonMissing": "このハッカソンは利用できません。フィルターをクリアして他のプロジェクトを見てください。",
+      "mediaExpired": "アップロードした画像の有効期限が切れました。もう一度追加して、プロジェクトを保存してください。",
+      "resourceRequired": "ハッカソンに提出する前に、デモ、リポジトリ、スライド、動画のいずれかを 1 つ以上追加してください。",
+      "contentRequired": "このプロジェクトを共有する前に、{{field}}を入力してください。空白や句読点だけでは内容として扱われません。",
+      "alreadyRegistered": "このハッカソンにはすでに登録済みです。",
+      "submissionUnauthorized": "このハッカソンに提出する権限がありません。",
+      "moderationFlagged": "コンテンツが自動モデレーションでフラグを立てられました。修正してもう一度お試しください。",
+      "userBlocked": "あなたのアカウントは、この操作を行うことが制限されています。",
+      "rateLimitExceeded": "リクエストが多すぎます。しばらく待ってからもう一度お試しください。"
+    },
+    "editor": {
+      "workspace": "プロジェクトワークスペース",
+      "intro": "アイデアや動くプロダクトを共有しましょう。まず必須の項目を仕上げてから、あれば画像やリソースを追加します。",
+      "content": "プロジェクトの内容",
+      "basics": "プロジェクトの概要",
+      "basicsHint": "プロジェクトにわかりやすい名前を付け、解決する課題を説明してください。",
+      "titlePlaceholder": "例：StudyBuddy：勉強仲間を見つける",
+      "summaryPlaceholder": "例：StudyBuddy は、科目やスケジュールが合う勉強グループを学生が見つけられるよう支援します。",
+      "media": "ロゴとスクリーンショット",
+      "links": "デモとリソース",
+      "linksHint": "追加したいリソースを選択してください。すでにお持ちのものだけで構いません。プロジェクトの編集が開いている間は、いつでも追加できます。",
+      "categories": "トラックと技術",
+      "categoriesHint": "トラックを 1 つ以上選択してください。エンジニアリング分野と技術は任意です。候補を検索するか、独自の項目を追加できます。",
+      "taxonomySearch": "検索または独自に追加…",
+      "taxonomyAdd": "「{{value}}」を追加",
+      "taxonomyLimit": "このグループでは最大 20 項目まで選択できます。",
+      "taxonomyLoadError": "候補を読み込めませんでした。独自の項目は追加できます。",
+      "team": "あなたのチーム",
+      "sections": "プロジェクトのセクション",
+      "checklist": "共有する準備はできましたか？",
+      "complete": "完了",
+      "missing": "必須",
+      "publicHint": "ハッカソンのプロジェクトは公開され、このイベントにリンクされます。締め切り後に編集できるかは、イベントの設定によります。",
+      "public": "公開",
+      "unlisted": "限定公開",
+      "private": "非公開",
+      "requiredHint": "続行するには、上の必須項目を入力してください。* が付いた項目は必須です。",
+      "uploading": "画像をアップロードして確認中…",
+      "unsaved": "未保存の変更があります。テキストはこのタブにバックアップされています。",
+      "ready": "保存する前に、プロジェクトを確認してください。",
+      "retryHint": "変更内容は残っています。問題を修正してもう一度お試しください。",
+      "leave": "未保存の変更があります。このページを離れますか？戻るとテキストは復元できますが、未保存の画像は再度追加する必要があります。",
+      "recovered": "未保存のテキストと選択内容を復元しました。確認して、準備ができたら保存してください。",
+      "gallery": "プロジェクトギャラリー",
+      "builder": "ビルダー",
+      "viewProject": "プロジェクトを見る",
+      "clearFilters": "すべてクリア",
+      "filters": "プロジェクトを絞り込み",
+      "overview": "概要",
+      "resources": "リソース",
+      "teamLeader": "チームリーダー",
+      "hackathon": "ハッカソン",
+      "share": "プロジェクトを共有",
+      "copied": "プロジェクトのリンクをコピーしました。",
+      "copyFailed": "コピーできませんでした。ブラウザからアドレスをコピーしてください。",
+      "noTeam": "追加のチームメンバーはまだいません。",
+      "noResources": "デモやリソースのリンクはまだ追加されていません。",
+      "results": "プロジェクト {{count}} 件を読み込み済み",
+      "myProjects": "マイプロジェクト",
+      "updated": "更新",
+      "aboutTeam": "このプロジェクトを作ったビルダーを紹介します。",
+      "winner": "受賞者",
+      "story": "プロジェクトのストーリー",
+      "description": "詳しい説明",
+      "descriptionHint": "課題、ユーザー、解決策、他との違いを説明してください。アイデアの段階であれば、提案するアプローチを説明してください。アーキテクチャやソースコードはまだ必要ありません。",
+      "progress": "ハッカソン中の進捗",
+      "progressHint": "任意。ハッカソン中に行った調査、インタビュー、スケッチ、プロトタイプなどの作業を説明してください。済んだことと、次のステップを分けて書きましょう。",
+      "pitchVideo": "ピッチ動画",
+      "videos": "プロジェクトの動画",
+      "resourceRequired": "デモ、リポジトリ、スライド、動画のいずれか 1 つ以上",
+      "hackathonLinksHint": "デモ、ソースコード、スライド、動画は任意です。これらのリンクがなくても、アイデアを提出できます。",
+      "characterLimit": "最大 {{count}} / {{limit}} 文字",
+      "write": "作成",
+      "preview": "プレビュー",
+      "previewEmpty": "Markdown を書くと、ここにプレビューが表示されます。",
+      "formatting": "Markdown の書式",
+      "markdownText": "テキスト",
+      "markdownheading": "見出し",
+      "markdownbold": "太字",
+      "markdownitalic": "斜体",
+      "markdownlist": "箇条書き",
+      "markdownlink": "リンク",
+      "markdowncode": "インラインコード",
+      "limitHint": "保存する前に、表示されている文字数の上限を超えた項目を短くしてください。",
+      "optional": "任意",
+      "titleHint": "短くて覚えやすい名前を付けてください。ハッカソンの名前を含める必要はありません。",
+      "slugHint": "このアドレスはプロジェクト名から生成されます。必要に応じて編集できます。",
+      "summaryHint": "2〜3 文で書きましょう：誰のためのものか、どんな課題を解決するか、どんなメリットがあるか。",
+      "descriptionPlaceholder": "課題：ユーザーはどんな困りごとを抱えていますか？\n\n解決策：あなたのアイデアは、どのように役立ちますか？\n\n他との違い：このアプローチがなぜ有用なのですか？",
+      "progressPlaceholder": "完了：学生 10 人にアンケートを行い、ユーザーフローをスケッチしました。\n\n学んだこと：ユーザーには、スケジュールが合う勉強グループが必要です。\n\n次：スケッチをユーザーと一緒に試します。",
+      "ideaHint": "まだアイデアの段階ですか？このセクション全体をスキップして、プロジェクトを提出できます。",
+      "checklistHint": "必須なのは、以下の項目のみです。デモとリソースは、完了状況に影響しません。",
+      "addResource": "{{resource}}を追加",
+      "removeResource": "{{resource}}を削除",
+      "httpsHint": "https:// で始まる完全なリンクを入力してください。例：https://example.com/demo。",
+      "resourceAccessHint": "公開、または「リンクを知っている全員」が閲覧できる HTTPS のリンクを使用してください。シークレットウィンドウで開いて、レビュアーが閲覧できることを確認しましょう。",
+      "resourceFields": {
+        "demo": {
+          "label": "ライブデモ",
+          "hint": "レビュアーが試せる、動作するプロダクトのバージョンです。"
+        },
+        "slide": {
+          "label": "スライド / ピッチ資料",
+          "hint": "アイデア、課題、解決策を紹介します。例：Google スライドや Canva を使用。"
+        },
+        "repo": {
+          "label": "GitHub のソースコード",
+          "hint": "課題やファイルへのリンクではなく、github.com/team/project 形式の公開リポジトリです。"
+        },
+        "video": {
+          "label": "デモ動画",
+          "hint": "YouTube、Vimeo、Loom の動画など、プロダクトが動作している様子の録画です。"
+        },
+        "pitchVideo": {
+          "label": "ピッチ動画",
+          "hint": "アイデア、その価値、チームを紹介します。動作するプロダクトは必須ではありません。"
+        }
+      }
+    },
+    "management": {
+      "edit": "編集",
+      "transfer": "ハッカソンに移動",
+      "transferDescription": "プロジェクトと提出物が、選択したハッカソンに移動します。過去の受賞歴はそのまま残ります。",
+      "currentHackathon": "現在のハッカソン",
+      "noHackathon": "ハッカソンなし",
+      "targetHackathon": "移動先のハッカソン",
+      "selectHackathon": "ハッカソンを選択",
+      "transferImpact": "新しいトラックを選んでください。必要に応じて、オーナーが移動先で登録・承認されます。現在の提出物はプロジェクトと一緒に移動します。",
+      "transferSuccess": "プロジェクトをハッカソンに移動しました。",
+      "transferConflict": "プロジェクトのオーナーは、このハッカソンにすでに別の提出物があります。別の移動先を選んでください。",
+      "transferFailed": "プロジェクトを移動できませんでした。ハッカソン、トラック、権限を確認して、もう一度お試しください。",
+      "manage": "プロジェクトを管理",
+      "title": "「{{title}}」を管理",
+      "delete": "プロジェクトを削除",
+      "block": "プロジェクトをブロック",
+      "unblock": "プロジェクトのブロックを解除",
+      "blocked": "ブロック中",
+      "public": "公開",
+      "unlisted": "限定公開",
+      "private": "非公開",
+      "all": "すべてのステータス",
+      "status": "ステータス",
+      "action": "操作",
+      "reason": "理由（必須）",
+      "deleteDescription": "プロジェクトを完全に削除し、リンクされたハッカソンの提出物を取り下げます。この操作は元に戻せません。",
+      "description": "ブロックすると、プロジェクトが公開表示から非表示になり、再公開できなくなります。ブロックを解除すると、再度公開するまで非公開のままです。",
+      "cancel": "キャンセル",
+      "saving": "保存中…",
+      "success": "プロジェクトを更新しました。",
+      "failed": "プロジェクトを更新できません。権限を確認して、もう一度お試しください。",
+      "blockedError": "このプロジェクトはブロックされています。再公開するには、管理者がブロックを解除する必要があります。",
+      "contentError": "公開する前に、要約と詳しい説明を追加してください。",
+      "previous": "前へ",
+      "next": "次へ"
+    }
+  },
+  "search": {
+    "placeholder": "公開コンテンツを検索...",
+    "title": "検索",
+    "queryLine": "「{{query}}」の検索結果",
+    "enterQueryHint": "下にキーワードを入力して、公開コンテンツを探しましょう。",
+    "categories": "検索結果のカテゴリ",
+    "clear": "検索をクリア",
+    "suggest": {
+      "recent": "最近の検索",
+      "trending": "トレンド",
+      "suggestions": "クイック結果",
+      "searchFor": "「{{query}}」を検索",
+      "enterToSeeAll": "Enter キーですべての結果を表示",
+      "viewAllResults": "すべての結果を見る",
+      "noQuickResults": "クイック結果はありません。"
+    },
+    "emptyTitle": "結果が見つかりません",
+    "empty": "結果が見つかりません。",
+    "filteredEmptyTitle": "このカテゴリには結果がありません",
+    "filteredEmpty": "別のカテゴリを選ぶか、別のキーワードをお試しください。",
+    "errors": {
+      "loadFailed": "検索結果を読み込めませんでした"
+    },
+    "group": {
+      "all": "すべて",
+      "project": "プロジェクト",
+      "contest": "ハッカソン",
+      "hackathon": "ハッカソン",
+      "course": "コース",
+      "profile": "プロフィール"
+    }
+  },
+  "tabs": {
+    "menu": "メニュー",
+    "signIn": "ログイン",
+    "signOut": "ログアウト"
+  },
+  "status": {
+    "loading": "読み込み中…",
+    "empty": "データはまだありません",
+    "error": "問題が発生しました"
+  },
+  "errorBoundary": {
+    "title": "問題が発生しました",
+    "sectionMessage": "このコンテンツを読み込めませんでした。",
+    "staleTitle": "Corelia が更新されました",
+    "staleMessage": "最新バージョンを読み込めませんでした。接続を確認して、ページを再読み込みしてください。",
+    "reload": "再読み込み",
+    "goHome": "ホームへ"
+  },
+  "home": {
+    "syncing": "同期中...",
+    "dashboard": "ダッシュボード",
+    "continueLearning": "学習を続ける",
+    "viewCourse": "表示",
+    "exploreCourses": "コースを探す",
+    "allCourses": "すべてのコース",
+    "studentFallback": "受講生",
+    "xp": {
+      "title": "現在の XP",
+      "unranked": "ランク外",
+      "noData": "XP データを利用できません",
+      "loading": "XP を読み込み中...",
+      "loadingDescription": "XP の合計を取得しています。",
+      "joinRank": "{{xp}} XP を獲得すると {{rank}} ランクに入れます",
+      "nextRank": "{{xp}} XP を獲得すると {{rank}} ランクに到達します",
+      "highest": "最高ランクに到達しました",
+      "loadFailed": "XP の情報を読み込めませんでした。"
+    },
+    "xpMissions": {
+      "title": "XP タスク",
+      "sidebarLabel": "XP とタスク",
+      "loading": "確認中...",
+      "statusUnavailable": "ステータスを確認できません",
+      "statusChecking": "確認中",
+      "statusComplete": "完了",
+      "statusNotComplete": "未完了",
+      "repeatable": "繰り返し可能",
+      "dailyProgress": "本日 {{count}}/5",
+      "tasks": {
+        "lesson": {
+          "title": "レッスンを完了する",
+          "detail": "対象のレッスン 1 件につき +10 XP · 1 回のみ"
+        },
+        "quiz": {
+          "title": "クイズに合格する",
+          "detail": "80% 以上で、+20 XP とレッスンの +10 XP"
+        },
+        "course": {
+          "title": "コースを修了する",
+          "detail": "対象のコース 1 件につき +100 XP · 1 回のみ"
+        },
+        "projectLike": {
+          "title": "プロジェクトに「いいね」する",
+          "detail": "1 プロジェクトにつき +2 XP · 1 日最大 5 プロジェクト"
+        },
+        "firstHackathonSubmission": {
+          "title": "ハッカソンのプロジェクトを提出する",
+          "detail": "最初の対象の提出で +100 XP"
+        },
+        "ocidConnected": {
+          "title": "OCID を連携する",
+          "detail": "1 回のみ +50 XP"
+        },
+        "githubConnected": {
+          "title": "GitHub を連携する",
+          "detail": "1 回のみ +50 XP"
+        },
+        "ethereumWallet": {
+          "title": "イーサリアムウォレットを接続する",
+          "detail": "ネットワークごとに 1 回 +30 XP"
+        },
+        "solanaWallet": {
+          "title": "Solana ウォレットを接続する",
+          "detail": "ネットワークごとに 1 回 +30 XP"
+        }
+      }
+    },
+    "meta": {
+      "hours": "{{count}} 時間",
+      "lessonCount": "{{count}} レッスン",
+      "learners": "受講生 {{displayCount}} 人",
+      "remainingDuration": "残り {{hours}} 時間 {{minutes}} 分",
+      "selfPaced": "自分のペースで",
+      "offlinePrefix": "対面授業"
+    },
+    "focus": {
+      "nextLesson": "再開するレッスン：{{title}}",
+      "allLessonsCompleted": "利用可能なすべてのレッスンを修了しました",
+      "lastAccessed": "最終アクセス：{{date}}"
+    },
+    "momentum": {
+      "learning": {
+        "label": "学習",
+        "emptyNote": "追跡中のコースはまだありません"
+      },
+      "contests": {
+        "label": "開催中のハッカソン",
+        "note": "ハッカソン · エコシステムの活動",
+        "emptyNote": "新しいハッカソンはありません"
+      },
+      "certificates": {
+        "label": "発行済みの修了証",
+        "note": "「実績」ですべて表示",
+        "emptyNote": "発行済みの修了証はまだありません"
+      }
+    },
+    "guest": {
+      "heroTitle": "Corelia で Web3 の学習の旅を始めましょう",
+      "heroSubtitle": "コースや開催中のハッカソンを探せます。進捗を保存したり受講登録したりしたいときは、ログインしてください。",
+      "featuredCoursesTitle": "おすすめのコース",
+      "signIn": "ログイン",
+      "openContestsTitle": "開催中のハッカソン",
+      "startLearningTitle": "学習を始める",
+      "startLearningSubtitle": "ログインすると、進捗の保存、修了証の追跡、ハッカソンへの応募ができます。",
+      "quickLinksTitle": "クイックリンク",
+      "valueProps": {
+        "learn": {
+          "label": "基礎を学ぶ",
+          "note": "一歩ずつ学習の勢いをつけられるよう設計されたコースとパスです。"
+        },
+        "build": {
+          "label": "実践で作る",
+          "note": "ハッカソンやコミュニティのプロジェクトで、実践的なスキルを磨きましょう。"
+        },
+        "ship": {
+          "label": "作品を公開する",
+          "note": "ポートフォリオから、Corelia エコシステムでの協業の機会まで。"
+        }
+      },
+      "quickLinks": {
+        "contests": "ハッカソン",
+        "courses": "コース"
+      }
+    },
+    "sections": {
+      "greeting": "{{name}} さん、こんにちは",
+      "greetingSubtitle": "コース、ハッカソン、実績を 1 か所で確認できます。",
+      "featuredOnline": "現在学習中",
+      "featuredOffline": "現在フォロー中",
+      "progress": "進捗",
+      "seeAll": "すべて表示",
+      "enrolledCourses": "受講中のコース",
+      "exploreTitle": "探索",
+      "recommendedTitle": "あなたへのおすすめ",
+      "goToLibrary": "ライブラリへ",
+      "startFromCatalogTitle": "まだ受講登録しているコースはありません。",
+      "startFromCatalogSubtitle": "基礎的なコースを選んで、学習の勢いをつけましょう。",
+      "enrollHint": "最初のコースを受講登録または購入すると、この領域に進捗とショートカットが表示されます。",
+      "profileSetupHintPrefix": "Corelia、講師、サポートスタッフがより良くサポートできるよう、氏名と電話番号を更新してください。",
+      "loadFailed": "コースを読み込めませんでした。"
+    }
+  },
+  "achievements": {
+    "badgeCategory": {
+      "learning": "学習",
+      "milestone": "マイルストーン",
+      "social": "ソーシャル"
+    },
+    "certificates": {
+      "courseCompletionTitle": "コース修了証",
+      "fallbackCourseName": "Corelia のコース",
+      "fallbackInstructorName": "Corelia Academy",
+      "issuedOnPrefix": "{{date}} 発行",
+      "type": {
+        "online": "オンライン",
+        "offline": "オフライン"
+      },
+      "ocAction": {
+        "view": "OC 資格情報を見る",
+        "claim": "OC 資格情報を受け取る"
+      },
+      "viewLarge": "修了証を見る",
+      "downloadPdf": "PDF としてダウンロード",
+      "downloadPng": "PNG としてダウンロード",
+      "downloadError": "修了証を生成できませんでした。もう一度お試しください。",
+      "noTemplate": "このコースにはまだ修了証テンプレートがアップロードされていません。",
+      "downloadTooltip": "ダウンロード"
+    },
+    "badges": {
+      "earnedPrefix": "獲得日：{{date}}",
+      "locked": "ロック中",
+      "pendingClaim": "受け取り待ち",
+      "failedPrefix": "資格情報を作成できませんでした",
+      "pendingPrefix": "資格情報を作成中...",
+      "retry": "再試行",
+      "ocDot": {
+        "claimedTooltip": "OC 資格情報を受け取り済み",
+        "failedTooltip": "資格情報を作成できませんでした",
+        "unclaimedTooltip": "OC 資格情報は未受け取り"
+      }
+    },
+    "milestones": {
+      "courseFirst": {
+        "title": "最初のコース",
+        "description": "最初のコースを受講登録すると、このマイルストーンが解放されます。"
+      },
+      "courseThree": {
+        "title": "コツコツ学ぶ人",
+        "description": "3 つの異なるコースを受講登録すると、このマイルストーンが解放されます。"
+      },
+      "firstCertificate": {
+        "title": "最初の修了証",
+        "description": "コースで最初の修了証を獲得すると、このマイルストーンが解放されます。"
+      },
+      "threeCertificates": {
+        "title": "学習ポートフォリオ",
+        "description": "修了証を 3 つ獲得して、Corelia の実績プロフィールを完成させましょう。"
+      },
+      "next": {
+        "titleFallback": "利用可能なすべてのマイルストーンを解放しました",
+        "descriptionFallback": "新しいコースを修了し続けて、時間をかけて実績プロフィールを充実させましょう。"
+      }
+    },
+    "oc": {
+      "badge": {
+        "claimed": "OC 受け取り済み",
+        "pending": "処理中",
+        "awaitingHolder": "OCID の接続が必要です",
+        "reconciling": "資格情報を確認中",
+        "failed": "失敗",
+        "unclaimed": "未受け取り"
+      },
+      "modal": {
+        "title": "Open Campus 資格情報",
+        "subtitle": "EDUChain ブロックチェーン上の検証可能な資格情報",
+        "kind": {
+          "cert": "修了証",
+          "oca": "OCA · 修了証明書",
+          "hackathonBadge": "ハッカソンバッジ",
+          "milestone": "マイルストーン",
+          "badge": "バッジ"
+        },
+        "date": {
+          "issued": "発行日",
+          "earned": "獲得日"
+        },
+        "statusLabel": "OC のステータス：",
+        "explorerTooltip": "ブロックエクスプローラーで見る",
+        "dashboardCtaTitle": "OCID ダッシュボードで見る",
+        "dashboardCtaSubtitle": "opencampus.xyz · 公開プロフィール",
+        "standardsNote": "この資格情報は、Open Badges と W3C の検証可能な資格情報の標準に準拠し、EDUChain ブロックチェーンに記録されます。独立して検証でき、プラットフォーム間で持ち運べます。",
+        "claim": {
+          "issuing": "資格情報を発行中...",
+          "retry": "再試行 – Open Campus で発行",
+          "issue": "Open Campus で発行",
+          "pending": "ブロックチェーン上で処理中..."
+        },
+        "connectRequired": {
+          "title": "OCID の接続が必要です",
+          "body": "この Open Campus 修了証を発行する前に、OCID を接続してください。元の Corelia 修了証は、修了証ボックスに引き続き保存されます。",
+          "cta": "OCID を接続"
+        },
+        "awaitingHolder": {
+          "title": "資格情報があなたの OCID を待っています",
+          "body": "OCID またはウォレットアドレスを接続すると、すぐにこの資格情報を発行できます。",
+          "cta": "OCID を接続"
+        },
+        "reconciliation": {
+          "title": "資格情報 ID の確認が必要です",
+          "body": "発行のレスポンスに、検証可能なオンチェーンの資格情報 ID が含まれていませんでした。資格情報がすでに存在しているか、レスポンスが不完全な可能性があります。重複リクエストを避けるため、再試行しないでください。Corelia がこの ID を確認する必要があります。"
+        },
+        "review": {
+          "title": "資格情報の内容を確認",
+          "subtitle": "この情報はオンチェーンに永続的に埋め込まれます。発行する前に、すべて正しいことをご確認ください。",
+          "back": "戻る",
+          "confirm": "確認して発行",
+          "credentialLabel": "資格情報",
+          "nameLabel": "資格情報に記載されるあなたの名前",
+          "editName": "名前を編集",
+          "nameMissing": "表示名がまだ設定されていません。資格情報にあなたの名前は表示されません。",
+          "setName": "名前を設定",
+          "permanenceWarning": "発行すると、この資格情報は EDUChain ブロックチェーンに永続的に記録され、編集も取り消しもできません。確定する前に、名前と OCID が正しいことをご確認ください。"
+        },
+        "claimToast": {
+          "pending": "資格情報はブロックチェーン上で処理中です。しばらくしてからもう一度ご確認ください。",
+          "error": {
+            "failed": "資格情報を発行できませんでした。もう一度お試しください。",
+            "notEligible": "資格情報を発行できません。コースを修了し、OCID が接続されていることをご確認ください。"
+          }
+        },
+        "claimedActions": {
+          "downloadPdf": "PDF をダウンロード",
+          "share": "共有"
+        },
+        "learnMore": "Open Campus の達成証明について知る"
+      }
+    },
+    "sync": {
+      "pendingTitle": "資格情報を作成中...",
+      "pendingDescription": "システムが、ブロックチェーン上にあなたの資格情報を記録・作成しています。",
+      "mintedTitle": "資格情報をミントしました！",
+      "mintedDescription": "資格情報が正常に作成され、ブロックチェーンに保存されました。",
+      "failedTitle": "資格情報のミントに失敗しました",
+      "failedDescription": "資格情報の発行中にエラーが発生しました。後でもう一度お試しください。",
+      "retrySuccess": "再試行リクエストを送信しました！",
+      "retryError": "再試行中にエラーが発生しました。"
+    },
+    "loadError": {
+      "body": "実績を更新できませんでした。最後に確認された資格情報のステータスを引き続き表示しています。",
+      "retry": "再試行",
+      "vaultUnavailable": "実績を読み込めませんでした。上の「再試行」を使用してください。"
+    },
+    "stats": {
+      "certificates": "修了証",
+      "oca": "OCA",
+      "badges": "バッジ",
+      "milestones": "マイルストーン",
+      "total": "実績の合計",
+      "ocCredential": "OC 資格情報"
+    },
+    "hero": {
+      "eyebrow": "実績の旅",
+      "title": "マイ実績",
+      "subtitlePrefix": "修了証、バッジ、学習マイルストーンを 1 つの流れで追跡できます。準備ができたら、各実績を次の場所で受け取れます：",
+      "subtitleSuffix": "ブロックチェーン上の検証可能な資格情報を取得しましょう。",
+      "certCount": "修了証 {{count}} 件",
+      "badgeUnlockedCount": "バッジ {{count}} 件を解放",
+      "readyToClaimCount": "受け取り可能 {{count}} 件",
+      "claimedOnOc": {
+        "title": "OC で受け取り済み",
+        "description": "Open Campus に公開された資格情報の数です。"
+      },
+      "pending": {
+        "title": "保留中",
+        "description": "保留中、または発行待ちの資格情報です。"
+      },
+      "nextMilestone": "次のマイルストーン"
+    },
+    "meaning": {
+      "title": "Corelia の資格情報の意味",
+      "p1": "Corelia の実績は、修了したコース、獲得した修了証、解放した技術マイルストーンなど、実際に達成した内容を反映します。",
+      "p2": "修了証とバッジは、正式な学位ではなく、学習ポートフォリオ、ワークショップ、ハッカソン、Web3 の旅を支えるためのものです。"
+    },
+    "useCases": {
+      "title": "活用できる場面",
+      "items": {
+        "0": "個人のポートフォリオ",
+        "1": "ワークショップ",
+        "2": "ハッカソン",
+        "3": "デモデー",
+        "4": "メンターレビュー"
+      },
+      "note": "Open Campus で受け取ると、これらの実績は検証可能な資格情報となり、個人プロフィールでよりわかりやすく共有できます。"
+    },
+    "recent": {
+      "title": "最近解放したもの",
+      "loading": "最新の実績を読み込み中です。",
+      "empty": "解放した実績はまだありません。最初のコースを修了して、この旅を始めましょう。"
+    },
+    "vaults": {
+      "certificates": {
+        "title": "修了証ボックス",
+        "subtitle": "修了したすべてのコースの修了証を保管する場所です。",
+        "countLabel": "修了証 {{count}} 件",
+        "loading": "修了証ボックスを読み込み中です。",
+        "empty": "修了証はまだありません。修了証付きのコースを修了して始めましょう。",
+        "syncTitle": "同期待ちの修了証",
+        "syncDescription": "修了証付きのコースを修了したことを Corelia は確認していますが、ボックスにはまだ発行記録がありません。まず同期して Corelia の修了証を発行してください。OCID は、後で Open Campus で受け取る際にのみ必要です。",
+        "syncCourse": "{{course}} を同期",
+        "syncSuccess": "修了証を発行しました。ボックスがまもなく更新されます。",
+        "syncPending": "修了証は資格の確認待ちです。",
+        "syncError": "現在、修了証を同期できません。"
+      },
+      "badges": {
+        "title": "実績、バッジ、マイルストーン",
+        "subtitle": "少しずつ解放している学習マイルストーンと進捗が含まれます。",
+        "summaryUnlocked": "{{earned}}/{{total}} 件を解放",
+        "loading": "バッジとマイルストーンを読み込み中です。",
+        "earnedSectionTitle": "獲得済み（{{count}}）",
+        "progressGood": "順調に進んでいます"
+      },
+      "onchain": {
+        "title": "オンチェーンボックス",
+        "subtitle": "オンチェーンに記録された Open Campus の実績とバッジです。"
+      },
+      "nextUnlock": {
+        "title": "次に解放できるもの",
+        "allUnlockedNote": "利用可能なすべてのマイルストーンを解放しました。これからは、OC 資格情報の受け取りと実績プロフィールの充実に集中できます。"
+      }
+    },
+    "ocVault": {
+      "tabs": {
+        "all": "すべて",
+        "oca": "達成証明（OCA）",
+        "ocb": "バッジ（OCB）",
+        "milestones": "マイルストーン"
+      },
+      "empty": "このカテゴリにはまだ資格情報がありません。"
+    },
+    "profileVisibility": {
+      "manage": "公開設定を管理",
+      "title": "公開する実績",
+      "description": "Corelia の公開プロフィールに表示する、確認済みの Open Campus 資格情報を選択します。",
+      "selected": "プロフィールに表示中",
+      "selectedCount": "プロフィールに表示中：資格情報 {{count}} 件",
+      "apply": "変更を適用",
+      "applying": "適用中...",
+      "ok": "OK",
+      "empty": "表示できる、受け取り済みの Open Campus 資格情報はまだありません。",
+      "emptyPublic": "公開表示している資格情報はありません。",
+      "saveSuccess": "公開の資格情報ボックスを更新しました。",
+      "saveError": "公開の資格情報ボックスを更新できませんでした。",
+      "publicVaultTitle": "Open Campus 資格情報",
+      "publicVaultDescription": "このメンバーがプロフィールに表示することにした資格情報です。",
+      "selfVaultDescription": "プロフィールに公開表示することにした資格情報です。"
+    },
+    "credentialType": {
+      "oca": "OCA",
+      "badge": "バッジ",
+      "milestone": "マイルストーン"
+    }
+  },
+  "combobox": {
+    "searchPlaceholder": "氏名またはメールアドレスで検索",
+    "emptyLabel": "一致する結果がありません。",
+    "searchLabel": "{{label}}を検索",
+    "tagsLabel": "タグ",
+    "selectOptionLabel": "オプションを選択",
+    "selectionLabel": "{{label}}の選択",
+    "tagOptionsLabel": "タグのオプション",
+    "tagOptionsForLabel": "{{label}}のタグオプション",
+    "hiddenTagsLabel_other": "非表示のタグ {{count}} 件",
+    "done": "完了",
+    "loadMore": "さらに読み込む",
+    "loadingMore": "さらに読み込み中..."
+  },
+  "openCampusConnect": {
+    "header": {
+      "ariaLabel": "OpenCampus を接続",
+      "logoAlt": "OpenCampus"
+    },
+    "modal": {
+      "logoAlt": "OpenCampus",
+      "title": "OpenCampus（OCID）を接続",
+      "description": "接続すると、OCID を使用して、Open Campus で実績の受け取りや検証ができます。",
+      "benefits": {
+        "0": "OCID の ID を Corelia アカウントに連携",
+        "1": "実績を検証可能な資格情報として受け取る",
+        "2": "Open Campus で実績プロフィールを簡単に共有"
+      },
+      "later": "あとで",
+      "learnMoreLink": "詳しく見る",
+      "connect": "OpenCampus を接続",
+      "connecting": "接続中…",
+      "startFailed": "OpenCampus の接続を開始できませんでした。もう一度お試しください。"
+    }
+  },
+  "unsubscribe": {
+    "loading": "処理中...",
+    "successTitle": "配信停止が完了しました",
+    "successBody": "今後、Corelia からこの種類のメール通知は届きません。",
+    "managePreferences": "通知設定を管理",
+    "errorTitle": "リクエストを処理できませんでした",
+    "errorBody": "配信停止のリンクが無効か、有効期限が切れています。「設定」で通知を管理してください。"
+  },
+  "claim": {
+    "loading": "検索中...",
+    "legacyTitle": "保留中の資格情報を受け取る",
+    "legacyBody": "招待に記載のメールアドレスで登録して、資格情報を受け取ってください。新しい招待リンクでは、資格情報のプレビューを確認できます。",
+    "title": "待機中の資格情報があります",
+    "subtitle": "次の資格情報が、{{email}} のアカウントに保存されるのを待っています。",
+    "pendingBadge": "保留中",
+    "cta": "Corelia に参加してすべて受け取る",
+    "emptyTitle": "保留中の資格情報はありません",
+    "emptyBody": "このメールアドレスで保留中の資格情報は見つかりませんでした。誤りだと思われる場合は、Corelia のチームにお問い合わせください。",
+    "errorTitle": "検索できませんでした",
+    "errorBody": "このリンクは無効か、問題が発生しました。受信したメールからもう一度お試しください。"
+  },
+  "verify": {
+    "loading": "確認中...",
+    "formTitle": "修了証を確認",
+    "formHint": "修了証に印刷されているコードを入力して、本物かどうかを確認します。",
+    "inputLabel": "修了証コード",
+    "inputPlaceholder": "CRL-XXXXXXXXXX",
+    "submit": "確認",
+    "validTitle": "有効な修了証です",
+    "validSubtitle": "この修了証は Corelia が発行したもので、現在も有効です。",
+    "revokedTitle": "修了証は失効しています",
+    "revokedBody": "この修了証は {{date}} に失効しており、すでに無効です。",
+    "revokedReason": "理由：{{reason}}",
+    "notFoundTitle": "修了証が見つかりません",
+    "notFoundBody": "このコードに一致する修了証はありません。修了証に印刷されているコードをもう一度ご確認ください。",
+    "errorTitle": "確認できませんでした",
+    "errorBody": "確認中に問題が発生しました。後でもう一度お試しください。",
+    "holderLabel": "発行先",
+    "courseLabel": "コース",
+    "instructorLabel": "講師",
+    "issuedLabel": "発行日",
+    "codeLabel": "修了証コード",
+    "unknownHolder": "氏名は記録されていません",
+    "unknownCourse": "コースは記録されていません",
+    "unknownInstructor": "講師は記録されていません",
+    "viewCourse": "コースを見る",
+    "viewProfile": "プロフィールを見る",
+    "viewOnchain": "Open Campus で見る",
+    "zoomImage": "修了証の画像を拡大"
+  },
+  "pendingCredentialsWelcome": {
+    "title": "資格情報を受け取りました！",
+    "body": "メールアドレス宛てに付与された資格情報が、Corelia アカウントに保存されました。",
+    "cta": "マイ資格情報を見る"
+  },
+  "componentShowcase": {
+    "xpRank": {
+      "title": "XP ランクのバッジ",
+      "criterion": "6 つのランクすべてを 80、160、200 px で表示します。アートワークのないランクは、はてなマークのバッジを使用します。",
+      "description": "ランクとサイズ別にバッジのアートワークを比較します。",
+      "combinationsTitle": "すべてのランクとサイズの組み合わせ",
+      "tableLabel": "ランクとサイズ別の XP バッジ",
+      "rank": "ランク",
+      "sizes": {
+        "small": "小 · 80 px",
+        "medium": "中 · 160 px",
+        "large": "大 · 200 px"
+      }
+    },
+    "fullPageEmptyState": {
+      "title": "ページ全体の空の状態"
+    },
+    "progress": {
+      "title": "進捗",
+      "criterion": "進捗バーと円の Figma サイズ、進捗レベル、カラーモデルです。",
+      "description": "Figma の進捗バーと円の正確なサイズ、状態、色を比較します。",
+      "standardTitle": "標準の進捗バー",
+      "standardCriterion": "376 × 20 px のコンポーネントで、トラックは 328 × 8 px です。",
+      "liveTitle": "操作できる進捗のデモ",
+      "liveCriterion": "−/+ を使うか、パーセントを入力してください。ちょうど 100% で円が完了し、100% を超えると失敗として表示されます。",
+      "liveRangeLabel": "進捗のパーセントを調整",
+      "liveDecrease": "進捗を 1% 減らす",
+      "liveIncrease": "進捗を 1% 増やす",
+      "liveInputLabel": "進捗のパーセント",
+      "liveOverrunHint": "バーは 100% を超えても満タンのままで、円には失敗マークが表示されます。",
+      "liveValue": "{{percentage}}%",
+      "liveBarSample": "{{theme}} · {{percentage}}%",
+      "compactTitle": "コンパクトなレッスン進捗",
+      "compactCriterion": "252 × 15 px のコンポーネントで、トラックは 210 × 4 px です。",
+      "circleTitle": "進捗の円",
+      "circleCriterion": "24 × 24 px。各パーセントは、対応する Figma のカラーバリエーションに従います。",
+      "label": "ラベル",
+      "noFill": "塗りなし",
+      "barSample": "{{theme}} · {{level}} · {{percentage}}% · {{color}}",
+      "circleSample": "{{state}} · {{percentage}}%{{colorText}}",
+      "defaultValue": "デフォルト",
+      "theme": {
+        "neutral": "ニュートラル",
+        "accent": "アクセント",
+        "status": "ステータス"
+      },
+      "level": {
+        "none": "なし",
+        "low": "低",
+        "medium": "中",
+        "good": "良好",
+        "done": "完了"
+      },
+      "circleState": {
+        "notStarted": "未開始",
+        "failed": "失敗",
+        "neutralProgress": "進行中 · ニュートラル",
+        "coloredProgress": "進行中 · カラー",
+        "done": "完了"
+      }
+    },
+    "tooltip": {
+      "title": "ツールチップ",
+      "criterion": "補足テキストの有無それぞれで、9 つの Figma 矢印の位置を表示します。メッセージの内容は呼び出し側が提供します。",
+      "description": "Figma の 18 種類すべての矢印と補足テキストのバリエーションを比較します。",
+      "withoutSupportingText": "補足テキストなし",
+      "withSupportingText": "補足テキストあり",
+      "sampleTitle": "これはツールチップです",
+      "sampleSupportingText": "ツールチップは、ページに常時表示のテキストを追加せずに、要素の意味や機能を説明します。",
+      "arrows": {
+        "none": "矢印なし",
+        "bottomCenter": "下中央",
+        "bottomLeft": "下左",
+        "bottomRight": "下右",
+        "topCenter": "上中央",
+        "topLeft": "上左",
+        "topRight": "上右",
+        "left": "左",
+        "right": "右"
+      }
+    },
+    "stepper": {
+      "title": "ステッパー",
+      "criterion": "横方向と縦方向の進捗の追跡です。使用するページが各ステップの状態を提供します。",
+      "description": "視覚的な進捗トラッカーです。親ページがステップの状態を制御し、フローをいつ進めるかを決定します。",
+      "liveTitle": "親ページが制御するインタラクティブなフロー",
+      "liveCriterion": "「前へ」と「次へ」を使って、親ページがステップの状態を更新する様子を確認できます。",
+      "orientationLabel": "向き",
+      "orientation": {
+        "horizontal": "横",
+        "vertical": "縦"
+      },
+      "styleLabel": "マーカーのスタイル",
+      "style": {
+        "text": "数字",
+        "icon": "アイコン"
+      },
+      "steps": {
+        "account": "アカウント",
+        "accountCaption": "必須の情報",
+        "profile": "プロフィール",
+        "profileCaption": "あなたの情報",
+        "review": "確認",
+        "reviewCaption": "内容を確認"
+      },
+      "state": {
+        "default": "未開始",
+        "focused": "現在のステップ",
+        "passed": "完了",
+        "error": "要対応"
+      },
+      "liveAccessibleLabel": "アカウント設定の進捗",
+      "currentStep": "ステップ {{current}} / {{total}}",
+      "previous": "前へ",
+      "next": "次へ",
+      "parentOwnsState": "各ステップの状態と進めるタイミングはページが決定します。ステッパーは渡された状態を表示するだけです。",
+      "statesTitle": "Figma の状態とレイアウトの比較",
+      "statesCriterion": "2 つの向きとマーカースタイルで、4 つの状態すべてを比較します。",
+      "statesAccessibleLabel": "ステッパーの状態の例",
+      "samples": {
+        "waiting": "待機中",
+        "current": "進行中",
+        "complete": "完了",
+        "problem": "要対応",
+        "optional": "未開始",
+        "inProgress": "現在のステップ",
+        "done": "終了",
+        "checkDetails": "詳細を確認"
+      },
+      "configuration": {
+        "horizontal": "{{style}}スタイル · 横",
+        "vertical": "{{style}}スタイル · 縦"
+      },
+      "usageTitle": "制御された使用例",
+      "usageCriterion": "ページが自身の現在のステップ値から各状態を導き出し、その結果をステッパーに渡します。"
+    }
+  },
+  "maintenance": {
+    "title": "システムメンテナンス中",
+    "body": "Corelia はアップグレード中です。まもなく戻ります。お待ちいただきありがとうございます！"
+  }
+}

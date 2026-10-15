@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { currentProfileQueryOptions } from "@/features/auth/profileQueries";
 import { clearPrivateQueryCache, queryClient } from "@/lib/queryClient";
 import i18n, { DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n";
+import { normalizeLocale, pickBrowserLocale } from "@/lib/locales";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { timedAsync } from "@/lib/perfTelemetry";
 import { isAuthSyncLocaleIgnored, resetManualLocaleIntent } from "@/lib/localeSyncGuard";
@@ -54,7 +55,7 @@ export function AuthSync() {
                 { userId: user.id },
               );
               if (!mounted || runSeq !== currentSeq) return;
-              const locale = (p?.locale ?? DEFAULT_LANGUAGE) as SupportedLanguage;
+              const locale = normalizeLocale(p?.locale, DEFAULT_LANGUAGE);
               if (!isAuthSyncLocaleIgnored(locale)) {
                 void i18n.changeLanguage(locale);
               }
@@ -81,8 +82,7 @@ export function AuthSync() {
             : typeof navigator !== "undefined" && navigator.language
               ? [navigator.language]
               : []) ?? [];
-        const isVi = langs.some((l) => String(l).toLowerCase().startsWith("vi"));
-        const publicLocale: SupportedLanguage = isVi ? "vi" : "en";
+        const publicLocale: SupportedLanguage = pickBrowserLocale(langs);
         if (!isAuthSyncLocaleIgnored(publicLocale)) {
           void i18n.changeLanguage(publicLocale);
         }

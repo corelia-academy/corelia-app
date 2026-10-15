@@ -1,0 +1,311 @@
+{
+  "eyebrow": "Corelia 求人",
+  "title": "テクノロジーと Web3 の求人",
+  "subtitle": "テクノロジーおよび Web3 企業の厳選された技術職・非技術職を探せます。",
+  "landing": {
+    "title": "{{label}}の求人",
+    "subtitle": "審査済みのテクノロジーおよび Web3 の情報源から厳選した{{label}}の求人を閲覧できます。"
+  },
+  "search": "検索",
+  "searchPlaceholder": "職種、スキル、企業、勤務地",
+  "results": "{{count}} 件の求人",
+  "hiddenCount": "{{count}} 件を非表示",
+  "sources": {
+    "connected": "連携中の求人情報源：{{sources}}"
+  },
+  "retry": "再試行",
+  "nav": {
+    "label": "求人ナビゲーション",
+    "find": "求人を探す",
+    "saved": "保存済み",
+    "applied": "応募済み",
+    "hidden": "非表示",
+    "market": "マーケット"
+  },
+  "filters": {
+    "label": "フィルター",
+    "jobType": "求人タイプ",
+    "role": "職種",
+    "domain": "分野",
+    "skill": "スキル",
+    "seniority": "経験レベル",
+    "workMode": "勤務形態",
+    "region": "地域",
+    "employmentType": "雇用形態",
+    "minimumSalary": "最低給与",
+    "salaryCurrency": "給与の通貨",
+    "postedDate": "掲載日",
+    "allRoles": "すべての職種",
+    "allJobTypes": "すべての求人タイプ",
+    "allDomains": "すべての分野",
+    "allSkills": "すべてのスキル",
+    "allSeniorities": "すべての経験レベル",
+    "allWorkModes": "すべての勤務形態",
+    "allRegions": "すべての地域",
+    "allEmploymentTypes": "すべての雇用形態",
+    "allCurrencies": "すべての通貨",
+    "anyDate": "指定なし",
+    "last7Days": "過去 7 日間",
+    "last30Days": "過去 30 日間",
+    "clear": "クリア",
+    "more": "その他のフィルター"
+  },
+  "values": {
+    "tech": "技術職",
+    "non_tech": "非技術職",
+    "intern": "インターン",
+    "fresher": "新卒",
+    "junior": "ジュニア",
+    "mid": "ミドル",
+    "senior": "シニア",
+    "lead": "リード / スタッフ",
+    "manager": "マネージャー",
+    "remote": "リモート",
+    "hybrid": "ハイブリッド",
+    "onsite": "出社",
+    "full_time": "正社員",
+    "part_time": "パートタイム",
+    "contract": "契約社員",
+    "temporary": "臨時",
+    "internship": "インターンシップ"
+  },
+  "actions": {
+    "save": "求人を保存",
+    "unsave": "保存を解除",
+    "markApplied": "応募済みにする",
+    "applied": "応募済み",
+    "hide": "求人を非表示",
+    "unhide": "求人を再表示",
+    "apply": "企業サイトで応募"
+  },
+  "card": {
+    "salaryNotShown": "給与は非公開"
+  },
+  "empty": {
+    "title": "条件に合う求人がありません",
+    "description": "検索条件を広げるか、フィルターをいくつかクリアしてみてください。"
+  },
+  "infinite": {
+    "loading": "求人をさらに読み込み中…",
+    "loadMore": "さらに求人を読み込む",
+    "retry": "求人の読み込みを再試行",
+    "ready": "スクロールすると求人が自動的に追加で読み込まれます。"
+  },
+  "messages": {
+    "loginRequired": "求人の保存、非表示、応募管理にはログインが必要です。",
+    "updateFailed": "この求人を更新できませんでした。",
+    "loadFailed": "求人を読み込めませんでした。",
+    "hidden": "求人を非表示にしました。",
+    "viewHidden": "非表示を表示",
+    "unhidden": "求人をメインリストに戻しました。"
+  },
+  "detail": {
+    "back": "求人一覧に戻る",
+    "notFound": "この求人は利用できないか、掲載期間が終了しています。",
+    "about": "仕事内容",
+    "noDescription": "情報源から詳細な説明が提供されていません。",
+    "requiredSkills": "必須スキル",
+    "preferredSkills": "歓迎スキル",
+    "overview": "求人の概要",
+    "salary": "給与",
+    "jobType": "求人タイプ",
+    "seniority": "経験レベル",
+    "role": "職種",
+    "source": "情報源",
+    "sourceAttribution": "この求人は {{source}} から提供されています。"
+  },
+  "user": {
+    "saved": {
+      "title": "保存した求人",
+      "description": "気になる求人を一か所にまとめて、準備ができたらいつでも戻れます。",
+      "empty": "保存した有効な求人はまだありません。"
+    },
+    "applied": {
+      "title": "応募履歴",
+      "description": "応募した求人の簡単な記録です。",
+      "empty": "応募済みにした有効な求人はありません。"
+    },
+    "hidden": {
+      "title": "非表示にした求人",
+      "description": "非表示にした求人を確認し、メインリストに戻せます。",
+      "empty": "非表示にした求人はありません。"
+    }
+  },
+  "market": {
+    "eyebrow": "マーケットインテリジェンス",
+    "title": "追跡中のテクノロジー企業が採用している職種",
+    "subtitle": "Corelia が厳選した情報源の技術職・非技術職の日次集計です。成長率や比較指標には、2 つの比較期間の両方で観測された情報源を使用しています。",
+    "cards": {
+      "active": "有効な求人",
+      "new": "本日の新着",
+      "remote": "リモートの割合",
+      "entry": "エントリーレベルの求人"
+    },
+    "topRoles": "需要の高い職種",
+    "topSkills": "最も求められるスキル",
+    "topDomains": "分野別の採用",
+    "activity": "新着求人の動向",
+    "activityDescription": "直近 30 回の観測における日別の新着・期限切れ求人",
+    "newJobs": "新着求人",
+    "expiredJobs": "期限切れの求人",
+    "roleGrowth": "職種の成長（比較可能な情報源）",
+    "skillGrowth": "スキルの成長（比較可能な情報源）",
+    "seniorityMix": "経験レベルの構成",
+    "growthPending": "成長率を表示するには、14 日分以上の日次スナップショットが必要です。",
+    "disclaimer": "Corelia が追跡する情報源で観測したデータです。全数調査ではなく、サンプリングした市場データセットです。",
+    "empty": {
+      "title": "マーケットデータを準備中です",
+      "description": "管理者が、検証済みの企業を少なくとも 1 社クロールし、日次分析を更新する必要があります。"
+    },
+    "chartScale": "求人 · 目盛り 0–{{count}}"
+  },
+  "admin": {
+    "title": "求人オペレーション",
+    "subtitle": "直接の求人フィードと ATS ターゲットを管理し、分類をレビューし、クローラーを実行し、市場の集計を確認します。",
+    "loading": "求人オペレーションを読み込み中…",
+    "nav": {
+      "overview": "概要",
+      "review": "レビュー",
+      "sources": "情報源",
+      "companies": "ATS ターゲット",
+      "crawlers": "クローラーの実行",
+      "analytics": "分析"
+    },
+    "overview": {
+      "active": "有効な求人",
+      "review": "要レビュー",
+      "companies": "ATS ターゲット",
+      "sources": "情報源",
+      "failedRuns": "失敗した実行"
+    },
+    "actions": {
+      "run": "今すぐ実行",
+      "runAll": "すべての情報源を実行",
+      "addTarget": "ATS ターゲットを追加",
+      "publish": "公開",
+      "reject": "却下",
+      "enable": "有効にする",
+      "disable": "無効にする",
+      "verify": "検証",
+      "unverify": "検証を解除",
+      "save": "保存",
+      "cancel": "キャンセル",
+      "edit": "編集",
+      "logs": "ログを表示",
+      "careerPage": "採用ページ",
+      "clearLogFilter": "すべての実行を表示",
+      "revalidate": "再検証",
+      "revalidateAll": "期限が来た情報源を再検証",
+      "resolve": "解決",
+      "refreshAnalytics": "分析を更新"
+    },
+    "confirm": {
+      "runAll": "有効で期限が来ているすべての求人情報源を今すぐ実行しますか？外部 API と AI の利用枠を消費する場合があります。",
+      "revalidateAll": "有効で期限が来ているすべての求人情報源を今すぐ再検証しますか？現在の情報源のスナップショットを取得しますが、AI は呼び出しません。"
+    },
+    "messages": {
+      "runComplete": "クローラーの実行が完了しました。",
+      "runPartial": "クローラーが終了しました。{{failures}} 件のターゲットが失敗しました。詳細は実行ログをご確認ください。",
+      "noEligibleCompanies": "実行可能なターゲットがありません。直接フィードはすぐに実行できます。ATS コネクターには有効な採用ページの URL が必要です。",
+      "policyRequired": "この情報源を有効にする前に、情報源のポリシーを確認してください。",
+      "saved": "変更を保存しました。",
+      "analyticsRefreshed": "市場分析を更新しました。",
+      "actionFailed": "操作を完了できませんでした。"
+    },
+    "review": {
+      "reason": "レビューの理由",
+      "title": "求人タイトル",
+      "summary": "事実に基づく要約",
+      "primaryRole": "主な職種のスラッグ",
+      "seniority": "経験レベルのスラッグ",
+      "roles": "職種のスラッグ（カンマ区切り）",
+      "domains": "分野のスラッグ（カンマ区切り）",
+      "requiredSkills": "必須スキルのスラッグ（カンマ区切り）",
+      "preferredSkills": "歓迎スキルのスラッグ（カンマ区切り）",
+      "empty": "現在レビューが必要な求人はありません。"
+    },
+    "columns": {
+      "source": "情報源",
+      "type": "種類",
+      "cadence": "頻度",
+      "jobsFound": "検出した求人",
+      "targets": "ATS ターゲット",
+      "credential": "認証情報",
+      "policy": "ポリシー確認済み",
+      "lastRun": "最終成功",
+      "lastError": "最終エラー",
+      "status": "ステータス",
+      "actions": "操作",
+      "started": "開始",
+      "trigger": "トリガー",
+      "target": "ターゲット",
+      "fetched": "取得済み",
+      "published": "公開済み",
+      "review": "レビュー",
+      "rejected": "却下済み",
+      "aiFailed": "AI フォールバック",
+      "failed": "失敗"
+    },
+    "status": {
+      "enabled": "有効",
+      "disabled": "無効",
+      "error": "エラー"
+    },
+    "company": {
+      "title": "企業ごとの ATS ターゲット",
+      "description": "Greenhouse、Lever、Ashby、SmartRecruiters は、全体で 1 つの求人フィードを提供していません。公開されている採用ページの URL をここに貼り付けると、Corelia が ATS とボード識別子を検出します。直接の求人フィードは、このタブにエントリーを追加する必要はありません。",
+      "empty": "ATS ターゲットはまだありません。公開されている Greenhouse、Lever、Ashby、SmartRecruiters の採用ページ URL を追加して始めましょう。",
+      "add": "ATS ターゲットを追加",
+      "name": "企業名",
+      "slug": "スラッグ",
+      "websiteUrl": "ウェブサイト URL",
+      "logoUrl": "ロゴ URL（任意）",
+      "careersUrl": "採用ページまたは ATS の URL",
+      "source": "情報源 / アダプター",
+      "identifier": "ATS のボード/サイト識別子",
+      "domains": "分野（カンマ区切り）",
+      "cadence": "クロール頻度（時間）",
+      "priority": "優先度 0–100",
+      "detected": "{{source}} / {{identifier}} を検出しました。上書きもできます。",
+      "openJobs": "募集中の求人 {{count}} 件",
+      "priorityValue": "優先度 {{priority}}",
+      "verified": "検証済み",
+      "unverified": "未検証",
+      "neverRun": "クロール履歴なし",
+      "lastRevalidated": "最終再検証"
+    },
+    "source": {
+      "feedTitle": "直接の求人フィード",
+      "feedDescription": "これらのアグリゲーターと RSS フィードは、求人を直接取得します。企業を追加する必要はありません。",
+      "atsTitle": "ATS コネクター",
+      "atsDescription": "これらのアダプターは、「ATS ターゲット」で設定された採用ページの URL に対してのみ実行されます。",
+      "direct": "直接",
+      "targetCount": "有効 {{active}} / 全 {{total}}",
+      "credentialConfigured": "設定済み",
+      "credentialMissing": "未設定",
+      "addRss": "RSS フィードを接続",
+      "name": "プロバイダー名",
+      "slug": "プロバイダーのスラッグ",
+      "baseUrl": "プロバイダーのウェブサイト URL",
+      "feedUrls": "RSS/Atom の URL（1 行に 1 つ）",
+      "termsUrl": "利用規約またはフィードのドキュメント URL",
+      "priority": "優先度 0–100",
+      "attributionText": "帰属表示テキスト",
+      "redistributionNotes": "再配布/ポリシーのメモ",
+      "policyReviewed": "ポリシー確認済み",
+      "attributionRequired": "帰属表示が必要",
+      "canonicalRequired": "正規リンクが必要",
+      "allowDescription": "説明の表示を許可",
+      "allowSeo": "SEO のインデックスを許可"
+    },
+    "analytics": {
+      "comparableNew": "比較可能な新着求人",
+      "comparableTotal": "比較可能な有効求人"
+    },
+    "alerts": {
+      "title": "未解決の運用アラート",
+      "occurrences": "{{count}} 件発生"
+    },
+    "loadFailed": "求人運用データを読み込めませんでした。"
+  }
+}

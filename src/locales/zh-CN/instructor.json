@@ -1,0 +1,1027 @@
+{
+  "sidebar": {
+    "title": "Corelia 讲师",
+    "subtitle": "在一处管理课程、资料和运营。",
+    "createCourse": "创建课程",
+    "courseList": "课程列表",
+    "offlineClasses": "线下课程",
+    "profile": "讲师资料",
+    "contests": "竞赛"
+  },
+  "layout": {
+    "crumbs": {
+      "home": "首页",
+      "teaching": "教学",
+      "createCourse": "创建课程",
+      "offlineClasses": "线下课程",
+      "createCohort": "创建班期",
+      "cohortWorkspace": "班期工作区",
+      "contests": "竞赛",
+      "createContest": "创建竞赛",
+      "contestWorkspace": "竞赛工作区",
+      "profile": "讲师资料",
+      "course": "课程",
+      "edit": "编辑"
+    },
+    "shell": {
+      "newCourse": {
+        "title": "创建新课程",
+        "description": "从零开始设置内容和免费学习旅程。"
+      },
+      "offlineList": {
+        "title": "线下课程",
+        "description": "协调线下班期、日程、地点，以及每次课的录像。"
+      },
+      "newCohort": {
+        "title": "创建新班期",
+        "description": "创建包含日程、Google Meet 和学员路线图的线下班期。"
+      },
+      "cohortWorkspace": {
+        "title": "班期工作区",
+        "description": "在一处管理课次日程、名册和学员路线图。"
+      },
+      "contestsList": {
+        "title": "竞赛",
+        "description": "将黑客松和竞赛作为教学运营的一部分进行管理。"
+      },
+      "newContest": {
+        "title": "创建新竞赛",
+        "description": "在工作区中设置活动、时间线和运营流程。"
+      },
+      "contestWorkspace": {
+        "title": "竞赛工作区",
+        "description": "在一处协调申请、评委、提交和结果。"
+      },
+      "profile": {
+        "title": "讲师资料",
+        "description": "保持您的专业资料和合作信息清晰、及时更新。"
+      },
+      "editCourse": {
+        "titleFallback": "编辑课程",
+        "description": "在一处调整内容、学员和业务配置。"
+      },
+      "courseList": {
+        "title": "课程",
+        "description": "跟踪所有培训产品、发布状态和后续步骤。"
+      }
+    },
+    "hero": {
+      "eyebrow": "教学区"
+    },
+    "badges": {
+      "externalPartner": "外部合作伙伴",
+      "coreliaInstructor": "Corelia 讲师",
+      "adminMode": "管理员模式",
+      "teachingMode": "教学任务"
+    }
+  },
+  "courseNew": {
+    "errors": {
+      "missingProfileName": "请在“账户”中更新您的姓名。",
+      "missingTitle": "请输入课程标题。",
+      "createFailed": "创建课程失败"
+    },
+    "toasts": {
+      "created": "课程创建成功。您可以继续编辑。"
+    },
+    "header": {
+      "subtitle": "在进入详细编辑页面之前，先快速完成初始配置。",
+      "step1": "第 1 步：设置"
+    },
+    "stats": {
+      "statusLabel": "状态",
+      "accessLabel": "访问类型",
+      "ownerLabel": "课程来源",
+      "levelLabel": "级别"
+    },
+    "nav": {
+      "heading": "设置路线图",
+      "description": "完成初始设置后，您将继续完善内容和高级配置。",
+      "generalInfo": "基本信息",
+      "content": "内容与课时",
+      "finalAssignment": "结业作业",
+      "certificate": "证书",
+      "studentManagement": "学员管理",
+      "deleteCourse": "删除课程"
+    },
+    "tip": {
+      "title": "快速设置提示",
+      "description": "在添加章节和课时之前，请先选择标题、slug 和内容语言。"
+    },
+    "section": {
+      "description": "填写基本信息。创建后，您将进入编辑页面，添加章节、课时和高级配置。",
+      "startBadge": "起始步骤"
+    },
+    "labels": {
+      "draft": "草稿",
+      "originExternal": "外部合作伙伴",
+      "originCorelia": "Corelia 讲师",
+      "title": "课程标题",
+      "slug": "Slug",
+      "shortDescription": "简短描述",
+      "description": "描述",
+      "descriptionMarkdownHint": "支持 Markdown（标题、列表、链接、代码块）。",
+      "sources": "来源（外部网址）",
+      "sourceAttributionNote": "来源署名说明",
+      "learningOutcomes": "您将学到什么",
+      "learningOutcomesSubtitle": "本课程将帮助学员达成这些成果。",
+      "learningOutcomesAdd": "添加成果",
+      "skills": "获得的技能",
+      "skillsSubtitle": "完成课程后，这些技能将显示在学员的资料中。",
+      "skillsAdd": "添加技能",
+      "thumbnail": "课程封面图片",
+      "ownerType": "课程来源",
+      "level": "级别",
+      "contentLocales": "课程内容语言",
+      "contentLocalesHint": "选择此课程将提供独立内容的语言。",
+      "primaryContentLocale": "主要内容语言（回退）",
+      "defaultVideoLocale": "默认视频主要语言",
+      "publishedCheckbox": "已发布（在“课程”页面可见）",
+      "externalAggregatedCheckbox": "公开的外部课程"
+    },
+    "hints": {
+      "businessSettingsRestricted": "只有教务人员/管理员可以更改课程来源。",
+      "externalAggregatedDescription": "此课程汇集外部来源的内容（YouTube/指向创作者频道的参考链接）。"
+    },
+    "placeholders": {
+      "title": "例如：React 从入门到精通",
+      "slug": "react-from-beginner-to-advanced",
+      "shortDescription": "一句话描述（可选）",
+      "description": "完整的课程描述...",
+      "sources": "每行一个网址\nhttps://youtube.com/...\nhttps://youtube.com/...",
+      "sourceAttributionNote": "关于汇集来源的公开说明（例如：由创作者的 YouTube 播放列表精选而成）。",
+      "learningOutcomesItem": "例如：解释 Web3 钱包和链上交易的工作原理",
+      "skillItem": "例如：区块链基础"
+    },
+    "actions": {
+      "uploadThumb": "上传封面图片",
+      "uploadingThumb": "正在上传...",
+      "create": "创建课程",
+      "creating": "正在创建...",
+      "cancel": "取消"
+    }
+  },
+  "courseListPage": {
+    "errors": {
+      "loadFailed": "加载列表失败"
+    },
+    "stats": {
+      "total": "课程总数",
+      "published": "已发布",
+      "drafts": "草稿",
+      "free": "免费课程"
+    },
+    "hero": {
+      "title": "您的课程目录",
+      "description": "跟踪发布状态，一键进入编辑。",
+      "create": "创建新课程"
+    },
+    "empty": {
+      "title": "此工作区中还没有课程。",
+      "description": "创建您的第一门课程，开始搭建课程目录。",
+      "createFirst": "创建您的第一门课程"
+    },
+    "coursePills": {
+      "published": "已发布",
+      "draft": "草稿"
+    },
+    "courseCards": {
+      "pricingLabel": "定价模式",
+      "free": "免费",
+      "instructorLabel": "讲师",
+      "you": "您"
+    },
+    "actions": {
+      "viewCourseTitle": "打开课程页面",
+      "previewDraftTitle": "预览草稿",
+      "viewCourse": "查看课程",
+      "preview": "预览",
+      "edit": "编辑"
+    }
+  },
+  "courseEdit": {
+    "i18n": {
+      "supportedLocalesLabel": "内容语言",
+      "supportedLocalesHint": "启用/停用此课程的内容语言。学习进度在各语言之间共享。",
+      "primaryLocaleLabel": "主要内容语言",
+      "editingLocaleLabel": "正在编辑的内容语言",
+      "editingNonPrimaryHint": "您正在编辑翻译。主要语言的内容保持独立。",
+      "translationModeBadge": "翻译模式",
+      "currentLocaleBadge": "当前",
+      "primaryEditingHint": "您正在直接编辑源语言。",
+      "translationEditingHint": "您正在编辑从{{source}}到{{target}}的翻译。"
+    },
+    "defaults": {
+      "lessonTitle": "课时"
+    },
+    "coInstructors": {
+      "label": "联合讲师",
+      "hint": "添加联合讲师以显示在课程页面上，并可选择授予有限的访问权限。",
+      "dialogTitle": "选择联合讲师",
+      "dialogDescription": "只能选择讲师目录中的讲师。",
+      "fallbackName": "讲师",
+      "placeholder": "选择联合讲师…",
+      "searchPlaceholder": "按姓名/邮箱搜索…",
+      "emptyLabel": "没有匹配的讲师。",
+      "loadingDirectory": "正在加载讲师…",
+      "permissions": {
+        "students": "查看学员",
+        "submissions": "审核提交",
+        "content": "查看内容",
+        "certificates": "查看证书",
+        "pricing": "查看定价"
+      },
+      "showOnCoursePage": "显示在课程详情页",
+      "willInviteBadge": "保存时将发出邀请",
+      "inviteSent": "已发送 {{count}} 份联合讲师邀请",
+      "inviteFailed": "{{count}} 份联合讲师邀请发送失败",
+      "inviteEmailFailed": "已创建应用内邀请，但无法向 {{count}} 位收件人发送邮件。",
+      "inviteRevoked": "邀请已撤销",
+      "pendingTitle": "待处理的邀请",
+      "pendingHint": "这些人已被邀请但尚未接受。接受之前，他们无法访问课程。",
+      "pendingExpiresAt": "{{date}} 到期",
+      "revokeInvite": "撤销"
+    },
+    "sponsors": {
+      "label": "赞助商",
+      "hint": "添加要显示在课程侧边栏中的赞助商（徽标、名称、网站、描述）。",
+      "countLabel": "{{count}} 位赞助商",
+      "empty": "暂无赞助商。",
+      "actions": {
+        "add": "添加赞助商",
+        "uploadLogo": "上传徽标",
+        "uploading": "正在上传...",
+        "save": "保存赞助商",
+        "cancel": "取消"
+      },
+      "fields": {
+        "logo": "徽标",
+        "name": "赞助商名称",
+        "website": "网站",
+        "description": "描述"
+      },
+      "dialog": {
+        "title": "赞助商"
+      },
+      "confirm": {
+        "remove": "移除此赞助商？"
+      },
+      "errors": {
+        "missingName": "请输入赞助商名称。",
+        "invalidWebsite": "网站必须是有效的网址（https://...）。",
+        "uploadLogoFailed": "上传赞助商徽标失败。"
+      },
+      "toasts": {
+        "saved": "赞助商已保存。",
+        "removed": "赞助商已移除。",
+        "logoUploaded": "徽标已上传。"
+      }
+    },
+    "partners": {
+      "label": "合作伙伴",
+      "hint": "添加要显示在课程侧边栏中的合作伙伴（徽标、名称、网站、描述）。",
+      "countLabel": "{{count}} 位合作伙伴",
+      "empty": "暂无合作伙伴。",
+      "actions": {
+        "add": "添加合作伙伴",
+        "uploadLogo": "上传徽标",
+        "uploading": "正在上传...",
+        "save": "保存合作伙伴",
+        "cancel": "取消"
+      },
+      "fields": {
+        "logo": "徽标",
+        "name": "合作伙伴名称",
+        "website": "网站",
+        "description": "描述"
+      },
+      "dialog": {
+        "title": "合作伙伴"
+      },
+      "confirm": {
+        "remove": "移除此合作伙伴？"
+      },
+      "errors": {
+        "missingName": "请输入合作伙伴名称。",
+        "invalidWebsite": "网站必须是有效的网址（https://...）。",
+        "uploadLogoFailed": "上传合作伙伴徽标失败。"
+      },
+      "toasts": {
+        "saved": "合作伙伴已保存。",
+        "removed": "合作伙伴已移除。",
+        "logoUploaded": "徽标已上传。"
+      }
+    },
+    "partnerBrand": {
+      "label": "提供方 / 合作伙伴",
+      "hint": "对于合作伙伴自有课程，这些信息将显示在课程侧边栏中。",
+      "actions": {
+        "uploadLogo": "上传徽标",
+        "uploading": "正在上传...",
+        "save": "保存合作伙伴信息"
+      },
+      "fields": {
+        "name": "合作伙伴名称",
+        "website": "网站",
+        "description": "描述"
+      },
+      "errors": {
+        "invalidWebsite": "网站必须是有效的网址（https://...）。",
+        "uploadLogoFailed": "上传合作伙伴徽标失败。"
+      },
+      "toasts": {
+        "saved": "合作伙伴信息已保存。",
+        "logoUploaded": "徽标已上传。"
+      }
+    },
+    "errors": {
+      "loadCourseFailed": "加载课程失败",
+      "refreshTotalFailed": "更新失败",
+      "uploadThumbnailFailed": "上传课程封面图片失败",
+      "updateFailed": "更新失败",
+      "processFailed": "操作失败",
+      "missingCertificateTemplate": "启用证书颁发后，请上传证书模板图片。",
+      "missingCertificateTemplateCta": "证书",
+      "uploadCertTemplateFailed": "上传证书模板失败",
+      "clearCertTemplateFailed": "取消证书失败",
+      "addSectionFailed": "添加章节失败",
+      "addLessonFailed": "添加课时失败",
+      "deleteSectionFailed": "删除章节失败",
+      "deleteLessonFailed": "删除课时失败",
+      "deleteCourseFailed": "删除课程失败",
+      "reorderLessonsFailed": "无法更新课时顺序",
+      "reorderSectionsFailed": "无法更新章节顺序",
+      "prepareLessonFailed": "无法准备该课时。",
+      "externalSourcesRequired": "启用“公开的外部课程”后，请至少输入一个来源网址。"
+    },
+    "page": {
+      "back": "返回"
+    },
+    "business": {
+      "ownershipLabel": "课程来源",
+      "ownershipAdminOnly": "只有管理员可以更新课程来源。",
+      "ownershipCurrent": "当前：{{type}}"
+    },
+    "externalCourse": {
+      "toggleLabel": "公开的外部课程",
+      "toggleHint": "如果此课程汇集了外部来源，请启用；来源和署名将显示在公开页面上。",
+      "sourcesLabel": "参考来源（网址）*",
+      "sourcesPlaceholder": "每行一个网址\nhttps://youtube.com/...\nhttps://youtube.com/...",
+      "sourcesRequired": "启用“公开的外部课程”时必填。",
+      "attributionLabel": "来源署名说明",
+      "attributionPlaceholder": "关于汇集来源的公开说明（例如：由创作者的 YouTube 播放列表精选而成）。"
+    },
+    "toasts": {
+      "totalDurationRefreshed": "总时长已更新。课程列表页现在应能正确显示。",
+      "saved": "更改已保存。",
+      "assignmentApproved": "提交已通过。",
+      "assignmentRejected": "提交已被拒绝。",
+      "certificateIssued": "证书已颁发。",
+      "assignmentConfigSaved": "作业设置已保存。",
+      "certTemplateUploaded": "证书模板已上传。",
+      "certTemplateCleared": "证书已取消。"
+    },
+    "confirm": {
+      "deleteSection": "删除此章节及其中的所有课时？",
+      "deleteLesson": "删除此课时？",
+      "deleteCourse": "删除整个课程及所有内容？此操作无法撤销。"
+    },
+    "labels": {
+      "published": "已发布",
+      "draft": "草稿",
+      "uploadThumb": "上传封面图片",
+      "uploadingThumb": "正在上传...",
+      "save": "保存更改",
+      "saving": "正在保存...",
+      "saveInfo": "基本信息已保存。",
+      "saveAssignment": "保存作业设置",
+      "saveCertificate": "证书设置已保存。",
+      "reload": "重新加载",
+      "loading": "加载中...",
+      "updating": "更新中…",
+      "updateTotalDuration": "刷新总时长",
+      "add": "添加",
+      "adding": "正在添加…",
+      "addSection": "添加章节",
+      "addingSection": "正在添加...",
+      "uploadTemplate": "上传模板",
+      "uploadingTemplate": "正在上传..."
+    },
+    "certificate": {
+      "sectionTitle": "证书模板",
+      "sectionDescription": "上传证书背景图（PNG/JPG）。学员姓名将放置在您设定的位置，方便学员下载并分享到社交媒体。",
+      "templateLabel": "证书模板",
+      "uploadTemplate": "上传模板",
+      "uploadingTemplate": "正在上传...",
+      "viewCurrentTemplate": "查看当前模板",
+      "nameXLabel": "学员姓名位置（距左侧 %）",
+      "nameYLabel": "学员姓名位置（距顶部 %）",
+      "nameColorLabel": "姓名文字颜色",
+      "nameColorHint": "叠加在证书上的学员姓名颜色。",
+      "afterUploadHintPrefix": "上传后，请调整两个“姓名位置”字段（距左侧 % / 距顶部 %）。",
+      "fileFormatHint": "格式：PNG 或 JPG。",
+      "disabledHint": "配置证书模板前，请先在“基本信息”标签页中启用“此课程颁发结业证书”。",
+      "disabledCta": "前往基本信息",
+      "setupLeaveWarning": "证书设置将被取消，您需要重新开始。要离开此页面吗？",
+      "saveLayout": "保存证书版式",
+      "nameGroupTitle": "学员姓名",
+      "nameSizeLabel": "姓名文字大小（占宽度 %）",
+      "footerGroupTitle": "页脚区块（颁发日期 / 证书编号）",
+      "footerGroupHint": "使用 Google Sans 印刷。此处显示的验证码就是二维码所链接的内容。",
+      "footerXLabel": "页脚位置（距左侧 %）",
+      "footerYLabel": "页脚位置（距顶部 %）",
+      "footerSizeLabel": "页脚文字大小（占宽度 %）",
+      "footerColorLabel": "页脚文字颜色",
+      "qrGroupTitle": "验证二维码",
+      "qrGroupHint": "扫描二维码即可验证证书。最小尺寸为 3%，最大为 30%。",
+      "qrXLabel": "二维码中心（距左侧 %）",
+      "qrYLabel": "二维码中心（距顶部 %）",
+      "qrSizeLabel": "二维码大小（占宽度 %）",
+      "previewTitle": "版式预览",
+      "previewNoTemplate": "上传证书模板后即可查看预览。",
+      "previewHint": "示例数据。真实证书会使用学员姓名、颁发日期和验证码。",
+      "previewSampleName": "张三"
+    },
+    "questionGenerator": {
+      "deleteQuestion": "删除题目",
+      "questionContentPlaceholder": "题目内容...",
+      "optionIsCorrect": "选项 {{id}} 为正确答案",
+      "optionPlaceholder": "选项 {{id}}...",
+      "explanationToggle": "答案解析",
+      "explanationPlaceholder": "说明为什么该答案正确（可选）...",
+      "replaceDraftConfirm": "生成新题目并替换当前草稿？未保存的修改将会丢失。"
+    },
+    "certificateGuide": {
+      "title": "如何创建模板",
+      "sizeHint": "推荐尺寸：1600×1200 px（4:3 横向）或 1200×1600 px（3:4 纵向）。",
+      "nameAreaHint": "在图片上为学员姓名留出空白区域（例如居中或下三分之一处）。",
+      "afterUploadHint": "上传后，请调整两个“姓名位置”字段（距左侧 % / 距顶部 %），使学员姓名位于空白区域。50% 即居中。",
+      "downloadSample": "下载示例模板（SVG）"
+    },
+    "ocb": {
+      "title": "Open Campus 链上凭证",
+      "subtitle": "符合条件的学员可以在“成就”页面领取属于自己的可验证链上凭证。铸造前，他们会确认自己的姓名和 OCID：不会自动颁发任何凭证。",
+      "loading": "正在加载凭证配置…",
+      "loadFailed": "无法加载凭证配置。",
+      "adminManagedTitle": "配置由管理员管理",
+      "adminManagedDescription": "只有管理员可以为本课程配置、启用或停用 Open Campus 凭证。如需颁发或更改学员凭证，请联系管理员。",
+      "unsupportedCourseTitle": "此课程不支持 Open Campus 凭证",
+      "unsupportedCourseDescription": "目前只有 Corelia 自有课程可以配置 Open Campus 凭证。",
+      "statusActive": "已启用",
+      "statusInactive": "未配置",
+      "mintToggleLabel": "允许链上铸造",
+      "kind": {
+        "label": "凭证类型",
+        "oca": {
+          "label": "OCA：成就证书",
+          "desc": "证书形式的链上凭证。适合课程结业和认证。"
+        },
+        "ocb": {
+          "label": "OCB：Open Campus 徽章",
+          "desc": "技能徽章形式的凭证。适合较短的成就和主题掌握。"
+        }
+      },
+      "configTitle": "凭证详情",
+      "requirementsTitle": "资格要求",
+      "confirmDeactivateWithIssuances": "已有 {{count}} 位学员持有此凭证。关闭后将停止向新学员颁发：不会撤销已颁发的凭证。继续关闭吗？",
+      "leaveWithoutSavingWarning": "您有未保存的 OpenCampus 凭证更改。现在离开不会向学员颁发链上凭证。仍要离开吗？",
+      "noPermission": "您没有权限为此课程配置凭证。",
+      "nameLabel": "凭证名称",
+      "descriptionLabel": "描述",
+      "badgeImageLabel": "徽章图片",
+      "imageHint": "推荐：1600×1200 px（横向）或 1200×1600 px（纵向）。用作 OpenCampus 上的链上徽章图案。",
+      "uploadBadge": "上传图片",
+      "uploading": "正在上传…",
+      "uploadOk": "图片已上传。",
+      "uploadFailed": "上传失败。",
+      "onchainCertLabel": "链上证书模板（Web3）",
+      "onchainCertHint": "用于在链上铸造凭证。不得包含为学员姓名预留的空位，以保护学员隐私。",
+      "uploadOnchainCert": "上传链上模板",
+      "onchainCertUploaded": "链上 OCA 模板已上传。",
+      "onchainCertUploadFailed": "上传链上模板失败。",
+      "onchainCertRequired": "保存 OCA 配置前，请上传链上模板。",
+      "imageRequired": "保存前请上传凭证图片。",
+      "completionPctLabel": "最低课时完成度",
+      "requireAssignmentPassLabel": "需要结业作业通过审核",
+      "requireAssignmentLabel": "需要结业作业通过审核",
+      "minScoreLabel": "最低作业分数",
+      "identifierPrefixLabel": "标识符前缀",
+      "identifierHint": "请使用易于识别的项目前缀（例如 corelia:unihackfest-2026）。前 25 个字符会显示在 Open Campus 中，后面跟随唯一编码。",
+      "identifierLocked": "已有 {{count}} 个凭证。前缀已锁定，以防止重复铸造。",
+      "save": "保存凭证配置",
+      "saving": "正在保存…",
+      "saved": "凭证配置已保存。",
+      "saveFailed": "无法保存凭证配置。"
+    },
+    "form": {
+      "titleLabel": "课程标题",
+      "shortDescriptionLabel": "简短描述",
+      "shortDescriptionPlaceholder": "一句话描述（可选）",
+      "descriptionLabel": "描述",
+      "descriptionMarkdownHint": "支持 Markdown（标题、列表、链接、代码块）。",
+      "learningOutcomesLabel": "您将学到什么",
+      "learningOutcomesSubtitle": "本课程将帮助学员达成这些成果。",
+      "learningOutcomesItemPlaceholder": "例如：解释 Web3 钱包和链上交易的工作原理",
+      "learningOutcomesAdd": "添加成果",
+      "skillsLabel": "获得的技能",
+      "skillsSubtitle": "请使用宽泛的领域级技能（例如：Web3、区块链、DeFi）。完成后将显示在学员资料中。",
+      "skillsItemPlaceholder": "例如：Web3",
+      "skillsAdd": "添加技能",
+      "thumbnailLabel": "课程封面图片",
+      "levelLabel": "级别"
+    },
+    "sidebar": {
+      "editingLanguage": "编辑语言",
+      "primaryBadge": "主要",
+      "navTitle": "编辑器导航",
+      "navHint": "依次完成各配置组，在发布前完善课程。",
+      "nav": {
+        "info": "基本信息",
+        "content": "内容与课时",
+        "assignments": "结业作业",
+        "certificate": "证书",
+        "credentials": "OpenCampus 凭证",
+        "students": "管理学员",
+        "danger": "删除课程",
+        "announcements": "公告"
+      }
+    },
+    "content": {
+      "heading": "课程内容",
+      "savingOrder": "正在保存课时顺序...",
+      "dragHint": "拖动圆点图标可在每个章节内调整课时顺序，也可以按需使用上/下箭头。",
+      "sectionsToggleLabel": "按章节组织",
+      "saveStructure": "保存结构",
+      "sectionsToggleHint": "启用后可将课时分组到各章节。停用则为平铺的课时列表。",
+      "addSectionHeading": "添加新章节",
+      "lessonTitlePlaceholder": "课时标题（可选）",
+      "lessonMinutesPlaceholder": "时长（分钟）：如果无法获取 YouTube 时长，请在此输入",
+      "sectionTitlePlaceholder": "章节标题"
+    },
+    "questions": {
+      "number": "第 {{number}} 题",
+      "loadFailed": "无法加载已有题目。",
+      "loadFailedBeforeGenerate": "已有题目加载失败时，无法生成题目。",
+      "loadFailedBeforeSave": "题目加载处于错误状态时，无法保存题目。",
+      "retry": "重试",
+      "generateFailed": "无法生成题目。",
+      "fillRequired": "请填写题目和至少两个答案选项。",
+      "saveFailed": "无法保存题目。",
+      "lessonTitle": "课时题目：{{title}}",
+      "sectionTitle": "测验题目：{{title}}",
+      "lessonDescription": "为本课时创建测验题目。您可以选择本章节的其他课时作为内容来源。",
+      "sectionDescription": "使用 AI 根据课时内容生成测验题目。保存前可以编辑。",
+      "sourceLessons": "来源课时",
+      "currentLesson": "本课时",
+      "count": "题目数量",
+      "generate": "生成题目",
+      "generating": "正在生成...",
+      "sources": "内容来源",
+      "loading": "正在加载题目...",
+      "empty": "根据课时内容生成题目，或在下方手动添加您自己的 A/B/C/D 题目。",
+      "emptyInline": "暂无题目。现在添加，或先创建测验再生成题目。",
+      "add": "添加题目",
+      "remove": "移除题目",
+      "questionPlaceholder": "题目文本...",
+      "optionPlaceholder": "选项 {{option}}...",
+      "correctAnswer": "选项 {{option}} 为正确答案",
+      "explanationPlaceholder": "答案解析（可选）",
+      "cancel": "取消",
+      "saving": "正在保存...",
+      "saveCount": "保存 {{count}} 道题目",
+      "savedLesson": "已为本课时保存 {{count}} 道题目。",
+      "savedSection": "已为本章节保存 {{count}} 道题目。"
+    },
+    "sections": {
+      "notTranslated": "未翻译",
+      "edit": "编辑",
+      "questions": "题目",
+      "editTitle": "编辑章节",
+      "titleLabel": "标题",
+      "descriptionLabel": "描述",
+      "descriptionPlaceholder": "简短的章节描述（可选）",
+      "cancel": "取消",
+      "save": "保存"
+    },
+    "descriptionGenerator": {
+      "trigger": "生成",
+      "translateTrigger": "使用 AI 翻译",
+      "courseTitle": "生成课程描述",
+      "courseDescription": "将根据本课程中已有的课时起草描述。",
+      "translateCourseTitle": "AI 翻译课程描述",
+      "translateCourseDescription": "保存前，将现有内容从{{source}}翻译为{{target}}。",
+      "sectionTitle": "生成章节描述",
+      "sectionDescription": "将根据本章节内的课时起草描述。",
+      "translateSectionTitle": "AI 翻译章节描述",
+      "translateSectionDescription": "保存前，将现有内容从{{source}}翻译为{{target}}。",
+      "lessonTitle": "生成课时描述",
+      "lessonDescription": "描述将结合课时的视频内容和已有的课时文案。",
+      "translateLessonTitle": "AI 翻译课时内容",
+      "translateLessonDescription": "保存前，将现有内容从{{source}}翻译为{{target}}。",
+      "currentCourseSource": "现有来源内容",
+      "translateDialogHint": "您可以先从源语言快速翻译，再在保存前润色结果。",
+      "sourcesTitle": "用于生成的来源内容",
+      "emptySources": "暂无可用的来源内容。",
+      "previewTitle": "描述草稿",
+      "previewPlaceholder": "点击“生成”以创建草稿...",
+      "generate": "生成描述",
+      "generating": "正在生成...",
+      "translating": "正在翻译...",
+      "translateApplied": "已应用翻译。准备好后请检查并保存。",
+      "cancel": "取消",
+      "useDescription": "使用此描述",
+      "warnings": {
+        "limited": "当前来源内容有限。请检查内容是否足以生成高质量的描述。",
+        "notEnough": "请检查内容是否足以生成高质量的描述。"
+      },
+      "sourceKinds": {
+        "shortDescription": "简短描述",
+        "longDescription": "详细描述",
+        "transcript": "视频内容",
+        "missing": "缺少来源"
+      },
+      "errors": {
+        "generic": "目前无法生成描述。",
+        "noBundle": "翻译响应中不包含内容包。"
+      }
+    },
+    "translationCoverage": {
+      "title": "翻译进度",
+      "description": "快速查看{{target}}版本中哪些部分已填写，哪些可以从{{source}}翻译。",
+      "completed": "已填写 {{completed}} / {{total}} 个字段",
+      "readyToTranslate": "{{count}} 个字段可翻译",
+      "states": {
+        "done": "已填写",
+        "ready": "可翻译",
+        "missing": "无来源"
+      },
+      "messages": {
+        "filled": "此字段在 {{locale}} 语言中已有内容。",
+        "sourceAvailable": "此字段在当前语言中为空，但 {{locale}} 中已有来源内容。",
+        "noSource": "目前还没有足够清晰的来源内容可供自动翻译。"
+      },
+      "actions": {
+        "openField": "打开此字段"
+      },
+      "fields": {
+        "title": "课程标题",
+        "shortDescription": "简短描述",
+        "description": "描述",
+        "learningOutcomes": "您将学到什么",
+        "assignmentTitle": "作业标题",
+        "assignmentDescription": "作业描述",
+        "assignmentInstructions": "作业说明"
+      }
+    },
+    "lessons": {
+      "formatLabel": "课时类型",
+      "formatVideo": "视频课时",
+      "formatArticle": "文字课时",
+      "formatQuiz": "测验",
+      "formatPractice": "实操",
+      "formatHint": "文字课时仅使用文字内容：无需 YouTube 视频。",
+      "articleContentRequired": "请为文字课时添加课时内容（Markdown 或简短描述）。",
+      "practiceContentRequired": "请为此实操课时添加实操说明。",
+      "practiceSourceLabel": "来源课时",
+      "practiceSourceNone": "无来源课时",
+      "practiceSourceHint": "选择此实操活动所基于的课时。",
+      "lessonQuestions": "题目",
+      "lessonQuestionsTitle": "课时题目",
+      "lessonQuestionsHint": "题目附属于本课时，不会改变其课时类型或已有视频。",
+      "quizConversionBlocked": "内容课时无法转换为测验。请打开“题目”，将测验附加到此课时。",
+      "quizSetupTitle": "测验题目",
+      "quizSetupHint": "根据本章节的课时生成题目，或手动添加您自己的 A/B/C/D 题目。",
+      "quizCreateHint": "创建此测验课时后，您可以从已有课时生成题目，也可以手动添加题目。",
+      "notTranslated": "未翻译",
+      "edit": "编辑",
+      "editTitle": "编辑课时详情",
+      "create": "添加课时",
+      "createTitle": "创建课时",
+      "createAction": "创建课时",
+      "creating": "正在创建...",
+      "titleLabel": "标题",
+      "youtubeLabel": "YouTube 链接",
+      "showPreview": "预览",
+      "hidePreview": "隐藏",
+      "draftBadge": "更新中",
+      "youtubePlaceholder": "YouTube 链接（可选）",
+      "videoPrimaryLocaleLabel": "视频主要语言",
+      "videoPrimaryLocaleHint": "用于说明视频的音频/配音语言；可以与内容语言不同。",
+      "durationMinutesLabel": "时长（分钟）",
+      "durationHint": "如果留空，系统会在可能时尝试从 YouTube 获取时长。",
+      "nonVideoDurationHint": "可选的预估值，用于课程时长和学员学习规划。",
+      "previewFreeLabel": "启用免费试看课时",
+      "previewBadge": "试看",
+      "previewFreeBadge": "免费试看",
+      "shortDescriptionLabel": "简短描述",
+      "shortDescriptionPlaceholder": "一两句话（可选）",
+      "markdownLabel": "详细描述（Markdown）",
+      "markdownHint": "支持 Markdown（标题、列表、链接、代码块）。",
+      "practiceMarkdownLabel": "实操说明（Markdown）",
+      "practiceMarkdownHint": "写明学员应完成的任务、交付物、提示或反思步骤。",
+      "resourcesLabel": "资源",
+      "resourceTitlePlaceholder": "资源标题",
+      "resourceUrlPlaceholder": "https://...",
+      "addResource": "添加资源",
+      "previewTitle": "预览",
+      "previewEmpty": "暂无详细描述。",
+      "cancel": "取消",
+      "save": "保存",
+      "segmentStartLabel": "片段开始",
+      "segmentEndLabel": "片段结束",
+      "segmentStartPlaceholder": "例如 0:00",
+      "segmentEndPlaceholder": "例如 15:30（留空表示到视频结尾）",
+      "segmentHint": "时间戳用于确定本课时占同一 YouTube 视频的哪一段（M:SS 或 H:MM:SS）。",
+      "progressLockBanner": "已有 {{count}} 位学员在此课时有学习进度。您可以编辑文字和片段时间戳，但不能更换为其他视频。",
+      "youtubeLockedHint": "YouTube 链接已锁定，因为学员在此课时已有学习进度。",
+      "cannotChangeVideoWithProgress": "学员在此课时已有学习进度时，无法更换为其他 YouTube 视频。",
+      "segmentEndInvalid": "片段结束必须是晚于开始时间的有效时间戳。"
+    },
+    "longVideo": {
+      "title": "长 YouTube 视频",
+      "editReplaceTitle": "长视频：替换此课时？",
+      "editReplaceIntro": "您已切换到另一个视频（约 {{duration}}）。可以保持为一个课时、根据说明中的章节拆分，或手动定义片段。拆分会移除当前课时，并在同一位置插入新的课时。",
+      "intro": "此视频约 {{duration}}。可以保持为一个课时、根据说明中的时间戳自动拆分，或手动定义片段。",
+      "foundChapters": "在视频说明中找到的时间戳：",
+      "noChapters": "在说明中未找到时间戳章节。请手动拆分，或保持为单个课时。",
+      "keepSingle": "保持为一个课时",
+      "autoSplit": "根据章节创建课时",
+      "manualSplit": "手动拆分",
+      "manualTitle": "定义片段",
+      "manualAddRow": "添加片段",
+      "manualConfirm": "创建课时",
+      "manualStartPlaceholder": "开始（例如 0:00）",
+      "manualEndPlaceholder": "结束（可选）",
+      "back": "返回",
+      "dismiss": "取消",
+      "manual": {
+        "invalidTimestamp": "请输入有效的时间戳，例如 15:30 或 1:20:00。",
+        "invalidEnd": "结束时间必须晚于开始时间。",
+        "invalidRange": "每个片段都需要有效的时长。",
+        "overlap": "片段不能重叠。",
+        "needRow": "请至少添加一个片段。"
+      }
+    },
+    "assignments": {
+      "completionRequirement": "配置结业作业后，学员必须提交并获得批准才能完成课程。",
+      "titleLabel": "作业标题",
+      "titlePlaceholder": "例如：结业项目（留空 = 不要求）",
+      "descriptionLabel": "描述 / 要求",
+      "descriptionPlaceholder": "说明学员需要提交什么...",
+      "instructionsLabel": "说明（可选）",
+      "instructionsPlaceholder": "给学员的补充指导...",
+      "reviewApprove": "通过",
+      "reviewReject": "拒绝",
+      "settingsTitle": "作业设置",
+      "submissionsTitle": "学员提交",
+      "noSubmissions": "暂无提交。",
+      "noSubmissionsHint": "暂无提交。请在上方的“作业设置”中添加作业标题并保存，以启用提交要求。",
+      "columns": {
+        "student": "学员",
+        "content": "内容",
+        "submittedAt": "提交时间",
+        "status": "状态",
+        "actions": "操作"
+      },
+      "lessonProgress": "课时 {{progress}}%",
+      "attachments": "{{count}} 个附件",
+      "viewSubmission": "查看完整提交",
+      "attachment": "附件 {{number}}",
+      "unavailableAttachment": "附件 {{number}} 的链接无效",
+      "feedback": "审核反馈"
+    },
+    "publishing": {
+      "publishedHint": "已发布（在课程页面可见）",
+      "hasCertificateHint": "此课程颁发结业证书",
+      "certificateConfiguredLockedHint": "已配置证书模板。无法在此处停用证书颁发。",
+      "updatingHint": "此课程正在更新（向学员显示提示）"
+    },
+    "students": {
+      "empty": "此课程暂无学员报名。",
+      "columns": {
+        "student": "学员",
+        "progress": "进度",
+        "assignment": "作业",
+        "certificate": "证书",
+        "enrolledAt": "报名时间",
+        "lastAccess": "上次访问"
+      },
+      "status": {
+        "approved": "已通过",
+        "rejected": "需要修改",
+        "pending": "待处理",
+        "notSubmitted": "未提交",
+        "notEligible": "不符合条件",
+        "issue": "颁发",
+        "issued": "已颁发"
+      }
+    },
+    "danger": {
+      "deleteCourseTitle": "删除课程？",
+      "dangerZoneTitle": "危险操作",
+      "deleteWarning": "删除课程将移除所有内容（章节、课时）。此操作无法撤销。",
+      "deleteConfirmWarning": "所有内容（章节、课时）将被永久删除。此操作无法撤销。",
+      "deleteButton": "删除"
+    },
+    "stats": {
+      "sections": "章节",
+      "lessons": "课时",
+      "students": "学员",
+      "submissions": "提交"
+    },
+    "tooltips": {
+      "dragReorder": "拖动以重新排序",
+      "moveUp": "上移",
+      "moveDown": "下移"
+    },
+    "a11y": {
+      "dragSection": "拖动以重新排序章节 {{title}}",
+      "moveSectionUp": "上移章节 {{title}}",
+      "moveSectionDown": "下移章节 {{title}}",
+      "dragLesson": "拖动以重新排序课时 {{title}}",
+      "moveLessonUp": "上移课时 {{title}}",
+      "moveLessonDown": "下移课时 {{title}}",
+      "removeOutcome": "移除学习成果 {{number}}",
+      "removeSkill": "移除技能 {{number}}",
+      "deleteSection": "删除章节 {{title}}",
+      "editSponsor": "编辑赞助商 {{title}}",
+      "removeSponsor": "移除赞助商 {{title}}",
+      "editPartner": "编辑合作伙伴 {{title}}",
+      "removePartner": "移除合作伙伴 {{title}}"
+    },
+    "access": {
+      "noPermission": "您没有编辑此课程的权限。",
+      "backToTeaching": "教学"
+    },
+    "announcements": {
+      "sectionTitle": "公告",
+      "heroTitle": "向学员发送公告",
+      "heroDescription": "撰写一封邮件，发送给本课程所有已报名的学员。",
+      "recipientCount": "将有 {{count}} 位学员收到邮件",
+      "recipientCountZero": "暂无学员报名",
+      "subjectLabel": "邮件主题",
+      "subjectPlaceholder": "输入主题...",
+      "bodyLabel": "消息",
+      "bodyPlaceholder": "在此撰写您的公告。段落之间请空一行。",
+      "bodyHint": "仅支持纯文本：会保留换行。无需编写 HTML。",
+      "bodyPreviewToggle": "预览",
+      "bodyPreviewBrandedNote": "预览（发送时会自动添加页眉和页脚）：",
+      "sendButton": "发送公告",
+      "confirmTitle": "发送公告？",
+      "confirmSubjectLabel": "主题：",
+      "confirmDescription": "邮件将发送给 {{count}} 位已报名的学员。",
+      "confirmButton": "立即发送",
+      "cancelButton": "取消",
+      "resultSent": "成功发送 {{sent}}/{{total}} 封邮件。",
+      "resultFailed": "{{failed}} 封邮件发送失败。",
+      "resultSkipped": "无法发送给 {{skipped}} 位收件人。",
+      "resultError": "发送出错：{{reason}}",
+      "systemUnavailable": "邮件系统目前不可用。未发送任何邮件。请联系系统管理员获取帮助。",
+      "notConfigured": "尚未配置邮件。请检查 RESEND_API_KEY。"
+    }
+  },
+  "learningPrinciples": {
+    "eyebrow": "CORELIA · 创作指南",
+    "title": "学习设计原则",
+    "intro": "设计能帮助学员理解、独立完成并应用技能的内容。从具体的成果出发，提供练习，并用学员的作品来改进教学。",
+    "scope": "面向讲师和内容作者 · 研究资料审阅于 2026 年 9 月 22 日",
+    "contents": "本页内容",
+    "sections": {
+      "principles": "7 条核心原则",
+      "example": "示例章节",
+      "formats": "选择课时形式",
+      "checklist": "发布前检查",
+      "sources": "研究来源"
+    },
+    "evidenceNote": "证据摘要描述的是研究。“在 Corelia 中应用”部分是针对当前系统的创作建议，并非针对 Corelia 学员的试验结论。",
+    "sourceLink": "研究依据",
+    "application": "在 Corelia 中应用",
+    "watchFor": "请注意：",
+    "principles": {
+      "outcome": {
+        "title": "从学员将能做到什么开始",
+        "evidence": "学习目标、学习活动和评估应针对同一项能力。[CMU：设计指南]",
+        "application": "使用可观察的行为：“在不使程序崩溃的情况下处理无效输入。”选择能体现该成果的作业，再让学员为这项作业做好准备。",
+        "limit": "关于编写程序的目标需要编写和运行的练习。仅考查定义的测验只能衡量其中一部分。"
+      },
+      "prior": {
+        "title": "检查起点",
+        "evidence": "先备知识既可能促进也可能阻碍新的学习。[CMU：研究综述]",
+        "application": "说明所需的知识和工具。从一个小问题或小任务开始，并在初学者可能缺少先修知识的地方链接到复习材料。",
+        "limit": "用它来引导学习，而不是排除学员。不要假设每个人都懂终端或 Git。"
+      },
+      "model": {
+        "title": "展示推理过程，然后留出练习空间",
+        "evidence": "IES 在其 2007 年指南中以中等证据推荐交替使用范例解答和独立练习。",
+        "application": "在文章中解释每个步骤为何重要。随后在“实操”中安排缺失步骤、调试任务和指导更少的变式。",
+        "limit": "根据经验调整支持程度。熟练的学员可能不需要再看一个范例。"
+      },
+      "retrieve": {
+        "title": "让学员回忆并解释",
+        "evidence": "IES 在其 2007 年指南中，将重温内容的测验和深度解释性问题评为强证据。",
+        "application": "在揭晓答案前，先请学员预测或解释。测验的干扰项应基于常见误解，再解释答案。",
+        "limit": "识别答案并不能证明具备独立解决问题的能力。请在“实操”中加入自我解释提示。"
+      },
+      "space": {
+        "title": "间隔一段时间后重温知识",
+        "evidence": "IES 在其 2007 年指南中以中等证据推荐将学习分散在不同时间。",
+        "application": "在之后的测验中重温前面的章节，并在结业作业中再次运用该技能。在说明中建议学员休息后再回来。",
+        "limit": "章节的边界并不保证存在时间间隔。本页面不提供复习调度器；固定的天数安排并非对每个人都最优。"
+      },
+      "feedback": {
+        "title": "让反馈有助于修改",
+        "evidence": "以目标为导向的练习以及与标准挂钩的反馈有助于学习。[CMU：研究综述]",
+        "application": "解释测验答案并提供相关提示。在结业作业审核中，指出做得好的地方、具体问题和下一步检查。使用现有的修订流程。",
+        "limit": "“错误”或“再努力一点”没有给出下一步。请安排适合课程的审核人员容量和响应时间。"
+      },
+      "transfer": {
+        "title": "检查应用能力和自我评估",
+        "evidence": "掌握意味着整合技能并知道何时运用。学员还需要监控自己的方法。[CMU：研究综述]",
+        "application": "在结业作业中改变范例的要求。公布评分标准，并要求提交成果物以及说明决策和遗留困难的笔记。",
+        "limit": "仅凭课时完成、经验值和凭证不能证明具备独立能力。请检查成果物及其说明。"
+      }
+    },
+    "example": {
+      "label": "创作示例 · Rust 入门",
+      "title": "在程序运行之间保留数据",
+      "goal": "先修：函数、Vec、Result 以及可用的 Cargo 环境。成果：添加一个任务，关闭应用，重新打开后数据仍在，并能处理损坏的文件。这是一个拟议章节，并非已发布的课程。",
+      "read": {
+        "title": "带范例的文章",
+        "body": "比较内存中的数据与文件中的数据。用一个小例子解释“读取 → 修改 → 写入”，并展示预期结果。"
+      },
+      "predict": {
+        "title": "测验：先预测再看解答",
+        "body": "“如果应用只更新 Vec 就退出，下次运行时任务还会在吗？为什么？”在答案中解释内存与持久化存储。"
+      },
+      "build": {
+        "title": "引导式项目：独立运行并检查",
+        "body": "提供起始代码，请学员实现读取和写入。运行 add，退出，再在新进程中运行 list。让学员尝试缺失的路径和损坏的文件。"
+      },
+      "submit": {
+        "title": "结业作业：提交并获得反馈",
+        "body": "在课程结业作业中要求提交 GitHub 网址和笔记。审核可复现性、全新运行间的数据以及错误提示。需要时给出具体的修改反馈。"
+      },
+      "revisit": {
+        "title": "通过新需求复习",
+        "body": "在下一章中，增加一个在重新打开应用后仍保留的完成状态。请学员解释哪一步让数据得以持久化。"
+      },
+      "rubricTitle": "提交说明的示例评分标准",
+      "rubric": "行为正确 · 数据在新运行中保留 · 清晰的错误处理 · 可复现的 README · 说明决策的笔记。这些是针对本作业提出的标准，并非 Corelia 的默认评分量表。"
+    },
+    "formats": {
+      "article": {
+        "title": "文章",
+        "body": "用于讲解、说明并支持查阅。写明目标，按思路组织，定义新术语，并标明来源和工具版本。"
+      },
+      "video": {
+        "title": "视频",
+        "body": "展示随时间变化的操作或变化。附上文字摘要和资源。按任务分段，而不是对每个课时强加固定时长。"
+      },
+      "quiz": {
+        "title": "测验",
+        "body": "用于回忆、预测和误解检查。包括解析、合理的干扰项以及重试机会。"
+      },
+      "code": {
+        "title": "代码练习",
+        "body": "目前支持带浏览器文本校验的单文件 Rust 填空或编辑练习。适用于小型练习任务。通过并不代表成功编译或运行。"
+      },
+      "practice": {
+        "title": "引导式实操",
+        "body": "用说明、清单或引导式项目完成真实任务。为每一步设定可检查的结果。Cargo 等工具在学员自己的机器上运行。"
+      },
+      "final": {
+        "title": "结业作业",
+        "body": "在课程层面提交成果物、获得反馈并修改。说明要求和评分标准。提交的作业不会自动成为公开项目；学员自行选择要分享的内容。"
+      }
+    },
+    "formatsNote": "这些应用反映的是 2026 年 9 月 22 日工作区中的 Corelia 代码和文档，并不代表已在生产环境上线。一个章节不必包含全部六种形式。",
+    "checklistNote": "课时或章节的编辑检查清单。勾选内容仅在此页面打开期间保留；这不是自动评估或发布操作。",
+    "checked": "已检查 {{count}} / {{total}} 项",
+    "reset": "清除勾选",
+    "checks": {
+      "outcome": "目标描述可观察的行为；评估衡量的是所教内容。",
+      "entry": "先修条件、工具和设置说明足以让目标初学者开始学习。",
+      "accuracy": "作者已重新运行示例，并检查了来源、版本和资源链接。",
+      "practice": "学员除阅读或复制外，还有独立的作业和预期结果。",
+      "feedback": "答案解析说明理由；提示和审核评语指出可执行的下一步。",
+      "review": "学员重温先前的知识，并在变化的情境中应用。",
+      "access": "已检查窄屏预览；视频有文字辅助；存在翻译时，术语和各语言版本保持一致。",
+      "pilot": "已有处于目标入门水平的学员试用了该材料；观察到的困难已用于改进。"
+    },
+    "sourcesNote": "基础来源审阅于 2026 年 9 月 22 日。IES 的证据等级指其 2007 年指南，并非对在线编程教学的评估。此处的示例、清单和形式选择是 Corelia 的应用，需要用真实学员验证。",
+    "sources": {
+      "alignment": {
+        "title": "CMU Eberly Center：使评估、目标和教学策略保持一致",
+        "description": "关于使目标、学习活动和评估保持一致的指导。支持原则 1。"
+      },
+      "learning": {
+        "title": "CMU Eberly Center：学习原则",
+        "description": "涵盖先备知识、练习、反馈、掌握和自我调节的研究综述。支持原则 2、6 和 7。"
+      },
+      "ies": {
+        "title": "IES / What Works Clearinghouse：组织教学与学习以提高学生学习效果（2007）",
+        "description": "关于范例解答、测验、间隔和解释性问题的、带证据等级的指导。支持原则 3、4 和 5。"
+      }
+    }
+  }
+}

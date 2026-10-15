@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { getMyXpDayBreakdown, getMyXpHistory, getXpSummary, utcDate, xpIntensity } from "@/lib/xp";
 import type { XpEntry } from "@/lib/xp";
+import { intlLocaleFor } from "@/lib/locales";
 
 const intensityClass = [
   "bg-surface-raised border-border-subtle",
@@ -77,7 +78,7 @@ export function XpActivity({ userId, own = false }: { userId: string; own?: bool
   });
   const weekTotal = weekDays.reduce((sum, day) => sum + (day.future ? 0 : day.xp), 0);
   const maxWeek = Math.max(1, ...weekDays.map((day) => day.xp));
-  const locale = i18n.language === "vi" ? "vi-VN" : "en-US";
+  const locale = intlLocaleFor(i18n.language);
   const formatted = (value: number) => new Intl.NumberFormat(locale).format(value);
   const dayLabel = (day: { date: string; xp: number; noData?: boolean }) => `${day.date}: ${day.noData ? t("xp.noData") : `${formatted(day.xp)} XP`}`;
   const weekdayLabels = Array.from({ length: 7 }, (_, index) => new Intl.DateTimeFormat(locale, { weekday: "narrow", timeZone: "UTC" }).format(addDays(new Date("2026-09-21T00:00:00Z"), index)));

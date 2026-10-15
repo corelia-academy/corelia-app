@@ -8,7 +8,7 @@ export function emailPreviewVariables(draft: EmailPreviewDraft): string[] {
 }
 
 export function emailPreviewValues(draft: EmailPreviewDraft, appUrl: string, overrides: Record<string, string>): Record<string, string> {
-  const vi = draft.locale !== "en";
+  const vi = !draft.locale || draft.locale === "vi";
   const defaults: Record<string, string> = {
     name: "Nguyễn Minh An", full_name: "Nguyễn Minh An", first_name: "An", last_name: "Nguyễn",
     email: "learner@example.com", locale: draft.locale ?? "vi",

@@ -23,9 +23,10 @@ import { datetimeLocalToIso, isoToDatetimeLocal } from "@/lib/datetime";
 import type { Contest, ContestI18nContent, ContestLocation, ContestStatus, ContestTrack, HackathonTaxonomyOption, HackathonTimelineItem, HackathonWinnerAward } from "@/types/hackathons";
 import { isPrizeAllocationValid, validateHackathonTaxonomyContract } from "@/lib/hackathonContract";
 import { isValidHackathonSocialLink, normalizeHackathonSocialLink } from "./utils/socialLinks";
+import { CONTENT_LOCALES, LOCALE_META, type ContentLocale } from "@/lib/locales";
 import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 
-type Locale = "vi" | "en";
+type Locale = ContentLocale;
 type LocaleDraft = {
   title: string;
   short_description: string;
@@ -132,8 +133,24 @@ function emptyLocale(): LocaleDraft {
   };
 }
 
+function emptyLocales(): Record<Locale, LocaleDraft> {
+  return Object.fromEntries(CONTENT_LOCALES.map((item) => [item, emptyLocale()])) as Record<Locale, LocaleDraft>;
+}
+
+/** Apply a change to every locale; `vi` stays the master copy that translations mirror. */
+function mapLocales(locales: Record<Locale, LocaleDraft>, change: (item: Locale, draft: LocaleDraft) => LocaleDraft): Record<Locale, LocaleDraft> {
+  return Object.fromEntries(CONTENT_LOCALES.map((item) => [item, change(item, locales[item])])) as Record<Locale, LocaleDraft>;
+}
+
+function hasLocaleContent(item: LocaleDraft | undefined): boolean {
+  if (!item) return false;
+  const text = [item.title, item.short_description, item.description_markdown, item.resources_markdown, item.prize_description_markdown];
+  const names = [...item.tracks, ...item.sectors, ...item.tech_stacks].map((entry) => entry.name);
+  return [...text, ...names, ...item.timeline.map((entry) => entry.title)].some((value) => Boolean(value?.trim()));
+}
+
 function emptyDraft(): Draft {
-  return { slug: "", status: "draft", cover_image_url: "", cover_image_path: "", mode: "online", host_name: "", host_logo_url: "", host_logo_path: "", host_website_url: "", telegram: "", x: "", facebook: "", official_course_id: "", related_course_ids: [], social_post_urls: "", submission_deadline: "", winners_announced: false, allow_project_edits_after_deadline: false, prize_amount: "0", prize_currency: "VND", winner_awards: [], locales: { vi: emptyLocale(), en: emptyLocale() } };
+  return { slug: "", status: "draft", cover_image_url: "", cover_image_path: "", mode: "online", host_name: "", host_logo_url: "", host_logo_path: "", host_website_url: "", telegram: "", x: "", facebook: "", official_course_id: "", related_course_ids: [], social_post_urls: "", submission_deadline: "", winners_announced: false, allow_project_edits_after_deadline: false, prize_amount: "0", prize_currency: "VND", winner_awards: [], locales: emptyLocales() };
 }
 
 function EditorSection({ title, description, children, onSave, saving, saveLabel, secondaryAction }: { title: string; description?: string; children: React.ReactNode; onSave: () => void; saving: boolean; saveLabel: string; secondaryAction?: { label: string; onClick: () => void } }) {
@@ -284,8 +301,9 @@ export default function AdminHackathonEditorPage() {
     queryFn: async () => {
       const contest = await getContest(id!, "vi");
       if (!contest) return null;
-      const [vi, en] = await Promise.all([getHackathonLocaleContent(id!, "vi"), getHackathonLocaleContent(id!, "en")]);
-      return { contest, vi, en };
+      const rows = await Promise.all(CONTENT_LOCALES.map((item) => getHackathonLocaleContent(id!, item)));
+      const localized = Object.fromEntries(CONTENT_LOCALES.map((item, index) => [item, rows[index]])) as Record<Locale, ContestI18nContent | null>;
+      return { contest, localized };
     },
     enabled: Boolean(id),
   });
@@ -320,7 +338,7 @@ export default function AdminHackathonEditorPage() {
       prize_amount: contest.prize_pool?.amount ?? "0",
       prize_currency: contest.prize_pool?.currency ?? "VND",
       winner_awards: contest.winner_awards ?? [],
-      locales: { vi: localeFromContest(contest, data.vi, true), en: localeFromContest(contest, data.en, false) },
+      locales: mapLocales(emptyLocales(), (item) => localeFromContest(contest, data.localized[item], item === "vi")),
     };
   }, [editorQuery.data]);
   const draft = draftState ?? loadedDraft ?? emptyDraft();
@@ -471,16 +489,22 @@ export default function AdminHackathonEditorPage() {
     timeline: draft.locales.vi.timeline,
     winner_awards: flattenAwards(groupAwards(draft.winner_awards)),
   });
+  /** `vi` and `en` always save; other locales save once they have (or had) content. */
+  const saveLocales = (contestId: string) => Promise.all(
+    CONTENT_LOCALES
+      .filter((item) => item === "vi" || item === "en" || hasLocaleContent(draft.locales[item]) || hasLocaleContent(loadedDraft?.locales[item]))
+      .map((item) => setHackathonLocaleContent(contestId, item, localePayload(item))),
+  );
   const saveMutation = useMutation({
     mutationFn: async () => {
       validate();
       let contest: Contest;
       if (isNew) {
         contest = await createContest(payload());
-        await Promise.all([setHackathonLocaleContent(contest.id, "vi", localePayload("vi")), setHackathonLocaleContent(contest.id, "en", localePayload("en"))]);
+        await saveLocales(contest.id);
       } else {
         contest = await updateContest(id!, payload());
-        await Promise.all([setHackathonLocaleContent(id!, "vi", localePayload("vi")), setHackathonLocaleContent(id!, "en", localePayload("en"))]);
+        await saveLocales(id!);
       }
 
       const [banner, hostLogo] = await Promise.all([
@@ -521,7 +545,7 @@ export default function AdminHackathonEditorPage() {
       toast.success(t("hackathons.editor.saved"));
       queryClient.setQueryData(
         ["admin", "hackathons", contest.id, "editor"],
-        (old: { contest: Contest; vi: ContestI18nContent; en: ContestI18nContent } | undefined) =>
+        (old: { contest: Contest; localized: Record<Locale, ContestI18nContent | null> } | undefined) =>
           old ? { ...old, contest } : undefined,
       );
       void Promise.all([
@@ -581,7 +605,7 @@ export default function AdminHackathonEditorPage() {
   };
   const addTrack = () => {
     const track: ContestTrack = { id: crypto.randomUUID(), name: "", description: "", prize_amount: "0", active: true, sort_order: draft.locales.vi.tracks.length };
-    setDraft((current) => ({ ...current, locales: { vi: { ...current.locales.vi, tracks: [...current.locales.vi.tracks, track] }, en: { ...current.locales.en, tracks: [...current.locales.en.tracks, { ...track, name: "", description: "" }] } } }));
+    setDraft((current) => ({ ...current, locales: mapLocales(current.locales, (item, value) => ({ ...value, tracks: [...value.tracks, item === "vi" ? track : { ...track, name: "", description: "" }] })) }));
     setDirty(true);
     toast.success(t("hackathons.editor.trackAdded"));
   };
@@ -593,16 +617,13 @@ export default function AdminHackathonEditorPage() {
       .map((item, sortOrder) => ({ ...item, sort_order: sortOrder }));
     setDraft((current) => ({
       ...current,
-      locales: {
-        vi: { ...current.locales.vi, tracks: withoutTrack(current.locales.vi.tracks) },
-        en: { ...current.locales.en, tracks: withoutTrack(current.locales.en.tracks) },
-      },
+      locales: mapLocales(current.locales, (_item, value) => ({ ...value, tracks: withoutTrack(value.tracks) })),
     }));
     setDirty(true);
   };
   const addTimeline = () => {
     const item: HackathonTimelineItem = { id: crypto.randomUUID(), title: "", starts_at: new Date().toISOString(), ends_at: null, description_markdown: "", sort_order: draft.locales.vi.timeline.length };
-    setDraft((current) => ({ ...current, locales: { vi: { ...current.locales.vi, timeline: [...current.locales.vi.timeline, item] }, en: { ...current.locales.en, timeline: [...current.locales.en.timeline, { ...item, title: "" }] } } })); setDirty(true);
+    setDraft((current) => ({ ...current, locales: mapLocales(current.locales, (loc, value) => ({ ...value, timeline: [...value.timeline, loc === "vi" ? item : { ...item, title: "" }] })) })); setDirty(true);
   };
   const removeTimeline = (timelineId: string) => {
     const withoutItem = (items: HackathonTimelineItem[]) => items
@@ -610,10 +631,7 @@ export default function AdminHackathonEditorPage() {
       .map((item, sortOrder) => ({ ...item, sort_order: sortOrder }));
     setDraft((current) => ({
       ...current,
-      locales: {
-        vi: { ...current.locales.vi, timeline: withoutItem(current.locales.vi.timeline) },
-        en: { ...current.locales.en, timeline: withoutItem(current.locales.en.timeline) },
-      },
+      locales: mapLocales(current.locales, (_item, value) => ({ ...value, timeline: withoutItem(value.timeline) })),
     }));
     setDirty(true);
   };
@@ -626,10 +644,7 @@ export default function AdminHackathonEditorPage() {
     };
     setDraft((current) => ({
       ...current,
-      locales: {
-        vi: { ...current.locales.vi, [key]: [...current.locales.vi[key], option] },
-        en: { ...current.locales.en, [key]: [...current.locales.en[key], { ...option, name: "" }] },
-      },
+      locales: mapLocales(current.locales, (item, value) => ({ ...value, [key]: [...value[key], item === "vi" ? option : { ...option, name: "" }] })),
     }));
     setDirty(true);
   };
@@ -766,8 +781,8 @@ export default function AdminHackathonEditorPage() {
           <div className="flex flex-wrap items-center gap-2 2xl:justify-end">
             <span className="inline-flex min-h-9 items-center rounded-full border border-border-subtle bg-surface-raised px-3 text-xs font-medium text-foreground">{t(`hackathons.editor.status.${draft.status}`)}</span>
             <span className="inline-flex min-h-9 items-center rounded-full border border-border-subtle bg-surface-raised px-3 text-xs font-medium text-foreground">{t(`hackathons.editor.modes.${draft.mode}`)}</span>
-            <div className="flex min-h-11 items-center gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1" role="group" aria-label={t("hackathons.editor.editingLanguage")}>
-              {(["vi", "en"] as Locale[]).map((item) => <button type="button" key={item} aria-pressed={item === locale} onClick={() => setLocale(item)} className={cn("flex min-h-9 items-center justify-center gap-1.5 rounded-md px-2.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30", item === locale ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground-muted hover:bg-background hover:text-foreground")}><span aria-hidden>{item === "vi" ? "🇻🇳" : "🇬🇧"}</span>{item.toUpperCase()}{item === "vi" ? <span className="rounded bg-primary-foreground/20 px-1 py-0.5 text-[10px] leading-none">{t("hackathons.editor.primaryBadge")}</span> : null}</button>)}
+            <div className="flex min-h-11 flex-wrap items-center gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1" role="group" aria-label={t("hackathons.editor.editingLanguage")}>
+              {CONTENT_LOCALES.map((item) => <button type="button" key={item} aria-pressed={item === locale} onClick={() => setLocale(item)} className={cn("flex min-h-9 items-center justify-center gap-1.5 rounded-md px-2.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30", item === locale ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground-muted hover:bg-background hover:text-foreground")}><span aria-hidden>{LOCALE_META[item].flag}</span>{LOCALE_META[item].short}{item === "vi" ? <span className="rounded bg-primary-foreground/20 px-1 py-0.5 text-[10px] leading-none">{t("hackathons.editor.primaryBadge")}</span> : null}</button>)}
             </div>
             {!isNew ? <Button type="button" variant="cta" hierarchy="secondary" size="small" className="min-h-11" disabled={translating} onClick={() => void translateAllContent()}>{translating ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}{translating ? t("hackathons.editor.aiTranslation.translating") : t("hackathons.editor.aiTranslation.action", { source: locale === "vi" ? "EN" : "VI", target: locale.toUpperCase() })}</Button> : null}
             {dirty ? <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-3 text-xs font-medium text-warning"><AlertTriangle className="size-3.5 shrink-0" />{t("hackathons.editor.unsaved")}</span> : null}
@@ -867,7 +882,7 @@ export default function AdminHackathonEditorPage() {
             </EditorSection>
           ) : null}
 
-          {activeSection === "taxonomy" && !isNew ? <EditorSection title={t("hackathons.editor.sections.taxonomy")} description={t("hackathons.editor.taxonomyHint")} onSave={save} saving={saveMutation.isPending} saveLabel={t("hackathons.editor.saveSection")}>{(["sectors", "tech_stacks"] as const).map((key) => <div key={key} className="space-y-3"><div className="flex items-center justify-between"><h3 className="text-foreground text-heading-small font-display">{t(`hackathons.editor.fields.${key}`)}</h3><Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={() => addTaxonomy(key)}><Plus className="size-4" />{t("hackathons.editor.add")}</Button></div>{localized[key].length === 0 ? <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-foreground-muted">{t(`hackathons.editor.fields.${key}`)}</div> : null}<div className="grid gap-3 sm:grid-cols-2">{localized[key].map((option) => <div key={option.id} className={cn("flex gap-2 rounded-xl border border-border-subtle bg-surface-raised p-3", option.active === false && "opacity-60")}><Input value={option.name} placeholder={t(`hackathons.editor.fields.${key}`)} onChange={(event) => changeLocale({ [key]: localized[key].map((row) => row.id === option.id ? { ...row, name: event.target.value } : row) })} /><Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={() => { const update = (target: Locale) => draft.locales[target][key].map((row) => row.id === option.id ? { ...row, active: row.active === false } : row); setDraft((current) => ({ ...current, locales: { vi: { ...current.locales.vi, [key]: update("vi") }, en: { ...current.locales.en, [key]: update("en") } } })); setDirty(true); }}>{option.active === false ? <><Check className="size-4" />{t("hackathons.editor.restore")}</> : t("hackathons.editor.archive")}</Button></div>)}</div></div>)}</EditorSection> : null}
+          {activeSection === "taxonomy" && !isNew ? <EditorSection title={t("hackathons.editor.sections.taxonomy")} description={t("hackathons.editor.taxonomyHint")} onSave={save} saving={saveMutation.isPending} saveLabel={t("hackathons.editor.saveSection")}>{(["sectors", "tech_stacks"] as const).map((key) => <div key={key} className="space-y-3"><div className="flex items-center justify-between"><h3 className="text-foreground text-heading-small font-display">{t(`hackathons.editor.fields.${key}`)}</h3><Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={() => addTaxonomy(key)}><Plus className="size-4" />{t("hackathons.editor.add")}</Button></div>{localized[key].length === 0 ? <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-foreground-muted">{t(`hackathons.editor.fields.${key}`)}</div> : null}<div className="grid gap-3 sm:grid-cols-2">{localized[key].map((option) => <div key={option.id} className={cn("flex gap-2 rounded-xl border border-border-subtle bg-surface-raised p-3", option.active === false && "opacity-60")}><Input value={option.name} placeholder={t(`hackathons.editor.fields.${key}`)} onChange={(event) => changeLocale({ [key]: localized[key].map((row) => row.id === option.id ? { ...row, name: event.target.value } : row) })} /><Button type="button" variant="cta" hierarchy="secondary" size="small" onClick={() => { const update = (target: Locale) => draft.locales[target][key].map((row) => row.id === option.id ? { ...row, active: row.active === false } : row); setDraft((current) => ({ ...current, locales: mapLocales(current.locales, (item, value) => ({ ...value, [key]: update(item) })) })); setDirty(true); }}>{option.active === false ? <><Check className="size-4" />{t("hackathons.editor.restore")}</> : t("hackathons.editor.archive")}</Button></div>)}</div></div>)}</EditorSection> : null}
 
           {activeSection === "projects" && !isNew ? (
             <EditorSection title={t("hackathons.editor.sections.projects")} description={t("hackathons.editor.sectionDescriptions.projects")} onSave={save} saving={saveMutation.isPending} saveLabel={t("hackathons.editor.saveSection")}>

@@ -1,0 +1,74 @@
+{
+  "follow": {
+    "follow": "フォロー",
+    "following": "フォロー中",
+    "errors": {
+      "check": "フォロー状態を確認できませんでした。",
+      "save": "フォロー状態を更新できませんでした。"
+    }
+  },
+  "followers": {
+    "summary": "フォロワー {{count}} 人",
+    "title": "フォロワー",
+    "description": "この項目をフォローしている公開プロフィールです。",
+    "loading": "フォロワーを読み込み中...",
+    "empty": "公開フォロワーはまだいません。",
+    "errors": {
+      "load": "フォロワーを読み込めませんでした。"
+    }
+  },
+  "following": {
+    "title": "フォロー中",
+    "description": "このユーザーがフォローしている公開プロフィールです。",
+    "loading": "フォロー中のユーザーを読み込み中...",
+    "empty": "フォローしている公開プロフィールはまだありません。",
+    "errors": {
+      "load": "フォロー中のユーザーを読み込めませんでした。"
+    }
+  },
+  "milestones": {
+    "eyebrow": "認証済みの実績",
+    "title": "フィード",
+    "description": "お祝いしたい学習やプロジェクトのマイルストーンです。",
+    "member": "Corelia メンバー",
+    "kind": {
+      "course_completed": "コース修了",
+      "xp_reached": "XP マイルストーン",
+      "project_submitted": "ハッカソンプロジェクト"
+    },
+    "completed": "コースを修了しました",
+    "reached": "{{count}} XP に到達しました",
+    "submitted": "プロジェクトを提出しました：",
+    "atHackathon": "{{name}} にて",
+    "like": "いいね",
+    "unlike": "いいねを取り消す",
+    "justNow": "たった今",
+    "tabs": "フィード表示",
+    "explore": "探索",
+    "leaderboard": "XP ランキング",
+    "following": "フォロー中",
+    "new": "新しいマイルストーンがあります",
+    "error": "フィードを読み込めない、または保存できませんでした。",
+    "retry": "再試行",
+    "empty": "マイルストーンはまだありません",
+    "emptyHint": "今は新しく見つかる実績がありません。おすすめから新しい人と出会いましょう。",
+    "followingHint": "フォロー中の人が実績を共有すると、ここに表示されます。",
+    "followedTitle": "フォロー中の人",
+    "peopleTitle": "ユーザー",
+    "followedTab": "フォロー中",
+    "followedEmpty": "まだ誰もフォローしていません。",
+    "followedDescription": "フォロー中の公開プロフィール（新しい順）です。",
+    "suggestedTitle": "フォローをおすすめしたい人",
+    "suggestedEmpty": "おすすめできる公開プロフィールはまだありません。",
+    "suggestedError": "おすすめユーザーを読み込めませんでした。",
+    "followedError": "フォロー中のユーザーを読み込めませんでした。",
+    "followedAll": "すべて表示",
+    "loadMore": "さらに読み込む",
+    "profileTitle": "実績",
+    "profileEmpty": "公開マイルストーンはまだありません。",
+    "exploreDescription": "まだフォローしていない人の実績を見つけましょう。",
+    "followingDescription": "フォロー中の人の最新の実績です。",
+    "findPeople": "フォローする人を探す",
+    "unavailable": "この実績は利用できなくなりました。"
+  }
+}

@@ -12,10 +12,8 @@ import {
 import type { Locale } from "@/types/database";
 import type { ContestFaqEntry, ContestTimelineMilestone } from "@/types/hackathons";
 import type { EntityI18nConfig } from "@/types/entityLocales";
+import { CONTENT_LOCALES, LOCALE_META, normalizeLocale } from "@/lib/locales";
 
-function normalizeLocale(value: string | null | undefined): Locale {
-  return value === "en" ? "en" : "vi";
-}
 
 function configPrimary(config: EntityI18nConfig | null | undefined): Locale {
   return normalizeLocale(config?.primary_content_locale);
@@ -24,7 +22,7 @@ function configPrimary(config: EntityI18nConfig | null | undefined): Locale {
 function configSupported(config: EntityI18nConfig | null | undefined): Locale[] {
   const raw = config?.supported_locales;
   const fallback: Locale[] = ["vi", "en"];
-  const list = Array.isArray(raw) && raw.length ? raw.map(normalizeLocale) : fallback;
+  const list = Array.isArray(raw) && raw.length ? raw.map((value) => normalizeLocale(value)) : fallback;
   return Array.from(new Set(list));
 }
 
@@ -104,7 +102,7 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
   const primaryLocale = configPrimary(i18nConfigDraft);
   const supportedLocales = configSupported(i18nConfigDraft);
 
-  const [targetLocale, setTargetLocale] = useState<Locale>(primaryLocale === "vi" ? "en" : "vi");
+  const [targetLocale, setTargetLocale] = useState<Locale>(primaryLocale === "en" ? "vi" : "en");
   const targetEnabled = supportedLocales.includes(targetLocale);
 
   const primarySnapshot = useMemo(() => {
@@ -281,8 +279,9 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
               value={targetLocale}
               onChange={(e) => setTargetLocale(normalizeLocale(e.target.value))}
             >
-              <option value="vi">vi</option>
-              <option value="en">en</option>
+              {CONTENT_LOCALES.map((lng) => (
+                <option key={lng} value={lng}>{LOCALE_META[lng].endonym}</option>
+              ))}
             </select>
             <Button type="button" variant="cta" hierarchy="secondary" onClick={copyAllFromPrimary}>
               <Copy className="size-4" aria-hidden />
@@ -313,14 +312,15 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
                   setI18nConfigDraft((p) => ({ ...p, primary_content_locale: normalizeLocale(e.target.value) }))
                 }
               >
-                <option value="vi">vi</option>
-                <option value="en">en</option>
+                {CONTENT_LOCALES.map((lng) => (
+                <option key={lng} value={lng}>{LOCALE_META[lng].endonym}</option>
+              ))}
               </select>
             </label>
             <div>
               <div className="text-xs font-medium text-foreground-muted">Supported locales</div>
               <div className="mt-2 flex flex-wrap gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3 text-sm">
-                {(["vi", "en"] as const).map((lng) => (
+                {CONTENT_LOCALES.map((lng) => (
                   <label key={lng} className="inline-flex items-center gap-2 text-foreground">
                     <input
                       type="checkbox"
@@ -334,7 +334,7 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
                         });
                       }}
                     />
-                    {lng}
+                    {LOCALE_META[lng].endonym}
                   </label>
                 ))}
               </div>

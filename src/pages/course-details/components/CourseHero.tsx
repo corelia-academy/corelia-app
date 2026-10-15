@@ -21,6 +21,7 @@ import {
   type CourseLesson,
   type Enrollment,
 } from "@/types/courses";
+import type { ContentLocale } from "@/lib/locales";
 
 interface CourseHeroProps {
   course: Course;
@@ -88,10 +89,7 @@ export function CourseHero({
   const uiLocale = normalizeCourseLocale(i18n.language);
   const shouldShowContentLocaleNotice = uiLocale !== contentLocale;
 
-  const localeLabel = (loc: "vi" | "en") =>
-    loc === "en"
-      ? translateCommon("language.en")
-      : translateCommon("language.vi");
+  const localeLabel = (loc: ContentLocale) => translateCommon(`language.${loc}`);
 
   const courseThumbnailSrc =
     course.thumbnail_url &&

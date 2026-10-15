@@ -6,6 +6,7 @@ import {
 } from "@/lib/courses";
 import type { Course, CourseLesson } from "@/types/courses";
 import { CourseBadge } from "./CourseBadge";
+import type { ContentLocale } from "@/lib/locales";
 
 export function CourseLanguagePanel({
   course,
@@ -25,10 +26,7 @@ export function CourseLanguagePanel({
     course.i18n?.default_video_primary_locale ?? primaryContentLocale,
   );
 
-  const localeLabel = (loc: "vi" | "en") =>
-    loc === "en"
-      ? translateCommon("language.en")
-      : translateCommon("language.vi");
+  const localeLabel = (loc: ContentLocale) => translateCommon(`language.${loc}`);
 
   return (
     <section>

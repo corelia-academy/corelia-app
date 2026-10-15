@@ -1,0 +1,1342 @@
+{
+  "appName": "Corelia",
+  "pageTitles": {
+    "home": "Inicio",
+    "login": "Iniciar sesión / Registrarse",
+    "confirmSignup": "Confirmar registro",
+    "signupVerified": "Cuenta verificada",
+    "resetPassword": "Restablecer contraseña",
+    "connectingAccount": "Conectar cuenta",
+    "unsubscribe": "Cancelar suscripción al correo",
+    "claimCertificate": "Reclamar certificado",
+    "verifyCertificate": "Verificar certificado",
+    "learnCourse": "Aprender curso",
+    "learnLesson": "Aprender lección",
+    "finalAssignment": "Trabajo final",
+    "componentLibrary": "Biblioteca de componentes",
+    "feed": "Novedades",
+    "courses": "Cursos",
+    "courseDetail": "Detalles del curso",
+    "projectInvite": "Invitación al proyecto",
+    "coInstructorInvite": "Invitación de coinstructor",
+    "instructorDetail": "Detalles del instructor",
+    "achievements": "Logros",
+    "hackathons": "Hackathons",
+    "hackathonOverview": "Resumen del hackathon",
+    "hackathonPrizes": "Premios",
+    "hackathonTimeline": "Cronograma",
+    "hackathonResources": "Recursos",
+    "hackathonProjects": "Proyectos del hackathon",
+    "projects": "Proyectos",
+    "newProject": "Crear proyecto",
+    "editProject": "Editar proyecto",
+    "projectDetail": "Detalles del proyecto",
+    "jobs": "Empleos",
+    "savedJobs": "Empleos guardados",
+    "appliedJobs": "Empleos postulados",
+    "hiddenJobs": "Empleos ocultos",
+    "jobMarket": "Mercado laboral",
+    "jobDetail": "Detalles del empleo",
+    "search": "Buscar",
+    "publicProfile": "Perfil público",
+    "accountProfile": "Perfil",
+    "accountCv": "CV",
+    "accountSettings": "Ajustes",
+    "accountProjects": "Mis proyectos",
+    "instructorProfile": "Perfil de instructor",
+    "users": "Usuarios",
+    "instructors": "Instructores",
+    "instructorReview": "Revisión de instructores",
+    "activityMilestones": "Hitos de actividad",
+    "manualMint": "Emitir certificado",
+    "branding": "Marca",
+    "manageHackathons": "Gestionar hackathons",
+    "newHackathon": "Crear hackathon",
+    "editHackathon": "Editar hackathon",
+    "manageProjects": "Gestionar proyectos",
+    "manageJobs": "Gestionar empleos",
+    "reviewJobs": "Revisar empleos",
+    "jobSources": "Fuentes de empleo",
+    "companies": "Empresas",
+    "crawlers": "Rastreadores de empleo",
+    "jobAnalytics": "Analítica de empleos",
+    "emailCenter": "Centro de correo",
+    "teaching": "Enseñanza",
+    "manageCourses": "Gestionar cursos",
+    "newCourse": "Crear curso",
+    "previewCourse": "Vista previa del curso",
+    "editCourse": "Editar curso",
+    "notFound": "Página no encontrada",
+    "maintenance": "Mantenimiento del sistema",
+    "applicationError": "Error de la aplicación",
+    "notifications": "Notificaciones"
+  },
+  "language": {
+    "switchLabel": "Cambiar idioma",
+    "en": "English",
+    "zh-CN": "简体中文",
+    "ko": "한국어",
+    "es": "Español",
+    "zh-TW": "繁體中文",
+    "vi": "Tiếng Việt",
+    "ja": "日本語"
+  },
+  "cropper": {
+    "title": "Recorta la imagen a 1:1 (cuadrada)",
+    "hint": "Arrastra para mover la imagen y usa el control deslizante para hacer zoom.",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar"
+  },
+  "actions": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "continue": "Continuar",
+    "confirm": "Confirmar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "submit": "Enviar",
+    "retry": "Reintentar",
+    "copy": "Copiar",
+    "download": "Descargar",
+    "share": "Compartir",
+    "search": "Buscar",
+    "runInRemix": "Ejecutar en Remix"
+  },
+  "notFound": {
+    "title": "Página no encontrada",
+    "description": "Esta página no existe o se ha movido.",
+    "backHome": "Volver al inicio"
+  },
+  "nav": {
+    "groups": {
+      "learning": "Aprendizaje",
+      "building": "Construir",
+      "career": "Carrera"
+    },
+    "changelog": "Blog",
+    "productRoadmap": "Versiones",
+    "feedback": "Comentarios",
+    "home": "Inicio",
+    "someone": "Alguien",
+    "courses": "Cursos",
+    "feed": "Novedades",
+    "contests": "Hackathons",
+    "projects": "Proyectos",
+    "jobs": "Empleos",
+    "achievements": "Logros",
+    "account": "Cuenta",
+    "admin": "Administración",
+    "instructor": "Enseñanza",
+    "instructorManagement": "Gestión de enseñanza"
+  },
+  "account": {
+    "signedInViaEmail": "(sesión iniciada con correo)"
+  },
+  "user": {
+    "fallbackName": "Usuario",
+    "accountSettings": "Ajustes de la cuenta"
+  },
+  "header": {
+    "publicProfile": "Perfil público",
+    "feedAria": "Abrir novedades",
+    "notifications": "Notificaciones",
+    "notificationsAria": "Abrir notificaciones",
+    "noNotifications": "Aún no hay notificaciones.",
+    "accept": "Aceptar",
+    "decline": "Rechazar"
+  },
+  "notifications": {
+    "projectInviteTitle": "Invitación al equipo",
+    "projectInviteBody": "Te invitaron a unirte a un proyecto de hackathon.",
+    "projectInviteProjectLabel": "Proyecto: {{title}}",
+    "projectInviteHackathonLabel": "Hackathon: {{title}}",
+    "openHackathon": "Abrir hackathon",
+    "inviteResolved": "Resuelta",
+    "inviteAccepted": "Te uniste al proyecto.",
+    "inviteDeclined": "Invitación rechazada.",
+    "inviteAcceptFailed": "No se pudo aceptar la invitación.",
+    "inviteDeclineFailed": "No se pudo rechazar la invitación.",
+    "coInstructorInviteTitle": "Invitación de coinstructor",
+    "coInstructorInviteBody": "Te invitaron a impartir «{{course}}» en conjunto.",
+    "coInstructorInviteCourseFallback": "un curso",
+    "coInstructorInvitePermissions": "Permisos: {{list}}",
+    "coInstructorInviteAccepted": "Ahora eres coinstructor.",
+    "coInstructorInviteDeclined": "Invitación de coinstructor rechazada.",
+    "coInstructorInviteAcceptFailed": "No se pudo aceptar la invitación de coinstructor.",
+    "coInstructorInviteDeclineFailed": "No se pudo rechazar la invitación de coinstructor.",
+    "hackathonRegistrationApprovedTitle": "Inscripción aprobada",
+    "hackathonRegistrationApprovedBody": "Tu solicitud para {{hackathonTitle}} fue aprobada.",
+    "hackathonRegistrationRejectedTitle": "Inscripción no aprobada",
+    "hackathonRegistrationRejectedBody": "Tu solicitud para {{hackathonTitle}} no fue aprobada.",
+    "hackathonRegistrationReviewNote": "Nota del revisor: {{note}}",
+    "hackathonRegistrationFallbackTitle": "Hackathon",
+    "viewHackathon": "Ver hackathon",
+    "hackathonWinnerAwardTitle": "Premio del hackathon",
+    "hackathonWinnerAwardBody": "Tu proyecto «{{project}}» recibió el premio «{{award}}» en «{{hackathon}}».",
+    "projectFallback": "tu proyecto",
+    "viewAwardDetails": "Ver resultados",
+    "courseAnnouncementTitle": "Anuncio del curso",
+    "markRead": "Marcar como leída",
+    "courseCompletedTitle": "Curso completado",
+    "courseCompletedBody": "¡Felicidades! Tu progreso en «{{course}}» se guardó como completado.",
+    "courseCompletedWithCertificateBody": "¡Felicidades! Completaste «{{course}}». Tu certificado de Corelia aparecerá en la caja de certificados cuando se emita.",
+    "courseCompletedCourseFallback": "tu curso",
+    "viewCompletion": "Ver logros",
+    "courseCertificateIssuedTitle": "Curso completado 🎉",
+    "courseCertificateIssuedBody": "Tu certificado de «{{course}}» está listo. Conecta OCID para emitir tu certificado de Open Campus.",
+    "courseCertificateIssuedCourseFallback": "tu curso",
+    "viewCertificate": "Ver certificado",
+    "ocCredentialMintedTitle": "Credencial de Open Campus emitida 🎉",
+    "ocCredentialMintedBody": "Acabas de recibir: {{name}}",
+    "ocCredentialMintedBodyOca": "Tu certificado está listo: {{name}}",
+    "viewCredential": "Ver logros",
+    "all": "Todas",
+    "unread": "No leídas",
+    "markAllRead": "Marcar todas como leídas",
+    "loadError": "No se pudieron cargar las notificaciones.",
+    "retry": "Reintentar",
+    "loadMore": "Cargar más",
+    "viewAll": "Ver todas las notificaciones",
+    "member": "Un miembro",
+    "actorGroup": "{{name}} y {{count}} más",
+    "newActivity": "Tienes actividad nueva",
+    "social": {
+      "project_liked": "A {{actors}} les gustó el proyecto de tu equipo {{title}}.",
+      "project_followed": "{{actors}} siguieron el proyecto de tu equipo {{title}}.",
+      "milestone_liked": "A {{actors}} les gustó tu logro.",
+      "user_followed": "{{actors}} te siguieron.",
+      "project_invite_accepted": "{{actors}} aceptaron tu invitación al proyecto {{title}}.",
+      "project_invite_declined": "{{actors}} rechazaron tu invitación al proyecto {{title}}.",
+      "course_invite_accepted": "{{actors}} aceptaron tu invitación de coinstructor para {{title}}.",
+      "course_invite_declined": "{{actors}} rechazaron tu invitación de coinstructor para {{title}}.",
+      "submission_received": "{{title}} tiene {{count}} envíos pendientes de revisión.",
+      "submission_approved": "Tu trabajo final de {{title}} fue aprobado.",
+      "submission_rejected": "Tu trabajo final de {{title}} necesita correcciones. Ábrelo para ver los comentarios.",
+      "hackathon_announcement": "Anuncio del organizador: {{title}}"
+    },
+    "updateError": "No se pudo actualizar la notificación. Inténtalo de nuevo."
+  },
+  "userProfile": {
+    "tabs": {
+      "overview": "Resumen",
+      "achievements": "Logros",
+      "courses": "Cursos",
+      "contests": "Hackathons"
+    },
+    "actions": {
+      "editProfile": "Editar perfil",
+      "previewAsGuest": "Ver como invitado",
+      "exitPreview": "Salir de la vista previa",
+      "exitPreviewShort": "Salir de la vista previa",
+      "viewFollowers": "Ver seguidores",
+      "viewFollowing": "Ver los perfiles que sigue este usuario"
+    },
+    "labels": {
+      "ocid": "OCID: {{ocid}}",
+      "website": "Sitio web",
+      "role": "Rol",
+      "memberSince": "Miembro desde",
+      "followers": "Seguidores",
+      "following": "Siguiendo",
+      "profile": "Perfil"
+    },
+    "errors": {
+      "notFound": "Usuario no encontrado",
+      "loadFailed": "No se pudo cargar el perfil",
+      "tryAnother": "Prueba con otro identificador (nombre de usuario u OCID)."
+    },
+    "overview": {
+      "title": "Resumen",
+      "quickInfo": "Información rápida",
+      "empty": "Aún no hay información pública.",
+      "instructorHeadlineFallback": "Instructor"
+    },
+    "skills": {
+      "title": "Habilidades obtenidas",
+      "empty": "Aún no hay habilidades."
+    },
+    "activity": {
+      "title": "Logros",
+      "empty": "Aún no hay hitos públicos."
+    },
+    "private": {
+      "title": "Perfil privado",
+      "description": "Esta cuenta es privada. Aquí solo se muestra el contenido público que eligió el propietario del perfil."
+    },
+    "achievements": {
+      "selfOnly": "Por ahora los logros solo son visibles para el propietario de la cuenta.",
+      "openInAchievementsPage": "Abre Logros para ver tus certificados e insignias.",
+      "cta": "Abrir Logros",
+      "privateTitle": "Los detalles de los logros son privados",
+      "privateDescription": "Los detalles de los logros no se muestran públicamente en este perfil.",
+      "openVault": "Abrir la caja de logros"
+    },
+    "courses": {
+      "privateByDefault": "Los cursos de los estudiantes son privados de forma predeterminada.",
+      "empty": "Aún no hay cursos publicados.",
+      "updatedAt": "Actualizado el {{date}}"
+    },
+    "contests": {
+      "empty": "Aún no hay hackathons públicos.",
+      "organizedTitle": "Hackathons organizados",
+      "participatedTitle": "Hackathons en los que participó",
+      "participatedEmpty": "Aún no hay participaciones.",
+      "fallbackTitle": "Hackathon",
+      "updatedAt": "Actualizado el {{date}}"
+    },
+    "projects": {
+      "empty": "Aún no hay proyectos públicos.",
+      "viewSource": "Ver código fuente",
+      "demo": "Demo",
+      "repo": "Repositorio",
+      "slides": "Diapositivas",
+      "screenshot": "Captura de pantalla",
+      "video": "Vídeo"
+    }
+  },
+  "projects": {
+    "translation": {
+      "languages": "Idiomas del contenido",
+      "primary": "Principal",
+      "optional": "Solo el idioma principal necesita todo el contenido obligatorio. La traducción es opcional; los campos vacíos muestran el contenido principal.",
+      "makePrimary": "Establecer como idioma principal",
+      "translate": "Traducir a {{target}} con IA",
+      "translating": "Traduciendo…",
+      "hint": "La IA traduce el contenido principal. Revísalo y edítalo antes de aplicarlo; las traducciones se guardan con tu proyecto.",
+      "preview": "Vista previa de la traducción",
+      "stale": "El proyecto cambió. Vuelve a traducir para no sobrescribir ediciones más recientes.",
+      "replaceHint": "Al aplicar, se reemplaza la traducción actual por esta vista previa.",
+      "apply": "Aplicar traducción",
+      "discard": "Descartar traducción",
+      "rateLimited": "Has completado 10 traducciones en una hora. Inténtalo de nuevo más tarde.",
+      "moderationRateLimited": "Demasiadas solicitudes de traducción bloqueadas en una hora. Inténtalo de nuevo más tarde."
+    },
+    "title": "Proyectos",
+    "description": "Una galería pública de proyectos del ecosistema de Corelia.",
+    "empty": "Aún no hay proyectos.",
+    "loading": "Cargando proyectos...",
+    "loadMore": "Cargar más",
+    "emptyTitle": "No se encontraron proyectos",
+    "emptyDescription": "Aún no hay contenido público que coincida con el filtro actual.",
+    "emptyHackathonDescription": "Aún no hay hackathons públicos disponibles para esta vista.",
+    "emptyCourseDescription": "Aún no hay cursos públicos disponibles para esta vista.",
+    "emptyShowcaseDescription": "Aún no hay escaparates públicos disponibles para esta vista.",
+    "errorTitle": "No se pudieron cargar los proyectos",
+    "errorDescription": "Algo salió mal al cargar la galería de proyectos.",
+    "retry": "Reintentar",
+    "byPrefix": "Por",
+    "viewSource": "Ver código fuente",
+    "demo": "Demo",
+    "repo": "Repositorio",
+    "slides": "Diapositivas",
+    "screenshot": "Captura de pantalla",
+    "video": "Vídeo",
+    "sourceHackathon": "Hackathon",
+    "sourceCourse": "Curso",
+    "sourceShowcase": "Escaparate",
+    "filters": {
+      "label": "Origen del proyecto",
+      "all": "Todos",
+      "hackathon": "Hackathon",
+      "allHackathons": "Todos los hackathons",
+      "tracks": "Categorías",
+      "sectors": "Áreas de ingeniería",
+      "techStacks": "Tecnologías",
+      "course": "Curso",
+      "showcase": "Escaparate"
+    },
+    "sort": {
+      "label": "Ordenar",
+      "newest": "Más recientes",
+      "oldest": "Más antiguos",
+      "mostLiked": "Más gustados"
+    },
+    "card": {
+      "noSummary": "Aún no se ha proporcionado un resumen.",
+      "publishedAt": "Publicado el {{date}}",
+      "links": "Enlaces del proyecto",
+      "moreLinks": "{{count}} enlaces más"
+    },
+    "detail": {
+      "backToProjects": "Volver a Proyectos",
+      "viewSource": "Ver código fuente",
+      "demo": "Demo",
+      "repo": "Repositorio",
+      "slides": "Diapositivas",
+      "screenshot": "Captura de pantalla",
+      "video": "Vídeo",
+      "description": "Descripción",
+      "noDescription": "Aún no se ha proporcionado una descripción.",
+      "notFoundTitle": "Proyecto no encontrado",
+      "notFoundDescription": "Puede que este proyecto no exista o no sea público.",
+      "goBack": "Volver a Proyectos",
+      "edit": "Editar proyecto"
+    },
+    "form": {
+      "back": "Atrás",
+      "createTitle": "Crear proyecto",
+      "editTitle": "Editar proyecto",
+      "title": "Título del proyecto",
+      "slug": "Slug",
+      "summary": "Resumen",
+      "demoUrl": "URL de la demo",
+      "repoUrl": "URL del repositorio",
+      "slideUrl": "URL de las diapositivas",
+      "videoUrl": "URL del vídeo de la demo",
+      "logo": "Logotipo del proyecto",
+      "logoHint": "PNG, JPEG o WebP; hasta 2 MB. La imagen se modera antes de subirse.",
+      "chooseLogo": "Elegir logotipo",
+      "screenshots": "Capturas de pantalla del proyecto",
+      "screenshotsHint": "Hasta 6 imágenes de 5 MB cada una. Puedes reordenarlas.",
+      "addScreenshots": "Añadir imágenes",
+      "screenshotAlt": "Captura de pantalla del proyecto {{index}}",
+      "remove": "Quitar",
+      "moveUp": "Subir",
+      "moveDown": "Bajar",
+      "logoInvalid": "El logotipo debe ser PNG, JPEG o WebP y no superar los 2 MB.",
+      "screenshotInvalid": "La imagen debe ser PNG, JPEG o WebP y no superar los 5 MB.",
+      "screenshotLimit": "Puedes subir hasta 6 capturas de pantalla.",
+      "mediaUploadFailed": "No se pudo subir la imagen.",
+      "mediaDeleteFailed": "No se pudo quitar la imagen.",
+      "visibility": "Visibilidad",
+      "create": "Crear proyecto",
+      "save": "Guardar cambios",
+      "saving": "Guardando…",
+      "created": "Proyecto creado.",
+      "saved": "Proyecto guardado.",
+      "saveFailed": "No se pudo guardar el proyecto.",
+      "notEligible": "Aún no puedes crear un proyecto",
+      "notEligibleDescription": "Inscríbete primero en el hackathon o revisa la fecha límite de envío.",
+      "cannotEdit": "No tienes permiso para editar este proyecto.",
+      "errors": {
+        "invalidUrl": "La URL proporcionada no es válida o no es segura.",
+        "invalidDemoUrl": "La URL de la demo no es válida (debe empezar por https:// y ser segura).",
+        "invalidRepoUrl": "La URL del repositorio no es válida (debe ser una URL de GitHub como https://github.com/owner/repo).",
+        "invalidSlideUrl": "La URL de las diapositivas no es válida (debe empezar por https:// y ser segura).",
+        "invalidVideoUrl": "La URL del vídeo no es válida (debe empezar por https:// y ser segura).",
+        "unverifiableLink": "No se pudo verificar el destino del enlace.",
+        "unverifiableDemoUrl": "No se pudo acceder a la URL de la demo ni verificarla.",
+        "unverifiableRepoUrl": "No se pudo verificar el repositorio de GitHub (puede ser privado).",
+        "unverifiableSlideUrl": "No se pudo acceder a la URL de las diapositivas de la presentación ni verificarla.",
+        "linkBlocked": "El enlace fue bloqueado por la moderación automática de contenido.",
+        "moderationTitle": "El título del proyecto no cumple las normas de la comunidad.",
+        "moderationSummary": "El resumen del proyecto no cumple las normas de la comunidad.",
+        "moderationLogo": "El logotipo no cumple las normas de la comunidad.",
+        "moderationImage": "La imagen subida no cumple las normas de la comunidad.",
+        "aiUnavailable": "La verificación automática no está disponible temporalmente. Inténtalo de nuevo en breve.",
+        "logoSize": "El archivo del logotipo no debe superar los 2 MB.",
+        "invalidSlug": "El slug debe estar formado por letras minúsculas, números y guiones."
+      },
+      "hackathonXpEarned": "+100 XP · Primer proyecto de hackathon enviado"
+    },
+    "team": {
+      "title": "Miembros del equipo",
+      "hint": "Los miembros aparecen públicamente en el proyecto tras aceptar una invitación y no pueden editarlo. El ajuste del portafolio solo controla si el proyecto aparece en su perfil.",
+      "hackathonEligibleHint": "Solo son elegibles los usuarios que se hayan inscrito en este hackathon.",
+      "pickTitle": "Elegir miembros del equipo",
+      "pickDescription": "Busca cuentas de Corelia para invitarlas a este proyecto.",
+      "hackathonPickDescription": "Solo son elegibles los participantes inscritos. Busca por nombre o @usuario para encontrar a personas más allá de las primeras 50 que se muestran.",
+      "placeholder": "Busca por nombre o @usuario",
+      "searchPlaceholder": "Busca por nombre o @usuario…",
+      "loading": "Cargando miembros…",
+      "empty": "No se encontraron miembros elegibles.",
+      "loadError": "No se pudieron cargar los miembros. Vuelve a intentar la búsqueda.",
+      "inviteAfterSave": "Las invitaciones se envían cuando el proyecto supera la moderación y se guarda.",
+      "invited": "Invitación enviada.",
+      "someInvitesFailed": "Se creó el proyecto, pero no se pudieron enviar algunas invitaciones.",
+      "pending": "Invitaciones pendientes",
+      "members": "Miembros que aceptaron",
+      "moreMembers": "{{count}} miembros más",
+      "revoke": "Revocar",
+      "remove": "Quitar",
+      "resendEmail": "Reenviar correo",
+      "emailSent": "Correo de invitación enviado.",
+      "emailAlreadySent": "El correo de invitación ya se había enviado.",
+      "emailSkipped": "Invitación registrada; se omitió el envío del correo.",
+      "emailRateLimited": "La entrega de correos está limitada. Inténtalo de nuevo en breve.",
+      "emailPermanentError": "La entrega del correo fue rechazada de forma permanente. Verifica la dirección del destinatario.",
+      "emailIndeterminateError": "El estado de entrega del correo es indeterminado. Hace falta una conciliación manual.",
+      "emailRetryableError": "No se pudo enviar el correo de invitación. Inténtalo de nuevo más tarde.",
+      "limit": "Hasta {{count}} personas, incluido el propietario del proyecto.",
+      "full": "Este proyecto alcanzó el límite de 6 personas. Quita a un miembro antes de añadir a alguien nuevo.",
+      "actionFailed": "No se pudo actualizar el equipo.",
+      "publicTitle": "Equipo del proyecto",
+      "removeMemberTitle": "Quitar del equipo actual",
+      "removeMemberConfirm": "Este miembro se quitará del equipo actual. Corelia ya no lo reconocerá como miembro de este equipo.",
+      "removeMemberAction": "Quitar del equipo",
+      "removingMember": "Quitando del equipo…",
+      "leaveProject": "Salir del equipo",
+      "leaveProjectTitle": "Salir del equipo actual",
+      "leaveProjectConfirm": "Saldrás del equipo actual. Corelia ya no te reconocerá como miembro de este equipo.",
+      "leaveProjectAction": "Salir del equipo",
+      "leavingProject": "Saliendo del equipo…",
+      "leftProject": "Saliste del equipo del proyecto.",
+      "leaveProjectFailed": "No se pudo salir del equipo del proyecto. Inténtalo de nuevo.",
+      "lateMembersHint": "Después de la fecha límite, puedes invitar a cualquier cuenta a colaborar. Los miembros nuevos no reciben premios ni certificados automáticamente."
+    },
+    "social": {
+      "heart": "Me gusta",
+      "unheart": "Quitar me gusta",
+      "loginToInteract": "Inicia sesión para dar me gusta.",
+      "heartFailed": "No se pudo actualizar el me gusta.",
+      "xpEarned": "+2 XP · Proyecto con me gusta",
+      "xpHint": "Primer me gusta elegible: +2 XP (hasta 5 proyectos por día UTC)",
+      "xpHintRemaining": "Primer me gusta elegible: +2 XP · quedan {{count}} me gusta con recompensa hoy (UTC)",
+      "xpLimitReached": "Hoy ya usaste los 5 me gusta con recompensa (UTC); aún puedes dar me gusta."
+    },
+    "errors": {
+      "loadFailed": "No se pudieron cargar los proyectos",
+      "link": "No se pudo verificar {{field}}. Usa un enlace HTTPS accesible que no requiera iniciar sesión e inténtalo de nuevo.",
+      "moderation": "{{field}} no superó la revisión de contenido. Revísalo e inténtalo de nuevo.",
+      "existing": "Ya tienes un proyecto para este hackathon. Abre tu proyecto existente para editarlo.",
+      "slug": "Esta URL de proyecto no está disponible. Elige otro slug.",
+      "deadline": "La fecha límite de envío ya pasó. No se pueden guardar estos cambios.",
+      "session": "Tu sesión caducó. Inicia sesión de nuevo para guardar tu proyecto.",
+      "forbidden": "No tienes permiso para hacer este cambio.",
+      "taxonomy": "Selecciona al menos una categoría, un área de ingeniería y una tecnología.",
+      "unavailable": "La revisión de contenido no está disponible temporalmente. Tus cambios se conservan; inténtalo de nuevo en breve.",
+      "hackathonMissing": "Este hackathon no está disponible. Borra el filtro para explorar otros proyectos.",
+      "mediaExpired": "Una imagen subida ha caducado. Vuelve a añadirla y guarda tu proyecto.",
+      "resourceRequired": "Añade al menos una demo, un repositorio, unas diapositivas o un vídeo antes de enviar a un hackathon.",
+      "contentRequired": "Completa {{field}} antes de compartir este proyecto. Los espacios en blanco o la puntuación solos no son contenido.",
+      "alreadyRegistered": "Ya estás inscrito en este hackathon.",
+      "submissionUnauthorized": "No tienes autorización para enviar a este hackathon.",
+      "moderationFlagged": "La moderación automática marcó el contenido. Revísalo e inténtalo de nuevo.",
+      "userBlocked": "Tu cuenta tiene restringida esta acción.",
+      "rateLimitExceeded": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo."
+    },
+    "editor": {
+      "workspace": "Espacio del proyecto",
+      "intro": "Comparte una idea o un producto funcional. Completa primero las secciones obligatorias y luego añade imágenes y recursos si los tienes.",
+      "content": "Contenido del proyecto",
+      "basics": "Resumen del proyecto",
+      "basicsHint": "Dale a tu proyecto un nombre claro y explica el problema que resuelve.",
+      "titlePlaceholder": "Ejemplo: StudyBuddy: encuentra compañero de estudio",
+      "summaryPlaceholder": "Ejemplo: StudyBuddy ayuda a los estudiantes a encontrar grupos de estudio que coincidan con sus asignaturas y horarios.",
+      "media": "Logotipo y capturas de pantalla",
+      "links": "Demo y recursos",
+      "linksHint": "Elige los recursos que quieres añadir. Incluye solo lo que ya tengas; puedes añadir más mientras la edición del proyecto esté abierta.",
+      "categories": "Categorías y tecnologías",
+      "categoriesHint": "Elige al menos una categoría. Las áreas de ingeniería y las tecnologías son opcionales; busca entre las sugerencias o añade las tuyas.",
+      "taxonomySearch": "Busca o añade las tuyas…",
+      "taxonomyAdd": "Añadir «{{value}}»",
+      "taxonomyLimit": "Puedes seleccionar hasta 20 elementos en este grupo.",
+      "taxonomyLoadError": "No se pudieron cargar las sugerencias. Aún puedes añadir tu propio elemento.",
+      "team": "Tu equipo",
+      "sections": "Secciones del proyecto",
+      "checklist": "¿Listo para compartir?",
+      "complete": "Completo",
+      "missing": "Obligatorio",
+      "publicHint": "Los proyectos de hackathon son públicos y están vinculados a este evento. Después de la fecha límite, la edición depende de los ajustes del evento.",
+      "public": "Público",
+      "unlisted": "No listado",
+      "private": "Privado",
+      "requiredHint": "Completa los elementos obligatorios de arriba para continuar. Los campos marcados con * son obligatorios.",
+      "uploading": "Subiendo y comprobando imágenes…",
+      "unsaved": "Tienes cambios sin guardar. El texto tiene una copia de seguridad en esta pestaña.",
+      "ready": "Revisa tu proyecto antes de guardar.",
+      "retryHint": "Tus cambios siguen aquí. Corrige el problema e inténtalo de nuevo.",
+      "leave": "Tienes cambios sin guardar. ¿Salir de esta página? Podrás recuperar tu texto al volver; las imágenes sin guardar tendrás que añadirlas de nuevo.",
+      "recovered": "Se recuperaron tu texto y tus selecciones sin guardar. Revísalos y guarda cuando estés listo.",
+      "gallery": "Galería de proyectos",
+      "builder": "Constructor",
+      "viewProject": "Ver proyecto",
+      "clearFilters": "Borrar todo",
+      "filters": "Filtrar proyectos",
+      "overview": "Resumen",
+      "resources": "Recursos",
+      "teamLeader": "Líder del equipo",
+      "hackathon": "Hackathon",
+      "share": "Compartir proyecto",
+      "copied": "Enlace del proyecto copiado.",
+      "copyFailed": "No se pudo copiar. Copia la dirección desde tu navegador.",
+      "noTeam": "Aún no hay otros miembros del equipo.",
+      "noResources": "Aún no se han añadido enlaces de demo ni de recursos.",
+      "results": "{{count}} proyectos cargados",
+      "myProjects": "Mis proyectos",
+      "updated": "Actualizado",
+      "aboutTeam": "Conoce a los constructores de este proyecto.",
+      "winner": "Proyecto ganador",
+      "story": "Historia del proyecto",
+      "description": "Descripción detallada",
+      "descriptionHint": "Explica el problema, los usuarios, la solución y qué la hace diferente. Si es una idea, describe tu enfoque propuesto; aún no hacen falta la arquitectura ni el código fuente.",
+      "progress": "Avances durante el hackathon",
+      "progressHint": "Opcional. Describe el trabajo realizado durante el hackathon: investigación, entrevistas, bocetos o un prototipo. Separa lo que has hecho de tus próximos pasos.",
+      "pitchVideo": "Vídeo de presentación",
+      "videos": "Vídeos del proyecto",
+      "resourceRequired": "Al menos una demo, un repositorio, unas diapositivas o un vídeo",
+      "hackathonLinksHint": "Las demos, el código fuente, las diapositivas y los vídeos son opcionales. Puedes enviar una idea sin ninguno de estos enlaces.",
+      "characterLimit": "Máximo {{count}} / {{limit}} caracteres",
+      "write": "Escribir",
+      "preview": "Vista previa",
+      "previewEmpty": "Escribe Markdown para ver aquí la vista previa.",
+      "formatting": "Formato Markdown",
+      "markdownText": "Texto",
+      "markdownheading": "Título",
+      "markdownbold": "Negrita",
+      "markdownitalic": "Cursiva",
+      "markdownlist": "Lista con viñetas",
+      "markdownlink": "Enlace",
+      "markdowncode": "Código en línea",
+      "limitHint": "Acorta los campos que superen su límite de caracteres antes de guardar.",
+      "optional": "Opcional",
+      "titleHint": "Elige un nombre corto y memorable. No necesitas incluir el nombre del hackathon.",
+      "slugHint": "Esta dirección se genera a partir del nombre de tu proyecto. Puedes editarla si hace falta.",
+      "summaryHint": "Escribe 2–3 frases: para quién es, qué problema resuelve y qué beneficio ofrece.",
+      "descriptionPlaceholder": "Problema: ¿Qué dificultad enfrentan tus usuarios?\n\nSolución: ¿Cómo los ayudaría tu idea?\n\nQué la hace diferente: ¿Por qué es útil este enfoque?",
+      "progressPlaceholder": "Completado: Encuesté a 10 estudiantes y bosquejé el flujo de usuario.\n\nAprendido: Los usuarios necesitan grupos de estudio con horarios compatibles.\n\nSiguiente: Probar los bocetos con los usuarios.",
+      "ideaHint": "¿Aún estás en la fase de idea? Puedes omitir toda esta sección y enviar tu proyecto.",
+      "checklistHint": "Solo los elementos de abajo son obligatorios. Las demos y los recursos no afectan a la finalización.",
+      "addResource": "Añadir {{resource}}",
+      "removeResource": "Quitar {{resource}}",
+      "httpsHint": "Introduce un enlace completo que empiece por https://, por ejemplo https://example.com/demo.",
+      "resourceAccessHint": "Usa enlaces HTTPS con acceso de visualización público o «Cualquier persona con el enlace». Ábrelos en una ventana privada para comprobar que los revisores pueden verlos.",
+      "resourceFields": {
+        "demo": {
+          "label": "Demo en vivo",
+          "hint": "Una versión funcional de tu producto que los revisores puedan probar."
+        },
+        "slide": {
+          "label": "Diapositivas / presentación",
+          "hint": "Presenta tu idea, el problema y la solución; por ejemplo con Google Slides o Canva."
+        },
+        "repo": {
+          "label": "Código fuente en GitHub",
+          "hint": "Un repositorio público en github.com/equipo/proyecto, y no un enlace a una incidencia o a un archivo."
+        },
+        "video": {
+          "label": "Vídeo de la demo",
+          "hint": "Una grabación de tu producto en acción, como un vídeo de YouTube, Vimeo o Loom."
+        },
+        "pitchVideo": {
+          "label": "Vídeo de presentación",
+          "hint": "Presenta tu idea, su valor y tu equipo. No hace falta un producto funcional."
+        }
+      }
+    },
+    "management": {
+      "edit": "Editar",
+      "transfer": "Mover a un hackathon",
+      "transferDescription": "El proyecto y el envío se moverán al hackathon seleccionado. Los premios históricos se mantienen.",
+      "currentHackathon": "Hackathon actual",
+      "noHackathon": "Sin hackathon",
+      "targetHackathon": "Hackathon de destino",
+      "selectHackathon": "Selecciona un hackathon",
+      "transferImpact": "Elige nuevas categorías. Si hace falta, el propietario se inscribirá y se aprobará en el destino; el envío actual se mueve con el proyecto.",
+      "transferSuccess": "Proyecto movido al hackathon.",
+      "transferConflict": "El propietario del proyecto ya tiene otro envío en este hackathon. Elige otro destino.",
+      "transferFailed": "No se pudo mover el proyecto. Revisa el hackathon, las categorías y los permisos, e inténtalo de nuevo.",
+      "manage": "Gestionar proyectos",
+      "title": "Gestionar «{{title}}»",
+      "delete": "Eliminar proyecto",
+      "block": "Bloquear proyecto",
+      "unblock": "Desbloquear proyecto",
+      "blocked": "Bloqueado",
+      "public": "Público",
+      "unlisted": "No listado",
+      "private": "Privado",
+      "all": "Todos los estados",
+      "status": "Estado",
+      "action": "Acción",
+      "reason": "Motivo (obligatorio)",
+      "deleteDescription": "Esto elimina el proyecto de forma permanente y retira el envío de hackathon vinculado. No se puede deshacer.",
+      "description": "Bloquear oculta el proyecto de la vista pública e impide volver a publicarlo. Al desbloquearlo queda privado hasta que lo publiques de nuevo.",
+      "cancel": "Cancelar",
+      "saving": "Guardando…",
+      "success": "Proyecto actualizado correctamente.",
+      "failed": "No se pudo actualizar el proyecto. Revisa tus permisos e inténtalo de nuevo.",
+      "blockedError": "Este proyecto está bloqueado. Un administrador debe desbloquearlo antes de que se pueda volver a publicar.",
+      "contentError": "Añade un resumen y una descripción detallada antes de publicar.",
+      "previous": "Anterior",
+      "next": "Siguiente"
+    }
+  },
+  "search": {
+    "placeholder": "Buscar contenido público...",
+    "title": "Buscar",
+    "queryLine": "Resultados de «{{query}}»",
+    "enterQueryHint": "Introduce una palabra clave abajo para descubrir contenido público.",
+    "categories": "Categorías de resultados de búsqueda",
+    "clear": "Borrar búsqueda",
+    "suggest": {
+      "recent": "Búsquedas recientes",
+      "trending": "Tendencias",
+      "suggestions": "Resultados rápidos",
+      "searchFor": "Buscar «{{query}}»",
+      "enterToSeeAll": "Pulsa Intro para ver todos los resultados",
+      "viewAllResults": "Ver todos los resultados",
+      "noQuickResults": "No hay resultados rápidos."
+    },
+    "emptyTitle": "No se encontraron resultados",
+    "empty": "No se encontraron resultados.",
+    "filteredEmptyTitle": "No hay resultados en esta categoría",
+    "filteredEmpty": "Elige otra categoría o prueba con otra palabra clave.",
+    "errors": {
+      "loadFailed": "No se pudieron cargar los resultados de búsqueda"
+    },
+    "group": {
+      "all": "Todos",
+      "project": "Proyecto",
+      "contest": "Hackathon",
+      "hackathon": "Hackathon",
+      "course": "Curso",
+      "profile": "Perfil"
+    }
+  },
+  "tabs": {
+    "menu": "Menú",
+    "signIn": "Iniciar sesión",
+    "signOut": "Cerrar sesión"
+  },
+  "status": {
+    "loading": "Cargando…",
+    "empty": "Aún no hay datos",
+    "error": "Algo salió mal"
+  },
+  "errorBoundary": {
+    "title": "Algo salió mal",
+    "sectionMessage": "No se pudo cargar este contenido.",
+    "staleTitle": "Corelia se actualizó",
+    "staleMessage": "No se pudo cargar la última versión. Revisa tu conexión y vuelve a cargar la página.",
+    "reload": "Recargar",
+    "goHome": "Ir al inicio"
+  },
+  "home": {
+    "syncing": "Sincronizando...",
+    "dashboard": "Panel",
+    "continueLearning": "Continuar aprendiendo",
+    "viewCourse": "Ver",
+    "exploreCourses": "Explorar cursos",
+    "allCourses": "Todos los cursos",
+    "studentFallback": "Estudiante",
+    "xp": {
+      "title": "XP actual",
+      "unranked": "Sin rango",
+      "noData": "Datos de XP no disponibles",
+      "loading": "Cargando XP...",
+      "loadingDescription": "Obteniendo tu total de XP.",
+      "joinRank": "Gana {{xp}} XP para entrar en el rango {{rank}}",
+      "nextRank": "Gana {{xp}} XP para alcanzar el rango {{rank}}",
+      "highest": "Has alcanzado el rango más alto",
+      "loadFailed": "No se pudo cargar la información de XP."
+    },
+    "xpMissions": {
+      "title": "Tareas de XP",
+      "sidebarLabel": "XP y tareas",
+      "loading": "Comprobando...",
+      "statusUnavailable": "Estado no disponible",
+      "statusChecking": "Comprobando",
+      "statusComplete": "Completada",
+      "statusNotComplete": "No completada",
+      "repeatable": "Se puede repetir",
+      "dailyProgress": "{{count}}/5 hoy",
+      "tasks": {
+        "lesson": {
+          "title": "Completar una lección",
+          "detail": "+10 XP por lección elegible · una vez"
+        },
+        "quiz": {
+          "title": "Aprobar un cuestionario",
+          "detail": "Puntuación ≥80 %: +20 XP y +10 XP de lección"
+        },
+        "course": {
+          "title": "Completar un curso",
+          "detail": "+100 XP por curso elegible · una vez"
+        },
+        "projectLike": {
+          "title": "Dar me gusta a un proyecto",
+          "detail": "+2 XP por proyecto · hasta 5 proyectos al día"
+        },
+        "firstHackathonSubmission": {
+          "title": "Enviar un proyecto de hackathon",
+          "detail": "+100 XP por tu primer envío elegible"
+        },
+        "ocidConnected": {
+          "title": "Vincular OCID",
+          "detail": "+50 XP una vez"
+        },
+        "githubConnected": {
+          "title": "Vincular GitHub",
+          "detail": "+50 XP una vez"
+        },
+        "ethereumWallet": {
+          "title": "Conectar una billetera de Ethereum",
+          "detail": "+30 XP una vez por red"
+        },
+        "solanaWallet": {
+          "title": "Conectar una billetera de Solana",
+          "detail": "+30 XP una vez por red"
+        }
+      }
+    },
+    "meta": {
+      "hours": "{{count}} h",
+      "lessonCount": "{{count}} lecciones",
+      "learners": "{{displayCount}} estudiantes",
+      "remainingDuration": "Quedan {{hours}} h {{minutes}} min",
+      "selfPaced": "a tu ritmo",
+      "offlinePrefix": "clase presencial"
+    },
+    "focus": {
+      "nextLesson": "Retomar lección: {{title}}",
+      "allLessonsCompleted": "Has completado todas las lecciones disponibles",
+      "lastAccessed": "Último acceso: {{date}}"
+    },
+    "momentum": {
+      "learning": {
+        "label": "Aprendizaje",
+        "emptyNote": "Aún no hay cursos en seguimiento"
+      },
+      "contests": {
+        "label": "Hackathons abiertos",
+        "note": "Hackathon · actividades del ecosistema",
+        "emptyNote": "No hay hackathons nuevos"
+      },
+      "certificates": {
+        "label": "Certificados emitidos",
+        "note": "Ver todos en Logros",
+        "emptyNote": "Aún no se han emitido certificados"
+      }
+    },
+    "guest": {
+      "heroTitle": "Empieza tu camino de aprendizaje en Web3 con Corelia",
+      "heroSubtitle": "Explora cursos y hackathons abiertos. Cuando quieras guardar tu progreso o inscribirte, solo inicia sesión.",
+      "featuredCoursesTitle": "Cursos destacados",
+      "signIn": "Iniciar sesión",
+      "openContestsTitle": "Hackathons abiertos",
+      "startLearningTitle": "Empezar a aprender",
+      "startLearningSubtitle": "Inicia sesión para guardar tu progreso, seguir tus certificados y enviar solicitudes a hackathons.",
+      "quickLinksTitle": "Enlaces rápidos",
+      "valueProps": {
+        "learn": {
+          "label": "Aprende los fundamentos",
+          "note": "Cursos y rutas diseñados para ayudarte a ganar impulso paso a paso."
+        },
+        "build": {
+          "label": "Construye practicando",
+          "note": "Los hackathons y los proyectos de la comunidad te ayudan a afinar habilidades del mundo real."
+        },
+        "ship": {
+          "label": "Publica tu trabajo",
+          "note": "Desde el portafolio hasta oportunidades de colaboración en el ecosistema de Corelia."
+        }
+      },
+      "quickLinks": {
+        "contests": "Hackathons",
+        "courses": "Cursos"
+      }
+    },
+    "sections": {
+      "greeting": "Hola, {{name}}",
+      "greetingSubtitle": "Sigue cursos, hackathons y logros en un solo lugar.",
+      "featuredOnline": "Aprendiendo ahora",
+      "featuredOffline": "Siguiendo ahora",
+      "progress": "Progreso",
+      "seeAll": "Ver todo",
+      "enrolledCourses": "Cursos inscritos",
+      "exploreTitle": "Explorar",
+      "recommendedTitle": "Recomendado para ti",
+      "goToLibrary": "Ir a la biblioteca",
+      "startFromCatalogTitle": "Aún no te has inscrito en ningún curso.",
+      "startFromCatalogSubtitle": "Elige un curso básico para ganar impulso.",
+      "enrollHint": "Cuando te inscribas o compres tu primer curso, esta zona mostrará tu progreso y accesos rápidos.",
+      "profileSetupHintPrefix": "Actualiza tu nombre completo y tu teléfono para que Corelia, los instructores o el personal de soporte puedan ayudarte mejor.",
+      "loadFailed": "No se pudieron cargar los cursos."
+    }
+  },
+  "achievements": {
+    "badgeCategory": {
+      "learning": "Aprendizaje",
+      "milestone": "Hito",
+      "social": "Social"
+    },
+    "certificates": {
+      "courseCompletionTitle": "Certificado de finalización del curso",
+      "fallbackCourseName": "Curso de Corelia",
+      "fallbackInstructorName": "Corelia Academy",
+      "issuedOnPrefix": "Emitido el {{date}}",
+      "type": {
+        "online": "En línea",
+        "offline": "Presencial"
+      },
+      "ocAction": {
+        "view": "Ver credencial de OC",
+        "claim": "Reclamar credencial de OC"
+      },
+      "viewLarge": "Ver certificado",
+      "downloadPdf": "Descargar como PDF",
+      "downloadPng": "Descargar como PNG",
+      "downloadError": "No se pudo generar el certificado. Inténtalo de nuevo.",
+      "noTemplate": "Aún no se ha subido una plantilla de certificado para este curso.",
+      "downloadTooltip": "Descargar"
+    },
+    "badges": {
+      "earnedPrefix": "Obtenido: {{date}}",
+      "locked": "Bloqueado",
+      "pendingClaim": "Pendiente de reclamar",
+      "failedPrefix": "No se pudo crear la credencial",
+      "pendingPrefix": "Creando credencial...",
+      "retry": "Reintentar",
+      "ocDot": {
+        "claimedTooltip": "Credencial de OC reclamada",
+        "failedTooltip": "No se pudo crear la credencial",
+        "unclaimedTooltip": "Credencial de OC sin reclamar"
+      }
+    },
+    "milestones": {
+      "courseFirst": {
+        "title": "Primer curso",
+        "description": "Inscríbete en tu primer curso para desbloquear este hito."
+      },
+      "courseThree": {
+        "title": "Estudiante constante",
+        "description": "Inscríbete en 3 cursos distintos para desbloquear este hito."
+      },
+      "firstCertificate": {
+        "title": "Primer certificado",
+        "description": "Obtén tu primer certificado de un curso para desbloquear este hito."
+      },
+      "threeCertificates": {
+        "title": "Portafolio de aprendizaje",
+        "description": "Obtén 3 certificados para completar tu perfil de logros de Corelia."
+      },
+      "next": {
+        "titleFallback": "Has desbloqueado todos los hitos disponibles",
+        "descriptionFallback": "Sigue completando cursos nuevos para enriquecer tu perfil de logros con el tiempo."
+      }
+    },
+    "oc": {
+      "badge": {
+        "claimed": "OC reclamada",
+        "pending": "Procesando",
+        "awaitingHolder": "Se necesita conectar OCID",
+        "reconciling": "Verificando credencial",
+        "failed": "Fallida",
+        "unclaimed": "Sin reclamar"
+      },
+      "modal": {
+        "title": "Credencial de Open Campus",
+        "subtitle": "Credencial verificable en la blockchain de EDUChain",
+        "kind": {
+          "cert": "Certificado",
+          "oca": "OCA · Certificado de finalización",
+          "hackathonBadge": "Insignia de hackathon",
+          "milestone": "Hito",
+          "badge": "Insignia"
+        },
+        "date": {
+          "issued": "Emitido",
+          "earned": "Obtenido"
+        },
+        "statusLabel": "Estado de OC:",
+        "explorerTooltip": "Ver en el explorador de bloques",
+        "dashboardCtaTitle": "Ver en el panel de OCID",
+        "dashboardCtaSubtitle": "opencampus.xyz · Perfil público",
+        "standardsNote": "Esta credencial sigue los estándares Open Badges y W3C Verifiable Credentials, y está anclada en la blockchain de EDUChain. Se puede verificar de forma independiente y es portable entre plataformas.",
+        "claim": {
+          "issuing": "Emitiendo credenciales...",
+          "retry": "Reintentar – Emitir en Open Campus",
+          "issue": "Emitir en Open Campus",
+          "pending": "Procesando en la blockchain..."
+        },
+        "connectRequired": {
+          "title": "Se necesita conectar OCID",
+          "body": "Conecta tu OCID antes de emitir este certificado de Open Campus. Tu certificado original de Corelia sigue guardado en tu caja de certificados.",
+          "cta": "Conectar OCID"
+        },
+        "awaitingHolder": {
+          "title": "La credencial está esperando tu OCID",
+          "body": "Esta credencial estará lista para emitirse en cuanto conectes un OCID o una dirección de billetera.",
+          "cta": "Conectar OCID"
+        },
+        "reconciliation": {
+          "title": "El ID de la credencial necesita verificación",
+          "body": "La respuesta de emisión no incluyó un ID de credencial on-chain verificable. Puede que la credencial ya exista o que la respuesta esté incompleta. No lo reintentes para evitar una solicitud duplicada; Corelia debe verificar este ID."
+        },
+        "review": {
+          "title": "Revisa la información de tu credencial",
+          "subtitle": "Esta información se incrustará de forma permanente on-chain. Asegúrate de que todo sea correcto antes de emitirla.",
+          "back": "Atrás",
+          "confirm": "Confirmar y emitir",
+          "credentialLabel": "Credencial",
+          "nameLabel": "Tu nombre en la credencial",
+          "editName": "Editar nombre",
+          "nameMissing": "Aún no has definido un nombre visible. Tu nombre no aparecerá en la credencial.",
+          "setName": "Definir nombre",
+          "permanenceWarning": "Una vez emitida, esta credencial queda registrada de forma permanente en la blockchain de EDUChain y no se puede editar ni revocar. Asegúrate de que tu nombre y tu OCID sean correctos antes de confirmar."
+        },
+        "claimToast": {
+          "pending": "Tu credencial se está procesando en la blockchain. Vuelve a comprobarlo en breve.",
+          "error": {
+            "failed": "No se pudo emitir la credencial. Inténtalo de nuevo.",
+            "notEligible": "No se pudo emitir la credencial. Asegúrate de haber completado el curso y de que tu OCID esté conectado."
+          }
+        },
+        "claimedActions": {
+          "downloadPdf": "Descargar PDF",
+          "share": "Compartir"
+        },
+        "learnMore": "Más información sobre los logros de Open Campus"
+      }
+    },
+    "sync": {
+      "pendingTitle": "Creando credencial...",
+      "pendingDescription": "El sistema está registrando y creando tu credencial en la blockchain.",
+      "mintedTitle": "¡Credencial emitida correctamente!",
+      "mintedDescription": "Tu credencial se creó correctamente y se almacenó en la blockchain.",
+      "failedTitle": "Falló la emisión de la credencial",
+      "failedDescription": "Ocurrió un error al emitir tu credencial. Inténtalo de nuevo más tarde.",
+      "retrySuccess": "¡Solicitud de reintento enviada!",
+      "retryError": "Error al reintentar."
+    },
+    "loadError": {
+      "body": "No pudimos actualizar tus logros. Se sigue mostrando el último estado confirmado de tus credenciales.",
+      "retry": "Reintentar",
+      "vaultUnavailable": "No se pudieron cargar los logros. Usa Reintentar arriba."
+    },
+    "stats": {
+      "certificates": "Certificados",
+      "oca": "OCA",
+      "badges": "Insignias",
+      "milestones": "Hitos",
+      "total": "Logros totales",
+      "ocCredential": "Credencial de OC"
+    },
+    "hero": {
+      "eyebrow": "Camino de logros",
+      "title": "Mis logros",
+      "subtitlePrefix": "Sigue tus certificados, insignias e hitos de aprendizaje en un mismo recorrido. Cuando estés listo, puedes reclamar cada logro en",
+      "subtitleSuffix": "para obtener credenciales verificables en la blockchain.",
+      "certCount": "{{count}} certificados",
+      "badgeUnlockedCount": "{{count}} insignias desbloqueadas",
+      "readyToClaimCount": "{{count}} listos para reclamar",
+      "claimedOnOc": {
+        "title": "Reclamados en OC",
+        "description": "Número de credenciales publicadas en Open Campus."
+      },
+      "pending": {
+        "title": "Pendientes",
+        "description": "Credenciales pendientes o en espera de emisión."
+      },
+      "nextMilestone": "Siguiente hito"
+    },
+    "meaning": {
+      "title": "Qué significan las credenciales de Corelia",
+      "p1": "Los logros de Corelia reflejan lo que has completado de verdad: cursos terminados, certificados obtenidos e hitos técnicos desbloqueados.",
+      "p2": "Los certificados y las insignias están pensados para respaldar tu portafolio de aprendizaje, talleres, hackathons y camino en Web3, no para ser títulos académicos formales."
+    },
+    "useCases": {
+      "title": "Dónde puedes usarlos",
+      "items": {
+        "0": "Portafolio personal",
+        "1": "Taller",
+        "2": "Hackathon",
+        "3": "Demo day",
+        "4": "Revisión con mentor"
+      },
+      "note": "Al reclamarlos en Open Campus, estos logros se convierten en credenciales verificables que puedes compartir con más claridad en tu perfil personal."
+    },
+    "recent": {
+      "title": "Desbloqueados recientemente",
+      "loading": "Cargando tus últimos logros.",
+      "empty": "Aún no has desbloqueado ningún logro. Completa tu primer curso para empezar este camino."
+    },
+    "vaults": {
+      "certificates": {
+        "title": "Caja de certificados",
+        "subtitle": "Un lugar para guardar todos los certificados de los cursos completados.",
+        "countLabel": "{{count}} certificados",
+        "loading": "Cargando tu caja de certificados.",
+        "empty": "Aún no tienes certificados. Completa un curso con certificación para empezar.",
+        "syncTitle": "Certificado pendiente de sincronizar",
+        "syncDescription": "Corelia ve que completaste un curso con certificado, pero la caja aún no tiene un registro emitido. Sincroniza para emitir primero el certificado de Corelia; el OCID solo hace falta más adelante para reclamarlo en Open Campus.",
+        "syncCourse": "Sincronizar {{course}}",
+        "syncSuccess": "Certificado emitido. Tu caja se actualizará ahora.",
+        "syncPending": "El certificado está esperando la confirmación de elegibilidad.",
+        "syncError": "No se pudo sincronizar el certificado en este momento."
+      },
+      "badges": {
+        "title": "Logros, insignias e hitos",
+        "subtitle": "Incluye los hitos de aprendizaje y el progreso que vas desbloqueando poco a poco.",
+        "summaryUnlocked": "{{earned}}/{{total}} desbloqueados",
+        "loading": "Cargando tus insignias e hitos.",
+        "earnedSectionTitle": "Obtenidos ({{count}})",
+        "progressGood": "Gran progreso"
+      },
+      "onchain": {
+        "title": "Caja on-chain",
+        "subtitle": "Logros e insignias de Open Campus registrados on-chain."
+      },
+      "nextUnlock": {
+        "title": "Próximos desbloqueos",
+        "allUnlockedNote": "Has desbloqueado todos los hitos disponibles. Ahora puedes centrarte en reclamar credenciales de OC y ampliar tu perfil de logros."
+      }
+    },
+    "ocVault": {
+      "tabs": {
+        "all": "Todos",
+        "oca": "Logros (OCA)",
+        "ocb": "Insignias (OCB)",
+        "milestones": "Hitos"
+      },
+      "empty": "Aún no hay credenciales en esta categoría."
+    },
+    "profileVisibility": {
+      "manage": "Gestionar visibilidad",
+      "title": "Logros públicos",
+      "description": "Elige las credenciales de Open Campus confirmadas que aparecen en tu perfil público de Corelia.",
+      "selected": "Se muestra en el perfil",
+      "selectedCount": "Se muestran en el perfil: {{count}} credenciales",
+      "apply": "Aplicar cambios",
+      "applying": "Aplicando...",
+      "ok": "Aceptar",
+      "empty": "Aún no tienes credenciales de Open Campus reclamadas para mostrar.",
+      "emptyPublic": "No estás mostrando públicamente ninguna de tus credenciales.",
+      "saveSuccess": "Tu caja pública de credenciales se actualizó.",
+      "saveError": "No se pudo actualizar tu caja pública de credenciales.",
+      "publicVaultTitle": "Credenciales de Open Campus",
+      "publicVaultDescription": "Credenciales que este miembro eligió mostrar en su perfil.",
+      "selfVaultDescription": "Credenciales que elegiste mostrar públicamente en tu perfil."
+    },
+    "credentialType": {
+      "oca": "OCA",
+      "badge": "Insignia",
+      "milestone": "Hito"
+    }
+  },
+  "combobox": {
+    "searchPlaceholder": "Busca por nombre o correo",
+    "emptyLabel": "No hay resultados que coincidan.",
+    "searchLabel": "Buscar {{label}}",
+    "tagsLabel": "etiquetas",
+    "selectOptionLabel": "Selecciona una opción",
+    "selectionLabel": "Selección de {{label}}",
+    "tagOptionsLabel": "Opciones de etiquetas",
+    "tagOptionsForLabel": "Opciones de etiquetas de {{label}}",
+    "hiddenTagsLabel_one": "{{count}} etiqueta oculta",
+    "hiddenTagsLabel_other": "{{count}} etiquetas ocultas",
+    "hiddenTagsLabel_many": "{{count}} etiquetas ocultas",
+    "done": "Hecho",
+    "loadMore": "Cargar más",
+    "loadingMore": "Cargando más..."
+  },
+  "openCampusConnect": {
+    "header": {
+      "ariaLabel": "Conectar OpenCampus",
+      "logoAlt": "OpenCampus"
+    },
+    "modal": {
+      "logoAlt": "OpenCampus",
+      "title": "Conectar OpenCampus (OCID)",
+      "description": "Conecta para usar OCID y reclamar o verificar logros en Open Campus.",
+      "benefits": {
+        "0": "Vincula tu identidad OCID a tu cuenta de Corelia",
+        "1": "Reclama logros como credenciales verificables",
+        "2": "Comparte fácilmente tu perfil de logros en Open Campus"
+      },
+      "later": "Quizá más tarde",
+      "learnMoreLink": "Más información",
+      "connect": "Conectar OpenCampus",
+      "connecting": "Conectando…",
+      "startFailed": "No se pudo iniciar la conexión con OpenCampus. Inténtalo de nuevo."
+    }
+  },
+  "unsubscribe": {
+    "loading": "Procesando...",
+    "successTitle": "Baja realizada correctamente",
+    "successBody": "Ya no recibirás este tipo de notificación por correo de Corelia.",
+    "managePreferences": "Gestionar preferencias de notificaciones",
+    "errorTitle": "No se pudo procesar la solicitud",
+    "errorBody": "El enlace de baja no es válido o ha caducado. Ve a Ajustes para gestionar tus notificaciones."
+  },
+  "claim": {
+    "loading": "Buscando...",
+    "legacyTitle": "Reclama tus credenciales pendientes",
+    "legacyBody": "Regístrate con la dirección de correo de tu invitación para reclamar tus credenciales. Los enlaces de invitación más recientes permiten ver una vista previa de las credenciales.",
+    "title": "Tienes credenciales esperando",
+    "subtitle": "Las siguientes credenciales están esperando a guardarse en la cuenta de {{email}}.",
+    "pendingBadge": "Pendiente",
+    "cta": "Únete a Corelia para reclamarlas todas",
+    "emptyTitle": "No hay credenciales pendientes",
+    "emptyBody": "No se encontraron credenciales pendientes para este correo. Si crees que es un error, contacta con el equipo de Corelia.",
+    "errorTitle": "No se pudo buscar",
+    "errorBody": "Este enlace no es válido o algo salió mal. Inténtalo de nuevo desde el correo que recibiste."
+  },
+  "verify": {
+    "loading": "Verificando...",
+    "formTitle": "Verificar un certificado",
+    "formHint": "Introduce el código impreso en el certificado para comprobar que es auténtico.",
+    "inputLabel": "Código del certificado",
+    "inputPlaceholder": "CRL-XXXXXXXXXX",
+    "submit": "Verificar",
+    "validTitle": "El certificado es válido",
+    "validSubtitle": "Este certificado fue emitido por Corelia y sigue en vigor.",
+    "revokedTitle": "El certificado ha sido revocado",
+    "revokedBody": "Este certificado se revocó el {{date}} y ya no es válido.",
+    "revokedReason": "Motivo: {{reason}}",
+    "notFoundTitle": "Certificado no encontrado",
+    "notFoundBody": "Ningún certificado coincide con este código. Revisa de nuevo el código impreso en el certificado.",
+    "errorTitle": "No se pudo verificar",
+    "errorBody": "Algo salió mal al verificar. Inténtalo de nuevo más tarde.",
+    "holderLabel": "Emitido a",
+    "courseLabel": "Curso",
+    "instructorLabel": "Instructor",
+    "issuedLabel": "Emitido el",
+    "codeLabel": "Código del certificado",
+    "unknownHolder": "Nombre no registrado",
+    "unknownCourse": "Curso no registrado",
+    "unknownInstructor": "Instructor no registrado",
+    "viewCourse": "Ver curso",
+    "viewProfile": "Ver perfil",
+    "viewOnchain": "Ver en Open Campus",
+    "zoomImage": "Ampliar la imagen del certificado"
+  },
+  "pendingCredentialsWelcome": {
+    "title": "¡Acabas de recibir tus credenciales!",
+    "body": "Las credenciales concedidas a tu correo ya están guardadas en tu cuenta de Corelia.",
+    "cta": "Ver mis credenciales"
+  },
+  "componentShowcase": {
+    "xpRank": {
+      "title": "Insignias de rango de XP",
+      "criterion": "Los seis rangos en 80, 160 y 200 px; los rangos sin ilustración usan la insignia con signo de interrogación.",
+      "description": "Compara la ilustración de las insignias por rango y tamaño.",
+      "combinationsTitle": "Todas las combinaciones de rango y tamaño",
+      "tableLabel": "Insignias de XP por rango y tamaño",
+      "rank": "Rango",
+      "sizes": {
+        "small": "Pequeña · 80 px",
+        "medium": "Mediana · 160 px",
+        "large": "Grande · 200 px"
+      }
+    },
+    "fullPageEmptyState": {
+      "title": "Estado vacío de página completa"
+    },
+    "progress": {
+      "title": "Progreso",
+      "criterion": "Tamaños de Figma, niveles de progreso y modelos de color para las barras y círculos de progreso.",
+      "description": "Compara los tamaños exactos, estados y colores de barras y círculos de Figma.",
+      "standardTitle": "Barras de progreso estándar",
+      "standardCriterion": "Componente de 376 × 20 px con una pista de 328 × 8 px.",
+      "liveTitle": "Demo práctica de progreso",
+      "liveCriterion": "Usa −/+ o introduce un porcentaje. Exactamente 100 % completa los círculos; por encima de 100 % los marca como fallidos.",
+      "liveRangeLabel": "Ajustar el porcentaje de progreso",
+      "liveDecrease": "Reducir el progreso un 1 %",
+      "liveIncrease": "Aumentar el progreso un 1 %",
+      "liveInputLabel": "Porcentaje de progreso",
+      "liveOverrunHint": "Las barras se quedan llenas por encima de 100 %; los círculos muestran una marca de fallo.",
+      "liveValue": "{{percentage}} %",
+      "liveBarSample": "{{theme}} · {{percentage}} %",
+      "compactTitle": "Progreso compacto de la lección",
+      "compactCriterion": "Componente de 252 × 15 px con una pista de 210 × 4 px.",
+      "circleTitle": "Círculos de progreso",
+      "circleCriterion": "24 × 24 px; cada porcentaje sigue su variante de color de Figma.",
+      "label": "Etiqueta",
+      "noFill": "Sin relleno",
+      "barSample": "{{theme}} · {{level}} · {{percentage}} % · {{color}}",
+      "circleSample": "{{state}} · {{percentage}} %{{colorText}}",
+      "defaultValue": "Predeterminado",
+      "theme": {
+        "neutral": "Neutro",
+        "accent": "Acento",
+        "status": "Estado"
+      },
+      "level": {
+        "none": "Ninguno",
+        "low": "Bajo",
+        "medium": "Medio",
+        "good": "Bueno",
+        "done": "Hecho"
+      },
+      "circleState": {
+        "notStarted": "Sin empezar",
+        "failed": "Fallido",
+        "neutralProgress": "En curso · neutro",
+        "coloredProgress": "En curso · en color",
+        "done": "Hecho"
+      }
+    },
+    "tooltip": {
+      "title": "Tooltip",
+      "criterion": "Las nueve posiciones de flecha de Figma con y sin texto de apoyo; quien lo usa proporciona el contenido del mensaje.",
+      "description": "Compara las 18 variantes de flecha y texto de apoyo de Figma.",
+      "withoutSupportingText": "Sin texto de apoyo",
+      "withSupportingText": "Con texto de apoyo",
+      "sampleTitle": "Esto es un tooltip",
+      "sampleSupportingText": "Los tooltips explican el significado o la función de un elemento sin añadir texto permanente a la página.",
+      "arrows": {
+        "none": "Sin flecha",
+        "bottomCenter": "Abajo al centro",
+        "bottomLeft": "Abajo a la izquierda",
+        "bottomRight": "Abajo a la derecha",
+        "topCenter": "Arriba al centro",
+        "topLeft": "Arriba a la izquierda",
+        "topRight": "Arriba a la derecha",
+        "left": "Izquierda",
+        "right": "Derecha"
+      }
+    },
+    "stepper": {
+      "title": "Stepper",
+      "criterion": "Seguimiento de progreso horizontal y vertical; la página que lo usa proporciona el estado de cada paso.",
+      "description": "Un seguimiento visual del progreso. La página principal controla el estado de los pasos y decide cuándo avanza el flujo.",
+      "liveTitle": "Flujo interactivo controlado por la página principal",
+      "liveCriterion": "Usa Anterior y Siguiente para ver cómo la página principal actualiza los estados de los pasos.",
+      "orientationLabel": "Orientación",
+      "orientation": {
+        "horizontal": "Horizontal",
+        "vertical": "Vertical"
+      },
+      "styleLabel": "Estilo del marcador",
+      "style": {
+        "text": "Números",
+        "icon": "Iconos"
+      },
+      "steps": {
+        "account": "Cuenta",
+        "accountCaption": "Datos obligatorios",
+        "profile": "Perfil",
+        "profileCaption": "Tu información",
+        "review": "Revisión",
+        "reviewCaption": "Confirma los datos"
+      },
+      "state": {
+        "default": "Sin empezar",
+        "focused": "Paso actual",
+        "passed": "Completo",
+        "error": "Requiere atención"
+      },
+      "liveAccessibleLabel": "Progreso de la configuración de la cuenta",
+      "currentStep": "Paso {{current}} de {{total}}",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "parentOwnsState": "La página decide el estado de cada paso y cuándo avanzar; el Stepper solo muestra el estado que recibe.",
+      "statesTitle": "Comparación de estados y diseño de Figma",
+      "statesCriterion": "Compara los cuatro estados en ambas orientaciones y estilos de marcador.",
+      "statesAccessibleLabel": "Ejemplos de estados del Stepper",
+      "samples": {
+        "waiting": "En espera",
+        "current": "En curso",
+        "complete": "Completo",
+        "problem": "Requiere atención",
+        "optional": "Sin empezar",
+        "inProgress": "Paso actual",
+        "done": "Terminado",
+        "checkDetails": "Revisa los detalles"
+      },
+      "configuration": {
+        "horizontal": "Estilo {{style}} · horizontal",
+        "vertical": "Estilo {{style}} · vertical"
+      },
+      "usageTitle": "Ejemplo de uso controlado",
+      "usageCriterion": "La página deriva cada estado de su propio valor de paso actual y pasa el resultado al Stepper."
+    }
+  },
+  "maintenance": {
+    "title": "Sistema en mantenimiento",
+    "body": "Corelia se está actualizando. Volveremos pronto. ¡Gracias por tu paciencia!"
+  }
+}

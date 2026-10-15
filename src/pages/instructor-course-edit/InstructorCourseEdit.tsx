@@ -212,6 +212,7 @@ import {
   revokeCoInstructorInvite,
   type CoInstructorInviteRow,
 } from "@/lib/coInstructorInvites";
+import { CONTENT_LOCALES, LOCALE_META, type ContentLocale } from "@/lib/locales";
 import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 
 /** Gợi ý tách lesson khi video dài hơn ngưỡng này (giây). */
@@ -241,6 +242,28 @@ type CoverageFieldKey =
   | "final_assignment_title"
   | "final_assignment_description"
   | "final_assignment_instructions";
+
+type LocaleContentDraft = { name: string; description: string };
+type LocaleContentDrafts = Record<ContentLocale, LocaleContentDraft>;
+const emptyLocaleContentDrafts = (): LocaleContentDrafts =>
+  Object.fromEntries(CONTENT_LOCALES.map((loc) => [loc, { name: "", description: "" }])) as LocaleContentDrafts;
+const draftsFromLocaleContent = (
+  content: CourseSponsor["locale_content"],
+  fallback: { name?: string | null; description?: string | null },
+): LocaleContentDrafts => Object.fromEntries(CONTENT_LOCALES.map((loc) => [loc, {
+  name: content?.[loc]?.name ?? (loc === "vi" ? fallback.name ?? "" : ""),
+  description: content?.[loc]?.description ?? (loc === "vi" ? fallback.description ?? "" : ""),
+}])) as LocaleContentDrafts;
+/** Display fallbacks prefer Vietnamese, then English, then any other authored locale. */
+const draftLocaleOrder: ContentLocale[] = ["vi", "en", ...CONTENT_LOCALES.filter((loc) => loc !== "vi" && loc !== "en")];
+const primaryDraftName = (drafts: LocaleContentDrafts) =>
+  draftLocaleOrder.map((loc) => drafts[loc].name.trim()).find(Boolean) ?? "";
+const primaryDraftDescription = (drafts: LocaleContentDrafts) =>
+  draftLocaleOrder.map((loc) => drafts[loc].description.trim()).find(Boolean) ?? "";
+const localeContentFromDrafts = (drafts: LocaleContentDrafts): NonNullable<CourseSponsor["locale_content"]> =>
+  Object.fromEntries(CONTENT_LOCALES
+    .filter((loc) => loc === "vi" || loc === "en" || drafts[loc].name.trim() || drafts[loc].description.trim())
+    .map((loc) => [loc, { name: drafts[loc].name.trim(), description: drafts[loc].description.trim() }]));
 
 const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLesson, onEditLearningLesson, renderLearningReadiness }: { learningTools?: ReactNode | ((focusIssue: (issue: PublishValidationIssue) => void) => ReactNode); onDirtyChange?: (dirty: boolean) => void; onCreateLearningLesson?: (lesson: CourseLesson) => void; onEditLearningLesson?: (lesson: CourseLesson, locale?: SupportedCourseLocale) => void; renderLearningReadiness?: (lesson: CourseLesson, openEditor: () => void) => ReactNode } = {}) => {
   const { t, i18n } = useTranslation("instructor");
@@ -585,17 +608,16 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
   const [sponsors, setSponsors, hydrateSponsors, acknowledgeSponsors, sponsorsDirty] = useCourseFieldDraft<CourseSponsor[]>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:sponsors`, []);
   const [sponsorDialogOpen, setSponsorDialogOpen] = useState(false);
   const [activeSponsorId, setActiveSponsorId] = useState<string | null>(null);
-  type LocaleContentDraft = { name: string; description: string };
   const [sponsorForm, setSponsorForm] = useState<{
     website: string;
     logo_url: string;
     logo_path: string;
-    locale_content: { vi: LocaleContentDraft; en: LocaleContentDraft };
+    locale_content: LocaleContentDrafts;
   }>({
     website: "",
     logo_url: "",
     logo_path: "",
-    locale_content: { vi: { name: "", description: "" }, en: { name: "", description: "" } },
+    locale_content: emptyLocaleContentDrafts(),
   });
   const [sponsorDialogLocale, setSponsorDialogLocale] = useState<SupportedCourseLocale>("vi");
   const sponsorLogoInputRef = useRef<HTMLInputElement | null>(null);
@@ -607,12 +629,12 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
     website: string;
     logo_url: string;
     logo_path: string;
-    locale_content: { vi: LocaleContentDraft; en: LocaleContentDraft };
+    locale_content: LocaleContentDrafts;
   }>({
     website: "",
     logo_url: "",
     logo_path: "",
-    locale_content: { vi: { name: "", description: "" }, en: { name: "", description: "" } },
+    locale_content: emptyLocaleContentDrafts(),
   });
   const [partnerDialogLocale, setPartnerDialogLocale] = useState<SupportedCourseLocale>("vi");
   const partnerLogoInputRef = useRef<HTMLInputElement | null>(null);
@@ -958,7 +980,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       ? supportedLocales.find((loc) => loc !== targetLocale) ?? primaryContentLocale
       : primaryContentLocale;
 
-  const localeBadge = (locale: SupportedCourseLocale) => `${locale === "vi" ? "🇻🇳" : "🇬🇧"} ${locale.toUpperCase()}`;
+  const localeBadge = (locale: SupportedCourseLocale) => `${LOCALE_META[locale].flag} ${LOCALE_META[locale].short}`;
 
   const bundleHasSource = (bundle: DescriptionTranslationBundle): boolean =>
     Boolean(
@@ -1871,7 +1893,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       website: "",
       logo_url: "",
       logo_path: "",
-      locale_content: { vi: { name: "", description: "" }, en: { name: "", description: "" } },
+      locale_content: emptyLocaleContentDrafts(),
     });
     setSponsorDialogOpen(true);
   };
@@ -1884,10 +1906,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       website: String(s.website ?? ""),
       logo_url: String(s.logo_url ?? ""),
       logo_path: String(s.logo_path ?? ""),
-      locale_content: {
-        vi: { name: lc.vi?.name ?? s.name ?? "", description: lc.vi?.description ?? s.description ?? "" },
-        en: { name: lc.en?.name ?? "", description: lc.en?.description ?? "" },
-      },
+      locale_content: draftsFromLocaleContent(lc, s),
     });
     setSponsorDialogOpen(true);
   };
@@ -1917,21 +1936,16 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
           updated[idx] = { ...updated[idx], logo_url: result.url, logo_path: result.path };
           return updated;
         }
-        const viName = sponsorForm.locale_content.vi.name.trim();
-        const enName = sponsorForm.locale_content.en.name.trim();
         return [
           ...normalized,
           {
             id: sid,
-            name: viName || enName || sid,
+            name: primaryDraftName(sponsorForm.locale_content) || sid,
             website: sponsorForm.website.trim() || null,
-            description: sponsorForm.locale_content.vi.description.trim() || sponsorForm.locale_content.en.description.trim() || null,
+            description: primaryDraftDescription(sponsorForm.locale_content) || null,
             logo_url: result.url,
             logo_path: result.path,
-            locale_content: {
-              vi: { name: viName, description: sponsorForm.locale_content.vi.description.trim() },
-              en: { name: enName, description: sponsorForm.locale_content.en.description.trim() },
-            },
+            locale_content: localeContentFromDrafts(sponsorForm.locale_content),
           },
         ];
       })();
@@ -1952,9 +1966,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
   const saveSponsorFromDialog = async () => {
     const sid = String(activeSponsorId ?? "").trim();
     if (!sid) return;
-    const viName = sponsorForm.locale_content.vi.name.trim();
-    const enName = sponsorForm.locale_content.en.name.trim();
-    const primaryName = viName || enName;
+    const primaryName = primaryDraftName(sponsorForm.locale_content);
     if (!primaryName) {
       toast.error(String(t("courseEdit.sponsors.errors.missingName")));
       return;
@@ -1965,10 +1977,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       return;
     }
 
-    const localeContent: CourseSponsor["locale_content"] = {
-      vi: { name: viName, description: sponsorForm.locale_content.vi.description.trim() },
-      en: { name: enName, description: sponsorForm.locale_content.en.description.trim() },
-    };
+    const localeContent: CourseSponsor["locale_content"] = localeContentFromDrafts(sponsorForm.locale_content);
 
     const nextSponsors = (() => {
       const normalized = sponsors.map((s) => ({ ...s, id: String(s.id ?? "").trim() }));
@@ -1977,7 +1986,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
         id: sid,
         name: primaryName,
         website: websiteValue || null,
-        description: sponsorForm.locale_content.vi.description.trim() || sponsorForm.locale_content.en.description.trim() || null,
+        description: primaryDraftDescription(sponsorForm.locale_content) || null,
         logo_url: sponsorForm.logo_url.trim() || null,
         logo_path: sponsorForm.logo_path.trim() || null,
         locale_content: localeContent,
@@ -2025,7 +2034,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       website: "",
       logo_url: "",
       logo_path: "",
-      locale_content: { vi: { name: "", description: "" }, en: { name: "", description: "" } },
+      locale_content: emptyLocaleContentDrafts(),
     });
     setPartnerDialogOpen(true);
   };
@@ -2038,10 +2047,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       website: String(p.website ?? ""),
       logo_url: String(p.logo_url ?? ""),
       logo_path: String(p.logo_path ?? ""),
-      locale_content: {
-        vi: { name: lc.vi?.name ?? p.name ?? "", description: lc.vi?.description ?? p.description ?? "" },
-        en: { name: lc.en?.name ?? "", description: lc.en?.description ?? "" },
-      },
+      locale_content: draftsFromLocaleContent(lc, p),
     });
     setPartnerDialogOpen(true);
   };
@@ -2073,21 +2079,16 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
           };
           return updated;
         }
-        const viName = partnerForm.locale_content.vi.name.trim();
-        const enName = partnerForm.locale_content.en.name.trim();
         return [
           ...normalized,
           {
             id: pid,
-            name: viName || enName || pid,
+            name: primaryDraftName(partnerForm.locale_content) || pid,
             website: partnerForm.website.trim() || null,
-            description: partnerForm.locale_content.vi.description.trim() || partnerForm.locale_content.en.description.trim() || null,
+            description: primaryDraftDescription(partnerForm.locale_content) || null,
             logo_url: result.url,
             logo_path: result.path,
-            locale_content: {
-              vi: { name: viName, description: partnerForm.locale_content.vi.description.trim() },
-              en: { name: enName, description: partnerForm.locale_content.en.description.trim() },
-            },
+            locale_content: localeContentFromDrafts(partnerForm.locale_content),
           },
         ];
       })();
@@ -2108,9 +2109,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
   const savePartnerFromDialog = async () => {
     const pid = String(activePartnerId ?? "").trim();
     if (!pid) return;
-    const viName = partnerForm.locale_content.vi.name.trim();
-    const enName = partnerForm.locale_content.en.name.trim();
-    const primaryName = viName || enName;
+    const primaryName = primaryDraftName(partnerForm.locale_content);
     if (!primaryName) {
       toast.error(String(t("courseEdit.partners.errors.missingName")));
       return;
@@ -2121,10 +2120,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       return;
     }
 
-    const localeContent: CoursePartner["locale_content"] = {
-      vi: { name: viName, description: partnerForm.locale_content.vi.description.trim() },
-      en: { name: enName, description: partnerForm.locale_content.en.description.trim() },
-    };
+    const localeContent: CoursePartner["locale_content"] = localeContentFromDrafts(partnerForm.locale_content);
 
     const nextPartners = (() => {
       const normalized = partners.map((p) => ({ ...p, id: String(p.id ?? "").trim() }));
@@ -2133,7 +2129,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
         id: pid,
         name: primaryName,
         website: websiteValue || null,
-        description: partnerForm.locale_content.vi.description.trim() || partnerForm.locale_content.en.description.trim() || null,
+        description: primaryDraftDescription(partnerForm.locale_content) || null,
         logo_url: partnerForm.logo_url.trim() || null,
         logo_path: partnerForm.logo_path.trim() || null,
         locale_content: localeContent,
@@ -4440,7 +4436,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
             <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-foreground-muted">
               {t("courseEdit.sidebar.editingLanguage")}
             </p>
-            <div className="flex gap-1">
+            <div className="flex flex-wrap gap-1">
               {supportedLocales.map((loc) => (
                 <button
                   key={loc}
@@ -4453,8 +4449,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
                   )}
                 >
-                  <span>{loc === "vi" ? "🇻🇳" : "🇬🇧"}</span>
-                  {loc.toUpperCase()}
+                  <span>{LOCALE_META[loc].flag}</span>
+                  {LOCALE_META[loc].short}
                   {loc === primaryContentLocale && (
                     <span className="rounded bg-primary-foreground/20 px-1 py-0.5 text-[10px] leading-none">
                       {t("courseEdit.sidebar.primaryBadge")}
@@ -4642,7 +4638,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                 <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border-subtle bg-surface-raised px-3 py-2">
                   <div className="flex items-center gap-2 text-xs text-foreground-muted">
                     <span className="font-medium text-foreground">{t("courseEdit.i18n.supportedLocalesLabel")}:</span>
-                    {(["vi", "en"] as const).map((loc) => {
+                    {CONTENT_LOCALES.map((loc) => {
                       const enabled = supportedLocales.includes(loc);
                       return (
                         <button
@@ -4667,7 +4663,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                               : "border-border-subtle bg-surface-base text-foreground-muted",
                           )}
                         >
-                          {loc === "vi" ? "🇻🇳" : "🇬🇧"} {loc.toUpperCase()}
+                          {localeBadge(loc)}
                         </button>
                       );
                     })}
@@ -5473,8 +5469,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                         </Field>
 
                         {/* Locale tabs */}
-                        <div className="flex gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1">
-                          {(["vi", "en"] as const).map((loc) => (
+                        <div className="flex flex-wrap gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1">
+                          {CONTENT_LOCALES.map((loc) => (
                             <button
                               key={loc}
                               type="button"
@@ -5486,7 +5482,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                                   : "text-foreground-muted hover:text-foreground",
                               )}
                             >
-                              {loc === "vi" ? "🇻🇳 Tiếng Việt" : "🇬🇧 English"}
+                              {LOCALE_META[loc].flag} <span lang={loc}>{LOCALE_META[loc].endonym}</span>
                             </button>
                           ))}
                         </div>
@@ -5727,8 +5723,8 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                         </Field>
 
                         {/* Locale tabs */}
-                        <div className="flex gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1">
-                          {(["vi", "en"] as const).map((loc) => (
+                        <div className="flex flex-wrap gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1">
+                          {CONTENT_LOCALES.map((loc) => (
                             <button
                               key={loc}
                               type="button"
@@ -5740,7 +5736,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                                   : "text-foreground-muted hover:text-foreground",
                               )}
                             >
-                              {loc === "vi" ? "🇻🇳 Tiếng Việt" : "🇬🇧 English"}
+                              {LOCALE_META[loc].flag} <span lang={loc}>{LOCALE_META[loc].endonym}</span>
                             </button>
                           ))}
                         </div>
@@ -6428,7 +6424,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                               : "text-foreground-muted hover:text-foreground",
                           )}
                         >
-                          {loc === "vi" ? "🇻🇳" : "🇬🇧"} {loc.toUpperCase()}
+                          {localeBadge(loc)}
                         </button>
                       ))}
                     </div>
@@ -6553,7 +6549,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                                 : "text-foreground-muted hover:text-foreground",
                             )}
                           >
-                            {loc === "vi" ? "🇻🇳" : "🇬🇧"} {loc.toUpperCase()}
+                            {localeBadge(loc)}
                           </button>
                         ))}
                       </div>
@@ -6746,9 +6742,9 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       }
                       className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                     >
-                      {(["vi", "en"] as const).map((loc) => (
+                      {CONTENT_LOCALES.map((loc) => (
                         <option key={loc} value={loc}>
-                          {loc.toUpperCase()}
+                          {LOCALE_META[loc].endonym}
                         </option>
                       ))}
                     </select>
@@ -7325,9 +7321,9 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       }
                       className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                     >
-                      {(["vi", "en"] as const).map((loc) => (
+                      {CONTENT_LOCALES.map((loc) => (
                         <option key={loc} value={loc}>
-                          {loc.toUpperCase()}
+                          {LOCALE_META[loc].endonym}
                         </option>
                       ))}
                     </select>
