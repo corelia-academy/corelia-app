@@ -153,7 +153,10 @@ const FormFallback = () => <RouteSkeleton variant="form" />;
 const TableFallback = () => <RouteSkeleton variant="table" />;
 const AccountFormFallback = () => <RouteSkeleton variant="form" bare />;
 const AccountListFallback = () => <RouteSkeleton variant="list" bare />;
-const TabFallback = () => <RouteSkeleton variant="list" bare />;
+// Hackathon tabs render under the already-visible contest header; their chunk is prefetched
+// with the layout, so a placeholder here would only add a second skeleton for React's ~300ms
+// Suspense reveal throttle.
+const TabFallback = () => null;
 const LearnFallback = () => <RouteSkeleton variant="learn" className="h-dvh" />;
 
 function RecoveryGuard() {
