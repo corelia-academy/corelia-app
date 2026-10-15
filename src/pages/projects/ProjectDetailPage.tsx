@@ -1,4 +1,5 @@
 import { Tabs } from "@base-ui/react/tabs";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { toast } from "sonner";
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -64,7 +65,7 @@ function ProjectLogo({ project }: { project: Project }) {
   if (coverUrl) {
     return (
       <div className="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border-subtle bg-surface-raised">
-        <img src={coverUrl} alt={project.title} className="h-full w-full object-contain" />
+        <img src={optimizedImageUrl(coverUrl, { width: 96, resize: "contain" })} srcSet={optimizedImageSrcSet(coverUrl, 96, { resize: "contain" })} alt={project.title} className="h-full w-full object-contain" />
       </div>
     );
   }
@@ -303,7 +304,7 @@ export default function ProjectDetailPage() {
         </Tabs.List>
         <Tabs.Panel value="overview" className="space-y-6">
           {videoEmbed || pitchEmbed ? <Tabs.Root defaultValue={videoEmbed ? "demo" : "pitch"} className="mobile-bleed-surface overflow-hidden rounded-2xl border border-border-subtle bg-surface-base"><Tabs.List className="flex gap-4 border-b border-border-subtle p-3" aria-label={t("projects.editor.videos")}>{videoEmbed ? <Tabs.Tab value="demo" className="rounded-lg px-3 py-2 text-label-medium font-body data-[active]:bg-primary/10 data-[active]:text-primary">{t("projects.detail.video")}</Tabs.Tab> : null}{pitchEmbed ? <Tabs.Tab value="pitch" className="rounded-lg px-3 py-2 text-label-medium font-body data-[active]:bg-primary/10 data-[active]:text-primary">{t("projects.editor.pitchVideo")}</Tabs.Tab> : null}</Tabs.List>{[["demo",videoEmbed],["pitch",pitchEmbed]].map(([value,embed])=> typeof value === 'string' && embed && typeof embed !== 'string' ? <Tabs.Panel key={value} value={value}><iframe className="aspect-video w-full" src={embed.src} title={value === 'demo' ? t("projects.detail.video") : t("projects.editor.pitchVideo")} referrerPolicy={embed.provider === "youtube" ? "strict-origin-when-cross-origin" : undefined} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen /></Tabs.Panel> : null)}</Tabs.Root> : null}
-          {(project.screenshot_urls?.length ?? 0) > 0 ? <section><h2 className="mb-3 text-heading-small font-display text-foreground">{t("projects.form.screenshots")}</h2><div className="mobile-bleed-grid grid gap-3 sm:grid-cols-2">{project.screenshot_urls?.map((url,index)=><a key={url} href={url} target="_blank" rel="noreferrer" className="block overflow-hidden border-y border-border-subtle sm:rounded-xl sm:border"><img src={url} alt={t("projects.form.screenshotAlt",{index:index+1})} className="block aspect-video w-full object-contain sm:object-cover" loading="lazy" /></a>)}</div></section> : null}
+          {(project.screenshot_urls?.length ?? 0) > 0 ? <section><h2 className="mb-3 text-heading-small font-display text-foreground">{t("projects.form.screenshots")}</h2><div className="mobile-bleed-grid grid gap-3 sm:grid-cols-2">{project.screenshot_urls?.map((url,index)=><a key={url} href={url} target="_blank" rel="noreferrer" className="block overflow-hidden border-y border-border-subtle sm:rounded-xl sm:border"><img src={optimizedImageUrl(url, { width: 640, resize: "contain" })} srcSet={optimizedImageSrcSet(url, 640, { resize: "contain" })} decoding="async" alt={t("projects.form.screenshotAlt",{index:index+1})} className="block aspect-video w-full object-contain sm:object-cover" loading="lazy" /></a>)}</div></section> : null}
           <section className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="text-heading-small font-display text-foreground">{t("projects.detail.description")}</h2><div className="mt-4 break-words"><Markdown content={description} /></div></section>
           <section>
             <div className="flex flex-wrap items-center justify-between gap-3">

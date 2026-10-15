@@ -20,6 +20,7 @@ describe("optimizedImageUrl", () => {
     );
     expect(optimizedImageUrl("https://example.com/a.png", { width: 320 })).toBe("https://example.com/a.png");
     expect(optimizedImageSrcSet(PUBLIC, 100)).toContain("width=200");
+    expect(optimizedImageUrl(SIGNED, { width: 24, resize: "contain" })).toContain("resize=contain");
   });
 
   it("uses cdn-cgi only on a proxied hostname", () => {

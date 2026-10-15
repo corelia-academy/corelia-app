@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { BookOpen, FileText, TimerIcon } from "@phosphor-icons/react";
@@ -41,7 +42,7 @@ export function PublicCourseCard({ course, progress, participantPreview, variant
         )}
       >
         <div className="absolute inset-0 flex items-center justify-center"><BookOpen className="size-10 text-foreground-muted" aria-hidden weight="duotone" /></div>
-        {course.thumbnail_url && failedImage !== course.thumbnail_url ? <img src={course.thumbnail_url} alt="" loading="lazy" onError={() => setFailedImage(course.thumbnail_url ?? null)} className="relative size-full object-cover" /> : null}
+        {course.thumbnail_url && failedImage !== course.thumbnail_url ? <img src={optimizedImageUrl(course.thumbnail_url, { width: 400 })} srcSet={optimizedImageSrcSet(course.thumbnail_url, 400)} decoding="async" alt="" loading="lazy" onError={() => setFailedImage(course.thumbnail_url ?? null)} className="relative size-full object-cover" /> : null}
       </div>
       <div className={variant === "catalog" ? "flex flex-1 flex-col p-4" : "flex flex-1 flex-col gap-3 p-5 sm:p-6"}>
         {variant === "catalog" ? (

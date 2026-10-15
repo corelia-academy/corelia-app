@@ -175,7 +175,7 @@ export default function Contests() {
                   {contest.host?.name ? (
                     <span className="inline-flex items-center gap-2 text-foreground-subtle">
                       {contest.host.logo_url ? (
-                        <img src={optimizedImageUrl(contest.host.logo_url, { width: 20 })} srcSet={optimizedImageSrcSet(contest.host.logo_url, 20)} decoding="async" alt="" className="size-5 rounded-full object-cover" />
+                        <img src={optimizedImageUrl(contest.host.logo_url, { width: 20, resize: "contain" })} srcSet={optimizedImageSrcSet(contest.host.logo_url, 20, { resize: "contain" })} decoding="async" alt="" className="size-5 rounded-full object-cover" />
                       ) : null}
                       {t("catalog.hostedBy", { name: contest.host.name })}
                     </span>

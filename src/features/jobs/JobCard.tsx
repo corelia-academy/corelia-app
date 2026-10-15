@@ -1,4 +1,5 @@
 import { Bookmark, BriefcaseBusiness, Clock3, Eye, EyeOff, MapPin } from "lucide-react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -26,7 +27,7 @@ export function JobCard({ publicAppearance = false, job, state, busy, onToggleSa
         <div className="flex items-start gap-3">
           {job.company_logo_url ? (
             <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border-subtle bg-surface-raised">
-              <img src={job.company_logo_url} alt="" className="size-full object-contain" />
+              <img src={optimizedImageUrl(job.company_logo_url, { width: 48, resize: "contain" })} srcSet={optimizedImageSrcSet(job.company_logo_url, 48, { resize: "contain" })} alt="" className="size-full object-contain" />
             </div>
           ) : null}
           <div className="min-w-0 flex-1">
