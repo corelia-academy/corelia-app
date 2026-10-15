@@ -4634,28 +4634,41 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                   onChange={course_resources => setForm(previous => ({ ...previous, course_resources }))}
                   disabled={saving}
                 />
-                {/* Locale config — advanced, collapsed into a summary row */}
-                <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border-subtle bg-surface-raised px-3 py-2">
-                  <div className="flex items-center gap-2 text-xs text-foreground-muted">
-                    <span className="font-medium text-foreground">{t("courseEdit.i18n.supportedLocalesLabel")}:</span>
-                    {CONTENT_LOCALES.map((loc) => {
+                {/* Locale config — one primary language, the rest are translations */}
+                <div className="flex flex-col gap-3 rounded-lg border border-border-subtle bg-surface-raised px-3 py-3">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-foreground-muted">
+                    <span className="font-medium text-foreground">{t("courseEdit.i18n.primaryLocaleLabel")}:</span>
+                    <select
+                      value={primaryContentLocale}
+                      onChange={(e) => {
+                        const next = normalizeCourseLocale(e.target.value);
+                        setPrimaryContentLocale(next);
+                        setSupportedLocales((prev) => (prev.includes(next) ? prev : [...prev, next]));
+                        setActiveContentLocale(next);
+                      }}
+                      className="rounded border border-border bg-surface-base px-2 py-0.5 text-xs outline-none"
+                    >
+                      {CONTENT_LOCALES.map((loc) => (
+                        <option key={loc} value={loc}>{LOCALE_META[loc].flag} {LOCALE_META[loc].endonym}</option>
+                      ))}
+                    </select>
+                    <span>{t("courseEdit.i18n.primaryLocaleHint")}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-foreground-muted">
+                    <span className="font-medium text-foreground">{t("courseEdit.i18n.translationsLabel")}:</span>
+                    {CONTENT_LOCALES.filter((loc) => loc !== primaryContentLocale).map((loc) => {
                       const enabled = supportedLocales.includes(loc);
                       return (
                         <button
                           key={loc}
                           type="button"
-                          onClick={() =>
-                            setSupportedLocales((prev) => {
-                              const next = new Set(prev);
-                              if (next.has(loc)) next.delete(loc);
-                              else next.add(loc);
-                              const result = Array.from(next);
-                              if (result.length === 0) return prev;
-                              if (!result.includes(primaryContentLocale)) setPrimaryContentLocale(result[0] ?? "vi");
-                              if (!result.includes(activeContentLocale)) setActiveContentLocale(result[0] ?? "vi");
-                              return result;
-                            })
-                          }
+                          aria-pressed={enabled}
+                          onClick={() => {
+                            setSupportedLocales((prev) =>
+                              enabled ? prev.filter((item) => item !== loc) : [...prev, loc],
+                            );
+                            if (enabled && activeContentLocale === loc) setActiveContentLocale(primaryContentLocale);
+                          }}
                           className={cn(
                             "rounded border px-2 py-0.5 text-xs font-medium transition-colors",
                             enabled
@@ -4667,18 +4680,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                         </button>
                       );
                     })}
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-foreground-muted">
-                    <span className="font-medium text-foreground">{t("courseEdit.i18n.primaryLocaleLabel")}:</span>
-                    <select
-                      value={primaryContentLocale}
-                      onChange={(e) => setPrimaryContentLocale(normalizeCourseLocale(e.target.value))}
-                      className="rounded border border-border bg-surface-base px-2 py-0.5 text-xs outline-none"
-                    >
-                      {supportedLocales.map((loc) => (
-                        <option key={loc} value={loc}>{loc.toUpperCase()}</option>
-                      ))}
-                    </select>
+                    <span className="basis-full">{t("courseEdit.i18n.translationsHint")}</span>
                   </div>
                 </div>
                 {activeContentLocale !== primaryContentLocale && (
