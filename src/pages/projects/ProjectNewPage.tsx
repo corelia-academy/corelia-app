@@ -11,6 +11,7 @@ import { getContestBySlug, getMyContestRegistration, getMyContestSubmission, ups
 import { createProjectCollaborationInvite } from "@/lib/projectCollaboration";
 import { useAuth } from "@/stores/authStore";
 import { xpAwardNotificationQueryKey } from "@/features/xp/xpNotificationKeys";
+import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 
 export default function ProjectNewPage() {
   const { t, i18n } = useTranslation("common");
@@ -45,7 +46,7 @@ export default function ProjectNewPage() {
   if (!hackathonSlug) return <Navigate replace to="/hackathons" />;
 
   if (hackathonSlug && (contestQuery.isPending || (contest && contextQuery.isPending))) {
-    return <div className="container-app py-16 text-body-medium font-body" role="status">{t("projects.loading")}</div>;
+    return <RouteSkeleton variant="form" />;
   }
   if (contestQuery.isError || contextQuery.isError) {
     return (

@@ -6,7 +6,6 @@ import {
   Eye,
   PlusCircle,
   GraduationCap,
-  Loader2,
   EyeOff,
   Pencil,
 } from "lucide-react";
@@ -16,11 +15,14 @@ import {
   getCourseOwnerTypeLabel,
 } from "@/types/courses";
 import { useAuth } from "@/stores/authStore";
+import { QueryErrorState } from "@/components/QueryErrorState";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { EmptyState, PageContainer, PageSectionCard } from "@/components/layouts/PagePrimitives";
 import { useLearningTranslation } from "@/features/learning/useLearningTranslation";
 import { Input } from "@/components/ui/input";
+import { ListRowsSkeleton } from "@/components/loading/RouteSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const InstructorCourses = () => {
   const { t } = useTranslation("instructor");
@@ -60,9 +62,27 @@ const InstructorCourses = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-80 items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-foreground-muted" aria-hidden />
-      </div>
+      <PageContainer>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-hidden>
+          {Array.from({ length: 4 }, (_, index) => (
+            <Skeleton key={index} className="h-[5.75rem] rounded-2xl" />
+          ))}
+        </div>
+        <ListRowsSkeleton rows={6} className="mt-6 rounded-2xl border border-border-subtle px-4" />
+      </PageContainer>
+    );
+  }
+
+  // Nothing loaded: show the failure with a retry instead of zeroed stats and an empty list.
+  if (error && !coursesQuery.data) {
+    return (
+      <PageContainer>
+        <QueryErrorState
+          message={error}
+          retrying={coursesQuery.isFetching}
+          onRetry={isAuthenticated ? () => void coursesQuery.refetch() : undefined}
+        />
+      </PageContainer>
     );
   }
 

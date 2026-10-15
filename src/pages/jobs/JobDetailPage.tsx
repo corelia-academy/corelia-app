@@ -15,6 +15,7 @@ import {
   useDynamicPageTitle,
   usePageTitleOverride,
 } from "@/components/navigation/PageTitle";
+import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 
 export default function JobDetailPage() {
   const { slug } = useParams();
@@ -47,7 +48,7 @@ export default function JobDetailPage() {
     },
     onError: (error) => toast.error(error.message === "login_required" ? t("messages.loginRequired") : t("messages.updateFailed")),
   });
-  if (jobQuery.isPending) return <div className="mx-auto max-w-5xl p-8"><div className="h-96 animate-pulse rounded-2xl bg-surface-raised" /></div>;
+  if (jobQuery.isPending) return <RouteSkeleton variant="detail" bare className="mx-auto w-full max-w-6xl px-4 pb-6 pt-4 sm:px-6 sm:py-6 lg:px-8" />;
   if (jobQuery.isError) return <div role="alert" className="mx-auto max-w-3xl p-8 text-center"><h1>{t("messages.loadFailed")}</h1><Button className="mt-4" variant="cta" hierarchy="secondary" onClick={() => void jobQuery.refetch()}>{t("retry")}</Button></div>;
   if (!jobQuery.data) return <div className="mx-auto max-w-3xl p-8 text-center"><h1 className="text-heading-medium font-display">{t("detail.notFound")}</h1><Button render={<Link to="/jobs" />} variant="cta" hierarchy="secondary" className="mt-4">{t("detail.back")}</Button></div>;
   const job = jobQuery.data;

@@ -212,6 +212,7 @@ import {
   revokeCoInstructorInvite,
   type CoInstructorInviteRow,
 } from "@/lib/coInstructorInvites";
+import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 
 /** Gợi ý tách lesson khi video dài hơn ngưỡng này (giây). */
 const LONG_VIDEO_SPLIT_SECONDS = 3600;
@@ -4114,11 +4115,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
   };
 
   if (loading) {
-    return (
-      <div className="flex min-h-80 items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-foreground-muted" aria-hidden />
-      </div>
-    );
+    return <RouteSkeleton variant="form" />;
   }
 
   if (error && !course) {

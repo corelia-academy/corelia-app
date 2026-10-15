@@ -1,4 +1,4 @@
-import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 
 import {
   getProjectBySlugOrId,
@@ -74,6 +74,8 @@ export function publicProjectDirectoryQueryOptions(
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     staleTime: 60_000,
+    // Filter/sort changes keep the current cards (dimmed) instead of blanking to skeletons.
+    placeholderData: keepPreviousData,
     meta: publicMeta,
   });
 }

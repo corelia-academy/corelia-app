@@ -988,7 +988,8 @@
     },
     "loadError": {
       "body": "We could not refresh your achievements. Your last confirmed credential status is still shown.",
-      "retry": "Retry"
+      "retry": "Retry",
+      "vaultUnavailable": "Achievements could not be loaded. Use Retry above."
     },
     "stats": {
       "certificates": "Certificates",

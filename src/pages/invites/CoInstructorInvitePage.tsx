@@ -13,6 +13,7 @@ import {
 } from "@/lib/coInstructorInvites";
 import { coInstructorInvitePreviewQueryOptions } from "@/features/invites/inviteQueries";
 import type { TFunction } from "i18next";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function formatCoInstructorError(err: unknown, t: TFunction<"courses">): string {
   const raw = err instanceof Error ? err.message : String(err ?? "");
@@ -131,7 +132,7 @@ export default function CoInstructorInvitePage() {
           </h1>
 
           {!authInitialized ? (
-            <p className="text-sm text-foreground-muted">{tc("status.loading")}</p>
+            <div role="status" aria-busy="true" className="space-y-3"><span className="sr-only">{tc("status.loading")}</span><Skeleton className="h-4 w-3/4" /><Skeleton className="h-11 w-full rounded-lg" /><Skeleton className="h-11 w-full rounded-lg" /></div>
           ) : !isAuthenticated ? (
             <div className="space-y-3">
               <p className="text-sm text-foreground-muted">
@@ -175,7 +176,7 @@ export default function CoInstructorInvitePage() {
               </Button>
             </div>
           ) : previewQuery.isPending ? (
-            <p className="text-sm text-foreground-muted">{tc("status.loading")}</p>
+            <div role="status" aria-busy="true" className="space-y-3"><span className="sr-only">{tc("status.loading")}</span><Skeleton className="h-4 w-3/4" /><Skeleton className="h-11 w-full rounded-lg" /><Skeleton className="h-11 w-full rounded-lg" /></div>
           ) : previewError ? (
             <p className="text-sm text-destructive">{previewError}</p>
           ) : preview ? (

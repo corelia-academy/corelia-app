@@ -12,6 +12,7 @@ import { getContest } from "@/lib/hackathons";
 import { updateMyProject } from "@/lib/projects";
 import { isHackathonProjectSource } from "@/lib/projectSource";
 import { useAuth } from "@/stores/authStore";
+import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 
 export default function ProjectEditPage() {
   const { slug } = useParams();
@@ -31,7 +32,7 @@ export default function ProjectEditPage() {
   });
 
   if (projectQuery.isPending || (hackathon && contestQuery.isPending)) {
-    return <div className="container-app py-16 text-body-medium font-body" role="status">{t("projects.loading")}</div>;
+    return <RouteSkeleton variant="form" />;
   }
   if (projectQuery.isError || contestQuery.isError || (hackathon && !contestQuery.data)) {
     return (

@@ -6,6 +6,17 @@ type PrivateQueryMeta = {
   showInGlobalLoading?: boolean;
 };
 
+/**
+ * `placeholderData` for private queries whose key changes with filters/pages/tabs: keeps the
+ * last result on screen while the next one loads, but never shows another user's data.
+ */
+export function keepPreviousDataForUser(userId: string | null | undefined) {
+  return <T,>(previousData: T | undefined, previousQuery?: { meta?: Record<string, unknown> }) => {
+    const previousUserId = (previousQuery?.meta as PrivateQueryMeta | undefined)?.userId ?? null;
+    return previousUserId === (userId ?? null) ? previousData : undefined;
+  };
+}
+
 function statusFromError(error: unknown): number | null {
   if (!error || typeof error !== "object") return null;
   const candidate = error as { status?: unknown; statusCode?: unknown };

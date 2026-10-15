@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { ListRowsSkeleton } from "@/components/loading/RouteSkeleton";
 
 type PreviewEntry = {
   file: string;
@@ -66,7 +67,7 @@ export default function AdminEmailPreviewPage() {
         </div>
       </div>
 
-      {status === "loading" ? <p className="text-sm text-foreground-muted">{t("previewGallery.loading")}</p> : null}
+      {status === "loading" ? <ListRowsSkeleton rows={4} /> : null}
       {status === "error" ? <p role="alert" className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{t("previewGallery.failed")}</p> : null}
       {status === "ready" && !selectedEntry ? <p className="text-sm text-foreground-muted">{t("previewGallery.empty")}</p> : null}
 

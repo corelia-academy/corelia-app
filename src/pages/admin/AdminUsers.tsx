@@ -28,14 +28,18 @@ export default function AdminUsers() {
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
+  // One role write at a time: selects stay disabled until the save settles (no double changes).
+  const [savingRoleUserId, setSavingRoleUserId] = useState<string | null>(null);
 
   async function handleRoleChange(userId: string, newRole: UserRole) {
+    if (savingRoleUserId) return;
     if (
       !confirm(
         t("users.confirmChangeRole", { role: getRoleLabel(newRole) }),
       )
     )
       return;
+    setSavingRoleUserId(userId);
     try {
       await updateProfileAdmin(userId, { role: newRole });
       setProfiles((prev) =>
@@ -47,6 +51,8 @@ export default function AdminUsers() {
         t("users.updateRoleErrorPrefix") +
           (err instanceof Error ? err.message : t("users.unknown")),
       );
+    } finally {
+      setSavingRoleUserId(null);
     }
   }
 
@@ -348,7 +354,9 @@ export default function AdminUsers() {
                     onChange={(e) =>
                       void handleRoleChange(p.id, e.target.value as UserRole)
                     }
-                    className="w-full rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                    disabled={savingRoleUserId !== null}
+                    aria-busy={savingRoleUserId === p.id || undefined}
+                    className="disabled:opacity-60 w-full rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                   >
                     {roleOptions.map((role) => (
                       <option key={role} value={role}>
@@ -500,7 +508,9 @@ export default function AdminUsers() {
                         onChange={(e) =>
                           void handleRoleChange(p.id, e.target.value as UserRole)
                         }
-                        className="rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                        disabled={savingRoleUserId !== null}
+                        aria-busy={savingRoleUserId === p.id || undefined}
+                        className="disabled:opacity-60 rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                       >
                         {roleOptions.map((role) => (
                           <option key={role} value={role}>

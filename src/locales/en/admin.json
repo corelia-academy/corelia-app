@@ -168,6 +168,7 @@
     "preview": "Preview",
     "loading": "Loading hackathons…",
     "empty": "No hackathons yet.",
+    "loadFailed": "Could not load hackathons.",
     "editor": {
       "back": "Back to list",
       "newTitle": "New hackathon",
@@ -378,7 +379,8 @@
     },
     "actions": {
       "refresh": "Refresh",
-      "clearFilters": "Clear filters"
+      "clearFilters": "Clear filters",
+      "detail": "Details"
     },
     "list": {
       "syncing": "Syncing instructors...",
@@ -387,6 +389,13 @@
       "loading": "Loading list...",
       "empty": "No instructors match the current filters.",
       "notUpdated": "Not updated"
+    },
+    "columns": {
+      "instructor": "Instructor",
+      "email": "Email",
+      "origin": "Category",
+      "courses": "Courses",
+      "actions": "Actions"
     },
     "originLabel": {
       "corelia": "Corelia",

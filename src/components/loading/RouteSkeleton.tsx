@@ -157,3 +157,21 @@ export function RouteSkeleton({ variant, className, bare = false }: RouteSkeleto
     </LoadingStatus>
   );
 }
+
+/** Inline placeholder rows for a list/table section whose page chrome is already rendered. */
+export function ListRowsSkeleton({ rows = 5, className }: { rows?: number; className?: string }) {
+  return (
+    <LoadingStatus className={cn("divide-y divide-border-subtle", className)}>
+      {Array.from({ length: rows }, (_, index) => (
+        <div key={index} className="flex items-center gap-3 py-3">
+          <Skeleton className="size-9 shrink-0 rounded-full" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-3 w-1/3" />
+          </div>
+          <Skeleton className="hidden h-8 w-20 rounded-lg sm:block" />
+        </div>
+      ))}
+    </LoadingStatus>
+  );
+}

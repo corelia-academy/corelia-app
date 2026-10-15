@@ -5,6 +5,8 @@ import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { QueryErrorState } from "@/components/QueryErrorState";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
 import {
   acceptProjectInviteById,
@@ -24,6 +26,7 @@ import {
   notificationKeys,
   notificationsQueryOptions,
 } from "@/features/notifications/notificationQueries";
+import { ListRowsSkeleton } from "@/components/loading/RouteSkeleton";
 
 function payloadString(payload: Record<string, unknown>, key: string): string {
   const v = payload[key];
@@ -72,7 +75,7 @@ export function NotificationInbox({ compact = false, onNavigate }: { compact?: b
   );
   const inviteContextByProjectId = inviteContextQuery.data ?? {};
 
-  const { mutate: markAllRead } = useMutation({
+  const { mutate: markAllRead, isPending: markingAllRead } = useMutation({
     mutationFn: markAllNotificationsRead,
     onSuccess: () => { void queryClient.invalidateQueries({ queryKey: notificationKeys.all }); },
     onError: (error) => {
@@ -158,20 +161,25 @@ export function NotificationInbox({ compact = false, onNavigate }: { compact?: b
     <section aria-label={t("header.notifications")}>
       <div className="flex flex-wrap items-center gap-2 border-b border-border-subtle p-3">
         {!compact && <><Button type="button" size="small" variant="cta" hierarchy={unread ? "tertiary" : "secondary"} aria-pressed={!unread} onClick={() => setUnread(false)}>{t("notifications.all")}</Button><Button type="button" size="small" variant="cta" hierarchy={unread ? "secondary" : "tertiary"} aria-pressed={unread} onClick={() => setUnread(true)}>{t("notifications.unread")}</Button></>}
-        <Button type="button" size="xsmall" variant="cta" hierarchy="tertiary" onClick={() => markAllRead()}>{t("notifications.markAllRead")}</Button>
+        <Button type="button" size="xsmall" variant="cta" hierarchy="tertiary" disabled={markingAllRead} onClick={() => markAllRead()}>{t("notifications.markAllRead")}</Button>
       </div>
       <div className={compact ? "scrollbar-design max-h-96 overflow-auto p-2" : "py-4"}>
-        {notificationsQuery.isError && <p role="alert" className="p-3 text-sm text-destructive">{t("notifications.loadError")} <button type="button" className="underline" onClick={() => void notificationsQuery.refetch()}>{t("notifications.retry")}</button></p>}
+        {notificationsQuery.isError && items.length > 0 && <p role="alert" className="p-3 text-sm text-destructive">{t("notifications.loadError")} <button type="button" className="underline" onClick={() => void notificationsQuery.refetch()}>{t("notifications.retry")}</button></p>}
           {loading && items.length === 0 ? (
-            <div className="px-2 py-6 text-center text-sm text-foreground-muted">
-              {t("status.loading")}
-            </div>
+            <ListRowsSkeleton rows={compact ? 4 : 6} className="px-2" />
+          ) : notificationsQuery.isError && items.length === 0 ? (
+            <QueryErrorState
+              className="m-2"
+              message={t("notifications.loadError")}
+              retrying={notificationsQuery.isFetching}
+              onRetry={() => void notificationsQuery.refetch()}
+            />
           ) : items.length === 0 ? (
             <div className="px-2 py-6 text-center text-sm text-foreground-muted">
               {t("header.noNotifications")}
             </div>
           ) : (
-            <ul className="grid gap-2">
+            <ul className={cn("grid gap-2 transition-opacity", notificationsQuery.isPlaceholderData && "opacity-60")} aria-busy={notificationsQuery.isPlaceholderData || undefined}>
               {(compact ? items.slice(0, 20) : items).map((n) => {
                 const isInvite = n.type === "project_collaboration_invite";
                 const isCoInstructorInvite = n.type === "co_instructor_invite";

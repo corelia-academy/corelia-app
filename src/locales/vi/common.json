@@ -988,7 +988,8 @@
     },
     "loadError": {
       "body": "Không thể làm mới thành tích. Hệ thống vẫn đang hiển thị trạng thái credential đã xác nhận gần nhất.",
-      "retry": "Thử lại"
+      "retry": "Thử lại",
+      "vaultUnavailable": "Chưa tải được thành tích. Hãy bấm Thử lại ở trên."
     },
     "stats": {
       "certificates": "Chứng nhận",
