@@ -842,7 +842,8 @@
       "startFromCatalogTitle": "まだ受講登録しているコースはありません。",
       "startFromCatalogSubtitle": "基礎的なコースを選んで、学習の勢いをつけましょう。",
       "enrollHint": "最初のコースを受講登録または購入すると、この領域に進捗とショートカットが表示されます。",
-      "profileSetupHintPrefix": "Corelia、講師、サポートスタッフがより良くサポートできるよう、氏名と電話番号を更新してください。"
+      "profileSetupHintPrefix": "Corelia、講師、サポートスタッフがより良くサポートできるよう、氏名と電話番号を更新してください。",
+      "loadFailed": "コースを読み込めませんでした。"
     }
   },
   "achievements": {
@@ -992,7 +993,8 @@
     },
     "loadError": {
       "body": "実績を更新できませんでした。最後に確認された資格情報のステータスを引き続き表示しています。",
-      "retry": "再試行"
+      "retry": "再試行",
+      "vaultUnavailable": "実績を読み込めませんでした。上の「再試行」を使用してください。"
     },
     "stats": {
       "certificates": "修了証",

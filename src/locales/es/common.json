@@ -842,7 +842,8 @@
       "startFromCatalogTitle": "Aún no te has inscrito en ningún curso.",
       "startFromCatalogSubtitle": "Elige un curso básico para ganar impulso.",
       "enrollHint": "Cuando te inscribas o compres tu primer curso, esta zona mostrará tu progreso y accesos rápidos.",
-      "profileSetupHintPrefix": "Actualiza tu nombre completo y tu teléfono para que Corelia, los instructores o el personal de soporte puedan ayudarte mejor."
+      "profileSetupHintPrefix": "Actualiza tu nombre completo y tu teléfono para que Corelia, los instructores o el personal de soporte puedan ayudarte mejor.",
+      "loadFailed": "No se pudieron cargar los cursos."
     }
   },
   "achievements": {
@@ -992,7 +993,8 @@
     },
     "loadError": {
       "body": "No pudimos actualizar tus logros. Se sigue mostrando el último estado confirmado de tus credenciales.",
-      "retry": "Reintentar"
+      "retry": "Reintentar",
+      "vaultUnavailable": "No se pudieron cargar los logros. Usa Reintentar arriba."
     },
     "stats": {
       "certificates": "Certificados",

@@ -82,7 +82,8 @@
       "likes": "Me gusta en tu trabajo",
       "follows": "Nuevos seguidores",
       "digest": "Correo diario de actividad social",
-      "digestDescription": "Se envía solo cuando hay actividad nueva, a las 09:00 ({{timezone}}). Puedes darte de baja en cualquier momento."
+      "digestDescription": "Se envía solo cuando hay actividad nueva, a las 09:00 ({{timezone}}). Puedes darte de baja en cualquier momento.",
+      "loadFailed": "No se pudieron cargar tus ajustes de notificaciones."
     }
   },
   "common": {

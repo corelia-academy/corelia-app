@@ -394,7 +394,8 @@
         "sectors": "エンジニアリング分野",
         "tech_stacks": "技術"
       }
-    }
+    },
+    "loadFailed": "ハッカソンを読み込めませんでした。"
   },
   "instructors": {
     "errors": {
@@ -431,7 +432,8 @@
     },
     "actions": {
       "refresh": "更新",
-      "clearFilters": "フィルターをクリア"
+      "clearFilters": "フィルターをクリア",
+      "detail": "詳細"
     },
     "list": {
       "syncing": "講師を同期中...",
@@ -445,6 +447,13 @@
       "corelia": "Corelia",
       "external": "外部",
       "unclassified": "未分類"
+    },
+    "columns": {
+      "instructor": "講師",
+      "email": "メール",
+      "origin": "カテゴリ",
+      "courses": "コース",
+      "actions": "操作"
     }
   },
   "instructorDetailPage": {

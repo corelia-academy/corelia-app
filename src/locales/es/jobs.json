@@ -305,6 +305,7 @@
     "alerts": {
       "title": "Alertas operativas abiertas",
       "occurrences": "{{count}} ocurrencia(s)"
-    }
+    },
+    "loadFailed": "No se pudieron cargar los datos de operaciones de empleo."
   }
 }

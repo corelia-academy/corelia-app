@@ -305,6 +305,7 @@
     "alerts": {
       "title": "未解決の運用アラート",
       "occurrences": "{{count}} 件発生"
-    }
+    },
+    "loadFailed": "求人運用データを読み込めませんでした。"
   }
 }

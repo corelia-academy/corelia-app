@@ -305,6 +305,7 @@
     "alerts": {
       "title": "未解决的运营告警",
       "occurrences": "出现 {{count}} 次"
-    }
+    },
+    "loadFailed": "无法加载职位运营数据。"
   }
 }

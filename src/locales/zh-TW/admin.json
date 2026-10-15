@@ -394,7 +394,8 @@
         "sectors": "工程領域",
         "tech_stacks": "技術"
       }
-    }
+    },
+    "loadFailed": "無法載入黑客松列表。"
   },
   "instructors": {
     "errors": {
@@ -431,7 +432,8 @@
     },
     "actions": {
       "refresh": "重新整理",
-      "clearFilters": "清除篩選"
+      "clearFilters": "清除篩選",
+      "detail": "詳情"
     },
     "list": {
       "syncing": "正在同步講師...",
@@ -445,6 +447,13 @@
       "corelia": "Corelia",
       "external": "外部",
       "unclassified": "未分類"
+    },
+    "columns": {
+      "instructor": "講師",
+      "email": "電子郵件",
+      "origin": "分類",
+      "courses": "課程",
+      "actions": "操作"
     }
   },
   "instructorDetailPage": {

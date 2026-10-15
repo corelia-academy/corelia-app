@@ -394,7 +394,8 @@
         "sectors": "엔지니어링 분야",
         "tech_stacks": "기술"
       }
-    }
+    },
+    "loadFailed": "해커톤 목록을 불러올 수 없습니다."
   },
   "instructors": {
     "errors": {
@@ -431,7 +432,8 @@
     },
     "actions": {
       "refresh": "새로 고침",
-      "clearFilters": "필터 초기화"
+      "clearFilters": "필터 초기화",
+      "detail": "상세"
     },
     "list": {
       "syncing": "강사 동기화 중...",
@@ -445,6 +447,13 @@
       "corelia": "Corelia",
       "external": "외부",
       "unclassified": "미분류"
+    },
+    "columns": {
+      "instructor": "강사",
+      "email": "이메일",
+      "origin": "분류",
+      "courses": "강의",
+      "actions": "작업"
     }
   },
   "instructorDetailPage": {

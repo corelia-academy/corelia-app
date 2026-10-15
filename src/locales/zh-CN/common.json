@@ -842,7 +842,8 @@
       "startFromCatalogTitle": "您还没有报名任何课程。",
       "startFromCatalogSubtitle": "选择一门基础课程，积累学习动力。",
       "enrollHint": "报名或购买第一门课程后，此区域将显示进度和快捷入口。",
-      "profileSetupHintPrefix": "请更新您的姓名和手机号，以便 Corelia、讲师或支持人员更好地帮助您。"
+      "profileSetupHintPrefix": "请更新您的姓名和手机号，以便 Corelia、讲师或支持人员更好地帮助您。",
+      "loadFailed": "无法加载课程列表。"
     }
   },
   "achievements": {
@@ -992,7 +993,8 @@
     },
     "loadError": {
       "body": "我们无法刷新您的成就。仍显示您最近一次确认的凭证状态。",
-      "retry": "重试"
+      "retry": "重试",
+      "vaultUnavailable": "无法加载成就。请使用上方的“重试”。"
     },
     "stats": {
       "certificates": "证书",

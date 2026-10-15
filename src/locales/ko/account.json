@@ -82,7 +82,8 @@
       "likes": "내 작업에 대한 좋아요",
       "follows": "새 팔로워",
       "digest": "일일 소셜 활동 이메일",
-      "digestDescription": "새로운 활동이 있을 때만 09:00({{timezone}})에 발송됩니다. 언제든지 수신을 거부할 수 있습니다."
+      "digestDescription": "새로운 활동이 있을 때만 09:00({{timezone}})에 발송됩니다. 언제든지 수신을 거부할 수 있습니다.",
+      "loadFailed": "알림 설정을 불러올 수 없습니다."
     }
   },
   "common": {

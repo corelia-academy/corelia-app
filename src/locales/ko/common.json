@@ -842,7 +842,8 @@
       "startFromCatalogTitle": "아직 수강 신청한 강의가 없습니다.",
       "startFromCatalogSubtitle": "기초 강의를 골라 학습 동력을 쌓아 보세요.",
       "enrollHint": "첫 강의를 수강 신청하거나 구매하면 이 영역에 진도와 바로가기가 표시됩니다.",
-      "profileSetupHintPrefix": "Corelia, 강사 또는 지원팀이 더 잘 도와드릴 수 있도록 이름과 전화번호를 업데이트하세요."
+      "profileSetupHintPrefix": "Corelia, 강사 또는 지원팀이 더 잘 도와드릴 수 있도록 이름과 전화번호를 업데이트하세요.",
+      "loadFailed": "강의 목록을 불러올 수 없습니다."
     }
   },
   "achievements": {
@@ -992,7 +993,8 @@
     },
     "loadError": {
       "body": "성과를 새로 고칠 수 없습니다. 마지막으로 확인된 자격 증명 상태를 계속 표시합니다.",
-      "retry": "다시 시도"
+      "retry": "다시 시도",
+      "vaultUnavailable": "성과를 불러올 수 없습니다. 위의 다시 시도를 사용하세요."
     },
     "stats": {
       "certificates": "수료증",

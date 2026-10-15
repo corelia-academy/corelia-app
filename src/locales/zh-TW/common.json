@@ -842,7 +842,8 @@
       "startFromCatalogTitle": "您還沒有報名任何課程。",
       "startFromCatalogSubtitle": "選擇一門基礎課程，累積學習動力。",
       "enrollHint": "報名或購買第一門課程後，此區域將顯示進度和快捷入口。",
-      "profileSetupHintPrefix": "請更新您的姓名和手機號碼，以便 Corelia、講師或支援人員更好地協助您。"
+      "profileSetupHintPrefix": "請更新您的姓名和手機號碼，以便 Corelia、講師或支援人員更好地協助您。",
+      "loadFailed": "無法載入課程列表。"
     }
   },
   "achievements": {
@@ -992,7 +993,8 @@
     },
     "loadError": {
       "body": "我們無法重新整理您的成就。仍顯示您最近一次確認的憑證狀態。",
-      "retry": "重試"
+      "retry": "重試",
+      "vaultUnavailable": "無法載入成就。請使用上方的「重試」。"
     },
     "stats": {
       "certificates": "證書",

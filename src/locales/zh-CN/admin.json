@@ -394,7 +394,8 @@
         "sectors": "工程领域",
         "tech_stacks": "技术"
       }
-    }
+    },
+    "loadFailed": "无法加载黑客松列表。"
   },
   "instructors": {
     "errors": {
@@ -431,7 +432,8 @@
     },
     "actions": {
       "refresh": "刷新",
-      "clearFilters": "清除筛选"
+      "clearFilters": "清除筛选",
+      "detail": "详情"
     },
     "list": {
       "syncing": "正在同步讲师...",
@@ -445,6 +447,13 @@
       "corelia": "Corelia",
       "external": "外部",
       "unclassified": "未分类"
+    },
+    "columns": {
+      "instructor": "讲师",
+      "email": "邮箱",
+      "origin": "分类",
+      "courses": "课程",
+      "actions": "操作"
     }
   },
   "instructorDetailPage": {

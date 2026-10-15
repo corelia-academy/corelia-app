@@ -82,7 +82,8 @@
       "likes": "您的作品收到的讚",
       "follows": "新追蹤者",
       "digest": "每日社群動態郵件",
-      "digestDescription": "僅在有新動態時於 09:00（{{timezone}}）寄出。可隨時取消訂閱。"
+      "digestDescription": "僅在有新動態時於 09:00（{{timezone}}）寄出。可隨時取消訂閱。",
+      "loadFailed": "無法載入您的通知設定。"
     }
   },
   "common": {

@@ -82,7 +82,8 @@
       "likes": "您的作品收到的赞",
       "follows": "新关注者",
       "digest": "每日社交动态邮件",
-      "digestDescription": "仅在有新动态时于 09:00（{{timezone}}）发送。可随时退订。"
+      "digestDescription": "仅在有新动态时于 09:00（{{timezone}}）发送。可随时退订。",
+      "loadFailed": "无法加载您的通知设置。"
     }
   },
   "common": {

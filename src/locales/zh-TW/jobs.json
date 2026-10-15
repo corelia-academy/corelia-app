@@ -305,6 +305,7 @@
     "alerts": {
       "title": "未解決的營運警示",
       "occurrences": "出現 {{count}} 次"
-    }
+    },
+    "loadFailed": "無法載入職缺營運資料。"
   }
 }
