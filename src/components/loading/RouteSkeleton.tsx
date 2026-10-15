@@ -140,27 +140,67 @@ function TableContent() {
   );
 }
 
-/** Lesson player shell: h-12 top bar plus content and curriculum panes (matches `Learn`). */
+/**
+ * Lesson player body, mirroring `LessonPlayerCard`: format label, title and summary above the
+ * lesson media, then the sticky Previous / lesson number / primary action footer.
+ */
+export function LessonPlayerSkeletonBody() {
+  return (
+    <div className="flex min-h-full flex-col" aria-hidden>
+      <div className="mx-auto w-full max-w-5xl flex-1 space-y-5 px-4 py-6 sm:px-6">
+        <div>
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="mt-3 h-8 w-3/4 max-w-xl rounded-lg" />
+          <Skeleton className="mt-3 h-4 w-full max-w-2xl" />
+        </div>
+        <Skeleton className="aspect-video w-full rounded-xl" />
+      </div>
+      <div className="sticky bottom-0 border-t border-border bg-surface-base px-3 pb-3 pt-2 sm:px-6 sm:pt-3">
+        <div className="grid grid-cols-2 items-center gap-2 sm:grid-cols-[auto_1fr_auto] sm:gap-3">
+          <Skeleton className="h-11 w-full rounded-lg sm:w-28" />
+          <Skeleton className="mx-auto hidden h-4 w-16 sm:block" />
+          <Skeleton className="h-11 w-full rounded-lg sm:w-28" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Full Learn screen: h-12 top bar, lesson player and (from 1280px) the curriculum panel. */
 export function LearnShellSkeleton({ className, immediate }: { className?: string; immediate?: boolean }) {
   return (
-    <LoadingStatus className={cn("flex h-full flex-col", className)} immediate={immediate}>
-      <div className="flex h-12 shrink-0 items-center gap-3 border-b border-border-subtle bg-surface-raised px-3">
-        <Skeleton className="size-8 rounded-md" />
-        <Skeleton className="mx-auto h-4 w-48 max-w-[50%]" />
-        <Skeleton className="size-8 rounded-md" />
+    <LoadingStatus className={cn("flex h-full flex-col bg-background", className)} immediate={immediate}>
+      {/* Top bar sits on surface-raised, so its placeholders use the darker base tone to stay visible. */}
+      <div className="relative flex h-12 shrink-0 items-center border-b border-border-subtle bg-surface-raised px-3" aria-hidden>
+        <Skeleton className="size-8 rounded-md bg-surface-base" />
+        <Skeleton className="absolute left-1/2 h-4 w-64 max-w-[50%] -translate-x-1/2 bg-surface-base" />
+        <Skeleton className="ml-auto size-8 rounded-md bg-surface-base" />
       </div>
-      <div className="flex min-h-0 flex-1">
-        <div className="min-w-0 flex-1 space-y-4 p-4 sm:p-6">
-          <Skeleton className="aspect-video w-full max-w-5xl rounded-2xl" />
-          <Skeleton className="h-7 w-2/3 max-w-xl rounded-lg" />
-          <Skeleton className="h-4 w-full max-w-3xl" />
-          <Skeleton className="h-4 w-5/6 max-w-3xl" />
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <LessonPlayerSkeletonBody />
         </div>
-        <div className="hidden w-[24%] min-w-64 max-w-sm shrink-0 space-y-2 border-l border-border-subtle bg-surface-base p-4 xl:block">
-          <Skeleton className="h-5 w-32" />
-          {Array.from({ length: 8 }, (_, index) => (
-            <Skeleton key={index} className="h-10 w-full rounded-lg" />
-          ))}
+        <div className="hidden w-[24%] shrink-0 flex-col border-l border-border-subtle bg-surface-base xl:flex" aria-hidden>
+          <div className="grid grid-cols-2 gap-1 border-b border-border-subtle p-2">
+            <Skeleton className="h-8 rounded-md" />
+            <Skeleton className="h-8 rounded-md" />
+          </div>
+          <div className="border-b border-border-subtle bg-surface-raised px-4 py-3">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-28 bg-surface-base" />
+              <Skeleton className="h-3 w-8 bg-surface-base" />
+            </div>
+            <Skeleton className="mt-2 h-1.5 w-full rounded-full bg-surface-base" />
+            <Skeleton className="mt-2 h-3 w-24 bg-surface-base" />
+          </div>
+          <div className="space-y-1 p-2">
+            {Array.from({ length: 8 }, (_, index) => (
+              <div key={index} className="flex items-center gap-3 px-2 py-2">
+                <Skeleton className="size-5 shrink-0 rounded-full" />
+                <Skeleton className="h-4 flex-1" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </LoadingStatus>

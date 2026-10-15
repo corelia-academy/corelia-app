@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { ArrowLeft } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { LessonPlayerSkeletonBody } from "@/components/loading/RouteSkeleton";
 import { skeletonRevealClass } from "@/components/loading/skeletonReveal";
 import { cn } from "@/lib/utils";
 
@@ -32,12 +32,9 @@ export function LearnMissingCourseIdState({
 /** Placeholder for the lesson player area while the resume redirect resolves. */
 export function LessonPlayerSkeleton() {
   return (
-    <div className={cn("space-y-4 p-4 sm:p-6", skeletonRevealClass())} role="status" aria-busy="true">
+    <div className={cn("h-full", skeletonRevealClass())} role="status" aria-busy="true">
       <span className="sr-only">Loading</span>
-      <Skeleton className="aspect-video w-full max-w-5xl rounded-2xl" />
-      <Skeleton className="h-7 w-2/3 max-w-xl rounded-lg" />
-      <Skeleton className="h-4 w-full max-w-3xl" />
-      <Skeleton className="h-4 w-5/6 max-w-3xl" />
+      <LessonPlayerSkeletonBody />
     </div>
   );
 }
