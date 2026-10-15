@@ -6,14 +6,11 @@ import {
   countMintedCredentials,
   getNotificationPreferences,
 } from "@/lib/notificationPreferences";
-import { getProjectLocaleContent, listMyProjectsForAccount } from "@/lib/projects";
-import type { Locale } from "@/types/database";
+import { listMyProjectsForAccount } from "@/lib/projects";
 
 export const accountKeys = {
   all: ["account"] as const,
   projects: (userId: string) => [...accountKeys.all, "projects", userId] as const,
-  projectLocale: (userId: string, projectId: string, locale: Locale) =>
-    [...accountKeys.all, "project-locale", userId, projectId, locale] as const,
   notificationPreferences: (userId: string) =>
     [...accountKeys.all, "notification-preferences", userId] as const,
   mintedCredentialCount: (userId: string) =>
@@ -29,25 +26,6 @@ export function accountProjectsQueryOptions(userId: string | undefined) {
     queryKey: accountKeys.projects(userId || "missing"),
     queryFn: () => listMyProjectsForAccount(),
     enabled: Boolean(userId),
-    staleTime: 30_000,
-    meta: privateMeta(userId || "missing"),
-  });
-}
-
-export function accountProjectLocaleQueryOptions(
-  userId: string | undefined,
-  projectId: string | undefined,
-  locale: Locale,
-  enabled: boolean,
-) {
-  return queryOptions({
-    queryKey: accountKeys.projectLocale(
-      userId || "missing",
-      projectId || "missing",
-      locale,
-    ),
-    queryFn: () => getProjectLocaleContent(projectId!, locale),
-    enabled: Boolean(userId && projectId && enabled),
     staleTime: 30_000,
     meta: privateMeta(userId || "missing"),
   });
