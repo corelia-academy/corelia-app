@@ -4,6 +4,8 @@ import { LoadingBar } from "@/components/ui/LoadingBar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
+import { AppShellSkeleton } from "@/components/loading/AppShellSkeleton";
+import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 import MaintenancePage from "@/pages/MaintenancePage";
 import {
   createBrowserRouter,
@@ -133,6 +135,14 @@ const AdminEmailPreviewPage = lazy(() => import("@/pages/admin/email/AdminEmailP
 const AdminOgPreviewPage = lazy(() => import("@/pages/admin/AdminOgPreviewPage"));
 
 const PageFallback = () => <AuthGateLoading />;
+const ShellFallback = () => <AppShellSkeleton />;
+const ListFallback = () => <RouteSkeleton variant="list" />;
+const DetailFallback = () => <RouteSkeleton variant="detail" />;
+const FormFallback = () => <RouteSkeleton variant="form" />;
+const TableFallback = () => <RouteSkeleton variant="table" />;
+const AccountFormFallback = () => <RouteSkeleton variant="form" bare />;
+const AccountListFallback = () => <RouteSkeleton variant="list" bare />;
+const LearnFallback = () => <RouteSkeleton variant="learn" className="h-dvh" />;
 
 function RecoveryGuard() {
   const navigate = useNavigate();
@@ -282,7 +292,7 @@ function ApplicationRoutes() {
             <Route
               path="learn"
               element={
-                <Suspense fallback={<PageFallback />}>
+                <Suspense fallback={<LearnFallback />}>
                   <LearnLayout />
                 </Suspense>
               }
@@ -290,19 +300,19 @@ function ApplicationRoutes() {
               <Route
                 path=":courseId"
                 element={
-                  <Suspense fallback={<PageFallback />}>
+                  <Suspense fallback={<LearnFallback />}>
                     <Learn />
                   </Suspense>
                 }
               />
               <Route
                 path=":courseId/final-assignment"
-                element={<Suspense fallback={<PageFallback />}><Learn /></Suspense>}
+                element={<Suspense fallback={<LearnFallback />}><Learn /></Suspense>}
               />
               <Route
                 path=":courseId/lesson/:lessonId"
                 element={
-                  <Suspense fallback={<PageFallback />}>
+                  <Suspense fallback={<LearnFallback />}>
                     <Learn />
                   </Suspense>
                 }
@@ -363,7 +373,7 @@ function ApplicationRoutes() {
             <Route
               path="/"
               element={
-                <Suspense fallback={<PageFallback />}>
+                <Suspense fallback={<ShellFallback />}>
                   <MainLayout />
                 </Suspense>
               }
@@ -371,17 +381,17 @@ function ApplicationRoutes() {
               <Route
                 index
                 element={
-                  <Suspense fallback={<PageFallback />}>
+                  <Suspense fallback={<ListFallback />}>
                     <Home />
                   </Suspense>
                 }
               />
-              <Route path="notifications" element={<RequireAuth><Suspense fallback={<PageFallback />}><NotificationsPage /></Suspense></RequireAuth>} />
+              <Route path="notifications" element={<RequireAuth><Suspense fallback={<ListFallback />}><NotificationsPage /></Suspense></RequireAuth>} />
               <Route
                 path="feed"
                 element={
                   <RequireAuth>
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<ListFallback />}>
                       <FeedPage />
                     </Suspense>
                   </RequireAuth>
@@ -394,7 +404,7 @@ function ApplicationRoutes() {
               <Route
                 path="courses"
                 element={
-                  <Suspense fallback={<PageFallback />}>
+                  <Suspense fallback={<ListFallback />}>
                     <Courses />
                   </Suspense>
                 }
@@ -420,7 +430,7 @@ function ApplicationRoutes() {
               <Route
                 path="courses/:id"
                 element={
-                  <Suspense fallback={<PageFallback />}>
+                  <Suspense fallback={<DetailFallback />}>
                     <CourseDetail />
                   </Suspense>
                 }
@@ -429,7 +439,7 @@ function ApplicationRoutes() {
               <Route
                 path="instructors/:id"
                 element={
-                  <Suspense fallback={<PageFallback />}>
+                  <Suspense fallback={<DetailFallback />}>
                     <InstructorDetail />
                   </Suspense>
                 }
@@ -438,17 +448,17 @@ function ApplicationRoutes() {
                 path="achievements"
                 element={
                   <RequireAuth>
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<ListFallback />}>
                       <AchievementsPage />
                     </Suspense>
                   </RequireAuth>
                 }
               />
-              <Route path="hackathons" element={<Suspense fallback={<PageFallback />}><Hackathons /></Suspense>} />
+              <Route path="hackathons" element={<Suspense fallback={<ListFallback />}><Hackathons /></Suspense>} />
               <Route path="hackathons/manage/*" element={<Suspense fallback={<PageFallback />}><NotFound /></Suspense>} />
               <Route path="hackathons/new" element={<Suspense fallback={<PageFallback />}><NotFound /></Suspense>} />
               <Route path="hackathons/:slug/manage/*" element={<Suspense fallback={<PageFallback />}><NotFound /></Suspense>} />
-              <Route path="hackathons/:slug" element={<Suspense fallback={<PageFallback />}><HackathonPublicLayout /></Suspense>}>
+              <Route path="hackathons/:slug" element={<Suspense fallback={<DetailFallback />}><HackathonPublicLayout /></Suspense>}>
                 <Route index element={<Navigate to="overview" replace />} />
                 <Route path="overview" element={<Suspense fallback={<PageFallback />}><HackathonOverviewTab /></Suspense>} />
                 <Route path="posts" element={<Suspense fallback={<PageFallback />}><HackathonPostsTab /></Suspense>} />
@@ -457,33 +467,33 @@ function ApplicationRoutes() {
                 <Route path="resources" element={<Suspense fallback={<PageFallback />}><HackathonResourcesTab /></Suspense>} />
                 <Route path="projects" element={<Suspense fallback={<PageFallback />}><HackathonProjectsTab /></Suspense>} />
               </Route>
-              <Route path="projects" element={<Suspense fallback={<PageFallback />}><ProjectsPage /></Suspense>} />
-              <Route path="projects/new" element={<RequireAuth><Suspense fallback={<PageFallback />}><ProjectNewPage /></Suspense></RequireAuth>} />
-              <Route path="projects/:slug/edit" element={<RequireAuth><Suspense fallback={<PageFallback />}><ProjectEditPage /></Suspense></RequireAuth>} />
-              <Route path="projects/:slug" element={<Suspense fallback={<PageFallback />}><ProjectDetailPage /></Suspense>} />
-              <Route path="jobs" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
-              <Route path="jobs/saved" element={<RequireAuth><Suspense fallback={<PageFallback />}><SavedJobsPage /></Suspense></RequireAuth>} />
-              <Route path="jobs/applied" element={<RequireAuth><Suspense fallback={<PageFallback />}><AppliedJobsPage /></Suspense></RequireAuth>} />
-              <Route path="jobs/hidden" element={<RequireAuth><Suspense fallback={<PageFallback />}><HiddenJobsPage /></Suspense></RequireAuth>} />
-              <Route path="jobs/market" element={<Suspense fallback={<PageFallback />}><JobMarketPage /></Suspense>} />
-              <Route path="jobs/market/skills/:skill" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
-              <Route path="jobs/market/roles/:role" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
-              <Route path="jobs/market/entry-level" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
-              <Route path="jobs/market/remote" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
-              <Route path="jobs/frontend" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
-              <Route path="jobs/backend" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
-              <Route path="jobs/ai-engineering" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
-              <Route path="jobs/devops" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
-              <Route path="jobs/skills/:skill" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
-              <Route path="jobs/domains/:domain" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
-              <Route path="jobs/remote" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
-              <Route path="jobs/vietnam" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
-              <Route path="jobs/apac" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
-              <Route path="jobs/:slug" element={<Suspense fallback={<PageFallback />}><JobDetailPage /></Suspense>} />
+              <Route path="projects" element={<Suspense fallback={<ListFallback />}><ProjectsPage /></Suspense>} />
+              <Route path="projects/new" element={<RequireAuth><Suspense fallback={<FormFallback />}><ProjectNewPage /></Suspense></RequireAuth>} />
+              <Route path="projects/:slug/edit" element={<RequireAuth><Suspense fallback={<FormFallback />}><ProjectEditPage /></Suspense></RequireAuth>} />
+              <Route path="projects/:slug" element={<Suspense fallback={<DetailFallback />}><ProjectDetailPage /></Suspense>} />
+              <Route path="jobs" element={<Suspense fallback={<ListFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/saved" element={<RequireAuth><Suspense fallback={<ListFallback />}><SavedJobsPage /></Suspense></RequireAuth>} />
+              <Route path="jobs/applied" element={<RequireAuth><Suspense fallback={<ListFallback />}><AppliedJobsPage /></Suspense></RequireAuth>} />
+              <Route path="jobs/hidden" element={<RequireAuth><Suspense fallback={<ListFallback />}><HiddenJobsPage /></Suspense></RequireAuth>} />
+              <Route path="jobs/market" element={<Suspense fallback={<ListFallback />}><JobMarketPage /></Suspense>} />
+              <Route path="jobs/market/skills/:skill" element={<Suspense fallback={<ListFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/market/roles/:role" element={<Suspense fallback={<ListFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/market/entry-level" element={<Suspense fallback={<ListFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/market/remote" element={<Suspense fallback={<ListFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/frontend" element={<Suspense fallback={<ListFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/backend" element={<Suspense fallback={<ListFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/ai-engineering" element={<Suspense fallback={<ListFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/devops" element={<Suspense fallback={<ListFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/skills/:skill" element={<Suspense fallback={<ListFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/domains/:domain" element={<Suspense fallback={<ListFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/remote" element={<Suspense fallback={<ListFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/vietnam" element={<Suspense fallback={<ListFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/apac" element={<Suspense fallback={<ListFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/:slug" element={<Suspense fallback={<DetailFallback />}><JobDetailPage /></Suspense>} />
               <Route
                 path="search"
                 element={
-                  <Suspense fallback={<PageFallback />}>
+                  <Suspense fallback={<ListFallback />}>
                     <SearchPage />
                   </Suspense>
                 }
@@ -500,7 +510,7 @@ function ApplicationRoutes() {
                 path="account"
                 element={
                   <RequireAuth>
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<FormFallback />}>
                       <Account />
                     </Suspense>
                   </RequireAuth>
@@ -510,7 +520,7 @@ function ApplicationRoutes() {
                 <Route
                   path="profile"
                   element={
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<AccountFormFallback />}>
                       <AccountProfileRoute />
                     </Suspense>
                   }
@@ -518,7 +528,7 @@ function ApplicationRoutes() {
                 <Route
                   path="cv"
                   element={
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<AccountFormFallback />}>
                       <AccountCvRoute />
                     </Suspense>
                   }
@@ -526,27 +536,27 @@ function ApplicationRoutes() {
                 <Route
                   path="settings"
                   element={
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<AccountFormFallback />}>
                       <AccountSettingsRoute />
                     </Suspense>
                   }
                 />
-                <Route path="projects" element={<Suspense fallback={<PageFallback />}><AccountProjectsRoute /></Suspense>} />
+                <Route path="projects" element={<Suspense fallback={<AccountListFallback />}><AccountProjectsRoute /></Suspense>} />
                 <Route
                   path="instructor"
                   element={
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<AccountFormFallback />}>
                       <AccountInstructorProfileRoute />
                     </Suspense>
                   }
                 />
               </Route>
-              <Route path="settings/avatar" element={<RequireAuth><Suspense fallback={<PageFallback />}><AvatarSettingsRoute /></Suspense></RequireAuth>} />
+              <Route path="settings/avatar" element={<RequireAuth><Suspense fallback={<FormFallback />}><AvatarSettingsRoute /></Suspense></RequireAuth>} />
               <Route
                 path="admin"
                 element={
-                  <RequireRole roles={ROLE_GROUPS.admin}>
-                    <Suspense fallback={<PageFallback />}>
+                  <RequireRole roles={ROLE_GROUPS.admin} loadingFallback={<TableFallback />}>
+                    <Suspense fallback={<TableFallback />}>
                       <AdminLayout />
                     </Suspense>
                   </RequireRole>
@@ -555,7 +565,7 @@ function ApplicationRoutes() {
                 <Route
                   index
                   element={
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<TableFallback />}>
                       <AdminUsers />
                     </Suspense>
                   }
@@ -563,7 +573,7 @@ function ApplicationRoutes() {
                 <Route
                   path="instructors"
                   element={
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<TableFallback />}>
                       <AdminInstructors />
                     </Suspense>
                   }
@@ -571,7 +581,7 @@ function ApplicationRoutes() {
                 <Route
                   path="instructors/:id"
                   element={
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<DetailFallback />}>
                       <AdminInstructorDetail />
                     </Suspense>
                   }
@@ -579,7 +589,7 @@ function ApplicationRoutes() {
                 <Route
                   path="activity-milestones"
                   element={
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<TableFallback />}>
                       <AdminActivityMilestones />
                     </Suspense>
                   }
@@ -587,42 +597,42 @@ function ApplicationRoutes() {
                 <Route
                   path="manual-mint"
                   element={
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<TableFallback />}>
                       <AdminManualMint />
                     </Suspense>
                   }
                 />
                 <Route
                   path="certificates"
-                  element={<RequireRole roles={ROLE_GROUPS.adminOnly}><Suspense fallback={<PageFallback />}><AdminCertificateAnalytics /></Suspense></RequireRole>}
+                  element={<RequireRole roles={ROLE_GROUPS.adminOnly} loadingFallback={<TableFallback />}><Suspense fallback={<TableFallback />}><AdminCertificateAnalytics /></Suspense></RequireRole>}
                 />
                 <Route
                   path="branding"
                   element={
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<FormFallback />}>
                       <AdminBranding />
                     </Suspense>
                   }
                 />
-                <Route path="hackathons" element={<Suspense fallback={<PageFallback />}><AdminHackathons /></Suspense>} />
-                <Route path="hackathons/new" element={<Suspense fallback={<PageFallback />}><AdminHackathonEditor /></Suspense>} />
-                <Route path="hackathons/:id/edit" element={<Suspense fallback={<PageFallback />}><AdminHackathonEditor /></Suspense>} />
-                <Route path="projects" element={<RequireRole roles={ROLE_GROUPS.projectManagers}><Suspense fallback={<PageFallback />}><AdminProjectsPage /></Suspense></RequireRole>} />
-                <Route path="jobs" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
-                <Route path="jobs/review" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
-                <Route path="jobs/sources" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
-                <Route path="jobs/companies" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
-                <Route path="jobs/crawlers" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
-                <Route path="jobs/analytics" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="hackathons" element={<Suspense fallback={<TableFallback />}><AdminHackathons /></Suspense>} />
+                <Route path="hackathons/new" element={<Suspense fallback={<FormFallback />}><AdminHackathonEditor /></Suspense>} />
+                <Route path="hackathons/:id/edit" element={<Suspense fallback={<FormFallback />}><AdminHackathonEditor /></Suspense>} />
+                <Route path="projects" element={<RequireRole roles={ROLE_GROUPS.projectManagers} loadingFallback={<TableFallback />}><Suspense fallback={<TableFallback />}><AdminProjectsPage /></Suspense></RequireRole>} />
+                <Route path="jobs" element={<Suspense fallback={<TableFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="jobs/review" element={<Suspense fallback={<TableFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="jobs/sources" element={<Suspense fallback={<TableFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="jobs/companies" element={<Suspense fallback={<TableFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="jobs/crawlers" element={<Suspense fallback={<TableFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="jobs/analytics" element={<Suspense fallback={<TableFallback />}><AdminJobsPage /></Suspense>} />
                 <Route path="email/previews" element={<Suspense fallback={<PageFallback />}><AdminEmailPreviewPage /></Suspense>} />
                 <Route path="og-preview" element={<Suspense fallback={<PageFallback />}><AdminOgPreviewPage /></Suspense>} />
-                <Route path="email" element={<Suspense fallback={<PageFallback />}><AdminEmailCenterPage /></Suspense>} />
+                <Route path="email" element={<Suspense fallback={<TableFallback />}><AdminEmailCenterPage /></Suspense>} />
               </Route>
               <Route
                 path="instructor"
                 element={
-                  <RequireRole roles={ROLE_GROUPS.instructorWorkspace}>
-                    <Suspense fallback={<PageFallback />}>
+                  <RequireRole roles={ROLE_GROUPS.instructorWorkspace} loadingFallback={<TableFallback />}>
+                    <Suspense fallback={<TableFallback />}>
                       <InstructorLayout />
                     </Suspense>
                   </RequireRole>
@@ -631,7 +641,7 @@ function ApplicationRoutes() {
                 <Route
                   path="courses"
                   element={
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<TableFallback />}>
                       <InstructorCourses />
                     </Suspense>
                   }
@@ -651,7 +661,7 @@ function ApplicationRoutes() {
                 <Route
                   path="courses/new"
                   element={
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<FormFallback />}>
                       <InstructorCourseNew />
                     </Suspense>
                   }
@@ -660,7 +670,7 @@ function ApplicationRoutes() {
                 <Route
                   path="courses/:id/edit"
                   element={
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<FormFallback />}>
                       <InstructorCourseEdit />
                     </Suspense>
                   }
@@ -668,7 +678,7 @@ function ApplicationRoutes() {
                 <Route
                   path="profile"
                   element={
-                    <Suspense fallback={<PageFallback />}>
+                    <Suspense fallback={<FormFallback />}>
                       <InstructorWorkspaceProfileRoute />
                     </Suspense>
                   }
@@ -676,7 +686,7 @@ function ApplicationRoutes() {
                 <Route
                   path="instructors"
                   element={
-                    <RequireRole roles={ROLE_GROUPS.admin}>
+                    <RequireRole roles={ROLE_GROUPS.admin} loadingFallback={<TableFallback />}>
                       <Navigate to="/admin/instructors" replace />
                     </RequireRole>
                   }

@@ -45,24 +45,18 @@ export function useCoursesCatalog() {
   ].filter(Boolean).length;
 
   return {
-    loading: catalogQuery.isPending || (courseIds.length > 0 && lessonCountsQuery.isPending),
+    // Lesson counts are secondary metadata: render cards as soon as the catalog arrives and
+    // let counts fill in (or stay hidden on failure) instead of blocking the whole page.
+    loading: catalogQuery.isPending,
     retry: async () => {
-      const refetches: Array<Promise<unknown>> = [catalogQuery.refetch()];
-      if (courseIds.length > 0) refetches.push(lessonCountsQuery.refetch());
-      return Promise.all(refetches);
+      await catalogQuery.refetch();
     },
     error: catalogQuery.error instanceof Error
       ? catalogQuery.error.message
       : catalogQuery.error
         ? t("catalog.loadErrorFallback")
-        : lessonCountsQuery.error instanceof Error
-          ? lessonCountsQuery.error.message
-          : lessonCountsQuery.error
-            ? t("catalog.lessonCountLoadErrorFallback")
-            : null,
-    errorTitle: lessonCountsQuery.isError && !catalogQuery.isError
-      ? t("catalog.lessonCountLoadErrorTitle")
-      : t("catalog.loadErrorTitle"),
+        : null,
+    errorTitle: t("catalog.loadErrorTitle"),
     catalogCourses: courses,
     filteredOnlineCourses,
     lessonCounts: lessonCountsQuery.data ?? new Map<string, number>(),

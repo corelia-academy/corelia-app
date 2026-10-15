@@ -210,7 +210,7 @@ export default function CoursesPage() {
               </div>
             ))}
           </div>
-          <div className="mobile-bleed-grid mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mobile-bleed-grid mt-6 grid grid-cols-[minmax(0,335px)] justify-center gap-6 sm:grid-cols-[repeat(2,minmax(0,335px))] lg:grid-cols-[repeat(3,minmax(0,335px))]">
             {Array.from({ length: 6 }).map((_, index) => (
               <div key={index} className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base">
                 <Skeleton className="aspect-video w-full rounded-none" />

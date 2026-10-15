@@ -15,7 +15,13 @@ export default function Home() {
   const { t } = useTranslation("common");
   const { profile, user, isAuthenticated } = useAuth();
 
-  const { courseCatalog, courseLessonCounts } = useHomeCatalogAndContests();
+  const {
+    courseCatalog,
+    courseLessonCounts,
+    loading: catalogLoading,
+    error: catalogError,
+    refetch: refetchCatalog,
+  } = useHomeCatalogAndContests();
   const { loading, focusCards, enrolledCourseCount } = useHomeUserDashboard(user, t);
 
   const oauthDisplayName =
@@ -51,16 +57,18 @@ export default function Home() {
         </aside>
 
         <main className="min-w-0 space-y-6 md:col-start-1 md:row-start-2 @max-[807px]:col-auto! @max-[807px]:row-start-auto!">
-          {!loading ? (
-            <ContinueLearningSection
-              t={t}
-              focusCards={focusCards}
-              enrolledCourseCount={enrolledCourseCount}
-            />
-          ) : null}
+          <ContinueLearningSection
+            t={t}
+            loading={loading}
+            focusCards={focusCards}
+            enrolledCourseCount={enrolledCourseCount}
+          />
 
           <ExploreCoursesSection
             t={t}
+            loading={catalogLoading}
+            error={Boolean(catalogError)}
+            onRetry={() => void refetchCatalog()}
             courseCatalog={courseCatalog}
             courseLessonCounts={courseLessonCounts}
           />

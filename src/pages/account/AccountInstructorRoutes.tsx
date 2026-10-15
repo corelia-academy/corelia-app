@@ -18,6 +18,7 @@ import {
   Instagram,
 } from "lucide-react";
 import { useAuth } from "@/stores/authStore";
+import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 import { updateProfileForUser } from "@/lib/profile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -407,11 +408,15 @@ function InstructorProfileSection() {
 }
 
 export function AccountInstructorProfileRoute() {
-  const { profile } = useAuth();
+  const { profile, profileLoading } = useAuth();
+  // Hard reload: wait for the profile before deciding, or instructors get bounced to /account.
+  if (profileLoading) {
+    return <RouteSkeleton variant="form" bare />;
+  }
   if (profile?.role !== "instructor") {
     return <Navigate to="/account" replace />;
   }
-  return <InstructorProfileSection />;
+  return <InstructorProfileSection key={profile.id} />;
 }
 
 export function InstructorWorkspaceProfileRoute() {

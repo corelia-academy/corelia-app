@@ -6,15 +6,18 @@ import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration
 import { ProgressBar } from "@/components/ui/progress";
 import { Timestamp } from "@/components/ui/timestamp";
 import type { FocusCard } from "../utils/homeTypes";
+import { HomeCourseCardSkeletonRow } from "./HomeCourseCardSkeleton";
 
 export function ContinueLearningSection({
   t,
   focusCards,
   enrolledCourseCount,
+  loading = false,
 }: {
   t: TFunction<"common">;
   focusCards: FocusCard[];
   enrolledCourseCount: number;
+  loading?: boolean;
 }) {
   const formatRemainingDuration = (seconds: number) => {
     const totalMinutes = Math.ceil(seconds / 60);
@@ -43,7 +46,9 @@ export function ContinueLearningSection({
         ) : null}
       </div>
 
-      {focusCards.length > 0 ? (
+      {loading ? (
+        <HomeCourseCardSkeletonRow />
+      ) : focusCards.length > 0 ? (
         <div className="mt-4 flex flex-wrap items-start gap-6">
           {focusCards.map((item) => (
             <NavLink
