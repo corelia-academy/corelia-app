@@ -747,6 +747,12 @@
     "xpLessonEarned": "このレッスンで 10 XP を獲得済み",
     "xpLessonAvailable": "このレッスンを初めて完了すると：+10 XP",
     "xpQuizEarned": "このクイズで XP を獲得済み",
-    "xpQuizAvailable": "初めて 80% 以上を取ると：+30 XP（レッスン + クイズ）"
+    "xpQuizAvailable": "初めて 80% 以上を取ると：+30 XP（レッスン + クイズ）",
+    "insertImage": "画像を挿入",
+    "imageUploading": "画像をアップロード中…",
+    "imageUploadFailed": "画像をアップロードできませんでした。もう一度お試しください。",
+    "imageInvalid": "5 MB までの PNG、JPEG、WebP、GIF 画像を選択してください。",
+    "imageDefaultAlt": "画像",
+    "imageInserted": "レッスン本文に画像を挿入しました。"
   }
 }

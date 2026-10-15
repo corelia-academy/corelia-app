@@ -1,4 +1,5 @@
 import { Globe } from "lucide-react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { useTranslation } from "react-i18next";
 import i18n from "@/i18n";
 import { Card, CardContent } from "@/components/ui/card";
@@ -76,7 +77,7 @@ export function CoursePartnerBrandPanel({
                 <div className="shrink-0">
                   {logoSrc ? (
                     <img
-                      src={logoSrc}
+                      src={optimizedImageUrl(logoSrc, { width: 40, resize: "contain" })} srcSet={optimizedImageSrcSet(logoSrc, 40, { resize: "contain" })}
                       alt={p.name}
                       loading="lazy"
                       decoding="async"

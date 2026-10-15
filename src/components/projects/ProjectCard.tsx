@@ -199,7 +199,7 @@ export function ProjectCard({
           )}
         >
           {logo ? (
-            <img src={optimizedImageUrl(logo, { width: 56 })} srcSet={optimizedImageSrcSet(logo, 56)} decoding="async" alt="" className="size-full object-contain" loading="lazy" />
+            <img src={optimizedImageUrl(logo, { width: 56, resize: "contain" })} srcSet={optimizedImageSrcSet(logo, 56, { resize: "contain" })} decoding="async" alt="" className="size-full object-contain" loading="lazy" />
           ) : phosphorDuotone ? (
             <PhosphorImage className="size-7 text-foreground-subtle" weight="duotone" />
           ) : (

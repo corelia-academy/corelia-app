@@ -747,6 +747,12 @@
     "xpLessonEarned": "此單元已獲得 10 經驗值",
     "xpLessonAvailable": "首次完成此單元：+10 經驗值",
     "xpQuizEarned": "此測驗已獲得經驗值",
-    "xpQuizAvailable": "首次得分達到 80% 以上：+30 經驗值（單元 + 測驗）"
+    "xpQuizAvailable": "首次得分達到 80% 以上：+30 經驗值（單元 + 測驗）",
+    "insertImage": "插入圖片",
+    "imageUploading": "正在上傳圖片…",
+    "imageUploadFailed": "無法上傳圖片，請再試一次。",
+    "imageInvalid": "請選擇不超過 5 MB 的 PNG、JPEG、WebP 或 GIF 圖片。",
+    "imageDefaultAlt": "圖片",
+    "imageInserted": "已將圖片插入課程內文。"
   }
 }

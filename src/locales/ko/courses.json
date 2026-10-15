@@ -747,6 +747,12 @@
     "xpLessonEarned": "이 레슨으로 이미 10 XP를 받았습니다",
     "xpLessonAvailable": "이 레슨을 처음 완료하면: +10 XP",
     "xpQuizEarned": "이 퀴즈로 이미 XP를 받았습니다",
-    "xpQuizAvailable": "처음으로 80% 이상 득점하면: +30 XP (레슨 + 퀴즈)"
+    "xpQuizAvailable": "처음으로 80% 이상 득점하면: +30 XP (레슨 + 퀴즈)",
+    "insertImage": "이미지 삽입",
+    "imageUploading": "이미지 업로드 중…",
+    "imageUploadFailed": "이미지를 업로드하지 못했습니다. 다시 시도하세요.",
+    "imageInvalid": "최대 5 MB의 PNG, JPEG, WebP 또는 GIF 이미지를 선택하세요.",
+    "imageDefaultAlt": "이미지",
+    "imageInserted": "레슨 본문에 이미지를 삽입했습니다."
   }
 }

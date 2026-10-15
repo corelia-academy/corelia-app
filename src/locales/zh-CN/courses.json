@@ -747,6 +747,12 @@
     "xpLessonEarned": "此课时已获得 10 经验值",
     "xpLessonAvailable": "首次完成此课时：+10 经验值",
     "xpQuizEarned": "此测验已获得经验值",
-    "xpQuizAvailable": "首次得分达到 80% 以上：+30 经验值（课时 + 测验）"
+    "xpQuizAvailable": "首次得分达到 80% 以上：+30 经验值（课时 + 测验）",
+    "insertImage": "插入图片",
+    "imageUploading": "正在上传图片…",
+    "imageUploadFailed": "无法上传图片，请重试。",
+    "imageInvalid": "请选择不超过 5 MB 的 PNG、JPEG、WebP 或 GIF 图片。",
+    "imageDefaultAlt": "图片",
+    "imageInserted": "已将图片插入课程正文。"
   }
 }

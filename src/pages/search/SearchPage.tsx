@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { NavLink, useLocation, useNavigate } from "react-router";
@@ -61,7 +62,7 @@ function SearchCourseResultCard({
       <div className="aspect-video overflow-hidden rounded-lg border border-border bg-surface-raised">
         {course.thumbnail_url && !failedImage ? (
           <img
-            src={course.thumbnail_url}
+            src={optimizedImageUrl(course.thumbnail_url, { width: 400 })} srcSet={optimizedImageSrcSet(course.thumbnail_url, 400)}
             alt=""
             loading="lazy"
             onError={() => setFailedImage(true)}

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { useQuery } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
@@ -81,7 +82,7 @@ export function ContestPublicProjectsSection(props: {
                 {getProjectCoverImageUrl(row) ? (
                   <div className="mb-4 overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
                     <img
-                      src={getProjectCoverImageUrl(row) ?? ""}
+                      src={optimizedImageUrl(getProjectCoverImageUrl(row), { width: 400, resize: "contain" })} srcSet={optimizedImageSrcSet(getProjectCoverImageUrl(row), 400, { resize: "contain" })}
                       alt={row.title}
                       className="h-44 w-full object-contain p-3"
                       loading="lazy"

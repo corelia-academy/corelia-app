@@ -11,9 +11,11 @@ type ImageUrlOptions = {
   /** Target CSS width in px; the 2x density variant is requested automatically by callers via `srcSet`. */
   width: number;
   quality?: number;
+  /** Supabase only. `contain` keeps the aspect ratio and fits inside `width` (use for logos). */
+  resize?: "cover" | "contain";
 };
 
-export function optimizedImageUrl(url: string | null | undefined, { width, quality = 75 }: ImageUrlOptions): string {
+export function optimizedImageUrl(url: string | null | undefined, { width, quality = 75, resize = "cover" }: ImageUrlOptions): string {
   const mode = readMode();
   if (!url || (mode !== "supabase" && mode !== "cloudflare")) return url ?? "";
   if (!OBJECT_PATH.test(url)) return url;
@@ -23,7 +25,7 @@ export function optimizedImageUrl(url: string | null | undefined, { width, quali
     const next = new URL(url.replace("/storage/v1/object/", "/storage/v1/render/image/"));
     next.searchParams.set("width", String(w));
     next.searchParams.set("quality", String(quality));
-    next.searchParams.set("resize", "cover");
+    next.searchParams.set("resize", resize);
     return next.toString();
   }
 
@@ -34,8 +36,8 @@ export function optimizedImageUrl(url: string | null | undefined, { width, quali
 }
 
 /** `srcSet` with 1x/2x variants, or undefined when transformation is disabled/unsupported for the URL. */
-export function optimizedImageSrcSet(url: string | null | undefined, width: number, quality?: number): string | undefined {
-  const base = optimizedImageUrl(url, { width, quality });
+export function optimizedImageSrcSet(url: string | null | undefined, width: number, opts: Omit<ImageUrlOptions, "width"> = {}): string | undefined {
+  const base = optimizedImageUrl(url, { width, ...opts });
   if (!url || base === url) return undefined;
-  return `${base} 1x, ${optimizedImageUrl(url, { width: width * 2, quality })} 2x`;
+  return `${base} 1x, ${optimizedImageUrl(url, { width: width * 2, ...opts })} 2x`;
 }
