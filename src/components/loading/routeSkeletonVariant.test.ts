@@ -14,6 +14,9 @@ describe("routeSkeletonVariantForPath", () => {
     ["/projects/my-app/edit", "form"],
     ["/projects/my-app", "detail"],
     ["/jobs/saved", "list"],
+    ["/admin/branding", "form"],
+    ["/admin/instructors/abc", "detail"],
+    ["/instructor/courses/abc/edit", "form"],
   ])("maps %s to %s", (path, variant) => {
     expect(routeSkeletonVariantForPath(path)).toBe(variant);
   });

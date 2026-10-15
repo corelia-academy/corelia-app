@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RouteSkeletonContent } from "@/components/loading/RouteSkeleton";
+import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 import { routeSkeletonVariantForPath } from "@/components/loading/routeSkeletonVariant";
 
 /**
@@ -26,8 +26,9 @@ export function AppShellSkeleton({ children }: { children?: ReactNode }) {
             <Skeleton className="h-10 w-full rounded-lg" />
           </div>
         </aside>
-        <main className="mx-auto w-full max-w-7xl p-4 sm:p-6 lg:p-8">
-          {children ?? <RouteSkeletonContent variant={variant === "learn" ? "home" : variant} />}
+        {/* Like MainLayout's SidebarInset: pages bring their own container. */}
+        <main className="min-w-0 flex-1">
+          {children ?? <RouteSkeleton variant={variant === "learn" ? "home" : variant} />}
         </main>
       </div>
     </div>

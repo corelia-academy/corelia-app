@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { skeletonRevealClass } from "./skeletonReveal";
 
 import type { RouteSkeletonVariant } from "./routeSkeletonVariant";
 
@@ -25,7 +26,7 @@ function LoadingStatus({
 }) {
   return (
     <div
-      className={cn(!immediate && "animate-skeleton-reveal", className)}
+      className={cn(skeletonRevealClass(immediate), className)}
       role="status"
       aria-live="polite"
       aria-busy="true"
@@ -204,10 +205,4 @@ export function ListRowsSkeleton({ rows = 5, className }: { rows?: number; class
       ))}
     </LoadingStatus>
   );
-}
-
-/** Variant content without container or status wrapper (for shells that provide both). */
-export function RouteSkeletonContent({ variant }: { variant: Exclude<RouteSkeletonVariant, "learn"> }) {
-  const Content = CONTENT_BY_VARIANT[variant];
-  return <Content />;
 }

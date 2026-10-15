@@ -6,6 +6,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
 import { AppShellSkeleton } from "@/components/loading/AppShellSkeleton";
 import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
+import { markClientNavigation } from "@/components/loading/skeletonReveal";
+import { LocationPlaceholder, RoutePlaceholder } from "@/routePlaceholders";
 import MaintenancePage from "@/pages/MaintenancePage";
 import {
   createBrowserRouter,
@@ -66,7 +68,11 @@ const VerifyCertificatePage = lazy(() =>
 const UserHandleRedirect = lazy(() => import("@/pages/users/UserHandleRedirect"));
 const AchievementsPage = lazy(() => import("@/pages/achievements"));
 const Hackathons = lazy(() => import("@/pages/hackathon-detail/Contests"));
-const HackathonPublicLayout = lazy(() => import("@/pages/hackathon-detail/ContestPublicLayout"));
+const HackathonPublicLayout = lazy(() => {
+  // Fetch the tab chunk alongside the layout so tabs don't add another loading stage after it.
+  void import("@/pages/hackathon-detail/ContestPublicTabs");
+  return import("@/pages/hackathon-detail/ContestPublicLayout");
+});
 const HackathonOverviewTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonOverviewTab })));
 const HackathonPostsTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonPostsTab })));
 const HackathonPrizesTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonPrizesTab })));
@@ -135,7 +141,11 @@ const AdminEmailPreviewPage = lazy(() => import("@/pages/admin/email/AdminEmailP
 const AdminOgPreviewPage = lazy(() => import("@/pages/admin/AdminOgPreviewPage"));
 
 const PageFallback = () => <AuthGateLoading />;
-const ShellFallback = () => <AppShellSkeleton />;
+const ShellFallback = () => (
+  <AppShellSkeleton>
+    <LocationPlaceholder />
+  </AppShellSkeleton>
+);
 const HomeFallback = () => <RouteSkeleton variant="home" />;
 const ListFallback = () => <RouteSkeleton variant="list" />;
 const DetailFallback = () => <RouteSkeleton variant="detail" />;
@@ -143,6 +153,7 @@ const FormFallback = () => <RouteSkeleton variant="form" />;
 const TableFallback = () => <RouteSkeleton variant="table" />;
 const AccountFormFallback = () => <RouteSkeleton variant="form" bare />;
 const AccountListFallback = () => <RouteSkeleton variant="list" bare />;
+const TabFallback = () => <RouteSkeleton variant="list" bare />;
 const LearnFallback = () => <RouteSkeleton variant="learn" className="h-dvh" />;
 
 function RecoveryGuard() {
@@ -188,7 +199,7 @@ export default function App() {
           <XpNotifications />
           <NotificationSync />
           {authStatus === "booting" ? (
-            <AuthBootstrapScreen />
+            <AuthBootstrapScreen content={<RoutePlaceholder pathname={window.location.pathname} />} />
           ) : (
             <TooltipProvider>
               <ApplicationRouter />
@@ -204,9 +215,20 @@ export default function App() {
 // Keep the existing descendant route tree while enabling supported navigation
 // blockers (including browser Back/Forward) in authoring workspaces.
 function ApplicationRouter() {
-  const [router] = useState(() => createBrowserRouter([
-    { path: "*", element: <ApplicationRoutes /> },
-  ]));
+  const [router] = useState(() => {
+    const instance = createBrowserRouter([
+      { path: "*", element: <ApplicationRoutes /> },
+    ]);
+    // Subscribed before RouterProvider, so the flag is set before the next route renders.
+    const initialKey = instance.state.location.key;
+    const unsubscribe = instance.subscribe((state) => {
+      if (state.location.key !== initialKey) {
+        markClientNavigation();
+        unsubscribe();
+      }
+    });
+    return instance;
+  });
   return <RouterProvider router={router} />;
 }
 
@@ -405,7 +427,7 @@ function ApplicationRoutes() {
               <Route
                 path="courses"
                 element={
-                  <Suspense fallback={<ListFallback />}>
+                  <Suspense fallback={<LocationPlaceholder />}>
                     <Courses />
                   </Suspense>
                 }
@@ -431,7 +453,7 @@ function ApplicationRoutes() {
               <Route
                 path="courses/:id"
                 element={
-                  <Suspense fallback={<DetailFallback />}>
+                  <Suspense fallback={<LocationPlaceholder />}>
                     <CourseDetail />
                   </Suspense>
                 }
@@ -459,19 +481,19 @@ function ApplicationRoutes() {
               <Route path="hackathons/manage/*" element={<Suspense fallback={<PageFallback />}><NotFound /></Suspense>} />
               <Route path="hackathons/new" element={<Suspense fallback={<PageFallback />}><NotFound /></Suspense>} />
               <Route path="hackathons/:slug/manage/*" element={<Suspense fallback={<PageFallback />}><NotFound /></Suspense>} />
-              <Route path="hackathons/:slug" element={<Suspense fallback={<DetailFallback />}><HackathonPublicLayout /></Suspense>}>
+              <Route path="hackathons/:slug" element={<Suspense fallback={<LocationPlaceholder />}><HackathonPublicLayout /></Suspense>}>
                 <Route index element={<Navigate to="overview" replace />} />
-                <Route path="overview" element={<Suspense fallback={<PageFallback />}><HackathonOverviewTab /></Suspense>} />
-                <Route path="posts" element={<Suspense fallback={<PageFallback />}><HackathonPostsTab /></Suspense>} />
-                <Route path="prizes" element={<Suspense fallback={<PageFallback />}><HackathonPrizesTab /></Suspense>} />
-                <Route path="timeline" element={<Suspense fallback={<PageFallback />}><HackathonTimelineTab /></Suspense>} />
-                <Route path="resources" element={<Suspense fallback={<PageFallback />}><HackathonResourcesTab /></Suspense>} />
-                <Route path="projects" element={<Suspense fallback={<PageFallback />}><HackathonProjectsTab /></Suspense>} />
+                <Route path="overview" element={<Suspense fallback={<TabFallback />}><HackathonOverviewTab /></Suspense>} />
+                <Route path="posts" element={<Suspense fallback={<TabFallback />}><HackathonPostsTab /></Suspense>} />
+                <Route path="prizes" element={<Suspense fallback={<TabFallback />}><HackathonPrizesTab /></Suspense>} />
+                <Route path="timeline" element={<Suspense fallback={<TabFallback />}><HackathonTimelineTab /></Suspense>} />
+                <Route path="resources" element={<Suspense fallback={<TabFallback />}><HackathonResourcesTab /></Suspense>} />
+                <Route path="projects" element={<Suspense fallback={<TabFallback />}><HackathonProjectsTab /></Suspense>} />
               </Route>
               <Route path="projects" element={<Suspense fallback={<ListFallback />}><ProjectsPage /></Suspense>} />
               <Route path="projects/new" element={<RequireAuth><Suspense fallback={<FormFallback />}><ProjectNewPage /></Suspense></RequireAuth>} />
               <Route path="projects/:slug/edit" element={<RequireAuth><Suspense fallback={<FormFallback />}><ProjectEditPage /></Suspense></RequireAuth>} />
-              <Route path="projects/:slug" element={<Suspense fallback={<DetailFallback />}><ProjectDetailPage /></Suspense>} />
+              <Route path="projects/:slug" element={<Suspense fallback={<LocationPlaceholder />}><ProjectDetailPage /></Suspense>} />
               <Route path="jobs" element={<Suspense fallback={<ListFallback />}><JobsPage /></Suspense>} />
               <Route path="jobs/saved" element={<RequireAuth><Suspense fallback={<ListFallback />}><SavedJobsPage /></Suspense></RequireAuth>} />
               <Route path="jobs/applied" element={<RequireAuth><Suspense fallback={<ListFallback />}><AppliedJobsPage /></Suspense></RequireAuth>} />
@@ -556,8 +578,8 @@ function ApplicationRoutes() {
               <Route
                 path="admin"
                 element={
-                  <RequireRole roles={ROLE_GROUPS.admin} loadingFallback={<TableFallback />}>
-                    <Suspense fallback={<TableFallback />}>
+                  <RequireRole roles={ROLE_GROUPS.admin} loadingFallback={<LocationPlaceholder />}>
+                    <Suspense fallback={<LocationPlaceholder />}>
                       <AdminLayout />
                     </Suspense>
                   </RequireRole>
@@ -605,7 +627,7 @@ function ApplicationRoutes() {
                 />
                 <Route
                   path="certificates"
-                  element={<RequireRole roles={ROLE_GROUPS.adminOnly} loadingFallback={<TableFallback />}><Suspense fallback={<TableFallback />}><AdminCertificateAnalytics /></Suspense></RequireRole>}
+                  element={<RequireRole roles={ROLE_GROUPS.adminOnly} loadingFallback={<LocationPlaceholder />}><Suspense fallback={<TableFallback />}><AdminCertificateAnalytics /></Suspense></RequireRole>}
                 />
                 <Route
                   path="branding"
@@ -618,7 +640,7 @@ function ApplicationRoutes() {
                 <Route path="hackathons" element={<Suspense fallback={<TableFallback />}><AdminHackathons /></Suspense>} />
                 <Route path="hackathons/new" element={<Suspense fallback={<FormFallback />}><AdminHackathonEditor /></Suspense>} />
                 <Route path="hackathons/:id/edit" element={<Suspense fallback={<FormFallback />}><AdminHackathonEditor /></Suspense>} />
-                <Route path="projects" element={<RequireRole roles={ROLE_GROUPS.projectManagers} loadingFallback={<TableFallback />}><Suspense fallback={<TableFallback />}><AdminProjectsPage /></Suspense></RequireRole>} />
+                <Route path="projects" element={<RequireRole roles={ROLE_GROUPS.projectManagers} loadingFallback={<LocationPlaceholder />}><Suspense fallback={<TableFallback />}><AdminProjectsPage /></Suspense></RequireRole>} />
                 <Route path="jobs" element={<Suspense fallback={<TableFallback />}><AdminJobsPage /></Suspense>} />
                 <Route path="jobs/review" element={<Suspense fallback={<TableFallback />}><AdminJobsPage /></Suspense>} />
                 <Route path="jobs/sources" element={<Suspense fallback={<TableFallback />}><AdminJobsPage /></Suspense>} />
@@ -632,8 +654,8 @@ function ApplicationRoutes() {
               <Route
                 path="instructor"
                 element={
-                  <RequireRole roles={ROLE_GROUPS.instructorWorkspace} loadingFallback={<TableFallback />}>
-                    <Suspense fallback={<TableFallback />}>
+                  <RequireRole roles={ROLE_GROUPS.instructorWorkspace} loadingFallback={<LocationPlaceholder />}>
+                    <Suspense fallback={<LocationPlaceholder />}>
                       <InstructorLayout />
                     </Suspense>
                   </RequireRole>
@@ -642,7 +664,7 @@ function ApplicationRoutes() {
                 <Route
                   path="courses"
                   element={
-                    <Suspense fallback={<TableFallback />}>
+                    <Suspense fallback={<LocationPlaceholder />}>
                       <InstructorCourses />
                     </Suspense>
                   }
@@ -687,7 +709,7 @@ function ApplicationRoutes() {
                 <Route
                   path="instructors"
                   element={
-                    <RequireRole roles={ROLE_GROUPS.admin} loadingFallback={<TableFallback />}>
+                    <RequireRole roles={ROLE_GROUPS.admin} loadingFallback={<LocationPlaceholder />}>
                       <Navigate to="/admin/instructors" replace />
                     </RequireRole>
                   }
