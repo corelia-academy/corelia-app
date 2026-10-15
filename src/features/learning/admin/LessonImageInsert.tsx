@@ -17,8 +17,8 @@ export function LessonImageInsert({ courseId, onInsert }: { courseId: string; on
     setBusy(true);
     try {
       const { uploadCourseLessonImage } = await import("@/lib/storage");
-      const { url } = await uploadCourseLessonImage(courseId, file);
-      onInsert(`![${t("learning.imageDefaultAlt")}](${url})`);
+      const { ref } = await uploadCourseLessonImage(courseId, file);
+      onInsert(`![${t("learning.imageDefaultAlt")}](${ref})`);
       toast.success(t("learning.imageInserted"));
     } catch {
       toast.error(t("learning.imageUploadFailed"));

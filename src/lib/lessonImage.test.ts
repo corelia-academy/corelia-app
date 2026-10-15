@@ -11,3 +11,17 @@ describe("isValidLessonImage", () => {
     expect(isValidLessonImage({ type: "image/png", size: 0 })).toBe(false);
   });
 });
+
+import { lessonImageRef, parseLessonImageRef } from "./lessonImage";
+
+describe("lesson image refs", () => {
+  it("round-trips a ref to its storage path", () => {
+    const ref = lessonImageRef("c1", "a-b.png");
+    expect(parseLessonImageRef(ref)).toEqual({ courseId: "c1", file: "a-b.png", path: "course-thumbnails/c1/lessons/a-b.png" });
+  });
+  it("rejects traversal and foreign urls", () => {
+    expect(parseLessonImageRef("/lesson-image/c1/../x.png")).toBeNull();
+    expect(parseLessonImageRef("https://example.com/a.png")).toBeNull();
+    expect(parseLessonImageRef(undefined)).toBeNull();
+  });
+});

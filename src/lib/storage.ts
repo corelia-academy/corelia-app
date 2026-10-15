@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { lessonImageRef, parseLessonImageRef } from "@/lib/lessonImage";
 
 // ─── Private `app` bucket (signed URLs — for non-credential assets) ───────────
 const BUCKET = "app";
@@ -108,14 +109,31 @@ export function uploadCourseThumbnail(
   return uploadToPath(`course-thumbnails/${courseId}/${crypto.randomUUID()}.${ext}`, file, previousPath, true);
 }
 
-/** Image embedded in lesson Markdown. Lives under the course folder so existing course-manager storage policies apply. */
-export function uploadCourseLessonImage(
+/** Image embedded in lesson Markdown. Lives under the course folder so existing course-manager storage policies apply.
+ *  Returns a stable `ref` for the Markdown; `url` is only a short-lived preview. */
+export async function uploadCourseLessonImage(
   courseId: string,
   file: File,
-): Promise<{ url: string; path: string }> {
+): Promise<{ url: string; path: string; ref: string }> {
   if (!courseId) throw new Error("Thiếu courseId khi upload ảnh bài học");
-  const ext = buildSafeExt(file.name, "png");
-  return uploadToPath(`course-thumbnails/${courseId}/lessons/${crypto.randomUUID()}.${ext}`, file, null, true);
+  const name = `${crypto.randomUUID()}.${buildSafeExt(file.name, "png")}`;
+  const { url, path } = await uploadToPath(`course-thumbnails/${courseId}/lessons/${name}`, file, null, true);
+  return { url, path, ref: lessonImageRef(courseId, name) };
+}
+
+const lessonImageUrlCache = new Map<string, { url: string; expires: number }>();
+const LESSON_IMAGE_TTL_SEC = 60 * 60;
+
+/** Fresh signed URL for a `/lesson-image/...` reference (cached for most of its lifetime). */
+export async function resolveLessonImageUrl(ref: string): Promise<string | null> {
+  const parsed = parseLessonImageRef(ref);
+  if (!parsed) return null;
+  const hit = lessonImageUrlCache.get(parsed.path);
+  if (hit && hit.expires > Date.now()) return hit.url;
+  const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(parsed.path, LESSON_IMAGE_TTL_SEC);
+  if (error || !data?.signedUrl) return null;
+  lessonImageUrlCache.set(parsed.path, { url: data.signedUrl, expires: Date.now() + (LESSON_IMAGE_TTL_SEC - 300) * 1000 });
+  return data.signedUrl;
 }
 
 export function uploadContestBanner(

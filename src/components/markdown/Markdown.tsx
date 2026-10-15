@@ -1,9 +1,35 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { parseLessonImageRef } from "@/lib/lessonImage";
 import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { CodeBlock } from "./CodeBlock";
+
+function MarkdownImage({ src, alt }: { src?: string; alt: string }) {
+  const isRef = parseLessonImageRef(src) !== null;
+  const [resolved, setResolved] = useState<string | null>(null);
+  useEffect(() => {
+    if (!isRef || !src) return;
+    let cancelled = false;
+    // Lazy: keeps the Supabase client out of the Markdown module graph until a lesson image is shown.
+    void import("@/lib/storage").then(({ resolveLessonImageUrl }) => resolveLessonImageUrl(src)).then((url) => { if (!cancelled) setResolved(url); }).catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [isRef, src]);
+  const url = isRef ? resolved : src;
+  if (!url) return isRef ? <span className="my-3 block aspect-video w-full animate-pulse rounded-lg bg-surface-raised" aria-hidden /> : null;
+  return (
+    <img
+      src={optimizedImageUrl(url, { width: 960, resize: "contain" }) || undefined}
+      srcSet={optimizedImageSrcSet(url, 960, { resize: "contain" })}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      className="my-3 h-auto max-w-full rounded-lg border border-border-subtle"
+    />
+  );
+}
 
 export function Markdown({ content, compact }: { content: string; compact?: boolean }) {
   const value = content?.trim();
@@ -33,19 +59,7 @@ export function Markdown({ content, compact }: { content: string; compact?: bool
           a: (props) => (
             <a className="text-primary underline underline-offset-4 hover:opacity-80" {...props} />
           ),
-          img: ({ src, alt }) => {
-            const url = typeof src === "string" ? src : undefined;
-            return (
-              <img
-                src={optimizedImageUrl(url, { width: 960, resize: "contain" }) || undefined}
-                srcSet={optimizedImageSrcSet(url, 960, { resize: "contain" })}
-                alt={alt ?? ""}
-                loading="lazy"
-                decoding="async"
-                className="my-3 h-auto max-w-full rounded-lg border border-border-subtle"
-              />
-            );
-          },
+          img: ({ src, alt }) => <MarkdownImage src={typeof src === "string" ? src : undefined} alt={alt ?? ""} />,
           ul: (props) => <ul className="list-disc space-y-1 pl-5" {...props} />,
           ol: (props) => <ol className="list-decimal space-y-1 pl-5" {...props} />,
           li: (props) => <li className="leading-7" {...props} />,
