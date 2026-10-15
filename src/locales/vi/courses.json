@@ -756,6 +756,12 @@
     "xpLessonEarned": "Đã nhận 10 XP cho bài học này",
     "xpLessonAvailable": "Hoàn thành bài học lần đầu: +10 XP",
     "xpQuizEarned": "Đã nhận XP cho quiz này",
-    "xpQuizAvailable": "Đạt ít nhất 80% lần đầu: +30 XP (bài học + quiz)"
+    "xpQuizAvailable": "Đạt ít nhất 80% lần đầu: +30 XP (bài học + quiz)",
+    "insertImage": "Chèn ảnh",
+    "imageUploading": "Đang tải ảnh lên…",
+    "imageUploadFailed": "Không tải được ảnh. Vui lòng thử lại.",
+    "imageInvalid": "Chọn ảnh PNG, JPEG, WebP hoặc GIF tối đa 5 MB.",
+    "imageDefaultAlt": "Ảnh",
+    "imageInserted": "Đã chèn ảnh vào nội dung bài học."
   }
 }

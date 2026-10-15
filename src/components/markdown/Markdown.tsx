@@ -2,6 +2,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
 import { cn } from "@/lib/utils";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { CodeBlock } from "./CodeBlock";
 
 export function Markdown({ content, compact }: { content: string; compact?: boolean }) {
@@ -32,6 +33,19 @@ export function Markdown({ content, compact }: { content: string; compact?: bool
           a: (props) => (
             <a className="text-primary underline underline-offset-4 hover:opacity-80" {...props} />
           ),
+          img: ({ src, alt }) => {
+            const url = typeof src === "string" ? src : undefined;
+            return (
+              <img
+                src={optimizedImageUrl(url, { width: 960, resize: "contain" }) || undefined}
+                srcSet={optimizedImageSrcSet(url, 960, { resize: "contain" })}
+                alt={alt ?? ""}
+                loading="lazy"
+                decoding="async"
+                className="my-3 h-auto max-w-full rounded-lg border border-border-subtle"
+              />
+            );
+          },
           ul: (props) => <ul className="list-disc space-y-1 pl-5" {...props} />,
           ol: (props) => <ol className="list-decimal space-y-1 pl-5" {...props} />,
           li: (props) => <li className="leading-7" {...props} />,
