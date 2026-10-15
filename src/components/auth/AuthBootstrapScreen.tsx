@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { AppShellSkeleton } from "@/components/loading/AppShellSkeleton";
 import { LearnShellSkeleton } from "@/components/loading/RouteSkeleton";
-import { routeSkeletonVariantForPath } from "@/components/loading/routeSkeletonVariant";
+import { isStandalonePlaceholderPath, routeSkeletonVariantForPath } from "@/components/loading/routeSkeletonVariant";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const MINIMAL_ROUTE_PREFIXES = [
@@ -21,6 +21,7 @@ function isMinimalRoute(): boolean {
 /** Neutral first paint while Supabase restores the session. Never renders guest/auth UI prematurely. */
 export function AuthBootstrapScreen({ content }: { content?: ReactNode }) {
   if (isMinimalRoute()) {
+    if (content && isStandalonePlaceholderPath(window.location.pathname)) return <>{content}</>;
     return (
       <main
         className="flex min-h-svh items-center justify-center bg-background px-4"

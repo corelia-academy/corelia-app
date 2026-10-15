@@ -9,28 +9,13 @@ import { useAuth, useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { queryClient } from "@/lib/queryClient";
+import { OCIDRedirectLoading } from "./OCIDRedirectLoading";
 
 type OCAuthStateMaybe = {
   OCId?: string;
   ethAddress?: string;
   idToken?: string;
 } | null | undefined;
-
-function Loading() {
-  const { t } = useTranslation("account");
-  return (
-    <div className="container-app py-10">
-      <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
-        <div className="flex items-center gap-3">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <div className="text-sm text-foreground-muted">
-            {t("ocid.redirect.finishing")}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function ErrorView() {
   const { t } = useTranslation("account");
@@ -126,7 +111,7 @@ export default function OCIDRedirect() {
         </div>
       ) : (
         <LoginCallBack
-          customLoadingComponent={<Loading />}
+          customLoadingComponent={<OCIDRedirectLoading />}
           customErrorComponent={<ErrorView />}
           successCallback={callbacks.successCallback}
           errorCallback={callbacks.errorCallback}
