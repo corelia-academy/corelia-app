@@ -319,6 +319,8 @@ export default function AppSidebar({
                       render={
                         <a
                           href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="flex w-full items-center gap-lg"
                         >
                           <Icon

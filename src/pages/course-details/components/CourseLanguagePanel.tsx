@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   getCoursePrimaryLocale,
   getCourseSupportedLocales,
@@ -32,13 +31,13 @@ export function CourseLanguagePanel({
       : translateCommon("language.vi");
 
   return (
-    <Card>
-      <CardContent className="p-4">
-        <h3 className="text-heading-small font-display text-foreground">
-          {translate("detail.courseDetail.languagePanel.title")}
-        </h3>
+    <section>
+      <h3 className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
+        {translate("detail.courseDetail.languagePanel.title")}
+      </h3>
 
-        <dl className="mt-3 grid grid-cols-1 gap-3 text-sm">
+      <div className="mt-3 space-y-3 rounded-2xl border border-border-subtle bg-surface-base px-4 py-3 shadow-card">
+        <dl className="grid grid-cols-1 gap-3 text-sm">
           <div className="flex items-start justify-between gap-3">
             <dt className="text-foreground-muted">
               {translate("detail.courseDetail.stats.videoLanguage")}
@@ -49,7 +48,7 @@ export function CourseLanguagePanel({
           </div>
         </dl>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-foreground-muted">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-foreground-muted">
           <span className="mr-1">
             {translate("detail.courseDetail.language.supportedLabel")}
           </span>
@@ -59,7 +58,7 @@ export function CourseLanguagePanel({
             </CourseBadge>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
