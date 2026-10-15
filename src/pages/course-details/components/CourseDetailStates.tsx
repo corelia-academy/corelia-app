@@ -7,7 +7,7 @@ export function CourseDetailLoading() {
   const { t } = useTranslation("courses");
   return (
     <div
-      className="container-app pb-6 pt-0 sm:py-8"
+      className="container-app animate-skeleton-reveal pb-6 pt-0 sm:py-8"
       role="status"
       aria-live="polite"
       aria-busy="true"

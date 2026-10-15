@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 /** Placeholder sized like the Home course cards (continue learning / recommendations). */
 export function HomeCourseCardSkeletonRow({ count = 2 }: { count?: number }) {
   return (
-    <div className="mt-4 flex flex-wrap items-start gap-6" role="status" aria-busy="true">
+    <div className="mt-4 flex animate-skeleton-reveal flex-wrap items-start gap-6" role="status" aria-busy="true">
       <span className="sr-only">Loading</span>
       {Array.from({ length: count }, (_, index) => (
         <div
