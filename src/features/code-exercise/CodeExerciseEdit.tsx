@@ -16,6 +16,7 @@ loader.config({ monaco });
 
 export default function CodeExerciseEdit({ source, onChange, language = "rust", readOnly = false }: { source: string; language?: CodeLanguage; onChange(source: string): void; readOnly?: boolean }) {
   const { resolvedTheme } = useTheme();
-  return <Editor height="360px" language={language} value={source} onChange={v => onChange(v ?? "")} theme={resolvedTheme === "dark" ? "vs-dark" : "vs"}
-    options={{ readOnly, minimap: { enabled: false }, fontSize: 14, tabSize: 4, automaticLayout: true, scrollBeyondLastLine: false, wordWrap: "on", accessibilitySupport: "on" }} />;
+  const height = Math.min(520, Math.max(280, source.split("\n").length * 21 + 32));
+  return <Editor height={`${height}px`} language={language} value={source} onChange={v => onChange(v ?? "")} theme={resolvedTheme === "dark" ? "vs-dark" : "vs"}
+    options={{ readOnly, minimap: { enabled: false }, fontSize: 14, tabSize: 4, automaticLayout: true, scrollBeyondLastLine: false, wordWrap: "on", accessibilitySupport: "on", padding: { top: 12, bottom: 12 }, lineHeight: 21, renderLineHighlight: "line", overviewRulerLanes: 0, hideCursorInOverviewRuler: true, scrollbar: { alwaysConsumeMouseWheel: false } }} />;
 }
