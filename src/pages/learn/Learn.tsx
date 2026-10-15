@@ -41,9 +41,10 @@ import { useTranslation } from "react-i18next";
 import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 import {
   LearnErrorState,
-  LearnLoadingState,
   LearnMissingCourseIdState,
+  LessonPlayerSkeleton,
 } from "./components/LearnStates";
+import { LearnShellSkeleton } from "@/components/loading/RouteSkeleton";
 import {
   LessonCurriculum,
   type CurriculumGroup,
@@ -366,6 +367,9 @@ function LearnWorkspace() {
   );
 
   const isDraftLesson = currentLesson ? isLessonDraftForLearners(currentLesson) : false;
+  // No/invalid lesson id with lessons available: an effect below redirects to the resume lesson,
+  // so show a placeholder instead of the player's "unavailable" message in the meantime.
+  const awaitingLessonRedirect = !isFinalAssignment && !currentLesson && visibleLessons.length > 0;
   useEffect(() => {
     if (!courseId || !lessonId || courseLoad.loading || currentLesson || !visibleLessons.length) return;
     toast.message(translate("learning.invalidRoute"));
@@ -508,7 +512,7 @@ function LearnWorkspace() {
   }
 
   if (courseLoad.loading) {
-    return <LearnLoadingState translate={translate} />;
+    return <LearnShellSkeleton />;
   }
 
   if (courseLoad.error || !courseLoad.course || !courseLoad.course.published || courseLoad.course.archived_at) {
@@ -611,7 +615,7 @@ function LearnWorkspace() {
         />
       ) : null}
 
-      {!isFinalAssignment && <LessonPlayerCard
+      {awaitingLessonRedirect ? <LessonPlayerSkeleton /> : !isFinalAssignment && <LessonPlayerCard
         lesson={currentLesson}
         lessonIndex={lessonIndexForPlayer}
         isDraftLesson={!!currentLesson && isDraftLesson}

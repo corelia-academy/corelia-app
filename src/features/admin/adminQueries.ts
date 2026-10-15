@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+import { keepPreviousDataForUser } from "@/lib/queryClient";
 
 import { getCoursesForManagement } from "@/lib/courses";
 import { getAllProfiles } from "@/lib/profile";
@@ -39,6 +40,8 @@ export function certificateAnalyticsQueryOptions(userId: string | undefined, fil
     queryFn: () => getCertificateAnalytics(filters, page * 25, 25),
     enabled: Boolean(userId && enabled),
     staleTime: 30_000,
+    // Paging/filtering keeps the current table (dimmed) instead of blanking it.
+    placeholderData: keepPreviousDataForUser(userId),
     meta: adminMeta(userId),
   });
 }

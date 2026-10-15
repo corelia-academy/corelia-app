@@ -17,6 +17,7 @@ import { useCourseCountsByInstructor } from "@/features/admin/instructors/hooks/
 import { AdminStatsCard } from "@/features/admin/ui/AdminStatsCard";
 import { AdminErrorBanner } from "@/features/admin/ui/AdminErrorBanner";
 import { UserAvatar } from "@/components/UserAvatar";
+import { ListRowsSkeleton } from "@/components/loading/RouteSkeleton";
 
 type InstructorOrigin = NonNullable<Profile["instructor_origin"]>;
 
@@ -232,9 +233,7 @@ export default function AdminInstructors() {
         </div>
         <div className="divide-y divide-border-subtle md:hidden">
           {loading ? (
-            <div className="p-6 text-center text-sm text-foreground-muted">
-              {t("instructors.list.loading")}
-            </div>
+            <ListRowsSkeleton rows={5} className="px-4" />
           ) : filtered.length === 0 ? (
             <div className="p-10 text-center text-sm text-foreground-muted">
               {t("instructors.list.empty")}
@@ -277,7 +276,7 @@ export default function AdminInstructors() {
                     </div>
                     <div>
                     <p className="text-xs text-foreground-muted">
-                        Phân loại
+                        {t("instructors.columns.origin")}
                       </p>
                       <p className="mt-1">
                       <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs font-medium text-foreground">
@@ -289,7 +288,7 @@ export default function AdminInstructors() {
                     </div>
                     <div>
                     <p className="text-xs text-foreground-muted">
-                        Khoá học
+                        {t("instructors.columns.courses")}
                       </p>
                     <p className="mt-1 text-sm text-foreground-muted">
                         {loadingCourses ? "..." : courseCountByInstructor[p.id] ?? 0}
@@ -330,7 +329,7 @@ export default function AdminInstructors() {
                         navigate(`/admin/instructors/${p.id}`);
                       }}
                     >
-                      Chi tiết
+                      {t("instructors.actions.detail")}
                     </Button>
                   </div>
                 </article>
@@ -343,30 +342,27 @@ export default function AdminInstructors() {
             <thead className="border-b border-border-subtle bg-surface-raised">
               <tr>
                 <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-muted">
-                  Giảng viên
+                  {t("instructors.columns.instructor")}
                 </th>
                 <th className="min-w-[180px] px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-muted">
-                  Email
+                  {t("instructors.columns.email")}
                 </th>
                 <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-muted">
-                  Phân loại
+                  {t("instructors.columns.origin")}
                 </th>
                 <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-muted">
-                  Khoá học
+                  {t("instructors.columns.courses")}
                 </th>
                 <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-muted">
-                  Tác vụ
+                  {t("instructors.columns.actions")}
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle">
               {loading ? (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="p-6 text-center text-sm text-foreground-muted"
-                  >
-                    Đang tải danh sách...
+                  <td colSpan={5} className="px-4">
+                    <ListRowsSkeleton rows={6} />
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
@@ -375,7 +371,7 @@ export default function AdminInstructors() {
                     colSpan={5}
                     className="p-10 text-center text-sm text-foreground-muted"
                   >
-                    Chưa có giảng viên nào khớp bộ lọc hiện tại.
+                    {t("instructors.list.empty")}
                   </td>
                 </tr>
               ) : (
@@ -460,7 +456,7 @@ export default function AdminInstructors() {
                               navigate(`/admin/instructors/${p.id}`);
                             }}
                           >
-                            Chi tiết
+                            {t("instructors.actions.detail")}
                           </Button>
                         </div>
                       </td>

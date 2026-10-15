@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLearningTranslation } from "@/features/learning/useLearningTranslation";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/stores/authStore";
 import { getLearningQuiz, submitLearningQuiz, type LearningQuizResult } from "@/lib/learning";
 import type { LessonRendererProps } from "./types";
@@ -12,7 +13,7 @@ export function QuizLesson(props: LessonRendererProps & { questions?: SectionQue
   const { t, i18n } = useLearningTranslation();
   const locale = props.contentLocale ?? i18n.language;
   const query = useQuery({ queryKey: ["learning-quiz", props.courseId, props.lesson.id, props.mode, user?.id, locale, props.resetEpoch ?? 0], queryFn: ({ signal }) => getLearningQuiz(props.courseId, props.lesson.id, props.mode === "preview" ? undefined : user?.id, locale, signal), enabled: !props.questions, staleTime: 30_000 });
-  if (!props.questions && query.isPending) return <p role="status">{t("learning.loading")}</p>;
+  if (!props.questions && query.isPending) return <div role="status" aria-busy="true" className="space-y-3"><span className="sr-only">{t("learning.loading")}</span><Skeleton className="h-6 w-1/2" /><Skeleton className="h-24 w-full rounded-xl" /></div>;
   if (!props.questions && query.isError) return <div role="alert">{t("learning.loadError")} <Button type="button" onClick={() => void query.refetch()}>{t("learning.retry")}</Button></div>;
   const questions = props.questions ?? query.data?.questions ?? [];
   if (!questions.length) return <p role="alert">{t("learning.unavailable")}</p>;

@@ -8,6 +8,7 @@ import {
   fetchProjectInviteDisplayContextByProjectIds,
   type ProjectInviteDisplayContext,
 } from "@/lib/notificationInviteContext";
+import { keepPreviousDataForUser } from "@/lib/queryClient";
 
 export const notificationKeys = {
   all: ["notifications"] as const,
@@ -27,6 +28,8 @@ export function notificationsQueryOptions(userId: string | null, enabled = true,
     staleTime: 30_000,
     refetchInterval: 60_000,
     refetchIntervalInBackground: false,
+    // Switching All/Unread keeps the current list visible instead of flashing "Loading".
+    placeholderData: keepPreviousDataForUser(userId),
     meta: userId ? { scope: "private", userId, showInGlobalLoading: false } : { scope: "public", showInGlobalLoading: false },
   });
 }

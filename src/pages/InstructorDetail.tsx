@@ -16,6 +16,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { useTranslation } from "react-i18next";
+import { QueryErrorState } from "@/components/QueryErrorState";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 
@@ -46,9 +47,11 @@ const InstructorDetail = () => {
   const instructorBio =
     profile?.instructor_bio?.trim() || profile?.bio?.trim() || undefined;
 
+  // A failed request (network/server) is not "not found": offer a retry instead.
+  const loadFailed = isValidUuid && detailQuery.isError && !detailQuery.data;
   const activeError = !isValidUuid
     ? translate("detail.instructorDetail.errors.notFound")
-    : detailQuery.error || (profile && profile.role !== "instructor")
+    : profile && profile.role !== "instructor"
       ? translate("detail.instructorDetail.errors.notFound")
       : null;
   const isActuallyLoading = isValidUuid && detailQuery.isPending;
@@ -88,6 +91,18 @@ const InstructorDetail = () => {
             {translate("detail.instructorDetail.loading")}
           </p>
         </div>
+      </div>
+    );
+  }
+
+  if (loadFailed) {
+    return (
+      <div className="mx-auto w-full min-w-0 max-w-7xl px-4 pb-6 pt-4 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+        <QueryErrorState
+          message={translate("detail.instructorDetail.errors.loadFailed")}
+          retrying={detailQuery.isFetching}
+          onRetry={() => void detailQuery.refetch()}
+        />
       </div>
     );
   }

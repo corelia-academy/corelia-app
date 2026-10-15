@@ -11,6 +11,7 @@ import { OcBadgesByScopeTabs } from "./components/OcBadgesByScopeTabs";
 import { CertificateCard } from "./components/CertificateCard";
 import { OcCredentialModal } from "./components/OcCredentialModal";
 import { useAchievementsPage } from "./hooks/useAchievementsPage";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type VaultKey = "certificates" | "onchain";
 
@@ -25,6 +26,8 @@ export default function AchievementsPage() {
     badges,
     loading,
     loadError,
+    loadFailed,
+    refreshing,
     reloadAchievements,
     certificateSyncCandidates,
     syncingCourseId,
@@ -64,8 +67,8 @@ export default function AchievementsPage() {
       {loadError && (
         <div role="alert" className="mb-4 flex flex-col gap-3 rounded-xl border border-warning/30 bg-warning/8 p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-foreground">{loadError}</p>
-          <Button type="button" variant="cta" hierarchy="secondary" size="small" className="shrink-0 gap-2" disabled={loading} onClick={() => void reloadAchievements()}>
-            <RefreshCw className={cn("size-4", loading && "animate-spin")} aria-hidden />
+          <Button type="button" variant="cta" hierarchy="secondary" size="small" className="shrink-0 gap-2" disabled={refreshing} onClick={() => void reloadAchievements()}>
+            <RefreshCw className={cn("size-4", refreshing && "animate-spin")} aria-hidden />
             {t("achievements.loadError.retry")}
           </Button>
         </div>
@@ -92,10 +95,14 @@ export default function AchievementsPage() {
             <div className="min-h-0 overflow-hidden">
               <div id="certificate-vault" className="border-t border-border-subtle p-4 sm:p-6">
               {loading ? (
-                <div className="flex flex-col items-center gap-3 py-12 text-center">
-                  <Loader2 className="size-6 animate-spin text-foreground-muted" aria-hidden />
-                  <p className="text-sm font-medium text-foreground">{t("achievements.vaults.certificates.loading")}</p>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-busy="true">
+                  <span className="sr-only">{t("achievements.vaults.certificates.loading")}</span>
+                  {Array.from({ length: 3 }, (_, index) => (
+                    <Skeleton key={index} className="aspect-[4/3] w-full rounded-xl" />
+                  ))}
                 </div>
+              ) : loadFailed ? (
+                <p role="status" className="py-12 text-center text-sm text-foreground-muted">{t("achievements.loadError.vaultUnavailable")}</p>
               ) : certificates.length === 0 ? (
                 <div className="flex flex-col items-center gap-3 py-12 text-center">
                   <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised"><Award className="size-6 text-foreground-muted" aria-hidden /></div>
@@ -147,10 +154,14 @@ export default function AchievementsPage() {
             <div className="min-h-0 overflow-hidden">
               <div id="onchain-vault" className="border-t border-border-subtle p-4 sm:p-6">
               {loading ? (
-                <div className="flex flex-col items-center gap-3 py-12 text-center">
-                  <Loader2 className="size-6 animate-spin text-foreground-muted" aria-hidden />
-                  <p className="text-sm font-medium text-foreground">{t("achievements.vaults.badges.loading")}</p>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4" role="status" aria-busy="true">
+                  <span className="sr-only">{t("achievements.vaults.badges.loading")}</span>
+                  {Array.from({ length: 4 }, (_, index) => (
+                    <Skeleton key={index} className="aspect-square w-full rounded-xl" />
+                  ))}
                 </div>
+              ) : loadFailed ? (
+                <p role="status" className="py-12 text-center text-sm text-foreground-muted">{t("achievements.loadError.vaultUnavailable")}</p>
               ) : (
                 <OcBadgesByScopeTabs badges={earnedBadges} loading={false} onOpenModal={openModal} onRetry={handleRetryBadge} />
               )}

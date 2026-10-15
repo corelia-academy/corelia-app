@@ -1,5 +1,6 @@
 import { Link } from "react-router";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
@@ -26,15 +27,15 @@ export function LearnMissingCourseIdState({
   );
 }
 
-export function LearnLoadingState({ translate }: { translate: TranslateFn }) {
+/** Placeholder for the lesson player area while the resume redirect resolves. */
+export function LessonPlayerSkeleton() {
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="flex min-h-96 flex-col items-center justify-center rounded-2xl border border-border-subtle bg-surface-base p-8 text-center shadow-card">
-        <Loader2 className="w-8 h-8 animate-spin text-foreground-muted" aria-hidden />
-        <p className="mt-4 text-sm text-foreground-muted">
-          {translate("detail.learn.loadingPage")}
-        </p>
-      </div>
+    <div className="space-y-4 p-4 sm:p-6" role="status" aria-busy="true">
+      <span className="sr-only">Loading</span>
+      <Skeleton className="aspect-video w-full max-w-5xl rounded-2xl" />
+      <Skeleton className="h-7 w-2/3 max-w-xl rounded-lg" />
+      <Skeleton className="h-4 w-full max-w-3xl" />
+      <Skeleton className="h-4 w-5/6 max-w-3xl" />
     </div>
   );
 }

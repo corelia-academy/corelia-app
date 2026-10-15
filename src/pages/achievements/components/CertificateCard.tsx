@@ -171,7 +171,7 @@ function CertificatePreviewDialog({
           <img
             src={renderedUrl ?? imageUrl}
             alt={cert.course}
-            className="w-full h-auto object-contain"
+            className="aspect-[4/3] w-full object-contain"
           />
           {/* CSS overlay only shown while canvas render is in progress (renderedUrl not ready yet) */}
           {!renderedUrl && cert.holderName && hasTemplate && (
@@ -264,7 +264,7 @@ export function CertificateCard({
           <img
             src={displayUrl}
             alt=""
-            className="w-full h-auto transition-opacity duration-200 group-hover/preview:opacity-90"
+            className="aspect-[4/3] w-full object-contain transition-opacity duration-200 group-hover/preview:opacity-90"
           />
           {/* CSS overlay only shown before the rendered URL is available */}
           {!renderedCardUrl && cert.holderName && hasTemplate && (

@@ -4,11 +4,13 @@ import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router";
 
+import { QueryErrorState } from "@/components/QueryErrorState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Timestamp } from "@/components/ui/timestamp";
 import { hackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
 import { useAuth } from "@/stores/authStore";
+import { ListRowsSkeleton } from "@/components/loading/RouteSkeleton";
 
 const PUBLIC_STATUSES = new Set(["published", "running", "ended"]);
 
@@ -34,7 +36,7 @@ export default function AdminHackathonsPage() {
         <div><div className="flex items-center gap-2"><h1 className="text-heading-medium font-display">{t("hackathons.title")}</h1></div><p className="mt-1 text-sm text-foreground-muted">{t("hackathons.description")}</p></div>
         <Button render={<NavLink to="/admin/hackathons/new" />} nativeButton={false}><Plus className="size-4" />{t("hackathons.new")}</Button>
       </header>
-      {query.isPending ? <p className="py-16 text-center text-sm text-foreground-muted">{t("hackathons.loading")}</p> : items.length === 0 ? <Card className="mt-6"><CardContent className="p-12 text-center text-sm text-foreground-muted">{t("hackathons.empty")}</CardContent></Card> : (
+      {query.isPending ? <ListRowsSkeleton rows={6} className="mt-6" /> : query.isError && !query.data ? <QueryErrorState className="mt-6" message={t("hackathons.loadFailed")} retrying={query.isFetching} onRetry={() => void query.refetch()} /> : items.length === 0 ? <Card className="mt-6"><CardContent className="p-12 text-center text-sm text-foreground-muted">{t("hackathons.empty")}</CardContent></Card> : (
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {items.map((hackathon) => (
             <Card key={hackathon.id} className="overflow-hidden">

@@ -223,7 +223,7 @@ export default function ProjectsPage() {
           </div>
         ) : (
           <>
-            <div className="mobile-bleed-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className={cn("mobile-bleed-grid grid gap-4 transition-opacity sm:grid-cols-2 lg:grid-cols-3", projectsQuery.isPlaceholderData && "opacity-60")} aria-busy={projectsQuery.isPlaceholderData || undefined}>
               {items.map(({ project, owner }) => (
                 <ProjectCard
                   systemTaxonomy={systemTaxonomy}

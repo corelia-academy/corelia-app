@@ -502,6 +502,7 @@ export default function CourseDetail() {
               hasStarted={progress.hasStarted}
               nextLesson={progress.nextLesson}
               enrolling={access.enrolling}
+              loading={access.loading}
               onContinue={handleContinue}
               onEnroll={handleEnrollClick}
             />

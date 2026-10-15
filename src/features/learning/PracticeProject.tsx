@@ -2,6 +2,7 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
 import { publicProjectDetailQueryOptions, publicProjectDirectoryQueryOptions } from "@/features/projects/projectQueries";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useLearningTranslation } from "./useLearningTranslation";
 
 export function PracticeProjectField({ value, onChange }: { value?: string; onChange(value: string | undefined): void }) {
@@ -27,7 +28,7 @@ export function PracticeProjectField({ value, onChange }: { value?: string; onCh
 export function PracticeProjectLink({ id, locale }: { id: string; locale?: string }) {
   const { t, i18n } = useLearningTranslation();
   const query = useQuery(publicProjectDetailQueryOptions(id, locale ?? i18n.language));
-  if (query.isPending) return <p role="status">{t("learning.loading")}</p>;
+  if (query.isPending) return <div role="status" aria-busy="true" className="space-y-3"><span className="sr-only">{t("learning.loading")}</span><Skeleton className="h-6 w-1/2" /><Skeleton className="h-24 w-full rounded-xl" /></div>;
   if (query.isError) return <p role="alert">{t("learning.loadError")} <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void query.refetch()}>{t("learning.retry")}</Button></p>;
   const project = query.data?.project;
   if (!project || project.visibility !== "public" || project.blocked) return <p className="text-sm text-foreground-muted">{t("learning.relatedUnavailable")}</p>;
