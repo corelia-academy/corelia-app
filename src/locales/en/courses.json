@@ -756,6 +756,12 @@
     "xpLessonEarned": "10 XP already earned for this lesson",
     "xpLessonAvailable": "Complete this lesson for the first time: +10 XP",
     "xpQuizEarned": "XP already earned for this quiz",
-    "xpQuizAvailable": "Score at least 80% for the first time: +30 XP (lesson + quiz)"
+    "xpQuizAvailable": "Score at least 80% for the first time: +30 XP (lesson + quiz)",
+    "insertImage": "Insert image",
+    "imageUploading": "Uploading image…",
+    "imageUploadFailed": "Could not upload the image. Try again.",
+    "imageInvalid": "Choose a PNG, JPEG, WebP or GIF image up to 5 MB.",
+    "imageDefaultAlt": "Image",
+    "imageInserted": "Image inserted into the lesson text."
   }
 }

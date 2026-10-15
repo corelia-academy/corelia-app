@@ -6,6 +6,7 @@ import {
   Play,
   Radio,
 } from "lucide-react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { HackathonSectionCard } from "@/pages/hackathon-detail/components/HackathonSectionCard";
@@ -60,7 +61,7 @@ export function ContestPublicResourcesSection(props: {
       <div className="flex flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
         {thumb?.trim() ? (
           <div className="relative aspect-video w-full bg-surface-raised">
-            <img src={thumb.trim()} alt="" className="h-full w-full object-cover" />
+            <img src={optimizedImageUrl(thumb.trim(), { width: 400 })} srcSet={optimizedImageSrcSet(thumb.trim(), 400)} alt="" className="h-full w-full object-cover" />
           </div>
         ) : null}
         <div className="flex flex-1 flex-col gap-2 p-3">

@@ -1,4 +1,5 @@
 import { Globe } from "lucide-react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { useTranslation } from "react-i18next";
 import i18n from "@/i18n";
 import type { CourseSponsor, SupportedCourseLocale } from "@/types/courses";
@@ -63,7 +64,7 @@ export function CourseSponsorsPanel({
               <div className="flex items-center justify-center bg-surface-raised px-4 py-5 border-b border-border-subtle">
                 {logoSrc ? (
                   <img
-                    src={logoSrc}
+                    src={optimizedImageUrl(logoSrc, { width: 120, resize: "contain" })} srcSet={optimizedImageSrcSet(logoSrc, 120, { resize: "contain" })}
                     alt={s.name}
                     loading="lazy"
                     decoding="async"

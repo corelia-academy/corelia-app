@@ -765,6 +765,12 @@
     "xpLessonEarned": "Ya ganaste 10 XP con esta lección",
     "xpLessonAvailable": "Completa esta lección por primera vez: +10 XP",
     "xpQuizEarned": "Ya ganaste XP con este cuestionario",
-    "xpQuizAvailable": "Obtén al menos un 80 % por primera vez: +30 XP (lección + cuestionario)"
+    "xpQuizAvailable": "Obtén al menos un 80 % por primera vez: +30 XP (lección + cuestionario)",
+    "insertImage": "Insertar imagen",
+    "imageUploading": "Subiendo imagen…",
+    "imageUploadFailed": "No se pudo subir la imagen. Inténtalo de nuevo.",
+    "imageInvalid": "Elige una imagen PNG, JPEG, WebP o GIF de hasta 5 MB.",
+    "imageDefaultAlt": "Imagen",
+    "imageInserted": "Imagen insertada en el texto de la lección."
   }
 }

@@ -108,6 +108,16 @@ export function uploadCourseThumbnail(
   return uploadToPath(`course-thumbnails/${courseId}/${crypto.randomUUID()}.${ext}`, file, previousPath, true);
 }
 
+/** Image embedded in lesson Markdown. Lives under the course folder so existing course-manager storage policies apply. */
+export function uploadCourseLessonImage(
+  courseId: string,
+  file: File,
+): Promise<{ url: string; path: string }> {
+  if (!courseId) throw new Error("Thiếu courseId khi upload ảnh bài học");
+  const ext = buildSafeExt(file.name, "png");
+  return uploadToPath(`course-thumbnails/${courseId}/lessons/${crypto.randomUUID()}.${ext}`, file, null, true);
+}
+
 export function uploadContestBanner(
   contestId: string,
   file: File,

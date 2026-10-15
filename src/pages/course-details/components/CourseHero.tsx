@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateLearningProgress } from "@/features/learning/invalidateLearningProgress";
 import { Info } from "lucide-react";
@@ -231,7 +232,7 @@ export function CourseHero({
 
             {courseThumbnailSrc ? (
               <img
-                src={courseThumbnailSrc}
+                src={optimizedImageUrl(courseThumbnailSrc, { width: 1200 })} srcSet={optimizedImageSrcSet(courseThumbnailSrc, 1200)}
                 alt={course.title}
                 loading="eager"
                 fetchPriority="high"
