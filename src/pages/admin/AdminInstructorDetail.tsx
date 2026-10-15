@@ -9,11 +9,13 @@ import {
   ProfileSection,
   type InstructorEditForm,
 } from "@/features/admin/instructors/detail/sections/ProfileSection";
+import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
+import { QueryErrorState } from "@/components/QueryErrorState";
 
 export default function AdminInstructorDetail() {
   const { t } = useTranslation("admin");
   const { id } = useParams<{ id: string }>();
-  const { profiles, setProfiles, loading, error, setError } = useAdminProfiles({
+  const { profiles, setProfiles, loading, loadFailed, refreshing, refresh, error, setError } = useAdminProfiles({
     fallbackErrorMessage: t("instructorDetailPage.errors.loadFailed"),
   });
   const [editForm, setEditForm] = useState<InstructorEditForm | null>(null);
@@ -80,7 +82,18 @@ export default function AdminInstructorDetail() {
   }
 
   if (loading) {
-    return <div className="container-app py-8 text-sm text-foreground-muted">{t("instructorDetailPage.loading")}</div>;
+    return <RouteSkeleton variant="detail" />;
+  }
+  if (loadFailed) {
+    return (
+      <div className="container-app py-8">
+        <QueryErrorState
+          message={t("instructorDetailPage.errors.loadFailed")}
+          retrying={refreshing}
+          onRetry={() => void refresh()}
+        />
+      </div>
+    );
   }
   if (!instructor || !editForm) {
     return (

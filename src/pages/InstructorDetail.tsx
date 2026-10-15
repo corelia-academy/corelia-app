@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
+import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 import { Link, useParams } from "react-router";
-import { Globe, GraduationCap, Loader2, MapPin } from "lucide-react";
+import { Globe, GraduationCap, MapPin } from "lucide-react";
 import { publicInstructorDetailQueryOptions } from "@/features/instructor/instructorQueries";
 import { PublicCourseCard } from "@/components/courses/PublicCourseCard";
 import { createMockParticipantPreview } from "@/components/participants/participantPreview";
@@ -16,6 +17,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { useTranslation } from "react-i18next";
+import { QueryErrorState } from "@/components/QueryErrorState";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 
@@ -46,9 +48,11 @@ const InstructorDetail = () => {
   const instructorBio =
     profile?.instructor_bio?.trim() || profile?.bio?.trim() || undefined;
 
+  // A failed request (network/server) is not "not found": offer a retry instead.
+  const loadFailed = isValidUuid && detailQuery.isError && !detailQuery.data;
   const activeError = !isValidUuid
     ? translate("detail.instructorDetail.errors.notFound")
-    : detailQuery.error || (profile && profile.role !== "instructor")
+    : profile && profile.role !== "instructor"
       ? translate("detail.instructorDetail.errors.notFound")
       : null;
   const isActuallyLoading = isValidUuid && detailQuery.isPending;
@@ -79,15 +83,17 @@ const InstructorDetail = () => {
     );
   }
 
-  if (isActuallyLoading) {
+  // Same placeholder as the route fallback, so the page never swaps one skeleton for another.
+  if (isActuallyLoading) return <RouteSkeleton variant="detail" />;
+
+  if (loadFailed) {
     return (
       <div className="mx-auto w-full min-w-0 max-w-7xl px-4 pb-6 pt-4 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-        <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-2xl border border-border-subtle bg-surface-base p-8 text-center">
-          <Loader2 className="size-8 animate-spin text-foreground-muted" aria-hidden />
-          <p className="mt-4 text-sm text-foreground-muted">
-            {translate("detail.instructorDetail.loading")}
-          </p>
-        </div>
+        <QueryErrorState
+          message={translate("detail.instructorDetail.errors.loadFailed")}
+          retrying={detailQuery.isFetching}
+          onRetry={() => void detailQuery.refetch()}
+        />
       </div>
     );
   }

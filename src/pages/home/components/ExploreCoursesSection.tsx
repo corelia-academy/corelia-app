@@ -10,6 +10,7 @@ import {
   createMockParticipantPreview,
 } from "@/components/participants/participantPreview";
 import type { Course } from "@/types/courses";
+import { HomeCourseCardSkeletonRow } from "./HomeCourseCardSkeleton";
 import { getCourseLevelLabel } from "@/types/courses";
 
 type RecommendedCourseCardView = {
@@ -21,10 +22,16 @@ export function ExploreCoursesSection({
   t,
   courseCatalog,
   courseLessonCounts,
+  loading = false,
+  error = false,
+  onRetry,
 }: {
   t: TFunction<"common">;
   courseCatalog: Course[];
   courseLessonCounts: Record<string, number | null>;
+  loading?: boolean;
+  error?: boolean;
+  onRetry?: () => void;
 }) {
   const recommendationCards: RecommendedCourseCardView[] = useMemo(() => {
     const seenCourseIds = new Set<string>();
@@ -58,6 +65,18 @@ export function ExploreCoursesSection({
           {t("home.sections.seeAll")}
         </Button>
       </div>
+      {loading ? (
+        <HomeCourseCardSkeletonRow />
+      ) : error && (courseCatalog ?? []).length === 0 ? (
+        <div className="flex w-full flex-col items-center gap-3 py-12 text-center sm:py-16" role="alert">
+          <p className="text-sm text-foreground-muted">{t("home.sections.loadFailed")}</p>
+          {onRetry ? (
+            <Button type="button" size="small" variant="cta" hierarchy="secondary" onClick={onRetry}>
+              {t("actions.retry")}
+            </Button>
+          ) : null}
+        </div>
+      ) : (
       <div className="mt-3 flex flex-wrap gap-6">
         {(courseCatalog ?? []).length === 0 ? (
           <div className="flex w-full flex-col items-center gap-3 py-12 text-center sm:py-16">
@@ -143,7 +162,7 @@ export function ExploreCoursesSection({
           })
         )}
       </div>
+      )}
     </section>
   );
 }
-

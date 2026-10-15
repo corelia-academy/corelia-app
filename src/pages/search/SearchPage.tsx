@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
 import { NavLink, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Search, ShieldAlert } from "lucide-react";
@@ -192,7 +193,7 @@ export default function SearchPage() {
         />
       </form>
 
-      <div className="mt-6">
+      <div className={cn("mt-6 transition-opacity", resultsQuery.isPlaceholderData && "opacity-60")} aria-busy={resultsQuery.isPlaceholderData || undefined}>
         {loading ? (
           <div className="space-y-3">
             <Skeleton className="h-16 w-full rounded-md" />

@@ -31,6 +31,9 @@ export default function OpenCampusConnectDialog(props: Props) {
               <img
                 src="/logo/OC-square-logo.svg"
                 alt={t("openCampusConnect.modal.logoAlt")}
+                width={40}
+                height={40}
+                className="size-10"
               />
             </div>
             <div className="min-w-0">

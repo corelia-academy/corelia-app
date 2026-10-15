@@ -310,6 +310,9 @@ export function useAchievementsPage(enabled = true) {
     loading:
       profileLoading || (vaultQuery.isPending && vaultQuery.fetchStatus !== "idle"),
     loadError: vaultQuery.error ? t("achievements.loadError.body") : null,
+    // No vault data at all (first load failed): vaults must not read as "empty".
+    loadFailed: vaultQuery.isError && !vaultQuery.data,
+    refreshing: vaultQuery.isFetching,
     reloadAchievements: vaultQuery.refetch,
     certificateSyncCandidates: vault.certificateSyncCandidates,
     syncingCourseId: syncMutation.isPending ? syncMutation.variables : null,

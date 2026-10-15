@@ -37,7 +37,7 @@
     "empty": { "title": "Dữ liệu thị trường đang được chuẩn bị", "description": "Admin cần crawl ít nhất một công ty đã xác minh và làm mới analytics hằng ngày." }
   },
   "admin": {
-    "title": "Vận hành Jobs", "subtitle": "Quản lý nguồn job trực tiếp và ATS target, duyệt phân loại, chạy crawler và kiểm tra dữ liệu thị trường.", "loading": "Đang tải vận hành Jobs…",
+    "title": "Vận hành Jobs", "subtitle": "Quản lý nguồn job trực tiếp và ATS target, duyệt phân loại, chạy crawler và kiểm tra dữ liệu thị trường.", "loading": "Đang tải vận hành Jobs…", "loadFailed": "Không tải được dữ liệu vận hành Jobs.",
     "nav": { "overview": "Tổng quan", "review": "Chờ duyệt", "sources": "Nguồn", "companies": "ATS Targets", "crawlers": "Lượt crawl", "analytics": "Analytics" },
     "overview": { "active": "Việc làm đang mở", "review": "Cần duyệt", "companies": "ATS targets", "sources": "Nguồn", "failedRuns": "Lượt chạy lỗi" },
     "actions": { "run": "Chạy ngay", "runAll": "Chạy tất cả nguồn", "addTarget": "Thêm ATS target", "revalidate": "Kiểm tra lại", "revalidateAll": "Kiểm tra lại nguồn đến hạn", "resolve": "Đánh dấu đã xử lý", "publish": "Đăng", "reject": "Từ chối", "enable": "Bật", "disable": "Tắt", "verify": "Xác minh", "unverify": "Bỏ xác minh", "save": "Lưu", "cancel": "Hủy", "edit": "Sửa", "logs": "Xem log", "careerPage": "Trang tuyển dụng", "clearLogFilter": "Hiện tất cả lượt chạy", "refreshAnalytics": "Làm mới analytics" },

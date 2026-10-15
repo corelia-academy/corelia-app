@@ -20,6 +20,7 @@ import { PageContainer } from "@/components/layouts/PagePrimitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { Timestamp } from "@/components/ui/timestamp";
 import { TooltipPreview } from "@/components/ui/tooltip";
@@ -244,7 +245,10 @@ export default function ContestPublicLayout() {
     );
   }
 
-  const cta = previewRequested ? null : registration ? (
+  const cta = previewRequested ? null : registrationQuery.isLoading && canRegister ? (
+    // Hold the CTA until we know the user's registration, so "Register" never flashes for registrants.
+    <Skeleton className="h-11 w-full rounded-lg sm:w-28 lg:h-8" aria-hidden />
+  ) : registration ? (
     <Button
       type="button"
       size="small"

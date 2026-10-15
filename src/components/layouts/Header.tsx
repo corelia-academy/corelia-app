@@ -302,7 +302,9 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                   : "/logo/corelia-full-logo-black.png"
               }
               alt="Corelia"
-              className="h-9"
+              width={108}
+              height={36}
+              className="h-9 w-auto"
             />
           </NavLink>
         </div>

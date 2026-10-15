@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
 import { publicHackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useLearningTranslation } from "./useLearningTranslation";
 
 export function PracticeHackathonField({ value, onChange }: { value?: string; onChange(value: string | undefined): void }) {
@@ -26,7 +27,7 @@ export function PracticeHackathonLink({ id, locale }: { id: string; locale?: str
   const { t, i18n } = useLearningTranslation();
   const query = useQuery(publicHackathonCatalogQueryOptions(locale ?? i18n.language));
   const contest = query.data?.find(item => item.id === id);
-  if (query.isPending) return <p role="status">{t("learning.loading")}</p>;
+  if (query.isPending) return <div role="status" aria-busy="true" className="space-y-3"><span className="sr-only">{t("learning.loading")}</span><Skeleton className="h-6 w-1/2" /><Skeleton className="h-24 w-full rounded-xl" /></div>;
   if (query.isError) return <p role="alert">{t("learning.loadError")} <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void query.refetch()}>{t("learning.retry")}</Button></p>;
   if (!contest?.slug) return <p className="text-sm text-foreground-muted">{t("learning.relatedUnavailable")}</p>;
   return <Link to={`/hackathons/${encodeURIComponent(contest.slug)}`} className="block rounded-xl border border-border p-4 text-primary underline">{t("learning.relatedHackathon")}: {contest.title}</Link>;

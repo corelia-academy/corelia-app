@@ -21,6 +21,7 @@ import {
   accountProjectsQueryOptions,
 } from "@/features/account/accountQueries";
 import { useAuth } from "@/stores/authStore";
+import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 
 function normalizeLocale(value: string | null | undefined): Locale {
   return value === "en" ? "en" : "vi";
@@ -190,7 +191,7 @@ export function AccountProjectsRoute() {
   }
 
   if (projectsQuery.isPending) {
-    return <div className="text-sm text-foreground-muted">{t("status.loading")}</div>;
+    return <RouteSkeleton variant="list" bare />;
   }
   if (projectsQuery.error) {
     return <div className="text-sm text-destructive">{projectsQuery.error instanceof Error ? projectsQuery.error.message : t("projects.errors.loadFailed")}</div>;

@@ -101,7 +101,7 @@ export function CertificateLayoutPreview({
         <img
           src={previewUrl}
           alt=""
-          className="w-full rounded-lg border border-border-subtle"
+          className="aspect-[4/3] w-full rounded-lg border border-border-subtle object-contain"
         />
       ) : (
         <div className="aspect-4/3 w-full animate-pulse rounded-lg border border-border-subtle bg-surface-base" />
