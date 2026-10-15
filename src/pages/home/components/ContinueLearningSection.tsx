@@ -1,4 +1,5 @@
 import { FileText, MonitorPlay, TimerIcon } from "@phosphor-icons/react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
 import { Chip } from "@/components/ui/chip";
@@ -59,7 +60,9 @@ export function ContinueLearningSection({
               <div className="aspect-video overflow-hidden rounded-lg border border-border bg-surface-raised">
                 {item.thumbnailUrl ? (
                   <img
-                    src={item.thumbnailUrl}
+                    src={optimizedImageUrl(item.thumbnailUrl, { width: 335 })}
+                    srcSet={optimizedImageSrcSet(item.thumbnailUrl, 335)}
+                    decoding="async"
                     alt=""
                     loading="lazy"
                     className="size-full object-cover"
