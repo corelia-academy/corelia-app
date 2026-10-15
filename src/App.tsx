@@ -153,7 +153,10 @@ const FormFallback = () => <RouteSkeleton variant="form" />;
 const TableFallback = () => <RouteSkeleton variant="table" />;
 const AccountFormFallback = () => <RouteSkeleton variant="form" bare />;
 const AccountListFallback = () => <RouteSkeleton variant="list" bare />;
-const TabFallback = () => <RouteSkeleton variant="list" bare />;
+// Hackathon tabs render under the already-visible contest header; their chunk is prefetched
+// with the layout, so a placeholder here would only add a second skeleton for React's ~300ms
+// Suspense reveal throttle.
+const TabFallback = () => null;
 const LearnFallback = () => <RouteSkeleton variant="learn" className="h-dvh" />;
 
 function RecoveryGuard() {
@@ -243,7 +246,7 @@ function ApplicationRoutes() {
             <Route
               path="/login"
               element={
-                <Suspense fallback={<PageFallback />}>
+                <Suspense fallback={<LocationPlaceholder />}>
                   <Auth />
                 </Suspense>
               }
@@ -275,7 +278,7 @@ function ApplicationRoutes() {
             <Route
               path="/ocid-redirect"
               element={
-                <Suspense fallback={<PageFallback />}>
+                <Suspense fallback={<LocationPlaceholder />}>
                   <OCIDRedirect />
                 </Suspense>
               }
@@ -533,7 +536,7 @@ function ApplicationRoutes() {
                 path="account"
                 element={
                   <RequireAuth>
-                    <Suspense fallback={<FormFallback />}>
+                    <Suspense fallback={<LocationPlaceholder />}>
                       <Account />
                     </Suspense>
                   </RequireAuth>
@@ -627,7 +630,7 @@ function ApplicationRoutes() {
                 />
                 <Route
                   path="certificates"
-                  element={<RequireRole roles={ROLE_GROUPS.adminOnly} loadingFallback={<LocationPlaceholder />}><Suspense fallback={<TableFallback />}><AdminCertificateAnalytics /></Suspense></RequireRole>}
+                  element={<RequireRole roles={ROLE_GROUPS.adminOnly} loadingFallback={<LocationPlaceholder withLayoutChrome={false} />}><Suspense fallback={<TableFallback />}><AdminCertificateAnalytics /></Suspense></RequireRole>}
                 />
                 <Route
                   path="branding"
@@ -640,7 +643,7 @@ function ApplicationRoutes() {
                 <Route path="hackathons" element={<Suspense fallback={<TableFallback />}><AdminHackathons /></Suspense>} />
                 <Route path="hackathons/new" element={<Suspense fallback={<FormFallback />}><AdminHackathonEditor /></Suspense>} />
                 <Route path="hackathons/:id/edit" element={<Suspense fallback={<FormFallback />}><AdminHackathonEditor /></Suspense>} />
-                <Route path="projects" element={<RequireRole roles={ROLE_GROUPS.projectManagers} loadingFallback={<LocationPlaceholder />}><Suspense fallback={<TableFallback />}><AdminProjectsPage /></Suspense></RequireRole>} />
+                <Route path="projects" element={<RequireRole roles={ROLE_GROUPS.projectManagers} loadingFallback={<LocationPlaceholder withLayoutChrome={false} />}><Suspense fallback={<TableFallback />}><AdminProjectsPage /></Suspense></RequireRole>} />
                 <Route path="jobs" element={<Suspense fallback={<TableFallback />}><AdminJobsPage /></Suspense>} />
                 <Route path="jobs/review" element={<Suspense fallback={<TableFallback />}><AdminJobsPage /></Suspense>} />
                 <Route path="jobs/sources" element={<Suspense fallback={<TableFallback />}><AdminJobsPage /></Suspense>} />
@@ -664,7 +667,7 @@ function ApplicationRoutes() {
                 <Route
                   path="courses"
                   element={
-                    <Suspense fallback={<LocationPlaceholder />}>
+                    <Suspense fallback={<LocationPlaceholder withLayoutChrome={false} />}>
                       <InstructorCourses />
                     </Suspense>
                   }
@@ -709,7 +712,7 @@ function ApplicationRoutes() {
                 <Route
                   path="instructors"
                   element={
-                    <RequireRole roles={ROLE_GROUPS.admin} loadingFallback={<LocationPlaceholder />}>
+                    <RequireRole roles={ROLE_GROUPS.admin} loadingFallback={<LocationPlaceholder withLayoutChrome={false} />}>
                       <Navigate to="/admin/instructors" replace />
                     </RequireRole>
                   }
