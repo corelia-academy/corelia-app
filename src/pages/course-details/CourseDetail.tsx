@@ -20,7 +20,6 @@ import { isLessonPublishedForLearners } from "@/lib/lessonFormat";
 import { useCourseLoad } from "./hooks/useCourseLoad";
 import { useCourseEnrollmentAccess } from "./hooks/useCourseEnrollmentAccess";
 import { useCourseProgress } from "./hooks/useCourseProgress";
-import { useSpotlightContests } from "./hooks/useSpotlightContests";
 import {
   CourseDetailError,
   CourseDetailLoading,
@@ -36,7 +35,6 @@ import {
 } from "./components/CourseCurriculum";
 import { getCourseContentLessons } from "./utils/contentLessons";
 import { CourseAccessPanel } from "./components/CourseAccessPanel";
-import { CourseSpotlightSection } from "./components/CourseSpotlightSection";
 import { CourseLanguagePanel } from "./components/CourseLanguagePanel";
 import { CoursePartnerBrandPanel } from "./components/CoursePartnerBrandPanel";
 import { CourseSponsorsPanel } from "./components/CourseSponsorsPanel";
@@ -109,7 +107,6 @@ export default function CourseDetail() {
     lastLessonId: access.enrollment?.last_lesson_id,
   });
 
-  const spotlightContests = useSpotlightContests();
 
   const syncCertificate = useCallback(async () => {
     const course = courseLoad.course;
@@ -493,18 +490,10 @@ export default function CourseDetail() {
               instructors={course.instructors}
             />
           ) : null}
-
-          <CourseSpotlightSection
-            resolvedCourseId={courseLoad.resolvedCourseId ?? ""}
-            courseTitle={course.title ?? ""}
-            hasFullCourseAccess={true}
-            nextLesson={progress.nextLesson}
-            spotlightContests={spotlightContests}
-          />
         </div>
 
         <aside className="contents lg:sticky lg:top-24 lg:flex lg:flex-col lg:gap-4 lg:self-start">
-          <div className="order-1 lg:order-none">
+          <div className="order-1 empty:hidden lg:order-none">
             <CourseAccessPanel
               resolvedCourseId={courseLoad.resolvedCourseId}
               enrolled={access.enrolled}
@@ -517,13 +506,13 @@ export default function CourseDetail() {
               onEnroll={handleEnrollClick}
             />
           </div>
-          <div className="order-2 lg:order-none">
+          <div className="order-2 empty:hidden lg:order-none">
             <CourseLanguagePanel course={course} lessons={lessons} />
           </div>
-          <div className="order-4 lg:order-none">
+          <div className="order-4 empty:hidden lg:order-none">
             <CoursePartnerBrandPanel course={course} />
           </div>
-          <div className="order-5 lg:order-none">
+          <div className="order-5 empty:hidden lg:order-none">
             <CourseSponsorsPanel sponsors={course.sponsors} />
           </div>
         </aside>
