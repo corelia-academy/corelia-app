@@ -18,6 +18,10 @@
       "title": "Perfil de aprendizaje y CV",
       "description": "Información para asesoría y apoyo profesional"
     },
+    "projects": {
+      "title": "Proyectos",
+      "description": "Gestiona tus proyectos y traducciones"
+    },
     "achievements": {
       "title": "Caja de logros",
       "description": "Gestiona certificados e insignias"

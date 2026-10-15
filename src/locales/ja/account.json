@@ -18,6 +18,10 @@
       "title": "学習プロフィールと履歴書",
       "description": "アドバイスやキャリア支援のための情報"
     },
+    "projects": {
+      "title": "プロジェクト",
+      "description": "プロジェクトと翻訳を管理"
+    },
     "achievements": {
       "title": "実績ボックス",
       "description": "修了証とバッジを管理"

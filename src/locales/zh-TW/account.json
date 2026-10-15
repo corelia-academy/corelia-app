@@ -18,6 +18,10 @@
       "title": "學習檔案與履歷",
       "description": "用於輔導與職涯支援的資訊"
     },
+    "projects": {
+      "title": "專案",
+      "description": "管理您的專案和翻譯"
+    },
     "achievements": {
       "title": "成就庫",
       "description": "管理證書和徽章"

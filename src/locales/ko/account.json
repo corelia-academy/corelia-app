@@ -18,6 +18,10 @@
       "title": "학습 프로필 및 이력서",
       "description": "상담 및 커리어 지원을 위한 정보"
     },
+    "projects": {
+      "title": "프로젝트",
+      "description": "프로젝트와 번역 관리"
+    },
     "achievements": {
       "title": "성과 보관함",
       "description": "수료증과 배지 관리"

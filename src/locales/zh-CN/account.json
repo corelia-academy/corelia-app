@@ -18,6 +18,10 @@
       "title": "学习档案与简历",
       "description": "用于辅导与职业支持的信息"
     },
+    "projects": {
+      "title": "项目",
+      "description": "管理您的项目和翻译"
+    },
     "achievements": {
       "title": "成就库",
       "description": "管理证书和徽章"

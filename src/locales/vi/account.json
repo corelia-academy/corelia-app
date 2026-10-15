@@ -18,6 +18,10 @@
       "title": "Hồ sơ học tập & CV",
       "description": "Thông tin phục vụ tư vấn & việc làm"
     },
+    "projects": {
+      "title": "Dự án",
+      "description": "Quản lý dự án và bản dịch"
+    },
     "achievements": {
       "title": "Kho thành tích",
       "description": "Quản lý chứng nhận & huy hiệu"
