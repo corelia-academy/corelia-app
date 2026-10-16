@@ -133,7 +133,7 @@
       "ownerType": "Course source",
       "level": "Level",
       "contentLocales": "Course content languages",
-      "contentLocalesHint": "Select languages that this course will have separate content for (currently VI/EN).",
+      "contentLocalesHint": "Select languages that this course will have separate content for.",
       "primaryContentLocale": "Primary content language (fallback)",
       "defaultVideoLocale": "Default video primary language",
       "publishedCheckbox": "Published (visible on the Courses page)",

@@ -209,7 +209,9 @@
       "translationModeBadge": "翻訳モード",
       "currentLocaleBadge": "現在",
       "primaryEditingHint": "原文の言語を直接編集しています。",
-      "translationEditingHint": "{{source}}から{{target}}への翻訳を編集しています。"
+      "translationEditingHint": "{{source}}から{{target}}への翻訳を編集しています。",
+      "addLanguage": "言語を追加",
+      "removeLanguage": "{{language}}を削除"
     },
     "defaults": {
       "lessonTitle": "レッスン"
