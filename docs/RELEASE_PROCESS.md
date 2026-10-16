@@ -59,6 +59,15 @@ Production workflow hiện có trigger `workflow_dispatch` không khai báo inpu
 
 Frontend artifact được build và verify trong Production gate; Cloudflare tự build/deploy frontend từ nhánh `main` qua tích hợp Git hiện có. Kiểm tra deployment của đúng commit và asset/hành vi tại `app.corelia.academy`. Biến môi trường build frontend được cấu hình trong Cloudflare; GitHub không cần token Cloudflare để publish. Các biến phục vụ kiểm tra artifact trong GitHub Actions vẫn theo workflow backend hiện có. Không publish production bằng terminal.
 
+## Điều kiện release thành công
+
+Một release chỉ được coi là thành công khi build và publication frontend đã được xác nhận, không chỉ khi PR đã merge:
+
+1. Check `Workers Builds: corelia-app` của commit merge vào `main` ở trạng thái `completed` và `success`. Xem bằng `gh api repos/corelia-academy/corelia-app/commits/<sha>/check-runs`. Nếu `failure` hoặc `cancelled`, release chưa thành công: sửa trên work branch rồi đi lại luồng `staging → main`.
+2. Mở `app.corelia.academy` (hard reload để bỏ cache) và xác nhận thay đổi chính của release hiển thị đúng; chỉ đọc, không lưu dữ liệu thật.
+3. Release có migration hoặc Edge Function thì chạy và xác nhận `Deploy Production` theo mục trên.
+4. Sau khi cả ba điều kiện đạt, mới coi release là xong và báo thành công; tag và GitHub Release phải trỏ đúng commit đã build. Nếu tag/Release đã tạo trước mà build fail, ghi rõ trong Release hoặc xoá và tạo lại sau khi sửa.
+
 ## Kiểm tra migration history trên môi trường live
 
 [`Verify Protected Live Migration History`](../.github/workflows/db-live-history-verify.yml) là workflow manual, read-only cho `staging` hoặc `main`. Workflow export migration ledger của target qua kết nối PostgreSQL least-privilege, kiểm tra project identity và history dự kiến, rồi upload kết quả thành artifact.
@@ -80,6 +89,6 @@ Trước khi dispatch/approve Production release, reviewer cần xác định đ
 - evidence Staging verification và deployment thành công;
 - migration state dự kiến và live-history verification artifact nếu có;
 - kết quả Production pre-migration, post-migration và post-Edge gates; và
-- evidence build/publication frontend riêng nếu release có thay đổi frontend.
+- evidence build/publication frontend riêng nếu release có thay đổi frontend: check `Workers Builds` của commit `main` đã `success` và đã kiểm tra hành vi trên `app.corelia.academy` (xem [Điều kiện release thành công](#điều-kiện-release-thành-công)).
 
 Các rollout plan và execution report lịch sử trong `docs/db-baseline/` chỉ cung cấp context và evidence cho từng release cụ thể. Chúng không thay thế workflow hiện tại hoặc một release candidate đã được refresh.
