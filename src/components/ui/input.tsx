@@ -64,6 +64,8 @@ type InputDesignProps = {
   leadingIconClassName?: string
   statusIcon?: React.ReactNode | null
   controlClassName?: string
+  /** Keep Enter available for a newline when this is a multiline field. */
+  submitOnEnter?: boolean
   renderLeadingContent?: (state: InputAccessoryState) => React.ReactNode
   renderTrailingContent?: (state: InputAccessoryState) => React.ReactNode
   tagOptions?: readonly InputTagOption[]
@@ -178,6 +180,7 @@ function InputImplementationContent({
       renderLeadingContent,
       renderTagMenu,
       renderTrailingContent,
+      submitOnEnter = true,
       selectedTagValues,
       statusIcon,
       tagOptions = [],
@@ -555,6 +558,7 @@ function InputImplementationContent({
           userHandler?.(event)
 
           if (
+            !submitOnEnter ||
             event.defaultPrevented ||
             event.key !== "Enter" ||
             event.shiftKey ||

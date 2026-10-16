@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 
@@ -15,42 +14,28 @@ import {
 import { ComponentShowcaseLayout, ShowcaseSection } from "./ComponentShowcaseLayout";
 
 const progressThemes = [
-  { value: "Neutral", key: "neutral" },
-  { value: "Accent", key: "accent" },
-  { value: "Status", key: "status" },
-] as const satisfies ReadonlyArray<{ value: ProgressTheme; key: string }>;
+  { value: "Neutral" },
+  { value: "Accent" },
+  { value: "Status" },
+] as const satisfies ReadonlyArray<{ value: ProgressTheme }>;
 
 const progressLevels = [
-  { value: "None", key: "none", percentage: 0 },
-  { value: "Low", key: "low", percentage: 20 },
-  { value: "Medium", key: "medium", percentage: 40 },
-  { value: "Good", key: "good", percentage: 80 },
-  { value: "Done", key: "done", percentage: 100 },
-] as const satisfies ReadonlyArray<{ value: ProgressLevel; key: string; percentage: number }>;
+  { value: "None", percentage: 0 },
+  { value: "Low", percentage: 20 },
+  { value: "Medium", percentage: 40 },
+  { value: "Good", percentage: 80 },
+  { value: "Done", percentage: 100 },
+] as const satisfies ReadonlyArray<{ value: ProgressLevel; percentage: number }>;
 
-const progressThemeTranslationKeys = {
-  neutral: "componentShowcase.progress.theme.neutral",
-  accent: "componentShowcase.progress.theme.accent",
-  status: "componentShowcase.progress.theme.status",
+const circleStateLabels = {
+  notStarted: "Not started",
+  neutralProgress: "In progress · neutral",
+  coloredProgress: "In progress · colored",
+  done: "Done",
+  failed: "Failed",
 } as const;
 
-const progressLevelTranslationKeys = {
-  none: "componentShowcase.progress.level.none",
-  low: "componentShowcase.progress.level.low",
-  medium: "componentShowcase.progress.level.medium",
-  good: "componentShowcase.progress.level.good",
-  done: "componentShowcase.progress.level.done",
-} as const;
-
-const circleStateTranslationKeys = {
-  notStarted: "componentShowcase.progress.circleState.notStarted",
-  neutralProgress: "componentShowcase.progress.circleState.neutralProgress",
-  coloredProgress: "componentShowcase.progress.circleState.coloredProgress",
-  done: "componentShowcase.progress.circleState.done",
-  failed: "componentShowcase.progress.circleState.failed",
-} as const;
-
-type CircleStateKey = keyof typeof circleStateTranslationKeys;
+type CircleStateKey = keyof typeof circleStateLabels;
 
 const statusColorTokens: Record<Exclude<ProgressLevel, "None">, string> = {
   Low: "progress-status-low",
@@ -187,7 +172,6 @@ export default function AdminProgressComponentPage({
 }: {
   embedded?: boolean;
 }) {
-  const { t } = useTranslation("common");
   const [livePercentage, setLivePercentage] = useState(65);
   const [livePercentageInput, setLivePercentageInput] = useState("65");
   const isLiveDone = livePercentage === 100;
@@ -198,29 +182,19 @@ export default function AdminProgressComponentPage({
     setLivePercentage(nextPercentage);
     setLivePercentageInput(String(nextPercentage));
   };
-  const liveProgressValue = t("componentShowcase.progress.liveValue", {
-    percentage: livePercentage,
-  });
-  const liveNeutralCircleLabel = t("componentShowcase.progress.circleSample", {
-    state: t(circleStateTranslationKeys[getLiveCircleStateKey(livePercentage, false)]),
-    percentage: livePercentage,
-    colorText: "",
-  });
-  const liveColoredCircleLabel = t("componentShowcase.progress.circleSample", {
-    state: t(circleStateTranslationKeys[getLiveCircleStateKey(livePercentage, true)]),
-    percentage: livePercentage,
-    colorText: livePercentage > 0 && !isLiveFailed ? " · progress-circle-purple" : "",
-  });
+  const liveProgressValue = `${livePercentage}%`;
+  const liveNeutralCircleLabel = `${circleStateLabels[getLiveCircleStateKey(livePercentage, false)]} · ${livePercentage}%`;
+  const liveColoredCircleLabel = `${circleStateLabels[getLiveCircleStateKey(livePercentage, true)]} · ${livePercentage}%${livePercentage > 0 && !isLiveFailed ? " · progress-circle-purple" : ""}`;
 
   return (
     <ComponentShowcaseLayout
-      title={t("componentShowcase.progress.title")}
-      description={t("componentShowcase.progress.description")}
+      title="Progress"
+      description="Compare the exact bar and circle sizes, states, and colors from Figma."
       embedded={embedded}
     >
       <ShowcaseSection
-        title={t("componentShowcase.progress.liveTitle")}
-        criterion={t("componentShowcase.progress.liveCriterion")}
+        title="Hands-on progress demo"
+        criterion="Use −/+ or enter a percentage. Exactly 100% completes the circles; values above 100% mark them failed."
       >
         <div
           className="space-y-4 rounded-lg border border-border-subtle bg-surface-base p-4"
@@ -234,12 +208,12 @@ export default function AdminProgressComponentPage({
               {liveProgressValue}
             </label>
             <span className="text-body-small text-foreground-muted">
-              {t("componentShowcase.progress.liveRangeLabel")}
+              Adjust progress percentage
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              aria-label={t("componentShowcase.progress.liveDecrease")}
+              aria-label="Decrease progress by 1%"
               disabled={livePercentage === 0}
               hierarchy="secondary"
               onClick={() => updateLivePercentage(livePercentage - 1)}
@@ -251,7 +225,7 @@ export default function AdminProgressComponentPage({
               className="text-body-small text-foreground"
               htmlFor="progress-live-number"
             >
-              {t("componentShowcase.progress.liveInputLabel")}
+              Progress percentage
             </label>
             <input
               className="h-10 w-24 rounded-md border border-border-subtle bg-surface-base px-3 text-center text-body-small text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
@@ -273,7 +247,7 @@ export default function AdminProgressComponentPage({
               value={livePercentageInput}
             />
             <Button
-              aria-label={t("componentShowcase.progress.liveIncrease")}
+              aria-label="Increase progress by 1%"
               onClick={() => updateLivePercentage(livePercentage + 1)}
               type="button"
             >
@@ -281,7 +255,7 @@ export default function AdminProgressComponentPage({
             </Button>
           </div>
           <input
-            aria-label={t("componentShowcase.progress.liveRangeLabel")}
+            aria-label="Adjust progress percentage"
             aria-valuetext={liveProgressValue}
             className="w-full accent-[var(--progress-accent-fill)]"
             data-testid="progress-live-range"
@@ -294,11 +268,11 @@ export default function AdminProgressComponentPage({
             value={Math.min(livePercentage, 100)}
           />
           <p className="text-body-small text-foreground-muted">
-            {t("componentShowcase.progress.liveOverrunHint")}
+            Bars stay full above 100%; circles show a failure mark.
           </p>
           <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {progressThemes.map((theme) => {
-              const themeLabel = t(progressThemeTranslationKeys[theme.key]);
+              const themeLabel = theme.value;
 
               return (
                 <div
@@ -310,13 +284,10 @@ export default function AdminProgressComponentPage({
                   </p>
                   <ProgressBar
                     animated
-                    aria-label={t("componentShowcase.progress.liveBarSample", {
-                      theme: themeLabel,
-                      percentage: livePercentage,
-                    })}
+                    aria-label={`${themeLabel} · ${livePercentage}%`}
                     progress={livePercentage}
                     statusLevel={theme.value === "Status" ? getLiveStatusLevel(livePercentage) : undefined}
-                    text={t("componentShowcase.progress.label")}
+                    text="Label"
                     theme={theme.value}
                   />
                 </div>
@@ -324,15 +295,12 @@ export default function AdminProgressComponentPage({
             })}
             <div className="min-w-0 rounded-lg border border-border-subtle bg-surface-base p-3">
               <p className="mb-2 text-body-small text-foreground-muted">
-                {t("componentShowcase.progress.compactTitle")} · {livePercentage}%
+                Compact lesson progress · {livePercentage}%
               </p>
               <LessonProgressBar
-                aria-label={t("componentShowcase.progress.liveBarSample", {
-                  theme: t("componentShowcase.progress.theme.accent"),
-                  percentage: livePercentage,
-                })}
+                aria-label={`Accent · ${livePercentage}%`}
                 progress={livePercentage}
-                text={t("componentShowcase.progress.label")}
+                text="Label"
               />
             </div>
             <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border-subtle bg-surface-base p-3">
@@ -366,8 +334,8 @@ export default function AdminProgressComponentPage({
       </ShowcaseSection>
 
       <ShowcaseSection
-        title={t("componentShowcase.progress.standardTitle")}
-        criterion={t("componentShowcase.progress.standardCriterion")}
+        title="Standard progress bars"
+        criterion="376 × 20 px component with a 328 × 8 px track."
       >
         <div className="w-full pb-2" data-testid="progress-bar-standard-showcase">
           <div className="grid w-full grid-cols-1 gap-6 xl:grid-cols-2">
@@ -377,11 +345,11 @@ export default function AdminProgressComponentPage({
                 className="min-w-0 flex flex-col gap-4 rounded-lg border border-border-subtle bg-surface-base p-4"
               >
                 <h3 className="text-heading-small font-display">
-                  {t(progressThemeTranslationKeys[theme.key])}
+                  {theme.value}
                 </h3>
                 {progressLevels.map((level) => {
                   const colorToken = level.value === "None"
-                    ? t("componentShowcase.progress.noFill")
+                    ? "No fill"
                     : getProgressColorToken(theme.value, level.value);
 
                   return (
@@ -391,20 +359,15 @@ export default function AdminProgressComponentPage({
                       data-testid={"progress-bar-" + theme.value.toLowerCase() + "-" + level.value.toLowerCase()}
                     >
                       <p className="flex items-center justify-between gap-2 text-body-small text-foreground-muted">
-                        <span>{t(progressLevelTranslationKeys[level.key])} · {level.percentage}%</span>
+                        <span>{level.value} · {level.percentage}%</span>
                         <span className="font-mono">{colorToken}</span>
                       </p>
                       <ProgressBar
                         theme={theme.value}
                         progress={level.percentage}
                         statusLevel={level.value === "None" ? undefined : level.value}
-                        text={t("componentShowcase.progress.label")}
-                        aria-label={t("componentShowcase.progress.barSample", {
-                          theme: t(progressThemeTranslationKeys[theme.key]),
-                          level: t(progressLevelTranslationKeys[level.key]),
-                          percentage: level.percentage,
-                          color: colorToken,
-                        })}
+                        text="Label"
+                        aria-label={`${theme.value} · ${level.value} · ${level.percentage}% · ${colorToken}`}
                       />
                     </div>
                   );
@@ -416,13 +379,13 @@ export default function AdminProgressComponentPage({
       </ShowcaseSection>
 
       <ShowcaseSection
-        title={t("componentShowcase.progress.compactTitle")}
-        criterion={t("componentShowcase.progress.compactCriterion")}
+        title="Compact lesson progress"
+        criterion="252 × 15 px component with a 210 × 4 px track."
       >
         <div className="flex flex-wrap gap-4" data-testid="progress-bar-compact-showcase">
           {progressLevels.map((level) => {
             const colorToken = level.value === "None"
-              ? t("componentShowcase.progress.noFill")
+              ? "No fill"
               : "progress-accent-fill";
 
             return (
@@ -432,17 +395,12 @@ export default function AdminProgressComponentPage({
                 data-testid={"lesson-progress-" + level.value.toLowerCase()}
               >
                 <p className="text-body-small text-foreground-muted">
-                  {t(progressLevelTranslationKeys[level.key])} · {level.percentage}% · {colorToken}
+                  {level.value} · {level.percentage}% · {colorToken}
                 </p>
                 <LessonProgressBar
                   progress={level.percentage}
-                  text={t("componentShowcase.progress.label")}
-                  aria-label={t("componentShowcase.progress.barSample", {
-                    theme: t("componentShowcase.progress.theme.accent"),
-                    level: t(progressLevelTranslationKeys[level.key]),
-                    percentage: level.percentage,
-                    color: colorToken,
-                  })}
+                  text="Label"
+                  aria-label={`Accent · ${level.value} · ${level.percentage}% · ${colorToken}`}
                 />
               </div>
             );
@@ -451,24 +409,20 @@ export default function AdminProgressComponentPage({
       </ShowcaseSection>
 
       <ShowcaseSection
-        title={t("componentShowcase.progress.circleTitle")}
-        criterion={t("componentShowcase.progress.circleCriterion")}
+        title="Progress circles"
+        criterion="24 × 24 px; each percentage follows its Figma color variant."
       >
         <div className="space-y-5" data-testid="progress-circle-showcase">
           {circleGroups.map((group) => (
             <section key={group.id} className="space-y-3">
               <h3 className="text-heading-small font-display">
-                {t(circleStateTranslationKeys[group.titleKey])}
+                {circleStateLabels[group.titleKey]}
               </h3>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {group.samples.map((sample) => {
                   const percentage = sample.percentage;
                   const colorText = sample.colorToken ? " · " + sample.colorToken : "";
-                  const ariaLabel = t("componentShowcase.progress.circleSample", {
-                    state: t(circleStateTranslationKeys[sample.stateKey]),
-                    percentage,
-                    colorText,
-                  });
+                  const ariaLabel = `${circleStateLabels[sample.stateKey]} · ${percentage}%${colorText}`;
 
                   return (
                     <div

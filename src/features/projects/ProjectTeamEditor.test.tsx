@@ -131,7 +131,7 @@ describe("ProjectTeamEditor UI resend email", () => {
     });
 
     const resendBtn = Array.from(container.querySelectorAll("button")).find(
-      (b) => b.textContent?.includes("projects.team.resendEmail"),
+      (b) => b.getAttribute("aria-label")?.includes("projects.team.resendEmail"),
     );
     expect(resendBtn).toBeDefined();
 
@@ -184,7 +184,7 @@ describe("ProjectTeamEditor UI resend email", () => {
     });
 
     const resendBtn = Array.from(container.querySelectorAll("button")).find(
-      (b) => b.textContent?.includes("projects.team.resendEmail"),
+      (b) => b.getAttribute("aria-label")?.includes("projects.team.resendEmail"),
     );
 
     await act(async () => {

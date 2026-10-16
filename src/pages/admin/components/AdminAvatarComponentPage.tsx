@@ -30,7 +30,6 @@ import {
 import { getGeneratedAvatarDataUrl } from "@/lib/avatar";
 import { User } from "@/components/ui/user";
 import { useAuth } from "@/stores/authStore";
-import { useTranslation } from "react-i18next";
 
 import { ComponentShowcaseLayout, ShowcaseSection } from "./ComponentShowcaseLayout";
 
@@ -191,8 +190,6 @@ function UserStatesShowcase({
   profile: ReturnType<typeof useAuth>["profile"];
   user: ReturnType<typeof useAuth>["user"];
 }) {
-  const { t } = useTranslation("common");
-  const { t: tAccount } = useTranslation("account");
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
   const metaAvatar =
@@ -221,40 +218,40 @@ function UserStatesShowcase({
             : profile?.id
               ? `/@${profile.id}`
               : "/account",
-        label: t("header.publicProfile"),
+        label: "Public profile",
         icon: <UserCircle aria-hidden />,
       },
       {
         to: "/account/profile",
-        label: tAccount("nav.profile.title"),
+        label: "Personal info",
         icon: <UserCircle aria-hidden />,
       },
       ...(profile?.role === "instructor"
         ? [
             {
               to: "/account/instructor",
-              label: tAccount("nav.instructor.title"),
+              label: "Instructor profile",
               icon: <GraduationCap aria-hidden />,
             },
           ]
         : []),
       {
         to: "/account/cv",
-        label: tAccount("nav.cv.title"),
+        label: "Learning profile & CV",
         icon: <IdCard aria-hidden />,
       },
       {
         to: "/achievements",
-        label: tAccount("nav.achievements.title"),
+        label: "Achievements Vault",
         icon: <Award aria-hidden />,
       },
       {
         to: "/account",
-        label: tAccount("nav.settings.title"),
+        label: "Settings",
         icon: <Settings aria-hidden />,
       },
     ],
-    [profile, t, tAccount],
+    [profile],
   );
 
   return (
@@ -314,7 +311,7 @@ function UserStatesShowcase({
               variant="destructive"
               size="small"
               icon={<LogOut aria-hidden />}
-              label={t("tabs.signOut")}
+              label="Sign out"
               isActive={false}
               showActive={false}
               hoverAsActive
@@ -331,8 +328,6 @@ export default function AdminAvatarComponentPage({
   embedded = false,
 }: AdminAvatarComponentPageProps) {
   const { profile, user } = useAuth();
-  const { t } = useTranslation("common");
-
   const metaName =
     typeof user?.user_metadata?.full_name === "string"
       ? user.user_metadata.full_name
@@ -344,7 +339,7 @@ export default function AdminAvatarComponentPage({
     : (profile?.full_name ??
       metaName ??
       profile?.id?.slice(0, 8) ??
-      t("user.fallbackName"));
+      "User");
   const avatarText = displayName.trim().charAt(0).toUpperCase() || "U";
 
   return (

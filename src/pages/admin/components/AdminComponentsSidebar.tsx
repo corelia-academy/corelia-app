@@ -1,6 +1,5 @@
 import type { RefObject } from "react";
 import { ArrowLeft } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { Action } from "@/components/ui/action";
@@ -32,8 +31,6 @@ export default function AdminComponentsSidebar<TSlug extends string>({
   onThemeChange,
   onSelectComponent,
 }: AdminComponentsSidebarProps<TSlug>) {
-  const { t } = useTranslation("common");
-
   return (
     <aside className="flex h-[70dvh] w-full min-h-0 min-w-0 flex-col lg:sticky lg:top-6 lg:w-[28vh] lg:self-start">
       <Button
@@ -74,19 +71,7 @@ export default function AdminComponentsSidebar<TSlug extends string>({
                   aria-current={activeComponent === slug ? "page" : undefined}
                 />
               }
-              label={
-                slug === "progress"
-                  ? t("componentShowcase.progress.title")
-                  : slug === "xp-rank"
-                    ? t("componentShowcase.xpRank.title")
-                    : slug === "full-page-empty-state"
-                      ? t("componentShowcase.fullPageEmptyState.title")
-                      : slug === "tooltip"
-                        ? t("componentShowcase.tooltip.title")
-                        : slug === "stepper"
-                          ? t("componentShowcase.stepper.title")
-                          : title
-              }
+              label={title}
               size="small"
               isActive={activeComponent === slug}
               className="relative z-10 justify-start bg-transparent data-[active=true]:bg-transparent data-[active=true]:hover:bg-transparent"

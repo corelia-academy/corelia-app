@@ -387,7 +387,9 @@
       "videoUrl": "Demo video URL",
       "logo": "Logo dự án",
       "logoHint": "PNG, JPEG hoặc WebP; tối đa 2 MB. Ảnh sẽ được kiểm duyệt trước khi tải lên.",
+      "submissionLogoHint": "PNG, JPEG hoặc WebP. Hình ảnh sẽ được kiểm duyệt khi tải lên.",
       "chooseLogo": "Chọn logo",
+      "uploadLogo": "Tải Lên",
       "screenshots": "Ảnh chụp dự án",
       "screenshotsHint": "Tối đa 6 ảnh, mỗi ảnh tối đa 5 MB. Có thể sắp xếp lại thứ tự.",
       "addScreenshots": "Thêm ảnh",
@@ -448,6 +450,14 @@
       "someInvitesFailed": "Dự án đã được tạo nhưng một số lời mời chưa gửi được.",
       "pending": "Đang chờ phản hồi",
       "members": "Thành viên đã tham gia",
+      "selectedCount": "Thành viên đã chọn ({{count}})",
+      "invitedCount": "Thành viên đã được mời ({{count}})",
+      "invitedStatus": "Đã Mời",
+      "removeFromList": "Xoá Khỏi Danh Sách",
+      "removeNamedFromList": "Xoá {{name}} khỏi danh sách",
+      "resendEmailFor": "Gửi lại email cho {{name}}",
+      "showMore": "Xem Thêm",
+      "showLess": "Thu gọn",
       "moreMembers": "Thêm {{count}} thành viên",
       "revoke": "Thu hồi",
       "remove": "Xóa",
@@ -518,6 +528,8 @@
       "media": "Logo & ảnh sản phẩm",
       "links": "Demo & tài liệu",
       "linksHint": "Chọn loại tài liệu bạn muốn bổ sung. Chỉ cần điền những gì đã có; có thể bổ sung khi dự án được phép chỉnh sửa.",
+      "submissionLinksTitle": "Link & Đính kèm",
+      "submissionLinksHint": "Bạn có thể bỏ qua thông tin này nếu đang ở giai đoạn ý tưởng. Nếu đính kèm link, hãy đảm bảo mọi người có thể truy cập công khai.",
       "categories": "Tracks & công nghệ",
       "categoriesHint": "Chọn ít nhất một Track. Chuyên môn kỹ thuật và Công nghệ là tùy chọn; bạn có thể tìm kiếm hoặc nhập mục riêng.",
       "taxonomySearch": "Tìm kiếm hoặc nhập mục riêng…",
@@ -527,6 +539,22 @@
       "team": "Đội ngũ của bạn",
       "sections": "Các phần của dự án",
       "checklist": "Sẵn sàng chia sẻ?",
+      "submissionTitle": "Thông tin dự án",
+      "submissionHint": "Vui lòng điền các thông tin cần thiết.",
+      "requiredInformation": "Thông tin bắt buộc",
+      "submissionStory": "Câu chuyện",
+      "submissionCharacterLimit": "{{count}}/{{limit}}",
+      "submissionProjectTitle": "Tiêu đề dự án",
+      "submissionTitlePlaceholder": "VD: Corelia Chatbot",
+      "submissionSlugPlaceholder": "VD: demo-seed-20261008-future-skillbridge",
+      "submissionSlugHint": "Đường dẫn đến dự án của bạn",
+      "submissionDescription": "Chi tiết dự án",
+      "submissionProgress": "Chia sẻ về quá trình thực hiện dự án",
+      "submissionTextPlaceholder": "Mô tả...",
+      "submissionPreviewImages": "Hình ảnh xem trước",
+      "submissionOptionalClassifications": "Phân loại bổ sung",
+      "submissionOptionalClassificationsHint": "Chuyên môn kỹ thuật và công nghệ là tùy chọn.",
+      "submissionSaveHint": "Sau khi lưu, ban tổ chức cuộc thi sẽ nhận được cập nhật mới nhất về dự án của bạn.",
       "complete": "Đã hoàn thành",
       "missing": "Bắt buộc",
       "publicHint": "Dự án hackathon được hiển thị công khai và gắn với cuộc thi. Sau hạn nộp, quyền chỉnh sửa phụ thuộc vào thiết lập cuộc thi.",
@@ -592,27 +620,33 @@
       "addResource": "Thêm {{resource}}",
       "removeResource": "Xóa {{resource}}",
       "httpsHint": "Nhập đường dẫn đầy đủ bắt đầu bằng https://, ví dụ https://example.com/demo.",
+      "resourceUrlValid": "Đường dẫn đã vượt qua kiểm tra an toàn và định dạng.",
       "resourceAccessHint": "Dùng link HTTPS và bật quyền xem công khai hoặc “Ai có đường liên kết”. Thử mở bằng cửa sổ ẩn danh để chắc chắn giám khảo xem được.",
       "resourceFields": {
         "demo": {
           "label": "Demo trực tuyến",
-          "hint": "Link đến bản chạy thử của sản phẩm để người đánh giá trải nghiệm."
+          "hint": "Link đến bản chạy thử của sản phẩm để người đánh giá trải nghiệm.",
+          "placeholder": "Link demo dự án (nếu có)"
         },
         "slide": {
           "label": "Slide / pitch deck",
-          "hint": "Bản trình bày ý tưởng, vấn đề và giải pháp; ví dụ Google Slides hoặc Canva."
+          "hint": "Bản trình bày ý tưởng, vấn đề và giải pháp; ví dụ Google Slides hoặc Canva.",
+          "placeholder": "Link slide, pitch deck (nếu có)"
         },
         "repo": {
           "label": "Mã nguồn GitHub",
-          "hint": "Link đến repository công khai, dạng github.com/nhom/du-an; không dùng link issue hoặc file."
+          "hint": "Link đến repository công khai, dạng github.com/nhom/du-an; không dùng link issue hoặc file.",
+          "placeholder": "Link GitHub source code dự án (nếu có)"
         },
         "video": {
           "label": "Video demo",
-          "hint": "Video quay cách sản phẩm hoạt động, ví dụ YouTube, Vimeo hoặc Loom."
+          "hint": "Video quay cách sản phẩm hoạt động, ví dụ YouTube, Vimeo hoặc Loom.",
+          "placeholder": "Link video demo / pitching dự án"
         },
         "pitchVideo": {
           "label": "Video thuyết trình",
-          "hint": "Video giới thiệu ý tưởng, giá trị và đội ngũ; có thể dùng ngay cả khi chưa có sản phẩm."
+          "hint": "Video giới thiệu ý tưởng, giá trị và đội ngũ; có thể dùng ngay cả khi chưa có sản phẩm.",
+          "placeholder": "Link video pitch dự án (nếu có)"
         }
       }
     },
@@ -1196,143 +1230,6 @@
     "title": "Bạn vừa nhận thành công các chứng nhận!",
     "body": "Các chứng nhận đã được cấp cho email của bạn giờ đã lưu vào tài khoản Corelia.",
     "cta": "Xem chứng nhận của tôi"
-  },
-  "componentShowcase": {
-    "xpRank": {
-      "title": "Huy hiệu bậc XP",
-      "criterion": "Đủ sáu bậc hạng ở cỡ 80, 160 và 200 px; bậc chưa có ảnh dùng huy hiệu dấu hỏi.",
-      "description": "Đối chiếu huy hiệu theo từng bậc và kích thước.",
-      "combinationsTitle": "Tất cả bậc hạng và kích thước",
-      "tableLabel": "Huy hiệu XP theo bậc hạng và kích thước",
-      "rank": "Bậc hạng",
-      "sizes": {
-        "small": "Nhỏ · 80 px",
-        "medium": "Vừa · 160 px",
-        "large": "Lớn · 200 px"
-      }
-    },
-    "fullPageEmptyState": {
-      "title": "Trạng thái trống toàn trang"
-    },
-    "progress": {
-      "title": "Tiến độ",
-      "criterion": "Kích thước, mức tiến độ và mô hình màu theo Figma cho thanh và vòng tròn.",
-      "description": "Đối chiếu kích thước, trạng thái và màu của các thanh và vòng tròn với Figma.",
-      "standardTitle": "Thanh tiến độ tiêu chuẩn",
-      "standardCriterion": "Thành phần 376 × 20 px, phần thanh 328 × 8 px.",
-      "liveTitle": "Mô phỏng thao tác tiến độ thực tế",
-      "liveCriterion": "Dùng nút −/+ hoặc nhập tỷ lệ. Vòng tròn chỉ hoàn tất ở đúng 100%; trên 100% sẽ chuyển sang thất bại.",
-      "liveRangeLabel": "Điều chỉnh tỷ lệ tiến độ",
-      "liveDecrease": "Giảm tiến độ 1%",
-      "liveIncrease": "Tăng tiến độ 1%",
-      "liveInputLabel": "Phần trăm tiến độ",
-      "liveOverrunHint": "Thanh vẫn đầy ở mức trên 100%; vòng tròn hiện dấu X.",
-      "liveValue": "{{percentage}}%",
-      "liveBarSample": "{{theme}} · {{percentage}}%",
-      "compactTitle": "Tiến độ bài học dạng gọn",
-      "compactCriterion": "Thành phần 252 × 15 px, phần thanh 210 × 4 px.",
-      "circleTitle": "Vòng tròn tiến độ",
-      "circleCriterion": "Kích thước 24 × 24 px; mỗi tỷ lệ dùng biến thể màu tương ứng trong Figma.",
-      "label": "Nhãn",
-      "noFill": "Không tô màu",
-      "barSample": "{{theme}} · {{level}} · {{percentage}}% · {{color}}",
-      "circleSample": "{{state}} · {{percentage}}%{{colorText}}",
-      "defaultValue": "Mặc định",
-      "theme": {
-        "neutral": "Trung tính",
-        "accent": "Nhấn",
-        "status": "Trạng thái"
-      },
-      "level": {
-        "none": "Chưa bắt đầu",
-        "low": "Thấp",
-        "medium": "Trung bình",
-        "good": "Tốt",
-        "done": "Hoàn tất"
-      },
-      "circleState": {
-        "notStarted": "Chưa bắt đầu",
-        "failed": "Thất bại",
-        "neutralProgress": "Đang tiến hành · trung tính",
-        "coloredProgress": "Đang tiến hành · có màu",
-        "done": "Hoàn tất"
-      }
-    },
-    "tooltip": {
-      "title": "Tooltip (chú giải nhanh)",
-      "criterion": "Đủ chín vị trí mũi tên theo Figma, có và không có văn bản bổ trợ; nơi sử dụng truyền nội dung vào.",
-      "description": "Đối chiếu đủ 18 biến thể mũi tên và văn bản bổ trợ theo Figma.",
-      "withoutSupportingText": "Không có văn bản bổ trợ",
-      "withSupportingText": "Có văn bản bổ trợ",
-      "sampleTitle": "Đây là một tooltip",
-      "sampleSupportingText": "Tooltip giúp giải thích ý nghĩa hoặc chức năng của một phần tử mà không cần đặt văn bản cố định trên trang.",
-      "arrows": {
-        "none": "Không có mũi tên",
-        "bottomCenter": "Mũi tên ở mép dưới, giữa",
-        "bottomLeft": "Mũi tên ở mép dưới, trái",
-        "bottomRight": "Mũi tên ở mép dưới, phải",
-        "topCenter": "Mũi tên ở mép trên, giữa",
-        "topLeft": "Mũi tên ở mép trên, trái",
-        "topRight": "Mũi tên ở mép trên, phải",
-        "left": "Mũi tên hướng trái",
-        "right": "Mũi tên hướng phải"
-      }
-    },
-    "stepper": {
-      "title": "Stepper (thanh chỉ bước)",
-      "criterion": "Theo dõi tiến độ ngang hoặc dọc; trang sử dụng truyền trạng thái cho từng bước.",
-      "description": "Thành phần hiển thị tiến độ. Trang cha quản lý trạng thái và quyết định khi nào luồng chuyển bước.",
-      "liveTitle": "Luồng bước do trang cha điều khiển",
-      "liveCriterion": "Bấm Trước và Sau để xem trang cha cập nhật trạng thái các bước.",
-      "orientationLabel": "Hướng hiển thị",
-      "orientation": {
-        "horizontal": "Ngang",
-        "vertical": "Dọc"
-      },
-      "styleLabel": "Kiểu dấu bước",
-      "style": {
-        "text": "Số thứ tự",
-        "icon": "Biểu tượng"
-      },
-      "steps": {
-        "account": "Tài khoản",
-        "accountCaption": "Thông tin bắt buộc",
-        "profile": "Hồ sơ",
-        "profileCaption": "Thông tin cá nhân",
-        "review": "Xác nhận",
-        "reviewCaption": "Kiểm tra thông tin"
-      },
-      "state": {
-        "default": "Chưa bắt đầu",
-        "focused": "Bước hiện tại",
-        "passed": "Đã hoàn tất",
-        "error": "Cần kiểm tra"
-      },
-      "liveAccessibleLabel": "Tiến độ thiết lập tài khoản",
-      "currentStep": "Bước {{current}} trên {{total}}",
-      "previous": "Trước",
-      "next": "Sau",
-      "parentOwnsState": "Trang sử dụng quyết định trạng thái và thời điểm chuyển bước; Stepper chỉ hiển thị trạng thái được truyền vào.",
-      "statesTitle": "Đối chiếu trạng thái và cách bố trí theo Figma",
-      "statesCriterion": "Xem đủ bốn trạng thái ở cả hai hướng và hai kiểu dấu bước.",
-      "statesAccessibleLabel": "Ví dụ các trạng thái của Stepper",
-      "samples": {
-        "waiting": "Đang chờ",
-        "current": "Đang thực hiện",
-        "complete": "Hoàn tất",
-        "problem": "Cần kiểm tra",
-        "optional": "Chưa bắt đầu",
-        "inProgress": "Bước hiện tại",
-        "done": "Đã xong",
-        "checkDetails": "Xem lại thông tin"
-      },
-      "configuration": {
-        "horizontal": "Kiểu {{style}} · bố trí ngang",
-        "vertical": "Kiểu {{style}} · bố trí dọc"
-      },
-      "usageTitle": "Ví dụ sử dụng có điều khiển",
-      "usageCriterion": "Trang tự tính trạng thái từ bước hiện tại rồi truyền danh sách vào Stepper."
-    }
   },
   "maintenance": {
     "title": "Đang bảo trì hệ thống",

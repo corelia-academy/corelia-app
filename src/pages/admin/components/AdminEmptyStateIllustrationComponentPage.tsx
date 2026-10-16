@@ -1,5 +1,4 @@
 import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
-import { useTranslation } from "react-i18next";
 
 import { ComponentShowcaseLayout, ShowcaseSection } from "./ComponentShowcaseLayout";
 
@@ -21,8 +20,6 @@ type AdminEmptyStateIllustrationComponentPageProps = {
 export default function AdminEmptyStateIllustrationComponentPage({
   embedded = false,
 }: AdminEmptyStateIllustrationComponentPageProps) {
-  const { t } = useTranslation("common");
-
   return (
     <ComponentShowcaseLayout
       title="Empty State Illustration"
@@ -47,8 +44,8 @@ export default function AdminEmptyStateIllustrationComponentPage({
                 <EmptyStateIllustration
                   type={type}
                   size={size}
-                  title={size === "tiny" ? undefined : t("projects.detail.notFoundTitle")}
-                  description={t("projects.detail.notFoundDescription")}
+                  title={size === "tiny" ? undefined : "Project not found"}
+                  description="This project may not exist or may not be public."
                 />
               </div>
             )),

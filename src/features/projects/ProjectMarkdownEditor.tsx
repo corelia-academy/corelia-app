@@ -3,11 +3,14 @@ import { useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Markdown } from "@/components/markdown/Markdown";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsGroup } from "@/components/ui/tabs";
 
-export function ProjectMarkdownEditor({ label, value, onChange, maxLength, required, placeholder, hint, rows = 10 }: {
+export function ProjectMarkdownEditor({ label, value, onChange, maxLength, required, placeholder, hint, rows = 10, variant = "markdown", layout = "stacked", compactCounter = false }: {
   label: string; value: string; onChange: (value: string) => void; maxLength: number;
   required: boolean; placeholder: string; hint?: string; rows?: number;
+  variant?: "markdown" | "plain"; layout?: "stacked" | "row";
+  compactCounter?: boolean;
 }) {
   const { t } = useTranslation("common");
   const id = useId();
@@ -36,25 +39,37 @@ export function ProjectMarkdownEditor({ label, value, onChange, maxLength, requi
       input.setSelectionRange(start + before.length, start + before.length + selected.length);
     });
   }
-  return <div className="min-w-0">
-    <label htmlFor={id} className="text-label-medium font-body">{label}{required ? <span className="text-primary"> *</span> : null}</label>
-    {hint ? <p id={`${id}-hint`} className="mt-2 text-body-small text-foreground-muted">{hint}</p> : null}
-    <Tabs.Root value={mode} onValueChange={value => setMode(String(value))} className="mt-2 overflow-hidden rounded-lg border border-border bg-background">
-      <TabsGroup level="2b">
-        <Tabs.List aria-label={`${label}: Markdown`}>
-          {(["write", "preview"] as const).map(tab => <Tabs.Tab key={tab} value={tab}>{t(`projects.editor.${tab}`)}</Tabs.Tab>)}
-        </Tabs.List>
-      </TabsGroup>
-      <Tabs.Panel value="write">
-        <div role="group" aria-label={t("projects.editor.formatting")} className="flex flex-wrap gap-1 border-b border-border p-2">
-          {actions.map(action => <button key={action.key} type="button" onClick={() => format(action)} title={t(`projects.editor.markdown${action.key}`)} aria-label={t(`projects.editor.markdown${action.key}`)} className="flex size-10 items-center justify-center rounded-md hover:bg-surface-raised focus-visible:outline-2 focus-visible:outline-primary"><action.icon className="size-4" /></button>)}
+  const describedBy = `${id}-limit${hint ? ` ${id}-hint` : ""}`;
+  const counter = <span id={`${id}-limit`} className="pointer-events-none absolute bottom-2 right-3 text-body-small font-body text-foreground-muted">{t(compactCounter ? "projects.editor.submissionCharacterLimit" : "projects.editor.characterLimit", { count: value.length, limit: maxLength })}</span>;
+  return <div className={layout === "row" ? "grid min-w-0 gap-3 border-b border-border-subtle py-5 last:border-b-0 last:pb-0 lg:grid-cols-[minmax(9rem,1fr)_minmax(0,2fr)] lg:gap-6" : "min-w-0"}>
+    <div>
+      <label htmlFor={id} className={`text-label-medium font-body${compactCounter ? " leading-[1.4] tracking-[-0.07px]" : ""}${layout === "row" ? " lg:block lg:pt-2" : ""}`}>{label}{required ? <span className="text-error-400"> *</span> : null}</label>
+      {hint ? <p id={`${id}-hint`} className="mt-2 text-body-small text-foreground-muted">{hint}</p> : null}
+    </div>
+    <div className="min-w-0">
+      {variant === "plain" ? (
+        <div className={compactCounter ? "mt-1.5" : "mt-2"}>
+          <Input ref={textarea} fieldType="auto-grow" submitOnEnter={false} id={id} required={required} aria-describedby={describedBy} rows={rows} maxLength={maxLength} value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder} controlClassName={compactCounter ? "h-[154px] min-h-[154px] max-h-[154px] overflow-hidden" : undefined} className={compactCounter ? "h-full min-h-full max-h-full overflow-y-auto pb-5" : "min-h-40"} renderTrailingContent={compactCounter ? () => counter : undefined} />
         </div>
-        <textarea ref={textarea} id={id} required={required} aria-describedby={`${id}-limit${hint ? ` ${id}-hint` : ""}`} rows={rows} maxLength={maxLength} value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder} className="block w-full resize-y bg-transparent px-3 py-2 text-body-medium font-body focus-visible:outline-2 focus-visible:outline-primary" />
-      </Tabs.Panel>
-      <Tabs.Panel value="preview" className="scrollbar-design min-h-40 overflow-x-auto break-words p-4 [&_img]:max-w-full">
-        {value.trim() ? <Markdown content={value} /> : <p className="text-body-medium font-body text-foreground-muted">{t("projects.editor.previewEmpty")}</p>}
-      </Tabs.Panel>
-    </Tabs.Root>
-    <p id={`${id}-limit`} className="mt-1 text-right text-body-small font-body text-foreground-muted">{t("projects.editor.characterLimit", { count: value.length, limit: maxLength })}</p>
+      ) : (
+        <Tabs.Root value={mode} onValueChange={value => setMode(String(value))} className="mt-2 overflow-hidden rounded-lg border border-border bg-background">
+          <TabsGroup level="2b">
+            <Tabs.List aria-label={`${label}: Markdown`}>
+              {(["write", "preview"] as const).map(tab => <Tabs.Tab key={tab} value={tab}>{t(`projects.editor.${tab}`)}</Tabs.Tab>)}
+            </Tabs.List>
+          </TabsGroup>
+          <Tabs.Panel value="write">
+            <div role="group" aria-label={t("projects.editor.formatting")} className="flex flex-wrap gap-1 border-b border-border p-2">
+              {actions.map(action => <button key={action.key} type="button" onClick={() => format(action)} title={t(`projects.editor.markdown${action.key}`)} aria-label={t(`projects.editor.markdown${action.key}`)} className="flex size-10 items-center justify-center rounded-md hover:bg-surface-raised focus-visible:outline-2 focus-visible:outline-primary"><action.icon className="size-4" /></button>)}
+            </div>
+            <Input ref={textarea} fieldType="auto-grow" submitOnEnter={false} id={id} required={required} aria-describedby={describedBy} rows={rows} maxLength={maxLength} value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder} controlClassName="min-h-40 gap-0 rounded-none border-0 bg-transparent p-0 shadow-none focus-within:ring-0" className="px-3 py-2 text-body-medium tracking-normal" />
+          </Tabs.Panel>
+          <Tabs.Panel value="preview" className="scrollbar-design min-h-40 overflow-x-auto break-words p-4 [&_img]:max-w-full">
+            {value.trim() ? <Markdown content={value} /> : <p className="text-body-medium font-body text-foreground-muted">{t("projects.editor.previewEmpty")}</p>}
+          </Tabs.Panel>
+        </Tabs.Root>
+      )}
+      {!compactCounter ? <p id={`${id}-limit`} className="mt-1 text-right text-body-small font-body text-foreground-muted">{t("projects.editor.characterLimit", { count: value.length, limit: maxLength })}</p> : null}
+    </div>
   </div>;
 }

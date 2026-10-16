@@ -94,10 +94,14 @@ function CatalogMultiSelectFilter({
               <Input
                 type="search"
                 variant="icon-leading"
+                leadingIconClassName="text-dropdown-supporting"
+                statusIcon={null}
                 value={search}
                 onChange={(event) => setSearch(event.currentTarget.value)}
                 placeholder={t("catalog.filters.searchPlaceholder")}
                 aria-label={searchLabel}
+                controlClassName="h-10 gap-sm rounded-lg border-dropdown-input-border bg-dropdown-surface px-md focus-within:ring-dropdown-focus"
+                className="text-body-large text-dropdown-title placeholder:text-dropdown-supporting"
               />
             </FieldContextReset>
           </DropdownMenuSearch>
@@ -106,7 +110,8 @@ function CatalogMultiSelectFilter({
               <DropdownMenuCheckboxItem
                 key={option.value}
                 checked={selectedValues.includes(option.value)}
-                size="default"
+                size="compact"
+                className="whitespace-nowrap"
                 onCheckedChange={(checked, eventDetails) => {
                   eventDetails.cancel();
                   onSelectedValuesChange(

@@ -79,7 +79,7 @@ describe("ProjectEditor", () => {
     expect((host.querySelector('button[type="submit"]') as HTMLButtonElement).disabled).toBe(true);
   });
   it("does not submit an incomplete new project and explains required fields", async () => {
-    const save = await render(undefined,false);
+    const save = await render(undefined,false,null);
     await submit();
     expect(save).not.toHaveBeenCalled();
     expect(host.textContent).toContain("projects.editor.requiredHint");
@@ -106,8 +106,9 @@ describe("ProjectEditor", () => {
   });
   it("accepts an idea without progress or resources", async () => {
     const save = await render();
-    await input('#project-story > div:last-child textarea','');
-    expect((host.querySelector('#project-story > div:last-child textarea') as HTMLTextAreaElement).required).toBe(false);
+    const progress = () => Array.from(host.querySelectorAll('#project-story textarea')).at(-1) as HTMLTextAreaElement;
+    await act(async () => { Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(progress(), ''); progress().dispatchEvent(new Event('input', { bubbles: true })); });
+    expect(progress().required).toBe(false);
     expect(host.querySelector("aside")?.textContent).not.toContain("projects.editor.progress");
     await input('#project-links input[value="https://youtu.be/demo"]','');
     await submit();

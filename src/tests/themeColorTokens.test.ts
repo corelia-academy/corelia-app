@@ -26,6 +26,32 @@ function expectSingleDeclaration(rule: string, name: string, value: string) {
 }
 
 describe("semantic theme color tokens", () => {
+  it("defines Informative Icon colors separately in light and dark mode", () => {
+    const lightMode = readCssRule(":root")
+    const darkMode = readCssRule(".dark")
+    const informativeIconColors = [
+      ["informative-icon-error-surface", "error-400"],
+      ["informative-icon-error-content", "error-200"],
+      ["informative-icon-error-outline", "error-600"],
+      ["informative-icon-warning-surface", "warning-500"],
+      ["informative-icon-warning-content", "warning-200"],
+      ["informative-icon-warning-outline", "warning-600"],
+      ["informative-icon-success-surface", "success-500"],
+      ["informative-icon-success-content", "success-200"],
+      ["informative-icon-success-outline", "success-600"],
+      ["informative-icon-blue-surface", "accent-sky-500"],
+      ["informative-icon-blue-content", "accent-sky-200"],
+      ["informative-icon-blue-outline", "accent-sky-600"],
+    ] as const
+
+    for (const [name, paletteToken] of informativeIconColors) {
+      const value = `var(--${paletteToken})`
+
+      expectSingleDeclaration(lightMode, name, value)
+      expectSingleDeclaration(darkMode, name, value)
+    }
+  })
+
   it("defines every role explicitly in light and dark mode", () => {
     const lightMode = readCssRule(":root")
     const darkMode = readCssRule(".dark")

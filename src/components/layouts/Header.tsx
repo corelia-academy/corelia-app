@@ -753,6 +753,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                       label={item.label}
                       showActive={false}
                       showPressed
+                      className="min-h-[50px]"
                       render={<NavLink to={item.to} />}
                       nativeButton={false}
                       onPointerEnter={() => prefetchRouteChunk(item.to)}
@@ -766,6 +767,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                     type="button"
                     variant="destructive"
                     size="small"
+                    className="min-h-[50px]"
                     icon={<LogOut aria-hidden />}
                     label={t("tabs.signOut")}
                     isActive={false}
