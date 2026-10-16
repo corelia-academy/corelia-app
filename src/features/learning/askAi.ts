@@ -4,8 +4,8 @@ import type { CourseLesson } from "@/types/courses";
 
 export type AskAiTarget = "chatgpt" | "claude" | "gemini" | "copy";
 
-/** Lesson formats whose body is teaching material. Quizzes, practice and the final assignment are assessments and never leave the app. */
-const ASKABLE_FORMATS = new Set(["article", "video", "code_exercise"]);
+/** Lesson formats whose body is teaching material. Quizzes and the final assignment are assessments and never leave the app; practice has no answer key. */
+const ASKABLE_FORMATS = new Set(["article", "video", "code_exercise", "practice"]);
 
 /** Prefilled URLs have practical length limits, so they carry a shorter excerpt than the clipboard. */
 export const ASK_AI_URL_CONTENT_LIMIT = 1500;
@@ -18,11 +18,29 @@ const TARGET_URLS: Record<Exclude<AskAiTarget, "copy">, string> = {
   gemini: "https://gemini.google.com/app",
 };
 
+function practiceStepsForAi(lesson: CourseLesson): string {
+  const config = lesson.practice_config;
+  if (!config) return "";
+  if (config.mode === "checklist") {
+    return (config.checklist_items ?? []).map(item => `- ${lessonText(item.label)}`).join("\n");
+  }
+  if (config.mode === "guided_project") {
+    return [...config.project_steps ?? []]
+      .sort((a, b) => a.order - b.order)
+      .map((step, i) => [`${i + 1}. ${lessonText(step.title)}`, lessonText(step.instructions_markdown).trim()].filter(Boolean).join("\n"))
+      .join("\n");
+  }
+  return "";
+}
+
 export function lessonBodyForAi(lesson: CourseLesson): string {
-  const body = getLessonFormat(lesson) === "code_exercise"
+  const format = getLessonFormat(lesson);
+  const body = format === "code_exercise"
     ? lesson.code_exercise_locale?.instructions ?? lesson.description_markdown
     : lesson.description_markdown;
-  return lessonText(body).trim();
+  const text = lessonText(body).trim();
+  if (format !== "practice") return text;
+  return [text, practiceStepsForAi(lesson)].filter(Boolean).join("\n\n");
 }
 
 export function canAskAboutLesson(lesson: CourseLesson | null): lesson is CourseLesson {
