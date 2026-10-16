@@ -738,8 +738,8 @@
           "detail": "+10 XP/eligible lesson · once"
         },
         "quiz": {
-          "title": "Pass a quiz",
-          "detail": "Score ≥80%: +20 XP and +10 lesson XP"
+          "title": "Complete a quiz",
+          "detail": "+30 XP/completed quiz · once"
         },
         "course": {
           "title": "Complete a course",

@@ -738,8 +738,8 @@
           "detail": "+10 XP/bài hợp lệ · 1 lần"
         },
         "quiz": {
-          "title": "Vượt qua quiz",
-          "detail": "Đạt ≥80%: +20 XP và +10 XP bài học"
+          "title": "Hoàn thành quiz",
+          "detail": "+30 XP/quiz hoàn thành · 1 lần"
         },
         "course": {
           "title": "Hoàn thành khóa",
