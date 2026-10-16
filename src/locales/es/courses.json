@@ -501,6 +501,15 @@
     "retry": "Reintentar",
     "source": "Código fuente",
     "unavailable": "Lección no disponible.",
+    "askAi": {
+      "trigger": "Preguntar a la IA",
+      "chatgpt": "Preguntar a ChatGPT",
+      "claude": "Preguntar a Claude",
+      "gemini": "Preguntar a Gemini (copia el prompt)",
+      "copy": "Copiar prompt",
+      "copied": "Prompt copiado. Pégalo en tu herramienta de IA.",
+      "copyFailed": "No se pudo copiar el prompt."
+    },
     "systemError": "No se pudo guardar el resultado. Tu trabajo se conserva; inténtalo de nuevo.",
     "checking": "Comprobando…",
     "checkCode": "Comprobar código",

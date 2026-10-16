@@ -483,6 +483,15 @@
     "retry": "再試行",
     "source": "ソースコード",
     "unavailable": "レッスンは利用できません。",
+    "askAi": {
+      "trigger": "AI に質問",
+      "chatgpt": "ChatGPT に質問",
+      "claude": "Claude に質問",
+      "gemini": "Gemini に質問（プロンプトをコピー）",
+      "copy": "プロンプトをコピー",
+      "copied": "プロンプトをコピーしました。AI ツールに貼り付けてください。",
+      "copyFailed": "プロンプトをコピーできませんでした。"
+    },
     "systemError": "結果を保存できませんでした。作業内容は保持されていますので、もう一度お試しください。",
     "checking": "確認中…",
     "checkCode": "コードを確認",

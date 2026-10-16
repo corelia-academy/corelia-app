@@ -483,6 +483,15 @@
     "retry": "重試",
     "source": "原始碼",
     "unavailable": "單元不可用。",
+    "askAi": {
+      "trigger": "詢問 AI",
+      "chatgpt": "詢問 ChatGPT",
+      "claude": "詢問 Claude",
+      "gemini": "詢問 Gemini（複製提示詞）",
+      "copy": "複製提示詞",
+      "copied": "提示詞已複製，請貼到你的 AI 工具中。",
+      "copyFailed": "無法複製提示詞。"
+    },
     "systemError": "無法儲存結果。您的作品已保留，請再試一次。",
     "checking": "檢查中…",
     "checkCode": "檢查程式碼",
