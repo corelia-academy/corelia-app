@@ -148,3 +148,28 @@ describe("isStaleChunkLoadError", () => {
     expect(isStaleChunkLoadError(new Error("Profile request failed"))).toBe(false);
   });
 });
+
+import { reloadOnceForStaleChunk } from "@/lib/staleChunkRecovery";
+
+describe("reloadOnceForStaleChunk", () => {
+  const memory = () => {
+    const data = new Map<string, string>();
+    return { getItem: (k: string) => data.get(k) ?? null, setItem: (k: string, v: string) => void data.set(k, v) };
+  };
+
+  it("reloads once, then respects the cooldown", () => {
+    const storage = memory();
+    const reload = vi.fn();
+    expect(reloadOnceForStaleChunk({ storage, reload, now: () => 1000 })).toBe(true);
+    expect(reloadOnceForStaleChunk({ storage, reload, now: () => 1000 + STALE_CHUNK_RELOAD_COOLDOWN_MS - 1 })).toBe(false);
+    expect(reloadOnceForStaleChunk({ storage, reload, now: () => 1000 + STALE_CHUNK_RELOAD_COOLDOWN_MS })).toBe(true);
+    expect(reload).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not reload when storage is unavailable", () => {
+    const storage = { getItem: () => { throw new Error("blocked"); }, setItem: () => undefined };
+    const reload = vi.fn();
+    expect(reloadOnceForStaleChunk({ storage, reload })).toBe(false);
+    expect(reload).not.toHaveBeenCalled();
+  });
+});

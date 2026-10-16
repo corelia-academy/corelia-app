@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { LoadingBar } from "@/components/ui/LoadingBar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
 import { AppShellSkeleton } from "@/components/loading/AppShellSkeleton";
 import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
@@ -220,7 +221,7 @@ export default function App() {
 function ApplicationRouter() {
   const [router] = useState(() => {
     const instance = createBrowserRouter([
-      { path: "*", element: <ApplicationRoutes /> },
+      { path: "*", element: <ApplicationRoutes />, errorElement: <RouteErrorBoundary /> },
     ]);
     // Subscribed before RouterProvider, so the flag is set before the next route renders.
     const initialKey = instance.state.location.key;
