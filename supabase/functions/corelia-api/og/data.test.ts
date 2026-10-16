@@ -62,7 +62,7 @@ describe("public OG DTO", () => {
       document: { slug: "hackathon", title: "Cuộc thi", host: { name: "Corelia" },
         starts_at: "2026-09-23T18:30:00Z", ends_at: "2026-09-25T10:00:00Z" } };
     const card = await loadOgCard(database({ hackathons: event }), "hackathon", "hackathon");
-    expect(card?.dateLabel).toBe("24/09/2026 – 25/09/2026");
+    expect(card?.dateLabel).toBe("Sep 24, 2026 – Sep 25, 2026");
     expect(await loadOgCard(database({ hackathons: { ...event, status: "draft" } }), "hackathon", "hackathon")).toBeNull();
   });
 
