@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeContentLocale, pickContentLocale } from "./entityLocales";
+import { getSupportedContentLocales, normalizeContentLocale, pickContentLocale } from "./entityLocales";
 
 describe("public content language negotiation", () => {
   it.each(["en", "en-US", "en_GB", " EN-us "])("normalizes %s", input => expect(normalizeContentLocale(input)).toBe("en"));
@@ -13,5 +13,10 @@ describe("public content language negotiation", () => {
   });
   it("respects a content item's supported languages", () => {
     expect(pickContentLocale({ primary_content_locale: "vi", supported_locales: ["vi"] }, "en-US")).toBe("vi");
+  });
+  it("falls back to the primary locale alone when no supported list is stored", () => {
+    expect(getSupportedContentLocales({ primary_content_locale: "ja" })).toEqual(["ja"]);
+    expect(getSupportedContentLocales(null)).toEqual(["vi"]);
+    expect(pickContentLocale({ primary_content_locale: "ko" }, "en")).toBe("ko");
   });
 });
