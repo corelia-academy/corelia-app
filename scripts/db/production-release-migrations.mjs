@@ -140,16 +140,19 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20261013004846_notification_preferences_insert_rls.sql",
   "supabase/migrations/20261015061354_search_public_unaccent_project_href.sql",
   "supabase/migrations/20261015183608_expand_content_locales.sql",
+  "supabase/migrations/20261016002456_project_supported_locales_follow_primary.sql",
+  "supabase/migrations/20261016002746_rls_initplan_and_hot_fk_indexes.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production ledger is verified through the search_public migration.
-// Only the Staging-validated content-locale expansion migration is pending.
+// Production ledger is verified through the content-locale expansion migration.
+// Only the Staging-validated supported-locales and RLS initplan/index migrations are pending.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20261015183608",
+  "20261016002456",
+  "20261016002746",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
