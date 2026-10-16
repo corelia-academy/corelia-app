@@ -99,13 +99,19 @@ describe("Action", () => {
 
     expect(defaultLarge).toContain('data-variant="default"');
     expect(defaultLarge).toContain('data-size="large"');
-    expect(defaultLarge).toContain("min-h-[60px]");
+    expect(defaultLarge).toContain("px-lg");
+    expect(defaultLarge).toContain("py-2md");
+    expect(defaultLarge).toContain("text-label-large");
     expect(defaultLarge).toContain("leading-[22px]");
+    expect(defaultLarge).not.toContain("min-h-[60px]");
 
     expect(destructiveSmall).toContain('data-variant="destructive"');
     expect(destructiveSmall).toContain('data-size="small"');
-    expect(destructiveSmall).toContain("min-h-[48px]");
+    expect(destructiveSmall).toContain("px-2md");
+    expect(destructiveSmall).toContain("py-md");
+    expect(destructiveSmall).toContain("text-label-medium");
     expect(destructiveSmall).toContain("leading-5");
+    expect(destructiveSmall).not.toContain("min-h-[48px]");
   });
 
   it("keeps the active color when the active state is hovered", () => {

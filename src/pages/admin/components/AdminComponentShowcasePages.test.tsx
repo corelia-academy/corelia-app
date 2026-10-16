@@ -83,6 +83,40 @@ describe("admin component detail pages", () => {
     container.remove();
   });
 
+  it("shows rounded solid and dashed frame examples on the separator page", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <AdminSeparatorComponentPage />
+        </MemoryRouter>,
+      );
+    });
+
+    const frames = [
+      ...container.querySelectorAll<HTMLElement>('[data-slot="separator"]'),
+    ].filter((separator) => separator.classList.contains("rounded-lg"));
+
+    expect(frames).toHaveLength(3);
+    expect(frames.map((frame) => frame.classList.contains("border-dashed"))).toEqual([
+      false,
+      true,
+      true,
+    ]);
+    expect(frames.map((frame) => frame.getAttribute("data-dash-pattern"))).toEqual([
+      null,
+      "4 3",
+      "8 6",
+    ]);
+    expect(frames.every((frame) => frame.getAttribute("aria-hidden") === "true")).toBe(true);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
   it("renders only the full-page empty-state component", async () => {
     const container = document.createElement("div");
     document.body.appendChild(container);

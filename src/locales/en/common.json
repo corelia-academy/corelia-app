@@ -382,7 +382,9 @@
       "videoUrl": "Demo video URL",
       "logo": "Project logo",
       "logoHint": "PNG, JPEG, or WebP; up to 2 MB. The image is moderated before upload.",
+      "submissionLogoHint": "PNG, JPEG, or WebP. The image will be moderated when uploaded.",
       "chooseLogo": "Choose logo",
+      "uploadLogo": "Upload",
       "screenshots": "Project screenshots",
       "screenshotsHint": "Up to 6 images, 5 MB each. You can reorder them.",
       "addScreenshots": "Add images",
@@ -522,6 +524,22 @@
       "team": "Your team",
       "sections": "Project sections",
       "checklist": "Ready to share?",
+      "submissionTitle": "Project information",
+      "submissionHint": "Please provide the required information.",
+      "requiredInformation": "Required information",
+      "submissionStory": "Story",
+      "submissionCharacterLimit": "{{count}}/{{limit}}",
+      "submissionProjectTitle": "Project title",
+      "submissionTitlePlaceholder": "e.g. Corelia Chatbot",
+      "submissionSlugPlaceholder": "e.g. demo-seed-20261008-future-skillbridge",
+      "submissionSlugHint": "Link to your project",
+      "submissionDescription": "Project details",
+      "submissionProgress": "Share how you built this project",
+      "submissionTextPlaceholder": "Describe your project...",
+      "submissionPreviewImages": "Preview images",
+      "submissionOptionalClassifications": "Additional classifications",
+      "submissionOptionalClassificationsHint": "Engineering areas and technologies are optional.",
+      "submissionSaveHint": "After you save, the contest organizers will receive the latest update to your project.",
       "complete": "Complete",
       "missing": "Required",
       "publicHint": "Hackathon projects are public and linked to this event. After the deadline, editing depends on the event settings.",
@@ -1189,143 +1207,6 @@
     "title": "You just received your credentials!",
     "body": "The credentials granted to your email are now saved to your Corelia account.",
     "cta": "View my credentials"
-  },
-  "componentShowcase": {
-    "xpRank": {
-      "title": "XP rank badges",
-      "criterion": "All six ranks at 80, 160, and 200 px; ranks without artwork use the question-mark badge.",
-      "description": "Compare badge artwork by rank and size.",
-      "combinationsTitle": "All rank and size combinations",
-      "tableLabel": "XP badges by rank and size",
-      "rank": "Rank",
-      "sizes": {
-        "small": "Small · 80 px",
-        "medium": "Medium · 160 px",
-        "large": "Large · 200 px"
-      }
-    },
-    "fullPageEmptyState": {
-      "title": "Full Page Empty State"
-    },
-    "progress": {
-      "title": "Progress",
-      "criterion": "Figma sizes, progress levels, and color models for progress bars and circles.",
-      "description": "Compare the exact bar and circle sizes, states, and colors from Figma.",
-      "standardTitle": "Standard progress bars",
-      "standardCriterion": "376 × 20 px component with a 328 × 8 px track.",
-      "liveTitle": "Hands-on progress demo",
-      "liveCriterion": "Use −/+ or enter a percentage. Exactly 100% completes the circles; values above 100% mark them failed.",
-      "liveRangeLabel": "Adjust progress percentage",
-      "liveDecrease": "Decrease progress by 1%",
-      "liveIncrease": "Increase progress by 1%",
-      "liveInputLabel": "Progress percentage",
-      "liveOverrunHint": "Bars stay full above 100%; circles show a failure mark.",
-      "liveValue": "{{percentage}}%",
-      "liveBarSample": "{{theme}} · {{percentage}}%",
-      "compactTitle": "Compact lesson progress",
-      "compactCriterion": "252 × 15 px component with a 210 × 4 px track.",
-      "circleTitle": "Progress circles",
-      "circleCriterion": "24 × 24 px; each percentage follows its Figma color variant.",
-      "label": "Label",
-      "noFill": "No fill",
-      "barSample": "{{theme}} · {{level}} · {{percentage}}% · {{color}}",
-      "circleSample": "{{state}} · {{percentage}}%{{colorText}}",
-      "defaultValue": "Default",
-      "theme": {
-        "neutral": "Neutral",
-        "accent": "Accent",
-        "status": "Status"
-      },
-      "level": {
-        "none": "None",
-        "low": "Low",
-        "medium": "Medium",
-        "good": "Good",
-        "done": "Done"
-      },
-      "circleState": {
-        "notStarted": "Not started",
-        "failed": "Failed",
-        "neutralProgress": "In progress · neutral",
-        "coloredProgress": "In progress · colored",
-        "done": "Done"
-      }
-    },
-    "tooltip": {
-      "title": "Tooltip",
-      "criterion": "All nine Figma arrow placements with and without supporting text; callers provide the message content.",
-      "description": "Compare all 18 arrow and supporting-text variants from Figma.",
-      "withoutSupportingText": "Without supporting text",
-      "withSupportingText": "With supporting text",
-      "sampleTitle": "This is a tooltip",
-      "sampleSupportingText": "Tooltips explain the meaning or function of an element without adding permanent text to the page.",
-      "arrows": {
-        "none": "No arrow",
-        "bottomCenter": "Bottom center",
-        "bottomLeft": "Bottom left",
-        "bottomRight": "Bottom right",
-        "topCenter": "Top center",
-        "topLeft": "Top left",
-        "topRight": "Top right",
-        "left": "Left",
-        "right": "Right"
-      }
-    },
-    "stepper": {
-      "title": "Stepper",
-      "criterion": "Horizontal and vertical progress tracking; the consuming page supplies each step state.",
-      "description": "A visual progress tracker. The parent page controls step state and decides when the flow moves.",
-      "liveTitle": "Interactive, parent-controlled flow",
-      "liveCriterion": "Use Previous and Next to see the parent page update the step states.",
-      "orientationLabel": "Orientation",
-      "orientation": {
-        "horizontal": "Horizontal",
-        "vertical": "Vertical"
-      },
-      "styleLabel": "Marker style",
-      "style": {
-        "text": "Numbers",
-        "icon": "Icons"
-      },
-      "steps": {
-        "account": "Account",
-        "accountCaption": "Required details",
-        "profile": "Profile",
-        "profileCaption": "Your information",
-        "review": "Review",
-        "reviewCaption": "Confirm details"
-      },
-      "state": {
-        "default": "Not started",
-        "focused": "Current step",
-        "passed": "Complete",
-        "error": "Needs attention"
-      },
-      "liveAccessibleLabel": "Account setup progress",
-      "currentStep": "Step {{current}} of {{total}}",
-      "previous": "Previous",
-      "next": "Next",
-      "parentOwnsState": "The page decides each step state and when to move; Stepper only displays the supplied state.",
-      "statesTitle": "Figma state and layout comparison",
-      "statesCriterion": "Compare all four states in both orientations and marker styles.",
-      "statesAccessibleLabel": "Stepper state examples",
-      "samples": {
-        "waiting": "Waiting",
-        "current": "In progress",
-        "complete": "Complete",
-        "problem": "Needs attention",
-        "optional": "Not started",
-        "inProgress": "Current step",
-        "done": "Finished",
-        "checkDetails": "Review the details"
-      },
-      "configuration": {
-        "horizontal": "{{style}} style · horizontal",
-        "vertical": "{{style}} style · vertical"
-      },
-      "usageTitle": "Controlled usage example",
-      "usageCriterion": "The page derives each state from its own current-step value and passes the result into Stepper."
-    }
   },
   "maintenance": {
     "title": "System under maintenance",

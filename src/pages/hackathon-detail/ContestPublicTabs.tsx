@@ -67,7 +67,7 @@ function HackathonProjectSidebar() {
 
   return (
     <div className="min-w-0 space-y-0 xl:sticky xl:top-6 xl:z-40 xl:self-start">
-      <aside data-hackathon-card className="min-w-0 flex flex-col gap-5 rounded-2xl border border-border bg-surface-base p-5 xl:px-4 xl:py-3">
+      <aside data-hackathon-card className="min-w-0 flex flex-col gap-5 rounded-2xl border border-border bg-surface-base p-lg">
         <div className="flex flex-col gap-2">
           <h2 data-hackathon-card-title className="font-display text-base font-medium leading-6 tracking-[-0.32px] text-foreground">{t("public.myProject.title")}</h2>
           <Separator />
@@ -75,7 +75,7 @@ function HackathonProjectSidebar() {
         {!registration ? (
           <div className="space-y-5">
             <p className="text-sm leading-6 text-foreground-muted xl:leading-[1.4] xl:tracking-[0.28px]">{t("public.myProject.registerRequiredDescription")}</p>
-            <Button type="button" variant="cta" hierarchy="secondary" size="small" data-hackathon-control className="w-full rounded-lg" disabled>{t("public.myProject.registerRequired")}</Button>
+            <Button type="button" variant="cta" hierarchy="primary" size="small" data-hackathon-control className="w-full rounded-lg capitalize" disabled>{t("public.myProject.create")}</Button>
           </div>
         ) : submissionLoading ? (
           <div className="space-y-3" aria-busy="true" aria-label={t("public.myProject.loading")}>
@@ -99,8 +99,7 @@ function HackathonProjectSidebar() {
         )}
       </aside>
       {contest.slug && contest.status !== "draft" ? (
-        <div className="mx-4 sm:mx-0">
-          <Separator className="my-6" />
+        <div className="mt-6 mx-4 sm:mx-0">
           <ContestPreparationCard contest={contest} />
         </div>
       ) : null}
@@ -204,12 +203,27 @@ export function HackathonTimelineTab() {
     const [date = "", time = ""] = formatVietnamDateTime(value, locale, { includeTimezone: false }).split(" · ");
     return [date, time];
   };
+  const now = Date.now();
   const steps = timeline.map((item) => {
     const [startDate, startTime] = getDateTimeParts(item.starts_at);
     const [endDate, endTime] = item.ends_at ? getDateTimeParts(item.ends_at) : ["", ""];
+    const startTimeMs = Number.isFinite(new Date(item.starts_at).getTime())
+      ? new Date(item.starts_at).getTime()
+      : 0;
+    const endTimeMs = item.ends_at && Number.isFinite(new Date(item.ends_at).getTime())
+      ? new Date(item.ends_at).getTime()
+      : startTimeMs;
+
+    let state: "Default" | "Focused" | "Passed" = "Default";
+    if (now > endTimeMs) {
+      state = "Passed";
+    } else if (now >= startTimeMs && now <= endTimeMs) {
+      state = "Focused";
+    }
+
     return {
       id: item.id,
-      state: "Default" as const,
+      state,
       title: (
         <div className="flex flex-col gap-[6px]">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-normal leading-[1.4] tracking-[0.28px] text-foreground-subtle">
@@ -230,7 +244,7 @@ export function HackathonTimelineTab() {
         <Stepper
           aria-label={t("detail.sections.timeline")}
           orientation="Vertical"
-          markerStyle="Icon"
+          markerStyle="Text"
           animated={false}
           steps={steps}
           className="mt-6 [&>li]:min-h-[120px] [&>li]:items-stretch [&_[data-slot=stepper-track]]:h-auto [&_[data-slot=stepper-track]]:min-h-[120px] [&_[data-slot=stepper-content]]:flex [&_[data-slot=stepper-content]]:flex-col [&_[data-slot=stepper-content]]:justify-center [&_[data-slot=stepper-content]>div:first-child]:overflow-visible [&_[data-slot=stepper-content]>div:first-child]:whitespace-normal"

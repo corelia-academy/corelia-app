@@ -35,7 +35,7 @@ type CatalogSort = "newest" | "oldest" | "deadlineSoonest";
 
 function CatalogGridSkeleton() {
   return <>{Array.from({ length: 3 }).map((_, index) => (
-    <div key={index} className="grid min-h-[202px] overflow-hidden rounded-xl border border-border xl:h-[202px] xl:grid-rows-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_352px] xl:gap-x-20">
+    <div key={index} className="grid min-h-[202px] overflow-hidden rounded-xl border border-border xl:grid-rows-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_352px] xl:gap-x-[clamp(2.75rem,calc(20.5cqi_-_139.6px),5rem)]">
       <div className="space-y-4 p-6">
         <Skeleton className="h-7 w-3/4" />
         <Skeleton className="h-10 w-full" />
@@ -148,10 +148,10 @@ export default function Contests() {
           event.preventDefault();
           toast.error(t("catalog.missingSlug"));
         }}
-        className="motion-hover-card group block min-w-0 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="motion-hover-card group block min-w-0 @container rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         aria-label={`${t("catalog.viewContest")}: ${contest.title}`}
       >
-        <article className="grid min-h-[202px] overflow-hidden rounded-md border border-border bg-surface-base transition-shadow duration-200 group-hover:shadow-md xl:h-[202px] xl:grid-rows-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_352px] xl:gap-x-20">
+        <article className="grid min-h-[202px] overflow-hidden rounded-md border border-border bg-surface-base transition-shadow duration-200 group-hover:shadow-md xl:grid-rows-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_352px] xl:gap-x-[clamp(2.75rem,calc(20.5cqi_-_139.6px),5rem)]">
           <div className="order-2 flex min-w-0 flex-col px-3xl py-2xl xl:order-none">
             <h3 className="line-clamp-1 text-heading-medium font-display text-foreground">
               {contest.title}
@@ -355,7 +355,7 @@ export default function Contests() {
         ) : null}
 
         <div
-          className={`mobile-bleed-grid grid gap-4 sm:gap-6 ${showSearchEmpty ? "flex-1" : ""
+          className={`mobile-bleed-grid grid gap-4 sm:gap-6 @container ${showSearchEmpty ? "flex-1" : ""
             }`}
           aria-busy={loading}
           aria-live={

@@ -8,7 +8,6 @@ import {
 } from "react";
 import { gsap } from "gsap";
 import { useTheme } from "next-themes";
-import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 
 import AdminActionComponentPage from "./components/AdminActionComponentPage";
@@ -106,8 +105,8 @@ const components = [
   },
   {
     slug: "xp-rank",
-    title: "XP Rank",
-    criterion: "All six ranks at 80, 160, and 200 px sizes.",
+    title: "XP rank badges",
+    criterion: "All six ranks at 80, 160, and 200 px; ranks without artwork use the question-mark badge.",
   },
   {
     slug: "full-page-empty-state",
@@ -121,12 +120,12 @@ const components = [
   {
     slug: "tooltip",
     title: "Tooltip",
-    criterion: "All nine Figma arrow placements with and without supporting text.",
+    criterion: "All nine Figma arrow placements with and without supporting text; callers provide the message content.",
   },
   {
     slug: "stepper",
     title: "Stepper",
-    criterion: "Horizontal and vertical step states; the consuming page controls state and transitions.",
+    criterion: "Horizontal and vertical progress tracking; the consuming page supplies each step state.",
   },
 ] as const;
 
@@ -175,7 +174,6 @@ function scrollToComponent(slug: ComponentSlug) {
 }
 
 export default function AdminComponentsPage() {
-  const { t } = useTranslation("common");
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { resolvedTheme, setTheme } = useTheme();
@@ -569,27 +567,19 @@ export default function AdminComponentsPage() {
               <ComponentSection {...components[12]}>
                 <AdminEmptyStateIllustrationComponentPage embedded />
               </ComponentSection>
-              <ComponentSection {...components[13]} title={t("componentShowcase.progress.title")} criterion={t("componentShowcase.progress.criterion")}>
+              <ComponentSection {...components[13]}>
                 <AdminProgressComponentPage embedded />
               </ComponentSection>
-              <ComponentSection {...components[14]} title={t("componentShowcase.xpRank.title")} criterion={t("componentShowcase.xpRank.criterion")}>
+              <ComponentSection {...components[14]}>
                 <AdminXpRankComponentPage embedded />
               </ComponentSection>
               <ComponentSection {...components[16]}>
                 <AdminTimestampComponentPage embedded />
               </ComponentSection>
-              <ComponentSection
-                {...components[17]}
-                title={t("componentShowcase.tooltip.title")}
-                criterion={t("componentShowcase.tooltip.criterion")}
-              >
+              <ComponentSection {...components[17]}>
                 <AdminTooltipComponentPage embedded />
               </ComponentSection>
-              <ComponentSection
-                {...components[18]}
-                title={t("componentShowcase.stepper.title")}
-                criterion={t("componentShowcase.stepper.criterion")}
-              >
+              <ComponentSection {...components[18]}>
                 <AdminStepperComponentPage embedded />
               </ComponentSection>
             </>

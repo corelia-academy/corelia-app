@@ -106,6 +106,8 @@ export default function AppSidebar({
   const { resolvedTheme } = useTheme();
   const location = useLocation();
   const pathname = location.pathname;
+  const isContestSubmissionRoute = pathname === "/projects/new"
+    && Boolean(new URLSearchParams(location.search).get("hackathon"));
   const locale = i18n.resolvedLanguage ?? i18n.language;
 
   const prefetchPrimaryRoute = async (href: string) => {
@@ -212,8 +214,9 @@ export default function AppSidebar({
               <SidebarMenu className="gap-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
-                  const isActive =
-                    item.href === "/"
+                  const isActive = isContestSubmissionRoute
+                    ? item.href === "/hackathons"
+                    : item.href === "/"
                       ? pathname === "/"
                       : pathname.startsWith(item.href);
                   return (

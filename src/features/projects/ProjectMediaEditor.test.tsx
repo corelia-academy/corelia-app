@@ -11,14 +11,14 @@ import { ProjectMediaEditor, type ProjectMediaItem } from "./ProjectMediaEditor"
 let host: HTMLDivElement;
 let root: Root;
 let changed: ReturnType<typeof vi.fn>;
-function Harness({ initial=[] }: { initial?: ProjectMediaItem[] }) {
+function Harness({ initial=[], presentation="default" }: { initial?: ProjectMediaItem[]; presentation?: "default" | "submission" }) {
   const [screenshots,setScreenshots] = useState(initial);
   const [logo,setLogo] = useState<ProjectMediaItem|null>(null);
-  return <ProjectMediaEditor projectId="project" logo={logo} onLogoChange={setLogo} screenshots={screenshots} onScreenshotsChange={value=>{setScreenshots(value);changed(value);}} deleteOnRemove={false} />;
+  return <ProjectMediaEditor projectId="project" logo={logo} onLogoChange={setLogo} screenshots={screenshots} onScreenshotsChange={value=>{setScreenshots(value);changed(value);}} deleteOnRemove={false} presentation={presentation} />;
 }
-async function mount(initial?: ProjectMediaItem[]) {
+async function mount(initial?: ProjectMediaItem[], presentation?: "default" | "submission") {
   host=document.createElement('div');document.body.appendChild(host);root=createRoot(host);
-  await act(async()=>root.render(<Harness initial={initial} />));
+  await act(async()=>root.render(<Harness initial={initial} presentation={presentation} />));
 }
 async function choose(files: File[], screenshots=false) {
   const input=host.querySelector(screenshots?'input[multiple]':'input:not([multiple])') as HTMLInputElement;
@@ -28,6 +28,13 @@ async function choose(files: File[], screenshots=false) {
 beforeEach(()=>{vi.clearAllMocks();changed=vi.fn();mocks.upload.mockImplementation(async (_id:string,_kind:string,file:File)=>({path:file.name,signed_url:`https://example.com/${file.name}`}));});
 afterEach(async()=>{if(root) await act(async()=>root.unmount());host?.remove();});
 describe('ProjectMediaEditor',()=>{
+  it('uses the configured dashed frame for both submission image placeholders',async()=>{
+    await mount(undefined, 'submission');
+    const frames = [...host.querySelectorAll<HTMLElement>('[data-slot="separator"]')];
+
+    expect(frames).toHaveLength(2);
+    expect(frames.map(frame => frame.getAttribute('data-dash-pattern'))).toEqual(['6 4', '6 4']);
+  });
   it('rejects unsupported, empty and oversized logos before calling the server',async()=>{
     await mount();
     await choose([new File(['x'],'test.txt',{type:'text/plain'})]);
