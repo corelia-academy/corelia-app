@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { PageContainer, PageSectionCard } from "@/components/layouts/PagePrimitives";
 
 import { useInstructorCourseNewForm } from "./hooks/useInstructorCourseNewForm";
+import { CONTENT_LOCALES, LOCALE_META } from "@/lib/locales";
 
 export default function InstructorCourseNewPage() {
   const {
@@ -207,7 +208,7 @@ export default function InstructorCourseNewPage() {
                 <Field>
                   <FieldLabel>{t("courseNew.labels.contentLocales" as never)}</FieldLabel>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {(["vi", "en"] as const).map((loc) => {
+                    {CONTENT_LOCALES.map((loc) => {
                       const enabled = form.supported_locales.includes(loc);
                       return (
                         <button
@@ -233,7 +234,7 @@ export default function InstructorCourseNewPage() {
                               : "border-border-subtle bg-surface-base text-foreground-muted"
                           }`}
                         >
-                          {loc.toUpperCase()}
+                          <span lang={loc}>{LOCALE_META[loc].endonym}</span>
                         </button>
                       );
                     })}
@@ -256,7 +257,7 @@ export default function InstructorCourseNewPage() {
                   >
                     {form.supported_locales.map((loc) => (
                       <option key={loc} value={loc}>
-                        {loc.toUpperCase()}
+                        {LOCALE_META[loc].endonym}
                       </option>
                     ))}
                   </select>
@@ -273,9 +274,9 @@ export default function InstructorCourseNewPage() {
                     }
                     className="w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                   >
-                    {(["vi", "en"] as const).map((loc) => (
+                    {CONTENT_LOCALES.map((loc) => (
                       <option key={loc} value={loc}>
-                        {loc.toUpperCase()}
+                        {LOCALE_META[loc].endonym}
                       </option>
                     ))}
                   </select>

@@ -73,8 +73,13 @@
   },
   "language": {
     "switchLabel": "Đổi ngôn ngữ",
+    "en": "English",
+    "zh-CN": "简体中文",
+    "ko": "한국어",
+    "es": "Español",
+    "zh-TW": "繁體中文",
     "vi": "Tiếng Việt",
-    "en": "English"
+    "ja": "日本語"
   },
   "cropper": {
     "title": "Cắt ảnh tỷ lệ 1:1 (Hình vuông)",
@@ -767,8 +772,8 @@
           "detail": "+10 XP/bài hợp lệ · 1 lần"
         },
         "quiz": {
-          "title": "Vượt qua quiz",
-          "detail": "Đạt ≥80%: +20 XP và +10 XP bài học"
+          "title": "Hoàn thành quiz",
+          "detail": "+30 XP/quiz hoàn thành · 1 lần"
         },
         "course": {
           "title": "Hoàn thành khóa",
@@ -871,7 +876,8 @@
       "startFromCatalogTitle": "Bạn chưa tham gia khoá học nào.",
       "startFromCatalogSubtitle": "Chọn một khoá học nền tảng để tạo nhịp học tập.",
       "enrollHint": "Khi bạn ghi danh hoặc mua khoá học đầu tiên, khu vực này sẽ hiện tiến độ và lối vào nhanh.",
-      "profileSetupHintPrefix": "Hãy cập nhật họ tên và số điện thoại để Corelia, giảng viên hoặc"
+      "profileSetupHintPrefix": "Hãy cập nhật họ tên và số điện thoại để Corelia, giảng viên hoặc",
+      "loadFailed": "Không thể tải danh sách khóa học."
     }
   },
   "achievements": {
@@ -1021,7 +1027,8 @@
     },
     "loadError": {
       "body": "Không thể làm mới thành tích. Hệ thống vẫn đang hiển thị trạng thái credential đã xác nhận gần nhất.",
-      "retry": "Thử lại"
+      "retry": "Thử lại",
+      "vaultUnavailable": "Chưa tải được thành tích. Hãy bấm Thử lại ở trên."
     },
     "stats": {
       "certificates": "Chứng nhận",

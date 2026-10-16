@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { gsap } from "gsap";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -20,6 +21,7 @@ import { BackLink } from "@/components/navigation/BackLink";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { Timestamp } from "@/components/ui/timestamp";
 import { TooltipPreview } from "@/components/ui/tooltip";
@@ -244,7 +246,10 @@ export default function ContestPublicLayout() {
     );
   }
 
-  const cta = previewRequested ? null : registration ? (
+  const cta = previewRequested ? null : registrationQuery.isLoading && canRegister ? (
+    // Hold the CTA until we know the user's registration, so "Register" never flashes for registrants.
+    <Skeleton className="h-11 w-full rounded-lg sm:w-28 lg:h-8" aria-hidden />
+  ) : registration ? (
     <Button
       type="button"
       size="small"
@@ -290,7 +295,7 @@ export default function ContestPublicLayout() {
         <header className="mobile-bleed-surface min-w-0">
           {contest.cover_image_url ? (
             <div className="aspect-[21/9] w-full overflow-hidden rounded-xl bg-surface-raised">
-              <img src={contest.cover_image_url} alt="" className="block h-full w-full rounded-xl object-cover" fetchPriority="high" />
+              <img src={optimizedImageUrl(contest.cover_image_url, { width: 1200 })} srcSet={optimizedImageSrcSet(contest.cover_image_url, 1200)} decoding="async" alt="" className="block h-full w-full rounded-xl object-cover" fetchPriority="high" />
             </div>
           ) : null}
 
@@ -316,7 +321,7 @@ export default function ContestPublicLayout() {
                       {contest.host?.name ? (
                         <span className="inline-flex min-w-0 items-center gap-1.5">
                           {contest.host.logo_url ? (
-                            <img src={contest.host.logo_url} alt="" className="size-6 shrink-0 rounded-full bg-white object-contain p-0.5" />
+                            <img src={optimizedImageUrl(contest.host.logo_url, { width: 24, resize: "contain" })} srcSet={optimizedImageSrcSet(contest.host.logo_url, 24, { resize: "contain" })} alt="" className="size-6 shrink-0 rounded-full bg-white object-contain p-0.5" />
                           ) : (
                             <Globe className="size-4 shrink-0" weight="duotone" aria-hidden />
                           )}

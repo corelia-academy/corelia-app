@@ -1,13 +1,14 @@
+import { normalizeLocale } from "@/lib/locales";
 import type { Locale } from "@/types/database";
 import type { EntityI18nConfig } from "@/types/entityLocales";
 
 export function normalizeContentLocale(input?: string | null): Locale {
-  return input?.trim().toLowerCase().split(/[-_]/)[0] === "en" ? "en" : "vi";
+  return normalizeLocale(input);
 }
 
 export function getSupportedContentLocales(config?: EntityI18nConfig | null): Locale[] {
   const list = config?.supported_locales;
-  const fallback: Locale[] = ["vi", "en"];
+  const fallback: Locale[] = [getPrimaryContentLocale(config)];
   const supported: Locale[] =
     Array.isArray(list) && list.length ? list.map(normalizeContentLocale) : fallback;
   return Array.from(new Set<Locale>(supported));

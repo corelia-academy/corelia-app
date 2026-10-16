@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from "node:fs";
-import { authNames, buildAuthTemplate, renderAuthFixture } from "./auth.mjs";
+import { authLocales, authNames, buildAuthTemplate, renderAuthFixture } from "./auth.mjs";
 import { renderEmailDocument } from "../../supabase/functions/corelia-api/lib/mail/document.ts";
 import { wrapBlastEmail } from "../../supabase/functions/corelia-api/lib/mail/layout.ts";
 import { buildCertificateIssuedEmail } from "../../supabase/functions/corelia-api/certificates/certificate_emails.ts";
@@ -30,17 +30,28 @@ function add(slug, group, title, result) {
 }
 
 for (const name of authNames) {
-  for (const locale of ["vi", "en"]) {
+  for (const locale of authLocales) {
     add(`auth-${name}-${locale}`, "Supabase Auth", `${name} · ${locale.toUpperCase()}`,
       renderAuthFixture(buildAuthTemplate(name), { ...fixture, locale }));
   }
 }
 
-for (const locale of ["vi", "en"]) {
+const previewCopy = {
+  en: { subject: "Build real-world products with Corelia", cta: "Start learning", blast: "A new update from Corelia Academy." },
+  vi: { subject: "Cùng xây dựng sản phẩm thực tế", cta: "Bắt đầu học", blast: "Thông báo mới từ Corelia Academy." },
+  "zh-CN": { subject: "与 Corelia 一起打造真实产品", cta: "开始学习", blast: "来自 Corelia Academy 的最新动态。" },
+  "zh-TW": { subject: "與 Corelia 一起打造真實產品", cta: "開始學習", blast: "來自 Corelia Academy 的最新動態。" },
+  ko: { subject: "Corelia와 함께 실제 제품을 만들어 보세요", cta: "학습 시작하기", blast: "Corelia Academy의 새로운 소식입니다." },
+  es: { subject: "Crea productos reales con Corelia", cta: "Empezar a aprender", blast: "Una novedad de Corelia Academy." },
+  ja: { subject: "Corelia と一緒に実際のプロダクトを作ろう", cta: "学習を始める", blast: "Corelia Academy からの新着のお知らせです。" },
+};
+
+for (const locale of authLocales) {
+  const copy = previewCopy[locale];
   add(`email-center-${locale}`, "Email Center", `Campaign · ${locale.toUpperCase()}`, renderEmailDocument({
-    subject: locale === "vi" ? "Cùng xây dựng sản phẩm thực tế" : "Build real-world products with Corelia",
+    subject: copy.subject,
     preheader: "Corelia Academy", bodyText: `${"Một nội dung dài để kiểm tra xuống dòng và khả năng đọc trên thiết bị nhỏ. ".repeat(4)}\n\nCorelia giúp bạn học qua dự án thực tế.`,
-    ctaLabel: locale === "vi" ? "Bắt đầu học" : "Start learning", ctaUrl: `${appUrl}/learn`,
+    ctaLabel: copy.cta, ctaUrl: `${appUrl}/learn`,
     imageUrl: `${appUrl}/Corelia_Banner_Square.png`, locale, purpose: "marketing", values: {}, unsubscribeUrl: `${appUrl}/unsubscribe`,
   }, { appUrl }, "preview"));
   add(`co-instructor-${locale}`, "Transactional", `Co-instructor · ${locale.toUpperCase()}`, buildCoInstructorInviteEmail({
@@ -69,7 +80,7 @@ for (const locale of ["vi", "en"]) {
   }));
   for (const kind of ["course", "hackathon"]) {
     add(`blast-${kind}-${locale}`, "Announcements", `${kind.replace("_", " ")} · ${locale.toUpperCase()}`, wrapBlastEmail({
-      kind, locale, bodyHtml: `<p>${locale === "vi" ? "Thông báo mới từ Corelia Academy." : "A new update from Corelia Academy."}</p>`, unsubUrl: `${appUrl}/settings`,
+      kind, locale, bodyHtml: `<p>${copy.blast}</p>`, unsubUrl: `${appUrl}/settings`,
     }));
   }
 }

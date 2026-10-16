@@ -1,0 +1,1340 @@
+{
+  "appName": "Corelia",
+  "pageTitles": {
+    "home": "首頁",
+    "login": "登入 / 註冊",
+    "confirmSignup": "確認註冊",
+    "signupVerified": "帳戶已驗證",
+    "resetPassword": "重設密碼",
+    "connectingAccount": "連結帳戶",
+    "unsubscribe": "取消訂閱郵件",
+    "claimCertificate": "領取證書",
+    "verifyCertificate": "驗證證書",
+    "learnCourse": "學習課程",
+    "learnLesson": "學習單元",
+    "finalAssignment": "結業作業",
+    "componentLibrary": "元件庫",
+    "feed": "動態",
+    "courses": "課程",
+    "courseDetail": "課程詳情",
+    "projectInvite": "專案邀請",
+    "coInstructorInvite": "共同講師邀請",
+    "instructorDetail": "講師詳情",
+    "achievements": "成就",
+    "hackathons": "黑客松",
+    "hackathonOverview": "黑客松概覽",
+    "hackathonPrizes": "獎項",
+    "hackathonTimeline": "時間軸",
+    "hackathonResources": "資源",
+    "hackathonProjects": "黑客松專案",
+    "projects": "專案",
+    "newProject": "建立專案",
+    "editProject": "編輯專案",
+    "projectDetail": "專案詳情",
+    "jobs": "職缺",
+    "savedJobs": "已收藏的職缺",
+    "appliedJobs": "已應徵的職缺",
+    "hiddenJobs": "已隱藏的職缺",
+    "jobMarket": "職缺市場",
+    "jobDetail": "職缺詳情",
+    "search": "搜尋",
+    "publicProfile": "公開資料",
+    "accountProfile": "資料",
+    "accountCv": "履歷",
+    "accountSettings": "設定",
+    "accountProjects": "我的專案",
+    "instructorProfile": "講師資料",
+    "users": "使用者",
+    "instructors": "講師",
+    "instructorReview": "講師審核",
+    "activityMilestones": "活動里程碑",
+    "manualMint": "頒發證書",
+    "branding": "品牌",
+    "manageHackathons": "管理黑客松",
+    "newHackathon": "建立黑客松",
+    "editHackathon": "編輯黑客松",
+    "manageProjects": "管理專案",
+    "manageJobs": "管理職缺",
+    "reviewJobs": "審核職缺",
+    "jobSources": "職缺來源",
+    "companies": "公司",
+    "crawlers": "職缺爬蟲",
+    "jobAnalytics": "職缺分析",
+    "emailCenter": "郵件中心",
+    "teaching": "教學",
+    "manageCourses": "管理課程",
+    "newCourse": "建立課程",
+    "previewCourse": "預覽課程",
+    "editCourse": "編輯課程",
+    "notFound": "找不到頁面",
+    "maintenance": "系統維護",
+    "applicationError": "應用程式錯誤",
+    "notifications": "通知"
+  },
+  "language": {
+    "switchLabel": "變更語言",
+    "en": "English",
+    "zh-CN": "简体中文",
+    "ko": "한국어",
+    "es": "Español",
+    "zh-TW": "繁體中文",
+    "vi": "Tiếng Việt",
+    "ja": "日本語"
+  },
+  "cropper": {
+    "title": "將圖片裁切為 1:1（正方形）",
+    "hint": "拖曳可移動圖片，使用滑桿縮放。",
+    "cancel": "取消",
+    "confirm": "確認"
+  },
+  "actions": {
+    "save": "儲存",
+    "cancel": "取消",
+    "close": "關閉",
+    "back": "返回",
+    "continue": "繼續",
+    "confirm": "確認",
+    "edit": "編輯",
+    "delete": "刪除",
+    "submit": "提交",
+    "retry": "重試",
+    "copy": "複製",
+    "download": "下載",
+    "share": "分享",
+    "search": "搜尋",
+    "runInRemix": "在 Remix 中執行"
+  },
+  "notFound": {
+    "title": "找不到頁面",
+    "description": "此頁面不存在或已被移動。",
+    "backHome": "返回首頁"
+  },
+  "nav": {
+    "groups": {
+      "learning": "學習",
+      "building": "打造",
+      "career": "職涯"
+    },
+    "changelog": "部落格",
+    "productRoadmap": "發布紀錄",
+    "feedback": "意見回饋",
+    "home": "首頁",
+    "someone": "某人",
+    "courses": "課程",
+    "feed": "動態",
+    "contests": "黑客松",
+    "projects": "專案",
+    "jobs": "職缺",
+    "achievements": "成就",
+    "account": "帳戶",
+    "admin": "管理後台",
+    "instructor": "教學",
+    "instructorManagement": "教學管理"
+  },
+  "account": {
+    "signedInViaEmail": "（透過電子郵件登入）"
+  },
+  "user": {
+    "fallbackName": "使用者",
+    "accountSettings": "帳戶設定"
+  },
+  "header": {
+    "publicProfile": "公開資料",
+    "feedAria": "開啟動態",
+    "notifications": "通知",
+    "notificationsAria": "開啟通知",
+    "noNotifications": "目前沒有通知。",
+    "accept": "接受",
+    "decline": "拒絕"
+  },
+  "notifications": {
+    "projectInviteTitle": "團隊邀請",
+    "projectInviteBody": "您被邀請加入一個黑客松專案。",
+    "projectInviteProjectLabel": "專案：{{title}}",
+    "projectInviteHackathonLabel": "黑客松：{{title}}",
+    "openHackathon": "開啟黑客松",
+    "inviteResolved": "已處理",
+    "inviteAccepted": "您已加入專案。",
+    "inviteDeclined": "邀請已拒絕。",
+    "inviteAcceptFailed": "無法接受邀請。",
+    "inviteDeclineFailed": "無法拒絕邀請。",
+    "coInstructorInviteTitle": "共同講師邀請",
+    "coInstructorInviteBody": "您被邀請共同講授「{{course}}」。",
+    "coInstructorInviteCourseFallback": "一門課程",
+    "coInstructorInvitePermissions": "權限：{{list}}",
+    "coInstructorInviteAccepted": "您現在是共同講師了。",
+    "coInstructorInviteDeclined": "共同講師邀請已拒絕。",
+    "coInstructorInviteAcceptFailed": "無法接受共同講師邀請。",
+    "coInstructorInviteDeclineFailed": "無法拒絕共同講師邀請。",
+    "hackathonRegistrationApprovedTitle": "報名已通過",
+    "hackathonRegistrationApprovedBody": "您對 {{hackathonTitle}} 的報名已通過。",
+    "hackathonRegistrationRejectedTitle": "報名未通過",
+    "hackathonRegistrationRejectedBody": "您對 {{hackathonTitle}} 的報名未通過。",
+    "hackathonRegistrationReviewNote": "審核員備註：{{note}}",
+    "hackathonRegistrationFallbackTitle": "黑客松",
+    "viewHackathon": "檢視黑客松",
+    "hackathonWinnerAwardTitle": "黑客松獎項",
+    "hackathonWinnerAwardBody": "您的專案「{{project}}」在「{{hackathon}}」中榮獲「{{award}}」。",
+    "projectFallback": "您的專案",
+    "viewAwardDetails": "檢視結果",
+    "courseAnnouncementTitle": "課程公告",
+    "markRead": "標記為已讀",
+    "courseCompletedTitle": "課程已完成",
+    "courseCompletedBody": "恭喜！您在「{{course}}」中的進度已儲存為完成。",
+    "courseCompletedWithCertificateBody": "恭喜！您已完成「{{course}}」。證書頒發後，您的 Corelia 證書將出現在證書庫中。",
+    "courseCompletedCourseFallback": "您的課程",
+    "viewCompletion": "檢視成就",
+    "courseCertificateIssuedTitle": "課程已完成 🎉",
+    "courseCertificateIssuedBody": "您的「{{course}}」證書已就緒。連結 OCID 即可頒發您的 Open Campus 證書。",
+    "courseCertificateIssuedCourseFallback": "您的課程",
+    "viewCertificate": "檢視證書",
+    "ocCredentialMintedTitle": "Open Campus 憑證已頒發 🎉",
+    "ocCredentialMintedBody": "您剛剛獲得：{{name}}",
+    "ocCredentialMintedBodyOca": "您的證書已就緒：{{name}}",
+    "viewCredential": "檢視成就",
+    "all": "全部",
+    "unread": "未讀",
+    "markAllRead": "全部標為已讀",
+    "loadError": "無法載入通知。",
+    "retry": "重試",
+    "loadMore": "載入更多",
+    "viewAll": "檢視所有通知",
+    "member": "一位成員",
+    "actorGroup": "{{name}} 等 {{count}} 人",
+    "newActivity": "您有新的動態",
+    "social": {
+      "project_liked": "{{actors}} 對您團隊的專案 {{title}} 按了讚。",
+      "project_followed": "{{actors}} 追蹤了您團隊的專案 {{title}}。",
+      "milestone_liked": "{{actors}} 對您的成就按了讚。",
+      "user_followed": "{{actors}} 追蹤了您。",
+      "project_invite_accepted": "{{actors}} 接受了您對專案 {{title}} 的邀請。",
+      "project_invite_declined": "{{actors}} 拒絕了您對專案 {{title}} 的邀請。",
+      "course_invite_accepted": "{{actors}} 接受了您對 {{title}} 的共同講師邀請。",
+      "course_invite_declined": "{{actors}} 拒絕了您對 {{title}} 的共同講師邀請。",
+      "submission_received": "{{title}} 有 {{count}} 份提交等待審核。",
+      "submission_approved": "您在 {{title}} 的結業作業已通過。",
+      "submission_rejected": "您在 {{title}} 的結業作業需要修改。開啟查看回饋。",
+      "hackathon_announcement": "主辦單位公告：{{title}}"
+    },
+    "updateError": "無法更新通知，請再試一次。"
+  },
+  "userProfile": {
+    "tabs": {
+      "overview": "概覽",
+      "achievements": "成就",
+      "courses": "課程",
+      "contests": "黑客松"
+    },
+    "actions": {
+      "editProfile": "編輯資料",
+      "previewAsGuest": "以訪客身分預覽",
+      "exitPreview": "結束預覽",
+      "exitPreviewShort": "結束預覽",
+      "viewFollowers": "檢視追蹤者",
+      "viewFollowing": "檢視此使用者追蹤的資料"
+    },
+    "labels": {
+      "ocid": "OCID：{{ocid}}",
+      "website": "網站",
+      "role": "角色",
+      "memberSince": "加入時間",
+      "followers": "追蹤者",
+      "following": "追蹤中",
+      "profile": "資料"
+    },
+    "errors": {
+      "notFound": "找不到使用者",
+      "loadFailed": "無法載入資料",
+      "tryAnother": "請嘗試其他使用者識別（使用者名稱或 OCID）。"
+    },
+    "overview": {
+      "title": "概覽",
+      "quickInfo": "基本資訊",
+      "empty": "尚無公開資訊。",
+      "instructorHeadlineFallback": "講師"
+    },
+    "skills": {
+      "title": "獲得的技能",
+      "empty": "尚無技能。"
+    },
+    "activity": {
+      "title": "成就",
+      "empty": "尚無公開里程碑。"
+    },
+    "private": {
+      "title": "私人資料",
+      "description": "此帳戶為私人。這裡只顯示資料擁有者選擇公開的內容。"
+    },
+    "achievements": {
+      "selfOnly": "目前成就僅對帳戶擁有者可見。",
+      "openInAchievementsPage": "開啟「成就」查看您的證書和徽章。",
+      "cta": "開啟成就",
+      "privateTitle": "成就詳情為私人",
+      "privateDescription": "成就詳情不會在此資料中公開顯示。",
+      "openVault": "開啟成就庫"
+    },
+    "courses": {
+      "privateByDefault": "學員的課程預設為私人。",
+      "empty": "尚無已發布的課程。",
+      "updatedAt": "更新於 {{date}}"
+    },
+    "contests": {
+      "empty": "尚無公開的黑客松。",
+      "organizedTitle": "主辦的黑客松",
+      "participatedTitle": "參加的黑客松",
+      "participatedEmpty": "尚無參與紀錄。",
+      "fallbackTitle": "黑客松",
+      "updatedAt": "更新於 {{date}}"
+    },
+    "projects": {
+      "empty": "尚無公開專案。",
+      "viewSource": "檢視原始碼",
+      "demo": "展示",
+      "repo": "程式碼庫",
+      "slides": "簡報",
+      "screenshot": "截圖",
+      "video": "影片"
+    }
+  },
+  "projects": {
+    "translation": {
+      "languages": "內容語言",
+      "primary": "主要",
+      "optional": "只有主要語言需要填寫全部必填內容。翻譯是選填的；空白欄位會顯示主要語言的內容。",
+      "makePrimary": "設為主要語言",
+      "translate": "使用 AI 翻譯為{{target}}",
+      "translating": "正在翻譯…",
+      "hint": "AI 會翻譯主要語言的內容。套用前請檢查並編輯；翻譯會隨專案一同儲存。",
+      "preview": "翻譯預覽",
+      "stale": "專案已變更。請重新翻譯，以免覆蓋較新的編輯。",
+      "replaceHint": "套用後將以此預覽取代目前的翻譯。",
+      "apply": "套用翻譯",
+      "discard": "捨棄翻譯",
+      "rateLimited": "您在一小時內已完成 10 次翻譯。請稍後再試。",
+      "moderationRateLimited": "一小時內被攔截的翻譯請求過多。請稍後再試。"
+    },
+    "title": "專案",
+    "description": "Corelia 生態中各類專案的公開展示。",
+    "empty": "尚無專案。",
+    "loading": "正在載入專案...",
+    "loadMore": "載入更多",
+    "emptyTitle": "找不到專案",
+    "emptyDescription": "目前沒有符合目前篩選條件的公開內容。",
+    "emptyHackathonDescription": "此檢視下尚無公開的黑客松。",
+    "emptyCourseDescription": "此檢視下尚無公開的課程。",
+    "emptyShowcaseDescription": "此檢視下尚無公開的展示。",
+    "errorTitle": "無法載入專案",
+    "errorDescription": "載入專案庫時發生錯誤。",
+    "retry": "重試",
+    "byPrefix": "作者",
+    "viewSource": "檢視原始碼",
+    "demo": "展示",
+    "repo": "程式碼庫",
+    "slides": "簡報",
+    "screenshot": "截圖",
+    "video": "影片",
+    "sourceHackathon": "黑客松",
+    "sourceCourse": "課程",
+    "sourceShowcase": "展示",
+    "filters": {
+      "label": "專案來源",
+      "all": "全部",
+      "hackathon": "黑客松",
+      "allHackathons": "所有黑客松",
+      "tracks": "賽道",
+      "sectors": "工程領域",
+      "techStacks": "技術",
+      "course": "課程",
+      "showcase": "展示"
+    },
+    "sort": {
+      "label": "排序",
+      "newest": "最新",
+      "oldest": "最早",
+      "mostLiked": "最多讚"
+    },
+    "card": {
+      "noSummary": "尚未提供摘要。",
+      "publishedAt": "發布於 {{date}}",
+      "links": "專案連結",
+      "moreLinks": "另有 {{count}} 個連結"
+    },
+    "detail": {
+      "backToProjects": "返回專案",
+      "viewSource": "檢視原始碼",
+      "demo": "展示",
+      "repo": "程式碼庫",
+      "slides": "簡報",
+      "screenshot": "截圖",
+      "video": "影片",
+      "description": "說明",
+      "noDescription": "尚未提供說明。",
+      "notFoundTitle": "找不到專案",
+      "notFoundDescription": "此專案可能不存在，或未公開。",
+      "goBack": "返回專案",
+      "edit": "編輯專案"
+    },
+    "form": {
+      "back": "返回",
+      "createTitle": "建立專案",
+      "editTitle": "編輯專案",
+      "title": "專案標題",
+      "slug": "Slug",
+      "summary": "摘要",
+      "demoUrl": "展示網址",
+      "repoUrl": "程式碼庫網址",
+      "slideUrl": "簡報網址",
+      "videoUrl": "展示影片網址",
+      "logo": "專案標誌",
+      "logoHint": "PNG、JPEG 或 WebP；最大 2 MB。圖片在上傳前會經過審核。",
+      "chooseLogo": "選擇標誌",
+      "screenshots": "專案截圖",
+      "screenshotsHint": "最多 6 張圖片，每張 5 MB。您可以調整順序。",
+      "addScreenshots": "新增圖片",
+      "screenshotAlt": "專案截圖 {{index}}",
+      "remove": "移除",
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "logoInvalid": "標誌必須為 PNG、JPEG 或 WebP，且不超過 2 MB。",
+      "screenshotInvalid": "圖片必須為 PNG、JPEG 或 WebP，且不超過 5 MB。",
+      "screenshotLimit": "最多可上傳 6 張截圖。",
+      "mediaUploadFailed": "無法上傳圖片。",
+      "mediaDeleteFailed": "無法移除圖片。",
+      "visibility": "可見性",
+      "create": "建立專案",
+      "save": "儲存變更",
+      "saving": "正在儲存…",
+      "created": "專案已建立。",
+      "saved": "專案已儲存。",
+      "saveFailed": "無法儲存專案。",
+      "notEligible": "您暫時無法建立專案",
+      "notEligibleDescription": "請先報名黑客松，或檢查提交截止時間。",
+      "cannotEdit": "您沒有編輯此專案的權限。",
+      "errors": {
+        "invalidUrl": "提供的網址無效或不安全。",
+        "invalidDemoUrl": "展示網址無效（必須以 https:// 開頭且安全）。",
+        "invalidRepoUrl": "程式碼庫網址無效（必須是 GitHub 網址，如 https://github.com/owner/repo）。",
+        "invalidSlideUrl": "簡報網址無效（必須以 https:// 開頭且安全）。",
+        "invalidVideoUrl": "影片網址無效（必須以 https:// 開頭且安全）。",
+        "unverifiableLink": "無法驗證連結的目標位址。",
+        "unverifiableDemoUrl": "無法存取或驗證展示網址。",
+        "unverifiableRepoUrl": "無法驗證該 GitHub 程式碼庫（可能為私人）。",
+        "unverifiableSlideUrl": "無法存取或驗證展示簡報網址。",
+        "linkBlocked": "該連結已被自動內容審核攔截。",
+        "moderationTitle": "專案標題不符合社群準則。",
+        "moderationSummary": "專案摘要不符合社群準則。",
+        "moderationLogo": "標誌不符合社群準則。",
+        "moderationImage": "上傳的圖片不符合社群準則。",
+        "aiUnavailable": "自動驗證暫時不可用，請稍後再試。",
+        "logoSize": "標誌檔案大小不能超過 2 MB。",
+        "invalidSlug": "Slug 只能由小寫字母、數字和連字號組成。"
+      },
+      "hackathonXpEarned": "+100 經驗值 · 首次提交黑客松專案"
+    },
+    "team": {
+      "title": "團隊成員",
+      "hint": "成員接受邀請後會公開顯示在專案中，但不能編輯專案。作品集設定僅控制該專案是否出現在其個人檔案中。",
+      "hackathonEligibleHint": "只有已報名此黑客松的使用者才符合資格。",
+      "pickTitle": "選擇團隊成員",
+      "pickDescription": "尋找要邀請加入此專案的 Corelia 帳戶。",
+      "hackathonPickDescription": "只有已報名的參與者才符合資格。請依姓名或 @使用者名稱搜尋，以找到前 50 位之外的人。",
+      "placeholder": "依姓名或 @使用者名稱搜尋",
+      "searchPlaceholder": "依姓名或 @使用者名稱搜尋…",
+      "loading": "正在載入成員…",
+      "empty": "找不到符合資格的成員。",
+      "loadError": "無法載入成員。請重新搜尋。",
+      "inviteAfterSave": "專案通過審核並儲存後才會寄出邀請。",
+      "invited": "邀請已寄出。",
+      "someInvitesFailed": "專案已建立，但部分邀請無法寄出。",
+      "pending": "待處理的邀請",
+      "members": "已接受的成員",
+      "moreMembers": "另有 {{count}} 位成員",
+      "revoke": "撤銷",
+      "remove": "移除",
+      "resendEmail": "重新寄送郵件",
+      "emailSent": "邀請郵件已寄出。",
+      "emailAlreadySent": "邀請郵件已寄出過。",
+      "emailSkipped": "邀請已記錄；已略過郵件寄送。",
+      "emailRateLimited": "郵件投遞受到頻率限制。請稍後再試。",
+      "emailPermanentError": "郵件投遞被永久拒絕。請確認收件人地址。",
+      "emailIndeterminateError": "郵件投遞狀態不確定。需要人工對帳。",
+      "emailRetryableError": "無法寄出邀請郵件。請稍後再試。",
+      "limit": "最多 {{count}} 人，包括專案擁有者。",
+      "full": "此專案已達到 6 人上限。請先移除一位成員，再新增新成員。",
+      "actionFailed": "無法更新團隊。",
+      "publicTitle": "專案團隊",
+      "removeMemberTitle": "從目前團隊中移除",
+      "removeMemberConfirm": "此成員將被從目前團隊中移除。Corelia 將不再承認其為本團隊成員。",
+      "removeMemberAction": "從團隊中移除",
+      "removingMember": "正在從團隊中移除…",
+      "leaveProject": "退出團隊",
+      "leaveProjectTitle": "退出目前團隊",
+      "leaveProjectConfirm": "您將退出目前團隊。Corelia 將不再承認您為本團隊成員。",
+      "leaveProjectAction": "退出團隊",
+      "leavingProject": "正在退出團隊…",
+      "leftProject": "您已退出專案團隊。",
+      "leaveProjectFailed": "無法退出專案團隊。請再試一次。",
+      "lateMembersHint": "截止後，您可以邀請任何帳戶協作。新成員不會自動獲得獎項或證書。"
+    },
+    "social": {
+      "heart": "讚",
+      "unheart": "收回讚",
+      "loginToInteract": "登入後可按讚。",
+      "heartFailed": "無法更新讚。",
+      "xpEarned": "+2 經驗值 · 對專案按讚",
+      "xpHint": "首次符合資格的讚：+2 經驗值（每個 UTC 日最多 5 個專案）",
+      "xpHintRemaining": "首次符合資格的讚：+2 經驗值 · 今日（UTC）還剩 {{count}} 次獎勵按讚",
+      "xpLimitReached": "今日（UTC）的 5 次獎勵按讚已用完；您仍可繼續按讚。"
+    },
+    "errors": {
+      "loadFailed": "無法載入專案",
+      "link": "無法驗證{{field}}。請使用無需登入即可存取的 HTTPS 連結，然後再試一次。",
+      "moderation": "{{field}}未通過內容審核。請修改後再試一次。",
+      "existing": "您已有此黑客松的專案。請開啟現有專案進行編輯。",
+      "slug": "此專案網址不可用。請選擇其他 slug。",
+      "deadline": "提交截止時間已過。無法儲存這些變更。",
+      "session": "您的工作階段已過期。請重新登入以儲存專案。",
+      "forbidden": "您沒有進行此變更的權限。",
+      "taxonomy": "請至少選擇一個賽道、工程領域和技術。",
+      "unavailable": "內容審核暫時不可用。您的變更已保留；請稍後再試。",
+      "hackathonMissing": "此黑客松不可用。請清除篩選條件以瀏覽其他專案。",
+      "mediaExpired": "已上傳的圖片已過期。請重新新增並儲存專案。",
+      "resourceRequired": "提交到黑客松前，請至少新增一個展示、程式碼庫、簡報或影片。",
+      "contentRequired": "分享此專案前，請先完成{{field}}。僅有空白或標點不算內容。",
+      "alreadyRegistered": "您已報名此黑客松。",
+      "submissionUnauthorized": "您無權向此黑客松提交作品。",
+      "moderationFlagged": "內容被自動審核標記。請修改後再試一次。",
+      "userBlocked": "您的帳戶被限制執行此操作。",
+      "rateLimitExceeded": "請求過多。請稍候再試。"
+    },
+    "editor": {
+      "workspace": "專案工作區",
+      "intro": "分享一個想法或一個可運作的產品。先完成必填部分，再新增圖片和資源（如果有）。",
+      "content": "專案內容",
+      "basics": "專案概覽",
+      "basicsHint": "為您的專案取一個清楚的名字，並說明它解決的問題。",
+      "titlePlaceholder": "範例：StudyBuddy：尋找讀書夥伴",
+      "summaryPlaceholder": "範例：StudyBuddy 幫助學生找到與其科目和時間相符的讀書小組。",
+      "media": "標誌與截圖",
+      "links": "展示與資源",
+      "linksHint": "選擇您想新增的資源。只需新增您已有的內容；在專案可編輯期間，您隨時可以補充。",
+      "categories": "賽道與技術",
+      "categoriesHint": "至少選擇一個賽道。工程領域和技術為選填；可搜尋建議項或新增您自己的。",
+      "taxonomySearch": "搜尋或新增您自己的…",
+      "taxonomyAdd": "新增「{{value}}」",
+      "taxonomyLimit": "此群組最多可選擇 20 項。",
+      "taxonomyLoadError": "無法載入建議項。您仍可新增自己的項目。",
+      "team": "您的團隊",
+      "sections": "專案分區",
+      "checklist": "準備好分享了嗎？",
+      "complete": "已完成",
+      "missing": "必填",
+      "publicHint": "黑客松專案是公開的，並與此活動連結。截止後能否編輯取決於活動設定。",
+      "public": "公開",
+      "unlisted": "不公開列出",
+      "private": "私人",
+      "requiredHint": "請先完成上方的必填項後再繼續。標有 * 的欄位為必填。",
+      "uploading": "正在上傳並檢查圖片…",
+      "unsaved": "您有未儲存的變更。文字已在此分頁中備份。",
+      "ready": "儲存前請檢查您的專案。",
+      "retryHint": "您的變更仍在這裡。請修正問題後再試一次。",
+      "leave": "您有未儲存的變更。要離開此頁面嗎？返回時可還原您的文字；未儲存的圖片需要重新新增。",
+      "recovered": "已還原您未儲存的文字和選擇。請檢查後在準備好時儲存。",
+      "gallery": "專案庫",
+      "builder": "打造者",
+      "viewProject": "檢視專案",
+      "clearFilters": "全部清除",
+      "filters": "篩選專案",
+      "overview": "概覽",
+      "resources": "資源",
+      "teamLeader": "團隊負責人",
+      "hackathon": "黑客松",
+      "share": "分享專案",
+      "copied": "專案連結已複製。",
+      "copyFailed": "無法複製。請從瀏覽器中複製位址。",
+      "noTeam": "尚無其他團隊成員。",
+      "noResources": "尚未新增展示或資源連結。",
+      "results": "已載入 {{count}} 個專案",
+      "myProjects": "我的專案",
+      "updated": "更新於",
+      "aboutTeam": "認識這個專案背後的打造者。",
+      "winner": "得獎者",
+      "story": "專案故事",
+      "description": "詳細說明",
+      "descriptionHint": "說明問題、使用者、方案以及與眾不同之處。如果是一個想法，請描述您設想的方法；暫時不需要架構和原始碼。",
+      "progress": "黑客松期間的進展",
+      "progressHint": "選填。描述黑客松期間完成的工作：研究、訪談、草圖或原型。請將已完成的工作與後續計畫區分開。",
+      "pitchVideo": "簡報影片",
+      "videos": "專案影片",
+      "resourceRequired": "至少一個展示、程式碼庫、簡報或影片",
+      "hackathonLinksHint": "展示、原始碼、簡報和影片均為選填。您可以不帶任何這些連結就提交一個想法。",
+      "characterLimit": "最多 {{count}} / {{limit}} 個字元",
+      "write": "撰寫",
+      "preview": "預覽",
+      "previewEmpty": "撰寫 Markdown，即可在此檢視預覽。",
+      "formatting": "Markdown 格式",
+      "markdownText": "文字",
+      "markdownheading": "標題",
+      "markdownbold": "粗體",
+      "markdownitalic": "斜體",
+      "markdownlist": "項目符號清單",
+      "markdownlink": "連結",
+      "markdowncode": "行內程式碼",
+      "limitHint": "儲存前，請縮短超出所顯示字數限制的欄位。",
+      "optional": "選填",
+      "titleHint": "請選擇簡短、好記的名稱。無需包含黑客松的名稱。",
+      "slugHint": "此位址由您的專案名稱產生。如有需要，可以修改。",
+      "summaryHint": "寫 2–3 句話：面向誰、解決什麼問題、帶來什麼好處。",
+      "descriptionPlaceholder": "問題：您的使用者面臨什麼困難？\n\n方案：您的想法如何幫助他們？\n\n與眾不同之處：為什麼這種方法有用？",
+      "progressPlaceholder": "已完成：研究了 10 名學生，並繪製了使用者流程草圖。\n\n收穫：使用者需要時間相符的讀書小組。\n\n下一步：用草圖向使用者做測試。",
+      "ideaHint": "仍處於想法階段？您可以略過整個部分，直接提交專案。",
+      "checklistHint": "只有以下項目是必填的。展示和資源不影響完成狀態。",
+      "addResource": "新增{{resource}}",
+      "removeResource": "移除{{resource}}",
+      "httpsHint": "請輸入以 https:// 開頭的完整連結，例如 https://example.com/demo。",
+      "resourceAccessHint": "請使用 HTTPS 連結，並設為公開或「知道連結的任何人」可檢視。用無痕視窗開啟，確認審核員能夠檢視。",
+      "resourceFields": {
+        "demo": {
+          "label": "線上展示",
+          "hint": "您的產品的可運作版本，審核員可以試用。"
+        },
+        "slide": {
+          "label": "簡報 / 簡報檔",
+          "hint": "介紹您的想法、問題和解決方案；例如使用 Google 簡報或 Canva。"
+        },
+        "repo": {
+          "label": "GitHub 原始碼",
+          "hint": "位於 github.com/team/project 的公開程式碼庫，而不是議題或檔案連結。"
+        },
+        "video": {
+          "label": "展示影片",
+          "hint": "展示您的產品實際運作的錄影，例如 YouTube、Vimeo 或 Loom 影片。"
+        },
+        "pitchVideo": {
+          "label": "簡報影片",
+          "hint": "介紹您的想法、價值和團隊。不需要可運作的產品。"
+        }
+      }
+    },
+    "management": {
+      "edit": "編輯",
+      "transfer": "移至黑客松",
+      "transferDescription": "專案和提交將移至所選黑客松。歷史獎項保持不變。",
+      "currentHackathon": "目前黑客松",
+      "noHackathon": "無黑客松",
+      "targetHackathon": "目標黑客松",
+      "selectHackathon": "選擇黑客松",
+      "transferImpact": "請選擇新的賽道。必要時，擁有者將在目標黑客松中被報名並通過；目前提交將隨專案一起移動。",
+      "transferSuccess": "專案已移至黑客松。",
+      "transferConflict": "專案擁有者在此黑客松中已有另一份提交。請選擇其他目標。",
+      "transferFailed": "無法移動專案。請檢查黑客松、賽道和權限，然後再試一次。",
+      "manage": "管理專案",
+      "title": "管理「{{title}}」",
+      "delete": "刪除專案",
+      "block": "封鎖專案",
+      "unblock": "解除封鎖專案",
+      "blocked": "已封鎖",
+      "public": "公開",
+      "unlisted": "不公開列出",
+      "private": "私人",
+      "all": "所有狀態",
+      "status": "狀態",
+      "action": "操作",
+      "reason": "原因（必填）",
+      "deleteDescription": "這將永久刪除專案，並撤回其連結的黑客松提交。此操作無法復原。",
+      "description": "封鎖會將專案從公開檢視中隱藏，並阻止重新發布。解除封鎖後，專案會保持私人，直到您再次發布。",
+      "cancel": "取消",
+      "saving": "正在儲存…",
+      "success": "專案更新成功。",
+      "failed": "無法更新專案。請檢查您的權限後再試一次。",
+      "blockedError": "此專案已被封鎖。必須由管理員解除封鎖後才能再次發布。",
+      "contentError": "發布前，請新增摘要和詳細說明。",
+      "previous": "上一頁",
+      "next": "下一頁"
+    }
+  },
+  "search": {
+    "placeholder": "搜尋公開內容...",
+    "title": "搜尋",
+    "queryLine": "「{{query}}」的搜尋結果",
+    "enterQueryHint": "在下方輸入關鍵字，探索公開內容。",
+    "categories": "搜尋結果分類",
+    "clear": "清除搜尋",
+    "suggest": {
+      "recent": "最近搜尋",
+      "trending": "熱門",
+      "suggestions": "快速結果",
+      "searchFor": "搜尋「{{query}}」",
+      "enterToSeeAll": "按 Enter 查看全部結果",
+      "viewAllResults": "檢視全部結果",
+      "noQuickResults": "沒有快速結果。"
+    },
+    "emptyTitle": "找不到結果",
+    "empty": "找不到結果。",
+    "filteredEmptyTitle": "此分類中沒有結果",
+    "filteredEmpty": "請選擇其他分類或嘗試其他關鍵字。",
+    "errors": {
+      "loadFailed": "無法載入搜尋結果"
+    },
+    "group": {
+      "all": "全部",
+      "project": "專案",
+      "contest": "黑客松",
+      "hackathon": "黑客松",
+      "course": "課程",
+      "profile": "資料"
+    }
+  },
+  "tabs": {
+    "menu": "選單",
+    "signIn": "登入",
+    "signOut": "登出"
+  },
+  "status": {
+    "loading": "載入中…",
+    "empty": "尚無資料",
+    "error": "發生錯誤"
+  },
+  "errorBoundary": {
+    "title": "發生錯誤",
+    "sectionMessage": "無法載入此內容。",
+    "staleTitle": "Corelia 已更新",
+    "staleMessage": "無法載入最新版本。請檢查網路連線，然後重新載入頁面。",
+    "reload": "重新載入",
+    "goHome": "返回首頁"
+  },
+  "home": {
+    "syncing": "正在同步...",
+    "dashboard": "儀表板",
+    "continueLearning": "繼續學習",
+    "viewCourse": "檢視",
+    "exploreCourses": "探索課程",
+    "allCourses": "所有課程",
+    "studentFallback": "學員",
+    "xp": {
+      "title": "目前經驗值",
+      "unranked": "未排名",
+      "noData": "經驗值資料不可用",
+      "loading": "正在載入經驗值...",
+      "loadingDescription": "正在取得您的經驗值總數。",
+      "joinRank": "再獲得 {{xp}} 經驗值即可加入{{rank}}等級",
+      "nextRank": "再獲得 {{xp}} 經驗值即可達到{{rank}}等級",
+      "highest": "您已達到最高等級",
+      "loadFailed": "無法載入經驗值資訊。"
+    },
+    "xpMissions": {
+      "title": "經驗值任務",
+      "sidebarLabel": "經驗值與任務",
+      "loading": "檢查中...",
+      "statusUnavailable": "狀態不可用",
+      "statusChecking": "檢查中",
+      "statusComplete": "已完成",
+      "statusNotComplete": "未完成",
+      "repeatable": "可重複",
+      "dailyProgress": "今日 {{count}}/5",
+      "tasks": {
+        "lesson": {
+          "title": "完成一個單元",
+          "detail": "每個符合資格的單元 +10 經驗值 · 僅一次"
+        },
+        "quiz": {
+          "title": "通過一次測驗",
+          "detail": "得分 ≥80%：+20 經驗值，另加 +10 單元經驗值"
+        },
+        "course": {
+          "title": "完成一門課程",
+          "detail": "每門符合資格的課程 +100 經驗值 · 僅一次"
+        },
+        "projectLike": {
+          "title": "對一個專案按讚",
+          "detail": "每個專案 +2 經驗值 · 每天最多 5 個專案"
+        },
+        "firstHackathonSubmission": {
+          "title": "提交黑客松專案",
+          "detail": "首次符合資格的提交可獲得 +100 經驗值"
+        },
+        "ocidConnected": {
+          "title": "連結 OCID",
+          "detail": "一次性 +50 經驗值"
+        },
+        "githubConnected": {
+          "title": "連結 GitHub",
+          "detail": "一次性 +50 經驗值"
+        },
+        "ethereumWallet": {
+          "title": "連結以太坊錢包",
+          "detail": "每個網路一次 +30 經驗值"
+        },
+        "solanaWallet": {
+          "title": "連結 Solana 錢包",
+          "detail": "每個網路一次 +30 經驗值"
+        }
+      }
+    },
+    "meta": {
+      "hours": "{{count}} 小時",
+      "lessonCount": "{{count}} 個單元",
+      "learners": "{{displayCount}} 位學員",
+      "remainingDuration": "剩餘 {{hours}} 小時 {{minutes}} 分鐘",
+      "selfPaced": "自訂進度",
+      "offlinePrefix": "實體課程"
+    },
+    "focus": {
+      "nextLesson": "繼續單元：{{title}}",
+      "allLessonsCompleted": "您已完成所有可用單元",
+      "lastAccessed": "上次存取：{{date}}"
+    },
+    "momentum": {
+      "learning": {
+        "label": "學習",
+        "emptyNote": "尚無正在追蹤的課程"
+      },
+      "contests": {
+        "label": "開放中的黑客松",
+        "note": "黑客松 · 生態活動",
+        "emptyNote": "尚無新的黑客松"
+      },
+      "certificates": {
+        "label": "已頒發的證書",
+        "note": "在「成就」中檢視全部",
+        "emptyNote": "尚未頒發證書"
+      }
+    },
+    "guest": {
+      "heroTitle": "與 Corelia 一起開啟您的 Web3 學習之旅",
+      "heroSubtitle": "探索課程和開放中的黑客松。想儲存進度或報名時，登入即可。",
+      "featuredCoursesTitle": "精選課程",
+      "signIn": "登入",
+      "openContestsTitle": "開放中的黑客松",
+      "startLearningTitle": "開始學習",
+      "startLearningSubtitle": "登入後可儲存進度、追蹤證書並提交黑客松報名。",
+      "quickLinksTitle": "快速連結",
+      "valueProps": {
+        "learn": {
+          "label": "學習基礎知識",
+          "note": "旨在幫助您一步步累積學習動力的課程和路徑。"
+        },
+        "build": {
+          "label": "在實作中打造",
+          "note": "黑客松和社群專案幫助您磨練真實世界的技能。"
+        },
+        "ship": {
+          "label": "交付您的作品",
+          "note": "從作品集到 Corelia 生態中的合作機會。"
+        }
+      },
+      "quickLinks": {
+        "contests": "黑客松",
+        "courses": "課程"
+      }
+    },
+    "sections": {
+      "greeting": "{{name}}，您好",
+      "greetingSubtitle": "在一處追蹤課程、黑客松和成就。",
+      "featuredOnline": "正在學習",
+      "featuredOffline": "正在關注",
+      "progress": "進度",
+      "seeAll": "檢視全部",
+      "enrolledCourses": "已報名的課程",
+      "exploreTitle": "探索",
+      "recommendedTitle": "為您推薦",
+      "goToLibrary": "前往課程庫",
+      "startFromCatalogTitle": "您還沒有報名任何課程。",
+      "startFromCatalogSubtitle": "選擇一門基礎課程，累積學習動力。",
+      "enrollHint": "報名或購買第一門課程後，此區域將顯示進度和快捷入口。",
+      "profileSetupHintPrefix": "請更新您的姓名和手機號碼，以便 Corelia、講師或支援人員更好地協助您。",
+      "loadFailed": "無法載入課程列表。"
+    }
+  },
+  "achievements": {
+    "badgeCategory": {
+      "learning": "學習",
+      "milestone": "里程碑",
+      "social": "社群"
+    },
+    "certificates": {
+      "courseCompletionTitle": "課程結業證書",
+      "fallbackCourseName": "Corelia 課程",
+      "fallbackInstructorName": "Corelia Academy",
+      "issuedOnPrefix": "頒發於 {{date}}",
+      "type": {
+        "online": "線上",
+        "offline": "實體"
+      },
+      "ocAction": {
+        "view": "檢視 OC 憑證",
+        "claim": "領取 OC 憑證"
+      },
+      "viewLarge": "檢視證書",
+      "downloadPdf": "下載為 PDF",
+      "downloadPng": "下載為 PNG",
+      "downloadError": "無法產生證書。請再試一次。",
+      "noTemplate": "此課程尚未上傳證書範本。",
+      "downloadTooltip": "下載"
+    },
+    "badges": {
+      "earnedPrefix": "獲得於：{{date}}",
+      "locked": "已鎖定",
+      "pendingClaim": "待領取",
+      "failedPrefix": "無法建立憑證",
+      "pendingPrefix": "正在建立憑證...",
+      "retry": "重試",
+      "ocDot": {
+        "claimedTooltip": "OC 憑證已領取",
+        "failedTooltip": "無法建立憑證",
+        "unclaimedTooltip": "OC 憑證未領取"
+      }
+    },
+    "milestones": {
+      "courseFirst": {
+        "title": "第一門課程",
+        "description": "報名您的第一門課程即可解鎖此里程碑。"
+      },
+      "courseThree": {
+        "title": "持續學習者",
+        "description": "報名 3 門不同的課程即可解鎖此里程碑。"
+      },
+      "firstCertificate": {
+        "title": "第一份證書",
+        "description": "從課程中獲得您的第一份證書即可解鎖此里程碑。"
+      },
+      "threeCertificates": {
+        "title": "學習作品集",
+        "description": "獲得 3 份證書，完善您的 Corelia 成就檔案。"
+      },
+      "next": {
+        "titleFallback": "您已解鎖所有可用的里程碑",
+        "descriptionFallback": "繼續完成新課程，隨著時間推移豐富您的成就檔案。"
+      }
+    },
+    "oc": {
+      "badge": {
+        "claimed": "已領取 OC",
+        "pending": "處理中",
+        "awaitingHolder": "需要連結 OCID",
+        "reconciling": "正在驗證憑證",
+        "failed": "失敗",
+        "unclaimed": "未領取"
+      },
+      "modal": {
+        "title": "Open Campus 憑證",
+        "subtitle": "EDUChain 區塊鏈上的可驗證憑證",
+        "kind": {
+          "cert": "證書",
+          "oca": "OCA · 結業證書",
+          "hackathonBadge": "黑客松徽章",
+          "milestone": "里程碑",
+          "badge": "徽章"
+        },
+        "date": {
+          "issued": "頒發於",
+          "earned": "獲得於"
+        },
+        "statusLabel": "OC 狀態：",
+        "explorerTooltip": "在區塊瀏覽器中檢視",
+        "dashboardCtaTitle": "在 OCID 控制台中檢視",
+        "dashboardCtaSubtitle": "opencampus.xyz · 公開資料",
+        "standardsNote": "此憑證遵循 Open Badges 和 W3C 可驗證憑證標準，錨定在 EDUChain 區塊鏈上。可獨立驗證，並可跨平台使用。",
+        "claim": {
+          "issuing": "正在頒發憑證...",
+          "retry": "重試 – 在 Open Campus 上頒發",
+          "issue": "在 Open Campus 上頒發",
+          "pending": "正在區塊鏈上處理..."
+        },
+        "connectRequired": {
+          "title": "需要連結 OCID",
+          "body": "頒發此 Open Campus 證書前，請先連結您的 OCID。您原有的 Corelia 證書仍保存在您的證書庫中。",
+          "cta": "連結 OCID"
+        },
+        "awaitingHolder": {
+          "title": "憑證正在等待您的 OCID",
+          "body": "連結 OCID 或錢包地址後，此憑證即可立即頒發。",
+          "cta": "連結 OCID"
+        },
+        "reconciliation": {
+          "title": "憑證 ID 需要驗證",
+          "body": "頒發回應沒有提供可驗證的鏈上憑證 ID。該憑證可能已經存在，或回應不完整。為避免重複請求，請勿重試；Corelia 必須驗證此 ID。"
+        },
+        "review": {
+          "title": "檢查您的憑證資訊",
+          "subtitle": "這些資訊將被永久寫入鏈上。頒發前請確認一切無誤。",
+          "back": "返回",
+          "confirm": "確認並頒發",
+          "credentialLabel": "憑證",
+          "nameLabel": "憑證上的您的姓名",
+          "editName": "編輯姓名",
+          "nameMissing": "您尚未設定顯示名稱。您的姓名不會出現在憑證上。",
+          "setName": "設定姓名",
+          "permanenceWarning": "憑證一旦頒發，將被永久記錄在 EDUChain 區塊鏈上，無法編輯或撤銷。確認前請核對您的姓名和 OCID 是否正確。"
+        },
+        "claimToast": {
+          "pending": "您的憑證正在區塊鏈上處理。請稍後再來查看。",
+          "error": {
+            "failed": "頒發憑證失敗。請再試一次。",
+            "notEligible": "無法頒發憑證。請確認您已完成課程並已連結 OCID。"
+          }
+        },
+        "claimedActions": {
+          "downloadPdf": "下載 PDF",
+          "share": "分享"
+        },
+        "learnMore": "了解 Open Campus 成就"
+      }
+    },
+    "sync": {
+      "pendingTitle": "正在建立憑證...",
+      "pendingDescription": "系統正在區塊鏈上記錄並建立您的憑證。",
+      "mintedTitle": "憑證鑄造成功！",
+      "mintedDescription": "您的憑證已成功建立並儲存在區塊鏈上。",
+      "failedTitle": "憑證鑄造失敗",
+      "failedDescription": "頒發您的憑證時發生錯誤。請稍後再試。",
+      "retrySuccess": "重試請求已送出！",
+      "retryError": "重試時發生錯誤。"
+    },
+    "loadError": {
+      "body": "我們無法重新整理您的成就。仍顯示您最近一次確認的憑證狀態。",
+      "retry": "重試",
+      "vaultUnavailable": "無法載入成就。請使用上方的「重試」。"
+    },
+    "stats": {
+      "certificates": "證書",
+      "oca": "OCA",
+      "badges": "徽章",
+      "milestones": "里程碑",
+      "total": "成就總數",
+      "ocCredential": "OC 憑證"
+    },
+    "hero": {
+      "eyebrow": "成就之旅",
+      "title": "我的成就",
+      "subtitlePrefix": "在一個流暢的旅程中追蹤證書、徽章和學習里程碑。準備好後，您可以將每項成就領取到",
+      "subtitleSuffix": "，以獲得區塊鏈上的可驗證憑證。",
+      "certCount": "{{count}} 份證書",
+      "badgeUnlockedCount": "已解鎖 {{count}} 枚徽章",
+      "readyToClaimCount": "{{count}} 項可領取",
+      "claimedOnOc": {
+        "title": "已在 OC 領取",
+        "description": "已發布到 Open Campus 的憑證數量。"
+      },
+      "pending": {
+        "title": "待處理",
+        "description": "待處理或等待頒發的憑證。"
+      },
+      "nextMilestone": "下一個里程碑"
+    },
+    "meaning": {
+      "title": "Corelia 憑證的意義",
+      "p1": "Corelia 中的成就反映您真正完成的內容：學完的課程、獲得的證書以及解鎖的技術里程碑。",
+      "p2": "證書和徽章旨在支援您的學習作品集、工作坊、黑客松和 Web3 之旅，而不是作為正式的學歷學位。"
+    },
+    "useCases": {
+      "title": "可以用在哪裡",
+      "items": {
+        "0": "個人作品集",
+        "1": "工作坊",
+        "2": "黑客松",
+        "3": "展示日",
+        "4": "導師審閱"
+      },
+      "note": "在 Open Campus 上領取後，這些成就將成為可驗證的憑證，您可以更清楚地在個人檔案中分享。"
+    },
+    "recent": {
+      "title": "最近解鎖",
+      "loading": "正在載入您的最新成就。",
+      "empty": "尚未解鎖任何成就。完成您的第一門課程，開啟這段旅程。"
+    },
+    "vaults": {
+      "certificates": {
+        "title": "證書庫",
+        "subtitle": "存放所有已完成課程證書的地方。",
+        "countLabel": "{{count}} 份證書",
+        "loading": "正在載入您的證書庫。",
+        "empty": "您還沒有任何證書。完成一門附證書的課程即可開始。",
+        "syncTitle": "證書等待同步",
+        "syncDescription": "Corelia 看到您完成了一門附證書的課程，但證書庫中還沒有頒發紀錄。請先同步以頒發 Corelia 證書；OCID 只在之後領取 Open Campus 憑證時才需要。",
+        "syncCourse": "同步{{course}}",
+        "syncSuccess": "證書已頒發。您的證書庫即將更新。",
+        "syncPending": "證書正在等待資格確認。",
+        "syncError": "目前無法同步證書。"
+      },
+      "badges": {
+        "title": "成就、徽章與里程碑",
+        "subtitle": "包括您正在逐步解鎖的學習里程碑和進度。",
+        "summaryUnlocked": "已解鎖 {{earned}}/{{total}}",
+        "loading": "正在載入您的徽章和里程碑。",
+        "earnedSectionTitle": "已獲得（{{count}}）",
+        "progressGood": "進展很棒"
+      },
+      "onchain": {
+        "title": "鏈上庫",
+        "subtitle": "記錄在鏈上的 Open Campus 成就和徽章。"
+      },
+      "nextUnlock": {
+        "title": "即將解鎖",
+        "allUnlockedNote": "您已解鎖所有可用的里程碑。現在可以專注於領取 OC 憑證並豐富您的成就檔案。"
+      }
+    },
+    "ocVault": {
+      "tabs": {
+        "all": "全部",
+        "oca": "成就（OCA）",
+        "ocb": "徽章（OCB）",
+        "milestones": "里程碑"
+      },
+      "empty": "此分類中尚無憑證。"
+    },
+    "profileVisibility": {
+      "manage": "管理可見性",
+      "title": "公開成就",
+      "description": "選擇要顯示在您的 Corelia 公開資料上的已確認 Open Campus 憑證。",
+      "selected": "已在資料中顯示",
+      "selectedCount": "資料中顯示：{{count}} 個憑證",
+      "apply": "套用變更",
+      "applying": "正在套用...",
+      "ok": "好",
+      "empty": "您還沒有已領取、可顯示的 Open Campus 憑證。",
+      "emptyPublic": "您沒有公開顯示任何憑證。",
+      "saveSuccess": "您的公開憑證庫已更新。",
+      "saveError": "無法更新您的公開憑證庫。",
+      "publicVaultTitle": "Open Campus 憑證",
+      "publicVaultDescription": "該成員選擇在其資料中顯示的憑證。",
+      "selfVaultDescription": "您選擇在資料中公開顯示的憑證。"
+    },
+    "credentialType": {
+      "oca": "OCA",
+      "badge": "徽章",
+      "milestone": "里程碑"
+    }
+  },
+  "combobox": {
+    "searchPlaceholder": "依姓名或電子郵件搜尋",
+    "emptyLabel": "沒有符合的結果。",
+    "searchLabel": "搜尋{{label}}",
+    "tagsLabel": "標籤",
+    "selectOptionLabel": "選擇一個選項",
+    "selectionLabel": "{{label}}選擇",
+    "tagOptionsLabel": "標籤選項",
+    "tagOptionsForLabel": "{{label}}標籤選項",
+    "hiddenTagsLabel_other": "{{count}} 個隱藏標籤",
+    "done": "完成",
+    "loadMore": "載入更多",
+    "loadingMore": "正在載入更多..."
+  },
+  "openCampusConnect": {
+    "header": {
+      "ariaLabel": "連結 OpenCampus",
+      "logoAlt": "OpenCampus"
+    },
+    "modal": {
+      "logoAlt": "OpenCampus",
+      "title": "連結 OpenCampus（OCID）",
+      "description": "連結後即可使用 OCID，並在 Open Campus 上領取/驗證成就。",
+      "benefits": {
+        "0": "將您的 OCID 身分與 Corelia 帳戶連結",
+        "1": "將成就作為可驗證憑證領取",
+        "2": "輕鬆在 Open Campus 上分享您的成就檔案"
+      },
+      "later": "以後再說",
+      "learnMoreLink": "了解更多",
+      "connect": "連結 OpenCampus",
+      "connecting": "正在連結…",
+      "startFailed": "無法開始 OpenCampus 連結。請再試一次。"
+    }
+  },
+  "unsubscribe": {
+    "loading": "處理中...",
+    "successTitle": "取消訂閱成功",
+    "successBody": "您將不再收到來自 Corelia 的此類郵件通知。",
+    "managePreferences": "管理通知偏好",
+    "errorTitle": "無法處理請求",
+    "errorBody": "取消訂閱連結無效或已過期。請前往「設定」管理您的通知。"
+  },
+  "claim": {
+    "loading": "查找中...",
+    "legacyTitle": "領取您的待領取憑證",
+    "legacyBody": "請使用邀請中的電子郵件地址註冊，以領取您的憑證。較新的邀請連結可預覽憑證。",
+    "title": "您有憑證在等待",
+    "subtitle": "以下憑證正等待儲存到 {{email}} 的帳戶。",
+    "pendingBadge": "待領取",
+    "cta": "加入 Corelia 全部領取",
+    "emptyTitle": "沒有待領取的憑證",
+    "emptyBody": "找不到此電子郵件的待領取憑證。如果您認為這是個錯誤，請聯絡 Corelia 團隊。",
+    "errorTitle": "無法查找",
+    "errorBody": "此連結無效或發生錯誤。請從您收到的郵件中再試一次。"
+  },
+  "verify": {
+    "loading": "驗證中...",
+    "formTitle": "驗證證書",
+    "formHint": "輸入證書上印製的編碼，檢查其是否真實有效。",
+    "inputLabel": "證書編碼",
+    "inputPlaceholder": "CRL-XXXXXXXXXX",
+    "submit": "驗證",
+    "validTitle": "證書有效",
+    "validSubtitle": "此證書由 Corelia 頒發，目前仍然有效。",
+    "revokedTitle": "證書已被撤銷",
+    "revokedBody": "此證書已於 {{date}} 被撤銷，不再有效。",
+    "revokedReason": "原因：{{reason}}",
+    "notFoundTitle": "找不到證書",
+    "notFoundBody": "沒有與此編碼相符的證書。請再次核對證書上印製的編碼。",
+    "errorTitle": "無法驗證",
+    "errorBody": "驗證時發生錯誤。請稍後再試。",
+    "holderLabel": "頒發給",
+    "courseLabel": "課程",
+    "instructorLabel": "講師",
+    "issuedLabel": "頒發日期",
+    "codeLabel": "證書編碼",
+    "unknownHolder": "未記錄姓名",
+    "unknownCourse": "未記錄課程",
+    "unknownInstructor": "未記錄講師",
+    "viewCourse": "檢視課程",
+    "viewProfile": "檢視資料",
+    "viewOnchain": "在 Open Campus 上檢視",
+    "zoomImage": "放大證書圖片"
+  },
+  "pendingCredentialsWelcome": {
+    "title": "您剛剛收到了憑證！",
+    "body": "寄到您電子郵件的憑證現已儲存到您的 Corelia 帳戶。",
+    "cta": "檢視我的憑證"
+  },
+  "componentShowcase": {
+    "xpRank": {
+      "title": "經驗值等級徽章",
+      "criterion": "全部六個等級的 80、160 和 200 px 尺寸；沒有圖稿的等級使用問號徽章。",
+      "description": "依等級和尺寸比較徽章圖稿。",
+      "combinationsTitle": "所有等級和尺寸組合",
+      "tableLabel": "依等級和尺寸排列的經驗值徽章",
+      "rank": "等級",
+      "sizes": {
+        "small": "小 · 80 px",
+        "medium": "中 · 160 px",
+        "large": "大 · 200 px"
+      }
+    },
+    "fullPageEmptyState": {
+      "title": "整頁空狀態"
+    },
+    "progress": {
+      "title": "進度",
+      "criterion": "進度條和圓環的 Figma 尺寸、進度級別和配色模型。",
+      "description": "比較來自 Figma 的進度條和圓環的精確尺寸、狀態和顏色。",
+      "standardTitle": "標準進度條",
+      "standardCriterion": "376 × 20 px 元件，含 328 × 8 px 軌道。",
+      "liveTitle": "動手體驗的進度示範",
+      "liveCriterion": "使用 −/+ 或輸入百分比。恰好 100% 時圓環完成；超過 100% 則標記為失敗。",
+      "liveRangeLabel": "調整進度百分比",
+      "liveDecrease": "將進度減少 1%",
+      "liveIncrease": "將進度增加 1%",
+      "liveInputLabel": "進度百分比",
+      "liveOverrunHint": "進度條超過 100% 時保持滿格；圓環顯示失敗標記。",
+      "liveValue": "{{percentage}}%",
+      "liveBarSample": "{{theme}} · {{percentage}}%",
+      "compactTitle": "精簡的單元進度",
+      "compactCriterion": "252 × 15 px 元件，含 210 × 4 px 軌道。",
+      "circleTitle": "進度圓環",
+      "circleCriterion": "24 × 24 px；每個百分比都遵循對應的 Figma 顏色變體。",
+      "label": "標籤",
+      "noFill": "無填色",
+      "barSample": "{{theme}} · {{level}} · {{percentage}}% · {{color}}",
+      "circleSample": "{{state}} · {{percentage}}%{{colorText}}",
+      "defaultValue": "預設",
+      "theme": {
+        "neutral": "中性",
+        "accent": "強調",
+        "status": "狀態"
+      },
+      "level": {
+        "none": "無",
+        "low": "低",
+        "medium": "中",
+        "good": "良好",
+        "done": "完成"
+      },
+      "circleState": {
+        "notStarted": "未開始",
+        "failed": "失敗",
+        "neutralProgress": "進行中 · 中性",
+        "coloredProgress": "進行中 · 彩色",
+        "done": "完成"
+      }
+    },
+    "tooltip": {
+      "title": "提示框",
+      "criterion": "九種 Figma 箭頭位置，含/不含輔助文字；訊息內容由呼叫方提供。",
+      "description": "比較來自 Figma 的全部 18 種箭頭和輔助文字變體。",
+      "withoutSupportingText": "無輔助文字",
+      "withSupportingText": "有輔助文字",
+      "sampleTitle": "這是一個提示框",
+      "sampleSupportingText": "提示框用於說明元素的意義或功能，而無需在頁面上新增固定文字。",
+      "arrows": {
+        "none": "無箭頭",
+        "bottomCenter": "底部置中",
+        "bottomLeft": "底部靠左",
+        "bottomRight": "底部靠右",
+        "topCenter": "頂部置中",
+        "topLeft": "頂部靠左",
+        "topRight": "頂部靠右",
+        "left": "左側",
+        "right": "右側"
+      }
+    },
+    "stepper": {
+      "title": "步驟列",
+      "criterion": "水平和垂直的進度追蹤；使用它的頁面提供每個步驟的狀態。",
+      "description": "視覺化進度追蹤器。由父頁面控制步驟狀態，並決定流程何時推進。",
+      "liveTitle": "可互動、由父頁面控制的流程",
+      "liveCriterion": "使用「上一步」和「下一步」查看父頁面如何更新步驟狀態。",
+      "orientationLabel": "方向",
+      "orientation": {
+        "horizontal": "水平",
+        "vertical": "垂直"
+      },
+      "styleLabel": "標記樣式",
+      "style": {
+        "text": "數字",
+        "icon": "圖示"
+      },
+      "steps": {
+        "account": "帳戶",
+        "accountCaption": "必填資訊",
+        "profile": "資料",
+        "profileCaption": "您的資訊",
+        "review": "檢閱",
+        "reviewCaption": "確認詳情"
+      },
+      "state": {
+        "default": "未開始",
+        "focused": "目前步驟",
+        "passed": "已完成",
+        "error": "需要處理"
+      },
+      "liveAccessibleLabel": "帳戶設定進度",
+      "currentStep": "第 {{current}} 步，共 {{total}} 步",
+      "previous": "上一步",
+      "next": "下一步",
+      "parentOwnsState": "由頁面決定每個步驟的狀態以及何時推進；步驟列只顯示傳入的狀態。",
+      "statesTitle": "Figma 狀態與版面對比",
+      "statesCriterion": "對比兩種方向和標記樣式下的全部四種狀態。",
+      "statesAccessibleLabel": "步驟列狀態範例",
+      "samples": {
+        "waiting": "等待中",
+        "current": "進行中",
+        "complete": "已完成",
+        "problem": "需要處理",
+        "optional": "未開始",
+        "inProgress": "目前步驟",
+        "done": "已結束",
+        "checkDetails": "檢查詳情"
+      },
+      "configuration": {
+        "horizontal": "{{style}}樣式 · 水平",
+        "vertical": "{{style}}樣式 · 垂直"
+      },
+      "usageTitle": "受控使用範例",
+      "usageCriterion": "頁面根據自己的目前步驟值推導出每個狀態，並傳給步驟列。"
+    }
+  },
+  "maintenance": {
+    "title": "系統維護中",
+    "body": "Corelia 正在升級，我們很快回來。感謝您的耐心等待！"
+  }
+}

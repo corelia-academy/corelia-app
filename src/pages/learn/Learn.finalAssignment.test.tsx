@@ -68,7 +68,7 @@ it("shows saved progress without syncing completion while the course is updating
   state.course.is_updating = true;
   state.progressPercent = 100;
   const { host } = await mount("/learn/course/lesson/article");
-  expect(host.querySelector('[role="status"]')?.textContent).toContain("detail.courseDetail.courseUpdatingCompletionNotice");
+  expect(host.textContent).not.toContain("detail.courseDetail.courseUpdatingCompletionNotice");
   expect(syncCourseCompletion).not.toHaveBeenCalled();
 });
 
@@ -145,4 +145,11 @@ it("opens the mobile navigation from the right with both sidebar tabs", async ()
   const sheet = host.querySelector('[data-sheet-side="right"]')!;
   expect(sheet).not.toBeNull();
   expect(sheet.querySelectorAll('[role="tab"]')).toHaveLength(2);
+});
+
+it("remounts the mobile panel after navigating to another lesson or the final assignment", async () => {
+  const { host, router } = await mount("/learn/course/lesson/article");
+  const firstSheet = host.querySelector('[data-sheet-side="right"]');
+  await act(async () => { await router.navigate("/learn/course/final-assignment"); });
+  expect(host.querySelector('[data-sheet-side="right"]')).not.toBe(firstSheet);
 });

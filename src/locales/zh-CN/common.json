@@ -1,0 +1,1340 @@
+{
+  "appName": "Corelia",
+  "pageTitles": {
+    "home": "首页",
+    "login": "登录 / 注册",
+    "confirmSignup": "确认注册",
+    "signupVerified": "账户已验证",
+    "resetPassword": "重置密码",
+    "connectingAccount": "连接账户",
+    "unsubscribe": "退订邮件",
+    "claimCertificate": "领取证书",
+    "verifyCertificate": "验证证书",
+    "learnCourse": "学习课程",
+    "learnLesson": "学习课时",
+    "finalAssignment": "结业作业",
+    "componentLibrary": "组件库",
+    "feed": "动态",
+    "courses": "课程",
+    "courseDetail": "课程详情",
+    "projectInvite": "项目邀请",
+    "coInstructorInvite": "联合讲师邀请",
+    "instructorDetail": "讲师详情",
+    "achievements": "成就",
+    "hackathons": "黑客松",
+    "hackathonOverview": "黑客松概览",
+    "hackathonPrizes": "奖项",
+    "hackathonTimeline": "时间线",
+    "hackathonResources": "资源",
+    "hackathonProjects": "黑客松项目",
+    "projects": "项目",
+    "newProject": "创建项目",
+    "editProject": "编辑项目",
+    "projectDetail": "项目详情",
+    "jobs": "职位",
+    "savedJobs": "已收藏的职位",
+    "appliedJobs": "已投递的职位",
+    "hiddenJobs": "已隐藏的职位",
+    "jobMarket": "职位市场",
+    "jobDetail": "职位详情",
+    "search": "搜索",
+    "publicProfile": "公开资料",
+    "accountProfile": "资料",
+    "accountCv": "简历",
+    "accountSettings": "设置",
+    "accountProjects": "我的项目",
+    "instructorProfile": "讲师资料",
+    "users": "用户",
+    "instructors": "讲师",
+    "instructorReview": "讲师审核",
+    "activityMilestones": "活动里程碑",
+    "manualMint": "颁发证书",
+    "branding": "品牌",
+    "manageHackathons": "管理黑客松",
+    "newHackathon": "创建黑客松",
+    "editHackathon": "编辑黑客松",
+    "manageProjects": "管理项目",
+    "manageJobs": "管理职位",
+    "reviewJobs": "审核职位",
+    "jobSources": "职位来源",
+    "companies": "公司",
+    "crawlers": "职位爬虫",
+    "jobAnalytics": "职位分析",
+    "emailCenter": "邮件中心",
+    "teaching": "教学",
+    "manageCourses": "管理课程",
+    "newCourse": "创建课程",
+    "previewCourse": "预览课程",
+    "editCourse": "编辑课程",
+    "notFound": "页面未找到",
+    "maintenance": "系统维护",
+    "applicationError": "应用错误",
+    "notifications": "通知"
+  },
+  "language": {
+    "switchLabel": "更换语言",
+    "en": "English",
+    "zh-CN": "简体中文",
+    "ko": "한국어",
+    "es": "Español",
+    "zh-TW": "繁體中文",
+    "vi": "Tiếng Việt",
+    "ja": "日本語"
+  },
+  "cropper": {
+    "title": "将图片裁剪为 1:1（正方形）",
+    "hint": "拖动可移动图片，使用滑块缩放。",
+    "cancel": "取消",
+    "confirm": "确认"
+  },
+  "actions": {
+    "save": "保存",
+    "cancel": "取消",
+    "close": "关闭",
+    "back": "返回",
+    "continue": "继续",
+    "confirm": "确认",
+    "edit": "编辑",
+    "delete": "删除",
+    "submit": "提交",
+    "retry": "重试",
+    "copy": "复制",
+    "download": "下载",
+    "share": "分享",
+    "search": "搜索",
+    "runInRemix": "在 Remix 中运行"
+  },
+  "notFound": {
+    "title": "页面未找到",
+    "description": "此页面不存在或已被移动。",
+    "backHome": "返回首页"
+  },
+  "nav": {
+    "groups": {
+      "learning": "学习",
+      "building": "构建",
+      "career": "职业"
+    },
+    "changelog": "博客",
+    "productRoadmap": "发布日志",
+    "feedback": "反馈",
+    "home": "首页",
+    "someone": "某人",
+    "courses": "课程",
+    "feed": "动态",
+    "contests": "黑客松",
+    "projects": "项目",
+    "jobs": "职位",
+    "achievements": "成就",
+    "account": "账户",
+    "admin": "管理后台",
+    "instructor": "教学",
+    "instructorManagement": "教学管理"
+  },
+  "account": {
+    "signedInViaEmail": "（通过邮箱登录）"
+  },
+  "user": {
+    "fallbackName": "用户",
+    "accountSettings": "账户设置"
+  },
+  "header": {
+    "publicProfile": "公开资料",
+    "feedAria": "打开动态",
+    "notifications": "通知",
+    "notificationsAria": "打开通知",
+    "noNotifications": "暂无通知。",
+    "accept": "接受",
+    "decline": "拒绝"
+  },
+  "notifications": {
+    "projectInviteTitle": "团队邀请",
+    "projectInviteBody": "您被邀请加入一个黑客松项目。",
+    "projectInviteProjectLabel": "项目：{{title}}",
+    "projectInviteHackathonLabel": "黑客松：{{title}}",
+    "openHackathon": "打开黑客松",
+    "inviteResolved": "已处理",
+    "inviteAccepted": "您已加入项目。",
+    "inviteDeclined": "邀请已拒绝。",
+    "inviteAcceptFailed": "无法接受邀请。",
+    "inviteDeclineFailed": "无法拒绝邀请。",
+    "coInstructorInviteTitle": "联合讲师邀请",
+    "coInstructorInviteBody": "您被邀请共同讲授“{{course}}”。",
+    "coInstructorInviteCourseFallback": "一门课程",
+    "coInstructorInvitePermissions": "权限：{{list}}",
+    "coInstructorInviteAccepted": "您现在是联合讲师了。",
+    "coInstructorInviteDeclined": "联合讲师邀请已拒绝。",
+    "coInstructorInviteAcceptFailed": "无法接受联合讲师邀请。",
+    "coInstructorInviteDeclineFailed": "无法拒绝联合讲师邀请。",
+    "hackathonRegistrationApprovedTitle": "报名已通过",
+    "hackathonRegistrationApprovedBody": "您对 {{hackathonTitle}} 的报名已通过。",
+    "hackathonRegistrationRejectedTitle": "报名未通过",
+    "hackathonRegistrationRejectedBody": "您对 {{hackathonTitle}} 的报名未通过。",
+    "hackathonRegistrationReviewNote": "审核员备注：{{note}}",
+    "hackathonRegistrationFallbackTitle": "黑客松",
+    "viewHackathon": "查看黑客松",
+    "hackathonWinnerAwardTitle": "黑客松奖项",
+    "hackathonWinnerAwardBody": "您的项目“{{project}}”在“{{hackathon}}”中荣获“{{award}}”。",
+    "projectFallback": "您的项目",
+    "viewAwardDetails": "查看结果",
+    "courseAnnouncementTitle": "课程公告",
+    "markRead": "标记为已读",
+    "courseCompletedTitle": "课程已完成",
+    "courseCompletedBody": "恭喜！您在“{{course}}”中的进度已保存为完成。",
+    "courseCompletedWithCertificateBody": "恭喜！您已完成“{{course}}”。证书颁发后，您的 Corelia 证书将出现在证书库中。",
+    "courseCompletedCourseFallback": "您的课程",
+    "viewCompletion": "查看成就",
+    "courseCertificateIssuedTitle": "课程已完成 🎉",
+    "courseCertificateIssuedBody": "您的“{{course}}”证书已就绪。连接 OCID 即可颁发您的 Open Campus 证书。",
+    "courseCertificateIssuedCourseFallback": "您的课程",
+    "viewCertificate": "查看证书",
+    "ocCredentialMintedTitle": "Open Campus 凭证已颁发 🎉",
+    "ocCredentialMintedBody": "您刚刚获得：{{name}}",
+    "ocCredentialMintedBodyOca": "您的证书已就绪：{{name}}",
+    "viewCredential": "查看成就",
+    "all": "全部",
+    "unread": "未读",
+    "markAllRead": "全部标为已读",
+    "loadError": "无法加载通知。",
+    "retry": "重试",
+    "loadMore": "加载更多",
+    "viewAll": "查看所有通知",
+    "member": "一位成员",
+    "actorGroup": "{{name}} 等 {{count}} 人",
+    "newActivity": "您有新的动态",
+    "social": {
+      "project_liked": "{{actors}} 赞了您团队的项目 {{title}}。",
+      "project_followed": "{{actors}} 关注了您团队的项目 {{title}}。",
+      "milestone_liked": "{{actors}} 赞了您的成就。",
+      "user_followed": "{{actors}} 关注了您。",
+      "project_invite_accepted": "{{actors}} 接受了您对项目 {{title}} 的邀请。",
+      "project_invite_declined": "{{actors}} 拒绝了您对项目 {{title}} 的邀请。",
+      "course_invite_accepted": "{{actors}} 接受了您对 {{title}} 的联合讲师邀请。",
+      "course_invite_declined": "{{actors}} 拒绝了您对 {{title}} 的联合讲师邀请。",
+      "submission_received": "{{title}} 有 {{count}} 份提交等待审核。",
+      "submission_approved": "您在 {{title}} 的结业作业已通过。",
+      "submission_rejected": "您在 {{title}} 的结业作业需要修改。打开查看反馈。",
+      "hackathon_announcement": "主办方公告：{{title}}"
+    },
+    "updateError": "无法更新通知，请重试。"
+  },
+  "userProfile": {
+    "tabs": {
+      "overview": "概览",
+      "achievements": "成就",
+      "courses": "课程",
+      "contests": "黑客松"
+    },
+    "actions": {
+      "editProfile": "编辑资料",
+      "previewAsGuest": "以访客身份预览",
+      "exitPreview": "退出预览",
+      "exitPreviewShort": "退出预览",
+      "viewFollowers": "查看关注者",
+      "viewFollowing": "查看该用户关注的资料"
+    },
+    "labels": {
+      "ocid": "OCID：{{ocid}}",
+      "website": "网站",
+      "role": "角色",
+      "memberSince": "加入时间",
+      "followers": "关注者",
+      "following": "正在关注",
+      "profile": "资料"
+    },
+    "errors": {
+      "notFound": "未找到用户",
+      "loadFailed": "无法加载资料",
+      "tryAnother": "请尝试其他用户标识（用户名或 OCID）。"
+    },
+    "overview": {
+      "title": "概览",
+      "quickInfo": "基本信息",
+      "empty": "暂无公开信息。",
+      "instructorHeadlineFallback": "讲师"
+    },
+    "skills": {
+      "title": "获得的技能",
+      "empty": "暂无技能。"
+    },
+    "activity": {
+      "title": "成就",
+      "empty": "暂无公开里程碑。"
+    },
+    "private": {
+      "title": "私密资料",
+      "description": "此账户为私密。这里只显示资料所有者选择公开的内容。"
+    },
+    "achievements": {
+      "selfOnly": "目前成就仅对账户所有者可见。",
+      "openInAchievementsPage": "打开“成就”查看您的证书和徽章。",
+      "cta": "打开成就",
+      "privateTitle": "成就详情为私密",
+      "privateDescription": "成就详情不会在此资料中公开显示。",
+      "openVault": "打开成就库"
+    },
+    "courses": {
+      "privateByDefault": "学员的课程默认私密。",
+      "empty": "暂无已发布的课程。",
+      "updatedAt": "更新于 {{date}}"
+    },
+    "contests": {
+      "empty": "暂无公开的黑客松。",
+      "organizedTitle": "主办的黑客松",
+      "participatedTitle": "参加的黑客松",
+      "participatedEmpty": "暂无参与记录。",
+      "fallbackTitle": "黑客松",
+      "updatedAt": "更新于 {{date}}"
+    },
+    "projects": {
+      "empty": "暂无公开项目。",
+      "viewSource": "查看源码",
+      "demo": "演示",
+      "repo": "代码库",
+      "slides": "幻灯片",
+      "screenshot": "截图",
+      "video": "视频"
+    }
+  },
+  "projects": {
+    "translation": {
+      "languages": "内容语言",
+      "primary": "主要",
+      "optional": "只有主要语言需要填写全部必填内容。翻译是可选的；空字段会显示主要语言的内容。",
+      "makePrimary": "设为主要语言",
+      "translate": "使用 AI 翻译为{{target}}",
+      "translating": "正在翻译…",
+      "hint": "AI 会翻译主要语言的内容。应用前请检查并编辑；翻译会随项目一同保存。",
+      "preview": "翻译预览",
+      "stale": "项目已更改。请重新翻译，以免覆盖较新的编辑。",
+      "replaceHint": "应用后将用此预览替换当前翻译。",
+      "apply": "应用翻译",
+      "discard": "放弃翻译",
+      "rateLimited": "您在一小时内已完成 10 次翻译。请稍后再试。",
+      "moderationRateLimited": "一小时内被拦截的翻译请求过多。请稍后再试。"
+    },
+    "title": "项目",
+    "description": "Corelia 生态中各类项目的公开展示。",
+    "empty": "暂无项目。",
+    "loading": "正在加载项目...",
+    "loadMore": "加载更多",
+    "emptyTitle": "未找到项目",
+    "emptyDescription": "目前没有符合当前筛选条件的公开内容。",
+    "emptyHackathonDescription": "此视图下暂无公开的黑客松。",
+    "emptyCourseDescription": "此视图下暂无公开的课程。",
+    "emptyShowcaseDescription": "此视图下暂无公开的展示。",
+    "errorTitle": "无法加载项目",
+    "errorDescription": "加载项目库时出了点问题。",
+    "retry": "重试",
+    "byPrefix": "作者",
+    "viewSource": "查看源码",
+    "demo": "演示",
+    "repo": "代码库",
+    "slides": "幻灯片",
+    "screenshot": "截图",
+    "video": "视频",
+    "sourceHackathon": "黑客松",
+    "sourceCourse": "课程",
+    "sourceShowcase": "展示",
+    "filters": {
+      "label": "项目来源",
+      "all": "全部",
+      "hackathon": "黑客松",
+      "allHackathons": "所有黑客松",
+      "tracks": "赛道",
+      "sectors": "工程领域",
+      "techStacks": "技术",
+      "course": "课程",
+      "showcase": "展示"
+    },
+    "sort": {
+      "label": "排序",
+      "newest": "最新",
+      "oldest": "最早",
+      "mostLiked": "最多赞"
+    },
+    "card": {
+      "noSummary": "暂未提供摘要。",
+      "publishedAt": "发布于 {{date}}",
+      "links": "项目链接",
+      "moreLinks": "另有 {{count}} 个链接"
+    },
+    "detail": {
+      "backToProjects": "返回项目",
+      "viewSource": "查看源码",
+      "demo": "演示",
+      "repo": "代码库",
+      "slides": "幻灯片",
+      "screenshot": "截图",
+      "video": "视频",
+      "description": "描述",
+      "noDescription": "暂未提供描述。",
+      "notFoundTitle": "未找到项目",
+      "notFoundDescription": "此项目可能不存在，或未公开。",
+      "goBack": "返回项目",
+      "edit": "编辑项目"
+    },
+    "form": {
+      "back": "返回",
+      "createTitle": "创建项目",
+      "editTitle": "编辑项目",
+      "title": "项目标题",
+      "slug": "Slug",
+      "summary": "摘要",
+      "demoUrl": "演示网址",
+      "repoUrl": "代码库网址",
+      "slideUrl": "幻灯片网址",
+      "videoUrl": "演示视频网址",
+      "logo": "项目徽标",
+      "logoHint": "PNG、JPEG 或 WebP；最大 2 MB。图片在上传前会经过审核。",
+      "chooseLogo": "选择徽标",
+      "screenshots": "项目截图",
+      "screenshotsHint": "最多 6 张图片，每张 5 MB。您可以调整顺序。",
+      "addScreenshots": "添加图片",
+      "screenshotAlt": "项目截图 {{index}}",
+      "remove": "移除",
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "logoInvalid": "徽标必须为 PNG、JPEG 或 WebP，且不超过 2 MB。",
+      "screenshotInvalid": "图片必须为 PNG、JPEG 或 WebP，且不超过 5 MB。",
+      "screenshotLimit": "最多可上传 6 张截图。",
+      "mediaUploadFailed": "无法上传图片。",
+      "mediaDeleteFailed": "无法移除图片。",
+      "visibility": "可见性",
+      "create": "创建项目",
+      "save": "保存更改",
+      "saving": "正在保存…",
+      "created": "项目已创建。",
+      "saved": "项目已保存。",
+      "saveFailed": "无法保存项目。",
+      "notEligible": "您暂时无法创建项目",
+      "notEligibleDescription": "请先报名黑客松，或检查提交截止时间。",
+      "cannotEdit": "您没有编辑此项目的权限。",
+      "errors": {
+        "invalidUrl": "提供的网址无效或不安全。",
+        "invalidDemoUrl": "演示网址无效（必须以 https:// 开头且安全）。",
+        "invalidRepoUrl": "代码库网址无效（必须是 GitHub 网址，如 https://github.com/owner/repo）。",
+        "invalidSlideUrl": "幻灯片网址无效（必须以 https:// 开头且安全）。",
+        "invalidVideoUrl": "视频网址无效（必须以 https:// 开头且安全）。",
+        "unverifiableLink": "无法验证链接的目标地址。",
+        "unverifiableDemoUrl": "无法访问或验证演示网址。",
+        "unverifiableRepoUrl": "无法验证该 GitHub 代码库（可能为私有）。",
+        "unverifiableSlideUrl": "无法访问或验证演示幻灯片网址。",
+        "linkBlocked": "该链接已被自动内容审核拦截。",
+        "moderationTitle": "项目标题不符合社区准则。",
+        "moderationSummary": "项目摘要不符合社区准则。",
+        "moderationLogo": "徽标不符合社区准则。",
+        "moderationImage": "上传的图片不符合社区准则。",
+        "aiUnavailable": "自动验证暂时不可用，请稍后再试。",
+        "logoSize": "徽标文件大小不能超过 2 MB。",
+        "invalidSlug": "Slug 只能由小写字母、数字和连字符组成。"
+      },
+      "hackathonXpEarned": "+100 经验值 · 首次提交黑客松项目"
+    },
+    "team": {
+      "title": "团队成员",
+      "hint": "成员接受邀请后会公开显示在项目中，但不能编辑项目。作品集设置仅控制该项目是否出现在其个人资料中。",
+      "hackathonEligibleHint": "只有已报名此黑客松的用户才符合条件。",
+      "pickTitle": "选择团队成员",
+      "pickDescription": "查找要邀请加入此项目的 Corelia 账户。",
+      "hackathonPickDescription": "只有已报名的参与者才符合条件。请按姓名或 @用户名 搜索，以找到前 50 位之外的人。",
+      "placeholder": "按姓名或 @用户名 搜索",
+      "searchPlaceholder": "按姓名或 @用户名 搜索…",
+      "loading": "正在加载成员…",
+      "empty": "未找到符合条件的成员。",
+      "loadError": "无法加载成员。请重新搜索。",
+      "inviteAfterSave": "项目通过审核并保存后才会发送邀请。",
+      "invited": "邀请已发送。",
+      "someInvitesFailed": "项目已创建，但部分邀请无法发送。",
+      "pending": "待处理的邀请",
+      "members": "已接受的成员",
+      "moreMembers": "另有 {{count}} 位成员",
+      "revoke": "撤销",
+      "remove": "移除",
+      "resendEmail": "重新发送邮件",
+      "emailSent": "邀请邮件已发送。",
+      "emailAlreadySent": "邀请邮件已发送过。",
+      "emailSkipped": "邀请已记录；已跳过邮件发送。",
+      "emailRateLimited": "邮件投递受到频率限制。请稍后再试。",
+      "emailPermanentError": "邮件投递被永久拒绝。请核实收件人地址。",
+      "emailIndeterminateError": "邮件投递状态不确定。需要人工对账。",
+      "emailRetryableError": "无法发送邀请邮件。请稍后再试。",
+      "limit": "最多 {{count}} 人，包括项目所有者。",
+      "full": "此项目已达到 6 人上限。请先移除一位成员，再添加新成员。",
+      "actionFailed": "无法更新团队。",
+      "publicTitle": "项目团队",
+      "removeMemberTitle": "从当前团队中移除",
+      "removeMemberConfirm": "此成员将被从当前团队中移除。Corelia 将不再承认其为本团队成员。",
+      "removeMemberAction": "从团队中移除",
+      "removingMember": "正在从团队中移除…",
+      "leaveProject": "退出团队",
+      "leaveProjectTitle": "退出当前团队",
+      "leaveProjectConfirm": "您将退出当前团队。Corelia 将不再承认您为本团队成员。",
+      "leaveProjectAction": "退出团队",
+      "leavingProject": "正在退出团队…",
+      "leftProject": "您已退出项目团队。",
+      "leaveProjectFailed": "无法退出项目团队。请重试。",
+      "lateMembersHint": "截止后，您可以邀请任意账户协作。新成员不会自动获得奖项或证书。"
+    },
+    "social": {
+      "heart": "赞",
+      "unheart": "取消赞",
+      "loginToInteract": "登录后可点赞。",
+      "heartFailed": "无法更新点赞。",
+      "xpEarned": "+2 经验值 · 点赞项目",
+      "xpHint": "首次符合条件的点赞：+2 经验值（每个 UTC 日最多 5 个项目）",
+      "xpHintRemaining": "首次符合条件的点赞：+2 经验值 · 今日（UTC）还剩 {{count}} 次奖励点赞",
+      "xpLimitReached": "今日（UTC）的 5 次奖励点赞已用完；您仍可继续点赞。"
+    },
+    "errors": {
+      "loadFailed": "无法加载项目",
+      "link": "无法验证{{field}}。请使用无需登录即可访问的 HTTPS 链接，然后重试。",
+      "moderation": "{{field}}未通过内容审核。请修改后重试。",
+      "existing": "您已有此黑客松的项目。请打开现有项目进行编辑。",
+      "slug": "此项目网址不可用。请选择其他 slug。",
+      "deadline": "提交截止时间已过。无法保存这些更改。",
+      "session": "您的会话已过期。请重新登录以保存项目。",
+      "forbidden": "您没有进行此更改的权限。",
+      "taxonomy": "请至少选择一个赛道、工程领域和技术。",
+      "unavailable": "内容审核暂时不可用。您的更改已保留；请稍后再试。",
+      "hackathonMissing": "此黑客松不可用。请清除筛选条件以浏览其他项目。",
+      "mediaExpired": "已上传的图片已过期。请重新添加并保存项目。",
+      "resourceRequired": "提交到黑客松前，请至少添加一个演示、代码库、幻灯片或视频。",
+      "contentRequired": "分享此项目前，请先完成{{field}}。仅有空白或标点不算内容。",
+      "alreadyRegistered": "您已报名此黑客松。",
+      "submissionUnauthorized": "您无权向此黑客松提交作品。",
+      "moderationFlagged": "内容被自动审核标记。请修改后重试。",
+      "userBlocked": "您的账户被限制执行此操作。",
+      "rateLimitExceeded": "请求过多。请稍候再试。"
+    },
+    "editor": {
+      "workspace": "项目工作区",
+      "intro": "分享一个想法或一个可运行的产品。先完成必填部分，再添加图片和资源（如果有）。",
+      "content": "项目内容",
+      "basics": "项目概览",
+      "basicsHint": "为您的项目起一个清晰的名字，并说明它解决的问题。",
+      "titlePlaceholder": "示例：StudyBuddy：寻找学习搭档",
+      "summaryPlaceholder": "示例：StudyBuddy 帮助学生找到与其科目和时间相匹配的学习小组。",
+      "media": "徽标与截图",
+      "links": "演示与资源",
+      "linksHint": "选择您想添加的资源。只需添加您已有的内容；在项目可编辑期间，您随时可以补充。",
+      "categories": "赛道与技术",
+      "categoriesHint": "至少选择一个赛道。工程领域和技术为选填；可搜索推荐项或添加您自己的。",
+      "taxonomySearch": "搜索或添加您自己的…",
+      "taxonomyAdd": "添加“{{value}}”",
+      "taxonomyLimit": "此分组最多可选择 20 项。",
+      "taxonomyLoadError": "无法加载推荐项。您仍可添加自己的项目。",
+      "team": "您的团队",
+      "sections": "项目分区",
+      "checklist": "准备好分享了吗？",
+      "complete": "已完成",
+      "missing": "必填",
+      "publicHint": "黑客松项目是公开的，并与此活动关联。截止后能否编辑取决于活动设置。",
+      "public": "公开",
+      "unlisted": "不公开列出",
+      "private": "私密",
+      "requiredHint": "请先完成上方的必填项后再继续。标有 * 的字段为必填。",
+      "uploading": "正在上传并检查图片…",
+      "unsaved": "您有未保存的更改。文字已在此标签页中备份。",
+      "ready": "保存前请检查您的项目。",
+      "retryHint": "您的更改仍在这里。请修正问题后重试。",
+      "leave": "您有未保存的更改。要离开此页面吗？返回时可恢复您的文字；未保存的图片需要重新添加。",
+      "recovered": "已恢复您未保存的文字和选择。请检查后在准备好时保存。",
+      "gallery": "项目库",
+      "builder": "构建者",
+      "viewProject": "查看项目",
+      "clearFilters": "全部清除",
+      "filters": "筛选项目",
+      "overview": "概览",
+      "resources": "资源",
+      "teamLeader": "团队负责人",
+      "hackathon": "黑客松",
+      "share": "分享项目",
+      "copied": "项目链接已复制。",
+      "copyFailed": "无法复制。请从浏览器中复制地址。",
+      "noTeam": "暂无其他团队成员。",
+      "noResources": "尚未添加演示或资源链接。",
+      "results": "已加载 {{count}} 个项目",
+      "myProjects": "我的项目",
+      "updated": "更新于",
+      "aboutTeam": "认识这个项目背后的构建者。",
+      "winner": "获奖者",
+      "story": "项目故事",
+      "description": "详细描述",
+      "descriptionHint": "说明问题、用户、方案以及与众不同之处。如果是一个想法，请描述您设想的方法；暂时不需要架构和源码。",
+      "progress": "黑客松期间的进展",
+      "progressHint": "选填。描述黑客松期间完成的工作：调研、访谈、草图或原型。请将已完成的工作与后续计划区分开。",
+      "pitchVideo": "路演视频",
+      "videos": "项目视频",
+      "resourceRequired": "至少一个演示、代码库、幻灯片或视频",
+      "hackathonLinksHint": "演示、源码、幻灯片和视频均为选填。您可以不带任何这些链接就提交一个想法。",
+      "characterLimit": "最多 {{count}} / {{limit}} 个字符",
+      "write": "编写",
+      "preview": "预览",
+      "previewEmpty": "编写 Markdown，即可在此查看预览。",
+      "formatting": "Markdown 格式",
+      "markdownText": "文本",
+      "markdownheading": "标题",
+      "markdownbold": "加粗",
+      "markdownitalic": "斜体",
+      "markdownlist": "项目符号列表",
+      "markdownlink": "链接",
+      "markdowncode": "行内代码",
+      "limitHint": "保存前，请缩短超出所显示字数限制的字段。",
+      "optional": "选填",
+      "titleHint": "请选择简短、好记的名称。无需包含黑客松的名称。",
+      "slugHint": "此地址由您的项目名称生成。如有需要，可以修改。",
+      "summaryHint": "写 2–3 句话：面向谁、解决什么问题、带来什么好处。",
+      "descriptionPlaceholder": "问题：您的用户面临什么困难？\n\n方案：您的想法如何帮助他们？\n\n与众不同之处：为什么这种方法有用？",
+      "progressPlaceholder": "已完成：调研了 10 名学生，并绘制了用户流程草图。\n\n收获：用户需要时间相匹配的学习小组。\n\n下一步：用草图向用户做测试。",
+      "ideaHint": "仍处于想法阶段？您可以跳过整个部分，直接提交项目。",
+      "checklistHint": "只有以下项目是必填的。演示和资源不影响完成状态。",
+      "addResource": "添加{{resource}}",
+      "removeResource": "移除{{resource}}",
+      "httpsHint": "请输入以 https:// 开头的完整链接，例如 https://example.com/demo。",
+      "resourceAccessHint": "请使用 HTTPS 链接，并设置为公开或“知道链接的任何人”可查看。用无痕窗口打开，确认审核员能够查看。",
+      "resourceFields": {
+        "demo": {
+          "label": "在线演示",
+          "hint": "您的产品的可运行版本，审核员可以试用。"
+        },
+        "slide": {
+          "label": "幻灯片 / 路演文稿",
+          "hint": "介绍您的想法、问题和解决方案；例如使用 Google Slides 或 Canva。"
+        },
+        "repo": {
+          "label": "GitHub 源码",
+          "hint": "位于 github.com/team/project 的公开代码库，而不是议题或文件链接。"
+        },
+        "video": {
+          "label": "演示视频",
+          "hint": "展示您的产品实际运行的录像，例如 YouTube、Vimeo 或 Loom 视频。"
+        },
+        "pitchVideo": {
+          "label": "路演视频",
+          "hint": "介绍您的想法、价值和团队。不需要可运行的产品。"
+        }
+      }
+    },
+    "management": {
+      "edit": "编辑",
+      "transfer": "移至黑客松",
+      "transferDescription": "项目和提交将移至所选黑客松。历史奖项保持不变。",
+      "currentHackathon": "当前黑客松",
+      "noHackathon": "无黑客松",
+      "targetHackathon": "目标黑客松",
+      "selectHackathon": "选择黑客松",
+      "transferImpact": "请选择新的赛道。必要时，所有者将在目标黑客松中被报名并通过；当前提交将随项目一起移动。",
+      "transferSuccess": "项目已移至黑客松。",
+      "transferConflict": "项目所有者在此黑客松中已有另一份提交。请选择其他目标。",
+      "transferFailed": "无法移动项目。请检查黑客松、赛道和权限，然后重试。",
+      "manage": "管理项目",
+      "title": "管理“{{title}}”",
+      "delete": "删除项目",
+      "block": "屏蔽项目",
+      "unblock": "取消屏蔽项目",
+      "blocked": "已屏蔽",
+      "public": "公开",
+      "unlisted": "不公开列出",
+      "private": "私密",
+      "all": "所有状态",
+      "status": "状态",
+      "action": "操作",
+      "reason": "原因（必填）",
+      "deleteDescription": "这将永久删除项目，并撤回其关联的黑客松提交。此操作无法撤销。",
+      "description": "屏蔽会将项目从公开视图中隐藏，并阻止重新发布。取消屏蔽后，项目会保持私密，直到您再次发布。",
+      "cancel": "取消",
+      "saving": "正在保存…",
+      "success": "项目更新成功。",
+      "failed": "无法更新项目。请检查您的权限后重试。",
+      "blockedError": "此项目已被屏蔽。必须由管理员取消屏蔽后才能再次发布。",
+      "contentError": "发布前，请添加摘要和详细描述。",
+      "previous": "上一页",
+      "next": "下一页"
+    }
+  },
+  "search": {
+    "placeholder": "搜索公开内容...",
+    "title": "搜索",
+    "queryLine": "“{{query}}”的搜索结果",
+    "enterQueryHint": "在下方输入关键词，发现公开内容。",
+    "categories": "搜索结果分类",
+    "clear": "清除搜索",
+    "suggest": {
+      "recent": "最近搜索",
+      "trending": "热门",
+      "suggestions": "快速结果",
+      "searchFor": "搜索“{{query}}”",
+      "enterToSeeAll": "按 Enter 查看全部结果",
+      "viewAllResults": "查看全部结果",
+      "noQuickResults": "没有快速结果。"
+    },
+    "emptyTitle": "未找到结果",
+    "empty": "未找到结果。",
+    "filteredEmptyTitle": "此分类中没有结果",
+    "filteredEmpty": "请选择其他分类或尝试其他关键词。",
+    "errors": {
+      "loadFailed": "无法加载搜索结果"
+    },
+    "group": {
+      "all": "全部",
+      "project": "项目",
+      "contest": "黑客松",
+      "hackathon": "黑客松",
+      "course": "课程",
+      "profile": "资料"
+    }
+  },
+  "tabs": {
+    "menu": "菜单",
+    "signIn": "登录",
+    "signOut": "退出登录"
+  },
+  "status": {
+    "loading": "加载中…",
+    "empty": "暂无数据",
+    "error": "出了点问题"
+  },
+  "errorBoundary": {
+    "title": "出了点问题",
+    "sectionMessage": "无法加载此内容。",
+    "staleTitle": "Corelia 已更新",
+    "staleMessage": "无法加载最新版本。请检查网络连接，然后重新加载页面。",
+    "reload": "重新加载",
+    "goHome": "返回首页"
+  },
+  "home": {
+    "syncing": "正在同步...",
+    "dashboard": "仪表盘",
+    "continueLearning": "继续学习",
+    "viewCourse": "查看",
+    "exploreCourses": "探索课程",
+    "allCourses": "所有课程",
+    "studentFallback": "学员",
+    "xp": {
+      "title": "当前经验值",
+      "unranked": "未排名",
+      "noData": "经验值数据不可用",
+      "loading": "正在加载经验值...",
+      "loadingDescription": "正在获取您的经验值总数。",
+      "joinRank": "再获得 {{xp}} 经验值即可加入{{rank}}等级",
+      "nextRank": "再获得 {{xp}} 经验值即可达到{{rank}}等级",
+      "highest": "您已达到最高等级",
+      "loadFailed": "无法加载经验值信息。"
+    },
+    "xpMissions": {
+      "title": "经验值任务",
+      "sidebarLabel": "经验值与任务",
+      "loading": "检查中...",
+      "statusUnavailable": "状态不可用",
+      "statusChecking": "检查中",
+      "statusComplete": "已完成",
+      "statusNotComplete": "未完成",
+      "repeatable": "可重复",
+      "dailyProgress": "今日 {{count}}/5",
+      "tasks": {
+        "lesson": {
+          "title": "完成一个课时",
+          "detail": "每个符合条件的课时 +10 经验值 · 仅一次"
+        },
+        "quiz": {
+          "title": "通过一次测验",
+          "detail": "得分 ≥80%：+20 经验值，另加 +10 课时经验值"
+        },
+        "course": {
+          "title": "完成一门课程",
+          "detail": "每门符合条件的课程 +100 经验值 · 仅一次"
+        },
+        "projectLike": {
+          "title": "点赞一个项目",
+          "detail": "每个项目 +2 经验值 · 每天最多 5 个项目"
+        },
+        "firstHackathonSubmission": {
+          "title": "提交黑客松项目",
+          "detail": "首次符合条件的提交可获得 +100 经验值"
+        },
+        "ocidConnected": {
+          "title": "关联 OCID",
+          "detail": "一次性 +50 经验值"
+        },
+        "githubConnected": {
+          "title": "关联 GitHub",
+          "detail": "一次性 +50 经验值"
+        },
+        "ethereumWallet": {
+          "title": "连接以太坊钱包",
+          "detail": "每个网络一次 +30 经验值"
+        },
+        "solanaWallet": {
+          "title": "连接 Solana 钱包",
+          "detail": "每个网络一次 +30 经验值"
+        }
+      }
+    },
+    "meta": {
+      "hours": "{{count}} 小时",
+      "lessonCount": "{{count}} 个课时",
+      "learners": "{{displayCount}} 位学员",
+      "remainingDuration": "剩余 {{hours}} 小时 {{minutes}} 分钟",
+      "selfPaced": "自定进度",
+      "offlinePrefix": "线下课程"
+    },
+    "focus": {
+      "nextLesson": "继续课时：{{title}}",
+      "allLessonsCompleted": "您已完成所有可用课时",
+      "lastAccessed": "上次访问：{{date}}"
+    },
+    "momentum": {
+      "learning": {
+        "label": "学习",
+        "emptyNote": "尚无正在跟踪的课程"
+      },
+      "contests": {
+        "label": "开放中的黑客松",
+        "note": "黑客松 · 生态活动",
+        "emptyNote": "暂无新的黑客松"
+      },
+      "certificates": {
+        "label": "已颁发的证书",
+        "note": "在“成就”中查看全部",
+        "emptyNote": "尚未颁发证书"
+      }
+    },
+    "guest": {
+      "heroTitle": "与 Corelia 一起开启您的 Web3 学习之旅",
+      "heroSubtitle": "探索课程和开放中的黑客松。想保存进度或报名时，登录即可。",
+      "featuredCoursesTitle": "精选课程",
+      "signIn": "登录",
+      "openContestsTitle": "开放中的黑客松",
+      "startLearningTitle": "开始学习",
+      "startLearningSubtitle": "登录后可保存进度、跟踪证书并提交黑客松报名。",
+      "quickLinksTitle": "快速链接",
+      "valueProps": {
+        "learn": {
+          "label": "学习基础知识",
+          "note": "旨在帮助您一步步积累学习动力的课程和路径。"
+        },
+        "build": {
+          "label": "在实践中构建",
+          "note": "黑客松和社区项目帮助您磨练真实世界的技能。"
+        },
+        "ship": {
+          "label": "交付您的作品",
+          "note": "从作品集到 Corelia 生态中的合作机会。"
+        }
+      },
+      "quickLinks": {
+        "contests": "黑客松",
+        "courses": "课程"
+      }
+    },
+    "sections": {
+      "greeting": "{{name}}，您好",
+      "greetingSubtitle": "在一处跟踪课程、黑客松和成就。",
+      "featuredOnline": "正在学习",
+      "featuredOffline": "正在关注",
+      "progress": "进度",
+      "seeAll": "查看全部",
+      "enrolledCourses": "已报名的课程",
+      "exploreTitle": "探索",
+      "recommendedTitle": "为您推荐",
+      "goToLibrary": "前往课程库",
+      "startFromCatalogTitle": "您还没有报名任何课程。",
+      "startFromCatalogSubtitle": "选择一门基础课程，积累学习动力。",
+      "enrollHint": "报名或购买第一门课程后，此区域将显示进度和快捷入口。",
+      "profileSetupHintPrefix": "请更新您的姓名和手机号，以便 Corelia、讲师或支持人员更好地帮助您。",
+      "loadFailed": "无法加载课程列表。"
+    }
+  },
+  "achievements": {
+    "badgeCategory": {
+      "learning": "学习",
+      "milestone": "里程碑",
+      "social": "社交"
+    },
+    "certificates": {
+      "courseCompletionTitle": "课程结业证书",
+      "fallbackCourseName": "Corelia 课程",
+      "fallbackInstructorName": "Corelia Academy",
+      "issuedOnPrefix": "颁发于 {{date}}",
+      "type": {
+        "online": "线上",
+        "offline": "线下"
+      },
+      "ocAction": {
+        "view": "查看 OC 凭证",
+        "claim": "领取 OC 凭证"
+      },
+      "viewLarge": "查看证书",
+      "downloadPdf": "下载为 PDF",
+      "downloadPng": "下载为 PNG",
+      "downloadError": "无法生成证书。请重试。",
+      "noTemplate": "此课程尚未上传证书模板。",
+      "downloadTooltip": "下载"
+    },
+    "badges": {
+      "earnedPrefix": "获得于：{{date}}",
+      "locked": "已锁定",
+      "pendingClaim": "待领取",
+      "failedPrefix": "无法创建凭证",
+      "pendingPrefix": "正在创建凭证...",
+      "retry": "重试",
+      "ocDot": {
+        "claimedTooltip": "OC 凭证已领取",
+        "failedTooltip": "无法创建凭证",
+        "unclaimedTooltip": "OC 凭证未领取"
+      }
+    },
+    "milestones": {
+      "courseFirst": {
+        "title": "第一门课程",
+        "description": "报名您的第一门课程即可解锁此里程碑。"
+      },
+      "courseThree": {
+        "title": "持续学习者",
+        "description": "报名 3 门不同的课程即可解锁此里程碑。"
+      },
+      "firstCertificate": {
+        "title": "第一份证书",
+        "description": "从课程中获得您的第一份证书即可解锁此里程碑。"
+      },
+      "threeCertificates": {
+        "title": "学习作品集",
+        "description": "获得 3 份证书，完善您的 Corelia 成就档案。"
+      },
+      "next": {
+        "titleFallback": "您已解锁所有可用的里程碑",
+        "descriptionFallback": "继续完成新课程，随着时间推移丰富您的成就档案。"
+      }
+    },
+    "oc": {
+      "badge": {
+        "claimed": "已领取 OC",
+        "pending": "处理中",
+        "awaitingHolder": "需要连接 OCID",
+        "reconciling": "正在验证凭证",
+        "failed": "失败",
+        "unclaimed": "未领取"
+      },
+      "modal": {
+        "title": "Open Campus 凭证",
+        "subtitle": "EDUChain 区块链上的可验证凭证",
+        "kind": {
+          "cert": "证书",
+          "oca": "OCA · 结业证书",
+          "hackathonBadge": "黑客松徽章",
+          "milestone": "里程碑",
+          "badge": "徽章"
+        },
+        "date": {
+          "issued": "颁发于",
+          "earned": "获得于"
+        },
+        "statusLabel": "OC 状态：",
+        "explorerTooltip": "在区块浏览器中查看",
+        "dashboardCtaTitle": "在 OCID 控制台中查看",
+        "dashboardCtaSubtitle": "opencampus.xyz · 公开资料",
+        "standardsNote": "此凭证遵循 Open Badges 和 W3C 可验证凭证标准，锚定在 EDUChain 区块链上。可独立验证，并可跨平台使用。",
+        "claim": {
+          "issuing": "正在颁发凭证...",
+          "retry": "重试 – 在 Open Campus 上颁发",
+          "issue": "在 Open Campus 上颁发",
+          "pending": "正在区块链上处理..."
+        },
+        "connectRequired": {
+          "title": "需要连接 OCID",
+          "body": "颁发此 Open Campus 证书前，请先连接您的 OCID。您原有的 Corelia 证书仍保存在您的证书库中。",
+          "cta": "连接 OCID"
+        },
+        "awaitingHolder": {
+          "title": "凭证正在等待您的 OCID",
+          "body": "连接 OCID 或钱包地址后，此凭证即可立即颁发。",
+          "cta": "连接 OCID"
+        },
+        "reconciliation": {
+          "title": "凭证 ID 需要验证",
+          "body": "颁发响应没有提供可验证的链上凭证 ID。该凭证可能已经存在，或响应不完整。为避免重复请求，请勿重试；Corelia 必须验证此 ID。"
+        },
+        "review": {
+          "title": "检查您的凭证信息",
+          "subtitle": "这些信息将被永久写入链上。颁发前请确认一切无误。",
+          "back": "返回",
+          "confirm": "确认并颁发",
+          "credentialLabel": "凭证",
+          "nameLabel": "凭证上的您的姓名",
+          "editName": "编辑姓名",
+          "nameMissing": "您尚未设置显示名称。您的姓名不会出现在凭证上。",
+          "setName": "设置姓名",
+          "permanenceWarning": "凭证一旦颁发，将被永久记录在 EDUChain 区块链上，无法编辑或撤销。确认前请核对您的姓名和 OCID 是否正确。"
+        },
+        "claimToast": {
+          "pending": "您的凭证正在区块链上处理。请稍后再来查看。",
+          "error": {
+            "failed": "颁发凭证失败。请重试。",
+            "notEligible": "无法颁发凭证。请确认您已完成课程并已连接 OCID。"
+          }
+        },
+        "claimedActions": {
+          "downloadPdf": "下载 PDF",
+          "share": "分享"
+        },
+        "learnMore": "了解 Open Campus 成就"
+      }
+    },
+    "sync": {
+      "pendingTitle": "正在创建凭证...",
+      "pendingDescription": "系统正在区块链上记录并创建您的凭证。",
+      "mintedTitle": "凭证铸造成功！",
+      "mintedDescription": "您的凭证已成功创建并存储在区块链上。",
+      "failedTitle": "凭证铸造失败",
+      "failedDescription": "颁发您的凭证时出错。请稍后再试。",
+      "retrySuccess": "重试请求已发送！",
+      "retryError": "重试时出错。"
+    },
+    "loadError": {
+      "body": "我们无法刷新您的成就。仍显示您最近一次确认的凭证状态。",
+      "retry": "重试",
+      "vaultUnavailable": "无法加载成就。请使用上方的“重试”。"
+    },
+    "stats": {
+      "certificates": "证书",
+      "oca": "OCA",
+      "badges": "徽章",
+      "milestones": "里程碑",
+      "total": "成就总数",
+      "ocCredential": "OC 凭证"
+    },
+    "hero": {
+      "eyebrow": "成就之旅",
+      "title": "我的成就",
+      "subtitlePrefix": "在一个流畅的旅程中跟踪证书、徽章和学习里程碑。准备好后，您可以将每项成就领取到",
+      "subtitleSuffix": "，以获得区块链上的可验证凭证。",
+      "certCount": "{{count}} 份证书",
+      "badgeUnlockedCount": "已解锁 {{count}} 枚徽章",
+      "readyToClaimCount": "{{count}} 项可领取",
+      "claimedOnOc": {
+        "title": "已在 OC 领取",
+        "description": "已发布到 Open Campus 的凭证数量。"
+      },
+      "pending": {
+        "title": "待处理",
+        "description": "待处理或等待颁发的凭证。"
+      },
+      "nextMilestone": "下一个里程碑"
+    },
+    "meaning": {
+      "title": "Corelia 凭证的含义",
+      "p1": "Corelia 中的成就反映您真正完成的内容：学完的课程、获得的证书以及解锁的技术里程碑。",
+      "p2": "证书和徽章旨在支持您的学习作品集、工作坊、黑客松和 Web3 之旅，而不是作为正式的学历学位。"
+    },
+    "useCases": {
+      "title": "可以用在哪里",
+      "items": {
+        "0": "个人作品集",
+        "1": "工作坊",
+        "2": "黑客松",
+        "3": "演示日",
+        "4": "导师评审"
+      },
+      "note": "在 Open Campus 上领取后，这些成就将成为可验证的凭证，您可以更清晰地在个人资料中分享。"
+    },
+    "recent": {
+      "title": "最近解锁",
+      "loading": "正在加载您的最新成就。",
+      "empty": "尚未解锁任何成就。完成您的第一门课程，开启这段旅程。"
+    },
+    "vaults": {
+      "certificates": {
+        "title": "证书库",
+        "subtitle": "存放所有已完成课程证书的地方。",
+        "countLabel": "{{count}} 份证书",
+        "loading": "正在加载您的证书库。",
+        "empty": "您还没有任何证书。完成一门带证书的课程即可开始。",
+        "syncTitle": "证书等待同步",
+        "syncDescription": "Corelia 看到您完成了一门带证书的课程，但证书库中还没有颁发记录。请先同步以颁发 Corelia 证书；OCID 只在之后领取 Open Campus 凭证时才需要。",
+        "syncCourse": "同步{{course}}",
+        "syncSuccess": "证书已颁发。您的证书库即将更新。",
+        "syncPending": "证书正在等待资格确认。",
+        "syncError": "目前无法同步证书。"
+      },
+      "badges": {
+        "title": "成就、徽章与里程碑",
+        "subtitle": "包括您正在逐步解锁的学习里程碑和进度。",
+        "summaryUnlocked": "已解锁 {{earned}}/{{total}}",
+        "loading": "正在加载您的徽章和里程碑。",
+        "earnedSectionTitle": "已获得（{{count}}）",
+        "progressGood": "进展很棒"
+      },
+      "onchain": {
+        "title": "链上库",
+        "subtitle": "记录在链上的 Open Campus 成就和徽章。"
+      },
+      "nextUnlock": {
+        "title": "即将解锁",
+        "allUnlockedNote": "您已解锁所有可用的里程碑。现在可以专注于领取 OC 凭证并丰富您的成就档案。"
+      }
+    },
+    "ocVault": {
+      "tabs": {
+        "all": "全部",
+        "oca": "成就（OCA）",
+        "ocb": "徽章（OCB）",
+        "milestones": "里程碑"
+      },
+      "empty": "此分类中暂无凭证。"
+    },
+    "profileVisibility": {
+      "manage": "管理可见性",
+      "title": "公开成就",
+      "description": "选择要显示在您的 Corelia 公开资料上的已确认 Open Campus 凭证。",
+      "selected": "已在资料中显示",
+      "selectedCount": "资料中显示：{{count}} 个凭证",
+      "apply": "应用更改",
+      "applying": "正在应用...",
+      "ok": "好",
+      "empty": "您还没有已领取、可显示的 Open Campus 凭证。",
+      "emptyPublic": "您没有公开显示任何凭证。",
+      "saveSuccess": "您的公开凭证库已更新。",
+      "saveError": "无法更新您的公开凭证库。",
+      "publicVaultTitle": "Open Campus 凭证",
+      "publicVaultDescription": "该成员选择在其资料中显示的凭证。",
+      "selfVaultDescription": "您选择在资料中公开显示的凭证。"
+    },
+    "credentialType": {
+      "oca": "OCA",
+      "badge": "徽章",
+      "milestone": "里程碑"
+    }
+  },
+  "combobox": {
+    "searchPlaceholder": "按姓名或邮箱搜索",
+    "emptyLabel": "没有匹配的结果。",
+    "searchLabel": "搜索{{label}}",
+    "tagsLabel": "标签",
+    "selectOptionLabel": "选择一个选项",
+    "selectionLabel": "{{label}}选择",
+    "tagOptionsLabel": "标签选项",
+    "tagOptionsForLabel": "{{label}}标签选项",
+    "hiddenTagsLabel_other": "{{count}} 个隐藏标签",
+    "done": "完成",
+    "loadMore": "加载更多",
+    "loadingMore": "正在加载更多..."
+  },
+  "openCampusConnect": {
+    "header": {
+      "ariaLabel": "连接 OpenCampus",
+      "logoAlt": "OpenCampus"
+    },
+    "modal": {
+      "logoAlt": "OpenCampus",
+      "title": "连接 OpenCampus（OCID）",
+      "description": "连接后即可使用 OCID，并在 Open Campus 上领取/验证成就。",
+      "benefits": {
+        "0": "将您的 OCID 身份与 Corelia 账户关联",
+        "1": "将成就作为可验证凭证领取",
+        "2": "轻松在 Open Campus 上分享您的成就档案"
+      },
+      "later": "以后再说",
+      "learnMoreLink": "了解更多",
+      "connect": "连接 OpenCampus",
+      "connecting": "正在连接…",
+      "startFailed": "无法开始 OpenCampus 连接。请重试。"
+    }
+  },
+  "unsubscribe": {
+    "loading": "处理中...",
+    "successTitle": "退订成功",
+    "successBody": "您将不再收到来自 Corelia 的此类邮件通知。",
+    "managePreferences": "管理通知偏好",
+    "errorTitle": "无法处理请求",
+    "errorBody": "退订链接无效或已过期。请前往“设置”管理您的通知。"
+  },
+  "claim": {
+    "loading": "查找中...",
+    "legacyTitle": "领取您的待领取凭证",
+    "legacyBody": "请使用邀请中的邮箱地址注册，以领取您的凭证。较新的邀请链接可预览凭证。",
+    "title": "您有凭证在等待",
+    "subtitle": "以下凭证正等待保存到 {{email}} 的账户。",
+    "pendingBadge": "待领取",
+    "cta": "加入 Corelia 全部领取",
+    "emptyTitle": "没有待领取的凭证",
+    "emptyBody": "未找到此邮箱的待领取凭证。如果您认为这是个错误，请联系 Corelia 团队。",
+    "errorTitle": "无法查找",
+    "errorBody": "此链接无效或出了点问题。请从您收到的邮件中重试。"
+  },
+  "verify": {
+    "loading": "验证中...",
+    "formTitle": "验证证书",
+    "formHint": "输入证书上印制的编码，检查其是否真实有效。",
+    "inputLabel": "证书编码",
+    "inputPlaceholder": "CRL-XXXXXXXXXX",
+    "submit": "验证",
+    "validTitle": "证书有效",
+    "validSubtitle": "此证书由 Corelia 颁发，目前仍然有效。",
+    "revokedTitle": "证书已被撤销",
+    "revokedBody": "此证书已于 {{date}} 被撤销，不再有效。",
+    "revokedReason": "原因：{{reason}}",
+    "notFoundTitle": "未找到证书",
+    "notFoundBody": "没有与此编码匹配的证书。请再次核对证书上印制的编码。",
+    "errorTitle": "无法验证",
+    "errorBody": "验证时出了点问题。请稍后再试。",
+    "holderLabel": "颁发给",
+    "courseLabel": "课程",
+    "instructorLabel": "讲师",
+    "issuedLabel": "颁发日期",
+    "codeLabel": "证书编码",
+    "unknownHolder": "未记录姓名",
+    "unknownCourse": "未记录课程",
+    "unknownInstructor": "未记录讲师",
+    "viewCourse": "查看课程",
+    "viewProfile": "查看资料",
+    "viewOnchain": "在 Open Campus 上查看",
+    "zoomImage": "放大证书图片"
+  },
+  "pendingCredentialsWelcome": {
+    "title": "您刚刚收到了凭证！",
+    "body": "发送到您邮箱的凭证现已保存到您的 Corelia 账户。",
+    "cta": "查看我的凭证"
+  },
+  "componentShowcase": {
+    "xpRank": {
+      "title": "经验值等级徽章",
+      "criterion": "全部六个等级的 80、160 和 200 px 尺寸；没有图稿的等级使用问号徽章。",
+      "description": "按等级和尺寸比较徽章图稿。",
+      "combinationsTitle": "所有等级和尺寸组合",
+      "tableLabel": "按等级和尺寸排列的经验值徽章",
+      "rank": "等级",
+      "sizes": {
+        "small": "小 · 80 px",
+        "medium": "中 · 160 px",
+        "large": "大 · 200 px"
+      }
+    },
+    "fullPageEmptyState": {
+      "title": "整页空状态"
+    },
+    "progress": {
+      "title": "进度",
+      "criterion": "进度条和圆环的 Figma 尺寸、进度级别和配色模型。",
+      "description": "比较来自 Figma 的进度条和圆环的精确尺寸、状态和颜色。",
+      "standardTitle": "标准进度条",
+      "standardCriterion": "376 × 20 px 组件，含 328 × 8 px 轨道。",
+      "liveTitle": "动手体验的进度演示",
+      "liveCriterion": "使用 −/+ 或输入百分比。恰好 100% 时圆环完成；超过 100% 则标记为失败。",
+      "liveRangeLabel": "调整进度百分比",
+      "liveDecrease": "将进度减少 1%",
+      "liveIncrease": "将进度增加 1%",
+      "liveInputLabel": "进度百分比",
+      "liveOverrunHint": "进度条超过 100% 时保持满格；圆环显示失败标记。",
+      "liveValue": "{{percentage}}%",
+      "liveBarSample": "{{theme}} · {{percentage}}%",
+      "compactTitle": "紧凑的课时进度",
+      "compactCriterion": "252 × 15 px 组件，含 210 × 4 px 轨道。",
+      "circleTitle": "进度圆环",
+      "circleCriterion": "24 × 24 px；每个百分比都遵循对应的 Figma 颜色变体。",
+      "label": "标签",
+      "noFill": "无填充",
+      "barSample": "{{theme}} · {{level}} · {{percentage}}% · {{color}}",
+      "circleSample": "{{state}} · {{percentage}}%{{colorText}}",
+      "defaultValue": "默认",
+      "theme": {
+        "neutral": "中性",
+        "accent": "强调",
+        "status": "状态"
+      },
+      "level": {
+        "none": "无",
+        "low": "低",
+        "medium": "中",
+        "good": "良好",
+        "done": "完成"
+      },
+      "circleState": {
+        "notStarted": "未开始",
+        "failed": "失败",
+        "neutralProgress": "进行中 · 中性",
+        "coloredProgress": "进行中 · 彩色",
+        "done": "完成"
+      }
+    },
+    "tooltip": {
+      "title": "提示框",
+      "criterion": "九种 Figma 箭头位置，含/不含辅助文字；消息内容由调用方提供。",
+      "description": "比较来自 Figma 的全部 18 种箭头和辅助文字变体。",
+      "withoutSupportingText": "无辅助文字",
+      "withSupportingText": "有辅助文字",
+      "sampleTitle": "这是一个提示框",
+      "sampleSupportingText": "提示框用于解释元素的含义或功能，而无需在页面上添加固定文字。",
+      "arrows": {
+        "none": "无箭头",
+        "bottomCenter": "底部居中",
+        "bottomLeft": "底部靠左",
+        "bottomRight": "底部靠右",
+        "topCenter": "顶部居中",
+        "topLeft": "顶部靠左",
+        "topRight": "顶部靠右",
+        "left": "左侧",
+        "right": "右侧"
+      }
+    },
+    "stepper": {
+      "title": "步骤条",
+      "criterion": "水平和垂直的进度跟踪；使用它的页面提供每个步骤的状态。",
+      "description": "可视化进度跟踪器。由父页面控制步骤状态，并决定流程何时推进。",
+      "liveTitle": "可交互、由父页面控制的流程",
+      "liveCriterion": "使用“上一步”和“下一步”查看父页面如何更新步骤状态。",
+      "orientationLabel": "方向",
+      "orientation": {
+        "horizontal": "水平",
+        "vertical": "垂直"
+      },
+      "styleLabel": "标记样式",
+      "style": {
+        "text": "数字",
+        "icon": "图标"
+      },
+      "steps": {
+        "account": "账户",
+        "accountCaption": "必填信息",
+        "profile": "资料",
+        "profileCaption": "您的信息",
+        "review": "复核",
+        "reviewCaption": "确认详情"
+      },
+      "state": {
+        "default": "未开始",
+        "focused": "当前步骤",
+        "passed": "已完成",
+        "error": "需要处理"
+      },
+      "liveAccessibleLabel": "账户设置进度",
+      "currentStep": "第 {{current}} 步，共 {{total}} 步",
+      "previous": "上一步",
+      "next": "下一步",
+      "parentOwnsState": "由页面决定每个步骤的状态以及何时推进；步骤条只显示传入的状态。",
+      "statesTitle": "Figma 状态与布局对比",
+      "statesCriterion": "对比两种方向和标记样式下的全部四种状态。",
+      "statesAccessibleLabel": "步骤条状态示例",
+      "samples": {
+        "waiting": "等待中",
+        "current": "进行中",
+        "complete": "已完成",
+        "problem": "需要处理",
+        "optional": "未开始",
+        "inProgress": "当前步骤",
+        "done": "已结束",
+        "checkDetails": "检查详情"
+      },
+      "configuration": {
+        "horizontal": "{{style}}样式 · 水平",
+        "vertical": "{{style}}样式 · 垂直"
+      },
+      "usageTitle": "受控使用示例",
+      "usageCriterion": "页面根据自己的当前步骤值推导出每个状态，并传给步骤条。"
+    }
+  },
+  "maintenance": {
+    "title": "系统维护中",
+    "body": "Corelia 正在升级，我们很快回来。感谢您的耐心等待！"
+  }
+}

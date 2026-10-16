@@ -1,0 +1,311 @@
+{
+  "eyebrow": "Corelia 職缺",
+  "title": "科技與 Web3 領域職缺",
+  "subtitle": "探索科技和 Web3 公司精選的技術與非技術職位。",
+  "landing": {
+    "title": "{{label}}職缺",
+    "subtitle": "瀏覽來自經審核的科技和 Web3 來源的精選{{label}}機會。"
+  },
+  "search": "搜尋",
+  "searchPlaceholder": "職位、技能、公司或地點",
+  "results": "{{count}} 個職缺",
+  "hiddenCount": "已隱藏 {{count}} 個",
+  "sources": {
+    "connected": "已連結的職缺來源：{{sources}}"
+  },
+  "retry": "重試",
+  "nav": {
+    "label": "職缺導覽",
+    "find": "找職缺",
+    "saved": "已收藏",
+    "applied": "已應徵",
+    "hidden": "已隱藏",
+    "market": "市場"
+  },
+  "filters": {
+    "label": "篩選",
+    "jobType": "職缺類型",
+    "role": "職位",
+    "domain": "領域",
+    "skill": "技能",
+    "seniority": "資歷",
+    "workMode": "工作模式",
+    "region": "地區",
+    "employmentType": "僱用類型",
+    "minimumSalary": "最低薪資",
+    "salaryCurrency": "薪資幣別",
+    "postedDate": "發布日期",
+    "allRoles": "所有職位",
+    "allJobTypes": "所有職缺類型",
+    "allDomains": "所有領域",
+    "allSkills": "所有技能",
+    "allSeniorities": "所有資歷",
+    "allWorkModes": "所有工作模式",
+    "allRegions": "所有地區",
+    "allEmploymentTypes": "所有僱用類型",
+    "allCurrencies": "所有幣別",
+    "anyDate": "不限日期",
+    "last7Days": "最近 7 天",
+    "last30Days": "最近 30 天",
+    "clear": "清除",
+    "more": "更多篩選"
+  },
+  "values": {
+    "tech": "技術",
+    "non_tech": "非技術",
+    "intern": "實習",
+    "fresher": "應屆畢業生",
+    "junior": "初階",
+    "mid": "中階",
+    "senior": "資深",
+    "lead": "主管 / 資深專家",
+    "manager": "經理",
+    "remote": "遠端",
+    "hybrid": "混合",
+    "onsite": "現場",
+    "full_time": "全職",
+    "part_time": "兼職",
+    "contract": "約聘",
+    "temporary": "臨時",
+    "internship": "實習"
+  },
+  "actions": {
+    "save": "收藏職缺",
+    "unsave": "取消收藏",
+    "markApplied": "標記為已應徵",
+    "applied": "已應徵",
+    "hide": "隱藏職缺",
+    "unhide": "重新顯示職缺",
+    "apply": "前往公司網站應徵"
+  },
+  "card": {
+    "salaryNotShown": "未顯示薪資"
+  },
+  "empty": {
+    "title": "沒有符合的職缺",
+    "description": "請嘗試放寬搜尋條件或清除部分篩選。"
+  },
+  "infinite": {
+    "loading": "正在載入更多職缺…",
+    "loadMore": "載入更多職缺",
+    "retry": "重試載入更多職缺",
+    "ready": "捲動時會自動載入更多職缺。"
+  },
+  "messages": {
+    "loginRequired": "登入後可收藏、隱藏或追蹤應徵。",
+    "updateFailed": "無法更新此職缺。",
+    "loadFailed": "無法載入職缺。",
+    "hidden": "職缺已隱藏。",
+    "viewHidden": "檢視已隱藏",
+    "unhidden": "職缺已回到主清單。"
+  },
+  "detail": {
+    "back": "返回職缺列表",
+    "notFound": "此職缺不可用或已過期。",
+    "about": "關於此職位",
+    "noDescription": "來源未提供完整說明。",
+    "requiredSkills": "必備技能",
+    "preferredSkills": "加分技能",
+    "overview": "職缺概覽",
+    "salary": "薪資",
+    "jobType": "職缺類型",
+    "seniority": "資歷",
+    "role": "職位",
+    "source": "來源",
+    "sourceAttribution": "職缺資訊由 {{source}} 提供。"
+  },
+  "user": {
+    "saved": {
+      "title": "已收藏的職缺",
+      "description": "把心儀的職位集中保存在這裡，準備好時再回來查看。",
+      "empty": "您還沒有收藏任何有效職缺。"
+    },
+    "applied": {
+      "title": "應徵紀錄",
+      "description": "您已應徵職缺的簡易紀錄。",
+      "empty": "您還沒有將任何有效職缺標記為已應徵。"
+    },
+    "hidden": {
+      "title": "已隱藏的職缺",
+      "description": "檢視您隱藏的職缺，並可將其放回主清單。",
+      "empty": "您沒有已隱藏的職缺。"
+    }
+  },
+  "market": {
+    "eyebrow": "市場洞察",
+    "title": "被追蹤的科技公司都在徵什麼人",
+    "subtitle": "來自 Corelia 精選來源的技術與非技術職位每日彙整。成長及可比較指標使用在兩個比較時間窗口內均被觀察到的來源。",
+    "cards": {
+      "active": "有效職缺",
+      "new": "今日新增",
+      "remote": "遠端占比",
+      "entry": "入門級職缺"
+    },
+    "topRoles": "熱門職位",
+    "topSkills": "最受歡迎的技能",
+    "topDomains": "各領域徵才情況",
+    "activity": "新職缺動態",
+    "activityDescription": "最近 30 次觀察中每天的新增與過期職缺",
+    "newJobs": "新增職缺",
+    "expiredJobs": "過期職缺",
+    "roleGrowth": "職位成長（可比較來源）",
+    "skillGrowth": "技能成長（可比較來源）",
+    "seniorityMix": "資歷分布",
+    "growthPending": "至少需要 14 天的每日快照才能顯示成長。",
+    "disclaimer": "資料來自 Corelia 追蹤的來源；這是抽樣的市場資料集，並非全面統計。",
+    "empty": {
+      "title": "市場資料準備中",
+      "description": "管理員需要至少抓取一家已驗證的公司並重新整理每日分析。"
+    },
+    "chartScale": "職缺 · 刻度 0–{{count}}"
+  },
+  "admin": {
+    "title": "職缺營運",
+    "subtitle": "管理直接職缺來源和 ATS 目標，審核分類，執行爬蟲，並檢視市場彙總。",
+    "loading": "正在載入職缺營運…",
+    "nav": {
+      "overview": "總覽",
+      "review": "審核",
+      "sources": "來源",
+      "companies": "ATS 目標",
+      "crawlers": "爬蟲執行",
+      "analytics": "分析"
+    },
+    "overview": {
+      "active": "有效職缺",
+      "review": "待審核",
+      "companies": "ATS 目標",
+      "sources": "來源",
+      "failedRuns": "失敗的執行"
+    },
+    "actions": {
+      "run": "立即執行",
+      "runAll": "執行所有來源",
+      "addTarget": "新增 ATS 目標",
+      "publish": "發布",
+      "reject": "拒絕",
+      "enable": "啟用",
+      "disable": "停用",
+      "verify": "驗證",
+      "unverify": "取消驗證",
+      "save": "儲存",
+      "cancel": "取消",
+      "edit": "編輯",
+      "logs": "檢視日誌",
+      "careerPage": "徵才頁面",
+      "clearLogFilter": "顯示所有執行",
+      "revalidate": "重新驗證",
+      "revalidateAll": "重新驗證到期來源",
+      "resolve": "處理",
+      "refreshAnalytics": "重新整理分析"
+    },
+    "confirm": {
+      "runAll": "現在執行所有已啟用且到期的職缺來源嗎？這可能會消耗外部 API 和 AI 額度。",
+      "revalidateAll": "現在重新驗證所有已啟用且到期的職缺來源嗎？這會擷取目前來源快照，但不會呼叫 AI。"
+    },
+    "messages": {
+      "runComplete": "爬蟲執行已完成。",
+      "runPartial": "爬蟲已結束，有 {{failures}} 個目標失敗。請查看執行日誌了解詳情。",
+      "noEligibleCompanies": "沒有可用的合格目標。直接職缺來源可立即執行；ATS 連接器需要有效的徵才頁面網址。",
+      "policyRequired": "啟用此來源前，請先審核來源政策。",
+      "saved": "變更已儲存。",
+      "analyticsRefreshed": "市場分析已重新整理。",
+      "actionFailed": "無法完成此操作。"
+    },
+    "review": {
+      "reason": "審核原因",
+      "title": "職缺名稱",
+      "summary": "事實摘要",
+      "primaryRole": "主要職位 slug",
+      "seniority": "資歷 slug",
+      "roles": "職位 slug，以逗號分隔",
+      "domains": "領域 slug，以逗號分隔",
+      "requiredSkills": "必備技能 slug，以逗號分隔",
+      "preferredSkills": "加分技能 slug，以逗號分隔",
+      "empty": "目前沒有需要審核的職缺。"
+    },
+    "columns": {
+      "source": "來源",
+      "type": "類型",
+      "cadence": "頻率",
+      "jobsFound": "已發現職缺",
+      "targets": "ATS 目標",
+      "credential": "憑證",
+      "policy": "政策已審核",
+      "lastRun": "上次成功",
+      "lastError": "上次錯誤",
+      "status": "狀態",
+      "actions": "操作",
+      "started": "開始時間",
+      "trigger": "觸發方式",
+      "target": "目標",
+      "fetched": "已擷取",
+      "published": "已發布",
+      "review": "待審核",
+      "rejected": "已拒絕",
+      "aiFailed": "AI 備援",
+      "failed": "失敗"
+    },
+    "status": {
+      "enabled": "已啟用",
+      "disabled": "已停用",
+      "error": "錯誤"
+    },
+    "company": {
+      "title": "依公司劃分的 ATS 目標",
+      "description": "Greenhouse、Lever、Ashby 和 SmartRecruiters 不提供統一的全域職缺來源。請在此貼上公開的徵才頁面網址，Corelia 將辨識其 ATS 及徵才看板識別碼。直接職缺來源無需在此分頁新增項目。",
+      "empty": "還沒有 ATS 目標。新增公開的 Greenhouse、Lever、Ashby 或 SmartRecruiters 徵才頁面網址即可開始。",
+      "add": "新增 ATS 目標",
+      "name": "公司名稱",
+      "slug": "Slug",
+      "websiteUrl": "網站網址",
+      "logoUrl": "Logo 網址（選填）",
+      "careersUrl": "徵才頁面或 ATS 網址",
+      "source": "來源 / 轉接器",
+      "identifier": "ATS 看板/網站識別碼",
+      "domains": "領域，以逗號分隔",
+      "cadence": "抓取頻率（小時）",
+      "priority": "優先順序 0–100",
+      "detected": "偵測到 {{source}} / {{identifier}}。您可以覆寫它。",
+      "openJobs": "{{count}} 個開缺職位",
+      "priorityValue": "優先順序 {{priority}}",
+      "verified": "已驗證",
+      "unverified": "未驗證",
+      "neverRun": "從未抓取",
+      "lastRevalidated": "上次重新驗證"
+    },
+    "source": {
+      "feedTitle": "直接職缺來源",
+      "feedDescription": "這些聚合平台和 RSS 來源會直接擷取職缺，無需您新增公司。",
+      "atsTitle": "ATS 連接器",
+      "atsDescription": "這些轉接器僅對「ATS 目標」下設定的徵才頁面網址執行。",
+      "direct": "直接",
+      "targetCount": "{{active}} 個啟用 / 共 {{total}} 個",
+      "credentialConfigured": "已設定",
+      "credentialMissing": "缺少",
+      "addRss": "連接 RSS 來源",
+      "name": "供應商名稱",
+      "slug": "供應商 slug",
+      "baseUrl": "供應商網站網址",
+      "feedUrls": "RSS/Atom 網址，每行一個",
+      "termsUrl": "條款或來源文件網址",
+      "priority": "優先順序 0–100",
+      "attributionText": "署名文字",
+      "redistributionNotes": "再散布/政策說明",
+      "policyReviewed": "政策已審核",
+      "attributionRequired": "需要署名",
+      "canonicalRequired": "需要標準連結",
+      "allowDescription": "允許顯示說明",
+      "allowSeo": "允許 SEO 索引"
+    },
+    "analytics": {
+      "comparableNew": "可比較新增職缺",
+      "comparableTotal": "可比較有效職缺"
+    },
+    "alerts": {
+      "title": "未解決的營運警示",
+      "occurrences": "出現 {{count}} 次"
+    },
+    "loadFailed": "無法載入職缺營運資料。"
+  }
+}

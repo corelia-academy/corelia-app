@@ -12,7 +12,7 @@ describe("Supabase Auth email templates", () => {
     identity_linked: [".Email", ".Provider"], identity_unlinked: [".Email", ".Provider"],
   };
 
-  it("keeps all 13 templates bilingual with English fallback", () => {
+  it("keeps all 13 templates localized with English fallback", () => {
     expect(authNames).toHaveLength(13);
     for (const name of authNames as string[]) {
       const template = buildAuthTemplate(name);
@@ -29,6 +29,18 @@ describe("Supabase Auth email templates", () => {
       expect(vi).not.toContain("{{");
       expect(en).not.toContain("{{");
       expect(vi).toContain("Corelia Academy");
+      const expected: Array<[string, string]> = [
+        ["zh-CN", "zh-CN"], ["zh_cn", "zh-CN"], ["zh-Hans", "zh-CN"], ["zh", "zh-CN"],
+        ["zh-TW", "zh-TW"], ["zh-HK", "zh-TW"], ["zh_Hant", "zh-TW"],
+        ["ko", "ko"], ["ko-KR", "ko"], ["ja", "ja"], ["ja_JP", "ja"], ["es", "es"], ["es-MX", "es"],
+      ];
+      for (const [input, lang] of expected) {
+        const html = renderAuthFixture(template, { ...fixture, locale: input });
+        expect(html).toContain(`lang="${lang}"`);
+        expect(html).not.toContain("{{");
+        expect(html).not.toBe(en);
+      }
+      expect(renderAuthFixture(template, { ...fixture, locale: "fr" })).toBe(en);
       expect(vi).toContain("padding:16px 24px");
       expect(vi).toContain("margin:0;line-height:18px");
     }

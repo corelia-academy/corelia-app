@@ -278,8 +278,11 @@ describe("draft hackathon preview", () => {
     const view = renderRoute("/hackathons/published-demo/overview");
     await settle();
     try {
+      const findAction = () => Array.from(view.container.querySelector("header")?.querySelectorAll("button") ?? []).find((button) => button.textContent === "public.register");
+      // The lazy-loaded route can take longer than one settle tick on slow CI runners.
+      for (let attempt = 0; attempt < 40 && !findAction(); attempt += 1) await settle();
       const hero = view.container.querySelector("header");
-      const action = Array.from(hero?.querySelectorAll("button") ?? []).find((button) => button.textContent === "public.register");
+      const action = findAction();
       const prize = view.container.querySelector("a[href='/hackathons/published-demo/prizes']");
       expect(action).toBeDefined();
       expect(prize).not.toBeNull();

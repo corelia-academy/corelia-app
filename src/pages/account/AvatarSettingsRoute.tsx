@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
+import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 import { Avatar as HumationAvatar } from "@humation/react";
 import { getPartsForSlot } from "@humation/core";
 import { useTranslation } from "react-i18next";
@@ -29,7 +30,7 @@ export function AvatarSettingsRoute() {
     setConfig(safeAvatarConfig(profile?.avatar_config, avatarAssets));
   }, [profile?.id, profile?.avatar_seed, profile?.avatar_config]);
 
-  if (!user || !profile) return null;
+  if (!user || !profile) return <RouteSkeleton variant="form" />;
   const effectiveSeed = seed ?? user.id;
 
   async function save() {

@@ -3,28 +3,66 @@ import { Window } from "happy-dom";
 import { escapeHtml } from "../../supabase/functions/corelia-api/lib/html.ts";
 import { emailSection, inlineEmailHtml, renderEmailFrame } from "../../supabase/functions/corelia-api/lib/mail/render.ts";
 
+export const authLocales = ["en", "zh-CN", "ko", "es", "zh-TW", "vi", "ja"];
 export const authNames = [
   "invite", "confirmation", "recovery", "magic_link", "email_change", "reauthentication",
   "password_changed", "email_changed", "phone_changed", "mfa_factor_enrolled",
   "mfa_factor_unenrolled", "identity_linked", "identity_unlinked",
 ];
-const vietnameseLocaleVariants = [
+// Go templates compare case-sensitively, so every accepted spelling is listed.
+const caseVariants = (value) => [...new Set([value, value.toLowerCase(), value.toUpperCase()])];
+const withRegions = (languages, regions) => [...new Set(languages.flatMap((language) => [
+  language,
+  ...regions.flatMap((region) => caseVariants(region).flatMap((r) => [`${language}-${r}`, `${language}_${r}`])),
+]))];
+const vietnameseVariants = [
   "vi", "vI", "Vi", "VI", "vn", "vN", "Vn", "VN",
   ...["vi", "vI", "Vi", "VI"].flatMap((language) =>
     ["vn", "vN", "Vn", "VN"].flatMap((region) => [`${language}-${region}`, `${language}_${region}`]),
   ),
 ];
-const localeCondition = `if or ${vietnameseLocaleVariants.map((locale) => `(eq .Data.locale "${locale}")`).join(" ")}`;
-const localeAction = `{{ ${localeCondition} }}`;
+/** Non-English locales in chain order; English is the final `else`. */
+const localeVariants = {
+  "zh-CN": withRegions(["zh"], ["CN", "SG", "Hans"]),
+  "zh-TW": withRegions(["zh"], ["TW", "HK", "MO", "Hant"]).filter((v) => v !== "zh"),
+  ko: withRegions(["ko"], ["KR"]),
+  ja: withRegions(["ja"], ["JP"]),
+  es: withRegions(["es"], ["ES", "MX", "AR", "CO", "US", "419"]),
+  vi: vietnameseVariants,
+};
+const authLocaleOrder = ["zh-CN", "zh-TW", "ko", "ja", "es", "vi"];
+const localeCondition = (locale) => `or ${localeVariants[locale].map((variant) => `(eq .Data.locale "${variant}")`).join(" ")}`;
+const conditionToLocale = new Map(authLocaleOrder.map((locale) => [localeCondition(locale), locale]));
+const translations = JSON.parse(readFileSync(new URL("../../supabase/templates/source/translations.json", import.meta.url), "utf8"));
+const collapse = (text) => text.replace(/\s+/g, " ").trim();
 
-function isVietnameseAuthLocale(locale) {
-  return typeof locale === "string" && ["vi", "vn"].includes(locale.trim().toLowerCase().replaceAll("_", "-").split("-")[0]);
+/** `{{ if zh-CN }}..{{ else if zh-TW }}..{{ else if vi }}VI{{ else }}EN{{ end }}`; `values` maps locale to text. */
+function localeChain(values) {
+  return authLocaleOrder
+    .map((locale, i) => `{{ ${i === 0 ? "if" : "else if"} ${localeCondition(locale)} }}${values[locale]}`)
+    .join("") + `{{ else }}${values.en}{{ end }}`;
+}
+
+function expandLocaleBlocks(source, name) {
+  return source.replace(
+    /{{\s*if or \(eq \.Data\.locale[\s\S]*?\)\s*}}([\s\S]*?){{\s*else\s*}}([\s\S]*?){{\s*end\s*}}/g,
+    (_block, vi, en) => {
+      const entry = translations[collapse(en)];
+      if (!entry) throw new Error(`Missing auth translations for "${collapse(en)}" in ${name}`);
+      for (const locale of ["zh-CN", "zh-TW", "ko", "ja", "es"]) {
+        if (!entry[locale]) throw new Error(`Missing ${locale} auth translation for "${collapse(en)}"`);
+      }
+      return localeChain({ ...entry, vi, en });
+    },
+  );
 }
 
 export function buildAuthTemplate(name) {
   if (!authNames.includes(name)) throw new Error("Unknown Auth template");
-  const source = readFileSync(new URL(`../../supabase/templates/source/${name}.html`, import.meta.url), "utf8")
-    .replace(/{{\s*if or \(eq \.Data\.locale[\s\S]*?\)\s*}}/g, localeAction);
+  const source = expandLocaleBlocks(
+    readFileSync(new URL(`../../supabase/templates/source/${name}.html`, import.meta.url), "utf8"),
+    name,
+  );
   // HTML parsers must never interpret the quotes or branches inside Go actions.
   const actions = [];
   const mask = (html) => html.replace(/{{[\s\S]*?}}/g, (action) => {
@@ -43,7 +81,7 @@ export function buildAuthTemplate(name) {
       .map((node) => emailSection(node.classList[0], inlineEmailHtml(node.innerHTML)))
       .join("\n");
     return restore(renderEmailFrame({
-      locale: mask(`${localeAction}vi{{ else }}en{{ end }}`),
+      locale: mask(localeChain({ "zh-CN": "zh-CN", "zh-TW": "zh-TW", ko: "ko", ja: "ja", es: "es", vi: "vi", en: "en" })),
       title, preheader: title, sectionsHtml,
     }, { appUrl: mask("{{ .SiteURL }}") })) + "\n";
   } finally {
@@ -67,15 +105,26 @@ export function renderAuthFixture(html, { locale, token = "123456", appUrl, conf
       continue;
     }
     const action = part.slice(2, -2).trim().replace(/\s+/g, " ");
+    const evaluate = (condition) => {
+      const localeCode = conditionToLocale.get(condition);
+      if (localeCode) return localeVariants[localeCode].includes(locale);
+      if (condition === ".Token") return Boolean(token);
+      throw new Error(`Unsupported fixture action: ${action}`);
+    };
     if (action.startsWith("if ")) {
-      const condition = action === localeCondition
-        ? isVietnameseAuthLocale(locale)
-        : action === "if .Token" ? Boolean(token) : undefined;
-      if (condition === undefined) throw new Error(`Unsupported fixture action: ${action}`);
-      branches.push({ active: condition, condition });
+      const condition = evaluate(action.slice(3));
+      branches.push({ active: condition, taken: condition });
+    } else if (action.startsWith("else if ")) {
+      if (!branches.length) throw new Error("Unexpected else if");
+      const branch = branches.at(-1);
+      const condition = !branch.taken && evaluate(action.slice(8));
+      branch.active = condition;
+      branch.taken ||= condition;
     } else if (action === "else") {
       if (!branches.length) throw new Error("Unexpected else");
-      branches.at(-1).active = !branches.at(-1).condition;
+      const branch = branches.at(-1);
+      branch.active = !branch.taken;
+      branch.taken = true;
     } else if (action === "end") {
       if (!branches.pop()) throw new Error("Unexpected end");
     } else if (Object.hasOwn(values, action)) {

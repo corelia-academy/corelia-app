@@ -73,8 +73,13 @@
   },
   "language": {
     "switchLabel": "Change language",
-    "vi": "Vietnamese",
-    "en": "English"
+    "en": "English",
+    "zh-CN": "简体中文",
+    "ko": "한국어",
+    "es": "Español",
+    "zh-TW": "繁體中文",
+    "vi": "Tiếng Việt",
+    "ja": "日本語"
   },
   "cropper": {
     "title": "Crop image to 1:1 (Square)",
@@ -767,8 +772,8 @@
           "detail": "+10 XP/eligible lesson · once"
         },
         "quiz": {
-          "title": "Pass a quiz",
-          "detail": "Score ≥80%: +20 XP and +10 lesson XP"
+          "title": "Complete a quiz",
+          "detail": "+30 XP/completed quiz · once"
         },
         "course": {
           "title": "Complete a course",
@@ -871,7 +876,8 @@
       "startFromCatalogTitle": "You haven't enrolled in any courses yet.",
       "startFromCatalogSubtitle": "Pick a foundational course to build momentum.",
       "enrollHint": "Once you enroll in or purchase your first course, this area will show progress and quick entry points.",
-      "profileSetupHintPrefix": "Please update your full name and phone number so Corelia, instructors, or"
+      "profileSetupHintPrefix": "Please update your full name and phone number so Corelia, instructors, or",
+      "loadFailed": "Could not load courses."
     }
   },
   "achievements": {
@@ -1021,7 +1027,8 @@
     },
     "loadError": {
       "body": "We could not refresh your achievements. Your last confirmed credential status is still shown.",
-      "retry": "Retry"
+      "retry": "Retry",
+      "vaultUnavailable": "Achievements could not be loaded. Use Retry above."
     },
     "stats": {
       "certificates": "Certificates",

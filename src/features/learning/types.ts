@@ -1,4 +1,5 @@
 import type { CourseLesson } from "@/types/courses";
+import type { ContentLocale } from "@/lib/locales";
 export interface CourseInstructorRef { profile_id: string; role_label?: string; order: number }
 export interface QuizConfig { passing_ratio: number; allow_retry: boolean }
 export type ArtifactField = "github_url" | "deployment_url" | "contract_address" | "transaction_url" | "demo_url" | "notes";
@@ -29,4 +30,4 @@ export interface LessonRendererProps {
   onComplete(): Promise<void>;
   onAction(action: LessonActionState | null): void;
 }
-export interface PublishValidationIssue { panel?: "info" | "content" | "assignments"; fieldPath?: Array<string | number>; lessonId?: string; field: string; code: string; locale?: "vi" | "en" }
+export interface PublishValidationIssue { panel?: "info" | "content" | "assignments"; fieldPath?: Array<string | number>; lessonId?: string; field: string; code: string; locale?: ContentLocale }

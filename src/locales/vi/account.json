@@ -18,6 +18,10 @@
       "title": "Hồ sơ học tập & CV",
       "description": "Thông tin phục vụ tư vấn & việc làm"
     },
+    "projects": {
+      "title": "Dự án",
+      "description": "Quản lý dự án và bản dịch"
+    },
     "achievements": {
       "title": "Kho thành tích",
       "description": "Quản lý chứng nhận & huy hiệu"
@@ -43,10 +47,16 @@
     "language": {
       "title": "Ngôn ngữ",
       "description": "Thay đổi ngôn ngữ hiển thị cho toàn bộ ứng dụng. Với tài khoản đã đăng nhập, lựa chọn này sẽ được đồng bộ trên các thiết bị.",
-      "viMeta": "Vietnamese (VI)",
-      "enMeta": "English (EN)",
-      "active_vi": "Đang dùng",
-      "active_en": "Đang dùng"
+      "meta": {
+        "en": "Tiếng Anh (EN)",
+        "zh-CN": "Tiếng Trung giản thể (zh-CN)",
+        "ko": "Tiếng Hàn (KO)",
+        "es": "Tiếng Tây Ban Nha (ES)",
+        "zh-TW": "Tiếng Trung phồn thể (zh-TW)",
+        "vi": "Tiếng Việt (VI)",
+        "ja": "Tiếng Nhật (JA)"
+      },
+      "active": "Đang dùng"
     },
     "appearance": {
       "title": "Giao diện",
@@ -76,7 +86,8 @@
       "likes": "Thông báo lượt thích",
       "follows": "Thông báo người theo dõi mới",
       "digest": "Email tổng hợp tương tác hằng ngày",
-      "digestDescription": "Chỉ gửi khi có hoạt động mới, lúc 09:00 ({{timezone}}). Bạn có thể hủy nhận bất cứ lúc nào."
+      "digestDescription": "Chỉ gửi khi có hoạt động mới, lúc 09:00 ({{timezone}}). Bạn có thể hủy nhận bất cứ lúc nào.",
+      "loadFailed": "Không tải được cài đặt thông báo của bạn."
     }
   },
   "common": {
@@ -90,37 +101,14 @@
   },
   "projects": {
     "pageTitle": "Không gian dự án",
-    "listTitle": "Dự án của tôi",
     "ownerBadge": "Chủ dự án",
     "collaboratorBadge": "Thành viên",
-    "publicListingLabel": "Danh sách public:",
-    "collaboratorCardTitle": "Hiển thị của collaborator",
-    "collaboratorCardBody": "Bạn đang là collaborator của project này. Bạn có thể chọn việc project có xuất hiện trên hồ sơ công khai của mình hay không.",
     "showOnProfileLabel": "Hiện project này trên hồ sơ của tôi",
     "showOnProfileHint": "Khi bật, project có thể xuất hiện trên hồ sơ công khai và trong danh sách project ở tài khoản của bạn.",
-    "ownerOnlyTitle": "Nội dung do owner quản lý",
-    "ownerOnlyBody": "Hiện tại chỉ owner mới sửa được nội dung chính của project và bản dịch. Với vai trò collaborator, bạn chỉ điều khiển việc project có xuất hiện trên hồ sơ của mình hay không.",
-    "localizationSettingsTitle": "Cài đặt bản địa hóa",
-    "primaryLocaleLabel": "Ngôn ngữ nội dung chính",
-    "supportedLocalesLabel": "Ngôn ngữ hỗ trợ",
-    "saveSettings": "Lưu cài đặt",
-    "translationEditorTitle": "Trình sửa bản dịch",
-    "translationEditorHint": "Nếu để trống, hệ thống sẽ fallback về ngôn ngữ chính ({{primaryLocale}}).",
-    "updatedAt": "Cập nhật: {{datetime}}",
-    "copyFromPrimary": "Chép từ bản chính",
-    "saveTranslation": "Lưu bản dịch",
-    "savingTranslation": "Đang lưu…",
-    "targetLocaleDisabled": "Ngôn ngữ đích {{locale}} chưa được bật trong danh sách hỗ trợ.",
-    "primaryColumnTitle": "Bản chính ({{locale}})",
-    "translationColumnTitle": "Bản dịch ({{locale}})",
-    "fieldTitle": "Tiêu đề",
-    "fieldSummary": "Tóm tắt",
-    "titleFallback": "Fallback: {{title}}",
-    "titlePlaceholder": "Nhập tiêu đề",
-    "summaryPlaceholder": "Để trống để dùng bản chính",
     "errors": {
       "visibilityFailed": "Không thể cập nhật chế độ hiển thị project trên hồ sơ của bạn."
-    }
+    },
+    "newProject": "Tạo dự án mới"
   },
   "password": {
     "title": "Đổi mật khẩu",

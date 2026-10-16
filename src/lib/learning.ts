@@ -7,6 +7,7 @@ import type { CourseLesson, CourseLessonLocaleContent, SupportedCourseLocale } f
 import type { SectionQuestion, SectionQuestionAttempt } from "@/types/questions";
 import type { PublishValidationIssue } from "@/features/learning/types";
 import { getPublicAvatarDetails } from "@/lib/publicProfileAvatars";
+import { CONTENT_LOCALES, normalizeLocale, type ContentLocale } from "@/lib/locales";
 
 export interface LearningQuizResult {
   attempt_group_id: string;
@@ -25,7 +26,7 @@ export async function submitLearningQuiz(courseId: string, lessonId: string, req
 export async function getLearningQuiz(courseId: string, lessonId: string, userId: string | undefined, locale: string, signal?: AbortSignal) {
   const [questions, copy, attempts, progress] = await Promise.all([
     getLessonQuestions(courseId, lessonId, undefined, signal),
-    getCourseLessonLocaleContentMap(courseId, locale.startsWith("en") ? "en" : "vi"),
+    getCourseLessonLocaleContentMap(courseId, normalizeLocale(locale)),
     userId ? supabase.from("section_question_attempts").select("*").eq("user_id", userId).eq("course_id", courseId).eq("lesson_id", lessonId).not("attempt_group_id", "is", null).order("attempted_at", { ascending: false }).order("id", { ascending: false }) : Promise.resolve({ data: [], error: null }),
     userId ? getLessonProgressForCourse(userId, courseId) : Promise.resolve([]),
   ]);
@@ -46,8 +47,14 @@ export async function saveLearningLesson(courseId: string, lesson: CourseLesson,
   return { ...data.data, id: data.id, section_id: data.section_id, order: data.sort_order, published: data.published, archived_at: data.archived_at } as CourseLesson;
 }
 export async function getLearningEditor(courseId: string) {
-  const [course, sections, lessons, vi, en, viCourse, enCourse] = await Promise.all([getCourse(courseId), getCourseSections(courseId), getCourseLessons(courseId), getCourseLessonLocaleContentMap(courseId, "vi"), getCourseLessonLocaleContentMap(courseId, "en"), getCourseLocaleContent(courseId, "vi"), getCourseLocaleContent(courseId, "en")]);
-  return { course, sections, lessons, locales: { vi, en }, courseLocales: { vi: viCourse, en: enCourse } };
+  const [course, sections, lessons, lessonMaps, courseCopies] = await Promise.all([
+    getCourse(courseId), getCourseSections(courseId), getCourseLessons(courseId),
+    Promise.all(CONTENT_LOCALES.map(locale => getCourseLessonLocaleContentMap(courseId, locale))),
+    Promise.all(CONTENT_LOCALES.map(locale => getCourseLocaleContent(courseId, locale))),
+  ]);
+  const locales = Object.fromEntries(CONTENT_LOCALES.map((locale, i) => [locale, lessonMaps[i]])) as Record<ContentLocale, Awaited<(typeof lessonMaps)[number]>>;
+  const courseLocales = Object.fromEntries(CONTENT_LOCALES.map((locale, i) => [locale, courseCopies[i]])) as Record<ContentLocale, Awaited<(typeof courseCopies)[number]>>;
+  return { course, sections, lessons, locales, courseLocales };
 }
 export async function getLearningPreview(courseId: string, lessonId: string | undefined, locale: SupportedCourseLocale) {
   const data = await getLearningEditor(courseId);

@@ -11,6 +11,7 @@ import {
   type NotificationPreferences,
 } from "@/lib/notificationPreferences";
 import { useAuth } from "@/stores/authStore";
+import { QueryErrorState } from "@/components/QueryErrorState";
 
 function Toggle({
   id,
@@ -100,6 +101,15 @@ export function NotificationPreferencesCard() {
         {t("settings.notifications.description")}
       </p>
 
+      {/* Never present defaults as the user's saved settings when they failed to load. */}
+      {preferencesQuery.isError && !preferencesQuery.data ? (
+        <QueryErrorState
+          className="mt-4"
+          message={t("settings.notifications.loadFailed")}
+          retrying={preferencesQuery.isFetching}
+          onRetry={() => void preferencesQuery.refetch()}
+        />
+      ) : (
       <div className="mt-4 divide-y divide-border-subtle rounded-md border border-border-subtle px-4">
         <Toggle id="pref-likes" checked={prefs.in_app_likes} onChange={() => !saveMutation.isPending && toggle("in_app_likes")} label={t("settings.notifications.likes")} />
         <Toggle id="pref-follows" checked={prefs.in_app_follows} onChange={() => !saveMutation.isPending && toggle("in_app_follows")} label={t("settings.notifications.follows")} />
@@ -124,6 +134,7 @@ export function NotificationPreferencesCard() {
           label={t("settings.notifications.inAppCourseBlast")}
         />
       </div>
+      )}
     </section>
   );
 }

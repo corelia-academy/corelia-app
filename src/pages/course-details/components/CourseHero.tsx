@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateLearningProgress } from "@/features/learning/invalidateLearningProgress";
 import { Info } from "lucide-react";
@@ -21,6 +22,7 @@ import {
   type CourseLesson,
   type Enrollment,
 } from "@/types/courses";
+import type { ContentLocale } from "@/lib/locales";
 
 interface CourseHeroProps {
   course: Course;
@@ -88,10 +90,7 @@ export function CourseHero({
   const uiLocale = normalizeCourseLocale(i18n.language);
   const shouldShowContentLocaleNotice = uiLocale !== contentLocale;
 
-  const localeLabel = (loc: "vi" | "en") =>
-    loc === "en"
-      ? translateCommon("language.en")
-      : translateCommon("language.vi");
+  const localeLabel = (loc: ContentLocale) => translateCommon(`language.${loc}`);
 
   const courseThumbnailSrc =
     course.thumbnail_url &&
@@ -233,7 +232,7 @@ export function CourseHero({
 
             {courseThumbnailSrc ? (
               <img
-                src={courseThumbnailSrc}
+                src={optimizedImageUrl(courseThumbnailSrc, { width: 1200 })} srcSet={optimizedImageSrcSet(courseThumbnailSrc, 1200)}
                 alt={course.title}
                 loading="eager"
                 fetchPriority="high"

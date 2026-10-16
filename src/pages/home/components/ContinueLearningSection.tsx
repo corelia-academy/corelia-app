@@ -1,4 +1,5 @@
 import { FileText, MonitorPlay, TimerIcon } from "@phosphor-icons/react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
 import { Chip } from "@/components/ui/chip";
@@ -6,15 +7,18 @@ import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration
 import { ProgressBar } from "@/components/ui/progress";
 import { Timestamp } from "@/components/ui/timestamp";
 import type { FocusCard } from "../utils/homeTypes";
+import { HomeCourseCardSkeletonRow } from "./HomeCourseCardSkeleton";
 
 export function ContinueLearningSection({
   t,
   focusCards,
   enrolledCourseCount,
+  loading = false,
 }: {
   t: TFunction<"common">;
   focusCards: FocusCard[];
   enrolledCourseCount: number;
+  loading?: boolean;
 }) {
   const formatRemainingDuration = (seconds: number) => {
     const totalMinutes = Math.ceil(seconds / 60);
@@ -43,7 +47,9 @@ export function ContinueLearningSection({
         ) : null}
       </div>
 
-      {focusCards.length > 0 ? (
+      {loading ? (
+        <HomeCourseCardSkeletonRow />
+      ) : focusCards.length > 0 ? (
         <div className="mt-4 flex flex-wrap items-start gap-6">
           {focusCards.map((item) => (
             <NavLink
@@ -54,7 +60,9 @@ export function ContinueLearningSection({
               <div className="aspect-video overflow-hidden rounded-lg border border-border bg-surface-raised">
                 {item.thumbnailUrl ? (
                   <img
-                    src={item.thumbnailUrl}
+                    src={optimizedImageUrl(item.thumbnailUrl, { width: 335 })}
+                    srcSet={optimizedImageSrcSet(item.thumbnailUrl, 335)}
+                    decoding="async"
                     alt=""
                     loading="lazy"
                     className="size-full object-cover"

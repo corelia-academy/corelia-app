@@ -2,21 +2,24 @@ import { NavLink } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { skeletonRevealClass } from "@/components/loading/skeletonReveal";
+import { cn } from "@/lib/utils";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
 
+/** Hackathon detail placeholder: layout loading state, route fallback and bootstrap content. */
 export function ContestDetailLoadingCard({
   translate,
 }: {
-  translate: (key: string, options?: Record<string, unknown>) => string;
+  translate?: (key: string, options?: Record<string, unknown>) => string;
 }) {
   return (
     <PageContainer width="default">
       <div
-        className="space-y-4 sm:space-y-5"
+        className={cn("space-y-4 sm:space-y-5", skeletonRevealClass())}
         role="status"
         aria-live="polite"
         aria-busy="true"
-        aria-label={translate("detail.loading.title")}
+        aria-label={translate ? translate("detail.loading.title") : "Loading"}
       >
         <Skeleton className="h-4 w-48" />
         <Card className="overflow-hidden">

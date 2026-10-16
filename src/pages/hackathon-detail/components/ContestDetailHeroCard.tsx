@@ -1,4 +1,5 @@
 import { ArrowRight, Share2, Trophy } from "lucide-react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,7 +41,7 @@ function HackathonHeroBanner({
   return (
     <div className="relative aspect-[21/9] w-full overflow-hidden bg-surface-raised">
       <img
-        src={src}
+        src={optimizedImageUrl(src, { width: 1200 })} srcSet={optimizedImageSrcSet(src, 1200)} decoding="async"
         alt={translate("detail.visual.bannerAlt", { title: contest.title })}
         className="h-full w-full object-cover"
       />

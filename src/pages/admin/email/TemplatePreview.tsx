@@ -3,13 +3,14 @@ import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { buildEmailPreview, emailPreviewValues, emailPreviewVariables } from "@/lib/email/preview";
+import type { ContentLocale } from "@/lib/locales";
 
 type TemplateDraft = {
   purpose: string; subject: string; preheader: string; image_url: string;
   body_text: string; cta_label: string; cta_url: string;
 };
 
-export function TemplatePreview({ mobile, template, locale }: { mobile: boolean; template: TemplateDraft; locale: "vi" | "en" }) {
+export function TemplatePreview({ mobile, template, locale }: { mobile: boolean; template: TemplateDraft; locale: ContentLocale }) {
   const { t } = useTranslation("emailCenter");
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const draft = {

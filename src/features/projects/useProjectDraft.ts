@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ProjectDraft } from "./projectEditorDraft";
+import { isContentLocale } from "@/lib/locales";
 
 // Recover text and selections on Back/refresh. Uploaded images stay in the
 // current editor only: temporary signed URLs must not be restored after expiry.
@@ -20,7 +21,7 @@ export function useProjectDraft(key: string, initial: ProjectDraft, leaveMessage
         const value = { primaryLocale: initial.primaryLocale, locales: initial.locales, ...raw.value };
         const strings = ["title", "slug", "summary", "demo", "repo", "slide", "video", "description", "progress", "pitchVideo"];
         const arrays = ["tracks", "sectors", "tech", "customSectors", "customTech"];
-        if ((value.primaryLocale === "vi" || value.primaryLocale === "en") && value.locales && typeof value.locales === "object" && !Array.isArray(value.locales) && Object.entries(value.locales).every(([locale, content]) => ["vi", "en"].includes(locale) && content && typeof content === "object" && !Array.isArray(content) && Object.entries(content).every(([field, text]) => ["title", "summary", "description", "progress"].includes(field) && typeof text === "string")) && strings.every(k => typeof value[k] === "string") && arrays.every(k => Array.isArray(value[k]) && value[k].every((id: unknown) => typeof id === "string")) && ["public", "private", "unlisted"].includes(value.visibility)) {
+        if (isContentLocale(value.primaryLocale) && value.locales && typeof value.locales === "object" && !Array.isArray(value.locales) && Object.entries(value.locales).every(([locale, content]) => isContentLocale(locale) && content && typeof content === "object" && !Array.isArray(content) && Object.entries(content).every(([field, text]) => ["title", "summary", "description", "progress"].includes(field) && typeof text === "string")) && strings.every(k => typeof value[k] === "string") && arrays.every(k => Array.isArray(value[k]) && value[k].every((id: unknown) => typeof id === "string")) && ["public", "private", "unlisted"].includes(value.visibility)) {
           return { ...initial, ...value, logo: initial.logo, screenshots: initial.screenshots } as ProjectDraft;
         }
       }

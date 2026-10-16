@@ -1,14 +1,17 @@
 import { useMemo, useState } from "react";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { useQuery } from "@tanstack/react-query";
-import { NavLink, useLocation } from "react-router";
+import { cn } from "@/lib/utils";
+import { NavLink, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Search, ShieldAlert } from "lucide-react";
-import { FileText, TimerIcon } from "@phosphor-icons/react";
+import { BackspaceIcon, FileText, TimerIcon } from "@phosphor-icons/react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { Timestamp } from "@/components/ui/timestamp";
@@ -59,7 +62,7 @@ function SearchCourseResultCard({
       <div className="aspect-video overflow-hidden rounded-lg border border-border bg-surface-raised">
         {course.thumbnail_url && !failedImage ? (
           <img
-            src={course.thumbnail_url}
+            src={optimizedImageUrl(course.thumbnail_url, { width: 400 })} srcSet={optimizedImageSrcSet(course.thumbnail_url, 400)}
             alt=""
             loading="lazy"
             onError={() => setFailedImage(true)}
@@ -112,9 +115,11 @@ function SearchCourseResultCard({
 
 export default function SearchPage() {
   const { t, i18n } = useTranslation("common");
+  const navigate = useNavigate();
   const q = useQueryParam("q").trim();
   const [activeFilter, setActiveFilter] = useState<SearchFilter>("all");
   const [previousQuery, setPreviousQuery] = useState(q);
+  const [draftQuery, setDraftQuery] = useState(q);
   const resultsQuery = useQuery(searchResultsQueryOptions(q, 30, true, i18n.language));
   const items = resultsQuery.data ?? EMPTY_SEARCH_RESULTS;
   const participantPreviewByCourse = useMemo(
@@ -126,6 +131,7 @@ export default function SearchPage() {
   const visibleItems = activeFilter === "all"
     ? items
     : items.filter((item) => item.entity_type === activeFilter);
+  const showCourseCards = visibleItems.every((item) => item.entity_type === "course" && item.course);
   const loading = Boolean(q) && resultsQuery.isPending;
   const error = resultsQuery.error instanceof Error
     ? resultsQuery.error.message
@@ -133,6 +139,7 @@ export default function SearchPage() {
 
   if (previousQuery !== q) {
     setPreviousQuery(q);
+    setDraftQuery(q);
     setActiveFilter("all");
   }
 
@@ -153,7 +160,41 @@ export default function SearchPage() {
         </div>
       </div>
 
-      <div className="mt-6">
+      <form
+        role="search"
+        className="mt-4 md:hidden"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const next = draftQuery.trim();
+          if (next) navigate(`/search?q=${encodeURIComponent(next)}`);
+        }}
+      >
+        <Input
+          variant="icon-leading"
+          value={draftQuery}
+          onChange={(event) => setDraftQuery(event.target.value)}
+          autoFocus={!q}
+          enterKeyHint="search"
+          renderTrailingContent={({ disabled }) =>
+            draftQuery.length > 0 ? (
+              <button
+                type="button"
+                aria-label={t("search.clear")}
+                disabled={disabled}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => setDraftQuery("")}
+                className="inline-flex size-6 shrink-0 items-center justify-center rounded text-foreground-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              >
+                <BackspaceIcon size={20} weight="duotone" aria-hidden />
+              </button>
+            ) : null
+          }
+          placeholder={t("search.placeholder")}
+          aria-label={t("search.placeholder")}
+        />
+      </form>
+
+      <div className={cn("mt-6 transition-opacity", resultsQuery.isPlaceholderData && "opacity-60")} aria-busy={resultsQuery.isPlaceholderData || undefined}>
         {loading ? (
           <div className="space-y-3">
             <Skeleton className="h-16 w-full rounded-md" />
@@ -217,12 +258,12 @@ export default function SearchPage() {
                 </div>
               ) : (
                 <div className={
-                  visibleItems.every((item) => item.entity_type === "course" && item.course)
+                  showCourseCards
                     ? "grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 xl:grid-cols-3"
                     : "mobile-bleed-grid divide-y divide-border-subtle"
                 }>
                   {visibleItems.map((item) => (
-                    item.entity_type === "course" && item.course ? (
+                    showCourseCards ? (
                       <SearchCourseResultCard
                         key={`${item.entity_type}:${item.entity_id}`}
                         item={item}

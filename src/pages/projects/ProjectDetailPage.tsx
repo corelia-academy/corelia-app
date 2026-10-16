@@ -1,4 +1,5 @@
 import { Tabs } from "@base-ui/react/tabs";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { toast } from "sonner";
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -23,7 +24,7 @@ import { ProjectSelfLeaveButton } from "@/components/projects/ProjectSelfLeaveBu
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ProjectDetailSkeleton } from "./ProjectDetailSkeleton";
 import { getProjectCoverImageUrl, type PublicProjectEntry } from "@/lib/projects";
 import { projectVideoEmbed } from "@/lib/projectVideo";
 import {
@@ -64,7 +65,7 @@ function ProjectLogo({ project }: { project: Project }) {
   if (coverUrl) {
     return (
       <div className="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border-subtle bg-surface-raised">
-        <img src={coverUrl} alt={project.title} className="h-full w-full object-contain" />
+        <img src={optimizedImageUrl(coverUrl, { width: 96, resize: "contain" })} srcSet={optimizedImageSrcSet(coverUrl, 96, { resize: "contain" })} alt={project.title} className="h-full w-full object-contain" />
       </div>
     );
   }
@@ -72,23 +73,6 @@ function ProjectLogo({ project }: { project: Project }) {
   return (
     <div className="flex size-24 shrink-0 items-center justify-center rounded-xl border border-border-subtle bg-surface-raised text-foreground-subtle">
       <ImageIcon className="size-10" aria-hidden />
-    </div>
-  );
-}
-
-function DetailSkeleton() {
-  return (
-    <div className="container-app pb-6 pt-4 sm:py-8">
-      <Skeleton className="mb-4 h-8 w-40" />
-      <Skeleton className="h-72 w-full rounded-lg" />
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-2/3" />
-          <Skeleton className="h-5 w-48" />
-          <Skeleton className="h-24 w-full" />
-        </div>
-        <Skeleton className="h-72 w-full rounded-lg" />
-      </div>
     </div>
   );
 }
@@ -157,7 +141,7 @@ export default function ProjectDetailPage() {
     );
   }
 
-  if (loading) return <DetailSkeleton />;
+  if (loading) return <ProjectDetailSkeleton />;
 
   if (error || !entry) {
     return (
@@ -320,7 +304,7 @@ export default function ProjectDetailPage() {
         </Tabs.List>
         <Tabs.Panel value="overview" className="space-y-6">
           {videoEmbed || pitchEmbed ? <Tabs.Root defaultValue={videoEmbed ? "demo" : "pitch"} className="mobile-bleed-surface overflow-hidden rounded-2xl border border-border-subtle bg-surface-base"><Tabs.List className="flex gap-4 border-b border-border-subtle p-3" aria-label={t("projects.editor.videos")}>{videoEmbed ? <Tabs.Tab value="demo" className="rounded-lg px-3 py-2 text-label-medium font-body data-[active]:bg-primary/10 data-[active]:text-primary">{t("projects.detail.video")}</Tabs.Tab> : null}{pitchEmbed ? <Tabs.Tab value="pitch" className="rounded-lg px-3 py-2 text-label-medium font-body data-[active]:bg-primary/10 data-[active]:text-primary">{t("projects.editor.pitchVideo")}</Tabs.Tab> : null}</Tabs.List>{[["demo",videoEmbed],["pitch",pitchEmbed]].map(([value,embed])=> typeof value === 'string' && embed && typeof embed !== 'string' ? <Tabs.Panel key={value} value={value}><iframe className="aspect-video w-full" src={embed.src} title={value === 'demo' ? t("projects.detail.video") : t("projects.editor.pitchVideo")} referrerPolicy={embed.provider === "youtube" ? "strict-origin-when-cross-origin" : undefined} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen /></Tabs.Panel> : null)}</Tabs.Root> : null}
-          {(project.screenshot_urls?.length ?? 0) > 0 ? <section><h2 className="mb-3 text-heading-small font-display text-foreground">{t("projects.form.screenshots")}</h2><div className="mobile-bleed-grid grid gap-3 sm:grid-cols-2">{project.screenshot_urls?.map((url,index)=><a key={url} href={url} target="_blank" rel="noreferrer" className="block overflow-hidden border-y border-border-subtle sm:rounded-xl sm:border"><img src={url} alt={t("projects.form.screenshotAlt",{index:index+1})} className="block h-auto w-full object-contain sm:aspect-video sm:object-cover" loading="lazy" /></a>)}</div></section> : null}
+          {(project.screenshot_urls?.length ?? 0) > 0 ? <section><h2 className="mb-3 text-heading-small font-display text-foreground">{t("projects.form.screenshots")}</h2><div className="mobile-bleed-grid grid gap-3 sm:grid-cols-2">{project.screenshot_urls?.map((url,index)=><a key={url} href={url} target="_blank" rel="noreferrer" className="block overflow-hidden border-y border-border-subtle sm:rounded-xl sm:border"><img src={optimizedImageUrl(url, { width: 640, resize: "contain" })} srcSet={optimizedImageSrcSet(url, 640, { resize: "contain" })} decoding="async" alt={t("projects.form.screenshotAlt",{index:index+1})} className="block aspect-video w-full object-contain sm:object-cover" loading="lazy" /></a>)}</div></section> : null}
           <section className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="text-heading-small font-display text-foreground">{t("projects.detail.description")}</h2><div className="mt-4 break-words"><Markdown content={description} /></div></section>
           <section>
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -334,7 +318,7 @@ export default function ProjectDetailPage() {
             {teamQuery.isPending ? <p className="mt-2 text-body-small font-body text-foreground-muted" role="status">{t("projects.team.loading")}</p> : teamQuery.isError ? <Button className="mt-2" size="small" variant="cta" hierarchy="tertiary" onClick={() => void teamQuery.refetch()}>{t("projects.retry")}</Button> : null}
           </section>
           {project.progress ? <section className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="text-heading-small font-display text-foreground">{t("projects.editor.progress")}</h2><div className="mt-4 break-words"><Markdown content={project.progress} /></div></section> : null}
-          {href && sourceQuery.data ? <NavLink to={href} className="flex flex-col gap-4 rounded-2xl border border-border-subtle bg-surface-base p-5 hover:border-primary/40 sm:flex-row">{sourceQuery.data.cover_image_url ? <img src={sourceQuery.data.cover_image_url} alt="" className="h-24 w-full rounded-lg object-cover sm:w-36" /> : null}<div className="min-w-0"><p className="text-label-small font-body uppercase tracking-wide text-foreground-muted">{t("projects.editor.hackathon")}</p><h2 className="mt-2 text-title-large font-display">{sourceQuery.data.title}</h2><p className="mt-1 line-clamp-2 text-body-medium font-body text-foreground-muted">{sourceQuery.data.short_description || sourceQuery.data.tagline}</p></div></NavLink> : null}
+          {href && sourceQuery.data ? <NavLink to={href} className="flex flex-col gap-4 rounded-2xl border border-border-subtle bg-surface-base p-5 hover:border-primary/40 sm:flex-row">{sourceQuery.data.cover_image_url ? <img src={optimizedImageUrl(sourceQuery.data.cover_image_url, { width: 144 })} srcSet={optimizedImageSrcSet(sourceQuery.data.cover_image_url, 144)} alt="" className="h-24 w-full rounded-lg object-cover sm:w-36" /> : null}<div className="min-w-0"><p className="text-label-small font-body uppercase tracking-wide text-foreground-muted">{t("projects.editor.hackathon")}</p><h2 className="mt-2 text-title-large font-display">{sourceQuery.data.title}</h2><p className="mt-1 line-clamp-2 text-body-medium font-body text-foreground-muted">{sourceQuery.data.short_description || sourceQuery.data.tagline}</p></div></NavLink> : null}
         </Tabs.Panel>
         {resourceActions.length ? <Tabs.Panel value="resources" className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="text-heading-small font-display text-foreground">{t("projects.editor.links")}</h2><div className="mt-5 space-y-3">{resourceActions.length ? resourceActions.map(action => action ? <a key={action.key} href={action.href} target="_blank" rel="noreferrer" className="flex min-w-0 items-center gap-3 rounded-xl border border-border p-4 hover:bg-surface-raised"><action.icon className="size-5 shrink-0 text-primary" /><span className="min-w-0"><span className="block text-cta-medium font-body">{action.label}</span><span className="mt-1 block truncate text-body-small font-body text-foreground-muted">{action.href}</span></span><ExternalLink className="ml-auto size-4 shrink-0" /></a> : null) : <p className="text-body-medium font-body text-foreground-muted">{t("projects.editor.noResources")}</p>}</div></Tabs.Panel> : null}
       </Tabs.Root>

@@ -418,6 +418,41 @@ describe("AdminHackathonEditorPage course-aligned navigation", () => {
     await view.cleanup();
   });
 
+  it("treats the hackathon's primary locale as the master copy", async () => {
+    const japanese = { ...contest, title: "デモ ハッカソン", i18n: { primary_content_locale: "ja", supported_locales: ["ja", "ko", "vi"] } } as unknown as Contest;
+    getContest.mockResolvedValue(japanese);
+    getHackathonLocaleContent.mockImplementation(async (_id: string, loc: string) => (
+      loc === "ja" ? { title: "デモ ハッカソン", short_description: "概要", description_markdown: "", resources_markdown: "", tracks: [], sectors: [], tech_stacks: [], timeline: [] } : null
+    ));
+    invokeGenerateDescription.mockResolvedValue({ description: "{}", sources: [], bundle: { title: "데모 해커톤" } });
+    const view = renderEditor("/admin/hackathons/hackathon-1/edit#overview");
+    await settle();
+    try {
+      // Opens on the primary locale with its badge.
+      expect((view.container.querySelector("#hackathon-title") as HTMLInputElement).value).toBe("デモ ハッカソン");
+      const primary = Array.from(view.container.querySelectorAll("button")).find((button) => button.getAttribute("aria-pressed") === "true");
+      expect(primary?.textContent).toContain("hackathons.editor.primaryBadge");
+
+      // Translating into another locale uses the primary locale as the source.
+      const korean = Array.from(view.container.querySelectorAll("button")).find((button) => button.textContent?.includes("KO"));
+      await act(async () => korean?.click());
+      const translate = Array.from(view.container.querySelectorAll("button")).find((button) => button.textContent?.includes("hackathons.editor.aiTranslation.action"));
+      await act(async () => translate?.click());
+      await settle();
+      expect(invokeGenerateDescription).toHaveBeenCalledWith(expect.objectContaining({ sourceLocale: "ja", locale: "ko" }));
+
+      // Document-level fields are written from the primary locale, and its copy is always saved.
+      const save = Array.from(view.container.querySelectorAll("button")).find((button) => button.textContent?.includes("hackathons.editor.saveSection"));
+      await act(async () => save?.click());
+      await settle();
+      expect(updateContest).toHaveBeenCalledWith("hackathon-1", expect.objectContaining({ title: "デモ ハッカソン", short_description: "概要" }));
+      const saved = setHackathonLocaleContent.mock.calls.map((call) => call[1]);
+      expect(saved).toEqual(expect.arrayContaining(["ja", "vi", "en", "ko"]));
+    } finally {
+      await view.cleanup();
+    }
+  });
+
   it("saves updated submission_deadline when edited in Overview", async () => {
     const { updateContest } = await import("@/lib/hackathons");
     (updateContest as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(contest);

@@ -16,6 +16,7 @@ import {
   projectInvitePreviewQueryOptions,
 } from "@/features/invites/inviteQueries";
 import type { TFunction } from "i18next";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function formatInviteError(err: unknown, t: TFunction<"contests">): string {
   const raw = err instanceof Error ? err.message : String(err ?? "");
@@ -123,7 +124,7 @@ export default function ProjectInvitePage() {
           )}
 
           {!authInitialized ? (
-            <p className="text-sm text-foreground-muted">{tc("status.loading")}</p>
+            <div role="status" aria-busy="true" className="space-y-3"><span className="sr-only">{tc("status.loading")}</span><Skeleton className="h-4 w-3/4" /><Skeleton className="h-11 w-full rounded-lg" /><Skeleton className="h-11 w-full rounded-lg" /></div>
           ) : !isAuthenticated ? (
             <div className="space-y-3">
               <p className="text-sm text-foreground-muted">
@@ -144,7 +145,7 @@ export default function ProjectInvitePage() {
           ) : !safeToken ? (
             <p className="text-sm text-destructive">{t("detail.inviteProject.invalid")}</p>
           ) : previewQuery.isPending ? (
-            <p className="text-sm text-foreground-muted">{tc("status.loading")}</p>
+            <div role="status" aria-busy="true" className="space-y-3"><span className="sr-only">{tc("status.loading")}</span><Skeleton className="h-4 w-3/4" /><Skeleton className="h-11 w-full rounded-lg" /><Skeleton className="h-11 w-full rounded-lg" /></div>
           ) : previewError ? (
             <div className="space-y-3">
               <p className="text-sm text-destructive">{previewError}</p>
