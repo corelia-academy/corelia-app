@@ -3,6 +3,7 @@ import type { CourseLesson } from "@/types/courses";
 import {
   ASK_AI_URL_CONTENT_LIMIT,
   buildAskAiPrompt,
+  lessonBodyForAi,
   canAskAboutLesson,
   resolveAskAiAction,
 } from "./askAi";
@@ -14,8 +15,17 @@ describe("canAskAboutLesson", () => {
     expect(canAskAboutLesson(lesson({ lesson_format: "article" }))).toBe(true);
     expect(canAskAboutLesson(lesson({ lesson_format: "video", youtube_url: "https://youtu.be/x" }))).toBe(true);
     expect(canAskAboutLesson(lesson({ lesson_format: "quiz" }))).toBe(false);
-    expect(canAskAboutLesson(lesson({ lesson_format: "practice" }))).toBe(false);
+    expect(canAskAboutLesson(lesson({ lesson_format: "practice" }))).toBe(true);
     expect(canAskAboutLesson(null)).toBe(false);
+  });
+});
+
+describe("lessonBodyForAi", () => {
+  it("adds checklist and guided project steps for practice lessons", () => {
+    const checklist = lesson({ lesson_format: "practice", description_markdown: "Do it", practice_config: { mode: "checklist", checklist_items: [{ id: "a", label: "Install CLI" }] } } as Partial<CourseLesson>);
+    expect(lessonBodyForAi(checklist)).toBe("Do it\n\n- Install CLI");
+    const guided = lesson({ lesson_format: "practice", practice_config: { mode: "guided_project", project_steps: [{ id: "b", order: 2, title: "Deploy", instructions_markdown: "" }, { id: "a", order: 1, title: "Init", instructions_markdown: "Run init" }] } } as Partial<CourseLesson>);
+    expect(lessonBodyForAi(guided)).toBe("1. Init\nRun init\n2. Deploy");
   });
 });
 

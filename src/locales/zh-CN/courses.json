@@ -483,6 +483,15 @@
     "retry": "重试",
     "source": "源代码",
     "unavailable": "课时不可用。",
+    "askAi": {
+      "trigger": "询问 AI",
+      "chatgpt": "询问 ChatGPT",
+      "claude": "询问 Claude",
+      "gemini": "询问 Gemini（复制提示词）",
+      "copy": "复制提示词",
+      "copied": "提示词已复制，请粘贴到你的 AI 工具中。",
+      "copyFailed": "无法复制提示词。"
+    },
     "systemError": "无法保存结果。您的作品已保留，请重试。",
     "checking": "检查中…",
     "checkCode": "检查代码",

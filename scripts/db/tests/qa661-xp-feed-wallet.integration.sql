@@ -207,4 +207,19 @@ DO $$ BEGIN
   END IF;
 END $$;
 
+-- #664: a learner who is not enrolled passes a quiz on the first try and still gets quiz + lesson XP.
+INSERT INTO auth.users(id,email) VALUES('a6610000-0000-4000-8000-000000000005','qa664-unenrolled@corelia.local');
+SELECT set_config('request.jwt.claim.sub','a6610000-0000-4000-8000-000000000005',true);
+SET LOCAL ROLE authenticated;
+SELECT public.learning_quiz_submit('qa661-course','q70',gen_random_uuid(),pg_temp.answers('q70',7),0);
+RESET ROLE;
+DO $$
+BEGIN
+  IF NOT EXISTS(SELECT 1 FROM public.enrollments WHERE user_id='a6610000-0000-4000-8000-000000000005' AND course_id='qa661-course')
+     OR (SELECT coalesce(sum(points),0) FROM public.user_point_ledger WHERE user_id='a6610000-0000-4000-8000-000000000005'
+         AND source_key IN ('quiz_passed:qa661-course:q70','lesson_completed:qa661-course:q70'))<>30 THEN
+    RAISE EXCEPTION '#664: first-pass quiz by unenrolled learner must enroll and award 30 XP';
+  END IF;
+END $$;
+
 ROLLBACK;
