@@ -8,13 +8,22 @@
 --   studio_catalog_scopes  one scope per group kind: audience, Corelia direction,
 --                          locale, research period (default 90 days)
 --   studio_paths           named path inside a kind (Rust, Frontend, Solana, ...)
---   studio_courses         catalog entry; `status` is the CATALOG state and is
---                          independent of the per-step run state; title is unique
---                          ignoring case and surrounding spaces
+--   studio_courses         catalog entry; title is unique ignoring case and
+--                          surrounding spaces. Two independent states:
+--                            research_status  evidence for ranking (idea,
+--                                             needs_more_sources, evidence_ok)
+--                            status           production state in the catalog
+--                          The rule "only evidence_ok enters the queue" is applied
+--                          by the server at the transition (E4/E5), not by a CHECK:
+--                          a published course may be re-researched later.
 --   studio_course_paths    many-to-many course <-> path, with separate order
 --                          columns per path (learning order, display order);
 --                          production priority is global: studio_courses.priority
---   studio_course_steps    state of the 9 generation steps of a course
+--   studio_runs            one generation run of a course; the client may supply
+--                          the id (a repeated insert of the same run fails), at most
+--                          one running run per course, reason required when a run
+--                          ends as a draft (draft_failed)
+--   studio_run_steps       state of the 9 steps inside a run, with repair count
 --
 -- Authorization (admin only, read and write)
 --   Studio is an admin tool and the publishable key ships in the browser bundle, so
@@ -104,6 +113,8 @@ CREATE TABLE public.studio_courses (
   priority integer NOT NULL DEFAULT 0 CHECK (priority BETWEEN 0 AND 100),
   status text NOT NULL DEFAULT 'idea'
     CHECK (status IN ('idea', 'queued', 'generating', 'published', 'needs_update', 'not_passed')),
+  research_status text NOT NULL DEFAULT 'idea'
+    CHECK (research_status IN ('idea', 'needs_more_sources', 'evidence_ok')),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
@@ -126,8 +137,29 @@ CREATE TABLE public.studio_course_paths (
 CREATE INDEX studio_course_paths_path_learning_idx
   ON public.studio_course_paths (path_id, learning_order);
 
-CREATE TABLE public.studio_course_steps (
+CREATE TABLE public.studio_runs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   course_id uuid NOT NULL REFERENCES public.studio_courses (id) ON DELETE CASCADE,
+  status text NOT NULL DEFAULT 'running'
+    CHECK (status IN ('running', 'published', 'draft_failed')),
+  hold_reason text,
+  started_at timestamptz NOT NULL DEFAULT now(),
+  finished_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT studio_runs_finished_matches_status
+    CHECK ((status = 'running') = (finished_at IS NULL)),
+  CONSTRAINT studio_runs_hold_reason_iff_draft
+    CHECK ((status = 'draft_failed') = (hold_reason IS NOT NULL AND length(btrim(hold_reason)) > 0))
+);
+
+CREATE UNIQUE INDEX studio_runs_one_running_per_course
+  ON public.studio_runs (course_id) WHERE status = 'running';
+CREATE INDEX studio_runs_course_started_idx
+  ON public.studio_runs (course_id, started_at DESC);
+
+CREATE TABLE public.studio_run_steps (
+  run_id uuid NOT NULL REFERENCES public.studio_runs (id) ON DELETE CASCADE,
   step_key text NOT NULL
     CHECK (step_key IN (
       'brief',
@@ -142,9 +174,11 @@ CREATE TABLE public.studio_course_steps (
     )),
   state text NOT NULL DEFAULT 'pending'
     CHECK (state IN ('pending', 'active', 'done', 'failed')),
+  repair_count integer NOT NULL DEFAULT 0 CHECK (repair_count >= 0),
+  failure_reason text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (course_id, step_key)
+  PRIMARY KEY (run_id, step_key)
 );
 
 -- updated_at maintenance (existing helper)
@@ -160,8 +194,11 @@ CREATE TRIGGER trg_studio_courses_touch_updated_at
 CREATE TRIGGER trg_studio_course_paths_touch_updated_at
   BEFORE UPDATE ON public.studio_course_paths
   FOR EACH ROW EXECUTE FUNCTION private.touch_updated_at();
-CREATE TRIGGER trg_studio_course_steps_touch_updated_at
-  BEFORE UPDATE ON public.studio_course_steps
+CREATE TRIGGER trg_studio_runs_touch_updated_at
+  BEFORE UPDATE ON public.studio_runs
+  FOR EACH ROW EXECUTE FUNCTION private.touch_updated_at();
+CREATE TRIGGER trg_studio_run_steps_touch_updated_at
+  BEFORE UPDATE ON public.studio_run_steps
   FOR EACH ROW EXECUTE FUNCTION private.touch_updated_at();
 
 -- -----------------------------------------------------------------------------
@@ -172,7 +209,8 @@ ALTER TABLE public.studio_catalog_scopes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.studio_paths ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.studio_courses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.studio_course_paths ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.studio_course_steps ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.studio_runs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.studio_run_steps ENABLE ROW LEVEL SECURITY;
 
 DO $$
 DECLARE
@@ -183,7 +221,8 @@ BEGIN
     'studio_paths',
     'studio_courses',
     'studio_course_paths',
-    'studio_course_steps'
+    'studio_runs',
+    'studio_run_steps'
   ] LOOP
     EXECUTE format(
       'CREATE POLICY %I ON public.%I FOR SELECT TO authenticated USING ((SELECT public.studio_can_write()))',

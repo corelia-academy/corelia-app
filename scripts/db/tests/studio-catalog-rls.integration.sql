@@ -20,7 +20,8 @@ INSERT INTO public.studio_courses(id,title) VALUES
  ('dddd5555-2222-4000-8000-000000000001','Seed course A'),
  ('dddd5555-2222-4000-8000-000000000002','Seed course B');
 INSERT INTO public.studio_course_paths(course_id,path_id) VALUES('dddd5555-2222-4000-8000-000000000001','dddd5555-1111-4000-8000-000000000001');
-INSERT INTO public.studio_course_steps(course_id,step_key) VALUES('dddd5555-2222-4000-8000-000000000001','research');
+INSERT INTO public.studio_runs(id,course_id) VALUES('dddd5555-3333-4000-8000-000000000001','dddd5555-2222-4000-8000-000000000001');
+INSERT INTO public.studio_run_steps(run_id,step_key) VALUES('dddd5555-3333-4000-8000-000000000001','research');
 
 DO $$
 DECLARE
@@ -34,19 +35,22 @@ DECLARE
     'studio_paths',          $q$INSERT INTO public.studio_paths(group_kind,slug,title) VALUES('skill','probe','Probe')$q$,
     'studio_courses',        $q$INSERT INTO public.studio_courses(title) VALUES('Probe')$q$,
     'studio_course_paths',   $q$INSERT INTO public.studio_course_paths(course_id,path_id) VALUES('dddd5555-2222-4000-8000-000000000002','dddd5555-1111-4000-8000-000000000001')$q$,
-    'studio_course_steps',   $q$INSERT INTO public.studio_course_steps(course_id,step_key) VALUES('dddd5555-2222-4000-8000-000000000001','brief')$q$);
+    'studio_runs',           $q$INSERT INTO public.studio_runs(course_id) VALUES('dddd5555-2222-4000-8000-000000000002')$q$,
+    'studio_run_steps',      $q$INSERT INTO public.studio_run_steps(run_id,step_key) VALUES('dddd5555-3333-4000-8000-000000000001','brief')$q$);
   update_sql constant jsonb := jsonb_build_object(
     'studio_catalog_scopes', $q$UPDATE public.studio_catalog_scopes SET audience='changed' WHERE group_kind='role'$q$,
     'studio_paths',          $q$UPDATE public.studio_paths SET title='changed' WHERE id='dddd5555-1111-4000-8000-000000000001'$q$,
     'studio_courses',        $q$UPDATE public.studio_courses SET title='changed' WHERE id='dddd5555-2222-4000-8000-000000000001'$q$,
     'studio_course_paths',   $q$UPDATE public.studio_course_paths SET learning_order=5 WHERE course_id='dddd5555-2222-4000-8000-000000000001'$q$,
-    'studio_course_steps',   $q$UPDATE public.studio_course_steps SET state='done' WHERE course_id='dddd5555-2222-4000-8000-000000000001' AND step_key='research'$q$);
+    'studio_runs',           $q$UPDATE public.studio_runs SET started_at=started_at WHERE id='dddd5555-3333-4000-8000-000000000001'$q$,
+    'studio_run_steps',      $q$UPDATE public.studio_run_steps SET state='done' WHERE run_id='dddd5555-3333-4000-8000-000000000001' AND step_key='research'$q$);
   delete_sql constant jsonb := jsonb_build_object(
     'studio_catalog_scopes', $q$DELETE FROM public.studio_catalog_scopes WHERE group_kind='role'$q$,
     'studio_paths',          $q$DELETE FROM public.studio_paths WHERE id='dddd5555-1111-4000-8000-000000000001'$q$,
     'studio_courses',        $q$DELETE FROM public.studio_courses WHERE id='dddd5555-2222-4000-8000-000000000002'$q$,
     'studio_course_paths',   $q$DELETE FROM public.studio_course_paths WHERE course_id='dddd5555-2222-4000-8000-000000000001'$q$,
-    'studio_course_steps',   $q$DELETE FROM public.studio_course_steps WHERE course_id='dddd5555-2222-4000-8000-000000000001' AND step_key='research'$q$);
+    'studio_runs',           $q$DELETE FROM public.studio_runs WHERE id='dddd5555-3333-4000-8000-000000000001'$q$,
+    'studio_run_steps',      $q$DELETE FROM public.studio_run_steps WHERE run_id='dddd5555-3333-4000-8000-000000000001' AND step_key='research'$q$);
   op text;
 BEGIN
   FOR actor IN 0..5 LOOP
@@ -54,7 +58,7 @@ BEGIN
     EXECUTE CASE WHEN actor=0 THEN 'SET LOCAL ROLE anon' ELSE 'SET LOCAL ROLE authenticated' END;
     is_writer := actor = 5;
 
-    FOREACH t IN ARRAY ARRAY['studio_catalog_scopes','studio_paths','studio_courses','studio_course_paths','studio_course_steps'] LOOP
+    FOREACH t IN ARRAY ARRAY['studio_catalog_scopes','studio_paths','studio_courses','studio_course_paths','studio_runs','studio_run_steps'] LOOP
       -- SELECT: admin sees the seed rows; anon has no grant; the rest see nothing.
       n := -1;
       BEGIN
@@ -178,8 +182,19 @@ DECLARE
     $q$INSERT INTO public.studio_paths(group_kind,slug,title) VALUES('skill','rust','dup')$q$,
     $q$INSERT INTO public.studio_catalog_scopes(group_kind,audience,corelia_direction,locale) VALUES('skill','a','b','xx')$q$,
     $q$INSERT INTO public.studio_catalog_scopes(group_kind,audience,corelia_direction,research_period_days) VALUES('skill','a','b',0)$q$,
-    $q$INSERT INTO public.studio_course_steps(course_id,step_key) VALUES('dddd5555-2222-4000-8000-000000000002','lessons_old')$q$,
-    $q$INSERT INTO public.studio_course_steps(course_id,step_key,state) VALUES('dddd5555-2222-4000-8000-000000000002','brief','bogus')$q$,
+    $q$INSERT INTO public.studio_courses(title,research_status) VALUES('x','ranked')$q$,
+    $q$INSERT INTO public.studio_run_steps(run_id,step_key) VALUES('dddd5555-3333-4000-8000-000000000001','lessons_old')$q$,
+    $q$INSERT INTO public.studio_run_steps(run_id,step_key,state) VALUES('dddd5555-3333-4000-8000-000000000001','brief','bogus')$q$,
+    $q$INSERT INTO public.studio_run_steps(run_id,step_key,repair_count) VALUES('dddd5555-3333-4000-8000-000000000001','brief',-1)$q$,
+    $q$INSERT INTO public.studio_run_steps(run_id,step_key) VALUES(gen_random_uuid(),'brief')$q$,
+    $q$INSERT INTO public.studio_runs(id,course_id) VALUES('dddd5555-3333-4000-8000-000000000001','dddd5555-2222-4000-8000-000000000002')$q$,
+    $q$INSERT INTO public.studio_runs(course_id) VALUES('dddd5555-2222-4000-8000-000000000001')$q$,
+    $q$INSERT INTO public.studio_runs(course_id,status) VALUES('dddd5555-2222-4000-8000-000000000002','bogus')$q$,
+    $q$INSERT INTO public.studio_runs(course_id,status,finished_at) VALUES('dddd5555-2222-4000-8000-000000000002','draft_failed',now())$q$,
+    $q$INSERT INTO public.studio_runs(course_id,status,finished_at,hold_reason) VALUES('dddd5555-2222-4000-8000-000000000002','draft_failed',now(),'  ')$q$,
+    $q$INSERT INTO public.studio_runs(course_id,status,finished_at,hold_reason) VALUES('dddd5555-2222-4000-8000-000000000002','published',now(),'reason')$q$,
+    $q$INSERT INTO public.studio_runs(course_id,status) VALUES('dddd5555-2222-4000-8000-000000000002','published')$q$,
+    $q$INSERT INTO public.studio_runs(course_id,finished_at) VALUES('dddd5555-2222-4000-8000-000000000002',now())$q$,
     $q$INSERT INTO public.studio_course_paths(course_id,path_id,learning_order) VALUES('dddd5555-2222-4000-8000-000000000002','dddd5555-1111-4000-8000-000000000001',-1)$q$,
     $q$INSERT INTO public.studio_course_paths(course_id,path_id) VALUES('dddd5555-2222-4000-8000-000000000001','dddd5555-1111-4000-8000-000000000001')$q$,
     $q$INSERT INTO public.studio_course_paths(course_id,path_id) VALUES(gen_random_uuid(),'dddd5555-1111-4000-8000-000000000001')$q$
@@ -197,6 +212,14 @@ BEGIN
 
   SELECT status INTO code FROM public.studio_courses WHERE id='dddd5555-2222-4000-8000-000000000001';
   IF code <> 'idea' THEN RAISE EXCEPTION 'course status default % <> idea', code; END IF;
+  SELECT research_status INTO code FROM public.studio_courses WHERE id='dddd5555-2222-4000-8000-000000000001';
+  IF code <> 'idea' THEN RAISE EXCEPTION 'course research_status default % <> idea', code; END IF;
+
+  -- research_status is independent of status: every combination below is accepted.
+  FOREACH s IN ARRAY ARRAY['idea','needs_more_sources','evidence_ok'] LOOP
+    UPDATE public.studio_courses SET research_status = s, status = 'published' WHERE id='dddd5555-2222-4000-8000-000000000002';
+  END LOOP;
+  UPDATE public.studio_courses SET research_status = 'idea', status = 'idea' WHERE id='dddd5555-2222-4000-8000-000000000002';
 
   -- One course in several paths, with an independent order per path.
   INSERT INTO public.studio_paths(id,group_kind,slug,title) VALUES('dddd5555-1111-4000-8000-000000000002','ecosystem','solana','Solana');
@@ -204,11 +227,25 @@ BEGIN
   SELECT count(*) INTO n FROM public.studio_course_paths WHERE course_id='dddd5555-2222-4000-8000-000000000001';
   IF n <> 2 THEN RAISE EXCEPTION 'course should be in 2 paths, found %', n; END IF;
 
-  -- All 9 step keys are accepted.
-  INSERT INTO public.studio_course_steps(course_id,step_key)
-  SELECT 'dddd5555-2222-4000-8000-000000000002', k FROM unnest(ARRAY['brief','research','curriculum','curriculum_review','lessons','lesson_review','structure_check','journey_test','publish']) k;
-  SELECT count(*) INTO n FROM public.studio_course_steps WHERE course_id='dddd5555-2222-4000-8000-000000000002';
+  -- A run holds all 9 step keys, with a repair count per step.
+  INSERT INTO public.studio_runs(id,course_id) VALUES('dddd5555-3333-4000-8000-000000000002','dddd5555-2222-4000-8000-000000000002');
+  INSERT INTO public.studio_run_steps(run_id,step_key)
+  SELECT 'dddd5555-3333-4000-8000-000000000002', k FROM unnest(ARRAY['brief','research','curriculum','curriculum_review','lessons','lesson_review','structure_check','journey_test','publish']) k;
+  SELECT count(*) INTO n FROM public.studio_run_steps WHERE run_id='dddd5555-3333-4000-8000-000000000002';
   IF n <> 9 THEN RAISE EXCEPTION 'expected 9 step rows, found %', n; END IF;
+  UPDATE public.studio_run_steps SET repair_count = repair_count + 1, state = 'failed', failure_reason = 'answer key mismatch'
+    WHERE run_id='dddd5555-3333-4000-8000-000000000002' AND step_key='lesson_review';
+  SELECT repair_count INTO n FROM public.studio_run_steps WHERE run_id='dddd5555-3333-4000-8000-000000000002' AND step_key='lesson_review';
+  IF n <> 1 THEN RAISE EXCEPTION 'repair_count % <> 1', n; END IF;
+
+  -- A run ends as a draft with a reason; the course can then start a new running run.
+  UPDATE public.studio_runs SET status='draft_failed', finished_at=now(), hold_reason='repair limit reached'
+    WHERE id='dddd5555-3333-4000-8000-000000000002';
+  INSERT INTO public.studio_runs(course_id) VALUES('dddd5555-2222-4000-8000-000000000002');
+  SELECT count(*) INTO n FROM public.studio_runs WHERE course_id='dddd5555-2222-4000-8000-000000000002';
+  IF n <> 2 THEN RAISE EXCEPTION 'expected run history of 2 for course B, found %', n; END IF;
+  UPDATE public.studio_runs SET status='published', finished_at=now()
+    WHERE course_id='dddd5555-2222-4000-8000-000000000002' AND status='running';
 
   -- Every status value is accepted.
   FOREACH s IN ARRAY ARRAY['idea','queued','generating','published','needs_update','not_passed'] LOOP
