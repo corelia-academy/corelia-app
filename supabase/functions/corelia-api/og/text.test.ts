@@ -9,7 +9,7 @@ describe("OG display normalization", () => {
   });
 
   it("formats event dates in Vietnam time", () => {
-    expect(dateLabel("2026-09-23T18:30:00Z")).toBe("24/09/2026");
+    expect(dateLabel("2026-09-23T18:30:00Z")).toBe("Sep 24, 2026");
   });
 
   it("changes revision only when the supplied display data changes", async () => {

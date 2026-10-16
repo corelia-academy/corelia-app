@@ -14,8 +14,9 @@ export function safeId(value: string): string | null {
 
 export function dateLabel(value: unknown): string | null {
   if (typeof value !== "string" || !Number.isFinite(Date.parse(value))) return null;
-  return new Intl.DateTimeFormat("vi-VN", {
-    timeZone: "Asia/Ho_Chi_Minh", day: "2-digit", month: "2-digit", year: "numeric",
+  // Social cards are rendered without a viewer locale, so dates are always in English.
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Ho_Chi_Minh", day: "numeric", month: "short", year: "numeric",
   }).format(new Date(value));
 }
 
