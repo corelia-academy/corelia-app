@@ -133,7 +133,7 @@
       "ownerType": "Nguồn khoá học",
       "level": "Cấp độ",
       "contentLocales": "Ngôn ngữ nội dung khoá học",
-      "contentLocalesHint": "Chọn những ngôn ngữ mà khoá học sẽ có nội dung riêng (hiện hỗ trợ VI/EN).",
+      "contentLocalesHint": "Chọn những ngôn ngữ mà khoá học sẽ có nội dung riêng.",
       "primaryContentLocale": "Ngôn ngữ nội dung chính (fallback)",
       "defaultVideoLocale": "Ngôn ngữ chính của video (mặc định)",
       "publishedCheckbox": "Đã xuất bản (hiển thị trên trang Khoá học)",

@@ -212,7 +212,7 @@ import {
   revokeCoInstructorInvite,
   type CoInstructorInviteRow,
 } from "@/lib/coInstructorInvites";
-import { CONTENT_LOCALES, LOCALE_META, type ContentLocale } from "@/lib/locales";
+import { CONTENT_LOCALES, LOCALE_META, intlLocaleFor, type ContentLocale } from "@/lib/locales";
 import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 
 /** Gợi ý tách lesson khi video dài hơn ngưỡng này (giây). */
@@ -276,8 +276,10 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
     if (loc.startsWith("vi")) return formatDuration(totalSeconds);
     const h = Math.floor(totalSeconds / 3600);
     const m = Math.floor((totalSeconds % 3600) / 60);
-    if (h <= 0) return `${m} min`;
-    return `${h} hr ${m} min`;
+    const unit = (value: number, name: "hour" | "minute") =>
+      new Intl.NumberFormat(intlLocaleFor(loc), { style: "unit", unit: name, unitDisplay: "short" }).format(value);
+    if (h <= 0) return unit(m, "minute");
+    return `${unit(h, "hour")} ${unit(m, "minute")}`;
   };
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();

@@ -209,7 +209,9 @@
       "translationModeBadge": "翻译模式",
       "currentLocaleBadge": "当前",
       "primaryEditingHint": "您正在直接编辑源语言。",
-      "translationEditingHint": "您正在编辑从{{source}}到{{target}}的翻译。"
+      "translationEditingHint": "您正在编辑从{{source}}到{{target}}的翻译。",
+      "addLanguage": "添加语言",
+      "removeLanguage": "移除{{language}}"
     },
     "defaults": {
       "lessonTitle": "课时"

@@ -209,7 +209,9 @@
       "translationModeBadge": "Modo de traducción",
       "currentLocaleBadge": "Actual",
       "primaryEditingHint": "Estás editando directamente el idioma de origen.",
-      "translationEditingHint": "Estás editando una traducción de {{source}} a {{target}}."
+      "translationEditingHint": "Estás editando una traducción de {{source}} a {{target}}.",
+      "addLanguage": "Añadir idioma",
+      "removeLanguage": "Quitar {{language}}"
     },
     "defaults": {
       "lessonTitle": "Lección"
