@@ -191,6 +191,7 @@ export function HackathonTimelineTab() {
   const { contest } = useOutletContext<HackathonOutletContext>();
   const { t, i18n } = useTranslation("contests");
   const locale = i18n.resolvedLanguage ?? i18n.language;
+  const [now] = useState(() => Date.now());
   const timeline = [...(contest.timeline ?? [])].sort((a, b) => a.sort_order - b.sort_order || a.starts_at.localeCompare(b.starts_at));
   if (timeline.length === 0) {
     return (
@@ -203,7 +204,6 @@ export function HackathonTimelineTab() {
     const [date = "", time = ""] = formatVietnamDateTime(value, locale, { includeTimezone: false }).split(" · ");
     return [date, time];
   };
-  const now = Date.now();
   const steps = timeline.map((item) => {
     const [startDate, startTime] = getDateTimeParts(item.starts_at);
     const [endDate, endTime] = item.ends_at ? getDateTimeParts(item.ends_at) : ["", ""];
@@ -220,7 +220,7 @@ export function HackathonTimelineTab() {
     } else if (now >= startTimeMs && now <= endTimeMs) {
       state = "Focused";
     }
-    const connectorState = state === "Default" ? "Default" : "Active";
+    const connectorState: "Default" | "Active" = state === "Default" ? "Default" : "Active";
 
     return {
       id: item.id,

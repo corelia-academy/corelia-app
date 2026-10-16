@@ -33,7 +33,7 @@ describe('ProjectMediaEditor',()=>{
     const frames = [...host.querySelectorAll<HTMLElement>('[data-slot="separator"]')];
 
     expect(frames).toHaveLength(2);
-    expect(frames.map(frame => frame.getAttribute('data-dash-pattern'))).toEqual(['6 4', '6 4']);
+    expect(frames.map(frame => frame.getAttribute('data-dash-pattern'))).toEqual(['12 4', '12 4']);
   });
   it('rejects unsupported, empty and oversized logos before calling the server',async()=>{
     await mount();

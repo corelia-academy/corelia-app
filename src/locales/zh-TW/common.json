@@ -429,7 +429,9 @@
         "logoSize": "標誌檔案大小不能超過 2 MB。",
         "invalidSlug": "Slug 只能由小寫字母、數字和連字號組成。"
       },
-      "hackathonXpEarned": "+100 經驗值 · 首次提交黑客松專案"
+      "hackathonXpEarned": "+100 經驗值 · 首次提交黑客松專案",
+      "submissionLogoHint": "支援 PNG、JPEG 或 WebP。圖片上傳時會經過審核。",
+      "uploadLogo": "上傳"
     },
     "team": {
       "title": "團隊成員",
@@ -474,7 +476,15 @@
       "leavingProject": "正在退出團隊…",
       "leftProject": "您已退出專案團隊。",
       "leaveProjectFailed": "無法退出專案團隊。請再試一次。",
-      "lateMembersHint": "截止後，您可以邀請任何帳戶協作。新成員不會自動獲得獎項或證書。"
+      "lateMembersHint": "截止後，您可以邀請任何帳戶協作。新成員不會自動獲得獎項或證書。",
+      "selectedCount": "已選成員（{{count}}）",
+      "invitedCount": "已邀請成員（{{count}}）",
+      "invitedStatus": "已邀請",
+      "removeFromList": "從清單中移除",
+      "removeNamedFromList": "將 {{name}} 從清單中移除",
+      "resendEmailFor": "向 {{name}} 重新寄送邀請郵件",
+      "showMore": "顯示更多",
+      "showLess": "收合"
     },
     "social": {
       "heart": "讚",
@@ -596,25 +606,49 @@
       "resourceFields": {
         "demo": {
           "label": "線上展示",
-          "hint": "您的產品的可運作版本，審核員可以試用。"
+          "hint": "您的產品的可運作版本，審核員可以試用。",
+          "placeholder": "專案展示連結（如有）"
         },
         "slide": {
           "label": "簡報 / 簡報檔",
-          "hint": "介紹您的想法、問題和解決方案；例如使用 Google 簡報或 Canva。"
+          "hint": "介紹您的想法、問題和解決方案；例如使用 Google 簡報或 Canva。",
+          "placeholder": "簡報或 pitch deck 連結（如有）"
         },
         "repo": {
           "label": "GitHub 原始碼",
-          "hint": "位於 github.com/team/project 的公開程式碼庫，而不是議題或檔案連結。"
+          "hint": "位於 github.com/team/project 的公開程式碼庫，而不是議題或檔案連結。",
+          "placeholder": "專案 GitHub 原始碼連結（如有）"
         },
         "video": {
           "label": "展示影片",
-          "hint": "展示您的產品實際運作的錄影，例如 YouTube、Vimeo 或 Loom 影片。"
+          "hint": "展示您的產品實際運作的錄影，例如 YouTube、Vimeo 或 Loom 影片。",
+          "placeholder": "專案展示或 pitch 影片連結"
         },
         "pitchVideo": {
           "label": "簡報影片",
-          "hint": "介紹您的想法、價值和團隊。不需要可運作的產品。"
+          "hint": "介紹您的想法、價值和團隊。不需要可運作的產品。",
+          "placeholder": "專案 pitch 影片連結（如有）"
         }
-      }
+      },
+      "submissionLinksTitle": "連結與附件",
+      "submissionLinksHint": "如果專案仍處於構想階段，可以略過此部分。新增連結時，請確保可公開存取。",
+      "submissionTitle": "專案資訊",
+      "submissionHint": "請提供必填資訊。",
+      "requiredInformation": "必填資訊",
+      "submissionStory": "故事",
+      "submissionCharacterLimit": "{{count}}/{{limit}}",
+      "submissionProjectTitle": "專案標題",
+      "submissionTitlePlaceholder": "例如：Corelia 聊天機器人",
+      "submissionSlugPlaceholder": "例如：demo-seed-20261008-future-skillbridge",
+      "submissionSlugHint": "專案連結",
+      "submissionDescription": "專案詳情",
+      "submissionProgress": "分享你是如何建置這個專案的",
+      "submissionTextPlaceholder": "描述你的專案...",
+      "submissionPreviewImages": "預覽圖片",
+      "submissionOptionalClassifications": "其他分類",
+      "submissionOptionalClassificationsHint": "工程領域和技術為選填。",
+      "submissionSaveHint": "儲存後，競賽主辦方將收到你專案的最新更新。",
+      "resourceUrlValid": "連結已通過安全性與格式檢查。"
     },
     "management": {
       "edit": "編輯",
@@ -1195,143 +1229,6 @@
     "title": "您剛剛收到了憑證！",
     "body": "寄到您電子郵件的憑證現已儲存到您的 Corelia 帳戶。",
     "cta": "檢視我的憑證"
-  },
-  "componentShowcase": {
-    "xpRank": {
-      "title": "經驗值等級徽章",
-      "criterion": "全部六個等級的 80、160 和 200 px 尺寸；沒有圖稿的等級使用問號徽章。",
-      "description": "依等級和尺寸比較徽章圖稿。",
-      "combinationsTitle": "所有等級和尺寸組合",
-      "tableLabel": "依等級和尺寸排列的經驗值徽章",
-      "rank": "等級",
-      "sizes": {
-        "small": "小 · 80 px",
-        "medium": "中 · 160 px",
-        "large": "大 · 200 px"
-      }
-    },
-    "fullPageEmptyState": {
-      "title": "整頁空狀態"
-    },
-    "progress": {
-      "title": "進度",
-      "criterion": "進度條和圓環的 Figma 尺寸、進度級別和配色模型。",
-      "description": "比較來自 Figma 的進度條和圓環的精確尺寸、狀態和顏色。",
-      "standardTitle": "標準進度條",
-      "standardCriterion": "376 × 20 px 元件，含 328 × 8 px 軌道。",
-      "liveTitle": "動手體驗的進度示範",
-      "liveCriterion": "使用 −/+ 或輸入百分比。恰好 100% 時圓環完成；超過 100% 則標記為失敗。",
-      "liveRangeLabel": "調整進度百分比",
-      "liveDecrease": "將進度減少 1%",
-      "liveIncrease": "將進度增加 1%",
-      "liveInputLabel": "進度百分比",
-      "liveOverrunHint": "進度條超過 100% 時保持滿格；圓環顯示失敗標記。",
-      "liveValue": "{{percentage}}%",
-      "liveBarSample": "{{theme}} · {{percentage}}%",
-      "compactTitle": "精簡的單元進度",
-      "compactCriterion": "252 × 15 px 元件，含 210 × 4 px 軌道。",
-      "circleTitle": "進度圓環",
-      "circleCriterion": "24 × 24 px；每個百分比都遵循對應的 Figma 顏色變體。",
-      "label": "標籤",
-      "noFill": "無填色",
-      "barSample": "{{theme}} · {{level}} · {{percentage}}% · {{color}}",
-      "circleSample": "{{state}} · {{percentage}}%{{colorText}}",
-      "defaultValue": "預設",
-      "theme": {
-        "neutral": "中性",
-        "accent": "強調",
-        "status": "狀態"
-      },
-      "level": {
-        "none": "無",
-        "low": "低",
-        "medium": "中",
-        "good": "良好",
-        "done": "完成"
-      },
-      "circleState": {
-        "notStarted": "未開始",
-        "failed": "失敗",
-        "neutralProgress": "進行中 · 中性",
-        "coloredProgress": "進行中 · 彩色",
-        "done": "完成"
-      }
-    },
-    "tooltip": {
-      "title": "提示框",
-      "criterion": "九種 Figma 箭頭位置，含/不含輔助文字；訊息內容由呼叫方提供。",
-      "description": "比較來自 Figma 的全部 18 種箭頭和輔助文字變體。",
-      "withoutSupportingText": "無輔助文字",
-      "withSupportingText": "有輔助文字",
-      "sampleTitle": "這是一個提示框",
-      "sampleSupportingText": "提示框用於說明元素的意義或功能，而無需在頁面上新增固定文字。",
-      "arrows": {
-        "none": "無箭頭",
-        "bottomCenter": "底部置中",
-        "bottomLeft": "底部靠左",
-        "bottomRight": "底部靠右",
-        "topCenter": "頂部置中",
-        "topLeft": "頂部靠左",
-        "topRight": "頂部靠右",
-        "left": "左側",
-        "right": "右側"
-      }
-    },
-    "stepper": {
-      "title": "步驟列",
-      "criterion": "水平和垂直的進度追蹤；使用它的頁面提供每個步驟的狀態。",
-      "description": "視覺化進度追蹤器。由父頁面控制步驟狀態，並決定流程何時推進。",
-      "liveTitle": "可互動、由父頁面控制的流程",
-      "liveCriterion": "使用「上一步」和「下一步」查看父頁面如何更新步驟狀態。",
-      "orientationLabel": "方向",
-      "orientation": {
-        "horizontal": "水平",
-        "vertical": "垂直"
-      },
-      "styleLabel": "標記樣式",
-      "style": {
-        "text": "數字",
-        "icon": "圖示"
-      },
-      "steps": {
-        "account": "帳戶",
-        "accountCaption": "必填資訊",
-        "profile": "資料",
-        "profileCaption": "您的資訊",
-        "review": "檢閱",
-        "reviewCaption": "確認詳情"
-      },
-      "state": {
-        "default": "未開始",
-        "focused": "目前步驟",
-        "passed": "已完成",
-        "error": "需要處理"
-      },
-      "liveAccessibleLabel": "帳戶設定進度",
-      "currentStep": "第 {{current}} 步，共 {{total}} 步",
-      "previous": "上一步",
-      "next": "下一步",
-      "parentOwnsState": "由頁面決定每個步驟的狀態以及何時推進；步驟列只顯示傳入的狀態。",
-      "statesTitle": "Figma 狀態與版面對比",
-      "statesCriterion": "對比兩種方向和標記樣式下的全部四種狀態。",
-      "statesAccessibleLabel": "步驟列狀態範例",
-      "samples": {
-        "waiting": "等待中",
-        "current": "進行中",
-        "complete": "已完成",
-        "problem": "需要處理",
-        "optional": "未開始",
-        "inProgress": "目前步驟",
-        "done": "已結束",
-        "checkDetails": "檢查詳情"
-      },
-      "configuration": {
-        "horizontal": "{{style}}樣式 · 水平",
-        "vertical": "{{style}}樣式 · 垂直"
-      },
-      "usageTitle": "受控使用範例",
-      "usageCriterion": "頁面根據自己的目前步驟值推導出每個狀態，並傳給步驟列。"
-    }
   },
   "maintenance": {
     "title": "系統維護中",

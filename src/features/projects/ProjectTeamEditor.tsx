@@ -235,6 +235,7 @@ export function ProjectTeamEditor({
                 <li key={id}>
                   <Action
                     nativeButton={false}
+                    render={<div />}
                     size="small"
                     className="min-h-[60px] hover:bg-transparent [&>span:first-child]:!size-10"
                     icon={<UserAvatar userId={option.userId} avatarUrl={option.avatarUrl} alt={option.avatarAlt} size="Large" />}
@@ -286,6 +287,7 @@ export function ProjectTeamEditor({
                 <li key={invite.id}>
                   <Action
                     nativeButton={false}
+                    render={<div />}
                     size="small"
                     className="min-h-[60px] hover:bg-transparent [&>span:first-child]:!size-10"
                     icon={<UserAvatar userId={invite.invitee_user_id} avatarUrl={profile?.avatar_url} alt={label} size="Large" />}
