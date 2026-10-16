@@ -492,6 +492,15 @@
     "retry": "Try again",
     "source": "Source code",
     "unavailable": "Lesson unavailable.",
+    "askAi": {
+      "trigger": "Ask AI",
+      "chatgpt": "Ask ChatGPT",
+      "claude": "Ask Claude",
+      "gemini": "Ask Gemini (copies prompt)",
+      "copy": "Copy prompt",
+      "copied": "Prompt copied. Paste it into your AI tool.",
+      "copyFailed": "Could not copy the prompt."
+    },
     "systemError": "Could not save the result. Your work is preserved; please retry.",
     "checking": "Checking…",
     "checkCode": "Check code",
