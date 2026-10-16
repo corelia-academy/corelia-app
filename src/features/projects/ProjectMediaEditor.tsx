@@ -39,7 +39,7 @@ function DashedUploadSlot({ className, label, disabled, onClick, onDropFiles }: 
 
   return (
     <div
-      className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-md bg-project-media-upload-placeholder-surface ${dragOver ? "ring-2 ring-inset ring-primary" : ""} ${className}`}
+      className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-md bg-project-media-upload-placeholder-surface transition-colors ${!disabled ? "hover:bg-action-hover" : ""} ${dragOver ? "ring-2 ring-inset ring-primary" : ""} ${className}`}
       onDragOver={event => {
         event.preventDefault();
         if (!disabled) {
@@ -76,7 +76,7 @@ function DashedUploadSlot({ className, label, disabled, onClick, onDropFiles }: 
         disabled={disabled}
         onClick={onClick}
       >
-        <Plus className="size-4 text-neutral-200" weight="regular" aria-hidden />
+        <Plus className="size-4 text-project-editor-heading" weight="regular" aria-hidden />
       </Button>
     </div>
   );
@@ -182,8 +182,8 @@ export function ProjectMediaEditor({
       <section className="grid min-w-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-12" aria-labelledby="project-logo-label">
         <div className="min-w-0 space-y-4">
           <div>
-            <h3 id="project-logo-label" className="text-heading-medium font-display text-neutral-200">{t("projects.form.logo")}</h3>
-            <p className="mt-4 text-xs leading-[1.25] tracking-[0.24px] font-body text-neutral-400">{t("projects.form.submissionLogoHint")}</p>
+            <h3 id="project-logo-label" className="text-heading-medium font-display text-project-editor-heading">{t("projects.form.logo")}</h3>
+            <p className="mt-4 text-xs leading-[1.25] tracking-[0.24px] font-body text-foreground-subtle">{t("projects.form.submissionLogoHint")}</p>
           </div>
           <input ref={logoInput} hidden type="file" accept={ACCEPT} disabled={uploading} aria-label={t("projects.form.chooseLogo")} onChange={event => { void uploadLogo(event.target.files?.[0]); event.target.value = ""; }} />
           <Button type="button" size="xsmall" variant="cta" hierarchy="secondary" disabled={uploading} onClick={() => logoInput.current?.click()}>{t("projects.form.uploadLogo")}</Button>
@@ -205,8 +205,8 @@ export function ProjectMediaEditor({
       <section className="grid min-w-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-12" aria-labelledby="project-preview-images-label">
         <div className="min-w-0 space-y-4">
           <div>
-            <h3 id="project-preview-images-label" className="text-heading-medium font-display text-foreground-subtle">{t("projects.editor.submissionPreviewImages")}</h3>
-            <p className="mt-2 text-body-small font-body text-foreground-muted">{t("projects.form.screenshotsHint")}</p>
+            <h3 id="project-preview-images-label" className="text-heading-medium font-display text-project-editor-heading">{t("projects.editor.submissionPreviewImages")}</h3>
+            <p className="mt-4 text-body-small font-body text-foreground-subtle">{t("projects.form.screenshotsHint")}</p>
           </div>
           <input ref={screenshotsInput} hidden type="file" accept={ACCEPT} multiple disabled={uploading || screenshots.length >= 6} aria-label={t("projects.form.addScreenshots")} onChange={event => { void uploadScreenshots(Array.from(event.target.files ?? [])); event.target.value = ""; }} />
           <Button type="button" size="small" variant="cta" hierarchy="secondary" disabled={uploading || screenshots.length >= 6} onClick={() => screenshotsInput.current?.click()}>{t("projects.form.addScreenshots")}</Button>

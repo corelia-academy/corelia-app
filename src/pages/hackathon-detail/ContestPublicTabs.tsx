@@ -220,10 +220,13 @@ export function HackathonTimelineTab() {
     } else if (now >= startTimeMs && now <= endTimeMs) {
       state = "Focused";
     }
+    const connectorState = state === "Default" ? "Default" : "Active";
 
     return {
       id: item.id,
       state,
+      connectorBefore: connectorState,
+      connectorAfter: connectorState,
       title: (
         <div className="flex flex-col gap-[6px]">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-normal leading-[1.4] tracking-[0.28px] text-foreground-subtle">

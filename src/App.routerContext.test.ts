@@ -25,4 +25,15 @@ describe("App router context", () => {
       /authStatus === "booting"[\s\S]*?<AuthBootstrapScreen \/>[\s\S]*?<ApplicationRouter \/>/,
     );
   });
+
+  it("registers the Informative Icon route in the component route list", () => {
+    const informativeIconRouteIndex = appSource.indexOf('"informative-icon",');
+    const dynamicComponentRouteIndex = appSource.indexOf(
+      "path={`/components/${component}`}",
+      informativeIconRouteIndex,
+    );
+
+    expect(informativeIconRouteIndex).toBeGreaterThanOrEqual(0);
+    expect(dynamicComponentRouteIndex).toBeGreaterThan(informativeIconRouteIndex);
+  });
 });

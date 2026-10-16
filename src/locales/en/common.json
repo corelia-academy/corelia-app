@@ -445,6 +445,14 @@
       "someInvitesFailed": "The project was created, but some invitations could not be sent.",
       "pending": "Pending invitations",
       "members": "Accepted members",
+      "selectedCount": "Selected members ({{count}})",
+      "invitedCount": "Members invited ({{count}})",
+      "invitedStatus": "Invited",
+      "removeFromList": "Remove from list",
+      "removeNamedFromList": "Remove {{name}} from the list",
+      "resendEmailFor": "Resend the invitation email to {{name}}",
+      "showMore": "Show more",
+      "showLess": "Show less",
       "moreMembers": "{{count}} more members",
       "revoke": "Revoke",
       "remove": "Remove",
@@ -515,6 +523,8 @@
       "media": "Logo & screenshots",
       "links": "Demo & resources",
       "linksHint": "Choose the resources you want to add. Include only what you already have; you can add more whenever project editing is open.",
+      "submissionLinksTitle": "Links & attachments",
+      "submissionLinksHint": "You can skip this section while your project is still an idea. If you add links, make sure they are publicly accessible.",
       "categories": "Tracks & technologies",
       "categoriesHint": "Choose at least one Track. Engineering areas and Technologies are optional; search the suggestions or add your own.",
       "taxonomySearch": "Search or add your own…",
@@ -605,27 +615,33 @@
       "addResource": "Add {{resource}}",
       "removeResource": "Remove {{resource}}",
       "httpsHint": "Enter a complete link starting with https://, for example https://example.com/demo.",
+      "resourceUrlValid": "The link passes the safety and format checks.",
       "resourceAccessHint": "Use HTTPS links with public or “Anyone with the link” viewing access. Open them in a private window to check that reviewers can view them.",
       "resourceFields": {
         "demo": {
           "label": "Live demo",
-          "hint": "A working version of your product that reviewers can try."
+          "hint": "A working version of your product that reviewers can try.",
+          "placeholder": "Project demo link (if available)"
         },
         "slide": {
           "label": "Slides / pitch deck",
-          "hint": "Present your idea, problem, and solution; for example with Google Slides or Canva."
+          "hint": "Present your idea, problem, and solution; for example with Google Slides or Canva.",
+          "placeholder": "Slides or pitch deck link (if available)"
         },
         "repo": {
           "label": "GitHub source code",
-          "hint": "A public repository at github.com/team/project, rather than an issue or file link."
+          "hint": "A public repository at github.com/team/project, rather than an issue or file link.",
+          "placeholder": "Project GitHub source code link (if available)"
         },
         "video": {
           "label": "Demo video",
-          "hint": "A recording of your product in action, such as a YouTube, Vimeo, or Loom video."
+          "hint": "A recording of your product in action, such as a YouTube, Vimeo, or Loom video.",
+          "placeholder": "Project demo or pitch video link"
         },
         "pitchVideo": {
           "label": "Pitch video",
-          "hint": "Introduce your idea, its value, and your team. A working product is not needed."
+          "hint": "Introduce your idea, its value, and your team. A working product is not needed.",
+          "placeholder": "Project pitch video link (if available)"
         }
       }
     },

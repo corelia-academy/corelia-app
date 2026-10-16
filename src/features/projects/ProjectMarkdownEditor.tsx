@@ -43,13 +43,13 @@ export function ProjectMarkdownEditor({ label, value, onChange, maxLength, requi
   const counter = <span id={`${id}-limit`} className="pointer-events-none absolute bottom-2 right-3 text-body-small font-body text-foreground-muted">{t(compactCounter ? "projects.editor.submissionCharacterLimit" : "projects.editor.characterLimit", { count: value.length, limit: maxLength })}</span>;
   return <div className={layout === "row" ? "grid min-w-0 gap-3 border-b border-border-subtle py-5 last:border-b-0 last:pb-0 lg:grid-cols-[minmax(9rem,1fr)_minmax(0,2fr)] lg:gap-6" : "min-w-0"}>
     <div>
-      <label htmlFor={id} className={`text-label-medium font-body${layout === "row" ? " lg:block lg:pt-2" : ""}`}>{label}{required ? <span className="text-primary"> *</span> : null}</label>
+      <label htmlFor={id} className={`text-label-medium font-body${compactCounter ? " leading-[1.4] tracking-[-0.07px]" : ""}${layout === "row" ? " lg:block lg:pt-2" : ""}`}>{label}{required ? <span className="text-error-400"> *</span> : null}</label>
       {hint ? <p id={`${id}-hint`} className="mt-2 text-body-small text-foreground-muted">{hint}</p> : null}
     </div>
     <div className="min-w-0">
       {variant === "plain" ? (
         <div className={compactCounter ? "mt-1.5" : "mt-2"}>
-          <Input ref={textarea} fieldType="auto-grow" submitOnEnter={false} id={id} required={required} aria-describedby={describedBy} rows={rows} maxLength={maxLength} value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder} controlClassName={compactCounter ? "h-[136px] min-h-[136px] max-h-[136px] overflow-hidden" : undefined} className={compactCounter ? "h-full min-h-full max-h-full overflow-y-auto pb-5" : "min-h-40"} renderTrailingContent={compactCounter ? () => counter : undefined} />
+          <Input ref={textarea} fieldType="auto-grow" submitOnEnter={false} id={id} required={required} aria-describedby={describedBy} rows={rows} maxLength={maxLength} value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder} controlClassName={compactCounter ? "h-[154px] min-h-[154px] max-h-[154px] overflow-hidden" : undefined} className={compactCounter ? "h-full min-h-full max-h-full overflow-y-auto pb-5" : "min-h-40"} renderTrailingContent={compactCounter ? () => counter : undefined} />
         </div>
       ) : (
         <Tabs.Root value={mode} onValueChange={value => setMode(String(value))} className="mt-2 overflow-hidden rounded-lg border border-border bg-background">

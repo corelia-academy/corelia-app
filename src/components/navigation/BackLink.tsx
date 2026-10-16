@@ -15,12 +15,12 @@ export function BackLink({ to, children, className }: BackLinkProps) {
     <NavLink
       to={to}
       className={cn(
-        "inline-flex min-h-8 items-center gap-1 text-xs font-medium text-foreground hover:text-foreground-muted focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+        "inline-flex min-h-8 items-center gap-2 rounded-sm px-1 py-1.5 text-sm font-semibold text-foreground hover:text-foreground-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
         className,
       )}
     >
       <ArrowLeft
-        className="size-3 shrink-0"
+        className="size-4 shrink-0"
         weight="duotone"
         aria-hidden
       />

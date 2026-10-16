@@ -445,6 +445,14 @@
       "someInvitesFailed": "Dự án đã được tạo nhưng một số lời mời chưa gửi được.",
       "pending": "Đang chờ phản hồi",
       "members": "Thành viên đã tham gia",
+      "selectedCount": "Thành viên đã chọn ({{count}})",
+      "invitedCount": "Thành viên đã được mời ({{count}})",
+      "invitedStatus": "Đã Mời",
+      "removeFromList": "Xoá Khỏi Danh Sách",
+      "removeNamedFromList": "Xoá {{name}} khỏi danh sách",
+      "resendEmailFor": "Gửi lại email cho {{name}}",
+      "showMore": "Xem Thêm",
+      "showLess": "Thu gọn",
       "moreMembers": "Thêm {{count}} thành viên",
       "revoke": "Thu hồi",
       "remove": "Xóa",
@@ -515,6 +523,8 @@
       "media": "Logo & ảnh sản phẩm",
       "links": "Demo & tài liệu",
       "linksHint": "Chọn loại tài liệu bạn muốn bổ sung. Chỉ cần điền những gì đã có; có thể bổ sung khi dự án được phép chỉnh sửa.",
+      "submissionLinksTitle": "Link & Đính kèm",
+      "submissionLinksHint": "Bạn có thể bỏ qua thông tin này nếu đang ở giai đoạn ý tưởng. Nếu đính kèm link, hãy đảm bảo mọi người có thể truy cập công khai.",
       "categories": "Tracks & công nghệ",
       "categoriesHint": "Chọn ít nhất một Track. Chuyên môn kỹ thuật và Công nghệ là tùy chọn; bạn có thể tìm kiếm hoặc nhập mục riêng.",
       "taxonomySearch": "Tìm kiếm hoặc nhập mục riêng…",
@@ -605,27 +615,33 @@
       "addResource": "Thêm {{resource}}",
       "removeResource": "Xóa {{resource}}",
       "httpsHint": "Nhập đường dẫn đầy đủ bắt đầu bằng https://, ví dụ https://example.com/demo.",
+      "resourceUrlValid": "Đường dẫn đã vượt qua kiểm tra an toàn và định dạng.",
       "resourceAccessHint": "Dùng link HTTPS và bật quyền xem công khai hoặc “Ai có đường liên kết”. Thử mở bằng cửa sổ ẩn danh để chắc chắn giám khảo xem được.",
       "resourceFields": {
         "demo": {
           "label": "Demo trực tuyến",
-          "hint": "Link đến bản chạy thử của sản phẩm để người đánh giá trải nghiệm."
+          "hint": "Link đến bản chạy thử của sản phẩm để người đánh giá trải nghiệm.",
+          "placeholder": "Link demo dự án (nếu có)"
         },
         "slide": {
           "label": "Slide / pitch deck",
-          "hint": "Bản trình bày ý tưởng, vấn đề và giải pháp; ví dụ Google Slides hoặc Canva."
+          "hint": "Bản trình bày ý tưởng, vấn đề và giải pháp; ví dụ Google Slides hoặc Canva.",
+          "placeholder": "Link slide, pitch deck (nếu có)"
         },
         "repo": {
           "label": "Mã nguồn GitHub",
-          "hint": "Link đến repository công khai, dạng github.com/nhom/du-an; không dùng link issue hoặc file."
+          "hint": "Link đến repository công khai, dạng github.com/nhom/du-an; không dùng link issue hoặc file.",
+          "placeholder": "Link GitHub source code dự án (nếu có)"
         },
         "video": {
           "label": "Video demo",
-          "hint": "Video quay cách sản phẩm hoạt động, ví dụ YouTube, Vimeo hoặc Loom."
+          "hint": "Video quay cách sản phẩm hoạt động, ví dụ YouTube, Vimeo hoặc Loom.",
+          "placeholder": "Link video demo / pitching dự án"
         },
         "pitchVideo": {
           "label": "Video thuyết trình",
-          "hint": "Video giới thiệu ý tưởng, giá trị và đội ngũ; có thể dùng ngay cả khi chưa có sản phẩm."
+          "hint": "Video giới thiệu ý tưởng, giá trị và đội ngũ; có thể dùng ngay cả khi chưa có sản phẩm.",
+          "placeholder": "Link video pitch dự án (nếu có)"
         }
       }
     },

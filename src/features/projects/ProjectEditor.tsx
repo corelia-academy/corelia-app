@@ -13,13 +13,15 @@ import { Action } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProgressCircle } from "@/components/ui/progress";
-import { Checkbox } from "@/components/ui/selection";
+import { Checkbox, CheckboxCard } from "@/components/ui/selection";
+import { Separator } from "@/components/ui/separator";
 import { canEditContestProject, isPastContestSubmissionDeadline } from "@/lib/hackathons";
 import { generateCanonicalProjectSlug } from "@/lib/hackathonContract";
 import { normalizeSlugDraft } from "@/lib/slug";
 import { projectErrorMessage } from "@/lib/projectErrors";
 import { listProjectTaxonomyOptions, type ProjectTaxonomyOption } from "@/lib/projectTaxonomy";
 import type { Contest } from "@/types/hackathons";
+import { MAX_PROJECT_TEAM_SIZE } from "@/types/projects";
 import type { Project } from "@/types/projects";
 import { ProjectMarkdownEditor } from "./ProjectMarkdownEditor";
 import { ProjectResourcesEditor } from "./ProjectResourcesEditor";
@@ -110,10 +112,9 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
       ...getSectionProgress([
         Boolean(draft.title.trim()) && draft.title.length <= contentLimits.title,
         Boolean(draft.slug) &&
-          draft.slug.length <= 160 &&
-          /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(draft.slug),
+        draft.slug.length <= 160 &&
+        /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(draft.slug),
         hasContent(draft.summary) && draft.summary.length <= contentLimits.summary,
-        draft.tracks.length > 0,
       ]),
       href: "#project-basics",
     },
@@ -121,7 +122,7 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
       label: t("projects.editor.submissionStory"),
       ...getSectionProgress([
         hasContent(draft.description) &&
-          draft.description.length <= contentLimits.description,
+        draft.description.length <= contentLimits.description,
       ]),
       href: "#project-story",
     },
@@ -202,12 +203,25 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
   }
 
   const trackPicker = contest ? <fieldset className={contestSubmission ? "space-y-3" : ""}>
-    <legend className="text-label-medium font-body">{t("projects.filters.tracks")} <span className="text-primary">*</span></legend>
-    <div className="mt-3 flex flex-wrap gap-2">
+    <legend className="text-label-medium font-body">{t("projects.filters.tracks")} <span className="text-error-400">*</span></legend>
+    <div className={contestSubmission ? "mt-3 grid gap-2" : "mt-3 flex flex-wrap gap-2"}>
       {(contest.tracks ?? [])
         .filter(option => option.active !== false || draft.tracks.includes(option.id))
         .map(option => {
           const checked = draft.tracks.includes(option.id);
+          if (contestSubmission) {
+            return <CheckboxCard
+              key={option.id}
+              size="small"
+              orientation="horizontal"
+              label={option.name}
+              supportingText={option.description ?? undefined}
+              className="gap-1 rounded-lg bg-project-track-card-surface p-3 [&_[data-slot=select-card-label]]:leading-[1.4] [&_[data-slot=select-card-supporting-text]]:text-body-medium [&_[data-slot=select-card-supporting-text]]:leading-[1.4] [&_[data-slot=select-card-supporting-text]]:tracking-[0.28px]"
+              checked={checked}
+              disabled={mutation.isPending || closed}
+              onCheckedChange={() => change("tracks", checked ? draft.tracks.filter(id => id !== option.id) : [...draft.tracks, option.id])}
+            />;
+          }
           return <Checkbox
             key={option.id}
             size="small"
@@ -234,7 +248,7 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
       <h1 className={`${contestSubmission ? "" : "mt-2 "}text-heading-large font-display`}>
         {contestSubmission ? t("projects.editor.submissionTitle") : t(project ? "projects.form.editTitle" : "projects.form.createTitle")}
       </h1>
-      <p className="mt-2 max-w-2xl text-body-medium font-body text-foreground-muted">
+      <p className={`mt-2 max-w-2xl font-body ${contestSubmission ? "text-body-large text-catalog-subtitle" : "text-body-medium text-foreground-muted"}`}>
         {contestSubmission ? t("projects.editor.submissionHint") : t("projects.editor.intro")}
       </p>
     </div>
@@ -268,7 +282,7 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
     {!contestSubmission ? pageHeader : null}
     {closed ? <p role="status" className="mb-5 rounded-lg border border-border bg-surface-raised p-4 text-body-medium font-body">{t("projects.errors.deadline")}</p> : null}
     {recovered ? <p role="status" className="mb-5 rounded-lg border border-primary/30 bg-primary/5 p-3 text-body-medium font-body">{t("projects.editor.recovered")}</p> : null}
-    <form onSubmit={event => { event.preventDefault(); if (complete && !closed && !uploading && !mutation.isPending) mutation.mutate(); }} className={`grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_280px] ${contestSubmission ? "lg:gap-x-12" : ""}`}>
+    <form onSubmit={event => { event.preventDefault(); if (complete && !closed && !uploading && !mutation.isPending) mutation.mutate(); }} className={`grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_280px] ${contestSubmission ? "lg:gap-x-12" : ""} [&_button:not(:disabled)]:cursor-pointer`}>
       <div className={`min-w-0 ${contestSubmission ? "space-y-8" : "space-y-6"}`}>
         {contestSubmission ? pageHeader : null}
         <fieldset disabled={mutation.isPending || closed} className={`min-w-0 ${contestSubmission ? "space-y-8" : "space-y-6"}`}>
@@ -281,38 +295,38 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
           <section id="project-basics" className={`scroll-mt-24 ${contestSubmission ? "border-b border-border-subtle pb-8" : "rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"}`}>
             {!contestSubmission ? <><h2 className="text-heading-medium font-display">{t("projects.editor.basics")}</h2><p className="mt-1 text-body-medium font-body text-foreground-muted">{t("projects.editor.basicsHint")}</p></> : null}
             <div className={contestSubmission ? "grid min-w-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-12" : ""}>
-              {contestSubmission ? <h2 className="text-heading-medium font-display text-foreground-subtle">{t("projects.editor.overview")}</h2> : null}
+              {contestSubmission ? <h2 className="text-heading-medium font-display text-project-editor-heading">{t("projects.editor.overview")}</h2> : null}
               <div className={contestSubmission ? "min-w-0 space-y-6" : "mt-6 space-y-5"}>
-              <div className={contestSubmission ? "space-y-2" : ""}>
-                <label htmlFor="project-title" className={`block text-label-medium font-body${contestSubmission ? " text-foreground-muted" : ""}`}>{t(contestSubmission ? "projects.editor.submissionProjectTitle" : "projects.form.title")} {isPrimary ? <span className="text-primary">*</span> : null}</label>
-                <div>
-                  <Input id="project-title" controlClassName={contestSubmission ? "" : undefined} className={contestSubmission ? "" : "mt-2"} required={isPrimary} maxLength={contentLimits.title} value={content.title} onChange={event => changeContent("title", event.target.value)} aria-describedby="project-title-hint" placeholder={t(contestSubmission ? "projects.editor.submissionTitlePlaceholder" : "projects.editor.titlePlaceholder")} />
-                  <span id="project-title-hint" className="mt-2 block text-body-small text-foreground-muted">{t("projects.editor.titleHint")}</span>
-                  {!contestSubmission ? <span className="mt-1 block text-right text-body-small font-body text-foreground-muted">{t("projects.editor.characterLimit", { count: content.title.length, limit: contentLimits.title })}</span> : null}
+                <div className={contestSubmission ? "space-y-2" : ""}>
+                  <label htmlFor="project-title" className={`block text-label-medium font-body${contestSubmission ? " leading-[1.4] tracking-[-0.07px] text-foreground-muted" : ""}`}>{t(contestSubmission ? "projects.editor.submissionProjectTitle" : "projects.form.title")} {isPrimary ? <span className="text-error-400">*</span> : null}</label>
+                  <div>
+                    <Input id="project-title" controlClassName={contestSubmission ? "" : undefined} className={contestSubmission ? "" : "mt-2"} required={isPrimary} maxLength={contentLimits.title} value={content.title} onChange={event => changeContent("title", event.target.value)} aria-describedby="project-title-hint" placeholder={t(contestSubmission ? "projects.editor.submissionTitlePlaceholder" : "projects.editor.titlePlaceholder")} />
+                    <span id="project-title-hint" className="mt-2 block text-body-small text-foreground-muted">{t("projects.editor.titleHint")}</span>
+                    {!contestSubmission ? <span className="mt-1 block text-right text-body-small font-body text-foreground-muted">{t("projects.editor.characterLimit", { count: content.title.length, limit: contentLimits.title })}</span> : null}
+                  </div>
                 </div>
-              </div>
-              <div className={contestSubmission ? "space-y-2" : ""}>
-                <label htmlFor="project-slug" className={`block text-label-medium font-body${contestSubmission ? " text-foreground-muted" : ""}`}>{t("projects.form.slug")} <span className="text-primary">*</span></label>
-                <div>
-                  <Input id="project-slug" controlClassName={contestSubmission ? "" : undefined} aria-describedby="project-slug-hint" className={contestSubmission ? "" : "mt-2"} required maxLength={160} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" value={draft.slug} placeholder={contestSubmission ? t("projects.editor.submissionSlugPlaceholder") : undefined} onChange={event => { setSlugTouched(true); change("slug", normalizeSlugDraft(event.target.value)); }} onBlur={() => { if (draft.slug.trim()) change("slug", slug); }} />
-                  <span id="project-slug-hint" className="mt-2 block text-body-small text-foreground-muted">{t(contestSubmission ? "projects.editor.submissionSlugHint" : "projects.editor.slugHint")}</span>
-                  {!contestSubmission ? <><span className="mt-1 block break-all text-body-small font-body text-foreground-muted">/projects/{slug || "…"}</span><span className="mt-1 block text-right text-body-small font-body text-foreground-muted">{t("projects.editor.characterLimit", { count: draft.slug.length, limit: 160 })}</span></> : null}
+                <div className={contestSubmission ? "space-y-2" : ""}>
+                  <label htmlFor="project-slug" className={`block text-label-medium font-body${contestSubmission ? " leading-[1.4] tracking-[-0.07px] text-foreground-muted" : ""}`}>{t("projects.form.slug")} <span className="text-error-400">*</span></label>
+                  <div>
+                    <Input id="project-slug" controlClassName={contestSubmission ? "" : undefined} aria-describedby="project-slug-hint" className={contestSubmission ? "" : "mt-2"} required maxLength={160} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" value={draft.slug} placeholder={contestSubmission ? t("projects.editor.submissionSlugPlaceholder") : undefined} onChange={event => { setSlugTouched(true); change("slug", normalizeSlugDraft(event.target.value)); }} onBlur={() => { if (draft.slug.trim()) change("slug", slug); }} />
+                    <span id="project-slug-hint" className="mt-2 block text-body-small text-foreground-muted">{t(contestSubmission ? "projects.editor.submissionSlugHint" : "projects.editor.slugHint")}</span>
+                    {!contestSubmission ? <><span className="mt-1 block break-all text-body-small font-body text-foreground-muted">/projects/{slug || "…"}</span><span className="mt-1 block text-right text-body-small font-body text-foreground-muted">{t("projects.editor.characterLimit", { count: draft.slug.length, limit: 160 })}</span></> : null}
+                  </div>
                 </div>
-              </div>
-              <div className={contestSubmission ? "space-y-1.5" : ""}>
-                <label htmlFor="project-summary" className={`block text-label-medium font-body${contestSubmission ? " text-foreground-muted" : ""}`}>{t("projects.form.summary")}{publishing && isPrimary ? <span className="text-primary"> *</span> : null}</label>
-                <div>
-                  <Input id="project-summary" fieldType="auto-grow" submitOnEnter={false} rows={1} aria-describedby={contestSubmission ? "project-summary-hint project-summary-limit" : "project-summary-hint"} required={publishing && isPrimary} controlClassName={contestSubmission ? "h-[136px] min-h-[136px] max-h-[136px] overflow-hidden" : undefined} className={contestSubmission ? "h-full min-h-full max-h-full overflow-y-auto pb-5" : "min-h-[142px]"} maxLength={contentLimits.summary} value={content.summary} placeholder={contestSubmission ? t("projects.editor.submissionTextPlaceholder") : t("projects.editor.summaryPlaceholder")} onChange={event => changeContent("summary", event.target.value)} renderTrailingContent={contestSubmission ? () => <span id="project-summary-limit" className="pointer-events-none absolute bottom-2 right-3 text-body-small font-body text-foreground-muted">{t("projects.editor.submissionCharacterLimit", { count: content.summary.length, limit: contentLimits.summary })}</span> : undefined} />
-                  {!contestSubmission ? <span id="project-summary-hint" className="mt-2 block text-body-small text-foreground-muted">{t("projects.editor.summaryHint")}</span> : <span id="project-summary-hint" className="sr-only">{t("projects.form.summary")}</span>}
-                  {!contestSubmission ? <span className="mt-1 block text-right text-body-small font-body text-foreground-muted">{t("projects.editor.characterLimit", { count: content.summary.length, limit: contentLimits.summary })}</span> : null}
+                <div className={contestSubmission ? "space-y-1.5" : ""}>
+                  <label htmlFor="project-summary" className={`block text-label-medium font-body${contestSubmission ? " leading-[1.4] tracking-[-0.07px] text-foreground-muted" : ""}`}>{t("projects.form.summary")}{publishing && isPrimary ? <span className="text-error-400"> *</span> : null}</label>
+                  <div>
+                    <Input id="project-summary" fieldType="auto-grow" submitOnEnter={false} rows={1} aria-describedby={contestSubmission ? "project-summary-hint project-summary-limit" : "project-summary-hint"} required={publishing && isPrimary} controlClassName={contestSubmission ? "h-[154px] min-h-[154px] max-h-[154px] overflow-hidden" : undefined} className={contestSubmission ? "h-full min-h-full max-h-full overflow-y-auto pb-5" : "min-h-[142px]"} maxLength={contentLimits.summary} value={content.summary} placeholder={contestSubmission ? t("projects.editor.submissionTextPlaceholder") : t("projects.editor.summaryPlaceholder")} onChange={event => changeContent("summary", event.target.value)} renderTrailingContent={contestSubmission ? () => <span id="project-summary-limit" className="pointer-events-none absolute bottom-2 right-3 text-body-small font-body text-foreground-muted">{t("projects.editor.submissionCharacterLimit", { count: content.summary.length, limit: contentLimits.summary })}</span> : undefined} />
+                    {!contestSubmission ? <span id="project-summary-hint" className="mt-2 block text-body-small text-foreground-muted">{t("projects.editor.summaryHint")}</span> : <span id="project-summary-hint" className="sr-only">{t("projects.form.summary")}</span>}
+                    {!contestSubmission ? <span className="mt-1 block text-right text-body-small font-body text-foreground-muted">{t("projects.editor.characterLimit", { count: content.summary.length, limit: contentLimits.summary })}</span> : null}
+                  </div>
                 </div>
-              </div>
               </div>
             </div>
           </section>
           <section id="project-story" className={`scroll-mt-24 ${contestSubmission ? "border-b border-border-subtle pb-8" : "rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"}`}>
             <div className={contestSubmission ? "grid min-w-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-12" : "space-y-5"}>
-              {contestSubmission ? <h2 className="text-heading-medium font-display text-foreground-subtle">{t("projects.editor.submissionStory")}</h2> : null}
+              {contestSubmission ? <h2 className="text-heading-medium font-display text-project-editor-heading">{t("projects.editor.submissionStory")}</h2> : null}
               <div className={contestSubmission ? "min-w-0 space-y-6" : ""}>
                 {!contestSubmission ? <h2 className="mb-2 text-heading-medium font-display">{t("projects.editor.story")}</h2> : null}
                 {storyFields}
@@ -323,24 +337,51 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
             {!contestSubmission ? <h2 className="mb-5 text-heading-medium font-display">{t("projects.editor.media")}</h2> : null}
             <ProjectMediaEditor projectId={projectId} logo={draft.logo} screenshots={draft.screenshots} onLogoChange={logo => change("logo", logo)} onScreenshotsChange={screenshots => change("screenshots", screenshots)} deleteOnRemove={false} onRemovePath={path => setRemovedPaths(current => [...new Set([...current, path])])} onUploadingChange={setUploading} presentation={contestSubmission ? "submission" : "default"} />
           </section>
-          {contestSubmission ? <details className="rounded-xl border border-border-subtle bg-surface-base">
+          {/* {contestSubmission ? <details className="rounded-xl border border-border-subtle bg-surface-base">
             <summary className="cursor-pointer px-5 py-4 text-label-medium font-body">{t("projects.translation.languages")}</summary>
             <div className="space-y-4 border-t border-border-subtle p-5">{translationFields}</div>
-          </details> : null}
-          <ProjectResourcesEditor draft={draft} onChange={change} />
-          {contest ? <section id="project-categories" className="scroll-mt-24 space-y-6 rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7">
-            <div><h2 className="text-heading-medium font-display">{t(contestSubmission ? "projects.editor.submissionOptionalClassifications" : "projects.editor.categories")}</h2><p className="mt-1 text-body-medium font-body text-foreground-muted">{t(contestSubmission ? "projects.editor.submissionOptionalClassificationsHint" : "projects.editor.categoriesHint")}</p></div>
+          </details> : null} */}
+          <ProjectResourcesEditor draft={draft} onChange={change} presentation={contestSubmission ? "submission" : "default"} />
+          {contest ? contestSubmission ? <section id="project-categories" className="scroll-mt-24">
+            <Separator className="mb-6" />
+            <div className="grid min-w-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-12">
+              <div>
+                <h2 className="text-heading-medium font-display text-project-editor-heading">{t("projects.editor.categories")}</h2>
+                <p className="mt-4 text-body-small font-body text-foreground-subtle">{t("projects.editor.categoriesHint")}</p>
+              </div>
+              <div className="min-w-0 space-y-6">
+                {trackPicker}
+                <ProjectTaxonomyPicker presentation="submission" label={t("projects.filters.sectors")} options={sectorOptions} selectedIds={draft.sectors} customValues={draft.customSectors} searchPlaceholder={t("projects.editor.taxonomySearch")} addLabel={(value) => t("projects.editor.taxonomyAdd", { value })} limitLabel={t("projects.editor.taxonomyLimit")} onChange={(ids, custom) => setDraft(current => ({ ...current, sectors: ids, customSectors: custom }))} />
+                <ProjectTaxonomyPicker presentation="submission" label={t("projects.filters.techStacks")} options={techOptions} selectedIds={draft.tech} customValues={draft.customTech} searchPlaceholder={t("projects.editor.taxonomySearch")} addLabel={(value) => t("projects.editor.taxonomyAdd", { value })} limitLabel={t("projects.editor.taxonomyLimit")} onChange={(ids, custom) => setDraft(current => ({ ...current, tech: ids, customTech: custom }))} />
+                {taxonomyQuery.isError ? <p role="alert" className="text-sm text-destructive">{t("projects.editor.taxonomyLoadError")}</p> : null}
+              </div>
+            </div>
+          </section> : <section id="project-categories" className="scroll-mt-24 space-y-6 rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7">
+            <div><h2 className="text-heading-medium font-display">{t("projects.editor.categories")}</h2><p className="mt-1 text-body-medium font-body text-foreground-muted">{t("projects.editor.categoriesHint")}</p></div>
             {trackPicker}
             <ProjectTaxonomyPicker label={t("projects.filters.sectors")} options={sectorOptions} selectedIds={draft.sectors} customValues={draft.customSectors} searchPlaceholder={t("projects.editor.taxonomySearch")} addLabel={(value) => t("projects.editor.taxonomyAdd", { value })} limitLabel={t("projects.editor.taxonomyLimit")} onChange={(ids, custom) => setDraft(current => ({ ...current, sectors: ids, customSectors: custom }))} />
             <ProjectTaxonomyPicker label={t("projects.filters.techStacks")} options={techOptions} selectedIds={draft.tech} customValues={draft.customTech} searchPlaceholder={t("projects.editor.taxonomySearch")} addLabel={(value) => t("projects.editor.taxonomyAdd", { value })} limitLabel={t("projects.editor.taxonomyLimit")} onChange={(ids, custom) => setDraft(current => ({ ...current, tech: ids, customTech: custom }))} />
             {taxonomyQuery.isError ? <p role="alert" className="text-sm text-destructive">{t("projects.editor.taxonomyLoadError")}</p> : null}
           </section> : null}
         </fieldset>
-        <section id="project-team" className="scroll-mt-24 rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="mb-5 text-heading-medium font-display">{t("projects.editor.team")}</h2><ProjectTeamEditor ownerId={project?.owner_id} editsClosed={closed} lateMembersAllowed={Boolean(contest && isPastContestSubmissionDeadline(contest) && canEditContestProject(contest))} projectId={projectId} sourceType={project?.source_type ?? (contest ? "hackathon" : "standalone")} sourceId={project?.source_id ?? contest?.id} persisted={Boolean(project)} selectedIds={teamIds} onSelectedIdsChange={setTeamIds} /></section>
+        <section id="project-team" className={`scroll-mt-24 ${contestSubmission ? "" : "rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"}`}>
+          {contestSubmission ? <>
+            <Separator className="mb-6" />
+            <div className="grid min-w-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-12">
+              <div>
+                <h2 className="text-heading-medium font-display text-project-editor-heading">{t("projects.team.title")}</h2>
+                <p className="mt-4 text-body-small font-body text-foreground-subtle">{t("projects.team.hint")}</p>
+                <p className="mt-2 text-body-small font-body text-foreground-subtle">{t("projects.team.limit", { count: MAX_PROJECT_TEAM_SIZE })}</p>
+                {contest ? <p className="mt-2 text-body-small font-body text-foreground-subtle">{t(isPastContestSubmissionDeadline(contest) && canEditContestProject(contest) ? "projects.team.lateMembersHint" : "projects.team.hackathonEligibleHint")}</p> : null}
+              </div>
+              <ProjectTeamEditor presentation="submission" ownerId={project?.owner_id} editsClosed={closed} lateMembersAllowed={Boolean(contest && isPastContestSubmissionDeadline(contest) && canEditContestProject(contest))} projectId={projectId} sourceType={project?.source_type ?? (contest ? "hackathon" : "standalone")} sourceId={project?.source_id ?? contest?.id} persisted={Boolean(project)} selectedIds={teamIds} onSelectedIdsChange={setTeamIds} />
+            </div>
+          </> : <><h2 className="mb-5 text-heading-medium font-display">{t("projects.editor.team")}</h2><ProjectTeamEditor ownerId={project?.owner_id} editsClosed={closed} lateMembersAllowed={Boolean(contest && isPastContestSubmissionDeadline(contest) && canEditContestProject(contest))} projectId={projectId} sourceType={project?.source_type ?? (contest ? "hackathon" : "standalone")} sourceId={project?.source_id ?? contest?.id} persisted={Boolean(project)} selectedIds={teamIds} onSelectedIdsChange={setTeamIds} /></>}
+        </section>
       </div>
       <aside className="space-y-5 lg:sticky lg:top-24">
         <div className={`rounded-2xl border bg-surface-base ${contestSubmission ? "border-border px-4 pt-3 pb-4 shadow-card" : "border-border-subtle p-5"}`}>
-          <h2 className={contestSubmission ? "text-sm font-medium text-foreground" : "text-heading-medium font-display"}>
+          <h2 className={contestSubmission ? "text-base font-medium leading-6 tracking-[-0.32px] text-foreground" : "text-heading-medium font-display"}>
             {contestSubmission
               ? t("projects.editor.requiredInformation")
               : `${t("projects.editor.checklist")} (${draft.primaryLocale.toUpperCase()})`}
@@ -359,7 +400,11 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
                         onClick={event => handleChecklistScroll(event, item.href)}
                       />
                     }
-                    label={item.label}
+                    label={
+                      <span className="group-hover/action:text-foreground">
+                        {item.label}
+                      </span>
+                    }
                     trailingGroup={
                       <ProgressCircle
                         aria-label={t(item.done ? "projects.editor.complete" : "projects.editor.missing")}
@@ -387,7 +432,7 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
                     size="small"
                     isActive={false}
                     showActive={false}
-                    className="min-h-10 hover:bg-transparent data-[active=true]:bg-transparent"
+                    className="cursor-pointer hover:bg-transparent data-[active=true]:bg-transparent"
                   />
                 ) : (
                   <a href={item.href} className="flex items-center gap-2 text-body-medium font-body">
@@ -399,14 +444,14 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
               </li>
             ))}
           </ul>
-          {contest && !contestSubmission ? <p className="mt-5 text-body-small font-body text-foreground-muted">{t("projects.editor.publicHint")}</p> : !contest ? <label className="mt-5 block text-label-medium font-body">{t("projects.form.visibility")}<select value={draft.visibility} onChange={event=>change("visibility", event.target.value as ProjectDraft['visibility'])} disabled={mutation.isPending} className="mt-2 min-h-11 w-full rounded-md border border-border bg-background px-3">{(['public','unlisted','private'] as const).map(value=><option key={value} value={value}>{t(`projects.editor.${value}`)}</option>)}</select></label> : null}
+          {contest && !contestSubmission ? <p className="mt-5 text-body-small font-body text-foreground-muted">{t("projects.editor.publicHint")}</p> : !contest ? <label className="mt-5 block text-label-medium font-body">{t("projects.form.visibility")}<select value={draft.visibility} onChange={event => change("visibility", event.target.value as ProjectDraft['visibility'])} disabled={mutation.isPending} className="mt-2 min-h-11 w-full rounded-md border border-border bg-background px-3">{(['public', 'unlisted', 'private'] as const).map(value => <option key={value} value={value}>{t(`projects.editor.${value}`)}</option>)}</select></label> : null}
           {!withinLimits ? <p role="alert" className="mt-4 text-body-small font-body text-destructive">{t("projects.editor.limitHint")}</p> : null}
           {!contestSubmission && !complete && withinLimits ? <p className="mt-4 text-body-small font-body text-foreground-muted">{t("projects.editor.requiredHint")}</p> : null}
           <Button className={`${contestSubmission ? "mt-2.5" : "mt-5"} w-full`} size={contestSubmission ? "small" : "medium"} type="submit" disabled={mutation.isPending || uploading || closed || !complete}>{mutation.isPending || uploading ? <LoaderCircle className="size-4 animate-spin" /> : null}{t(uploading ? "projects.editor.uploading" : mutation.isPending ? "projects.form.saving" : contestSubmission || project ? "projects.form.save" : "projects.form.create")}</Button>
-          {contestSubmission ? <p className="mt-2.5 text-body-small font-body text-foreground-muted">{t("projects.editor.submissionSaveHint")}</p> : null}
+          {contestSubmission ? <p className="mt-2.5 text-sm leading-[1.25] tracking-[0.28px] font-body italic text-foreground-subtle">{t("projects.editor.submissionSaveHint")}</p> : null}
           {(!contestSubmission || dirty) ? <p className="mt-3 text-body-small font-body text-foreground-muted" role="status">{t(dirty ? "projects.editor.unsaved" : "projects.editor.ready")}</p> : null}
         </div>
-        {mutation.isError ? <div ref={errorRef} tabIndex={-1} role="alert" className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-body-medium font-body text-destructive">{projectErrorMessage(mutation.error,t)}<p className="mt-2">{t("projects.editor.retryHint")}</p></div> : null}
+        {mutation.isError ? <div ref={errorRef} tabIndex={-1} role="alert" className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-body-medium font-body text-destructive">{projectErrorMessage(mutation.error, t)}<p className="mt-2">{t("projects.editor.retryHint")}</p></div> : null}
       </aside>
     </form>
   </div>;

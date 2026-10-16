@@ -31,10 +31,12 @@ import AdminBadgeComponentPage from "./AdminBadgeComponentPage";
 import AdminDropdownMenuComponentPage from "./AdminDropdownMenuComponentPage";
 import AdminEmptyStateIllustrationComponentPage from "./AdminEmptyStateIllustrationComponentPage";
 import AdminFullPageEmptyStateComponentPage from "./AdminFullPageEmptyStateComponentPage";
+import AdminInformativeIconComponentPage from "./AdminInformativeIconComponentPage";
 import AdminInputFieldComponentPage from "./AdminInputFieldComponentPage";
 import AdminScrollbarComponentPage from "./AdminScrollbarComponentPage";
 import AdminSelectionComponentPage from "./AdminSelectionComponentPage";
 import AdminSeparatorComponentPage from "./AdminSeparatorComponentPage";
+import AdminStepperComponentPage from "./AdminStepperComponentPage";
 import AdminTimestampComponentPage from "./AdminTimestampComponentPage";
 import AdminTagComponentPage from "./AdminTagComponentPage";
 import AdminTabsComponentPage from "./AdminTabsComponentPage";
@@ -55,6 +57,8 @@ const pages = [
   AdminDropdownMenuComponentPage,
   AdminEmptyStateIllustrationComponentPage,
   AdminInputFieldComponentPage,
+  AdminInformativeIconComponentPage,
+  AdminStepperComponentPage,
 ];
 
 describe("admin component detail pages", () => {
@@ -493,6 +497,65 @@ describe("admin component detail pages", () => {
     expect(container.querySelector('[data-testid="badge-filled-color-row-white"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="badge-outline-color-row-primary"]')?.querySelectorAll("svg")).toHaveLength(6);
     expect(container.querySelector('[data-testid="badge-filled-color-row-primary"]')?.querySelectorAll("svg")).toHaveLength(6);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders all 40 Informative Icon variants in the showcase matrix", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <AdminInformativeIconComponentPage />
+        </MemoryRouter>,
+      );
+    });
+
+    expect(container.querySelectorAll('[data-slot="informative-icon"]')).toHaveLength(40);
+    expect(container.querySelectorAll('[data-testid^="informative-icon-circle-color-row-"]')).toHaveLength(4);
+    expect(container.querySelectorAll('[data-testid^="informative-icon-circle-outline-color-row-"]')).toHaveLength(4);
+    expect(container.querySelector('[data-testid="informative-icon-circle-outline-color-row-blue"]')).not.toBeNull();
+    expect(container.querySelector("h1")?.textContent).toBe("Informative Icon");
+    expect(container.textContent).toContain("Colors, sizes, and types");
+    expect(container.textContent).toContain("Light circle outline");
+    expect(
+      container.querySelector('[data-slot="informative-icon"]')?.getAttribute("aria-label"),
+    ).toBe("Error Light circle, size XS");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("shows a full connector into the focused step and a half-active connector after it", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <AdminStepperComponentPage />
+        </MemoryRouter>,
+      );
+    });
+
+    const steps = container.querySelectorAll(
+      '[data-testid="stepper-live-preview"] [data-slot="stepper"] > li',
+    );
+    const active = "bg-[var(--stepper-connector-active)]";
+    const muted = "bg-[var(--stepper-connector-default)]";
+
+    expect(steps[0]?.getAttribute("data-state")).toBe("Passed");
+    expect(steps[1]?.getAttribute("data-state")).toBe("Focused");
+    expect(steps[2]?.getAttribute("data-state")).toBe("Default");
+    expect(steps[0]?.querySelector('[data-slot="stepper-connector-after"]')?.classList.contains(active)).toBe(true);
+    expect(steps[1]?.querySelector('[data-slot="stepper-connector-before"]')?.classList.contains(active)).toBe(true);
+    expect(steps[1]?.querySelector('[data-slot="stepper-connector-after"]')?.classList.contains(active)).toBe(true);
+    expect(steps[2]?.querySelector('[data-slot="stepper-connector-before"]')?.classList.contains(muted)).toBe(true);
 
     await act(async () => root.unmount());
     container.remove();

@@ -1,8 +1,11 @@
 import { useState } from "react";
 
+import { WarningCircle } from "@phosphor-icons/react";
+
 import { Button } from "@/components/ui/button";
 import {
   Stepper,
+  type StepperConnectorState,
   type StepperOrientation,
   type StepperStep,
   type StepperStepState,
@@ -45,6 +48,12 @@ const styleLabels = {
   Icon: "Icons",
 } as const satisfies Record<StepperStyle, string>;
 
+function getStepIcon(state: StepperStepState) {
+  return state === "Default" || state === "Focused"
+    ? <WarningCircle className="size-4" weight="duotone" />
+    : undefined;
+}
+
 export default function AdminStepperComponentPage({
   embedded = false,
 }: {
@@ -60,12 +69,18 @@ export default function AdminStepperComponentPage({
       : index === currentStep
         ? "Focused"
         : "Default";
+    const connectorState: StepperConnectorState = state === "Default"
+      ? "Default"
+      : "Active";
 
     return {
       title: step.title,
       caption: step.caption,
       state,
+      connectorBefore: connectorState,
+      connectorAfter: connectorState,
       stateLabel: stateLabels[state],
+      icon: getStepIcon(state),
     };
   });
 
@@ -74,24 +89,34 @@ export default function AdminStepperComponentPage({
       title: "Waiting",
       caption: "Not started",
       state: "Default",
+      connectorBefore: "Default",
+      connectorAfter: "Active",
       stateLabel: stateLabels.Default,
+      icon: getStepIcon("Default"),
     },
     {
       title: "In progress",
       caption: "Current step",
       state: "Focused",
+      connectorBefore: "Active",
+      connectorAfter: "Active",
       stateLabel: stateLabels.Focused,
+      icon: getStepIcon("Focused"),
     },
     {
       title: "Complete",
       caption: "Finished",
       state: "Passed",
+      connectorBefore: "Active",
+      connectorAfter: "Error",
       stateLabel: stateLabels.Passed,
     },
     {
       title: "Needs attention",
       caption: "Review the details",
       state: "Error",
+      connectorBefore: "Error",
+      connectorAfter: "Error",
       stateLabel: stateLabels.Error,
     },
   ];
@@ -161,7 +186,7 @@ export default function AdminStepperComponentPage({
           </div>
 
           <div
-            className="overflow-hidden rounded-lg bg-[var(--neutral-900)] px-4 py-6 sm:px-6"
+            className="overflow-hidden rounded-lg bg-background px-4 py-6 sm:px-6"
             data-testid="stepper-live-preview"
           >
             <Stepper
@@ -222,7 +247,7 @@ export default function AdminStepperComponentPage({
               <h3 className="text-heading-small font-display">
                 {`${styleLabels[configuration.style]} style · ${configuration.orientation.toLowerCase()}`}
               </h3>
-              <div className="overflow-hidden rounded-lg bg-[var(--neutral-900)] px-4 py-5 sm:px-6">
+              <div className="overflow-hidden rounded-lg bg-background px-4 py-5 sm:px-6">
                 <Stepper
                   aria-label="Stepper state examples"
                   orientation={configuration.orientation}
@@ -239,15 +264,22 @@ export default function AdminStepperComponentPage({
         title="Controlled usage example"
         criterion="The page derives each state from its own current-step value and passes the result into Stepper."
       >
-        <pre className="overflow-x-auto rounded-lg bg-[var(--neutral-900)] p-4 text-xs leading-5 text-[var(--neutral-200)]">
-          <code>{`const steps = data.map((step, index) => ({
-  ...step,
-  state: index < currentStep
+        <pre className="overflow-x-auto rounded-lg bg-background p-4 text-xs leading-5 text-foreground">
+        <code>{`const steps = data.map((step, index) => {
+  const state = index < currentStep
     ? "Passed"
     : index === currentStep
       ? "Focused"
-      : "Default",
-}));
+      : "Default";
+  const connectorState = state === "Default" ? "Default" : "Active";
+
+  return {
+    ...step,
+    state,
+    connectorBefore: connectorState,
+    connectorAfter: connectorState,
+  };
+});
 
 <Stepper
   steps={steps}

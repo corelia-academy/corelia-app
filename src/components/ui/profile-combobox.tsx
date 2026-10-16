@@ -1,6 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Check, ChevronDown } from "lucide-react";
+import { Action } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +16,7 @@ export interface ProfileComboboxOption {
   id: string;
   label: string;
   description?: string | null;
+  icon?: ReactNode;
 }
 
 interface ProfileComboboxProps {
@@ -31,6 +34,7 @@ interface ProfileComboboxProps {
   isLoadingMore?: boolean;
   onSearchChange?: (query: string) => void;
   errorMessage?: string;
+  presentation?: "dialog" | "inline";
 }
 
 function normalize(text: string) {
@@ -52,6 +56,7 @@ export function ProfileCombobox({
   isLoadingMore = false,
   onSearchChange,
   errorMessage,
+  presentation = "dialog",
 }: ProfileComboboxProps) {
   const { t } = useTranslation("common");
   const [open, setOpen] = useState(false);
@@ -88,7 +93,93 @@ export function ProfileCombobox({
       return;
     }
     onChange(id);
-    setOpen(false);
+    if (presentation === "dialog") {
+      setOpen(false);
+    } else {
+      setQuery("");
+      onSearchChange?.("");
+    }
+  }
+
+  if (presentation === "inline") {
+    const selectedOptions = selectedIds
+      .map((id) => options.find((option) => option.id === id))
+      .filter((option): option is ProfileComboboxOption => Boolean(option));
+    const candidateOptions = filtered.filter((option) => !selectedIds.includes(option.id));
+
+    return (
+      <div className="min-w-0 space-y-2">
+        <Input
+          type="search"
+          variant="icon-leading"
+          leadingIconClassName="text-foreground-subtle"
+          statusIcon={null}
+          controlClassName="h-10 rounded-lg border-border bg-background px-3"
+          className="text-body-large placeholder:text-foreground-subtle"
+          value={query}
+          onChange={(event) => {
+            setQuery(event.currentTarget.value);
+            onSearchChange?.(event.currentTarget.value);
+          }}
+          placeholder={searchPlaceholder ?? t("combobox.searchPlaceholder")}
+          aria-label={searchPlaceholder ?? t("combobox.searchPlaceholder")}
+        />
+        {errorMessage ? <p role="alert" className="text-sm text-destructive">{errorMessage}</p> : null}
+        {selectedOptions.length > 0 ? (
+          <div className="space-y-1" aria-label={title}>
+            {selectedOptions.map((option) => (
+              <Action
+                key={option.id}
+                type="button"
+                size="small"
+                isActive
+                aria-pressed="true"
+                icon={option.icon}
+                label={option.label}
+                supportingText={option.description ?? undefined}
+                trailingGroup={<Check className="size-4 text-primary" aria-hidden />}
+                onClick={() => toggleOption(option.id)}
+              />
+            ))}
+          </div>
+        ) : null}
+        {query.trim() ? (
+          candidateOptions.length > 0 ? (
+            <div className="space-y-1" aria-label={title}>
+              {candidateOptions.map((option) => (
+                <Action
+                  key={option.id}
+                  type="button"
+                  size="small"
+                  aria-pressed="false"
+                  icon={option.icon}
+                  label={option.label}
+                  supportingText={option.description ?? undefined}
+                  onClick={() => toggleOption(option.id)}
+                />
+              ))}
+            </div>
+          ) : !errorMessage ? (
+            <div className="rounded-lg border border-dashed border-border-subtle bg-surface-base px-4 py-4 text-sm text-foreground-muted">
+              {emptyLabel ?? t("combobox.emptyLabel")}
+            </div>
+          ) : null
+        ) : null}
+        {hasMore ? (
+          <Button
+            type="button"
+            variant="cta"
+            hierarchy="tertiary"
+            size="small"
+            className="w-full text-xs text-foreground-muted hover:text-foreground"
+            disabled={isLoadingMore}
+            onClick={onLoadMore}
+          >
+            {isLoadingMore ? t("combobox.loadingMore") : t("combobox.loadMore")}
+          </Button>
+        ) : null}
+      </div>
+    );
   }
 
   return (

@@ -347,6 +347,7 @@ function ApplicationRoutes() {
               "timestamp",
               "tooltip",
               "stepper",
+              "informative-icon",
             ].map((component) => (
               <Route
                 key={component}

@@ -17,6 +17,7 @@ import AdminButtonComponentPage from "./components/AdminButtonComponentPage";
 import AdminDropdownMenuComponentPage from "./components/AdminDropdownMenuComponentPage";
 import AdminEmptyStateIllustrationComponentPage from "./components/AdminEmptyStateIllustrationComponentPage";
 import AdminFullPageEmptyStateComponentPage from "./components/AdminFullPageEmptyStateComponentPage";
+import AdminInformativeIconComponentPage from "./components/AdminInformativeIconComponentPage";
 import AdminProgressComponentPage from "./components/AdminProgressComponentPage";
 import AdminXpRankComponentPage from "./components/AdminXpRankComponentPage";
 import AdminInputFieldComponentPage from "./components/AdminInputFieldComponentPage";
@@ -126,6 +127,11 @@ const components = [
     slug: "stepper",
     title: "Stepper",
     criterion: "Horizontal and vertical progress tracking; the consuming page supplies each step state.",
+  },
+  {
+    slug: "informative-icon",
+    title: "Informative Icon",
+    criterion: "Four status colors, five sizes, and two circle types.",
   },
 ] as const;
 
@@ -581,6 +587,9 @@ export default function AdminComponentsPage() {
               </ComponentSection>
               <ComponentSection {...components[18]}>
                 <AdminStepperComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[19]}>
+                <AdminInformativeIconComponentPage embedded />
               </ComponentSection>
             </>
           )}

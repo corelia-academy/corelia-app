@@ -4,10 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { UserAvatar } from "@/components/UserAvatar";
+import { Action } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { ProfileCombobox } from "@/components/ui/profile-combobox";
 import type { ProfileComboboxOption } from "@/components/ui/profile-combobox";
+import { Separator } from "@/components/ui/separator";
 import {
   createProjectCollaborationInvite,
   listCollaborationProfiles,
@@ -31,6 +34,13 @@ type Props = {
   lateMembersAllowed?: boolean;
   selectedIds?: string[];
   onSelectedIdsChange?: (ids: string[]) => void;
+  presentation?: "default" | "submission";
+};
+
+type TeamProfileOption = ProfileComboboxOption & {
+  userId: string;
+  avatarUrl?: string | null;
+  avatarAlt: string;
 };
 
 export function ProjectTeamEditor({
@@ -43,6 +53,7 @@ export function ProjectTeamEditor({
   lateMembersAllowed = false,
   selectedIds = [],
   onSelectedIdsChange,
+  presentation = "default",
 }: Props) {
   const { t } = useTranslation("common");
   const hackathon = sourceType === "hackathon" || sourceType === "contest";
@@ -50,7 +61,7 @@ export function ProjectTeamEditor({
   const key = ["project-team", projectId] as const;
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [selectedOptions, setSelectedOptions] = useState<ProfileComboboxOption[]>([]);
+  const [selectedOptions, setSelectedOptions] = useState<TeamProfileOption[]>([]);
   useEffect(() => {
     const timeout = window.setTimeout(() => {
       setDebouncedSearch(search.trim().replace(/^@+/, ""));
@@ -79,6 +90,10 @@ export function ProjectTeamEditor({
     id: profile.user_id,
     label: profile.full_name?.trim() || profile.username?.trim() || profile.user_id,
     description: profile.username ? `@${profile.username}` : null,
+    icon: <UserAvatar userId={profile.user_id} avatarUrl={profile.avatar_url} alt={profile.full_name?.trim() || profile.username?.trim() || profile.user_id} size="sm" />,
+    userId: profile.user_id,
+    avatarUrl: profile.avatar_url,
+    avatarAlt: profile.full_name?.trim() || profile.username?.trim() || profile.user_id,
   })), [candidatesQuery.data]);
   const options = useMemo(() => {
     const candidateIds = new Set(candidateOptions.map((option) => option.id));
@@ -155,10 +170,12 @@ export function ProjectTeamEditor({
   const memberCount = 1 + (persisted ? (team?.members.filter((member) => member.user_id !== ownerId).length ?? 0) : selectedIds.length);
   const atCapacity = memberCount >= MAX_PROJECT_TEAM_SIZE;
   const pending = team?.invites.filter((invite) => invite.status === "pending") ?? [];
+  const [showAllPending, setShowAllPending] = useState(false);
+  const visiblePending = showAllPending ? pending : pending.slice(0, 5);
 
   return (
     <fieldset className="space-y-3">
-      <div>
+      {presentation === "default" ? <div>
         <legend className="text-sm font-medium">{t("projects.team.title")}</legend>
         <p className="mt-1 text-xs text-foreground-muted">{t("projects.team.hint")}</p>
         <p className="mt-1 text-xs text-foreground-muted">{t("projects.team.limit", { count: MAX_PROJECT_TEAM_SIZE })}</p>
@@ -166,8 +183,9 @@ export function ProjectTeamEditor({
         {hackathon ? (
           <p className="mt-1 text-xs text-foreground-muted">{t(lateMembersAllowed ? "projects.team.lateMembersHint" : "projects.team.hackathonEligibleHint")}</p>
         ) : null}
-      </div>
+      </div> : null}
       {!editsClosed && (!persisted || (!atCapacity && teamQuery.isSuccess)) ? <ProfileCombobox
+        presentation={presentation === "submission" ? "inline" : "dialog"}
         title={t("projects.team.pickTitle")}
         description={hackathon && !lateMembersAllowed ? t("projects.team.hackathonPickDescription") : t("projects.team.pickDescription")}
         options={options}
@@ -176,12 +194,23 @@ export function ProjectTeamEditor({
         placeholder={t("projects.team.placeholder")}
         searchPlaceholder={t("projects.team.searchPlaceholder")}
         emptyLabel={candidatesQuery.isPending || search.trim().replace(/^@+/, "") !== debouncedSearch ? t("projects.team.loading") : t("projects.team.empty")}
-        value={persisted ? "" : selectedIds}
-        multiple={!persisted}
+        value={persisted || presentation === "submission" ? "" : selectedIds}
+        multiple={!persisted && presentation !== "submission"}
         onChange={(value) => {
           if (persisted) {
             const id = Array.isArray(value) ? value[0] : value;
             if (id) inviteMutation.mutate(id);
+          } else if (presentation === "submission") {
+            const id = Array.isArray(value) ? value[0] : value;
+            if (!id || selectedIds.includes(id)) return;
+            if (memberCount >= MAX_PROJECT_TEAM_SIZE) {
+              toast.error(t("projects.team.full"));
+              return;
+            }
+            const option = options.find((item) => item.id === id);
+            if (!option) return;
+            setSelectedOptions((current) => current.some((item) => item.id === id) ? current : [...current, option]);
+            onSelectedIdsChange?.([...selectedIds, id]);
           } else {
             const ids = Array.isArray(value) ? value : value ? [value] : [];
             if (ids.length >= MAX_PROJECT_TEAM_SIZE) {
@@ -193,44 +222,119 @@ export function ProjectTeamEditor({
           }
         }}
       /> : null}
+      {!persisted && presentation === "submission" && selectedIds.length > 0 ? (
+        <section className="pt-2" aria-label={t("projects.team.selectedCount", { count: selectedIds.length })}>
+          <p className="mb-2 text-label-large font-semibold text-foreground-muted">
+            {t("projects.team.selectedCount", { count: selectedIds.length })}
+          </p>
+          <ul>
+            {selectedIds.map((id, index) => {
+              const option = options.find((item) => item.id === id);
+              if (!option) return null;
+              return (
+                <li key={id}>
+                  <Action
+                    nativeButton={false}
+                    size="small"
+                    className="min-h-[60px] hover:bg-transparent [&>span:first-child]:!size-10"
+                    icon={<UserAvatar userId={option.userId} avatarUrl={option.avatarUrl} alt={option.avatarAlt} size="Large" />}
+                    label={option.label}
+                    supportingText={option.description ?? undefined}
+                    trailingGroup={(
+                      <Button
+                        type="button"
+                        size="xsmall"
+                        variant="cta"
+                        hierarchy="tertiary"
+                        className="cursor-pointer hover:bg-transparent hover:text-foreground-muted"
+                        aria-label={t("projects.team.removeNamedFromList", { name: option.label })}
+                        onClick={() => {
+                          onSelectedIdsChange?.(selectedIds.filter((selectedId) => selectedId !== id));
+                          setSelectedOptions((current) => current.filter((item) => item.id !== id));
+                        }}
+                      >
+                        <X className="size-3" aria-hidden />
+                        {t("projects.team.removeFromList")}
+                      </Button>
+                    )}
+                  />
+                  {index < selectedIds.length - 1 ? <Separator /> : null}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
+      {!persisted && presentation === "submission" && selectedIds.length === 0 && !search.trim() ? (
+        <p className="text-body-small text-foreground-muted">{t("projects.editor.noTeam")}</p>
+      ) : null}
       {!persisted && selectedIds.length ? (
         <p className="text-xs text-foreground-muted">{t("projects.team.inviteAfterSave")}</p>
       ) : null}
       {persisted && teamQuery.isPending ? <p className="text-sm text-foreground-muted">{t("projects.team.loading")}</p> : null}
       {persisted && pending.length ? (
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">{t("projects.team.pending")}</p>
-          <ul className="mt-2 space-y-2">
-            {pending.map((invite) => {
+        <section className="pt-2" aria-label={t("projects.team.invitedCount", { count: pending.length })}>
+          <p className="mb-2 text-label-large font-semibold text-foreground-muted">
+            {t("projects.team.invitedCount", { count: pending.length })}
+          </p>
+          <ul>
+            {visiblePending.map((invite, index) => {
               const profile = team?.profiles[invite.invitee_user_id];
+              const label = profile?.full_name?.trim() || profile?.username?.trim() || invite.invitee_user_id;
               const isResending = resendInviteMutation.isPending && resendingInviteId === invite.id;
-              return <li key={invite.id} className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 text-sm">
-                <span>{profile?.full_name || profile?.username || invite.invitee_user_id}</span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
+              return (
+                <li key={invite.id}>
+                  <Action
+                    nativeButton={false}
                     size="small"
-                    variant="cta" hierarchy="secondary"
-                    disabled={isResending}
-                    onClick={() => resendInviteMutation.mutate(invite.id)}
-                  >
-                    {isResending ? <Loader2 className="size-4 animate-spin" /> : <Mail className="size-4" />}
-                    {t("projects.team.resendEmail")}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="small"
-                    variant="cta" hierarchy="tertiary"
-                    disabled={revokeMutation.isPending}
-                    onClick={() => revokeMutation.mutate(invite.id)}
-                  >
-                    <X className="size-4" />{t("projects.team.revoke")}
-                  </Button>
-                </div>
-              </li>;
+                    className="min-h-[60px] hover:bg-transparent [&>span:first-child]:!size-10"
+                    icon={<UserAvatar userId={invite.invitee_user_id} avatarUrl={profile?.avatar_url} alt={label} size="Large" />}
+                    label={label}
+                    supportingText={profile?.username ? `@${profile.username}` : undefined}
+                    badge={<span className="text-body-small text-foreground-muted">{t("projects.team.invitedStatus")}</span>}
+                    trailingGroup={(
+                      <div className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          size="xsmall"
+                          variant="cta"
+                          hierarchy="tertiary"
+                          iconOnly
+                          aria-label={t("projects.team.resendEmailFor", { name: label })}
+                          disabled={isResending}
+                          onClick={() => resendInviteMutation.mutate(invite.id)}
+                        >
+                          {isResending ? <Loader2 className="size-3 animate-spin" aria-hidden /> : <Mail className="size-3" aria-hidden />}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="xsmall"
+                          variant="cta"
+                          hierarchy="tertiary"
+                          className="cursor-pointer hover:bg-transparent hover:text-foreground-muted"
+                          aria-label={t("projects.team.removeNamedFromList", { name: label })}
+                          disabled={revokeMutation.isPending}
+                          onClick={() => revokeMutation.mutate(invite.id)}
+                        >
+                          <X className="size-3" aria-hidden />
+                          {t("projects.team.removeFromList")}
+                        </Button>
+                      </div>
+                    )}
+                  />
+                  {index < visiblePending.length - 1 ? <Separator /> : null}
+                </li>
+              );
             })}
           </ul>
-        </div>
+          {pending.length > 5 ? (
+            <div className="flex justify-center pt-2">
+              <Button type="button" size="xsmall" variant="cta" hierarchy="tertiary" onClick={() => setShowAllPending((current) => !current)}>
+                {t(showAllPending ? "projects.team.showLess" : "projects.team.showMore")}
+              </Button>
+            </div>
+          ) : null}
+        </section>
       ) : null}
       {persisted && team?.members.length ? (
         <div>

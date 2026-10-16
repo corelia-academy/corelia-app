@@ -55,7 +55,7 @@ vi.mock("@/lib/projectTaxonomy", () => ({ listProjectTaxonomyOptions: async () =
 vi.mock("@/components/projects/ProjectCard", () => ({ ProjectCard: ({ project }: { project: { title: string } }) => <article>{project.title}</article> }));
 vi.mock("@/components/projects/ProjectCardSkeleton", () => ({ ProjectCardSkeleton: () => null }));
 
-import { HackathonOverviewTab, HackathonPostsTab, HackathonPrizesTab, HackathonProjectsTab, HackathonResourcesTab } from "./ContestPublicTabs";
+import { HackathonOverviewTab, HackathonPostsTab, HackathonPrizesTab, HackathonProjectsTab, HackathonResourcesTab, HackathonTimelineTab } from "./ContestPublicTabs";
 
 const contest = {
   id: "hackathon-1",
@@ -241,6 +241,69 @@ it("embeds organizer posts on the direct Posts route and shows an empty state wi
       contest.winner_awards = [];
       await view.cleanup();
     }
+  });
+});
+
+describe("HackathonTimelineTab connector halves", () => {
+  it("shows a full connector into the current milestone and a half-active connector after it", async () => {
+    const now = Date.now();
+    const minute = 60_000;
+    const timelineContest = {
+      ...contest,
+      timeline: [
+        {
+          id: "passed",
+          title: "Passed milestone",
+          starts_at: new Date(now - minute * 2).toISOString(),
+          ends_at: new Date(now - minute).toISOString(),
+          sort_order: 0,
+        },
+        {
+          id: "focused",
+          title: "Current milestone",
+          starts_at: new Date(now - minute).toISOString(),
+          ends_at: new Date(now + minute).toISOString(),
+          sort_order: 1,
+        },
+        {
+          id: "default",
+          title: "Upcoming milestone",
+          starts_at: new Date(now + minute * 2).toISOString(),
+          ends_at: new Date(now + minute * 3).toISOString(),
+          sort_order: 2,
+        },
+      ],
+    } as unknown as Contest;
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter initialEntries={["/hackathons/demo-hackathon/timeline"]}>
+          <Routes>
+            <Route element={<Outlet context={{ contest: timelineContest, registration: null }} />}>
+              <Route path="/hackathons/:slug/timeline" element={<HackathonTimelineTab />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>,
+      );
+    });
+
+    const steps = container.querySelectorAll('[data-slot="stepper"] > li');
+    const active = "bg-[var(--stepper-connector-active)]";
+    const muted = "bg-[var(--stepper-connector-default)]";
+
+    expect(steps[0]?.getAttribute("data-state")).toBe("Passed");
+    expect(steps[1]?.getAttribute("data-state")).toBe("Focused");
+    expect(steps[2]?.getAttribute("data-state")).toBe("Default");
+    expect(steps[0]?.querySelector('[data-slot="stepper-connector-after"]')?.classList.contains(active)).toBe(true);
+    expect(steps[1]?.querySelector('[data-slot="stepper-connector-before"]')?.classList.contains(active)).toBe(true);
+    expect(steps[1]?.querySelector('[data-slot="stepper-connector-after"]')?.classList.contains(active)).toBe(true);
+    expect(steps[2]?.querySelector('[data-slot="stepper-connector-before"]')?.classList.contains(muted)).toBe(true);
+
+    await act(async () => root.unmount());
+    container.remove();
   });
 });
 
