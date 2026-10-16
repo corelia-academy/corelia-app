@@ -21,7 +21,7 @@ function configPrimary(config: EntityI18nConfig | null | undefined): Locale {
 
 function configSupported(config: EntityI18nConfig | null | undefined): Locale[] {
   const raw = config?.supported_locales;
-  const fallback: Locale[] = ["vi", "en"];
+  const fallback: Locale[] = [configPrimary(config)];
   const list = Array.isArray(raw) && raw.length ? raw.map((value) => normalizeLocale(value)) : fallback;
   return Array.from(new Set(list));
 }
@@ -97,7 +97,7 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
   const queryClient = useQueryClient();
   const visible = isManageView && isManager && activeManageSection === "translations";
 
-  const initialConfig = (contest.i18n ?? { supported_locales: ["vi", "en"], primary_content_locale: "vi" }) as EntityI18nConfig;
+  const initialConfig = (contest.i18n ?? { supported_locales: ["vi"], primary_content_locale: "vi" }) as EntityI18nConfig;
   const [i18nConfigDraft, setI18nConfigDraft] = useState<EntityI18nConfig>(initialConfig);
   const primaryLocale = configPrimary(i18nConfigDraft);
   const supportedLocales = configSupported(i18nConfigDraft);

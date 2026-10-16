@@ -42,7 +42,7 @@ export function useInstructorCourseNewForm() {
     null,
   );
   const [form, setForm] = useState({
-    supported_locales: ["vi", "en"] as SupportedCourseLocale[],
+    supported_locales: ["vi"] as SupportedCourseLocale[],
     primary_content_locale: "vi" as SupportedCourseLocale,
     default_video_primary_locale: "vi" as SupportedCourseLocale,
     title: "",

@@ -544,7 +544,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
   // Per co-instructor visibility on course details page (default: true).
   const [coInstructorVisibility, setCoInstructorVisibility, hydrateCoInstructorVisibility, acknowledgeCoInstructorVisibility, coInstructorVisibilityDirty] = useCourseFieldDraft<Record<string, boolean>>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:coInstructorVisibility`, {});
 
-  const [supportedLocales, setSupportedLocales, hydrateSupportedLocales, acknowledgeSupportedLocales, supportedLocalesDirty] = useCourseFieldDraft<SupportedCourseLocale[]>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:supportedLocales`, ["vi", "en"]);
+  const [supportedLocales, setSupportedLocales, hydrateSupportedLocales, acknowledgeSupportedLocales, supportedLocalesDirty] = useCourseFieldDraft<SupportedCourseLocale[]>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:supportedLocales`, ["vi"]);
   const [primaryContentLocale, setPrimaryContentLocale, hydratePrimaryContentLocale, acknowledgePrimaryContentLocale, primaryContentLocaleDirty] = useCourseFieldDraft<SupportedCourseLocale>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:primaryContentLocale`, "vi");
   const [defaultVideoPrimaryLocale, setDefaultVideoPrimaryLocale, hydrateDefaultVideoPrimaryLocale, acknowledgeDefaultVideoPrimaryLocale, defaultVideoPrimaryLocaleDirty] = useCourseFieldDraft<SupportedCourseLocale>(`${profile?.id ?? "anonymous"}:${id ?? "missing"}:defaultVideoPrimaryLocale`, "vi");
   const [activeContentLocale, setActiveContentLocale] = useState<SupportedCourseLocale>("vi");

@@ -104,7 +104,7 @@ export function getCoursePrimaryLocale(course?: Pick<Course, "i18n"> | null): Su
 
 export function getCourseSupportedLocales(course?: Pick<Course, "i18n"> | null): SupportedCourseLocale[] {
   const list = course?.i18n?.supported_locales;
-  const fallback: SupportedCourseLocale[] = ["vi", "en"];
+  const fallback: SupportedCourseLocale[] = [getCoursePrimaryLocale(course)];
   const supported: SupportedCourseLocale[] =
     Array.isArray(list) && list.length ? list.map(normalizeCourseLocale) : fallback;
   return Array.from(new Set<SupportedCourseLocale>(supported));

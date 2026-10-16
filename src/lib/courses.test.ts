@@ -10,7 +10,7 @@ vi.mock("@/lib/supabase", () => ({
   supabase: { from: vi.fn(), rpc: vi.fn() },
 }));
 
-import { getCourse, getResumeLesson, applyCourseLocaleContent, saveCourseWithLocale, updateCourse, updateSection, addLesson, updateLesson, applyCourseLessonLocaleContent, deleteCourse, deleteLesson, getLearnerCourseProgressSnapshot, revertCourseCompletion } from "./courses";
+import { getCourse, getResumeLesson, applyCourseLocaleContent, saveCourseWithLocale, updateCourse, updateSection, addLesson, updateLesson, applyCourseLessonLocaleContent, deleteCourse, deleteLesson, getLearnerCourseProgressSnapshot, revertCourseCompletion, getCourseSupportedLocales, pickCourseContentLocale } from "./courses";
 import { supabase } from "./supabase";
 
 const masterVideoLesson: CourseLesson = {
@@ -300,4 +300,13 @@ it("saves shared resources as course metadata and keeps them across content lang
   expect(applyCourseLocaleContent(course!, { locale: "en", title: "English", description: "Translated" }).course_resources).toEqual(course_resources);
   vi.mocked(supabase.rpc).mockResolvedValueOnce({ error: { message: "COURSE_MANAGE_PERMISSION_REQUIRED" } } as never);
   await expect(saveCourseWithLocale("course", { course_resources }, "en", {})).rejects.toThrow("COURSE_MANAGE_PERMISSION_REQUIRED");
+});
+
+describe("course content locales", () => {
+  it("supports only the primary locale until others are enabled", () => {
+    expect(getCourseSupportedLocales({ i18n: { primary_content_locale: "ja" } } as never)).toEqual(["ja"]);
+    expect(getCourseSupportedLocales(null)).toEqual(["vi"]);
+    expect(pickCourseContentLocale({ i18n: { primary_content_locale: "ko" } } as never, "en")).toBe("ko");
+    expect(getCourseSupportedLocales({ i18n: { primary_content_locale: "ja", supported_locales: ["ja", "zh-TW"] } } as never)).toEqual(["ja", "zh-TW"]);
+  });
 });

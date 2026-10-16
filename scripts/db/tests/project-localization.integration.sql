@@ -15,6 +15,18 @@ BEGIN
     OR NOT EXISTS(SELECT 1 FROM public.project_locales WHERE project_id=project AND locale='vi' AND data->>'description'='Mô tả' AND data->>'progress'='Tiến độ') THEN
     RAISE EXCEPTION 'Bilingual content not saved';
   END IF;
+  -- A save starts from the primary locale only and never drops locales already enabled.
+  IF (SELECT i18n->'supported_locales' FROM public.projects WHERE id=project) <> '["en"]'::jsonb THEN
+    RAISE EXCEPTION 'New project should only support its primary locale';
+  END IF;
+  PERFORM public.update_ai_gated_project_i18n(actor,project,'{"primary_content_locale":"en","supported_locales":["en","ja","vi"]}');
+  PERFORM set_config('role','service_role',true);
+  PERFORM * FROM public.save_ai_gated_project(p_actor_id=>actor,p_project_id=>project,p_slug=>'localized-test',
+    p_title=>'English title',p_summary=>'English summary',p_primary_content_locale=>'en',p_locales=>'{"en":{"title":"English title"}}');
+  PERFORM set_config('role','none',true);
+  IF (SELECT i18n->'supported_locales' FROM public.projects WHERE id=project) <> '["en","ja","vi"]'::jsonb THEN
+    RAISE EXCEPTION 'Saving a project dropped enabled locales';
+  END IF;
   -- Old clients preserve translations and update primary projection.
   PERFORM * FROM public.save_ai_gated_project(p_actor_id=>actor,p_project_id=>project,p_slug=>'localized-test',p_title=>'Legacy title');
   IF NOT EXISTS(SELECT 1 FROM public.project_locales WHERE project_id=project AND locale='en' AND data->>'title'='Legacy title')
