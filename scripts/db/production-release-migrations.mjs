@@ -138,6 +138,7 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20261008162131_project_team_member_limit.sql",
   "supabase/migrations/20261013000703_social_notifications.sql",
   "supabase/migrations/20261013004846_notification_preferences_insert_rls.sql",
+  "supabase/migrations/20261013120000_quiz_enroll_before_xp_trigger.sql",
   "supabase/migrations/20261015061354_search_public_unaccent_project_href.sql",
   "supabase/migrations/20261015183608_expand_content_locales.sql",
   "supabase/migrations/20261016002456_project_supported_locales_follow_primary.sql",
@@ -151,6 +152,7 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
 // Production ledger is verified through the content-locale expansion migration.
 // Only the Staging-validated project supported-locales and RLS initplan migrations are pending.
 const UNRELEASED_PENDING_VERSIONS = new Set([
+  "20261013120000",
   "20261016002456",
   "20261016002746",
 ]);
