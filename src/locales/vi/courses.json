@@ -492,6 +492,15 @@
     "retry": "Thử lại",
     "source": "Mã nguồn",
     "unavailable": "Bài học chưa khả dụng.",
+    "askAi": {
+      "trigger": "Hỏi AI",
+      "chatgpt": "Hỏi ChatGPT",
+      "claude": "Hỏi Claude",
+      "gemini": "Hỏi Gemini (sao chép prompt)",
+      "copy": "Sao chép prompt",
+      "copied": "Đã sao chép prompt. Hãy dán vào công cụ AI của bạn.",
+      "copyFailed": "Không sao chép được prompt."
+    },
     "systemError": "Không lưu được kết quả. Bài làm của bạn vẫn được giữ; hãy thử lại.",
     "checking": "Đang kiểm tra…",
     "checkCode": "Kiểm tra code",

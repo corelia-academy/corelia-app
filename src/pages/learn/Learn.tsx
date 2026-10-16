@@ -618,6 +618,7 @@ function LearnWorkspace() {
       {awaitingLessonRedirect ? <LessonPlayerSkeleton /> : !isFinalAssignment && <LessonPlayerCard
         lesson={currentLesson}
         lessonIndex={lessonIndexForPlayer}
+        courseTitle={course.title}
         isDraftLesson={!!currentLesson && isDraftLesson}
         completed={
           !!currentLesson && progress.completedIds.has(currentLesson.id)
