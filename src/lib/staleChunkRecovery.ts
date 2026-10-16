@@ -78,3 +78,24 @@ export function installStaleChunkRecovery({
   eventTarget.addEventListener("vite:preloadError", handlePreloadError);
   return () => eventTarget.removeEventListener("vite:preloadError", handlePreloadError);
 }
+
+/** Reload at most once per cooldown window; returns whether a reload was triggered. */
+export function reloadOnceForStaleChunk({
+  storage = window.sessionStorage,
+  reload = () => window.location.reload(),
+  now = Date.now,
+}: { storage?: StorageLike; reload?: () => void; now?: () => number } = {}): boolean {
+  const currentTime = now();
+  try {
+    const stored = storage.getItem(STALE_CHUNK_RELOAD_KEY);
+    const lastReloadAt = stored === null ? Number.NaN : Number(stored);
+    const elapsed = currentTime - lastReloadAt;
+    if (Number.isFinite(lastReloadAt) && elapsed >= 0 && elapsed < STALE_CHUNK_RELOAD_COOLDOWN_MS) return false;
+    storage.setItem(STALE_CHUNK_RELOAD_KEY, String(currentTime));
+  } catch {
+    // No per-tab guard available: skip the automatic reload to avoid a loop.
+    return false;
+  }
+  reload();
+  return true;
+}
