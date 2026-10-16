@@ -34,6 +34,7 @@ import {
 } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
+import { LessonImageInsert } from "@/features/learning/admin/LessonImageInsert";
 import {
   ArrowLeft,
   ArrowRight,
@@ -6895,6 +6896,11 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                       className="min-h-[220px] w-full rounded border border-border bg-surface-base px-3 py-2 font-mono text-sm leading-6 outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                       rows={10}
                     />
+                    {id ? (
+                      <div className="mt-2">
+                        <LessonImageInsert courseId={id} onInsert={(md) => setEditingLessonMarkdown((cur) => `${cur.trimEnd()}\n\n${md}\n`.trimStart())} />
+                      </div>
+                    ) : null}
                   </Field>
                   ) : null}
                   {editingLessonFormat !== "quiz" && editingLessonFormat !== "practice" ? (
