@@ -7,24 +7,9 @@ import {
   type ReactNode,
 } from "react"
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
+import { CaretDown } from "@phosphor-icons/react/dist/csr/CaretDown"
 
 import { cn } from "@/lib/utils"
-import tooltipArrowBasicBottomCenter from "@/assets/ui/tooltip-arrows/tooltip-arrow-basic-bottom-center.svg"
-import tooltipArrowBasicBottomLeft from "@/assets/ui/tooltip-arrows/tooltip-arrow-basic-bottom-left.svg"
-import tooltipArrowBasicBottomRight from "@/assets/ui/tooltip-arrows/tooltip-arrow-basic-bottom-right.svg"
-import tooltipArrowBasicLeft from "@/assets/ui/tooltip-arrows/tooltip-arrow-basic-left.svg"
-import tooltipArrowBasicRight from "@/assets/ui/tooltip-arrows/tooltip-arrow-basic-right.svg"
-import tooltipArrowBasicTopCenter from "@/assets/ui/tooltip-arrows/tooltip-arrow-basic-top-center.svg"
-import tooltipArrowBasicTopLeft from "@/assets/ui/tooltip-arrows/tooltip-arrow-basic-top-left.svg"
-import tooltipArrowBasicTopRight from "@/assets/ui/tooltip-arrows/tooltip-arrow-basic-top-right.svg"
-import tooltipArrowSupportingBottomCenter from "@/assets/ui/tooltip-arrows/tooltip-arrow-supporting-bottom-center.svg"
-import tooltipArrowSupportingBottomLeft from "@/assets/ui/tooltip-arrows/tooltip-arrow-supporting-bottom-left.svg"
-import tooltipArrowSupportingBottomRight from "@/assets/ui/tooltip-arrows/tooltip-arrow-supporting-bottom-right.svg"
-import tooltipArrowSupportingLeft from "@/assets/ui/tooltip-arrows/tooltip-arrow-supporting-left.svg"
-import tooltipArrowSupportingRight from "@/assets/ui/tooltip-arrows/tooltip-arrow-supporting-right.svg"
-import tooltipArrowSupportingTopCenter from "@/assets/ui/tooltip-arrows/tooltip-arrow-supporting-top-center.svg"
-import tooltipArrowSupportingTopLeft from "@/assets/ui/tooltip-arrows/tooltip-arrow-supporting-top-left.svg"
-import tooltipArrowSupportingTopRight from "@/assets/ui/tooltip-arrows/tooltip-arrow-supporting-top-right.svg"
 
 export type TooltipArrow =
   | "none"
@@ -40,11 +25,6 @@ export type TooltipArrow =
 type TooltipArrowPosition = {
   side: NonNullable<TooltipPrimitive.Positioner.Props["side"]>
   align: NonNullable<TooltipPrimitive.Positioner.Props["align"]>
-}
-
-type TooltipArrowImages = {
-  withoutSupportingText: string
-  withSupportingText: string
 }
 
 const tooltipArrowPositions: Record<TooltipArrow, TooltipArrowPosition> = {
@@ -76,90 +56,80 @@ function tooltipArrowForSide(
   }
 }
 
-const tooltipArrowImages: Record<Exclude<TooltipArrow, "none">, TooltipArrowImages> = {
-  "bottom-center": {
-    withoutSupportingText: tooltipArrowBasicBottomCenter,
-    withSupportingText: tooltipArrowSupportingBottomCenter,
-  },
-  "bottom-left": {
-    withoutSupportingText: tooltipArrowBasicBottomLeft,
-    withSupportingText: tooltipArrowSupportingBottomLeft,
-  },
-  "bottom-right": {
-    withoutSupportingText: tooltipArrowBasicBottomRight,
-    withSupportingText: tooltipArrowSupportingBottomRight,
-  },
-  "top-center": {
-    withoutSupportingText: tooltipArrowBasicTopCenter,
-    withSupportingText: tooltipArrowSupportingTopCenter,
-  },
-  "top-left": {
-    withoutSupportingText: tooltipArrowBasicTopLeft,
-    withSupportingText: tooltipArrowSupportingTopLeft,
-  },
-  "top-right": {
-    withoutSupportingText: tooltipArrowBasicTopRight,
-    withSupportingText: tooltipArrowSupportingTopRight,
-  },
-  left: {
-    withoutSupportingText: tooltipArrowBasicLeft,
-    withSupportingText: tooltipArrowSupportingLeft,
-  },
-  right: {
-    withoutSupportingText: tooltipArrowBasicRight,
-    withSupportingText: tooltipArrowSupportingRight,
-  },
-}
-
 type TooltipArrowGeometry = {
   slot: string
   artwork: string
+  artworkOffsetX: number
+  artworkWidth: number
 }
+
+const tooltipArrowArtworkWidths = {
+  standard: 13.5564,
+  wide: 14.1863,
+} as const
 
 const tooltipArrowGeometry: Record<
   Exclude<TooltipArrow, "none">,
-  {
-    withoutSupportingText: TooltipArrowGeometry
-    withSupportingText: TooltipArrowGeometry
-  }
+  TooltipArrowGeometry
 > = {
   "bottom-center": {
-    withoutSupportingText: { slot: "h-[8.51471px] w-4", artwork: "h-[8.51471px] w-4" },
-    withSupportingText: { slot: "h-[8.51471px] w-4", artwork: "h-[8.51471px] w-4" },
+    slot: "h-[8.51471px] w-4",
+    artwork: "h-[8.51471px] w-4",
+    artworkOffsetX: 0,
+    artworkWidth: tooltipArrowArtworkWidths.standard,
   },
   "bottom-left": {
-    withoutSupportingText: { slot: "h-[8.51471px] w-7", artwork: "h-[8.51471px] w-7" },
-    withSupportingText: { slot: "h-[8.51471px] w-7", artwork: "h-[8.51471px] w-7" },
+    slot: "h-[8.51471px] w-7",
+    artwork: "h-[8.51471px] w-7",
+    artworkOffsetX: 6.315,
+    artworkWidth: tooltipArrowArtworkWidths.wide,
   },
   "bottom-right": {
-    withoutSupportingText: { slot: "h-[8.51471px] w-7", artwork: "h-[8.51471px] w-7" },
-    withSupportingText: { slot: "h-[8.51471px] w-7", artwork: "h-[8.51471px] w-7" },
+    slot: "h-[8.51471px] w-7",
+    artwork: "h-[8.51471px] w-7",
+    artworkOffsetX: -6,
+    artworkWidth: tooltipArrowArtworkWidths.standard,
   },
   "top-center": {
-    withoutSupportingText: { slot: "h-[8.51471px] w-4", artwork: "h-[8.51471px] w-4" },
-    withSupportingText: { slot: "h-[8.51471px] w-4", artwork: "h-[8.51471px] w-4" },
+    slot: "h-[8.51471px] w-4",
+    artwork: "h-[8.51471px] w-4",
+    artworkOffsetX: 0,
+    artworkWidth: tooltipArrowArtworkWidths.standard,
   },
   "top-left": {
-    withoutSupportingText: { slot: "h-[8.51471px] w-7", artwork: "h-[8.51471px] w-7" },
-    withSupportingText: { slot: "h-[8.51471px] w-7", artwork: "h-[8.51471px] w-7" },
+    slot: "h-[8.51471px] w-7",
+    artwork: "h-[8.51471px] w-7",
+    artworkOffsetX: -6,
+    artworkWidth: tooltipArrowArtworkWidths.standard,
   },
   "top-right": {
-    withoutSupportingText: {
-      slot: "h-[8.51471px] w-[28.5878px]",
-      artwork: "h-[8.51471px] w-[28.5878px]",
-    },
-    withSupportingText: {
-      slot: "h-[8.51471px] w-7",
-      artwork: "h-[8.51471px] w-7",
-    },
+    slot: "h-[8.51471px] w-[28.5878px]",
+    artwork: "h-[8.51471px] w-[28.5878px]",
+    artworkOffsetX: 7.53585,
+    artworkWidth: tooltipArrowArtworkWidths.wide,
   },
   left: {
-    withoutSupportingText: { slot: "h-4 w-[8.51471px]", artwork: "h-[8.51471px] w-4" },
-    withSupportingText: { slot: "h-4 w-[8.51471px]", artwork: "h-[8.51471px] w-4" },
+    slot: "h-4 w-[8.51471px]",
+    artwork: "h-[8.51471px] w-4",
+    artworkOffsetX: 0,
+    artworkWidth: tooltipArrowArtworkWidths.standard,
   },
   right: {
-    withoutSupportingText: { slot: "h-4 w-[8.51471px]", artwork: "h-[8.51471px] w-4" },
-    withSupportingText: { slot: "h-4 w-[8.51471px]", artwork: "h-[8.51471px] w-4" },
+    slot: "h-4 w-[8.51471px]",
+    artwork: "h-[8.51471px] w-4",
+    artworkOffsetX: 0,
+    artworkWidth: tooltipArrowArtworkWidths.standard,
+  },
+}
+
+const tooltipArrowSupportingGeometry: Partial<
+  Record<Exclude<TooltipArrow, "none">, TooltipArrowGeometry>
+> = {
+  "top-right": {
+    slot: "h-[8.51471px] w-7",
+    artwork: "h-[8.51471px] w-7",
+    artworkOffsetX: 6.315,
+    artworkWidth: tooltipArrowArtworkWidths.wide,
   },
 }
 
@@ -261,29 +231,31 @@ function loadTooltipGsap() {
 
 function TooltipArrowShape({
   className,
-  src,
+  offsetX,
+  width,
 }: {
   className: string
-  src: string
+  offsetX: number
+  width: number
 }) {
   return (
     <span
       aria-hidden="true"
       className={cn(
-        "pointer-events-none absolute left-1/2 top-1/2 block max-w-none -translate-x-1/2 -translate-y-1/2 bg-(--tooltip-surface) group-data-[side=bottom]:rotate-180 group-data-[side=left]:-rotate-90 group-data-[side=inline-start]:-rotate-90 group-data-[side=right]:rotate-90 group-data-[side=inline-end]:rotate-90",
+        "pointer-events-none absolute left-1/2 top-1/2 block max-w-none -translate-x-1/2 -translate-y-1/2 group-data-[side=bottom]:rotate-180 group-data-[side=left]:-rotate-90 group-data-[side=inline-start]:-rotate-90 group-data-[side=right]:rotate-90 group-data-[side=inline-end]:rotate-90",
         className,
       )}
-      style={{
-        maskImage: `url("${src}")`,
-        WebkitMaskImage: `url("${src}")`,
-        maskPosition: "center",
-        WebkitMaskPosition: "center",
-        maskRepeat: "no-repeat",
-        WebkitMaskRepeat: "no-repeat",
-        maskSize: "100% 100%",
-        WebkitMaskSize: "100% 100%",
-      }}
-    />
+    >
+      <CaretDown
+        aria-hidden="true"
+        color="var(--tooltip-surface)"
+        preserveAspectRatio="none"
+        viewBox="40 88 176 96"
+        weight="fill"
+        className="absolute left-1/2 top-1/2 block h-[7.77818px] max-w-none -translate-x-1/2 -translate-y-1/2"
+        style={{ marginLeft: offsetX, width }}
+      />
+    </span>
   )
 }
 
@@ -440,12 +412,6 @@ function TooltipContent({
     ? { side, align }
     : tooltipArrowPositions[arrow]
   const arrowType = arrow ?? tooltipArrowForSide(position.side)
-  const arrowImage = arrowType === "none"
-    ? undefined
-    : tooltipArrowImages[arrowType][
-      hasSupportingText ? "withSupportingText" : "withoutSupportingText"
-    ]
-
   useLayoutEffect(() => {
     if (!isOpen || !popup) return
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
@@ -482,9 +448,9 @@ function TooltipContent({
 
   const arrowGeometry = arrowType === "none"
     ? undefined
-    : tooltipArrowGeometry[arrowType][
-      hasSupportingText ? "withSupportingText" : "withoutSupportingText"
-    ]
+    : hasSupportingText
+      ? tooltipArrowSupportingGeometry[arrowType] ?? tooltipArrowGeometry[arrowType]
+      : tooltipArrowGeometry[arrowType]
 
   return (
     <TooltipPrimitive.Portal>
@@ -505,7 +471,7 @@ function TooltipContent({
           {...props}
         >
           <TooltipSurface supportingText={supportingText}>{children}</TooltipSurface>
-          {arrowImage && arrowGeometry ? (
+          {arrowGeometry ? (
             <TooltipPrimitive.Arrow
               data-slot="tooltip-arrow"
               style={(state) =>
@@ -527,7 +493,8 @@ function TooltipContent({
               )}
             >
               <TooltipArrowShape
-                src={arrowImage}
+                offsetX={arrowGeometry.artworkOffsetX}
+                width={arrowGeometry.artworkWidth}
                 className={arrowGeometry.artwork}
               />
             </TooltipPrimitive.Arrow>

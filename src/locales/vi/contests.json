@@ -116,14 +116,14 @@
     },
     "myProject": {
       "title": "Dự án của bạn",
-      "registerRequiredDescription": "Đăng ký hackathon trước khi tạo dự án.",
+      "registerRequiredDescription": "Vui lòng ghi danh để tạo dự án.",
       "registerRequired": "Cần đăng ký trước",
       "loading": "Đang tải dự án của bạn",
       "untitled": "Dự án chưa có tiêu đề",
       "edit": "Chỉnh sửa dự án",
       "view": "Xem dự án",
-      "emptyDescription": "Tạo dự án để bắt đầu chuẩn bị bài nộp của bạn.",
-      "create": "Tạo dự án"
+      "emptyDescription": "Chưa có dự án nào được tạo.",
+      "create": "Tạo Dự Án"
     },
     "prepare": {
       "title": "Tìm hiểu cuộc thi",

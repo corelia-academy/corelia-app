@@ -35,7 +35,7 @@ export function ContestPreparationCard({ contest }: { contest: Pick<Contest, "ti
           className="scrollbar-design h-[120px] w-full resize-none overflow-y-auto rounded-lg border border-input-field-border bg-background px-3 py-2 text-sm leading-[1.4] tracking-[0.28px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           value={prompt}
         />
-        <Button type="button" variant="cta" hierarchy="secondary" size="small" data-hackathon-control className="h-[34px] w-full rounded-lg bg-background capitalize" onClick={() => void copy()}><Copy className="size-4" weight="duotone" aria-hidden />{t("public.prepare.copy")}</Button>
+        <Button type="button" variant="cta" hierarchy="secondary" size="small" data-hackathon-control className="w-full rounded-lg bg-background capitalize" onClick={() => void copy()}><Copy className="size-4" weight="duotone" aria-hidden />{t("public.prepare.copy")}</Button>
       </div>
     </section>
   );

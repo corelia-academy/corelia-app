@@ -21,11 +21,11 @@ const actionVariants = cva(
 
             // Size scope (phạm vi kích thước). Default radius = 6px theo Figma.
             size: {
-                // Large Action (Action lớn): 60px theo Figma.
-                large: "min-h-[60px] gap-lg rounded-xl px-lg py-2md",
+                // Large Action (Action lớn): padding theo Figma.
+                large: "gap-lg rounded-xl px-lg py-2md",
 
-                // Small Action (Action nhỏ): 50px theo Figma.
-                small: "min-h-[50px] gap-lg rounded-lg px-2md py-md",
+                // Small Action (Action nhỏ): padding theo Figma.
+                small: "gap-lg rounded-lg px-2md py-md",
             },
 
             // Business active scope (phạm vi item đang được chọn).
@@ -81,12 +81,6 @@ const actionVariants = cva(
                 class: "hover:bg-action-hover hover:rounded-lg",
             },
 
-            // Destructive + Small (nguy hiểm + nhỏ) có chiều cao 48px theo Figma.
-            {
-                variant: "destructive",
-                size: "small",
-                class: "min-h-[48px]",
-            },
 
             // isActive=true: giữ màu đang chọn khi hover (rê chuột).
             // Nhờ vậy state dùng chung của Action không đổi màu item active.
@@ -289,8 +283,8 @@ function Action({
                     className={cn(
                         "block truncate font-body",
                         size === "large"
-                            ? "text-label-large leading-[22px]"
-                            : "text-label-medium leading-5",
+                            ? "text-label-large leading-[22px] tracking-[0]"
+                            : "text-label-medium leading-5 tracking-[-0.005em]",
                         disabled ? "text-action-disabled" : contentForegroundClass,
                         hoverAsActiveTextClass,
                     )}

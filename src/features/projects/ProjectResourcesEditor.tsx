@@ -1,8 +1,10 @@
 import { useId, useState } from "react";
+import { CheckCircle, XCircle } from "@phosphor-icons/react";
 import { FileSliders, Github, Globe, Mic, Plus, Video, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import type { ProjectDraft } from "./projectEditorDraft";
 
 const resources = [
@@ -14,15 +16,71 @@ const resources = [
 ] as const;
 type ResourceKey = typeof resources[number]["key"];
 
-export function ProjectResourcesEditor({ draft, onChange }: {
+export function ProjectResourcesEditor({ draft, onChange, presentation = "default" }: {
   draft: Pick<ProjectDraft, ResourceKey>;
   onChange: (key: ResourceKey, value: string) => void;
+  presentation?: "default" | "submission";
 }) {
   const { t } = useTranslation("common");
   const id = useId();
   const [expanded, setExpanded] = useState<ResourceKey[]>(() => resources.filter(({ key }) => draft[key]).map(({ key }) => key));
   const [focusKey, setFocusKey] = useState<ResourceKey | null>(null);
   const [touched, setTouched] = useState<ResourceKey[]>([]);
+
+  if (presentation === "submission") {
+    const submissionResourceKeys = ["repo", "demo", "slide", "video"] as const;
+    const visibleResources = submissionResourceKeys
+      .map((key) => resources.find((resource) => resource.key === key))
+      .filter((resource): resource is (typeof resources)[number] => Boolean(resource));
+
+    return <section id="project-links" className="scroll-mt-24">
+      <Separator className="mb-6" />
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-12">
+        <div>
+          <h2 className="text-heading-medium font-display text-project-editor-heading">{t("projects.editor.submissionLinksTitle")}</h2>
+          <p className="mt-4 text-body-small font-body text-foreground-subtle">{t("projects.editor.submissionLinksHint")}</p>
+        </div>
+        <div className="min-w-0 space-y-3">
+          {visibleResources.map(({ key, icon: Icon }) => {
+            const inputId = `${id}-${key}`;
+            const value = draft[key].trim();
+            const valid = Boolean(value) && isSafeSubmissionResource(key, value);
+            const invalid = touched.includes(key) && Boolean(value) && !valid;
+            const statusIcon = valid
+              ? <CheckCircle className="size-5 text-success" weight="duotone" aria-hidden />
+              : invalid
+                ? <XCircle className="size-5 text-destructive" weight="duotone" aria-hidden />
+                : null;
+            return <div key={key} className="min-w-0">
+              <Input
+                id={inputId}
+                type="url"
+                variant="icon-leading"
+                leadingIcon={<Icon className="size-5 text-foreground-subtle" aria-hidden />}
+                statusIcon={statusIcon}
+                inputMode="url"
+                autoComplete="off"
+                spellCheck={false}
+                maxLength={2048}
+                pattern="https://.*"
+                placeholder={t(`projects.editor.resourceFields.${key}.placeholder`)}
+                aria-label={t(`projects.editor.resourceFields.${key}.label`)}
+                aria-invalid={invalid || undefined}
+                aria-describedby={invalid ? `${inputId}-error` : undefined}
+                controlClassName="h-10 rounded-lg border-border bg-background px-3"
+                className="text-body-medium placeholder:text-foreground-subtle"
+                value={draft[key]}
+                onChange={(event) => onChange(key, event.currentTarget.value)}
+                onBlur={() => setTouched((current) => [...new Set([...current, key])])}
+              />
+              {valid ? <p className="sr-only" role="status">{t("projects.editor.resourceUrlValid")}</p> : null}
+              {invalid ? <p id={`${inputId}-error`} className="mt-2 text-body-small text-destructive" role="alert">{t(key === "repo" ? "projects.form.errors.invalidRepoUrl" : "projects.form.errors.invalidUrl")}</p> : null}
+            </div>;
+          })}
+        </div>
+      </div>
+    </section>;
+  }
 
   return <section id="project-links" className="scroll-mt-24 rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7">
     <div className="flex flex-wrap items-center gap-3">
@@ -67,4 +125,56 @@ function isHttpsResource(value: string) {
     const url = new URL(value.trim());
     return url.protocol === "https:" && Boolean(url.hostname);
   } catch { return false; }
+}
+
+// Mirror the server checks for immediate feedback; the server remains authoritative when saving.
+function isSafeSubmissionResource(key: ResourceKey, value: string) {
+  if (!value || value.length > 2048) return false;
+
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return false;
+  }
+
+  if (url.protocol !== "https:" || url.username || url.password || isUnsafeResourceHostname(url.hostname)) {
+    return false;
+  }
+
+  if (key !== "repo") return true;
+
+  const pathParts = url.pathname.split("/").filter(Boolean);
+  return url.hostname.toLowerCase() === "github.com" && pathParts.length === 2;
+}
+
+function isUnsafeResourceHostname(hostname: string) {
+  const host = hostname.toLowerCase().replace(/\.$/, "").replace(/^\[|\]$/g, "");
+  const ipv4Parts = host.split(".").map(Number);
+  const isIpv4 = ipv4Parts.length === 4
+    && ipv4Parts.every((part) => Number.isInteger(part) && part >= 0 && part <= 255);
+  const isPrivateIpv4 = isIpv4 && (
+    ipv4Parts[0] === 10
+    || ipv4Parts[0] === 127
+    || (ipv4Parts[0] === 169 && ipv4Parts[1] === 254)
+    || (ipv4Parts[0] === 172 && ipv4Parts[1] >= 16 && ipv4Parts[1] <= 31)
+    || (ipv4Parts[0] === 192 && ipv4Parts[1] === 168)
+    || ipv4Parts[0] === 0
+  );
+  const firstIpv6Hextet = host.includes(":")
+    ? Number.parseInt(host.split(":", 1)[0] || "0", 16)
+    : Number.NaN;
+  const isUnsafeIpv6 = host.includes(":") && (
+    host === "::"
+    || host === "::1"
+    || host.includes(".")
+    || (Number.isInteger(firstIpv6Hextet) && (firstIpv6Hextet & 0xfe00) === 0xfc00)
+    || (Number.isInteger(firstIpv6Hextet) && (firstIpv6Hextet & 0xffc0) === 0xfe80)
+  );
+
+  return host === "localhost"
+    || host.endsWith(".localhost")
+    || host.endsWith(".local")
+    || isUnsafeIpv6
+    || Boolean(isPrivateIpv4);
 }

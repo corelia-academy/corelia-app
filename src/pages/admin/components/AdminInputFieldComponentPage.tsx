@@ -28,7 +28,6 @@ import {
   type InputVariant,
 } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useTranslation } from "react-i18next";
 
 import { ComponentShowcaseLayout, ShowcaseSection } from "./ComponentShowcaseLayout";
 
@@ -158,7 +157,6 @@ function InputShowcaseSelector({
   options: readonly InputOption[];
   side: "leading" | "trailing";
 }) {
-  const { t } = useTranslation("common");
   const [value, setValue] = useState(() => options[0]?.value ?? "");
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -225,8 +223,8 @@ function InputShowcaseSelector({
                 statusIcon={null}
                 value={search}
                 onChange={(event) => setSearch(event.currentTarget.value)}
-                placeholder={t("actions.search")}
-                aria-label={t("combobox.searchLabel", { label: ariaLabel })}
+                placeholder="Search"
+                aria-label={`Search ${ariaLabel}`}
                 controlClassName="h-10 gap-sm rounded-lg border-dropdown-input-border bg-dropdown-surface px-md focus-within:ring-dropdown-focus"
                 className="text-body-large text-dropdown-title placeholder:text-dropdown-supporting"
               />
@@ -248,7 +246,7 @@ function InputShowcaseSelector({
               ))
             ) : (
               <p className="px-3 py-6 text-center text-body-small text-dropdown-supporting">
-                {t("combobox.emptyLabel")}
+                No matching results.
               </p>
             )}
           </DropdownMenuList>
@@ -259,7 +257,6 @@ function InputShowcaseSelector({
 }
 
 function InputShowcaseTagMenu({ menu }: { menu: InputTagMenuState }) {
-  const { t } = useTranslation("common");
   const [search, setSearch] = useState("");
   const filteredOptions = filterOptions(menu.options, search);
 
@@ -284,10 +281,8 @@ function InputShowcaseTagMenu({ menu }: { menu: InputTagMenuState }) {
               statusIcon={null}
               value={search}
               onChange={(event) => setSearch(event.currentTarget.value)}
-              placeholder={t("actions.search")}
-              aria-label={t("combobox.searchLabel", {
-                label: t("combobox.tagsLabel"),
-              })}
+              placeholder="Search"
+              aria-label="Search tags"
               controlClassName="h-10 gap-sm rounded-lg border-dropdown-input-border bg-dropdown-surface px-md focus-within:ring-dropdown-focus"
               className="text-body-large text-dropdown-title placeholder:text-dropdown-supporting"
             />
@@ -321,7 +316,7 @@ function InputShowcaseTagMenu({ menu }: { menu: InputTagMenuState }) {
             ))
           ) : (
             <p className="px-3 py-6 text-center text-body-small text-dropdown-supporting">
-              {t("combobox.emptyLabel")}
+              No matching results.
             </p>
           )}
         </DropdownMenuList>

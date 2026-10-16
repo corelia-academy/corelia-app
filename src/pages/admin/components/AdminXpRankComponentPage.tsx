@@ -1,5 +1,3 @@
-import { useTranslation } from "react-i18next";
-
 import { XpRankEmblem, type XpRankEmblemSize } from "@/components/ui/XpRankEmblem";
 import { XpRankBadge } from "@/features/xp/XpRankBadge";
 import { XP_RANKS } from "@/lib/xpRanks";
@@ -7,12 +5,12 @@ import { XP_RANKS } from "@/lib/xpRanks";
 import { ComponentShowcaseLayout, ShowcaseSection } from "./ComponentShowcaseLayout";
 
 const sizes = [
-  { size: "small", key: "small" },
-  { size: "medium", key: "medium" },
-  { size: "large", key: "large" },
+  { size: "small", label: "Small · 80 px" },
+  { size: "medium", label: "Medium · 160 px" },
+  { size: "large", label: "Large · 200 px" },
 ] as const satisfies ReadonlyArray<{
   size: XpRankEmblemSize;
-  key: string;
+  label: string;
 }>;
 
 export default function AdminXpRankComponentPage({
@@ -20,33 +18,31 @@ export default function AdminXpRankComponentPage({
 }: {
   embedded?: boolean;
 }) {
-  const { t, i18n } = useTranslation("common");
-  const formatXp = (value: number) =>
-    new Intl.NumberFormat(i18n.language).format(value);
+  const formatXp = (value: number) => new Intl.NumberFormat("en-US").format(value);
 
   return (
     <ComponentShowcaseLayout
-      title={t("componentShowcase.xpRank.title")}
-      description={t("componentShowcase.xpRank.description")}
+      title="XP rank badges"
+      description="Compare badge artwork by rank and size."
       embedded={embedded}
     >
       <ShowcaseSection
-        title={t("componentShowcase.xpRank.combinationsTitle")}
-        criterion={t("componentShowcase.xpRank.criterion")}
+        title="All rank and size combinations"
+        criterion="All six ranks at 80, 160, and 200 px; ranks without artwork use the question-mark badge."
       >
         <div className="overflow-x-auto pb-2" data-testid="xp-rank-emblem-showcase">
           <table
-            aria-label={t("componentShowcase.xpRank.tableLabel")}
+            aria-label="XP badges by rank and size"
             className="w-full min-w-[820px] border-separate border-spacing-y-3"
           >
             <thead>
               <tr className="text-left text-body-small text-foreground-muted">
                 <th scope="col" className="px-4 py-2">
-                  {t("componentShowcase.xpRank.rank")}
+                  Rank
                 </th>
-                {sizes.map(({ size, key }) => (
+                {sizes.map(({ size, label }) => (
                   <th key={size} scope="col" className="px-4 py-2 text-center">
-                    {t(`componentShowcase.xpRank.sizes.${key}`)}
+                    {label}
                   </th>
                 ))}
               </tr>

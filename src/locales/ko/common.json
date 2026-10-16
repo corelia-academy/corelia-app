@@ -429,7 +429,9 @@
         "logoSize": "로고 파일 크기는 2 MB를 넘을 수 없습니다.",
         "invalidSlug": "슬러그는 영문 소문자, 숫자, 하이픈으로 구성되어야 합니다."
       },
-      "hackathonXpEarned": "+100 XP · 첫 해커톤 프로젝트 제출"
+      "hackathonXpEarned": "+100 XP · 첫 해커톤 프로젝트 제출",
+      "submissionLogoHint": "PNG, JPEG 또는 WebP 형식을 지원합니다. 업로드 시 이미지가 검수됩니다.",
+      "uploadLogo": "업로드"
     },
     "team": {
       "title": "팀원",
@@ -474,7 +476,15 @@
       "leavingProject": "팀에서 나가는 중…",
       "leftProject": "프로젝트 팀에서 나갔습니다.",
       "leaveProjectFailed": "프로젝트 팀에서 나갈 수 없습니다. 다시 시도하세요.",
-      "lateMembersHint": "마감 후에는 어떤 계정이든 협업하도록 초대할 수 있습니다. 새 팀원은 상이나 수료증을 자동으로 받지 않습니다."
+      "lateMembersHint": "마감 후에는 어떤 계정이든 협업하도록 초대할 수 있습니다. 새 팀원은 상이나 수료증을 자동으로 받지 않습니다.",
+      "selectedCount": "선택한 멤버 ({{count}})",
+      "invitedCount": "초대한 멤버 ({{count}})",
+      "invitedStatus": "초대됨",
+      "removeFromList": "목록에서 제거",
+      "removeNamedFromList": "{{name}}님을 목록에서 제거",
+      "resendEmailFor": "{{name}}님에게 초대 이메일 다시 보내기",
+      "showMore": "더 보기",
+      "showLess": "간략히 보기"
     },
     "social": {
       "heart": "좋아요",
@@ -596,25 +606,49 @@
       "resourceFields": {
         "demo": {
           "label": "라이브 데모",
-          "hint": "검토자가 사용해 볼 수 있는 작동하는 제품 버전입니다."
+          "hint": "검토자가 사용해 볼 수 있는 작동하는 제품 버전입니다.",
+          "placeholder": "프로젝트 데모 링크(있는 경우)"
         },
         "slide": {
           "label": "슬라이드 / 발표 자료",
-          "hint": "아이디어, 문제, 해결책을 소개하세요. 예: Google 슬라이드 또는 Canva."
+          "hint": "아이디어, 문제, 해결책을 소개하세요. 예: Google 슬라이드 또는 Canva.",
+          "placeholder": "슬라이드 또는 피치 덱 링크(있는 경우)"
         },
         "repo": {
           "label": "GitHub 소스 코드",
-          "hint": "이슈나 파일 링크가 아닌 github.com/team/project 형식의 공개 저장소입니다."
+          "hint": "이슈나 파일 링크가 아닌 github.com/team/project 형식의 공개 저장소입니다.",
+          "placeholder": "프로젝트 GitHub 소스 코드 링크(있는 경우)"
         },
         "video": {
           "label": "데모 영상",
-          "hint": "YouTube, Vimeo, Loom 영상처럼 제품이 실제로 동작하는 모습을 담은 녹화본입니다."
+          "hint": "YouTube, Vimeo, Loom 영상처럼 제품이 실제로 동작하는 모습을 담은 녹화본입니다.",
+          "placeholder": "프로젝트 데모 또는 피치 영상 링크"
         },
         "pitchVideo": {
           "label": "발표 영상",
-          "hint": "아이디어, 가치, 팀을 소개하세요. 작동하는 제품은 필요하지 않습니다."
+          "hint": "아이디어, 가치, 팀을 소개하세요. 작동하는 제품은 필요하지 않습니다.",
+          "placeholder": "프로젝트 피치 영상 링크(있는 경우)"
         }
-      }
+      },
+      "submissionLinksTitle": "링크 및 첨부 파일",
+      "submissionLinksHint": "프로젝트가 아직 아이디어 단계라면 이 섹션은 건너뛸 수 있습니다. 링크를 추가한다면 공개적으로 접근할 수 있는지 확인하세요.",
+      "submissionTitle": "프로젝트 정보",
+      "submissionHint": "필수 정보를 입력해 주세요.",
+      "requiredInformation": "필수 정보",
+      "submissionStory": "스토리",
+      "submissionCharacterLimit": "{{count}}/{{limit}}",
+      "submissionProjectTitle": "프로젝트 제목",
+      "submissionTitlePlaceholder": "예: Corelia 챗봇",
+      "submissionSlugPlaceholder": "예: demo-seed-20261008-future-skillbridge",
+      "submissionSlugHint": "프로젝트 링크",
+      "submissionDescription": "프로젝트 상세 정보",
+      "submissionProgress": "이 프로젝트를 어떻게 만들었는지 공유해 주세요",
+      "submissionTextPlaceholder": "프로젝트를 설명해 주세요...",
+      "submissionPreviewImages": "미리보기 이미지",
+      "submissionOptionalClassifications": "추가 분류",
+      "submissionOptionalClassificationsHint": "엔지니어링 분야와 기술은 선택 사항입니다.",
+      "submissionSaveHint": "저장하면 대회 주최자에게 프로젝트의 최신 업데이트가 전달됩니다.",
+      "resourceUrlValid": "링크가 보안 및 형식 검사를 통과했습니다."
     },
     "management": {
       "edit": "편집",
@@ -1195,143 +1229,6 @@
     "title": "자격 증명을 받았습니다!",
     "body": "이메일로 부여된 자격 증명이 Corelia 계정에 저장되었습니다.",
     "cta": "내 자격 증명 보기"
-  },
-  "componentShowcase": {
-    "xpRank": {
-      "title": "XP 등급 배지",
-      "criterion": "여섯 가지 등급을 80, 160, 200 px로 표시합니다. 이미지가 없는 등급은 물음표 배지를 사용합니다.",
-      "description": "등급과 크기별로 배지 이미지를 비교합니다.",
-      "combinationsTitle": "모든 등급과 크기 조합",
-      "tableLabel": "등급 및 크기별 XP 배지",
-      "rank": "등급",
-      "sizes": {
-        "small": "작게 · 80 px",
-        "medium": "보통 · 160 px",
-        "large": "크게 · 200 px"
-      }
-    },
-    "fullPageEmptyState": {
-      "title": "전체 페이지 빈 상태"
-    },
-    "progress": {
-      "title": "진행률",
-      "criterion": "진행률 막대와 원의 Figma 크기, 진행 단계, 색상 모델입니다.",
-      "description": "Figma의 막대와 원의 정확한 크기, 상태, 색상을 비교합니다.",
-      "standardTitle": "표준 진행률 막대",
-      "standardCriterion": "376 × 20 px 컴포넌트, 328 × 8 px 트랙.",
-      "liveTitle": "직접 해보는 진행률 데모",
-      "liveCriterion": "−/+를 사용하거나 퍼센트를 입력하세요. 정확히 100%이면 원이 완료되고, 100%를 넘으면 실패로 표시됩니다.",
-      "liveRangeLabel": "진행률 퍼센트 조정",
-      "liveDecrease": "진행률 1% 감소",
-      "liveIncrease": "진행률 1% 증가",
-      "liveInputLabel": "진행률 퍼센트",
-      "liveOverrunHint": "막대는 100%를 넘어도 가득 찬 상태로 유지되고, 원은 실패 표시를 보여줍니다.",
-      "liveValue": "{{percentage}}%",
-      "liveBarSample": "{{theme}} · {{percentage}}%",
-      "compactTitle": "간결한 레슨 진행률",
-      "compactCriterion": "252 × 15 px 컴포넌트, 210 × 4 px 트랙.",
-      "circleTitle": "진행률 원",
-      "circleCriterion": "24 × 24 px. 각 퍼센트는 해당하는 Figma 색상 변형을 따릅니다.",
-      "label": "라벨",
-      "noFill": "채우기 없음",
-      "barSample": "{{theme}} · {{level}} · {{percentage}}% · {{color}}",
-      "circleSample": "{{state}} · {{percentage}}%{{colorText}}",
-      "defaultValue": "기본",
-      "theme": {
-        "neutral": "중립",
-        "accent": "강조",
-        "status": "상태"
-      },
-      "level": {
-        "none": "없음",
-        "low": "낮음",
-        "medium": "중간",
-        "good": "좋음",
-        "done": "완료"
-      },
-      "circleState": {
-        "notStarted": "시작 전",
-        "failed": "실패",
-        "neutralProgress": "진행 중 · 중립",
-        "coloredProgress": "진행 중 · 색상",
-        "done": "완료"
-      }
-    },
-    "tooltip": {
-      "title": "툴팁",
-      "criterion": "보조 텍스트 유무에 따른 9가지 Figma 화살표 위치입니다. 메시지 내용은 호출하는 쪽에서 제공합니다.",
-      "description": "Figma의 18가지 화살표 및 보조 텍스트 변형을 모두 비교합니다.",
-      "withoutSupportingText": "보조 텍스트 없음",
-      "withSupportingText": "보조 텍스트 있음",
-      "sampleTitle": "툴팁입니다",
-      "sampleSupportingText": "툴팁은 페이지에 고정 텍스트를 추가하지 않고 요소의 의미나 기능을 설명합니다.",
-      "arrows": {
-        "none": "화살표 없음",
-        "bottomCenter": "아래 가운데",
-        "bottomLeft": "아래 왼쪽",
-        "bottomRight": "아래 오른쪽",
-        "topCenter": "위 가운데",
-        "topLeft": "위 왼쪽",
-        "topRight": "위 오른쪽",
-        "left": "왼쪽",
-        "right": "오른쪽"
-      }
-    },
-    "stepper": {
-      "title": "스테퍼",
-      "criterion": "가로 및 세로 진행 상황 추적입니다. 사용하는 페이지가 각 단계의 상태를 제공합니다.",
-      "description": "시각적인 진행 추적기입니다. 상위 페이지가 단계 상태를 제어하고 흐름이 언제 이동할지 결정합니다.",
-      "liveTitle": "상위 페이지가 제어하는 대화형 흐름",
-      "liveCriterion": "이전과 다음을 사용해 상위 페이지가 단계 상태를 어떻게 업데이트하는지 확인하세요.",
-      "orientationLabel": "방향",
-      "orientation": {
-        "horizontal": "가로",
-        "vertical": "세로"
-      },
-      "styleLabel": "마커 스타일",
-      "style": {
-        "text": "숫자",
-        "icon": "아이콘"
-      },
-      "steps": {
-        "account": "계정",
-        "accountCaption": "필수 정보",
-        "profile": "프로필",
-        "profileCaption": "내 정보",
-        "review": "검토",
-        "reviewCaption": "세부 정보 확인"
-      },
-      "state": {
-        "default": "시작 전",
-        "focused": "현재 단계",
-        "passed": "완료",
-        "error": "확인 필요"
-      },
-      "liveAccessibleLabel": "계정 설정 진행 상황",
-      "currentStep": "{{total}}단계 중 {{current}}단계",
-      "previous": "이전",
-      "next": "다음",
-      "parentOwnsState": "페이지가 각 단계의 상태와 이동 시점을 결정하며, 스테퍼는 전달받은 상태만 표시합니다.",
-      "statesTitle": "Figma 상태 및 레이아웃 비교",
-      "statesCriterion": "두 방향과 마커 스타일에서 네 가지 상태를 모두 비교합니다.",
-      "statesAccessibleLabel": "스테퍼 상태 예시",
-      "samples": {
-        "waiting": "대기 중",
-        "current": "진행 중",
-        "complete": "완료",
-        "problem": "확인 필요",
-        "optional": "시작 전",
-        "inProgress": "현재 단계",
-        "done": "종료됨",
-        "checkDetails": "세부 정보 검토"
-      },
-      "configuration": {
-        "horizontal": "{{style}} 스타일 · 가로",
-        "vertical": "{{style}} 스타일 · 세로"
-      },
-      "usageTitle": "제어형 사용 예시",
-      "usageCriterion": "페이지가 자신의 현재 단계 값으로 각 상태를 계산해 스테퍼에 전달합니다."
-    }
   },
   "maintenance": {
     "title": "시스템 점검 중",

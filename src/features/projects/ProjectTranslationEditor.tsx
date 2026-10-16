@@ -2,19 +2,28 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { translateProjectContent } from "@/lib/projectSubmission";
 import { projectErrorMessage } from "@/lib/projectErrors";
 import { CONTENT_LOCALES, LOCALE_META, isContentLocale, type ContentLocale } from "@/lib/locales";
 import type { ProjectContent } from "@/types/projects";
 import { primaryProjectContent, type ProjectDraft } from "./projectEditorDraft";
 
+const DEFAULT_CONTENT_LIMITS: Record<keyof ProjectContent, number> = {
+  title: 160,
+  summary: 1000,
+  description: 20000,
+  progress: 10000,
+};
+
 function defaultTarget(primary: ContentLocale): ContentLocale {
   return primary === "en" ? "vi" : "en";
 }
 
-export function ProjectTranslationEditor({ projectId, draft, disabled, onApply }: {
+export function ProjectTranslationEditor({ projectId, draft, disabled, onApply, limits }: {
   projectId: string; draft: ProjectDraft; disabled: boolean;
   onApply: (locale: ContentLocale, content: ProjectContent) => void;
+  limits?: Partial<Record<keyof ProjectContent, number>>;
 }) {
   const { t } = useTranslation("common");
   const [preview, setPreview] = useState<{ draft: ProjectDraft; content: ProjectContent; target: ContentLocale } | null>(null);
@@ -40,7 +49,7 @@ export function ProjectTranslationEditor({ projectId, draft, disabled, onApply }
       <h3 className="font-semibold">{t("projects.translation.preview")} ({LOCALE_META[preview.target].endonym})</h3>
       {(["title", "summary", "description", "progress"] as const).map(field => <label className="block text-sm" key={field}>
         {t(field === "title" || field === "summary" ? `projects.form.${field}` : `projects.editor.${field}`)}
-        <textarea className="mt-1 min-h-20 w-full rounded-md border border-border bg-background p-2" value={preview.content[field]} maxLength={{title:160,summary:1000,description:20000,progress:10000}[field]} onChange={event => setPreview({ ...preview, content: { ...preview.content, [field]: event.target.value } })} />
+        <Input fieldType="auto-grow" submitOnEnter={false} rows={1} controlClassName="mt-1" className="min-h-[62px]" value={preview.content[field]} maxLength={limits?.[field] ?? DEFAULT_CONTENT_LIMITS[field]} onChange={event => setPreview({ ...preview, content: { ...preview.content, [field]: event.target.value } })} />
       </label>)}
       {draft !== preview.draft ? <p role="status">{t("projects.translation.stale")}</p> : null}
       <p className="text-xs text-foreground-muted">{t("projects.translation.replaceHint")}</p>
