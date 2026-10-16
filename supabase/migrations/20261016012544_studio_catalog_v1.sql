@@ -9,7 +9,8 @@
 --                          locale, research period (default 90 days)
 --   studio_paths           named path inside a kind (Rust, Frontend, Solana, ...)
 --   studio_courses         catalog entry; `status` is the CATALOG state and is
---                          independent of the per-step run state
+--                          independent of the per-step run state; title is unique
+--                          ignoring case and surrounding spaces
 --   studio_course_paths    many-to-many course <-> path, with separate order
 --                          columns per path (learning order, display order);
 --                          production priority is global: studio_courses.priority
@@ -106,6 +107,11 @@ CREATE TABLE public.studio_courses (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- One catalog entry per course name: Studio matches courses by title (idea form, preset import),
+-- so duplicates must be rejected by the database, not only by a client-side check.
+CREATE UNIQUE INDEX studio_courses_title_key
+  ON public.studio_courses (lower(btrim(title)));
 
 CREATE TABLE public.studio_course_paths (
   course_id uuid NOT NULL REFERENCES public.studio_courses (id) ON DELETE CASCADE,

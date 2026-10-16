@@ -172,6 +172,7 @@ DECLARE
     $q$INSERT INTO public.studio_courses(title) VALUES('   ')$q$,
     $q$INSERT INTO public.studio_courses(title,priority) VALUES('x',101)$q$,
     $q$INSERT INTO public.studio_courses(title,level) VALUES('x','expert')$q$,
+    $q$INSERT INTO public.studio_courses(title) VALUES('  seed COURSE a ')$q$,
     $q$INSERT INTO public.studio_paths(group_kind,slug,title) VALUES('other','x','x')$q$,
     $q$INSERT INTO public.studio_paths(group_kind,slug,title) VALUES('skill','Bad Slug','x')$q$,
     $q$INSERT INTO public.studio_paths(group_kind,slug,title) VALUES('skill','rust','dup')$q$,
