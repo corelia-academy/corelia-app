@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { normalizeLocale } from "@/lib/locales";
+import { ListRowsSkeleton } from "@/components/loading/RouteSkeleton";
 
 type PreviewEntry = {
   file: string;
@@ -38,7 +40,7 @@ export default function AdminEmailPreviewPage() {
     return () => controller.abort();
   }, []);
 
-  const locale = (i18n.resolvedLanguage ?? i18n.language).startsWith("en") ? "en" : "vi";
+  const locale = normalizeLocale(i18n.resolvedLanguage ?? i18n.language);
   const localizedEntries = entries.filter((entry) => entry.file.endsWith(`-${locale}.html`));
   const selectedEntry = localizedEntries.find((entry) => entry.file === `${selectedTemplate}-${locale}.html`) ?? localizedEntries[0];
   const previewUrl = (file: string) => `${import.meta.env.BASE_URL}email-preview/${file}`;
@@ -66,7 +68,7 @@ export default function AdminEmailPreviewPage() {
         </div>
       </div>
 
-      {status === "loading" ? <p className="text-sm text-foreground-muted">{t("previewGallery.loading")}</p> : null}
+      {status === "loading" ? <ListRowsSkeleton rows={4} /> : null}
       {status === "error" ? <p role="alert" className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{t("previewGallery.failed")}</p> : null}
       {status === "ready" && !selectedEntry ? <p className="text-sm text-foreground-muted">{t("previewGallery.empty")}</p> : null}
 

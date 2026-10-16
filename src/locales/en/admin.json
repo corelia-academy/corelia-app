@@ -168,6 +168,7 @@
     "preview": "Preview",
     "loading": "Loading hackathons…",
     "empty": "No hackathons yet.",
+    "loadFailed": "Could not load hackathons.",
     "editor": {
       "back": "Back to list",
       "newTitle": "New hackathon",
@@ -212,6 +213,13 @@
       "loadingProjects": "Loading projects…",
       "noEligibleProjects": "No eligible projects found.",
       "awardLabel": "Award label",
+      "awardLabelRequired": "Enter a name for every award before saving.",
+      "dragProject": "Drag project {{name}} to reorder",
+      "dragAward": "Drag award {{name}} to reorder",
+      "moveProjectUp": "Move project {{name}} up",
+      "moveProjectDown": "Move project {{name}} down",
+      "moveAwardUp": "Move award {{name}} up",
+      "moveAwardDown": "Move award {{name}} down",
       "noAwards": "No winning projects selected yet.",
       "deleteConfirm": "Permanently delete this hackathon?",
       "applyStatus": "Apply status",
@@ -238,6 +246,8 @@
       "awardMissingFields": "Please select a project and enter the award name.",
       "awardAdded": "Award added to list.",
       "notifyAwardsAction": "Notify winners via email",
+      "saveBeforeNotifyAwards": "Save award changes before notifying winners.",
+      "validationSocialPost": "Enter public Facebook, Instagram, or X post URLs, one per line.",
       "notifyAwardsConfirm": "Send award notification emails to all winning project teams now?",
       "awardsNotified": "Award notifications sent ({{count}} emails delivered).",
       "awardsNotifyRetryableError": "Some award emails could not be sent due to temporary errors. You can retry shortly.",
@@ -276,11 +286,11 @@
         "danger": "Publish, end & delete"
       },
       "sectionDescriptions": {
-        "overview": "Identity, host information, contact channels, and deadlines.",
+        "overview": "Identity, host information, contact channels, organizer posts, and deadlines.",
         "description": "The full Markdown introduction for the hackathon.",
         "prizes": "Define the total prize pool and add tracks only when prizes need to be split.",
         "timeline": "Hackathon stages ordered from earliest to latest.",
-        "resources": "Supporting documents, links, and guidance in Markdown.",
+        "resources": "Supporting documents and preparation courses.",
         "projects": "Select winning projects and assign award labels manually.",
         "danger": "Change the public status or permanently delete this hackathon."
       },
@@ -308,6 +318,14 @@
         "bannerHint": "Recommended size: 2100 × 900 px (21:9). Minimum: 1680 × 720 px.",
         "bannerEmpty": "Add a cover image",
         "uploadBanner": "Upload banner",
+        "officialCourse": "Recommended preparation course",
+        "relatedCourses": "Other preparation courses",
+        "noCourse": "No course selected",
+        "noPublishedCourses": "No published courses available.",
+        "coursesLoadFailed": "Could not load published courses.",
+        "socialPosts": "Organizer social posts",
+        "socialPostsPlaceholder": "One Facebook, Instagram, or X post URL per line",
+        "socialPostsHint": "Public post links only. Private or restricted posts may not embed.",
         "changeBanner": "Change banner",
         "bannerPreviewAlt": "Hackathon banner preview",
         "hostLogo": "Host logo",
@@ -361,7 +379,8 @@
     },
     "actions": {
       "refresh": "Refresh",
-      "clearFilters": "Clear filters"
+      "clearFilters": "Clear filters",
+      "detail": "Details"
     },
     "list": {
       "syncing": "Syncing instructors...",
@@ -370,6 +389,13 @@
       "loading": "Loading list...",
       "empty": "No instructors match the current filters.",
       "notUpdated": "Not updated"
+    },
+    "columns": {
+      "instructor": "Instructor",
+      "email": "Email",
+      "origin": "Category",
+      "courses": "Courses",
+      "actions": "Actions"
     },
     "originLabel": {
       "corelia": "Corelia",

@@ -1,5 +1,6 @@
 import type { CourseLesson, CourseLessonLocaleContent, SupportedCourseLocale } from "@/types/courses";
 import type { SectionQuestion } from "@/types/questions";
+import { CONTENT_LOCALES } from "@/lib/locales";
 
 export type LessonLocales = Partial<Record<SupportedCourseLocale, Partial<CourseLessonLocaleContent>>>;
 
@@ -19,7 +20,7 @@ export function duplicateLesson(lesson: CourseLesson, questions: SectionQuestion
     delete question.created_at;
     delete question.updated_at;
   }
-  for (const locale of ["vi", "en"] as const) {
+  for (const locale of CONTENT_LOCALES) {
     const content = copy.locales[locale];
     if (!content) continue;
     if (content.title) content.title = title(content.title, locale);

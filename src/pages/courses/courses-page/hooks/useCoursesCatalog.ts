@@ -9,10 +9,11 @@ import {
 import { getCatalogInstructorOptions, getCatalogSkillOptions } from "../utils/catalog";
 import type { CourseLevel, SupportedCourseLocale } from "@/types/courses";
 import { filterAndSortCourses, type OwnerFilter, type SortMode } from "../utils/catalog";
+import { normalizeLocale } from "@/lib/locales";
 
 export function useCoursesCatalog() {
   const { t, i18n } = useTranslation("courses");
-  const locale: SupportedCourseLocale = i18n.language?.startsWith("en") ? "en" : "vi";
+  const locale: SupportedCourseLocale = normalizeLocale(i18n.language);
   const catalogQuery = useQuery(coursesCatalogQueryOptions(locale));
   const courses = useMemo(() => catalogQuery.data ?? [], [catalogQuery.data]);
   const courseIds = useMemo(() => courses.map((course) => course.id), [courses]);
@@ -45,24 +46,18 @@ export function useCoursesCatalog() {
   ].filter(Boolean).length;
 
   return {
-    loading: catalogQuery.isPending || (courseIds.length > 0 && lessonCountsQuery.isPending),
+    // Lesson counts are secondary metadata: render cards as soon as the catalog arrives and
+    // let counts fill in (or stay hidden on failure) instead of blocking the whole page.
+    loading: catalogQuery.isPending,
     retry: async () => {
-      const refetches: Array<Promise<unknown>> = [catalogQuery.refetch()];
-      if (courseIds.length > 0) refetches.push(lessonCountsQuery.refetch());
-      return Promise.all(refetches);
+      await catalogQuery.refetch();
     },
     error: catalogQuery.error instanceof Error
       ? catalogQuery.error.message
       : catalogQuery.error
         ? t("catalog.loadErrorFallback")
-        : lessonCountsQuery.error instanceof Error
-          ? lessonCountsQuery.error.message
-          : lessonCountsQuery.error
-            ? t("catalog.lessonCountLoadErrorFallback")
-            : null,
-    errorTitle: lessonCountsQuery.isError && !catalogQuery.isError
-      ? t("catalog.lessonCountLoadErrorTitle")
-      : t("catalog.loadErrorTitle"),
+        : null,
+    errorTitle: t("catalog.loadErrorTitle"),
     catalogCourses: courses,
     filteredOnlineCourses,
     lessonCounts: lessonCountsQuery.data ?? new Map<string, number>(),

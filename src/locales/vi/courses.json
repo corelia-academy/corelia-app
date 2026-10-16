@@ -171,7 +171,6 @@
         "title": "Khoá học đang được cập nhật",
         "body": "Bạn vẫn có thể học các bài đã sẵn sàng. Việc hoàn thành khoá học và cấp thành tích mới sẽ mở lại khi khoá học cập nhật xong."
       },
-      "courseUpdatingCompletionNotice": "Khoá học đang được cập nhật. Tiến độ bài học của bạn vẫn được lưu; trạng thái hoàn thành và thành tích mới sẽ được ghi nhận khi khoá học sẵn sàng.",
       "learningOutcomes": {
         "title": "Bạn sẽ học được gì",
         "subtitle": "Khoá học này sẽ giúp bạn:"
@@ -493,6 +492,15 @@
     "retry": "Thử lại",
     "source": "Mã nguồn",
     "unavailable": "Bài học chưa khả dụng.",
+    "askAi": {
+      "trigger": "Hỏi AI",
+      "chatgpt": "Hỏi ChatGPT",
+      "claude": "Hỏi Claude",
+      "gemini": "Hỏi Gemini (sao chép prompt)",
+      "copy": "Sao chép prompt",
+      "copied": "Đã sao chép prompt. Hãy dán vào công cụ AI của bạn.",
+      "copyFailed": "Không sao chép được prompt."
+    },
     "systemError": "Không lưu được kết quả. Bài làm của bạn vẫn được giữ; hãy thử lại.",
     "checking": "Đang kiểm tra…",
     "checkCode": "Kiểm tra code",
@@ -521,8 +529,6 @@
     "noContentIssues": "Không có nội dung cần sửa.",
     "moreActions": "Thao tác khác",
     "recalculateDuration": "Tính lại thời lượng",
-    "retryVideo": "Tải lại video",
-    "openYoutube": "Mở trên YouTube",
     "previewBanner": "XEM THỬ · Không lưu tiến độ, bài nộp hoặc nháp.",
     "completed": "Đã hoàn thành",
     "markIncomplete": "Đánh dấu chưa hoàn thành",
@@ -759,6 +765,12 @@
     "xpLessonEarned": "Đã nhận 10 XP cho bài học này",
     "xpLessonAvailable": "Hoàn thành bài học lần đầu: +10 XP",
     "xpQuizEarned": "Đã nhận XP cho quiz này",
-    "xpQuizAvailable": "Hoàn thành quiz lần đầu: +30 XP"
+    "xpQuizAvailable": "Hoàn thành quiz lần đầu: +30 XP",
+    "insertImage": "Chèn ảnh",
+    "imageUploading": "Đang tải ảnh lên…",
+    "imageUploadFailed": "Không tải được ảnh. Vui lòng thử lại.",
+    "imageInvalid": "Chọn ảnh PNG, JPEG, WebP hoặc GIF tối đa 5 MB.",
+    "imageDefaultAlt": "Ảnh",
+    "imageInserted": "Đã chèn ảnh vào nội dung bài học."
   }
 }

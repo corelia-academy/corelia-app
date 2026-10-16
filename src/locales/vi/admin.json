@@ -168,6 +168,7 @@
     "preview": "Xem trước",
     "loading": "Đang tải hackathon…",
     "empty": "Chưa có hackathon nào.",
+    "loadFailed": "Không tải được danh sách hackathon.",
     "editor": {
       "back": "Quay lại danh sách",
       "newTitle": "Hackathon mới",
@@ -212,6 +213,13 @@
       "loadingProjects": "Đang tải danh sách dự án…",
       "noEligibleProjects": "Không tìm thấy dự án phù hợp.",
       "awardLabel": "Nhãn giải thưởng",
+      "awardLabelRequired": "Nhập tên cho tất cả giải thưởng trước khi lưu.",
+      "dragProject": "Kéo dự án {{name}} để đổi vị trí",
+      "dragAward": "Kéo giải {{name}} để đổi vị trí",
+      "moveProjectUp": "Chuyển dự án {{name}} lên",
+      "moveProjectDown": "Chuyển dự án {{name}} xuống",
+      "moveAwardUp": "Chuyển giải {{name}} lên",
+      "moveAwardDown": "Chuyển giải {{name}} xuống",
       "noAwards": "Chưa chọn dự án thắng giải.",
       "deleteConfirm": "Xóa vĩnh viễn hackathon này?",
       "applyStatus": "Áp dụng trạng thái",
@@ -238,6 +246,8 @@
       "awardMissingFields": "Vui lòng chọn bài thi và nhập tên giải thưởng.",
       "awardAdded": "Đã thêm giải thưởng vào danh sách.",
       "notifyAwardsAction": "Gửi thông báo trao giải qua email",
+      "saveBeforeNotifyAwards": "Lưu thay đổi giải thưởng trước khi gửi thông báo.",
+      "validationSocialPost": "Nhập link bài đăng Facebook, Instagram hoặc X công khai, mỗi dòng một link.",
       "notifyAwardsConfirm": "Gửi email thông báo trao giải tới toàn bộ nhóm dự án đạt giải ngay bây giờ?",
       "awardsNotified": "Đã gửi thông báo trao giải ({{count}} email thành công).",
       "awardsNotifyRetryableError": "Một số email trao giải chưa gửi được do lỗi tạm thời. Bạn có thể thử lại sau.",
@@ -276,11 +286,11 @@
         "danger": "Xuất bản, kết thúc & xóa"
       },
       "sectionDescriptions": {
-        "overview": "Thông tin nhận diện, đơn vị tổ chức, kênh liên hệ và deadline.",
+        "overview": "Thông tin nhận diện, đơn vị tổ chức, kênh liên hệ, bài đăng và deadline.",
         "description": "Nội dung Markdown giới thiệu đầy đủ về hackathon.",
         "prizes": "Khai báo tổng giải thưởng và chỉ tạo hạng mục khi thật sự cần chia giải.",
         "timeline": "Các giai đoạn diễn ra theo thứ tự từ sớm đến muộn.",
-        "resources": "Tài liệu, liên kết và hướng dẫn bổ sung ở dạng Markdown.",
+        "resources": "Tài liệu và khóa học chuẩn bị.",
         "projects": "Chọn dự án thắng giải và đặt nhãn giải thủ công.",
         "danger": "Thay đổi trạng thái công khai hoặc xóa vĩnh viễn hackathon."
       },
@@ -308,6 +318,14 @@
         "bannerHint": "Kích thước khuyên dùng: 2100 × 900 px (21:9). Tối thiểu: 1680 × 720 px.",
         "bannerEmpty": "Thêm ảnh bìa",
         "uploadBanner": "Tải banner lên",
+        "officialCourse": "Khóa học chuẩn bị được đề xuất",
+        "relatedCourses": "Khóa học chuẩn bị khác",
+        "noCourse": "Chưa chọn khóa học",
+        "noPublishedCourses": "Chưa có khóa học đã xuất bản.",
+        "coursesLoadFailed": "Không tải được danh sách khóa học.",
+        "socialPosts": "Bài đăng mạng xã hội của ban tổ chức",
+        "socialPostsPlaceholder": "Mỗi dòng một link bài đăng Facebook, Instagram hoặc X",
+        "socialPostsHint": "Chỉ dùng bài đăng công khai. Bài riêng tư hoặc bị giới hạn có thể không nhúng được.",
         "changeBanner": "Đổi banner",
         "bannerPreviewAlt": "Xem trước banner hackathon",
         "hostLogo": "Logo đơn vị tổ chức",
@@ -361,7 +379,8 @@
     },
     "actions": {
       "refresh": "Làm mới",
-      "clearFilters": "Xoá bộ lọc"
+      "clearFilters": "Xoá bộ lọc",
+      "detail": "Chi tiết"
     },
     "list": {
       "syncing": "Đang đồng bộ danh sách giảng viên...",
@@ -370,6 +389,13 @@
       "loading": "Đang tải danh sách...",
       "empty": "Chưa có giảng viên nào khớp bộ lọc hiện tại.",
       "notUpdated": "Chưa cập nhật"
+    },
+    "columns": {
+      "instructor": "Giảng viên",
+      "email": "Email",
+      "origin": "Phân loại",
+      "courses": "Khoá học",
+      "actions": "Tác vụ"
     },
     "originLabel": {
       "corelia": "Corelia",

@@ -7,6 +7,7 @@ import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 import { OgImagePreview } from "@/features/og/OgImagePreview";
 import { ogPreviewQueryOptions, probeOgImage, type OgEntity } from "@/features/og/ogPreviewQueries";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { ListRowsSkeleton } from "@/components/loading/RouteSkeleton";
 
 export default function AdminOgPreviewPage() {
   const { t } = useTranslation("admin");
@@ -50,7 +51,7 @@ export default function AdminOgPreviewPage() {
         {imageFailed ? <p role="alert" className="text-destructive">{t("ogPreview.imageError")}</p> : null}
         <p className="text-sm text-foreground-muted">{t("ogPreview.enterIdentifier")}</p>
       </div>
-      : metaQuery.isPending ? <p role="status">{t("ogPreview.loading")}</p>
+      : metaQuery.isPending ? <ListRowsSkeleton rows={3} />
       : metaQuery.isError ? <div role="alert" className="space-y-2"><p>{t("ogPreview.metadataError")}</p>
         <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void metaQuery.refetch()}>{t("ogPreview.retry")}</Button></div>
       : !meta ? <p className="rounded-lg border border-border p-6 text-foreground-muted">{t("ogPreview.unavailable")}</p>

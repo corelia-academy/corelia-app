@@ -1,7 +1,39 @@
 import { createClient, type SupabaseClient, type User } from "https://esm.sh/@supabase/supabase-js@2.49.8";
 
+const CONTENT_LOCALES = ["en", "zh-CN", "ko", "es", "zh-TW", "vi", "ja"] as const;
+type Locale = (typeof CONTENT_LOCALES)[number];
+const LANGUAGE_NAMES: Record<Locale, string> = {
+  en: "English",
+  "zh-CN": "Simplified Chinese (zh-CN)",
+  ko: "Korean",
+  es: "Spanish",
+  "zh-TW": "Traditional Chinese (zh-TW)",
+  vi: "Vietnamese",
+  ja: "Japanese",
+};
+/** YouTube caption language codes accepted for each locale. */
+const CAPTION_CODES: Record<Locale, string[]> = {
+  en: ["en"],
+  "zh-CN": ["zh-cn", "zh-hans", "zh"],
+  "zh-TW": ["zh-tw", "zh-hant"],
+  ko: ["ko"],
+  es: ["es"],
+  vi: ["vi"],
+  ja: ["ja"],
+};
+
+/** Region-aware: zh-TW/Hant/HK/MO -> zh-TW; other zh -> zh-CN. */
+function parseLocale(value: unknown): Locale | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim().toLowerCase().replaceAll("_", "-");
+  if (["zh-tw", "zh-hk", "zh-mo", "zh-hant"].includes(normalized) || normalized.startsWith("zh-hant-")) return "zh-TW";
+  const language = normalized.split("-")[0];
+  if (language === "zh") return "zh-CN";
+  if (language === "vn") return "vi";
+  return (CONTENT_LOCALES as readonly string[]).includes(language) ? (language as Locale) : null;
+}
+
 type Role = "student" | "instructor" | "support_staff" | "admin";
-type Locale = "vi" | "en";
 
 type RequestBody = {
   courseId?: unknown;
@@ -289,7 +321,7 @@ function parseBody(body: RequestBody): {
           .map((id) => (id as string).trim())
           .slice(0, 8)
       : null;
-  const locale = body.locale === "en" ? "en" : "vi";
+  const locale = parseLocale(body.locale) ?? "vi";
   let count = 5;
   if (body.count !== undefined && body.count !== null && body.count !== "") {
     if (typeof body.count === "number") {
@@ -379,9 +411,10 @@ function chooseCaptionTrack(
   tracks: Array<{ langCode: string; name: string; isAsr: boolean }>,
   locale: Locale,
 ) {
-  const exact = tracks.filter((t) => t.langCode.toLowerCase() === locale);
+  const exact = tracks.filter((t) => CAPTION_CODES[locale].includes(t.langCode.toLowerCase()));
   if (exact.length > 0) return exact.find((t) => !t.isAsr) ?? exact[0];
-  const family = tracks.filter((t) => t.langCode.toLowerCase().startsWith(`${locale}-`));
+  const base = locale.split("-")[0].toLowerCase();
+  const family = tracks.filter((t) => t.langCode.toLowerCase().startsWith(`${base}-`));
   if (family.length > 0) return family.find((t) => !t.isAsr) ?? family[0];
   return tracks.find((t) => !t.isAsr) ?? tracks[0] ?? null;
 }
@@ -448,7 +481,7 @@ function buildPrompt(sources: LessonSource[], locale: Locale, count: number): {
   const langInstruction =
     locale === "vi"
       ? "Viết hoàn toàn bằng tiếng Việt, tự nhiên, dễ hiểu."
-      : "Write entirely in English, clear and natural.";
+      : `Write entirely in ${LANGUAGE_NAMES[locale]}, clear and natural.`;
 
   const system = `Bạn là giáo viên chuyên tạo câu hỏi trắc nghiệm cho khoá học online.
 Nhiệm vụ: Tạo đúng ${count} câu hỏi MCQ từ nội dung bài học dưới đây.

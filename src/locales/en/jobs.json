@@ -163,6 +163,7 @@
     "title": "Jobs operations",
     "subtitle": "Manage direct job feeds and ATS targets, review classifications, run crawlers, and inspect market aggregates.",
     "loading": "Loading Jobs operations…",
+    "loadFailed": "Could not load Jobs operations data.",
     "nav": {
       "overview": "Overview",
       "review": "Review",

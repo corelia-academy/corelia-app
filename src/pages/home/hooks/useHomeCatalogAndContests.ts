@@ -9,8 +9,8 @@ export function useHomeCatalogAndContests() {
   return {
     courseCatalog: query.data?.courseCatalog ?? [],
     courseLessonCounts: query.data?.courseLessonCounts ?? {},
-    contests: query.data?.contests ?? [],
     loading: query.isPending,
     error: query.error,
+    refetch: query.refetch,
   };
 }

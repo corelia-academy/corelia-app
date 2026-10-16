@@ -34,6 +34,7 @@ import type {
 } from "@/types/courses";
 import type { PublicProfile } from "@/types/database";
 import type { Contest } from "@/types/hackathons";
+import { normalizeLocale } from "@/lib/locales";
 
 export interface CourseBundle {
   course: Course | null;
@@ -267,10 +268,11 @@ export function coursesCatalogQueryOptions(locale: string) {
     queryKey: courseKeys.catalog(locale),
     queryFn: async () => {
       const courses = await getPublishedCourses();
-      if (locale === "vi" || courses.length === 0) return courses;
+      const contentLocale = normalizeLocale(locale);
+      if (contentLocale === "vi" || courses.length === 0) return courses;
       const localeMap = await getBatchCourseLocaleContent(
         courses.map((course) => course.id),
-        locale === "en" ? "en" : "vi",
+        contentLocale,
       );
       return courses.map((course) =>
         applyCourseLocaleContent(course, localeMap.get(course.id) ?? null),

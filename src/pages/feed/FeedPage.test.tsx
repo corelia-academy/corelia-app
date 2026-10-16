@@ -1,3 +1,4 @@
+vi.mock("@/lib/notifications", () => ({ markNotificationFeedSeen: vi.fn().mockResolvedValue(undefined) }));
 // @vitest-environment happy-dom
 import { act } from "react";
 import { createRoot } from "react-dom/client";

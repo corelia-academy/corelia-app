@@ -59,6 +59,44 @@ export function SectionErrorBoundary({ children }: Props) {
   return <SectionErrorBoundaryInner t={t}>{children}</SectionErrorBoundaryInner>;
 }
 
+/** Full-page error view shared by the React boundary and the router `errorElement`. */
+export function ErrorFallback({ error, onRetry }: { error: Error; onRetry: () => void }) {
+  const { t } = useTranslation("common");
+  const isStaleChunk = isStaleChunkLoadError(error);
+
+  return (
+    <>
+      <PageTitleOverride titleKey="applicationError" />
+      <div className="flex min-h-svh flex-col items-center justify-center gap-4 p-8 text-center" role="alert">
+        <p className="text-lg font-semibold text-destructive">
+          {t(isStaleChunk ? "errorBoundary.staleTitle" : "errorBoundary.title")}
+        </p>
+        <p className="max-w-md text-sm text-foreground-muted">
+          {isStaleChunk ? t("errorBoundary.staleMessage") : error.message}
+        </p>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            className="rounded-md border border-border px-4 py-2 text-sm transition-colors duration-150 hover:bg-surface-raised"
+            onClick={onRetry}
+          >
+            {t(isStaleChunk ? "errorBoundary.reload" : "actions.retry")}
+          </button>
+          <button
+            type="button"
+            className="rounded-md border border-border px-4 py-2 text-sm transition-colors duration-150 hover:bg-surface-raised"
+            onClick={() => {
+              window.location.assign("/");
+            }}
+          >
+            {t("errorBoundary.goHome")}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 class ErrorBoundaryInner extends Component<BoundaryProps, State> {
   state: State = { error: null };
 
@@ -81,41 +119,7 @@ class ErrorBoundaryInner extends Component<BoundaryProps, State> {
 
   render() {
     if (this.state.error) {
-      const isStaleChunk = isStaleChunkLoadError(this.state.error);
-
-      return (
-        <>
-          <PageTitleOverride titleKey="applicationError" />
-          <div className="flex min-h-svh flex-col items-center justify-center gap-4 p-8 text-center">
-            <p className="text-lg font-semibold text-destructive">
-              {this.props.t(isStaleChunk ? "errorBoundary.staleTitle" : "errorBoundary.title")}
-            </p>
-            <p className="max-w-md text-sm text-foreground-muted">
-              {isStaleChunk
-                ? this.props.t("errorBoundary.staleMessage")
-                : this.state.error.message}
-            </p>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                className="rounded-md border border-border px-4 py-2 text-sm transition-colors duration-150 hover:bg-surface-raised"
-                onClick={this.handleRetry}
-              >
-                {this.props.t(isStaleChunk ? "errorBoundary.reload" : "actions.retry")}
-              </button>
-              <button
-                type="button"
-                className="rounded-md border border-border px-4 py-2 text-sm transition-colors duration-150 hover:bg-surface-raised"
-                onClick={() => {
-                  window.location.assign("/");
-                }}
-              >
-                {this.props.t("errorBoundary.goHome")}
-              </button>
-            </div>
-          </div>
-        </>
-      );
+      return <ErrorFallback error={this.state.error} onRetry={this.handleRetry} />;
     }
     return this.props.children;
   }

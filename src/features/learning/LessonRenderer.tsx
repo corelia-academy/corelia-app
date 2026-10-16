@@ -30,7 +30,7 @@ function ContentLesson({ lesson, mode, onAction, onComplete, video = false }: Le
   const updating = video && !url && !lesson.youtube_url?.trim();
   useEffect(() => { onAction(updating ? null : { label: t("learning.completeContinue"), run: complete }); return () => onAction(null); }, [onAction, complete, t, updating]);
   return <div className="space-y-6">
-    {url && <YoutubeLessonVideo url={url} title={lesson.title} watchUrl={lesson.youtube_url} />}
+    {url && <YoutubeLessonVideo url={url} title={lesson.title} />}
     {updating && <p role="status" className="rounded-xl border border-border bg-surface-raised p-6 text-foreground-muted">{t("learning.videoUpdating")}</p>}
     <Markdown content={lesson.description_markdown ?? ""} />
   </div>;

@@ -1,0 +1,549 @@
+{
+  "nav": {
+    "sectionTitle": "계정 설정",
+    "currentSectionLabel": "현재 보고 있는 항목",
+    "settings": {
+      "title": "설정",
+      "description": "테마, 로그아웃"
+    },
+    "profile": {
+      "title": "개인 정보",
+      "description": "이름, 연락처, 아바타"
+    },
+    "instructor": {
+      "title": "강사 프로필",
+      "description": "학습자에게 공개되는 정보"
+    },
+    "cv": {
+      "title": "학습 프로필 및 이력서",
+      "description": "상담 및 커리어 지원을 위한 정보"
+    },
+    "projects": {
+      "title": "프로젝트",
+      "description": "프로젝트와 번역 관리"
+    },
+    "achievements": {
+      "title": "성과 보관함",
+      "description": "수료증과 배지 관리"
+    }
+  },
+  "header": {
+    "roleLabel": {
+      "instructor": "강사 계정",
+      "admin": "관리자 계정",
+      "support_staff": "지원 계정",
+      "student": "학생 계정"
+    },
+    "subtitle": "개인 정보, 보안, 커리어 프로필을 한곳에서 관리하세요.",
+    "summary": {
+      "profileLabel": "프로필",
+      "roleLabel": "역할",
+      "statusLabel": "상태",
+      "missingDisplayName": "표시 이름이 설정되지 않았습니다",
+      "statusReady": "학습하고 진도를 추적할 준비가 되었습니다"
+    }
+  },
+  "settings": {
+    "language": {
+      "title": "언어",
+      "description": "앱 표시 언어를 변경합니다. 로그인하면 이 설정이 모든 기기에 동기화됩니다.",
+      "meta": {
+        "en": "영어 (EN)",
+        "zh-CN": "중국어 간체 (zh-CN)",
+        "ko": "한국어 (KO)",
+        "es": "스페인어 (ES)",
+        "zh-TW": "중국어 번체 (zh-TW)",
+        "vi": "베트남어 (VI)",
+        "ja": "일본어 (JA)"
+      },
+      "active": "사용 중"
+    },
+    "appearance": {
+      "title": "화면 설정",
+      "description": "사용 환경에 맞는 테마를 선택하세요.",
+      "themeLabel": "테마",
+      "light": "라이트",
+      "dark": "다크",
+      "system": "시스템"
+    },
+    "session": {
+      "title": "세션",
+      "description": "이 기기의 로그인 상태를 관리합니다.",
+      "signOutTitle": "로그아웃",
+      "signOutDescription": "이 기기에서 현재 세션을 종료합니다.",
+      "signOutButton": "로그아웃"
+    },
+    "notifications": {
+      "title": "알림 설정",
+      "description": "이메일과 앱 내에서 받을 알림을 선택하세요.",
+      "emailLearningReminders": "주기적인 학습 알림 이메일 받기",
+      "emailLearningRemindersDesc": "진행 중인 강의를 멈추면 간격을 두고 알림을 보냅니다.",
+      "emailCourseBlast": "강의 공지 이메일 받기",
+      "emailTrackBlast": "학습 경로 공지 이메일 받기",
+      "inAppCourseBlast": "앱 내에 강의 공지 표시",
+      "inAppTrackBlast": "앱 내에 학습 경로 공지 표시",
+      "saved": "알림 설정이 저장되었습니다",
+      "likes": "내 작업에 대한 좋아요",
+      "follows": "새 팔로워",
+      "digest": "일일 소셜 활동 이메일",
+      "digestDescription": "새로운 활동이 있을 때만 09:00({{timezone}})에 발송됩니다. 언제든지 수신을 거부할 수 있습니다.",
+      "loadFailed": "알림 설정을 불러올 수 없습니다."
+    }
+  },
+  "common": {
+    "loading": "처리 중…",
+    "continue": "계속",
+    "cancel": "취소",
+    "finish": "완료"
+  },
+  "errors": {
+    "notLoggedIn": "로그인하지 않았습니다"
+  },
+  "projects": {
+    "pageTitle": "프로젝트 작업 공간",
+    "ownerBadge": "소유자",
+    "collaboratorBadge": "협업자",
+    "showOnProfileLabel": "내 프로필에 이 프로젝트 표시",
+    "showOnProfileHint": "사용하면 이 프로젝트가 공개 프로필과 계정 프로젝트 목록에 표시될 수 있습니다.",
+    "errors": {
+      "visibilityFailed": "이 프로젝트의 프로필 공개 설정을 업데이트할 수 없습니다."
+    },
+    "newProject": "새 프로젝트"
+  },
+  "password": {
+    "title": "비밀번호 변경",
+    "subtitle": "이메일과 비밀번호로 로그인한 계정에만 적용됩니다.",
+    "fields": {
+      "current": {
+        "label": "현재 비밀번호",
+        "placeholder": "현재 비밀번호 입력"
+      },
+      "next": {
+        "label": "새 비밀번호",
+        "placeholder": "8자 이상, 대문자·소문자·숫자·기호 포함"
+      },
+      "confirm": {
+        "label": "새 비밀번호 확인",
+        "placeholder": "새 비밀번호 다시 입력"
+      }
+    },
+    "actions": {
+      "submit": "비밀번호 변경"
+    },
+    "success": {
+      "changed": "비밀번호가 변경되었습니다."
+    },
+    "errors": {
+      "confirmMismatch": "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.",
+      "minLength": "새 비밀번호는 8자 이상이어야 합니다.",
+      "policy": "새 비밀번호는 8자 이상이며 대문자, 소문자, 숫자, 기호를 포함해야 합니다.",
+      "missingEmail": "이메일을 찾을 수 없습니다. 이메일 기반 계정만 비밀번호를 변경할 수 있습니다.",
+      "changeFailed": "비밀번호를 변경할 수 없습니다."
+    }
+  },
+  "mfa": {
+    "title": "2단계 보안 (MFA)",
+    "subtitle": "로그인할 때 SMS 코드를 받을 휴대전화 번호를 추가하여 계정을 더 안전하게 지키세요.",
+    "factorLabel": "인증용 휴대전화 번호",
+    "providers": {
+      "google": "Google",
+      "github": "GitHub"
+    },
+    "enrolled": {
+      "title": "등록된 인증 수단:"
+    },
+    "actions": {
+      "addPhone": "인증용 휴대전화 번호 추가",
+      "sending": "전송 중…",
+      "sendSms": "SMS 코드 전송"
+    },
+    "reauth": {
+      "hint": "보안을 위해 휴대전화 번호를 추가하기 전에 다시 인증하세요.",
+      "passwordLabel": "현재 비밀번호",
+      "passwordPlaceholder": "비밀번호 입력",
+      "popupHint": "아래 버튼을 눌러 {{provider}}(으)로 다시 로그인하세요."
+    },
+    "phone": {
+      "label": "휴대전화 번호 (E.164, 예: +84901234567)",
+      "placeholder": "+84 901 234 567"
+    },
+    "code": {
+      "hint": "코드를 전송했습니다. 아래에 6자리 코드를 입력하세요.",
+      "label": "인증 코드",
+      "placeholder": "000000"
+    },
+    "success": {
+      "enabled": "2단계 인증(SMS)이 사용 설정되었습니다."
+    },
+    "errors": {
+      "reauthFailed": "재인증에 실패했습니다. 다시 시도하세요.",
+      "invalidPhone": "휴대전화 번호가 올바르지 않습니다 (예: 0901234567 또는 +84901234567).",
+      "sendCodeFailed": "코드를 전송할 수 없습니다. 다시 시도하세요.",
+      "enrollFailed": "등록에 실패했습니다. 다시 시도하세요."
+    }
+  },
+  "profile": {
+    "loading": "프로필을 불러오는 중…",
+    "mustLogin": "이 페이지를 보려면 로그인해야 합니다.",
+    "tabs": {
+      "info": "프로필",
+      "ocid": "OCID",
+      "security": "보안"
+    },
+    "emailLoginLabel": "로그인 이메일",
+    "publicProfile": {
+      "label": "공개 프로필",
+      "status": {
+        "public": "공개",
+        "private": "비공개"
+      },
+      "hint": "내 공개 프로필 링크: /@{{handle}}",
+      "actions": {
+        "makePrivate": "비공개로 전환",
+        "makePublic": "공개로 전환",
+        "saving": "저장 중..."
+      }
+    },
+    "setupWarning": {
+      "title": "프로필에 정보가 조금 더 필요합니다.",
+      "body": "Corelia, 강사 또는 지원팀이 더 잘 도와드릴 수 있도록 이름과 전화번호를 업데이트하세요."
+    },
+    "avatar": {
+      "label": "아바타",
+      "alt": "아바타",
+      "upload": "이미지 업로드",
+      "uploading": "업로드 중…",
+      "randomize": "무작위 아바타 사용해 보기",
+      "tryAnother": "다른 아바타 보기",
+      "useThis": "이 아바타 사용",
+      "cancel": "취소",
+      "saving": "저장 중…",
+      "hint": "JPG, PNG 또는 WebP. 이미지는 즉시 저장되고 업데이트됩니다."
+    },
+    "fullName": {
+      "label": "이름",
+      "placeholder": "홍길동",
+      "hint": "수료증과 성적 증명서에 사용됩니다.",
+      "limit": "최대 {{count}} / {{max}}자."
+    },
+    "username": {
+      "label": "사용자 이름",
+      "placeholder": "예: terrrancrypt",
+      "hint": "공개 프로필 URL에 사용됩니다."
+    },
+    "bio": {
+      "label": "소개",
+      "placeholder": "자신을 짧게 소개해 주세요…",
+      "hint": "공개 프로필에 표시됩니다."
+    },
+    "website": {
+      "label": "웹사이트",
+      "placeholder": "https://…",
+      "hint": "포트폴리오 / LinkedIn / 개인 웹사이트."
+    },
+    "phone": {
+      "label": "연락처 전화번호",
+      "placeholder": "예: 09xxxxxxxx",
+      "hint": "필요할 때 지원팀이 연락하는 데 사용됩니다."
+    },
+    "actions": {
+      "saving": "저장 중...",
+      "save": "변경 사항 저장"
+    },
+    "success": {
+      "avatarUpdated": "아바타가 업데이트되었습니다.",
+      "updated": "계정 정보가 업데이트되었습니다.",
+      "visibilityUpdated": "프로필 공개 설정이 업데이트되었습니다."
+    },
+    "errors": {
+      "avatarUploadFailed": "이미지를 업로드할 수 없습니다.",
+      "avatarUpdateFailed": "아바타를 업데이트할 수 없습니다.",
+      "updateFailed": "정보를 업데이트할 수 없습니다.",
+      "visibilityUpdateFailed": "프로필 공개 설정을 업데이트할 수 없습니다.",
+      "usernameTaken": "이미 사용 중인 사용자 이름입니다. 다른 이름을 선택하세요.",
+      "loadFailed": "프로필을 불러올 수 없습니다. 연결을 확인하세요.",
+      "invalidName": "이름은 160자 이하이며 숨겨진 제어 문자를 포함할 수 없습니다.",
+      "invalidText": "프로필 필드가 너무 길거나 숨겨진 제어 문자를 포함합니다. 줄이거나 다시 입력하세요."
+    },
+    "retry": "다시 시도"
+  },
+  "cv": {
+    "title": "학습 프로필 및 이력서",
+    "subtitle": "커리어 상담, 채용 추천, 장학금 지원을 위한 통합 프로필입니다.",
+    "comingSoon": {
+      "title": "이력서 관리 (출시 예정)",
+      "body": "여기에서 이력서(PDF)를 업로드하고 커리어 정보를 업데이트할 수 있게 됩니다. 강사와 지원팀이 내 상황을 이해하고 학습 경로를 더 잘 도울 수 있습니다.",
+      "note": "이 기능이 완성되기 전까지는 확장 프로필 설명에 이력서 링크(Google Drive, Notion 등)를 추가할 수 있습니다."
+    },
+    "prep": {
+      "title": "준비하면 좋은 정보",
+      "items": {
+        "0": "경력 / 주요 개인 프로젝트.",
+        "1": "수료한 강의와 관련 수료증.",
+        "2": "기술 스킬과 소프트 스킬."
+      }
+    }
+  },
+  "instructorProfile": {
+    "onlyInstructors": "강사만 강의 프로필을 편집할 수 있습니다.",
+    "title": "강사 프로필",
+    "subtitle": "강사 페이지와 강의 페이지에서 학습자에게 보이는 공개 프로필입니다.",
+    "completion": "{{percent}}% 완료",
+    "common": {
+      "notUpdated": "업데이트되지 않음"
+    },
+    "origin": {
+      "corelia": "Corelia 강사",
+      "external": "파트너 강사 (외부)",
+      "unknown": "미분류"
+    },
+    "cards": {
+      "originLabel": "강사 유형",
+      "organizationLabel": "소속",
+      "headlineLabel": "헤드라인",
+      "websiteLabel": "웹사이트 / 포트폴리오"
+    },
+    "tips": {
+      "organization": {
+        "title": "소속을 표시하세요",
+        "body": "소속은 학습자가 내 전문성을 이해하는 데 도움이 됩니다."
+      },
+      "intro": {
+        "title": "짧은 소개",
+        "body": "헤드라인과 소개에 강점, 경력, 가르치는 분야를 담아 주세요."
+      },
+      "externalProfile": {
+        "title": "외부 프로필 연결",
+        "body": "학습자가 수강을 고려할 때 LinkedIn이나 포트폴리오가 신뢰를 높여 줍니다."
+      }
+    },
+    "fields": {
+      "origin": {
+        "label": "강사 유형",
+        "hint": "강사 유형은 지원팀/관리자만 변경할 수 있습니다."
+      },
+      "organization": {
+        "label": "소속",
+        "placeholder": "예: Corelia, ABC 회사, XYZ 대학교..."
+      },
+      "headline": {
+        "label": "헤드라인",
+        "placeholder": "예: 시니어 프론트엔드 엔지니어, 데이터 분석 멘토..."
+      },
+      "bio": {
+        "label": "강사 소개",
+        "placeholder": "가르친 경험, 실제 프로젝트, 함께 일한 회사, 주요 전문 분야를 공유하세요..."
+      },
+      "website": {
+        "label": "웹사이트 / LinkedIn / 포트폴리오",
+        "placeholder": "https://..., linkedin.com/in/..., 개인 포트폴리오"
+      }
+    },
+    "socialLinks": {
+      "title": "소셜 미디어 및 링크",
+      "subtitle": "강의 페이지에 표시할 소셜 미디어 계정이나 링크를 추가하세요.",
+      "empty": "추가된 링크가 없습니다. 아래에서 첫 링크를 추가하세요.",
+      "addTitle": "새 링크 추가",
+      "urlPlaceholder": "https://...",
+      "labelPlaceholder": "선택 라벨 (예: 개인 블로그)",
+      "addButton": "추가",
+      "removeLabel": "링크 삭제",
+      "errors": {
+        "urlRequired": "URL을 입력하세요.",
+        "urlInvalid": "URL은 https:// 또는 http://로 시작해야 합니다"
+      }
+    },
+    "actions": {
+      "saving": "저장 중...",
+      "save": "강사 프로필 저장"
+    },
+    "success": {
+      "updated": "강사 프로필이 업데이트되었습니다."
+    },
+    "errors": {
+      "updateFailed": "강사 프로필을 업데이트할 수 없습니다."
+    }
+  },
+  "ocid": {
+    "card": {
+      "title": "OCID 연결",
+      "description": "Open Campus ID를 연결하여 Open Campus 생태계에서 신원과 지갑(있는 경우)을 동기화하세요.",
+      "statusConnected": "연결됨",
+      "statusDisconnected": "연결 안 됨",
+      "initializing": "OCID SDK 초기화 중…",
+      "connectHint": "아래 버튼을 눌러 OCID를 Corelia 계정에 연결하세요.",
+      "ocidLabel": "OCID",
+      "ethAddressLabel": "ETH 주소",
+      "disconnect": "연결 해제",
+      "connect": "OCID로 연결",
+      "loadingDisconnect": "처리 중…",
+      "loadingConnect": "이동 중…"
+    },
+    "redirect": {
+      "finishing": "OCID 연결을 마무리하는 중…",
+      "connectFailedFallback": "OCID를 연결할 수 없습니다. 다시 시도하세요.",
+      "alreadyLinkedToOtherAccount": "이 OCID는 이미 다른 계정에 연결되어 있습니다. 먼저 해당 계정에서 연결을 해제하세요.",
+      "mustLoginFirst": "OCID를 연결하려면 먼저 Corelia에 로그인해야 합니다.",
+      "missingOcidFromSession": "로그인 세션에서 OCID를 가져올 수 없습니다. 다시 연결하세요.",
+      "backToHome": "홈으로 돌아가기"
+    },
+    "toasts": {
+      "startConnectFailed": "OCID 연결을 시작할 수 없습니다.",
+      "disconnectSuccess": "OCID 연결이 해제되었습니다.",
+      "disconnectFailed": "OCID 연결을 해제할 수 없습니다."
+    },
+    "disconnectDialog": {
+      "title": "OCID 연결을 해제할까요?",
+      "body": "이 계정에서 OCID 연결을 해제하시겠습니까?",
+      "bodyWithCredentials_other": "현재 OCID로 이미 온체인 자격 증명 {{count}}개가 발행되었습니다.",
+      "warningTitle": "이 자격 증명은 이전되지 않습니다.",
+      "warningBody": "이후 다른 OCID를 연결하더라도 이미 발행된 자격 증명은 이전 OCID에 그대로 귀속되며 새 OCID로 옮길 수 없습니다.",
+      "confirm": "그래도 연결 해제"
+    }
+  },
+  "xp": {
+    "earned": "+{{count}} XP",
+    "activityCompleted": "활동 완료",
+    "title": "XP 활동",
+    "loading": "XP를 불러오는 중…",
+    "error": "XP를 불러올 수 없습니다.",
+    "total": "누적 {{count}} XP",
+    "utc": "날짜는 UTC 기준",
+    "calendar": "활동 캘린더",
+    "less": "적음",
+    "more": "많음",
+    "empty": "아직 XP 활동이 없습니다.",
+    "weekTotal": "이번 주: {{count}} XP",
+    "weekChart": "이번 주 일별 XP",
+    "previousWeek": "지난주",
+    "nextWeek": "다음 주",
+    "history": "XP 내역",
+    "previous": "이전",
+    "next": "다음",
+    "sources": {
+      "daily_streak_claim": "이전 일일 출석",
+      "ocid_connected": "OCID 연결",
+      "github_connected": "GitHub 연결",
+      "ethereum_wallet": "이더리움 지갑 연결",
+      "solana_wallet": "Solana 지갑 연결",
+      "lesson_completed": "레슨 완료",
+      "quiz_passed": "퀴즈 통과",
+      "course_completed": "강의 수료",
+      "first_hackathon_submission": "첫 해커톤 프로젝트 제출",
+      "project_liked": "프로젝트에 좋아요",
+      "correction": "XP 정정"
+    },
+    "connections": {
+      "title": "계정 및 지갑",
+      "description": "GitHub를 연결하면 한 번 50 XP를 받습니다.",
+      "connected": "연결됨",
+      "connectGithub": "GitHub 연결",
+      "failed": "GitHub를 연결할 수 없습니다.",
+      "connectEthereum": "{{wallet}} 연결",
+      "connectSolana": "{{wallet}} 연결",
+      "noSolanaWallet": "메시지 서명을 지원하는 Solana 지갑을 찾을 수 없습니다.",
+      "connectGoogle": "Google 연결",
+      "noEthereumWallet": "이더리움 지갑을 찾을 수 없습니다.",
+      "walletXpEarned": "+30 XP · 첫 지갑 연결",
+      "walletDisconnect": "연결 해제",
+      "walletDisconnectTitle": "이 지갑 연결을 해제할까요?",
+      "walletDisconnectBody": "나중에 다시 연결하거나 다른 계정에 연결할 수 있습니다. 이미 받은 XP는 유지되며, 이 지갑으로는 XP를 다시 받을 수 없습니다.",
+      "walletDisconnectConfirm": "지갑 연결 해제",
+      "walletDisconnectCancel": "취소",
+      "walletDisconnected": "지갑 연결이 해제되었습니다.",
+      "ocidXpEarned": "+50 XP · OCID 연결",
+      "githubXpEarned": "+50 XP · GitHub 연결",
+      "errors": {
+        "wallet_missing": "지갑을 찾을 수 없습니다. 지갑을 설치하거나 잠금을 해제한 후 다시 시도하세요.",
+        "invalid_signature": "서명이 올바르지 않거나 거부되었습니다.",
+        "challenge_expired": "인증 요청이 만료되었습니다. 다시 시도하세요.",
+        "wallet_linked_to_another_account": "이 지갑은 이미 다른 계정에 연결되어 있습니다.",
+        "origin_mismatch": "연결 출처가 일치하지 않습니다. Corelia에서 다시 시도하세요.",
+        "unauthenticated": "세션이 만료되었습니다. 다시 로그인하세요."
+      },
+      "loading": "확인 중…",
+      "loadFailed": "연결 상태를 확인할 수 없습니다",
+      "notConnected": "연결 안 됨",
+      "walletCount": "연결됨 · 지갑 {{count}}개",
+      "addWallet": "다른 지갑 연결",
+      "chooseWallet": "지갑 선택",
+      "confirmWallet": "지갑에서 확인을 기다리는 중…",
+      "oauthFailed": "계정 연결에 실패했습니다. 다시 시도하세요. 문제가 계속되면 고객지원에 문의하여 Google/GitHub 연결을 확인하세요.",
+      "oauthCancelled": "계정 연결이 취소되었습니다. 아래에서 다시 연결해 보세요."
+    },
+    "noData": "신뢰할 수 있는 XP 데이터가 없습니다",
+    "rank": {
+      "title": "XP 등급",
+      "names": {
+        "starter": "스타터",
+        "bronze": "브론즈",
+        "silver": "실버",
+        "gold": "골드",
+        "platinum": "플래티넘",
+        "diamond": "다이아몬드"
+      },
+      "progress": "다음 등급까지의 진행률",
+      "remaining": "{{rank}}까지 {{xp}} XP",
+      "highest": "최고 등급 달성",
+      "allRanks": "모든 등급 보기",
+      "description": "등급은 Corelia에서 누적한 활동을 반영합니다. 전문 자격증이나 보상 권리가 아닙니다."
+    },
+    "leaderboard": {
+      "title": "XP 리더보드",
+      "description": "Corelia 학습 커뮤니티와 함께 성장을 축하하세요. 공개된 학생 및 강사 프로필이 참여합니다.",
+      "period": "리더보드 기간",
+      "week": "이번 주",
+      "allTime": "전체 기간",
+      "weekRange": "{{start}} – {{end}} · UTC",
+      "lifetime": "과거 활동을 포함해 Corelia에서 얻은 모든 유효한 XP입니다.",
+      "yourPosition": "내 순위",
+      "position": "{{rank}}위",
+      "empty": "이 기간에는 아직 대상이 되는 XP 활동이 없습니다.",
+      "error": "리더보드를 불러올 수 없습니다. 다시 시도하세요.",
+      "member": "Corelia 회원",
+      "pagination": "리더보드 페이지",
+      "page": "{{page}} / {{total}}",
+      "top": "참가자 {{eligible}}명 중 상위 {{count}}명",
+      "reasons": {
+        "private_profile": "프로필이 비공개이므로 리더보드에 표시되지 않습니다. 개인 등급은 계속 확인할 수 있습니다.",
+        "ineligible_role": "관리자 및 지원 계정은 리더보드에 참여하지 않습니다. 개인 등급은 계속 확인할 수 있습니다.",
+        "no_xp": "이 기간에는 아직 양의 XP 잔액이 없습니다.",
+        "missing_profile": "프로필을 아직 사용할 수 없습니다."
+      }
+    }
+  },
+  "avatarEditor": {
+    "title": "아바타 편집",
+    "description": "스타일을 고른 뒤 프로필에 저장하세요.",
+    "edit": "아바타 편집",
+    "back": "프로필로 돌아가기",
+    "preview": "아바타 미리보기",
+    "randomize": "무작위",
+    "randomizeHelp": "무작위는 아바타 코드를 바꿔 다른 모습을 시도합니다. 선택한 부위와 색상은 유지되며, 변경 사항은 아바타 저장을 선택할 때만 저장됩니다.",
+    "reset": "기본값으로 재설정",
+    "parts": "부위",
+    "colors": "색상",
+    "fromSeed": "패턴에 따라 자동",
+    "autoPartHelp": "계정마다 고유한 아바타 코드가 있습니다. \"패턴에 따라 자동\"을 선택하면 해당 코드로 이 부위가 일관되게 생성되며, 특정 부위를 선택하면 고정됩니다.",
+    "clear": "지우기",
+    "save": "아바타 저장",
+    "saving": "저장 중…",
+    "saved": "아바타가 저장되었습니다.",
+    "saveFailed": "아바타를 저장할 수 없습니다. 다시 시도하세요.",
+    "slots": {
+      "head": "머리와 헤어",
+      "body": "상의",
+      "bottom": "하의",
+      "item": "액세서리",
+      "glasses": "안경"
+    },
+    "colorsBySlot": {
+      "background": "배경",
+      "stroke": "윤곽선",
+      "hair": "머리카락",
+      "skin": "피부",
+      "clothes": "옷",
+      "bottom": "하의"
+    }
+  }
+}

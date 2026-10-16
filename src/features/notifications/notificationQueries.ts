@@ -1,13 +1,14 @@
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 import {
-  listMyNotifications,
-  type UserNotificationRow,
+  listNotificationPage,
+  type NotificationCursor,
 } from "@/lib/notifications";
 import {
   fetchProjectInviteDisplayContextByProjectIds,
   type ProjectInviteDisplayContext,
 } from "@/lib/notificationInviteContext";
+import { keepPreviousDataForUser } from "@/lib/queryClient";
 
 export const notificationKeys = {
   all: ["notifications"] as const,
@@ -17,17 +18,19 @@ export const notificationKeys = {
     [...notificationKeys.all, "invite-contexts", userId ?? "anonymous", ...projectIds] as const,
 };
 
-export function notificationsQueryOptions(userId: string | null, enabled: boolean) {
-  return queryOptions<UserNotificationRow[]>({
-    queryKey: notificationKeys.list(userId),
-    queryFn: () => listMyNotifications(40),
+export function notificationsQueryOptions(userId: string | null, enabled = true, unread = false) {
+  return infiniteQueryOptions({
+    queryKey: [...notificationKeys.list(userId), unread],
+    queryFn: ({ pageParam }) => listNotificationPage(pageParam, unread),
+    initialPageParam: null as NotificationCursor | null,
+    getNextPageParam: page => page.items.length === 20 ? page.items.at(-1) : undefined,
     enabled: enabled && userId != null,
     staleTime: 30_000,
     refetchInterval: 60_000,
     refetchIntervalInBackground: false,
-    meta: userId
-      ? { scope: "private", userId, showInGlobalLoading: false }
-      : { scope: "public", showInGlobalLoading: false },
+    // Switching All/Unread keeps the current list visible instead of flashing "Loading".
+    placeholderData: keepPreviousDataForUser(userId),
+    meta: userId ? { scope: "private", userId, showInGlobalLoading: false } : { scope: "public", showInGlobalLoading: false },
   });
 }
 export function notificationInviteContextsQueryOptions(

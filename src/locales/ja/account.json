@@ -1,0 +1,549 @@
+{
+  "nav": {
+    "sectionTitle": "アカウント設定",
+    "currentSectionLabel": "現在表示中",
+    "settings": {
+      "title": "設定",
+      "description": "テーマ、ログアウト"
+    },
+    "profile": {
+      "title": "個人情報",
+      "description": "氏名、連絡先、アバター"
+    },
+    "instructor": {
+      "title": "講師プロフィール",
+      "description": "受講生に表示される情報"
+    },
+    "cv": {
+      "title": "学習プロフィールと履歴書",
+      "description": "アドバイスやキャリア支援のための情報"
+    },
+    "projects": {
+      "title": "プロジェクト",
+      "description": "プロジェクトと翻訳を管理"
+    },
+    "achievements": {
+      "title": "実績ボックス",
+      "description": "修了証とバッジを管理"
+    }
+  },
+  "header": {
+    "roleLabel": {
+      "instructor": "講師アカウント",
+      "admin": "管理者アカウント",
+      "support_staff": "サポートアカウント",
+      "student": "受講生アカウント"
+    },
+    "subtitle": "個人情報、セキュリティ、キャリアプロフィールを 1 か所で管理できます。",
+    "summary": {
+      "profileLabel": "プロフィール",
+      "roleLabel": "ロール",
+      "statusLabel": "ステータス",
+      "missingDisplayName": "表示名が未設定です",
+      "statusReady": "学習と進捗の記録を始める準備ができました"
+    }
+  },
+  "settings": {
+    "language": {
+      "title": "言語",
+      "description": "アプリの表示言語を変更します。ログインしている場合、この設定はお使いのすべてのデバイスで同期されます。",
+      "meta": {
+        "en": "英語 (EN)",
+        "zh-CN": "中国語（簡体字）(zh-CN)",
+        "ko": "韓国語 (KO)",
+        "es": "スペイン語 (ES)",
+        "zh-TW": "中国語（繁体字）(zh-TW)",
+        "vi": "ベトナム語 (VI)",
+        "ja": "日本語 (JA)"
+      },
+      "active": "使用中"
+    },
+    "appearance": {
+      "title": "外観",
+      "description": "ご利用環境に合ったテーマを選んでください。",
+      "themeLabel": "テーマ",
+      "light": "ライト",
+      "dark": "ダーク",
+      "system": "システム"
+    },
+    "session": {
+      "title": "セッション",
+      "description": "このデバイスでのログイン状態を管理します。",
+      "signOutTitle": "ログアウト",
+      "signOutDescription": "このデバイスの現在のセッションを終了します。",
+      "signOutButton": "ログアウト"
+    },
+    "notifications": {
+      "title": "通知設定",
+      "description": "メールとアプリ内で受け取る通知を選択します。",
+      "emailLearningReminders": "定期的な学習リマインダーメールを受け取る",
+      "emailLearningRemindersDesc": "進行中のコースを中断したときに、間隔をあけてリマインダーを送信します。",
+      "emailCourseBlast": "コースのお知らせメールを受け取る",
+      "emailTrackBlast": "学習パスのお知らせメールを受け取る",
+      "inAppCourseBlast": "コースのお知らせをアプリ内に表示",
+      "inAppTrackBlast": "学習パスのお知らせをアプリ内に表示",
+      "saved": "通知設定を保存しました",
+      "likes": "あなたの作品へのいいね",
+      "follows": "新しいフォロワー",
+      "digest": "毎日のソーシャルアクティビティメール",
+      "digestDescription": "新しいアクティビティがあるときのみ、09:00（{{timezone}}）に送信されます。いつでも配信停止できます。",
+      "loadFailed": "通知設定を読み込めませんでした。"
+    }
+  },
+  "common": {
+    "loading": "処理中…",
+    "continue": "続行",
+    "cancel": "キャンセル",
+    "finish": "完了"
+  },
+  "errors": {
+    "notLoggedIn": "ログインしていません"
+  },
+  "projects": {
+    "pageTitle": "プロジェクトワークスペース",
+    "ownerBadge": "オーナー",
+    "collaboratorBadge": "コラボレーター",
+    "showOnProfileLabel": "このプロジェクトを自分のプロフィールに表示",
+    "showOnProfileHint": "有効にすると、このプロジェクトが公開プロフィールとアカウントのプロジェクト一覧に表示されることがあります。",
+    "errors": {
+      "visibilityFailed": "このプロジェクトのプロフィール表示設定を更新できませんでした。"
+    },
+    "newProject": "新規プロジェクト"
+  },
+  "password": {
+    "title": "パスワードを変更",
+    "subtitle": "メールアドレスとパスワードでログインしているアカウントにのみ適用されます。",
+    "fields": {
+      "current": {
+        "label": "現在のパスワード",
+        "placeholder": "現在のパスワードを入力"
+      },
+      "next": {
+        "label": "新しいパスワード",
+        "placeholder": "8 文字以上、大文字・小文字・数字・記号を含む"
+      },
+      "confirm": {
+        "label": "新しいパスワード（確認）",
+        "placeholder": "新しいパスワードを再入力"
+      }
+    },
+    "actions": {
+      "submit": "パスワードを変更"
+    },
+    "success": {
+      "changed": "パスワードを変更しました。"
+    },
+    "errors": {
+      "confirmMismatch": "新しいパスワードと確認用パスワードが一致しません。",
+      "minLength": "新しいパスワードは 8 文字以上である必要があります。",
+      "policy": "新しいパスワードは 8 文字以上で、大文字、小文字、数字、記号を含める必要があります。",
+      "missingEmail": "メールアドレスが見つかりません。パスワードを変更できるのは、メールアドレスベースのアカウントのみです。",
+      "changeFailed": "パスワードを変更できませんでした。"
+    }
+  },
+  "mfa": {
+    "title": "2 要素セキュリティ (MFA)",
+    "subtitle": "ログイン時に SMS コードを受け取る電話番号を追加して、アカウントをより安全に保ちましょう。",
+    "factorLabel": "認証用の電話番号",
+    "providers": {
+      "google": "Google",
+      "github": "GitHub"
+    },
+    "enrolled": {
+      "title": "登録済みの認証要素："
+    },
+    "actions": {
+      "addPhone": "認証用の電話番号を追加",
+      "sending": "送信中…",
+      "sendSms": "SMS コードを送信"
+    },
+    "reauth": {
+      "hint": "セキュリティのため、電話番号を追加する前に再認証してください。",
+      "passwordLabel": "現在のパスワード",
+      "passwordPlaceholder": "パスワードを入力",
+      "popupHint": "下のボタンをクリックして、{{provider}} でもう一度ログインしてください。"
+    },
+    "phone": {
+      "label": "電話番号（E.164 形式、例：+84901234567）",
+      "placeholder": "+84 901 234 567"
+    },
+    "code": {
+      "hint": "コードを送信しました。下に 6 桁のコードを入力してください。",
+      "label": "認証コード",
+      "placeholder": "000000"
+    },
+    "success": {
+      "enabled": "2 要素認証（SMS）を有効にしました。"
+    },
+    "errors": {
+      "reauthFailed": "再認証に失敗しました。もう一度お試しください。",
+      "invalidPhone": "電話番号が正しくありません（例：0901234567 または +84901234567）。",
+      "sendCodeFailed": "コードを送信できませんでした。もう一度お試しください。",
+      "enrollFailed": "登録に失敗しました。もう一度お試しください。"
+    }
+  },
+  "profile": {
+    "loading": "プロフィールを読み込み中…",
+    "mustLogin": "このページを表示するにはログインが必要です。",
+    "tabs": {
+      "info": "プロフィール",
+      "ocid": "OCID",
+      "security": "セキュリティ"
+    },
+    "emailLoginLabel": "ログイン用メールアドレス",
+    "publicProfile": {
+      "label": "公開プロフィール",
+      "status": {
+        "public": "公開",
+        "private": "非公開"
+      },
+      "hint": "公開プロフィールのリンク：/@{{handle}}",
+      "actions": {
+        "makePrivate": "非公開にする",
+        "makePublic": "公開にする",
+        "saving": "保存中..."
+      }
+    },
+    "setupWarning": {
+      "title": "プロフィールにもう少し情報が必要です。",
+      "body": "Corelia、講師、サポートスタッフがより良くサポートできるよう、氏名と電話番号を更新してください。"
+    },
+    "avatar": {
+      "label": "アバター",
+      "alt": "アバター",
+      "upload": "画像をアップロード",
+      "uploading": "アップロード中…",
+      "randomize": "ランダムなアバターを試す",
+      "tryAnother": "別のアバターを試す",
+      "useThis": "このアバターを使用",
+      "cancel": "キャンセル",
+      "saving": "保存中…",
+      "hint": "JPG、PNG、WebP に対応。画像はすぐに保存・更新されます。"
+    },
+    "fullName": {
+      "label": "氏名",
+      "placeholder": "山田 太郎",
+      "hint": "修了証や成績証明書に使用されます。",
+      "limit": "最大 {{count}} / {{max}} 文字。"
+    },
+    "username": {
+      "label": "ユーザー名",
+      "placeholder": "例：terrrancrypt",
+      "hint": "公開プロフィールの URL に使用されます。"
+    },
+    "bio": {
+      "label": "自己紹介",
+      "placeholder": "あなたについての短い紹介…",
+      "hint": "公開プロフィールに表示されます。"
+    },
+    "website": {
+      "label": "ウェブサイト",
+      "placeholder": "https://…",
+      "hint": "ポートフォリオ / LinkedIn / 個人サイト。"
+    },
+    "phone": {
+      "label": "連絡先電話番号",
+      "placeholder": "例：09xxxxxxxx",
+      "hint": "必要な場合にサポートスタッフが連絡するために使用します。"
+    },
+    "actions": {
+      "saving": "保存中...",
+      "save": "変更を保存"
+    },
+    "success": {
+      "avatarUpdated": "アバターを更新しました。",
+      "updated": "アカウント情報を更新しました。",
+      "visibilityUpdated": "プロフィールの公開設定を更新しました。"
+    },
+    "errors": {
+      "avatarUploadFailed": "画像をアップロードできませんでした。",
+      "avatarUpdateFailed": "アバターを更新できませんでした。",
+      "updateFailed": "情報を更新できませんでした。",
+      "visibilityUpdateFailed": "プロフィールの公開設定を更新できませんでした。",
+      "usernameTaken": "このユーザー名はすでに使われています。別の名前を選んでください。",
+      "loadFailed": "プロフィールを読み込めませんでした。接続を確認してください。",
+      "invalidName": "氏名は 160 文字以内で、非表示の制御文字を含まないようにしてください。",
+      "invalidText": "プロフィールの項目が長すぎるか、非表示の制御文字が含まれています。短くするか、入力し直してください。"
+    },
+    "retry": "再試行"
+  },
+  "cv": {
+    "title": "学習プロフィールと履歴書",
+    "subtitle": "キャリアアドバイス、求人紹介、奨学金支援のための統合プロフィールです。",
+    "comingSoon": {
+      "title": "履歴書管理（近日公開）",
+      "body": "ここで履歴書（PDF）をアップロードし、キャリア情報を更新できるようになります。講師やサポートスタッフがあなたの状況を理解し、学習パスをより良くサポートできます。",
+      "note": "この機能の完成までは、拡張プロフィールの説明に履歴書のリンク（Google Drive、Notion など）を追加できます。"
+    },
+    "prep": {
+      "title": "準備しておくとよい情報",
+      "items": {
+        "0": "職務経歴 / 注目すべき個人プロジェクト。",
+        "1": "修了したコースと関連する修了証。",
+        "2": "技術スキルとソフトスキル。"
+      }
+    }
+  },
+  "instructorProfile": {
+    "onlyInstructors": "講師のみが指導プロフィールを編集できます。",
+    "title": "講師プロフィール",
+    "subtitle": "講師ページとコースページで受講生に表示される公開プロフィールです。",
+    "completion": "{{percent}}% 完了",
+    "common": {
+      "notUpdated": "未更新"
+    },
+    "origin": {
+      "corelia": "Corelia 講師",
+      "external": "パートナー講師（外部）",
+      "unknown": "未分類"
+    },
+    "cards": {
+      "originLabel": "講師タイプ",
+      "organizationLabel": "所属",
+      "headlineLabel": "肩書き",
+      "websiteLabel": "ウェブサイト / ポートフォリオ"
+    },
+    "tips": {
+      "organization": {
+        "title": "所属を表示しましょう",
+        "body": "所属は、受講生があなたの専門性を理解する助けになります。"
+      },
+      "intro": {
+        "title": "短い自己紹介",
+        "body": "肩書きと自己紹介では、強み、経験、指導分野を紹介しましょう。"
+      },
+      "externalProfile": {
+        "title": "外部プロフィールをリンク",
+        "body": "LinkedIn やポートフォリオは、受講を検討する受講生の信頼につながります。"
+      }
+    },
+    "fields": {
+      "origin": {
+        "label": "講師タイプ",
+        "hint": "講師タイプはサポートスタッフ／管理者のみが更新できます。"
+      },
+      "organization": {
+        "label": "所属",
+        "placeholder": "例：Corelia、ABC 株式会社、XYZ 大学..."
+      },
+      "headline": {
+        "label": "肩書き",
+        "placeholder": "例：シニアフロントエンドエンジニア、データ分析メンター..."
+      },
+      "bio": {
+        "label": "講師の自己紹介",
+        "placeholder": "指導経験、実際のプロジェクト、一緒に働いた企業、主な専門分野を紹介してください..."
+      },
+      "website": {
+        "label": "ウェブサイト / LinkedIn / ポートフォリオ",
+        "placeholder": "https://...、linkedin.com/in/...、個人ポートフォリオ"
+      }
+    },
+    "socialLinks": {
+      "title": "SNS とリンク",
+      "subtitle": "コースページに表示する SNS アカウントやリンクを追加します。",
+      "empty": "リンクはまだ追加されていません。下から最初のリンクを追加してください。",
+      "addTitle": "新しいリンクを追加",
+      "urlPlaceholder": "https://...",
+      "labelPlaceholder": "ラベル（任意、例：個人ブログ）",
+      "addButton": "追加",
+      "removeLabel": "リンクを削除",
+      "errors": {
+        "urlRequired": "URL を入力してください。",
+        "urlInvalid": "URL は https:// または http:// で始まる必要があります"
+      }
+    },
+    "actions": {
+      "saving": "保存中...",
+      "save": "講師プロフィールを保存"
+    },
+    "success": {
+      "updated": "講師プロフィールを更新しました。"
+    },
+    "errors": {
+      "updateFailed": "講師プロフィールを更新できませんでした。"
+    }
+  },
+  "ocid": {
+    "card": {
+      "title": "OCID を接続",
+      "description": "Open Campus ID を連携して、Open Campus エコシステム内で ID とウォレット（ある場合）を同期します。",
+      "statusConnected": "接続済み",
+      "statusDisconnected": "未接続",
+      "initializing": "OCID SDK を初期化中…",
+      "connectHint": "下のボタンをクリックして、OCID を Corelia アカウントに連携します。",
+      "ocidLabel": "OCID",
+      "ethAddressLabel": "ETH アドレス",
+      "disconnect": "接続を解除",
+      "connect": "OCID で接続",
+      "loadingDisconnect": "処理中…",
+      "loadingConnect": "リダイレクト中…"
+    },
+    "redirect": {
+      "finishing": "OCID の連携を完了しています…",
+      "connectFailedFallback": "OCID を連携できませんでした。もう一度お試しください。",
+      "alreadyLinkedToOtherAccount": "この OCID はすでに別のアカウントに連携されています。先にそのアカウントで接続を解除してください。",
+      "mustLoginFirst": "OCID を連携する前に、Corelia にログインする必要があります。",
+      "missingOcidFromSession": "ログインセッションから OCID を取得できませんでした。もう一度接続してください。",
+      "backToHome": "ホームに戻る"
+    },
+    "toasts": {
+      "startConnectFailed": "OCID の接続を開始できませんでした。",
+      "disconnectSuccess": "OCID の接続を解除しました。",
+      "disconnectFailed": "OCID の接続を解除できませんでした。"
+    },
+    "disconnectDialog": {
+      "title": "OCID の接続を解除しますか？",
+      "body": "このアカウントから OCID の接続を解除してもよろしいですか？",
+      "bodyWithCredentials_other": "現在の OCID には、すでにオンチェーン資格情報が {{count}} 件発行されています。",
+      "warningTitle": "これらの資格情報は移行されません。",
+      "warningBody": "後で別の OCID を接続しても、発行済みの資格情報は以前の OCID に紐づいたままで、新しい OCID へ移すことはできません。",
+      "confirm": "それでも接続を解除"
+    }
+  },
+  "xp": {
+    "earned": "+{{count}} XP",
+    "activityCompleted": "アクティビティ完了",
+    "title": "XP アクティビティ",
+    "loading": "XP を読み込み中…",
+    "error": "XP を読み込めませんでした。",
+    "total": "累計 {{count}} XP",
+    "utc": "日付は UTC 基準",
+    "calendar": "アクティビティカレンダー",
+    "less": "少ない",
+    "more": "多い",
+    "empty": "XP アクティビティはまだありません。",
+    "weekTotal": "今週：{{count}} XP",
+    "weekChart": "今週の日別 XP",
+    "previousWeek": "前の週",
+    "nextWeek": "次の週",
+    "history": "XP 履歴",
+    "previous": "前へ",
+    "next": "次へ",
+    "sources": {
+      "daily_streak_claim": "過去のデイリーチェックイン",
+      "ocid_connected": "OCID を接続しました",
+      "github_connected": "GitHub を接続しました",
+      "ethereum_wallet": "イーサリアムウォレットを接続しました",
+      "solana_wallet": "Solana ウォレットを接続しました",
+      "lesson_completed": "レッスンを完了しました",
+      "quiz_passed": "クイズに合格しました",
+      "course_completed": "コースを修了しました",
+      "first_hackathon_submission": "ハッカソンの初回プロジェクト提出",
+      "project_liked": "プロジェクトにいいねしました",
+      "correction": "XP の訂正"
+    },
+    "connections": {
+      "title": "アカウントとウォレット",
+      "description": "GitHub を連携すると、1 回だけ 50 XP を獲得できます。",
+      "connected": "接続済み",
+      "connectGithub": "GitHub を接続",
+      "failed": "GitHub を接続できませんでした。",
+      "connectEthereum": "{{wallet}} を接続",
+      "connectSolana": "{{wallet}} を接続",
+      "noSolanaWallet": "メッセージ署名に対応した Solana ウォレットが見つかりません。",
+      "connectGoogle": "Google を接続",
+      "noEthereumWallet": "イーサリアムウォレットが見つかりません。",
+      "walletXpEarned": "+30 XP · 初めてのウォレット接続",
+      "walletDisconnect": "接続を解除",
+      "walletDisconnectTitle": "このウォレットの接続を解除しますか？",
+      "walletDisconnectBody": "後でもう一度接続したり、別のアカウントに接続したりできます。獲得済みの XP は保持され、このウォレットで再び XP を獲得することはできません。",
+      "walletDisconnectConfirm": "ウォレットの接続を解除",
+      "walletDisconnectCancel": "キャンセル",
+      "walletDisconnected": "ウォレットの接続を解除しました。",
+      "ocidXpEarned": "+50 XP · OCID を接続",
+      "githubXpEarned": "+50 XP · GitHub を接続",
+      "errors": {
+        "wallet_missing": "ウォレットが見つかりません。ウォレットをインストールするかロックを解除して、もう一度お試しください。",
+        "invalid_signature": "署名が無効か、拒否されました。",
+        "challenge_expired": "確認リクエストの有効期限が切れました。もう一度お試しください。",
+        "wallet_linked_to_another_account": "このウォレットはすでに別のアカウントに連携されています。",
+        "origin_mismatch": "接続元が一致しません。Corelia からもう一度お試しください。",
+        "unauthenticated": "セッションの有効期限が切れました。もう一度ログインしてください。"
+      },
+      "loading": "確認中…",
+      "loadFailed": "接続状態を確認できませんでした",
+      "notConnected": "未接続",
+      "walletCount": "接続済み · ウォレット {{count}} 件",
+      "addWallet": "別のウォレットを接続",
+      "chooseWallet": "ウォレットを選択",
+      "confirmWallet": "ウォレットでの確認を待っています…",
+      "oauthFailed": "アカウントの接続に失敗しました。もう一度お試しください。問題が解決しない場合は、サポートに Google/GitHub 連携の確認をご依頼ください。",
+      "oauthCancelled": "アカウントの接続がキャンセルされました。下からもう一度接続をお試しいただけます。"
+    },
+    "noData": "信頼できる XP データがありません",
+    "rank": {
+      "title": "XP ランク",
+      "names": {
+        "starter": "スターター",
+        "bronze": "ブロンズ",
+        "silver": "シルバー",
+        "gold": "ゴールド",
+        "platinum": "プラチナ",
+        "diamond": "ダイヤモンド"
+      },
+      "progress": "次のランクまでの進捗",
+      "remaining": "{{rank}} まであと {{xp}} XP",
+      "highest": "最高ランクに到達しました",
+      "allRanks": "すべてのランクを表示",
+      "description": "ランクは Corelia での累積アクティビティを反映したものです。専門資格や報酬を受ける権利ではありません。"
+    },
+    "leaderboard": {
+      "title": "XP リーダーボード",
+      "description": "Corelia の学習コミュニティと一緒に成長を祝いましょう。公開されている受講生と講師のプロフィールが対象です。",
+      "period": "リーダーボードの期間",
+      "week": "今週",
+      "allTime": "通算",
+      "weekRange": "{{start}} – {{end}} · UTC",
+      "lifetime": "過去のアクティビティを含む、Corelia で獲得したすべての有効な XP です。",
+      "yourPosition": "あなたの順位",
+      "position": "{{rank}} 位",
+      "empty": "この期間に対象となる XP アクティビティはまだありません。",
+      "error": "リーダーボードを読み込めませんでした。もう一度お試しください。",
+      "member": "Corelia メンバー",
+      "pagination": "リーダーボードのページ",
+      "page": "{{page}} / {{total}}",
+      "top": "参加者 {{eligible}} 人中の上位 {{count}} 人",
+      "reasons": {
+        "private_profile": "プロフィールが非公開のため、リーダーボードには表示されません。個人のランクは引き続き確認できます。",
+        "ineligible_role": "管理者アカウントとサポートアカウントはリーダーボードの対象外です。個人のランクは引き続き確認できます。",
+        "no_xp": "この期間のプラスの XP 残高はまだありません。",
+        "missing_profile": "プロフィールはまだ利用できません。"
+      }
+    }
+  },
+  "avatarEditor": {
+    "title": "アバターを編集",
+    "description": "見た目を選んで、プロフィールに保存します。",
+    "edit": "アバターを編集",
+    "back": "プロフィールに戻る",
+    "preview": "アバターのプレビュー",
+    "randomize": "ランダム",
+    "randomizeHelp": "「ランダム」はアバターコードを変更して別の見た目を試します。選んだパーツと色はそのままで、変更は「アバターを保存」を選んだときにのみ保存されます。",
+    "reset": "初期設定に戻す",
+    "parts": "パーツ",
+    "colors": "色",
+    "fromSeed": "パターンから自動",
+    "autoPartHelp": "各アカウントには専用のアバターコードがあります。「パターンから自動」を選ぶと、そのコードから一貫してこのパーツが生成されます。特定のパーツを選ぶと固定されます。",
+    "clear": "クリア",
+    "save": "アバターを保存",
+    "saving": "保存中…",
+    "saved": "アバターを保存しました。",
+    "saveFailed": "アバターを保存できませんでした。もう一度お試しください。",
+    "slots": {
+      "head": "頭と髪",
+      "body": "トップス",
+      "bottom": "ボトムス",
+      "item": "アクセサリー",
+      "glasses": "メガネ"
+    },
+    "colorsBySlot": {
+      "background": "背景",
+      "stroke": "輪郭",
+      "hair": "髪",
+      "skin": "肌",
+      "clothes": "服",
+      "bottom": "ボトムス"
+    }
+  }
+}

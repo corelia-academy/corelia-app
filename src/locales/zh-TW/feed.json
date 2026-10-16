@@ -1,0 +1,74 @@
+{
+  "follow": {
+    "follow": "追蹤",
+    "following": "已追蹤",
+    "errors": {
+      "check": "無法檢查追蹤狀態。",
+      "save": "無法更新追蹤狀態。"
+    }
+  },
+  "followers": {
+    "summary": "{{count}} 位追蹤者",
+    "title": "追蹤者",
+    "description": "追蹤此內容的公開使用者。",
+    "loading": "正在載入追蹤者…",
+    "empty": "目前沒有公開追蹤者。",
+    "errors": {
+      "load": "無法載入追蹤者。"
+    }
+  },
+  "following": {
+    "title": "追蹤中",
+    "description": "此使用者追蹤的公開使用者。",
+    "loading": "正在載入追蹤清單…",
+    "empty": "尚未追蹤任何公開使用者。",
+    "errors": {
+      "load": "無法載入追蹤清單。"
+    }
+  },
+  "milestones": {
+    "eyebrow": "已驗證的成就",
+    "title": "動態",
+    "description": "值得慶祝的學習與專案里程碑。",
+    "member": "Corelia 成員",
+    "kind": {
+      "course_completed": "完成課程",
+      "xp_reached": "經驗值里程碑",
+      "project_submitted": "黑客松專案"
+    },
+    "completed": "完成了一門課程",
+    "reached": "達到了 {{count}} 經驗值",
+    "submitted": "提交了專案至",
+    "atHackathon": "在 {{name}}",
+    "like": "讚",
+    "unlike": "收回讚",
+    "justNow": "剛剛",
+    "tabs": "動態檢視",
+    "explore": "探索",
+    "leaderboard": "經驗值排行",
+    "following": "追蹤中",
+    "new": "有新的里程碑",
+    "error": "無法載入或儲存動態。",
+    "retry": "重試",
+    "empty": "尚無里程碑",
+    "emptyHint": "目前沒有可探索的新成就。去推薦名單認識一些人吧。",
+    "followingHint": "當您追蹤的人分享成就時，會顯示在這裡。",
+    "followedTitle": "您追蹤的人",
+    "peopleTitle": "使用者",
+    "followedTab": "追蹤中",
+    "followedEmpty": "您還沒有追蹤任何人。",
+    "followedDescription": "您追蹤的公開使用者，依最新排序。",
+    "suggestedTitle": "您可能想追蹤的人",
+    "suggestedEmpty": "目前沒有可推薦的公開使用者。",
+    "suggestedError": "無法載入推薦使用者。",
+    "followedError": "無法載入您追蹤的使用者。",
+    "followedAll": "檢視全部",
+    "loadMore": "載入更多",
+    "profileTitle": "成就",
+    "profileEmpty": "尚無公開里程碑。",
+    "exploreDescription": "探索您尚未追蹤的使用者的成就。",
+    "followingDescription": "您追蹤的人的最新成就。",
+    "findPeople": "尋找可追蹤的人",
+    "unavailable": "此成就已不再提供。"
+  }
+}

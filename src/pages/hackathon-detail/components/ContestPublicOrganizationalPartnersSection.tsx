@@ -1,4 +1,5 @@
 import { HackathonSectionCard } from "@/pages/hackathon-detail/components/HackathonSectionCard";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import type { Contest } from "@/types/hackathons";
 
 export function ContestPublicOrganizationalPartnersSection(props: {
@@ -28,7 +29,7 @@ export function ContestPublicOrganizationalPartnersSection(props: {
               {partner.logo_url?.trim() ? (
                 <div className="shrink-0">
                   <img
-                    src={partner.logo_url.trim()}
+                    src={optimizedImageUrl(partner.logo_url.trim(), { width: 56, resize: "contain" })} srcSet={optimizedImageSrcSet(partner.logo_url.trim(), 56, { resize: "contain" })}
                     alt={partner.title}
                     className="size-14 rounded-2xl border border-border-subtle bg-surface-base shadow-card object-contain p-1"
                   />

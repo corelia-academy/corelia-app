@@ -10,6 +10,7 @@ import type { MyProjectEntry } from "@/lib/projectCollaboration";
 import type { Course } from "@/types/courses";
 import type { Contest } from "@/types/hackathons";
 import { saveProject, saveProjectI18n, saveProjectLocale } from "@/lib/projectSubmission";
+import type { ContentLocale } from "@/lib/locales";
 
 export type ProjectI18nContent = {
   title?: string;
@@ -489,9 +490,8 @@ export async function listPublicProjects(
   const regularLimit = limit - winnerSlice.length;
   const rangeStart = regularOffset;
   const rangeSize = regularLimit;
-  const { data, error } = regularLimit > 0
-    ? await query.range(rangeStart, rangeStart + rangeSize)
-    : { data: [] as Project[], error: null };
+  // The inclusive range fetches one lookahead row even when winners fill this page.
+  const { data, error } = await query.range(rangeStart, rangeStart + rangeSize);
   if (error) throw new Error(error.message);
 
   const fetchedProjects = (data ?? []) as Project[];
@@ -704,7 +704,7 @@ export type ProjectUpdateInput = Pick<
   custom_sector_names?: string[];
   custom_tech_stack_names?: string[];
   removed_media_paths?: string[];
-  primary_content_locale?: "vi" | "en";
+  primary_content_locale?: ContentLocale;
   locales?: ProjectLocales;
 };
 

@@ -1,7 +1,48 @@
 import { createClient, type SupabaseClient, type User } from "https://esm.sh/@supabase/supabase-js@2.49.8";
 
+const CONTENT_LOCALES = ["en", "zh-CN", "ko", "es", "zh-TW", "vi", "ja"] as const;
+type Locale = (typeof CONTENT_LOCALES)[number];
+const VI_LANGUAGE_NAMES: Record<Locale, string> = {
+  en: "tiếng Anh",
+  "zh-CN": "tiếng Trung giản thể",
+  ko: "tiếng Hàn",
+  es: "tiếng Tây Ban Nha",
+  "zh-TW": "tiếng Trung phồn thể",
+  vi: "tiếng Việt",
+  ja: "tiếng Nhật",
+};
+const LANGUAGE_NAMES: Record<Locale, string> = {
+  en: "English",
+  "zh-CN": "Simplified Chinese (zh-CN)",
+  ko: "Korean",
+  es: "Spanish",
+  "zh-TW": "Traditional Chinese (zh-TW)",
+  vi: "Vietnamese",
+  ja: "Japanese",
+};
+/** YouTube caption language codes accepted for each locale. */
+const CAPTION_CODES: Record<Locale, string[]> = {
+  en: ["en"],
+  "zh-CN": ["zh-cn", "zh-hans", "zh"],
+  "zh-TW": ["zh-tw", "zh-hant"],
+  ko: ["ko"],
+  es: ["es"],
+  vi: ["vi"],
+  ja: ["ja"],
+};
+
+/** Region-aware: zh-TW/Hant/HK/MO -> zh-TW; other zh -> zh-CN. */
+function parseLocale(value: unknown): Locale | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim().toLowerCase().replaceAll("_", "-");
+  if (["zh-tw", "zh-hk", "zh-mo", "zh-hant"].includes(normalized) || normalized.startsWith("zh-hant-")) return "zh-TW";
+  const language = normalized.split("-")[0];
+  if (language === "zh") return "zh-CN";
+  if (language === "vn") return "vi";
+  return (CONTENT_LOCALES as readonly string[]).includes(language) ? (language as Locale) : null;
+}
+
 type Role = "student" | "instructor" | "support_staff" | "admin";
-type Locale = "vi" | "en";
 type GenerateType = "course" | "lesson" | "hackathon";
 type ActionType = "generate" | "translate";
 type TargetField =
@@ -250,9 +291,8 @@ function parseBody(body: RequestBody): {
       ? body.targetField
       : null;
   const intent = body.intent === "practice" ? "practice" : null;
-  const locale = body.locale === "en" ? "en" : body.locale === "vi" ? "vi" : null;
-  const sourceLocale =
-    body.sourceLocale === "en" ? "en" : body.sourceLocale === "vi" ? "vi" : null;
+  const locale = parseLocale(body.locale);
+  const sourceLocale = parseLocale(body.sourceLocale);
   const sourceInputs = Array.isArray(body.sourceInputs) ? (body.sourceInputs as SourceInput[]) : null;
   const bundleKind =
     body.bundleKind === "course_info" ||
@@ -476,9 +516,10 @@ async function fetchCaptionTracks(videoId: string): Promise<CaptionTrack[]> {
 }
 
 function chooseCaptionTrack(tracks: CaptionTrack[], locale: Locale): CaptionTrack | null {
-  const exact = tracks.filter((track) => track.langCode.toLowerCase() === locale);
+  const exact = tracks.filter((track) => CAPTION_CODES[locale].includes(track.langCode.toLowerCase()));
   if (exact.length > 0) return exact.find((track) => !track.isAsr) ?? exact[0]!;
-  const sameFamily = tracks.filter((track) => track.langCode.toLowerCase().startsWith(`${locale}-`));
+  const family = locale.split("-")[0].toLowerCase();
+  const sameFamily = tracks.filter((track) => track.langCode.toLowerCase().startsWith(`${family}-`));
   if (sameFamily.length > 0) return sameFamily.find((track) => !track.isAsr) ?? sameFamily[0]!;
   return tracks.find((track) => !track.isAsr) ?? tracks[0] ?? null;
 }
@@ -810,10 +851,12 @@ function buildPrompt(params: {
   sources: LessonSource[];
   isSectionScoped: boolean;
 }): string {
+  const targetName = LANGUAGE_NAMES[params.locale];
+  const sourceName = LANGUAGE_NAMES[params.sourceLocale ?? (params.locale === "vi" ? "en" : "vi")];
   const localeInstruction =
     params.locale === "vi"
       ? "Viết hoàn toàn bằng tiếng Việt, tự nhiên, rõ ràng, không quảng cáo quá mức."
-      : "Write entirely in English, clear and natural, without hype.";
+      : `Write entirely in ${targetName}, clear and natural, without hype.`;
   const targetInstruction =
     params.action === "translate"
       ? params.targetField === "title"
@@ -865,8 +908,8 @@ function buildPrompt(params: {
   const framing =
     params.action === "translate"
       ? params.locale === "vi"
-        ? `Bạn đang dịch nội dung giáo dục từ ${params.sourceLocale === "en" ? "tiếng Anh" : "tiếng Việt"} sang tiếng Việt.`
-        : `You are translating educational content from ${params.sourceLocale === "vi" ? "Vietnamese" : "English"} into English.`
+        ? `Bạn đang dịch nội dung giáo dục từ ${params.sourceLocale ? VI_LANGUAGE_NAMES[params.sourceLocale] : "tiếng Anh"} sang tiếng Việt.`
+        : `You are translating educational content from ${sourceName} into ${targetName}.`
       : params.intent === "practice"
       ? params.locale === "vi"
         ? "Bạn đang tạo một bài thực hành dựa trên các bài học nguồn đã chọn."
@@ -932,18 +975,21 @@ function buildBundlePrompt(params: {
   sourceLocale: Locale | null;
   sourceBundle: TranslationBundle;
 }): string {
+  const targetName = LANGUAGE_NAMES[params.locale];
+  const sourceName = LANGUAGE_NAMES[params.sourceLocale ?? (params.locale === "vi" ? "en" : "vi")];
+  const viSourceName = VI_LANGUAGE_NAMES[params.sourceLocale ?? "en"];
   const localeInstruction =
     params.locale === "vi"
       ? "Viết hoàn toàn bằng tiếng Việt."
-      : "Write entirely in English.";
+      : `Write entirely in ${targetName}.`;
   const framing =
     params.kind === "hackathon"
       ? params.locale === "vi"
-        ? `Bạn đang dịch nội dung hackathon từ ${params.sourceLocale === "en" ? "tiếng Anh" : "tiếng Việt"} sang tiếng Việt.`
-        : `You are translating hackathon content from ${params.sourceLocale === "vi" ? "Vietnamese" : "English"} into English.`
+        ? `Bạn đang dịch nội dung hackathon từ ${viSourceName} sang tiếng Việt.`
+        : `You are translating hackathon content from ${sourceName} into ${targetName}.`
       : params.locale === "vi"
-        ? `Bạn đang dịch nội dung khoá học từ ${params.sourceLocale === "en" ? "tiếng Anh" : "tiếng Việt"} sang tiếng Việt.`
-        : `You are translating course content from ${params.sourceLocale === "vi" ? "Vietnamese" : "English"} into English.`;
+        ? `Bạn đang dịch nội dung khoá học từ ${viSourceName} sang tiếng Việt.`
+        : `You are translating course content from ${sourceName} into ${targetName}.`;
   return [
     framing,
     localeInstruction,

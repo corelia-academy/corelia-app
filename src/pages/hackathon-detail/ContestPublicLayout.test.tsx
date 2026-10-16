@@ -113,7 +113,7 @@ function renderRoute(entry: string) {
         <MemoryRouter initialEntries={[entry]}>
           <Routes>
             <Route path="/hackathons/:slug" element={<ContestPublicLayout />}>
-              {["overview", "prizes", "timeline", "projects", "resources"].map((tab) => (
+              {["overview", "posts", "prizes", "timeline", "projects", "resources"].map((tab) => (
                 <Route key={tab} path={tab} element={<><div>{tab} content</div><RouteLocation /></>} />
               ))}
             </Route>
@@ -178,6 +178,29 @@ describe("draft hackathon preview", () => {
     await view.cleanup();
   });
 
+  it("shows the Posts tab only when there is a valid organizer post", async () => {
+    const withoutPosts = renderRoute("/hackathons/published-demo/overview");
+    await settle();
+    expect(withoutPosts.container.querySelectorAll('[role="tab"]')).toHaveLength(5);
+    await withoutPosts.cleanup();
+
+    const directRoute = renderRoute("/hackathons/published-demo/posts");
+    await settle();
+    expect(directRoute.container.querySelectorAll('[role="tab"]')).toHaveLength(5);
+    expect(directRoute.container.querySelector("[data-route-location]")?.textContent).toBe("/hackathons/published-demo/posts");
+    await directRoute.cleanup();
+
+    state.publicContest = { ...publishedContest, social_post_urls: ["https://x.com/corelia/status/123"] };
+    const withPosts = renderRoute("/hackathons/published-demo/overview");
+    await settle();
+    const tabs = Array.from(withPosts.container.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    expect(tabs).toHaveLength(6);
+    expect(tabs[1].textContent).toBe("public.tabs.posts");
+    await act(async () => tabs[1].click());
+    expect(withPosts.container.querySelector("[data-route-location]")?.textContent).toBe("/hackathons/published-demo/posts");
+    await withPosts.cleanup();
+  });
+
   it("shows the full banner without a dark content overlay and uses the X brand icon", async () => {
     const view = renderRoute("/hackathons/draft-demo/overview?preview=1");
     await settle();
@@ -220,9 +243,12 @@ describe("draft hackathon preview", () => {
   it("shows applicant avatars with the total in the public detail", async () => {
     state.publicContest = { ...publishedContest, participants_count: 119 };
     const view = renderRoute("/hackathons/published-demo/overview");
-    await settle();
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(view.container.querySelector("[data-slot='avatar-group']")).not.toBeNull();
+      });
+    });
 
-    expect(view.container.querySelector("[data-slot='avatar-group']")).not.toBeNull();
     expect(view.container.querySelector("[data-slot='avatar-group-count']")?.textContent).toBe("+118");
     expect(view.container.textContent).toContain("catalog.participantsCount");
     expect(view.container.querySelector("[data-slot='avatar-group']")?.getAttribute("aria-label")).toBe("public.applications: 119");
@@ -252,8 +278,11 @@ describe("draft hackathon preview", () => {
     const view = renderRoute("/hackathons/published-demo/overview");
     await settle();
     try {
+      const findAction = () => Array.from(view.container.querySelector("header")?.querySelectorAll("button") ?? []).find((button) => button.textContent === "public.register");
+      // The lazy-loaded route can take longer than one settle tick on slow CI runners.
+      for (let attempt = 0; attempt < 40 && !findAction(); attempt += 1) await settle();
       const hero = view.container.querySelector("header");
-      const action = Array.from(hero?.querySelectorAll("button") ?? []).find((button) => button.textContent === "public.register");
+      const action = findAction();
       const prize = view.container.querySelector("a[href='/hackathons/published-demo/prizes']");
       expect(action).toBeDefined();
       expect(prize).not.toBeNull();

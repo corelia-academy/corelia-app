@@ -1,26 +1,14 @@
 # Corelia App
 
-Vite + React 19 + TypeScript SPA. Auth, database, and storage use **Supabase**; backend APIs live in **Supabase Edge Functions** (`corelia-api`). Production hosting is deployed with **Cloudflare Workers** via Wrangler.
+Vite + React 19 + TypeScript SPA. Auth, database, and storage use **Supabase**; backend APIs live in **Supabase Edge Functions** (`corelia-api`). The frontend runs on **Cloudflare Workers**, built and deployed automatically by Cloudflare from the connected `staging` and `main` branches. The UI and content support `vi`, `en`, `zh-CN`, `zh-TW`, `ko`, `es`, and `ja`.
 
-## Recent release-system changes
+## Releases
 
-This update changes CI/CD release controls only. It does not change application features or automatically publish the frontend.
-
-### 2026-08-28 — Release control plane and deployment gates
-
-- **Separated deployment paths:** The [`Deploy Staging`](.github/workflows/deploy-staging.yml) workflow handles Supabase migrations and Edge Functions. The Vite app and Cloudflare Workers deployment use a separate path.
-- **Staging release gate:** A qualifying push to `staging` runs migration guardrails, the full test suite, lint, build, and an isolated local migration recreate before any remote migration or Edge Function deployment.
-- **Pull-request guardrails:** Pull requests that touch database or release-control files run migration baseline/declaration checks and an isolated migration recreation. [`Verify Protected Live Migration History`](.github/workflows/db-live-history-verify.yml) provides a separate read-only check for `staging` or `main`.
-- **Production release control:** Production is not push-triggered. The [`Deploy Production`](.github/workflows/deploy-prod.yml) workflow must be dispatched manually from `main` and runs its verification job before any Supabase deployment.
-- **Failure containment:** Release jobs use bounded local cleanup and controlled concurrency; migration rollouts that require destructive changes can deploy a compatible backend before applying the migration.
+Release notes for each version live in [docs/releases](docs/releases) and on [GitHub Releases](https://github.com/corelia-academy/corelia-app/releases). The flow is `work branch → staging → PR to main`; see [Release process](docs/RELEASE_PROCESS.md) for gates, triggers, and failure handling.
 
 ## Documentation
 
 See the [documentation index](docs/README.md) for feature guides, QA, and operations. The [Feed guide](docs/feed/README.md) describes the proposed community feed and retirement of the legacy activity stream.
-
-## Release process
-
-See [Release process](docs/RELEASE_PROCESS.md) for the staging and production flow, release gates, current triggers, and failure handling.
 
 ## Prerequisites
 
@@ -63,13 +51,8 @@ pnpm build:prod
 
 ## Deploy
 
-- **Workers (app):** after build, deploy with Wrangler (see [wrangler.jsonc](wrangler.jsonc)):
-
-```bash
-pnpm deploy
-```
-
-- **Supabase Edge Functions:**
+- **Frontend (Cloudflare Workers):** do not deploy from a terminal. Cloudflare builds and deploys when `staging` or `main` changes. Verify the Cloudflare build for the commit and the live domain. The `deploy:*` scripts in `package.json` only build the artifact for the matching mode.
+- **Supabase migrations and Edge Functions:** deployed by the GitHub workflows (`Deploy Staging` on push to `staging`, `Deploy Production` by manual dispatch from `main`). See [Release process](docs/RELEASE_PROCESS.md). For a single local function deploy:
 
 ```bash
 pnpm functions:deploy

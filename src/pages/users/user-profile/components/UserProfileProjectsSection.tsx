@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { useMemo } from "react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -114,7 +115,7 @@ export function UserProfileProjectsSection({
                 <div className="relative aspect-video overflow-hidden border-b border-border-subtle bg-surface-raised md:aspect-auto md:min-h-56 md:border-r md:border-b-0">
                   {coverUrl ? (
                     <img
-                      src={coverUrl}
+                      src={optimizedImageUrl(coverUrl, { width: 480 })} srcSet={optimizedImageSrcSet(coverUrl, 480)} decoding="async"
                       alt={project.title}
                       className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                       loading="lazy"

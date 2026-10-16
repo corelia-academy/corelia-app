@@ -1,4 +1,5 @@
 import { NavLink } from "react-router";
+import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import {
   ArrowSquareOut,
   GithubLogo,
@@ -32,7 +33,6 @@ type ProjectCardProps = {
   ownerAvatarConfig?: import("../../../shared/avatarConfig").AvatarConfig | null;
   teamMembers?: PublicProjectTeamMember[];
   taxonomy?: Contest | null;
-  awardLabel?: string | null;
   hearted?: boolean;
   className?: string;
   systemTaxonomy?: ProjectTaxonomyOption[];
@@ -49,7 +49,6 @@ export function ProjectCard({
   ownerAvatarConfig,
   teamMembers = [],
   taxonomy,
-  awardLabel,
   hearted,
   className,
   systemTaxonomy = [],
@@ -69,8 +68,7 @@ export function ProjectCard({
         year: "numeric",
       }).format(createdAt);
   const technologies = projectTaxonomyNames(project.hackathon_tech_stack_ids ?? [], project.custom_tech_stack_names ?? [], systemTaxonomy.filter((item) => item.kind === "technology"), taxonomy?.tech_stacks ?? []);
-  const awards = taxonomy?.winner_awards?.filter((award) => award.project_id === project.id) ?? [];
-  const displayAward = awardLabel || (awards.length ? awards[0].label || t("projects.editor.winner") : null);
+  const awards = taxonomy?.winner_awards?.filter((award) => award.project_id === project.id).sort((a, b) => a.sort_order - b.sort_order) ?? [];
   const ownerName = ownerLabel?.trim() || (ownerHandle ? `@${ownerHandle}` : t("projects.editor.builder"));
   const people = [
     {
@@ -151,12 +149,12 @@ export function ProjectCard({
       ) : null}
     </AvatarGroup>
   );
-  const awardContent = displayAward ? (
+  const awardContent = awards.length ? (
     <div className={cn("mt-4 flex flex-wrap gap-1.5", isHackathon && "mt-2")}>
-      <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-label-small font-body text-primary">
+      {awards.map((award) => <span key={award.id} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-label-small font-body text-primary">
         {phosphorDuotone ? <PhosphorTrophy className="size-3" weight="duotone" /> : <Trophy className="size-3" />}
-        {displayAward}
-      </span>
+        {award.label || t("projects.editor.winner")}
+      </span>)}
     </div>
   ) : null;
   const renderActions = (compact = false) => actions.length ? (
@@ -186,7 +184,7 @@ export function ProjectCard({
     <article
       className={cn(
         "group relative flex h-full min-w-0 flex-col rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card transition-shadow hover:border-primary/40 hover:shadow-md",
-        isHackathon && "h-60 rounded-lg p-4 shadow-none hover:shadow-none",
+        isHackathon && "h-auto min-h-60 rounded-lg p-4 shadow-none hover:shadow-none",
         className,
       )}
     >
@@ -201,7 +199,7 @@ export function ProjectCard({
           )}
         >
           {logo ? (
-            <img src={logo} alt="" className="size-full object-contain" loading="lazy" />
+            <img src={optimizedImageUrl(logo, { width: 56, resize: "contain" })} srcSet={optimizedImageSrcSet(logo, 56, { resize: "contain" })} decoding="async" alt="" className="size-full object-contain" loading="lazy" />
           ) : phosphorDuotone ? (
             <PhosphorImage className="size-7 text-foreground-subtle" weight="duotone" />
           ) : (

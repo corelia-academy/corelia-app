@@ -14,6 +14,11 @@ export function startManualLocaleChange(targetLocale: SupportedLanguage): number
   return revision;
 }
 
+/** True while no newer manual change has superseded this revision. */
+export function isLatestManualLocaleRevision(revision: number): boolean {
+  return revision === currentRevision;
+}
+
 /**
  * Backward-compatible alias for startManualLocaleChange.
  */

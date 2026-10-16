@@ -23,6 +23,7 @@ Bắt đầu từ mục tương ứng với công việc. Code và migrations l�
 |---|---|
 | Quy tắc frontend | [Frontend rules](front-end-rules/README.md) |
 | Phát hành staging/production | [Release process](RELEASE_PROCESS.md) |
+| Ghi chú các phiên bản | [Release notes](releases/) |
 | Kiểm tra artifact staging | [Staging build](STAGING_BUILD_VERIFY.md) |
 | QA liên tính năng | [Test index](tests/README.md) |
 | Database baseline và báo cáo rollout | [DB baseline](db-baseline/README.md) |

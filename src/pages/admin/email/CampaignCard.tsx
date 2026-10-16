@@ -8,12 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { CampaignDeliveryDetails } from "./CampaignDeliveryDetails";
+import { intlLocale } from "@/lib/intl";
 
 type Campaign = Record<string, unknown>;
 type Action = "send" | "schedule" | "pause" | "resume" | "cancel";
 
 function vietnamTime(value: unknown): string {
-  return typeof value === "string" && value ? new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(value)) : "";
+  return typeof value === "string" && value ? new Intl.DateTimeFormat(intlLocale(), { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(value)) : "";
 }
 
 export function CampaignCard({ campaign, pending, onControl }: { campaign: Campaign; pending: boolean; onControl: (id: string, command: string, scheduledAt?: string) => Promise<void> }) {

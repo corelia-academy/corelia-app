@@ -1,0 +1,1029 @@
+{
+  "sidebar": {
+    "title": "Corelia 講師",
+    "subtitle": "コース、プロフィール、運用を 1 か所で管理します。",
+    "createCourse": "コースを作成",
+    "courseList": "コース一覧",
+    "offlineClasses": "対面授業",
+    "profile": "講師プロフィール",
+    "contests": "コンテスト"
+  },
+  "layout": {
+    "crumbs": {
+      "home": "ホーム",
+      "teaching": "指導",
+      "createCourse": "コースを作成",
+      "offlineClasses": "対面授業",
+      "createCohort": "コホートを作成",
+      "cohortWorkspace": "コホートワークスペース",
+      "contests": "コンテスト",
+      "createContest": "コンテストを作成",
+      "contestWorkspace": "コンテストワークスペース",
+      "profile": "講師プロフィール",
+      "course": "コース",
+      "edit": "編集"
+    },
+    "shell": {
+      "newCourse": {
+        "title": "新しいコースを作成",
+        "description": "コンテンツと無料の学習ジャーニーをゼロから設定します。"
+      },
+      "offlineList": {
+        "title": "対面授業",
+        "description": "対面コホート、スケジュール、場所、各回の録画を調整します。"
+      },
+      "newCohort": {
+        "title": "新しいコホートを作成",
+        "description": "スケジュール、Google Meet、受講生のロードマップを備えた対面コホートを作成します。"
+      },
+      "cohortWorkspace": {
+        "title": "コホートワークスペース",
+        "description": "回ごとのスケジュール、名簿、受講生のロードマップを 1 か所で管理します。"
+      },
+      "contestsList": {
+        "title": "コンテスト",
+        "description": "ハッカソンやコンテストを指導運営の一部として管理します。"
+      },
+      "newContest": {
+        "title": "新しいコンテストを作成",
+        "description": "ワークスペースでアクティビティ、タイムライン、運用フローを設定します。"
+      },
+      "contestWorkspace": {
+        "title": "コンテストワークスペース",
+        "description": "応募、審査員、提出物、結果を 1 か所で調整します。"
+      },
+      "profile": {
+        "title": "講師プロフィール",
+        "description": "専門プロフィールと協業情報を、わかりやすく最新の状態に保ちます。"
+      },
+      "editCourse": {
+        "titleFallback": "コースを編集",
+        "description": "コンテンツ、受講生、ビジネス設定を 1 か所で調整します。"
+      },
+      "courseList": {
+        "title": "コース",
+        "description": "すべての研修商品、公開ステータス、次のステップを追跡します。"
+      }
+    },
+    "hero": {
+      "eyebrow": "指導エリア"
+    },
+    "badges": {
+      "externalPartner": "外部パートナー",
+      "coreliaInstructor": "Corelia 講師",
+      "adminMode": "管理者モード",
+      "teachingMode": "指導タスク"
+    }
+  },
+  "courseNew": {
+    "errors": {
+      "missingProfileName": "アカウントで氏名を更新してください。",
+      "missingTitle": "コースのタイトルを入力してください。",
+      "createFailed": "コースを作成できませんでした"
+    },
+    "toasts": {
+      "created": "コースを作成しました。引き続き編集できます。"
+    },
+    "header": {
+      "subtitle": "詳細な編集画面に進む前に、初期設定をすばやく行います。",
+      "step1": "ステップ 1：設定"
+    },
+    "stats": {
+      "statusLabel": "ステータス",
+      "accessLabel": "アクセスタイプ",
+      "ownerLabel": "コースの提供元",
+      "levelLabel": "レベル"
+    },
+    "nav": {
+      "heading": "設定ロードマップ",
+      "description": "この初期設定の後、コンテンツと詳細設定を引き続き仕上げます。",
+      "generalInfo": "基本情報",
+      "content": "コンテンツとレッスン",
+      "finalAssignment": "最終課題",
+      "certificate": "修了証",
+      "studentManagement": "受講生管理",
+      "deleteCourse": "コースを削除"
+    },
+    "tip": {
+      "title": "クイック設定のヒント",
+      "description": "セクションとレッスンを追加する前に、タイトル、スラッグ、コンテンツ言語を選択してください。"
+    },
+    "section": {
+      "description": "基本情報を入力します。作成後は編集ページに移動し、章、レッスン、詳細設定を追加できます。",
+      "startBadge": "最初のステップ"
+    },
+    "labels": {
+      "draft": "下書き",
+      "originExternal": "外部パートナー",
+      "originCorelia": "Corelia 講師",
+      "title": "コースのタイトル",
+      "slug": "スラッグ",
+      "shortDescription": "短い説明",
+      "description": "説明",
+      "descriptionMarkdownHint": "Markdown に対応しています（見出し、リスト、リンク、コードブロック）。",
+      "sources": "情報源（外部 URL）",
+      "sourceAttributionNote": "情報源のクレジットメモ",
+      "learningOutcomes": "学べること",
+      "learningOutcomesSubtitle": "このコースは、受講生が次の成果を達成できるよう支援します。",
+      "learningOutcomesAdd": "成果を追加",
+      "skills": "身につくスキル",
+      "skillsSubtitle": "コース修了後、これらのスキルが受講生のプロフィールに表示されます。",
+      "skillsAdd": "スキルを追加",
+      "thumbnail": "コースのカバー画像",
+      "ownerType": "コースの提供元",
+      "level": "レベル",
+      "contentLocales": "コースのコンテンツ言語",
+      "contentLocalesHint": "このコースで個別のコンテンツを用意する言語を選択してください。",
+      "primaryContentLocale": "メインのコンテンツ言語（フォールバック）",
+      "defaultVideoLocale": "動画の既定のメイン言語",
+      "publishedCheckbox": "公開（コース一覧ページに表示）",
+      "externalAggregatedCheckbox": "公開の外部コース"
+    },
+    "hints": {
+      "businessSettingsRestricted": "コースの提供元を変更できるのは、教務担当者/管理者のみです。",
+      "externalAggregatedDescription": "このコースは外部の情報源のコンテンツをまとめたものです（YouTube／制作者のチャンネルへの参考リンク）。"
+    },
+    "placeholders": {
+      "title": "例：初心者から上級者までの React",
+      "slug": "react-from-beginner-to-advanced",
+      "shortDescription": "1 行の説明（任意）",
+      "description": "コースの詳しい説明...",
+      "sources": "1 行に 1 つの URL\nhttps://youtube.com/...\nhttps://youtube.com/...",
+      "sourceAttributionNote": "まとめた情報源に関する公開メモ（例：制作者の YouTube 再生リストから厳選）。",
+      "learningOutcomesItem": "例：Web3 ウォレットとオンチェーン取引の仕組みを説明できる",
+      "skillItem": "例：ブロックチェーンの基礎"
+    },
+    "actions": {
+      "uploadThumb": "カバー画像をアップロード",
+      "uploadingThumb": "アップロード中...",
+      "create": "コースを作成",
+      "creating": "作成中...",
+      "cancel": "キャンセル"
+    }
+  },
+  "courseListPage": {
+    "errors": {
+      "loadFailed": "一覧を読み込めませんでした"
+    },
+    "stats": {
+      "total": "コース総数",
+      "published": "公開済み",
+      "drafts": "下書き",
+      "free": "無料コース"
+    },
+    "hero": {
+      "title": "あなたのコースカタログ",
+      "description": "公開ステータスを確認し、ワンクリックで編集に移動できます。",
+      "create": "新しいコースを作成"
+    },
+    "empty": {
+      "title": "このワークスペースにはまだコースがありません。",
+      "description": "最初のコースを作成して、カタログを作り始めましょう。",
+      "createFirst": "最初のコースを作成"
+    },
+    "coursePills": {
+      "published": "公開済み",
+      "draft": "下書き"
+    },
+    "courseCards": {
+      "pricingLabel": "料金モデル",
+      "free": "無料",
+      "instructorLabel": "講師",
+      "you": "あなた"
+    },
+    "actions": {
+      "viewCourseTitle": "コースページを開く",
+      "previewDraftTitle": "下書きをプレビュー",
+      "viewCourse": "コースを表示",
+      "preview": "プレビュー",
+      "edit": "編集"
+    }
+  },
+  "courseEdit": {
+    "i18n": {
+      "supportedLocalesLabel": "コンテンツ言語",
+      "supportedLocalesHint": "このコースのコンテンツ言語を有効/無効にします。学習の進捗は言語間で共有されます。",
+      "primaryLocaleLabel": "メインのコンテンツ言語",
+      "editingLocaleLabel": "編集中のコンテンツ言語",
+      "editingNonPrimaryHint": "翻訳を編集しています。メイン言語のコンテンツは別に保持されます。",
+      "translationModeBadge": "翻訳モード",
+      "currentLocaleBadge": "現在",
+      "primaryEditingHint": "原文の言語を直接編集しています。",
+      "translationEditingHint": "{{source}}から{{target}}への翻訳を編集しています。",
+      "addLanguage": "言語を追加",
+      "removeLanguage": "{{language}}を削除"
+    },
+    "defaults": {
+      "lessonTitle": "レッスン"
+    },
+    "coInstructors": {
+      "label": "共同講師",
+      "hint": "コースページに表示する共同講師を追加し、必要に応じて限定的なアクセス権を付与します。",
+      "dialogTitle": "共同講師を選択",
+      "dialogDescription": "ディレクトリ内の講師のみ選択できます。",
+      "fallbackName": "講師",
+      "placeholder": "共同講師を選択…",
+      "searchPlaceholder": "氏名/メールで検索…",
+      "emptyLabel": "一致する講師がいません。",
+      "loadingDirectory": "講師を読み込み中…",
+      "permissions": {
+        "students": "受講生を表示",
+        "submissions": "提出物をレビュー",
+        "content": "コンテンツを表示",
+        "certificates": "修了証を表示",
+        "pricing": "料金を表示"
+      },
+      "showOnCoursePage": "コース詳細ページに表示",
+      "willInviteBadge": "保存時に招待します",
+      "inviteSent": "共同講師の招待を {{count}} 件送信しました",
+      "inviteFailed": "共同講師の招待 {{count}} 件が失敗しました",
+      "inviteEmailFailed": "アプリ内の招待は作成されましたが、{{count}} 人の受信者にメールを送信できませんでした。",
+      "inviteRevoked": "招待を取り消しました",
+      "pendingTitle": "保留中の招待",
+      "pendingHint": "これらの人は招待されていますが、まだ承諾していません。承諾するまで、コースにはアクセスできません。",
+      "pendingExpiresAt": "{{date}} に期限切れ",
+      "revokeInvite": "取り消す"
+    },
+    "sponsors": {
+      "label": "スポンサー",
+      "hint": "コースのサイドバーに表示するスポンサーを追加します（ロゴ、名前、ウェブサイト、説明）。",
+      "countLabel": "スポンサー {{count}} 社",
+      "empty": "スポンサーはまだありません。",
+      "actions": {
+        "add": "スポンサーを追加",
+        "uploadLogo": "ロゴをアップロード",
+        "uploading": "アップロード中...",
+        "save": "スポンサーを保存",
+        "cancel": "キャンセル"
+      },
+      "fields": {
+        "logo": "ロゴ",
+        "name": "スポンサー名",
+        "website": "ウェブサイト",
+        "description": "説明"
+      },
+      "dialog": {
+        "title": "スポンサー"
+      },
+      "confirm": {
+        "remove": "このスポンサーを削除しますか？"
+      },
+      "errors": {
+        "missingName": "スポンサー名を入力してください。",
+        "invalidWebsite": "ウェブサイトは有効な URL（https://...）にしてください。",
+        "uploadLogoFailed": "スポンサーのロゴをアップロードできませんでした。"
+      },
+      "toasts": {
+        "saved": "スポンサーを保存しました。",
+        "removed": "スポンサーを削除しました。",
+        "logoUploaded": "ロゴをアップロードしました。"
+      }
+    },
+    "partners": {
+      "label": "パートナー",
+      "hint": "コースのサイドバーに表示するパートナーを追加します（ロゴ、名前、ウェブサイト、説明）。",
+      "countLabel": "パートナー {{count}} 社",
+      "empty": "パートナーはまだありません。",
+      "actions": {
+        "add": "パートナーを追加",
+        "uploadLogo": "ロゴをアップロード",
+        "uploading": "アップロード中...",
+        "save": "パートナーを保存",
+        "cancel": "キャンセル"
+      },
+      "fields": {
+        "logo": "ロゴ",
+        "name": "パートナー名",
+        "website": "ウェブサイト",
+        "description": "説明"
+      },
+      "dialog": {
+        "title": "パートナー"
+      },
+      "confirm": {
+        "remove": "このパートナーを削除しますか？"
+      },
+      "errors": {
+        "missingName": "パートナー名を入力してください。",
+        "invalidWebsite": "ウェブサイトは有効な URL（https://...）にしてください。",
+        "uploadLogoFailed": "パートナーのロゴをアップロードできませんでした。"
+      },
+      "toasts": {
+        "saved": "パートナーを保存しました。",
+        "removed": "パートナーを削除しました。",
+        "logoUploaded": "ロゴをアップロードしました。"
+      }
+    },
+    "partnerBrand": {
+      "label": "提供元 / パートナー",
+      "hint": "パートナー所有のコースでは、この情報がコースのサイドバーに表示されます。",
+      "actions": {
+        "uploadLogo": "ロゴをアップロード",
+        "uploading": "アップロード中...",
+        "save": "パートナー情報を保存"
+      },
+      "fields": {
+        "name": "パートナー名",
+        "website": "ウェブサイト",
+        "description": "説明"
+      },
+      "errors": {
+        "invalidWebsite": "ウェブサイトは有効な URL（https://...）にしてください。",
+        "uploadLogoFailed": "パートナーのロゴをアップロードできませんでした。"
+      },
+      "toasts": {
+        "saved": "パートナー情報を保存しました。",
+        "logoUploaded": "ロゴをアップロードしました。"
+      }
+    },
+    "errors": {
+      "loadCourseFailed": "コースを読み込めませんでした",
+      "refreshTotalFailed": "更新に失敗しました",
+      "uploadThumbnailFailed": "コースのカバー画像をアップロードできませんでした",
+      "updateFailed": "更新に失敗しました",
+      "processFailed": "操作に失敗しました",
+      "missingCertificateTemplate": "修了証の発行を有効にする場合は、修了証テンプレート画像をアップロードしてください。",
+      "missingCertificateTemplateCta": "修了証",
+      "uploadCertTemplateFailed": "修了証テンプレートをアップロードできませんでした",
+      "clearCertTemplateFailed": "修了証を取り消せませんでした",
+      "addSectionFailed": "セクションを追加できませんでした",
+      "addLessonFailed": "レッスンを追加できませんでした",
+      "deleteSectionFailed": "セクションを削除できませんでした",
+      "deleteLessonFailed": "レッスンを削除できませんでした",
+      "deleteCourseFailed": "コースを削除できませんでした",
+      "reorderLessonsFailed": "レッスンの順序を更新できません",
+      "reorderSectionsFailed": "セクションの順序を更新できません",
+      "prepareLessonFailed": "レッスンを準備できませんでした。",
+      "externalSourcesRequired": "「公開の外部コース」を有効にする場合は、情報源の URL を 1 つ以上入力してください。"
+    },
+    "page": {
+      "back": "戻る"
+    },
+    "business": {
+      "ownershipLabel": "コースの提供元",
+      "ownershipAdminOnly": "コースの提供元を更新できるのは管理者のみです。",
+      "ownershipCurrent": "現在：{{type}}"
+    },
+    "externalCourse": {
+      "toggleLabel": "公開の外部コース",
+      "toggleHint": "このコースが外部の情報源をまとめたものである場合に有効にします。情報源とクレジットが公開ページに表示されます。",
+      "sourcesLabel": "参考情報源（URL）*",
+      "sourcesPlaceholder": "1 行に 1 つの URL\nhttps://youtube.com/...\nhttps://youtube.com/...",
+      "sourcesRequired": "「公開の外部コース」を有効にした場合は必須です。",
+      "attributionLabel": "情報源のクレジットメモ",
+      "attributionPlaceholder": "まとめた情報源に関する公開メモ（例：制作者の YouTube 再生リストから厳選）。"
+    },
+    "toasts": {
+      "totalDurationRefreshed": "合計時間を更新しました。コース一覧ページに正しく表示されるはずです。",
+      "saved": "変更を保存しました。",
+      "assignmentApproved": "提出を承認しました。",
+      "assignmentRejected": "提出を却下しました。",
+      "certificateIssued": "修了証を発行しました。",
+      "assignmentConfigSaved": "課題の設定を保存しました。",
+      "certTemplateUploaded": "修了証テンプレートをアップロードしました。",
+      "certTemplateCleared": "修了証を取り消しました。"
+    },
+    "confirm": {
+      "deleteSection": "このセクションと中のすべてのレッスンを削除しますか？",
+      "deleteLesson": "このレッスンを削除しますか？",
+      "deleteCourse": "コース全体とすべてのコンテンツを削除しますか？この操作は元に戻せません。"
+    },
+    "labels": {
+      "published": "公開済み",
+      "draft": "下書き",
+      "uploadThumb": "カバー画像をアップロード",
+      "uploadingThumb": "アップロード中...",
+      "save": "変更を保存",
+      "saving": "保存中...",
+      "saveInfo": "基本情報を保存しました。",
+      "saveAssignment": "課題設定を保存",
+      "saveCertificate": "修了証の設定を保存しました。",
+      "reload": "再読み込み",
+      "loading": "読み込み中...",
+      "updating": "更新中…",
+      "updateTotalDuration": "合計時間を更新",
+      "add": "追加",
+      "adding": "追加中…",
+      "addSection": "セクションを追加",
+      "addingSection": "追加中...",
+      "uploadTemplate": "テンプレートをアップロード",
+      "uploadingTemplate": "アップロード中..."
+    },
+    "certificate": {
+      "sectionTitle": "修了証テンプレート",
+      "sectionDescription": "修了証の背景（PNG/JPG）をアップロードします。受講生の氏名は設定した位置に配置され、ダウンロードして SNS で共有できます。",
+      "templateLabel": "修了証テンプレート",
+      "uploadTemplate": "テンプレートをアップロード",
+      "uploadingTemplate": "アップロード中...",
+      "viewCurrentTemplate": "現在のテンプレートを表示",
+      "nameXLabel": "受講生の氏名の位置（左から %）",
+      "nameYLabel": "受講生の氏名の位置（上から %）",
+      "nameColorLabel": "氏名の文字色",
+      "nameColorHint": "修了証に重ねて表示される受講生の氏名の色です。",
+      "afterUploadHintPrefix": "アップロード後、2 つの「氏名の位置」フィールド（左から % / 上から %）を調整してください。",
+      "fileFormatHint": "形式：PNG または JPG。",
+      "disabledHint": "修了証テンプレートを設定する前に、「基本情報」タブで「このコースは修了証を発行する」を有効にしてください。",
+      "disabledCta": "基本情報へ移動",
+      "setupLeaveWarning": "修了証の設定が取り消されます。最初からやり直す必要があります。このページを離れますか？",
+      "saveLayout": "修了証のレイアウトを保存",
+      "nameGroupTitle": "受講生の氏名",
+      "nameSizeLabel": "氏名の文字サイズ（幅に対する %）",
+      "footerGroupTitle": "フッターブロック（発行日 / 修了証 ID）",
+      "footerGroupHint": "Google Sans で印字されます。ここに表示される認証コードが QR のリンク先です。",
+      "footerXLabel": "フッターの位置（左から %）",
+      "footerYLabel": "フッターの位置（上から %）",
+      "footerSizeLabel": "フッターの文字サイズ（幅に対する %）",
+      "footerColorLabel": "フッターの文字色",
+      "qrGroupTitle": "認証用 QR コード",
+      "qrGroupHint": "QR コードをスキャンして修了証を確認できます。最小サイズは 3%、最大は 30% です。",
+      "qrXLabel": "QR の中心（左から %）",
+      "qrYLabel": "QR の中心（上から %）",
+      "qrSizeLabel": "QR のサイズ（幅に対する %）",
+      "previewTitle": "レイアウトのプレビュー",
+      "previewNoTemplate": "修了証テンプレートをアップロードすると、プレビューが表示されます。",
+      "previewHint": "サンプルデータです。実際の修了証には、受講生の氏名、発行日、認証コードが使用されます。",
+      "previewSampleName": "山田 太郎"
+    },
+    "questionGenerator": {
+      "deleteQuestion": "問題を削除",
+      "questionContentPlaceholder": "問題の内容...",
+      "optionIsCorrect": "選択肢 {{id}} が正解",
+      "optionPlaceholder": "選択肢 {{id}}...",
+      "explanationToggle": "解答の解説",
+      "explanationPlaceholder": "その答えが正しい理由を説明してください（任意）...",
+      "replaceDraftConfirm": "新しい問題を生成して現在の下書きを置き換えますか？未保存の編集内容は失われます。"
+    },
+    "certificateGuide": {
+      "title": "テンプレートの作り方",
+      "sizeHint": "推奨サイズ：1600×1200 px（4:3 横向き）または 1200×1600 px（3:4 縦向き）。",
+      "nameAreaHint": "画像に受講生の氏名用の空白エリアを残してください（例：中央または下 3 分の 1）。",
+      "afterUploadHint": "アップロード後、2 つの「氏名の位置」フィールド（左から % / 上から %）を調整して、氏名が空白エリアに収まるようにします。50% が中央です。",
+      "downloadSample": "サンプルテンプレートをダウンロード（SVG）"
+    },
+    "ocb": {
+      "title": "Open Campus オンチェーン資格情報",
+      "subtitle": "要件を満たした受講生は、「実績」ページから、検証可能な自分のオンチェーン資格情報を受け取れます。ミントする前に氏名と OCID を確認します。自動的には発行されません。",
+      "loading": "資格情報の設定を読み込み中…",
+      "loadFailed": "資格情報の設定を読み込めませんでした。",
+      "adminManagedTitle": "管理者が管理する設定",
+      "adminManagedDescription": "このコースの Open Campus 資格情報を設定・有効化/無効化できるのは管理者のみです。受講生の資格情報の発行や変更は、管理者にお問い合わせください。",
+      "unsupportedCourseTitle": "このコースは Open Campus 資格情報に対応していません",
+      "unsupportedCourseDescription": "Open Campus 資格情報は、現在 Corelia 所有のコースでのみ設定できます。",
+      "statusActive": "有効",
+      "statusInactive": "未設定",
+      "mintToggleLabel": "オンチェーンでのミントを許可",
+      "kind": {
+        "label": "資格情報の種類",
+        "oca": {
+          "label": "OCA：達成証明書",
+          "desc": "証明書形式のオンチェーン資格情報です。コースの修了や認定に最適です。"
+        },
+        "ocb": {
+          "label": "OCB：Open Campus バッジ",
+          "desc": "スキルバッジ形式の資格情報です。短い達成やトピックの習得に最適です。"
+        }
+      },
+      "configTitle": "資格情報の詳細",
+      "requirementsTitle": "取得要件",
+      "confirmDeactivateWithIssuances": "すでに {{count}} 人の受講生がこの資格情報を保有しています。オフにすると新しい受講生への発行が停止しますが、発行済みのものは取り消されません。オフにしますか？",
+      "leaveWithoutSavingWarning": "OpenCampus 資格情報に未保存の変更があります。今離れると、受講生にオンチェーン資格情報は発行されません。それでも離れますか？",
+      "noPermission": "このコースの資格情報を設定する権限がありません。",
+      "nameLabel": "資格情報名",
+      "descriptionLabel": "説明",
+      "badgeImageLabel": "バッジ画像",
+      "imageHint": "推奨：1600×1200 px（横向き）または 1200×1600 px（縦向き）。OpenCampus でオンチェーンバッジのアートとして使用されます。",
+      "uploadBadge": "画像をアップロード",
+      "uploading": "アップロード中…",
+      "uploadOk": "画像をアップロードしました。",
+      "uploadFailed": "アップロードに失敗しました。",
+      "onchainCertLabel": "オンチェーン修了証テンプレート（Web3）",
+      "onchainCertHint": "資格情報をオンチェーンでミントする際に使用されます。受講生のプライバシー保護のため、氏名用のスペースを含めてはいけません。",
+      "uploadOnchainCert": "オンチェーンテンプレートをアップロード",
+      "onchainCertUploaded": "オンチェーン OCA テンプレートをアップロードしました。",
+      "onchainCertUploadFailed": "オンチェーンテンプレートをアップロードできませんでした。",
+      "onchainCertRequired": "OCA の設定を保存する前に、オンチェーンテンプレートをアップロードしてください。",
+      "imageRequired": "保存する前に資格情報の画像をアップロードしてください。",
+      "completionPctLabel": "レッスンの最低修了率",
+      "requireAssignmentPassLabel": "最終課題の承認を必須にする",
+      "requireAssignmentLabel": "最終課題の承認を必須にする",
+      "minScoreLabel": "課題の最低スコア",
+      "identifierPrefixLabel": "識別子のプレフィックス",
+      "identifierHint": "わかりやすいプログラムのプレフィックスを使用してください（例：corelia:unihackfest-2026）。最初の 25 文字が Open Campus に表示され、その後に固有のコードが続きます。",
+      "identifierLocked": "すでに {{count}} 件の資格情報があります。重複ミントを防ぐため、プレフィックスはロックされています。",
+      "save": "資格情報の設定を保存",
+      "saving": "保存中…",
+      "saved": "資格情報の設定を保存しました。",
+      "saveFailed": "資格情報の設定を保存できませんでした。"
+    },
+    "form": {
+      "titleLabel": "コースのタイトル",
+      "shortDescriptionLabel": "短い説明",
+      "shortDescriptionPlaceholder": "1 行の説明（任意）",
+      "descriptionLabel": "説明",
+      "descriptionMarkdownHint": "Markdown に対応しています（見出し、リスト、リンク、コードブロック）。",
+      "learningOutcomesLabel": "学べること",
+      "learningOutcomesSubtitle": "このコースは、受講生が次の成果を達成できるよう支援します。",
+      "learningOutcomesItemPlaceholder": "例：Web3 ウォレットとオンチェーン取引の仕組みを説明できる",
+      "learningOutcomesAdd": "成果を追加",
+      "skillsLabel": "身につくスキル",
+      "skillsSubtitle": "広い分野レベルのスキルを使用してください（例：Web3、ブロックチェーン、DeFi）。修了後に受講生のプロフィールに表示されます。",
+      "skillsItemPlaceholder": "例：Web3",
+      "skillsAdd": "スキルを追加",
+      "thumbnailLabel": "コースのカバー画像",
+      "levelLabel": "レベル"
+    },
+    "sidebar": {
+      "editingLanguage": "編集言語",
+      "primaryBadge": "メイン",
+      "navTitle": "エディターのナビゲーション",
+      "navHint": "公開する前に、各設定グループを順に確認してコースを仕上げてください。",
+      "nav": {
+        "info": "基本情報",
+        "content": "コンテンツとレッスン",
+        "assignments": "最終課題",
+        "certificate": "修了証",
+        "credentials": "OpenCampus 資格情報",
+        "students": "受講生を管理",
+        "danger": "コースを削除",
+        "announcements": "お知らせ"
+      }
+    },
+    "content": {
+      "heading": "コースコンテンツ",
+      "savingOrder": "レッスンの順序を保存中...",
+      "dragHint": "丸いアイコンをドラッグして各セクション内のレッスンを並べ替えるか、必要に応じて上下の矢印を使ってください。",
+      "sectionsToggleLabel": "章ごとに整理",
+      "saveStructure": "構成を保存",
+      "sectionsToggleHint": "有効にすると、レッスンを章にまとめます。無効にすると、フラットなレッスン一覧になります。",
+      "addSectionHeading": "新しいセクションを追加",
+      "lessonTitlePlaceholder": "レッスンのタイトル（任意）",
+      "lessonMinutesPlaceholder": "所要時間（分）：YouTube の長さを取得できない場合は、ここに入力してください",
+      "sectionTitlePlaceholder": "セクションのタイトル"
+    },
+    "questions": {
+      "number": "問題 {{number}}",
+      "loadFailed": "既存の問題を読み込めませんでした。",
+      "loadFailedBeforeGenerate": "既存の問題の読み込みに失敗している間は、問題を生成できません。",
+      "loadFailedBeforeSave": "問題の読み込みがエラー状態の間は、問題を保存できません。",
+      "retry": "再試行",
+      "generateFailed": "問題を生成できませんでした。",
+      "fillRequired": "問題と、少なくとも 2 つの選択肢を入力してください。",
+      "saveFailed": "問題を保存できませんでした。",
+      "lessonTitle": "レッスンの問題：{{title}}",
+      "sectionTitle": "クイズの問題：{{title}}",
+      "lessonDescription": "このレッスンのクイズ問題を作成します。同じセクションの他のレッスンをコンテンツの情報源として選べます。",
+      "sectionDescription": "AI を使って、レッスンの内容からクイズ問題を生成します。保存する前に編集できます。",
+      "sourceLessons": "元になるレッスン",
+      "currentLesson": "このレッスン",
+      "count": "問題数",
+      "generate": "問題を生成",
+      "generating": "生成中...",
+      "sources": "コンテンツの情報源",
+      "loading": "問題を読み込み中...",
+      "empty": "レッスンの内容から問題を生成するか、下に A/B/C/D の問題を手動で追加してください。",
+      "emptyInline": "問題はまだありません。今すぐ追加するか、先にクイズを作成してから問題を生成してください。",
+      "add": "問題を追加",
+      "remove": "問題を削除",
+      "questionPlaceholder": "問題文...",
+      "optionPlaceholder": "選択肢 {{option}}...",
+      "correctAnswer": "選択肢 {{option}} が正解",
+      "explanationPlaceholder": "解答の解説（任意）",
+      "cancel": "キャンセル",
+      "saving": "保存中...",
+      "saveCount": "{{count}} 問を保存",
+      "savedLesson": "このレッスンの {{count}} 問を保存しました。",
+      "savedSection": "このセクションの {{count}} 問を保存しました。"
+    },
+    "sections": {
+      "notTranslated": "未翻訳",
+      "edit": "編集",
+      "questions": "問題",
+      "editTitle": "セクションを編集",
+      "titleLabel": "タイトル",
+      "descriptionLabel": "説明",
+      "descriptionPlaceholder": "セクションの短い説明（任意）",
+      "cancel": "キャンセル",
+      "save": "保存"
+    },
+    "descriptionGenerator": {
+      "trigger": "生成",
+      "translateTrigger": "AI で翻訳",
+      "courseTitle": "コースの説明を生成",
+      "courseDescription": "このコースにすでにあるレッスンから説明を作成します。",
+      "translateCourseTitle": "AI でコースの説明を翻訳",
+      "translateCourseDescription": "保存する前に、既存のコンテンツを{{source}}から{{target}}に翻訳します。",
+      "sectionTitle": "セクションの説明を生成",
+      "sectionDescription": "このセクション内のレッスンから説明を作成します。",
+      "translateSectionTitle": "AI でセクションの説明を翻訳",
+      "translateSectionDescription": "保存する前に、既存のコンテンツを{{source}}から{{target}}に翻訳します。",
+      "lessonTitle": "レッスンの説明を生成",
+      "lessonDescription": "レッスンの動画コンテンツと既存のレッスン文章を合わせて説明を作成します。",
+      "translateLessonTitle": "AI でレッスンの内容を翻訳",
+      "translateLessonDescription": "保存する前に、既存のコンテンツを{{source}}から{{target}}に翻訳します。",
+      "currentCourseSource": "既存の元コンテンツ",
+      "translateDialogHint": "元の言語からすばやく翻訳し、保存する前に結果を整えられます。",
+      "sourcesTitle": "生成に使用した元コンテンツ",
+      "emptySources": "使用できる元コンテンツがまだありません。",
+      "previewTitle": "説明の下書き",
+      "previewPlaceholder": "「生成」をクリックして下書きを作成...",
+      "generate": "説明を生成",
+      "generating": "生成中...",
+      "translating": "翻訳中...",
+      "translateApplied": "翻訳を適用しました。準備ができたら確認して保存してください。",
+      "cancel": "キャンセル",
+      "useDescription": "この説明を使用",
+      "warnings": {
+        "limited": "現在の元コンテンツが限られています。質の高い説明を生成するのに十分な内容があるかご確認ください。",
+        "notEnough": "質の高い説明を生成するのに十分な内容があるかご確認ください。"
+      },
+      "sourceKinds": {
+        "shortDescription": "短い説明",
+        "longDescription": "長い説明",
+        "transcript": "動画コンテンツ",
+        "missing": "情報源なし"
+      },
+      "errors": {
+        "generic": "現在、説明を生成できません。",
+        "noBundle": "翻訳のレスポンスにコンテンツバンドルが含まれていませんでした。"
+      }
+    },
+    "translationCoverage": {
+      "title": "翻訳の進捗",
+      "description": "{{target}}版のどの部分が入力済みで、どの部分を{{source}}から翻訳できるかをすぐに確認できます。",
+      "completed": "{{completed}} / {{total}} 項目が入力済み",
+      "readyToTranslate": "翻訳可能な項目 {{count}} 件",
+      "states": {
+        "done": "入力済み",
+        "ready": "準備完了",
+        "missing": "元コンテンツなし"
+      },
+      "messages": {
+        "filled": "この項目は {{locale}} の言語にすでに内容があります。",
+        "sourceAvailable": "この項目は現在の言語では空ですが、{{locale}} に元コンテンツがあります。",
+        "noSource": "自動翻訳できるほど明確な元コンテンツがまだありません。"
+      },
+      "actions": {
+        "openField": "この項目を開く"
+      },
+      "fields": {
+        "title": "コースのタイトル",
+        "shortDescription": "短い説明",
+        "description": "説明",
+        "learningOutcomes": "学べること",
+        "assignmentTitle": "課題のタイトル",
+        "assignmentDescription": "課題の説明",
+        "assignmentInstructions": "課題の指示"
+      }
+    },
+    "lessons": {
+      "formatLabel": "レッスンの種類",
+      "formatVideo": "動画レッスン",
+      "formatArticle": "テキストレッスン",
+      "formatQuiz": "クイズ",
+      "formatPractice": "実践演習",
+      "formatHint": "テキストレッスンは文章コンテンツのみを使用します。YouTube 動画は不要です。",
+      "articleContentRequired": "テキストレッスンには、レッスン内容（Markdown または短い説明）を追加してください。",
+      "practiceContentRequired": "この実践演習レッスンには、実践演習の指示を追加してください。",
+      "practiceSourceLabel": "元のレッスン",
+      "practiceSourceNone": "元のレッスンなし",
+      "practiceSourceHint": "この実践演習の元になるレッスンを選択してください。",
+      "lessonQuestions": "問題",
+      "lessonQuestionsTitle": "レッスンの問題",
+      "lessonQuestionsHint": "問題はこのレッスンに紐づけられ、レッスンの種類や既存の動画は変更されません。",
+      "quizConversionBlocked": "コンテンツレッスンはクイズに変換できません。代わりに「問題」を開いて、このレッスンにクイズを紐づけてください。",
+      "quizSetupTitle": "クイズの問題",
+      "quizSetupHint": "このセクションのレッスンから問題を生成するか、A/B/C/D の問題を手動で追加してください。",
+      "quizCreateHint": "このクイズレッスンを作成した後、既存のレッスンから生成したり、問題を手動で追加したりできます。",
+      "notTranslated": "未翻訳",
+      "edit": "編集",
+      "editTitle": "レッスンの詳細を編集",
+      "create": "レッスンを追加",
+      "createTitle": "レッスンを作成",
+      "createAction": "レッスンを作成",
+      "creating": "作成中...",
+      "titleLabel": "タイトル",
+      "youtubeLabel": "YouTube リンク",
+      "showPreview": "プレビュー",
+      "hidePreview": "非表示",
+      "draftBadge": "更新中",
+      "youtubePlaceholder": "YouTube リンク（任意）",
+      "videoPrimaryLocaleLabel": "動画のメイン言語",
+      "videoPrimaryLocaleHint": "動画の音声/ナレーションの言語を示します。コンテンツ言語と異なっていても構いません。",
+      "durationMinutesLabel": "所要時間（分）",
+      "durationHint": "空欄の場合、可能であればシステムが YouTube から所要時間を取得します。",
+      "nonVideoDurationHint": "コースの所要時間と受講生の学習計画に使われる、任意の目安です。",
+      "previewFreeLabel": "無料プレビューレッスンを有効にする",
+      "previewBadge": "プレビュー",
+      "previewFreeBadge": "無料プレビュー",
+      "shortDescriptionLabel": "短い説明",
+      "shortDescriptionPlaceholder": "1〜2 文（任意）",
+      "markdownLabel": "詳しい説明（Markdown）",
+      "markdownHint": "Markdown に対応しています（見出し、リスト、リンク、コードブロック）。",
+      "practiceMarkdownLabel": "実践演習の指示（Markdown）",
+      "practiceMarkdownHint": "受講生が取り組むべき課題、成果物、プロンプト、振り返りの手順を記述してください。",
+      "resourcesLabel": "リソース",
+      "resourceTitlePlaceholder": "リソースのタイトル",
+      "resourceUrlPlaceholder": "https://...",
+      "addResource": "リソースを追加",
+      "previewTitle": "プレビュー",
+      "previewEmpty": "詳しい説明はまだありません。",
+      "cancel": "キャンセル",
+      "save": "保存",
+      "segmentStartLabel": "区間の開始",
+      "segmentEndLabel": "区間の終了",
+      "segmentStartPlaceholder": "例：0:00",
+      "segmentEndPlaceholder": "例：15:30（空欄にすると動画の最後まで）",
+      "segmentHint": "タイムスタンプは、同じ YouTube 動画のうちこのレッスンが担当する区間を指定します（M:SS または H:MM:SS）。",
+      "progressLockBanner": "このレッスンにはすでに {{count}} 人の受講生の進捗があります。テキストと区間のタイムスタンプは編集できますが、別の動画に切り替えることはできません。",
+      "youtubeLockedHint": "受講生がこのレッスンで進捗を持っているため、YouTube リンクはロックされています。",
+      "cannotChangeVideoWithProgress": "受講生がこのレッスンで進捗を持っている間は、別の YouTube 動画に切り替えられません。",
+      "segmentEndInvalid": "区間の終了は、開始時間より後の有効なタイムスタンプにしてください。"
+    },
+    "longVideo": {
+      "title": "長い YouTube 動画",
+      "editReplaceTitle": "長い動画：このレッスンを置き換えますか？",
+      "editReplaceIntro": "別の動画（約 {{duration}}）に切り替えました。1 つのレッスンのままにするか、説明欄のチャプターで分割するか、区間を手動で定義できます。分割すると、現在のレッスンが削除され、同じ位置に新しいレッスンが挿入されます。",
+      "intro": "この動画は約 {{duration}} です。1 つのレッスンのままにするか、説明欄のタイムスタンプから自動分割するか、区間を手動で定義できます。",
+      "foundChapters": "動画の説明欄で見つかったタイムスタンプ：",
+      "noChapters": "説明欄にタイムスタンプのチャプターが見つかりませんでした。手動で分割するか、1 つのレッスンのままにしてください。",
+      "keepSingle": "1 つのレッスンのままにする",
+      "autoSplit": "チャプターからレッスンを作成",
+      "manualSplit": "手動で分割",
+      "manualTitle": "区間を定義",
+      "manualAddRow": "区間を追加",
+      "manualConfirm": "レッスンを作成",
+      "manualStartPlaceholder": "開始（例：0:00）",
+      "manualEndPlaceholder": "終了（任意）",
+      "back": "戻る",
+      "dismiss": "キャンセル",
+      "manual": {
+        "invalidTimestamp": "15:30 や 1:20:00 のような有効なタイムスタンプを入力してください。",
+        "invalidEnd": "終了時間は開始時間より後にしてください。",
+        "invalidRange": "各区間には有効な長さが必要です。",
+        "overlap": "区間は重複してはいけません。",
+        "needRow": "区間を 1 つ以上追加してください。"
+      }
+    },
+    "assignments": {
+      "completionRequirement": "最終課題を設定すると、受講生はコースを修了するために課題を提出し、承認を受ける必要があります。",
+      "titleLabel": "課題のタイトル",
+      "titlePlaceholder": "例：最終プロジェクト（空欄 = 必須ではない）",
+      "descriptionLabel": "説明 / 要件",
+      "descriptionPlaceholder": "受講生が提出すべき内容を説明してください...",
+      "instructionsLabel": "指示（任意）",
+      "instructionsPlaceholder": "受講生への追加のガイダンス...",
+      "reviewApprove": "承認",
+      "reviewReject": "却下",
+      "settingsTitle": "課題設定",
+      "submissionsTitle": "受講生の提出物",
+      "noSubmissions": "提出物はまだありません。",
+      "noSubmissionsHint": "提出物はまだありません。上の「課題設定」で課題のタイトルを追加して保存すると、提出要件が有効になります。",
+      "columns": {
+        "student": "受講生",
+        "content": "内容",
+        "submittedAt": "提出日時",
+        "status": "ステータス",
+        "actions": "操作"
+      },
+      "lessonProgress": "レッスン {{progress}}%",
+      "attachments": "添付ファイル {{count}} 件",
+      "viewSubmission": "提出内容をすべて表示",
+      "attachment": "添付ファイル {{number}}",
+      "unavailableAttachment": "添付ファイル {{number}} のリンクが無効です",
+      "feedback": "レビューのフィードバック"
+    },
+    "publishing": {
+      "publishedHint": "公開済み（コースページに表示）",
+      "hasCertificateHint": "このコースは修了証を発行する",
+      "certificateConfiguredLockedHint": "修了証テンプレートが設定されています。ここでは修了証の発行を無効にできません。",
+      "updatingHint": "このコースは更新中です（受講生にお知らせを表示）"
+    },
+    "students": {
+      "empty": "このコースに受講登録している受講生はまだいません。",
+      "columns": {
+        "student": "受講生",
+        "progress": "進捗",
+        "assignment": "課題",
+        "certificate": "修了証",
+        "enrolledAt": "受講登録日",
+        "lastAccess": "最終アクセス"
+      },
+      "status": {
+        "approved": "承認済み",
+        "rejected": "修正依頼中",
+        "pending": "保留中",
+        "notSubmitted": "未提出",
+        "notEligible": "対象外",
+        "issue": "発行",
+        "issued": "発行済み"
+      }
+    },
+    "danger": {
+      "deleteCourseTitle": "コースを削除しますか？",
+      "dangerZoneTitle": "危険な操作",
+      "deleteWarning": "コースを削除すると、すべてのコンテンツ（セクション、レッスン）が削除されます。この操作は元に戻せません。",
+      "deleteConfirmWarning": "すべてのコンテンツ（セクション、レッスン）が完全に削除されます。この操作は元に戻せません。",
+      "deleteButton": "削除"
+    },
+    "stats": {
+      "sections": "セクション",
+      "lessons": "レッスン",
+      "students": "受講生",
+      "submissions": "提出物"
+    },
+    "tooltips": {
+      "dragReorder": "ドラッグして並べ替え",
+      "moveUp": "上へ移動",
+      "moveDown": "下へ移動"
+    },
+    "a11y": {
+      "dragSection": "ドラッグしてセクション {{title}} を並べ替え",
+      "moveSectionUp": "セクション {{title}} を上へ移動",
+      "moveSectionDown": "セクション {{title}} を下へ移動",
+      "dragLesson": "ドラッグしてレッスン {{title}} を並べ替え",
+      "moveLessonUp": "レッスン {{title}} を上へ移動",
+      "moveLessonDown": "レッスン {{title}} を下へ移動",
+      "removeOutcome": "学習成果 {{number}} を削除",
+      "removeSkill": "スキル {{number}} を削除",
+      "deleteSection": "セクション {{title}} を削除",
+      "editSponsor": "スポンサー {{title}} を編集",
+      "removeSponsor": "スポンサー {{title}} を削除",
+      "editPartner": "パートナー {{title}} を編集",
+      "removePartner": "パートナー {{title}} を削除"
+    },
+    "access": {
+      "noPermission": "このコースを編集する権限がありません。",
+      "backToTeaching": "指導"
+    },
+    "announcements": {
+      "sectionTitle": "お知らせ",
+      "heroTitle": "受講生にお知らせを送信",
+      "heroDescription": "メールを作成して、このコースに受講登録しているすべての受講生に送信します。",
+      "recipientCount": "{{count}} 人の受講生にメールが届きます",
+      "recipientCountZero": "受講登録している受講生はまだいません",
+      "subjectLabel": "メールの件名",
+      "subjectPlaceholder": "件名を入力...",
+      "bodyLabel": "メッセージ",
+      "bodyPlaceholder": "ここにお知らせを書いてください。段落の間は空行を入れてください。",
+      "bodyHint": "プレーンテキストのみ：改行は保持されます。HTML を書く必要はありません。",
+      "bodyPreviewToggle": "プレビュー",
+      "bodyPreviewBrandedNote": "プレビュー（送信時にヘッダーとフッターが自動的に追加されます）：",
+      "sendButton": "お知らせを送信",
+      "confirmTitle": "お知らせを送信しますか？",
+      "confirmSubjectLabel": "件名：",
+      "confirmDescription": "受講登録している {{count}} 人の受講生にメールが送信されます。",
+      "confirmButton": "今すぐ送信",
+      "cancelButton": "キャンセル",
+      "resultSent": "{{total}} 通中 {{sent}} 通のメールを送信しました。",
+      "resultFailed": "{{failed}} 通のメールを送信できませんでした。",
+      "resultSkipped": "{{skipped}} 人の受信者に送信できませんでした。",
+      "resultError": "送信エラー：{{reason}}",
+      "systemUnavailable": "メールシステムは現在ご利用いただけません。メールは送信されませんでした。サポートが必要な場合は、システム管理者にお問い合わせください。",
+      "notConfigured": "メールが設定されていません。RESEND_API_KEY を確認してください。"
+    }
+  },
+  "learningPrinciples": {
+    "eyebrow": "CORELIA · 制作ガイド",
+    "title": "学習設計の原則",
+    "intro": "受講生が理解し、自力で取り組み、スキルを応用できるようなコンテンツを設計しましょう。具体的な成果から始め、練習の機会を用意し、受講生の成果物を指導の改善に活かします。",
+    "scope": "講師とコンテンツ制作者向け · 調査の確認日：2026 年 9 月 22 日",
+    "contents": "このページの内容",
+    "sections": {
+      "principles": "7 つの基本原則",
+      "example": "チャプターの例",
+      "formats": "レッスン形式を選ぶ",
+      "checklist": "公開前の確認",
+      "sources": "調査の情報源"
+    },
+    "evidenceNote": "エビデンスの要約は調査内容を説明したものです。「Corelia で適用する」の枠は現在のシステムに対する制作上の推奨であり、Corelia の受講生を対象とした試験の結果ではありません。",
+    "sourceLink": "調査の根拠",
+    "application": "Corelia で適用する",
+    "watchFor": "留意点：",
+    "principles": {
+      "outcome": {
+        "title": "受講生ができるようになることから始める",
+        "evidence": "目標、学習活動、評価は同じ能力を対象にします。[CMU：設計ガイダンス]",
+        "application": "観察可能な行動を使います。「不正な入力を、プログラムをクラッシュさせずに処理する。」この成果を示せる課題を選び、その課題に向けて受講生を準備させましょう。",
+        "limit": "プログラムを書くことに関する目標には、書く練習と実行する練習が必要です。定義を問うクイズでは一部しか測れません。"
+      },
+      "prior": {
+        "title": "出発点を確認する",
+        "evidence": "事前知識は、新しい学習を助けることも妨げることもあります。[CMU：調査の総括]",
+        "application": "必要な知識とツールを明記します。小さな質問や課題から始め、初心者に前提知識が足りないかもしれない箇所には復習資料へのリンクを付けましょう。",
+        "limit": "学習を導くために使い、受講生を排除するために使わないでください。全員がターミナルや Git を知っているとは限りません。"
+      },
+      "model": {
+        "title": "思考の過程を見せてから、練習の余地を残す",
+        "evidence": "IES は 2007 年のガイドで、解説付きの例題と自力で解く問題を交互に出すことを、中程度のエビデンスとともに推奨しています。",
+        "application": "記事で各ステップがなぜ重要なのかを説明します。続いて、実践演習で、欠けたステップ、デバッグ課題、支援を減らしたバリエーションを出しましょう。",
+        "limit": "経験に合わせて支援を調整します。習熟した受講生には、さらに例題は不要かもしれません。"
+      },
+      "retrieve": {
+        "title": "受講生に思い出して説明してもらう",
+        "evidence": "IES は 2007 年のガイドで、内容を振り返るクイズや、深く説明させる質問を、強いエビデンスがあるものと評価しています。",
+        "application": "答えを示す前に、予測や説明を求めます。クイズの誤答の選択肢はよくある誤解に基づいて作り、答えを解説しましょう。",
+        "limit": "答えを見分けられることは、自力で問題を解く力の証明にはなりません。実践演習に自己説明のプロンプトを含めましょう。"
+      },
+      "space": {
+        "title": "時間を置いてから知識を振り返る",
+        "evidence": "IES は 2007 年のガイドで、学習を時間的に分散させることを、中程度のエビデンスとともに推奨しています。",
+        "application": "後のクイズで以前のチャプターを振り返り、最終課題でそのスキルを再び使います。指示の中で、少し休んでから戻ることを提案しましょう。",
+        "limit": "チャプターの区切りが、時間の間隔を保証するわけではありません。このページには復習スケジューラーは含まれず、固定の日数のスケジュールが全員に最適とは限りません。"
+      },
+      "feedback": {
+        "title": "修正に役立つフィードバックにする",
+        "evidence": "目標志向の練習と、基準に結びついたフィードバックは学習を助けます。[CMU：調査の総括]",
+        "application": "クイズの答えを解説し、関連するヒントを提供します。最終課題のレビューでは、うまくいっている点、具体的な問題、次に確認することを伝えます。既存の修正依頼の流れを使いましょう。",
+        "limit": "「違います」や「もっと頑張って」では次の一歩がわかりません。コースに合ったレビュー体制と応答時間を整えましょう。"
+      },
+      "transfer": {
+        "title": "応用力と自己評価を確認する",
+        "evidence": "習熟には、スキルを統合し、いつ適用するかを知ることが含まれます。受講生は自分のやり方を振り返ることも必要です。[CMU：調査の総括]",
+        "application": "最終課題では、例題から要件を変えます。基準を公開し、成果物とともに、判断の理由や残っている困難を説明するメモを求めましょう。",
+        "limit": "レッスンの修了、XP、資格情報だけでは、自力での能力は証明できません。成果物とその説明を確認してください。"
+      }
+    },
+    "example": {
+      "label": "制作例 · Rust 入門",
+      "title": "プログラムの実行間でデータを保持する",
+      "goal": "前提：関数、Vec、Result、動作する Cargo 環境。成果：タスクを追加し、アプリを閉じて再度開いてもデータが残り、壊れたファイルを処理できる。これは提案されたチャプターであり、公開済みのコースではありません。",
+      "read": {
+        "title": "例題付きの記事",
+        "body": "メモリ上のデータとファイル上のデータを比較します。小さな例で「読み込み → 変更 → 書き込み」を説明し、期待される結果を示しましょう。"
+      },
+      "predict": {
+        "title": "クイズ：解答を見る前に予測する",
+        "body": "「アプリが Vec を更新するだけで終了した場合、次回の実行でもタスクは残っていますか？それはなぜですか？」答えの中で、メモリと永続ストレージの違いを説明します。"
+      },
+      "build": {
+        "title": "ガイド付きプロジェクト：自力で実行して確認する",
+        "body": "スターターコードを提供し、受講生に読み込みと書き込みを実装してもらいます。add を実行して終了し、新しいプロセスで list を実行します。存在しないパスや壊れたファイルも試してもらいましょう。"
+      },
+      "submit": {
+        "title": "最終課題：提出してフィードバックを受ける",
+        "body": "コースの最終課題で、GitHub の URL とメモを求めます。再現性、新規実行をまたいだデータ、エラーメッセージをレビューします。必要に応じて、具体的な修正フィードバックを返しましょう。"
+      },
+      "revisit": {
+        "title": "新しい要件で復習する",
+        "body": "次のチャプターで、アプリを再度開いても保持される完了ステータスを追加します。どのステップがデータを永続化しているのかを、受講生に説明してもらいましょう。"
+      },
+      "rubricTitle": "提出の指示に使う基準の例",
+      "rubric": "正しい動作 · 新規実行でもデータが残る · わかりやすいエラー処理 · 再現できる README · 判断の理由を説明したメモ。これらはこの課題のための提案基準であり、Corelia の既定の採点基準ではありません。"
+    },
+    "formats": {
+      "article": {
+        "title": "記事",
+        "body": "説明、図解、参照をサポートします。目標を示し、考え方ごとに構成し、新しい用語を定義し、情報源とツールのバージョンを明記しましょう。"
+      },
+      "video": {
+        "title": "動画",
+        "body": "時間とともに変わる操作や変化を示します。文章の要約とリソースを付けましょう。すべてのレッスンに固定の長さを課すのではなく、タスクごとに区切ります。"
+      },
+      "quiz": {
+        "title": "クイズ",
+        "body": "想起、予測、誤解のチェックに使います。解説、もっともらしい誤答の選択肢、再挑戦の機会を含めましょう。"
+      },
+      "code": {
+        "title": "コード演習",
+        "body": "現在は、ブラウザ上のテキスト検証による、単一ファイルの Rust の穴埋めまたは編集演習に対応しています。小さな練習課題に使いましょう。合格しても、コンパイルや実行に成功したことの証明にはなりません。"
+      },
+      "practice": {
+        "title": "ガイド付き実践演習",
+        "body": "実際の課題には、指示、チェックリスト、ガイド付きプロジェクトを使います。各ステップに、確認できる結果を設定しましょう。Cargo などのツールは受講生のマシンで実行されます。"
+      },
+      "final": {
+        "title": "最終課題",
+        "body": "コースレベルで、成果物を提出し、フィードバックを受け、修正します。要件と基準を説明しましょう。提出物が自動的に公開プロジェクトになることはなく、共有する内容は受講生が選びます。"
+      }
+    },
+    "formatsNote": "これらの適用例は、2026 年 9 月 22 日時点のワークスペースにある Corelia のコードとドキュメントを反映したもので、本番環境での提供を確認したものではありません。チャプターに 6 つの形式をすべて含める必要はありません。",
+    "checklistNote": "レッスンまたはチャプター向けの編集チェックリストです。選択内容はこのページを開いている間のみ保持されます。自動評価や公開操作ではありません。",
+    "checked": "{{total}} 項目中 {{count}} 項目を確認済み",
+    "reset": "選択をクリア",
+    "checks": {
+      "outcome": "目標は観察可能な行動を記述しており、評価は教えた内容を測定している。",
+      "entry": "前提条件、ツール、セットアップの手順で、想定する初心者が始められる。",
+      "accuracy": "制作者が例を再実行し、情報源、バージョン、リソースのリンクを確認した。",
+      "practice": "受講生には、読むことや写すことを超えた、自力で取り組む課題と期待される結果がある。",
+      "feedback": "答えの解説が理由を説明しており、ヒントとレビューコメントが実行可能な次の一歩を示している。",
+      "review": "受講生が以前の知識を振り返り、状況が変わった場面で適用する。",
+      "access": "狭い画面でのプレビューを確認済み。動画には文章の補助があり、翻訳がある場合は用語や各言語版が一致している。",
+      "pilot": "想定する入門レベルの受講生が教材を試し、観察された困難が修正に反映された。"
+    },
+    "sourcesNote": "基礎となる情報源は 2026 年 9 月 22 日に確認しました。IES のエビデンスレベルは 2007 年のガイドを指しており、オンラインのプログラミング教育の評価ではありません。ここにある例、チェックリスト、形式の選択は Corelia の適用例であり、実際の受講生で検証する必要があります。",
+    "sources": {
+      "alignment": {
+        "title": "CMU Eberly Center：評価、目標、指導方法を整合させる",
+        "description": "目標、学習活動、評価を整合させるためのガイダンスです。原則 1 を裏付けます。"
+      },
+      "learning": {
+        "title": "CMU Eberly Center：学習の原則",
+        "description": "事前知識、練習、フィードバック、習熟、自己調整を扱った調査の総括です。原則 2、6、7 を裏付けます。"
+      },
+      "ies": {
+        "title": "IES / What Works Clearinghouse：Organizing Instruction and Study to Improve Student Learning（2007）",
+        "description": "解説付きの例題、クイズ、分散学習、説明を求める質問に関する、エビデンスの等級付きガイダンスです。原則 3、4、5 を裏付けます。"
+      }
+    }
+  }
+}

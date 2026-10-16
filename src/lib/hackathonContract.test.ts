@@ -57,6 +57,16 @@ describe("simplified hackathon contract", () => {
     expect(orderWinnerFirst(projects, awards).map((item) => item.id)).toEqual(["first", "second", "normal"]);
   });
 
+  it("uses the first award position when a project wins more than once", () => {
+    const projects = [{ id: "normal" }, { id: "first" }, { id: "second" }];
+    const awards = [
+      { id: "award-1", project_id: "first", label: "First prize", sort_order: 0 },
+      { id: "award-2", project_id: "second", label: "Second prize", sort_order: 1 },
+      { id: "award-3", project_id: "first", label: "Extra prize", sort_order: 2 },
+    ];
+    expect(orderWinnerFirst(projects, awards).map((item) => item.id)).toEqual(["first", "second", "normal"]);
+  });
+
   it("generates deterministic lowercase slugs", () => {
     expect(generateCanonicalProjectSlug("Ứng dụng Giáo dục", "A1B2C3D4-extra")).toBe("ung-dung-giao-duc-a1b2c3d4");
     expect(generateCanonicalProjectSlug("manual-slug-")).toBe("manual-slug");

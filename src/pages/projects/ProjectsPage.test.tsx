@@ -221,4 +221,37 @@ describe("ProjectsPage hackathon slug filter case-insensitivity", () => {
 
     await view.cleanup();
   });
+
+  it("shows every award once on its project card and orders winners by their first award", async () => {
+    const originalHackathons = state.hackathons;
+    const originalProjects = state.projectsByHackathonId["h-qa-356"];
+    state.hackathons = [{
+      ...originalHackathons[0],
+      winner_awards: [
+        { id: "a1", project_id: "p-1", label: "Best Product", sort_order: 0 },
+        { id: "b1", project_id: "p-2", label: "Runner-up", sort_order: 1 },
+        { id: "a2", project_id: "p-1", label: "Best UX", sort_order: 2 },
+      ],
+    }];
+    state.projectsByHackathonId["h-qa-356"] = [
+      { project: { id: "p-2", title: "Project Beta", slug: "project-beta", source_id: "h-qa-356" }, owner: { username: "bob" } },
+      ...originalProjects,
+    ];
+    try {
+      const view = await renderPage("/projects?hackathon=qa-356");
+      try {
+        const cards = Array.from(view.container.querySelectorAll("article"));
+        expect(cards).toHaveLength(2);
+        expect(cards[0].textContent).toContain("Project Alpha");
+        expect(cards[0].textContent).toContain("Best Product");
+        expect(cards[0].textContent).toContain("Best UX");
+        expect(cards[1].textContent).toContain("Runner-up");
+      } finally {
+        await view.cleanup();
+      }
+    } finally {
+      state.hackathons = originalHackathons;
+      state.projectsByHackathonId["h-qa-356"] = originalProjects;
+    }
+  });
 });

@@ -1,0 +1,771 @@
+{
+  "certificateAnalytics": {
+    "title": "修了証",
+    "description": "Corelia のコース修了証と Open Campus OCA の発行・配信指標です。",
+    "course": "コース",
+    "allCourses": "すべてのコース",
+    "from": "開始",
+    "to": "終了",
+    "network": "Open Campus ネットワーク",
+    "allNetworks": "すべてのネットワーク",
+    "invalidRange": "開始日は終了日より前にする必要があります。",
+    "loading": "分析を読み込み中…",
+    "loadError": "修了証の分析を読み込めませんでした。",
+    "forbidden": "このレポートを閲覧できるのは管理者のみです。",
+    "mintAttempts": "分析の有効化以降、OC のミント呼び出しが {{count}} 件記録されています",
+    "hint": "日付は Corelia の発行時刻またはコース修了時刻（ベトナム時間）で絞り込みます。プロバイダーが受理しても、受信トレイに届いたことの証明にはなりません。",
+    "learnerRows": "突合行 {{count}} 件",
+    "refresh": "更新",
+    "exportCsv": "CSV をエクスポート",
+    "exporting": "エクスポート中…",
+    "exportError": "CSV をエクスポートできませんでした。もう一度お試しください。",
+    "tableLabel": "受講生・コース別の修了証",
+    "empty": "一致する記録がありません。",
+    "page": "{{page}} / {{pages}} ページ",
+    "previous": "前へ",
+    "next": "次へ",
+    "unknown": "不明",
+    "issued": "発行済み",
+    "revoked": "失効",
+    "created": "作成済み",
+    "missing": "なし",
+    "unresolved": "ID の突合が必要",
+    "summary": {
+      "completed": "修了",
+      "corelia_issued": "Corelia 発行",
+      "corelia_revoked": "Corelia 失効",
+      "oca_minted": "OCA ミント済み",
+      "oca_unresolved": "OCA 未解決",
+      "oca_pending": "OCA 保留中",
+      "oca_failed": "OCA 失敗",
+      "unique_learners": "受講生"
+    },
+    "columns": {
+      "learner": "受講生",
+      "course": "コース",
+      "completed": "修了日時",
+      "corelia": "Corelia",
+      "coreEmail": "Corelia メール",
+      "coreNotice": "Corelia 通知",
+      "oca": "Open Campus OCA",
+      "ocEmail": "OCA メール",
+      "ocNotice": "OCA 通知"
+    },
+    "status": {
+      "minted": "ミント済み",
+      "pending": "保留中",
+      "failed": "失敗"
+    },
+    "mail": {
+      "accepted": "プロバイダーが受理",
+      "provider_error": "プロバイダーエラー",
+      "skipped": "スキップ"
+    }
+  },
+  "ogPreview": {
+    "title": "共有画像のプレビュー",
+    "description": "公開コンテンツから生成された Open Graph 画像を確認します。",
+    "entity": "コンテンツタイプ",
+    "entities": {
+      "project": "プロジェクト",
+      "course": "コース",
+      "hackathon": "ハッカソン",
+      "profile": "プロフィール"
+    },
+    "identifier": "スラッグ、ID、またはハンドル",
+    "identifierPlaceholder": "公開用の識別子を入力",
+    "load": "プレビュー",
+    "enterIdentifier": "コンテンツタイプを選択して識別子を入力すると、画像をプレビューできます。",
+    "defaultImageDescription": "エンティティカードのない Corelia ページに使用される既定の共有画像です。",
+    "loading": "共有画像を読み込み中…",
+    "metadataError": "メタデータを読み込めませんでした。もう一度お試しください。",
+    "unavailable": "このコンテンツは公開されていないか、共有画像がありません。",
+    "imageError": "共有画像を読み込めませんでした。再試行するか、元の画像を開いて確認してください。",
+    "retry": "再試行",
+    "refresh": "プレビューを更新",
+    "copy": "画像 URL をコピー",
+    "openPage": "公開ページを開く",
+    "openImage": "元の PNG を開く",
+    "image": "Open Graph 画像 1200 × 630",
+    "imageAlt": "Open Graph 共有画像のプレビュー",
+    "lightBackground": "明るい背景",
+    "darkBackground": "暗い背景",
+    "canonicalUrl": "正規 URL",
+    "imageUrl": "画像 URL",
+    "updatedAt": "更新日時",
+    "revision": "リビジョン"
+  },
+  "layout": {
+    "activityMilestones": {
+      "uploading": "画像をアップロード中...",
+      "clickToUpload": "クリックしてアップロード",
+      "orDragDrop": "またはここにドラッグ＆ドロップ",
+      "supportFormats": "PNG、JPG 形式に対応",
+      "preview": "プレビュー"
+    },
+    "sidebar": {
+      "ogPreview": {
+        "label": "Open Graph プレビュー"
+      },
+      "brandTitle": "Corelia 管理",
+      "brandSubtitle": "ロール、講師、日常のシステム運用を 1 か所で管理します。",
+      "primaryNavigation": "メインナビゲーション",
+      "users": {
+        "label": "ユーザー",
+        "tooltip": "ユーザー"
+      },
+      "jobs": {
+        "label": "求人",
+        "tooltip": "求人の取り込みとレビュー"
+      },
+      "instructors": {
+        "label": "講師",
+        "tooltip": "講師"
+      },
+      "activityMilestones": {
+        "label": "アクティビティのマイルストーン",
+        "tooltip": "Open Campus 全体のマイルストーンバッジ"
+      },
+      "manualMint": {
+        "label": "OCA/OCB の手動付与",
+        "tooltip": "コースとは無関係に、個人へ OCA/OCB を手動で付与します"
+      },
+      "branding": {
+        "label": "ブランディング",
+        "tooltip": "Corelia のロゴとブランド素材"
+      },
+      "offlineClasses": {
+        "label": "対面授業",
+        "tooltip": "対面授業"
+      },
+      "contests": {
+        "label": "コンテスト",
+        "tooltip": "コンテスト"
+      },
+      "hackathons": {
+        "label": "ハッカソン",
+        "tooltip": "ハッカソンを管理"
+      },
+      "email": {
+        "label": "メールセンター",
+        "tooltip": "受信者、テンプレート、キャンペーン、自動化"
+      },
+      "emailPreview": {
+        "label": "メールレビュー",
+        "tooltip": "すべてのメールテンプレートをデスクトップとモバイルで確認"
+      },
+      "projects": {
+        "label": "プロジェクト"
+      }
+    },
+    "pageMeta": {
+      "email": {
+        "title": "メールセンター",
+        "description": "システム、学習、プログラム、マーケティングのメールを運用します。"
+      },
+      "users": {
+        "title": "ユーザー管理",
+        "description": "すべてのユーザーのロールとアクセス状況を管理します。"
+      },
+      "jobs": {
+        "title": "求人オペレーション",
+        "description": "情報源、企業、レビューキュー、クローラーの実行、市場分析を管理します。"
+      },
+      "instructors": {
+        "title": "講師管理",
+        "description": "プロフィール、講師タイプ、パートナーとの協業データを追跡します。"
+      },
+      "activityMilestones": {
+        "title": "アクティビティのマイルストーン",
+        "description": "特定のコースとは無関係な、自動・手動の Open Campus バッジを設定します。"
+      },
+      "manualMint": {
+        "title": "資格情報の手動付与",
+        "description": "コースやハッカソンとは無関係に、特定の個人へ OCA または OCB を手動で付与します。"
+      },
+      "branding": {
+        "title": "ブランディング",
+        "description": "修了証やオンチェーン資格情報に使用する Corelia のロゴを管理します。"
+      },
+      "contests": {
+        "title": "コンテスト運営",
+        "description": "コンテストの作成と管理、応募のレビュー、提出物の採点、結果の公開を行います。"
+      },
+      "hackathons": {
+        "title": "ハッカソン管理",
+        "description": "コンテンツ、分類、プロジェクト、受賞者を編集します。"
+      },
+      "instructorDetail": {
+        "title": "講師の詳細",
+        "description": "プロフィールと講師情報を更新します。"
+      },
+      "projects": {
+        "title": "プロジェクト",
+        "description": "プロジェクトのモデレーション"
+      }
+    },
+    "hero": {
+      "eyebrow": "管理エリア",
+      "pills": {
+        "sensitive": "機密性の高い権限",
+        "manualAudit": "手動監査"
+      }
+    }
+  },
+  "hackathons": {
+    "title": "ハッカソン",
+    "description": "公開ハッカソンのページを作成・管理します。",
+    "new": "新しいハッカソン",
+    "edit": "編集",
+    "view": "公開ページを表示",
+    "preview": "プレビュー",
+    "loading": "ハッカソンを読み込み中…",
+    "empty": "ハッカソンはまだありません。",
+    "editor": {
+      "back": "一覧に戻る",
+      "newTitle": "新しいハッカソン",
+      "editTitle": "ハッカソンを編集",
+      "newIntro": "まず基本情報を作成します。下書きができたら、内容、賞金、タイムライン、プロジェクトを仕上げます。",
+      "editIntro": "ハッカソンのセクションを 1 つずつ編集し、他の作業に移る前に保存してください。",
+      "participants": "登録",
+      "saveAll": "すべて保存",
+      "saveSection": "変更を保存",
+      "createDraft": "下書きを作成",
+      "cancel": "キャンセル",
+      "saved": "ハッカソンを保存しました。",
+      "saveFailed": "ハッカソンを保存できませんでした。",
+      "notFound": "ハッカソンが見つかりません。",
+      "unsaved": "未保存の変更",
+      "leaveConfirm": "未保存の変更があります。エディターを離れて変更を破棄しますか？",
+      "add": "追加",
+      "archive": "アーカイブ",
+      "restore": "復元",
+      "activate": "有効にする",
+      "remove": "削除",
+      "removeImage": "画像を削除",
+      "removeTrack": "トラックを削除",
+      "removeTrackConfirm": "このトラックを削除しますか？変更は保存後に反映されます。",
+      "noTracks": "トラックはまだありません。賞金をトラックごとに分ける必要がある場合にのみ追加してください。",
+      "trackNumber": "トラック {{number}}",
+      "trackName": "トラック名",
+      "trackNamePlaceholder": "例：コンシューマー、インフラ…",
+      "trackPrize": "賞金の配分",
+      "trackDescription": "説明",
+      "trackDescriptionPlaceholder": "このトラックの対象範囲と基準を説明してください…",
+      "noTimeline": "タイムラインのステージはまだありません。",
+      "timelineNumber": "ステージ {{number}}",
+      "timelineTitle": "ステージのタイトル",
+      "timelineStarts": "開始",
+      "timelineEnds": "終了",
+      "removeTimeline": "ステージを削除",
+      "saveBeforeWinners": "受賞者を選択する前に、ハッカソンを保存してください。",
+      "selectProject": "プロジェクトを選択",
+      "selectProjectHint": "表彰する提出済みプロジェクトを検索して選択します。",
+      "searchProjectPlaceholder": "プロジェクト名または @ユーザー名で検索…",
+      "loadingProjects": "プロジェクトを読み込み中…",
+      "noEligibleProjects": "対象のプロジェクトが見つかりません。",
+      "awardLabel": "賞の名称",
+      "awardLabelRequired": "保存する前に、すべての賞に名称を入力してください。",
+      "dragProject": "プロジェクト {{name}} をドラッグして並べ替え",
+      "dragAward": "賞 {{name}} をドラッグして並べ替え",
+      "moveProjectUp": "プロジェクト {{name}} を上へ移動",
+      "moveProjectDown": "プロジェクト {{name}} を下へ移動",
+      "moveAwardUp": "賞 {{name}} を上へ移動",
+      "moveAwardDown": "賞 {{name}} を下へ移動",
+      "noAwards": "受賞プロジェクトはまだ選択されていません。",
+      "deleteConfirm": "このハッカソンを完全に削除しますか？",
+      "applyStatus": "ステータスを適用",
+      "publish": "公開",
+      "unpublish": "非公開にする",
+      "statusPublishedCta": "公開中（クリックで下書きに戻す）",
+      "statusDraftCta": "下書き（クリックで公開）",
+      "end": "終了",
+      "delete": "ハッカソンを削除",
+      "editingLanguage": "編集言語",
+      "primaryBadge": "メイン",
+      "sidebarTitle": "ハッカソンの設定",
+      "taxonomyHint": "新しいハッカソンには、一般的な分野と技術のプリセットが含まれます。未使用のオプションは名前の変更、追加、アーカイブができます。使用中の分類は削除できません。",
+      "validationRequired": "ベトナム語のタイトルとスラッグは必須です。",
+      "validationCurrency": "通貨は 2〜10 文字の英大文字または数字にしてください。",
+      "validationPrize": "トラックへの配分額は賞金総額を超えられません。",
+      "validationTelegram": "Telegram は有効な t.me の URL または @ユーザー名にしてください。",
+      "validationX": "X は x.com または twitter.com の完全な URL にしてください。",
+      "validationFacebook": "Facebook は facebook.com の完全な URL にしてください。",
+      "validationTrackNameRequired": "トラック {{number}} に名前がありません。保存する前に名前を入力するか、削除してください。",
+      "validationTaxonomyRequired": "公開中または開催中のハッカソンには、有効な分野と有効な技術がそれぞれ 1 つ以上必要です。",
+      "validationTaxonomyItemInvalid": "各分野または技術には、有効な識別子と名前が必要です。",
+      "trackAdded": "新しいトラックを下書きに追加しました。",
+      "awardMissingFields": "プロジェクトを選択し、賞の名称を入力してください。",
+      "awardAdded": "賞をリストに追加しました。",
+      "notifyAwardsAction": "受賞者にメールで通知",
+      "saveBeforeNotifyAwards": "受賞者に通知する前に、賞の変更を保存してください。",
+      "validationSocialPost": "公開されている Facebook、Instagram、X の投稿 URL を 1 行に 1 つ入力してください。",
+      "notifyAwardsConfirm": "受賞プロジェクトのすべてのチームに、今すぐ受賞通知メールを送信しますか？",
+      "awardsNotified": "受賞通知を送信しました（メール {{count}} 件を配信）。",
+      "awardsNotifyRetryableError": "一時的なエラーのため、一部の受賞メールを送信できませんでした。しばらくしてから再試行できます。",
+      "awardsNotifyPermanentError": "一部の受賞メールがプロバイダーに恒久的に拒否されました。受信者のメールアドレスをご確認ください。",
+      "awardsNotifyIndeterminateError": "一部の受賞メールの配信状況が不明です。再試行する前に突合が必要です。",
+      "awardsNotifyNotConfigured": "メール送信が設定されていません。アプリ内通知は作成されましたが、メールは送信されませんでした。",
+      "awardsNotifyFailed": "受賞通知メールを送信できませんでした。",
+      "status": {
+        "draft": "下書き",
+        "published": "公開済み",
+        "running": "開催中",
+        "ended": "終了"
+      },
+      "modes": {
+        "online": "オンライン",
+        "offline": "オフライン",
+        "hybrid": "ハイブリッド"
+      },
+      "aiTranslation": {
+        "action": "AI で {{source}} → {{target}} に翻訳",
+        "translating": "AI が翻訳中…",
+        "noSource": "翻訳できる {{source}} のコンテンツがまだありません。",
+        "overwriteConfirm": "{{target}} の下書きにはすでに内容があります。AI の翻訳で置き換えますか？",
+        "invalidResponse": "AI が無効なハッカソンの翻訳を返しました。",
+        "applied": "{{source}} から {{target}} への AI 翻訳を適用しました。保存する前に内容を確認してください。",
+        "failed": "ハッカソンの内容を翻訳できませんでした。"
+      },
+      "sections": {
+        "overview": "概要",
+        "description": "説明",
+        "prizes": "賞金とトラック",
+        "timeline": "タイムライン",
+        "resources": "リソース",
+        "taxonomy": "プロジェクト分類",
+        "projects": "プロジェクトと受賞者",
+        "danger": "公開、終了、削除"
+      },
+      "sectionDescriptions": {
+        "overview": "ID、主催者情報、連絡チャンネル、主催者の投稿、締め切り。",
+        "description": "ハッカソンの紹介全文（Markdown）。",
+        "prizes": "賞金総額を設定し、賞金を分ける必要がある場合にのみトラックを追加します。",
+        "timeline": "ハッカソンのステージを早い順に並べます。",
+        "resources": "参考資料と準備用コース。",
+        "projects": "受賞プロジェクトを選択し、賞の名称を手動で設定します。",
+        "danger": "公開ステータスを変更するか、このハッカソンを完全に削除します。"
+      },
+      "fields": {
+        "title": "タイトル",
+        "slug": "スラッグ",
+        "shortDescription": "短い説明",
+        "mode": "開催形式",
+        "host": "主催",
+        "hostWebsite": "主催者のウェブサイト",
+        "telegram": "Telegram（URL または @ユーザー名）",
+        "telegramPlaceholder": "https://t.me/corelia_builders または @corelia_builders",
+        "telegramHint": "@ユーザー名は、フィールドから移動すると t.me の URL に変換されます。",
+        "x": "X プロフィールの URL",
+        "xPlaceholder": "https://x.com/unihackfest",
+        "facebook": "Facebook ページの URL",
+        "facebookPlaceholder": "https://facebook.com/unihackfest",
+        "fullUrlHint": "https:// で始まる完全な URL を入力してください",
+        "currency": "通貨",
+        "markdown": "Markdown コンテンツ",
+        "prizeDescription": "賞金説明の Markdown",
+        "timelineDescription": "ステージ説明の Markdown",
+        "tracks": "トラック",
+        "banner": "ハッカソンのバナー",
+        "bannerHint": "推奨サイズ：2100 × 900 px（21:9）。最小：1680 × 720 px。",
+        "bannerEmpty": "カバー画像を追加",
+        "uploadBanner": "バナーをアップロード",
+        "officialCourse": "おすすめの準備用コース",
+        "relatedCourses": "その他の準備用コース",
+        "noCourse": "コースが選択されていません",
+        "noPublishedCourses": "利用可能な公開済みコースがありません。",
+        "coursesLoadFailed": "公開済みコースを読み込めませんでした。",
+        "socialPosts": "主催者の SNS 投稿",
+        "socialPostsPlaceholder": "Facebook、Instagram、X の投稿 URL を 1 行に 1 つ",
+        "socialPostsHint": "公開された投稿のリンクのみ。非公開または制限付きの投稿は埋め込めない場合があります。",
+        "changeBanner": "バナーを変更",
+        "bannerPreviewAlt": "ハッカソンバナーのプレビュー",
+        "hostLogo": "主催者のロゴ",
+        "hostLogoHint": "正方形または透過背景のロゴをアップロードしてください。",
+        "changeHostLogo": "主催者のロゴをアップロードまたは変更",
+        "hostLogoPreviewAlt": "主催者ロゴのプレビュー",
+        "totalPrize": "賞金総額",
+        "submission_deadline": "提出期限",
+        "winners_announced": "受賞者を発表済み",
+        "winners_announcedHint": "結果の発表後も、チームはプロジェクトとメンバーを更新し続けられます。",
+        "allow_project_edits_after_deadline": "提出期限後の編集を許可",
+        "allow_project_edits_after_deadlineHint": "結果の発表前に、チームがプロジェクトとメンバーを更新できるようにします。審査中の内容に影響する可能性があります。",
+        "editsAutomaticallyOpen": "結果が発表されたため、編集は自動的に開放されています。",
+        "sectors": "エンジニアリング分野",
+        "tech_stacks": "技術"
+      }
+    },
+    "loadFailed": "ハッカソンを読み込めませんでした。"
+  },
+  "instructors": {
+    "errors": {
+      "generic": "問題が発生しました",
+      "updateFailed": "更新できません"
+    },
+    "toasts": {
+      "originUpdated": "講師タイプを更新しました。"
+    },
+    "stats": {
+      "total": "講師の総数",
+      "corelia": "Corelia",
+      "external": "外部パートナー",
+      "unclassified": "未分類",
+      "managedCourses": "管理中のコース",
+      "loadingValue": "..."
+    },
+    "hero": {
+      "title": "講師ネットワークの運用",
+      "description": "各プロフィールを開いて、講師情報と分類を管理します。"
+    },
+    "filters": {
+      "searchPlaceholder": "氏名、メール、所属、肩書き、UID で検索…",
+      "originOptions": {
+        "all": "すべて",
+        "corelia": "Corelia",
+        "external": "外部"
+      },
+      "quick": {
+        "all": "すべて",
+        "corelia": "Corelia",
+        "external": "外部"
+      }
+    },
+    "actions": {
+      "refresh": "更新",
+      "clearFilters": "フィルターをクリア",
+      "detail": "詳細"
+    },
+    "list": {
+      "syncing": "講師を同期中...",
+      "showing": "講師 {{shown}} / {{total}} 人を表示中",
+      "showingOriginSuffix": " · {{origin}}",
+      "loading": "リストを読み込み中...",
+      "empty": "現在のフィルターに一致する講師がいません。",
+      "notUpdated": "未更新"
+    },
+    "originLabel": {
+      "corelia": "Corelia",
+      "external": "外部",
+      "unclassified": "未分類"
+    },
+    "columns": {
+      "instructor": "講師",
+      "email": "メール",
+      "origin": "カテゴリ",
+      "courses": "コース",
+      "actions": "操作"
+    }
+  },
+  "instructorDetailPage": {
+    "errors": {
+      "loadFailed": "データを読み込めません",
+      "saveFailed": "変更を保存できません"
+    },
+    "toasts": {
+      "detailsSaved": "講師の詳細を保存しました。"
+    },
+    "loading": "講師の詳細を読み込み中...",
+    "empty": {
+      "notFound": "講師が見つかりません。"
+    },
+    "actions": {
+      "backToList": "一覧に戻る",
+      "backToInstructors": "← 講師一覧に戻る"
+    },
+    "summary": {
+      "profileCompletion": "プロフィールの完成度"
+    },
+    "hero": {
+      "eyebrow": "講師ワークスペース",
+      "description": "わかりやすい運用フローで講師プロフィール情報を管理します。",
+      "rolePrefix": "ロール：{{role}}",
+      "partnerInstructor": "パートナー講師",
+      "coreliaInstructor": "Corelia 講師"
+    },
+    "nav": {
+      "title": "プロフィールナビゲーション",
+      "subtitle": "講師のプロフィール情報を確認・更新します。"
+    },
+    "sections": {
+      "profile": "講師の詳細"
+    },
+    "common": {
+      "dash": "-",
+      "notUpdated": "未更新"
+    },
+    "profile": {
+      "title": "講師の詳細",
+      "description": "公開プロフィール、システムロール、専門情報を更新します。",
+      "completionLabel": "{{percent}}% 完了",
+      "fields": {
+        "role": "ロール",
+        "origin": "講師タイプ",
+        "fullName": "氏名",
+        "phone": "電話番号",
+        "organization": "所属"
+      },
+      "roleOptions": {
+        "instructor": "講師",
+        "supportStaff": "サポート",
+        "student": "受講生"
+      },
+      "originOptions": {
+        "external": "外部"
+      },
+      "actions": {
+        "save": "変更を保存",
+        "saving": "保存中..."
+      }
+    }
+  },
+  "users": {
+    "showingRange": "{{total}} アカウント中 {{start}}–{{end}} を表示",
+    "pagination": {
+      "label": "アカウントのページ送り",
+      "page": "{{total}} ページ中 {{page}} ページ",
+      "previous": "前へ",
+      "next": "次へ"
+    },
+    "title": "アクセス制御ダッシュボード",
+    "subtitle": "氏名、メール、UID で検索し、日々の運用に合わせて表で直接ロールを調整できます。",
+    "stats": {
+      "totalUsers": "ユーザー総数",
+      "admin": "管理者",
+      "support": "サポート",
+      "instructor": "講師",
+      "student": "受講生",
+      "opencampusConnected": "OpenCampus 連携済み"
+    },
+    "searchPlaceholder": "氏名、メール、ロール、UID で検索…",
+    "allRoles": "すべてのロール",
+    "refresh": "更新",
+    "clearFilters": "フィルターをクリア",
+    "loadingList": "リストを読み込み中...",
+    "syncing": "ユーザーを同期中...",
+    "empty": "現在のフィルターに一致するユーザーがいません。",
+    "unknownError": "問題が発生しました",
+    "confirmChangeRole": "ロールを{{role}}に変更してもよろしいですか？",
+    "updateRoleSuccess": "ロールを更新しました！",
+    "updateRoleErrorPrefix": "ロールの更新に失敗しました：",
+    "unknown": "不明なエラー",
+    "showing": "{{shown}} / {{total}} アカウントを表示中",
+    "showingRoleSuffix": " · {{role}}",
+    "table": {
+      "name": "氏名",
+      "email": "メールアドレス",
+      "role": "ロール",
+      "phone": "電話番号",
+      "createdAt": "作成日",
+      "actions": "操作"
+    },
+    "mobile": {
+      "uid": "UID：{{uid}}…",
+      "emailLabel": "メールアドレス",
+      "currentRole": "現在のロール",
+      "phone": "電話番号",
+      "createdAt": "作成日",
+      "changeRole": "ロールを変更",
+      "notUpdated": "未更新",
+      "dash": "-"
+    }
+  },
+  "branding": {
+    "loading": "ブランディング設定を読み込み中…",
+    "loadFailed": "ブランディング設定を読み込めませんでした。",
+    "uploading": "アップロード中…",
+    "uploaded": "ロゴをアップロードして保存しました。",
+    "uploadFailed": "ロゴのアップロードに失敗しました。",
+    "saving": "保存中…",
+    "saved": "保存しました。",
+    "saveFailed": "保存できませんでした。",
+    "logo": {
+      "title": "Corelia ロゴ",
+      "subtitle": "修了証や OpenCampus オンチェーン資格情報の発行元画像として使用されます。推奨：透過背景の正方形またはワイドの PNG/SVG。",
+      "uploadButton": "ロゴをアップロード",
+      "hint": "PNG、JPG、SVG。公開 CDN に永続的に保存されます。",
+      "urlLabel": "ロゴ URL",
+      "saveUrl": "URL を保存",
+      "urlHint": "アップロード後に自動で設定されます。CDN の URL を直接貼り付けることもできます。"
+    },
+    "appBaseUrl": {
+      "title": "アプリのベース URL",
+      "subtitle": "システムメール（修了証、受け取り招待など）のリンク生成に使用するルートドメインです。ステージング：https://staging.corelia.academy、本番：https://app.corelia.academy。ここを間違えると、送信するすべてのメールのリンクが誤った環境に向かいます。",
+      "urlLabel": "ベース URL",
+      "saveUrl": "URL を保存",
+      "invalidUrl": "URL が正しくありません：https://ドメイン の形式で、末尾のスラッシュや余分な文字を含めないでください。"
+    }
+  },
+  "activityMilestones": {
+    "heading": "アクティビティのマイルストーン",
+    "subheading": "Open Campus（OCB）で発行するグローバルバッジです。",
+    "add": "マイルストーンを追加",
+    "loading": "読み込み中…",
+    "loadFailed": "マイルストーンを読み込めませんでした。",
+    "empty": "設定されたマイルストーンはありません。",
+    "saved": "保存しました。",
+    "saveFailed": "保存に失敗しました。",
+    "edit": "編集",
+    "grant": "付与",
+    "createTitle": "新しいマイルストーン",
+    "editTitle": "マイルストーンを編集",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "saving": "保存中…",
+    "grantTitle": "マイルストーンを付与",
+    "grantUsersLabel": "受講生のユーザー ID（カンマまたは改行区切り）",
+    "grantReasonLabel": "理由（任意）",
+    "grantNeedUsers": "ユーザー ID を 1 つ以上入力してください。",
+    "grantOk": "付与を処理しました。",
+    "grantFailed": "付与に失敗しました。",
+    "granting": "付与中…",
+    "grantSubmit": "付与してミント",
+    "col": {
+      "name": "名前",
+      "rule": "ルール",
+      "trigger": "トリガー",
+      "issued": "発行数",
+      "active": "有効",
+      "actions": "操作"
+    },
+    "field": {
+      "name": "タイトル",
+      "description": "説明",
+      "image": "バッジ画像",
+      "prefix": "識別子のプレフィックス",
+      "triggerAuto": "自動",
+      "triggerManual": "手動（管理者による付与）",
+      "event": "イベント",
+      "days": "日数",
+      "count": "回数",
+      "active": "有効"
+    },
+    "event": {
+      "coursesCompleted": "修了したコース",
+      "projects": "提出したプロジェクト"
+    },
+    "rule": {
+      "manual": "手動付与",
+      "coursesCompleted": "コース {{count}} 件修了",
+      "projects": "プロジェクト {{count}} 件提出"
+    }
+  },
+  "manualMint": {
+    "heading": "OCA/OCB の手動付与",
+    "subheading": "コース修了とは別の報酬として、特定の個人に OCA/OCB を付与します。コースやハッカソンの状態には影響しません。",
+    "tabs": {
+      "grant": "資格情報 / バッジを付与",
+      "history": "付与履歴と保留中",
+      "templates": "バッジテンプレート"
+    },
+    "lookup": {
+      "heading": "受講生を検索",
+      "uidPlaceholder": "UID（アカウントページからコピー）",
+      "emailPlaceholder": "受講生のメールアドレス",
+      "submit": "検索",
+      "loading": "検索中…",
+      "notFoundUid": "この UID のユーザーが見つかりません。",
+      "invalidEmailFormat": "メールアドレスの形式が正しくありません（例：name@example.com）。入力し直してください。",
+      "ghostNotice": "{{email}} さんはまだアカウントがありません。付与後、Corelia への参加と受け取りを案内する招待メールをお送りします。",
+      "error": "検索に失敗しました。",
+      "previewProfile": "プロフィールをプレビュー"
+    },
+    "preview": {
+      "title": "プロフィールのプレビュー",
+      "loading": "読み込み中…",
+      "notFound": "このプロフィールを読み込めませんでした。",
+      "noName": "名前が未設定",
+      "role": "ロール",
+      "followers": "フォロワー",
+      "fullPageLink": "ページ全体を表示 →"
+    },
+    "templates": {
+      "searchPlaceholder": "名前や説明でバッジテンプレートを検索...",
+      "totalCount": "合計：テンプレート {{count}} 件",
+      "emptyTitle": "ライブラリにテンプレートはまだありません",
+      "emptySubtitle": "手動でバッジを付与するときに「テンプレートライブラリに保存」を有効にすると、後で素早く再利用できます。",
+      "useTemplate": "テンプレートを使用",
+      "deleteConfirm": "ライブラリからテンプレート「{{name}}」を削除してもよろしいですか？",
+      "deleteSuccess": "テンプレートをライブラリから削除しました",
+      "deleteFailed": "テンプレートを削除できませんでした",
+      "deleteForbidden": "システムの自動テンプレートは削除できません",
+      "loadFailed": "バッジテンプレートを読み込めませんでした",
+      "ocbBadge": "OCB バッジ",
+      "ocaCertificate": "OCA 修了証",
+      "hidden": "非表示",
+      "createTemplate": "テンプレートを作成",
+      "createDialogTitle": "新しいバッジ / 修了証テンプレートを作成",
+      "createDialogDescription": "バッジテンプレートを作成してライブラリに保存すると、手動で付与するときに素早く再利用できます。",
+      "createSuccess": "バッジテンプレートをライブラリに保存しました！",
+      "createFailed": "バッジテンプレートを保存できませんでした。もう一度お試しください。",
+      "saveTemplateBtn": "ライブラリに保存",
+      "templateNamePlaceholder": "例：第 3 四半期の最優秀貢献者、ハッカソン受賞者...",
+      "templateDescriptionPlaceholder": "この賞の基準または理由の説明..."
+    },
+    "form": {
+      "kind": "資格情報の種類",
+      "name": "資格情報/バッジ名",
+      "image": "テンプレート画像",
+      "uploadCta": "クリックしてアップロード",
+      "uploading": "アップロード中…",
+      "imagePreview": "プレビュー",
+      "invalidPng": "このファイルは有効な PNG ではありません。背景を削除するか、次の場所で画像を変換してください：",
+      "uploadFailed": "画像のアップロードに失敗しました。",
+      "reason": "付与の理由",
+      "grantSectionTitle": "バッジ / 修了証の詳細",
+      "chooseFromTemplates": "テンプレートから選択…",
+      "saveAsTemplate": "今後再利用できるよう、テンプレートライブラリに保存",
+      "appliedTemplate": "テンプレート「{{name}}」を適用しました",
+      "submit": "付与",
+      "submitting": "付与中…",
+      "success": "付与しました。",
+      "successGhost": "保留中として保存し、受信者に招待メールを送信しました。",
+      "submitFailed": "付与に失敗しました。"
+    },
+    "history": {
+      "heading": "手動ミント履歴と保留中の付与",
+      "subheading": "手動で付与したすべての資格情報、Open Campus でのミントの進捗、保留中の受け取りを追跡します。",
+      "searchPlaceholder": "受信者、メール、OCID、バッジ名、理由で検索...",
+      "statusFilterLabel": "ステータス",
+      "kindFilterLabel": "種類",
+      "dateFilterLabel": "日付",
+      "filterStatusAll": "すべてのステータス",
+      "filterStatusMinted": "ミント済み",
+      "filterStatusPending": "保留中 / 登録待ち",
+      "filterStatusFailed": "失敗",
+      "filterKindAll": "すべての種類",
+      "filterKindOca": "OCA（修了証）",
+      "filterKindOcb": "OCB（バッジ）",
+      "filterDateAll": "全期間",
+      "filterDateToday": "今日",
+      "filterDate7Days": "過去 7 日間",
+      "filterDate30Days": "過去 30 日間",
+      "filterDateThisMonth": "今月",
+      "resetFilters": "フィルターをリセット",
+      "refresh": "更新",
+      "recipientCol": "受信者",
+      "badgeCol": "バッジ / 資格情報",
+      "granterCol": "付与者",
+      "dateCol": "日付",
+      "statusCol": "ステータス",
+      "statusMinted": "ミント済み",
+      "statusPending": "保留中",
+      "statusAwaitingSignup": "登録待ち",
+      "statusFailed": "失敗",
+      "statusRevoked": "取り消し済み",
+      "reasonCol": "付与の理由",
+      "actionsCol": "操作",
+      "viewOnOpenCampus": "エクスプローラー",
+      "retryBtn": "再試行",
+      "retrying": "再試行中…",
+      "retrySuccess": "ミントの再試行を開始しました。",
+      "retryFailed": "再試行に失敗しました。",
+      "revokeBtn": "取り消す",
+      "revokeConfirm": "「{{recipient}}」への付与を取り消しますか？この操作は元に戻せません。",
+      "revokeSuccess": "付与を取り消しました。",
+      "revokeFailed": "取り消せませんでした。",
+      "empty": "手動で付与された資格情報はまだありません。",
+      "emptyFiltered": "現在のフィルターに一致する資格情報がありません。",
+      "loadFailed": "手動ミント履歴を読み込めませんでした。"
+    }
+  }
+}

@@ -68,12 +68,18 @@
     "editCourse": "Chỉnh sửa khóa học",
     "notFound": "Không tìm thấy trang",
     "maintenance": "Bảo trì hệ thống",
-    "applicationError": "Lỗi ứng dụng"
+    "applicationError": "Lỗi ứng dụng",
+    "notifications": "Thông báo"
   },
   "language": {
     "switchLabel": "Đổi ngôn ngữ",
+    "en": "English",
+    "zh-CN": "简体中文",
+    "ko": "한국어",
+    "es": "Español",
+    "zh-TW": "繁體中文",
     "vi": "Tiếng Việt",
-    "en": "English"
+    "ja": "日本語"
   },
   "cropper": {
     "title": "Cắt ảnh tỷ lệ 1:1 (Hình vuông)",
@@ -185,7 +191,32 @@
     "ocCredentialMintedTitle": "Đã cấp Open Campus credential 🎉",
     "ocCredentialMintedBody": "Bạn vừa nhận được: {{name}}",
     "ocCredentialMintedBodyOca": "Chứng nhận của bạn đã sẵn sàng: {{name}}",
-    "viewCredential": "Xem thành tích"
+    "viewCredential": "Xem thành tích",
+    "all": "Tất cả",
+    "unread": "Chưa đọc",
+    "markAllRead": "Đánh dấu tất cả đã đọc",
+    "loadError": "Không tải được thông báo.",
+    "retry": "Thử lại",
+    "loadMore": "Tải thêm",
+    "viewAll": "Xem tất cả thông báo",
+    "member": "Một thành viên",
+    "actorGroup": "{{name}} và {{count}} người khác",
+    "newActivity": "Bạn có hoạt động mới",
+    "social": {
+      "project_liked": "{{actors}} đã thích dự án {{title}} của nhóm bạn.",
+      "project_followed": "{{actors}} đã theo dõi dự án {{title}} của nhóm bạn.",
+      "milestone_liked": "{{actors}} đã thích thành tựu của bạn.",
+      "user_followed": "{{actors}} đã theo dõi bạn.",
+      "project_invite_accepted": "{{actors}} đã chấp nhận lời mời tham gia dự án {{title}}.",
+      "project_invite_declined": "{{actors}} đã từ chối lời mời tham gia dự án {{title}}.",
+      "course_invite_accepted": "{{actors}} đã chấp nhận lời mời đồng giảng viên khóa {{title}}.",
+      "course_invite_declined": "{{actors}} đã từ chối lời mời đồng giảng viên khóa {{title}}.",
+      "submission_received": "Khóa {{title}} có {{count}} bài nộp đang chờ chấm.",
+      "submission_approved": "Bài cuối khóa {{title}} của bạn đã được duyệt.",
+      "submission_rejected": "Bài cuối khóa {{title}} của bạn cần chỉnh sửa. Mở để xem nhận xét.",
+      "hackathon_announcement": "Thông báo từ ban tổ chức: {{title}}"
+    },
+    "updateError": "Không cập nhật được thông báo. Vui lòng thử lại."
   },
   "userProfile": {
     "tabs": {
@@ -811,7 +842,8 @@
       "startFromCatalogTitle": "Bạn chưa tham gia khoá học nào.",
       "startFromCatalogSubtitle": "Chọn một khoá học nền tảng để tạo nhịp học tập.",
       "enrollHint": "Khi bạn ghi danh hoặc mua khoá học đầu tiên, khu vực này sẽ hiện tiến độ và lối vào nhanh.",
-      "profileSetupHintPrefix": "Hãy cập nhật họ tên và số điện thoại để Corelia, giảng viên hoặc"
+      "profileSetupHintPrefix": "Hãy cập nhật họ tên và số điện thoại để Corelia, giảng viên hoặc",
+      "loadFailed": "Không thể tải danh sách khóa học."
     }
   },
   "achievements": {
@@ -961,7 +993,8 @@
     },
     "loadError": {
       "body": "Không thể làm mới thành tích. Hệ thống vẫn đang hiển thị trạng thái credential đã xác nhận gần nhất.",
-      "retry": "Thử lại"
+      "retry": "Thử lại",
+      "vaultUnavailable": "Chưa tải được thành tích. Hãy bấm Thử lại ở trên."
     },
     "stats": {
       "certificates": "Chứng nhận",
@@ -1119,6 +1152,8 @@
   },
   "claim": {
     "loading": "Đang tra cứu...",
+    "legacyTitle": "Nhận chứng nhận đang chờ",
+    "legacyBody": "Đăng ký bằng địa chỉ email trong thư mời để nhận chứng nhận. Thư mời mới sẽ hiển thị bản xem trước.",
     "title": "Bạn có chứng nhận đang chờ",
     "subtitle": "Các chứng nhận sau đang chờ được lưu vào tài khoản của {{email}}.",
     "pendingBadge": "Đang chờ",

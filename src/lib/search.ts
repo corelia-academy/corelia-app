@@ -28,7 +28,8 @@ export interface TrendingSearchRow {
 
 export async function searchPublic(query: string, limit: number, offset = 0, locale?: string) {
   const { data, error } = await supabase.rpc("search_public", {
-    p_query: query,
+    // NFC keeps decomposed Vietnamese input from some IMEs matchable by the RPC's unaccent.
+    p_query: query.normalize("NFC"),
     p_limit: limit,
     p_offset: offset,
   });

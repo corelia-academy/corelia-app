@@ -1,0 +1,1029 @@
+{
+  "sidebar": {
+    "title": "Instructor de Corelia",
+    "subtitle": "Gestiona cursos, perfil y operaciones en un solo lugar.",
+    "createCourse": "Crear curso",
+    "courseList": "Lista de cursos",
+    "offlineClasses": "Clases presenciales",
+    "profile": "Perfil de instructor",
+    "contests": "Concursos"
+  },
+  "layout": {
+    "crumbs": {
+      "home": "Inicio",
+      "teaching": "Enseñanza",
+      "createCourse": "Crear curso",
+      "offlineClasses": "Clases presenciales",
+      "createCohort": "Crear cohorte",
+      "cohortWorkspace": "Espacio de la cohorte",
+      "contests": "Concursos",
+      "createContest": "Crear concurso",
+      "contestWorkspace": "Espacio del concurso",
+      "profile": "Perfil de instructor",
+      "course": "Curso",
+      "edit": "Editar"
+    },
+    "shell": {
+      "newCourse": {
+        "title": "Crear un curso nuevo",
+        "description": "Configura el contenido y un recorrido de aprendizaje gratuito desde cero."
+      },
+      "offlineList": {
+        "title": "Clases presenciales",
+        "description": "Coordina cohortes presenciales, horarios, ubicaciones y grabaciones por sesión."
+      },
+      "newCohort": {
+        "title": "Crear una cohorte nueva",
+        "description": "Crea una cohorte presencial con horario, Google Meet y hoja de ruta para los estudiantes."
+      },
+      "cohortWorkspace": {
+        "title": "Espacio de la cohorte",
+        "description": "Gestiona los horarios de las sesiones, la lista de participantes y las hojas de ruta en un solo lugar."
+      },
+      "contestsList": {
+        "title": "Concursos",
+        "description": "Gestiona hackathons y concursos como parte de las operaciones de enseñanza."
+      },
+      "newContest": {
+        "title": "Crear un concurso nuevo",
+        "description": "Configura una actividad, un cronograma y un flujo operativo en el espacio de trabajo."
+      },
+      "contestWorkspace": {
+        "title": "Espacio del concurso",
+        "description": "Coordina solicitudes, jurados, envíos y resultados en un solo lugar."
+      },
+      "profile": {
+        "title": "Perfil de instructor",
+        "description": "Mantén tu perfil profesional y tu información de colaboración claros y al día."
+      },
+      "editCourse": {
+        "titleFallback": "Editar curso",
+        "description": "Ajusta el contenido, los estudiantes y la configuración del negocio en un solo lugar."
+      },
+      "courseList": {
+        "title": "Cursos",
+        "description": "Sigue todos los productos de formación, su estado de publicación y los siguientes pasos."
+      }
+    },
+    "hero": {
+      "eyebrow": "Área de enseñanza"
+    },
+    "badges": {
+      "externalPartner": "Socio externo",
+      "coreliaInstructor": "Instructor de Corelia",
+      "adminMode": "Modo administrador",
+      "teachingMode": "Tareas de enseñanza"
+    }
+  },
+  "courseNew": {
+    "errors": {
+      "missingProfileName": "Actualiza tu nombre completo en Cuenta.",
+      "missingTitle": "Introduce un título para el curso.",
+      "createFailed": "Error al crear el curso"
+    },
+    "toasts": {
+      "created": "Curso creado correctamente. Puedes seguir editándolo."
+    },
+    "header": {
+      "subtitle": "Configura rápidamente lo inicial antes de pasar a la pantalla de edición detallada.",
+      "step1": "Paso 1: Configuración"
+    },
+    "stats": {
+      "statusLabel": "Estado",
+      "accessLabel": "Tipo de acceso",
+      "ownerLabel": "Origen del curso",
+      "levelLabel": "Nivel"
+    },
+    "nav": {
+      "heading": "Hoja de ruta de configuración",
+      "description": "Tras esta configuración inicial, seguirás completando el contenido y la configuración avanzada.",
+      "generalInfo": "Información general",
+      "content": "Contenido y lecciones",
+      "finalAssignment": "Trabajo final",
+      "certificate": "Certificado",
+      "studentManagement": "Gestión de estudiantes",
+      "deleteCourse": "Eliminar curso"
+    },
+    "tip": {
+      "title": "Consejo de configuración rápida",
+      "description": "Elige el título, el slug y los idiomas del contenido antes de añadir secciones y lecciones."
+    },
+    "section": {
+      "description": "Completa la información básica. Al crear el curso, pasarás a la página de edición para añadir capítulos, lecciones y configuración avanzada.",
+      "startBadge": "Paso inicial"
+    },
+    "labels": {
+      "draft": "Borrador",
+      "originExternal": "Socio externo",
+      "originCorelia": "Instructor de Corelia",
+      "title": "Título del curso",
+      "slug": "Slug",
+      "shortDescription": "Descripción breve",
+      "description": "Descripción",
+      "descriptionMarkdownHint": "Admite Markdown (títulos, listas, enlaces, bloques de código).",
+      "sources": "Fuentes (URL externas)",
+      "sourceAttributionNote": "Nota de atribución de las fuentes",
+      "learningOutcomes": "Lo que aprenderás",
+      "learningOutcomesSubtitle": "Este curso ayudará a los estudiantes a lograr estos resultados.",
+      "learningOutcomesAdd": "Añadir resultado",
+      "skills": "Habilidades que se obtienen",
+      "skillsSubtitle": "Estas habilidades aparecerán en el perfil del estudiante tras completar el curso.",
+      "skillsAdd": "Añadir habilidad",
+      "thumbnail": "Imagen de portada del curso",
+      "ownerType": "Origen del curso",
+      "level": "Nivel",
+      "contentLocales": "Idiomas del contenido del curso",
+      "contentLocalesHint": "Selecciona los idiomas para los que este curso tendrá contenido propio.",
+      "primaryContentLocale": "Idioma principal del contenido (alternativa)",
+      "defaultVideoLocale": "Idioma principal predeterminado del vídeo",
+      "publishedCheckbox": "Publicado (visible en la página de Cursos)",
+      "externalAggregatedCheckbox": "Curso externo público"
+    },
+    "hints": {
+      "businessSettingsRestricted": "Solo el personal académico o los administradores pueden cambiar el origen del curso.",
+      "externalAggregatedDescription": "Este curso reúne contenido de fuentes externas (YouTube/enlaces de referencia al canal del creador)."
+    },
+    "placeholders": {
+      "title": "p. ej. React de principiante a avanzado",
+      "slug": "react-de-principiante-a-avanzado",
+      "shortDescription": "Descripción de una línea (opcional)",
+      "description": "Descripción completa del curso...",
+      "sources": "Una URL por línea\nhttps://youtube.com/...\nhttps://youtube.com/...",
+      "sourceAttributionNote": "Nota pública sobre las fuentes reunidas (p. ej., seleccionado de una lista de reproducción de YouTube de los creadores).",
+      "learningOutcomesItem": "p. ej. Explicar cómo funcionan las billeteras Web3 y las transacciones on-chain",
+      "skillItem": "p. ej. Fundamentos de blockchain"
+    },
+    "actions": {
+      "uploadThumb": "Subir imagen de portada",
+      "uploadingThumb": "Subiendo...",
+      "create": "Crear curso",
+      "creating": "Creando...",
+      "cancel": "Cancelar"
+    }
+  },
+  "courseListPage": {
+    "errors": {
+      "loadFailed": "Error al cargar la lista"
+    },
+    "stats": {
+      "total": "Total de cursos",
+      "published": "Publicados",
+      "drafts": "Borradores",
+      "free": "Cursos gratuitos"
+    },
+    "hero": {
+      "title": "Tu catálogo de cursos",
+      "description": "Sigue el estado de publicación y pasa a editar con un clic.",
+      "create": "Crear curso nuevo"
+    },
+    "empty": {
+      "title": "Aún no hay cursos en este espacio de trabajo.",
+      "description": "Crea tu primer curso para empezar a construir tu catálogo.",
+      "createFirst": "Crear tu primer curso"
+    },
+    "coursePills": {
+      "published": "Publicado",
+      "draft": "Borrador"
+    },
+    "courseCards": {
+      "pricingLabel": "Modelo de precios",
+      "free": "Gratis",
+      "instructorLabel": "Instructor",
+      "you": "Tú"
+    },
+    "actions": {
+      "viewCourseTitle": "Abrir página del curso",
+      "previewDraftTitle": "Vista previa del borrador",
+      "viewCourse": "Ver curso",
+      "preview": "Vista previa",
+      "edit": "Editar"
+    }
+  },
+  "courseEdit": {
+    "i18n": {
+      "supportedLocalesLabel": "Idiomas del contenido",
+      "supportedLocalesHint": "Activa o desactiva los idiomas del contenido de este curso. El progreso de aprendizaje se comparte entre idiomas.",
+      "primaryLocaleLabel": "Idioma principal del contenido",
+      "editingLocaleLabel": "Editando el contenido de",
+      "editingNonPrimaryHint": "Estás editando una traducción. El contenido del idioma principal permanece separado.",
+      "translationModeBadge": "Modo de traducción",
+      "currentLocaleBadge": "Actual",
+      "primaryEditingHint": "Estás editando directamente el idioma de origen.",
+      "translationEditingHint": "Estás editando una traducción de {{source}} a {{target}}.",
+      "addLanguage": "Añadir idioma",
+      "removeLanguage": "Quitar {{language}}"
+    },
+    "defaults": {
+      "lessonTitle": "Lección"
+    },
+    "coInstructors": {
+      "label": "Coinstructores",
+      "hint": "Añade coinstructores para mostrarlos en la página del curso y, opcionalmente, concederles acceso limitado.",
+      "dialogTitle": "Seleccionar coinstructores",
+      "dialogDescription": "Solo se pueden seleccionar instructores del directorio.",
+      "fallbackName": "Instructor",
+      "placeholder": "Selecciona coinstructores…",
+      "searchPlaceholder": "Busca por nombre/correo…",
+      "emptyLabel": "No hay instructores que coincidan.",
+      "loadingDirectory": "Cargando instructores…",
+      "permissions": {
+        "students": "Ver estudiantes",
+        "submissions": "Revisar envíos",
+        "content": "Ver contenido",
+        "certificates": "Ver certificados",
+        "pricing": "Ver precios"
+      },
+      "showOnCoursePage": "Mostrar en la página de detalles del curso",
+      "willInviteBadge": "Se invitará al guardar",
+      "inviteSent": "Se enviaron {{count}} invitación(es) de coinstructor",
+      "inviteFailed": "Fallaron {{count}} invitación(es) de coinstructor",
+      "inviteEmailFailed": "Se creó la invitación en la aplicación, pero no se pudo enviar el correo a {{count}} destinatario(s).",
+      "inviteRevoked": "Invitación revocada",
+      "pendingTitle": "Invitaciones pendientes",
+      "pendingHint": "Estas personas han sido invitadas pero aún no han aceptado. No pueden acceder al curso hasta que acepten.",
+      "pendingExpiresAt": "Caduca el {{date}}",
+      "revokeInvite": "Revocar"
+    },
+    "sponsors": {
+      "label": "Patrocinadores",
+      "hint": "Añade patrocinadores para mostrarlos en la barra lateral del curso (logotipo, nombre, sitio web, descripción).",
+      "countLabel": "{{count}} patrocinadores",
+      "empty": "Aún no hay patrocinadores.",
+      "actions": {
+        "add": "Añadir patrocinador",
+        "uploadLogo": "Subir logotipo",
+        "uploading": "Subiendo...",
+        "save": "Guardar patrocinador",
+        "cancel": "Cancelar"
+      },
+      "fields": {
+        "logo": "Logotipo",
+        "name": "Nombre del patrocinador",
+        "website": "Sitio web",
+        "description": "Descripción"
+      },
+      "dialog": {
+        "title": "Patrocinador"
+      },
+      "confirm": {
+        "remove": "¿Quitar este patrocinador?"
+      },
+      "errors": {
+        "missingName": "Introduce el nombre del patrocinador.",
+        "invalidWebsite": "El sitio web debe ser una URL válida (https://...).",
+        "uploadLogoFailed": "No se pudo subir el logotipo del patrocinador."
+      },
+      "toasts": {
+        "saved": "Patrocinador guardado.",
+        "removed": "Patrocinador eliminado.",
+        "logoUploaded": "Logotipo subido."
+      }
+    },
+    "partners": {
+      "label": "Socios",
+      "hint": "Añade socios para mostrarlos en la barra lateral del curso (logotipo, nombre, sitio web, descripción).",
+      "countLabel": "{{count}} socios",
+      "empty": "Aún no hay socios.",
+      "actions": {
+        "add": "Añadir socio",
+        "uploadLogo": "Subir logotipo",
+        "uploading": "Subiendo...",
+        "save": "Guardar socio",
+        "cancel": "Cancelar"
+      },
+      "fields": {
+        "logo": "Logotipo",
+        "name": "Nombre del socio",
+        "website": "Sitio web",
+        "description": "Descripción"
+      },
+      "dialog": {
+        "title": "Socio"
+      },
+      "confirm": {
+        "remove": "¿Quitar este socio?"
+      },
+      "errors": {
+        "missingName": "Introduce el nombre del socio.",
+        "invalidWebsite": "El sitio web debe ser una URL válida (https://...).",
+        "uploadLogoFailed": "No se pudo subir el logotipo del socio."
+      },
+      "toasts": {
+        "saved": "Socio guardado.",
+        "removed": "Socio eliminado.",
+        "logoUploaded": "Logotipo subido."
+      }
+    },
+    "partnerBrand": {
+      "label": "Ofrecido por / Socio",
+      "hint": "Esta información se mostrará en la barra lateral del curso para los cursos de socios.",
+      "actions": {
+        "uploadLogo": "Subir logotipo",
+        "uploading": "Subiendo...",
+        "save": "Guardar información del socio"
+      },
+      "fields": {
+        "name": "Nombre del socio",
+        "website": "Sitio web",
+        "description": "Descripción"
+      },
+      "errors": {
+        "invalidWebsite": "El sitio web debe ser una URL válida (https://...).",
+        "uploadLogoFailed": "No se pudo subir el logotipo del socio."
+      },
+      "toasts": {
+        "saved": "Información del socio guardada.",
+        "logoUploaded": "Logotipo subido."
+      }
+    },
+    "errors": {
+      "loadCourseFailed": "Error al cargar el curso",
+      "refreshTotalFailed": "Error al actualizar",
+      "uploadThumbnailFailed": "No se pudo subir la imagen de portada del curso",
+      "updateFailed": "Error al actualizar",
+      "processFailed": "La acción falló",
+      "missingCertificateTemplate": "Sube una imagen de plantilla del certificado cuando esté activada la emisión de certificados.",
+      "missingCertificateTemplateCta": "Certificado",
+      "uploadCertTemplateFailed": "No se pudo subir la plantilla del certificado",
+      "clearCertTemplateFailed": "No se pudo cancelar el certificado",
+      "addSectionFailed": "No se pudo añadir la sección",
+      "addLessonFailed": "No se pudo añadir la lección",
+      "deleteSectionFailed": "No se pudo eliminar la sección",
+      "deleteLessonFailed": "No se pudo eliminar la lección",
+      "deleteCourseFailed": "No se pudo eliminar el curso",
+      "reorderLessonsFailed": "No se puede actualizar el orden de las lecciones",
+      "reorderSectionsFailed": "No se puede actualizar el orden de las secciones",
+      "prepareLessonFailed": "No se pudo preparar la lección.",
+      "externalSourcesRequired": "Introduce al menos una URL de origen cuando esté activado Curso externo público."
+    },
+    "page": {
+      "back": "Atrás"
+    },
+    "business": {
+      "ownershipLabel": "Origen del curso",
+      "ownershipAdminOnly": "Solo los administradores pueden actualizar el origen del curso.",
+      "ownershipCurrent": "Actual: {{type}}"
+    },
+    "externalCourse": {
+      "toggleLabel": "Curso externo público",
+      "toggleHint": "Actívalo si este curso reúne fuentes externas; las fuentes y la atribución aparecerán en la página pública.",
+      "sourcesLabel": "Fuentes de referencia (URL) *",
+      "sourcesPlaceholder": "Una URL por línea\nhttps://youtube.com/...\nhttps://youtube.com/...",
+      "sourcesRequired": "Obligatorio cuando está activado Curso externo público.",
+      "attributionLabel": "Nota de atribución de las fuentes",
+      "attributionPlaceholder": "Nota pública sobre las fuentes reunidas (p. ej., seleccionado de las listas de reproducción de YouTube de los creadores)."
+    },
+    "toasts": {
+      "totalDurationRefreshed": "Duración total actualizada. La página de la lista de cursos ya debería mostrarse correctamente.",
+      "saved": "Cambios guardados.",
+      "assignmentApproved": "Entrega aprobada.",
+      "assignmentRejected": "Entrega rechazada.",
+      "certificateIssued": "Certificado emitido.",
+      "assignmentConfigSaved": "Ajustes del trabajo guardados.",
+      "certTemplateUploaded": "Plantilla del certificado subida.",
+      "certTemplateCleared": "Certificado cancelado."
+    },
+    "confirm": {
+      "deleteSection": "¿Eliminar esta sección y todas las lecciones que contiene?",
+      "deleteLesson": "¿Eliminar esta lección?",
+      "deleteCourse": "¿Eliminar todo el curso y su contenido? Esta acción no se puede deshacer."
+    },
+    "labels": {
+      "published": "Publicado",
+      "draft": "Borrador",
+      "uploadThumb": "Subir imagen de portada",
+      "uploadingThumb": "Subiendo...",
+      "save": "Guardar cambios",
+      "saving": "Guardando...",
+      "saveInfo": "Información general guardada.",
+      "saveAssignment": "Guardar ajustes del trabajo",
+      "saveCertificate": "Ajustes del certificado guardados.",
+      "reload": "Recargar",
+      "loading": "Cargando...",
+      "updating": "Actualizando…",
+      "updateTotalDuration": "Actualizar duración total",
+      "add": "Añadir",
+      "adding": "Añadiendo…",
+      "addSection": "Añadir sección",
+      "addingSection": "Añadiendo...",
+      "uploadTemplate": "Subir plantilla",
+      "uploadingTemplate": "Subiendo..."
+    },
+    "certificate": {
+      "sectionTitle": "Plantilla del certificado",
+      "sectionDescription": "Sube un fondo para el certificado (PNG/JPG). El nombre del estudiante se colocará en la posición que indiques para que pueda descargarlo y compartirlo en redes sociales.",
+      "templateLabel": "Plantilla del certificado",
+      "uploadTemplate": "Subir plantilla",
+      "uploadingTemplate": "Subiendo...",
+      "viewCurrentTemplate": "Ver plantilla actual",
+      "nameXLabel": "Posición del nombre del estudiante (% desde la izquierda)",
+      "nameYLabel": "Posición del nombre del estudiante (% desde arriba)",
+      "nameColorLabel": "Color del texto del nombre",
+      "nameColorHint": "Color del nombre del estudiante superpuesto en el certificado.",
+      "afterUploadHintPrefix": "Tras subirla, ajusta los dos campos «Posición del nombre» (% desde la izquierda / % desde arriba).",
+      "fileFormatHint": "Formato: PNG o JPG.",
+      "disabledHint": "Activa «Este curso emite un certificado de finalización» en la pestaña de información general antes de configurar la plantilla del certificado.",
+      "disabledCta": "Ir a información general",
+      "setupLeaveWarning": "La configuración del certificado se cancelará y tendrás que empezar de nuevo. ¿Salir de esta página?",
+      "saveLayout": "Guardar diseño del certificado",
+      "nameGroupTitle": "Nombre del estudiante",
+      "nameSizeLabel": "Tamaño del texto del nombre (% del ancho)",
+      "footerGroupTitle": "Bloque del pie (fecha de emisión / ID del certificado)",
+      "footerGroupHint": "Se imprime en Google Sans. El código de verificación que se muestra aquí es al que apunta el QR.",
+      "footerXLabel": "Posición del pie (% desde la izquierda)",
+      "footerYLabel": "Posición del pie (% desde arriba)",
+      "footerSizeLabel": "Tamaño del texto del pie (% del ancho)",
+      "footerColorLabel": "Color del texto del pie",
+      "qrGroupTitle": "Código QR de verificación",
+      "qrGroupHint": "El código QR permite escanearlo para verificar el certificado. El tamaño mínimo es 3 % y el máximo 30 %.",
+      "qrXLabel": "Centro del QR (% desde la izquierda)",
+      "qrYLabel": "Centro del QR (% desde arriba)",
+      "qrSizeLabel": "Tamaño del QR (% del ancho)",
+      "previewTitle": "Vista previa del diseño",
+      "previewNoTemplate": "Sube una plantilla de certificado para ver la vista previa.",
+      "previewHint": "Datos de ejemplo. El certificado real usa el nombre del estudiante, la fecha de emisión y el código de verificación.",
+      "previewSampleName": "María Pérez"
+    },
+    "questionGenerator": {
+      "deleteQuestion": "Eliminar pregunta",
+      "questionContentPlaceholder": "Contenido de la pregunta...",
+      "optionIsCorrect": "La opción {{id}} es correcta",
+      "optionPlaceholder": "Opción {{id}}...",
+      "explanationToggle": "Explicación de la respuesta",
+      "explanationPlaceholder": "Explica por qué la respuesta es correcta (opcional)...",
+      "replaceDraftConfirm": "¿Generar preguntas nuevas y reemplazar el borrador actual? Se perderán las ediciones sin guardar."
+    },
+    "certificateGuide": {
+      "title": "Cómo crear una plantilla",
+      "sizeHint": "Tamaño recomendado: 1600×1200 px (4:3 horizontal) o 1200×1600 px (3:4 vertical).",
+      "nameAreaHint": "Deja un área vacía en la imagen para el nombre del estudiante (p. ej. en el centro o en el tercio inferior).",
+      "afterUploadHint": "Tras subirla, ajusta los dos campos «Posición del nombre» (% desde la izquierda / % desde arriba) para que el nombre quede en el área vacía. 50 % = centro.",
+      "downloadSample": "Descargar plantilla de ejemplo (SVG)"
+    },
+    "ocb": {
+      "title": "Credencial on-chain de Open Campus",
+      "subtitle": "Los estudiantes que cumplan los requisitos pueden reclamar su propia credencial on-chain verificable desde la página de Logros. Revisan su nombre y su OCID antes de emitirla: no se emite nada automáticamente.",
+      "loading": "Cargando la configuración de la credencial…",
+      "loadFailed": "No se pudo cargar la configuración de la credencial.",
+      "adminManagedTitle": "Configuración gestionada por los administradores",
+      "adminManagedDescription": "Solo los administradores pueden configurar y activar o desactivar las credenciales de Open Campus de este curso. Contacta con un administrador para emitir o cambiar credenciales de estudiantes.",
+      "unsupportedCourseTitle": "Las credenciales de Open Campus no son compatibles con este curso",
+      "unsupportedCourseDescription": "Actualmente las credenciales de Open Campus solo se pueden configurar para cursos propiedad de Corelia.",
+      "statusActive": "Activa",
+      "statusInactive": "Sin configurar",
+      "mintToggleLabel": "Permitir la emisión on-chain",
+      "kind": {
+        "label": "Tipo de credencial",
+        "oca": {
+          "label": "OCA: Certificado de logro",
+          "desc": "Credencial on-chain con formato de certificado. Ideal para finalizaciones de cursos y certificaciones."
+        },
+        "ocb": {
+          "label": "OCB: Insignia de Open Campus",
+          "desc": "Credencial de insignia de habilidad. Ideal para logros más breves y dominio de temas."
+        }
+      },
+      "configTitle": "Detalles de la credencial",
+      "requirementsTitle": "Requisitos de elegibilidad",
+      "confirmDeactivateWithIssuances": "{{count}} estudiante(s) ya tienen esta credencial. Desactivarla detiene la emisión a nuevos estudiantes: NO revoca lo que ya se emitió. ¿Continuar con la desactivación?",
+      "leaveWithoutSavingWarning": "Tienes cambios sin guardar en las credenciales de OpenCampus. Si sales ahora NO se emitirá la credencial on-chain a los estudiantes. ¿Salir de todos modos?",
+      "noPermission": "No tienes permiso para configurar credenciales de este curso.",
+      "nameLabel": "Nombre de la credencial",
+      "descriptionLabel": "Descripción",
+      "badgeImageLabel": "Imagen de la insignia",
+      "imageHint": "Recomendado: 1600×1200 px (horizontal) o 1200×1600 px (vertical). Se usa como arte de la insignia on-chain en OpenCampus.",
+      "uploadBadge": "Subir imagen",
+      "uploading": "Subiendo…",
+      "uploadOk": "Imagen subida.",
+      "uploadFailed": "Falló la subida.",
+      "onchainCertLabel": "Plantilla de certificado on-chain (Web3)",
+      "onchainCertHint": "Se usa para emitir la credencial on-chain. NO debe contener ningún espacio reservado para el nombre del estudiante, para proteger su privacidad.",
+      "uploadOnchainCert": "Subir plantilla on-chain",
+      "onchainCertUploaded": "Plantilla OCA on-chain subida.",
+      "onchainCertUploadFailed": "No se pudo subir la plantilla on-chain.",
+      "onchainCertRequired": "Sube la plantilla on-chain antes de guardar la configuración del OCA.",
+      "imageRequired": "Sube una imagen de la credencial antes de guardar.",
+      "completionPctLabel": "Finalización mínima de lecciones",
+      "requireAssignmentPassLabel": "Exigir la aprobación del trabajo final",
+      "requireAssignmentLabel": "Exigir la aprobación del trabajo final",
+      "minScoreLabel": "Puntuación mínima del trabajo",
+      "identifierPrefixLabel": "Prefijo del identificador",
+      "identifierHint": "Usa un prefijo de programa reconocible (p. ej. corelia:unihackfest-2026). Los primeros 25 caracteres aparecen en Open Campus, seguidos de un código único.",
+      "identifierLocked": "Ya existen {{count}} credencial(es). El prefijo está bloqueado para evitar emisiones duplicadas.",
+      "save": "Guardar configuración de la credencial",
+      "saving": "Guardando…",
+      "saved": "Configuración de la credencial guardada.",
+      "saveFailed": "No se pudo guardar la configuración de la credencial."
+    },
+    "form": {
+      "titleLabel": "Título del curso",
+      "shortDescriptionLabel": "Descripción breve",
+      "shortDescriptionPlaceholder": "Descripción de una línea (opcional)",
+      "descriptionLabel": "Descripción",
+      "descriptionMarkdownHint": "Admite Markdown (títulos, listas, enlaces, bloques de código).",
+      "learningOutcomesLabel": "Lo que aprenderás",
+      "learningOutcomesSubtitle": "Este curso ayudará a los estudiantes a lograr estos resultados.",
+      "learningOutcomesItemPlaceholder": "p. ej. Explicar cómo funcionan las billeteras Web3 y las transacciones on-chain",
+      "learningOutcomesAdd": "Añadir resultado",
+      "skillsLabel": "Habilidades que se obtienen",
+      "skillsSubtitle": "Usa habilidades amplias a nivel de ámbito (por ejemplo: Web3, Blockchain, DeFi). Aparecen en el perfil del estudiante tras completar el curso.",
+      "skillsItemPlaceholder": "p. ej. Web3",
+      "skillsAdd": "Añadir habilidad",
+      "thumbnailLabel": "Imagen de portada del curso",
+      "levelLabel": "Nivel"
+    },
+    "sidebar": {
+      "editingLanguage": "Idioma de edición",
+      "primaryBadge": "principal",
+      "navTitle": "Navegación del editor",
+      "navHint": "Recorre cada grupo de configuración para completar el curso antes de publicarlo.",
+      "nav": {
+        "info": "Información general",
+        "content": "Contenido y lecciones",
+        "assignments": "Trabajo final",
+        "certificate": "Certificado",
+        "credentials": "Credenciales de OpenCampus",
+        "students": "Gestionar estudiantes",
+        "danger": "Eliminar curso",
+        "announcements": "Anuncios"
+      }
+    },
+    "content": {
+      "heading": "Contenido del curso",
+      "savingOrder": "Guardando el orden de las lecciones...",
+      "dragHint": "Arrastra el icono de puntos para reordenar las lecciones dentro de cada sección, o usa las flechas arriba/abajo si lo prefieres.",
+      "sectionsToggleLabel": "Organizar por capítulos",
+      "saveStructure": "Guardar estructura",
+      "sectionsToggleHint": "Actívalo para agrupar las lecciones en capítulos. Desactívalo para una lista plana de lecciones.",
+      "addSectionHeading": "Añadir sección nueva",
+      "lessonTitlePlaceholder": "Título de la lección (opcional)",
+      "lessonMinutesPlaceholder": "Duración (minutos): si no se puede obtener la duración de YouTube, introdúcela aquí",
+      "sectionTitlePlaceholder": "Título de la sección"
+    },
+    "questions": {
+      "number": "Pregunta {{number}}",
+      "loadFailed": "No se pudieron cargar las preguntas existentes.",
+      "loadFailedBeforeGenerate": "No se pueden generar preguntas mientras no se hayan podido cargar las existentes.",
+      "loadFailedBeforeSave": "No se pueden guardar las preguntas mientras la carga de preguntas esté en estado de error.",
+      "retry": "Reintentar",
+      "generateFailed": "No se pudieron generar las preguntas.",
+      "fillRequired": "Completa la pregunta y al menos dos opciones de respuesta.",
+      "saveFailed": "No se pudieron guardar las preguntas.",
+      "lessonTitle": "Preguntas de la lección: {{title}}",
+      "sectionTitle": "Preguntas del cuestionario: {{title}}",
+      "lessonDescription": "Crea preguntas de cuestionario para esta lección. Puedes elegir otras lecciones de la sección como fuentes de contenido.",
+      "sectionDescription": "Usa la IA para generar preguntas de cuestionario a partir del contenido de las lecciones. Puedes editarlas antes de guardar.",
+      "sourceLessons": "Lecciones de origen",
+      "currentLesson": "esta lección",
+      "count": "Número de preguntas",
+      "generate": "Generar preguntas",
+      "generating": "Generando...",
+      "sources": "Fuentes de contenido",
+      "loading": "Cargando preguntas...",
+      "empty": "Genera preguntas a partir del contenido de la lección o añade manualmente tus propias preguntas A/B/C/D abajo.",
+      "emptyInline": "Aún no hay preguntas. Añade una ahora, o crea primero el cuestionario y genera las preguntas después.",
+      "add": "Añadir pregunta",
+      "remove": "Quitar pregunta",
+      "questionPlaceholder": "Texto de la pregunta...",
+      "optionPlaceholder": "Opción {{option}}...",
+      "correctAnswer": "La opción {{option}} es correcta",
+      "explanationPlaceholder": "Explicación de la respuesta (opcional)",
+      "cancel": "Cancelar",
+      "saving": "Guardando...",
+      "saveCount": "Guardar {{count}} preguntas",
+      "savedLesson": "Se guardaron {{count}} preguntas para esta lección.",
+      "savedSection": "Se guardaron {{count}} preguntas para esta sección."
+    },
+    "sections": {
+      "notTranslated": "Sin traducir",
+      "edit": "Editar",
+      "questions": "Preguntas",
+      "editTitle": "Editar sección",
+      "titleLabel": "Título",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Descripción breve de la sección (opcional)",
+      "cancel": "Cancelar",
+      "save": "Guardar"
+    },
+    "descriptionGenerator": {
+      "trigger": "Generar",
+      "translateTrigger": "Traducir con IA",
+      "courseTitle": "Generar descripción del curso",
+      "courseDescription": "La descripción se redactará a partir de las lecciones que ya están en este curso.",
+      "translateCourseTitle": "Traducir con IA la descripción del curso",
+      "translateCourseDescription": "Traduce el contenido existente de {{source}} a {{target}} antes de guardar.",
+      "sectionTitle": "Generar descripción de la sección",
+      "sectionDescription": "La descripción se redactará a partir de las lecciones de esta sección.",
+      "translateSectionTitle": "Traducir con IA la descripción de la sección",
+      "translateSectionDescription": "Traduce el contenido existente de {{source}} a {{target}} antes de guardar.",
+      "lessonTitle": "Generar descripción de la lección",
+      "lessonDescription": "La descripción usará el contenido en vídeo de la lección junto con cualquier texto existente de la lección.",
+      "translateLessonTitle": "Traducir con IA el contenido de la lección",
+      "translateLessonDescription": "Traduce el contenido existente de {{source}} a {{target}} antes de guardar.",
+      "currentCourseSource": "Contenido de origen existente",
+      "translateDialogHint": "Puedes traducir rápidamente desde el idioma de origen y luego pulir el resultado antes de guardar.",
+      "sourcesTitle": "Contenido de origen usado para la generación",
+      "emptySources": "Aún no hay contenido de origen utilizable.",
+      "previewTitle": "Borrador de descripción",
+      "previewPlaceholder": "Haz clic en Generar para crear un borrador...",
+      "generate": "Generar descripción",
+      "generating": "Generando...",
+      "translating": "Traduciendo...",
+      "translateApplied": "Traducción aplicada. Revísala y guarda cuando estés listo.",
+      "cancel": "Cancelar",
+      "useDescription": "Usar esta descripción",
+      "warnings": {
+        "limited": "El contenido de origen actual es limitado. Comprueba que haya contenido suficiente para generar una descripción de calidad.",
+        "notEnough": "Comprueba que haya contenido suficiente para generar una descripción de calidad."
+      },
+      "sourceKinds": {
+        "shortDescription": "Descripción breve",
+        "longDescription": "Descripción larga",
+        "transcript": "Contenido en vídeo",
+        "missing": "Falta el origen"
+      },
+      "errors": {
+        "generic": "No se puede generar una descripción en este momento.",
+        "noBundle": "La respuesta de la traducción no incluía un paquete de contenido."
+      }
+    },
+    "translationCoverage": {
+      "title": "Cobertura de traducción",
+      "description": "Consulta rápidamente qué partes de la versión en {{target}} ya están rellenas y cuáles se pueden traducir desde {{source}}.",
+      "completed": "{{completed}} / {{total}} campos rellenos",
+      "readyToTranslate": "{{count}} campos listos para traducir",
+      "states": {
+        "done": "Rellenado",
+        "ready": "Listo",
+        "missing": "Sin origen"
+      },
+      "messages": {
+        "filled": "Este campo ya tiene contenido en el idioma {{locale}}.",
+        "sourceAvailable": "Este campo está vacío en el idioma actual, pero ya existe contenido de origen en {{locale}}.",
+        "noSource": "Aún no hay contenido de origen suficientemente claro para traducir automáticamente."
+      },
+      "actions": {
+        "openField": "Abrir este campo"
+      },
+      "fields": {
+        "title": "Título del curso",
+        "shortDescription": "Descripción breve",
+        "description": "Descripción",
+        "learningOutcomes": "Lo que aprenderás",
+        "assignmentTitle": "Título del trabajo",
+        "assignmentDescription": "Descripción del trabajo",
+        "assignmentInstructions": "Instrucciones del trabajo"
+      }
+    },
+    "lessons": {
+      "formatLabel": "Tipo de lección",
+      "formatVideo": "Lección en vídeo",
+      "formatArticle": "Lección de texto",
+      "formatQuiz": "Cuestionario",
+      "formatPractice": "Práctica",
+      "formatHint": "Las lecciones de texto solo usan contenido escrito: no se necesita vídeo de YouTube.",
+      "articleContentRequired": "Añade el contenido de la lección (Markdown o descripción breve) para una lección de texto.",
+      "practiceContentRequired": "Añade instrucciones de práctica para esta lección de práctica.",
+      "practiceSourceLabel": "Lección de origen",
+      "practiceSourceNone": "Sin lección de origen",
+      "practiceSourceHint": "Elige la lección en la que se basa esta actividad práctica.",
+      "lessonQuestions": "Preguntas",
+      "lessonQuestionsTitle": "Preguntas de la lección",
+      "lessonQuestionsHint": "Las preguntas se adjuntan a esta lección y no cambian su tipo de lección ni el vídeo existente.",
+      "quizConversionBlocked": "Una lección de contenido no se puede convertir en cuestionario. Abre Preguntas para adjuntar un cuestionario a esta lección.",
+      "quizSetupTitle": "Preguntas del cuestionario",
+      "quizSetupHint": "Genera preguntas a partir de las lecciones de esta sección o añade manualmente tus propias preguntas A/B/C/D.",
+      "quizCreateHint": "Tras crear esta lección de cuestionario, puedes generar preguntas a partir de lecciones existentes o añadirlas manualmente.",
+      "notTranslated": "Sin traducir",
+      "edit": "Editar",
+      "editTitle": "Editar detalles de la lección",
+      "create": "Añadir lección",
+      "createTitle": "Crear lección",
+      "createAction": "Crear lección",
+      "creating": "Creando...",
+      "titleLabel": "Título",
+      "youtubeLabel": "Enlace de YouTube",
+      "showPreview": "Vista previa",
+      "hidePreview": "Ocultar",
+      "draftBadge": "Actualizando",
+      "youtubePlaceholder": "Enlace de YouTube (opcional)",
+      "videoPrimaryLocaleLabel": "Idioma principal del vídeo",
+      "videoPrimaryLocaleHint": "Se usa para indicar el idioma del audio o la locución del vídeo; puede ser distinto del idioma del contenido.",
+      "durationMinutesLabel": "Duración (minutos)",
+      "durationHint": "Si lo dejas en blanco, el sistema intentará obtener la duración de YouTube cuando sea posible.",
+      "nonVideoDurationHint": "Estimación opcional que se usa para la duración del curso y la planificación de los estudiantes.",
+      "previewFreeLabel": "Activar lección de vista previa gratuita",
+      "previewBadge": "Vista previa",
+      "previewFreeBadge": "Vista previa gratuita",
+      "shortDescriptionLabel": "Descripción breve",
+      "shortDescriptionPlaceholder": "Una o dos frases (opcional)",
+      "markdownLabel": "Descripción larga (Markdown)",
+      "markdownHint": "Admite Markdown (títulos, listas, enlaces, bloques de código).",
+      "practiceMarkdownLabel": "Instrucciones de la práctica (Markdown)",
+      "practiceMarkdownHint": "Escribe la tarea, los entregables, las indicaciones o los pasos de reflexión que los estudiantes deben completar.",
+      "resourcesLabel": "Recursos",
+      "resourceTitlePlaceholder": "Título del recurso",
+      "resourceUrlPlaceholder": "https://...",
+      "addResource": "Añadir recurso",
+      "previewTitle": "Vista previa",
+      "previewEmpty": "Aún no hay descripción larga.",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "segmentStartLabel": "Inicio del segmento",
+      "segmentEndLabel": "Fin del segmento",
+      "segmentStartPlaceholder": "p. ej. 0:00",
+      "segmentEndPlaceholder": "p. ej. 15:30 (déjalo en blanco para llegar al final del vídeo)",
+      "segmentHint": "Las marcas de tiempo definen la parte del mismo vídeo de YouTube que corresponde a esta lección (M:SS o H:MM:SS).",
+      "progressLockBanner": "{{count}} estudiante(s) ya tienen progreso en esta lección. Puedes editar el texto y las marcas de tiempo del segmento, pero no cambiar a otro vídeo.",
+      "youtubeLockedHint": "El enlace de YouTube está bloqueado porque hay estudiantes con progreso en esta lección.",
+      "cannotChangeVideoWithProgress": "No se puede cambiar a otro vídeo de YouTube mientras haya estudiantes con progreso en esta lección.",
+      "segmentEndInvalid": "El fin del segmento debe ser una marca de tiempo válida posterior al inicio."
+    },
+    "longVideo": {
+      "title": "Vídeo largo de YouTube",
+      "editReplaceTitle": "Vídeo largo: ¿reemplazar esta lección?",
+      "editReplaceIntro": "Cambiaste a otro vídeo (de unos {{duration}}). Puedes mantenerlo como una sola lección, dividirlo según los capítulos de la descripción o definir segmentos manualmente. Al dividir se elimina la lección actual y se insertan las nuevas en el mismo lugar.",
+      "intro": "Este vídeo dura unos {{duration}}. Mantén una sola lección, divídelo automáticamente según las marcas de tiempo de la descripción o define segmentos manualmente.",
+      "foundChapters": "Marcas de tiempo encontradas en la descripción del vídeo:",
+      "noChapters": "No se encontraron capítulos con marcas de tiempo en la descripción. Divide manualmente o mantén una sola lección.",
+      "keepSingle": "Mantener una sola lección",
+      "autoSplit": "Crear lecciones a partir de los capítulos",
+      "manualSplit": "Dividir manualmente",
+      "manualTitle": "Definir segmentos",
+      "manualAddRow": "Añadir segmento",
+      "manualConfirm": "Crear lecciones",
+      "manualStartPlaceholder": "Inicio (p. ej. 0:00)",
+      "manualEndPlaceholder": "Fin (opcional)",
+      "back": "Atrás",
+      "dismiss": "Cancelar",
+      "manual": {
+        "invalidTimestamp": "Introduce marcas de tiempo válidas como 15:30 o 1:20:00.",
+        "invalidEnd": "La hora de fin debe ser posterior al inicio.",
+        "invalidRange": "Cada segmento necesita una duración válida.",
+        "overlap": "Los segmentos no deben solaparse.",
+        "needRow": "Añade al menos un segmento."
+      }
+    },
+    "assignments": {
+      "completionRequirement": "Cuando se configura un trabajo final, los estudiantes deben entregarlo y recibir aprobación para completar el curso.",
+      "titleLabel": "Título del trabajo",
+      "titlePlaceholder": "p. ej. Proyecto final (en blanco = no obligatorio)",
+      "descriptionLabel": "Descripción / requisitos",
+      "descriptionPlaceholder": "Describe lo que los estudiantes deben entregar...",
+      "instructionsLabel": "Instrucciones (opcional)",
+      "instructionsPlaceholder": "Orientación adicional para los estudiantes...",
+      "reviewApprove": "Aprobar",
+      "reviewReject": "Rechazar",
+      "settingsTitle": "Ajustes del trabajo",
+      "submissionsTitle": "Entregas de los estudiantes",
+      "noSubmissions": "Aún no hay entregas.",
+      "noSubmissionsHint": "Aún no hay entregas. Añade un título al trabajo en «Ajustes del trabajo» arriba y guarda para activar los requisitos de entrega.",
+      "columns": {
+        "student": "Estudiante",
+        "content": "Contenido",
+        "submittedAt": "Enviado",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "lessonProgress": "{{progress}} % de lecciones",
+      "attachments": "{{count}} archivo(s) adjunto(s)",
+      "viewSubmission": "Ver entrega completa",
+      "attachment": "Archivo adjunto {{number}}",
+      "unavailableAttachment": "El archivo adjunto {{number}} tiene un enlace no válido",
+      "feedback": "Comentarios de la revisión"
+    },
+    "publishing": {
+      "publishedHint": "Publicado (visible en la página del curso)",
+      "hasCertificateHint": "Este curso emite un certificado de finalización",
+      "certificateConfiguredLockedHint": "Hay una plantilla de certificado configurada. La emisión de certificados no se puede desactivar aquí.",
+      "updatingHint": "Este curso se está actualizando (mostrar un aviso a los estudiantes)"
+    },
+    "students": {
+      "empty": "Aún no hay estudiantes inscritos en este curso.",
+      "columns": {
+        "student": "Estudiante",
+        "progress": "Progreso",
+        "assignment": "Trabajo",
+        "certificate": "Certificado",
+        "enrolledAt": "Inscripción",
+        "lastAccess": "Último acceso"
+      },
+      "status": {
+        "approved": "Aprobado",
+        "rejected": "Cambios solicitados",
+        "pending": "Pendiente",
+        "notSubmitted": "No enviado",
+        "notEligible": "No elegible",
+        "issue": "Emitir",
+        "issued": "Emitido"
+      }
+    },
+    "danger": {
+      "deleteCourseTitle": "¿Eliminar el curso?",
+      "dangerZoneTitle": "Zona de peligro",
+      "deleteWarning": "Al eliminar el curso se borrará todo el contenido (secciones, lecciones). Esta acción no se puede deshacer.",
+      "deleteConfirmWarning": "Todo el contenido (secciones, lecciones) se eliminará de forma permanente. Esta acción no se puede deshacer.",
+      "deleteButton": "Eliminar"
+    },
+    "stats": {
+      "sections": "Secciones",
+      "lessons": "Lecciones",
+      "students": "Estudiantes",
+      "submissions": "Entregas"
+    },
+    "tooltips": {
+      "dragReorder": "Arrastra para reordenar",
+      "moveUp": "Subir",
+      "moveDown": "Bajar"
+    },
+    "a11y": {
+      "dragSection": "Arrastra para reordenar la sección {{title}}",
+      "moveSectionUp": "Subir la sección {{title}}",
+      "moveSectionDown": "Bajar la sección {{title}}",
+      "dragLesson": "Arrastra para reordenar la lección {{title}}",
+      "moveLessonUp": "Subir la lección {{title}}",
+      "moveLessonDown": "Bajar la lección {{title}}",
+      "removeOutcome": "Quitar el resultado de aprendizaje {{number}}",
+      "removeSkill": "Quitar la habilidad {{number}}",
+      "deleteSection": "Eliminar la sección {{title}}",
+      "editSponsor": "Editar patrocinador {{title}}",
+      "removeSponsor": "Quitar patrocinador {{title}}",
+      "editPartner": "Editar socio {{title}}",
+      "removePartner": "Quitar socio {{title}}"
+    },
+    "access": {
+      "noPermission": "No tienes permiso para editar este curso.",
+      "backToTeaching": "Enseñanza"
+    },
+    "announcements": {
+      "sectionTitle": "Anuncios",
+      "heroTitle": "Enviar un anuncio a los estudiantes",
+      "heroDescription": "Redacta un correo y envíalo a todos los estudiantes inscritos en este curso.",
+      "recipientCount": "{{count}} estudiantes recibirán el correo",
+      "recipientCountZero": "Aún no hay estudiantes inscritos",
+      "subjectLabel": "Asunto del correo",
+      "subjectPlaceholder": "Introduce el asunto...",
+      "bodyLabel": "Mensaje",
+      "bodyPlaceholder": "Escribe aquí tu anuncio. Deja una línea en blanco entre párrafos.",
+      "bodyHint": "Solo texto sin formato: se conservan los saltos de línea. No necesitas escribir HTML.",
+      "bodyPreviewToggle": "Vista previa",
+      "bodyPreviewBrandedNote": "Vista previa (el encabezado y el pie se añaden automáticamente al enviar):",
+      "sendButton": "Enviar anuncio",
+      "confirmTitle": "¿Enviar el anuncio?",
+      "confirmSubjectLabel": "Asunto:",
+      "confirmDescription": "El correo se enviará a {{count}} estudiantes inscritos.",
+      "confirmButton": "Enviar ahora",
+      "cancelButton": "Cancelar",
+      "resultSent": "Se enviaron correctamente {{sent}}/{{total}} correos.",
+      "resultFailed": "No se pudieron enviar {{failed}} correos.",
+      "resultSkipped": "No se pudo enviar a {{skipped}} destinatarios.",
+      "resultError": "Error de envío: {{reason}}",
+      "systemUnavailable": "El sistema de correo no está disponible por ahora. No se envió ningún correo. Contacta con un administrador del sistema para obtener ayuda.",
+      "notConfigured": "El correo no está configurado. Revisa RESEND_API_KEY."
+    }
+  },
+  "learningPrinciples": {
+    "eyebrow": "CORELIA · GUÍA DE CREACIÓN",
+    "title": "Principios de diseño del aprendizaje",
+    "intro": "Diseña contenido que ayude a los estudiantes a comprender, trabajar de forma independiente y aplicar sus habilidades. Empieza con un resultado concreto, ofrece práctica y usa el trabajo de los estudiantes para mejorar la enseñanza.",
+    "scope": "Para instructores y autores de contenido · Investigación revisada el 22 de septiembre de 2026",
+    "contents": "En esta página",
+    "sections": {
+      "principles": "7 principios básicos",
+      "example": "Un capítulo de ejemplo",
+      "formats": "Elige un formato de lección",
+      "checklist": "Antes de publicar",
+      "sources": "Fuentes de investigación"
+    },
+    "evidenceNote": "Los resúmenes de evidencia describen investigaciones. Los recuadros «Aplicar en Corelia» son recomendaciones de creación para el sistema actual, no resultados de ensayos con estudiantes de Corelia.",
+    "sourceLink": "Base de investigación",
+    "application": "Aplicar en Corelia",
+    "watchFor": "Ten en cuenta:",
+    "principles": {
+      "outcome": {
+        "title": "Empieza por lo que los estudiantes podrán hacer",
+        "evidence": "Los objetivos, las actividades de aprendizaje y la evaluación deben abordar la misma capacidad. [CMU: guía de diseño]",
+        "application": "Usa una acción observable: «Gestionar entradas no válidas sin que el programa se bloquee». Elige un trabajo que demuestre este resultado y luego prepara a los estudiantes para ese trabajo.",
+        "limit": "Un objetivo sobre escribir programas necesita práctica de escritura y ejecución. Un cuestionario de definiciones solo mide una parte."
+      },
+      "prior": {
+        "title": "Comprueba el punto de partida",
+        "evidence": "Los conocimientos previos pueden favorecer o dificultar el nuevo aprendizaje. [CMU: síntesis de investigación]",
+        "application": "Indica los conocimientos y herramientas necesarios. Empieza con una pregunta o tarea pequeña y enlaza a un repaso donde los principiantes puedan carecer de un requisito previo.",
+        "limit": "Úsalo para orientar el aprendizaje, no para excluir a los estudiantes. No des por hecho que todos conocen la terminal o Git."
+      },
+      "model": {
+        "title": "Muestra el razonamiento y deja espacio para practicar",
+        "evidence": "El IES recomienda alternar soluciones resueltas y problemas independientes, con evidencia moderada en su guía de 2007.",
+        "application": "Explica en un artículo por qué importa cada paso. Después añade en Práctica un paso que falta, una tarea de depuración y una variación con menos ayuda.",
+        "limit": "Ajusta el apoyo a la experiencia. Los estudiantes competentes quizá no necesiten otro ejemplo resuelto."
+      },
+      "retrieve": {
+        "title": "Pide a los estudiantes que recuerden y expliquen",
+        "evidence": "El IES califica como evidencia sólida los cuestionarios que retoman el contenido y las preguntas explicativas profundas en su guía de 2007.",
+        "application": "Pide una predicción o una explicación antes de revelar la respuesta. Usa distractores en los cuestionarios basados en malentendidos comunes y luego explica la respuesta.",
+        "limit": "Reconocer una respuesta no demuestra una resolución independiente de problemas. Incluye indicaciones de autoexplicación en Práctica."
+      },
+      "space": {
+        "title": "Retoma el conocimiento después de un descanso",
+        "evidence": "El IES recomienda espaciar el aprendizaje en el tiempo, con evidencia moderada en su guía de 2007.",
+        "application": "Retoma un capítulo anterior en un cuestionario posterior y reutiliza la habilidad en el trabajo final. Sugiere en las instrucciones volver tras un descanso.",
+        "limit": "Que un capítulo termine no garantiza un intervalo de tiempo. Esta página no añade un programador de repasos; un único calendario fijo de días no es óptimo para todos."
+      },
+      "feedback": {
+        "title": "Haz que los comentarios sirvan para revisar",
+        "evidence": "La práctica orientada a objetivos y los comentarios vinculados a criterios favorecen el aprendizaje. [CMU: síntesis de investigación]",
+        "application": "Explica las respuestas de los cuestionarios y ofrece pistas relevantes. En las revisiones del trabajo final, indica qué funciona, el problema concreto y la siguiente comprobación. Usa el flujo de revisión existente.",
+        "limit": "«Incorrecto» o «esfuérzate más» no dan un siguiente paso. Organiza la capacidad de los revisores y un tiempo de respuesta adecuados al curso."
+      },
+      "transfer": {
+        "title": "Comprueba la aplicación y la autoevaluación",
+        "evidence": "El dominio implica integrar habilidades y saber cuándo aplicarlas. Los estudiantes también deben supervisar su enfoque. [CMU: síntesis de investigación]",
+        "application": "Cambia los requisitos del ejemplo resuelto en el trabajo final. Publica los criterios y pide un artefacto junto con notas que expliquen las decisiones y las dificultades pendientes.",
+        "limit": "La finalización de lecciones, el XP y las credenciales por sí solos no demuestran capacidad independiente. Examina el artefacto y la explicación."
+      }
+    },
+    "example": {
+      "label": "EJEMPLO DE CREACIÓN · INTRODUCCIÓN A RUST",
+      "title": "Conservar los datos entre ejecuciones del programa",
+      "goal": "Requisitos previos: funciones, Vec, Result y un entorno de Cargo funcional. Resultado: añadir una tarea, cerrar la aplicación, volver a abrirla con los datos intactos y gestionar un archivo dañado. Este es un capítulo propuesto, no un curso publicado.",
+      "read": {
+        "title": "Artículo con un ejemplo resuelto",
+        "body": "Compara los datos en memoria con los datos en un archivo. Explica leer → cambiar → escribir con un ejemplo pequeño y muestra el resultado esperado."
+      },
+      "predict": {
+        "title": "Cuestionario: predice antes de ver la solución",
+        "body": "«Si la aplicación solo actualiza un Vec y termina, ¿seguirá la tarea en la siguiente ejecución? ¿Por qué?» Explica en la respuesta la memoria frente al almacenamiento persistente."
+      },
+      "build": {
+        "title": "Proyecto guiado: ejecuta y comprueba de forma independiente",
+        "body": "Proporciona código inicial y pide a los estudiantes que implementen la lectura y la escritura. Ejecuta add, sal y ejecuta list en un proceso nuevo. Haz que prueben una ruta inexistente y un archivo dañado."
+      },
+      "submit": {
+        "title": "Trabajo final: entrega y recibe comentarios",
+        "body": "Pide una URL de GitHub y notas en el trabajo final del curso. Revisa la reproducibilidad, los datos entre ejecuciones nuevas y los mensajes de error. Da comentarios de revisión concretos cuando haga falta."
+      },
+      "revisit": {
+        "title": "Repasa con un requisito nuevo",
+        "body": "En el siguiente capítulo, añade un estado de finalización que se conserve al reabrir la aplicación. Pide a los estudiantes que expliquen qué paso hace persistentes los datos."
+      },
+      "rubricTitle": "Criterios de ejemplo para las instrucciones de entrega",
+      "rubric": "Comportamiento correcto · Los datos sobreviven a una nueva ejecución · Gestión clara de errores · README reproducible · Notas que expliquen las decisiones. Son criterios propuestos para este trabajo, no la escala de calificación predeterminada de Corelia."
+    },
+    "formats": {
+      "article": {
+        "title": "Artículo",
+        "body": "Explica, ilustra y facilita la consulta. Indica el objetivo, organiza por ideas, define los términos nuevos e identifica las fuentes y las versiones de las herramientas."
+      },
+      "video": {
+        "title": "Vídeo",
+        "body": "Muestra acciones o cambios a lo largo del tiempo. Incluye un resumen escrito y recursos. Segmenta por tarea en lugar de imponer una duración fija a cada lección."
+      },
+      "quiz": {
+        "title": "Cuestionario",
+        "body": "Úsalo para recuerdo, predicción y comprobación de malentendidos. Incluye explicaciones, distractores plausibles y oportunidades de reintento."
+      },
+      "code": {
+        "title": "Ejercicio de código",
+        "body": "Actualmente admite ejercicios de Rust de un solo archivo para rellenar o editar, con validación de texto en el navegador. Úsalo para tareas de práctica pequeñas. Superarlo no demuestra que compile ni se ejecute correctamente."
+      },
+      "practice": {
+        "title": "Práctica guiada",
+        "body": "Usa instrucciones, listas de verificación o proyectos guiados para tareas reales. Da a cada paso un resultado comprobable. Cargo y otras herramientas se ejecutan en el equipo del estudiante."
+      },
+      "final": {
+        "title": "Trabajo final",
+        "body": "Entrega artefactos, recibe comentarios y revisa a nivel de curso. Explica los requisitos y los criterios. Las entregas no se convierten automáticamente en proyectos públicos; los estudiantes eligen qué compartir."
+      }
+    },
+    "formatsNote": "Estas aplicaciones reflejan el código y la documentación de Corelia en el espacio de trabajo el 22 de septiembre de 2026, no la confirmación de disponibilidad en producción. Un capítulo no necesita los seis formatos.",
+    "checklistNote": "Una lista de verificación editorial para una lección o un capítulo. Las selecciones solo duran mientras esta página está abierta; no es una evaluación automática ni una acción de publicación.",
+    "checked": "{{count}} / {{total}} elementos revisados",
+    "reset": "Borrar selecciones",
+    "checks": {
+      "outcome": "El objetivo describe un comportamiento observable; la evaluación mide lo que se enseñó.",
+      "entry": "Los requisitos previos, las herramientas y las instrucciones de configuración permiten empezar al principiante previsto.",
+      "accuracy": "El autor volvió a ejecutar los ejemplos y comprobó las fuentes, las versiones y los enlaces de los recursos.",
+      "practice": "Los estudiantes tienen trabajo independiente y resultados esperados, más allá de leer o copiar.",
+      "feedback": "Las explicaciones de las respuestas dan razones; las pistas y los comentarios de revisión indican siguientes pasos accionables.",
+      "review": "Los estudiantes retoman conocimientos anteriores y los aplican en una situación distinta.",
+      "access": "Se comprobó la vista previa en pantalla estrecha; los vídeos tienen apoyo escrito; la terminología y las versiones en cada idioma coinciden donde existen traducciones.",
+      "pilot": "Un estudiante del nivel de entrada previsto probó el material; las dificultades observadas orientaron las revisiones."
+    },
+    "sourcesNote": "Fuentes fundamentales revisadas el 22 de septiembre de 2026. Los niveles de evidencia del IES se refieren a su guía de 2007, no a una evaluación de la enseñanza de programación en línea. Los ejemplos, la lista de verificación y las elecciones de formato aquí son aplicaciones de Corelia que deben validarse con estudiantes reales.",
+    "sources": {
+      "alignment": {
+        "title": "CMU Eberly Center: alinear evaluaciones, objetivos y estrategias de enseñanza",
+        "description": "Orientación sobre cómo alinear metas, actividades de aprendizaje y evaluación. Respalda el principio 1."
+      },
+      "learning": {
+        "title": "CMU Eberly Center: principios del aprendizaje",
+        "description": "Síntesis de investigación sobre conocimientos previos, práctica, comentarios, dominio y autorregulación. Respalda los principios 2, 6 y 7."
+      },
+      "ies": {
+        "title": "IES / What Works Clearinghouse: Organizing Instruction and Study to Improve Student Learning (2007)",
+        "description": "Orientación con niveles de evidencia sobre ejemplos resueltos, cuestionarios, espaciado y preguntas explicativas. Respalda los principios 3, 4 y 5."
+      }
+    }
+  }
+}

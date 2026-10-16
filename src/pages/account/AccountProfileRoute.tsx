@@ -4,7 +4,7 @@ import { UserCircle } from "lucide-react";
 import type { Profile } from "@/types/database";
 import { useAuth } from "@/stores/authStore";
 import { updateProfileForUser } from "@/lib/profile";
-import { Skeleton } from "@/components/ui/skeleton";
+import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 import ConnectOCIDCard from "@/pages/account/ConnectOCIDCard";
 import { ChangePasswordCard } from "./ChangePasswordCard";
 import { ProfileSection } from "./ProfileSection";
@@ -94,7 +94,7 @@ export function AccountProfileRoute() {
       });
       setProfilePublic(updated.profile_public ?? nextProfilePublic);
       await refreshProfile(user);
-      await queryClient.invalidateQueries({ queryKey: ["xp"] });
+      void queryClient.invalidateQueries({ queryKey: ["xp"] });
       setSuccess(t("profile.success.visibilityUpdated"));
     } catch (err) {
       setProfilePublic(previousProfilePublic);
@@ -132,7 +132,7 @@ export function AccountProfileRoute() {
       });
       setFullName(current => current === fullName ? savedProfile.full_name ?? "" : current);
       await refreshProfile(user);
-      await queryClient.invalidateQueries({ queryKey: ["xp"] });
+      void queryClient.invalidateQueries({ queryKey: ["xp"] });
       setSuccess(t("profile.success.updated"));
     } catch (err) {
       const raw = err instanceof Error ? err.message : "";
@@ -155,41 +155,9 @@ export function AccountProfileRoute() {
     }
   }
 
-  // Skeleton = page data (profile), not the global auth gate (`AuthGateLoading` in RequireAuth / Suspense).
+  // Same placeholder as the route fallback (AccountFormFallback), so it never swaps skeletons.
   if (!authInitialized || (profileLoading && !profile)) {
-    return (
-      <div className="space-y-4">
-        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
-          <Skeleton className="h-6 w-56 rounded" />
-          <Skeleton className="mt-2 h-4 w-full max-w-xl rounded" />
-        </div>
-        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
-          <div className="flex items-center gap-4">
-            <Skeleton className="size-20 rounded-full" />
-            <div className="min-w-0 flex-1 space-y-2">
-              <Skeleton className="h-4 w-40 rounded" />
-              <Skeleton className="h-9 w-44 rounded" />
-              <Skeleton className="h-3 w-64 rounded" />
-            </div>
-          </div>
-          <div className="mt-5 space-y-4">
-            <div className="space-y-1.5">
-              <Skeleton className="h-4 w-28 rounded" />
-              <Skeleton className="h-10 w-full rounded" />
-              <Skeleton className="h-3 w-48 rounded" />
-            </div>
-            <div className="space-y-1.5">
-              <Skeleton className="h-4 w-24 rounded" />
-              <Skeleton className="h-10 w-full rounded" />
-              <Skeleton className="h-3 w-56 rounded" />
-            </div>
-            <div className="flex justify-end">
-              <Skeleton className="h-10 w-28 rounded" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <RouteSkeleton variant="form" bare />;
   }
 
   if (!user) {

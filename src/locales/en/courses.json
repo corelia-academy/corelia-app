@@ -171,7 +171,6 @@
         "title": "This course is being updated",
         "body": "You can keep learning the available lessons. Course completion and new awards will resume when the update is finished."
       },
-      "courseUpdatingCompletionNotice": "This course is being updated. Your lesson progress is saved; course completion and new awards will be recorded when the course is ready.",
       "learningOutcomes": {
         "title": "What you'll learn",
         "subtitle": "This course will help you learn:"
@@ -493,6 +492,15 @@
     "retry": "Try again",
     "source": "Source code",
     "unavailable": "Lesson unavailable.",
+    "askAi": {
+      "trigger": "Ask AI",
+      "chatgpt": "Ask ChatGPT",
+      "claude": "Ask Claude",
+      "gemini": "Ask Gemini (copies prompt)",
+      "copy": "Copy prompt",
+      "copied": "Prompt copied. Paste it into your AI tool.",
+      "copyFailed": "Could not copy the prompt."
+    },
     "systemError": "Could not save the result. Your work is preserved; please retry.",
     "checking": "Checking…",
     "checkCode": "Check code",
@@ -521,8 +529,6 @@
     "noContentIssues": "There are no content issues.",
     "moreActions": "More actions",
     "recalculateDuration": "Recalculate duration",
-    "retryVideo": "Reload video",
-    "openYoutube": "Open on YouTube",
     "previewBanner": "PREVIEW · Progress, submissions and drafts are not saved.",
     "completed": "Completed",
     "markIncomplete": "Mark as incomplete",
@@ -759,6 +765,12 @@
     "xpLessonEarned": "10 XP already earned for this lesson",
     "xpLessonAvailable": "Complete this lesson for the first time: +10 XP",
     "xpQuizEarned": "XP already earned for this quiz",
-    "xpQuizAvailable": "Complete this quiz for the first time: +30 XP"
+    "xpQuizAvailable": "Complete this quiz for the first time: +30 XP",
+    "insertImage": "Insert image",
+    "imageUploading": "Uploading image…",
+    "imageUploadFailed": "Could not upload the image. Try again.",
+    "imageInvalid": "Choose a PNG, JPEG, WebP or GIF image up to 5 MB.",
+    "imageDefaultAlt": "Image",
+    "imageInserted": "Image inserted into the lesson text."
   }
 }

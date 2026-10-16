@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Action } from "@/components/ui/action";
 import { useTranslation } from "react-i18next";
 import {
+  FolderKanban,
   GraduationCap,
   IdCard,
   Settings,
@@ -44,6 +45,12 @@ export default function Account() {
       title: t("nav.cv.title"),
       description: t("nav.cv.description"),
       icon: <IdCard className="size-4 shrink-0" aria-hidden />,
+    },
+    {
+      to: "/account/projects",
+      title: t("nav.projects.title"),
+      description: t("nav.projects.description"),
+      icon: <FolderKanban className="size-4 shrink-0" aria-hidden />,
     },
     {
       to: "/account/settings",

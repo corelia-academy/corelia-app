@@ -11,6 +11,7 @@ import {
   type NotificationPreferences,
 } from "@/lib/notificationPreferences";
 import { useAuth } from "@/stores/authStore";
+import { QueryErrorState } from "@/components/QueryErrorState";
 
 function Toggle({
   id,
@@ -81,8 +82,11 @@ export function NotificationPreferencesCard() {
     onSuccess: () => toast.success(t("settings.notifications.saved")),
   });
 
-  function toggle(key: keyof NotificationPreferences) {
+  function toggle(key: Exclude<keyof NotificationPreferences, "digest_timezone">) {
     const next = { ...prefs, [key]: !prefs[key] };
+    if (key === "email_social_digest" && next.email_social_digest) {
+      next.digest_timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Ho_Chi_Minh";
+    }
     saveMutation.mutate(next);
   }
 
@@ -97,7 +101,19 @@ export function NotificationPreferencesCard() {
         {t("settings.notifications.description")}
       </p>
 
+      {/* Never present defaults as the user's saved settings when they failed to load. */}
+      {preferencesQuery.isError && !preferencesQuery.data ? (
+        <QueryErrorState
+          className="mt-4"
+          message={t("settings.notifications.loadFailed")}
+          retrying={preferencesQuery.isFetching}
+          onRetry={() => void preferencesQuery.refetch()}
+        />
+      ) : (
       <div className="mt-4 divide-y divide-border-subtle rounded-md border border-border-subtle px-4">
+        <Toggle id="pref-likes" checked={prefs.in_app_likes} onChange={() => !saveMutation.isPending && toggle("in_app_likes")} label={t("settings.notifications.likes")} />
+        <Toggle id="pref-follows" checked={prefs.in_app_follows} onChange={() => !saveMutation.isPending && toggle("in_app_follows")} label={t("settings.notifications.follows")} />
+        <Toggle id="pref-social-digest" checked={prefs.email_social_digest} onChange={() => !saveMutation.isPending && toggle("email_social_digest")} label={t("settings.notifications.digest")} description={t("settings.notifications.digestDescription", { timezone: prefs.digest_timezone })} />
         <Toggle
           id="pref-email-learning"
           checked={prefs.email_learning_reminders}
@@ -118,6 +134,7 @@ export function NotificationPreferencesCard() {
           label={t("settings.notifications.inAppCourseBlast")}
         />
       </div>
+      )}
     </section>
   );
 }

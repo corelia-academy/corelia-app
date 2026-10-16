@@ -5,9 +5,10 @@
 
 import i18n from "@/i18n";
 import type { CodeExerciseConfig, CodeExerciseLocaleContent } from "@/features/code-exercise/types";
+import type { ContentLocale } from "@/lib/locales";
 import type { PracticeConfig, QuizConfig, CourseInstructorRef, ArtifactField } from "@/features/learning/types";
 
-export type SupportedCourseLocale = "vi" | "en";
+export type SupportedCourseLocale = ContentLocale;
 
 export type CourseLevel = "beginner" | "intermediate" | "advanced" | "all";
 export type CourseOwnerType = "corelia" | "external_partner";

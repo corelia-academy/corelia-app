@@ -1,0 +1,549 @@
+{
+  "nav": {
+    "sectionTitle": "帳戶設定",
+    "currentSectionLabel": "目前檢視",
+    "settings": {
+      "title": "設定",
+      "description": "主題、登出"
+    },
+    "profile": {
+      "title": "個人資訊",
+      "description": "姓名、聯絡方式、頭像"
+    },
+    "instructor": {
+      "title": "講師資料",
+      "description": "對學員可見的資訊"
+    },
+    "cv": {
+      "title": "學習檔案與履歷",
+      "description": "用於輔導與職涯支援的資訊"
+    },
+    "projects": {
+      "title": "專案",
+      "description": "管理您的專案和翻譯"
+    },
+    "achievements": {
+      "title": "成就庫",
+      "description": "管理證書和徽章"
+    }
+  },
+  "header": {
+    "roleLabel": {
+      "instructor": "講師帳戶",
+      "admin": "管理員帳戶",
+      "support_staff": "支援帳戶",
+      "student": "學員帳戶"
+    },
+    "subtitle": "在一處管理您的個人資訊、安全設定和職涯檔案。",
+    "summary": {
+      "profileLabel": "資料",
+      "roleLabel": "角色",
+      "statusLabel": "狀態",
+      "missingDisplayName": "尚未設定顯示名稱",
+      "statusReady": "已就緒，可以開始學習並追蹤進度"
+    }
+  },
+  "settings": {
+    "language": {
+      "title": "語言",
+      "description": "變更應用程式顯示語言。登入後，此偏好會在您的各台裝置間同步。",
+      "meta": {
+        "en": "英語 (EN)",
+        "zh-CN": "簡體中文 (zh-CN)",
+        "ko": "韓語 (KO)",
+        "es": "西班牙語 (ES)",
+        "zh-TW": "繁體中文 (zh-TW)",
+        "vi": "越南語 (VI)",
+        "ja": "日語 (JA)"
+      },
+      "active": "使用中"
+    },
+    "appearance": {
+      "title": "外觀",
+      "description": "選擇適合您使用環境的主題。",
+      "themeLabel": "主題",
+      "light": "淺色",
+      "dark": "深色",
+      "system": "跟隨系統"
+    },
+    "session": {
+      "title": "工作階段",
+      "description": "管理此裝置上的登入狀態。",
+      "signOutTitle": "登出",
+      "signOutDescription": "結束此裝置上的目前工作階段。",
+      "signOutButton": "登出"
+    },
+    "notifications": {
+      "title": "通知偏好",
+      "description": "選擇您希望透過電子郵件和應用程式內接收的通知。",
+      "emailLearningReminders": "接收定期的學習提醒郵件",
+      "emailLearningRemindersDesc": "當您暫停正在學習的課程時，依間隔寄送提醒。",
+      "emailCourseBlast": "接收課程公告郵件",
+      "emailTrackBlast": "接收學習路徑公告郵件",
+      "inAppCourseBlast": "在應用程式內顯示課程公告",
+      "inAppTrackBlast": "在應用程式內顯示學習路徑公告",
+      "saved": "通知偏好已儲存",
+      "likes": "您的作品收到的讚",
+      "follows": "新追蹤者",
+      "digest": "每日社群動態郵件",
+      "digestDescription": "僅在有新動態時於 09:00（{{timezone}}）寄出。可隨時取消訂閱。",
+      "loadFailed": "無法載入您的通知設定。"
+    }
+  },
+  "common": {
+    "loading": "處理中…",
+    "continue": "繼續",
+    "cancel": "取消",
+    "finish": "完成"
+  },
+  "errors": {
+    "notLoggedIn": "尚未登入"
+  },
+  "projects": {
+    "pageTitle": "專案工作區",
+    "ownerBadge": "擁有者",
+    "collaboratorBadge": "協作者",
+    "showOnProfileLabel": "在我的資料中顯示此專案",
+    "showOnProfileHint": "啟用後，此專案可顯示在您的公開資料和帳戶專案清單中。",
+    "errors": {
+      "visibilityFailed": "無法更新此專案的資料可見性。"
+    },
+    "newProject": "新增專案"
+  },
+  "password": {
+    "title": "變更密碼",
+    "subtitle": "僅適用於使用電子郵件和密碼登入的帳戶。",
+    "fields": {
+      "current": {
+        "label": "目前密碼",
+        "placeholder": "輸入目前密碼"
+      },
+      "next": {
+        "label": "新密碼",
+        "placeholder": "至少 8 個字元，包含大寫字母、小寫字母、數字和符號"
+      },
+      "confirm": {
+        "label": "確認新密碼",
+        "placeholder": "再次輸入新密碼"
+      }
+    },
+    "actions": {
+      "submit": "變更密碼"
+    },
+    "success": {
+      "changed": "密碼變更成功。"
+    },
+    "errors": {
+      "confirmMismatch": "新密碼與確認密碼不一致。",
+      "minLength": "新密碼至少需要 8 個字元。",
+      "policy": "新密碼至少需要 8 個字元，並包含大寫字母、小寫字母、數字和符號。",
+      "missingEmail": "找不到電子郵件。只有以電子郵件為基礎的帳戶才能變更密碼。",
+      "changeFailed": "無法變更密碼。"
+    }
+  },
+  "mfa": {
+    "title": "雙重驗證安全 (MFA)",
+    "subtitle": "新增手機號碼，以便登入時接收簡訊驗證碼，讓您的帳戶更安全。",
+    "factorLabel": "驗證手機號碼",
+    "providers": {
+      "google": "Google",
+      "github": "GitHub"
+    },
+    "enrolled": {
+      "title": "已綁定的驗證方式："
+    },
+    "actions": {
+      "addPhone": "新增驗證手機號碼",
+      "sending": "傳送中…",
+      "sendSms": "傳送簡訊驗證碼"
+    },
+    "reauth": {
+      "hint": "基於安全考量，新增手機號碼前請重新驗證身分。",
+      "passwordLabel": "目前密碼",
+      "passwordPlaceholder": "輸入密碼",
+      "popupHint": "點擊下方按鈕，使用 {{provider}} 重新登入。"
+    },
+    "phone": {
+      "label": "手機號碼（E.164 格式，例如 +84901234567）",
+      "placeholder": "+84 901 234 567"
+    },
+    "code": {
+      "hint": "驗證碼已傳送。請在下方輸入 6 位數驗證碼。",
+      "label": "驗證碼",
+      "placeholder": "000000"
+    },
+    "success": {
+      "enabled": "雙重驗證（簡訊）已啟用。"
+    },
+    "errors": {
+      "reauthFailed": "重新驗證失敗，請再試一次。",
+      "invalidPhone": "手機號碼無效（例如 0901234567 或 +84901234567）。",
+      "sendCodeFailed": "無法傳送驗證碼，請再試一次。",
+      "enrollFailed": "綁定失敗，請再試一次。"
+    }
+  },
+  "profile": {
+    "loading": "正在載入資料…",
+    "mustLogin": "您需要登入才能檢視此頁面。",
+    "tabs": {
+      "info": "資料",
+      "ocid": "OCID",
+      "security": "安全"
+    },
+    "emailLoginLabel": "登入電子郵件",
+    "publicProfile": {
+      "label": "公開資料",
+      "status": {
+        "public": "公開",
+        "private": "私人"
+      },
+      "hint": "您的公開資料連結：/@{{handle}}",
+      "actions": {
+        "makePrivate": "設為私人",
+        "makePublic": "設為公開",
+        "saving": "正在儲存..."
+      }
+    },
+    "setupWarning": {
+      "title": "您的資料還需要補充一些資訊。",
+      "body": "請更新您的姓名和手機號碼，以便 Corelia、講師或支援人員更好地協助您。"
+    },
+    "avatar": {
+      "label": "頭像",
+      "alt": "頭像",
+      "upload": "上傳圖片",
+      "uploading": "上傳中…",
+      "randomize": "試試隨機頭像",
+      "tryAnother": "換一個",
+      "useThis": "使用此頭像",
+      "cancel": "取消",
+      "saving": "正在儲存…",
+      "hint": "支援 JPG、PNG 或 WebP。圖片將立即儲存並更新。"
+    },
+    "fullName": {
+      "label": "姓名",
+      "placeholder": "王小明",
+      "hint": "用於證書和成績單。",
+      "limit": "最多 {{count}} / {{max}} 個字元。"
+    },
+    "username": {
+      "label": "使用者名稱",
+      "placeholder": "例如 terrrancrypt",
+      "hint": "用於您的公開資料網址。"
+    },
+    "bio": {
+      "label": "個人簡介",
+      "placeholder": "簡短介紹一下您自己…",
+      "hint": "將顯示在您的公開資料中。"
+    },
+    "website": {
+      "label": "網站",
+      "placeholder": "https://…",
+      "hint": "作品集 / LinkedIn / 個人網站。"
+    },
+    "phone": {
+      "label": "聯絡電話",
+      "placeholder": "例如 09xxxxxxxx",
+      "hint": "必要時支援人員會透過此號碼聯絡您。"
+    },
+    "actions": {
+      "saving": "正在儲存...",
+      "save": "儲存變更"
+    },
+    "success": {
+      "avatarUpdated": "頭像已更新。",
+      "updated": "帳戶資訊已更新。",
+      "visibilityUpdated": "資料可見性已更新。"
+    },
+    "errors": {
+      "avatarUploadFailed": "無法上傳圖片。",
+      "avatarUpdateFailed": "無法更新頭像。",
+      "updateFailed": "無法更新資訊。",
+      "visibilityUpdateFailed": "無法更新資料可見性。",
+      "usernameTaken": "此使用者名稱已被使用，請換一個。",
+      "loadFailed": "無法載入您的資料，請檢查網路連線。",
+      "invalidName": "姓名最多 160 個字元，且不能包含隱藏的控制字元。",
+      "invalidText": "某個資料欄位過長或包含隱藏的控制字元，請縮短或重新輸入。"
+    },
+    "retry": "重試"
+  },
+  "cv": {
+    "title": "學習檔案與履歷",
+    "subtitle": "用於職涯輔導、職缺內推和獎學金支援的綜合檔案。",
+    "comingSoon": {
+      "title": "履歷管理（即將推出）",
+      "body": "您將可以在此上傳履歷（PDF）並更新職涯資訊，協助講師和支援人員了解您的背景，更好地支援您的學習路徑。",
+      "note": "目前在此功能完善期間，您可以將履歷連結（Google Drive、Notion 等）加入擴充資料說明中。"
+    },
+    "prep": {
+      "title": "建議準備的資訊",
+      "items": {
+        "0": "工作經歷 / 重要的個人專案。",
+        "1": "已完成的課程及相關證書。",
+        "2": "專業技能和軟實力。"
+      }
+    }
+  },
+  "instructorProfile": {
+    "onlyInstructors": "只有講師可以編輯教學資料。",
+    "title": "講師資料",
+    "subtitle": "這是顯示給學員的公開資料，會出現在講師頁面和課程頁面上。",
+    "completion": "已完成 {{percent}}%",
+    "common": {
+      "notUpdated": "未更新"
+    },
+    "origin": {
+      "corelia": "Corelia 講師",
+      "external": "合作講師（外部）",
+      "unknown": "未分類"
+    },
+    "cards": {
+      "originLabel": "講師類型",
+      "organizationLabel": "所屬機構",
+      "headlineLabel": "頭銜",
+      "websiteLabel": "網站 / 作品集"
+    },
+    "tips": {
+      "organization": {
+        "title": "顯示您所屬的機構",
+        "body": "所屬機構能讓學員更了解您的專業背景。"
+      },
+      "intro": {
+        "title": "簡短介紹",
+        "body": "您的頭銜和簡介應突顯優勢、經驗和授課領域。"
+      },
+      "externalProfile": {
+        "title": "連結外部資料",
+        "body": "在學員考慮報名時，LinkedIn 或作品集有助於建立信任。"
+      }
+    },
+    "fields": {
+      "origin": {
+        "label": "講師類型",
+        "hint": "講師類型只能由支援人員/管理員更新。"
+      },
+      "organization": {
+        "label": "所屬機構",
+        "placeholder": "例如 Corelia、ABC 公司、XYZ 大學…"
+      },
+      "headline": {
+        "label": "頭銜",
+        "placeholder": "例如 資深前端工程師、資料分析導師…"
+      },
+      "bio": {
+        "label": "講師簡介",
+        "placeholder": "分享教學經驗、實際專案、合作過的公司和您的主要專長…"
+      },
+      "website": {
+        "label": "網站 / LinkedIn / 作品集",
+        "placeholder": "https://…、linkedin.com/in/…、個人作品集"
+      }
+    },
+    "socialLinks": {
+      "title": "社群媒體與連結",
+      "subtitle": "新增您的社群媒體帳號或連結，顯示在課程頁面上。",
+      "empty": "尚未新增連結。請在下方新增您的第一個連結。",
+      "addTitle": "新增連結",
+      "urlPlaceholder": "https://...",
+      "labelPlaceholder": "選填標籤（例如 個人部落格）",
+      "addButton": "新增",
+      "removeLabel": "移除連結",
+      "errors": {
+        "urlRequired": "請輸入網址。",
+        "urlInvalid": "網址必須以 https:// 或 http:// 開頭"
+      }
+    },
+    "actions": {
+      "saving": "正在儲存...",
+      "save": "儲存講師資料"
+    },
+    "success": {
+      "updated": "講師資料已更新。"
+    },
+    "errors": {
+      "updateFailed": "無法更新講師資料。"
+    }
+  },
+  "ocid": {
+    "card": {
+      "title": "連結 OCID",
+      "description": "連結您的 Open Campus ID，在 Open Campus 生態系統中同步身分和錢包（如有）。",
+      "statusConnected": "已連結",
+      "statusDisconnected": "未連結",
+      "initializing": "正在初始化 OCID SDK…",
+      "connectHint": "點擊下方按鈕，將 OCID 連結到您的 Corelia 帳戶。",
+      "ocidLabel": "OCID",
+      "ethAddressLabel": "ETH 地址",
+      "disconnect": "中斷連結",
+      "connect": "使用 OCID 連結",
+      "loadingDisconnect": "處理中…",
+      "loadingConnect": "正在跳轉…"
+    },
+    "redirect": {
+      "finishing": "正在完成 OCID 連結…",
+      "connectFailedFallback": "無法連結 OCID，請再試一次。",
+      "alreadyLinkedToOtherAccount": "此 OCID 已連結到另一個帳戶。請先在該帳戶中中斷連結。",
+      "mustLoginFirst": "連結 OCID 前，您需要先登入 Corelia。",
+      "missingOcidFromSession": "無法從登入工作階段取得 OCID，請重新連結。",
+      "backToHome": "返回首頁"
+    },
+    "toasts": {
+      "startConnectFailed": "無法開始 OCID 連結。",
+      "disconnectSuccess": "OCID 已中斷連結。",
+      "disconnectFailed": "無法中斷 OCID 連結。"
+    },
+    "disconnectDialog": {
+      "title": "中斷 OCID 連結？",
+      "body": "確定要將 OCID 與此帳戶中斷連結嗎？",
+      "bodyWithCredentials_other": "已有 {{count}} 個鏈上憑證鑄造到您目前的 OCID。",
+      "warningTitle": "這些憑證不會轉移。",
+      "warningBody": "如果之後連結其他 OCID，已鑄造的憑證仍將綁定在舊 OCID 上，無法轉移到新的 OCID。",
+      "confirm": "仍然中斷連結"
+    }
+  },
+  "xp": {
+    "earned": "+{{count}} 經驗值",
+    "activityCompleted": "活動已完成",
+    "title": "經驗值動態",
+    "loading": "正在載入經驗值…",
+    "error": "無法載入經驗值。",
+    "total": "累計 {{count}} 經驗值",
+    "utc": "日期以 UTC 計算",
+    "calendar": "活動日曆",
+    "less": "較少",
+    "more": "較多",
+    "empty": "尚無經驗值動態。",
+    "weekTotal": "本週：{{count}} 經驗值",
+    "weekChart": "本週每日經驗值",
+    "previousWeek": "上一週",
+    "nextWeek": "下一週",
+    "history": "經驗值紀錄",
+    "previous": "上一頁",
+    "next": "下一頁",
+    "sources": {
+      "daily_streak_claim": "先前的每日簽到",
+      "ocid_connected": "已連結 OCID",
+      "github_connected": "已連結 GitHub",
+      "ethereum_wallet": "已連結以太坊錢包",
+      "solana_wallet": "已連結 Solana 錢包",
+      "lesson_completed": "完成了一個單元",
+      "quiz_passed": "通過了測驗",
+      "course_completed": "完成了一門課程",
+      "first_hackathon_submission": "首次提交黑客松專案",
+      "project_liked": "對一個專案按讚",
+      "correction": "經驗值更正"
+    },
+    "connections": {
+      "title": "帳戶與錢包",
+      "description": "連結 GitHub 可一次性獲得 50 經驗值。",
+      "connected": "已連結",
+      "connectGithub": "連結 GitHub",
+      "failed": "無法連結 GitHub。",
+      "connectEthereum": "連結 {{wallet}}",
+      "connectSolana": "連結 {{wallet}}",
+      "noSolanaWallet": "找不到支援訊息簽署的 Solana 錢包。",
+      "connectGoogle": "連結 Google",
+      "noEthereumWallet": "找不到以太坊錢包。",
+      "walletXpEarned": "+30 經驗值 · 首次連結錢包",
+      "walletDisconnect": "中斷連結",
+      "walletDisconnectTitle": "中斷此錢包的連結？",
+      "walletDisconnectBody": "您之後可以重新連結，或連結到其他帳戶。已獲得的經驗值會保留，且此錢包不會再次獲得經驗值。",
+      "walletDisconnectConfirm": "中斷錢包連結",
+      "walletDisconnectCancel": "取消",
+      "walletDisconnected": "錢包已中斷連結。",
+      "ocidXpEarned": "+50 經驗值 · 已連結 OCID",
+      "githubXpEarned": "+50 經驗值 · 已連結 GitHub",
+      "errors": {
+        "wallet_missing": "找不到錢包。請安裝或解鎖錢包後再試。",
+        "invalid_signature": "簽署無效或已被拒絕。",
+        "challenge_expired": "驗證請求已過期，請再試一次。",
+        "wallet_linked_to_another_account": "此錢包已連結到另一個帳戶。",
+        "origin_mismatch": "連結來源不符。請從 Corelia 重新嘗試。",
+        "unauthenticated": "您的工作階段已過期，請重新登入。"
+      },
+      "loading": "檢查中…",
+      "loadFailed": "無法檢查連結狀態",
+      "notConnected": "未連結",
+      "walletCount": "已連結 · {{count}} 個錢包",
+      "addWallet": "連結另一個錢包",
+      "chooseWallet": "選擇錢包",
+      "confirmWallet": "正在等待您在錢包中確認…",
+      "oauthFailed": "帳戶連結失敗，請再試一次。如果問題仍然存在，請聯絡客服檢查 Google/GitHub 連結。",
+      "oauthCancelled": "帳戶連結已取消。您可以在下方重新嘗試連結。"
+    },
+    "noData": "沒有可靠的經驗值資料",
+    "rank": {
+      "title": "經驗值等級",
+      "names": {
+        "starter": "新手",
+        "bronze": "青銅",
+        "silver": "白銀",
+        "gold": "黃金",
+        "platinum": "白金",
+        "diamond": "鑽石"
+      },
+      "progress": "距離下一等級的進度",
+      "remaining": "距離 {{rank}} 還需 {{xp}} 經驗值",
+      "highest": "已達到最高等級",
+      "allRanks": "檢視所有等級",
+      "description": "等級反映您在 Corelia 上累積的活動。它不是專業認證，也不代表享有獎勵權益。"
+    },
+    "leaderboard": {
+      "title": "經驗值排行榜",
+      "description": "與 Corelia 學習社群一起慶祝進步。公開的學員和講師資料參與排名。",
+      "period": "排行榜週期",
+      "week": "本週",
+      "allTime": "歷史總榜",
+      "weekRange": "{{start}} – {{end}} · UTC",
+      "lifetime": "在 Corelia 獲得的所有有效經驗值，包括歷史活動。",
+      "yourPosition": "您的名次",
+      "position": "第 {{rank}} 名",
+      "empty": "此週期內尚無符合條件的經驗值活動。",
+      "error": "無法載入排行榜，請再試一次。",
+      "member": "Corelia 成員",
+      "pagination": "排行榜分頁",
+      "page": "{{page}} / {{total}}",
+      "top": "{{eligible}} 位參與者中的前 {{count}} 名",
+      "reasons": {
+        "private_profile": "您的資料為私人，因此不會出現在排行榜上。您仍可查看個人等級。",
+        "ineligible_role": "管理員和支援帳戶不參與排行榜。您仍可查看個人等級。",
+        "no_xp": "您在此週期內還沒有正的經驗值餘額。",
+        "missing_profile": "您的資料暫不可用。"
+      }
+    }
+  },
+  "avatarEditor": {
+    "title": "編輯頭像",
+    "description": "選擇您的形象，然後儲存到您的資料。",
+    "edit": "編輯頭像",
+    "back": "返回資料",
+    "preview": "頭像預覽",
+    "randomize": "隨機產生",
+    "randomizeHelp": "「隨機產生」會變更頭像代碼以嘗試另一種外觀。您選擇的部件和顏色保持不變；只有選擇「儲存頭像」後變更才會儲存。",
+    "reset": "恢復預設",
+    "parts": "部件",
+    "colors": "顏色",
+    "fromSeed": "依圖案自動產生",
+    "autoPartHelp": "每個帳戶都有自己的頭像代碼。選擇「依圖案自動產生」可根據該代碼穩定產生此部件，或選擇特定部件將其固定。",
+    "clear": "清除",
+    "save": "儲存頭像",
+    "saving": "正在儲存…",
+    "saved": "頭像已儲存。",
+    "saveFailed": "無法儲存頭像，請再試一次。",
+    "slots": {
+      "head": "頭部與髮型",
+      "body": "身體",
+      "bottom": "下身",
+      "item": "配件",
+      "glasses": "眼鏡"
+    },
+    "colorsBySlot": {
+      "background": "背景",
+      "stroke": "輪廓",
+      "hair": "頭髮",
+      "skin": "膚色",
+      "clothes": "衣服",
+      "bottom": "下身"
+    }
+  }
+}

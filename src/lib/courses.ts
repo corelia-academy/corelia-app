@@ -2,6 +2,7 @@ import { normalizeCodeLocale } from "@/features/code-exercise/locale";
 import { normalizeVideoLocale } from "@/features/learning/videoLocale";
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
 import { coreliaEdgeUrl, supabaseFunctionHeaders } from "@/lib/coreliaEdgeApi";
+import { normalizeLocale } from "@/lib/locales";
 import { supabase } from "@/lib/supabase";
 import { removeUndefinedFields } from "@/lib/utils";
 import { getYoutubeVideoId } from "@/types/courses";
@@ -93,7 +94,7 @@ function lessonRowToLesson(
 }
 
 export function normalizeCourseLocale(input?: string | null): SupportedCourseLocale {
-  return input?.trim().toLowerCase().split(/[-_]/)[0] === "en" ? "en" : "vi";
+  return normalizeLocale(input);
 }
 
 export function getCoursePrimaryLocale(course?: Pick<Course, "i18n"> | null): SupportedCourseLocale {
@@ -103,7 +104,7 @@ export function getCoursePrimaryLocale(course?: Pick<Course, "i18n"> | null): Su
 
 export function getCourseSupportedLocales(course?: Pick<Course, "i18n"> | null): SupportedCourseLocale[] {
   const list = course?.i18n?.supported_locales;
-  const fallback: SupportedCourseLocale[] = ["vi", "en"];
+  const fallback: SupportedCourseLocale[] = [getCoursePrimaryLocale(course)];
   const supported: SupportedCourseLocale[] =
     Array.isArray(list) && list.length ? list.map(normalizeCourseLocale) : fallback;
   return Array.from(new Set<SupportedCourseLocale>(supported));

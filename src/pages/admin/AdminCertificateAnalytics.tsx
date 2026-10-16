@@ -1,11 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
+import { QueryErrorState } from "@/components/QueryErrorState";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { certificateAnalyticsQueryOptions } from "@/features/admin/adminQueries";
 import { getCertificateAnalytics, certificateAnalyticsCsv, type CertificateAnalyticsFilters } from "@/lib/certificateAnalytics";
 import { useAuth } from "@/stores/authStore";
+import { ListRowsSkeleton } from "@/components/loading/RouteSkeleton";
 
 const PAGE_SIZE = 25;
 const INITIAL_FILTERS: CertificateAnalyticsFilters = { courseId: "", from: "", to: "", network: "" };
@@ -81,7 +84,7 @@ export default function AdminCertificateAnalytics() {
       {!validRange && <p role="alert" className="text-sm text-destructive sm:col-span-2">{t("certificateAnalytics.invalidRange")}</p>}
     </div>
 
-    {query.isPending ? <p role="status">{t("certificateAnalytics.loading")}</p> : query.isError ? <p role="alert">{t("certificateAnalytics.loadError")}</p> : result && <>
+    {query.isPending ? <ListRowsSkeleton rows={8} /> : query.isError && !query.data ? <QueryErrorState message={t("certificateAnalytics.loadError")} retrying={query.isFetching} onRetry={() => void query.refetch()} /> : result && <>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
         {(["completed", "corelia_issued", "corelia_revoked", "oca_minted", "oca_unresolved", "oca_pending", "oca_failed", "unique_learners"] as const).map(key =>
           <div className="rounded-lg border border-border p-3" key={key}><div className="text-xs text-foreground-muted">{t(`certificateAnalytics.summary.${key}`)}</div><div className="mt-1 text-2xl font-semibold tabular-nums">{result.summary[key]}</div></div>)}
@@ -92,7 +95,7 @@ export default function AdminCertificateAnalytics() {
         <div className="flex gap-2"><Button type="button" variant="cta" hierarchy="secondary" onClick={() => void query.refetch()} disabled={query.isFetching}>{t("certificateAnalytics.refresh")}</Button><Button type="button" onClick={() => void exportCsv()} disabled={exporting || result.total === 0}>{exporting ? t("certificateAnalytics.exporting") : t("certificateAnalytics.exportCsv")}</Button></div>
       </div>
       {exportError && <p role="alert" className="text-sm text-destructive">{t("certificateAnalytics.exportError")}</p>}
-      <div className="overflow-x-auto rounded-lg border border-border" role="region" aria-label={t("certificateAnalytics.tableLabel")} tabIndex={0}>
+      <div className={cn("overflow-x-auto rounded-lg border border-border transition-opacity", query.isPlaceholderData && "opacity-60")} aria-busy={query.isPlaceholderData || undefined} role="region" aria-label={t("certificateAnalytics.tableLabel")} tabIndex={0}>
         <table className="w-full min-w-[1200px] text-left text-sm">
           <thead className="bg-surface-raised"><tr>{(["learner", "course", "completed", "corelia", "coreEmail", "coreNotice", "oca", "ocEmail", "ocNotice"] as const).map(key => <th key={key} scope="col" className="px-3 py-2">{t(`certificateAnalytics.columns.${key}`)}</th>)}</tr></thead>
           <tbody>{result.rows.length === 0 ? <tr><td colSpan={9} className="px-3 py-5 text-center text-foreground-muted">{t("certificateAnalytics.empty")}</td></tr> : result.rows.map(row => <tr key={`${row.user_id}:${row.course_id}`} className="border-t border-border align-top">
@@ -106,7 +109,7 @@ export default function AdminCertificateAnalytics() {
           </tr>)}</tbody>
         </table>
       </div>
-      <div className="flex items-center justify-between gap-3"><span className="text-sm text-foreground-muted">{t("certificateAnalytics.page", { page: page + 1, pages: Math.max(1, Math.ceil(result.total / PAGE_SIZE)) })}</span><div className="flex gap-2"><Button type="button" variant="cta" hierarchy="secondary" disabled={page === 0} onClick={() => setPage(current => current - 1)}>{t("certificateAnalytics.previous")}</Button><Button type="button" variant="cta" hierarchy="secondary" disabled={(page + 1) * PAGE_SIZE >= result.total} onClick={() => setPage(current => current + 1)}>{t("certificateAnalytics.next")}</Button></div></div>
+      <div className="flex items-center justify-between gap-3"><span className="text-sm text-foreground-muted">{t("certificateAnalytics.page", { page: page + 1, pages: Math.max(1, Math.ceil(result.total / PAGE_SIZE)) })}</span><div className="flex gap-2"><Button type="button" variant="cta" hierarchy="secondary" disabled={page === 0} onClick={() => setPage(current => current - 1)}>{t("certificateAnalytics.previous")}</Button><Button type="button" variant="cta" hierarchy="secondary" disabled={query.isPlaceholderData || (page + 1) * PAGE_SIZE >= result.total} onClick={() => setPage(current => current + 1)}>{t("certificateAnalytics.next")}</Button></div></div>
     </>}
   </div>;
 }

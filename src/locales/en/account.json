@@ -18,6 +18,10 @@
       "title": "Learning profile & CV",
       "description": "Info for advising & career support"
     },
+    "projects": {
+      "title": "Projects",
+      "description": "Manage your projects & translations"
+    },
     "achievements": {
       "title": "Achievements Vault",
       "description": "Manage certificates & badges"
@@ -43,10 +47,16 @@
     "language": {
       "title": "Language",
       "description": "Change the app display language. When signed in, this preference is synced across your devices.",
-      "viMeta": "Vietnamese (VI)",
-      "enMeta": "English (EN)",
-      "active_vi": "Active",
-      "active_en": "Active"
+      "meta": {
+        "en": "English (EN)",
+        "zh-CN": "Simplified Chinese (zh-CN)",
+        "ko": "Korean (KO)",
+        "es": "Spanish (ES)",
+        "zh-TW": "Traditional Chinese (zh-TW)",
+        "vi": "Vietnamese (VI)",
+        "ja": "Japanese (JA)"
+      },
+      "active": "Active"
     },
     "appearance": {
       "title": "Appearance",
@@ -72,7 +82,12 @@
       "emailTrackBlast": "Receive learning path announcement emails",
       "inAppCourseBlast": "Show course announcements in-app",
       "inAppTrackBlast": "Show learning path announcements in-app",
-      "saved": "Notification preferences saved"
+      "saved": "Notification preferences saved",
+      "likes": "Likes on your work",
+      "follows": "New followers",
+      "digest": "Daily social activity email",
+      "digestDescription": "Sent only when there is new activity, at 09:00 ({{timezone}}). Unsubscribe at any time.",
+      "loadFailed": "Could not load your notification settings."
     }
   },
   "common": {
@@ -86,37 +101,14 @@
   },
   "projects": {
     "pageTitle": "Project workspace",
-    "listTitle": "My projects",
     "ownerBadge": "Owner",
     "collaboratorBadge": "Collaborator",
-    "publicListingLabel": "Public listing:",
-    "collaboratorCardTitle": "Collaborator visibility",
-    "collaboratorCardBody": "You are listed as a collaborator on this project. You can choose whether this project appears on your public profile.",
     "showOnProfileLabel": "Show this project on my profile",
     "showOnProfileHint": "When enabled, this project can appear on your public profile and in your account project list.",
-    "ownerOnlyTitle": "Owner-managed content",
-    "ownerOnlyBody": "Only the project owner can edit the main project content and translations right now. As a collaborator, you can only control whether it appears on your profile.",
-    "localizationSettingsTitle": "Localization settings",
-    "primaryLocaleLabel": "Primary content locale",
-    "supportedLocalesLabel": "Supported locales",
-    "saveSettings": "Save settings",
-    "translationEditorTitle": "Translation editor",
-    "translationEditorHint": "Empty fields fall back to primary ({{primaryLocale}}).",
-    "updatedAt": "Updated: {{datetime}}",
-    "copyFromPrimary": "Copy from primary",
-    "saveTranslation": "Save translation",
-    "savingTranslation": "Saving…",
-    "targetLocaleDisabled": "Target locale {{locale}} is not enabled in supported locales.",
-    "primaryColumnTitle": "Primary ({{locale}})",
-    "translationColumnTitle": "Translation ({{locale}})",
-    "fieldTitle": "Title",
-    "fieldSummary": "Summary",
-    "titleFallback": "Fallback: {{title}}",
-    "titlePlaceholder": "Enter title",
-    "summaryPlaceholder": "Fallback to primary if empty",
     "errors": {
       "visibilityFailed": "Could not update profile visibility for this project."
-    }
+    },
+    "newProject": "New project"
   },
   "password": {
     "title": "Change password",

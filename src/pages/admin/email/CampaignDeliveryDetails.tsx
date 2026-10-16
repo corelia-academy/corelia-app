@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { emailAdmin, type Paginated } from "@/lib/emailCenter";
 import { useAuth } from "@/stores/authStore";
+import { intlLocale } from "@/lib/intl";
 
 type Recipient = {
   id: string;
@@ -22,7 +23,7 @@ const sentStatuses = new Set(["accepted", "delivered", "bounced", "complained"])
 const filters = ["", "accepted", "delivered", "queued", "failed", "bounced", "indeterminate"];
 
 function localTime(value: string | null): string {
-  return value ? new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(value)) : "—";
+  return value ? new Intl.DateTimeFormat(intlLocale(), { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(value)) : "—";
 }
 
 export function CampaignDeliveryDetails({ campaignId, initialStatus = "" }: { campaignId: string; initialStatus?: string }) {
@@ -31,7 +32,7 @@ export function CampaignDeliveryDetails({ campaignId, initialStatus = "" }: { ca
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
   const [status, setStatus] = useState(initialStatus);
-  const exclude = useMutation({ mutationFn: (recipientId: string) => emailAdmin("campaigns.exclude_recipient", { recipient_id: recipientId }), onSuccess: async () => { toast.success(t("campaigns.excluded")); await queryClient.invalidateQueries({ queryKey: ["email-center"] }); }, onError: () => toast.error(t("messages.failed")) });
+  const exclude = useMutation({ mutationFn: (recipientId: string) => emailAdmin("campaigns.exclude_recipient", { recipient_id: recipientId }), onSuccess: async () => { toast.success(t("campaigns.excluded")); await queryClient.invalidateQueries({ queryKey: ["email-center", "campaign-recipients", campaignId] }); }, onError: () => toast.error(t("messages.failed")) });
   const recipients = useQuery({
     queryKey: ["email-center", "campaign-recipients", campaignId, status, page],
     queryFn: () => emailAdmin<Paginated<Recipient>>("campaigns.recipients", { campaign_id: campaignId, status, page }),

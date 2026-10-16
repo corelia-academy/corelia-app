@@ -6,7 +6,6 @@ import {
   Eye,
   PlusCircle,
   GraduationCap,
-  Loader2,
   EyeOff,
   Pencil,
 } from "lucide-react";
@@ -16,11 +15,13 @@ import {
   getCourseOwnerTypeLabel,
 } from "@/types/courses";
 import { useAuth } from "@/stores/authStore";
+import { QueryErrorState } from "@/components/QueryErrorState";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { EmptyState, PageContainer, PageSectionCard } from "@/components/layouts/PagePrimitives";
 import { useLearningTranslation } from "@/features/learning/useLearningTranslation";
 import { Input } from "@/components/ui/input";
+import { InstructorCoursesSkeleton } from "@/pages/instructor/InstructorCoursesSkeleton";
 
 const InstructorCourses = () => {
   const { t } = useTranslation("instructor");
@@ -58,11 +59,18 @@ const InstructorCourses = () => {
     return { total: courses.length, published, drafts, free: courses.length };
   }, [courses]);
 
-  if (loading) {
+  if (loading) return <InstructorCoursesSkeleton />;
+
+  // Nothing loaded: show the failure with a retry instead of zeroed stats and an empty list.
+  if (error && !coursesQuery.data) {
     return (
-      <div className="flex min-h-80 items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-foreground-muted" aria-hidden />
-      </div>
+      <PageContainer>
+        <QueryErrorState
+          message={error}
+          retrying={coursesQuery.isFetching}
+          onRetry={isAuthenticated ? () => void coursesQuery.refetch() : undefined}
+        />
+      </PageContainer>
     );
   }
 

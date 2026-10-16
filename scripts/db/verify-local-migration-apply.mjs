@@ -24,6 +24,7 @@ const sqlTestPaths = [
   "scripts/db/tests/email-center.integration.sql",
   "scripts/db/tests/career-tracks-retirement.integration.sql",
   "scripts/db/tests/hackathon-taxonomy-contract.integration.sql",
+  "scripts/db/tests/search-public.integration.sql",
 ].map((path) => resolve(process.cwd(), path));
 
 console.log("===============================================================================");
@@ -135,6 +136,10 @@ execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "
 });
 execFileSync(process.execPath, ["scripts/db/tests/learning-policy-postgrest.integration.mjs"], { stdio: "inherit" });
 console.log("✓ SQL integration test suites executed successfully.\n");
+
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/social-notifications.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
 
 // 4. Exercise the exact Jobs relationship through the local PostgREST server.
 console.log("[STEP 4/4] Executing Jobs PostgREST relationship smoke...");

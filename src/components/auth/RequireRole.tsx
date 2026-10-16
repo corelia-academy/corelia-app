@@ -13,6 +13,8 @@ interface RequireRoleProps {
   loginPath?: string;
   /** Redirect khi đã đăng nhập nhưng không đủ role (mặc định /) */
   fallbackPath?: string;
+  /** Placeholder while the profile/role is resolving (mặc định spinner) */
+  loadingFallback?: React.ReactNode;
 }
 
 /**
@@ -23,6 +25,7 @@ export function RequireRole({
   roles,
   loginPath = "/login",
   fallbackPath = "/",
+  loadingFallback = <AuthGateLoading />,
 }: RequireRoleProps) {
   const { t } = useTranslation("common");
   const { isAuthenticated, hasRole, authInitialized, profileLoading, profile, user, refreshProfile } =
@@ -38,7 +41,7 @@ export function RequireRole({
   }
 
   if (profileLoading) {
-    return <AuthGateLoading />;
+    return <>{loadingFallback}</>;
   }
 
   if (!profile && user) {
