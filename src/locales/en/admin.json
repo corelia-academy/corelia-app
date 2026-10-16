@@ -93,6 +93,10 @@
         "label": "Hackathons",
         "tooltip": "Manage hackathons"
       },
+      "studio": {
+        "label": "Corelia Studio",
+        "tooltip": "Open Corelia Studio in a new tab"
+      },
       "email": {
         "label": "Email Center",
         "tooltip": "Recipients, templates, campaigns, and automations"

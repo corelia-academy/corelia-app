@@ -146,6 +146,10 @@
         "label": "黑客松",
         "tooltip": "管理黑客松"
       },
+      "studio": {
+        "label": "Corelia Studio",
+        "tooltip": "在新标签页中打开 Corelia Studio"
+      },
       "email": {
         "label": "邮件中心",
         "tooltip": "收件人、模板、营销活动和自动化"

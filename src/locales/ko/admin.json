@@ -146,6 +146,10 @@
         "label": "해커톤",
         "tooltip": "해커톤 관리"
       },
+      "studio": {
+        "label": "Corelia Studio",
+        "tooltip": "Corelia Studio를 새 탭에서 열기"
+      },
       "email": {
         "label": "이메일 센터",
         "tooltip": "수신자, 템플릿, 캠페인, 자동화"

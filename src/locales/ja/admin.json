@@ -146,6 +146,10 @@
         "label": "ハッカソン",
         "tooltip": "ハッカソンを管理"
       },
+      "studio": {
+        "label": "Corelia Studio",
+        "tooltip": "Corelia Studio を新しいタブで開く"
+      },
       "email": {
         "label": "メールセンター",
         "tooltip": "受信者、テンプレート、キャンペーン、自動化"

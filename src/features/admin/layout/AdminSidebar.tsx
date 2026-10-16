@@ -15,6 +15,7 @@ import {
   Award,
   Blocks,
   BriefcaseBusiness,
+  ExternalLink,
   GraduationCap,
   ImageIcon,
   Mail,
@@ -32,6 +33,7 @@ export function AdminSidebar() {
   const location = useLocation();
   const { profile } = useAuth();
   const pathname = location.pathname;
+  const studioUrl = import.meta.env.VITE_STUDIO_URL?.trim();
 
   return (
     <Sidebar stickyContext="main-content" collapsible="icon" variant="sidebar">
@@ -192,6 +194,25 @@ export function AdminSidebar() {
                   }
                 />
               </SidebarMenuItem>
+              {profile?.role === "admin" && studioUrl ? (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    className="rounded-md"
+                    tooltip={t("layout.sidebar.studio.tooltip")}
+                    render={
+                      <a
+                        href={studioUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex w-full items-center gap-2"
+                      >
+                        <ExternalLink className="size-4" aria-hidden />
+                        <span>{t("layout.sidebar.studio.label")}</span>
+                      </a>
+                    }
+                  />
+                </SidebarMenuItem>
+              ) : null}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

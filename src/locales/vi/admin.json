@@ -93,6 +93,10 @@
         "label": "Hackathon",
         "tooltip": "Quản lý hackathon"
       },
+      "studio": {
+        "label": "Corelia Studio",
+        "tooltip": "Mở Corelia Studio trong tab mới"
+      },
       "email": {
         "label": "Trung tâm Email",
         "tooltip": "Người nhận, template, chiến dịch và tự động hóa"
