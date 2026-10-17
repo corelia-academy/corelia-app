@@ -391,7 +391,7 @@
       "chooseLogo": "Chọn logo",
       "uploadLogo": "Tải Lên",
       "screenshots": "Ảnh chụp dự án",
-      "screenshotsHint": "Tối đa 6 ảnh, mỗi ảnh tối đa 5 MB. Có thể sắp xếp lại thứ tự.",
+      "screenshotsHint": "Tối đa 6 hình, mỗi hình 5 MB. Ưu tiên tỉ lệ 16:9. Bạn có thể sắp xếp theo thứ tự mong muốn hiển thị.",
       "addScreenshots": "Thêm ảnh",
       "screenshotAlt": "Ảnh chụp dự án {{index}}",
       "remove": "Xóa",

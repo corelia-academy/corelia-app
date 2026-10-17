@@ -182,7 +182,7 @@ export function ProjectMediaEditor({
       <section className="grid min-w-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-12" aria-labelledby="project-logo-label">
         <div className="min-w-0 space-y-4">
           <div>
-            <h3 id="project-logo-label" className="text-heading-medium font-display text-project-editor-heading">{t("projects.form.logo")}</h3>
+            <h3 id="project-logo-label" className="text-heading-medium font-display text-project-editor-heading">{t("projects.form.logo")} <span className="text-label-medium text-error-400">*</span></h3>
             <p className="mt-4 text-xs leading-[1.25] tracking-[0.24px] font-body text-foreground-subtle">{t("projects.form.submissionLogoHint")}</p>
           </div>
           <input ref={logoInput} hidden type="file" accept={ACCEPT} disabled={uploading} aria-label={t("projects.form.chooseLogo")} onChange={event => { void uploadLogo(event.target.files?.[0]); event.target.value = ""; }} />
@@ -191,7 +191,7 @@ export function ProjectMediaEditor({
         <div className="flex items-start gap-3">
           {logo ? <div className="relative size-[120px] rounded-md">
             <img src={logo.url} alt="" className="size-full rounded-md object-cover" />
-            <Button type="button" size="xsmall" variant="cta" hierarchy="tertiary" iconOnly className="absolute -right-1 -top-1 size-4 rounded-full border border-border bg-background p-0" aria-label={t("projects.form.remove")} disabled={uploading} onClick={() => void remove(logo, "logo")}><X className="size-2" weight="duotone" aria-hidden /></Button>
+            <Button type="button" size="xsmall" variant="cta" hierarchy="tertiary" iconOnly className="absolute -right-1.5 -top-1.5 size-4 rounded-full border border-border bg-surface-raised p-0 text-foreground" aria-label={t("projects.form.remove")} disabled={uploading} onClick={() => void remove(logo, "logo")}><X className="size-2.5" weight="regular" aria-hidden /></Button>
           </div> : <DashedUploadSlot
             className="size-[120px]"
             label={t("projects.form.uploadLogo")}
@@ -209,17 +209,13 @@ export function ProjectMediaEditor({
             <p className="mt-4 text-body-small font-body text-foreground-subtle">{t("projects.form.screenshotsHint")}</p>
           </div>
           <input ref={screenshotsInput} hidden type="file" accept={ACCEPT} multiple disabled={uploading || screenshots.length >= 6} aria-label={t("projects.form.addScreenshots")} onChange={event => { void uploadScreenshots(Array.from(event.target.files ?? [])); event.target.value = ""; }} />
-          <Button type="button" size="small" variant="cta" hierarchy="secondary" disabled={uploading || screenshots.length >= 6} onClick={() => screenshotsInput.current?.click()}>{t("projects.form.addScreenshots")}</Button>
+          <Button type="button" size="xsmall" variant="cta" hierarchy="secondary" disabled={uploading || screenshots.length >= 6} onClick={() => screenshotsInput.current?.click()}>{t("projects.form.uploadLogo")}</Button>
         </div>
         <div className="flex min-w-0 flex-wrap items-start gap-3">
           {screenshots.map((item, index) => (
-            <div key={item.path} className="w-[210px] overflow-hidden rounded-md border border-border bg-surface-raised">
-              <img src={item.url} alt={t("projects.form.screenshotAlt", { index: index + 1 })} className="h-[120px] w-full object-cover" />
-              <div className="flex justify-end gap-1 p-1">
-                <Button type="button" size="small" variant="cta" hierarchy="tertiary" iconOnly aria-label={t("projects.form.moveUp")} disabled={uploading || index === 0} onClick={() => move(index, -1)}><ArrowUp className="size-4" /></Button>
-                <Button type="button" size="small" variant="cta" hierarchy="tertiary" iconOnly aria-label={t("projects.form.moveDown")} disabled={uploading || index === screenshots.length - 1} onClick={() => move(index, 1)}><ArrowDown className="size-4" /></Button>
-                <Button type="button" size="small" variant="cta" hierarchy="tertiary" iconOnly aria-label={t("projects.form.remove")} disabled={uploading} onClick={() => void remove(item, "screenshot")}><Trash2 className="size-4" /></Button>
-              </div>
+            <div key={item.path} className="relative h-[120px] w-[210px] shrink-0 rounded-md">
+              <img src={item.url} alt={t("projects.form.screenshotAlt", { index: index + 1 })} className="size-full rounded-md object-cover" />
+              <Button type="button" size="xsmall" variant="cta" hierarchy="tertiary" iconOnly className="absolute -right-1.5 -top-1.5 size-4 rounded-full border border-border bg-surface-raised p-0 text-foreground" aria-label={t("projects.form.remove")} disabled={uploading} onClick={() => void remove(item, "screenshot")}><X className="size-2.5" weight="regular" aria-hidden /></Button>
             </div>
           ))}
           {screenshots.length < 6 ? <DashedUploadSlot
