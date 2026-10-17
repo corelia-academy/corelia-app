@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import { InformativeIcon, type InformativeIconColor } from "@/components/ui/informative-icon"
 
 const toastBarVariants = cva(
-  "inline-flex w-[348px] max-w-full shrink-0 items-center gap-3 rounded-xl bg-toast-bar-surface px-4 py-2.5 min-h-[44px] shadow-2xl select-none font-body text-sm font-normal text-toast-bar-foreground transition-all",
+  "inline-flex w-[348px] max-w-full shrink-0 items-center gap-3 rounded-xl bg-toast-bar-surface px-4 py-2.5 shadow-2xl select-none font-body text-sm font-normal text-toast-bar-foreground transition-all",
   {
     variants: {
       position: {
