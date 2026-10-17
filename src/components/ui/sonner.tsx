@@ -1,12 +1,8 @@
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Info,
-  Loader2,
-  XCircle,
-} from "lucide-react"
+import { Loader2 } from "lucide-react"
+
+import { InformativeIcon } from "@/components/ui/informative-icon"
 
 const Toaster = ({ position = "top-center", ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
@@ -18,32 +14,35 @@ const Toaster = ({ position = "top-center", ...props }: ToasterProps) => {
       position={position}
       icons={{
         success: (
-          <CheckCircle2 className="size-4" aria-hidden />
+          <InformativeIcon color="success" size="xs" type="circle-outline" aria-hidden="true" />
         ),
         info: (
-          <Info className="size-4" aria-hidden />
+          <InformativeIcon color="blue" size="xs" type="circle-outline" aria-hidden="true" />
         ),
         warning: (
-          <AlertTriangle className="size-4" aria-hidden />
+          <InformativeIcon color="warning" size="xs" type="circle-outline" aria-hidden="true" />
         ),
         error: (
-          <XCircle className="size-4" aria-hidden />
+          <InformativeIcon color="error" size="xs" type="circle-outline" aria-hidden="true" />
         ),
         loading: (
-          <Loader2 className="size-4 animate-spin" aria-hidden />
+          <Loader2 className="size-5 animate-spin text-[var(--accent-sky-400)]" aria-hidden="true" />
         ),
       }}
       style={
         {
-          "--normal-bg": "var(--surface-float)",
-          "--normal-text": "var(--foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)",
+          "--normal-bg": "var(--toast-bar-surface)",
+          "--normal-text": "var(--toast-bar-foreground)",
+          "--normal-border": "transparent",
+          "--border-radius": "var(--radius-xl)",
         } as React.CSSProperties
       }
       toastOptions={{
         classNames: {
-          toast: "cn-toast",
+          toast: "cn-toast !w-[348px] !max-w-full !rounded-xl !bg-toast-bar-surface !px-4 !py-2.5 !min-h-[44px] !shadow-2xl !select-none !font-body !text-sm !font-normal !text-toast-bar-foreground !border-0 !gap-3",
+          title: "!text-toast-bar-foreground !text-sm !font-normal !leading-5",
+          description: "!text-toast-bar-foreground/80 !text-xs",
+          icon: "!m-0 !p-0 !self-center",
         },
       }}
       {...props}

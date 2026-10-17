@@ -30,6 +30,7 @@ import AdminTabsComponentPage from "./components/AdminTabsComponentPage";
 import AdminTooltipComponentPage from "./components/AdminTooltipComponentPage";
 import AdminToggleComponentPage from "./components/AdminToggleComponentPage";
 import AdminStepperComponentPage from "./components/AdminStepperComponentPage";
+import AdminToastBarComponentPage from "./components/AdminToastBarComponentPage";
 import AdminComponentsSidebar from "./components/AdminComponentsSidebar";
 
 const components = [
@@ -132,6 +133,11 @@ const components = [
     slug: "informative-icon",
     title: "Informative Icon",
     criterion: "Four status colors, five sizes, and two circle types.",
+  },
+  {
+    slug: "toast-bar",
+    title: "Toast Bar",
+    criterion: "All eight visual models across top and bottom positioning with InformativeIcon feedback states.",
   },
 ] as const;
 
@@ -590,6 +596,9 @@ export default function AdminComponentsPage() {
               </ComponentSection>
               <ComponentSection {...components[19]}>
                 <AdminInformativeIconComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[20]}>
+                <AdminToastBarComponentPage embedded />
               </ComponentSection>
             </>
           )}
