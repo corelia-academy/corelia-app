@@ -1,10 +1,10 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, NavLink, useLocation } from "react-router";
+import { UserAvatar } from "@/components/UserAvatar";
 import { XpRankBadge } from "@/features/xp/XpRankBadge";
 import { XpBadge } from "@/features/xp/XpBadge";
 import { getXpTotals } from "@/lib/xp";
-import { getGeneratedAvatarDataUrl } from "@/lib/avatar";
 import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 import { NotificationBell } from "@/components/layouts/NotificationBell";
@@ -23,7 +23,6 @@ import {
   siteAccountLinks,
   siteHomeHref,
   siteNavigation,
-  writeSiteUser,
   type SiteHeaderLinkProps,
 } from "@corelia/ui/site-header";
 import "@corelia/ui/site-header.css";
@@ -80,18 +79,14 @@ export default function Header() {
       metaName ??
       profile?.id?.slice(0, 8) ??
       t("user.fallbackName"));
-  const userId = profile?.id ?? user?.id ?? null;
-  // Same image the app's UserAvatar renders; the landing header reads it from the snapshot below.
-  const avatarUrl = useMemo(
-    () => getGeneratedAvatarDataUrl(userId, profile?.avatar_seed, profile?.avatar_config)
-      ?? (profile ? profile.avatar_url : metaAvatar),
-    [metaAvatar, profile, userId],
-  );
-
-  useEffect(() => {
-    if (!isAuthenticated || !userId || !profile) return;
-    writeSiteUser({ id: userId, name: displayName, avatarUrl });
-  }, [avatarUrl, displayName, isAuthenticated, profile, userId]);
+  const avatarUrl = profile ? profile.avatar_url : metaAvatar;
+  const avatarFallback = (
+    profile?.full_name ??
+    metaName ??
+    profile?.id ??
+    user?.id ??
+    "U"
+  ).charAt(0);
   const xpQuery = useQuery({
     queryKey: ["xp", "total", user?.id],
     queryFn: async () => {
@@ -152,6 +147,17 @@ export default function Header() {
               <NotificationBell />
               <AccountMenu
                 user={{ name: displayName, email: user?.email ?? null, avatarUrl }}
+                avatar={
+                  <UserAvatar
+                    userId={profile?.id ?? user?.id}
+                    avatarUrl={avatarUrl}
+                    avatarSeed={profile?.avatar_seed}
+                    avatarConfig={profile?.avatar_config}
+                    alt={displayName}
+                    fallback={avatarFallback}
+                    size="Medium"
+                  />
+                }
                 summary={user?.id ? (
                   <span className="flex flex-wrap items-center gap-1">
                     <XpBadge total={xpQuery.data?.[user.id]} />
