@@ -1,6 +1,7 @@
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
 import { supabase } from "@/lib/supabase";
+import { appUrl } from "@/lib/appUrl";
 
 export async function getAuthSession(): Promise<Session | null> {
   const { data, error } = await supabase.auth.getSession();
@@ -104,7 +105,7 @@ export async function signUpWithPassword(input: {
 export async function signInWithOAuth(provider: "google" | "github"): Promise<void> {
   const { error } = await supabase.auth.signInWithOAuth({
     provider,
-    options: { redirectTo: `${window.location.origin}/` },
+    options: { redirectTo: appUrl("/") },
   });
   if (error) throw error;
 }
@@ -136,7 +137,7 @@ export async function getConnectedIdentities() {
 export async function connectAccountIdentity(provider: "github" | "google") {
   const { error } = await supabase.auth.linkIdentity({
     provider,
-    options: { redirectTo: `${window.location.origin}/account/profile` },
+    options: { redirectTo: appUrl("/account/profile") },
   });
   if (error) throw error;
 }

@@ -1,0 +1,735 @@
+---
+import StripeBand from "@/components/common/StripeBand.astro";
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import Herocontact from "@/assets/herocontact.jpg";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const subjects = [
+    { value: "general", label: t("contact.form.subject.general") },
+    { value: "partnership", label: t("contact.form.subject.partnership") },
+    { value: "b2b", label: t("contact.form.subject.b2b") },
+    { value: "program", label: t("contact.form.subject.program") },
+    { value: "other", label: t("contact.form.subject.other") },
+];
+const splitTeamName = (value: string) => {
+    const [role, ...nameParts] = value.trim().split(/\s+/);
+
+    return {
+        role,
+        name: nameParts.join(" "),
+    };
+};
+
+const founder = splitTeamName(t("contact.team.founder.name"));
+const cofounder = splitTeamName(t("contact.team.cofounder.name"));
+---
+
+<section class="border-t border-border bg-background">
+    <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+        <div class="border-x border-border">
+            <!-- Tiêu đề section -->
+            <div class="grid min-h-[120px] lg:grid-cols-[351px_498px_351px]">
+                <StripeBand
+                    animated
+                    class="hidden border-r border-border lg:block"
+                />
+
+                <div class="flex items-center justify-center gap-5 px-6">
+                    <span class="font-heading text-lg leading-[1.2] text-muted-foreground md:text-2xl">
+                        {"<"}
+                    </span>
+
+                    <h2
+                        class="text-center font-heading text-4xl leading-[1.15] md:text-5xl"
+                        data-reveal="text-up"
+                    >
+                        {t("contact.section.title")}
+                    </h2>
+
+                    <span class="font-heading text-lg leading-[1.2] text-muted-foreground md:text-2xl">
+                        {">"}
+                    </span>
+                </div>
+
+                <StripeBand
+                    animated
+                    class="hidden border-l border-border lg:block"
+                />
+            </div>
+
+            <!-- Quote + đội ngũ -->
+            <!-- Form + thông tin pháp lý -->
+            <div
+                class="grid lg:grid-cols-[minmax(0,876px)_324px] border-t border-border"
+            >
+                <div>
+                    <div
+                        class="relative min-h-[413px] overflow-hidden border-r border-border"
+                    >
+                        <img loading="lazy" decoding="async"
+                            src={Herocontact.src}
+                            alt=""
+                            aria-hidden="true"
+                            class="absolute inset-0 h-full w-full object-cover"
+                        />
+
+                        <div
+                            class="relative z-10 flex h-full flex-col justify-between gap-12 px-8 py-12 lg:px-[117px] lg:py-20"
+                        >
+                            <p
+                                class="max-w-[641px] font-heading text-4xl leading-[1.15] md:text-5xl"
+                                data-reveal="text-up"
+                            >
+                                {t("contact.intro.quote")}
+                            </p>
+
+                            <p
+                                class="max-w-[338px] text-sm leading-[1.4] md:text-base"
+                                data-reveal="fade-up"
+                                data-reveal-delay="200"
+                            >
+                                {t("contact.intro.description")}
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Contact form -->
+                    <div
+                        id="form"
+                        class="border-r border-border"
+                        style="scroll-margin-top: calc(var(--site-header-height, 72px) + 12px)"
+                    >
+                        <div
+                            class="flex min-h-[80px] items-center bg-secondary border-b border-border px-8"
+                        >
+                            <h3
+                                class="font-heading text-lg leading-[1.2] md:text-2xl"
+                                data-reveal="text-up"
+                            >
+                                {t("contact.form.title")}
+                            </h3>
+                        </div>
+
+                        <form
+                            id="contact-form"
+                            class="grid gap-6 p-8 md:grid-cols-2"
+                            data-submitting={t("form.submitting")}
+                            data-success={t("form.success.contact")}
+                            data-error={t("form.error")}
+                            data-submit-text={t("contact.form.submit")}
+                            data-reveal="fade-up"
+                            data-reveal-delay="150"
+                        >
+                            <!-- Tên -->
+                            <div>
+                                <label
+                                    for="ct-full-name"
+                                    class="mb-2 block text-sm leading-[1.4] text-foreground-subtle md:text-base"
+                                >
+                                    {t("contact.form.firstName")}<span class="text-[#EB3C3C]">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="ct-full-name"
+                                    name="fullName"
+                                    required
+                                    placeholder={t("contact.form.fullNamePlaceholder")}
+                                    class="w-full border border-border rounded-[8px] bg-secondary px-4 py-3 text-sm leading-[1.2] text-foreground placeholder:text-foreground-subtle focus:border-foreground focus:outline-none md:text-lg"
+                                />
+                            </div>
+
+                            <!-- Email -->
+                            <div>
+                                <label
+                                    for="ct-email"
+                                    class="mb-2 block text-sm leading-[1.4] text-foreground-subtle md:text-base"
+                                >
+                                    {t("contact.form.email")}<span class="text-[#EB3C3C]">*</span>
+                                </label>
+
+                                <input
+                                    type="email"
+                                    id="ct-email"
+                                    name="email"
+                                    required
+                                    placeholder="your@gmail.com"
+                                    class="w-full border border-border rounded-[8px] bg-secondary px-4 py-3 text-sm leading-[1.2] text-foreground placeholder:text-foreground-subtle focus:border-foreground focus:outline-none md:text-lg"
+                                />
+                            </div>
+
+                            <!-- Chủ đề -->
+                            <div>
+                                <label
+                                    id="ct-subject-label"
+                                    for="ct-subject-trigger"
+                                    class="mb-2 block text-sm leading-[1.4] text-foreground-subtle md:text-base"
+                                >
+                                    {t("contact.form.subject")}
+                                </label>
+
+                                <div class="relative" data-subject-select>
+                                    <select
+                                        id="ct-subject"
+                                        name="subject"
+                                        class="pointer-events-none absolute size-px opacity-0"
+                                        tabindex="-1"
+                                        aria-hidden="true"
+                                    >
+                                        {
+                                            subjects.map((subject) => (
+                                                <option value={subject.value}>
+                                                    {subject.label}
+                                                </option>
+                                            ))
+                                        }
+                                    </select>
+
+                                    <button
+                                        id="ct-subject-trigger"
+                                        type="button"
+                                        data-subject-trigger
+                                        aria-haspopup="listbox"
+                                        aria-expanded="false"
+                                        aria-controls="ct-subject-menu"
+                                        aria-labelledby="ct-subject-label ct-subject-value"
+                                        class="flex w-full items-center justify-between rounded-[8px] border border-border bg-secondary px-4 py-3 text-left text-sm leading-[1.2] text-foreground focus:border-foreground focus:outline-none md:text-lg"
+                                    >
+                                        <span id="ct-subject-value" data-subject-value>
+                                            {subjects[0].label}
+                                        </span>
+                                        <img loading="lazy" decoding="async"
+                                            src="/invertedtriangle.svg"
+                                            alt=""
+                                            data-subject-chevron
+                                            class="size-4 shrink-0"
+                                            aria-hidden="true"
+                                        />
+                                    </button>
+
+                                    <div
+                                        id="ct-subject-menu"
+                                        role="listbox"
+                                        aria-labelledby="ct-subject-label"
+                                        aria-hidden="true"
+                                        class="absolute left-0 top-full z-30 mt-2 max-h-60 w-full overflow-y-auto rounded-[8px] border border-border bg-secondary opacity-0 invisible pointer-events-none"
+                                        inert
+                                    >
+                                        {
+                                            subjects.map((subject, index) => (
+                                                <button
+                                                    type="button"
+                                                    role="option"
+                                                    data-subject-option
+                                                    data-value={subject.value}
+                                                    aria-selected={
+                                                        index === 0
+                                                            ? "true"
+                                                            : "false"
+                                                    }
+                                                    tabindex="-1"
+                                                     class="block w-full px-4 py-3 text-left text-sm leading-[1.2] text-foreground transition-colors hover:bg-muted focus:bg-muted focus:outline-none md:text-lg"
+                                                >
+                                                    {subject.label}
+                                                </button>
+                                            ))
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Số điện thoại -->
+                            <div>
+                                <label
+                                    for="ct-phone"
+                                    class="mb-2 block text-sm leading-[1.4] text-foreground-subtle md:text-base"
+                                >
+                                    {t("contact.form.phone")}
+                                </label>
+
+                                <input
+                                    type="tel"
+                                    id="ct-phone"
+                                    name="phone"
+                                    placeholder="+84 xxx xxx xxx"
+                                    class="w-full border border-border rounded-[8px] bg-secondary px-4 py-3 text-sm leading-[1.2] text-foreground placeholder:text-foreground-subtle focus:border-foreground focus:outline-none md:text-lg"
+                                />
+                            </div>
+
+                            <!-- Nội dung thắc mắc -->
+                            <div class="md:col-span-2">
+                                <label
+                                    for="ct-message"
+                                    class="mb-2 block text-sm leading-[1.4] text-foreground-subtle md:text-base"
+                                >
+                                    {t("contact.form.message")}*
+                                </label>
+
+                                <textarea
+                                    id="ct-message"
+                                    name="message"
+                                    required
+                                    rows="5"
+                                    placeholder={t("contact.form.messagePlaceholder")}
+                                    class="min-h-[100px] h-[100px] w-full resize-none border rounded-[8px] border-border bg-secondary px-4 py-3 text-sm leading-[1.2] text-foreground placeholder:text-foreground-subtle focus:border-foreground focus:outline-none md:text-lg"
+                                ></textarea>
+                            </div>
+
+                            <!-- Submit -->
+                            <div class="md:col-span-2" data-reveal="fade-up">
+                                <button
+                                    type="submit"
+                                    id="ct-submit-btn"
+                                    data-hover-wave
+                                    class="h-10 inline-flex cursor-pointer items-center justify-center rounded-lg border border-border-button bg-button-primary-background hover:bg-button-primary-background-hover text-button-primary-foreground px-4 text-sm font-normal leading-[1.2]
+                            shadow-button-primary-glow transition-all duration-300 md:text-lg"
+                                >
+                                    <span
+                                        id="ct-btn-text"
+                                        class="hw-label relative top-px md:top-0"
+                                    >
+                                        {t("contact.form.submit")}
+                                    </span>
+                                </button>
+
+                                <div
+                                    id="ct-feedback"
+                                    aria-live="polite"
+                                    class="hidden py-3 text-sm"
+                                >
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="flex-col w-full flex">
+                    <aside
+                        class="flex flex-1 flex-col gap-8 p-8"
+                        data-reveal="fade-up"
+                    >
+                        <div class="gap-2">
+                            <h3
+                                class="text-sm leading-[1.4] text-foreground-subtle font-medium md:text-base"
+                            >
+                                {t("contact.team.title")}
+                            </h3>
+                            <img loading="lazy" decoding="async"
+                                src="/Corelia_Academy_Logo_Dark.png"
+                                alt="Corelia Academy"
+                                class="-ml-3 h-[75px] mr-auto w-auto object-contain"
+                            />
+                        </div>
+
+                        <div class="space-y-8">
+                            <div class="space-y-2">
+                                <p class="text-base font-medium leading-[1.2] md:text-xl">
+                                    <span class="text-foreground"
+                                        >{founder.role}</span
+                                    >{" "}
+                                    <span class="text-primary-a"
+                                        >{founder.name}</span
+                                    >
+                                </p>
+
+                                <div>
+                                    <p class="text-sm leading-[1.4] text-border-strong md:text-base">
+                                        {t("contact.team.founder.email")}
+                                    </p>
+
+                                    <p class="text-sm leading-[1.4] text-border-strong md:text-base">
+                                        {t("contact.team.founder.telegram")}
+                                    </p>
+
+                                    <p class="text-sm leading-[1.4] text-border-strong md:text-base">
+                                        {t("contact.team.founder.zalo")}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <p class="text-base font-medium leading-[1.2] md:text-xl">
+                                    <span class="text-foreground"
+                                        >{cofounder.role}</span
+                                    >{" "}
+                                    <span class="text-primary-a"
+                                        >{cofounder.name}</span
+                                    >
+                                </p>
+
+                                <div>
+                                    <p class="text-sm leading-[1.4] text-border-strong md:text-base">
+                                        {t("contact.team.cofounder.email")}
+                                    </p>
+
+                                    <p class="text-sm leading-[1.4] text-border-strong md:text-base">
+                                        {t("contact.team.cofounder.telegram")}
+                                    </p>
+
+                                    <p class="text-sm leading-[1.4] text-border-strong md:text-base">
+                                        {t("contact.team.cofounder.zalo")}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                    <!-- Legal information -->
+                    <aside
+                        class="flex  flex-col border-t border-border gap-8 p-8"
+                        data-reveal="fade-up"
+                        data-reveal-delay="200"
+                    >
+                        <div class="space-y-6">
+                            <p class="text-base text-foreground font-medium leading-[1.2] md:text-xl">
+                                {t("contact.info.company.legalName")}
+                            </p>
+                            <div class="">
+                                <p class="text-sm text-foreground-subtle leading-[1.4] md:text-base">
+                                    {t("contact.info.location.title")}
+                                </p>
+
+                                <p
+                                    class="text-base leading-[1.2] text-foreground md:text-xl"
+                                >
+                                    {t("contact.info.location.description")}
+                                </p>
+                            </div>
+
+                            <div class="">
+                                <p class="text-sm text-foreground-subtle leading-[1.4] md:text-base">
+                                    {t("contact.info.email.title")}
+                                </p>
+
+                                <a
+                                    href={`mailto:${t("contact.info.email.value")}`}
+                                    class="text-base leading-[1.2] text-foreground underline underline-offset-4 hover:text-foreground md:text-xl"
+                                >
+                                    {t("contact.info.email.value")}
+                                </a>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    import { gsap } from "gsap";
+    import { submitForm } from "@/lib/submitForm";
+
+    const form = document.getElementById("contact-form") as HTMLFormElement;
+    const btn = document.getElementById("ct-submit-btn") as HTMLButtonElement;
+    const btnText = document.getElementById("ct-btn-text") as HTMLSpanElement;
+    const feedback = document.getElementById("ct-feedback") as HTMLDivElement;
+    const subjectRoot = document.querySelector<HTMLElement>(
+        "[data-subject-select]",
+    );
+    const subjectSelect = document.getElementById(
+        "ct-subject",
+    ) as HTMLSelectElement | null;
+    const subjectTrigger = document.querySelector<HTMLButtonElement>(
+        "[data-subject-trigger]",
+    );
+    const subjectMenu = document.getElementById("ct-subject-menu");
+    const subjectValue = document.getElementById("ct-subject-value");
+    const subjectChevron = document.querySelector<HTMLElement>(
+        "[data-subject-chevron]",
+    );
+    const subjectOptions = subjectRoot
+        ? Array.from(
+              subjectRoot.querySelectorAll<HTMLButtonElement>(
+                  "[data-subject-option]",
+              ),
+          )
+        : [];
+    const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const subjectOpenDuration = prefersReducedMotion ? 0 : 0.32;
+    const subjectCloseDuration = prefersReducedMotion ? 0 : 0.24;
+
+    const submittingText = form.dataset.submitting!;
+    const successText = form.dataset.success!;
+    const errorText = form.dataset.error!;
+    const defaultText = form.dataset.submitText!;
+
+    const syncSubjectValue = () => {
+        if (!subjectSelect || !subjectValue) return;
+
+        const selectedOption =
+            subjectOptions.find(
+                (option) => option.dataset.value === subjectSelect.value,
+            ) ?? subjectOptions[0];
+
+        if (!selectedOption) return;
+
+        const selectedValue = selectedOption.dataset.value;
+        if (selectedValue) {
+            subjectSelect.value = selectedValue;
+        }
+
+        subjectValue.textContent = selectedOption.textContent?.trim() ?? "";
+
+        subjectOptions.forEach((option) => {
+            const isSelected = option === selectedOption;
+            option.setAttribute("aria-selected", String(isSelected));
+            option.classList.toggle("bg-muted", isSelected);
+        });
+    };
+
+    const killSubjectTweens = () => {
+        gsap.killTweensOf(subjectMenu);
+        gsap.killTweensOf(subjectOptions);
+        gsap.killTweensOf(subjectChevron);
+    };
+
+    const focusSelectedSubject = () => {
+        const selectedIndex = Math.max(
+            0,
+            subjectOptions.findIndex(
+                (option) => option.dataset.value === subjectSelect?.value,
+            ),
+        );
+
+        subjectOptions[selectedIndex]?.focus({ preventScroll: true });
+    };
+
+    const closeSubjectMenu = (restoreFocus = false) => {
+        if (!subjectMenu) return;
+
+        killSubjectTweens();
+        subjectMenu.setAttribute("inert", "");
+        subjectMenu.setAttribute("aria-hidden", "true");
+        subjectTrigger?.setAttribute("aria-expanded", "false");
+
+        gsap.to(subjectOptions, {
+            autoAlpha: 0,
+            duration: subjectCloseDuration,
+            ease: "power2.in",
+            overwrite: true,
+        });
+
+        gsap.to(subjectMenu, {
+            height: 0,
+            autoAlpha: 0,
+            duration: subjectCloseDuration,
+            ease: "power2.inOut",
+            overwrite: true,
+            onComplete: () => {
+                gsap.set(subjectMenu, {
+                    height: 0,
+                    visibility: "hidden",
+                    pointerEvents: "none",
+                });
+            },
+        });
+
+        gsap.to(subjectChevron, {
+            rotation: 0,
+            duration: prefersReducedMotion ? 0 : 0.2,
+            ease: "power2.out",
+            overwrite: true,
+        });
+
+        if (restoreFocus) {
+            subjectTrigger?.focus({ preventScroll: true });
+        }
+    };
+
+    const openSubjectMenu = () => {
+        if (!subjectMenu) return;
+
+        killSubjectTweens();
+        subjectMenu.removeAttribute("inert");
+        subjectMenu.setAttribute("aria-hidden", "false");
+        subjectTrigger?.setAttribute("aria-expanded", "true");
+
+        gsap.set(subjectMenu, {
+            height: 0,
+            autoAlpha: 1,
+            visibility: "visible",
+            pointerEvents: "auto",
+        });
+
+        gsap.to(subjectMenu, {
+            height: "auto",
+            duration: subjectOpenDuration,
+            ease: "power3.out",
+            overwrite: true,
+        });
+
+        gsap.fromTo(
+            subjectOptions,
+            { autoAlpha: 0 },
+            {
+                autoAlpha: 1,
+                duration: prefersReducedMotion ? 0 : 0.22,
+                stagger: prefersReducedMotion ? 0 : 0.035,
+                ease: "power2.out",
+                overwrite: true,
+            },
+        );
+
+        gsap.to(subjectChevron, {
+            rotation: 180,
+            duration: prefersReducedMotion ? 0 : 0.2,
+            ease: "power2.out",
+            overwrite: true,
+        });
+    };
+
+    const chooseSubject = (option: HTMLButtonElement) => {
+        const value = option.dataset.value;
+        if (!value || !subjectSelect) return;
+
+        subjectSelect.value = value;
+        syncSubjectValue();
+        closeSubjectMenu(true);
+    };
+
+    if (subjectMenu && subjectTrigger && subjectSelect) {
+        syncSubjectValue();
+
+        gsap.set(subjectMenu, {
+            height: 0,
+            autoAlpha: 0,
+            visibility: "hidden",
+            pointerEvents: "none",
+        });
+        gsap.set(subjectOptions, { autoAlpha: 0 });
+        gsap.set(subjectChevron, { rotation: 0 });
+
+        subjectTrigger.addEventListener("click", () => {
+            const isOpen = subjectTrigger.getAttribute("aria-expanded") === "true";
+
+            if (isOpen) {
+                closeSubjectMenu();
+            } else {
+                openSubjectMenu();
+            }
+        });
+
+        subjectTrigger.addEventListener("keydown", (event) => {
+            if (event.key === "ArrowDown") {
+                event.preventDefault();
+                openSubjectMenu();
+                focusSelectedSubject();
+            } else if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+
+                if (subjectTrigger.getAttribute("aria-expanded") === "true") {
+                    closeSubjectMenu();
+                } else {
+                    openSubjectMenu();
+                }
+            } else if (event.key === "Escape") {
+                event.preventDefault();
+                closeSubjectMenu(true);
+            }
+        });
+
+        subjectOptions.forEach((option, index) => {
+            option.addEventListener("click", () => chooseSubject(option));
+
+            option.addEventListener("keydown", (event) => {
+                const lastIndex = subjectOptions.length - 1;
+
+                if (event.key === "ArrowDown") {
+                    event.preventDefault();
+                    subjectOptions[Math.min(index + 1, lastIndex)]?.focus({
+                        preventScroll: true,
+                    });
+                } else if (event.key === "ArrowUp") {
+                    event.preventDefault();
+                    subjectOptions[Math.max(index - 1, 0)]?.focus({
+                        preventScroll: true,
+                    });
+                } else if (event.key === "Home") {
+                    event.preventDefault();
+                    subjectOptions[0]?.focus({ preventScroll: true });
+                } else if (event.key === "End") {
+                    event.preventDefault();
+                    subjectOptions[lastIndex]?.focus({ preventScroll: true });
+                } else if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    chooseSubject(option);
+                } else if (event.key === "Escape") {
+                    event.preventDefault();
+                    closeSubjectMenu(true);
+                } else if (event.key === "Tab") {
+                    closeSubjectMenu();
+                }
+            });
+        });
+
+        document.addEventListener("pointerdown", (event) => {
+            if (
+                subjectTrigger.getAttribute("aria-expanded") === "true" &&
+                event.target instanceof Node &&
+                !subjectRoot?.contains(event.target)
+            ) {
+                closeSubjectMenu();
+            }
+        });
+
+        form.addEventListener("reset", () => {
+            closeSubjectMenu();
+            requestAnimationFrame(syncSubjectValue);
+        });
+    }
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        btn.disabled = true;
+        btnText.textContent = submittingText;
+        feedback.classList.add("hidden");
+
+        try {
+            const fullName = (
+                form.querySelector('[name="fullName"]') as HTMLInputElement
+            ).value.trim().replace(/\s+/g, " ");
+            const [firstName = "", ...lastNameParts] = fullName.split(" ");
+
+            await submitForm({
+                formType: "contact",
+                fullName,
+                firstName,
+                lastName: lastNameParts.join(" "),
+                email: (
+                    form.querySelector('[name="email"]') as HTMLInputElement
+                ).value,
+                phone: (
+                    form.querySelector('[name="phone"]') as HTMLInputElement
+                ).value,
+                subject: (
+                    form.querySelector('[name="subject"]') as HTMLSelectElement
+                ).value,
+                message: (
+                    form.querySelector(
+                        '[name="message"]',
+                    ) as HTMLTextAreaElement
+                ).value,
+            });
+
+            feedback.textContent = successText;
+            feedback.className =
+                "mt-2 rounded-[12px] border border-green-500/20 bg-green-500/10 px-4 py-3 text-center text-sm text-green-400";
+
+            form.reset();
+        } catch {
+            feedback.textContent = errorText;
+            feedback.className =
+                "mt-2 rounded-[12px] border border-red-500/20 bg-red-500/10 px-4 py-3 text-center text-sm text-red-400";
+
+            btn.disabled = false;
+        } finally {
+            btnText.textContent = defaultText;
+            feedback.classList.remove("hidden");
+        }
+    });
+</script>

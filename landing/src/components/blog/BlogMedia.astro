@@ -1,0 +1,121 @@
+---
+import type { BlogMedia } from "@/lib/blogTaxonomy";
+import { getYouTubeEmbedUrl, getYouTubeThumbnailUrl } from "@/lib/youtube";
+
+type Props = {
+  media?: BlogMedia;
+  title: string;
+  href?: string;
+  mode?: "card" | "post";
+  class?: string;
+};
+
+const {
+  media,
+  title,
+  href,
+  mode = "card",
+  class: className,
+} = Astro.props as Props;
+
+const ytThumb =
+  media?.type === "youtube" ? getYouTubeThumbnailUrl(media.url) : null;
+const ytEmbed =
+  media?.type === "youtube" ? getYouTubeEmbedUrl(media.url) : null;
+const useContainedPostImage =
+  media?.type === "image" && mode === "post" && media.fit === "contain";
+---
+
+{
+  !media ? null : href ? (
+    <a href={href} class={`block ${className ?? ""}`.trim()}>
+      {media.type === "image" ? (
+        <img
+          src={media.src}
+          alt={media.alt ?? title}
+          loading="lazy"
+          decoding="async"
+          class="w-full aspect-video object-cover"
+        />
+      ) : ytThumb ? (
+        <div class="relative w-full aspect-video overflow-hidden">
+          <img
+            src={ytThumb}
+            alt={title}
+            loading="lazy"
+            decoding="async"
+            class="w-full h-full object-cover"
+          />
+          <div class="absolute inset-0 grid place-items-center bg-black/30">
+            <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/10 border border-white/20">
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                class="w-5 h-5 text-white translate-x-px"
+              >
+                <path
+                  fill="currentColor"
+                  d="M8 5.75v12.5c0 .74.8 1.2 1.45.84l10.3-6.25a1 1 0 0 0 0-1.68L9.45 4.91A1 1 0 0 0 8 5.75Z"
+                />
+              </svg>
+            </span>
+          </div>
+        </div>
+      ) : null}
+    </a>
+  ) : (
+    <div class={className}>
+      {media.type === "image" ? (
+        useContainedPostImage ? (
+          <figure class="relative overflow-hidden ">
+            <img
+              src={media.src}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              aria-hidden="true"
+              class="absolute inset-0 h-full w-full scale-105 object-cover blur-3xl opacity-25"
+            />
+            <div class="absolute inset-0 bg-gradient-to-br from-white/6 via-transparent to-black/20" />
+            <img
+              src={media.src}
+              alt={media.alt ?? title}
+              loading="lazy"
+              decoding="async"
+              class="relative z-10 mx-auto block max-h-[72vh] w-full object-contain p-2 md:p-3"
+            />
+          </figure>
+        ) : (
+          <img
+            src={media.src}
+            alt={media.alt ?? title}
+            loading="lazy"
+            decoding="async"
+            class="w-full aspect-video object-cover"
+          />
+        )
+      ) : mode === "post" && ytEmbed ? (
+        <div class="w-full aspect-video overflow-hidden ">
+          <iframe
+            class="w-full h-full"
+            src={ytEmbed}
+            title={title}
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          />
+        </div>
+      ) : ytThumb ? (
+        <div class="relative w-full aspect-video overflow-hidden">
+          <img
+            src={ytThumb}
+            alt={title}
+            loading="lazy"
+            decoding="async"
+            class="w-full h-full object-cover"
+          />
+        </div>
+      ) : null}
+    </div>
+  )
+}

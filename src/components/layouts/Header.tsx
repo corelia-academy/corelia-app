@@ -38,6 +38,7 @@ import {
 } from "@/features/search/searchQueries";
 import { logSearchQuery } from "@/lib/search";
 import { prefetchRouteChunk } from "@/lib/routePrefetch";
+import { appPath } from "@/lib/appUrl";
 
 const RECENT_SEARCHES_KEY = "corelia.recentSearches.v1";
 const MAX_RECENT_SEARCHES = 8;
@@ -298,8 +299,8 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
             <img
               src={
                 isDarkMode
-                  ? "/logo/Corelia_Logo_White.svg"
-                  : "/logo/corelia-full-logo-black.png"
+                  ? appPath("/logo/Corelia_Logo_White.svg")
+                  : appPath("/logo/corelia-full-logo-black.png")
               }
               alt="Corelia"
               width={108}
@@ -792,7 +793,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                   aria-label={t("openCampusConnect.header.ariaLabel")}
                 >
                   <img
-                    src="/logo/OC-square-logo.svg"
+                    src={appPath("/logo/OC-square-logo.svg")}
                     alt="Open Campus"
                     className="h-6 rounded-full"
                   />

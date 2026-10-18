@@ -5,6 +5,7 @@ import {
   normalizeLocale,
   parseContentLocale,
   pickBrowserLocale,
+  readLocalePreference,
 } from "./locales";
 
 describe("locales", () => {
@@ -28,6 +29,14 @@ describe("locales", () => {
     expect(pickBrowserLocale(["fr-FR", "ko-KR", "en-US"])).toBe("ko");
     expect(pickBrowserLocale(["fr-FR"])).toBe("en");
     expect(pickBrowserLocale([])).toBe("en");
+  });
+
+  it("reads the shared language preference cookie", () => {
+    expect(readLocalePreference("theme=dark; corelia_lang=zh-TW")).toBe("zh-TW");
+    expect(readLocalePreference("corelia_lang=ja-JP")).toBe("ja");
+    expect(readLocalePreference("corelia_lang=fr")).toBeNull();
+    expect(readLocalePreference("other_corelia_lang=vi")).toBeNull();
+    expect(readLocalePreference("")).toBeNull();
   });
 
   it("maps to BCP 47 tags for Intl", () => {

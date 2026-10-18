@@ -1,0 +1,131 @@
+---
+import Header from "../components/common/header.astro";
+import Footer from "../components/common/footer.astro";
+import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const translatePath = useTranslatedPath(lang);
+---
+
+<BaseLayout
+  lang={lang}
+  title={t("404.title")}
+  description={t("404.description")}
+  robots="noindex, nofollow"
+>
+  <Header />
+
+  <main class="min-h-screen flex items-center justify-center px-4 pt-20">
+    <div class="container max-w-[800px] mx-auto text-center">
+      <div class="space-y-8">
+        <div class="space-y-4">
+          <h1 class="text-8xl md:text-9xl font-bold text-primary animate-pulse">
+            404
+          </h1>
+          <h2 class="text-3xl md:text-4xl font-semibold text-foreground">
+            {t("404.heading")}
+          </h2>
+          <p class="text-lg md:text-xl text-muted-foreground max-w-[600px] mx-auto">
+            {t("404.description")}
+          </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
+          <a
+            href={translatePath("/")}
+            class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full font-medium hover:bg-secondary hover:text-secondary-foreground transition-all duration-300"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            {t("404.backHome")}
+          </a>
+          <a
+            href={translatePath("/contact")}
+            class="inline-flex items-center gap-2 border border-primary text-primary px-6 py-3 rounded-full font-medium hover:bg-primary hover:text-black transition-all duration-300"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            {t("404.contact")}
+          </a>
+        </div>
+
+        <div class="pt-8">
+          <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-border"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+              <span class="px-4 text-muted-foreground bg-background">
+                {lang === "vi"
+                  ? "Có thể bạn đang tìm kiếm"
+                  : "You might be looking for"}
+              </span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6">
+            <a
+              href={translatePath("/")}
+              class="p-4 border border-border rounded-lg hover:border-primary transition-all duration-300 group"
+            >
+              <div class="text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                {t("nav.home")}
+              </div>
+            </a>
+            <a
+              href={translatePath("/fields")}
+              class="p-4 border border-border rounded-lg hover:border-primary transition-all duration-300 group"
+            >
+              <div class="text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                {t("nav.fields")}
+              </div>
+            </a>
+            <a
+              href={translatePath("/case-studies")}
+              class="p-4 border border-border rounded-lg hover:border-primary transition-all duration-300 group"
+            >
+              <div class="text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                {t("nav.businesses")}
+              </div>
+            </a>
+            <a
+              href={translatePath("/universities")}
+              class="p-4 border border-border rounded-lg hover:border-primary transition-all duration-300 group"
+            >
+              <div class="text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                {t("nav.universities")}
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>

@@ -1,0 +1,245 @@
+---
+import Header from "@/components/common/header.astro";
+import Herocontact from "@/components/contact/herocontact.astro";
+import Forminfocontact from "@/components/contact/forminfocontact.astro";
+import Footer from "@/components/common/footer.astro";
+import { useTranslations } from "@/i18n/translations";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+// import { MailIcon, MapPinIcon, SendIcon, MessageCircleIcon, Building2Icon } from "@lucide/astro";
+
+const lang = "vi";
+const t = useTranslations(lang);
+
+// const subjects = [
+//   { value: "general", label: t("contact.form.subject.general") },
+//   { value: "partnership", label: t("contact.form.subject.partnership") },
+//   { value: "b2b", label: t("contact.form.subject.b2b") },
+//   { value: "program", label: t("contact.form.subject.program") },
+//   { value: "other", label: t("contact.form.subject.other") },
+// ];
+
+// const socialMedia = [
+//   { icon: "/x-logo-black.png", link: "https://x.com/coreliaacademy", name: "X (Twitter)", invert: true },
+//   { icon: "/youtube-fill-logo.svg", link: "https://www.youtube.com/@coreliaacademy", name: "YouTube", invert: false },
+//   { icon: "/facebook-fill-logo.svg", link: "https://www.facebook.com/", name: "Facebook", invert: false },
+//   { icon: "/linkedin-fill-logo.svg", link: "https://www.linkedin.com/", name: "LinkedIn", invert: false },
+// ];
+---
+
+<BaseLayout
+  lang={lang}
+  title={t("contact.meta.title")}
+  description={t("contact.meta.description")}
+  canonicalUrl="https://corelia.academy/vi/contact"
+  ogUrl="https://corelia.academy/vi/contact"
+  ogImage="https://corelia.academy/corelia-og-site-v2-vi.png"
+>
+  <!-- <Fragment slot="head">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js" is:inline></script>
+    <script is:inline>
+      document.addEventListener("DOMContentLoaded", function () {
+        AOS.init({ duration: 1000, once: true, offset: 100, easing: "ease-in-out" });
+      });
+    </script>
+  </Fragment> -->
+
+  <div class="flex min-h-svh flex-col">
+    <Header />
+    <Herocontact fullScreenFold />
+  </div>
+  <Forminfocontact />
+
+  <!-- Hero
+  <section class="relative pt-28 pb-12 md:pt-36 md:pb-16 overflow-hidden">
+    <div class="absolute inset-0 bg-linear-to-b from-white/3 to-transparent pointer-events-none"></div>
+    <div class="container max-w-[1200px] mx-auto px-4 xl:px-0 relative z-10">
+      <div class="flex flex-col items-center text-center space-y-4">
+        <img loading="lazy" decoding="async"
+          src="/Corelia_Academy_Logo_Dark.png"
+          alt="Corelia Academy"
+          class="h-10 md:h-12 w-auto object-contain mb-2"
+          data-aos="fade-down" data-aos-delay="200"
+        />
+        <h1
+          class="text-white text-2xl md:text-4xl lg:text-5xl font-semibold"
+          data-aos="fade-up" data-aos-delay="400"
+        >
+          {t("contact.hero.title")}
+        </h1>
+        <p
+          class="text-white/70 text-sm md:text-base font-light max-w-[500px] leading-relaxed"
+          data-aos="fade-up" data-aos-delay="600"
+        >
+          {t("contact.hero.description")}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  Form + Info
+  <section class="py-8 md:py-16">
+    <div class="container max-w-[1200px] mx-auto px-4 xl:px-0">
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        Contact Form
+        <div class="lg:col-span-3" data-aos="fade-right" data-aos-delay="300">
+          <div class="bg-muted border border-border rounded-[24px] p-6 md:p-8">
+            <h2 class="text-white text-lg font-semibold mb-6">{t("contact.form.title")}</h2>
+            <form
+              class="space-y-4"
+              id="contact-form"
+              data-submitting={t("form.submitting")}
+              data-success={t("form.success.contact")}
+              data-error={t("form.error")}
+              data-submit-text={t("contact.form.submit")}
+            >
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="ct-first" class="block text-white/60 text-xs mb-1.5">{t("contact.form.firstName")}</label>
+                  <input
+                    type="text"
+                    id="ct-first"
+                    name="firstName"
+                    required
+                    class="w-full bg-white/5 border border-border rounded-[12px] px-4 py-3 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                    placeholder={t("contact.form.firstName")}
+                  />
+                </div>
+                <div>
+                  <label for="ct-last" class="block text-white/60 text-xs mb-1.5">{t("contact.form.lastName")}</label>
+                  <input
+                    type="text"
+                    id="ct-last"
+                    name="lastName"
+                    required
+                    class="w-full bg-white/5 border border-border rounded-[12px] px-4 py-3 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                    placeholder={t("contact.form.lastName")}
+                  />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="ct-email" class="block text-white/60 text-xs mb-1.5">{t("contact.form.email")}</label>
+                  <input
+                    type="email"
+                    id="ct-email"
+                    name="email"
+                    required
+                    class="w-full bg-white/5 border border-border rounded-[12px] px-4 py-3 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                    placeholder="your@email.com"
+                  />
+                </div>
+                <div>
+                  <label for="ct-phone" class="block text-white/60 text-xs mb-1.5">{t("contact.form.phone")}</label>
+                  <input
+                    type="tel"
+                    id="ct-phone"
+                    name="phone"
+                    class="w-full bg-white/5 border border-border rounded-[12px] px-4 py-3 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                    placeholder="+84 xxx xxx xxx"
+                  />
+                </div>
+              </div>
+              <div>
+                <label for="ct-subject" class="block text-white/60 text-xs mb-1.5">{t("contact.form.subject")}</label>
+                <select
+                  id="ct-subject"
+                  name="subject"
+                  class="w-full bg-white/5 border border-border rounded-[12px] px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30 transition-colors appearance-none cursor-pointer"
+                >
+                  {subjects.map((s) => (
+                    <option value={s.value} class="bg-muted text-white">{s.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label for="ct-message" class="block text-white/60 text-xs mb-1.5">{t("contact.form.message")}</label>
+                <textarea
+                  id="ct-message"
+                  name="message"
+                  rows="5"
+                  required
+                  class="w-full bg-white/5 border border-border rounded-[12px] px-4 py-3 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-white/30 transition-colors resize-none"
+                  placeholder={t("contact.form.message")}
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                id="ct-submit-btn"
+                class="bg-primary text-primary-foreground px-8 py-3 rounded-full font-medium hover:bg-secondary hover:text-secondary-foreground transition-all duration-300 text-sm flex items-center gap-2"
+              >
+                <SendIcon id="ct-send-icon" class="size-4" />
+                <svg id="ct-spinner" class="hidden animate-spin size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                <span id="ct-btn-text">{t("contact.form.submit")}</span>
+              </button>
+              <div id="ct-feedback" class="hidden text-center text-sm py-2 rounded-[12px] mt-2"></div>
+            </form>
+          </div>
+        </div>
+
+        Contact Info
+        <div class="lg:col-span-2 space-y-4" data-aos="fade-left" data-aos-delay="500">
+          Email
+          <div class="bg-muted border border-border rounded-[24px] p-6">
+            <div class="size-10 rounded-[12px] bg-white/10 flex items-center justify-center mb-4">
+              <MailIcon class="size-5 text-white" />
+            </div>
+            <p class="text-white text-base font-semibold mb-2">{t("contact.info.email.title")}</p>
+            <p class="text-white/50 text-xs font-light leading-relaxed mb-3">{t("contact.info.email.description")}</p>
+            <a href={`mailto:${t("contact.info.email.value")}`} class="text-white text-sm hover:text-white/70 transition-colors underline underline-offset-4 decoration-white/20">
+              {t("contact.info.email.value")}
+            </a>
+          </div>
+
+          Social
+          <div class="bg-muted border border-border rounded-[24px] p-6">
+            <div class="size-10 rounded-[12px] bg-white/10 flex items-center justify-center mb-4">
+              <MessageCircleIcon class="size-5 text-white" />
+            </div>
+            <p class="text-white text-base font-semibold mb-2">{t("contact.info.social.title")}</p>
+            <p class="text-white/50 text-xs font-light leading-relaxed mb-4">{t("contact.info.social.description")}</p>
+            <div class="flex items-center gap-4">
+              {socialMedia.map((item) => (
+                <a href={item.link} target="_blank" class="group" aria-label={item.name}>
+                  <img loading="lazy" decoding="async"
+                    src={item.icon}
+                    alt={item.name}
+                    class:list={[
+                      "hover:scale-110 transition-all duration-300 invert opacity-70 group-hover:opacity-100",
+                      item.invert ? "size-4" : "size-5",
+                    ]}
+                  />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          Location
+          <div class="bg-muted border border-border rounded-[24px] p-6">
+            <div class="size-10 rounded-[12px] bg-white/10 flex items-center justify-center mb-4">
+              <MapPinIcon class="size-5 text-white" />
+            </div>
+            <p class="text-white text-base font-semibold mb-2">{t("contact.info.location.title")}</p>
+            <p class="text-white/50 text-sm font-light">{t("contact.info.location.description")}</p>
+          </div>
+
+          Company info
+          <div class="bg-muted border border-border rounded-[24px] p-6">
+            <div class="size-10 rounded-[12px] bg-white/10 flex items-center justify-center mb-4">
+              <Building2Icon class="size-5 text-white" />
+            </div>
+            <p class="text-white text-base font-semibold mb-2">{t("contact.info.company.title")}</p>
+            <p class="text-white font-medium text-sm mb-2">{t("contact.info.company.legalName")}</p>
+            <p class="text-white/50 text-xs font-light mb-1"><span class="text-white/70">{t("contact.info.company.taxCode")}:</span> {t("contact.info.company.taxCodeValue")}</p>
+            <p class="text-white/50 text-xs font-light"><span class="text-white/70">{t("contact.info.company.representative")}:</span> {t("contact.info.company.representativeValue")}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section> -->
+
+<Footer />
+</BaseLayout>

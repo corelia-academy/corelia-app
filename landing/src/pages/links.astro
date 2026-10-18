@@ -1,0 +1,152 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import StripeBand from "@/components/common/StripeBand.astro";
+import HeroBackground from "@/assets/landing/hero-background.jpg";
+
+const appOrigin = String(
+  import.meta.env.PUBLIC_APP_URL ?? "/learn",
+).replace(/\/$/, "");
+
+const links = [
+  { name: "Website", href: "https://corelia.academy/", handle: "Explore Corelia Academy", icon: "website" },
+  { name: "Corelia App", href: appOrigin, handle: "Start your learning journey", icon: "app" },
+  { name: "X", href: "https://x.com/corelia_edu", handle: "@corelia_edu", icon: "x" },
+  { name: "YouTube", href: "https://www.youtube.com/@corelia-academy", handle: "@corelia-academy", icon: "/youtube-fill-logo.svg" },
+  { name: "Facebook", href: "https://www.facebook.com/corelia.academy", handle: "@corelia.academy", icon: "/facebook-fill-logo.svg" },
+  { name: "Telegram Channel", href: "https://t.me/corelia_builders", handle: "@corelia_builders", icon: "telegram" },
+  { name: "Instagram", href: "https://www.instagram.com/corelia.academy/", handle: "@corelia.academy", icon: "instagram" },
+  { name: "Threads", href: "https://www.threads.com/@corelia.academy", handle: "@corelia.academy", icon: "threads" },
+  { name: "LinkedIn", href: "https://www.linkedin.com/company/corelia-academy", handle: "Corelia Academy", icon: "/linkedin-fill-logo.svg" },
+  { name: "TikTok", href: "https://www.tiktok.com/@corelia.academy", handle: "@corelia.academy", icon: "tiktok" },
+];
+---
+
+<BaseLayout
+  lang="en"
+  title="Links | Corelia Academy"
+  description="Learn, build, and connect with Corelia. Explore our website, open the Corelia App, and find all our social channels."
+  canonicalUrl="https://corelia.academy/links"
+  ogImage="https://corelia.academy/corelia-og-site-v2-en.png"
+>
+  <main class="links-page" style={{ "--links-background": `url("${HeroBackground.src}")` }}>
+    <div class="links-content">
+      <header class="brand-bar">
+        <a class="brand" href="/" aria-label="Corelia Academy home">
+          <img loading="lazy" decoding="async" src="/Corelia_Academy_Logo_Dark.png" alt="" width="750" height="300" />
+        </a>
+        <h1 class="page-label">CONNECT WITH US</h1>
+      </header>
+
+      <nav aria-label="Corelia Academy links">
+        <ul class="social-links">
+          {links.map((link) => (
+            <li class:list={{ "featured-link": link.icon === "website" || link.icon === "app", "app-link": link.icon === "app" }}>
+              <a class="social-link" href={link.href} target="_blank" rel="noopener noreferrer">
+                <span class="platform-icon" aria-hidden="true">
+                  {link.icon === "website" ? (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="9" />
+                      <ellipse cx="12" cy="12" rx="4" ry="9" />
+                      <path d="M3 12h18" />
+                    </svg>
+                  ) : link.icon === "app" ? (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="4" />
+                      <path d="m10 8 6 4-6 4V8Z" />
+                    </svg>
+                  ) : link.icon === "telegram" ? (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m22 2-7 20-4-9-9-4 20-7ZM22 2 11 13" />
+                    </svg>
+                  ) : link.icon === "tiktok" ? (
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M16.7 2c.3 2.6 1.8 4.1 4.3 4.3v3.2a8.8 8.8 0 0 1-4.3-1v6.1a7.4 7.4 0 1 1-6.4-7.3v3.3a4.2 4.2 0 1 0 3.1 4V2h3.3Z" />
+                    </svg>
+                  ) : link.icon === "instagram" ? (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                      <rect x="3" y="3" width="18" height="18" rx="5" />
+                      <circle cx="12" cy="12" r="4" />
+                      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+                    </svg>
+                  ) : link.icon === "threads" ? (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 7.5C18.9 3.9 16.2 2 12 2 5.8 2 3 5.7 3 12s2.9 10 9 10c4.9 0 8-2.6 8-6.1 0-3.4-2.8-5.4-7-5.4-3.2 0-5 1.3-5 3.4 0 1.8 1.4 3 3.5 3 2.9 0 4.5-2 4.5-5.7 0-3.2-1.5-5.1-4.1-5.1-1.7 0-3 .7-3.8 2" />
+                    </svg>
+                  ) : link.icon === "x" ? (
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M18.9 2H22l-6.8 7.8L23.2 22h-6.3L12 14.6 5.5 22H2.4l8.2-9.4L1 2h6.5l5.7 7.5L18.9 2ZM17.8 20h1.7L6.6 3.9H4.8L17.8 20Z" />
+                    </svg>
+                  ) : (
+                    <img loading="lazy" decoding="async" src={link.icon} alt="" width="24" height="24" />
+                  )}
+                </span>
+                <span class="link-copy">
+                  <span class="platform-name">{link.name}</span>
+                  <span class="platform-handle">{link.handle}</span>
+                </span>
+                <svg class="link-arrow" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 17 17 7M7 7h10v10" />
+                </svg>
+                <span class="sr-only"> (opens in a new tab)</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <StripeBand class="h-8 border-t border-border bg-background" />
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .links-page {
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    padding: 48px 20px;
+    background-color: var(--background);
+    background-image: var(--links-background);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+  .links-content { width: 100%; max-width: 480px; min-width: 0; border: 1px solid var(--border); background: color-mix(in srgb, var(--background) 92%, transparent); }
+  .brand-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 24px; border-bottom: 1px solid var(--border); background: var(--background); }
+  .brand { display: inline-flex; flex-shrink: 0; }
+  .brand img { width: 125px; height: 50px; object-fit: contain; }
+  .page-label { font-family: var(--font-number); color: var(--muted-foreground); font-size: 10px; letter-spacing: 0.05em; }
+  nav { background: var(--background); }
+  .social-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; list-style: none; margin: 0; padding: 0; }
+  .social-links li { grid-column: 1 / -1; }
+  .social-link { display: flex; align-items: center; gap: 16px; min-height: 72px; padding: 14px 24px; border-top: 1px solid var(--border); text-decoration: none; transition: background 180ms ease, color 180ms ease; }
+  .platform-icon { display: grid; place-items: center; width: 24px; height: 24px; flex-shrink: 0; color: inherit; }
+  .platform-icon svg, .platform-icon img { width: 24px; height: 24px; }
+  .platform-icon img { filter: invert(1); }
+  .link-copy { display: grid; gap: 3px; min-width: 0; }
+  .platform-name { font-family: var(--font-heading); font-weight: 500; font-size: 18px; line-height: 1.2; }
+  .platform-handle { color: var(--muted-foreground); font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
+  .link-arrow { width: 20px; height: 20px; flex-shrink: 0; margin-left: auto; color: inherit; }
+  .social-links .featured-link { grid-column: auto; padding: 24px 8px 24px 24px; }
+  .social-links .app-link { padding: 24px 24px 24px 8px; }
+  .featured-link .social-link { min-height: 44px; padding: 10px 12px; gap: 8px; border: 1px solid var(--border-container); border-radius: var(--radius); background: var(--primary-container); color: var(--on-primary-container); box-shadow: var(--button-tertiary-glow); }
+  .featured-link .platform-name { font-family: var(--font-body); font-size: 16px; font-weight: 400; }
+  .featured-link .platform-handle, .featured-link .platform-icon { display: none; }
+  .featured-link .link-arrow { width: 16px; height: 16px; }
+  .app-link .social-link { background: var(--button-primary-background); border-color: var(--border-button); color: var(--button-primary-foreground); box-shadow: var(--button-primary-glow); }
+  .brand:focus-visible, .social-link:focus-visible { outline: 2px solid var(--blue-ribbon-300); outline-offset: -4px; }
+  .brand:focus-visible, .featured-link .social-link:focus-visible { outline-offset: 4px; }
+  @media (hover: hover) {
+    .social-link:hover { background: var(--secondary); }
+    .featured-link .social-link:hover { background: var(--primary-container-hover); }
+    .app-link .social-link:hover { background: var(--button-primary-background-hover); }
+  }
+  @media (max-width: 380px) {
+    .links-page { padding: 24px 12px; }
+    .brand-bar { padding-inline: 16px; gap: 8px; }
+    .page-label { font-size: 9px; }
+    .social-link { padding-inline: 16px; }
+    .social-links .featured-link { padding-left: 16px; }
+    .social-links .app-link { padding-left: 8px; padding-right: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .social-link { transition: none; } }
+</style>

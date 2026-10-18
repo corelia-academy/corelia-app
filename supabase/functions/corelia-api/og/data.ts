@@ -10,6 +10,7 @@ function required(value: unknown, limit: number): string | null {
   return plainText(value, limit);
 }
 
+/** Shared origin; course and hackathon pages are rendered by the landing site at its root. */
 function canonicalOrigin(): string {
   const value = Deno.env.get("CORELIA_APP_ORIGIN")?.trim();
   if (!value) throw new Error("Missing CORELIA_APP_ORIGIN");
@@ -18,6 +19,18 @@ function canonicalOrigin(): string {
     throw new Error("Invalid CORELIA_APP_ORIGIN");
   }
   return url.origin;
+}
+
+/** Path prefix of the SPA on the shared origin ("/learn"); the landing site owns the root. */
+function appBasePath(): string {
+  const value = Deno.env.get("CORELIA_APP_BASE_PATH")?.trim() ?? "";
+  if (value && !/^\/[a-z0-9-]+$/i.test(value)) throw new Error("Invalid CORELIA_APP_BASE_PATH");
+  return value;
+}
+
+/** In-app pages (projects, profiles) and the OG image proxy live under the SPA base path. */
+export function appBaseUrl(): string {
+  return `${canonicalOrigin()}${appBasePath()}`;
 }
 
 function mediaPath(value: unknown, prefix: string): string | null {
@@ -49,7 +62,7 @@ async function projectCard(db: SupabaseClient, id: string): Promise<Omit<OgCard,
     tags: uniqueTags,
     imagePath: mediaPath(row.logo_path, `project-media/${row.owner_id}/${row.id}/logo/`),
     dateLabel: null,
-    updatedAt: row.updated_at, canonicalUrl: `${canonicalOrigin()}/projects/${encodeURIComponent(row.slug)}`,
+    updatedAt: row.updated_at, canonicalUrl: `${appBaseUrl()}/projects/${encodeURIComponent(row.slug)}`,
   };
 }
 
@@ -138,7 +151,7 @@ async function profileCard(db: SupabaseClient, id: string): Promise<Omit<OgCard,
     avatar: { seed: typeof row.avatar_seed === "string" && /^[0-9a-f-]{36}$/i.test(row.avatar_seed)
       ? row.avatar_seed : row.id, config: safeAvatarConfig(row.avatar_config, avatarAssets) },
     dateLabel: null,
-    updatedAt: row.updated_at, canonicalUrl: `${canonicalOrigin()}/@${encodeURIComponent(canonicalId)}`,
+    updatedAt: row.updated_at, canonicalUrl: `${appBaseUrl()}/@${encodeURIComponent(canonicalId)}`,
   };
 }
 
@@ -158,10 +171,9 @@ export async function loadOgCard(db: SupabaseClient, entity: OgEntity, rawId: st
 }
 
 export function publicOgMeta(card: OgCard): OgPublicMeta {
-  const origin = new URL(card.canonicalUrl).origin;
   return {
     canonicalUrl: card.canonicalUrl,
-    imageUrl: `${origin}/api/og/${card.entity}/${encodeURIComponent(card.canonicalId)}?v=${card.revision}`,
+    imageUrl: `${appBaseUrl()}/api/og/${card.entity}/${encodeURIComponent(card.canonicalId)}?v=${card.revision}`,
     updatedAt: card.updatedAt,
     revision: card.revision,
     title: `${card.title} | Corelia`,

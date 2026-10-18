@@ -15,6 +15,8 @@ Corelia is a multilingual learning and credential platform. The browser app uses
 ## Repository Structure
 
 - `src/` — SPA routes, feature pages, shared UI, stores, and client data helpers. Read `src/AGENTS.md` before changing it.
+- `landing/` — Astro marketing site for `corelia.academy` (imported squashed from `corelia-academy/corelia-landing`). Read `landing/AGENTS.md` before changing it.
+- `packages/ui/` — `@corelia/ui`: locale helpers shared by `landing/` and the app.
 - `supabase/` — migrations, local config, email templates, and Edge Functions. Read `supabase/AGENTS.md` before changing it.
 - `scripts/db/` — migration-baseline, drift, live-state, and release verification tools.
 - `docs/` — specialized architecture, design, QA, and release references; open only the document relevant to the task.
@@ -49,6 +51,7 @@ Run the smallest relevant check first, then broaden in proportion to risk:
 3. Lint: `pnpm lint`
 4. Typecheck plus production-neutral build: `pnpm build`
 5. Mode-specific artifact when relevant: `pnpm build:staging` or `pnpm build:prod`
+6. Landing changes: `pnpm landing:build`
 
 Database changes additionally use `pnpm db:verify`; schema/migration changes require the isolated local stack check documented in `supabase/AGENTS.md`. Do not require the full suite for documentation-only or narrowly scoped changes unless CI parity or risk warrants it.
 
@@ -62,6 +65,7 @@ Database changes additionally use `pnpm db:verify`; schema/migration changes req
 - `.github/workflows/db-guardrails.yml` runs on matching PR changes. The live-history workflow is manual and read-only.
 - Production Supabase deployment is a manual dispatch of `.github/workflows/deploy-prod.yml` from `main`; merging to `main` does not trigger it automatically.
 - Cloudflare automatically builds and deploys the frontend from its connected Git branches (`staging` / `main`). Do not add or dispatch a separate GitHub frontend deployment workflow or require a GitHub Cloudflare API token. Verify the Cloudflare deployment for the intended commit and the live domain before claiming frontend deployment success. Coordinate backend compatibility before publishing dependent frontend changes; never use the ambiguous default `wrangler deploy` command.
+- The landing/app domain split (`corelia.academy` + `/learn`) has a one-time infrastructure runbook in `docs/LANDING_LEARN_CUTOVER.md`.
 - For remote delivery, follow `docs/RELEASE_PROCESS.md` and watch every applicable run to a terminal result. Inspect the failed step before retrying; fix only task-related failures and report unrelated failures as blockers.
 
 ## Definition of Done

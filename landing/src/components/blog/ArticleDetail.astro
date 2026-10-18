@@ -1,0 +1,186 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Header from "@/components/common/header.astro";
+import Footer from "@/components/common/footer.astro";
+import BlogMedia from "@/components/blog/BlogMedia.astro";
+import BlogShare from "@/components/blog/BlogShare.astro";
+import BlogTableOfContents from "@/components/blog/BlogTableOfContents.astro";
+import BlogRelatedPosts from "@/components/blog/BlogRelatedPosts.astro";
+import { useTranslations } from "@/i18n/translations";
+import { getCollection } from "astro:content";
+import {
+  blogCategoryUrl,
+  blogIndexUrl,
+  blogPostUrl,
+  caseStudyIndexUrl,
+  caseStudyPostUrl,
+  getBlogOgImage,
+  type BlogLocale,
+  type BlogPost,
+} from "@/lib/blog";
+import { blogCategoryLabel } from "@/lib/blogTaxonomy";
+
+type Props = {
+  post: BlogPost;
+  locale: BlogLocale;
+  languageHrefs: Record<string, string>;
+  alternates: Partial<Record<BlogLocale, string>>;
+};
+
+const { post, locale, languageHrefs, alternates } = Astro.props as Props;
+const isCaseStudy = post.data.contentType === "case-study";
+const t = useTranslations(locale);
+const { Content } = await post.render();
+const members = await getCollection("members");
+const author = post.data.author
+  ? members.find((member) => member.slug === post.data.author)
+  : null;
+const authorName = author?.data.name ?? post.data.author;
+const authorHref = post.data.author ? `/member/${post.data.author}` : null;
+const allSameLocale = await getCollection(
+  "blog",
+  (entry) =>
+    !entry.data.draft &&
+    entry.data.locale === locale &&
+    entry.data.contentType === post.data.contentType,
+);
+const currentTags = new Set(post.data.tags);
+const candidates = allSameLocale
+  .filter((candidate) => candidate.id !== post.id)
+  .map((candidate) => ({
+    post: candidate,
+    score: candidate.data.tags.filter((tag) => currentTags.has(tag)).length,
+  }))
+  .sort(
+    (a, b) =>
+      b.score - a.score ||
+      b.post.data.date.valueOf() - a.post.data.date.valueOf(),
+  );
+const matching = candidates.filter((candidate) => candidate.score > 0);
+const related = [
+  ...matching,
+  ...candidates.filter((candidate) => candidate.score === 0),
+]
+  .slice(0, 4)
+  .map((candidate) => candidate.post);
+const fmtDate = new Intl.DateTimeFormat(locale === "en" ? "en-US" : "vi-VN", {
+  dateStyle: "long",
+});
+const canonicalPath = isCaseStudy
+  ? caseStudyPostUrl(locale, post.slug)
+  : blogPostUrl(locale, post.slug);
+const canonicalUrl = `https://corelia.academy${canonicalPath}`;
+const og = getBlogOgImage(post.data.media);
+const readMinutes = Math.max(
+  1,
+  Math.ceil((post.body?.trim().split(/\s+/).filter(Boolean).length ?? 0) / 200),
+);
+const readTimeLabel =
+  locale === "en" ? `${readMinutes} min read` : `Đọc trong ${readMinutes} phút`;
+const breadcrumbHome = isCaseStudy
+  ? caseStudyIndexUrl(locale)
+  : blogIndexUrl(locale);
+const breadcrumbLabel = isCaseStudy
+  ? t("nav.businesses")
+  : t("nav.blog");
+const articleLabel = post.data.title;
+const defaultOgImage = `https://corelia.academy/corelia-og-site-v2-${locale}.png`;
+---
+
+<BaseLayout
+  lang={locale}
+  title={`${post.data.title} - ${t("meta.title")}`}
+  description={post.data.description ?? t("blog.description")}
+  canonicalUrl={canonicalUrl}
+  ogUrl={canonicalUrl}
+  ogType="article"
+  ogImage={og?.url ?? defaultOgImage}
+  ogImageWidth={og?.width}
+  ogImageHeight={og?.height}
+  ogImageType={og?.type}
+  bodyClass="dark blog-detail-page"
+>
+  <Fragment slot="head">
+    {alternates.vi && <link rel="alternate" hreflang="vi" href={`https://corelia.academy${alternates.vi}`} />}
+    {alternates.en && <link rel="alternate" hreflang="en" href={`https://corelia.academy${alternates.en}`} />}
+    <meta property="article:published_time" content={post.data.date.toISOString()} />
+    {authorName && <meta property="article:author" content={authorName} />}
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": isCaseStudy ? "Article" : "BlogPosting",
+      headline: post.data.title,
+      description: post.data.description ?? t("blog.description"),
+      image: og?.url ?? defaultOgImage,
+      datePublished: post.data.date.toISOString(),
+      dateModified: post.data.date.toISOString(),
+      ...(authorName ? { author: { "@type": "Person", name: authorName, ...(authorHref ? { url: `https://corelia.academy${authorHref}` } : {}) } } : {}),
+      publisher: { "@type": "Organization", name: "Corelia Academy", logo: { "@type": "ImageObject", url: "https://corelia.academy/corelia_favicon.svg" } },
+      mainEntityOfPage: { "@type": "WebPage", "@id": canonicalUrl },
+    })} />
+  </Fragment>
+
+  <Header languageHrefs={languageHrefs} />
+  <main class="min-h-screen pt-[var(--site-header-height,56px)]">
+    <div class="container mx-auto flex max-w-(--app-max-width) flex-col px-3 xl:px-0">
+      <div class="border-x border-border">
+        <div class="space-y-16 px-4 py-10 md:px-8 md:py-16 xl:px-10">
+          <header class="space-y-6">
+            <nav class="flex min-w-0 items-center gap-2 text-sm leading-[1.2] text-border-strong md:text-base" aria-label={locale === "vi" ? "Đường dẫn trang" : "Breadcrumb"}>
+              <a href={breadcrumbHome} class="shrink-0 transition-colors hover:text-foreground">{breadcrumbLabel}</a>
+              <span class="shrink-0" aria-hidden="true">/</span>
+              <span class="min-w-0 truncate" aria-current="page" title={articleLabel}>{articleLabel}</span>
+            </nav>
+            <h1 class="text-4xl font-semibold leading-[1.15] md:text-5xl" data-reveal="text-up">{post.data.title}</h1>
+            <div class="flex flex-wrap items-center gap-2 text-sm leading-[1.2] md:text-lg" data-reveal="fade-up" data-reveal-delay="150">
+              <div class="inline-flex items-center gap-2 border border-border-strong px-2 py-1 text-border-strong">
+                {isCaseStudy
+                  ? <span>{blogCategoryLabel(locale, post.data.category)}</span>
+                  : <a href={blogCategoryUrl(locale, post.data.category)} class="hover:text-primary">{blogCategoryLabel(locale, post.data.category)}</a>}
+                <span aria-hidden="true">•</span>
+                <span>{readTimeLabel}</span>
+              </div>
+              <span class="text-border-strong" aria-hidden="true">•</span>
+              <p class="text-border-strong">{fmtDate.format(post.data.date)}</p>
+              {authorHref && <>
+                <span class="text-border-strong" aria-hidden="true">•</span>
+                <p class="text-border-strong">{t("blog.by")} <a class="text-primary-a hover:underline underline-offset-4" href={authorHref}>{authorName}</a></p>
+              </>}
+            </div>
+            {post.data.description && <p class="text-sm leading-[1.4] text-border-strong md:text-base" data-reveal="fade-up" data-reveal-delay="250">{post.data.description}</p>}
+          </header>
+
+          <div data-reveal="fade-up" data-reveal-delay="350">
+            <BlogMedia media={post.data.media} title={post.data.title} mode="post" />
+          </div>
+
+          <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_240px] xl:gap-30">
+            <div class="min-w-0">
+              <article
+                id="blog-article"
+                data-blog-article
+                class="space-y-6 text-sm leading-[1.4] md:text-base
+                  [&_h2]:scroll-mt-22 [&_h2]:mt-12 [&_h2]:text-[28px] [&_h2]:font-semibold [&_h2]:leading-[1.15]
+                  [&_h3]:scroll-mt-22 [&_h3]:mt-8 [&_h3]:text-2xl [&_h3]:font-semibold [&_h3]:leading-[1.15]
+                  md:[&_h2]:text-4xl md:[&_h3]:text-[28px]
+                  [&_p]:text-border-strong [&_p]:leading-[1.4]
+                  [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:text-border-strong
+                  [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:text-border-strong
+                  [&_a]:text-primary-a [&_a:hover]:underline [&_a]:underline-offset-4
+                  [&_code]:rounded-md [&_code]:bg-white/10 [&_code]:px-1.5 [&_code]:py-0.5
+                  [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-border [&_pre]:bg-black/30 [&_pre]:p-4"
+              >
+                <Content />
+              </article>
+            </div>
+            <div class="self-start lg:sticky lg:top-[calc(var(--site-header-height,56px)+2rem)]">
+              <BlogTableOfContents title={t("blog.toc")} articleId="blog-article" />
+              <BlogShare locale={locale} class="w-fit" url={canonicalUrl} title={post.data.title} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <BlogRelatedPosts locale={locale} posts={related} fmtDate={fmtDate} title={t("blog.related")} />
+  <Footer />
+</BaseLayout>

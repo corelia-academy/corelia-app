@@ -1,0 +1,304 @@
+---
+import Header from "@/components/common/header.astro";
+import Footer from "@/components/common/footer.astro";
+import { useTranslations } from "@/i18n/translations";
+import { useTranslatedPath } from "@/i18n/utils";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+  GraduationCapIcon,
+  UniversityIcon,
+  BriefcaseBusinessIcon,
+  ShieldCheckIcon,
+  RocketIcon,
+  HammerIcon,
+  InfinityIcon,
+  LightbulbIcon,
+  CheckIcon,
+} from "@lucide/astro";
+
+const lang = "vi";
+const t = useTranslations(lang);
+const translatePath = useTranslatedPath(lang);
+
+const pillars = [
+  {
+    icon: GraduationCapIcon,
+    title: t("about.pillars.learners.title"),
+    subtitle: t("about.pillars.learners.subtitle"),
+    description: t("about.pillars.learners.description"),
+    points: [
+      t("about.pillars.learners.point1"),
+      t("about.pillars.learners.point2"),
+      t("about.pillars.learners.point3"),
+    ],
+  },
+  {
+    icon: UniversityIcon,
+    title: t("about.pillars.universities.title"),
+    subtitle: t("about.pillars.universities.subtitle"),
+    description: t("about.pillars.universities.description"),
+    points: [
+      t("about.pillars.universities.point1"),
+      t("about.pillars.universities.point2"),
+      t("about.pillars.universities.point3"),
+    ],
+  },
+  {
+    icon: BriefcaseBusinessIcon,
+    title: t("about.pillars.b2b.title"),
+    subtitle: t("about.pillars.b2b.subtitle"),
+    description: t("about.pillars.b2b.description"),
+    points: [
+      t("about.pillars.b2b.point1"),
+      t("about.pillars.b2b.point2"),
+      t("about.pillars.b2b.point3"),
+    ],
+  },
+];
+
+const advantages = [
+  {
+    icon: ShieldCheckIcon,
+    title: t("about.advantages.cert.title"),
+    description: t("about.advantages.cert.description"),
+  },
+  {
+    icon: RocketIcon,
+    title: t("about.advantages.career.title"),
+    description: t("about.advantages.career.description"),
+  },
+  {
+    icon: HammerIcon,
+    title: t("about.advantages.handson.title"),
+    description: t("about.advantages.handson.description"),
+  },
+  {
+    icon: InfinityIcon,
+    title: t("about.advantages.ecosystem.title"),
+    description: t("about.advantages.ecosystem.description"),
+  },
+];
+
+---
+
+<BaseLayout
+  lang={lang}
+  title={t("about.meta.title")}
+  description={t("about.meta.description")}
+  canonicalUrl="https://corelia.academy/vi/about"
+  ogUrl="https://corelia.academy/vi/about"
+  ogImage="https://corelia.academy/corelia-og-site-v2-vi.png"
+>
+  <Fragment slot="head">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js" is:inline></script>
+    <script is:inline>
+      document.addEventListener("DOMContentLoaded", function () {
+        AOS.init({
+          duration: 1000,
+          once: true,
+          offset: 100,
+          easing: "ease-in-out",
+        });
+      });
+    </script>
+  </Fragment>
+
+  <Header />
+
+  <!-- Section 1: Hero -->
+  <section class="relative pt-28 pb-20 md:pt-36 md:pb-28 overflow-hidden">
+    <div
+      class="absolute inset-0 bg-linear-to-b from-white/3 to-transparent pointer-events-none"
+    >
+    </div>
+    <div class="container max-w-[1200px] mx-auto px-4 xl:px-0 relative z-10">
+      <div class="flex flex-col items-center text-center space-y-6">
+        <p
+          class="text-white text-xs md:text-sm font-light bg-white/10 px-4 py-2 rounded-full border border-white/15"
+          data-aos="fade-down"
+          data-aos-delay="200"
+        >
+          {t("about.hero.badge")}
+        </p>
+        <h1
+          class="text-white text-2xl md:text-4xl lg:text-5xl font-semibold max-w-[900px] leading-tight"
+          data-aos="fade-up"
+          data-aos-delay="400"
+        >
+          {t("about.hero.title")}
+        </h1>
+        <p
+          class="text-white/70 text-sm md:text-base font-light max-w-[700px] leading-relaxed"
+          data-aos="fade-up"
+          data-aos-delay="600"
+        >
+          {t("about.hero.description")}
+        </p>
+        <div class="pt-4" data-aos="fade-up" data-aos-delay="800">
+          <a
+            href={translatePath("/contact")}
+            class="bg-primary text-primary-foreground px-6 py-2.5 rounded-full cursor-pointer hover:bg-secondary hover:text-secondary-foreground transition-all duration-300 text-xs md:text-sm inline-flex items-center justify-center"
+          >
+            {t("nav.contact")}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Philosophy -->
+  <section class="py-16 md:py-24">
+    <div class="container max-w-[1200px] mx-auto px-4 xl:px-0">
+      <!-- Philosophy -->
+      <div
+        class="bg-card border border-border rounded-[24px] p-6 md:p-10 lg:p-12"
+        data-aos="fade-up"
+      >
+        <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
+          <div class="flex-1">
+            <span
+              class="inline-flex items-center gap-2 text-xs font-medium text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full border border-amber-400/20 mb-6"
+            >
+              <LightbulbIcon class="size-3.5" />
+              {t("about.philosophy.label")}
+            </span>
+            <h3
+              class="text-white text-xl md:text-2xl lg:text-3xl font-semibold mb-4 leading-tight"
+            >
+              {t("about.philosophy.title")}
+            </h3>
+            <p
+              class="text-white/60 text-sm md:text-base font-light leading-relaxed"
+            >
+              {t("about.philosophy.description")}
+            </p>
+          </div>
+          <div class="flex-1 space-y-4 w-full">
+            {
+              [
+                t("about.philosophy.point1"),
+                t("about.philosophy.point2"),
+                t("about.philosophy.point3"),
+              ].map((point, index) => (
+                <div
+                  class="bg-secondary rounded-[16px] p-4 flex items-start gap-3"
+                  data-aos="fade-left"
+                  data-aos-delay={200 + index * 100}
+                >
+                  <div class="mt-0.5 shrink-0 size-5 rounded-full bg-amber-400/20 flex items-center justify-center">
+                    <CheckIcon class="size-3 text-amber-400" />
+                  </div>
+                  <p class="text-white/80 text-sm font-light">{point}</p>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: 3 Pillars Ecosystem -->
+  <section class="py-16 md:py-24">
+    <div class="container max-w-[1200px] mx-auto px-4 xl:px-0">
+      <div class="flex flex-col items-center text-center mb-10 md:mb-14">
+        <h2
+          class="text-white text-2xl md:text-3xl lg:text-4xl font-semibold mb-4"
+          data-aos="fade-up"
+        >
+          {t("about.pillars.title")}
+        </h2>
+        <p
+          class="text-white/60 text-sm md:text-base font-light max-w-[600px]"
+          data-aos="fade-up"
+          data-aos-delay="200"
+        >
+          {t("about.pillars.description")}
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {
+          pillars.map((pillar, index) => (
+            <div
+              class="bg-muted border border-border rounded-[24px] p-6 md:p-8 flex flex-col h-full"
+              data-aos="fade-up"
+              data-aos-delay={300 + index * 150}
+            >
+              <div class="flex items-center gap-3 mb-5">
+                <div class="size-10 rounded-[12px] bg-white/10 flex items-center justify-center shrink-0">
+                  <pillar.icon class="size-5 text-white" />
+                </div>
+                <div>
+                  <p class="text-white text-base font-semibold">
+                    {pillar.title}
+                  </p>
+                  <p class="text-white/40 text-xs">{pillar.subtitle}</p>
+                </div>
+              </div>
+
+              <p class="text-white/60 text-sm font-light leading-relaxed mb-6">
+                {pillar.description}
+              </p>
+
+              <div class="mt-auto space-y-3">
+                {pillar.points.map((point) => (
+                  <div class="flex items-start gap-2.5">
+                    <CheckIcon class="size-4 text-white/40 mt-0.5 shrink-0" />
+                    <p class="text-white/70 text-xs font-light">{point}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Advantages -->
+  <section class="py-16 md:py-24">
+    <div class="container max-w-[1200px] mx-auto px-4 xl:px-0">
+      <div class="flex flex-col items-center text-center mb-10 md:mb-14">
+        <h2
+          class="text-white text-2xl md:text-3xl lg:text-4xl font-semibold mb-4"
+          data-aos="fade-up"
+        >
+          {t("about.advantages.title")}
+        </h2>
+        <p
+          class="text-white/60 text-sm md:text-base font-light max-w-[600px]"
+          data-aos="fade-up"
+          data-aos-delay="200"
+        >
+          {t("about.advantages.description")}
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {
+          advantages.map((item, index) => (
+            <div
+              class="bg-card border border-border rounded-[24px] p-6 md:p-8"
+              data-aos="fade-up"
+              data-aos-delay={300 + index * 100}
+            >
+              <div class="size-10 rounded-[12px] bg-white/10 flex items-center justify-center mb-5">
+                <item.icon class="size-5 text-white" />
+              </div>
+              <p class="text-white text-base md:text-lg font-semibold mb-3">
+                {item.title}
+              </p>
+              <p class="text-white/60 text-sm font-light leading-relaxed">
+                {item.description}
+              </p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</BaseLayout>

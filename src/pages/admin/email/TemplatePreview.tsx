@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { buildEmailPreview, emailPreviewValues, emailPreviewVariables } from "@/lib/email/preview";
 import type { ContentLocale } from "@/lib/locales";
+import { appBaseUrl } from "@/lib/appUrl";
 
 type TemplateDraft = {
   purpose: string; subject: string; preheader: string; image_url: string;
@@ -18,9 +19,10 @@ export function TemplatePreview({ mobile, template, locale }: { mobile: boolean;
     preheader: template.preheader, bodyText: template.body_text || t("templates.body"),
     ctaLabel: template.cta_label, ctaUrl: template.cta_url, imageUrl: template.image_url, locale,
   };
-  const values = emailPreviewValues(draft, window.location.origin, overrides);
+  const baseUrl = appBaseUrl();
+  const values = emailPreviewValues(draft, baseUrl, overrides);
   const variables = emailPreviewVariables(draft);
-  const preview = buildEmailPreview(draft, window.location.origin, values);
+  const preview = buildEmailPreview(draft, baseUrl, values);
   return (
     <div className="mt-4 min-w-0 space-y-4">
       {variables.length > 0 && <fieldset className="space-y-2 rounded-md border border-border-subtle p-3">

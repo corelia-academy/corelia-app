@@ -6,7 +6,7 @@ describe("routeSkeletonVariantForPath", () => {
     ["/", "home"],
     ["/courses", "list"],
     ["/courses/react-basics", "detail"],
-    ["/learn/course-1/lesson/2", "learn"],
+    ["/study/course-1/lesson/2", "learn"],
     ["/admin/instructors", "table"],
     ["/instructor/courses", "table"],
     ["/account/profile", "form"],

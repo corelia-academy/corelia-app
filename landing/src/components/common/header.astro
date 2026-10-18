@@ -1,0 +1,452 @@
+---
+import LanguageSwitcher from "./LanguageSwitcher.astro";
+import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+
+type Props = {
+  languageHrefs?: Record<string, string>;
+  /** Passed by catalog pages; the header itself is English/Vietnamese and follows the URL. */
+  lang?: string;
+  locales?: readonly string[];
+};
+
+const { languageHrefs } = Astro.props as Props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const translatePath = useTranslatedPath(lang);
+
+// The learning app is served from the same origin under /learn.
+const appUrl = String(import.meta.env.PUBLIC_APP_URL ?? "/learn").replace(/\/$/, "");
+const appLoginUrl = `${appUrl}/login`;
+
+// const navItems = [
+const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
+//   {
+//     label: t("nav.home"),
+//     href: translatePath("/"),
+//   },
+//   {
+//     label: "Cora",
+//     href: translatePath("/cora"),
+//   },
+//   {
+//     label: "UniHackfest",
+//     href: "https://unihackfest.vn ",
+//   },
+//   {
+//     label: t("nav.about"),
+//     href: translatePath("/about"),
+//   },
+//   {
+//     label: t("nav.universities"),
+//     href: translatePath("/universities"),
+//   },
+//   {
+//     label: t("nav.blog"),
+//     href: translatePath("/blog"),
+//   },
+// ];
+const navItems = [
+  {
+    label: t("nav.about"),
+    href: translatePath("/"),
+  },
+  // {
+  //   label: t("nav.ecosystem"),
+  //   href: translatePath("/ecosystem"),
+  // },
+  {
+    label: t("nav.roadmap"),
+    href: translatePath("/roadmap"),
+  },
+  {
+    label: t("nav.businesses"),
+    href: translatePath("/case-studies"),
+  },
+  {
+    label: t("nav.blog"),
+    href: translatePath("/blog"),
+  },
+  {
+    label: t("nav.contact"),
+    href: translatePath("/contact"),
+  },
+];
+---
+
+<header
+  data-site-header
+  class="flex flex-col fixed top-0 left-0 right-0 bg-background z-20 border-b border-border"
+>
+  <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+    <div class="relative border-x border-border px-2.5 py-2 sm:px-3">
+      <div class="relative flex items-center justify-between">
+        <div class="flex shrink-0 items-center">
+          <a href={translatePath("/")} aria-label={t("nav.home")}>
+            <img
+              src="/Corelia_Academy_Logo_Dark.png"
+              alt="Corelia Academy"
+              class="h-7 w-auto cursor-pointer object-contain sm:h-8 xl:h-10"
+            />
+          </a>
+        </div>
+        <!-- Desktop Navigation -->
+        <nav class="hidden xl:absolute xl:left-1/2 xl:flex xl:-translate-x-1/2">
+          <ul
+            class="flex items-center gap-8 text-base font-normal leading-[1.2]"
+            data-nav-group
+          >
+            {
+              navItems.map((item) => {
+                const itemPath = item.href.replace(/\/$/, "") || "/";
+                const isActive =
+                  itemPath === translatePath("/blog")
+                    ? currentPath === itemPath ||
+                      currentPath.startsWith(`${itemPath}/`)
+                    : itemPath === currentPath;
+                return (
+                  <li>
+                    <a
+                      href={item.href}
+                      class="relative inline-block"
+                      data-nav-link
+                      data-nav-active={isActive}
+                    >
+                      <span class="text-foreground-subtle">{item.label}</span>
+                      <span
+                        data-nav-sweep
+                        class="absolute inset-0 overflow-hidden pointer-events-none"
+                        aria-hidden="true"
+                      >
+                        <span class="absolute inset-0 whitespace-nowrap text-foreground">
+                          {item.label}
+                        </span>
+                      </span>
+                    </a>
+                  </li>
+                );
+              })
+            }
+          </ul>
+        </nav>
+
+        <!-- Desktop Actions -->
+        <div class="hidden items-center justify-end gap-6 text-xs xl:flex">
+          <LanguageSwitcher hrefs={languageHrefs} />
+          <a
+            href={appLoginUrl}
+            data-hover-wave
+            class="h-8 px-4 py-[7px] rounded-lg cursor-pointer border border-border-button bg-button-primary-background hover:bg-button-primary-background-hover text-button-primary-foreground flex items-center justify-center
+          shadow-button-primary-glow transition-all duration-300 text-base font-normal leading-[1.2]"
+          >
+            <span class="hw-label">{t("nav.getStarted")}</span>
+          </a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <div class="flex items-center gap-1 sm:gap-2 xl:hidden">
+          <a
+            href={appLoginUrl}
+            data-hover-wave
+            class="flex h-8 cursor-pointer items-center justify-center whitespace-nowrap rounded-lg border border-border-button bg-button-primary-background px-2.5 py-[7px] text-sm font-normal leading-[1.2] text-button-primary-foreground shadow-button-primary-glow transition-all duration-300 hover:bg-button-primary-background-hover sm:px-4 sm:text-base"
+          >
+            <span class="hw-label">{t("nav.getStarted")}</span>
+          </a>
+          <button
+            id="mobile-menu-btn"
+            class="p-1.5 focus:outline-none sm:p-2 xl:hidden"
+            aria-label="Toggle menu"
+            aria-controls="mobile-menu"
+            aria-expanded="false"
+          >
+            <svg
+              class="size-5 sm:size-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <!-- Hamburger Icon -->
+              <path
+                id="hamburger-icon"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"></path>
+              <!-- X Icon (hidden by default) -->
+              <path
+                id="close-icon"
+                class="opacity-0"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Menu Dropdown -->
+      <div
+        id="mobile-menu"
+        class="absolute inset-x-0 top-full max-h-[calc(100vh_-_4rem)] overflow-y-auto border-x border-b border-border bg-background px-3 opacity-0 invisible pointer-events-none xl:hidden"
+        inert
+      >
+        <nav class="pt-2 pb-2">
+          <ul class="flex flex-col gap-3 text-sm leading-[1.2]">
+            {
+              navItems.map((item) => (
+                <li>
+                  <a
+                    href={item.href}
+                    class="block py-1 hover:text-primary transition-colors"
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+            <li
+              class="flex items-center gap-2"
+            >
+              <LanguageSwitcher hrefs={languageHrefs} />
+            </li>
+            <!-- <li class="pt-1 transform translate-y-0 transition-all duration-300">
+            <a
+              href={appLoginUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="block w-full h-8 py-[7px] rounded-lg border border-border-button hover:border-border-container bg-button-primary-background hover:bg-primary-container text-button-primary-foreground hover:text-on-primary-container shadow-button-primary-glow hover:shadow-button-tertiary-glow transition-all duration-300 text-center text-xs font-medium"
+            >
+              {t("nav.getStarted")}
+            </a>
+          </li> -->
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  const syncHeaderHeight = () => {
+    const header = document.querySelector<HTMLElement>("[data-site-header]");
+    if (!header) return;
+
+    const update = () => {
+      document.documentElement.style.setProperty(
+        "--site-header-height",
+        `${header.getBoundingClientRect().height}px`,
+      );
+    };
+
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(header);
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", syncHeaderHeight, {
+      once: true,
+    });
+  } else {
+    syncHeaderHeight();
+  }
+</script>
+
+<script>
+  import { gsap } from "gsap";
+
+  const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+  const mobileMenu = document.getElementById("mobile-menu");
+  const hamburgerIcon = document.getElementById("hamburger-icon");
+  const closeIcon = document.getElementById("close-icon");
+  const menuItems = mobileMenu
+    ? Array.from(mobileMenu.querySelectorAll<HTMLElement>("li"))
+    : [];
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+  const openDuration = prefersReducedMotion ? 0 : 0.4;
+  const closeDuration = prefersReducedMotion ? 0 : 0.28;
+  let isOpen = false;
+
+  const killMenuTweens = () => {
+    gsap.killTweensOf(mobileMenu);
+    gsap.killTweensOf(menuItems);
+    gsap.killTweensOf(hamburgerIcon);
+    gsap.killTweensOf(closeIcon);
+  };
+
+  const animateIcons = (open: boolean) => {
+    gsap.to(hamburgerIcon, {
+      autoAlpha: open ? 0 : 1,
+      scale: open ? 0 : 1,
+      duration: prefersReducedMotion ? 0 : 0.2,
+      ease: "power2.out",
+      overwrite: true,
+    });
+    gsap.to(closeIcon, {
+      autoAlpha: open ? 1 : 0,
+      scale: open ? 1 : 0,
+      duration: prefersReducedMotion ? 0 : 0.2,
+      ease: "power2.out",
+      overwrite: true,
+    });
+  };
+
+  const openMenu = () => {
+    if (!mobileMenu) return;
+
+    killMenuTweens();
+    isOpen = true;
+    mobileMenuBtn?.setAttribute("aria-expanded", "true");
+    mobileMenu.removeAttribute("inert");
+
+    gsap.set(mobileMenu, {
+      height: 0,
+      autoAlpha: 1,
+      visibility: "visible",
+      pointerEvents: "auto",
+    });
+
+    gsap.to(mobileMenu, {
+      height: "auto",
+      duration: openDuration,
+      ease: "power3.out",
+      overwrite: true,
+    });
+
+    gsap.fromTo(
+      menuItems,
+      { autoAlpha: 0 },
+      {
+        autoAlpha: 1,
+        duration: prefersReducedMotion ? 0 : 0.28,
+        stagger: prefersReducedMotion ? 0 : 0.04,
+        ease: "power2.out",
+        overwrite: true,
+      },
+    );
+
+    animateIcons(true);
+  };
+
+  const closeMenu = () => {
+    if (!mobileMenu) return;
+
+    killMenuTweens();
+    isOpen = false;
+    mobileMenuBtn?.setAttribute("aria-expanded", "false");
+    mobileMenu.setAttribute("inert", "");
+
+    gsap.to(menuItems, {
+      autoAlpha: 0,
+      duration: closeDuration,
+      stagger: prefersReducedMotion ? 0 : 0.02,
+      ease: "power2.in",
+      overwrite: true,
+    });
+
+    gsap.to(mobileMenu, {
+      height: 0,
+      autoAlpha: 0,
+      duration: closeDuration,
+      ease: "power2.inOut",
+      overwrite: true,
+      onComplete: () => {
+        gsap.set(mobileMenu, {
+          height: 0,
+          visibility: "hidden",
+          pointerEvents: "none",
+        });
+      },
+    });
+
+    animateIcons(false);
+  };
+
+  gsap.set(mobileMenu, {
+    height: 0,
+    autoAlpha: 0,
+    visibility: "hidden",
+    pointerEvents: "none",
+  });
+  gsap.set(menuItems, { autoAlpha: 0 });
+  gsap.set(hamburgerIcon, { autoAlpha: 1, scale: 1 });
+  gsap.set(closeIcon, { autoAlpha: 0, scale: 0 });
+
+  mobileMenuBtn?.addEventListener("click", () => {
+    if (isOpen) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  });
+
+  // Close menu when clicking on a link
+  const menuLinks = mobileMenu?.querySelectorAll("a, button");
+  menuLinks?.forEach((link) => {
+    link.addEventListener("click", () => {
+      if (isOpen) {
+        closeMenu();
+      }
+    });
+  });
+
+  // new
+  document.querySelectorAll("[data-nav-link]").forEach((link) => {
+    const sweep = link.querySelector("[data-nav-sweep]");
+    if (!sweep) return;
+
+    const isActiveLink = link.getAttribute("data-nav-active") === "true";
+    gsap.set(sweep, {
+      clipPath: isActiveLink ? "inset(0 0% 0 0)" : "inset(0 100% 0 0)",
+    });
+
+    link.addEventListener("mouseenter", () => {
+      gsap.to(sweep, {
+        clipPath: "inset(0 0% 0 0)",
+        duration: 0.4,
+        ease: "power2.out",
+        overwrite: true,
+      });
+
+      const group = link.closest("[data-nav-group]");
+      const activeLink = group?.querySelector(
+        '[data-nav-link][data-nav-active="true"]',
+      );
+      if (activeLink && activeLink !== link) {
+        const activeSweep = activeLink.querySelector("[data-nav-sweep]");
+        gsap.to(activeSweep, {
+          clipPath: "inset(0 100% 0 0)",
+          duration: 0.3,
+          overwrite: true,
+        });
+      }
+    });
+
+    link.addEventListener("mouseleave", () => {
+      if (!isActiveLink) {
+        gsap.to(sweep, {
+          clipPath: "inset(0 100% 0 0)",
+          duration: 0.35,
+          ease: "power2.inOut",
+          overwrite: true,
+        });
+      }
+
+      const group = link.closest("[data-nav-group]");
+      const activeLink = group?.querySelector(
+        '[data-nav-link][data-nav-active="true"]',
+      );
+      if (activeLink && activeLink !== link) {
+        const activeSweep = activeLink.querySelector("[data-nav-sweep]");
+        gsap.to(activeSweep, {
+          clipPath: "inset(0 0% 0 0)",
+          duration: 0.3,
+          overwrite: true,
+        });
+      }
+    });
+  });
+</script>

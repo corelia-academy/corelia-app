@@ -41,12 +41,12 @@
     "zh-TW": "確認電子郵件 →",
     "ja": "メールを確認 →"
   },
-  "You received this because an account was created at app.corelia.academy": {
-    "zh-CN": "您收到此邮件是因为有人在 app.corelia.academy 创建了账户",
-    "ko": "app.corelia.academy에서 계정이 생성되어 이 이메일을 받으셨습니다",
-    "es": "Recibes esto porque se creó una cuenta en app.corelia.academy",
-    "zh-TW": "您收到此郵件是因為有人在 app.corelia.academy 建立了帳戶",
-    "ja": "app.corelia.academy でアカウントが作成されたため、このメールをお送りしています"
+  "You received this because an account was created at corelia.academy": {
+    "zh-CN": "您收到此邮件是因为有人在 corelia.academy 创建了账户",
+    "ko": "corelia.academy에서 계정이 생성되어 이 이메일을 받으셨습니다",
+    "es": "Recibes esto porque se creó una cuenta en corelia.academy",
+    "zh-TW": "您收到此郵件是因為有人在 corelia.academy 建立了帳戶",
+    "ja": "corelia.academy でアカウントが作成されたため、このメールをお送りしています"
   },
   "Privacy Policy": {
     "zh-CN": "隐私政策",
@@ -293,12 +293,12 @@
     "zh-TW": "如果這不是您本人發起的操作，請立即變更密碼。Corelia Academy 絕不會透過電話或聊天向您索取 OTP。",
     "ja": "この操作に心当たりがない場合は、すぐにパスワードを変更してください。Corelia Academy が電話やチャットで OTP をお尋ねすることはありません。"
   },
-  "You received this because a reauthentication was requested at app.corelia.academy": {
-    "zh-CN": "您收到此邮件是因为有人在 app.corelia.academy 请求了重新验证",
-    "ko": "app.corelia.academy에서 재인증이 요청되어 이 이메일을 받으셨습니다",
-    "es": "Recibes esto porque se solicitó una reautenticación en app.corelia.academy",
-    "zh-TW": "您收到此郵件是因為有人在 app.corelia.academy 請求了重新驗證",
-    "ja": "app.corelia.academy で再認証がリクエストされたため、このメールをお送りしています"
+  "You received this because a reauthentication was requested at corelia.academy": {
+    "zh-CN": "您收到此邮件是因为有人在 corelia.academy 请求了重新验证",
+    "ko": "corelia.academy에서 재인증이 요청되어 이 이메일을 받으셨습니다",
+    "es": "Recibes esto porque se solicitó una reautenticación en corelia.academy",
+    "zh-TW": "您收到此郵件是因為有人在 corelia.academy 請求了重新驗證",
+    "ja": "corelia.academy で再認証がリクエストされたため、このメールをお送りしています"
   },
   "Account Security": {
     "zh-CN": "账户安全",
@@ -363,11 +363,11 @@
     "zh-TW": "30 分鐘",
     "ja": "30 分"
   },
-  "You received this because a password reset was requested at app.corelia.academy": {
-    "zh-CN": "您收到此邮件是因为有人在 app.corelia.academy 请求了重置密码",
-    "ko": "app.corelia.academy에서 비밀번호 재설정이 요청되어 이 이메일을 받으셨습니다",
-    "es": "Recibes esto porque se solicitó restablecer la contraseña en app.corelia.academy",
-    "zh-TW": "您收到此郵件是因為有人在 app.corelia.academy 請求了重設密碼",
-    "ja": "app.corelia.academy でパスワードのリセットがリクエストされたため、このメールをお送りしています"
+  "You received this because a password reset was requested at corelia.academy": {
+    "zh-CN": "您收到此邮件是因为有人在 corelia.academy 请求了重置密码",
+    "ko": "corelia.academy에서 비밀번호 재설정이 요청되어 이 이메일을 받으셨습니다",
+    "es": "Recibes esto porque se solicitó restablecer la contraseña en corelia.academy",
+    "zh-TW": "您收到此郵件是因為有人在 corelia.academy 請求了重設密碼",
+    "ja": "corelia.academy でパスワードのリセットがリクエストされたため、このメールをお送りしています"
   }
 }

@@ -1,0 +1,24 @@
+---
+import type { BlogCategory, BlogLocale } from "@/lib/blogTaxonomy";
+import { blogCategoryLabel, blogTagLabel } from "@/lib/blogTaxonomy";
+import { blogCategoryUrl, blogTagUrl } from "@/lib/blog";
+
+type Props = {
+  locale: BlogLocale;
+  category: BlogCategory;
+  tags: string[];
+  maxTags?: number;
+  class?: string;
+};
+
+const { locale, category, class: className } = Astro.props as Props;
+---
+
+<div class={`flex gap-1.5 flex-wrap ${className ?? ""}`.trim()}>
+  <a
+    href={blogCategoryUrl(locale, category)}
+    class="text-[11px] px-2 py-1 rounded-full bg-secondary text-white"
+  >
+    {blogCategoryLabel(locale, category)}
+  </a>
+</div>

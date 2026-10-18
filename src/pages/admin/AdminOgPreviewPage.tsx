@@ -8,6 +8,7 @@ import { OgImagePreview } from "@/features/og/OgImagePreview";
 import { ogPreviewQueryOptions, probeOgImage, type OgEntity } from "@/features/og/ogPreviewQueries";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { ListRowsSkeleton } from "@/components/loading/RouteSkeleton";
+import { appPath } from "@/lib/appUrl";
 
 export default function AdminOgPreviewPage() {
   const { t } = useTranslation("admin");
@@ -46,7 +47,7 @@ export default function AdminOgPreviewPage() {
     </form>
     {!id ? <div className="space-y-4">
         <p className="text-sm text-foreground-muted">{t("ogPreview.defaultImageDescription")}</p>
-        <OgImagePreview imageUrl="/corelia-og-default-background.png" dark={dark} onToggleDark={() => setDark(value => !value)}
+        <OgImagePreview imageUrl={appPath("/corelia-og-default-background.png")} dark={dark} onToggleDark={() => setDark(value => !value)}
           onError={() => setImageFailed(true)} />
         {imageFailed ? <p role="alert" className="text-destructive">{t("ogPreview.imageError")}</p> : null}
         <p className="text-sm text-foreground-muted">{t("ogPreview.enterIdentifier")}</p>

@@ -1,0 +1,135 @@
+---
+// HoverWaveInit.astro
+// Hiệu ứng hover "lật cuộn" (roll) cho mọi phần tử có [data-hover-wave].
+// Nhúng 1 lần trong BaseLayout. Không cần props. Đơn sắc — màu quyết định sau.
+---
+
+<script>
+    import { gsap } from "gsap";
+    import { SplitText } from "gsap/SplitText";
+
+    gsap.registerPlugin(SplitText);
+
+    const CONFIG = { duration: 0.42, ease: "power3.inOut", stagger: 0.028 };
+
+    function buildRoll(label: HTMLElement) {
+        // Tách chữ; aria "auto" tự thêm aria-label nhãn gốc + ẩn span con khỏi screen-reader
+        const split = SplitText.create(label, {
+            type: "chars,words",
+            charsClass: "hw-char",
+            aria: "auto",
+        });
+
+        const inners: HTMLElement[] = [];
+        split.chars.forEach((c) => {
+            const el = c as HTMLElement;
+            const ch = el.textContent ?? "";
+            if (!ch.trim()) return; // giữ nguyên khoảng trắng
+            el.textContent = "";
+
+            const inner = document.createElement("span");
+            inner.className = "hw-roll";
+
+            const top = document.createElement("span");
+            top.textContent = ch;
+
+            const bot = document.createElement("span");
+            bot.textContent = ch;
+            bot.className = "hw-char-b"; // HOOK đổi màu — để trống, quyết định sau
+
+            inner.append(top, bot);
+            el.appendChild(inner);
+            inners.push(inner);
+        });
+        return inners;
+    }
+
+    function wire(btn: HTMLElement) {
+        if (btn.dataset.hwDone) return; // tránh init trùng
+        btn.dataset.hwDone = "1";
+
+        const label = btn.querySelector<HTMLElement>(".hw-label") ?? btn;
+        const inners = buildRoll(label);
+        if (!inners.length) return;
+
+        gsap.set(inners, { yPercent: -50 });
+
+        const roll = (v: number) =>
+            gsap.to(inners, {
+                yPercent: v, // -50 = cuộn lên đúng 1 dòng chữ
+                duration: CONFIG.duration,
+                ease: CONFIG.ease,
+                stagger: CONFIG.stagger,
+                overwrite: true,
+            });
+
+        btn.addEventListener("mouseenter", () => roll(0)); // hover: cuộn XUỐNG
+        btn.addEventListener("focus", () => roll(0));
+        btn.addEventListener("mouseleave", () => roll(-50)); // rời: về chỗ
+        btn.addEventListener("blur", () => roll(-50));
+    }
+
+    function setup() {
+        const disableHoverWave = window.matchMedia(
+            "(max-width: 767px), (hover: none), (pointer: coarse)",
+        ).matches;
+
+        // Mobile hoặc thiết bị cảm ứng: giữ nguyên chữ, không chạy SplitText
+        if (disableHoverWave) return;
+
+        // Desktop có chuột: tiếp tục chạy hiệu ứng hover
+        gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+            document
+                .querySelectorAll<HTMLElement>("[data-hover-wave]")
+                .forEach((btn) => wire(btn));
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    mutation.addedNodes.forEach((node) => {
+                        if (!(node instanceof Element)) return;
+
+                        if (node.matches("[data-hover-wave]")) {
+                            wire(node as HTMLElement);
+                        }
+
+                        node.querySelectorAll<HTMLElement>(
+                            "[data-hover-wave]",
+                        ).forEach((element) => wire(element));
+                    });
+                });
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true,
+            });
+        });
+    }
+
+    // Chờ font load xong mới tách chữ (tránh sai bề rộng do Google Sans Flex)
+    const boot = () => (document.fonts?.ready ?? Promise.resolve()).then(setup);
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", boot);
+    } else {
+        boot();
+    }
+</script>
+
+<style is:global>
+    /* Các span do SplitText sinh ra ở runtime → phải để global */
+    .hw-char {
+        display: inline-block;
+        overflow: hidden;
+        height: 1lh;
+        line-height: inherit;
+        vertical-align: middle;
+    }
+    .hw-roll {
+        display: block;
+    }
+    .hw-roll > span {
+        display: block;
+        height: 1lh;
+        line-height: inherit;
+    }
+</style>

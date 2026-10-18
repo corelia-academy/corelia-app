@@ -21,11 +21,13 @@ const entries = [];
 function add(slug, group, title, result) {
   const html = typeof result === "string" ? result : result.html;
   const file = `${slug}.html`;
+  // Relative links: previews are served from <app base>/email-preview/, next to /email-assets/.
   writeFileSync(new URL(file, outputDir), html
-    .replaceAll("https://app.corelia.dev/email-assets/", "/email-assets/")
-    .replaceAll("https://app.corelia.academy/email-assets/", "/email-assets/")
-    .replaceAll(`${appUrl}/`, "/")
-    .replaceAll(`${appUrl}\"`, `/\"`));
+    .replaceAll("https://app.corelia.dev/email-assets/", "../email-assets/")
+    .replaceAll("https://app.corelia.academy/email-assets/", "../email-assets/")
+    .replaceAll("https://corelia.academy/learn/email-assets/", "../email-assets/")
+    .replaceAll(`${appUrl}/`, "../")
+    .replaceAll(`${appUrl}\"`, `../\"`));
   entries.push({ file, group, title });
 }
 

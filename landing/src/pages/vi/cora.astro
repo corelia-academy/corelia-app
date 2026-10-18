@@ -1,0 +1,8 @@
+---
+import CoraLandingPage from "@/components/cora/CoraLandingPage.astro";
+import { getCoraPageContent } from "@/components/cora/content";
+
+const content = getCoraPageContent("vi");
+---
+
+<CoraLandingPage lang="vi" content={content} />

@@ -106,7 +106,61 @@ describe("Cloudflare asset fallback worker", () => {
 
     const response = await handleRequest(request, env);
 
-    expect(response).toBe(expected);
+    expect(await response.text()).toBe("<!doctype html>");
+    expect(response.headers.get("X-Robots-Tag")).toBe("noindex");
     expect(fetch).toHaveBeenCalledWith(request);
+  });
+});
+
+describe("app served under the /learn base path", () => {
+  const base = {
+    CORELIA_APP_ORIGIN: "https://corelia.academy",
+    CORELIA_APP_BASE_PATH: "/learn",
+  };
+
+  it("strips the base path before reading SPA assets", async () => {
+    const { env, fetch } = createEnv();
+    const response = await handleRequest(new Request("https://corelia.academy/learn/feed?tab=1"), { ...env, ...base });
+    expect(response.status).toBe(200);
+    expect(response.headers.get("X-Robots-Tag")).toBe("noindex");
+    expect((fetch.mock.calls[0] as unknown as [Request])[0].url).toBe("https://corelia.academy/feed?tab=1");
+  });
+
+  it("serves the app root for the bare base path", async () => {
+    const { env, fetch } = createEnv();
+    await handleRequest(new Request("https://corelia.academy/learn"), { ...env, ...base });
+    expect((fetch.mock.calls[0] as unknown as [Request])[0].url).toBe("https://corelia.academy/");
+  });
+
+  it("serves hashed assets that exist under the base path", async () => {
+    const script = new Response("console.log(1)", { headers: { "Content-Type": "text/javascript" } });
+    const { env, fetch } = createEnv(script);
+    const response = await handleRequest(new Request("https://corelia.academy/learn/assets/index-abc.js"), { ...env, ...base });
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe("console.log(1)");
+    expect((fetch.mock.calls[0] as unknown as [Request])[0].url).toBe("https://corelia.academy/assets/index-abc.js");
+  });
+
+  it("applies asset rules to the stripped path", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const { env, fetch } = createEnv();
+    // The SPA fallback answers a missing file with index.html; the Worker turns that into a 404.
+    const response = await handleRequest(new Request("https://corelia.academy/learn/assets/index-old.js"), { ...env, ...base });
+    expect(response.status).toBe(404);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not serve paths outside the base path", async () => {
+    const { env, fetch } = createEnv();
+    const response = await handleRequest(new Request("https://corelia.academy/learning"), { ...env, ...base });
+    expect(response.status).toBe(404);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("injects OG metadata for page routes under the base path", async () => {
+    const { env } = createEnv();
+    const response = await handleRequest(new Request("https://corelia.academy/learn/projects/demo"), { ...env, ...base });
+    // Unconfigured OG upstream: the page route was recognised after stripping the prefix.
+    expect(response.status).toBe(503);
   });
 });

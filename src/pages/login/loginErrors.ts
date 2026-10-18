@@ -36,6 +36,9 @@ function supabaseAuthToPseudoCode(err: {
   if (apiCode === "email_not_confirmed") return "auth/email-not-confirmed";
 
   const msg = err.message.toLowerCase();
+  if (apiCode === "same_password" || msg.includes("different from the old password")) {
+    return "auth/same-password";
+  }
   if (
     msg.includes("mfa") ||
     msg.includes("multi-factor") ||

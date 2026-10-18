@@ -17,6 +17,7 @@ import { setUserJobState } from "@/lib/jobs";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useAuth } from "@/stores/authStore";
 import type { JobFilters, UserJobState } from "@/types/jobs";
+import { landingUrl } from "@/lib/appUrl";
 
 const SELECT_CLASS = "h-9 min-w-0 rounded-md border border-border-subtle bg-surface-base px-3 text-sm text-foreground outline-none focus:border-primary";
 
@@ -67,15 +68,13 @@ export default function JobsPage() {
     pageSize: 24,
     ...landing?.filters,
   };
-  const canonicalUrl = typeof window === "undefined"
-    ? `https://app.corelia.academy${location.pathname}`
-    : `${window.location.origin}${location.pathname}`;
+  const canonicalUrl = landingUrl(location.pathname);
   usePageMeta({
     title: landing ? t("landing.title", { label: landing.label }) : t("title"),
     description: landing ? t("landing.subtitle", { label: landing.label }) : t("subtitle"),
     url: canonicalUrl,
     canonicalUrl,
-    robots: "index,follow",
+    robots: "noindex,follow",
   });
   const jobsQuery = useInfiniteQuery(jobsInfiniteCatalogQueryOptions(filters, user?.id));
   const taxonomyQuery = useQuery(jobTaxonomyQueryOptions());

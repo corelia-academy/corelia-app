@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 import { routeSkeletonVariantForPath } from "@/components/loading/routeSkeletonVariant";
+import { currentAppPathname } from "@/lib/appUrl";
 
 /**
  * Header + sidebar + content placeholder sized like `MainLayout` (72px header, 15rem sidebar
@@ -9,7 +10,7 @@ import { routeSkeletonVariantForPath } from "@/components/loading/routeSkeletonV
  * paint stays one continuous skeleton.
  */
 export function AppShellSkeleton({ children }: { children?: ReactNode }) {
-  const variant = typeof window === "undefined" ? "home" : routeSkeletonVariantForPath(window.location.pathname);
+  const variant = typeof window === "undefined" ? "home" : routeSkeletonVariantForPath(currentAppPathname());
   return (
     <div className="min-h-svh bg-background" role="status" aria-live="polite" aria-busy="true">
       <span className="sr-only">Loading</span>

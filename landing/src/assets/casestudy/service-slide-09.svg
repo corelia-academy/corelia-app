@@ -1,0 +1,16 @@
+<svg width="676" height="377" viewBox="0 0 676 377" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- MOCK DATA: temporary Figma-like service artwork. -->
+    <path d="M343.368 0L0 180.527L343.368 377L676 180.527L343.368 0Z" fill="url(#gradient)"/>
+    <g transform="translate(338 190) rotate(-29)">
+        <text text-anchor="middle" fill="#FFFFFF" font-family="Akt, Arial, sans-serif" font-size="24" font-weight="700">
+            <tspan x="0" dy="0">STRATEGIC</tspan>
+            <tspan x="0" dy="28">PARTNERSHIPS</tspan>
+        </text>
+    </g>
+    <defs>
+        <linearGradient id="gradient" x1="383.5" y1="14.5" x2="369.143" y2="286.743" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#648BFF"/>
+            <stop offset="1" stop-color="#225AFF"/>
+        </linearGradient>
+    </defs>
+</svg>

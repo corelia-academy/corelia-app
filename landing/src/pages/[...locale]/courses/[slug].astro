@@ -1,0 +1,119 @@
+---
+import { localizePath } from "@corelia/ui/locales";
+import CatalogLayout from "@/layouts/CatalogLayout.astro";
+import { CATALOG_COPY } from "@/i18n/catalog";
+import { getCourse, type CatalogCourse } from "@/lib/catalog";
+import { catalogNotFound, catalogUnavailable, routeLocale, setCatalogCacheHeaders, validSlug } from "@/lib/catalogRoute";
+import { APP_URL, absoluteUrl, courseJsonLd, paragraphs, truncate } from "@/lib/seo";
+
+export const prerender = false;
+
+const locale = routeLocale(Astro.params.locale);
+const { slug } = Astro.params;
+if (!locale || !validSlug(slug)) {
+  return catalogNotFound(Astro.request, Astro.locals);
+}
+const copy = CATALOG_COPY[locale];
+
+let course: CatalogCourse | null = null;
+try {
+  course = await getCourse(slug, locale);
+} catch (error) {
+  console.error("[catalog] course", error instanceof Error ? error.message : error);
+  return catalogUnavailable(copy.unavailable);
+}
+if (!course) {
+  return catalogNotFound(Astro.request, Astro.locals);
+}
+setCatalogCacheHeaders(Astro.response.headers);
+
+const path = `/courses/${course.slug}`;
+// A locale without a translation repeats another locale's text: keep it out of the index.
+const translated = course.contentLocale === locale;
+const description = truncate(course.shortDescription || course.description);
+const hours = Math.round(course.durationSeconds / 3600);
+const appCourseUrl = `${APP_URL}/courses/${encodeURIComponent(course.slug)}`;
+---
+
+<CatalogLayout
+  locale={locale}
+  path={path}
+  title={`${course.title} | Corelia Academy`}
+  description={description}
+  contentLocales={course.locales}
+  indexable={translated}
+  canonicalLocale={course.contentLocale}
+  image={course.thumbnailUrl}
+  structuredData={[courseJsonLd({
+    title: course.title,
+    description,
+    url: absoluteUrl(localizePath(path, course.contentLocale)),
+    image: course.thumbnailUrl || undefined,
+    inLanguage: course.contentLocale,
+    skills: course.skills,
+    durationSeconds: course.durationSeconds,
+    instructorName: course.instructorName,
+  })]}
+  breadcrumbs={[
+    { name: copy.coursesTitle, path: localizePath("/courses", locale) },
+    { name: course.title, path: localizePath(path, locale) },
+  ]}
+>
+  <article class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <div>
+      <h1 class="text-3xl font-semibold leading-tight text-white md:text-5xl">{course.title}</h1>
+      {course.shortDescription ? <p class="mt-4 text-lg text-white/70">{course.shortDescription}</p> : null}
+      {!translated ? <p class="mt-4 rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-white/70">{copy.notTranslated}</p> : null}
+
+      {
+        course.learningOutcomes.length ? (
+          <section class="mt-10">
+            <h2 class="text-xl font-semibold text-white">{copy.outcomes}</h2>
+            <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+              {course.learningOutcomes.map((outcome) => (
+                <li class="flex gap-2 text-white/75"><span aria-hidden="true">✓</span><span>{outcome}</span></li>
+              ))}
+            </ul>
+          </section>
+        ) : null
+      }
+
+      {
+        course.description ? (
+          <section class="mt-10 space-y-4">
+            <h2 class="text-xl font-semibold text-white">{copy.about}</h2>
+            {paragraphs(course.description).map((paragraph) => <p class="whitespace-pre-line text-white/70">{paragraph}</p>)}
+          </section>
+        ) : null
+      }
+
+      {
+        course.skills.length ? (
+          <section class="mt-10">
+            <h2 class="text-xl font-semibold text-white">{copy.skills}</h2>
+            <ul class="mt-4 flex flex-wrap gap-2">
+              {course.skills.map((skill) => <li class="rounded-full border border-white/15 px-3 py-1 text-sm text-white/75">{skill}</li>)}
+            </ul>
+          </section>
+        ) : null
+      }
+    </div>
+
+    <aside class="h-fit overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] lg:sticky lg:top-[calc(var(--site-header-height,72px)+1.5rem)]">
+      {course.thumbnailUrl ? <img src={course.thumbnailUrl} alt="" width="640" height="360" class="aspect-video w-full object-cover" /> : null}
+      <div class="space-y-4 p-5">
+        <dl class="grid grid-cols-2 gap-3 text-sm">
+          {course.level ? <div><dt class="text-white/50">{copy.level}</dt><dd class="text-white">{copy.levels[course.level] ?? course.level}</dd></div> : null}
+          {hours > 0 ? <div><dt class="text-white/50">{copy.duration}</dt><dd class="text-white">{hours} {copy.hours}</dd></div> : null}
+          {course.instructorName ? <div class="col-span-2"><dt class="text-white/50">{copy.instructor}</dt><dd class="text-white">{course.instructorName}</dd></div> : null}
+        </dl>
+        <a
+          href={appCourseUrl}
+          class="flex h-11 items-center justify-center rounded-lg bg-[#fff700] font-semibold text-[#0b0e11] transition-colors hover:bg-[#e6de00]"
+        >
+          {copy.startLearning}
+        </a>
+      </div>
+    </aside>
+  </article>
+</CatalogLayout>

@@ -1,0 +1,158 @@
+---
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import { blogPostUrl, getBlogPosts, type BlogLocale } from "@/lib/blog";
+import { getYouTubeThumbnailUrl } from "@/lib/youtube";
+
+const lang = getLangFromUrl(Astro.url) as BlogLocale;
+const t = useTranslations(lang);
+
+const posts = await getBlogPosts(lang);
+
+const highlightKeys = [
+    "corelia-academy-uef-strategic-mou-fit-career-day-2026",
+    "corelia-stellar-apac-hackathon-vietnam-demo-day-2026",
+    "corelia-unihackfest-da-nang-campus-2026",
+] as const;
+
+function getPreviewImage(post: (typeof posts)[number]) {
+    const media = post.data.media;
+
+    if (!media) return null;
+
+    if (media.type === "image") {
+        return media.src;
+    }
+
+    return getYouTubeThumbnailUrl(media.url);
+}
+
+const postsByTranslationKey = new Map(
+    posts.map((post) => [post.data.translationKey, post]),
+);
+const highlightTitleKey = [
+    "blog.stats.mostRead",
+    "blog.stats.featuredEvents",
+    "blog.stats.web3Projects",
+] as const;
+const highlightCards = highlightKeys.flatMap((translationKey, index) => {
+    const post = postsByTranslationKey.get(translationKey);
+    const titleKey = highlightTitleKey[index];
+
+    if (!post || !titleKey) return [];
+
+    return [
+        {
+            title: t(titleKey),
+            alt: post.data.title,
+            href: blogPostUrl(lang, post.slug),
+            image: getPreviewImage(post),
+        },
+    ];
+});
+---
+
+{
+    highlightCards.map((card) =>
+        card.image ? <link rel="preload" as="image" href={card.image} /> : null,
+    )
+}
+{
+    highlightCards.length > 0 ? (
+        <section
+            class="w-full border-y border-border"
+            aria-label={t("blog.title")}
+        >
+            <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+                <div class="grid grid-cols-1 border-x border-border md:grid-cols-3">
+                    {highlightCards.map((card, index) => (
+                        <a
+                            href={card.href}
+                            class:list={[
+                                "group relative flex flex-col overflow-hidden border-b border-border transition-colors duration-300 hover:bg-secondary md:border-b-0",
+                                index < 2 ? "md:border-r" : "",
+                            ]}
+                            data-reveal="fade-up"
+                            data-reveal-delay={index * 150}
+                        >
+                            <div class="relative z-10 h-[138px] shrink-0 overflow-hidden border-b border-border">
+                                {/* lớp 2: số, bám góc dưới-trái, tràn ra ngoài, mờ dần */}
+                                <div
+                                    class="absolute bottom-0 left-0 text-primary"
+                                    style={
+                                        {
+                                            fontFamily: "var(--font-number)",
+                                            fontWeight: 100,
+                                            fontSize:
+                                                "clamp(48px, 35cqw, 156px)",
+                                            lineHeight: "1.15",
+                                            letterSpacing: "-0.05em",
+                                            marginLeft: "-0.3em",
+                                            textBoxTrim: "trim-both",
+                                            textBoxEdge: "cap alphabetic",
+                                        } as React.CSSProperties
+                                    }
+                                >
+                                    {String(index + 1).padStart(2, "0")}
+                                </div>
+                                <div
+                                    class="pointer-events-none absolute inset-y-0 left-0 w-10"
+                                    style={{
+                                        background:
+                                            "linear-gradient(90deg, var(--background) 0%, transparent 100%)",
+                                    }}
+                                />
+                                {/* lớp 3: chữ, canh giữa, nổi trên cùng */}
+                                <div
+                                    class="absolute inset-0 z-10 flex px-8"
+                                    style={{
+                                        padding: "32px 40px 32px 120px",
+                                        flexDirection: "column",
+                                        alignItems: "flex-start",
+                                        gap: "16px",
+                                        alignSelf: "stretch",
+                                    }}
+                                >
+                                    <span
+                                        class="text-2xl font-medium leading-[1.15] tracking-[-0.96px] md:text-[28px] md:tracking-[-1.12px]"
+                                        style={{
+                                            fontFamily: "var(--font-heading)",
+                                        }}
+                                    >
+                                        {card.title}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="p-6">
+                                <div class="aspect-[4/3] w-full overflow-hidden bg-muted">
+                                    {card.image ? (
+                                        <img
+                                            src={card.image}
+                                            alt={card.alt}
+                                            loading="eager"
+                                            fetchpriority={
+                                                index === 0 ? "high" : "auto"
+                                            }
+                                            decoding="async"
+                                            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                    ) : (
+                                        <div
+                                            class="h-full w-full bg-linear-to-br from-primary/15 via-card to-muted"
+                                            aria-hidden="true"
+                                        />
+                                    )}
+                                </div>
+
+                                <span class="absolute bottom-0 right-0 p-2 border border-border bg-popover">
+                                    <img loading="lazy" decoding="async" src="/Next.svg" alt="" class="size-5">
+                                </span>
+                            </div>
+                        </a>
+                    ))}
+                </div>
+            </div>
+        </section>
+    ) : null
+}

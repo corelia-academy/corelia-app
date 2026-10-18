@@ -6,11 +6,11 @@ import backgroundPrompt from "@/assets/BackgroundPrompt.svg";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { Contest } from "@/types/hackathons";
+import { appUrl } from "@/lib/appUrl";
 
 export function ContestPreparationCard({ contest }: { contest: Pick<Contest, "title" | "slug"> }) {
   const { t } = useTranslation("contests");
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const url = `${origin}/hackathons/${encodeURIComponent(contest.slug ?? "")}`;
+  const url = appUrl(`/hackathons/${encodeURIComponent(contest.slug ?? "")}`);
   const prompt = t("public.prepare.prompt", { title: contest.title, url });
   const copy = async () => {
     try {

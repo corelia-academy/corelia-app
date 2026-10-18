@@ -9,16 +9,20 @@
   "vars": {
     "CORELIA_API_URL": "https://lawhkvyyoznwygzsycan.supabase.co/functions/v1/corelia-api",
     "CORELIA_OG_FUNCTION_URL": "https://lawhkvyyoznwygzsycan.supabase.co/functions/v1/corelia-api",
-    "CORELIA_APP_ORIGIN": "https://app.corelia.academy"
+    "CORELIA_APP_ORIGIN": "https://corelia.academy",
+    "CORELIA_APP_BASE_PATH": "/learn"
   },
+  "routes": [{ "pattern": "corelia.academy/learn*", "zone_name": "corelia.academy" }],
   "env": {
     "staging": {
       "name": "corelia-staging",
       "vars": {
         "CORELIA_API_URL": "https://opoozbmfbezkrpzxsusx.supabase.co/functions/v1/corelia-api",
         "CORELIA_OG_FUNCTION_URL": "https://opoozbmfbezkrpzxsusx.supabase.co/functions/v1/corelia-api",
-        "CORELIA_APP_ORIGIN": "https://staging.corelia.academy"
-      }
+        "CORELIA_APP_ORIGIN": "https://staging.corelia.academy",
+        "CORELIA_APP_BASE_PATH": "/learn"
+      },
+      "routes": [{ "pattern": "staging.corelia.academy/learn*", "zone_name": "corelia.academy" }]
     }
   },
   "assets": {

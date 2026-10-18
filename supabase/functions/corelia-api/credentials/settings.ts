@@ -49,7 +49,7 @@ export async function getCoreliaLogoUrl(db: SupabaseClient): Promise<string> {
 
 export async function getAppBaseUrl(db: SupabaseClient): Promise<string> {
   const u = (await getSetting(db, "corelia_app_base_url"))?.trim();
-  return u?.replace(/\/+$/, "") || "https://app.corelia.academy";
+  return u?.replace(/\/+$/, "") || "https://corelia.academy/learn";
 }
 
 export function openCampusApiKey(network: MintNetwork): string {

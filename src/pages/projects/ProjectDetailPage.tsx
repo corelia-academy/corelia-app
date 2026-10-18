@@ -40,6 +40,7 @@ import {
   useDynamicPageTitle,
   usePageTitleOverride,
 } from "@/components/navigation/PageTitle";
+import { appUrl } from "@/lib/appUrl";
 
 function sourceLink(project: Project, hackathonSlug?: string | null): string | null {
   if (isHackathonProjectSource(project.source_type) && project.source_id) {
@@ -251,7 +252,7 @@ export default function ProjectDetailPage() {
             size="small"
             onClick={async () => {
               try {
-                await navigator.clipboard.writeText(`${window.location.origin}/projects/${project.slug}`);
+                await navigator.clipboard.writeText(appUrl(`/projects/${project.slug}`));
                 toast.success(t("projects.editor.copied"));
               } catch {
                 toast.error(t("projects.editor.copyFailed"));

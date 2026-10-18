@@ -1,0 +1,218 @@
+---
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import { blogPostUrl, getBlogPosts, type BlogLocale } from "@/lib/blog";
+import { blogCategoryLabel } from "@/lib/blogTaxonomy";
+import { getYouTubeThumbnailUrl } from "@/lib/youtube";
+import BusinessBlogCarousel from "./case-studies";
+import StripeBand from "../common/StripeBand.astro";
+import panelCasestudy from "@/assets/casestudy/panel_casestudy.jpg";
+
+const lang = getLangFromUrl(Astro.url) as BlogLocale;
+const t = useTranslations(lang);
+
+const ctaHref = `${lang === "vi" ? "/vi" : ""}/contact/#form`;
+
+const posts = await getBlogPosts(lang);
+
+const additionalCaseStudyKeys = [
+    "corelia-academy-uef-strategic-mou-fit-career-day-2026",
+    "corelia-stellar-apac-hackathon-vietnam-demo-day-2026",
+    "corelia-unihackfest-da-nang-campus-2026",
+] as const;
+
+function getPreviewImage(post: (typeof posts)[number]) {
+    const media = post.data.media;
+
+    if (!media) return null;
+
+    if (media.type === "image") {
+        return media.src;
+    }
+
+    return getYouTubeThumbnailUrl(media.url);
+}
+
+const postsByTranslationKey = new Map(
+    posts.map((post) => [post.data.translationKey, post]),
+);
+
+const blogCards = additionalCaseStudyKeys.flatMap((translationKey) => {
+    const post = postsByTranslationKey.get(translationKey);
+    if (!post) return [];
+
+    return [
+        {
+            title: post.data.title,
+            description: post.data.description ?? "",
+            category: blogCategoryLabel(lang, post.data.category),
+            href: blogPostUrl(lang, post.slug),
+            image: getPreviewImage(post),
+        },
+    ];
+});
+---
+
+<div class="w-full border-t border-border">
+    <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+        <div class="h-[100px] hidden md:block">
+            <StripeBand
+                animated
+                class="bg-background border-x border-border h-full w-full hidden md:block"
+            />
+        </div>
+        <div class="border-x border-border">
+            <!-- header -->
+            <div
+                class="flex items-center border-b border-border h-20 py-5 bg-secondary px-10"
+            >
+                <p
+                    class="text-lg leading-[1.15] tracking-[-0.02em] text-foreground md:text-2xl md:leading-[1.2]"
+                    style="font-family: var(--font-heading);"
+                >
+                    {t("casestudies.title")}
+                </p>
+            </div>
+
+            <div>
+                <BusinessBlogCarousel cards={blogCards} />
+            </div>
+
+            <div
+                class="relative isolate bg-background h-auto overflow-hidden border-b
+            border-border bg-background"
+            >
+                <img
+                    src={panelCasestudy.src}
+                    alt=""
+                    aria-hidden="true"
+                    loading="eager"
+                    fetchpriority="high"
+                    class="pointer-events-none absolute inset-0 h-full w-full bg-background select-none object-fill"
+                />
+
+                <div
+                    class="container relative z-10 mx-auto flex flex-col items-center justify-center gap-6 px-3 py-10 text-center xl:px-0"
+                >
+                    <h2
+                        class="max-w-[920px] text-4xl font-medium leading-[1.15] tracking-[-0.04em] text-foreground lg:px-40 md:text-5xl"
+                        style="font-family: var(--font-heading);"
+                        data-reveal="text-up"
+                    >
+                        {t("casestudies.panel.title")}
+                    </h2>
+
+                    <p
+                        class="max-w-[700px] text-sm leading-[1.4] text-foreground-muted px-6 md:text-base"
+                        data-reveal="text-up"
+                        data-reveal-delay="200"
+                    >
+                        {t("casestudies.panel.description")}
+                    </p>
+                </div>
+            </div>
+
+            <div
+                id="featured-cta-wrap"
+                class="flex flex-1 items-center justify-center gap-3 md:gap-8 md:px-8 py-6"
+            >
+                <div class="flex items-center gap-3 md:gap-8">
+                    <img loading="lazy" decoding="async"
+                        src="/invertedtriangle.svg"
+                        alt=""
+                        data-cta-arrow="left"
+                        class="size-4 -rotate-90 opacity-30"
+                    />
+                    <img loading="lazy" decoding="async"
+                        src="/invertedtriangle.svg"
+                        alt=""
+                        data-cta-arrow="left"
+                        class="size-4 -rotate-90 opacity-60"
+                    />
+                    <img loading="lazy" decoding="async"
+                        src="/invertedtriangle.svg"
+                        alt=""
+                        data-cta-arrow="left"
+                        class="size-4 -rotate-90"
+                    />
+                </div>
+                <a
+                    href={ctaHref}
+                    data-hover-wave
+                    class="rounded-[8px] border border-border-button bg-button-primary-background px-2 md:px-4 py-[7px] text-sm font-medium leading-[1.2] text-button-primary-foreground shadow-button-primary-glow transition-colors hover:bg-button-primary-background-hover md:text-lg"
+                >
+                    <span class="hw-label relative top-px md:top-0"
+                        >{t("casestudies.cta")}</span
+                    >
+                </a>
+                <div class="flex items-center gap-3 md:gap-8">
+                    <img loading="lazy" decoding="async"
+                        src="/invertedtriangle.svg"
+                        alt=""
+                        data-cta-arrow="right"
+                        class="size-4 rotate-90"
+                    />
+                    <img loading="lazy" decoding="async"
+                        src="/invertedtriangle.svg"
+                        alt=""
+                        data-cta-arrow="right"
+                        class="size-4 rotate-90 opacity-60"
+                    />
+                    <img loading="lazy" decoding="async"
+                        src="/invertedtriangle.svg"
+                        alt=""
+                        data-cta-arrow="right"
+                        class="size-4 rotate-90 opacity-30"
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    import { gsap } from "gsap";
+    const wrap = document.getElementById("featured-cta-wrap");
+    if (wrap) {
+        const left = Array.from(
+            wrap.querySelectorAll('[data-cta-arrow="left"]'),
+        );
+        const right = Array.from(
+            wrap.querySelectorAll('[data-cta-arrow="right"]'),
+        );
+        let tl: ReturnType<typeof gsap.timeline> | null = null;
+        wrap.addEventListener("mouseenter", () => {
+            if (tl) tl.kill();
+            gsap.set([...left, ...right], { x: 0 });
+            tl = gsap.timeline({ repeat: -1, repeatDelay: 0.1 });
+            tl.to(
+                left,
+                { x: 15, duration: 0.26, ease: "power2.in", stagger: 0.06 },
+                0,
+            )
+                .to(
+                    right,
+                    {
+                        x: -15,
+                        duration: 0.26,
+                        ease: "power2.in",
+                        stagger: 0.06,
+                    },
+                    0,
+                )
+                .to([...left, ...right], {
+                    x: 0,
+                    duration: 0.16,
+                    ease: "power2.out",
+                });
+        });
+        wrap.addEventListener("mouseleave", () => {
+            if (tl) tl.kill();
+            gsap.to([...left, ...right], {
+                x: 0,
+                duration: 0.2,
+                ease: "power2.out",
+            });
+        });
+    }
+</script>

@@ -110,7 +110,7 @@ function LearnWorkspace() {
     courseId: string;
     lessonId?: string;
   }>();
-  const isFinalAssignment = Boolean(useMatch("/learn/:courseId/final-assignment"));
+  const isFinalAssignment = Boolean(useMatch("/study/:courseId/final-assignment"));
   const navigate = useNavigate();
   const { profile, user } = useAuth();
   const queryClient = useQueryClient();
@@ -345,7 +345,7 @@ function LearnWorkspace() {
     const next = getResumeLesson(visibleLessons, progress.progressList, access.enrollment?.last_lesson_id);
     const target = next ?? visibleLessons[0];
     if (target) {
-      navigate(`/learn/${courseId}/lesson/${target.id}`, { replace: true });
+      navigate(`/study/${courseId}/lesson/${target.id}`, { replace: true });
     }
   }, [access.enrollment?.last_lesson_id, access.loading, courseId, courseLoad.loading, lessonId, isFinalAssignment, navigate, progress.loaded, progress.progressList, visibleLessons]);
 
@@ -373,7 +373,7 @@ function LearnWorkspace() {
   useEffect(() => {
     if (!courseId || !lessonId || courseLoad.loading || currentLesson || !visibleLessons.length) return;
     toast.message(translate("learning.invalidRoute"));
-    navigate(`/learn/${courseId}/lesson/${visibleLessons[0].id}`, { replace: true });
+    navigate(`/study/${courseId}/lesson/${visibleLessons[0].id}`, { replace: true });
   }, [courseId, lessonId, courseLoad.loading, currentLesson, visibleLessons, navigate, translate]);
   useEffect(() => {
     if (user && currentLesson && courseId) void recordLearningEvent(courseId, currentLesson.id, "lesson_started");
@@ -537,7 +537,7 @@ function LearnWorkspace() {
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             {firstLesson && (
-              <Button onClick={() => navigate(`/learn/${courseId}/lesson/${firstLesson.id}`, { replace: true })}>
+              <Button onClick={() => navigate(`/study/${courseId}/lesson/${firstLesson.id}`, { replace: true })}>
                 {translate("detail.learn.goToFirstLesson", { defaultValue: "Vào bài học đầu tiên" })}
               </Button>
             )}
@@ -632,7 +632,7 @@ function LearnWorkspace() {
         translate={translate}
         onMarkComplete={markComplete}
         onReset={resetMutation.mutateAsync}
-        onNavigateToLesson={(id) => navigate(`/learn/${courseId}/lesson/${id}`)}
+        onNavigateToLesson={(id) => navigate(`/study/${courseId}/lesson/${id}`)}
         courseId={courseId}
       />}
 

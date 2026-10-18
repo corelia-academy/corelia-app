@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { usePageTitleOverride } from "@/components/navigation/PageTitle";
+import { appPath } from "@/lib/appUrl";
 
 export default function MaintenancePage() {
   const { t } = useTranslation("common");
@@ -8,12 +9,12 @@ export default function MaintenancePage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background px-4 text-center">
       <img
-        src="/logo/corelia-logo-black.svg"
+        src={appPath("/logo/corelia-logo-black.svg")}
         alt="Corelia"
         className="h-10 dark:hidden"
       />
       <img
-        src="/logo/corelia-logo-white.svg"
+        src={appPath("/logo/corelia-logo-white.svg")}
         alt="Corelia"
         className="hidden h-10 dark:block"
       />
