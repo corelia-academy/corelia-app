@@ -1,7 +1,9 @@
 packages:
   - "."
+  - "landing"
 
 allowBuilds:
+  "@parcel/watcher": true
   core-js: false
   esbuild: true
   msw: true

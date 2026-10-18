@@ -15,6 +15,7 @@ Corelia is a multilingual learning and credential platform. The browser app uses
 ## Repository Structure
 
 - `src/` — SPA routes, feature pages, shared UI, stores, and client data helpers. Read `src/AGENTS.md` before changing it.
+- `landing/` — Astro marketing site for `corelia.academy` (imported squashed from `corelia-academy/corelia-landing`). Read `landing/AGENTS.md` before changing it.
 - `supabase/` — migrations, local config, email templates, and Edge Functions. Read `supabase/AGENTS.md` before changing it.
 - `scripts/db/` — migration-baseline, drift, live-state, and release verification tools.
 - `docs/` — specialized architecture, design, QA, and release references; open only the document relevant to the task.
@@ -49,6 +50,7 @@ Run the smallest relevant check first, then broaden in proportion to risk:
 3. Lint: `pnpm lint`
 4. Typecheck plus production-neutral build: `pnpm build`
 5. Mode-specific artifact when relevant: `pnpm build:staging` or `pnpm build:prod`
+6. Landing changes: `pnpm landing:build`
 
 Database changes additionally use `pnpm db:verify`; schema/migration changes require the isolated local stack check documented in `supabase/AGENTS.md`. Do not require the full suite for documentation-only or narrowly scoped changes unless CI parity or risk warrants it.
 

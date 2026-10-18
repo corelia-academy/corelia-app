@@ -23,17 +23,13 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-# Local Netlify folder
-.netlify
+# Local Wrangler folder
+.wrangler/
 
-# Agent context file (tệp ngữ cảnh nội bộ cho AI agent, không commit)
-AGENTS.md
 
 # Raw font zip dump (rác macOS __MACOSX/, .DS_Store) — bản dùng thật đã copy sang public/fonts/
 CoreliaFont/
 
-# Deno lock tự sinh khi netlify build/dev giả lập Edge Functions
-deno.lock
 
 # Cấu hình VS Code cá nhân
 .vscode/
