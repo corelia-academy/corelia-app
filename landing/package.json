@@ -13,7 +13,9 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^12.6.13",
     "@astrojs/react": "^4.4.2",
+    "@astrojs/sitemap": "^3.7.4",
     "@corelia/ui": "workspace:*",
     "@lucide/astro": "^0.562.0",
     "@tailwindcss/vite": "^4.1.18",

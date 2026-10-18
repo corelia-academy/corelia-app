@@ -11,11 +11,13 @@ import {
 import { localizePath, rememberLocale, stripLocalePrefix, type SiteLocale } from "@corelia/ui/locales";
 import "@corelia/ui/site-header.css";
 
-/** Locales the landing site has pages for. */
-const LANDING_LOCALES = ["en", "vi"] as const satisfies readonly SiteLocale[];
+/** Locales the marketing pages exist in; catalog pages pass every site locale. */
+const MARKETING_LOCALES = ["en", "vi"] as const satisfies readonly SiteLocale[];
 
 type Props = {
-  lang: (typeof LANDING_LOCALES)[number];
+  lang: SiteLocale;
+  /** Locales this page exists in (the language menu only offers these). */
+  locales?: readonly SiteLocale[];
   currentPath: string;
   /** Alternate URLs of this page per locale (blog posts have translated slugs). */
   languageHrefs?: Partial<Record<string, string>>;
@@ -23,7 +25,7 @@ type Props = {
   appUrl: string;
 };
 
-export default function LandingHeader({ lang, currentPath, languageHrefs, appUrl }: Props) {
+export default function LandingHeader({ lang, locales = MARKETING_LOCALES, currentPath, languageHrefs, appUrl }: Props) {
   const copy = SITE_HEADER_COPY[lang];
   // Unknown until hydration: the session lives in the browser (the app's Supabase storage).
   const [user, setUser] = useState<SiteSessionUser | null | undefined>(undefined);
@@ -52,13 +54,13 @@ export default function LandingHeader({ lang, currentPath, languageHrefs, appUrl
   return (
     <SiteHeader
       position="fixed"
-      logo={{ href: localizePath("/", lang), src: "/Corelia_Academy_Logo_Dark.png", alt: "Corelia Academy" }}
+      logo={{ href: (MARKETING_LOCALES as readonly SiteLocale[]).includes(lang) ? localizePath("/", lang) : "/", src: "/Corelia_Academy_Logo_Dark.png", alt: "Corelia Academy" }}
       nav={siteNavigation(lang)}
       activePath={currentPath}
       labels={copy}
       end={
         <>
-          <LanguageMenu locale={lang} locales={LANDING_LOCALES} label={copy.language} onSelect={switchLanguage} />
+          <LanguageMenu locale={lang} locales={locales} label={copy.language} onSelect={switchLanguage} />
           <AuthActions user={user} {...auth} />
         </>
       }

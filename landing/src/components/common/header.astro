@@ -1,13 +1,17 @@
 ---
+import type { SiteLocale } from "@corelia/ui/locales";
 import LandingHeader from "./LandingHeader";
 import { getLangFromUrl } from "@/i18n/utils";
 
 type Props = {
   languageHrefs?: Record<string, string>;
+  /** Catalog pages exist in every site locale; marketing pages default to the URL's en/vi. */
+  lang?: SiteLocale;
+  locales?: readonly SiteLocale[];
 };
 
-const { languageHrefs } = Astro.props as Props;
-const lang = getLangFromUrl(Astro.url);
+const { languageHrefs, locales } = Astro.props as Props;
+const lang = (Astro.props as Props).lang ?? getLangFromUrl(Astro.url);
 // The learning app is served from the same origin under /learn.
 const appUrl = String(import.meta.env.PUBLIC_APP_URL ?? "/learn").replace(/\/$/, "");
 ---
@@ -16,6 +20,7 @@ const appUrl = String(import.meta.env.PUBLIC_APP_URL ?? "/learn").replace(/\/$/,
 <LandingHeader
   client:load
   lang={lang}
+  locales={locales}
   currentPath={Astro.url.pathname}
   languageHrefs={languageHrefs}
   appUrl={appUrl}

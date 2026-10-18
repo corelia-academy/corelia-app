@@ -26,7 +26,7 @@ type Props = {
 const { lang, content } = Astro.props as Props;
 
 const appOrigin = String(
-  import.meta.env.PUBLIC_APP_ORIGIN ?? "https://app.corelia.academy",
+  import.meta.env.PUBLIC_APP_URL ?? "/learn",
 ).replace(/\/$/, "");
 const appLoginUrl = `${appOrigin}/login`;
 const appCoraUrl = `${appOrigin}/cora`;

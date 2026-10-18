@@ -8,10 +8,8 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const translatePath = useTranslatedPath(lang);
 
-const appOrigin = String(
-  import.meta.env.PUBLIC_APP_ORIGIN ?? "https://app.corelia.academy",
-).replace(/\/$/, "");
-const appCoursesUrl = `${appOrigin}/courses`;
+// The course catalog is rendered by this site.
+const appCoursesUrl = translatePath("/courses");
 ---
 
 <div
@@ -43,8 +41,6 @@ const appCoursesUrl = `${appOrigin}/courses`;
   >
     <a
       href={appCoursesUrl}
-      target="_blank"
-      rel="noopener noreferrer"
       class="w-fit bg-primary text-primary-foreground pt-2 pb-2 pl-4 pr-2 rounded-full cursor-pointer hover:bg-secondary hover:text-secondary-foreground transition-all duration-300 text-xs md:text-sm flex items-center justify-center gap-2"
     >
       {t("program.seeAll")}

@@ -82,6 +82,14 @@ describe("SiteHeader", () => {
   });
 });
 
+describe("siteNavigation", () => {
+  it("localises catalog sections everywhere and marketing pages only in English and Vietnamese", () => {
+    const hrefs = (locale: "ja" | "vi") => siteNavigation(locale).flatMap((g) => g.items ?? []).map((i) => i.href);
+    expect(hrefs("ja")).toEqual(["/ja/courses", "/roadmap", "/cora", "/ja/jobs", "/ja/hackathons", "/blog", "/case-studies", "/universities", "/about", "/contact"]);
+    expect(hrefs("vi")).toContain("/vi/roadmap");
+  });
+});
+
 describe("LanguageMenu", () => {
   it("lists every locale by endonym and reports a new choice", () => {
     const onSelect = vi.fn();

@@ -104,13 +104,17 @@ export const SITE_HEADER_COPY: Record<SiteLocale, Copy> = {
   },
 };
 
-/**
- * Site navigation. Paths point at the landing site (domain root) and are localised;
- * marketing pages that only exist in English and Vietnamese fall back to English there.
- */
+/** Landing sections that exist in every site locale; the other marketing pages exist in English and Vietnamese. */
+export const FULLY_LOCALIZED_PATHS = ["/courses", "/jobs", "/hackathons"] as const;
+const MARKETING_LOCALES: readonly SiteLocale[] = ["en", "vi"];
+
+/** Site navigation. Paths point at the landing site (domain root), localised where the page exists. */
 export function siteNavigation(locale: SiteLocale): SiteNavGroup[] {
   const c = SITE_HEADER_COPY[locale];
-  const to = (path: string) => localizePath(path, locale);
+  const to = (path: string) =>
+    (FULLY_LOCALIZED_PATHS as readonly string[]).includes(path) || MARKETING_LOCALES.includes(locale)
+      ? localizePath(path, locale)
+      : path;
   return [
     {
       id: "learn", label: c.learn, items: [

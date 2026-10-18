@@ -2,4 +2,4 @@ export { SiteHeader, type SiteHeaderLinkProps, type SiteHeaderProps } from "./Si
 export { LanguageMenu, type LanguageMenuProps } from "./LanguageMenu";
 export { AuthActions, type AuthActionsProps } from "./AuthActions";
 export { readSiteSession, type SiteSessionUser } from "./session";
-export { SITE_HEADER_COPY, siteNavigation, type SiteNavGroup, type SiteNavLink } from "./nav";
+export { FULLY_LOCALIZED_PATHS, SITE_HEADER_COPY, siteNavigation, type SiteNavGroup, type SiteNavLink } from "./nav";

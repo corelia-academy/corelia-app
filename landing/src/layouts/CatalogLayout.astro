@@ -1,0 +1,82 @@
+---
+import { SITE_LOCALES, SITE_LOCALE_META, localizePath, type SiteLocale } from "@corelia/ui/locales";
+import Header from "@/components/common/header.astro";
+import Footer from "@/components/common/footer.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { CATALOG_COPY } from "@/i18n/catalog";
+import { DEFAULT_OG_IMAGE, absoluteUrl, alternates, breadcrumbJsonLd, jsonLd } from "@/lib/seo";
+
+type Props = {
+  locale: SiteLocale;
+  /** Locale-free path, e.g. "/courses/intro". */
+  path: string;
+  title: string;
+  description: string;
+  /** Locales whose version of this page has its own content (hreflang set). */
+  contentLocales?: readonly SiteLocale[];
+  /**
+   * False when this locale's version repeats another locale's content (no translation yet):
+   * the page stays crawlable for links but points its canonical at `canonicalLocale`.
+   */
+  indexable?: boolean;
+  canonicalLocale?: SiteLocale;
+  image?: string;
+  ogType?: string;
+  structuredData?: unknown[];
+  breadcrumbs?: Array<{ name: string; path: string }>;
+};
+
+const {
+  locale, path, title, description, contentLocales = SITE_LOCALES, indexable = true, canonicalLocale = locale,
+  image, ogType = "website", structuredData = [], breadcrumbs = [],
+} = Astro.props as Props;
+const copy = CATALOG_COPY[locale];
+const canonicalUrl = absoluteUrl(localizePath(path, indexable ? locale : canonicalLocale));
+const hreflangs = indexable ? alternates(path, contentLocales) : [];
+const crumbs = breadcrumbs.length ? [{ name: copy.home, path: localizePath("/", locale) }, ...breadcrumbs] : [];
+const blocks = [...structuredData, ...(crumbs.length ? [breadcrumbJsonLd(crumbs)] : [])];
+---
+
+<BaseLayout
+  lang={SITE_LOCALE_META[locale].hreflang}
+  title={title}
+  description={description}
+  robots={indexable ? "index,follow" : "noindex,follow"}
+  canonicalUrl={canonicalUrl}
+  ogUrl={absoluteUrl(localizePath(path, locale))}
+  ogType={ogType}
+  ogImage={image || DEFAULT_OG_IMAGE}
+>
+  <Fragment slot="head">
+    {hreflangs.map((link) => <link rel="alternate" hreflang={link.hreflang} href={link.href} />)}
+    {blocks.map((block) => <script type="application/ld+json" set:html={jsonLd(block)} />)}
+  </Fragment>
+
+  <Header lang={locale} locales={SITE_LOCALES} />
+
+  <main class="min-h-screen pt-[var(--site-header-height,72px)]">
+    <div class="container mx-auto max-w-6xl px-4 py-10 md:py-14 xl:px-0">
+      {
+        crumbs.length > 1 ? (
+          <nav aria-label="Breadcrumb" class="mb-6 text-sm text-white/60">
+            <ol class="flex flex-wrap items-center gap-2">
+              {crumbs.map((crumb, index) => (
+                <li class="flex items-center gap-2">
+                  {index > 0 ? <span aria-hidden="true">/</span> : null}
+                  {index < crumbs.length - 1 ? (
+                    <a class="hover:text-white" href={crumb.path}>{crumb.name}</a>
+                  ) : (
+                    <span aria-current="page" class="text-white/80">{crumb.name}</span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
+        ) : null
+      }
+      <slot />
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>

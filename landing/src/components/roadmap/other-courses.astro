@@ -1,14 +1,11 @@
 ---
-import { getLangFromUrl } from "@/i18n/utils";
+import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
 import { useTranslations } from "@/i18n/translations";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-
-const appOrigin = String(
-    import.meta.env.PUBLIC_APP_ORIGIN ?? "https://app.corelia.academy",
-).replace(/\/$/, "");
-const coursesUrl = `${appOrigin}/courses`;
+// Course pages are rendered by this site (catalog), not the learning app.
+const coursesUrl = useTranslatedPath(lang)("/courses");
 
 // mock
 const courses = [

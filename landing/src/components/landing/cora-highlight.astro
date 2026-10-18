@@ -8,7 +8,7 @@ const translatePath = useTranslatedPath(lang);
 const content = getCoraHighlightContent(lang);
 
 const appOrigin = String(
-  import.meta.env.PUBLIC_APP_ORIGIN ?? "https://app.corelia.academy",
+  import.meta.env.PUBLIC_APP_URL ?? "/learn",
 ).replace(/\/$/, "");
 const appLoginUrl = `${appOrigin}/login`;
 const coraPath = translatePath("/cora");

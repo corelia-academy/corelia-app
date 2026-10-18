@@ -23,6 +23,7 @@ export default defineConfig({
       "worker/**/*.test.ts",
       "packages/*/src/**/*.test.ts",
       "packages/*/src/**/*.test.tsx",
+      "landing/src/**/*.test.ts",
     ],
   },
 });

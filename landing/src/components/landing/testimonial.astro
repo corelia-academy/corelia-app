@@ -10,7 +10,7 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
 const appOrigin = String(
-  import.meta.env.PUBLIC_APP_ORIGIN ?? "https://app.corelia.academy",
+  import.meta.env.PUBLIC_APP_URL ?? "/learn",
 ).replace(/\/$/, "");
 const appLoginUrl = `${appOrigin}/login`;
 //MOCK DATA

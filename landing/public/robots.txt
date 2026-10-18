@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# /learn (the learning app) stays crawlable so search engines see its noindex
+# directives and social crawlers can fetch its Open Graph images.
+Sitemap: https://corelia.academy/sitemap-index.xml
+Sitemap: https://corelia.academy/sitemap-catalog.xml

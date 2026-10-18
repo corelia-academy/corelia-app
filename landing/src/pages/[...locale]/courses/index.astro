@@ -1,0 +1,89 @@
+---
+import { localizePath } from "@corelia/ui/locales";
+import CatalogLayout from "@/layouts/CatalogLayout.astro";
+import { CATALOG_COPY } from "@/i18n/catalog";
+import { listCourses, type CatalogCourse } from "@/lib/catalog";
+import { catalogNotFound, routeLocale, setCatalogCacheHeaders } from "@/lib/catalogRoute";
+import { absoluteUrl } from "@/lib/seo";
+
+export const prerender = false;
+
+const locale = routeLocale(Astro.params.locale);
+if (!locale) {
+  return catalogNotFound(Astro.request, Astro.locals);
+}
+const copy = CATALOG_COPY[locale];
+
+let courses: CatalogCourse[] = [];
+let failed = false;
+try {
+  courses = await listCourses(locale);
+} catch (error) {
+  failed = true;
+  console.error("[catalog] courses", error instanceof Error ? error.message : error);
+}
+Astro.response.status = failed ? 503 : 200;
+setCatalogCacheHeaders(Astro.response.headers, Astro.response.status);
+
+const itemList = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  itemListElement: courses.map((course, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    url: absoluteUrl(localizePath(`/courses/${course.slug}`, locale)),
+    name: course.title,
+  })),
+};
+---
+
+<CatalogLayout
+  locale={locale}
+  path="/courses"
+  title={`${copy.coursesTitle} | Corelia Academy`}
+  description={copy.coursesIntro}
+  structuredData={courses.length ? [itemList] : []}
+  breadcrumbs={[{ name: copy.coursesTitle, path: localizePath("/courses", locale) }]}
+>
+  <header class="mb-10 max-w-3xl">
+    <h1 class="text-3xl font-semibold leading-tight text-white md:text-5xl">{copy.coursesTitle}</h1>
+    <p class="mt-4 text-base text-white/70 md:text-lg">{copy.coursesIntro}</p>
+  </header>
+
+  {failed ? <p role="alert" class="text-white/70">{copy.unavailable}</p> : null}
+  {!failed && courses.length === 0 ? <p class="text-white/70">{copy.coursesEmpty}</p> : null}
+
+  <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      courses.map((course) => (
+        <li>
+          <a
+            href={localizePath(`/courses/${course.slug}`, locale)}
+            class="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-colors hover:border-white/25"
+          >
+            {course.thumbnailUrl ? (
+              <img
+                src={course.thumbnailUrl}
+                alt=""
+                width="640"
+                height="360"
+                loading="lazy"
+                decoding="async"
+                class="aspect-video w-full object-cover"
+              />
+            ) : (
+              <div class="aspect-video w-full bg-white/5" />
+            )}
+            <div class="flex flex-1 flex-col gap-3 p-5">
+              <h2 class="text-lg font-semibold text-white group-hover:underline">{course.title}</h2>
+              {course.shortDescription ? <p class="line-clamp-3 text-sm text-white/65">{course.shortDescription}</p> : null}
+              <p class="mt-auto text-xs text-white/50">
+                {[copy.levels[course.level] ?? "", course.instructorName].filter(Boolean).join(" · ")}
+              </p>
+            </div>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</CatalogLayout>
