@@ -1,0 +1,296 @@
+---
+type Props = {
+    title: string;
+    articleId?: string;
+    class?: string;
+};
+
+const {
+    title,
+    articleId = "blog-article",
+    class: className,
+} = Astro.props as Props;
+---
+
+<aside
+    class:list={["hidden self-start lg:block", className]}
+    data-blog-toc
+    data-article-id={articleId}
+>
+    <!-- <div
+        id={`${articleId}-toc-trigger`}
+        class="ml-auto flex h-full w-full items-center justify-center bg-secondary px-6 py-4 text-border-strong transition-colors hover:text-foreground"
+    >
+        <span data-blog-toc-trigger-label class="whitespace-nowrap truncate text-base leading-[1.4]">
+            {title}
+        </span>
+    </div> -->
+
+    <nav
+        class="max-h-[calc(100vh-15rem)] overflow-y-auto bg-secondary p-4"
+        aria-label={title}
+    >
+        <ol data-blog-toc-list class="space-y-2 text-base"></ol>
+    </nav>
+
+    <!-- <div
+        id={`${articleId}-toc-panel`}
+        class="h-0 overflow-hidden opacity-0"
+        data-blog-toc-panel
+    >
+        <div class="min-h-0 overflow-hidden">
+        <nav
+        class="max-h-[calc(100vh-15rem)] overflow-y-auto bg-secondary p-4"
+        aria-label={title}
+    >
+        <ol data-blog-toc-list class="space-y-2 text-base"></ol>
+    </nav></div>
+    </div> -->
+</aside>
+<script>
+    import { gsap } from "gsap";
+    import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+
+    gsap.registerPlugin(ScrollToPlugin);
+
+    const slugify = (value: string) =>
+        value
+            .normalize("NFKD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "");
+
+    const initBlogTableOfContents = () => {
+        document
+            .querySelectorAll<HTMLElement>("[data-blog-toc]")
+            .forEach((toc) => {
+                if (toc.dataset.initialized === "true") return;
+
+                const articleId = toc.dataset.articleId ?? "";
+                const article = document.getElementById(articleId);
+                const list = toc.querySelector<HTMLOListElement>(
+                    "[data-blog-toc-list]",
+                );
+                // const panel = toc.querySelector<HTMLElement>(
+                //     "[data-blog-toc-panel]",
+                // );
+                // const triggerLabel = toc.querySelector<HTMLElement>(
+                //     "[data-blog-toc-trigger-label]",
+                // );
+                // const fallbackTitle = triggerLabel?.textContent?.trim() ?? "";
+
+                if (!article || !list) return;
+
+                // gsap.set(panel, {
+                //     height: 0,
+                //     opacity: 0,
+                //     visibility: "hidden",
+                //     pointerEvents: "none",
+                //     overflow: "hidden",
+                // });
+
+                // const openPanel = () => {
+                //     gsap.killTweensOf(panel);
+
+                //     gsap.set(panel, {
+                //         visibility: "visible",
+                //         pointerEvents: "auto",
+                //     });
+
+                //     gsap.to(panel, {
+                //         height: "auto",
+                //         opacity: 1,
+                //         duration: 0.42,
+                //         ease: "power3.out",
+                //         overwrite: "auto",
+                //     });
+                // };
+
+                // const closePanel = () => {
+                //     gsap.killTweensOf(panel);
+
+                //     gsap.to(panel, {
+                //         height: 0,
+                //         opacity: 0,
+                //         duration: 0.3,
+                //         ease: "power2.inOut",
+                //         overwrite: "auto",
+                //         onComplete: () => {
+                //             gsap.set(panel, {
+                //                 visibility: "hidden",
+                //                 pointerEvents: "none",
+                //             });
+                //         },
+                //     });
+                // };
+
+                // toc.addEventListener("pointerenter", openPanel);
+                // toc.addEventListener("pointerleave", closePanel);
+
+                const headings = Array.from(
+                    article.querySelectorAll<HTMLElement>("h2, h3"),
+                ).filter((heading) => heading.textContent?.trim());
+
+                if (!headings.length) {
+                    toc.hidden = true;
+                    return;
+                }
+
+                const links: HTMLAnchorElement[] = [];
+                const usedIds = new Set<string>();
+                let isProgrammaticScroll = false;
+
+                const setActive = (active: HTMLAnchorElement | null) => {
+                    links.forEach((link) => {
+                        const isActive = link === active;
+
+                        link.classList.toggle("text-primary-a", isActive);
+                        link.classList.toggle("text-border-strong", !isActive);
+
+                        if (isActive) {
+                            link.setAttribute("aria-current", "location");
+                        } else {
+                            link.removeAttribute("aria-current");
+                        }
+                    });
+                    // if (triggerLabel) {
+                    //     triggerLabel.textContent =
+                    //         active?.textContent?.trim() || fallbackTitle;
+                    // }
+                };
+
+                const getActiveLink = () => {
+                    const header =
+                        document.querySelector<HTMLElement>(
+                            "[data-site-header]",
+                        );
+                    const headerHeight =
+                        header?.getBoundingClientRect().height ?? 56;
+                    const activationY = headerHeight + 16;
+
+                    let activeHeading = headings[0] ?? null;
+
+                    headings.forEach((heading) => {
+                        if (
+                            heading.getBoundingClientRect().top <= activationY
+                        ) {
+                            activeHeading = heading;
+                        }
+                    });
+
+                    return (
+                        links.find(
+                            (link) =>
+                                link.getAttribute("href") ===
+                                `#${activeHeading?.id}`,
+                        ) ?? null
+                    );
+                };
+
+                headings.forEach((heading, index) => {
+                    const headingText = heading.textContent?.trim() ?? "";
+                    const baseId =
+                        slugify(headingText) || `section-${index + 1}`;
+
+                    let headingId = heading.id || baseId;
+                    let suffix = 2;
+
+                    while (
+                        usedIds.has(headingId) ||
+                        (document.getElementById(headingId) &&
+                            document.getElementById(headingId) !== heading)
+                    ) {
+                        headingId = `${baseId}-${suffix}`;
+                        suffix++;
+                    }
+
+                    heading.id = headingId;
+                    usedIds.add(headingId);
+
+                    const item = document.createElement("li");
+                    item.className = heading.tagName === "H3" ? "pl-3" : "";
+
+                    const link = document.createElement("a");
+                    link.href = `#${headingId}`;
+                    link.textContent = headingText;
+                    link.className =
+                        "block text-base leading-[1.4] text-border-strong transition-colors hover:text-foreground";
+
+                    link.addEventListener("click", (event) => {
+                        event.preventDefault();
+                        setActive(link);
+
+                        const target = document.getElementById(headingId);
+                        if (!target) return;
+
+                        const header =
+                            document.querySelector<HTMLElement>(
+                                "[data-site-header]",
+                            );
+                        const headerHeight =
+                            header?.getBoundingClientRect().height ?? 56;
+                        const scrollMarginTop =
+                            parseFloat(
+                                getComputedStyle(target).scrollMarginTop,
+                            ) || 0;
+                        const offsetY = Math.max(headerHeight, scrollMarginTop);
+
+                        window.history.replaceState(null, "", `#${headingId}`);
+                        gsap.killTweensOf(window);
+                        isProgrammaticScroll = true;
+
+                        gsap.to(window, {
+                            duration: 0.8,
+                            ease: "power3.out",
+                            overwrite: "auto",
+                            onComplete: () => {
+                                setActive(link);
+                                isProgrammaticScroll = false;
+                            },
+                            onInterrupt: () => {
+                                isProgrammaticScroll = false;
+                            },
+                            scrollTo: {
+                                y: target,
+                                offsetY,
+                                autoKill: true,
+                            },
+                        });
+                    });
+
+                    item.append(link);
+                    list.append(item);
+                    links.push(link);
+                });
+
+                setActive(links[0] ?? null);
+
+                if ("IntersectionObserver" in window) {
+                    const observer = new IntersectionObserver(
+                        () => {
+                            if (isProgrammaticScroll) return;
+
+                            setActive(getActiveLink());
+                        },
+                        {
+                            rootMargin: "-40px 0px -60% 0px",
+                            threshold: [0, 1],
+                        },
+                    );
+
+                    headings.forEach((heading) => observer.observe(heading));
+                }
+
+                toc.dataset.initialized = "true";
+            });
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initBlogTableOfContents, {
+            once: true,
+        });
+    } else {
+        initBlogTableOfContents();
+    }
+</script>

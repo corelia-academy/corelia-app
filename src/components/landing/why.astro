@@ -1,0 +1,28 @@
+---
+import WhyReact from "./why.tsx";
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<div class="container max-w-[1200px] mx-auto py-16 px-3 xl:px-0">
+  <p
+    class="pb-6 text-center text-2xl font-semibold capitalize text-foreground md:text-3xl lg:text-4xl max-w-[90%] md:max-w-none"
+    data-aos="fade-up"
+  >
+    {t("why.title")}
+  </p>
+  <p
+    class="mx-auto max-w-[90%] pb-16 text-center text-xs font-light text-muted-foreground md:max-w-[500px] md:text-sm"
+    data-aos="fade-up"
+    data-aos-delay="200"
+  >
+    {t("why.description")}
+  </p>
+
+  <div data-aos="fade-up" data-aos-delay="400">
+    <WhyReact client:load lang={lang} />
+  </div>
+</div>

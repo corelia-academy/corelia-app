@@ -1,0 +1,224 @@
+---
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import { blogPostUrl, getBlogPosts, type BlogLocale } from "@/lib/blog";
+import { blogCategoryLabel } from "@/lib/blogTaxonomy";
+import { getYouTubeThumbnailUrl } from "@/lib/youtube";
+import StripeBand from "../common/StripeBand.astro";
+
+const lang = getLangFromUrl(Astro.url) as BlogLocale;
+const t = useTranslations(lang);
+
+const posts = await getBlogPosts(lang);
+
+const additionalCaseStudyKeys = [
+    "sui-learning-tour-huit-2026",
+    "corelia-academy-uef-strategic-mou-fit-career-day-2026",
+    "corelia-stellar-apac-hackathon-vietnam-demo-day-2026",
+    "corelia-unihackfest-da-nang-campus-2026",
+] as const;
+
+function getPreviewImage(post: (typeof posts)[number]) {
+    const media = post.data.media;
+
+    if (!media) return null;
+
+    if (media.type === "image") {
+        return media.src;
+    }
+
+    return getYouTubeThumbnailUrl(media.url);
+}
+
+function estimateReadMinutes(post: (typeof posts)[number]) {
+    const wordCount =
+        post.body?.trim().split(/\s+/).filter(Boolean).length ?? 0;
+
+    return Math.max(1, Math.ceil(wordCount / 200));
+}
+
+function readTimeLabel(minutes: number) {
+    return lang === "en" ? `${minutes} min read` : `Đọc trong ${minutes} phút`;
+}
+
+const postsByTranslationKey = new Map(
+    posts.map((post) => [post.data.translationKey, post]),
+);
+
+const blogCards = additionalCaseStudyKeys.flatMap((translationKey) => {
+    const post = postsByTranslationKey.get(translationKey);
+
+    if (!post) return [];
+
+    return [
+        {
+            title: post.data.title,
+            description: post.data.description ?? "",
+            category: blogCategoryLabel(lang, post.data.category),
+            tagCount: Math.max(post.data.tags.length - 1, 0),
+            moreTagsLabel: t("casestudies.card.moreTags"),
+            readTime: estimateReadMinutes(post),
+            href: blogPostUrl(lang, post.slug),
+            image: getPreviewImage(post),
+        },
+    ];
+});
+
+const featuredCard = blogCards[0];
+const secondaryCards = blogCards.slice(1);
+---
+
+{
+    blogCards.map((card) =>
+        card.image ? <link rel="preload" as="image" href={card.image} /> : null,
+    )
+}
+
+<section class="w-full border-t border-border">
+    <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+        <!-- <div
+            class="grid h-[100px] w-full grid-cols-1 overflow-hidden border-x border-border md:grid-cols-3"
+        >
+            ke soc
+            <StripeBand
+                animated
+                class="bg-background flex flex-col flex-1 border-r border-border"
+            />
+
+            title
+            <div
+                class="flex items-center justify-center border-r border-border"
+            >
+                <div class="flex gap-3 justify-center mx-auto">
+                    <span class="text-2xl text-foreground-subtle mt-3"
+                        >&lt;</span
+                    >
+                    <p
+                        class="flex-1 text-4xl font-medium leading-[1.15] tracking-[-0.05em] text-foreground md:text-5xl md:tracking-[-0.04em]"
+                        style="font-family: var(--font-heading);"
+                    >
+                        Case Study
+                    </p>
+                    <span class="text-2xl text-foreground-subtle mt-3"
+                        >&gt;</span
+                    >
+                </div>
+            </div>
+
+            ke soc
+            <StripeBand animated class="bg-background flex flex-col flex-1" />
+        </div> -->
+
+        <!-- <div class="grid grid-cols-1 border-x border-border md:grid-cols-2"> -->
+        {
+            featuredCard ? (
+                <div class="grid grid-cols-1 border-t border-x border-border lg:grid-cols-2">
+                    <a
+                        href={featuredCard.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="group relative flex flex-col border-b border-border transition-colors hover:bg-secondary md:border-r md:border-b-0"
+                    >
+                        <div class="flex flex-1 flex-col gap-3 p-6 md:gap-6">
+                            <div class="h-[360px] w-full overflow-hidden bg-background xl:h-[430px]">
+                                {featuredCard.image ? (
+                                    <img
+                                        src={featuredCard.image}
+                                        alt={featuredCard.title}
+                                        class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                                        loading="eager"
+                                        fetchpriority="high"
+                                        decoding="async"
+                                    />
+                                ) : (
+                                    <div
+                                        class="h-full w-full bg-linear-to-br from-primary/15 via-card to-muted"
+                                        aria-hidden="true"
+                                    />
+                                )}
+                            </div>
+
+                            <div class="flex flex-col gap-3 md:p-6 pb-4 xl:pb-12 md:gap-6">
+                                <span class="inline-flex w-fit items-center gap-2 border border-border-strong px-2 py-1 text-sm font-medium leading-[1.2] text-border-strong md:text-lg">
+                                    {featuredCard.category}
+                                    <span aria-hidden="true">•</span>
+                                    {readTimeLabel(featuredCard.readTime)}
+                                </span>
+
+                                <p
+                                    class="line-clamp-2 text-2xl font-medium leading-[1.15] tracking-[-0.04em] text-foreground md:text-[28px]"
+                                    style="font-family: var(--font-heading);"
+                                >
+                                    {featuredCard.title}
+                                </p>
+
+                                <p class="line-clamp-2 text-sm font-normal leading-[1.4] text-foreground-subtle md:text-base">
+                                    {featuredCard.description}
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <div class="flex h-full min-h-0 flex-col">
+                        <div
+                            class="flex h-[80px] items-center justify-center bg-secondary border-b border-border"
+                        >
+                            <p
+                                class="text-lg font-medium leading-[1.2] tracking-[-0.02em] text-foreground md:text-xl"
+                                style="font-family: var(--font-heading);"
+                            >
+                                {t("blog.caseStudy.popularTitle")}
+                            </p>
+                        </div>
+
+                        <div class="flex flex-col">
+                            {secondaryCards.map((card, index) => (
+                                <a
+                                    href={card.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="group grid h-fit border-b border-border p-5 transition-colors duration-300 hover:bg-secondary last:border-b-0 sm:grid-cols-2 sm:gap-5"
+                                >
+                                    <div class="overflow-hidden">
+                                        {card.image ? (
+                                            <img
+                                                src={card.image}
+                                                alt={card.title}
+                                                loading="eager"
+                                                decoding="async"
+                                                class="h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-[1.03]"
+                                            />
+                                        ) : (
+                                            <div
+                                                class="h-full w-full bg-linear-to-br from-primary/15 via-card to-muted"
+                                                aria-hidden="true"
+                                            />
+                                        )}
+                                    </div>
+
+                                    <div class="flex min-w-0 flex-col gap-2 pt-4 sm:pt-0">
+                                        <p class="w-fit border border-border-strong px-2 py-1 text-sm leading-[1.2] text-border-strong md:text-lg">
+                                            {card.category}
+                                        </p>
+
+                                        <h3
+                                            class="line-clamp-2 text-2xl font-medium leading-[1.15] tracking-[-0.04em] text-foreground md:text-[28px]"
+                                            style="font-family: var(--font-heading);"
+                                        >
+                                            {card.title}
+                                        </h3>
+
+                                        <p class="line-clamp-2 text-sm leading-[1.4] text-foreground-subtle">
+                                            {card.description}
+                                        </p>
+                                    </div>
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            ) : null
+        }
+        <!-- </div> -->
+    </div>
+</section>

@@ -1,0 +1,139 @@
+---
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import HeroCarousel from "@/components/roadmap/hero-carousel";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const appOrigin = String(
+    import.meta.env.PUBLIC_APP_ORIGIN ?? "https://app.corelia.academy",
+).replace(/\/$/, "");
+const appLoginUrl = `${appOrigin}/login`;
+
+const heroSlides = [
+    "/SolanaBootcamp.png",
+    "/BlockchainBasics.png",
+    "/Digitalassetsfoundations.png",
+    "/Evmdappdeveloper.png",
+    "/Rustsurvivalkit.png",
+    "/Soliditydeveloper.png"
+];
+
+// MOCK — logo nhà tài trợ
+const sponsors = [
+    "/Corelia_Academy_Logo_Dark.png",
+    "/Corelia_Academy_Logo_Dark.png",
+    "/Corelia_Academy_Logo_Dark.png",
+    "/Corelia_Academy_Logo_Dark.png",
+    "/Corelia_Academy_Logo_Dark.png",
+    "/Corelia_Academy_Logo_Dark.png",
+    "/Corelia_Academy_Logo_Dark.png",
+    "/Corelia_Academy_Logo_Dark.png",
+    "/Corelia_Academy_Logo_Dark.png",
+];
+---
+
+<div class="mt-14">
+    <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+        <!-- carousel -->
+        <div
+            class="relative border-x border-t border-border"
+            data-reveal="fade-up"
+        >
+            <HeroCarousel images={heroSlides} client:load />
+            <span
+                class="absolute right-0 top-6 z-10 flex items-center gap-[10px] bg-warning px-6 py-[10px] text-base font-medium leading-[1.15] text-background md:text-xl md:leading-[1.2]"
+                style="font-family: var(--font-heading);"
+            >
+                <img src="/Star.svg" alt="" class=" size-4 md:size-5" />
+                <span class="text-base font-medium leading-[1.15] md:text-xl md:leading-[1.2]">
+                    {t("roadmap.hero.badge")}
+                </span>
+            </span>
+        </div>
+    </div>
+
+    <div class="w-full border-t border-border bg-background">
+        <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+            <div class="flex flex-col border-x border-border lg:flex-row">
+                <div
+                    class="flex lg:w-[50%] items-center gap-6 px-6 py-6 md:border-t-0 md:px-8"
+                >
+                    <p
+                        class="shrink-0 text-lg font-normal leading-[1.15] tracking-[-0.02em] text-foreground md:text-2xl md:leading-[1.2]"
+                        style="font-family: var(--font-heading);"
+                        data-reveal="text-up"
+                    >
+                        {t("roadmap.hero.sponsor")}
+                    </p>
+                    <div
+                        class="partner-fade relative min-w-0 flex-1 overflow-hidden"
+                    >
+                        <div
+                            class="flex w-max animate-partner-scroll items-center gap-10"
+                        >
+                            {
+                                sponsors.map((s) => (
+                                    <img
+                                        src={s}
+                                        alt=""
+                                        class="h-8 w-auto shrink-0 object-contain opacity-80"
+                                    />
+                                ))
+                            }
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- phải: nút CTA -->
+                <a
+                    href={appLoginUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="flex min-h-[90px] flex-1 items-center justify-between gap-4 border-t border-border bg-primary px-6 md:px-16 py-4 text-primary-foreground hover:bg-button-primary-background-hover transition-colors sm:border-l sm:border-t-0"
+                    data-reveal="fade-up"
+                    data-hover-wave
+                    style="font-family: var(--font-heading);"
+                >
+                    <span
+                        class="hw-label text-lg font-normal leading-[1.15] tracking-[-0.02em] md:text-2xl md:leading-[1.2]"
+                    >
+                        {t("roadmap.hero.cta.becomeastudent")}
+                    </span>
+                    <img src="/Next.svg" alt="" class="size-8" />
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .partner-fade {
+        mask-image: linear-gradient(
+            to right,
+            transparent,
+            black 15%,
+            black 85%,
+            transparent
+        );
+        -webkit-mask-image: linear-gradient(
+            to right,
+            transparent,
+            black 15%,
+            black 85%,
+            transparent
+        );
+    }
+    @keyframes partner-scroll {
+        from {
+            transform: translateX(0);
+        }
+        to {
+            transform: translateX(-50%);
+        }
+    }
+    .animate-partner-scroll {
+        animation: partner-scroll 30s linear infinite;
+    }
+</style>

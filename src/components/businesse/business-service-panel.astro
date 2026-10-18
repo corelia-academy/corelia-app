@@ -1,0 +1,93 @@
+---
+import panelService from "@/assets/casestudy/panelservice.svg";
+import serviceSlide01 from "@/assets/casestudy/service-slide-01.svg";
+import serviceSlide02 from "@/assets/casestudy/service-slide-02.svg";
+import serviceSlide03 from "@/assets/casestudy/service-slide-03.svg";
+import serviceSlide04 from "@/assets/casestudy/service-slide-04.svg";
+import serviceSlide05 from "@/assets/casestudy/service-slide-05.svg";
+import serviceSlide06 from "@/assets/casestudy/service-slide-06.svg";
+import serviceSlide07 from "@/assets/casestudy/service-slide-07.svg";
+import serviceSlide08 from "@/assets/casestudy/service-slide-08.svg";
+import serviceSlide09 from "@/assets/casestudy/service-slide-09.svg";
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import BusinessServicePanelCarousel from "./business-service-panel.tsx";
+import StripeBand from "../common/StripeBand.astro";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// MOCK
+const serviceSlides = [
+    {
+        src: serviceSlide01.src,
+        alt: "Market Entry and Ecosystem Strategy",
+        title: t("biz.services.panel.title"),
+    },
+    {
+        src: serviceSlide02.src,
+        alt: "University Activation",
+        title: t("biz.services.item.universityActivation"),
+    },
+    {
+        src: serviceSlide03.src,
+        alt: "Developer Education",
+        title: t("biz.services.item.developerEducation"),
+    },
+    {
+        src: serviceSlide04.src,
+        alt: "Hackathons and Builder Programs",
+        title: t("biz.services.item.hackathons"),
+    },
+    {
+        src: serviceSlide05.src,
+        alt: "Ecosystem Localization",
+        title: t("biz.services.item.ecosystemLocalization"),
+    },
+    {
+        src: serviceSlide06.src,
+        alt: "Community and Developer Activation",
+        title: t("biz.services.item.communityActivation"),
+    },
+    {
+        src: serviceSlide07.src,
+        alt: "Ecosystem Events",
+        title: t("biz.services.item.ecosystemEvents"),
+    },
+    {
+        src: serviceSlide08.src,
+        alt: "Content and Education Production",
+        title: t("biz.services.item.contentEducationProduction"),
+    },
+    {
+        src: serviceSlide09.src,
+        alt: "Strategic Partnerships",
+        title: t("biz.services.item.strategicPartnerships"),
+    },
+];
+---
+
+<section
+    class="w-full border-t border-border"
+    aria-labelledby="business-service-panel-title"
+>
+    <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+        <!-- <div class="overflow-hidden border-x border-border"> -->
+            <div class="h-[100px] hidden md:block">
+                <StripeBand
+                    animated
+                    class="bg-background border-x border-border h-full w-full"
+                />
+            </div>
+        <!-- </div> -->
+    </div>
+    <BusinessServicePanelCarousel
+        client:visible
+        slides={serviceSlides}
+        backgroundSrc={panelService.src}
+        panelContent={{
+            eyebrow: t("biz.services.panel.eyebrow"),
+            description: t("biz.services.panel.description"),
+        }}
+    />
+</section>

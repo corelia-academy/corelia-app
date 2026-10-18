@@ -1,0 +1,61 @@
+---
+import Header from "@/components/common/header.astro";
+import Footer from "@/components/common/footer.astro";
+import { useTranslations } from "@/i18n/translations";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const lang = "en";
+const t = useTranslations(lang);
+---
+
+<BaseLayout
+  lang={lang}
+  title={t("terms.meta.title")}
+  description={t("terms.meta.description")}
+  canonicalUrl="https://corelia.academy/terms"
+>
+  <Header />
+
+  <section class="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden">
+    <div class="absolute inset-0 bg-linear-to-b from-white/3 to-transparent pointer-events-none"></div>
+    <div class="container max-w-[800px] mx-auto px-4 xl:px-0 relative z-10">
+      <div class="flex flex-col text-left space-y-6 mb-12">
+        <h1 class="text-white text-3xl md:text-5xl font-semibold leading-tight">
+          {t("terms.hero.title")}
+        </h1>
+        <p class="text-white/70 text-base font-light leading-relaxed">
+          {t("terms.hero.description")}
+        </p>
+
+        <div class="space-y-8 mt-8">
+          <div class="space-y-3">
+            <h2 class="text-white text-xl font-medium">{t("terms.content.title1")}</h2>
+            <p class="text-white/60 text-sm leading-relaxed whitespace-pre-line">{t("terms.content.desc1")}</p>
+          </div>
+          
+          <div class="space-y-3">
+            <h2 class="text-white text-xl font-medium">{t("terms.content.title2")}</h2>
+            <p class="text-white/60 text-sm leading-relaxed whitespace-pre-line">{t("terms.content.desc2")}</p>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-white text-xl font-medium">{t("terms.content.title3")}</h2>
+            <p class="text-white/60 text-sm leading-relaxed whitespace-pre-line">{t("terms.content.desc3")}</p>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-white text-xl font-medium">{t("terms.content.title4")}</h2>
+            <p class="text-white/60 text-sm leading-relaxed whitespace-pre-line">{t("terms.content.desc4")}</p>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-white text-xl font-medium">{t("terms.content.title5")}</h2>
+            <p class="text-white/60 text-sm leading-relaxed whitespace-pre-line">{t("terms.content.desc5")}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</BaseLayout>

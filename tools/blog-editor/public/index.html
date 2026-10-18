@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Corelia Blog Editor</title>
+    <link rel="stylesheet" href="/vendor/easymde.min.css" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">CORELIA CONTENT STUDIO</p>
+        <h1>Blog Editor</h1>
+      </div>
+      <div class="actions">
+        <span id="status" class="status">Sẵn sàng</span>
+        <button id="newPost" class="button ghost">Tạo bài mới</button>
+        <button id="savePost" class="button primary" disabled>Lưu bài viết</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="sidebar panel">
+        <div class="panel-title">
+          <h2>Bài viết</h2>
+          <button id="refreshPosts" class="icon-button" title="Tải lại">↻</button>
+        </div>
+        <div class="filters">
+          <input id="postSearch" type="search" placeholder="Tìm bài viết VI hoặc EN…" />
+        </div>
+        <div id="postList" class="post-list"></div>
+      </aside>
+
+      <section class="editor panel">
+        <div class="panel-title editor-heading">
+          <div>
+            <h2 id="currentTitle">Chọn một bài viết</h2>
+            <p id="currentPath">File Markdown sẽ hiển thị tại đây.</p>
+          </div>
+          <div class="language-tabs" role="tablist" aria-label="Ngôn ngữ bài viết">
+            <button class="language-tab" data-locale="vi" disabled>VI</button>
+            <button class="language-tab" data-locale="en" disabled>EN</button>
+          </div>
+        </div>
+        <div class="markdown-shell">
+          <textarea id="contentEditor" spellcheck="false" placeholder="Chọn bài viết ở cột bên trái…"></textarea>
+        </div>
+      </section>
+
+      <aside class="media panel">
+        <div class="panel-title">
+          <div>
+            <h2>Thư viện ảnh</h2>
+            <p>Nhấp ảnh để chèn Markdown</p>
+          </div>
+        </div>
+        <label class="field">
+          <span>Thư mục trong public/blog</span>
+          <div class="folder-row">
+            <input id="imageFolder" placeholder="ten-bai-viet-2026" />
+            <button id="loadImages" class="icon-button" title="Tải ảnh">↻</button>
+          </div>
+        </label>
+        <label class="upload-zone" for="imageUpload">
+          <strong>Thêm ảnh</strong>
+          <span>Chọn nhiều tệp JPG, PNG, WebP…</span>
+          <input id="imageUpload" type="file" accept="image/*" multiple />
+        </label>
+        <div id="imageList" class="image-list">
+          <p class="empty">Nhập tên thư mục để xem ảnh.</p>
+        </div>
+      </aside>
+    </main>
+
+    <dialog id="newPostDialog">
+      <form id="newPostForm" method="dialog">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">BÀI VIẾT MỚI</p>
+            <h2>Tạo file Markdown</h2>
+          </div>
+          <button type="button" id="closeDialog" class="icon-button">×</button>
+        </div>
+        <label class="field"><span>Tiêu đề</span><input id="newTitle" required /></label>
+        <label class="field"><span>Slug</span><input id="newSlug" required pattern="[a-z0-9-]+" /></label>
+        <label class="field"><span>Ngôn ngữ</span><select id="newLocale"><option value="vi">Tiếng Việt</option><option value="en">English</option></select></label>
+        <p id="translationHint" class="translation-hint hidden"></p>
+        <button class="button primary full" type="submit">Tạo và bắt đầu soạn</button>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="/vendor/easymde.min.js"></script>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

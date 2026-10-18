@@ -1,0 +1,98 @@
+[build]
+command = "pnpm run build"
+publish = "dist"
+
+[[redirects]]
+from = "/en"
+to = "/"
+status = 301
+
+[[redirects]]
+from = "/en/*"
+to = "/:splat"
+status = 301
+
+[[redirects]]
+from = "/blog/solana-developer-bootcamp-structured-builder-journey"
+to = "/case-studies/solana-developer-bootcamp-structured-builder-journey"
+status = 301
+
+[[redirects]]
+from = "/blog/sui-learning-tour-campus-awareness-to-student-builders"
+to = "/case-studies/sui-learning-tour-campus-awareness-to-student-builders"
+status = 301
+
+[[redirects]]
+from = "/blog/unihackfest-2026-university-to-builder-pipeline"
+to = "/case-studies/unihackfest-2026-university-to-builder-pipeline"
+status = 301
+
+[[redirects]]
+from = "/vi/blog/solana-developer-bootcamp-hanh-trinh-builder-co-cau-truc"
+to = "/vi/case-studies/solana-developer-bootcamp-hanh-trinh-builder-co-cau-truc"
+status = 301
+
+[[redirects]]
+from = "/vi/blog/sui-learning-tour-tu-nhan-biet-den-student-builder"
+to = "/vi/case-studies/sui-learning-tour-tu-nhan-biet-den-student-builder"
+status = 301
+
+[[redirects]]
+from = "/vi/blog/unihackfest-2026-xay-dung-lo-trinh-tu-giang-duong-den-builder"
+to = "/vi/case-studies/unihackfest-2026-xay-dung-lo-trinh-tu-giang-duong-den-builder"
+status = 301
+
+[[redirects]]
+from = "/blog/rwa-tokenized-gold-hanoi-workshop-2026"
+to = "/blog/corelia-academy-rwa-tokenized-gold-hanoi-workshop-2026"
+status = 301
+
+[[redirects]]
+from = "/blog/van-lang-web3-dapp-workshop-2026"
+to = "/blog/corelia-academy-van-lang-web3-dapp-workshop-2026"
+status = 301
+
+[[redirects]]
+from = "/blog/corelia-trien-khai-chuong-trinh-dao-tao-ky-su-web3-tai-itc-2026"
+to = "/blog/corelia-launches-web3-engineer-training-program-at-itc-2026"
+status = 301
+
+[[redirects]]
+from = "/blog/corelia-uef-khoi-dong-unihackfest-unitour-2026"
+to = "/blog/corelia-uef-launch-unihackfest-unitour-2026"
+status = 301
+
+[[redirects]]
+from = "/blog/trao-giai-hackathon-web3-builders-tai-itc-2026"
+to = "/blog/web3-builders-hackathon-awards-at-itc-2026"
+status = 301
+
+[[redirects]]
+from = "/blog/khep-lai-hanh-trinh-ky-su-web3-sui-blockchain-demo-day-2026"
+to = "/blog/web3-engineer-sui-blockchain-demo-day-2026"
+status = 301
+
+[[redirects]]
+from = "/blog/unihackfest-2026-la-gi-kick-off-tai-uef"
+to = "/blog/what-is-unihackfest-2026-uef-kickoff"
+status = 301
+
+[[redirects]]
+from = "/blog/vi-sao-corelia-dong-to-chuc-unihackfest-2026"
+to = "/blog/why-corelia-co-organizes-unihackfest-2026"
+status = 301
+
+[[redirects]]
+from = "/vi/blog/rwa-tokenized-gold-hanoi-workshop-2026"
+to = "/vi/blog/corelia-academy-rwa-tokenized-gold-hanoi-workshop-2026"
+status = 301
+
+[[redirects]]
+from = "/vi/blog/van-lang-web3-dapp-workshop-2026"
+to = "/vi/blog/corelia-academy-van-lang-web3-dapp-workshop-2026"
+status = 301
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200

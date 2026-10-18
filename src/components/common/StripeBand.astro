@@ -1,0 +1,54 @@
+---
+interface Props {
+    class?: string;
+    animated?: boolean;
+}
+const { class: className, animated = false } = Astro.props;
+---
+
+<div
+class:list={["stripe-band", className, { "stripe-band--animated": animated }]}
+    aria-hidden="true">
+    <slot />
+</div>
+
+<style>
+    .stripe-band {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stripe-band::before {
+        position: absolute;
+        inset: -48px;
+        content: "";
+        pointer-events: none;
+        background-image: repeating-linear-gradient(
+            45deg,
+            var(--border) 0,
+            var(--border) 1px,
+            transparent 1px,
+            transparent 24px
+        );
+    }
+
+    .stripe-band--animated::before {
+        animation: stripe-band-move-left 1.2s linear infinite;
+        will-change: transform;
+    }
+
+    @keyframes stripe-band-move-left {
+        from {
+            transform: translate3d(0, 0, 0);
+        }
+        to {
+            transform: translate3d(-33.9411px, 0, 0);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .stripe-band--animated::before {
+            animation: none;
+        }
+    }
+</style>

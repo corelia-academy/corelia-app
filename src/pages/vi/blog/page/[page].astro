@@ -1,0 +1,18 @@
+---
+import BlogNewsRoute from "@/components/blog/blog-news-route.astro";
+import { BLOG_NEWS_PAGE_SIZE, getBlogPosts } from "@/lib/blog";
+
+export async function getStaticPaths() {
+  const posts = await getBlogPosts("vi");
+  const totalPages = Math.ceil(posts.length / BLOG_NEWS_PAGE_SIZE);
+
+  return Array.from({ length: Math.max(totalPages - 1, 0) }, (_, index) => ({
+    params: { page: String(index + 2) },
+    props: { page: index + 2 },
+  }));
+}
+
+const { page } = Astro.props as { page: number };
+---
+
+<BlogNewsRoute lang="vi" tabPath="all" page={page} />

@@ -1,0 +1,49 @@
+---
+import Hero from "@/components/landing/hero.astro";
+import Number from "@/components/landing/number.astro";
+import Header from "../../components/common/header.astro";
+import Company from "@/components/landing/company.astro";
+import Why from "@/components/landing/why.astro";
+import Program from "@/components/landing/program.astro";
+import BlogPreview from "@/components/landing/blog-preview.astro";
+import Different from "@/components/landing/different.astro";
+import CoraHighlight from "@/components/landing/cora-highlight.astro";
+import Faq from "@/components/landing/faq.astro";
+import Footer from "@/components/common/footer.astro";
+import { useTranslations } from "@/i18n/translations";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import LearningJourney from "@/components/landing/learning-journey.astro";
+import Mentors from "@/components/landing/mentors.astro";
+import Testimonial from "@/components/landing/testimonial.astro";
+import Achievements from "@/components/landing/achievements.astro";
+
+const t = useTranslations("vi");
+---
+
+<BaseLayout
+  lang="vi"
+  title={t("meta.title")}
+  description={t("meta.description")}
+  canonicalUrl="https://corelia.academy/vi/"
+  ogUrl="https://corelia.academy/vi/"
+  ogImage="https://corelia.academy/corelia-og-site-v2-vi.png"
+>
+  <div class="flex min-h-svh flex-col">
+    <Header />
+    <Hero fullScreenFold />
+    <Number />
+  </div>
+  <Company />
+  <Different />
+  <LearningJourney />
+  <Mentors />
+  <Testimonial />
+  <Achievements />
+  <BlogPreview />
+  <Faq />
+  <Footer />
+  <!--
+  <Why />
+  <Program />
+  -->
+</BaseLayout>

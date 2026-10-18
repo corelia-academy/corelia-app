@@ -1,0 +1,145 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Header from "@/components/common/header.astro";
+import Footer from "@/components/common/footer.astro";
+import BlogPostCard from "@/components/blog/BlogPostCard.astro";
+import { useTranslations } from "@/i18n/translations";
+import { getCollection } from "astro:content";
+import {
+  BLOG_PAGE_SIZE,
+  blogCategoryUrl,
+  blogIndexUrl,
+  getBlogPosts,
+} from "@/lib/blog";
+import { blogCategoryLabel, type BlogCategory } from "@/lib/blogTaxonomy";
+
+const t = useTranslations("vi");
+
+type Props = {
+  category: BlogCategory;
+  posts: Awaited<ReturnType<typeof getBlogPosts>>;
+  page: number;
+  totalPages: number;
+};
+
+export async function getStaticPaths() {
+  const allPosts = await getBlogPosts("vi");
+  const byCategory = new Map<string, typeof allPosts>();
+
+  for (const post of allPosts) {
+    const key = post.data.category;
+    const bucket = byCategory.get(key) ?? [];
+    bucket.push(post);
+    byCategory.set(key, bucket);
+  }
+
+  return Array.from(byCategory.entries()).map(([category, posts]) => {
+    const totalPages = Math.max(1, Math.ceil(posts.length / BLOG_PAGE_SIZE));
+    return {
+      params: { category },
+      props: {
+        category,
+        posts: posts.slice(0, BLOG_PAGE_SIZE),
+        page: 1,
+        totalPages,
+      },
+    };
+  });
+}
+
+const { category, posts, page, totalPages } = Astro.props as Props;
+const fmtDate = new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium" });
+
+const members = await getCollection("members");
+const memberBySlug = new Map(members.map((m) => [m.slug, m] as const));
+
+const canonicalPath = blogCategoryUrl("vi", category, page);
+const canonicalUrl = `https://corelia.academy${canonicalPath}`;
+---
+
+<BaseLayout
+  lang="vi"
+  title={`${blogCategoryLabel("vi", category)} - ${t("blog.title")}`}
+  description={t("blog.description")}
+  canonicalUrl={canonicalUrl}
+  ogUrl={canonicalUrl}
+  ogImage="https://corelia.academy/corelia-og-site-v2-vi.png"
+>
+  <Fragment slot="head">
+    <link
+      rel="alternate"
+      hreflang="en"
+      href={`https://corelia.academy${blogCategoryUrl("en", category, page)}`}
+    />
+    <link rel="alternate" hreflang="vi" href={canonicalUrl} />
+  </Fragment>
+
+  <Header />
+
+  <main class="min-h-screen px-4 pt-20">
+    <div class="container max-w-[1200px] mx-auto py-16">
+      <div class="space-y-3">
+        <p class="text-sm text-muted-foreground">
+          <a
+            class="text-primary hover:underline underline-offset-4"
+            href={blogIndexUrl("vi")}
+          >
+            ← {t("blog.title")}
+          </a>
+        </p>
+        <h1 class="text-3xl md:text-4xl font-semibold text-foreground">
+          {blogCategoryLabel("vi", category)}
+        </h1>
+        <p class="text-lg text-muted-foreground max-w-[700px]">
+          {t("blog.description")}
+        </p>
+      </div>
+
+      <section class="mt-10 grid gap-4 md:grid-cols-2">
+        {
+          posts.map((post) => (
+            <BlogPostCard
+              locale="vi"
+              post={post}
+              fmtDate={fmtDate}
+              memberBySlug={memberBySlug}
+              byText={t("blog.by")}
+            />
+          ))
+        }
+      </section>
+
+      {
+        totalPages > 1 ? (
+          <nav class="mt-10 flex items-center justify-between gap-4">
+            {page > 1 ? (
+              <a
+                class="text-sm text-primary hover:underline underline-offset-4"
+                href={blogCategoryUrl("vi", category, page - 1)}
+              >
+                ← Trang trước
+              </a>
+            ) : (
+              <span class="w-[86px]" />
+            )}
+            <span class="text-sm text-muted-foreground">
+              Trang {page}/{totalPages}
+            </span>
+            {page < totalPages ? (
+              <a
+                class="text-sm text-primary hover:underline underline-offset-4"
+                href={blogCategoryUrl("vi", category, page + 1)}
+              >
+                Trang sau →
+              </a>
+            ) : (
+              <span class="w-[86px]" />
+            )}
+          </nav>
+        ) : null
+      }
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>

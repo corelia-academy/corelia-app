@@ -1,0 +1,24 @@
+<script>
+  import AOS from "aos";
+  import "aos/dist/aos.css";
+
+  const init = () => {
+    AOS.init({
+      duration: 1000,
+      once: true,
+      offset: 100,
+      easing: "ease-in-out",
+    });
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+
+  window.addEventListener("load", () => {
+    AOS.refresh();
+    setTimeout(() => AOS.refresh(), 100);
+  });
+</script>

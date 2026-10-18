@@ -1,0 +1,87 @@
+---
+import DifferentCarousel from "./different-carousel";
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import StripeBand from "../common/StripeBand.astro";
+import Different1 from "@/assets/landing/different-1.jpg";
+import Different2 from "@/assets/landing/different-2.jpg";
+import Different3 from "@/assets/landing/different-3.jpg";
+import Different4 from "@/assets/landing/different-4.jpg";
+import Different5 from "@/assets/landing/different-5.jpg";
+import Different6 from "@/assets/landing/different-6.jpg";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const different = [
+  {
+    title: t("different.1.title"),
+    description: t("different.1.description"),
+    image: Different1.src,
+  },
+  {
+    title: t("different.2.title"),
+    description: t("different.2.description"),
+    image: Different2.src,
+  },
+  {
+    title: t("different.3.title"),
+    description: t("different.3.description"),
+    image: Different3.src,
+  },
+  {
+    title: t("different.4.title"),
+    description: t("different.4.description"),
+    image: Different4.src,
+  },
+  {
+    title: t("different.5.title"),
+    description: t("different.5.description"),
+    image: Different5.src,
+  },
+  {
+    title: t("different.6.title"),
+    description: t("different.6.description"),
+    image: Different6.src,
+  },
+];
+---
+
+<div class="w-full border-t border-border">
+  <div
+    class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0 flex flex-col"
+  >
+    <!-- new design -->
+    <div
+      class="grid w-full grid-cols-1 overflow-hidden border-x border-border md:grid-cols-2"
+    >
+      <!-- left -->
+      <StripeBand
+        animated
+        class="bg-background flex flex-col flex-1 border-r border-border"
+      />
+      <!-- right -->
+      <div
+        class="flex items-center p-8 lg:p-12 w-full bg-[length:100%_100%]"
+        style="background-image: url('/panelmini.png');"
+      >
+        <p
+          class="mx-0 text-4xl font-medium leading-[1.15] tracking-[-1.8px] text-primary-foreground md:tracking-[-1.6px] lg:text-5xl xl:mx-10"
+          style="font-family: var(--font-heading);"
+          data-reveal="text-up"
+        >
+          {t("different.title")}
+        </p>
+      </div>
+    </div>
+
+    <!-- data-aos="fade-up"
+  data-aos-delay="200" -->
+    <div class="w-full">
+      <DifferentCarousel
+        items={different}
+        client:visible={{ rootMargin: "800px" }}
+      />
+    </div>
+  </div>
+</div>

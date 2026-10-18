@@ -1,0 +1,106 @@
+---
+import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const translatePath = useTranslatedPath(lang);
+
+const linkColumns = [
+  {
+    label: t("footer.explore"),
+    links: [
+      { label: "Blockchain Lab", href: "https://lab.corelia.academy/" },
+      { label: "UniHackFest", href: "https://unihackfest.vn" },
+    ],
+  },
+  {
+    label: t("footer.followUs"),
+    links: [
+      { label: "X", href: "https://x.com/corelia_edu" },
+      { label: "YouTube", href: "https://www.youtube.com/@corelia-academy" },
+      { label: "Facebook", href: "https://www.facebook.com/corelia.academy" },
+      { label: "Telegram", href: "https://t.me/corelia_builders" },
+      { label: "Instagram", href: "https://www.instagram.com/corelia.academy/" },
+      { label: "Threads", href: "https://www.threads.com/@corelia.academy" },
+      {
+        label: "LinkedIn",
+        href: "https://www.linkedin.com/company/corelia-academy",
+      },
+      { label: "TikTok", href: "https://www.tiktok.com/@corelia.academy" },
+    ],
+  },
+];
+---
+
+<div class="w-full border-t border-border">
+  <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+  <div
+    class="border-x border-border flex-col gap-15 md:gap-20 p-8 md:p-0 md:py-20 lg:px-10"
+  >
+    <div class="flex flex-col gap-10 md:flex-row md:gap-20">
+      <div class="flex w-full md:w-[37%] flex-col gap-8 md:ml-8">
+        <img loading="lazy" decoding="async"
+          src="/Corelia_Academy_Logo_Dark.png"
+          alt="Corelia Academy"
+          class="-ml-3 h-[120px] mr-auto w-auto object-contain"
+        />
+        <div class="flex flex-col gap-2 text-muted-foreground">
+          <p class=" text-sm font-medium leading-[1.2] md:text-lg">
+            {t("footer.company.name")}
+          </p>
+          <p class="text-sm leading-[1.4] md:text-base">
+            {t("footer.company.taxCode")} - {t("footer.company.address")}
+          </p>
+        </div>
+      </div>
+
+      <div class="grid flex-1 grid-cols-1 md:grid-cols-2 gap-10">
+        {
+          linkColumns.map((col) => (
+            <div class="flex flex-col gap-2">
+              <p class="text-sm leading-[1.4] text-muted-foreground md:text-base">
+                {col.label}
+              </p>
+              <div class="grid grid-cols-2 flex-row md:grid-cols-1 gap-3">
+                {col.links.map((link) => (
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-base font-medium leading-[1.15] text-foreground transition-opacity hover:opacity-80 md:text-xl md:leading-[1.2]"
+                    style="font-family: var(--font-heading);"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div
+      class="flex flex-col gap-3 py-10 md:px-8 text-[10px] leading-[1.2] uppercase tracking-[0.6px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:text-xs"
+      style="font-family: var(--font-number);"
+    >
+      <p>{t("footer.copyright")}</p>
+      <div class="flex flex-wrap gap-x-5 gap-y-2">
+        <a
+          class="transition-colors hover:text-foreground"
+          href={translatePath("/terms")}
+        >
+          {t("footer.termsOfService")}
+        </a>
+        <a
+          class="transition-colors hover:text-foreground"
+          href={translatePath("/policy")}
+        >
+          {t("footer.privacyPolicy")}
+        </a>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
