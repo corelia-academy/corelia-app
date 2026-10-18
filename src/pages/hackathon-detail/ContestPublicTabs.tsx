@@ -4,11 +4,16 @@ import {
   CalendarDots,
   CaretDown,
   Coins,
+  Eye,
   FolderOpen,
+  FolderSimple,
   Package,
+  PencilSimple,
 } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation, useOutletContext, useSearchParams } from "react-router";
+
+import { feedRelativeTime } from "@/lib/feedRelativeTime";
 
 import { EmptyState, PageSectionCard } from "@/components/layouts/PagePrimitives";
 import { Markdown } from "@/components/markdown/Markdown";
@@ -57,21 +62,22 @@ function EmptyTab({ icon, title }: { icon: React.ReactNode; title: string }) {
 
 function HackathonProjectSidebar() {
   const { contest, registration, submission, submissionLoading, submissionClosed } = useOutletContext<HackathonOutletContext>();
-  const { t } = useTranslation("contests");
+  const { t, i18n } = useTranslation("contests");
   const projectCanEdit = Boolean(submission?.project_id && canEditContestProject(contest));
   const projectPath = submission?.project_id
     ? projectCanEdit
       ? `/projects/${submission.project_id}/edit`
       : `/projects/${submission.project_id}`
     : null;
+  const [now] = useState(() => Date.now());
+  const updatedAt = submission?.updated_at || submission?.submitted_at;
+  const relativeTime = typeof updatedAt === "string" && updatedAt ? feedRelativeTime(updatedAt, now, i18n.language, t("public.myProject.justNow")) : "";
+  const updatedText = relativeTime ? t("public.myProject.updatedAt", { time: relativeTime }) : "";
 
   return (
     <div className="min-w-0 space-y-0 xl:sticky xl:top-6 xl:z-40 xl:self-start">
-      <aside data-hackathon-card className="min-w-0 flex flex-col gap-5 rounded-2xl border border-border bg-surface-base p-lg">
-        <div className="flex flex-col gap-2">
-          <h2 data-hackathon-card-title className="font-display text-base font-medium leading-6 tracking-[-0.32px] text-foreground">{t("public.myProject.title")}</h2>
-          <Separator />
-        </div>
+      <aside data-hackathon-card className="min-w-0 flex flex-col gap-md rounded-2xl border border-border bg-surface-base pt-lg px-xl pb-xl">
+        <h2 data-hackathon-card-title className="font-display text-base font-medium leading-6 tracking-[-0.32px] text-foreground">{t("public.myProject.title")}</h2>
         {!registration ? (
           <div className="space-y-5">
             <p className="text-sm leading-6 text-foreground-muted xl:leading-[1.4] xl:tracking-[0.28px]">{t("public.myProject.registerRequiredDescription")}</p>
@@ -83,9 +89,43 @@ function HackathonProjectSidebar() {
             <Skeleton className="h-10 w-full rounded-lg" />
           </div>
         ) : projectPath ? (
-          <div className="space-y-5">
-            <p className="break-words text-sm font-medium text-foreground xl:leading-[1.4] xl:tracking-[0.28px]">{submission?.title || t("public.myProject.untitled")}</p>
-            <Button render={<NavLink to={projectPath} />} nativeButton={false} variant="cta" hierarchy="secondary" size="small" data-hackathon-control className="w-full rounded-lg">{projectCanEdit ? t("public.myProject.edit") : t("public.myProject.view")}</Button>
+          <div className="flex items-center justify-between gap-3 py-md px-0">
+            <div className="flex min-w-0 items-center gap-3">
+              <FolderSimple className="size-5 shrink-0 text-foreground-muted" weight="duotone" aria-hidden />
+              <div className="min-w-0">
+                <span className="block truncate text-sm font-medium leading-tight text-foreground">
+                  {submission?.title || t("public.myProject.untitled")}
+                </span>
+                {updatedText ? <p className="mt-1 truncate text-xs text-foreground-muted">{updatedText}</p> : null}
+              </div>
+            </div>
+            {projectCanEdit ? (
+              <Button
+                render={<NavLink to={projectPath} />}
+                nativeButton={false}
+                hierarchy="primary"
+                size="small"
+                iconOnly
+                data-hackathon-control
+                aria-label={t("public.myProject.edit")}
+                title={t("public.myProject.edit")}
+              >
+                <PencilSimple weight="duotone" aria-hidden />
+              </Button>
+            ) : (
+              <Button
+                render={<NavLink to={projectPath} />}
+                nativeButton={false}
+                hierarchy="tertiary"
+                size="small"
+                iconOnly
+                data-hackathon-control
+                aria-label={t("public.myProject.view")}
+                title={t("public.myProject.view")}
+              >
+                <Eye weight="duotone" aria-hidden />
+              </Button>
+            )}
           </div>
         ) : (
           <div className="space-y-5">

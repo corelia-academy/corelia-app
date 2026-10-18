@@ -122,6 +122,8 @@
       "untitled": "Untitled project",
       "edit": "Edit project",
       "view": "View project",
+      "updatedAt": "Updated {{time}}",
+      "justNow": "just now",
       "emptyDescription": "Create a project to start preparing your submission.",
       "create": "Create project"
     },

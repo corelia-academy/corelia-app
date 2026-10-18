@@ -122,6 +122,8 @@
       "untitled": "Dự án chưa có tiêu đề",
       "edit": "Chỉnh sửa dự án",
       "view": "Xem dự án",
+      "updatedAt": "Cập nhật {{time}}",
+      "justNow": "vừa xong",
       "emptyDescription": "Chưa có dự án nào được tạo.",
       "create": "Tạo Dự Án"
     },
