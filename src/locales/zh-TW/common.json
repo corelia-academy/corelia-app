@@ -395,6 +395,7 @@
       "remove": "移除",
       "moveUp": "上移",
       "moveDown": "下移",
+      "coverImageBadge": "封面",
       "logoInvalid": "標誌必須為 PNG、JPEG 或 WebP，且不超過 2 MB。",
       "screenshotInvalid": "圖片必須為 PNG、JPEG 或 WebP，且不超過 5 MB。",
       "screenshotLimit": "最多可上傳 6 張截圖。",

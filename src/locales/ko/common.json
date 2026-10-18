@@ -395,6 +395,7 @@
       "remove": "삭제",
       "moveUp": "위로 이동",
       "moveDown": "아래로 이동",
+      "coverImageBadge": "커버",
       "logoInvalid": "로고는 PNG, JPEG 또는 WebP이며 2 MB를 넘지 않아야 합니다.",
       "screenshotInvalid": "이미지는 PNG, JPEG 또는 WebP이며 5 MB를 넘지 않아야 합니다.",
       "screenshotLimit": "스크린샷은 최대 6장까지 업로드할 수 있습니다.",

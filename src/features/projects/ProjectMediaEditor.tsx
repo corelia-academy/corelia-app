@@ -1,8 +1,13 @@
-import { ArrowDown, ArrowUp, ImagePlus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, GripVertical, ImagePlus, Trash2 } from "lucide-react";
 import { Plus, X } from "@phosphor-icons/react";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { gsap } from "gsap";
+import { Flip } from "gsap/Flip";
+
+gsap.registerPlugin(Flip);
 
 import { projectErrorMessage } from "@/lib/projectErrors";
 import { Button } from "@/components/ui/button";
@@ -79,6 +84,281 @@ function DashedUploadSlot({ className, label, disabled, onClick, onDropFiles }: 
         <Plus className="size-4 text-project-editor-heading" weight="regular" aria-hidden />
       </Button>
     </div>
+  );
+}
+
+type SortableScreenshotsGridProps = {
+  screenshots: ProjectMediaItem[];
+  onScreenshotsChange: (screenshots: ProjectMediaItem[]) => void;
+  onRemove: (item: ProjectMediaItem) => void;
+  uploading: boolean;
+  t: (key: string, options?: Record<string, unknown> | string) => string;
+  trailingSlot?: ReactNode;
+};
+
+function SortableScreenshotsGrid({
+  screenshots,
+  onScreenshotsChange,
+  onRemove,
+  uploading,
+  t,
+  trailingSlot,
+}: SortableScreenshotsGridProps) {
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
+  const [pointerCoord, setPointerCoord] = useState<{ x: number; y: number } | null>(null);
+  const [grabOffset, setGrabOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  const draggingIndexRef = useRef<number | null>(null);
+  const overIndexRef = useRef<number | null>(null);
+  const screenshotsRef = useRef(screenshots);
+  useEffect(() => {
+    screenshotsRef.current = screenshots;
+  }, [screenshots]);
+
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
+  const isDraggingActiveRef = useRef(false);
+
+  // Compute preview reordered list for rendering in the grid while dragging
+  const displayItems = useMemo(() => {
+    if (draggingIndex === null || overIndex === null || draggingIndex === overIndex) {
+      return screenshots;
+    }
+    const next = [...screenshots];
+    const [moved] = next.splice(draggingIndex, 1);
+    if (moved) {
+      next.splice(overIndex, 0, moved);
+    }
+    return next;
+  }, [screenshots, draggingIndex, overIndex]);
+
+  useEffect(() => {
+    return () => {
+      if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+    };
+  }, []);
+
+  function startDrag(clientX: number, clientY: number, index: number, cardEl: HTMLElement) {
+    const rect = cardEl.getBoundingClientRect();
+    setGrabOffset({ x: clientX - rect.left, y: clientY - rect.top });
+    setPointerCoord({ x: clientX, y: clientY });
+    setDraggingIndex(index);
+    setOverIndex(index);
+    draggingIndexRef.current = index;
+    overIndexRef.current = index;
+    isDraggingActiveRef.current = true;
+
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      try {
+        navigator.vibrate(40);
+      } catch {
+        /* ignore */
+      }
+    }
+
+    function onPointerMove(e: PointerEvent) {
+      setPointerCoord({ x: e.clientX, y: e.clientY });
+
+      const grid = gridRef.current;
+      if (!grid) return;
+
+      const cards = Array.from(grid.querySelectorAll<HTMLDivElement>("[data-sortable-card]"));
+      let targetIndex: number | null = null;
+
+      for (let i = 0; i < cards.length; i++) {
+        const r = cards[i]!.getBoundingClientRect();
+        if (
+          e.clientX >= r.left &&
+          e.clientX <= r.right &&
+          e.clientY >= r.top &&
+          e.clientY <= r.bottom
+        ) {
+          targetIndex = i;
+          break;
+        }
+      }
+
+      if (targetIndex !== null && targetIndex !== overIndexRef.current) {
+        // Capture positions of all grid cards before state change
+        const state = Flip.getState(grid.querySelectorAll("[data-sortable-card]"));
+
+        overIndexRef.current = targetIndex;
+        setOverIndex(targetIndex);
+
+        // Animate all other shifting cards smoothly to make room
+        requestAnimationFrame(() => {
+          Flip.from(state, {
+            duration: 0.28,
+            ease: "power2.out",
+            targets: grid.querySelectorAll("[data-sortable-card]"),
+          });
+        });
+      }
+    }
+
+    function onPointerUp() {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+
+      const fromIndex = draggingIndexRef.current;
+      const toIndex = overIndexRef.current;
+
+      if (fromIndex !== null && toIndex !== null && fromIndex !== toIndex) {
+        const next = [...screenshotsRef.current];
+        const [moved] = next.splice(fromIndex, 1);
+        if (moved) {
+          next.splice(toIndex, 0, moved);
+          onScreenshotsChange(next);
+        }
+      }
+
+      setDraggingIndex(null);
+      setOverIndex(null);
+      setPointerCoord(null);
+      draggingIndexRef.current = null;
+      overIndexRef.current = null;
+      isDraggingActiveRef.current = false;
+    }
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+  }
+
+  function handleCardPointerDown(e: ReactPointerEvent<HTMLDivElement>, index: number) {
+    if (uploading) return;
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+
+    pointerStartRef.current = { x: e.clientX, y: e.clientY };
+    const targetEl = e.currentTarget;
+
+    if (e.pointerType === "touch") {
+      longPressTimerRef.current = setTimeout(() => {
+        startDrag(e.clientX, e.clientY, index, targetEl);
+      }, 250);
+    } else {
+      function onInitialMouseMove(moveEvent: PointerEvent) {
+        if (!pointerStartRef.current) return;
+        const dx = Math.abs(moveEvent.clientX - pointerStartRef.current.x);
+        const dy = Math.abs(moveEvent.clientY - pointerStartRef.current.y);
+        if (dx > 4 || dy > 4) {
+          window.removeEventListener("pointermove", onInitialMouseMove);
+          window.removeEventListener("pointerup", onInitialMouseUp);
+          startDrag(moveEvent.clientX, moveEvent.clientY, index, targetEl);
+        }
+      }
+      function onInitialMouseUp() {
+        window.removeEventListener("pointermove", onInitialMouseMove);
+        window.removeEventListener("pointerup", onInitialMouseUp);
+        pointerStartRef.current = null;
+      }
+      window.addEventListener("pointermove", onInitialMouseMove);
+      window.addEventListener("pointerup", onInitialMouseUp);
+    }
+  }
+
+  function handleCardPointerMove(e: ReactPointerEvent<HTMLDivElement>) {
+    if (!pointerStartRef.current || isDraggingActiveRef.current) return;
+    const dx = Math.abs(e.clientX - pointerStartRef.current.x);
+    const dy = Math.abs(e.clientY - pointerStartRef.current.y);
+    if (dx > 8 || dy > 8) {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+      pointerStartRef.current = null;
+    }
+  }
+
+  function handleCardPointerUp() {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    pointerStartRef.current = null;
+  }
+
+  return (
+    <>
+      <div ref={gridRef} className="flex min-w-0 flex-wrap items-start gap-3">
+        {displayItems.map((item, index) => {
+          const isBeingDragged = draggingIndex !== null && item.path === screenshots[draggingIndex]?.path;
+
+          return (
+            <div
+              key={item.path}
+              data-sortable-card
+              className={`group relative h-[120px] w-[210px] shrink-0 touch-pan-y select-none rounded-md transition-shadow duration-150 ${
+                isBeingDragged
+                  ? "border-2 border-dashed border-primary/50 bg-primary/5 opacity-40 shadow-inner"
+                  : "cursor-grab active:cursor-grabbing hover:shadow-md"
+              }`}
+              onPointerDown={(e) => handleCardPointerDown(e, index)}
+              onPointerMove={handleCardPointerMove}
+              onPointerUp={handleCardPointerUp}
+              onPointerCancel={handleCardPointerUp}
+            >
+              <img
+                src={item.url}
+                alt={t("projects.form.screenshotAlt", { index: index + 1 })}
+                className="pointer-events-none size-full rounded-md object-cover"
+                draggable={false}
+              />
+              <span className="pointer-events-none absolute bottom-1.5 left-1.5 flex items-center gap-1 rounded bg-black/65 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                <GripVertical className="size-3" />
+                {index === 0 ? t("projects.form.coverImageBadge", "Bìa") : `#${index + 1}`}
+              </span>
+              <Button
+                type="button"
+                size="xsmall"
+                variant="cta"
+                hierarchy="tertiary"
+                iconOnly
+                className="absolute -right-1.5 -top-1.5 z-10 size-4 rounded-full border border-border bg-surface-raised p-0 text-foreground"
+                aria-label={t("projects.form.remove")}
+                disabled={uploading}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemove(item);
+                }}
+              >
+                <X className="size-2.5" weight="regular" aria-hidden />
+              </Button>
+            </div>
+          );
+        })}
+        {trailingSlot}
+      </div>
+
+      {typeof document !== "undefined" && draggingIndex !== null && pointerCoord && screenshots[draggingIndex]
+        ? createPortal(
+            <div
+              className="pointer-events-none fixed z-50 overflow-hidden rounded-md shadow-2xl ring-2 ring-primary scale-105"
+              style={{
+                left: pointerCoord.x - grabOffset.x,
+                top: pointerCoord.y - grabOffset.y,
+                width: 210,
+                height: 120,
+              }}
+            >
+              <img
+                src={screenshots[draggingIndex].url}
+                alt=""
+                className="size-full object-cover"
+                draggable={false}
+              />
+              <span className="absolute bottom-1.5 left-1.5 flex items-center gap-1 rounded bg-black/75 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+                <GripVertical className="size-3" />
+                {overIndex === 0 ? t("projects.form.coverImageBadge", "Bìa") : `#${(overIndex ?? draggingIndex) + 1}`}
+              </span>
+            </div>,
+            document.body,
+          )
+        : null}
+    </>
   );
 }
 
@@ -211,21 +491,26 @@ export function ProjectMediaEditor({
           <input ref={screenshotsInput} hidden type="file" accept={ACCEPT} multiple disabled={uploading || screenshots.length >= 6} aria-label={t("projects.form.addScreenshots")} onChange={event => { void uploadScreenshots(Array.from(event.target.files ?? [])); event.target.value = ""; }} />
           <Button type="button" size="xsmall" variant="cta" hierarchy="secondary" disabled={uploading || screenshots.length >= 6} onClick={() => screenshotsInput.current?.click()}>{t("projects.form.uploadLogo")}</Button>
         </div>
-        <div className="flex min-w-0 flex-wrap items-start gap-3">
-          {screenshots.map((item, index) => (
-            <div key={item.path} className="relative h-[120px] w-[210px] shrink-0 rounded-md">
-              <img src={item.url} alt={t("projects.form.screenshotAlt", { index: index + 1 })} className="size-full rounded-md object-cover" />
-              <Button type="button" size="xsmall" variant="cta" hierarchy="tertiary" iconOnly className="absolute -right-1.5 -top-1.5 size-4 rounded-full border border-border bg-surface-raised p-0 text-foreground" aria-label={t("projects.form.remove")} disabled={uploading} onClick={() => void remove(item, "screenshot")}><X className="size-2.5" weight="regular" aria-hidden /></Button>
-            </div>
-          ))}
-          {screenshots.length < 6 ? <DashedUploadSlot
-            className="h-[120px] w-[210px]"
-            label={t("projects.form.addScreenshots")}
-            disabled={uploading}
-            onClick={() => screenshotsInput.current?.click()}
-            onDropFiles={files => { void uploadScreenshots(files); }}
-          /> : null}
-          {uploading ? <p className="basis-full text-body-small font-body text-foreground-muted" role="status">{t("projects.editor.uploading")}</p> : null}
+        <div className="min-w-0">
+          <SortableScreenshotsGrid
+            screenshots={screenshots}
+            onScreenshotsChange={onScreenshotsChange}
+            onRemove={(item) => void remove(item, "screenshot")}
+            uploading={uploading}
+            t={t}
+            trailingSlot={
+              screenshots.length < 6 ? (
+                <DashedUploadSlot
+                  className="h-[120px] w-[210px]"
+                  label={t("projects.form.addScreenshots")}
+                  disabled={uploading}
+                  onClick={() => screenshotsInput.current?.click()}
+                  onDropFiles={(files) => { void uploadScreenshots(files); }}
+                />
+              ) : null
+            }
+          />
+          {uploading ? <p className="mt-3 text-body-small font-body text-foreground-muted" role="status">{t("projects.editor.uploading")}</p> : null}
         </div>
       </section>
     </div>;
