@@ -65,6 +65,7 @@ Database changes additionally use `pnpm db:verify`; schema/migration changes req
 - `.github/workflows/db-guardrails.yml` runs on matching PR changes. The live-history workflow is manual and read-only.
 - Production Supabase deployment is a manual dispatch of `.github/workflows/deploy-prod.yml` from `main`; merging to `main` does not trigger it automatically.
 - Cloudflare automatically builds and deploys the frontend from its connected Git branches (`staging` / `main`). Do not add or dispatch a separate GitHub frontend deployment workflow or require a GitHub Cloudflare API token. Verify the Cloudflare deployment for the intended commit and the live domain before claiming frontend deployment success. Coordinate backend compatibility before publishing dependent frontend changes; never use the ambiguous default `wrangler deploy` command.
+- The landing/app domain split (`corelia.academy` + `/learn`) has a one-time infrastructure runbook in `docs/LANDING_LEARN_CUTOVER.md`.
 - For remote delivery, follow `docs/RELEASE_PROCESS.md` and watch every applicable run to a terminal result. Inspect the failed step before retrying; fix only task-related failures and report unrelated failures as blockers.
 
 ## Definition of Done
