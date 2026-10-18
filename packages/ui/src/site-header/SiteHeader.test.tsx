@@ -3,9 +3,10 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { AccountMenu, SearchLink } from "./AccountMenu";
 import { AuthActions } from "./AuthActions";
 import { LanguageMenu } from "./LanguageMenu";
-import { SITE_HEADER_COPY, siteNavigation } from "./nav";
+import { SITE_HEADER_COPY, siteAccountLinks, siteHomeHref, siteNavigation } from "./nav";
 import { readSiteSession } from "./session";
 import { SiteHeader } from "./SiteHeader";
 
@@ -143,5 +144,56 @@ describe("readSiteSession", () => {
     expect(readSiteSession(storage({ "sb-abc-auth-token": JSON.stringify({ user: {} }) }))).toBeNull();
     expect(readSiteSession(storage({ "sb-abc-auth-token": "{" }))).toBeNull();
     expect(readSiteSession(null)).toBeNull();
+  });
+});
+
+describe("AccountMenu", () => {
+  it("lists the shared app destinations and signs out through the app", () => {
+    const el = render(
+      <AccountMenu
+        user={{ name: "Lan", email: "lan@example.com", avatarUrl: null }}
+        items={siteAccountLinks("vi", "/learn")}
+        signOut={{ label: copy.signOut, href: "/learn/logout" }}
+        label={copy.account}
+      />,
+    );
+    const trigger = el.querySelector<HTMLButtonElement>(".csh-account-trigger")!;
+    const panel = document.getElementById(trigger.getAttribute("aria-controls")!)!;
+    expect(trigger.textContent).toContain("Lan");
+    expect(panel.hidden).toBe(true);
+    act(() => trigger.click());
+    expect(panel.hidden).toBe(false);
+    const links = [...panel.querySelectorAll<HTMLAnchorElement>("a.csh-account-link")].map((a) => a.getAttribute("href"));
+    expect(links).toEqual([
+      "/learn/", "/learn/feed", "/learn/projects", "/learn/achievements",
+      "/learn/account/profile", "/learn/account/cv", "/learn/account", "/learn/logout",
+    ]);
+    act(() => { window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })); });
+    expect(panel.hidden).toBe(true);
+  });
+
+  it("runs the host's sign-out action when there is no link", () => {
+    const onSelect = vi.fn();
+    const el = render(
+      <AccountMenu user={{ name: null, email: "a@b.c", avatarUrl: null }} items={[]} signOut={{ label: "Out", onSelect }} label="Account" />,
+    );
+    act(() => el.querySelector<HTMLButtonElement>(".csh-account-trigger")!.click());
+    act(() => el.querySelector<HTMLButtonElement>("button.csh-account-signout")!.click());
+    expect(onSelect).toHaveBeenCalledOnce();
+  });
+});
+
+describe("shared header helpers", () => {
+  it("sends the logo to the localized landing home", () => {
+    expect(siteHomeHref("en")).toBe("/");
+    expect(siteHomeHref("vi")).toBe("/vi");
+    expect(siteHomeHref("ko")).toBe("/");
+  });
+
+  it("renders the search icon as a labelled link", () => {
+    const el = render(<SearchLink href="/learn/search" label={copy.search} />);
+    const link = el.querySelector<HTMLAnchorElement>("a.csh-icon-button")!;
+    expect(link.getAttribute("href")).toBe("/learn/search");
+    expect(link.textContent).toBe("Tìm kiếm");
   });
 });
