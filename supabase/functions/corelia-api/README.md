@@ -107,6 +107,25 @@ Nếu thiếu `RESEND_API_KEY` hoặc `MAIL_FROM`, handler **không lỗi**: tr�
 
 Code gửi mail chung: [`lib/mail/resend.ts`](lib/mail/resend.ts) (transport) + [`lib/mail/layout.ts`](lib/mail/layout.ts) (branded shell, i18n vi/en). Handler/builder lo `subject` + nội dung body; `wrapTransactionalEmail` / `wrapBlastEmail` bọc HTML cuối.
 
+### Corelia Studio: tạo khóa AI
+
+| Biến | Bắt buộc? | Ghi chú |
+|------|-----------|---------|
+| `CORELIA_STUDIO_OPENAI_API_KEY` | Có cho `studio.tick` | Key riêng của Studio, không dùng `OPENAI_API_KEY` của app; thiếu thì tick trả 503 và không đụng lượt chạy nào. |
+| `CORELIA_STUDIO_CRON_SECRET` | Có cho `studio.tick` | Scheduler gửi qua header `x-corelia-studio-cron-secret`. |
+
+`studio.start` (Bearer, chỉ `profiles.role = admin`; `support_staff` bị từ chối) nhận
+`course_id` và `run_id` tùy chọn. RPC `studio_start_run` tạo lượt chạy và 9 bước trong
+một transaction; gửi lại cùng `run_id` trả lượt chạy đã có. Khóa nháp (0 path) hoặc
+khóa đang `queued`/`generating`/`published` trả 409.
+
+`studio.tick` đẩy tối đa 5 lượt chạy đang mở, mỗi lượt một hành động: gửi yêu cầu
+model ở background mode, lấy kết quả, hoặc kết thúc lượt chạy. Mỗi lần gọi model là một
+dòng `studio_generations` được chèn trước khi gọi provider (unique theo bước và lượt
+thử), nên hai tick chồng nhau không gửi trùng. Prompt nằm trong
+[`studio/prompts.ts`](studio/prompts.ts); bước chưa có trong `STEP_SPECS` kết thúc lượt
+chạy ở `draft_failed` kèm lý do.
+
 ### Email Center
 
 `email.admin` cung cấp API quản trị contact/list/import, template/version, campaign và automation. `email.worker` chỉ nhận request có `EMAIL_WORKER_SECRET`; `email.webhook` xác minh chữ ký Svix bằng `RESEND_WEBHOOK_SIGNING_SECRET`; `email.unsubscribe` là endpoint public cho marketing unsubscribe. Dữ liệu Email Center chỉ truy cập qua service-role boundary và các bảng không cấp quyền Data API cho `anon`/`authenticated`.

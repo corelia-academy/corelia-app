@@ -49,6 +49,7 @@ import { handleWalletChallenge, handleWalletVerify } from "./wallets/handlers.ts
 import { handleOcidLink } from "./ocid/handlers.ts";
 import { authorizedOgRequest, handleOgRequest, isOgOp } from "./og/handlers.ts";
 import { handleAvatarSave, handleAvatarSvg } from "./avatar/handlers.ts";
+import { handleStudioStart, handleStudioTick } from "./studio/handlers.ts";
 
 const PROTECTED_OPS = new Set<string>([
   "avatar.save",
@@ -90,6 +91,8 @@ const PROTECTED_OPS = new Set<string>([
   "jobs.refreshAnalytics",
   "jobs.review",
   "jobs.admin",
+  "studio.start",
+  "studio.tick",
   // credentials.claimLookup is PUBLIC — intentionally omitted from PROTECTED_OPS
 ]);
 
@@ -107,6 +110,12 @@ function hasLearningReminderCronSecret(req: Request): boolean {
 function hasJobsCronSecret(req: Request): boolean {
   const expected = Deno.env.get("CORELIA_JOBS_CRON_SECRET")?.trim() ?? "";
   const provided = req.headers.get("x-corelia-jobs-cron-secret")?.trim() ?? "";
+  return Boolean(expected && provided && expected === provided);
+}
+
+function hasStudioCronSecret(req: Request): boolean {
+  const expected = Deno.env.get("CORELIA_STUDIO_CRON_SECRET")?.trim() ?? "";
+  const provided = req.headers.get("x-corelia-studio-cron-secret")?.trim() ?? "";
   return Boolean(expected && provided && expected === provided);
 }
 
@@ -135,7 +144,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const isLearningReminderCron = op === "courses.sendLearningReminders" && hasLearningReminderCronSecret(req);
     const isJobsCron = op === "jobs.runScheduled" && hasJobsCronSecret(req);
     const isEmailWorker = op === "email.worker" && hasEmailWorkerSecret(req);
-    if (PROTECTED_OPS.has(op) && !hasBearerAuthHeader(req) && !isLearningReminderCron && !isJobsCron && !isEmailWorker) {
+    const isStudioCron = op === "studio.tick" && hasStudioCronSecret(req);
+    if (PROTECTED_OPS.has(op) && !hasBearerAuthHeader(req) && !isLearningReminderCron && !isJobsCron && !isEmailWorker && !isStudioCron) {
       return withCors(req, json({ message: "Missing Authorization header" }, 401));
     }
     let db: SupabaseClient;
@@ -229,6 +239,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleJobsReview(req, db);
     } else if (op === "jobs.admin" && req.method === "POST") {
       response = await handleJobsAdmin(req, db);
+    } else if (op === "studio.start" && req.method === "POST") {
+      response = await handleStudioStart(req, db);
+    } else if (op === "studio.tick" && req.method === "POST") {
+      response = await handleStudioTick(req, db);
     } else if (op === "admin.emailOutbox.reconcile" && req.method === "POST") {
       response = await handleAdminEmailOutboxReconcile(req, db);
     } else if (op === "email.admin" && req.method === "POST") {
