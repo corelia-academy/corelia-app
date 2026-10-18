@@ -22,7 +22,7 @@ export function JobCard({ publicAppearance = false, job, state, busy, onToggleSa
   const { t, i18n } = useTranslation("jobs");
   const salary = formatJobSalary(job, i18n.language);
   return (
-    <Card className={`group h-full transition-colors hover:border-primary/35 ${publicAppearance ? "public-job-card min-w-0" : ""}`}>
+    <Card className={`motion-hover-card group h-full transition-colors hover:border-primary/35 ${publicAppearance ? "public-job-card min-w-0" : ""}`}>
       <CardContent className="flex h-full flex-col p-5">
         <div className="flex items-start gap-3">
           {job.company_logo_url ? (

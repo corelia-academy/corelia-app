@@ -11,6 +11,7 @@ import {
   createMockParticipantPreview,
 } from "@/components/participants/participantPreview";
 import type { Course } from "@/types/courses";
+import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import { HomeCourseCardSkeletonRow } from "./HomeCourseCardSkeleton";
 import { getCourseLevelLabel } from "@/types/courses";
 
@@ -34,6 +35,7 @@ export function ExploreCoursesSection({
   error?: boolean;
   onRetry?: () => void;
 }) {
+  const revealRef = useRevealOnScroll<HTMLElement>();
   const recommendationCards: RecommendedCourseCardView[] = useMemo(() => {
     const seenCourseIds = new Set<string>();
 
@@ -51,7 +53,7 @@ export function ExploreCoursesSection({
   }, [courseCatalog]);
 
   return (
-    <section className="mobile-bleed-surface px-5 sm:px-0">
+    <section ref={revealRef} className="motion-reveal mobile-bleed-surface px-5 sm:px-0">
       <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
         <h2 className="text-body-large font-body font-medium text-foreground">
           {t("home.sections.recommendedTitle")}

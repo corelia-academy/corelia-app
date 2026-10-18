@@ -64,7 +64,7 @@ export function CourseAccessPanel({
                 <div className="h-full rounded-full bg-success" style={{ width: `${progressPercent}%` }} />
               </div>
             </div>
-            <Button className="w-full" onClick={onContinue} disabled={!resolvedCourseId}>
+            <Button className="motion-press w-full" onClick={onContinue} disabled={!resolvedCourseId}>
               {nextLesson
                 ? hasStarted
                   ? translate("detail.spotlight.continueLearning")
@@ -76,7 +76,7 @@ export function CourseAccessPanel({
         ) : (
           <>
             <p className="mb-4 text-sm leading-relaxed text-foreground-muted">{translate("detail.accessPanel.freeEnrollCopy")}</p>
-            <Button className="w-full" disabled={enrolling} onClick={onEnroll}>
+            <Button className="motion-press w-full" disabled={enrolling} onClick={onEnroll}>
               {enrolling ? translate("detail.accessPanel.processing") : translate("detail.accessPanel.enrollAndEnter")}
             </Button>
           </>

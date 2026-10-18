@@ -7,6 +7,7 @@ import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration
 import { ProgressBar } from "@/components/ui/progress";
 import { Timestamp } from "@/components/ui/timestamp";
 import type { FocusCard } from "../utils/homeTypes";
+import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import { HomeCourseCardSkeletonRow } from "./HomeCourseCardSkeleton";
 
 export function ContinueLearningSection({
@@ -20,6 +21,7 @@ export function ContinueLearningSection({
   enrolledCourseCount: number;
   loading?: boolean;
 }) {
+  const revealRef = useRevealOnScroll<HTMLElement>();
   const formatRemainingDuration = (seconds: number) => {
     const totalMinutes = Math.ceil(seconds / 60);
 
@@ -30,7 +32,7 @@ export function ContinueLearningSection({
   };
 
   return (
-    <section className="mobile-bleed-surface px-5 sm:px-0">
+    <section ref={revealRef} className="motion-reveal mobile-bleed-surface px-5 sm:px-0">
       <div className="flex items-center gap-2 border-b border-border pb-3">
         <MonitorPlay
           aria-hidden="true"
