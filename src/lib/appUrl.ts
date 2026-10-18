@@ -34,12 +34,6 @@ export function appBaseUrl(): string {
   return appUrl("/").replace(/\/$/, "");
 }
 
-/** Whether an absolute path belongs to the SPA (under the base path) rather than the landing site. */
-export function isAppPath(path: string): boolean {
-  if (!APP_BASE_PATH) return path.startsWith("/");
-  return path === APP_BASE_PATH || path.startsWith(`${APP_BASE_PATH}/`) || path.startsWith(`${APP_BASE_PATH}?`);
-}
-
 /** Strip the base path from a browser pathname so it can be matched against router paths. */
 export function stripAppBasePath(pathname: string): string {
   if (!APP_BASE_PATH) return pathname;
