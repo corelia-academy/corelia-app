@@ -1,0 +1,71 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Header from "@/components/common/header.astro";
+import Footer from "@/components/common/footer.astro";
+import HeroBlog from "@/components/blog/hero-blog.astro";
+import CaseStudyBlog from "@/components/blog/case-study-blog.astro";
+import BlogNewsSection from "@/components/blog/blog-news-section.astro";
+import { useTranslations } from "@/i18n/translations";
+import type { BlogLocale } from "@/lib/blog";
+
+type BlogRoutePath =
+    | "all"
+    | "events"
+    | "news"
+    | "learning-methods"
+    | "contests";
+
+type Props = {
+    lang: BlogLocale;
+    tabPath: BlogRoutePath;
+    page?: number;
+};
+
+const { lang, tabPath, page = 1 } = Astro.props as Props;
+const t = useTranslations(lang);
+
+const languagePrefix = lang === "en" ? "" : "/vi";
+const routeBasePath =
+    tabPath === "all"
+        ? `${languagePrefix}/blog`
+        : `${languagePrefix}/blog/${tabPath}`;
+const canonicalPath = page <= 1 ? routeBasePath : `${routeBasePath}/page/${page}`;
+const alternatePrefix = lang === "en" ? "/vi" : "";
+const alternateBasePath =
+    tabPath === "all"
+        ? `${alternatePrefix}/blog`
+        : `${alternatePrefix}/blog/${tabPath}`;
+const alternatePath =
+    page <= 1 ? alternateBasePath : `${alternateBasePath}/page/${page}`;
+
+const canonicalUrl = `https://corelia.academy${canonicalPath}`;
+const alternateUrl = `https://corelia.academy${alternatePath}`;
+---
+
+<BaseLayout
+    lang={lang}
+    title={`${t("blog.title")} - ${t("meta.title")}`}
+    description={t("blog.description")}
+    canonicalUrl={canonicalUrl}
+    ogUrl={canonicalUrl}
+    ogImage={`https://corelia.academy/corelia-og-site-v2-${lang}.png`}
+>
+    <Fragment slot="head">
+        <link
+            rel="alternate"
+            hreflang="vi"
+            href={lang === "vi" ? canonicalUrl : alternateUrl}
+        />
+        <link
+            rel="alternate"
+            hreflang="en"
+            href={lang === "en" ? canonicalUrl : alternateUrl}
+        />
+    </Fragment>
+
+    <Header />
+    <HeroBlog />
+    <CaseStudyBlog />
+    <BlogNewsSection activeTab={tabPath} page={page} />
+    <Footer />
+</BaseLayout>

@@ -1,0 +1,180 @@
+---
+import { languages } from "@/i18n/translations";
+import { getLangFromUrl, stripLangPrefix, useTranslatedPath } from "@/i18n/utils";
+import { cn } from "@/lib/utils";
+import { CheckIcon } from "@lucide/astro";
+
+type Props = {
+  hrefs?: Partial<Record<keyof typeof languages, string>>;
+};
+
+const lang = getLangFromUrl(Astro.url);
+const translatePath = useTranslatedPath(lang);
+const { hrefs } = Astro.props as Props;
+
+const basePath = stripLangPrefix(Astro.url.pathname);
+const hrefFor = (langCode: keyof typeof languages) =>
+  hrefs?.[langCode] ?? translatePath(basePath, langCode);
+
+const languageIcons: Record<string, string> = {
+  vi: "/vn.svg",
+  en: "/gb.svg",
+};
+---
+
+<div class="relative">
+  <!-- Dropdown for xl and above -->
+  <!-- <div class="hidden xl:block">
+    <button
+      id="lang-switcher-btn"
+      class={cn(
+        "flex items-center gap-1 pl-2.5 pr-1 py-1",
+        "rounded-full",
+        "text-white text-sm cursor-pointer",
+        "transition-all duration-200",
+        "hover:bg-white/15 hover:border-white/30 active:bg-white/20",
+        "[&.active_.chevron-icon]:rotate-180",
+        "touch-manipulation",
+      )}
+      aria-label="Switch language"
+      type="button"
+    >
+      <img loading="lazy" decoding="async" src={languageIcons[lang]} alt={languages[lang]} class="size-5" />
+      <ChevronDownIcon
+        class="size-4 chevron-icon transition-transform duration-200"
+      />
+    </button>
+
+    <div
+      id="lang-dropdown"
+      class={cn(
+        "absolute top-[calc(100%+0.5rem)] right-0 min-w-[140px]",
+        "bg-[rgba(30,30,30,0.98)] backdrop-blur-xl",
+        "border border-white/20 rounded-xl",
+        "opacity-0 invisible -translate-y-2 pointer-events-none",
+        "transition-all duration-200",
+        "shadow-[0_10px_40px_rgba(0,0,0,0.3)]",
+        "z-1000",
+        "[&.show]:opacity-100 [&.show]:visible [&.show]:translate-y-0 [&.show]:pointer-events-auto",
+        "whitespace-nowrap overflow-hidden",
+      )}
+    >
+      {
+        Object.entries(languages).map(([langCode, label]) => (
+          <a
+            href={hrefFor(langCode as keyof typeof languages)}
+            class={cn(
+              "flex items-center gap-2.5 px-3 py-2",
+              "text-white no-underline text-sm",
+              "transition-all duration-150 cursor-pointer",
+              "hover:bg-white/5 active:bg-white/15",
+              "touch-manipulation",
+              langCode === lang && "bg-white/10",
+            )}
+          >
+            <img loading="lazy" decoding="async" src={languageIcons[langCode]} alt={label} class="size-4" />
+            <span class="flex-1">{label}</span>
+          </a>
+        ))
+      }
+    </div>
+  </div> -->
+
+  <!-- cài đặt giao diện mới chọn ngôn ngữ -->
+  <div class="hidden xl:flex items-center gap-2 text-base leading-[1.2]" data-nav-group>
+    {
+      Object.entries(languages).map(([langCode], index) => (
+        <>
+          {index > 0 && <span class="text-foreground-subtle">|</span>}
+          <a
+          href={hrefFor(langCode as keyof typeof languages)}
+          data-nav-link
+          data-nav-active={langCode === lang}
+          class="relative inline-block uppercase"
+          >
+            <span class="font-medium text-foreground-subtle">
+              {langCode}
+            </span>
+            <span
+            data-nav-sweep
+            class="absolute inset-0 overflow-hidden text-foreground pointer-events-none uppercase"
+            aria-hidden="true"
+            >
+              <span class="absolute inset-0 whitespace-nowrap">{langCode}</span>
+            </span>
+          </a>
+        </>
+      ))
+    }
+  </div>
+
+  <!-- Buttons for below xl -->
+  <div class="flex items-center gap-2 xl:hidden">
+    {
+      Object.entries(languages).map(([langCode, label]) => (
+        <a
+          href={hrefFor(langCode as keyof typeof languages)}
+          class={cn(
+            "flex items-center gap-1.5 px-3 py-1.5",
+            "rounded-full",
+            "text-white text-sm leading-[1.2] no-underline cursor-pointer",
+            "transition-all duration-200",
+            "hover:bg-white/15 active:bg-white/20",
+            "touch-manipulation",
+            langCode === lang ? "bg-white/20" : "bg-white/5",
+          )}
+          aria-label={`Switch to ${label}`}
+        >
+          <img loading="lazy" decoding="async" src={languageIcons[langCode]} alt={label} class="size-4" />
+          <span>{label}</span>
+          {langCode === lang && <CheckIcon class="size-4 ml-0.5" />}
+        </a>
+      ))
+    }
+  </div>
+</div>
+
+<!-- <script>
+  const langSwitcherBtn = document.getElementById("lang-switcher-btn");
+  const langDropdown = document.getElementById("lang-dropdown");
+
+  if (langSwitcherBtn && langDropdown) {
+    // Toggle dropdown
+    const toggleDropdown = (e: Event) => {
+      e.stopPropagation();
+      e.preventDefault();
+      langSwitcherBtn.classList.toggle("active");
+      langDropdown.classList.toggle("show");
+    };
+
+    // Support both click and touch events
+    langSwitcherBtn.addEventListener("click", toggleDropdown);
+    langSwitcherBtn.addEventListener("touchstart", toggleDropdown, {
+      passive: false,
+    });
+
+    // Close dropdown when clicking/touching outside
+    const closeDropdown = () => {
+      langSwitcherBtn.classList.remove("active");
+      langDropdown.classList.remove("show");
+    };
+
+    document.addEventListener("click", closeDropdown);
+    document.addEventListener("touchstart", closeDropdown);
+
+    // Prevent closing when clicking/touching inside dropdown
+    const preventClose = (e: Event) => {
+      e.stopPropagation();
+    };
+
+    langDropdown.addEventListener("click", preventClose);
+    langDropdown.addEventListener("touchstart", preventClose);
+
+    // Close dropdown when a language is selected
+    const langLinks = langDropdown.querySelectorAll("a");
+    langLinks.forEach((link) => {
+      link.addEventListener("click", closeDropdown);
+      link.addEventListener("touchstart", closeDropdown);
+    });
+  }
+</script> -->

@@ -1,0 +1,439 @@
+---
+import Header from "@/components/common/header.astro";
+import Footer from "@/components/common/footer.astro";
+import { useTranslations } from "@/i18n/translations";
+import { useTranslatedPath } from "@/i18n/utils";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+  BookOpenIcon,
+  UsersIcon,
+  BriefcaseIcon,
+  ArrowRightIcon,
+  CheckIcon,
+  LightbulbIcon,
+  BuildingIcon,
+  CodeIcon,
+  TrophyIcon,
+} from "@lucide/astro";
+
+const lang = "en";
+const t = useTranslations(lang);
+const translatePath = useTranslatedPath(lang);
+
+const painPoints = [
+  {
+    icon: BookOpenIcon,
+    title: t("uni.pain.curriculum.title"),
+    description: t("uni.pain.curriculum.description"),
+    solution: t("uni.pain.curriculum.solution"),
+  },
+  {
+    icon: UsersIcon,
+    title: t("uni.pain.lecturers.title"),
+    description: t("uni.pain.lecturers.description"),
+    solution: t("uni.pain.lecturers.solution"),
+  },
+  {
+    icon: BriefcaseIcon,
+    title: t("uni.pain.jobs.title"),
+    description: t("uni.pain.jobs.description"),
+    solution: t("uni.pain.jobs.solution"),
+  },
+];
+
+const tiers = [
+  {
+    number: "01",
+    title: t("uni.tiers.t1.title"),
+    subtitle: t("uni.tiers.t1.subtitle"),
+    description: t("uni.tiers.t1.description"),
+    result: t("uni.tiers.t1.result"),
+  },
+  {
+    number: "02",
+    title: t("uni.tiers.t2.title"),
+    subtitle: t("uni.tiers.t2.subtitle"),
+    description: t("uni.tiers.t2.description"),
+    result: t("uni.tiers.t2.result"),
+  },
+  {
+    number: "03",
+    title: t("uni.tiers.t3.title"),
+    subtitle: t("uni.tiers.t3.subtitle"),
+    description: t("uni.tiers.t3.description"),
+    result: t("uni.tiers.t3.result"),
+  },
+];
+
+const schoolProvides = [
+  t("uni.zeroburden.school.point1"),
+  t("uni.zeroburden.school.point2"),
+  t("uni.zeroburden.school.point3"),
+];
+
+const coreliaHandles = [
+  t("uni.zeroburden.corelia.point1"),
+  t("uni.zeroburden.corelia.point2"),
+  t("uni.zeroburden.corelia.point3"),
+];
+
+---
+
+<BaseLayout
+  lang={lang}
+  title={t("uni.meta.title")}
+  description={t("uni.meta.description")}
+  canonicalUrl="https://corelia.academy/universities"
+  ogUrl="https://corelia.academy/universities"
+  ogImage="https://corelia.academy/corelia-og-site-v2-en.png"
+>
+  <Fragment slot="head">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js" is:inline></script>
+    <script is:inline>
+      document.addEventListener("DOMContentLoaded", function () {
+        AOS.init({
+          duration: 1000,
+          once: true,
+          offset: 100,
+          easing: "ease-in-out",
+        });
+      });
+    </script>
+  </Fragment>
+
+  <Header />
+
+  <!-- Hero -->
+  <section class="relative pt-28 pb-20 md:pt-36 md:pb-28 overflow-hidden">
+    <div
+      class="absolute inset-0 bg-linear-to-b from-white/3 to-transparent pointer-events-none"
+    >
+    </div>
+    <div class="container max-w-[1200px] mx-auto px-4 xl:px-0 relative z-10">
+      <div class="flex flex-col items-center text-center space-y-6">
+        <p
+          class="text-white text-xs md:text-sm font-light bg-white/10 px-4 py-2 rounded-full border border-white/15"
+          data-aos="fade-down"
+          data-aos-delay="200"
+        >
+          {t("uni.hero.badge")}
+        </p>
+        <h1
+          class="text-foreground text-2xl md:text-4xl lg:text-5xl font-semibold max-w-[900px] leading-tight"
+          data-aos="fade-up"
+          data-aos-delay="400"
+        >
+          {t("uni.hero.title")}
+        </h1>
+        <p
+          class="text-muted-foreground text-sm md:text-base font-light max-w-[700px] leading-relaxed"
+          data-aos="fade-up"
+          data-aos-delay="600"
+        >
+          {t("uni.hero.description")}
+        </p>
+        <div
+          class="flex items-center gap-3 pt-4"
+          data-aos="fade-up"
+          data-aos-delay="800"
+        >
+          <a
+            href={translatePath("/contact")}
+            class="bg-primary text-primary-foreground px-6 py-2.5 rounded-full hover:bg-secondary hover:text-secondary-foreground transition-all duration-300 text-xs md:text-sm flex items-center gap-2"
+          >
+            {t("uni.cta.button")}
+            <ArrowRightIcon class="size-4" />
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pain Points -->
+  <section class="py-16 md:py-24">
+    <div class="container max-w-[1200px] mx-auto px-4 xl:px-0">
+      <div class="flex flex-col items-center text-center mb-10 md:mb-14">
+        <h2
+          class="text-foreground text-2xl md:text-3xl lg:text-4xl font-semibold mb-4"
+          data-aos="fade-up"
+        >
+          {t("uni.pain.title")}
+        </h2>
+        <p
+          class="text-muted-foreground text-sm md:text-base font-light max-w-[650px]"
+          data-aos="fade-up"
+          data-aos-delay="200"
+        >
+          {t("uni.pain.description")}
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {
+          painPoints.map((point, index) => (
+            <div
+              class="bg-card border border-border rounded-[24px] p-6 md:p-8 flex flex-col"
+              data-aos="fade-up"
+              data-aos-delay={300 + index * 150}
+            >
+              <div class="size-10 rounded-[12px] bg-white/10 flex items-center justify-center mb-5">
+                <point.icon class="size-5 text-foreground" />
+              </div>
+              <p class="text-foreground text-base font-semibold mb-3">
+                {point.title}
+              </p>
+              <p class="text-muted-foreground text-xs font-light leading-relaxed mb-5">
+                {point.description}
+              </p>
+
+              <div class="mt-auto bg-success/10 border border-success/20 rounded-[12px] p-3">
+                <div class="flex items-start gap-2">
+                  <LightbulbIcon class="size-3.5 text-success mt-0.5 shrink-0" />
+                  <p class="text-success/80 text-xs font-light leading-relaxed">
+                    {point.solution}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Partnership Tiers -->
+  <section class="py-16 md:py-24">
+    <div class="container max-w-[1200px] mx-auto px-4 xl:px-0">
+      <div class="flex flex-col items-center text-center mb-10 md:mb-14">
+        <h2
+          class="text-foreground text-2xl md:text-3xl lg:text-4xl font-semibold mb-4"
+          data-aos="fade-up"
+        >
+          {t("uni.tiers.title")}
+        </h2>
+        <p
+          class="text-muted-foreground text-sm md:text-base font-light max-w-[600px]"
+          data-aos="fade-up"
+          data-aos-delay="200"
+        >
+          {t("uni.tiers.description")}
+        </p>
+      </div>
+
+      <div class="space-y-4">
+        {
+          tiers.map((tier, index) => (
+            <div
+              class="bg-secondary border border-border rounded-[24px] p-6 md:p-8 lg:p-10"
+              data-aos="fade-up"
+              data-aos-delay={300 + index * 150}
+            >
+              <div class="flex flex-col lg:flex-row gap-6 lg:gap-10 items-start">
+                <div class="shrink-0">
+                  <span class="text-4xl md:text-5xl font-semibold text-foreground/10">
+                    {tier.number}
+                  </span>
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-3">
+                    <p class="text-foreground text-lg md:text-xl font-semibold">
+                      {tier.title}
+                    </p>
+                    <span class="text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
+                      {tier.subtitle}
+                    </span>
+                  </div>
+                  <p class="text-muted-foreground text-sm font-light leading-relaxed mb-4">
+                    {tier.description}
+                  </p>
+                  <div class="flex items-start gap-2">
+                    <CheckIcon class="size-4 text-success/80 mt-0.5 shrink-0" />
+                    <p class="text-success/75 text-xs font-light">
+                      {tier.result}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Zero-Burden Model -->
+  <section class="py-16 md:py-24">
+    <div class="container max-w-[1200px] mx-auto px-4 xl:px-0">
+      <div class="flex flex-col items-center text-center mb-10 md:mb-14">
+        <h2
+          class="text-foreground text-2xl md:text-3xl lg:text-4xl font-semibold mb-4"
+          data-aos="fade-up"
+        >
+          {t("uni.zeroburden.title")}
+        </h2>
+        <p
+          class="text-muted-foreground text-sm md:text-base font-light max-w-[600px]"
+          data-aos="fade-up"
+          data-aos-delay="200"
+        >
+          {t("uni.zeroburden.description")}
+        </p>
+      </div>
+
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 gap-4"
+        data-aos="fade-up"
+        data-aos-delay="400"
+      >
+        <!-- School side -->
+        <div
+          class="bg-card border border-border rounded-[24px] p-6 md:p-8"
+        >
+          <div class="flex items-center gap-3 mb-6">
+            <div
+              class="size-10 rounded-[12px] bg-primary/10 flex items-center justify-center"
+            >
+              <BuildingIcon class="size-5 text-primary" />
+            </div>
+            <p class="text-foreground text-base font-semibold">
+              {t("uni.zeroburden.school.title")}
+            </p>
+          </div>
+          <div class="space-y-4">
+            {
+              schoolProvides.map((point) => (
+                <div class="flex items-start gap-2.5">
+                  <CheckIcon class="size-4 text-primary/70 mt-0.5 shrink-0" />
+                  <p class="text-muted-foreground text-sm font-light">{point}</p>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+
+        <!-- Corelia side -->
+        <div
+          class="bg-secondary border border-border rounded-[24px] p-6 md:p-8"
+        >
+          <div class="flex items-center gap-3 mb-6">
+            <div
+              class="size-10 rounded-[12px] bg-success/10 flex items-center justify-center"
+            >
+              <CodeIcon class="size-5 text-success" />
+            </div>
+            <p class="text-foreground text-base font-semibold">
+              {t("uni.zeroburden.corelia.title")}
+            </p>
+          </div>
+          <div class="space-y-4">
+            {
+              coreliaHandles.map((point) => (
+                <div class="flex items-start gap-2.5">
+                  <CheckIcon class="size-4 text-success/70 mt-0.5 shrink-0" />
+                  <p class="text-muted-foreground text-sm font-light">{point}</p>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Campus Activities -->
+  <section class="py-16 md:py-24">
+    <div class="container max-w-[1200px] mx-auto px-4 xl:px-0">
+      <div class="flex flex-col items-center text-center mb-10 md:mb-14">
+        <h2
+          class="text-foreground text-2xl md:text-3xl lg:text-4xl font-semibold mb-4"
+          data-aos="fade-up"
+        >
+          {t("uni.activities.title")}
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div
+          class="bg-secondary border border-border rounded-[24px] p-6 md:p-8"
+          data-aos="fade-up"
+          data-aos-delay="300"
+        >
+          <div
+            class="size-10 rounded-[12px] bg-white/10 flex items-center justify-center mb-5"
+          >
+            <CodeIcon class="size-5 text-foreground" />
+          </div>
+          <p class="text-foreground text-base md:text-lg font-semibold mb-3">
+            {t("uni.activities.bootcamp.title")}
+          </p>
+          <p class="text-muted-foreground text-sm font-light leading-relaxed">
+            {t("uni.activities.bootcamp.description")}
+          </p>
+        </div>
+        <div
+          class="bg-secondary border border-border rounded-[24px] p-6 md:p-8"
+          data-aos="fade-up"
+          data-aos-delay="400"
+        >
+          <div
+            class="size-10 rounded-[12px] bg-white/10 flex items-center justify-center mb-5"
+          >
+            <TrophyIcon class="size-5 text-foreground" />
+          </div>
+          <p class="text-foreground text-base md:text-lg font-semibold mb-3">
+            {t("uni.activities.hackathon.title")}
+          </p>
+          <p class="text-muted-foreground text-sm font-light leading-relaxed">
+            {t("uni.activities.hackathon.description")}
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-16 md:py-24">
+    <div class="container max-w-[1200px] mx-auto px-4 xl:px-0">
+      <div
+        class="relative bg-linear-to-br from-card to-secondary border border-border rounded-[32px] p-8 md:p-12 lg:p-16 overflow-hidden"
+        data-aos="fade-up"
+      >
+        <div
+          class="absolute top-0 right-0 w-[300px] h-[300px] bg-white/2 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"
+        >
+        </div>
+        <div
+          class="absolute bottom-0 left-0 w-[200px] h-[200px] bg-white/2 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"
+        >
+        </div>
+
+        <div
+          class="relative z-10 flex flex-col items-center text-center max-w-[750px] mx-auto"
+        >
+          <h2
+            class="text-foreground text-xl md:text-2xl lg:text-3xl font-semibold mb-5 leading-tight"
+          >
+            {t("uni.cta.title")}
+          </h2>
+          <p
+            class="text-muted-foreground text-sm md:text-base font-light leading-relaxed mb-8"
+          >
+            {t("uni.cta.description")}
+          </p>
+          <div class="flex flex-col sm:flex-row items-center gap-3">
+            <a
+              href={translatePath("/contact")}
+              class="bg-primary text-primary-foreground px-8 py-3 rounded-full hover:bg-secondary hover:text-secondary-foreground transition-all duration-300 text-sm md:text-base font-medium flex items-center gap-2"
+            >
+              {t("uni.cta.button")}
+              <ArrowRightIcon class="size-4" />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</BaseLayout>

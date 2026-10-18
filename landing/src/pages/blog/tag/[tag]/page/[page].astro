@@ -1,0 +1,153 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Header from "@/components/common/header.astro";
+import Footer from "@/components/common/footer.astro";
+import BlogPostCard from "@/components/blog/BlogPostCard.astro";
+import { useTranslations } from "@/i18n/translations";
+import { getCollection } from "astro:content";
+import {
+  BLOG_PAGE_SIZE,
+  blogIndexUrl,
+  blogTagUrl,
+  getBlogPosts,
+} from "@/lib/blog";
+import { blogTagLabel, type BlogTag } from "@/lib/blogTaxonomy";
+
+const t = useTranslations("en");
+
+type Props = {
+  tag: BlogTag;
+  posts: Awaited<ReturnType<typeof getBlogPosts>>;
+  page: number;
+  totalPages: number;
+};
+
+export async function getStaticPaths() {
+  const allPosts = await getBlogPosts("en");
+  const byTag = new Map<string, typeof allPosts>();
+
+  for (const post of allPosts) {
+    for (const tag of post.data.tags) {
+      const bucket = byTag.get(tag) ?? [];
+      bucket.push(post);
+      byTag.set(tag, bucket);
+    }
+  }
+
+  const paths: Array<{
+    params: { tag: string; page: string };
+    props: Props;
+  }> = [];
+
+  for (const [tag, posts] of byTag.entries()) {
+    const totalPages = Math.ceil(posts.length / BLOG_PAGE_SIZE);
+    if (totalPages <= 1) continue;
+
+    for (let page = 2; page <= totalPages; page++) {
+      const start = (page - 1) * BLOG_PAGE_SIZE;
+      const end = start + BLOG_PAGE_SIZE;
+      paths.push({
+        params: { tag, page: String(page) },
+        props: {
+          tag: tag as BlogTag,
+          posts: posts.slice(start, end),
+          page,
+          totalPages,
+        },
+      });
+    }
+  }
+
+  return paths;
+}
+
+const { tag, posts, page, totalPages } = Astro.props as Props;
+const fmtDate = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
+
+const members = await getCollection("members");
+const memberBySlug = new Map(members.map((m) => [m.slug, m] as const));
+
+const canonicalPath = blogTagUrl("en", tag, page);
+const canonicalUrl = `https://corelia.academy${canonicalPath}`;
+---
+
+<BaseLayout
+  lang="en"
+  title={`${blogTagLabel("en", tag)} - ${t("blog.title")}`}
+  description={t("blog.description")}
+  canonicalUrl={canonicalUrl}
+  ogUrl={canonicalUrl}
+  ogImage="https://corelia.academy/corelia-og-site-v2-en.png"
+>
+  <Fragment slot="head">
+    <link
+      rel="alternate"
+      hreflang="vi"
+      href={`https://corelia.academy${blogTagUrl("vi", tag, page)}`}
+    />
+    <link rel="alternate" hreflang="en" href={canonicalUrl} />
+  </Fragment>
+
+  <Header />
+
+  <main class="min-h-screen px-4 pt-20">
+    <div class="container max-w-[1200px] mx-auto py-16">
+      <div class="space-y-3">
+        <p class="text-sm text-muted-foreground">
+          <a
+            class="text-primary hover:underline underline-offset-4"
+            href={blogIndexUrl("en")}
+          >
+            ← {t("blog.title")}
+          </a>
+        </p>
+        <h1 class="text-3xl md:text-4xl font-semibold text-foreground">
+          #{blogTagLabel("en", tag)}
+        </h1>
+        <p class="text-lg text-muted-foreground max-w-[700px]">
+          {t("blog.description")}
+        </p>
+      </div>
+
+      <section class="mt-10 grid gap-4 md:grid-cols-2">
+        {
+          posts.map((post) => (
+            <BlogPostCard
+              locale="en"
+              post={post}
+              fmtDate={fmtDate}
+              memberBySlug={memberBySlug}
+              byText={t("blog.by")}
+            />
+          ))
+        }
+      </section>
+
+      <nav class="mt-10 flex items-center justify-between gap-4">
+        <a
+          class="text-sm text-primary hover:underline underline-offset-4"
+          href={blogTagUrl("en", tag, page - 1)}
+        >
+          ← Previous
+        </a>
+        <span class="text-sm text-muted-foreground">
+          Page {page}/{totalPages}
+        </span>
+        {
+          page < totalPages ? (
+            <a
+              class="text-sm text-primary hover:underline underline-offset-4"
+              href={blogTagUrl("en", tag, page + 1)}
+            >
+              Next →
+            </a>
+          ) : (
+            <span class="w-[74px]" />
+          )
+        }
+      </nav>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>

@@ -1,0 +1,301 @@
+---
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import { InfoIcon } from "@lucide/astro";
+import Tooltip from "../common/Tooltip.astro";
+import NghienAI from "@/assets/logo/nghienAILogo.svg";
+import Olym3 from "@/assets/logo/olym3Logo.png";
+import UEF from "@/assets/logo/uefLogo.png";
+import Arc from "@/assets/logo/arcLogo.svg";
+import VLU from "@/assets/logo/vluLogo.svg";
+import VHU from "@/assets/logo/vhuLogo.png";
+import MEXC from "@/assets/logo/mexcLogo.svg";
+import DHV from "@/assets/logo/dhvLogo.png";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+type PartnerLogo = {
+  logo: string;
+  name: string;
+  url: string;
+  height: string;
+  bgColor: string;
+  padding: string;
+};
+
+const ecosystemPartners: PartnerLogo[] = [
+  {
+    logo: Arc.src,
+    name: "Arc",
+    url: "https://www.arc.io/",
+    height: "36px",
+    bgColor: "bg-card/20",
+    padding: "p-4",
+  },
+  {
+    logo: MEXC.src,
+    name: "MEXC",
+    url: "https://mexc-ventures.com/",
+    height: "78px",
+    bgColor: "bg-card/20",
+    padding: "p-4",
+  },
+  {
+    logo: NghienAI.src,
+    name: "Nghiên AI",
+    url: "https://www.facebook.com/groups/3262256010653927",
+    height: "32px",
+    bgColor: "bg-card/20",
+    padding: "p-4",
+  },
+  {
+    logo: Olym3.src,
+    name: "Olym3",
+    url: "https://www.olym3.com/",
+    height: "36px",
+    bgColor: "bg-card/20",
+    padding: "p-4",
+  },
+  {
+    logo: UEF.src,
+    name: "UEF",
+    url: "https://www.uef.edu.vn/",
+    height: "88px",
+    bgColor: "bg-card/20",
+    padding: "p-4",
+  },
+  {
+    logo: VLU.src,
+    name: "VLU",
+    url: "https://www.vlu.edu.vn/",
+    height: "36px",
+    bgColor: "bg-card/20",
+    padding: "p-4",
+  },
+  {
+    logo: VHU.src,
+    name: "VHU",
+    url: "https://www.vhu.edu.vn/",
+    height: "88px",
+    bgColor: "bg-card/20",
+    padding: "p-4",
+  },
+  {
+    logo: DHV.src,
+    name: "DHV",
+    url: "https://www.dhv.edu.vn/",
+    height: "68px",
+    bgColor: "bg-card/20",
+    padding: "p-4",
+  },
+  // {
+  //   logo: "#",
+  //   name: "",
+  //   url: "#",
+  //   height: "68px",
+  //   bgColor: "bg-card/20",
+  //   padding: "p-4",
+  // },
+];
+
+// const universityPartners: PartnerLogo[] = [
+//   {
+//     logo: "/Van_Lang_Uni.svg",
+//     name: "Van Lang University",
+//     url: "https://vlu.edu.vn/",
+//     height: "36px",
+//     bgColor: "bg-card/20",
+//     padding: "p-4",
+//   },
+//   {
+//     logo: "/Van_Hien_Uni.png",
+//     name: "Van Hien University",
+//     url: "https://vhu.edu.vn/",
+//     height: "68px",
+//     bgColor: "bg-card/20",
+//     padding: "p-2",
+//   },
+//   {
+//     logo: "/UTC2.png",
+//     name: "UTC2",
+//     url: "https://utc2.edu.vn/",
+//     height: "68px",
+//     bgColor: "bg-card/20",
+//     padding: "p-2",
+//   },
+//   {
+//     logo: "/GDU.png",
+//     name: "GDU",
+//     url: "https://gdu.edu.vn/",
+//     height: "68px",
+//     bgColor: "bg-white",
+//     padding: "p-2",
+//   },
+//   {
+//     logo: "/LOGO_GDU_CLUB.png",
+//     name: "GDU Club",
+//     url: "https://gdu.edu.vn/",
+//     height: "98px",
+//     bgColor: "bg-white",
+//     padding: "p-2",
+//   },
+//   {
+//     logo: "/HUFLIT_LOGO.svg",
+//     name: "HUFLIT",
+//     url: "https://huflit.edu.vn/",
+//     height: "68px",
+//     bgColor: "bg-card/20",
+//     padding: "p-2",
+//   },
+//   {
+//     logo: "/LogoHUIT.png",
+//     name: "HUIT",
+//     url: "https://huit.edu.vn/",
+//     height: "68px",
+//     bgColor: "bg-card/20",
+//     padding: "p-2",
+//   },
+//   {
+//     logo: "/LOGO_UEF.png",
+//     name: "UEF",
+//     url: "https://uef.edu.vn/",
+//     height: "98px",
+//     bgColor: "bg-card/20",
+//     padding: "p-2",
+//   },
+//   {
+//     logo: "/LOGO_FIT.png",
+//     name: "FIT",
+//     url: "https://fit.hcmus.edu.vn/",
+//     height: "68px",
+//     bgColor: "bg-card/20",
+//     padding: "p-2",
+//   },
+//   {
+//     logo: "/APC.png",
+//     name: "APC",
+//     url: "https://apc.edu.vn/",
+//     height: "70px",
+//     bgColor: "bg-card/20",
+//     padding: "p-2",
+//   },
+//   // MOCK DATA — thay bằng đối tác thật khi có
+//   {
+//     logo: "/Corelia_Academy_Logo_Dark.png",
+//     name: "MOCK DATA",
+//     url: "#",
+//     height: "68px",
+//     bgColor: "bg-card/20",
+//     padding: "p-2",
+//   },
+//   // MOCK DATA — thay bằng đối tác thật khi có
+//   {
+//     logo: "/Corelia_Academy_Logo_Dark.png",
+//     name: "MOCK DATA",
+//     url: "#",
+//     height: "68px",
+//     bgColor: "bg-card/20",
+//     padding: "p-2",
+//   },
+// ];
+---
+
+<!-- new design -->
+<div class="w-full border-t border-border">
+  <div
+    class="container mx-auto flex flex-col max-w-(--app-max-width) px-3 xl:px-0"
+  >
+    <div class="flex flex-col border-x border-border">
+      <div
+        class="bg-secondary relative flex h-20 items-center justify-center px-5 text-lg font-medium leading-[1.15] tracking-[-0.36px] text-foreground md:text-2xl md:leading-[1.2] md:tracking-[-0.48px]"
+        style="font-family: var(--font-heading);"
+      >
+        <p data-reveal="text-up">{t("company.partnerLabel")}</p>
+        <Tooltip content={t("company.partnerTooltip")} placement="bottom">
+          <button
+            type="button"
+            class="ml-2 inline-flex size-5 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            aria-label={t("company.partnerTooltipLabel")}
+          >
+            <InfoIcon class="size-4" aria-hidden="true" />
+          </button>
+        </Tooltip>
+      </div>
+      <div
+        class="ecosystem-partner-grid grid grid-cols-2 border-t border-border md:grid-cols-4"
+      >
+        {
+          ecosystemPartners.map((company, index) => (
+            <div class="h-36 bg-background p-6">
+              <div
+                class="flex size-full items-center justify-center"
+                data-reveal="fade-up"
+                data-reveal-delay={index * 100}
+              >
+                <img loading="lazy" decoding="async"
+                  src={company.logo}
+                  alt={company.name}
+                  class="object-contain"
+                  style={`height: ${company.height}`}
+                />
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* .ecosystem-partner-grid > :not(:first-child) {
+    border-top: 1px solid var(--border);
+  }
+
+  @media (min-width: 640px) {
+    .ecosystem-partner-grid > :nth-child(even) {
+      border-left: 1px solid var(--border);
+    }
+
+    .ecosystem-partner-grid > :nth-child(2) {
+      border-top: 0;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .ecosystem-partner-grid > * {
+      border-top: 0;
+      border-left: 0;
+    }
+
+    .ecosystem-partner-grid > :not(:nth-child(4n + 1)) {
+      border-left: 1px solid var(--border);
+    }
+
+    .ecosystem-partner-grid > :nth-child(n + 5) {
+      border-top: 1px solid var(--border);
+    }
+  } */
+
+  .ecosystem-partner-grid > * {
+    border-top: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    border-left: 0;
+  }
+
+  /* Mobile: 2 cột */
+  @media (max-width: 639px) {
+    .ecosystem-partner-grid > :not(:nth-child(2n)) {
+      border-right: 1px solid var(--border);
+    }
+  }
+
+  /* Tablet + Desktop: 4 cột */
+  @media (min-width: 640px) {
+    .ecosystem-partner-grid > :not(:nth-child(4n)) {
+      border-right: 1px solid var(--border);
+    }
+  }
+</style>

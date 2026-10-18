@@ -1,0 +1,160 @@
+---
+type Placement = "top" | "right" | "bottom" | "left";
+
+type Props = {
+  content: string;
+  placement?: Placement;
+  delay?: number;
+  class?: string;
+};
+
+const {
+  content,
+  placement = "top",
+  delay = 150,
+  class: className,
+} = Astro.props as Props;
+
+const tooltipId = `tooltip-${crypto.randomUUID()}`;
+---
+
+<span
+  class:list={["tooltip", className]}
+  data-placement={placement}
+  style={`--tooltip-delay: ${Math.max(0, delay)}ms`}
+  role="group"
+  aria-describedby={tooltipId}
+>
+  <slot />
+  <span id={tooltipId} class="tooltip__content" role="tooltip">
+    {content}
+  </span>
+</span>
+
+<style>
+  .tooltip {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .tooltip__content {
+    position: absolute;
+    z-index: 1000;
+    width: max-content;
+    max-width: min(16rem, calc(100vw - 2rem));
+    padding: 0.375rem 0.625rem;
+    border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+    border-radius: 0rem;
+    background: var(--popover);
+    color: #fff;
+    box-shadow: var(--elevation-2);
+    font-size: 0.625rem;
+    font-weight: 500;
+    /* line-height: 1.2; */
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 150ms ease var(--tooltip-delay),
+      transform 150ms ease var(--tooltip-delay),
+      visibility 0s linear calc(var(--tooltip-delay) + 150ms);
+  }
+
+  @media (min-width: 768px) {
+    .tooltip__content {
+      font-size: 0.75rem;
+    }
+  }
+
+  .tooltip__content::after {
+    position: absolute;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-right: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+    border-bottom: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+    background: var(--popover);
+    content: "";
+  }
+
+  .tooltip:hover .tooltip__content,
+  .tooltip:focus-within .tooltip__content {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: var(--tooltip-delay), var(--tooltip-delay), 0s;
+  }
+
+  .tooltip[data-placement="top"] .tooltip__content {
+    bottom: calc(100% + 0.625rem);
+    left: 50%;
+    transform: translate(-50%, 0.25rem);
+  }
+
+  .tooltip[data-placement="top"] .tooltip__content::after {
+    top: calc(100% - 0.2rem);
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+  }
+
+  .tooltip[data-placement="top"]:hover .tooltip__content,
+  .tooltip[data-placement="top"]:focus-within .tooltip__content {
+    transform: translate(-50%, 0);
+  }
+
+  .tooltip[data-placement="bottom"] .tooltip__content {
+    top: calc(100% + 0.625rem);
+    left: 50%;
+    transform: translate(-50%, -0.25rem);
+  }
+
+  .tooltip[data-placement="bottom"] .tooltip__content::after {
+    bottom: calc(100% - 0.2rem);
+    left: 50%;
+    transform: translateX(-50%) rotate(225deg);
+  }
+
+  .tooltip[data-placement="bottom"]:hover .tooltip__content,
+  .tooltip[data-placement="bottom"]:focus-within .tooltip__content {
+    transform: translate(-50%, 0);
+  }
+
+  .tooltip[data-placement="left"] .tooltip__content {
+    top: 50%;
+    right: calc(100% + 0.625rem);
+    transform: translate(0.25rem, -50%);
+  }
+
+  .tooltip[data-placement="left"] .tooltip__content::after {
+    top: 50%;
+    left: calc(100% - 0.2rem);
+    transform: translateY(-50%) rotate(-45deg);
+  }
+
+  .tooltip[data-placement="left"]:hover .tooltip__content,
+  .tooltip[data-placement="left"]:focus-within .tooltip__content {
+    transform: translate(0, -50%);
+  }
+
+  .tooltip[data-placement="right"] .tooltip__content {
+    top: 50%;
+    left: calc(100% + 0.625rem);
+    transform: translate(-0.25rem, -50%);
+  }
+
+  .tooltip[data-placement="right"] .tooltip__content::after {
+    top: 50%;
+    right: calc(100% - 0.2rem);
+    transform: translateY(-50%) rotate(135deg);
+  }
+
+  .tooltip[data-placement="right"]:hover .tooltip__content,
+  .tooltip[data-placement="right"]:focus-within .tooltip__content {
+    transform: translate(0, -50%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tooltip__content {
+      transition: none;
+    }
+  }
+</style>

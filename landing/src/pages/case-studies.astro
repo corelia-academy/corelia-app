@@ -1,0 +1,29 @@
+---
+import Header from "@/components/common/header.astro";
+import HeroBusinesses from "@/components/businesse/hero-businesses.astro";
+import BusinessCaseStudies from "@/components/businesse/business-case-studies.astro";
+import CaseStudies from "@/components/businesse/case-studies.astro";
+import BusinessServicePanel from "@/components/businesse/business-service-panel.astro";
+import Footer from "@/components/common/footer.astro";
+import { useTranslations } from "@/i18n/translations";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const lang = "en";
+const t = useTranslations(lang);
+---
+
+<BaseLayout
+  lang={lang}
+  title={t("biz.meta.title")}
+  description={t("biz.meta.description")}
+  canonicalUrl="https://corelia.academy/case-studies"
+  ogUrl="https://corelia.academy/case-studies"
+  ogImage="https://corelia.academy/corelia-og-site-v2-en.png"
+>
+  <Header />
+  <HeroBusinesses />
+  <BusinessCaseStudies />
+  <CaseStudies />
+  <BusinessServicePanel />
+  <Footer />
+</BaseLayout>

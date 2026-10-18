@@ -1,0 +1,405 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@font-face {
+  font-family: "Akt";
+  src: url("/fonts/Akt-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Akt";
+  src: url("/fonts/Akt-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "TT Norms Pro Trial";
+  src: url("/fonts/TTNormsProTrial-Normal.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "TT Norms Pro Trial";
+  src: url("/fonts/TTNormsProTrial-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PP Supply Sans";
+  src: url("/fonts/PPSupplySans-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PP Supply Sans";
+  src: url("/fonts/PPSupplySans-Ultralight.otf") format("opentype");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+/* Midnight Blue tokens — aligned with corelia-app/src/styles/globals.css */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-subtle: var(--foreground-subtle);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-a: var(--primary-a);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-container: var(--primary-container);
+  --color-primary-container-hover: var(--primary-container-hover);
+  --color-primary-container-muted: var(--primary-container-muted);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-on-primary-body: var(--on-primary-body);
+  --color-button-primary-foreground: var(--button-primary-foreground);
+  --color-button-primary-background: var(--button-primary-background);
+  --color-border-container: var(--border-container);
+  --color-border-button: var(--border-button);
+  --color-border-strong: var(--border-strong);
+  --color-button-primary-background-hover: var(--button-primary-background-hover);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-input: var(--input);
+  --shadow-card: var(--shadow-card);
+  --shadow-button-primary-glow: var(--button-primary-glow);
+  --shadow-button-tertiary-glow: var(--button-tertiary-glow);
+  --shadow-elevation-1: var(--elevation-1);
+  --shadow-elevation-2: var(--elevation-2);
+  --shadow-elevation-3: var(--elevation-3);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  font-family: "Google Sans Flex", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --radius: 0.5rem;
+  --content-px: clamp(1rem, 3vw, 2rem);
+  --app-max-width: 1200px;
+
+  /* ==========================================
+    LIGHT MODE: DORA Aesthetic (Warm Sand + Slate)
+     ========================================== */
+
+  /* ── Background & Surfaces ── */
+  --background: oklch(0.965 0.012 75);
+  --foreground: oklch(0.20 0.04 235);
+  --foreground-muted: oklch(0.55 0.03 235);
+  --foreground-subtle: oklch(0.70 0.02 235);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.20 0.04 235);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.20 0.04 235);
+
+  /* ── Brand Colors (Deep Slate Blue) ── */
+  --primary: oklch(0.25 0.05 235);
+  --primary-foreground: oklch(1 0 0);
+  /* --primary-muted: color-mix(in oklch, var(--primary) 10%, transparent); */
+  --primary-container: oklch(0.93 0.015 235);
+  --on-primary-container: oklch(0.20 0.04 235);
+
+  /* ── Secondary / Muted ── */
+  --secondary: oklch(0.93 0.01 75);
+  --secondary-foreground: oklch(0.25 0.04 235);
+  --muted: oklch(0.93 0.01 75);
+  --muted-foreground: oklch(0.55 0.03 235);
+  --accent: oklch(0.93 0.01 75);
+  --accent-foreground: oklch(0.20 0.04 235);
+  --accent-muted: color-mix(in oklch, var(--accent) 15%, transparent);
+
+  /* ── Semantic Colors ── */
+  --destructive: oklch(0.58 0.16 35);
+  --destructive-foreground: oklch(1 0 0);
+  --destructive-muted: color-mix(in oklch, var(--destructive) 10%, transparent);
+  --success: oklch(0.60 0.12 150);
+  --success-foreground: oklch(1 0 0);
+  --success-muted: color-mix(in oklch, var(--success) 10%, transparent);
+  --warning: oklch(0.65 0.16 65);
+  --warning-foreground: oklch(1 0 0);
+  --warning-muted: oklch(0.96 0.04 85);
+
+  /* ── Borders & Inputs ── */
+  --border: #282E3F;
+  --border-subtle: oklch(0.92 0.01 75);
+  --border-strong: oklch(22.221% 0.01751 74.641);
+  --input: oklch(0.88 0.015 75);
+  --ring: oklch(0.25 0.05 235);
+
+  /* ── Shadows ── */
+  --elevation-1: 0 1px 2px 0 oklch(0.2 0.04 235 / 0.05);
+  --elevation-2: 0 4px 6px -1px oklch(0.2 0.04 235 / 0.08),
+    0 2px 4px -2px oklch(0 0 0 / 0.04);
+  --elevation-3: var(--elevation-2);
+  --shadow-card: 0 1px 3px 0 oklch(0.2 0.04 235 / 0.06),
+    0 1px 2px -1px oklch(0 0 0 / 0.03);
+
+  --chart-1: oklch(0.72 0.145 210);
+  --chart-2: oklch(0.61 0.22 252);
+  --chart-3: oklch(0.52 0.245 252);
+  --chart-4: oklch(0.696 0.17 162);
+  --chart-5: oklch(0.769 0.188 70);
+
+  /* ── Sidebar ── */
+  --sidebar: oklch(0.98 0.005 75);
+  --sidebar-foreground: oklch(0.20 0.04 235);
+  --sidebar-primary: oklch(0.25 0.05 235);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.93 0.01 75);
+  --sidebar-accent-foreground: oklch(0.20 0.04 235);
+  --sidebar-border: oklch(0.88 0.015 75);
+  --sidebar-ring: oklch(0.25 0.05 235);
+
+  /* ── Corelia DS v2 surfaces ── */
+  --surface-base: var(--card);
+  --surface-raised: oklch(0.98 0.005 75);
+  --surface-overlay: oklch(0.96 0.01 75);
+  --surface-float: var(--popover);
+}
+
+.dark {
+    /* ==========================================
+    DARK MODE: Neutral + Điểm Blue Ribon
+     ========================================== */
+
+  /* ── Tầng 1: Primitive (nguyên liệu thô, tên theo đúng Figma) ── */
+  --shades-50: #ffffff;
+  --shades-100: #fafbff;
+  --shades-200: #f4f7ff;
+  --shades-300: #edf2ff;
+  --shades-400: #dfe5f6;
+  --shades-500: #cbd1e2;
+  --shades-600: #9da3b4;
+  --shades-700: #6d7384;
+  --shades-800: #4c5263;
+  --shades-900: #282e3f;
+  --shades-950: #191f30;
+
+  --blue-ribbon-50: #eef5ff;
+  --blue-ribbon-100: #dae9ff;
+  --blue-ribbon-200: #bddaff;
+  --blue-ribbon-300: #90c3ff;
+  --blue-ribbon-400: #5ba3ff;
+  --blue-ribbon-500: #357efc;
+  --blue-ribbon-600: #1759f1;
+  --blue-ribbon-700: #1749de;
+  --blue-ribbon-800: #193cb4;
+  --blue-ribbon-900: #1a378e;
+  --blue-ribbon-950: #152356;
+
+  --neutral-50: #eae6e3;
+  --neutral-100: #f2f2f2;
+  --neutral-200: #e5e5e5;
+  --neutral-300: #d1d1d1;
+  --neutral-400: #a3a3a3;
+  --neutral-500: #737373;
+  --neutral-600: #525252;
+  --neutral-700: #2e2e2e;
+  --neutral-800: #1f1f1f;
+  --neutral-900: #1a1a1a;
+  --neutral-950: #0a0913;
+
+  --font-heading: "Akt", system-ui, sans-serif;
+  --font-body: "TT Norms Pro Trial", system-ui, sans-serif;
+  --font-number: "PP Supply Sans", monospace;
+  font-family: var(--font-body);
+  --radius: 0.5rem;
+  --content-px: clamp(1rem, 3vw, 2rem);
+  --app-max-width: 1200px;
+
+  /* ── Background & Surfaces ── */
+  --background: var(--neutral-950);
+  --foreground: var(--neutral-50);
+  --foreground-muted: var(--shades-400);
+  --foreground-subtle: var(--shades-700);
+  /* ── Hoạ tiết trang trí ── */
+  --gradient-background-panel: linear-gradient(220deg, #225AFF 3%, rgba(10, 9, 19, 0.00) 17.49%, rgba(10, 9, 19, 0.00) 85.99%, #225AFF 98%);
+  --gradient-background-streak: linear-gradient(199deg, #2159FF 23.27%, rgba(23, 73, 222, 0.00) 82.97%);
+
+  --card: var(--shades-900);
+  --card-foreground: oklch(0.95 0.01 75);
+  --popover: #131420;
+  --popover-foreground: #1B4CDE;
+
+  /* ── Brand Colors ── */
+  --primary: var(--blue-ribbon-700);
+  --primary-a: var(--blue-ribbon-500);
+  --primary-foreground: var(--neutral-50);
+  /* --primary-muted: var(--shades-400); */
+  --primary-container: var(--blue-ribbon-100);
+  --primary-container-hover: var(--blue-ribbon-200);
+  --primary-container-muted: var(--blue-ribbon-50);
+  --on-primary-container: var(--blue-ribbon-900);
+  --on-primary-body: var(--shades-50);
+  /* ── Secondary / Muted ── */
+  --secondary: var(--shades-950);
+  --secondary-foreground: oklch(0.95 0.01 75);
+  --muted: oklch(0.26 0.03 240);
+  --muted-foreground: var(--shades-500);
+  --accent: oklch(0.26 0.03 240);
+  --accent-foreground: oklch(0.95 0.01 75);
+  --accent-muted: color-mix(in oklch, var(--accent) 15%, transparent);
+
+  /* ── Semantic Colors ── */
+  --destructive: oklch(0.68 0.15 35);
+  --destructive-foreground: oklch(0.18 0.03 240);
+  --destructive-muted: color-mix(in oklch, var(--destructive) 15%, transparent);
+  --success: oklch(0.70 0.13 150);
+  --success-foreground: oklch(0.18 0.03 240);
+  --success-muted: color-mix(in oklch, var(--success) 15%, transparent);
+  --warning: #FDCD21;
+  --warning-foreground: oklch(0.18 0.03 240);
+  --warning-muted: oklch(0.28 0.06 85);
+
+  /* ── Borders & Inputs ── */
+  --border: var(--shades-900);
+  --border-subtle: oklch(0.24 0.02 240);
+  --border-strong: var(--shades-600);
+  --border-container: var(--blue-ribbon-300);
+  --border-button: var(--blue-ribbon-400);
+  --input: var(--shades-800);
+  --ring: oklch(0.82 0.12 95);
+  --button-primary-foreground: var(--shades-200);
+  --button-primary-background: var(--blue-ribbon-600);
+  --button-primary-background-hover: var(--blue-ribbon-500);
+
+  /* ── Shadows ── */
+  --elevation-1: 0 1px 2px 0 oklch(0 0 0 / 0.35);
+  --elevation-2: 0 4px 6px -1px oklch(0 0 0 / 0.40),
+    0 2px 4px -2px oklch(0 0 0 / 0.30);
+  --elevation-3: var(--elevation-2);
+  --shadow-card: 0 1px 3px 0 oklch(0 0 0 / 0.3);
+  --button-primary-glow: inset 0 0 5px 0 rgba(255,255,255,0.8);
+  --button-tertiary-glow: inset 0 0 10px 0 rgba(255,255,255,0.8), inset 0 0 5px 0 #fff;
+
+  --chart-1: oklch(0.72 0.145 210);
+  --chart-2: oklch(0.635 0.245 252);
+  --chart-3: oklch(0.52 0.245 252);
+  --chart-4: oklch(0.696 0.17 162);
+  --chart-5: oklch(0.828 0.189 84);
+
+  /* ── Sidebar ── */
+  --sidebar: oklch(0.16 0.03 240);
+  --sidebar-foreground: oklch(0.95 0.01 75);
+  --sidebar-primary: oklch(0.82 0.12 95);
+  --sidebar-primary-foreground: oklch(0.18 0.03 240);
+  --sidebar-accent: oklch(0.24 0.03 240);
+  --sidebar-accent-foreground: oklch(0.95 0.01 75);
+  --sidebar-border: oklch(0.28 0.025 240);
+  --sidebar-ring: oklch(0.82 0.12 95);
+
+  /* ── Corelia DS v2 surfaces ── */
+  --surface-base: oklch(0.18 0.03 240);
+  --surface-raised: oklch(0.22 0.035 240);
+  --surface-overlay: oklch(0.26 0.035 240);
+  --surface-float: oklch(0.30 0.035 240);
+}
+
+html,
+body {
+  overflow-x: hidden;
+}
+
+body.blog-detail-page {
+  overflow-x: clip;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: var(--radius);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+body {
+  font-family: inherit;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer utilities {
+  .font-google-sans {
+    font-family: "Google Sans Flex", sans-serif;
+  }
+}
+
+/* Scroll-reveal (GSAP ScrollTrigger) — ẩn sẵn trước khi JS chạy, tránh nháy */
+.reveal-ready [data-reveal] {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-ready [data-reveal] {
+    opacity: 1 !important;
+  }
+}

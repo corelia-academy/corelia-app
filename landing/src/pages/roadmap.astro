@@ -1,0 +1,35 @@
+---
+import Header from  "@/components/common/header.astro";
+import RoadmapHero from "@/components/roadmap/hero.astro";
+import FeaturedCourses from "@/components/roadmap/featured-courses.astro";
+import OtherCourses from "@/components/roadmap/other-courses.astro";
+import SuitableRoadmap from "@/components/roadmap/suitable-roadmap.astro";
+import Faq from "@/components/landing/faq.astro";
+import Footer from "@/components/common/footer.astro";
+import Stripebandroadmap from "@/components/roadmap/stripebandroadmap.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { useTranslations } from "@/i18n/translations";
+
+const lang = "en";
+const t = useTranslations(lang);
+---
+
+<BaseLayout
+    lang={lang}
+    title={t("roadmap.meta.title")}
+    description={t("roadmap.meta.description")}
+    canonicalUrl="https://corelia.academy/roadmap"
+    ogUrl="https://corelia.academy/roadmap"
+    ogImage="https://corelia.academy/corelia-og-site-v2-en.png"
+>
+    <Header />
+    <RoadmapHero />
+    <Stripebandroadmap />
+    <FeaturedCourses />
+    <Stripebandroadmap />
+    <OtherCourses />
+    <Stripebandroadmap />
+    <SuitableRoadmap />
+    <Faq />
+    <Footer />
+</BaseLayout>

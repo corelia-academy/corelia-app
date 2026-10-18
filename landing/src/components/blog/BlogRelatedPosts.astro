@@ -1,0 +1,210 @@
+---
+import type { BlogLocale, BlogPost } from "@/lib/blog";
+import { articlePostUrl } from "@/lib/blog";
+import BlogMedia from "@/components/blog/BlogMedia.astro";
+import { useTranslations } from "@/i18n/translations";
+import StripeBand from "@/components/common/StripeBand.astro";
+import { blogCategoryLabel } from "@/lib/blogTaxonomy";
+import { getYouTubeThumbnailUrl } from "@/lib/youtube";
+
+type Props = {
+    locale: BlogLocale;
+    posts: BlogPost[];
+    fmtDate: Intl.DateTimeFormat;
+    title: string;
+};
+
+const { locale, posts, fmtDate, title } = Astro.props as Props;
+const t = useTranslations(locale);
+
+const featured = posts[0];
+const secondary = posts.slice(1);
+
+function getPreviewImage(post: BlogPost) {
+    const media = post.data.media;
+
+    if (!media) return null;
+    if (media.type === "image") return media.src;
+
+    return getYouTubeThumbnailUrl(media.url);
+}
+
+function estimateReadMinutes(post: BlogPost) {
+    const wordCount =
+        post.body?.trim().split(/\s+/).filter(Boolean).length ?? 0;
+
+    return Math.max(1, Math.ceil(wordCount / 200));
+}
+
+function readTimeLabel(minutes: number, locale: BlogLocale) {
+    return locale === "en"
+        ? `${minutes} min read`
+        : `Đọc trong ${minutes} phút`;
+}
+
+const featuredCard = featured
+    ? {
+        href: articlePostUrl(locale, featured),
+        title: featured.data.title,
+        description: featured.data.description ?? "",
+        category: blogCategoryLabel(locale, featured.data.category),
+        readTime: readTimeLabel(estimateReadMinutes(featured), locale),
+        image: getPreviewImage(featured),
+    }
+    : null;
+
+const secondaryCards = secondary.map((post) => ({
+    href: articlePostUrl(locale, post),
+    title: post.data.title,
+    description: post.data.description ?? "",
+    category: blogCategoryLabel(locale, post.data.category),
+    image: getPreviewImage(post),
+}));
+---
+
+<section
+    class="w-full border-t border-border"
+    aria-labelledby="blog-related-title"
+>
+    <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+        <div
+            class="grid h-[100px] w-full grid-cols-1 overflow-hidden border-x border-border md:grid-cols-3"
+        >
+            <!-- ke soc -->
+            <StripeBand
+                animated
+                class="bg-background flex flex-col flex-1 border-r border-border"
+            />
+
+            <!-- title -->
+            <div
+                class="flex items-center justify-center border-r border-border"
+            >
+                <div class="flex gap-3 justify-center mx-auto">
+                    <span class="text-2xl text-foreground-subtle mt-3"
+                        >&lt;</span
+                    >
+                    <p
+                        class="flex-1 text-4xl font-medium leading-[1.15] tracking-[-0.05em] text-foreground md:text-5xl md:tracking-[-0.04em]"
+                        style="font-family: var(--font-heading);"
+                        data-reveal="text-up"
+                    >
+                        {title}
+                    </p>
+                    <span class="text-2xl text-foreground-subtle mt-3"
+                        >&gt;</span
+                    >
+                </div>
+            </div>
+
+            <!-- ke soc -->
+            <StripeBand animated class="bg-background flex flex-col flex-1" />
+        </div>
+            {
+                featuredCard ? (
+                    <div class="grid grid-cols-1 border-t border-x border-border lg:grid-cols-2">
+                        <a
+                            href={featuredCard.href}
+                            class="group relative flex flex-col border-b border-border transition-colors hover:bg-secondary md:border-r md:border-b-0"
+                        >
+                            <div class="flex flex-1 flex-col gap-3 p-6 md:gap-6">
+                                <div class="h-[360px] w-full overflow-hidden bg-background xl:h-[430px]">
+                                    {featuredCard.image ? (
+                                        <img
+                                            src={featuredCard.image}
+                                            alt={featuredCard.title}
+                                            class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                                            loading="eager"
+                                            fetchpriority="high"
+                                            decoding="async"
+                                        />
+                                    ) : (
+                                        <div
+                                            class="h-full w-full bg-linear-to-br from-primary/15 via-card to-muted"
+                                            aria-hidden="true"
+                                        />
+                                    )}
+                                </div>
+
+                                <div class="flex flex-col gap-3 md:gap-6 md:p-6">
+                                    <span class="inline-flex w-fit items-center gap-2 border border-border-strong px-2 py-1 text-sm font-medium leading-[1.2] text-border-strong md:text-lg">
+                                        {featuredCard.category}
+                                        <span aria-hidden="true">•</span>
+                                        {featuredCard.readTime}
+                                    </span>
+
+                                    <p
+                                        class="line-clamp-2 text-2xl font-medium leading-[1.15] tracking-[-0.04em] text-foreground md:text-[28px]"
+                                        style="font-family: var(--font-heading);"
+                                    >
+                                        {featuredCard.title}
+                                    </p>
+
+                                    <p class="line-clamp-2 text-sm font-normal leading-[1.4] text-foreground-subtle md:text-base">
+                                        {featuredCard.description}
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+
+                        <div class="flex h-full min-h-0 flex-col">
+                            {/* <div
+                                class="flex h-[80px] items-center justify-center border-b border-border bg-secondary"
+                                data-reveal="fade-up"
+                            >
+                                <p
+                                    class="text-lg font-medium leading-[1.2] tracking-[-0.02em] text-foreground md:text-2xl"
+                                    style="font-family: var(--font-heading);"
+                                >
+                                    {t("blog.caseStudy.popularTitle")}
+                                </p>
+                            </div> */}
+
+                            <div class="flex flex-col">
+                                {secondaryCards.map((card, index) => (
+                                    <a
+                                        href={card.href}
+                                        class="group grid border-b border-border p-5 transition-colors duration-300 hover:bg-secondary last:border-b-0 sm:grid-cols-2 sm:gap-5"
+                                    >
+                                        <div class="h-[205.555px] overflow-hidden">
+                                            {card.image ? (
+                                                <img
+                                                    src={card.image}
+                                                    alt={card.title}
+                                                    loading="eager"
+                                                    decoding="async"
+                                                    class="block h-full w-full object-cover object-center p-3 transition-transform duration-500 group-hover:scale-[1.03]"
+                                                />
+                                            ) : (
+                                                <div
+                                                    class="h-full w-full bg-linear-to-br from-primary/15 via-card to-muted"
+                                                    aria-hidden="true"
+                                                />
+                                            )}
+                                        </div>
+
+                                        <div class="flex min-w-0 flex-col gap-2 pt-4 sm:pt-0">
+                                            <p class="w-fit border border-border-strong px-2 py-1 text-sm leading-[1.2] text-border-strong md:text-lg">
+                                                {card.category}
+                                            </p>
+
+                                            <h3
+                                                class="line-clamp-2 text-2xl font-medium leading-[1.15] tracking-[-0.04em] text-foreground md:text-[28px]"
+                                                style="font-family: var(--font-heading);"
+                                            >
+                                                {card.title}
+                                            </h3>
+
+                                            <p class="line-clamp-2 text-sm leading-[1.4] text-foreground-subtle md:text-base">
+                                                {card.description}
+                                            </p>
+                                        </div>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                ) : null
+            }
+    </div>
+</section>

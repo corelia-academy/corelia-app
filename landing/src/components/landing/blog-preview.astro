@@ -1,0 +1,130 @@
+---
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import ArrowRight from "@/assets/landing/arrow-right.svg";
+import {
+  blogIndexUrl,
+  blogPostUrl,
+  getBlogPosts,
+  type BlogLocale,
+} from "@/lib/blog";
+import { blogCategoryLabel } from "@/lib/blogTaxonomy";
+import { getYouTubeThumbnailUrl } from "@/lib/youtube";
+import StripeBand from "../common/StripeBand.astro";
+
+const lang = getLangFromUrl(Astro.url) as BlogLocale;
+const t = useTranslations(lang);
+
+const posts = await getBlogPosts(lang);
+const latestPosts = posts.slice(0, 2);
+
+function previewImageSrc(post: (typeof posts)[number]): string | null {
+  const media = post.data.media;
+  if (!media) return null;
+  if (media.type === "image") return media.src;
+  return getYouTubeThumbnailUrl(media.url);
+}
+
+function estimateReadMinutes(post: (typeof posts)[number]): number {
+  const WordCount = post.body?.trim().split(/\s+/).filter(Boolean).length ?? 0;
+  return Math.max(1, Math.ceil(WordCount / 200));
+}
+
+function readTimeLabel(minutes: number): string {
+  return lang === "en" ? `${minutes} min read` : `Đọc trong ${minutes} phút`;
+}
+
+---
+
+<div class="w-full border-t border-border">
+  <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+
+    <!-- banner "‹ Tin tức ›" -->
+    <div
+      class="grid h-[200px] w-full grid-cols-1 overflow-hidden border-x border-border md:grid-cols-3"
+    >
+      <!-- ke soc -->
+      <StripeBand animated class="bg-background flex flex-col flex-1 border-r border-border" />
+
+      <!-- title -->
+      <div class="flex items-center justify-center border-r border-border">
+        <div class="flex gap-3 justify-center mx-auto">
+          <span class="text-2xl text-foreground-subtle mt-3">&lt;</span>
+          <p
+            class="flex-1 text-4xl font-medium leading-[1.15] tracking-[-0.05em] text-foreground md:text-5xl md:tracking-[-0.04em]"
+            style="font-family: var(--font-heading);"
+            data-reveal="text-up"
+          >
+            {t("blog.preview.bannerLabel")}
+          </p>
+          <span class="text-2xl text-foreground-subtle mt-3">&gt;</span>
+        </div>
+      </div>
+
+      <!-- ke soc -->
+      <StripeBand animated class="bg-background flex flex-col flex-1" />
+    </div>
+
+    <!-- blog -->
+    <div class="grid grid-cols-1 gap-5 border-t border-border md:grid-cols-2">
+      {
+        latestPosts.map((post, index) => {
+          const href = blogPostUrl(lang, post.slug);
+          const thumb = previewImageSrc(post);
+          const minutes = estimateReadMinutes(post);
+          return (
+            <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group relative flex flex-col border border-border transition-colors hover:bg-secondary"
+            data-reveal="fade-up"
+            data-reveal-delay={index * 150}>
+              <div class="h-[250px] md:h-[320px] w-full overflow-hidden bg-muted">
+                {
+                  thumb ? (
+                    <img src={thumb}
+                    alt={post.data.title}
+                    class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    loading="lazy"
+                    decoding="async"
+                    />
+                  ) : (
+                    <div class="h-full w-full bg-linear-to-br from-primary/15 via-card to-muted"
+                    aria-hidden="true" />
+                  )}
+              </div>
+              <div class="flex flex-1 flex-col gap-3 md:gap-6 p-6 pb-15">
+                <span class="inline-flex w-fit items-center gap-2 border border-border-strong px-2 py-1 text-sm font-medium leading-[1.2] text-border-strong md:text-lg">
+                  {blogCategoryLabel(lang, post.data.category)}
+                  <span aria-hidden="true">•</span>
+                  {readTimeLabel(minutes)}
+                </span>
+                <p
+                class="line-clamp-2 text-2xl font-medium leading-[1.15] tracking-[-0.04em] text-foreground md:text-[28px]"
+                style="font-family: var(--font-heading);">
+                  {post.data.title}
+                </p>
+                <p class="line-clamp-2 text-sm font-normal leading-[1.4] text-foreground-subtle md:text-base">
+                  {post.data.description ?? ""}
+                </p>
+              </div>
+              <span class="absolute bottom-3 left-3 size-[6px] bg-foreground-muted" />
+              <span class="absolute bottom-3 right-3 size-[6px] bg-foreground-muted" />
+            </a>
+          );
+        })
+      }
+    </div>
+
+    <a
+      href={blogIndexUrl(lang)}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="flex h-20 items-center justify-end gap-3 border-x border-b border-border bg-border px-6 text-sm font-medium leading-[1.2] text-foreground transition-none hover:!bg-border focus:!bg-border active:!bg-border md:px-10 md:text-lg"
+    >
+      <span>{t("blog.preview.viewAll")}</span>
+      <img loading="lazy" decoding="async" src={ArrowRight.src} alt="" class="size-4" aria-hidden="true" />
+    </a>
+  </div>
+</div>

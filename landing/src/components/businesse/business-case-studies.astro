@@ -1,0 +1,100 @@
+---
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import { caseStudyPostUrl, getCaseStudyPosts, type BlogLocale } from "@/lib/blog";
+import { getYouTubeEmbedUrl } from "@/lib/youtube";
+import StripeBand from "../common/StripeBand.astro";
+import BusinessCaseStudiesCarousel from "./business-case-studies.tsx";
+
+const lang = getLangFromUrl(Astro.url) as BlogLocale;
+const t = useTranslations(lang);
+
+const posts = await getCaseStudyPosts(lang);
+
+const featuredCaseStudyKeys = [
+    "sui-learning-tour-campus-awareness-to-student-builders",
+    "unihackfest-2026-university-to-builder-pipeline",
+    "solana-developer-bootcamp-structured-builder-journey",
+] as const;
+
+function getPreviewImage(post: (typeof posts)[number]) {
+    const media = post.data.media;
+
+    if (!media) return null;
+
+    if (media.type === "image") {
+        return media.src;
+    }
+
+    return getYouTubeEmbedUrl(media.url);
+}
+
+const postsByTranslationKey = new Map(
+    posts.map((post) => [post.data.translationKey, post]),
+);
+
+const caseStudyNavLabels: Record<(typeof featuredCaseStudyKeys)[number], string> = {
+    "sui-learning-tour-campus-awareness-to-student-builders": "Sui Learning Tour",
+    "unihackfest-2026-university-to-builder-pipeline": "UniHackFest",
+    "solana-developer-bootcamp-structured-builder-journey": "Solana Bootcamp",
+};
+
+const caseStudies = featuredCaseStudyKeys.flatMap((translationKey) => {
+    const post = postsByTranslationKey.get(translationKey);
+    if (!post) return [];
+
+    return [{
+    eyebrow: t("business.caseStudy.eyebrow"),
+    navLabel: caseStudyNavLabels[translationKey],
+    title: post.data.title,
+    description: post.data.description ?? "",
+    href: caseStudyPostUrl(lang, post.slug),
+    image: getPreviewImage(post),
+    }];
+});
+
+const stats = [
+    {
+        number: t("business.caseStudy.stats.1.number"),
+        text: t("business.caseStudy.stats.1.text"),
+    },
+    {
+        number: t("business.caseStudy.stats.2.number"),
+        text: t("business.caseStudy.stats.2.text"),
+    },
+];
+---
+
+<div
+    class="h-[100px] container relative z-10 mx-auto max-w-(--app-max-width) px-3 xl:px-0 hidden md:block"
+>
+    <StripeBand
+        animated
+        class="bg-background border-x border-border h-full w-full"
+    />
+</div>
+<section
+    class="relative w-full overflow-hidden border-t border-border"
+>
+    <div
+        class="case-study-grid-background container border-x border-border relative z-10 mx-auto max-w-(--app-max-width) px-3 xl:px-0"
+        style="
+        background-image: linear-gradient(
+        90deg,
+        var(--border) 0,
+        var(--border) 1px,
+        transparent 1px,
+        transparent 100%
+        );
+        background-size: 5% 100%;
+        background-repeat: repeat;
+    "
+    >
+        <BusinessCaseStudiesCarousel
+            items={caseStudies}
+            stats={stats}
+            viewFullLabel={t("business.caseStudy.viewFull")}
+            client:visible
+        />
+    </div>
+</section>

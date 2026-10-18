@@ -1,0 +1,174 @@
+---
+/**
+ * Program track tabs — native radio + label + :has() so switching works without JS hydration.
+ */
+import { getLangFromUrl } from "@/i18n/utils";
+import {
+  useTranslations,
+  type TranslationKey,
+} from "@/i18n/translations";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const ICONS = ["/4.png", "/5.png", "/6.png", "/7.png"] as const;
+
+const tracks: {
+  slug: string;
+  labelKey: TranslationKey;
+  courseKeys: readonly TranslationKey[];
+}[] = [
+  {
+    slug: "app",
+    labelKey: "program.tab.app",
+    courseKeys: [
+      "program.app.1.title",
+      "program.app.2.title",
+      "program.app.3.title",
+      "program.app.4.title",
+    ],
+  },
+  {
+    slug: "ai",
+    labelKey: "program.tab.ai",
+    courseKeys: [
+      "program.ai.1.title",
+      "program.ai.2.title",
+      "program.ai.3.title",
+      "program.ai.4.title",
+    ],
+  },
+  {
+    slug: "blockchain",
+    labelKey: "program.tab.blockchain",
+    courseKeys: [
+      "program.1.title",
+      "program.2.title",
+      "program.3.title",
+      "program.4.title",
+    ],
+  },
+];
+---
+
+<div class="program-tabs-native relative z-10 w-full">
+  {
+    tracks.map((tr, i) => (
+      <input
+        type="radio"
+        name="program-track"
+        id={`program-tab-${tr.slug}`}
+        class="sr-only"
+        checked={i === 0}
+      />
+    ))
+  }
+
+  <div
+    class="grid grid-cols-3 gap-1 text-center items-end text-[11px] lg:text-xs"
+    role="tablist"
+    aria-label={t("program.title")}
+  >
+    {
+      tracks.map((tr) => (
+        <label
+          for={`program-tab-${tr.slug}`}
+          class:list={[
+            "program-tab-label",
+            "m-0 w-full rounded-tl-[24px] border-t border-r border-l border-border rounded-tr-[24px] bg-card p-2 text-center font-[family:inherit] cursor-pointer h-fit transition-all duration-300",
+            "[-webkit-tap-highlight-color:transparent] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          ]}
+          role="tab"
+        >
+          <span class="program-tab-label-inner block whitespace-normal leading-snug px-0.5">
+            {t(tr.labelKey)}
+          </span>
+        </label>
+      ))
+    }
+  </div>
+
+  <div class="p-2 bg-card border border-border rounded-bl-[40px] rounded-br-[40px]">
+    <div class="p-4 sm:p-6 md:p-8 bg-background rounded-[20px] md:rounded-[36px]">
+      {
+        tracks.map((tr) => (
+          <div
+            class:list={[
+              "program-panel",
+              `program-panel-${tr.slug}`,
+              "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 w-full",
+            ]}
+          >
+            {tr.courseKeys.map((key, idx) => (
+              <div class="relative flex min-h-[180px] flex-col items-start gap-3 overflow-hidden rounded-[16px] border border-border bg-card p-4 transition-colors hover:bg-secondary md:min-h-[200px] md:rounded-[20px] md:p-5">
+                <div class="relative z-2 flex max-w-[88%] flex-col gap-2 sm:max-w-[200px]">
+                  <p class="text-lg font-medium text-card-foreground">{t(key)}</p>
+                  <span class="inline-flex w-fit rounded-full border border-border bg-primary/15 px-2 py-1 text-xs text-muted-foreground">
+                    {t("program.course.status")}
+                  </span>
+                </div>
+                <div class="pointer-events-none absolute -bottom-[40px] -right-[40px] md:-bottom-[50px] md:-right-[50px]">
+                  <img
+                    src={ICONS[idx]}
+                    alt=""
+                    class="size-[150px] object-cover md:size-[190px]"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  .program-tabs-native .program-panel {
+    display: none;
+  }
+  .program-tabs-native:has(#program-tab-app:checked) .program-panel-app {
+    display: grid;
+  }
+  .program-tabs-native:has(#program-tab-ai:checked) .program-panel-ai {
+    display: grid;
+  }
+  .program-tabs-native:has(#program-tab-blockchain:checked)
+    .program-panel-blockchain {
+    display: grid;
+  }
+
+  .program-tabs-native:has(#program-tab-app:checked)
+    label[for="program-tab-app"],
+  .program-tabs-native:has(#program-tab-ai:checked)
+    label[for="program-tab-ai"],
+  .program-tabs-native:has(#program-tab-blockchain:checked)
+    label[for="program-tab-blockchain"] {
+    font-size: 0.875rem;
+  }
+  @media (min-width: 1024px) {
+    .program-tabs-native:has(#program-tab-app:checked)
+      label[for="program-tab-app"],
+    .program-tabs-native:has(#program-tab-ai:checked)
+      label[for="program-tab-ai"],
+    .program-tabs-native:has(#program-tab-blockchain:checked)
+      label[for="program-tab-blockchain"] {
+      font-size: 1rem;
+    }
+  }
+
+  .program-tabs-native:has(#program-tab-app:checked)
+    label[for="program-tab-app"]
+    .program-tab-label-inner,
+  .program-tabs-native:has(#program-tab-ai:checked)
+    label[for="program-tab-ai"]
+    .program-tab-label-inner,
+  .program-tabs-native:has(#program-tab-blockchain:checked)
+    label[for="program-tab-blockchain"]
+    .program-tab-label-inner {
+    padding: 0.75rem;
+    border-radius: 16px;
+    background-color: color-mix(in oklch, var(--foreground) 15%, transparent);
+  }
+</style>

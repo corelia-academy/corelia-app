@@ -1,0 +1,94 @@
+---
+import { ArrowRightIcon } from "lucide-react";
+import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import ProgramTabs from "@/components/landing/program-tabs.astro";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const translatePath = useTranslatedPath(lang);
+
+const appOrigin = String(
+  import.meta.env.PUBLIC_APP_ORIGIN ?? "https://app.corelia.academy",
+).replace(/\/$/, "");
+const appCoursesUrl = `${appOrigin}/courses`;
+---
+
+<div
+  id="programs"
+  class="container max-w-[1200px] mx-auto py-16 px-3 xl:px-0 flex flex-col items-center justify-center scroll-mt-24"
+>
+  <p
+    class="pb-6 text-center text-2xl font-semibold capitalize text-foreground md:text-3xl lg:text-4xl max-w-[90%] md:max-w-none"
+    data-aos="fade-up"
+  >
+    {t("program.title")}
+  </p>
+  <p
+    class="mx-auto max-w-[90%] pb-16 text-center text-xs font-light text-muted-foreground md:max-w-[500px] md:text-sm"
+    data-aos="fade-up"
+    data-aos-delay="200"
+  >
+    {t("program.description")}
+  </p>
+
+  <div class="w-full relative z-15 isolate">
+    <ProgramTabs />
+  </div>
+
+  <div
+    class="flex justify-center mt-8 md:mt-12 lg:mt-16"
+    data-aos="fade-up"
+    data-aos-delay="800"
+  >
+    <a
+      href={appCoursesUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="w-fit bg-primary text-primary-foreground pt-2 pb-2 pl-4 pr-2 rounded-full cursor-pointer hover:bg-secondary hover:text-secondary-foreground transition-all duration-300 text-xs md:text-sm flex items-center justify-center gap-2"
+    >
+      {t("program.seeAll")}
+
+      <div class="p-1 bg-primary-foreground/15 rounded-full">
+        <ArrowRightIcon className="size-3 text-primary-foreground" strokeWidth={1} />
+      </div>
+    </a>
+  </div>
+
+  <div
+    class="mt-16 flex flex-col lg:flex-row items-stretch justify-center gap-4 h-full lg:h-[350px]"
+  >
+    <img loading="lazy" decoding="async"
+      src="/Choose_Program.png"
+      alt="Program Image"
+      class="object-cover object-bottom w-full lg:w-[45%] rounded-[40px] h-full"
+      data-aos="fade-right"
+    />
+    <div
+      class="w-full lg:w-[55%] text-left bg-card p-6 md:p-8 rounded-[40px] border border-border flex flex-col justify-between h-full"
+      data-aos="fade-left"
+    >
+      <div>
+        <p
+          class="text-foreground text-xl md:text-2xl lg:text-3xl xl:text-4xl font-medium capitalize pb-2 md:pb-3"
+        >
+          {t("program.notSure.title")}
+        </p>
+        <p
+          class="text-muted-foreground text-sm md:text-base font-light pb-8 md:pb-12 lg:pb-16"
+        >
+          {t("program.notSure.description")}
+        </p>
+      </div>
+      <a
+        href={translatePath("/contact")}
+        class="w-fit bg-primary text-primary-foreground pt-2 pb-2 pl-4 pr-2 rounded-full cursor-pointer hover:bg-secondary hover:text-secondary-foreground transition-all duration-300 text-xs md:text-sm flex items-center justify-center gap-2"
+      >
+        {t("program.notSure.cta")}
+        <div class="p-1 bg-primary-foreground/15 rounded-full">
+          <ArrowRightIcon className="size-3 text-primary-foreground" strokeWidth={1} />
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
