@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 import type { ClaimStatus } from "../types";
+import { appPath } from "@/lib/appUrl";
 
 export function OcClaimBadge({ status }: { status: ClaimStatus }) {
   const { t } = useTranslation("common");
@@ -59,7 +60,7 @@ export function OcClaimBadge({ status }: { status: ClaimStatus }) {
   return (
     <span className={cn(base, "bg-surface-raised font-medium text-foreground-muted")}>
       <img
-        src="/open-campus-edu-logo.png"
+        src={appPath("/open-campus-edu-logo.png")}
         alt="OC"
         className="size-3.5 shrink-0 rounded-full sm:size-4"
       />

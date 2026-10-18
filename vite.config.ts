@@ -13,6 +13,8 @@ const appVersion = JSON.parse(
 
 // https://vite.dev/config/
 export default defineConfig({
+  // The SPA is served at corelia.academy/learn; the Astro landing owns the domain root.
+  base: '/learn/',
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),
   },

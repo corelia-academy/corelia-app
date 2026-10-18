@@ -589,7 +589,7 @@
     },
     "appBaseUrl": {
       "title": "應用程式基礎網址",
-      "subtitle": "用於產生系統郵件（證書、領取邀請等）中連結的根網域。測試環境：https://staging.corelia.academy；正式環境：https://app.corelia.academy。此處填寫錯誤會導致所有寄出的郵件連結指向錯誤的環境。",
+      "subtitle": "用於產生系統郵件（證書、領取邀請等）中連結的根網域。測試環境：https://staging.corelia.academy/learn；正式環境：https://corelia.academy/learn。此處填寫錯誤會導致所有寄出的郵件連結指向錯誤的環境。",
       "urlLabel": "基礎網址",
       "saveUrl": "儲存網址",
       "invalidUrl": "網址無效：必須形如 https://網域，且不能有結尾斜線或多餘字元。"

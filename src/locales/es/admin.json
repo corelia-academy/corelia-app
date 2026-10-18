@@ -589,7 +589,7 @@
     },
     "appBaseUrl": {
       "title": "URL base de la aplicación",
-      "subtitle": "Dominio raíz que se usa para construir los enlaces de los correos del sistema (certificados, invitaciones para reclamar...). Staging: https://staging.corelia.academy; producción: https://app.corelia.academy. Un valor incorrecto aquí envía todos los enlaces de los correos salientes al entorno equivocado.",
+      "subtitle": "Dominio raíz que se usa para construir los enlaces de los correos del sistema (certificados, invitaciones para reclamar...). Staging: https://staging.corelia.academy/learn; producción: https://corelia.academy/learn. Un valor incorrecto aquí envía todos los enlaces de los correos salientes al entorno equivocado.",
       "urlLabel": "URL base",
       "saveUrl": "Guardar URL",
       "invalidUrl": "URL no válida: debe tener la forma https://dominio, sin barra final ni caracteres adicionales."

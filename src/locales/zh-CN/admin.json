@@ -589,7 +589,7 @@
     },
     "appBaseUrl": {
       "title": "应用基础网址",
-      "subtitle": "用于生成系统邮件（证书、领取邀请等）中链接的根域名。测试环境：https://staging.corelia.academy；生产环境：https://app.corelia.academy。此处填写错误会导致所有发出的邮件链接指向错误的环境。",
+      "subtitle": "用于生成系统邮件（证书、领取邀请等）中链接的根域名。测试环境：https://staging.corelia.academy/learn；生产环境：https://corelia.academy/learn。此处填写错误会导致所有发出的邮件链接指向错误的环境。",
       "urlLabel": "基础网址",
       "saveUrl": "保存网址",
       "invalidUrl": "网址无效：必须形如 https://域名，且不能有结尾斜杠或多余字符。"

@@ -4,7 +4,7 @@ export type RouteSkeletonVariant = "home" | "list" | "detail" | "form" | "table"
 export function routeSkeletonVariantForPath(pathname: string): RouteSkeletonVariant {
   const path = pathname.replace(/\/+$/, "") || "/";
   if (path === "/") return "home";
-  if (path.startsWith("/learn/")) return "learn";
+  if (path.startsWith("/study/")) return "learn";
   if (
     path === "/admin/branding" ||
     /^\/admin\/hackathons\/(new|[^/]+\/edit)$/.test(path) ||

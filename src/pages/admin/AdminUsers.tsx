@@ -15,6 +15,7 @@ import { AdminStatsCard } from "@/features/admin/ui/AdminStatsCard";
 import { AdminErrorBanner } from "@/features/admin/ui/AdminErrorBanner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { UserAvatar } from "@/components/UserAvatar";
+import { appPath } from "@/lib/appUrl";
 
 const PAGE_SIZE = 25;
 
@@ -123,7 +124,7 @@ export default function AdminUsers() {
           value={stats.openCampusConnected}
           icon={
             <img
-              src="/open-campus-edu-logo.png"
+              src={appPath("/open-campus-edu-logo.png")}
               alt=""
               className="size-5 rounded-full"
               aria-hidden

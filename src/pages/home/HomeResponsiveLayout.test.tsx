@@ -110,13 +110,13 @@ it("keeps continue-learning cards at the intended tablet container width", async
     completed: false,
     nextStep: "Next lesson",
     meta: "2 minutes · self-paced",
-    action: "/learn/responsive-focus-card",
+    action: "/study/responsive-focus-card",
   };
   const container = await render(
     <ContinueLearningSection t={t} focusCards={[focusCard]} enrolledCourseCount={1} />,
   );
   const card = container.querySelector<HTMLAnchorElement>(
-    'a[href="/learn/responsive-focus-card"]',
+    'a[href="/study/responsive-focus-card"]',
   );
 
   expect(card?.className).toContain("@min-[504px]:@max-[807px]:flex-[1_1_240px]!");

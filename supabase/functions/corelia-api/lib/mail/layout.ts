@@ -9,10 +9,12 @@ export function resolveAppUrl(): string {
       : typeof process !== "undefined"
         ? process.env[name]?.trim() ?? ""
         : "";
+  // The SPA lives under a base path on the shared origin (https://corelia.academy/learn).
+  const origin = getEnv("CORELIA_APP_ORIGIN").replace(/\/+$/, "");
   const raw =
     getEnv("APP_URL") ||
-    getEnv("CORELIA_APP_ORIGIN") ||
-    "https://app.corelia.dev";
+    (origin ? `${origin}${getEnv("CORELIA_APP_BASE_PATH")}` : "") ||
+    "https://corelia.academy/learn";
   return raw.replace(/\/+$/, "");
 }
 

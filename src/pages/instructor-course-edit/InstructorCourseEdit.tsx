@@ -215,6 +215,7 @@ import {
 } from "@/lib/coInstructorInvites";
 import { CONTENT_LOCALES, LOCALE_META, intlLocaleFor, type ContentLocale } from "@/lib/locales";
 import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
+import { appPath } from "@/lib/appUrl";
 
 /** Gợi ý tách lesson khi video dài hơn ngưỡng này (giây). */
 const LONG_VIDEO_SPLIT_SECONDS = 3600;
@@ -3740,7 +3741,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
       return;
     try {
       await runMutation(() => deleteCourse(id));
-      window.location.href = "/instructor/courses";
+      window.location.href = appPath("/instructor/courses");
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.deleteCourseFailed"));
     }
@@ -8357,7 +8358,7 @@ const InstructorCourseEdit = ({ learningTools, onDirtyChange, onCreateLearningLe
                   </ul>
                   <div className="mt-4">
                     <a
-                      href="/certificate-template-sample.svg"
+                      href={appPath("/certificate-template-sample.svg")}
                       download="certificate-template-sample.svg"
                       className="inline-flex items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-raised"
                     >

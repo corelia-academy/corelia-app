@@ -17,6 +17,7 @@ import {
   usePageTitleOverride,
 } from "@/components/navigation/PageTitle";
 import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
+import { landingUrl } from "@/lib/appUrl";
 
 export default function JobDetailPage() {
   const { slug } = useParams();
@@ -28,16 +29,15 @@ export default function JobDetailPage() {
   const metaJob = jobQuery.data;
   usePageTitleOverride(jobQuery.isSuccess && !metaJob ? "notFound" : null);
   useDynamicPageTitle(metaJob ? `${metaJob.title} · ${metaJob.company_name}` : null);
-  const pageUrl = typeof window === "undefined"
-    ? `https://app.corelia.academy/jobs/${slug ?? ""}`
-    : `${window.location.origin}${window.location.pathname}`;
+  // The landing site renders the indexable job page; this view stays out of the index.
+  const pageUrl = landingUrl(`/jobs/${slug ?? ""}`);
   const canIndex = metaJob?.job_sources?.allow_seo_indexing === true;
   usePageMeta({
     title: metaJob ? `${metaJob.title} at ${metaJob.company_name}` : undefined,
     description: metaJob?.summary ?? undefined,
     url: pageUrl,
     canonicalUrl: pageUrl,
-    robots: metaJob ? canIndex ? "index,follow" : "noindex,nofollow" : "noindex,follow",
+    robots: metaJob && !canIndex ? "noindex,nofollow" : "noindex,follow",
   });
   const mutation = useMutation({
     mutationFn: async (patch: { saved?: boolean; applied?: boolean }) => {

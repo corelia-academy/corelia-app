@@ -34,7 +34,7 @@ function LessonItem({
 
   return (
     <Link
-      to={`/learn/${courseId}/lesson/${lesson.id}`}
+      to={`/study/${courseId}/lesson/${lesson.id}`}
       className={cn(
         rowClassName,
         "flex w-full items-start gap-3 hover:bg-surface-raised sm:items-center",
@@ -166,7 +166,7 @@ function CurriculumList({
             />
           ))}
       {hasFinalAssignment && hasFullCourseAccess && <Link
-        to={`/learn/${courseId}/final-assignment`}
+        to={`/study/${courseId}/final-assignment`}
         aria-current={isFinalAssignment ? "page" : undefined}
         className={cn("flex items-center gap-3 border-t border-border-subtle border-l-[3px] px-4 py-3 text-sm", isFinalAssignment ? "border-l-brand-accent bg-primary-muted font-medium text-primary" : "border-l-transparent hover:bg-surface-raised")}
       ><FileText className="size-4 shrink-0" aria-hidden />{translate("detail.learn.finalAssignmentTitle")}</Link>}

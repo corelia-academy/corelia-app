@@ -589,7 +589,7 @@
     },
     "appBaseUrl": {
       "title": "アプリのベース URL",
-      "subtitle": "システムメール（修了証、受け取り招待など）のリンク生成に使用するルートドメインです。ステージング：https://staging.corelia.academy、本番：https://app.corelia.academy。ここを間違えると、送信するすべてのメールのリンクが誤った環境に向かいます。",
+      "subtitle": "システムメール（修了証、受け取り招待など）のリンク生成に使用するルートドメインです。ステージング：https://staging.corelia.academy/learn、本番：https://corelia.academy/learn。ここを間違えると、送信するすべてのメールのリンクが誤った環境に向かいます。",
       "urlLabel": "ベース URL",
       "saveUrl": "URL を保存",
       "invalidUrl": "URL が正しくありません：https://ドメイン の形式で、末尾のスラッシュや余分な文字を含めないでください。"

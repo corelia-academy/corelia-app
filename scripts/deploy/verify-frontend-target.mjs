@@ -1,10 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { frontendTarget, FRONTEND_TARGETS } from "./worker-target.mjs";
+import { frontendTarget, FRONTEND_TARGETS, workerRoutes } from "./worker-target.mjs";
 
 export function entryAssetPath(html) {
-  const match = html.match(/<script\b[^>]*\bsrc="(\/assets\/index-[A-Za-z0-9_-]+\.js)"/);
+  // Vite prefixes asset URLs with the /learn base; the files themselves sit at client/assets/.
+  const match = html.match(/<script\b[^>]*\bsrc="(?:\/learn)?(\/assets\/index-[A-Za-z0-9_-]+\.js)"/);
   if (!match) throw new Error("Frontend entry script is missing from index.html");
   return match[1];
 }
@@ -19,8 +20,12 @@ export async function verifyFrontendTarget(mode, distRoot = resolve("dist")) {
     throw new Error(`Worker avatar API does not target ${mode} Supabase`);
   }
   if (config.vars?.CORELIA_OG_FUNCTION_URL !== `https://${target.projectRef}.supabase.co/functions/v1/corelia-api` ||
-      config.vars?.CORELIA_APP_ORIGIN !== target.appUrl) {
+      config.vars?.CORELIA_APP_ORIGIN !== target.appOrigin ||
+      config.vars?.CORELIA_APP_BASE_PATH !== new URL(target.appUrl).pathname) {
     throw new Error(`Worker OG configuration does not target ${mode}`);
+  }
+  if (JSON.stringify(config.routes) !== JSON.stringify(workerRoutes(target))) {
+    throw new Error(`Worker routes do not target ${mode}`);
   }
 
   const html = await readFile(resolve(distRoot, "client/index.html"), "utf8");

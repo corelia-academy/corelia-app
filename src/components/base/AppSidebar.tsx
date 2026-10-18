@@ -34,6 +34,7 @@ import { useTheme } from "next-themes";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/stores/authStore";
 import { canSpeculativelyPrefetch, prefetchRouteChunk } from "@/lib/routePrefetch";
+import { appPath } from "@/lib/appUrl";
 
 // const primaryNav = [
 //   { labelKey: "nav.home" as const, href: "/", icon: House, end: true },
@@ -152,8 +153,8 @@ export default function AppSidebar({
             <img
               src={
                 resolvedTheme === "dark"
-                  ? "/logo/Corelia_Logo_White.svg"
-                  : "/logo/corelia-full-logo-black.png"
+                  ? appPath("/logo/Corelia_Logo_White.svg")
+                  : appPath("/logo/corelia-full-logo-black.png")
               }
               alt="Corelia Academy"
               width={108}
