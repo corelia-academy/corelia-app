@@ -18,15 +18,13 @@ export type AccountMenuProps = {
   /** "Log out": a link on the landing site (the app owns the session), an action inside the app. */
   signOut: { label: string; href?: string; onSelect?: () => void };
   label: string;
-  /** Replaces the default avatar (the app renders its generated avatars). */
-  avatar?: ReactNode;
   /** Extra content under the name, e.g. the app's XP badges. */
   summary?: ReactNode;
   renderLink?: (props: SiteHeaderLinkProps) => ReactNode;
 };
 
 /** Avatar button with the signed-in user's menu; identical on the landing site and in the app. */
-export function AccountMenu({ user, items, signOut, label, avatar, summary, renderLink = defaultLink }: AccountMenuProps) {
+export function AccountMenu({ user, items, signOut, label, summary, renderLink = defaultLink }: AccountMenuProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const panelId = useId();
@@ -58,9 +56,9 @@ export function AccountMenu({ user, items, signOut, label, avatar, summary, rend
         aria-controls={panelId}
         onClick={() => setOpen((value) => !value)}
       >
-        {avatar ?? (user.avatarUrl
+        {user.avatarUrl
           ? <img className="csh-avatar csh-avatar-lg" src={user.avatarUrl} alt="" width={32} height={32} referrerPolicy="no-referrer" />
-          : <span className="csh-avatar csh-avatar-lg" aria-hidden>{initial(user)}</span>)}
+          : <span className="csh-avatar csh-avatar-lg" aria-hidden>{initial(user)}</span>}
         {name ? <span className="csh-account-name">{name}</span> : null}
       </button>
       <div id={panelId} className="csh-account-panel" hidden={!open}>

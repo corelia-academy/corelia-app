@@ -7,7 +7,7 @@ import { AccountMenu, SearchLink } from "./AccountMenu";
 import { AuthActions } from "./AuthActions";
 import { LanguageMenu } from "./LanguageMenu";
 import { SITE_HEADER_COPY, siteAccountLinks, siteHomeHref, siteNavigation } from "./nav";
-import { readSiteSession } from "./session";
+import { SITE_USER_KEY, readSiteSession, writeSiteUser } from "./session";
 import { SiteHeader } from "./SiteHeader";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -137,6 +137,15 @@ describe("readSiteSession", () => {
     expect(readSiteSession(storage({ theme: "dark", "sb-abcdef-auth-token": session }))).toEqual({
       name: "An Nguyen", email: "a@b.c", avatarUrl: "https://x/a.png",
     });
+  });
+
+  it("prefers the app's name and avatar for the same user", () => {
+    const session = JSON.stringify({ refresh_token: "r", user: { id: "u1", email: "a@b.c", user_metadata: { full_name: "An Nguyen", avatar_url: "https://x/a.png" } } });
+    const entries: Record<string, string> = { "sb-abcdef-auth-token": session };
+    writeSiteUser({ id: "u1", name: "an.edu", avatarUrl: "data:image/svg+xml,x" }, { setItem: (k, v) => { entries[k] = v; } });
+    expect(readSiteSession(storage(entries))).toEqual({ name: "an.edu", email: "a@b.c", avatarUrl: "data:image/svg+xml,x" });
+    entries[SITE_USER_KEY] = JSON.stringify({ id: "someone-else", name: "x", avatarUrl: "y" });
+    expect(readSiteSession(storage(entries))?.name).toBe("An Nguyen");
   });
 
   it("treats missing, signed-out and malformed entries as guests", () => {
