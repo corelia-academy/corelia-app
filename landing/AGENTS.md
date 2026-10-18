@@ -13,7 +13,7 @@ Astro 5 marketing site for `https://corelia.academy` (home, roadmap, case studie
 - `src/components/` — `.astro` sections plus React islands (`@astrojs/react`).
 - `src/content/blog/` — published blog and case-study Markdown (schema in `src/content.config.ts`). `blog/` at this level holds unpublished drafts.
 - `src/layouts/BaseLayout.astro` — `<head>`, canonical, robots, Open Graph/Twitter metadata.
-- `src/components/common/header.astro` + `LandingHeader.tsx` — the site header shared with the learning app (`packages/ui`, `@corelia/ui/site-header`). Change navigation, header copy and styling there, not per page.
+- `src/components/common/header.astro` — the landing header (navigation, language switcher). Guests see "Log in"; an inline script reads the app's Supabase session from this origin's localStorage and shows the avatar and "Learn" (`PUBLIC_APP_URL`) instead. The learning app keeps its own header and sidebar.
 - `public/_redirects` — permanent redirects served by Cloudflare static assets.
 - `tools/blog-editor/` — local blog editing tool (`pnpm --filter corelia-landing blog:editor`).
 

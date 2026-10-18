@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { NavLink, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -22,8 +22,7 @@ import {
   type ParticipantPreviewData,
 } from "@/components/participants/participantPreview";
 import { searchResultsQueryOptions } from "@/features/search/searchQueries";
-import { logSearchQuery, type SearchEntityType, type SearchResultRow } from "@/lib/search";
-import { useAuth } from "@/stores/authStore";
+import type { SearchEntityType, SearchResultRow } from "@/lib/search";
 import { formatDuration, getCourseLevelLabel } from "@/types/courses";
 
 const SEARCH_FILTERS = ["all", "course", "hackathon", "project", "profile"] as const;
@@ -121,9 +120,6 @@ export default function SearchPage() {
   const [activeFilter, setActiveFilter] = useState<SearchFilter>("all");
   const [previousQuery, setPreviousQuery] = useState(q);
   const [draftQuery, setDraftQuery] = useState(q);
-  const { isAuthenticated } = useAuth();
-  // Signed-in searches feed the trending list (the header used to log them before it became an icon).
-  const logSearch = useMutation({ mutationFn: logSearchQuery });
   const resultsQuery = useQuery(searchResultsQueryOptions(q, 30, true, i18n.language));
   const items = resultsQuery.data ?? EMPTY_SEARCH_RESULTS;
   const participantPreviewByCourse = useMemo(
@@ -166,13 +162,11 @@ export default function SearchPage() {
 
       <form
         role="search"
-        className="mt-4 max-w-xl"
+        className="mt-4 md:hidden"
         onSubmit={(event) => {
           event.preventDefault();
           const next = draftQuery.trim();
-          if (!next) return;
-          navigate(`/search?q=${encodeURIComponent(next)}`);
-          if (isAuthenticated) logSearch.mutate(next);
+          if (next) navigate(`/search?q=${encodeURIComponent(next)}`);
         }}
       >
         <Input

@@ -21,8 +21,6 @@ vi.mock("@/features/search/searchQueries", () => ({
 }));
 
 vi.mock("@/components/participants/ParticipantSummary", () => ({ ParticipantSummary: () => null }));
-vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ isAuthenticated: false }) }));
-vi.mock("@/lib/search", () => ({ logSearchQuery: vi.fn() }));
 
 import SearchPage from "./SearchPage";
 

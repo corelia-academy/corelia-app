@@ -59,7 +59,6 @@ const SearchPage = lazy(() => import("@/pages/search"));
 const ConfirmSignup = lazy(() => import("@/pages/auth/ConfirmSignup"));
 const SignupVerified = lazy(() => import("@/pages/auth/SignupVerified"));
 const ResetPasswordPage = lazy(() => import("@/pages/auth/ResetPasswordPage"));
-const SignOutPage = lazy(() => import("@/pages/auth/SignOutPage"));
 const EmailUnsubscribePage = lazy(() =>
   import("@/pages/EmailUnsubscribePage").then((m) => ({ default: m.EmailUnsubscribePage })),
 );
@@ -277,14 +276,6 @@ function ApplicationRoutes() {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <ResetPasswordPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/logout"
-              element={
-                <Suspense fallback={<PageFallback />}>
-                  <SignOutPage />
                 </Suspense>
               }
             />
