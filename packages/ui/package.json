@@ -1,0 +1,16 @@
+{
+  "name": "@corelia/ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Site chrome shared by the landing site and the learning app (header, locales).",
+  "exports": {
+    "./locales": "./src/locales.ts",
+    "./site-header": "./src/site-header/index.ts",
+    "./site-header.css": "./src/site-header/site-header.css"
+  },
+  "peerDependencies": {
+    "lucide-react": ">=0.500.0",
+    "react": "^19.0.0"
+  }
+}

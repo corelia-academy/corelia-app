@@ -38,7 +38,17 @@ import {
 } from "@/features/search/searchQueries";
 import { logSearchQuery } from "@/lib/search";
 import { prefetchRouteChunk } from "@/lib/routePrefetch";
-import { appPath } from "@/lib/appUrl";
+import { appPath, isAppPath, stripAppBasePath } from "@/lib/appUrl";
+import { useLocale } from "@/hooks/useLocale";
+import {
+  AuthActions,
+  LanguageMenu,
+  SITE_HEADER_COPY,
+  SiteHeader,
+  siteNavigation,
+  type SiteHeaderLinkProps,
+} from "@corelia/ui/site-header";
+import "@corelia/ui/site-header.css";
 
 const RECENT_SEARCHES_KEY = "corelia.recentSearches.v1";
 const MAX_RECENT_SEARCHES = 8;
@@ -70,6 +80,22 @@ function writeRecentSearches(items: string[]) {
   }
 }
 
+/** App paths stay in the router; landing pages (domain root) are full-page links. */
+function renderSiteLink({ href, children, ...props }: SiteHeaderLinkProps) {
+  if (!isAppPath(href)) return <a href={href} {...props}>{children}</a>;
+  const to = stripAppBasePath(href);
+  return (
+    <NavLink
+      to={to}
+      {...props}
+      onPointerEnter={() => prefetchRouteChunk(to)}
+      onFocus={() => prefetchRouteChunk(to)}
+    >
+      {children}
+    </NavLink>
+  );
+}
+
 function addRecentSearch(query: string) {
   const q = query.trim();
   if (!q) return;
@@ -96,6 +122,9 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
   // const { isInitialized, authState, ocAuth } = useOCAuth();
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
+  const { language, setLanguage } = useLocale();
+  const siteCopy = SITE_HEADER_COPY[language];
+  const returnTo = `${location.pathname}${location.search}`;
   const isSearchRoute = location.pathname === "/search" || location.pathname === "/search/";
   const searchRouteKey = isSearchRoute ? `${location.pathname}${location.search}` : null;
   const initialSearchText = searchRouteKey === null
@@ -284,219 +313,24 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
   }
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background">
-      <div className="mx-auto flex h-[71px] w-full max-w-[1990px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-5xl">
-        <div className="flex items-center gap-2 sm:gap-4">
-          <SidebarTrigger className="size-7 shrink-0 lg:hidden">
-            <MenuIcon className="size-5" aria-hidden />
-          </SidebarTrigger>
-          <NavLink
-            to="/"
-            className="flex h-10 items-center gap-2 text-sm font-medium"
-            onPointerEnter={() => prefetchRouteChunk("/")}
-            onFocus={() => prefetchRouteChunk("/")}
-          >
-            <img
-              src={
-                isDarkMode
-                  ? appPath("/logo/Corelia_Logo_White.svg")
-                  : appPath("/logo/corelia-full-logo-black.png")
-              }
-              alt="Corelia"
-              width={108}
-              height={36}
-              className="h-9 w-auto"
-            />
-          </NavLink>
-        </div>
-
-        {/* <form
-          className="hidden flex-1 items-center justify-center md:flex"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void handleSearchSubmit(searchText);
-          }}
-        >
-          <div ref={searchWrapRef} className="relative w-full max-w-xl">
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-foreground-muted"
-              aria-hidden
-            />
-            <input
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              onFocus={() => {
-                const hasAnything =
-                  searchText.trim().length > 0 ||
-                  readRecentSearches().length > 0 ||
-                  trending.length > 0;
-                setSearchOpen(hasAnything);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") {
-                  setSearchOpen(false);
-                }
-              }}
-              className="h-10 w-full rounded-full border border-border bg-surface-base pl-9 pr-3 text-sm text-foreground outline-hidden transition-colors placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
-              placeholder={t("search.placeholder")}
-              aria-label={t("search.placeholder")}
-            />
-
-            {searchOpen &&
-            (searchText.trim().length > 0 ||
-              recentSearches.length > 0 ||
-              trending.length > 0 ||
-              suggestionsLoading) ? (
-              <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-xl border border-border bg-surface-overlay">
-                <div className="scrollbar-design max-h-[60vh] overflow-auto p-2">
-                  {searchText.trim() ? (
-                    <button
-                      type="button"
-                      className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 hover:bg-surface-raised"
-                      onClick={() => void handleSearchSubmit(searchText)}
-                    >
-                      <div className="min-w-0">
-                        <div className="truncate font-medium text-foreground">
-                          {t("search.suggest.searchFor", {
-                            query: searchText.trim(),
-                          })}
-                        </div>
-                        <div className="mt-0.5 text-xs text-foreground-muted">
-                          {t("search.suggest.enterToSeeAll")}
-                        </div>
-                      </div>
-                      <Search
-                        className="size-4 text-foreground-muted"
-                        aria-hidden
-                      />
-                    </button>
-                  ) : null}
-
-                  {!searchText.trim() ? (
-                    <div className="grid gap-3 p-1">
-                      {recentSearches.length ? (
-                        <div>
-                          <div className="px-2 py-1 text-xs font-medium text-foreground-muted">
-                            {t("search.suggest.recent")}
-                          </div>
-                          <div className="grid">
-                            {recentSearches.map((q) => (
-                              <button
-                                key={`recent:${q}`}
-                                type="button"
-                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 hover:bg-surface-raised"
-                                onClick={() => void handleSearchSubmit(q)}
-                              >
-                                <Search
-                                  className="size-4 text-foreground-muted"
-                                  aria-hidden
-                                />
-                                <span className="truncate text-foreground">
-                                  {q}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {trending.length ? (
-                        <div>
-                          <div className="px-2 py-1 text-xs font-medium text-foreground-muted">
-                            {t("search.suggest.trending")}
-                          </div>
-                          <div className="grid">
-                            {trending.map((row) => (
-                              <button
-                                key={`trend:${row.query}`}
-                                type="button"
-                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 hover:bg-surface-raised"
-                                onClick={() =>
-                                  void handleSearchSubmit(row.query)
-                                }
-                              >
-                                <Search
-                                  className="size-4 text-foreground-muted"
-                                  aria-hidden
-                                />
-                                <span className="truncate text-foreground">
-                                  {row.query}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      ) : null}
-                    </div>
-                  ) : suggestionsLoading ? (
-                    <div className="px-3 py-2 text-sm text-foreground-muted">
-                      {t("status.loading")}
-                    </div>
-                  ) : suggestionsError ? (
-                    <div className="px-3 py-2 text-sm text-foreground-muted">
-                      {suggestionsError}
-                    </div>
-                  ) : suggestions.length ? (
-                    <div className="mt-1 grid">
-                      <div className="px-2 py-1 text-xs font-medium text-foreground-muted">
-                        {t("search.suggest.suggestions")}
-                      </div>
-                      {suggestions.map((item) => (
-                        <button
-                          key={`${item.entity_type}:${item.entity_id}`}
-                          type="button"
-                          className="flex w-full items-start gap-3 rounded-lg px-3 py-2 text-left transition-colors duration-150 hover:bg-surface-raised"
-                          onClick={() => {
-                            addRecentSearch(searchText.trim());
-                            setRecentSearches(readRecentSearches());
-                            setSearchOpen(false);
-                            navigate(item.href);
-                          }}
-                        >
-                          <div className="min-w-0">
-                            <div className="truncate text-sm font-medium text-foreground">
-                              {item.title}
-                            </div>
-                            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-foreground-muted">
-                              <span className="rounded-full border border-border bg-surface-base px-2 py-0.5">
-                                {t(
-                                  `search.group.${item.entity_type}` as never,
-                                  {
-                                    defaultValue: item.entity_type,
-                                  },
-                                )}
-                              </span>
-                              {item.subtitle ? (
-                                <span className="truncate">
-                                  {item.subtitle}
-                                </span>
-                              ) : null}
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-
-                      <button
-                        type="button"
-                        className="mt-1 flex w-full items-center justify-center rounded-lg px-3 py-2 text-sm text-foreground-muted transition-colors duration-150 hover:bg-surface-raised"
-                        onClick={() => void handleSearchSubmit(searchText)}
-                      >
-                        {t("search.suggest.viewAllResults")}
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="px-3 py-2 text-sm text-foreground-muted">
-                      {t("search.suggest.noQuickResults")}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : null}
-          </div>
-        </form> */}
-
+    <SiteHeader
+      logo={{
+        href: appPath("/"),
+        src: isDarkMode ? appPath("/logo/Corelia_Logo_White.svg") : appPath("/logo/corelia-full-logo-black.png"),
+        alt: "Corelia",
+      }}
+      nav={siteNavigation(language)}
+      renderLink={renderSiteLink}
+      mobileMenu={false}
+      labels={siteCopy}
+      start={
+        <SidebarTrigger className="size-7 shrink-0 lg:hidden">
+          <MenuIcon className="size-5" aria-hidden />
+        </SidebarTrigger>
+      }
+      center={
         <form
-          className="hidden min-w-0 flex-1 items-center justify-center md:flex xl:absolute xl:left-1/2 xl:w-[400px] xl:-translate-x-1/2 xl:flex-none"
+          className="flex w-full min-w-0 items-center justify-center"
           onSubmit={(e) => {
             e.preventDefault();
             void handleSearchSubmit(searchText);
@@ -695,8 +529,10 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
             ) : null}
           </div>
         </form>
-
+      }
+      end={
         <div className="flex items-center gap-2">
+          <LanguageMenu locale={language} label={siteCopy.language} onSelect={(lng) => void setLanguage(lng)} />
           {!isSearchRoute ? (
             <NavLink
               to="/search"
@@ -813,18 +649,17 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
               /> */}
             </div>
           ) : (
-            <NavLink
-              to="/login"
-              state={{ from: location }}
-              className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-border bg-surface-base px-3 py-1.5 text-sm text-foreground transition-colors duration-150 hover:bg-surface-raised"
-              onPointerEnter={() => prefetchRouteChunk("/login")}
-              onFocus={() => prefetchRouteChunk("/login")}
-            >
-              {t("tabs.signIn")}
-            </NavLink>
+            <AuthActions
+              user={null}
+              signInHref={appPath(`/login?next=${encodeURIComponent(returnTo)}`)}
+              signUpHref={appPath(`/login?mode=signup&next=${encodeURIComponent(returnTo)}`)}
+              appHref={appPath("/")}
+              labels={siteCopy}
+              renderLink={renderSiteLink}
+            />
           )}
         </div>
-      </div>
-    </header>
+      }
+    />
   );
 }

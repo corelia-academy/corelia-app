@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@astrojs/react": "^4.4.2",
+    "@corelia/ui": "workspace:*",
     "@lucide/astro": "^0.562.0",
     "@tailwindcss/vite": "^4.1.18",
     "@types/react": "^19.2.8",

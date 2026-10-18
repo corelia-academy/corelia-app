@@ -19,6 +19,9 @@ importers:
       '@base-ui/react':
         specifier: ^1.2.0
         version: 1.2.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@corelia/ui':
+        specifier: workspace:*
+        version: link:packages/ui
       '@fontsource-variable/google-sans':
         specifier: ^5.2.1
         version: 5.2.1
@@ -221,6 +224,9 @@ importers:
       '@astrojs/react':
         specifier: ^4.4.2
         version: 4.4.2(@types/node@24.12.0)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(jiti@2.7.0)(lightningcss@1.31.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(yaml@2.9.1)
+      '@corelia/ui':
+        specifier: workspace:*
+        version: link:../packages/ui
       '@lucide/astro':
         specifier: ^0.562.0
         version: 0.562.0(astro@5.18.2(@netlify/blobs@10.7.13)(@types/node@24.12.0)(jiti@2.7.0)(lightningcss@1.31.1)(rollup@4.64.5)(typescript@6.0.3)(yaml@2.9.1))
@@ -288,6 +294,15 @@ importers:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
+
+  packages/ui:
+    dependencies:
+      lucide-react:
+        specifier: '>=0.500.0'
+        version: 0.577.0(react@19.2.4)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.4
 
 packages:
 

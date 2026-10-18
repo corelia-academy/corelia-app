@@ -1,3 +1,5 @@
+import { LOCALE_PREFERENCE_COOKIE } from "@corelia/ui/locales";
+
 /** Single source of truth for UI and content locales, in display order. */
 export const CONTENT_LOCALES = ["en", "zh-CN", "ko", "es", "zh-TW", "vi", "ja"] as const;
 export type ContentLocale = (typeof CONTENT_LOCALES)[number];
@@ -70,7 +72,7 @@ export function intlLocaleFor(locale?: string | null): string {
  * Cookie holding the language a visitor picked explicitly. It is shared with the
  * landing site on the same domain, so a choice made on either side carries over.
  */
-export const LOCALE_PREFERENCE_COOKIE = "corelia_lang";
+export { LOCALE_PREFERENCE_COOKIE };
 
 export function readLocalePreference(cookie: string = typeof document === "undefined" ? "" : document.cookie): ContentLocale | null {
   const match = cookie.match(new RegExp(`(?:^|;\\s*)${LOCALE_PREFERENCE_COOKIE}=([^;]*)`));

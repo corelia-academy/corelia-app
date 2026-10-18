@@ -1,6 +1,7 @@
 packages:
   - "."
   - "landing"
+  - "packages/*"
 
 allowBuilds:
   "@parcel/watcher": true
