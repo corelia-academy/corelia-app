@@ -1,0 +1,84 @@
+---
+import { localizePath } from "@corelia/ui/locales";
+import CatalogLayout from "@/layouts/CatalogLayout.astro";
+import { CATALOG_COPY } from "@/i18n/catalog";
+import { listHackathons, type CatalogHackathon } from "@/lib/catalog";
+import { catalogNotFound, formatDate, routeLocale, setCatalogCacheHeaders } from "@/lib/catalogRoute";
+import { absoluteUrl } from "@/lib/seo";
+
+export const prerender = false;
+
+const locale = routeLocale(Astro.params.locale);
+if (!locale) {
+  return catalogNotFound(Astro.request, Astro.locals);
+}
+const copy = CATALOG_COPY[locale];
+
+let hackathons: CatalogHackathon[] = [];
+let failed = false;
+try {
+  hackathons = await listHackathons(locale);
+} catch (error) {
+  failed = true;
+  console.error("[catalog] hackathons", error instanceof Error ? error.message : error);
+}
+Astro.response.status = failed ? 503 : 200;
+setCatalogCacheHeaders(Astro.response.headers, Astro.response.status);
+
+const itemList = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  itemListElement: hackathons.map((hackathon, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    url: absoluteUrl(localizePath(`/hackathons/${hackathon.slug}`, locale)),
+    name: hackathon.title,
+  })),
+};
+---
+
+<CatalogLayout
+  locale={locale}
+  path="/hackathons"
+  title={`${copy.hackathonsTitle} | Corelia Academy`}
+  description={copy.hackathonsIntro}
+  structuredData={hackathons.length ? [itemList] : []}
+  breadcrumbs={[{ name: copy.hackathonsTitle, path: localizePath("/hackathons", locale) }]}
+>
+  <header class="mb-10 max-w-3xl">
+    <h1 class="text-3xl font-semibold leading-tight text-white md:text-5xl">{copy.hackathonsTitle}</h1>
+    <p class="mt-4 text-base text-white/70 md:text-lg">{copy.hackathonsIntro}</p>
+  </header>
+
+  {failed ? <p role="alert" class="text-white/70">{copy.unavailable}</p> : null}
+  {!failed && hackathons.length === 0 ? <p class="text-white/70">{copy.hackathonsEmpty}</p> : null}
+
+  <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      hackathons.map((hackathon) => (
+        <li>
+          <a
+            href={localizePath(`/hackathons/${hackathon.slug}`, locale)}
+            class="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-colors hover:border-white/25"
+          >
+            {hackathon.imageUrl ? (
+              <img src={hackathon.imageUrl} alt="" width="640" height="360" loading="lazy" decoding="async" class="aspect-video w-full object-cover" />
+            ) : (
+              <div class="aspect-video w-full bg-white/5" />
+            )}
+            <div class="flex flex-1 flex-col gap-3 p-5">
+              <span class="w-fit rounded-full border border-white/15 px-2.5 py-0.5 text-xs text-white/70">
+                {copy.statuses[hackathon.status] ?? hackathon.status}
+              </span>
+              <h2 class="text-lg font-semibold text-white group-hover:underline">{hackathon.title}</h2>
+              {hackathon.tagline ? <p class="line-clamp-3 text-sm text-white/65">{hackathon.tagline}</p> : null}
+              <p class="mt-auto text-xs text-white/50">
+                {[formatDate(hackathon.startsAt, locale), copy.modes[hackathon.mode] ?? ""].filter(Boolean).join(" · ")}
+              </p>
+            </div>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</CatalogLayout>

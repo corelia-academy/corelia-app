@@ -23,6 +23,7 @@ import {
   type Enrollment,
 } from "@/types/courses";
 import type { ContentLocale } from "@/lib/locales";
+import { appPath } from "@/lib/appUrl";
 
 interface CourseHeroProps {
   course: Course;
@@ -223,7 +224,7 @@ export function CourseHero({
         <div className="order-first overflow-hidden bg-surface-raised sm:order-last sm:rounded-md">
           <div className="relative aspect-video">
             <img
-              src="/Corelia_Banner_Square.png"
+              src={appPath("/Corelia_Banner_Square.png")}
               alt=""
               aria-hidden
               decoding="async"

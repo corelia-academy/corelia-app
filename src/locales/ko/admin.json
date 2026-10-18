@@ -589,7 +589,7 @@
     },
     "appBaseUrl": {
       "title": "앱 기본 URL",
-      "subtitle": "시스템 이메일(수료증, 청구 초대 등)의 링크를 만드는 데 사용되는 루트 도메인입니다. 스테이징: https://staging.corelia.academy, 프로덕션: https://app.corelia.academy. 잘못 설정하면 발송되는 모든 이메일 링크가 잘못된 환경으로 연결됩니다.",
+      "subtitle": "시스템 이메일(수료증, 청구 초대 등)의 링크를 만드는 데 사용되는 루트 도메인입니다. 스테이징: https://staging.corelia.academy/learn, 프로덕션: https://corelia.academy/learn. 잘못 설정하면 발송되는 모든 이메일 링크가 잘못된 환경으로 연결됩니다.",
       "urlLabel": "기본 URL",
       "saveUrl": "URL 저장",
       "invalidUrl": "올바르지 않은 URL입니다. https://도메인 형식이어야 하며 끝에 슬래시나 불필요한 문자가 없어야 합니다."

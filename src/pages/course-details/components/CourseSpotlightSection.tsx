@@ -45,8 +45,8 @@ export function CourseSpotlightSection({
               courseTitle,
             }),
         href: nextLesson
-          ? `/learn/${resolvedCourseId}/lesson/${nextLesson.id}`
-          : `/learn/${resolvedCourseId}`,
+          ? `/study/${resolvedCourseId}/lesson/${nextLesson.id}`
+          : `/study/${resolvedCourseId}`,
         ctaLabel: nextLesson
           ? translate("detail.spotlight.continueLearning")
           : translate("detail.spotlight.enterLearningPage"),

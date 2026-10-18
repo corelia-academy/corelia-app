@@ -1,0 +1,119 @@
+---
+import "@/styles/global.css";
+import AosInit from "@/components/AosInit.astro";
+import GsapReveal from "@/components/GsapReveal.astro";
+import HoverWaveInit from "@/components/common/HoverWaveInit.astro";
+
+type Props = {
+  lang: string;
+  title: string;
+  description?: string;
+  robots?: string;
+  canonicalUrl?: string;
+  ogUrl?: string;
+  ogType?: string;
+  ogImage?: string;
+  ogImageWidth?: number | string;
+  ogImageHeight?: number | string;
+  ogImageType?: string;
+  twitterCard?: string;
+  twitterUrl?: string;
+  twitterImage?: string;
+  bodyClass?: string;
+};
+
+const {
+  lang,
+  title,
+  description,
+  robots,
+  canonicalUrl,
+  ogUrl = canonicalUrl,
+  ogType = "website",
+  ogImage,
+  ogImageWidth,
+  ogImageHeight,
+  ogImageType = "image/png",
+  twitterCard = "summary_large_image",
+  twitterUrl = ogUrl,
+  twitterImage = ogImage,
+  bodyClass = "dark",
+} = Astro.props as Props;
+---
+
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <script is:inline>
+      document.documentElement.classList.add("reveal-ready");
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/corelia_favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+    </noscript>
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="application-name" content="Corelia Academy" />
+    {description ? <meta name="description" content={description} /> : null}
+    {robots ? <meta name="robots" content={robots} /> : null}
+    {canonicalUrl ? <link rel="canonical" href={canonicalUrl} /> : null}
+
+    {ogUrl ? <meta property="og:type" content={ogType} /> : null}
+    {ogUrl ? <meta property="og:url" content={ogUrl} /> : null}
+    {ogUrl ? <meta property="og:title" content={title} /> : null}
+    {
+      ogUrl && description ? (
+        <meta property="og:description" content={description} />
+      ) : null
+    }
+    {ogUrl && ogImage ? <meta property="og:image" content={ogImage} /> : null}
+    {
+      ogUrl && ogImage ? (
+        <>
+          {ogImageWidth ? (
+            <meta property="og:image:width" content={String(ogImageWidth)} />
+          ) : null}
+          {ogImageHeight ? (
+            <meta property="og:image:height" content={String(ogImageHeight)} />
+          ) : null}
+          {ogImageType ? (
+            <meta property="og:image:type" content={ogImageType} />
+          ) : null}
+        </>
+      ) : null
+    }
+
+    {
+      twitterUrl && twitterImage ? (
+        <>
+          <meta property="twitter:card" content={twitterCard} />
+          <meta property="twitter:url" content={twitterUrl} />
+          <meta property="twitter:title" content={title} />
+          {description ? (
+            <meta property="twitter:description" content={description} />
+          ) : null}
+          <meta property="twitter:image" content={twitterImage} />
+        </>
+      ) : null
+    }
+
+    <slot name="head" />
+    <AosInit />
+    <GsapReveal />
+    <HoverWaveInit />
+  </head>
+
+  <body class={bodyClass}>
+    <slot />
+  </body>
+</html>

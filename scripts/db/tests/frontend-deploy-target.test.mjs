@@ -13,7 +13,7 @@ function fixture() {
   const configPath = join(root, "corelia_app/wrangler.json");
   const entryPath = join(root, "client/assets/index-abc123.js");
   writeFileSync(configPath, JSON.stringify({ name: "corelia-app", assets: { directory: "../client" } }));
-  writeFileSync(join(root, "client/index.html"), '<script type="module" src="/assets/index-abc123.js"></script>');
+  writeFileSync(join(root, "client/index.html"), '<script type="module" src="/learn/assets/index-abc123.js"></script>');
   writeFileSync(entryPath, '"https://opoozbmfbezkrpzxsusx.supabase.co" "https://cdn-staging.corelia.academy" "sb_publishable_test"');
   return { root, configPath, entryPath };
 }
@@ -29,6 +29,9 @@ test("Staging build pins the generated Worker and Supabase target", async (t) =>
     "https://opoozbmfbezkrpzxsusx.supabase.co/functions/v1/corelia-api");
   assert.equal(JSON.parse(readFileSync(f.configPath, "utf8")).vars.CORELIA_APP_ORIGIN,
     "https://staging.corelia.academy");
+  assert.equal(JSON.parse(readFileSync(f.configPath, "utf8")).vars.CORELIA_APP_BASE_PATH, "/learn");
+  assert.deepEqual(JSON.parse(readFileSync(f.configPath, "utf8")).routes,
+    [{ pattern: "staging.corelia.academy/learn*", zone_name: "corelia.academy" }]);
   assert.equal((await verifyFrontendTarget("staging", f.root)).assetPath, "/assets/index-abc123.js");
 });
 
@@ -47,6 +50,11 @@ test("Staging deployment rejects a Production Worker or Supabase bundle", async 
   writeFileSync(f.configPath, JSON.stringify(wrongConfig));
   await assert.rejects(verifyFrontendTarget("staging", f.root), /Worker OG configuration/);
   await prepareWorkerTarget("staging", f.configPath);
+  const wrongRoutes = JSON.parse(readFileSync(f.configPath, "utf8"));
+  wrongRoutes.routes = [{ pattern: "corelia.academy/learn*", zone_name: "corelia.academy" }];
+  writeFileSync(f.configPath, JSON.stringify(wrongRoutes));
+  await assert.rejects(verifyFrontendTarget("staging", f.root), /Worker routes/);
+  await prepareWorkerTarget("staging", f.configPath);
   writeFileSync(f.entryPath, '"https://lawhkvyyoznwygzsycan.supabase.co" "https://cdn-staging.corelia.academy" "sb_publishable_test"');
   await assert.rejects(verifyFrontendTarget("staging", f.root), /missing the staging Supabase/);
 });
@@ -61,7 +69,9 @@ test("Production build pins the avatar API to Production Supabase", async (t) =>
     "https://lawhkvyyoznwygzsycan.supabase.co/functions/v1/corelia-api");
   assert.equal(config.vars.CORELIA_OG_FUNCTION_URL,
     "https://lawhkvyyoznwygzsycan.supabase.co/functions/v1/corelia-api");
-  assert.equal(config.vars.CORELIA_APP_ORIGIN, "https://app.corelia.academy");
+  assert.equal(config.vars.CORELIA_APP_ORIGIN, "https://corelia.academy");
+  assert.equal(config.vars.CORELIA_APP_BASE_PATH, "/learn");
+  assert.deepEqual(config.routes, [{ pattern: "corelia.academy/learn*", zone_name: "corelia.academy" }]);
 });
 
 test("Package scripts do not expose an ambiguous default deployment command", () => {

@@ -10,6 +10,7 @@ import { JobsNav } from "@/features/jobs/JobsNav";
 import { jobMarketQueryOptions } from "@/features/jobs/jobQueries";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import type { MarketDailyStat, MarketDimensionStat } from "@/types/jobs";
+import { landingUrl } from "@/lib/appUrl";
 
 type Dimension = "role" | "skill" | "domain" | "seniority";
 
@@ -70,8 +71,8 @@ export default function JobMarketPage() {
   const snapshot = query.data;
   const latest = snapshot?.latest;
   const remoteShare = latest?.active_jobs ? Math.round(latest.remote_jobs / latest.active_jobs * 100) : 0;
-  const pageUrl = typeof window === "undefined" ? "https://app.corelia.academy/jobs/market" : `${window.location.origin}/jobs/market`;
-  usePageMeta({ title: t("market.title"), description: t("market.subtitle"), url: pageUrl, canonicalUrl: pageUrl, robots: "index,follow" });
+  const pageUrl = landingUrl("/jobs/market");
+  usePageMeta({ title: t("market.title"), description: t("market.subtitle"), url: pageUrl, canonicalUrl: pageUrl, robots: "noindex,follow" });
   const cards = [
     [t("market.cards.active"), latest?.active_jobs ?? 0, BriefcaseBusiness, "/jobs"],
     [t("market.cards.new"), latest?.new_jobs ?? 0, Sparkles, "/jobs?days=1"],

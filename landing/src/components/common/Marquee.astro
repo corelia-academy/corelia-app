@@ -1,0 +1,31 @@
+---
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<div class="border-b border-input text-center justify-center bg-button-primary-background">
+    <!-- <div class="inline-flex animate-marquee w-full"> -->
+        <span class="text-xs text-foreground tracking-widest">{t("marquee.text")}</span>
+        <!-- {Array.from({ length: 50 }).map(() => (
+            
+        ))} -->
+    <!-- </div> -->
+</div>
+
+<!-- <style>
+    @keyframes marquee {
+        from {
+            transform: translatex(0);
+        }
+        to {
+            transform: translatex(-50%);
+        }
+    }
+
+    .animate-marquee {
+        animation: marquee 70s linear infinite;
+    }
+</style> -->

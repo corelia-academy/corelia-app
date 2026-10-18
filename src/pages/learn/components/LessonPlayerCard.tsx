@@ -64,13 +64,13 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
   const resources = validateLessonResources(lesson.resources ?? [], lesson.id, "vi", true).length ? [] : lesson.resources ?? [];
   const run = async () => {
     if (inFlight.current) return;
-    if (mode === "learner" && !user) { navigate("/login", { state: { from: { pathname: `/learn/${courseId}/lesson/${lesson.id}` } } }); return; }
+    if (mode === "learner" && !user) { navigate("/login", { state: { from: { pathname: `/study/${courseId}/lesson/${lesson.id}` } } }); return; }
     inFlight.current = true;
     setBusy(true); setError(null);
     try {
       if (completed && mode === "learner") {
         if (nextLesson) onNavigateToLesson(nextLesson.id);
-        else navigate(hasFinalAssignment ? `/learn/${courseId}/final-assignment` : `/courses/${courseId}`);
+        else navigate(hasFinalAssignment ? `/study/${courseId}/final-assignment` : `/courses/${courseId}`);
       } else await action?.run();
     } catch (e) { if (active.current) setError(e instanceof Error ? e.message : t("learning.systemError")); }
     finally { inFlight.current = false; if (active.current) setBusy(false); }

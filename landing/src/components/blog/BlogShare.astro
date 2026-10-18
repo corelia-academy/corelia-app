@@ -1,0 +1,150 @@
+---
+import type { BlogLocale } from "@/lib/blogTaxonomy";
+import { useTranslations } from "@/i18n/translations";
+import {
+  CopyIcon,
+  FacebookIcon,
+  LinkedinIcon,
+  TwitterIcon,
+} from "@lucide/astro";
+
+type Props = {
+  locale: BlogLocale;
+  url: string;
+  title: string;
+  class?: string;
+};
+
+const { locale, url, title, class: className } = Astro.props;
+const t = useTranslations(locale);
+
+const encodedUrl = encodeURIComponent(url);
+const encodedTitle = encodeURIComponent(title);
+const facebookHref = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+const xHref = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`;
+const linkedinHref = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+---
+
+<section
+  class:list={[
+    "flex flex-col lg:pt-6 sm:flex-row sm:items-center ml-auto sm:justify-between",
+    className,
+  ]}
+  aria-label={t("blog.share.title")}
+>
+  <!-- <p class="text-sm font-medium text-foreground">{t("blog.share.title")}</p> -->
+  <div
+    class="flex flex-wrap items-center"
+    data-blog-share-root
+    data-share-url={url}
+    data-share-title={title}
+    data-label-copied={t("blog.share.copied")}
+  >
+    <!-- <a
+      href={facebookHref}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-flex size-9 items-center justify-center rounded-lg border border-white/10 bg-background/30 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
+      aria-label={t("blog.share.facebook")}
+      title={t("blog.share.facebook")}
+    >
+      <FacebookIcon class="size-4" aria-hidden="true" />
+    </a>
+    <a
+      href={xHref}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-flex size-9 items-center justify-center rounded-lg border border-white/10 bg-background/30 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
+      aria-label={t("blog.share.x")}
+      title={t("blog.share.x")}
+    >
+      <TwitterIcon class="size-4" aria-hidden="true" />
+    </a>
+    <a
+      href={linkedinHref}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-flex size-9 items-center justify-center rounded-lg border border-white/10 bg-background/30 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
+      aria-label={t("blog.share.linkedin")}
+      title={t("blog.share.linkedin")}
+    >
+      <LinkedinIcon class="size-4" aria-hidden="true" />
+    </a> -->
+    <button
+      type="button"
+      data-blog-share-copy
+      class="inline-flex h-9 items-center gap-2 px-3 text-sm leading-[1.4] text-border-strong transition-colors hover:text-foreground md:text-base"
+      aria-label={t("blog.share.copy")}
+    >
+      <img loading="lazy" decoding="async"
+        src="/link.svg"
+        alt="link"
+        class="size-4 shrink-0"
+        aria-hidden="true"
+      />
+      <!-- <CopyIcon class="size-4 shrink-0" aria-hidden="true" /> -->
+      <span data-blog-share-copy-label>{t("blog.share.copy")}</span>
+    </button>
+    <span class="text-border-strong">•</span>
+    <button
+      type="button"
+      data-blog-share-native
+      class="hidden h-9 items-center gap-2 px-3 text-sm leading-[1.4] text-border-strong transition-colors hover:text-foreground md:text-base"
+      aria-label={t("blog.share.native")}
+    >
+      <img loading="lazy" decoding="async"
+        src="/share.svg"
+        alt="share"
+        class="size-4 shrink-0"
+        aria-hidden="true"
+      />
+      <span>{t("blog.share.native")}</span>
+    </button>
+  </div>
+</section>
+
+<script>
+  document
+    .querySelectorAll<HTMLElement>("[data-blog-share-root]")
+    .forEach((root) => {
+      const url = root.dataset.shareUrl ?? "";
+      const title = root.dataset.shareTitle ?? "";
+      const copiedLabel = root.dataset.labelCopied ?? "Copied";
+      const copyBtn = root.querySelector<HTMLButtonElement>(
+        "[data-blog-share-copy]",
+      );
+      const copyLabel = root.querySelector("[data-blog-share-copy-label]");
+      const nativeBtn = root.querySelector<HTMLButtonElement>(
+        "[data-blog-share-native]",
+      );
+
+      copyBtn?.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(url);
+          if (copyLabel) {
+            const original = copyLabel.textContent ?? "";
+            copyLabel.textContent = copiedLabel;
+            copyBtn.setAttribute("aria-label", copiedLabel);
+            window.setTimeout(() => {
+              copyLabel.textContent = original;
+              copyBtn.setAttribute("aria-label", original);
+            }, 2000);
+          }
+        } catch {
+          /* clipboard may fail on insecure contexts */
+        }
+      });
+
+      if (nativeBtn && navigator.share) {
+        nativeBtn.classList.remove("hidden");
+        nativeBtn.classList.add("inline-flex");
+        nativeBtn.addEventListener("click", async () => {
+          try {
+            await navigator.share({ title, text: title, url });
+          } catch {
+            /* user cancelled or share failed */
+          }
+        });
+      }
+    });
+</script>

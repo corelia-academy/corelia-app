@@ -25,8 +25,11 @@ function database(rows: Record<string, Record<string, unknown> | null>): Supabas
   } as unknown as SupabaseClient;
 }
 
-beforeEach(() => vi.stubGlobal("Deno", { env: { get: (key: string) =>
-  key === "CORELIA_APP_ORIGIN" ? "http://localhost:5173" : "http://127.0.0.1:54321" } }));
+const TEST_ENV: Record<string, string> = {
+  CORELIA_APP_ORIGIN: "http://localhost:5173",
+  CORELIA_APP_BASE_PATH: "/learn",
+};
+beforeEach(() => vi.stubGlobal("Deno", { env: { get: (key: string) => TEST_ENV[key] ?? "http://127.0.0.1:54321" } }));
 afterEach(() => vi.unstubAllGlobals());
 
 describe("public OG DTO", () => {
@@ -39,6 +42,8 @@ describe("public OG DTO", () => {
     const card = await loadOgCard(database(rows), "project", "demo");
     expect(card).toMatchObject({ title: "Dự án Việt", description: "Mô tả", tags: ["AI"], subtitle: "Alice" });
     expect(publicOgMeta(card!).imageUrl).toContain(card!.revision);
+    expect(card?.canonicalUrl).toMatch(/^http:\/\/localhost:5173\/learn\/projects\//);
+    expect(publicOgMeta(card!).imageUrl).toMatch(/^http:\/\/localhost:5173\/learn\/api\/og\/project\//);
     const changed = await loadOgCard(database({ ...rows, projects: { ...project, summary: "Mô tả mới" } }), "project", "demo");
     expect(changed?.revision).not.toBe(card?.revision);
     const timestampOnly = await loadOgCard(database({ ...rows, projects: { ...project, updated_at: "2026-09-25T00:00:00Z" } }), "project", "demo");

@@ -14,6 +14,7 @@ import { useAuth } from "@/stores/authStore";
 import { disconnectOCID } from "@/lib/profile";
 import { mintedCredentialCountQueryOptions } from "@/features/account/accountQueries";
 import { useTranslation } from "react-i18next";
+import { appPath } from "@/lib/appUrl";
 
 function truncateMiddle(value: string, head = 6, tail = 4) {
   if (value.length <= head + tail + 1) return value;
@@ -166,7 +167,7 @@ export default function ConnectOCIDCard() {
             className="h-11 cursor-pointer border border-border-subtle bg-ocid-blue text-primary-foreground px-3 py-2.5 text-left text-sm hover:opacity-90 active:opacity-80"
           >
             <img
-              src="/logo/OC-square-logo.svg"
+              src={appPath("/logo/OC-square-logo.svg")}
               alt="Open Campus"
               className="h-full rounded-full"
             />

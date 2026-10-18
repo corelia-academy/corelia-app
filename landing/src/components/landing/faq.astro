@@ -1,0 +1,132 @@
+---
+import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import Faq from "./faq";
+import StripeBand from "../common/StripeBand.astro";
+import Background from "@/assets/landing/background2.jpg";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const translatePath = useTranslatedPath(lang);
+
+const faqs = [
+  {
+    question: t("faq.1.question"),
+    answer: t("faq.1.answer"),
+  },
+  {
+    question: t("faq.2.question"),
+    answer: t("faq.2.answer"),
+  },
+  {
+    question: t("faq.3.question"),
+    answer: t("faq.3.answer"),
+  },
+  {
+    question: t("faq.4.question"),
+    answer: t("faq.4.answer"),
+  },
+  {
+    question: t("faq.5.question"),
+    answer: t("faq.5.answer"),
+  },
+  {
+    question: t("faq.6.question"),
+    answer: t("faq.6.answer"),
+  },
+  {
+    question: t("faq.7.question"),
+    answer: t("faq.7.answer"),
+  },
+];
+---
+
+<div class="w-full border-t border-border">
+  <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+    <div
+      class="grid h-full md:h-[200px] w-full grid-cols-1 overflow-hidden border-x border-b border-border md:grid-cols-2"
+    >
+      <!-- left banner -->
+      <div
+        class="gap-3 flex items-center bg-background border-r border-border p-8 md:p-14"
+      >
+        <span class="text-2xl text-foreground-subtle">&lt;</span>
+        <p
+          class="text-4xl font-medium leading-[1.15] tracking-[-0.05em] text-foreground md:text-5xl md:tracking-[-0.04em]"
+          style="font-family: var(--font-heading);"
+          data-reveal="text-up"
+        >
+          FAQs
+        </p>
+        <span class="text-2xl text-foreground-subtle">&gt;</span>
+      </div>
+
+      <!-- right -->
+      <StripeBand
+        animated
+        class="bg-background flex flex-col flex-1 border-r border-border hidden md:block"
+      />
+    </div>
+
+    <div
+      class="grid w-full grid-cols-1 overflow-hidden border-x border-border md:grid-cols-2"
+    >
+      <!-- left -->
+      <div class="flex flex-col border-r border-border">
+        <div
+          class="flex h-20 items-center border-b border-border bg-secondary p-8 lg:p-0 lg:px-10"
+        >
+          <p
+            class="mx-auto text-center text-lg font-medium leading-[1.15] tracking-[-0.02em] text-foreground lg:text-2xl lg:leading-[1.2]"
+            style="font-family: var(--font-heading);"
+          >
+            {t("faq.title")}
+          </p>
+        </div>
+
+        <div
+          class="relative flex flex-col flex-1 justify-center gap-16 p-8 lg:p-0 lg:px-20"
+        >
+          <img loading="lazy" decoding="async"
+            src={Background.src}
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover"
+          />
+          <p
+            class="z-10 max-w-[100%] text-4xl font-medium leading-[1.15] tracking-[-0.05em] text-primary-foreground lg:text-5xl md:tracking-[-0.04em]"
+            style="font-family: var(--font-heading);"
+            data-reveal="text-up"
+          >
+            {t("faq.quote")}
+          </p>
+          <div class="z-10 md:mr-30">
+            <p
+              class="z-10 max-w-[100%] text-sm font-normal leading-[1.4] text-primary-foreground md:text-base"
+              data-reveal="fade-up"
+              data-reveal-delay="200"
+            >
+              {t("faq.description.1")}
+            </p>
+            <p
+              class="z-10 max-w-[100%] text-sm font-normal leading-[1.4] text-primary-foreground md:text-base"
+              data-reveal="fade-up"
+              data-reveal-delay="200"
+            >
+              {t("faq.description.2")}{" "}
+              <a
+                href={translatePath("/contact")}
+                class="underline underline-offset-2 transition-opacity duration-300 hover:opacity-80"
+                >{t("faq.description.link")}</a
+              >
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- right -->
+      <div id="mentors-carousel-slot" class="flex w-full">
+        <Faq items={faqs} client:visible={{ rootMargin: "200px" }} />
+      </div>
+    </div>
+  </div>
+</div>

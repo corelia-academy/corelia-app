@@ -1,0 +1,76 @@
+---
+import { DEFAULT_SITE_LOCALE, localizePath } from "@corelia/ui/locales";
+import CatalogLayout from "@/layouts/CatalogLayout.astro";
+import { CATALOG_COPY } from "@/i18n/catalog";
+import { listJobs, type CatalogJob } from "@/lib/catalog";
+import { catalogNotFound, formatDate, formatSalary, routeLocale, setCatalogCacheHeaders } from "@/lib/catalogRoute";
+
+export const prerender = false;
+
+const locale = routeLocale(Astro.params.locale);
+if (!locale) {
+  return catalogNotFound(Astro.request, Astro.locals);
+}
+const copy = CATALOG_COPY[locale];
+
+let jobs: CatalogJob[] = [];
+let failed = false;
+try {
+  jobs = await listJobs();
+} catch (error) {
+  failed = true;
+  console.error("[catalog] jobs", error instanceof Error ? error.message : error);
+}
+Astro.response.status = failed ? 503 : 200;
+setCatalogCacheHeaders(Astro.response.headers, Astro.response.status);
+---
+
+<!-- Postings are not translated, so only the English list is indexed; other locales only translate the UI. -->
+<CatalogLayout
+  locale={locale}
+  path="/jobs"
+  title={`${copy.jobsTitle} | Corelia Academy`}
+  description={copy.jobsIntro}
+  contentLocales={[DEFAULT_SITE_LOCALE]}
+  indexable={locale === DEFAULT_SITE_LOCALE}
+  canonicalLocale={DEFAULT_SITE_LOCALE}
+  breadcrumbs={[{ name: copy.jobsTitle, path: localizePath("/jobs", locale) }]}
+>
+  <header class="mb-10 max-w-3xl">
+    <h1 class="text-3xl font-semibold leading-tight text-white md:text-5xl">{copy.jobsTitle}</h1>
+    <p class="mt-4 text-base text-white/70 md:text-lg">{copy.jobsIntro}</p>
+  </header>
+
+  {failed ? <p role="alert" class="text-white/70">{copy.unavailable}</p> : null}
+  {!failed && jobs.length === 0 ? <p class="text-white/70">{copy.jobsEmpty}</p> : null}
+
+  <ul class="grid gap-4">
+    {
+      jobs.map((job) => (
+        <li>
+          <a
+            href={localizePath(`/jobs/${job.slug}`, locale)}
+            class="group flex items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:border-white/25"
+          >
+            {job.companyLogoUrl ? (
+              <img src={job.companyLogoUrl} alt="" width="48" height="48" loading="lazy" decoding="async" class="size-12 shrink-0 rounded-lg bg-white object-contain" />
+            ) : (
+              <div class="size-12 shrink-0 rounded-lg bg-white/10" />
+            )}
+            <div class="min-w-0 flex-1">
+              <h2 class="font-semibold text-white group-hover:underline">{job.title}</h2>
+              <p class="text-sm text-white/70">{job.companyName}</p>
+              <p class="mt-2 text-xs text-white/50">
+                {[
+                  job.remoteType === "remote" ? copy.remote : job.locationText,
+                  formatSalary(job, locale),
+                  job.postedAt ? `${copy.posted} ${formatDate(job.postedAt, locale)}` : "",
+                ].filter(Boolean).join(" · ")}
+              </p>
+            </div>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</CatalogLayout>

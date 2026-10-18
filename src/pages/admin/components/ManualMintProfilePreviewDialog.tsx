@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { adminProfilePreviewQueryOptions } from "@/features/admin/adminQueries";
 import { getRoleLabel } from "@/types/database";
 import { useAuth } from "@/stores/authStore";
+import { appPath } from "@/lib/appUrl";
 
 /** Floating preview of a student's public profile — lets an admin visually confirm
  *  they picked the right person before minting, without leaving the manual-mint form. */
@@ -79,7 +80,7 @@ export function ManualMintProfilePreviewDialog({
 
             {profile.username ? (
               <a
-                href={`/u/${encodeURIComponent(profile.username)}`}
+                href={appPath(`/u/${encodeURIComponent(profile.username)}`)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block text-sm text-primary underline-offset-2 hover:underline"

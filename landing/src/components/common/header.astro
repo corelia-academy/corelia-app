@@ -1,0 +1,53 @@
+---
+import type { SiteLocale } from "@corelia/ui/locales";
+import LandingHeader from "./LandingHeader";
+import { getLangFromUrl } from "@/i18n/utils";
+
+type Props = {
+  languageHrefs?: Record<string, string>;
+  /** Catalog pages exist in every site locale; marketing pages default to the URL's en/vi. */
+  lang?: SiteLocale;
+  locales?: readonly SiteLocale[];
+};
+
+const { languageHrefs, locales } = Astro.props as Props;
+const lang = (Astro.props as Props).lang ?? getLangFromUrl(Astro.url);
+// The learning app is served from the same origin under /learn.
+const appUrl = String(import.meta.env.PUBLIC_APP_URL ?? "/learn").replace(/\/$/, "");
+---
+
+<!-- Shared with the learning app (packages/ui); rendered to HTML at build time, hydrated for menus and auth state. -->
+<LandingHeader
+  client:load
+  lang={lang}
+  locales={locales}
+  currentPath={Astro.url.pathname}
+  languageHrefs={languageHrefs}
+  appUrl={appUrl}
+/>
+
+<script>
+  const syncHeaderHeight = () => {
+    const header = document.querySelector<HTMLElement>("[data-site-header]");
+    if (!header) return;
+
+    const update = () => {
+      document.documentElement.style.setProperty(
+        "--site-header-height",
+        `${header.getBoundingClientRect().height}px`,
+      );
+    };
+
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(header);
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", syncHeaderHeight, {
+      once: true,
+    });
+  } else {
+    syncHeaderHeight();
+  }
+</script>

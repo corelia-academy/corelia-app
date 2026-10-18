@@ -99,6 +99,6 @@ it("opens the final assignment route after the last completed lesson", async () 
   const markComplete = vi.fn();
   act(() => root.render(<TestCard {...props} completed hasFinalAssignment nextLesson={null} courseId="course" onMarkComplete={markComplete} onNavigateToLesson={vi.fn()} />));
   await act(async () => Array.from(host.querySelectorAll("button")).find(button => button.textContent === "learning.finalAssignmentLink")!.click());
-  expect(routeNavigate).toHaveBeenCalledWith("/learn/course/final-assignment");
+  expect(routeNavigate).toHaveBeenCalledWith("/study/course/final-assignment");
   expect(markComplete).not.toHaveBeenCalled();
 });

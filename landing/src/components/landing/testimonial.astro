@@ -1,0 +1,227 @@
+---
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import TestimonialCarousel from "./testimonial-carousel";
+import Student1 from "@/assets/landing/student-1.jpg";
+import Student2 from "@/assets/landing/student-2.jpg";
+import Student3 from "@/assets/landing/student-3.jpg";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const appOrigin = String(
+  import.meta.env.PUBLIC_APP_URL ?? "/learn",
+).replace(/\/$/, "");
+const appLoginUrl = `${appOrigin}/login`;
+//MOCK DATA
+const testimonials = [
+  {
+    name: t("testimonial.1.name"),
+    role: t("testimonial.1.role"),
+    review: t("testimonial.1.review"),
+    avatar: Student1.src,
+  },
+  {
+    name: t("testimonial.2.name"),
+    role: t("testimonial.2.role"),
+    review: t("testimonial.2.review"),
+    avatar: Student2.src,
+  },
+  {
+    name: t("testimonial.3.name"),
+    role: t("testimonial.3.role"),
+    review: t("testimonial.3.review"),
+    avatar: Student3.src,
+  },
+];
+---
+
+<div class="w-full border-t border-border bg-background">
+  <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+    <div
+      class="grid w-full grid-cols-1 overflow-hidden border-x border-border md:grid-cols-2"
+    >
+      <!-- left banner -->
+      <div class="flex items-center border-r border-border p-8 md:p-12"></div>
+
+      <!-- right -->
+      <div class="flex flex-col flex-1"></div>
+    </div>
+  </div>
+</div>
+<div class="w-full border-t border-border">
+  <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+    <div
+      class="relative grid grid-cols-1 overflow-hidden border-x border-border bg-background md:grid-cols-2 md:items-stretch"
+    >
+      <!-- left -->
+      <div class="flex flex-col border-r border-border p-6 xl:pl-16 xl:pr-7">
+        <div class="xl:pt-11">
+          <span
+            class="text-[28px] xl:text-5xl"
+            style="font-family: var(--font-heading);"
+            data-reveal="fade-up">&ldquo;</span
+          >
+          <p
+            class="max-w-lg mt:5 text-4xl font-medium leading-[1.15] tracking-[-1.8px] text-primary-foreground md:mt-10 md:text-5xl md:tracking-[-1.6px] xl:text-5xl"
+            style="font-family: var(--font-heading);"
+            data-reveal="text-up"
+            data-reveal-delay="200"
+          >
+            {t("testimonial.quote")}
+          </p>
+        </div>
+        <!-- <a
+                    href={appLoginUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex mt-10 h-10 w-fit cursor-pointer items-center justify-center rounded-lg border border-border-container bg-primary-container px-4 text-xs font-medium text-on-primary-container shadow-button-tertiary-glow transition-all duration-300"
+                    data-aos="fade-up"
+                    data-aos-delay="400"
+                >
+                    {t("hero.cta.becomeastudent")}
+                </a> -->
+      </div>
+
+      <!-- right -->
+      <div
+        class="relative justify-center flex flex-col w-full pl-6 md:pr-16"
+        data-testimonial-hover
+      >
+        <div class="pb-16 pt-6 md:pt-16">
+          <div class="relative w-full">
+            <div
+              class="absolute md:-right-8 md:-top-8 hidden h-full w-full border-2 border-on-primary-body md:block"
+              aria-hidden="true"
+            >
+            </div>
+            <div
+              class="relative flex flex-col h-[400px] md:h-[503px] gap-8 border-2 border-foreground bg-on-primary-body p-10 text-background"
+              data-testimonial-card
+            >
+              <!-- <div class="flex flex-col gap-6">
+                                <div class="flex items-center gap-3">
+                                    <img loading="lazy" decoding="async"
+                                        src="/Sep.png"
+                                        alt=""
+                                        class="size-5 shrink-0 rounded-full bg-black/20"
+                                    />
+                                    <p class="text-base font-medium">
+                                        {t("testimonial.1.name")}
+                                    </p>
+                                </div>
+                                <p
+                                    class="text-sm md:text-xl"
+                                    style="mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
+                                -webkit-mask-image: linear-gradient(to bottom, black 95%, transparent 100%);"
+                                    data-testimonial-review
+                                >
+                                    {t("testimonial.1.review")}
+                                </p>
+                            </div> -->
+
+              <TestimonialCarousel
+                testimonials={testimonials}
+                client:visible={{ rootMargin: "200px" }}
+              />
+            </div>
+          </div>
+          <svg
+            class="pointer-events-none absolute left-6 h-16 text-on-primary-body"
+            data-testimonial-stripe
+            viewBox="0 0 582 61"
+            preserveAspectRatio="none"
+            fill="none"
+          >
+            <path
+              d="M-28.1938 -30.0645L348.457 358.285"
+              stroke="currentColor"
+              stroke-width="2"></path>
+            <path
+              d="M-8.81201 -48.8613L367.839 339.488"
+              stroke="currentColor"
+              stroke-width="2"></path>
+            <path
+              d="M10.5698 -67.6582L387.221 320.691"
+              stroke="currentColor"
+              stroke-width="2"></path>
+            <path
+              d="M29.9512 -86.457L406.602 301.892"
+              stroke="currentColor"
+              stroke-width="2"></path>
+            <path
+              d="M49.333 -105.254L425.984 283.095"
+              stroke="currentColor"
+              stroke-width="2"></path>
+            <path
+              d="M68.7139 -124.053L445.365 264.296"
+              stroke="currentColor"
+              stroke-width="2"></path>
+            <path
+              d="M88.0957 -142.85L464.747 245.499"
+              stroke="currentColor"
+              stroke-width="2"></path>
+            <path
+              d="M107.477 -161.648L484.128 226.701"
+              stroke="currentColor"
+              stroke-width="2"></path>
+            <path
+              d="M126.859 -180.445L503.51 207.904"
+              stroke="currentColor"
+              stroke-width="2"></path>
+            <path
+              d="M146.24 -199.244L522.891 189.105"
+              stroke="currentColor"
+              stroke-width="2"></path>
+            <path
+              d="M165.622 -218.041L542.273 170.308"
+              stroke="currentColor"
+              stroke-width="2"></path>
+            <path
+              d="M185.003 -236.84L561.655 151.509"
+              stroke="currentColor"
+              stroke-width="2"></path>
+            <path
+              d="M204.385 -255.637L581.036 132.712"
+              stroke="currentColor"
+              stroke-width="2"></path>
+            <path
+              d="M223.766 -274.436L600.417 113.913"
+              stroke="currentColor"
+              stroke-width="2"></path>
+            <path
+              d="M243.148 -293.232L619.799 95.1166"
+              stroke="currentColor"
+              stroke-width="2"></path>
+            <path
+              d="M262.529 -312.031L639.18 76.3177"
+              stroke="currentColor"
+              stroke-width="2"></path>
+            <path
+              d="M281.911 -330.828L658.562 57.5208"
+              stroke="currentColor"
+              stroke-width="2"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="w-full border-t border-border bg-background">
+  <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+    <div
+      class="grid w-full grid-cols-1 overflow-hidden border-x border-border md:grid-cols-2"
+    >
+      <!-- left banner -->
+      <div class="flex items-center border-r border-border p-8 md:p-12"></div>
+
+      <!-- right -->
+      <div class="flex flex-col flex-1"></div>
+    </div>
+  </div>
+</div>
+
+<!-- <script>
+    import { initTestimonialHover } from "@/lib/testimonialHover";
+    initTestimonialHover();
+</script> -->

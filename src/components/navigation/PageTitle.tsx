@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { matchRoutes, useLocation } from "react-router";
+import { currentAppPathname } from "@/lib/appUrl";
 
 const BRAND_NAME = "Corelia Academy";
 
@@ -105,9 +106,9 @@ export const PAGE_TITLE_ROUTES: PageTitleRoute[] = [
   { path: "/claim", handle: "claimCertificate" },
   { path: "/verify/:code", handle: "verifyCertificate" },
   { path: "/verify", handle: "verifyCertificate" },
-  { path: "/learn/:courseId/final-assignment", handle: "finalAssignment" },
-  { path: "/learn/:courseId/lesson/:lessonId", handle: "learnLesson" },
-  { path: "/learn/:courseId", handle: "learnCourse" },
+  { path: "/study/:courseId/final-assignment", handle: "finalAssignment" },
+  { path: "/study/:courseId/lesson/:lessonId", handle: "learnLesson" },
+  { path: "/study/:courseId", handle: "learnCourse" },
   { path: "/components/*", handle: "componentLibrary" },
   { path: "/", handle: "home" },
   { path: "/feed", handle: "feed" },
@@ -213,7 +214,7 @@ const PageTitleContext = createContext<PageTitleContextValue | null>(null);
 export function PageTitleProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslation("common");
   const [routeKey, setRouteKey] = useState<PageTitleKey>(() =>
-    typeof window === "undefined" ? "home" : resolvePageTitleKey(window.location.pathname),
+    typeof window === "undefined" ? "home" : resolvePageTitleKey(currentAppPathname()),
   );
   const [overrides, setOverrides] = useState<Map<symbol, PageTitleOverrideValue>>(() => new Map());
   const setOverride = useCallback((id: symbol, override: PageTitleOverrideValue | null) => {

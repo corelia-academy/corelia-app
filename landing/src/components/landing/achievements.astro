@@ -1,0 +1,68 @@
+---
+import AchievementsCarousel from "./achievements-carousel";
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import { blogPostUrl, getBlogPosts } from "@/lib/blog";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const achievementPosts = [
+    { slug: "vi-sao-corelia-dong-to-chuc-unihackfest-2026", image: "/blog/vi-sao-corelia-dong-to-chuc-unihackfest-2026/_DSC0898.jpg" },
+    { slug: "corelia-academy-uef-strategic-mou-fit-career-day-2026", image: "/blog/UEF02237.jpg" },
+    { slug: "sui-learning-tour-uef-2026", image: "/blog/sui-uef.jpg" },
+    { slug: "sui-learning-tour-utc2-2025", image: "/blog/sui-utc2.jpg" },
+    { slug: "sui-learning-tour-van-lang-university-2025", image: "/blog/sui-vanlang.jpg" },
+];
+const blogPosts = await getBlogPosts(lang);
+const postBySlug = new Map(blogPosts.map((post) => [post.data.translationKey, post]));
+const achievements = achievementPosts.flatMap(({ slug, image }) => {
+    const post = postBySlug.get(slug);
+    if (!post) return [];
+
+    return [{
+        image,
+        title: post.data.title,
+        date: post.data.date.toLocaleDateString(lang === "vi" ? "vi-VN" : "en-US"),
+        href: blogPostUrl(lang, post.slug),
+    }];
+});
+const achievementStats = [
+    { number: t("achievements.stat1.number"), text: t("achievements.stat1.text") },
+    { number: t("achievements.stat2.number"), text: t("achievements.stat2.text") },
+    { number: t("achievements.stat3.number"), text: t("achievements.stat3.text") },
+];
+---
+<div class="w-full border-t border-border">
+    <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+        <div class="flex w-full flex-col overflow-hidden border-x border-border md:flex-row">
+            <!-- left -->
+            <AchievementsCarousel slides={achievements} client:visible={{ rootMargin: "200px" }} />
+        </div>
+    </div>
+</div>
+<div class="w-full border-t border-border bg-background">
+    <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0 ">
+        <div class="grid w-full grid-cols-1 overflow-hidden border-x border-border md:grid-cols-3">
+            {
+                achievementStats.map(({number, text}, index) => (
+                    <div class:list={["flex items-center gap-4 lg:gap-8 border-border xl:px-7 p-5", index < achievementStats.length - 1 && "border-r"]}
+                    data-reveal="text-up"
+                    data-reveal-delay={index * 400}>
+                        <span class="flex flex-col items-center shrink-0">
+                            <span class="text-[28px] font-medium leading-[1.15] tracking-[-1.4px] text-foreground lg:text-[36px] lg:tracking-[-1.44px]" style="font-family: var(--font-heading);">
+                                {number}
+                            </span>
+                            <span class="mt-2 h-px w-10 bg-foreground" />
+                        </span>
+                        <p
+                        class="text-lg font-normal leading-[1.15] tracking-[-0.02em] text-foreground lg:text-2xl md:leading-[1.2]"
+                        style="font-family: var(--font-heading);">
+                            {text}
+                        </p>
+                    </div>
+                ))
+            }
+        </div>
+    </div>
+</div>

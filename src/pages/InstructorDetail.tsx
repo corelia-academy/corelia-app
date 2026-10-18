@@ -20,6 +20,7 @@ import { useTranslation } from "react-i18next";
 import { QueryErrorState } from "@/components/QueryErrorState";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
+import { appUrl } from "@/lib/appUrl";
 
 const EMPTY_COURSES: never[] = [];
 
@@ -60,7 +61,7 @@ const InstructorDetail = () => {
   usePageMeta({
     title: profile?.full_name?.trim() ?? undefined,
     description: instructorBio,
-    image: profile?.profile_public && profile.username ? `${window.location.origin}/avatar/${encodeURIComponent(profile.username)}.svg` : undefined,
+    image: profile?.profile_public && profile.username ? appUrl(`/avatar/${encodeURIComponent(profile.username)}.svg`) : undefined,
     url: window.location.href,
   });
   useDynamicPageTitle(profile?.full_name);

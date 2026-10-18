@@ -32,6 +32,7 @@ import { User } from "@/components/ui/user";
 import { useAuth } from "@/stores/authStore";
 
 import { ComponentShowcaseLayout, ShowcaseSection } from "./ComponentShowcaseLayout";
+import { appPath } from "@/lib/appUrl";
 
 type AdminAvatarComponentPageProps = {
   embedded?: boolean;
@@ -138,7 +139,7 @@ function AvatarCase({
         {type === "Brand Logos" ? (
           <>
             <AvatarImage
-              src={isCoreliaLogo ? "/corelia_favicon.svg" : "/logo/OC-square-logo.svg"}
+              src={isCoreliaLogo ? appPath("/corelia_favicon.svg") : appPath("/logo/OC-square-logo.svg")}
               alt={isCoreliaLogo ? "Corelia logo" : "Open Campus logo"}
             />
             <AvatarFallback>

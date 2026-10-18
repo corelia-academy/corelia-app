@@ -44,14 +44,14 @@ it.each([false, true])("keeps completion and credential follow-up in the active 
   let resolveCompletion!: (value: { completed: boolean; completed_at: string }) => void;
   state.sync.mockReturnValue(new Promise(resolve => { resolveCompletion = resolve; }));
   state.credential.mockResolvedValue({ reason: "no_credential" });
-  const router = createMemoryRouter([{ path: "/learn/:courseId", element: <Learn /> }], { initialEntries: ["/learn/a"] });
+  const router = createMemoryRouter([{ path: "/study/:courseId", element: <Learn /> }], { initialEntries: ["/study/a"] });
   const client = new QueryClient();
   const host = document.createElement("div");
   const root = createRoot(host);
   cleanup = () => { act(() => root.unmount()); router.dispose(); client.clear(); };
   await act(async () => root.render(<QueryClientProvider client={client}><RouterProvider router={router} /></QueryClientProvider>));
   expect(state.sync).toHaveBeenCalledWith("learner", "a");
-  if (switchCourse) await act(async () => { await router.navigate("/learn/b"); });
+  if (switchCourse) await act(async () => { await router.navigate("/study/b"); });
   expect(host.querySelector('[data-testid="course"]')?.textContent).toBe(switchCourse ? "b" : "a");
   await act(async () => resolveCompletion({ completed: true, completed_at: "2026-09-12T00:00:00Z" }));
   expect(Boolean(host.querySelector('[data-testid="completed"]'))).toBe(!switchCourse);

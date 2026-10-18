@@ -3,6 +3,7 @@ import { AppShellSkeleton } from "@/components/loading/AppShellSkeleton";
 import { LearnShellSkeleton } from "@/components/loading/RouteSkeleton";
 import { isStandalonePlaceholderPath, routeSkeletonVariantForPath } from "@/components/loading/routeSkeletonVariant";
 import { Skeleton } from "@/components/ui/skeleton";
+import { currentAppPathname } from "@/lib/appUrl";
 
 const MINIMAL_ROUTE_PREFIXES = [
   "/login",
@@ -16,12 +17,12 @@ const MINIMAL_ROUTE_PREFIXES = [
 
 function isMinimalRoute(): boolean {
   if (typeof window === "undefined") return false;
-  return MINIMAL_ROUTE_PREFIXES.some((prefix) => window.location.pathname.startsWith(prefix));
+  return MINIMAL_ROUTE_PREFIXES.some((prefix) => currentAppPathname().startsWith(prefix));
 }
 /** Neutral first paint while Supabase restores the session. Never renders guest/auth UI prematurely. */
 export function AuthBootstrapScreen({ content }: { content?: ReactNode }) {
   if (isMinimalRoute()) {
-    if (content && isStandalonePlaceholderPath(window.location.pathname)) return <>{content}</>;
+    if (content && isStandalonePlaceholderPath(currentAppPathname())) return <>{content}</>;
     return (
       <main
         className="flex min-h-svh items-center justify-center bg-background px-4"
@@ -39,7 +40,7 @@ export function AuthBootstrapScreen({ content }: { content?: ReactNode }) {
   }
 
   // Match the route about to render so the shape does not change again after boot.
-  if (routeSkeletonVariantForPath(window.location.pathname) === "learn") {
+  if (routeSkeletonVariantForPath(currentAppPathname()) === "learn") {
     return (
       <div className="h-dvh overflow-hidden bg-background">
         <LearnShellSkeleton immediate />

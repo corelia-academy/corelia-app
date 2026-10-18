@@ -30,6 +30,7 @@ import { passwordPolicyFailureReason } from "@/lib/passwordPolicy";
 import { LoginHcaptcha } from "@/components/auth/LoginHcaptcha";
 import { hcaptchaSiteKey, isHcaptchaConfigured } from "@/lib/hcaptchaConfig";
 import { authMetadataLocaleFromUiLanguage } from "@/lib/intl";
+import { appUrl } from "@/lib/appUrl";
 
 type Translate = (key: string, options?: { defaultValue?: string }) => string;
 
@@ -159,7 +160,7 @@ export function LoginForm({
         authApiCalled = true;
         await executeAuth(() => requestPasswordReset({
           email: email.trim(),
-          redirectTo: `${window.location.origin}/account/settings`,
+          redirectTo: appUrl("/account/settings"),
           captchaToken: captchaOpts.captchaToken,
         }));
         setSuccessMessage(t("login.forgotPassword.sent"));
@@ -197,7 +198,7 @@ export function LoginForm({
           password,
           fullName: name,
           locale: authMetadataLocaleFromUiLanguage(i18n.resolvedLanguage ?? i18n.language),
-          emailRedirectTo: `${window.location.origin}/auth/signup-verified`,
+          emailRedirectTo: appUrl("/auth/signup-verified"),
           captchaToken: captchaOpts.captchaToken,
         })) as Awaited<ReturnType<typeof signUpWithPassword>>;
         const session = data.session;

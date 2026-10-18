@@ -1,0 +1,286 @@
+---
+import FeaturedCourses from "./featured-courses";
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const appOrigin = String(
+    import.meta.env.PUBLIC_APP_URL ?? "/learn",
+).replace(/\/$/, "");
+const ctaHref = `${appOrigin}/login`;
+
+const courses = [
+    {
+        image: "/BlockchainBasics.png",
+        title: t("roadmap.featured.1.title"),
+        range: t("roadmap.featured.1.range"),
+        lessons: t("roadmap.featured.1.lessons"),
+        desc: t("roadmap.featured.1.desc"),
+        topics: [
+            t("roadmap.featured.1.detail.1"),
+            t("roadmap.featured.1.detail.2"),
+            t("roadmap.featured.1.detail.3"),
+            t("roadmap.featured.1.detail.4"),
+        ],
+    },
+    {
+        image: "/Soliditydeveloper.png",
+        title: t("roadmap.featured.2.title"),
+        range: t("roadmap.featured.2.range"),
+        lessons: t("roadmap.featured.2.lessons"),
+        desc: t("roadmap.featured.2.desc"),
+        topics: [
+            t("roadmap.featured.2.detail.1"),
+            t("roadmap.featured.2.detail.2"),
+            t("roadmap.featured.2.detail.3"),
+        ],
+    },
+    {
+        image: "/Evmdappdeveloper.png",
+        title: t("roadmap.featured.3.title"),
+        range: t("roadmap.featured.3.range"),
+        lessons: t("roadmap.featured.3.lessons"),
+        desc: t("roadmap.featured.3.desc"),
+        topics: [
+            t("roadmap.featured.3.detail.1"),
+            t("roadmap.featured.3.detail.2"),
+            t("roadmap.featured.3.detail.3"),
+        ],
+    },
+    {
+        image: "/Rustsurvivalkit.png",
+        title: t("roadmap.featured.4.title"),
+        range: t("roadmap.featured.4.range"),
+        lessons: t("roadmap.featured.4.lessons"),
+        desc: t("roadmap.featured.4.desc"),
+        topics: [
+            t("roadmap.featured.4.detail.1"),
+            t("roadmap.featured.4.detail.2"),
+            t("roadmap.featured.4.detail.3"),
+        ],
+    },
+    {
+        image: "/SolanaBootcamp.png",
+        title: t("roadmap.featured.5.title"),
+        range: t("roadmap.featured.5.range"),
+        lessons: t("roadmap.featured.5.lessons"),
+        desc: t("roadmap.featured.5.desc"),
+        topics: [
+            t("roadmap.featured.5.detail.1"),
+            t("roadmap.featured.5.detail.2"),
+            t("roadmap.featured.5.detail.3"),
+        ],
+    },
+    {
+        image: "/Digitalassetsfoundations.png",
+        title: t("roadmap.featured.6.title"),
+        range: t("roadmap.featured.6.range"),
+        lessons: t("roadmap.featured.6.lessons"),
+        desc: t("roadmap.featured.6.desc"),
+        topics: [
+            t("roadmap.featured.6.detail.1"),
+            t("roadmap.featured.6.detail.2"),
+            t("roadmap.featured.6.detail.3"),
+        ],
+    },
+];
+
+// MOCK — feedback nhiều câu (qua t())
+const feedbacks = [
+    { avatar: "/Sep.png", text: t("roadmap.featured.review.1") },
+    { avatar: "/Sep.png", text: t("roadmap.featured.review.2") },
+    { avatar: "/Sep.png", text: t("roadmap.featured.review.3") },
+    { avatar: "/Sep.png", text: t("roadmap.featured.review.4") },
+];
+
+const labels = {
+    about: t("roadmap.featured.tab.about"),
+    detail: t("roadmap.featured.tab.detail"),
+};
+---
+
+<div class="w-full border-t border-border">
+    <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+        <div class="border-x border-border">
+            <!-- top -->
+            <div
+                class="flex flex-col lg:flex-row w-full items-stretch border-b border-border"
+            >
+                <div
+                    class="flex lg:w-[50%] items-center gap-6 border-b lg:border-r border-border py-6 md:px-6 lg:pl-16"
+                >
+                    <p
+                        class="shrink-0 text-lg leading-[1.15] tracking-[-0.02em] text-foreground md:text-2xl md:leading-[1.2] hidden md:block"
+                        style="font-family: var(--font-heading);"
+                        data-reveal="text-up"
+                    >
+                        {t("roadmap.featured.feedbacks")}
+                    </p>
+                    <div
+                        class="partner-fade relative min-w-0 flex-1 overflow-hidden"
+                    >
+                        <div
+                            class="flex w-max animate-partner-scroll items-center gap-10"
+                        >
+                            {
+                                [...feedbacks, ...feedbacks].map((f) => (
+                                    <span class="flex shrink-0 items-center gap-2 whitespace-nowrap text-sm leading-[1.4] text-muted-foreground md:text-base">
+                                        <img loading="lazy" decoding="async"
+                                            src={f.avatar}
+                                            alt=""
+                                            class="size-5 shrink-0 rounded-full object-cover"
+                                        />
+                                        {f.text}
+                                    </span>
+                                ))
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div
+                    id="featured-cta-wrap"
+                    class="flex flex-1 items-center justify-center gap-5 md:gap-8 md:px-8 py-6"
+                >
+                    <div class="flex items-center gap-5 md:gap-8">
+                        <img loading="lazy" decoding="async"
+                            src="/invertedtriangle.svg"
+                            alt=""
+                            data-cta-arrow="left"
+                            class="size-4 -rotate-90 opacity-30"
+                        />
+                        <img loading="lazy" decoding="async"
+                            src="/invertedtriangle.svg"
+                            alt=""
+                            data-cta-arrow="left"
+                            class="size-4 -rotate-90 opacity-60"
+                        />
+                        <img loading="lazy" decoding="async"
+                            src="/invertedtriangle.svg"
+                            alt=""
+                            data-cta-arrow="left"
+                            class="size-4 -rotate-90"
+                        />
+                    </div>
+                    <a
+                        href={ctaHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-reveal="fade-up"
+                        data-hover-wave
+                        class="rounded-[8px] border border-border-button bg-button-primary-background px-4 py-[7px] text-sm font-medium leading-[1.2] text-button-primary-foreground shadow-button-primary-glow transition-colors hover:bg-button-primary-background-hover md:text-lg"
+                    >
+                        <span class="hw-label relative top-px md:top-0">{t("roadmap.featured.cta")}</span
+                        >
+                    </a>
+                    <div class="flex items-center gap-5 md:gap-8">
+                        <img loading="lazy" decoding="async"
+                            src="/invertedtriangle.svg"
+                            alt=""
+                            data-cta-arrow="right"
+                            class="size-4 rotate-90"
+                        />
+                        <img loading="lazy" decoding="async"
+                            src="/invertedtriangle.svg"
+                            alt=""
+                            data-cta-arrow="right"
+                            class="size-4 rotate-90 opacity-60"
+                        />
+                        <img loading="lazy" decoding="async"
+                            src="/invertedtriangle.svg"
+                            alt=""
+                            data-cta-arrow="right"
+                            class="size-4 rotate-90 opacity-30"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div data-reveal="fade-up">
+                <FeaturedCourses
+                    courses={courses}
+                    labels={labels}
+                    client:visible={{ rootMargin: "200px" }}
+                />
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .partner-fade {
+        mask-image: linear-gradient(
+            to right,
+            transparent,
+            black 15%,
+            black 85%,
+            transparent
+        );
+        -webkit-mask-image: linear-gradient(
+            to right,
+            transparent,
+            black 15%,
+            black 85%,
+            transparent
+        );
+    }
+    @keyframes partner-scroll {
+        from {
+            transform: translateX(0);
+        }
+        to {
+            transform: translateX(-50%);
+        }
+    }
+    .animate-partner-scroll {
+        animation: partner-scroll 30s linear infinite;
+    }
+</style>
+
+<script>
+    import { gsap } from "gsap";
+    const wrap = document.getElementById("featured-cta-wrap");
+    if (wrap) {
+        const left = Array.from(
+            wrap.querySelectorAll('[data-cta-arrow="left"]'),
+        );
+        const right = Array.from(
+            wrap.querySelectorAll('[data-cta-arrow="right"]'),
+        );
+        let tl: ReturnType<typeof gsap.timeline> | null = null;
+        wrap.addEventListener("mouseenter", () => {
+            if (tl) tl.kill();
+            gsap.set([...left, ...right], { x: 0 });
+            tl = gsap.timeline({ repeat: -1, repeatDelay: 0.1 });
+            tl.to(
+                left,
+                { x: 15, duration: 0.26, ease: "power2.in", stagger: 0.06 },
+                0,
+            )
+                .to(
+                    right,
+                    {
+                        x: -15,
+                        duration: 0.26,
+                        ease: "power2.in",
+                        stagger: 0.06,
+                    },
+                    0,
+                )
+                .to([...left, ...right], {
+                    x: 0,
+                    duration: 0.16,
+                    ease: "power2.out",
+                });
+        });
+        wrap.addEventListener("mouseleave", () => {
+            if (tl) tl.kill();
+            gsap.to([...left, ...right], {
+                x: 0,
+                duration: 0.2,
+                ease: "power2.out",
+            });
+        });
+    }
+</script>

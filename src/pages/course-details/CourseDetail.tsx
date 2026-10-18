@@ -322,10 +322,10 @@ export default function CourseDetail() {
       const result = await progress.refresh();
       const sorted = result?.sorted ?? sortedLessons;
       const next = result?.next ?? sorted[0] ?? null;
-      if (next) navigate(`/learn/${courseId}/lesson/${next.id}`);
+      if (next) navigate(`/study/${courseId}/lesson/${next.id}`);
       else if (sorted[0])
-        navigate(`/learn/${courseId}/lesson/${sorted[0].id}`);
-      else navigate(`/learn/${courseId}`);
+        navigate(`/study/${courseId}/lesson/${sorted[0].id}`);
+      else navigate(`/study/${courseId}`);
     } catch (e) {
       courseLoad.setError(
         e instanceof Error
@@ -350,8 +350,8 @@ export default function CourseDetail() {
     if (!courseId) return;
     navigate(
       progress.nextLesson
-        ? `/learn/${courseId}/lesson/${progress.nextLesson.id}`
-        : `/learn/${courseId}`,
+        ? `/study/${courseId}/lesson/${progress.nextLesson.id}`
+        : `/study/${courseId}`,
     );
   }, [courseLoad.resolvedCourseId, navigate, progress.nextLesson]);
 

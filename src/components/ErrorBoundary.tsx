@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { isStaleChunkLoadError } from "@/lib/staleChunkRecovery";
 import { PageTitleOverride } from "@/components/navigation/PageTitle";
+import { appPath } from "@/lib/appUrl";
 
 interface Props {
   children: ReactNode;
@@ -86,7 +87,7 @@ export function ErrorFallback({ error, onRetry }: { error: Error; onRetry: () =>
             type="button"
             className="rounded-md border border-border px-4 py-2 text-sm transition-colors duration-150 hover:bg-surface-raised"
             onClick={() => {
-              window.location.assign("/");
+              window.location.assign(appPath("/"));
             }}
           >
             {t("errorBoundary.goHome")}

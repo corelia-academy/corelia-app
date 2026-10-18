@@ -36,6 +36,7 @@ import {
   PageTitleProvider,
   RoutePageTitleSync,
 } from "@/components/navigation/PageTitle";
+import { APP_BASE_PATH, currentAppPathname } from "@/lib/appUrl";
 
 // Lazy-load all routes not needed on the initial render
 const Home = lazy(() => import("@/pages/home/index"));
@@ -50,6 +51,7 @@ const MainLayout = lazy(() => import("@/components/layouts/MainLayout"));
 const CourseDetail = lazy(() => import("@/pages/course-details"));
 const Learn = lazy(() => import("@/pages/learn"));
 const LearnLayout = lazy(() => import("@/pages/learn/LearnLayout"));
+const LegacyLearnRedirect = lazy(() => import("@/pages/learn/LegacyLearnRedirect"));
 const InstructorDetail = lazy(() => import("@/pages/InstructorDetail"));
 const ProjectInvitePage = lazy(() => import("@/pages/invites/ProjectInvitePage"));
 const CoInstructorInvitePage = lazy(() => import("@/pages/invites/CoInstructorInvitePage"));
@@ -203,7 +205,7 @@ export default function App() {
           <XpNotifications />
           <NotificationSync />
           {authStatus === "booting" ? (
-            <AuthBootstrapScreen content={<RoutePlaceholder pathname={window.location.pathname} />} />
+            <AuthBootstrapScreen content={<RoutePlaceholder pathname={currentAppPathname()} />} />
           ) : (
             <TooltipProvider>
               <ApplicationRouter />
@@ -220,9 +222,10 @@ export default function App() {
 // blockers (including browser Back/Forward) in authoring workspaces.
 function ApplicationRouter() {
   const [router] = useState(() => {
-    const instance = createBrowserRouter([
-      { path: "*", element: <ApplicationRoutes />, errorElement: <RouteErrorBoundary /> },
-    ]);
+    const instance = createBrowserRouter(
+      [{ path: "*", element: <ApplicationRoutes />, errorElement: <RouteErrorBoundary /> }],
+      { basename: APP_BASE_PATH || "/" },
+    );
     // Subscribed before RouterProvider, so the flag is set before the next route renders.
     const initialKey = instance.state.location.key;
     const unsubscribe = instance.subscribe((state) => {
@@ -316,8 +319,9 @@ function ApplicationRoutes() {
                 </Suspense>
               }
             />
+            <Route path="learn/*" element={<Suspense fallback={<LearnFallback />}><LegacyLearnRedirect /></Suspense>} />
             <Route
-              path="learn"
+              path="study"
               element={
                 <Suspense fallback={<LearnFallback />}>
                   <LearnLayout />

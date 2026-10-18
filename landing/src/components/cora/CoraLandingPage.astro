@@ -1,0 +1,450 @@
+---
+import Header from "@/components/common/header.astro";
+import Footer from "@/components/common/footer.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+  ArrowRightIcon,
+  BrainCircuitIcon,
+  CheckIcon,
+  GraduationCapIcon,
+  LightbulbIcon,
+  LineChartIcon,
+  RocketIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  BookOpenIcon,
+  CompassIcon,
+  LanguagesIcon,
+} from "@lucide/astro";
+import type { CoraPageContent as Content } from "./content";
+
+type Props = {
+  lang: "vi" | "en";
+  content: Content;
+};
+
+const { lang, content } = Astro.props as Props;
+
+const appOrigin = String(
+  import.meta.env.PUBLIC_APP_URL ?? "/learn",
+).replace(/\/$/, "");
+const appLoginUrl = `${appOrigin}/login`;
+const appCoraUrl = `${appOrigin}/cora`;
+const canonicalUrl = `https://corelia.academy${content.canonicalPath}`;
+const alternatePath = lang === "vi" ? "/cora" : "/vi/cora";
+const languageHrefs =
+  lang === "vi"
+    ? { vi: "/vi/cora", en: "/cora" }
+    : { en: "/cora", vi: "/vi/cora" };
+
+const coraLogo = "/logo/Cora_AI_Tutor.svg";
+const surfaceIcons = [GraduationCapIcon, BookOpenIcon, CompassIcon] as const;
+const benefitIcons = [BrainCircuitIcon, LineChartIcon, LanguagesIcon, RocketIcon] as const;
+const principleIcons = [LightbulbIcon, ShieldCheckIcon, RocketIcon];
+---
+
+<BaseLayout
+  lang={lang}
+  title={content.metaTitle}
+  description={content.metaDescription}
+  canonicalUrl={canonicalUrl}
+  ogUrl={canonicalUrl}
+  ogImage={`https://corelia.academy/corelia-og-site-v2-${lang}.png`}
+>
+  <Fragment slot="head">
+    <link
+      rel="alternate"
+      hreflang={lang === "vi" ? "en" : "vi"}
+      href={`https://corelia.academy${alternatePath}`}
+    />
+  </Fragment>
+
+  <Header languageHrefs={languageHrefs} />
+
+  <main class="relative overflow-hidden">
+    <div class="pointer-events-none absolute inset-0 overflow-hidden">
+      <div class="absolute inset-0 bg-linear-to-b from-primary/10 via-transparent to-transparent"></div>
+      <div class="absolute left-1/2 top-20 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-primary/12 blur-3xl"></div>
+    </div>
+
+    <section class="relative overflow-hidden pt-28 pb-20 md:pt-36 md:pb-28">
+      <div class="absolute inset-0 bg-linear-to-b from-white/3 to-transparent pointer-events-none"></div>
+      <div class="container relative z-10 mx-auto max-w-[1200px] px-4 xl:px-0">
+        <div class="flex flex-col items-center text-center">
+          <div
+            class="inline-flex items-center gap-2 rounded-full border border-border bg-white/8 px-4 py-2 text-[11px] font-light uppercase tracking-[0.22em] text-foreground"
+            data-aos="fade-down"
+            data-aos-delay="100"
+          >
+            <img loading="lazy" decoding="async" src={coraLogo} alt="Cora AI Tutor" class="h-4 w-auto" />
+            {content.badge}
+          </div>
+          <h1
+            class="mt-6 max-w-[920px] text-3xl font-semibold leading-tight text-foreground md:text-4xl lg:text-5xl"
+            data-aos="fade-up"
+            data-aos-delay="200"
+          >
+            {content.title}
+          </h1>
+          <p
+            class="mt-5 max-w-[760px] text-sm leading-7 text-muted-foreground md:text-base"
+            data-aos="fade-up"
+            data-aos-delay="300"
+          >
+            {content.description}
+          </p>
+          <div
+            class="mt-8 flex flex-wrap items-center justify-center gap-3"
+            data-aos="fade-up"
+            data-aos-delay="400"
+          >
+            <a
+              href={appLoginUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-all duration-300 hover:bg-secondary hover:text-secondary-foreground md:px-5 md:text-sm"
+            >
+              {content.primaryCta}
+              <ArrowRightIcon class="size-4" />
+            </a>
+            <a
+              href="#surfaces"
+              class="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-transparent px-4 py-2 text-xs font-medium text-foreground transition-all duration-300 hover:bg-foreground/10 md:px-5 md:text-sm"
+            >
+              {content.secondaryCta}
+            </a>
+          </div>
+          <div
+            class="mt-8 flex flex-wrap items-center justify-center gap-3"
+            data-aos="fade-up"
+            data-aos-delay="500"
+          >
+            {
+              content.proof.map((item, index) => (
+                <span
+                  class="rounded-full border border-border bg-card/70 px-3 py-1.5 text-xs font-light text-muted-foreground"
+                  data-aos="zoom-in"
+                  data-aos-delay={550 + index * 70}
+                >
+                  {item}
+                </span>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="surfaces" class="container mx-auto max-w-[1200px] px-3 py-16 xl:px-0 scroll-mt-24">
+      <div class="grid items-stretch gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <div
+          class="rounded-[40px] border border-border bg-card p-6 md:p-8 lg:p-10"
+          data-aos="fade-right"
+        >
+          <p class="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            {content.surfaceTitle}
+          </p>
+          <h2 class="pt-3 text-2xl font-semibold text-foreground md:text-3xl">
+            {content.surfaceDescription}
+          </h2>
+          <div class="mt-8 space-y-4">
+            {
+              content.surfaces.map((surface, index) => {
+                const Icon = surfaceIcons[index] ?? GraduationCapIcon;
+                return (
+                  <div
+                    class="rounded-[24px] bg-secondary p-4"
+                    data-aos="fade-up"
+                    data-aos-delay={150 + index * 120}
+                  >
+                    <div class="flex items-start gap-4">
+                      <div class="flex size-12 shrink-0 items-center justify-center rounded-[16px] bg-primary/10 text-primary">
+                        <Icon class="size-5" />
+                      </div>
+                      <div>
+                        <p class="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+                          {surface.eyebrow}
+                        </p>
+                        <h3 class="pt-1 text-lg font-medium text-card-foreground">
+                          {surface.title}
+                        </h3>
+                        <p class="pt-2 text-sm font-light leading-7 text-muted-foreground">
+                          {surface.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            }
+          </div>
+        </div>
+
+        <div
+          class="rounded-[40px] border border-border bg-card p-4 md:p-5"
+          data-aos="fade-left"
+          data-aos-delay="150"
+        >
+          <div class="grid h-full gap-3 rounded-[28px] bg-secondary p-3 md:grid-rows-[auto_auto_1fr]">
+            <div
+              class="rounded-[24px] border border-border bg-card px-4 py-4"
+              data-aos="zoom-in"
+              data-aos-delay="220"
+            >
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <p class="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+                    Cora AI
+                  </p>
+                  <p class="pt-1 text-lg font-medium text-card-foreground">
+                    {lang === "vi"
+                      ? "Một tutor sống cùng learner journey"
+                      : "A tutor that lives inside the learner journey"}
+                  </p>
+                </div>
+                <img loading="lazy" decoding="async" src={coraLogo} alt="Cora AI Tutor" class="h-11 w-auto" />
+              </div>
+            </div>
+
+            <div class="grid gap-3 md:grid-cols-2">
+              <div
+                class="rounded-[24px] border border-border bg-card p-4"
+                data-aos="fade-up"
+                data-aos-delay="320"
+              >
+                <p class="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+                  {lang === "vi" ? "Learning Memory" : "Learning Memory"}
+                </p>
+                <div class="mt-3 space-y-2">
+                  <div class="rounded-full bg-primary/10 px-3 py-1 text-xs text-primary">
+                    {lang === "vi" ? "Strong: React foundations" : "Strong: React foundations"}
+                  </div>
+                  <div class="rounded-full bg-white/6 px-3 py-1 text-xs text-muted-foreground">
+                    {lang === "vi" ? "Needs work: debugging flow" : "Needs work: debugging flow"}
+                  </div>
+                  <div class="rounded-full bg-white/6 px-3 py-1 text-xs text-muted-foreground">
+                    {lang === "vi" ? "Style: học qua ví dụ" : "Style: learns through examples"}
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="rounded-[24px] border border-border bg-card p-4"
+                data-aos="fade-up"
+                data-aos-delay="420"
+              >
+                <p class="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+                  {lang === "vi" ? "Recommended Next" : "Recommended Next"}
+                </p>
+                <div class="mt-3 space-y-2">
+                  <div class="flex items-start gap-2 text-sm text-card-foreground">
+                    <CheckIcon class="mt-0.5 size-4 shrink-0 text-primary" />
+                    <span>{lang === "vi" ? "Tiếp tục lesson đang học" : "Continue the active lesson"}</span>
+                  </div>
+                  <div class="flex items-start gap-2 text-sm text-card-foreground">
+                    <CheckIcon class="mt-0.5 size-4 shrink-0 text-primary" />
+                    <span>{lang === "vi" ? "Ôn lại topic còn yếu" : "Review a weak topic"}</span>
+                  </div>
+                  <div class="flex items-start gap-2 text-sm text-card-foreground">
+                    <CheckIcon class="mt-0.5 size-4 shrink-0 text-primary" />
+                    <span>{lang === "vi" ? "Khám phá course kế tiếp" : "Explore the next course"}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="rounded-[24px] border border-border bg-card p-4 md:p-5"
+              data-aos="fade-up"
+              data-aos-delay="520"
+            >
+              <div class="grid gap-3">
+                {
+                  content.prompts.slice(0, 3).map((prompt) => (
+                    <div class="rounded-[18px] bg-secondary px-4 py-3 text-sm font-light leading-6 text-muted-foreground">
+                      “{prompt}”
+                    </div>
+                  ))
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="container mx-auto max-w-[1200px] px-3 py-16 xl:px-0">
+      <p
+        class="pb-6 text-center text-2xl font-semibold capitalize text-foreground md:text-3xl lg:text-4xl max-w-[90%] md:max-w-none"
+        data-aos="fade-up"
+      >
+        {content.benefitTitle}
+      </p>
+      <p
+        class="mx-auto max-w-[90%] pb-8 text-center text-xs font-light text-muted-foreground md:max-w-[620px] md:text-sm xl:pb-16"
+        data-aos="fade-up"
+        data-aos-delay="150"
+      >
+        {content.benefitDescription}
+      </p>
+
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {
+          content.benefits.map((benefit, index) => {
+            const Icon = benefitIcons[index] ?? BrainCircuitIcon;
+            return (
+              <div
+                class="rounded-[28px] border border-border bg-card p-6 md:p-7"
+                data-aos="fade-up"
+                data-aos-delay={220 + index * 120}
+              >
+                <div class="flex size-11 items-center justify-center rounded-[16px] bg-primary/10 text-primary">
+                  <Icon class="size-5" />
+                </div>
+                <h3 class="pt-5 text-xl font-medium text-card-foreground">
+                  {benefit.title}
+                </h3>
+                <p class="pt-3 text-sm font-light leading-7 text-muted-foreground">
+                  {benefit.description}
+                </p>
+              </div>
+            );
+          })
+        }
+      </div>
+    </section>
+
+    <section class="container mx-auto max-w-[1200px] px-3 py-16 xl:px-0">
+      <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div
+          class="rounded-[40px] border border-border bg-card p-6 md:p-8 lg:p-10"
+          data-aos="fade-right"
+        >
+          <p class="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            {content.principleTitle}
+          </p>
+          <h2 class="pt-3 text-2xl font-semibold text-foreground md:text-3xl">
+            {content.principleDescription}
+          </h2>
+          <div class="mt-8 space-y-4">
+            {
+              content.principles.map((principle, index) => {
+                const Icon = principleIcons[index] ?? SparklesIcon;
+                return (
+                  <div
+                    class="rounded-[24px] bg-secondary p-4"
+                    data-aos="fade-right"
+                    data-aos-delay={140 + index * 110}
+                  >
+                    <div class="flex items-start gap-4">
+                      <div class="flex size-11 shrink-0 items-center justify-center rounded-[16px] bg-primary/10 text-primary">
+                        <Icon class="size-5" />
+                      </div>
+                      <div>
+                        <h3 class="text-lg font-medium text-card-foreground">
+                          {principle.title}
+                        </h3>
+                        <p class="pt-2 text-sm font-light leading-7 text-muted-foreground">
+                          {principle.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            }
+          </div>
+        </div>
+
+        <div
+          class="rounded-[40px] border border-border bg-card p-6 md:p-8 lg:p-10"
+          data-aos="fade-left"
+          data-aos-delay="120"
+        >
+          <p class="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            {content.promptTitle}
+          </p>
+          <h2 class="pt-3 text-2xl font-semibold text-foreground md:text-3xl">
+            {content.promptDescription}
+          </h2>
+          <div class="mt-8 grid gap-3">
+            {
+              content.prompts.map((prompt, index) => (
+                <div
+                  class="rounded-[20px] bg-secondary px-4 py-3 text-sm font-light leading-6 text-muted-foreground"
+                  data-aos="fade-up"
+                  data-aos-delay={180 + index * 80}
+                >
+                  “{prompt}”
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="container mx-auto max-w-[1200px] px-3 py-16 xl:px-0">
+        <div
+          class="rounded-[40px] border border-border bg-card p-6 md:p-8 lg:p-10"
+          data-aos="zoom-in-up"
+        >
+          <div class="flex flex-col items-center text-center">
+          <img loading="lazy" decoding="async"
+            src={coraLogo}
+            alt="Cora AI Tutor"
+            class="h-14 w-auto"
+            data-aos="zoom-in"
+            data-aos-delay="100"
+          />
+          <h2
+            class="mx-auto max-w-[820px] pt-5 text-2xl font-semibold text-foreground md:text-3xl lg:text-4xl"
+            data-aos="fade-up"
+            data-aos-delay="180"
+          >
+            {content.ctaTitle}
+          </h2>
+          <p
+            class="mx-auto max-w-[760px] pt-4 text-sm font-light leading-7 text-muted-foreground md:text-base"
+            data-aos="fade-up"
+            data-aos-delay="260"
+          >
+            {content.ctaDescription}
+          </p>
+          <div
+            class="mt-8 flex flex-wrap items-center justify-center gap-3"
+            data-aos="fade-up"
+            data-aos-delay="340"
+          >
+            <a
+              href={appLoginUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-all duration-300 hover:bg-secondary hover:text-secondary-foreground md:px-5 md:text-sm"
+            >
+              {content.cta.primary}
+              <ArrowRightIcon class="size-4" />
+            </a>
+            <a
+              href={appCoraUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-transparent px-4 py-2 text-xs font-medium text-foreground transition-all duration-300 hover:bg-foreground/10 md:px-5 md:text-sm"
+            >
+              <SparklesIcon class="size-4" />
+              {content.cta.secondary}
+            </a>
+          </div>
+          <p
+            class="mt-4 text-center text-xs font-light text-muted-foreground"
+            data-aos="fade-up"
+            data-aos-delay="420"
+          >
+            {content.cta.tertiary}
+          </p>
+        </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>

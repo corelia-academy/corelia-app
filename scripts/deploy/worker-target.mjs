@@ -7,15 +7,23 @@ export const FRONTEND_TARGETS = Object.freeze({
     worker: "corelia-staging",
     projectRef: "opoozbmfbezkrpzxsusx",
     cdnUrl: "https://cdn-staging.corelia.academy",
-    appUrl: "https://staging.corelia.academy",
+    appOrigin: "https://staging.corelia.academy",
+    appUrl: "https://staging.corelia.academy/learn",
   }),
   production: Object.freeze({
     worker: "corelia-app",
     projectRef: "lawhkvyyoznwygzsycan",
     cdnUrl: "https://cdn.corelia.academy",
-    appUrl: "https://app.corelia.academy",
+    appOrigin: "https://corelia.academy",
+    appUrl: "https://corelia.academy/learn",
   }),
 });
+
+/** The app Worker owns only the /learn prefix; the landing Worker serves the rest of the host. */
+export function workerRoutes(target) {
+  const url = new URL(target.appUrl);
+  return [{ pattern: `${url.host}${url.pathname}*`, zone_name: "corelia.academy" }];
+}
 
 export function frontendTarget(mode) {
   const target = FRONTEND_TARGETS[mode];
@@ -37,8 +45,10 @@ export async function prepareWorkerTarget(mode, configPath) {
     ...config.vars,
     CORELIA_API_URL: `https://${target.projectRef}.supabase.co/functions/v1/corelia-api`,
     CORELIA_OG_FUNCTION_URL: `https://${target.projectRef}.supabase.co/functions/v1/corelia-api`,
-    CORELIA_APP_ORIGIN: target.appUrl,
+    CORELIA_APP_ORIGIN: target.appOrigin,
+    CORELIA_APP_BASE_PATH: new URL(target.appUrl).pathname,
   };
+  config.routes = workerRoutes(target);
   await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
   return target;
 }

@@ -148,7 +148,7 @@ export function homeDashboardQueryOptions(
                     date: new Date(enrollment.last_accessed_at).toLocaleDateString(intlLocale()),
                   }),
             meta: formatCourseMeta(course, format),
-            action: `/learn/${course.id}`,
+            action: `/study/${course.id}`,
             thumbnailUrl: course.thumbnail_url,
             lastAccessedAt: enrollment.last_accessed_at,
           };

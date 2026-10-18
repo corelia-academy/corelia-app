@@ -34,6 +34,10 @@ vi.mock("@opencampus/ocid-connect-js", () => ({
   useOCAuth: () => ({ isInitialized: true, authState: null, ocAuth: {} }),
 }));
 
+vi.mock("@/hooks/useLocale", () => ({
+  useLocale: () => ({ language: "en", setLanguage: vi.fn(), canPersistToProfile: true }),
+}));
+
 vi.mock("next-themes", () => ({
   useTheme: () => ({ resolvedTheme: "dark" }),
 }));

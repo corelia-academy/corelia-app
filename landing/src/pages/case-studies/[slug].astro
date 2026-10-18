@@ -1,0 +1,17 @@
+---
+import ArticleDetail from "@/components/blog/ArticleDetail.astro";
+import { getArticleStaticPaths, type BlogPost } from "@/lib/blog";
+
+export function getStaticPaths() {
+  return getArticleStaticPaths("en", "case-study");
+}
+
+const { post, locale, languageHrefs, alternates } = Astro.props as {
+  post: BlogPost;
+  locale: "en";
+  languageHrefs: Record<string, string>;
+  alternates: Partial<Record<"en" | "vi", string>>;
+};
+---
+
+<ArticleDetail {post} {locale} {languageHrefs} {alternates} />

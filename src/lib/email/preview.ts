@@ -14,7 +14,7 @@ export function emailPreviewValues(draft: EmailPreviewDraft, appUrl: string, ove
     email: "learner@example.com", locale: draft.locale ?? "vi",
     course_name: vi ? "Xây dựng sản phẩm với AI" : "Building products with AI",
     event_name: "Corelia Builder Day", event_url: `${appUrl}/hackathons/example`,
-    course_url: `${appUrl}/learn/example`, image_url: `${appUrl}/Corelia_Banner_Square.png`,
+    course_url: `${appUrl}/study/example`, image_url: `${appUrl}/Corelia_Banner_Square.png`,
   };
   return Object.fromEntries(emailPreviewVariables(draft).map((key) => [
     key, overrides[key] ?? defaults[key] ?? (/url$/i.test(key) ? `${appUrl}/example` : `[${key}]`),

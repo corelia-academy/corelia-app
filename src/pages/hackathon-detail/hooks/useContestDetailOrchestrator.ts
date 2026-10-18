@@ -83,6 +83,7 @@ import {
   useContestRegistrationFlow,
   type RegistrationDecisionStatus,
 } from "./useContestRegistrationFlow";
+import { appUrl } from "@/lib/appUrl";
 
 const API_ERROR_I18N: Record<string, string> = {
   "unauthenticated": "detail.errors.unauthenticated",
@@ -1555,7 +1556,7 @@ export function useContestDetailOrchestrator({
         const { token } = await executeWrite(() =>
           createProjectCollaborationInvite(collabProject.id, inviteeUserId),
         );
-        const link = `${window.location.origin}/invites/project/${token}`;
+        const link = appUrl(`/invites/project/${token}`);
         await navigator.clipboard.writeText(link);
         toast.success(translate("detail.toasts.collabInviteLinkCopied"));
         await loadCollaboration();
@@ -2075,7 +2076,7 @@ export function useContestDetailOrchestrator({
     async (email: string) => {
       if (!id) return;
       const pathSlug = contest?.slug ?? slug ?? id;
-      const link = `${window.location.origin}/hackathons/${pathSlug}/manage/overview?invite=${encodeURIComponent(email)}`;
+      const link = appUrl(`/hackathons/${pathSlug}/manage/overview?invite=${encodeURIComponent(email)}`);
       await navigator.clipboard.writeText(link);
       toast.success(translate("detail.toasts.inviteLinkCopied"));
     },
@@ -2086,7 +2087,7 @@ export function useContestDetailOrchestrator({
     (invite: ContestAccessInvite) => {
       if (!id || !contest) return;
       const pathSlug = contest.slug ?? slug ?? id;
-      const link = `${window.location.origin}/hackathons/${pathSlug}/manage/overview?invite=${encodeURIComponent(invite.email)}`;
+      const link = appUrl(`/hackathons/${pathSlug}/manage/overview?invite=${encodeURIComponent(invite.email)}`);
       const subject = encodeURIComponent(
         translate("detail.inviteEmail.subjectPrefix", { title: contest.title }),
       );

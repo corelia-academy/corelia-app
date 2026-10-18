@@ -104,7 +104,7 @@ export function buildLearningReminderEmail({ courses, displayName, locale, stage
 }): { subject: string; html: string } {
   if (!courses.length) throw new Error("learning_reminder_requires_course");
   const primaryCourse = courses[0];
-  const primaryLink = `${appUrl}/learn/${encodeURIComponent(primaryCourse.slug)}`;
+  const primaryLink = `${appUrl}/study/${encodeURIComponent(primaryCourse.slug)}`;
   const copy = COPY[locale] ?? COPY.en;
   const stageCopy = copy.stages[stage];
   const heroTag = stageCopy.tag;
@@ -121,7 +121,7 @@ export function buildLearningReminderEmail({ courses, displayName, locale, stage
           ${copy.courseList}
         </p>
         <ul style="padding-left: 18px; margin: 0; font-size: 13px; color: ${EMAIL_BRAND.text};">
-          ${courses.map((c) => `<li><a href="${escapeHtml(`${appUrl}/learn/${encodeURIComponent(c.slug)}`)}" style="color: ${EMAIL_BRAND.link}; text-decoration: none;">${escapeHtml(c.title)}</a></li>`).join("")}
+          ${courses.map((c) => `<li><a href="${escapeHtml(`${appUrl}/study/${encodeURIComponent(c.slug)}`)}" style="color: ${EMAIL_BRAND.link}; text-decoration: none;">${escapeHtml(c.title)}</a></li>`).join("")}
         </ul>
       </div>
     `;
