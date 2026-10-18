@@ -301,14 +301,7 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
-  packages/ui:
-    dependencies:
-      lucide-react:
-        specifier: '>=0.500.0'
-        version: 0.577.0(react@19.2.4)
-      react:
-        specifier: ^19.0.0
-        version: 19.2.4
+  packages/ui: {}
 
 packages:
 

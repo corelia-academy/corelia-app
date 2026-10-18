@@ -16,7 +16,7 @@ Corelia is a multilingual learning and credential platform. The browser app uses
 
 - `src/` — SPA routes, feature pages, shared UI, stores, and client data helpers. Read `src/AGENTS.md` before changing it.
 - `landing/` — Astro marketing site for `corelia.academy` (imported squashed from `corelia-academy/corelia-landing`). Read `landing/AGENTS.md` before changing it.
-- `packages/ui/` — `@corelia/ui`: site header, navigation copy and locale helpers shared by `landing/` and the app.
+- `packages/ui/` — `@corelia/ui`: locale helpers shared by `landing/` and the app.
 - `supabase/` — migrations, local config, email templates, and Edge Functions. Read `supabase/AGENTS.md` before changing it.
 - `scripts/db/` — migration-baseline, drift, live-state, and release verification tools.
 - `docs/` — specialized architecture, design, QA, and release references; open only the document relevant to the task.

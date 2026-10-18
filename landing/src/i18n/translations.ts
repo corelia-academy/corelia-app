@@ -23,8 +23,6 @@ export const translations = {
     "nav.ecosystem": "Hệ sinh thái",
     "nav.roadmap": "Lộ trình học viên",
     "nav.getStarted": "Học ngay",
-    "nav.login": "Đăng nhập",
-    "nav.learn": "Vào học",
 
     // Hero section
     "hero.title": "Từ kiến thức đến sản phẩm thực tế",
@@ -806,8 +804,6 @@ export const translations = {
     "nav.ecosystem": "Ecosystem",
     "nav.roadmap": "Roadmap",
     "nav.getStarted": "Learn now",
-    "nav.login": "Log in",
-    "nav.learn": "Learn",
 
     // Hero section
     // "hero.badge": "Project-based learning · Mentors from the field",
