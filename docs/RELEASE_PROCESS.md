@@ -43,7 +43,7 @@ Job `verify` phải pass trước khi job `deploy` được chạy. Job này cà
 - lint và staging build; và
 - clean local migration-chain recreation.
 
-Sau khi verify, job `deploy` apply migrations vào Staging project được link và deploy các Edge Functions đã cấu hình. Khi rollout có destructive migration, backend tương thích phải được deploy theo thứ tự release đã định trước khi migration được apply. Workflow này không publish frontend. Cloudflare tự build/deploy frontend khi nhánh `staging` thay đổi. Kiểm tra deployment tương ứng commit trong Cloudflare và xác minh `staging.corelia.academy`; không dispatch workflow frontend trên GitHub. Với frontend phụ thuộc API mới, cần có backend tương thích trước khi đưa thay đổi frontend lên nhánh tự deploy. Dùng [Staging bundle verification](STAGING_BUILD_VERIFY.md) khi cần kiểm tra frontend và backend cùng nhau.
+Sau khi verify, job `deploy` apply migrations vào Staging project được link và deploy các Edge Functions đã cấu hình. Khi rollout có destructive migration, backend tương thích phải được deploy theo thứ tự release đã định trước khi migration được apply. Workflow này không publish frontend. Cloudflare tự build/deploy frontend khi nhánh `staging` thay đổi. Kiểm tra deployment tương ứng commit trong Cloudflare của cả Worker app `corelia-staging` và Worker landing `corelia-landing-staging`, rồi xác minh `staging.corelia.academy/learn` (app) và `staging.corelia.academy` (landing); không dispatch workflow frontend trên GitHub. Với frontend phụ thuộc API mới, cần có backend tương thích trước khi đưa thay đổi frontend lên nhánh tự deploy. Dùng [Staging bundle verification](STAGING_BUILD_VERIFY.md) khi cần kiểm tra frontend và backend cùng nhau.
 
 ## Release Production
 
@@ -57,14 +57,14 @@ Production workflow hiện có trigger `workflow_dispatch` không khai báo inpu
 4. deploy các Edge Functions cần thiết; và
 5. chạy post-Edge runtime và database check cuối cùng.
 
-Frontend artifact được build và verify trong Production gate; Cloudflare tự build/deploy frontend từ nhánh `main` qua tích hợp Git hiện có. Kiểm tra deployment của đúng commit và asset/hành vi tại `app.corelia.academy`. Biến môi trường build frontend được cấu hình trong Cloudflare; GitHub không cần token Cloudflare để publish. Các biến phục vụ kiểm tra artifact trong GitHub Actions vẫn theo workflow backend hiện có. Không publish production bằng terminal.
+Frontend artifact được build và verify trong Production gate; Cloudflare tự build/deploy frontend từ nhánh `main` qua tích hợp Git hiện có. Kiểm tra deployment của đúng commit và asset/hành vi tại `corelia.academy/learn` (app, Worker `corelia-app`) và `corelia.academy` (landing, Worker `corelia-landing`). `app.corelia.academy` chỉ còn redirect 301 sang `corelia.academy/learn`. Biến môi trường build frontend được cấu hình trong Cloudflare; GitHub không cần token Cloudflare để publish. Các biến phục vụ kiểm tra artifact trong GitHub Actions vẫn theo workflow backend hiện có. Không publish production bằng terminal.
 
 ## Điều kiện release thành công
 
 Một release chỉ được coi là thành công khi build và publication frontend đã được xác nhận, không chỉ khi PR đã merge:
 
-1. Check `Workers Builds: corelia-app` của commit merge vào `main` ở trạng thái `completed` và `success`. Xem bằng `gh api repos/corelia-academy/corelia-app/commits/<sha>/check-runs`. Nếu `failure` hoặc `cancelled`, release chưa thành công: sửa trên work branch rồi đi lại luồng `staging → main`.
-2. Mở `app.corelia.academy` (hard reload để bỏ cache) và xác nhận thay đổi chính của release hiển thị đúng; chỉ đọc, không lưu dữ liệu thật.
+1. Check `Workers Builds: corelia-app` (và `Workers Builds: corelia-landing` khi release đổi `landing/`) của commit merge vào `main` ở trạng thái `completed` và `success`. Xem bằng `gh api repos/corelia-academy/corelia-app/commits/<sha>/check-runs`. Nếu `failure` hoặc `cancelled`, release chưa thành công: sửa trên work branch rồi đi lại luồng `staging → main`.
+2. Mở `corelia.academy/learn` (và `corelia.academy` nếu release đổi landing), hard reload để bỏ cache, và xác nhận thay đổi chính của release hiển thị đúng; chỉ đọc, không lưu dữ liệu thật.
 3. Release có migration hoặc Edge Function thì chạy và xác nhận `Deploy Production` theo mục trên.
 4. Sau khi cả ba điều kiện đạt, mới coi release là xong và báo thành công; tag và GitHub Release phải trỏ đúng commit đã build. Nếu tag/Release đã tạo trước mà build fail, ghi rõ trong Release hoặc xoá và tạo lại sau khi sửa.
 
@@ -89,6 +89,6 @@ Trước khi dispatch/approve Production release, reviewer cần xác định đ
 - evidence Staging verification và deployment thành công;
 - migration state dự kiến và live-history verification artifact nếu có;
 - kết quả Production pre-migration, post-migration và post-Edge gates; và
-- evidence build/publication frontend riêng nếu release có thay đổi frontend: check `Workers Builds` của commit `main` đã `success` và đã kiểm tra hành vi trên `app.corelia.academy` (xem [Điều kiện release thành công](#điều-kiện-release-thành-công)).
+- evidence build/publication frontend riêng nếu release có thay đổi frontend: check `Workers Builds` của commit `main` đã `success` và đã kiểm tra hành vi trên `corelia.academy/learn` (xem [Điều kiện release thành công](#điều-kiện-release-thành-công)).
 
 Các rollout plan và execution report lịch sử trong `docs/db-baseline/` chỉ cung cấp context và evidence cho từng release cụ thể. Chúng không thay thế workflow hiện tại hoặc một release candidate đã được refresh.

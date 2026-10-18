@@ -236,16 +236,16 @@ export const translations = {
       "Chúng tôi tôn trọng và cam kết bảo mật thông tin cá nhân của bạn. Chính sách này giải thích cách chúng tôi thu thập, sử dụng và bảo vệ thông tin của bạn.",
     "privacy.content.title1": "1. Thu thập thông tin",
     "privacy.content.desc1":
-      "Chúng tôi thu thập thông tin khi bạn đăng ký tài khoản trên nền tảng học tập của chúng tôi (https://app.corelia.academy), đăng ký khóa học hoặc tham gia sự kiện. Thông tin có thể bao gồm họ tên, email, số điện thoại, tiến độ học tập, và dữ liệu tương tác với nền tảng.",
+      "Chúng tôi thu thập thông tin khi bạn đăng ký tài khoản trên nền tảng học tập của chúng tôi (https://corelia.academy/learn), đăng ký khóa học hoặc tham gia sự kiện. Thông tin có thể bao gồm họ tên, email, số điện thoại, tiến độ học tập, và dữ liệu tương tác với nền tảng.",
     "privacy.content.title2": "2. Sử dụng thông tin",
     "privacy.content.desc2":
-      "Thông tin của bạn được sử dụng để cung cấp quyền truy cập vào các khóa học trên app.corelia.academy, theo dõi và đánh giá kết quả học tập, cấp chứng chỉ, cá nhân hóa trải nghiệm học tập, và gửi thông báo quan trọng liên quan đến quá trình học lập trình Web3 của bạn.",
+      "Thông tin của bạn được sử dụng để cung cấp quyền truy cập vào các khóa học trên corelia.academy/learn, theo dõi và đánh giá kết quả học tập, cấp chứng chỉ, cá nhân hóa trải nghiệm học tập, và gửi thông báo quan trọng liên quan đến quá trình học lập trình Web3 của bạn.",
     "privacy.content.title3": "3. Chia sẻ dữ liệu",
     "privacy.content.desc3":
       "Corelia Academy không bán dữ liệu học viên. Dữ liệu chỉ được chia sẻ với các đối tác nền giáo dục (như nhà trường liên kết) hoặc nhà tuyển dụng (chỉ khi có sự đồng ý rõ ràng của bạn thông qua các chương trình kết nối việc làm B2B), và các nhà cung cấp dịch vụ hạ tầng cần thiết.",
     "privacy.content.title4": "4. Bảo mật và Lưu trữ",
     "privacy.content.desc4":
-      "Tài khoản và dữ liệu quá trình học tập của bạn trên app.corelia.academy được bảo vệ bằng các biện pháp bảo mật tiêu chuẩn ngành. Dữ liệu sẽ được lưu trữ trong suốt thời gian tài khoản hoạt động hoặc cho đến khi bạn yêu cầu xóa toàn bộ thông tin tài khoản.",
+      "Tài khoản và dữ liệu quá trình học tập của bạn trên corelia.academy/learn được bảo vệ bằng các biện pháp bảo mật tiêu chuẩn ngành. Dữ liệu sẽ được lưu trữ trong suốt thời gian tài khoản hoạt động hoặc cho đến khi bạn yêu cầu xóa toàn bộ thông tin tài khoản.",
     "privacy.content.title5": "5. Quyền của người dùng",
     "privacy.content.desc5":
       "Bạn có quyền truy cập, chỉnh sửa hoặc yêu cầu xóa dữ liệu cá nhân của mình bất kỳ lúc nào bằng cách sử dụng công cụ quản lý tài khoản trên nền tảng hoặc liên hệ trực tiếp với chúng tôi qua email hỗ trợ.",
@@ -259,16 +259,16 @@ export const translations = {
       "Vui lòng đọc kỹ các điều khoản dưới đây trước khi sử dụng các dịch vụ và nền tảng học tập của Corelia Academy.",
     "terms.content.title1": "1. Chấp thuận điều khoản",
     "terms.content.desc1":
-      "Bằng việc truy cập trang web này hoặc đăng ký tài khoản trên nền tảng e-learning (https://app.corelia.academy), bạn đồng ý tuân thủ toàn bộ các điều khoản và quy định của chúng tôi. Nếu không đồng ý, vui lòng ngừng sử dụng dịch vụ.",
+      "Bằng việc truy cập trang web này hoặc đăng ký tài khoản trên nền tảng e-learning (https://corelia.academy/learn), bạn đồng ý tuân thủ toàn bộ các điều khoản và quy định của chúng tôi. Nếu không đồng ý, vui lòng ngừng sử dụng dịch vụ.",
     "terms.content.title2": "2. Tài khoản học viên",
     "terms.content.desc2":
-      "Học viên chịu trách nhiệm bảo mật thông tin đăng nhập tài khoản trên app.corelia.academy. Tuyệt đối không chia sẻ tài khoản, khóa học, hoặc các tài nguyên học tập cấp quyền riêng cho bất kỳ bên thứ ba nào.",
+      "Học viên chịu trách nhiệm bảo mật thông tin đăng nhập tài khoản trên corelia.academy/learn. Tuyệt đối không chia sẻ tài khoản, khóa học, hoặc các tài nguyên học tập cấp quyền riêng cho bất kỳ bên thứ ba nào.",
     "terms.content.title3": "3. Quyền sở hữu trí tuệ",
     "terms.content.desc3":
       "Tất cả học liệu, tài liệu kỹ thuật, video bài giảng, mã nguồn mẫu, và các dự án do Corelia cung cấp trên nền tảng là tài sản trí tuệ của Corelia Academy. Việc sao chép, phân phối hoặc khai thác cho mục đích thương mại khi chưa có sự cho phép là vi phạm.",
     "terms.content.title4": "4. Quy tắc hành xử",
     "terms.content.desc4":
-      "Học viên cần tuân thủ sự trung thực trong học thuật. Các hành vi gian lận dự án (capstone), sử dụng phần mềm tự động (bot) để thu thập dữ liệu trên app.corelia.academy, hoặc có hành vi phá hoại hệ thống sẽ dẫn đến việc khóa tài khoản vĩnh viễn.",
+      "Học viên cần tuân thủ sự trung thực trong học thuật. Các hành vi gian lận dự án (capstone), sử dụng phần mềm tự động (bot) để thu thập dữ liệu trên corelia.academy/learn, hoặc có hành vi phá hoại hệ thống sẽ dẫn đến việc khóa tài khoản vĩnh viễn.",
     "terms.content.title5": "5. Từ chối bảo đảm",
     "terms.content.desc5":
       'Mặc dù chúng tôi cam kết mang lại chất lượng giảng dạy tốt nhất, nền tảng học tập và tài liệu được cung cấp "như hiện trạng". Việc sử dụng kiến thức blockchain và smart contract để đầu tư hoặc xây dựng dự án tài chính là rủi ro và trách nhiệm của cá nhân bạn.',
@@ -1025,16 +1025,16 @@ export const translations = {
       "We respect and are committed to protecting your personal information. This policy explains how we collect, use, and protect your information.",
     "privacy.content.title1": "1. Information Collection",
     "privacy.content.desc1":
-      "We collect information when you register an account on our learning platform (https://app.corelia.academy), enroll in a course, or join an event. This may include your name, email, phone number, learning progress, and platform interaction data.",
+      "We collect information when you register an account on our learning platform (https://corelia.academy/learn), enroll in a course, or join an event. This may include your name, email, phone number, learning progress, and platform interaction data.",
     "privacy.content.title2": "2. Use of Information",
     "privacy.content.desc2":
-      "Your information is used to provide access to courses on app.corelia.academy, track and evaluate learning outcomes, issue certificates, personalize your learning experience, and send important notices related to your Web3 development journey.",
+      "Your information is used to provide access to courses on corelia.academy/learn, track and evaluate learning outcomes, issue certificates, personalize your learning experience, and send important notices related to your Web3 development journey.",
     "privacy.content.title3": "3. Data Sharing",
     "privacy.content.desc3":
       "Corelia Academy does not sell student data. Information is only shared with educational partners (like affiliated universities) or employers (only with your explicit consent through B2B placement initiatives), and essential infrastructure providers.",
     "privacy.content.title4": "4. Security and Storage",
     "privacy.content.desc4":
-      "Your account and learning data on app.corelia.academy are protected by industry-standard security measures. Data is stored for as long as your account is active or until you request full account deletion.",
+      "Your account and learning data on corelia.academy/learn are protected by industry-standard security measures. Data is stored for as long as your account is active or until you request full account deletion.",
     "privacy.content.title5": "5. User Rights",
     "privacy.content.desc5":
       "You have the right to access, modify, or request the deletion of your personal data at any time using the account management tools on the platform or by contacting our support email directly.",
@@ -1048,16 +1048,16 @@ export const translations = {
       "Please read these terms carefully before using Corelia Academy's services and learning platforms.",
     "terms.content.title1": "1. Acceptance of Terms",
     "terms.content.desc1":
-      "By accessing this website or registering an account on our e-learning platform (https://app.corelia.academy), you agree to be bound by all our terms and conditions. If you do not agree, please stop using the service.",
+      "By accessing this website or registering an account on our e-learning platform (https://corelia.academy/learn), you agree to be bound by all our terms and conditions. If you do not agree, please stop using the service.",
     "terms.content.title2": "2. Student Accounts",
     "terms.content.desc2":
-      "Students are responsible for maintaining the confidentiality of their login credentials on app.corelia.academy. Strictly do not share your account, courses, or privately accessed learning resources with any third party.",
+      "Students are responsible for maintaining the confidentiality of their login credentials on corelia.academy/learn. Strictly do not share your account, courses, or privately accessed learning resources with any third party.",
     "terms.content.title3": "3. Intellectual Property",
     "terms.content.desc3":
       "All course materials, technical documentation, video lectures, sample source code, and projects provided by Corelia on the platform are the intellectual property of Corelia Academy. Copying, distributing, or exploiting for commercial purposes without permission is prohibited.",
     "terms.content.title4": "4. Code of Conduct",
     "terms.content.desc4":
-      "Students must adhere to academic integrity. Behaviors such as capstone project plagiarism, using automated software (bots) to scrape data on app.corelia.academy, or sabotaging the system will result in permanent account suspension.",
+      "Students must adhere to academic integrity. Behaviors such as capstone project plagiarism, using automated software (bots) to scrape data on corelia.academy/learn, or sabotaging the system will result in permanent account suspension.",
     "terms.content.title5": "5. Disclaimer of Warranties",
     "terms.content.desc5":
       'While we commit to providing the best teaching quality, the learning platform and materials are provided "as is". Using blockchain and smart contract knowledge to invest or build financial projects involves risk and is entirely your personal responsibility.',

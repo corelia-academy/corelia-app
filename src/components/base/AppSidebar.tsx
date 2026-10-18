@@ -74,7 +74,7 @@ const primaryNavSections = [
 const sidebarUtilityLinks = [
   {
     labelKey: "nav.changelog",
-    href: "https://corelia.academy/blog/",
+    href: "/blog",
     icon: MegaphoneSimple,
     showArrow: true,
   },
@@ -86,7 +86,7 @@ const sidebarUtilityLinks = [
   },
   {
     labelKey: "nav.feedback",
-    href: "https://corelia.academy/contact/",
+    href: "/contact",
     icon: ChatText,
     showArrow: false,
   },
