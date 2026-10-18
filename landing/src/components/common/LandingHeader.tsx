@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 import {
-  AccountMenu,
   AuthActions,
   LanguageMenu,
   SITE_HEADER_COPY,
-  SearchLink,
   SiteHeader,
   readSiteSession,
-  siteAccountLinks,
-  siteHomeHref,
   siteNavigation,
   type SiteSessionUser,
 } from "@corelia/ui/site-header";
@@ -58,27 +54,17 @@ export default function LandingHeader({ lang, locales = MARKETING_LOCALES, curre
   return (
     <SiteHeader
       position="fixed"
-      logo={{ href: siteHomeHref(lang), src: "/Corelia_Academy_Logo_Dark.png", alt: "Corelia Academy" }}
+      logo={{ href: (MARKETING_LOCALES as readonly SiteLocale[]).includes(lang) ? localizePath("/", lang) : "/", src: "/Corelia_Academy_Logo_Dark.png", alt: "Corelia Academy" }}
       nav={siteNavigation(lang)}
       activePath={currentPath}
       labels={copy}
       end={
         <>
           <LanguageMenu locale={lang} locales={locales} label={copy.language} onSelect={switchLanguage} />
-          <SearchLink href={`${appUrl}/search`} label={copy.search} />
-          {user ? (
-            <AccountMenu
-              user={user}
-              items={siteAccountLinks(lang, appUrl)}
-              signOut={{ label: copy.signOut, href: `${appUrl}/logout` }}
-              label={copy.account}
-            />
-          ) : (
-            <AuthActions user={user} {...auth} />
-          )}
+          <AuthActions user={user} {...auth} />
         </>
       }
-      mobileFooter={user ? undefined : <AuthActions user={user} {...auth} stacked />}
+      mobileFooter={<AuthActions user={user} {...auth} stacked />}
     />
   );
 }

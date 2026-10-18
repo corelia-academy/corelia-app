@@ -21,8 +21,6 @@ type Copy = {
   universities: string; universitiesDesc: string;
   about: string; aboutUs: string; aboutUsDesc: string; contact: string; contactDesc: string;
   signIn: string; signUp: string; goToApp: string; language: string; menu: string; closeMenu: string; mainNav: string;
-  account: string; myLearning: string; feed: string; projects: string; achievements: string; profile: string; cv: string;
-  settings: string; signOut: string; search: string;
 };
 
 /** Header copy for every site locale; both the landing site and the app render from this. */
@@ -37,8 +35,6 @@ export const SITE_HEADER_COPY: Record<SiteLocale, Copy> = {
     universities: "Universities", universitiesDesc: "Campus partnerships",
     about: "About", aboutUs: "About Corelia", aboutUsDesc: "Our mission and team", contact: "Contact", contactDesc: "Talk to our team",
     signIn: "Log in", signUp: "Sign up", goToApp: "Go to learning", language: "Language", menu: "Open menu", closeMenu: "Close menu", mainNav: "Main navigation",
-    account: "Account", myLearning: "My learning", feed: "Feed", projects: "Projects", achievements: "Achievements", profile: "Profile", cv: "CV",
-    settings: "Settings", signOut: "Log out", search: "Search",
   },
   vi: {
     learn: "Học", courses: "Khóa học", coursesDesc: "Khóa học Web3 và blockchain thực chiến",
@@ -50,8 +46,6 @@ export const SITE_HEADER_COPY: Record<SiteLocale, Copy> = {
     universities: "Đại học", universitiesDesc: "Hợp tác với các trường",
     about: "Giới thiệu", aboutUs: "Về Corelia", aboutUsDesc: "Sứ mệnh và đội ngũ", contact: "Liên hệ", contactDesc: "Trao đổi với đội ngũ",
     signIn: "Đăng nhập", signUp: "Đăng ký", goToApp: "Vào học", language: "Ngôn ngữ", menu: "Mở menu", closeMenu: "Đóng menu", mainNav: "Điều hướng chính",
-    account: "Tài khoản", myLearning: "Học tập của tôi", feed: "Bảng tin", projects: "Dự án", achievements: "Thành tích", profile: "Hồ sơ", cv: "CV",
-    settings: "Cài đặt", signOut: "Đăng xuất", search: "Tìm kiếm",
   },
   "zh-CN": {
     learn: "学习", courses: "课程", coursesDesc: "实战型 Web3 与区块链课程",
@@ -63,8 +57,6 @@ export const SITE_HEADER_COPY: Record<SiteLocale, Copy> = {
     universities: "高校", universitiesDesc: "校园合作",
     about: "关于", aboutUs: "关于 Corelia", aboutUsDesc: "使命与团队", contact: "联系我们", contactDesc: "与团队交流",
     signIn: "登录", signUp: "注册", goToApp: "开始学习", language: "语言", menu: "打开菜单", closeMenu: "关闭菜单", mainNav: "主导航",
-    account: "账户", myLearning: "我的学习", feed: "动态", projects: "项目", achievements: "成就", profile: "个人资料", cv: "简历",
-    settings: "设置", signOut: "退出登录", search: "搜索",
   },
   "zh-TW": {
     learn: "學習", courses: "課程", coursesDesc: "實戰型 Web3 與區塊鏈課程",
@@ -76,8 +68,6 @@ export const SITE_HEADER_COPY: Record<SiteLocale, Copy> = {
     universities: "大學", universitiesDesc: "校園合作",
     about: "關於", aboutUs: "關於 Corelia", aboutUsDesc: "使命與團隊", contact: "聯絡我們", contactDesc: "與團隊聯繫",
     signIn: "登入", signUp: "註冊", goToApp: "開始學習", language: "語言", menu: "開啟選單", closeMenu: "關閉選單", mainNav: "主要導覽",
-    account: "帳戶", myLearning: "我的學習", feed: "動態", projects: "專案", achievements: "成就", profile: "個人資料", cv: "履歷",
-    settings: "設定", signOut: "登出", search: "搜尋",
   },
   ko: {
     learn: "학습", courses: "강좌", coursesDesc: "실전 Web3·블록체인 강좌",
@@ -89,8 +79,6 @@ export const SITE_HEADER_COPY: Record<SiteLocale, Copy> = {
     universities: "대학", universitiesDesc: "캠퍼스 파트너십",
     about: "소개", aboutUs: "Corelia 소개", aboutUsDesc: "미션과 팀", contact: "문의", contactDesc: "팀에 문의하기",
     signIn: "로그인", signUp: "회원가입", goToApp: "학습하러 가기", language: "언어", menu: "메뉴 열기", closeMenu: "메뉴 닫기", mainNav: "주 메뉴",
-    account: "계정", myLearning: "내 학습", feed: "피드", projects: "프로젝트", achievements: "업적", profile: "프로필", cv: "이력서",
-    settings: "설정", signOut: "로그아웃", search: "검색",
   },
   ja: {
     learn: "学ぶ", courses: "コース", coursesDesc: "実践的な Web3・ブロックチェーン講座",
@@ -102,8 +90,6 @@ export const SITE_HEADER_COPY: Record<SiteLocale, Copy> = {
     universities: "大学", universitiesDesc: "キャンパス連携",
     about: "概要", aboutUs: "Corelia について", aboutUsDesc: "ミッションとチーム", contact: "お問い合わせ", contactDesc: "チームに相談する",
     signIn: "ログイン", signUp: "新規登録", goToApp: "学習へ進む", language: "言語", menu: "メニューを開く", closeMenu: "メニューを閉じる", mainNav: "メインナビゲーション",
-    account: "アカウント", myLearning: "マイ学習", feed: "フィード", projects: "プロジェクト", achievements: "実績", profile: "プロフィール", cv: "履歴書",
-    settings: "設定", signOut: "ログアウト", search: "検索",
   },
   es: {
     learn: "Aprender", courses: "Cursos", coursesDesc: "Cursos prácticos de Web3 y blockchain",
@@ -115,8 +101,6 @@ export const SITE_HEADER_COPY: Record<SiteLocale, Copy> = {
     universities: "Universidades", universitiesDesc: "Alianzas con campus",
     about: "Nosotros", aboutUs: "Sobre Corelia", aboutUsDesc: "Nuestra misión y equipo", contact: "Contacto", contactDesc: "Habla con el equipo",
     signIn: "Iniciar sesión", signUp: "Registrarse", goToApp: "Ir a aprender", language: "Idioma", menu: "Abrir menú", closeMenu: "Cerrar menú", mainNav: "Navegación principal",
-    account: "Cuenta", myLearning: "Mi aprendizaje", feed: "Novedades", projects: "Proyectos", achievements: "Logros", profile: "Perfil", cv: "CV",
-    settings: "Configuración", signOut: "Cerrar sesión", search: "Buscar",
   },
 };
 
@@ -158,25 +142,5 @@ export function siteNavigation(locale: SiteLocale): SiteNavGroup[] {
         { label: c.contact, description: c.contactDesc, href: to("/contact") },
       ],
     },
-  ];
-}
-
-/** Landing home for a locale (the logo target on both sites). */
-export function siteHomeHref(locale: SiteLocale): string {
-  return MARKETING_LOCALES.includes(locale) ? localizePath("/", locale) : "/";
-}
-
-/** Signed-in destinations in the account menu, shared by both sites. `appUrl` is the app's base path (e.g. "/learn"). */
-export function siteAccountLinks(locale: SiteLocale, appUrl: string): SiteNavLink[] {
-  const c = SITE_HEADER_COPY[locale];
-  const base = appUrl.replace(/\/+$/, "");
-  return [
-    { label: c.myLearning, href: `${base}/` },
-    { label: c.feed, href: `${base}/feed` },
-    { label: c.projects, href: `${base}/projects` },
-    { label: c.achievements, href: `${base}/achievements` },
-    { label: c.profile, href: `${base}/account/profile` },
-    { label: c.cv, href: `${base}/account/cv` },
-    { label: c.settings, href: `${base}/account` },
   ];
 }

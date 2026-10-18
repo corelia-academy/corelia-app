@@ -1,31 +1,84 @@
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { Action } from "@/components/ui/action";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, NavLink, useLocation } from "react-router";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Input } from "@/components/ui/input";
+import { BackspaceIcon } from "@phosphor-icons/react";
+import {
+  Award,
+  GraduationCap,
+  IdCard,
+  LogOut,
+  MenuIcon,
+  Search,
+  Settings,
+  UserCircle,
+} from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
+import { User } from "@/components/ui/user";
 import { XpRankBadge } from "@/features/xp/XpRankBadge";
 import { XpBadge } from "@/features/xp/XpBadge";
 import { getXpTotals } from "@/lib/xp";
 import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
+// import { useOCAuth } from "@opencampus/ocid-connect-js";
+// import OpenCampusConnectDialog from "@/components/layouts/OpenCampusConnectDialog";
 import { NotificationBell } from "@/components/layouts/NotificationBell";
 import { useTheme } from "next-themes";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  searchResultsQueryOptions,
+  trendingSearchesQueryOptions,
+} from "@/features/search/searchQueries";
+import { logSearchQuery } from "@/lib/search";
 import { prefetchRouteChunk } from "@/lib/routePrefetch";
-import { APP_BASE_PATH, appPath, isAppPath, stripAppBasePath } from "@/lib/appUrl";
-import { ROLE_GROUPS } from "@/config/roles";
+import { appPath, isAppPath, stripAppBasePath } from "@/lib/appUrl";
 import { useLocale } from "@/hooks/useLocale";
 import {
-  AccountMenu,
   AuthActions,
   LanguageMenu,
   SITE_HEADER_COPY,
-  SearchLink,
   SiteHeader,
-  siteAccountLinks,
-  siteHomeHref,
   siteNavigation,
   type SiteHeaderLinkProps,
 } from "@corelia/ui/site-header";
 import "@corelia/ui/site-header.css";
+
+const RECENT_SEARCHES_KEY = "corelia.recentSearches.v1";
+const MAX_RECENT_SEARCHES = 8;
+const MAX_SUGGESTIONS = 8;
+
+function readRecentSearches(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(RECENT_SEARCHES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((x): x is string => typeof x === "string")
+      .map((x) => x.trim())
+      .filter(Boolean)
+      .slice(0, MAX_RECENT_SEARCHES);
+  } catch {
+    return [];
+  }
+}
+
+function writeRecentSearches(items: string[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(items));
+  } catch {
+    // ignore
+  }
+}
 
 /** App paths stay in the router; landing pages (domain root) are full-page links. */
 function renderSiteLink({ href, children, ...props }: SiteHeaderLinkProps) {
@@ -34,7 +87,6 @@ function renderSiteLink({ href, children, ...props }: SiteHeaderLinkProps) {
   return (
     <NavLink
       to={to}
-      end={to === "/"}
       {...props}
       onPointerEnter={() => prefetchRouteChunk(to)}
       onFocus={() => prefetchRouteChunk(to)}
@@ -44,21 +96,71 @@ function renderSiteLink({ href, children, ...props }: SiteHeaderLinkProps) {
   );
 }
 
-/**
- * The site header shared with the landing site (same logo target, navigation, language menu,
- * search and account menu). The app adds the notification bell and role-based workspaces.
- */
-export default function Header() {
+function addRecentSearch(query: string) {
+  const q = query.trim();
+  if (!q) return;
+  const curr = readRecentSearches();
+  const next = [
+    q,
+    ...curr.filter((x) => x.toLowerCase() !== q.toLowerCase()),
+  ].slice(0, MAX_RECENT_SEARCHES);
+  writeRecentSearches(next);
+}
+
+export default function Header({ publicUI = false }: { publicUI?: boolean }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, profile, authInitialized, signOut, user, hasRole } = useAuth();
-  const { t } = useTranslation("common");
+  const {
+    isAuthenticated,
+    profile,
+    authInitialized,
+    signOut,
+    user,
+  } = useAuth();
+  const { t, i18n } = useTranslation("common");
   const { t: tAccount } = useTranslation("account");
+  // const { isInitialized, authState, ocAuth } = useOCAuth();
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
   const { language, setLanguage } = useLocale();
   const siteCopy = SITE_HEADER_COPY[language];
   const returnTo = `${location.pathname}${location.search}`;
+  const isSearchRoute = location.pathname === "/search" || location.pathname === "/search/";
+  const searchRouteKey = isSearchRoute ? `${location.pathname}${location.search}` : null;
+  const initialSearchText = searchRouteKey === null
+    ? ""
+    : new URLSearchParams(location.search).get("q") ?? "";
+  // const [ocConnectOpen, setOcConnectOpen] = useState(false);
+  // const [ocConnectLoading, setOcConnectLoading] = useState(false);
+  // const [ocConnectError, setOcConnectError] = useState<string | null>(null);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [searchText, setSearchText] = useState(initialSearchText);
+  const [debouncedSearchText, setDebouncedSearchText] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [previousSearchRouteKey, setPreviousSearchRouteKey] = useState(searchRouteKey);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() =>
+    readRecentSearches(),
+  );
+  const searchWrapRef = useRef<HTMLDivElement | null>(null);
+  const trendingQuery = useQuery(trendingSearchesQueryOptions());
+  const suggestionsQuery = useQuery(
+    searchResultsQueryOptions(debouncedSearchText, MAX_SUGGESTIONS, searchOpen, publicUI ? i18n.language : undefined),
+  );
+  const logSearchMutation = useMutation({ mutationFn: logSearchQuery });
+  const trending = trendingQuery.data ?? [];
+  const suggestions = suggestionsQuery.data ?? [];
+  const suggestionsLoading = Boolean(debouncedSearchText.trim()) && suggestionsQuery.isFetching;
+  const suggestionsError = suggestionsQuery.error instanceof Error
+    ? suggestionsQuery.error.message
+    : suggestionsQuery.error ? t("search.errors.loadFailed") : null;
+
+  if (previousSearchRouteKey !== searchRouteKey) {
+    setPreviousSearchRouteKey(searchRouteKey);
+    if (searchRouteKey !== null) {
+      setSearchText(new URLSearchParams(location.search).get("q") ?? "");
+      setSearchOpen(false);
+    }
+  }
 
   const metaName =
     typeof user?.user_metadata?.full_name === "string"
@@ -87,6 +189,7 @@ export default function Header() {
     user?.id ??
     "U"
   ).charAt(0);
+  const isOcidConnected = Boolean(profile?.ocid);
   const xpQuery = useQuery({
     queryKey: ["xp", "total", user?.id],
     queryFn: async () => {
@@ -96,89 +199,467 @@ export default function Header() {
     staleTime: 60_000,
   });
 
-  const canTeach = isAuthenticated && hasRole(ROLE_GROUPS.instructorWorkspace);
-  const canAdmin = isAuthenticated && hasRole(ROLE_GROUPS.admin);
-  const accountItems = useMemo(() => {
-    const publicProfile = profile?.username?.trim()
-      ? `/@${profile.username.trim()}`
-      : profile?.ocid?.trim()
-        ? `/@${profile.ocid.trim()}`
-        : profile?.id
-          ? `/@${profile.id}`
-          : null;
-    return [
-      ...siteAccountLinks(language, APP_BASE_PATH),
-      ...(publicProfile ? [{ label: t("header.publicProfile"), href: appPath(publicProfile) }] : []),
+  const accountDropdownItems = useMemo(
+    () => [
+      {
+        to: profile?.username?.trim()
+          ? `/@${profile.username.trim()}`
+          : profile?.ocid?.trim()
+            ? `/@${profile.ocid.trim()}`
+            : profile?.id
+              ? `/@${profile.id}`
+              : "/account",
+        label: t("header.publicProfile"),
+        icon: <UserCircle aria-hidden />,
+      },
+      {
+        to: "/account/profile",
+        label: tAccount("nav.profile.title"),
+        icon: <UserCircle aria-hidden />,
+      },
       ...(profile?.role === "instructor"
-        ? [{ label: tAccount("nav.instructor.title"), href: appPath("/account/instructor") }]
+        ? [
+          {
+            to: "/account/instructor",
+            label: tAccount("nav.instructor.title"),
+            icon: (
+              <GraduationCap aria-hidden />
+            ),
+          },
+        ]
         : []),
-      ...(canTeach ? [{ label: t("nav.instructor"), href: appPath("/instructor/courses") }] : []),
-      ...(canAdmin ? [{ label: t("nav.admin"), href: appPath("/admin") }] : []),
-    ];
-  }, [canAdmin, canTeach, language, profile, t, tAccount]);
+      {
+        to: "/account/cv",
+        label: tAccount("nav.cv.title"),
+        icon: <IdCard aria-hidden />,
+      },
+      {
+        to: "/achievements",
+        label: tAccount("nav.achievements.title"),
+        icon: <Award aria-hidden />,
+      },
+      {
+        // "Cài đặt" trong menu hồ sơ là lối vào khu vực tài khoản; route gốc
+        // sẽ mở tab Thông tin cá nhân trước. Tab /account/settings vẫn dành cho
+        // các deep link có chủ đích như unsubscribe hoặc đổi mật khẩu.
+        to: "/account",
+        label: tAccount("nav.settings.title"),
+        icon: <Settings aria-hidden />,
+      },
+    ],
+    [profile, t, tAccount],
+  );
 
-  const guestAuth = {
-    user: null,
-    signInHref: appPath(`/login?next=${encodeURIComponent(returnTo)}`),
-    signUpHref: appPath(`/login?mode=signup&next=${encodeURIComponent(returnTo)}`),
-    appHref: appPath("/"),
-    labels: siteCopy,
-    renderLink: renderSiteLink,
-  };
+  // const ocConnectDisabled = useMemo(() => {
+  //   if (!isInitialized) return true;
+  //   if (!ocAuth) return true;
+  //   return false;
+  // }, [isInitialized, ocAuth]);
+
+  // async function handleOcConnect() {
+  //   setOcConnectError(null);
+  //   try {
+  //     if (ocConnectDisabled) return;
+  //     setOcConnectLoading(true);
+  //     await ocAuth!.signInWithRedirect({ state: "corelia-ocid-connect" });
+  //   } catch (e) {
+  //     const message =
+  //       e instanceof Error
+  //         ? e.message
+  //         : t("openCampusConnect.modal.startFailed");
+  //     setOcConnectError(message);
+  //     setOcConnectLoading(false);
+  //   }
+  // }
+
+  // function handleOcLogoClick() {
+  //   if (!isAuthenticated) return;
+  //   if (isOcidConnected) {
+  //     navigate("/account");
+  //     return;
+  //   }
+  //   setOcConnectError(null);
+  //   setOcConnectLoading(false);
+  //   setOcConnectOpen(true);
+  // }
+
+  useEffect(() => {
+    function onPointerDown(e: PointerEvent) {
+      if (!searchWrapRef.current) return;
+      if (!searchOpen) return;
+      const target = e.target as Node | null;
+      if (target && searchWrapRef.current.contains(target)) return;
+      setSearchOpen(false);
+    }
+    window.addEventListener("pointerdown", onPointerDown);
+    return () => window.removeEventListener("pointerdown", onPointerDown);
+  }, [searchOpen]);
+
+  useEffect(() => {
+    const handle = window.setTimeout(() => setDebouncedSearchText(searchText.trim()), 180);
+    return () => window.clearTimeout(handle);
+  }, [searchText]);
+
+  async function handleSearchSubmit(query: string) {
+    const q = query.trim();
+    if (!q) return;
+    addRecentSearch(q);
+    setRecentSearches(readRecentSearches());
+    setSearchOpen(false);
+    navigate(`/search?q=${encodeURIComponent(q)}`);
+    if (isAuthenticated) {
+      logSearchMutation.mutate(q);
+    }
+  }
 
   return (
     <SiteHeader
       logo={{
-        href: siteHomeHref(language),
+        href: appPath("/"),
         src: isDarkMode ? appPath("/logo/Corelia_Logo_White.svg") : appPath("/logo/corelia-full-logo-black.png"),
         alt: "Corelia",
       }}
       nav={siteNavigation(language)}
       renderLink={renderSiteLink}
+      mobileMenu={false}
       labels={siteCopy}
+      start={
+        <SidebarTrigger className="size-7 shrink-0 lg:hidden">
+          <MenuIcon className="size-5" aria-hidden />
+        </SidebarTrigger>
+      }
+      center={
+        <form
+          className="flex w-full min-w-0 items-center justify-center"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleSearchSubmit(searchText);
+          }}
+        >
+          <div
+            ref={searchWrapRef}
+            className="relative min-w-0 w-full max-w-[400px]"
+          >
+            <Input
+              variant="icon-leading"
+              value={searchText}
+              onChange={(e) => {
+                setSearchText(e.target.value);
+                setSearchOpen(true);
+              }}
+              onFocus={() => {
+                const hasAnything =
+                  searchText.trim().length > 0 ||
+                  readRecentSearches().length > 0 ||
+                  trending.length > 0;
+
+                setSearchOpen(hasAnything);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  setSearchOpen(false);
+                }
+              }}
+              renderTrailingContent={({ disabled }) =>
+                searchText.length > 0 ? (
+                  <button
+                    type="button"
+                    aria-label={t("search.clear")}
+                    disabled={disabled}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => setSearchText("")}
+                    className="inline-flex size-6 shrink-0 items-center justify-center rounded text-foreground-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  >
+                    <BackspaceIcon size={20} weight="duotone" aria-hidden />
+                  </button>
+                ) : null
+              }
+              placeholder={t("search.placeholder")}
+              aria-label={t("search.placeholder")}
+            />
+            {searchOpen &&
+            (searchText.trim().length > 0 ||
+              recentSearches.length > 0 ||
+              trending.length > 0 ||
+              suggestionsLoading) ? (
+              <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-xl border border-border bg-surface-overlay">
+                <div className="scrollbar-design max-h-[60vh] overflow-auto p-2">
+                  {searchText.trim() ? (
+                    <button
+                      type="button"
+                      className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 hover:bg-surface-raised"
+                      onClick={() => void handleSearchSubmit(searchText)}
+                    >
+                      <div className="min-w-0">
+                        <div className="truncate font-medium text-foreground">
+                          {t("search.suggest.searchFor", {
+                            query: searchText.trim(),
+                          })}
+                        </div>
+                        <div className="mt-0.5 text-xs text-foreground-muted">
+                          {t("search.suggest.enterToSeeAll")}
+                        </div>
+                      </div>
+                      <Search
+                        className="size-4 text-foreground-muted"
+                        aria-hidden
+                      />
+                    </button>
+                  ) : null}
+
+                  {!searchText.trim() ? (
+                    <div className="grid gap-3 p-1">
+                      {recentSearches.length ? (
+                        <div>
+                          <div className="px-2 py-1 text-xs font-medium text-foreground-muted">
+                            {t("search.suggest.recent")}
+                          </div>
+                          <div className="grid">
+                            {recentSearches.map((q) => (
+                              <button
+                                key={`recent:${q}`}
+                                type="button"
+                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 hover:bg-surface-raised"
+                                onClick={() => void handleSearchSubmit(q)}
+                              >
+                                <Search
+                                  className="size-4 text-foreground-muted"
+                                  aria-hidden
+                                />
+                                <span className="truncate text-foreground">
+                                  {q}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {trending.length ? (
+                        <div>
+                          <div className="px-2 py-1 text-xs font-medium text-foreground-muted">
+                            {t("search.suggest.trending")}
+                          </div>
+                          <div className="grid">
+                            {trending.map((row) => (
+                              <button
+                                key={`trend:${row.query}`}
+                                type="button"
+                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 hover:bg-surface-raised"
+                                onClick={() =>
+                                  void handleSearchSubmit(row.query)
+                                }
+                              >
+                                <Search
+                                  className="size-4 text-foreground-muted"
+                                  aria-hidden
+                                />
+                                <span className="truncate text-foreground">
+                                  {row.query}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : suggestionsLoading ? (
+                    <div className="px-3 py-2 text-sm text-foreground-muted">
+                      {t("status.loading")}
+                    </div>
+                  ) : suggestionsError ? (
+                    <div className="px-3 py-2 text-sm text-foreground-muted">
+                      {suggestionsError}
+                    </div>
+                  ) : suggestions.length ? (
+                    <div className="mt-1 grid">
+                      <div className="px-2 py-1 text-xs font-medium text-foreground-muted">
+                        {t("search.suggest.suggestions")}
+                      </div>
+                      {suggestions.map((item) => (
+                        <button
+                          key={`${item.entity_type}:${item.entity_id}`}
+                          type="button"
+                          className="flex w-full items-start gap-3 rounded-lg px-3 py-2 text-left transition-colors duration-150 hover:bg-surface-raised"
+                          onClick={() => {
+                            addRecentSearch(searchText.trim());
+                            setRecentSearches(readRecentSearches());
+                            setSearchOpen(false);
+                            navigate(item.href);
+                          }}
+                        >
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-medium text-foreground">
+                              {item.title}
+                            </div>
+                            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-foreground-muted">
+                              <span className="rounded-full border border-border bg-surface-base px-2 py-0.5">
+                                {t(
+                                  `search.group.${item.entity_type}` as never,
+                                  {
+                                    defaultValue: item.entity_type,
+                                  },
+                                )}
+                              </span>
+                              {item.subtitle ? (
+                                <span className="truncate">
+                                  {item.subtitle}
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+
+                      <button
+                        type="button"
+                        className="mt-1 flex w-full items-center justify-center rounded-lg px-3 py-2 text-sm text-foreground-muted transition-colors duration-150 hover:bg-surface-raised"
+                        onClick={() => void handleSearchSubmit(searchText)}
+                      >
+                        {t("search.suggest.viewAllResults")}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="px-3 py-2 text-sm text-foreground-muted">
+                      {t("search.suggest.noQuickResults")}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </form>
+      }
       end={
-        <>
+        <div className="flex items-center gap-2">
           <LanguageMenu locale={language} label={siteCopy.language} onSelect={(lng) => void setLanguage(lng)} />
-          <SearchLink href={appPath("/search")} label={siteCopy.search} renderLink={renderSiteLink} />
+          {!isSearchRoute ? (
+            <NavLink
+              to="/search"
+              aria-label={t("search.title")}
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-foreground transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:hidden"
+              onPointerEnter={() => prefetchRouteChunk("/search")}
+              onFocus={() => prefetchRouteChunk("/search")}
+            >
+              <Search className="size-5" aria-hidden />
+            </NavLink>
+          ) : null}
           {!authInitialized ? (
             <div className="h-9 w-28 animate-pulse rounded-full bg-surface-raised md:h-10" />
           ) : isAuthenticated ? (
-            <>
+            <div className="flex items-center gap-3">
               <NotificationBell />
-              <AccountMenu
-                user={{ name: displayName, email: user?.email ?? null, avatarUrl }}
-                avatar={
-                  <UserAvatar
-                    userId={profile?.id ?? user?.id}
-                    avatarUrl={avatarUrl}
-                    avatarSeed={profile?.avatar_seed}
-                    avatarConfig={profile?.avatar_config}
-                    alt={displayName}
-                    fallback={avatarFallback}
-                    size="Medium"
+              <DropdownMenu
+                open={accountMenuOpen}
+                onOpenChange={setAccountMenuOpen}
+              >
+                <DropdownMenuTrigger
+                  render={
+                    <User
+                      showDropdown={false}
+                      state={accountMenuOpen ? "Clicked" : "Default"}
+                      className={`group duration-150 focus-visible:ring-primary/20 max-md:[&>span[data-slot=user-label]]:hidden max-md:border-0 max-md:data-[state=Clicked]:bg-transparent ${isOcidConnected ? "text-primary" : "text-foreground"
+                        }`}
+                      avatar={
+                        <UserAvatar
+                          userId={profile?.id ?? user?.id}
+                          avatarUrl={avatarUrl}
+                          avatarSeed={profile?.avatar_seed} avatarConfig={profile?.avatar_config}
+                          alt={displayName}
+                          fallback={avatarFallback}
+                          size="Medium"
+                          className="transition-[box-shadow,background-color] group-hover/user:bg-surface-raised group-hover/user:ring-2 group-hover/user:ring-primary/20"
+                        />
+                      }
+                    >
+                      <span className="hidden max-w-48 truncate md:inline">
+                        {displayName}
+                      </span>
+                    </User>
+                  }
+                />
+                <DropdownMenuContent align="end" className="z-20 min-w-64">
+                  {user?.id ? <div className="flex items-center justify-between gap-2 px-3 py-2 text-sm"><span className="truncate font-medium">{displayName}</span><span className="flex shrink-0 flex-col items-end gap-1"><XpBadge total={xpQuery.data?.[user.id]} /><XpRankBadge total={xpQuery.data?.[user.id]} /></span></div> : null}
+                  {accountDropdownItems.map((item) => (
+                    <Action
+                      key={item.to}
+                      role="menuitem"
+                      variant="default"
+                      size="small"
+                      icon={item.icon}
+                      label={item.label}
+                      showActive={false}
+                      showPressed
+                      className="min-h-[50px]"
+                      render={<NavLink to={item.to} />}
+                      nativeButton={false}
+                      onPointerEnter={() => prefetchRouteChunk(item.to)}
+                      onFocus={() => prefetchRouteChunk(item.to)}
+                      onClick={() => setAccountMenuOpen(false)}
+                    />
+                  ))}
+                  <DropdownMenuSeparator className="mx-0" />
+                  <Action
+                    role="menuitem"
+                    type="button"
+                    variant="destructive"
+                    size="small"
+                    className="min-h-[50px]"
+                    icon={<LogOut aria-hidden />}
+                    label={t("tabs.signOut")}
+                    isActive={false}
+                    showActive={false}
+                    hoverAsActive
+                    showPressed
+                    onClick={() => {
+                      setAccountMenuOpen(false);
+                      void signOut().then(() =>
+                        navigate("/login", { replace: true }),
+                      );
+                    }}
                   />
-                }
-                summary={user?.id ? (
-                  <span className="flex flex-wrap items-center gap-1">
-                    <XpBadge total={xpQuery.data?.[user.id]} />
-                    <XpRankBadge total={xpQuery.data?.[user.id]} />
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* {!isOcidConnected && (
+                <button
+                  type="button"
+                  onClick={handleOcLogoClick}
+                  className="hidden h-10 items-center justify-center gap-2 rounded-full border border-border bg-ocid-blue px-2.5 py-2 text-left text-sm cursor-pointer transition-colors duration-150 hover:opacity-90 md:inline-flex text-white"
+                  aria-label={t("openCampusConnect.header.ariaLabel")}
+                >
+                  <img
+                    src={appPath("/logo/OC-square-logo.svg")}
+                    alt="Open Campus"
+                    className="h-6 rounded-full"
+                  />
+                  <span>
+                    Link <span className="font-bold">OCID</span>
                   </span>
-                ) : null}
-                items={accountItems}
-                signOut={{
-                  label: siteCopy.signOut,
-                  onSelect: () => void signOut().then(() => navigate("/login", { replace: true })),
-                }}
-                label={siteCopy.account}
-                renderLink={renderSiteLink}
-              />
-            </>
+                </button>
+              )}
+
+              <OpenCampusConnectDialog
+                open={ocConnectOpen}
+                onOpenChange={setOcConnectOpen}
+                onConnect={() => void handleOcConnect()}
+                disabled={ocConnectDisabled}
+                loading={ocConnectLoading}
+                error={ocConnectError ?? authState?.error?.message ?? null}
+              /> */}
+            </div>
           ) : (
-            <AuthActions {...guestAuth} />
+            <AuthActions
+              user={null}
+              signInHref={appPath(`/login?next=${encodeURIComponent(returnTo)}`)}
+              signUpHref={appPath(`/login?mode=signup&next=${encodeURIComponent(returnTo)}`)}
+              appHref={appPath("/")}
+              labels={siteCopy}
+              renderLink={renderSiteLink}
+            />
           )}
-        </>
+        </div>
       }
-      mobileFooter={authInitialized && !isAuthenticated ? <AuthActions {...guestAuth} stacked /> : undefined}
     />
   );
 }
