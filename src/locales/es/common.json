@@ -395,6 +395,7 @@
       "remove": "Quitar",
       "moveUp": "Subir",
       "moveDown": "Bajar",
+      "coverImageBadge": "Portada",
       "logoInvalid": "El logotipo debe ser PNG, JPEG o WebP y no superar los 2 MB.",
       "screenshotInvalid": "La imagen debe ser PNG, JPEG o WebP y no superar los 5 MB.",
       "screenshotLimit": "Puedes subir hasta 6 capturas de pantalla.",

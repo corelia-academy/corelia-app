@@ -389,6 +389,7 @@ function ApplicationRoutes() {
               "tooltip",
               "stepper",
               "informative-icon",
+              "toast-bar",
             ].map((component) => (
               <Route
                 key={component}

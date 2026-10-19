@@ -59,4 +59,23 @@ describe('ProjectMediaEditor',()=>{
     await act(async()=>host.querySelector<HTMLButtonElement>('[aria-label="projects.form.remove"]')!.click());
     expect(changed.mock.lastCall?.[0].map((item:ProjectMediaItem)=>item.path)).toEqual(['one']);expect(mocks.remove).not.toHaveBeenCalled();
   });
+  it('renders sortable screenshot cards with cover badge and allows removal in submission presentation', async () => {
+    await mount(
+      [
+        { path: 'one.png', url: 'https://example.com/one.png' },
+        { path: 'two.png', url: 'https://example.com/two.png' },
+      ],
+      'submission',
+    );
+    const cards = host.querySelectorAll('[data-sortable-card]');
+    expect(cards).toHaveLength(2);
+    expect(cards[0]?.textContent).toContain('projects.form.coverImageBadge');
+    expect(cards[1]?.textContent).toContain('#2');
+
+    // Remove one item
+    await act(async () => {
+      cards[0]?.querySelector<HTMLButtonElement>('[aria-label="projects.form.remove"]')?.click();
+    });
+    expect(changed.mock.lastCall?.[0].map((item: ProjectMediaItem) => item.path)).toEqual(['two.png']);
+  });
 });

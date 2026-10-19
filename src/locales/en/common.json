@@ -397,6 +397,7 @@
       "remove": "Remove",
       "moveUp": "Move up",
       "moveDown": "Move down",
+      "coverImageBadge": "Cover",
       "logoInvalid": "The logo must be PNG, JPEG, or WebP and no larger than 2 MB.",
       "screenshotInvalid": "The image must be PNG, JPEG, or WebP and no larger than 5 MB.",
       "screenshotLimit": "You can upload up to 6 screenshots.",

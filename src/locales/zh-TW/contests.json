@@ -122,6 +122,8 @@
       "untitled": "未命名專案",
       "edit": "編輯專案",
       "view": "檢視專案",
+      "updatedAt": "{{time}}更新",
+      "justNow": "剛剛",
       "emptyDescription": "建立專案，開始準備您的提交。",
       "create": "建立專案"
     },

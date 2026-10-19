@@ -148,6 +148,10 @@
   --color-stepper-passed-outline: var(--stepper-passed-outline);
   --color-stepper-error-surface: var(--stepper-error-surface);
   --color-stepper-error-outline: var(--stepper-error-outline);
+  /* Issue #1091 — Figma Toast Bar semantic color aliases. */
+  --color-toast-bar-surface: var(--toast-bar-surface);
+  --color-toast-bar-border: var(--toast-bar-border);
+  --color-toast-bar-foreground: var(--toast-bar-foreground);
   --color-foreground-muted: var(--foreground-muted);
   --color-catalog-subtitle: var(--catalog-subtitle);
   --color-foreground-subtle: var(--foreground-subtle);
@@ -857,6 +861,11 @@
   --informative-icon-blue-content: var(--accent-sky-200);
   --informative-icon-blue-outline: var(--accent-sky-600);
 
+  /* Toast Bar tokens — exact Figma Dark Midnight Navy specification */
+  --toast-bar-surface: var(--neutral-800);
+  --toast-bar-border: color-mix(in srgb, var(--neutral-700) 40%, transparent);
+  --toast-bar-foreground: var(--neutral-50);
+
   --text-primary-2: #121926;
   --text-secondary: #4b5565;
   --text-tertiary: #9aa3b2;
@@ -1168,6 +1177,11 @@
   --informative-icon-blue-surface: var(--accent-sky-500);
   --informative-icon-blue-content: var(--accent-sky-200);
   --informative-icon-blue-outline: var(--accent-sky-600);
+
+  /* Toast Bar tokens — exact Figma Dark Midnight Navy specification */
+  --toast-bar-surface: var(--neutral-800);
+  --toast-bar-border: color-mix(in srgb, var(--neutral-700) 40%, transparent);
+  --toast-bar-foreground: var(--neutral-50);
 
   /* Dark mode: preserve the exact Figma palette mappings. */
   --progress-track: var(--neutral-700);

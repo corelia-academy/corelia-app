@@ -99,9 +99,15 @@ export default function ProjectEditPage() {
       }}
       onSaved={(savedSlug) => {
         void queryClient.invalidateQueries({ queryKey: ["projects"] });
-        void queryClient.invalidateQueries({ queryKey: ["hackathons"] });
-        toast.success(t("projects.form.saved"));
-        navigate(`/projects/${savedSlug}`);
+        void queryClient.invalidateQueries({ queryKey: ["hackathons"], refetchType: "none" });
+        const headerBottom = document.querySelector("header")?.getBoundingClientRect().bottom ?? 72;
+        toast.success(t("projects.form.saved"), {
+          position: "top-right",
+          style: { top: `${Math.max(0, headerBottom + 25 - 32)}px` },
+        });
+        if (savedSlug && savedSlug !== slug) {
+          navigate(`/projects/${savedSlug}/edit`, { replace: true });
+        }
       }}
     />
   );

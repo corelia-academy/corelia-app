@@ -66,6 +66,8 @@ describe("Button", () => {
     expect(markup).toContain("bg-button-primary");
     expect(markup).toContain("h-10");
     expect(markup).toContain("Save");
+    expect(markup).toContain("cursor-pointer");
+    expect(markup).toContain("disabled:cursor-not-allowed");
   });
 
   it.each(hierarchyCases)(

@@ -10,7 +10,7 @@ function recoverable(draft: ProjectDraft) {
 
 export function useProjectDraft(key: string, initial: ProjectDraft, leaveMessage: string) {
   const [restored, setRestored] = useState(false);
-  const [draft, setDraft] = useState(() => {
+  const [draft, setDraftState] = useState(() => {
     try {
       const raw = JSON.parse(sessionStorage.getItem(key) ?? "null");
       const base = raw?.base ? JSON.parse(raw.base) : null;
@@ -29,9 +29,14 @@ export function useProjectDraft(key: string, initial: ProjectDraft, leaveMessage
     return initial;
   });
   const [wasRecovered] = useState(() => JSON.stringify(recoverable(draft)) !== JSON.stringify(recoverable(initial)));
-  const [baseline] = useState(initial);
+  const [baseline, setBaseline] = useState(initial);
   const committed = useRef(false);
   const dirty = JSON.stringify(draft) !== JSON.stringify(baseline);
+
+  const setDraft: typeof setDraftState = (action) => {
+    committed.current = false;
+    setDraftState(action);
+  };
 
   useEffect(() => {
     if (committed.current) return;
@@ -63,6 +68,7 @@ export function useProjectDraft(key: string, initial: ProjectDraft, leaveMessage
   const recovered = wasRecovered && !restored;
   function clear() {
     committed.current = true;
+    setBaseline(draft);
     try { sessionStorage.removeItem(key); } catch { /* Storage is optional. */ }
   }
   return { draft, setDraft, dirty, clear, recovered, dismissRecovery: () => setRestored(true) };
