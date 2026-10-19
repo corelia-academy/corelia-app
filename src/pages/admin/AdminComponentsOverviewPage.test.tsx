@@ -51,8 +51,9 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(20);
+    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(21);
     expect(container.querySelector('a[href="/components/timestamp"]')).not.toBeNull();
+    expect(container.querySelector('a[href="/components/toast-bar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/action"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/avatar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/scrollbar"]')).not.toBeNull();
@@ -74,13 +75,14 @@ describe("AdminComponentsPage", () => {
     expect(navigation?.classList.contains("overflow-x-auto")).toBe(true);
     expect(navigation?.classList.contains("overflow-x-hidden")).toBe(false);
     expect(container.querySelector("main")?.classList.contains("select-none")).toBe(false);
-    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(19);
+    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(20);
     expect(container.querySelector("#component-full-page-empty-state")).toBeNull();
-    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(19);
+    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(20);
     expect(container.querySelector('[data-testid="component-section-title"]')?.textContent).toBe("Action");
     expect(container.textContent).toContain("Badge");
     expect(container.textContent).toContain("Selection");
     expect(container.querySelector("#component-timestamp")).not.toBeNull();
+    expect(container.querySelector("#component-toast-bar")).not.toBeNull();
     expect(container.querySelector("#component-tooltip")).not.toBeNull();
     expect(container.querySelector("#component-stepper")).not.toBeNull();
     expect(container.querySelector("#component-informative-icon")).not.toBeNull();
