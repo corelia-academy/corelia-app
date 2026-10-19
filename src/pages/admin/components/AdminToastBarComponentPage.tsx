@@ -97,8 +97,8 @@ export default function AdminToastBarComponentPage({
               key={`trigger-${variant}`}
               type="button"
               size="small"
-              variant="cta"
-              hierarchy={variant === "error" ? "destructive" : "secondary"}
+              variant={variant === "error" ? "destructive" : "cta"}
+              hierarchy="secondary"
               onClick={() => triggerToast(variant)}
               data-testid={`trigger-toast-${variant}`}
             >

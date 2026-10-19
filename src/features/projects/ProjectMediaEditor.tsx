@@ -2,6 +2,7 @@ import { ArrowDown, ArrowUp, GripVertical, ImagePlus, Trash2 } from "lucide-reac
 import { Plus, X } from "@phosphor-icons/react";
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { gsap } from "gsap";
@@ -92,7 +93,7 @@ type SortableScreenshotsGridProps = {
   onScreenshotsChange: (screenshots: ProjectMediaItem[]) => void;
   onRemove: (item: ProjectMediaItem) => void;
   uploading: boolean;
-  t: (key: string, options?: Record<string, unknown> | string) => string;
+  t: TFunction<"common">;
   trailingSlot?: ReactNode;
 };
 
