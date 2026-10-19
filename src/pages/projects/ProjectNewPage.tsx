@@ -117,8 +117,12 @@ export default function ProjectNewPage() {
       onSaved={(slug) => {
         void queryClient.invalidateQueries({ queryKey: ["projects"] });
         void queryClient.invalidateQueries({ queryKey: ["hackathons"] });
-        toast.success(t("projects.form.created"));
-        navigate(`/projects/${slug}`);
+        const headerBottom = document.querySelector("header")?.getBoundingClientRect().bottom ?? 72;
+        toast.success(t("projects.form.created"), {
+          position: "top-right",
+          style: { top: `${Math.max(0, headerBottom + 25 - 32)}px` },
+        });
+        navigate(`/projects/${slug}/edit`, { replace: true });
       }}
     />
   );

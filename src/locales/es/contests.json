@@ -122,6 +122,8 @@
       "untitled": "Proyecto sin título",
       "edit": "Editar proyecto",
       "view": "Ver proyecto",
+      "updatedAt": "Actualizado {{time}}",
+      "justNow": "ahora mismo",
       "emptyDescription": "Crea un proyecto para empezar a preparar tu envío.",
       "create": "Crear proyecto"
     },

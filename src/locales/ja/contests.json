@@ -122,6 +122,8 @@
       "untitled": "無題のプロジェクト",
       "edit": "プロジェクトを編集",
       "view": "プロジェクトを表示",
+      "updatedAt": "{{time}}に更新",
+      "justNow": "たった今",
       "emptyDescription": "プロジェクトを作成して、提出の準備を始めましょう。",
       "create": "プロジェクトを作成"
     },
