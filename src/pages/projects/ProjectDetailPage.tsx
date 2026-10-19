@@ -5,7 +5,6 @@ import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink, useNavigate, useParams } from "react-router";
 import {
-  ArrowLeft,
   Share2,
   ExternalLink,
   Github,
@@ -18,6 +17,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { BackLink } from "@/components/navigation/BackLink";
 import { Markdown } from "@/components/markdown/Markdown";
 import { ProjectManagementControls } from "@/components/projects/ProjectManagementControls";
 import { ProjectSelfLeaveButton } from "@/components/projects/ProjectSelfLeaveButton";
@@ -240,10 +240,9 @@ export default function ProjectDetailPage() {
   return (
     <div className="container-app pb-6 pt-4 sm:py-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <Button variant="cta" hierarchy="tertiary" size="small" render={<NavLink to={back} />} nativeButton={false}>
-          <ArrowLeft className="size-4" />
+        <BackLink to={back}>
           {t("projects.detail.backToProjects")}
-        </Button>
+        </BackLink>
         <div className="flex flex-wrap items-center gap-2">
           <ProjectManagementControls project={project} onDeleted={() => navigate("/projects", { replace: true })} />
           <ProjectSocialBlock projectId={project.id} likeCount={Number(project.like_count ?? 0)} className="border-0 pt-0" />
