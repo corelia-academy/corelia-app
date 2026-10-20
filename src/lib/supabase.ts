@@ -16,7 +16,60 @@ if (import.meta.env.DEV && (!url || !publicClientKey)) {
   );
 }
 
+// ┌─── Request timeout for Auth/REST ────────────────────────────────────
+//
+// Some networks intermittently stall requests to `*.supabase.co` (TLS succeeds,
+// no response ever arrives). `fetch` has no default timeout, and supabase-js
+// holds its auth lock while a session/token request is in flight, so one stalled
+// request blocked every later query and left pages on skeletons forever.
+// Aborting Auth/REST requests after a bound turns the stall into a normal error
+// that auth-js and TanStack Query already retry. Storage uploads and Edge
+// Functions (AI generation, bulk work) can legitimately run longer, so they keep
+// the caller's own signal only.
+
+export const SUPABASE_REQUEST_TIMEOUT_MS = 15_000;
+const TIMED_PATH_PREFIXES = ["/auth/v1/", "/rest/v1/"];
+
+function requestPathname(input: RequestInfo | URL): string {
+  const raw = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+  try {
+    return new URL(raw).pathname;
+  } catch {
+    return "";
+  }
+}
+
+export function createTimeoutFetch(
+  baseFetch: typeof fetch = (...args) => fetch(...args),
+  timeoutMs: number = SUPABASE_REQUEST_TIMEOUT_MS,
+): typeof fetch {
+  return (input, init) => {
+    const pathname = requestPathname(input);
+    if (!TIMED_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+      return baseFetch(input, init);
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      controller.abort(new DOMException(`Supabase request timed out after ${timeoutMs}ms`, "TimeoutError"));
+    }, timeoutMs);
+
+    const callerSignal = init?.signal ?? (input instanceof Request ? input.signal : undefined);
+    const onCallerAbort = () => controller.abort(callerSignal?.reason);
+    if (callerSignal?.aborted) onCallerAbort();
+    else callerSignal?.addEventListener("abort", onCallerAbort, { once: true });
+
+    return baseFetch(input, { ...init, signal: controller.signal }).finally(() => {
+      clearTimeout(timer);
+      callerSignal?.removeEventListener("abort", onCallerAbort);
+    });
+  };
+}
+
 export const supabase = createClient(url, publicClientKey, {
+  global: {
+    fetch: createTimeoutFetch(),
+  },
   auth: {
     persistSession: true,
     autoRefreshToken: true,
