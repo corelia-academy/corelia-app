@@ -9,6 +9,8 @@ export interface SubmitRequest {
   instructions: string;
   input: string;
   effort: string;
+  /** Caps reasoning + visible output, so a runaway response fails fast instead of running to the model limit. */
+  maxOutputTokens: number;
   schemaName: string;
   schema: Record<string, unknown>;
   tools?: Record<string, unknown>[];
@@ -48,6 +50,7 @@ export async function submitResponse(apiKey: string, req: SubmitRequest): Promis
       instructions: req.instructions,
       input: req.input,
       reasoning: { effort: req.effort },
+      max_output_tokens: req.maxOutputTokens,
       tools: req.tools,
       text: { format: { type: "json_schema", name: req.schemaName, strict: true, schema: req.schema } },
       background: true,

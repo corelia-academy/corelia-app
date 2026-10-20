@@ -2,13 +2,15 @@ import { getUserRole } from "../lib/authz.ts";
 import { json } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 import { pollResponse, submitResponse } from "./openai.ts";
-import { PROMPTS } from "./prompts.ts";
+import { PROMPTS, type AgentRole } from "./prompts.ts";
 import {
+  agentKeyEnv,
   planRun,
   STEP_LABEL,
   STEP_ORDER,
   STEP_SPECS,
   stepAgent,
+  utcDate,
   type GenerationState,
   type RunContext,
   type StepKey,
@@ -33,6 +35,10 @@ interface RunRow {
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function agentKey(role: AgentRole): string {
+  return Deno.env.get(agentKeyEnv(role))?.trim() ?? "";
 }
 
 // Studio is admin only: support_staff is excluded, matching studio_can_write() in the schema.
@@ -67,8 +73,6 @@ export async function handleStudioTick(req: Request, db: SupabaseClient): Promis
   const expected = Deno.env.get("CORELIA_STUDIO_CRON_SECRET")?.trim() ?? "";
   const provided = req.headers.get("x-corelia-studio-cron-secret")?.trim() ?? "";
   if (!expected || provided !== expected) return json({ message: "unauthorized" }, 401);
-  const apiKey = Deno.env.get("CORELIA_STUDIO_OPENAI_API_KEY")?.trim() ?? "";
-  if (!apiKey) return json({ message: "studio_openai_key_missing" }, 503);
 
   // Least recently advanced first, so every running run moves forward across ticks.
   const { data: runs, error } = await db
@@ -82,7 +86,7 @@ export async function handleStudioTick(req: Request, db: SupabaseClient): Promis
   const results = [];
   for (const run of (runs ?? []) as RunRow[]) {
     try {
-      const outcome = await advanceRun(db, apiKey, run);
+      const outcome = await advanceRun(db, run);
       results.push({ run_id: run.id, ...outcome });
     } catch (e) {
       console.error("[corelia-api] studio tick", { run_id: run.id, error: errorMessage(e) });
@@ -94,7 +98,7 @@ export async function handleStudioTick(req: Request, db: SupabaseClient): Promis
   return json({ processed: results.length, results });
 }
 
-async function advanceRun(db: SupabaseClient, apiKey: string, run: RunRow): Promise<{ step: StepKey | null; action: TickAction["kind"] }> {
+async function advanceRun(db: SupabaseClient, run: RunRow): Promise<{ step: StepKey | null; action: TickAction["kind"] }> {
   const { data: stepRows, error } = await db.from("studio_run_steps").select("step_key,state").eq("run_id", run.id);
   if (error) throw new Error(error.message);
   const steps: Partial<Record<StepKey, StepState>> = {};
@@ -105,7 +109,7 @@ async function advanceRun(db: SupabaseClient, apiKey: string, run: RunRow): Prom
   if (current) {
     const res = await db
       .from("studio_generations")
-      .select("id,attempt,status,provider_request_id,error,created_at")
+      .select("id,attempt,agent_role,status,provider_request_id,error,created_at")
       .eq("run_id", run.id)
       .eq("step_key", current)
       .order("attempt", { ascending: false })
@@ -121,10 +125,10 @@ async function advanceRun(db: SupabaseClient, apiKey: string, run: RunRow): Prom
       await finishRun(db, run, step, action.status, action.reason, latest?.attempt ?? 0);
       break;
     case "submit":
-      await submitStep(db, apiKey, run, step!, action.attempt, action.parentId);
+      await submitStep(db, run, step!, action.attempt, action.parentId, action.parentId ? latest?.error ?? null : null);
       break;
     case "poll":
-      await pollStep(db, apiKey, run, step!, action.generationId, action.requestId, latest!.attempt);
+      await pollStep(db, run, step!, latest!, action.requestId);
       break;
     case "expire_submitting":
       await failGeneration(db, action.generationId, "submitting", "Gửi yêu cầu tới model bị gián đoạn.");
@@ -166,13 +170,31 @@ async function loadContext(db: SupabaseClient, run: RunRow): Promise<RunContext>
       locale: s.locale,
     })),
     outputs,
+    today: utcDate(Date.now()),
   };
 }
 
-async function submitStep(db: SupabaseClient, apiKey: string, run: RunRow, step: StepKey, attempt: number, parentId: string | null) {
+async function submitStep(
+  db: SupabaseClient,
+  run: RunRow,
+  step: StepKey,
+  attempt: number,
+  parentId: string | null,
+  previousError: string | null,
+) {
   const spec = STEP_SPECS[step]!;
   const agent = stepAgent(step)!;
-  const input = spec.buildInput(await loadContext(db, run));
+  const apiKey = agentKey(agent.role);
+  if (!apiKey) {
+    await finishRun(db, run, step, "draft_failed", `Chưa cấu hình ${agentKeyEnv(agent.role)}.`, attempt);
+    return;
+  }
+  // A retry tells the model why the previous attempt was rejected; resending the same input
+  // would most likely reproduce the same failure.
+  const input = {
+    ...spec.buildInput(await loadContext(db, run)),
+    ...(previousError ? { previous_attempt: { attempt: attempt - 1, rejected_because: previousError } } : {}),
+  };
 
   // The insert is the claim: a concurrent tick hitting the same attempt gets 23505 and stops here.
   const { data: gen, error } = await db
@@ -186,7 +208,7 @@ async function submitStep(db: SupabaseClient, apiKey: string, run: RunRow, step:
       provider: "openai",
       requested_model_id: spec.model,
       prompt_version: agent.promptVersion,
-      params: { effort: spec.effort, tools: spec.tools ?? [] },
+      params: { effort: spec.effort, max_output_tokens: spec.maxOutputTokens, tools: spec.tools ?? [] },
       input,
       parent_generation_id: parentId,
     })
@@ -208,6 +230,7 @@ async function submitStep(db: SupabaseClient, apiKey: string, run: RunRow, step:
       instructions: PROMPTS[spec.prompt].system,
       input: JSON.stringify(input),
       effort: spec.effort,
+      maxOutputTokens: spec.maxOutputTokens,
       schemaName: step,
       schema: spec.schema,
       tools: spec.tools,
@@ -235,7 +258,15 @@ async function submitStep(db: SupabaseClient, apiKey: string, run: RunRow, step:
   });
 }
 
-async function pollStep(db: SupabaseClient, apiKey: string, run: RunRow, step: StepKey, generationId: string, requestId: string, attempt: number) {
+// A background response belongs to the project of the key that created it, so it is read with
+// the key of the agent recorded on the generation, not with the key of whichever step is current.
+async function pollStep(db: SupabaseClient, run: RunRow, step: StepKey, latest: GenerationState, requestId: string) {
+  const { id: generationId, attempt } = latest;
+  const apiKey = agentKey(latest.agent_role);
+  if (!apiKey) {
+    await finishRun(db, run, step, "draft_failed", `Chưa cấu hình ${agentKeyEnv(latest.agent_role)}.`, attempt);
+    return;
+  }
   const result = await pollResponse(apiKey, requestId);
   if (!result || result.state === "running") return;
 

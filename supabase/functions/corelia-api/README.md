@@ -111,7 +111,7 @@ Code gửi mail chung: [`lib/mail/resend.ts`](lib/mail/resend.ts) (transport) + 
 
 | Biến | Bắt buộc? | Ghi chú |
 |------|-----------|---------|
-| `CORELIA_STUDIO_OPENAI_API_KEY` | Có cho `studio.tick` | Key riêng của Studio, không dùng `OPENAI_API_KEY` của app; thiếu thì tick trả 503 và không đụng lượt chạy nào. |
+| `CORELIA_STUDIO_A1_CATALOG_RESEARCH_OPENAI_API_KEY`, `…_A2_COURSE_RESEARCH_…`, `…_A3_CURRICULUM_…`, `…_A4_CURRICULUM_REVIEW_…`, `…_A5_LESSON_…`, `…_A6_LESSON_REVIEW_…` | Có cho bước của agent tương ứng | Mỗi agent một key OpenAI, đánh số theo thứ tự trong luồng (tên lấy từ `AGENT_NAME`), không dùng `OPENAI_API_KEY` của app. Bước thuộc agent nào lấy theo `STEP_OWNER`; poll dùng key của agent ghi trên `studio_generations`. Thiếu key thì lượt chạy dừng ở bước đó (`draft_failed`, lý do nêu tên biến); lượt chạy khác vẫn chạy. A1 thuộc luồng Catalog, chưa có bước trong lượt chạy. |
 | `CORELIA_STUDIO_CRON_SECRET` | Có cho `studio.tick` | Scheduler gửi qua header `x-corelia-studio-cron-secret`. |
 
 `studio.start` (Bearer, chỉ `profiles.role = admin`; `support_staff` bị từ chối) nhận
@@ -124,7 +124,7 @@ model ở background mode, lấy kết quả, hoặc kết thúc lượt chạy.
 dòng `studio_generations` được chèn trước khi gọi provider (unique theo bước và lượt
 thử), nên hai tick chồng nhau không gửi trùng. Prompt nằm trong
 [`studio/prompts.ts`](studio/prompts.ts); bước chưa có trong `STEP_SPECS` kết thúc lượt
-chạy ở `draft_failed` kèm lý do.
+chạy ở `draft_failed` kèm lý do và người chạy bước (agent hoặc code).
 
 ### Email Center
 
