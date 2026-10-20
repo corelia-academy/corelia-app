@@ -21,7 +21,7 @@ export function HomeHeader({
   const featuredWrapperClassName = "sm:rounded-lg sm:bg-surface-raised/50";
 
   return (
-    <section className="mobile-bleed-surface bg-surface-base shadow-card px-5 pt-5 pb-4 sm:px-0 sm:py-0">
+    <section className="mobile-bleed-surface px-5 pt-5 pb-4 sm:px-0 sm:py-0">
       <div className="flex flex-col gap-2">
         {loading ? (
           <div className="text-[11px] font-medium uppercase tracking-wide text-foreground-muted">
