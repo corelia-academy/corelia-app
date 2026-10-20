@@ -75,11 +75,12 @@ function SearchCourseResultCard({
         )}
       </div>
       <div className="flex flex-col gap-4 p-4">
-        <h2 className="line-clamp-2 text-lg font-display font-medium leading-tight text-foreground">
+        <h2 className="line-clamp-2 text-heading-medium! font-display font-medium leading-[1.2]! text-foreground">
           {item.title}
         </h2>
         <Timestamp
           type="full"
+          size="medium"
           className="min-w-0 flex-wrap gap-3 whitespace-normal"
           date={(
             <span className="inline-flex flex-wrap items-center gap-2">
@@ -144,9 +145,9 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="container-app pb-6 pt-4 sm:py-8">
+    <div className="course-catalog-page course-catalog container-app pb-8 pt-6 sm:py-8">
       <div className="flex items-start gap-3">
-        <Search className="mt-1 size-5 text-primary" aria-hidden />
+        {/* <Search className="mt-1 size-5 text-primary" aria-hidden /> */}
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-heading-large font-display text-foreground">
             {q ? t("search.queryLine", { query: q }) : t("search.title")}

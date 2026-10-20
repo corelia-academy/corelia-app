@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState } from "react";
 import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
-import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +15,7 @@ import {
   DropdownMenuList,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuTrigger,
+  DropdownMenuTriggerWithIndicator,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -277,7 +276,7 @@ export default function Contests() {
             </div>
 
             <DropdownMenu>
-              <DropdownMenuTrigger
+              <DropdownMenuTriggerWithIndicator
                 type="button"
                 aria-label={commonT("projects.sort.label")}
                 className="flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-3 text-left font-body text-body-large text-foreground transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
@@ -289,8 +288,7 @@ export default function Contests() {
                       ? commonT("projects.sort.oldest")
                       : t("catalog.sort.deadlineSoonest")}
                 </span>
-                <ChevronDown className="size-4 shrink-0 text-foreground-muted" aria-hidden />
-              </DropdownMenuTrigger>
+              </DropdownMenuTriggerWithIndicator>
               <DropdownMenuContent
                 layout="multiple-list"
                 align="start"

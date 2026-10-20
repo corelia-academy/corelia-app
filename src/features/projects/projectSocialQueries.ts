@@ -10,6 +10,8 @@ export const projectSocialKeys = {
     [...projectSocialKeys.all, "heart", userId, projectId] as const,
   hearts: (userId: string, projectIds: readonly string[]) =>
     [...projectSocialKeys.all, "hearts", userId, ...projectIds] as const,
+  allHearts: (userId: string) =>
+    [...projectSocialKeys.all, "hearts", userId, "all"] as const,
 };
 
 export function projectHeartQueryOptions(
@@ -33,12 +35,15 @@ export function projectHeartQueryOptions(
 export function projectHeartsQueryOptions(
   userId: string | undefined,
   projectIds: string[],
+  includeAllProjectIds = false,
 ) {
   const ids = Array.from(new Set(projectIds.filter(Boolean))).sort();
   return queryOptions({
-    queryKey: projectSocialKeys.hearts(userId || "missing", ids),
-    queryFn: () => listMyProjectHeartIds(ids),
-    enabled: Boolean(userId && ids.length),
+    queryKey: includeAllProjectIds
+      ? projectSocialKeys.allHearts(userId || "missing")
+      : projectSocialKeys.hearts(userId || "missing", ids),
+    queryFn: () => listMyProjectHeartIds(includeAllProjectIds ? undefined : ids),
+    enabled: Boolean(userId && (includeAllProjectIds || ids.length)),
     staleTime: 30_000,
     meta: {
       scope: "private",

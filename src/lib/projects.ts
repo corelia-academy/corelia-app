@@ -340,6 +340,7 @@ export type ListPublicProjectsOptions = {
   sectorIds?: string[];
   techStackIds?: string[];
   winnerProjectIds?: string[];
+  likedProjectIds?: string[];
 };
 
 export type PublicProjectListResult = {
@@ -452,8 +453,13 @@ export async function listPublicProjects(
   const sourceType = normalizePublicProjectSource(options.source);
   const sort = normalizeProjectListSort(options.sort);
 
+  if (options.likedProjectIds?.length === 0) {
+    return { items: [], nextCursor: null, hasMore: false };
+  }
+
   const applyFilters = () => {
     let filtered = supabase.from("projects").select(select).eq("visibility", "public");
+    if (options.likedProjectIds) filtered = filtered.in("id", options.likedProjectIds);
     if (sourceType) filtered = filtered.in("source_type", sourceType);
     if (options.hackathonId) {
       filtered = filtered.in("source_type", ["contest", "hackathon"]).eq("source_id", options.hackathonId);

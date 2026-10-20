@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { ChevronDown, ShieldAlert, X } from "lucide-react";
+import { ShieldAlert, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
+import { toast } from "sonner";
 
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/projects/ProjectCardSkeleton";
@@ -19,7 +20,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSearch,
   DropdownMenuSelectAll,
-  DropdownMenuTrigger,
+  DropdownMenuTriggerWithIndicator,
 } from "@/components/ui/dropdown-menu";
 import { publicHackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
 import {
@@ -41,8 +42,11 @@ function csv(value: string | null): string[] {
   return Array.from(new Set((value ?? "").split(",").map((item) => item.trim()).filter(Boolean)));
 }
 
-function sortParam(value: string | null): PublicProjectSort {
-  return value === "oldest" ? "oldest" : "newest";
+type ProjectDirectoryChoice = PublicProjectSort | "liked";
+
+function sortParam(value: string | null): ProjectDirectoryChoice {
+  if (value === "liked" || value === "oldest" || value === "most_liked") return value;
+  return "newest";
 }
 
 function TaxonomyFilter({
@@ -95,22 +99,19 @@ function TaxonomyFilter({
         if (!nextOpen) setQuery("");
       }}
     >
-      <DropdownMenuTrigger
+      <DropdownMenuTriggerWithIndicator
         type="button"
         aria-label={label}
         aria-expanded={open}
+        trailingContent={selected.length > 0 ? (
+          <span className="rounded-full bg-primary/10 px-2 text-primary" aria-hidden>
+            {selected.length}
+          </span>
+        ) : undefined}
         className="flex min-h-11 w-full min-w-0 items-center justify-between gap-3 rounded-lg border border-input-field-border bg-surface-base px-3 text-left text-body-large text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
       >
         <span className="min-w-0 truncate">{label}</span>
-        <span className="flex shrink-0 items-center gap-2">
-          {selected.length > 0 ? (
-            <span className="rounded-full bg-primary/10 px-2 text-primary" aria-hidden>
-              {selected.length}
-            </span>
-          ) : null}
-          <ChevronDown className="size-4 text-foreground-muted" aria-hidden />
-        </span>
-      </DropdownMenuTrigger>
+      </DropdownMenuTriggerWithIndicator>
       <DropdownMenuContent
         layout="multiple-list"
         align="start"
@@ -189,7 +190,8 @@ export default function ProjectsPage() {
   const trackIds = csv(params.get("tracks"));
   const sectorIds = csv(params.get("sectors"));
   const techStackIds = csv(params.get("tech"));
-  const sort = sortParam(params.get("sort"));
+  const sortChoice = sortParam(params.get("sort"));
+  const sort: PublicProjectSort = sortChoice === "liked" ? "newest" : sortChoice;
   const [hackathonDropdownOpen, setHackathonDropdownOpen] = useState(false);
   const [hackathonSearch, setHackathonSearch] = useState("");
 
@@ -235,21 +237,38 @@ export default function ProjectsPage() {
     return hackathons.flatMap((h) => h.winner_awards ?? []);
   }, [selectedHackathon, hackathons]);
 
+  const likedProjectIdsQuery = useQuery(
+    projectHeartsQueryOptions(user?.id, [], sortChoice === "liked"),
+  );
+  const likedProjectIds = sortChoice === "liked" && likedProjectIdsQuery.data
+    ? Array.from(likedProjectIdsQuery.data).sort()
+    : undefined;
+
   const directoryOptions = publicProjectDirectoryQueryOptions(locale, "all", sort, {
     hackathonId: selectedHackathon?.id ?? null,
     trackIds,
     sectorIds,
     techStackIds,
-    winnerProjectIds: allWinnerAwards.map((award) => award.project_id),
+    winnerProjectIds: sortChoice === "liked" || sortChoice === "most_liked"
+      ? []
+      : allWinnerAwards.map((award) => award.project_id),
+    likedProjectIds,
   });
   const projectsQuery = useInfiniteQuery({
     ...directoryOptions,
-    enabled: !hackathonParam || Boolean(selectedHackathon),
+    enabled:
+      (!hackathonParam || Boolean(selectedHackathon)) &&
+      (sortChoice !== "liked" || Boolean(user?.id && likedProjectIdsQuery.isSuccess)),
   });
   const projectCountQuery = useQuery(publicProjectCountQueryOptions());
   const items = useMemo(
-    () => winnerFirst(projectsQuery.data?.pages.flatMap((page) => page.items) ?? [], allWinnerAwards),
-    [projectsQuery.data?.pages, allWinnerAwards],
+    () => {
+      const pageItems = projectsQuery.data?.pages.flatMap((page) => page.items) ?? [];
+      return sortChoice === "liked" || sortChoice === "most_liked"
+        ? pageItems
+        : winnerFirst(pageItems, allWinnerAwards);
+    },
+    [projectsQuery.data?.pages, allWinnerAwards, sortChoice],
   );
   const teamsQuery = useQuery(publicProjectTeamsQueryOptions(items.map((item) => item.project.id)));
 
@@ -267,9 +286,16 @@ export default function ProjectsPage() {
     setParams(next);
   }, [params, setParams]);
 
-  const error = projectsQuery.isError || hackathonsQuery.isError ? t("projects.errorDescription") : hackathonParam && hackathonsQuery.isSuccess && !selectedHackathon ? t("projects.errors.hackathonMissing") : null;
+  useEffect(() => {
+    if (sortChoice === "liked" && !user) {
+      toast.message(t("projects.social.loginToInteract"));
+      update("sort", "newest");
+    }
+  }, [sortChoice, user, t, update]);
+
+  const error = projectsQuery.isError || hackathonsQuery.isError || (sortChoice === "liked" && likedProjectIdsQuery.isError) ? t("projects.errorDescription") : hackathonParam && hackathonsQuery.isSuccess && !selectedHackathon ? t("projects.errors.hackathonMissing") : null;
   const hasProjectFilters = Boolean(
-    hackathonParam || trackIds.length || sectorIds.length || techStackIds.length,
+    hackathonParam || trackIds.length || sectorIds.length || techStackIds.length || sortChoice === "liked",
   );
   const showDirectoryEmpty = !projectsQuery.isPending && !error && items.length === 0;
 
@@ -312,7 +338,7 @@ export default function ProjectsPage() {
               if (!nextOpen) setHackathonSearch("");
             }}
           >
-            <DropdownMenuTrigger
+            <DropdownMenuTriggerWithIndicator
               type="button"
               aria-label={t("projects.filters.hackathon")}
               aria-expanded={hackathonDropdownOpen}
@@ -321,8 +347,7 @@ export default function ProjectsPage() {
               <span className="min-w-0 truncate">
                 {selectedHackathon?.title ?? t("projects.filters.allHackathons")}
               </span>
-              <ChevronDown className="size-4 shrink-0 text-foreground-muted" aria-hidden />
-            </DropdownMenuTrigger>
+            </DropdownMenuTriggerWithIndicator>
             <DropdownMenuContent
               layout="multiple-list"
               align="start"
@@ -375,16 +400,21 @@ export default function ProjectsPage() {
             </DropdownMenuContent>
           </DropdownMenu>
           <DropdownMenu>
-            <DropdownMenuTrigger
+            <DropdownMenuTriggerWithIndicator
               type="button"
               aria-label={t("projects.sort.label")}
               className="flex h-10 w-full min-w-0 items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-3 text-left text-body-large text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
             >
               <span className="min-w-0 truncate">
-                {sort === "oldest" ? t("projects.sort.oldest") : t("projects.sort.newest")}
+                {sortChoice === "liked"
+                  ? t("projects.sort.liked")
+                  : sortChoice === "most_liked"
+                    ? t("projects.sort.mostLiked")
+                    : sortChoice === "oldest"
+                      ? t("projects.sort.oldest")
+                      : t("projects.sort.newest")}
               </span>
-              <ChevronDown className="size-4 shrink-0 text-foreground-muted" aria-hidden />
-            </DropdownMenuTrigger>
+            </DropdownMenuTriggerWithIndicator>
             <DropdownMenuContent
               layout="multiple-list"
               align="start"
@@ -392,8 +422,14 @@ export default function ProjectsPage() {
             >
               <DropdownMenuList>
                 <DropdownMenuRadioGroup
-                  value={sort}
-                  onValueChange={(value) => update("sort", value)}
+                  value={sortChoice}
+                  onValueChange={(value) => {
+                    if (value === "liked" && !user) {
+                      toast.message(t("projects.social.loginToInteract"));
+                      return;
+                    }
+                    update("sort", value);
+                  }}
                 >
                   <DropdownMenuRadioItem className="text-body-large" value="newest">
                     <DropdownMenuItemContent>{t("projects.sort.newest")}</DropdownMenuItemContent>
@@ -401,11 +437,17 @@ export default function ProjectsPage() {
                   <DropdownMenuRadioItem className="text-body-large" value="oldest">
                     <DropdownMenuItemContent>{t("projects.sort.oldest")}</DropdownMenuItemContent>
                   </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem className="text-body-large" value="most_liked">
+                    <DropdownMenuItemContent>{t("projects.sort.mostLiked")}</DropdownMenuItemContent>
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem className="text-body-large" value="liked">
+                    <DropdownMenuItemContent>{t("projects.sort.liked")}</DropdownMenuItemContent>
+                  </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuList>
             </DropdownMenuContent>
           </DropdownMenu>
-          {(hackathonParam || trackIds.length || sectorIds.length || techStackIds.length || sort !== "newest") ? (
+          {(hackathonParam || trackIds.length || sectorIds.length || techStackIds.length || sortChoice !== "newest") ? (
             <Button
               type="button"
               variant="cta"
@@ -460,7 +502,16 @@ export default function ProjectsPage() {
           <div className="flex flex-col items-center gap-3 py-14 text-center" role="alert">
             <ShieldAlert className="size-8 text-foreground-subtle" aria-hidden />
             <p className="text-sm text-foreground-muted">{error}</p>
-            <Button type="button" onClick={() => { void projectsQuery.refetch(); void hackathonsQuery.refetch(); }}>{t("projects.retry")}</Button>
+            <Button
+              type="button"
+              onClick={() => {
+                void projectsQuery.refetch();
+                void hackathonsQuery.refetch();
+                if (sortChoice === "liked") void likedProjectIdsQuery.refetch();
+              }}
+            >
+              {t("projects.retry")}
+            </Button>
           </div>
         ) : items.length === 0 ? (
           <div className="flex flex-1 items-center justify-center py-14 text-center">

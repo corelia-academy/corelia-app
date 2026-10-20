@@ -35,7 +35,7 @@ export function ProjectResourcesEditor({ draft, onChange, presentation = "defaul
 
     return <section id="project-links" className="scroll-mt-24">
       <Separator className="mb-6" />
-      <div className="grid min-w-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-12">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[200px_minmax(0,1fr)] xl:gap-x-12">
         <div>
           <h2 className="text-heading-medium font-display text-project-editor-heading">{t("projects.editor.submissionLinksTitle")}</h2>
           <p className="mt-4 text-body-small font-body text-foreground-subtle">{t("projects.editor.submissionLinksHint")}</p>

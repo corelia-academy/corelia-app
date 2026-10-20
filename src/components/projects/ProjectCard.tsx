@@ -112,11 +112,11 @@ export function ProjectCard({
         size="Xsmall"
       />
       {ownerHandle ? (
-        <NavLink to={`/@${ownerHandle}`} className="min-w-0 truncate hover:underline">
+        <NavLink to={`/@${ownerHandle}`} className="min-w-0 truncate text-foreground-subtle hover:underline">
           {ownerName}
         </NavLink>
       ) : (
-        <span className="min-w-0 truncate">{ownerName}</span>
+        <span className="min-w-0 truncate text-foreground-subtle">{ownerName}</span>
       )}
     </div>
   ) : (
@@ -191,11 +191,11 @@ export function ProjectCard({
         "motion-hover-card group relative flex h-full min-w-0 flex-col border border-border bg-surface-base shadow-card",
         isHackathon
           ? "h-auto min-h-60 rounded-lg p-4 shadow-none hover:shadow-none"
-          : "min-h-60 rounded-lg p-4",
+          : "min-h-60 rounded-md p-4 shadow-none",
         className,
       )}
     >
-      <div className={cn("flex items-start justify-between gap-4", isHackathon && "gap-2")}>
+      <div className="flex items-start justify-between gap-2">
         <NavLink
           to={detailPath}
           tabIndex={-1}
@@ -211,7 +211,7 @@ export function ProjectCard({
           )}
         </NavLink>
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-lg font-display font-medium text-foreground">
+          <h2 className="truncate text-heading-medium font-display text-foreground">
             <NavLink
               to={detailPath}
               className="rounded-sm hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
@@ -219,7 +219,7 @@ export function ProjectCard({
               {project.title}
             </NavLink>
           </h2>
-          <p className="mt-0.5 text-label-small font-body text-foreground-subtle">
+          <p className="mt-1 text-body-small font-body leading-[1.25] text-foreground-subtle">
             {t("projects.card.publishedAt", { date: publishedDate })}
           </p>
         </div>
@@ -231,13 +231,18 @@ export function ProjectCard({
           className="shrink-0 border-0 pt-0"
         />
       </div>
-      <p className={cn("mt-6 min-h-[35px] line-clamp-2 text-body-medium font-body text-foreground-muted", isHackathon && "min-h-0")}>
+      <p className={cn("mt-4 min-h-[35px] line-clamp-3 text-body-medium font-body leading-[1.4] text-catalog-subtitle", isHackathon && "min-h-0")}>
         {project.summary || t("projects.card.noSummary")}
       </p>
       {technologies.length ? (
         <div className={cn("mt-3 flex flex-wrap gap-1.5", !isHackathon && "gap-1")}>
           {technologies.map((technology) => (
-            <Chip key={technology} size="xsmall" shape="circle">
+            <Chip
+              key={technology}
+              size="xsmall"
+              shape="circle"
+              className="py-1 text-[10px] leading-[1.2] text-neutral-100"
+            >
               {technology}
             </Chip>
           ))}
@@ -250,7 +255,7 @@ export function ProjectCard({
           {renderActions(true)}
         </div>
       ) : (
-        <div className="mt-auto flex min-w-0 items-center justify-between gap-3 pt-3 text-body-small font-body">
+        <div className="mt-auto flex min-w-0 items-center justify-between gap-3 pt-3 text-body-small font-body leading-[1.25]">
           <div className="flex min-w-0 items-center gap-2">
             <span className="shrink-0 text-foreground-subtle">{t("projects.byPrefix")}</span>
             {peopleContent}

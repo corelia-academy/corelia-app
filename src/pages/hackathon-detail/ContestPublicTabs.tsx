@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import {
   CalendarDots,
-  CaretDown,
   Coins,
   Eye,
   FolderOpen,
@@ -27,7 +26,7 @@ import {
   DropdownMenuList,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuTrigger,
+  DropdownMenuTriggerWithIndicator,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -451,22 +450,17 @@ export function HackathonProjectsTab() {
               aria-label={t("public.projects.searchPlaceholder")}
             />
             <DropdownMenu>
-              <DropdownMenuTrigger
+              <DropdownMenuTriggerWithIndicator
                 type="button"
                 aria-label={t("public.projects.sort")}
-                className="group/sort-menu flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-lg text-left font-body text-body-large text-foreground transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-lg text-left font-body text-body-large text-foreground transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               >
                 <span>
                   {sort === "newest"
                     ? t("public.projects.newest")
                     : t("public.projects.oldest")}
                 </span>
-                <CaretDown
-                  className="size-5 shrink-0 text-foreground-muted transition-transform duration-200 group-data-[popup-open]/sort-menu:rotate-180"
-                  weight="duotone"
-                  aria-hidden
-                />
-              </DropdownMenuTrigger>
+              </DropdownMenuTriggerWithIndicator>
               <DropdownMenuContent
                 layout="multiple-list"
                 align="start"

@@ -65,6 +65,7 @@ type InputDesignProps = {
   leadingIconClassName?: string
   statusIcon?: React.ReactNode | null
   controlClassName?: string
+  allowManualResize?: boolean
   /** Keep Enter available for a newline when this is a multiline field. */
   submitOnEnter?: boolean
   renderLeadingContent?: (state: InputAccessoryState) => React.ReactNode
@@ -161,6 +162,7 @@ function InputImplementationContent({
     const {
       "aria-describedby": ariaDescribedBy,
       "aria-invalid": ariaInvalid,
+      allowManualResize = false,
       className,
       controlClassName,
       defaultValue,
@@ -209,6 +211,8 @@ function InputImplementationContent({
     const [tagMenuOpen, setTagMenuOpen] = React.useState(false)
     const inputRef = React.useRef<HTMLInputElement | null>(null)
     const textareaRef = React.useRef<HTMLTextAreaElement | null>(null)
+    const manualResizeHeight = React.useRef<number | null>(null)
+    const resizeStartHeight = React.useRef<number | null>(null)
     const tagTriggerRef = React.useRef<HTMLSpanElement | null>(null)
     const [tagsAreWrapped, setTagsAreWrapped] = React.useState(false)
 
@@ -223,11 +227,62 @@ function InputImplementationContent({
 
     const resizeTextarea = React.useCallback(
       (textarea: HTMLTextAreaElement) => {
+        if (allowManualResize && manualResizeHeight.current !== null) {
+          textarea.style.height = `${manualResizeHeight.current}px`
+          return
+        }
+
         textarea.style.height = "auto"
         textarea.style.height = `${textarea.scrollHeight}px`
       },
-      [],
+      [allowManualResize],
     )
+
+    const handleTextareaPointerDown = (
+      event: React.PointerEvent<HTMLTextAreaElement>,
+    ) => {
+      const userHandler = (
+        inputProps as React.ComponentPropsWithoutRef<"textarea">
+      ).onPointerDown
+
+      userHandler?.(event)
+      resizeStartHeight.current =
+        allowManualResize && !event.defaultPrevented
+          ? event.currentTarget.clientHeight
+          : null
+    }
+
+    const handleTextareaPointerUp = (
+      event: React.PointerEvent<HTMLTextAreaElement>,
+    ) => {
+      const userHandler = (
+        inputProps as React.ComponentPropsWithoutRef<"textarea">
+      ).onPointerUp
+
+      userHandler?.(event)
+
+      const startHeight = resizeStartHeight.current
+      resizeStartHeight.current = null
+
+      if (
+        event.defaultPrevented ||
+        !allowManualResize ||
+        startHeight === null
+      ) {
+        return
+      }
+
+      const textarea = event.currentTarget
+      if (textarea.clientHeight === startHeight) return
+
+      if (textarea.scrollHeight > textarea.clientHeight) {
+        manualResizeHeight.current = textarea.clientHeight
+        return
+      }
+
+      manualResizeHeight.current = null
+      resizeTextarea(textarea)
+    }
 
     const setTextareaRef = React.useCallback(
       (textarea: HTMLTextAreaElement | null) => {
@@ -598,6 +653,8 @@ function InputImplementationContent({
         onChange={handleInputChange}
         onFocus={handleInputFocus}
         onClick={handleInputClick}
+        onPointerDown={handleTextareaPointerDown}
+        onPointerUp={handleTextareaPointerUp}
         onKeyDown={(event) => {
           const userHandler = (
             inputProps as React.ComponentPropsWithoutRef<"textarea">

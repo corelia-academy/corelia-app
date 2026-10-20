@@ -80,7 +80,7 @@ export function ProjectSocialBlock({
   return (
     <div className={cn("border-t border-border-subtle pt-3", className)}>
       {phosphorDuotone ? (
-        <div className={cn("inline-flex items-center gap-1.5", hearted && "text-rose-600")}>
+        <div className={cn("inline-flex items-center gap-2", hearted && "text-rose-600")}>
           <PhosphorHeart
             className={cn(
               "size-5 cursor-pointer focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
@@ -101,7 +101,9 @@ export function ProjectSocialBlock({
               }
             }}
           />
-          <span className="tabular-nums text-label-medium font-body">{likeCount}</span>
+          <span className="tabular-nums text-body-medium font-body leading-[1.4] text-foreground-subtle">
+            {likeCount}
+          </span>
         </div>
       ) : (
         <Button

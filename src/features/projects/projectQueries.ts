@@ -57,6 +57,7 @@ export function publicProjectDirectoryQueryOptions(
     sectorIds?: string[];
     techStackIds?: string[];
     winnerProjectIds?: string[];
+    likedProjectIds?: string[];
   } = {},
 ) {
   const taxonomyKey = JSON.stringify([
@@ -64,6 +65,7 @@ export function publicProjectDirectoryQueryOptions(
     filters.sectorIds ?? [],
     filters.techStackIds ?? [],
     filters.winnerProjectIds ?? [],
+    ...(filters.likedProjectIds ? [filters.likedProjectIds] : []),
   ]);
   return infiniteQueryOptions({
     queryKey: projectKeys.directory(
