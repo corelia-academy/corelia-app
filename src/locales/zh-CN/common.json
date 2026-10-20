@@ -320,6 +320,7 @@
     "loadMore": "加载更多",
     "emptyTitle": "未找到项目",
     "emptyDescription": "目前没有符合当前筛选条件的公开内容。",
+    "emptyStartDescription": "从一个新项目开始吧。",
     "emptyHackathonDescription": "此视图下暂无公开的黑客松。",
     "emptyCourseDescription": "此视图下暂无公开的课程。",
     "emptyShowcaseDescription": "此视图下暂无公开的展示。",

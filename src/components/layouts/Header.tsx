@@ -4,7 +4,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, NavLink, useLocation } from "react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
-import { BackspaceIcon } from "@phosphor-icons/react";
 import {
   Award,
   GraduationCap,
@@ -507,6 +506,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
             className="relative min-w-0 w-full max-w-[400px]"
           >
             <Input
+              type="search"
               variant="icon-leading"
               value={searchText}
               onChange={(e) => {
@@ -526,20 +526,6 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                   setSearchOpen(false);
                 }
               }}
-              renderTrailingContent={({ disabled }) =>
-                searchText.length > 0 ? (
-                  <button
-                    type="button"
-                    aria-label={t("search.clear")}
-                    disabled={disabled}
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => setSearchText("")}
-                    className="inline-flex size-6 shrink-0 items-center justify-center rounded text-foreground-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  >
-                    <BackspaceIcon size={20} weight="duotone" aria-hidden />
-                  </button>
-                ) : null
-              }
               placeholder={t("search.placeholder")}
               aria-label={t("search.placeholder")}
             />

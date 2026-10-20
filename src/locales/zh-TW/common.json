@@ -320,6 +320,7 @@
     "loadMore": "載入更多",
     "emptyTitle": "找不到專案",
     "emptyDescription": "目前沒有符合目前篩選條件的公開內容。",
+    "emptyStartDescription": "從一個新專案開始吧。",
     "emptyHackathonDescription": "此檢視下尚無公開的黑客松。",
     "emptyCourseDescription": "此檢視下尚無公開的課程。",
     "emptyShowcaseDescription": "此檢視下尚無公開的展示。",

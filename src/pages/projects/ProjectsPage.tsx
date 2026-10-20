@@ -1,14 +1,29 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { ChevronDown, Package, ShieldAlert, X } from "lucide-react";
+import { ChevronDown, ShieldAlert, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { NavLink, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/projects/ProjectCardSkeleton";
 import { Button } from "@/components/ui/button";
+import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItemContent,
+  DropdownMenuList,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSearch,
+  DropdownMenuSelectAll,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { publicHackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
 import {
+  publicProjectCountQueryOptions,
   publicProjectDirectoryQueryOptions,
   publicProjectTeamsQueryOptions,
 } from "@/features/projects/projectQueries";
@@ -35,43 +50,120 @@ function TaxonomyFilter({
   options,
   selected,
   onChange,
+  searchLabel,
+  allLabel,
+  noResultsLabel,
 }: {
   label: string;
   options: FilterOption[];
   selected: string[];
   onChange: (ids: string[]) => void;
+  searchLabel: string;
+  allLabel: string;
+  noResultsLabel: string;
 }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const activeOptions = options.filter((option) => option.active !== false);
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const visibleOptions = activeOptions.filter((option) =>
+    option.name.toLocaleLowerCase().includes(normalizedQuery),
+  );
+  const selectedVisibleCount = visibleOptions.filter((option) =>
+    selected.includes(option.id),
+  ).length;
+  const allVisibleSelected =
+    visibleOptions.length > 0 && selectedVisibleCount === visibleOptions.length;
+  const someVisibleSelected = selectedVisibleCount > 0 && !allVisibleSelected;
+
   if (activeOptions.length === 0) return null;
+
+  function updateVisibleSelection(checked: boolean) {
+    const visibleIds = new Set(visibleOptions.map((option) => option.id));
+    onChange(
+      checked
+        ? Array.from(new Set([...selected, ...visibleIds]))
+        : selected.filter((id) => !visibleIds.has(id)),
+    );
+  }
+
   return (
-    <details className="relative min-w-0 rounded-lg border border-border bg-surface-base">
-      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-3 text-sm font-medium">{label}{selected.length ? <span className="rounded-full bg-primary/10 px-2 text-primary">{selected.length}</span> : null}<ChevronDown className="size-4" /></summary>
-      <div className="scrollbar-design relative z-10 flex max-h-72 flex-col gap-1 overflow-auto border-t border-border p-2 lg:absolute lg:top-full lg:mt-2 lg:w-72 lg:rounded-xl lg:border lg:bg-surface-base lg:shadow-lg">
-        {activeOptions.map((option) => {
-          const checked = selected.includes(option.id);
-          return (
-            <button
-              key={option.id}
-              type="button"
-              aria-pressed={checked}
-              className={cn(
-                "min-h-11 rounded-md border px-3 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                checked
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-surface-base text-foreground hover:bg-surface-raised",
-              )}
-              onClick={() =>
-                onChange(
-                  checked ? selected.filter((id) => id !== option.id) : [...selected, option.id],
-                )
-              }
-            >
-              {option.name}
-            </button>
-          );
-        })}
-      </div>
-    </details>
+    <DropdownMenu
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) setQuery("");
+      }}
+    >
+      <DropdownMenuTrigger
+        type="button"
+        aria-label={label}
+        aria-expanded={open}
+        className="flex min-h-11 w-full min-w-0 items-center justify-between gap-3 rounded-lg border border-input-field-border bg-surface-base px-3 text-left text-body-large text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      >
+        <span className="min-w-0 truncate">{label}</span>
+        <span className="flex shrink-0 items-center gap-2">
+          {selected.length > 0 ? (
+            <span className="rounded-full bg-primary/10 px-2 text-primary" aria-hidden>
+              {selected.length}
+            </span>
+          ) : null}
+          <ChevronDown className="size-4 text-foreground-muted" aria-hidden />
+        </span>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        layout="multiple-list"
+        align="start"
+        className="max-w-[calc(100vw-2rem)]"
+      >
+        <DropdownMenuSearch>
+          <Input
+            type="search"
+            variant="icon-leading"
+            leadingIconClassName="text-dropdown-supporting"
+            statusIcon={null}
+            value={query}
+            onChange={(event) => setQuery(event.currentTarget.value)}
+            placeholder={searchLabel}
+            aria-label={`${searchLabel} ${label}`}
+            controlClassName="h-10 gap-sm rounded-lg border-dropdown-input-border bg-dropdown-surface px-md focus-within:ring-dropdown-focus"
+            className="text-body-large text-dropdown-title placeholder:text-dropdown-supporting"
+          />
+        </DropdownMenuSearch>
+        <DropdownMenuSelectAll
+          checked={allVisibleSelected}
+          indeterminate={someVisibleSelected}
+          disabled={visibleOptions.length === 0}
+          label={allLabel}
+          onCheckedChange={(checked) => updateVisibleSelection(checked === true)}
+        />
+        <DropdownMenuList>
+          {visibleOptions.length > 0 ? (
+            visibleOptions.map((option) => (
+              <DropdownMenuCheckboxItem
+                key={option.id}
+                checked={selected.includes(option.id)}
+                size="compact"
+                onCheckedChange={(checked, eventDetails) => {
+                  eventDetails.cancel();
+                  onChange(
+                    checked
+                      ? [...selected, option.id]
+                      : selected.filter((id) => id !== option.id),
+                  );
+                }}
+              >
+                <DropdownMenuItemContent>{option.name}</DropdownMenuItemContent>
+              </DropdownMenuCheckboxItem>
+            ))
+          ) : (
+            <p className="px-3 py-6 text-center text-body-small text-dropdown-supporting">
+              {noResultsLabel}
+            </p>
+          )}
+        </DropdownMenuList>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -98,6 +190,8 @@ export default function ProjectsPage() {
   const sectorIds = csv(params.get("sectors"));
   const techStackIds = csv(params.get("tech"));
   const sort = sortParam(params.get("sort"));
+  const [hackathonDropdownOpen, setHackathonDropdownOpen] = useState(false);
+  const [hackathonSearch, setHackathonSearch] = useState("");
 
   const hackathonsQuery = useQuery(publicHackathonCatalogQueryOptions(locale));
   const taxonomyQuery = useQuery({ queryKey: ["projects", "taxonomy", locale], queryFn: () => listProjectTaxonomyOptions(locale), staleTime: 5 * 60_000 });
@@ -108,6 +202,14 @@ export default function ProjectsPage() {
     return [...system, ...legacy.filter((item) => !known.has(item.id))];
   };
   const hackathons = useMemo(() => hackathonsQuery.data ?? [], [hackathonsQuery.data]);
+  const visibleHackathons = useMemo(() => {
+    const normalizedSearch = hackathonSearch.trim().toLocaleLowerCase();
+    return normalizedSearch
+      ? hackathons.filter((hackathon) =>
+          hackathon.title.toLocaleLowerCase().includes(normalizedSearch),
+        )
+      : hackathons;
+  }, [hackathons, hackathonSearch]);
   const selectedHackathon = useMemo(
     () =>
       normalizedHackathonSlug
@@ -144,6 +246,7 @@ export default function ProjectsPage() {
     ...directoryOptions,
     enabled: !hackathonParam || Boolean(selectedHackathon),
   });
+  const projectCountQuery = useQuery(publicProjectCountQueryOptions());
   const items = useMemo(
     () => winnerFirst(projectsQuery.data?.pages.flatMap((page) => page.items) ?? [], allWinnerAwards),
     [projectsQuery.data?.pages, allWinnerAwards],
@@ -165,50 +268,194 @@ export default function ProjectsPage() {
   }, [params, setParams]);
 
   const error = projectsQuery.isError || hackathonsQuery.isError ? t("projects.errorDescription") : hackathonParam && hackathonsQuery.isSuccess && !selectedHackathon ? t("projects.errors.hackathonMissing") : null;
+  const hasProjectFilters = Boolean(
+    hackathonParam || trackIds.length || sectorIds.length || techStackIds.length,
+  );
+  const showDirectoryEmpty = !projectsQuery.isPending && !error && items.length === 0;
 
   return (
-    <div className="container-app pb-6 pt-4 sm:py-8">
-      <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
+    <div
+      className={cn(
+        "course-catalog-page container-app pb-8 pt-6 sm:py-8",
+        showDirectoryEmpty && "flex min-h-[calc(100svh-var(--app-header-height))] flex-col",
+      )}
+    >
+      <main
+        className={cn(
+          "course-catalog mx-auto w-full max-w-[1072px]",
+          showDirectoryEmpty && "flex flex-1 flex-col",
+        )}
+      >
+      <header className="mb-6">
         <div>
-        <div className="flex items-center gap-2">
-          <h1 className="text-heading-large font-display text-foreground">{t("projects.title")}</h1>
+          <h1 className="text-heading-large font-display text-foreground">
+            {t("projects.title")}
+            {projectCountQuery.isSuccess ? (
+              <span className="ml-2 text-body-large font-body font-normal text-foreground-subtle">
+                ({projectCountQuery.data})
+              </span>
+            ) : null}
+          </h1>
+          <p className="mt-2 text-body-large text-catalog-subtitle">{t("projects.description")}</p>
         </div>
-        <p className="mt-1 text-sm text-foreground-muted">{t("projects.description")}</p>
-        </div>
+        {/* Temporarily hidden because this action is not present in the Figma design.
         <Button variant="cta" hierarchy="secondary" render={<NavLink to="/account/projects" />} nativeButton={false}>{t("projects.editor.myProjects")}</Button>
+        */}
       </header>
 
-      <section className="mobile-bleed-surface space-y-5 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="text-sm font-medium text-foreground">
-            {t("projects.filters.hackathon")}
-            <select className="mt-2 min-h-11 w-full rounded-md border border-border bg-background px-3" value={selectedHackathon?.slug ?? ""} onChange={(event) => update("hackathon", event.target.value)}>
-              <option value="">{t("projects.filters.allHackathons")}</option>
-              {hackathons.map((hackathon) => <option key={hackathon.id} value={hackathon.slug ?? ""}>{hackathon.title}</option>)}
-            </select>
-          </label>
-          <label className="text-sm font-medium text-foreground">
-            {t("projects.sort.label")}
-            <select className="mt-2 min-h-11 w-full rounded-md border border-border bg-background px-3" value={sort} onChange={(event) => update("sort", event.target.value)}>
-              <option value="newest">{t("projects.sort.newest")}</option>
-              <option value="oldest">{t("projects.sort.oldest")}</option>
-            </select>
-          </label>
+      <section className="course-catalog-filters space-y-5">
+        <div className="grid w-full max-w-[1072px] grid-cols-1 gap-2 xl:grid-cols-[520px_352px_auto] xl:items-center">
+          <DropdownMenu
+            open={hackathonDropdownOpen}
+            onOpenChange={(nextOpen) => {
+              setHackathonDropdownOpen(nextOpen);
+              if (!nextOpen) setHackathonSearch("");
+            }}
+          >
+            <DropdownMenuTrigger
+              type="button"
+              aria-label={t("projects.filters.hackathon")}
+              aria-expanded={hackathonDropdownOpen}
+              className="flex h-10 w-full min-w-0 items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-3 text-left text-body-large text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            >
+              <span className="min-w-0 truncate">
+                {selectedHackathon?.title ?? t("projects.filters.allHackathons")}
+              </span>
+              <ChevronDown className="size-4 shrink-0 text-foreground-muted" aria-hidden />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              layout="multiple-list"
+              align="start"
+              className="w-(--anchor-width) max-w-[calc(100vw-2rem)]"
+            >
+              <DropdownMenuSearch>
+                <Input
+                  type="search"
+                  variant="icon-leading"
+                  leadingIconClassName="text-dropdown-supporting"
+                  statusIcon={null}
+                  value={hackathonSearch}
+                  onChange={(event) => setHackathonSearch(event.currentTarget.value)}
+                  placeholder={t("pageTitles.search")}
+                  aria-label={`${t("pageTitles.search")} ${t("projects.filters.hackathon")}`}
+                  controlClassName="h-10 gap-sm rounded-lg border-dropdown-input-border bg-dropdown-surface px-md focus-within:ring-dropdown-focus"
+                  className="text-body-large text-dropdown-title placeholder:text-dropdown-supporting"
+                />
+              </DropdownMenuSearch>
+              <DropdownMenuList>
+                <DropdownMenuRadioGroup
+                  value={selectedHackathon?.slug ?? ""}
+                  onValueChange={(value) => {
+                    update("hackathon", value);
+                    setHackathonDropdownOpen(false);
+                    setHackathonSearch("");
+                  }}
+                >
+                  <DropdownMenuRadioItem className="text-body-large" value="">
+                    <DropdownMenuItemContent>
+                      {t("projects.filters.allHackathons")}
+                    </DropdownMenuItemContent>
+                  </DropdownMenuRadioItem>
+                  {visibleHackathons.map((hackathon) => (
+                    <DropdownMenuRadioItem
+                      key={hackathon.id}
+                      className="text-body-large"
+                      value={hackathon.slug ?? ""}
+                    >
+                      <DropdownMenuItemContent>{hackathon.title}</DropdownMenuItemContent>
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+                {visibleHackathons.length === 0 ? (
+                  <p className="px-3 py-6 text-center text-body-small text-dropdown-supporting">
+                    {t("search.empty")}
+                  </p>
+                ) : null}
+              </DropdownMenuList>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              type="button"
+              aria-label={t("projects.sort.label")}
+              className="flex h-10 w-full min-w-0 items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-3 text-left text-body-large text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            >
+              <span className="min-w-0 truncate">
+                {sort === "oldest" ? t("projects.sort.oldest") : t("projects.sort.newest")}
+              </span>
+              <ChevronDown className="size-4 shrink-0 text-foreground-muted" aria-hidden />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              layout="multiple-list"
+              align="start"
+              className="w-(--anchor-width) max-w-[calc(100vw-2rem)]"
+            >
+              <DropdownMenuList>
+                <DropdownMenuRadioGroup
+                  value={sort}
+                  onValueChange={(value) => update("sort", value)}
+                >
+                  <DropdownMenuRadioItem className="text-body-large" value="newest">
+                    <DropdownMenuItemContent>{t("projects.sort.newest")}</DropdownMenuItemContent>
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem className="text-body-large" value="oldest">
+                    <DropdownMenuItemContent>{t("projects.sort.oldest")}</DropdownMenuItemContent>
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuList>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          {(hackathonParam || trackIds.length || sectorIds.length || techStackIds.length || sort !== "newest") ? (
+            <Button
+              type="button"
+              variant="cta"
+              hierarchy="tertiary"
+              size="small"
+              className="w-fit justify-self-start"
+              onClick={() => setParams(new URLSearchParams())}
+            >
+              <X className="size-4" />
+              {t("projects.editor.clearFilters")}
+            </Button>
+          ) : null}
         </div>
 
         {selectedHackathon ? (
           <div className="grid gap-3 border-t border-border-subtle pt-4 sm:grid-cols-3">
-            <TaxonomyFilter label={t("projects.filters.tracks")} options={selectedHackathon.tracks ?? []} selected={trackIds} onChange={(ids) => update("tracks", ids)} />
-            <TaxonomyFilter label={t("projects.filters.sectors")} options={filterOptions("sector", selectedHackathon.sectors ?? [])} selected={sectorIds} onChange={(ids) => update("sectors", ids)} />
-            <TaxonomyFilter label={t("projects.filters.techStacks")} options={filterOptions("technology", selectedHackathon.tech_stacks ?? [])} selected={techStackIds} onChange={(ids) => update("tech", ids)} />
+            <TaxonomyFilter
+              label={t("projects.filters.tracks")}
+              options={selectedHackathon.tracks ?? []}
+              selected={trackIds}
+              onChange={(ids) => update("tracks", ids)}
+              searchLabel={t("pageTitles.search")}
+              allLabel={t("projects.filters.all")}
+              noResultsLabel={t("search.empty")}
+            />
+            <TaxonomyFilter
+              label={t("projects.filters.sectors")}
+              options={filterOptions("sector", selectedHackathon.sectors ?? [])}
+              selected={sectorIds}
+              onChange={(ids) => update("sectors", ids)}
+              searchLabel={t("pageTitles.search")}
+              allLabel={t("projects.filters.all")}
+              noResultsLabel={t("search.empty")}
+            />
+            <TaxonomyFilter
+              label={t("projects.filters.techStacks")}
+              options={filterOptions("technology", selectedHackathon.tech_stacks ?? [])}
+              selected={techStackIds}
+              onChange={(ids) => update("tech", ids)}
+              searchLabel={t("pageTitles.search")}
+              allLabel={t("projects.filters.all")}
+              noResultsLabel={t("search.empty")}
+            />
           </div>
         ) : null}
-        {(hackathonParam || trackIds.length || sectorIds.length || techStackIds.length || sort !== "newest") ? <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => setParams(new URLSearchParams())}><X className="size-4" />{t("projects.editor.clearFilters")}</Button> : null}
       </section>
 
-      <div className="mt-6">
+      <div className={cn("mt-6", showDirectoryEmpty && "flex flex-1")}>
         {projectsQuery.isPending && !error ? (
-          <div className="mobile-bleed-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div>
+          <div className="mobile-bleed-grid grid gap-6 sm:grid-cols-2">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div>
         ) : error && items.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-14 text-center" role="alert">
             <ShieldAlert className="size-8 text-foreground-subtle" aria-hidden />
@@ -216,14 +463,21 @@ export default function ProjectsPage() {
             <Button type="button" onClick={() => { void projectsQuery.refetch(); void hackathonsQuery.refetch(); }}>{t("projects.retry")}</Button>
           </div>
         ) : items.length === 0 ? (
-          <div className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base px-4 py-14 text-center shadow-card">
-            <Package className="mx-auto size-8 text-foreground-subtle" aria-hidden />
-            <h2 className="mt-3 text-heading-small font-display text-foreground">{t("projects.emptyTitle")}</h2>
-            <p className="mt-1 text-sm text-foreground-muted">{t("projects.emptyDescription")}</p>
+          <div className="flex flex-1 items-center justify-center py-14 text-center">
+            <EmptyStateIllustration
+              type={hasProjectFilters ? "search" : "empty"}
+              size="medium"
+              title={t(hasProjectFilters ? "search.emptyTitle" : "projects.emptyTitle")}
+              description={t(
+                hasProjectFilters
+                  ? "projects.emptyDescription"
+                  : "projects.emptyStartDescription",
+              )}
+            />
           </div>
         ) : (
           <>
-            <div className={cn("mobile-bleed-grid grid gap-4 transition-opacity sm:grid-cols-2 lg:grid-cols-3", projectsQuery.isPlaceholderData && "opacity-60")} aria-busy={projectsQuery.isPlaceholderData || undefined}>
+            <div className={cn("mobile-bleed-grid grid gap-6 transition-opacity sm:grid-cols-2", projectsQuery.isPlaceholderData && "opacity-60")} aria-busy={projectsQuery.isPlaceholderData || undefined}>
               {items.map(({ project, owner }) => (
                 <ProjectCard
                   systemTaxonomy={systemTaxonomy}
@@ -250,6 +504,7 @@ export default function ProjectsPage() {
           </>
         )}
       </div>
+      </main>
     </div>
   );
 }

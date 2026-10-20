@@ -1,13 +1,14 @@
+import { useState } from "react";
 import { NavLink } from "react-router";
 import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import {
   ArrowSquareOut,
+  BookmarkSimpleIcon as PhosphorBookmark,
   GithubLogo,
   Image as PhosphorImage,
   Presentation as PhosphorPresentation,
   Trophy as PhosphorTrophy,
 } from "@phosphor-icons/react";
-import { ExternalLink, Github, ImageIcon, Presentation, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
@@ -36,7 +37,6 @@ type ProjectCardProps = {
   hearted?: boolean;
   className?: string;
   systemTaxonomy?: ProjectTaxonomyOption[];
-  phosphorDuotone?: boolean;
   variant?: "default" | "hackathon";
 };
 
@@ -52,21 +52,21 @@ export function ProjectCard({
   hearted,
   className,
   systemTaxonomy = [],
-  phosphorDuotone = false,
   variant = "default",
 }: ProjectCardProps) {
   const { t, i18n } = useTranslation("common");
   const isHackathon = variant === "hackathon";
+  const [isSaved, setIsSaved] = useState(false);
   const detailPath = `/projects/${project.slug || project.id}`;
   const logo = getProjectCoverImageUrl(project);
   const createdAt = new Date(project.created_at);
   const publishedDate = Number.isNaN(createdAt.getTime())
     ? project.created_at
     : new Intl.DateTimeFormat(i18n.resolvedLanguage ?? i18n.language, {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      }).format(createdAt);
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(createdAt);
   const technologies = projectTaxonomyNames(project.hackathon_tech_stack_ids ?? [], project.custom_tech_stack_names ?? [], systemTaxonomy.filter((item) => item.kind === "technology"), taxonomy?.tech_stacks ?? []);
   const awards = taxonomy?.winner_awards?.filter((award) => award.project_id === project.id).sort((a, b) => a.sort_order - b.sort_order) ?? [];
   const ownerName = ownerLabel?.trim() || (ownerHandle ? `@${ownerHandle}` : t("projects.editor.builder"));
@@ -91,11 +91,15 @@ export function ProjectCard({
       })),
   ];
   const visiblePeople = people.slice(0, 3);
-  const actions = [
-    { href: project.demo_url, label: t("projects.detail.demo"), icon: ExternalLink, phosphorIcon: ArrowSquareOut },
-    { href: project.repo_url, label: t("projects.detail.repo"), icon: Github, phosphorIcon: GithubLogo },
-    { href: project.slide_url, label: t("projects.detail.slides"), icon: Presentation, phosphorIcon: PhosphorPresentation },
-  ].filter((item) => item.href);
+  const actionItems = {
+    demo: { href: project.demo_url, label: t("projects.detail.demo"), icon: ArrowSquareOut },
+    repo: { href: project.repo_url, label: t("projects.detail.repo"), icon: GithubLogo },
+    slides: { href: project.slide_url, label: t("projects.detail.slides"), icon: PhosphorPresentation },
+  };
+  const actions = (isHackathon
+    ? [actionItems.demo, actionItems.repo, actionItems.slides]
+    : [actionItems.repo, actionItems.slides, actionItems.demo]
+  ).filter((item) => item.href);
   const peopleContent = people.length === 1 ? (
     <div className="flex min-w-0 items-center gap-2">
       <UserAvatar
@@ -105,7 +109,7 @@ export function ProjectCard({
         avatarConfig={ownerAvatarConfig}
         alt={ownerName}
         fallback={ownerName.charAt(0).toUpperCase()}
-        size={isHackathon ? "Xsmall" : undefined}
+        size="Xsmall"
       />
       {ownerHandle ? (
         <NavLink to={`/@${ownerHandle}`} className="min-w-0 truncate hover:underline">
@@ -126,7 +130,7 @@ export function ProjectCard({
             avatarConfig={person.avatarConfig}
             alt={person.label}
             fallback={person.label.charAt(0).toUpperCase()}
-            size={isHackathon ? "Xsmall" : undefined}
+            size="Xsmall"
           />
         );
         return person.href ? (
@@ -152,15 +156,15 @@ export function ProjectCard({
   const awardContent = awards.length ? (
     <div className={cn("mt-4 flex flex-wrap gap-1.5", isHackathon && "mt-2")}>
       {awards.map((award) => <span key={award.id} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-label-small font-body text-primary">
-        {phosphorDuotone ? <PhosphorTrophy className="size-3" weight="duotone" /> : <Trophy className="size-3" />}
+        <PhosphorTrophy className="size-3" weight="duotone" />
         {award.label || t("projects.editor.winner")}
       </span>)}
     </div>
   ) : null;
-  const renderActions = (compact = false) => actions.length ? (
+  const renderActions = (compact = false, directoryCard = false) => actions.length ? (
     <div className={compact ? "shrink-0" : "mt-auto pt-4"}>
-      <div className={cn("flex gap-1", compact ? "justify-end" : "border-t border-border-subtle pt-4")}>
-        {actions.map(({ href, label, icon: Icon, phosphorIcon: PhosphorIcon }) => (
+      <div className={cn("flex gap-1", compact ? "justify-end" : "border-t border-border-subtle pt-4", directoryCard && "gap-4")}>
+        {actions.map(({ href, label, icon: Icon }) => (
           <a
             key={label}
             href={href!}
@@ -171,9 +175,10 @@ export function ProjectCard({
             className={cn(
               "flex size-10 items-center justify-center rounded-lg border border-border-subtle hover:bg-surface-raised",
               compact && "border-0",
+              directoryCard && "size-5 rounded-none p-0 hover:bg-transparent hover:text-foreground-muted",
             )}
           >
-            {phosphorDuotone ? <PhosphorIcon className="size-4" weight="duotone" /> : <Icon className="size-4" />}
+            <Icon className={cn("size-4", directoryCard && "size-5")} weight="duotone" />
           </a>
         ))}
       </div>
@@ -183,96 +188,98 @@ export function ProjectCard({
   return (
     <article
       className={cn(
-        "group relative flex h-full min-w-0 flex-col rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card transition-shadow hover:border-primary/40 hover:shadow-md",
-        isHackathon && "h-auto min-h-60 rounded-lg p-4 shadow-none hover:shadow-none",
+        "motion-hover-card group relative flex h-full min-w-0 flex-col border border-border bg-surface-base shadow-card",
+        isHackathon
+          ? "h-auto min-h-60 rounded-lg p-4 shadow-none hover:shadow-none"
+          : "min-h-60 rounded-lg p-4",
         className,
       )}
     >
-      <div className={cn("flex items-start justify-between gap-3", isHackathon && "gap-2")}>
+      <div className={cn("flex items-start justify-between gap-4", isHackathon && "gap-2")}>
         <NavLink
           to={detailPath}
           tabIndex={-1}
           aria-hidden="true"
           className={cn(
-            "flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border-subtle bg-surface-raised",
-            isHackathon && "size-12 rounded-full",
+            "flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-subtle bg-surface-raised",
           )}
         >
           {logo ? (
             <img src={optimizedImageUrl(logo, { width: 56, resize: "contain" })} srcSet={optimizedImageSrcSet(logo, 56, { resize: "contain" })} decoding="async" alt="" className="size-full object-contain" loading="lazy" />
-          ) : phosphorDuotone ? (
-            <PhosphorImage className="size-7 text-foreground-subtle" weight="duotone" />
           ) : (
-            <ImageIcon className="size-7 text-foreground-subtle" />
+            <PhosphorImage className="size-7 text-foreground-subtle" weight="duotone" />
           )}
         </NavLink>
-        {isHackathon ? (
-          <div className="min-w-0 flex-1">
-            <h2 className="line-clamp-2 break-words text-lg font-display font-medium text-foreground">
-              <NavLink
-                to={detailPath}
-                className="rounded-sm hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
-              >
-                {project.title}
-              </NavLink>
-            </h2>
-            <p className="mt-0.5 text-label-small font-body text-foreground-subtle">
-              {t("projects.card.publishedAt", { date: publishedDate })}
-            </p>
-          </div>
-        ) : null}
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-lg font-display font-medium text-foreground">
+            <NavLink
+              to={detailPath}
+              className="rounded-sm hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
+            >
+              {project.title}
+            </NavLink>
+          </h2>
+          <p className="mt-0.5 text-label-small font-body text-foreground-subtle">
+            {t("projects.card.publishedAt", { date: publishedDate })}
+          </p>
+        </div>
         <ProjectSocialBlock
           projectId={project.id}
           likeCount={Number(project.like_count ?? 0)}
           hearted={hearted}
-          phosphorDuotone={phosphorDuotone}
-          className={cn("border-0 pt-0", isHackathon && "shrink-0")}
+          phosphorDuotone
+          className="shrink-0 border-0 pt-0"
         />
       </div>
-      {!isHackathon ? (
-        <h2 className="mt-4 line-clamp-2 break-words text-heading-small font-display text-foreground">
-          <NavLink
-            to={detailPath}
-            className="rounded-sm hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
-          >
-            {project.title}
-          </NavLink>
-        </h2>
-      ) : null}
-      <p className={cn("mt-2 min-h-16 line-clamp-3 text-body-medium font-body text-foreground-muted", isHackathon && "mt-6 min-h-0 text-body-medium")}>
+      <p className={cn("mt-6 min-h-[35px] line-clamp-2 text-body-medium font-body text-foreground-muted", isHackathon && "min-h-0")}>
         {project.summary || t("projects.card.noSummary")}
       </p>
-      {isHackathon ? (
-        technologies.length ? (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {technologies.map((technology) => (
-              <Chip key={technology} size="xsmall" shape="circle">
-                {technology}
-              </Chip>
-            ))}
-          </div>
-        ) : null
-      ) : (
-        <dl className="mt-5 space-y-3 text-body-small font-body">
-          {technologies.length ? (
-            <div className="flex items-start gap-3">
-              <dt className="w-20 shrink-0 text-label-small font-body text-foreground-subtle">{t("projects.filters.techStacks")}</dt>
-              <dd className="min-w-0 font-medium">{technologies.join(", ")}</dd>
-            </div>
-          ) : null}
-          <div className="flex items-center gap-3">
-            <dt className="w-20 shrink-0 text-label-small font-body text-foreground-subtle">{t("projects.editor.builder")}</dt>
-            <dd className="min-w-0 font-medium">{peopleContent}</dd>
-          </div>
-        </dl>
-      )}
+      {technologies.length ? (
+        <div className={cn("mt-3 flex flex-wrap gap-1.5", !isHackathon && "gap-1")}>
+          {technologies.map((technology) => (
+            <Chip key={technology} size="xsmall" shape="circle">
+              {technology}
+            </Chip>
+          ))}
+        </div>
+      ) : null}
       {awardContent}
       {isHackathon ? (
         <div className="mt-auto flex min-w-0 items-center justify-between gap-2 pt-6 text-body-small font-body">
           <div className="min-w-0">{peopleContent}</div>
           {renderActions(true)}
         </div>
-      ) : renderActions()}
+      ) : (
+        <div className="mt-auto flex min-w-0 items-center justify-between gap-3 pt-3 text-body-small font-body">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="shrink-0 text-foreground-subtle">{t("projects.byPrefix")}</span>
+            {peopleContent}
+          </div>
+          <div className="flex shrink-0 items-center gap-3">
+            {renderActions(true, true)}
+            {actions.length ? <span className="h-5 w-px bg-border-subtle" aria-hidden /> : null}
+            <PhosphorBookmark
+              className={cn(
+                "size-5 shrink-0 cursor-pointer text-foreground focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                !isSaved && "hover:text-foreground-muted",
+                isSaved && "fill-current text-primary [&>path:first-child]:opacity-100",
+              )}
+              weight="duotone"
+              role="button"
+              tabIndex={0}
+              aria-label={t("actions.save")}
+              aria-pressed={isSaved}
+              onClick={() => setIsSaved((current) => !current)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setIsSaved((current) => !current);
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
     </article>
   );
 }

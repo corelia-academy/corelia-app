@@ -1,7 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { readAccountConnectionError } from "@/lib/accountConnectionCallback";
 import { useQuery } from "@tanstack/react-query";
-import { Github, Wallet, Mail, CheckCircle2 } from "lucide-react";
+import { GithubLogo } from "@phosphor-icons/react";
+import { Wallet, Mail, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -128,7 +129,7 @@ export function ConnectedAccountsCard() {
     <h2 className="font-display text-heading-medium">{t("xp.connections.title")}</h2>
     {callbackError ? <p role="alert" className="mt-3 rounded-lg border border-destructive p-3 text-sm text-destructive">{t(callbackError.messageKey)}</p> : null}
     <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border-subtle p-3">
-      <div className="flex items-center gap-2"><Github className="size-5" aria-hidden /><div><span className="font-medium">GitHub</span><p className="break-all text-xs text-foreground-muted">{identities.isSuccess ? githubIdentity ? githubIdentity.identity_data?.user_name || githubIdentity.identity_data?.email : t("xp.connections.notConnected") : null}</p></div></div>
+      <div className="flex items-center gap-2"><GithubLogo className="size-5" weight="duotone" aria-hidden /><div><span className="font-medium">GitHub</span><p className="break-all text-xs text-foreground-muted">{identities.isSuccess ? githubIdentity ? githubIdentity.identity_data?.user_name || githubIdentity.identity_data?.email : t("xp.connections.notConnected") : null}</p></div></div>
       {identities.isPending ? <span className="text-sm text-foreground-muted">{t("xp.connections.loading")}</span> : identities.isError ? <span className="text-sm text-destructive">{t("xp.connections.loadFailed")}</span> : githubIdentity ? <span className="text-sm text-primary">{t("xp.connections.connected")}</span> : <button type="button" disabled={connecting} onClick={() => void connectIdentity("github")} className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">{connecting ? t("xp.connections.loading") : t("xp.connections.connectGithub")}</button>}
     </div>
     <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border-subtle p-3">

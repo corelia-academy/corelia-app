@@ -320,6 +320,7 @@
     "loadMore": "Tải thêm",
     "emptyTitle": "Chưa tìm thấy dự án",
     "emptyDescription": "Chưa có nội dung public nào phù hợp với bộ lọc hiện tại.",
+    "emptyStartDescription": "Bắt đầu với một dự án mới.",
     "emptyHackathonDescription": "Chưa có hackathon public nào phù hợp để hiển thị.",
     "emptyCourseDescription": "Chưa có khóa học public nào phù hợp để hiển thị.",
     "emptyShowcaseDescription": "Chưa có showcase public nào phù hợp để hiển thị.",

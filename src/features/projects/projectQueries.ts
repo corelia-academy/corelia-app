@@ -1,6 +1,7 @@
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 
 import {
+  countPublicProjects,
   getProjectBySlugOrId,
   listPublicProjects,
   type PublicProjectSort,
@@ -20,6 +21,7 @@ export const projectKeys = {
     hackathonId = "all",
     taxonomyKey = "all",
   ) => [...projectKeys.all, "directory", locale, source, sort, hackathonId, taxonomyKey] as const,
+  publicCount: () => [...projectKeys.all, "public-count"] as const,
   detail: (projectId: string, locale: string) =>
     [...projectKeys.all, "detail", projectId, locale] as const,
   teams: (projectIds: string[]) => [...projectKeys.all, "teams", ...projectIds] as const,
@@ -31,6 +33,15 @@ export function publicProjectTeamsQueryOptions(projectIds: string[]) {
     queryKey: projectKeys.teams(ids),
     queryFn: () => listPublicProjectTeams(ids),
     enabled: ids.length > 0,
+    staleTime: 60_000,
+    meta: publicMeta,
+  });
+}
+
+export function publicProjectCountQueryOptions() {
+  return queryOptions({
+    queryKey: projectKeys.publicCount(),
+    queryFn: countPublicProjects,
     staleTime: 60_000,
     meta: publicMeta,
   });

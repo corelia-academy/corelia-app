@@ -23,6 +23,8 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItemContent,
+  DropdownMenuList,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
@@ -439,7 +441,7 @@ export function HackathonProjectsTab() {
               {t("public.projects.description")}
             </p>
           </div>
-          <div className="grid gap-2 sm:grid-cols-[minmax(0,520px)_minmax(0,1fr)] sm:items-center">
+          <div className="grid w-full max-w-[880px] grid-cols-1 gap-2 2xl:grid-cols-[520px_352px] 2xl:items-center">
             <Input
               type="search"
               variant="icon-leading"
@@ -465,24 +467,30 @@ export function HackathonProjectsTab() {
                   aria-hidden
                 />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuRadioGroup
-                  value={sort}
-                  onValueChange={(value) => {
-                    if (value !== "newest" && value !== "oldest") return;
-                    const next = new URLSearchParams(params);
-                    if (value === "oldest") next.set("sort", "oldest");
-                    else next.delete("sort");
-                    setParams(next, { preventScrollReset: true });
-                  }}
-                >
-                  <DropdownMenuRadioItem className="text-body-large" value="newest">
-                    {t("public.projects.newest")}
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem className="text-body-large" value="oldest">
-                    {t("public.projects.oldest")}
-                  </DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
+              <DropdownMenuContent
+                layout="multiple-list"
+                align="start"
+                className="w-(--anchor-width) max-w-[calc(100vw-2rem)]"
+              >
+                <DropdownMenuList>
+                  <DropdownMenuRadioGroup
+                    value={sort}
+                    onValueChange={(value) => {
+                      if (value !== "newest" && value !== "oldest") return;
+                      const next = new URLSearchParams(params);
+                      if (value === "oldest") next.set("sort", "oldest");
+                      else next.delete("sort");
+                      setParams(next, { preventScrollReset: true });
+                    }}
+                  >
+                    <DropdownMenuRadioItem className="text-body-large" value="newest">
+                      <DropdownMenuItemContent>{t("public.projects.newest")}</DropdownMenuItemContent>
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem className="text-body-large" value="oldest">
+                      <DropdownMenuItemContent>{t("public.projects.oldest")}</DropdownMenuItemContent>
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuList>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -490,7 +498,7 @@ export function HackathonProjectsTab() {
 
         {query.isPending ? <div className="grid gap-6 sm:grid-cols-2">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div> : query.isError ? <div role="alert" className="py-8 text-center"><p>{t("detail.errors.loadFailed")}</p><Button className="mt-3" onClick={() => void query.refetch()}>{t("projects.retry", { ns: "common" })}</Button></div> : filteredProjects.length === 0 ? <EmptyTab icon={<Package className="size-6" weight="duotone" />} title={t("public.empty.projects")} /> : (
           <>
-            <div className="grid gap-6 sm:grid-cols-2">{filteredProjects.map(({ project, owner }) => <ProjectCard key={project.id} variant="hackathon" phosphorDuotone systemTaxonomy={systemTaxonomy} hearted={hearts.data?.has(project.id) ?? false} taxonomy={contest} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} ownerAvatarUrl={owner?.avatar_url} ownerAvatarSeed={owner?.avatar_seed} ownerAvatarConfig={owner?.avatar_config} teamMembers={teamsQuery.data?.[project.id] ?? []} />)}</div>
+            <div className="grid gap-6 sm:grid-cols-2">{filteredProjects.map(({ project, owner }) => <ProjectCard key={project.id} variant="hackathon" systemTaxonomy={systemTaxonomy} hearted={hearts.data?.has(project.id) ?? false} taxonomy={contest} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} ownerAvatarUrl={owner?.avatar_url} ownerAvatarSeed={owner?.avatar_seed} ownerAvatarConfig={owner?.avatar_config} teamMembers={teamsQuery.data?.[project.id] ?? []} />)}</div>
             {query.hasNextPage ? <div className="flex justify-center"><Button type="button" variant="cta" hierarchy="secondary" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>{query.isFetchingNextPage ? t("public.projects.loading") : t("public.projects.loadMore")}</Button></div> : null}
           </>
         )}

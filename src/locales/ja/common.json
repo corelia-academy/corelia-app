@@ -320,6 +320,7 @@
     "loadMore": "さらに読み込む",
     "emptyTitle": "プロジェクトが見つかりません",
     "emptyDescription": "現在のフィルターに一致する公開コンテンツはまだありません。",
+    "emptyStartDescription": "新しいプロジェクトを始めましょう。",
     "emptyHackathonDescription": "この表示で利用できる公開ハッカソンはまだありません。",
     "emptyCourseDescription": "この表示で利用できる公開コースはまだありません。",
     "emptyShowcaseDescription": "この表示で利用できる公開ショーケースはまだありません。",

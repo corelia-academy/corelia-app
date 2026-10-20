@@ -4,10 +4,10 @@ import { toast } from "sonner";
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink, useNavigate, useParams } from "react-router";
+import { GithubLogo } from "@phosphor-icons/react";
 import {
   Share2,
   ExternalLink,
-  Github,
   ImageIcon,
   Package,
   PlayCircle,
@@ -202,7 +202,7 @@ export default function ProjectDetailPage() {
           label: t("projects.detail.repo"),
           href: project.repo_url,
           external: true,
-          icon: Github,
+          icon: GithubLogo,
         }
       : null,
     project.slide_url
@@ -320,11 +320,11 @@ export default function ProjectDetailPage() {
           {project.progress ? <section className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="text-heading-small font-display text-foreground">{t("projects.editor.progress")}</h2><div className="mt-4 break-words"><Markdown content={project.progress} /></div></section> : null}
           {href && sourceQuery.data ? <NavLink to={href} className="flex flex-col gap-4 rounded-2xl border border-border-subtle bg-surface-base p-5 hover:border-primary/40 sm:flex-row">{sourceQuery.data.cover_image_url ? <img src={optimizedImageUrl(sourceQuery.data.cover_image_url, { width: 144 })} srcSet={optimizedImageSrcSet(sourceQuery.data.cover_image_url, 144)} alt="" className="h-24 w-full rounded-lg object-cover sm:w-36" /> : null}<div className="min-w-0"><p className="text-label-small font-body uppercase tracking-wide text-foreground-muted">{t("projects.editor.hackathon")}</p><h2 className="mt-2 text-title-large font-display">{sourceQuery.data.title}</h2><p className="mt-1 line-clamp-2 text-body-medium font-body text-foreground-muted">{sourceQuery.data.short_description || sourceQuery.data.tagline}</p></div></NavLink> : null}
         </Tabs.Panel>
-        {resourceActions.length ? <Tabs.Panel value="resources" className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="text-heading-small font-display text-foreground">{t("projects.editor.links")}</h2><div className="mt-5 space-y-3">{resourceActions.length ? resourceActions.map(action => action ? <a key={action.key} href={action.href} target="_blank" rel="noreferrer" className="flex min-w-0 items-center gap-3 rounded-xl border border-border p-4 hover:bg-surface-raised"><action.icon className="size-5 shrink-0 text-primary" /><span className="min-w-0"><span className="block text-cta-medium font-body">{action.label}</span><span className="mt-1 block truncate text-body-small font-body text-foreground-muted">{action.href}</span></span><ExternalLink className="ml-auto size-4 shrink-0" /></a> : null) : <p className="text-body-medium font-body text-foreground-muted">{t("projects.editor.noResources")}</p>}</div></Tabs.Panel> : null}
+        {resourceActions.length ? <Tabs.Panel value="resources" className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"><h2 className="text-heading-small font-display text-foreground">{t("projects.editor.links")}</h2><div className="mt-5 space-y-3">{resourceActions.length ? resourceActions.map(action => action ? <a key={action.key} href={action.href} target="_blank" rel="noreferrer" className="flex min-w-0 items-center gap-3 rounded-xl border border-border p-4 hover:bg-surface-raised">{action.key === "repo" ? <GithubLogo className="size-5 shrink-0 text-primary" weight="duotone" aria-hidden /> : <action.icon className="size-5 shrink-0 text-primary" aria-hidden />}<span className="min-w-0"><span className="block text-cta-medium font-body">{action.label}</span><span className="mt-1 block truncate text-body-small font-body text-foreground-muted">{action.href}</span></span><ExternalLink className="ml-auto size-4 shrink-0" /></a> : null) : <p className="text-body-medium font-body text-foreground-muted">{t("projects.editor.noResources")}</p>}</div></Tabs.Panel> : null}
       </Tabs.Root>
       <aside className="min-w-0 space-y-5 lg:sticky lg:top-24">
         <section className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base p-5">
-          {resourceActions.length ? <div className="flex flex-wrap gap-2">{resourceActions.map(action => action ? <Button key={action.key} variant="cta" hierarchy="secondary" size="small" render={<a href={action.href} target="_blank" rel="noreferrer" />} nativeButton={false}><action.icon className="size-4" />{action.label}</Button> : null)}</div> : null}
+          {resourceActions.length ? <div className="flex flex-wrap gap-2">{resourceActions.map(action => action ? <Button key={action.key} variant="cta" hierarchy="secondary" size="small" render={<a href={action.href} target="_blank" rel="noreferrer" />} nativeButton={false}>{action.key === "repo" ? <GithubLogo className="size-4" weight="duotone" aria-hidden /> : <action.icon className="size-4" aria-hidden />}{action.label}</Button> : null)}</div> : null}
           <div className={resourceActions.length ? "mt-5 border-t border-border-subtle pt-4" : ""}><p className="text-label-small font-body text-foreground-muted">{t("projects.editor.updated")}</p><time className="mt-1 block text-body-medium font-body" dateTime={project.updated_at}>{new Intl.DateTimeFormat(locale,{dateStyle:"medium"}).format(new Date(project.updated_at))}</time></div>
         </section>
         {taxonomy.some(group=>group.values.length) ? <section className="mobile-bleed-surface space-y-5 rounded-2xl border border-border-subtle bg-surface-base p-5">{taxonomy.filter(group=>group.values.length).map(group=><div key={group.label}><h2 className="text-label-small font-body text-foreground-muted">{group.label}</h2><div className="mt-2 flex flex-wrap gap-2">{group.values.map(option=><span key={option.id} className="rounded-full bg-surface-raised px-3 py-1.5 text-body-small font-body">{option.name}</span>)}</div></div>)}</section> : null}

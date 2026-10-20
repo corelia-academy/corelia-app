@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
-import { ChevronDown, X } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItemContent,
+  DropdownMenuList,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
@@ -265,22 +267,12 @@ export default function Contests() {
           <div className="course-catalog-filters mt-6 grid grid-cols-1 gap-3 xl:grid-cols-[520px_352px] xl:gap-2">
             <div className="min-w-0">
               <Input
-                type="text"
+                type="search"
                 variant="icon-leading"
                 value={search}
                 onChange={(event) => setSearch(event.currentTarget.value)}
                 placeholder={t("catalog.searchPlaceholder")}
                 aria-label={t("catalog.searchPlaceholder")}
-                renderTrailingContent={() => search ? (
-                  <button
-                    type="button"
-                    aria-label={commonT("search.clear")}
-                    onClick={() => setSearch("")}
-                    className="flex size-8 items-center justify-center rounded-full text-foreground-muted hover:bg-surface-raised hover:text-foreground"
-                  >
-                    <X className="size-4" aria-hidden />
-                  </button>
-                ) : null}
               />
             </div>
 
@@ -300,31 +292,34 @@ export default function Contests() {
                 <ChevronDown className="size-4 shrink-0 text-foreground-muted" aria-hidden />
               </DropdownMenuTrigger>
               <DropdownMenuContent
+                layout="multiple-list"
                 align="start"
-                className="min-w-0 max-w-[calc(100vw-2rem)]"
+                className="w-(--anchor-width) max-w-[calc(100vw-2rem)]"
               >
-                <DropdownMenuRadioGroup
-                  value={sort}
-                  onValueChange={(value) => {
-                    if (
-                      value === "newest" ||
-                      value === "oldest" ||
-                      value === "deadlineSoonest"
-                    ) {
-                      setSort(value);
-                    }
-                  }}
-                >
-                  <DropdownMenuRadioItem className="text-body-large" value="newest">
-                    {commonT("projects.sort.newest")}
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem className="text-body-large" value="oldest">
-                    {commonT("projects.sort.oldest")}
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem className="text-body-large" value="deadlineSoonest">
-                    {t("catalog.sort.deadlineSoonest")}
-                  </DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
+                <DropdownMenuList>
+                  <DropdownMenuRadioGroup
+                    value={sort}
+                    onValueChange={(value) => {
+                      if (
+                        value === "newest" ||
+                        value === "oldest" ||
+                        value === "deadlineSoonest"
+                      ) {
+                        setSort(value);
+                      }
+                    }}
+                  >
+                    <DropdownMenuRadioItem className="text-body-large" value="newest">
+                      <DropdownMenuItemContent>{commonT("projects.sort.newest")}</DropdownMenuItemContent>
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem className="text-body-large" value="oldest">
+                      <DropdownMenuItemContent>{commonT("projects.sort.oldest")}</DropdownMenuItemContent>
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem className="text-body-large" value="deadlineSoonest">
+                      <DropdownMenuItemContent>{t("catalog.sort.deadlineSoonest")}</DropdownMenuItemContent>
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuList>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

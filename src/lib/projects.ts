@@ -506,6 +506,16 @@ export async function listPublicProjects(
   };
 }
 
+export async function countPublicProjects(): Promise<number> {
+  const { count, error } = await supabase
+    .from("projects")
+    .select("id", { count: "exact", head: true })
+    .eq("visibility", "public");
+
+  if (error) throw new Error(error.message);
+  return count ?? 0;
+}
+
 async function listDirectoryProjectEntries(
   uiLocale?: string | null,
 ): Promise<PublicProjectEntry[]> {

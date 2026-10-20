@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { NavLink, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Search, ShieldAlert } from "lucide-react";
-import { BackspaceIcon, FileText, TimerIcon } from "@phosphor-icons/react";
+import { FileText, TimerIcon } from "@phosphor-icons/react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -170,25 +170,12 @@ export default function SearchPage() {
         }}
       >
         <Input
+          type="search"
           variant="icon-leading"
           value={draftQuery}
           onChange={(event) => setDraftQuery(event.target.value)}
           autoFocus={!q}
           enterKeyHint="search"
-          renderTrailingContent={({ disabled }) =>
-            draftQuery.length > 0 ? (
-              <button
-                type="button"
-                aria-label={t("search.clear")}
-                disabled={disabled}
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => setDraftQuery("")}
-                className="inline-flex size-6 shrink-0 items-center justify-center rounded text-foreground-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-              >
-                <BackspaceIcon size={20} weight="duotone" aria-hidden />
-              </button>
-            ) : null
-          }
           placeholder={t("search.placeholder")}
           aria-label={t("search.placeholder")}
         />

@@ -3,9 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { getPublicProfileById } from "@/lib/profile";
 import { parseCourseInstructors } from "@/features/learning/courseInstructors";
 import type { CourseInstructorRef } from "@/features/learning/types";
+import { GithubLogo } from "@phosphor-icons/react";
 import {
   Globe,
-  Github,
   Linkedin,
   Twitter,
   Youtube,
@@ -37,7 +37,7 @@ function initials(name: string | null): string {
 function SocialIcon({ platform }: { platform: InstructorSocialPlatform }) {
   switch (platform) {
     case "github":
-      return <Github className="size-4" aria-hidden />;
+      return <GithubLogo className="size-4" weight="duotone" aria-hidden />;
     case "linkedin":
       return <Linkedin className="size-4" aria-hidden />;
     case "twitter":
