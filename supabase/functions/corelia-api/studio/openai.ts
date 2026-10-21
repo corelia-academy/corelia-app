@@ -20,7 +20,7 @@ export interface SubmitRequest {
 export type PollResult =
   | { state: "running" }
   | { state: "completed"; model: string; text: string; usage: Record<string, unknown> | null }
-  | { state: "failed"; error: string };
+  | { state: "failed"; error: string; model?: string; usage?: Record<string, unknown> | null };
 
 export class ProviderError extends Error {
   constructor(message: string, readonly status: number) {
@@ -73,6 +73,11 @@ interface ResponseBody {
   incomplete_details?: { reason?: string } | null;
 }
 
+/** An incomplete or failed response can still have consumed tokens, so its cost is kept. */
+function billed(body: ResponseBody): { model?: string; usage?: Record<string, unknown> } {
+  return { ...(body.model ? { model: body.model } : {}), ...(body.usage ? { usage: body.usage } : {}) };
+}
+
 export function readResponse(body: ResponseBody): PollResult {
   const status = body.status ?? "";
   if (status === "queued" || status === "in_progress") return { state: "running" };
@@ -86,9 +91,9 @@ export function readResponse(body: ResponseBody): PollResult {
     return { state: "completed", model: body.model, text, usage: body.usage ?? null };
   }
   if (status === "incomplete") {
-    return { state: "failed", error: `incomplete: ${body.incomplete_details?.reason ?? "unknown"}` };
+    return { state: "failed", error: `incomplete: ${body.incomplete_details?.reason ?? "unknown"}`, ...billed(body) };
   }
-  return { state: "failed", error: `${status || "unknown status"}: ${body.error?.message ?? "no error message"}` };
+  return { state: "failed", error: `${status || "unknown status"}: ${body.error?.message ?? "no error message"}`, ...billed(body) };
 }
 
 /** Returns null when the provider could not be reached; the next tick polls again. */

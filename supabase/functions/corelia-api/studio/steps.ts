@@ -1,3 +1,14 @@
+import { LESSONS_PER_TICK, planLessons, type LessonAction, type LessonGeneration } from "./lesson_flow.ts";
+import { acceptLessonReview, LESSON_REVIEW_SCHEMA } from "./lesson_review.ts";
+import {
+  acceptLesson,
+  buildLessonInput,
+  buildLessonReviewInput,
+  LESSON_SCHEMA,
+  lessonTools,
+  reviewTools,
+  type LessonContext,
+} from "./lessons.ts";
 import { PROMPTS, promptVersion, type AgentRole, type PromptKey } from "./prompts.ts";
 
 export const STEP_ORDER = [
@@ -57,8 +68,9 @@ export function agentKeyEnv(role: AgentRole): string {
   return `CORELIA_STUDIO_${role}_${AGENT_NAME[role]}_OPENAI_API_KEY`;
 }
 
-/** Lesson formats the Corelia app can render and validate for ai_generated courses. */
-export const PLATFORM_FORMATS = ["video", "article", "quiz", "code_exercise", "practice"] as const;
+export { PLATFORM_FORMAT_GUIDE, PLATFORM_FORMATS } from "./formats.ts";
+import { PLATFORM_FORMAT_GUIDE, PLATFORM_FORMATS } from "./formats.ts";
+import { canRetry, roundFailures, type RoundFailures } from "./retry.ts";
 
 export const MAX_RUN_MS = 24 * 60 * 60 * 1000;
 export const SUBMIT_STALE_MS = 10 * 60 * 1000;
@@ -71,6 +83,10 @@ export interface RunContext {
   outputs: Partial<Record<StepKey, unknown>>;
   /** Current UTC date (YYYY-MM-DD). Models do not know it, so source check dates come from here. */
   today: string;
+  /** Review feedback the curriculum is being revised against; null when it is not being revised. */
+  revision: CurriculumRevision | null;
+  /** Draft/review state of the lesson being written or reviewed; set only when a lesson id is given. */
+  lesson?: LessonContext | null;
 }
 
 export type Acceptance = { ok: true; summary: string } | { ok: false; reason: string };
@@ -85,8 +101,10 @@ export interface StepSpec {
   maxAttempts: number;
   tools?: Record<string, unknown>[];
   schema: Record<string, unknown>;
-  buildInput(ctx: RunContext): Record<string, unknown>;
-  accept(output: unknown, ctx: RunContext): Acceptance;
+  /** Steps that run once per curriculum lesson (A5) pass the lesson id to the three functions below. */
+  buildInput(ctx: RunContext, lessonId?: string): Record<string, unknown>;
+  accept(output: unknown, ctx: RunContext, lessonId?: string): Acceptance | Promise<Acceptance>;
+  lessonTools?(lessonId: string, ctx: RunContext): Record<string, unknown>[] | undefined;
 }
 
 const str = { type: "string" };
@@ -154,13 +172,13 @@ const RESEARCH_SCHEMA = object({
 });
 
 /**
- * Role of a lesson in the learning sequence (Learning Principles): diagnostic start with remedial
- * material for missing prerequisites, worked example then reduced support, retrieval of earlier
- * modules, and a final cumulative check.
+ * Role of a lesson in the learning sequence (Learning Principles): a self-check diagnostic start
+ * whose resources are the review material for missing prerequisites, worked example then reduced
+ * support, retrieval of earlier modules, and a final cumulative check. The app has no optional
+ * lesson, so every lesson counts toward completion; there is no separate remedial lesson.
  */
 export const LESSON_PURPOSES = [
   "diagnostic",
-  "remedial",
   "explanation",
   "worked_example",
   "guided_practice",
@@ -187,9 +205,9 @@ const CURRICULUM_SCHEMA = object({
           description: str,
           type: { type: "string", enum: [...PLATFORM_FORMATS] },
           purpose: { type: "string", enum: [...LESSON_PURPOSES] },
-          required: { type: "boolean" },
           outcome_ids: strList,
           prerequisites: strList,
+          prerequisite_lesson_ids: strList,
           completion_rule: str,
           pass_threshold: { type: ["number", "null"] },
           review_lesson_ids: strList,
@@ -199,6 +217,35 @@ const CURRICULUM_SCHEMA = object({
     }),
   },
 });
+
+const REVIEW_SCHEMA = object({
+  verdict: { type: "string", enum: ["pass", "needs_fix"] },
+  issues: {
+    type: "array",
+    items: object({
+      location: str,
+      problem: str,
+      principle: str,
+      fix: str,
+      severity: { type: "string", enum: ["blocking", "minor"] },
+    }),
+  },
+  needs_research: strList,
+  summary: str,
+});
+
+interface CurriculumReview {
+  verdict: string;
+  issues: { location: string; problem: string; severity: string }[];
+  needs_research: string[];
+}
+
+export interface CurriculumRevision {
+  /** Number of reviews that asked for this revision. */
+  round: number;
+  issues: unknown[];
+  needs_research: string[];
+}
 
 interface Brief {
   status: string;
@@ -220,8 +267,8 @@ interface CurriculumLesson {
   id: string;
   type: string;
   purpose: LessonPurpose;
-  required: boolean;
   outcome_ids: string[];
+  prerequisite_lesson_ids: string[];
   pass_threshold: number | null;
   review_lesson_ids: string[];
   source_ids: string[];
@@ -306,47 +353,49 @@ export function acceptCurriculum(output: unknown, sourceIds: Set<string>): Accep
       problems.push(`outcome ${o.id} không có lesson kiểm tra hợp lệ`);
     }
   }
+  const position = new Map(lessons.map((l, i) => [l.id, i]));
   for (const l of lessons) {
-    // Diagnostic and remedial lessons serve prerequisites, not course outcomes. They orient the
-    // learner and must never gate completion, so they are optional and carry no pass threshold.
-    const orientation = l.purpose === "diagnostic" || l.purpose === "remedial";
-    if ((!orientation && l.outcome_ids.length === 0) || l.outcome_ids.some((id) => !outcomeIds.has(id))) {
+    // The diagnostic checks prerequisites, not course outcomes, so it may have none. It is a
+    // self-check practice: the app has no optional lesson, and a threshold would gate completion.
+    const diagnostic = l.purpose === "diagnostic";
+    if ((!diagnostic && l.outcome_ids.length === 0) || l.outcome_ids.some((id) => !outcomeIds.has(id))) {
       problems.push(`lesson ${l.id} có outcome không hợp lệ`);
     }
     if (l.source_ids.length === 0 || l.source_ids.some((id) => !sourceIds.has(id))) problems.push(`lesson ${l.id} có source_id không có trong research`);
-    if (orientation) {
-      if (l.required) problems.push(`lesson ${l.id} (${l.purpose}) phải là optional`);
-      if (l.pass_threshold !== null) problems.push(`lesson ${l.id} (${l.purpose}) không được có ngưỡng pass`);
-    }
+    if (diagnostic && l.type !== "practice") problems.push(`lesson ${l.id} (diagnostic) phải là practice`);
     // Feedback on a wrong answer points back to the lesson that teaches it again.
     if (l.type === "quiz") {
-      if (!orientation && (l.pass_threshold === null || !(l.pass_threshold > 0 && l.pass_threshold <= 100))) {
-        problems.push(`quiz ${l.id} thiếu ngưỡng pass trong (0, 100]`);
-      }
+      if (l.pass_threshold === null || !(l.pass_threshold > 0 && l.pass_threshold <= 100)) problems.push(`quiz ${l.id} thiếu ngưỡng pass trong (0, 100]`);
       if (l.review_lesson_ids.length === 0) problems.push(`quiz ${l.id} không có lesson để ôn khi sai`);
-    } else if (!orientation && l.pass_threshold !== null) {
+    } else if (l.pass_threshold !== null) {
       problems.push(`lesson ${l.id} không phải quiz nhưng có ngưỡng pass`);
     }
     if (l.review_lesson_ids.some((id) => !lessonIds.has(id) || id === l.id)) problems.push(`lesson ${l.id} trỏ tới lesson ôn không hợp lệ`);
+    for (const p of l.prerequisite_lesson_ids) {
+      if (!lessonIds.has(p) || p === l.id) problems.push(`lesson ${l.id} có prerequisite_lesson_ids không hợp lệ (${p})`);
+      else if (position.get(p)! > position.get(l.id)!) problems.push(`lesson ${l.id}: prerequisite ${p} đứng sau`);
+    }
   }
-  if (!lessons.some((l) => l.required)) problems.push("không có lesson bắt buộc");
 
-  // Starting point: the first module checks prior knowledge.
+  // Starting point: the first module opens with a self-check on prior knowledge.
   if (!curriculum.modules[0]?.lessons.some((l) => l.purpose === "diagnostic")) problems.push("module đầu không có lesson chẩn đoán đầu vào");
 
-  // Transfer: a required final quiz in the last module covers every outcome.
+  // Transfer: the final_check lessons of the last module (a summary quiz, plus code_exercise or
+  // practice for outcomes a quiz cannot check) together cover every outcome. There is no final
+  // assignment in an ai_generated course (docs/course-types.md).
   const last = curriculum.modules[curriculum.modules.length - 1];
-  const finals = (last?.lessons ?? []).filter((l) => l.purpose === "final_check" && l.type === "quiz" && l.required);
+  const finals = (last?.lessons ?? []).filter((l) => l.purpose === "final_check");
   const covered = new Set(finals.flatMap((l) => l.outcome_ids));
-  if (finals.length === 0) problems.push("module cuối không có quiz tổng hợp bắt buộc");
-  else if ([...outcomeIds].some((id) => !covered.has(id))) problems.push("quiz tổng hợp không phủ mọi outcome");
+  if (!finals.some((l) => l.type === "quiz")) problems.push("module cuối không có quiz tổng hợp");
+  const uncovered = [...outcomeIds].filter((id) => !covered.has(id));
+  if (uncovered.length > 0) problems.push(`các lesson final_check của module cuối chưa phủ outcome ${uncovered.join(", ")}`);
 
   // Spacing: with more than one module, a later module brings back an outcome taught earlier.
   if (curriculum.modules.length > 1) {
     const firstModule = new Map<string, number>();
     curriculum.modules.forEach((m, i) => {
       for (const l of m.lessons) {
-        if (l.purpose === "diagnostic" || l.purpose === "remedial") continue;
+        if (l.purpose === "diagnostic") continue;
         for (const o of l.outcome_ids) if (!firstModule.has(o)) firstModule.set(o, i);
       }
     });
@@ -358,6 +407,84 @@ export function acceptCurriculum(output: unknown, sourceIds: Set<string>): Accep
 
   if (problems.length > 0) return { ok: false, reason: `Curriculum chưa hợp lệ: ${list(problems)}` };
   return { ok: true, summary: `${curriculum.modules.length} module, ${lessons.length} lesson, ${curriculum.outcomes.length} outcome.` };
+}
+
+/** Blocking items of a review: blocking issues plus topics without a source, which also go back to the author. */
+export function blockingItems(output: unknown): string[] {
+  const review = output as CurriculumReview;
+  return [
+    ...review.issues.filter((i) => i.severity === "blocking").map((i) => `${i.location}: ${i.problem}`),
+    ...review.needs_research.map((topic) => `thiếu nguồn: ${topic}`),
+  ];
+}
+
+export function acceptCurriculumReview(output: unknown, curriculum: unknown): Acceptance {
+  const review = output as CurriculumReview;
+  const c = curriculum as Curriculum;
+  const known = new Set([
+    ...c.modules.map((m) => m.id),
+    ...c.modules.flatMap((m) => m.lessons.map((l) => l.id)),
+    ...c.outcomes.map((o) => o.id),
+  ]);
+  const problems: string[] = [];
+  for (const i of review.issues) {
+    if (!known.has(i.location)) problems.push(`vị trí "${i.location}" không phải ID trong curriculum`);
+    if (!i.problem.trim()) problems.push(`vấn đề tại ${i.location} để trống`);
+  }
+  const blocking = blockingItems(output).length;
+  if (review.verdict === "pass" && blocking > 0) problems.push("verdict pass nhưng còn lỗi blocking hoặc chủ đề thiếu nguồn");
+  if (review.verdict === "needs_fix" && blocking === 0) problems.push("verdict needs_fix nhưng không có lỗi blocking hay chủ đề thiếu nguồn");
+  if (problems.length > 0) return { ok: false, reason: `Review chưa hợp lệ: ${list(problems)}` };
+  const minor = review.issues.filter((i) => i.severity === "minor").length;
+  return { ok: true, summary: `${review.verdict}, ${blocking} lỗi blocking, ${minor} minor.` };
+}
+
+/** A review round is the A4 verdict on one accepted curriculum; at most this many per run. */
+export const MAX_REVIEW_ROUNDS = 2;
+
+/**
+ * Progress of the curriculum/review loop, counted from accepted generations. Every accepted review
+ * consumes one accepted curriculum: reviews === curricula means the curriculum waits for a revision,
+ * reviews < curricula means the latest curriculum waits for its review.
+ */
+export interface RunProgress {
+  /** Attempt number the current step's retry budget counts from (after its last accepted attempt). */
+  firstAttempt: number;
+  curricula: number;
+  reviews: number;
+  /** Blocking items of the latest accepted review; null until it is loaded. */
+  blocking: string[] | null;
+  /** Failed attempts of the current step's round; absent when unknown (counted from the attempt number). */
+  failures?: RoundFailures;
+}
+
+export const NO_PROGRESS: RunProgress = { firstAttempt: 0, curricula: 0, reviews: 0, blocking: null };
+
+export function buildProgress(
+  rows: { step_key: string; attempt: number; status: string; provider_request_id: string | null }[],
+  current: StepKey,
+  latestReview: unknown,
+): RunProgress {
+  const done = rows.filter((r) => r.status === "completed");
+  const attempts = done.filter((r) => r.step_key === current).map((r) => r.attempt);
+  const firstAttempt = attempts.length ? Math.max(...attempts) + 1 : 0;
+  return {
+    firstAttempt,
+    failures: roundFailures(rows.filter((r) => r.step_key === current), firstAttempt),
+    curricula: done.filter((r) => r.step_key === "curriculum").length,
+    reviews: done.filter((r) => r.step_key === "curriculum_review").length,
+    blocking: latestReview ? blockingItems(latestReview) : null,
+  };
+}
+
+export function curriculumRevision(
+  counts: { curricula: number; reviews: number },
+  latestReview: unknown,
+): CurriculumRevision | null {
+  if (counts.reviews === 0 || counts.curricula > counts.reviews || !latestReview) return null;
+  if (blockingItems(latestReview).length === 0) return null;
+  const review = latestReview as CurriculumReview;
+  return { round: counts.reviews, issues: review.issues, needs_research: review.needs_research };
 }
 
 function researchSourceIds(ctx: RunContext): Set<string> {
@@ -383,7 +510,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
       course: ctx.course,
       paths: ctx.paths,
       tracks: ctx.scopes,
-      platform_formats: PLATFORM_FORMATS,
+      platform_formats: PLATFORM_FORMAT_GUIDE,
     }),
     accept: acceptBrief,
   },
@@ -400,7 +527,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
       course_type: "ai_generated",
       brief: ctx.outputs.brief,
       today: ctx.today,
-      platform_formats: PLATFORM_FORMATS,
+      platform_formats: PLATFORM_FORMAT_GUIDE,
     }),
     accept: (output, ctx) => acceptResearch(output, ctx.today),
   },
@@ -416,11 +543,57 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
       course_type: "ai_generated",
       brief: ctx.outputs.brief,
       research_brief: ctx.outputs.research,
-      platform_formats: PLATFORM_FORMATS,
+      platform_formats: PLATFORM_FORMAT_GUIDE,
+      ...(ctx.revision ? { previous_curriculum: ctx.outputs.curriculum, review: ctx.revision } : {}),
     }),
     accept: (output, ctx) => acceptCurriculum(output, researchSourceIds(ctx)),
   },
+  curriculum_review: {
+    prompt: "a4-curriculum-review",
+    kind: "review",
+    model: MODEL,
+    effort: EFFORT,
+    maxOutputTokens: 20_000,
+    maxAttempts: 2,
+    schema: REVIEW_SCHEMA,
+    buildInput: (ctx) => ({
+      course_type: "ai_generated",
+      brief: ctx.outputs.brief,
+      research_brief: ctx.outputs.research,
+      curriculum: ctx.outputs.curriculum,
+      platform_formats: PLATFORM_FORMAT_GUIDE,
+    }),
+    accept: (output, ctx) => acceptCurriculumReview(output, ctx.outputs.curriculum),
+  },
+  lessons: {
+    prompt: "a5-lesson",
+    kind: "text",
+    model: MODEL,
+    effort: EFFORT,
+    maxOutputTokens: 40_000,
+    maxAttempts: 2,
+    schema: LESSON_SCHEMA,
+    buildInput: (ctx, lessonId) => buildLessonInput(ctx, lessonId!),
+    accept: (output, ctx, lessonId) => acceptLesson(output, ctx, lessonId!),
+    lessonTools,
+  },
+  lesson_review: {
+    prompt: "a6-lesson-review",
+    kind: "review",
+    model: MODEL,
+    effort: EFFORT,
+    maxOutputTokens: 20_000,
+    maxAttempts: 2,
+    schema: LESSON_REVIEW_SCHEMA,
+    buildInput: (ctx, lessonId) => buildLessonReviewInput(ctx, lessonId!),
+    accept: (output, ctx, lessonId) => acceptLessonReview(output, ctx, lessonId!),
+    lessonTools: reviewTools,
+  },
 };
+
+/** Steps the runtime executes itself, without a model. */
+export const CODE_STEPS = ["structure_check", "journey_test"] as const satisfies readonly StepKey[];
+export type CodeStep = typeof CODE_STEPS[number];
 
 export function stepAgent(step: StepKey) {
   const spec = STEP_SPECS[step];
@@ -435,6 +608,8 @@ export interface GenerationState {
   provider_request_id: string | null;
   error: string | null;
   created_at: string;
+  /** Set on generations of per-lesson steps. */
+  lesson_id?: string | null;
 }
 
 export type TickAction =
@@ -443,6 +618,10 @@ export type TickAction =
   | { kind: "poll"; generationId: string; requestId: string }
   | { kind: "expire_submitting"; generationId: string }
   | { kind: "mark_done"; generationId: string }
+  | { kind: "reopen"; round: number; blocking: number }
+  | { kind: "lessons"; actions: LessonAction[] }
+  | { kind: "check"; check: CodeStep }
+  | { kind: "publish" }
   | { kind: "wait" };
 
 /** Next action for one running run. Pure: the handler executes it. */
@@ -451,6 +630,12 @@ export function planRun(input: {
   latest: GenerationState | null;
   startedAt: string;
   now: number;
+  progress?: RunProgress;
+  /**
+   * Curriculum lessons with their generations of both lesson steps and the blocking items of each
+   * lesson's newest accepted review; required while the step is `lessons` or `lesson_review`.
+   */
+  lessons?: { ids: string[]; rows: LessonGeneration[]; blocking: Record<string, string[]> };
 }): { step: StepKey | null; action: TickAction } {
   const current = STEP_ORDER.find((k) => input.steps[k] !== "done") ?? null;
   if (!current) return { step: null, action: { kind: "finish", status: "published", reason: "" } };
@@ -461,12 +646,36 @@ export function planRun(input: {
   if (input.steps[current] === "failed") {
     return { step: current, action: { kind: "finish", status: "draft_failed", reason: `Bước ${label} thất bại.` } };
   }
+  if (current === "structure_check" || current === "journey_test") return { step: current, action: { kind: "check", check: current } };
+  if (current === "publish") return { step: current, action: { kind: "publish" } };
   const spec = STEP_SPECS[current];
   if (!spec) {
     const owner = STEP_OWNER[current] === "code" ? "code" : `agent ${STEP_OWNER[current]}`;
     return { step: current, action: { kind: "finish", status: "draft_failed", reason: `Bước ${label} (${owner}) chưa được triển khai.` } };
   }
+  if (current === "lessons" || current === "lesson_review") {
+    // Both steps run once per lesson and interleave: a lesson is written, reviewed, rewritten and
+    // reviewed again independently of the others, so the step-level `latest` does not apply and the
+    // pair finishes together (the second tick marks the other step done).
+    if (!input.lessons) return { step: current, action: { kind: "finish", status: "draft_failed", reason: `Bước ${label}: không đọc được danh sách lesson.` } };
+    const plan = planLessons({
+      lessonIds: input.lessons.ids,
+      rows: input.lessons.rows,
+      blocking: input.lessons.blocking,
+      now: input.now,
+      maxAttempts: { lessons: STEP_SPECS.lessons!.maxAttempts, lesson_review: STEP_SPECS.lesson_review!.maxAttempts },
+      submitStaleMs: SUBMIT_STALE_MS,
+      limit: LESSONS_PER_TICK,
+    });
+    if (plan.outcome === "done") return { step: current, action: { kind: "mark_done", generationId: plan.lastGenerationId } };
+    if (plan.outcome === "failed") {
+      const failed = plan.exhausted.map((e) => `${e.lessonId} (${e.reason})`);
+      return { step: current, action: { kind: "finish", status: "draft_failed", reason: `Bước ${label}: ${failed.length} lesson không đạt: ${list(failed)}` } };
+    }
+    return { step: current, action: plan.actions.length ? { kind: "lessons", actions: plan.actions } : { kind: "wait" } };
+  }
   const latest = input.latest;
+  const progress = input.progress ?? NO_PROGRESS;
   if (!latest) return { step: current, action: { kind: "submit", attempt: 0, parentId: null } };
   switch (latest.status) {
     case "submitting":
@@ -476,9 +685,30 @@ export function planRun(input: {
     case "submitted":
       return { step: current, action: { kind: "poll", generationId: latest.id, requestId: latest.provider_request_id ?? "" } };
     case "completed":
+      if (current === "curriculum" && progress.reviews > 0 && progress.curricula <= progress.reviews) {
+        // The accepted curriculum was already reviewed and sent back: write the revision.
+        return { step: current, action: { kind: "submit", attempt: latest.attempt + 1, parentId: latest.id } };
+      }
+      if (current === "curriculum_review") {
+        if (progress.reviews < progress.curricula) {
+          // A revised curriculum is waiting for its own review.
+          return { step: current, action: { kind: "submit", attempt: latest.attempt + 1, parentId: null } };
+        }
+        const blocking = progress.blocking ?? [];
+        if (blocking.length > 0) {
+          if (progress.reviews >= MAX_REVIEW_ROUNDS) {
+            return {
+              step: current,
+              action: { kind: "finish", status: "draft_failed", reason: `Bước ${label}: còn lỗi blocking sau ${progress.reviews} vòng: ${list(blocking)}` },
+            };
+          }
+          return { step: current, action: { kind: "reopen", round: progress.reviews, blocking: blocking.length } };
+        }
+      }
       return { step: current, action: { kind: "mark_done", generationId: latest.id } };
     case "failed":
-      if (latest.attempt + 1 < spec.maxAttempts) {
+      // The retry budget is per round: attempts before the last accepted one do not count.
+      if (canRetry(progress.failures ?? { model: latest.attempt + 1 - progress.firstAttempt, transport: 0 }, spec.maxAttempts)) {
         return { step: current, action: { kind: "submit", attempt: latest.attempt + 1, parentId: latest.id } };
       }
       return {

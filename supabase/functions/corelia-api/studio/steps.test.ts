@@ -4,6 +4,9 @@ import { readResponse } from "./openai.ts";
 import { PROMPTS } from "./prompts.ts";
 import {
   acceptCurriculum,
+  acceptCurriculumReview,
+  buildProgress,
+  curriculumRevision,
   acceptResearch,
   agentKeyEnv,
   MAX_RUN_MS,
@@ -74,14 +77,12 @@ describe("studio planRun", () => {
       .toEqual({ kind: "mark_done", generationId: "g1" });
   });
 
-  it("ends the run at a step that has no implementation", () => {
-    expect(planRun({ steps: steps(["brief", "research", "curriculum"]), latest: null, startedAt, now })).toEqual({
-      step: "curriculum_review",
-      action: { kind: "finish", status: "draft_failed", reason: "Bước Kiểm tra curriculum (agent A4) chưa được triển khai." },
-    });
-    const allAgentSteps = ["brief", "research", "curriculum", "curriculum_review", "lessons", "lesson_review"] as StepKey[];
-    expect(planRun({ steps: steps(allAgentSteps), latest: null, startedAt, now }).action)
-      .toEqual({ kind: "finish", status: "draft_failed", reason: "Bước Kiểm tra cấu trúc (code) chưa được triển khai." });
+  it("runs every step: the model steps by their spec, the code steps by the runtime", () => {
+    for (const step of STEP_ORDER) {
+      const done = STEP_ORDER.slice(0, STEP_ORDER.indexOf(step));
+      const { action } = planRun({ steps: steps(done), latest: null, startedAt, now, lessons: { ids: [], rows: [], blocking: {} } });
+      expect(action.kind, step).not.toBe("finish");
+    }
   });
 
   it("ends a run older than the time limit", () => {
@@ -92,6 +93,115 @@ describe("studio planRun", () => {
 
   it("publishes when every step is done", () => {
     expect(planRun({ steps: steps([...STEP_ORDER]), latest: null, startedAt, now }).action.kind).toBe("finish");
+  });
+});
+
+describe("studio curriculum review loop", () => {
+  const issue = (location: string, severity: string) => ({ location, problem: `lỗi ${location}`, principle: "p", fix: "f", severity });
+  const review = (verdict: string, issues: ReturnType<typeof issue>[] = [], needs_research: string[] = []) => ({
+    verdict,
+    issues,
+    needs_research,
+    summary: "s",
+  });
+  const lesson = (id: string) => ({ id, type: "article", purpose: "explanation" });
+  const curriculum = {
+    outcomes: [{ id: "o1" }],
+    modules: [{ id: "m1", lessons: [lesson("l1"), lesson("l2")] }],
+  };
+
+  // Steps as the handler leaves them: curriculum done and review active after a review was accepted.
+  const afterReview = steps(["brief", "research", "curriculum"], "active");
+  const progress = (reviews: number, curricula: number, blocking: string[] | null, firstAttempt = 0) => ({ firstAttempt, curricula, reviews, blocking });
+
+  it("passes a review with no blocking item and one with only minor issues", () => {
+    for (const out of [review("pass"), review("pass", [issue("l1", "minor")])]) {
+      const p = buildProgress([{ step_key: "curriculum", attempt: 0, status: "completed" }, { step_key: "curriculum_review", attempt: 0, status: "completed" }], "curriculum_review", out);
+      expect(planRun({ steps: afterReview, latest: gen({ status: "completed", attempt: 0 }), startedAt, now, progress: p }).action)
+        .toEqual({ kind: "mark_done", generationId: "g1" });
+    }
+  });
+
+  it("reopens the curriculum when the first review has blocking items", () => {
+    const blocking = ["l1: lỗi l1", "thiếu nguồn: borrow checker"];
+    expect(planRun({ steps: afterReview, latest: gen({ status: "completed" }), startedAt, now, progress: progress(1, 1, blocking) }).action)
+      .toEqual({ kind: "reopen", round: 1, blocking: 2 });
+  });
+
+  it("writes the revision after the reopen, then reviews it as a new attempt", () => {
+    const reopened = steps(["brief", "research"], "active");
+    expect(planRun({ steps: reopened, latest: gen({ status: "completed", attempt: 0 }), startedAt, now, progress: progress(1, 1, null) }))
+      .toEqual({ step: "curriculum", action: { kind: "submit", attempt: 1, parentId: "g1" } });
+    const revised = steps(["brief", "research", "curriculum"]);
+    expect(planRun({ steps: revised, latest: gen({ status: "completed", attempt: 0 }), startedAt, now, progress: progress(1, 2, [], 1) }))
+      .toEqual({ step: "curriculum_review", action: { kind: "submit", attempt: 1, parentId: null } });
+  });
+
+  it("ends the run when the second review still has blocking items", () => {
+    const action = planRun({ steps: afterReview, latest: gen({ status: "completed", attempt: 1 }), startedAt, now, progress: progress(2, 2, ["l2: lỗi l2"], 2) }).action;
+    expect(action).toEqual({
+      kind: "finish",
+      status: "draft_failed",
+      reason: "Bước Kiểm tra curriculum: còn lỗi blocking sau 2 vòng: l2: lỗi l2",
+    });
+  });
+
+  it("counts the retry budget per round, not across reopens", () => {
+    const reopened = steps(["brief", "research"], "active");
+    // Curriculum attempt 0 accepted, revision attempt 1 rejected: one more try in this round.
+    expect(planRun({ steps: reopened, latest: gen({ status: "failed", attempt: 1, error: "x" }), startedAt, now, progress: progress(1, 1, null, 1) }).action)
+      .toEqual({ kind: "submit", attempt: 2, parentId: "g1" });
+    expect(planRun({ steps: reopened, latest: gen({ status: "failed", attempt: 2, error: "x" }), startedAt, now, progress: progress(1, 1, null, 1) }).action.kind)
+      .toBe("finish");
+  });
+
+  it("derives the loop state from accepted generations only", () => {
+    const rows = [
+      { step_key: "curriculum", attempt: 0, status: "completed", provider_request_id: "r0" },
+      { step_key: "curriculum_review", attempt: 0, status: "completed", provider_request_id: "r1" },
+      { step_key: "curriculum", attempt: 1, status: "failed", provider_request_id: "r2" },
+      { step_key: "curriculum", attempt: 2, status: "completed", provider_request_id: "r3" },
+      // After the accepted attempt 2: one rejected answer and one request that never reached the provider.
+      { step_key: "curriculum", attempt: 3, status: "failed", provider_request_id: "r4" },
+      { step_key: "curriculum", attempt: 4, status: "failed", provider_request_id: null },
+    ];
+    expect(buildProgress(rows, "curriculum", null)).toEqual({
+      firstAttempt: 3,
+      curricula: 2,
+      reviews: 1,
+      blocking: null,
+      failures: { model: 1, transport: 1 },
+    });
+    expect(buildProgress(rows, "curriculum_review", review("needs_fix", [issue("l1", "blocking")]))).toMatchObject({ firstAttempt: 1, blocking: ["l1: lỗi l1"] });
+  });
+
+  it("gives A3 the review only while the curriculum waits for its revision", () => {
+    const bad = review("needs_fix", [issue("l1", "blocking"), issue("l2", "minor")], ["tokio"]);
+    expect(curriculumRevision({ curricula: 1, reviews: 1 }, bad)).toEqual({ round: 1, issues: bad.issues, needs_research: ["tokio"] });
+    expect(curriculumRevision({ curricula: 2, reviews: 1 }, bad)).toBeNull();
+    expect(curriculumRevision({ curricula: 1, reviews: 1 }, review("pass", [issue("l1", "minor")]))).toBeNull();
+    expect(curriculumRevision({ curricula: 1, reviews: 0 }, null)).toBeNull();
+    const ctx = { course: { title: "t", level: null }, paths: [], scopes: [], outputs: { curriculum }, today: "2026-10-20" };
+    const input = STEP_SPECS.curriculum!.buildInput({ ...ctx, revision: { round: 1, issues: bad.issues, needs_research: ["tokio"] } });
+    expect(input).toMatchObject({ previous_curriculum: curriculum, review: { round: 1 } });
+    expect(STEP_SPECS.curriculum!.buildInput({ ...ctx, revision: null })).not.toHaveProperty("review");
+  });
+
+  it("accepts consistent verdicts and rejects contradictions or unknown locations", () => {
+    expect(acceptCurriculumReview(review("pass", [issue("l1", "minor")]), curriculum))
+      .toEqual({ ok: true, summary: "pass, 0 lỗi blocking, 1 minor." });
+    expect(acceptCurriculumReview(review("needs_fix", [issue("o1", "blocking")], ["x"]), curriculum))
+      .toEqual({ ok: true, summary: "needs_fix, 2 lỗi blocking, 0 minor." });
+    expect(acceptCurriculumReview(review("needs_fix", [], ["x"]), curriculum).ok).toBe(true);
+    for (const bad of [
+      review("pass", [issue("l1", "blocking")]),
+      review("pass", [], ["x"]),
+      review("needs_fix", [issue("l1", "minor")]),
+      review("needs_fix"),
+      review("pass", [issue("l9", "minor")]),
+    ]) {
+      expect(acceptCurriculumReview(bad, curriculum).ok).toBe(false);
+    }
   });
 });
 
@@ -156,8 +266,8 @@ describe("studio acceptance", () => {
     id,
     type: "article",
     purpose: "explanation",
-    required: true,
     outcome_ids: ["o1"],
+    prerequisite_lesson_ids: [] as string[],
     pass_threshold: null,
     review_lesson_ids: [] as string[],
     source_ids: ["s1"],
@@ -172,9 +282,8 @@ describe("studio acceptance", () => {
       {
         id: "m1",
         lessons: [
-          quiz("d1", { purpose: "diagnostic", required: false, outcome_ids: [], pass_threshold: null, review_lesson_ids: ["p1"] }),
-          lesson("p1", { purpose: "remedial", required: false, outcome_ids: [] }),
-          lesson("l1"),
+          lesson("d1", { type: "practice", purpose: "diagnostic", outcome_ids: [] }),
+          lesson("l1", { prerequisite_lesson_ids: ["d1"] }),
           quiz("q1", { purpose: "guided_practice" }),
         ],
       },
@@ -196,17 +305,19 @@ describe("studio acceptance", () => {
   };
 
   it("accepts a curriculum with diagnosis, retrieval, a final check and quiz thresholds", () => {
-    expect(acceptCurriculum(curriculum, sources)).toEqual({ ok: true, summary: "2 module, 7 lesson, 2 outcome." });
+    expect(acceptCurriculum(curriculum, sources)).toEqual({ ok: true, summary: "2 module, 6 lesson, 2 outcome." });
   });
 
-  it("keeps diagnostic and remedial lessons optional and without a gating threshold", () => {
+  it("makes the diagnostic a self-check practice without a threshold, and orders prerequisites", () => {
     const [m1, m2] = curriculum.modules;
-    const [d1, p1, l1, q1] = m1.lessons;
-    const swap = (first: object, second: object) => withModules([{ ...m1, lessons: [first, second, l1, q1] }, m2]);
-    expect(reason(swap({ ...d1, required: true }, p1))).toContain("lesson d1 (diagnostic) phải là optional");
-    expect(reason(swap({ ...d1, pass_threshold: 60 }, p1))).toContain("lesson d1 (diagnostic) không được có ngưỡng pass");
-    expect(reason(swap(d1, { ...p1, required: true }))).toContain("lesson p1 (remedial) phải là optional");
-    expect(reason(swap(d1, { ...p1, purpose: "explanation" }))).toContain("lesson p1 có outcome không hợp lệ");
+    const [d1, l1, q1] = m1.lessons;
+    const first = (...lessons: object[]) => withModules([{ ...m1, lessons }, m2]);
+    expect(reason(first({ ...d1, type: "article" }, l1, q1))).toContain("lesson d1 (diagnostic) phải là practice");
+    expect(reason(first({ ...d1, pass_threshold: 60 }, l1, q1))).toContain("lesson d1 không phải quiz nhưng có ngưỡng pass");
+    expect(reason(first({ ...d1, outcome_ids: ["o9"] }, l1, q1))).toContain("lesson d1 có outcome không hợp lệ");
+    expect(reason(first(d1, lesson("l1", { prerequisite_lesson_ids: ["q1"] }), q1))).toContain("lesson l1: prerequisite q1 đứng sau");
+    expect(reason(first(d1, lesson("l1", { prerequisite_lesson_ids: ["ghost"] }), q1))).toContain("prerequisite_lesson_ids không hợp lệ (ghost)");
+    expect(reason(first(d1, lesson("l1", { prerequisite_lesson_ids: ["l1"] }), q1))).toContain("không hợp lệ (l1)");
   });
 
   it("rejects unknown sources, unchecked outcomes and duplicate ids", () => {
@@ -218,20 +329,35 @@ describe("studio acceptance", () => {
 
   it("requires quiz thresholds and review lessons, and no threshold elsewhere", () => {
     const [m1, m2] = curriculum.modules;
-    const [d1, p1, l1, q1] = m1.lessons;
+    const [d1, l1, q1] = m1.lessons;
     const first = (...lessons: object[]) => withModules([{ ...m1, lessons }, m2]);
-    expect(reason(first(d1, p1, l1, quiz("q1", { pass_threshold: null })))).toContain("quiz q1 thiếu ngưỡng pass");
-    expect(reason(first(d1, p1, l1, quiz("q1", { review_lesson_ids: [] })))).toContain("quiz q1 không có lesson để ôn khi sai");
-    expect(reason(first(d1, p1, lesson("l1", { pass_threshold: 70 }), q1))).toContain("lesson l1 không phải quiz nhưng có ngưỡng pass");
+    expect(reason(first(d1, l1, quiz("q1", { pass_threshold: null })))).toContain("quiz q1 thiếu ngưỡng pass");
+    expect(reason(first(d1, l1, quiz("q1", { review_lesson_ids: [] })))).toContain("quiz q1 không có lesson để ôn khi sai");
+    expect(reason(first(d1, lesson("l1", { pass_threshold: 70 }), q1))).toContain("lesson l1 không phải quiz nhưng có ngưỡng pass");
   });
 
   it("requires a diagnostic start, a covering final check and retrieval of an earlier module", () => {
     const [m1, m2] = curriculum.modules;
     expect(reason(withModules([{ ...m1, lessons: m1.lessons.slice(1) }, m2]))).toContain("module đầu không có lesson chẩn đoán");
-    expect(reason(withModules([m1, { ...m2, lessons: m2.lessons.slice(0, 2) }]))).toContain("module cuối không có quiz tổng hợp bắt buộc");
+    expect(reason(withModules([m1, { ...m2, lessons: m2.lessons.slice(0, 2) }]))).toContain("module cuối không có quiz tổng hợp");
     expect(reason(withModules([m1, { ...m2, lessons: [m2.lessons[0], m2.lessons[1], quiz("q9", { purpose: "final_check" })] }])))
-      .toContain("quiz tổng hợp không phủ mọi outcome");
+      .toContain("chưa phủ outcome");
     expect(reason(withModules([m1, { ...m2, lessons: [m2.lessons[0], m2.lessons[2]] }]))).toContain("không có lesson ôn lại outcome");
+  });
+
+  it("lets code_exercise and practice final checks cover outcomes the summary quiz cannot check", () => {
+    const [m1, m2] = curriculum.modules;
+    const finals = [
+      quiz("q9", { purpose: "final_check", outcome_ids: ["o2"], review_lesson_ids: ["l2"] }),
+      lesson("c9", { type: "code_exercise", purpose: "final_check", outcome_ids: ["o1"] }),
+    ];
+    const outcomes = [{ id: "o1", check_lesson_ids: ["q1", "c9"] }, curriculum.outcomes[1]];
+    expect(acceptCurriculum({ ...curriculum, outcomes, modules: [m1, { ...m2, lessons: [m2.lessons[0], m2.lessons[1], ...finals] }] }, sources).ok)
+      .toBe(true);
+    // Without the summary quiz the final check is incomplete even when the other lessons cover everything.
+    const noQuiz = [lesson("c9", { type: "code_exercise", purpose: "final_check", outcome_ids: ["o1", "o2"] })];
+    expect(reason({ ...curriculum, outcomes, modules: [m1, { ...m2, lessons: [m2.lessons[0], m2.lessons[1], ...noQuiz] }] }))
+      .toContain("module cuối không có quiz tổng hợp");
   });
 });
 
@@ -246,6 +372,15 @@ describe("studio openai readResponse", () => {
     })).toEqual({ state: "completed", model: "gpt-6-luna", text: "{}", usage: { total_tokens: 3 } });
     expect(readResponse({ status: "incomplete", incomplete_details: { reason: "max_output_tokens" } }))
       .toEqual({ state: "failed", error: "incomplete: max_output_tokens" });
+    // Tokens spent on an unfinished response are still billed, so usage and model are kept.
+    expect(readResponse({
+      status: "incomplete",
+      model: "gpt-6-luna",
+      usage: { total_tokens: 9 },
+      incomplete_details: { reason: "max_output_tokens" },
+    })).toEqual({ state: "failed", error: "incomplete: max_output_tokens", model: "gpt-6-luna", usage: { total_tokens: 9 } });
+    expect(readResponse({ status: "failed", model: "gpt-6-luna", usage: { total_tokens: 2 }, error: { message: "boom" } }))
+      .toEqual({ state: "failed", error: "failed: boom", model: "gpt-6-luna", usage: { total_tokens: 2 } });
     expect(readResponse({ status: "cancelled" }).state).toBe("failed");
   });
 });

@@ -126,6 +126,38 @@ thử), nên hai tick chồng nhau không gửi trùng. Prompt nằm trong
 [`studio/prompts.ts`](studio/prompts.ts); bước chưa có trong `STEP_SPECS` kết thúc lượt
 chạy ở `draft_failed` kèm lý do và người chạy bước (agent hoặc code).
 
+Local không có scheduler, nên lượt chạy chỉ tiến khi có ai gọi `studio.tick`. Với
+`pnpm functions:serve` đang chạy:
+
+```bash
+pnpm studio:tick                  # mặc định 15s/lần, tới http://127.0.0.1:54321/functions/v1
+pnpm studio:tick --interval 30 --url http://127.0.0.1:54321/functions/v1
+```
+
+Script đọc `CORELIA_STUDIO_CRON_SECRET` từ `supabase/functions/.env` lúc khởi động, không
+in ra. Mỗi tick log `processed` và hành động của từng lượt chạy; Ctrl+C để dừng.
+
+`studio.start` nhận thêm `resume_from_run_id` (lượt `draft_failed` mới nhất của khóa) để chạy tiếp
+từ bản nháp: lượt mới chép các generation đã được chấp nhận (brief, research, curriculum và review
+nếu đã xong; lesson đã đạt; bản nháp lesson chưa được review) với `origin = 'resumed'`, chỉ tạo lại
+phần còn lại với ngân sách mới. Chi phí của một lượt chạy là tổng `usage` của các dòng `origin = 'ai'`.
+Kết quả có `resume` (số bước và lesson đã chép) hoặc `resume_skipped` kèm lý do, khi đó lượt chạy bắt
+đầu từ đầu. Kiểm bằng `scripts/studio/verify-resume.ts`.
+
+Các bước sau lesson chạy trong chính tick, không gọi model: `structure_check` kiểm mọi lesson
+bằng quy tắc publish của app, vẽ sơ đồ thành PNG vào bucket `studio-drafts` và kiểm link;
+`journey_test` kiểm thứ tự học; `publish` ghi `courses`, `course_sections`, `course_lessons`,
+`course_section_questions` trong một transaction (`studio_publish_course`), nên trigger
+publication của app chặn thì không có gì được ghi và lượt chạy dừng ở `draft_failed` kèm lý do.
+Kiểm hai bước cuối với DB local, không tốn model:
+
+```bash
+eval "$(npx supabase status -o env)"
+SUPABASE_URL=$API_URL SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY deno run -A --no-config scripts/studio/verify-publish.ts
+SUPABASE_URL=$API_URL SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY deno run -A --no-config scripts/studio/verify-tick.ts
+deno run -A --no-config scripts/studio/measure-diagram.ts <thư mục *.json đặc tả sơ đồ>
+```
+
 ### Email Center
 
 `email.admin` cung cấp API quản trị contact/list/import, template/version, campaign và automation. `email.worker` chỉ nhận request có `EMAIL_WORKER_SECRET`; `email.webhook` xác minh chữ ký Svix bằng `RESEND_WEBHOOK_SIGNING_SECRET`; `email.unsubscribe` là endpoint public cho marketing unsubscribe. Dữ liệu Email Center chỉ truy cập qua service-role boundary và các bảng không cấp quyền Data API cho `anon`/`authenticated`.
