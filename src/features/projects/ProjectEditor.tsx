@@ -270,7 +270,7 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
     hint={submissionPresentation ? undefined : t(`projects.editor.${key}Hint`)}
     placeholder={submissionPresentation ? t("projects.editor.submissionTextPlaceholder") : t(`projects.editor.${key}Placeholder`)}
     rows={submissionPresentation ? 1 : key === "description" ? 10 : 6}
-    variant={submissionPresentation ? "plain" : "markdown"}
+    variant="markdown"
     layout="stacked"
     compactCounter={submissionPresentation}
   />);
@@ -286,7 +286,7 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
     {!submissionPresentation ? pageHeader : null}
     {closed ? <p role="status" className="mb-5 rounded-lg border border-border bg-surface-raised p-4 text-body-medium font-body">{t("projects.errors.deadline")}</p> : null}
     {recovered ? <p role="status" className="mb-5 rounded-lg border border-primary/30 bg-primary/5 p-3 text-body-medium font-body">{t("projects.editor.recovered")}</p> : null}
-    <form onSubmit={event => { event.preventDefault(); if (complete && !closed && !uploading && !mutation.isPending) mutation.mutate(); }} className={`grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_280px] ${submissionPresentation ? "lg:gap-x-12" : ""} [&_button:not(:disabled)]:cursor-pointer`}>
+    <form onSubmit={event => { event.preventDefault(); if (complete && !closed && !uploading && !mutation.isPending) mutation.mutate(); }} className={`grid items-start gap-8 ${submissionPresentation ? "xl:grid-cols-[minmax(0,1fr)_280px] xl:gap-x-12" : "lg:grid-cols-[minmax(0,1fr)_280px]"} [&_button:not(:disabled)]:cursor-pointer`}>
       <div className={`min-w-0 ${submissionPresentation ? "space-y-8" : "space-y-6"}`}>
         {submissionPresentation ? pageHeader : null}
         <fieldset disabled={mutation.isPending || closed} className={`min-w-0 ${submissionPresentation ? "space-y-8" : "space-y-6"}`}>
@@ -298,7 +298,7 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
           ) : null}
           <section id="project-basics" className={`scroll-mt-24 ${submissionPresentation ? "border-b border-border-subtle pb-8" : "rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"}`}>
             {!submissionPresentation ? <><h2 className="text-heading-medium font-display">{t("projects.editor.basics")}</h2><p className="mt-1 text-body-medium font-body text-foreground-muted">{t("projects.editor.basicsHint")}</p></> : null}
-            <div className={submissionPresentation ? "grid min-w-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-12" : ""}>
+            <div className={submissionPresentation ? "grid min-w-0 gap-6 xl:grid-cols-[200px_minmax(0,1fr)] xl:gap-x-12" : ""}>
               {submissionPresentation ? <h2 className="text-heading-medium font-display text-project-editor-heading">{t("projects.editor.overview")}</h2> : null}
               <div className={submissionPresentation ? "min-w-0 space-y-6" : "mt-6 space-y-5"}>
                 <div className={submissionPresentation ? "space-y-2" : ""}>
@@ -318,18 +318,25 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
                   </div>
                 </div>
                 <div className={submissionPresentation ? "space-y-1.5" : ""}>
-                  <label htmlFor="project-summary" className={`block text-label-medium font-body${submissionPresentation ? " leading-[1.4] tracking-[-0.07px] text-foreground-muted" : ""}`}>{t("projects.form.summary")}{publishing && isPrimary ? <span className="text-error-400"> *</span> : null}</label>
-                  <div>
-                    <Input id="project-summary" fieldType="auto-grow" submitOnEnter={false} rows={1} aria-describedby={submissionPresentation ? "project-summary-hint project-summary-limit" : "project-summary-hint"} required={publishing && isPrimary} controlClassName={submissionPresentation ? "h-[154px] min-h-[154px] max-h-[154px] overflow-hidden" : undefined} className={submissionPresentation ? "h-full min-h-full max-h-full overflow-y-auto pb-5" : "min-h-[142px]"} maxLength={contentLimits.summary} value={content.summary} placeholder={submissionPresentation ? t("projects.editor.submissionTextPlaceholder") : t("projects.editor.summaryPlaceholder")} onChange={event => changeContent("summary", event.target.value)} renderTrailingContent={submissionPresentation ? () => <span id="project-summary-limit" className="pointer-events-none absolute bottom-2 right-3 text-body-small font-body text-foreground-muted">{t("projects.editor.submissionCharacterLimit", { count: content.summary.length, limit: contentLimits.summary })}</span> : undefined} />
-                    {!submissionPresentation ? <span id="project-summary-hint" className="mt-2 block text-body-small text-foreground-muted">{t("projects.editor.summaryHint")}</span> : <span id="project-summary-hint" className="sr-only">{t("projects.form.summary")}</span>}
-                    {!submissionPresentation ? <span className="mt-1 block text-right text-body-small font-body text-foreground-muted">{t("projects.editor.characterLimit", { count: content.summary.length, limit: contentLimits.summary })}</span> : null}
-                  </div>
+                  <ProjectMarkdownEditor
+                    label={t("projects.form.summary")}
+                    value={content.summary}
+                    onChange={value => changeContent("summary", value)}
+                    maxLength={contentLimits.summary}
+                    required={publishing && isPrimary}
+                    hint={submissionPresentation ? undefined : t("projects.editor.summaryHint")}
+                    placeholder={submissionPresentation ? t("projects.editor.submissionTextPlaceholder") : t("projects.editor.summaryPlaceholder")}
+                    rows={1}
+                    variant="markdown"
+                    layout="stacked"
+                    compactCounter={submissionPresentation}
+                  />
                 </div>
               </div>
             </div>
           </section>
           <section id="project-story" className={`scroll-mt-24 ${submissionPresentation ? "border-b border-border-subtle pb-8" : "rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"}`}>
-            <div className={submissionPresentation ? "grid min-w-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-12" : "space-y-5"}>
+            <div className={submissionPresentation ? "grid min-w-0 gap-6 xl:grid-cols-[200px_minmax(0,1fr)] xl:gap-x-12" : "space-y-5"}>
               {submissionPresentation ? <h2 className="text-heading-medium font-display text-project-editor-heading">{t("projects.editor.submissionStory")}</h2> : null}
               <div className={submissionPresentation ? "min-w-0 space-y-6" : ""}>
                 {!submissionPresentation ? <h2 className="mb-2 text-heading-medium font-display">{t("projects.editor.story")}</h2> : null}
@@ -348,7 +355,7 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
           <ProjectResourcesEditor draft={draft} onChange={change} presentation={submissionPresentation ? "submission" : "default"} />
           {contest ? submissionPresentation ? <section id="project-categories" className="scroll-mt-24">
             <Separator className="mb-6" />
-            <div className="grid min-w-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-12">
+            <div className="grid min-w-0 gap-6 xl:grid-cols-[200px_minmax(0,1fr)] xl:gap-x-12">
               <div>
                 <h2 className="text-heading-medium font-display text-project-editor-heading">{t("projects.editor.categories")}</h2>
                 <p className="mt-4 text-body-small font-body text-foreground-subtle">{t("projects.editor.categoriesHint")}</p>
@@ -371,7 +378,7 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
         <section id="project-team" className={`scroll-mt-24 ${submissionPresentation ? "" : "rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7"}`}>
           {submissionPresentation ? <>
             <Separator className="mb-6" />
-            <div className="grid min-w-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-12">
+            <div className="grid min-w-0 gap-6 xl:grid-cols-[200px_minmax(0,1fr)] xl:gap-x-12">
               <div>
                 <h2 className="text-heading-medium font-display text-project-editor-heading">{t("projects.team.title")}</h2>
                 <p className="mt-4 text-body-small font-body text-foreground-subtle">{t("projects.team.hint")}</p>
@@ -383,7 +390,7 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
           </> : <><h2 className="mb-5 text-heading-medium font-display">{t("projects.editor.team")}</h2><ProjectTeamEditor ownerId={project?.owner_id} editsClosed={closed} lateMembersAllowed={Boolean(contest && isPastContestSubmissionDeadline(contest) && canEditContestProject(contest))} projectId={projectId} sourceType={project?.source_type ?? (contest ? "hackathon" : "standalone")} sourceId={project?.source_id ?? contest?.id} persisted={Boolean(project)} selectedIds={teamIds} onSelectedIdsChange={setTeamIds} /></>}
         </section>
       </div>
-      <aside className="space-y-5 lg:sticky lg:top-24">
+      <aside className={`space-y-5 ${submissionPresentation ? "xl:sticky xl:top-24" : "lg:sticky lg:top-24"}`}>
         <div className={`rounded-2xl border bg-surface-base ${submissionPresentation ? "border-border px-4 pt-3 pb-4 shadow-card" : "border-border-subtle p-5"}`}>
           <h2 className={submissionPresentation ? "text-base font-medium leading-6 tracking-[-0.32px] text-foreground" : "text-heading-medium font-display"}>
             {submissionPresentation

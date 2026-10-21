@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate } from "react-router";
+import { GithubLogo } from "@phosphor-icons/react";
 import {
   Building2,
   FilePenLine,
@@ -10,7 +11,6 @@ import {
   ShieldCheck,
   Trash2,
   Globe,
-  Github,
   Linkedin,
   Twitter,
   Youtube,
@@ -40,7 +40,7 @@ const SOCIAL_PLATFORMS: { value: InstructorSocialPlatform; label: string }[] = [
 function SocialPlatformIcon({ platform }: { platform: InstructorSocialPlatform }) {
   const cls = "size-4 shrink-0";
   switch (platform) {
-    case "github": return <Github className={cls} aria-hidden />;
+    case "github": return <GithubLogo className={cls} weight="duotone" aria-hidden />;
     case "linkedin": return <Linkedin className={cls} aria-hidden />;
     case "twitter": return <Twitter className={cls} aria-hidden />;
     case "youtube": return <Youtube className={cls} aria-hidden />;

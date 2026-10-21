@@ -161,12 +161,12 @@ describe("ProjectEditor", () => {
     await input('#project-story textarea','A useful solution');
     const textarea = host.querySelector('#project-story textarea') as HTMLTextAreaElement;
     textarea.setSelectionRange(2,8);
-    await act(async () => (host.querySelector('button[aria-label="projects.editor.markdownbold"]') as HTMLButtonElement).click());
+    await act(async () => (host.querySelector('#project-story button[aria-label="projects.editor.markdownbold"]') as HTMLButtonElement).click());
     expect(textarea.value).toBe('A **useful** solution');
-    await act(async () => Array.from(host.querySelectorAll('[role="tab"]')).find(tab=>tab.textContent==='projects.editor.preview')!.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+    await act(async () => Array.from(host.querySelectorAll('#project-story [role="tab"]')).find(tab=>tab.textContent==='projects.editor.preview')!.dispatchEvent(new MouseEvent('click',{bubbles:true})));
     expect(host.querySelector('#project-story strong')?.textContent).toBe('useful');
     expect(save).not.toHaveBeenCalled();
-    await act(async () => Array.from(host.querySelectorAll('[role="tab"]')).find(tab=>tab.textContent==='projects.editor.write')!.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+    await act(async () => Array.from(host.querySelectorAll('#project-story [role="tab"]')).find(tab=>tab.textContent==='projects.editor.write')!.dispatchEvent(new MouseEvent('click',{bubbles:true})));
     expect((host.querySelector('#project-story textarea') as HTMLTextAreaElement).value).toBe('A **useful** solution');
   });
   it("does not let toolbar formatting exceed the Markdown limit", async () => {

@@ -1,6 +1,6 @@
 import { useId, useState } from "react";
-import { CheckCircle, XCircle } from "@phosphor-icons/react";
-import { FileSliders, Github, Globe, Mic, Plus, Video, X } from "lucide-react";
+import { CheckCircle, GithubLogo, XCircle } from "@phosphor-icons/react";
+import { FileSliders, Globe, Mic, Plus, Video, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import type { ProjectDraft } from "./projectEditorDraft";
 const resources = [
   { key: "demo", icon: Globe, example: "https://my-project.example.com" },
   { key: "slide", icon: FileSliders, example: "https://docs.google.com/presentation/d/…" },
-  { key: "repo", icon: Github, example: "https://github.com/your-team/your-project" },
+  { key: "repo", icon: GithubLogo, example: "https://github.com/your-team/your-project" },
   { key: "video", icon: Video, example: "https://www.youtube.com/watch?v=…" },
   { key: "pitchVideo", icon: Mic, example: "https://www.loom.com/share/…" },
 ] as const;
@@ -35,7 +35,7 @@ export function ProjectResourcesEditor({ draft, onChange, presentation = "defaul
 
     return <section id="project-links" className="scroll-mt-24">
       <Separator className="mb-6" />
-      <div className="grid min-w-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-12">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[200px_minmax(0,1fr)] xl:gap-x-12">
         <div>
           <h2 className="text-heading-medium font-display text-project-editor-heading">{t("projects.editor.submissionLinksTitle")}</h2>
           <p className="mt-4 text-body-small font-body text-foreground-subtle">{t("projects.editor.submissionLinksHint")}</p>
@@ -56,7 +56,7 @@ export function ProjectResourcesEditor({ draft, onChange, presentation = "defaul
                 id={inputId}
                 type="url"
                 variant="icon-leading"
-                leadingIcon={<Icon className="size-5 text-foreground-subtle" aria-hidden />}
+                leadingIcon={key === "repo" ? <GithubLogo className="size-5 text-foreground-subtle" weight="duotone" aria-hidden /> : <Icon className="size-5 text-foreground-subtle" aria-hidden />}
                 statusIcon={statusIcon}
                 inputMode="url"
                 autoComplete="off"
@@ -97,7 +97,7 @@ export function ProjectResourcesEditor({ draft, onChange, presentation = "defaul
         return <div key={key} className="min-w-0 rounded-xl border border-border bg-background">
           {visible ? <div className="p-4">
             <div className="flex items-center gap-2">
-              <Icon className="size-4 shrink-0 text-primary" aria-hidden />
+              {key === "repo" ? <GithubLogo className="size-4 shrink-0 text-primary" weight="duotone" aria-hidden /> : <Icon className="size-4 shrink-0 text-primary" aria-hidden />}
               <label htmlFor={inputId} className="flex-1 text-label-medium">{t(`projects.editor.resourceFields.${key}.label`)}</label>
               <Button type="button" variant="cta" hierarchy="tertiary" iconOnly size="small" aria-label={t("projects.editor.removeResource", { resource: t(`projects.editor.resourceFields.${key}.label`) })} onClick={() => {
                 onChange(key, "");
@@ -109,7 +109,7 @@ export function ProjectResourcesEditor({ draft, onChange, presentation = "defaul
             <Input autoFocus={focusKey === key} id={inputId} className="mt-3" type="url" inputMode="url" autoComplete="off" spellCheck={false} maxLength={2048} pattern="https://.*" placeholder={example} value={draft[key]} aria-describedby={`${inputId}-hint${invalid ? ` ${inputId}-error` : ""}`} aria-invalid={invalid || undefined} onChange={event => { setExpanded(current => [...new Set([...current, key])]); onChange(key, event.target.value); }} onBlur={() => setTouched(current => [...new Set([...current, key])])} />
             {invalid ? <p id={`${inputId}-error`} className="mt-2 text-body-small text-destructive" role="alert">{t("projects.editor.httpsHint")}</p> : null}
           </div> : <button type="button" aria-label={t("projects.editor.addResource", { resource: t(`projects.editor.resourceFields.${key}.label`) })} className="flex min-h-24 w-full items-start gap-3 rounded-xl p-4 text-left transition-colors hover:bg-surface-raised focus-visible:outline-2 focus-visible:outline-primary" aria-expanded={false} onClick={() => { setFocusKey(key); setExpanded(current => [...current, key]); }}>
-            <Icon className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
+            {key === "repo" ? <GithubLogo className="mt-0.5 size-5 shrink-0 text-primary" weight="duotone" aria-hidden /> : <Icon className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />}
             <span className="min-w-0 flex-1 break-words"><span className="block text-label-medium">{t("projects.editor.addResource", { resource: t(`projects.editor.resourceFields.${key}.label`) })}</span><span className="mt-2 block text-body-small text-foreground-muted">{t(`projects.editor.resourceFields.${key}.hint`)}</span></span>
             <Plus className="size-4 shrink-0 text-foreground-muted" aria-hidden />
           </button>}

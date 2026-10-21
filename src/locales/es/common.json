@@ -320,6 +320,7 @@
     "loadMore": "Cargar más",
     "emptyTitle": "No se encontraron proyectos",
     "emptyDescription": "Aún no hay contenido público que coincida con el filtro actual.",
+    "emptyStartDescription": "Empieza con un proyecto nuevo.",
     "emptyHackathonDescription": "Aún no hay hackathons públicos disponibles para esta vista.",
     "emptyCourseDescription": "Aún no hay cursos públicos disponibles para esta vista.",
     "emptyShowcaseDescription": "Aún no hay escaparates públicos disponibles para esta vista.",
@@ -351,6 +352,7 @@
       "label": "Ordenar",
       "newest": "Más recientes",
       "oldest": "Más antiguos",
+      "liked": "Me gustan",
       "mostLiked": "Más gustados"
     },
     "card": {
