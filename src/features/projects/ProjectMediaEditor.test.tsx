@@ -25,8 +25,13 @@ async function choose(files: File[], screenshots=false) {
   Object.defineProperty(input,'files',{configurable:true,value:files});
   await act(async()=>{input.dispatchEvent(new Event('change',{bubbles:true}));await new Promise(resolve=>setTimeout(resolve,0));});
 }
+function dispatchPointerEvent(target: HTMLElement, type: string, values: PointerEventInit) {
+  const event = new PointerEvent(type, { bubbles: true, cancelable: true, ...values });
+  if (values.pointerType !== undefined) Object.defineProperty(event, "pointerType", { value: values.pointerType });
+  target.dispatchEvent(event);
+}
 beforeEach(()=>{vi.clearAllMocks();changed=vi.fn();mocks.upload.mockImplementation(async (_id:string,_kind:string,file:File)=>({path:file.name,signed_url:`https://example.com/${file.name}`}));});
-afterEach(async()=>{if(root) await act(async()=>root.unmount());host?.remove();});
+afterEach(async()=>{if(root) await act(async()=>root.unmount());host?.remove();vi.useRealTimers();});
 describe('ProjectMediaEditor',()=>{
   it('uses the configured dashed frame for both submission image placeholders',async()=>{
     await mount(undefined, 'submission');
@@ -77,5 +82,82 @@ describe('ProjectMediaEditor',()=>{
       cards[0]?.querySelector<HTMLButtonElement>('[aria-label="projects.form.remove"]')?.click();
     });
     expect(changed.mock.lastCall?.[0].map((item: ProjectMediaItem) => item.path)).toEqual(['two.png']);
+  });
+
+  it('starts mouse dragging from the image card after the movement threshold', async () => {
+    await mount(
+      [
+        { path: 'one.png', url: 'https://example.com/one.png' },
+        { path: 'two.png', url: 'https://example.com/two.png' },
+      ],
+      'submission',
+    );
+    const card = host.querySelector<HTMLElement>('[data-sortable-card]')!;
+
+    await act(async () => {
+      dispatchPointerEvent(card, 'pointerdown', { pointerId: 3, pointerType: 'mouse', button: 0, clientX: 10, clientY: 10 });
+      dispatchPointerEvent(card, 'pointermove', { pointerId: 3, pointerType: 'mouse', button: 0, clientX: 20, clientY: 10 });
+    });
+
+    expect(document.body.querySelector('[class~="fixed"][class~="z-50"]')).not.toBeNull();
+    expect(document.body.style.overflow).toBe('hidden');
+
+    await act(async () => dispatchPointerEvent(card, 'pointerup', { pointerId: 3, pointerType: 'mouse', button: 0 }));
+    expect(document.body.style.overflow).toBe('');
+  });
+
+  it('cancels touch drag activation when the finger moves before the hold delay', async () => {
+    vi.useFakeTimers();
+    await mount([{ path: 'one.png', url: 'https://example.com/one.png' }], 'submission');
+    const card = host.querySelector<HTMLElement>('[data-sortable-card]')!;
+
+    await act(async () => {
+      dispatchPointerEvent(card, 'pointerdown', { pointerId: 5, pointerType: 'touch', button: 0, clientX: 10, clientY: 10 });
+      dispatchPointerEvent(card, 'pointermove', { pointerId: 5, pointerType: 'touch', button: 0, clientX: 10, clientY: 22 });
+      vi.advanceTimersByTime(300);
+    });
+
+    expect(document.body.style.overflow).toBe('');
+    expect(document.body.querySelector('[class~="fixed"][class~="z-50"]')).toBeNull();
+  });
+
+  it('locks page scrolling after the touch hold delay and restores it on pointer cancel', async () => {
+    vi.useFakeTimers();
+    await mount(
+      [
+        { path: 'one.png', url: 'https://example.com/one.png' },
+        { path: 'two.png', url: 'https://example.com/two.png' },
+      ],
+      'submission',
+    );
+    const card = host.querySelector<HTMLElement>('[data-sortable-card]')!;
+
+    await act(async () => {
+      dispatchPointerEvent(card, 'pointerdown', { pointerId: 7, pointerType: 'touch', button: 0, clientX: 10, clientY: 10 });
+      vi.advanceTimersByTime(250);
+    });
+    expect(document.body.style.overflow).toBe('hidden');
+
+    const touchMove = new Event('touchmove', { cancelable: true });
+    window.dispatchEvent(touchMove);
+    expect(touchMove.defaultPrevented).toBe(true);
+
+    await act(async () => dispatchPointerEvent(card, 'pointercancel', { pointerId: 7, pointerType: 'touch', button: 0 }));
+    expect(document.body.style.overflow).toBe('');
+    expect(changed).not.toHaveBeenCalled();
+  });
+
+  it('does not start dragging when the remove button is pressed', async () => {
+    vi.useFakeTimers();
+    await mount([{ path: 'one.png', url: 'https://example.com/one.png' }], 'submission');
+    const removeButton = host.querySelector<HTMLButtonElement>('[aria-label="projects.form.remove"]')!;
+
+    await act(async () => {
+      dispatchPointerEvent(removeButton, 'pointerdown', { pointerId: 9, pointerType: 'touch', button: 0, clientX: 10, clientY: 10 });
+      vi.advanceTimersByTime(300);
+    });
+
+    expect(document.body.style.overflow).toBe('');
+    expect(document.body.querySelector('[class~="fixed"][class~="z-50"]')).toBeNull();
   });
 });

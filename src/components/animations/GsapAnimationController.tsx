@@ -69,7 +69,8 @@ export function GsapAnimationController() {
     const handlePointerOut = (event: PointerEvent) => {
       const element = findAnimatedElement(event.target);
       if (!element || isWithinElement(element, event.relatedTarget)) return;
-      if (!element.matches(":focus-within")) animateElement(element, false);
+      const hasKeyboardFocus = element.querySelector(":focus-visible") !== null;
+      if (!hasKeyboardFocus) animateElement(element, false);
     };
 
     const handleFocusIn = (event: FocusEvent) => {

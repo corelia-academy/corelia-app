@@ -51,6 +51,10 @@ vi.mock("@/features/hackathons/hackathonQueries", () => ({
 }));
 
 vi.mock("@/features/projects/projectQueries", () => ({
+  publicProjectCountQueryOptions: () => ({
+    queryKey: ["projects", "public-count-test"],
+    queryFn: async () => 1,
+  }),
   publicProjectTeamsQueryOptions: () => ({
     queryKey: ["projects", "teams-test"],
     queryFn: async () => ({}),
@@ -126,6 +130,10 @@ describe("ProjectsPage hackathon slug filter case-insensitivity", () => {
     }
   }
 
+  function hackathonTrigger(root: HTMLElement) {
+    return root.querySelector<HTMLButtonElement>('button[aria-label="projects.filters.hackathon"]');
+  }
+
   function LocationTracker() {
     const location = useLocation();
     return <span data-testid="location-search">{location.search}</span>;
@@ -167,9 +175,7 @@ describe("ProjectsPage hackathon slug filter case-insensitivity", () => {
   it("resolves lowercase hackathon slug and renders project list", async () => {
     const view = await renderPage("/projects?hackathon=qa-356");
 
-    const select = view.container.querySelector("select");
-    expect(select).not.toBeNull();
-    expect(select?.value).toBe("qa-356");
+    expect(hackathonTrigger(view.container)?.textContent).toBe("QA 356");
 
     expect(view.container.textContent).toContain("Project Alpha");
     expect(view.container.textContent).not.toContain("This hackathon is unavailable");
@@ -181,9 +187,7 @@ describe("ProjectsPage hackathon slug filter case-insensitivity", () => {
   it("resolves uppercase hackathon slug QA-356, renders the same project list, and canonicalizes URL to lowercase", async () => {
     const view = await renderPage("/projects?hackathon=QA-356");
 
-    const select = view.container.querySelector("select");
-    expect(select).not.toBeNull();
-    expect(select?.value).toBe("qa-356");
+    expect(hackathonTrigger(view.container)?.textContent).toBe("QA 356");
 
     expect(view.container.textContent).toContain("Project Alpha");
     expect(view.container.textContent).not.toContain("This hackathon is unavailable");
@@ -196,9 +200,7 @@ describe("ProjectsPage hackathon slug filter case-insensitivity", () => {
   it("resolves mixed-case slug Qa-356 with whitespace padding and canonicalizes URL to lowercase", async () => {
     const view = await renderPage("/projects?hackathon=%20Qa-356%20");
 
-    const select = view.container.querySelector("select");
-    expect(select).not.toBeNull();
-    expect(select?.value).toBe("qa-356");
+    expect(hackathonTrigger(view.container)?.textContent).toBe("QA 356");
 
     expect(view.container.textContent).toContain("Project Alpha");
     expect(view.container.textContent).not.toContain("This hackathon is unavailable");
@@ -211,9 +213,7 @@ describe("ProjectsPage hackathon slug filter case-insensitivity", () => {
   it("displays hackathon missing error when slug does not exist", async () => {
     const view = await renderPage("/projects?hackathon=unknown-hackathon");
 
-    const select = view.container.querySelector("select");
-    expect(select).not.toBeNull();
-    expect(select?.value).toBe("");
+    expect(hackathonTrigger(view.container)?.textContent).toBe("projects.filters.allHackathons");
 
     expect(view.container.textContent).toContain("This hackathon is unavailable");
     expect(view.container.textContent).not.toContain("Project Alpha");

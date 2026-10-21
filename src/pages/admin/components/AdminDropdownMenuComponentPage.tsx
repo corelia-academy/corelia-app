@@ -16,6 +16,7 @@ import {
   DropdownMenuSelectAll,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuTriggerWithIndicator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
@@ -818,6 +819,79 @@ export default function AdminDropdownMenuComponentPage({
           {baseItemColumns.map((column) => (
             <BaseItemPreview key={column.id} {...column} />
           ))}
+        </div>
+      </ShowcaseSection>
+
+      <ShowcaseSection title="Dropdown trigger indicator">
+        <div
+          data-testid="dropdown-menu-trigger-indicator"
+          className="grid min-w-0 gap-6 xl:grid-cols-3"
+        >
+          <div className="min-w-0 space-y-2">
+            <p className="text-body-small text-foreground-muted">Default icon</p>
+            <DropdownMenu>
+              <DropdownMenuTriggerWithIndicator
+                type="button"
+                aria-label="Open default icon example"
+                trailingContent={
+                  <span className="rounded-full bg-primary/10 px-2 text-primary" aria-hidden>
+                    2
+                  </span>
+                }
+                className="flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-3 text-left text-body-large text-foreground"
+              >
+                <span className="min-w-0 truncate">Course level</span>
+              </DropdownMenuTriggerWithIndicator>
+              <DropdownMenuContent align="start">
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Menu content stays separate</DropdownMenuLabel>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <div className="min-w-0 space-y-2">
+            <p className="text-body-small text-foreground-muted">Custom icon</p>
+            <DropdownMenu>
+              <DropdownMenuTriggerWithIndicator
+                type="button"
+                aria-label="Open custom icon example"
+                icon={<CaretDown className="size-4 text-primary" weight="regular" aria-hidden />}
+                className="flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-3 text-left text-body-large text-foreground"
+              >
+                <span className="min-w-0 truncate">Custom indicator</span>
+              </DropdownMenuTriggerWithIndicator>
+              <DropdownMenuContent align="start">
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Menu content stays separate</DropdownMenuLabel>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <div className="min-w-0 space-y-2">
+            <p className="text-body-small text-foreground-muted">No icon</p>
+            <DropdownMenu>
+              <DropdownMenuTriggerWithIndicator
+                type="button"
+                aria-label="Open no icon example"
+                icon={null}
+                trailingContent={
+                  <span className="rounded-full bg-primary/10 px-2 text-primary" aria-hidden>
+                    2
+                  </span>
+                }
+                className="flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-3 text-left text-body-large text-foreground"
+              >
+                <span className="min-w-0 truncate">Indicator hidden</span>
+              </DropdownMenuTriggerWithIndicator>
+              <DropdownMenuContent align="start">
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Menu content stays separate</DropdownMenuLabel>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </ShowcaseSection>
 

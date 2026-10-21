@@ -12,7 +12,7 @@ import {
   DropdownMenuItemContent,
   DropdownMenuList,
   DropdownMenuSearch,
-  DropdownMenuTrigger,
+  DropdownMenuTriggerWithIndicator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { normalizeTaxonomySearch, type ProjectTaxonomyOption } from "@/lib/projectTaxonomy";
@@ -66,14 +66,13 @@ export function ProjectTaxonomyPicker({ label, options, selectedIds, customValue
           </div>
         </div>
       </details> : <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger
-          className="group mt-3 flex h-10 w-full items-center justify-between rounded-lg border border-border bg-background px-3 text-left text-body-large text-foreground-muted outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        <DropdownMenuTriggerWithIndicator
+          className="mt-3 flex h-10 w-full items-center justify-between rounded-lg border border-border bg-background px-3 text-left text-body-large text-foreground-muted outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           aria-label={searchPlaceholder}
           aria-expanded={open}
         >
           {searchPlaceholder}
-          <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} aria-hidden />
-        </DropdownMenuTrigger>
+        </DropdownMenuTriggerWithIndicator>
         <DropdownMenuContent
           layout="multiple-list"
           sideOffset={4}

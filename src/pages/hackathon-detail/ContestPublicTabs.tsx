@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import {
   CalendarDots,
-  CaretDown,
   Coins,
   Eye,
   FolderOpen,
@@ -23,9 +22,11 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItemContent,
+  DropdownMenuList,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuTrigger,
+  DropdownMenuTriggerWithIndicator,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -439,7 +440,7 @@ export function HackathonProjectsTab() {
               {t("public.projects.description")}
             </p>
           </div>
-          <div className="grid gap-2 sm:grid-cols-[minmax(0,520px)_minmax(0,1fr)] sm:items-center">
+          <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_180px] sm:items-center">
             <Input
               type="search"
               variant="icon-leading"
@@ -449,40 +450,41 @@ export function HackathonProjectsTab() {
               aria-label={t("public.projects.searchPlaceholder")}
             />
             <DropdownMenu>
-              <DropdownMenuTrigger
+              <DropdownMenuTriggerWithIndicator
                 type="button"
                 aria-label={t("public.projects.sort")}
-                className="group/sort-menu flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-lg text-left font-body text-body-large text-foreground transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-lg text-left font-body text-body-large text-foreground transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               >
                 <span>
                   {sort === "newest"
                     ? t("public.projects.newest")
                     : t("public.projects.oldest")}
                 </span>
-                <CaretDown
-                  className="size-5 shrink-0 text-foreground-muted transition-transform duration-200 group-data-[popup-open]/sort-menu:rotate-180"
-                  weight="duotone"
-                  aria-hidden
-                />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuRadioGroup
-                  value={sort}
-                  onValueChange={(value) => {
-                    if (value !== "newest" && value !== "oldest") return;
-                    const next = new URLSearchParams(params);
-                    if (value === "oldest") next.set("sort", "oldest");
-                    else next.delete("sort");
-                    setParams(next, { preventScrollReset: true });
-                  }}
-                >
-                  <DropdownMenuRadioItem className="text-body-large" value="newest">
-                    {t("public.projects.newest")}
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem className="text-body-large" value="oldest">
-                    {t("public.projects.oldest")}
-                  </DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
+              </DropdownMenuTriggerWithIndicator>
+              <DropdownMenuContent
+                layout="multiple-list"
+                align="start"
+                className="w-(--anchor-width) max-w-[calc(100vw-2rem)]"
+              >
+                <DropdownMenuList>
+                  <DropdownMenuRadioGroup
+                    value={sort}
+                    onValueChange={(value) => {
+                      if (value !== "newest" && value !== "oldest") return;
+                      const next = new URLSearchParams(params);
+                      if (value === "oldest") next.set("sort", "oldest");
+                      else next.delete("sort");
+                      setParams(next, { preventScrollReset: true });
+                    }}
+                  >
+                    <DropdownMenuRadioItem className="text-body-large" value="newest">
+                      <DropdownMenuItemContent>{t("public.projects.newest")}</DropdownMenuItemContent>
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem className="text-body-large" value="oldest">
+                      <DropdownMenuItemContent>{t("public.projects.oldest")}</DropdownMenuItemContent>
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuList>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -490,7 +492,7 @@ export function HackathonProjectsTab() {
 
         {query.isPending ? <div className="grid gap-6 sm:grid-cols-2">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div> : query.isError ? <div role="alert" className="py-8 text-center"><p>{t("detail.errors.loadFailed")}</p><Button className="mt-3" onClick={() => void query.refetch()}>{t("projects.retry", { ns: "common" })}</Button></div> : filteredProjects.length === 0 ? <EmptyTab icon={<Package className="size-6" weight="duotone" />} title={t("public.empty.projects")} /> : (
           <>
-            <div className="grid gap-6 sm:grid-cols-2">{filteredProjects.map(({ project, owner }) => <ProjectCard key={project.id} variant="hackathon" phosphorDuotone systemTaxonomy={systemTaxonomy} hearted={hearts.data?.has(project.id) ?? false} taxonomy={contest} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} ownerAvatarUrl={owner?.avatar_url} ownerAvatarSeed={owner?.avatar_seed} ownerAvatarConfig={owner?.avatar_config} teamMembers={teamsQuery.data?.[project.id] ?? []} />)}</div>
+            <div className="grid gap-6 sm:grid-cols-2">{filteredProjects.map(({ project, owner }) => <ProjectCard key={project.id} variant="hackathon" systemTaxonomy={systemTaxonomy} hearted={hearts.data?.has(project.id) ?? false} taxonomy={contest} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} ownerAvatarUrl={owner?.avatar_url} ownerAvatarSeed={owner?.avatar_seed} ownerAvatarConfig={owner?.avatar_config} teamMembers={teamsQuery.data?.[project.id] ?? []} />)}</div>
             {query.hasNextPage ? <div className="flex justify-center"><Button type="button" variant="cta" hierarchy="secondary" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>{query.isFetchingNextPage ? t("public.projects.loading") : t("public.projects.loadMore")}</Button></div> : null}
           </>
         )}

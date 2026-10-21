@@ -28,8 +28,21 @@ vi.mock("@/components/ui/dropdown-menu", async () => {
   return {
     DropdownMenu: passThrough,
     DropdownMenuContent: passThrough,
+    DropdownMenuList: passThrough,
+    DropdownMenuItemContent: passThrough,
     DropdownMenuTrigger: (props: React.ComponentProps<"button">) =>
       React.createElement("button", { ...props, "data-slot": "dropdown-menu-trigger" }),
+    DropdownMenuTriggerWithIndicator: ({
+      trailingContent,
+      children,
+      ...props
+    }: React.ComponentProps<"button"> & { trailingContent?: React.ReactNode }) =>
+      React.createElement(
+        "button",
+        { ...props, "data-slot": "dropdown-menu-trigger" },
+        children,
+        trailingContent,
+      ),
     DropdownMenuRadioGroup: ({
       children,
       onValueChange,

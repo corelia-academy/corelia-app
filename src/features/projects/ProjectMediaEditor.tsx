@@ -97,6 +97,31 @@ type SortableScreenshotsGridProps = {
   trailingSlot?: ReactNode;
 };
 
+function lockPageScroll() {
+  const body = document.body;
+  const root = document.documentElement;
+  const previousOverflow = body.style.overflow;
+  const previousPaddingRight = body.style.paddingRight;
+  const previousOverscrollBehavior = root.style.overscrollBehavior;
+  const scrollbarWidth = window.innerWidth - root.clientWidth;
+
+  if (scrollbarWidth > 0) {
+    body.style.paddingRight = `calc(${window.getComputedStyle(body).paddingRight} + ${scrollbarWidth}px)`;
+  }
+  body.style.overflow = "hidden";
+  root.style.overscrollBehavior = "none";
+
+  return () => {
+    body.style.overflow = previousOverflow;
+    body.style.paddingRight = previousPaddingRight;
+    root.style.overscrollBehavior = previousOverscrollBehavior;
+  };
+}
+
+function preventTouchScroll(event: TouchEvent) {
+  event.preventDefault();
+}
+
 function SortableScreenshotsGrid({
   screenshots,
   onScreenshotsChange,
@@ -121,6 +146,8 @@ function SortableScreenshotsGrid({
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
   const isDraggingActiveRef = useRef(false);
+  const cleanupDragRef = useRef<(() => void) | null>(null);
+  const cleanupPendingPointerRef = useRef<(() => void) | null>(null);
 
   // Compute preview reordered list for rendering in the grid while dragging
   const displayItems = useMemo(() => {
@@ -138,10 +165,14 @@ function SortableScreenshotsGrid({
   useEffect(() => {
     return () => {
       if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+      cleanupPendingPointerRef.current?.();
+      cleanupDragRef.current?.();
     };
   }, []);
 
-  function startDrag(clientX: number, clientY: number, index: number, cardEl: HTMLElement) {
+  function startDrag(clientX: number, clientY: number, index: number, cardEl: HTMLElement, pointerId: number) {
+    cleanupPendingPointerRef.current?.();
+    const restorePageScroll = lockPageScroll();
     const rect = cardEl.getBoundingClientRect();
     setGrabOffset({ x: clientX - rect.left, y: clientY - rect.top });
     setPointerCoord({ x: clientX, y: clientY });
@@ -160,6 +191,7 @@ function SortableScreenshotsGrid({
     }
 
     function onPointerMove(e: PointerEvent) {
+      if (e.pointerId !== pointerId) return;
       setPointerCoord({ x: e.clientX, y: e.clientY });
 
       const grid = gridRef.current;
@@ -199,15 +231,24 @@ function SortableScreenshotsGrid({
       }
     }
 
-    function onPointerUp() {
+    function cleanupDrag() {
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("pointercancel", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerCancel);
+      window.removeEventListener("blur", onWindowBlur);
+      window.removeEventListener("touchmove", preventTouchScroll);
+      restorePageScroll();
+      isDraggingActiveRef.current = false;
+      cleanupDragRef.current = null;
+    }
+
+    function finishDrag(commit: boolean) {
+      cleanupDrag();
 
       const fromIndex = draggingIndexRef.current;
       const toIndex = overIndexRef.current;
 
-      if (fromIndex !== null && toIndex !== null && fromIndex !== toIndex) {
+      if (commit && fromIndex !== null && toIndex !== null && fromIndex !== toIndex) {
         const next = [...screenshotsRef.current];
         const [moved] = next.splice(fromIndex, 1);
         if (moved) {
@@ -224,9 +265,24 @@ function SortableScreenshotsGrid({
       isDraggingActiveRef.current = false;
     }
 
+    function onPointerUp(e: PointerEvent) {
+      if (e.pointerId === pointerId) finishDrag(true);
+    }
+
+    function onPointerCancel(e: PointerEvent) {
+      if (e.pointerId === pointerId) finishDrag(false);
+    }
+
+    function onWindowBlur() {
+      finishDrag(false);
+    }
+
+    cleanupDragRef.current = cleanupDrag;
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
-    window.addEventListener("pointercancel", onPointerUp);
+    window.addEventListener("pointercancel", onPointerCancel);
+    window.addEventListener("blur", onWindowBlur);
+    window.addEventListener("touchmove", preventTouchScroll, { passive: false });
   }
 
   function handleCardPointerDown(e: ReactPointerEvent<HTMLDivElement>, index: number) {
@@ -235,33 +291,62 @@ function SortableScreenshotsGrid({
 
     pointerStartRef.current = { x: e.clientX, y: e.clientY };
     const targetEl = e.currentTarget;
+    if (typeof targetEl.setPointerCapture === "function") {
+      try {
+        targetEl.setPointerCapture(e.pointerId);
+      } catch {
+        // The pointer may already have been canceled by the browser.
+      }
+    }
 
     if (e.pointerType === "touch") {
       longPressTimerRef.current = setTimeout(() => {
-        startDrag(e.clientX, e.clientY, index, targetEl);
+        longPressTimerRef.current = null;
+        pointerStartRef.current = null;
+        startDrag(e.clientX, e.clientY, index, targetEl, e.pointerId);
       }, 250);
     } else {
       function onInitialMouseMove(moveEvent: PointerEvent) {
-        if (!pointerStartRef.current) return;
+        if (!pointerStartRef.current || moveEvent.pointerId !== e.pointerId) return;
         const dx = Math.abs(moveEvent.clientX - pointerStartRef.current.x);
         const dy = Math.abs(moveEvent.clientY - pointerStartRef.current.y);
         if (dx > 4 || dy > 4) {
-          window.removeEventListener("pointermove", onInitialMouseMove);
-          window.removeEventListener("pointerup", onInitialMouseUp);
-          startDrag(moveEvent.clientX, moveEvent.clientY, index, targetEl);
+          cleanupInitialPointer();
+          startDrag(moveEvent.clientX, moveEvent.clientY, index, targetEl, e.pointerId);
         }
       }
-      function onInitialMouseUp() {
+
+      function cleanupInitialPointer() {
         window.removeEventListener("pointermove", onInitialMouseMove);
         window.removeEventListener("pointerup", onInitialMouseUp);
+        window.removeEventListener("pointercancel", onInitialPointerCancel);
+        window.removeEventListener("blur", onInitialWindowBlur);
         pointerStartRef.current = null;
+        cleanupPendingPointerRef.current = null;
       }
+
+      function onInitialMouseUp(upEvent: PointerEvent) {
+        if (upEvent.pointerId === e.pointerId) cleanupInitialPointer();
+      }
+
+      function onInitialPointerCancel(cancelEvent: PointerEvent) {
+        if (cancelEvent.pointerId === e.pointerId) cleanupInitialPointer();
+      }
+
+      function onInitialWindowBlur() {
+        cleanupInitialPointer();
+      }
+
+      cleanupPendingPointerRef.current = cleanupInitialPointer;
       window.addEventListener("pointermove", onInitialMouseMove);
       window.addEventListener("pointerup", onInitialMouseUp);
+      window.addEventListener("pointercancel", onInitialPointerCancel);
+      window.addEventListener("blur", onInitialWindowBlur);
     }
   }
 
   function handleCardPointerMove(e: ReactPointerEvent<HTMLDivElement>) {
+    if (e.pointerType !== "touch") return;
     if (!pointerStartRef.current || isDraggingActiveRef.current) return;
     const dx = Math.abs(e.clientX - pointerStartRef.current.x);
     const dy = Math.abs(e.clientY - pointerStartRef.current.y);
@@ -321,6 +406,7 @@ function SortableScreenshotsGrid({
                 className="absolute -right-1.5 -top-1.5 z-10 size-4 rounded-full border border-border bg-surface-raised p-0 text-foreground"
                 aria-label={t("projects.form.remove")}
                 disabled={uploading}
+                onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
                   onRemove(item);
@@ -460,7 +546,7 @@ export function ProjectMediaEditor({
 
   if (presentation === "submission") {
     return <div className="space-y-8">
-      <section className="grid min-w-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-12" aria-labelledby="project-logo-label">
+      <section className="grid min-w-0 gap-6 xl:grid-cols-[200px_minmax(0,1fr)] xl:gap-x-12" aria-labelledby="project-logo-label">
         <div className="min-w-0 space-y-4">
           <div>
             <h3 id="project-logo-label" className="text-heading-medium font-display text-project-editor-heading">{t("projects.form.logo")} <span className="text-label-medium text-error-400">*</span></h3>
@@ -483,7 +569,7 @@ export function ProjectMediaEditor({
         </div>
       </section>
 
-      <section className="grid min-w-0 gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-12" aria-labelledby="project-preview-images-label">
+      <section className="grid min-w-0 gap-6 xl:grid-cols-[200px_minmax(0,1fr)] xl:gap-x-12" aria-labelledby="project-preview-images-label">
         <div className="min-w-0 space-y-4">
           <div>
             <h3 id="project-preview-images-label" className="text-heading-medium font-display text-project-editor-heading">{t("projects.editor.submissionPreviewImages")}</h3>

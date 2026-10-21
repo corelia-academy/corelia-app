@@ -1023,4 +1023,58 @@ describe("Input", () => {
 
     await view.unmount()
   })
+
+  it("renders a search clear button when type is search with content, and clears on click", async () => {
+    function ControlledSearch() {
+      const [query, setQuery] = React.useState("react query")
+      return (
+        <Input
+          type="search"
+          variant="icon-leading"
+          value={query}
+          onChange={(e) => setQuery(e.currentTarget.value)}
+        />
+      )
+    }
+
+    const view = render(<ControlledSearch />)
+    await view.mount()
+
+    const input = view.container.querySelector<HTMLInputElement>("input")
+    expect(input?.value).toBe("react query")
+
+    const clearButton = view.container.querySelector<HTMLButtonElement>(
+      'button[aria-label="Clear search"]',
+    )
+    expect(clearButton).not.toBeNull()
+
+    await act(async () => {
+      clearButton?.click()
+    })
+
+    expect(input?.value).toBe("")
+    expect(
+      view.container.querySelector('button[aria-label="Clear search"]'),
+    ).toBeNull()
+
+    await view.unmount()
+  })
+
+  it("does not render a clear button for non-search inputs", async () => {
+    const view = render(
+      <Input
+        type="text"
+        variant="icon-leading"
+        defaultValue="some text"
+      />,
+    )
+    await view.mount()
+
+    const clearButton = view.container.querySelector<HTMLButtonElement>(
+      'button[aria-label="Clear search"]',
+    )
+    expect(clearButton).toBeNull()
+
+    await view.unmount()
+  })
 })

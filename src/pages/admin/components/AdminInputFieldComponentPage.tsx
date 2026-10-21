@@ -16,6 +16,7 @@ import {
   DropdownMenuList,
   DropdownMenuSearch,
   DropdownMenuTrigger,
+  DropdownMenuTriggerWithIndicator,
 } from "@/components/ui/dropdown-menu";
 import { Field, FieldContextReset } from "@/components/ui/field";
 import {
@@ -179,7 +180,7 @@ function InputShowcaseSelector({
         open={!disabled && menuOpen}
         onOpenChange={(open) => setMenuOpen(!disabled && open)}
       >
-        <DropdownMenuTrigger
+        <DropdownMenuTriggerWithIndicator
           render={
             <button
               type="button"
@@ -191,27 +192,30 @@ function InputShowcaseSelector({
               )}
             />
           }
+          icon={
+            <span
+              draggable={false}
+              onDragStart={(event) => event.preventDefault()}
+              className="inline-flex size-4 items-center justify-center select-none [&_*]:select-none [&>svg]:size-4"
+            >
+              <CaretDown
+                aria-hidden="true"
+                className={
+                  disabled
+                    ? "text-input-field-disabled-icon"
+                    : "text-foreground-tertiary"
+                }
+                size={16}
+                weight="regular"
+              />
+            </span>
+          }
+          rotateIcon={false}
         >
           <span className="max-w-32 truncate">
             {selectedOption?.label ?? value}
           </span>
-          <span
-            draggable={false}
-            onDragStart={(event) => event.preventDefault()}
-            className="inline-flex size-4 items-center justify-center select-none [&_*]:select-none [&>svg]:size-4"
-          >
-            <CaretDown
-              aria-hidden="true"
-              className={
-                disabled
-                  ? "text-input-field-disabled-icon"
-                  : "text-foreground-tertiary"
-              }
-              size={16}
-              weight="regular"
-            />
-          </span>
-        </DropdownMenuTrigger>
+        </DropdownMenuTriggerWithIndicator>
         <DropdownMenuContent layout="multiple-list" className="w-max min-w-32">
           <DropdownMenuSearch>
             <FieldContextReset>
