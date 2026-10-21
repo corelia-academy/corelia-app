@@ -440,7 +440,7 @@ export function HackathonProjectsTab() {
               {t("public.projects.description")}
             </p>
           </div>
-          <div className="grid w-full max-w-[880px] grid-cols-1 gap-2 2xl:grid-cols-[520px_352px] 2xl:items-center">
+          <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_180px] sm:items-center">
             <Input
               type="search"
               variant="icon-leading"

@@ -55,7 +55,7 @@ export function ProjectCard({
   variant = "default",
 }: ProjectCardProps) {
   const { t, i18n } = useTranslation("common");
-  const isHackathon = variant === "hackathon";
+
   const [isSaved, setIsSaved] = useState(false);
   const detailPath = `/projects/${project.slug || project.id}`;
   const logo = getProjectCoverImageUrl(project);
@@ -96,10 +96,7 @@ export function ProjectCard({
     repo: { href: project.repo_url, label: t("projects.detail.repo"), icon: GithubLogo },
     slides: { href: project.slide_url, label: t("projects.detail.slides"), icon: PhosphorPresentation },
   };
-  const actions = (isHackathon
-    ? [actionItems.demo, actionItems.repo, actionItems.slides]
-    : [actionItems.repo, actionItems.slides, actionItems.demo]
-  ).filter((item) => item.href);
+  const actions = [actionItems.repo, actionItems.slides, actionItems.demo].filter((item) => item.href);
   const peopleContent = people.length === 1 ? (
     <div className="flex min-w-0 items-center gap-2">
       <UserAvatar
@@ -154,7 +151,7 @@ export function ProjectCard({
     </AvatarGroup>
   );
   const awardContent = awards.length ? (
-    <div className={cn("mt-4 flex flex-wrap gap-1.5", isHackathon && "mt-2")}>
+    <div className="mt-4 flex flex-wrap gap-1.5">
       {awards.map((award) => <span key={award.id} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-label-small font-body text-primary">
         <PhosphorTrophy className="size-3" weight="duotone" />
         {award.label || t("projects.editor.winner")}
@@ -188,10 +185,7 @@ export function ProjectCard({
   return (
     <article
       className={cn(
-        "motion-hover-card group relative flex h-full min-w-0 flex-col border border-border bg-surface-base shadow-card",
-        isHackathon
-          ? "h-auto min-h-60 rounded-lg p-4 shadow-none hover:shadow-none"
-          : "min-h-60 rounded-md p-4 shadow-none",
+        "motion-hover-card group relative flex h-full min-h-60 min-w-0 flex-col rounded-md border border-border bg-surface-base p-4 shadow-none",
         className,
       )}
     >
@@ -231,11 +225,11 @@ export function ProjectCard({
           className="shrink-0 border-0 pt-0"
         />
       </div>
-      <p className={cn("mt-4 min-h-[35px] line-clamp-3 text-body-medium font-body leading-[1.4] text-catalog-subtitle", isHackathon && "min-h-0")}>
+      <p className="mt-4 min-h-[35px] line-clamp-3 text-body-medium font-body leading-[1.4] text-catalog-subtitle">
         {project.summary || t("projects.card.noSummary")}
       </p>
       {technologies.length ? (
-        <div className={cn("mt-3 flex flex-wrap gap-1.5", !isHackathon && "gap-1")}>
+        <div className="mt-3 flex flex-wrap gap-1">
           {technologies.map((technology) => (
             <Chip
               key={technology}
@@ -249,42 +243,35 @@ export function ProjectCard({
         </div>
       ) : null}
       {awardContent}
-      {isHackathon ? (
-        <div className="mt-auto flex min-w-0 items-center justify-between gap-2 pt-6 text-body-small font-body">
-          <div className="min-w-0">{peopleContent}</div>
-          {renderActions(true)}
+      <div className="mt-auto flex min-w-0 items-center justify-between gap-3 pt-3 text-body-small font-body leading-[1.25]">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="shrink-0 text-foreground-subtle">{t("projects.byPrefix")}</span>
+          {peopleContent}
         </div>
-      ) : (
-        <div className="mt-auto flex min-w-0 items-center justify-between gap-3 pt-3 text-body-small font-body leading-[1.25]">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="shrink-0 text-foreground-subtle">{t("projects.byPrefix")}</span>
-            {peopleContent}
-          </div>
-          <div className="flex shrink-0 items-center gap-3">
-            {renderActions(true, true)}
-            {actions.length ? <span className="h-5 w-px bg-border-subtle" aria-hidden /> : null}
-            <PhosphorBookmark
-              className={cn(
-                "size-5 shrink-0 cursor-pointer text-foreground focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
-                !isSaved && "hover:text-foreground-muted",
-                isSaved && "fill-current text-primary [&>path:first-child]:opacity-100",
-              )}
-              weight="duotone"
-              role="button"
-              tabIndex={0}
-              aria-label={t("actions.save")}
-              aria-pressed={isSaved}
-              onClick={() => setIsSaved((current) => !current)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  setIsSaved((current) => !current);
-                }
-              }}
-            />
-          </div>
+        <div className="flex shrink-0 items-center gap-3">
+          {renderActions(true, true)}
+          {actions.length ? <span className="h-5 w-px bg-border-subtle" aria-hidden /> : null}
+          <PhosphorBookmark
+            className={cn(
+              "size-5 shrink-0 cursor-pointer text-foreground focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+              !isSaved && "hover:text-foreground-muted",
+              isSaved && "fill-current text-primary [&>path:first-child]:opacity-100",
+            )}
+            weight="duotone"
+            role="button"
+            tabIndex={0}
+            aria-label={t("actions.save")}
+            aria-pressed={isSaved}
+            onClick={() => setIsSaved((current) => !current)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setIsSaved((current) => !current);
+              }
+            }}
+          />
         </div>
-      )}
+      </div>
     </article>
   );
 }
