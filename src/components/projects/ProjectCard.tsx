@@ -52,7 +52,6 @@ export function ProjectCard({
   hearted,
   className,
   systemTaxonomy = [],
-  variant = "default",
 }: ProjectCardProps) {
   const { t, i18n } = useTranslation("common");
 

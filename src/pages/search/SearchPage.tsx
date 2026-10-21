@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { NavLink, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Search, ShieldAlert } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 import { FileText, TimerIcon } from "@phosphor-icons/react";
 
 import { Badge } from "@/components/ui/badge";
