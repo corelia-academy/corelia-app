@@ -22,7 +22,7 @@ describe("EmptyStateIllustration", () => {
     ["tiny", "size-[120px]"],
     ["medium", "size-[200px]"],
     ["large", "size-[280px]"],
-    ["fullPage", "size-[240px]"],
+    ["fullPage", "size-[280px]"],
   ] as const)("uses the Figma frame size for %s", (size, sizeClass) => {
     const markup = renderToStaticMarkup(
       <EmptyStateIllustration type="search" size={size} />,

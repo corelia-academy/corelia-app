@@ -119,7 +119,6 @@ export default function Contests() {
       <FullPageEmptyState
         title={t("catalog.emptyTitle")}
         description={t("catalog.emptyDescription")}
-        size="large"
       />
     );
   }
