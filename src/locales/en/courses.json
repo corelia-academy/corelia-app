@@ -57,6 +57,10 @@
     "corelia": "Corelia course",
     "external_partner": "Partner instructor course"
   },
+  "aiGenerated": {
+    "label": "AI-generated",
+    "description": "Content created by AI and checked automatically."
+  },
   "catalog": {
     "title": "Courses",
     "pageTitle": "Course Library",

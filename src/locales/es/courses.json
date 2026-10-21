@@ -57,6 +57,10 @@
     "corelia": "Curso de Corelia",
     "external_partner": "Curso de instructor asociado"
   },
+  "aiGenerated": {
+    "label": "Generado con IA",
+    "description": "Contenido creado por IA y revisado automáticamente."
+  },
   "catalog": {
     "title": "Cursos",
     "pageTitle": "Biblioteca de cursos",

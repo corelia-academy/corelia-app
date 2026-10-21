@@ -196,6 +196,8 @@ export interface Course {
   external_source_attribution_note?: string | null;
   /** Loại sở hữu khoá học: nội bộ Corelia hoặc đối tác ngoài */
   owner_type?: CourseOwnerType;
+  /** Khoá do Corelia Studio tạo bằng AI; không có field = khoá thường */
+  course_type?: "ai_generated";
 
   /** Đồng giảng viên (chỉ để hiển thị công khai) */
   co_instructors?: CourseCoInstructorSnapshot[];
