@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 
+import { FullPageEmptyState } from "@/components/layouts/FullPageEmptyState";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/projects/ProjectCardSkeleton";
 import { Button } from "@/components/ui/button";
@@ -298,6 +299,24 @@ export default function ProjectsPage() {
     hackathonParam || trackIds.length || sectorIds.length || techStackIds.length || sortChoice === "liked",
   );
   const showDirectoryEmpty = !projectsQuery.isPending && !error && items.length === 0;
+  const showFullPageEmpty =
+    !projectsQuery.isPending &&
+    !error &&
+    items.length === 0 &&
+    !hasProjectFilters &&
+    hackathonsQuery.isSuccess &&
+    projectCountQuery.isSuccess &&
+    hackathons.length === 0 &&
+    projectCountQuery.data === 0;
+
+  if (showFullPageEmpty) {
+    return (
+      <FullPageEmptyState
+        title={t("projects.emptyTitle")}
+        description={t("projects.emptyStartDescription")}
+      />
+    );
+  }
 
   return (
     <div
@@ -516,7 +535,7 @@ export default function ProjectsPage() {
         ) : items.length === 0 ? (
           <div className="flex flex-1 items-center justify-center py-14 text-center">
             <EmptyStateIllustration
-              type={hasProjectFilters ? "search" : "empty"}
+              type="search"
               size="medium"
               title={t(hasProjectFilters ? "search.emptyTitle" : "projects.emptyTitle")}
               description={t(

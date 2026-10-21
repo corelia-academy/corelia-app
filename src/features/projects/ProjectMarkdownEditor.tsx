@@ -53,15 +53,19 @@ export function ProjectMarkdownEditor({ label, value, onChange, maxLength, requi
         </div>
       ) : (
         <Tabs.Root value={mode} onValueChange={value => setMode(String(value))} className="mt-2 overflow-hidden rounded-lg border border-border bg-background">
-          <TabsGroup level="2b">
-            <Tabs.List aria-label={`${label}: Markdown`}>
-              {(["write", "preview"] as const).map(tab => <Tabs.Tab key={tab} value={tab}>{t(`projects.editor.${tab}`)}</Tabs.Tab>)}
-            </Tabs.List>
-          </TabsGroup>
+          <div className="flex flex-wrap items-center gap-2 border-b border-border p-2">
+            <TabsGroup level="2b" className="shrink-0">
+              <Tabs.List aria-label={`${label}: Markdown`}>
+                {(["write", "preview"] as const).map(tab => <Tabs.Tab key={tab} value={tab}>{t(`projects.editor.${tab}`)}</Tabs.Tab>)}
+              </Tabs.List>
+            </TabsGroup>
+            {mode === "write" ? (
+              <div role="group" aria-label={t("projects.editor.formatting")} className="flex min-w-0 grow basis-[max-content] flex-nowrap justify-end gap-1">
+                {actions.map(action => <button key={action.key} type="button" onClick={() => format(action)} title={t(`projects.editor.markdown${action.key}`)} aria-label={t(`projects.editor.markdown${action.key}`)} className="flex size-10 items-center justify-center rounded-md hover:bg-surface-raised focus-visible:outline-2 focus-visible:outline-primary"><action.icon className="size-4" /></button>)}
+              </div>
+            ) : null}
+          </div>
           <Tabs.Panel value="write">
-            <div role="group" aria-label={t("projects.editor.formatting")} className="flex flex-wrap gap-1 border-b border-border p-2">
-              {actions.map(action => <button key={action.key} type="button" onClick={() => format(action)} title={t(`projects.editor.markdown${action.key}`)} aria-label={t(`projects.editor.markdown${action.key}`)} className="flex size-10 items-center justify-center rounded-md hover:bg-surface-raised focus-visible:outline-2 focus-visible:outline-primary"><action.icon className="size-4" /></button>)}
-            </div>
             <Input ref={textarea} fieldType="auto-grow" allowManualResize submitOnEnter={false} id={id} required={required} aria-describedby={describedBy} rows={rows} maxLength={maxLength} value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder} renderTrailingContent={compactCounter ? () => counter : undefined} controlClassName="min-h-40 gap-0 rounded-none border-0 bg-transparent p-0 shadow-none focus-within:ring-0" className="min-h-[calc(10rem_-_2px)] resize-y overflow-y-auto scrollbar-design px-3 py-2 text-body-medium tracking-normal" />
           </Tabs.Panel>
           <Tabs.Panel value="preview" className="scrollbar-design min-h-40 overflow-x-auto break-words p-4 [&_img]:max-w-full">

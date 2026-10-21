@@ -20,7 +20,7 @@ describe("FullPageEmptyState", () => {
     );
     expect(markup).toContain("<svg");
     expect(markup).toContain('fill="var(--empty-state-art-surface)"');
-    expect(markup).toContain("size-[240px]");
+    expect(markup).toContain("size-[280px]");
     expect(markup).toContain("No courses");
     expect(markup).toContain("There are no courses yet");
   });
