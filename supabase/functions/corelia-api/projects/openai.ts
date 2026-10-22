@@ -48,6 +48,12 @@ async function openAiFetch(path: string, body: unknown, timeoutMs = 20_000): Pro
 type TextEntry = { field: string; text: string };
 
 export async function moderateProjectText(entries: TextEntry[]): Promise<void> {
+  const isLocal =
+    Deno.env.get("SUPABASE_URL")?.includes("127.0.0.1") ||
+    Deno.env.get("SUPABASE_URL")?.includes("localhost") ||
+    Deno.env.get("SUPABASE_URL")?.includes("kong") ||
+    Deno.env.get("CORELIA_APP_ORIGIN")?.includes("localhost");
+  if (isLocal && !Deno.env.get("OPENAI_API_KEY")?.trim()) return;
   const filtered = entries.filter((entry) => entry.text.trim());
   if (!filtered.length) return;
   const response = await openAiFetch("/moderations", {
@@ -68,6 +74,12 @@ export async function moderateProjectText(entries: TextEntry[]): Promise<void> {
 }
 
 export async function moderateProjectImage(bytes: Uint8Array, mime: string): Promise<void> {
+  const isLocal =
+    Deno.env.get("SUPABASE_URL")?.includes("127.0.0.1") ||
+    Deno.env.get("SUPABASE_URL")?.includes("localhost") ||
+    Deno.env.get("SUPABASE_URL")?.includes("kong") ||
+    Deno.env.get("CORELIA_APP_ORIGIN")?.includes("localhost");
+  if (isLocal && !Deno.env.get("OPENAI_API_KEY")?.trim()) return;
   let binary = "";
   const chunkSize = 0x8000;
   for (let offset = 0; offset < bytes.length; offset += chunkSize) {
