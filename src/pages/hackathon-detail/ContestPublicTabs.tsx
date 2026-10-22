@@ -38,6 +38,7 @@ import {
 } from "@/features/projects/projectQueries";
 import { useAuth } from "@/stores/authStore";
 import { projectHeartsQueryOptions } from "@/features/projects/projectSocialQueries";
+import { projectSavesQueryOptions } from "@/features/projects/projectSaveQueries";
 import { winnerProjectOrder } from "@/lib/hackathonContract";
 import { canEditContestProject } from "@/lib/hackathons";
 import type { HackathonOutletContext } from "./ContestPublicLayout";
@@ -425,6 +426,7 @@ export function HackathonProjectsTab() {
   }, [contest.tech_stacks, locale, projects, search, systemTaxonomy]);
   const teamsQuery = useQuery(publicProjectTeamsQueryOptions(projects.map((item) => item.project.id)));
   const hearts = useQuery(projectHeartsQueryOptions(user?.id, projects.map(item => item.project.id)));
+  const saves = useQuery(projectSavesQueryOptions(user?.id, projects.map(item => item.project.id)));
   return (
     <HackathonPublicTabLayout>
       <div className="min-w-0 space-y-4 sm:space-y-8">
@@ -492,7 +494,7 @@ export function HackathonProjectsTab() {
 
         {query.isPending ? <div className="grid gap-6 sm:grid-cols-2">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div> : query.isError ? <div role="alert" className="py-8 text-center"><p>{t("detail.errors.loadFailed")}</p><Button className="mt-3" onClick={() => void query.refetch()}>{t("projects.retry", { ns: "common" })}</Button></div> : filteredProjects.length === 0 ? <EmptyTab icon={<Package className="size-6" weight="duotone" />} title={t("public.empty.projects")} /> : (
           <>
-            <div className="grid gap-6 sm:grid-cols-2">{filteredProjects.map(({ project, owner }) => <ProjectCard key={project.id} variant="hackathon" systemTaxonomy={systemTaxonomy} hearted={hearts.data?.has(project.id) ?? false} taxonomy={contest} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} ownerAvatarUrl={owner?.avatar_url} ownerAvatarSeed={owner?.avatar_seed} ownerAvatarConfig={owner?.avatar_config} teamMembers={teamsQuery.data?.[project.id] ?? []} />)}</div>
+            <div className="grid gap-6 sm:grid-cols-2">{filteredProjects.map(({ project, owner }) => <ProjectCard key={project.id} variant="hackathon" systemTaxonomy={systemTaxonomy} hearted={hearts.data?.has(project.id) ?? false} saved={saves.data?.has(project.id) ?? false} saveStateReady={saves.isSuccess && !saves.isPlaceholderData} taxonomy={contest} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} ownerAvatarUrl={owner?.avatar_url} ownerAvatarSeed={owner?.avatar_seed} ownerAvatarConfig={owner?.avatar_config} teamMembers={teamsQuery.data?.[project.id] ?? []} />)}</div>
             {query.hasNextPage ? <div className="flex justify-center"><Button type="button" variant="cta" hierarchy="secondary" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>{query.isFetchingNextPage ? t("public.projects.loading") : t("public.projects.loadMore")}</Button></div> : null}
           </>
         )}

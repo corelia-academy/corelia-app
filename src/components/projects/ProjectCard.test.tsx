@@ -18,6 +18,7 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 vi.mock("@/components/projects/ProjectSocialBlock", () => ({ ProjectSocialBlock: () => null }));
+vi.mock("@/components/projects/ProjectSaveBlock", () => ({ ProjectSaveBlock: () => null }));
 vi.mock("@/lib/projects", () => ({ getProjectCoverImageUrl: () => null }));
 vi.mock("@/lib/projectTaxonomy", () => ({ projectTaxonomyNames: () => [] }));
 
