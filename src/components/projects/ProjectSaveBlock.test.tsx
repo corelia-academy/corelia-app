@@ -90,4 +90,19 @@ describe("ProjectSaveBlock", () => {
     expect(container.querySelector('[role="button"]')?.getAttribute("aria-pressed")).toBe("true");
     expect(container.querySelector(".tabular-nums")?.textContent).toBe("2");
   });
+
+  it("drops the optimistic count when the server reports no change", async () => {
+    setProjectSavedMock.mockResolvedValue({ saved: true, changed: false });
+
+    await renderSaveBlock();
+    const bookmark = container.querySelector('[role="button"]') as SVGElement;
+
+    await act(async () => {
+      bookmark.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(bookmark.getAttribute("aria-pressed")).toBe("true");
+    expect(container.querySelector(".tabular-nums")?.textContent).toBe("1");
+  });
 });

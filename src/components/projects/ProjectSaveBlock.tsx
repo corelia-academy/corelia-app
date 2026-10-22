@@ -86,7 +86,7 @@ export function ProjectSaveBlock({
 
     try {
       const result = await saveMutation.mutateAsync(nextSaved);
-      if (result.saved !== nextSaved) {
+      if (!result.changed) {
         setOptimisticSave(null);
       }
     } catch (error) {
