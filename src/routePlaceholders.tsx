@@ -1,11 +1,14 @@
+import type { ReactNode } from "react";
 import { useLocation } from "react-router";
-import { AuthPageSkeleton } from "@/components/loading/AuthPageSkeleton";
+import { AppLoadingScreen } from "@/components/loading/AppLoadingScreen";
 import { AccountChromeSkeleton, WorkspaceChromeSkeleton } from "@/components/loading/LayoutChromeSkeleton";
 import { LearnShellSkeleton, RouteSkeleton } from "@/components/loading/RouteSkeleton";
 import { isWorkspacePath, routeSkeletonVariantForPath } from "@/components/loading/routeSkeletonVariant";
+import { isInitialLoad } from "@/components/loading/skeletonReveal";
 import { CourseDetailLoading } from "@/pages/course-details/components/CourseDetailStates";
 import { CoursesPageSkeleton } from "@/pages/courses/courses-page/CoursesPageSkeleton";
 import { ContestDetailLoadingCard } from "@/pages/hackathon-detail/components/ContestDetailGateStates";
+import { HomePageSkeleton } from "@/pages/home/HomePageSkeleton";
 import { InstructorCoursesSkeleton } from "@/pages/instructor/InstructorCoursesSkeleton";
 import { OCIDRedirectLoading } from "@/pages/OCIDRedirectLoading";
 import { ProjectDetailSkeleton } from "@/pages/projects/ProjectDetailSkeleton";
@@ -27,7 +30,8 @@ type RoutePlaceholderProps = {
  */
 export function RoutePlaceholder({ pathname, withLayoutChrome = true }: RoutePlaceholderProps) {
   const path = pathname.replace(/\/+$/, "") || "/";
-  if (path === "/login") return <AuthPageSkeleton />;
+  if (path === "/") return <HomePageSkeleton />;
+  if (path === "/login") return <AppLoadingScreen />;
   if (path === "/ocid-redirect") return <OCIDRedirectLoading />;
   if (path === "/courses") return <CoursesPageSkeleton />;
   if (/^\/courses\/[^/]+$/.test(path)) return <CourseDetailLoading />;
@@ -45,8 +49,20 @@ export function RoutePlaceholder({ pathname, withLayoutChrome = true }: RoutePla
   return withLayoutChrome && isWorkspacePath(path) ? <WorkspaceChromeSkeleton>{page}</WorkspaceChromeSkeleton> : page;
 }
 
+/**
+ * Route chunk / guard fallback: the global loading screen on the first visit (boot, layout and
+ * page chunks show as one loading state), the route's skeleton after an in-app navigation.
+ */
+export function InitialLoadFallback({ children }: { children: ReactNode }) {
+  return isInitialLoad() ? <AppLoadingScreen /> : <>{children}</>;
+}
+
 /** `RoutePlaceholder` for the current router location (guards and layout fallbacks). */
 export function LocationPlaceholder({ withLayoutChrome }: { withLayoutChrome?: boolean }) {
   const { pathname } = useLocation();
-  return <RoutePlaceholder pathname={pathname} withLayoutChrome={withLayoutChrome} />;
+  return (
+    <InitialLoadFallback>
+      <RoutePlaceholder pathname={pathname} withLayoutChrome={withLayoutChrome} />
+    </InitialLoadFallback>
+  );
 }

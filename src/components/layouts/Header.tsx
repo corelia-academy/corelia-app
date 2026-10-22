@@ -112,7 +112,8 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
     readRecentSearches(),
   );
   const searchWrapRef = useRef<HTMLDivElement | null>(null);
-  const trendingQuery = useQuery(trendingSearchesQueryOptions());
+  // Trending suggestions only render in the open search panel; do not fetch them on every page load.
+  const trendingQuery = useQuery({ ...trendingSearchesQueryOptions(), enabled: searchOpen });
   const suggestionsQuery = useQuery(
     searchResultsQueryOptions(debouncedSearchText, MAX_SUGGESTIONS, searchOpen, publicUI ? i18n.language : undefined),
   );

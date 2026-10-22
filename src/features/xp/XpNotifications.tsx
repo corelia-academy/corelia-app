@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { useAuth } from "@/stores/authStore";
+import { useBrowserIdle } from "@/hooks/useBrowserIdle";
 import { supabase } from "@/lib/supabase";
 import { advanceXpNotifications, getXpNotificationEntries, initializeXpNotifications, readXpNotificationCursor, saveXpNotificationCursor } from "@/lib/xpNotifications";
 import { xpAwardNotificationQueryKey } from "./xpNotificationKeys";
@@ -19,6 +20,8 @@ function UserXpNotifications({ userId }: { userId: string }) {
   const queryClient = useQueryClient();
   const connectionsSynced = useRef(false);
   const initialFetchObserved = useRef(false);
+  // Background sync: wait until the page has loaded its own chunks and data.
+  const idle = useBrowserIdle();
   const sync = useQuery({
     queryKey: [...xpAwardNotificationQueryKey, userId],
     queryFn: async () => {
@@ -31,6 +34,7 @@ function UserXpNotifications({ userId }: { userId: string }) {
       }
       return getXpNotificationEntries(userId, cursor);
     },
+    enabled: idle,
     staleTime: 0,
     meta: { scope: "private", userId, showInGlobalLoading: false },
   });

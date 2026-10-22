@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigate, NavLink, useLocation, useSearchParams } from "react-router";
 import { ArrowLeft } from "lucide-react";
-import { AuthPageSkeleton } from "@/components/loading/AuthPageSkeleton";
+import { AppLoadingScreen } from "@/components/loading/AppLoadingScreen";
 import { mfaAssuranceQueryOptions } from "@/features/auth/authQueries";
 import { useAuth } from "@/stores/authStore";
 import { LoginForm } from "@/pages/login/LoginForm";
@@ -44,7 +44,7 @@ export default function Auth() {
 
   // Same placeholder as the bootstrap screen and route fallback, so the login page never swaps it.
   if (!authInitialized || (user && mfaGate === "unchecked")) {
-    return <AuthPageSkeleton />;
+    return <AppLoadingScreen />;
   }
 
   if (user && mfaGate === "mfa") {

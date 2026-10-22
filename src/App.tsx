@@ -8,7 +8,8 @@ import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
 import { AppShellSkeleton } from "@/components/loading/AppShellSkeleton";
 import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 import { markClientNavigation } from "@/components/loading/skeletonReveal";
-import { LocationPlaceholder, RoutePlaceholder } from "@/routePlaceholders";
+import { InitialLoadFallback, LocationPlaceholder } from "@/routePlaceholders";
+import { HomePageSkeleton } from "@/pages/home/HomePageSkeleton";
 import MaintenancePage from "@/pages/MaintenancePage";
 import {
   createBrowserRouter,
@@ -37,6 +38,7 @@ import {
   RoutePageTitleSync,
 } from "@/components/navigation/PageTitle";
 import { APP_BASE_PATH, currentAppPathname } from "@/lib/appUrl";
+import { preloadEntryRoute } from "@/lib/routePrefetch";
 
 // Lazy-load all routes not needed on the initial render
 const Home = lazy(() => import("@/pages/home/index"));
@@ -143,24 +145,29 @@ const AdminCertificateAnalytics = lazy(() => import("@/pages/admin/AdminCertific
 const AdminEmailPreviewPage = lazy(() => import("@/pages/admin/email/AdminEmailPreviewPage"));
 const AdminOgPreviewPage = lazy(() => import("@/pages/admin/AdminOgPreviewPage"));
 
-const PageFallback = () => <AuthGateLoading />;
+// Route chunks load only after auth boot mounts the router; start the entry URL's chunks now.
+if (typeof window !== "undefined") preloadEntryRoute(currentAppPathname());
+
+const PageFallback = () => <InitialLoadFallback><AuthGateLoading /></InitialLoadFallback>;
 const ShellFallback = () => (
-  <AppShellSkeleton>
-    <LocationPlaceholder />
-  </AppShellSkeleton>
+  <InitialLoadFallback>
+    <AppShellSkeleton>
+      <LocationPlaceholder />
+    </AppShellSkeleton>
+  </InitialLoadFallback>
 );
-const HomeFallback = () => <RouteSkeleton variant="home" />;
-const ListFallback = () => <RouteSkeleton variant="list" />;
-const DetailFallback = () => <RouteSkeleton variant="detail" />;
-const FormFallback = () => <RouteSkeleton variant="form" />;
-const TableFallback = () => <RouteSkeleton variant="table" />;
-const AccountFormFallback = () => <RouteSkeleton variant="form" bare />;
-const AccountListFallback = () => <RouteSkeleton variant="list" bare />;
+const HomeFallback = () => <InitialLoadFallback><HomePageSkeleton /></InitialLoadFallback>;
+const ListFallback = () => <InitialLoadFallback><RouteSkeleton variant="list" /></InitialLoadFallback>;
+const DetailFallback = () => <InitialLoadFallback><RouteSkeleton variant="detail" /></InitialLoadFallback>;
+const FormFallback = () => <InitialLoadFallback><RouteSkeleton variant="form" /></InitialLoadFallback>;
+const TableFallback = () => <InitialLoadFallback><RouteSkeleton variant="table" /></InitialLoadFallback>;
+const AccountFormFallback = () => <InitialLoadFallback><RouteSkeleton variant="form" bare /></InitialLoadFallback>;
+const AccountListFallback = () => <InitialLoadFallback><RouteSkeleton variant="list" bare /></InitialLoadFallback>;
 // Hackathon tabs render under the already-visible contest header; their chunk is prefetched
 // with the layout, so a placeholder here would only add a second skeleton for React's ~300ms
 // Suspense reveal throttle.
 const TabFallback = () => null;
-const LearnFallback = () => <RouteSkeleton variant="learn" className="h-dvh" />;
+const LearnFallback = () => <InitialLoadFallback><RouteSkeleton variant="learn" className="h-dvh" /></InitialLoadFallback>;
 
 function RecoveryGuard() {
   const navigate = useNavigate();
@@ -205,7 +212,7 @@ export default function App() {
           <XpNotifications />
           <NotificationSync />
           {authStatus === "booting" ? (
-            <AuthBootstrapScreen content={<RoutePlaceholder pathname={currentAppPathname()} />} />
+            <AuthBootstrapScreen />
           ) : (
             <TooltipProvider>
               <ApplicationRouter />
@@ -227,9 +234,10 @@ function ApplicationRouter() {
       { basename: APP_BASE_PATH || "/" },
     );
     // Subscribed before RouterProvider, so the flag is set before the next route renders.
+    // Redirects (replace, e.g. /login → /) still belong to the initial load.
     const initialKey = instance.state.location.key;
     const unsubscribe = instance.subscribe((state) => {
-      if (state.location.key !== initialKey) {
+      if (state.location.key !== initialKey && state.historyAction !== "REPLACE") {
         markClientNavigation();
         unsubscribe();
       }

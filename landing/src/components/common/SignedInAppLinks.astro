@@ -1,0 +1,41 @@
+---
+// SignedInAppLinks.astro
+// The learning app shares this origin, so its Supabase session is in localStorage here.
+// For a signed-in visitor, point every "<app>/login" link straight at the app, skipping the
+// login page's session check. Embedded once in BaseLayout.
+const appUrl = String(import.meta.env.PUBLIC_APP_URL ?? "/learn").replace(/\/$/, "");
+---
+
+<script is:inline define:vars={{ appUrl }}>
+  (() => {
+    const hasSession = () => {
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (!key || !/^sb-.+-auth-token$/.test(key)) continue;
+          const session = JSON.parse(localStorage.getItem(key) || "null");
+          if (session?.refresh_token) return true;
+        }
+      } catch {
+        // Storage blocked or unreadable: keep the login links.
+      }
+      return false;
+    };
+    if (!hasSession()) return;
+
+    const login = new URL(`${appUrl}/login`, location.href);
+    const rewrite = () => {
+      document.querySelectorAll("a[href]").forEach((link) => {
+        const url = new URL(link.href, location.href);
+        if (url.origin === login.origin && url.pathname.replace(/\/$/, "") === login.pathname) {
+          link.setAttribute("href", appUrl || "/");
+        }
+      });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", rewrite, { once: true });
+    } else {
+      rewrite();
+    }
+  })();
+</script>

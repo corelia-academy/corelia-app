@@ -1703,6 +1703,32 @@
   animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* HTML splash (index.html) shown until the first page is ready; see components/loading/appSplash.ts. */
+#app-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--background);
+  transition: opacity 250ms ease-out;
+}
+
+#app-splash[data-hidden] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#app-splash .app-splash-dark,
+.dark #app-splash .app-splash-light {
+  display: none;
+}
+
+.dark #app-splash .app-splash-dark {
+  display: block;
+}
+
 /* Hold a loading placeholder invisible for its first 200ms so fast loads finish without a skeleton flash. */
 @utility animate-skeleton-reveal {
   animation: skeletonReveal 150ms ease-out 200ms both;
