@@ -6,7 +6,7 @@
 --
 --   Copied  the newest accepted generation of brief, research, curriculum and curriculum_review,
 --           as far as those steps were done (a prefix: a step is not copied after one that was
---           not done), for every lesson that was DONE (its newest accepted draft has an accepted
+--           not done; a curriculum that asked for more research is not a curriculum), for every lesson that was DONE (its newest accepted draft has an accepted
 --           review with no blocking issue) that draft and that review, and for every lesson whose
 --           newest accepted draft was never reviewed (the run stopped first) that draft alone.
 --   Redone  every other lesson, from the start.
@@ -18,7 +18,7 @@
 -- original request id is unique per provider and a copy never called one.
 --
 -- Nothing is copied unless the failed run is the newest run of the same course, ended as
--- draft_failed, and finished its curriculum; then the call starts a normal run and says why.
+-- draft_failed, and finished at least its brief; then the call starts a normal run and says why.
 
 ALTER TABLE public.studio_generations DROP CONSTRAINT studio_generations_origin_check;
 ALTER TABLE public.studio_generations
@@ -56,6 +56,7 @@ AS $$
 DECLARE
   v_from public.studio_runs%ROWTYPE;
   v_step text;
+  v_gen uuid;
   v_ids uuid[] := '{}';
   v_steps text[] := '{}';
   v_lessons uuid[];
@@ -77,15 +78,17 @@ BEGIN
   -- The steps before the lessons, as far as they were done.
   FOREACH v_step IN ARRAY ARRAY['brief', 'research', 'curriculum', 'curriculum_review'] LOOP
     EXIT WHEN NOT EXISTS (SELECT 1 FROM public.studio_run_steps s WHERE s.run_id = p_from AND s.step_key = v_step AND s.state = 'done');
-    v_ids := v_ids || (
-      SELECT g.id FROM public.studio_generations g
-      WHERE g.run_id = p_from AND g.step_key = v_step AND g.lesson_id IS NULL AND g.status = 'completed'
-      ORDER BY g.attempt DESC LIMIT 1
-    );
+    SELECT g.id INTO v_gen FROM public.studio_generations g
+    WHERE g.run_id = p_from AND g.step_key = v_step AND g.lesson_id IS NULL AND g.status = 'completed'
+      -- A curriculum that asked for more research is a request, not a curriculum.
+      AND coalesce(g.output ->> 'status', '') <> 'needs_research'
+    ORDER BY g.attempt DESC LIMIT 1;
+    EXIT WHEN v_gen IS NULL;
+    v_ids := v_ids || v_gen;
     v_steps := v_steps || v_step;
   END LOOP;
-  IF NOT ('curriculum' = ANY (v_steps)) THEN
-    RETURN jsonb_build_object('skipped', 'curriculum_not_done');
+  IF cardinality(v_steps) = 0 THEN
+    RETURN jsonb_build_object('skipped', 'nothing_done');
   END IF;
 
   -- Lessons that were done: as many accepted reviews as accepted drafts, the last review with no blocking issue.

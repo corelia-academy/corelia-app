@@ -6,6 +6,9 @@ import {
   acceptCurriculum,
   acceptCurriculumReview,
   buildProgress,
+  MAX_RESEARCH_REQUESTS,
+  researchGap,
+  researchRequest,
   curriculumRevision,
   acceptResearch,
   agentKeyEnv,
@@ -171,6 +174,9 @@ describe("studio curriculum review loop", () => {
       reviews: 1,
       blocking: null,
       failures: { model: 1, transport: 1 },
+      researches: 0,
+      researchRequests: 0,
+      missing: null,
     });
     expect(buildProgress(rows, "curriculum_review", review("needs_fix", [issue("l1", "blocking")]))).toMatchObject({ firstAttempt: 1, blocking: ["l1: lỗi l1"] });
   });
@@ -202,6 +208,70 @@ describe("studio curriculum review loop", () => {
     ]) {
       expect(acceptCurriculumReview(bad, curriculum).ok).toBe(false);
     }
+  });
+});
+
+describe("studio curriculum asks for more research", () => {
+  const askRow = (attempt: number, outcome: string | null = "needs_research") => ({ step_key: "curriculum", attempt, status: "completed", provider_request_id: `r${attempt}`, outcome });
+  const researchRow = (attempt: number) => ({ step_key: "research", attempt, status: "completed", provider_request_id: `q${attempt}`, outcome: "ready" });
+  const progress = (over: object) => ({ firstAttempt: 1, curricula: 0, reviews: 0, blocking: null, researches: 1, researchRequests: 1, missing: ["mẫu on-chain"], ...over });
+  const plan = (done: StepKey[], latest: GenerationState | null, p: object) => planRun({ steps: steps(done, "active"), latest, startedAt, now, progress: progress(p) });
+
+  it("treats needs_research with a missing list as an outcome, not a rejection", () => {
+    expect(acceptCurriculum({ status: "needs_research", missing: ["a", "b"] }, new Set())).toEqual({ ok: true, summary: "cần thêm nghiên cứu: a; b" });
+    expect(acceptCurriculum({ status: "needs_research", missing: [] }, new Set()).ok).toBe(false);
+    expect(researchRequest({ status: "needs_research", missing: ["a"] })).toEqual(["a"]);
+    expect(researchRequest({ status: "draft", missing: [] })).toBeNull();
+  });
+
+  it("counts requests apart from curricula, and ends a round at the request", () => {
+    const rows = [researchRow(0), askRow(0), askRow(1, "draft"), { ...askRow(2, "draft"), status: "failed" }];
+    expect(buildProgress(rows, "curriculum", null)).toMatchObject({ curricula: 1, researchRequests: 1, researches: 1, firstAttempt: 2 });
+    expect(buildProgress([askRow(0)], "curriculum", null, { status: "needs_research", missing: ["x"] })).toMatchObject({ missing: ["x"] });
+  });
+
+  it("reopens the research on the first request, then writes the curriculum again once it is redone", () => {
+    const asked = gen({ status: "completed", attempt: 0, agent_role: "A3" });
+    // curriculum asked: reopen research
+    expect(plan(["brief", "research"], asked, {}).action).toEqual({ kind: "reopen_research", round: 1, missing: ["mẫu on-chain"] });
+    // research reopened: A2 runs again as a new attempt, keeping the old brief as its parent
+    const brief = gen({ status: "completed", attempt: 0, agent_role: "A2" });
+    expect(plan(["brief"], brief, { missing: null })).toEqual({ step: "research", action: { kind: "submit", attempt: 1, parentId: "g1" } });
+    // research redone: the step is done
+    const redone = gen({ status: "completed", attempt: 1, agent_role: "A2" });
+    expect(plan(["brief"], redone, { researches: 2, missing: null }).action).toEqual({ kind: "mark_done", generationId: "g1" });
+    // back at the curriculum: the old request does not count as done, a new attempt is written
+    expect(plan(["brief", "research"], asked, { researches: 2 }).action).toEqual({ kind: "submit", attempt: 1, parentId: null });
+  });
+
+  it("fails the run when the curriculum asks a second time, listing what is missing", () => {
+    expect(MAX_RESEARCH_REQUESTS).toBe(2);
+    const asked = gen({ status: "completed", attempt: 1, agent_role: "A3" });
+    expect(plan(["brief", "research"], asked, { researchRequests: 2, researches: 2, missing: ["mẫu on-chain", "kiểm tra đầu vào"] }).action).toEqual({
+      kind: "finish",
+      status: "draft_failed",
+      reason: "Bước Curriculum: vẫn cần thêm nghiên cứu sau 2 vòng: mẫu on-chain; kiểm tra đầu vào",
+    });
+  });
+
+  it("keeps the retry budget of each round: a rejected answer after the request does not use up the next round", () => {
+    const rows = [researchRow(0), askRow(0), { ...askRow(1, "draft"), status: "failed" }];
+    const p = buildProgress(rows, "curriculum", null);
+    const failed = gen({ status: "failed", attempt: 1, error: "x", provider_request_id: "r1", agent_role: "A3" });
+    expect(planRun({ steps: steps(["brief", "research"], "active"), latest: failed, startedAt, now, progress: p }).action).toEqual({ kind: "submit", attempt: 2, parentId: "g1" });
+    const failedTwice = buildProgress([...rows, { ...askRow(2, "draft"), status: "failed" }], "curriculum", null);
+    expect(planRun({ steps: steps(["brief", "research"], "active"), latest: { ...failed, attempt: 2 }, startedAt, now, progress: failedTwice }).action.kind).toBe("finish");
+  });
+
+  it("tells A2 what to add only while the research has not been redone", () => {
+    const ask = { status: "needs_research", missing: ["a"] };
+    expect(researchGap({ researches: 1, requests: 1 }, ask)).toEqual({ round: 1, missing: ["a"], requested_by: "curriculum" });
+    expect(researchGap({ researches: 2, requests: 1 }, ask)).toBeNull();
+    expect(researchGap({ researches: 1, requests: 0 }, null)).toBeNull();
+    const ctx = { course: { title: "t", level: null }, paths: [], scopes: [], outputs: { brief: { b: 1 }, research: { r: 1 } }, today: "2026-10-22", revision: null };
+    const input = STEP_SPECS.research!.buildInput({ ...ctx, researchGap: { round: 1, missing: ["a"], requested_by: "curriculum" } });
+    expect(input).toMatchObject({ research_gap: { round: 1, missing: ["a"], requested_by: "curriculum" }, previous_research: { r: 1 } });
+    expect(STEP_SPECS.research!.buildInput(ctx)).not.toHaveProperty("research_gap");
   });
 });
 
@@ -370,17 +440,19 @@ describe("studio openai readResponse", () => {
       output: [{ type: "web_search_call" }, { type: "message", content: [{ type: "output_text", text: "{}" }] }],
       usage: { total_tokens: 3 },
     })).toEqual({ state: "completed", model: "gpt-6-luna", text: "{}", usage: { total_tokens: 3 } });
+    // Running out of output budget is a verdict on the model's answer: a rejected attempt.
     expect(readResponse({ status: "incomplete", incomplete_details: { reason: "max_output_tokens" } }))
-      .toEqual({ state: "failed", error: "incomplete: max_output_tokens" });
+      .toEqual({ state: "failed", cause: "rejected", error: "incomplete: max_output_tokens" });
     // Tokens spent on an unfinished response are still billed, so usage and model are kept.
     expect(readResponse({
       status: "incomplete",
       model: "gpt-6-luna",
       usage: { total_tokens: 9 },
       incomplete_details: { reason: "max_output_tokens" },
-    })).toEqual({ state: "failed", error: "incomplete: max_output_tokens", model: "gpt-6-luna", usage: { total_tokens: 9 } });
+    })).toEqual({ state: "failed", cause: "rejected", error: "incomplete: max_output_tokens", model: "gpt-6-luna", usage: { total_tokens: 9 } });
+    // A request the provider failed after accepting it says nothing about the model's answer.
     expect(readResponse({ status: "failed", model: "gpt-6-luna", usage: { total_tokens: 2 }, error: { message: "boom" } }))
-      .toEqual({ state: "failed", error: "failed: boom", model: "gpt-6-luna", usage: { total_tokens: 2 } });
-    expect(readResponse({ status: "cancelled" }).state).toBe("failed");
+      .toEqual({ state: "failed", cause: "provider", error: "failed: boom", model: "gpt-6-luna", usage: { total_tokens: 2 } });
+    expect(readResponse({ status: "cancelled" })).toMatchObject({ state: "failed", cause: "provider" });
   });
 });

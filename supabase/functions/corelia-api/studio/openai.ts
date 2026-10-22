@@ -14,13 +14,14 @@ export interface SubmitRequest {
   schemaName: string;
   schema: Record<string, unknown>;
   tools?: Record<string, unknown>[];
+  serviceTier: "flex" | "default";
   metadata: Record<string, string>;
 }
 
 export type PollResult =
   | { state: "running" }
   | { state: "completed"; model: string; text: string; usage: Record<string, unknown> | null }
-  | { state: "failed"; error: string; model?: string; usage?: Record<string, unknown> | null };
+  | { state: "failed"; cause: "provider" | "rejected"; error: string; model?: string; usage?: Record<string, unknown> | null };
 
 export class ProviderError extends Error {
   constructor(message: string, readonly status: number) {
@@ -42,22 +43,32 @@ async function errorText(res: Response): Promise<string> {
 }
 
 export async function submitResponse(apiKey: string, req: SubmitRequest): Promise<string> {
-  const res = await fetch(RESPONSES_URL, {
-    method: "POST",
-    headers: headers(apiKey),
-    body: JSON.stringify({
-      model: req.model,
-      instructions: req.instructions,
-      input: req.input,
-      reasoning: { effort: req.effort },
-      max_output_tokens: req.maxOutputTokens,
-      tools: req.tools,
-      text: { format: { type: "json_schema", name: req.schemaName, strict: true, schema: req.schema } },
-      background: true,
-      store: true,
-      metadata: req.metadata,
-    }),
-  });
+  const send = (serviceTier: string) =>
+    fetch(RESPONSES_URL, {
+      method: "POST",
+      headers: headers(apiKey),
+      body: JSON.stringify({
+        model: req.model,
+        instructions: req.instructions,
+        input: req.input,
+        reasoning: { effort: req.effort },
+        max_output_tokens: req.maxOutputTokens,
+        tools: req.tools,
+        text: { format: { type: "json_schema", name: req.schemaName, strict: true, schema: req.schema } },
+        service_tier: serviceTier,
+        background: true,
+        store: true,
+        metadata: req.metadata,
+      }),
+    });
+  let res = await send(req.serviceTier);
+  // Flex has best-effort capacity (429 when none is free) and is not offered for every model
+  // (400 naming flex): the same request then goes to the default tier instead of failing.
+  if (!res.ok && req.serviceTier === "flex") {
+    const message = await errorText(res);
+    if (res.status !== 429 && !(res.status === 400 && /flex/i.test(message))) throw new ProviderError(message, res.status);
+    res = await send("default");
+  }
   if (!res.ok) throw new ProviderError(await errorText(res), res.status);
   const body = await res.json() as { id?: string };
   if (!body.id) throw new ProviderError("response without id", res.status);
@@ -69,13 +80,21 @@ interface ResponseBody {
   model?: string;
   output?: { type?: string; content?: { type?: string; text?: string }[] }[];
   usage?: Record<string, unknown>;
+  /** Tier that actually served the response; flex is billed at a lower rate. */
+  service_tier?: string;
   error?: { message?: string } | null;
   incomplete_details?: { reason?: string } | null;
 }
 
 /** An incomplete or failed response can still have consumed tokens, so its cost is kept. */
 function billed(body: ResponseBody): { model?: string; usage?: Record<string, unknown> } {
-  return { ...(body.model ? { model: body.model } : {}), ...(body.usage ? { usage: body.usage } : {}) };
+  const usage = usageOf(body);
+  return { ...(body.model ? { model: body.model } : {}), ...(usage ? { usage } : {}) };
+}
+
+/** Usage with the serving tier, so the cost of a generation can be priced from its record alone. */
+function usageOf(body: ResponseBody): Record<string, unknown> | null {
+  return body.usage ? { ...body.usage, ...(body.service_tier ? { service_tier: body.service_tier } : {}) } : null;
 }
 
 export function readResponse(body: ResponseBody): PollResult {
@@ -87,20 +106,22 @@ export function readResponse(body: ResponseBody): PollResult {
       .filter((c) => c.type === "output_text")
       .map((c) => c.text ?? "")
       .join("");
-    if (!body.model) return { state: "failed", error: "completed response without model" };
-    return { state: "completed", model: body.model, text, usage: body.usage ?? null };
+    if (!body.model) return { state: "failed", cause: "provider", error: "completed response without model" };
+    return { state: "completed", model: body.model, text, usage: usageOf(body) };
   }
   if (status === "incomplete") {
-    return { state: "failed", error: `incomplete: ${body.incomplete_details?.reason ?? "unknown"}`, ...billed(body) };
+    // The output budget ran out: a verdict on the model's answer, so it counts as a rejected attempt.
+    return { state: "failed", cause: "rejected", error: `incomplete: ${body.incomplete_details?.reason ?? "unknown"}`, ...billed(body) };
   }
-  return { state: "failed", error: `${status || "unknown status"}: ${body.error?.message ?? "no error message"}`, ...billed(body) };
+  // failed / cancelled: the provider gave up on the request (server error, no flex capacity).
+  return { state: "failed", cause: "provider", error: `${status || "unknown status"}: ${body.error?.message ?? "no error message"}`, ...billed(body) };
 }
 
 /** Returns null when the provider could not be reached; the next tick polls again. */
 export async function pollResponse(apiKey: string, id: string): Promise<PollResult | null> {
   const res = await fetch(`${RESPONSES_URL}/${encodeURIComponent(id)}`, { headers: headers(apiKey) });
-  if (res.status === 404) return { state: "failed", error: "response not found at provider" };
+  if (res.status === 404) return { state: "failed", cause: "provider", error: "response not found at provider" };
   if (res.status === 429 || res.status >= 500) return null;
-  if (!res.ok) return { state: "failed", error: await errorText(res) };
+  if (!res.ok) return { state: "failed", cause: "provider", error: await errorText(res) };
   return readResponse(await res.json() as ResponseBody);
 }

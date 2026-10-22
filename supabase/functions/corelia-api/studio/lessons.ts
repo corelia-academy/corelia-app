@@ -218,6 +218,12 @@ export function lessonRevision(lc: LessonContext | null | undefined): { round: n
 }
 
 /** The part of a lesson's input shared by writer and reviewer. */
+/** The brief without what only the brief step needs (its status, assumptions, open questions). */
+function lessonBrief(brief: BriefFull): Record<string, unknown> {
+  const { status: _status, assumptions: _assumptions, open_questions: _questions, ...rest } = brief as BriefFull & Record<string, unknown>;
+  return rest;
+}
+
 function lessonBase(ctx: RunContext, lessonId: string) {
   const curriculum = ctx.outputs.curriculum as CurriculumFull;
   const research = ctx.outputs.research as ResearchFull;
@@ -231,12 +237,13 @@ function lessonBase(ctx: RunContext, lessonId: string) {
   return {
     ref: refs[index],
     locale: brief.locale,
+    // Fields that are the same for every lesson of the run come first: the provider caches the
+    // longest identical prefix of the request, so the lesson-specific part must follow them.
     common: {
       course_type: "ai_generated",
-      brief: ctx.outputs.brief,
-      locale: brief.locale,
-      platform_format: PLATFORM_FORMAT_GUIDE[lesson.type],
+      brief: lessonBrief(brief),
       today: ctx.today,
+      platform_format: PLATFORM_FORMAT_GUIDE[lesson.type],
       lesson,
       module: { id: mod.id, title: mod.title, description: mod.description },
       outcomes: curriculum.outcomes.filter((o) => lesson.outcome_ids.includes(o.id)),
@@ -309,8 +316,13 @@ export function lessonTools(lessonId: string, ctx: RunContext): Record<string, u
 }
 
 /** The reviewer checks claims against sources and may need to search. */
-export function reviewTools(): Record<string, unknown>[] {
-  return [{ type: "web_search" }];
+/**
+ * The reviewer checks the lesson against the sources the research step already read; a claim that
+ * would need a new source is reported as unverified. It runs for every lesson of every revision, and
+ * each search is billed per call plus its content tokens.
+ */
+export function reviewTools(): Record<string, unknown>[] | undefined {
+  return undefined;
 }
 
 // ---- output -> app record ----------------------------------------------------------------------

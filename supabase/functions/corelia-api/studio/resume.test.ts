@@ -15,9 +15,14 @@ describe("studio resume: event note", () => {
       .toBe(`Chạy tiếp từ lượt ${FROM}: chép 4 bước, 44 lesson; tạo lại 0 lesson.`);
   });
 
+  it("says so when only the early steps were copied", () => {
+    const resume = { from_run_id: FROM, steps: 2, lessons_copied: 0, drafts_copied: 0, lessons_total: 0 };
+    expect(resumeNote({ run_id: "r", created: true, resume }, FROM)).toBe(`Chạy tiếp từ lượt ${FROM}: chép 2 bước; các bước sau chạy lại.`);
+  });
+
   it("says why a run was not resumed, and stays silent when no resume was asked", () => {
     expect(resumeNote({ run_id: "r", created: true, resume_skipped: "not_latest_run" }, FROM)).toContain("đã có lượt chạy mới hơn");
-    expect(resumeNote({ run_id: "r", created: true, resume_skipped: "curriculum_not_done" }, FROM)).toContain("chạy từ đầu");
+    expect(resumeNote({ run_id: "r", created: true, resume_skipped: "nothing_done" }, FROM)).toContain("chạy từ đầu");
     expect(resumeNote({ run_id: "r", created: true }, null)).toBeNull();
   });
 });

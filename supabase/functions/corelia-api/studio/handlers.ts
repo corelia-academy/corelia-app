@@ -15,13 +15,17 @@ import {
   type LessonOutput,
 } from "./lessons.ts";
 import { pollResponse, submitResponse } from "./openai.ts";
+import { failureKind, type AttemptRow, type FailureKind } from "./retry.ts";
 import { publishRun, PublishRejected } from "./publish.ts";
 import { resumeNote, type StartResult } from "./resume.ts";
 import { PROMPTS, type AgentRole } from "./prompts.ts";
 import {
   agentKeyEnv,
   buildProgress,
+  SERVICE_TIER,
   curriculumRevision,
+  researchGap,
+  researchRequest,
   planRun,
   STEP_LABEL,
   STEP_ORDER,
@@ -133,7 +137,7 @@ export async function advanceRun(db: SupabaseClient, run: RunRow): Promise<{ ste
   if (current) {
     const res = await db
       .from("studio_generations")
-      .select("id,attempt,agent_role,status,provider_request_id,error,created_at")
+      .select("id,attempt,agent_role,status,provider_request_id,failure_kind,error,created_at")
       .eq("run_id", run.id)
       .eq("step_key", current)
       .is("lesson_id", null)
@@ -167,13 +171,16 @@ export async function advanceRun(db: SupabaseClient, run: RunRow): Promise<{ ste
       await pollStep(db, run, step!, latest!, action.requestId);
       break;
     case "expire_submitting":
-      await failGeneration(db, action.generationId, "submitting", "Gửi yêu cầu tới model bị gián đoạn.");
+      await failGeneration(db, action.generationId, "submitting", "transport", "Gửi yêu cầu tới model bị gián đoạn.");
       break;
     case "mark_done":
       await markStepDone(db, run.id, step!);
       break;
     case "reopen":
       await reopenCurriculum(db, run.id, latest!.attempt, action.round, action.blocking);
+      break;
+    case "reopen_research":
+      await reopenResearch(db, run.id, latest!.attempt, action.round, action.missing);
       break;
     case "wait":
       break;
@@ -182,16 +189,19 @@ export async function advanceRun(db: SupabaseClient, run: RunRow): Promise<{ ste
 }
 
 async function loadProgress(db: SupabaseClient, run: RunRow, current: StepKey, latest: GenerationState | null): Promise<RunProgress> {
-  const { data, error } = await db.from("studio_generations").select("step_key,attempt,status,provider_request_id").eq("run_id", run.id).is("lesson_id", null);
+  // outcome: a curriculum is either a draft or a request for more research.
+  const { data, error } = await db.from("studio_generations").select("step_key,attempt,status,provider_request_id,failure_kind,outcome:output->>status").eq("run_id", run.id).is("lesson_id", null);
   if (error) throw new Error(error.message);
-  // The review verdict is only needed to decide what follows an accepted review.
+  // The output is only needed to decide what follows an accepted review or an accepted curriculum.
   let review: unknown = null;
-  if (current === "curriculum_review" && latest?.status === "completed") {
+  let curriculum: unknown = null;
+  if ((current === "curriculum_review" || current === "curriculum") && latest?.status === "completed") {
     const res = await db.from("studio_generations").select("output").eq("id", latest.id).single();
     if (res.error) throw new Error(res.error.message);
-    review = res.data.output;
+    if (current === "curriculum_review") review = res.data.output;
+    else curriculum = res.data.output;
   }
-  return buildProgress(data ?? [], current, review);
+  return buildProgress(data ?? [], current, review, curriculum);
 }
 
 async function loadCurriculum(db: SupabaseClient, run: RunRow): Promise<unknown> {
@@ -202,6 +212,7 @@ async function loadCurriculum(db: SupabaseClient, run: RunRow): Promise<unknown>
     .eq("step_key", "curriculum")
     .eq("status", "completed")
     .is("lesson_id", null)
+    .neq("output->>status", "needs_research") // a request for more research is not a curriculum
     .order("attempt", { ascending: false })
     .limit(1)
     .single();
@@ -215,7 +226,7 @@ async function loadLessons(db: SupabaseClient, run: RunRow) {
   const ids = lessonIds(await loadCurriculum(db, run));
   const rows = await db
     .from("studio_generations")
-    .select("id,attempt,agent_role,status,provider_request_id,error,created_at,lesson_id,step_key")
+    .select("id,attempt,agent_role,status,provider_request_id,failure_kind,error,created_at,lesson_id,step_key")
     .eq("run_id", run.id)
     .in("step_key", ["lessons", "lesson_review"])
     .not("lesson_id", "is", null);
@@ -242,7 +253,7 @@ async function runLessonActions(db: SupabaseClient, run: RunRow, actions: Lesson
     try {
       if (a.kind === "submit") await submitStep(db, run, a.step, a.attempt, a.parentId, a.previousError, a.lessonId);
       else if (a.kind === "poll") await pollStep(db, run, a.step, a.generation, a.generation.provider_request_id ?? "");
-      else await failGeneration(db, a.generationId, "submitting", "Gửi yêu cầu tới model bị gián đoạn.");
+      else await failGeneration(db, a.generationId, "submitting", "transport", "Gửi yêu cầu tới model bị gián đoạn.");
     } catch (e) {
       console.error("[corelia-api] studio lesson", { run_id: run.id, lesson_id: a.lessonId, error: errorMessage(e) });
       failure ??= e;
@@ -394,6 +405,24 @@ async function loadLessonContext(db: SupabaseClient, run: RunRow, lessonId: stri
   return { drafts: drafts.length, reviews: reviews.length, draft: drafts.at(-1)?.output ?? null, review: reviews.at(-1)?.output ?? null };
 }
 
+// The curriculum asked for evidence it does not have: research runs again. Only the tick that moves the
+// step out of `done` records the events, so overlapping ticks do not log the same round twice.
+async function reopenResearch(db: SupabaseClient, runId: string, attempt: number, round: number, missing: string[]) {
+  const { data, error } = await db
+    .from("studio_run_steps")
+    .update({ state: "active" })
+    .eq("run_id", runId)
+    .eq("step_key", "research")
+    .eq("state", "done")
+    .select("run_id");
+  if (error) throw new Error(error.message);
+  const pending = await db.from("studio_run_steps").update({ state: "pending" }).eq("run_id", runId).eq("step_key", "curriculum");
+  if (pending.error) throw new Error(pending.error.message);
+  if (!data?.length) return;
+  await addEvent(db, { run_id: runId, step_key: "curriculum", attempt, kind: "warning", agent_role: "A3", message: `${STEP_LABEL.curriculum} cần thêm nghiên cứu (vòng ${round}): ${missing.join("; ")}` });
+  await addEvent(db, { run_id: runId, step_key: "research", attempt, kind: "progress", agent_role: "A2", message: `Mở lại ${STEP_LABEL.research}.` });
+}
+
 // Sends an accepted curriculum back to A3. Only the tick that moves the step out of `done` records
 // the event, so overlapping ticks do not log the same round twice.
 async function reopenCurriculum(db: SupabaseClient, runId: string, attempt: number, round: number, blocking: number) {
@@ -434,11 +463,15 @@ async function loadContext(db: SupabaseClient, run: RunRow, lessonId?: string): 
   const scopes = await db.from("studio_catalog_scopes").select("group_kind,audience,corelia_direction,locale").in("group_kind", tracks);
   if (scopes.error) throw new Error(scopes.error.message);
 
+  // A curriculum that asked for more research is not a curriculum: it only feeds the research gap.
+  const requests = (generations.data ?? []).filter((g) => g.step_key === "curriculum" && researchRequest(g.output) !== null);
+  const used = (generations.data ?? []).filter((g) => !requests.includes(g));
   const outputs: RunContext["outputs"] = {};
-  for (const g of generations.data ?? []) outputs[g.step_key as StepKey] = g.output; // ordered by attempt: latest wins
-  const accepted = (step: StepKey) => (generations.data ?? []).filter((g) => g.step_key === step).length;
+  for (const g of used) outputs[g.step_key as StepKey] = g.output; // ordered by attempt: latest wins
+  const accepted = (step: StepKey) => used.filter((g) => g.step_key === step).length;
   return {
     revision: curriculumRevision({ curricula: accepted("curriculum"), reviews: accepted("curriculum_review") }, outputs.curriculum_review),
+    researchGap: researchGap({ researches: accepted("research"), requests: requests.length }, requests.at(-1)?.output),
     course: course.data as RunContext["course"],
     paths,
     scopes: (scopes.data ?? []).map((s) => ({
@@ -471,11 +504,16 @@ async function submitStep(
   }
   const ctx = await loadContext(db, run, lessonId);
   const tools = lessonId && spec.lessonTools ? spec.lessonTools(lessonId, ctx) : spec.tools;
+  // After an infrastructure failure the retry is not a correction: the model is not told it was
+  // rejected, and a provider failure (possibly no flex capacity) goes to the default tier.
+  const parentKind = parentId ? await loadFailureKind(db, parentId) : null;
+  const rejectedBecause = parentKind === "rejected" ? previousError : null;
+  const serviceTier = parentKind === "provider" ? "default" : SERVICE_TIER;
   // A retry tells the model why the previous attempt was rejected; resending the same input
   // would most likely reproduce the same failure.
   const input = {
     ...spec.buildInput(ctx, lessonId),
-    ...(previousError ? { previous_attempt: { attempt: attempt - 1, rejected_because: previousError } } : {}),
+    ...(rejectedBecause ? { previous_attempt: { attempt: attempt - 1, rejected_because: rejectedBecause } } : {}),
   };
 
   // The insert is the claim: a concurrent tick hitting the same attempt gets 23505 and stops here.
@@ -491,7 +529,7 @@ async function submitStep(
       provider: "openai",
       requested_model_id: spec.model,
       prompt_version: agent.promptVersion,
-      params: { effort: spec.effort, max_output_tokens: spec.maxOutputTokens, tools: tools ?? [] },
+      params: { effort: spec.effort, max_output_tokens: spec.maxOutputTokens, tools: tools ?? [], service_tier: serviceTier },
       input,
       parent_generation_id: parentId,
     })
@@ -518,10 +556,11 @@ async function submitStep(
       schemaName: step,
       schema: spec.schema,
       tools,
+      serviceTier,
       metadata: { generation_id: gen.id, run_id: run.id, step, ...(lessonId ? { lesson_id: lessonId } : {}) },
     });
   } catch (e) {
-    await failGeneration(db, gen.id, "submitting", `Không gửi được yêu cầu: ${errorMessage(e)}`);
+    await failGeneration(db, gen.id, "submitting", "transport", `Không gửi được yêu cầu: ${errorMessage(e)}`);
     await addEvent(db, { run_id: run.id, step_key: step, attempt, kind: "error", agent_role: agent.role, message: `${label}: không gửi được yêu cầu tới ${spec.model}.` });
     return;
   }
@@ -567,7 +606,7 @@ async function pollStep(db: SupabaseClient, run: RunRow, step: StepKey, latest: 
   const agent = stepAgent(step)!;
   const label = lessonId ? `${STEP_LABEL[step]} ${lessonId}` : STEP_LABEL[step];
   if (result.state === "failed") {
-    if (await failGeneration(db, generationId, "submitted", result.error, { model_id: result.model, usage: result.usage })) {
+    if (await failGeneration(db, generationId, "submitted", result.cause, result.error, { model_id: result.model, usage: result.usage })) {
       await addEvent(db, { run_id: run.id, step_key: step, attempt, kind: "warning", agent_role: agent.role, message: `${label}: model trả lỗi (${result.error}).` });
     }
     return;
@@ -602,7 +641,7 @@ async function pollStep(db: SupabaseClient, run: RunRow, step: StepKey, latest: 
   };
   const { data: updated, error } = await db
     .from("studio_generations")
-    .update(acceptance.ok ? { ...done, status: "completed" } : { ...done, status: "failed", error: acceptance.reason })
+    .update(acceptance.ok ? { ...done, status: "completed" } : { ...done, status: "failed", failure_kind: "rejected", error: acceptance.reason })
     .eq("id", generationId)
     .eq("status", "submitted")
     .select("id");
@@ -612,7 +651,9 @@ async function pollStep(db: SupabaseClient, run: RunRow, step: StepKey, latest: 
   if (acceptance.ok) {
     // The step is done once every lesson is accepted (planRun), and a review is done only when its
     // verdict leaves no blocking item (planRun decides between done and reopening the curriculum).
-    if (!lessonId && step !== "curriculum_review") await markStepDone(db, run.id, step);
+    // A curriculum that asks for more research is not done either: planRun reopens the research.
+    const undecided = step === "curriculum_review" || (step === "curriculum" && researchRequest(output) !== null);
+    if (!lessonId && !undecided) await markStepDone(db, run.id, step);
     await addEvent(db, { run_id: run.id, step_key: step, attempt, kind: "result", agent_role: agent.role, message: `${label}: ${acceptance.summary}` });
   } else {
     await addEvent(db, { run_id: run.id, step_key: step, attempt, kind: "warning", agent_role: agent.role, message: `${label}: ${acceptance.reason}` });
@@ -624,17 +665,28 @@ async function markStepDone(db: SupabaseClient, runId: string, step: StepKey) {
   if (error) throw new Error(error.message);
 }
 
+async function loadFailureKind(db: SupabaseClient, generationId: string): Promise<FailureKind | null> {
+  const { data, error } = await db
+    .from("studio_generations")
+    .select("status,provider_request_id,failure_kind")
+    .eq("id", generationId)
+    .single();
+  if (error) throw new Error(error.message);
+  return data.status === "failed" ? failureKind(data as AttemptRow) : null;
+}
+
 /** Returns false when the row had already left `from` (handled by another tick). */
 async function failGeneration(
   db: SupabaseClient,
   id: string,
   from: "submitting" | "submitted",
+  kind: FailureKind,
   reason: string,
   billed: { model_id?: string; usage?: Record<string, unknown> | null } = {},
 ): Promise<boolean> {
   const { data, error } = await db
     .from("studio_generations")
-    .update({ ...billed, status: "failed", error: reason.slice(0, 2000), completed_at: new Date().toISOString() })
+    .update({ ...billed, status: "failed", failure_kind: kind, error: reason.slice(0, 2000), completed_at: new Date().toISOString() })
     .eq("id", id)
     .eq("status", from)
     .select("id");

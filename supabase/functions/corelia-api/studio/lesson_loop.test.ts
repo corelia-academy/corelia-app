@@ -89,6 +89,16 @@ describe("studio lesson loop: planning", () => {
     expect(outage.exhausted.map((e) => e.lessonId)).toEqual(["a"]);
   });
 
+  it("counts a provider failure after the request was accepted as infrastructure, not as the model's attempt", () => {
+    const others = ["b", "c", "d"].map((l) => draft(l));
+    // Accepted by the provider (it has a request id) and then failed by it, e.g. no flex capacity.
+    const provider = (attempt: number) => gen("a", "lessons", attempt, "failed", { failure_kind: "provider" });
+    const rejected = (attempt: number) => gen("a", "lessons", attempt, "failed", { failure_kind: "rejected" });
+    expect(plan([provider(0), provider(1), ...others]).exhausted).toEqual([]);
+    // Two refused answers use both model attempts.
+    expect(plan([rejected(0), rejected(1), ...others]).exhausted.map((e) => e.lessonId)).toEqual(["a"]);
+  });
+
   it("counts the retry budget per round: a rejected rewrite does not use up the reviews or earlier attempts", () => {
     const base_ = [draft("a"), review("a")];
     const blocking = { a: ["x: y"] };
@@ -215,9 +225,10 @@ describe("studio lesson loop: review input and acceptance", () => {
     expect(() => buildLessonReviewInput({ ...ctx, lesson: null }, "l-quiz")).toThrow();
   });
 
-  it("has a reviewer spec that searches the web and a strict schema", () => {
+  it("has a reviewer spec without web search and with a strict schema", () => {
     const spec = STEP_SPECS.lesson_review!;
-    expect(spec.lessonTools!("l-art", ctx)).toEqual([{ type: "web_search" }]);
+    // The reviewer checks against the sources the research step already read.
+    expect(spec.lessonTools!("l-art", ctx)).toBeUndefined();
     expect(spec.maxAttempts).toBe(2);
     expect((spec.schema as { required: string[] }).required).toEqual(["verdict", "issues", "unverified", "summary"]);
   });

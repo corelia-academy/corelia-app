@@ -70,7 +70,7 @@ export function agentKeyEnv(role: AgentRole): string {
 
 export { PLATFORM_FORMAT_GUIDE, PLATFORM_FORMATS } from "./formats.ts";
 import { PLATFORM_FORMAT_GUIDE, PLATFORM_FORMATS } from "./formats.ts";
-import { canRetry, roundFailures, type RoundFailures } from "./retry.ts";
+import { canRetry, roundFailures, type FailureKind, type RoundFailures } from "./retry.ts";
 
 export const MAX_RUN_MS = 24 * 60 * 60 * 1000;
 export const SUBMIT_STALE_MS = 10 * 60 * 1000;
@@ -87,6 +87,8 @@ export interface RunContext {
   revision: CurriculumRevision | null;
   /** Draft/review state of the lesson being written or reviewed; set only when a lesson id is given. */
   lesson?: LessonContext | null;
+  /** Set while the research is being redone for a request of the curriculum. */
+  researchGap?: ResearchGap | null;
 }
 
 export type Acceptance = { ok: true; summary: string } | { ok: false; reason: string };
@@ -340,7 +342,12 @@ export function acceptResearch(output: unknown, today: string): Acceptance {
 
 export function acceptCurriculum(output: unknown, sourceIds: Set<string>): Acceptance {
   const curriculum = output as Curriculum;
-  if (curriculum.status !== "draft") return { ok: false, reason: `Curriculum cần thêm nghiên cứu: ${list(curriculum.missing)}` };
+  if (curriculum.status === "needs_research") {
+    // A request for more evidence: the research step is reopened for it (planRun), the curriculum is not used.
+    if (curriculum.missing.length === 0) return { ok: false, reason: "Curriculum báo cần thêm nghiên cứu nhưng không nêu missing cụ thể." };
+    return { ok: true, summary: `cần thêm nghiên cứu: ${list(curriculum.missing)}` };
+  }
+  if (curriculum.status !== "draft") return { ok: false, reason: `Curriculum có status không hợp lệ: ${curriculum.status}` };
   const problems: string[] = [];
   const lessons = curriculum.modules.flatMap((m) => m.lessons);
   const lessonIds = new Set(lessons.map((l) => l.id));
@@ -428,7 +435,7 @@ export function acceptCurriculumReview(output: unknown, curriculum: unknown): Ac
   ]);
   const problems: string[] = [];
   for (const i of review.issues) {
-    if (!known.has(i.location)) problems.push(`vị trí "${i.location}" không phải ID trong curriculum`);
+    if (!known.has(i.location)) problems.push(`vị trí "${i.location}" không phải ID trong curriculum (location là đúng một ID module, lesson hoặc outcome; cùng lỗi ở nhiều nơi thì tách thành nhiều issue)`);
     if (!i.problem.trim()) problems.push(`vấn đề tại ${i.location} để trống`);
   }
   const blocking = blockingItems(output).length;
@@ -456,25 +463,62 @@ export interface RunProgress {
   blocking: string[] | null;
   /** Failed attempts of the current step's round; absent when unknown (counted from the attempt number). */
   failures?: RoundFailures;
+  /** Accepted research briefs, and accepted curricula that asked for more research instead of being drafts. */
+  researches?: number;
+  researchRequests?: number;
+  /** `missing` of the newest accepted curriculum when it is a research request; null when it is a draft or not loaded. */
+  missing?: string[] | null;
 }
+
+/** A curriculum may ask for more research this many times in a run (as many review rounds as A4). */
+export const MAX_RESEARCH_REQUESTS = 2;
 
 export const NO_PROGRESS: RunProgress = { firstAttempt: 0, curricula: 0, reviews: 0, blocking: null };
 
 export function buildProgress(
-  rows: { step_key: string; attempt: number; status: string; provider_request_id: string | null }[],
+  /** `outcome` is output->>status: it tells a curriculum draft from a request for more research. */
+  rows: { step_key: string; attempt: number; status: string; provider_request_id: string | null; failure_kind?: FailureKind | null; outcome?: string | null }[],
   current: StepKey,
   latestReview: unknown,
+  latestCurriculum?: unknown,
 ): RunProgress {
   const done = rows.filter((r) => r.status === "completed");
   const attempts = done.filter((r) => r.step_key === current).map((r) => r.attempt);
   const firstAttempt = attempts.length ? Math.max(...attempts) + 1 : 0;
+  const curricula = done.filter((r) => r.step_key === "curriculum");
   return {
     firstAttempt,
     failures: roundFailures(rows.filter((r) => r.step_key === current), firstAttempt),
-    curricula: done.filter((r) => r.step_key === "curriculum").length,
+    curricula: curricula.filter((r) => r.outcome !== "needs_research").length,
     reviews: done.filter((r) => r.step_key === "curriculum_review").length,
     blocking: latestReview ? blockingItems(latestReview) : null,
+    researches: done.filter((r) => r.step_key === "research").length,
+    researchRequests: curricula.filter((r) => r.outcome === "needs_research").length,
+    missing: latestCurriculum ? researchRequest(latestCurriculum) : null,
   };
+}
+
+/** `missing` of a curriculum output that asks for more research; null for a draft. */
+export function researchRequest(curriculum: unknown): string[] | null {
+  const c = curriculum as { status?: string; missing?: string[] };
+  return c.status === "needs_research" ? c.missing ?? [] : null;
+}
+
+export interface ResearchGap {
+  /** Number of times the curriculum has asked for more research. */
+  round: number;
+  missing: string[];
+  requested_by: "curriculum";
+}
+
+/**
+ * What A2 is asked to add: the newest request of the curriculum, while the research has not been
+ * redone for it (each accepted request consumes one accepted research brief).
+ */
+export function researchGap(counts: { researches: number; requests: number }, newestRequest: unknown): ResearchGap | null {
+  if (counts.requests === 0 || counts.requests < counts.researches || !newestRequest) return null;
+  const missing = researchRequest(newestRequest);
+  return missing ? { round: counts.requests, missing, requested_by: "curriculum" } : null;
 }
 
 export function curriculumRevision(
@@ -493,7 +537,19 @@ function researchSourceIds(ctx: RunContext): Set<string> {
 }
 
 const MODEL = "gpt-6-luna";
+/** Steps called once per run decide the shape of the whole course and keep the highest effort. */
 const EFFORT = "xhigh";
+/**
+ * Lesson writing runs dozens of times per course and reasoning tokens are most of its cost. The
+ * lesson review keeps EFFORT: the checker is never weaker than what it checks, and nothing after it
+ * catches content errors.
+ */
+const LESSON_EFFORT = "high";
+/**
+ * Flex processing: lower price for slower, best-effort capacity; runs are background work anyway.
+ * When flex has no capacity the request falls back to the default tier (openai.ts).
+ */
+export const SERVICE_TIER = "flex";
 
 /** Steps the runtime can execute. A step missing here ends the run as draft_failed. */
 export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
@@ -528,6 +584,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
       brief: ctx.outputs.brief,
       today: ctx.today,
       platform_formats: PLATFORM_FORMAT_GUIDE,
+      ...(ctx.researchGap ? { research_gap: ctx.researchGap, previous_research: ctx.outputs.research } : {}),
     }),
     accept: (output, ctx) => acceptResearch(output, ctx.today),
   },
@@ -569,7 +626,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
     prompt: "a5-lesson",
     kind: "text",
     model: MODEL,
-    effort: EFFORT,
+    effort: LESSON_EFFORT,
     maxOutputTokens: 40_000,
     maxAttempts: 2,
     schema: LESSON_SCHEMA,
@@ -606,6 +663,7 @@ export interface GenerationState {
   agent_role: AgentRole;
   status: "submitting" | "submitted" | "completed" | "failed";
   provider_request_id: string | null;
+  failure_kind?: FailureKind | null;
   error: string | null;
   created_at: string;
   /** Set on generations of per-lesson steps. */
@@ -619,6 +677,7 @@ export type TickAction =
   | { kind: "expire_submitting"; generationId: string }
   | { kind: "mark_done"; generationId: string }
   | { kind: "reopen"; round: number; blocking: number }
+  | { kind: "reopen_research"; round: number; missing: string[] }
   | { kind: "lessons"; actions: LessonAction[] }
   | { kind: "check"; check: CodeStep }
   | { kind: "publish" }
@@ -685,6 +744,25 @@ export function planRun(input: {
     case "submitted":
       return { step: current, action: { kind: "poll", generationId: latest.id, requestId: latest.provider_request_id ?? "" } };
     case "completed":
+      if (current === "research" && (progress.researchRequests ?? 0) > 0 && (progress.researchRequests ?? 0) >= (progress.researches ?? 0)) {
+        // The curriculum asked for more evidence: research again, keeping what is already found.
+        return { step: current, action: { kind: "submit", attempt: latest.attempt + 1, parentId: latest.id } };
+      }
+      if (current === "curriculum" && progress.missing) {
+        // The newest curriculum is a request for more research.
+        const requests = progress.researchRequests ?? 0;
+        if (requests < (progress.researches ?? 0)) {
+          // The research was redone since: write the curriculum again.
+          return { step: current, action: { kind: "submit", attempt: latest.attempt + 1, parentId: null } };
+        }
+        if (requests >= MAX_RESEARCH_REQUESTS) {
+          return {
+            step: current,
+            action: { kind: "finish", status: "draft_failed", reason: `Bước ${label}: vẫn cần thêm nghiên cứu sau ${requests} vòng: ${list(progress.missing)}` },
+          };
+        }
+        return { step: current, action: { kind: "reopen_research", round: requests, missing: progress.missing } };
+      }
       if (current === "curriculum" && progress.reviews > 0 && progress.curricula <= progress.reviews) {
         // The accepted curriculum was already reviewed and sent back: write the revision.
         return { step: current, action: { kind: "submit", attempt: latest.attempt + 1, parentId: latest.id } };

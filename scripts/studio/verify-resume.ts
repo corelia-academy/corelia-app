@@ -124,7 +124,20 @@ try {
   const cEarly = await course("Resume early");
   const early = await failedRun(cEarly, ["brief", "research"], []);
   const r3 = await start(cEarly, early);
-  check(r3.resume_skipped === "curriculum_not_done" && (await generations(r3.run_id)).length === 0, "a run that did not finish its curriculum starts over, nothing copied");
+  const r3rows = await generations(r3.run_id);
+  check(r3.resume?.steps === 2 && r3rows.map((r) => r.step_key).sort().join() === "brief,research", "a run that stopped before its curriculum keeps its brief and research");
+
+  const cNothing = await course("Resume nothing");
+  const nothing = await failedRun(cNothing, [], []);
+  const r3b = await start(cNothing, nothing);
+  check(r3b.resume_skipped === "nothing_done" && (await generations(r3b.run_id)).length === 0, "a run with no finished step starts over");
+
+  // A curriculum that asked for more research is not copied as a curriculum, even when its step is marked done.
+  const cAsk = await course("Resume research request");
+  const asked = await failedRun(cAsk, upTo, []);
+  must(await db.from("studio_generations").update({ output: { status: "needs_research", missing: ["x"] } }).eq("run_id", asked).eq("step_key", "curriculum"), "ask");
+  const r3c = await start(cAsk, asked);
+  check(!(await generations(r3c.run_id)).some((r) => r.step_key === "curriculum"), "a curriculum that asked for more research is not copied");
 
   const cOther = await course("Resume other");
   const r4 = await start(cOther, old);
