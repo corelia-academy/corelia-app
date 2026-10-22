@@ -7,6 +7,7 @@ import App from "./App";
 import { OCConnect } from "@opencampus/ocid-connect-js";
 import { queryClient } from "@/lib/queryClient";
 import { installStaleChunkRecovery } from "@/lib/staleChunkRecovery";
+import { installTimeZonePreference } from "@/lib/timezone";
 declare global {
   interface Window {
     __CORELIA_BUILD__?: { version: string };
@@ -18,6 +19,7 @@ window.__CORELIA_BUILD__ = {
 };
 
 installStaleChunkRecovery({ buildVersion: import.meta.env.VITE_APP_VERSION });
+installTimeZonePreference();
 
 const ocidOpts = {
   clientId: import.meta.env.VITE_OCID_CLIENT_ID,

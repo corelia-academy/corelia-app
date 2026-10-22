@@ -326,6 +326,7 @@ export async function updateProfileForUser(
   if (updates.website !== undefined) safeUpdates.website = updates.website;
   if (updates.profile_public !== undefined) safeUpdates.profile_public = updates.profile_public;
   if (updates.locale !== undefined) safeUpdates.locale = updates.locale;
+  if (updates.timezone !== undefined) safeUpdates.timezone = updates.timezone;
   if (updates.instructor_headline !== undefined) safeUpdates.instructor_headline = updates.instructor_headline;
   if (updates.instructor_bio !== undefined) safeUpdates.instructor_bio = updates.instructor_bio;
   if (updates.instructor_organization !== undefined) {
