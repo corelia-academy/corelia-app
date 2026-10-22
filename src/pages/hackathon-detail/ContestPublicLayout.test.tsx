@@ -70,6 +70,9 @@ vi.mock("@/lib/hackathons", () => ({
   isPastContestSubmissionDeadline: vi.fn(() => false),
   sanitizeSlug: (value: unknown) => (typeof value === "string" ? value.trim().toLowerCase() : null),
 }));
+vi.mock("@/lib/projectCollaboration", () => ({
+  listHackathonCollaboratorProjects: vi.fn(async () => []),
+}));
 vi.mock("@/features/hackathons/hackathonQueries", () => ({
   publicHackathonApplicantPreviewsQueryOptions: (ids: string[]) => ({
     queryKey: ["hackathons", "applicant-test", ...ids],
