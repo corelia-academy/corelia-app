@@ -17,11 +17,6 @@ export function routeSkeletonVariantForPath(pathname: string): RouteSkeletonVari
   return "list";
 }
 
-/** Full-page routes outside MainLayout whose page draws its own loading screen (login, OCID). */
-export function isStandalonePlaceholderPath(pathname: string): boolean {
-  return /^\/(login|ocid-redirect)\/?$/.test(pathname);
-}
-
 /** Admin / instructor workspace routes rendered inside their own sidebar + top-bar layout. */
 export function isWorkspacePath(pathname: string): boolean {
   return /^\/(admin|instructor)(\/|$)/.test(pathname);

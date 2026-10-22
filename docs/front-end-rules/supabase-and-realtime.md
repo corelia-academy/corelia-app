@@ -33,6 +33,9 @@ Direct auth operations chỉ được đặt trong auth service/boundary hoặc 
 ## Tránh waterfall và N+1
 
 - Bắt đầu các reads độc lập song song.
+- Sau khi có row gốc, mọi lookup chỉ phụ thuộc vào row đó (locale content, signed media URL, owner/public profile, taxonomy) chạy cùng một `Promise.all`, không `await` lần lượt. Mẫu: `loadCourseBundle`, `getProjectBySlugOrId`, `localizeProjectEntries`.
+- Fallback lookup (slug history, tìm theo id khi slug không khớp) chạy song song với lookup chính khi chi phí thấp; không bắt mọi request trả giá cho trường hợp hiếm.
+- Một detail read trên critical path tối đa 2 round trip nối tiếp (row gốc → nhánh song song). Nhiều hơn phải có lý do ghi trong code.
 - Batch IDs thay vì gọi một query cho từng card/row.
 - Reuse query cache giữa list, detail và destination route qua query options chung.
 - Không chạy mutation/backfill trong critical read path.

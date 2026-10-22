@@ -3,6 +3,7 @@ import "@/styles/global.css";
 import AosInit from "@/components/AosInit.astro";
 import GsapReveal from "@/components/GsapReveal.astro";
 import HoverWaveInit from "@/components/common/HoverWaveInit.astro";
+import SignedInAppLinks from "@/components/common/SignedInAppLinks.astro";
 
 type Props = {
   lang: string;
@@ -111,6 +112,7 @@ const {
     <AosInit />
     <GsapReveal />
     <HoverWaveInit />
+    <SignedInAppLinks />
   </head>
 
   <body class={bodyClass}>

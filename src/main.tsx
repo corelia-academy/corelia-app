@@ -8,6 +8,7 @@ import { OCConnect } from "@opencampus/ocid-connect-js";
 import { queryClient } from "@/lib/queryClient";
 import { installStaleChunkRecovery } from "@/lib/staleChunkRecovery";
 import { installTimeZonePreference } from "@/lib/timezone";
+import { scheduleAppSplashRelease } from "@/components/loading/appSplash";
 declare global {
   interface Window {
     __CORELIA_BUILD__?: { version: string };
@@ -34,3 +35,6 @@ createRoot(document.getElementById("root")!).render(
     </OCConnect>
   </QueryClientProvider>,
 );
+
+// Fallback for trees that never mount a loading screen (e.g. maintenance mode).
+scheduleAppSplashRelease(500);

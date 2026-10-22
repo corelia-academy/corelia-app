@@ -10,6 +10,7 @@ vi.mock("@/lib/supabase", () => ({ supabase: { rpc: mocks.rpc } }));
 vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: { id: "notification-ui-test" } }) }));
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string, options?: { count?: number }) => options?.count ? `+${options.count} XP` : key }) }));
 vi.mock("sonner", () => ({ toast: { success: mocks.toast } }));
+vi.mock("@/hooks/useBrowserIdle", () => ({ useBrowserIdle: () => true }));
 vi.mock("@/lib/xpNotifications", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/xpNotifications")>();
   return { ...actual, initializeXpNotifications: async (id: string) => {
