@@ -8,13 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { CampaignDeliveryDetails } from "./CampaignDeliveryDetails";
+import { datetimeLocalToIso } from "@/lib/datetime";
 import { intlLocale } from "@/lib/intl";
+import { resolvedTimeZone } from "@/lib/timezone";
 
 type Campaign = Record<string, unknown>;
 type Action = "send" | "schedule" | "pause" | "resume" | "cancel";
 
-function vietnamTime(value: unknown): string {
-  return typeof value === "string" && value ? new Intl.DateTimeFormat(intlLocale(), { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(value)) : "";
+function displayTime(value: unknown): string {
+  return typeof value === "string" && value ? new Intl.DateTimeFormat(intlLocale(), { dateStyle: "short", timeStyle: "short" }).format(new Date(value)) : "";
 }
 
 export function CampaignCard({ campaign, pending, onControl }: { campaign: Campaign; pending: boolean; onControl: (id: string, command: string, scheduledAt?: string) => Promise<void> }) {
@@ -32,7 +34,8 @@ export function CampaignCard({ campaign, pending, onControl }: { campaign: Campa
   const accepted = Number(campaign.accepted_count ?? 0);
   const failed = Number(campaign.failed_count ?? 0);
   const waitingToSendNow = status === "scheduled" && Date.parse(String(campaign.scheduled_at ?? "")) <= Date.now();
-  const scheduleIso = schedule ? new Date(`${schedule}:00+07:00`).toISOString() : "";
+  const scheduleIso = datetimeLocalToIso(schedule) ?? "";
+  const timezone = resolvedTimeZone();
   const validSchedule = Boolean(schedule && Date.parse(scheduleIso) > Date.now());
 
   const confirm = async () => {
@@ -57,7 +60,7 @@ export function CampaignCard({ campaign, pending, onControl }: { campaign: Campa
           <div className="sm:col-span-2"><dt className="text-foreground-muted">{t("campaigns.subjectPreview")}</dt><dd>{String(campaign.frozen_subject || version?.subject || "—")}</dd></div>
           <div className="sm:col-span-2"><dt className="text-foreground-muted">Reply-To</dt><dd>{String(campaign.frozen_reply_to || "—")}</dd></div>
         </dl>
-        <p className="mt-3 text-xs font-medium">{waitingToSendNow ? t("campaigns.workerPending") : status === "scheduled" ? t("campaigns.scheduledFor", { time: vietnamTime(campaign.scheduled_at) }) : status === "running" ? t("campaigns.sendingProgress", { accepted, total }) : status === "ready" ? t("campaigns.notScheduled") : campaign.scheduled_at ? t("campaigns.startedAt", { time: vietnamTime(campaign.scheduled_at) }) : ""}</p>
+        <p className="mt-3 text-xs font-medium">{waitingToSendNow ? t("campaigns.workerPending") : status === "scheduled" ? t("campaigns.scheduledFor", { time: displayTime(campaign.scheduled_at), timezone }) : status === "running" ? t("campaigns.sendingProgress", { accepted, total }) : status === "ready" ? t("campaigns.notScheduled") : campaign.scheduled_at ? t("campaigns.startedAt", { time: displayTime(campaign.scheduled_at), timezone }) : ""}</p>
         <p className="mt-1 text-xs text-foreground-muted">{t("campaigns.acceptedCount", { count: accepted })} · {t("campaigns.deliveredCount", { count: Number(campaign.delivered_count ?? 0) })} · {t("campaigns.failedCount", { count: failed })} · {t("campaigns.suppressedCount", { count: Number(campaign.suppressed_count ?? 0) })}</p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
@@ -73,7 +76,7 @@ export function CampaignCard({ campaign, pending, onControl }: { campaign: Campa
       <DialogContent className="max-w-lg">
         <DialogHeader><DialogTitle>{action === "cancel" && waitingToSendNow ? t("campaigns.confirmCancelSend") : t(`campaigns.confirm.${action ?? "send"}`)}</DialogTitle><DialogDescription>{t("campaigns.reviewBeforeAction")}</DialogDescription></DialogHeader>
         <div className="rounded-md border border-border-subtle p-4 text-sm"><p className="font-medium">{String(campaign.name)}</p><p>{t("campaigns.template")}: {version?.email_templates?.name ?? "—"} · v{version?.version ?? "—"}</p><p>{t("campaigns.subjectPreview")}: {String(campaign.frozen_subject || version?.subject || "—")}</p><p>{t("campaigns.sender")}: {String(campaign.frozen_from ?? "—")}</p><p>Reply-To: {String(campaign.frozen_reply_to ?? "—")}</p><p>{t("campaigns.list")}: {campaign.audience_type === "all_contacts" ? t("campaigns.allCurrentContactsLabel") : list?.name ?? "—"} · {total.toLocaleString()} {t("campaigns.recipients")}</p></div>
-        {action === "schedule" && <div><Label htmlFor={`schedule-${id}`}>{t("campaigns.schedule")}</Label><Input id={`schedule-${id}`} className="mt-1" type="datetime-local" value={schedule} onChange={(event) => setSchedule(event.target.value)} /><p className="mt-1 text-xs text-foreground-muted">{validSchedule ? t("campaigns.scheduledFor", { time: vietnamTime(scheduleIso) }) : t("campaigns.futureSchedule")}</p></div>}
+        {action === "schedule" && <div><Label htmlFor={`schedule-${id}`}>{t("campaigns.schedule", { timezone })}</Label><Input id={`schedule-${id}`} className="mt-1" type="datetime-local" value={schedule} onChange={(event) => setSchedule(event.target.value)} /><p className="mt-1 text-xs text-foreground-muted">{validSchedule ? t("campaigns.scheduledFor", { time: displayTime(scheduleIso), timezone }) : t("campaigns.futureSchedule")}</p></div>}
         {action === "send" && <p className="text-sm font-medium">{t("campaigns.sendNowWarning")}</p>}
         <DialogFooter><Button type="button" variant="cta" hierarchy="secondary" onClick={() => setAction(null)}>{t("campaigns.back")}</Button><Button type="button" disabled={submitting || pending || action === "schedule" && !validSchedule} onClick={confirm}>{action === "cancel" && waitingToSendNow ? t("campaigns.confirmCancelSend") : t(`campaigns.confirm.${action ?? "send"}`)}</Button></DialogFooter>
       </DialogContent>
