@@ -64,71 +64,116 @@ function EmptyTab({ icon, title }: { icon: React.ReactNode; title: string }) {
 }
 
 function HackathonProjectSidebar() {
-  const { contest, registration, submission, submissionLoading, submissionClosed } = useOutletContext<HackathonOutletContext>();
+  const {
+    contest,
+    registration,
+    submission,
+    submissionLoading,
+    collaboratorProjects,
+    collaboratorProjectsLoading,
+    submissionClosed,
+  } = useOutletContext<HackathonOutletContext>();
+  const { user } = useAuth();
   const { t, i18n } = useTranslation("contests");
-  const projectCanEdit = Boolean(submission?.project_id && canEditContestProject(contest));
-  const projectPath = submission?.project_id
-    ? projectCanEdit
-      ? `/projects/${submission.project_id}/edit`
-      : `/projects/${submission.project_id}`
-    : null;
+  const sidebarProjects = useMemo(() => {
+    const byId = new Map<
+      string,
+      { id: string; title: string | null; updatedAt: string | null; isCreator: boolean }
+    >();
+
+    if (submission?.project_id) {
+      byId.set(submission.project_id, {
+        id: submission.project_id,
+        title: submission.title ?? null,
+        updatedAt: submission.updated_at || submission.submitted_at || null,
+        isCreator: true,
+      });
+    }
+
+    for (const project of collaboratorProjects) {
+      if (!byId.has(project.id)) {
+        byId.set(project.id, {
+          id: project.id,
+          title: project.title,
+          updatedAt: project.updated_at,
+          isCreator: project.owner_id === user?.id,
+        });
+      }
+    }
+
+    return Array.from(byId.values());
+  }, [collaboratorProjects, submission, user?.id]);
   const [now] = useState(() => Date.now());
-  const updatedAt = submission?.updated_at || submission?.submitted_at;
-  const relativeTime = typeof updatedAt === "string" && updatedAt ? feedRelativeTime(updatedAt, now, i18n.language, t("public.myProject.justNow")) : "";
-  const updatedText = relativeTime ? t("public.myProject.updatedAt", { time: relativeTime }) : "";
 
   return (
     <div className="min-w-0 space-y-0 xl:sticky xl:top-6 xl:z-40 xl:self-start">
       <aside data-hackathon-card className="min-w-0 flex flex-col gap-md rounded-2xl border border-border bg-surface-base pt-lg px-xl pb-xl">
         <h2 data-hackathon-card-title className="font-display text-base font-medium leading-6 tracking-[-0.32px] text-foreground">{t("public.myProject.title")}</h2>
-        {!registration ? (
-          <div className="space-y-5">
-            <p className="text-sm leading-6 text-foreground-muted xl:leading-[1.4] xl:tracking-[0.28px]">{t("public.myProject.registerRequiredDescription")}</p>
-            <Button type="button" variant="cta" hierarchy="primary" size="small" data-hackathon-control className="w-full rounded-lg capitalize" disabled>{t("public.myProject.create")}</Button>
-          </div>
-        ) : submissionLoading ? (
+        {submissionLoading || collaboratorProjectsLoading ? (
           <div className="space-y-3" aria-busy="true" aria-label={t("public.myProject.loading")}>
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-10 w-full rounded-lg" />
           </div>
-        ) : projectPath ? (
-          <div className="flex items-center justify-between gap-3 py-md px-0">
-            <div className="flex min-w-0 items-center gap-3">
-              <FolderSimple className="size-5 shrink-0 text-foreground-muted" weight="duotone" aria-hidden />
-              <div className="min-w-0">
-                <span className="block truncate text-sm font-medium leading-tight text-foreground">
-                  {submission?.title || t("public.myProject.untitled")}
-                </span>
-                {updatedText ? <p className="mt-1 truncate text-xs text-foreground-muted">{updatedText}</p> : null}
-              </div>
-            </div>
-            {projectCanEdit ? (
-              <Button
-                render={<NavLink to={projectPath} />}
-                nativeButton={false}
-                hierarchy="primary"
-                size="small"
-                iconOnly
-                data-hackathon-control
-                aria-label={t("public.myProject.edit")}
-                title={t("public.myProject.edit")}
-              >
-                <PencilSimple weight="duotone" aria-hidden />
-              </Button>
-            ) : (
-              <Button
-                render={<NavLink to={projectPath} />}
-                nativeButton={false}
-                hierarchy="tertiary"
-                size="small"
-                iconOnly
-                data-hackathon-control
-                aria-label={t("public.myProject.view")}
-                title={t("public.myProject.view")}
-              >
-                <Eye weight="duotone" aria-hidden />
-              </Button>
-            )}
+        ) : sidebarProjects.length > 0 ? (
+          <>
+            {sidebarProjects.map((project) => {
+              const projectCanEdit = Boolean(project.isCreator && canEditContestProject(contest));
+              const projectPath = projectCanEdit
+                ? `/projects/${project.id}/edit`
+                : `/projects/${project.id}`;
+              const relativeTime = project.updatedAt
+                ? feedRelativeTime(project.updatedAt, now, i18n.language, t("public.myProject.justNow"))
+                : "";
+              const updatedText = relativeTime
+                ? t("public.myProject.updatedAt", { time: relativeTime })
+                : "";
+
+              return (
+                <div key={project.id} className="flex items-center justify-between gap-3 py-md px-0">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <FolderSimple className="size-5 shrink-0 text-foreground-muted" weight="duotone" aria-hidden />
+                    <div className="min-w-0">
+                      <span className="block truncate text-sm font-medium leading-tight text-foreground">
+                        {project.title || t("public.myProject.untitled")}
+                      </span>
+                      {updatedText ? <p className="mt-1 truncate text-xs text-foreground-muted">{updatedText}</p> : null}
+                    </div>
+                  </div>
+                  {projectCanEdit ? (
+                    <Button
+                      render={<NavLink to={projectPath} />}
+                      nativeButton={false}
+                      hierarchy="primary"
+                      size="small"
+                      iconOnly
+                      data-hackathon-control
+                      aria-label={t("public.myProject.edit")}
+                      title={t("public.myProject.edit")}
+                    >
+                      <PencilSimple weight="duotone" aria-hidden />
+                    </Button>
+                  ) : (
+                    <Button
+                      render={<NavLink to={projectPath} />}
+                      nativeButton={false}
+                      hierarchy="tertiary"
+                      size="small"
+                      iconOnly
+                      data-hackathon-control
+                      aria-label={t("public.myProject.view")}
+                      title={t("public.myProject.view")}
+                    >
+                      <Eye weight="duotone" aria-hidden />
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+          </>
+        ) : !registration ? (
+          <div className="space-y-5">
+            <p className="text-sm leading-6 text-foreground-muted xl:leading-[1.4] xl:tracking-[0.28px]">{t("public.myProject.registerRequiredDescription")}</p>
+            <Button type="button" variant="cta" hierarchy="primary" size="small" data-hackathon-control className="w-full rounded-lg capitalize" disabled>{t("public.myProject.create")}</Button>
           </div>
         ) : (
           <div className="space-y-5">

@@ -52,6 +52,37 @@ export async function fetchHackathonProjectForOwnerSubmission(
   return (data ?? null) as Project | null;
 }
 
+export type HackathonCollaboratorProject = Pick<
+  Project,
+  "id" | "owner_id" | "title" | "updated_at"
+>;
+
+export async function listHackathonCollaboratorProjects(
+  hackathonId: string,
+  userId: string,
+): Promise<HackathonCollaboratorProject[]> {
+  const { data: collaboratorRows, error: collaboratorError } = await supabase
+    .from("project_collaborators")
+    .select("project_id")
+    .eq("user_id", userId);
+  if (collaboratorError) throw new Error(collaboratorError.message);
+
+  const projectIds = Array.from(
+    new Set((collaboratorRows ?? []).map((row) => row.project_id).filter(Boolean)),
+  ) as string[];
+  if (projectIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("projects")
+    .select("id,owner_id,title,updated_at")
+    .in("id", projectIds)
+    .in("source_type", ["contest", "hackathon"])
+    .eq("source_id", hackathonId)
+    .order("updated_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as HackathonCollaboratorProject[];
+}
+
 export async function listProjectCollaborators(
   projectId: string,
 ): Promise<ProjectCollaboratorRow[]> {

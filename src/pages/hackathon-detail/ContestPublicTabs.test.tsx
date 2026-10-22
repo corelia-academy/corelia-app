@@ -69,7 +69,7 @@ const contest = {
 } as unknown as Contest;
 
 function ParentRoute() {
-  return <Outlet context={{ contest, registration: null }} />;
+  return <Outlet context={{ contest, registration: null, collaboratorProjects: [] }} />;
 }
 
 function LocationProbe() {
@@ -115,7 +115,7 @@ it("shows linked preparation courses without organizer posts in Resources", asyn
   const root = createRoot(container);
   await act(async () => root.render(
     <MemoryRouter initialEntries={["/hackathons/demo-hackathon/resources"]}>
-      <Routes><Route element={<Outlet context={{ contest: resourceContest }} />}><Route path="/hackathons/:slug/resources" element={<HackathonResourcesTab />} /></Route></Routes>
+      <Routes><Route element={<Outlet context={{ contest: resourceContest, collaboratorProjects: [] }} />}><Route path="/hackathons/:slug/resources" element={<HackathonResourcesTab />} /></Route></Routes>
     </MemoryRouter>,
   ));
   expect(container.querySelector<HTMLAnchorElement>('a[href="/courses/skill-course"]')?.textContent).toBe("Skill course");
@@ -131,7 +131,7 @@ it("embeds organizer posts on the direct Posts route and shows an empty state wi
   const root = createRoot(container);
   const render = async (social_post_urls: string[]) => act(async () => root.render(
     <MemoryRouter initialEntries={["/hackathons/demo-hackathon/posts"]}>
-      <Routes><Route element={<Outlet context={{ contest: { ...contest, social_post_urls } }} />}><Route path="/hackathons/:slug/posts" element={<HackathonPostsTab />} /></Route></Routes>
+      <Routes><Route element={<Outlet context={{ contest: { ...contest, social_post_urls }, collaboratorProjects: [] }} />}><Route path="/hackathons/:slug/posts" element={<HackathonPostsTab />} /></Route></Routes>
     </MemoryRouter>,
   ));
   await render(["https://x.com/corelia/status/123"]);
@@ -284,7 +284,7 @@ describe("HackathonTimelineTab connector halves", () => {
       root.render(
         <MemoryRouter initialEntries={["/hackathons/demo-hackathon/timeline"]}>
           <Routes>
-            <Route element={<Outlet context={{ contest: timelineContest, registration: null }} />}>
+            <Route element={<Outlet context={{ contest: timelineContest, registration: null, collaboratorProjects: [] }} />}>
               <Route path="/hackathons/:slug/timeline" element={<HackathonTimelineTab />} />
             </Route>
           </Routes>
@@ -318,7 +318,7 @@ describe("HackathonOverviewTab", () => {
       root.render(
         <MemoryRouter>
           <Routes>
-            <Route element={<Outlet context={{ contest: { ...contest, short_description: "A complete summary for participants", description_markdown: "Detailed rules and schedule" }, registration: null }} />}>
+            <Route element={<Outlet context={{ contest: { ...contest, short_description: "A complete summary for participants", description_markdown: "Detailed rules and schedule" }, registration: null, collaboratorProjects: [] }} />}>
               <Route index element={<HackathonOverviewTab />} />
             </Route>
           </Routes>
@@ -356,6 +356,7 @@ describe("HackathonOverviewTab", () => {
                       updated_at: new Date(Date.now() - 60000).toISOString(),
                     },
                     submissionLoading: false,
+                    collaboratorProjects: [],
                     submissionClosed: false,
                   }}
                 />
@@ -404,6 +405,7 @@ describe("HackathonOverviewTab", () => {
                       submitted_at: new Date(Date.now() - 3600000).toISOString(),
                     },
                     submissionLoading: false,
+                    collaboratorProjects: [],
                     submissionClosed: true,
                   }}
                 />
@@ -441,7 +443,7 @@ describe("HackathonPrizesTab", () => {
       root.render(
         <MemoryRouter>
           <Routes>
-            <Route element={<Outlet context={{ contest: prizeContest, registration: null }} />}>
+            <Route element={<Outlet context={{ contest: prizeContest, registration: null, collaboratorProjects: [] }} />}>
               <Route index element={<HackathonPrizesTab />} />
             </Route>
           </Routes>
