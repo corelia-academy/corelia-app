@@ -58,6 +58,14 @@
       },
       "active": "Đang dùng"
     },
+    "timezone": {
+      "title": "Múi giờ",
+      "description": "Ngày giờ trong ứng dụng được hiển thị theo múi giờ này. Khi đăng nhập, tuỳ chọn được đồng bộ giữa các thiết bị của bạn.",
+      "label": "Múi giờ hiển thị",
+      "auto": "Tự động phát hiện ({{timezone}})",
+      "current": "Giờ hiện tại: {{time}}",
+      "saveFailed": "Không thể lưu múi giờ. Vui lòng thử lại."
+    },
     "appearance": {
       "title": "Giao diện",
       "description": "Chọn chế độ hiển thị phù hợp với môi trường của bạn.",

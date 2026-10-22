@@ -43,8 +43,9 @@ import type { Contest, ContestRegistration } from "@/types/hackathons";
 import { ContestDetailLoadingCard } from "@/pages/hackathon-detail/components/ContestDetailGateStates";
 import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 import { formatPrizeAmount } from "./utils/formatPrizeAmount";
-import { formatVietnamDateTime } from "./utils/formatVietnamDateTime";
+import { formatEventDateTime } from "./utils/formatEventDateTime";
 import { getHackathonSocialPostEmbed } from "@/lib/hackathonSocialPosts";
+import { timeZoneDisplayLabel } from "@/lib/timezone";
 
 const TABS = ["overview", "posts", "prizes", "timeline", "projects", "resources"] as const;
 
@@ -412,11 +413,11 @@ export default function ContestPublicLayout() {
                   triggerLabel={t("public.registrationDeadline")}
                   triggerClassName="absolute left-1/2 top-1/2 size-6 -translate-x-1/2 -translate-y-1/2 [@media(pointer:coarse)]:size-11"
                 >
-                  {t("public.timezoneLabel")}
+                  {timeZoneDisplayLabel()}
                 </TooltipPreview>
               </span>
             </div>
-            <div className="mt-2 font-display text-[28px] font-medium leading-[1.2] text-foreground">{effectiveDeadline ? <time dateTime={effectiveDeadline}>{formatVietnamDateTime(effectiveDeadline, locale, { includeTimezone: false, compact: true })}</time> : "—"}</div>
+            <div className="mt-2 font-display text-[28px] font-medium leading-[1.2] text-foreground">{effectiveDeadline ? <time dateTime={effectiveDeadline}>{formatEventDateTime(effectiveDeadline, locale, { includeTimezone: false, compact: true })}</time> : "—"}</div>
           </div>
           <Separator className="sm:hidden" />
           <Separator orientation="vertical" className="hidden sm:block" />
@@ -431,11 +432,11 @@ export default function ContestPublicLayout() {
                   triggerLabel={t("public.submissionDeadline")}
                   triggerClassName="absolute left-1/2 top-1/2 size-6 -translate-x-1/2 -translate-y-1/2 [@media(pointer:coarse)]:size-11"
                 >
-                  {t("public.timezoneLabel")}
+                  {timeZoneDisplayLabel()}
                 </TooltipPreview>
               </span>
             </div>
-            <div className="mt-2 font-display text-[28px] font-medium leading-[1.2] text-foreground">{effectiveDeadline ? <time dateTime={effectiveDeadline}>{formatVietnamDateTime(effectiveDeadline, locale, { includeTimezone: false, compact: true })}</time> : "—"}</div>
+            <div className="mt-2 font-display text-[28px] font-medium leading-[1.2] text-foreground">{effectiveDeadline ? <time dateTime={effectiveDeadline}>{formatEventDateTime(effectiveDeadline, locale, { includeTimezone: false, compact: true })}</time> : "—"}</div>
           </div>
         </div>
       </PageContainer>

@@ -10,6 +10,7 @@ import {
   saveNotificationPreferences,
   type NotificationPreferences,
 } from "@/lib/notificationPreferences";
+import { resolvedTimeZone } from "@/lib/timezone";
 import { useAuth } from "@/stores/authStore";
 import { QueryErrorState } from "@/components/QueryErrorState";
 
@@ -85,7 +86,7 @@ export function NotificationPreferencesCard() {
   function toggle(key: Exclude<keyof NotificationPreferences, "digest_timezone">) {
     const next = { ...prefs, [key]: !prefs[key] };
     if (key === "email_social_digest" && next.email_social_digest) {
-      next.digest_timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Ho_Chi_Minh";
+      next.digest_timezone = resolvedTimeZone();
     }
     saveMutation.mutate(next);
   }
