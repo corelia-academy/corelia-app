@@ -492,8 +492,12 @@
     "social": {
       "heart": "Thả tim",
       "unheart": "Bỏ tim",
+      "save": "Lưu dự án",
+      "unsave": "Bỏ lưu dự án",
       "loginToInteract": "Đăng nhập để thả tim.",
+      "loginToSave": "Đăng nhập để lưu dự án này.",
       "heartFailed": "Không cập nhật được tim.",
+      "saveFailed": "Không cập nhật được trạng thái lưu dự án.",
       "xpEarned": "+2 XP · Like project",
       "xpHint": "Like hợp lệ lần đầu: +2 XP (tối đa 5 project/ngày UTC)",
       "xpHintRemaining": "Like hợp lệ lần đầu: +2 XP · còn {{count}} lượt thưởng hôm nay (UTC)",

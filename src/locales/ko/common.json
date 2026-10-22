@@ -492,8 +492,12 @@
     "social": {
       "heart": "좋아요",
       "unheart": "좋아요 취소",
+      "save": "프로젝트 저장",
+      "unsave": "저장한 프로젝트에서 제거",
       "loginToInteract": "좋아요를 누르려면 로그인하세요.",
+      "loginToSave": "프로젝트를 저장하려면 로그인하세요.",
       "heartFailed": "좋아요를 업데이트할 수 없습니다.",
+      "saveFailed": "저장 상태를 업데이트할 수 없습니다.",
       "xpEarned": "+2 XP · 프로젝트 좋아요",
       "xpHint": "처음 적용되는 좋아요: +2 XP (UTC 하루 최대 프로젝트 5개)",
       "xpHintRemaining": "처음 적용되는 좋아요: +2 XP · 오늘(UTC) 보상 좋아요 {{count}}회 남음",

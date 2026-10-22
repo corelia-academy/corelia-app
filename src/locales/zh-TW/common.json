@@ -492,8 +492,12 @@
     "social": {
       "heart": "讚",
       "unheart": "收回讚",
+      "save": "收藏專案",
+      "unsave": "取消收藏專案",
       "loginToInteract": "登入後可按讚。",
+      "loginToSave": "登入後可收藏此專案。",
       "heartFailed": "無法更新讚。",
+      "saveFailed": "無法更新專案收藏狀態。",
       "xpEarned": "+2 經驗值 · 對專案按讚",
       "xpHint": "首次符合資格的讚：+2 經驗值（每個 UTC 日最多 5 個專案）",
       "xpHintRemaining": "首次符合資格的讚：+2 經驗值 · 今日（UTC）還剩 {{count}} 次獎勵按讚",

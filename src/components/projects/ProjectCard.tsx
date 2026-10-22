@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { NavLink } from "react-router";
 import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import {
   ArrowSquareOut,
-  BookmarkSimpleIcon as PhosphorBookmark,
   GithubLogo,
   Image as PhosphorImage,
   Presentation as PhosphorPresentation,
@@ -12,6 +10,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
+import { ProjectSaveBlock } from "@/components/projects/ProjectSaveBlock";
 import { Chip } from "@/components/ui/chip";
 import {
   AvatarGroup,
@@ -35,6 +34,8 @@ type ProjectCardProps = {
   teamMembers?: PublicProjectTeamMember[];
   taxonomy?: Contest | null;
   hearted?: boolean;
+  saved?: boolean;
+  saveStateReady?: boolean;
   className?: string;
   systemTaxonomy?: ProjectTaxonomyOption[];
   variant?: "default" | "hackathon";
@@ -50,12 +51,13 @@ export function ProjectCard({
   teamMembers = [],
   taxonomy,
   hearted,
+  saved,
+  saveStateReady,
   className,
   systemTaxonomy = [],
 }: ProjectCardProps) {
   const { t, i18n } = useTranslation("common");
 
-  const [isSaved, setIsSaved] = useState(false);
   const detailPath = `/projects/${project.slug || project.id}`;
   const logo = getProjectCoverImageUrl(project);
   const createdAt = new Date(project.created_at);
@@ -250,24 +252,11 @@ export function ProjectCard({
         <div className="flex shrink-0 items-center gap-3">
           {renderActions(true, true)}
           {actions.length ? <span className="h-5 w-px bg-border-subtle" aria-hidden /> : null}
-          <PhosphorBookmark
-            className={cn(
-              "size-5 shrink-0 cursor-pointer text-foreground focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
-              !isSaved && "hover:text-foreground-muted",
-              isSaved && "fill-current text-primary [&>path:first-child]:opacity-100",
-            )}
-            weight="duotone"
-            role="button"
-            tabIndex={0}
-            aria-label={t("actions.save")}
-            aria-pressed={isSaved}
-            onClick={() => setIsSaved((current) => !current)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                setIsSaved((current) => !current);
-              }
-            }}
+          <ProjectSaveBlock
+            projectId={project.id}
+            saved={saved}
+            saveStateReady={saveStateReady}
+            saveCount={project.save_count ?? 0}
           />
         </div>
       </div>
