@@ -8,9 +8,13 @@ export function AiCourseBadge({ course }: { course: Pick<Course, "course_type"> 
   if (course.course_type !== "ai_generated") return null;
   return (
     <Tooltip>
-      <TooltipTrigger render={<Badge size="xsmall" color="cyan" tabIndex={0} />}>
-        {t("aiGenerated.label")}
-      </TooltipTrigger>
+      <TooltipTrigger
+        render={
+          <Badge size="xsmall" color="cyan" tabIndex={0}>
+            {t("aiGenerated.label")}
+          </Badge>
+        }
+      />
       <TooltipContent>{t("aiGenerated.description")}</TooltipContent>
     </Tooltip>
   );
