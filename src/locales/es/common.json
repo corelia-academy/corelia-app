@@ -492,8 +492,12 @@
     "social": {
       "heart": "Me gusta",
       "unheart": "Quitar me gusta",
+      "save": "Guardar proyecto",
+      "unsave": "Quitar proyecto guardado",
       "loginToInteract": "Inicia sesión para dar me gusta.",
+      "loginToSave": "Inicia sesión para guardar este proyecto.",
       "heartFailed": "No se pudo actualizar el me gusta.",
+      "saveFailed": "No se pudo actualizar el estado de guardado.",
       "xpEarned": "+2 XP · Proyecto con me gusta",
       "xpHint": "Primer me gusta elegible: +2 XP (hasta 5 proyectos por día UTC)",
       "xpHintRemaining": "Primer me gusta elegible: +2 XP · quedan {{count}} me gusta con recompensa hoy (UTC)",

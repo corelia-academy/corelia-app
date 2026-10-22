@@ -492,8 +492,12 @@
     "social": {
       "heart": "いいね",
       "unheart": "いいねを取り消す",
+      "save": "プロジェクトを保存",
+      "unsave": "保存を解除",
       "loginToInteract": "いいねするにはログインしてください。",
+      "loginToSave": "このプロジェクトを保存するにはログインしてください。",
       "heartFailed": "いいねを更新できませんでした。",
+      "saveFailed": "保存状態を更新できませんでした。",
       "xpEarned": "+2 XP · プロジェクトにいいね",
       "xpHint": "最初の対象のいいね：+2 XP（UTC の 1 日あたり最大 5 プロジェクト）",
       "xpHintRemaining": "最初の対象のいいね：+2 XP · 本日（UTC）の報酬付きいいねは残り {{count}} 回",

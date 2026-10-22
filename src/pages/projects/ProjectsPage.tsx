@@ -31,6 +31,7 @@ import {
 } from "@/features/projects/projectQueries";
 import type { PublicProjectEntry, PublicProjectSort } from "@/lib/projects";
 import { projectHeartsQueryOptions } from "@/features/projects/projectSocialQueries";
+import { projectSavesQueryOptions } from "@/features/projects/projectSaveQueries";
 import { useAuth } from "@/stores/authStore";
 import { cn } from "@/lib/utils";
 import type { HackathonTaxonomyOption, HackathonWinnerAward } from "@/types/hackathons";
@@ -274,6 +275,7 @@ export default function ProjectsPage() {
   const teamsQuery = useQuery(publicProjectTeamsQueryOptions(items.map((item) => item.project.id)));
 
   const hearts = useQuery(projectHeartsQueryOptions(user?.id, items.map(item => item.project.id)));
+  const saves = useQuery(projectSavesQueryOptions(user?.id, items.map(item => item.project.id)));
   const update = useCallback((key: string, value: string | string[]) => {
     const next = new URLSearchParams(params);
     const normalized = Array.isArray(value) ? value.join(",") : value;
@@ -553,6 +555,8 @@ export default function ProjectsPage() {
                   systemTaxonomy={systemTaxonomy}
                   key={project.id}
                   hearted={hearts.data?.has(project.id) ?? false}
+                  saved={saves.data?.has(project.id) ?? false}
+                  saveStateReady={saves.isSuccess && !saves.isPlaceholderData}
                   project={project}
                   taxonomy={hackathons.find((item) => item.id === project.source_id)}
                   ownerLabel={owner?.full_name ?? owner?.username}

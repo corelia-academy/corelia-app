@@ -229,7 +229,7 @@ export async function listContestShowcaseProjects(
   contestId: string,
 ): Promise<ContestLinkedShowcaseProject[]> {
   const select =
-    "id,slug,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,owner_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,custom_sector_names,custom_tech_stack_names,created_at,updated_at,like_count" as const;
+    "id,slug,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,owner_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,custom_sector_names,custom_tech_stack_names,created_at,updated_at,like_count,save_count" as const;
 
   const { data, error } = await supabase
     .from("projects")
@@ -447,7 +447,7 @@ export async function listPublicProjects(
   options: ListPublicProjectsOptions = {},
 ): Promise<PublicProjectListResult> {
   const select =
-    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,custom_sector_names,custom_tech_stack_names,i18n,created_at,updated_at,like_count" as const;
+    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,custom_sector_names,custom_tech_stack_names,i18n,created_at,updated_at,like_count,save_count" as const;
   const limit = normalizeProjectLimit(options.limit);
   const offset = parseProjectCursor(options.cursor);
   const sourceType = normalizePublicProjectSource(options.source);

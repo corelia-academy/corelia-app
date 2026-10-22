@@ -41,6 +41,8 @@ export interface Project {
   custom_tech_stack_names: string[];
   /** Denormalized count from project_hearts (server-maintained). */
   like_count?: number;
+  /** Denormalized, non-negative count from project_saves (server-maintained). */
+  save_count?: number;
   /** Denormalized count from follows (server-maintained). */
   follower_count?: number;
   /** Text-only content localization config */

@@ -492,8 +492,12 @@
     "social": {
       "heart": "赞",
       "unheart": "取消赞",
+      "save": "收藏项目",
+      "unsave": "取消收藏项目",
       "loginToInteract": "登录后可点赞。",
+      "loginToSave": "登录后可收藏此项目。",
       "heartFailed": "无法更新点赞。",
+      "saveFailed": "无法更新项目收藏状态。",
       "xpEarned": "+2 经验值 · 点赞项目",
       "xpHint": "首次符合条件的点赞：+2 经验值（每个 UTC 日最多 5 个项目）",
       "xpHintRemaining": "首次符合条件的点赞：+2 经验值 · 今日（UTC）还剩 {{count}} 次奖励点赞",

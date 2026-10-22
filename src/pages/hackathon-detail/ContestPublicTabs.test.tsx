@@ -49,6 +49,7 @@ vi.mock("./hooks/useContestLearningLinks", () => ({ useContestLearningLinks: (co
 }) }));
 vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: null }) }));
 vi.mock("@/lib/projectSocial", () => ({ listMyProjectHeartIds: async () => new Set() }));
+vi.mock("@/lib/projectSaves", () => ({ listMyProjectSaveIds: async () => new Set() }));
 vi.mock("@/lib/projectTaxonomy", () => ({ listProjectTaxonomyOptions: async () => [
   { id: "sector-ai-engineering", kind: "sector", name: "Kỹ thuật AI & Machine Learning", sort_order: 0 },
   { id: "tech-solana", kind: "technology", name: "Solana", sort_order: 0 },

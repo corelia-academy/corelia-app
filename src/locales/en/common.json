@@ -492,8 +492,12 @@
     "social": {
       "heart": "Like",
       "unheart": "Unlike",
+      "save": "Save project",
+      "unsave": "Remove saved project",
       "loginToInteract": "Sign in to like.",
+      "loginToSave": "Sign in to save this project.",
       "heartFailed": "Could not update like.",
+      "saveFailed": "Could not update the saved project.",
       "xpEarned": "+2 XP · Project liked",
       "xpHint": "First eligible like: +2 XP (up to 5 projects per UTC day)",
       "xpHintRemaining": "First eligible like: +2 XP · {{count}} rewarded likes left today (UTC)",
