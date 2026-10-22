@@ -10,6 +10,7 @@ import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { timedAsync } from "@/lib/perfTelemetry";
 import { isAuthSyncLocaleIgnored, resetManualLocaleIntent } from "@/lib/localeSyncGuard";
 import { appPath } from "@/lib/appUrl";
+import { parseTimeZonePreference, setTimeZonePreference } from "@/lib/timezone";
 
 
 /**
@@ -60,6 +61,8 @@ export function AuthSync() {
               if (!isAuthSyncLocaleIgnored(locale)) {
                 void i18n.changeLanguage(locale);
               }
+              // The profile is the source of truth for the timezone across devices.
+              if (p) setTimeZonePreference(parseTimeZonePreference(p.timezone));
             } catch (error) {
               console.error("Failed to load profile:", error);
             }

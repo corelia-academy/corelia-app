@@ -6,6 +6,7 @@ import { MemoryRouter, Route, Routes, useLocation } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Contest } from "@/types/hackathons";
+import { AUTO_TIMEZONE, setTimeZonePreference, timeZoneDisplayLabel } from "@/lib/timezone";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -150,10 +151,12 @@ describe("draft hackathon preview", () => {
     window.scrollTo = vi.fn();
     HTMLElement.prototype.scrollIntoView = vi.fn();
     HTMLElement.prototype.scrollTo = vi.fn();
+    setTimeZonePreference("Asia/Ho_Chi_Minh");
   });
 
   afterEach(() => {
     document.body.innerHTML = "";
+    setTimeZonePreference(AUTO_TIMEZONE);
   });
 
   it("renders an admin-only, read-only draft preview and preserves preview tabs", async () => {
@@ -317,7 +320,7 @@ describe("draft hackathon preview", () => {
     try {
       const deadlines = Array.from(view.container.querySelectorAll("time"));
       expect(deadlines).toHaveLength(2);
-      expect(deadlines.every((deadline) => !deadline.textContent?.includes("ICT (UTC+7)"))).toBe(true);
+      expect(deadlines.every((deadline) => !deadline.textContent?.includes("GMT+7"))).toBe(true);
 
       const trigger = view.container.querySelector<HTMLButtonElement>(
         'button[aria-label="public.submissionDeadline"]',
@@ -344,7 +347,7 @@ describe("draft hackathon preview", () => {
       const tooltip = document.body.querySelector<HTMLElement>(
         '[data-slot="tooltip-content"]',
       );
-      expect(tooltip?.textContent).toBe("public.timezoneLabel");
+      expect(tooltip?.textContent).toBe(timeZoneDisplayLabel());
       expect(tooltip?.getAttribute("data-side")).toBe("bottom");
       expect(document.body.querySelector('[data-slot="tooltip-arrow"]')).toBeNull();
     } finally {
@@ -368,7 +371,7 @@ describe("draft hackathon preview", () => {
       expect(view.container.textContent).toContain("public.submissionDeadline");
       const deadlines = Array.from(view.container.querySelectorAll("time"));
       expect(deadlines[0]?.textContent).toContain("12:00");
-      expect(deadlines[0]?.textContent).not.toContain("ICT (UTC+7)");
+      expect(deadlines[0]?.textContent).not.toContain("GMT+7");
       expect(deadlines[0]?.getAttribute("datetime")).toBe("2026-10-01T05:00:00.000Z");
     } finally {
       await view.cleanup();

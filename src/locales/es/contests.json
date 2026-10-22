@@ -61,7 +61,6 @@
     "participantsCount": "{{displayCount}} participantes",
     "submissionDeadline": "Fecha límite de envío",
     "registrationDeadline": "Fecha límite de inscripción",
-    "timezoneLabel": "ICT (UTC+7)",
     "registrationCountdown": "La inscripción cierra en {{time}}",
     "timeUnit": {
       "hours": "horas"
