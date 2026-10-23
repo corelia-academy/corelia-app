@@ -495,6 +495,46 @@ export async function getCourseSections(courseId: string): Promise<CourseSection
   return (data ?? []).map((r) => sectionRowToSection(courseId, r as CourseRow & { sort_order: number }));
 }
 
+function groupByCourseId<T>(courseIds: string[], rows: Array<{ course_id: string } & T>, map: (row: T) => unknown) {
+  const grouped = new Map<string, unknown[]>(courseIds.map((id) => [id, []]));
+  for (const row of rows) grouped.get(row.course_id)?.push(map(row));
+  return grouped;
+}
+
+/** Sections for a bounded set of courses in one read, each list in curriculum order. */
+export async function getCourseSectionsByCourseIds(courseIds: string[]): Promise<Map<string, CourseSection[]>> {
+  const ids = Array.from(new Set(courseIds.filter(Boolean)));
+  if (ids.length === 0) return new Map();
+  const { data, error } = await supabase
+    .from("course_sections")
+    .select("*")
+    .in("course_id", ids)
+    .order("sort_order", { ascending: true });
+  if (error) throw new Error(error.message);
+  return groupByCourseId(
+    ids,
+    (data ?? []) as Array<{ course_id: string; id: string; sort_order: number; data: Record<string, unknown> | null }>,
+    (row) => sectionRowToSection(row.course_id, row),
+  ) as Map<string, CourseSection[]>;
+}
+
+/** Lessons for a bounded set of courses in one read, each list in `sort_order`. */
+export async function getCourseLessonsByCourseIds(courseIds: string[]): Promise<Map<string, CourseLesson[]>> {
+  const ids = Array.from(new Set(courseIds.filter(Boolean)));
+  if (ids.length === 0) return new Map();
+  const { data, error } = await supabase
+    .from("course_lessons")
+    .select("*")
+    .in("course_id", ids)
+    .order("sort_order", { ascending: true });
+  if (error) throw new Error(error.message);
+  return groupByCourseId(
+    ids,
+    (data ?? []) as Array<{ course_id: string } & CourseRow & { section_id: string; sort_order: number }>,
+    (row) => lessonRowToLesson(row),
+  ) as Map<string, CourseLesson[]>;
+}
+
 export async function getCourseLessons(
   courseId: string,
   options?: { previewOnly?: boolean },
@@ -695,6 +735,26 @@ export async function getLessonProgressForCourse(
     .eq("course_id", courseId);
   if (error) throw new Error(error.message);
   return (data ?? []).map((d) => ({ id: d.id, ...d } as LessonProgress));
+}
+
+/** One user's lesson progress for a bounded set of courses in one read. */
+export async function getLessonProgressForCourses(
+  userId: string,
+  courseIds: string[],
+): Promise<Map<string, LessonProgress[]>> {
+  const ids = Array.from(new Set(courseIds.filter(Boolean)));
+  if (ids.length === 0) return new Map();
+  const { data, error } = await supabase
+    .from("lesson_progress")
+    .select("*")
+    .eq("user_id", userId)
+    .in("course_id", ids);
+  if (error) throw new Error(error.message);
+  return groupByCourseId(
+    ids,
+    (data ?? []) as Array<{ course_id: string } & LessonProgress>,
+    (row) => row,
+  ) as Map<string, LessonProgress[]>;
 }
 
 export async function getLessonProgressForUsersInCourse(
