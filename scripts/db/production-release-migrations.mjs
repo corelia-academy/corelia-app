@@ -147,16 +147,17 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20261021132220_project_saves.sql",
   "supabase/migrations/20261022044225_project_save_atomic_set.sql",
   "supabase/migrations/20261022105441_profile_timezone.sql",
+  "supabase/migrations/20261023141349_public_course_hackathon_media_cdn.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production ledger is verified through the project saves migrations.
-// Only the Staging-validated profile timezone migration is pending.
+// Production ledger is verified through the profile timezone migration.
+// Only the Staging-validated public course/hackathon media cdn migration is pending.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20261022105441",
+  "20261023141349",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
