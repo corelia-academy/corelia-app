@@ -15,6 +15,7 @@ import {
   type LessonOutput,
 } from "./lessons.ts";
 import { advanceCatalogJobs } from "./catalog_run.ts";
+import { rerankIfStale } from "./ranking_run.ts";
 import { agentKey, errorMessage, failGeneration, loadFailureKind } from "./generations.ts";
 import { pollResponse, submitResponse } from "./openai.ts";
 import { publishRun, PublishRejected } from "./publish.ts";
@@ -117,7 +118,8 @@ export async function handleStudioTick(req: Request, db: SupabaseClient): Promis
     if (touchError) console.error("[corelia-api] studio tick touch", { run_id: run.id, error: touchError.message });
   }
   const catalog = await advanceCatalogJobs(db);
-  return json({ processed: results.length, results, catalog });
+  const ranking = await rerankIfStale(db);
+  return json({ processed: results.length, results, catalog, ranking });
 }
 
 export async function advanceRun(db: SupabaseClient, run: RunRow): Promise<{ step: StepKey | null; action: TickAction["kind"] }> {
