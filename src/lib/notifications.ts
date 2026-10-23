@@ -48,9 +48,16 @@ export async function markNotificationFeedSeen(): Promise<void> {
 }
 
 export function subscribeToNotifications(userId: string, onChange: () => void): () => void {
+  // The first SUBSCRIBED follows the initial notifications query, so refetching then only
+  // duplicates it; catch up on missed events after a reconnect instead.
+  let subscribedBefore = false;
   const channel = supabase.channel(`notifications:${userId}`).on("postgres_changes", {
     event: "*", schema: "public", table: "user_notifications", filter: `user_id=eq.${userId}`,
-  }, onChange).subscribe(status => { if (status === "SUBSCRIBED") onChange(); });
+  }, onChange).subscribe(status => {
+    if (status !== "SUBSCRIBED") return;
+    if (subscribedBefore) onChange();
+    subscribedBefore = true;
+  });
   return () => { void supabase.removeChannel(channel); };
 }
 
