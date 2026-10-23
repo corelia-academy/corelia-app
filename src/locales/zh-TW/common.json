@@ -311,7 +311,8 @@
       "apply": "套用翻譯",
       "discard": "捨棄翻譯",
       "rateLimited": "您在一小時內已完成 10 次翻譯。請稍後再試。",
-      "moderationRateLimited": "一小時內被攔截的翻譯請求過多。請稍後再試。"
+      "moderationRateLimited": "一小時內被攔截的翻譯請求過多。請稍後再試。",
+      "dailyRateLimited": "你已達到今日翻譯上限。請明天再試。"
     },
     "title": "專案",
     "description": "Corelia 生態中各類專案的公開展示。",
@@ -522,7 +523,8 @@
       "submissionUnauthorized": "您無權向此黑客松提交作品。",
       "moderationFlagged": "內容被自動審核標記。請修改後再試一次。",
       "userBlocked": "您的帳戶被限制執行此操作。",
-      "rateLimitExceeded": "請求過多。請稍候再試。"
+      "rateLimitExceeded": "請求過多。請稍候再試。",
+      "rateLimited": "短時間內專案變更過多。請稍候幾分鐘再試。"
     },
     "editor": {
       "workspace": "專案工作區",
