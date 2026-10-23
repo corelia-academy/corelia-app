@@ -56,7 +56,11 @@ describe("public OG DTO", () => {
       archived_at: null, data: { title: "Khóa học", short_description: "Mô tả", instructor_name: "Giảng viên" },
       updated_at: "2026-09-24T00:00:00Z" };
     const card = await loadOgCard(database({ courses: course }), "course", "course-slug");
-    expect(card?.canonicalUrl).toBe("http://localhost:5173/courses/course-slug");
+    // No English version: the landing page for the primary (default Vietnamese) locale is canonical.
+    expect(card?.canonicalUrl).toBe("http://localhost:5173/vi/courses/course-slug");
+    const english = await loadOgCard(database({ courses: { ...course,
+      data: { ...course.data, i18n: { primary_content_locale: "vi", supported_locales: ["vi", "en"] } } } }), "course", "course-slug");
+    expect(english?.canonicalUrl).toBe("http://localhost:5173/courses/course-slug");
     expect(card?.subtitle).toBe("Giảng viên");
     expect(await loadOgCard(database({ courses: { ...course, published: false } }), "course", "course-slug")).toBeNull();
     expect(await loadOgCard(database({ courses: { ...course, archived_at: "2026-09-24T00:00:00Z" } }), "course", "course-slug")).toBeNull();
@@ -68,6 +72,10 @@ describe("public OG DTO", () => {
         starts_at: "2026-09-23T18:30:00Z", ends_at: "2026-09-25T10:00:00Z" } };
     const card = await loadOgCard(database({ hackathons: event }), "hackathon", "hackathon");
     expect(card?.dateLabel).toBe("Sep 24, 2026 – Sep 25, 2026");
+    expect(card?.canonicalUrl).toBe("http://localhost:5173/vi/hackathons/hackathon");
+    const korean = await loadOgCard(database({ hackathons: { ...event,
+      document: { ...event.document, i18n: { primary_content_locale: "ko-KR" } } } }), "hackathon", "hackathon");
+    expect(korean?.canonicalUrl).toBe("http://localhost:5173/ko/hackathons/hackathon");
     expect(await loadOgCard(database({ hackathons: { ...event, status: "draft" } }), "hackathon", "hackathon")).toBeNull();
   });
 
