@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useLayoutEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { LoadingBar } from "@/components/ui/LoadingBar";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,6 +8,7 @@ import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
 import { AppShellSkeleton } from "@/components/loading/AppShellSkeleton";
 import { RouteSkeleton } from "@/components/loading/RouteSkeleton";
 import { markClientNavigation } from "@/components/loading/skeletonReveal";
+import { holdAppSplashForNavigation, releaseAppSplashNavigationHold } from "@/components/loading/appSplash";
 import { InitialLoadFallback, LocationPlaceholder } from "@/routePlaceholders";
 import { HomePageSkeleton } from "@/pages/home/HomePageSkeleton";
 import MaintenancePage from "@/pages/MaintenancePage";
@@ -144,7 +145,7 @@ const AdminEmailPreviewPage = lazy(() => import("@/pages/admin/email/AdminEmailP
 const AdminOgPreviewPage = lazy(() => import("@/pages/admin/AdminOgPreviewPage"));
 
 // Route chunks load only after auth boot mounts the router; start the entry URL's chunks now.
-if (typeof window !== "undefined") preloadEntryRoute(currentAppPathname());
+if (typeof window !== "undefined") preloadEntryRoute(currentAppPathname(), window.location.search);
 
 const PageFallback = () => <InitialLoadFallback><AuthGateLoading /></InitialLoadFallback>;
 const ShellFallback = () => (
@@ -233,20 +234,32 @@ function ApplicationRouter() {
     );
     // Subscribed before RouterProvider, so the flag is set before the next route renders.
     // Redirects (replace, e.g. /login → /) still belong to the initial load.
-    const initialKey = instance.state.location.key;
+    let lastKey = instance.state.location.key;
     const unsubscribe = instance.subscribe((state) => {
-      if (state.location.key !== initialKey && state.historyAction !== "REPLACE") {
-        markClientNavigation();
-        unsubscribe();
+      if (state.location.key === lastKey) return;
+      lastKey = state.location.key;
+      if (state.historyAction === "REPLACE") {
+        holdAppSplashForNavigation();
+        return;
       }
+      markClientNavigation();
+      unsubscribe();
     });
     return instance;
   });
   return <RouterProvider router={router} />;
 }
 
+/** Releases the splash hold taken for an initial-load redirect once the new location has committed. */
+function SplashNavigationRelease() {
+  const { key } = useLocation();
+  useLayoutEffect(() => releaseAppSplashNavigationHold(), [key]);
+  return null;
+}
+
 function ApplicationRoutes() {
   return <>
+          <SplashNavigationRelease />
           <RoutePageTitleSync />
           <CredentialRealtimeSync />
           <ScrollToTop />
