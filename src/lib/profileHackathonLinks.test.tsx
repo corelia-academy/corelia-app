@@ -108,7 +108,7 @@ vi.mock("@/lib/coreliaEdgeApi", () => ({
   callCoreliaApi: vi.fn(),
   coreliaEdgeUrl: vi.fn((path: string) => `https://example.com/edge/${path}`),
 }));
-vi.mock("@/lib/storage", () => ({ deleteStorageObjectByPath: vi.fn() }));
+vi.mock("@/lib/storage", () => ({ deleteContestMediaByPath: vi.fn(), deleteStorageObjectByPath: vi.fn() }));
 vi.mock("@/lib/profile", () => ({
   getProfileForUser: vi.fn(async () => ({ id: "admin-1", role: "admin" })),
 }));
