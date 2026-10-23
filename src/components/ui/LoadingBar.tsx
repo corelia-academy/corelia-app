@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
+import { useFirstLoadSettled } from "@/hooks/useFirstLoadSettled";
 
 export function LoadingBar() {
   const fetchingCount = useIsFetching({
     predicate: (query) => query.meta?.showInGlobalLoading !== false,
   });
   const mutatingCount = useIsMutating();
-  const isLoading = fetchingCount > 0 || mutatingCount > 0;
+  // The first load already shows the splash and data skeletons; the bar only tracks later work.
+  const firstLoadSettled = useFirstLoadSettled();
+  const isLoading = firstLoadSettled && (fetchingCount > 0 || mutatingCount > 0);
   const [barState, setBarState] = useState({
     progress: 0,
     visible: false,

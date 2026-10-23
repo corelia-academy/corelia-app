@@ -1,10 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import {
-  getTodayLikeXpRemaining,
-  hasAnyMyXpAward,
-  hasMyXpAward,
-} from "@/lib/xp";
+import { getMyXpMissionAwards, hasAnyMyXpAward } from "@/lib/xp";
 
 export type HomeXpMissionProgress = {
   lessonCompleted: boolean;
@@ -18,41 +14,36 @@ export type HomeXpMissionProgress = {
   projectLikesToday: number;
 };
 
+const ONE_OFF_AWARD_KEYS = [
+  "first_hackathon_submission",
+  "ocid_connected",
+  "github_connected",
+  "ethereum_wallet",
+  "solana_wallet",
+];
+
 async function getHomeXpMissionProgress(
   userId: string,
 ): Promise<HomeXpMissionProgress> {
-  const [
-    lessonCompleted,
-    quizPassed,
-    courseCompleted,
-    firstHackathonSubmission,
-    ocidConnected,
-    githubConnected,
-    ethereumWallet,
-    solanaWallet,
-    projectLikesRemaining,
-  ] = await Promise.all([
-    hasAnyMyXpAward(userId, "lesson_completed"),
-    hasAnyMyXpAward(userId, "quiz_passed"),
-    hasAnyMyXpAward(userId, "course_completed"),
-    hasMyXpAward("first_hackathon_submission"),
-    hasMyXpAward("ocid_connected"),
-    hasMyXpAward("github_connected"),
-    hasMyXpAward("ethereum_wallet"),
-    hasMyXpAward("solana_wallet"),
-    getTodayLikeXpRemaining(userId),
-  ]);
+  // Repeatable sources need "any row" checks; one-off awards and today's likes share one read.
+  const [lessonCompleted, quizPassed, courseCompleted, { awardedKeys, projectLikesToday }] =
+    await Promise.all([
+      hasAnyMyXpAward(userId, "lesson_completed"),
+      hasAnyMyXpAward(userId, "quiz_passed"),
+      hasAnyMyXpAward(userId, "course_completed"),
+      getMyXpMissionAwards(userId, ONE_OFF_AWARD_KEYS),
+    ]);
 
   return {
     lessonCompleted,
     quizPassed,
     courseCompleted,
-    firstHackathonSubmission,
-    ocidConnected,
-    githubConnected,
-    ethereumWallet,
-    solanaWallet,
-    projectLikesToday: Math.max(0, 5 - projectLikesRemaining),
+    firstHackathonSubmission: awardedKeys.has("first_hackathon_submission"),
+    ocidConnected: awardedKeys.has("ocid_connected"),
+    githubConnected: awardedKeys.has("github_connected"),
+    ethereumWallet: awardedKeys.has("ethereum_wallet"),
+    solanaWallet: awardedKeys.has("solana_wallet"),
+    projectLikesToday,
   };
 }
 
