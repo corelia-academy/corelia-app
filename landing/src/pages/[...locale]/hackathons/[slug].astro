@@ -4,7 +4,7 @@ import CatalogLayout from "@/layouts/CatalogLayout.astro";
 import { CATALOG_COPY } from "@/i18n/catalog";
 import { getHackathon, type CatalogHackathon } from "@/lib/catalog";
 import { catalogNotFound, catalogUnavailable, formatDate, routeLocale, setCatalogCacheHeaders, validSlug } from "@/lib/catalogRoute";
-import { APP_URL, absoluteUrl, hackathonJsonLd, paragraphs, truncate } from "@/lib/seo";
+import { APP_URL, absoluteUrl, hackathonJsonLd, ogCardUrl, paragraphs, truncate } from "@/lib/seo";
 
 export const prerender = false;
 
@@ -46,7 +46,9 @@ const facts = [
   contentLocales={hackathon.locales}
   indexable={translated}
   canonicalLocale={hackathon.contentLocale}
-  image={hackathon.imageUrl}
+  image={ogCardUrl("hackathon", hackathon.slug)}
+  imageWidth={1200}
+  imageHeight={630}
   structuredData={[hackathonJsonLd({
     title: hackathon.title,
     description,

@@ -20,6 +20,8 @@ OpenGraph là năng lực share của các route **public, canonical và có n�
 | Certificate/credential verify, job detail | Quyết định từng entity trước khi thêm | Chỉ làm khi product xác nhận page đó được chủ động chia sẻ và field hiển thị không lộ PII/nguồn có giới hạn attribution. |
 | Account, admin, editor, draft, invite, checkout, auth, private/unlisted/blocked entities | Không dynamic OG; `noindex` khi phù hợp | Không có canonical public resource và không được lộ metadata. |
 
+Mọi URL dưới đây là đường dẫn trong app: app được phục vụ dưới `CORELIA_APP_BASE_PATH` (`/learn`) của origin chung `corelia.academy`, Worker bỏ prefix trước khi định tuyến. Trang course/hackathon công khai do landing (`landing/`) render ở gốc domain; route `/learn/courses/:slug`, `/learn/hackathons/:slug` của app vẫn inject OG nhưng `og:url`/canonical trỏ về trang landing.
+
 Với entity dynamic, URL endpoint là `/api/og/<entity>/<canonical-id>`. Riêng project dùng `/api/og/project/:slug`; URL trang là `/projects/:slug` (không phải `/project/:slug`). `unlisted`, `private`, `blocked`, slug không tồn tại và dữ liệu lỗi đều không có OG endpoint: trả cùng một `404` để không tiết lộ trạng thái riêng tư.
 
 ## Vì sao plan gốc cần điều chỉnh theo Corelia
@@ -159,7 +161,21 @@ X-Content-Type-Options: nosniff
 ETag: "project-og-<project-id>-<content-revision>"
 ```
 
-`v` không quyết định data và không được đưa vào query DB. Sau khi query public-only, so sánh `v` với revision hiện tại; thiếu/sai `v` trả `404` cùng response shape với unavailable, không render và không tạo cache key tùy ý. Cả Worker lẫn Edge Function không cache HTML, metadata hay PNG chứa entity data; không cấu hình Cloudflare Cache Rule override `no-store`. Đây là yêu cầu để URL cũ ngừng phục vụ nội dung khi project chuyển private/blocked/deleted. Social platform có thể giữ bản sao đã lấy trước đó ngoài quyền kiểm soát của Corelia. ETag chỉ dùng cho chẩn đoán; không trả `304` từ cache cũ trước khi kiểm tra lại quyền public và revision. PNG response không chứa CORS header vì nó là image public, không phải browser API.
+`v` không quyết định data và không được đưa vào query DB. Sau khi query public-only, so sánh `v` với revision hiện tại; sai `v` trả `404` cùng response shape với unavailable, không render và không tạo cache key tùy ý. Cả Worker lẫn Edge Function không cache HTML, metadata hay PNG chứa entity data; không cấu hình Cloudflare Cache Rule override `no-store`. Đây là yêu cầu để URL cũ ngừng phục vụ nội dung khi project chuyển private/blocked/deleted. Social platform có thể giữ bản sao đã lấy trước đó ngoài quyền kiểm soát của Corelia. ETag chỉ dùng cho chẩn đoán; không trả `304` từ cache cũ trước khi kiểm tra lại quyền public và revision. PNG response không chứa CORS header vì nó là image public, không phải browser API.
+
+#### URL ảnh ổn định (không có `v`)
+
+`GET` và `HEAD /api/og/<entity>/<canonical-id>` không có query `v` do Worker xử lý: Worker gọi cùng metadata op `og.<entity>.meta` (kiểm tra public, tính revision) rồi trả
+
+```http
+302 Found
+Location: https://corelia.academy/learn/api/og/<entity>/<canonical-id>?v=<content-revision>
+Cache-Control: no-store
+```
+
+Entity unavailable trả `404` `no-store` như image route, không có `Location`. Route này không render, không cache và chỉ redirect tới `imageUrl` đã qua kiểm tra origin của metadata, nên không tạo cache key tùy ý; rate limit dùng chung bucket với image route.
+
+URL ổn định dành cho trang mà HTML được cache ngoài Worker app — hiện là trang landing `/courses/:slug` và `/hackathons/:slug` (kể cả bản có prefix locale), vốn có `Cache-Control: public, s-maxage=600, stale-while-revalidate=86400`. Nhúng `?v=` vào HTML đó sẽ làm ảnh `404` trong suốt thời gian cache sau mỗi lần sửa entity; URL ổn định luôn trỏ tới revision hiện tại. Landing dựng URL bằng `ogCardUrl()` trong `landing/src/lib/seo.ts` (`PUBLIC_SITE_URL` + `PUBLIC_APP_URL`), khai báo `og:image:width=1200`, `og:image:height=630`, và không dùng thumbnail/cover signed của Storage làm `og:image` (URL signed hết hạn và ảnh không đúng tỉ lệ/dung lượng của card). JSON-LD vẫn có thể dùng ảnh gốc. HTML do Worker app rewrite vẫn dùng URL có `v`.
 
 Sai method trả `405` với `Allow: GET, HEAD`; slug malformed, unavailable, revision không khớp hoặc renderer không có DTO công khai trả `404` với `no-store`. `HEAD` kiểm tra public/revision, trả success headers như `GET` khi dữ liệu hợp lệ nhưng không render PNG/body; lỗi chỉ xảy ra lúc render có thể chỉ xuất hiện ở `GET` và preview phải xử lý `<img onError>`. Nếu renderer/runtime hỏng sau khi data đã hợp lệ, trả `500` text `no-store`, log cấu trúc `{ route, slug, projectId?, stage }` và không log project text, signed URL hay binary data.
 
@@ -178,7 +194,7 @@ Với mỗi detail route đã được cho phép trong bảng policy (ví dụ `
 `og:image` phải là absolute URL cùng origin, ví dụ:
 
 ```text
-https://app.corelia.academy/api/og/project/custos?v=<content-revision>
+https://corelia.academy/learn/api/og/project/custos?v=<content-revision>
 ```
 
 Các trang detail có OG động không ghi đè `og:image` hoặc `twitter:image` bằng thumbnail, cover hay avatar trong `usePageMeta` sau khi React tải xong; Worker đã đặt URL ảnh OG canonical trong HTML ban đầu.
