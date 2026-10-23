@@ -4,6 +4,8 @@
 
 let holders = 0;
 let releaseTimer: number | undefined;
+let hidden = false;
+const hiddenListeners = new Set<() => void>();
 
 function splashElement(): HTMLElement | null {
   return typeof document === "undefined" ? null : document.getElementById("app-splash");
@@ -15,8 +17,25 @@ export function hasAppSplash(): boolean {
   return splash !== null && !splash.hasAttribute("data-hidden");
 }
 
+function markHidden() {
+  if (hidden) return;
+  hidden = true;
+  for (const listener of hiddenListeners) listener();
+}
+
+/** True once the splash has started fading out, or when there is none. */
+export function isAppSplashHidden(): boolean {
+  return hidden || !hasAppSplash();
+}
+
+export function subscribeAppSplashHidden(listener: () => void): () => void {
+  hiddenListeners.add(listener);
+  return () => hiddenListeners.delete(listener);
+}
+
 function hideAppSplash() {
   const splash = splashElement();
+  markHidden();
   if (!splash) return;
   splash.setAttribute("data-hidden", "");
   const remove = () => splash.remove();

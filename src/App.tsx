@@ -38,21 +38,23 @@ import {
   RoutePageTitleSync,
 } from "@/components/navigation/PageTitle";
 import { APP_BASE_PATH, currentAppPathname } from "@/lib/appUrl";
-import { preloadEntryRoute } from "@/lib/routePrefetch";
+import { lazyRoute } from "@/lib/lazyRoute";
+import { preloadEntryRoute, routeChunks } from "@/lib/routePrefetch";
 
-// Lazy-load all routes not needed on the initial render
-const Home = lazy(() => import("@/pages/home/index"));
+// Lazy-load all routes not needed on the initial render. Routes with a shared chunk (`routeChunks`)
+// render without suspending once preloaded or prefetched.
+const Home = lazyRoute(routeChunks.home);
 const NotificationsPage = lazy(() => import("@/pages/notifications/NotificationsPage"));
-const FeedPage = lazy(() => import("@/pages/feed/FeedPage"));
-const Courses = lazy(() => import("@/pages/courses"));
+const FeedPage = lazyRoute(routeChunks.feed);
+const Courses = lazyRoute(routeChunks.courses);
 const LearningPrinciplesPage = lazy(() => import("@/pages/learning-principles/LearningPrinciplesPage"));
-const Auth = lazy(() => import("@/pages/login/Auth"));
+const Auth = lazyRoute(routeChunks.login);
 const OCIDRedirect = lazy(() => import("@/pages/OCIDRedirect"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
-const MainLayout = lazy(() => import("@/components/layouts/MainLayout"));
-const CourseDetail = lazy(() => import("@/pages/course-details"));
-const Learn = lazy(() => import("@/pages/learn"));
-const LearnLayout = lazy(() => import("@/pages/learn/LearnLayout"));
+const MainLayout = lazyRoute(routeChunks.mainLayout);
+const CourseDetail = lazyRoute(routeChunks.courseDetail);
+const Learn = lazyRoute(routeChunks.learn);
+const LearnLayout = lazyRoute(routeChunks.learnLayout);
 const LegacyLearnRedirect = lazy(() => import("@/pages/learn/LegacyLearnRedirect"));
 const InstructorDetail = lazy(() => import("@/pages/InstructorDetail"));
 const ProjectInvitePage = lazy(() => import("@/pages/invites/ProjectInvitePage"));
@@ -71,31 +73,27 @@ const VerifyCertificatePage = lazy(() =>
   import("@/pages/verify/VerifyCertificatePage").then((m) => ({ default: m.VerifyCertificatePage })),
 );
 const UserHandleRedirect = lazy(() => import("@/pages/users/UserHandleRedirect"));
-const AchievementsPage = lazy(() => import("@/pages/achievements"));
-const Hackathons = lazy(() => import("@/pages/hackathon-detail/Contests"));
-const HackathonPublicLayout = lazy(() => {
-  // Fetch the tab chunk alongside the layout so tabs don't add another loading stage after it.
-  void import("@/pages/hackathon-detail/ContestPublicTabs");
-  return import("@/pages/hackathon-detail/ContestPublicLayout");
-});
+const AchievementsPage = lazyRoute(routeChunks.achievements);
+const Hackathons = lazyRoute(routeChunks.hackathons);
+const HackathonPublicLayout = lazyRoute(routeChunks.hackathonLayout);
 const HackathonOverviewTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonOverviewTab })));
 const HackathonPostsTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonPostsTab })));
 const HackathonPrizesTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonPrizesTab })));
 const HackathonTimelineTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonTimelineTab })));
 const HackathonResourcesTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonResourcesTab })));
 const HackathonProjectsTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonProjectsTab })));
-const ProjectsPage = lazy(() => import("@/pages/projects/ProjectsPage"));
-const ProjectDetailPage = lazy(() => import("@/pages/projects/ProjectDetailPage"));
+const ProjectsPage = lazyRoute(routeChunks.projects);
+const ProjectDetailPage = lazyRoute(routeChunks.projectDetail);
 const ProjectNewPage = lazy(() => import("@/pages/projects/ProjectNewPage"));
 const ProjectEditPage = lazy(() => import("@/pages/projects/ProjectEditPage"));
-const JobsPage = lazy(() => import("@/pages/jobs/JobsPage"));
-const JobDetailPage = lazy(() => import("@/pages/jobs/JobDetailPage"));
+const JobsPage = lazyRoute(routeChunks.jobs);
+const JobDetailPage = lazyRoute(routeChunks.jobDetail);
 const SavedJobsPage = lazy(() => import("@/pages/jobs/UserJobsPage").then((m) => ({ default: m.SavedJobsPage })));
 const AppliedJobsPage = lazy(() => import("@/pages/jobs/UserJobsPage").then((m) => ({ default: m.AppliedJobsPage })));
 const HiddenJobsPage = lazy(() => import("@/pages/jobs/UserJobsPage").then((m) => ({ default: m.HiddenJobsPage })));
-const JobMarketPage = lazy(() => import("@/pages/jobs/JobMarketPage"));
+const JobMarketPage = lazyRoute(routeChunks.jobMarket);
 
-const Account = lazy(() => import("@/pages/account/Account"));
+const Account = lazyRoute(routeChunks.account);
 const AccountProfileRoute = lazy(() =>
   import("@/pages/account/AccountProfileRoute").then((m) => ({ default: m.AccountProfileRoute })),
 );
@@ -122,13 +120,13 @@ const InstructorWorkspaceProfileRoute = lazy(() =>
   })),
 );
 
-const InstructorLayout = lazy(() => import("@/pages/instructor/InstructorLayout"));
+const InstructorLayout = lazyRoute(routeChunks.instructorLayout);
 const InstructorCourses = lazy(() => import("@/pages/InstructorCourses"));
 const InstructorCourseNew = lazy(() => import("@/pages/instructor-course-new"));
 const LearningPreview = lazy(() => import("@/pages/instructor-course-edit/LearningPreview"));
 const InstructorCourseEdit = lazy(() => import("@/pages/instructor-course-edit"));
 
-const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout"));
+const AdminLayout = lazyRoute(routeChunks.adminLayout);
 const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers"));
 const AdminInstructors = lazy(() => import("@/pages/admin/AdminInstructors"));
 const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDetail"));
