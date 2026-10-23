@@ -25,6 +25,7 @@ const sqlTestPaths = [
   "scripts/db/tests/career-tracks-retirement.integration.sql",
   "scripts/db/tests/hackathon-taxonomy-contract.integration.sql",
   "scripts/db/tests/search-public.integration.sql",
+  "scripts/db/tests/public-media-cdn.integration.sql",
 ].map((path) => resolve(process.cwd(), path));
 
 console.log("===============================================================================");
@@ -135,6 +136,7 @@ execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "
   stdio: ["pipe", "inherit", "inherit"],
 });
 execFileSync(process.execPath, ["scripts/db/tests/learning-policy-postgrest.integration.mjs"], { stdio: "inherit" });
+execFileSync(process.execPath, ["scripts/db/tests/public-media-cdn-storage.integration.mjs"], { stdio: "inherit" });
 console.log("✓ SQL integration test suites executed successfully.\n");
 
 execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
