@@ -14,11 +14,12 @@ import {
   type LessonContext,
   type LessonOutput,
 } from "./lessons.ts";
+import { advanceCatalogJobs } from "./catalog_run.ts";
+import { agentKey, errorMessage, failGeneration, loadFailureKind } from "./generations.ts";
 import { pollResponse, submitResponse } from "./openai.ts";
-import { failureKind, type AttemptRow, type FailureKind } from "./retry.ts";
 import { publishRun, PublishRejected } from "./publish.ts";
 import { resumeNote, type StartResult } from "./resume.ts";
-import { PROMPTS, type AgentRole } from "./prompts.ts";
+import { PROMPTS } from "./prompts.ts";
 import {
   agentKeyEnv,
   buildProgress,
@@ -55,14 +56,6 @@ export interface RunRow {
   id: string;
   course_id: string;
   started_at: string;
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
-
-function agentKey(role: AgentRole): string {
-  return Deno.env.get(agentKeyEnv(role))?.trim() ?? "";
 }
 
 // Studio is admin only: support_staff is excluded, matching studio_can_write() in the schema.
@@ -123,7 +116,8 @@ export async function handleStudioTick(req: Request, db: SupabaseClient): Promis
     const { error: touchError } = await db.from("studio_runs").update({ status: "running" }).eq("id", run.id).eq("status", "running");
     if (touchError) console.error("[corelia-api] studio tick touch", { run_id: run.id, error: touchError.message });
   }
-  return json({ processed: results.length, results });
+  const catalog = await advanceCatalogJobs(db);
+  return json({ processed: results.length, results, catalog });
 }
 
 export async function advanceRun(db: SupabaseClient, run: RunRow): Promise<{ step: StepKey | null; action: TickAction["kind"] }> {
@@ -663,35 +657,6 @@ async function pollStep(db: SupabaseClient, run: RunRow, step: StepKey, latest: 
 async function markStepDone(db: SupabaseClient, runId: string, step: StepKey) {
   const { error } = await db.from("studio_run_steps").update({ state: "done" }).eq("run_id", runId).eq("step_key", step);
   if (error) throw new Error(error.message);
-}
-
-async function loadFailureKind(db: SupabaseClient, generationId: string): Promise<FailureKind | null> {
-  const { data, error } = await db
-    .from("studio_generations")
-    .select("status,provider_request_id,failure_kind")
-    .eq("id", generationId)
-    .single();
-  if (error) throw new Error(error.message);
-  return data.status === "failed" ? failureKind(data as AttemptRow) : null;
-}
-
-/** Returns false when the row had already left `from` (handled by another tick). */
-async function failGeneration(
-  db: SupabaseClient,
-  id: string,
-  from: "submitting" | "submitted",
-  kind: FailureKind,
-  reason: string,
-  billed: { model_id?: string; usage?: Record<string, unknown> | null } = {},
-): Promise<boolean> {
-  const { data, error } = await db
-    .from("studio_generations")
-    .update({ ...billed, status: "failed", failure_kind: kind, error: reason.slice(0, 2000), completed_at: new Date().toISOString() })
-    .eq("id", id)
-    .eq("status", from)
-    .select("id");
-  if (error) throw new Error(error.message);
-  return Boolean(data?.length);
 }
 
 async function finishRun(

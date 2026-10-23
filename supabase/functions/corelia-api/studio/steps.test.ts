@@ -439,7 +439,7 @@ describe("studio openai readResponse", () => {
       model: "gpt-6-luna",
       output: [{ type: "web_search_call" }, { type: "message", content: [{ type: "output_text", text: "{}" }] }],
       usage: { total_tokens: 3 },
-    })).toEqual({ state: "completed", model: "gpt-6-luna", text: "{}", usage: { total_tokens: 3 } });
+    })).toEqual({ state: "completed", model: "gpt-6-luna", text: "{}", usage: { total_tokens: 3, web_search_calls: 1 } });
     // Running out of output budget is a verdict on the model's answer: a rejected attempt.
     expect(readResponse({ status: "incomplete", incomplete_details: { reason: "max_output_tokens" } }))
       .toEqual({ state: "failed", cause: "rejected", error: "incomplete: max_output_tokens" });
@@ -449,10 +449,10 @@ describe("studio openai readResponse", () => {
       model: "gpt-6-luna",
       usage: { total_tokens: 9 },
       incomplete_details: { reason: "max_output_tokens" },
-    })).toEqual({ state: "failed", cause: "rejected", error: "incomplete: max_output_tokens", model: "gpt-6-luna", usage: { total_tokens: 9 } });
+    })).toEqual({ state: "failed", cause: "rejected", error: "incomplete: max_output_tokens", model: "gpt-6-luna", usage: { total_tokens: 9, web_search_calls: 0 } });
     // A request the provider failed after accepting it says nothing about the model's answer.
     expect(readResponse({ status: "failed", model: "gpt-6-luna", usage: { total_tokens: 2 }, error: { message: "boom" } }))
-      .toEqual({ state: "failed", cause: "provider", error: "failed: boom", model: "gpt-6-luna", usage: { total_tokens: 2 } });
+      .toEqual({ state: "failed", cause: "provider", error: "failed: boom", model: "gpt-6-luna", usage: { total_tokens: 2, web_search_calls: 0 } });
     expect(readResponse({ status: "cancelled" })).toMatchObject({ state: "failed", cause: "provider" });
   });
 });

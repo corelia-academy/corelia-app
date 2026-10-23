@@ -283,7 +283,7 @@ interface Curriculum {
   modules: { id: string; lessons: CurriculumLesson[] }[];
 }
 
-function list(items: string[], max = 3): string {
+export function list(items: string[], max = 3): string {
   return items.slice(0, max).join("; ") + (items.length > max ? ` (+${items.length - max})` : "");
 }
 
@@ -536,9 +536,9 @@ function researchSourceIds(ctx: RunContext): Set<string> {
   return new Set((research?.sources ?? []).filter((s) => s.access === "read").map((s) => s.source_id));
 }
 
-const MODEL = "gpt-6-luna";
+export const MODEL = "gpt-6-luna";
 /** Steps called once per run decide the shape of the whole course and keep the highest effort. */
-const EFFORT = "xhigh";
+export const EFFORT = "xhigh";
 /**
  * Lesson writing runs dozens of times per course and reasoning tokens are most of its cost. The
  * lesson review keeps EFFORT: the checker is never weaker than what it checks, and nothing after it

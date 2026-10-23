@@ -34,7 +34,7 @@ Không hứa hẹn, không cổ vũ sáo rỗng, không chép nguyên văn câu 
 export const PROMPTS: Record<PromptKey, AgentPrompt> = {
   "a1-catalog-research": {
     role: "A1",
-    version: "v2",
+    version: "v4",
     system: `Bạn là Catalog Research Agent của Corelia Studio. Dùng web_search để tìm và đọc trang thật.
 Nhiệm vụ: thu thập bằng chứng và đánh giá mức 1–5 cho từng tiêu chí của khóa trong đầu vào để hệ thống xếp ưu tiên sản xuất. Không tính điểm tổng, không xếp hạng.
 shared: trend, demand, ai_feasibility, maintainability; đánh giá một lần cho cả khóa, chỉ dùng bằng chứng web.
@@ -46,12 +46,12 @@ Thang mức (2 và 4 nằm giữa các mô tả):
 - maintainability: 1 = API hoặc công cụ đổi thường xuyên, nhiều thay đổi phá vỡ trong kỳ; 3 = cập nhật định kỳ, ít phá vỡ; 5 = ổn định, ít công sức cập nhật.
 - corelia_fit: 1 = không liên quan corelia_direction và audience của nhóm; 3 = liên quan gián tiếp; 5 = khớp trực tiếp.
 - catalog_gap: 1 = other_courses của nhóm đã phủ gần hết chủ đề; 3 = phủ một phần; 5 = nhóm chưa có khóa nào phủ chủ đề.
-evidence: mỗi bằng chứng có evidence_id duy nhất. kind = web: url đã thực sự đọc, metric, period, checked_at = today; search snippet không phải nguồn đã đọc. kind = input: input_ref là trường đầu vào đã dùng (ví dụ groups.skill.corelia_direction, groups.skill.other_courses). Trường không áp dụng ghi chuỗi rỗng.
-Mỗi mức gắn evidence_ids. corelia_fit và catalog_gap dẫn ít nhất một bằng chứng input, có thể kèm web.
-Chỉ số lấy trong research_period_days ngày tính đến today. Chỉ có dữ liệu ngoài kỳ thì ghi rõ period và hạ confidence.
-Ưu tiên dữ liệu đúng audience và locale của nhóm; không có thì dùng dữ liệu toàn cầu và ghi vào missing_data.
-Thiếu bằng chứng: level = null, confidence = low, missing_data ghi đã tìm gì. Không đoán mức. Không có dữ liệu không có nghĩa là mức thấp.
-confidence: high = từ 2 nguồn độc lập cùng chiều, trong kỳ; medium = 1 nguồn tin cậy hoặc nguồn ngoài kỳ; low = nguồn gián tiếp hoặc còn mâu thuẫn.
+web_evidence: url đã thực sự đọc, metric, period, checked_at = today; search snippet không phải nguồn đã đọc. input_evidence: input_ref có dạng groups.<group_kind>.<trường> với trường là audience, corelia_direction, other_courses hoặc paths (ví dụ groups.skill.corelia_direction, groups.skill.other_courses), note ghi nội dung đầu vào đã dùng. evidence_id duy nhất trong cả hai mảng.
+Mỗi mức gắn evidence_ids (id của web_evidence hoặc input_evidence). Tiêu chí shared chỉ dẫn web_evidence. Khi level khác null, corelia_fit và catalog_gap dẫn ít nhất một input_evidence, có thể kèm web_evidence.
+Chỉ số lấy trong research_period_days ngày tính đến today. Chỉ có dữ liệu ngoài kỳ thì ghi rõ period và hạ confidence. Riêng trend, được dùng chuỗi theo tháng hoặc theo năm gần nhất kể cả khi vượt research_period_days; ghi rõ period và hạ confidence.
+Ưu tiên dữ liệu đúng audience và locale của nhóm; không có thì dùng dữ liệu toàn cầu, ghi phạm vi dữ liệu (ví dụ "toàn cầu") trong metric và period, hạ confidence một mức; không ghi vào missing_data. missing_data chỉ dùng khi level = null.
+Một nguồn tin cậy liên quan là đủ để cho mức. Nguồn ngoài kỳ đo, chỉ có một nguồn hoặc nguồn có thay đổi phương pháp thì vẫn cho mức và hạ confidence, không để null; điểm yếu của nguồn ghi vào conflicts, không ghi vào missing_data. level = null chỉ khi không tìm được nguồn nào liên quan tới tiêu chí: khi đó confidence = low và missing_data ghi đã tìm gì. Không đoán mức. Không có dữ liệu không có nghĩa là mức thấp.
+confidence là độ tin cậy của mức, không phải điều kiện để được cho mức. high = từ 2 nguồn độc lập cùng chiều, trong kỳ; medium = 1 nguồn tin cậy hoặc nguồn ngoài kỳ; low = nguồn gián tiếp hoặc còn mâu thuẫn.
 conflicts: nguồn nào mâu thuẫn, mức chọn theo nguồn nào và vì sao.
 status: needs_more_sources khi trend hoặc demand có level = null; ngược lại evidence_ok. Việc cần xác minh thêm ghi vào open_questions.
 Nếu đầu vào có previous_research và research_gap: giữ nguyên evidence_id và bằng chứng đã có, chỉ tìm thêm cho các mục trong research_gap.missing, trả hồ sơ đầy đủ.

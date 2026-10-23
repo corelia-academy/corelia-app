@@ -49,6 +49,7 @@ import { handleWalletChallenge, handleWalletVerify } from "./wallets/handlers.ts
 import { handleOcidLink } from "./ocid/handlers.ts";
 import { authorizedOgRequest, handleOgRequest, isOgOp } from "./og/handlers.ts";
 import { handleAvatarSave, handleAvatarSvg } from "./avatar/handlers.ts";
+import { handleCatalogResearchStart } from "./studio/catalog_run.ts";
 import { handleStudioStart, handleStudioTick } from "./studio/handlers.ts";
 
 const PROTECTED_OPS = new Set<string>([
@@ -93,6 +94,7 @@ const PROTECTED_OPS = new Set<string>([
   "jobs.admin",
   "studio.start",
   "studio.tick",
+  "studio.catalog_research",
   // credentials.claimLookup is PUBLIC — intentionally omitted from PROTECTED_OPS
 ]);
 
@@ -241,6 +243,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleJobsAdmin(req, db);
     } else if (op === "studio.start" && req.method === "POST") {
       response = await handleStudioStart(req, db);
+    } else if (op === "studio.catalog_research" && req.method === "POST") {
+      response = await handleCatalogResearchStart(req, db);
     } else if (op === "studio.tick" && req.method === "POST") {
       response = await handleStudioTick(req, db);
     } else if (op === "admin.emailOutbox.reconcile" && req.method === "POST") {

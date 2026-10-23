@@ -111,7 +111,7 @@ Code gửi mail chung: [`lib/mail/resend.ts`](lib/mail/resend.ts) (transport) + 
 
 | Biến | Bắt buộc? | Ghi chú |
 |------|-----------|---------|
-| `CORELIA_STUDIO_A1_CATALOG_RESEARCH_OPENAI_API_KEY`, `…_A2_COURSE_RESEARCH_…`, `…_A3_CURRICULUM_…`, `…_A4_CURRICULUM_REVIEW_…`, `…_A5_LESSON_…`, `…_A6_LESSON_REVIEW_…` | Có cho bước của agent tương ứng | Mỗi agent một key OpenAI, đánh số theo thứ tự trong luồng (tên lấy từ `AGENT_NAME`), không dùng `OPENAI_API_KEY` của app. Bước thuộc agent nào lấy theo `STEP_OWNER`; poll dùng key của agent ghi trên `studio_generations`. Thiếu key thì lượt chạy dừng ở bước đó (`draft_failed`, lý do nêu tên biến); lượt chạy khác vẫn chạy. A1 thuộc luồng Catalog, chưa có bước trong lượt chạy. |
+| `CORELIA_STUDIO_A1_CATALOG_RESEARCH_OPENAI_API_KEY`, `…_A2_COURSE_RESEARCH_…`, `…_A3_CURRICULUM_…`, `…_A4_CURRICULUM_REVIEW_…`, `…_A5_LESSON_…`, `…_A6_LESSON_REVIEW_…` | Có cho bước của agent tương ứng | Mỗi agent một key OpenAI, đánh số theo thứ tự trong luồng (tên lấy từ `AGENT_NAME`), không dùng `OPENAI_API_KEY` của app. Bước thuộc agent nào lấy theo `STEP_OWNER`; poll dùng key của agent ghi trên `studio_generations`. Thiếu key thì lượt chạy dừng ở bước đó (`draft_failed`, lý do nêu tên biến); lượt chạy khác vẫn chạy. A1 thuộc luồng Catalog, chạy theo catalog job (`studio.catalog_research`), không có bước trong lượt chạy; thiếu key thì job kết thúc `failed`. |
 | `CORELIA_STUDIO_CRON_SECRET` | Có cho `studio.tick` | Scheduler gửi qua header `x-corelia-studio-cron-secret`. |
 
 `studio.start` (Bearer, chỉ `profiles.role = admin`; `support_staff` bị từ chối) nhận
@@ -125,6 +125,14 @@ dòng `studio_generations` được chèn trước khi gọi provider (unique th
 thử), nên hai tick chồng nhau không gửi trùng. Prompt nằm trong
 [`studio/prompts.ts`](studio/prompts.ts); bước chưa có trong `STEP_SPECS` kết thúc lượt
 chạy ở `draft_failed` kèm lý do và người chạy bước (agent hoặc code).
+
+`studio.catalog_research` (Bearer, admin) nhận `course_id` và `job_id` tùy chọn, tạo catalog job `manual` cho khóa
+(RPC `studio_start_catalog_job`; gửi lại cùng `job_id` trả job đã có). Khóa không có path hoặc nhóm chưa có
+scope trả 409 và không tạo job; khóa đã có job đang chạy trả 409 `course_has_running_job`. `studio.tick` đẩy
+thêm tối đa 3 catalog job đang chạy (`catalog` trong phản hồi): A1 gọi với `web_search` giới hạn
+`max_tool_calls`, kết quả qua `acceptCatalogResearch`; thiếu `trend`/`demand` thì nghiên cứu lại tối đa
+`MAX_CATALOG_RESEARCH_ROUNDS` vòng rồi kết thúc `needs_more_sources`, lỗi kỹ thuật quá ngân sách thử lại thì
+`failed`. Trước mỗi attempt mới, chi phí ước lượng (cận trên, theo `usage` đã ghi gồm `web_search_calls`) đạt `CATALOG_JOB_BUDGET_USD` thì job kết thúc `failed`. Job không ghi `studio_run_events`; lý do kết thúc nằm ở `studio_catalog_jobs.reason`.
 
 Local không có scheduler, nên lượt chạy chỉ tiến khi có ai gọi `studio.tick`. Với
 `pnpm functions:serve` đang chạy:

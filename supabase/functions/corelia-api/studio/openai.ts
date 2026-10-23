@@ -14,6 +14,8 @@ export interface SubmitRequest {
   schemaName: string;
   schema: Record<string, unknown>;
   tools?: Record<string, unknown>[];
+  /** Caps the tool calls (web_search) of the whole response, which bounds its cost; the model answers without tools once it is reached. */
+  maxToolCalls?: number;
   serviceTier: "flex" | "default";
   metadata: Record<string, string>;
 }
@@ -54,6 +56,7 @@ export async function submitResponse(apiKey: string, req: SubmitRequest): Promis
         reasoning: { effort: req.effort },
         max_output_tokens: req.maxOutputTokens,
         tools: req.tools,
+        max_tool_calls: req.maxToolCalls,
         text: { format: { type: "json_schema", name: req.schemaName, strict: true, schema: req.schema } },
         service_tier: serviceTier,
         background: true,
@@ -92,9 +95,14 @@ function billed(body: ResponseBody): { model?: string; usage?: Record<string, un
   return { ...(body.model ? { model: body.model } : {}), ...(usage ? { usage } : {}) };
 }
 
-/** Usage with the serving tier, so the cost of a generation can be priced from its record alone. */
+/**
+ * Usage with the serving tier and the number of web_search calls (every action: search, open_page,
+ * find_in_page), so the cost of a generation can be priced from its record alone.
+ */
 function usageOf(body: ResponseBody): Record<string, unknown> | null {
-  return body.usage ? { ...body.usage, ...(body.service_tier ? { service_tier: body.service_tier } : {}) } : null;
+  if (!body.usage) return null;
+  const webSearchCalls = (body.output ?? []).filter((item) => item.type === "web_search_call").length;
+  return { ...body.usage, ...(body.service_tier ? { service_tier: body.service_tier } : {}), web_search_calls: webSearchCalls };
 }
 
 export function readResponse(body: ResponseBody): PollResult {

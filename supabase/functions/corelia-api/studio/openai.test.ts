@@ -57,4 +57,12 @@ describe("studio openai service tier", () => {
     const done = readResponse({ status: "completed", model: "gpt-6-luna", output: [], usage: { input_tokens: 1 }, service_tier: "flex" });
     expect(done).toMatchObject({ state: "completed", usage: { input_tokens: 1, service_tier: "flex" } });
   });
+
+  it("counts every web_search call of the response in the usage", () => {
+    const output = [{ type: "reasoning" }, { type: "web_search_call" }, { type: "web_search_call" }, { type: "message", content: [{ type: "output_text", text: "{}" }] }];
+    const done = readResponse({ status: "completed", model: "gpt-6-luna", output, usage: { input_tokens: 1 } });
+    expect(done).toMatchObject({ state: "completed", usage: { web_search_calls: 2 } });
+    const cut = readResponse({ status: "incomplete", model: "gpt-6-luna", output, usage: { input_tokens: 1 }, incomplete_details: { reason: "max_output_tokens" } });
+    expect(cut).toMatchObject({ state: "failed", usage: { web_search_calls: 2 } });
+  });
 });
