@@ -154,6 +154,12 @@ execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "
 execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
   input: readFileSync(resolve("scripts/db/tests/studio-catalog-ranking.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
 });
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/studio-courses-drop-priority.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/studio-expire-drafts.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
 
 // 4. Exercise the exact Jobs relationship through the local PostgREST server.
 console.log("[STEP 4/4] Executing Jobs PostgREST relationship smoke...");

@@ -7,6 +7,7 @@ import type { CatalogResearch, GroupKind } from "./catalog.ts";
 import { errorMessage } from "./generations.ts";
 import { fetchAllPages, type PageResult } from "./paging.ts";
 import {
+  checkManualOrder,
   computeRankings,
   isRankingStale,
   laterMark,
@@ -179,4 +180,37 @@ export async function handleCatalogRerank(req: Request, db: SupabaseClient): Pro
   }
   if ((await getUserRole(db, userId)) !== "admin") return json({ message: "forbidden" }, 403);
   return json(await runRanking(db), 200);
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Saves a manual position for a ranked course, then recomputes the pass so the queue shows it. */
+export async function handleCatalogManualOrder(req: Request, db: SupabaseClient): Promise<Response> {
+  let userId: string;
+  try {
+    userId = (await verifyBearerUser(req, db)).id;
+  } catch {
+    return json({ message: "unauthenticated" }, 401);
+  }
+  if ((await getUserRole(db, userId)) !== "admin") return json({ message: "forbidden" }, 403);
+
+  const body = await req.json().catch(() => ({})) as Record<string, unknown>;
+  const courseId = String(body.course_id ?? "");
+  const position = body.position;
+  const reason = typeof body.reason === "string" ? body.reason.trim() : "";
+  if (!UUID_RE.test(courseId) || typeof position !== "number" || !Number.isInteger(position) || position < 1 || !reason) {
+    return json({ message: "invalid_input" }, 400);
+  }
+
+  const { input } = await loadRankingInput(db);
+  const check = checkManualOrder(input, courseId, position);
+  if (!check.ok) return json({ message: check.reason }, 409);
+
+  const { data, error } = await db.rpc("studio_set_manual_order", { p_course_id: courseId, p_position: position, p_reason: reason, p_actor: userId });
+  if (error) {
+    if (error.message === "course_not_found") return json({ message: "course_not_found" }, 404);
+    throw new Error(error.message);
+  }
+  const saved = await runRanking(db);
+  return json({ manual_order_id: data as string, computed_at: saved.computed_at }, 200);
 }

@@ -174,7 +174,6 @@ DECLARE
   bad text[] := ARRAY[
     $q$INSERT INTO public.studio_courses(title,status) VALUES('x','bogus')$q$,
     $q$INSERT INTO public.studio_courses(title) VALUES('   ')$q$,
-    $q$INSERT INTO public.studio_courses(title,priority) VALUES('x',101)$q$,
     $q$INSERT INTO public.studio_courses(title,level) VALUES('x','expert')$q$,
     $q$INSERT INTO public.studio_courses(title) VALUES('  seed COURSE a ')$q$,
     $q$INSERT INTO public.studio_paths(group_kind,slug,title) VALUES('other','x','x')$q$,
@@ -261,7 +260,7 @@ BEGIN
   -- updated_at is maintained by the trigger: a client-supplied past value is overridden.
   -- (now() is the transaction start time, so compare against it directly.)
   RESET ROLE;
-  UPDATE public.studio_courses SET priority = 50, updated_at = now() - interval '1 day' WHERE id='dddd5555-2222-4000-8000-000000000001';
+  UPDATE public.studio_courses SET level = 'advanced', updated_at = now() - interval '1 day' WHERE id='dddd5555-2222-4000-8000-000000000001';
   SELECT updated_at INTO after_ts FROM public.studio_courses WHERE id='dddd5555-2222-4000-8000-000000000001';
   IF after_ts <> now() THEN RAISE EXCEPTION 'updated_at was not refreshed on UPDATE (%)', after_ts; END IF;
 END $$;

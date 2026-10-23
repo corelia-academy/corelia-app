@@ -50,7 +50,7 @@ import { handleOcidLink } from "./ocid/handlers.ts";
 import { authorizedOgRequest, handleOgRequest, isOgOp } from "./og/handlers.ts";
 import { handleAvatarSave, handleAvatarSvg } from "./avatar/handlers.ts";
 import { handleCatalogResearchStart } from "./studio/catalog_run.ts";
-import { handleCatalogRerank } from "./studio/ranking_run.ts";
+import { handleCatalogManualOrder, handleCatalogRerank } from "./studio/ranking_run.ts";
 import { handleStudioStart, handleStudioTick } from "./studio/handlers.ts";
 
 const PROTECTED_OPS = new Set<string>([
@@ -97,6 +97,7 @@ const PROTECTED_OPS = new Set<string>([
   "studio.tick",
   "studio.catalog_research",
   "studio.catalog_rerank",
+  "studio.catalog_manual_order",
   // credentials.claimLookup is PUBLIC — intentionally omitted from PROTECTED_OPS
 ]);
 
@@ -249,6 +250,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleCatalogResearchStart(req, db);
     } else if (op === "studio.catalog_rerank" && req.method === "POST") {
       response = await handleCatalogRerank(req, db);
+    } else if (op === "studio.catalog_manual_order" && req.method === "POST") {
+      response = await handleCatalogManualOrder(req, db);
     } else if (op === "studio.tick" && req.method === "POST") {
       response = await handleStudioTick(req, db);
     } else if (op === "admin.emailOutbox.reconcile" && req.method === "POST") {

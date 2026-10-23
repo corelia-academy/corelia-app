@@ -225,9 +225,9 @@ BEGIN
     -- Admin keeps the course columns the Studio UI writes.
     IF actor = 3 THEN
       INSERT INTO public.studio_courses(title,level,status) VALUES('admin idea','beginner','idea');
-      UPDATE public.studio_courses SET title='Catalog course B2', level='advanced', priority=10 WHERE id='dddd7777-2222-4000-8000-000000000002';
+      UPDATE public.studio_courses SET title='Catalog course B2', level='advanced' WHERE id='dddd7777-2222-4000-8000-000000000002';
       GET DIAGNOSTICS n = ROW_COUNT;
-      IF n <> 1 THEN RAISE EXCEPTION 'Admin update of title/level/priority touched % rows', n; END IF;
+      IF n <> 1 THEN RAISE EXCEPTION 'Admin update of title/level touched % rows', n; END IF;
     END IF;
 
     -- policy_tier is writable by the admin only (RLS hides the row from the others), and writing it

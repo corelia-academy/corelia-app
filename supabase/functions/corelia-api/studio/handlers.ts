@@ -15,6 +15,7 @@ import {
   type LessonOutput,
 } from "./lessons.ts";
 import { advanceCatalogJobs } from "./catalog_run.ts";
+import { purgeExpiredDrafts } from "./drafts.ts";
 import { rerankIfStale } from "./ranking_run.ts";
 import { agentKey, errorMessage, failGeneration, loadFailureKind } from "./generations.ts";
 import { pollResponse, submitResponse } from "./openai.ts";
@@ -119,7 +120,8 @@ export async function handleStudioTick(req: Request, db: SupabaseClient): Promis
   }
   const catalog = await advanceCatalogJobs(db);
   const ranking = await rerankIfStale(db);
-  return json({ processed: results.length, results, catalog, ranking });
+  const drafts = await purgeExpiredDrafts(db);
+  return json({ processed: results.length, results, catalog, ranking, drafts });
 }
 
 export async function advanceRun(db: SupabaseClient, run: RunRow): Promise<{ step: StepKey | null; action: TickAction["kind"] }> {
