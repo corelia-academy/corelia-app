@@ -8,7 +8,16 @@ export function absoluteUrl(path: string): string {
   return `${SITE_ORIGIN}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-export type Alternate = { hreflang: string; href: string };
+/**
+ * The app's branded 1200×630 share card. The revision-less URL redirects to the current
+ * revision, so it stays valid while this page's HTML sits in a cache.
+ */
+export function ogCardUrl(entity: "course" | "hackathon", slug: string): string {
+  const path = `${APP_URL}/api/og/${entity}/${encodeURIComponent(slug)}`;
+  return /^https?:\/\//.test(path) ? path : absoluteUrl(path);
+}
+
+export type Alternate ={ hreflang: string; href: string };
 
 /** hreflang links for a page that exists in `locales`, plus x-default (English, or the first locale). */
 export function alternates(path: string, locales: readonly SiteLocale[]): Alternate[] {

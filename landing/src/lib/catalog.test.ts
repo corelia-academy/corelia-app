@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { contentLocales, pickContentLocale } from "./catalog";
 import { catalogNotFound, formatSalary, routeLocale, validSlug } from "./catalogRoute";
-import { alternates, jsonLd, paragraphs, truncate } from "./seo";
+import { alternates, jsonLd, ogCardUrl, paragraphs, truncate } from "./seo";
 
 describe("catalog locales", () => {
   it("defaults content to Vietnamese like the app and keeps the primary locale first", () => {
@@ -57,6 +57,11 @@ describe("seo helpers", () => {
       { hreflang: "x-default", href: "https://corelia.academy/courses/x" },
     ]);
     expect(alternates("/hackathons/h", ["vi"]).at(-1)).toEqual({ hreflang: "x-default", href: "https://corelia.academy/vi/hackathons/h" });
+  });
+
+  it("points share cards at the app's revision-less OG image route", () => {
+    expect(ogCardUrl("course", "solana-bootcamp")).toBe("https://corelia.academy/learn/api/og/course/solana-bootcamp");
+    expect(ogCardUrl("hackathon", "a b")).toBe("https://corelia.academy/learn/api/og/hackathon/a%20b");
   });
 
   it("escapes JSON-LD so it cannot close the script tag", () => {
