@@ -182,7 +182,6 @@ DECLARE
     $q$INSERT INTO public.studio_paths(group_kind,slug,title) VALUES('skill','rust','dup')$q$,
     $q$INSERT INTO public.studio_catalog_scopes(group_kind,audience,corelia_direction,locale) VALUES('skill','a','b','xx')$q$,
     $q$INSERT INTO public.studio_catalog_scopes(group_kind,audience,corelia_direction,research_period_days) VALUES('skill','a','b',0)$q$,
-    $q$INSERT INTO public.studio_courses(title,research_status) VALUES('x','ranked')$q$,
     $q$INSERT INTO public.studio_run_steps(run_id,step_key) VALUES('dddd5555-3333-4000-8000-000000000001','lessons_old')$q$,
     $q$INSERT INTO public.studio_run_steps(run_id,step_key,state) VALUES('dddd5555-3333-4000-8000-000000000001','brief','bogus')$q$,
     $q$INSERT INTO public.studio_run_steps(run_id,step_key,repair_count) VALUES('dddd5555-3333-4000-8000-000000000001','brief',-1)$q$,
@@ -215,11 +214,7 @@ BEGIN
   SELECT research_status INTO code FROM public.studio_courses WHERE id='dddd5555-2222-4000-8000-000000000001';
   IF code <> 'idea' THEN RAISE EXCEPTION 'course research_status default % <> idea', code; END IF;
 
-  -- research_status is independent of status: every combination below is accepted.
-  FOREACH s IN ARRAY ARRAY['idea','needs_more_sources','evidence_ok'] LOOP
-    UPDATE public.studio_courses SET research_status = s, status = 'published' WHERE id='dddd5555-2222-4000-8000-000000000002';
-  END LOOP;
-  UPDATE public.studio_courses SET research_status = 'idea', status = 'idea' WHERE id='dddd5555-2222-4000-8000-000000000002';
+  -- research_status is written only by the server (studio-catalog-research.integration.sql).
 
   -- One course in several paths, with an independent order per path.
   INSERT INTO public.studio_paths(id,group_kind,slug,title) VALUES('dddd5555-1111-4000-8000-000000000002','ecosystem','solana','Solana');
