@@ -33,6 +33,32 @@ export function appBaseUrl(): string {
   return `${canonicalOrigin()}${appBasePath()}`;
 }
 
+/** Landing URL prefix per content locale; English sits at the root (packages/ui/src/locales.ts). */
+const LANDING_LOCALE_PREFIX: Record<string, string> = {
+  en: "", vi: "/vi", "zh-CN": "/zh-cn", "zh-TW": "/zh-tw", ko: "/ko", ja: "/ja", es: "/es",
+};
+
+function landingLocale(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const tag = value.trim().toLowerCase().replaceAll("_", "-");
+  if (["zh-tw", "zh-hk", "zh-mo", "zh-hant"].includes(tag)) return "zh-TW";
+  if (tag.startsWith("zh")) return "zh-CN";
+  const base = tag.split("-")[0];
+  return base in LANDING_LOCALE_PREFIX ? base : null;
+}
+
+/**
+ * Locale prefix of the landing page that is canonical for an entity: English when the content
+ * has an English version, else its primary content locale (Vietnamese by default). Mirrors
+ * `contentLocales`/`pickContentLocale` in landing/src/lib/catalog.ts.
+ */
+function landingPrefix(i18n: unknown): string {
+  const config = i18n as { primary_content_locale?: unknown; supported_locales?: unknown } | null;
+  const primary = landingLocale(config?.primary_content_locale) ?? "vi";
+  const supported = Array.isArray(config?.supported_locales) ? config.supported_locales.map(landingLocale) : [];
+  return LANDING_LOCALE_PREFIX[primary === "en" || supported.includes("en") ? "en" : primary];
+}
+
 function mediaPath(value: unknown, prefix: string): string | null {
   return typeof value === "string" && value.startsWith(prefix) && !value.includes("..")
     ? value : null;
@@ -86,7 +112,7 @@ async function courseCard(db: SupabaseClient, id: string): Promise<Omit<OgCard, 
     entity: "course", id: row.id, canonicalId: row.slug,
     title, description: plainText(body?.short_description ?? body?.description, 180),
     subtitle: plainText(body?.instructor_name, 48), tags: [], imagePath: path, dateLabel: null,
-    updatedAt: row.updated_at, canonicalUrl: `${canonicalOrigin()}/courses/${encodeURIComponent(row.slug)}`,
+    updatedAt: row.updated_at, canonicalUrl: `${canonicalOrigin()}${landingPrefix(body?.i18n)}/courses/${encodeURIComponent(row.slug)}`,
   };
 }
 
@@ -108,7 +134,7 @@ async function eventCard(db: SupabaseClient, id: string): Promise<Omit<OgCard, "
     subtitle: plainText(host?.name, 48), tags: [],
     imagePath: mediaPath(body?.cover_image_path, `contest-banners/${row.id}/`),
     dateLabel: start ? end && end !== start ? `${start} – ${end}` : start : null,
-    updatedAt: row.updated_at, canonicalUrl: `${canonicalOrigin()}/hackathons/${encodeURIComponent(slug)}`,
+    updatedAt: row.updated_at, canonicalUrl: `${canonicalOrigin()}${landingPrefix(body?.i18n)}/hackathons/${encodeURIComponent(slug)}`,
   };
 }
 

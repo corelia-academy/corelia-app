@@ -4,7 +4,7 @@ import CatalogLayout from "@/layouts/CatalogLayout.astro";
 import { CATALOG_COPY } from "@/i18n/catalog";
 import { getCourse, type CatalogCourse } from "@/lib/catalog";
 import { catalogNotFound, catalogUnavailable, routeLocale, setCatalogCacheHeaders, validSlug } from "@/lib/catalogRoute";
-import { APP_URL, absoluteUrl, courseJsonLd, paragraphs, truncate } from "@/lib/seo";
+import { APP_URL, absoluteUrl, courseJsonLd, ogCardUrl, paragraphs, truncate } from "@/lib/seo";
 
 export const prerender = false;
 
@@ -43,7 +43,9 @@ const appCourseUrl = `${APP_URL}/courses/${encodeURIComponent(course.slug)}`;
   contentLocales={course.locales}
   indexable={translated}
   canonicalLocale={course.contentLocale}
-  image={course.thumbnailUrl}
+  image={ogCardUrl("course", course.slug)}
+  imageWidth={1200}
+  imageHeight={630}
   structuredData={[courseJsonLd({
     title: course.title,
     description,

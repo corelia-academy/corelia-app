@@ -21,6 +21,8 @@ type Props = {
   indexable?: boolean;
   canonicalLocale?: SiteLocale;
   image?: string;
+  imageWidth?: number;
+  imageHeight?: number;
   ogType?: string;
   structuredData?: unknown[];
   breadcrumbs?: Array<{ name: string; path: string }>;
@@ -28,7 +30,7 @@ type Props = {
 
 const {
   locale, path, title, description, contentLocales = SITE_LOCALES, indexable = true, canonicalLocale = locale,
-  image, ogType = "website", structuredData = [], breadcrumbs = [],
+  image, imageWidth, imageHeight, ogType = "website", structuredData = [], breadcrumbs = [],
 } = Astro.props as Props;
 const copy = CATALOG_COPY[locale];
 const canonicalUrl = absoluteUrl(localizePath(path, indexable ? locale : canonicalLocale));
@@ -46,6 +48,8 @@ const blocks = [...structuredData, ...(crumbs.length ? [breadcrumbJsonLd(crumbs)
   ogUrl={absoluteUrl(localizePath(path, locale))}
   ogType={ogType}
   ogImage={image || DEFAULT_OG_IMAGE}
+  ogImageWidth={image ? imageWidth : undefined}
+  ogImageHeight={image ? imageHeight : undefined}
 >
   <Fragment slot="head">
     {hreflangs.map((link) => <link rel="alternate" hreflang={link.hreflang} href={link.href} />)}
