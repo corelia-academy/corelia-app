@@ -311,7 +311,8 @@
       "apply": "Áp dụng bản dịch",
       "discard": "Bỏ bản dịch",
       "rateLimited": "Bạn đã hoàn thành 10 bản dịch trong một giờ. Vui lòng thử lại sau.",
-      "moderationRateLimited": "Bạn đã gửi quá nhiều nội dung bị chặn trong một giờ. Vui lòng thử lại sau."
+      "moderationRateLimited": "Bạn đã gửi quá nhiều nội dung bị chặn trong một giờ. Vui lòng thử lại sau.",
+      "dailyRateLimited": "Bạn đã dùng hết lượt dịch của hôm nay. Vui lòng thử lại vào ngày mai."
     },
     "title": "Dự án",
     "description": "Trang tổng hợp dự án public của toàn bộ cộng đồng Corelia.",
@@ -522,7 +523,8 @@
       "submissionUnauthorized": "Bạn không có quyền nộp dự án vào hackathon này.",
       "moderationFlagged": "Nội dung bị hệ thống kiểm duyệt cảnh báo. Vui lòng chỉnh sửa và thử lại.",
       "userBlocked": "Tài khoản của bạn đang bị giới hạn thực hiện thao tác này.",
-      "rateLimitExceeded": "Quá nhiều yêu cầu. Vui lòng thử lại sau ít phút."
+      "rateLimitExceeded": "Quá nhiều yêu cầu. Vui lòng thử lại sau ít phút.",
+      "rateLimited": "Bạn đã thay đổi project quá nhiều trong thời gian ngắn. Vui lòng đợi vài phút rồi thử lại."
     },
     "editor": {
       "workspace": "Không gian dự án",

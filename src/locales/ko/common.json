@@ -311,7 +311,8 @@
       "apply": "번역 적용",
       "discard": "번역 취소",
       "rateLimited": "1시간 동안 번역을 10번 완료했습니다. 나중에 다시 시도하세요.",
-      "moderationRateLimited": "1시간 동안 차단된 번역 요청이 너무 많습니다. 나중에 다시 시도하세요."
+      "moderationRateLimited": "1시간 동안 차단된 번역 요청이 너무 많습니다. 나중에 다시 시도하세요.",
+      "dailyRateLimited": "오늘의 번역 한도에 도달했습니다. 내일 다시 시도하세요."
     },
     "title": "프로젝트",
     "description": "Corelia 생태계 전반의 프로젝트를 모은 공개 갤러리입니다.",
@@ -522,7 +523,8 @@
       "submissionUnauthorized": "이 해커톤에 제출할 권한이 없습니다.",
       "moderationFlagged": "콘텐츠가 자동 검수에서 표시되었습니다. 수정한 후 다시 시도하세요.",
       "userBlocked": "계정이 이 작업을 수행하지 못하도록 제한되었습니다.",
-      "rateLimitExceeded": "요청이 너무 많습니다. 잠시 기다린 후 다시 시도하세요."
+      "rateLimitExceeded": "요청이 너무 많습니다. 잠시 기다린 후 다시 시도하세요.",
+      "rateLimited": "짧은 시간에 프로젝트 변경이 너무 많습니다. 몇 분 후에 다시 시도하세요."
     },
     "editor": {
       "workspace": "프로젝트 작업 공간",

@@ -311,7 +311,8 @@
       "apply": "应用翻译",
       "discard": "放弃翻译",
       "rateLimited": "您在一小时内已完成 10 次翻译。请稍后再试。",
-      "moderationRateLimited": "一小时内被拦截的翻译请求过多。请稍后再试。"
+      "moderationRateLimited": "一小时内被拦截的翻译请求过多。请稍后再试。",
+      "dailyRateLimited": "你已达到今日翻译上限。请明天再试。"
     },
     "title": "项目",
     "description": "Corelia 生态中各类项目的公开展示。",
@@ -522,7 +523,8 @@
       "submissionUnauthorized": "您无权向此黑客松提交作品。",
       "moderationFlagged": "内容被自动审核标记。请修改后重试。",
       "userBlocked": "您的账户被限制执行此操作。",
-      "rateLimitExceeded": "请求过多。请稍候再试。"
+      "rateLimitExceeded": "请求过多。请稍候再试。",
+      "rateLimited": "短时间内项目更改过多。请稍等几分钟后再试。"
     },
     "editor": {
       "workspace": "项目工作区",

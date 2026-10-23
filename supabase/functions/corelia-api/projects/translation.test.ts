@@ -10,10 +10,12 @@ vi.mock("./openai.ts", () => ({
   ProjectAiError: class extends Error {
     readonly code: string;
     readonly status: number;
-    constructor(code: string, status = 422) {
+    readonly billed: boolean;
+    constructor(code: string, status = 422, billed = false) {
       super(code);
       this.code = code;
       this.status = status;
+      this.billed = billed;
     }
   },
 }));
@@ -37,20 +39,25 @@ beforeEach(() => {
     ? { data: requestId, error: null }
     : { data: null, error: null });
   mocks.translate.mockResolvedValue({ content, usage: { input_tokens: 10, output_tokens: 10 } });
+  mocks.moderate.mockResolvedValue(undefined);
 });
 
 describe("project translation endpoint", () => {
   it("reserves, moderates, translates, then commits one successful quota slot", async () => {
     expect((await handleProjectTranslate(request(), db)).status).toBe(200);
     expect(mocks.rpc.mock.calls.map(([name]) => name)).toEqual([
+      "consume_rate_limit",
       "reserve_project_translation_success",
       "assert_project_translation_moderation_allowed",
       "commit_project_translation",
     ]);
-    expect(mocks.rpc).toHaveBeenNthCalledWith(1, "reserve_project_translation_success", {
+    expect(mocks.rpc).toHaveBeenNthCalledWith(1, "consume_rate_limit", {
+      p_bucket: "project_translation_daily", p_subject: "actor", p_limit: 40, p_window_seconds: 86_400,
+    });
+    expect(mocks.rpc).toHaveBeenNthCalledWith(2, "reserve_project_translation_success", {
       p_actor_id: "actor", p_project_id: body.project_id,
     });
-    expect(mocks.rpc).toHaveBeenNthCalledWith(3, "commit_project_translation", {
+    expect(mocks.rpc).toHaveBeenNthCalledWith(4, "commit_project_translation", {
       p_actor_id: "actor", p_request_id: requestId,
     });
     expect(mocks.translate).toHaveBeenCalledWith(content, "en", "vi");
@@ -69,10 +76,11 @@ describe("project translation endpoint", () => {
     expect(mocks.translate).not.toHaveBeenCalled();
   });
 
-  it("releases the reservation when the provider fails", async () => {
-    mocks.translate.mockRejectedValue(new ProjectAiError("ai_unavailable:timeout", 503));
+  it("releases the reservation when the provider rejects the request unbilled", async () => {
+    mocks.translate.mockRejectedValue(new ProjectAiError("ai_unavailable:provider_error", 503));
     expect((await handleProjectTranslate(request(), db)).status).toBe(503);
     expect(mocks.rpc.mock.calls.map(([name]) => name)).toEqual([
+      "consume_rate_limit",
       "reserve_project_translation_success",
       "assert_project_translation_moderation_allowed",
       "release_project_translation",
@@ -86,14 +94,36 @@ describe("project translation endpoint", () => {
     mocks.moderate.mockRejectedValue(new ProjectAiError("moderation_blocked:title"));
     expect((await handleProjectTranslate(request(), db)).status).toBe(422);
     expect(mocks.rpc.mock.calls.map(([name]) => name)).toEqual([
+      "consume_rate_limit",
       "reserve_project_translation_success",
       "assert_project_translation_moderation_allowed",
       "record_project_translation_moderation_block",
       "release_project_translation",
     ]);
-    expect(mocks.rpc).toHaveBeenNthCalledWith(3, "record_project_translation_moderation_block", {
+    expect(mocks.rpc).toHaveBeenNthCalledWith(4, "record_project_translation_moderation_block", {
       p_actor_id: "actor", p_project_id: body.project_id,
     });
+  });
+
+  it.each(["ai_unavailable:invalid_response", "ai_unavailable:timeout"])(
+    "keeps the quota slot when a billed provider call fails with %s",
+    async code => {
+      mocks.translate.mockRejectedValue(new ProjectAiError(code, 503, true));
+      expect((await handleProjectTranslate(request(), db)).status).toBe(503);
+      expect(mocks.rpc).toHaveBeenLastCalledWith("commit_project_translation", {
+        p_actor_id: "actor", p_request_id: requestId,
+      });
+      expect(mocks.rpc.mock.calls.map(([name]) => name)).not.toContain("release_project_translation");
+    },
+  );
+
+  it("stops before reserving when the daily attempt ceiling is reached", async () => {
+    mocks.rpc.mockImplementation(async (name: string) => name === "consume_rate_limit"
+      ? { error: { message: "rate_limited:project_translation_daily" } }
+      : { data: requestId, error: null });
+    expect((await handleProjectTranslate(request(), db)).status).toBe(429);
+    expect(mocks.rpc.mock.calls.map(([name]) => name)).toEqual(["consume_rate_limit"]);
+    expect(mocks.translate).not.toHaveBeenCalled();
   });
 
   it("enforces the separate moderation abuse guard before calling AI", async () => {

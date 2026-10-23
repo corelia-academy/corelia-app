@@ -311,7 +311,8 @@
       "apply": "Aplicar traducción",
       "discard": "Descartar traducción",
       "rateLimited": "Has completado 10 traducciones en una hora. Inténtalo de nuevo más tarde.",
-      "moderationRateLimited": "Demasiadas solicitudes de traducción bloqueadas en una hora. Inténtalo de nuevo más tarde."
+      "moderationRateLimited": "Demasiadas solicitudes de traducción bloqueadas en una hora. Inténtalo de nuevo más tarde.",
+      "dailyRateLimited": "Has alcanzado el límite de traducciones de hoy. Inténtalo de nuevo mañana."
     },
     "title": "Proyectos",
     "description": "Una galería pública de proyectos del ecosistema de Corelia.",
@@ -522,7 +523,8 @@
       "submissionUnauthorized": "No tienes autorización para enviar a este hackathon.",
       "moderationFlagged": "La moderación automática marcó el contenido. Revísalo e inténtalo de nuevo.",
       "userBlocked": "Tu cuenta tiene restringida esta acción.",
-      "rateLimitExceeded": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo."
+      "rateLimitExceeded": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.",
+      "rateLimited": "Demasiados cambios en el proyecto en poco tiempo. Espera unos minutos e inténtalo de nuevo."
     },
     "editor": {
       "workspace": "Espacio del proyecto",

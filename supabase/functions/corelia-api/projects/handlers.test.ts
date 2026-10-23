@@ -185,11 +185,62 @@ describe("bilingual project save", () => {
     mocks.moderate.mockRejectedValueOnce(new Error("moderation_blocked:vi.description"));
     const response = await handleProjectSave(request({primary_content_locale:"en",locales:{en:{title:"Title",summary:"Summary",description:"Story"},vi:{description:"Blocked"}}}),db);
     expect(response.status).not.toBe(200);
-    expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(mocks.rpc.mock.calls.map(([name]) => name)).toEqual(["consume_rate_limit"]);
   });
   it("rejects blocked projects before calling AI", async () => {
     mocks.existing.mockResolvedValue({data:{blocked:true},error:null});
     expect((await handleProjectSave(request({}),db)).status).toBe(403);
     expect(mocks.moderate).not.toHaveBeenCalled();
+  });
+});
+
+describe("project save abuse limits", () => {
+  const owner = "11111111-1111-4111-8111-111111111111";
+  function dbWith(project: Record<string, unknown> | null, locales: Array<{ locale: string; data: Record<string, string> }>) {
+    return {
+      from: (table: string) => {
+        const chain = {
+          select: () => chain,
+          eq: () => table === "project_locales" ? Promise.resolve({ data: locales, error: null }) : chain,
+          maybeSingle: async () => ({ data: table === "profiles" ? { role: "learner" } : project, error: null }),
+          lt: () => chain,
+          limit: async () => ({ data: [], error: null }),
+        };
+        return chain;
+      },
+      rpc: mocks.rpc,
+    } as unknown as SupabaseClient;
+  }
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.existing.mockResolvedValue({ data: null, error: null });
+    mocks.moderate.mockResolvedValue(undefined);
+    mocks.rpc.mockResolvedValue({ data: [{ project_id: base.project_id, project_slug: "project" }], error: null });
+  });
+
+  it("only moderates text that differs from the persisted project", async () => {
+    const existing = { owner_id: owner, source_type: "hackathon", title: "Project", summary: "A project summary", description: "A detailed project story", progress: "" };
+    const response = await handleProjectSave(request({ primary_content_locale: "en", locales: {
+      en: { title: "Project", summary: "A project summary", description: "A detailed project story" },
+      vi: { title: "Dự án", summary: "Tóm tắt mới" },
+    } }), dbWith(existing, [{ locale: "vi", data: { title: "Dự án", summary: "Tóm tắt cũ" } }]));
+    expect(response.status).toBe(200);
+    expect(mocks.moderate).toHaveBeenCalledWith([{ field: "vi.summary", text: "Tóm tắt mới" }]);
+  });
+
+  it("rate-limits saves before calling moderation", async () => {
+    mocks.rpc.mockImplementation(async (name: string) => name === "consume_rate_limit"
+      ? { error: { message: "rate_limited:project_save" } }
+      : { data: null, error: null });
+    const response = await handleProjectSave(request({}), db);
+    expect(response.status).toBe(429);
+    expect(mocks.moderate).not.toHaveBeenCalled();
+  });
+
+  it("rejects locale saves for a project that does not exist before moderation", async () => {
+    const response = await handleProjectSave(request({ mode: "locale", locale: "vi", data: { title: "Tên" } }), dbWith(null, []));
+    expect(response.status).toBe(404);
+    expect(mocks.moderate).not.toHaveBeenCalled();
+    expect(mocks.rpc).not.toHaveBeenCalled();
   });
 });

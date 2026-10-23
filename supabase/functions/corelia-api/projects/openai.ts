@@ -4,7 +4,9 @@ import { LANGUAGE_NAMES } from "../lib/locale.ts";
 const OPENAI_API_BASE = "https://api.openai.com/v1";
 
 export class ProjectAiError extends Error {
-  constructor(public readonly code: string, public readonly status = 422) {
+  // billed: the provider accepted the request, so the attempt costs money
+  // even though no usable result came back.
+  constructor(public readonly code: string, public readonly status = 422, public readonly billed = false) {
     super(code);
   }
 }
@@ -125,7 +127,13 @@ export async function translateProjectText(content: Partial<ProjectContent>, sou
       properties: Object.fromEntries(Object.keys(PROJECT_CONTENT_LIMITS).map(key => [key, { type: "string" }])),
       required: Object.keys(PROJECT_CONTENT_LIMITS),
     } } },
-  }, 60_000);
+  }, 60_000).catch((error) => {
+    // A timed-out generation is still billed for the tokens produced so far.
+    if (error instanceof ProjectAiError && error.code === "ai_unavailable:timeout") {
+      throw new ProjectAiError(error.code, error.status, true);
+    }
+    throw error;
+  });
   const rawUsage = response.usage as Record<string, unknown> | undefined;
   const usage = { input_tokens: Number(rawUsage?.input_tokens ?? 0), output_tokens: Number(rawUsage?.output_tokens ?? 0) };
   try {
@@ -142,6 +150,6 @@ export async function translateProjectText(content: Partial<ProjectContent>, sou
     return { content: translated, usage };
   } catch {
     console.info("[projects.translate] invalid output usage", usage);
-    throw new ProjectAiError("ai_unavailable:invalid_response", 503);
+    throw new ProjectAiError("ai_unavailable:invalid_response", 503, true);
   }
 }

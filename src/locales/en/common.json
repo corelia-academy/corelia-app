@@ -311,7 +311,8 @@
       "apply": "Apply translation",
       "discard": "Discard translation",
       "rateLimited": "You have completed 10 translations in one hour. Please try again later.",
-      "moderationRateLimited": "Too many blocked translation requests in one hour. Please try again later."
+      "moderationRateLimited": "Too many blocked translation requests in one hour. Please try again later.",
+      "dailyRateLimited": "You have reached today's translation limit. Please try again tomorrow."
     },
     "title": "Projects",
     "description": "A public gallery of projects across the Corelia ecosystem.",
@@ -522,7 +523,8 @@
       "submissionUnauthorized": "You are not authorized to submit to this hackathon.",
       "moderationFlagged": "Content was flagged by automated moderation. Please revise it and try again.",
       "userBlocked": "Your account is restricted from performing this action.",
-      "rateLimitExceeded": "Too many requests. Please wait a moment and try again."
+      "rateLimitExceeded": "Too many requests. Please wait a moment and try again.",
+      "rateLimited": "Too many project changes in a short time. Please wait a few minutes and try again."
     },
     "editor": {
       "workspace": "Project workspace",

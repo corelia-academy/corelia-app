@@ -75,6 +75,12 @@ describe("project AI translation", () => {
     {status:"completed",output_text:JSON.stringify({...content,description:"Changed https://other.example `new code`"})},
   ])("rejects unusable AI responses", async payload => {
     vi.stubGlobal("fetch",vi.fn().mockResolvedValue(response(payload)));
-    await expect(translateProjectText(content,"en","vi")).rejects.toMatchObject({code:"ai_unavailable:invalid_response"});
+    await expect(translateProjectText(content,"en","vi")).rejects.toMatchObject({code:"ai_unavailable:invalid_response",billed:true});
+  });
+  it("marks timeouts as billed but provider rejections as unbilled", async () => {
+    vi.stubGlobal("fetch",vi.fn().mockRejectedValue(new DOMException("timed out","AbortError")));
+    await expect(translateProjectText(content,"en","vi")).rejects.toMatchObject({code:"ai_unavailable:timeout",billed:true});
+    vi.stubGlobal("fetch",vi.fn().mockResolvedValue(response({},false)));
+    await expect(translateProjectText(content,"en","vi")).rejects.toMatchObject({code:"ai_unavailable:provider_error",billed:false});
   });
 });

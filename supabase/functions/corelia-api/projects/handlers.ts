@@ -1,6 +1,7 @@
 import { contentLocale, projectContent, projectLocales } from "./localization.ts";
 import { isContentLocale } from "../lib/locale.ts";
 import { json } from "../lib/http.ts";
+import { consumeRateLimit } from "../lib/rate_limit.ts";
 import { verifyBearerUser, type SupabaseClient, type User } from "../lib/supabase.ts";
 import {
   translateProjectText,
@@ -40,7 +41,38 @@ function errorResponse(error: unknown): Response {
   return json({ message: "project_operation_failed" }, 500);
 }
 
-async function actorCanManageProject(db: SupabaseClient, user: User, projectId: string): Promise<{
+// Per-user ceilings on Edge operations that call paid or rate-shared AI APIs.
+const SAVE_LIMIT = { bucket: "project_save", limit: 30, windowSeconds: 600 };
+const MEDIA_UPLOAD_LIMIT = { bucket: "project_media_upload", limit: 20, windowSeconds: 600 };
+const TRANSLATE_DAILY_LIMIT = { bucket: "project_translation_daily", limit: 40, windowSeconds: 86_400 };
+
+type ModerationEntry = { field: string; text: string };
+
+// Text already persisted on the project passed moderation when it was saved,
+// so only new or changed text is sent to the provider again.
+async function persistedModerationKeys(db: SupabaseClient, projectId: string, primary: Record<string, unknown> | null): Promise<Set<string>> {
+  const keys = new Set<string>();
+  if (primary) {
+    for (const field of ["title", "summary", "description", "progress"]) {
+      const text = primary[field];
+      if (typeof text === "string" && text.trim()) keys.add(`${field}\u0000${text.trim()}`);
+    }
+  }
+  const { data, error } = await db.from("project_locales").select("locale,data").eq("project_id", projectId);
+  if (error) throw new Error(error.message);
+  for (const row of (data ?? []) as Array<{ locale: string; data: Record<string, unknown> | null }>) {
+    for (const [field, text] of Object.entries(row.data ?? {})) {
+      if (typeof text === "string" && text.trim()) keys.add(`${row.locale}.${field}\u0000${text.trim()}`);
+    }
+  }
+  return keys;
+}
+
+function changedModerationEntries(entries: ModerationEntry[], persisted: Set<string>): ModerationEntry[] {
+  return entries.filter(entry => entry.text.trim() && !persisted.has(`${entry.field}\u0000${entry.text.trim()}`));
+}
+
+async function actorCanManageProject(db: SupabaseClient, user: User, projectId: string, allowMissing = true): Promise<{
   allowed: boolean;
   ownerId: string;
 }> {
@@ -50,7 +82,12 @@ async function actorCanManageProject(db: SupabaseClient, user: User, projectId: 
   ]);
   if (projectError) throw new Error(projectError.message);
   if (profileError) throw new Error(profileError.message);
-  if (!project) return { allowed: true, ownerId: user.id };
+  // New projects get a client-generated id and upload media before the first
+  // save, so a missing row is the owner's draft unless the caller requires one.
+  if (!project) {
+    if (!allowMissing) throw new Error("not_found:project");
+    return { allowed: true, ownerId: user.id };
+  }
   const staff = profile?.role === "admin" || profile?.role === "support_staff";
   const allowed = project.owner_id === user.id || staff;
   if (allowed) {
@@ -74,6 +111,7 @@ export async function handleProjectMediaUpload(req: Request, db: SupabaseClient)
 
     const access = await actorCanManageProject(db, user, projectId);
     if (!access.allowed) return json({ message: "forbidden:project_media" }, 403);
+    await consumeRateLimit(db, MEDIA_UPLOAD_LIMIT.bucket, user.id, MEDIA_UPLOAD_LIMIT.limit, MEDIA_UPLOAD_LIMIT.windowSeconds);
     const maxBytes = kind === "logo" ? PROJECT_LOGO_MAX_BYTES : PROJECT_SCREENSHOT_MAX_BYTES;
     if (file.size <= 0 || file.size > maxBytes) {
       return json({ message: `invalid_input:${kind}_size` }, 400);
@@ -247,9 +285,13 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
     if (mode === "locale") {
       const locale = contentLocale(body.locale);
       const data = projectContent(body.data, true);
-      const access = await actorCanManageProject(db,user,projectId);
+      const access = await actorCanManageProject(db,user,projectId,false);
       if (!access.allowed) throw new Error("forbidden:project_update");
-      await moderateProjectText(Object.entries(data).map(([field,text]) => ({ field: `locale.${field}`, text })));
+      await consumeRateLimit(db, SAVE_LIMIT.bucket, user.id, SAVE_LIMIT.limit, SAVE_LIMIT.windowSeconds);
+      const persisted = await persistedModerationKeys(db, projectId, null);
+      await moderateProjectText(Object.entries(data)
+        .filter(([field,text]) => !persisted.has(`${locale}.${field}\u0000${text.trim()}`))
+        .map(([field,text]) => ({ field: `locale.${field}`, text })));
       const { error } = await db.rpc("save_ai_gated_project_locale", {
         p_actor_id: user.id,
         p_project_id: projectId,
@@ -295,7 +337,7 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
     // Existing source is immutable in the save RPC; do not trust a caller's
     // source/visibility to exempt an existing hackathon project from requirements.
     const { data: existing, error: existingError } = await db.from("projects")
-      .select("source_type,description,progress,pitch_video_url,blocked").eq("id", projectId).maybeSingle();
+      .select("source_type,title,summary,description,progress,pitch_video_url,blocked").eq("id", projectId).maybeSingle();
     if (existingError) throw new Error(existingError.message);
     if (!existing && String(body.source_type ?? "").trim() !== "hackathon") throw new Error("forbidden:project_source_create");
     if (!existing && !String(body.source_id ?? "").trim()) throw new Error("invalid_input:hackathon_id");
@@ -315,13 +357,15 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
       if (!/[\p{L}\p{N}]/u.test(String(value))) return json({ message: `required_content:${field}` }, 400);
     }
 
-    await moderateProjectText([
+    await consumeRateLimit(db, SAVE_LIMIT.bucket, user.id, SAVE_LIMIT.limit, SAVE_LIMIT.windowSeconds);
+    const persisted = existing ? await persistedModerationKeys(db, projectId, existing) : new Set<string>();
+    await moderateProjectText(changedModerationEntries([
       { field: "title", text: title },
       { field: "summary", text: summary },
       { field: "description", text: description ?? "" },
       { field: "progress", text: progress ?? "" },
       ...Object.entries(locales ?? {}).filter(([locale]) => locale !== primary).flatMap(([locale, content]) => Object.entries(content).map(([field,text]) => ({ field: `${locale}.${field}`, text }))),
-    ]);
+    ], persisted));
 
     const params = {
       ...(primary ? { p_primary_content_locale: primary, p_locales: locales } : {}),
@@ -455,6 +499,7 @@ export async function handleProjectTranslate(req: Request, db: SupabaseClient): 
     if (source === target) throw new Error("invalid_input:project_locale");
     const content = projectContent(body.content);
     if (!Object.values(content).some(text => /[\p{L}\p{N}]/u.test(text))) throw new Error("required_content:title");
+    await consumeRateLimit(db, TRANSLATE_DAILY_LIMIT.bucket, user.id, TRANSLATE_DAILY_LIMIT.limit, TRANSLATE_DAILY_LIMIT.windowSeconds);
     const { data, error } = await db.rpc("reserve_project_translation_success", { p_actor_id: user.id, p_project_id: body.project_id });
     if (error) throw new Error(error.message);
     if (typeof data !== "string" || !isUuid(data)) throw new Error("invalid_input:project_translation_reservation");
@@ -481,11 +526,14 @@ export async function handleProjectTranslate(req: Request, db: SupabaseClient): 
           console.warn("[projects.translate] moderation guard record failed", moderationRecordError.message);
         }
       }
-      const { error: releaseError } = await db.rpc("release_project_translation", {
+      // A provider response that could not be used was still paid for, so it
+      // keeps its quota slot; only failures before the provider call release it.
+      const billed = error instanceof ProjectAiError && error.billed;
+      const { error: settleError } = await db.rpc(billed ? "commit_project_translation" : "release_project_translation", {
         p_actor_id: actorId,
         p_request_id: requestId,
       });
-      if (releaseError) console.warn("[projects.translate] reservation release failed", releaseError.message);
+      if (settleError) console.warn("[projects.translate] reservation settle failed", settleError.message);
     }
     console.info("[projects.translate]", { requestId, status: "failed" });
     return errorResponse(responseError);
