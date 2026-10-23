@@ -15,14 +15,16 @@ Error, retry, empty và offline states phải là first-class behavior. Full-pag
 - **Lần tải đầu gom về một global loading.** `AuthBootstrapScreen` và mọi route fallback (`*Fallback` trong `App.tsx`, `LocationPlaceholder`) bọc qua `InitialLoadFallback`: trước lần điều hướng đầu tiên của người dùng chúng render `AppLoadingScreen`, sau đó mới render skeleton của route. Redirect (`replace`, vd. `/login` → `/`) vẫn tính là lần tải đầu.
 - **Không xếp chồng hai skeleton cho cùng một vùng.** Nếu fallback của route và loading state của page cùng vẽ một vùng, chúng phải dùng chung component/geometry (pattern `RoutePlaceholder`: page export loading layout của mình, fallback dùng lại), không được hiện skeleton chung rồi đổi sang skeleton khác.
 - **Fallback sau điều hướng trong app** dùng skeleton khớp layout đích (`RoutePlaceholder`, `RouteSkeleton`, skeleton riêng của page); `skeletonRevealClass()` ẩn chúng 200ms đầu để load nhanh không bị nháy.
+- **Thanh loading trên cùng (`LoadingBar`) không chạy trong lần tải đầu** (splash và skeleton đã thể hiện việc đang tải); nó chỉ báo fetch/mutation sau khi trang đầu đã ổn định.
 - **Không thêm màn loading mới.** Dùng `AppLoadingScreen` cho loading toàn app, `AuthGateLoading` cho gate nhỏ trong trang, skeleton cho data. Không tạo spinner/full-page loader riêng cho từng feature.
 - **Kiểm tra khi đổi loading flow**: tải lại trang khi đã đăng nhập và chưa đăng nhập, xác nhận chỉ có một global loading rồi đến skeleton data (nếu có), không có bước skeleton → skeleton khác.
 
 ## Request trên lần tải đầu
 
+- Route dùng `lazyRoute(routeChunks.x)` để render ngay, không suspend, khi chunk đã được tải trước; `lazy()` thường luôn suspend một lần và React giữ nội dung lại ~300ms sau khi fallback hiện.
 - Route chunk của layout và page đầu tiên được tải song song với auth boot (`preloadEntryRoute` trong `src/lib/routePrefetch.ts`). Route public mới có lưu lượng đáng kể phải được thêm vào `routeLoaders` ở đó (dùng chung cho prefetch khi hover).
 - Component luôn mount (Header, sidebar, sync component) chỉ fetch dữ liệu mà chúng đang hiển thị. Dữ liệu chỉ dùng khi người dùng mở panel/menu (vd. trending searches) phải `enabled` theo trạng thái mở.
-- Background sync không phục vụ UI hiện tại (vd. XP sync) chờ trình duyệt rảnh bằng `useBrowserIdle()` để không tranh băng thông với chunk và data của page, nhất là trên mobile.
+- Background sync không phục vụ UI hiện tại (vd. XP sync) chờ trang đầu tải xong bằng `useFirstLoadSettled()` (splash đã ẩn, query của page đã xong, trình duyệt rảnh) để không tranh băng thông với chunk và data của page, nhất là trên mobile.
 - Khi thêm query mới, kiểm tra request trace của lần tải đầu (đã đăng nhập và chưa đăng nhập, viewport mobile): không có request trùng, không có chuỗi request nối tiếp tránh được.
 
 ## Layout stability
