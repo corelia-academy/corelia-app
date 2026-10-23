@@ -1,5 +1,6 @@
 import { isAuthFailure } from "../lib/authz.ts";
 import { json } from "../lib/http.ts";
+import { consumeRateLimit } from "../lib/rate_limit.ts";
 import { buildCoInstructorInviteEmail } from "../lib/mail/co_instructor_invite_body.ts";
 import { resolveAppUrl } from "../lib/mail/layout.ts";
 import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
@@ -50,6 +51,7 @@ export async function handleCoInstructorInviteEmail(
     if (new Date(String(invite.expires_at)).getTime() <= Date.now()) {
       return json({ message: "invite_expired" }, 409);
     }
+    await consumeRateLimit(db, "course_co_instructor_invite_email", sender.id, 20, 3600);
 
     const [{ data: invitee }, { data: inviter }, { data: course }] = await Promise.all([
       db
@@ -102,6 +104,9 @@ export async function handleCoInstructorInviteEmail(
       to: [recipientEmail],
       subject,
       html,
+      // Resend replays the first send for 24h, so repeated calls for one
+      // invite cannot deliver more than one email.
+      idempotencyKey: `course-co-instructor-invite:${inviteId}`,
     });
 
     if ("sent" in result && result.sent) {
@@ -117,6 +122,7 @@ export async function handleCoInstructorInviteEmail(
   } catch (e) {
     const msg = e instanceof Error ? e.message : "unknown";
     if (isAuthFailure(msg)) return json({ message: "unauthenticated" }, 401);
+    if (msg.startsWith("rate_limited:")) return json({ message: msg }, 429);
     console.error("[corelia-api] courses.coInstructorInvite.sendEmail", e);
     return json({ message: "internal_error" }, 500);
   }

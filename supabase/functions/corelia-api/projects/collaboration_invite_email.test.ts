@@ -164,6 +164,7 @@ describe("handleProjectCollaborationInviteEmail replay and idempotency", () => {
     }
 
     const mockDb = {
+      rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
       auth: {
         getUser: vi.fn().mockResolvedValue({
           data: { user: { id: senderId, email: "sender@example.com" } },
