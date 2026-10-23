@@ -1,3 +1,4 @@
+import { resolveAuthRedirect } from "@/lib/authRedirect";
 import { routeChunk } from "@/lib/lazyRoute";
 
 type NetworkInformationLike = {
@@ -84,8 +85,21 @@ const STANDALONE_ROUTE = /^\/(login|confirm-signup|auth|ocid-redirect|email|clai
  * chunks during boot instead, so the first visit does not wait for a second download round.
  * Not speculative: the visitor is already on this URL.
  */
-export function preloadEntryRoute(pathname: string): void {
+function hasStoredSession(): boolean {
+  try {
+    return Object.keys(localStorage).some((key) => /^sb-.+-auth-token$/.test(key));
+  } catch {
+    return false;
+  }
+}
+
+export function preloadEntryRoute(pathname: string, search = ""): void {
   const path = pathname.replace(/\/+$/, "") || "/";
+  // A signed-in visit to /login redirects straight on; fetch where it is going as well.
+  if (path === "/login" && hasStoredSession()) {
+    const redirect = resolveAuthRedirect(null, new URLSearchParams(search));
+    preloadEntryRoute(redirect.split(/[?#]/)[0] ?? "/");
+  }
   const loads: Array<Promise<unknown>> = [];
   if (/^\/study\/[^/]+/.test(path)) {
     loads.push(routeChunks.learnLayout.load(), routeChunks.learn.load());

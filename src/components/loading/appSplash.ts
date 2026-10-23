@@ -63,3 +63,21 @@ export function holdAppSplash(): () => void {
     scheduleAppSplashRelease();
   };
 }
+
+let releaseNavigationHold: (() => void) | undefined;
+
+/**
+ * Hold the splash across an initial-load redirect (e.g. /login → /). Router navigations render in a
+ * transition, so the old route can unmount before the next route's loading screen commits; without
+ * this hold the splash would fade out into an empty page. Released once the new location commits.
+ */
+export function holdAppSplashForNavigation() {
+  if (!hasAppSplash()) return;
+  releaseNavigationHold?.();
+  releaseNavigationHold = holdAppSplash();
+}
+
+export function releaseAppSplashNavigationHold() {
+  releaseNavigationHold?.();
+  releaseNavigationHold = undefined;
+}

@@ -43,4 +43,27 @@ describe("app splash", () => {
     vi.advanceTimersByTime(1);
     expect(hasAppSplash()).toBe(false);
   });
+
+  it("stays up across an initial-load redirect until the new location commits", async () => {
+    const { hasAppSplash, holdAppSplash, holdAppSplashForNavigation, releaseAppSplashNavigationHold } = await setup();
+    const releaseLogin = holdAppSplash();
+    // /login decides to redirect: the router takes a hold, then the login screen unmounts.
+    holdAppSplashForNavigation();
+    releaseLogin();
+    vi.advanceTimersByTime(500);
+    expect(hasAppSplash()).toBe(true);
+
+    releaseAppSplashNavigationHold();
+    vi.advanceTimersByTime(60);
+    expect(hasAppSplash()).toBe(false);
+  });
+
+  it("does not take a navigation hold once the splash is gone", async () => {
+    const { hasAppSplash, holdAppSplashForNavigation, scheduleAppSplashRelease } = await setup();
+    scheduleAppSplashRelease(0);
+    vi.advanceTimersByTime(1);
+    expect(hasAppSplash()).toBe(false);
+    holdAppSplashForNavigation();
+    expect(hasAppSplash()).toBe(false);
+  });
 });
