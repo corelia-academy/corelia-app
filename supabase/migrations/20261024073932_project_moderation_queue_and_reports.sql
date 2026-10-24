@@ -70,8 +70,8 @@ CREATE TABLE IF NOT EXISTS public.project_reports (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS project_reports_one_open_per_reporter
   ON public.project_reports(project_id, reporter_id) WHERE status = 'open';
-CREATE INDEX IF NOT EXISTS project_reports_open_project
-  ON public.project_reports(project_id) WHERE status = 'open';
+CREATE INDEX IF NOT EXISTS project_reports_project_status
+  ON public.project_reports(project_id, status);
 CREATE INDEX IF NOT EXISTS project_reports_reporter_time
   ON public.project_reports(reporter_id, created_at DESC);
 ALTER TABLE public.project_reports ENABLE ROW LEVEL SECURITY;
@@ -80,7 +80,7 @@ GRANT SELECT ON public.project_reports TO authenticated;
 GRANT SELECT,INSERT,UPDATE,DELETE ON public.project_reports TO service_role;
 DROP POLICY IF EXISTS project_reports_select_own_or_staff ON public.project_reports;
 CREATE POLICY project_reports_select_own_or_staff ON public.project_reports FOR SELECT TO authenticated
-  USING (reporter_id = (SELECT auth.uid()) OR private.is_admin_or_support());
+  USING (reporter_id = (SELECT auth.uid()) OR (SELECT private.is_admin_or_support()));
 
 CREATE OR REPLACE FUNCTION private.enqueue_project_moderation(p_project_id uuid, p_priority integer, p_delay_seconds integer)
 RETURNS void LANGUAGE sql SECURITY INVOKER SET search_path = '' AS $$

@@ -1,13 +1,14 @@
 -- Bound what browsers can store in the `cdn` and `app` buckets.
 --
 -- cdn (public): every writer uploads raster images (credential badges, certificate
--- templates, brand logo, rendered certificate PNGs). SVG is excluded because the
--- bucket is served publicly and SVG can carry script.
+-- templates, brand logo, rendered certificate PNGs, and course/hackathon covers,
+-- thumbnails and host logos picked from `image/*` inputs). SVG is excluded because
+-- the bucket is served publicly and SVG can carry script.
 -- app (private): course/contest/project/lesson images plus final-assignment
 -- attachments (.pdf/.doc/.docx/.zip, see FinalAssignmentPanel). 25 MB covers the
 -- largest attachment while capping per-object storage cost.
 UPDATE storage.buckets
-SET allowed_mime_types = ARRAY['image/png','image/jpeg','image/webp']
+SET allowed_mime_types = ARRAY['image/png','image/jpeg','image/webp','image/gif','image/avif']
 WHERE id = 'cdn';
 
 UPDATE storage.buckets

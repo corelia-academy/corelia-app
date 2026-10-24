@@ -53,7 +53,7 @@ DO $$ BEGIN
   IF to_regclass('public.user_notifications_target_type') IS NULL THEN
     RAISE EXCEPTION 'user_notifications target/type index is missing';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM storage.buckets WHERE id = 'cdn' AND allowed_mime_types = ARRAY['image/png','image/jpeg','image/webp'])
+  IF NOT EXISTS (SELECT 1 FROM storage.buckets WHERE id = 'cdn' AND allowed_mime_types = ARRAY['image/png','image/jpeg','image/webp','image/gif','image/avif'])
     OR NOT EXISTS (SELECT 1 FROM storage.buckets WHERE id = 'app' AND file_size_limit = 26214400
       AND 'application/pdf' = ANY(allowed_mime_types) AND NOT 'text/html' = ANY(allowed_mime_types)) THEN
     RAISE EXCEPTION 'Storage bucket limits are not configured';
