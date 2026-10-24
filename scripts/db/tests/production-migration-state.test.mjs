@@ -171,8 +171,13 @@ test("Production backend release accepts only the approved pending migrations", 
   const localVersions = [...realReleasedVersions, ...APPROVED_PENDING_VERSIONS];
   const observedRemote = localVersions.filter((v) => !CURRENT_PENDING_VERSIONS.includes(v));
   assert.deepEqual(CURRENT_PENDING_VERSIONS, [
-    "20261022212141",
-    "20261024051107",
+    "20261024073926",
+    "20261024073927",
+    "20261024073928",
+    "20261024073929",
+    "20261024073931",
+    "20261024073932",
+    "20261024092123",
   ]);
   assert.ok(observedRemote.includes("20260925022405"));
   assert.ok(observedRemote.includes("20260925091927"));
