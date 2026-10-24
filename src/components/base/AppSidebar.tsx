@@ -163,7 +163,7 @@ export default function AppSidebar({
         </SidebarHeader>
       ) : null}
 
-      <SidebarContent className="py-lg px-md">
+      <SidebarContent className="py-lg px-xs">
         {/* <SidebarGroup>
           <SidebarGroupContent className="px-1">
             <SidebarMenu className="gap-1">
@@ -212,7 +212,7 @@ export default function AppSidebar({
                 </SidebarGroupLabel>
               ) : null}
 
-              <SidebarMenu className="gap-1">
+              <SidebarMenu>
                 {section.items.map((item) => {
                   const Icon = item.icon;
                   const isActive =

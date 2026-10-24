@@ -698,7 +698,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
           {!authInitialized ? (
             <div className="h-9 w-28 animate-pulse rounded-full bg-surface-raised md:h-10" />
           ) : isAuthenticated ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-lg md:gap-xl">
               <NotificationBell />
               <DropdownMenu
                 open={accountMenuOpen}
