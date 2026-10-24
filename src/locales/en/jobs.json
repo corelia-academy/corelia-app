@@ -85,6 +85,10 @@
     "title": "No matching jobs",
     "description": "Try broadening your search or clearing some filters."
   },
+  "noJobs": {
+    "title": "No data.",
+    "description": "No jobs have been posted recently."
+  },
   "infinite": {
     "loading": "Loading more jobs…",
     "loadMore": "Load more jobs",
