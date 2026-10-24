@@ -17,16 +17,17 @@ BEGIN
        '{"title":"External","thumbnail_url":"https://images.example.com/c.png","thumbnail_path":"course-thumbnails/media-external/c.png"}');
     INSERT INTO public.hackathons(id,status,document) VALUES
       ('media-hackathon','draft',
-       '{"title":"Hackathon","cover_image_url":"http://127.0.0.1:54321/storage/v1/object/sign/app/contest-banners/media-hackathon/1.png?token=t","cover_image_path":"contest-banners/media-hackathon/1.png","thumbnail_url":"http://127.0.0.1:54321/storage/v1/object/sign/app/contest-thumbnails/media-hackathon/2.png?token=t","thumbnail_path":"contest-thumbnails/media-hackathon/2.png"}');
+       '{"title":"Hackathon","cover_image_url":"http://127.0.0.1:54321/storage/v1/object/sign/app/contest-banners/media-hackathon/1.png?token=t","cover_image_path":"contest-banners/media-hackathon/1.png","thumbnail_url":"http://127.0.0.1:54321/storage/v1/object/sign/app/contest-thumbnails/media-hackathon/2.png?token=t","thumbnail_path":"contest-thumbnails/media-hackathon/2.png","host":{"name":"Host","website_url":"https://host.example","logo_url":"http://127.0.0.1:54321/storage/v1/object/sign/app/contest-org-partner-logos/media-hackathon/host/3.png?token=t","logo_path":"contest-org-partner-logos/media-hackathon/host/3.png"}}');
     INSERT INTO storage.objects(bucket_id,name) VALUES
       ('cdn','course-thumbnails/media-copied/a.png'),
       ('cdn','course-thumbnails/media-external/c.png'),
       ('cdn','contest-banners/media-hackathon/1.png'),
-      ('cdn','contest-thumbnails/media-hackathon/2.png');
+      ('cdn','contest-thumbnails/media-hackathon/2.png'),
+      ('cdn','contest-org-partner-logos/media-hackathon/host/3.png');
 
     first_run := public.promote_public_media_to_cdn();
-    IF first_run < 3 THEN
-      RAISE EXCEPTION 'expected at least 3 promoted URLs, got %', first_run;
+    IF first_run < 4 THEN
+      RAISE EXCEPTION 'expected at least 4 promoted URLs, got %', first_run;
     END IF;
     IF (SELECT data->>'thumbnail_url' FROM public.courses WHERE id='media-copied')
        <> 'http://127.0.0.1:54321/storage/v1/object/public/cdn/course-thumbnails/media-copied/a.png' THEN
@@ -44,6 +45,11 @@ BEGIN
        <> 'http://127.0.0.1:54321/storage/v1/object/public/cdn/contest-thumbnails/media-hackathon/2.png' THEN
       RAISE EXCEPTION 'hackathon artwork was not rewritten to cdn';
     END IF;
+    IF (SELECT document#>>'{host,logo_url}' FROM public.hackathons WHERE id='media-hackathon')
+       <> 'http://127.0.0.1:54321/storage/v1/object/public/cdn/contest-org-partner-logos/media-hackathon/host/3.png'
+    OR (SELECT document#>>'{host,name}' FROM public.hackathons WHERE id='media-hackathon') <> 'Host' THEN
+      RAISE EXCEPTION 'hackathon host logo was not rewritten to cdn';
+    END IF;
     IF (SELECT document->>'title' FROM public.hackathons WHERE id='media-hackathon') <> 'Hackathon' THEN
       RAISE EXCEPTION 'hackathon document lost unrelated keys';
     END IF;
@@ -58,8 +64,9 @@ BEGIN
     END IF;
     IF (SELECT count(*) FROM pg_policies WHERE schemaname='storage' AND tablename='objects'
         AND policyname IN ('cdn_course_thumbnails_select','cdn_contest_media_select','cdn_course_thumbnails_insert','cdn_course_thumbnails_update','cdn_course_thumbnails_delete',
-                           'cdn_contest_media_insert','cdn_contest_media_update','cdn_contest_media_delete')) <> 8 THEN
-      RAISE EXCEPTION 'cdn write policies for course/hackathon artwork are missing';
+                           'cdn_contest_media_insert','cdn_contest_media_update','cdn_contest_media_delete',
+                           'cdn_contest_host_logos_select','cdn_contest_host_logos_insert','cdn_contest_host_logos_update','cdn_contest_host_logos_delete')) <> 12 THEN
+      RAISE EXCEPTION 'cdn policies for course/hackathon artwork are missing';
     END IF;
     RAISE EXCEPTION 'public-media-cdn: rollback fixtures';
   EXCEPTION WHEN raise_exception THEN

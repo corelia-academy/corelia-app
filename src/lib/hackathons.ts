@@ -930,7 +930,7 @@ export async function deleteContest(contestId: string): Promise<void> {
   const existing = await getContest(contestId);
   await deleteContestMediaByPath(existing?.cover_image_path);
   await deleteContestMediaByPath(existing?.thumbnail_path);
-  await deleteStorageObjectByPath(existing?.host?.logo_path);
+  await deleteContestMediaByPath(existing?.host?.logo_path);
   for (const p of existing?.organizational_partners ?? []) {
     await deleteStorageObjectByPath(p.logo_path);
   }

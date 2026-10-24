@@ -1,7 +1,8 @@
-// One-off backfill for public course/hackathon artwork that was uploaded to the
+// One-off backfill for public course/hackathon artwork (course thumbnails, hackathon
+// covers/thumbnails and host logos) that was uploaded to the
 // private `app` bucket with 1-year signed URLs. Copies each referenced object to
 // the same path in the public `cdn` bucket, then calls
-// public.promote_public_media_to_cdn() (migration 20261023141349) to rewrite the
+// public.promote_public_media_to_cdn() (migrations 20261023141349, 20261024051107) to rewrite the
 // stored URLs. Idempotent: existing `cdn` copies are kept, rows already on `cdn`
 // are skipped. The `app` originals are left in place.
 //
@@ -43,6 +44,8 @@ for (const hackathon of hackathons.data) {
     const path = legacyPath(hackathon.document, urlKey, pathKey);
     if (path) paths.add(path);
   }
+  const hostLogo = legacyPath(hackathon.document?.host, "logo_url", "logo_path");
+  if (hostLogo) paths.add(hostLogo);
 }
 
 const app = client.storage.from("app");
