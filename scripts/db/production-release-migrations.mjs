@@ -150,18 +150,30 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20261022212141_performance_advisors_fk_indexes_policy_merge.sql",
   "supabase/migrations/20261023141349_public_course_hackathon_media_cdn.sql",
   "supabase/migrations/20261024051107_hackathon_host_logo_cdn.sql",
+  "supabase/migrations/20261024073926_shared_rate_limit.sql",
+  "supabase/migrations/20261024073927_notification_event_flood_guard.sql",
+  "supabase/migrations/20261024073928_storage_upload_hardening.sql",
+  "supabase/migrations/20261024073929_search_trending_and_wallet_abuse_limits.sql",
+  "supabase/migrations/20261024073931_project_auto_translation_jobs.sql",
+  "supabase/migrations/20261024073932_project_moderation_queue_and_reports.sql",
+  "supabase/migrations/20261024092123_project_reports_invoker_wrappers.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production ledger is verified through the public course/hackathon media cdn
-// migration. The Staging-validated performance advisors migration (applied out
-// of order via --include-all) and hackathon host logo cdn migration are pending.
+// Production ledger is verified through the hackathon host logo cdn migration.
+// The Staging-validated abuse-limit, background translation and moderation
+// queue migrations (#815, #817) are pending.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20261022212141",
-  "20261024051107",
+  "20261024073926",
+  "20261024073927",
+  "20261024073928",
+  "20261024073929",
+  "20261024073931",
+  "20261024073932",
+  "20261024092123",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
