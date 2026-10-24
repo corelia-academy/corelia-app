@@ -50,6 +50,20 @@ hour across Edge instances, including failed attempts. Logs contain request ID,
 status and provider input/output token counts, never project text. Translation
 is optional; provider failures do not prevent manual bilingual editing.
 
+Background translation follows the primary locale. After each successful save,
+`sync_project_translations` hashes the primary text and queues one job per
+enabled locale whose stored translation is from an older source. Each save
+pushes the job back 5 minutes, so a burst of edits costs one translation per
+locale. Locales the owner edits by hand become `manual` and are never
+overwritten; `projects.translations.request` (`project_id`, `locale`, 20/hour
+per user) re-queues a locale immediately and enables it if needed.
+`projects.translations.status` returns each locale's status (`fresh`, `stale`,
+`pending`, `failed`, `manual`). The `corelia-project-translations` cron job
+calls `projects.translations.run` with the Jobs scheduler secret
+(`CORELIA_JOBS_CRON_SECRET`) only when a job is due; each run translates up to 5
+jobs, capped at 30 per project and 100 per owner per day. Set
+`PROJECT_AUTO_TRANSLATE_ENABLED=false` to pause the worker.
+
 Project text/images use `omni-moderation-latest`. Resource URL fields (demo,
 repository, slides, demo video, and pitch video) are validated locally for HTTPS,
 length, and safe URL structure; embedded credentials and local/private addresses

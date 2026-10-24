@@ -10,8 +10,11 @@ import type { Contest } from "@/types/hackathons";
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 vi.mock("@/i18n", () => ({ default: { language: "en", resolvedLanguage: "en" } }));
 vi.mock("@/lib/supabase", () => ({ supabase: {} }));
-const translate = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/projectSubmission", () => ({ translateProjectContent: translate }));
+const translations = vi.hoisted(() => ({ status: vi.fn(), request: vi.fn() }));
+vi.mock("@/lib/projectSubmission", () => ({
+  fetchProjectTranslationStatus: translations.status,
+  requestProjectTranslation: translations.request,
+}));
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
 vi.mock("@/lib/projectTaxonomy", () => ({
@@ -220,27 +223,29 @@ describe("project language editing", () => {
     await button("Tiếng Việt");
     expect((host.querySelector("textarea") as HTMLTextAreaElement).value).toBe("Keep description");
   });
-  it("previews AI output without saving and rejects applying it after a newer edit", async () => {
-    translate.mockResolvedValue({ title: "Translated", summary: "Summary", description: "Story", progress: "Progress" });
+  it("marks only hand-edited secondary languages for saving", async () => {
+    translations.status.mockResolvedValue([]);
     const save = await render(undefined, true, null);
-    await button("projects.translation.translate");
-    await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
-    expect(host.textContent).toContain("projects.translation.preview");
-    expect(save).not.toHaveBeenCalled();
-    await input("#project-basics input", "New original");
-    const apply = Array.from(host.querySelectorAll("button")).find(item => item.textContent === "projects.translation.apply")!;
-    expect(apply.disabled).toBe(true);
-    expect(host.textContent).toContain("projects.translation.stale");
-  });
-  it("applies a reviewed translation only to the secondary language", async () => {
-    translate.mockResolvedValue({ title: "Translated", summary: "Summary", description: "Story", progress: "Progress" });
-    const save = await render(undefined, true, null);
-    await button("projects.translation.translate");
-    await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
-    await button("projects.translation.apply");
-    expect((host.querySelector("#project-basics input") as HTMLInputElement).value).toBe("Translated");
+    await button("English");
+    await input("textarea", "English summary");
     await submit();
-    expect((save.mock.calls as unknown as Array<[{ draft: import("./projectEditorDraft").ProjectDraft }]>)[0][0].draft.title).toBe("Original");
-    expect((save.mock.calls as unknown as Array<[{ draft: import("./projectEditorDraft").ProjectDraft }]>)[0][0].draft.locales.en?.description).toBe("Story");
+    const draft = (save.mock.calls as unknown as Array<[{ draft: import("./projectEditorDraft").ProjectDraft }]>)[0][0].draft;
+    expect(draft.editedLocales).toEqual(["en"]);
+  });
+  it("shows background translation status and queues a fresh translation", async () => {
+    translations.status.mockResolvedValue([{ locale: "en", status: "manual", translated_at: null }]);
+    translations.request.mockResolvedValue(undefined);
+    const save = await render(undefined, true, null);
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+    expect(translations.status).toHaveBeenCalledWith("project-1");
+    expect(host.textContent).toContain("projects.translation.status.manual");
+    await button("projects.translation.retranslate");
+    expect(translations.request).toHaveBeenCalledWith("project-1", "en");
+    expect(save).not.toHaveBeenCalled();
+  });
+  it("asks new projects to save before translating", async () => {
+    await render(undefined, false, null);
+    expect(host.textContent).toContain("projects.translation.saveFirst");
+    expect(translations.status).not.toHaveBeenCalled();
   });
 });

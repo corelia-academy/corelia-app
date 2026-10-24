@@ -63,7 +63,7 @@ describe("project story save handler", () => {
       };
       const response = await handleProjectSave(request({ source_type: source, ...resources }), db);
       expect(response.status).toBe(200);
-      expect(mocks.rpc).toHaveBeenLastCalledWith("save_ai_gated_project_taxonomy", expect.objectContaining(
+      expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project_taxonomy", expect.objectContaining(
         Object.fromEntries(Object.entries(resources).map(([field, url]) => [`p_${field}`, url])),
       ));
       expect(mocks.moderate).toHaveBeenCalled();
@@ -77,9 +77,9 @@ describe("project story save handler", () => {
   it("preserves omitted story fields but forwards explicit clearing", async () => {
     mocks.existing.mockResolvedValue({ data: { source_type: "standalone" }, error: null });
     await handleProjectSave(request({description:null,visibility:"private"}),db);
-    expect(mocks.rpc).toHaveBeenLastCalledWith("save_ai_gated_project_taxonomy",expect.objectContaining({p_description:null,p_progress:null,p_pitch_video_url:null}));
+    expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project_taxonomy",expect.objectContaining({p_description:null,p_progress:null,p_pitch_video_url:null}));
     await handleProjectSave(request({description:"",progress:"",pitch_video_url:"",visibility:"private"}),db);
-    expect(mocks.rpc).toHaveBeenLastCalledWith("save_ai_gated_project_taxonomy",expect.objectContaining({p_description:"",p_progress:"",p_pitch_video_url:""}));
+    expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project_taxonomy",expect.objectContaining({p_description:"",p_progress:"",p_pitch_video_url:""}));
   });
   it.each([{description:"x".repeat(20001)},{progress:"x".repeat(10001)},{pitch_video_url:"javascript:alert(1)"}])("rejects invalid content before saving", async payload => {
     expect((await handleProjectSave(request(payload),db)).status).toBe(400);
@@ -226,6 +226,25 @@ describe("project save abuse limits", () => {
     } }), dbWith(existing, [{ locale: "vi", data: { title: "Dự án", summary: "Tóm tắt cũ" } }]));
     expect(response.status).toBe(200);
     expect(mocks.moderate).toHaveBeenCalledWith([{ field: "vi.summary", text: "Tóm tắt mới" }]);
+  });
+
+  it("queues background translation and marks only hand-edited locales as manual", async () => {
+    const existing = { owner_id: owner, source_type: "hackathon", title: "Project", summary: "A project summary", description: "A detailed project story", progress: "" };
+    const response = await handleProjectSave(request({ primary_content_locale: "en", locales: {
+      en: { title: "Project v2", summary: "A project summary", description: "A detailed project story" },
+      vi: { title: "Dự án", summary: "Tóm tắt cũ" },
+      ja: { title: "手動タイトル" },
+    } }), dbWith(existing, [{ locale: "vi", data: { title: "Dự án", summary: "Tóm tắt cũ" } }, { locale: "ja", data: { title: "AI" } }]));
+    expect(response.status).toBe(200);
+    expect(mocks.rpc).toHaveBeenLastCalledWith("sync_project_translations", { p_project_id: base.project_id, p_manual_locales: ["ja"] });
+  });
+
+  it("keeps a committed save successful when queueing translations fails", async () => {
+    mocks.rpc.mockImplementation(async (name: string) => name === "sync_project_translations"
+      ? { error: { message: "boom" } }
+      : { data: [{ project_id: base.project_id, project_slug: "project" }], error: null });
+    const response = await handleProjectSave(request({}), db);
+    expect(response.status).toBe(200);
   });
 
   it("rate-limits saves before calling moderation", async () => {
