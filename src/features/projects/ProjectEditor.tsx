@@ -28,7 +28,7 @@ import { ProjectResourcesEditor } from "./ProjectResourcesEditor";
 import { ProjectMediaEditor } from "./ProjectMediaEditor";
 import { ProjectTeamEditor } from "./ProjectTeamEditor";
 import { ProjectTaxonomyPicker } from "./ProjectTaxonomyPicker";
-import { projectDraft, contentForLocale, changePrimaryLocale, type ProjectDraft } from "./projectEditorDraft";
+import { projectDraft, contentForLocale, changePrimaryLocale, markLocaleEdited, type ProjectDraft } from "./projectEditorDraft";
 import { useProjectDraft } from "./useProjectDraft";
 import { CONTENT_LOCALES, LOCALE_META, type ContentLocale } from "@/lib/locales";
 
@@ -201,7 +201,7 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
   function changeContent(key: keyof ProjectContent, value: string) {
     dismissRecovery();
     setDraft(current => {
-      if (contentLocale !== current.primaryLocale) return { ...current, locales: { ...current.locales, [contentLocale]: { ...contentForLocale(current, contentLocale), [key]: value } } };
+      if (contentLocale !== current.primaryLocale) return markLocaleEdited({ ...current, locales: { ...current.locales, [contentLocale]: { ...contentForLocale(current, contentLocale), [key]: value } } }, contentLocale);
       return { ...current, [key]: value, ...(key === "title" && !slugTouched ? { slug: value.trim() ? generateCanonicalProjectSlug(value) : "" } : {}) };
     });
   }
@@ -244,7 +244,7 @@ export function ProjectEditor({ projectId, userId, project, contest, bypassDeadl
     </div>
     <p className="text-sm text-foreground-muted">{t("projects.translation.optional")}</p>
     {!isPrimary ? <Button type="button" variant="cta" hierarchy="secondary" onClick={() => { dismissRecovery(); setDraft(current => changePrimaryLocale(current, contentLocale)); }}>{t("projects.translation.makePrimary")}</Button> : null}
-    <ProjectTranslationEditor projectId={projectId} draft={draft} disabled={closed || mutation.isPending} limits={contentLimits} onApply={(locale, translated) => { dismissRecovery(); setDraft(current => ({ ...current, locales: { ...current.locales, [locale]: translated } })); setContentLocale(locale); }} />
+    <ProjectTranslationEditor projectId={projectId} persisted={Boolean(project)} primaryLocale={draft.primaryLocale} disabled={closed || mutation.isPending} />
   </>;
   const pageHeader = <header className={submissionPresentation ? "flex flex-wrap items-start justify-between gap-4" : "my-6 flex flex-wrap items-start justify-between gap-4"}>
     <div>

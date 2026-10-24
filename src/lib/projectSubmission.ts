@@ -1,6 +1,6 @@
 import { coreliaEdgeUrl, supabaseFunctionHeaders } from "@/lib/coreliaEdgeApi";
 import { supabase } from "@/lib/supabase";
-import type { ProjectSourceType, ProjectVisibility, ProjectContent, ProjectLocales } from "@/types/projects";
+import type { ProjectSourceType, ProjectVisibility, ProjectLocales } from "@/types/projects";
 import type { ContentLocale } from "@/lib/locales";
 
 export type ProjectSaveInput = {
@@ -136,12 +136,23 @@ export async function manageProject(projectId: string, action: ProjectManagement
   await parseResponse(response);
 }
 
-export async function translateProjectContent(projectId: string, sourceLocale: ContentLocale, targetLocale: ContentLocale, content: ProjectContent): Promise<ProjectContent> {
-  const response = await authenticatedRequest("projects.translate", {
+export type ProjectTranslationStatus = "fresh" | "stale" | "pending" | "failed" | "manual";
+export type ProjectLocaleTranslation = { locale: ContentLocale; status: ProjectTranslationStatus; translated_at: string | null };
+
+export async function fetchProjectTranslationStatus(projectId: string): Promise<ProjectLocaleTranslation[]> {
+  const response = await authenticatedRequest("projects.translations.status", {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ project_id: projectId, source_locale: sourceLocale, target_locale: targetLocale, content }),
+    body: JSON.stringify({ project_id: projectId }),
   });
-  const payload = await parseResponse<{ content: ProjectContent }>(response);
-  if (!payload.content || !["title", "summary", "description", "progress"].every(key => typeof payload.content[key as keyof ProjectContent] === "string")) throw new Error("ai_unavailable:invalid_response");
-  return payload.content;
+  const payload = await parseResponse<{ locales?: ProjectLocaleTranslation[] }>(response);
+  return payload.locales ?? [];
+}
+
+/** Queue an immediate translation of the primary content into `locale`. */
+export async function requestProjectTranslation(projectId: string, locale: ContentLocale): Promise<void> {
+  const response = await authenticatedRequest("projects.translations.request", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ project_id: projectId, locale }),
+  });
+  await parseResponse(response);
 }

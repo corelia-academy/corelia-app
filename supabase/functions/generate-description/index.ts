@@ -146,6 +146,32 @@ class HttpStatusError extends Error {
   }
 }
 
+const MAX_SOURCE_INPUTS = 20;
+
+// Per-user ceiling on paid AI generations, backed by public.consume_rate_limit.
+async function consumeGenerationQuota(db: SupabaseClient, userId: string, bucket: string, limit: number): Promise<void> {
+  const { error } = await db.rpc("consume_rate_limit", {
+    p_bucket: bucket,
+    p_subject: userId,
+    p_limit: limit,
+    p_window_seconds: 3600,
+  });
+  if (error?.message.startsWith("rate_limited:")) {
+    throw new HttpStatusError(429, "Bạn đã dùng hết lượt AI trong giờ này. Vui lòng thử lại sau.");
+  }
+  if (error) throw new Error(error.message);
+}
+
+async function readJsonBody(req: Request, maxChars: number): Promise<unknown> {
+  const text = await req.text();
+  if (text.length > maxChars) throw new HttpStatusError(413, "Nội dung gửi lên quá dài.");
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new HttpStatusError(400, "Payload JSON không hợp lệ.");
+  }
+}
+
 function normalizeOrigin(raw: string): string | null {
   try {
     const url = new URL(raw.trim());
@@ -1233,12 +1259,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       return withCors(req, json({ message: "Bạn không có quyền dùng tính năng này." }, 403));
     }
 
-    let rawBody: unknown;
-    try {
-      rawBody = await req.json();
-    } catch {
-      throw new HttpStatusError(400, "Payload JSON không hợp lệ.");
-    }
+    const rawBody = await readJsonBody(req, 400_000);
     if (!rawBody || typeof rawBody !== "object" || Array.isArray(rawBody)) {
       throw new HttpStatusError(400, "Payload JSON phải là một object.");
     }
@@ -1255,6 +1276,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       guardCourseId = await resolveAndValidateCourseScope(db, parsed);
       await ensureCanManageCourse(db, user.id, role, guardCourseId);
     }
+    if ((parsed.sourceInputs?.length ?? 0) > MAX_SOURCE_INPUTS) {
+      throw new HttpStatusError(400, "Quá nhiều nguồn nội dung trong một yêu cầu.");
+    }
+    await consumeGenerationQuota(db, user.id, "ai_generate_description", 60);
 
     if (parsed.action === "translate" && parsed.bundleKind) {
       if (!parsed.sourceBundle) {

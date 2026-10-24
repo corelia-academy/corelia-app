@@ -5,6 +5,8 @@ import { normalizeLocale, type ContentLocale } from "@/lib/locales";
 export type ProjectDraft = {
   primaryLocale: ContentLocale;
   locales: ProjectLocales;
+  /** Non-primary locales edited by hand in this draft; only these are saved. */
+  editedLocales?: ContentLocale[];
   title: string; slug: string; summary: string;
   description: string; progress: string; pitchVideo: string;
   demo: string; repo: string; slide: string; video: string;
@@ -38,9 +40,17 @@ export function primaryProjectContent(draft: ProjectDraft): ProjectContent {
 export function contentForLocale(draft: ProjectDraft, locale: ContentLocale): ProjectContent {
   return locale === draft.primaryLocale ? primaryProjectContent(draft) : { title: "", summary: "", description: "", progress: "", ...draft.locales[locale] };
 }
+// Untouched secondary locales are left out so a stale copy loaded with the
+// editor never overwrites a background translation finished since then.
 export function projectLocalePayload(draft: ProjectDraft) {
-  return { primary_content_locale: draft.primaryLocale, locales: { ...draft.locales, [draft.primaryLocale]: primaryProjectContent(draft) } };
+  const edited = new Set(draft.editedLocales ?? []);
+  const locales = Object.fromEntries(Object.entries(draft.locales).filter(([locale]) => edited.has(locale as ContentLocale)));
+  return { primary_content_locale: draft.primaryLocale, locales: { ...locales, [draft.primaryLocale]: primaryProjectContent(draft) } };
+}
+export function markLocaleEdited(draft: ProjectDraft, locale: ContentLocale): ProjectDraft {
+  return draft.editedLocales?.includes(locale) ? draft : { ...draft, editedLocales: [...(draft.editedLocales ?? []), locale] };
 }
 export function changePrimaryLocale(draft: ProjectDraft, locale: ContentLocale): ProjectDraft {
-  return { ...draft, ...contentForLocale(draft, locale), primaryLocale: locale, locales: { ...draft.locales, [draft.primaryLocale]: primaryProjectContent(draft) } };
+  const switched = { ...draft, ...contentForLocale(draft, locale), primaryLocale: locale, locales: { ...draft.locales, [draft.primaryLocale]: primaryProjectContent(draft) } };
+  return markLocaleEdited(switched, draft.primaryLocale);
 }

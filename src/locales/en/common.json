@@ -302,16 +302,21 @@
       "primary": "Primary",
       "optional": "Only the primary language needs all required content. Translation is optional; empty fields display the primary content.",
       "makePrimary": "Set as primary language",
-      "translate": "Translate to {{target}} with AI",
-      "translating": "Translating…",
-      "hint": "AI translates the primary content. Review and edit before applying; translations are saved with your project.",
-      "preview": "Translation preview",
-      "stale": "The project has changed. Translate again to avoid overwriting newer edits.",
-      "replaceHint": "Applying replaces the current translation with this preview.",
-      "apply": "Apply translation",
-      "discard": "Discard translation",
+      "translate": "Translate to {{target}}",
       "rateLimited": "You have completed 10 translations in one hour. Please try again later.",
-      "moderationRateLimited": "Too many blocked translation requests in one hour. Please try again later."
+      "moderationRateLimited": "Too many blocked translation requests in one hour. Please try again later.",
+      "dailyRateLimited": "You have reached today's translation limit. Please try again tomorrow.",
+      "saveFirst": "Save the project to turn on automatic translation.",
+      "autoHint": "Edit only the primary language. Other languages are translated automatically a few minutes after you save. Editing a language by hand stops automatic updates for it until you translate it again.",
+      "addLanguage": "Add language",
+      "retranslate": "Translate again from primary",
+      "status": {
+        "fresh": "Translated",
+        "stale": "Waiting for edits to settle",
+        "pending": "Translating…",
+        "failed": "Translation failed",
+        "manual": "Edited by you"
+      }
     },
     "title": "Projects",
     "description": "A public gallery of projects across the Corelia ecosystem.",
@@ -522,7 +527,8 @@
       "submissionUnauthorized": "You are not authorized to submit to this hackathon.",
       "moderationFlagged": "Content was flagged by automated moderation. Please revise it and try again.",
       "userBlocked": "Your account is restricted from performing this action.",
-      "rateLimitExceeded": "Too many requests. Please wait a moment and try again."
+      "rateLimitExceeded": "Too many requests. Please wait a moment and try again.",
+      "rateLimited": "Too many project changes in a short time. Please wait a few minutes and try again."
     },
     "editor": {
       "workspace": "Project workspace",
@@ -691,7 +697,33 @@
       "blockedError": "This project is blocked. An admin must unblock it before it can be published again.",
       "contentError": "Add a summary and detailed description before publishing.",
       "previous": "Previous",
-      "next": "Next"
+      "next": "Next",
+      "reported": "Reported"
+    },
+    "report": {
+      "action": "Report",
+      "title": "Report this project",
+      "description": "Tell us what is wrong. Reports are private; the owner is not told who reported.",
+      "reason": "Reason",
+      "note": "Details (optional)",
+      "submit": "Send report",
+      "success": "Thanks. Our team will review this project.",
+      "failed": "Could not send the report. Please try again.",
+      "rateLimited": "You have sent many reports today. Please try again tomorrow.",
+      "openCount": "Open reports: {{total}}",
+      "empty": "No projects have open reports.",
+      "dismiss": "Dismiss reports",
+      "markActioned": "Mark handled",
+      "reasons": {
+        "spam": "Spam or advertising",
+        "harassment": "Harassment or bullying",
+        "sexual": "Sexual content",
+        "violence": "Violence",
+        "hate": "Hate speech",
+        "illegal": "Illegal content",
+        "plagiarism": "Plagiarism or stolen work",
+        "other": "Other"
+      }
     }
   },
   "search": {

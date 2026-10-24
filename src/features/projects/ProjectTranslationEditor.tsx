@@ -1,62 +1,77 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { Badge, type BadgeColor } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { translateProjectContent } from "@/lib/projectSubmission";
+import {
+  fetchProjectTranslationStatus,
+  requestProjectTranslation,
+  type ProjectTranslationStatus,
+} from "@/lib/projectSubmission";
 import { projectErrorMessage } from "@/lib/projectErrors";
 import { CONTENT_LOCALES, LOCALE_META, isContentLocale, type ContentLocale } from "@/lib/locales";
-import type { ProjectContent } from "@/types/projects";
-import { primaryProjectContent, type ProjectDraft } from "./projectEditorDraft";
 
-const DEFAULT_CONTENT_LIMITS: Record<keyof ProjectContent, number> = {
-  title: 160,
-  summary: 1000,
-  description: 20000,
-  progress: 10000,
+const STATUS_COLOR: Record<ProjectTranslationStatus, BadgeColor> = {
+  fresh: "success",
+  stale: "gray",
+  pending: "primary",
+  failed: "error",
+  manual: "warning",
 };
+// Poll while a translation is queued; the worker runs every minute.
+const ACTIVE_POLL_MS = 15_000;
 
-function defaultTarget(primary: ContentLocale): ContentLocale {
-  return primary === "en" ? "vi" : "en";
+function projectTranslationStatusKey(projectId: string) {
+  return ["projectTranslationStatus", projectId] as const;
 }
 
-export function ProjectTranslationEditor({ projectId, draft, disabled, onApply, limits }: {
-  projectId: string; draft: ProjectDraft; disabled: boolean;
-  onApply: (locale: ContentLocale, content: ProjectContent) => void;
-  limits?: Partial<Record<keyof ProjectContent, number>>;
+/**
+ * Owners edit only the primary language. Other languages are translated by a
+ * background job after each save; this panel shows their status and lets the
+ * owner add a language or ask for a fresh translation.
+ */
+export function ProjectTranslationEditor({ projectId, persisted, primaryLocale, disabled }: {
+  projectId: string; persisted: boolean; primaryLocale: ContentLocale; disabled: boolean;
 }) {
   const { t } = useTranslation("common");
-  const [preview, setPreview] = useState<{ draft: ProjectDraft; content: ProjectContent; target: ContentLocale } | null>(null);
-  const [target, setTarget] = useState<ContentLocale>(() => defaultTarget(draft.primaryLocale));
-  const effectiveTarget = target === draft.primaryLocale ? defaultTarget(draft.primaryLocale) : target;
-  const mutation = useMutation({
-    mutationFn: async (snapshot: ProjectDraft) => {
-      const targetLocale = effectiveTarget;
-      return { draft: snapshot, target: targetLocale, content: await translateProjectContent(projectId, snapshot.primaryLocale, targetLocale, primaryProjectContent(snapshot)) };
-    },
-    onSuccess: setPreview,
+  const queryClient = useQueryClient();
+  const statusQuery = useQuery({
+    queryKey: projectTranslationStatusKey(projectId),
+    queryFn: () => fetchProjectTranslationStatus(projectId),
+    enabled: persisted,
+    refetchInterval: query => query.state.data?.some(row => row.status === "pending" || row.status === "stale") ? ACTIVE_POLL_MS : false,
   });
+  const request = useMutation({
+    mutationFn: (locale: ContentLocale) => requestProjectTranslation(projectId, locale),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: projectTranslationStatusKey(projectId) }),
+  });
+  const rows = (statusQuery.data ?? []).filter(row => row.locale !== primaryLocale);
+  const available = CONTENT_LOCALES.filter(locale => locale !== primaryLocale && !rows.some(row => row.locale === locale));
+  const [added, setAdded] = useState<ContentLocale | "">("");
+  const addTarget = added && available.includes(added) ? added : available[0];
+
+  if (!persisted) return <p className="text-xs text-foreground-muted">{t("projects.translation.saveFirst")}</p>;
+
   return <div className="space-y-3">
-    <select aria-label={t("projects.translation.languages")} className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm" value={effectiveTarget} disabled={disabled || mutation.isPending} onChange={event => { if (!isContentLocale(event.target.value)) return; setPreview(null); setTarget(event.target.value); }}>
-      {CONTENT_LOCALES.filter(locale => locale !== draft.primaryLocale).map(locale => <option key={locale} value={locale}>{LOCALE_META[locale].endonym}</option>)}
-    </select>
-    <Button type="button" variant="cta" hierarchy="secondary" disabled={disabled || mutation.isPending || !draft.title.trim()} onClick={() => { setPreview(null); mutation.mutate(draft); }}>
-      {t(mutation.isPending ? "projects.translation.translating" : "projects.translation.translate", { target: LOCALE_META[effectiveTarget].endonym })}
-    </Button>
-    <p className="text-xs text-foreground-muted">{t("projects.translation.hint")}</p>
-    {mutation.isError ? <p role="alert" className="text-sm text-destructive">{projectErrorMessage(mutation.error, t)}</p> : null}
-    {preview ? <section aria-label={t("projects.translation.preview")} className="space-y-3 rounded-xl border border-border p-4">
-      <h3 className="font-semibold">{t("projects.translation.preview")} ({LOCALE_META[preview.target].endonym})</h3>
-      {(["title", "summary", "description", "progress"] as const).map(field => <label className="block text-sm" key={field}>
-        {t(field === "title" || field === "summary" ? `projects.form.${field}` : `projects.editor.${field}`)}
-        <Input fieldType="auto-grow" submitOnEnter={false} rows={1} controlClassName="mt-1" className="min-h-[62px]" value={preview.content[field]} maxLength={limits?.[field] ?? DEFAULT_CONTENT_LIMITS[field]} onChange={event => setPreview({ ...preview, content: { ...preview.content, [field]: event.target.value } })} />
-      </label>)}
-      {draft !== preview.draft ? <p role="status">{t("projects.translation.stale")}</p> : null}
-      <p className="text-xs text-foreground-muted">{t("projects.translation.replaceHint")}</p>
-      <div className="flex gap-2">
-        <Button type="button" disabled={disabled || draft !== preview.draft} onClick={() => { onApply(preview.target, preview.content); setPreview(null); }}>{t("projects.translation.apply")}</Button>
-        <Button type="button" variant="cta" hierarchy="tertiary" onClick={() => setPreview(null)}>{t("projects.translation.discard")}</Button>
-      </div>
-    </section> : null}
+    <p className="text-xs text-foreground-muted">{t("projects.translation.autoHint")}</p>
+    {rows.length ? <ul aria-label={t("projects.translation.languages")} className="space-y-2">
+      {rows.map(row => <li key={row.locale} className="flex flex-wrap items-center gap-2">
+        <span lang={row.locale} className="min-w-24 text-sm">{LOCALE_META[row.locale].endonym}</span>
+        <Badge color={STATUS_COLOR[row.status]}>{t(`projects.translation.status.${row.status}`)}</Badge>
+        {row.status !== "pending" ? <Button type="button" variant="cta" hierarchy="tertiary" disabled={disabled || request.isPending} onClick={() => request.mutate(row.locale)}>
+          {t("projects.translation.retranslate")}
+        </Button> : null}
+      </li>)}
+    </ul> : null}
+    {available.length && addTarget ? <div className="flex flex-wrap items-center gap-2">
+      <select aria-label={t("projects.translation.addLanguage")} className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm" value={addTarget} disabled={disabled || request.isPending} onChange={event => { if (isContentLocale(event.target.value)) setAdded(event.target.value); }}>
+        {available.map(locale => <option key={locale} value={locale}>{LOCALE_META[locale].endonym}</option>)}
+      </select>
+      <Button type="button" variant="cta" hierarchy="secondary" disabled={disabled || request.isPending} onClick={() => request.mutate(addTarget)}>
+        {t("projects.translation.translate", { target: LOCALE_META[addTarget].endonym })}
+      </Button>
+    </div> : null}
+    {request.isError ? <p role="alert" className="text-sm text-destructive">{projectErrorMessage(request.error, t)}</p> : null}
+    {statusQuery.isError ? <p role="alert" className="text-sm text-destructive">{projectErrorMessage(statusQuery.error, t)}</p> : null}
   </div>;
 }

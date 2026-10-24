@@ -302,16 +302,21 @@
       "primary": "기본",
       "optional": "기본 언어에만 모든 필수 콘텐츠가 필요합니다. 번역은 선택 사항이며, 비어 있는 필드에는 기본 콘텐츠가 표시됩니다.",
       "makePrimary": "기본 언어로 설정",
-      "translate": "AI로 {{target}}(으)로 번역",
-      "translating": "번역 중…",
-      "hint": "AI가 기본 콘텐츠를 번역합니다. 적용하기 전에 검토하고 편집하세요. 번역은 프로젝트와 함께 저장됩니다.",
-      "preview": "번역 미리보기",
-      "stale": "프로젝트가 변경되었습니다. 최신 수정 내용을 덮어쓰지 않도록 다시 번역하세요.",
-      "replaceHint": "적용하면 현재 번역이 이 미리보기로 교체됩니다.",
-      "apply": "번역 적용",
-      "discard": "번역 취소",
+      "translate": "{{target}}(으)로 번역",
       "rateLimited": "1시간 동안 번역을 10번 완료했습니다. 나중에 다시 시도하세요.",
-      "moderationRateLimited": "1시간 동안 차단된 번역 요청이 너무 많습니다. 나중에 다시 시도하세요."
+      "moderationRateLimited": "1시간 동안 차단된 번역 요청이 너무 많습니다. 나중에 다시 시도하세요.",
+      "dailyRateLimited": "오늘의 번역 한도에 도달했습니다. 내일 다시 시도하세요.",
+      "saveFirst": "자동 번역을 켜려면 프로젝트를 저장하세요.",
+      "autoHint": "기본 언어만 편집하면 됩니다. 다른 언어는 저장 후 몇 분 뒤 자동으로 번역됩니다. 직접 편집한 언어는 다시 번역할 때까지 자동으로 업데이트되지 않습니다.",
+      "addLanguage": "언어 추가",
+      "retranslate": "기본 언어에서 다시 번역",
+      "status": {
+        "fresh": "번역됨",
+        "stale": "편집이 끝나기를 기다리는 중",
+        "pending": "번역 중…",
+        "failed": "번역 실패",
+        "manual": "직접 편집함"
+      }
     },
     "title": "프로젝트",
     "description": "Corelia 생태계 전반의 프로젝트를 모은 공개 갤러리입니다.",
@@ -522,7 +527,8 @@
       "submissionUnauthorized": "이 해커톤에 제출할 권한이 없습니다.",
       "moderationFlagged": "콘텐츠가 자동 검수에서 표시되었습니다. 수정한 후 다시 시도하세요.",
       "userBlocked": "계정이 이 작업을 수행하지 못하도록 제한되었습니다.",
-      "rateLimitExceeded": "요청이 너무 많습니다. 잠시 기다린 후 다시 시도하세요."
+      "rateLimitExceeded": "요청이 너무 많습니다. 잠시 기다린 후 다시 시도하세요.",
+      "rateLimited": "짧은 시간에 프로젝트 변경이 너무 많습니다. 몇 분 후에 다시 시도하세요."
     },
     "editor": {
       "workspace": "프로젝트 작업 공간",
@@ -691,7 +697,33 @@
       "blockedError": "이 프로젝트는 차단되었습니다. 다시 게시하려면 관리자가 차단을 해제해야 합니다.",
       "contentError": "게시하기 전에 요약과 자세한 설명을 추가하세요.",
       "previous": "이전",
-      "next": "다음"
+      "next": "다음",
+      "reported": "신고됨"
+    },
+    "report": {
+      "action": "신고",
+      "title": "이 프로젝트 신고",
+      "description": "무엇이 문제인지 알려 주세요. 신고는 비공개이며 소유자는 누가 신고했는지 알 수 없습니다.",
+      "reason": "사유",
+      "note": "세부 내용(선택)",
+      "submit": "신고 보내기",
+      "success": "감사합니다. 팀에서 이 프로젝트를 검토하겠습니다.",
+      "failed": "신고를 보내지 못했습니다. 다시 시도하세요.",
+      "rateLimited": "오늘 신고를 많이 보냈습니다. 내일 다시 시도하세요.",
+      "openCount": "처리 대기 신고: {{total}}",
+      "empty": "처리 대기 중인 신고가 있는 프로젝트가 없습니다.",
+      "dismiss": "신고 기각",
+      "markActioned": "처리 완료로 표시",
+      "reasons": {
+        "spam": "스팸 또는 광고",
+        "harassment": "괴롭힘",
+        "sexual": "성적인 콘텐츠",
+        "violence": "폭력",
+        "hate": "혐오 발언",
+        "illegal": "불법 콘텐츠",
+        "plagiarism": "표절 또는 도용",
+        "other": "기타"
+      }
     }
   },
   "search": {

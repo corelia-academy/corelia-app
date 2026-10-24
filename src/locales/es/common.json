@@ -302,16 +302,21 @@
       "primary": "Principal",
       "optional": "Solo el idioma principal necesita todo el contenido obligatorio. La traducción es opcional; los campos vacíos muestran el contenido principal.",
       "makePrimary": "Establecer como idioma principal",
-      "translate": "Traducir a {{target}} con IA",
-      "translating": "Traduciendo…",
-      "hint": "La IA traduce el contenido principal. Revísalo y edítalo antes de aplicarlo; las traducciones se guardan con tu proyecto.",
-      "preview": "Vista previa de la traducción",
-      "stale": "El proyecto cambió. Vuelve a traducir para no sobrescribir ediciones más recientes.",
-      "replaceHint": "Al aplicar, se reemplaza la traducción actual por esta vista previa.",
-      "apply": "Aplicar traducción",
-      "discard": "Descartar traducción",
+      "translate": "Traducir a {{target}}",
       "rateLimited": "Has completado 10 traducciones en una hora. Inténtalo de nuevo más tarde.",
-      "moderationRateLimited": "Demasiadas solicitudes de traducción bloqueadas en una hora. Inténtalo de nuevo más tarde."
+      "moderationRateLimited": "Demasiadas solicitudes de traducción bloqueadas en una hora. Inténtalo de nuevo más tarde.",
+      "dailyRateLimited": "Has alcanzado el límite de traducciones de hoy. Inténtalo de nuevo mañana.",
+      "saveFirst": "Guarda el proyecto para activar la traducción automática.",
+      "autoHint": "Edita solo el idioma principal. Los demás idiomas se traducen automáticamente unos minutos después de guardar. Si editas un idioma a mano, deja de actualizarse automáticamente hasta que lo vuelvas a traducir.",
+      "addLanguage": "Añadir idioma",
+      "retranslate": "Volver a traducir desde el principal",
+      "status": {
+        "fresh": "Traducido",
+        "stale": "Esperando a que termines de editar",
+        "pending": "Traduciendo…",
+        "failed": "La traducción falló",
+        "manual": "Editado por ti"
+      }
     },
     "title": "Proyectos",
     "description": "Una galería pública de proyectos del ecosistema de Corelia.",
@@ -522,7 +527,8 @@
       "submissionUnauthorized": "No tienes autorización para enviar a este hackathon.",
       "moderationFlagged": "La moderación automática marcó el contenido. Revísalo e inténtalo de nuevo.",
       "userBlocked": "Tu cuenta tiene restringida esta acción.",
-      "rateLimitExceeded": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo."
+      "rateLimitExceeded": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.",
+      "rateLimited": "Demasiados cambios en el proyecto en poco tiempo. Espera unos minutos e inténtalo de nuevo."
     },
     "editor": {
       "workspace": "Espacio del proyecto",
@@ -691,7 +697,33 @@
       "blockedError": "Este proyecto está bloqueado. Un administrador debe desbloquearlo antes de que se pueda volver a publicar.",
       "contentError": "Añade un resumen y una descripción detallada antes de publicar.",
       "previous": "Anterior",
-      "next": "Siguiente"
+      "next": "Siguiente",
+      "reported": "Denunciados"
+    },
+    "report": {
+      "action": "Denunciar",
+      "title": "Denunciar este proyecto",
+      "description": "Cuéntanos qué ocurre. Las denuncias son privadas; el propietario no sabe quién denunció.",
+      "reason": "Motivo",
+      "note": "Detalles (opcional)",
+      "submit": "Enviar denuncia",
+      "success": "Gracias. Nuestro equipo revisará este proyecto.",
+      "failed": "No se pudo enviar la denuncia. Inténtalo de nuevo.",
+      "rateLimited": "Has enviado muchas denuncias hoy. Inténtalo de nuevo mañana.",
+      "openCount": "Denuncias abiertas: {{total}}",
+      "empty": "Ningún proyecto tiene denuncias abiertas.",
+      "dismiss": "Descartar denuncias",
+      "markActioned": "Marcar como resuelto",
+      "reasons": {
+        "spam": "Spam o publicidad",
+        "harassment": "Acoso",
+        "sexual": "Contenido sexual",
+        "violence": "Violencia",
+        "hate": "Discurso de odio",
+        "illegal": "Contenido ilegal",
+        "plagiarism": "Plagio o trabajo robado",
+        "other": "Otro"
+      }
     }
   },
   "search": {
