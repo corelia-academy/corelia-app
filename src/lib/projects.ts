@@ -547,6 +547,28 @@ async function listDirectoryProjectEntries(
   return localizeProjectEntries((data ?? []) as Project[], uiLocale);
 }
 
+/** Public projects (with owners) for the given ids, in the order of `ids`; used to render search results as project cards. */
+export async function getPublicProjectEntriesByIds(
+  ids: string[],
+  uiLocale?: string | null,
+): Promise<PublicProjectEntry[]> {
+  if (!ids.length) return [];
+  const select =
+    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,custom_sector_names,custom_tech_stack_names,i18n,created_at,updated_at,like_count,save_count" as const;
+
+  const { data, error } = await supabase
+    .from("projects")
+    .select(select)
+    .eq("visibility", "public")
+    .in("id", ids);
+
+  if (error) throw new Error(error.message);
+
+  const order = new Map(ids.map((id, index) => [id, index]));
+  const rows = ((data ?? []) as Project[]).sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+  return localizeProjectEntries(rows, uiLocale);
+}
+
 function publicDirectorySourceFlags(source: ListPublicProjectsOptions["source"]): {
   includeHackathons: boolean;
   includeCourses: boolean;
