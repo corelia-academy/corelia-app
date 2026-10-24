@@ -16,11 +16,11 @@ describe("optimizedImageUrl", () => {
   it("uses Supabase render endpoint and keeps the signed token", () => {
     vi.stubEnv("VITE_IMAGE_TRANSFORM", "supabase");
     expect(optimizedImageUrl(SIGNED, { width: 320 })).toBe(
-      "https://x.supabase.co/storage/v1/render/image/sign/app/a.jpg?token=t&width=320&quality=75&resize=cover",
+      "https://x.supabase.co/storage/v1/render/image/sign/app/a.jpg?token=t&width=320&quality=75&resize=contain",
     );
     expect(optimizedImageUrl("https://example.com/a.png", { width: 320 })).toBe("https://example.com/a.png");
     expect(optimizedImageSrcSet(PUBLIC, 100)).toContain("width=200");
-    expect(optimizedImageUrl(SIGNED, { width: 24, resize: "contain" })).toContain("resize=contain");
+    expect(optimizedImageUrl(SIGNED, { width: 24, resize: "cover" })).toContain("resize=cover");
   });
 
   it("uses cdn-cgi only on a proxied hostname", () => {
