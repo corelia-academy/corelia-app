@@ -5,7 +5,7 @@ import {
   normalizeCourseLocale,
 } from "@/lib/courses";
 import type { Course, CourseLesson } from "@/types/courses";
-import { CourseBadge } from "./CourseBadge";
+import { CourseBadge } from "@/components/courses/CourseBadge";
 import type { ContentLocale } from "@/lib/locales";
 
 export function CourseLanguagePanel({

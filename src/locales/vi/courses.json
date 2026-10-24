@@ -57,6 +57,10 @@
     "corelia": "Khoá học Corelia",
     "external_partner": "Khoá học giảng viên đối tác"
   },
+  "aiGenerated": {
+    "label": "Tạo bởi AI",
+    "description": "Nội dung do AI tạo và được kiểm tra tự động."
+  },
   "catalog": {
     "title": "Khoá học",
     "pageTitle": "Thư viện khóa học",

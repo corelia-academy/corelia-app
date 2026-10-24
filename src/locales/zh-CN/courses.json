@@ -57,6 +57,10 @@
     "corelia": "Corelia 课程",
     "external_partner": "合作讲师课程"
   },
+  "aiGenerated": {
+    "label": "AI 生成",
+    "description": "由 AI 创建并经过自动检查的内容。"
+  },
   "catalog": {
     "title": "课程",
     "pageTitle": "课程库",
