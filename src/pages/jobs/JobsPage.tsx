@@ -29,8 +29,35 @@ import { useAuth } from "@/stores/authStore";
 import type { JobFilters, UserJobState } from "@/types/jobs";
 import { landingUrl } from "@/lib/appUrl";
 
-const SELECT_CLASS = "h-10 min-w-0 rounded-md border border-input-field-border bg-surface-base px-3 text-sm text-foreground outline-none focus:border-primary";
 const FILTER_TRIGGER_CLASS = "flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-3 text-left font-body text-body-large text-foreground transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40";
+
+type JobFilterOption = { value: string; label: string };
+
+function JobFilterDropdown({ label, allLabel, value, options, disabled, onValueChange }: {
+  label: string;
+  allLabel: string;
+  value: string;
+  options: readonly JobFilterOption[];
+  disabled?: boolean;
+  onValueChange: (value: string) => void;
+}) {
+  const selectedLabel = options.find((option) => option.value === value)?.label;
+  return (
+    <DropdownMenu>
+      <DropdownMenuTriggerWithIndicator type="button" disabled={disabled} aria-label={label} className={FILTER_TRIGGER_CLASS}>
+        <span className="min-w-0 truncate">{selectedLabel ?? (value ? humanizeJobSlug(value) : allLabel)}</span>
+      </DropdownMenuTriggerWithIndicator>
+      <DropdownMenuContent layout="multiple-list" align="start" className="w-(--anchor-width) max-w-[calc(100vw-2rem)]">
+        <DropdownMenuList>
+          <DropdownMenuRadioGroup value={value} onValueChange={(next) => onValueChange(String(next))}>
+            <DropdownMenuRadioItem className="text-body-large" value=""><DropdownMenuItemContent>{allLabel}</DropdownMenuItemContent></DropdownMenuRadioItem>
+            {options.map((option) => <DropdownMenuRadioItem key={option.value} className="text-body-large" value={option.value}><DropdownMenuItemContent>{option.label}</DropdownMenuItemContent></DropdownMenuRadioItem>)}
+          </DropdownMenuRadioGroup>
+        </DropdownMenuList>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 function landingFilters(pathname: string, route: { skill?: string; domain?: string; role?: string }): { label: string; filters: JobFilters } | null {
   const fixed: Record<string, { label: string; filters: JobFilters }> = {
@@ -194,56 +221,20 @@ export default function JobsPage() {
               <Input name="q" type="search" variant="icon-leading" defaultValue={params.get("q") ?? ""} placeholder={t("searchPlaceholder")} aria-label={t("searchPlaceholder")} />
             </form>
             <div className="grid gap-2 sm:grid-cols-3">
-              <DropdownMenu>
-                <DropdownMenuTriggerWithIndicator type="button" aria-label={t("filters.jobType")} className={FILTER_TRIGGER_CLASS}>
-                  <span className="min-w-0 truncate">{filters.jobType ? t(`values.${filters.jobType}`) : t("filters.allJobTypes")}</span>
-                </DropdownMenuTriggerWithIndicator>
-                <DropdownMenuContent layout="multiple-list" align="start" className="w-(--anchor-width) max-w-[calc(100vw-2rem)]">
-                  <DropdownMenuList>
-                    <DropdownMenuRadioGroup value={filters.jobType ?? ""} onValueChange={(value) => updateParam("type", String(value))}>
-                      <DropdownMenuRadioItem className="text-body-large" value=""><DropdownMenuItemContent>{t("filters.allJobTypes")}</DropdownMenuItemContent></DropdownMenuRadioItem>
-                      {(["tech", "non_tech"] as const).map((value) => <DropdownMenuRadioItem key={value} className="text-body-large" value={value}><DropdownMenuItemContent>{t(`values.${value}`)}</DropdownMenuItemContent></DropdownMenuRadioItem>)}
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuList>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <DropdownMenu>
-                <DropdownMenuTriggerWithIndicator type="button" disabled={Boolean(landing?.filters.role)} aria-label={t("filters.role")} className={FILTER_TRIGGER_CLASS}>
-                  <span className="min-w-0 truncate">{filters.role ? taxonomyQuery.data?.roles.find((item) => item.slug === filters.role)?.name ?? humanizeJobSlug(filters.role) : t("filters.allRoles")}</span>
-                </DropdownMenuTriggerWithIndicator>
-                <DropdownMenuContent layout="multiple-list" align="start" className="w-(--anchor-width) max-w-[calc(100vw-2rem)]">
-                  <DropdownMenuList>
-                    <DropdownMenuRadioGroup value={filters.role ?? ""} onValueChange={(value) => updateParam("role", String(value))}>
-                      <DropdownMenuRadioItem className="text-body-large" value=""><DropdownMenuItemContent>{t("filters.allRoles")}</DropdownMenuItemContent></DropdownMenuRadioItem>
-                      {taxonomyQuery.data?.roles.map((item) => <DropdownMenuRadioItem key={item.slug} className="text-body-large" value={item.slug}><DropdownMenuItemContent>{item.name}</DropdownMenuItemContent></DropdownMenuRadioItem>)}
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuList>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <DropdownMenu>
-                <DropdownMenuTriggerWithIndicator type="button" disabled={Boolean(landing?.filters.remoteType)} aria-label={t("filters.workMode")} className={FILTER_TRIGGER_CLASS}>
-                  <span className="min-w-0 truncate">{filters.remoteType ? t(`values.${filters.remoteType}`, { defaultValue: humanizeJobSlug(filters.remoteType) }) : t("filters.allWorkModes")}</span>
-                </DropdownMenuTriggerWithIndicator>
-                <DropdownMenuContent layout="multiple-list" align="start" className="w-(--anchor-width) max-w-[calc(100vw-2rem)]">
-                  <DropdownMenuList>
-                    <DropdownMenuRadioGroup value={filters.remoteType ?? ""} onValueChange={(value) => updateParam("remote", String(value))}>
-                      <DropdownMenuRadioItem className="text-body-large" value=""><DropdownMenuItemContent>{t("filters.allWorkModes")}</DropdownMenuItemContent></DropdownMenuRadioItem>
-                      {(["remote", "hybrid", "onsite"] as const).map((value) => <DropdownMenuRadioItem key={value} className="text-body-large" value={value}><DropdownMenuItemContent>{t(`values.${value}`)}</DropdownMenuItemContent></DropdownMenuRadioItem>)}
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuList>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <JobFilterDropdown label={t("filters.jobType")} allLabel={t("filters.allJobTypes")} value={filters.jobType ?? ""} options={(["tech", "non_tech"] as const).map((value) => ({ value, label: t(`values.${value}`) }))} onValueChange={(value) => updateParam("type", value)} />
+              <JobFilterDropdown label={t("filters.role")} allLabel={t("filters.allRoles")} value={filters.role ?? ""} disabled={Boolean(landing?.filters.role)} options={taxonomyQuery.data?.roles.map((item) => ({ value: item.slug, label: item.name })) ?? []} onValueChange={(value) => updateParam("role", value)} />
+              <JobFilterDropdown label={t("filters.workMode")} allLabel={t("filters.allWorkModes")} value={filters.remoteType ?? ""} disabled={Boolean(landing?.filters.remoteType)} options={(["remote", "hybrid", "onsite"] as const).map((value) => ({ value, label: t(`values.${value}`) }))} onValueChange={(value) => updateParam("remote", value)} />
             </div>
           </div>
           <details className="group" open={["domain", "skill", "seniority", "region", "employment", "currency", "salary", "days"].some(key => params.has(key))}>
             <summary className="cursor-pointer py-3 text-sm font-medium text-primary">{t("filters.more")}</summary>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 pt-3">
-            <select className={SELECT_CLASS} disabled={Boolean(landing?.filters.domain)} value={filters.domain ?? ""} onChange={(e) => updateParam("domain", e.target.value)} aria-label={t("filters.domain")}><option value="">{t("filters.allDomains")}</option>{taxonomyQuery.data?.domains.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}</select>
-            <select className={SELECT_CLASS} disabled={Boolean(landing?.filters.skill)} value={filters.skill ?? ""} onChange={(e) => updateParam("skill", e.target.value)} aria-label={t("filters.skill")}><option value="">{t("filters.allSkills")}</option>{taxonomyQuery.data?.skills.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}</select>
-            <select className={SELECT_CLASS} disabled={Boolean(landing?.filters.entryLevel)} value={filters.seniority ?? ""} onChange={(e) => updateParam("seniority", e.target.value)} aria-label={t("filters.seniority")}><option value="">{landing?.filters.entryLevel ? t("market.cards.entry") : t("filters.allSeniorities")}</option>{(["intern", "fresher", "junior", "mid", "senior", "lead", "manager"] as const).map((value) => <option key={value} value={value}>{t(`values.${value}`)}</option>)}</select>
-            <select className={SELECT_CLASS} disabled={Boolean(landing?.filters.region || landing?.filters.countryCode)} value={filters.region ?? ""} onChange={(e) => updateParam("region", e.target.value)} aria-label={t("filters.region")}><option value="">{landing?.filters.countryCode === "VN" ? "Vietnam" : t("filters.allRegions")}</option>{(["APAC", "EMEA", "AMER"] as const).map((value) => <option key={value} value={value}>{value}</option>)}</select>
-            <select className={SELECT_CLASS} value={filters.employmentType ?? ""} onChange={(e) => updateParam("employment", e.target.value)} aria-label={t("filters.employmentType")}><option value="">{t("filters.allEmploymentTypes")}</option>{(["full_time", "part_time", "contract", "temporary", "internship"] as const).map((value) => <option key={value} value={value}>{t(`values.${value}`)}</option>)}</select>
-            <select className={SELECT_CLASS} value={filters.salaryCurrency ?? ""} onChange={(e) => updateParam("currency", e.target.value)} aria-label={t("filters.salaryCurrency")}><option value="">{t("filters.allCurrencies")}</option>{["USD", "EUR", "GBP", "SGD", "VND"].map((value) => <option key={value} value={value}>{value}</option>)}</select>
+            <JobFilterDropdown label={t("filters.domain")} allLabel={t("filters.allDomains")} value={filters.domain ?? ""} disabled={Boolean(landing?.filters.domain)} options={taxonomyQuery.data?.domains.map((item) => ({ value: item.slug, label: item.name })) ?? []} onValueChange={(value) => updateParam("domain", value)} />
+            <JobFilterDropdown label={t("filters.skill")} allLabel={t("filters.allSkills")} value={filters.skill ?? ""} disabled={Boolean(landing?.filters.skill)} options={taxonomyQuery.data?.skills.map((item) => ({ value: item.slug, label: item.name })) ?? []} onValueChange={(value) => updateParam("skill", value)} />
+            <JobFilterDropdown label={t("filters.seniority")} allLabel={landing?.filters.entryLevel ? t("market.cards.entry") : t("filters.allSeniorities")} value={filters.seniority ?? ""} disabled={Boolean(landing?.filters.entryLevel)} options={(["intern", "fresher", "junior", "mid", "senior", "lead", "manager"] as const).map((value) => ({ value, label: t(`values.${value}`) }))} onValueChange={(value) => updateParam("seniority", value)} />
+            <JobFilterDropdown label={t("filters.region")} allLabel={landing?.filters.countryCode === "VN" ? "Vietnam" : t("filters.allRegions")} value={filters.region ?? ""} disabled={Boolean(landing?.filters.region || landing?.filters.countryCode)} options={(["APAC", "EMEA", "AMER"] as const).map((value) => ({ value, label: value }))} onValueChange={(value) => updateParam("region", value)} />
+            <JobFilterDropdown label={t("filters.employmentType")} allLabel={t("filters.allEmploymentTypes")} value={filters.employmentType ?? ""} options={(["full_time", "part_time", "contract", "temporary", "internship"] as const).map((value) => ({ value, label: t(`values.${value}`) }))} onValueChange={(value) => updateParam("employment", value)} />
+            <JobFilterDropdown label={t("filters.salaryCurrency")} allLabel={t("filters.allCurrencies")} value={filters.salaryCurrency ?? ""} options={["USD", "EUR", "GBP", "SGD", "VND"].map((value) => ({ value, label: value }))} onValueChange={(value) => updateParam("currency", value)} />
             <Input
               type="text"
               inputMode="numeric"
@@ -273,7 +264,7 @@ export default function JobsPage() {
               placeholder={t("filters.minimumSalary")}
               aria-label={t("filters.minimumSalary")}
             />
-            <select className={SELECT_CLASS} value={String(filters.postedWithinDays ?? "")} onChange={(e) => updateParam("days", e.target.value)} aria-label={t("filters.postedDate")}><option value="">{t("filters.anyDate")}</option><option value="7">{t("filters.last7Days")}</option><option value="30">{t("filters.last30Days")}</option></select>
+            <JobFilterDropdown label={t("filters.postedDate")} allLabel={t("filters.anyDate")} value={String(filters.postedWithinDays ?? "")} options={[{ value: "7", label: t("filters.last7Days") }, { value: "30", label: t("filters.last30Days") }]} onValueChange={(value) => updateParam("days", value)} />
             <Button type="button" variant="cta" hierarchy="tertiary" onClick={() => setParams({})}>{t("filters.clear")}</Button>
             </div>
           </details>
