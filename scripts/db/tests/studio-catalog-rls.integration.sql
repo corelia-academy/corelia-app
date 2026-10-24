@@ -83,7 +83,12 @@ BEGIN
           WHEN no_data_found THEN NULL;
           WHEN insufficient_privilege THEN n := -42501;
         END;
-        IF is_writer THEN
+        IF t IN ('studio_runs','studio_run_steps') THEN
+          IF has_table_privilege(current_user, format('public.%I', t), upper(op)) THEN
+            RAISE EXCEPTION 'Client actor % retains % privilege on %', actor, op, t;
+          END IF;
+          IF n <> -42501 THEN RAISE EXCEPTION 'Client actor % % % returned %, expected 42501 (service role only)', actor, op, t, n; END IF;
+        ELSIF is_writer THEN
           IF n <> 1 THEN RAISE EXCEPTION 'Writer actor % % % affected %, expected 1', actor, op, t, n; END IF;
         ELSIF op = 'insert' THEN
           IF n <> -42501 THEN RAISE EXCEPTION 'Non-writer actor % INSERT % returned %, expected 42501', actor, t, n; END IF;
@@ -167,11 +172,11 @@ BEGIN
   RESET ROLE;
 END $$;
 
--- Data contract (as admin): defaults, many-to-many membership, CHECK constraints, updated_at.
+-- Data contract: catalog as admin, runs/steps as service role, plus the updated_at trigger.
 DO $$
 DECLARE
   n integer; after_ts timestamptz; code text;
-  bad text[] := ARRAY[
+  bad_catalog text[] := ARRAY[
     $q$INSERT INTO public.studio_courses(title,status) VALUES('x','bogus')$q$,
     $q$INSERT INTO public.studio_courses(title) VALUES('   ')$q$,
     $q$INSERT INTO public.studio_courses(title,level) VALUES('x','expert')$q$,
@@ -181,6 +186,11 @@ DECLARE
     $q$INSERT INTO public.studio_paths(group_kind,slug,title) VALUES('skill','rust','dup')$q$,
     $q$INSERT INTO public.studio_catalog_scopes(group_kind,audience,corelia_direction,locale) VALUES('skill','a','b','xx')$q$,
     $q$INSERT INTO public.studio_catalog_scopes(group_kind,audience,corelia_direction,research_period_days) VALUES('skill','a','b',0)$q$,
+    $q$INSERT INTO public.studio_course_paths(course_id,path_id,learning_order) VALUES('dddd5555-2222-4000-8000-000000000002','dddd5555-1111-4000-8000-000000000001',-1)$q$,
+    $q$INSERT INTO public.studio_course_paths(course_id,path_id) VALUES('dddd5555-2222-4000-8000-000000000001','dddd5555-1111-4000-8000-000000000001')$q$,
+    $q$INSERT INTO public.studio_course_paths(course_id,path_id) VALUES(gen_random_uuid(),'dddd5555-1111-4000-8000-000000000001')$q$
+  ];
+  bad_runtime text[] := ARRAY[
     $q$INSERT INTO public.studio_run_steps(run_id,step_key) VALUES('dddd5555-3333-4000-8000-000000000001','lessons_old')$q$,
     $q$INSERT INTO public.studio_run_steps(run_id,step_key,state) VALUES('dddd5555-3333-4000-8000-000000000001','brief','bogus')$q$,
     $q$INSERT INTO public.studio_run_steps(run_id,step_key,repair_count) VALUES('dddd5555-3333-4000-8000-000000000001','brief',-1)$q$,
@@ -192,10 +202,7 @@ DECLARE
     $q$INSERT INTO public.studio_runs(course_id,status,finished_at,hold_reason) VALUES('dddd5555-2222-4000-8000-000000000002','draft_failed',now(),'  ')$q$,
     $q$INSERT INTO public.studio_runs(course_id,status,finished_at,hold_reason) VALUES('dddd5555-2222-4000-8000-000000000002','published',now(),'reason')$q$,
     $q$INSERT INTO public.studio_runs(course_id,status) VALUES('dddd5555-2222-4000-8000-000000000002','published')$q$,
-    $q$INSERT INTO public.studio_runs(course_id,finished_at) VALUES('dddd5555-2222-4000-8000-000000000002',now())$q$,
-    $q$INSERT INTO public.studio_course_paths(course_id,path_id,learning_order) VALUES('dddd5555-2222-4000-8000-000000000002','dddd5555-1111-4000-8000-000000000001',-1)$q$,
-    $q$INSERT INTO public.studio_course_paths(course_id,path_id) VALUES('dddd5555-2222-4000-8000-000000000001','dddd5555-1111-4000-8000-000000000001')$q$,
-    $q$INSERT INTO public.studio_course_paths(course_id,path_id) VALUES(gen_random_uuid(),'dddd5555-1111-4000-8000-000000000001')$q$
+    $q$INSERT INTO public.studio_runs(course_id,finished_at) VALUES('dddd5555-2222-4000-8000-000000000002',now())$q$
   ];
   s text;
 BEGIN
@@ -221,6 +228,26 @@ BEGIN
   SELECT count(*) INTO n FROM public.studio_course_paths WHERE course_id='dddd5555-2222-4000-8000-000000000001';
   IF n <> 2 THEN RAISE EXCEPTION 'course should be in 2 paths, found %', n; END IF;
 
+  -- Every course status value is accepted.
+  FOREACH s IN ARRAY ARRAY['idea','queued','generating','published','needs_update','not_passed'] LOOP
+    UPDATE public.studio_courses SET status = s WHERE id='dddd5555-2222-4000-8000-000000000002';
+  END LOOP;
+
+  -- Catalog constraint probes remain client writes and accept only their data constraints.
+  FOREACH s IN ARRAY bad_catalog LOOP
+    code := NULL;
+    BEGIN
+      EXECUTE s;
+    EXCEPTION WHEN check_violation THEN code := 'check';
+              WHEN unique_violation THEN code := 'unique';
+              WHEN foreign_key_violation THEN code := 'fk';
+    END;
+    IF code IS NULL THEN RAISE EXCEPTION 'Catalog constraint probe was accepted: %', s; END IF;
+  END LOOP;
+
+  -- Runtime rows are written only by the trusted service role.
+  SET LOCAL ROLE service_role;
+
   -- A run holds all 9 step keys, with a repair count per step.
   INSERT INTO public.studio_runs(id,course_id) VALUES('dddd5555-3333-4000-8000-000000000002','dddd5555-2222-4000-8000-000000000002');
   INSERT INTO public.studio_run_steps(run_id,step_key)
@@ -241,12 +268,8 @@ BEGIN
   UPDATE public.studio_runs SET status='published', finished_at=now()
     WHERE course_id='dddd5555-2222-4000-8000-000000000002' AND status='running';
 
-  -- Every status value is accepted.
-  FOREACH s IN ARRAY ARRAY['idea','queued','generating','published','needs_update','not_passed'] LOOP
-    UPDATE public.studio_courses SET status = s WHERE id='dddd5555-2222-4000-8000-000000000002';
-  END LOOP;
-
-  FOREACH s IN ARRAY bad LOOP
+  -- Runtime constraint probes must reach their data constraints under service_role.
+  FOREACH s IN ARRAY bad_runtime LOOP
     code := NULL;
     BEGIN
       EXECUTE s;
@@ -254,9 +277,8 @@ BEGIN
               WHEN unique_violation THEN code := 'unique';
               WHEN foreign_key_violation THEN code := 'fk';
     END;
-    IF code IS NULL THEN RAISE EXCEPTION 'Constraint probe was accepted: %', s; END IF;
+    IF code IS NULL THEN RAISE EXCEPTION 'Runtime constraint probe was accepted: %', s; END IF;
   END LOOP;
-
   -- updated_at is maintained by the trigger: a client-supplied past value is overridden.
   -- (now() is the transaction start time, so compare against it directly.)
   RESET ROLE;
