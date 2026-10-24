@@ -200,8 +200,10 @@ function resolveFieldLabel(field: string | undefined, t: TFunction): string {
 
 /** Keep server details out of product copy while identifying the field to fix. */
 export function projectErrorMessage(error: unknown, t: TFunction<"common">): string {
+  if (error instanceof Error && error.message.startsWith("rate_limited:project_translation_daily")) return t("projects.translation.dailyRateLimited");
   if (error instanceof Error && error.message.startsWith("rate_limited:project_translation_moderation")) return t("projects.translation.moderationRateLimited");
   if (error instanceof Error && error.message.startsWith("rate_limited:project_translation")) return t("projects.translation.rateLimited");
+  if (error instanceof Error && error.message.startsWith("rate_limited:project_")) return t("projects.errors.rateLimited");
   const semantic = resolveSemanticProjectError(error);
   const label = resolveFieldLabel(semantic.field, t);
 

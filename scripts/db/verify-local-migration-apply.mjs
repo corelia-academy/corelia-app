@@ -20,11 +20,16 @@ const sqlTestPaths = [
   "scripts/db/tests/project-submission.integration.sql",
   "scripts/db/tests/project-localization.integration.sql",
   "scripts/db/tests/project-translation-quota.integration.sql",
+  "scripts/db/tests/rate-limit.integration.sql",
+  "scripts/db/tests/project-auto-translation.integration.sql",
+  "scripts/db/tests/project-moderation-queue.integration.sql",
   "scripts/db/tests/jobs-mvp.integration.sql",
   "scripts/db/tests/email-center.integration.sql",
   "scripts/db/tests/career-tracks-retirement.integration.sql",
   "scripts/db/tests/hackathon-taxonomy-contract.integration.sql",
   "scripts/db/tests/search-public.integration.sql",
+  "scripts/db/tests/search-trending-abuse.integration.sql",
+  "scripts/db/tests/notification-storage-abuse.integration.sql",
   "scripts/db/tests/public-media-cdn.integration.sql",
 ].map((path) => resolve(process.cwd(), path));
 
@@ -75,7 +80,7 @@ for (const sqlTestPath of sqlTestPaths) {
   }
 
   try {
-    if (["certificate-analytics.integration.sql", "project-moderation.integration.sql", "xp-rpc-boundary.integration.sql", "feed-xp-suggestions.integration.sql", "feed-people-timelines.integration.sql", "course-updating-completion.integration.sql", "xp-leaderboard.integration.sql", "qa661-xp-feed-wallet.integration.sql"].some((name) => sqlTestPath.endsWith(name))) {
+    if (["certificate-analytics.integration.sql", "project-moderation.integration.sql", "xp-rpc-boundary.integration.sql", "feed-xp-suggestions.integration.sql", "feed-people-timelines.integration.sql", "course-updating-completion.integration.sql", "xp-leaderboard.integration.sql", "qa661-xp-feed-wallet.integration.sql", "notification-storage-abuse.integration.sql"].some((name) => sqlTestPath.endsWith(name))) {
       execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
         input: readFileSync(resolve(sqlTestPath)), stdio: ["pipe", "inherit", "inherit"],
       });

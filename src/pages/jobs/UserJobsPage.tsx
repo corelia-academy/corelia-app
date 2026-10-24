@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookmarkX, BriefcaseBusiness, EyeOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { QueryErrorState } from "@/components/QueryErrorState";
+import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
 import { JobCard } from "@/features/jobs/JobCard";
 import { JobsNav } from "@/features/jobs/JobsNav";
 import { jobKeys, userJobsQueryOptions } from "@/features/jobs/jobQueries";
@@ -24,7 +24,7 @@ export function UserJobsPage({ mode }: { mode: "saved" | "applied" | "hidden" })
     },
     onError: () => toast.error(t("messages.updateFailed")),
   });
-  return <div className="mx-auto w-full max-w-7xl px-4 pb-6 pt-4 sm:px-6 sm:py-6 lg:px-8"><JobsNav /><header className="mt-6"><h1 className="text-heading-medium font-display">{t(`user.${mode}.title`)}</h1><p className="mt-2 text-sm text-foreground-muted">{t(`user.${mode}.description`)}</p></header>{query.isPending ? <div className="mobile-bleed-grid mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-72 animate-pulse rounded-2xl bg-surface-raised" />)}</div> : query.isError && !query.data ? <QueryErrorState className="mobile-bleed-surface mt-6" message={t("messages.loadFailed")} retrying={query.isFetching} onRetry={() => void query.refetch()} /> : query.data?.length ? <div className="mobile-bleed-grid mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{query.data.map(({ job, state }) => <JobCard key={job.id} job={job} state={state} busy={mutation.isPending && mutation.variables?.jobId === job.id} onToggleSaved={() => mutation.mutate({ jobId: job.id, patch: { saved: !state.saved } })} onToggleApplied={() => mutation.mutate({ jobId: job.id, patch: { applied: !state.applied } })} onToggleHidden={() => mutation.mutate({ jobId: job.id, patch: { hidden: !state.hidden } })} />)}</div> : <div className="mobile-bleed-surface mt-6 rounded-xl border border-border-subtle bg-surface-base p-12 text-center">{mode === "saved" ? <BookmarkX className="mx-auto size-8 text-foreground-subtle" aria-hidden /> : mode === "hidden" ? <EyeOff className="mx-auto size-8 text-foreground-subtle" aria-hidden /> : <BriefcaseBusiness className="mx-auto size-8 text-foreground-subtle" aria-hidden />}<h2 className="mt-3 text-heading-small font-display">{t(`user.${mode}.empty`)}</h2></div>}</div>;
+  return <div className="course-catalog-page container-app pb-8 pt-6 sm:py-8"><main className="course-catalog mx-auto w-full max-w-[1072px]"><JobsNav /><header className="mt-6"><h1 className="text-heading-large font-display text-foreground">{t(`user.${mode}.title`)}</h1><p className="mt-2 text-body-large text-catalog-subtitle">{t(`user.${mode}.description`)}</p></header>{query.isPending ? <div className="mobile-bleed-grid mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-72 animate-pulse rounded-2xl bg-surface-raised" />)}</div> : query.isError && !query.data ? <QueryErrorState className="mobile-bleed-surface mt-6" message={t("messages.loadFailed")} retrying={query.isFetching} onRetry={() => void query.refetch()} /> : query.data?.length ? <div className="mobile-bleed-grid mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{query.data.map(({ job, state }) => <JobCard key={job.id} job={job} state={state} busy={mutation.isPending && mutation.variables?.jobId === job.id} onToggleSaved={() => mutation.mutate({ jobId: job.id, patch: { saved: !state.saved } })} />)}</div> : <div className="mt-6 flex min-h-[31.25rem] items-center justify-center"><EmptyStateIllustration type="empty" size="medium" title={t(`user.${mode}.empty`)} /></div>}</main></div>;
 }
 
 export function SavedJobsPage() { return <UserJobsPage mode="saved" />; }

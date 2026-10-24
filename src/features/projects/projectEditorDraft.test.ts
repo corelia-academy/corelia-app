@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Project } from "@/types/projects";
-import { changePrimaryLocale, contentForLocale, projectDraft, projectLocalePayload } from "./projectEditorDraft";
+import { changePrimaryLocale, contentForLocale, markLocaleEdited, projectDraft, projectLocalePayload } from "./projectEditorDraft";
 
 describe("localized project draft", () => {
   it("defaults new projects to the UI language and legacy projects to Vietnamese", () => {
@@ -19,5 +19,13 @@ describe("localized project draft", () => {
     expect(contentForLocale(english,"vi").title).toBe("Tên");
     expect(changePrimaryLocale(english,"vi").summary).toBe("Tóm tắt");
     expect(projectLocalePayload(english).locales.en?.title).toBe("Title");
+    expect(projectLocalePayload(english).locales.vi?.title).toBe("Tên");
+  });
+  it("saves only the primary and hand-edited secondary locales", () => {
+    const draft = { ...projectDraft(), title: "Tên", locales: { en: { title: "AI title" }, ja: { title: "Old" } } };
+    expect(Object.keys(projectLocalePayload(draft).locales)).toEqual(["vi"]);
+    const edited = markLocaleEdited(draft, "ja");
+    expect(Object.keys(projectLocalePayload(edited).locales).sort()).toEqual(["ja", "vi"]);
+    expect(markLocaleEdited(edited, "ja")).toBe(edited);
   });
 });

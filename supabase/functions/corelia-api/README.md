@@ -50,7 +50,38 @@ hour across Edge instances, including failed attempts. Logs contain request ID,
 status and provider input/output token counts, never project text. Translation
 is optional; provider failures do not prevent manual bilingual editing.
 
-Project text/images use `omni-moderation-latest`. Resource URL fields (demo,
+Background translation follows the primary locale. After each successful save,
+`sync_project_translations` hashes the primary text and queues one job per
+enabled locale whose stored translation is from an older source. Each save
+pushes the job back 5 minutes, so a burst of edits costs one translation per
+locale. Locales the owner edits by hand become `manual` and are never
+overwritten; `projects.translations.request` (`project_id`, `locale`, 20/hour
+per user) re-queues a locale immediately and enables it if needed.
+`projects.translations.status` returns each locale's status (`fresh`, `stale`,
+`pending`, `failed`, `manual`). The `corelia-project-translations` cron job
+calls `projects.translations.run` with the Jobs scheduler secret
+(`CORELIA_JOBS_CRON_SECRET`) only when a job is due; each run translates up to 5
+jobs, capped at 30 per project and 100 per owner per day. Set
+`PROJECT_AUTO_TRANSLATE_ENABLED=false` to pause the worker.
+
+Project text moderation is hybrid. Verdicts are cached per text hash
+(`private.moderation_results`), so unchanged text is never re-sent. The save
+that first makes a project visible (new hackathon project, or private → public)
+is moderated before it commits and rejects flagged fields. Edits to a project
+that is already visible, locale saves and private drafts commit immediately and
+are queued (`private.project_moderation_queue`, 60 s debounce). The
+`corelia-project-moderation` cron job calls `projects.moderation.run` (Jobs
+scheduler secret) only when work is due; it batches uncached text for up to 20
+projects and hides (blocks + makes private) a visible project with flagged text,
+recording an audit row with no actor. A staff unblock allowlists the project's
+current flagged text so the worker does not hide it again.
+
+Signed-in users report a visible project with the `report_project` RPC (20 per
+day, one open report per project). Reports queue an immediate check with a
+priority equal to the number of open reports; staff review them in Admin →
+Projects → Reported (`list_reported_projects`, `resolve_project_reports`).
+
+Project images use `omni-moderation-latest` synchronously on upload. Resource URL fields (demo,
 repository, slides, demo video, and pitch video) are validated locally for HTTPS,
 length, and safe URL structure; embedded credentials and local/private addresses
 are rejected. Repository URLs must have the form `github.com/owner/repo`. Saving

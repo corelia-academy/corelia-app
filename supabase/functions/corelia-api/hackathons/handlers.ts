@@ -1,5 +1,6 @@
 import { isAuthFailure } from "../lib/authz.ts";
 import { json } from "../lib/http.ts";
+import { consumeRateLimit } from "../lib/rate_limit.ts";
 import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
 import { resolveAppUrl } from "../lib/mail/layout.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
@@ -52,6 +53,10 @@ export async function handleHackathonNotifyRegistrationReview(req: Request, db: 
     if (status !== "approved" && status !== "rejected") {
       return json({ message: "Trạng thái đăng ký chưa được duyệt." }, 400);
     }
+    // Reviewers legitimately notify many applicants, but one applicant should
+    // not receive more than a few review emails however many reviewers send.
+    await consumeRateLimit(db, "hackathon_review_email_sender", reviewer.id, 100, 3600);
+    await consumeRateLimit(db, "hackathon_review_email_recipient", applicantUserId, 3, 3600);
 
     const { data: hRow, error: hRowErr } = await db.from("hackathons").select("document").eq("id", hackathonId)
       .maybeSingle();
@@ -109,6 +114,7 @@ export async function handleHackathonNotifyRegistrationReview(req: Request, db: 
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
+    if (message.startsWith("rate_limited:")) return json({ message }, 429);
     console.error("[corelia-api] hackathon.notifyRegistrationReview", e);
     return json({ message: "Không thể xử lý yêu cầu." }, 500);
   }

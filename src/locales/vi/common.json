@@ -302,16 +302,21 @@
       "primary": "Bản chính",
       "optional": "Chỉ bản chính cần đủ nội dung bắt buộc. Bản dịch tùy chọn; trường còn trống sẽ hiển thị bản chính.",
       "makePrimary": "Đặt làm ngôn ngữ chính",
-      "translate": "Dịch sang {{target}} bằng AI",
-      "translating": "Đang dịch…",
-      "hint": "AI dịch từ bản chính. Bạn có thể xem và chỉnh lại trước khi áp dụng; bản dịch được lưu khi lưu dự án.",
-      "preview": "Xem trước bản dịch",
-      "stale": "Nội dung dự án đã thay đổi. Hãy dịch lại để tránh ghi đè thay đổi mới.",
-      "replaceHint": "Áp dụng sẽ thay nội dung bản dịch hiện tại bằng bản xem trước này.",
-      "apply": "Áp dụng bản dịch",
-      "discard": "Bỏ bản dịch",
+      "translate": "Dịch sang {{target}}",
       "rateLimited": "Bạn đã hoàn thành 10 bản dịch trong một giờ. Vui lòng thử lại sau.",
-      "moderationRateLimited": "Bạn đã gửi quá nhiều nội dung bị chặn trong một giờ. Vui lòng thử lại sau."
+      "moderationRateLimited": "Bạn đã gửi quá nhiều nội dung bị chặn trong một giờ. Vui lòng thử lại sau.",
+      "dailyRateLimited": "Bạn đã dùng hết lượt dịch của hôm nay. Vui lòng thử lại vào ngày mai.",
+      "saveFirst": "Lưu project để bật dịch tự động.",
+      "autoHint": "Bạn chỉ cần sửa ngôn ngữ chính. Các ngôn ngữ khác sẽ được dịch tự động vài phút sau khi lưu. Nếu bạn tự sửa một ngôn ngữ, ngôn ngữ đó sẽ không được cập nhật tự động nữa cho đến khi bạn bấm dịch lại.",
+      "addLanguage": "Thêm ngôn ngữ",
+      "retranslate": "Dịch lại từ bản chính",
+      "status": {
+        "fresh": "Đã dịch",
+        "stale": "Đang chờ bạn sửa xong",
+        "pending": "Đang dịch…",
+        "failed": "Dịch thất bại",
+        "manual": "Bạn tự sửa"
+      }
     },
     "title": "Dự án",
     "description": "Trang tổng hợp dự án public của toàn bộ cộng đồng Corelia.",
@@ -522,7 +527,8 @@
       "submissionUnauthorized": "Bạn không có quyền nộp dự án vào hackathon này.",
       "moderationFlagged": "Nội dung bị hệ thống kiểm duyệt cảnh báo. Vui lòng chỉnh sửa và thử lại.",
       "userBlocked": "Tài khoản của bạn đang bị giới hạn thực hiện thao tác này.",
-      "rateLimitExceeded": "Quá nhiều yêu cầu. Vui lòng thử lại sau ít phút."
+      "rateLimitExceeded": "Quá nhiều yêu cầu. Vui lòng thử lại sau ít phút.",
+      "rateLimited": "Bạn đã thay đổi project quá nhiều trong thời gian ngắn. Vui lòng đợi vài phút rồi thử lại."
     },
     "editor": {
       "workspace": "Không gian dự án",
@@ -691,7 +697,33 @@
       "blockedError": "Project đã bị chặn. Admin cần bỏ chặn trước khi có thể đăng lại.",
       "contentError": "Cần bổ sung tóm tắt và mô tả chi tiết trước khi công khai.",
       "previous": "Trước",
-      "next": "Tiếp"
+      "next": "Tiếp",
+      "reported": "Bị báo cáo"
+    },
+    "report": {
+      "action": "Báo cáo",
+      "title": "Báo cáo project này",
+      "description": "Cho chúng tôi biết vấn đề. Báo cáo được giữ kín; chủ project không biết ai đã báo cáo.",
+      "reason": "Lý do",
+      "note": "Chi tiết (không bắt buộc)",
+      "submit": "Gửi báo cáo",
+      "success": "Cảm ơn bạn. Đội ngũ sẽ xem xét project này.",
+      "failed": "Không gửi được báo cáo. Vui lòng thử lại.",
+      "rateLimited": "Hôm nay bạn đã gửi nhiều báo cáo. Vui lòng thử lại vào ngày mai.",
+      "openCount": "Báo cáo đang mở: {{total}}",
+      "empty": "Không có project nào đang bị báo cáo.",
+      "dismiss": "Bỏ qua báo cáo",
+      "markActioned": "Đánh dấu đã xử lý",
+      "reasons": {
+        "spam": "Spam hoặc quảng cáo",
+        "harassment": "Quấy rối hoặc bắt nạt",
+        "sexual": "Nội dung tình dục",
+        "violence": "Bạo lực",
+        "hate": "Ngôn từ thù ghét",
+        "illegal": "Nội dung vi phạm pháp luật",
+        "plagiarism": "Đạo nhái hoặc lấy cắp sản phẩm",
+        "other": "Khác"
+      }
     }
   },
   "search": {

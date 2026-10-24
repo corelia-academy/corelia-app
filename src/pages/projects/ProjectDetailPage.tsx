@@ -20,6 +20,7 @@ import { useTranslation } from "react-i18next";
 import { BackLink } from "@/components/navigation/BackLink";
 import { Markdown } from "@/components/markdown/Markdown";
 import { ProjectManagementControls } from "@/components/projects/ProjectManagementControls";
+import { ReportProjectButton } from "@/components/projects/ReportProjectButton";
 import { ProjectSelfLeaveButton } from "@/components/projects/ProjectSelfLeaveButton";
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { UserAvatar } from "@/components/UserAvatar";
@@ -245,6 +246,7 @@ export default function ProjectDetailPage() {
         </BackLink>
         <div className="flex flex-wrap items-center gap-2">
           <ProjectManagementControls project={project} onDeleted={() => navigate("/projects", { replace: true })} />
+          <ReportProjectButton project={project} />
           <ProjectSocialBlock projectId={project.id} likeCount={Number(project.like_count ?? 0)} className="border-0 pt-0" />
           <Button
             variant="cta" hierarchy="secondary"

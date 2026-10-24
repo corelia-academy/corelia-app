@@ -204,6 +204,9 @@ describe("Edge Functions Integration: generate-questions and generate-descriptio
             headers: { "Content-Type": "application/json", "Content-Range": "0-0/1" },
           });
         }
+        if (urlStr.includes("/rest/v1/rpc/consume_rate_limit")) {
+          return new Response(null, { status: 204 });
+        }
         if (urlStr.includes("/rest/v1/hackathons")) {
           return new Response(JSON.stringify({ id: "hackathon-1" }), {
             status: 200,
@@ -253,6 +256,60 @@ describe("Edge Functions Integration: generate-questions and generate-descriptio
       expect(data.bundle.title).toBe("Demo Hackathon");
       expect(data.bundle.tracks).toEqual([{ id: "track-1", name: "Education", description: "Build for learning" }]);
       expect(data.bundle.sectors).toEqual([{ id: "sector-1", name: "Giáo dục" }]);
+    });
+
+    it("stops before OpenAI when the hourly generation quota is used", async () => {
+      await import("./generate-description/index");
+      const fetchMock = vi.fn().mockImplementation(async (url: string | URL) => {
+        const urlStr = String(url);
+        const ok = (body: unknown) => new Response(JSON.stringify(body), {
+          status: 200,
+          headers: { "Content-Type": "application/json", "Content-Range": "0-0/1" },
+        });
+        if (urlStr.includes("/auth/v1/user")) return ok({ id: "admin-1", email_confirmed_at: "2026-08-01T00:00:00Z" });
+        if (urlStr.includes("/rest/v1/profiles")) return ok({ role: "admin" });
+        if (urlStr.includes("/rest/v1/hackathons")) return ok({ id: "hackathon-1" });
+        if (urlStr.includes("/rest/v1/rpc/consume_rate_limit")) {
+          return new Response(JSON.stringify({ message: "rate_limited:ai_generate_description" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        return new Response(JSON.stringify({ message: "Not found" }), { status: 404 });
+      });
+      globalThis.fetch = fetchMock;
+
+      const res = await descriptionHandler!(
+        new Request("http://localhost", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer test-token" },
+          body: JSON.stringify({
+            hackathonId: "hackathon-1",
+            action: "translate",
+            type: "hackathon",
+            targetField: "description",
+            locale: "en",
+            sourceLocale: "vi",
+            bundleKind: "hackathon",
+            sourceBundle: { title: "Hackathon mẫu" },
+          }),
+        }),
+      );
+
+      expect(res.status).toBe(429);
+      expect(fetchMock.mock.calls.map(([url]) => String(url))).not.toContain("https://api.openai.com/v1/responses");
+    });
+
+    it("rejects oversized payloads with 413", async () => {
+      await import("./generate-description/index");
+      const res = await descriptionHandler!(
+        new Request("http://localhost", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer test-token" },
+          body: JSON.stringify({ sourceBundle: { description: "x".repeat(400_001) } }),
+        }),
+      );
+      expect(res.status).toBe(413);
     });
 
     it("masks database failures with 500 and safe message", async () => {

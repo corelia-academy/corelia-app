@@ -98,6 +98,9 @@ describe("formatProjectError & projectErrorMessage", () => {
   it("keeps the translation success quota separate from the moderation abuse guard", () => {
     expect(projectErrorMessage(new Error("rate_limited:project_translation"), t)).toBe("projects.translation.rateLimited");
     expect(projectErrorMessage(new Error("rate_limited:project_translation_moderation"), t)).toBe("projects.translation.moderationRateLimited");
+    expect(projectErrorMessage(new Error("rate_limited:project_translation_daily"), t)).toBe("projects.translation.dailyRateLimited");
+    expect(projectErrorMessage(new Error("rate_limited:project_save"), t)).toBe("projects.errors.rateLimited");
+    expect(projectErrorMessage(new Error("rate_limited:project_media_upload"), t)).toBe("projects.errors.rateLimited");
   });
 
   it("never exposes raw backend code to the user and falls back safely to saveFailed", () => {

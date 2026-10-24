@@ -1,13 +1,23 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BriefcaseBusiness, Search, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { parseSalaryFilter } from "./jobFilterUtils";
 
+import { FullPageEmptyState } from "@/components/layouts/FullPageEmptyState";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItemContent,
+  DropdownMenuList,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTriggerWithIndicator,
+} from "@/components/ui/dropdown-menu";
+import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
 import { Input } from "@/components/ui/input";
 import { JobCard } from "@/features/jobs/JobCard";
 import { humanizeJobSlug } from "@/features/jobs/jobFormat";
@@ -19,7 +29,8 @@ import { useAuth } from "@/stores/authStore";
 import type { JobFilters, UserJobState } from "@/types/jobs";
 import { landingUrl } from "@/lib/appUrl";
 
-const SELECT_CLASS = "h-9 min-w-0 rounded-md border border-border-subtle bg-surface-base px-3 text-sm text-foreground outline-none focus:border-primary";
+const SELECT_CLASS = "h-10 min-w-0 rounded-md border border-input-field-border bg-surface-base px-3 text-sm text-foreground outline-none focus:border-primary";
+const FILTER_TRIGGER_CLASS = "flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-3 text-left font-body text-body-large text-foreground transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40";
 
 function landingFilters(pathname: string, route: { skill?: string; domain?: string; role?: string }): { label: string; filters: JobFilters } | null {
   const fixed: Record<string, { label: string; filters: JobFilters }> = {
@@ -157,31 +168,74 @@ export default function JobsPage() {
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError]);
 
+  const hasFilterParams = ["q", "type", "role", "remote", "domain", "skill", "seniority", "region", "employment", "currency", "salary", "days"].some((key) => params.has(key));
+  if (jobsQuery.isSuccess && !landing && !hasFilterParams && jobs.length === 0 && !latestPage?.hiddenCount) {
+    return <FullPageEmptyState title={t("noJobs.title")} description={t("noJobs.description")} />;
+  }
+
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 pb-6 pt-4 sm:px-6 sm:py-6 lg:px-8">
-      <div className="flex flex-col gap-5">
+    <div className="course-catalog-page container-app pb-8 pt-6 sm:py-8">
+      <main className="course-catalog mx-auto flex w-full max-w-[1072px] flex-col gap-6">
         <JobsNav />
-        <header className="mobile-bleed-surface rounded-2xl border border-border-subtle bg-surface-base p-5 sm:p-7">
-          <div className="flex items-center gap-2 text-sm font-semibold text-primary"><BriefcaseBusiness className="size-4" aria-hidden />{t("eyebrow")}</div>
-          <h1 className="mt-3 text-foreground text-heading-medium font-display">{landing ? t("landing.title", { label: landing.label }) : t("title")}</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground-muted sm:text-base">{landing ? t("landing.subtitle", { label: landing.label }) : t("subtitle")}</p>
-          <form className="mt-5 flex max-w-2xl gap-2 max-[359px]:flex-col" onSubmit={(event) => {
-            event.preventDefault();
-            const form = new FormData(event.currentTarget);
-            updateParam("q", String(form.get("q") ?? "").trim());
-          }}>
-            <Input name="q" defaultValue={params.get("q") ?? ""} placeholder={t("searchPlaceholder")} aria-label={t("searchPlaceholder")} />
-            <Button type="submit" className="max-[359px]:w-full"><Search className="size-4" aria-hidden />{t("search")}</Button>
-          </form>
+        <header>
+          <h1 className="text-heading-large font-display text-foreground">
+            {landing ? t("landing.title", { label: landing.label }) : t("title")}
+            {latestPage ? <span className="ml-2 text-body-large font-body font-normal text-foreground-subtle">({latestPage.total})</span> : null}
+          </h1>
+          <p className="mt-2 max-w-3xl text-body-large text-catalog-subtitle">{landing ? t("landing.subtitle", { label: landing.label }) : t("subtitle")}</p>
         </header>
-        <section className="mobile-bleed-surface rounded-xl border border-border-subtle bg-surface-base p-4" aria-label={t("filters.label")}>
-          <div className="mb-3 flex items-center gap-2 text-sm font-semibold"><SlidersHorizontal className="size-4" aria-hidden />{t("filters.label")}</div>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            <select className={SELECT_CLASS} value={filters.jobType ?? ""} onChange={(e) => updateParam("type", e.target.value)} aria-label={t("filters.jobType")}><option value="">{t("filters.allJobTypes")}</option>{(["tech", "non_tech"] as const).map((value) => <option key={value} value={value}>{t(`values.${value}`)}</option>)}</select>
-            <select className={SELECT_CLASS} disabled={Boolean(landing?.filters.role)} value={filters.role ?? ""} onChange={(e) => updateParam("role", e.target.value)} aria-label={t("filters.role")}><option value="">{t("filters.allRoles")}</option>{taxonomyQuery.data?.roles.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}</select>
-            <select className={SELECT_CLASS} disabled={Boolean(landing?.filters.remoteType)} value={filters.remoteType ?? ""} onChange={(e) => updateParam("remote", e.target.value)} aria-label={t("filters.workMode")}><option value="">{t("filters.allWorkModes")}</option>{(["remote", "hybrid", "onsite"] as const).map((value) => <option key={value} value={value}>{t(`values.${value}`)}</option>)}</select>
+        <section className="course-catalog-filters flex flex-col gap-3" aria-label={t("filters.label")}>
+          <div className="grid gap-2 xl:grid-cols-[minmax(0,520px)_minmax(0,1fr)] xl:items-center">
+            <form className="min-w-0" onSubmit={(event) => {
+              event.preventDefault();
+              const form = new FormData(event.currentTarget);
+              updateParam("q", String(form.get("q") ?? "").trim());
+            }}>
+              <Input name="q" type="search" variant="icon-leading" defaultValue={params.get("q") ?? ""} placeholder={t("searchPlaceholder")} aria-label={t("searchPlaceholder")} />
+            </form>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <DropdownMenu>
+                <DropdownMenuTriggerWithIndicator type="button" aria-label={t("filters.jobType")} className={FILTER_TRIGGER_CLASS}>
+                  <span className="min-w-0 truncate">{filters.jobType ? t(`values.${filters.jobType}`) : t("filters.allJobTypes")}</span>
+                </DropdownMenuTriggerWithIndicator>
+                <DropdownMenuContent layout="multiple-list" align="start" className="w-(--anchor-width) max-w-[calc(100vw-2rem)]">
+                  <DropdownMenuList>
+                    <DropdownMenuRadioGroup value={filters.jobType ?? ""} onValueChange={(value) => updateParam("type", String(value))}>
+                      <DropdownMenuRadioItem className="text-body-large" value=""><DropdownMenuItemContent>{t("filters.allJobTypes")}</DropdownMenuItemContent></DropdownMenuRadioItem>
+                      {(["tech", "non_tech"] as const).map((value) => <DropdownMenuRadioItem key={value} className="text-body-large" value={value}><DropdownMenuItemContent>{t(`values.${value}`)}</DropdownMenuItemContent></DropdownMenuRadioItem>)}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuList>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTriggerWithIndicator type="button" disabled={Boolean(landing?.filters.role)} aria-label={t("filters.role")} className={FILTER_TRIGGER_CLASS}>
+                  <span className="min-w-0 truncate">{filters.role ? taxonomyQuery.data?.roles.find((item) => item.slug === filters.role)?.name ?? humanizeJobSlug(filters.role) : t("filters.allRoles")}</span>
+                </DropdownMenuTriggerWithIndicator>
+                <DropdownMenuContent layout="multiple-list" align="start" className="w-(--anchor-width) max-w-[calc(100vw-2rem)]">
+                  <DropdownMenuList>
+                    <DropdownMenuRadioGroup value={filters.role ?? ""} onValueChange={(value) => updateParam("role", String(value))}>
+                      <DropdownMenuRadioItem className="text-body-large" value=""><DropdownMenuItemContent>{t("filters.allRoles")}</DropdownMenuItemContent></DropdownMenuRadioItem>
+                      {taxonomyQuery.data?.roles.map((item) => <DropdownMenuRadioItem key={item.slug} className="text-body-large" value={item.slug}><DropdownMenuItemContent>{item.name}</DropdownMenuItemContent></DropdownMenuRadioItem>)}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuList>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTriggerWithIndicator type="button" disabled={Boolean(landing?.filters.remoteType)} aria-label={t("filters.workMode")} className={FILTER_TRIGGER_CLASS}>
+                  <span className="min-w-0 truncate">{filters.remoteType ? t(`values.${filters.remoteType}`, { defaultValue: humanizeJobSlug(filters.remoteType) }) : t("filters.allWorkModes")}</span>
+                </DropdownMenuTriggerWithIndicator>
+                <DropdownMenuContent layout="multiple-list" align="start" className="w-(--anchor-width) max-w-[calc(100vw-2rem)]">
+                  <DropdownMenuList>
+                    <DropdownMenuRadioGroup value={filters.remoteType ?? ""} onValueChange={(value) => updateParam("remote", String(value))}>
+                      <DropdownMenuRadioItem className="text-body-large" value=""><DropdownMenuItemContent>{t("filters.allWorkModes")}</DropdownMenuItemContent></DropdownMenuRadioItem>
+                      {(["remote", "hybrid", "onsite"] as const).map((value) => <DropdownMenuRadioItem key={value} className="text-body-large" value={value}><DropdownMenuItemContent>{t(`values.${value}`)}</DropdownMenuItemContent></DropdownMenuRadioItem>)}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuList>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-          <details className="mt-4 group" open={["domain", "skill", "seniority", "region", "employment", "currency", "salary", "days"].some(key => params.has(key))}>
+          <details className="group" open={["domain", "skill", "seniority", "region", "employment", "currency", "salary", "days"].some(key => params.has(key))}>
             <summary className="cursor-pointer py-3 text-sm font-medium text-primary">{t("filters.more")}</summary>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 pt-3">
             <select className={SELECT_CLASS} disabled={Boolean(landing?.filters.domain)} value={filters.domain ?? ""} onChange={(e) => updateParam("domain", e.target.value)} aria-label={t("filters.domain")}><option value="">{t("filters.allDomains")}</option>{taxonomyQuery.data?.domains.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}</select>
@@ -224,13 +278,12 @@ export default function JobsPage() {
             </div>
           </details>
         </section>
-        <div className="flex items-center justify-between gap-3"><p className="text-sm text-foreground-muted">{t("results", { count: latestPage?.total ?? 0 })}{latestPage?.hiddenCount ? <> · <Link to="/jobs/hidden" className="underline-offset-4 hover:underline">{t("hiddenCount", { count: latestPage.hiddenCount })}</Link></> : null}</p></div>
-        {jobsQuery.isPending ? <div className="mobile-bleed-grid grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-72 animate-pulse rounded-2xl bg-surface-raised" />)}</div> : jobsQuery.isError && !jobsQuery.data ? <div className="mobile-bleed-surface rounded-xl border border-destructive/30 p-8 text-center text-sm text-destructive" role="alert">{t("messages.loadFailed")} <Button type="button" variant="cta" hierarchy="secondary" className="ml-2" onClick={() => void jobsQuery.refetch()}>{t("retry")}</Button></div> : jobs.length ? <div className={cn("mobile-bleed-grid grid gap-4 transition-opacity sm:grid-cols-2 xl:grid-cols-3", jobsQuery.isPlaceholderData && "opacity-60")} aria-busy={jobsQuery.isPlaceholderData || undefined}>{jobs.map((job) => {
+        {jobsQuery.isPending ? <div className="mobile-bleed-grid grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-72 animate-pulse rounded-2xl bg-surface-raised" />)}</div> : jobsQuery.isError && !jobsQuery.data ? <div className="mobile-bleed-surface rounded-xl border border-destructive/30 p-8 text-center text-sm text-destructive" role="alert">{t("messages.loadFailed")} <Button type="button" variant="cta" hierarchy="secondary" className="ml-2" onClick={() => void jobsQuery.refetch()}>{t("retry")}</Button></div> : jobs.length ? <div className={cn("mobile-bleed-grid grid gap-6 transition-opacity sm:grid-cols-2 xl:grid-cols-3", jobsQuery.isPlaceholderData && "opacity-60")} aria-busy={jobsQuery.isPlaceholderData || undefined}>{jobs.map((job) => {
           const state = stateByJobId[job.id];
-          return <JobCard publicAppearance key={job.id} job={job} state={state} busy={stateMutation.isPending && stateMutation.variables?.jobId === job.id} onToggleSaved={() => mutateState(job.id, { saved: !state?.saved })} onToggleApplied={() => mutateState(job.id, { applied: !state?.applied })} onToggleHidden={() => mutateState(job.id, { hidden: true })} />;
-        })}</div> : <div className="mobile-bleed-surface rounded-xl border border-border-subtle bg-surface-base p-12 text-center"><BriefcaseBusiness className="mx-auto size-8 text-foreground-subtle" aria-hidden /><h2 className="mt-3 text-heading-small font-display">{t("empty.title")}</h2><p className="mt-1 text-sm text-foreground-muted">{t("empty.description")}</p></div>}
+          return <JobCard publicAppearance key={job.id} job={job} state={state} busy={stateMutation.isPending && stateMutation.variables?.jobId === job.id} onToggleSaved={() => mutateState(job.id, { saved: !state?.saved })} />;
+        })}</div> : <div className="flex min-h-[31.25rem] items-center justify-center"><EmptyStateIllustration type="search" size="medium" title={t("empty.title")} description={t("empty.description")} /></div>}
         {jobsQuery.hasNextPage ? <div ref={loadMoreRef} className="flex min-h-10 items-center justify-center text-sm text-foreground-muted" role="status" aria-live="polite">{jobsQuery.isFetchingNextPage ? t("infinite.loading") : jobsQuery.isFetchNextPageError ? <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void jobsQuery.fetchNextPage()}>{t("infinite.retry")}</Button> : typeof IntersectionObserver === "undefined" ? <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void jobsQuery.fetchNextPage()}>{t("infinite.loadMore")}</Button> : <span className="sr-only">{t("infinite.ready")}</span>}</div> : null}
-      </div>
+      </main>
     </div>
   );
 }

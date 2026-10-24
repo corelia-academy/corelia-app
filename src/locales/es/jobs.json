@@ -85,6 +85,10 @@
     "title": "No hay empleos que coincidan",
     "description": "Prueba a ampliar la búsqueda o a quitar algunos filtros."
   },
+  "noJobs": {
+    "title": "Sin datos.",
+    "description": "No se han publicado empleos recientemente."
+  },
   "infinite": {
     "loading": "Cargando más empleos…",
     "loadMore": "Cargar más empleos",

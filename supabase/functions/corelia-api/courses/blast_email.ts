@@ -1,5 +1,6 @@
 import { isAuthFailure } from "../lib/authz.ts";
 import { json } from "../lib/http.ts";
+import { consumeRateLimit } from "../lib/rate_limit.ts";
 import { normalizeAnnouncementBodyHtml } from "../lib/mail/announcement_body.ts";
 import { resolveAppUrl, wrapBlastEmail } from "../lib/mail/layout.ts";
 import { summarizeBlastRecipients } from "../lib/mail/recipient_accounting.ts";
@@ -52,6 +53,7 @@ export async function handleCourseBlastEmail(
 
     const allowed = await senderCanBlastCourse(db, sender.id, courseId);
     if (!allowed) return json({ message: "forbidden:blast_email" }, 403);
+    await consumeRateLimit(db, "course_blast_email", sender.id, 5, 86_400);
 
     const { data: enrollments, error: eErr } = await db
       .from("enrollments")
@@ -165,6 +167,7 @@ export async function handleCourseBlastEmail(
     const msg = e instanceof Error ? e.message : "unknown";
     if (isAuthFailure(msg)) return json({ message: "unauthenticated" }, 401);
     console.error("[corelia-api] courses.blastEmail", e);
+    if (msg.startsWith("rate_limited:")) return json({ message: msg }, 429);
     return json({ message: "internal_error" }, 500);
   }
 }

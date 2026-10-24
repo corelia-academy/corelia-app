@@ -4,7 +4,9 @@ import { LANGUAGE_NAMES } from "../lib/locale.ts";
 const OPENAI_API_BASE = "https://api.openai.com/v1";
 
 export class ProjectAiError extends Error {
-  constructor(public readonly code: string, public readonly status = 422) {
+  // billed: the provider accepted the request, so the attempt costs money
+  // even though no usable result came back.
+  constructor(public readonly code: string, public readonly status = 422, public readonly billed = false) {
     super(code);
   }
 }
@@ -73,6 +75,31 @@ export async function moderateProjectText(entries: TextEntry[]): Promise<void> {
   }
 }
 
+export const MODERATION_MODEL = "omni-moderation-latest";
+const MODERATION_BATCH = 32;
+
+export type ModerationVerdict = { flagged: boolean; categories: string[] };
+
+/** Batch text moderation that reports every verdict instead of stopping at the first flag. */
+export async function moderateTexts(texts: string[]): Promise<ModerationVerdict[]> {
+  const verdicts: ModerationVerdict[] = [];
+  for (let offset = 0; offset < texts.length; offset += MODERATION_BATCH) {
+    const input = texts.slice(offset, offset + MODERATION_BATCH);
+    const response = await openAiFetch("/moderations", { model: MODERATION_MODEL, input });
+    const results = Array.isArray(response.results) ? response.results : [];
+    if (results.length !== input.length) throw new ProjectAiError("ai_unavailable:invalid_response", 503);
+    for (const raw of results) {
+      const result = raw as Record<string, unknown>;
+      if (typeof result.flagged !== "boolean") throw new ProjectAiError("ai_unavailable:invalid_response", 503);
+      const categories = result.categories && typeof result.categories === "object"
+        ? Object.entries(result.categories as Record<string, unknown>).filter(([, value]) => value === true).map(([key]) => key)
+        : [];
+      verdicts.push({ flagged: result.flagged, categories });
+    }
+  }
+  return verdicts;
+}
+
 export async function moderateProjectImage(bytes: Uint8Array, mime: string): Promise<void> {
   const isLocal =
     Deno.env.get("SUPABASE_URL")?.includes("127.0.0.1") ||
@@ -125,7 +152,13 @@ export async function translateProjectText(content: Partial<ProjectContent>, sou
       properties: Object.fromEntries(Object.keys(PROJECT_CONTENT_LIMITS).map(key => [key, { type: "string" }])),
       required: Object.keys(PROJECT_CONTENT_LIMITS),
     } } },
-  }, 60_000);
+  }, 60_000).catch((error) => {
+    // A timed-out generation is still billed for the tokens produced so far.
+    if (error instanceof ProjectAiError && error.code === "ai_unavailable:timeout") {
+      throw new ProjectAiError(error.code, error.status, true);
+    }
+    throw error;
+  });
   const rawUsage = response.usage as Record<string, unknown> | undefined;
   const usage = { input_tokens: Number(rawUsage?.input_tokens ?? 0), output_tokens: Number(rawUsage?.output_tokens ?? 0) };
   try {
@@ -142,6 +175,6 @@ export async function translateProjectText(content: Partial<ProjectContent>, sou
     return { content: translated, usage };
   } catch {
     console.info("[projects.translate] invalid output usage", usage);
-    throw new ProjectAiError("ai_unavailable:invalid_response", 503);
+    throw new ProjectAiError("ai_unavailable:invalid_response", 503, true);
   }
 }
