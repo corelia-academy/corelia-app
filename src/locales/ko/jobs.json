@@ -85,6 +85,10 @@
     "title": "일치하는 채용이 없습니다",
     "description": "검색 범위를 넓히거나 일부 필터를 해제해 보세요."
   },
+  "noJobs": {
+    "title": "데이터가 없습니다.",
+    "description": "최근에 게시된 채용 공고가 없습니다."
+  },
   "infinite": {
     "loading": "채용을 더 불러오는 중…",
     "loadMore": "채용 더 보기",

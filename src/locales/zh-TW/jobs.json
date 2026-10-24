@@ -85,6 +85,10 @@
     "title": "沒有符合的職缺",
     "description": "請嘗試放寬搜尋條件或清除部分篩選。"
   },
+  "noJobs": {
+    "title": "尚無資料。",
+    "description": "近期沒有已發布的職缺。"
+  },
   "infinite": {
     "loading": "正在載入更多職缺…",
     "loadMore": "載入更多職缺",

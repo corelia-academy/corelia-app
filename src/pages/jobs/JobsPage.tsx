@@ -1,5 +1,4 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Briefcase } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -7,6 +6,7 @@ import { useLocation, useNavigate, useParams, useSearchParams } from "react-rout
 import { toast } from "sonner";
 import { parseSalaryFilter } from "./jobFilterUtils";
 
+import { FullPageEmptyState } from "@/components/layouts/FullPageEmptyState";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,6 +17,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTriggerWithIndicator,
 } from "@/components/ui/dropdown-menu";
+import { EmptyStateIllustration } from "@/components/ui/empty-state-illustration";
 import { Input } from "@/components/ui/input";
 import { JobCard } from "@/features/jobs/JobCard";
 import { humanizeJobSlug } from "@/features/jobs/jobFormat";
@@ -167,6 +168,11 @@ export default function JobsPage() {
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError]);
 
+  const hasFilterParams = ["q", "type", "role", "remote", "domain", "skill", "seniority", "region", "employment", "currency", "salary", "days"].some((key) => params.has(key));
+  if (jobsQuery.isSuccess && !landing && !hasFilterParams && jobs.length === 0 && !latestPage?.hiddenCount) {
+    return <FullPageEmptyState title={t("noJobs.title")} description={t("noJobs.description")} />;
+  }
+
   return (
     <div className="course-catalog-page container-app pb-8 pt-6 sm:py-8">
       <main className="course-catalog mx-auto flex w-full max-w-[1072px] flex-col gap-6">
@@ -275,7 +281,7 @@ export default function JobsPage() {
         {jobsQuery.isPending ? <div className="mobile-bleed-grid grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-72 animate-pulse rounded-2xl bg-surface-raised" />)}</div> : jobsQuery.isError && !jobsQuery.data ? <div className="mobile-bleed-surface rounded-xl border border-destructive/30 p-8 text-center text-sm text-destructive" role="alert">{t("messages.loadFailed")} <Button type="button" variant="cta" hierarchy="secondary" className="ml-2" onClick={() => void jobsQuery.refetch()}>{t("retry")}</Button></div> : jobs.length ? <div className={cn("mobile-bleed-grid grid gap-6 transition-opacity sm:grid-cols-2 xl:grid-cols-3", jobsQuery.isPlaceholderData && "opacity-60")} aria-busy={jobsQuery.isPlaceholderData || undefined}>{jobs.map((job) => {
           const state = stateByJobId[job.id];
           return <JobCard publicAppearance key={job.id} job={job} state={state} busy={stateMutation.isPending && stateMutation.variables?.jobId === job.id} onToggleSaved={() => mutateState(job.id, { saved: !state?.saved })} />;
-        })}</div> : <div className="mobile-bleed-surface rounded-xl border border-border-subtle bg-surface-base p-12 text-center"><Briefcase className="mx-auto size-8 text-foreground-subtle" weight="duotone" aria-hidden /><h2 className="mt-3 text-heading-small font-display">{t("empty.title")}</h2><p className="mt-1 text-sm text-foreground-muted">{t("empty.description")}</p></div>}
+        })}</div> : <div className="flex min-h-[31.25rem] items-center justify-center"><EmptyStateIllustration type="search" size="medium" title={t("empty.title")} description={t("empty.description")} /></div>}
         {jobsQuery.hasNextPage ? <div ref={loadMoreRef} className="flex min-h-10 items-center justify-center text-sm text-foreground-muted" role="status" aria-live="polite">{jobsQuery.isFetchingNextPage ? t("infinite.loading") : jobsQuery.isFetchNextPageError ? <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void jobsQuery.fetchNextPage()}>{t("infinite.retry")}</Button> : typeof IntersectionObserver === "undefined" ? <Button type="button" variant="cta" hierarchy="secondary" onClick={() => void jobsQuery.fetchNextPage()}>{t("infinite.loadMore")}</Button> : <span className="sr-only">{t("infinite.ready")}</span>}</div> : null}
       </main>
     </div>
