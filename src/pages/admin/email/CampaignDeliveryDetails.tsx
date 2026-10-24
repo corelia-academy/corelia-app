@@ -23,7 +23,7 @@ const sentStatuses = new Set(["accepted", "delivered", "bounced", "complained"])
 const filters = ["", "accepted", "delivered", "queued", "failed", "bounced", "indeterminate"];
 
 function localTime(value: string | null): string {
-  return value ? new Intl.DateTimeFormat(intlLocale(), { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(value)) : "—";
+  return value ? new Intl.DateTimeFormat(intlLocale(), { dateStyle: "short", timeStyle: "short" }).format(new Date(value)) : "—";
 }
 
 export function CampaignDeliveryDetails({ campaignId, initialStatus = "" }: { campaignId: string; initialStatus?: string }) {

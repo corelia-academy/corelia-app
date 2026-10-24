@@ -44,9 +44,10 @@ import { canEditContestProject } from "@/lib/hackathons";
 import type { HackathonOutletContext } from "./ContestPublicLayout";
 import { ContestPreparationCard } from "./components/ContestPreparationCard";
 import { formatPrizeAmount } from "./utils/formatPrizeAmount";
-import { formatVietnamDateTime } from "./utils/formatVietnamDateTime";
+import { formatEventDateTime } from "./utils/formatEventDateTime";
 import { listProjectTaxonomyOptions, projectTaxonomyNames } from "@/lib/projectTaxonomy";
 import { getHackathonSocialPostEmbed } from "@/lib/hackathonSocialPosts";
+import { timeZoneOffsetLabel, resolvedTimeZone } from "@/lib/timezone";
 import { useContestLearningLinks } from "./hooks/useContestLearningLinks";
 
 const HACKATHON_TAB_TITLE_CLASS =
@@ -243,7 +244,7 @@ export function HackathonTimelineTab() {
     );
   }
   const getDateTimeParts = (value: string): [string, string] => {
-    const [date = "", time = ""] = formatVietnamDateTime(value, locale, { includeTimezone: false }).split(" · ");
+    const [date = "", time = ""] = formatEventDateTime(value, locale, { includeTimezone: false }).split(" · ");
     return [date, time];
   };
   const steps = timeline.map((item) => {
@@ -274,7 +275,7 @@ export function HackathonTimelineTab() {
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-normal leading-[1.4] tracking-[0.28px] text-foreground-subtle">
             <time dateTime={item.starts_at}>{startDate}{endDate && endDate !== startDate ? ` – ${endDate}` : ""}</time>
             <Separator orientation="vertical" className="hidden h-4 sm:block" />
-            <span>{startTime}{item.ends_at ? ` – ${endTime}` : ""} ICT (UTC+7)</span>
+            <span>{startTime}{item.ends_at ? ` – ${endTime}` : ""} {timeZoneOffsetLabel(resolvedTimeZone())}</span>
           </div>
           <h3 className="font-display text-[18px] font-medium leading-[1.2] text-hackathon-timeline-title">{item.title}</h3>
           {item.description_markdown ? <div className="text-sm font-normal leading-[1.4] tracking-[0.28px] text-foreground-subtle"><Markdown content={item.description_markdown} compact /></div> : null}

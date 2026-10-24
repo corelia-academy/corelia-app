@@ -61,7 +61,6 @@
     "participantsCount": "{{displayCount}} 位参与者",
     "submissionDeadline": "提交截止时间",
     "registrationDeadline": "报名截止时间",
-    "timezoneLabel": "ICT (UTC+7)",
     "registrationCountdown": "报名将在 {{time}} 后截止",
     "timeUnit": {
       "hours": "小时"

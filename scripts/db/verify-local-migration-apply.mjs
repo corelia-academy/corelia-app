@@ -29,6 +29,7 @@ const sqlTestPaths = [
   "scripts/db/tests/hackathon-taxonomy-contract.integration.sql",
   "scripts/db/tests/search-public.integration.sql",
   "scripts/db/tests/search-trending-abuse.integration.sql",
+  "scripts/db/tests/notification-storage-abuse.integration.sql",
 ].map((path) => resolve(process.cwd(), path));
 
 console.log("===============================================================================");
@@ -78,7 +79,7 @@ for (const sqlTestPath of sqlTestPaths) {
   }
 
   try {
-    if (["certificate-analytics.integration.sql", "project-moderation.integration.sql", "xp-rpc-boundary.integration.sql", "feed-xp-suggestions.integration.sql", "feed-people-timelines.integration.sql", "course-updating-completion.integration.sql", "xp-leaderboard.integration.sql", "qa661-xp-feed-wallet.integration.sql"].some((name) => sqlTestPath.endsWith(name))) {
+    if (["certificate-analytics.integration.sql", "project-moderation.integration.sql", "xp-rpc-boundary.integration.sql", "feed-xp-suggestions.integration.sql", "feed-people-timelines.integration.sql", "course-updating-completion.integration.sql", "xp-leaderboard.integration.sql", "qa661-xp-feed-wallet.integration.sql", "notification-storage-abuse.integration.sql"].some((name) => sqlTestPath.endsWith(name))) {
       execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
         input: readFileSync(resolve(sqlTestPath)), stdio: ["pipe", "inherit", "inherit"],
       });

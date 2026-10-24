@@ -135,7 +135,7 @@ export default function AdminBranding() {
             <input
               ref={fileRef}
               type="file"
-              accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+              accept="image/png,image/jpeg,image/jpg"
               className="hidden"
               onChange={(e) => void handleUpload(e.target.files?.[0] ?? null)}
             />

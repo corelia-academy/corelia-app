@@ -58,6 +58,14 @@
       },
       "active": "Active"
     },
+    "timezone": {
+      "title": "Timezone",
+      "description": "Dates and times across the app are shown in this timezone. When signed in, this preference is synced across your devices.",
+      "label": "Display timezone",
+      "auto": "Auto-detect ({{timezone}})",
+      "current": "Current time: {{time}}",
+      "saveFailed": "Could not save your timezone. Please try again."
+    },
     "appearance": {
       "title": "Appearance",
       "description": "Pick a theme that fits your environment.",

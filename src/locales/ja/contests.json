@@ -61,7 +61,6 @@
     "participantsCount": "参加者 {{displayCount}} 人",
     "submissionDeadline": "提出締め切り",
     "registrationDeadline": "登録締め切り",
-    "timezoneLabel": "ICT (UTC+7)",
     "registrationCountdown": "登録締め切りまであと {{time}}",
     "timeUnit": {
       "hours": "時間"

@@ -48,6 +48,8 @@ export interface Profile {
   following_count?: number;
   /** Ngôn ngữ UI người dùng chọn (vd: vi/en) */
   locale?: Locale | null;
+  /** Múi giờ hiển thị (IANA); null = tự động phát hiện */
+  timezone?: string | null;
   /** Open Campus ID (OCID) đã liên kết (nếu có) */
   ocid?: string | null;
   /** Ethereum address liên kết với OCID (nếu có) */
@@ -114,6 +116,7 @@ export interface ProfileUpdate {
   follower_count?: number;
   following_count?: number;
   locale?: Locale | null;
+  timezone?: string | null;
   ocid?: string | null;
   ocid_eth_address?: string | null;
   ocid_connected_at?: string | null;

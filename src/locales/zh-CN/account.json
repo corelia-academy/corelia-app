@@ -58,6 +58,14 @@
       },
       "active": "当前使用"
     },
+    "timezone": {
+      "title": "时区",
+      "description": "应用中的日期和时间将按此时区显示。登录后，此偏好会在你的所有设备间同步。",
+      "label": "显示时区",
+      "auto": "自动检测（{{timezone}}）",
+      "current": "当前时间：{{time}}",
+      "saveFailed": "无法保存时区，请重试。"
+    },
     "appearance": {
       "title": "外观",
       "description": "选择适合您使用环境的主题。",

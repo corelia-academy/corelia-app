@@ -27,7 +27,7 @@ export default function AdminCertificateAnalytics() {
     setFilters(current => ({ ...current, [key]: value }));
     setPage(0);
   };
-  const formatDate = (value: string | null) => value ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(value)) : "—";
+  const formatDate = (value: string | null) => value ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—";
   const mail = (status: string | null) => {
     if (status === "accepted") return t("certificateAnalytics.mail.accepted");
     if (status === "provider_error") return t("certificateAnalytics.mail.provider_error");

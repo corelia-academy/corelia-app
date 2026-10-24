@@ -1,10 +1,10 @@
-const HACKATHON_TIME_ZONE = "Asia/Ho_Chi_Minh";
+import { resolvedTimeZone, timeZoneOffsetLabel } from "@/lib/timezone";
 
-function formatCompactDate(date: Date, locale: string): string {
+function formatCompactDate(date: Date, locale: string, timeZone: string): string {
   const formatter = new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
-    timeZone: HACKATHON_TIME_ZONE,
+    timeZone,
   });
 
   if (!locale.toLowerCase().startsWith("en")) return formatter.format(date);
@@ -27,23 +27,24 @@ function formatCompactDate(date: Date, locale: string): string {
   return `${month} ${day}${suffix}`;
 }
 
-/** Public hackathon times use the event's Vietnam timezone on every device. */
-export function formatVietnamDateTime(
+/** Hackathon times in the user's display timezone (Settings → Timezone). */
+export function formatEventDateTime(
   value: string,
   locale: string,
   options: { includeTimezone?: boolean; compact?: boolean } = {},
 ): string {
   const date = new Date(value);
+  const timeZone = resolvedTimeZone();
   const formattedDate = options.compact
-    ? formatCompactDate(date, locale)
+    ? formatCompactDate(date, locale, timeZone)
     : new Intl.DateTimeFormat(locale, {
         dateStyle: "medium",
-        timeZone: HACKATHON_TIME_ZONE,
+        timeZone,
       }).format(date);
   const formattedTime = new Intl.DateTimeFormat(locale, {
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: HACKATHON_TIME_ZONE,
+    timeZone,
     hour12: false,
   }).format(date);
   const dateTime = options.compact
@@ -51,5 +52,5 @@ export function formatVietnamDateTime(
     : `${formattedDate} · ${formattedTime}`;
   return options.includeTimezone === false
     ? dateTime
-    : `${dateTime} ICT (UTC+7)`;
+    : `${dateTime} ${timeZoneOffsetLabel(timeZone)}`;
 }
