@@ -26,6 +26,7 @@ try {
     { path: `course-thumbnails/${course}/${randomUUID()}.png`, manager: owner },
     { path: `contest-banners/${hackathon}/${Date.now()}.png`, manager: adminActor },
     { path: `contest-thumbnails/${hackathon}/${Date.now()}.png`, manager: adminActor },
+    { path: `contest-org-partner-logos/${hackathon}/host/${Date.now()}.png`, manager: adminActor },
   ];
   const anonymous = client(env.ANON_KEY);
   for (const { path, manager } of cases) {
@@ -43,7 +44,11 @@ try {
     assert.ifError(removed.error);
     assert.equal(removed.data?.length, 1, `${manager.name} delete ${path}`);
   }
-  console.log('PASS: cdn course/hackathon artwork — manager upload/delete, stranger/anonymous denied, public read, no anonymous listing.');
+  // Organizational partner logos are not part of the cdn host-logo policy.
+  const partnerPath = `contest-org-partner-logos/${hackathon}/partner-1/${Date.now()}.png`;
+  paths.push(partnerPath);
+  assert((await adminActor.client.storage.from('cdn').upload(partnerPath, png())).error, 'partner logo upload to cdn denied');
+  console.log('PASS: cdn course/hackathon artwork and host logos — manager upload/delete, partner logos stay out of cdn, stranger/anonymous denied, public read, no anonymous listing.');
 } finally {
   if (paths.length) await admin.storage.from('cdn').remove(paths);
   await admin.from('hackathons').delete().eq('id', hackathon);
