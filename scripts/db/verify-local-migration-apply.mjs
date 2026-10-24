@@ -155,6 +155,9 @@ execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "
   input: readFileSync(resolve("scripts/db/tests/studio-catalog-ranking.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
 });
 execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/studio-start-gate.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
   input: readFileSync(resolve("scripts/db/tests/studio-courses-drop-priority.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
 });
 execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {

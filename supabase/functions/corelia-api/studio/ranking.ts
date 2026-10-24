@@ -417,9 +417,9 @@ export function laterMark(a: string | null, b: string | null): string | null {
 }
 
 /**
- * Whether the production order must be computed again. `mark` is the newest finished research or
- * manual order now (null: nothing to rank); `latest` is the newest production ranking, with the mark
- * it was computed from.
+ * Whether the production order must be computed again. `mark` is the newest finished research,
+ * manual order, course update, or course-path update now (null: no research has finished); `latest`
+ * is the newest production ranking, with the mark it was computed from.
  */
 export function isRankingStale(mark: string | null, latest: { source_as_of: string | null } | null): boolean {
   if (mark === null) return false;

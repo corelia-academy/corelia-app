@@ -49,7 +49,6 @@ function research(l: Levels = {}, confidence = "medium"): CatalogResearch {
     })),
     web_evidence: [],
     input_evidence: [],
-    open_questions: [],
   };
 }
 
@@ -197,6 +196,15 @@ describe("production order", () => {
     const list = ["idea", "not_passed", "needs_update", "queued", "generating", "published"].map((status, n) => course(String(n + 1), { status }));
     const rows = production(input(list, Object.fromEntries(list.map((c) => [c.id, L(4, 4)]))));
     expect(rows.map((r) => Number(r.course_id.slice(-12))).sort()).toEqual([1, 2, 3]);
+  });
+
+  it("V-01: a queued run has no production row; its failed not_passed course is ranked again", () => {
+    const queued = course("1", { status: "queued" });
+    const failed = course("2", { status: "not_passed" });
+    const rows = production(input([queued, failed], { [queued.id]: L(4, 4), [failed.id]: L(4, 4) }));
+
+    expect(rows.some((row) => row.course_id === queued.id)).toBe(false);
+    expect(rows).toContainEqual(expect.objectContaining({ course_id: failed.id, rank: 1, job_id: `job-${failed.id}` }));
   });
 
   it("KB4: the base course stands right before its dependent and says why", () => {

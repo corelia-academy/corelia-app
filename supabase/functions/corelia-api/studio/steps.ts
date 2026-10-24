@@ -10,6 +10,7 @@ import {
   type LessonContext,
 } from "./lessons.ts";
 import { PROMPTS, promptVersion, type AgentRole, type PromptKey } from "./prompts.ts";
+import type { BriefCatalogResearch } from "./catalog_research_brief.ts";
 
 export const STEP_ORDER = [
   "brief",
@@ -89,6 +90,8 @@ export interface RunContext {
   lesson?: LessonContext | null;
   /** Set while the research is being redone for a request of the curriculum. */
   researchGap?: ResearchGap | null;
+  /** The A1 profile attached to this run by D6; absent on legacy runs. */
+  catalogResearch?: BriefCatalogResearch | null;
 }
 
 export type Acceptance = { ok: true; summary: string } | { ok: false; reason: string };
@@ -566,6 +569,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
       course: ctx.course,
       paths: ctx.paths,
       tracks: ctx.scopes,
+      ...(ctx.catalogResearch ? { catalog_research: ctx.catalogResearch } : {}),
       platform_formats: PLATFORM_FORMAT_GUIDE,
     }),
     accept: acceptBrief,

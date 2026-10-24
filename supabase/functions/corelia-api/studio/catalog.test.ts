@@ -20,6 +20,7 @@ import {
   type CatalogResearch,
   type CatalogRows,
 } from "./catalog.ts";
+import { PROMPTS } from "./prompts.ts";
 import { MAX_TRANSPORT_FAILURES } from "./retry.ts";
 import { SUBMIT_STALE_MS } from "./steps.ts";
 
@@ -52,7 +53,6 @@ function research(over: Partial<CatalogResearch> = {}): CatalogResearch {
       { evidence_id: "i1", input_ref: "groups.skill.corelia_direction", note: "định hướng của nhóm" },
       { evidence_id: "i2", input_ref: "groups.skill.other_courses", note: "các khóa khác" },
     ],
-    open_questions: [],
     ...over,
   };
 }
@@ -81,12 +81,13 @@ describe("CATALOG_RESEARCH_SCHEMA", () => {
   it("is strict at every object level", () => {
     const seen: string[] = [];
     visit(CATALOG_RESEARCH_SCHEMA, "$", seen);
-    expect(seen.length).toBe(7); // root, shared criterion, by_group item, group criterion, web evidence, input evidence, open question
+    expect(seen.length).toBe(6); // root, shared criterion, by_group item, group criterion, web evidence, input evidence
   });
 
   it("has the contract's top-level fields, with level an integer or null", () => {
     const s = CATALOG_RESEARCH_SCHEMA as { required: string[]; properties: Record<string, any> };
-    expect(s.required).toEqual(["status", "shared", "by_group", "web_evidence", "input_evidence", "open_questions"]);
+    expect(s.required).toEqual(["status", "shared", "by_group", "web_evidence", "input_evidence"]);
+    expect(s.properties).not.toHaveProperty("open_questions");
     expect(s.properties.shared.items.properties.level).toEqual({ type: ["integer", "null"] });
     expect(s.properties.shared.items.properties.criterion.enum).toEqual(["trend", "demand", "ai_feasibility", "maintainability"]);
     expect(s.properties.by_group.items.properties.criteria.items.properties.criterion.enum).toEqual(["corelia_fit", "catalog_gap"]);
@@ -96,10 +97,40 @@ describe("CATALOG_RESEARCH_SCHEMA", () => {
   });
 });
 
+describe("A1 catalog prompt", () => {
+  it("uses v5 and does not request open_questions", () => {
+    const prompt = PROMPTS["a1-catalog-research"];
+    expect(prompt.version).toBe("v5");
+    expect(prompt.system).not.toContain("open_questions");
+    expect(prompt.system).toContain("ít nhất một truy vấn nhắm đúng locale hoặc thị trường của audience");
+  });
+});
+
 describe("acceptCatalogResearch", () => {
-  it("accepts a complete record", () => {
+  it("accepts a complete record without open_questions", () => {
     const r = acceptCatalogResearch(research(), CTX);
     expect(r).toEqual({ ok: true, summary: "8/8 tiêu chí có mức, 1 bằng chứng web, 2 bằng chứng input, evidence_ok." });
+  });
+
+  it("ignores legacy open_questions when validating and carrying prior research", () => {
+    const legacy = {
+      ...research({
+        status: "needs_more_sources",
+        shared: [
+          crit("trend", { level: null, evidence_ids: [], confidence: "low", missing_data: "không có số liệu tại locale" }),
+          crit("demand"),
+          crit("ai_feasibility"),
+          crit("maintainability"),
+        ],
+      }),
+      open_questions: [{ question: "câu hỏi cũ", impact: "", blocking: false, action: "" }],
+    };
+
+    expect(acceptCatalogResearch(legacy, CTX).ok).toBe(true);
+    expect(catalogResearchGap(1, legacy)).toEqual({
+      previous_research: legacy,
+      research_gap: { round: 1, missing: ["trend: không có số liệu tại locale"] },
+    });
   });
 
   // First course of a new group: other_courses is [] in the input, and citing it is the evidence of the gap.

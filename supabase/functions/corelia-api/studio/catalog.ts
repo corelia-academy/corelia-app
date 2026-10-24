@@ -48,10 +48,6 @@ export const CATALOG_RESEARCH_SCHEMA = object({
     type: "array",
     items: object({ evidence_id: str, input_ref: str, note: str }),
   },
-  open_questions: {
-    type: "array",
-    items: object({ question: str, impact: str, blocking: { type: "boolean" }, action: str }),
-  },
 });
 
 /** Model call of one attempt. The model, effort and output budget follow the course research step (A2) until A1 is measured. */
@@ -143,7 +139,6 @@ export interface CatalogResearch {
   by_group: { group_kind: string; criteria: CatalogCriterion[] }[];
   web_evidence: WebEvidence[];
   input_evidence: InputEvidence[];
-  open_questions: { question: string; impact: string; blocking: boolean; action: string }[];
 }
 
 export interface CatalogAcceptContext {

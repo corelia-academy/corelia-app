@@ -17,6 +17,7 @@ import {
 import { advanceCatalogJobs } from "./catalog_run.ts";
 import { purgeExpiredDrafts } from "./drafts.ts";
 import { rerankIfStale } from "./ranking_run.ts";
+import { loadCatalogResearchForBrief } from "./catalog_research_brief.ts";
 import { agentKey, errorMessage, failGeneration, loadFailureKind } from "./generations.ts";
 import { pollResponse, submitResponse } from "./openai.ts";
 import { publishRun, PublishRejected } from "./publish.ts";
@@ -51,6 +52,8 @@ const START_ERRORS: Record<string, number> = {
   course_not_found: 404,
   course_not_startable: 409,
   course_has_no_path: 409,
+  course_not_researched: 409,
+  course_not_in_queue: 409,
   run_id_conflict: 409,
 };
 
@@ -58,6 +61,7 @@ export interface RunRow {
   id: string;
   course_id: string;
   started_at: string;
+  catalog_job_id?: string | null;
 }
 
 // Studio is admin only: support_staff is excluded, matching studio_can_write() in the schema.
@@ -77,10 +81,22 @@ export async function handleStudioStart(req: Request, db: SupabaseClient): Promi
   const resumeFrom = body.resume_from_run_id === undefined ? null : String(body.resume_from_run_id);
   if (!UUID_RE.test(courseId) || !UUID_RE.test(runId) || (resumeFrom !== null && !UUID_RE.test(resumeFrom))) return json({ message: "invalid_input" }, 400);
 
+  const ranking = await rerankIfStale(db);
+  if (ranking.action === "failed") {
+    console.error("[corelia-api] studio start: ranking refresh failed; using the latest saved queue");
+  }
+
   const { data, error } = await db.rpc("studio_start_run", { p_course_id: courseId, p_run_id: runId, p_started_by: userId, p_resume_from: resumeFrom });
   if (error) {
     const status = START_ERRORS[error.message] ?? (error.code === "23505" ? 409 : undefined);
-    if (status) return json({ message: error.code === "23505" ? "course_has_running_run" : error.message }, status);
+    if (status) {
+      const message = error.code === "23505" ? "course_has_running_run" : error.message;
+      if (message === "course_not_in_queue") {
+        const reason = queueReason(error.details) ?? await readQueueReason(db, courseId);
+        return json({ message, reason }, status);
+      }
+      return json({ message }, status);
+    }
     throw new Error(error.message);
   }
   const result = data as StartResult;
@@ -100,7 +116,7 @@ export async function handleStudioTick(req: Request, db: SupabaseClient): Promis
   // Least recently advanced first, so every running run moves forward across ticks.
   const { data: runs, error } = await db
     .from("studio_runs")
-    .select("id,course_id,started_at")
+    .select("id,course_id,started_at,catalog_job_id")
     .eq("status", "running")
     .order("updated_at", { ascending: true })
     .limit(RUNS_PER_TICK);
@@ -319,7 +335,7 @@ async function renderDrafts(db: SupabaseClient, run: RunRow, records: Record<str
 // structure_check and journey_test run in the tick itself. A failure ends the run as a draft with the
 // list of problems; a check that could not be made (links unreachable for now) is retried next tick.
 async function runCheck(db: SupabaseClient, run: RunRow, check: CodeStep) {
-  const ctx = await loadContext(db, run);
+  const ctx = await loadContext(db, run, check);
   const curriculum = ctx.outputs.curriculum;
   const records = await loadRecords(db, run, ctx);
 
@@ -363,7 +379,7 @@ async function runCheck(db: SupabaseClient, run: RunRow, check: CodeStep) {
 // Writes the course through the app's own tables. A refusal by the database becomes the run's reason;
 // a failure to reach it is retried on the next tick (publishing is idempotent per run).
 async function runPublish(db: SupabaseClient, run: RunRow) {
-  const ctx = await loadContext(db, run);
+  const ctx = await loadContext(db, run, "publish");
   const records = await loadRecords(db, run, ctx);
   const course = await db.from("studio_courses").select("title").eq("id", run.course_id).single();
   if (course.error) throw new Error(course.error.message);
@@ -445,7 +461,7 @@ async function reopenCurriculum(db: SupabaseClient, runId: string, attempt: numb
   });
 }
 
-async function loadContext(db: SupabaseClient, run: RunRow, lessonId?: string): Promise<RunContext> {
+export async function loadContext(db: SupabaseClient, run: RunRow, step?: StepKey, lessonId?: string): Promise<RunContext> {
   const [course, links, generations] = await Promise.all([
     db.from("studio_courses").select("title,level").eq("id", run.course_id).single(),
     db.from("studio_course_paths").select("studio_paths(group_kind,title)").eq("course_id", run.course_id),
@@ -458,7 +474,10 @@ async function loadContext(db: SupabaseClient, run: RunRow, lessonId?: string): 
     return p ? [{ track: p.group_kind, title: p.title }] : [];
   });
   const tracks = [...new Set(paths.map((p) => p.track))];
-  const scopes = await db.from("studio_catalog_scopes").select("group_kind,audience,corelia_direction,locale").in("group_kind", tracks);
+  const [scopes, catalogResearch] = await Promise.all([
+    db.from("studio_catalog_scopes").select("group_kind,audience,corelia_direction,locale").in("group_kind", tracks),
+    step === "brief" && run.catalog_job_id ? loadCatalogResearchForBrief(db, run.catalog_job_id, tracks) : Promise.resolve(null),
+  ]);
   if (scopes.error) throw new Error(scopes.error.message);
 
   // A curriculum that asked for more research is not a curriculum: it only feeds the research gap.
@@ -478,10 +497,46 @@ async function loadContext(db: SupabaseClient, run: RunRow, lessonId?: string): 
       corelia_direction: s.corelia_direction,
       locale: s.locale,
     })),
+    catalogResearch,
     outputs,
     today: utcDate(Date.now()),
     lesson: lessonId ? await loadLessonContext(db, run, lessonId) : null,
   };
+}
+
+const QUEUE_REASONS = new Set([
+  "not_ranked",
+  "not_researched",
+  "missing_core_criteria",
+  "no_path",
+  "prerequisite_cycle",
+  "blocked_by_prerequisite",
+]);
+
+function queueReason(detail: unknown): string | null {
+  return typeof detail === "string" && QUEUE_REASONS.has(detail) ? detail : null;
+}
+
+async function readQueueReason(db: SupabaseClient, courseId: string): Promise<string> {
+  const latest = await db
+    .from("studio_catalog_rankings")
+    .select("id")
+    .is("group_kind", null)
+    .order("computed_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (latest.error) throw new Error(latest.error.message);
+  if (!latest.data) return "not_ranked";
+
+  const score = await db
+    .from("studio_catalog_scores")
+    .select("excluded_reason")
+    .eq("ranking_id", latest.data.id)
+    .eq("course_id", courseId)
+    .maybeSingle();
+  if (score.error) throw new Error(score.error.message);
+  return queueReason(score.data?.excluded_reason) ?? "not_ranked";
 }
 
 async function submitStep(
@@ -500,7 +555,7 @@ async function submitStep(
     await finishRun(db, run, step, "draft_failed", `Chưa cấu hình ${agentKeyEnv(agent.role)}.`, attempt);
     return;
   }
-  const ctx = await loadContext(db, run, lessonId);
+  const ctx = await loadContext(db, run, step, lessonId);
   const tools = lessonId && spec.lessonTools ? spec.lessonTools(lessonId, ctx) : spec.tools;
   // After an infrastructure failure the retry is not a correction: the model is not told it was
   // rejected, and a provider failure (possibly no flex capacity) goes to the default tier.
@@ -620,7 +675,7 @@ async function pollStep(db: SupabaseClient, run: RunRow, step: StepKey, latest: 
   try {
     acceptance = output === null
       ? { ok: false, reason: "Đầu ra không phải JSON hợp lệ." }
-      : await spec.accept(output, await loadContext(db, run, lessonId), lessonId);
+      : await spec.accept(output, await loadContext(db, run, step, lessonId), lessonId);
   } catch (e) {
     // A check that could not be made (e.g. YouTube unreachable) is not a verdict on the output:
     // leave the response unread so the next tick polls it again without spending an attempt.

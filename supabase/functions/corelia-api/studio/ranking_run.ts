@@ -120,17 +120,22 @@ export async function loadRankingInput(db: SupabaseClient): Promise<{ input: Ran
 }
 
 /**
- * Newest finished research or manual order, as the database prints it; null when no research has
- * finished. Read before the inputs of a pass, so a result that lands later is newer than the mark.
+ * Newest finished research, manual order, course update, or course-path update, as the database
+ * prints it; null when no research has finished. Read before the inputs of a pass, so a result
+ * that lands later is newer than the mark.
  */
-async function sourceMark(db: SupabaseClient): Promise<string | null> {
-  const [job, manual] = await Promise.all([
+export async function sourceMark(db: SupabaseClient): Promise<string | null> {
+  const [job, manual, course, coursePath] = await Promise.all([
     db.from("studio_catalog_jobs").select("finished_at").in("status", RESEARCH_DONE).order("finished_at", { ascending: false }).limit(1).maybeSingle(),
     db.from("studio_catalog_manual_orders").select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    db.from("studio_courses").select("updated_at").order("updated_at", { ascending: false }).limit(1).maybeSingle(),
+    db.from("studio_course_paths").select("updated_at").order("updated_at", { ascending: false }).limit(1).maybeSingle(),
   ]);
-  for (const r of [job, manual]) if (r.error) throw new Error(r.error.message);
+  for (const r of [job, manual, course, coursePath]) if (r.error) throw new Error(r.error.message);
   const finished: string | null = job.data?.finished_at ?? null;
-  return finished === null ? null : laterMark(finished, manual.data?.created_at ?? null);
+  if (finished === null) return null;
+  return [manual.data?.created_at, course.data?.updated_at, coursePath.data?.updated_at]
+    .reduce((mark, candidate) => laterMark(mark, candidate ?? null), finished);
 }
 
 /** Computes and saves one pass: the three group rankings and the production order. */
