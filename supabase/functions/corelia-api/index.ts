@@ -25,6 +25,7 @@ import { handleHackathonWinnerAwardNotify } from "./hackathons/winner_award_noti
 import { corsHeadersForRequest, json, withCors } from "./lib/http.ts";
 import { handleNotificationsUnsubscribe } from "./notifications/unsubscribe.ts";
 import { handleProjectCollaborationInviteEmail } from "./projects/collaboration_invite_email.ts";
+import { handleProjectModerationRun } from "./projects/moderation.ts";
 import {
   handleProjectTranslationRequest,
   handleProjectTranslationsRun,
@@ -226,6 +227,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleProjectTranslationStatus(req, db);
     } else if (op === "projects.translations.run" && req.method === "POST") {
       response = await handleProjectTranslationsRun(req, db);
+    } else if (op === "projects.moderation.run" && req.method === "POST") {
+      response = await handleProjectModerationRun(req, db);
     } else if (op === "projects.save" && req.method === "POST") {
       response = await handleProjectSave(req, db);
     } else if (op === "projects.media.upload" && req.method === "POST") {

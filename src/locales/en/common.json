@@ -697,7 +697,33 @@
       "blockedError": "This project is blocked. An admin must unblock it before it can be published again.",
       "contentError": "Add a summary and detailed description before publishing.",
       "previous": "Previous",
-      "next": "Next"
+      "next": "Next",
+      "reported": "Reported"
+    },
+    "report": {
+      "action": "Report",
+      "title": "Report this project",
+      "description": "Tell us what is wrong. Reports are private; the owner is not told who reported.",
+      "reason": "Reason",
+      "note": "Details (optional)",
+      "submit": "Send report",
+      "success": "Thanks. Our team will review this project.",
+      "failed": "Could not send the report. Please try again.",
+      "rateLimited": "You have sent many reports today. Please try again tomorrow.",
+      "openCount": "Open reports: {{total}}",
+      "empty": "No projects have open reports.",
+      "dismiss": "Dismiss reports",
+      "markActioned": "Mark handled",
+      "reasons": {
+        "spam": "Spam or advertising",
+        "harassment": "Harassment or bullying",
+        "sexual": "Sexual content",
+        "violence": "Violence",
+        "hate": "Hate speech",
+        "illegal": "Illegal content",
+        "plagiarism": "Plagiarism or stolen work",
+        "other": "Other"
+      }
     }
   },
   "search": {

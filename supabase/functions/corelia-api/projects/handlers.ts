@@ -9,6 +9,7 @@ import {
   moderateProjectText,
   ProjectAiError,
 } from "./openai.ts";
+import { enqueueProjectModeration, moderateProjectTextCached, type ModerationEntry } from "./moderation.ts";
 import {
   detectImageMime,
   isOwnedProjectMediaPath,
@@ -46,30 +47,15 @@ const SAVE_LIMIT = { bucket: "project_save", limit: 30, windowSeconds: 600 };
 const MEDIA_UPLOAD_LIMIT = { bucket: "project_media_upload", limit: 20, windowSeconds: 600 };
 const TRANSLATE_DAILY_LIMIT = { bucket: "project_translation_daily", limit: 40, windowSeconds: 86_400 };
 
-type ModerationEntry = { field: string; text: string };
-
-type PersistedText = { keys: Set<string>; locales: Map<string, Record<string, unknown>> };
-
-// Text already persisted on the project passed moderation when it was saved,
-// so only new or changed text is sent to the provider again.
-async function persistedProjectText(db: SupabaseClient, projectId: string, primary: Record<string, unknown> | null): Promise<PersistedText> {
-  const keys = new Set<string>();
+// Stored secondary-locale text, used to tell hand edits from untouched copies.
+async function persistedProjectLocales(db: SupabaseClient, projectId: string): Promise<Map<string, Record<string, unknown>>> {
   const locales = new Map<string, Record<string, unknown>>();
-  if (primary) {
-    for (const field of ["title", "summary", "description", "progress"]) {
-      const text = primary[field];
-      if (typeof text === "string" && text.trim()) keys.add(`${field}\u0000${text.trim()}`);
-    }
-  }
   const { data, error } = await db.from("project_locales").select("locale,data").eq("project_id", projectId);
   if (error) throw new Error(error.message);
   for (const row of (data ?? []) as Array<{ locale: string; data: Record<string, unknown> | null }>) {
     locales.set(row.locale, row.data ?? {});
-    for (const [field, text] of Object.entries(row.data ?? {})) {
-      if (typeof text === "string" && text.trim()) keys.add(`${row.locale}.${field}\u0000${text.trim()}`);
-    }
   }
-  return { keys, locales };
+  return locales;
 }
 
 // Non-primary locales whose text this request changes are owner-authored, so
@@ -89,10 +75,6 @@ function handEditedLocales(
 async function syncProjectTranslations(db: SupabaseClient, projectId: string, manualLocales: string[]): Promise<void> {
   const { error } = await db.rpc("sync_project_translations", { p_project_id: projectId, p_manual_locales: manualLocales });
   if (error) console.warn("[projects.translations] sync failed", projectId, error.message);
-}
-
-function changedModerationEntries(entries: ModerationEntry[], persisted: Set<string>): ModerationEntry[] {
-  return entries.filter(entry => entry.text.trim() && !persisted.has(`${entry.field}\u0000${entry.text.trim()}`));
 }
 
 async function actorCanManageProject(db: SupabaseClient, user: User, projectId: string, allowMissing = true): Promise<{
@@ -311,10 +293,8 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
       const access = await actorCanManageProject(db,user,projectId,false);
       if (!access.allowed) throw new Error("forbidden:project_update");
       await consumeRateLimit(db, SAVE_LIMIT.bucket, user.id, SAVE_LIMIT.limit, SAVE_LIMIT.windowSeconds);
-      const persisted = await persistedProjectText(db, projectId, null);
-      await moderateProjectText(Object.entries(data)
-        .filter(([field,text]) => !persisted.keys.has(`${locale}.${field}\u0000${text.trim()}`))
-        .map(([field,text]) => ({ field: `locale.${field}`, text })));
+      const persisted = await persistedProjectLocales(db, projectId);
+      // Locale edits never publish a project, so they are checked in the background.
       const { error } = await db.rpc("save_ai_gated_project_locale", {
         p_actor_id: user.id,
         p_project_id: projectId,
@@ -322,7 +302,8 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
         p_data: data,
       });
       if (error) throw new Error(error.message);
-      await syncProjectTranslations(db, projectId, handEditedLocales({ [locale]: data }, undefined, persisted.locales));
+      await syncProjectTranslations(db, projectId, handEditedLocales({ [locale]: data }, undefined, persisted));
+      await enqueueProjectModeration(db, projectId);
       return json({ ok: true });
     }
 
@@ -362,7 +343,7 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
     // Existing source is immutable in the save RPC; do not trust a caller's
     // source/visibility to exempt an existing hackathon project from requirements.
     const { data: existing, error: existingError } = await db.from("projects")
-      .select("source_type,title,summary,description,progress,pitch_video_url,blocked").eq("id", projectId).maybeSingle();
+      .select("source_type,visibility,title,summary,description,progress,pitch_video_url,blocked").eq("id", projectId).maybeSingle();
     if (existingError) throw new Error(existingError.message);
     if (!existing && String(body.source_type ?? "").trim() !== "hackathon") throw new Error("forbidden:project_source_create");
     if (!existing && !String(body.source_id ?? "").trim()) throw new Error("invalid_input:hackathon_id");
@@ -383,16 +364,25 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
     }
 
     await consumeRateLimit(db, SAVE_LIMIT.bucket, user.id, SAVE_LIMIT.limit, SAVE_LIMIT.windowSeconds);
-    const persisted: PersistedText = existing
-      ? await persistedProjectText(db, projectId, existing)
-      : { keys: new Set(), locales: new Map() };
-    await moderateProjectText(changedModerationEntries([
-      { field: "title", text: title },
-      { field: "summary", text: summary },
-      { field: "description", text: description ?? "" },
-      { field: "progress", text: progress ?? "" },
-      ...Object.entries(locales ?? {}).filter(([locale]) => locale !== primary).flatMap(([locale, content]) => Object.entries(content).map(([field,text]) => ({ field: `${locale}.${field}`, text }))),
-    ], persisted.keys));
+    const persisted = existing ? await persistedProjectLocales(db, projectId) : new Map<string, Record<string, unknown>>();
+    // Hybrid moderation: the save that first makes a project visible is checked
+    // before it commits; later edits to a visible project, and private drafts,
+    // are checked by the background worker, which hides the project if flagged.
+    const visibleBefore = Boolean(existing && !existing.blocked && existing.visibility !== "private");
+    const moderateNow = publishing && !visibleBefore;
+    if (moderateNow) {
+      const entries: ModerationEntry[] = [
+        { field: "title", text: title },
+        { field: "summary", text: summary },
+        { field: "description", text: description ?? String(existing?.description ?? "") },
+        { field: "progress", text: progress ?? String(existing?.progress ?? "") },
+        ...Object.entries(locales ?? {}).filter(([locale]) => locale !== primary).flatMap(([locale, content]) => Object.entries(content).map(([field,text]) => ({ field: `${locale}.${field}`, text: text ?? "" }))),
+        ...[...persisted].filter(([locale]) => locale !== primary && !locales?.[locale as keyof typeof locales]).flatMap(([locale, content]) => Object.entries(content)
+          .filter(([field, text]) => field !== "updated_at" && typeof text === "string")
+          .map(([field, text]) => ({ field: `${locale}.${field}`, text: String(text) }))),
+      ];
+      await moderateProjectTextCached(db, projectId, entries);
+    }
 
     const params = {
       ...(primary ? { p_primary_content_locale: primary, p_locales: locales } : {}),
@@ -421,7 +411,8 @@ export async function handleProjectSave(req: Request, db: SupabaseClient): Promi
     };
     const { data, error } = await db.rpc("save_ai_gated_project_taxonomy", params);
     if (error) throw new Error(error.message);
-    await syncProjectTranslations(db, projectId, handEditedLocales(locales ?? {}, primary, persisted.locales));
+    await syncProjectTranslations(db, projectId, handEditedLocales(locales ?? {}, primary, persisted));
+    if (!moderateNow) await enqueueProjectModeration(db, projectId);
     const committedPaths = [params.p_logo_path, ...params.p_screenshot_paths]
       .filter((path): path is string => Boolean(path));
     if (committedPaths.length) {
@@ -469,6 +460,14 @@ export async function handleProjectManage(req: Request, db: SupabaseClient): Pro
       p_reason: body.reason ?? null,
     });
     if (error) throw new Error(error.message);
+    if (body.action === "unblock") {
+      // A staff unblock reviews the current text; the worker must not re-hide it.
+      const { error: allowError } = await db.rpc("allow_project_moderation_overrides", {
+        p_actor_id: user.id,
+        p_project_id: body.project_id,
+      });
+      if (allowError) console.warn("[projects.manage] moderation allowlist failed", allowError.message);
+    }
     if (body.action === "delete") {
       // Deletion is already committed. Cleanup failure must not report a failed
       // delete; the expiry registry preserves the work for the next cleanup.

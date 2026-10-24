@@ -697,7 +697,33 @@
       "blockedError": "이 프로젝트는 차단되었습니다. 다시 게시하려면 관리자가 차단을 해제해야 합니다.",
       "contentError": "게시하기 전에 요약과 자세한 설명을 추가하세요.",
       "previous": "이전",
-      "next": "다음"
+      "next": "다음",
+      "reported": "신고됨"
+    },
+    "report": {
+      "action": "신고",
+      "title": "이 프로젝트 신고",
+      "description": "무엇이 문제인지 알려 주세요. 신고는 비공개이며 소유자는 누가 신고했는지 알 수 없습니다.",
+      "reason": "사유",
+      "note": "세부 내용(선택)",
+      "submit": "신고 보내기",
+      "success": "감사합니다. 팀에서 이 프로젝트를 검토하겠습니다.",
+      "failed": "신고를 보내지 못했습니다. 다시 시도하세요.",
+      "rateLimited": "오늘 신고를 많이 보냈습니다. 내일 다시 시도하세요.",
+      "openCount": "처리 대기 신고: {{total}}",
+      "empty": "처리 대기 중인 신고가 있는 프로젝트가 없습니다.",
+      "dismiss": "신고 기각",
+      "markActioned": "처리 완료로 표시",
+      "reasons": {
+        "spam": "스팸 또는 광고",
+        "harassment": "괴롭힘",
+        "sexual": "성적인 콘텐츠",
+        "violence": "폭력",
+        "hate": "혐오 발언",
+        "illegal": "불법 콘텐츠",
+        "plagiarism": "표절 또는 도용",
+        "other": "기타"
+      }
     }
   },
   "search": {

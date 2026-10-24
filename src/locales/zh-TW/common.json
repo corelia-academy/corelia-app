@@ -697,7 +697,33 @@
       "blockedError": "此專案已被封鎖。必須由管理員解除封鎖後才能再次發布。",
       "contentError": "發布前，請新增摘要和詳細說明。",
       "previous": "上一頁",
-      "next": "下一頁"
+      "next": "下一頁",
+      "reported": "被檢舉"
+    },
+    "report": {
+      "action": "檢舉",
+      "title": "檢舉此專案",
+      "description": "告訴我們問題所在。檢舉內容保密，專案擁有者不會知道檢舉人。",
+      "reason": "原因",
+      "note": "詳細資訊（選填）",
+      "submit": "送出檢舉",
+      "success": "感謝你的回報，我們的團隊會審核此專案。",
+      "failed": "無法送出檢舉，請再試一次。",
+      "rateLimited": "你今天已送出許多檢舉，請明天再試。",
+      "openCount": "待處理檢舉：{{total}}",
+      "empty": "沒有待處理檢舉的專案。",
+      "dismiss": "駁回檢舉",
+      "markActioned": "標記為已處理",
+      "reasons": {
+        "spam": "垃圾訊息或廣告",
+        "harassment": "騷擾或霸凌",
+        "sexual": "色情內容",
+        "violence": "暴力",
+        "hate": "仇恨言論",
+        "illegal": "違法內容",
+        "plagiarism": "抄襲或盜用作品",
+        "other": "其他"
+      }
     }
   },
   "search": {

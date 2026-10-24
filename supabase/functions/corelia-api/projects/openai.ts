@@ -75,6 +75,31 @@ export async function moderateProjectText(entries: TextEntry[]): Promise<void> {
   }
 }
 
+export const MODERATION_MODEL = "omni-moderation-latest";
+const MODERATION_BATCH = 32;
+
+export type ModerationVerdict = { flagged: boolean; categories: string[] };
+
+/** Batch text moderation that reports every verdict instead of stopping at the first flag. */
+export async function moderateTexts(texts: string[]): Promise<ModerationVerdict[]> {
+  const verdicts: ModerationVerdict[] = [];
+  for (let offset = 0; offset < texts.length; offset += MODERATION_BATCH) {
+    const input = texts.slice(offset, offset + MODERATION_BATCH);
+    const response = await openAiFetch("/moderations", { model: MODERATION_MODEL, input });
+    const results = Array.isArray(response.results) ? response.results : [];
+    if (results.length !== input.length) throw new ProjectAiError("ai_unavailable:invalid_response", 503);
+    for (const raw of results) {
+      const result = raw as Record<string, unknown>;
+      if (typeof result.flagged !== "boolean") throw new ProjectAiError("ai_unavailable:invalid_response", 503);
+      const categories = result.categories && typeof result.categories === "object"
+        ? Object.entries(result.categories as Record<string, unknown>).filter(([, value]) => value === true).map(([key]) => key)
+        : [];
+      verdicts.push({ flagged: result.flagged, categories });
+    }
+  }
+  return verdicts;
+}
+
 export async function moderateProjectImage(bytes: Uint8Array, mime: string): Promise<void> {
   const isLocal =
     Deno.env.get("SUPABASE_URL")?.includes("127.0.0.1") ||

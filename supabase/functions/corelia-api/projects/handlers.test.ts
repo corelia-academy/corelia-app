@@ -1,11 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "../lib/supabase.ts";
-const mocks = vi.hoisted(() => ({ moderate: vi.fn(), rpc: vi.fn(), existing: vi.fn() }));
+const mocks = vi.hoisted(() => ({ moderate: vi.fn(), rpc: vi.fn(), existing: vi.fn(), enqueue: vi.fn() }));
 vi.mock("../lib/supabase.ts", () => ({ verifyBearerUser: async () => ({ id: "11111111-1111-4111-8111-111111111111" }) }));
 vi.mock("./openai.ts", () => ({
   moderateProjectText: mocks.moderate,
   moderateProjectImage: vi.fn(),
   ProjectAiError: class extends Error {},
+}));
+vi.mock("./moderation.ts", () => ({
+  moderateProjectTextCached: (_db: unknown, _projectId: string, entries: unknown) => mocks.moderate(entries),
+  enqueueProjectModeration: mocks.enqueue,
 }));
 import { handleProjectSave, handleProjectMediaUpload, handleProjectMediaDelete } from "./handlers.ts";
 const db = {
@@ -66,7 +70,8 @@ describe("project story save handler", () => {
       expect(mocks.rpc).toHaveBeenCalledWith("save_ai_gated_project_taxonomy", expect.objectContaining(
         Object.fromEntries(Object.entries(resources).map(([field, url]) => [`p_${field}`, url])),
       ));
-      expect(mocks.moderate).toHaveBeenCalled();
+      // Edits to an already visible project are moderated in the background.
+      expect(existing ? mocks.enqueue : mocks.moderate).toHaveBeenCalled();
       for (const url of Object.values(resources)) {
         expect(JSON.stringify(mocks.moderate.mock.calls)).not.toContain(url);
       }
@@ -185,7 +190,7 @@ describe("bilingual project save", () => {
     mocks.moderate.mockRejectedValueOnce(new Error("moderation_blocked:vi.description"));
     const response = await handleProjectSave(request({primary_content_locale:"en",locales:{en:{title:"Title",summary:"Summary",description:"Story"},vi:{description:"Blocked"}}}),db);
     expect(response.status).not.toBe(200);
-    expect(mocks.rpc.mock.calls.map(([name]) => name)).toEqual(["consume_rate_limit"]);
+    expect(mocks.rpc.mock.calls.map(([name]) => name)).not.toContain("save_ai_gated_project_taxonomy");
   });
   it("rejects blocked projects before calling AI", async () => {
     mocks.existing.mockResolvedValue({data:{blocked:true},error:null});
@@ -218,14 +223,23 @@ describe("project save abuse limits", () => {
     mocks.rpc.mockResolvedValue({ data: [{ project_id: base.project_id, project_slug: "project" }], error: null });
   });
 
-  it("only moderates text that differs from the persisted project", async () => {
-    const existing = { owner_id: owner, source_type: "hackathon", title: "Project", summary: "A project summary", description: "A detailed project story", progress: "" };
-    const response = await handleProjectSave(request({ primary_content_locale: "en", locales: {
-      en: { title: "Project", summary: "A project summary", description: "A detailed project story" },
-      vi: { title: "Dự án", summary: "Tóm tắt mới" },
-    } }), dbWith(existing, [{ locale: "vi", data: { title: "Dự án", summary: "Tóm tắt cũ" } }]));
+  it("checks edits to a visible project in the background instead of before saving", async () => {
+    const existing = { owner_id: owner, source_type: "hackathon", visibility: "public", title: "Project", summary: "A project summary", description: "A detailed project story", progress: "" };
+    const response = await handleProjectSave(request({ summary: "A changed summary" }), dbWith(existing, []));
     expect(response.status).toBe(200);
-    expect(mocks.moderate).toHaveBeenCalledWith([{ field: "vi.summary", text: "Tóm tắt mới" }]);
+    expect(mocks.moderate).not.toHaveBeenCalled();
+    expect(mocks.enqueue).toHaveBeenCalledWith(expect.anything(), base.project_id);
+  });
+
+  it("moderates every stored and submitted text before a private draft is first published", async () => {
+    const existing = { owner_id: owner, source_type: "standalone", visibility: "private", title: "Project", summary: "A project summary", description: "A detailed project story", progress: "" };
+    const response = await handleProjectSave(request({ visibility: "public", description: null }), dbWith(existing, [{ locale: "ja", data: { title: "下書き" } }]));
+    expect(response.status).toBe(200);
+    expect(mocks.moderate).toHaveBeenCalledWith(expect.arrayContaining([
+      { field: "description", text: "A detailed project story" },
+      { field: "ja.title", text: "下書き" },
+    ]));
+    expect(mocks.enqueue).not.toHaveBeenCalled();
   });
 
   it("queues background translation and marks only hand-edited locales as manual", async () => {

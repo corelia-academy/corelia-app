@@ -697,7 +697,33 @@
       "blockedError": "Este proyecto está bloqueado. Un administrador debe desbloquearlo antes de que se pueda volver a publicar.",
       "contentError": "Añade un resumen y una descripción detallada antes de publicar.",
       "previous": "Anterior",
-      "next": "Siguiente"
+      "next": "Siguiente",
+      "reported": "Denunciados"
+    },
+    "report": {
+      "action": "Denunciar",
+      "title": "Denunciar este proyecto",
+      "description": "Cuéntanos qué ocurre. Las denuncias son privadas; el propietario no sabe quién denunció.",
+      "reason": "Motivo",
+      "note": "Detalles (opcional)",
+      "submit": "Enviar denuncia",
+      "success": "Gracias. Nuestro equipo revisará este proyecto.",
+      "failed": "No se pudo enviar la denuncia. Inténtalo de nuevo.",
+      "rateLimited": "Has enviado muchas denuncias hoy. Inténtalo de nuevo mañana.",
+      "openCount": "Denuncias abiertas: {{total}}",
+      "empty": "Ningún proyecto tiene denuncias abiertas.",
+      "dismiss": "Descartar denuncias",
+      "markActioned": "Marcar como resuelto",
+      "reasons": {
+        "spam": "Spam o publicidad",
+        "harassment": "Acoso",
+        "sexual": "Contenido sexual",
+        "violence": "Violencia",
+        "hate": "Discurso de odio",
+        "illegal": "Contenido ilegal",
+        "plagiarism": "Plagio o trabajo robado",
+        "other": "Otro"
+      }
     }
   },
   "search": {

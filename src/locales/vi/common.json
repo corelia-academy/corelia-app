@@ -697,7 +697,33 @@
       "blockedError": "Project đã bị chặn. Admin cần bỏ chặn trước khi có thể đăng lại.",
       "contentError": "Cần bổ sung tóm tắt và mô tả chi tiết trước khi công khai.",
       "previous": "Trước",
-      "next": "Tiếp"
+      "next": "Tiếp",
+      "reported": "Bị báo cáo"
+    },
+    "report": {
+      "action": "Báo cáo",
+      "title": "Báo cáo project này",
+      "description": "Cho chúng tôi biết vấn đề. Báo cáo được giữ kín; chủ project không biết ai đã báo cáo.",
+      "reason": "Lý do",
+      "note": "Chi tiết (không bắt buộc)",
+      "submit": "Gửi báo cáo",
+      "success": "Cảm ơn bạn. Đội ngũ sẽ xem xét project này.",
+      "failed": "Không gửi được báo cáo. Vui lòng thử lại.",
+      "rateLimited": "Hôm nay bạn đã gửi nhiều báo cáo. Vui lòng thử lại vào ngày mai.",
+      "openCount": "Báo cáo đang mở: {{total}}",
+      "empty": "Không có project nào đang bị báo cáo.",
+      "dismiss": "Bỏ qua báo cáo",
+      "markActioned": "Đánh dấu đã xử lý",
+      "reasons": {
+        "spam": "Spam hoặc quảng cáo",
+        "harassment": "Quấy rối hoặc bắt nạt",
+        "sexual": "Nội dung tình dục",
+        "violence": "Bạo lực",
+        "hate": "Ngôn từ thù ghét",
+        "illegal": "Nội dung vi phạm pháp luật",
+        "plagiarism": "Đạo nhái hoặc lấy cắp sản phẩm",
+        "other": "Khác"
+      }
     }
   },
   "search": {

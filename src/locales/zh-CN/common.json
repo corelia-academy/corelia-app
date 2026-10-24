@@ -697,7 +697,33 @@
       "blockedError": "此项目已被屏蔽。必须由管理员取消屏蔽后才能再次发布。",
       "contentError": "发布前，请添加摘要和详细描述。",
       "previous": "上一页",
-      "next": "下一页"
+      "next": "下一页",
+      "reported": "被举报"
+    },
+    "report": {
+      "action": "举报",
+      "title": "举报此项目",
+      "description": "告诉我们问题所在。举报内容保密，项目所有者不会知道举报人。",
+      "reason": "原因",
+      "note": "详情（可选）",
+      "submit": "提交举报",
+      "success": "感谢你的反馈，我们的团队会审核此项目。",
+      "failed": "无法提交举报，请重试。",
+      "rateLimited": "你今天已提交了很多举报，请明天再试。",
+      "openCount": "待处理举报：{{total}}",
+      "empty": "没有待处理举报的项目。",
+      "dismiss": "驳回举报",
+      "markActioned": "标记为已处理",
+      "reasons": {
+        "spam": "垃圾信息或广告",
+        "harassment": "骚扰或霸凌",
+        "sexual": "色情内容",
+        "violence": "暴力",
+        "hate": "仇恨言论",
+        "illegal": "违法内容",
+        "plagiarism": "抄袭或盗用作品",
+        "other": "其他"
+      }
     }
   },
   "search": {

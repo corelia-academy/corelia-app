@@ -22,6 +22,7 @@ const sqlTestPaths = [
   "scripts/db/tests/project-translation-quota.integration.sql",
   "scripts/db/tests/rate-limit.integration.sql",
   "scripts/db/tests/project-auto-translation.integration.sql",
+  "scripts/db/tests/project-moderation-queue.integration.sql",
   "scripts/db/tests/jobs-mvp.integration.sql",
   "scripts/db/tests/email-center.integration.sql",
   "scripts/db/tests/career-tracks-retirement.integration.sql",
