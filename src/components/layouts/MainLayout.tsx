@@ -31,7 +31,7 @@ const MainLayout = () => {
       <div className="flex min-h-0 flex-1">
         <MainAppSidebar />
         <SidebarInset
-          className="flex min-h-[calc(100svh-var(--app-header-height))] min-w-0 flex-col lg:overflow-y-auto"
+          className="scrollbar-design flex min-h-[calc(100svh-var(--app-header-height))] min-w-0 flex-col lg:overflow-y-auto"
           style={{ "--main-shell-header-height": "var(--app-header-height)" } as CSSProperties}
         >
           <div className={publicUI ? "public-content flex-1" : "flex-1"}>
