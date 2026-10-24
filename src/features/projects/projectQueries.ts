@@ -3,6 +3,7 @@ import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/
 import {
   countPublicProjects,
   getProjectBySlugOrId,
+  getPublicProjectEntriesByIds,
   listPublicProjects,
   type PublicProjectSort,
   type PublicProjectSourceFilter,
@@ -25,6 +26,8 @@ export const projectKeys = {
   detail: (projectId: string, locale: string) =>
     [...projectKeys.all, "detail", projectId, locale] as const,
   teams: (projectIds: string[]) => [...projectKeys.all, "teams", ...projectIds] as const,
+  entriesByIds: (projectIds: string[], locale: string) =>
+    [...projectKeys.all, "entries", locale, ...projectIds] as const,
 };
 
 export function publicProjectTeamsQueryOptions(projectIds: string[]) {
@@ -34,6 +37,19 @@ export function publicProjectTeamsQueryOptions(projectIds: string[]) {
     queryFn: () => listPublicProjectTeams(ids),
     enabled: ids.length > 0,
     staleTime: 60_000,
+    meta: publicMeta,
+  });
+}
+
+/** Project cards for a known set of ids (e.g. global search results); keeps the caller's id order. */
+export function publicProjectEntriesByIdsQueryOptions(projectIds: string[], locale: string) {
+  const ids = Array.from(new Set(projectIds.map((id) => id.trim()).filter(Boolean)));
+  return queryOptions({
+    queryKey: projectKeys.entriesByIds(ids, locale),
+    queryFn: () => getPublicProjectEntriesByIds(ids, locale),
+    enabled: ids.length > 0,
+    staleTime: 60_000,
+    placeholderData: keepPreviousData,
     meta: publicMeta,
   });
 }
