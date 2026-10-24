@@ -89,13 +89,25 @@ export async function withFirstHackathonXp<T>(action: () => Promise<T>): Promise
   return { value, awarded };
 }
 
-export async function getTodayLikeXpRemaining(userId: string): Promise<number> {
+/**
+ * One ledger read for the user's one-off awards (by source key) and today's project-like awards
+ * (at most 5 per day), instead of a request per mission.
+ */
+export async function getMyXpMissionAwards(
+  userId: string,
+  sourceKeys: string[],
+): Promise<{ awardedKeys: Set<string>; projectLikesToday: number }> {
   const start = `${utcDate(new Date())}T00:00:00.000Z`;
-  const { count, error } = await supabase.from("user_point_ledger")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId).eq("source", "project_liked").gte("occurred_at", start);
+  const { data, error } = await supabase.from("user_point_ledger")
+    .select("source,source_key")
+    .eq("user_id", userId)
+    .or(`source_key.in.(${sourceKeys.join(",")}),and(source.eq.project_liked,occurred_at.gte."${start}")`);
   if (error) throw new Error(error.message);
-  return Math.max(0, 5 - (count ?? 0));
+  const rows = (data ?? []) as Array<{ source: string; source_key: string | null }>;
+  return {
+    awardedKeys: new Set(rows.flatMap((row) => (row.source_key ? [row.source_key] : []))),
+    projectLikesToday: Math.min(5, rows.filter((row) => row.source === "project_liked").length),
+  };
 }
 
 export function utcDate(date: Date): string {

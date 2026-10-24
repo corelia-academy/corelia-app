@@ -159,6 +159,12 @@ export async function handleOgWorkerRequest(request: Request, env: OgWorkerEnv):
           headers: { ...NO_STORE, "Content-Type": "application/json; charset=utf-8" },
         });
       }
+      // Stable image URL for pages cached outside this Worker (landing): resolve to the current revision.
+      if (!url.searchParams.has("v")) {
+        const data = await metadata(env, route.entity, route.id);
+        if (!data) return new Response(request.method === "HEAD" ? null : "Not Found", { status: 404, headers: NO_STORE });
+        return new Response(null, { status: 302, headers: { ...NO_STORE, Location: data.imageUrl } });
+      }
       const upstream = await edge(env, route.entity, "image", route.id,
         request.method as "GET" | "HEAD", url.searchParams.get("v") ?? undefined);
       const headers = new Headers(NO_STORE);

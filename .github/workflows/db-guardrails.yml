@@ -94,9 +94,13 @@ jobs:
 
       - name: Pre-pull Supabase Postgres image
         run: |
+          image=ghcr.io/supabase/postgres:17.6.1.156
+          # Same image on public.ecr.aws, pinned by digest, for when ghcr.io rate-limits pulls.
+          mirror=public.ecr.aws/supabase/postgres@sha256:ca7871b587ca2c401ac0f325df6249c9aa0d25647ded34631158efc51176767f
           for delay in 0 15 45; do
             if [ "$delay" -gt 0 ]; then sleep "$delay"; fi
-            if docker pull ghcr.io/supabase/postgres:17.6.1.156; then exit 0; fi
+            if docker pull "$image"; then exit 0; fi
+            if docker pull "$mirror" && docker tag "$mirror" "$image"; then exit 0; fi
           done
           exit 1
 

@@ -53,6 +53,7 @@ vi.mock("@/lib/courses", () => ({ getPublishedCourses: vi.fn(async () => [
 ]) }));
 
 vi.mock("@/lib/storage", () => ({
+  deleteContestMediaByPath: vi.fn(),
   deleteStorageObjectByPath: vi.fn(),
   uploadContestBanner: vi.fn(),
   uploadContestHostLogo: vi.fn(),

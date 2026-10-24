@@ -146,17 +146,22 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20261018051216_move_app_base_url_under_learn.sql",
   "supabase/migrations/20261021132220_project_saves.sql",
   "supabase/migrations/20261022044225_project_save_atomic_set.sql",
+  "supabase/migrations/20261022105441_profile_timezone.sql",
+  "supabase/migrations/20261022212141_performance_advisors_fk_indexes_policy_merge.sql",
+  "supabase/migrations/20261023141349_public_course_hackathon_media_cdn.sql",
+  "supabase/migrations/20261024051107_hackathon_host_logo_cdn.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production ledger is verified through the app base URL move under /learn.
-// Only the Staging-validated project saves migrations are pending.
+// Production ledger is verified through the public course/hackathon media cdn
+// migration. The Staging-validated performance advisors migration (applied out
+// of order via --include-all) and hackathon host logo cdn migration are pending.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20261021132220",
-  "20261022044225",
+  "20261022212141",
+  "20261024051107",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

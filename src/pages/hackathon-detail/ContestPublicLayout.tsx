@@ -45,6 +45,7 @@ import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 import { formatPrizeAmount } from "./utils/formatPrizeAmount";
 import { formatEventDateTime } from "./utils/formatEventDateTime";
 import { getHackathonSocialPostEmbed } from "@/lib/hackathonSocialPosts";
+import { listHackathonCollaboratorProjects } from "@/lib/projectCollaboration";
 import { timeZoneDisplayLabel } from "@/lib/timezone";
 
 const TABS = ["overview", "posts", "prizes", "timeline", "projects", "resources"] as const;
@@ -54,6 +55,8 @@ export type HackathonOutletContext = {
   registration: ContestRegistration | null;
   submission: Awaited<ReturnType<typeof getMyContestSubmission>> | null;
   submissionLoading: boolean;
+  collaboratorProjects: Awaited<ReturnType<typeof listHackathonCollaboratorProjects>>;
+  collaboratorProjectsLoading: boolean;
   submissionClosed: boolean;
 };
 
@@ -113,6 +116,12 @@ export default function ContestPublicLayout() {
     staleTime: 30_000,
   });
   const submissionQuery = useQuery({ queryKey: ["projects", "my-submission", contest?.id, user?.id], queryFn: () => getMyContestSubmission(contest!.id, user), enabled: Boolean(contest && user && !previewRequested), staleTime: 0 });
+  const collaboratorProjectsQuery = useQuery({
+    queryKey: ["projects", "my-hackathon-collaborations", contest?.id, user?.id],
+    queryFn: () => listHackathonCollaboratorProjects(contest!.id, user!.id),
+    enabled: Boolean(contest && user && !previewRequested),
+    staleTime: 0,
+  });
   const registration = registrationQuery.data ?? null;
   const canRegister = Boolean(contest && canRegisterForContest(contest));
   const [nowMs] = useState(() => Date.now());
@@ -480,7 +489,17 @@ export default function ContestPublicLayout() {
 
         <PageContainer width="default" className="px-0 pt-3xl sm:px-6 sm:pt-3xl lg:px-8">
           <Tabs.Panel value={activeTab} className="mobile-bleed-grid">
-            <Outlet context={{ contest, registration, submission: submissionQuery.data ?? null, submissionLoading: Boolean(user && !previewRequested && submissionQuery.isPending), submissionClosed } satisfies HackathonOutletContext} />
+            <Outlet
+              context={{
+                contest,
+                registration,
+                submission: submissionQuery.data ?? null,
+                submissionLoading: Boolean(user && !previewRequested && submissionQuery.isPending),
+                collaboratorProjects: collaboratorProjectsQuery.data ?? [],
+                collaboratorProjectsLoading: Boolean(user && !previewRequested && collaboratorProjectsQuery.isPending),
+                submissionClosed,
+              } satisfies HackathonOutletContext}
+            />
           </Tabs.Panel>
         </PageContainer>
       </Tabs.Root>

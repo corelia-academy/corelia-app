@@ -11,11 +11,15 @@ type ImageUrlOptions = {
   /** Target CSS width in px; the 2x density variant is requested automatically by callers via `srcSet`. */
   width: number;
   quality?: number;
-  /** Supabase only. `contain` keeps the aspect ratio and fits inside `width` (use for logos). */
+  /**
+   * Supabase only. `contain` (default) keeps the aspect ratio and fits inside `width`; let CSS
+   * `object-fit` do the cropping. `cover` with only a width keeps the source height, so a 16:9
+   * source comes back as a tall centre strip.
+   */
   resize?: "cover" | "contain";
 };
 
-export function optimizedImageUrl(url: string | null | undefined, { width, quality = 75, resize = "cover" }: ImageUrlOptions): string {
+export function optimizedImageUrl(url: string | null | undefined, { width, quality = 75, resize = "contain" }: ImageUrlOptions): string {
   const mode = readMode();
   if (!url || (mode !== "supabase" && mode !== "cloudflare")) return url ?? "";
   if (!OBJECT_PATH.test(url)) return url;
