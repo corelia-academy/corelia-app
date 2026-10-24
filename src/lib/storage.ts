@@ -137,7 +137,7 @@ export async function resolveLessonImageUrl(ref: string): Promise<string | null>
   return data.signedUrl;
 }
 
-/** Removes hackathon cover/thumbnail artwork. Older uploads live in the private `app`
+/** Removes hackathon cover/thumbnail/host-logo artwork. Older uploads live in the private `app`
  *  bucket (and may also have a `cdn` copy from the backfill), newer ones only in `cdn`. */
 export async function deleteContestMediaByPath(path?: string | null): Promise<void> {
   await Promise.all([deleteCdnObjectByPath(path), deleteStorageObjectByPath(path)]);
@@ -167,14 +167,16 @@ export async function uploadContestThumbnail(
   return uploadToCdn(`contest-thumbnails/${contestId}/${Date.now()}.${ext}`, file, null, true);
 }
 
-export function uploadContestHostLogo(
+/** Permanent CDN URL — hackathon host logo shown in the app and the landing catalog. */
+export async function uploadContestHostLogo(
   contestId: string,
   file: File,
   previousPath?: string | null,
 ): Promise<{ url: string; path: string }> {
   if (!contestId) throw new Error("Thiếu contestId khi upload logo đơn vị tổ chức");
   const ext = buildSafeExt(file.name, "png");
-  return uploadToPath(`contest-org-partner-logos/${contestId}/host/${Date.now()}.${ext}`, file, previousPath);
+  await deleteContestMediaByPath(previousPath);
+  return uploadToCdn(`contest-org-partner-logos/${contestId}/host/${Date.now()}.${ext}`, file, null, true);
 }
 
 /** Permanent CDN URL — hackathon credential badge for OC payload. */
