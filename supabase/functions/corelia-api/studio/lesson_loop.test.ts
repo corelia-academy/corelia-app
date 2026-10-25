@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { journeyProblems, linkProblems, structureProblems, type LessonRecord } from "./checks.ts";
 import { MAX_LESSON_REVIEWS, planLessons, type LessonGeneration, type LessonStep } from "./lesson_flow.ts";
 import { MAX_TRANSPORT_FAILURES } from "./retry.ts";
-import { article, base, ctx, curriculum, editCode, fillCode, now, question } from "./lesson_fixtures.ts";
+import { article, base, ctx, curriculum, editCode, fillCode, lesson, now, question } from "./lesson_fixtures.ts";
 import { acceptLessonReview, resolvePath } from "./lesson_review.ts";
 import { buildLessonInput, buildLessonReviewInput, lessonRefs, lessonRevision, reviewBlocking, toLessonDraft, TransientError, type LessonContext } from "./lessons.ts";
 import { planRun, STEP_ORDER, STEP_SPECS, SUBMIT_STALE_MS, type RunContext, type StepKey } from "./steps.ts";
@@ -169,9 +169,99 @@ const verdictOf = (verdict: string, issues: object[] = [], unverified: string[] 
 const quizOutput = { ...base, quiz: { questions: [question(), question()] } };
 const codeOutput = { ...base, code: editCode, source_ids: ["s1", "s2"] };
 
+// Reduced field sample from run c284b778; source IDs, package facts, and question states are retained.
+const c284ResearchSample = {
+  sources: [
+    { source_id: "S05", title: "Solana wallet integration with Next.js and @solana/kit", url: "https://solana.com/docs/frontend/nextjs-solana", access: "read" },
+    { source_id: "S07", title: "Installation — Next.js", url: "https://nextjs.org/docs/pages/getting-started/installation", access: "read" },
+  ],
+  topics: [],
+  tool_versions: [
+    { tool: "Node.js", version: "Minimum 20.9; source lists 24.22.1 LTS, without a locked Node choice.", source_ids: ["S07", "S22"] },
+    { tool: "@solana/kit", version: "Guide recommends 8.3+; releases list 8.5.0; older tutorial says 7+.", source_ids: ["S08", "S09", "S05"] },
+    { tool: "@solana/kit-plugin-rpc", version: "Guide recommends 0.19+; older tutorial says 0.13+.", source_ids: ["S08", "S05"] },
+    { tool: "@solana/kit-plugin-wallet", version: "Guide recommends 0.20+; older tutorial says 0.14+.", source_ids: ["S08", "S05"] },
+    { tool: "@solana/react", version: "Guide recommends 8+; older tutorial says 7+.", source_ids: ["S08", "S05"] },
+  ],
+  misconceptions: [],
+  open_questions: [
+    { question: "Exact compatible package versions are unverified; npm package pages returned 403.", impact: "Compatibility and reproducibility remain unresolved.", blocking: false, action: "Check registry metadata and peer dependencies." },
+    { question: "Choose create-next-app or create-solana-dapp for the sample project.", impact: "This affects presentation, not evidence for connection or transfer steps.", blocking: false, action: "Read official setup docs before recommending create-solana-dapp." },
+  ],
+};
+const c284CurriculumSample = {
+  outcomes: [{ id: "o1", text: "Làm được thiết lập project." }],
+  modules: [
+    {
+      id: "m2",
+      title: "Kết nối",
+      description: "",
+      lessons: [
+        lesson("m2_setup_explain", "article", { purpose: "explanation", source_ids: ["S05", "S07"] }),
+        lesson("m2_node_only", "article", { purpose: "explanation", source_ids: ["S07"] }),
+      ],
+    },
+    {
+      id: "m1",
+      title: "Nền tảng",
+      description: "",
+      lessons: [lesson("m1_diagnostic_js", "article", { purpose: "diagnostic", source_ids: ["S15", "S16"] })],
+    },
+  ],
+};
+function c284Context(lessonId: string, research = c284ResearchSample): RunContext {
+  const sourceIds = lessonId === "m1_diagnostic_js" ? ["S15", "S16"] : lessonId === "m2_node_only" ? ["S07"] : ["S05", "S07"];
+  return {
+    ...ctx,
+    outputs: { ...ctx.outputs, brief: { locale: "vi" }, research, curriculum: c284CurriculumSample },
+    lesson: { drafts: 1, reviews: 0, draft: { ...base, source_ids: sourceIds, article }, review: null },
+  };
+}
+
 function withLesson(lesson: LessonContext | null, id = "l-quiz"): [RunContext, string] {
   return [{ ...ctx, lesson }, id];
 }
+
+describe("studio lesson loop: research version handoff", () => {
+  it("passes c284b778 package evidence and unresolved nonblocking questions to A5 and A6", () => {
+    const writer = buildLessonInput(c284Context("m2_setup_explain"), "m2_setup_explain");
+    const reviewer = buildLessonReviewInput(c284Context("m2_setup_explain"), "m2_setup_explain");
+    const writerResearch = writer.research as Record<string, any>;
+    const reviewerResearch = reviewer.research as Record<string, any>;
+
+    for (const research of [writerResearch, reviewerResearch]) {
+      expect(research.tool_versions).toEqual(c284ResearchSample.tool_versions);
+      expect(research.open_questions).toEqual(c284ResearchSample.open_questions);
+      expect(research.open_questions.every((q: { blocking: boolean }) => !q.blocking)).toBe(true);
+    }
+  });
+
+  it("filters versions without lesson-source overlap and omits blocking questions for both agents", () => {
+    const researchWithBlocking = {
+      ...c284ResearchSample,
+      open_questions: [
+        ...c284ResearchSample.open_questions,
+        { ...c284ResearchSample.open_questions[0], blocking: true, question: "synthetic blocking sentinel" },
+      ],
+    };
+    const writer = buildLessonInput(c284Context("m2_node_only", researchWithBlocking), "m2_node_only");
+    const reviewer = buildLessonReviewInput(c284Context("m2_node_only", researchWithBlocking), "m2_node_only");
+    for (const input of [writer, reviewer]) {
+      const research = input.research as Record<string, any>;
+      expect(research.tool_versions).toEqual([c284ResearchSample.tool_versions[0]]);
+      expect(research.open_questions).toEqual(c284ResearchSample.open_questions);
+      expect(research.open_questions.some((q: { question: string }) => q.question === "synthetic blocking sentinel")).toBe(false);
+    }
+
+    const noVersionCtx = c284Context("m1_diagnostic_js", researchWithBlocking);
+    for (const input of [
+      buildLessonInput(noVersionCtx, "m1_diagnostic_js"),
+      buildLessonReviewInput(noVersionCtx, "m1_diagnostic_js"),
+    ]) {
+      expect((input.research as Record<string, any>).tool_versions).toEqual([]);
+    }
+  });
+});
 
 describe("studio lesson loop: review input and acceptance", () => {
   it("resolves field paths of the lesson draft", () => {
@@ -236,7 +326,7 @@ describe("studio lesson loop: review input and acceptance", () => {
 
 // ---- structure_check and journey_test -----------------------------------------------------------
 
-const prov = { model_id: "gpt-6-luna", prompt_version: "a5-lesson@v5" };
+const prov = { model_id: "gpt-6-luna", prompt_version: "a5-lesson@v10" };
 const outputs: Record<string, object> = {
   "l-art": { ...base, article },
   "l-quiz": quizOutput,

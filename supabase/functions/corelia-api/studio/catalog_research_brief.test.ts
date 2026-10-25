@@ -115,10 +115,26 @@ describe("A1 catalog research in the A2 brief", () => {
     expect(orders).toEqual([["attempt", { ascending: false }], ["attempt", { ascending: false }]]);
   });
 
-  it("uses prompt version v4 and keeps the A2 brief output contract unchanged", () => {
-    expect(PROMPTS["a2-brief"].version).toBe("v4");
+  it("uses prompt version v5, describes source-based version evidence, and keeps the A2 brief output contract unchanged", () => {
+    expect(PROMPTS["a2-brief"].version).toBe("v5");
+    expect(PROMPTS["a2-brief"].system).toContain("sẽ theo tài liệu chính thức hiện hành mà bước research đọc được");
+    expect(PROMPTS["a2-brief"].system).toContain("brief không hứa bộ phiên bản tương thích được chốt");
     expect(PROMPTS["a2-brief"].system).toContain("không chép URL A1 vào brief");
     expect(PROMPTS["a2-brief"].system).toContain("mọi suy luận từ A1 phải ghi vào assumptions");
     expect(STEP_SPECS.brief!.schema).toBeDefined();
+  });
+
+  it("keeps A5 and A6 package-version decisions bounded by research evidence", () => {
+    expect(PROMPTS["a5-lesson"].version).toBe("v10");
+    expect(PROMPTS["a5-lesson"].system).toContain("tool_versions của research chỉ ghi mức tối thiểu hoặc phiên bản theo nguồn");
+    expect(PROMPTS["a5-lesson"].system).toContain("nếu chỉ nêu mức tối thiểu, ghi rõ đó là mức tối thiểu và để lệnh không ghim phiên bản");
+    expect(PROMPTS["a5-lesson"].system).toContain("Không tự suy ra phiên bản.");
+    expect(PROMPTS["a5-lesson"].system).toContain("open_questions blocking = false ghi phiên bản chưa xác minh");
+
+    expect(PROMPTS["a6-lesson-review"].version).toBe("v7");
+    expect(PROMPTS["a6-lesson-review"].system).toContain("KHÔNG phải lỗi blocking nếu tool_versions chỉ nêu mức tối thiểu (chưa chốt bộ phiên bản tương thích)");
+    expect(PROMPTS["a6-lesson-review"].system).toContain("lesson nêu phiên bản hoặc mức tối thiểu không có trong tool_versions hay nguồn đã đọc của lesson");
+    expect(PROMPTS["a6-lesson-review"].system).toContain("khẳng định bộ phiên bản tương thích đã được xác minh/khóa khi research không nói vậy");
+    expect(PROMPTS["a6-lesson-review"].system).toContain("thiếu bước cài đặt/cấu hình cho công cụ cụ thể mà brief.tools yêu cầu");
   });
 });

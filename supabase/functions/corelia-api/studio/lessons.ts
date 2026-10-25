@@ -44,6 +44,8 @@ interface ResearchFull {
   sources: { source_id: string; title: string; url: string; access: string }[];
   topics: { topic: string; why: string; source_ids: string[]; key_points: { point: string; source_ids: string[] }[] }[];
   misconceptions: { topic: string; misconception: string; correction: string; source_ids: string[] }[];
+  tool_versions?: { tool: string; version: string; source_ids: string[] }[];
+  open_questions?: { question: string; impact: string; blocking: boolean; action: string }[];
 }
 interface BriefFull {
   locale?: string;
@@ -252,7 +254,9 @@ function lessonBase(ctx: RunContext, lessonId: string) {
         topics: research.topics
           .filter((t) => touches(t.source_ids))
           .map((t) => ({ ...t, key_points: t.key_points.filter((k) => touches(k.source_ids)) })),
+        tool_versions: (research.tool_versions ?? []).filter((v) => touches(v.source_ids)),
         misconceptions: research.misconceptions.filter((m) => touches(m.source_ids)),
+        open_questions: (research.open_questions ?? []).filter((q) => !q.blocking),
       },
     },
     neighbours: {
