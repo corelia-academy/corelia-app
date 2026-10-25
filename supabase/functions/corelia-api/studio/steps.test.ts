@@ -290,6 +290,19 @@ describe("studio step owners", () => {
   });
 });
 
+describe("A2 research prompt", () => {
+  it("uses v6 and does not block research on unverified package versions", () => {
+    const prompt = PROMPTS["a2-research"];
+    expect(prompt.version).toBe("v6");
+    expect(prompt.system).toContain("needs_research CHỈ khi một chủ đề cốt lõi trong phạm vi của brief");
+    expect(prompt.system).toContain("KHÔNG phải lý do needs_research");
+    expect(prompt.system).toContain("trả status: ready");
+    expect(prompt.system).toContain("open_questions với blocking = false");
+    expect(prompt.system).toContain("blocking = false chỉ có nghĩa khi status = ready");
+    expect(prompt.system).toContain("không dùng needs_research cho phiên bản gói");
+  });
+});
+
 describe("studio acceptance", () => {
   const today = "2026-10-20";
   const research = {
@@ -308,6 +321,18 @@ describe("studio acceptance", () => {
 
   it("accepts research whose topics, prerequisites and misconceptions rest on sources read on the run date", () => {
     expect(acceptResearch(research, today)).toEqual({ ok: true, summary: "1 chủ đề, 1 ý chính, 1 lỗi hiểu sai, 2 nguồn đã đọc." });
+  });
+
+  it("accepts ready research with an unblocked open question", () => {
+    const question = { question: "Phiên bản package chưa xác minh", impact: "Không ảnh hưởng nội dung đã có nguồn", blocking: false, action: "Ghi rõ nguồn không truy cập được" };
+    expect(acceptResearch({ ...research, open_questions: [question] }, today))
+      .toEqual({ ok: true, summary: "1 chủ đề, 1 ý chính, 1 lỗi hiểu sai, 2 nguồn đã đọc." });
+  });
+
+  it("rejects needs_research even when its only open question is unblocked", () => {
+    const question = { question: "Phiên bản package chưa xác minh", blocking: false };
+    expect(acceptResearch({ ...research, status: "needs_research", open_questions: [question] }, today))
+      .toEqual({ ok: false, reason: "Thiếu bằng chứng: Phiên bản package chưa xác minh" });
   });
 
   it("rejects unknown or unread sources, community-only topics and uncited key points", () => {
