@@ -291,15 +291,22 @@ describe("studio step owners", () => {
 });
 
 describe("A2 research prompt", () => {
-  it("uses v6 and does not block research on unverified package versions", () => {
+  it("uses v7 and does not block research on unverified package versions", () => {
     const prompt = PROMPTS["a2-research"];
-    expect(prompt.version).toBe("v6");
+    expect(prompt.version).toBe("v7");
     expect(prompt.system).toContain("needs_research CHỈ khi một chủ đề cốt lõi trong phạm vi của brief");
     expect(prompt.system).toContain("KHÔNG phải lý do needs_research");
     expect(prompt.system).toContain("trả status: ready");
     expect(prompt.system).toContain("open_questions với blocking = false");
     expect(prompt.system).toContain("blocking = false chỉ có nghĩa khi status = ready");
     expect(prompt.system).toContain("không dùng needs_research cho phiên bản gói");
+    expect(prompt.system).toContain("brief.tools yêu cầu người học cài đặt hoặc cấu hình");
+    expect(prompt.system).toContain("tài liệu cài đặt/cấu hình chính thức");
+    expect(prompt.system).toContain("Trang chỉ liệt kê phiên bản không chứng minh cách cài đặt/cấu hình");
+    expect(prompt.system).toContain("trả needs_research; nêu tên công cụ");
+    expect(prompt.system).toContain("loại công cụ chung hoặc chưa xác định sản phẩm cụ thể");
+    expect(prompt.system).toContain("không phải lý do needs_research");
+    expect(prompt.system).toContain("thiếu nguồn chính thức đã đọc vẫn là gap cốt lõi");
   });
 });
 
