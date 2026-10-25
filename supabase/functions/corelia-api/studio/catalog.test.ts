@@ -7,7 +7,6 @@ import {
   CATALOG_RESEARCH_SCHEMA,
   catalogGap,
   catalogJobCostUsd,
-  CATALOG_JOB_BUDGET_USD,
   generationCostUsd,
   catalogResearchGap,
   catalogStatus,
@@ -495,9 +494,9 @@ describe("catalog job cost", () => {
   });
 });
 
-describe("planCatalogJob budget", () => {
+describe("planCatalogJob cost-independent structural limits", () => {
   const now = Date.parse("2026-10-23T12:00:00Z");
-  const gen = (attempt: number, status: CatalogGeneration["status"], usage: Record<string, unknown> | null): CatalogGeneration => ({
+  const gen = (attempt: number, status: CatalogGeneration["status"], over: Partial<CatalogGeneration> = {}): CatalogGeneration => ({
     id: `g${attempt}`,
     attempt,
     status,
@@ -506,32 +505,36 @@ describe("planCatalogJob budget", () => {
     error: status === "failed" ? "bị từ chối" : null,
     created_at: "2026-10-23T11:59:00Z",
     model_id: "gpt-6-luna",
-    usage,
+    ...over,
   });
-  const plan = (generations: CatalogGeneration[], latestResult: Parameters<typeof planCatalogJob>[0]["latestResult"] = null) =>
-    planCatalogJob({ generations, startedAt: "2026-10-23T11:00:00Z", now, latestResult });
-  const cheap = { input_tokens: 100_000, output_tokens: 10_000, web_search_calls: 10 }; // $0.115
-  const dear = { input_tokens: 100_000, output_tokens: 10_000, web_search_calls: 80 }; // $0.815
+  const plan = (
+    generations: CatalogGeneration[],
+    latestResult: Parameters<typeof planCatalogJob>[0]["latestResult"] = null,
+    startedAt = "2026-10-23T11:00:00Z",
+  ) => planCatalogJob({ generations, startedAt, now, latestResult });
+  const veryHighUsage = { input_tokens: 1_000_000_000, output_tokens: 1_000_000_000, web_search_calls: 1_000_000 };
   const needsMore = { status: "needs_more_sources" as const, missing: ["trend: x"] };
 
-  it("keeps submitting while the job is under the budget", () => {
-    expect(plan([gen(0, "completed", cheap)], needsMore)).toEqual({ kind: "submit", attempt: 1, parentId: "g0" });
-    expect(plan([gen(0, "failed", cheap)])).toEqual({ kind: "submit", attempt: 1, parentId: "g0" });
+  it("submits the first attempt, retry, and next round despite already high generation usage", () => {
+    expect(plan([])).toEqual({ kind: "submit", attempt: 0, parentId: null });
+    expect(plan([gen(0, "failed", { usage: veryHighUsage })])).toEqual({ kind: "submit", attempt: 1, parentId: "g0" });
+    expect(plan([gen(0, "completed", { usage: veryHighUsage })], needsMore)).toEqual({ kind: "submit", attempt: 1, parentId: "g0" });
   });
 
-  it("fails the job instead of starting the next attempt once the estimate reaches the budget", () => {
-    const action = plan([gen(0, "completed", dear), gen(1, "failed", cheap)]);
+  it("ends needs_more_sources after the configured research rounds despite high usage", () => {
+    const done = Array.from({ length: MAX_CATALOG_RESEARCH_ROUNDS + 1 }, (_, i) => gen(i, "completed", { usage: veryHighUsage }));
+    expect(plan(done, needsMore)).toMatchObject({ kind: "finish", status: "needs_more_sources" });
+  });
+
+  it("fails after the retry limit despite high usage", () => {
+    expect(plan([
+      gen(0, "failed", { usage: veryHighUsage }),
+      gen(1, "failed", { usage: veryHighUsage }),
+    ])).toMatchObject({ kind: "finish", status: "failed" });
+  });
+
+  it("fails after 24 hours regardless of high usage", () => {
+    const action = plan([gen(0, "submitted", { usage: veryHighUsage })], null, "2026-10-21T00:00:00Z");
     expect(action).toMatchObject({ kind: "finish", status: "failed" });
-    expect((action as { reason: string }).reason).toContain(`$${CATALOG_JOB_BUDGET_USD.toFixed(2)}`);
-    expect(plan([gen(0, "completed", dear)], needsMore)).toMatchObject({ kind: "finish", status: "failed" });
-  });
-
-  it("does not hold back a result that is already accepted or a response still in flight", () => {
-    expect(plan([gen(0, "completed", dear)], { status: "evidence_ok", missing: [] })).toMatchObject({ kind: "finish", status: "evidence_ok" });
-    expect(plan([gen(0, "completed", dear), gen(1, "submitted", null)])).toMatchObject({ kind: "poll" });
-  });
-
-  it("counts failed attempts that were billed", () => {
-    expect(plan([gen(0, "failed", dear)])).toMatchObject({ kind: "finish", status: "failed" });
   });
 });

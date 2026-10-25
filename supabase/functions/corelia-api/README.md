@@ -131,8 +131,9 @@ chạy ở `draft_failed` kèm lý do và người chạy bước (agent hoặc 
 scope trả 409 và không tạo job; khóa đã có job đang chạy trả 409 `course_has_running_job`. `studio.tick` đẩy
 thêm tối đa 3 catalog job đang chạy (`catalog` trong phản hồi): A1 gọi với `web_search` giới hạn
 `max_tool_calls`, kết quả qua `acceptCatalogResearch`; thiếu `trend`/`demand` thì nghiên cứu lại tối đa
-`MAX_CATALOG_RESEARCH_ROUNDS` vòng rồi kết thúc `needs_more_sources`, lỗi kỹ thuật quá ngân sách thử lại thì
-`failed`. Trước mỗi attempt mới, chi phí ước lượng (cận trên, theo `usage` đã ghi gồm `web_search_calls`) đạt `CATALOG_JOB_BUDGET_USD` thì job kết thúc `failed`. Job không ghi `studio_run_events`; lý do kết thúc nằm ở `studio_catalog_jobs.reason`.
+`MAX_CATALOG_RESEARCH_ROUNDS` vòng rồi kết thúc `needs_more_sources`, lỗi kỹ thuật hết lượt thử lại thì
+`failed`. Trong giai đoạn phát triển không có trần chi phí; mỗi attempt vẫn bị giới hạn bởi `maxAttempts`,
+`maxToolCalls` và thời gian chạy tối đa 24 giờ. Job không ghi `studio_run_events`; lý do kết thúc nằm ở `studio_catalog_jobs.reason`.
 
 Local không có scheduler, nên lượt chạy chỉ tiến khi có ai gọi `studio.tick`. Với
 `pnpm functions:serve` đang chạy:

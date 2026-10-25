@@ -74,7 +74,8 @@ BEGIN
   END IF;
 
   -- needs_more_sources sets research_status; failed leaves it.
-  PERFORM public.studio_start_catalog_job('dddd7777-2222-4000-8000-000000000001','dddd7777-4444-4000-8000-000000000002','scheduled',NULL);
+  r := public.studio_start_catalog_job('dddd7777-2222-4000-8000-000000000001','dddd7777-4444-4000-8000-000000000002','scheduled',NULL);
+  IF (r->>'created')::boolean IS NOT TRUE THEN RAISE EXCEPTION 'scheduled start with no actor should create the job: %', r; END IF;
   -- Another job reuses attempt 0: the claim is per job, not shared by every catalog row.
   INSERT INTO public.studio_generations(catalog_job_id,attempt,agent_role,kind,provider,requested_model_id,prompt_version,input)
   VALUES('dddd7777-4444-4000-8000-000000000002',0,'A1','research','openai','m','a1-catalog-research@v1','{}');

@@ -15,6 +15,7 @@ import {
   type LessonOutput,
 } from "./lessons.ts";
 import { advanceCatalogJobs } from "./catalog_run.ts";
+import { queueAutoResearch } from "./auto_research.ts";
 import { purgeExpiredDrafts } from "./drafts.ts";
 import { rerankIfStale } from "./ranking_run.ts";
 import { loadCatalogResearchForBrief } from "./catalog_research_brief.ts";
@@ -134,10 +135,17 @@ export async function handleStudioTick(req: Request, db: SupabaseClient): Promis
     const { error: touchError } = await db.from("studio_runs").update({ status: "running" }).eq("id", run.id).eq("status", "running");
     if (touchError) console.error("[corelia-api] studio tick touch", { run_id: run.id, error: touchError.message });
   }
+  let autoResearch: Record<string, unknown>;
+  try {
+    autoResearch = await queueAutoResearch(db);
+  } catch (e) {
+    console.error("[corelia-api] studio auto-research tick failed", errorMessage(e));
+    autoResearch = { action: "failed" };
+  }
   const catalog = await advanceCatalogJobs(db);
   const ranking = await rerankIfStale(db);
   const drafts = await purgeExpiredDrafts(db);
-  return json({ processed: results.length, results, catalog, ranking, drafts });
+  return json({ processed: results.length, results, auto_research: autoResearch, catalog, ranking, drafts });
 }
 
 export async function advanceRun(db: SupabaseClient, run: RunRow): Promise<{ step: StepKey | null; action: TickAction["kind"] }> {

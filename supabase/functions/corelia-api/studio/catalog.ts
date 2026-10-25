@@ -69,12 +69,6 @@ export const CATALOG_SPEC = {
 /** Research rounds after the first, while trend or demand is still missing (as MAX_RESEARCH_REQUESTS of a run). */
 export const MAX_CATALOG_RESEARCH_ROUNDS = 2;
 
-/**
- * Hard cap on the estimated cost of one catalog job (USD). Measured on one real course (Rust,
- * 23/10/2026): $0.29 to $0.51 with the upper-bound pricing below. Checked before every new attempt.
- */
-export const CATALOG_JOB_BUDGET_USD = 0.75;
-
 /** USD per 1M tokens, input / output (docs/stack/0004-llm-provider-and-models.md, list prices). */
 export const MODEL_PRICES: Record<string, { input: number; output: number }> = {
   "gpt-6-astra": { input: 10, output: 50 },
@@ -92,7 +86,7 @@ export interface PricedGeneration {
 /**
  * Upper-bound cost of one generation: every input token at the full input price (cached tokens and
  * the flex discount are not applied) and every web_search action as one call. A model without a
- * listed price is priced as the most expensive one, so an unknown model cannot slip under the budget.
+ * listed price is priced as the most expensive one to keep the estimate conservative.
  */
 export function generationCostUsd(g: PricedGeneration): number {
   if (!g.usage) return 0;
@@ -376,13 +370,7 @@ export function planCatalogJob(input: {
   }
   const rows = [...input.generations].sort((a, b) => a.attempt - b.attempt);
   const latest = rows.at(-1);
-  // Every new attempt (first, retry or next round) is checked against the budget first.
-  const spent = catalogJobCostUsd(rows);
-  const submit = (attempt: number, parentId: string | null): CatalogAction =>
-    spent >= CATALOG_JOB_BUDGET_USD
-      ? { kind: "finish", status: "failed", reason: `Vượt ngân sách $${CATALOG_JOB_BUDGET_USD.toFixed(2)} cho một job (đã tiêu ước lượng $${spent.toFixed(2)}).` }
-      : { kind: "submit", attempt, parentId };
-  if (!latest) return submit(0, null);
+  if (!latest) return { kind: "submit", attempt: 0, parentId: null };
   switch (latest.status) {
     case "submitting":
       return input.now - Date.parse(latest.created_at) > SUBMIT_STALE_MS
@@ -399,10 +387,12 @@ export function planCatalogJob(input: {
         return { kind: "finish", status: "needs_more_sources", reason: `Vẫn thiếu bằng chứng sau ${rounds} vòng nghiên cứu: ${list(result.missing, 5)}` };
       }
       // Research again for what is missing; the accepted record is passed on (previous_research).
-      return submit(latest.attempt + 1, latest.id);
+      return { kind: "submit", attempt: latest.attempt + 1, parentId: latest.id };
     }
     case "failed": {
-      if (canRetry(failuresOfRound(rows), CATALOG_SPEC.maxAttempts)) return submit(latest.attempt + 1, latest.id);
+      if (canRetry(failuresOfRound(rows), CATALOG_SPEC.maxAttempts)) {
+        return { kind: "submit", attempt: latest.attempt + 1, parentId: latest.id };
+      }
       return { kind: "finish", status: "failed", reason: latest.error ?? "Lượt nghiên cứu thất bại." };
     }
     default:
