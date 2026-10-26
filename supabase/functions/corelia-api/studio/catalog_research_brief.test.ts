@@ -125,16 +125,64 @@ describe("A1 catalog research in the A2 brief", () => {
   });
 
   it("keeps A5 and A6 package-version decisions bounded by research evidence", () => {
-    expect(PROMPTS["a5-lesson"].version).toBe("v10");
+    expect(PROMPTS["a5-lesson"].version).toBe("v14");
     expect(PROMPTS["a5-lesson"].system).toContain("tool_versions của research chỉ ghi mức tối thiểu hoặc phiên bản theo nguồn");
     expect(PROMPTS["a5-lesson"].system).toContain("nếu chỉ nêu mức tối thiểu, ghi rõ đó là mức tối thiểu và để lệnh không ghim phiên bản");
     expect(PROMPTS["a5-lesson"].system).toContain("Không tự suy ra phiên bản.");
     expect(PROMPTS["a5-lesson"].system).toContain("open_questions blocking = false ghi phiên bản chưa xác minh");
 
-    expect(PROMPTS["a6-lesson-review"].version).toBe("v7");
+    expect(PROMPTS["a6-lesson-review"].version).toBe("v11");
     expect(PROMPTS["a6-lesson-review"].system).toContain("KHÔNG phải lỗi blocking nếu tool_versions chỉ nêu mức tối thiểu (chưa chốt bộ phiên bản tương thích)");
     expect(PROMPTS["a6-lesson-review"].system).toContain("lesson nêu phiên bản hoặc mức tối thiểu không có trong tool_versions hay nguồn đã đọc của lesson");
     expect(PROMPTS["a6-lesson-review"].system).toContain("khẳng định bộ phiên bản tương thích đã được xác minh/khóa khi research không nói vậy");
     expect(PROMPTS["a6-lesson-review"].system).toContain("thiếu bước cài đặt/cấu hình cho công cụ cụ thể mà brief.tools yêu cầu");
+  });
+
+  it("keeps AI courses knowledge-only and limits video recommendations to research evidence", () => {
+    const a2 = PROMPTS["a2-research"];
+    const a3 = PROMPTS["a3-curriculum"];
+    const a4 = PROMPTS["a4-curriculum-review"];
+    const a5 = PROMPTS["a5-lesson"];
+    const a6 = PROMPTS["a6-lesson-review"];
+
+    expect(a3.version).toBe("v13");
+    expect(a4.version).toBe("v10");
+    expect(a5.version).toBe("v14");
+    expect(a6.version).toBe("v11");
+    expect(a2.version).toBe("v11");
+    expect(a2.system).toContain("videos là mảng có thể rỗng");
+    expect(a2.system).toContain("evidence_source_ids không rỗng");
+    expect(a2.system).toContain("thiếu video không phải lý do needs_research");
+
+    for (const prompt of [a3, a4, a5, a6]) {
+      expect(prompt.system).toContain("Nguyên tắc chỉ truyền thụ kiến thức");
+    }
+
+    expect(a3.system).toContain("Dùng đúng stack_choice trong research_brief cho toàn khóa");
+    expect(a3.system).toContain("Nếu research cũ thiếu stack_choice, không tự chọn thay A2");
+    expect(a3.system).toContain("check_lesson_ids");
+    expect(a3.system).toContain("Không tạo lesson type video");
+    expect(a3.system).toContain("bỏ qua video vẫn phải hiểu đủ lesson");
+    expect(a4.system).toContain("báo blocking; không báo blocking vì curriculum thiếu các nhiệm vụ như vậy");
+    expect(a4.system).toContain("Báo blocking nếu curriculum có lesson type video");
+    expect(a4.system).toContain("outcome chỉ được dạy khi người học phải xem/hiểu video tùy chọn");
+    expect(a5.system).toContain("Bước cài công cụ brief đòi và lệnh khớp research vẫn có trong bài như nội dung minh họa");
+    expect(a5.system).toContain("suggested_videos là mảng video ID");
+    expect(a5.system).toContain("tối đa 2");
+    expect(a5.system).toContain("code sẽ dựng resources xem thêm");
+    expect(a5.system).toContain("không đặt link YouTube trong text/markdown hoặc resources");
+    expect(a5.system).toContain("Khối video chỉ dùng khi curriculum đã lưu sẵn lesson.type = video");
+    expect(a5.system).toContain("không dùng web_search để tìm video");
+    expect(a5.system).toContain("không đưa video vào completion_rule hay checklist");
+    expect(a5.system).toContain("Nội dung video không phải bằng chứng");
+    expect(a6.system).toContain("Chỉ review các outcome_ids của lesson đang review");
+    expect(a6.system).toContain("Không blocking vì thiếu nhiệm vụ yêu cầu người học thao tác ngoài Corelia");
+    expect(a6.system).toContain("thiếu cảnh báo an toàn cần có");
+    expect(a6.system).toContain("dùng công cụ khác selected của cùng tool_type là lỗi blocking");
+    expect(a6.system).toContain("unverified bắt đầu bằng “research_gap:”");
+    expect(a6.system).toContain("không dùng video làm bằng chứng");
+    expect(a6.system).toContain("không đánh giá nội dung video");
+    expect(a6.system).toContain("phải xem/hiểu video tùy chọn mới nắm được outcome");
+    expect(a6.system).toContain("thiếu bước cài đặt/cấu hình cho công cụ cụ thể mà brief.tools yêu cầu");
   });
 });

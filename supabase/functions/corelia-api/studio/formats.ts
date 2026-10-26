@@ -17,3 +17,12 @@ export const PLATFORM_FORMAT_GUIDE: Record<typeof PLATFORM_FORMATS[number], stri
   practice:
     "Hướng dẫn hoặc checklist tự kiểm tra; người học tự làm và tự đánh dấu, không chấm, không nộp bài. Dùng cho thao tác trên máy người học (cài đặt, terminal, chạy lệnh Cargo, xem kết quả chạy).",
 };
+
+/** Formats available to newly generated AI curricula; saved video lessons remain renderable. */
+export const AI_CURRICULUM_FORMATS = PLATFORM_FORMATS.filter(
+  (format): format is Exclude<(typeof PLATFORM_FORMATS)[number], "video"> => format !== "video",
+);
+type AiCurriculumFormat = (typeof AI_CURRICULUM_FORMATS)[number];
+export const AI_CURRICULUM_FORMAT_GUIDE: Pick<typeof PLATFORM_FORMAT_GUIDE, AiCurriculumFormat> = Object.fromEntries(
+  AI_CURRICULUM_FORMATS.map((format) => [format, PLATFORM_FORMAT_GUIDE[format]]),
+) as Pick<typeof PLATFORM_FORMAT_GUIDE, AiCurriculumFormat>;

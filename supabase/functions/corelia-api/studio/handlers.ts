@@ -305,7 +305,11 @@ async function loadRecords(db: SupabaseClient, run: RunRow, ctx: RunContext): Pr
     const ref = refs.get(id);
     if (!ref) continue;
     const prov = (x?: { model_id: string | null; prompt_version: string | null }) => (x ? { model_id: x.model_id, prompt_version: x.prompt_version } : null);
-    records[id] = { draft: toLessonDraft(ref, g.output as LessonOutput, locale), written: prov(g), reviewed: prov(reviewed[id]) };
+    records[id] = {
+      draft: toLessonDraft(ref, g.output as LessonOutput, locale, ctx.outputs.research as Parameters<typeof toLessonDraft>[3]),
+      written: prov(g),
+      reviewed: prov(reviewed[id]),
+    };
   }
   return records;
 }

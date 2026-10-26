@@ -4,11 +4,13 @@ import {
   acceptLesson,
   buildLessonInput,
   buildLessonReviewInput,
+  normalizeResearchTopic,
   LESSON_SCHEMA,
   lessonTools,
   reviewTools,
   type LessonContext,
 } from "./lessons.ts";
+import { getYoutubeVideoId } from "./lesson_ports.ts";
 import { PROMPTS, promptVersion, type AgentRole, type PromptKey } from "./prompts.ts";
 import type { BriefCatalogResearch } from "./catalog_research_brief.ts";
 
@@ -70,7 +72,7 @@ export function agentKeyEnv(role: AgentRole): string {
 }
 
 export { PLATFORM_FORMAT_GUIDE, PLATFORM_FORMATS } from "./formats.ts";
-import { PLATFORM_FORMAT_GUIDE, PLATFORM_FORMATS } from "./formats.ts";
+import { AI_CURRICULUM_FORMAT_GUIDE, AI_CURRICULUM_FORMATS, PLATFORM_FORMAT_GUIDE } from "./formats.ts";
 import { canRetry, roundFailures, type FailureKind, type RoundFailures } from "./retry.ts";
 
 export const MAX_RUN_MS = 24 * 60 * 60 * 1000;
@@ -165,6 +167,30 @@ const RESEARCH_SCHEMA = object({
     }),
   },
   tool_versions: { type: "array", items: object({ tool: str, version: str, source_ids: strList }) },
+  stack_choice: object({
+    tools: {
+      type: "array",
+      items: object({
+        tool_type: str,
+        selected: str,
+        alternatives_considered: strList,
+        basis: { type: "string", enum: ["source_recommended", "context_rule"] },
+        reason: str,
+        source_ids: strList,
+      }),
+    },
+  }),
+  videos: {
+    type: "array",
+    items: object({
+      topic: str,
+      url: str,
+      title: str,
+      channel: str,
+      channel_basis: str,
+      evidence_source_ids: strList,
+    }),
+  },
   misconceptions: {
     type: "array",
     items: object({ topic: str, misconception: str, correction: str, source_ids: strList }),
@@ -208,7 +234,7 @@ const CURRICULUM_SCHEMA = object({
           id: str,
           title: str,
           description: str,
-          type: { type: "string", enum: [...PLATFORM_FORMATS] },
+          type: { type: "string", enum: [...AI_CURRICULUM_FORMATS] },
           purpose: { type: "string", enum: [...LESSON_PURPOSES] },
           outcome_ids: strList,
           prerequisites: strList,
@@ -262,8 +288,28 @@ interface Research {
   prerequisites: { prerequisite: string; remedial_source_ids: string[] }[];
   topics: { topic: string; source_ids: string[]; key_points: { point: string; source_ids: string[] }[] }[];
   sources: { source_id: string; authority: string; access: string; checked_at: string }[];
+  videos?: ResearchVideoCandidate[];
+  stack_choice: {
+    tools: {
+      tool_type: string;
+      selected: string;
+      alternatives_considered: string[];
+      basis: "source_recommended" | "context_rule";
+      reason: string;
+      source_ids: string[];
+    }[];
+  };
   misconceptions: { topic: string; source_ids: string[] }[];
   open_questions: { question: string; blocking: boolean }[];
+}
+
+export interface ResearchVideoCandidate {
+  topic: string;
+  url: string;
+  title: string;
+  channel: string;
+  channel_basis: string;
+  evidence_source_ids: string[];
 }
 
 type LessonPurpose = typeof LESSON_PURPOSES[number];
@@ -300,11 +346,118 @@ export function acceptBrief(output: unknown): Acceptance {
   return { ok: true, summary: "brief sẵn sàng." };
 }
 
+function stackChoiceProblems(value: unknown, sources: Research["sources"]): string[] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return ["thiếu stack_choice"];
+  const choice = value as Record<string, unknown>;
+  if (!Array.isArray(choice.tools)) return ["stack_choice.tools phải là danh sách"];
+  const tools = choice.tools as unknown[];
+
+  const problems: string[] = [];
+  const types = new Set<string>();
+  const read = new Map(sources.filter((s) => s.access === "read").map((s) => [s.source_id, s]));
+  tools.forEach((tool, index) => {
+    const label = `stack_choice.tools[${index}]`;
+    if (!tool || typeof tool !== "object" || Array.isArray(tool)) {
+      problems.push(`${label} phải là một lựa chọn công cụ`);
+      return;
+    }
+    const item = tool as Record<string, unknown>;
+    const toolType = typeof item.tool_type === "string" ? item.tool_type.trim() : "";
+    const selected = typeof item.selected === "string" ? item.selected.trim() : "";
+    const reason = typeof item.reason === "string" ? item.reason.trim() : "";
+    const itemLabel = toolType || label;
+    if (!toolType) problems.push(`${label}: thiếu tool_type`);
+    else if (types.has(toolType)) problems.push(`${itemLabel}: trùng tool_type`);
+    else types.add(toolType);
+    if (!selected) problems.push(`${itemLabel}: thiếu selected`);
+    if (!reason) problems.push(`${itemLabel}: thiếu reason`);
+
+    if (!Array.isArray(item.alternatives_considered) || item.alternatives_considered.some((x) => typeof x !== "string" || !x.trim())) {
+      problems.push(`${itemLabel}: alternatives_considered phải là danh sách tên công cụ`);
+    } else if (item.alternatives_considered.length === 0) {
+      problems.push(`${itemLabel}: alternatives_considered cần ít nhất một phương án thay thế`);
+    } else if (selected && item.alternatives_considered.some((x) => (x as string).trim() === selected)) {
+      problems.push(`${itemLabel}: selected không được lặp trong alternatives_considered`);
+    }
+
+    if (item.basis !== "source_recommended" && item.basis !== "context_rule") {
+      problems.push(`${itemLabel}: basis phải là source_recommended hoặc context_rule`);
+    }
+    if (!Array.isArray(item.source_ids) || item.source_ids.some((x) => typeof x !== "string" || !x.trim())) {
+      problems.push(`${itemLabel}: source_ids phải là danh sách ID nguồn`);
+      return;
+    }
+    const sourceIds = item.source_ids as string[];
+    if (new Set(sourceIds).size !== sourceIds.length) problems.push(`${itemLabel}: source_ids bị trùng`);
+    if (sourceIds.some((id) => !read.has(id))) problems.push(`${itemLabel}: source_ids phải trỏ tới nguồn đã đọc`);
+    if (item.basis === "source_recommended") {
+      if (sourceIds.length === 0) problems.push(`${itemLabel}: source_recommended cần source_ids`);
+    }
+  });
+  return problems;
+}
+
+function researchVideoProblems(
+  value: unknown,
+  topics: Research["topics"],
+  sources: Research["sources"],
+): string[] {
+  if (value === undefined) return []; // older accepted research has no video candidates
+  if (!Array.isArray(value)) return ["videos phải là danh sách"];
+
+  const knownTopics = new Set(topics.map((topic) => normalizeResearchTopic(topic.topic)));
+  const readSources = new Set(sources.filter((source) => source.access === "read").map((source) => source.source_id));
+  const videoIds = new Set<string>();
+  const problems: string[] = [];
+
+  value.forEach((candidate, index) => {
+    const label = `videos[${index}]`;
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
+      problems.push(`${label} phải là video ứng viên`);
+      return;
+    }
+    const video = candidate as Record<string, unknown>;
+    const topic = typeof video.topic === "string" ? normalizeResearchTopic(video.topic) : "";
+    if (!topic) problems.push(`${label}: thiếu topic`);
+    else if (!knownTopics.has(topic)) problems.push(`${label}: topic không có trong research`);
+
+    const url = typeof video.url === "string" ? video.url.trim() : "";
+    const videoId = url ? getYoutubeVideoId(url) : null;
+    if (!videoId) problems.push(`${label}: url không phải link YouTube hợp lệ`);
+    else if (videoIds.has(videoId)) problems.push(`${label}: trùng video ID`);
+    else videoIds.add(videoId);
+
+    for (const field of ["title", "channel", "channel_basis"] as const) {
+      if (typeof video[field] !== "string" || !video[field].trim()) problems.push(`${label}: thiếu ${field}`);
+    }
+
+    if (!Array.isArray(video.evidence_source_ids) || video.evidence_source_ids.length === 0 ||
+        video.evidence_source_ids.some((id) => typeof id !== "string" || !id.trim())) {
+      problems.push(`${label}: evidence_source_ids phải có ít nhất một ID nguồn đã đọc`);
+    } else {
+      const evidenceIds = video.evidence_source_ids as string[];
+      if (new Set(evidenceIds).size !== evidenceIds.length) problems.push(`${label}: evidence_source_ids bị trùng`);
+      if (evidenceIds.some((id) => !readSources.has(id))) {
+        problems.push(`${label}: evidence_source_ids phải trỏ tới nguồn access = read`);
+      }
+    }
+  });
+  return problems;
+}
+
 export function acceptResearch(output: unknown, today: string): Acceptance {
   const research = output as Research;
   if (research.status !== "ready") {
     const blocking = research.open_questions.filter((q) => q.blocking).map((q) => q.question);
     return { ok: false, reason: `Thiếu bằng chứng: ${list(blocking.length ? blocking : research.open_questions.map((q) => q.question))}` };
+  }
+  const stackProblems = stackChoiceProblems(research.stack_choice, Array.isArray(research.sources) ? research.sources : []);
+  if (stackProblems.length > 0) {
+    return { ok: false, reason: `Research stack_choice chưa hợp lệ: ${list(stackProblems)}` };
+  }
+  const videoProblems = researchVideoProblems(research.videos, research.topics, research.sources);
+  if (videoProblems.length > 0) {
+    return { ok: false, reason: `Research videos chưa hợp lệ: ${list(videoProblems)}` };
   }
   // Lessons are written from key points, so every point must rest on a source that was actually
   // read, and each topic needs an official source: community sources only supplement.
@@ -351,6 +504,12 @@ export function acceptCurriculum(output: unknown, sourceIds: Set<string>): Accep
     return { ok: true, summary: `cần thêm nghiên cứu: ${list(curriculum.missing)}` };
   }
   if (curriculum.status !== "draft") return { ok: false, reason: `Curriculum có status không hợp lệ: ${curriculum.status}` };
+  for (const module of curriculum.modules) {
+    const legacyVideoLesson = module.lessons.find((lesson) => lesson.type === "video");
+    if (legacyVideoLesson) {
+      return { ok: false, reason: `lesson ${legacyVideoLesson.id}: type video không còn được hỗ trợ trong curriculum AI mới` };
+    }
+  }
   const problems: string[] = [];
   const lessons = curriculum.modules.flatMap((m) => m.lessons);
   const lessonIds = new Set(lessons.map((l) => l.id));
@@ -604,7 +763,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
       course_type: "ai_generated",
       brief: ctx.outputs.brief,
       research_brief: ctx.outputs.research,
-      platform_formats: PLATFORM_FORMAT_GUIDE,
+      platform_formats: AI_CURRICULUM_FORMAT_GUIDE,
       ...(ctx.revision ? { previous_curriculum: ctx.outputs.curriculum, review: ctx.revision } : {}),
     }),
     accept: (output, ctx) => acceptCurriculum(output, researchSourceIds(ctx)),
@@ -622,7 +781,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
       brief: ctx.outputs.brief,
       research_brief: ctx.outputs.research,
       curriculum: ctx.outputs.curriculum,
-      platform_formats: PLATFORM_FORMAT_GUIDE,
+      platform_formats: AI_CURRICULUM_FORMAT_GUIDE,
     }),
     accept: (output, ctx) => acceptCurriculumReview(output, ctx.outputs.curriculum),
   },

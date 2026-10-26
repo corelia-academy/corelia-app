@@ -5,7 +5,7 @@ import { MAX_LESSON_REVIEWS, planLessons, type LessonGeneration, type LessonStep
 import { MAX_TRANSPORT_FAILURES } from "./retry.ts";
 import { article, base, ctx, curriculum, editCode, fillCode, lesson, now, question } from "./lesson_fixtures.ts";
 import { acceptLessonReview, resolvePath } from "./lesson_review.ts";
-import { buildLessonInput, buildLessonReviewInput, lessonRefs, lessonRevision, reviewBlocking, toLessonDraft, TransientError, type LessonContext } from "./lessons.ts";
+import { buildLessonInput, buildLessonReviewInput, lessonRefs, lessonRevision, lessonTools, reviewBlocking, toLessonDraft, TransientError, type LessonContext } from "./lessons.ts";
 import { planRun, STEP_ORDER, STEP_SPECS, SUBMIT_STALE_MS, type RunContext, type StepKey } from "./steps.ts";
 
 // ---- loop planning -----------------------------------------------------------------------------
@@ -183,6 +183,16 @@ const c284ResearchSample = {
     { tool: "@solana/kit-plugin-wallet", version: "Guide recommends 0.20+; older tutorial says 0.14+.", source_ids: ["S08", "S05"] },
     { tool: "@solana/react", version: "Guide recommends 8+; older tutorial says 7+.", source_ids: ["S08", "S05"] },
   ],
+  stack_choice: {
+    tools: [{
+      tool_type: "package_manager",
+      selected: "npm",
+      alternatives_considered: ["pnpm", "yarn"],
+      basis: "source_recommended",
+      reason: "The official course setup guide uses npm.",
+      source_ids: ["S05"],
+    }],
+  },
   misconceptions: [],
   open_questions: [
     { question: "Exact compatible package versions are unverified; npm package pages returned 403.", impact: "Compatibility and reproducibility remain unresolved.", blocking: false, action: "Check registry metadata and peer dependencies." },
@@ -231,6 +241,7 @@ describe("studio lesson loop: research version handoff", () => {
 
     for (const research of [writerResearch, reviewerResearch]) {
       expect(research.tool_versions).toEqual(c284ResearchSample.tool_versions);
+      expect(research.stack_choice).toEqual(c284ResearchSample.stack_choice);
       expect(research.open_questions).toEqual(c284ResearchSample.open_questions);
       expect(research.open_questions.every((q: { blocking: boolean }) => !q.blocking)).toBe(true);
     }
@@ -249,6 +260,7 @@ describe("studio lesson loop: research version handoff", () => {
     for (const input of [writer, reviewer]) {
       const research = input.research as Record<string, any>;
       expect(research.tool_versions).toEqual([c284ResearchSample.tool_versions[0]]);
+      expect(research.stack_choice).toEqual(c284ResearchSample.stack_choice);
       expect(research.open_questions).toEqual(c284ResearchSample.open_questions);
       expect(research.open_questions.some((q: { question: string }) => q.question === "synthetic blocking sentinel")).toBe(false);
     }
@@ -260,6 +272,42 @@ describe("studio lesson loop: research version handoff", () => {
     ]) {
       expect((input.research as Record<string, any>).tool_versions).toEqual([]);
     }
+  });
+
+  it("keeps legacy research without stack_choice readable for resumed lesson inputs", () => {
+    const legacyResearch = { ...c284ResearchSample, stack_choice: undefined };
+    const oldContext = c284Context("m2_node_only", legacyResearch);
+    const writer = buildLessonInput(oldContext, "m2_node_only");
+    const reviewer = buildLessonReviewInput(oldContext, "m2_node_only");
+
+    expect(writer.research).not.toHaveProperty("stack_choice");
+    expect(reviewer.research).not.toHaveProperty("stack_choice");
+  });
+
+  it("passes only source-matched video candidates to A5/A6 and gives A5 no video search tool", () => {
+    const candidates = [
+      { topic: "t1", url: "https://youtu.be/aaaaaaaaaaa", title: "Topic one", channel: "Rust Education", channel_basis: "Read channel evidence.", evidence_source_ids: ["s1"] },
+      { topic: "t2", url: "https://youtu.be/bbbbbbbbbbb", title: "Topic two", channel: "Rust Education", channel_basis: "Read channel evidence.", evidence_source_ids: ["s2"] },
+    ];
+    const topics = (ctx.outputs.research as { topics: { topic: string }[] }).topics
+      .map((topic) => ({ ...topic, topic: ` ${topic.topic} ` }));
+    const research = { ...ctx.outputs.research, topics, videos: candidates };
+    const lessonContext = {
+      ...ctx,
+      outputs: { ...ctx.outputs, research },
+      lesson: { drafts: 1, reviews: 0, draft: { ...base, article }, review: null },
+    };
+    const writer = buildLessonInput(lessonContext, "l-art");
+    const reviewer = buildLessonReviewInput(lessonContext, "l-art");
+    expect((writer.research as Record<string, any>).videos).toEqual([candidates[0]]);
+    expect((reviewer.research as Record<string, any>).videos).toEqual([candidates[0]]);
+    expect((buildLessonInput(lessonContext, "l-vid").research as Record<string, any>).videos).toEqual([candidates[1]]);
+    expect(buildLessonInput(lessonContext, "l-vid")).toMatchObject({ lesson: { id: "l-vid", type: "video" } });
+    expect(lessonTools("l-vid", lessonContext)).toBeUndefined();
+
+    const { videos: _videos, ...legacyResearch } = research;
+    const legacyContext = { ...lessonContext, outputs: { ...lessonContext.outputs, research: legacyResearch } };
+    expect((buildLessonInput(legacyContext, "l-vid").research as Record<string, any>).videos).toEqual([]);
   });
 });
 
@@ -315,6 +363,17 @@ describe("studio lesson loop: review input and acceptance", () => {
     expect(() => buildLessonReviewInput({ ...ctx, lesson: null }, "l-quiz")).toThrow();
   });
 
+  it("shows system-built supplemental video resources to A6", () => {
+    const draft = { ...base, article, suggested_videos: ["aaaaaaaaaaa"] };
+    const [c, id] = withLesson({ drafts: 1, reviews: 0, draft, review: null }, "l-art");
+    const input = buildLessonReviewInput(c, id) as Record<string, any>;
+    expect(input.lesson_draft.lesson.resources).toContainEqual({
+      title: "Video: Worked example for t1 — Rust Education",
+      url: "https://www.youtube.com/watch?v=aaaaaaaaaaa",
+    });
+    expect(input.checks_already_run.join(" ")).toContain("suggested video thuộc ứng viên lesson");
+  });
+
   it("has a reviewer spec without web search and with a strict schema", () => {
     const spec = STEP_SPECS.lesson_review!;
     // The reviewer checks against the sources the research step already read.
@@ -326,7 +385,7 @@ describe("studio lesson loop: review input and acceptance", () => {
 
 // ---- structure_check and journey_test -----------------------------------------------------------
 
-const prov = { model_id: "gpt-6-luna", prompt_version: "a5-lesson@v10" };
+const prov = { model_id: "gpt-6-luna", prompt_version: "a5-lesson@v14" };
 const outputs: Record<string, object> = {
   "l-art": { ...base, article },
   "l-quiz": quizOutput,
@@ -337,7 +396,7 @@ const outputs: Record<string, object> = {
 function records(over: Partial<Record<string, object>> = {}): Record<string, LessonRecord> {
   return Object.fromEntries(lessonRefs(curriculum).map((r) => [
     r.lesson.id,
-    { draft: toLessonDraft(r, (over[r.lesson.id] ?? outputs[r.lesson.id]) as never, "vi"), written: prov, reviewed: prov },
+    { draft: toLessonDraft(r, (over[r.lesson.id] ?? outputs[r.lesson.id]) as never, "vi", ctx.outputs.research as never), written: prov, reviewed: prov },
   ]));
 }
 const research = ctx.outputs.research;
@@ -387,6 +446,21 @@ describe("studio structure_check", () => {
     expect(problems).toContain("l-art: source_id s9 ngoài curriculum");
   });
 
+  it("accepts only code-built candidate video resources under each lesson", () => {
+    const all = records({
+      "l-art": { ...base, article, suggested_videos: ["aaaaaaaaaaa"] },
+    });
+    expect(all["l-art"].draft.lesson.resources).toContainEqual({
+      title: "Video: Worked example for t1 — Rust Education",
+      url: "https://www.youtube.com/watch?v=aaaaaaaaaaa",
+    });
+    expect(structureProblems(curriculum, research, all)).toEqual([]);
+
+    all["l-art"].draft.lesson.resources![0].url = "https://www.youtube.com/watch?v=bbbbbbbbbbb";
+    expect(structureProblems(curriculum, research, all).join("\n"))
+      .toContain("resource https://www.youtube.com/watch?v=bbbbbbbbbbb không phải video xem thêm hợp lệ của lesson");
+  });
+
   it("requires provenance for both the writer and the reviewer", () => {
     const all = records();
     all["l-art"].written = { model_id: "", prompt_version: "x" };
@@ -404,10 +478,29 @@ describe("studio structure_check: links", () => {
     return all;
   };
   const answer = (status: (url: string, method: string) => number): typeof fetch =>
-    ((url: string, init?: RequestInit) => Promise.resolve(new Response("", { status: status(String(url), init?.method ?? "GET") }))) as unknown as typeof fetch;
+    ((url: string, init?: RequestInit) => {
+      const target = String(url);
+      const code = status(target, init?.method ?? "GET");
+      const body = target.includes("oembed") && code === 200 ? JSON.stringify({ author_name: "Rust Education" }) : "";
+      return Promise.resolve(new Response(body, { status: code }));
+    }) as unknown as typeof fetch;
 
   it("passes when resources and the video answer", async () => {
     expect(await linkProblems(withLinks(), answer(() => 200))).toEqual([]);
+  });
+
+  it("does not make a generic HTTP request to a suggested YouTube watch page", async () => {
+    const all = withLinks();
+    const url = "https://www.youtube.com/watch?v=aaaaaaaaaaa";
+    all["l-art"].draft.lesson.resources!.push({ title: "Video: Topic one — Rust Education", url });
+    const requested: string[] = [];
+    const fetcher = ((target: string) => {
+      requested.push(target);
+      return Promise.resolve(new Response(JSON.stringify({ author_name: "Rust Education" }), { status: 200 }));
+    }) as unknown as typeof fetch;
+    expect(await linkProblems(all, fetcher)).toEqual([]);
+    expect(requested).not.toContain(url);
+    expect(requested.some((target) => target.includes("/oembed"))).toBe(true);
   });
 
   it("reports a missing page or video", async () => {

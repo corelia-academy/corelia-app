@@ -55,7 +55,12 @@ export function acceptLessonReview(output: unknown, ctx: RunContext, lessonId: s
   const lc = ctx.lesson;
   if (!lc?.draft) throw new Error(`lesson ${lessonId} chưa có bản nháp để đối chiếu`);
   const ref = lessonRefs(ctx.outputs.curriculum).find((r) => r.lesson.id === lessonId)!;
-  const draft = toLessonDraft(ref, lc.draft as LessonOutput, (ctx.outputs.brief as { locale?: string }).locale);
+  const draft = toLessonDraft(
+    ref,
+    lc.draft as LessonOutput,
+    (ctx.outputs.brief as { locale?: string }).locale,
+    ctx.outputs.research as Parameters<typeof toLessonDraft>[3],
+  );
   const problems: string[] = [];
   for (const i of review.issues) {
     if (resolvePath(draft, i.location) === undefined) problems.push(`vị trí "${i.location}" không phải field của lesson_draft (một đường dẫn tính từ gốc lesson_draft, không có tiền tố "lesson_draft.", mỗi issue một field; field gốc: lesson, questions, diagrams, source_ids, summary)`);

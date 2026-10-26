@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { readResponse } from "./openai.ts";
 import { PROMPTS } from "./prompts.ts";
+import { AI_CURRICULUM_FORMATS, AI_CURRICULUM_FORMAT_GUIDE, PLATFORM_FORMATS, PLATFORM_FORMAT_GUIDE } from "./formats.ts";
 import {
   acceptCurriculum,
   acceptCurriculumReview,
@@ -273,6 +274,18 @@ describe("studio curriculum asks for more research", () => {
     expect(input).toMatchObject({ research_gap: { round: 1, missing: ["a"], requested_by: "curriculum" }, previous_research: { r: 1 } });
     expect(STEP_SPECS.research!.buildInput(ctx)).not.toHaveProperty("research_gap");
   });
+
+  it("passes the accepted stack_choice unchanged to A3", () => {
+    const stack_choice = { tools: [{ tool_type: "package_manager", selected: "pnpm", source_ids: ["s1"] }] };
+    const input = STEP_SPECS.curriculum!.buildInput({
+      course: { title: "t", level: null },
+      paths: [],
+      scopes: [],
+      outputs: { brief: { b: 1 }, research: { stack_choice } },
+      today: "2026-10-22",
+    });
+    expect((input.research_brief as Record<string, unknown>).stack_choice).toBe(stack_choice);
+  });
 });
 
 describe("studio step owners", () => {
@@ -291,9 +304,9 @@ describe("studio step owners", () => {
 });
 
 describe("A2 research prompt", () => {
-  it("uses v7 and does not block research on unverified package versions", () => {
+  it("uses v11, records the course stack decision, and does not block research on unverified package versions", () => {
     const prompt = PROMPTS["a2-research"];
-    expect(prompt.version).toBe("v7");
+    expect(prompt.version).toBe("v11");
     expect(prompt.system).toContain("needs_research CHỈ khi một chủ đề cốt lõi trong phạm vi của brief");
     expect(prompt.system).toContain("KHÔNG phải lý do needs_research");
     expect(prompt.system).toContain("trả status: ready");
@@ -307,6 +320,20 @@ describe("A2 research prompt", () => {
     expect(prompt.system).toContain("loại công cụ chung hoặc chưa xác định sản phẩm cụ thể");
     expect(prompt.system).toContain("không phải lý do needs_research");
     expect(prompt.system).toContain("thiếu nguồn chính thức đã đọc vẫn là gap cốt lõi");
+    expect(prompt.system).toContain("stack_choice là quyết định stack duy nhất cho toàn khóa");
+    expect(prompt.system).toContain("basis = source_recommended");
+    expect(prompt.system).toContain("basis = context_rule");
+    expect(prompt.system).toContain("Không dùng needs_research chỉ vì nguồn không khuyến nghị một lựa chọn stack");
+    expect(prompt.system).toContain("Nếu không có công cụ nào như vậy, trả stack_choice.tools = []");
+    expect(prompt.system).toContain("có từ hai phương án trở lên để chọn");
+    expect(prompt.system).toContain("công cụ không có phương án thay thế hoặc nằm ngoài phạm vi khóa không cần mục");
+    const schema = STEP_SPECS.research!.schema as { required: string[]; properties: Record<string, unknown> };
+    expect(schema.required).toContain("stack_choice");
+    expect(schema.properties).toHaveProperty("stack_choice");
+    expect(schema.required).toContain("videos");
+    expect(schema.properties).toHaveProperty("videos");
+    expect(prompt.system).toContain("videos là mảng có thể rỗng");
+    expect(prompt.system).toContain("Với mỗi topic, chủ động tìm video YouTube");
   });
 });
 
@@ -321,6 +348,17 @@ describe("studio acceptance", () => {
       { source_id: "s2", authority: "supplementary", access: "read", checked_at: "2026-10-19" },
       { source_id: "s3", authority: "official", access: "unreachable", checked_at: "" },
     ],
+    videos: [],
+    stack_choice: {
+      tools: [{
+        tool_type: "package_manager",
+        selected: "pnpm",
+        alternatives_considered: ["npm", "yarn"],
+        basis: "source_recommended",
+        reason: "Nguồn chính thức đã đọc khuyến nghị pnpm.",
+        source_ids: ["s1"],
+      }],
+    },
     misconceptions: [{ topic: "ownership", source_ids: ["s1"] }],
     open_questions: [],
   };
@@ -330,15 +368,119 @@ describe("studio acceptance", () => {
     expect(acceptResearch(research, today)).toEqual({ ok: true, summary: "1 chủ đề, 1 ý chính, 1 lỗi hiểu sai, 2 nguồn đã đọc." });
   });
 
+  it("accepts evidence-backed video candidates and treats legacy missing videos as an empty list", () => {
+    const candidate = {
+      topic: "ownership",
+      url: "https://youtu.be/aaaaaaaaaaa",
+      title: "Giải thích ownership",
+      channel: "Rust Education",
+      channel_basis: "Trang giới thiệu kênh đã đọc mô tả nội dung giáo dục Rust.",
+      evidence_source_ids: ["s1"],
+    };
+    expect(acceptResearch({ ...research, videos: [candidate] }, today).ok).toBe(true);
+    expect(acceptResearch({
+      ...research,
+      videos: [{ ...candidate, evidence_source_ids: ["s2"] }],
+    }, today).ok).toBe(true);
+    const { videos: _videos, ...legacy } = research;
+    expect(acceptResearch(legacy, today).ok).toBe(true);
+    expect(acceptResearch({
+      ...research,
+      topics: research.topics.map((topic) => ({ ...topic, topic: ` ${topic.topic} ` })),
+      videos: [{ ...candidate, topic: ` ${candidate.topic} ` }],
+    }, today).ok).toBe(true);
+  });
+
+  it("rejects video candidates without read evidence, a parsed URL, a unique ID and a research topic", () => {
+    const candidate = {
+      topic: "ownership",
+      url: "https://youtu.be/aaaaaaaaaaa",
+      title: "Giải thích ownership",
+      channel: "Rust Education",
+      channel_basis: "Trang giới thiệu kênh đã đọc mô tả nội dung giáo dục Rust.",
+      evidence_source_ids: ["s1"],
+    };
+    expect(acceptResearch({ ...research, videos: [{ ...candidate, evidence_source_ids: [] }] }, today))
+      .toMatchObject({ ok: false, reason: expect.stringContaining("evidence_source_ids phải có ít nhất một ID nguồn đã đọc") });
+    expect(acceptResearch({ ...research, videos: [{ ...candidate, evidence_source_ids: ["s3"] }] }, today))
+      .toMatchObject({ ok: false, reason: expect.stringContaining("evidence_source_ids phải trỏ tới nguồn access = read") });
+    expect(acceptResearch({ ...research, videos: [{ ...candidate, url: "https://example.com/video" }] }, today))
+      .toMatchObject({ ok: false, reason: expect.stringContaining("url không phải link YouTube hợp lệ") });
+    expect(acceptResearch({ ...research, videos: [candidate, { ...candidate, url: "https://youtube.com/watch?v=aaaaaaaaaaa" }] }, today))
+      .toMatchObject({ ok: false, reason: expect.stringContaining("trùng video ID") });
+    expect(acceptResearch({ ...research, videos: [{ ...candidate, topic: "not in research" }] }, today))
+      .toMatchObject({ ok: false, reason: expect.stringContaining("topic không có trong research") });
+  });
+
+  it("accepts ready research with no stack tools to choose", () => {
+    expect(acceptResearch({ ...research, stack_choice: { tools: [] } }, today))
+      .toEqual({ ok: true, summary: "1 chủ đề, 1 ý chính, 1 lỗi hiểu sai, 2 nguồn đã đọc." });
+  });
+
+  it("accepts a context_rule choice with a reason and no invented source IDs", () => {
+    const contextual = {
+      ...research,
+      stack_choice: {
+        tools: [{
+          ...research.stack_choice.tools[0],
+          basis: "context_rule",
+          reason: "Khóa nhập môn: phù hợp môi trường đã cài và cần ít bước thêm.",
+          source_ids: [],
+        }],
+      },
+    };
+    expect(acceptResearch(contextual, today).ok).toBe(true);
+    expect(acceptResearch({
+      ...contextual,
+      stack_choice: { tools: [{ ...contextual.stack_choice.tools[0], source_ids: ["not-read"] }] },
+    }, today)).toMatchObject({ ok: false, reason: expect.stringContaining("source_ids phải trỏ tới nguồn đã đọc") });
+  });
+
+  it("rejects missing stack_choice and invalid recommendation metadata", () => {
+    expect(acceptResearch({ ...research, stack_choice: undefined }, today))
+      .toMatchObject({ ok: false, reason: expect.stringContaining("thiếu stack_choice") });
+    expect(acceptResearch({ ...research, stack_choice: { tools: "pnpm" } }, today))
+      .toMatchObject({ ok: false, reason: expect.stringContaining("stack_choice.tools phải là danh sách") });
+    expect(acceptResearch({
+      ...research,
+      stack_choice: { tools: [{ ...research.stack_choice.tools[0], basis: "guess" }] },
+    }, today)).toMatchObject({ ok: false, reason: expect.stringContaining("basis phải là source_recommended hoặc context_rule") });
+    expect(acceptResearch({
+      ...research,
+      stack_choice: { tools: [{ ...research.stack_choice.tools[0], source_ids: [] }] },
+    }, today)).toMatchObject({ ok: false, reason: expect.stringContaining("source_recommended cần source_ids") });
+    expect(acceptResearch({
+      ...research,
+      stack_choice: { tools: [{ ...research.stack_choice.tools[0], source_ids: undefined }] },
+    }, today)).toMatchObject({ ok: false, reason: expect.stringContaining("source_ids phải là danh sách ID nguồn") });
+    const supplementalRecommendation = {
+      ...research,
+      sources: research.sources.map((source) => source.source_id === "s2" ? { ...source, checked_at: today } : source),
+      stack_choice: { tools: [{ ...research.stack_choice.tools[0], source_ids: ["s2"] }] },
+    };
+    expect(acceptResearch(supplementalRecommendation, today).ok).toBe(true);
+    expect(acceptResearch({
+      ...research,
+      stack_choice: { tools: [{ ...research.stack_choice.tools[0], alternatives_considered: [] }] },
+    }, today)).toMatchObject({
+      ok: false,
+      reason: expect.stringContaining("alternatives_considered cần ít nhất một phương án thay thế"),
+    });
+    expect(acceptResearch({
+      ...research,
+      stack_choice: { tools: [research.stack_choice.tools[0], research.stack_choice.tools[0]] },
+    }, today)).toMatchObject({ ok: false, reason: expect.stringContaining("trùng tool_type") });
+  });
+
   it("accepts ready research with an unblocked open question", () => {
     const question = { question: "Phiên bản package chưa xác minh", impact: "Không ảnh hưởng nội dung đã có nguồn", blocking: false, action: "Ghi rõ nguồn không truy cập được" };
     expect(acceptResearch({ ...research, open_questions: [question] }, today))
       .toEqual({ ok: true, summary: "1 chủ đề, 1 ý chính, 1 lỗi hiểu sai, 2 nguồn đã đọc." });
   });
 
-  it("rejects needs_research even when its only open question is unblocked", () => {
+  it("returns the evidence gap for needs_research before validating stack_choice", () => {
     const question = { question: "Phiên bản package chưa xác minh", blocking: false };
-    expect(acceptResearch({ ...research, status: "needs_research", open_questions: [question] }, today))
+    expect(acceptResearch({ ...research, status: "needs_research", stack_choice: undefined, open_questions: [question] }, today))
       .toEqual({ ok: false, reason: "Thiếu bằng chứng: Phiên bản package chưa xác minh" });
   });
 
@@ -408,6 +550,30 @@ describe("studio acceptance", () => {
 
   it("accepts a curriculum with diagnosis, retrieval, a final check and quiz thresholds", () => {
     expect(acceptCurriculum(curriculum, sources)).toEqual({ ok: true, summary: "2 module, 6 lesson, 2 outcome." });
+  });
+
+  it("rejects video lessons in new curricula even when research has a matching candidate", () => {
+    const [m1, m2] = curriculum.modules;
+    const videoCurriculum = withModules([
+      { ...m1, lessons: [m1.lessons[0], { ...m1.lessons[1], type: "video" }, m1.lessons[2]] },
+      m2,
+    ]);
+    expect(acceptCurriculum(videoCurriculum, sources))
+      .toMatchObject({ ok: false, reason: expect.stringContaining("type video không còn được hỗ trợ") });
+  });
+
+  it("offers no video format to new A3/A4 curricula while preserving the app's original formats", () => {
+    expect(PLATFORM_FORMATS).toContain("video");
+    expect(PLATFORM_FORMAT_GUIDE).toHaveProperty("video");
+    expect(AI_CURRICULUM_FORMATS).not.toContain("video");
+    expect(AI_CURRICULUM_FORMAT_GUIDE).not.toHaveProperty("video");
+
+    const schema = STEP_SPECS.curriculum!.schema as any;
+    expect(schema.properties.modules.items.properties.lessons.items.properties.type.enum).toEqual([...AI_CURRICULUM_FORMATS]);
+    for (const key of ["curriculum", "curriculum_review"] as const) {
+      const input = STEP_SPECS[key]!.buildInput({ outputs: { brief: {}, research: {}, curriculum: {} }, revision: null } as never) as Record<string, any>;
+      expect(input.platform_formats).not.toHaveProperty("video");
+    }
   });
 
   it("makes the diagnostic a self-check practice without a threshold, and orders prerequisites", () => {

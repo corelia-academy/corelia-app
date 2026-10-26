@@ -3,10 +3,13 @@ import { describe, expect, it } from "vitest";
 import { acceptLesson, buildLessonInput, LESSON_SCHEMA, lessonIds, lessonRefs, quizPassingRatio, toLessonDraft, TransientError } from "./lessons.ts";
 import { article, base, ctx, curriculum, diagram, editCode, fillCode, question, test } from "./lesson_fixtures.ts";
 
-const ok = (youtube = true): typeof fetch => (() => Promise.resolve(new Response("{}", { status: youtube ? 200 : 404 }))) as typeof fetch;
-const accept = (id: string, out: object, fetchFn = ok()) => acceptLesson({ ...base, ...out }, ctx, id, fetchFn);
-const reason = async (id: string, out: object, fetchFn = ok()) => {
-  const r = await accept(id, out, fetchFn);
+const ok = (youtube = true): typeof fetch => (() => Promise.resolve(new Response(
+  youtube ? JSON.stringify({ author_name: "Rust Education" }) : "",
+  { status: youtube ? 200 : 404 },
+))) as typeof fetch;
+const accept = (id: string, out: object, fetchFn = ok(), lessonCtx: typeof ctx = ctx) => acceptLesson({ ...base, ...out }, lessonCtx, id, fetchFn);
+const reason = async (id: string, out: object, fetchFn = ok(), lessonCtx: typeof ctx = ctx) => {
+  const r = await accept(id, out, fetchFn, lessonCtx);
   return r.ok ? "" : r.reason;
 };
 
@@ -18,7 +21,7 @@ describe("studio lessons: accept by format", () => {
     expect((await accept("l-code", { code: fillCode })).ok).toBe(true);
     expect((await accept("l-prac", { practice: { description_markdown: "Làm theo.", mode: "instruction", checklist_items: [] } })).ok).toBe(true);
     expect((await accept("l-prac", { practice: { description_markdown: "Tự kiểm tra.", mode: "checklist", checklist_items: [{ id: "c1", label: "Đã chạy" }] } })).ok).toBe(true);
-    expect((await accept("l-vid", { source_ids: ["s2"], video: { youtube_url: "https://youtu.be/dQw4w9WgXcQ", start_seconds: 10, end_seconds: 0 } })).ok).toBe(true);
+    expect((await accept("l-vid", { source_ids: ["s2"], video: { youtube_url: "https://youtu.be/bbbbbbbbbbb", start_seconds: 10, end_seconds: 0 } })).ok).toBe(true);
   });
 
   it("requires exactly the block of the lesson's format", async () => {
@@ -109,23 +112,185 @@ describe("studio lessons: accept by format", () => {
     expect(await run({ practice: { ...practice, mode: "instruction", checklist_items: [] }, resources })).toContain("phải là practice checklist");
   });
 
-  it("video: the URL must parse and the video must exist for oEmbed", async () => {
+  it("video: use only a matching research candidate and verify its oEmbed channel", async () => {
     const video = (url: string) => ({ source_ids: ["s2"], video: { youtube_url: url, start_seconds: 0, end_seconds: 0 } });
     expect(await reason("l-vid", video("https://example.com/watch"))).toContain("youtube_required");
-    expect(await reason("l-vid", { source_ids: ["s2"], video: { youtube_url: "https://youtu.be/dQw4w9WgXcQ", start_seconds: 30, end_seconds: 20 } })).toContain("invalid_segment");
-    expect(await reason("l-vid", video("https://youtu.be/dQw4w9WgXcQ"), ok(false))).toContain("oEmbed");
+    expect(await reason("l-vid", { source_ids: ["s2"], video: { youtube_url: "https://youtu.be/bbbbbbbbbbb", start_seconds: 30, end_seconds: 20 } })).toContain("invalid_segment");
+    expect(await reason("l-vid", video("https://youtu.be/bbbbbbbbbbb"), ok(false))).toContain("oEmbed");
     const seen: string[] = [];
     const spy = ((url: string) => {
       seen.push(url);
-      return Promise.resolve(new Response("{}", { status: 200 }));
+      return Promise.resolve(new Response(JSON.stringify({ author_name: "  RUST   education " }), { status: 200 }));
     }) as unknown as typeof fetch;
-    expect((await accept("l-vid", video("https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=5"), spy)).ok).toBe(true);
+    expect((await accept("l-vid", video("https://www.youtube.com/watch?v=bbbbbbbbbbb&t=5"), spy)).ok).toBe(true);
     expect(seen[0]).toContain("youtube.com/oembed");
-    expect(seen[0]).toContain(encodeURIComponent("https://www.youtube.com/watch?v=dQw4w9WgXcQ"));
+    expect(seen[0]).toContain(encodeURIComponent("https://www.youtube.com/watch?v=bbbbbbbbbbb"));
+
+    expect(await reason("l-vid", video("https://youtu.be/ccccccccccc"))).toContain("không có trong research.videos");
+    expect(await reason("l-vid", video("https://youtu.be/aaaaaaaaaaa"))).toContain("không có trong research.videos");
+    const wrongChannel = ((() => Promise.resolve(new Response(JSON.stringify({ author_name: "Other Channel" }), { status: 200 }))) as unknown) as typeof fetch;
+    expect(await reason("l-vid", video("https://youtu.be/bbbbbbbbbbb"), wrongChannel)).toContain("author_name không khớp channel research");
+    const missingAuthor = (() => Promise.resolve(new Response("{}", { status: 200 }))) as typeof fetch;
+    expect(await reason("l-vid", video("https://youtu.be/bbbbbbbbbbb"), missingAuthor)).toContain("thiếu author_name");
+  });
+
+  it("article: every YouTube link must be a matching lesson candidate with the same channel", async () => {
+    const withRecommendation = {
+      ...article,
+      description_markdown: `${article.description_markdown}\n\nĐề xuất xem: [bài giảng](https://youtu.be/aaaaaaaaaaa)`,
+    };
+    expect((await accept("l-art", { article: withRecommendation })).ok).toBe(true);
+    expect(await reason("l-art", {
+      article: { ...withRecommendation, description_markdown: `${article.description_markdown}\n\n[video](https://youtu.be/ccccccccccc)` },
+    })).toContain("ngoài research.videos");
+    const wrongChannel = (() => Promise.resolve(new Response(JSON.stringify({ author_name: "Other Channel" }), { status: 200 }))) as typeof fetch;
+    expect(await reason("l-art", { article: withRecommendation }, wrongChannel)).toContain("author_name không khớp channel research");
+  });
+
+  it.each(((): { field: string; lessonId: string; output: object; lessonCtx?: typeof ctx }[] => {
+    const unresearched = "https://youtu.be/ccccccccccc";
+    const practice = {
+      practice: {
+        description_markdown: "Tự kiểm tra kiến thức.",
+        mode: "checklist",
+        checklist_items: [{ id: "c1", label: "Đã hiểu" }],
+      },
+    };
+    const codeWith = (over: object) => ({ code: { ...editCode, ...over } });
+    const resourceContext = {
+      ...ctx,
+      outputs: {
+        ...ctx.outputs,
+        research: {
+          ...(ctx.outputs.research as object),
+          sources: (ctx.outputs.research as { sources: { source_id: string; url: string }[] }).sources
+            .map((source) => source.source_id === "s1" ? { ...source, url: unresearched } : source),
+        },
+      },
+    } as typeof ctx;
+    return [
+      { field: "lesson.title", lessonId: "l-prac", output: { ...practice, title: unresearched } },
+      { field: "lesson.short_description", lessonId: "l-prac", output: { ...practice, short_description: unresearched } },
+      {
+        field: "lesson.description_markdown (article)",
+        lessonId: "l-art",
+        output: { article: { ...article, description_markdown: `${article.description_markdown}\n\n${unresearched}` } },
+      },
+      { field: "lesson.description_markdown (practice)", lessonId: "l-prac", output: { ...practice, practice: { ...practice.practice, description_markdown: unresearched } } },
+      { field: "lesson.resources[0].title", lessonId: "l-prac", output: { ...practice, resources: [{ title: unresearched, url: "https://doc.rust-lang.org/book/" }] } },
+      {
+        field: "lesson.resources[0].url",
+        lessonId: "l-prac",
+        output: { ...practice, resources: [{ title: "Tài liệu", url: unresearched }] },
+        lessonCtx: resourceContext,
+      },
+      { field: "questions[0].question", lessonId: "l-quiz", output: { quiz: { questions: [question({ question: unresearched })] } } },
+      { field: "questions[0].options[0].text", lessonId: "l-quiz", output: { quiz: { questions: [question({ options: [{ id: "a", text: unresearched }, ...question().options.slice(1)] })] } } },
+      { field: "questions[0].explanation", lessonId: "l-quiz", output: { quiz: { questions: [question({ explanation: unresearched })] } } },
+      { field: "lesson.code_exercise_locale.instructions", lessonId: "l-code", output: codeWith({ instructions: `[Xem video](${unresearched})` }) },
+      { field: "lesson.code_exercise_config.hints[0]", lessonId: "l-code", output: codeWith({ hints: [unresearched] }) },
+      { field: "lesson.code_exercise_config.blanks[0].feedback", lessonId: "l-code", output: { code: { ...fillCode, blanks: [{ ...fillCode.blanks[0], feedback: unresearched }] } } },
+      { field: "lesson.code_exercise_config.tests[0].description", lessonId: "l-code", output: codeWith({ tests: [{ ...editCode.tests[0], description: unresearched }] }) },
+      { field: "lesson.code_exercise_config.tests[0].failure_message", lessonId: "l-code", output: codeWith({ tests: [{ ...editCode.tests[0], failure_message: unresearched }] }) },
+      { field: "lesson.code_exercise_config.tests[0].hint", lessonId: "l-code", output: codeWith({ tests: [{ ...editCode.tests[0], hint: unresearched }] }) },
+      { field: "lesson.practice_config.checklist_items[0].label", lessonId: "l-prac", output: { ...practice, practice: { ...practice.practice, checklist_items: [{ id: "c1", label: unresearched }] } } },
+    ];
+  })())("rejects an unresearched YouTube link in $field", async ({ field, lessonId, output, lessonCtx }) => {
+    const why = await reason(lessonId, output, ok(), lessonCtx);
+    if (field === "lesson.resources[0].url") expect(why).toContain("video xem thêm phải được chọn qua suggested_videos");
+    else expect(why).toContain("ngoài research.videos");
+    if (field !== "quiz fixture" && field !== "code fixture" && field !== "lesson.resources[0].url") {
+      expect(why).toContain(field.replace(/ \(.+\)$/, ""));
+    }
+  });
+
+  it("practice: accepts a researched link, rejects malformed IDs and channel mismatches, and checks repeated IDs once", async () => {
+    const practice = (description_markdown: string) => ({
+      practice: { description_markdown, mode: "instruction", checklist_items: [] },
+    });
+    const validUrl = "https://youtu.be/aaaaaaaaaaa";
+    const valid = practice(`Bài viết minh họa. [Đề xuất xem](${validUrl})`);
+    expect((await accept("l-prac", valid)).ok).toBe(true);
+    expect(await reason("l-prac", practice("[Video](https://youtu.be:not-a-port/not-a-video-id)")))
+      .toContain("lesson.description_markdown: link YouTube không hợp lệ");
+    expect(await reason("l-prac", practice("[Video](//youtu.be/not-a-video-id)")))
+      .toContain("lesson.description_markdown: link YouTube không hợp lệ");
+
+    const wrongChannel = (() => Promise.resolve(new Response(JSON.stringify({ author_name: "Other Channel" }), { status: 200 }))) as typeof fetch;
+    expect(await reason("l-prac", practice(`[Đề xuất xem](${validUrl})`), wrongChannel))
+      .toContain("lesson.description_markdown: author_name không khớp channel research");
+
+    let calls = 0;
+    const spy = (() => {
+      calls++;
+      return Promise.resolve(new Response(JSON.stringify({ author_name: "Rust Education" }), { status: 200 }));
+    }) as typeof fetch;
+    expect((await accept("l-prac", { ...practice(`[Đề xuất xem](${validUrl})`), title: validUrl }, spy)).ok).toBe(true);
+    expect(calls).toBe(1);
+  });
+
+  it("practice: oEmbed network and server errors remain transient", async () => {
+    const output = { practice: { description_markdown: "https://youtu.be/aaaaaaaaaaa", mode: "instruction", checklist_items: [] } };
+    const server = (() => Promise.resolve(new Response("", { status: 503 }))) as typeof fetch;
+    const offline = (() => Promise.reject(new Error("offline"))) as typeof fetch;
+    await expect(accept("l-prac", output, server)).rejects.toBeInstanceOf(TransientError);
+    await expect(accept("l-prac", output, offline)).rejects.toBeInstanceOf(TransientError);
+  });
+
+  it.each([
+    ["l-art", { article }],
+    ["l-quiz", { quiz: { questions: [question()] } }],
+    ["l-code", { code: editCode, source_ids: ["s1", "s2"] }],
+    ["l-prac", { practice: { description_markdown: "Đọc ví dụ.", mode: "instruction", checklist_items: [] } }],
+  ])("builds a code-owned optional video resource for %s and allows an empty selection", async (lessonId, block) => {
+    const selected = { ...base, ...block, suggested_videos: ["aaaaaaaaaaa"] };
+    expect((await accept(lessonId, selected)).ok).toBe(true);
+    const ref = lessonRefs(curriculum).find((item) => item.lesson.id === lessonId)!;
+    const withSuggestion = toLessonDraft(ref, selected as never, "vi", ctx.outputs.research as never);
+    expect(withSuggestion.lesson.resources).toContainEqual({
+      title: "Video: Worked example for t1 — Rust Education",
+      url: "https://www.youtube.com/watch?v=aaaaaaaaaaa",
+    });
+
+    const empty = { ...selected, suggested_videos: [] };
+    expect((await accept(lessonId, empty)).ok).toBe(true);
+    expect(toLessonDraft(ref, empty as never, "vi", ctx.outputs.research as never).lesson.resources).toBeUndefined();
+  });
+
+  it("rejects suggested video IDs that are unknown, duplicated, or over the limit", async () => {
+    expect(await reason("l-art", { article, suggested_videos: ["ccccccccccc"] })).toContain("không thuộc ứng viên của lesson");
+    expect(await reason("l-art", { article, suggested_videos: ["aaaaaaaaaaa", "aaaaaaaaaaa"] })).toContain("bị trùng video ID");
+    expect(await reason("l-code", { code: editCode, suggested_videos: ["aaaaaaaaaaa", "bbbbbbbbbbb", "ccccccccccc"], source_ids: ["s1", "s2"] })).toContain("tối đa 2 video");
+    expect(await reason("l-art", { article, resources: [{ title: "Video xem thêm", url: "https://www.youtube.com/watch?v=aaaaaaaaaaa" }] }))
+      .toContain("video xem thêm phải được chọn qua suggested_videos");
+  });
+
+  it("oEmbeds each suggested ID once, rejects missing embeds or channel mismatch, and keeps transient errors", async () => {
+    const articleWithLink = {
+      ...article,
+      description_markdown: `${article.description_markdown}\n\n[Xem thêm](https://youtu.be/aaaaaaaaaaa)`,
+    };
+    let calls = 0;
+    const spy = (() => {
+      calls++;
+      return Promise.resolve(new Response(JSON.stringify({ author_name: "Rust Education" }), { status: 200 }));
+    }) as typeof fetch;
+    expect((await accept("l-art", { article: articleWithLink, suggested_videos: ["aaaaaaaaaaa"] }, spy)).ok).toBe(true);
+    expect(calls).toBe(1);
+
+    const wrongChannel = (() => Promise.resolve(new Response(JSON.stringify({ author_name: "Other Channel" }), { status: 200 }))) as typeof fetch;
+    expect(await reason("l-art", { article, suggested_videos: ["aaaaaaaaaaa"] }, wrongChannel))
+      .toContain("author_name không khớp channel research");
+    const missing = (() => Promise.resolve(new Response("", { status: 404 }))) as typeof fetch;
+    expect(await reason("l-art", { article, suggested_videos: ["aaaaaaaaaaa"] }, missing)).toContain("không nhúng được");
+    const server = (() => Promise.resolve(new Response("", { status: 503 }))) as typeof fetch;
+    const offline = (() => Promise.reject(new Error("offline"))) as typeof fetch;
+    await expect(accept("l-art", { article, suggested_videos: ["aaaaaaaaaaa"] }, server)).rejects.toBeInstanceOf(TransientError);
+    await expect(accept("l-art", { article, suggested_videos: ["aaaaaaaaaaa"] }, offline)).rejects.toBeInstanceOf(TransientError);
   });
 
   it("video: a check that cannot be made throws instead of failing the lesson", async () => {
-    const out = { source_ids: ["s2"], video: { youtube_url: "https://youtu.be/dQw4w9WgXcQ", start_seconds: 0, end_seconds: 0 } };
+    const out = { source_ids: ["s2"], video: { youtube_url: "https://youtu.be/bbbbbbbbbbb", start_seconds: 0, end_seconds: 0 } };
     const server = (() => Promise.resolve(new Response("", { status: 503 }))) as typeof fetch;
     const offline = (() => Promise.reject(new Error("offline"))) as typeof fetch;
     await expect(accept("l-vid", out, server)).rejects.toBeInstanceOf(TransientError);
@@ -187,6 +352,7 @@ describe("studio lessons: input", () => {
 
 describe("studio lessons: schema", () => {
   it("is strict-mode shaped: closed objects with every key required, within the property budget", () => {
+    expect((LESSON_SCHEMA as any).required).toContain("suggested_videos");
     let properties = 0;
     const walk = (node: unknown) => {
       if (Array.isArray(node)) return node.forEach(walk);

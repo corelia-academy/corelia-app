@@ -1,7 +1,7 @@
 // Steps structure_check and journey_test: deterministic checks over every lesson of the run. No
 // model call; a failure lists what is wrong and the run stops as a draft (nothing is repaired here).
 
-import { diagramProblems, lessonRefs, TransientError, youtubeEmbeddable, type LessonRef } from "./lessons.ts";
+import { diagramProblems, lessonRefs, lessonVideoCandidates, TransientError, youtubeEmbeddable, type LessonRef } from "./lessons.ts";
 import { evaluateCodeExercise, getYoutubeVideoId, validateCodeConfig, validateLesson, validateQuestion, validateResources } from "./lesson_ports.ts";
 import type { LessonDraft } from "./lesson_types.ts";
 
@@ -21,9 +21,9 @@ export interface LessonRecord {
 interface CurriculumOutcomes {
   outcomes: { id: string; check_lesson_ids: string[] }[];
 }
-interface ResearchSources {
+type ResearchSources = Parameters<typeof lessonVideoCandidates>[0] & {
   sources: { url: string; access: string }[];
-}
+};
 
 const known = (p: Provenance | null) => Boolean(p?.model_id?.trim() && p.prompt_version?.trim());
 
@@ -34,7 +34,8 @@ export function structureProblems(curriculum: unknown, research: unknown, record
   const refs = lessonRefs(curriculum);
   const ids = new Set(refs.map((r) => r.lesson.id));
   for (const id of Object.keys(records)) if (!ids.has(id)) problems.push(`lesson thừa không có trong curriculum: ${id}`);
-  const readUrls = new Set((research as ResearchSources).sources.filter((s) => s.access === "read").map((s) => s.url));
+  const researchData = research as ResearchSources;
+  const readUrls = new Set(researchData.sources.filter((s) => s.access === "read").map((s) => s.url));
 
   for (const { lesson: cl } of refs) {
     for (const id of cl.review_lesson_ids) if (!ids.has(id)) problems.push(`${cl.id}: review_lesson_ids trỏ tới lesson không có (${id})`);
@@ -53,7 +54,24 @@ export function structureProblems(curriculum: unknown, research: unknown, record
     if (cl.type === "quiz" && questions.length === 0) at("quiz không có câu hỏi");
     if (cl.type === "article") for (const p of diagramProblems(lesson.description_markdown ?? "", diagrams)) at(p);
     for (const code of validateResources(lesson.resources ?? [])) at(`resources: ${code}`);
-    for (const r of lesson.resources ?? []) if (!readUrls.has(r.url)) at(`resource ${r.url} không thuộc nguồn đã đọc`);
+    const candidateById = new Map<string, { title: string; channel: string }>();
+    for (const candidate of lessonVideoCandidates(researchData, cl.source_ids)) {
+      const videoId = getYoutubeVideoId(candidate.url);
+      if (videoId && !candidateById.has(videoId)) candidateById.set(videoId, candidate);
+    }
+    for (const r of lesson.resources ?? []) {
+      const videoId = getYoutubeVideoId(r.url);
+      if (videoId) {
+        const candidate = candidateById.get(videoId);
+        const expectedUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        const expectedTitle = candidate ? `Video: ${candidate.title} — ${candidate.channel}` : "";
+        if (!candidate || r.url !== expectedUrl || r.title !== expectedTitle) {
+          at(`resource ${r.url} không phải video xem thêm hợp lệ của lesson`);
+        }
+      } else if (!readUrls.has(r.url)) {
+        at(`resource ${r.url} không thuộc nguồn đã đọc`);
+      }
+    }
     const allowed = new Set(cl.source_ids);
     for (const id of source_ids) if (!allowed.has(id)) at(`source_id ${id} ngoài curriculum`);
     if (!known(record.written)) at("thiếu model_id/prompt_version của bản viết");
@@ -93,6 +111,9 @@ export async function linkProblems(records: Record<string, LessonRecord>, fetchF
   const seen = new Set<string>();
   for (const [id, { draft }] of Object.entries(records)) {
     for (const r of draft.lesson.resources ?? []) {
+      // YouTube candidates were checked with oEmbed before the draft was accepted; watch pages
+      // are not a reliable target for a generic HEAD/GET reachability check.
+      if (getYoutubeVideoId(r.url)) continue;
       if (seen.has(r.url)) continue;
       seen.add(r.url);
       checks.push({
@@ -105,7 +126,7 @@ export async function linkProblems(records: Record<string, LessonRecord>, fetchF
       });
     }
     const video = draft.lesson.youtube_url ? getYoutubeVideoId(draft.lesson.youtube_url) : null;
-    if (video) checks.push({ where: `${id}: video ${video}`, run: () => youtubeEmbeddable(video, fetchFn) });
+    if (video) checks.push({ where: `${id}: video ${video}`, run: async () => Boolean(await youtubeEmbeddable(video, fetchFn)) });
   }
   for (let i = 0; i < checks.length; i += 8) {
     const results = await Promise.allSettled(checks.slice(i, i + 8).map((c) => c.run()));

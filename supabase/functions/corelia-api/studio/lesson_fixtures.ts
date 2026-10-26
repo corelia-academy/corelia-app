@@ -39,6 +39,24 @@ export const research = {
     { topic: "t1", why: "w", source_ids: ["s1"], key_points: [{ point: "p1", source_ids: ["s1"] }, { point: "p2", source_ids: ["s2"] }] },
     { topic: "t2", why: "w", source_ids: ["s2"], key_points: [{ point: "p3", source_ids: ["s2"] }] },
   ],
+  videos: [
+    {
+      topic: "t1",
+      url: "https://youtu.be/aaaaaaaaaaa",
+      title: "Worked example for t1",
+      channel: "Rust Education",
+      channel_basis: "A read channel page establishes the educational focus.",
+      evidence_source_ids: ["s1"],
+    },
+    {
+      topic: "t2",
+      url: "https://youtu.be/bbbbbbbbbbb",
+      title: "Worked example for t2",
+      channel: "Rust Education",
+      channel_basis: "A read channel page establishes the educational focus.",
+      evidence_source_ids: ["s2"],
+    },
+  ],
   misconceptions: [
     { topic: "t1", misconception: "m1", correction: "c1", source_ids: ["s1"] },
     { topic: "t2", misconception: "m2", correction: "c2", source_ids: ["s2"] },
@@ -59,6 +77,7 @@ export const base = {
   short_description: "Mô tả ngắn.",
   duration_seconds: 300,
   resources: [],
+  suggested_videos: [],
   source_ids: ["s1"],
   summary: "Lesson làm X.",
   article: null,
