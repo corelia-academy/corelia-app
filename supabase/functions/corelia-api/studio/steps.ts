@@ -10,7 +10,13 @@ import {
   reviewTools,
   type LessonContext,
 } from "./lessons.ts";
-import { getYoutubeVideoId } from "./lesson_ports.ts";
+import {
+  ENABLED_CODE_LANGUAGES,
+  getCodeLanguageAdapter,
+  getYoutubeVideoId,
+  resolveCodeLanguage,
+  type EnabledCodeLanguage,
+} from "./lesson_ports.ts";
 import { PROMPTS, promptVersion, type AgentRole, type PromptKey } from "./prompts.ts";
 import type { BriefCatalogResearch } from "./catalog_research_brief.ts";
 
@@ -126,6 +132,7 @@ const BRIEF_SCHEMA = object({
   topic: str,
   audience: str,
   level: { type: "string", enum: ["beginner", "intermediate", "advanced"] },
+  code_language: { type: ["string", "null"], enum: [...ENABLED_CODE_LANGUAGES, null] },
   locale: str,
   goals: strList,
   scope: strList,
@@ -281,6 +288,7 @@ export interface CurriculumRevision {
 interface Brief {
   status: string;
   open_questions: string[];
+  code_language?: EnabledCodeLanguage | null;
 }
 
 interface Research {
@@ -343,7 +351,24 @@ export function utcDate(ms: number): string {
 export function acceptBrief(output: unknown): Acceptance {
   const brief = output as Brief;
   if (brief.status !== "ready") return { ok: false, reason: `Brief thiếu dữ liệu: ${list(brief.open_questions)}` };
+  const requestedLanguage = (brief as { code_language?: unknown }).code_language;
+  if (requestedLanguage !== undefined && requestedLanguage !== null) {
+    const adapter = getCodeLanguageAdapter(requestedLanguage);
+    if (adapter?.status === "prepared") {
+      return { ok: false, reason: `code_language "${adapter.id}" chưa hỗ trợ publish.` };
+    }
+    if (!adapter) {
+      return { ok: false, reason: `code_language "${String(requestedLanguage)}" không hợp lệ hoặc chưa hỗ trợ publish.` };
+    }
+  }
   return { ok: true, summary: "brief sẵn sàng." };
+}
+
+function briefWithCodeLanguage(value: unknown): Record<string, unknown> {
+  const brief = value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
+  return { ...brief, code_language: resolveCodeLanguage(brief.code_language) };
 }
 
 function stackChoiceProblems(value: unknown, sources: Research["sources"]): string[] {
@@ -496,7 +521,11 @@ export function acceptResearch(output: unknown, today: string): Acceptance {
   };
 }
 
-export function acceptCurriculum(output: unknown, sourceIds: Set<string>): Acceptance {
+export function acceptCurriculum(
+  output: unknown,
+  sourceIds: Set<string>,
+  codeLanguage: EnabledCodeLanguage | null = "rust",
+): Acceptance {
   const curriculum = output as Curriculum;
   if (curriculum.status === "needs_research") {
     // A request for more evidence: the research step is reopened for it (planRun), the curriculum is not used.
@@ -512,6 +541,9 @@ export function acceptCurriculum(output: unknown, sourceIds: Set<string>): Accep
   }
   const problems: string[] = [];
   const lessons = curriculum.modules.flatMap((m) => m.lessons);
+  if (codeLanguage === null && lessons.some((lesson) => lesson.type === "code_exercise")) {
+    return { ok: false, reason: "Curriculum có code_exercise nhưng brief.code_language = null." };
+  }
   const lessonIds = new Set(lessons.map((l) => l.id));
   const outcomeIds = new Set(curriculum.outcomes.map((o) => o.id));
   const ids = [...curriculum.modules.map((m) => m.id), ...lessons.map((l) => l.id), ...curriculum.outcomes.map((o) => o.id)];
@@ -729,6 +761,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
       paths: ctx.paths,
       tracks: ctx.scopes,
       ...(ctx.catalogResearch ? { catalog_research: ctx.catalogResearch } : {}),
+      code_languages: ENABLED_CODE_LANGUAGES,
       platform_formats: PLATFORM_FORMAT_GUIDE,
     }),
     accept: acceptBrief,
@@ -744,7 +777,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
     schema: RESEARCH_SCHEMA,
     buildInput: (ctx) => ({
       course_type: "ai_generated",
-      brief: ctx.outputs.brief,
+      brief: briefWithCodeLanguage(ctx.outputs.brief),
       today: ctx.today,
       platform_formats: PLATFORM_FORMAT_GUIDE,
       ...(ctx.researchGap ? { research_gap: ctx.researchGap, previous_research: ctx.outputs.research } : {}),
@@ -761,12 +794,16 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
     schema: CURRICULUM_SCHEMA,
     buildInput: (ctx) => ({
       course_type: "ai_generated",
-      brief: ctx.outputs.brief,
+      brief: briefWithCodeLanguage(ctx.outputs.brief),
       research_brief: ctx.outputs.research,
       platform_formats: AI_CURRICULUM_FORMAT_GUIDE,
       ...(ctx.revision ? { previous_curriculum: ctx.outputs.curriculum, review: ctx.revision } : {}),
     }),
-    accept: (output, ctx) => acceptCurriculum(output, researchSourceIds(ctx)),
+    accept: (output, ctx) => acceptCurriculum(
+      output,
+      researchSourceIds(ctx),
+      resolveCodeLanguage((ctx.outputs.brief as { code_language?: unknown }).code_language),
+    ),
   },
   curriculum_review: {
     prompt: "a4-curriculum-review",
@@ -778,7 +815,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
     schema: REVIEW_SCHEMA,
     buildInput: (ctx) => ({
       course_type: "ai_generated",
-      brief: ctx.outputs.brief,
+      brief: briefWithCodeLanguage(ctx.outputs.brief),
       research_brief: ctx.outputs.research,
       curriculum: ctx.outputs.curriculum,
       platform_formats: AI_CURRICULUM_FORMAT_GUIDE,

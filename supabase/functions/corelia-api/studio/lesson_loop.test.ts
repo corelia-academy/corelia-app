@@ -4,6 +4,7 @@ import { journeyProblems, linkProblems, structureProblems, type LessonRecord } f
 import { MAX_LESSON_REVIEWS, planLessons, type LessonGeneration, type LessonStep } from "./lesson_flow.ts";
 import { MAX_TRANSPORT_FAILURES } from "./retry.ts";
 import { article, base, ctx, curriculum, editCode, fillCode, lesson, now, question } from "./lesson_fixtures.ts";
+import { getCodeLanguageAdapter } from "./lesson_ports.ts";
 import { acceptLessonReview, resolvePath } from "./lesson_review.ts";
 import { buildLessonInput, buildLessonReviewInput, lessonRefs, lessonRevision, lessonTools, reviewBlocking, toLessonDraft, TransientError, type LessonContext } from "./lessons.ts";
 import { planRun, STEP_ORDER, STEP_SPECS, SUBMIT_STALE_MS, type RunContext, type StepKey } from "./steps.ts";
@@ -284,6 +285,31 @@ describe("studio lesson loop: research version handoff", () => {
     expect(reviewer.research).not.toHaveProperty("stack_choice");
   });
 
+  it("passes the course code language and only its guide to A5 and A6, defaulting legacy briefs to Rust", () => {
+    const selectedContext = {
+      ...ctx,
+      outputs: { ...ctx.outputs, brief: { locale: "vi", code_language: "python" } },
+    } as RunContext;
+    const pythonGuide = getCodeLanguageAdapter("python")!.guide;
+    const rustGuide = getCodeLanguageAdapter("rust")!.guide;
+    const writer = buildLessonInput(selectedContext, "l-code") as Record<string, any>;
+    expect(writer).toMatchObject({ code_language: "python", code_language_guide: pythonGuide });
+    expect(writer.code_language_guide).not.toBe(rustGuide);
+
+    const reviewContext = {
+      ...selectedContext,
+      lesson: { drafts: 1, reviews: 0, draft: { ...base, code: editCode }, review: null },
+    } as RunContext;
+    const reviewer = buildLessonReviewInput(reviewContext, "l-code") as Record<string, any>;
+    expect(reviewer).toMatchObject({ code_language: "python", code_language_guide: pythonGuide });
+    expect(reviewer.code_language_guide).not.toBe(rustGuide);
+    expect(reviewer.checks_already_run.join(" ")).toContain("code_language=python");
+    expect(reviewer.checks_already_run.join(" ")).toContain("Đã kiểm lộ đáp án");
+
+    const legacyContext = { ...ctx, outputs: { ...ctx.outputs, brief: { locale: "vi" } } } as RunContext;
+    expect(buildLessonInput(legacyContext, "l-code")).toMatchObject({ code_language: "rust", code_language_guide: rustGuide });
+  });
+
   it("passes only source-matched video candidates to A5/A6 and gives A5 no video search tool", () => {
     const candidates = [
       { topic: "t1", url: "https://youtu.be/aaaaaaaaaaa", title: "Topic one", channel: "Rust Education", channel_basis: "Read channel evidence.", evidence_source_ids: ["s1"] },
@@ -385,7 +411,7 @@ describe("studio lesson loop: review input and acceptance", () => {
 
 // ---- structure_check and journey_test -----------------------------------------------------------
 
-const prov = { model_id: "gpt-6-luna", prompt_version: "a5-lesson@v14" };
+const prov = { model_id: "gpt-6-luna", prompt_version: "a5-lesson@v15" };
 const outputs: Record<string, object> = {
   "l-art": { ...base, article },
   "l-quiz": quizOutput,

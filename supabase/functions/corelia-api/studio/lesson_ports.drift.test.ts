@@ -7,7 +7,16 @@ import { validateLesson as appValidateLesson } from "@/features/learning/validat
 import { validateLessonResources } from "@/features/learning/resourceValidation";
 import { getYoutubeVideoId as appYoutubeId } from "@/types/courses";
 
-import { getYoutubeVideoId, validateCodeConfig, validateLesson, validateResources } from "./lesson_ports.ts";
+import {
+  CODE_LANGUAGE_ADAPTERS,
+  ENABLED_CODE_LANGUAGES,
+  getCodeLanguageAdapter,
+  getYoutubeVideoId,
+  PREPARED_CODE_LANGUAGES,
+  validateCodeConfig,
+  validateLesson,
+  validateResources,
+} from "./lesson_ports.ts";
 
 const fill = {
   schema_version: 1,
@@ -81,6 +90,45 @@ describe("lesson_ports drift", () => {
   it.each(configs)("validateCodeConfig: %s", (_name, config) => {
     expect(validateCodeConfig(config, true).sort()).toEqual(appValidateCodeConfig(config, true).sort());
     expect(validateCodeConfig(config, false).sort()).toEqual(appValidateCodeConfig(config, false).sort());
+  });
+
+  it.each(ENABLED_CODE_LANGUAGES)("enabled language %s matches the app validator", (language) => {
+    const adapter = getCodeLanguageAdapter(language)!;
+    const config = {
+      ...edit,
+      language,
+      file: { ...edit.file, path: `main.${adapter.extensions[0]}` },
+    };
+    expect(validateCodeConfig(config, true)).toEqual(appValidateCodeConfig(config, true));
+    expect(validateCodeConfig(config, true)).toEqual([]);
+  });
+
+  it.each(PREPARED_CODE_LANGUAGES)("prepared language %s stays off until app and DB support it", (language) => {
+    const adapter = getCodeLanguageAdapter(language)!;
+    const config = {
+      ...edit,
+      language,
+      file: { ...edit.file, path: `Main.${adapter.extensions[0]}` },
+    };
+    expect(adapter.status).toBe("prepared");
+    expect(adapter.guide.trim()).not.toBe("");
+    const appErrors = appValidateCodeConfig(config, true);
+    // The current app's shape guard reports invalid_config (not unsupported_config).
+    expect(appErrors, `${language} is supported by the app now; verify the DB publish gate and move it from prepared to enabled`).toEqual(["invalid_config"]);
+    expect(validateCodeConfig(config, true)).toEqual(appErrors);
+  });
+
+  it("keeps all enabled adapters aligned with the registry and leaves prepared adapters out of schemas", () => {
+    expect(ENABLED_CODE_LANGUAGES).toEqual(["rust", "typescript", "javascript", "python", "java", "c", "cpp", "go"]);
+    expect(CODE_LANGUAGE_ADAPTERS.map((language) => language.id)).toEqual([
+      ...ENABLED_CODE_LANGUAGES,
+      ...PREPARED_CODE_LANGUAGES,
+    ]);
+    expect(PREPARED_CODE_LANGUAGES).toEqual(["solidity", "move"]);
+    for (const language of CODE_LANGUAGE_ADAPTERS) {
+      expect(language.extensions.length, language.id).toBeGreaterThan(0);
+      expect(language.guide.trim(), language.id).not.toBe("");
+    }
   });
 
   it.each(lessons)("validateLesson: %s", (_name, lesson) => {

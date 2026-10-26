@@ -21,7 +21,7 @@ export const LESSON_REVIEW_SCHEMA = object({
       verified_by: { type: "string", enum: ["tool", "source", "reasoning"] },
     }),
   },
-  /** What could not be verified, e.g. Rust code that was not compiled. */
+  /** What could not be verified, e.g. course-language code that was not compiled. */
   unverified: strList,
   summary: str,
 });

@@ -8,14 +8,19 @@ import { checkDiagram } from "./diagram.ts";
 import type { LessonDiagram, LessonDraft, LessonFormat, QuestionData } from "./lesson_types.ts";
 import {
   evaluateCodeExercise,
+  ENABLED_CODE_LANGUAGES,
+  getCodeLanguageAdapter,
   getYoutubeVideoId,
-  PUBLISHABLE_CODE_LANGUAGE,
+  isEnabledCodeLanguage,
+  resolveCodeLanguage,
   validateCodeConfig,
   validateLesson,
   validateQuestion,
   validateResources,
+  validCodeFile,
   type CodeExerciseConfig,
   type CodeExerciseTest,
+  type EnabledCodeLanguage,
 } from "./lesson_ports.ts";
 import type { Acceptance, ResearchVideoCandidate, RunContext } from "./steps.ts";
 import { PLATFORM_FORMAT_GUIDE } from "./formats.ts";
@@ -60,6 +65,7 @@ interface ResearchFull {
 }
 interface BriefFull {
   locale?: string;
+  code_language?: EnabledCodeLanguage | null;
 }
 
 /** Trim research topic labels for matching without changing their case or meaning. */
@@ -157,10 +163,8 @@ export const LESSON_SCHEMA = object({
   })),
   code: nullable(object({
     instructions: str,
-    // The publish gate (private.learning_code_errors) accepts Rust only.
-    language: { type: "string", enum: [PUBLISHABLE_CODE_LANGUAGE] },
-    // The app accepts a bare file name only (validCodeFile in src/features/code-exercise/languages.ts).
-    file_path: { type: "string", enum: ["main.rs", "lib.rs"] },
+    language: { type: "string", enum: [...ENABLED_CODE_LANGUAGES] },
+    file_path: str,
     starter_source: str,
     reference_solution: str,
     hints: strList,
@@ -263,6 +267,8 @@ function lessonBase(ctx: RunContext, lessonId: string) {
   const curriculum = ctx.outputs.curriculum as CurriculumFull;
   const research = ctx.outputs.research as ResearchFull;
   const brief = ctx.outputs.brief as BriefFull;
+  const codeLanguage = resolveCodeLanguage(brief.code_language);
+  const codeLanguageAdapter = codeLanguage ? getCodeLanguageAdapter(codeLanguage) : undefined;
   const { refs, index } = findLesson(ctx, lessonId);
   const { lesson, moduleId } = refs[index];
   const mod = curriculum.modules.find((m) => m.id === moduleId)!;
@@ -276,7 +282,9 @@ function lessonBase(ctx: RunContext, lessonId: string) {
     // longest identical prefix of the request, so the lesson-specific part must follow them.
     common: {
       course_type: "ai_generated",
-      brief: lessonBrief(brief),
+      brief: { ...lessonBrief(brief), code_language: codeLanguage },
+      code_language: codeLanguage,
+      ...(codeLanguageAdapter ? { code_language_guide: codeLanguageAdapter.guide } : {}),
       today: ctx.today,
       platform_format: PLATFORM_FORMAT_GUIDE[lesson.type],
       lesson,
@@ -325,12 +333,15 @@ export function buildLessonReviewInput(ctx: RunContext, lessonId: string): Recor
     ...neighbours,
     review_round: lc.reviews + 1,
     lesson_draft: toLessonDraft(ref, lc.draft as LessonOutput, locale, ctx.outputs.research as ResearchFull),
-    checks_already_run: checksAlreadyRun(ref.lesson.type),
+    checks_already_run: checksAlreadyRun(
+      ref.lesson.type,
+      resolveCodeLanguage((ctx.outputs.brief as BriefFull).code_language),
+    ),
   };
 }
 
 /** What acceptLesson verified before the draft reached the reviewer, so the reviewer does not repeat it. */
-export function checksAlreadyRun(format: LessonFormat): string[] {
+export function checksAlreadyRun(format: LessonFormat, codeLanguage: EnabledCodeLanguage | null = "rust"): string[] {
   const common = [
     "Quy tắc publish của app cho lesson (validateLesson): tiêu đề, cấu hình theo format.",
     "source_ids nằm trong source_ids của lesson ở curriculum; resource do A5 viết thuộc nguồn research đã đọc; suggested video thuộc ứng viên lesson và oEmbed/author_name đã được kiểm.",
@@ -339,8 +350,9 @@ export function checksAlreadyRun(format: LessonFormat): string[] {
     article: ["Markdown và diagrams khớp hai chiều; bố cục sơ đồ vẽ được (không chồng nét, không đi xuyên node)."],
     quiz: ["Mỗi câu có ≥ 2 phương án, id duy nhất, correct_index hợp lệ, có giải thích. CHƯA kiểm tra đáp án đúng về nội dung."],
     code_exercise: [
-      "Rust, tệp .rs; reference_solution đạt mọi test bắt buộc; starter_source không đạt.",
-      "CHƯA biên dịch hay chạy mã Rust: đúng/sai của mã và test chưa được kiểm chứng bằng công cụ.",
+      `code_language=${codeLanguage ?? "null"}; tệp có đuôi hợp lệ; reference_solution đạt mọi test bắt buộc; starter_source không đạt.`,
+      `CHƯA biên dịch hay chạy mã ${codeLanguage ?? "đã chọn"}; đúng/sai của mã và test chưa được kiểm chứng bằng công cụ.`,
+      "Đã kiểm lộ đáp án dạng định danh nguyên từ trong hints, feedback, failure_message và hint của test theo accepted_answers/value của test contains.",
     ],
     practice: ["Chỉ mode instruction hoặc checklist, không bài nộp; checklist có id duy nhất."],
     video: ["Video ID thuộc ứng viên research của lesson, oEmbed trả 200 và author_name khớp channel ứng viên. CHƯA kiểm tra nội dung, độ dài hay ngôn ngữ video."],
@@ -600,16 +612,70 @@ function quizProblems(quiz: NonNullable<LessonOutput["quiz"]>, draft: LessonDraf
   return problems;
 }
 
-function codeProblems(code: NonNullable<LessonOutput["code"]>, config: CodeExerciseConfig): string[] {
+function answerLeakProblems(code: NonNullable<LessonOutput["code"]>): string[] {
+  const answers = new Set<string>();
+  for (const blank of code.blanks) {
+    for (const answer of blank.accepted_answers) {
+      const identifier = answer.trim();
+      if (/^[A-Za-z_][A-Za-z0-9_]{2,}$/.test(identifier)) answers.add(identifier);
+    }
+  }
+  for (const test of code.tests) {
+    if (test.type !== "contains") continue;
+    const identifier = test.value.trim();
+    if (/^[A-Za-z_][A-Za-z0-9_]{2,}$/.test(identifier)) answers.add(identifier);
+  }
+
+  const texts: { location: string; value: string }[] = [];
+  code.hints.forEach((value, index) => texts.push({ location: `code.hints[${index}]`, value }));
+  code.blanks.forEach((blank, index) => texts.push({ location: `code.blanks[${index}].feedback`, value: blank.feedback }));
+  code.tests.forEach((test, index) => {
+    texts.push({ location: `code.tests[${index}].failure_message`, value: test.failure_message });
+    texts.push({ location: `code.tests[${index}].hint`, value: test.hint });
+  });
+
+  const hasWholeIdentifier = (text: string, identifier: string): boolean => {
+    for (let start = text.indexOf(identifier); start >= 0; start = text.indexOf(identifier, start + 1)) {
+      const before = start > 0 ? text[start - 1] : "";
+      const after = text[start + identifier.length] ?? "";
+      if (!/[A-Za-z0-9_]/.test(before) && !/[A-Za-z0-9_]/.test(after)) return true;
+    }
+    return false;
+  };
+
   const problems: string[] = [];
-  // Publish gate: Rust, in a *.rs file.
-  if (code.language !== PUBLISHABLE_CODE_LANGUAGE) problems.push("ngôn ngữ phải là rust");
-  if (!/^[a-zA-Z0-9_.-]+\.rs$/.test(code.file_path)) problems.push(`file_path "${code.file_path}" phải là tên tệp .rs không có thư mục, ví dụ main.rs`);
+  for (const { location, value } of texts) {
+    if (typeof value !== "string" || !value) continue;
+    for (const answer of answers) {
+      if (hasWholeIdentifier(value, answer)) problems.push(`${location} lộ đáp án định danh "${answer}"`);
+    }
+  }
+  return problems;
+}
+
+function codeProblems(
+  code: NonNullable<LessonOutput["code"]>,
+  config: CodeExerciseConfig,
+  expectedLanguage: EnabledCodeLanguage | null,
+): string[] {
+  const problems: string[] = [];
+  const adapter = getCodeLanguageAdapter(code.language);
+  if (adapter?.status === "prepared") problems.push(`ngôn ngữ ${adapter.id} chưa hỗ trợ publish`);
+  else if (!isEnabledCodeLanguage(code.language)) problems.push(`ngôn ngữ ${code.language} chưa hỗ trợ publish`);
+  if (expectedLanguage === null) {
+    problems.push("brief.code_language = null nên khóa không hỗ trợ code_exercise");
+  } else if (code.language !== expectedLanguage) {
+    problems.push(`language phải khớp code_language của khóa (${expectedLanguage})`);
+  }
+  if (adapter && !validCodeFile(code.file_path, code.language)) {
+    problems.push(`file_path "${code.file_path}" phải là tên tệp trần có đuôi hợp lệ cho ${code.language}`);
+  }
   if (!code.instructions.trim()) problems.push("thiếu hướng dẫn (instructions)");
   if (code.mode === "edit" && code.blanks.length > 0) problems.push("mode edit không có blanks");
   for (const t of code.tests) {
     if (t.type === "source_equals" ? t.accepted_sources.length === 0 : !t.value) problems.push(`test ${t.id} thiếu ${t.type === "source_equals" ? "accepted_sources" : "value"}`);
   }
+  problems.push(...answerLeakProblems(code));
   if (problems.length > 0) return problems;
   const errors = validateCodeConfig(config, true);
   if (errors.length > 0) return errors.map((e) => `code_exercise_config: ${e}`);
@@ -678,7 +744,13 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
   for (const { field, code } of validateLesson(draft.lesson)) problems.push(`${field}: ${code}`);
   if (format === "article") problems.push(...diagramProblems(out.article!.description_markdown, out.article!.diagrams));
   if (format === "quiz") problems.push(...quizProblems(out.quiz!, draft));
-  if (format === "code_exercise") problems.push(...codeProblems(out.code!, draft.lesson.code_exercise_config!));
+  if (format === "code_exercise") {
+    problems.push(...codeProblems(
+      out.code!,
+      draft.lesson.code_exercise_config!,
+      resolveCodeLanguage((ctx.outputs.brief as BriefFull).code_language),
+    ));
+  }
   if (format === "practice") {
     const p = out.practice!;
     if (p.mode === "instruction" && p.checklist_items.length > 0) problems.push("mode instruction không có checklist_items");

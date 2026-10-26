@@ -67,7 +67,7 @@ export const ctx: RunContext = {
   course: { title: "Rust", level: "beginner" },
   paths: [],
   scopes: [],
-  outputs: { brief: { locale: "vi" }, research, curriculum },
+  outputs: { brief: { locale: "vi", code_language: "rust" }, research, curriculum },
   today: "2026-10-20",
   revision: null,
 };

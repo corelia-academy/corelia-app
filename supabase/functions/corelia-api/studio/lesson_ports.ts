@@ -39,27 +39,62 @@ export function getYoutubeVideoId(url: string): string | null {
 
 // ---- src/features/code-exercise/languages.ts ------------------------------------------------
 
-// Publish gate: private.learning_code_errors accepts only "rust" and a *.rs file, although the
-// app's CODE_LANGUAGES lists more.
-export const PUBLISHABLE_CODE_LANGUAGE = "rust";
-const CODE_LANGUAGES = ["rust", "typescript", "javascript", "python", "java", "c", "cpp", "go"] as const;
-const LANGUAGE_EXTENSIONS: Record<string, readonly string[]> = {
-  rust: ["rs"],
-  typescript: ["ts"],
-  javascript: ["js"],
-  python: ["py"],
-  java: ["java"],
-  c: ["c"],
-  cpp: ["cpp", "cc", "cxx"],
-  go: ["go"],
+// Keep this registry aligned with the app's code-exercise languages and the database publish gate.
+// Prepared entries are deliberately omitted from model schemas and validation until both accept them.
+type CodeLanguageDefinition = {
+  id: string;
+  status: "enabled" | "prepared";
+  extensions: readonly string[];
+  guide: string;
 };
 
-function isCodeLanguage(value: unknown): boolean {
-  return typeof value === "string" && CODE_LANGUAGES.some((language) => language === value);
+export const CODE_LANGUAGE_ADAPTERS = [
+  { id: "rust", status: "enabled", extensions: ["rs"], guide: "Rust: dùng fn, struct/enum và impl phù hợp với bài; giải thích ownership/borrow khi chủ đề cần." },
+  { id: "typescript", status: "enabled", extensions: ["ts"], guide: "TypeScript: khai báo kiểu đầu vào/đầu ra; dùng function, type/interface và module phù hợp với bài." },
+  { id: "javascript", status: "enabled", extensions: ["js"], guide: "JavaScript: dùng function, object/array và module; không thêm cú pháp TypeScript." },
+  { id: "python", status: "enabled", extensions: ["py"], guide: "Python: dùng def, thụt lề đúng, kiểu dữ liệu và module phù hợp với bài." },
+  { id: "java", status: "enabled", extensions: ["java"], guide: "Java: đặt mã trong class, khai báo kiểu rõ ràng và dùng method phù hợp với bài." },
+  { id: "c", status: "enabled", extensions: ["c"], guide: "C: dùng khai báo, hàm và header cần thiết; giữ một tệp .c tự đủ theo giới hạn bài." },
+  { id: "cpp", status: "enabled", extensions: ["cpp", "cc", "cxx"], guide: "C++: dùng kiểu, hàm và include cần thiết; chọn cú pháp nhất quán với chủ đề bài." },
+  { id: "go", status: "enabled", extensions: ["go"], guide: "Go: gồm package declaration và hàm Go; xử lý error return khi chủ đề cần." },
+  { id: "solidity", status: "prepared", extensions: ["sol"], guide: "Solidity: dùng pragma, contract, function và modifier; nêu rõ visibility và khả năng truy cập." },
+  { id: "move", status: "prepared", extensions: ["move"], guide: "Move: dùng module, hàm public, kiểu u64 và ability phù hợp (copy, drop, store, key)." },
+] as const satisfies readonly CodeLanguageDefinition[];
+
+type CodeLanguageAdapter = (typeof CODE_LANGUAGE_ADAPTERS)[number];
+type EnabledCodeLanguageAdapter = Extract<CodeLanguageAdapter, { status: "enabled" }>;
+export type EnabledCodeLanguage = EnabledCodeLanguageAdapter["id"];
+export type PreparedCodeLanguage = Extract<CodeLanguageAdapter, { status: "prepared" }>["id"];
+
+export const ENABLED_CODE_LANGUAGES = CODE_LANGUAGE_ADAPTERS
+  .filter((language): language is EnabledCodeLanguageAdapter => language.status === "enabled")
+  .map((language) => language.id);
+export const PREPARED_CODE_LANGUAGES = CODE_LANGUAGE_ADAPTERS
+  .filter((language) => language.status === "prepared")
+  .map((language) => language.id) as PreparedCodeLanguage[];
+
+export function getCodeLanguageAdapter(value: unknown): CodeLanguageAdapter | undefined {
+  return typeof value === "string" ? CODE_LANGUAGE_ADAPTERS.find((language) => language.id === value) : undefined;
 }
 
-function validCodeFile(path: string, language: string): boolean {
-  return /^[\w.-]+\.[a-z]+$/.test(path) && (LANGUAGE_EXTENSIONS[language] ?? []).includes(path.split(".").at(-1) ?? "");
+export function isEnabledCodeLanguage(value: unknown): value is EnabledCodeLanguage {
+  return getCodeLanguageAdapter(value)?.status === "enabled";
+}
+
+export function resolveCodeLanguage(value: unknown): EnabledCodeLanguage | null {
+  if (value === undefined) return "rust"; // Briefs saved before code_language was introduced.
+  if (value === null) return null;
+  return isEnabledCodeLanguage(value) ? value : null;
+}
+
+function isCodeLanguage(value: unknown): value is EnabledCodeLanguage {
+  return isEnabledCodeLanguage(value);
+}
+
+export function validCodeFile(path: string, language: string): boolean {
+  const adapter = getCodeLanguageAdapter(language);
+  const extension = path.split(".").at(-1) ?? "";
+  return Boolean(adapter && /^[\w.-]+\.[a-z]+$/.test(path) && adapter.extensions.some((allowed) => allowed === extension));
 }
 
 // ---- src/features/code-exercise/types.ts ----------------------------------------------------

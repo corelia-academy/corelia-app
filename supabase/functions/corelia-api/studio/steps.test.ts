@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import { readResponse } from "./openai.ts";
 import { PROMPTS } from "./prompts.ts";
 import { AI_CURRICULUM_FORMATS, AI_CURRICULUM_FORMAT_GUIDE, PLATFORM_FORMATS, PLATFORM_FORMAT_GUIDE } from "./formats.ts";
+import { ENABLED_CODE_LANGUAGES, PREPARED_CODE_LANGUAGES, resolveCodeLanguage } from "./lesson_ports.ts";
 import {
+  acceptBrief,
   acceptCurriculum,
   acceptCurriculumReview,
   buildProgress,
@@ -97,6 +99,38 @@ describe("studio planRun", () => {
 
   it("publishes when every step is done", () => {
     expect(planRun({ steps: steps([...STEP_ORDER]), latest: null, startedAt, now }).action.kind).toBe("finish");
+  });
+});
+
+describe("studio brief code language", () => {
+  it("offers only publish-enabled languages plus null in A2's strict output schema and input", () => {
+    const schema = STEP_SPECS.brief!.schema as { properties: Record<string, { enum?: unknown[] }> };
+    expect(schema.properties.code_language.enum).toEqual([...ENABLED_CODE_LANGUAGES, null]);
+    expect(schema.properties.code_language.enum).not.toContain("solidity");
+    expect(schema.properties.code_language.enum).not.toContain("move");
+
+    const input = STEP_SPECS.brief!.buildInput({ course: { title: "Solana", level: "beginner" }, paths: [], scopes: [], catalogResearch: null } as never);
+    expect(input.code_languages).toEqual(ENABLED_CODE_LANGUAGES);
+  });
+
+  it("keeps old briefs on Rust, allows explicit null, and rejects prepared languages for publish", () => {
+    expect(acceptBrief({ status: "ready", open_questions: [] })).toEqual({ ok: true, summary: "brief sẵn sàng." });
+    expect(resolveCodeLanguage(undefined)).toBe("rust");
+    expect(acceptBrief({ status: "ready", open_questions: [], code_language: null }).ok).toBe(true);
+    expect(resolveCodeLanguage(null)).toBeNull();
+    for (const language of PREPARED_CODE_LANGUAGES) {
+      expect(acceptBrief({ status: "ready", open_questions: [], code_language: language }))
+        .toMatchObject({ ok: false, reason: expect.stringContaining("chưa hỗ trợ publish") });
+    }
+    expect(acceptBrief({ status: "ready", open_questions: [], code_language: "cobol" }))
+      .toMatchObject({ ok: false, reason: expect.stringContaining("chưa hỗ trợ publish") });
+  });
+
+  it("normalizes a saved brief without code_language to Rust for A3 and A4", () => {
+    for (const step of ["curriculum", "curriculum_review"] as const) {
+      const input = STEP_SPECS[step]!.buildInput({ outputs: { brief: { locale: "vi" }, research: {}, curriculum: {} }, revision: null } as never) as Record<string, any>;
+      expect(input.brief.code_language).toBe("rust");
+    }
   });
 });
 
@@ -550,6 +584,13 @@ describe("studio acceptance", () => {
 
   it("accepts a curriculum with diagnosis, retrieval, a final check and quiz thresholds", () => {
     expect(acceptCurriculum(curriculum, sources)).toEqual({ ok: true, summary: "2 module, 6 lesson, 2 outcome." });
+    expect(acceptCurriculum(curriculum, sources, null).ok).toBe(true);
+    const withCodeExercise = withModules([
+      { ...curriculum.modules[0], lessons: [...curriculum.modules[0].lessons, lesson("code", { type: "code_exercise" })] },
+      curriculum.modules[1],
+    ]);
+    expect(acceptCurriculum(withCodeExercise, sources, null))
+      .toMatchObject({ ok: false, reason: expect.stringContaining("brief.code_language = null") });
   });
 
   it("rejects video lessons in new curricula even when research has a matching candidate", () => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { acceptLesson, buildLessonInput, LESSON_SCHEMA, lessonIds, lessonRefs, quizPassingRatio, toLessonDraft, TransientError } from "./lessons.ts";
+import { ENABLED_CODE_LANGUAGES, getCodeLanguageAdapter, PREPARED_CODE_LANGUAGES } from "./lesson_ports.ts";
 import { article, base, ctx, curriculum, diagram, editCode, fillCode, question, test } from "./lesson_fixtures.ts";
 
 const ok = (youtube = true): typeof fetch => (() => Promise.resolve(new Response(
@@ -12,6 +13,10 @@ const reason = async (id: string, out: object, fetchFn = ok(), lessonCtx: typeof
   const r = await accept(id, out, fetchFn, lessonCtx);
   return r.ok ? "" : r.reason;
 };
+const withCodeLanguage = (language: unknown): typeof ctx => ({
+  ...ctx,
+  outputs: { ...ctx.outputs, brief: { locale: "vi", code_language: language } },
+}) as typeof ctx;
 
 describe("studio lessons: accept by format", () => {
   it("accepts a valid lesson of each format", async () => {
@@ -66,20 +71,76 @@ describe("studio lessons: accept by format", () => {
     expect(await reason("l-quiz", quiz(question({ explanation: "" })))).toContain("thiếu giải thích");
   });
 
-  it("code: the reference passes, the starter does not, and the file is Rust", async () => {
+  it("code: the reference passes, the starter does not, and the file matches the course language", async () => {
     const code = (over: object) => ({ code: { ...editCode, ...over } });
     expect(await reason("l-code", { ...code({ starter_source: "pub fn add(a: i32, b: i32) -> i32 { a + b }" }), source_ids: ["s1"] })).toContain("starter_source đã vượt");
     expect(await reason("l-code", code({ reference_solution: "pub fn add(a: i32, b: i32) -> i32 { 0 }" }))).toContain("solution_failed");
     expect(await reason("l-code", code({ tests: [test({ required: false })] }))).toContain("required_test_missing");
     expect(await reason("l-code", code({ tests: [test({ value: "" })] }))).toContain("thiếu value");
     expect(await reason("l-code", code({ blanks: [{ id: "kw", accepted_answers: ["mut"], feedback: "" }] }))).toContain("mode edit không có blanks");
-    expect(await reason("l-code", code({ file_path: "main.py" }))).toContain(".rs");
-    expect(await reason("l-code", code({ language: "python" }))).toContain("rust");
+    expect(await reason("l-code", code({ file_path: "main.py" }))).toContain("file_path");
+    expect(await reason("l-code", code({ file_path: "src/lib.rs" }))).toContain("tên tệp trần");
+    expect(await reason("l-code", code({ language: "python", file_path: "main.py" }))).toContain("language phải khớp code_language của khóa (rust)");
+    expect(await reason("l-code", code({ language: "solidity", file_path: "lib.sol" }), ok(), withCodeLanguage("solidity"))).toContain("solidity chưa hỗ trợ publish");
+    expect(await reason("l-code", code({}), ok(), withCodeLanguage(null))).toContain("brief.code_language = null");
     expect(await reason("l-code", code({ instructions: " " }))).toContain("instructions");
     expect(await reason("l-code", { code: { ...fillCode, reference_solution: "let x = 5;" } })).toContain("solution_failed");
     expect(await reason("l-code", { code: { ...fillCode, blanks: [] } })).toContain("invalid_blanks");
     const sourceEquals = test({ id: "eq", type: "source_equals", value: "", accepted_sources: [editCode.reference_solution] });
     expect((await accept("l-code", { code: { ...editCode, tests: [sourceEquals] } })).ok).toBe(true);
+  });
+
+  it.each(ENABLED_CODE_LANGUAGES)("accepts a valid code lesson in enabled language %s", async (language) => {
+    const extension = getCodeLanguageAdapter(language)!.extensions[0];
+    const result = await accept(
+      "l-code",
+      { code: { ...editCode, language, file_path: `Main.${extension}` } },
+      ok(),
+      withCodeLanguage(language),
+    );
+    expect(result).toMatchObject({ ok: true });
+  });
+
+  it("rejects prepared languages at the lesson gate with a publish-specific reason", async () => {
+    for (const language of PREPARED_CODE_LANGUAGES) {
+      const extension = getCodeLanguageAdapter(language)!.extensions[0];
+      expect(await reason(
+        "l-code",
+        { code: { ...editCode, language, file_path: `Main.${extension}` } },
+        ok(),
+        withCodeLanguage(language),
+      )).toContain(`${language} chưa hỗ trợ publish`);
+    }
+  });
+
+  it("rejects identifier answers leaked into each hint surface", async () => {
+    expect(await reason("l-code", { code: { ...fillCode, hints: ["Hãy thử từ mut ở đây."] } }))
+      .toContain('code.hints[0] lộ đáp án định danh "mut"');
+    expect(await reason("l-code", { code: { ...fillCode, blanks: [{ ...fillCode.blanks[0], feedback: "Đáp án là mut." }] } }))
+      .toContain('code.blanks[0].feedback lộ đáp án định danh "mut"');
+    expect(await reason("l-code", { code: { ...editCode, tests: [test({ value: "add", failure_message: "Hãy thêm add." })] } }))
+      .toContain('code.tests[0].failure_message lộ đáp án định danh "add"');
+    expect(await reason("l-code", { code: { ...editCode, tests: [test({ value: "add", hint: "Dùng add." })] } }))
+      .toContain('code.tests[0].hint lộ đáp án định danh "add"');
+  });
+
+  it("uses whole-identifier, case-sensitive, conservative answer matching", async () => {
+    const nonLeaking = await accept("l-code", { code: { ...fillCode, hints: ["Tư duy về tính mutable; đừng trả lời MUT."] } });
+    expect(nonLeaking).toMatchObject({ ok: true });
+
+    const shortAndNonIdentifierAnswers = {
+      ...fillCode,
+      blanks: [{ id: "kw", accepted_answers: ["if", "::", "a + b"], feedback: "Từ khóa if, toán tử :: và biểu thức a + b." }],
+      hints: ["Xem lại if, :: và a + b."],
+    };
+    const conservativeReason = await reason("l-code", { code: shortAndNonIdentifierAnswers });
+    expect(conservativeReason).not.toContain("lộ đáp án định danh");
+
+    const sourceEquals = test({ id: "eq", type: "source_equals", value: "", accepted_sources: [editCode.reference_solution], failure_message: "Đáp án add chưa đúng." });
+    const ignoredTestReason = await reason("l-code", { code: { ...editCode, tests: [sourceEquals] } });
+    expect(ignoredTestReason).not.toContain("lộ đáp án định danh");
+    const notContains = test({ type: "not_contains", value: "add", failure_message: "Đừng dùng add." });
+    expect(await reason("l-code", { code: { ...editCode, tests: [notContains] } })).not.toContain("lộ đáp án định danh");
   });
 
   it("practice: no submissions, valid checklist", async () => {
@@ -353,6 +414,12 @@ describe("studio lessons: input", () => {
 describe("studio lessons: schema", () => {
   it("is strict-mode shaped: closed objects with every key required, within the property budget", () => {
     expect((LESSON_SCHEMA as any).required).toContain("suggested_videos");
+    const codeSchema = (LESSON_SCHEMA.properties.code as any).anyOf[0];
+    expect(codeSchema.properties.language.enum).toEqual(ENABLED_CODE_LANGUAGES);
+    expect(codeSchema.properties.file_path.type).toBe("string");
+    for (const language of PREPARED_CODE_LANGUAGES) {
+      expect(codeSchema.properties.language.enum).not.toContain(language);
+    }
     let properties = 0;
     const walk = (node: unknown) => {
       if (Array.isArray(node)) return node.forEach(walk);
