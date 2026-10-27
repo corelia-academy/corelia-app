@@ -216,7 +216,11 @@
       "submission_rejected": "Your final assignment for {{title}} needs revision. Open it to see the feedback.",
       "hackathon_announcement": "Organizer announcement: {{title}}"
     },
-    "updateError": "Could not update the notification. Please try again."
+    "updateError": "Could not update the notification. Please try again.",
+    "projectAutoHiddenTitle": "Your project was hidden",
+    "projectAutoHiddenBody": "Our automated check flagged content in {{title}}, so it is now private. Our team will review it; if you think this is a mistake, contact support.",
+    "projectAutoHiddenFields": "Flagged: {{fields}}",
+    "viewProject": "View project"
   },
   "userProfile": {
     "tabs": {

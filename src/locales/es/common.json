@@ -216,7 +216,11 @@
       "submission_rejected": "Tu trabajo final de {{title}} necesita correcciones. Ábrelo para ver los comentarios.",
       "hackathon_announcement": "Anuncio del organizador: {{title}}"
     },
-    "updateError": "No se pudo actualizar la notificación. Inténtalo de nuevo."
+    "updateError": "No se pudo actualizar la notificación. Inténtalo de nuevo.",
+    "projectAutoHiddenTitle": "Tu proyecto se ha ocultado",
+    "projectAutoHiddenBody": "Nuestra revisión automática marcó contenido en {{title}}, por lo que ahora es privado. Nuestro equipo lo revisará; si crees que es un error, contacta con soporte.",
+    "projectAutoHiddenFields": "Marcado: {{fields}}",
+    "viewProject": "Ver proyecto"
   },
   "userProfile": {
     "tabs": {

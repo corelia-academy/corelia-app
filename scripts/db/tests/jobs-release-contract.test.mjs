@@ -90,20 +90,14 @@ test("Production release migrations distinguish deployed and pending versions", 
   const release = await import("../production-release-migrations.mjs");
   assert.equal(
     release.PREVIOUSLY_RELEASED_APPROVED_VERSIONS.at(-1),
-    "20261024051107",
+    "20261024092123",
   );
   assert.deepEqual(release.CURRENT_PENDING_VERSIONS, [
-    "20261024073926",
-    "20261024073927",
-    "20261024073928",
-    "20261024073929",
-    "20261024073931",
-    "20261024073932",
-    "20261024092123",
+    "20261027151145",
   ]);
   assert.equal(
     release.EXPECTED_POST_MIGRATION_LATEST,
-    "20261024092123",
+    "20261027151145",
   );
   assert.ok(
     release.APPROVED_PENDING_VERSIONS.includes("20260903214029"),

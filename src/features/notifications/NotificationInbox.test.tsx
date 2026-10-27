@@ -56,4 +56,19 @@ describe("notification history", () => {
   expect(state.all).toHaveBeenCalledTimes(1);
   await view.cleanup();
  });
+ it("explains an automatically hidden project with readable field names and marks it read when opened", async () => {
+  state.query.mockResolvedValue({ unread_count: 1, items: [{
+   id: "hidden", user_id: "me", type: "project_auto_hidden", group_key: null,
+   activity_at: "2026-10-27T00:00:00Z", created_at: "2026-10-27T00:00:00Z", read_at: null, resolved_at: null,
+   payload: { project_id: "p1", project_title: "Pact", project_slug: "pact", fields: ["description", "vi.summary"], target_path: "/projects/pact" },
+  }] });
+  const view = await mount();
+  expect(view.container.textContent).toContain("Your project was hidden");
+  expect(view.container.textContent).toContain("Pact");
+  expect(view.container.textContent).toMatch(/Flagged: .+, .+ \(VI\)/);
+  expect(view.container.textContent).not.toContain("vi.summary");
+  await act(async () => { view.container.querySelector<HTMLAnchorElement>('a[href="/projects/pact"]')!.click(); });
+  expect(state.read).toHaveBeenCalledWith("hidden", true, "2026-10-27T00:00:00Z");
+  await view.cleanup();
+ });
 });
