@@ -109,7 +109,10 @@ jobs:
           # Match the image used by local Learning authorization QA.
           mkdir -p supabase/.temp
           printf '%s' '17.6.1.156' > supabase/.temp/postgres-version
-          supabase start
+          # Only Postgres, Auth, REST, Storage, Realtime and Kong are needed for the
+          # migration and policy suites; skipping the rest halves image pulls, which
+          # otherwise fail whenever ghcr.io/ECR rate-limits the runner.
+          supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor
           pnpm db:verify:local
 
       - name: Stop isolated local Supabase stack
