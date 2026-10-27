@@ -116,7 +116,10 @@ describe("A1 catalog research in the A2 brief", () => {
   });
 
   it("uses prompt version v6 and selects one enabled code language for the course", () => {
-    expect(PROMPTS["a2-brief"].version).toBe("v6");
+    expect(PROMPTS["a2-brief"].version).toBe("v7");
+    expect(PROMPTS["a2-brief"].system).toContain("Nguyên tắc chỉ truyền thụ kiến thức");
+    expect(PROMPTS["a2-brief"].system).toContain("không đưa mục tiêu hay phạm vi đòi người học tự chạy lệnh");
+    expect(PROMPTS["a2-brief"].system).toContain("Nếu đầu vào có scope_note");
     expect(PROMPTS["a2-brief"].system).toContain("sẽ theo tài liệu chính thức hiện hành mà bước research đọc được");
     expect(PROMPTS["a2-brief"].system).toContain("brief không hứa bộ phiên bản tương thích được chốt");
     expect(PROMPTS["a2-brief"].system).toContain("không chép URL A1 vào brief");
@@ -127,17 +130,17 @@ describe("A1 catalog research in the A2 brief", () => {
   });
 
   it("keeps A5 and A6 package-version decisions bounded by research evidence", () => {
-    expect(PROMPTS["a5-lesson"].version).toBe("v15");
+    expect(PROMPTS["a5-lesson"].version).toBe("v16");
     expect(PROMPTS["a5-lesson"].system).toContain("tool_versions của research chỉ ghi mức tối thiểu hoặc phiên bản theo nguồn");
     expect(PROMPTS["a5-lesson"].system).toContain("nếu chỉ nêu mức tối thiểu, ghi rõ đó là mức tối thiểu và để lệnh không ghim phiên bản");
     expect(PROMPTS["a5-lesson"].system).toContain("Không tự suy ra phiên bản.");
     expect(PROMPTS["a5-lesson"].system).toContain("open_questions blocking = false ghi phiên bản chưa xác minh");
 
-    expect(PROMPTS["a6-lesson-review"].version).toBe("v12");
+    expect(PROMPTS["a6-lesson-review"].version).toBe("v13");
     expect(PROMPTS["a6-lesson-review"].system).toContain("KHÔNG phải lỗi blocking nếu tool_versions chỉ nêu mức tối thiểu (chưa chốt bộ phiên bản tương thích)");
     expect(PROMPTS["a6-lesson-review"].system).toContain("lesson nêu phiên bản hoặc mức tối thiểu không có trong tool_versions hay nguồn đã đọc của lesson");
     expect(PROMPTS["a6-lesson-review"].system).toContain("khẳng định bộ phiên bản tương thích đã được xác minh/khóa khi research không nói vậy");
-    expect(PROMPTS["a6-lesson-review"].system).toContain("thiếu bước cài đặt/cấu hình cho công cụ cụ thể mà brief.tools yêu cầu");
+    expect(PROMPTS["a6-lesson-review"].system).toContain("Không blocking vì lesson thiếu bước cài đặt/cấu hình công cụ");
   });
 
   it("keeps AI courses knowledge-only and limits video recommendations to research evidence", () => {
@@ -147,11 +150,11 @@ describe("A1 catalog research in the A2 brief", () => {
     const a5 = PROMPTS["a5-lesson"];
     const a6 = PROMPTS["a6-lesson-review"];
 
-    expect(a3.version).toBe("v14");
-    expect(a4.version).toBe("v10");
-    expect(a5.version).toBe("v15");
-    expect(a6.version).toBe("v12");
-    expect(a2.version).toBe("v11");
+    expect(a3.version).toBe("v15");
+    expect(a4.version).toBe("v11");
+    expect(a5.version).toBe("v16");
+    expect(a6.version).toBe("v13");
+    expect(a2.version).toBe("v12");
     expect(a2.system).toContain("videos là mảng có thể rỗng");
     expect(a2.system).toContain("evidence_source_ids không rỗng");
     expect(a2.system).toContain("thiếu video không phải lý do needs_research");
@@ -167,9 +170,12 @@ describe("A1 catalog research in the A2 brief", () => {
     expect(a3.system).toContain("Không tạo lesson type video");
     expect(a3.system).toContain("bỏ qua video vẫn phải hiểu đủ lesson");
     expect(a4.system).toContain("báo blocking; không báo blocking vì curriculum thiếu các nhiệm vụ như vậy");
+    expect(a3.system).toContain("Chỉ gắn outcome vào lesson mà description thật sự dạy và kiểm đủ điều outcome nêu");
+    expect(a4.system).toContain("đọc description của mọi lesson trong check_lesson_ids");
     expect(a4.system).toContain("Báo blocking nếu curriculum có lesson type video");
     expect(a4.system).toContain("outcome chỉ được dạy khi người học phải xem/hiểu video tùy chọn");
-    expect(a5.system).toContain("Bước cài công cụ brief đòi và lệnh khớp research vẫn có trong bài như nội dung minh họa");
+    expect(a5.system).toContain("Bài không bắt buộc có bước cài đặt/cấu hình công cụ");
+    expect(a5.system).toContain("chấp nhận mọi cách sửa đúng hợp lý");
     expect(a5.system).toContain("suggested_videos là mảng video ID");
     expect(a5.system).toContain("tối đa 2");
     expect(a5.system).toContain("code sẽ dựng resources xem thêm");
@@ -189,7 +195,7 @@ describe("A1 catalog research in the A2 brief", () => {
     expect(a6.system).toContain("không dùng video làm bằng chứng");
     expect(a6.system).toContain("không đánh giá nội dung video");
     expect(a6.system).toContain("phải xem/hiểu video tùy chọn mới nắm được outcome");
-    expect(a6.system).toContain("thiếu bước cài đặt/cấu hình cho công cụ cụ thể mà brief.tools yêu cầu");
+    expect(a6.system).toContain("Không blocking vì lesson thiếu bước cài đặt/cấu hình công cụ");
     expect(a6.system).toContain("Mã theo code_language chưa được biên dịch hay chạy");
     expect(a6.system).toContain("Blocking nếu gợi ý lộ đáp án hoặc đoạn mã giải");
   });

@@ -475,7 +475,7 @@ async function reopenCurriculum(db: SupabaseClient, runId: string, attempt: numb
 
 export async function loadContext(db: SupabaseClient, run: RunRow, step?: StepKey, lessonId?: string): Promise<RunContext> {
   const [course, links, generations] = await Promise.all([
-    db.from("studio_courses").select("title,level").eq("id", run.course_id).single(),
+    db.from("studio_courses").select("title,level,scope_note").eq("id", run.course_id).single(),
     db.from("studio_course_paths").select("studio_paths(group_kind,title)").eq("course_id", run.course_id),
     db.from("studio_generations").select("step_key,attempt,output").eq("run_id", run.id).eq("status", "completed").is("lesson_id", null).order("attempt"),
   ]);

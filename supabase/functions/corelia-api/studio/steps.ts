@@ -87,7 +87,7 @@ export const SUBMIT_STALE_MS = 10 * 60 * 1000;
 export const RESPONSE_STALE_MS = 30 * 60 * 1000;
 
 export interface RunContext {
-  course: { title: string; level: string | null };
+  course: { title: string; level: string | null; scope_note?: string | null };
   paths: { track: string; title: string }[];
   scopes: { track: string; audience: string; corelia_direction: string; locale: string }[];
   /** Validated output of each earlier step. */

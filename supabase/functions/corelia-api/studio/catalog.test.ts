@@ -99,7 +99,7 @@ describe("CATALOG_RESEARCH_SCHEMA", () => {
 describe("A1 catalog prompt", () => {
   it("uses v5 and does not request open_questions", () => {
     const prompt = PROMPTS["a1-catalog-research"];
-    expect(prompt.version).toBe("v5");
+    expect(prompt.version).toBe("v6");
     expect(prompt.system).not.toContain("open_questions");
     expect(prompt.system).toContain("ít nhất một truy vấn nhắm đúng locale hoặc thị trường của audience");
   });
@@ -349,6 +349,11 @@ describe("catalog input", () => {
       other_courses: [{ title: "Go", level: null, status: "published" }],
     });
     expect(base.groups[1].other_courses).toEqual([{ title: "Anchor", level: "advanced", status: "queued" }]);
+  });
+
+  it("passes the scope note of the course to the model input", () => {
+    const base = assembleCatalogBase(rows({ course: { title: "Rust cơ bản", level: "beginner", scope_note: "E0382, E0499" } }));
+    expect(buildCatalogInput(base, "2026-10-27", null, null).course).toEqual({ title: "Rust cơ bản", level: "beginner", scope_note: "E0382, E0499" });
   });
 
   it("uses the longest period of the groups of the course (not of unrelated scopes)", () => {

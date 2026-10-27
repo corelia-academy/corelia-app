@@ -338,22 +338,21 @@ describe("studio step owners", () => {
 });
 
 describe("A2 research prompt", () => {
-  it("uses v11, records the course stack decision, and does not block research on unverified package versions", () => {
+  it("uses v12, records the course stack decision, and does not block research on unverified package versions", () => {
     const prompt = PROMPTS["a2-research"];
-    expect(prompt.version).toBe("v11");
+    expect(prompt.version).toBe("v12");
     expect(prompt.system).toContain("needs_research CHỈ khi một chủ đề cốt lõi trong phạm vi của brief");
     expect(prompt.system).toContain("KHÔNG phải lý do needs_research");
     expect(prompt.system).toContain("trả status: ready");
     expect(prompt.system).toContain("open_questions với blocking = false");
     expect(prompt.system).toContain("blocking = false chỉ có nghĩa khi status = ready");
     expect(prompt.system).toContain("không dùng needs_research cho phiên bản gói");
-    expect(prompt.system).toContain("brief.tools yêu cầu người học cài đặt hoặc cấu hình");
-    expect(prompt.system).toContain("tài liệu cài đặt/cấu hình chính thức");
-    expect(prompt.system).toContain("Trang chỉ liệt kê phiên bản không chứng minh cách cài đặt/cấu hình");
-    expect(prompt.system).toContain("trả needs_research; nêu tên công cụ");
-    expect(prompt.system).toContain("loại công cụ chung hoặc chưa xác định sản phẩm cụ thể");
-    expect(prompt.system).toContain("không phải lý do needs_research");
-    expect(prompt.system).toContain("thiếu nguồn chính thức đã đọc vẫn là gap cốt lõi");
+    expect(prompt.system).toContain("cài đặt/cấu hình công cụ chạy ngoài Corelia không phải chủ đề cốt lõi");
+    expect(prompt.system).toContain("Cài đặt/cấu hình công cụ chạy ngoài Corelia không bắt buộc có nguồn");
+    expect(prompt.system).not.toContain("trả needs_research; nêu tên công cụ");
+    expect(prompt.system).not.toContain("gap cốt lõi");
+    expect(prompt.system).toContain("chỉ dùng source_id có trong sources của chính bản này với access = read");
+    expect(prompt.system).toContain("dùng basis = context_rule với source_ids []");
     expect(prompt.system).toContain("stack_choice là quyết định stack duy nhất cho toàn khóa");
     expect(prompt.system).toContain("basis = source_recommended");
     expect(prompt.system).toContain("basis = context_rule");

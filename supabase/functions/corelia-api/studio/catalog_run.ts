@@ -138,7 +138,7 @@ export async function advanceCatalogJob(db: SupabaseClient, job: JobRow): Promis
 
 export async function loadCatalogBase(db: SupabaseClient, courseId: string): Promise<CatalogBase> {
   const [course, links] = await Promise.all([
-    db.from("studio_courses").select("title,level").eq("id", courseId).maybeSingle(),
+    db.from("studio_courses").select("title,level,scope_note").eq("id", courseId).maybeSingle(),
     db.from("studio_course_paths").select("studio_paths(group_kind,title)").eq("course_id", courseId),
   ]);
   if (course.error) throw new Error(course.error.message);

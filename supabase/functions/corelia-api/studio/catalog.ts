@@ -267,13 +267,13 @@ export interface CatalogGroup {
 }
 
 export interface CatalogBase {
-  course: { title: string; level: string | null };
+  course: { title: string; level: string | null; scope_note?: string | null };
   groups: CatalogGroup[];
   research_period_days: number;
 }
 
 export interface CatalogRows {
-  course: { title: string; level: string | null };
+  course: { title: string; level: string | null; scope_note?: string | null };
   /** Paths of the course. */
   paths: { group_kind: string; title: string }[];
   scopes: { group_kind: string; audience: string; corelia_direction: string; locale: string; research_period_days: number }[];
