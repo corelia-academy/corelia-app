@@ -216,7 +216,11 @@
       "submission_rejected": "您在 {{title}} 的结业作业需要修改。打开查看反馈。",
       "hackathon_announcement": "主办方公告：{{title}}"
     },
-    "updateError": "无法更新通知，请重试。"
+    "updateError": "无法更新通知，请重试。",
+    "projectAutoHiddenTitle": "你的项目已被隐藏",
+    "projectAutoHiddenBody": "自动审核在 {{title}} 中发现了违规内容，项目已设为私密。我们的团队会进行审核；如果你认为这是误判，请联系支持。",
+    "projectAutoHiddenFields": "被标记的部分：{{fields}}",
+    "viewProject": "查看项目"
   },
   "userProfile": {
     "tabs": {
