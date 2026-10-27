@@ -6,6 +6,7 @@ import {
   buildLessonReviewInput,
   normalizeResearchTopic,
   LESSON_SCHEMA,
+  LESSON_SHARED_KEYS,
   lessonTools,
   reviewTools,
   type LessonContext,
@@ -116,6 +117,8 @@ export interface StepSpec {
   maxAttempts: number;
   tools?: Record<string, unknown>[];
   schema: Record<string, unknown>;
+  /** Leading keys of the built input that stay the same for every lesson of the run (see SubmitRequest.sharedInputKeys). */
+  sharedInputKeys?: readonly string[];
   /** Steps that run once per curriculum lesson (A5) pass the lesson id to the three functions below. */
   buildInput(ctx: RunContext, lessonId?: string): Record<string, unknown>;
   accept(output: unknown, ctx: RunContext, lessonId?: string): Acceptance | Promise<Acceptance>;
@@ -832,6 +835,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
     maxOutputTokens: 40_000,
     maxAttempts: 2,
     schema: LESSON_SCHEMA,
+    sharedInputKeys: LESSON_SHARED_KEYS,
     buildInput: (ctx, lessonId) => buildLessonInput(ctx, lessonId!),
     accept: (output, ctx, lessonId) => acceptLesson(output, ctx, lessonId!),
     lessonTools,
@@ -844,6 +848,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
     maxOutputTokens: 20_000,
     maxAttempts: 2,
     schema: LESSON_REVIEW_SCHEMA,
+    sharedInputKeys: LESSON_SHARED_KEYS,
     buildInput: (ctx, lessonId) => buildLessonReviewInput(ctx, lessonId!),
     accept: (output, ctx, lessonId) => acceptLessonReview(output, ctx, lessonId!),
     lessonTools: reviewTools,

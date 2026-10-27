@@ -247,7 +247,7 @@ async function submitCatalog(db: SupabaseClient, job: JobRow, attempt: number, p
     requestId = await submitResponse(apiKey, {
       model: CATALOG_SPEC.model,
       instructions: agent.system,
-      input: JSON.stringify(input),
+      input,
       effort: CATALOG_SPEC.effort,
       maxOutputTokens: CATALOG_SPEC.maxOutputTokens,
       maxToolCalls: CATALOG_SPEC.maxToolCalls,

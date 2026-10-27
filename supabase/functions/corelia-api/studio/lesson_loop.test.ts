@@ -6,7 +6,8 @@ import { MAX_TRANSPORT_FAILURES } from "./retry.ts";
 import { article, base, ctx, curriculum, editCode, fillCode, lesson, now, question } from "./lesson_fixtures.ts";
 import { getCodeLanguageAdapter } from "./lesson_ports.ts";
 import { acceptLessonReview, resolvePath } from "./lesson_review.ts";
-import { buildLessonInput, buildLessonReviewInput, lessonRefs, lessonRevision, lessonTools, reviewBlocking, toLessonDraft, TransientError, type LessonContext } from "./lessons.ts";
+import { inputBlocks } from "./openai.ts";
+import { buildLessonInput, buildLessonReviewInput, LESSON_SHARED_KEYS, lessonRefs, lessonRevision, lessonTools, reviewBlocking, toLessonDraft, TransientError, type LessonContext } from "./lessons.ts";
 import { planRun, STEP_ORDER, STEP_SPECS, SUBMIT_STALE_MS, type RunContext, type StepKey } from "./steps.ts";
 
 // ---- loop planning -----------------------------------------------------------------------------
@@ -245,6 +246,21 @@ describe("studio lesson loop: research version handoff", () => {
       expect(research.stack_choice).toEqual(c284ResearchSample.stack_choice);
       expect(research.open_questions).toEqual(c284ResearchSample.open_questions);
       expect(research.open_questions.every((q: { blocking: boolean }) => !q.blocking)).toBe(true);
+    }
+  });
+
+  it("starts the A5 and A6 input with the keys shared by every lesson of the run, in the same order", () => {
+    for (const lessonId of ["m2_setup_explain", "m1_diagnostic_js"]) {
+      const writer = buildLessonInput(c284Context(lessonId), lessonId);
+      const reviewer = buildLessonReviewInput(c284Context(lessonId), lessonId);
+      for (const input of [writer, reviewer]) {
+        const keys = Object.keys(input).filter((k) => input[k] !== undefined);
+        expect(keys.slice(0, LESSON_SHARED_KEYS.filter((k) => k in input).length)).toEqual(LESSON_SHARED_KEYS.filter((k) => k in input));
+        expect(keys).toContain("lesson");
+      }
+      const [writerShared] = inputBlocks(writer, LESSON_SHARED_KEYS);
+      const [reviewerShared] = inputBlocks(reviewer, LESSON_SHARED_KEYS);
+      expect(writerShared).toBe(reviewerShared);
     }
   });
 

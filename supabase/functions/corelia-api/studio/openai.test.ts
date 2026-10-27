@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { readResponse, submitResponse, type SubmitRequest } from "./openai.ts";
+import { inputBlocks, readResponse, submitResponse, type SubmitRequest } from "./openai.ts";
 
 const request: SubmitRequest = {
   model: "gpt-6-luna",
   instructions: "x",
-  input: "{}",
+  input: {},
   effort: "high",
   maxOutputTokens: 100,
   schemaName: "s",
@@ -51,6 +51,40 @@ describe("studio openai service tier", () => {
     const tiers = stubFetch(reply(400, { error: { message: "Invalid schema" } }));
     await expect(submitResponse("k", request)).rejects.toThrow("Invalid schema");
     expect(tiers).toEqual(["flex"]);
+  });
+
+  it("sends the instructions and input as blocks that join back to the original text", async () => {
+    let body: Record<string, any> = {};
+    vi.stubGlobal("fetch", vi.fn(async (_url: string, init: RequestInit) => {
+      body = JSON.parse(String(init.body));
+      return reply(200, { id: "resp_4" });
+    }));
+    const input = { course_type: "x", brief: { a: 1 }, today: "2026-10-27", lesson: { id: "l1" }, review: undefined, tail: [1, 2] };
+    await submitResponse("k", { ...request, instructions: "system text", input, sharedInputKeys: ["course_type", "brief", "code_language_guide", "today"] });
+
+    expect(body.instructions).toBeUndefined();
+    expect(body.prompt_cache_options).toEqual({ mode: "explicit" });
+    const [developer, user] = body.input;
+    expect(developer).toEqual({ role: "developer", content: [{ type: "input_text", text: "system text", prompt_cache_breakpoint: { mode: "explicit" } }] });
+    expect(user.content).toHaveLength(2);
+    expect(user.content[0].prompt_cache_breakpoint).toEqual({ mode: "explicit" });
+    expect(user.content[1].prompt_cache_breakpoint).toBeUndefined();
+    expect(user.content.map((c: { text: string }) => c.text).join("")).toBe(JSON.stringify(input));
+  });
+
+  it("splits the input only after leading shared keys and never writes the call-specific part", () => {
+    const joined = (input: Record<string, unknown>, keys?: readonly string[]) => inputBlocks(input, keys).join("");
+
+    // no shared key leads, or every key is shared: one block
+    expect(inputBlocks({ lesson: 1, brief: 2 }, ["brief"])).toEqual([JSON.stringify({ lesson: 1, brief: 2 })]);
+    expect(inputBlocks({ brief: 2 }, ["brief"])).toEqual(['{"brief":2}']);
+    expect(inputBlocks({ brief: 2, lesson: 1 })).toEqual(['{"brief":2,"lesson":1}']);
+    // a shared key that is absent or undefined does not break the split
+    const input = { course_type: "x", code_language_guide: undefined, today: "d", lesson: { id: "l" } };
+    expect(inputBlocks(input, ["course_type", "code_language_guide", "today"])).toEqual(['{"course_type":"x","today":"d"', ',"lesson":{"id":"l"}}']);
+    expect(joined(input, ["course_type", "code_language_guide", "today"])).toBe(JSON.stringify(input));
+    // a shared key after a call-specific one stays in the call-specific block
+    expect(inputBlocks({ brief: 1, lesson: 2, today: 3 }, ["brief", "today"])).toEqual(['{"brief":1', ',"lesson":2,"today":3}']);
   });
 
   it("keeps the serving tier with the usage, for pricing", () => {

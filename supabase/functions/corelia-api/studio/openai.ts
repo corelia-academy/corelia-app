@@ -7,7 +7,9 @@ const RESPONSES_URL = "https://api.openai.com/v1/responses";
 export interface SubmitRequest {
   model: string;
   instructions: string;
-  input: string;
+  input: Record<string, unknown>;
+  /** Leading keys of `input` that are identical across the calls of a step (the same run); they get a cache breakpoint. */
+  sharedInputKeys?: readonly string[];
   effort: string;
   /** Caps reasoning + visible output, so a runaway response fails fast instead of running to the model limit. */
   maxOutputTokens: number;
@@ -44,6 +46,40 @@ async function errorText(res: Response): Promise<string> {
   }
 }
 
+const BREAKPOINT = { mode: "explicit" } as const;
+
+/**
+ * The input as JSON text split in two at a key boundary: the leading keys that are in `sharedKeys`,
+ * then the rest. Joined they are exactly JSON.stringify(input). With no leading shared key, or nothing
+ * after them, the whole text is one block.
+ */
+export function inputBlocks(input: Record<string, unknown>, sharedKeys: readonly string[] = []): string[] {
+  const entries = Object.entries(input).filter(([, value]) => value !== undefined);
+  let shared = 0;
+  while (shared < entries.length && sharedKeys.includes(entries[shared][0])) shared++;
+  if (shared === 0 || shared === entries.length) return [JSON.stringify(input)];
+  return [
+    JSON.stringify(Object.fromEntries(entries.slice(0, shared))).slice(0, -1),
+    "," + JSON.stringify(Object.fromEntries(entries.slice(shared))).slice(1),
+  ];
+}
+
+/**
+ * Cache breakpoints sit after the instructions and after the shared input, the parts that repeat between
+ * calls. The part that is specific to one call is never read again, so it gets none and is not written
+ * to the cache (a cache write costs more than uncached input).
+ */
+function cachedInput(req: SubmitRequest) {
+  const blocks = inputBlocks(req.input, req.sharedInputKeys);
+  return [
+    { role: "developer", content: [{ type: "input_text", text: req.instructions, prompt_cache_breakpoint: BREAKPOINT }] },
+    {
+      role: "user",
+      content: blocks.map((text, i) => ({ type: "input_text", text, ...(i < blocks.length - 1 ? { prompt_cache_breakpoint: BREAKPOINT } : {}) })),
+    },
+  ];
+}
+
 export async function submitResponse(apiKey: string, req: SubmitRequest): Promise<string> {
   const send = (serviceTier: string) =>
     fetch(RESPONSES_URL, {
@@ -51,8 +87,8 @@ export async function submitResponse(apiKey: string, req: SubmitRequest): Promis
       headers: headers(apiKey),
       body: JSON.stringify({
         model: req.model,
-        instructions: req.instructions,
-        input: req.input,
+        input: cachedInput(req),
+        prompt_cache_options: { mode: "explicit" },
         reasoning: { effort: req.effort },
         max_output_tokens: req.maxOutputTokens,
         tools: req.tools,

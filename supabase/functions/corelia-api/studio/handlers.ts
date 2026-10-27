@@ -615,7 +615,8 @@ async function submitStep(
     requestId = await submitResponse(apiKey, {
       model: spec.model,
       instructions: PROMPTS[spec.prompt].system,
-      input: JSON.stringify(input),
+      input,
+      sharedInputKeys: spec.sharedInputKeys,
       effort: spec.effort,
       maxOutputTokens: spec.maxOutputTokens,
       schemaName: step,

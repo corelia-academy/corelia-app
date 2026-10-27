@@ -263,6 +263,9 @@ function lessonBrief(brief: BriefFull): Record<string, unknown> {
   return rest;
 }
 
+/** Keys that come first in every lesson input and are the same for all lessons of a run; keep them leading and in this order. */
+export const LESSON_SHARED_KEYS = ["course_type", "brief", "code_language", "code_language_guide", "today"] as const;
+
 function lessonBase(ctx: RunContext, lessonId: string) {
   const curriculum = ctx.outputs.curriculum as CurriculumFull;
   const research = ctx.outputs.research as ResearchFull;
@@ -278,8 +281,8 @@ function lessonBase(ctx: RunContext, lessonId: string) {
   return {
     ref: refs[index],
     locale: brief.locale,
-    // Fields that are the same for every lesson of the run come first: the provider caches the
-    // longest identical prefix of the request, so the lesson-specific part must follow them.
+    // The fields of LESSON_SHARED_KEYS are the same for every lesson of the run and come first: they
+    // are a separate cached block of the request, so the lesson-specific part must follow them.
     common: {
       course_type: "ai_generated",
       brief: { ...lessonBrief(brief), code_language: codeLanguage },
