@@ -157,23 +157,18 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20261024073931_project_auto_translation_jobs.sql",
   "supabase/migrations/20261024073932_project_moderation_queue_and_reports.sql",
   "supabase/migrations/20261024092123_project_reports_invoker_wrappers.sql",
+  "supabase/migrations/20261027151145_notify_owner_on_ai_project_hide.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production ledger is verified through the hackathon host logo cdn migration.
-// The Staging-validated abuse-limit, background translation and moderation
-// queue migrations (#815, #817) are pending.
+// Production ledger is verified through the project reports invoker wrappers
+// migration. The Staging-validated AI project hide owner notification
+// migration (#825) is pending.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20261024073926",
-  "20261024073927",
-  "20261024073928",
-  "20261024073929",
-  "20261024073931",
-  "20261024073932",
-  "20261024092123",
+  "20261027151145",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
