@@ -83,6 +83,8 @@ import { canRetry, roundFailures, type FailureKind, type RoundFailures } from ".
 
 export const MAX_RUN_MS = 24 * 60 * 60 * 1000;
 export const SUBMIT_STALE_MS = 10 * 60 * 1000;
+/** A submitted response that is still queued or running after this long is cancelled and retried (longest step measured: ~8 min). */
+export const RESPONSE_STALE_MS = 30 * 60 * 1000;
 
 export interface RunContext {
   course: { title: string; level: string | null };

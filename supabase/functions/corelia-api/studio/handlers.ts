@@ -19,8 +19,8 @@ import { queueAutoResearch } from "./auto_research.ts";
 import { purgeExpiredDrafts } from "./drafts.ts";
 import { rerankIfStale } from "./ranking_run.ts";
 import { loadCatalogResearchForBrief } from "./catalog_research_brief.ts";
-import { agentKey, errorMessage, failGeneration, loadFailureKind } from "./generations.ts";
-import { pollResponse, submitResponse } from "./openai.ts";
+import { agentKey, errorMessage, failGeneration, loadFailureKind, pollOrExpire } from "./generations.ts";
+import { submitResponse } from "./openai.ts";
 import { publishRun, PublishRejected } from "./publish.ts";
 import { resumeNote, type StartResult } from "./resume.ts";
 import { PROMPTS } from "./prompts.ts";
@@ -664,7 +664,7 @@ async function pollStep(db: SupabaseClient, run: RunRow, step: StepKey, latest: 
     await finishRun(db, run, step, "draft_failed", `Chưa cấu hình ${agentKeyEnv(latest.agent_role)}.`, attempt);
     return;
   }
-  const result = await pollResponse(apiKey, requestId);
+  const result = await pollOrExpire(apiKey, requestId, latest.created_at);
   if (!result || result.state === "running") return;
 
   const spec = STEP_SPECS[step]!;

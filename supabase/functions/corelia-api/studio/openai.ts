@@ -133,3 +133,15 @@ export async function pollResponse(apiKey: string, id: string): Promise<PollResu
   if (!res.ok) return { state: "failed", cause: "provider", error: await errorText(res) };
   return readResponse(await res.json() as ResponseBody);
 }
+
+/**
+ * Cancels a background response that is still waiting. A confirmed cancel is a provider failure with the
+ * given reason (and the usage it consumed); a response that finished meanwhile is read as usual, so its
+ * result is not lost. Null when the provider refused or could not be reached; the next poll decides.
+ */
+export async function cancelResponse(apiKey: string, id: string, reason: string): Promise<PollResult | null> {
+  const res = await fetch(`${RESPONSES_URL}/${encodeURIComponent(id)}/cancel`, { method: "POST", headers: headers(apiKey) });
+  if (!res.ok) return null;
+  const body = await res.json() as ResponseBody;
+  return body.status === "cancelled" ? { state: "failed", cause: "provider", error: reason, ...billed(body) } : readResponse(body);
+}

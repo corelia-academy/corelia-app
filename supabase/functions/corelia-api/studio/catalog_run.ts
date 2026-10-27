@@ -19,8 +19,8 @@ import {
   type CatalogGeneration,
   type CatalogRows,
 } from "./catalog.ts";
-import { agentKey, errorMessage, failGeneration, loadFailureKind } from "./generations.ts";
-import { pollResponse, submitResponse } from "./openai.ts";
+import { agentKey, errorMessage, failGeneration, loadFailureKind, pollOrExpire } from "./generations.ts";
+import { submitResponse } from "./openai.ts";
 import { PROMPTS, promptVersion } from "./prompts.ts";
 import { agentKeyEnv, SERVICE_TIER, utcDate } from "./steps.ts";
 
@@ -277,7 +277,7 @@ async function pollCatalog(db: SupabaseClient, job: JobRow, latest: CatalogGener
     await finishCatalogJob(db, job.id, "failed", `Chưa cấu hình ${agentKeyEnv("A1")}.`);
     return;
   }
-  const result = await pollResponse(apiKey, requestId);
+  const result = await pollOrExpire(apiKey, requestId, latest.created_at);
   if (!result || result.state === "running") return;
   if (result.state === "failed") {
     await failGeneration(db, latest.id, "submitted", result.cause, result.error, { model_id: result.model, usage: result.usage });
