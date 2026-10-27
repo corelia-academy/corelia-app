@@ -92,27 +92,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pre-pull Supabase Postgres image
-        run: |
-          image=ghcr.io/supabase/postgres:17.6.1.156
-          # Same image on public.ecr.aws, pinned by digest, for when ghcr.io rate-limits pulls.
-          mirror=public.ecr.aws/supabase/postgres@sha256:ca7871b587ca2c401ac0f325df6249c9aa0d25647ded34631158efc51176767f
-          for delay in 0 15 45; do
-            if [ "$delay" -gt 0 ]; then sleep "$delay"; fi
-            if docker pull "$image"; then exit 0; fi
-            if docker pull "$mirror" && docker tag "$mirror" "$image"; then exit 0; fi
-          done
-          exit 1
-
-      - name: Start isolated local Supabase stack
+      - name: Pre-pull Supabase images
+        # ghcr.io and public.ecr.aws both throttle runners for hours at a time;
+        # the script falls back to Docker Hub and tags images for the CLI.
         env:
-          # Pull Supabase service images from ghcr.io, where the job is logged in,
-          # instead of anonymous public.ecr.aws pulls that hit toomanyrequests.
-          SUPABASE_INTERNAL_IMAGE_REGISTRY: ghcr.io
+          SUPABASE_CLI: pnpm exec supabase
         run: |
           # Reserved-role denial probes crash on the CLI's older default image.
           mkdir -p supabase/.temp
           printf '%s' '17.6.1.156' > supabase/.temp/postgres-version
+          bash scripts/ci/prepull-supabase-images.sh studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor
+
+      - name: Start isolated local Supabase stack
+        run: |
           # Only Postgres, Auth, REST, Storage, Realtime and Kong are needed for the
           # migration and policy suites; skipping the rest halves image pulls, which
           # otherwise fail whenever ghcr.io/ECR rate-limits the runner.
