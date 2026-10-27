@@ -105,11 +105,18 @@ jobs:
           exit 1
 
       - name: Start isolated local Supabase stack
+        env:
+          # Pull Supabase service images from ghcr.io, where the job is logged in,
+          # instead of anonymous public.ecr.aws pulls that hit toomanyrequests.
+          SUPABASE_INTERNAL_IMAGE_REGISTRY: ghcr.io
         run: |
           # Reserved-role denial probes crash on the CLI's older default image.
           mkdir -p supabase/.temp
           printf '%s' '17.6.1.156' > supabase/.temp/postgres-version
-          pnpm exec supabase start
+          # Only Postgres, Auth, REST, Storage, Realtime and Kong are needed for the
+          # migration and policy suites; skipping the rest halves image pulls, which
+          # otherwise fail whenever ghcr.io/ECR rate-limits the runner.
+          pnpm exec supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor
 
       - name: Apply every migration to an empty local database
         run: pnpm db:verify:local
