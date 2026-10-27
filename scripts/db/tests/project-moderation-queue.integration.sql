@@ -58,9 +58,19 @@ BEGIN
     OR NOT EXISTS (SELECT 1 FROM private.project_moderation_audit WHERE project_id=project AND actor_id IS NULL AND action='block') THEN
     RAISE EXCEPTION 'flagged public project was not hidden';
   END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM public.user_notifications
+    WHERE user_id=owner_id AND type='project_auto_hidden' AND payload->>'project_id'=project::text
+      AND payload->'fields' = '["description"]'::jsonb AND payload->>'target_path'='/projects/mq-public'
+  ) THEN
+    RAISE EXCEPTION 'owner was not notified about the hidden project';
+  END IF;
   hidden := public.finish_project_moderation(draft,ARRAY['summary']);
   IF hidden OR (SELECT blocked FROM public.projects WHERE id=draft) OR EXISTS (SELECT 1 FROM private.project_moderation_queue WHERE project_id IN (project,draft)) THEN
     RAISE EXCEPTION 'private draft was blocked or queue not cleared';
+  END IF;
+  IF EXISTS (SELECT 1 FROM public.user_notifications WHERE type='project_auto_hidden' AND payload->>'project_id'=draft::text) THEN
+    RAISE EXCEPTION 'owner was notified about a draft that stayed private';
   END IF;
 
   -- A staff unblock allows the reviewed flagged text for that project only.

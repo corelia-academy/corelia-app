@@ -216,7 +216,11 @@
       "submission_rejected": "{{title}} の最終課題は修正が必要です。開いてフィードバックをご確認ください。",
       "hackathon_announcement": "主催者からのお知らせ：{{title}}"
     },
-    "updateError": "通知を更新できませんでした。もう一度お試しください。"
+    "updateError": "通知を更新できませんでした。もう一度お試しください。",
+    "projectAutoHiddenTitle": "プロジェクトが非表示になりました",
+    "projectAutoHiddenBody": "自動チェックで {{title}} の内容が問題として検出されたため、非公開になりました。チームが確認します。誤りだと思われる場合はサポートにお問い合わせください。",
+    "projectAutoHiddenFields": "検出箇所: {{fields}}",
+    "viewProject": "プロジェクトを見る"
   },
   "userProfile": {
     "tabs": {

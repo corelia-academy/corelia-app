@@ -1,4 +1,5 @@
 import { SocialNotification } from "./SocialNotification";
+import { ProjectAutoHiddenNotification } from "./ProjectAutoHiddenNotification";
 import { useMemo, useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink } from "react-router";
@@ -189,6 +190,7 @@ export function NotificationInbox({ compact = false, onNavigate }: { compact?: b
                 const isHackathonWinnerAward = n.type === "hackathon_winner_award";
                 const isCourseAnnouncement = n.type === "course_announcement";
                 const isCourseCompleted = n.type === "course_completed";
+                const isProjectAutoHidden = n.type === "project_auto_hidden";
                 const isCourseCertificateIssued = n.type === "course_certificate_issued";
                 const isOcCredential = n.type === "oc_credential_minted";
                 const ocCredentialUrl = isOcCredential
@@ -434,6 +436,8 @@ export function NotificationInbox({ compact = false, onNavigate }: { compact?: b
                           </div>
                         ) : null}
                       </>
+                    ) : isProjectAutoHidden ? (
+                      <ProjectAutoHiddenNotification notification={n} onOpen={() => setOpen(false)} />
                     ) : isCourseCompleted ? (
                       <>
                         <div className="font-medium text-foreground">

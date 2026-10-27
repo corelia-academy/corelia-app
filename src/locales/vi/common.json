@@ -216,7 +216,11 @@
       "submission_rejected": "Bài cuối khóa {{title}} của bạn cần chỉnh sửa. Mở để xem nhận xét.",
       "hackathon_announcement": "Thông báo từ ban tổ chức: {{title}}"
     },
-    "updateError": "Không cập nhật được thông báo. Vui lòng thử lại."
+    "updateError": "Không cập nhật được thông báo. Vui lòng thử lại.",
+    "projectAutoHiddenTitle": "Project của bạn đã bị ẩn",
+    "projectAutoHiddenBody": "Hệ thống kiểm duyệt tự động phát hiện nội dung không phù hợp trong {{title}}, nên project đã được chuyển sang riêng tư. Đội ngũ sẽ xem xét; nếu bạn cho rằng đây là nhầm lẫn, hãy liên hệ hỗ trợ.",
+    "projectAutoHiddenFields": "Phần bị đánh dấu: {{fields}}",
+    "viewProject": "Xem project"
   },
   "userProfile": {
     "tabs": {

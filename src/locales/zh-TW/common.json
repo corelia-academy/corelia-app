@@ -216,7 +216,11 @@
       "submission_rejected": "您在 {{title}} 的結業作業需要修改。開啟查看回饋。",
       "hackathon_announcement": "主辦單位公告：{{title}}"
     },
-    "updateError": "無法更新通知，請再試一次。"
+    "updateError": "無法更新通知，請再試一次。",
+    "projectAutoHiddenTitle": "你的專案已被隱藏",
+    "projectAutoHiddenBody": "自動審核在 {{title}} 中發現了違規內容，專案已設為私人。我們的團隊會進行審核；如果你認為這是誤判，請聯絡支援。",
+    "projectAutoHiddenFields": "被標記的部分：{{fields}}",
+    "viewProject": "查看專案"
   },
   "userProfile": {
     "tabs": {
