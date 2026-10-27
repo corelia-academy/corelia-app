@@ -5,6 +5,7 @@ import {
 } from "@/lib/courses";
 import { getBatchHackathonLocaleContent } from "@/lib/hackathons";
 import { normalizeContentLocale } from "@/lib/entityLocales";
+import type { ProjectOwnerPublicProfile } from "@/lib/projects";
 import { supabase } from "@/lib/supabase";
 import type { Course } from "@/types/courses";
 
@@ -74,6 +75,17 @@ export async function searchPublic(query: string, limit: number, offset = 0, loc
       ...(localized?.title ? { title: localized.title } : {}),
     };
   });
+}
+
+/** Avatar data for profile search results; the search RPC only returns name and handle. */
+export async function getSearchProfiles(ids: string[]): Promise<ProjectOwnerPublicProfile[]> {
+  if (!ids.length) return [];
+  const { data, error } = await supabase
+    .from("public_profiles")
+    .select("id,username,ocid,full_name,avatar_url,avatar_seed,avatar_config")
+    .in("id", ids);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as ProjectOwnerPublicProfile[];
 }
 
 export async function listTrendingSearches(limit = 8) {

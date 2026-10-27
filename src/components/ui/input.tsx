@@ -65,6 +65,7 @@ type InputDesignProps = {
   leadingIconClassName?: string
   statusIcon?: React.ReactNode | null
   controlClassName?: string
+  inputDisabled?: boolean
   allowManualResize?: boolean
   /** Keep Enter available for a newline when this is a multiline field. */
   submitOnEnter?: boolean
@@ -166,7 +167,8 @@ function InputImplementationContent({
       className,
       controlClassName,
       defaultValue,
-      disabled: inputDisabled = false,
+      disabled: controlDisabledProp = false,
+      inputDisabled: inputDisabledOnly = false,
       expandedTagsMaxHeight,
       fieldType = "single-line",
       id,
@@ -192,7 +194,8 @@ function InputImplementationContent({
       variant = "default",
       ...inputProps
     } = props
-    const disabled = Boolean(fieldContext?.disabled || inputDisabled)
+    const disabled = Boolean(fieldContext?.disabled || controlDisabledProp)
+    const nativeInputDisabled = disabled || inputDisabledOnly
     const required = Boolean(fieldContext?.required || inputRequired)
     const label = fieldContext?.label
     const hint = fieldContext?.hint
@@ -649,7 +652,7 @@ function InputImplementationContent({
         defaultValue={defaultValue}
         maxLength={maxLength}
         required={required}
-        disabled={disabled}
+        disabled={nativeInputDisabled}
         onChange={handleInputChange}
         onFocus={handleInputFocus}
         onClick={handleInputClick}
@@ -701,7 +704,7 @@ function InputImplementationContent({
         defaultValue={defaultValue}
         maxLength={maxLength}
         required={required}
-        disabled={disabled}
+        disabled={nativeInputDisabled}
         onChange={handleInputChange}
         onFocus={handleInputFocus}
         onClick={handleInputClick}
@@ -782,7 +785,14 @@ function InputImplementationContent({
             </IconSlot>
           ) : null}
 
-          {resolvedTrailingContent}
+          {renderTrailingContent !== undefined ? (
+            <span
+              data-slot="input-field-trailing-content"
+              className="contents [&_[data-slot=dropdown-menu-trigger]]:cursor-pointer"
+            >
+              {resolvedTrailingContent}
+            </span>
+          ) : resolvedTrailingContent}
 
           {disabled ? (
             <span

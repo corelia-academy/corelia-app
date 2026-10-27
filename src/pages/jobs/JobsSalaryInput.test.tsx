@@ -95,6 +95,30 @@ describe("JobsPage salary filter IME & URL synchronization", () => {
     document.body.innerHTML = "";
   });
 
+  it("limits the salary currency divider highlight to visible focus or an open menu", async () => {
+    const view = renderJobsPage("/jobs?currency=USD");
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+
+    const currencyTrigger = view.container.querySelector<HTMLButtonElement>(
+      'button[aria-label="filters.salaryCurrency"]',
+    );
+    const divider = currencyTrigger?.parentElement;
+
+    expect(divider?.className).not.toContain(
+      "group-focus-within/input-field:border-input-field-divider-focus",
+    );
+    expect(divider?.className).toContain(
+      "group-has-[:focus-visible]/input-field:border-input-field-divider-focus",
+    );
+    expect(divider?.className).toContain(
+      "group-has-[[data-popup-open]]/input-field:border-input-field-divider-focus",
+    );
+
+    await view.cleanup();
+  });
+
   it("preserves 0 as a valid salary value from URL parameter", async () => {
     const view = renderJobsPage("/jobs?currency=VND&salary=0");
     await act(async () => {
@@ -169,6 +193,66 @@ describe("JobsPage salary filter IME & URL synchronization", () => {
 
     const probe = view.container.querySelector('[data-testid="search-params"]');
     expect(probe?.textContent).toContain("salary=2500");
+
+    await view.cleanup();
+  });
+});
+
+describe("JobsPage primary filter popup width", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("fits the three primary filter menus to content while keeping other filters anchored", async () => {
+    const primaryFilterLabels = [
+      "filters.jobType",
+      "filters.role",
+      "filters.workMode",
+    ];
+
+    for (const label of primaryFilterLabels) {
+      const view = renderJobsPage("/jobs?days=7");
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      });
+
+      const trigger = view.container.querySelector<HTMLButtonElement>(
+        `button[aria-label="${label}"]`,
+      );
+      expect(trigger).not.toBeNull();
+
+      await act(async () => {
+        trigger?.click();
+      });
+
+      const menu = document.querySelector<HTMLElement>(
+        '[data-slot="dropdown-menu-content"][data-layout="multiple-list"][data-open]',
+      );
+      expect(menu?.className).toContain("w-max");
+      expect(menu?.className).toContain("min-w-(--anchor-width)");
+
+      await view.cleanup();
+    }
+
+    const view = renderJobsPage("/jobs?days=7");
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+
+    const additionalFilterTrigger = view.container.querySelector<HTMLButtonElement>(
+      'button[aria-label="filters.postedDate"]',
+    );
+    expect(additionalFilterTrigger).not.toBeNull();
+
+    await act(async () => {
+      additionalFilterTrigger?.click();
+    });
+
+    const additionalFilterMenu = document.querySelector<HTMLElement>(
+      '[data-slot="dropdown-menu-content"][data-layout="multiple-list"][data-open]',
+    );
+    expect(additionalFilterMenu?.className).toContain("w-(--anchor-width)");
+    expect(additionalFilterMenu?.className).not.toContain("w-max");
 
     await view.cleanup();
   });

@@ -14,6 +14,8 @@ import {
   DropdownMenuHeader,
   DropdownMenuItemContent,
   DropdownMenuList,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSearch,
   DropdownMenuSelectAll,
   DropdownMenuTrigger,
@@ -255,6 +257,48 @@ describe("Dropdown Menu multiple list", () => {
 
     expect(content?.className).toContain("overflow-x-auto")
     expect(content?.className).not.toContain("overflow-x-hidden")
+
+    await act(async () => root.unmount())
+    container.remove()
+  })
+
+  it("closes a single-select menu after choosing an option", async () => {
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+    const root = createRoot(container)
+
+    await act(async () => {
+      root.render(
+        <DropdownMenu defaultOpen>
+          <DropdownMenuTrigger>Open</DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuRadioGroup
+              value=""
+              onValueChange={() => undefined}
+            >
+              <DropdownMenuRadioItem value="">All</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="remote">
+                Remote
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>,
+      )
+    })
+
+    const trigger = document.body.querySelector<HTMLElement>(
+      '[data-slot="dropdown-menu-trigger"]',
+    )
+    const options = document.body.querySelectorAll<HTMLElement>(
+      '[data-slot="dropdown-menu-radio-item"]',
+    )
+
+    expect(trigger?.getAttribute("aria-expanded")).toBe("true")
+    expect(options).toHaveLength(2)
+
+    await act(async () => options[1].click())
+
+    expect(trigger?.getAttribute("aria-expanded")).toBe("false")
 
     await act(async () => root.unmount())
     container.remove()
