@@ -1,4 +1,5 @@
 import { isAuthFailure } from "../lib/authz.ts";
+import { sha256Hex, timingSafeEqual } from "../lib/crypto.ts";
 import { json } from "../lib/http.ts";
 import { consumeRateLimit } from "../lib/rate_limit.ts";
 import { buildCoInstructorInviteEmail } from "../lib/mail/co_instructor_invite_body.ts";
@@ -16,6 +17,8 @@ import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
  * the caller passes it back here so we can embed it in the email deeplink.
  * We re-verify on the server that:
  *   - the caller is the inviter on the invite row,
+ *   - the token matches the invite's stored hash, so the email can only carry
+ *     the link the RPC issued,
  *   - the invite is still pending and not expired.
  */
 export async function handleCoInstructorInviteEmail(
@@ -37,13 +40,16 @@ export async function handleCoInstructorInviteEmail(
 
     const { data: invite, error: invErr } = await db
       .from("course_co_instructor_invites")
-      .select("id, course_id, invitee_user_id, invited_by, permissions, status, expires_at")
+      .select("id, course_id, invitee_user_id, invited_by, permissions, status, expires_at, token_hash")
       .eq("id", inviteId)
       .maybeSingle();
     if (invErr) throw new Error(invErr.message);
     if (!invite) return json({ message: "invite_not_found" }, 404);
     if (invite.invited_by !== sender.id) {
       return json({ message: "forbidden" }, 403);
+    }
+    if (!timingSafeEqual(await sha256Hex(token), String(invite.token_hash ?? ""))) {
+      return json({ message: "invalid_input:token_mismatch" }, 400);
     }
     if (invite.status !== "pending") {
       return json({ message: "invite_not_pending" }, 409);
