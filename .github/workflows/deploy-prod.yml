@@ -109,7 +109,12 @@ jobs:
           # Match the image used by local Learning authorization QA.
           mkdir -p supabase/.temp
           printf '%s' '17.6.1.156' > supabase/.temp/postgres-version
-          supabase start
+          if ! supabase start; then
+            # ghcr.io also rate-limits the other service images; the CLI's default registry serves the same tags.
+            supabase stop --no-backup || true
+            docker tag ghcr.io/supabase/postgres:17.6.1.156 public.ecr.aws/supabase/postgres:17.6.1.156
+            SUPABASE_INTERNAL_IMAGE_REGISTRY=public.ecr.aws supabase start
+          fi
           pnpm db:verify:local
 
       - name: Stop isolated local Supabase stack

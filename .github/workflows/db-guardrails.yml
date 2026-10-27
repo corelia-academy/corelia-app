@@ -109,7 +109,12 @@ jobs:
           # Reserved-role denial probes crash on the CLI's older default image.
           mkdir -p supabase/.temp
           printf '%s' '17.6.1.156' > supabase/.temp/postgres-version
-          pnpm exec supabase start
+          if ! pnpm exec supabase start; then
+            # ghcr.io also rate-limits the other service images; the CLI's default registry serves the same tags.
+            pnpm exec supabase stop --no-backup || true
+            docker tag ghcr.io/supabase/postgres:17.6.1.156 public.ecr.aws/supabase/postgres:17.6.1.156
+            SUPABASE_INTERNAL_IMAGE_REGISTRY=public.ecr.aws pnpm exec supabase start
+          fi
 
       - name: Apply every migration to an empty local database
         run: pnpm db:verify:local
