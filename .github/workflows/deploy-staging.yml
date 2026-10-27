@@ -77,14 +77,15 @@ jobs:
         # the script falls back to Docker Hub and tags images for the CLI.
         env:
           SUPABASE_CLI: supabase
-        run: bash scripts/ci/prepull-supabase-images.sh studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor
-
-      - name: Cleanly recreate isolated local migration chain
-        timeout-minutes: 15
         run: |
           # Match the image used by local Learning authorization QA.
           mkdir -p supabase/.temp
           printf '%s' '17.6.1.156' > supabase/.temp/postgres-version
+          bash scripts/ci/prepull-supabase-images.sh studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor
+
+      - name: Cleanly recreate isolated local migration chain
+        timeout-minutes: 15
+        run: |
           # Only Postgres, Auth, REST, Storage, Realtime and Kong are needed for the
           # migration and policy suites; skipping the rest halves image pulls, which
           # otherwise fail whenever ghcr.io/ECR rate-limits the runner.
