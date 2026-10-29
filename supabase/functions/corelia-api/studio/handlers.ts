@@ -53,8 +53,7 @@ const START_ERRORS: Record<string, number> = {
   course_not_found: 404,
   course_not_startable: 409,
   course_has_no_path: 409,
-  course_not_researched: 409,
-  course_not_in_queue: 409,
+  scope_missing: 409,
   run_id_conflict: 409,
 };
 
@@ -82,27 +81,18 @@ export async function handleStudioStart(req: Request, db: SupabaseClient): Promi
   const resumeFrom = body.resume_from_run_id === undefined ? null : String(body.resume_from_run_id);
   if (!UUID_RE.test(courseId) || !UUID_RE.test(runId) || (resumeFrom !== null && !UUID_RE.test(resumeFrom))) return json({ message: "invalid_input" }, 400);
 
-  const ranking = await rerankIfStale(db);
-  if (ranking.action === "failed") {
-    console.error("[corelia-api] studio start: ranking refresh failed; using the latest saved queue");
-  }
-
   const { data, error } = await db.rpc("studio_start_run", { p_course_id: courseId, p_run_id: runId, p_started_by: userId, p_resume_from: resumeFrom });
   if (error) {
     const status = START_ERRORS[error.message] ?? (error.code === "23505" ? 409 : undefined);
     if (status) {
       const message = error.code === "23505" ? "course_has_running_run" : error.message;
-      if (message === "course_not_in_queue") {
-        const reason = queueReason(error.details) ?? await readQueueReason(db, courseId);
-        return json({ message, reason }, status);
-      }
       return json({ message }, status);
     }
     throw new Error(error.message);
   }
   const result = data as StartResult;
   if (result.created) {
-    await addEvent(db, { run_id: runId, step_key: "brief", attempt: 0, kind: "progress", message: "Đã xếp hàng lượt chạy." });
+    await addEvent(db, { run_id: runId, step_key: "catalog_research", attempt: 0, kind: "progress", message: "Đã xếp hàng khâu 0: nghiên cứu Catalog." });
     const note = resumeNote(result, resumeFrom);
     if (note) await addEvent(db, { run_id: runId, step_key: "brief", attempt: 0, kind: "progress", message: note });
   }
@@ -154,9 +144,22 @@ export async function advanceRun(db: SupabaseClient, run: RunRow): Promise<{ ste
   const steps: Partial<Record<StepKey, StepState>> = {};
   for (const row of stepRows ?? []) steps[row.step_key as StepKey] = row.state as StepState;
 
-  const current = STEP_ORDER.find((k) => steps[k] !== "done");
+  const current = STEP_ORDER.find((k) => !(k === "catalog_research" && steps[k] === undefined) && steps[k] !== "done");
   let latest: GenerationState | null = null;
-  if (current) {
+  let catalogResearch: { status: "running" | "evidence_ok" | "needs_more_sources" | "failed"; reason?: string } | null | undefined;
+  if (current === "catalog_research") {
+    if (run.catalog_job_id) {
+      const result = await db.from("studio_catalog_jobs").select("course_id,status,reason").eq("id", run.catalog_job_id).maybeSingle();
+      if (result.error) throw new Error(result.error.message);
+      if (result.data && result.data.course_id === run.course_id) {
+        catalogResearch = { status: result.data.status, reason: result.data.reason } as typeof catalogResearch;
+      } else {
+        catalogResearch = null;
+      }
+    } else {
+      catalogResearch = null;
+    }
+  } else if (current) {
     const res = await db
       .from("studio_generations")
       .select("id,attempt,agent_role,status,provider_request_id,failure_kind,error,created_at")
@@ -170,9 +173,9 @@ export async function advanceRun(db: SupabaseClient, run: RunRow): Promise<{ ste
     latest = res.data as GenerationState | null;
   }
 
-  const progress = current ? await loadProgress(db, run, current, latest) : undefined;
+  const progress = current && current !== "catalog_research" ? await loadProgress(db, run, current, latest) : undefined;
   const lessons = current === "lessons" || current === "lesson_review" ? await loadLessons(db, run) : undefined;
-  const { step, action } = planRun({ steps, latest, startedAt: run.started_at, now: Date.now(), progress, lessons });
+  const { step, action } = planRun({ steps, latest, startedAt: run.started_at, now: Date.now(), catalogResearch, progress, lessons });
   switch (action.kind) {
     case "lessons":
       await runLessonActions(db, run, action.actions);
@@ -514,41 +517,6 @@ export async function loadContext(db: SupabaseClient, run: RunRow, step?: StepKe
     today: utcDate(Date.now()),
     lesson: lessonId ? await loadLessonContext(db, run, lessonId) : null,
   };
-}
-
-const QUEUE_REASONS = new Set([
-  "not_ranked",
-  "not_researched",
-  "missing_core_criteria",
-  "no_path",
-  "prerequisite_cycle",
-  "blocked_by_prerequisite",
-]);
-
-function queueReason(detail: unknown): string | null {
-  return typeof detail === "string" && QUEUE_REASONS.has(detail) ? detail : null;
-}
-
-async function readQueueReason(db: SupabaseClient, courseId: string): Promise<string> {
-  const latest = await db
-    .from("studio_catalog_rankings")
-    .select("id")
-    .is("group_kind", null)
-    .order("computed_at", { ascending: false })
-    .order("id", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (latest.error) throw new Error(latest.error.message);
-  if (!latest.data) return "not_ranked";
-
-  const score = await db
-    .from("studio_catalog_scores")
-    .select("excluded_reason")
-    .eq("ranking_id", latest.data.id)
-    .eq("course_id", courseId)
-    .maybeSingle();
-  if (score.error) throw new Error(score.error.message);
-  return queueReason(score.data?.excluded_reason) ?? "not_ranked";
 }
 
 async function submitStep(

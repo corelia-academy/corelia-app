@@ -3,14 +3,14 @@
 // Contract: corelia-studio/docs/agents/catalog-research-agent.md.
 import { PLATFORM_FORMAT_GUIDE } from "./formats.ts";
 import { canRetry, roundFailures, type AttemptRow, type RoundFailures } from "./retry.ts";
-import { EFFORT, list, MAX_RUN_MS, MODEL, SUBMIT_STALE_MS, utcDate, type Acceptance } from "./steps.ts";
+import { CATALOG_MAX_RUN_MS, EFFORT, list, MODEL, SUBMIT_STALE_MS, utcDate, type Acceptance } from "./steps.ts";
 
 export const SHARED_CRITERIA = ["trend", "demand", "ai_feasibility", "maintainability"] as const;
 export const GROUP_CRITERIA = ["corelia_fit", "catalog_gap"] as const;
 const CONFIDENCE = ["high", "medium", "low"] as const;
 const GROUP_KINDS = ["skill", "role", "ecosystem"] as const;
 /** Input fields of a group that a criterion can rest on. */
-export const INPUT_REF_FIELDS = ["audience", "corelia_direction", "other_courses", "paths"] as const;
+export const INPUT_REF_FIELDS = ["audience", "corelia_direction", "other_courses", "paths", "app_courses"] as const;
 
 const str = { type: "string" };
 const strList = { type: "array", items: str };
@@ -46,7 +46,14 @@ export const CATALOG_RESEARCH_SCHEMA = object({
   },
   input_evidence: {
     type: "array",
-    items: object({ evidence_id: str, input_ref: str, note: str }),
+    items: object({
+      evidence_id: str,
+      input_ref: {
+        type: "string",
+        pattern: "^(app_courses|groups\\.(skill|role|ecosystem)\\.(audience|corelia_direction|other_courses|paths))$",
+      },
+      note: str,
+    }),
   },
 });
 
@@ -139,6 +146,8 @@ export interface CatalogAcceptContext {
   today: string;
   /** group_kind of every group in the input: by_group has exactly these. */
   groupKinds: string[];
+  /** The model receives this bounded app catalog when it can cite `app_courses`. */
+  hasAppCourses?: boolean;
 }
 
 export type CatalogAcceptance = Acceptance;
@@ -200,9 +209,13 @@ export function acceptCatalogResearch(output: unknown, ctx: CatalogAcceptContext
       problems.push(`bằng chứng ${e.evidence_id} (input) thiếu input_ref`);
       continue;
     }
+    if (e.input_ref === "app_courses") {
+      if (ctx.hasAppCourses === false) problems.push(`bằng chứng ${e.evidence_id}: input_ref app_courses nhưng đầu vào không có catalog khóa đã publish`);
+      continue;
+    }
     const [root, kind, field, ...rest] = e.input_ref.split(".");
-    if (root !== "groups" || !kind || !field || rest.length > 0 || !(INPUT_REF_FIELDS as readonly string[]).includes(field)) {
-      problems.push(`bằng chứng ${e.evidence_id}: input_ref "${e.input_ref}" phải có dạng groups.<group_kind>.<${INPUT_REF_FIELDS.join("|")}>`);
+    if (root !== "groups" || !kind || !field || rest.length > 0 || !(INPUT_REF_FIELDS as readonly string[]).includes(field) || field === "app_courses") {
+      problems.push(`bằng chứng ${e.evidence_id}: input_ref phải có dạng groups.<group_kind>.<audience|corelia_direction|other_courses|paths> hoặc app_courses`);
     } else if (!ctx.groupKinds.includes(kind)) {
       problems.push(`bằng chứng ${e.evidence_id}: input_ref "${e.input_ref}" trỏ tới nhóm ${kind} không có trong đầu vào`);
     }
@@ -270,6 +283,80 @@ export interface CatalogBase {
   course: { title: string; level: string | null; scope_note?: string | null };
   groups: CatalogGroup[];
   research_period_days: number;
+  /** Up to 30 most recently updated published courses across public.courses and Studio. */
+  app_courses: { items: AppCourseSummary[]; limit: number; truncated: boolean };
+}
+
+export const APP_COURSES_MAX_ITEMS = 30;
+const APP_COURSE_LIMITS = { slug: 80, level: 32, title: 160, short_description: 280, course_type: 48, outcome: 120 } as const;
+
+export interface AppCourseSummary {
+  id: string;
+  slug: string;
+  level: string | null;
+  title: string;
+  short_description: string;
+  course_type: string;
+  learning_outcomes: string[];
+  learning_outcomes_truncated: boolean;
+}
+
+export interface AppCourseCandidate extends Partial<Omit<AppCourseSummary, "learning_outcomes" | "learning_outcomes_truncated">> {
+  id: string;
+  updated_at?: string;
+  learning_outcomes?: unknown;
+}
+
+const boundedText = (value: unknown, max: number) => typeof value === "string" ? value.trim().slice(0, max) : "";
+
+/** Dedupe by app course id and cap every field and list before it reaches the model input. */
+export function boundAppCourses(candidates: AppCourseCandidate[], sourceTruncated = false) {
+  const distinct = new Map<string, AppCourseCandidate>();
+  for (const candidate of candidates) {
+    const id = boundedText(candidate.id, 80);
+    if (!id) continue;
+    const existing = distinct.get(id);
+    if (!existing) {
+      distinct.set(id, candidate);
+      continue;
+    }
+    const latest = Date.parse(candidate.updated_at ?? "") > Date.parse(existing.updated_at ?? "") ? candidate : existing;
+    const other = latest === candidate ? existing : candidate;
+    distinct.set(id, {
+      ...other,
+      ...latest,
+      updated_at: latest.updated_at ?? other.updated_at,
+      slug: latest.slug || other.slug,
+      level: latest.level || other.level,
+      title: latest.title || other.title,
+      short_description: latest.short_description || other.short_description,
+      course_type: latest.course_type || other.course_type,
+      learning_outcomes: Array.isArray(latest.learning_outcomes) && latest.learning_outcomes.length > 0
+        ? latest.learning_outcomes
+        : other.learning_outcomes,
+    });
+  }
+  const sorted = [...distinct.values()].sort((a, b) => {
+    const date = Date.parse(b.updated_at ?? "") - Date.parse(a.updated_at ?? "");
+    return (Number.isFinite(date) ? date : 0) || a.id.localeCompare(b.id);
+  });
+  const truncated = sourceTruncated || sorted.length > APP_COURSES_MAX_ITEMS;
+  const items = sorted.slice(0, APP_COURSES_MAX_ITEMS).map((course): AppCourseSummary => {
+    const allOutcomes = Array.isArray(course.learning_outcomes)
+      ? course.learning_outcomes.map((item) => boundedText(item, APP_COURSE_LIMITS.outcome)).filter(Boolean)
+      : [];
+    return {
+      id: boundedText(course.id, 80),
+      slug: boundedText(course.slug, APP_COURSE_LIMITS.slug),
+      level: boundedText(course.level, APP_COURSE_LIMITS.level) || null,
+      title: boundedText(course.title, APP_COURSE_LIMITS.title),
+      short_description: boundedText(course.short_description, APP_COURSE_LIMITS.short_description),
+      course_type: boundedText(course.course_type, APP_COURSE_LIMITS.course_type),
+      learning_outcomes: allOutcomes.slice(0, 4),
+      learning_outcomes_truncated: allOutcomes.length > 4 || (Array.isArray(course.learning_outcomes) && course.learning_outcomes.some((item) => typeof item === "string" && item.trim().length > APP_COURSE_LIMITS.outcome)),
+    };
+  });
+  return { items, limit: APP_COURSES_MAX_ITEMS, truncated };
 }
 
 export interface CatalogRows {
@@ -280,6 +367,7 @@ export interface CatalogRows {
   /** Courses with a path in one of the groups, the course itself included; a course in several paths of a group repeats. */
   neighbours: { group_kind: string; id: string; title: string; level: string | null; status: string }[];
   courseId: string;
+  appCourses?: { items: AppCourseCandidate[]; truncated?: boolean };
 }
 
 /**
@@ -307,7 +395,12 @@ export function assembleCatalogBase(rows: CatalogRows): CatalogBase {
     };
   });
   const period = Math.max(...kinds.map((k) => rows.scopes.find((s) => s.group_kind === k)!.research_period_days));
-  return { course: rows.course, groups, research_period_days: period };
+  return {
+    course: rows.course,
+    groups,
+    research_period_days: period,
+    app_courses: boundAppCourses(rows.appCourses?.items ?? [], rows.appCourses?.truncated ?? false),
+  };
 }
 
 export interface CatalogResearchGap {
@@ -331,6 +424,7 @@ export function buildCatalogInput(
   return {
     course: base.course,
     groups: base.groups,
+    app_courses: base.app_courses,
     research_period_days: base.research_period_days,
     today,
     platform_formats: PLATFORM_FORMAT_GUIDE,
@@ -365,7 +459,7 @@ export function planCatalogJob(input: {
   /** Outcome of the newest generation when it is completed (read from its output); null otherwise. */
   latestResult: { status: CatalogStatus; missing: string[] } | null;
 }): CatalogAction {
-  if (input.now - Date.parse(input.startedAt) > MAX_RUN_MS) {
+  if (input.now - Date.parse(input.startedAt) > CATALOG_MAX_RUN_MS) {
     return { kind: "finish", status: "failed", reason: "Lượt nghiên cứu vượt quá 24 giờ." };
   }
   const rows = [...input.generations].sort((a, b) => a.attempt - b.attempt);

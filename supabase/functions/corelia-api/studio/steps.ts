@@ -22,6 +22,7 @@ import { PROMPTS, promptVersion, type AgentRole, type PromptKey } from "./prompt
 import type { BriefCatalogResearch } from "./catalog_research_brief.ts";
 
 export const STEP_ORDER = [
+  "catalog_research",
   "brief",
   "research",
   "curriculum",
@@ -36,6 +37,7 @@ export type StepKey = typeof STEP_ORDER[number];
 export type StepState = "pending" | "active" | "done" | "failed";
 
 export const STEP_LABEL: Record<StepKey, string> = {
+  catalog_research: "Nghiên cứu Catalog (khâu 0)",
   brief: "Chuẩn bị brief",
   research: "Nghiên cứu",
   curriculum: "Curriculum",
@@ -48,10 +50,11 @@ export const STEP_LABEL: Record<StepKey, string> = {
 };
 
 /**
- * Who runs each step: an agent role (one OpenAI key per role) or deterministic code (no key).
- * A1 Catalog Research belongs to the Catalog flow, not to a course run, so it owns no step here.
+ * Who runs each step: an agent role, deterministic code, or the separate Catalog job queue.
+ * A1 generations remain owned by studio_catalog_jobs; the run step only follows that job.
  */
-export const STEP_OWNER: Record<StepKey, AgentRole | "code"> = {
+export const STEP_OWNER: Record<StepKey, AgentRole | "code" | "catalog_job"> = {
+  catalog_research: "catalog_job",
   brief: "A2",
   research: "A2",
   curriculum: "A3",
@@ -82,7 +85,10 @@ export { PLATFORM_FORMAT_GUIDE, PLATFORM_FORMATS } from "./formats.ts";
 import { AI_CURRICULUM_FORMAT_GUIDE, AI_CURRICULUM_FORMATS, PLATFORM_FORMAT_GUIDE } from "./formats.ts";
 import { canRetry, roundFailures, type FailureKind, type RoundFailures } from "./retry.ts";
 
-export const MAX_RUN_MS = 24 * 60 * 60 * 1000;
+/** A run can spend up to 24 hours on A1 and another 24 hours on steps 1–9. */
+export const MAX_RUN_MS = 48 * 60 * 60 * 1000;
+/** A1 catalog jobs retain their original independent 24-hour limit. */
+export const CATALOG_MAX_RUN_MS = 24 * 60 * 60 * 1000;
 export const SUBMIT_STALE_MS = 10 * 60 * 1000;
 /** A submitted response that is still queued or running after this long is cancelled and retried (longest step measured: ~8 min). */
 export const RESPONSE_STALE_MS = 30 * 60 * 1000;
@@ -750,7 +756,7 @@ const LESSON_EFFORT = "high";
  */
 export const SERVICE_TIER = "flex";
 
-/** Steps the runtime can execute. A step missing here ends the run as draft_failed. */
+/** Model generations the run runtime can execute. Step 0 is intentionally absent because A1 owns a catalog job. */
 export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
   brief: {
     prompt: "a2-brief",
@@ -882,7 +888,7 @@ export type TickAction =
   | { kind: "submit"; attempt: number; parentId: string | null }
   | { kind: "poll"; generationId: string; requestId: string }
   | { kind: "expire_submitting"; generationId: string }
-  | { kind: "mark_done"; generationId: string }
+  | { kind: "mark_done"; generationId?: string }
   | { kind: "reopen"; round: number; blocking: number }
   | { kind: "reopen_research"; round: number; missing: string[] }
   | { kind: "lessons"; actions: LessonAction[] }
@@ -896,6 +902,8 @@ export function planRun(input: {
   latest: GenerationState | null;
   startedAt: string;
   now: number;
+  /** Status of the A1 job pinned to this run when step 0 is current. */
+  catalogResearch?: { status: "running" | "evidence_ok" | "needs_more_sources" | "failed"; reason?: string } | null;
   progress?: RunProgress;
   /**
    * Curriculum lessons with their generations of both lesson steps and the blocking items of each
@@ -903,14 +911,27 @@ export function planRun(input: {
    */
   lessons?: { ids: string[]; rows: LessonGeneration[]; blocking: Record<string, string[]> };
 }): { step: StepKey | null; action: TickAction } {
-  const current = STEP_ORDER.find((k) => input.steps[k] !== "done") ?? null;
+  // Runs already in progress when step 0 was introduced have no row for it. Leave them on their
+  // existing step sequence rather than starting A1 halfway through a run.
+  const current = STEP_ORDER.find((k) => !(k === "catalog_research" && input.steps[k] === undefined) && input.steps[k] !== "done") ?? null;
   if (!current) return { step: null, action: { kind: "finish", status: "published", reason: "" } };
   if (input.now - Date.parse(input.startedAt) > MAX_RUN_MS) {
-    return { step: current, action: { kind: "finish", status: "draft_failed", reason: "Lượt chạy vượt quá 24 giờ." } };
+    return { step: current, action: { kind: "finish", status: "draft_failed", reason: "Lượt chạy vượt quá 48 giờ." } };
   }
   const label = STEP_LABEL[current];
   if (input.steps[current] === "failed") {
     return { step: current, action: { kind: "finish", status: "draft_failed", reason: `Bước ${label} thất bại.` } };
+  }
+  if (current === "catalog_research") {
+    if (!input.catalogResearch) {
+      return { step: current, action: { kind: "finish", status: "draft_failed", reason: "Bước Nghiên cứu Catalog: không tìm thấy job A1 của lượt chạy." } };
+    }
+    if (input.catalogResearch.status === "running") return { step: current, action: { kind: "wait" } };
+    if (input.catalogResearch.status === "failed") {
+      const detail = input.catalogResearch.reason?.trim();
+      return { step: current, action: { kind: "finish", status: "draft_failed", reason: `Bước Nghiên cứu Catalog thất bại${detail ? `: ${detail}` : "."}` } };
+    }
+    return { step: current, action: { kind: "mark_done" } };
   }
   if (current === "structure_check" || current === "journey_test") return { step: current, action: { kind: "check", check: current } };
   if (current === "publish") return { step: current, action: { kind: "publish" } };

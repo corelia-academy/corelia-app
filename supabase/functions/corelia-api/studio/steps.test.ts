@@ -31,8 +31,8 @@ const startedAt = new Date(now - 60_000).toISOString();
 
 function steps(done: StepKey[], current?: StepState): Partial<Record<StepKey, StepState>> {
   const out: Partial<Record<StepKey, StepState>> = {};
-  for (const k of STEP_ORDER) out[k] = done.includes(k) ? "done" : "pending";
-  const first = STEP_ORDER.find((k) => !done.includes(k));
+  for (const k of STEP_ORDER) out[k] = k === "catalog_research" || done.includes(k) ? "done" : "pending";
+  const first = STEP_ORDER.find((k) => out[k] !== "done");
   if (first && current) out[first] = current;
   return out;
 }
@@ -51,11 +51,35 @@ function gen(over: Partial<GenerationState>): GenerationState {
 }
 
 describe("studio planRun", () => {
-  it("submits the first attempt of the first pending step", () => {
+  it("waits for the separate A1 job before submitting the first run-owned step", () => {
+    const beforeA1 = steps([]);
+    beforeA1.catalog_research = "pending";
+    expect(planRun({ steps: beforeA1, latest: null, startedAt, now, catalogResearch: { status: "running" } }))
+      .toEqual({ step: "catalog_research", action: { kind: "wait" } });
     expect(planRun({ steps: steps([]), latest: null, startedAt, now })).toEqual({
       step: "brief",
       action: { kind: "submit", attempt: 0, parentId: null },
     });
+  });
+
+  it.each(["evidence_ok", "needs_more_sources"] as const)("treats the successful A1 status %s as step 0 done", (status) => {
+    const beforeA1 = steps([]);
+    beforeA1.catalog_research = "pending";
+    expect(planRun({ steps: beforeA1, latest: null, startedAt, now, catalogResearch: { status } }))
+      .toEqual({ step: "catalog_research", action: { kind: "mark_done" } });
+  });
+
+  it("fails the run when the pinned A1 job failed infrastructure", () => {
+    const beforeA1 = steps([]);
+    beforeA1.catalog_research = "pending";
+    expect(planRun({ steps: beforeA1, latest: null, startedAt, now, catalogResearch: { status: "failed", reason: "provider unavailable" } }).action)
+      .toEqual({ kind: "finish", status: "draft_failed", reason: "Bước Nghiên cứu Catalog thất bại: provider unavailable" });
+  });
+
+  it("skips step 0 on a run created before the column was introduced", () => {
+    const legacy = steps(["brief"]);
+    delete legacy.catalog_research;
+    expect(planRun({ steps: legacy, latest: gen({}), startedAt, now })).toMatchObject({ step: "research" });
   });
 
   it("polls a submitted generation", () => {
@@ -86,7 +110,9 @@ describe("studio planRun", () => {
   it("runs every step: the model steps by their spec, the code steps by the runtime", () => {
     for (const step of STEP_ORDER) {
       const done = STEP_ORDER.slice(0, STEP_ORDER.indexOf(step));
-      const { action } = planRun({ steps: steps(done), latest: null, startedAt, now, lessons: { ids: [], rows: [], blocking: {} } });
+      const inputSteps = steps(done);
+      if (step === "catalog_research") inputSteps.catalog_research = "pending";
+      const { action } = planRun({ steps: inputSteps, latest: null, startedAt, now, catalogResearch: { status: "running" }, lessons: { ids: [], rows: [], blocking: {} } });
       expect(action.kind, step).not.toBe("finish");
     }
   });
@@ -94,7 +120,7 @@ describe("studio planRun", () => {
   it("ends a run older than the time limit", () => {
     const old = new Date(now - MAX_RUN_MS - 1).toISOString();
     expect(planRun({ steps: steps([]), latest: null, startedAt: old, now }).action)
-      .toEqual({ kind: "finish", status: "draft_failed", reason: "Lượt chạy vượt quá 24 giờ." });
+      .toEqual({ kind: "finish", status: "draft_failed", reason: "Lượt chạy vượt quá 48 giờ." });
   });
 
   it("publishes when every step is done", () => {
@@ -331,7 +357,7 @@ describe("studio step owners", () => {
   });
 
   it("places the six agents and keeps code steps without an agent", () => {
-    expect(STEP_ORDER.map((k) => STEP_OWNER[k])).toEqual(["A2", "A2", "A3", "A4", "A5", "A6", "code", "code", "code"]);
+    expect(STEP_ORDER.map((k) => STEP_OWNER[k])).toEqual(["catalog_job", "A2", "A2", "A3", "A4", "A5", "A6", "code", "code", "code"]);
     expect(agentKeyEnv("A1")).toBe("CORELIA_STUDIO_A1_CATALOG_RESEARCH_OPENAI_API_KEY");
     expect(agentKeyEnv("A4")).toBe("CORELIA_STUDIO_A4_CURRICULUM_REVIEW_OPENAI_API_KEY");
   });

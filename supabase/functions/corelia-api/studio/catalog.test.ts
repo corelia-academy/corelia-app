@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   acceptCatalogResearch,
   assembleCatalogBase,
+  boundAppCourses,
   buildCatalogInput,
   CATALOG_RESEARCH_SCHEMA,
   catalogGap,
@@ -24,7 +25,7 @@ import { MAX_TRANSPORT_FAILURES } from "./retry.ts";
 import { SUBMIT_STALE_MS } from "./steps.ts";
 
 const TODAY = "2026-10-23";
-const CTX = { today: TODAY, groupKinds: ["skill", "role"] };
+const CTX = { today: TODAY, groupKinds: ["skill", "role"], hasAppCourses: true };
 
 const crit = (criterion: string, over: Partial<CatalogCriterion> = {}): CatalogCriterion => ({
   criterion,
@@ -93,15 +94,17 @@ describe("CATALOG_RESEARCH_SCHEMA", () => {
     expect(s.properties.status.enum).toEqual(["evidence_ok", "needs_more_sources"]);
     expect(Object.keys(s.properties.web_evidence.items.properties)).toEqual(["evidence_id", "url", "metric", "period", "checked_at"]);
     expect(Object.keys(s.properties.input_evidence.items.properties)).toEqual(["evidence_id", "input_ref", "note"]);
+    expect(s.properties.input_evidence.items.properties.input_ref.pattern).toContain("app_courses");
   });
 });
 
 describe("A1 catalog prompt", () => {
-  it("uses v5 and does not request open_questions", () => {
+  it("uses v7 and does not request open_questions", () => {
     const prompt = PROMPTS["a1-catalog-research"];
-    expect(prompt.version).toBe("v6");
+    expect(prompt.version).toBe("v7");
     expect(prompt.system).not.toContain("open_questions");
     expect(prompt.system).toContain("ít nhất một truy vấn nhắm đúng locale hoặc thị trường của audience");
+    expect(prompt.system).toContain("input_ref = app_courses");
   });
 });
 
@@ -176,7 +179,7 @@ describe("acceptCatalogResearch", () => {
     expect(reason(noRef)).toContain("(input) thiếu input_ref");
   });
 
-  it("input_ref must be groups.<group_kind of the input>.<audience|corelia_direction|other_courses|paths>", () => {
+  it("input_ref supports app_courses and only groups from the input", () => {
     for (const ref of ["groups.skill.audience", "groups.role.other_courses", "groups.skill.paths", "groups.skill.corelia_direction"]) {
       const o = research();
       o.input_evidence[0].input_ref = ref;
@@ -185,6 +188,10 @@ describe("acceptCatalogResearch", () => {
     const unknownGroup = research();
     unknownGroup.input_evidence[0].input_ref = "groups.ecosystem.audience";
     expect(reason(unknownGroup)).toContain("trỏ tới nhóm ecosystem không có trong đầu vào");
+    const appCourses = research();
+    appCourses.input_evidence.push({ evidence_id: "i3", input_ref: "app_courses", note: "khóa đã publish" });
+    expect(acceptCatalogResearch(appCourses, CTX).ok).toBe(true);
+    expect(acceptCatalogResearch(appCourses, { ...CTX, hasAppCourses: false }).ok).toBe(false);
     for (const ref of ["groups.skill.locale", "groups.skill.audience.x", "groups.skill", "course.title", "skill.audience"]) {
       const o = research();
       o.input_evidence[0].input_ref = ref;
@@ -376,8 +383,32 @@ describe("catalog input", () => {
 
   it("first round input has no previous_research, research_gap or previous_attempt", () => {
     const input = buildCatalogInput(assembleCatalogBase(rows()), TODAY, null, null);
-    expect(Object.keys(input).sort()).toEqual(["course", "groups", "platform_formats", "research_period_days", "today"]);
+    expect(Object.keys(input).sort()).toEqual(["app_courses", "course", "groups", "platform_formats", "research_period_days", "today"]);
     expect(input.today).toBe(TODAY);
+    expect(input.app_courses).toMatchObject({ items: [], limit: 30, truncated: false });
+  });
+
+  it("caps the published app catalog, fields and outcomes after deduping by id", () => {
+    const candidates = Array.from({ length: 32 }, (_, index) => ({
+      id: `id-${index}`,
+      updated_at: new Date(Date.UTC(2026, 0, index + 1)).toISOString(),
+      slug: "s".repeat(100),
+      level: "beginner",
+      title: "t".repeat(200),
+      short_description: "d".repeat(300),
+      course_type: "c".repeat(60),
+      learning_outcomes: Array.from({ length: 6 }, () => "o".repeat(140)),
+    }));
+    const bounded = boundAppCourses([...candidates, { ...candidates[0], title: "duplicate" }]);
+    expect(bounded.items).toHaveLength(30);
+    expect(bounded.truncated).toBe(true);
+    expect(bounded.items[0].title.length).toBe(160);
+    expect(bounded.items[0].slug.length).toBe(80);
+    expect(bounded.items[0].short_description.length).toBe(280);
+    expect(bounded.items[0].course_type.length).toBe(48);
+    expect(bounded.items[0].learning_outcomes).toHaveLength(4);
+    expect(bounded.items[0].learning_outcomes[0].length).toBe(120);
+    expect(bounded.items[0].learning_outcomes_truncated).toBe(true);
   });
 
   it("a research round carries the previous record and the gap; a retry carries the rejection", () => {

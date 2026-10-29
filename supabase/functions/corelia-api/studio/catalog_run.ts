@@ -14,7 +14,10 @@ import {
   catalogStatus,
   CatalogInputError,
   planCatalogJob,
+  APP_COURSES_MAX_ITEMS,
+  boundAppCourses,
   type CatalogAction,
+  type AppCourseCandidate,
   type CatalogBase,
   type CatalogGeneration,
   type CatalogRows,
@@ -150,15 +153,75 @@ export async function loadCatalogBase(db: SupabaseClient, courseId: string): Pro
     return p ? [p] : [];
   });
   const kinds = [...new Set(paths.map((p) => p.group_kind))];
-  // Without paths there is nothing more to read: assembleCatalogBase raises course_has_no_path.
-  const [scopes, neighbours] = kinds.length
-    ? await Promise.all([
-      db.from("studio_catalog_scopes").select("group_kind,audience,corelia_direction,locale,research_period_days").in("group_kind", kinds),
-      db.from("studio_course_paths").select("studio_paths!inner(group_kind),studio_courses!inner(id,title,level,status)").in("studio_paths.group_kind", kinds),
-    ])
-    : [{ data: [], error: null }, { data: [], error: null }];
+  if (kinds.length === 0) throw new CatalogInputError("course_has_no_path", "Khóa chưa thuộc path nào nên không có phạm vi để nghiên cứu.");
+
+  const [scopes, neighbours, publicCourses, studioPublishedCourses] = await Promise.all([
+    db.from("studio_catalog_scopes").select("group_kind,audience,corelia_direction,locale,research_period_days").in("group_kind", kinds),
+    db.from("studio_course_paths").select("studio_paths!inner(group_kind),studio_courses!inner(id,title,level,status)").in("studio_paths.group_kind", kinds),
+    db.from("courses")
+      .select("id,slug,updated_at,data", { count: "exact" })
+      .eq("published", true)
+      .order("updated_at", { ascending: false })
+      .order("id", { ascending: true })
+      .limit(APP_COURSES_MAX_ITEMS + 1),
+    db.from("studio_courses")
+      .select("id,title,level,updated_at", { count: "exact" })
+      .eq("status", "published")
+      .order("updated_at", { ascending: false })
+      .order("id", { ascending: true })
+      .limit(APP_COURSES_MAX_ITEMS + 1),
+  ]);
   if (scopes.error) throw new Error(scopes.error.message);
   if (neighbours.error) throw new Error(neighbours.error.message);
+  if (publicCourses.error) throw new Error(publicCourses.error.message);
+  if (studioPublishedCourses.error) throw new Error(studioPublishedCourses.error.message);
+
+  const publicCourseRows = (publicCourses.data ?? []) as { id: string; slug: string; updated_at: string; data: unknown }[];
+  const localeRows = publicCourseRows.length
+    ? await db.from("course_locales").select("course_id,locale,data").in("course_id", publicCourseRows.map((c) => c.id)).in("locale", ["vi", "en"])
+    : { data: [], error: null };
+  if (localeRows.error) throw new Error(localeRows.error.message);
+  const localeByCourse = new Map<string, { locale: string; data: unknown }[]>();
+  for (const locale of (localeRows.data ?? []) as { course_id: string; locale: string; data: unknown }[]) {
+    const rows = localeByCourse.get(locale.course_id) ?? [];
+    rows.push({ locale: locale.locale, data: locale.data });
+    localeByCourse.set(locale.course_id, rows);
+  }
+  const asObject = (value: unknown): Record<string, unknown> => value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+  const publicCandidates: AppCourseCandidate[] = publicCourseRows.map((row) => {
+    const data = asObject(row.data);
+    const i18n = asObject(data.i18n);
+    const locales = localeByCourse.get(row.id) ?? [];
+    const preferred = [i18n.primary_content_locale, "vi", "en"].filter((value): value is string => typeof value === "string");
+    const localized = preferred.map((locale) => locales.find((candidate) => candidate.locale === locale)?.data).find(Boolean);
+    const content = asObject(localized);
+    return {
+      id: row.id,
+      slug: row.slug,
+      updated_at: row.updated_at,
+      level: data.level,
+      title: content.title ?? data.title,
+      short_description: content.short_description ?? data.short_description,
+      course_type: data.course_type,
+      learning_outcomes: content.learning_outcomes ?? data.learning_outcomes,
+    } as AppCourseCandidate;
+  });
+  const studioCandidates: AppCourseCandidate[] = ((studioPublishedCourses.data ?? []) as { id: string; title: string; level: string | null; updated_at: string }[]).map((row) => ({
+    id: row.id,
+    title: row.title,
+    level: row.level,
+    updated_at: row.updated_at,
+    course_type: "ai_generated",
+    slug: "",
+    short_description: "",
+    learning_outcomes: [],
+  }));
+  const sourceTruncated = (publicCourses.count ?? publicCourseRows.length) > publicCourseRows.length
+    || (studioPublishedCourses.count ?? studioCandidates.length) > studioCandidates.length;
+  const bounded = boundAppCourses(
+    [...publicCandidates, ...studioCandidates].filter((course) => course.id !== courseId),
+    sourceTruncated,
+  );
 
   const rows: CatalogRows = {
     courseId,
@@ -170,6 +233,7 @@ export async function loadCatalogBase(db: SupabaseClient, courseId: string): Pro
       const c = n.studio_courses as unknown as { id: string; title: string; level: string | null; status: string };
       return { group_kind: path.group_kind, ...c };
     }),
+    appCourses: { items: bounded.items, truncated: bounded.truncated },
   };
   return assembleCatalogBase(rows);
 }
@@ -296,7 +360,11 @@ async function pollCatalog(db: SupabaseClient, job: JobRow, latest: CatalogGener
   } else {
     const base = await loadBaseOrFinish(db, job);
     if (!base) return;
-    acceptance = acceptCatalogResearch(output, { today: utcDate(Date.now()), groupKinds: base.groups.map((g) => g.group_kind) });
+    acceptance = acceptCatalogResearch(output, {
+      today: utcDate(Date.now()),
+      groupKinds: base.groups.map((g) => g.group_kind),
+      hasAppCourses: base.app_courses.items.length > 0,
+    });
   }
 
   const done = {
