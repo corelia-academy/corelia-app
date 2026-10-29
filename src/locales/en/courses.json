@@ -532,6 +532,7 @@
     "recalculateDuration": "Recalculate duration",
     "previewBanner": "PREVIEW · Progress, submissions and drafts are not saved.",
     "completed": "Completed",
+    "markComplete": "Mark as complete",
     "markIncomplete": "Mark as incomplete",
     "redoFromStart": "Start over",
     "redoConfirm": "Start this exercise over? Your current answers and local draft will be cleared. Previous submissions will stay in your history.",

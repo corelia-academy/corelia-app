@@ -760,15 +760,16 @@ function LearnWorkspace() {
   );
 
   const footerBar = (
-    <div className="grid h-14 shrink-0 grid-cols-[1fr_auto_1fr] items-center border-t border-border bg-background px-3 sm:h-[72px] sm:px-4xl">
-      <span aria-hidden />
-      <div ref={setAskAiSlot} className="flex items-center justify-center" />
-      <div ref={setFooterSlot} className="flex items-center justify-end gap-md" />
+    <div className="pointer-events-none absolute inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 flex justify-center px-3">
+      <div className="pointer-events-auto flex items-center gap-md rounded-xl border border-border-strong bg-surface-float/95 p-1.5 shadow-dropdown backdrop-blur-md [&:not(:has(>div:not(:empty)))]:hidden">
+        <div ref={setAskAiSlot} className="flex items-center empty:hidden" />
+        <div ref={setFooterSlot} className="flex items-center empty:hidden" />
+      </div>
     </div>
   );
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="relative flex h-full flex-col">
       {topBar}
       {isDesktop ? (
         <div className="flex flex-1 overflow-hidden">
@@ -781,8 +782,8 @@ function LearnWorkspace() {
               minSize={40}
               className="min-w-0 bg-background"
             >
-              <div className="flex h-full min-w-0 flex-col">
-                <main className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="relative flex h-full min-w-0 flex-col">
+                <main className="min-h-0 flex-1 overflow-y-auto pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   {lessonContent}
                 </main>
                 {footerBar}
@@ -806,7 +807,7 @@ function LearnWorkspace() {
         </div>
       ) : (
         <>
-          <main className="min-w-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <main className="min-w-0 flex-1 overflow-y-auto pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {lessonContent}
           </main>
           {footerBar}

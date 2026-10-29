@@ -522,6 +522,7 @@
     "recalculateDuration": "重新計算時長",
     "previewBanner": "預覽 · 進度、提交和草稿不會被儲存。",
     "completed": "已完成",
+    "markComplete": "標記為已完成",
     "markIncomplete": "標記為未完成",
     "redoFromStart": "重新開始",
     "redoConfirm": "重新開始此練習？您目前的答案和本機草稿將被清除。先前的提交會保留在紀錄中。",

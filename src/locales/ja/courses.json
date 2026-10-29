@@ -522,6 +522,7 @@
     "recalculateDuration": "所要時間を再計算",
     "previewBanner": "プレビュー · 進捗、提出、下書きは保存されません。",
     "completed": "修了",
+    "markComplete": "完了にする",
     "markIncomplete": "未完了にする",
     "redoFromStart": "最初からやり直す",
     "redoConfirm": "この演習を最初からやり直しますか？現在の回答とローカルの下書きは消去されます。過去の提出は履歴に残ります。",

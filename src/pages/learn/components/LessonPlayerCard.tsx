@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
+import { CheckCircle, CircleNotch } from "@phosphor-icons/react";
 import { useAuth } from "@/stores/authStore";
 import { LessonRenderer } from "@/features/learning/LessonRenderer";
 import { canAskAboutLesson } from "@/features/learning/askAi";
@@ -63,8 +64,9 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
     void queryClient.invalidateQueries({ queryKey: xpAwardNotificationQueryKey });
     if (!active.current) return;
     toast.success(t("learning.completedToast"), { position: "top-right" });
-    if (nextLesson && lesson && ["article","video","practice"].includes(getLessonFormat(lesson))) onNavigateToLesson(nextLesson.id);
-  }, [mode, onMarkComplete, lesson, queryClient, nextLesson, onNavigateToLesson, t]);
+    // The floating bar is a complete/incomplete toggle, so it stays on the lesson.
+    if (actionSlot === undefined && nextLesson && lesson && ["article","video","practice"].includes(getLessonFormat(lesson))) onNavigateToLesson(nextLesson.id);
+  }, [mode, onMarkComplete, lesson, queryClient, nextLesson, onNavigateToLesson, t, actionSlot]);
   if (!lesson || !courseId) return <p className="p-6">{t("learning.unavailable")}</p>;
   const resources = validateLessonResources(lesson.resources ?? [], lesson.id, "vi", true).length ? [] : lesson.resources ?? [];
   const run = async () => {
@@ -140,10 +142,13 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
     </footer>
     )}
     {inFooter && actionSlot && createPortal(
-      <>
-        {canReset && completed && <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={busy || action?.pending} onClick={() => void reset(false)}>{t("learning.markIncomplete")}</Button>}
-        <Button type="button" variant="cta" hierarchy="primary" size="small" disabled={primaryDisabled} onClick={() => void run()}>{label}</Button>
-      </>,
+      // One toggle: complete via the lesson's own action, uncomplete via reset.
+      <Button type="button" variant="cta" hierarchy={completed ? "secondary" : "primary"} size="small" aria-pressed={completed}
+        disabled={completed ? !canReset || busy || action?.pending : primaryDisabled}
+        onClick={() => void (completed ? reset(false) : run())}
+        leadingIcon={busy ? <CircleNotch className="animate-spin" aria-hidden /> : <CheckCircle weight={completed ? "fill" : "regular"} className={completed ? "text-success" : undefined} aria-hidden />}>
+        {busy ? t("learning.saving") : completed ? t(canReset ? "learning.markIncomplete" : "learning.completed") : action?.label === t("learning.completeContinue") ? t("learning.markComplete") : label}
+      </Button>,
       actionSlot,
     )}
     {inFooter && askAiSlot && canAskAboutLesson(lesson) && createPortal(<AskAiMenu lesson={lesson} courseTitle={courseTitle} />, askAiSlot)}
