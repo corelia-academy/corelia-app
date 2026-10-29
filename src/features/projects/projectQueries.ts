@@ -1,7 +1,9 @@
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 
 import {
+  countPublicProjects,
   getProjectBySlugOrId,
+  getPublicProjectEntriesByIds,
   listPublicProjects,
   type PublicProjectSort,
   type PublicProjectSourceFilter,
@@ -20,9 +22,12 @@ export const projectKeys = {
     hackathonId = "all",
     taxonomyKey = "all",
   ) => [...projectKeys.all, "directory", locale, source, sort, hackathonId, taxonomyKey] as const,
+  publicCount: () => [...projectKeys.all, "public-count"] as const,
   detail: (projectId: string, locale: string) =>
     [...projectKeys.all, "detail", projectId, locale] as const,
   teams: (projectIds: string[]) => [...projectKeys.all, "teams", ...projectIds] as const,
+  entriesByIds: (projectIds: string[], locale: string) =>
+    [...projectKeys.all, "entries", locale, ...projectIds] as const,
 };
 
 export function publicProjectTeamsQueryOptions(projectIds: string[]) {
@@ -31,6 +36,28 @@ export function publicProjectTeamsQueryOptions(projectIds: string[]) {
     queryKey: projectKeys.teams(ids),
     queryFn: () => listPublicProjectTeams(ids),
     enabled: ids.length > 0,
+    staleTime: 60_000,
+    meta: publicMeta,
+  });
+}
+
+/** Project cards for a known set of ids (e.g. global search results); keeps the caller's id order. */
+export function publicProjectEntriesByIdsQueryOptions(projectIds: string[], locale: string) {
+  const ids = Array.from(new Set(projectIds.map((id) => id.trim()).filter(Boolean)));
+  return queryOptions({
+    queryKey: projectKeys.entriesByIds(ids, locale),
+    queryFn: () => getPublicProjectEntriesByIds(ids, locale),
+    enabled: ids.length > 0,
+    staleTime: 60_000,
+    placeholderData: keepPreviousData,
+    meta: publicMeta,
+  });
+}
+
+export function publicProjectCountQueryOptions() {
+  return queryOptions({
+    queryKey: projectKeys.publicCount(),
+    queryFn: countPublicProjects,
     staleTime: 60_000,
     meta: publicMeta,
   });
@@ -46,6 +73,7 @@ export function publicProjectDirectoryQueryOptions(
     sectorIds?: string[];
     techStackIds?: string[];
     winnerProjectIds?: string[];
+    likedProjectIds?: string[];
   } = {},
 ) {
   const taxonomyKey = JSON.stringify([
@@ -53,6 +81,7 @@ export function publicProjectDirectoryQueryOptions(
     filters.sectorIds ?? [],
     filters.techStackIds ?? [],
     filters.winnerProjectIds ?? [],
+    ...(filters.likedProjectIds ? [filters.likedProjectIds] : []),
   ]);
   return infiniteQueryOptions({
     queryKey: projectKeys.directory(

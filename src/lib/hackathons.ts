@@ -3,7 +3,7 @@ import { saveProject } from "@/lib/projectSubmission";
 import i18n from "@/i18n";
 import { supabase } from "@/lib/supabase";
 import { removeUndefinedFields } from "@/lib/utils";
-import { deleteStorageObjectByPath } from "@/lib/storage";
+import { deleteContestMediaByPath, deleteStorageObjectByPath } from "@/lib/storage";
 import { getProfileForUser } from "@/lib/profile";
 import { normalizeContentLocale, pickContentLocale } from "@/lib/entityLocales";
 import { calculateContestScoreTotal } from "@/lib/hackathonScoreValidation";
@@ -928,9 +928,9 @@ export async function deleteContest(contestId: string): Promise<void> {
   await requireContestManager();
 
   const existing = await getContest(contestId);
-  await deleteStorageObjectByPath(existing?.cover_image_path);
-  await deleteStorageObjectByPath(existing?.thumbnail_path);
-  await deleteStorageObjectByPath(existing?.host?.logo_path);
+  await deleteContestMediaByPath(existing?.cover_image_path);
+  await deleteContestMediaByPath(existing?.thumbnail_path);
+  await deleteContestMediaByPath(existing?.host?.logo_path);
   for (const p of existing?.organizational_partners ?? []) {
     await deleteStorageObjectByPath(p.logo_path);
   }

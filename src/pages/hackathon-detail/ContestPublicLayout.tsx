@@ -3,7 +3,6 @@ import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { gsap } from "gsap";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  ArrowLeft,
   Clock,
   FacebookLogo as PhosphorFacebookLogo,
   Globe,
@@ -18,6 +17,7 @@ import { NavLink, Outlet, useLocation, useNavigate, useParams } from "react-rout
 import { toast } from "sonner";
 
 import { PageContainer } from "@/components/layouts/PagePrimitives";
+import { BackLink } from "@/components/navigation/BackLink";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -43,8 +43,10 @@ import type { Contest, ContestRegistration } from "@/types/hackathons";
 import { ContestDetailLoadingCard } from "@/pages/hackathon-detail/components/ContestDetailGateStates";
 import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 import { formatPrizeAmount } from "./utils/formatPrizeAmount";
-import { formatVietnamDateTime } from "./utils/formatVietnamDateTime";
+import { formatEventDateTime } from "./utils/formatEventDateTime";
 import { getHackathonSocialPostEmbed } from "@/lib/hackathonSocialPosts";
+import { listHackathonCollaboratorProjects } from "@/lib/projectCollaboration";
+import { timeZoneDisplayLabel } from "@/lib/timezone";
 
 const TABS = ["overview", "posts", "prizes", "timeline", "projects", "resources"] as const;
 
@@ -53,6 +55,8 @@ export type HackathonOutletContext = {
   registration: ContestRegistration | null;
   submission: Awaited<ReturnType<typeof getMyContestSubmission>> | null;
   submissionLoading: boolean;
+  collaboratorProjects: Awaited<ReturnType<typeof listHackathonCollaboratorProjects>>;
+  collaboratorProjectsLoading: boolean;
   submissionClosed: boolean;
 };
 
@@ -112,6 +116,12 @@ export default function ContestPublicLayout() {
     staleTime: 30_000,
   });
   const submissionQuery = useQuery({ queryKey: ["projects", "my-submission", contest?.id, user?.id], queryFn: () => getMyContestSubmission(contest!.id, user), enabled: Boolean(contest && user && !previewRequested), staleTime: 0 });
+  const collaboratorProjectsQuery = useQuery({
+    queryKey: ["projects", "my-hackathon-collaborations", contest?.id, user?.id],
+    queryFn: () => listHackathonCollaboratorProjects(contest!.id, user!.id),
+    enabled: Boolean(contest && user && !previewRequested),
+    staleTime: 0,
+  });
   const registration = registrationQuery.data ?? null;
   const canRegister = Boolean(contest && canRegisterForContest(contest));
   const [nowMs] = useState(() => Date.now());
@@ -289,13 +299,9 @@ export default function ContestPublicLayout() {
     <div className="pb-10">
       {previewAuthorized ? <div className="border-b border-warning/30 bg-warning-muted px-4 py-2 text-center text-sm font-medium text-foreground" role="status">{t("public.previewNotice")}</div> : null}
       <PageContainer width="default" className="px-0 pb-0 pt-0 sm:px-6 sm:pt-5 lg:px-8 lg:pt-12 lg:pb-0">
-        <NavLink
-          to="/hackathons"
-          className="mb-4xl inline-flex min-h-8 items-center gap-1 text-xs font-medium text-foreground hover:text-foreground-muted focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-        >
-          <ArrowLeft className="size-3" weight="duotone" aria-hidden />
+        <BackLink to="/hackathons" className="mb-4xl">
           {t("detail.errorState.backToList")}
-        </NavLink>
+        </BackLink>
         <header className="mobile-bleed-surface min-w-0">
           {contest.cover_image_url ? (
             <div className="aspect-[21/9] w-full overflow-hidden rounded-xl bg-surface-raised">
@@ -400,13 +406,13 @@ export default function ContestPublicLayout() {
 
         <div data-hackathon-metadata className="mobile-bleed-grid mt-8 grid min-w-0 gap-y-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-x-4 sm:gap-y-0 lg:gap-x-8">
           <NavLink to={`/hackathons/${slug}/prizes${previewRequested ? "?preview=1" : ""}`} className="group min-w-0 px-4 py-4 outline-none transition-colors hover:bg-surface-base focus-visible:rounded-lg focus-visible:ring-2 focus-visible:ring-primary/40 sm:px-0 lg:py-0">
-            <div className="font-display text-lg font-medium leading-[1.2] text-blue-400">{t("public.prizes.total")}</div>
+            <div className="font-display text-lg font-medium leading-[1.2] text-hackathon-stat-label">{t("public.prizes.total")}</div>
             <div className="mt-2 flex flex-wrap items-baseline gap-x-2"><span className="font-display text-[28px] font-medium leading-[1.2] tracking-tight text-foreground tabular-nums [overflow-wrap:anywhere]">{contest.prize_pool?.amount ? formatPrizeAmount(contest.prize_pool.amount, locale) : "—"}</span>{contest.prize_pool?.currency ? <span className="text-sm text-foreground-muted lg:font-display lg:text-[28px] lg:font-medium lg:leading-[1.2]">{contest.prize_pool.currency}</span> : null}</div>
           </NavLink>
           <Separator className="sm:hidden" />
           <Separator orientation="vertical" className="hidden sm:block" />
           <div className="min-w-0 px-4 py-4 sm:px-0 lg:py-0">
-            <div className="flex items-center gap-2 font-display text-lg font-medium leading-[1.2] text-blue-400">
+            <div className="flex items-center gap-2 font-display text-lg font-medium leading-[1.2] text-hackathon-stat-label">
               {t("public.registrationDeadline")}
               <span className="relative h-5 w-6 shrink-0">
                 <TooltipPreview
@@ -416,16 +422,16 @@ export default function ContestPublicLayout() {
                   triggerLabel={t("public.registrationDeadline")}
                   triggerClassName="absolute left-1/2 top-1/2 size-6 -translate-x-1/2 -translate-y-1/2 [@media(pointer:coarse)]:size-11"
                 >
-                  {t("public.timezoneLabel")}
+                  {timeZoneDisplayLabel()}
                 </TooltipPreview>
               </span>
             </div>
-            <div className="mt-2 font-display text-[28px] font-medium leading-[1.2] text-foreground">{effectiveDeadline ? <time dateTime={effectiveDeadline}>{formatVietnamDateTime(effectiveDeadline, locale, { includeTimezone: false, compact: true })}</time> : "—"}</div>
+            <div className="mt-2 font-display text-[28px] font-medium leading-[1.2] text-foreground">{effectiveDeadline ? <time dateTime={effectiveDeadline}>{formatEventDateTime(effectiveDeadline, locale, { includeTimezone: false, compact: true })}</time> : "—"}</div>
           </div>
           <Separator className="sm:hidden" />
           <Separator orientation="vertical" className="hidden sm:block" />
           <div className="min-w-0 px-4 py-4 sm:px-0 lg:py-0">
-            <div className="flex items-center gap-2 font-display text-lg font-medium leading-[1.2] text-blue-400">
+            <div className="flex items-center gap-2 font-display text-lg font-medium leading-[1.2] text-hackathon-stat-label">
               {t("public.submissionDeadline")}
               <span className="relative h-5 w-6 shrink-0">
                 <TooltipPreview
@@ -435,11 +441,11 @@ export default function ContestPublicLayout() {
                   triggerLabel={t("public.submissionDeadline")}
                   triggerClassName="absolute left-1/2 top-1/2 size-6 -translate-x-1/2 -translate-y-1/2 [@media(pointer:coarse)]:size-11"
                 >
-                  {t("public.timezoneLabel")}
+                  {timeZoneDisplayLabel()}
                 </TooltipPreview>
               </span>
             </div>
-            <div className="mt-2 font-display text-[28px] font-medium leading-[1.2] text-foreground">{effectiveDeadline ? <time dateTime={effectiveDeadline}>{formatVietnamDateTime(effectiveDeadline, locale, { includeTimezone: false, compact: true })}</time> : "—"}</div>
+            <div className="mt-2 font-display text-[28px] font-medium leading-[1.2] text-foreground">{effectiveDeadline ? <time dateTime={effectiveDeadline}>{formatEventDateTime(effectiveDeadline, locale, { includeTimezone: false, compact: true })}</time> : "—"}</div>
           </div>
         </div>
       </PageContainer>
@@ -483,7 +489,17 @@ export default function ContestPublicLayout() {
 
         <PageContainer width="default" className="px-0 pt-3xl sm:px-6 sm:pt-3xl lg:px-8">
           <Tabs.Panel value={activeTab} className="mobile-bleed-grid">
-            <Outlet context={{ contest, registration, submission: submissionQuery.data ?? null, submissionLoading: Boolean(user && !previewRequested && submissionQuery.isPending), submissionClosed } satisfies HackathonOutletContext} />
+            <Outlet
+              context={{
+                contest,
+                registration,
+                submission: submissionQuery.data ?? null,
+                submissionLoading: Boolean(user && !previewRequested && submissionQuery.isPending),
+                collaboratorProjects: collaboratorProjectsQuery.data ?? [],
+                collaboratorProjectsLoading: Boolean(user && !previewRequested && collaboratorProjectsQuery.isPending),
+                submissionClosed,
+              } satisfies HackathonOutletContext}
+            />
           </Tabs.Panel>
         </PageContainer>
       </Tabs.Root>

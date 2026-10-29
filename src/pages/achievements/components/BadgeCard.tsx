@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { BADGE_PLACEHOLDER } from "../constants";
 import type { BadgeItem, ModalItem } from "../types";
 import { OcClaimBadge } from "./OcClaimBadge";
+import { appPath } from "@/lib/appUrl";
 
 export function BadgeCard({
   badge,
@@ -81,7 +82,7 @@ export function BadgeCard({
           ) : (
             <span title={t("achievements.badges.ocDot.unclaimedTooltip")}>
               <img
-                src="/open-campus-edu-logo.png"
+                src={appPath("/open-campus-edu-logo.png")}
                 alt="OC"
                 className={cn("size-4 rounded-full sm:size-5", isPending ? "animate-pulse opacity-100" : "opacity-50")}
               />

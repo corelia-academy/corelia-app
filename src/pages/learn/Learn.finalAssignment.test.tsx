@@ -35,7 +35,7 @@ let cleanup: (() => void) | undefined;
 afterEach(() => { cleanup?.(); window.localStorage.clear(); vi.clearAllMocks(); vi.restoreAllMocks(); state.access = true; state.progressPercent = 0; state.course.is_updating = false; state.course.final_assignment_title = "Task Manager"; state.submission = null; });
 
 async function mount(path: string) {
-  const router = createMemoryRouter(["/learn/:courseId", "/learn/:courseId/lesson/:lessonId", "/learn/:courseId/final-assignment"].map(path => ({ path, element: <Learn /> })), { initialEntries: [path] });
+  const router = createMemoryRouter(["/study/:courseId", "/study/:courseId/lesson/:lessonId", "/study/:courseId/final-assignment"].map(path => ({ path, element: <Learn /> })), { initialEntries: [path] });
   const client = new QueryClient(); const host = document.createElement("div"); document.body.append(host); const root = createRoot(host);
   cleanup = () => { act(() => root.unmount()); router.dispose(); client.clear(); host.remove(); };
   await act(async () => root.render(<QueryClientProvider client={client}><RouterProvider router={router} /></QueryClientProvider>));
@@ -45,17 +45,17 @@ async function mount(path: string) {
 it.each([false, true])("separates article and final assignment with Back/Forward (desktop=%s)", async desktop => {
   const match = window.matchMedia.bind(window);
   vi.spyOn(window, "matchMedia").mockImplementation(query => Object.defineProperty(match(query), "matches", { value: desktop }));
-  const { host, router } = await mount("/learn/course/lesson/article");
+  const { host, router } = await mount("/study/course/lesson/article");
   expect(host.querySelector('[data-testid="article"]')?.textContent).toBe("Article body");
   expect(host.querySelector("#final-assignment")).toBeNull();
-  const link = host.querySelector<HTMLAnchorElement>('a[href="/learn/course/final-assignment"]')!;
+  const link = host.querySelector<HTMLAnchorElement>('a[href="/study/course/final-assignment"]')!;
   expect(link).toBeTruthy();
   vi.mocked(recordLearningEvent).mockClear();
   await act(async () => link.click());
-  expect(router.state.location.pathname).toBe("/learn/course/final-assignment");
+  expect(router.state.location.pathname).toBe("/study/course/final-assignment");
   expect(host.querySelector('[data-testid="article"]')).toBeNull();
   expect(host.querySelector("#final-assignment h1")?.textContent).toBe("Task Manager");
-  expect(host.querySelector('a[aria-current="page"]')?.getAttribute("href")).toBe("/learn/course/final-assignment");
+  expect(host.querySelector('a[aria-current="page"]')?.getAttribute("href")).toBe("/study/course/final-assignment");
   expect(recordLearningEvent).not.toHaveBeenCalled();
   await act(async () => { await router.navigate(-1); });
   expect(host.querySelector('[data-testid="article"]')).not.toBeNull();
@@ -67,14 +67,14 @@ it.each([false, true])("separates article and final assignment with Back/Forward
 it("shows saved progress without syncing completion while the course is updating", async () => {
   state.course.is_updating = true;
   state.progressPercent = 100;
-  const { host } = await mount("/learn/course/lesson/article");
+  const { host } = await mount("/study/course/lesson/article");
   expect(host.textContent).not.toContain("detail.courseDetail.courseUpdatingCompletionNotice");
   expect(syncCourseCompletion).not.toHaveBeenCalled();
 });
 
 it("opens the final assignment directly, submits, and restores its status on reload", async () => {
-  const { host, router } = await mount("/learn/course/final-assignment");
-  expect(router.state.location.pathname).toBe("/learn/course/final-assignment");
+  const { host, router } = await mount("/study/course/final-assignment");
+  expect(router.state.location.pathname).toBe("/study/course/final-assignment");
   expect(recordLearningEvent).not.toHaveBeenCalled();
   const input = host.querySelector<HTMLInputElement>("#final-assignment input")!;
   act(() => { Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), "value")!.set!.call(input, "My project notes"); input.dispatchEvent(new Event("input", { bubbles: true })); });
@@ -82,15 +82,15 @@ it("opens the final assignment directly, submits, and restores its status on rel
   expect(state.submit).toHaveBeenCalledWith(expect.objectContaining({ artifacts: { notes: "My project notes" } }));
   cleanup?.();
   state.submission = { status: "pending" };
-  const reloaded = await mount("/learn/course/final-assignment");
+  const reloaded = await mount("/study/course/final-assignment");
   expect(reloaded.host.textContent).toContain("detail.learn.finalAssignment.status.pending");
 });
 
 it.each(["missing", "denied"])("shows a clear unavailable state when %s", async reason => {
   if (reason === "missing") state.course.final_assignment_title = "";
   else state.access = false;
-  const { host, router } = await mount("/learn/course/final-assignment");
-  expect(router.state.location.pathname).toBe("/learn/course/final-assignment");
+  const { host, router } = await mount("/study/course/final-assignment");
+  expect(router.state.location.pathname).toBe("/study/course/final-assignment");
   expect(host.querySelector("#final-assignment")).toBeNull();
   expect(host.textContent).toContain(reason === "missing" ? "detail.learn.finalAssignmentUnavailable" : "detail.learn.finalAssignmentAccessRequired");
   expect(host.querySelector('a[href="/courses/course"]')).not.toBeNull();
@@ -99,13 +99,13 @@ it.each(["missing", "denied"])("shows a clear unavailable state when %s", async 
 
 it("keeps the practice handoff across routes when browser storage is blocked", async () => {
   vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => { throw new Error("Storage denied"); });
-  const { host, router } = await mount("/learn/course/lesson/article");
+  const { host, router } = await mount("/study/course/lesson/article");
   act(() => {
     window.dispatchEvent(new CustomEvent("learning:final-artifacts", { detail: { userId: "learner", courseId: "course", artifacts: { notes: "Completed practice" } } }));
     window.dispatchEvent(new CustomEvent("learning:final-artifacts", { detail: { userId: "other", courseId: "course", artifacts: { notes: "Other user" } } }));
     window.dispatchEvent(new CustomEvent("learning:final-artifacts", { detail: { userId: "learner", courseId: "other", artifacts: { notes: "Other course" } } }));
   });
-  await act(async () => { await router.navigate("/learn/course/final-assignment"); });
+  await act(async () => { await router.navigate("/study/course/final-assignment"); });
   expect(host.querySelector<HTMLInputElement>("#final-assignment input")?.value).toBe("Completed practice");
 });
 
@@ -114,7 +114,7 @@ it("keeps the resizable curriculum on the right and ignores old left-sidebar siz
   const match = window.matchMedia.bind(window);
   vi.spyOn(window, "matchMedia").mockImplementation(query => Object.defineProperty(match(query), "matches", { value: true }));
   localStorage.setItem("resizable-panels:learn-layout-curriculum", "[24,76]");
-  const { host } = await mount("/learn/course/lesson/article");
+  const { host } = await mount("/study/course/lesson/article");
   const panels = host.querySelectorAll<HTMLElement>('[data-slot="resizable-panel"]');
   expect(panels).toHaveLength(2);
   expect(panels[0].querySelector("main")).not.toBeNull();
@@ -136,20 +136,20 @@ it("keeps the resizable curriculum on the right and ignores old left-sidebar siz
   await act(async () => window.dispatchEvent(new PointerEvent("pointerup", { pointerId: 1 })));
   expect(panels[1].style.flexGrow).toBe("30");
   cleanup?.();
-  const reloaded = await mount("/learn/course/lesson/article");
+  const reloaded = await mount("/study/course/lesson/article");
   expect(reloaded.host.querySelectorAll<HTMLElement>('[data-slot="resizable-panel"]')[1].style.flexGrow).toBe("30");
 });
 
 it("opens the mobile navigation from the right with both sidebar tabs", async () => {
-  const { host } = await mount("/learn/course/lesson/article");
+  const { host } = await mount("/study/course/lesson/article");
   const sheet = host.querySelector('[data-sheet-side="right"]')!;
   expect(sheet).not.toBeNull();
   expect(sheet.querySelectorAll('[role="tab"]')).toHaveLength(2);
 });
 
 it("remounts the mobile panel after navigating to another lesson or the final assignment", async () => {
-  const { host, router } = await mount("/learn/course/lesson/article");
+  const { host, router } = await mount("/study/course/lesson/article");
   const firstSheet = host.querySelector('[data-sheet-side="right"]');
-  await act(async () => { await router.navigate("/learn/course/final-assignment"); });
+  await act(async () => { await router.navigate("/study/course/final-assignment"); });
   expect(host.querySelector('[data-sheet-side="right"]')).not.toBe(firstSheet);
 });

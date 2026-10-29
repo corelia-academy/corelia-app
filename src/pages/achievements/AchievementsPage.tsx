@@ -12,6 +12,7 @@ import { CertificateCard } from "./components/CertificateCard";
 import { OcCredentialModal } from "./components/OcCredentialModal";
 import { useAchievementsPage } from "./hooks/useAchievementsPage";
 import { Skeleton } from "@/components/ui/skeleton";
+import { appPath } from "@/lib/appUrl";
 
 type VaultKey = "certificates" | "onchain";
 
@@ -138,7 +139,7 @@ export default function AchievementsPage() {
           <button type="button" aria-expanded={openVault === "onchain"} aria-controls="onchain-vault" onClick={() => toggleVault("onchain")} className="flex w-full min-w-0 items-center justify-between gap-3 p-4 text-left transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:p-6">
             <span className="flex min-w-0 items-center gap-3">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 sm:size-11">
-                <img src="/open-campus-edu-logo.png" alt="" className="size-5 rounded-full" />
+                <img src={appPath("/open-campus-edu-logo.png")} alt="" className="size-5 rounded-full" />
               </span>
               <span className="min-w-0">
                 <span className="block text-lg font-medium text-foreground">{t("achievements.vaults.onchain.title")}</span>

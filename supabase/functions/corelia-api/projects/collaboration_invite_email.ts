@@ -1,5 +1,6 @@
 import { isAuthFailure } from "../lib/authz.ts";
 import { json } from "../lib/http.ts";
+import { consumeRateLimit } from "../lib/rate_limit.ts";
 import { buildProjectCollaborationInviteEmail } from "../lib/mail/project_collaboration_invite_body.ts";
 import { resolveAppUrl } from "../lib/mail/layout.ts";
 import { claimOutboxLease, commitOutboxSuccess, commitOutboxFailure, releaseOutboxUnconfigured, persistOutboxDispatch } from "../lib/mail/outbox.ts";
@@ -66,6 +67,9 @@ export async function handleProjectCollaborationInviteEmail(
     if (new Date(String(invite.expires_at)).getTime() <= Date.now()) {
       return json({ message: "invite_expired" }, 409);
     }
+    // Cancel-and-reinvite creates a new invite id each time, so the per-invite
+    // outbox dedupe alone does not bound how many emails a sender can trigger.
+    await consumeRateLimit(db, "project_invite_email", sender.id, 30, 3600);
 
     const inviteIdempotencyKey = inviteId;
     // V-01a: Fail-closed on outbox query error before modifying any state
@@ -496,6 +500,7 @@ export async function handleProjectCollaborationInviteEmail(
     const msg = e instanceof Error ? e.message : "unknown";
     if (isAuthFailure(msg)) return json({ message: "unauthenticated" }, 401);
     console.error("[corelia-api] projects.collaborationInvite.sendEmail", e);
+    if (msg.startsWith("rate_limited:")) return json({ message: msg }, 429);
     return json({ message: "internal_error" }, 500);
   }
 }

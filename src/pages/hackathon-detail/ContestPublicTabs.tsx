@@ -2,13 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import {
   CalendarDots,
-  CaretDown,
   Coins,
+  Eye,
   FolderOpen,
+  FolderSimple,
   Package,
+  PencilSimple,
 } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation, useOutletContext, useSearchParams } from "react-router";
+
+import { feedRelativeTime } from "@/lib/feedRelativeTime";
 
 import { EmptyState, PageSectionCard } from "@/components/layouts/PagePrimitives";
 import { Markdown } from "@/components/markdown/Markdown";
@@ -18,9 +22,11 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItemContent,
+  DropdownMenuList,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuTrigger,
+  DropdownMenuTriggerWithIndicator,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -32,14 +38,16 @@ import {
 } from "@/features/projects/projectQueries";
 import { useAuth } from "@/stores/authStore";
 import { projectHeartsQueryOptions } from "@/features/projects/projectSocialQueries";
+import { projectSavesQueryOptions } from "@/features/projects/projectSaveQueries";
 import { winnerProjectOrder } from "@/lib/hackathonContract";
 import { canEditContestProject } from "@/lib/hackathons";
 import type { HackathonOutletContext } from "./ContestPublicLayout";
 import { ContestPreparationCard } from "./components/ContestPreparationCard";
 import { formatPrizeAmount } from "./utils/formatPrizeAmount";
-import { formatVietnamDateTime } from "./utils/formatVietnamDateTime";
+import { formatEventDateTime } from "./utils/formatEventDateTime";
 import { listProjectTaxonomyOptions, projectTaxonomyNames } from "@/lib/projectTaxonomy";
 import { getHackathonSocialPostEmbed } from "@/lib/hackathonSocialPosts";
+import { timeZoneOffsetLabel, resolvedTimeZone } from "@/lib/timezone";
 import { useContestLearningLinks } from "./hooks/useContestLearningLinks";
 
 const HACKATHON_TAB_TITLE_CLASS =
@@ -56,36 +64,116 @@ function EmptyTab({ icon, title }: { icon: React.ReactNode; title: string }) {
 }
 
 function HackathonProjectSidebar() {
-  const { contest, registration, submission, submissionLoading, submissionClosed } = useOutletContext<HackathonOutletContext>();
-  const { t } = useTranslation("contests");
-  const projectCanEdit = Boolean(submission?.project_id && canEditContestProject(contest));
-  const projectPath = submission?.project_id
-    ? projectCanEdit
-      ? `/projects/${submission.project_id}/edit`
-      : `/projects/${submission.project_id}`
-    : null;
+  const {
+    contest,
+    registration,
+    submission,
+    submissionLoading,
+    collaboratorProjects,
+    collaboratorProjectsLoading,
+    submissionClosed,
+  } = useOutletContext<HackathonOutletContext>();
+  const { user } = useAuth();
+  const { t, i18n } = useTranslation("contests");
+  const sidebarProjects = useMemo(() => {
+    const byId = new Map<
+      string,
+      { id: string; title: string | null; updatedAt: string | null; isCreator: boolean }
+    >();
+
+    if (submission?.project_id) {
+      byId.set(submission.project_id, {
+        id: submission.project_id,
+        title: submission.title ?? null,
+        updatedAt: submission.updated_at || submission.submitted_at || null,
+        isCreator: true,
+      });
+    }
+
+    for (const project of collaboratorProjects) {
+      if (!byId.has(project.id)) {
+        byId.set(project.id, {
+          id: project.id,
+          title: project.title,
+          updatedAt: project.updated_at,
+          isCreator: project.owner_id === user?.id,
+        });
+      }
+    }
+
+    return Array.from(byId.values());
+  }, [collaboratorProjects, submission, user?.id]);
+  const [now] = useState(() => Date.now());
 
   return (
     <div className="min-w-0 space-y-0 xl:sticky xl:top-6 xl:z-40 xl:self-start">
-      <aside data-hackathon-card className="min-w-0 flex flex-col gap-5 rounded-2xl border border-border bg-surface-base p-5 xl:px-4 xl:py-3">
-        <div className="flex flex-col gap-2">
-          <h2 data-hackathon-card-title className="font-display text-base font-medium leading-6 tracking-[-0.32px] text-foreground">{t("public.myProject.title")}</h2>
-          <Separator />
-        </div>
-        {!registration ? (
-          <div className="space-y-5">
-            <p className="text-sm leading-6 text-foreground-muted xl:leading-[1.4] xl:tracking-[0.28px]">{t("public.myProject.registerRequiredDescription")}</p>
-            <Button type="button" variant="cta" hierarchy="secondary" size="small" data-hackathon-control className="w-full rounded-lg" disabled>{t("public.myProject.registerRequired")}</Button>
-          </div>
-        ) : submissionLoading ? (
+      <aside data-hackathon-card className="min-w-0 flex flex-col gap-md rounded-2xl border border-border bg-surface-base pt-lg px-xl pb-xl">
+        <h2 data-hackathon-card-title className="font-display text-base font-medium leading-6 tracking-[-0.32px] text-foreground">{t("public.myProject.title")}</h2>
+        {submissionLoading || collaboratorProjectsLoading ? (
           <div className="space-y-3" aria-busy="true" aria-label={t("public.myProject.loading")}>
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-10 w-full rounded-lg" />
           </div>
-        ) : projectPath ? (
+        ) : sidebarProjects.length > 0 ? (
+          <>
+            {sidebarProjects.map((project) => {
+              const projectCanEdit = Boolean(project.isCreator && canEditContestProject(contest));
+              const projectPath = projectCanEdit
+                ? `/projects/${project.id}/edit`
+                : `/projects/${project.id}`;
+              const relativeTime = project.updatedAt
+                ? feedRelativeTime(project.updatedAt, now, i18n.language, t("public.myProject.justNow"))
+                : "";
+              const updatedText = relativeTime
+                ? t("public.myProject.updatedAt", { time: relativeTime })
+                : "";
+
+              return (
+                <div key={project.id} className="flex items-center justify-between gap-3 py-md px-0">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <FolderSimple className="size-5 shrink-0 text-foreground-muted" weight="duotone" aria-hidden />
+                    <div className="min-w-0">
+                      <span className="block truncate text-sm font-medium leading-tight text-foreground">
+                        {project.title || t("public.myProject.untitled")}
+                      </span>
+                      {updatedText ? <p className="mt-1 truncate text-xs text-foreground-muted">{updatedText}</p> : null}
+                    </div>
+                  </div>
+                  {projectCanEdit ? (
+                    <Button
+                      render={<NavLink to={projectPath} />}
+                      nativeButton={false}
+                      hierarchy="primary"
+                      size="small"
+                      iconOnly
+                      data-hackathon-control
+                      aria-label={t("public.myProject.edit")}
+                      title={t("public.myProject.edit")}
+                    >
+                      <PencilSimple weight="duotone" aria-hidden />
+                    </Button>
+                  ) : (
+                    <Button
+                      render={<NavLink to={projectPath} />}
+                      nativeButton={false}
+                      hierarchy="tertiary"
+                      size="small"
+                      iconOnly
+                      data-hackathon-control
+                      aria-label={t("public.myProject.view")}
+                      title={t("public.myProject.view")}
+                    >
+                      <Eye weight="duotone" aria-hidden />
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+          </>
+        ) : !registration ? (
           <div className="space-y-5">
-            <p className="break-words text-sm font-medium text-foreground xl:leading-[1.4] xl:tracking-[0.28px]">{submission?.title || t("public.myProject.untitled")}</p>
-            <Button render={<NavLink to={projectPath} />} nativeButton={false} variant="cta" hierarchy="secondary" size="small" data-hackathon-control className="w-full rounded-lg">{projectCanEdit ? t("public.myProject.edit") : t("public.myProject.view")}</Button>
+            <p className="text-sm leading-6 text-foreground-muted xl:leading-[1.4] xl:tracking-[0.28px]">{t("public.myProject.registerRequiredDescription")}</p>
+            <Button type="button" variant="cta" hierarchy="primary" size="small" data-hackathon-control className="w-full rounded-lg capitalize" disabled>{t("public.myProject.create")}</Button>
           </div>
         ) : (
           <div className="space-y-5">
@@ -99,8 +187,7 @@ function HackathonProjectSidebar() {
         )}
       </aside>
       {contest.slug && contest.status !== "draft" ? (
-        <div className="mx-4 sm:mx-0">
-          <Separator className="my-6" />
+        <div className="mt-6 mx-4 sm:mx-0">
           <ContestPreparationCard contest={contest} />
         </div>
       ) : null}
@@ -192,6 +279,7 @@ export function HackathonTimelineTab() {
   const { contest } = useOutletContext<HackathonOutletContext>();
   const { t, i18n } = useTranslation("contests");
   const locale = i18n.resolvedLanguage ?? i18n.language;
+  const [now] = useState(() => Date.now());
   const timeline = [...(contest.timeline ?? [])].sort((a, b) => a.sort_order - b.sort_order || a.starts_at.localeCompare(b.starts_at));
   if (timeline.length === 0) {
     return (
@@ -201,21 +289,38 @@ export function HackathonTimelineTab() {
     );
   }
   const getDateTimeParts = (value: string): [string, string] => {
-    const [date = "", time = ""] = formatVietnamDateTime(value, locale, { includeTimezone: false }).split(" · ");
+    const [date = "", time = ""] = formatEventDateTime(value, locale, { includeTimezone: false }).split(" · ");
     return [date, time];
   };
   const steps = timeline.map((item) => {
     const [startDate, startTime] = getDateTimeParts(item.starts_at);
     const [endDate, endTime] = item.ends_at ? getDateTimeParts(item.ends_at) : ["", ""];
+    const startTimeMs = Number.isFinite(new Date(item.starts_at).getTime())
+      ? new Date(item.starts_at).getTime()
+      : 0;
+    const endTimeMs = item.ends_at && Number.isFinite(new Date(item.ends_at).getTime())
+      ? new Date(item.ends_at).getTime()
+      : startTimeMs;
+
+    let state: "Default" | "Focused" | "Passed" = "Default";
+    if (now > endTimeMs) {
+      state = "Passed";
+    } else if (now >= startTimeMs && now <= endTimeMs) {
+      state = "Focused";
+    }
+    const connectorState: "Default" | "Active" = state === "Default" ? "Default" : "Active";
+
     return {
       id: item.id,
-      state: "Default" as const,
+      state,
+      connectorBefore: connectorState,
+      connectorAfter: connectorState,
       title: (
         <div className="flex flex-col gap-[6px]">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-normal leading-[1.4] tracking-[0.28px] text-foreground-subtle">
             <time dateTime={item.starts_at}>{startDate}{endDate && endDate !== startDate ? ` – ${endDate}` : ""}</time>
             <Separator orientation="vertical" className="hidden h-4 sm:block" />
-            <span>{startTime}{item.ends_at ? ` – ${endTime}` : ""} ICT (UTC+7)</span>
+            <span>{startTime}{item.ends_at ? ` – ${endTime}` : ""} {timeZoneOffsetLabel(resolvedTimeZone())}</span>
           </div>
           <h3 className="font-display text-[18px] font-medium leading-[1.2] text-hackathon-timeline-title">{item.title}</h3>
           {item.description_markdown ? <div className="text-sm font-normal leading-[1.4] tracking-[0.28px] text-foreground-subtle"><Markdown content={item.description_markdown} compact /></div> : null}
@@ -230,7 +335,7 @@ export function HackathonTimelineTab() {
         <Stepper
           aria-label={t("detail.sections.timeline")}
           orientation="Vertical"
-          markerStyle="Icon"
+          markerStyle="Text"
           animated={false}
           steps={steps}
           className="mt-6 [&>li]:min-h-[120px] [&>li]:items-stretch [&_[data-slot=stepper-track]]:h-auto [&_[data-slot=stepper-track]]:min-h-[120px] [&_[data-slot=stepper-content]]:flex [&_[data-slot=stepper-content]]:flex-col [&_[data-slot=stepper-content]]:justify-center [&_[data-slot=stepper-content]>div:first-child]:overflow-visible [&_[data-slot=stepper-content]>div:first-child]:whitespace-normal"
@@ -367,6 +472,7 @@ export function HackathonProjectsTab() {
   }, [contest.tech_stacks, locale, projects, search, systemTaxonomy]);
   const teamsQuery = useQuery(publicProjectTeamsQueryOptions(projects.map((item) => item.project.id)));
   const hearts = useQuery(projectHeartsQueryOptions(user?.id, projects.map(item => item.project.id)));
+  const saves = useQuery(projectSavesQueryOptions(user?.id, projects.map(item => item.project.id)));
   return (
     <HackathonPublicTabLayout>
       <div className="min-w-0 space-y-4 sm:space-y-8">
@@ -382,7 +488,7 @@ export function HackathonProjectsTab() {
               {t("public.projects.description")}
             </p>
           </div>
-          <div className="grid gap-2 sm:grid-cols-[minmax(0,520px)_minmax(0,1fr)] sm:items-center">
+          <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_180px] sm:items-center">
             <Input
               type="search"
               variant="icon-leading"
@@ -392,40 +498,41 @@ export function HackathonProjectsTab() {
               aria-label={t("public.projects.searchPlaceholder")}
             />
             <DropdownMenu>
-              <DropdownMenuTrigger
+              <DropdownMenuTriggerWithIndicator
                 type="button"
                 aria-label={t("public.projects.sort")}
-                className="group/sort-menu flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-lg text-left font-body text-body-large text-foreground transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-lg text-left font-body text-body-large text-foreground transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               >
                 <span>
                   {sort === "newest"
                     ? t("public.projects.newest")
                     : t("public.projects.oldest")}
                 </span>
-                <CaretDown
-                  className="size-5 shrink-0 text-foreground-muted transition-transform duration-200 group-data-[popup-open]/sort-menu:rotate-180"
-                  weight="duotone"
-                  aria-hidden
-                />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuRadioGroup
-                  value={sort}
-                  onValueChange={(value) => {
-                    if (value !== "newest" && value !== "oldest") return;
-                    const next = new URLSearchParams(params);
-                    if (value === "oldest") next.set("sort", "oldest");
-                    else next.delete("sort");
-                    setParams(next, { preventScrollReset: true });
-                  }}
-                >
-                  <DropdownMenuRadioItem className="text-body-large" value="newest">
-                    {t("public.projects.newest")}
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem className="text-body-large" value="oldest">
-                    {t("public.projects.oldest")}
-                  </DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
+              </DropdownMenuTriggerWithIndicator>
+              <DropdownMenuContent
+                layout="multiple-list"
+                align="start"
+                className="w-(--anchor-width) max-w-[calc(100vw-2rem)]"
+              >
+                <DropdownMenuList>
+                  <DropdownMenuRadioGroup
+                    value={sort}
+                    onValueChange={(value) => {
+                      if (value !== "newest" && value !== "oldest") return;
+                      const next = new URLSearchParams(params);
+                      if (value === "oldest") next.set("sort", "oldest");
+                      else next.delete("sort");
+                      setParams(next, { preventScrollReset: true });
+                    }}
+                  >
+                    <DropdownMenuRadioItem className="text-body-large" value="newest">
+                      <DropdownMenuItemContent>{t("public.projects.newest")}</DropdownMenuItemContent>
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem className="text-body-large" value="oldest">
+                      <DropdownMenuItemContent>{t("public.projects.oldest")}</DropdownMenuItemContent>
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuList>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -433,7 +540,7 @@ export function HackathonProjectsTab() {
 
         {query.isPending ? <div className="grid gap-6 sm:grid-cols-2">{Array.from({ length: 6 }).map((_, index) => <ProjectCardSkeleton key={index} />)}</div> : query.isError ? <div role="alert" className="py-8 text-center"><p>{t("detail.errors.loadFailed")}</p><Button className="mt-3" onClick={() => void query.refetch()}>{t("projects.retry", { ns: "common" })}</Button></div> : filteredProjects.length === 0 ? <EmptyTab icon={<Package className="size-6" weight="duotone" />} title={t("public.empty.projects")} /> : (
           <>
-            <div className="grid gap-6 sm:grid-cols-2">{filteredProjects.map(({ project, owner }) => <ProjectCard key={project.id} variant="hackathon" phosphorDuotone systemTaxonomy={systemTaxonomy} hearted={hearts.data?.has(project.id) ?? false} taxonomy={contest} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} ownerAvatarUrl={owner?.avatar_url} ownerAvatarSeed={owner?.avatar_seed} ownerAvatarConfig={owner?.avatar_config} teamMembers={teamsQuery.data?.[project.id] ?? []} />)}</div>
+            <div className="grid gap-6 sm:grid-cols-2">{filteredProjects.map(({ project, owner }) => <ProjectCard key={project.id} variant="hackathon" systemTaxonomy={systemTaxonomy} hearted={hearts.data?.has(project.id) ?? false} saved={saves.data?.has(project.id) ?? false} saveStateReady={saves.isSuccess && !saves.isPlaceholderData} taxonomy={contest} project={project} ownerLabel={owner?.full_name ?? owner?.username} ownerHandle={owner?.username ?? owner?.ocid} ownerAvatarUrl={owner?.avatar_url} ownerAvatarSeed={owner?.avatar_seed} ownerAvatarConfig={owner?.avatar_config} teamMembers={teamsQuery.data?.[project.id] ?? []} />)}</div>
             {query.hasNextPage ? <div className="flex justify-center"><Button type="button" variant="cta" hierarchy="secondary" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>{query.isFetchingNextPage ? t("public.projects.loading") : t("public.projects.loadMore")}</Button></div> : null}
           </>
         )}

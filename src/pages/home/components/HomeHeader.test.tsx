@@ -31,7 +31,7 @@ function makeFocusCard(completed: boolean): FocusCard {
     completed,
     nextStep: completed ? "All lessons completed" : "Next lesson: Lesson 1",
     meta: "2 minutes · self-paced",
-    action: "/learn/course-revert-test",
+    action: "/study/course-revert-test",
   };
 }
 
@@ -70,7 +70,7 @@ async function renderHeader(featuredFocus: FocusCard) {
 it("labels a completed featured course as View", async () => {
   const container = await renderHeader(makeFocusCard(true));
   const action = container.querySelector<HTMLAnchorElement>(
-    'a[href="/learn/course-revert-test"]',
+    'a[href="/study/course-revert-test"]',
   );
 
   expect(action?.textContent).toContain("View");
@@ -83,7 +83,7 @@ it("labels a completed featured course as View", async () => {
 it("keeps Continue learning for an incomplete featured course", async () => {
   const container = await renderHeader(makeFocusCard(false));
   const action = container.querySelector<HTMLAnchorElement>(
-    'a[href="/learn/course-revert-test"]',
+    'a[href="/study/course-revert-test"]',
   );
 
   expect(action?.textContent).toContain("Continue learning");

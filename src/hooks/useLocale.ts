@@ -12,6 +12,7 @@ import {
   startManualLocaleChange,
 } from "@/lib/localeSyncGuard";
 import type { Profile } from "@/types/database";
+import { writeLocalePreference } from "@/lib/locales";
 
 function isSupportedLanguage(value: string): value is SupportedLanguage {
   return (SUPPORTED_LANGUAGES as readonly string[]).includes(value);
@@ -35,6 +36,7 @@ export function useLocale() {
     async (lng: SupportedLanguage) => {
       const previousLng = language;
       const revision = startManualLocaleChange(lng);
+      writeLocalePreference(lng);
       await i18n.changeLanguage(lng);
 
       if (user) {

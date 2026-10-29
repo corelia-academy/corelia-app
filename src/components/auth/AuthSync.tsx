@@ -5,10 +5,12 @@ import { useAuthStore } from "@/stores/authStore";
 import { currentProfileQueryOptions } from "@/features/auth/profileQueries";
 import { clearPrivateQueryCache, queryClient } from "@/lib/queryClient";
 import i18n, { DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n";
-import { normalizeLocale, pickBrowserLocale } from "@/lib/locales";
+import { normalizeLocale, pickBrowserLocale, readLocalePreference } from "@/lib/locales";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { timedAsync } from "@/lib/perfTelemetry";
 import { isAuthSyncLocaleIgnored, resetManualLocaleIntent } from "@/lib/localeSyncGuard";
+import { appPath } from "@/lib/appUrl";
+import { parseTimeZonePreference, setTimeZonePreference } from "@/lib/timezone";
 
 
 /**
@@ -59,6 +61,8 @@ export function AuthSync() {
               if (!isAuthSyncLocaleIgnored(locale)) {
                 void i18n.changeLanguage(locale);
               }
+              // The profile is the source of truth for the timezone across devices.
+              if (p) setTimeZonePreference(parseTimeZonePreference(p.timezone));
             } catch (error) {
               console.error("Failed to load profile:", error);
             }
@@ -82,7 +86,8 @@ export function AuthSync() {
             : typeof navigator !== "undefined" && navigator.language
               ? [navigator.language]
               : []) ?? [];
-        const publicLocale: SupportedLanguage = pickBrowserLocale(langs);
+        // An explicit choice outlives the session; otherwise fall back to the browser.
+        const publicLocale: SupportedLanguage = readLocalePreference() ?? pickBrowserLocale(langs);
         if (!isAuthSyncLocaleIgnored(publicLocale)) {
           void i18n.changeLanguage(publicLocale);
         }
@@ -182,7 +187,7 @@ export function AuthSync() {
       void useAuthStore.getState().signOut();
       // Redirect to login without reloading the SPA bundle.
       try {
-        window.location.assign("/login");
+        window.location.assign(appPath("/login"));
       } catch {
         // ignore
       }

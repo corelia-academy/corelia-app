@@ -25,6 +25,12 @@ import { handleHackathonWinnerAwardNotify } from "./hackathons/winner_award_noti
 import { corsHeadersForRequest, json, withCors } from "./lib/http.ts";
 import { handleNotificationsUnsubscribe } from "./notifications/unsubscribe.ts";
 import { handleProjectCollaborationInviteEmail } from "./projects/collaboration_invite_email.ts";
+import { handleProjectModerationRun } from "./projects/moderation.ts";
+import {
+  handleProjectTranslationRequest,
+  handleProjectTranslationsRun,
+  handleProjectTranslationStatus,
+} from "./projects/translation_jobs.ts";
 import {
   handleProjectMediaDelete,
   handleProjectMediaUpload,
@@ -84,6 +90,8 @@ const PROTECTED_OPS = new Set<string>([
   "credentials.grantPending",
   "projects.save",
   "projects.translate",
+  "projects.translations.request",
+  "projects.translations.status",
   "projects.manage",
   "projects.transferHackathon",
   "projects.media.upload",
@@ -228,6 +236,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleProjectTransferHackathon(req, db);
     } else if (op === "projects.translate" && req.method === "POST") {
       response = await handleProjectTranslate(req, db);
+    } else if (op === "projects.translations.request" && req.method === "POST") {
+      response = await handleProjectTranslationRequest(req, db);
+    } else if (op === "projects.translations.status" && req.method === "POST") {
+      response = await handleProjectTranslationStatus(req, db);
+    } else if (op === "projects.translations.run" && req.method === "POST") {
+      response = await handleProjectTranslationsRun(req, db);
+    } else if (op === "projects.moderation.run" && req.method === "POST") {
+      response = await handleProjectModerationRun(req, db);
     } else if (op === "projects.save" && req.method === "POST") {
       response = await handleProjectSave(req, db);
     } else if (op === "projects.media.upload" && req.method === "POST") {

@@ -2,6 +2,7 @@ import { Award, Medal, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import type { BadgeItem, CertificateItem } from "../types";
+import { appPath } from "@/lib/appUrl";
 
 export function StatsBar({
   certificates,
@@ -52,7 +53,7 @@ export function StatsBar({
           value: ocaCount,
           icon: (
             <img
-              src="/open-campus-edu-logo.png"
+              src={appPath("/open-campus-edu-logo.png")}
               alt="OC"
               className="size-5 rounded-full"
             />

@@ -4,7 +4,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, NavLink, useLocation } from "react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
-import { BackspaceIcon } from "@phosphor-icons/react";
 import {
   Award,
   GraduationCap,
@@ -38,6 +37,7 @@ import {
 } from "@/features/search/searchQueries";
 import { logSearchQuery } from "@/lib/search";
 import { prefetchRouteChunk } from "@/lib/routePrefetch";
+import { appPath } from "@/lib/appUrl";
 
 const RECENT_SEARCHES_KEY = "corelia.recentSearches.v1";
 const MAX_RECENT_SEARCHES = 8;
@@ -112,7 +112,8 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
     readRecentSearches(),
   );
   const searchWrapRef = useRef<HTMLDivElement | null>(null);
-  const trendingQuery = useQuery(trendingSearchesQueryOptions());
+  // Trending suggestions only render in the open search panel; do not fetch them on every page load.
+  const trendingQuery = useQuery({ ...trendingSearchesQueryOptions(), enabled: searchOpen });
   const suggestionsQuery = useQuery(
     searchResultsQueryOptions(debouncedSearchText, MAX_SUGGESTIONS, searchOpen, publicUI ? i18n.language : undefined),
   );
@@ -298,8 +299,8 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
             <img
               src={
                 isDarkMode
-                  ? "/logo/Corelia_Logo_White.svg"
-                  : "/logo/corelia-full-logo-black.png"
+                  ? appPath("/logo/Corelia_Logo_White.svg")
+                  : appPath("/logo/corelia-full-logo-black.png")
               }
               alt="Corelia"
               width={108}
@@ -506,6 +507,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
             className="relative min-w-0 w-full max-w-[400px]"
           >
             <Input
+              type="search"
               variant="icon-leading"
               value={searchText}
               onChange={(e) => {
@@ -525,20 +527,6 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                   setSearchOpen(false);
                 }
               }}
-              renderTrailingContent={({ disabled }) =>
-                searchText.length > 0 ? (
-                  <button
-                    type="button"
-                    aria-label={t("search.clear")}
-                    disabled={disabled}
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => setSearchText("")}
-                    className="inline-flex size-6 shrink-0 items-center justify-center rounded text-foreground-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  >
-                    <BackspaceIcon size={20} weight="duotone" aria-hidden />
-                  </button>
-                ) : null
-              }
               placeholder={t("search.placeholder")}
               aria-label={t("search.placeholder")}
             />
@@ -710,7 +698,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
           {!authInitialized ? (
             <div className="h-9 w-28 animate-pulse rounded-full bg-surface-raised md:h-10" />
           ) : isAuthenticated ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-lg md:gap-xl">
               <NotificationBell />
               <DropdownMenu
                 open={accountMenuOpen}
@@ -753,6 +741,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                       label={item.label}
                       showActive={false}
                       showPressed
+                      className="min-h-[50px]"
                       render={<NavLink to={item.to} />}
                       nativeButton={false}
                       onPointerEnter={() => prefetchRouteChunk(item.to)}
@@ -766,6 +755,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                     type="button"
                     variant="destructive"
                     size="small"
+                    className="min-h-[50px]"
                     icon={<LogOut aria-hidden />}
                     label={t("tabs.signOut")}
                     isActive={false}
@@ -790,7 +780,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
                   aria-label={t("openCampusConnect.header.ariaLabel")}
                 >
                   <img
-                    src="/logo/OC-square-logo.svg"
+                    src={appPath("/logo/OC-square-logo.svg")}
                     alt="Open Campus"
                     className="h-6 rounded-full"
                   />

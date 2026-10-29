@@ -2,6 +2,7 @@ import bs58 from "npm:bs58@6.0.0";
 import { getAddress, isAddress, verifyMessage } from "npm:viem@2.56.8";
 
 import { json } from "../lib/http.ts";
+import { consumeRateLimit } from "../lib/rate_limit.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 
 type Chain = "ethereum" | "solana";
@@ -31,6 +32,13 @@ export async function handleWalletChallenge(req: Request, db: SupabaseClient): P
   if (!origin) return json({ message: "origin_required" }, 403);
   const input = parseInput(await req.json().catch(() => null));
   if (!input) return json({ message: "invalid_wallet" }, 400);
+  try {
+    await consumeRateLimit(db, "wallet_challenge", user.id, 10, 600);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (message.startsWith("rate_limited:")) return json({ message }, 429);
+    return json({ message: "challenge_failed" }, 500);
+  }
   const nonce = crypto.randomUUID();
   const expiresAt = new Date(Date.now() + 5 * 60_000).toISOString();
   const message = `Corelia wallet connection\nOrigin: ${origin}\nUser: ${user.id}\nChain: ${input.chain}\nAddress: ${input.address}\nNonce: ${nonce}\nExpires: ${expiresAt}\n\nSign to connect this wallet. No transaction will be sent.`;

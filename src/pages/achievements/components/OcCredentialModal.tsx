@@ -28,6 +28,7 @@ import {
   downloadCertificate,
 } from "../utils/renderCertificate";
 import { OcClaimBadge } from "./OcClaimBadge";
+import { appPath, appUrl } from "@/lib/appUrl";
 
 export function OcCredentialModal({
   item,
@@ -213,7 +214,7 @@ export function OcCredentialModal({
                   onClick={onConnectOcid}
                 >
                   <img
-                    src="/open-campus-edu-logo.png"
+                    src={appPath("/open-campus-edu-logo.png")}
                     alt=""
                     className="size-5 shrink-0 rounded-full brightness-0 invert"
                   />
@@ -241,7 +242,7 @@ export function OcCredentialModal({
                   ) : (
                     <>
                       <img
-                        src="/open-campus-edu-logo.png"
+                        src={appPath("/open-campus-edu-logo.png")}
                         alt=""
                         className="size-5 shrink-0 rounded-full brightness-0 invert"
                       />
@@ -364,7 +365,7 @@ export function OcCredentialModal({
             >
               <div className="flex min-w-0 flex-1 items-center gap-2">
                 <img
-                  src="/open-campus-edu-logo.png"
+                  src={appPath("/open-campus-edu-logo.png")}
                   alt="OC"
                   className="size-5 shrink-0 rounded-full"
                 />
@@ -428,7 +429,7 @@ export function OcCredentialModal({
                 onClick={onConnectOcid}
               >
                 <img
-                  src="/open-campus-edu-logo.png"
+                  src={appPath("/open-campus-edu-logo.png")}
                   alt=""
                   className="size-5 shrink-0 rounded-full brightness-0 invert"
                 />
@@ -460,7 +461,7 @@ export function OcCredentialModal({
                 ) : (
                   <>
                     <img
-                      src="/open-campus-edu-logo.png"
+                      src={appPath("/open-campus-edu-logo.png")}
                       alt=""
                       className="size-5 shrink-0 rounded-full brightness-0 invert"
                     />
@@ -525,7 +526,7 @@ export function OcCredentialModal({
                   className="flex-1 gap-2 text-sm sm:text-base"
                   size="large"
                   onClick={async () => {
-                    const shareUrl = d.ocCredentialUrl || `${window.location.origin}/u/${profile?.username || ""}`;
+                    const shareUrl = d.ocCredentialUrl || appUrl(`/u/${profile?.username || ""}`);
                     const shareTitle = item.kind === "cert" ? (d as CertificateItem).course : (d as BadgeItem).title;
                     const shareText = `Tôi vừa nhận được thành tích "${shareTitle}" từ Corelia Academy trên chuỗi khối Open Campus!`;
 

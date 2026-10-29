@@ -39,6 +39,7 @@ import {
   renderCertificateBlob,
 } from "../utils/renderCertificate";
 import { OcClaimBadge } from "./OcClaimBadge";
+import { appPath } from "@/lib/appUrl";
 
 // ── Certificate lightbox ────────────────────────────────────────────────────
 function CertificatePreviewDialog({
@@ -369,7 +370,7 @@ export function CertificateCard({
                 }
               >
                 <img
-                  src="/open-campus-edu-logo.png"
+                  src={appPath("/open-campus-edu-logo.png")}
                   alt="OC"
                   className="size-3.5 shrink-0 rounded-full sm:size-4"
                 />
@@ -385,7 +386,7 @@ export function CertificateCard({
                 className="border-border bg-surface-base hover:bg-surface-raised"
               >
                 <img
-                  src="/open-campus-edu-logo.png"
+                  src={appPath("/open-campus-edu-logo.png")}
                   alt="OC"
                   className="size-3.5 shrink-0 rounded-full sm:size-4"
                 />
@@ -401,7 +402,7 @@ export function CertificateCard({
                 className="border-warning/30 bg-warning/10 text-warning-foreground hover:bg-warning/15"
               >
                 <img
-                  src="/open-campus-edu-logo.png"
+                  src={appPath("/open-campus-edu-logo.png")}
                   alt="OC"
                   className="size-3.5 shrink-0 rounded-full sm:size-4"
                 />

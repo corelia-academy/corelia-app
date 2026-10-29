@@ -7,6 +7,8 @@ import App from "./App";
 import { OCConnect } from "@opencampus/ocid-connect-js";
 import { queryClient } from "@/lib/queryClient";
 import { installStaleChunkRecovery } from "@/lib/staleChunkRecovery";
+import { installTimeZonePreference } from "@/lib/timezone";
+import { scheduleAppSplashRelease } from "@/components/loading/appSplash";
 declare global {
   interface Window {
     __CORELIA_BUILD__?: { version: string };
@@ -18,6 +20,7 @@ window.__CORELIA_BUILD__ = {
 };
 
 installStaleChunkRecovery({ buildVersion: import.meta.env.VITE_APP_VERSION });
+installTimeZonePreference();
 
 const ocidOpts = {
   clientId: import.meta.env.VITE_OCID_CLIENT_ID,
@@ -32,3 +35,6 @@ createRoot(document.getElementById("root")!).render(
     </OCConnect>
   </QueryClientProvider>,
 );
+
+// Fallback for trees that never mount a loading screen (e.g. maintenance mode).
+scheduleAppSplashRelease(500);

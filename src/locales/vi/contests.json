@@ -61,7 +61,6 @@
     "participantsCount": "{{displayCount}} người tham gia",
     "submissionDeadline": "Hạn nộp dự án",
     "registrationDeadline": "Hạn đăng ký",
-    "timezoneLabel": "ICT (UTC+7)",
     "registrationCountdown": "Còn {{time}} đến hạn đóng form",
     "timeUnit": {
       "hours": "giờ"
@@ -116,14 +115,16 @@
     },
     "myProject": {
       "title": "Dự án của bạn",
-      "registerRequiredDescription": "Đăng ký hackathon trước khi tạo dự án.",
+      "registerRequiredDescription": "Vui lòng ghi danh để tạo dự án.",
       "registerRequired": "Cần đăng ký trước",
       "loading": "Đang tải dự án của bạn",
       "untitled": "Dự án chưa có tiêu đề",
       "edit": "Chỉnh sửa dự án",
       "view": "Xem dự án",
-      "emptyDescription": "Tạo dự án để bắt đầu chuẩn bị bài nộp của bạn.",
-      "create": "Tạo dự án"
+      "updatedAt": "Cập nhật {{time}}",
+      "justNow": "vừa xong",
+      "emptyDescription": "Chưa có dự án nào được tạo.",
+      "create": "Tạo Dự Án"
     },
     "prepare": {
       "title": "Tìm hiểu cuộc thi",

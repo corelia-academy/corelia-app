@@ -121,7 +121,9 @@ export async function listPublicPortfolioProjects(
   );
   const hackathonSlugById = new Map<string, string>();
 
-  await Promise.all([
+  // Media URLs only depend on the stored paths, so sign them alongside the other lookups.
+  const [withMedia] = await Promise.all([
+    attachProjectMedia(projects),
     Promise.all(
       Array.from(idsByLocale.entries()).map(async ([locale, ids]) => {
         localeMaps.set(locale, await getBatchProjectLocaleContent(ids, locale));
@@ -141,22 +143,20 @@ export async function listPublicPortfolioProjects(
     })(),
   ]);
 
-  return attachProjectMedia(
-    projects.map((project) => {
-      const locale = pickContentLocale(project.i18n ?? null, uiLocale);
-      const localized = applyProjectLocaleContent(
-        project,
-        localeMaps.get(locale)?.get(project.id) ?? null,
-      );
-      const hackathonSlug = project.source_id
-        ? hackathonSlugById.get(project.source_id) ?? null
-        : null;
-      return {
-        ...localized,
-        hackathon_slug: hackathonSlug,
-      };
-    }),
-  );
+  return withMedia.map((project) => {
+    const locale = pickContentLocale(project.i18n ?? null, uiLocale);
+    const localized = applyProjectLocaleContent(
+      project,
+      localeMaps.get(locale)?.get(project.id) ?? null,
+    );
+    const hackathonSlug = project.source_id
+      ? hackathonSlugById.get(project.source_id) ?? null
+      : null;
+    return {
+      ...localized,
+      hackathon_slug: hackathonSlug,
+    };
+  });
 }
 
 export function applyProjectLocaleContent(project: Project, localized: ProjectI18nContent | null): Project {
@@ -229,7 +229,7 @@ export async function listContestShowcaseProjects(
   contestId: string,
 ): Promise<ContestLinkedShowcaseProject[]> {
   const select =
-    "id,slug,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,owner_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,custom_sector_names,custom_tech_stack_names,created_at,updated_at,like_count" as const;
+    "id,slug,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,owner_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,custom_sector_names,custom_tech_stack_names,created_at,updated_at,like_count,save_count" as const;
 
   const { data, error } = await supabase
     .from("projects")
@@ -340,6 +340,7 @@ export type ListPublicProjectsOptions = {
   sectorIds?: string[];
   techStackIds?: string[];
   winnerProjectIds?: string[];
+  likedProjectIds?: string[];
 };
 
 export type PublicProjectListResult = {
@@ -418,6 +419,12 @@ async function attachOwners(projects: Project[]): Promise<PublicProjectEntry[]> 
   }));
 }
 
+/** Localized projects with their owners; owner profiles load alongside locale content and media. */
+async function localizeProjectEntries(projects: Project[], uiLocale?: string | null): Promise<PublicProjectEntry[]> {
+  const [localized, entries] = await Promise.all([localizeProjects(projects, uiLocale), attachOwners(projects)]);
+  return localized.map((project, index) => ({ project, owner: entries[index]?.owner ?? null }));
+}
+
 async function localizeProjects(projects: Project[], uiLocale?: string | null): Promise<Project[]> {
   const normalizedUiLocale = normalizeContentLocale(uiLocale);
 
@@ -429,31 +436,38 @@ async function localizeProjects(projects: Project[], uiLocale?: string | null): 
     idsByLocale.set(desired, list);
   }
   const localeMaps = new Map<Locale, Map<string, ProjectI18nContent>>();
-  await Promise.all(
-    Array.from(idsByLocale.entries()).map(async ([locale, ids]) => {
+  // Media URLs only depend on the stored paths, so sign them while the locale rows load.
+  const [withMedia] = await Promise.all([
+    attachProjectMedia(projects),
+    ...Array.from(idsByLocale.entries()).map(async ([locale, ids]) => {
       localeMaps.set(locale, await getBatchProjectLocaleContent(ids, locale));
     }),
-  );
+  ]);
 
-  return attachProjectMedia(projects.map((p) => {
+  return withMedia.map((p) => {
     const desired = pickContentLocale(p.i18n ?? null, normalizedUiLocale);
     const localized = localeMaps.get(desired)?.get(p.id) ?? null;
     return applyProjectLocaleContent(p, localized);
-  }));
+  });
 }
 
 export async function listPublicProjects(
   options: ListPublicProjectsOptions = {},
 ): Promise<PublicProjectListResult> {
   const select =
-    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,custom_sector_names,custom_tech_stack_names,i18n,created_at,updated_at,like_count" as const;
+    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,custom_sector_names,custom_tech_stack_names,i18n,created_at,updated_at,like_count,save_count" as const;
   const limit = normalizeProjectLimit(options.limit);
   const offset = parseProjectCursor(options.cursor);
   const sourceType = normalizePublicProjectSource(options.source);
   const sort = normalizeProjectListSort(options.sort);
 
+  if (options.likedProjectIds?.length === 0) {
+    return { items: [], nextCursor: null, hasMore: false };
+  }
+
   const applyFilters = () => {
     let filtered = supabase.from("projects").select(select).eq("visibility", "public");
+    if (options.likedProjectIds) filtered = filtered.in("id", options.likedProjectIds);
     if (sourceType) filtered = filtered.in("source_type", sourceType);
     if (options.hackathonId) {
       filtered = filtered.in("source_type", ["contest", "hackathon"]).eq("source_id", options.hackathonId);
@@ -498,12 +512,21 @@ export async function listPublicProjects(
   const hasMore = offset + limit < winnerRows.length || fetchedProjects.length > rangeSize;
   const projects = [...winnerSlice, ...fetchedProjects.slice(0, regularLimit)];
 
-  const localizedProjects = await localizeProjects(projects, options.locale);
   return {
-    items: await attachOwners(localizedProjects),
+    items: await localizeProjectEntries(projects, options.locale),
     nextCursor: hasMore ? String(offset + limit) : null,
     hasMore,
   };
+}
+
+export async function countPublicProjects(): Promise<number> {
+  const { count, error } = await supabase
+    .from("projects")
+    .select("id", { count: "exact", head: true })
+    .eq("visibility", "public");
+
+  if (error) throw new Error(error.message);
+  return count ?? 0;
 }
 
 async function listDirectoryProjectEntries(
@@ -521,8 +544,29 @@ async function listDirectoryProjectEntries(
 
   if (error) throw new Error(error.message);
 
-  const localizedProjects = await localizeProjects((data ?? []) as Project[], uiLocale);
-  return attachOwners(localizedProjects);
+  return localizeProjectEntries((data ?? []) as Project[], uiLocale);
+}
+
+/** Public projects (with owners) for the given ids, in the order of `ids`; used to render search results as project cards. */
+export async function getPublicProjectEntriesByIds(
+  ids: string[],
+  uiLocale?: string | null,
+): Promise<PublicProjectEntry[]> {
+  if (!ids.length) return [];
+  const select =
+    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,video_url,logo_path,screenshot_paths,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,custom_sector_names,custom_tech_stack_names,i18n,created_at,updated_at,like_count,save_count" as const;
+
+  const { data, error } = await supabase
+    .from("projects")
+    .select(select)
+    .eq("visibility", "public")
+    .in("id", ids);
+
+  if (error) throw new Error(error.message);
+
+  const order = new Map(ids.map((id, index) => [id, index]));
+  const rows = ((data ?? []) as Project[]).sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+  return localizeProjectEntries(rows, uiLocale);
 }
 
 function publicDirectorySourceFlags(source: ListPublicProjectsOptions["source"]): {
@@ -646,35 +690,43 @@ export async function getProjectBySlugOrId(
   // break detail pages while the frontend/database releases converge.
   const select = "*" as const;
 
-  let projectId = isUuidLike(value) ? value : null;
-  const currentSlug = isUuidLike(value) ? null : value;
-  if (!projectId && currentSlug) {
-    const { data: history } = await supabase
-      .from("project_slug_history")
-      .select("project_id")
-      .eq("slug", currentSlug)
-      .maybeSingle();
-    projectId = history?.project_id ?? null;
+  const byId = (id: string) => supabase.from("projects").select(select).eq("id", id).maybeSingle();
+  let result;
+  if (isUuidLike(value)) {
+    result = await byId(value);
+  } else {
+    // Most links carry the current slug, so look it up alongside the renamed-slug history
+    // instead of after it. A history match still wins, as before.
+    const [bySlug, { data: history }] = await Promise.all([
+      supabase.from("projects").select(select).eq("slug", value).maybeSingle(),
+      supabase.from("project_slug_history").select("project_id").eq("slug", value).maybeSingle(),
+    ]);
+    const historyId = history?.project_id ?? null;
+    result = historyId && bySlug.data?.id !== historyId ? await byId(historyId) : bySlug;
   }
-
-  let query = supabase
-    .from("projects")
-    .select(select)
-    ;
-  query = projectId ? query.eq("id", projectId) : query.eq("slug", currentSlug!);
-  const { data, error } = await query.maybeSingle();
+  const { data, error } = result;
 
   if (error) throw new Error(error.message);
   if (!data) return null;
 
-  const [localizedProject] = sourceContent ? await attachProjectMedia([data as Project], true) : await localizeProjects([data as Project], uiLocale);
-  if (sourceContent) {
-    const { data: locales, error: localeError } = await supabase.from("project_locales").select("locale,data").eq("project_id", data.id);
-    if (localeError) throw new Error(localeError.message);
-    localizedProject.content_locales = Object.fromEntries((locales ?? []).map(row => [row.locale, row.data])) as ProjectLocales;
-  }
-  const [entry] = await attachOwners([localizedProject]);
-  return entry ?? null;
+  // Locale content, media URLs and the owner only depend on the row: fetch them together.
+  const [localizedProject, [entry]] = await Promise.all([
+    sourceContent ? getProjectSourceContent(data as Project) : localizeProjects([data as Project], uiLocale).then(([project]) => project),
+    attachOwners([data as Project]),
+  ]);
+  return entry ? { ...entry, project: localizedProject } : null;
+}
+
+async function getProjectSourceContent(project: Project): Promise<Project> {
+  const [[withMedia], { data: locales, error: localeError }] = await Promise.all([
+    attachProjectMedia([project], true),
+    supabase.from("project_locales").select("locale,data").eq("project_id", project.id),
+  ]);
+  if (localeError) throw new Error(localeError.message);
+  return {
+    ...withMedia,
+    content_locales: Object.fromEntries((locales ?? []).map(row => [row.locale, row.data])) as ProjectLocales,
+  };
 }
 
 export const getProjectById = getProjectBySlugOrId;
@@ -781,8 +833,6 @@ export async function listMyProjects(uiLocale?: string | null): Promise<Project[
     collaboratorProjects = (data ?? []) as Project[];
   }
 
-  const normalizedUiLocale = normalizeContentLocale(uiLocale);
-
   const merged = [...((owned ?? []) as Project[]), ...collaboratorProjects];
   const byId = new Map<string, Project>();
   for (const item of merged) byId.set(item.id, item);
@@ -790,25 +840,7 @@ export async function listMyProjects(uiLocale?: string | null): Promise<Project[
     (a, b) => String(b.updated_at ?? "").localeCompare(String(a.updated_at ?? "")),
   );
 
-  const idsByLocale = new Map<Locale, string[]>();
-  for (const p of list) {
-    const desired = pickContentLocale(p.i18n ?? null, normalizedUiLocale);
-    const ids = idsByLocale.get(desired) ?? [];
-    ids.push(p.id);
-    idsByLocale.set(desired, ids);
-  }
-  const localeMaps = new Map<Locale, Map<string, ProjectI18nContent>>();
-  await Promise.all(
-    Array.from(idsByLocale.entries()).map(async ([locale, ids]) => {
-      localeMaps.set(locale, await getBatchProjectLocaleContent(ids, locale));
-    }),
-  );
-
-  return attachProjectMedia(list.map((p) => {
-    const desired = pickContentLocale(p.i18n ?? null, normalizedUiLocale);
-    const localized = localeMaps.get(desired)?.get(p.id) ?? null;
-    return applyProjectLocaleContent(p, localized);
-  }));
+  return localizeProjects(list, uiLocale);
 }
 
 export async function listMyProjectsForAccount(uiLocale?: string | null): Promise<MyProjectEntry[]> {
@@ -901,24 +933,21 @@ export async function listMyProjectsForAccount(uiLocale?: string | null): Promis
     idsByLocale.set(desired, ids);
   }
   const localeMaps = new Map<Locale, Map<string, ProjectI18nContent>>();
-  await Promise.all(
-    Array.from(idsByLocale.entries()).map(async ([locale, ids]) => {
+  // Media URLs only depend on the stored paths, so sign them while the locale rows load.
+  const [projectsWithMedia] = await Promise.all([
+    attachProjectMedia(list.map((item) => item.project)),
+    ...Array.from(idsByLocale.entries()).map(async ([locale, ids]) => {
       localeMaps.set(locale, await getBatchProjectLocaleContent(ids, locale));
     }),
-  );
+  ]);
+  const mediaById = new Map(projectsWithMedia.map((project) => [project.id, project]));
 
-  const localizedEntries = list.map((item) => {
+  return list.map((item) => {
     const desired = pickContentLocale(item.project.i18n ?? null, normalizedUiLocale);
     const localized = localeMaps.get(desired)?.get(item.project.id) ?? null;
     return {
       ...item,
-      project: applyProjectLocaleContent(item.project, localized),
+      project: applyProjectLocaleContent(mediaById.get(item.project.id) ?? item.project, localized),
     };
   });
-  const projectsWithMedia = await attachProjectMedia(localizedEntries.map((item) => item.project));
-  const mediaById = new Map(projectsWithMedia.map((project) => [project.id, project]));
-  return localizedEntries.map((item) => ({
-    ...item,
-    project: mediaById.get(item.project.id) ?? item.project,
-  }));
 }

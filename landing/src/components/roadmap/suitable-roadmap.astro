@@ -1,0 +1,310 @@
+---
+import SuitableRoadmapCarousel from "./suitable-roadmap";
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// MOCK DATA — thay bằng dữ liệu thật sau
+const tracks = [
+    {
+        id: "blockchain-developer",
+        title: t("roadmap.suitable.track.1.title"),
+        summary: t("roadmap.suitable.track.1.summary"),
+        courseCount: t("roadmap.suitable.track.1.courseCount"),
+        courses: [
+            {
+                image: "/BlockchainBasics.png",
+                title: t("roadmap.suitable.track.1.course.1.title"),
+                desc: t("roadmap.suitable.track.1.course.1.description"),
+            },
+            {
+                image: "/Soliditydeveloper.png",
+                title: t("roadmap.suitable.track.1.course.2.title"),
+                desc: t("roadmap.suitable.track.1.course.2.description"),
+            },
+            {
+                image: "/Evmdappdeveloper.png",
+                title: t("roadmap.suitable.track.1.course.3.title"),
+                desc: t("roadmap.suitable.track.1.course.3.description"),
+            },
+        ],
+    },
+
+    {
+        id: "solana-developer",
+        title: t("roadmap.suitable.track.2.title"),
+        summary: t("roadmap.suitable.track.2.summary"),
+        courseCount: t("roadmap.suitable.track.2.courseCount"),
+        courses: [
+            {
+                image: "/Rustsurvivalkit.png",
+                title: t("roadmap.featured.4.title"),
+                desc: t("roadmap.featured.4.desc"),
+            },
+            {
+                image: "/SolanaBootcamp.png",
+                title: t("roadmap.featured.5.title"),
+                desc: t("roadmap.featured.5.desc"),
+            },
+            {
+                image: "/Digitalassetsfoundations.png",
+                title: t("roadmap.featured.6.title"),
+                desc: t("roadmap.featured.6.desc"),
+            },
+        ],
+    },
+
+    {
+        id: "smart-contract-developer",
+        title: t("roadmap.suitable.track.3.title"),
+        summary: t("roadmap.suitable.track.3.summary"),
+        courseCount: t("roadmap.suitable.track.3.courseCount"),
+        courses: [
+            {
+                image: "/BlockchainBasics.png",
+                title: t("roadmap.featured.1.title"),
+                desc: t("roadmap.featured.1.desc"),
+            },
+            {
+                image: "/Soliditydeveloper.png",
+                title: t("roadmap.featured.2.title"),
+                desc: t("roadmap.featured.2.desc"),
+            },
+            {
+                image: "/Evmdappdeveloper.png",
+                title: t("roadmap.featured.3.title"),
+                desc: t("roadmap.featured.3.desc"),
+            },
+        ],
+    },
+
+    {
+        id: "web3-dapp-developer",
+        title: t("roadmap.suitable.track.4.title"),
+        summary: t("roadmap.suitable.track.4.summary"),
+        courseCount: t("roadmap.suitable.track.4.courseCount"),
+        courses: [
+            {
+                image: "/Evmdappdeveloper.png",
+                title: t("roadmap.featured.3.title"),
+                desc: t("roadmap.featured.3.desc"),
+            },
+            {
+                image: "/Soliditydeveloper.png",
+                title: t("roadmap.featured.2.title"),
+                desc: t("roadmap.featured.2.desc"),
+            },
+            {
+                image: "/Digitalassetsfoundations.png",
+                title: t("roadmap.featured.6.title"),
+                desc: t("roadmap.featured.6.desc"),
+            },
+        ],
+    },
+
+    {
+        id: "frontend-web3-developer",
+        title: t("roadmap.suitable.track.5.title"),
+        summary: t("roadmap.suitable.track.5.summary"),
+        courseCount: t("roadmap.suitable.track.5.courseCount"),
+        courses: [
+            {
+                image: "/BlockchainBasics.png",
+                title: t("roadmap.featured.1.title"),
+                desc: t("roadmap.featured.1.desc"),
+            },
+            {
+                image: "/Soliditydeveloper.png",
+                title: t("roadmap.featured.2.title"),
+                desc: t("roadmap.featured.2.desc"),
+            },
+            {
+                image: "/Evmdappdeveloper.png",
+                title: t("roadmap.featured.3.title"),
+                desc: t("roadmap.featured.3.desc"),
+            },
+        ],
+    },
+
+    {
+        id: "web3-product-engineer",
+        title: t("roadmap.suitable.track.6.title"),
+        summary: t("roadmap.suitable.track.6.summary"),
+        courseCount: t("roadmap.suitable.track.6.courseCount"),
+        courses: [
+            {
+                image: "/BlockchainBasics.png",
+                title: t("roadmap.featured.1.title"),
+                desc: t("roadmap.featured.1.desc"),
+            },
+            {
+                image: "/Evmdappdeveloper.png",
+                title: t("roadmap.featured.3.title"),
+                desc: t("roadmap.featured.3.desc"),
+            },
+            {
+                image: "/Soliditydeveloper.png",
+                title: t("roadmap.featured.2.title"),
+                desc: t("roadmap.featured.2.desc"),
+            },
+        ],
+    },
+
+    {
+        id: "defi-protocol-developer",
+        title: t("roadmap.suitable.track.7.title"),
+        summary: t("roadmap.suitable.track.7.summary"),
+        courseCount: t("roadmap.suitable.track.7.courseCount"),
+        courses: [
+            {
+                image: "/Soliditydeveloper.png",
+                title: t("roadmap.featured.2.title"),
+                desc: t("roadmap.featured.2.desc"),
+            },
+            {
+                image: "/BlockchainBasics.png",
+                title: t("roadmap.featured.1.title"),
+                desc: t("roadmap.featured.1.desc"),
+            },
+            {
+                image: "/Digitalassetsfoundations.png",
+                title: t("roadmap.featured.6.title"),
+                desc: t("roadmap.featured.6.desc"),
+            },
+        ],
+    },
+
+    {
+        id: "blockchain-security-developer",
+        title: t("roadmap.suitable.track.8.title"),
+        summary: t("roadmap.suitable.track.8.summary"),
+        courseCount: t("roadmap.suitable.track.8.courseCount"),
+        courses: [
+            {
+                image: "/BlockchainBasics.png",
+                title: t("roadmap.featured.1.title"),
+                desc: t("roadmap.featured.1.desc"),
+            },
+            {
+                image: "/Soliditydeveloper.png",
+                title: t("roadmap.featured.2.title"),
+                desc: t("roadmap.featured.2.desc"),
+            },
+            {
+                image: "/Digitalassetsfoundations.png",
+                title: t("roadmap.featured.6.title"),
+                desc: t("roadmap.featured.6.desc"),
+            },
+        ],
+    },
+];
+
+const labels = {
+    forLabel: t("roadmap.suitable.forLabel"),
+};
+---
+
+<div class="w-full border-t border-border [overflow-anchor:none]">
+    <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0 [overflow-anchor:none]">
+        <div class="border-x border-border">
+            <!-- top -->
+            <div
+                class="flex items-center border-b border-border h-20 py-5 bg-secondary px-10"
+            >
+                <p
+                    class="text-lg leading-[1.15] tracking-[-0.02em] text-foreground md:text-2xl md:leading-[1.2]"
+                    style="font-family: var(--font-heading);"
+                    data-reveal="text-up"
+                >
+                    {t("roadmap.suitable.title")}
+                </p>
+            </div>
+            <div data-reveal="fade-up">
+                <SuitableRoadmapCarousel
+                    tracks={tracks}
+                    forLabel={labels.forLabel}
+                    client:visible={{ rootMargin: "200px" }}
+                />
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- <style>
+    .partner-fade {
+        mask-image: linear-gradient(
+            to right,
+            transparent,
+            black 15%,
+            black 85%,
+            transparent
+        );
+        -webkit-mask-image: linear-gradient(
+            to right,
+            transparent,
+            black 15%,
+            black 85%,
+            transparent
+        );
+    }
+    @keyframes partner-scroll {
+        from {
+            transform: translateX(0);
+        }
+        to {
+            transform: translateX(-50%);
+        }
+    }
+    .animate-partner-scroll {
+        animation: partner-scroll 30s linear infinite;
+    }
+</style>
+
+<script>
+    import { gsap } from "gsap";
+    const wrap = document.getElementById("featured-cta-wrap");
+    if (wrap) {
+        const left = Array.from(
+            wrap.querySelectorAll('[data-cta-arrow="left"]'),
+        );
+        const right = Array.from(
+            wrap.querySelectorAll('[data-cta-arrow="right"]'),
+        );
+        let tl: ReturnType<typeof gsap.timeline> | null = null;
+        wrap.addEventListener("mouseenter", () => {
+            if (tl) tl.kill();
+            gsap.set([...left, ...right], { x: 0 });
+            tl = gsap.timeline({ repeat: -1, repeatDelay: 0.1 });
+            tl.to(
+                left,
+                { x: 15, duration: 0.26, ease: "power2.in", stagger: 0.06 },
+                0,
+            )
+                .to(
+                    right,
+                    {
+                        x: -15,
+                        duration: 0.26,
+                        ease: "power2.in",
+                        stagger: 0.06,
+                    },
+                    0,
+                )
+                .to([...left, ...right], {
+                    x: 0,
+                    duration: 0.16,
+                    ease: "power2.out",
+                });
+        });
+        wrap.addEventListener("mouseleave", () => {
+            if (tl) tl.kill();
+            gsap.to([...left, ...right], {
+                x: 0,
+                duration: 0.2,
+                ease: "power2.out",
+            });
+        });
+    }
+</script> -->

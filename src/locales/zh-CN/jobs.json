@@ -85,6 +85,10 @@
     "title": "没有匹配的职位",
     "description": "请尝试放宽搜索条件或清除部分筛选。"
   },
+  "noJobs": {
+    "title": "暂无数据。",
+    "description": "近期没有已发布的职位。"
+  },
   "infinite": {
     "loading": "正在加载更多职位…",
     "loadMore": "加载更多职位",

@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { LanguageSettingsCard } from "./LanguageSettingsCard";
 import { NotificationPreferencesCard } from "./NotificationPreferencesCard";
+import { TimeZoneSettingsCard } from "./TimeZoneSettingsCard";
 
 function AccountSettingsSection() {
   const { t } = useTranslation("account");
@@ -34,6 +35,7 @@ function AccountSettingsSection() {
         <Button className="mt-3" type="button" variant="cta" hierarchy="secondary" nativeButton={false} render={<Link to="/settings/avatar" />}>{t("avatarEditor.edit")}</Button>
       </section>
       <LanguageSettingsCard />
+      <TimeZoneSettingsCard />
       <NotificationPreferencesCard />
       <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
         <div className="flex items-start justify-between gap-3">

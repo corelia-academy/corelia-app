@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { CaretDown, MonitorPlay } from "@phosphor-icons/react";
+import { MonitorPlay } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 
 import { FullPageEmptyState } from "@/components/layouts/FullPageEmptyState";
@@ -14,7 +14,7 @@ import {
   DropdownMenuItemContent,
   DropdownMenuList,
   DropdownMenuSearch,
-  DropdownMenuTrigger,
+  DropdownMenuTriggerWithIndicator,
 } from "@/components/ui/dropdown-menu";
 import { FieldContextReset } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -60,30 +60,23 @@ function CatalogMultiSelectFilter({
     <div className="min-w-0">
       <p className="mb-2 text-sm text-foreground-muted xl:hidden">{label}</p>
       <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger
+        <DropdownMenuTriggerWithIndicator
           type="button"
           aria-label={`${label}${selectedValues.length > 0 ? `, ${t("catalog.filters.selectedCount", { count: selectedValues.length })}` : ""}`}
+          trailingContent={selectedValues.length > 0 ? (
+            <Badge
+              size="xsmall"
+              color="primary"
+              className="border-transparent bg-primary-muted px-1.5 py-0.5 text-xs leading-none text-foreground"
+              aria-hidden
+            >
+              {selectedValues.length}
+            </Badge>
+          ) : undefined}
           className="flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input-field-border bg-surface-base px-3 text-left font-body text-body-large text-foreground transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
         >
           <span className="min-w-0 truncate">{label}</span>
-          <span className="flex shrink-0 items-center gap-2">
-            {selectedValues.length > 0 ? (
-              <Badge
-                size="xsmall"
-                color="primary"
-                className="border-transparent bg-primary-muted px-1.5 py-0.5 text-xs leading-none text-foreground"
-                aria-hidden
-              >
-                {selectedValues.length}
-              </Badge>
-            ) : null}
-            <CaretDown
-              className={`size-4 text-foreground-muted transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-              weight="duotone"
-              aria-hidden
-            />
-          </span>
-        </DropdownMenuTrigger>
+        </DropdownMenuTriggerWithIndicator>
         <DropdownMenuContent
           layout="multiple-list"
           sideOffset={8}
@@ -94,10 +87,14 @@ function CatalogMultiSelectFilter({
               <Input
                 type="search"
                 variant="icon-leading"
+                leadingIconClassName="text-dropdown-supporting"
+                statusIcon={null}
                 value={search}
                 onChange={(event) => setSearch(event.currentTarget.value)}
                 placeholder={t("catalog.filters.searchPlaceholder")}
                 aria-label={searchLabel}
+                controlClassName="h-10 gap-sm rounded-lg border-dropdown-input-border bg-dropdown-surface px-md focus-within:ring-dropdown-focus"
+                className="text-body-large text-dropdown-title placeholder:text-dropdown-supporting"
               />
             </FieldContextReset>
           </DropdownMenuSearch>
@@ -106,7 +103,8 @@ function CatalogMultiSelectFilter({
               <DropdownMenuCheckboxItem
                 key={option.value}
                 checked={selectedValues.includes(option.value)}
-                size="default"
+                size="compact"
+                className="whitespace-nowrap"
                 onCheckedChange={(checked, eventDetails) => {
                   eventDetails.cancel();
                   onSelectedValuesChange(

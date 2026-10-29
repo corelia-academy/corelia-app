@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { CircleHelp } from "lucide-react";
 
 import {
@@ -20,16 +19,16 @@ const tooltipArrows = [
   "right",
 ] as const satisfies readonly TooltipArrow[];
 
-const arrowLabelKeys = {
-  none: "componentShowcase.tooltip.arrows.none",
-  "bottom-center": "componentShowcase.tooltip.arrows.bottomCenter",
-  "bottom-left": "componentShowcase.tooltip.arrows.bottomLeft",
-  "bottom-right": "componentShowcase.tooltip.arrows.bottomRight",
-  "top-center": "componentShowcase.tooltip.arrows.topCenter",
-  "top-left": "componentShowcase.tooltip.arrows.topLeft",
-  "top-right": "componentShowcase.tooltip.arrows.topRight",
-  left: "componentShowcase.tooltip.arrows.left",
-  right: "componentShowcase.tooltip.arrows.right",
+const arrowLabels = {
+  none: "No arrow",
+  "bottom-center": "Bottom center",
+  "bottom-left": "Bottom left",
+  "bottom-right": "Bottom right",
+  "top-center": "Top center",
+  "top-left": "Top left",
+  "top-right": "Top right",
+  left: "Left",
+  right: "Right",
 } as const satisfies Record<TooltipArrow, string>;
 
 const tooltipPreviewAnchorClasses: Record<TooltipArrow, string> = {
@@ -51,13 +50,10 @@ type AdminTooltipComponentPageProps = {
 export default function AdminTooltipComponentPage({
   embedded = false,
 }: AdminTooltipComponentPageProps) {
-  const { t } = useTranslation("common");
-  const title = t("componentShowcase.tooltip.title");
-  const description = t("componentShowcase.tooltip.description");
-  const sampleTitle = t("componentShowcase.tooltip.sampleTitle");
-  const sampleSupportingText = t(
-    "componentShowcase.tooltip.sampleSupportingText",
-  );
+  const title = "Tooltip";
+  const description = "Compare all 18 arrow and supporting-text variants from Figma.";
+  const sampleTitle = "This is a tooltip";
+  const sampleSupportingText = "Tooltips explain the meaning or function of an element without adding permanent text to the page.";
 
   return (
     <ComponentShowcaseLayout
@@ -66,7 +62,7 @@ export default function AdminTooltipComponentPage({
       embedded={embedded}
     >
       <ShowcaseSection
-        title={t("componentShowcase.tooltip.withoutSupportingText")}
+        title="Without supporting text"
       >
         <div
           className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 2xl:grid-cols-3"
@@ -78,7 +74,7 @@ export default function AdminTooltipComponentPage({
               className="rounded-md border border-border-subtle bg-surface-base"
             >
               <h3 className="px-3 pt-3 text-label-medium text-foreground">
-                {t(arrowLabelKeys[arrow])}
+                {arrowLabels[arrow]}
               </h3>
               <div
                 className={`flex min-h-32 justify-center px-2 pb-6 pt-4 ${tooltipPreviewAnchorClasses[arrow]}`}
@@ -97,7 +93,7 @@ export default function AdminTooltipComponentPage({
       </ShowcaseSection>
 
       <ShowcaseSection
-        title={t("componentShowcase.tooltip.withSupportingText")}
+        title="With supporting text"
       >
         <div
           className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 2xl:grid-cols-3"
@@ -109,7 +105,7 @@ export default function AdminTooltipComponentPage({
               className="rounded-md border border-border-subtle bg-surface-base"
             >
               <h3 className="px-3 pt-3 text-label-medium text-foreground">
-                {t(arrowLabelKeys[arrow])}
+                {arrowLabels[arrow]}
               </h3>
               <div
                 className={`flex min-h-48 justify-center px-2 pb-6 pt-4 ${tooltipPreviewAnchorClasses[arrow]}`}

@@ -2,7 +2,10 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
+    <!-- SEO pages live on the landing site; the learning app is not indexed. -->
+    <meta name="robots" content="noindex" />
     <link rel="icon" type="image/svg+xml" href="/corelia_favicon.svg" />
+    <script src="/theme-init.js"></script>
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
@@ -18,8 +21,8 @@
       property="og:description"
       content="Nền tảng học Web3 và blockchain với khóa học chất lượng, contests và cộng đồng thực chiến."
     />
-    <meta property="og:url" content="https://app.corelia.academy/" />
-    <meta property="og:image" content="https://app.corelia.academy/corelia-og-default-background.png" />
+    <meta property="og:url" content="https://corelia.academy/learn/" />
+    <meta property="og:image" content="https://corelia.academy/learn/corelia-og-default-background.png" />
     <meta property="og:image:alt" content="Corelia Academy" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Corelia Academy" />
@@ -27,10 +30,15 @@
       name="twitter:description"
       content="Nền tảng học Web3 và blockchain với khóa học chất lượng, contests và cộng đồng thực chiến."
     />
-    <meta name="twitter:image" content="https://app.corelia.academy/corelia-og-default-background.png" />
+    <meta name="twitter:image" content="https://corelia.academy/learn/corelia-og-default-background.png" />
     <title>Corelia Academy</title>
   </head>
   <body>
+    <!-- Splash painted before JavaScript; AppLoadingScreen fades it out once the first page is ready. -->
+    <div id="app-splash" role="status" aria-busy="true">
+      <img class="app-splash-light" src="/logo/corelia-logo-black.svg" alt="" width="80" height="80" />
+      <img class="app-splash-dark" src="/logo/corelia-logo-white.svg" alt="" width="80" height="80" />
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

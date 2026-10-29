@@ -536,7 +536,7 @@
     },
     "appBaseUrl": {
       "title": "App base URL",
-      "subtitle": "Root domain used to build links in system emails (certificates, claim invites...). Staging: https://staging.corelia.academy; production: https://app.corelia.academy. A wrong value here sends every outgoing email link to the wrong environment.",
+      "subtitle": "Root domain used to build links in system emails (certificates, claim invites...). Staging: https://staging.corelia.academy/learn; production: https://corelia.academy/learn. A wrong value here sends every outgoing email link to the wrong environment.",
       "urlLabel": "Base URL",
       "saveUrl": "Save URL",
       "invalidUrl": "Invalid URL: must look like https://domain, with no trailing slash or extra characters."

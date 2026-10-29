@@ -1,0 +1,10 @@
+{
+  "name": "@corelia/ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Locale helpers shared by the landing site and the learning app.",
+  "exports": {
+    "./locales": "./src/locales.ts"
+  }
+}

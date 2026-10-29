@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+import { appPath } from "@/lib/appUrl";
 
 export type OgEntity = "project" | "course" | "hackathon" | "profile";
 export type OgPreviewMeta = {
@@ -14,7 +15,7 @@ export function ogPreviewQueryOptions(entity: OgEntity, id: string) {
     queryKey: ["og-preview", entity, normalized] as const,
     enabled: Boolean(normalized),
     queryFn: async (): Promise<OgPreviewMeta | null> => {
-      const response = await fetch(`/api/og/${entity}/${encodeURIComponent(normalized)}/meta`, { cache: "no-store" });
+      const response = await fetch(appPath(`/api/og/${entity}/${encodeURIComponent(normalized)}/meta`), { cache: "no-store" });
       if (response.status === 404) return null;
       if (!response.ok) throw new Error(`OG metadata: ${response.status}`);
       return response.json() as Promise<OgPreviewMeta>;

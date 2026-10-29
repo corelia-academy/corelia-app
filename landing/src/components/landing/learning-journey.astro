@@ -1,0 +1,44 @@
+---
+import LearningJourney from "./learning-journey";
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import StripeBand from "../common/StripeBand.astro";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const steps = [
+    { description: t("learningJourney.1.description") },
+    { description: t("learningJourney.2.description") },
+    { description: t("learningJourney.3.description") },
+    { description: t("learningJourney.4.description") },
+];
+---
+
+<div class="w-full border-t border-border">
+    <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+        <div class="grid w-full grid-cols-1 overflow-hidden border-x border-border md:grid-cols-2">
+            <!-- left banner -->
+            <div class=" flex items-center border-r border-border p-8 lg:p-12 w-full bg-[length:100%_100%]"
+            style="background-image: url('/panelmini.png');">
+                <p
+                class="mx-0 text-4xl font-medium leading-[1.15] tracking-[-1.8px] text-primary-foreground md:tracking-[-1.6px] lg:text-5xl xl:mx-10"
+                style="font-family: var(--font-heading);"
+                data-reveal="text-up"
+                >
+                    {t("learningJourney.title")}
+                </p>
+            </div>
+
+            <!-- right -->
+            <StripeBand animated class="bg-background flex flex-col flex-1" />
+        </div>
+
+        <div class="w-full">
+            <LearningJourney
+            steps={steps}
+            verticalText={t("learningJourney.description.number")}
+            client:load />
+        </div>
+    </div>
+</div>

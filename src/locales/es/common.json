@@ -216,7 +216,11 @@
       "submission_rejected": "Tu trabajo final de {{title}} necesita correcciones. Ábrelo para ver los comentarios.",
       "hackathon_announcement": "Anuncio del organizador: {{title}}"
     },
-    "updateError": "No se pudo actualizar la notificación. Inténtalo de nuevo."
+    "updateError": "No se pudo actualizar la notificación. Inténtalo de nuevo.",
+    "projectAutoHiddenTitle": "Tu proyecto se ha ocultado",
+    "projectAutoHiddenBody": "Nuestra revisión automática marcó contenido en {{title}}, por lo que ahora es privado. Nuestro equipo lo revisará; si crees que es un error, contacta con soporte.",
+    "projectAutoHiddenFields": "Marcado: {{fields}}",
+    "viewProject": "Ver proyecto"
   },
   "userProfile": {
     "tabs": {
@@ -302,16 +306,21 @@
       "primary": "Principal",
       "optional": "Solo el idioma principal necesita todo el contenido obligatorio. La traducción es opcional; los campos vacíos muestran el contenido principal.",
       "makePrimary": "Establecer como idioma principal",
-      "translate": "Traducir a {{target}} con IA",
-      "translating": "Traduciendo…",
-      "hint": "La IA traduce el contenido principal. Revísalo y edítalo antes de aplicarlo; las traducciones se guardan con tu proyecto.",
-      "preview": "Vista previa de la traducción",
-      "stale": "El proyecto cambió. Vuelve a traducir para no sobrescribir ediciones más recientes.",
-      "replaceHint": "Al aplicar, se reemplaza la traducción actual por esta vista previa.",
-      "apply": "Aplicar traducción",
-      "discard": "Descartar traducción",
+      "translate": "Traducir a {{target}}",
       "rateLimited": "Has completado 10 traducciones en una hora. Inténtalo de nuevo más tarde.",
-      "moderationRateLimited": "Demasiadas solicitudes de traducción bloqueadas en una hora. Inténtalo de nuevo más tarde."
+      "moderationRateLimited": "Demasiadas solicitudes de traducción bloqueadas en una hora. Inténtalo de nuevo más tarde.",
+      "dailyRateLimited": "Has alcanzado el límite de traducciones de hoy. Inténtalo de nuevo mañana.",
+      "saveFirst": "Guarda el proyecto para activar la traducción automática.",
+      "autoHint": "Edita solo el idioma principal. Los demás idiomas se traducen automáticamente unos minutos después de guardar. Si editas un idioma a mano, deja de actualizarse automáticamente hasta que lo vuelvas a traducir.",
+      "addLanguage": "Añadir idioma",
+      "retranslate": "Volver a traducir desde el principal",
+      "status": {
+        "fresh": "Traducido",
+        "stale": "Esperando a que termines de editar",
+        "pending": "Traduciendo…",
+        "failed": "La traducción falló",
+        "manual": "Editado por ti"
+      }
     },
     "title": "Proyectos",
     "description": "Una galería pública de proyectos del ecosistema de Corelia.",
@@ -320,6 +329,7 @@
     "loadMore": "Cargar más",
     "emptyTitle": "No se encontraron proyectos",
     "emptyDescription": "Aún no hay contenido público que coincida con el filtro actual.",
+    "emptyStartDescription": "Empieza con un proyecto nuevo.",
     "emptyHackathonDescription": "Aún no hay hackathons públicos disponibles para esta vista.",
     "emptyCourseDescription": "Aún no hay cursos públicos disponibles para esta vista.",
     "emptyShowcaseDescription": "Aún no hay escaparates públicos disponibles para esta vista.",
@@ -351,6 +361,7 @@
       "label": "Ordenar",
       "newest": "Más recientes",
       "oldest": "Más antiguos",
+      "liked": "Me gustan",
       "mostLiked": "Más gustados"
     },
     "card": {
@@ -395,6 +406,7 @@
       "remove": "Quitar",
       "moveUp": "Subir",
       "moveDown": "Bajar",
+      "coverImageBadge": "Portada",
       "logoInvalid": "El logotipo debe ser PNG, JPEG o WebP y no superar los 2 MB.",
       "screenshotInvalid": "La imagen debe ser PNG, JPEG o WebP y no superar los 5 MB.",
       "screenshotLimit": "Puedes subir hasta 6 capturas de pantalla.",
@@ -429,7 +441,9 @@
         "logoSize": "El archivo del logotipo no debe superar los 2 MB.",
         "invalidSlug": "El slug debe estar formado por letras minúsculas, números y guiones."
       },
-      "hackathonXpEarned": "+100 XP · Primer proyecto de hackathon enviado"
+      "hackathonXpEarned": "+100 XP · Primer proyecto de hackathon enviado",
+      "submissionLogoHint": "PNG, JPEG o WebP. La imagen se moderará al subirla.",
+      "uploadLogo": "Subir"
     },
     "team": {
       "title": "Miembros del equipo",
@@ -474,13 +488,25 @@
       "leavingProject": "Saliendo del equipo…",
       "leftProject": "Saliste del equipo del proyecto.",
       "leaveProjectFailed": "No se pudo salir del equipo del proyecto. Inténtalo de nuevo.",
-      "lateMembersHint": "Después de la fecha límite, puedes invitar a cualquier cuenta a colaborar. Los miembros nuevos no reciben premios ni certificados automáticamente."
+      "lateMembersHint": "Después de la fecha límite, puedes invitar a cualquier cuenta a colaborar. Los miembros nuevos no reciben premios ni certificados automáticamente.",
+      "selectedCount": "Miembros seleccionados ({{count}})",
+      "invitedCount": "Miembros invitados ({{count}})",
+      "invitedStatus": "Invitado",
+      "removeFromList": "Quitar de la lista",
+      "removeNamedFromList": "Quitar a {{name}} de la lista",
+      "resendEmailFor": "Reenviar el correo de invitación a {{name}}",
+      "showMore": "Mostrar más",
+      "showLess": "Mostrar menos"
     },
     "social": {
       "heart": "Me gusta",
       "unheart": "Quitar me gusta",
+      "save": "Guardar proyecto",
+      "unsave": "Quitar proyecto guardado",
       "loginToInteract": "Inicia sesión para dar me gusta.",
+      "loginToSave": "Inicia sesión para guardar este proyecto.",
       "heartFailed": "No se pudo actualizar el me gusta.",
+      "saveFailed": "No se pudo actualizar el estado de guardado.",
       "xpEarned": "+2 XP · Proyecto con me gusta",
       "xpHint": "Primer me gusta elegible: +2 XP (hasta 5 proyectos por día UTC)",
       "xpHintRemaining": "Primer me gusta elegible: +2 XP · quedan {{count}} me gusta con recompensa hoy (UTC)",
@@ -505,7 +531,8 @@
       "submissionUnauthorized": "No tienes autorización para enviar a este hackathon.",
       "moderationFlagged": "La moderación automática marcó el contenido. Revísalo e inténtalo de nuevo.",
       "userBlocked": "Tu cuenta tiene restringida esta acción.",
-      "rateLimitExceeded": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo."
+      "rateLimitExceeded": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.",
+      "rateLimited": "Demasiados cambios en el proyecto en poco tiempo. Espera unos minutos e inténtalo de nuevo."
     },
     "editor": {
       "workspace": "Espacio del proyecto",
@@ -596,25 +623,49 @@
       "resourceFields": {
         "demo": {
           "label": "Demo en vivo",
-          "hint": "Una versión funcional de tu producto que los revisores puedan probar."
+          "hint": "Una versión funcional de tu producto que los revisores puedan probar.",
+          "placeholder": "Enlace de la demo del proyecto (si está disponible)"
         },
         "slide": {
           "label": "Diapositivas / presentación",
-          "hint": "Presenta tu idea, el problema y la solución; por ejemplo con Google Slides o Canva."
+          "hint": "Presenta tu idea, el problema y la solución; por ejemplo con Google Slides o Canva.",
+          "placeholder": "Enlace de las diapositivas o del pitch deck (si está disponible)"
         },
         "repo": {
           "label": "Código fuente en GitHub",
-          "hint": "Un repositorio público en github.com/equipo/proyecto, y no un enlace a una incidencia o a un archivo."
+          "hint": "Un repositorio público en github.com/equipo/proyecto, y no un enlace a una incidencia o a un archivo.",
+          "placeholder": "Enlace al código fuente del proyecto en GitHub (si está disponible)"
         },
         "video": {
           "label": "Vídeo de la demo",
-          "hint": "Una grabación de tu producto en acción, como un vídeo de YouTube, Vimeo o Loom."
+          "hint": "Una grabación de tu producto en acción, como un vídeo de YouTube, Vimeo o Loom.",
+          "placeholder": "Enlace del vídeo de demo o pitch del proyecto"
         },
         "pitchVideo": {
           "label": "Vídeo de presentación",
-          "hint": "Presenta tu idea, su valor y tu equipo. No hace falta un producto funcional."
+          "hint": "Presenta tu idea, su valor y tu equipo. No hace falta un producto funcional.",
+          "placeholder": "Enlace del vídeo de pitch del proyecto (si está disponible)"
         }
-      }
+      },
+      "submissionLinksTitle": "Enlaces y adjuntos",
+      "submissionLinksHint": "Puedes omitir esta sección mientras tu proyecto sea solo una idea. Si añades enlaces, asegúrate de que sean de acceso público.",
+      "submissionTitle": "Información del proyecto",
+      "submissionHint": "Proporciona la información requerida.",
+      "requiredInformation": "Información requerida",
+      "submissionStory": "Historia",
+      "submissionCharacterLimit": "{{count}}/{{limit}}",
+      "submissionProjectTitle": "Título del proyecto",
+      "submissionTitlePlaceholder": "p. ej., Chatbot de Corelia",
+      "submissionSlugPlaceholder": "p. ej., demo-seed-20261008-future-skillbridge",
+      "submissionSlugHint": "Enlace a tu proyecto",
+      "submissionDescription": "Detalles del proyecto",
+      "submissionProgress": "Cuenta cómo construiste este proyecto",
+      "submissionTextPlaceholder": "Describe tu proyecto...",
+      "submissionPreviewImages": "Imágenes de vista previa",
+      "submissionOptionalClassifications": "Clasificaciones adicionales",
+      "submissionOptionalClassificationsHint": "Las áreas de ingeniería y las tecnologías son opcionales.",
+      "submissionSaveHint": "Después de guardar, los organizadores del concurso recibirán la última actualización de tu proyecto.",
+      "resourceUrlValid": "El enlace supera las comprobaciones de seguridad y formato."
     },
     "management": {
       "edit": "Editar",
@@ -650,7 +701,33 @@
       "blockedError": "Este proyecto está bloqueado. Un administrador debe desbloquearlo antes de que se pueda volver a publicar.",
       "contentError": "Añade un resumen y una descripción detallada antes de publicar.",
       "previous": "Anterior",
-      "next": "Siguiente"
+      "next": "Siguiente",
+      "reported": "Denunciados"
+    },
+    "report": {
+      "action": "Denunciar",
+      "title": "Denunciar este proyecto",
+      "description": "Cuéntanos qué ocurre. Las denuncias son privadas; el propietario no sabe quién denunció.",
+      "reason": "Motivo",
+      "note": "Detalles (opcional)",
+      "submit": "Enviar denuncia",
+      "success": "Gracias. Nuestro equipo revisará este proyecto.",
+      "failed": "No se pudo enviar la denuncia. Inténtalo de nuevo.",
+      "rateLimited": "Has enviado muchas denuncias hoy. Inténtalo de nuevo mañana.",
+      "openCount": "Denuncias abiertas: {{total}}",
+      "empty": "Ningún proyecto tiene denuncias abiertas.",
+      "dismiss": "Descartar denuncias",
+      "markActioned": "Marcar como resuelto",
+      "reasons": {
+        "spam": "Spam o publicidad",
+        "harassment": "Acoso",
+        "sexual": "Contenido sexual",
+        "violence": "Violencia",
+        "hate": "Discurso de odio",
+        "illegal": "Contenido ilegal",
+        "plagiarism": "Plagio o trabajo robado",
+        "other": "Otro"
+      }
     }
   },
   "search": {
@@ -1197,143 +1274,6 @@
     "title": "¡Acabas de recibir tus credenciales!",
     "body": "Las credenciales concedidas a tu correo ya están guardadas en tu cuenta de Corelia.",
     "cta": "Ver mis credenciales"
-  },
-  "componentShowcase": {
-    "xpRank": {
-      "title": "Insignias de rango de XP",
-      "criterion": "Los seis rangos en 80, 160 y 200 px; los rangos sin ilustración usan la insignia con signo de interrogación.",
-      "description": "Compara la ilustración de las insignias por rango y tamaño.",
-      "combinationsTitle": "Todas las combinaciones de rango y tamaño",
-      "tableLabel": "Insignias de XP por rango y tamaño",
-      "rank": "Rango",
-      "sizes": {
-        "small": "Pequeña · 80 px",
-        "medium": "Mediana · 160 px",
-        "large": "Grande · 200 px"
-      }
-    },
-    "fullPageEmptyState": {
-      "title": "Estado vacío de página completa"
-    },
-    "progress": {
-      "title": "Progreso",
-      "criterion": "Tamaños de Figma, niveles de progreso y modelos de color para las barras y círculos de progreso.",
-      "description": "Compara los tamaños exactos, estados y colores de barras y círculos de Figma.",
-      "standardTitle": "Barras de progreso estándar",
-      "standardCriterion": "Componente de 376 × 20 px con una pista de 328 × 8 px.",
-      "liveTitle": "Demo práctica de progreso",
-      "liveCriterion": "Usa −/+ o introduce un porcentaje. Exactamente 100 % completa los círculos; por encima de 100 % los marca como fallidos.",
-      "liveRangeLabel": "Ajustar el porcentaje de progreso",
-      "liveDecrease": "Reducir el progreso un 1 %",
-      "liveIncrease": "Aumentar el progreso un 1 %",
-      "liveInputLabel": "Porcentaje de progreso",
-      "liveOverrunHint": "Las barras se quedan llenas por encima de 100 %; los círculos muestran una marca de fallo.",
-      "liveValue": "{{percentage}} %",
-      "liveBarSample": "{{theme}} · {{percentage}} %",
-      "compactTitle": "Progreso compacto de la lección",
-      "compactCriterion": "Componente de 252 × 15 px con una pista de 210 × 4 px.",
-      "circleTitle": "Círculos de progreso",
-      "circleCriterion": "24 × 24 px; cada porcentaje sigue su variante de color de Figma.",
-      "label": "Etiqueta",
-      "noFill": "Sin relleno",
-      "barSample": "{{theme}} · {{level}} · {{percentage}} % · {{color}}",
-      "circleSample": "{{state}} · {{percentage}} %{{colorText}}",
-      "defaultValue": "Predeterminado",
-      "theme": {
-        "neutral": "Neutro",
-        "accent": "Acento",
-        "status": "Estado"
-      },
-      "level": {
-        "none": "Ninguno",
-        "low": "Bajo",
-        "medium": "Medio",
-        "good": "Bueno",
-        "done": "Hecho"
-      },
-      "circleState": {
-        "notStarted": "Sin empezar",
-        "failed": "Fallido",
-        "neutralProgress": "En curso · neutro",
-        "coloredProgress": "En curso · en color",
-        "done": "Hecho"
-      }
-    },
-    "tooltip": {
-      "title": "Tooltip",
-      "criterion": "Las nueve posiciones de flecha de Figma con y sin texto de apoyo; quien lo usa proporciona el contenido del mensaje.",
-      "description": "Compara las 18 variantes de flecha y texto de apoyo de Figma.",
-      "withoutSupportingText": "Sin texto de apoyo",
-      "withSupportingText": "Con texto de apoyo",
-      "sampleTitle": "Esto es un tooltip",
-      "sampleSupportingText": "Los tooltips explican el significado o la función de un elemento sin añadir texto permanente a la página.",
-      "arrows": {
-        "none": "Sin flecha",
-        "bottomCenter": "Abajo al centro",
-        "bottomLeft": "Abajo a la izquierda",
-        "bottomRight": "Abajo a la derecha",
-        "topCenter": "Arriba al centro",
-        "topLeft": "Arriba a la izquierda",
-        "topRight": "Arriba a la derecha",
-        "left": "Izquierda",
-        "right": "Derecha"
-      }
-    },
-    "stepper": {
-      "title": "Stepper",
-      "criterion": "Seguimiento de progreso horizontal y vertical; la página que lo usa proporciona el estado de cada paso.",
-      "description": "Un seguimiento visual del progreso. La página principal controla el estado de los pasos y decide cuándo avanza el flujo.",
-      "liveTitle": "Flujo interactivo controlado por la página principal",
-      "liveCriterion": "Usa Anterior y Siguiente para ver cómo la página principal actualiza los estados de los pasos.",
-      "orientationLabel": "Orientación",
-      "orientation": {
-        "horizontal": "Horizontal",
-        "vertical": "Vertical"
-      },
-      "styleLabel": "Estilo del marcador",
-      "style": {
-        "text": "Números",
-        "icon": "Iconos"
-      },
-      "steps": {
-        "account": "Cuenta",
-        "accountCaption": "Datos obligatorios",
-        "profile": "Perfil",
-        "profileCaption": "Tu información",
-        "review": "Revisión",
-        "reviewCaption": "Confirma los datos"
-      },
-      "state": {
-        "default": "Sin empezar",
-        "focused": "Paso actual",
-        "passed": "Completo",
-        "error": "Requiere atención"
-      },
-      "liveAccessibleLabel": "Progreso de la configuración de la cuenta",
-      "currentStep": "Paso {{current}} de {{total}}",
-      "previous": "Anterior",
-      "next": "Siguiente",
-      "parentOwnsState": "La página decide el estado de cada paso y cuándo avanzar; el Stepper solo muestra el estado que recibe.",
-      "statesTitle": "Comparación de estados y diseño de Figma",
-      "statesCriterion": "Compara los cuatro estados en ambas orientaciones y estilos de marcador.",
-      "statesAccessibleLabel": "Ejemplos de estados del Stepper",
-      "samples": {
-        "waiting": "En espera",
-        "current": "En curso",
-        "complete": "Completo",
-        "problem": "Requiere atención",
-        "optional": "Sin empezar",
-        "inProgress": "Paso actual",
-        "done": "Terminado",
-        "checkDetails": "Revisa los detalles"
-      },
-      "configuration": {
-        "horizontal": "Estilo {{style}} · horizontal",
-        "vertical": "Estilo {{style}} · vertical"
-      },
-      "usageTitle": "Ejemplo de uso controlado",
-      "usageCriterion": "La página deriva cada estado de su propio valor de paso actual y pasa el resultado al Stepper."
-    }
   },
   "maintenance": {
     "title": "Sistema en mantenimiento",

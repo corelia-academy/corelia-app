@@ -58,6 +58,14 @@
       },
       "active": "Activo"
     },
+    "timezone": {
+      "title": "Zona horaria",
+      "description": "Las fechas y horas de la app se muestran en esta zona horaria. Si has iniciado sesión, esta preferencia se sincroniza entre tus dispositivos.",
+      "label": "Zona horaria de visualización",
+      "auto": "Detección automática ({{timezone}})",
+      "current": "Hora actual: {{time}}",
+      "saveFailed": "No se pudo guardar tu zona horaria. Inténtalo de nuevo."
+    },
     "appearance": {
       "title": "Apariencia",
       "description": "Elige un tema que se adapte a tu entorno.",

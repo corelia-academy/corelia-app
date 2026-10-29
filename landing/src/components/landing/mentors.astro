@@ -1,0 +1,104 @@
+---
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import MentorsCarousel from "./mentors";
+import Background from "@/assets/landing/background2.jpg";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// mockdata
+const mentors = [
+  {
+    name: "Cris D. Tran",
+    title: "Core Contributor, Open Campus",
+    photo: "/mentors/crisMentor.png",
+  },
+  {
+    name: "Mai Thanh Nha",
+    title: "Founder, Olym3",
+    photo: "/mentors/thanhNhaMentor.png",
+  },
+  {
+    name: "Tran Thuy Nha Truc",
+    title: "Trainer, Testing VN",
+    photo: "/mentors/nhaTrucMentor.png",
+  },
+];
+---
+
+<div class="w-full border-t border-border">
+  <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+    <div
+      class="grid w-full grid-cols-1 overflow-hidden border-x border-border md:grid-cols-2"
+    >
+      <!-- left -->
+      <div class="flex flex-col border-r border-border">
+        <div
+          class="flex h-20 items-center justify-center border-b border-border bg-secondary px-10"
+        >
+          <p
+            class="text-center text-lg font-medium leading-[1.15] tracking-[-0.02em] text-foreground lg:text-2xl md:leading-[1.2]"
+            style="font-family: var(--font-heading);"
+          >
+            {t("mentors.badge")}
+          </p>
+        </div>
+
+        <div
+          class="relative flex flex-1 flex-col justify-center gap-7 xl:gap-16 overflow-hidden p-8 xl:px-20"
+        >
+          <img loading="lazy" decoding="async"
+            src={Background.src}
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover"
+          />
+          <p
+            class="z-10 max-w-[100%] text-4xl font-medium leading-[1.15] tracking-[-1.8px] text-primary-foreground md:text-5xl md:tracking-[-1.6px]"
+            style="font-family: var(--font-heading);"
+          >
+            <svg
+              class="mr-10 inline-block align-middle"
+              width="27"
+              height="31"
+              viewBox="0 0 27 31"
+              fill="none"
+            >
+              <path
+                opacity="0.3"
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M22.8164 5.32635C18.9805 3.06926 13.8198 0.0327085 13.3657 0C12.9912 0.213716 12.596 0.438892 12.1841 0.673507C8.60179 2.71426 3.76588 5.46912 0.471148 7.60775C0.445329 7.62659 0.305704 7.91526 0.293923 7.98774L0.212127 8.62172C-0.159425 12.1653 0.0450421 20.9981 0.167334 23.152L0.204337 23.217C0.931636 24.07 12.1697 30.369 13.3268 30.9744L13.4865 31L13.6695 30.9961C13.8574 30.8913 14.1355 30.7379 14.4842 30.5456C17.6194 28.8161 26.4596 23.9396 26.7335 22.9926C27.1416 21.5776 27.0205 9.7379 26.7725 7.62744C26.2212 7.32968 24.6741 6.41942 22.8164 5.32635ZM13.9007 3.78504L13.9113 3.79065L13.9305 3.80061C13.9453 3.8084 13.9708 3.82196 13.9977 3.83694C15.1254 4.46695 16.5999 5.32027 18.1254 6.21211L23.347 9.27578L23.7663 9.52056L23.7833 10.0127C23.8328 11.4559 23.8764 13.4754 23.8828 15.5813C23.8879 17.2623 23.8723 18.9016 23.8318 20.1932C23.8228 20.4788 23.8106 20.7404 23.7998 20.9718C23.7996 20.9764 23.7993 20.9813 23.7991 20.9858L23.7978 21.015L23.7773 21.463L23.4091 21.7112C23.3978 21.7188 23.3806 21.7306 23.3619 21.7435C23.3537 21.7491 23.3449 21.7551 23.3357 21.7614C23.2728 21.8047 23.1897 21.8618 23.1267 21.9033C22.1077 22.5728 20.7199 23.4086 19.2371 24.2698C17.3321 25.3762 15.358 26.4731 13.9322 27.2617L13.5137 27.4926L13.0969 27.2599C11.7528 26.5095 9.79013 25.4068 7.86005 24.2905C6.29899 23.3877 4.80087 22.5017 3.70084 21.8194C3.68264 21.8081 3.66492 21.7971 3.65236 21.7891L3.63472 21.7776L3.62174 21.7692L3.21942 21.5192L3.20581 21.04C3.16452 19.6366 3.12642 17.7489 3.11906 15.8114C3.11046 13.5463 3.14862 11.4524 3.23218 10.011L3.25855 9.54824L3.64725 9.30692C6.50827 7.52918 10.0951 5.47737 13.0569 3.78937L13.478 3.54891L13.9007 3.78504Z"
+                fill="currentColor"></path>
+              <path
+                opacity="0.6"
+                d="M13.4254 7C13.7998 7.02662 19.9349 10.6823 20.8736 11.1828C21.0114 12.3401 21.0787 18.8329 20.852 19.6088C20.6829 20.1859 14.6374 23.4238 13.5942 23.9978L13.4925 24L13.4038 23.986C12.7609 23.654 6.51758 20.1997 6.11352 19.7319L6.09296 19.6963C6.02502 18.5151 5.91143 13.6713 6.11785 11.728L6.16329 11.3804C6.16984 11.3406 6.2474 11.1823 6.26175 11.172C8.30259 9.86437 11.4078 8.13663 13.4254 7ZM13.4903 9.50168C11.8434 10.4281 9.85889 11.5491 8.27852 12.5184C8.23296 13.2941 8.21208 14.4309 8.21685 15.669C8.22092 16.7269 8.24162 17.7578 8.26445 18.5237C8.2787 18.5325 8.29309 18.5418 8.30773 18.5507C8.91262 18.9211 9.74001 19.4039 10.6058 19.8982C11.6751 20.5086 12.7628 21.1121 13.5087 21.5232C14.3005 21.0909 15.3936 20.4915 16.4473 19.8874C17.2688 19.4164 18.0304 18.9635 18.5853 18.6036C18.6399 18.5681 18.6902 18.5327 18.7378 18.501C18.7441 18.3684 18.751 18.2206 18.7562 18.0584C18.7785 17.3577 18.7872 16.4647 18.7843 15.5459C18.7808 14.3963 18.7565 13.2941 18.7292 12.5076C17.9233 12.0423 16.8375 11.4098 15.8284 10.8276C14.9813 10.3387 14.1655 9.87285 13.5433 9.52976C13.5256 9.51998 13.5076 9.51119 13.4903 9.50168Z"
+                fill="currentcolor"></path>
+              <path
+                d="M13.4281 11.9219C13.5799 11.933 16.0679 13.4558 16.4486 13.6643C16.5045 14.1462 16.5319 16.8521 16.4399 17.1747C16.3713 17.4152 13.9192 18.7641 13.4964 19.0031C13.4795 19.0062 13.4289 19.0034 13.4191 18.9982C13.1503 18.8557 10.4606 17.3267 10.4541 17.2111C10.4247 16.6865 10.3745 14.4255 10.4829 13.7467C10.4855 13.73 10.5171 13.6633 10.5227 13.6597C11.3504 13.1149 12.6099 12.3954 13.4281 11.9219Z"
+                fill="currentColor"></path>
+            </svg>
+            <span data-reveal="text-up">{t("mentors.quote")}</span>
+          </p>
+          <div class="mr-10 xl:mr-30">
+            <p
+              class="z-10 max-w-[100%] text-sm font-normal leading-[1.4] text-primary-foreground md:text-base"
+              data-reveal="text-up"
+              data-reveal-delay="600"
+            >
+              {t("mentors.description")}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- right -->
+      <div id="mentors-carousel-slot" class="flex w-full">
+        <MentorsCarousel
+          mentors={mentors}
+          client:visible={{ rootMargin: "200px" }}
+        />
+      </div>
+    </div>
+  </div>
+</div>

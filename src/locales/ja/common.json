@@ -216,7 +216,11 @@
       "submission_rejected": "{{title}} の最終課題は修正が必要です。開いてフィードバックをご確認ください。",
       "hackathon_announcement": "主催者からのお知らせ：{{title}}"
     },
-    "updateError": "通知を更新できませんでした。もう一度お試しください。"
+    "updateError": "通知を更新できませんでした。もう一度お試しください。",
+    "projectAutoHiddenTitle": "プロジェクトが非表示になりました",
+    "projectAutoHiddenBody": "自動チェックで {{title}} の内容が問題として検出されたため、非公開になりました。チームが確認します。誤りだと思われる場合はサポートにお問い合わせください。",
+    "projectAutoHiddenFields": "検出箇所: {{fields}}",
+    "viewProject": "プロジェクトを見る"
   },
   "userProfile": {
     "tabs": {
@@ -302,16 +306,21 @@
       "primary": "メイン",
       "optional": "必須のコンテンツがすべて必要なのはメイン言語のみです。翻訳は任意で、空のフィールドにはメインのコンテンツが表示されます。",
       "makePrimary": "メイン言語に設定",
-      "translate": "AI で{{target}}に翻訳",
-      "translating": "翻訳中…",
-      "hint": "AI がメインのコンテンツを翻訳します。適用する前に確認して編集してください。翻訳はプロジェクトとともに保存されます。",
-      "preview": "翻訳のプレビュー",
-      "stale": "プロジェクトが変更されました。新しい編集内容を上書きしないよう、もう一度翻訳してください。",
-      "replaceHint": "適用すると、現在の翻訳がこのプレビューに置き換えられます。",
-      "apply": "翻訳を適用",
-      "discard": "翻訳を破棄",
+      "translate": "{{target}}に翻訳",
       "rateLimited": "1 時間に 10 回の翻訳を完了しました。しばらくしてからもう一度お試しください。",
-      "moderationRateLimited": "1 時間内にブロックされた翻訳リクエストが多すぎます。しばらくしてからもう一度お試しください。"
+      "moderationRateLimited": "1 時間内にブロックされた翻訳リクエストが多すぎます。しばらくしてからもう一度お試しください。",
+      "dailyRateLimited": "本日の翻訳上限に達しました。明日もう一度お試しください。",
+      "saveFirst": "自動翻訳を有効にするにはプロジェクトを保存してください。",
+      "autoHint": "編集するのはメイン言語だけで構いません。ほかの言語は保存の数分後に自動で翻訳されます。手動で編集した言語は、再翻訳するまで自動更新されません。",
+      "addLanguage": "言語を追加",
+      "retranslate": "メイン言語から再翻訳",
+      "status": {
+        "fresh": "翻訳済み",
+        "stale": "編集の完了を待っています",
+        "pending": "翻訳中…",
+        "failed": "翻訳に失敗しました",
+        "manual": "手動で編集済み"
+      }
     },
     "title": "プロジェクト",
     "description": "Corelia のエコシステム全体のプロジェクトを集めた公開ギャラリーです。",
@@ -320,6 +329,7 @@
     "loadMore": "さらに読み込む",
     "emptyTitle": "プロジェクトが見つかりません",
     "emptyDescription": "現在のフィルターに一致する公開コンテンツはまだありません。",
+    "emptyStartDescription": "新しいプロジェクトを始めましょう。",
     "emptyHackathonDescription": "この表示で利用できる公開ハッカソンはまだありません。",
     "emptyCourseDescription": "この表示で利用できる公開コースはまだありません。",
     "emptyShowcaseDescription": "この表示で利用できる公開ショーケースはまだありません。",
@@ -351,6 +361,7 @@
       "label": "並べ替え",
       "newest": "新しい順",
       "oldest": "古い順",
+      "liked": "自分がいいねした",
       "mostLiked": "いいねの多い順"
     },
     "card": {
@@ -395,6 +406,7 @@
       "remove": "削除",
       "moveUp": "上へ移動",
       "moveDown": "下へ移動",
+      "coverImageBadge": "カバー",
       "logoInvalid": "ロゴは PNG、JPEG、WebP のいずれかで、2 MB 以下にしてください。",
       "screenshotInvalid": "画像は PNG、JPEG、WebP のいずれかで、5 MB 以下にしてください。",
       "screenshotLimit": "スクリーンショットは最大 6 枚までアップロードできます。",
@@ -429,7 +441,9 @@
         "logoSize": "ロゴのファイルサイズは 2 MB を超えないようにしてください。",
         "invalidSlug": "スラッグは、英小文字、数字、ハイフンで構成してください。"
       },
-      "hackathonXpEarned": "+100 XP · 初めてハッカソンのプロジェクトを提出"
+      "hackathonXpEarned": "+100 XP · 初めてハッカソンのプロジェクトを提出",
+      "submissionLogoHint": "PNG、JPEG、WebP に対応しています。アップロード時に画像が審査されます。",
+      "uploadLogo": "アップロード"
     },
     "team": {
       "title": "チームメンバー",
@@ -474,13 +488,25 @@
       "leavingProject": "チームを抜けています…",
       "leftProject": "プロジェクトチームを抜けました。",
       "leaveProjectFailed": "プロジェクトチームを抜けられませんでした。もう一度お試しください。",
-      "lateMembersHint": "締め切り後は、任意のアカウントを共同作業に招待できます。新しいメンバーが賞や修了証を自動的に受け取ることはありません。"
+      "lateMembersHint": "締め切り後は、任意のアカウントを共同作業に招待できます。新しいメンバーが賞や修了証を自動的に受け取ることはありません。",
+      "selectedCount": "選択したメンバー（{{count}}）",
+      "invitedCount": "招待済みメンバー（{{count}}）",
+      "invitedStatus": "招待済み",
+      "removeFromList": "リストから削除",
+      "removeNamedFromList": "{{name}} をリストから削除",
+      "resendEmailFor": "{{name}} に招待メールを再送信",
+      "showMore": "もっと見る",
+      "showLess": "閉じる"
     },
     "social": {
       "heart": "いいね",
       "unheart": "いいねを取り消す",
+      "save": "プロジェクトを保存",
+      "unsave": "保存を解除",
       "loginToInteract": "いいねするにはログインしてください。",
+      "loginToSave": "このプロジェクトを保存するにはログインしてください。",
       "heartFailed": "いいねを更新できませんでした。",
+      "saveFailed": "保存状態を更新できませんでした。",
       "xpEarned": "+2 XP · プロジェクトにいいね",
       "xpHint": "最初の対象のいいね：+2 XP（UTC の 1 日あたり最大 5 プロジェクト）",
       "xpHintRemaining": "最初の対象のいいね：+2 XP · 本日（UTC）の報酬付きいいねは残り {{count}} 回",
@@ -505,7 +531,8 @@
       "submissionUnauthorized": "このハッカソンに提出する権限がありません。",
       "moderationFlagged": "コンテンツが自動モデレーションでフラグを立てられました。修正してもう一度お試しください。",
       "userBlocked": "あなたのアカウントは、この操作を行うことが制限されています。",
-      "rateLimitExceeded": "リクエストが多すぎます。しばらく待ってからもう一度お試しください。"
+      "rateLimitExceeded": "リクエストが多すぎます。しばらく待ってからもう一度お試しください。",
+      "rateLimited": "短時間にプロジェクトの変更が多すぎます。数分待ってからもう一度お試しください。"
     },
     "editor": {
       "workspace": "プロジェクトワークスペース",
@@ -596,25 +623,49 @@
       "resourceFields": {
         "demo": {
           "label": "ライブデモ",
-          "hint": "レビュアーが試せる、動作するプロダクトのバージョンです。"
+          "hint": "レビュアーが試せる、動作するプロダクトのバージョンです。",
+          "placeholder": "プロジェクトのデモリンク（ある場合）"
         },
         "slide": {
           "label": "スライド / ピッチ資料",
-          "hint": "アイデア、課題、解決策を紹介します。例：Google スライドや Canva を使用。"
+          "hint": "アイデア、課題、解決策を紹介します。例：Google スライドや Canva を使用。",
+          "placeholder": "スライドまたはピッチデッキのリンク（ある場合）"
         },
         "repo": {
           "label": "GitHub のソースコード",
-          "hint": "課題やファイルへのリンクではなく、github.com/team/project 形式の公開リポジトリです。"
+          "hint": "課題やファイルへのリンクではなく、github.com/team/project 形式の公開リポジトリです。",
+          "placeholder": "プロジェクトの GitHub ソースコードのリンク（ある場合）"
         },
         "video": {
           "label": "デモ動画",
-          "hint": "YouTube、Vimeo、Loom の動画など、プロダクトが動作している様子の録画です。"
+          "hint": "YouTube、Vimeo、Loom の動画など、プロダクトが動作している様子の録画です。",
+          "placeholder": "プロジェクトのデモまたはピッチ動画のリンク"
         },
         "pitchVideo": {
           "label": "ピッチ動画",
-          "hint": "アイデア、その価値、チームを紹介します。動作するプロダクトは必須ではありません。"
+          "hint": "アイデア、その価値、チームを紹介します。動作するプロダクトは必須ではありません。",
+          "placeholder": "プロジェクトのピッチ動画のリンク（ある場合）"
         }
-      }
+      },
+      "submissionLinksTitle": "リンクと添付ファイル",
+      "submissionLinksHint": "プロジェクトがまだアイデア段階の場合、このセクションは省略できます。リンクを追加する場合は、公開アクセスできることを確認してください。",
+      "submissionTitle": "プロジェクト情報",
+      "submissionHint": "必要な情報を入力してください。",
+      "requiredInformation": "必須情報",
+      "submissionStory": "ストーリー",
+      "submissionCharacterLimit": "{{count}}/{{limit}}",
+      "submissionProjectTitle": "プロジェクト名",
+      "submissionTitlePlaceholder": "例：Corelia チャットボット",
+      "submissionSlugPlaceholder": "例：demo-seed-20261008-future-skillbridge",
+      "submissionSlugHint": "プロジェクトへのリンク",
+      "submissionDescription": "プロジェクトの詳細",
+      "submissionProgress": "このプロジェクトをどのように作ったか共有してください",
+      "submissionTextPlaceholder": "プロジェクトを説明してください...",
+      "submissionPreviewImages": "プレビュー画像",
+      "submissionOptionalClassifications": "追加の分類",
+      "submissionOptionalClassificationsHint": "エンジニアリング分野と技術は任意です。",
+      "submissionSaveHint": "保存後、コンテストの主催者にプロジェクトの最新の更新が通知されます。",
+      "resourceUrlValid": "リンクは安全性と形式のチェックに合格しました。"
     },
     "management": {
       "edit": "編集",
@@ -650,7 +701,33 @@
       "blockedError": "このプロジェクトはブロックされています。再公開するには、管理者がブロックを解除する必要があります。",
       "contentError": "公開する前に、要約と詳しい説明を追加してください。",
       "previous": "前へ",
-      "next": "次へ"
+      "next": "次へ",
+      "reported": "報告済み"
+    },
+    "report": {
+      "action": "報告",
+      "title": "このプロジェクトを報告",
+      "description": "問題の内容を教えてください。報告は非公開で、オーナーに報告者は知らされません。",
+      "reason": "理由",
+      "note": "詳細（任意）",
+      "submit": "報告を送信",
+      "success": "ありがとうございます。チームがこのプロジェクトを確認します。",
+      "failed": "報告を送信できませんでした。もう一度お試しください。",
+      "rateLimited": "本日は多くの報告を送信しています。明日もう一度お試しください。",
+      "openCount": "未対応の報告: {{total}}",
+      "empty": "未対応の報告があるプロジェクトはありません。",
+      "dismiss": "報告を却下",
+      "markActioned": "対応済みにする",
+      "reasons": {
+        "spam": "スパムまたは広告",
+        "harassment": "嫌がらせ・いじめ",
+        "sexual": "性的なコンテンツ",
+        "violence": "暴力",
+        "hate": "ヘイトスピーチ",
+        "illegal": "違法なコンテンツ",
+        "plagiarism": "盗用・剽窃",
+        "other": "その他"
+      }
     }
   },
   "search": {
@@ -1195,143 +1272,6 @@
     "title": "資格情報を受け取りました！",
     "body": "メールアドレス宛てに付与された資格情報が、Corelia アカウントに保存されました。",
     "cta": "マイ資格情報を見る"
-  },
-  "componentShowcase": {
-    "xpRank": {
-      "title": "XP ランクのバッジ",
-      "criterion": "6 つのランクすべてを 80、160、200 px で表示します。アートワークのないランクは、はてなマークのバッジを使用します。",
-      "description": "ランクとサイズ別にバッジのアートワークを比較します。",
-      "combinationsTitle": "すべてのランクとサイズの組み合わせ",
-      "tableLabel": "ランクとサイズ別の XP バッジ",
-      "rank": "ランク",
-      "sizes": {
-        "small": "小 · 80 px",
-        "medium": "中 · 160 px",
-        "large": "大 · 200 px"
-      }
-    },
-    "fullPageEmptyState": {
-      "title": "ページ全体の空の状態"
-    },
-    "progress": {
-      "title": "進捗",
-      "criterion": "進捗バーと円の Figma サイズ、進捗レベル、カラーモデルです。",
-      "description": "Figma の進捗バーと円の正確なサイズ、状態、色を比較します。",
-      "standardTitle": "標準の進捗バー",
-      "standardCriterion": "376 × 20 px のコンポーネントで、トラックは 328 × 8 px です。",
-      "liveTitle": "操作できる進捗のデモ",
-      "liveCriterion": "−/+ を使うか、パーセントを入力してください。ちょうど 100% で円が完了し、100% を超えると失敗として表示されます。",
-      "liveRangeLabel": "進捗のパーセントを調整",
-      "liveDecrease": "進捗を 1% 減らす",
-      "liveIncrease": "進捗を 1% 増やす",
-      "liveInputLabel": "進捗のパーセント",
-      "liveOverrunHint": "バーは 100% を超えても満タンのままで、円には失敗マークが表示されます。",
-      "liveValue": "{{percentage}}%",
-      "liveBarSample": "{{theme}} · {{percentage}}%",
-      "compactTitle": "コンパクトなレッスン進捗",
-      "compactCriterion": "252 × 15 px のコンポーネントで、トラックは 210 × 4 px です。",
-      "circleTitle": "進捗の円",
-      "circleCriterion": "24 × 24 px。各パーセントは、対応する Figma のカラーバリエーションに従います。",
-      "label": "ラベル",
-      "noFill": "塗りなし",
-      "barSample": "{{theme}} · {{level}} · {{percentage}}% · {{color}}",
-      "circleSample": "{{state}} · {{percentage}}%{{colorText}}",
-      "defaultValue": "デフォルト",
-      "theme": {
-        "neutral": "ニュートラル",
-        "accent": "アクセント",
-        "status": "ステータス"
-      },
-      "level": {
-        "none": "なし",
-        "low": "低",
-        "medium": "中",
-        "good": "良好",
-        "done": "完了"
-      },
-      "circleState": {
-        "notStarted": "未開始",
-        "failed": "失敗",
-        "neutralProgress": "進行中 · ニュートラル",
-        "coloredProgress": "進行中 · カラー",
-        "done": "完了"
-      }
-    },
-    "tooltip": {
-      "title": "ツールチップ",
-      "criterion": "補足テキストの有無それぞれで、9 つの Figma 矢印の位置を表示します。メッセージの内容は呼び出し側が提供します。",
-      "description": "Figma の 18 種類すべての矢印と補足テキストのバリエーションを比較します。",
-      "withoutSupportingText": "補足テキストなし",
-      "withSupportingText": "補足テキストあり",
-      "sampleTitle": "これはツールチップです",
-      "sampleSupportingText": "ツールチップは、ページに常時表示のテキストを追加せずに、要素の意味や機能を説明します。",
-      "arrows": {
-        "none": "矢印なし",
-        "bottomCenter": "下中央",
-        "bottomLeft": "下左",
-        "bottomRight": "下右",
-        "topCenter": "上中央",
-        "topLeft": "上左",
-        "topRight": "上右",
-        "left": "左",
-        "right": "右"
-      }
-    },
-    "stepper": {
-      "title": "ステッパー",
-      "criterion": "横方向と縦方向の進捗の追跡です。使用するページが各ステップの状態を提供します。",
-      "description": "視覚的な進捗トラッカーです。親ページがステップの状態を制御し、フローをいつ進めるかを決定します。",
-      "liveTitle": "親ページが制御するインタラクティブなフロー",
-      "liveCriterion": "「前へ」と「次へ」を使って、親ページがステップの状態を更新する様子を確認できます。",
-      "orientationLabel": "向き",
-      "orientation": {
-        "horizontal": "横",
-        "vertical": "縦"
-      },
-      "styleLabel": "マーカーのスタイル",
-      "style": {
-        "text": "数字",
-        "icon": "アイコン"
-      },
-      "steps": {
-        "account": "アカウント",
-        "accountCaption": "必須の情報",
-        "profile": "プロフィール",
-        "profileCaption": "あなたの情報",
-        "review": "確認",
-        "reviewCaption": "内容を確認"
-      },
-      "state": {
-        "default": "未開始",
-        "focused": "現在のステップ",
-        "passed": "完了",
-        "error": "要対応"
-      },
-      "liveAccessibleLabel": "アカウント設定の進捗",
-      "currentStep": "ステップ {{current}} / {{total}}",
-      "previous": "前へ",
-      "next": "次へ",
-      "parentOwnsState": "各ステップの状態と進めるタイミングはページが決定します。ステッパーは渡された状態を表示するだけです。",
-      "statesTitle": "Figma の状態とレイアウトの比較",
-      "statesCriterion": "2 つの向きとマーカースタイルで、4 つの状態すべてを比較します。",
-      "statesAccessibleLabel": "ステッパーの状態の例",
-      "samples": {
-        "waiting": "待機中",
-        "current": "進行中",
-        "complete": "完了",
-        "problem": "要対応",
-        "optional": "未開始",
-        "inProgress": "現在のステップ",
-        "done": "終了",
-        "checkDetails": "詳細を確認"
-      },
-      "configuration": {
-        "horizontal": "{{style}}スタイル · 横",
-        "vertical": "{{style}}スタイル · 縦"
-      },
-      "usageTitle": "制御された使用例",
-      "usageCriterion": "ページが自身の現在のステップ値から各状態を導き出し、その結果をステッパーに渡します。"
-    }
   },
   "maintenance": {
     "title": "システムメンテナンス中",

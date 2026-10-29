@@ -1,0 +1,106 @@
+---
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import HeroAssetsRight from "@/assets/landing/hero-assets-right.svg";
+import BackgroundHero from "@/assets/landing/hero-background.jpg";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+interface Props {
+  fullScreenFold?: boolean;
+}
+
+const { fullScreenFold = false } = Astro.props;
+
+const appOrigin = String(
+  import.meta.env.PUBLIC_APP_URL ?? "/learn",
+).replace(/\/$/, "");
+const appLoginUrl = `${appOrigin}/login`;
+---
+
+<!-- design mới -->
+<div
+  class:list={[
+    "mt-[var(--site-header-height,0px)] flex flex-col",
+    fullScreenFold ? "min-h-0 flex-1" : "md:min-h-[calc(100vh_-_198px)]",
+  ]}
+>
+  <div
+    class="mx-auto relative flex w-full flex-1 flex-col overflow-hidden bg-background lg:flex-row"
+  >
+    <!-- cột trái -->
+    <div
+      class="relative z-10 flex w-full flex-col items-center justify-center overflow-hidden border-r border-border p-8 lg:p-16 lg:w-1/2"
+    >
+      <!-- <div
+        class="pointer-events-none absolute inset-0 w-full bg-[length:100%_100%]"
+        aria-hidden="true"
+        style="background-image: url('/panel.png');"
+      >
+      </div> -->
+      <img
+        src={BackgroundHero.src}
+        aria-hidden="true"
+        class="pointer-events-none absolute inset-0 hidden size-full object-fill lg:block"
+      />
+      <div class="lg:ml-auto flex w-full max-w-[500px] flex-col gap-3 md:gap-7">
+        <p
+          class="text-4xl font-medium leading-[1.15] tracking-[-1.8px] text-primary-foreground md:tracking-[-1.6px] lg:text-5xl"
+          style="font-family: var(--font-heading);"
+          data-reveal="text-up"
+          data-reveal-delay="200"
+        >
+          {t("hero.title")}
+        </p>
+        <div class="lg:mr-50">
+          <p
+            class="text-sm font-normal leading-[1.4] text-on-primary-body md:text-base"
+            data-reveal="text-up"
+            data-reveal-delay="600"
+          >
+            {t("hero.description")}
+          </p>
+        </div>
+        <div
+          class="flex flex-wrap items-center gap-3 pt-2"
+          data-reveal="fade-up"
+          data-reveal-delay="1000"
+        >
+          <a
+            href={appLoginUrl}
+            data-hover-wave
+            class="h-10 inline-flex cursor-pointer items-center justify-center rounded-lg border border-border-container bg-primary-container hover:bg-primary-container-hover px-4 text-sm font-normal leading-[1.2] text-on-primary-container shadow-button-tertiary-glow transition-all duration-300 md:text-lg"
+          >
+            <span class="hw-label relative top-px md:top-0">
+              {t("hero.cta.becomeastudent")}
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- cột phải -->
+    <div
+      class="relative z-0 min-h-[min(80vw,500px)] lg:min-h-[min(40vw,240px)] w-full flex-1 basis-0 overflow-hidden bg-background lg:w-auto"
+    >
+      <!-- <div
+        class="absolute inset-0 grid auto-rows-fr grid-cols-20"
+        aria-hidden="true"
+      >
+        {
+          Array.from({ length: 20 }).map(() => (
+            <div class="border-r border-border" />
+          ))
+        }
+      </div> -->
+      <div class="pointer-events-none size-full">
+        <img
+          src={HeroAssetsRight.src}
+          aria-hidden="true"
+          class="absolute inset-0 size-full object-cover object-center"
+        />
+      </div>
+    </div>
+  </div>
+</div>

@@ -34,6 +34,7 @@ import { useTheme } from "next-themes";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/stores/authStore";
 import { canSpeculativelyPrefetch, prefetchRouteChunk } from "@/lib/routePrefetch";
+import { appPath } from "@/lib/appUrl";
 
 // const primaryNav = [
 //   { labelKey: "nav.home" as const, href: "/", icon: House, end: true },
@@ -73,7 +74,7 @@ const primaryNavSections = [
 const sidebarUtilityLinks = [
   {
     labelKey: "nav.changelog",
-    href: "https://corelia.academy/blog/",
+    href: "/blog",
     icon: MegaphoneSimple,
     showArrow: true,
   },
@@ -85,7 +86,7 @@ const sidebarUtilityLinks = [
   },
   {
     labelKey: "nav.feedback",
-    href: "https://corelia.academy/contact/",
+    href: "/contact",
     icon: ChatText,
     showArrow: false,
   },
@@ -150,8 +151,8 @@ export default function AppSidebar({
             <img
               src={
                 resolvedTheme === "dark"
-                  ? "/logo/Corelia_Logo_White.svg"
-                  : "/logo/corelia-full-logo-black.png"
+                  ? appPath("/logo/Corelia_Logo_White.svg")
+                  : appPath("/logo/corelia-full-logo-black.png")
               }
               alt="Corelia Academy"
               width={108}
@@ -162,7 +163,7 @@ export default function AppSidebar({
         </SidebarHeader>
       ) : null}
 
-      <SidebarContent className="py-lg px-md">
+      <SidebarContent className="py-lg px-xs">
         {/* <SidebarGroup>
           <SidebarGroupContent className="px-1">
             <SidebarMenu className="gap-1">
@@ -211,7 +212,7 @@ export default function AppSidebar({
                 </SidebarGroupLabel>
               ) : null}
 
-              <SidebarMenu className="gap-1">
+              <SidebarMenu>
                 {section.items.map((item) => {
                   const Icon = item.icon;
                   const isActive =

@@ -7,7 +7,7 @@ const db = vi.hoisted(() => ({
 
 vi.mock("@/i18n", () => ({ default: { language: "vi", resolvedLanguage: "vi" } }));
 vi.mock("@/lib/coreliaEdgeApi", () => ({ invokeCoreliaApi: vi.fn(), callCoreliaApi: vi.fn() }));
-vi.mock("@/lib/storage", () => ({ deleteStorageObjectByPath: vi.fn() }));
+vi.mock("@/lib/storage", () => ({ deleteContestMediaByPath: vi.fn(), deleteStorageObjectByPath: vi.fn() }));
 vi.mock("@/lib/profile", () => ({
   getProfileForUser: vi.fn(async () => ({ id: "admin-1", role: "admin" })),
 }));

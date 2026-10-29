@@ -1,0 +1,31 @@
+---
+import BlogNewsRoute from "@/components/blog/blog-news-route.astro";
+import {
+  BLOG_NEWS_PAGE_SIZE,
+  filterBlogPostsForNewsTab,
+  getBlogPosts,
+  type BlogNewsTabKey,
+} from "@/lib/blog";
+
+export async function getStaticPaths() {
+  const categoryTabs = ["events", "news", "learning-methods", "contests"] as const;
+  const posts = await getBlogPosts("en");
+
+  return categoryTabs.flatMap((tab) => {
+    const filteredPosts = filterBlogPostsForNewsTab(posts, tab);
+    const totalPages = Math.ceil(filteredPosts.length / BLOG_NEWS_PAGE_SIZE);
+
+    return Array.from({ length: Math.max(totalPages - 1, 0) }, (_, index) => ({
+      params: { tab, page: String(index + 2) },
+      props: { tabPath: tab as BlogNewsTabKey, page: index + 2 },
+    }));
+  });
+}
+
+const { tabPath, page } = Astro.props as {
+  tabPath: Exclude<BlogNewsTabKey, "all">;
+  page: number;
+};
+---
+
+<BlogNewsRoute lang="en" tabPath={tabPath} page={page} />

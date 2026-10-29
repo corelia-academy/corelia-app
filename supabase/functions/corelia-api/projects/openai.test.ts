@@ -4,6 +4,7 @@ import {
   translateProjectText,
   moderateProjectImage,
   moderateProjectText,
+  moderateTexts,
 } from "./openai.ts";
 
 function response(body: Record<string, unknown>, ok = true): Response {
@@ -38,6 +39,20 @@ describe("project OpenAI gate", () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce(new DOMException("timed out", "AbortError")));
     await expect(moderateProjectText([{ field: "title", text: "Title" }]))
       .rejects.toMatchObject({ code: "ai_unavailable:timeout" });
+  });
+
+  it("returns every verdict with its categories in batches of 32", async () => {
+    const fetchMock = vi.fn().mockImplementation(async (_url: string, init: RequestInit) => {
+      const input = JSON.parse(String(init.body)).input as string[];
+      return response({ results: input.map(text => ({ flagged: text === "bad", categories: { harassment: text === "bad", violence: false } })) });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const texts = [...Array.from({ length: 33 }, (_, i) => `ok ${i}`), "bad"];
+    const verdicts = await moderateTexts(texts);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(verdicts).toHaveLength(34);
+    expect(verdicts[33]).toEqual({ flagged: true, categories: ["harassment"] });
+    expect(verdicts[0]).toEqual({ flagged: false, categories: [] });
   });
 
   it("fails closed when moderation responses omit the flagged decision", async () => {
@@ -75,6 +90,12 @@ describe("project AI translation", () => {
     {status:"completed",output_text:JSON.stringify({...content,description:"Changed https://other.example `new code`"})},
   ])("rejects unusable AI responses", async payload => {
     vi.stubGlobal("fetch",vi.fn().mockResolvedValue(response(payload)));
-    await expect(translateProjectText(content,"en","vi")).rejects.toMatchObject({code:"ai_unavailable:invalid_response"});
+    await expect(translateProjectText(content,"en","vi")).rejects.toMatchObject({code:"ai_unavailable:invalid_response",billed:true});
+  });
+  it("marks timeouts as billed but provider rejections as unbilled", async () => {
+    vi.stubGlobal("fetch",vi.fn().mockRejectedValue(new DOMException("timed out","AbortError")));
+    await expect(translateProjectText(content,"en","vi")).rejects.toMatchObject({code:"ai_unavailable:timeout",billed:true});
+    vi.stubGlobal("fetch",vi.fn().mockResolvedValue(response({},false)));
+    await expect(translateProjectText(content,"en","vi")).rejects.toMatchObject({code:"ai_unavailable:provider_error",billed:false});
   });
 });

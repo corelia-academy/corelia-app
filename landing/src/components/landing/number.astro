@@ -1,0 +1,158 @@
+---
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import Solana from "@/assets/logo/solanaLogo.svg";
+import Sui from "@/assets/logo/suiLogo.svg";
+import OpenCampus from "@/assets/logo/opencampusLogo.png";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const numbers = [
+  {
+    number: "3000+",
+    title: t("number.1.title"),
+  },
+  {
+    number: "20+",
+    title: t("number.2.title"),
+  },
+  {
+    number: "90%",
+    title: t("number.3.title"),
+  },
+];
+
+// Thay danh sach doi tac khi co thay doi khac, dong bo lai voi company.astro
+const partnerLogos = [
+  { logo: OpenCampus.src, name: "Open Campus", width: 687, height: 139 },
+  { logo: Solana.src, name: "Solana", width: 646, height: 96 },
+  { logo: Sui.src, name: "Sui", width: 1914, height: 1001 },
+];
+
+// Each group must cover the viewport; the track contains exactly two equal groups.
+const logosPerGroup = [...partnerLogos, ...partnerLogos];
+---
+
+<!-- new design --><!-- <div class="container mx-auto flex flex-col max-w-(--app-max-width) px-3 xl:px-0"> -->
+<div class="w-full border-t border-border bg-background">
+  <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+    <div
+      class="flex w-full flex-col border-x border-border bg-background lg:flex-row"
+    >
+      <!-- thông số -->
+      <div
+        class="flex w-full shrink-0 flex-wrap items-start justify-between border-b lg:border-b-0 lg:border-r border-border gap-4 p-4 sm:p-6 sm:gap-6 lg:w-[50%]"
+      >
+        {
+          numbers.map((number) => (
+            <div>
+              <p
+                class="text-sm font-normal leading-[1.4] text-foreground md:text-base"
+                data-reveal="text-up"
+                data-reveal-eager
+                data-reveal-delay="200"
+              >
+                {number.title}
+              </p>
+              <p
+                class="text-[28px] font-medium leading-[1.15] tracking-[-1.4px] text-foreground lg:text-[40px] lg:tracking-[-1.6px]"
+                style="font-family: var(--font-heading);"
+                data-reveal="text-up"
+                data-reveal-split="chars"
+                data-reveal-eager
+                data-reveal-delay="600"
+              >
+                {number.number}
+              </p>
+            </div>
+          ))
+        }
+      </div>
+
+      <!-- Partner -->
+      <div
+        class="flex w-full min-w-0 flex-1 items-center gap-6 px-6 py-6 md:border-t-0 md:px-8"
+      >
+        <!-- <p
+          class="shrink-0 text-2xl font-light leading-[1.2] tracking-[-0.02em] text-foreground"
+        >
+          {t("number.partnersLabel")}
+        </p> -->
+        <div class="partner-fade relative min-w-0 flex-1 overflow-hidden">
+          <div class="partner-track">
+            {
+              [false, true].map((isDuplicate) => (
+                <div
+                  class="partner-group"
+                  aria-hidden={isDuplicate ? "true" : undefined}
+                >
+                  {logosPerGroup.map((partner) => (
+                    <img loading="lazy" decoding="async"
+                      src={partner.logo}
+                      alt={isDuplicate ? "" : partner.name}
+                      width={partner.width}
+                      height={partner.height}
+                      class="h-8 w-auto shrink-0 object-contain opacity-80"
+                    />
+                  ))}
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .partner-fade {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 15%,
+      black 85%,
+      transparent
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 15%,
+      black 85%,
+      transparent
+    );
+  }
+  @keyframes partner-scroll {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  .partner-track {
+    display: flex;
+    width: max-content;
+    animation: partner-scroll 12s linear infinite;
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+  }
+
+  .partner-group {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 2.5rem;
+    padding-right: 2.5rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .partner-track {
+      animation: none;
+      transform: none;
+    }
+  }
+</style>

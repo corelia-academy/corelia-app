@@ -79,23 +79,47 @@ export function ProjectSocialBlock({
 
   return (
     <div className={cn("border-t border-border-subtle pt-3", className)}>
-      <Button
-        type="button"
-        variant="cta" hierarchy="tertiary"
-        size="small"
-        disabled={heartMutation.isPending}
-        className={cn("gap-1.5", hearted && "text-rose-600")}
-        onClick={() => void handleHeart()}
-        aria-pressed={hearted}
-        aria-label={hearted ? t("projects.social.unheart") : t("projects.social.heart")}
-      >
-        {phosphorDuotone ? (
-          <PhosphorHeart className={cn("size-4", hearted && "fill-current")} weight="duotone" aria-hidden />
-        ) : (
+      {phosphorDuotone ? (
+        <div className={cn("inline-flex items-center gap-2", hearted && "text-rose-600")}>
+          <PhosphorHeart
+            className={cn(
+              "size-5 cursor-pointer focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+              !hearted && "hover:text-foreground-muted",
+              hearted && "fill-current [&>path:first-child]:opacity-100",
+            )}
+            weight="duotone"
+            role="button"
+            tabIndex={0}
+            aria-disabled={heartMutation.isPending}
+            aria-pressed={hearted}
+            aria-label={hearted ? t("projects.social.unheart") : t("projects.social.heart")}
+            onClick={() => void handleHeart()}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                void handleHeart();
+              }
+            }}
+          />
+          <span className="tabular-nums text-body-medium font-body leading-[1.4] text-foreground-subtle">
+            {likeCount}
+          </span>
+        </div>
+      ) : (
+        <Button
+          type="button"
+          variant="cta" hierarchy="tertiary"
+          size="small"
+          disabled={heartMutation.isPending}
+          className={cn("gap-1.5", hearted && "text-rose-600")}
+          onClick={() => void handleHeart()}
+          aria-pressed={hearted}
+          aria-label={hearted ? t("projects.social.unheart") : t("projects.social.heart")}
+        >
           <Heart className={cn("size-4", hearted && "fill-current")} aria-hidden />
-        )}
-        <span className="tabular-nums text-label-medium font-body">{likeCount}</span>
-      </Button>
+          <span className="tabular-nums text-label-medium font-body">{likeCount}</span>
+        </Button>
+      )}
     </div>
   );
 }

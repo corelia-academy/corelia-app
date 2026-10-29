@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { appPath } from "@/lib/appUrl";
 
 type Props = {
   open: boolean;
@@ -29,7 +30,7 @@ export default function OpenCampusConnectDialog(props: Props) {
           <div className="flex items-start gap-3">
             <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-surface-raised">
               <img
-                src="/logo/OC-square-logo.svg"
+                src={appPath("/logo/OC-square-logo.svg")}
                 alt={t("openCampusConnect.modal.logoAlt")}
                 width={40}
                 height={40}
@@ -85,7 +86,7 @@ export default function OpenCampusConnectDialog(props: Props) {
             className="h-11 inline-flex items-center justify-center gap-2 border border-border-subtle bg-ocid-blue px-3 py-2.5 text-left text-sm cursor-pointer hover:opacity-90 active:opacity-80 text-white"
           >
             <img
-              src="/logo/OC-square-logo.svg"
+              src={appPath("/logo/OC-square-logo.svg")}
               alt="Open Campus"
               className="h-full rounded-full"
             />

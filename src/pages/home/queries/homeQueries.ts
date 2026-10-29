@@ -33,6 +33,26 @@ export const homeKeys = {
     [...homeKeys.all, "dashboard", userId ?? "anonymous", locale] as const,
 };
 
+type CoursesModule = typeof import("@/lib/courses");
+
+/** Learner-visible content lesson counts for a few catalog cards, from one lesson read. */
+async function countVisibleContentLessons(
+  coursesModule: CoursesModule,
+  courses: Course[],
+): Promise<Array<readonly [string, number | null]>> {
+  try {
+    const lessonsByCourse = await coursesModule.getCourseLessonsByCourseIds(courses.map((course) => course.id));
+    return courses.map((course) => [
+      course.id,
+      (lessonsByCourse.get(course.id) ?? [])
+        .filter(isLessonPublishedForLearners)
+        .filter((lesson) => !isActivityLesson(lesson)).length,
+    ] as const);
+  } catch {
+    return courses.map((course) => [course.id, null] as const);
+  }
+}
+
 export function homeCatalogQueryOptions(user: User | null, locale: string) {
   return queryOptions<HomeCatalogPayload>({
     queryKey: homeKeys.catalog(user?.id ?? null, locale),
@@ -51,19 +71,7 @@ export function homeCatalogQueryOptions(user: User | null, locale: string) {
               )
               .catch(() => new Map())
           : Promise.resolve(new Map()),
-        Promise.all(
-          (user ? publishedCourses.slice(0, 2) : []).map(async (course) => {
-            try {
-              const lessons = await coursesModule.getCourseLessons(course.id);
-              const visibleContentLessonCount = lessons
-                .filter(isLessonPublishedForLearners)
-                .filter((lesson) => !isActivityLesson(lesson)).length;
-              return [course.id, visibleContentLessonCount] as const;
-            } catch {
-              return [course.id, null] as const;
-            }
-          }),
-        ),
+        user ? countVisibleContentLessons(coursesModule, publishedCourses.slice(0, 2)) : Promise.resolve([]),
       ]);
       const localizedMap = new Map(
         previewCourses.map((course) => [
@@ -95,65 +103,70 @@ export function homeDashboardQueryOptions(
       if (!user) return EMPTY_DASHBOARD;
       const {
         computeProgressPercent,
-        getCourse,
+        getCoursesByIds,
         getCompletedLessonIds,
-        getCourseLessons,
-        getCourseSections,
-        getLessonProgressForCourse,
+        getCourseLessonsByCourseIds,
+        getCourseSectionsByCourseIds,
+        getLessonProgressForCourses,
         getMyEnrollments,
         getResumeLesson,
         sortLessonsByCurriculum,
       } = await import("@/lib/courses");
 
       const enrollments = await getMyEnrollments(user.id);
-      const enrollmentCards = await Promise.all(
-        enrollments.slice(0, 2).map(async (enrollment): Promise<FocusCard | null> => {
-          const [course, lessons, sections, progress] = await Promise.all([
-            getCourse(enrollment.course_id),
-            getCourseLessons(enrollment.course_id),
-            getCourseSections(enrollment.course_id),
-            getLessonProgressForCourse(user.id, enrollment.course_id),
-          ]);
-          if (!course) return null;
-          const sortedLessons = sortLessonsByCurriculum(lessons, sections);
-          const percent = computeProgressPercent(sortedLessons, progress);
-          const requiredLessons = sortedLessons.filter(
-            (lesson) => lesson.published !== false && !lesson.archived_at,
-          );
-          const completedLessonIds = getCompletedLessonIds(requiredLessons, progress);
-          const remainingLessons = requiredLessons.filter(
-            (lesson) => !completedLessonIds.has(lesson.id),
-          );
-          const remainingDurationSeconds = remainingLessons.every((lesson) =>
-            Number.isFinite(lesson.duration_seconds),
-          )
-            ? remainingLessons.reduce((total, lesson) => total + lesson.duration_seconds, 0)
-            : null;
-          const nextLesson = getResumeLesson(sortedLessons, progress, enrollment.last_lesson_id);
-          const format = pickCourseFormat(course);
-          return {
-            id: course.id,
-            title: course.title,
-            format,
-            progress: percent,
-            lessonCount: requiredLessons.length,
-            remainingDurationSeconds,
-            completed: Boolean(enrollment.completed_at),
-            nextStep:
-              format === "online"
-                ? nextLesson?.title
-                  ? t("home.focus.nextLesson", { title: nextLesson.title })
-                  : t("home.focus.allLessonsCompleted")
-                : t("home.focus.lastAccessed", {
-                    date: new Date(enrollment.last_accessed_at).toLocaleDateString(intlLocale()),
-                  }),
-            meta: formatCourseMeta(course, format),
-            action: `/learn/${course.id}`,
-            thumbnailUrl: course.thumbnail_url,
-            lastAccessedAt: enrollment.last_accessed_at,
-          };
-        }),
-      );
+      const shown = enrollments.slice(0, 2);
+      const courseIds = shown.map((enrollment) => enrollment.course_id);
+      // One read per table for all shown courses, instead of four per course.
+      const [coursesById, lessonsByCourse, sectionsByCourse, progressByCourse] = await Promise.all([
+        getCoursesByIds(courseIds),
+        getCourseLessonsByCourseIds(courseIds),
+        getCourseSectionsByCourseIds(courseIds),
+        getLessonProgressForCourses(user.id, courseIds),
+      ]);
+      const enrollmentCards = shown.map((enrollment): FocusCard | null => {
+        const course = coursesById.get(enrollment.course_id);
+        const lessons = lessonsByCourse.get(enrollment.course_id) ?? [];
+        const sections = sectionsByCourse.get(enrollment.course_id) ?? [];
+        const progress = progressByCourse.get(enrollment.course_id) ?? [];
+        if (!course) return null;
+        const sortedLessons = sortLessonsByCurriculum(lessons, sections);
+        const percent = computeProgressPercent(sortedLessons, progress);
+        const requiredLessons = sortedLessons.filter(
+          (lesson) => lesson.published !== false && !lesson.archived_at,
+        );
+        const completedLessonIds = getCompletedLessonIds(requiredLessons, progress);
+        const remainingLessons = requiredLessons.filter(
+          (lesson) => !completedLessonIds.has(lesson.id),
+        );
+        const remainingDurationSeconds = remainingLessons.every((lesson) =>
+          Number.isFinite(lesson.duration_seconds),
+        )
+          ? remainingLessons.reduce((total, lesson) => total + lesson.duration_seconds, 0)
+          : null;
+        const nextLesson = getResumeLesson(sortedLessons, progress, enrollment.last_lesson_id);
+        const format = pickCourseFormat(course);
+        return {
+          id: course.id,
+          title: course.title,
+          format,
+          progress: percent,
+          lessonCount: requiredLessons.length,
+          remainingDurationSeconds,
+          completed: Boolean(enrollment.completed_at),
+          nextStep:
+            format === "online"
+              ? nextLesson?.title
+                ? t("home.focus.nextLesson", { title: nextLesson.title })
+                : t("home.focus.allLessonsCompleted")
+              : t("home.focus.lastAccessed", {
+                  date: new Date(enrollment.last_accessed_at).toLocaleDateString(intlLocale()),
+                }),
+          meta: formatCourseMeta(course, format),
+          action: `/study/${course.id}`,
+          thumbnailUrl: course.thumbnail_url,
+          lastAccessedAt: enrollment.last_accessed_at,
+        };
+      });
 
       return {
         focusCards: enrollmentCards.filter((item): item is FocusCard => item != null),

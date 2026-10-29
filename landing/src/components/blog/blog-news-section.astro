@@ -1,0 +1,682 @@
+---
+import { getLangFromUrl } from "@/i18n/utils";
+import { useTranslations } from "@/i18n/translations";
+import ArrowRight from "@/assets/landing/arrow-right.svg";
+import {
+    blogPostUrl,
+    BLOG_NEWS_PAGE_SIZE,
+    filterBlogPostsForNewsTab,
+    getBlogPosts,
+    type BlogLocale,
+    type BlogNewsTabKey,
+} from "@/lib/blog";
+import { blogCategoryLabel } from "@/lib/blogTaxonomy";
+import { getYouTubeThumbnailUrl } from "@/lib/youtube";
+import StripeBand from "../common/StripeBand.astro";
+
+const lang = getLangFromUrl(Astro.url) as BlogLocale;
+const t = useTranslations(lang);
+
+type Props = {
+    activeTab?: BlogNewsTabKey;
+    page?: number;
+};
+
+const { activeTab = "all", page = 1 } = Astro.props as Props;
+const posts = await getBlogPosts(lang);
+const blogBasePath = lang === "en" ? "/blog" : "/vi/blog";
+
+// MOCK MAPPING: mapping tạm thời theo category hiện có.
+const newsTabs = [
+    {
+        key: "events",
+        label: t("blog.news.tabs.events"),
+        href: `${blogBasePath}/events`,
+    },
+    {
+        key: "news",
+        label: t("blog.news.tabs.announcements"),
+        href: `${blogBasePath}/news`,
+    },
+    {
+        key: "learning-methods",
+        label: t("blog.news.tabs.learningMethods"),
+        href: `${blogBasePath}/learning-methods`,
+    },
+    {
+        key: "contests",
+        label: t("blog.news.tabs.contests"),
+        href: `${blogBasePath}/contests`,
+    },
+] as const;
+
+function previewImageSrc(post: (typeof posts)[number]): string | null {
+    const media = post.data.media;
+    if (!media) return null;
+    if (media.type === "image") return media.src;
+    return getYouTubeThumbnailUrl(media.url);
+}
+
+function estimateReadMinutes(post: (typeof posts)[number]): number {
+    const wordCount =
+        post.body?.trim().split(/\s+/).filter(Boolean).length ?? 0;
+    return Math.max(1, Math.ceil(wordCount / 200));
+}
+
+function readTimeLabel(minutes: number): string {
+    return lang === "en" ? `${minutes}` : `${minutes}`;
+}
+
+const filteredNewsCards = filterBlogPostsForNewsTab(posts, activeTab)
+    .map((post) => ({
+        href: blogPostUrl(lang, post.slug),
+        title: post.data.title,
+        description: post.data.description ?? "",
+        category: post.data.category,
+        categoryLabel: blogCategoryLabel(lang, post.data.category),
+        date: post.data.date.toLocaleDateString(
+            lang === "en" ? "en-US" : "vi-VN",
+            {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+            },
+        ),
+        image: previewImageSrc(post),
+        readTime: readTimeLabel(estimateReadMinutes(post)),
+    }));
+
+const pageSize = BLOG_NEWS_PAGE_SIZE;
+const requestedPage = Number.isInteger(page) && page > 0 ? page : 1;
+const totalPages = Math.max(1, Math.ceil(filteredNewsCards.length / pageSize));
+const currentPage = Math.min(requestedPage, totalPages);
+const firstCardIndex = (currentPage - 1) * pageSize;
+const newsCards = filteredNewsCards.slice(
+    firstCardIndex,
+    firstCardIndex + pageSize,
+);
+
+const newsBasePath =
+    activeTab === "all" ? blogBasePath : `${blogBasePath}/${activeTab}`;
+
+const makeNewsPageHref = (targetPage: number) =>
+    targetPage <= 1 ? newsBasePath : `${newsBasePath}/page/${targetPage}`;
+
+type PaginationItem = number | "ellipsis";
+
+function getPaginationItems(
+    current: number,
+    total: number,
+): PaginationItem[] {
+    if (total <= 5) {
+        return Array.from({ length: total }, (_, index) => index + 1);
+    }
+
+    if (current <= 3) {
+        return [1, 2, 3, "ellipsis", total];
+    }
+
+    const groupStart = 4 + Math.floor((current - 4) / 5) * 5;
+    const groupLength = Math.min(5, total - groupStart + 1);
+
+    return Array.from(
+        { length: groupLength },
+        (_, index) => groupStart + index,
+    );
+}
+
+const paginationItems = getPaginationItems(currentPage, totalPages);
+const totalGroups =
+    totalPages <= 5 ? 1 : 1 + Math.ceil((totalPages - 3) / 5);
+const currentGroup =
+    totalPages <= 5 || currentPage <= 3
+        ? 0
+        : Math.floor((currentPage - 4) / 5) + 1;
+const previousGroupPage =
+    currentGroup <= 1 ? 1 : 4 + (currentGroup - 2) * 5;
+const nextGroupPage = currentGroup === 0 ? 4 : 4 + currentGroup * 5;
+---
+
+{
+    newsCards.map((post) =>
+        post.image ? <link rel="preload" as="image" href={post.image} /> : null,
+    )
+}
+
+<section id="blog-news" data-blog-news class="w-full border-t border-border">
+    <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+        <!-- banner "‹ Tin tức ›" -->
+        <div
+            class="grid h-[200px] w-full grid-cols-1 overflow-hidden border-x border-border md:grid-cols-3"
+        >
+            <!-- ke soc -->
+            <StripeBand
+                
+                class="bg-background flex flex-col flex-1 border-r border-border"
+            />
+
+            <!-- title -->
+            <div
+                class="flex items-center justify-center border-r border-border"
+            >
+                <div class="flex gap-3 justify-center mx-auto">
+                    <span class="text-2xl text-foreground-subtle mt-3"
+                        >&lt;</span
+                    >
+                    <p
+                        class="flex-1 text-4xl font-medium leading-[1.15] tracking-[-0.05em] text-foreground md:text-5xl md:tracking-[-0.04em]"
+                        style="font-family: var(--font-heading);"
+                    >
+                        {t("blog.preview.bannerLabel")}
+                    </p>
+                    <span class="text-2xl text-foreground-subtle mt-3"
+                        >&gt;</span
+                    >
+                </div>
+            </div>
+
+            <!-- ke soc -->
+            <StripeBand class="bg-background flex flex-col flex-1" />
+        </div>
+    </div>
+
+    <div class="container mx-auto max-w-(--app-max-width) px-3 xl:px-0">
+        <div class="border-x border-t border-border">
+            <div class="relative border-x border-border bg-secondary px-3 md:px-5 md:h-20">
+                <div class="flex items-center h-10 gap-1 sm:gap-2 md:hidden">
+                    <button
+                        id="blog-news-tabs-btn"
+                        class="p-1.5 focus:outline-none sm:p-2 md:hidden"
+                        type="button"
+                        aria-label="Toggle menu"
+                        aria-controls="blog-news-tabs-menu"
+                        aria-expanded="false"
+                    >
+                        <svg
+                            class="size-5 sm:size-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <!-- Hamburger Icon -->
+                            <path
+                                id="blog-news-tabs-hamburger-icon"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16"></path>
+
+                            <!-- X Icon -->
+                            <path
+                                id="blog-news-tabs-close-icon"
+                                class="opacity-0"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"
+                            ></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div
+                    id="blog-news-tabs-menu"
+                    class="absolute inset-x-0 top-full max-h-[calc(100vh_-_4rem)] overflow-y-auto bg-secondary border-x border-b border-border px-3 opacity-0 invisible pointer-events-none md:hidden"
+                    inert
+                >
+                    <nav class="pt-2 pb-2">
+                        <ul class="flex flex-col gap-3 text-sm leading-[1.2]">
+                            {
+                                newsTabs.map((tab) => (
+                                    <li>
+                                        <a
+                                            href={tab.href}
+                                            class:list={[
+                                                "block py-1 transition-colors",
+                                                tab.key === activeTab
+                                                    ? "text-foreground"
+                                                    : "text-muted-foreground hover:text-primary",
+                                            ]}
+                                            aria-current={
+                                                tab.key === activeTab
+                                                    ? "page"
+                                                    : undefined
+                                            }
+                                        >
+                                            {tab.label}
+                                        </a>
+                                    </li>
+                                ))
+                            }
+                        </ul>
+                    </nav>
+                </div>
+
+                <div
+                    class="hidden items-start gap-6 overflow-x-auto md:flex"
+                    role="tablist"
+                    data-nav-group
+                    aria-label={t("blog.news.pagination")}
+                >
+                    {
+                        newsTabs.map((tab) => (
+                            <a
+                                href={tab.href}
+                                role="tab"
+                                aria-selected={
+                                    tab.key === activeTab ? "true" : "false"
+                                }
+                                aria-current={
+                                    tab.key === activeTab ? "page" : undefined
+                                }
+                                class:list={[
+                                    "relative inline-block min-h-20 shrink-0 whitespace-nowrap px-3 pt-7 text-center text-sm transition-colors md:text-lg",
+                                    tab.key === activeTab
+                                        ? "border-b-2 border-foreground"
+                                        : "text-foreground-subtle",
+                                ]}
+                                data-nav-link
+                                data-nav-active={tab.key === activeTab}
+                            >
+                                <span class="text-foreground-subtle">
+                                    {tab.label}
+                                </span>
+
+                                <span
+                                    data-nav-sweep
+                                    class="pointer-events-none absolute inset-0 overflow-hidden"
+                                    aria-hidden="true"
+                                >
+                                    <span class="absolute inset-0 whitespace-nowrap pt-7 text-foreground">
+                                        {tab.label}
+                                    </span>
+                                </span>
+                            </a>
+                        ))
+                    }
+                </div>
+            </div>
+
+            <div class="" data-news-panel>
+                <div
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+                    data-news-grid
+                    hidden={newsCards.length === 0}
+                >
+                    {
+                        newsCards.map((post, index) => (
+                            <article
+                                data-news-card
+                                data-news-category={post.category}
+                                class="min-w-0"
+                            >
+                                <a
+                                    href={post.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="group flex h-full flex-col border border-border p-5 transition-colors hover:bg-secondary"
+                                >
+                                    <div class="h-[250px] w-full overflow-hidden bg-muted">
+                                        {post.image ? (
+                                            <img
+                                                data-news-image
+                                                src={post.image}
+                                                alt={post.title}
+                                                loading="eager"
+                                                fetchpriority={
+                                                    index === 0 ? "high" : "auto"
+                                                }
+                                                decoding="async"
+                                                class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                            />
+                                        ) : (
+                                            <div
+                                                class="h-full w-full bg-linear-to-br from-primary/15 via-card to-muted"
+                                                aria-hidden="true"
+                                            />
+                                        )}
+                                    </div>
+
+                                    <div class="flex flex-1 flex-col gap-3 py-5 md:gap-4">
+                                        <h3
+                                            class="line-clamp-2 text-2xl font-medium leading-[1.15] tracking-[-0.03em] text-foreground md:text-[28px] md:leading-[1.2]"
+                                            style={{
+                                                fontFamily:
+                                                    "var(--font-heading)",
+                                            }}
+                                        >
+                                            {post.title}
+                                        </h3>
+
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <span class="w-fit border border-border-strong p-1 text-sm font-medium leading-[1.2] text-border-strong md:text-lg">
+                                                {post.categoryLabel}
+                                            </span>
+
+                                            <span class="w-fit border border-border-strong p-1 text-sm font-medium leading-[1.2] text-border-strong md:text-lg">
+                                                +{post.readTime} more roles
+                                            </span>
+                                        </div>
+                                    </div>
+                                </a>
+                                {/* <a href={post.href} class="group block border border-border">
+                                    <div class="aspect-[1.45] overflow-hidden border border-border bg-muted">
+                                        {post.image ? (
+                                            <img
+                                                src={post.image}
+                                                alt={post.title}
+                                                loading="lazy"
+                                                class="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                            />
+                                        ) : (
+                                            <div
+                                                class="flex size-full items-center justify-center bg-muted text-sm text-foreground-subtle"
+                                                aria-hidden="true"
+                                            >
+                                                Corelia Academy
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <div class="flex flex-wrap gap-2 text-xs text-foreground-subtle">
+                                            <span class="border border-border px-2 py-1">
+                                                {post.categoryLabel}
+                                            </span>
+                                            <span class="border border-border px-2 py-1">
+                                                {post.date}
+                                            </span>
+                                            <span class="border border-border px-2 py-1">
+                                                {post.readTime}
+                                            </span>
+                                        </div>
+
+                                        <h3 class="mt-4 line-clamp-2 text-xl leading-[1.15] tracking-[-0.04em] text-foreground md:text-2xl">
+                                            {post.title}
+                                        </h3>
+
+                                        {post.description && (
+                                            <p class="mt-3 line-clamp-2 text-sm leading-[1.4] text-foreground-subtle">
+                                                {post.description}
+                                            </p>
+                                        )}
+                                    </div>
+                                </a> */}
+                            </article>
+                        ))
+                    }
+                </div>
+
+                <p
+                    data-news-empty
+                    hidden={newsCards.length !== 0}
+                    class="py-12 text-center text-sm text-foreground-subtle"
+                >
+                    {t("blog.news.empty")}
+                </p>
+
+                <nav
+                    data-news-pagination
+                    data-auto-scroll={
+                        activeTab !== "all" || currentPage > 1 ? "true" : "false"
+                    }
+                    data-page-label={t("blog.news.page")}
+                    class="bg-secondary h-20 p-10 flex items-center justify-center gap-2"
+                    aria-label={t("blog.news.pagination")}
+                >
+                    <a
+                        data-news-prev
+                        href={previousGroupPage > 1 ? makeNewsPageHref(previousGroupPage) : newsBasePath}
+                        class:list={[
+                            "flex size-10 items-center justify-center border border-border text-foreground-subtle transition-colors hover:bg-muted",
+                            currentGroup === 0 && "pointer-events-none opacity-40",
+                        ]}
+                        aria-disabled={currentGroup === 0 ? "true" : "false"}
+                        aria-label={t("blog.news.previous")}
+                    >
+                        <img loading="lazy" decoding="async"
+                            src={ArrowRight.src}
+                            alt=""
+                            aria-hidden="true"
+                            class="size-4 rotate-180"
+                        />
+                    </a>
+
+                    <div data-news-pages class="flex items-center gap-1">
+                        {
+                            paginationItems.map((pageItem) => {
+                                const isEllipsis = pageItem === "ellipsis";
+                                const pageNumber = isEllipsis ? 4 : pageItem;
+                                const isCurrentPage =
+                                    !isEllipsis && pageNumber === currentPage;
+
+                                return isCurrentPage ? (
+                                    <span
+                                        class="flex size-10 items-center justify-center border border-border bg-background text-center text-sm leading-none text-primary-foreground"
+                                        aria-current="page"
+                                    >
+                                        {pageNumber}
+                                    </span>
+                                ) : (
+                                    <a
+                                        href={makeNewsPageHref(pageNumber)}
+                                        class="flex size-10 items-center justify-center border border-border text-center text-sm leading-none text-foreground transition-colors hover:bg-muted"
+                                        aria-label={`${t("blog.news.page")} ${pageNumber}`}
+                                    >
+                                        {isEllipsis ? "..." : pageNumber}
+                                    </a>
+                                );
+                            })
+                        }
+                    </div>
+
+                    <a
+                        data-news-next
+                        href={makeNewsPageHref(nextGroupPage)}
+                        class:list={[
+                            "flex size-10 items-center justify-center border border-border text-foreground-subtle transition-colors hover:bg-muted",
+                            currentGroup >= totalGroups - 1 &&
+                                "pointer-events-none opacity-40",
+                        ]}
+                        aria-disabled={
+                            currentGroup >= totalGroups - 1 ? "true" : "false"
+                        }
+                        aria-label={t("blog.news.next")}
+                    >
+                        <img loading="lazy" decoding="async"
+                            src={ArrowRight.src}
+                            alt=""
+                            aria-hidden="true"
+                            class="size-4"
+                        />
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    import { gsap } from "gsap";
+
+    const blogTabsButton = document.getElementById("blog-news-tabs-btn");
+    const blogTabsMenu = document.getElementById("blog-news-tabs-menu");
+    const blogTabsHamburgerIcon = document.getElementById(
+        "blog-news-tabs-hamburger-icon",
+    );
+    const blogTabsCloseIcon = document.getElementById(
+        "blog-news-tabs-close-icon",
+    );
+    const blogTabsItems = blogTabsMenu
+        ? Array.from(blogTabsMenu.querySelectorAll<HTMLElement>("li"))
+        : [];
+    const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const openDuration = prefersReducedMotion ? 0 : 0.4;
+    const closeDuration = prefersReducedMotion ? 0 : 0.28;
+
+    let blogTabsOpen = false;
+
+    const killBlogTabsTweens = () => {
+        gsap.killTweensOf(blogTabsMenu);
+        gsap.killTweensOf(blogTabsItems);
+        gsap.killTweensOf(blogTabsHamburgerIcon);
+        gsap.killTweensOf(blogTabsCloseIcon);
+    };
+
+    const animateBlogTabsIcons = (open: boolean) => {
+        gsap.to(blogTabsHamburgerIcon, {
+            autoAlpha: open ? 0 : 1,
+            scale: open ? 0 : 1,
+            duration: prefersReducedMotion ? 0 : 0.2,
+            ease: "power2.out",
+            overwrite: true,
+        });
+        gsap.to(blogTabsCloseIcon, {
+            autoAlpha: open ? 1 : 0,
+            scale: open ? 1 : 0,
+            duration: prefersReducedMotion ? 0 : 0.2,
+            ease: "power2.out",
+            overwrite: true,
+        });
+    };
+
+    const openBlogTabsMenu = () => {
+        if (!blogTabsMenu) return;
+
+        killBlogTabsTweens();
+        blogTabsOpen = true;
+        blogTabsButton?.setAttribute("aria-expanded", "true");
+        blogTabsMenu.removeAttribute("inert");
+
+        gsap.set(blogTabsMenu, {
+            height: 0,
+            autoAlpha: 1,
+            visibility: "visible",
+            pointerEvents: "auto",
+        });
+
+        gsap.to(blogTabsMenu, {
+            height: "auto",
+            duration: openDuration,
+            ease: "power3.out",
+            overwrite: true,
+        });
+
+        gsap.fromTo(
+            blogTabsItems,
+            { autoAlpha: 0 },
+            {
+                autoAlpha: 1,
+                duration: prefersReducedMotion ? 0 : 0.28,
+                stagger: prefersReducedMotion ? 0 : 0.04,
+                ease: "power2.out",
+                overwrite: true,
+            },
+        );
+
+        animateBlogTabsIcons(true);
+    };
+
+    const closeBlogTabsMenu = () => {
+        if (!blogTabsMenu) return;
+
+        killBlogTabsTweens();
+        blogTabsOpen = false;
+        blogTabsButton?.setAttribute("aria-expanded", "false");
+        blogTabsMenu.setAttribute("inert", "");
+
+        gsap.to(blogTabsItems, {
+            autoAlpha: 0,
+            duration: closeDuration,
+            stagger: prefersReducedMotion ? 0 : 0.02,
+            ease: "power2.in",
+            overwrite: true,
+        });
+
+        gsap.to(blogTabsMenu, {
+            height: 0,
+            autoAlpha: 0,
+            duration: closeDuration,
+            ease: "power2.inOut",
+            overwrite: true,
+            onComplete: () => {
+                gsap.set(blogTabsMenu, {
+                    height: 0,
+                    visibility: "hidden",
+                    pointerEvents: "none",
+                });
+            },
+        });
+
+        animateBlogTabsIcons(false);
+    };
+
+    gsap.set(blogTabsMenu, {
+        height: 0,
+        autoAlpha: 0,
+        visibility: "hidden",
+        pointerEvents: "none",
+    });
+    gsap.set(blogTabsItems, { autoAlpha: 0 });
+    gsap.set(blogTabsHamburgerIcon, { autoAlpha: 1, scale: 1 });
+    gsap.set(blogTabsCloseIcon, { autoAlpha: 0, scale: 0 });
+
+    blogTabsButton?.addEventListener("click", () => {
+        if (blogTabsOpen) {
+            closeBlogTabsMenu();
+        } else {
+            openBlogTabsMenu();
+        }
+    });
+
+    const blogTabsLinks = blogTabsMenu?.querySelectorAll("a, button");
+
+    blogTabsLinks?.forEach((link) => {
+        link.addEventListener("click", closeBlogTabsMenu);
+    });
+
+    const newsSection = document.querySelector("[data-blog-news]");
+
+    if (newsSection instanceof HTMLElement) {
+        const decodedNewsImages = new Set<string>();
+        const newsImages = newsSection.querySelectorAll<HTMLImageElement>(
+            "[data-news-image]",
+        );
+
+        newsImages.forEach((image) => {
+            const src = image.currentSrc || image.src;
+
+            if (!src || decodedNewsImages.has(src)) {
+                return;
+            }
+
+            decodedNewsImages.add(src);
+
+            const preloader = new Image();
+            preloader.decoding = "async";
+            preloader.src = src;
+            void preloader.decode?.().catch(() => undefined);
+        });
+
+        const pagination = newsSection.querySelector("[data-news-pagination]");
+        const shouldAutoScroll =
+            pagination?.getAttribute("data-auto-scroll") === "true";
+
+        if (shouldAutoScroll) {
+            requestAnimationFrame(() => {
+                const headerOffset = 96;
+                const targetTop =
+                    newsSection.getBoundingClientRect().top +
+                    window.scrollY -
+                    headerOffset;
+
+                window.scrollTo({
+                    top: Math.max(0, targetTop),
+                    behavior: "smooth",
+                });
+            });
+        }
+    }
+</script>

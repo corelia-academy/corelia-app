@@ -29,6 +29,7 @@ These instructions apply under `src/`.
 - Keep interactive controls accessible: explicit non-submit button types, labels for icon-only controls, meaningful alt text, focus behavior, and adequate touch targets.
 - User-facing text uses an existing i18next namespace from `i18n.ts`. Add matching keys to both `locales/vi/<namespace>.json` and `locales/en/<namespace>.json`.
 - Keep responsive behavior, layout stability, and loading/error/empty states consistent with representative pages in the same feature.
+- Loading: first app load (auth boot, first route chunks) shows only the global `AppLoadingScreen`; skeletons are only for content whose data is fetching. Follow the loading and skeleton rules in `docs/front-end-rules/performance-and-loading.md`.
 
 ## Placement and Validation
 

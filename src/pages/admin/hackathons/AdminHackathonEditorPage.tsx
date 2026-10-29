@@ -15,7 +15,7 @@ import { publicProjectDirectoryQueryOptions } from "@/features/projects/projectQ
 import { createContest, deleteContest, getContest, getHackathonLocaleContent, notifyHackathonWinnerAwards, setHackathonLocaleContent, updateContest } from "@/lib/hackathons";
 import { getPublishedCourses } from "@/lib/courses";
 import { getHackathonSocialPostEmbed } from "@/lib/hackathonSocialPosts";
-import { deleteStorageObjectByPath, uploadContestBanner, uploadContestHostLogo } from "@/lib/storage";
+import { deleteContestMediaByPath, uploadContestBanner, uploadContestHostLogo } from "@/lib/storage";
 import { invokeGenerateDescription, type DescriptionTranslationBundle, type HackathonTranslationItem } from "@/lib/descriptionGenerator";
 import { canonicalizeSlug, normalizeSlugDraft } from "@/lib/slug";
 import { cn } from "@/lib/utils";
@@ -526,8 +526,8 @@ export default function AdminHackathonEditorPage() {
         });
       }
       await Promise.all([
-        bannerRemoved && !bannerFile ? deleteStorageObjectByPath(draft.cover_image_path) : Promise.resolve(),
-        hostLogoRemoved && !hostLogoFile ? deleteStorageObjectByPath(draft.host_logo_path) : Promise.resolve(),
+        bannerRemoved && !bannerFile ? deleteContestMediaByPath(draft.cover_image_path) : Promise.resolve(),
+        hostLogoRemoved && !hostLogoFile ? deleteContestMediaByPath(draft.host_logo_path) : Promise.resolve(),
       ]);
       return { contest, banner, hostLogo };
     },

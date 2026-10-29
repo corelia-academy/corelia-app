@@ -61,7 +61,6 @@
     "participantsCount": "参加者 {{displayCount}} 人",
     "submissionDeadline": "提出締め切り",
     "registrationDeadline": "登録締め切り",
-    "timezoneLabel": "ICT (UTC+7)",
     "registrationCountdown": "登録締め切りまであと {{time}}",
     "timeUnit": {
       "hours": "時間"
@@ -122,6 +121,8 @@
       "untitled": "無題のプロジェクト",
       "edit": "プロジェクトを編集",
       "view": "プロジェクトを表示",
+      "updatedAt": "{{time}}に更新",
+      "justNow": "たった今",
       "emptyDescription": "プロジェクトを作成して、提出の準備を始めましょう。",
       "create": "プロジェクトを作成"
     },

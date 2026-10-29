@@ -1,0 +1,261 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Header from "@/components/common/header.astro";
+import HeroBlog from "@/components/blog/hero-blog.astro";
+import CaseStudyBlog from "@/components/blog/case-study-blog.astro";
+import BlogNewsSection from "@/components/blog/blog-news-section.astro";
+// import BlogHighlights from "@/components/blog/blog-highlights.astro";
+// import BlogPreview from "@/components/landing/blog-preview.astro";
+import Footer from "@/components/common/footer.astro";
+// import BlogBadges from "@/components/blog/BlogBadges.astro";
+// import BlogMedia from "@/components/blog/BlogMedia.astro";
+import { useTranslations } from "@/i18n/translations";
+// import { getCollection } from "astro:content";
+// import {
+//   blogIndexUrl,
+//   blogPostUrl,
+//   BLOG_PAGE_SIZE,
+//   getBlogPosts,
+// } from "@/lib/blog";
+
+const t = useTranslations("vi");
+
+// const page = 1;
+// const allPosts = await getBlogPosts("vi");
+// const totalPages = Math.max(1, Math.ceil(allPosts.length / BLOG_PAGE_SIZE));
+// const posts = allPosts.slice(0, BLOG_PAGE_SIZE);
+
+// const members = await getCollection("members");
+// const memberBySlug = new Map(members.map((m) => [m.slug, m] as const));
+
+// const fmtDate = new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium" });
+
+// type PaginationItem = number | "ellipsis";
+// function getPaginationItems(current: number, total: number): PaginationItem[] {
+//   if (total <= 1) return [1];
+//   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+//   const items: PaginationItem[] = [1];
+
+//   if (current <= 4) {
+//     for (let i = 2; i <= 5; i++) items.push(i);
+//     items.push("ellipsis", total);
+//     return items;
+//   }
+
+//   if (current >= total - 3) {
+//     items.push("ellipsis");
+//     for (let i = Math.max(2, total - 4); i <= total - 1; i++) items.push(i);
+//     items.push(total);
+//     return items;
+//   }
+
+//   items.push("ellipsis", current - 1, current, current + 1, "ellipsis", total);
+//   return items;
+// }
+
+// const prevHref = page > 1 ? blogIndexUrl("vi", page - 1) : null;
+// const nextHref = page < totalPages ? blogIndexUrl("vi", page + 1) : null;
+// const paginationItems = getPaginationItems(page, totalPages);
+---
+
+<BaseLayout
+  lang="vi"
+  title={`${t("blog.title")} - ${t("meta.title")}`}
+  description={t("blog.description")}
+  canonicalUrl="https://corelia.academy/vi/blog"
+  ogUrl="https://corelia.academy/vi/blog"
+  ogImage="https://corelia.academy/corelia-og-site-v2-vi.png"
+>
+  <!-- <Fragment slot="head">
+    <link
+      rel="alternate"
+      hreflang="en"
+      href="https://corelia.academy/blog"
+    />
+    <link rel="alternate" hreflang="vi" href="https://corelia.academy/vi/blog" />
+  </Fragment> -->
+
+  <!-- <div class="flex min-h-svh flex-col">
+    <Header />
+    <HeroBlog fullScreenFold />
+  </div> -->
+  <Header />
+  <HeroBlog />
+  <CaseStudyBlog />
+  <BlogNewsSection activeTab="all" />
+  <!-- <BlogHighlights />
+  <BlogPreview /> -->
+  <!-- <main class="min-h-screen px-4 pt-20">
+    <div class="container max-w-[1200px] mx-auto py-16">
+      <div class="flex flex-col items-center justify-center gap-4">
+        <h1 class="text-4xl md:text-5xl font-semibold text-foreground">
+          {t("blog.title")}
+        </h1>
+        <p class="text-lg text-muted-foreground max-w-[700px]">
+          {t("blog.description")}
+        </p>
+      </div>
+
+      {
+        posts.length === 0 ? (
+          <section class="mt-10 border border-border rounded-2xl p-6 md:p-8 bg-background/30">
+            <p class="text-muted-foreground">{t("blog.comingSoon")}</p>
+          </section>
+        ) : (
+          <>
+            <section class="mt-10 grid gap-4 md:grid-cols-2">
+              {posts.map((post) => {
+                const author = post.data.author
+                  ? memberBySlug.get(post.data.author)
+                  : null;
+                const authorName = author?.data.name ?? post.data.author;
+                const authorHref = post.data.author
+                  ? `/member/${post.data.author}`
+                  : null;
+                const href = blogPostUrl("vi", post.slug);
+
+                return (
+                  <article class="border border-border rounded-2xl p-3 pb-6 bg-white transition-colors min-h-[369px]">
+                    <BlogMedia
+                      media={post.data.media}
+                      title={post.data.title}
+                      href={href}
+                      mode="card"
+                      class="mb-4"
+                    />
+
+                    <div class="flex items-center justify-between gap-4">
+                      <BlogBadges
+                        locale="vi"
+                        category={post.data.category}
+                        tags={post.data.tags}
+                        maxTags={3}
+                      />
+                      <div class="flex items-center gap-1 flex-wrap">
+                        <p class="text-xs text-black">
+                          {fmtDate.format(post.data.date)}
+                        </p>
+                        {authorHref ? (
+                          <p class="text-xs text-black">
+                            <span class="mx-1">•</span>
+                            {t("blog.by")}{" "}
+                            <a
+                              class="text-black hover:underline underline-offset-4"
+                              href={authorHref}
+                            >
+                              {authorName}
+                            </a>
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <h2 class="mt-3 text-xl font-semibold leading-snug text-black">
+                      <a class="hover:underline underline-offset-4" href={href}>
+                        {post.data.title}
+                      </a>
+                    </h2>
+                  </article>
+                );
+              })}
+            </section>
+
+            {totalPages > 1 ? (
+              <nav
+                class="mt-10 grid gap-3 sm:grid-cols-3 sm:items-center"
+                aria-label="Chuyển trang bài viết"
+              >
+                <div class="order-2 sm:order-0 flex">
+                  {prevHref ? (
+                    <a
+                      class="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-border bg-background/30 px-4 py-2 text-sm font-medium text-foreground hover:bg-background/50 transition-colors focus-visible:outline focus-visible:outline-offset-2"
+                      href={prevHref}
+                      rel="prev"
+                      aria-label={`Trang trước (trang ${page - 1})`}
+                    >
+                      <span aria-hidden="true">←</span>
+                      <span>Trang trước</span>
+                    </a>
+                  ) : (
+                    <span
+                      class="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-border bg-background/20 px-4 py-2 text-sm font-medium text-muted-foreground opacity-60"
+                      aria-disabled="true"
+                    >
+                      <span aria-hidden="true">←</span>
+                      <span>Trang trước</span>
+                    </span>
+                  )}
+                </div>
+
+                <div class="order-1 sm:order-0 flex flex-col items-center justify-center gap-2">
+                  {/* <span class="inline-flex items-center rounded-full border border-border bg-background/20 px-3 py-1 text-xs text-muted-foreground">
+                    Trang{" "}
+                    <span class="mx-1 font-medium text-foreground">{page}</span>/
+                    <span class="ml-1">{totalPages}</span>
+                  </span> */}
+                  <ol
+                    class="hidden sm:flex items-center gap-1"
+                    aria-label="Danh sách trang"
+                  >
+                    {paginationItems.map((item) =>
+                      item === "ellipsis" ? (
+                        <li class="px-2 text-muted-foreground">
+                          <span aria-hidden="true">…</span>
+                          <span class="sr-only">Các trang khác</span>
+                        </li>
+                      ) : (
+                        <li>
+                          {item === page ? (
+                            <span
+                              class="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-primary px-3 text-sm font-medium text-primary-foreground"
+                              aria-current="page"
+                            >
+                              {item}
+                            </span>
+                          ) : (
+                            <a
+                              class="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-border bg-background/20 px-3 text-sm text-foreground hover:bg-background/50 transition-colors focus-visible:outline focus-visible:outline-offset-2"
+                              href={blogIndexUrl("vi", item)}
+                              aria-label={`Đi tới trang ${item}`}
+                            >
+                              {item}
+                            </a>
+                          )}
+                        </li>
+                      ),
+                    )}
+                  </ol>
+                </div>
+
+                <div class="order-3 sm:order-0 flex sm:justify-end">
+                  {nextHref ? (
+                    <a
+                      class="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-border bg-background/30 px-4 py-2 text-sm font-medium text-foreground hover:bg-background/50 transition-colors focus-visible:outline focus-visible:outline-offset-2"
+                      href={nextHref}
+                      rel="next"
+                      aria-label={`Trang sau (trang ${page + 1})`}
+                    >
+                      <span>Trang sau</span>
+                      <span aria-hidden="true">→</span>
+                    </a>
+                  ) : (
+                    <span
+                      class="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-border bg-background/20 px-4 py-2 text-sm font-medium text-muted-foreground opacity-60"
+                      aria-disabled="true"
+                    >
+                      <span>Trang sau</span>
+                      <span aria-hidden="true">→</span>
+                    </span>
+                  )}
+                </div>
+              </nav>
+            ) : null}
+          </>
+        )
+      }
+    </div>
+  </main> -->
+
+  <Footer />
+</BaseLayout>

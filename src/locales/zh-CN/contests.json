@@ -61,7 +61,6 @@
     "participantsCount": "{{displayCount}} 位参与者",
     "submissionDeadline": "提交截止时间",
     "registrationDeadline": "报名截止时间",
-    "timezoneLabel": "ICT (UTC+7)",
     "registrationCountdown": "报名将在 {{time}} 后截止",
     "timeUnit": {
       "hours": "小时"
@@ -122,6 +121,8 @@
       "untitled": "未命名项目",
       "edit": "编辑项目",
       "view": "查看项目",
+      "updatedAt": "{{time}}更新",
+      "justNow": "刚刚",
       "emptyDescription": "创建项目，开始准备您的提交。",
       "create": "创建项目"
     },

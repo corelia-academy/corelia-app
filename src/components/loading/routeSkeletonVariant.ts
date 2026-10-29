@@ -4,7 +4,7 @@ export type RouteSkeletonVariant = "home" | "list" | "detail" | "form" | "table"
 export function routeSkeletonVariantForPath(pathname: string): RouteSkeletonVariant {
   const path = pathname.replace(/\/+$/, "") || "/";
   if (path === "/") return "home";
-  if (path.startsWith("/learn/")) return "learn";
+  if (path.startsWith("/study/")) return "learn";
   if (
     path === "/admin/branding" ||
     /^\/admin\/hackathons\/(new|[^/]+\/edit)$/.test(path) ||
@@ -15,11 +15,6 @@ export function routeSkeletonVariantForPath(pathname: string): RouteSkeletonVari
   if (path.startsWith("/account") || /^\/projects\/(new|[^/]+\/edit)$/.test(path)) return "form";
   if (/^\/(courses|instructors|projects|hackathons)\/[^/]+/.test(path)) return "detail";
   return "list";
-}
-
-/** Full-page routes outside MainLayout whose page draws its own loading screen (login, OCID). */
-export function isStandalonePlaceholderPath(pathname: string): boolean {
-  return /^\/(login|ocid-redirect)\/?$/.test(pathname);
 }
 
 /** Admin / instructor workspace routes rendered inside their own sidebar + top-bar layout. */

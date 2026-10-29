@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+
+import { WarningCircle } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import {
   Stepper,
+  type StepperConnectorState,
   type StepperOrientation,
   type StepperStep,
   type StepperStepState,
@@ -13,50 +15,50 @@ import {
 import { ComponentShowcaseLayout, ShowcaseSection } from "./ComponentShowcaseLayout";
 
 const workflow = [
-  { title: "account", caption: "accountCaption" },
-  { title: "profile", caption: "profileCaption" },
-  { title: "review", caption: "reviewCaption" },
+  { title: "Account", caption: "Required details" },
+  { title: "Profile", caption: "Your information" },
+  { title: "Review", caption: "Confirm details" },
 ] as const;
 
 const orientationOptions = [
-  { value: "Horizontal", translationKey: "componentShowcase.stepper.orientation.horizontal" },
-  { value: "Vertical", translationKey: "componentShowcase.stepper.orientation.vertical" },
+  { value: "Horizontal", label: "Horizontal" },
+  { value: "Vertical", label: "Vertical" },
 ] as const satisfies ReadonlyArray<{
   value: StepperOrientation;
-  translationKey: string;
+  label: string;
 }>;
 
 const styleOptions = [
-  { value: "Text", translationKey: "componentShowcase.stepper.style.text" },
-  { value: "Icon", translationKey: "componentShowcase.stepper.style.icon" },
+  { value: "Text", label: "Numbers" },
+  { value: "Icon", label: "Icons" },
 ] as const satisfies ReadonlyArray<{
   value: StepperStyle;
-  translationKey: string;
+  label: string;
 }>;
 
-const stateTranslationKeys = {
-  Default: "componentShowcase.stepper.state.default",
-  Focused: "componentShowcase.stepper.state.focused",
-  Passed: "componentShowcase.stepper.state.passed",
-  Error: "componentShowcase.stepper.state.error",
+const stateLabels = {
+  Default: "Not started",
+  Focused: "Current step",
+  Passed: "Complete",
+  Error: "Needs attention",
 } as const satisfies Record<StepperStepState, string>;
 
-const styleTranslationKeys = {
-  Text: "componentShowcase.stepper.style.text",
-  Icon: "componentShowcase.stepper.style.icon",
+const styleLabels = {
+  Text: "Numbers",
+  Icon: "Icons",
 } as const satisfies Record<StepperStyle, string>;
 
-const configurationTranslationKeys = {
-  Horizontal: "componentShowcase.stepper.configuration.horizontal",
-  Vertical: "componentShowcase.stepper.configuration.vertical",
-} as const satisfies Record<StepperOrientation, string>;
+function getStepIcon(state: StepperStepState) {
+  return state === "Default" || state === "Focused"
+    ? <WarningCircle className="size-4" weight="duotone" />
+    : undefined;
+}
 
 export default function AdminStepperComponentPage({
   embedded = false,
 }: {
   embedded?: boolean;
 }) {
-  const { t } = useTranslation("common");
   const [currentStep, setCurrentStep] = useState(1);
   const [orientation, setOrientation] = useState<StepperOrientation>("Horizontal");
   const [style, setStyle] = useState<StepperStyle>("Text");
@@ -67,39 +69,55 @@ export default function AdminStepperComponentPage({
       : index === currentStep
         ? "Focused"
         : "Default";
+    const connectorState: StepperConnectorState = state === "Default"
+      ? "Default"
+      : "Active";
 
     return {
-      title: t(`componentShowcase.stepper.steps.${step.title}`),
-      caption: t(`componentShowcase.stepper.steps.${step.caption}`),
+      title: step.title,
+      caption: step.caption,
       state,
-      stateLabel: t(stateTranslationKeys[state]),
+      connectorBefore: connectorState,
+      connectorAfter: connectorState,
+      stateLabel: stateLabels[state],
+      icon: getStepIcon(state),
     };
   });
 
   const stateSamples: StepperStep[] = [
     {
-      title: t("componentShowcase.stepper.samples.waiting"),
-      caption: t("componentShowcase.stepper.samples.optional"),
+      title: "Waiting",
+      caption: "Not started",
       state: "Default",
-      stateLabel: t("componentShowcase.stepper.state.default"),
+      connectorBefore: "Default",
+      connectorAfter: "Active",
+      stateLabel: stateLabels.Default,
+      icon: getStepIcon("Default"),
     },
     {
-      title: t("componentShowcase.stepper.samples.current"),
-      caption: t("componentShowcase.stepper.samples.inProgress"),
+      title: "In progress",
+      caption: "Current step",
       state: "Focused",
-      stateLabel: t("componentShowcase.stepper.state.focused"),
+      connectorBefore: "Active",
+      connectorAfter: "Active",
+      stateLabel: stateLabels.Focused,
+      icon: getStepIcon("Focused"),
     },
     {
-      title: t("componentShowcase.stepper.samples.complete"),
-      caption: t("componentShowcase.stepper.samples.done"),
+      title: "Complete",
+      caption: "Finished",
       state: "Passed",
-      stateLabel: t("componentShowcase.stepper.state.passed"),
+      connectorBefore: "Active",
+      connectorAfter: "Error",
+      stateLabel: stateLabels.Passed,
     },
     {
-      title: t("componentShowcase.stepper.samples.problem"),
-      caption: t("componentShowcase.stepper.samples.checkDetails"),
+      title: "Needs attention",
+      caption: "Review the details",
       state: "Error",
-      stateLabel: t("componentShowcase.stepper.state.error"),
+      connectorBefore: "Error",
+      connectorAfter: "Error",
+      stateLabel: stateLabels.Error,
     },
   ];
 
@@ -115,19 +133,19 @@ export default function AdminStepperComponentPage({
 
   return (
     <ComponentShowcaseLayout
-      title={t("componentShowcase.stepper.title")}
-      description={t("componentShowcase.stepper.description")}
+      title="Stepper"
+      description="A visual progress tracker. The parent page controls step state and decides when the flow moves."
       embedded={embedded}
     >
       <ShowcaseSection
-        title={t("componentShowcase.stepper.liveTitle")}
-        criterion={t("componentShowcase.stepper.liveCriterion")}
+        title="Interactive, parent-controlled flow"
+        criterion="Use Previous and Next to see the parent page update the step states."
       >
         <div className="space-y-5" data-testid="stepper-live-showcase">
           <div className="grid gap-4 sm:grid-cols-2">
             <fieldset className="min-w-0 space-y-2">
               <legend className="text-body-small font-medium text-foreground">
-                {t("componentShowcase.stepper.orientationLabel")}
+                Orientation
               </legend>
               <div className="flex flex-wrap gap-2">
                 {orientationOptions.map((option) => (
@@ -140,14 +158,14 @@ export default function AdminStepperComponentPage({
                     type="button"
                     variant="cta"
                   >
-                    {t(option.translationKey)}
+                    {option.label}
                   </Button>
                 ))}
               </div>
             </fieldset>
             <fieldset className="min-w-0 space-y-2">
               <legend className="text-body-small font-medium text-foreground">
-                {t("componentShowcase.stepper.styleLabel")}
+                Marker style
               </legend>
               <div className="flex flex-wrap gap-2">
                 {styleOptions.map((option) => (
@@ -160,7 +178,7 @@ export default function AdminStepperComponentPage({
                     type="button"
                     variant="cta"
                   >
-                    {t(option.translationKey)}
+                    {option.label}
                   </Button>
                 ))}
               </div>
@@ -168,11 +186,11 @@ export default function AdminStepperComponentPage({
           </div>
 
           <div
-            className="overflow-hidden rounded-lg bg-[var(--neutral-900)] px-4 py-6 sm:px-6"
+            className="overflow-hidden rounded-lg bg-background px-4 py-6 sm:px-6"
             data-testid="stepper-live-preview"
           >
             <Stepper
-              aria-label={t("componentShowcase.stepper.liveAccessibleLabel")}
+              aria-label="Account setup progress"
               animated
               markerStyle={style}
               orientation={orientation}
@@ -186,10 +204,7 @@ export default function AdminStepperComponentPage({
               aria-live="polite"
               className="text-body-small text-foreground-muted"
             >
-              {t("componentShowcase.stepper.currentStep", {
-                current: currentStep + 1,
-                total: workflow.length,
-              })}
+              {`Step ${currentStep + 1} of ${workflow.length}`}
             </p>
             <div className="flex gap-2">
               <Button
@@ -200,7 +215,7 @@ export default function AdminStepperComponentPage({
                 type="button"
                 variant="cta"
               >
-                {t("componentShowcase.stepper.previous")}
+                Previous
               </Button>
               <Button
                 disabled={currentStep === workflow.length - 1}
@@ -209,19 +224,19 @@ export default function AdminStepperComponentPage({
                 type="button"
                 variant="cta"
               >
-                {t("componentShowcase.stepper.next")}
+                Next
               </Button>
             </div>
           </div>
           <p className="text-body-small text-foreground-muted">
-            {t("componentShowcase.stepper.parentOwnsState")}
+            The page decides each step state and when to move; Stepper only displays the supplied state.
           </p>
         </div>
       </ShowcaseSection>
 
       <ShowcaseSection
-        title={t("componentShowcase.stepper.statesTitle")}
-        criterion={t("componentShowcase.stepper.statesCriterion")}
+        title="Figma state and layout comparison"
+        criterion="Compare all four states in both orientations and marker styles."
       >
         <div className="grid gap-4 xl:grid-cols-2" data-testid="stepper-state-showcase">
           {sampleConfigurations.map((configuration) => (
@@ -230,13 +245,11 @@ export default function AdminStepperComponentPage({
               className="min-w-0 space-y-3 rounded-lg border border-border-subtle p-4"
             >
               <h3 className="text-heading-small font-display">
-                {t(configurationTranslationKeys[configuration.orientation], {
-                  style: t(styleTranslationKeys[configuration.style]),
-                })}
+                {`${styleLabels[configuration.style]} style · ${configuration.orientation.toLowerCase()}`}
               </h3>
-              <div className="overflow-hidden rounded-lg bg-[var(--neutral-900)] px-4 py-5 sm:px-6">
+              <div className="overflow-hidden rounded-lg bg-background px-4 py-5 sm:px-6">
                 <Stepper
-                  aria-label={t("componentShowcase.stepper.statesAccessibleLabel")}
+                  aria-label="Stepper state examples"
                   orientation={configuration.orientation}
                   steps={stateSamples}
                   markerStyle={configuration.style}
@@ -248,18 +261,25 @@ export default function AdminStepperComponentPage({
       </ShowcaseSection>
 
       <ShowcaseSection
-        title={t("componentShowcase.stepper.usageTitle")}
-        criterion={t("componentShowcase.stepper.usageCriterion")}
+        title="Controlled usage example"
+        criterion="The page derives each state from its own current-step value and passes the result into Stepper."
       >
-        <pre className="overflow-x-auto rounded-lg bg-[var(--neutral-900)] p-4 text-xs leading-5 text-[var(--neutral-200)]">
-          <code>{`const steps = data.map((step, index) => ({
-  ...step,
-  state: index < currentStep
+        <pre className="overflow-x-auto rounded-lg bg-background p-4 text-xs leading-5 text-foreground">
+        <code>{`const steps = data.map((step, index) => {
+  const state = index < currentStep
     ? "Passed"
     : index === currentStep
       ? "Focused"
-      : "Default",
-}));
+      : "Default";
+  const connectorState = state === "Default" ? "Default" : "Active";
+
+  return {
+    ...step,
+    state,
+    connectorBefore: connectorState,
+    connectorAfter: connectorState,
+  };
+});
 
 <Stepper
   steps={steps}

@@ -1,8 +1,10 @@
 import { supabase } from "@/lib/supabase";
 
-export async function listMyProjectHeartIds(projectIds: string[]): Promise<Set<string>> {
-  const ids = Array.from(new Set(projectIds.map((id) => id.trim()).filter(Boolean)));
-  if (ids.length === 0) return new Set();
+export async function listMyProjectHeartIds(projectIds?: string[]): Promise<Set<string>> {
+  const ids = projectIds
+    ? Array.from(new Set(projectIds.map((id) => id.trim()).filter(Boolean)))
+    : null;
+  if (ids?.length === 0) return new Set();
 
   const {
     data: { user },
@@ -11,11 +13,13 @@ export async function listMyProjectHeartIds(projectIds: string[]): Promise<Set<s
   if (userErr) throw new Error(userErr.message);
   if (!user) return new Set();
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("project_hearts")
     .select("project_id")
-    .eq("user_id", user.id)
-    .in("project_id", ids);
+    .eq("user_id", user.id);
+  if (ids) query = query.in("project_id", ids);
+
+  const { data, error } = await query;
 
   if (error) throw new Error(error.message);
   return new Set((data ?? []).map((r) => r.project_id as string));

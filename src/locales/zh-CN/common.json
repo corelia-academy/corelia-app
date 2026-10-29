@@ -216,7 +216,11 @@
       "submission_rejected": "您在 {{title}} 的结业作业需要修改。打开查看反馈。",
       "hackathon_announcement": "主办方公告：{{title}}"
     },
-    "updateError": "无法更新通知，请重试。"
+    "updateError": "无法更新通知，请重试。",
+    "projectAutoHiddenTitle": "你的项目已被隐藏",
+    "projectAutoHiddenBody": "自动审核在 {{title}} 中发现了违规内容，项目已设为私密。我们的团队会进行审核；如果你认为这是误判，请联系支持。",
+    "projectAutoHiddenFields": "被标记的部分：{{fields}}",
+    "viewProject": "查看项目"
   },
   "userProfile": {
     "tabs": {
@@ -302,16 +306,21 @@
       "primary": "主要",
       "optional": "只有主要语言需要填写全部必填内容。翻译是可选的；空字段会显示主要语言的内容。",
       "makePrimary": "设为主要语言",
-      "translate": "使用 AI 翻译为{{target}}",
-      "translating": "正在翻译…",
-      "hint": "AI 会翻译主要语言的内容。应用前请检查并编辑；翻译会随项目一同保存。",
-      "preview": "翻译预览",
-      "stale": "项目已更改。请重新翻译，以免覆盖较新的编辑。",
-      "replaceHint": "应用后将用此预览替换当前翻译。",
-      "apply": "应用翻译",
-      "discard": "放弃翻译",
+      "translate": "翻译为{{target}}",
       "rateLimited": "您在一小时内已完成 10 次翻译。请稍后再试。",
-      "moderationRateLimited": "一小时内被拦截的翻译请求过多。请稍后再试。"
+      "moderationRateLimited": "一小时内被拦截的翻译请求过多。请稍后再试。",
+      "dailyRateLimited": "你已达到今日翻译上限。请明天再试。",
+      "saveFirst": "保存项目后即可开启自动翻译。",
+      "autoHint": "只需编辑主语言。其他语言会在保存几分钟后自动翻译。手动编辑过的语言将不再自动更新，直到你重新翻译。",
+      "addLanguage": "添加语言",
+      "retranslate": "从主语言重新翻译",
+      "status": {
+        "fresh": "已翻译",
+        "stale": "等待编辑完成",
+        "pending": "翻译中…",
+        "failed": "翻译失败",
+        "manual": "已手动编辑"
+      }
     },
     "title": "项目",
     "description": "Corelia 生态中各类项目的公开展示。",
@@ -320,6 +329,7 @@
     "loadMore": "加载更多",
     "emptyTitle": "未找到项目",
     "emptyDescription": "目前没有符合当前筛选条件的公开内容。",
+    "emptyStartDescription": "从一个新项目开始吧。",
     "emptyHackathonDescription": "此视图下暂无公开的黑客松。",
     "emptyCourseDescription": "此视图下暂无公开的课程。",
     "emptyShowcaseDescription": "此视图下暂无公开的展示。",
@@ -351,6 +361,7 @@
       "label": "排序",
       "newest": "最新",
       "oldest": "最早",
+      "liked": "我点过赞的",
       "mostLiked": "最多赞"
     },
     "card": {
@@ -395,6 +406,7 @@
       "remove": "移除",
       "moveUp": "上移",
       "moveDown": "下移",
+      "coverImageBadge": "封面",
       "logoInvalid": "徽标必须为 PNG、JPEG 或 WebP，且不超过 2 MB。",
       "screenshotInvalid": "图片必须为 PNG、JPEG 或 WebP，且不超过 5 MB。",
       "screenshotLimit": "最多可上传 6 张截图。",
@@ -429,7 +441,9 @@
         "logoSize": "徽标文件大小不能超过 2 MB。",
         "invalidSlug": "Slug 只能由小写字母、数字和连字符组成。"
       },
-      "hackathonXpEarned": "+100 经验值 · 首次提交黑客松项目"
+      "hackathonXpEarned": "+100 经验值 · 首次提交黑客松项目",
+      "submissionLogoHint": "支持 PNG、JPEG 或 WebP。图片上传时会经过审核。",
+      "uploadLogo": "上传"
     },
     "team": {
       "title": "团队成员",
@@ -474,13 +488,25 @@
       "leavingProject": "正在退出团队…",
       "leftProject": "您已退出项目团队。",
       "leaveProjectFailed": "无法退出项目团队。请重试。",
-      "lateMembersHint": "截止后，您可以邀请任意账户协作。新成员不会自动获得奖项或证书。"
+      "lateMembersHint": "截止后，您可以邀请任意账户协作。新成员不会自动获得奖项或证书。",
+      "selectedCount": "已选成员（{{count}}）",
+      "invitedCount": "已邀请成员（{{count}}）",
+      "invitedStatus": "已邀请",
+      "removeFromList": "从列表中移除",
+      "removeNamedFromList": "将 {{name}} 从列表中移除",
+      "resendEmailFor": "向 {{name}} 重新发送邀请邮件",
+      "showMore": "显示更多",
+      "showLess": "收起"
     },
     "social": {
       "heart": "赞",
       "unheart": "取消赞",
+      "save": "收藏项目",
+      "unsave": "取消收藏项目",
       "loginToInteract": "登录后可点赞。",
+      "loginToSave": "登录后可收藏此项目。",
       "heartFailed": "无法更新点赞。",
+      "saveFailed": "无法更新项目收藏状态。",
       "xpEarned": "+2 经验值 · 点赞项目",
       "xpHint": "首次符合条件的点赞：+2 经验值（每个 UTC 日最多 5 个项目）",
       "xpHintRemaining": "首次符合条件的点赞：+2 经验值 · 今日（UTC）还剩 {{count}} 次奖励点赞",
@@ -505,7 +531,8 @@
       "submissionUnauthorized": "您无权向此黑客松提交作品。",
       "moderationFlagged": "内容被自动审核标记。请修改后重试。",
       "userBlocked": "您的账户被限制执行此操作。",
-      "rateLimitExceeded": "请求过多。请稍候再试。"
+      "rateLimitExceeded": "请求过多。请稍候再试。",
+      "rateLimited": "短时间内项目更改过多。请稍等几分钟后再试。"
     },
     "editor": {
       "workspace": "项目工作区",
@@ -596,25 +623,49 @@
       "resourceFields": {
         "demo": {
           "label": "在线演示",
-          "hint": "您的产品的可运行版本，审核员可以试用。"
+          "hint": "您的产品的可运行版本，审核员可以试用。",
+          "placeholder": "项目演示链接（如有）"
         },
         "slide": {
           "label": "幻灯片 / 路演文稿",
-          "hint": "介绍您的想法、问题和解决方案；例如使用 Google Slides 或 Canva。"
+          "hint": "介绍您的想法、问题和解决方案；例如使用 Google Slides 或 Canva。",
+          "placeholder": "幻灯片或路演文稿链接（如有）"
         },
         "repo": {
           "label": "GitHub 源码",
-          "hint": "位于 github.com/team/project 的公开代码库，而不是议题或文件链接。"
+          "hint": "位于 github.com/team/project 的公开代码库，而不是议题或文件链接。",
+          "placeholder": "项目 GitHub 源代码链接（如有）"
         },
         "video": {
           "label": "演示视频",
-          "hint": "展示您的产品实际运行的录像，例如 YouTube、Vimeo 或 Loom 视频。"
+          "hint": "展示您的产品实际运行的录像，例如 YouTube、Vimeo 或 Loom 视频。",
+          "placeholder": "项目演示或路演视频链接"
         },
         "pitchVideo": {
           "label": "路演视频",
-          "hint": "介绍您的想法、价值和团队。不需要可运行的产品。"
+          "hint": "介绍您的想法、价值和团队。不需要可运行的产品。",
+          "placeholder": "项目路演视频链接（如有）"
         }
-      }
+      },
+      "submissionLinksTitle": "链接与附件",
+      "submissionLinksHint": "如果项目仍处于构想阶段，可以跳过此部分。添加链接时，请确保可公开访问。",
+      "submissionTitle": "项目信息",
+      "submissionHint": "请提供必填信息。",
+      "requiredInformation": "必填信息",
+      "submissionStory": "故事",
+      "submissionCharacterLimit": "{{count}}/{{limit}}",
+      "submissionProjectTitle": "项目标题",
+      "submissionTitlePlaceholder": "例如：Corelia 聊天机器人",
+      "submissionSlugPlaceholder": "例如：demo-seed-20261008-future-skillbridge",
+      "submissionSlugHint": "项目链接",
+      "submissionDescription": "项目详情",
+      "submissionProgress": "分享你是如何构建这个项目的",
+      "submissionTextPlaceholder": "描述你的项目...",
+      "submissionPreviewImages": "预览图片",
+      "submissionOptionalClassifications": "其他分类",
+      "submissionOptionalClassificationsHint": "工程领域和技术为选填。",
+      "submissionSaveHint": "保存后，赛事主办方将收到你项目的最新更新。",
+      "resourceUrlValid": "链接已通过安全和格式检查。"
     },
     "management": {
       "edit": "编辑",
@@ -650,7 +701,33 @@
       "blockedError": "此项目已被屏蔽。必须由管理员取消屏蔽后才能再次发布。",
       "contentError": "发布前，请添加摘要和详细描述。",
       "previous": "上一页",
-      "next": "下一页"
+      "next": "下一页",
+      "reported": "被举报"
+    },
+    "report": {
+      "action": "举报",
+      "title": "举报此项目",
+      "description": "告诉我们问题所在。举报内容保密，项目所有者不会知道举报人。",
+      "reason": "原因",
+      "note": "详情（可选）",
+      "submit": "提交举报",
+      "success": "感谢你的反馈，我们的团队会审核此项目。",
+      "failed": "无法提交举报，请重试。",
+      "rateLimited": "你今天已提交了很多举报，请明天再试。",
+      "openCount": "待处理举报：{{total}}",
+      "empty": "没有待处理举报的项目。",
+      "dismiss": "驳回举报",
+      "markActioned": "标记为已处理",
+      "reasons": {
+        "spam": "垃圾信息或广告",
+        "harassment": "骚扰或霸凌",
+        "sexual": "色情内容",
+        "violence": "暴力",
+        "hate": "仇恨言论",
+        "illegal": "违法内容",
+        "plagiarism": "抄袭或盗用作品",
+        "other": "其他"
+      }
     }
   },
   "search": {
@@ -1195,143 +1272,6 @@
     "title": "您刚刚收到了凭证！",
     "body": "发送到您邮箱的凭证现已保存到您的 Corelia 账户。",
     "cta": "查看我的凭证"
-  },
-  "componentShowcase": {
-    "xpRank": {
-      "title": "经验值等级徽章",
-      "criterion": "全部六个等级的 80、160 和 200 px 尺寸；没有图稿的等级使用问号徽章。",
-      "description": "按等级和尺寸比较徽章图稿。",
-      "combinationsTitle": "所有等级和尺寸组合",
-      "tableLabel": "按等级和尺寸排列的经验值徽章",
-      "rank": "等级",
-      "sizes": {
-        "small": "小 · 80 px",
-        "medium": "中 · 160 px",
-        "large": "大 · 200 px"
-      }
-    },
-    "fullPageEmptyState": {
-      "title": "整页空状态"
-    },
-    "progress": {
-      "title": "进度",
-      "criterion": "进度条和圆环的 Figma 尺寸、进度级别和配色模型。",
-      "description": "比较来自 Figma 的进度条和圆环的精确尺寸、状态和颜色。",
-      "standardTitle": "标准进度条",
-      "standardCriterion": "376 × 20 px 组件，含 328 × 8 px 轨道。",
-      "liveTitle": "动手体验的进度演示",
-      "liveCriterion": "使用 −/+ 或输入百分比。恰好 100% 时圆环完成；超过 100% 则标记为失败。",
-      "liveRangeLabel": "调整进度百分比",
-      "liveDecrease": "将进度减少 1%",
-      "liveIncrease": "将进度增加 1%",
-      "liveInputLabel": "进度百分比",
-      "liveOverrunHint": "进度条超过 100% 时保持满格；圆环显示失败标记。",
-      "liveValue": "{{percentage}}%",
-      "liveBarSample": "{{theme}} · {{percentage}}%",
-      "compactTitle": "紧凑的课时进度",
-      "compactCriterion": "252 × 15 px 组件，含 210 × 4 px 轨道。",
-      "circleTitle": "进度圆环",
-      "circleCriterion": "24 × 24 px；每个百分比都遵循对应的 Figma 颜色变体。",
-      "label": "标签",
-      "noFill": "无填充",
-      "barSample": "{{theme}} · {{level}} · {{percentage}}% · {{color}}",
-      "circleSample": "{{state}} · {{percentage}}%{{colorText}}",
-      "defaultValue": "默认",
-      "theme": {
-        "neutral": "中性",
-        "accent": "强调",
-        "status": "状态"
-      },
-      "level": {
-        "none": "无",
-        "low": "低",
-        "medium": "中",
-        "good": "良好",
-        "done": "完成"
-      },
-      "circleState": {
-        "notStarted": "未开始",
-        "failed": "失败",
-        "neutralProgress": "进行中 · 中性",
-        "coloredProgress": "进行中 · 彩色",
-        "done": "完成"
-      }
-    },
-    "tooltip": {
-      "title": "提示框",
-      "criterion": "九种 Figma 箭头位置，含/不含辅助文字；消息内容由调用方提供。",
-      "description": "比较来自 Figma 的全部 18 种箭头和辅助文字变体。",
-      "withoutSupportingText": "无辅助文字",
-      "withSupportingText": "有辅助文字",
-      "sampleTitle": "这是一个提示框",
-      "sampleSupportingText": "提示框用于解释元素的含义或功能，而无需在页面上添加固定文字。",
-      "arrows": {
-        "none": "无箭头",
-        "bottomCenter": "底部居中",
-        "bottomLeft": "底部靠左",
-        "bottomRight": "底部靠右",
-        "topCenter": "顶部居中",
-        "topLeft": "顶部靠左",
-        "topRight": "顶部靠右",
-        "left": "左侧",
-        "right": "右侧"
-      }
-    },
-    "stepper": {
-      "title": "步骤条",
-      "criterion": "水平和垂直的进度跟踪；使用它的页面提供每个步骤的状态。",
-      "description": "可视化进度跟踪器。由父页面控制步骤状态，并决定流程何时推进。",
-      "liveTitle": "可交互、由父页面控制的流程",
-      "liveCriterion": "使用“上一步”和“下一步”查看父页面如何更新步骤状态。",
-      "orientationLabel": "方向",
-      "orientation": {
-        "horizontal": "水平",
-        "vertical": "垂直"
-      },
-      "styleLabel": "标记样式",
-      "style": {
-        "text": "数字",
-        "icon": "图标"
-      },
-      "steps": {
-        "account": "账户",
-        "accountCaption": "必填信息",
-        "profile": "资料",
-        "profileCaption": "您的信息",
-        "review": "复核",
-        "reviewCaption": "确认详情"
-      },
-      "state": {
-        "default": "未开始",
-        "focused": "当前步骤",
-        "passed": "已完成",
-        "error": "需要处理"
-      },
-      "liveAccessibleLabel": "账户设置进度",
-      "currentStep": "第 {{current}} 步，共 {{total}} 步",
-      "previous": "上一步",
-      "next": "下一步",
-      "parentOwnsState": "由页面决定每个步骤的状态以及何时推进；步骤条只显示传入的状态。",
-      "statesTitle": "Figma 状态与布局对比",
-      "statesCriterion": "对比两种方向和标记样式下的全部四种状态。",
-      "statesAccessibleLabel": "步骤条状态示例",
-      "samples": {
-        "waiting": "等待中",
-        "current": "进行中",
-        "complete": "已完成",
-        "problem": "需要处理",
-        "optional": "未开始",
-        "inProgress": "当前步骤",
-        "done": "已结束",
-        "checkDetails": "检查详情"
-      },
-      "configuration": {
-        "horizontal": "{{style}}样式 · 水平",
-        "vertical": "{{style}}样式 · 垂直"
-      },
-      "usageTitle": "受控使用示例",
-      "usageCriterion": "页面根据自己的当前步骤值推导出每个状态，并传给步骤条。"
-    }
   },
   "maintenance": {
     "title": "系统维护中",

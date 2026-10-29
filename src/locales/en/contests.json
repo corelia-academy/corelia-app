@@ -61,7 +61,6 @@
     "participantsCount": "{{displayCount}} participants",
     "submissionDeadline": "Submission deadline",
     "registrationDeadline": "Registration deadline",
-    "timezoneLabel": "ICT (UTC+7)",
     "registrationCountdown": "Registration closes in {{time}}",
     "timeUnit": {
       "hours": "hours"
@@ -122,6 +121,8 @@
       "untitled": "Untitled project",
       "edit": "Edit project",
       "view": "View project",
+      "updatedAt": "Updated {{time}}",
+      "justNow": "just now",
       "emptyDescription": "Create a project to start preparing your submission.",
       "create": "Create project"
     },

@@ -18,6 +18,7 @@ import { useAuth } from "@/stores/authStore";
 import { TemplatePreview } from "./TemplatePreview";
 import { CampaignCard } from "./CampaignCard";
 import { CONTENT_LOCALES, LOCALE_META, type ContentLocale } from "@/lib/locales";
+import { appBaseUrl } from "@/lib/appUrl";
 
 const sections = ["overview", "contacts", "templates", "campaigns", "automations", "settings", "guide"] as const;
 type Section = typeof sections[number];
@@ -57,7 +58,7 @@ function emailErrorKey(error: unknown): string {
   return ["invalid_recipient", "sender_not_verified", "missing_template_variables", "template_translation_missing", "email_provider_error", "email_not_configured"].includes(code) ? `templates.errors.${code}` : "templates.errors.generic";
 }
 function testValues(version: Record<string, unknown>, recipient: string, locale: string): Record<string, string> {
-  const origin = window.location.origin;
+  const origin = appBaseUrl();
   const defaults: Record<string, string> = { name: "Corelia Admin", full_name: "Corelia Admin", first_name: "Corelia", last_name: "Admin", email: recipient, locale, course_name: "Corelia Academy", event_name: "UniHackfest", event_url: `${origin}/hackathons`, course_url: `${origin}/courses`, image_url: `${origin}/Corelia_Banner_Square.png` };
   const variables = Array.isArray(version.variables) ? version.variables as string[] : [];
   return Object.fromEntries(variables.map((key) => [key, defaults[key] ?? (/url$/i.test(key) ? `${origin}/` : `[${key}]`)]).concat(Object.entries(defaults)));

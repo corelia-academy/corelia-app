@@ -1,5 +1,6 @@
 import { coreliaEdgeUrl, supabaseFunctionHeaders } from "@/lib/coreliaEdgeApi";
 import { supabase } from "@/lib/supabase";
+import { appUrl } from "@/lib/appUrl";
 
 /** Shape returned by public.corelia_verify_certificate(). Deliberately carries no
  *  user_id or email — the RPC never selects them. */
@@ -95,5 +96,5 @@ export async function invokeRevokeCertificate(params: {
 
 /** Absolute URL a QR code on a printed certificate points at. */
 export function certificateVerifyUrl(code: string): string {
-  return `${window.location.origin}/verify/${encodeURIComponent(code)}`;
+  return appUrl(`/verify/${encodeURIComponent(code)}`);
 }

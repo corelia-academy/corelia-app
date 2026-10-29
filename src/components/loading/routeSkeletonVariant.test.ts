@@ -6,7 +6,7 @@ describe("routeSkeletonVariantForPath", () => {
     ["/", "home"],
     ["/courses", "list"],
     ["/courses/react-basics", "detail"],
-    ["/learn/course-1/lesson/2", "learn"],
+    ["/study/course-1/lesson/2", "learn"],
     ["/admin/instructors", "table"],
     ["/instructor/courses", "table"],
     ["/account/profile", "form"],
@@ -23,11 +23,8 @@ describe("routeSkeletonVariantForPath", () => {
 });
 
 describe("placeholder path helpers", () => {
-  it("detects standalone and workspace routes", async () => {
-    const { isStandalonePlaceholderPath, isWorkspacePath } = await import("./routeSkeletonVariant");
-    expect(isStandalonePlaceholderPath("/login")).toBe(true);
-    expect(isStandalonePlaceholderPath("/ocid-redirect")).toBe(true);
-    expect(isStandalonePlaceholderPath("/verify/abc")).toBe(false);
+  it("detects workspace routes", async () => {
+    const { isWorkspacePath } = await import("./routeSkeletonVariant");
     expect(isWorkspacePath("/admin")).toBe(true);
     expect(isWorkspacePath("/instructor/courses")).toBe(true);
     expect(isWorkspacePath("/instructors/abc")).toBe(false);

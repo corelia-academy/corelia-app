@@ -5,6 +5,11 @@ export function markClientNavigation() {
   hasClientNavigated = true;
 }
 
+/** True until the first user navigation: route fallbacks show the global loading screen. */
+export function isInitialLoad(): boolean {
+  return !hasClientNavigated;
+}
+
 /**
  * Class that hides a loading placeholder for its first 200ms, so fast loads finish without a
  * skeleton flash. Only after an in-app navigation: on first paint the placeholder must show at

@@ -120,10 +120,13 @@
   --color-accent-sky-500: var(--accent-sky-500);
   --color-accent-sky-600: var(--accent-sky-600); */
 
+  --color-error-400: var(--error-400);
+
   /* Semantic color aliases for consumers moved off raw palette utilities. */
   --color-loading-bar-end: var(--loading-bar-end);
   --color-hackathon-unpublish-surface: var(--hackathon-unpublish-surface);
   --color-hackathon-unpublish-hover-surface: var(--hackathon-unpublish-hover-surface);
+  --color-hackathon-stat-label: var(--hackathon-stat-label);
   --color-mint-pending-filter-text: var(--mint-pending-filter-text);
   --color-mint-pending-count-surface: var(--mint-pending-count-surface);
   --color-mint-pending-count-text: var(--mint-pending-count-text);
@@ -135,7 +138,20 @@
   --color-mint-revoked-badge-border: var(--mint-revoked-badge-border);
 
   --color-foreground: var(--foreground);
+  --color-project-editor-heading: var(--project-editor-heading);
   --color-hackathon-timeline-title: var(--hackathon-timeline-title);
+  --color-stepper-focused-ring: var(--stepper-focused-ring);
+  --color-stepper-focused-surface: var(--stepper-focused-surface);
+  --color-stepper-focused-content: var(--stepper-focused-content);
+  --color-stepper-default-content: var(--stepper-default-content);
+  --color-stepper-default-icon-content: var(--stepper-default-icon-content);
+  --color-stepper-passed-outline: var(--stepper-passed-outline);
+  --color-stepper-error-surface: var(--stepper-error-surface);
+  --color-stepper-error-outline: var(--stepper-error-outline);
+  /* Issue #1091 — Figma Toast Bar semantic color aliases. */
+  --color-toast-bar-surface: var(--toast-bar-surface);
+  --color-toast-bar-border: var(--toast-bar-border);
+  --color-toast-bar-foreground: var(--toast-bar-foreground);
   --color-foreground-muted: var(--foreground-muted);
   --color-catalog-subtitle: var(--catalog-subtitle);
   --color-foreground-subtle: var(--foreground-subtle);
@@ -226,8 +242,10 @@
   /* Corelia DS v2 surfaces */
   --color-surface-base: var(--surface-base);
   --color-surface-raised: var(--surface-raised);
+  --color-project-track-card-surface: var(--project-track-card-surface);
   --color-surface-overlay: var(--surface-overlay);
   --color-surface-float: var(--surface-float);
+  --color-project-media-upload-placeholder-surface: var(--project-media-upload-placeholder-surface);
   --color-home-xp-panel-surface: var(--home-xp-panel-surface);
   --color-home-xp-progress-track: var(--home-xp-progress-track);
   /* Issue #391 — Figma Input Field semantic color aliases. */
@@ -718,6 +736,25 @@
   --progress-circle-ring-yellow: color-mix(in srgb, var(--progress-circle-yellow) 40%, var(--background));
   --progress-circle-ring-neutral: color-mix(in srgb, var(--progress-circle-neutral) 40%, var(--background));
 
+  /* Stepper semantic colors for light mode. */
+  /* Shared focused marker outline for both number and icon styles. */
+  --stepper-default-content: var(--neutral-400);
+  --stepper-default-icon-content: var(--neutral-50);
+  --stepper-focused-surface: var(--neutral-400);
+  --stepper-focused-content: var(--neutral-50);
+  --stepper-focused-ring: var(--neutral-300);
+  /* Outer outline of the completed Stepper marker. */
+  --stepper-passed-outline: var(--success-300);
+  --stepper-connector-default: var(--neutral-200);
+  --stepper-connector-active: var(--neutral-500);
+  --stepper-connector-error: var(--error-500);
+  --stepper-passed-surface: var(--success-400);
+  --stepper-error-surface: var(--error-400);
+  --stepper-error-outline: var(--error-400);
+  --stepper-error-icon: var(--neutral-50);
+  --stepper-title: var(--foreground);
+  --stepper-caption: var(--foreground-muted);
+
 
   /*
      Issue #380 — Figma Color 🟢 (node 12:3) → CSS token mapping.
@@ -810,6 +847,25 @@
   --accent-sky-500: #006c97;
   --accent-sky-600: #004763;
 
+  /* Informative Icon tokens — defaults match Figma and can be overridden per theme. */
+  --informative-icon-error-surface: var(--error-400);
+  --informative-icon-error-content: var(--error-200);
+  --informative-icon-error-outline: var(--error-600);
+  --informative-icon-warning-surface: var(--warning-500);
+  --informative-icon-warning-content: var(--warning-200);
+  --informative-icon-warning-outline: var(--warning-600);
+  --informative-icon-success-surface: var(--success-500);
+  --informative-icon-success-content: var(--success-200);
+  --informative-icon-success-outline: var(--success-600);
+  --informative-icon-blue-surface: var(--accent-sky-500);
+  --informative-icon-blue-content: var(--accent-sky-200);
+  --informative-icon-blue-outline: var(--accent-sky-600);
+
+  /* Toast Bar tokens — exact Figma Dark Midnight Navy specification */
+  --toast-bar-surface: var(--neutral-800);
+  --toast-bar-border: color-mix(in srgb, var(--neutral-700) 40%, transparent);
+  --toast-bar-foreground: var(--neutral-50);
+
   --text-primary-2: #121926;
   --text-secondary: #4b5565;
   --text-tertiary: #9aa3b2;
@@ -843,7 +899,9 @@
   --background: var(--neutral-50);
   /* Chữ xám đậm trung tính kiểu Google (#202124) */
   --foreground: var(--text-primary-2);
+  --project-editor-heading: var(--foreground);
   --hackathon-timeline-title: var(--foreground);
+  --hackathon-stat-label: var(--blue-700);
   --foreground-muted: var(--text-secondary);
   --catalog-subtitle: var(--text-secondary);
   --foreground-subtle: var(--neutral-400);
@@ -964,6 +1022,8 @@
   /* ── Corelia DS v2 surfaces ── */
   --surface-base: var(--card);
   --surface-raised: var(--neutral-50);
+  --project-track-card-surface: var(--surface-raised);
+  --project-media-upload-placeholder-surface: var(--surface-raised);
   --home-xp-panel-surface: var(--neutral-50);
   --home-xp-panel-art-opacity: 1;
   --home-xp-progress-track: var(--neutral-200);
@@ -1102,6 +1162,27 @@
      ========================================== */
   --content-px: clamp(1rem, 3vw, 2rem);
   --app-max-width: 80rem;
+  --accent-sky-600: #004763;
+
+  /* Independent dark-mode overrides for Informative Icon colors. */
+  --informative-icon-error-surface: var(--error-400);
+  --informative-icon-error-content: var(--error-200);
+  --informative-icon-error-outline: var(--error-600);
+  --informative-icon-warning-surface: var(--warning-500);
+  --informative-icon-warning-content: var(--warning-200);
+  --informative-icon-warning-outline: var(--warning-600);
+  --informative-icon-success-surface: var(--success-500);
+  --informative-icon-success-content: var(--success-200);
+  --informative-icon-success-outline: var(--success-600);
+  --informative-icon-blue-surface: var(--accent-sky-500);
+  --informative-icon-blue-content: var(--accent-sky-200);
+  --informative-icon-blue-outline: var(--accent-sky-600);
+
+  /* Toast Bar tokens — exact Figma Dark Midnight Navy specification */
+  --toast-bar-surface: var(--neutral-800);
+  --toast-bar-border: color-mix(in srgb, var(--neutral-700) 40%, transparent);
+  --toast-bar-foreground: var(--neutral-50);
+
   /* Dark mode: preserve the exact Figma palette mappings. */
   --progress-track: var(--neutral-700);
   --progress-neutral: var(--neutral-50);
@@ -1129,12 +1210,31 @@
   --progress-circle-ring-yellow: color-mix(in srgb, var(--progress-circle-yellow) 40%, var(--background));
   --progress-circle-ring-neutral: color-mix(in srgb, var(--progress-circle-neutral) 40%, var(--background));
 
+  /* Stepper semantic colors for dark mode; preserve the existing dark line palette. */
+  --stepper-default-content: var(--neutral-400);
+  --stepper-default-icon-content: var(--neutral-50);
+  --stepper-focused-surface: var(--neutral-50);
+  --stepper-focused-content: var(--neutral-900);
+  --stepper-focused-ring: var(--neutral-500);
+  --stepper-passed-outline: var(--success-600);
+  --stepper-connector-default: color-mix(in srgb, var(--neutral-50) 20%, transparent);
+  --stepper-connector-active: var(--neutral-400);
+  --stepper-connector-error: var(--error-500);
+  --stepper-passed-surface: var(--success-400);
+  --stepper-error-surface: var(--error-400);
+  --stepper-error-outline: var(--error-500);
+  --stepper-error-icon: var(--neutral-50);
+  --stepper-title: var(--neutral-200);
+  --stepper-caption: var(--neutral-400);
+
 
 
   /* ── Background & Surfaces ── */
   --background: var(--neutral-900);
   --foreground: var(--neutral-50);
+  --project-editor-heading: var(--neutral-200);
   --hackathon-timeline-title: var(--neutral-200);
+  --hackathon-stat-label: var(--blue-400);
   --foreground-muted: var(--neutral-300);
   --catalog-subtitle: var(--neutral-200);
   --foreground-subtle: var(--neutral-400);
@@ -1281,6 +1381,8 @@
   /* ── Corelia DS v2 surfaces ── */
   --surface-base: var(--background);
   --surface-raised: var(--card);
+  --project-track-card-surface: var(--neutral-800);
+  --project-media-upload-placeholder-surface: var(--neutral-800);
   --home-xp-panel-surface: var(--surface-base);
   --home-xp-panel-art-opacity: 1;
   --home-xp-progress-track: var(--surface-raised);
@@ -1601,6 +1703,32 @@
   animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* HTML splash (index.html) shown until the first page is ready; see components/loading/appSplash.ts. */
+#app-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--background);
+  transition: opacity 250ms ease-out;
+}
+
+#app-splash[data-hidden] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#app-splash .app-splash-dark,
+.dark #app-splash .app-splash-light {
+  display: none;
+}
+
+.dark #app-splash .app-splash-dark {
+  display: block;
+}
+
 /* Hold a loading placeholder invisible for its first 200ms so fast loads finish without a skeleton flash. */
 @utility animate-skeleton-reveal {
   animation: skeletonReveal 150ms ease-out 200ms both;
@@ -1629,5 +1757,37 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Press feedback: compositor-only transform, no JS. */
+.motion-press {
+  transition: transform 120ms ease-out;
+}
+
+.motion-press:active:not(:disabled, [aria-disabled="true"]) {
+  transform: scale(0.97);
+}
+
+/* Reveal on scroll: useRevealOnScroll sets data-reveal="pending" until the element enters the viewport. */
+.motion-reveal[data-reveal="pending"] {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.motion-reveal[data-reveal="shown"] {
+  transition:
+    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-press,
+  .motion-reveal[data-reveal="shown"] {
+    transition: none;
+  }
+
+  .motion-press:active:not(:disabled, [aria-disabled="true"]) {
+    transform: none;
   }
 }

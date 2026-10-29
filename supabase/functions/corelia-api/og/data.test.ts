@@ -25,8 +25,11 @@ function database(rows: Record<string, Record<string, unknown> | null>): Supabas
   } as unknown as SupabaseClient;
 }
 
-beforeEach(() => vi.stubGlobal("Deno", { env: { get: (key: string) =>
-  key === "CORELIA_APP_ORIGIN" ? "http://localhost:5173" : "http://127.0.0.1:54321" } }));
+const TEST_ENV: Record<string, string> = {
+  CORELIA_APP_ORIGIN: "http://localhost:5173",
+  CORELIA_APP_BASE_PATH: "/learn",
+};
+beforeEach(() => vi.stubGlobal("Deno", { env: { get: (key: string) => TEST_ENV[key] ?? "http://127.0.0.1:54321" } }));
 afterEach(() => vi.unstubAllGlobals());
 
 describe("public OG DTO", () => {
@@ -39,6 +42,8 @@ describe("public OG DTO", () => {
     const card = await loadOgCard(database(rows), "project", "demo");
     expect(card).toMatchObject({ title: "Dự án Việt", description: "Mô tả", tags: ["AI"], subtitle: "Alice" });
     expect(publicOgMeta(card!).imageUrl).toContain(card!.revision);
+    expect(card?.canonicalUrl).toMatch(/^http:\/\/localhost:5173\/learn\/projects\//);
+    expect(publicOgMeta(card!).imageUrl).toMatch(/^http:\/\/localhost:5173\/learn\/api\/og\/project\//);
     const changed = await loadOgCard(database({ ...rows, projects: { ...project, summary: "Mô tả mới" } }), "project", "demo");
     expect(changed?.revision).not.toBe(card?.revision);
     const timestampOnly = await loadOgCard(database({ ...rows, projects: { ...project, updated_at: "2026-09-25T00:00:00Z" } }), "project", "demo");
@@ -51,7 +56,11 @@ describe("public OG DTO", () => {
       archived_at: null, data: { title: "Khóa học", short_description: "Mô tả", instructor_name: "Giảng viên" },
       updated_at: "2026-09-24T00:00:00Z" };
     const card = await loadOgCard(database({ courses: course }), "course", "course-slug");
-    expect(card?.canonicalUrl).toBe("http://localhost:5173/courses/course-slug");
+    // No English version: the landing page for the primary (default Vietnamese) locale is canonical.
+    expect(card?.canonicalUrl).toBe("http://localhost:5173/vi/courses/course-slug");
+    const english = await loadOgCard(database({ courses: { ...course,
+      data: { ...course.data, i18n: { primary_content_locale: "vi", supported_locales: ["vi", "en"] } } } }), "course", "course-slug");
+    expect(english?.canonicalUrl).toBe("http://localhost:5173/courses/course-slug");
     expect(card?.subtitle).toBe("Giảng viên");
     expect(await loadOgCard(database({ courses: { ...course, published: false } }), "course", "course-slug")).toBeNull();
     expect(await loadOgCard(database({ courses: { ...course, archived_at: "2026-09-24T00:00:00Z" } }), "course", "course-slug")).toBeNull();
@@ -62,7 +71,11 @@ describe("public OG DTO", () => {
       document: { slug: "hackathon", title: "Cuộc thi", host: { name: "Corelia" },
         starts_at: "2026-09-23T18:30:00Z", ends_at: "2026-09-25T10:00:00Z" } };
     const card = await loadOgCard(database({ hackathons: event }), "hackathon", "hackathon");
-    expect(card?.dateLabel).toBe("24/09/2026 – 25/09/2026");
+    expect(card?.dateLabel).toBe("Sep 24, 2026 – Sep 25, 2026");
+    expect(card?.canonicalUrl).toBe("http://localhost:5173/vi/hackathons/hackathon");
+    const korean = await loadOgCard(database({ hackathons: { ...event,
+      document: { ...event.document, i18n: { primary_content_locale: "ko-KR" } } } }), "hackathon", "hackathon");
+    expect(korean?.canonicalUrl).toBe("http://localhost:5173/ko/hackathons/hackathon");
     expect(await loadOgCard(database({ hackathons: { ...event, status: "draft" } }), "hackathon", "hackathon")).toBeNull();
   });
 

@@ -1,5 +1,6 @@
 import * as React from "react"
 
+import { Backspace } from "@phosphor-icons/react/dist/csr/Backspace"
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass"
 import {
   FIELD_CONTROL_MARKER,
@@ -64,6 +65,10 @@ type InputDesignProps = {
   leadingIconClassName?: string
   statusIcon?: React.ReactNode | null
   controlClassName?: string
+  inputDisabled?: boolean
+  allowManualResize?: boolean
+  /** Keep Enter available for a newline when this is a multiline field. */
+  submitOnEnter?: boolean
   renderLeadingContent?: (state: InputAccessoryState) => React.ReactNode
   renderTrailingContent?: (state: InputAccessoryState) => React.ReactNode
   tagOptions?: readonly InputTagOption[]
@@ -158,10 +163,12 @@ function InputImplementationContent({
     const {
       "aria-describedby": ariaDescribedBy,
       "aria-invalid": ariaInvalid,
+      allowManualResize = false,
       className,
       controlClassName,
       defaultValue,
-      disabled: inputDisabled = false,
+      disabled: controlDisabledProp = false,
+      inputDisabled: inputDisabledOnly = false,
       expandedTagsMaxHeight,
       fieldType = "single-line",
       id,
@@ -178,6 +185,7 @@ function InputImplementationContent({
       renderLeadingContent,
       renderTagMenu,
       renderTrailingContent,
+      submitOnEnter = true,
       selectedTagValues,
       statusIcon,
       tagOptions = [],
@@ -186,7 +194,8 @@ function InputImplementationContent({
       variant = "default",
       ...inputProps
     } = props
-    const disabled = Boolean(fieldContext?.disabled || inputDisabled)
+    const disabled = Boolean(fieldContext?.disabled || controlDisabledProp)
+    const nativeInputDisabled = disabled || inputDisabledOnly
     const required = Boolean(fieldContext?.required || inputRequired)
     const label = fieldContext?.label
     const hint = fieldContext?.hint
@@ -205,6 +214,8 @@ function InputImplementationContent({
     const [tagMenuOpen, setTagMenuOpen] = React.useState(false)
     const inputRef = React.useRef<HTMLInputElement | null>(null)
     const textareaRef = React.useRef<HTMLTextAreaElement | null>(null)
+    const manualResizeHeight = React.useRef<number | null>(null)
+    const resizeStartHeight = React.useRef<number | null>(null)
     const tagTriggerRef = React.useRef<HTMLSpanElement | null>(null)
     const [tagsAreWrapped, setTagsAreWrapped] = React.useState(false)
 
@@ -219,11 +230,62 @@ function InputImplementationContent({
 
     const resizeTextarea = React.useCallback(
       (textarea: HTMLTextAreaElement) => {
+        if (allowManualResize && manualResizeHeight.current !== null) {
+          textarea.style.height = `${manualResizeHeight.current}px`
+          return
+        }
+
         textarea.style.height = "auto"
         textarea.style.height = `${textarea.scrollHeight}px`
       },
-      [],
+      [allowManualResize],
     )
+
+    const handleTextareaPointerDown = (
+      event: React.PointerEvent<HTMLTextAreaElement>,
+    ) => {
+      const userHandler = (
+        inputProps as React.ComponentPropsWithoutRef<"textarea">
+      ).onPointerDown
+
+      userHandler?.(event)
+      resizeStartHeight.current =
+        allowManualResize && !event.defaultPrevented
+          ? event.currentTarget.clientHeight
+          : null
+    }
+
+    const handleTextareaPointerUp = (
+      event: React.PointerEvent<HTMLTextAreaElement>,
+    ) => {
+      const userHandler = (
+        inputProps as React.ComponentPropsWithoutRef<"textarea">
+      ).onPointerUp
+
+      userHandler?.(event)
+
+      const startHeight = resizeStartHeight.current
+      resizeStartHeight.current = null
+
+      if (
+        event.defaultPrevented ||
+        !allowManualResize ||
+        startHeight === null
+      ) {
+        return
+      }
+
+      const textarea = event.currentTarget
+      if (textarea.clientHeight === startHeight) return
+
+      if (textarea.scrollHeight > textarea.clientHeight) {
+        manualResizeHeight.current = textarea.clientHeight
+        return
+      }
+
+      manualResizeHeight.current = null
+      resizeTextarea(textarea)
+    }
 
     const setTextareaRef = React.useCallback(
       (textarea: HTMLTextAreaElement | null) => {
@@ -368,7 +430,7 @@ function InputImplementationContent({
     const handleInputChange = (
       event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     ) => {
-      if (hasCounter && (value === null || value === undefined)) {
+      if (value === null || value === undefined) {
         setUncontrolledLength(event.currentTarget.value.length)
       }
 
@@ -469,6 +531,53 @@ function InputImplementationContent({
         : "text-foreground-subtle"
     const resolvedStatusIcon = statusIcon
 
+    const handleClearSearch = React.useCallback(
+      (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault()
+        const input = inputRef.current
+        if (!input) return
+
+        const valueSetter = Object.getOwnPropertyDescriptor(
+          window.HTMLInputElement.prototype,
+          "value",
+        )?.set
+
+        if (valueSetter) {
+          valueSetter.call(input, "")
+        } else {
+          input.value = ""
+        }
+
+        setUncontrolledLength(0)
+        input.dispatchEvent(new Event("input", { bubbles: true }))
+        input.dispatchEvent(new Event("change", { bubbles: true }))
+        input.focus()
+      },
+      [],
+    )
+
+    const defaultSearchClearButton =
+      type === "search" &&
+      currentLength > 0 &&
+      !disabled &&
+      !inputProps.readOnly ? (
+        <button
+          type="button"
+          aria-label={t("search.clear", { defaultValue: "Clear search" })}
+          disabled={disabled}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={handleClearSearch}
+          className="inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded text-foreground-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        >
+          <Backspace size={20} weight="duotone" aria-hidden />
+        </button>
+      ) : null
+
+    const resolvedTrailingContent =
+      renderTrailingContent !== undefined
+        ? renderTrailingContent({ disabled, invalid: isInvalid })
+        : defaultSearchClearButton
+
     const tagTrigger = (
       <span
         ref={tagTriggerRef}
@@ -543,10 +652,12 @@ function InputImplementationContent({
         defaultValue={defaultValue}
         maxLength={maxLength}
         required={required}
-        disabled={disabled}
+        disabled={nativeInputDisabled}
         onChange={handleInputChange}
         onFocus={handleInputFocus}
         onClick={handleInputClick}
+        onPointerDown={handleTextareaPointerDown}
+        onPointerUp={handleTextareaPointerUp}
         onKeyDown={(event) => {
           const userHandler = (
             inputProps as React.ComponentPropsWithoutRef<"textarea">
@@ -555,6 +666,7 @@ function InputImplementationContent({
           userHandler?.(event)
 
           if (
+            !submitOnEnter ||
             event.defaultPrevented ||
             event.key !== "Enter" ||
             event.shiftKey ||
@@ -592,7 +704,7 @@ function InputImplementationContent({
         defaultValue={defaultValue}
         maxLength={maxLength}
         required={required}
-        disabled={disabled}
+        disabled={nativeInputDisabled}
         onChange={handleInputChange}
         onFocus={handleInputFocus}
         onClick={handleInputClick}
@@ -610,8 +722,8 @@ function InputImplementationContent({
           showAllSelectedLayout
             ? "h-0 w-0 min-w-0 flex-none overflow-hidden opacity-0"
             : hasFieldMode
-              ? "h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-0 py-0 text-body-large font-body leading-[1.4] tracking-[0.02em] text-foreground shadow-none outline-none placeholder:text-foreground-subtle focus-visible:border-0 focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-100 disabled:text-input-field-disabled-foreground disabled:placeholder:text-input-field-disabled-foreground aria-invalid:border-0 aria-invalid:ring-0"
-              : "flex h-9 w-full rounded-lg border border-border bg-surface-base px-lg py-md text-body-medium font-body text-foreground outline-none transition-colors placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/15",
+              ? "h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-0 py-0 text-body-large font-body leading-[1.4] tracking-[0.02em] text-foreground shadow-none outline-none placeholder:text-foreground-subtle focus-visible:border-0 focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-100 disabled:text-input-field-disabled-foreground disabled:placeholder:text-input-field-disabled-foreground aria-invalid:border-0 aria-invalid:ring-0 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
+              : "flex h-9 w-full rounded-lg border border-border bg-surface-base px-lg py-md text-body-medium font-body text-foreground outline-none transition-colors placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/15 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none",
           className,
         )}
       />
@@ -673,7 +785,14 @@ function InputImplementationContent({
             </IconSlot>
           ) : null}
 
-          {renderTrailingContent?.({ disabled, invalid: isInvalid })}
+          {renderTrailingContent !== undefined ? (
+            <span
+              data-slot="input-field-trailing-content"
+              className="contents [&_[data-slot=dropdown-menu-trigger]]:cursor-pointer"
+            >
+              {resolvedTrailingContent}
+            </span>
+          ) : resolvedTrailingContent}
 
           {disabled ? (
             <span

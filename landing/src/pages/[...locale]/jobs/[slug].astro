@@ -1,0 +1,103 @@
+---
+import { DEFAULT_SITE_LOCALE, localizePath } from "@corelia/ui/locales";
+import CatalogLayout from "@/layouts/CatalogLayout.astro";
+import { CATALOG_COPY } from "@/i18n/catalog";
+import { getJob, type CatalogJob } from "@/lib/catalog";
+import { catalogNotFound, catalogUnavailable, formatDate, formatSalary, routeLocale, setCatalogCacheHeaders, validSlug } from "@/lib/catalogRoute";
+import { APP_URL, absoluteUrl, jobPostingJsonLd, paragraphs, truncate } from "@/lib/seo";
+
+export const prerender = false;
+
+const locale = routeLocale(Astro.params.locale);
+const { slug } = Astro.params;
+if (!locale || !validSlug(slug)) {
+  return catalogNotFound(Astro.request, Astro.locals);
+}
+const copy = CATALOG_COPY[locale];
+
+let job: CatalogJob | null = null;
+try {
+  job = await getJob(slug);
+} catch (error) {
+  console.error("[catalog] job", error instanceof Error ? error.message : error);
+  return catalogUnavailable(copy.unavailable);
+}
+if (!job) {
+  return catalogNotFound(Astro.request, Astro.locals);
+}
+setCatalogCacheHeaders(Astro.response.headers);
+
+const path = `/jobs/${job.slug}`;
+// Index only the English URL, and only when the job source allows search engines (same rule as the app).
+const indexable = job.indexable && locale === DEFAULT_SITE_LOCALE;
+const salary = formatSalary(job, locale);
+const facts = [
+  [copy.company, job.companyName],
+  [copy.location, job.remoteType === "remote" ? copy.remote : job.locationText],
+  [copy.salary, salary],
+  [copy.posted, formatDate(job.postedAt, locale)],
+].filter(([, value]) => value);
+---
+
+<CatalogLayout
+  locale={locale}
+  path={path}
+  title={`${job.title} – ${job.companyName} | Corelia Academy`}
+  description={truncate(job.summary || job.description)}
+  contentLocales={[DEFAULT_SITE_LOCALE]}
+  indexable={indexable}
+  canonicalLocale={DEFAULT_SITE_LOCALE}
+  image={job.companyLogoUrl}
+  structuredData={job.indexable ? [jobPostingJsonLd({
+    ...job,
+    description: job.description,
+    url: absoluteUrl(path),
+  })] : []}
+  breadcrumbs={[
+    { name: copy.jobsTitle, path: localizePath("/jobs", locale) },
+    { name: job.title, path: localizePath(path, locale) },
+  ]}
+>
+  <article class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <div>
+      <div class="flex items-center gap-4">
+        {job.companyLogoUrl ? <img src={job.companyLogoUrl} alt="" width="56" height="56" class="size-14 rounded-xl bg-white object-contain" /> : null}
+        <div>
+          <h1 class="text-2xl font-semibold leading-tight text-white md:text-4xl">{job.title}</h1>
+          <p class="mt-1 text-white/70">{job.companyName}</p>
+        </div>
+      </div>
+      {
+        job.skills.length ? (
+          <ul class="mt-6 flex flex-wrap gap-2">
+            {job.skills.map((skill) => <li class="rounded-full border border-white/15 px-3 py-1 text-sm text-white/75">{skill}</li>)}
+          </ul>
+        ) : null
+      }
+      <section class="mt-8 space-y-4">
+        {paragraphs(job.description).map((paragraph) => <p class="whitespace-pre-line text-white/70">{paragraph}</p>)}
+      </section>
+    </div>
+    <aside class="h-fit space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 lg:sticky lg:top-[calc(var(--site-header-height,72px)+1.5rem)]">
+      <dl class="grid gap-3 text-sm">
+        {facts.map(([label, value]) => <div><dt class="text-white/50">{label}</dt><dd class="text-white">{value}</dd></div>)}
+        {job.expiresAt ? <div><dt class="text-white/50">{copy.ends}</dt><dd class="text-white">{formatDate(job.expiresAt, locale)}</dd></div> : null}
+      </dl>
+      {
+        job.applyUrl ? (
+          <a
+            href={job.applyUrl}
+            rel="noopener nofollow"
+            target="_blank"
+            class="flex h-11 items-center justify-center rounded-lg bg-[#fff700] font-semibold text-[#0b0e11] transition-colors hover:bg-[#e6de00]"
+          >
+            {copy.applyNow}
+          </a>
+        ) : null
+      }
+      <a href={`${APP_URL}/jobs/${encodeURIComponent(job.slug)}`} class="block text-center text-sm text-white/70 underline hover:text-white">
+        {copy.viewInApp}
+      </a>
+    </aside>
+  </article>
+</CatalogLayout>

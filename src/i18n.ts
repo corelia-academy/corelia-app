@@ -2,7 +2,7 @@ import i18n, { type BackendModule, type ResourceKey } from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
-import { CONTENT_LOCALES, parseContentLocale, type ContentLocale } from "@/lib/locales";
+import { CONTENT_LOCALES, LOCALE_PREFERENCE_COOKIE, parseContentLocale, type ContentLocale } from "@/lib/locales";
 
 import common_vi from "@/locales/vi/common.json";
 import auth_vi from "@/locales/vi/auth.json";
@@ -106,8 +106,10 @@ void i18n
       escapeValue: false,
     },
     detection: {
-      order: ["localStorage", "navigator", "htmlTag"],
+      // The cookie carries an explicit choice made on the landing site (same domain).
+      order: ["localStorage", "cookie", "navigator", "htmlTag"],
       lookupLocalStorage: "i18nextLng",
+      lookupCookie: LOCALE_PREFERENCE_COOKIE,
       caches: ["localStorage"],
       convertDetectedLanguage: (lng: string) => parseContentLocale(lng) ?? lng,
     },

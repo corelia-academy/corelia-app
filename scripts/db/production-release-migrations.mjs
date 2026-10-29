@@ -138,21 +138,37 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20261008162131_project_team_member_limit.sql",
   "supabase/migrations/20261013000703_social_notifications.sql",
   "supabase/migrations/20261013004846_notification_preferences_insert_rls.sql",
+  "supabase/migrations/20261013120000_quiz_enroll_before_xp_trigger.sql",
   "supabase/migrations/20261015061354_search_public_unaccent_project_href.sql",
   "supabase/migrations/20261015183608_expand_content_locales.sql",
   "supabase/migrations/20261016002456_project_supported_locales_follow_primary.sql",
   "supabase/migrations/20261016002746_rls_initplan_and_hot_fk_indexes.sql",
+  "supabase/migrations/20261018051216_move_app_base_url_under_learn.sql",
+  "supabase/migrations/20261021132220_project_saves.sql",
+  "supabase/migrations/20261022044225_project_save_atomic_set.sql",
+  "supabase/migrations/20261022105441_profile_timezone.sql",
+  "supabase/migrations/20261022212141_performance_advisors_fk_indexes_policy_merge.sql",
+  "supabase/migrations/20261023141349_public_course_hackathon_media_cdn.sql",
+  "supabase/migrations/20261024051107_hackathon_host_logo_cdn.sql",
+  "supabase/migrations/20261024073926_shared_rate_limit.sql",
+  "supabase/migrations/20261024073927_notification_event_flood_guard.sql",
+  "supabase/migrations/20261024073928_storage_upload_hardening.sql",
+  "supabase/migrations/20261024073929_search_trending_and_wallet_abuse_limits.sql",
+  "supabase/migrations/20261024073931_project_auto_translation_jobs.sql",
+  "supabase/migrations/20261024073932_project_moderation_queue_and_reports.sql",
+  "supabase/migrations/20261024092123_project_reports_invoker_wrappers.sql",
+  "supabase/migrations/20261027151145_notify_owner_on_ai_project_hide.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production ledger is verified through the content-locale expansion migration.
-// Only the Staging-validated project supported-locales and RLS initplan migrations are pending.
+// Production ledger is verified through the project reports invoker wrappers
+// migration. The Staging-validated AI project hide owner notification
+// migration (#825) is pending.
 const UNRELEASED_PENDING_VERSIONS = new Set([
-  "20261016002456",
-  "20261016002746",
+  "20261027151145",
 ]);
 
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(

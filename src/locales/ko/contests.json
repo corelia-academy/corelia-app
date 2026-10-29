@@ -61,7 +61,6 @@
     "participantsCount": "참가자 {{displayCount}}명",
     "submissionDeadline": "제출 마감",
     "registrationDeadline": "등록 마감",
-    "timezoneLabel": "ICT (UTC+7)",
     "registrationCountdown": "등록 마감까지 {{time}}",
     "timeUnit": {
       "hours": "시간"
@@ -122,6 +121,8 @@
       "untitled": "제목 없는 프로젝트",
       "edit": "프로젝트 편집",
       "view": "프로젝트 보기",
+      "updatedAt": "{{time}} 업데이트됨",
+      "justNow": "방금",
       "emptyDescription": "프로젝트를 만들고 제출을 준비하세요.",
       "create": "프로젝트 만들기"
     },

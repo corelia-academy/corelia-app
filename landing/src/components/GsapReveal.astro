@@ -1,0 +1,163 @@
+<script>
+    import { gsap } from "gsap";
+    import { SplitText } from "gsap/SplitText";
+
+    gsap.registerPlugin(SplitText);
+
+    const preferReduced = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    const EASE = "cubic-bezier(0.19, 1, 0.22, 1)"; // expo.out
+    const DUR_TEXT = 2100; // ms — chữ cuộn (theo design)
+    const DUR_BLOCK = 2100; // ms — card/khối fade
+
+    // Vị trí xuất phát cho CHỮ (cuộn qua mask, dịch theo % chiều cao chữ)
+    function fromText(dir: string) {
+        if (dir === "up") return "translate3d(0, 120%, 0)";
+        if (dir === "down") return "translate3d(0, -120%, 0)";
+        if (dir === "left") return "translate3d(120%, 0, 0)";
+        if (dir === "right") return "translate3d(-120%, 0, 0)";
+        return "translate3d(0, 0, 0)";
+    }
+
+    // Vị trí xuất phát cho CARD/KHỐI (dịch theo px)
+    function fromBlock(dir: string, dist: number) {
+        // "up" = trồi lên từ dưới (giống reveal text); sóng trái→phải do stagger delay từng block
+        if (dir === "up") return `translate3d(0, ${dist}px, 0)`;
+        if (dir === "down") return `translate3d(0, ${-dist}px, 0)`;
+        if (dir === "left") return `translate3d(${dist}px, 0, 0)`;
+        if (dir === "right") return `translate3d(${-dist}px, 0, 0)`;
+        return "translate3d(0, 0, 0)";
+    }
+
+    // Hiệu ứng chữ: tách theo TỪ, cuộn lần lượt trái → phải
+    function revealText(el: HTMLElement, dir: string, delayMs: number) {
+        const masked = dir === "up" || dir === "down";
+        const staggerMs = parseFloat(el.dataset.revealStagger || "35");
+        const dur = parseFloat(el.dataset.revealDuration || String(DUR_TEXT));
+
+        const unit = el.dataset.revealSplit === "chars" ? "chars" : "words";
+        const split = SplitText.create(el, {
+            type: unit,
+            mask: masked ? unit : undefined,
+            autoSplit: false,
+        });
+        const words = (unit === "chars" ? split.chars : split.words) as HTMLElement[];
+
+        // const split = SplitText.create(el, {
+        //     type: "words",
+        //     mask: masked ? "words" : undefined,
+        //     autoSplit: false,
+        // });
+        // const words = split.words as HTMLElement[];
+        el.style.opacity = "1";
+
+        if (preferReduced) {
+            words.forEach((w) => {
+                w.style.transform = "none";
+                w.style.opacity = "1";
+            });
+            return;
+        }
+
+        const start = fromText(dir);
+        words.forEach((w) => {
+            w.style.willChange = "transform, opacity";
+            w.style.transform = start;
+            w.style.opacity = masked ? "1" : "0";
+        });
+
+        void el.offsetWidth;
+
+        requestAnimationFrame(() => {
+            words.forEach((w, i) => {
+                const d = delayMs + i * staggerMs;
+                w.style.transition =
+                    `transform ${dur}ms ${EASE} ${d}ms, opacity ${dur}ms ease ${d}ms`;
+                w.style.transform = "translate3d(0,0,0)";
+                w.style.opacity = "1";
+            });
+        });
+
+        const total = delayMs + (words.length - 1) * staggerMs + dur;
+        window.setTimeout(() => {
+            words.forEach((w) => (w.style.willChange = "auto"));
+        }, total + 100);
+    }
+
+    // Hiệu ứng khối: fade + trượt cả phần tử (cho card/ảnh)
+    function revealBlock(el: HTMLElement, dir: string, delayMs: number) {
+        const dist = parseFloat(el.dataset.revealDistance || "40");
+        const dur = parseFloat(el.dataset.revealDuration || String(DUR_BLOCK));
+
+        if (preferReduced) {
+            el.style.opacity = "1";
+            el.style.transform = "none";
+            return;
+        }
+
+        el.style.willChange = "transform, opacity";
+        el.style.transform = fromBlock(dir, dist); // opacity vẫn = 0 do CSS
+
+        void el.offsetWidth;
+
+        requestAnimationFrame(() => {
+            el.style.transition =
+                `transform ${dur}ms ${EASE} ${delayMs}ms, opacity ${dur}ms ease ${delayMs}ms`;
+            el.style.transform = "translate3d(0, 0, 0)";
+            el.style.opacity = "1";
+        });
+
+        window.setTimeout(() => {
+            el.style.willChange = "auto";
+        }, delayMs + dur + 100);
+    }
+
+    function revealEl(el: HTMLElement) {
+        const type = el.dataset.reveal || "text-up";
+        const delayMs = parseFloat(el.dataset.revealDelay || "0");
+
+        if (type.startsWith("text-")) {
+            revealText(el, type.slice(5), delayMs);
+        } else if (type.startsWith("fade-")) {
+            revealBlock(el, type.slice(5), delayMs);
+        } else {
+            el.style.opacity = "1";
+        }
+    }
+
+    // Chạy khi phần tử cuộn vào tầm nhìn (phần trên đầu → chạy gần như ngay lúc load)
+    function init() {
+        const io = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        revealEl(entry.target as HTMLElement);
+                        io.unobserve(entry.target);
+                    }
+                });
+            },
+            { rootMargin: "0px 0px -10% 0px" },
+        );
+        document
+            .querySelectorAll<HTMLElement>("[data-reveal]")
+            .forEach((el) => {
+                const rect = el.getBoundingClientRect();
+                const inView =
+                    rect.top < window.innerHeight * 0.9 && rect.bottom > 0;
+                if (el.hasAttribute("data-reveal-eager") || inView) {
+                    revealEl(el); // đang trong tầm nhìn (hero) → chạy ngay lúc load
+                } else {
+                    io.observe(el); // dưới trang → chờ cuộn tới
+                }
+            });
+    }
+
+    // Chờ font tải xong rồi mới bắt đầu (để tách chữ đúng vị trí)
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(init);
+    } else {
+        init();
+    }
+</script>

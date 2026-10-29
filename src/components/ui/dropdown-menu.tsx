@@ -1,5 +1,6 @@
 import * as React from "react"
 import { Menu as MenuPrimitive } from "@base-ui/react/menu"
+import { CaretDown } from "@phosphor-icons/react"
 import { Check, ChevronRight, Minus } from "lucide-react"
 
 import { Checkbox, type CheckboxProps } from "@/components/ui/selection"
@@ -23,6 +24,71 @@ function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {
 
 function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
   return <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />
+}
+
+type DropdownMenuTriggerWithIndicatorProps = MenuPrimitive.Trigger.Props & {
+  icon?: React.ReactNode | null
+  rotateIcon?: boolean
+  indicatorClassName?: string
+  trailingContent?: React.ReactNode
+  trailingGroupClassName?: string
+}
+
+function DropdownMenuTriggerWithIndicator({
+  children,
+  icon,
+  rotateIcon = true,
+  indicatorClassName,
+  trailingContent,
+  trailingGroupClassName,
+  className,
+  ...props
+}: DropdownMenuTriggerWithIndicatorProps) {
+  const indicator =
+    icon === undefined ? (
+      <CaretDown
+        className="size-4 text-foreground-muted"
+        weight="duotone"
+        aria-hidden
+      />
+    ) : (
+      icon
+    )
+  const indicatorNode =
+    indicator === null ? null : (
+      <span
+        className={cn(
+          "inline-flex shrink-0 items-center justify-center transition-transform duration-200",
+          rotateIcon &&
+            "group-data-[popup-open]/dropdown-indicator:rotate-180",
+          indicatorClassName,
+        )}
+      >
+        {indicator}
+      </span>
+    )
+
+  return (
+    <DropdownMenuTrigger
+      {...props}
+      className={cn("group/dropdown-indicator", className)}
+    >
+      {children}
+      {trailingContent === undefined ? (
+        indicatorNode
+      ) : (
+        <span
+          className={cn(
+            "ml-auto inline-flex shrink-0 items-center gap-2",
+            trailingGroupClassName,
+          )}
+        >
+          {trailingContent}
+          {indicatorNode}
+        </span>
+      )}
+    </DropdownMenuTrigger>
+  )
 }
 
 type DropdownMenuItemContentProps = {
@@ -446,6 +512,7 @@ function DropdownMenuRadioItem({
   className,
   children,
   inset,
+  closeOnClick = true,
   ...props
 }: MenuPrimitive.RadioItem.Props & {
   inset?: boolean
@@ -454,6 +521,7 @@ function DropdownMenuRadioItem({
     <MenuPrimitive.RadioItem
       data-slot="dropdown-menu-radio-item"
       data-inset={inset}
+      closeOnClick={closeOnClick}
       className={cn(
         "relative flex cursor-default items-center gap-md rounded-md py-md pr-5xl pl-md text-body-small font-body outline-hidden select-none focus:bg-surface-raised focus:text-foreground data-inset:pl-4xl data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
@@ -506,6 +574,7 @@ export {
   DropdownMenu,
   DropdownMenuPortal,
   DropdownMenuTrigger,
+  DropdownMenuTriggerWithIndicator,
   DropdownMenuContent,
   DropdownMenuItemContent,
   DropdownMenuHeader,
@@ -527,6 +596,7 @@ export {
 
 export type {
   DropdownMenuContentLayout,
+  DropdownMenuTriggerWithIndicatorProps,
   DropdownMenuItemContentProps,
   DropdownMenuHeaderProps,
 }

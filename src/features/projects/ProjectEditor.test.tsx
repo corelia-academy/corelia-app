@@ -10,8 +10,11 @@ import type { Contest } from "@/types/hackathons";
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 vi.mock("@/i18n", () => ({ default: { language: "en", resolvedLanguage: "en" } }));
 vi.mock("@/lib/supabase", () => ({ supabase: {} }));
-const translate = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/projectSubmission", () => ({ translateProjectContent: translate }));
+const translations = vi.hoisted(() => ({ status: vi.fn(), request: vi.fn() }));
+vi.mock("@/lib/projectSubmission", () => ({
+  fetchProjectTranslationStatus: translations.status,
+  requestProjectTranslation: translations.request,
+}));
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
 vi.mock("@/lib/projectTaxonomy", () => ({
@@ -24,7 +27,7 @@ vi.mock("@/lib/projectTaxonomy", () => ({
 vi.mock("./ProjectTeamEditor", () => ({ ProjectTeamEditor: () => null }));
 vi.mock("./ProjectMediaEditor", () => ({ ProjectMediaEditor: ({ onUploadingChange }: { onUploadingChange: (value: boolean) => void }) => <button type="button" onClick={() => onUploadingChange(true)}>upload-test</button> }));
 import { ProjectEditor } from "./ProjectEditor";
-const project = { id: "project-1", title: "Original", slug: "original", summary: "Keep description", description: "The problem and solution", progress: "Built a working prototype", video_url: "https://youtu.be/demo", visibility: "public", screenshot_paths: [], hackathon_track_ids: ["track"], hackathon_sector_ids: ["area"], hackathon_tech_stack_ids: ["tech"] } as unknown as Project;
+const project = { id: "project-1", title: "Original", slug: "original", summary: "Keep description", description: "The problem and solution", progress: "Built a working prototype", video_url: "https://youtu.be/demo", visibility: "public", logo_path: "user/logo.png", logo_url: "https://example.com/logo.png", screenshot_paths: [], hackathon_track_ids: ["track"], hackathon_sector_ids: ["area"], hackathon_tech_stack_ids: ["tech"] } as unknown as Project;
 const contest = { id: "event", slug: "event", title: "Event", tracks: [{ id: "track", name: "Track" }], sectors: [{ id: "area", name: "Area" }], tech_stacks: [{ id: "tech", name: "Tech" }] } as unknown as Contest;
 let root: Root;
 let host: HTMLDivElement;
@@ -79,7 +82,7 @@ describe("ProjectEditor", () => {
     expect((host.querySelector('button[type="submit"]') as HTMLButtonElement).disabled).toBe(true);
   });
   it("does not submit an incomplete new project and explains required fields", async () => {
-    const save = await render(undefined,false);
+    const save = await render(undefined,false,null);
     await submit();
     expect(save).not.toHaveBeenCalled();
     expect(host.textContent).toContain("projects.editor.requiredHint");
@@ -105,9 +108,10 @@ describe("ProjectEditor", () => {
     expect((host.querySelector('button[type="submit"]') as HTMLButtonElement).disabled).toBe(true);
   });
   it("accepts an idea without progress or resources", async () => {
-    const save = await render();
-    await input('#project-story > div:last-child textarea','');
-    expect((host.querySelector('#project-story > div:last-child textarea') as HTMLTextAreaElement).required).toBe(false);
+    const save = await render(undefined, true, null);
+    const progress = () => Array.from(host.querySelectorAll('#project-story textarea')).at(-1) as HTMLTextAreaElement;
+    await act(async () => { Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(progress(), ''); progress().dispatchEvent(new Event('input', { bubbles: true })); });
+    expect(progress().required).toBe(false);
     expect(host.querySelector("aside")?.textContent).not.toContain("projects.editor.progress");
     await input('#project-links input[value="https://youtu.be/demo"]','');
     await submit();
@@ -119,9 +123,9 @@ describe("ProjectEditor", () => {
 
   it("allows optional taxonomy to be empty and adds a project-only value", async () => {
     const save = await render(undefined, true, contest, { ...project, hackathon_sector_ids: [], hackathon_tech_stack_ids: [], custom_sector_names: [], custom_tech_stack_names: [] });
-    const details = host.querySelectorAll("#project-categories details");
-    await act(async () => { (details[1] as HTMLDetailsElement).open = true; details[1].dispatchEvent(new Event("toggle")); });
-    const search = details[1].querySelector("input") as HTMLInputElement;
+    const triggers = host.querySelectorAll('#project-categories button[aria-label="projects.editor.taxonomySearch"]');
+    await act(async () => (triggers[1] as HTMLButtonElement).click());
+    const search = document.body.querySelector('input[type="search"]') as HTMLInputElement;
     await act(async () => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value")!.set!.call(search,"WebAssembly"); search.dispatchEvent(new Event("input",{bubbles:true})); });
     await act(async () => search.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })));
     await submit();
@@ -129,7 +133,7 @@ describe("ProjectEditor", () => {
   });
 
   it("adds optional resources on demand and keeps empty links out of the save", async () => {
-    const save = await render(undefined, true, contest, { ...project, video_url: null });
+    const save = await render(undefined, true, null, { ...project, video_url: null });
     expect(host.querySelectorAll('#project-links input')).toHaveLength(0);
     await act(async () => (host.querySelector('#project-links button') as HTMLButtonElement).click());
     expect(host.querySelectorAll('#project-links input')).toHaveLength(1);
@@ -156,20 +160,20 @@ describe("ProjectEditor", () => {
     expect(save).not.toHaveBeenCalled();
   });
   it("formats selected Markdown and previews it without saving or losing the draft", async () => {
-    const save = await render();
+    const save = await render(undefined, true, null);
     await input('#project-story textarea','A useful solution');
     const textarea = host.querySelector('#project-story textarea') as HTMLTextAreaElement;
     textarea.setSelectionRange(2,8);
-    await act(async () => (host.querySelector('button[aria-label="projects.editor.markdownbold"]') as HTMLButtonElement).click());
+    await act(async () => (host.querySelector('#project-story button[aria-label="projects.editor.markdownbold"]') as HTMLButtonElement).click());
     expect(textarea.value).toBe('A **useful** solution');
-    await act(async () => Array.from(host.querySelectorAll('[role="tab"]')).find(tab=>tab.textContent==='projects.editor.preview')!.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+    await act(async () => Array.from(host.querySelectorAll('#project-story [role="tab"]')).find(tab=>tab.textContent==='projects.editor.preview')!.dispatchEvent(new MouseEvent('click',{bubbles:true})));
     expect(host.querySelector('#project-story strong')?.textContent).toBe('useful');
     expect(save).not.toHaveBeenCalled();
-    await act(async () => Array.from(host.querySelectorAll('[role="tab"]')).find(tab=>tab.textContent==='projects.editor.write')!.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+    await act(async () => Array.from(host.querySelectorAll('#project-story [role="tab"]')).find(tab=>tab.textContent==='projects.editor.write')!.dispatchEvent(new MouseEvent('click',{bubbles:true})));
     expect((host.querySelector('#project-story textarea') as HTMLTextAreaElement).value).toBe('A **useful** solution');
   });
   it("does not let toolbar formatting exceed the Markdown limit", async () => {
-    await render();
+    await render(undefined, true, null);
     await input('#project-story textarea','x'.repeat(20000));
     const textarea = host.querySelector('#project-story textarea') as HTMLTextAreaElement;
     textarea.setSelectionRange(0,1);
@@ -195,7 +199,7 @@ describe("project language editing", () => {
     await act(async () => Array.from(host.querySelectorAll("button")).find(item => item.textContent?.includes(text))!.click());
   }
   it("keeps primary and secondary content independent and saves both without changing the slug", async () => {
-    const save = await render();
+    const save = await render(undefined, true, null);
     await button("English");
     expect((host.querySelector("textarea") as HTMLTextAreaElement).value).toBe("");
     await input("#project-basics input", "English project");
@@ -207,39 +211,41 @@ describe("project language editing", () => {
     expect((save.mock.calls as unknown as Array<[{ draft: import("./projectEditorDraft").ProjectDraft }]>)[0][0].draft).toMatchObject({ primaryLocale: "vi", title: "Original", locales: { en: { title: "English project", summary: "English summary" } } });
   });
   it("recovers secondary content and validates the selected primary language", async () => {
-    const save = await render();
+    const save = await render(undefined, true, null);
     await button("English");
     await input("textarea", "Recovered English summary");
     await button("projects.translation.makePrimary");
     await submit();
     expect(save).not.toHaveBeenCalled();
     await act(async()=>root.unmount()); client.clear(); host.remove();
-    await render();
+    await render(undefined, true, null);
     expect((host.querySelector("textarea") as HTMLTextAreaElement).value).toBe("Recovered English summary");
     await button("Tiếng Việt");
     expect((host.querySelector("textarea") as HTMLTextAreaElement).value).toBe("Keep description");
   });
-  it("previews AI output without saving and rejects applying it after a newer edit", async () => {
-    translate.mockResolvedValue({ title: "Translated", summary: "Summary", description: "Story", progress: "Progress" });
-    const save = await render();
-    await button("projects.translation.translate");
-    await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
-    expect(host.textContent).toContain("projects.translation.preview");
-    expect(save).not.toHaveBeenCalled();
-    await input("#project-basics input", "New original");
-    const apply = Array.from(host.querySelectorAll("button")).find(item => item.textContent === "projects.translation.apply")!;
-    expect(apply.disabled).toBe(true);
-    expect(host.textContent).toContain("projects.translation.stale");
-  });
-  it("applies a reviewed translation only to the secondary language", async () => {
-    translate.mockResolvedValue({ title: "Translated", summary: "Summary", description: "Story", progress: "Progress" });
-    const save = await render();
-    await button("projects.translation.translate");
-    await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
-    await button("projects.translation.apply");
-    expect((host.querySelector("#project-basics input") as HTMLInputElement).value).toBe("Translated");
+  it("marks only hand-edited secondary languages for saving", async () => {
+    translations.status.mockResolvedValue([]);
+    const save = await render(undefined, true, null);
+    await button("English");
+    await input("textarea", "English summary");
     await submit();
-    expect((save.mock.calls as unknown as Array<[{ draft: import("./projectEditorDraft").ProjectDraft }]>)[0][0].draft.title).toBe("Original");
-    expect((save.mock.calls as unknown as Array<[{ draft: import("./projectEditorDraft").ProjectDraft }]>)[0][0].draft.locales.en?.description).toBe("Story");
+    const draft = (save.mock.calls as unknown as Array<[{ draft: import("./projectEditorDraft").ProjectDraft }]>)[0][0].draft;
+    expect(draft.editedLocales).toEqual(["en"]);
+  });
+  it("shows background translation status and queues a fresh translation", async () => {
+    translations.status.mockResolvedValue([{ locale: "en", status: "manual", translated_at: null }]);
+    translations.request.mockResolvedValue(undefined);
+    const save = await render(undefined, true, null);
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+    expect(translations.status).toHaveBeenCalledWith("project-1");
+    expect(host.textContent).toContain("projects.translation.status.manual");
+    await button("projects.translation.retranslate");
+    expect(translations.request).toHaveBeenCalledWith("project-1", "en");
+    expect(save).not.toHaveBeenCalled();
+  });
+  it("asks new projects to save before translating", async () => {
+    await render(undefined, false, null);
+    expect(host.textContent).toContain("projects.translation.saveFirst");
+    expect(translations.status).not.toHaveBeenCalled();
   });
 });

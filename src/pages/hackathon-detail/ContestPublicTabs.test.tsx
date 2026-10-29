@@ -6,6 +6,7 @@ import { MemoryRouter, Outlet, Route, Routes, useLocation } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { Contest } from "@/types/hackathons";
+import { canEditContestProject } from "@/lib/hackathons";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -48,6 +49,7 @@ vi.mock("./hooks/useContestLearningLinks", () => ({ useContestLearningLinks: (co
 }) }));
 vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: null }) }));
 vi.mock("@/lib/projectSocial", () => ({ listMyProjectHeartIds: async () => new Set() }));
+vi.mock("@/lib/projectSaves", () => ({ listMyProjectSaveIds: async () => new Set() }));
 vi.mock("@/lib/projectTaxonomy", () => ({ listProjectTaxonomyOptions: async () => [
   { id: "sector-ai-engineering", kind: "sector", name: "Kỹ thuật AI & Machine Learning", sort_order: 0 },
   { id: "tech-solana", kind: "technology", name: "Solana", sort_order: 0 },
@@ -55,7 +57,7 @@ vi.mock("@/lib/projectTaxonomy", () => ({ listProjectTaxonomyOptions: async () =
 vi.mock("@/components/projects/ProjectCard", () => ({ ProjectCard: ({ project }: { project: { title: string } }) => <article>{project.title}</article> }));
 vi.mock("@/components/projects/ProjectCardSkeleton", () => ({ ProjectCardSkeleton: () => null }));
 
-import { HackathonOverviewTab, HackathonPostsTab, HackathonPrizesTab, HackathonProjectsTab, HackathonResourcesTab } from "./ContestPublicTabs";
+import { HackathonOverviewTab, HackathonPostsTab, HackathonPrizesTab, HackathonProjectsTab, HackathonResourcesTab, HackathonTimelineTab } from "./ContestPublicTabs";
 
 const contest = {
   id: "hackathon-1",
@@ -67,7 +69,7 @@ const contest = {
 } as unknown as Contest;
 
 function ParentRoute() {
-  return <Outlet context={{ contest, registration: null }} />;
+  return <Outlet context={{ contest, registration: null, collaboratorProjects: [] }} />;
 }
 
 function LocationProbe() {
@@ -113,7 +115,7 @@ it("shows linked preparation courses without organizer posts in Resources", asyn
   const root = createRoot(container);
   await act(async () => root.render(
     <MemoryRouter initialEntries={["/hackathons/demo-hackathon/resources"]}>
-      <Routes><Route element={<Outlet context={{ contest: resourceContest }} />}><Route path="/hackathons/:slug/resources" element={<HackathonResourcesTab />} /></Route></Routes>
+      <Routes><Route element={<Outlet context={{ contest: resourceContest, collaboratorProjects: [] }} />}><Route path="/hackathons/:slug/resources" element={<HackathonResourcesTab />} /></Route></Routes>
     </MemoryRouter>,
   ));
   expect(container.querySelector<HTMLAnchorElement>('a[href="/courses/skill-course"]')?.textContent).toBe("Skill course");
@@ -129,7 +131,7 @@ it("embeds organizer posts on the direct Posts route and shows an empty state wi
   const root = createRoot(container);
   const render = async (social_post_urls: string[]) => act(async () => root.render(
     <MemoryRouter initialEntries={["/hackathons/demo-hackathon/posts"]}>
-      <Routes><Route element={<Outlet context={{ contest: { ...contest, social_post_urls } }} />}><Route path="/hackathons/:slug/posts" element={<HackathonPostsTab />} /></Route></Routes>
+      <Routes><Route element={<Outlet context={{ contest: { ...contest, social_post_urls }, collaboratorProjects: [] }} />}><Route path="/hackathons/:slug/posts" element={<HackathonPostsTab />} /></Route></Routes>
     </MemoryRouter>,
   ));
   await render(["https://x.com/corelia/status/123"]);
@@ -244,6 +246,69 @@ it("embeds organizer posts on the direct Posts route and shows an empty state wi
   });
 });
 
+describe("HackathonTimelineTab connector halves", () => {
+  it("shows a full connector into the current milestone and a half-active connector after it", async () => {
+    const now = Date.now();
+    const minute = 60_000;
+    const timelineContest = {
+      ...contest,
+      timeline: [
+        {
+          id: "passed",
+          title: "Passed milestone",
+          starts_at: new Date(now - minute * 2).toISOString(),
+          ends_at: new Date(now - minute).toISOString(),
+          sort_order: 0,
+        },
+        {
+          id: "focused",
+          title: "Current milestone",
+          starts_at: new Date(now - minute).toISOString(),
+          ends_at: new Date(now + minute).toISOString(),
+          sort_order: 1,
+        },
+        {
+          id: "default",
+          title: "Upcoming milestone",
+          starts_at: new Date(now + minute * 2).toISOString(),
+          ends_at: new Date(now + minute * 3).toISOString(),
+          sort_order: 2,
+        },
+      ],
+    } as unknown as Contest;
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter initialEntries={["/hackathons/demo-hackathon/timeline"]}>
+          <Routes>
+            <Route element={<Outlet context={{ contest: timelineContest, registration: null, collaboratorProjects: [] }} />}>
+              <Route path="/hackathons/:slug/timeline" element={<HackathonTimelineTab />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>,
+      );
+    });
+
+    const steps = container.querySelectorAll('[data-slot="stepper"] > li');
+    const active = "bg-[var(--stepper-connector-active)]";
+    const muted = "bg-[var(--stepper-connector-default)]";
+
+    expect(steps[0]?.getAttribute("data-state")).toBe("Passed");
+    expect(steps[1]?.getAttribute("data-state")).toBe("Focused");
+    expect(steps[2]?.getAttribute("data-state")).toBe("Default");
+    expect(steps[0]?.querySelector('[data-slot="stepper-connector-after"]')?.classList.contains(active)).toBe(true);
+    expect(steps[1]?.querySelector('[data-slot="stepper-connector-before"]')?.classList.contains(active)).toBe(true);
+    expect(steps[1]?.querySelector('[data-slot="stepper-connector-after"]')?.classList.contains(active)).toBe(true);
+    expect(steps[2]?.querySelector('[data-slot="stepper-connector-before"]')?.classList.contains(muted)).toBe(true);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+});
+
 describe("HackathonOverviewTab", () => {
   it("keeps the full short description available when the main description differs", async () => {
     const container = document.createElement("div");
@@ -253,7 +318,7 @@ describe("HackathonOverviewTab", () => {
       root.render(
         <MemoryRouter>
           <Routes>
-            <Route element={<Outlet context={{ contest: { ...contest, short_description: "A complete summary for participants", description_markdown: "Detailed rules and schedule" }, registration: null }} />}>
+            <Route element={<Outlet context={{ contest: { ...contest, short_description: "A complete summary for participants", description_markdown: "Detailed rules and schedule" }, registration: null, collaboratorProjects: [] }} />}>
               <Route index element={<HackathonOverviewTab />} />
             </Route>
           </Routes>
@@ -263,6 +328,101 @@ describe("HackathonOverviewTab", () => {
     try {
       expect(container.textContent).toContain("A complete summary for participants");
       expect(container.textContent).toContain("Detailed rules and schedule");
+    } finally {
+      await act(async () => root.unmount());
+      container.remove();
+    }
+  });
+
+  it("renders editable project state in sidebar with duotone icons and primary action", async () => {
+    vi.mocked(canEditContestProject).mockReturnValue(true);
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <Routes>
+            <Route
+              element={
+                <Outlet
+                  context={{
+                    contest,
+                    registration: { id: "reg-1", user_id: "user-1", contest_id: contest.id, status: "confirmed" },
+                    submission: {
+                      id: "sub-1",
+                      project_id: "proj-1",
+                      title: "Dự án AI Web3",
+                      updated_at: new Date(Date.now() - 60000).toISOString(),
+                    },
+                    submissionLoading: false,
+                    collaboratorProjects: [],
+                    submissionClosed: false,
+                  }}
+                />
+              }
+            >
+              <Route index element={<HackathonOverviewTab />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>,
+      );
+    });
+    try {
+      expect(container.textContent).toContain("public.myProject.title");
+      expect(container.textContent).toContain("Dự án AI Web3");
+      expect(container.textContent).toContain("public.myProject.updatedAt");
+      const editButton = container.querySelector<HTMLAnchorElement>('a[aria-label="public.myProject.edit"]');
+      expect(editButton).not.toBeNull();
+      expect(editButton?.getAttribute("href")).toBe("/projects/proj-1/edit");
+      expect(editButton?.hasAttribute("data-hackathon-control")).toBe(true);
+      expect(container.querySelector('a[aria-label="public.myProject.view"]')).toBeNull();
+    } finally {
+      await act(async () => root.unmount());
+      container.remove();
+    }
+  });
+
+  it("renders review state with tertiary view action when editing is closed", async () => {
+    vi.mocked(canEditContestProject).mockReturnValue(false);
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <Routes>
+            <Route
+              element={
+                <Outlet
+                  context={{
+                    contest,
+                    registration: { id: "reg-1", user_id: "user-1", contest_id: contest.id, status: "confirmed" },
+                    submission: {
+                      id: "sub-1",
+                      project_id: "proj-1",
+                      title: "Dự án AI Web3",
+                      submitted_at: new Date(Date.now() - 3600000).toISOString(),
+                    },
+                    submissionLoading: false,
+                    collaboratorProjects: [],
+                    submissionClosed: true,
+                  }}
+                />
+              }
+            >
+              <Route index element={<HackathonOverviewTab />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>,
+      );
+    });
+    try {
+      const viewButton = container.querySelector<HTMLAnchorElement>('a[aria-label="public.myProject.view"]');
+      expect(viewButton).not.toBeNull();
+      expect(viewButton?.getAttribute("href")).toBe("/projects/proj-1");
+      expect(viewButton?.hasAttribute("data-hackathon-control")).toBe(true);
+      expect(container.querySelector('a[aria-label="public.myProject.edit"]')).toBeNull();
     } finally {
       await act(async () => root.unmount());
       container.remove();
@@ -283,7 +443,7 @@ describe("HackathonPrizesTab", () => {
       root.render(
         <MemoryRouter>
           <Routes>
-            <Route element={<Outlet context={{ contest: prizeContest, registration: null }} />}>
+            <Route element={<Outlet context={{ contest: prizeContest, registration: null, collaboratorProjects: [] }} />}>
               <Route index element={<HackathonPrizesTab />} />
             </Route>
           </Routes>
