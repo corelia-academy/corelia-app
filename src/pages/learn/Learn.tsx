@@ -5,18 +5,17 @@ import type { ArtifactField } from "@/features/learning/types";
 import { recordLearningEvent } from "@/lib/learning";
 import { invalidateLearningProgress } from "@/features/learning/invalidateLearningProgress";
 import {
+  type ComponentProps,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   useSyncExternalStore,
 } from "react";
+import { gsap } from "gsap";
 import { Link, useMatch, useNavigate, useParams } from "react-router";
-import {
-  List,
-  PanelRight,
-} from "lucide-react";
 import {
   checkAndIssueCertificate,
   courseHasCertificate,
@@ -38,7 +37,8 @@ import { useAuth } from "@/stores/authStore";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
-import { ArrowLeft } from "@phosphor-icons/react";
+// TODO(figma-learn): thêm lại ArrowLeft khi bỏ comment nút quay lại
+import { SidebarSimple } from "@phosphor-icons/react";
 import { appPath } from "@/lib/appUrl";
 import { prefetchRouteChunk } from "@/lib/routePrefetch";
 import { useTheme } from "next-themes";
@@ -71,7 +71,6 @@ import {
 import {
   Sheet,
   SheetContent,
-  SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
@@ -99,6 +98,46 @@ export default function Learn() {
   const { courseId } = useParams<{ courseId: string }>();
   const { user } = useAuth();
   return <LearnWorkspace key={`${courseId}:${user?.id ?? "anonymous"}`} />;
+}
+
+/** Mobile curriculum: same content and header as the desktop panel; the header button closes it. */
+function MobileCurriculumSheet({
+  openLabel,
+  title,
+  curriculumProps,
+}: {
+  openLabel: string;
+  title: string;
+  curriculumProps: Omit<ComponentProps<typeof LessonCurriculum>, "variant" | "onTogglePanel">;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger
+        render={
+          <Button
+            type="button"
+            variant="cta"
+            hierarchy="primary"
+            aria-label={openLabel}
+            className="absolute top-5 right-0 z-10 w-10 justify-center rounded-l-lg rounded-r-none px-0 shadow-[0_1px_3px_rgba(16,24,40,0.15)]"
+          />
+        }
+      >
+        <SidebarSimple weight="duotone" className="size-5" aria-hidden />
+      </SheetTrigger>
+      <SheetContent
+        side="right"
+        showCloseButton={false}
+        className="h-dvh min-h-0 w-[min(25rem,100vw)]! max-w-none! bg-surface-base p-0 data-[side=right]:border-border"
+      >
+        <SheetTitle className="sr-only">{title}</SheetTitle>
+        <LearnSidebar
+          curriculum={<LessonCurriculum variant="sidebar" {...curriculumProps} onTogglePanel={() => setOpen(false)} />}
+        />
+      </SheetContent>
+    </Sheet>
+  );
 }
 
 function LearnWorkspace() {
@@ -146,6 +185,33 @@ function LearnWorkspace() {
   const [footerSlot, setFooterSlot] = useState<HTMLDivElement | null>(null);
   const [askAiSlot, setAskAiSlot] = useState<HTMLDivElement | null>(null);
   const curriculumPanelRef = useRef<ResizablePanelHandle | null>(null);
+  const reopenTabRef = useRef<HTMLButtonElement | null>(null);
+  const reopenTabAppliedRef = useRef<{ tab: HTMLButtonElement; show: boolean } | null>(null);
+  // Runs after every render so a tab that mounts late (loading -> content, breakpoint change)
+  // is still put in its initial state before paint.
+  useLayoutEffect(() => {
+    const tab = reopenTabRef.current;
+    if (!tab) {
+      reopenTabAppliedRef.current = null;
+      return;
+    }
+    const show = !curricOpen;
+    const applied = reopenTabAppliedRef.current;
+    if (applied?.tab === tab && applied.show === show) return;
+    reopenTabAppliedRef.current = { tab, show };
+    const target = { autoAlpha: show ? 1 : 0, x: show ? 0 : 40 };
+    gsap.killTweensOf(tab);
+    if (applied?.tab !== tab || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      gsap.set(tab, target);
+      return;
+    }
+    gsap.to(tab, {
+      ...target,
+      duration: show ? 0.28 : 0.18,
+      delay: show ? 0.18 : 0,
+      ease: show ? "power3.out" : "power2.in",
+    });
+  });
   const completionSyncAttemptedRef = useRef<Set<string>>(new Set());
   const syncEpochRef = useRef(0);
   const [completionSyncing, setCompletionSyncing] = useState(false);
@@ -594,10 +660,12 @@ function LearnWorkspace() {
     }
 
     if (panel.isCollapsed()) {
+      setCurricOpen(true);
       panel.expand();
       return;
     }
 
+    setCurricOpen(false);
     panel.collapse();
   };
 
@@ -677,6 +745,7 @@ function LearnWorkspace() {
       <div className="mx-auto flex h-[71px] w-full max-w-[1990px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-5xl">
         {/* Left: nút quay lại khóa học (icon) + logo, theo Figma */}
         <div className="flex items-center gap-2md">
+          {/* TODO(figma-learn): tạm ẩn nút quay lại khóa học trước logo, chờ thiết kế
           <Button
             variant="cta" hierarchy="tertiary" iconOnly
             size="small"
@@ -686,6 +755,7 @@ function LearnWorkspace() {
           >
             <ArrowLeft weight="duotone" aria-hidden />
           </Button>
+          */}
           <Link
             to="/"
             className="flex h-10 items-center gap-2 text-sm font-medium"
@@ -708,7 +778,9 @@ function LearnWorkspace() {
 
         {/* Center: Heading/Medium (Akt 18px), gap 15px theo Figma */}
         <div className="flex min-w-0 flex-1 select-none items-center justify-center gap-[15px] text-center font-display text-heading-medium xl:absolute xl:left-1/2 xl:max-w-[50%] xl:flex-none xl:-translate-x-1/2">
-          <span className="min-w-0 truncate text-foreground-subtle">
+          <span
+            className={`min-w-0 truncate text-foreground-subtle${currentLesson || isFinalAssignment ? " hidden sm:inline" : ""}`}
+          >
             {course.title}
           </span>
           {(currentLesson || isFinalAssignment) && (
@@ -725,34 +797,6 @@ function LearnWorkspace() {
 
         {/* Right */}
         <div className="flex items-center gap-2">
-          {!curricOpen && (
-            <Button
-              variant="cta" hierarchy="tertiary" iconOnly
-              size="small"
-              onClick={toggleCurriculumPanel}
-              aria-label={translate("detail.learn.toggleCurriculum")}
-              className="hidden xl:inline-flex"
-            >
-              <PanelRight className="size-4" aria-hidden />
-            </Button>
-          )}
-          {/* Mobile: Sheet for curriculum */}
-          <Sheet key={`${courseId}:${lessonId ?? ""}:${isFinalAssignment}`}>
-            <SheetTrigger
-              className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md text-foreground-muted hover:bg-surface-raised hover:text-foreground xl:hidden"
-              aria-label={translate("detail.learn.openCurriculum")}
-            >
-              <List className="size-4" aria-hidden />
-            </SheetTrigger>
-            <SheetContent side="right" className="h-dvh min-h-0 w-[min(24rem,calc(100vw-1rem))]! max-w-none! p-0">
-              <SheetHeader className="shrink-0 border-b border-border-subtle px-4 py-3 pr-14">
-                <SheetTitle>
-                  {translate("courseResources.sidebarTitle")}
-                </SheetTitle>
-              </SheetHeader>
-              <LearnSidebar curriculum={<LessonCurriculum variant="sidebar" {...curriculumProps} />} />
-            </SheetContent>
-          </Sheet>
           <LearnResourcesDrawer groups={lessonsBySection} courseResources={course.course_resources} />
         </div>
       </div>
@@ -774,6 +818,7 @@ function LearnWorkspace() {
       {isDesktop ? (
         <div className="flex flex-1 overflow-hidden">
           <ResizablePanelGroup
+            animationDuration={0.4}
             orientation="horizontal"
             autoSaveId="learn-layout-curriculum-right-v1"
           >
@@ -787,6 +832,20 @@ function LearnWorkspace() {
                   {lessonContent}
                 </main>
                 {footerBar}
+                <Button
+                  ref={reopenTabRef}
+                  type="button"
+                  variant="cta"
+                  hierarchy="primary"
+                  onClick={toggleCurriculumPanel}
+                  aria-label={translate("detail.learn.toggleCurriculum")}
+                  className="group absolute top-5 right-0 z-10 w-10 justify-start gap-md overflow-hidden rounded-l-lg rounded-r-none px-2.5 shadow-[0_1px_3px_rgba(16,24,40,0.15)] transition-[width,padding] duration-200 hover:w-[135px] hover:px-5 focus-visible:w-[135px] focus-visible:px-5"
+                >
+                  <SidebarSimple weight="duotone" className="size-5 group-hover:size-4 group-focus-visible:size-4" aria-hidden />
+                  <span className="whitespace-nowrap opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                    {translate("detail.learn.curriculumTitle")}
+                  </span>
+                </Button>
               </div>
             </ResizablePanel>
             <ResizableHandle />
@@ -806,12 +865,18 @@ function LearnWorkspace() {
           </ResizablePanelGroup>
         </div>
       ) : (
-        <>
-          <main className="min-w-0 flex-1 overflow-y-auto pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="relative flex min-h-0 flex-1 flex-col">
+          <main className="min-h-0 min-w-0 flex-1 overflow-y-auto pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {lessonContent}
           </main>
           {footerBar}
-        </>
+          <MobileCurriculumSheet
+            key={`${courseId}:${lessonId ?? ""}:${isFinalAssignment}`}
+            openLabel={translate("detail.learn.openCurriculum")}
+            title={translate("courseResources.sidebarTitle")}
+            curriculumProps={curriculumProps}
+          />
+        </div>
       )}
     </div>
   );

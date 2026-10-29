@@ -121,11 +121,15 @@ it("keeps the resizable curriculum on the right and ignores old left-sidebar siz
   expect(panels[1].querySelector('[role="tab"]')).toBeNull();
   expect(panels[0].style.flexGrow).toBe("72");
   expect(panels[1].style.flexGrow).toBe("28");
-  const toggle = host.querySelector<HTMLButtonElement>('[aria-label="detail.learn.toggleCurriculum"]')!;
+  const toggle = panels[1].querySelector<HTMLButtonElement>('[aria-label="detail.learn.toggleCurriculum"]')!;
+  const reopenTab = panels[0].querySelector<HTMLButtonElement>('[aria-label="detail.learn.toggleCurriculum"]')!;
+  expect(reopenTab.style.visibility).toBe("hidden");
   await act(async () => toggle.click());
   expect(panels[1].hasAttribute("data-collapsed")).toBe(true);
+  expect(reopenTab.style.visibility).not.toBe("hidden");
   await act(async () => toggle.click());
   expect(panels[1].hasAttribute("data-collapsed")).toBe(false);
+  expect(reopenTab.style.visibility).toBe("hidden");
   expect(panels[1].style.flexGrow).toBe("28");
   const group = host.querySelector<HTMLElement>('[data-slot="resizable-panel-group"]')!;
   vi.spyOn(group, "getBoundingClientRect").mockReturnValue({ width: 1000 } as DOMRect);
@@ -140,16 +144,22 @@ it("keeps the resizable curriculum on the right and ignores old left-sidebar siz
   expect(reloaded.host.querySelectorAll<HTMLElement>('[data-slot="resizable-panel"]')[1].style.flexGrow).toBe("34");
 });
 
+const curriculumSheet = (host: HTMLElement) =>
+  Array.from(host.querySelectorAll<HTMLElement>('[data-sheet-side="right"]')).find(sheet =>
+    sheet.querySelector('[aria-label="detail.learn.toggleCurriculum"]'),
+  );
+
 it("opens the mobile curriculum from the right without tabs", async () => {
   const { host } = await mount("/study/course/lesson/article");
-  const sheet = host.querySelector('[data-sheet-side="right"]')!;
-  expect(sheet).not.toBeNull();
+  const sheet = curriculumSheet(host)!;
+  expect(sheet).not.toBeUndefined();
   expect(sheet.querySelectorAll('[role="tab"]')).toHaveLength(0);
 });
 
 it("remounts the mobile panel after navigating to another lesson or the final assignment", async () => {
   const { host, router } = await mount("/study/course/lesson/article");
-  const firstSheet = host.querySelector('[data-sheet-side="right"]');
+  const firstSheet = curriculumSheet(host);
+  expect(firstSheet).not.toBeUndefined();
   await act(async () => { await router.navigate("/study/course/final-assignment"); });
-  expect(host.querySelector('[data-sheet-side="right"]')).not.toBe(firstSheet);
+  expect(curriculumSheet(host)).not.toBe(firstSheet);
 });
