@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
+import { runStudioCourseEditLogIntegration } from "./tests/studio-course-edit-log-runner.mjs";
 
 const command = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const pnpmShell = process.platform === "win32";
@@ -176,6 +177,9 @@ execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "
 execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
   input: readFileSync(resolve("scripts/db/tests/studio-courses-scope-note.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
 });
+// Role-switching and psql meta-command coverage needs a multi-statement client.
+// The finally-style cleanup also removes committed fixtures if an assertion fails.
+runStudioCourseEditLogIntegration();
 
 // 4. Exercise the exact Jobs relationship through the local PostgREST server.
 console.log("[STEP 4/4] Executing Jobs PostgREST relationship smoke...");
