@@ -423,7 +423,9 @@
       },
       "noLessonSelected": "Chọn một bài học từ curriculum để bắt đầu.",
       "toggleCurriculum": "Bật/tắt curriculum",
-      "openCurriculum": "Mở curriculum"
+      "openCurriculum": "Mở curriculum",
+      "moveBar": "Di chuyển thanh hành động (kéo hoặc dùng phím mũi tên)",
+      "resetBar": "Đặt lại vị trí thanh"
     }
   },
   "filters": {

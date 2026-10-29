@@ -414,7 +414,9 @@
       },
       "noLessonSelected": "カリキュラムからレッスンを選択して始めましょう。",
       "toggleCurriculum": "カリキュラムを切り替え",
-      "openCurriculum": "カリキュラムを開く"
+      "openCurriculum": "カリキュラムを開く",
+      "moveBar": "アクションバーを移動(ドラッグまたは矢印キー)",
+      "resetBar": "バーの位置をリセット"
     }
   },
   "filters": {

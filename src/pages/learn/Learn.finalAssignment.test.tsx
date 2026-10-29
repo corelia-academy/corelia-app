@@ -156,6 +156,25 @@ it("opens the mobile curriculum from the right without tabs", async () => {
   expect(sheet.querySelectorAll('[role="tab"]')).toHaveLength(0);
 });
 
+it("offers a grip to move the action bar and no reset button until it has been moved", async () => {
+  const { host } = await mount("/study/course/lesson/article");
+  expect(host.querySelector('[aria-label="detail.learn.moveBar"]')).not.toBeNull();
+  expect(host.querySelector('[aria-label="detail.learn.resetBar"]')).toBeNull();
+});
+
+it("restores a saved action bar position and lets the learner reset it", async () => {
+  const match = window.matchMedia.bind(window);
+  vi.spyOn(window, "matchMedia").mockImplementation(query =>
+    query.includes("prefers-reduced-motion") ? Object.defineProperty(match(query), "matches", { value: true }) : match(query),
+  );
+  localStorage.setItem("learn-dock-bar-v1", JSON.stringify({ x: 0.1, y: -0.1 }));
+  const { host } = await mount("/study/course/lesson/article");
+  const reset = host.querySelector<HTMLButtonElement>('[aria-label="detail.learn.resetBar"]');
+  expect(reset).not.toBeNull();
+  await act(async () => reset!.click());
+  expect(host.querySelector('[aria-label="detail.learn.resetBar"]')).toBeNull();
+});
+
 it("remounts the mobile panel after navigating to another lesson or the final assignment", async () => {
   const { host, router } = await mount("/study/course/lesson/article");
   const firstSheet = curriculumSheet(host);

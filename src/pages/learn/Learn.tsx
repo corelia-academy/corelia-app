@@ -38,7 +38,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
 // TODO(figma-learn): thêm lại ArrowLeft khi bỏ comment nút quay lại
-import { SidebarSimple } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, DotsSixVertical, SidebarSimple } from "@phosphor-icons/react";
 import { appPath } from "@/lib/appUrl";
 import { prefetchRouteChunk } from "@/lib/routePrefetch";
 import { useTheme } from "next-themes";
@@ -54,6 +54,8 @@ import {
 } from "./components/LessonCurriculum";
 import { LessonPlayerCard } from "./components/LessonPlayerCard";
 import { FinalAssignmentPanel } from "./components/FinalAssignmentPanel";
+import { useEdgeTabDrag } from "./hooks/useEdgeTabDrag";
+import { useFloatingBarDrag } from "./hooks/useFloatingBarDrag";
 import { useLearnCourseLoad } from "./hooks/useLearnCourseLoad";
 import { useLearnEnrollmentAccess } from "./hooks/useLearnEnrollmentAccess";
 import { useLearnProgress } from "./hooks/useLearnProgress";
@@ -111,21 +113,24 @@ function MobileCurriculumSheet({
   curriculumProps: Omit<ComponentProps<typeof LessonCurriculum>, "variant" | "onTogglePanel">;
 }) {
   const [open, setOpen] = useState(false);
+  const { ref: tabRef, handlers: tabHandlers } = useEdgeTabDrag();
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger
-        render={
-          <Button
-            type="button"
-            variant="cta"
-            hierarchy="primary"
-            aria-label={openLabel}
-            className="absolute top-5 right-0 z-10 w-10 justify-center rounded-l-lg rounded-r-none px-0 shadow-[0_1px_3px_rgba(16,24,40,0.15)]"
-          />
-        }
-      >
-        <SidebarSimple weight="duotone" className="size-5" aria-hidden />
-      </SheetTrigger>
+      <div ref={tabRef} {...tabHandlers} className="pointer-events-none absolute top-5 right-0 z-10 touch-none">
+        <SheetTrigger
+          render={
+            <Button
+              type="button"
+              variant="cta"
+              hierarchy="primary"
+              aria-label={openLabel}
+              className="pointer-events-auto w-10 justify-center rounded-l-lg rounded-r-none px-0 shadow-[0_1px_3px_rgba(16,24,40,0.15)]"
+            />
+          }
+        >
+          <SidebarSimple weight="duotone" className="size-5" aria-hidden />
+        </SheetTrigger>
+      </div>
       <SheetContent
         side="right"
         showCloseButton={false}
@@ -186,6 +191,8 @@ function LearnWorkspace() {
   const [askAiSlot, setAskAiSlot] = useState<HTMLDivElement | null>(null);
   const curriculumPanelRef = useRef<ResizablePanelHandle | null>(null);
   const reopenTabRef = useRef<HTMLButtonElement | null>(null);
+  const tabDrag = useEdgeTabDrag();
+  const barDrag = useFloatingBarDrag();
   const reopenTabAppliedRef = useRef<{ tab: HTMLButtonElement; show: boolean } | null>(null);
   // Runs after every render so a tab that mounts late (loading -> content, breakpoint change)
   // is still put in its initial state before paint.
@@ -805,9 +812,37 @@ function LearnWorkspace() {
 
   const footerBar = (
     <div className="pointer-events-none absolute inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 flex justify-center px-3">
-      <div className="pointer-events-auto flex items-center gap-md rounded-xl border border-border-strong bg-surface-float/95 p-1.5 shadow-dropdown backdrop-blur-md [&:not(:has(>div:not(:empty)))]:hidden">
+      <div
+        ref={barDrag.barRef}
+        className="pointer-events-auto flex items-center gap-md rounded-xl border border-border-strong bg-surface-float/95 p-1.5 shadow-dropdown backdrop-blur-md [&:not(:has(>div:not(:empty)))]:hidden"
+      >
+        <Button
+          type="button"
+          variant="cta"
+          hierarchy="tertiary"
+          iconOnly
+          size="small"
+          aria-label={translate("detail.learn.moveBar")}
+          className="cursor-grab touch-none select-none active:cursor-grabbing"
+          {...barDrag.gripProps}
+        >
+          <DotsSixVertical weight="bold" className="size-4" aria-hidden />
+        </Button>
         <div ref={setAskAiSlot} className="flex items-center empty:hidden" />
         <div ref={setFooterSlot} className="flex items-center empty:hidden" />
+        {barDrag.isMoved && (
+          <Button
+            type="button"
+            variant="cta"
+            hierarchy="tertiary"
+            iconOnly
+            size="small"
+            aria-label={translate("detail.learn.resetBar")}
+            onClick={barDrag.reset}
+          >
+            <ArrowCounterClockwise weight="bold" className="size-4" aria-hidden />
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -832,20 +867,22 @@ function LearnWorkspace() {
                   {lessonContent}
                 </main>
                 {footerBar}
-                <Button
-                  ref={reopenTabRef}
-                  type="button"
-                  variant="cta"
-                  hierarchy="primary"
-                  onClick={toggleCurriculumPanel}
-                  aria-label={translate("detail.learn.toggleCurriculum")}
-                  className="group absolute top-5 right-0 z-10 w-10 justify-start gap-md overflow-hidden rounded-l-lg rounded-r-none px-2.5 shadow-[0_1px_3px_rgba(16,24,40,0.15)] transition-[width,padding] duration-200 hover:w-[135px] hover:px-5 focus-visible:w-[135px] focus-visible:px-5"
-                >
-                  <SidebarSimple weight="duotone" className="size-5 group-hover:size-4 group-focus-visible:size-4" aria-hidden />
-                  <span className="whitespace-nowrap opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-                    {translate("detail.learn.curriculumTitle")}
-                  </span>
-                </Button>
+                <div ref={tabDrag.ref} {...tabDrag.handlers} className="pointer-events-none absolute top-5 right-0 z-10 touch-none">
+                  <Button
+                    ref={reopenTabRef}
+                    type="button"
+                    variant="cta"
+                    hierarchy="primary"
+                    onClick={toggleCurriculumPanel}
+                    aria-label={translate("detail.learn.toggleCurriculum")}
+                    className="group pointer-events-auto w-10 justify-start gap-md overflow-hidden rounded-l-lg rounded-r-none px-2.5 shadow-[0_1px_3px_rgba(16,24,40,0.15)] transition-[width,padding] duration-200 hover:w-[135px] hover:px-5 focus-visible:w-[135px] focus-visible:px-5"
+                  >
+                    <SidebarSimple weight="duotone" className="size-5 group-hover:size-4 group-focus-visible:size-4" aria-hidden />
+                    <span className="whitespace-nowrap opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                      {translate("detail.learn.curriculumTitle")}
+                    </span>
+                  </Button>
+                </div>
               </div>
             </ResizablePanel>
             <ResizableHandle />

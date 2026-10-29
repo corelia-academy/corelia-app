@@ -414,7 +414,9 @@
       },
       "noLessonSelected": "請從課程大綱中選擇一個單元開始。",
       "toggleCurriculum": "切換課程大綱",
-      "openCurriculum": "開啟課程大綱"
+      "openCurriculum": "開啟課程大綱",
+      "moveBar": "移動操作列(拖曳或使用方向鍵)",
+      "resetBar": "重設操作列位置"
     }
   },
   "filters": {

@@ -414,7 +414,9 @@
       },
       "noLessonSelected": "커리큘럼에서 레슨을 선택해 시작하세요.",
       "toggleCurriculum": "커리큘럼 전환",
-      "openCurriculum": "커리큘럼 열기"
+      "openCurriculum": "커리큘럼 열기",
+      "moveBar": "작업 표시줄 이동(드래그 또는 화살표 키)",
+      "resetBar": "표시줄 위치 초기화"
     }
   },
   "filters": {

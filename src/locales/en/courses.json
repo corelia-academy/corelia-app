@@ -423,7 +423,9 @@
       },
       "noLessonSelected": "Select a lesson from the curriculum to begin.",
       "toggleCurriculum": "Toggle curriculum",
-      "openCurriculum": "Open curriculum"
+      "openCurriculum": "Open curriculum",
+      "moveBar": "Move action bar (drag or use arrow keys)",
+      "resetBar": "Reset bar position"
     }
   },
   "filters": {

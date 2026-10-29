@@ -414,7 +414,9 @@
       },
       "noLessonSelected": "请从课程大纲中选择一个课时开始。",
       "toggleCurriculum": "切换课程大纲",
-      "openCurriculum": "打开课程大纲"
+      "openCurriculum": "打开课程大纲",
+      "moveBar": "移动操作栏(拖动或使用方向键)",
+      "resetBar": "重置操作栏位置"
     }
   },
   "filters": {
