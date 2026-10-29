@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { loadYoutubePlayerApi, type YoutubePlayer } from "@/lib/youtubePlayerApi";
+import { cn } from "@/lib/utils";
 import { useLearningTranslation } from "./useLearningTranslation";
 
-type Props = { url: string; title: string };
+type Props = { url: string; title: string; flush?: boolean };
 export function YoutubeLessonVideo(props: Props) {
   return <Player key={props.url} {...props} />;
 }
-function Player({ url, title }: Props) {
+function Player({ url, title, flush = false }: Props) {
   const { t } = useLearningTranslation();
   const container = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
@@ -45,8 +46,8 @@ function Player({ url, title }: Props) {
       host.replaceChildren();
     };
   }, [url, title]);
-  return <div className="space-y-3">
-    <div ref={container} className="aspect-video w-full overflow-hidden rounded-xl bg-black" />
-    {failed && <p role="alert">{t("learning.videoError")}</p>}
+  return <div className={flush ? undefined : "space-y-3"}>
+    <div ref={container} className={cn("aspect-video w-full overflow-hidden bg-black", !flush && "rounded-xl")} />
+    {failed && <p role="alert" className={flush ? "px-4 py-3 sm:px-6 md:px-8xl" : undefined}>{t("learning.videoError")}</p>}
   </div>;
 }

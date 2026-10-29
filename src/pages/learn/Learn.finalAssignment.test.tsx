@@ -29,7 +29,7 @@ vi.mock("./hooks/useLearnSubmission", () => ({ useLearnSubmission: () => ({ stat
 vi.mock("./components/LessonPlayerCard", () => ({ LessonPlayerCard: ({ lesson }: { lesson: { description_markdown: string } }) => <p data-testid="article">{lesson?.description_markdown}</p> }));
 vi.mock("@/components/ui/sheet", () => {
   const Wrapper = ({ children }: { children: ReactNode }) => <div>{children}</div>;
-  return { Sheet: Wrapper, SheetContent: ({ side, children }: { side: string; children: ReactNode }) => <div data-sheet-side={side}>{children}</div>, SheetHeader: Wrapper, SheetTitle: Wrapper, SheetTrigger: Wrapper };
+  return { Sheet: Wrapper, SheetContent: ({ side, children }: { side: string; children: ReactNode }) => <div data-sheet-side={side}>{children}</div>, SheetHeader: Wrapper, SheetTitle: Wrapper, SheetTrigger: Wrapper, SheetClose: Wrapper, SheetDescription: Wrapper };
 });
 let cleanup: (() => void) | undefined;
 afterEach(() => { cleanup?.(); window.localStorage.clear(); vi.clearAllMocks(); vi.restoreAllMocks(); state.access = true; state.progressPercent = 0; state.course.is_updating = false; state.course.final_assignment_title = "Task Manager"; state.submission = null; });
@@ -118,15 +118,15 @@ it("keeps the resizable curriculum on the right and ignores old left-sidebar siz
   const panels = host.querySelectorAll<HTMLElement>('[data-slot="resizable-panel"]');
   expect(panels).toHaveLength(2);
   expect(panels[0].querySelector("main")).not.toBeNull();
-  expect(panels[1].querySelector('[role="tablist"]')).not.toBeNull();
-  expect(panels[0].style.flexGrow).toBe("76");
-  expect(panels[1].style.flexGrow).toBe("24");
+  expect(panels[1].querySelector('[role="tab"]')).toBeNull();
+  expect(panels[0].style.flexGrow).toBe("72");
+  expect(panels[1].style.flexGrow).toBe("28");
   const toggle = host.querySelector<HTMLButtonElement>('[aria-label="detail.learn.toggleCurriculum"]')!;
   await act(async () => toggle.click());
   expect(panels[1].hasAttribute("data-collapsed")).toBe(true);
   await act(async () => toggle.click());
   expect(panels[1].hasAttribute("data-collapsed")).toBe(false);
-  expect(panels[1].style.flexGrow).toBe("24");
+  expect(panels[1].style.flexGrow).toBe("28");
   const group = host.querySelector<HTMLElement>('[data-slot="resizable-panel-group"]')!;
   vi.spyOn(group, "getBoundingClientRect").mockReturnValue({ width: 1000 } as DOMRect);
   const handle = host.querySelector<HTMLElement>('[role="separator"]')!;
@@ -134,17 +134,17 @@ it("keeps the resizable curriculum on the right and ignores old left-sidebar siz
   await act(async () => handle.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, clientX: 760, pointerId: 1 })));
   await act(async () => window.dispatchEvent(new PointerEvent("pointermove", { clientX: 700, pointerId: 1 })));
   await act(async () => window.dispatchEvent(new PointerEvent("pointerup", { pointerId: 1 })));
-  expect(panels[1].style.flexGrow).toBe("30");
+  expect(panels[1].style.flexGrow).toBe("34");
   cleanup?.();
   const reloaded = await mount("/study/course/lesson/article");
-  expect(reloaded.host.querySelectorAll<HTMLElement>('[data-slot="resizable-panel"]')[1].style.flexGrow).toBe("30");
+  expect(reloaded.host.querySelectorAll<HTMLElement>('[data-slot="resizable-panel"]')[1].style.flexGrow).toBe("34");
 });
 
-it("opens the mobile navigation from the right with both sidebar tabs", async () => {
+it("opens the mobile curriculum from the right without tabs", async () => {
   const { host } = await mount("/study/course/lesson/article");
   const sheet = host.querySelector('[data-sheet-side="right"]')!;
   expect(sheet).not.toBeNull();
-  expect(sheet.querySelectorAll('[role="tab"]')).toHaveLength(2);
+  expect(sheet.querySelectorAll('[role="tab"]')).toHaveLength(0);
 });
 
 it("remounts the mobile panel after navigating to another lesson or the final assignment", async () => {

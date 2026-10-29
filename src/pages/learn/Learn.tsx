@@ -1,7 +1,7 @@
 import { LearnSidebar } from "./components/LearnSidebar";
+import { LearnResourcesDrawer } from "./components/LearnResourcesDrawer";
 import { normalizeArtifactDraft } from "@/features/learning/artifactDraft";
 import type { ArtifactField } from "@/features/learning/types";
-import { lessonText } from "@/features/learning/lessonCopy";
 import { recordLearningEvent } from "@/lib/learning";
 import { invalidateLearningProgress } from "@/features/learning/invalidateLearningProgress";
 import {
@@ -14,7 +14,6 @@ import {
 } from "react";
 import { Link, useMatch, useNavigate, useParams } from "react-router";
 import {
-  ChevronLeft,
   List,
   PanelRight,
 } from "lucide-react";
@@ -39,6 +38,10 @@ import { useAuth } from "@/stores/authStore";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useDynamicPageTitle } from "@/components/navigation/PageTitle";
+import { ArrowLeft } from "@phosphor-icons/react";
+import { appPath } from "@/lib/appUrl";
+import { prefetchRouteChunk } from "@/lib/routePrefetch";
+import { useTheme } from "next-themes";
 import {
   LearnErrorState,
   LearnMissingCourseIdState,
@@ -57,7 +60,6 @@ import { useLearnProgress } from "./hooks/useLearnProgress";
 import { useLearnSubmission } from "./hooks/useLearnSubmission";
 import { Button } from "@/components/ui/button";
 import { CourseCompletionCertificatePanel } from "@/components/courses/CourseCompletionCertificatePanel";
-import { cn } from "@/lib/utils";
 import type { CertificateIssueReason } from "@/lib/courses";
 import type { Enrollment } from "@/types/courses";
 import {
@@ -113,6 +115,8 @@ function LearnWorkspace() {
   const isFinalAssignment = Boolean(useMatch("/study/:courseId/final-assignment"));
   const navigate = useNavigate();
   const { profile, user } = useAuth();
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === "dark";
   const queryClient = useQueryClient();
   const rememberLessonQueue = useRef(Promise.resolve());
   // Keep completed practice artifacts across lesson/final routes even if storage is blocked.
@@ -139,6 +143,8 @@ function LearnWorkspace() {
     () => false,
   );
   const [curricOpen, setCurricOpen] = useState(true);
+  const [footerSlot, setFooterSlot] = useState<HTMLDivElement | null>(null);
+  const [askAiSlot, setAskAiSlot] = useState<HTMLDivElement | null>(null);
   const curriculumPanelRef = useRef<ResizablePanelHandle | null>(null);
   const completionSyncAttemptedRef = useRef<Set<string>>(new Set());
   const syncEpochRef = useRef(0);
@@ -634,6 +640,8 @@ function LearnWorkspace() {
         onReset={resetMutation.mutateAsync}
         onNavigateToLesson={(id) => navigate(`/study/${courseId}/lesson/${id}`)}
         courseId={courseId}
+        actionSlot={footerSlot}
+        askAiSlot={askAiSlot}
       />}
 
       {isFinalAssignment && shouldShowFinalAssignment ? (
@@ -665,68 +673,97 @@ function LearnWorkspace() {
   );
 
   const topBar = (
-    <div className="relative flex h-12 shrink-0 items-center border-b border-border-subtle bg-surface-raised px-3">
-      {/* Left */}
-      <div className="flex items-center gap-1">
-        <Button
-          variant="cta" hierarchy="tertiary" iconOnly
-          size="small"
-          render={<Link to={`/courses/${courseId}`} />}
-          nativeButton={false}
-          aria-label={translate("detail.learn.backToCourse")}
-          className="min-h-11 min-w-11"
-        >
-          <ChevronLeft className="size-4" aria-hidden />
-        </Button>
-      </div>
-
-      <div className="mx-auto flex min-w-0 flex-1 flex-col px-1 text-center text-xs leading-4 sm:absolute sm:left-1/2 sm:max-w-[50%] sm:-translate-x-1/2 sm:flex-row sm:items-center sm:gap-1.5 sm:overflow-hidden sm:text-sm">
-        <span className="min-w-0 truncate font-medium text-foreground sm:shrink-0">
-          {course.title}
-        </span>
-        {(currentLesson || isFinalAssignment) && (
-          <>
-            <span className="hidden shrink-0 text-foreground-subtle sm:inline">/</span>
-            <span className="min-w-0 truncate text-foreground-muted">
-              {isFinalAssignment ? translate("detail.learn.finalAssignmentTitle") : lessonText(currentLesson?.title)}
-            </span>
-          </>
-        )}
-      </div>
-
-      {/* Right */}
-      <div className="ml-auto flex items-center gap-1">
-        <Button
-          variant="cta" hierarchy="tertiary" iconOnly
-          size="small"
-          onClick={toggleCurriculumPanel}
-          aria-label={translate("detail.learn.toggleCurriculum")}
-          className={cn(
-            "hidden xl:inline-flex",
-            curricOpen &&
-              "bg-primary-muted text-primary hover:bg-primary-muted hover:text-primary",
-          )}
-        >
-          <PanelRight className="size-4" aria-hidden />
-        </Button>
-        {/* Mobile: Sheet for curriculum */}
-        <Sheet key={`${courseId}:${lessonId ?? ""}:${isFinalAssignment}`}>
-          <SheetTrigger
-            className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md text-foreground-muted hover:bg-surface-raised hover:text-foreground xl:hidden"
-            aria-label={translate("detail.learn.openCurriculum")}
+    <header className="relative w-full shrink-0 border-b border-border bg-background">
+      <div className="mx-auto flex h-[71px] w-full max-w-[1990px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-5xl">
+        {/* Left: nút quay lại khóa học (icon) + logo, theo Figma */}
+        <div className="flex items-center gap-2md">
+          <Button
+            variant="cta" hierarchy="tertiary" iconOnly
+            size="small"
+            nativeButton={false}
+            render={<Link to={`/courses/${courseId}`} />}
+            aria-label={translate("detail.learn.backToCourse")}
           >
-            <List className="size-4" aria-hidden />
-          </SheetTrigger>
-          <SheetContent side="right" className="h-dvh min-h-0 w-[min(24rem,calc(100vw-1rem))]! max-w-none! p-0">
-            <SheetHeader className="shrink-0 border-b border-border-subtle px-4 py-3 pr-14">
-              <SheetTitle>
-                {translate("courseResources.sidebarTitle")}
-              </SheetTitle>
-            </SheetHeader>
-            <LearnSidebar resources={course.course_resources} curriculum={<LessonCurriculum variant="sidebar" {...curriculumProps} />} />
-          </SheetContent>
-        </Sheet>
+            <ArrowLeft weight="duotone" aria-hidden />
+          </Button>
+          <Link
+            to="/"
+            className="flex h-10 items-center gap-2 text-sm font-medium"
+            onPointerEnter={() => prefetchRouteChunk("/")}
+            onFocus={() => prefetchRouteChunk("/")}
+          >
+            <img
+              src={
+                isDarkMode
+                  ? appPath("/logo/Corelia_Logo_White.svg")
+                  : appPath("/logo/corelia-full-logo-black.png")
+              }
+              alt="Corelia"
+              width={108}
+              height={36}
+              className="h-9 w-auto"
+            />
+          </Link>
+        </div>
+
+        {/* Center: Heading/Medium (Akt 18px), gap 15px theo Figma */}
+        <div className="flex min-w-0 flex-1 select-none items-center justify-center gap-[15px] text-center font-display text-heading-medium xl:absolute xl:left-1/2 xl:max-w-[50%] xl:flex-none xl:-translate-x-1/2">
+          <span className="min-w-0 truncate text-foreground-subtle">
+            {course.title}
+          </span>
+          {(currentLesson || isFinalAssignment) && (
+            <>
+              <span className="hidden w-px shrink-0 self-stretch bg-border sm:block" aria-hidden />
+              <span className="shrink-0 text-action-text">
+                {isFinalAssignment
+                  ? translate("detail.learn.finalAssignmentTitle")
+                  : translate("learning.lessonNumber", { number: (lessonIndexForPlayer ?? 0) + 1 })}
+              </span>
+            </>
+          )}
+        </div>
+
+        {/* Right */}
+        <div className="flex items-center gap-2">
+          {!curricOpen && (
+            <Button
+              variant="cta" hierarchy="tertiary" iconOnly
+              size="small"
+              onClick={toggleCurriculumPanel}
+              aria-label={translate("detail.learn.toggleCurriculum")}
+              className="hidden xl:inline-flex"
+            >
+              <PanelRight className="size-4" aria-hidden />
+            </Button>
+          )}
+          {/* Mobile: Sheet for curriculum */}
+          <Sheet key={`${courseId}:${lessonId ?? ""}:${isFinalAssignment}`}>
+            <SheetTrigger
+              className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md text-foreground-muted hover:bg-surface-raised hover:text-foreground xl:hidden"
+              aria-label={translate("detail.learn.openCurriculum")}
+            >
+              <List className="size-4" aria-hidden />
+            </SheetTrigger>
+            <SheetContent side="right" className="h-dvh min-h-0 w-[min(24rem,calc(100vw-1rem))]! max-w-none! p-0">
+              <SheetHeader className="shrink-0 border-b border-border-subtle px-4 py-3 pr-14">
+                <SheetTitle>
+                  {translate("courseResources.sidebarTitle")}
+                </SheetTitle>
+              </SheetHeader>
+              <LearnSidebar curriculum={<LessonCurriculum variant="sidebar" {...curriculumProps} />} />
+            </SheetContent>
+          </Sheet>
+          <LearnResourcesDrawer groups={lessonsBySection} courseResources={course.course_resources} />
+        </div>
       </div>
+    </header>
+  );
+
+  const footerBar = (
+    <div className="grid h-14 shrink-0 grid-cols-[1fr_auto_1fr] items-center border-t border-border bg-background px-3 sm:h-[72px] sm:px-4xl">
+      <span aria-hidden />
+      <div ref={setAskAiSlot} className="flex items-center justify-center" />
+      <div ref={setFooterSlot} className="flex items-center justify-end gap-md" />
     </div>
   );
 
@@ -740,18 +777,21 @@ function LearnWorkspace() {
             autoSaveId="learn-layout-curriculum-right-v1"
           >
             <ResizablePanel
-              defaultSize={76}
+              defaultSize={72}
               minSize={40}
               className="min-w-0 bg-background"
             >
-              <main className="h-full min-w-0 overflow-y-auto">
-                {lessonContent}
-              </main>
+              <div className="flex h-full min-w-0 flex-col">
+                <main className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  {lessonContent}
+                </main>
+                {footerBar}
+              </div>
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel
               ref={curriculumPanelRef}
-              defaultSize={24}
+              defaultSize={28}
               minSize={16}
               maxSize={35}
               collapsible
@@ -760,14 +800,17 @@ function LearnWorkspace() {
               onExpand={() => setCurricOpen(true)}
               className="flex flex-col bg-surface-base"
             >
-              <LearnSidebar resources={course.course_resources} curriculum={<LessonCurriculum variant="sidebar" {...curriculumProps} />} />
+              <LearnSidebar curriculum={<LessonCurriculum variant="sidebar" {...curriculumProps} onTogglePanel={toggleCurriculumPanel} />} />
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>
       ) : (
-        <main className="min-w-0 flex-1 overflow-y-auto">
-          {lessonContent}
-        </main>
+        <>
+          <main className="min-w-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {lessonContent}
+          </main>
+          {footerBar}
+        </>
       )}
     </div>
   );
