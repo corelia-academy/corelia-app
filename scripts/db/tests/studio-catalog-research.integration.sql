@@ -20,6 +20,9 @@ SET LOCAL ROLE service_role;
 DO $$
 DECLARE
   r jsonb;
+  manual_snapshot jsonb;
+  restored_snapshot jsonb;
+  redone_snapshot jsonb;
   ok boolean;
 BEGIN
   r := public.studio_start_catalog_job('dddd7777-2222-4000-8000-000000000001','dddd7777-4444-4000-8000-000000000001','manual','dddd7777-0000-4000-8000-000000000003');
@@ -142,12 +145,37 @@ BEGIN
   WHERE ranking_id = 'dddd7777-5555-4000-8000-000000000012' AND course_id = 'dddd7777-2222-4000-8000-000000000002';
 
   -- Manual orders: a new order supersedes the previous one; a research result expires the active one.
-  PERFORM public.studio_set_manual_order('dddd7777-2222-4000-8000-000000000002',3,'pilot partner','dddd7777-0000-4000-8000-000000000003');
+  PERFORM public.studio_set_manual_order(
+    p_course_id => 'dddd7777-2222-4000-8000-000000000002',
+    p_position => 3
+  );
+  IF (SELECT reason FROM public.studio_catalog_manual_orders WHERE course_id='dddd7777-2222-4000-8000-000000000002' AND status='active') IS NOT NULL THEN
+    RAISE EXCEPTION 'manual order without a reason should save NULL';
+  END IF;
   PERFORM public.studio_set_manual_order('dddd7777-2222-4000-8000-000000000002',1,'moved up','dddd7777-0000-4000-8000-000000000003');
   IF (SELECT count(*) FROM public.studio_catalog_manual_orders WHERE course_id='dddd7777-2222-4000-8000-000000000002' AND status='superseded' AND ended_at IS NOT NULL) <> 1
      OR (SELECT position FROM public.studio_catalog_manual_orders WHERE course_id='dddd7777-2222-4000-8000-000000000002' AND status='active') <> 1 THEN
     RAISE EXCEPTION 'new manual order did not supersede the previous one';
   END IF;
+
+  -- Score-order reset returns a snapshot; undo restores it, and redo refuses to clear a changed set.
+  manual_snapshot := public.studio_clear_manual_orders();
+  IF jsonb_array_length(manual_snapshot) <> 1
+     OR EXISTS (SELECT 1 FROM public.studio_catalog_manual_orders WHERE status='active') THEN
+    RAISE EXCEPTION 'score-order reset did not return and clear the active manual order: %', manual_snapshot;
+  END IF;
+  restored_snapshot := public.studio_restore_manual_orders(manual_snapshot,'dddd7777-0000-4000-8000-000000000003');
+  IF (restored_snapshot->0->>'position')::integer <> 1
+     OR restored_snapshot->0->>'reason' <> 'moved up'
+     OR (SELECT count(*) FROM public.studio_catalog_manual_orders WHERE status='active') <> 1 THEN
+    RAISE EXCEPTION 'undo did not restore the manual-order snapshot: %', restored_snapshot;
+  END IF;
+  redone_snapshot := public.studio_clear_manual_orders(restored_snapshot);
+  IF redone_snapshot <> restored_snapshot THEN RAISE EXCEPTION 'redo changed the expected snapshot'; END IF;
+  IF EXISTS (SELECT 1 FROM public.studio_catalog_manual_orders WHERE status='active') THEN
+    RAISE EXCEPTION 'redo did not reapply the score-order reset';
+  END IF;
+  PERFORM public.studio_restore_manual_orders(manual_snapshot,'dddd7777-0000-4000-8000-000000000003');
   BEGIN
     PERFORM public.studio_set_manual_order(gen_random_uuid(),1,'x',NULL);
     RAISE EXCEPTION 'manual order of an unknown course was accepted';
@@ -176,6 +204,7 @@ DECLARE
   t text;
   op text;
   stmt text;
+  function_signature text;
 BEGIN
   FOR actor IN 0..3 LOOP
     PERFORM set_config('request.jwt.claim.sub', CASE WHEN actor=0 THEN '' ELSE 'dddd7777-0000-4000-8000-'||lpad(actor::text,12,'0') END, true);
@@ -209,11 +238,8 @@ BEGIN
       $q$INSERT INTO public.studio_scoring_weights(version,weights) VALUES(99,(SELECT weights FROM public.studio_scoring_weights WHERE version=1))$q$,
       $q$UPDATE public.studio_courses SET research_status='evidence_ok' WHERE id='dddd7777-2222-4000-8000-000000000002'$q$,
       $q$INSERT INTO public.studio_courses(title,research_status) VALUES('forged evidence','evidence_ok')$q$,
-      $q$SELECT public.studio_start_catalog_job('dddd7777-2222-4000-8000-000000000002',gen_random_uuid(),'manual',NULL)$q$,
-      $q$SELECT public.studio_finish_catalog_job('dddd7777-4444-4000-8000-000000000001','evidence_ok',NULL)$q$,
       $q$INSERT INTO public.studio_catalog_manual_orders(course_id,position,reason) VALUES('dddd7777-2222-4000-8000-000000000002',1,'forged')$q$,
-      $q$INSERT INTO public.studio_catalog_rankings(group_kind,weights_version,algorithm_version) VALUES('skill',1,'forged')$q$,
-      $q$SELECT public.studio_set_manual_order('dddd7777-2222-4000-8000-000000000002',1,'forged',NULL)$q$
+      $q$INSERT INTO public.studio_catalog_rankings(group_kind,weights_version,algorithm_version) VALUES('skill',1,'forged')$q$
     ] LOOP
       n := -1;
       BEGIN
@@ -221,6 +247,17 @@ BEGIN
         GET DIAGNOSTICS n = ROW_COUNT;
       EXCEPTION WHEN insufficient_privilege THEN n := -42501; END;
       IF n <> -42501 THEN RAISE EXCEPTION 'Actor % write was not refused (%): %', actor, n, stmt; END IF;
+    END LOOP;
+
+    -- Check EXECUTE grants without invoking intentionally forbidden routines on this local PG 17.6 clone.
+    FOREACH function_signature IN ARRAY ARRAY[
+      'public.studio_start_catalog_job(uuid,uuid,text,uuid)',
+      'public.studio_finish_catalog_job(uuid,text,text)',
+      'public.studio_set_manual_order(uuid,integer,text,uuid)'
+    ] LOOP
+      IF has_function_privilege(current_user, function_signature, 'EXECUTE') THEN
+        RAISE EXCEPTION 'Actor % can execute protected function %', actor, function_signature;
+      END IF;
     END LOOP;
 
     -- Admin keeps the course columns the Studio UI writes.
@@ -294,7 +331,6 @@ DECLARE
     -- manual orders: position, reason, status and validity rules
     $q$INSERT INTO public.studio_catalog_manual_orders(course_id,position,reason) VALUES('dddd7777-2222-4000-8000-000000000001',0,'x')$q$,
     $q$INSERT INTO public.studio_catalog_manual_orders(course_id,position,reason) VALUES('dddd7777-2222-4000-8000-000000000001',1,'  ')$q$,
-    $q$INSERT INTO public.studio_catalog_manual_orders(course_id,position,reason) VALUES('dddd7777-2222-4000-8000-000000000001',1,NULL)$q$,
     $q$INSERT INTO public.studio_catalog_manual_orders(course_id,position,reason,status) VALUES('dddd7777-2222-4000-8000-000000000001',1,'x','done')$q$,
     $q$INSERT INTO public.studio_catalog_manual_orders(course_id,position,reason,ended_at) VALUES('dddd7777-2222-4000-8000-000000000001',1,'x',now())$q$,
     $q$INSERT INTO public.studio_catalog_manual_orders(course_id,position,reason,status) VALUES('dddd7777-2222-4000-8000-000000000001',1,'x','expired')$q$

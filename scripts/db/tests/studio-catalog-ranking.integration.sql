@@ -8,7 +8,8 @@ INSERT INTO public.studio_courses(id,title) VALUES
  ('eeee8888-2222-4000-8000-000000000001','Ranking course A'),
  ('eeee8888-2222-4000-8000-000000000002','Ranking course B'),
  ('eeee8888-2222-4000-8000-000000000003','Ranking course C'),
- ('eeee8888-2222-4000-8000-000000000004','Ranking course D');
+ ('eeee8888-2222-4000-8000-000000000004','Ranking course D'),
+ ('eeee8888-2222-4000-8000-000000000005','Manual-order blank-reason probe');
 INSERT INTO public.studio_catalog_jobs(id,course_id,trigger,status,finished_at) VALUES
  ('eeee8888-4444-4000-8000-000000000001','eeee8888-2222-4000-8000-000000000001','manual','evidence_ok',now());
 
@@ -107,22 +108,21 @@ RESET ROLE;
 DO $$
 DECLARE
   actor text;
-  code text;
 BEGIN
   FOREACH actor IN ARRAY ARRAY['anon', 'authenticated'] LOOP
     EXECUTE format('SET LOCAL ROLE %I', actor);
-    code := NULL;
-    BEGIN
-      PERFORM public.studio_save_ranking(1, 'forged', NULL, '[{"group_kind":null,"scores":[]}]'::jsonb);
-    EXCEPTION WHEN insufficient_privilege THEN code := '42501'; END;
-    IF code IS NULL THEN RAISE EXCEPTION '% could call studio_save_ranking', actor; END IF;
-    code := NULL;
-    BEGIN
-      PERFORM private.studio_save_ranking(1, 'forged', NULL, '[{"group_kind":null,"scores":[]}]'::jsonb);
-    EXCEPTION WHEN insufficient_privilege THEN code := '42501'; END;
-    IF code IS NULL THEN RAISE EXCEPTION '% could call private.studio_save_ranking', actor; END IF;
+    IF has_function_privilege(current_user, 'public.studio_save_ranking(integer,text,timestamptz,jsonb)', 'EXECUTE') THEN
+      RAISE EXCEPTION '% can execute studio_save_ranking', actor;
+    END IF;
+    IF has_function_privilege(current_user, 'private.studio_save_ranking(integer,text,timestamptz,jsonb)', 'EXECUTE') THEN
+      RAISE EXCEPTION '% can execute private.studio_save_ranking', actor;
+    END IF;
     RESET ROLE;
   END LOOP;
+  IF NOT has_function_privilege('service_role', 'public.studio_save_ranking(integer,text,timestamptz,jsonb)', 'EXECUTE')
+     OR NOT has_function_privilege('service_role', 'private.studio_save_ranking(integer,text,timestamptz,jsonb)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'service_role cannot execute studio_save_ranking';
+  END IF;
 END $$;
 
 -- Constraint probes (as postgres) on the rows of the pass above, then the same probes with the
@@ -172,5 +172,81 @@ BEGIN
     BEGIN EXECUTE s; EXCEPTION WHEN OTHERS THEN RAISE EXCEPTION 'probe is refused by something else than excluded_reason_known: % (%)', s, SQLERRM; END;
   END LOOP;
 END $$;
+
+-- Manual-order actions: NULL/blank reasons, clear snapshots, conflict guards and restore.
+SET LOCAL ROLE service_role;
+DO $$
+DECLARE
+  id_a uuid;
+  id_b uuid;
+  id_c uuid;
+  id_d uuid;
+  snapshot jsonb;
+  returned jsonb;
+  code text;
+  message text;
+  active_count integer;
+  total_count integer;
+BEGIN
+  id_a := public.studio_set_manual_order('eeee8888-2222-4000-8000-000000000001', 11, NULL, NULL);
+  id_b := public.studio_set_manual_order('eeee8888-2222-4000-8000-000000000002', 22, '   ', NULL);
+  id_c := public.studio_set_manual_order('eeee8888-2222-4000-8000-000000000003', 33, 'reviewed reason C', NULL);
+  id_d := public.studio_set_manual_order('eeee8888-2222-4000-8000-000000000004', 44, 'reviewed reason D', NULL);
+
+  IF (SELECT reason FROM public.studio_catalog_manual_orders WHERE id = id_a) IS NOT NULL
+     OR (SELECT reason FROM public.studio_catalog_manual_orders WHERE id = id_b) IS NOT NULL THEN
+    RAISE EXCEPTION 'NULL and whitespace reasons must be stored as NULL';
+  END IF;
+
+  code := NULL;
+  BEGIN
+    INSERT INTO public.studio_catalog_manual_orders(course_id, position, reason)
+    VALUES ('eeee8888-2222-4000-8000-000000000005', 55, '   ');
+  EXCEPTION WHEN check_violation THEN code := 'check';
+  END;
+  IF code IS NULL THEN RAISE EXCEPTION 'direct whitespace reason bypassed the table check'; END IF;
+
+  snapshot := jsonb_build_array(
+    jsonb_build_object('course_id', 'eeee8888-2222-4000-8000-000000000001', 'position', 11, 'reason', NULL),
+    jsonb_build_object('course_id', 'eeee8888-2222-4000-8000-000000000002', 'position', 22, 'reason', NULL),
+    jsonb_build_object('course_id', 'eeee8888-2222-4000-8000-000000000003', 'position', 33, 'reason', 'reviewed reason C'),
+    jsonb_build_object('course_id', 'eeee8888-2222-4000-8000-000000000004', 'position', 44, 'reason', 'reviewed reason D')
+  );
+  BEGIN
+    PERFORM public.studio_clear_manual_orders(snapshot || '[{"course_id":"eeee8888-2222-4000-8000-000000000005","position":55,"reason":null}]'::jsonb);
+    RAISE EXCEPTION 'expected manual_order_conflict after a mismatched clear snapshot';
+  EXCEPTION WHEN raise_exception THEN
+    GET STACKED DIAGNOSTICS message = MESSAGE_TEXT;
+    IF message <> 'manual_order_conflict' THEN RAISE; END IF;
+  END;
+  SELECT count(*) INTO active_count FROM public.studio_catalog_manual_orders WHERE status = 'active';
+  IF active_count <> 4 THEN RAISE EXCEPTION 'mismatched clear snapshot changed the active rows'; END IF;
+
+  BEGIN
+    PERFORM public.studio_restore_manual_orders(snapshot, NULL);
+    RAISE EXCEPTION 'restore unexpectedly succeeded while active rows existed';
+  EXCEPTION WHEN raise_exception THEN
+    GET STACKED DIAGNOSTICS message = MESSAGE_TEXT;
+    IF message <> 'manual_order_conflict' THEN RAISE; END IF;
+  END;
+
+  returned := public.studio_clear_manual_orders(snapshot);
+  IF returned IS DISTINCT FROM snapshot THEN RAISE EXCEPTION 'clear returned a different snapshot: %', returned; END IF;
+  SELECT count(*) INTO active_count FROM public.studio_catalog_manual_orders WHERE status = 'active';
+  IF active_count <> 0 THEN RAISE EXCEPTION 'clear left active manual orders'; END IF;
+  IF (SELECT count(*) FROM public.studio_catalog_manual_orders WHERE status = 'superseded' AND ended_at IS NOT NULL) <> 4 THEN
+    RAISE EXCEPTION 'clear did not close each active manual order';
+  END IF;
+
+  returned := public.studio_restore_manual_orders(snapshot, NULL);
+  IF returned IS DISTINCT FROM snapshot THEN RAISE EXCEPTION 'restore returned a different snapshot: %', returned; END IF;
+  SELECT count(*) INTO active_count FROM public.studio_catalog_manual_orders WHERE status = 'active';
+  SELECT count(*) INTO total_count FROM public.studio_catalog_manual_orders;
+  IF active_count <> 4 OR total_count <> 8 THEN RAISE EXCEPTION 'restore did not create a new active audit set'; END IF;
+  IF (SELECT count(*) FROM public.studio_catalog_manual_orders WHERE status = 'active' AND reason IS NULL) <> 2 THEN
+    RAISE EXCEPTION 'restore did not retain NULL reasons';
+  END IF;
+END $$;
+RESET ROLE;
 
 ROLLBACK;

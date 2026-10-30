@@ -56,7 +56,8 @@ import { handleOcidLink } from "./ocid/handlers.ts";
 import { authorizedOgRequest, handleOgRequest, isOgOp } from "./og/handlers.ts";
 import { handleAvatarSave, handleAvatarSvg } from "./avatar/handlers.ts";
 import { handleCatalogResearchStart } from "./studio/catalog_run.ts";
-import { handleCatalogManualOrder, handleCatalogRerank } from "./studio/ranking_run.ts";
+import { handleCatalogRerank } from "./studio/ranking_run.ts";
+import { handleCatalogManualOrder, handleCatalogManualOrderReset, handleCatalogManualOrderRestore } from "./studio/manual_order.ts";
 import { handleStudioStart, handleStudioTick } from "./studio/handlers.ts";
 
 const PROTECTED_OPS = new Set<string>([
@@ -106,6 +107,8 @@ const PROTECTED_OPS = new Set<string>([
   "studio.catalog_research",
   "studio.catalog_rerank",
   "studio.catalog_manual_order",
+  "studio.catalog_manual_order_reset",
+  "studio.catalog_manual_order_restore",
   // credentials.claimLookup is PUBLIC — intentionally omitted from PROTECTED_OPS
 ]);
 
@@ -268,6 +271,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleCatalogRerank(req, db);
     } else if (op === "studio.catalog_manual_order" && req.method === "POST") {
       response = await handleCatalogManualOrder(req, db);
+    } else if (op === "studio.catalog_manual_order_reset" && req.method === "POST") {
+      response = await handleCatalogManualOrderReset(req, db);
+    } else if (op === "studio.catalog_manual_order_restore" && req.method === "POST") {
+      response = await handleCatalogManualOrderRestore(req, db);
     } else if (op === "studio.tick" && req.method === "POST") {
       response = await handleStudioTick(req, db);
     } else if (op === "admin.emailOutbox.reconcile" && req.method === "POST") {
