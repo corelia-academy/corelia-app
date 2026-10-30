@@ -39,6 +39,7 @@ export function runStudioCourseEditLogIntegration({
 } = {}) {
   const runId = randomUUID();
   let testError;
+  console.log(`[studio-course-edit-log] test_run_id=${runId}`);
 
   try {
     const args = [

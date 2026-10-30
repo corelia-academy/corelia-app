@@ -1,6 +1,13 @@
--- Transactional edit-log coverage. Test data is removed before this script exits.
+-- Committed integration transactions cover real write paths. The runner supplies
+-- a unique test_run_id and cleans fixtures even if an assertion stops this script.
 
 \set ON_ERROR_STOP on
+
+\if :{?test_run_id}
+\else
+  \echo 'test_run_id must be supplied by studio-course-edit-log-runner.mjs'
+  \quit 2
+\endif
 
 SELECT pg_catalog.set_config('request.jwt.claim.sub', '', false);
 SELECT pg_catalog.set_config('request.jwt.claims', '{}', false);
@@ -19,7 +26,8 @@ INSERT INTO _studio_edit_actors(kind, id) VALUES
   ('admin', pg_catalog.gen_random_uuid()),
   ('instructor', pg_catalog.gen_random_uuid()),
   ('support', pg_catalog.gen_random_uuid()),
-  ('co_instructor', pg_catalog.gen_random_uuid());
+  ('co_instructor', pg_catalog.gen_random_uuid()),
+  ('student', pg_catalog.gen_random_uuid());
 
 GRANT SELECT ON TABLE pg_temp._studio_edit_actors TO authenticated, service_role;
 
@@ -29,7 +37,7 @@ INSERT INTO auth.users (
 )
 SELECT
   a.id,
-  'edit-log-' || a.id::text || '@corelia.local',
+  'edit-log-' || :'test_run_id' || '-' || a.id::text || '@corelia.local',
   '00000000-0000-0000-0000-000000000000',
   'authenticated',
   'authenticated',
@@ -45,6 +53,7 @@ SET
   role = CASE a.kind
     WHEN 'admin' THEN 'admin'
     WHEN 'support' THEN 'support_staff'
+    WHEN 'student' THEN 'student'
     ELSE 'instructor'
   END,
   instructor_origin = CASE WHEN a.kind IN ('instructor', 'co_instructor') THEN 'corelia' ELSE NULL END,
@@ -52,6 +61,7 @@ SET
     WHEN 'admin' THEN 'Edit Log Admin'
     WHEN 'instructor' THEN 'Edit Log Instructor'
     WHEN 'support' THEN 'Edit Log Support'
+    WHEN 'student' THEN 'Edit Log Student'
     ELSE 'Edit Log Co-instructor'
   END
 FROM pg_temp._studio_edit_actors a
@@ -63,11 +73,11 @@ CREATE TEMP TABLE _studio_edit_courses (
 );
 
 INSERT INTO _studio_edit_courses(kind, id) VALUES
-  ('main', 'edit-log-' || replace(pg_catalog.gen_random_uuid()::text, '-', '')),
-  ('non_ai', 'edit-log-' || replace(pg_catalog.gen_random_uuid()::text, '-', '')),
-  ('published_toggle', 'edit-log-' || replace(pg_catalog.gen_random_uuid()::text, '-', '')),
-  ('published_guard', 'edit-log-' || replace(pg_catalog.gen_random_uuid()::text, '-', '')),
-  ('cascade', 'edit-log-' || replace(pg_catalog.gen_random_uuid()::text, '-', ''));
+  ('main', 'edit-log-' || :'test_run_id' || '-main'),
+  ('non_ai', 'edit-log-' || :'test_run_id' || '-non-ai'),
+  ('published_toggle', 'edit-log-' || :'test_run_id' || '-published-toggle'),
+  ('published_guard', 'edit-log-' || :'test_run_id' || '-published-guard'),
+  ('cascade', 'edit-log-' || :'test_run_id' || '-cascade');
 
 GRANT SELECT ON TABLE pg_temp._studio_edit_courses TO authenticated, service_role;
 
@@ -165,6 +175,7 @@ SELECT id::text AS admin_id FROM pg_temp._studio_edit_actors WHERE kind = 'admin
 SELECT id::text AS instructor_id FROM pg_temp._studio_edit_actors WHERE kind = 'instructor' \gset
 SELECT id::text AS support_id FROM pg_temp._studio_edit_actors WHERE kind = 'support' \gset
 SELECT id::text AS co_instructor_id FROM pg_temp._studio_edit_actors WHERE kind = 'co_instructor' \gset
+SELECT id::text AS student_id FROM pg_temp._studio_edit_actors WHERE kind = 'student' \gset
 SELECT id AS main_course_id FROM pg_temp._studio_edit_courses WHERE kind = 'main' \gset
 SELECT id AS non_ai_course_id FROM pg_temp._studio_edit_courses WHERE kind = 'non_ai' \gset
 SELECT id AS toggle_course_id FROM pg_temp._studio_edit_courses WHERE kind = 'published_toggle' \gset
@@ -254,6 +265,273 @@ BEGIN
     WHERE c->'fields' ? 'data'
   ) THEN
     RAISE EXCEPTION 'The audit record must store data keys, not whole rows';
+  END IF;
+END;
+$$;
+COMMIT;
+
+-- The real course-info Save must ignore its automatic timestamp-only writes.
+BEGIN;
+SELECT pg_catalog.set_config('request.jwt.claim.sub', (SELECT id::text FROM pg_temp._studio_edit_actors WHERE kind = 'instructor'), true);
+SET LOCAL ROLE authenticated;
+SELECT public.learning_save_course_info(
+  (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main'),
+  '{"title":"Course after edit"}'::jsonb,
+  'en',
+  '{"title":"Course translation after edit"}'::jsonb
+);
+RESET ROLE;
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM public.studio_course_edits
+    WHERE txid = pg_catalog.txid_current()
+      AND course_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main')
+  ) THEN
+    RAISE EXCEPTION 'No-op learning_save_course_info created an edit row';
+  END IF;
+END;
+$$;
+COMMIT;
+
+BEGIN;
+SELECT pg_catalog.set_config('request.jwt.claim.sub', (SELECT id::text FROM pg_temp._studio_edit_actors WHERE kind = 'instructor'), true);
+SET LOCAL ROLE authenticated;
+SELECT public.learning_save_course_info(
+  (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main'),
+  '{"title":"Course title saved through RPC"}'::jsonb,
+  'en',
+  '{"title":"Course translation after edit"}'::jsonb
+);
+RESET ROLE;
+
+DO $$
+DECLARE
+  logged public.studio_course_edits%ROWTYPE;
+  row_count integer;
+BEGIN
+  SELECT pg_catalog.count(*) INTO row_count
+  FROM public.studio_course_edits
+  WHERE txid = pg_catalog.txid_current()
+    AND course_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main');
+  IF row_count <> 1 THEN
+    RAISE EXCEPTION 'Changed learning_save_course_info must create exactly one edit row, got %', row_count;
+  END IF;
+
+  SELECT * INTO logged
+  FROM public.studio_course_edits
+  WHERE txid = pg_catalog.txid_current()
+    AND course_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main');
+  IF pg_catalog.jsonb_array_length(logged.changes) <> 1
+     OR logged.changes->0->>'entity' <> 'course'
+     OR (SELECT pg_catalog.count(*) FROM pg_catalog.jsonb_object_keys(logged.changes->0->'fields')) <> 1
+     OR NOT (logged.changes->0->'fields' ? 'title')
+     OR logged.changes->0->'fields'->'title'->>'old' <> 'Course after edit'
+     OR logged.changes->0->'fields'->'title'->>'new' <> 'Course title saved through RPC' THEN
+    RAISE EXCEPTION 'Changed learning_save_course_info logged timestamp noise or missed the title diff: %', logged.changes;
+  END IF;
+END;
+$$;
+COMMIT;
+
+-- Follow/unfollow an actually published AI course through authenticated RLS.
+BEGIN;
+SELECT pg_catalog.set_config('request.jwt.claim.sub', (SELECT id::text FROM pg_temp._studio_edit_actors WHERE kind = 'student'), true);
+SET LOCAL ROLE authenticated;
+INSERT INTO public.follows(follower_id, subject_type, subject_id)
+VALUES (
+  auth.uid(),
+  'course',
+  (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'published_toggle')
+);
+RESET ROLE;
+
+DO $$
+BEGIN
+  IF (SELECT follower_count FROM public.courses WHERE id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'published_toggle')) <> 1 THEN
+    RAISE EXCEPTION 'Authenticated follow did not increment the AI course follower_count';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.studio_course_edits
+    WHERE txid = pg_catalog.txid_current()
+      AND course_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'published_toggle')
+  ) THEN
+    RAISE EXCEPTION 'Authenticated follow created a course edit row';
+  END IF;
+END;
+$$;
+COMMIT;
+
+\if :{?force_assertion_failure}
+  \if :force_assertion_failure
+    \echo 'Forcing assertion failure after committed course edit and follow fixtures'
+    DO $$ BEGIN RAISE EXCEPTION 'FORCED_ASSERTION_FAILURE'; END $$;
+  \endif
+\endif
+
+BEGIN;
+SELECT pg_catalog.set_config('request.jwt.claim.sub', (SELECT id::text FROM pg_temp._studio_edit_actors WHERE kind = 'student'), true);
+SET LOCAL ROLE authenticated;
+DELETE FROM public.follows
+WHERE follower_id = auth.uid()
+  AND subject_type = 'course'
+  AND subject_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'published_toggle');
+RESET ROLE;
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM public.follows
+    WHERE subject_type = 'course'
+      AND subject_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'published_toggle')
+  ) THEN
+    RAISE EXCEPTION 'Authenticated unfollow left the follow row behind';
+  END IF;
+  IF (SELECT follower_count FROM public.courses WHERE id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'published_toggle')) <> 0 THEN
+    RAISE EXCEPTION 'Authenticated unfollow did not restore the AI course follower_count';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.studio_course_edits
+    WHERE txid = pg_catalog.txid_current()
+      AND course_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'published_toggle')
+  ) THEN
+    RAISE EXCEPTION 'Authenticated unfollow created a course edit row';
+  END IF;
+END;
+$$;
+COMMIT;
+
+-- Synchronize primary/explicit lesson locales through the real RPC, then prove
+-- an identical subsequent Save produces no edit row.
+BEGIN;
+SELECT pg_catalog.set_config('request.jwt.claim.sub', (SELECT id::text FROM pg_temp._studio_edit_actors WHERE kind = 'instructor'), true);
+SET LOCAL ROLE authenticated;
+SELECT public.learning_save_lesson(
+  (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main'),
+  (
+    SELECT pg_catalog.jsonb_build_object(
+      'id', l.id,
+      'section_id', l.section_id,
+      'order', l.sort_order,
+      'published', l.published,
+      'archived_at', l.archived_at
+    ) || l.data
+    FROM public.course_lessons l
+    WHERE l.course_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main')
+      AND l.id = 'lesson-article'
+  ),
+  NULL,
+  (
+    SELECT pg_catalog.jsonb_build_object(
+      'en', pg_catalog.jsonb_build_object(
+        'title', l.data->'title',
+        'description_markdown', l.data->'description_markdown'
+      )
+    )
+    FROM public.course_lessons l
+    WHERE l.course_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main')
+      AND l.id = 'lesson-article'
+  )
+);
+RESET ROLE;
+COMMIT;
+
+BEGIN;
+SELECT pg_catalog.set_config('request.jwt.claim.sub', (SELECT id::text FROM pg_temp._studio_edit_actors WHERE kind = 'instructor'), true);
+SET LOCAL ROLE authenticated;
+SELECT public.learning_save_lesson(
+  (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main'),
+  (
+    SELECT pg_catalog.jsonb_build_object(
+      'id', l.id,
+      'section_id', l.section_id,
+      'order', l.sort_order,
+      'published', l.published,
+      'archived_at', l.archived_at
+    ) || l.data
+    FROM public.course_lessons l
+    WHERE l.course_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main')
+      AND l.id = 'lesson-article'
+  ),
+  NULL,
+  (
+    SELECT pg_catalog.jsonb_build_object(
+      'en', pg_catalog.jsonb_build_object(
+        'title', l.data->'title',
+        'description_markdown', l.data->'description_markdown'
+      )
+    )
+    FROM public.course_lessons l
+    WHERE l.course_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main')
+      AND l.id = 'lesson-article'
+  )
+);
+RESET ROLE;
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM public.studio_course_edits
+    WHERE txid = pg_catalog.txid_current()
+      AND course_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main')
+  ) THEN
+    RAISE EXCEPTION 'No-op learning_save_lesson created an edit row';
+  END IF;
+END;
+$$;
+COMMIT;
+
+-- The real quiz-save RPC must snapshot the containing lesson in the question label.
+BEGIN;
+SELECT pg_catalog.set_config('request.jwt.claim.sub', (SELECT id::text FROM pg_temp._studio_edit_actors WHERE kind = 'instructor'), true);
+SET LOCAL ROLE authenticated;
+SELECT public.learning_save_lesson(
+  (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main'),
+  (
+    SELECT pg_catalog.jsonb_build_object(
+      'id', l.id,
+      'section_id', l.section_id,
+      'order', l.sort_order,
+      'published', l.published,
+      'archived_at', l.archived_at
+    ) || l.data || '{"title":"Quiz lesson saved through RPC"}'::jsonb
+    FROM public.course_lessons l
+    WHERE l.course_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main')
+      AND l.id = 'lesson-quiz'
+  ),
+  pg_catalog.jsonb_build_array(
+    pg_catalog.jsonb_build_object(
+      'id', 'question-main',
+      'order', 0,
+      'type', 'mcq',
+      'question', 'Quiz prompt saved through RPC',
+      'options', pg_catalog.jsonb_build_array(
+        pg_catalog.jsonb_build_object('id', 'a', 'text', 'A'),
+        pg_catalog.jsonb_build_object('id', 'b', 'text', 'B')
+      ),
+      'correct_index', 0
+    )
+  ),
+  NULL
+);
+RESET ROLE;
+
+DO $$
+DECLARE logged public.studio_course_edits%ROWTYPE;
+BEGIN
+  SELECT * INTO logged
+  FROM public.studio_course_edits
+  WHERE txid = pg_catalog.txid_current()
+    AND course_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main');
+  IF NOT FOUND OR NOT EXISTS (
+    SELECT 1
+    FROM pg_catalog.jsonb_array_elements(logged.changes) c
+    WHERE c->>'entity' = 'question'
+      AND c->>'entity_id' = 'question-main'
+      AND c->>'label' = 'Quiz lesson saved through RPC · Quiz prompt saved through RPC'
+  ) THEN
+    RAISE EXCEPTION 'Quiz Save did not snapshot its parent lesson in the question label: %', logged.changes;
   END IF;
 END;
 $$;
@@ -411,10 +689,11 @@ BEGIN
       AND EXISTS (
         SELECT 1
         FROM pg_catalog.jsonb_array_elements(e.changes) c
-        WHERE c->'fields' ? 'description_markdown'
+        WHERE c->>'entity' = 'lesson'
+          AND c->'fields' ? 'description_markdown'
       )
   ) <> 3 THEN
-    RAISE EXCEPTION 'Three committed edits must have distinct transaction records';
+    RAISE EXCEPTION 'Three committed lesson edits must have distinct transaction records';
   END IF;
 END;
 $$;
@@ -506,7 +785,7 @@ BEGIN
   IF NOT FOUND
      OR pg_catalog.jsonb_array_length(logged.changes) <> 1
      OR NOT (logged.changes->0->'fields' ? 'archived_at')
-     OR pg_catalog.jsonb_object_length(logged.changes->0->'fields') <> 1 THEN
+     OR (SELECT pg_catalog.count(*) FROM pg_catalog.jsonb_object_keys(logged.changes->0->'fields')) <> 1 THEN
     RAISE EXCEPTION 'archived_at-only edit was not captured exactly';
   END IF;
 END;
@@ -751,7 +1030,7 @@ SELECT pg_catalog.count(*)::text AS rollback_log_count
 FROM public.studio_course_edits
 WHERE course_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main')
 \gset
-SELECT data->>'short_description' AS rollback_old_value
+SELECT COALESCE(data->>'short_description', '') AS rollback_old_value
 FROM public.course_lessons
 WHERE course_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main') AND id = 'lesson-article'
 \gset
@@ -777,7 +1056,7 @@ SELECT pg_catalog.count(*)::text AS rollback_log_count_after
 FROM public.studio_course_edits
 WHERE course_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main')
 \gset
-SELECT data->>'short_description' AS rollback_new_value
+SELECT COALESCE(data->>'short_description', '') AS rollback_new_value
 FROM public.course_lessons
 WHERE course_id = (SELECT id FROM pg_temp._studio_edit_courses WHERE kind = 'main') AND id = 'lesson-article'
 \gset
@@ -878,8 +1157,13 @@ COMMIT;
 -- Remove all test-owned rows, including audit rows with no course foreign key.
 BEGIN;
 SELECT pg_catalog.set_config('request.jwt.claim.sub', '', true);
+UPDATE public.course_lessons l
+SET published = false, archived_at = NULL
+FROM pg_temp._studio_edit_courses f
+WHERE f.id = l.course_id;
+
 UPDATE public.courses c
-SET published = false, archived_at = COALESCE(c.archived_at, pg_catalog.now())
+SET published = false, archived_at = NULL
 FROM pg_temp._studio_edit_courses f
 WHERE f.id = c.id;
 
