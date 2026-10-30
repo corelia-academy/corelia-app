@@ -1,9 +1,10 @@
-import { useState, type ReactNode } from "react";
+import { useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { gsap } from "gsap";
 import { lessonText } from "@/features/learning/lessonCopy";
 import { Link } from "react-router";
 import { CaretDown, CheckSquare, Code, FileText, List, PencilLine, PlayCircle, SidebarSimple } from "@phosphor-icons/react";
 import { Action } from "@/components/ui/action";
-import { LessonProgressBar, ProgressCircle } from "@/components/ui/progress";
+import { ProgressCircle } from "@/components/ui/progress";
 import { getLessonFormat, isArticleLesson } from "@/lib/lessonFormat";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -41,12 +42,16 @@ function LessonItem({
     <Action
       type="button"
       size="small"
+      className="rounded-md py-2md hover:rounded-md"
       isActive={active}
       icon={<Icon weight="duotone" aria-hidden />}
       label={lessonText(lesson.title)}
-      dateTime={!done && lesson.duration_seconds > 0 ? formatDuration(lesson.duration_seconds) : undefined}
       trailingGroup={done ? (
         <ProgressCircle aria-label={translate("detail.learn.stats.completedLessons")} done className="size-4" />
+      ) : lesson.duration_seconds > 0 ? (
+        <span className="font-body text-label-small leading-[1.4] text-action-supporting">
+          {formatDuration(lesson.duration_seconds)}
+        </span>
       ) : undefined}
       render={<Link to={`/study/${courseId}/lesson/${lesson.id}`} />}
       nativeButton={false}
@@ -56,21 +61,47 @@ function LessonItem({
 
 function CurriculumSection({ title, children }: { title: string; children: ReactNode }) {
   const [open, setOpen] = useState(true);
+  const regionRef = useRef<HTMLDivElement>(null);
+  const previousOpen = useRef(open);
+  const regionId = useId();
+
+  // Animates only real open/close changes, so the first render and StrictMode re-runs stay still.
+  useLayoutEffect(() => {
+    const region = regionRef.current;
+    if (!region || previousOpen.current === open) return;
+    previousOpen.current = open;
+    gsap.killTweensOf(region);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      gsap.set(region, open ? { clearProps: "display,height,overflow" } : { display: "none" });
+      return;
+    }
+    gsap.set(region, { display: "block", overflow: "hidden" });
+    if (open) {
+      gsap.fromTo(region, { height: 0 }, { height: "auto", duration: 0.28, ease: "power3.out", clearProps: "display,height,overflow" });
+    } else {
+      gsap.to(region, { height: 0, duration: 0.2, ease: "power2.in", onComplete: () => gsap.set(region, { display: "none" }) });
+    }
+  }, [open]);
+
   return (
-    <section className="flex flex-col gap-md">
+    <section data-open={open} className="flex flex-col [[data-open=false]+&]:-mt-px">
       <div className="border-y border-border px-lg">
         <Action
           type="button"
           size="large"
+          className="cursor-pointer rounded-md hover:rounded-md hover:bg-transparent [&_span]:transition-colors hover:[&_span]:text-button-secondary-foreground"
           label={title}
           aria-expanded={open}
+          aria-controls={regionId}
           onClick={() => setOpen((value) => !value)}
           trailingGroup={
             <CaretDown aria-hidden weight="duotone" className={cn("size-4 transition-transform", !open && "-rotate-90")} />
           }
         />
       </div>
-      {open ? <div className="flex flex-col px-2xl">{children}</div> : null}
+      <div ref={regionRef} id={regionId} inert={!open}>
+        <div className="flex flex-col px-2xl pt-md [section:not(:last-child)_&]:pb-2xl">{children}</div>
+      </div>
     </section>
   );
 }
@@ -144,16 +175,16 @@ function CurriculumList({
 
   return (
     <div className={cn(scrollClassName)}>
-      <div className="flex flex-col gap-2xl pb-2xl">
+      <div className="flex flex-col pb-2xl">
         {hasSections
           ? groups.map(({ section, lessons: sectionLessons }) => (
               <CurriculumSection key={section.id} title={section.title}>
                 {sectionLessons.map(renderLesson)}
               </CurriculumSection>
             ))
-          : <div className="flex flex-col px-2xl">{flatLessons!.map(renderLesson)}</div>}
+          : <div className="flex flex-col px-2xl not-last:pb-2xl">{flatLessons!.map(renderLesson)}</div>}
         {hasFinalAssignment && hasFullCourseAccess && (
-          <div className="px-2xl">
+          <div className="px-2xl transition-[padding-top] duration-300 ease-out [[data-open=false]+&]:pt-2xl">
             <Action
               type="button"
               size="small"
@@ -259,12 +290,6 @@ export function LessonCurriculum({
     return (
       <div className="flex flex-col h-full">
         <div className="shrink-0">
-          <LessonProgressBar
-            aria-label={`${translate("detail.learn.curriculumTitle")} ${progressPercent}%`}
-            label={false}
-            progress={progressPercent}
-            className="flex h-1 w-full [&>[data-slot=progress-bar-track]]:w-full [&>[data-slot=progress-bar-track]]:flex-auto"
-          />
           <div className="flex items-center gap-xl border-b border-border bg-sidebar px-xl py-xl xl:px-4xl">
             <ProgressCircle
               aria-label={`${translate("detail.learn.curriculumTitle")} ${progressPercent}%`}
