@@ -3445,3 +3445,57 @@ USING ((SELECT public.studio_can_write()));
 REVOKE ALL PRIVILEGES ON TABLE public.studio_agent_prompts FROM PUBLIC, anon, authenticated, service_role;
 GRANT SELECT ON TABLE public.studio_agent_prompts TO authenticated, service_role;
 -- <<< 20261030163745_studio_agent_prompts_immutable.sql
+
+-- >>> studio run tick schedule
+-- The request is sent only when both routing and authentication secrets exist in Vault.
+CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+DO $studio_tick_unschedule$
+DECLARE
+  existing_job record;
+BEGIN
+  FOR existing_job IN
+    SELECT jobid FROM cron.job WHERE jobname = 'corelia-studio-tick'
+  LOOP
+    PERFORM cron.unschedule(existing_job.jobid);
+  END LOOP;
+END
+$studio_tick_unschedule$;
+
+SELECT cron.schedule(
+  'corelia-studio-tick',
+  '30 seconds',
+  $studio_tick_command$
+    SELECT net.http_post(
+      url := (
+        SELECT decrypted_secret
+        FROM vault.decrypted_secrets
+        WHERE name = 'corelia_jobs_project_url'
+      ) || '/functions/v1/corelia-api?op=studio.tick',
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'x-corelia-studio-cron-secret', (
+          SELECT decrypted_secret
+          FROM vault.decrypted_secrets
+          WHERE name = 'corelia_studio_cron_secret'
+        )
+      ),
+      body := '{}'::jsonb,
+      timeout_milliseconds := 150000
+    )
+    WHERE EXISTS (
+      SELECT 1
+      FROM vault.decrypted_secrets
+      WHERE name = 'corelia_jobs_project_url'
+        AND nullif(btrim(decrypted_secret), '') IS NOT NULL
+    )
+    AND EXISTS (
+      SELECT 1
+      FROM vault.decrypted_secrets
+      WHERE name = 'corelia_studio_cron_secret'
+        AND nullif(btrim(decrypted_secret), '') IS NOT NULL
+    );
+  $studio_tick_command$
+);
+-- <<< studio run tick schedule

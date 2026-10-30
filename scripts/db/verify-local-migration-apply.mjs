@@ -151,6 +151,11 @@ execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "
 
 execFileSync(process.execPath, ["scripts/db/tests/studio-agent-prompts.integration.mjs"], { stdio: "inherit" });
 
+// Verify the Vault-backed Studio tick schedule without executing its HTTP command.
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/studio-tick-scheduler.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
+
 // Run pause/continue assertions in a multi-statement transaction and roll fixtures back.
 execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
   input: readFileSync(resolve("scripts/db/tests/studio-run-pause-continue.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
