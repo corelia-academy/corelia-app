@@ -814,7 +814,7 @@ function LearnWorkspace() {
     <div className="pointer-events-none absolute inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 flex justify-center px-3">
       <div
         ref={barDrag.barRef}
-        className="pointer-events-auto flex items-center gap-md rounded-xl border border-border-strong bg-surface-float/95 p-1.5 shadow-dropdown backdrop-blur-md [&:not(:has(>div:not(:empty)))]:hidden"
+        className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-md rounded-xl border border-border-strong bg-surface-float/95 p-1.5 shadow-dropdown backdrop-blur-md [&:not(:has(>div:not(:empty)))]:hidden"
       >
         <Button
           type="button"
