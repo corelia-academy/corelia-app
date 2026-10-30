@@ -42,6 +42,7 @@ import { ArrowCounterClockwise, DotsSixVertical, SidebarSimple } from "@phosphor
 import { appPath } from "@/lib/appUrl";
 import { prefetchRouteChunk } from "@/lib/routePrefetch";
 import { useTheme } from "next-themes";
+import { AppHeaderBar } from "@/components/layouts/AppHeaderBar";
 import {
   LearnErrorState,
   LearnMissingCourseIdState,
@@ -748,8 +749,7 @@ function LearnWorkspace() {
   );
 
   const topBar = (
-    <header className="relative w-full shrink-0 border-b border-border bg-background">
-      <div className="mx-auto flex h-[71px] w-full max-w-[1990px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-5xl">
+    <AppHeaderBar>
         {/* Left: nút quay lại khóa học (icon) + logo, theo Figma */}
         <div className="flex items-center gap-2md">
           {/* TODO(figma-learn): tạm ẩn nút quay lại khóa học trước logo, chờ thiết kế
@@ -806,8 +806,7 @@ function LearnWorkspace() {
         <div className="flex items-center gap-2">
           <LearnResourcesDrawer groups={lessonsBySection} courseResources={course.course_resources} />
         </div>
-      </div>
-    </header>
+    </AppHeaderBar>
   );
 
   const footerBar = (

@@ -24,6 +24,7 @@ import { useTranslation } from "react-i18next";
 // import { useOCAuth } from "@opencampus/ocid-connect-js";
 // import OpenCampusConnectDialog from "@/components/layouts/OpenCampusConnectDialog";
 import { NotificationBell } from "@/components/layouts/NotificationBell";
+import { AppHeaderBar } from "@/components/layouts/AppHeaderBar";
 import { useTheme } from "next-themes";
 import {
   DropdownMenu,
@@ -284,8 +285,7 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
   }
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background">
-      <div className="mx-auto flex h-[71px] w-full max-w-[1990px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-5xl">
+    <AppHeaderBar className="sticky top-0 z-40">
         <div className="flex items-center gap-2 sm:gap-4">
           <SidebarTrigger className="size-7 shrink-0 lg:hidden">
             <MenuIcon className="size-5" aria-hidden />
@@ -811,7 +811,6 @@ export default function Header({ publicUI = false }: { publicUI?: boolean }) {
             </NavLink>
           )}
         </div>
-      </div>
-    </header>
+    </AppHeaderBar>
   );
 }

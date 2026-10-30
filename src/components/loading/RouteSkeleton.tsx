@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AppHeaderBar } from "@/components/layouts/AppHeaderBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { skeletonRevealClass } from "./skeletonReveal";
@@ -148,7 +149,7 @@ function TableContent() {
 export function LessonPlayerSkeletonBody() {
   return (
     <div className="flex min-h-full flex-col" aria-hidden>
-      <Skeleton className="aspect-video w-full rounded-none" />
+      <div className="border-b border-border"><Skeleton className="aspect-video max-h-[80vh] w-full rounded-none" /></div>
       <div className="flex w-full max-w-[880px] flex-col gap-6xl px-4 pb-7xl pt-6xl sm:px-6 md:px-8xl">
         <div>
           <Skeleton className="h-4 w-16" />
@@ -161,14 +162,14 @@ export function LessonPlayerSkeletonBody() {
 }
 
 /**
- * Full Learn screen, mirroring `Learn.tsx`: 72px header, the lesson column with the floating
+ * Full Learn screen, mirroring `Learn.tsx`: shared `AppHeaderBar` header, the lesson column with the floating
  * action bar (and the curriculum edge tab below 1280px) and, from 1280px, the curriculum panel
  * at its default 28% share.
  */
 export function LearnShellSkeleton({ className, immediate }: { className?: string; immediate?: boolean }) {
   return (
     <LoadingStatus className={cn("flex h-full flex-col bg-background", className)} immediate={immediate}>
-      <div className="relative flex h-[72px] shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-3 sm:gap-3 sm:px-5xl" aria-hidden>
+      <AppHeaderBar aria-hidden>
         <Skeleton className="h-9 w-[108px] rounded-md" />
         <div className="flex min-w-0 flex-1 items-center justify-center gap-[15px] xl:absolute xl:left-1/2 xl:max-w-[50%] xl:flex-none xl:-translate-x-1/2">
           <Skeleton className="hidden h-5 w-40 sm:block" />
@@ -176,7 +177,7 @@ export function LearnShellSkeleton({ className, immediate }: { className?: strin
           <Skeleton className="h-5 w-16" />
         </div>
         <Skeleton className="h-8 w-28 rounded-md max-sm:size-8" />
-      </div>
+      </AppHeaderBar>
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <div className="relative min-w-0 flex-[72_1_0%] overflow-hidden">
           <LessonPlayerSkeletonBody />
@@ -190,21 +191,21 @@ export function LearnShellSkeleton({ className, immediate }: { className?: strin
           <Skeleton className="absolute right-0 top-5 z-10 h-10 w-10 rounded-l-lg rounded-r-none xl:hidden" aria-hidden />
         </div>
         <div className="hidden min-h-0 flex-[28_1_0%] flex-col overflow-hidden border-l border-border bg-surface-base xl:flex" aria-hidden>
-          <div className="flex items-center gap-xl border-b border-border bg-sidebar px-xl py-xl xl:px-4xl">
+          <div className="flex items-center gap-xl border-b border-border bg-sidebar px-2xl py-xl">
             <Skeleton className="size-6 rounded-full" />
             <Skeleton className="mx-auto h-5 w-28" />
             <Skeleton className="size-6 rounded-md" />
           </div>
-          <div className="flex flex-col gap-2xl pb-2xl">
+          <div className="flex flex-col gap-md pb-2xl">
             {[3, 2, 2].map((lessons, section) => (
               <div key={section} className="flex flex-col gap-md">
-                <div className="border-y border-border px-lg">
+                <div className="border-y border-border">
                   <div className="flex items-center gap-lg border border-transparent px-lg py-2md">
                     <Skeleton className="h-[22px] flex-1" />
                     <Skeleton className="size-4" />
                   </div>
                 </div>
-                <div className="flex flex-col px-2xl">
+                <div className="flex flex-col px-lg">
                   {Array.from({ length: lessons }, (_, row) => (
                     <div key={row} className="flex items-center gap-lg border border-transparent px-2md py-2md">
                       <Skeleton className="size-5 shrink-0 rounded-full" />

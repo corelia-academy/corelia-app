@@ -85,7 +85,7 @@ function CurriculumSection({ title, children }: { title: string; children: React
 
   return (
     <section data-open={open} className="flex flex-col [[data-open=false]+&]:-mt-px">
-      <div className="border-y border-border px-lg">
+      <div className="border-y border-border">
         <Action
           type="button"
           size="large"
@@ -100,7 +100,7 @@ function CurriculumSection({ title, children }: { title: string; children: React
         />
       </div>
       <div ref={regionRef} id={regionId} inert={!open}>
-        <div className="flex flex-col px-2xl pt-md [section:not(:last-child)_&]:pb-2xl">{children}</div>
+        <div className="flex flex-col px-lg pt-md [section:not(:last-child)_&]:pb-md">{children}</div>
       </div>
     </section>
   );
@@ -182,9 +182,9 @@ function CurriculumList({
                 {sectionLessons.map(renderLesson)}
               </CurriculumSection>
             ))
-          : <div className="flex flex-col px-2xl not-last:pb-2xl">{flatLessons!.map(renderLesson)}</div>}
+          : <div className="flex flex-col px-lg not-last:pb-md">{flatLessons!.map(renderLesson)}</div>}
         {hasFinalAssignment && hasFullCourseAccess && (
-          <div className="px-2xl transition-[padding-top] duration-300 ease-out [[data-open=false]+&]:pt-2xl">
+          <div className="px-lg transition-[padding-top] duration-300 ease-out [[data-open=false]+&]:pt-md">
             <Action
               type="button"
               size="small"
@@ -290,7 +290,7 @@ export function LessonCurriculum({
     return (
       <div className="flex flex-col h-full">
         <div className="shrink-0">
-          <div className="flex items-center gap-xl border-b border-border bg-sidebar px-xl py-xl xl:px-4xl">
+          <div className="flex items-center gap-xl border-b border-border bg-sidebar px-2xl py-xl">
             <ProgressCircle
               aria-label={`${translate("detail.learn.curriculumTitle")} ${progressPercent}%`}
               process
@@ -303,7 +303,7 @@ export function LessonCurriculum({
             {onTogglePanel ? (
               <Button
                 variant="cta" hierarchy="tertiary" iconOnly
-                size="small"
+                size="xsmall"
                 onClick={onTogglePanel}
                 aria-label={translate("detail.learn.toggleCurriculum")}
               >
