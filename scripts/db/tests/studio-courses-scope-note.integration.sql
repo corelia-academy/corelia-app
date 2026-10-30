@@ -1,6 +1,17 @@
 -- studio_courses.scope_note: optional, non-blank, at most 2000 characters. Rolled back.
 BEGIN;
 
+DO $$
+BEGIN
+  IF NOT has_column_privilege('authenticated', 'public.studio_courses', 'scope_note', 'INSERT') THEN
+    RAISE EXCEPTION 'authenticated must have INSERT privilege on studio_courses.scope_note';
+  END IF;
+  IF NOT has_column_privilege('authenticated', 'public.studio_courses', 'scope_note', 'UPDATE') THEN
+    RAISE EXCEPTION 'authenticated must have UPDATE privilege on studio_courses.scope_note';
+  END IF;
+END;
+$$;
+
 INSERT INTO public.studio_courses(id, title, status) VALUES
  ('ffff8888-2222-4000-8000-000000000001','Scope note unset','idea'),
  ('ffff8888-2222-4000-8000-000000000002','Scope note set','idea');
