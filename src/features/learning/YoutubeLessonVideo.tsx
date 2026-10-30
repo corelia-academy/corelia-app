@@ -46,7 +46,7 @@ function Player({ url, title, flush = false }: Props) {
       host.replaceChildren();
     };
   }, [url, title]);
-  return <div className={flush ? undefined : "space-y-3"}>
+  return <div className={flush ? "border-b border-border" : "space-y-3"}>
     <div ref={container} className={cn("aspect-video w-full overflow-hidden bg-black", !flush && "rounded-xl")} />
     {failed && <p role="alert" className={flush ? "px-4 py-3 sm:px-6 md:px-8xl" : undefined}>{t("learning.videoError")}</p>}
   </div>;
