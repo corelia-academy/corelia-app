@@ -18,12 +18,15 @@ if (insertStart < 0) throw new Error("Prompt migration seed INSERT not found.");
 const insertEnd = migration.indexOf("\n\nALTER TABLE public.studio_agent_prompts ENABLE ROW LEVEL SECURITY;", insertStart);
 if (insertEnd < 0) throw new Error("Prompt migration seed INSERT terminator not found.");
 const seedSql = migration.slice(insertStart, insertEnd + 1);
-const rowPattern = /\('([^']+)',\s*(\d+),\s*'(A[1-6])',\s*(\$[a-z0-9_]+\$)\r?\n([\s\S]*?)\r?\n\4\)/g;
+const rowPattern = /\('([^']+)',\s*(\d+),\s*'(A[1-6])',\s*(\$[a-z0-9_]+\$)([\s\S]*?)\4\)/g;
 const entries = [...seedSql.matchAll(rowPattern)];
 if (entries.length !== 7) throw new Error(`Expected 7 prompt seed rows, found ${entries.length}.`);
 
-export const SEEDED_PROMPTS = Object.fromEntries(entries.map(([, key, version, role, , system]) => [key!, {
-  role: role!,
-  version: `v${version}`,
-  system: `\n${system}\n`,
-}])) as Record<string, SeededPrompt>;
+export const SEEDED_PROMPTS = Object.fromEntries(entries.map(([, key, version, role, , system]) => {
+  if (/^[\r\n]|[\r\n]$/.test(system!)) throw new Error(`Prompt seed has a leading or trailing newline: ${key}.`);
+  return [key!, {
+    role: role!,
+    version: `v${version}`,
+    system: system!,
+  }];
+})) as Record<string, SeededPrompt>;

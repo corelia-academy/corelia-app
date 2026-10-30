@@ -18,6 +18,7 @@ describe("Studio prompt seeds", () => {
       expect(SEEDED_PROMPTS[key]!.role).toBe(expected[key]);
       expect(Number(SEEDED_PROMPTS[key]!.version.slice(1))).toBe(PROMPT_VERSIONS[key]);
       expect(SEEDED_PROMPTS[key]!.system.trim()).not.toBe("");
+      expect(SEEDED_PROMPTS[key]!.system).not.toMatch(/^[\r\n]|[\r\n]$/);
     }
   });
 });
