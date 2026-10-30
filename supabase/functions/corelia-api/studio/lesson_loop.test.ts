@@ -142,7 +142,7 @@ describe("studio lesson loop: planning", () => {
 
   it("drives both steps from planRun and finishes them one after the other", () => {
     const steps = (done: StepKey[]) => Object.fromEntries(STEP_ORDER.map((k) => [k, done.includes(k) ? "done" : "pending"])) as never;
-    const upTo = ["brief", "research", "curriculum", "curriculum_review"] as StepKey[];
+    const upTo = ["catalog_research", "brief", "research", "curriculum", "curriculum_review"] as StepKey[];
     const rows = ids.flatMap((l) => [draft(l), review(l)]);
     const lessons = { ids, rows, blocking: Object.fromEntries(ids.map((l) => [l, [] as string[]])) };
     const input = { latest: null, startedAt: new Date(now - 1000).toISOString(), now, lessons };
@@ -155,7 +155,7 @@ describe("studio lesson loop: planning", () => {
 
   it("runs structure_check, journey_test and publish as code steps", () => {
     const steps = (done: StepKey[]) => Object.fromEntries(STEP_ORDER.map((k) => [k, done.includes(k) ? "done" : "pending"])) as never;
-    const upTo = ["brief", "research", "curriculum", "curriculum_review", "lessons", "lesson_review"] as StepKey[];
+    const upTo = ["catalog_research", "brief", "research", "curriculum", "curriculum_review", "lessons", "lesson_review"] as StepKey[];
     const input = { latest: null, startedAt: new Date(now - 1000).toISOString(), now };
     expect(planRun({ ...input, steps: steps(upTo) })).toEqual({ step: "structure_check", action: { kind: "check", check: "structure_check" } });
     expect(planRun({ ...input, steps: steps([...upTo, "structure_check"]) }).action).toEqual({ kind: "check", check: "journey_test" });

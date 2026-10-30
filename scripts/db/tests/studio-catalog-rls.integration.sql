@@ -14,7 +14,12 @@ UPDATE public.profiles SET
 WHERE id::text LIKE 'dddd5555%';
 
 -- Seed (as postgres): one row per table, plus spare parents for insert probes.
-INSERT INTO public.studio_catalog_scopes(group_kind,audience,corelia_direction) VALUES('role','Web3 developers','Practical Web3 engineering');
+INSERT INTO public.studio_catalog_scopes(group_kind,audience,corelia_direction) VALUES('role','Web3 developers','Practical Web3 engineering')
+ON CONFLICT (group_kind) DO UPDATE
+SET audience = EXCLUDED.audience, corelia_direction = EXCLUDED.corelia_direction;
+-- The admin insert probe below checks scope defaults. Remove the migration seed inside this
+-- transaction so it remains independent of whether the schema was seeded before the test.
+DELETE FROM public.studio_catalog_scopes WHERE group_kind = 'skill';
 INSERT INTO public.studio_paths(id,group_kind,slug,title) VALUES('dddd5555-1111-4000-8000-000000000001','skill','rust','Rust');
 INSERT INTO public.studio_courses(id,title) VALUES
  ('dddd5555-2222-4000-8000-000000000001','Seed course A'),
