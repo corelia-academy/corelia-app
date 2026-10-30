@@ -153,9 +153,7 @@ khóa đang `queued`/`generating`/`published` trả 409.
 `studio.tick` đẩy tối đa 5 lượt chạy đang mở, mỗi lượt một hành động: gửi yêu cầu
 model ở background mode, lấy kết quả, hoặc kết thúc lượt chạy. Mỗi lần gọi model là một
 dòng `studio_generations` được chèn trước khi gọi provider (unique theo bước và lượt
-thử), nên hai tick chồng nhau không gửi trùng. Prompt nằm trong
-[`studio/prompts.ts`](studio/prompts.ts); bước chưa có trong `STEP_SPECS` kết thúc lượt
-chạy ở `draft_failed` kèm lý do và người chạy bước (agent hoặc code).
+thử), nên hai tick chồng nhau không gửi trùng. Runtime đọc nội dung prompt đã ghim phiên bản số từ bảng bất biến `public.studio_agent_prompts`; thiếu hàng thì dừng với lỗi, không dùng prompt dự phòng trong code. Bước chưa có trong `STEP_SPECS` kết thúc lượt chạy ở `draft_failed` kèm lý do và người chạy bước (agent hoặc code).
 
 `studio.catalog_research` (Bearer, admin) nhận `course_id` và `job_id` tùy chọn, tạo catalog job `manual` cho khóa
 (RPC `studio_start_catalog_job`; gửi lại cùng `job_id` trả job đã có). Khóa không có path hoặc nhóm chưa có

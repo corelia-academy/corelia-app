@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { readResponse } from "./openai.ts";
-import { PROMPTS } from "./prompts.ts";
+import { SEEDED_PROMPTS } from "./prompt_seed_test_helper.ts";
+import { A4_REVIEW_CRITERIA } from "./review_policy.ts";
 import { AI_CURRICULUM_FORMATS, AI_CURRICULUM_FORMAT_GUIDE, PLATFORM_FORMATS, PLATFORM_FORMAT_GUIDE } from "./formats.ts";
 import { ENABLED_CODE_LANGUAGES, PREPARED_CODE_LANGUAGES, resolveCodeLanguage } from "./lesson_ports.ts";
 import {
@@ -21,6 +22,7 @@ import {
   STEP_ORDER,
   STEP_OWNER,
   STEP_SPECS,
+  stepAgent,
   SUBMIT_STALE_MS,
   type GenerationState,
   type StepKey,
@@ -283,6 +285,31 @@ describe("studio curriculum review loop", () => {
     expect(acceptCurriculumReview(review("pass", [issue("l9", "minor")]), curriculum).ok).toBe(false);
   });
 
+  it("normalizes A4 check evidence without changing the issue-derived verdict", () => {
+    const blocking = { ...issue("l1", "blocking"), criterion: "prerequisites" };
+    const checks = [
+      { criterion: "outcome_activity_assessment_alignment", result: "ok", basis: "Matched activity and assessment", refs: ["l1"] },
+      { criterion: "practice_and_feedback", result: "ok", basis: "Checked feedback", refs: ["missing"] },
+      { criterion: "prerequisites", result: "ok", basis: "Checked order", refs: ["l1"] },
+      { criterion: "review_and_application", result: "issue", basis: "Claim without issue", refs: ["l1"] },
+      { result: "ok", basis: "Missing criterion", refs: ["l1"] },
+    ];
+    const withChecks = acceptCurriculumReview({ ...review("pass", [blocking]), checks }, curriculum);
+    const withoutChecks = acceptCurriculumReview(review("pass", [blocking]), curriculum);
+    expect(withChecks).toMatchObject({ ok: true, summary: "needs_fix, 1 lỗi blocking, 0 minor." });
+    expect(withChecks).toMatchObject({ normalizedOutput: { verdict: "needs_fix" } });
+    const normalized = (withChecks as { normalizedOutput: { checks: { criterion: string; result: string; basis: string; refs: string[] }[] } }).normalizedOutput.checks;
+    expect(normalized.find((check) => check.criterion === "outcome_activity_assessment_alignment")).toMatchObject({ result: "ok" });
+    expect(normalized.find((check) => check.criterion === "practice_and_feedback")).toMatchObject({ result: "unverified", refs: [] });
+    expect(normalized.find((check) => check.criterion === "prerequisites")).toMatchObject({ result: "issue" });
+    expect(normalized.find((check) => check.criterion === "review_and_application")).toMatchObject({ result: "unverified" });
+    expect(normalized.find((check) => check.criterion === "sources_by_topic")).toMatchObject({ result: "unverified", basis: "không được báo cáo" });
+    expect(normalized).toHaveLength(A4_REVIEW_CRITERIA.length);
+    expect((withoutChecks as { normalizedOutput: { verdict: string } }).normalizedOutput.verdict).toBe(
+      (withChecks as { normalizedOutput: { verdict: string } }).normalizedOutput.verdict,
+    );
+  });
+
   it("does not require practice beyond the diagnostic and passes an A4 complaint about missing practice", () => {
     const noOptionalPractice = curriculum;
     const missingPractice = { ...issue("m1", "blocking"), category: "missing_practice" };
@@ -296,6 +323,8 @@ describe("studio curriculum review loop", () => {
     expect(input.curriculum.modules[0].lessons[0].purpose).toBe("optional_hands_on");
     const schema = STEP_SPECS.curriculum_review!.schema as any;
     expect(schema.properties.issues.items.properties.category.enum).toContain("optional_made_mandatory");
+    expect(schema.properties.issues.items.properties.criterion.enum).toEqual([...A4_REVIEW_CRITERIA]);
+    expect(schema.properties.checks.items.properties.criterion.enum).toEqual([...A4_REVIEW_CRITERIA]);
   });
 });
 
@@ -378,7 +407,8 @@ describe("studio curriculum asks for more research", () => {
 describe("studio step owners", () => {
   it("runs each implemented step with the prompt of the agent that owns it", () => {
     for (const [step, spec] of Object.entries(STEP_SPECS)) {
-      expect(PROMPTS[spec!.prompt].role).toBe(STEP_OWNER[step as StepKey]);
+      expect(SEEDED_PROMPTS[spec!.prompt].role).toBe(STEP_OWNER[step as StepKey]);
+      expect(stepAgent(step as StepKey)).toMatchObject({ role: STEP_OWNER[step as StepKey], promptKey: spec!.prompt });
       expect(spec!.maxOutputTokens).toBeGreaterThan(0);
     }
   });
@@ -392,7 +422,7 @@ describe("studio step owners", () => {
 
 describe("A2 research prompt", () => {
   it("uses v13, records the course stack decision, and does not block research on unverified package versions", () => {
-    const prompt = PROMPTS["a2-research"];
+    const prompt = SEEDED_PROMPTS["a2-research"];
     expect(prompt.version).toBe("v13");
     expect(prompt.system).toContain("needs_research CHỈ khi một chủ đề cốt lõi trong phạm vi của brief");
     expect(prompt.system).toContain("KHÔNG phải lý do needs_research");
@@ -635,7 +665,18 @@ describe("studio acceptance", () => {
   };
 
   it("accepts a curriculum with diagnosis, retrieval, a final check and quiz thresholds", () => {
-    expect(acceptCurriculum(curriculum, sources)).toEqual({ ok: true, summary: "2 module, 6 lesson, 2 outcome." });
+    expect(acceptCurriculum(curriculum, sources)).toEqual({
+      ok: true,
+      summary: "2 module, 6 lesson, 2 outcome.",
+      codeChecks: [
+        { id: "curriculum.lesson_rules", passed: 6, total: 6 },
+        { id: "curriculum.outcome_refs", passed: 8, total: 8 },
+        { id: "curriculum.source_refs", passed: 6, total: 6 },
+        { id: "curriculum.dependencies", passed: 5, total: 5 },
+        { id: "curriculum.quiz_rules", passed: 3, total: 3 },
+        { id: "curriculum.final_coverage", passed: 2, total: 2 },
+      ],
+    });
     expect(LESSON_PURPOSES).toContain("optional_hands_on");
     expect(acceptCurriculum(curriculum, sources, null).ok).toBe(true);
     expect(acceptCurriculumReview({

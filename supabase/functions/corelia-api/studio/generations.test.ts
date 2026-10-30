@@ -39,6 +39,12 @@ describe("studio pollOrExpire", () => {
     expect(calls).toEqual(["poll", "cancel"]);
   });
 
+  it("does not count a paused interval toward the submitted-response timeout", async () => {
+    const calls = stubProvider(reply(200, { status: "in_progress" }));
+    expect(await pollOrExpire("k", "resp_1", ago(RESPONSE_STALE_MS + 15 * 60_000), 20 * 60_000)).toEqual({ state: "running" });
+    expect(calls).toEqual(["poll"]);
+  });
+
   it("does not cancel a stale response that already finished", async () => {
     const calls = stubProvider(reply(200, { status: "failed", error: { message: "boom" } }));
     expect(await pollOrExpire("k", "resp_1", ago(RESPONSE_STALE_MS + 60_000))).toMatchObject({ state: "failed", error: "failed: boom" });

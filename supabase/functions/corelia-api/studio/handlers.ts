@@ -1,7 +1,7 @@
 import { getUserRole } from "../lib/authz.ts";
 import { json } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
-import { journeyProblems, linkProblems, structureProblems, type LessonRecord } from "./checks.ts";
+import { journeyProblems, linkProblems, structureProblems, type CodeCheck, type LessonRecord } from "./checks.ts";
 import { draftDir, draftPath, renderDiagramPng } from "./diagram_render.ts";
 import type { LessonAction, LessonGeneration } from "./lesson_flow.ts";
 import {
@@ -23,10 +23,12 @@ import { agentKey, errorMessage, failGeneration, loadFailureKind, pollOrExpire }
 import { submitResponse } from "./openai.ts";
 import { publishRun, PublishRejected } from "./publish.ts";
 import type { StartResult } from "./resume.ts";
-import { PROMPTS } from "./prompts.ts";
+import { loadAgentPrompt } from "./agent_prompts.ts";
 import {
   agentKeyEnv,
   buildProgress,
+  MAX_RUN_MS,
+  RESPONSE_STALE_MS,
   SERVICE_TIER,
   curriculumRevision,
   researchGap,
@@ -62,6 +64,7 @@ export interface RunRow {
   course_id: string;
   started_at: string;
   catalog_job_id?: string | null;
+  paused_at?: string | null;
 }
 
 // Studio is admin only: support_staff is excluded, matching studio_can_write() in the schema.
@@ -94,6 +97,36 @@ export async function handleStudioStart(req: Request, db: SupabaseClient): Promi
   return json(result, result.created ? 201 : 200);
 }
 
+export async function handleStudioPause(req: Request, db: SupabaseClient): Promise<Response> {
+  return handleStudioRunControl(req, db, "studio_pause_run");
+}
+
+export async function handleStudioContinue(req: Request, db: SupabaseClient): Promise<Response> {
+  return handleStudioRunControl(req, db, "studio_continue_run");
+}
+
+async function handleStudioRunControl(req: Request, db: SupabaseClient, rpcName: "studio_pause_run" | "studio_continue_run"): Promise<Response> {
+  let userId: string;
+  try {
+    userId = (await verifyBearerUser(req, db)).id;
+  } catch {
+    return json({ message: "unauthenticated" }, 401);
+  }
+  if ((await getUserRole(db, userId)) !== "admin") return json({ message: "forbidden" }, 403);
+
+  const body = await req.json().catch(() => ({})) as Record<string, unknown>;
+  const runId = String(body.run_id ?? "");
+  if (!UUID_RE.test(runId)) return json({ message: "invalid_input" }, 400);
+
+  const { data, error } = await db.rpc(rpcName, { p_run_id: runId });
+  if (error) {
+    const status = error.message === "run_not_found" ? 404 : error.message === "run_not_running" ? 409 : undefined;
+    if (status) return json({ message: error.message }, status);
+    throw new Error(error.message);
+  }
+  return json(data);
+}
+
 export async function handleStudioTick(req: Request, db: SupabaseClient): Promise<Response> {
   const expected = Deno.env.get("CORELIA_STUDIO_CRON_SECRET")?.trim() ?? "";
   const provided = req.headers.get("x-corelia-studio-cron-secret")?.trim() ?? "";
@@ -102,7 +135,7 @@ export async function handleStudioTick(req: Request, db: SupabaseClient): Promis
   // Least recently advanced first, so every running run moves forward across ticks.
   const { data: runs, error } = await db
     .from("studio_runs")
-    .select("id,course_id,started_at,catalog_job_id")
+    .select("id,course_id,started_at,catalog_job_id,paused_at")
     .eq("status", "running")
     .order("updated_at", { ascending: true })
     .limit(RUNS_PER_TICK);
@@ -168,9 +201,17 @@ export async function advanceRun(db: SupabaseClient, run: RunRow): Promise<{ ste
     latest = res.data as GenerationState | null;
   }
 
+  const now = Date.now();
+  let startedAt = run.started_at;
+  if (now - Date.parse(run.started_at) > MAX_RUN_MS) {
+    const pausedMs = await loadPausedDurationMs(db, run, now);
+    startedAt = new Date(Date.parse(run.started_at) + pausedMs).toISOString();
+  }
   const progress = current && current !== "catalog_research" ? await loadProgress(db, run, current, latest) : undefined;
   const lessons = current === "lessons" || current === "lesson_review" ? await loadLessons(db, run) : undefined;
-  const { step, action } = planRun({ steps, latest, startedAt: run.started_at, now: Date.now(), catalogResearch, progress, lessons });
+  const planned = planRun({ steps, latest, startedAt, now, catalogResearch, progress, lessons });
+  const { step } = planned;
+  const action = tickActionForRun(run.paused_at, planned.action);
   switch (action.kind) {
     case "lessons":
       await runLessonActions(db, run, action.actions);
@@ -224,6 +265,42 @@ export async function advanceRun(db: SupabaseClient, run: RunRow): Promise<{ ste
       break;
   }
   return { step, action: action.kind };
+}
+
+export function pausedTickAction(action: TickAction): TickAction {
+  if (action.kind === "poll" || action.kind === "mark_done" || action.kind === "finish") return action;
+  if (action.kind === "lessons") {
+    const polls = action.actions.filter((lessonAction) => lessonAction.kind === "poll");
+    return polls.length > 0 ? { kind: "lessons", actions: polls } : { kind: "wait" };
+  }
+  return { kind: "wait" };
+}
+
+export function tickActionForRun(pausedAt: string | null | undefined, action: TickAction): TickAction {
+  return pausedAt ? pausedTickAction(action) : action;
+}
+
+async function loadPausedDurationMs(db: SupabaseClient, run: RunRow, now: number): Promise<number> {
+  const { data, error } = await db
+    .from("studio_run_events")
+    .select("payload")
+    .eq("run_id", run.id)
+    .eq("kind", "progress")
+    .not("payload->>paused_seconds", "is", null);
+  if (error) throw new Error(error.message);
+
+  const completedPauseMs = (data ?? []).reduce((total, event) => {
+    const seconds = Number((event.payload as Record<string, unknown> | null)?.paused_seconds);
+    return Number.isFinite(seconds) && seconds > 0 ? total + seconds * 1000 : total;
+  }, 0);
+  const currentPauseMs = activePauseDurationMs(run.paused_at, now);
+  return completedPauseMs + currentPauseMs;
+}
+
+export function activePauseDurationMs(pausedAt: string | null | undefined, now: number): number {
+  if (!pausedAt) return 0;
+  const parsed = Date.parse(pausedAt);
+  return Number.isFinite(parsed) ? Math.max(0, now - parsed) : 0;
 }
 
 async function loadProgress(db: SupabaseClient, run: RunRow, current: StepKey, latest: GenerationState | null): Promise<RunProgress> {
@@ -368,14 +445,15 @@ async function runCheck(db: SupabaseClient, run: RunRow, check: CodeStep) {
   const records = await loadRecords(db, run, ctx);
 
   let problems: string[];
+  const checks: CodeCheck[] = [];
   const restricted: string[] = [];
   try {
     if (check === "structure_check") {
-      problems = structureProblems(curriculum, ctx.outputs.research, records);
+      problems = structureProblems(curriculum, ctx.outputs.research, records, checks);
       if (problems.length === 0 && (await renderDrafts(db, run, records)) > 0) return;
-      if (problems.length === 0) problems = await linkProblems(records, fetch, restricted);
+      if (problems.length === 0) problems = await linkProblems(records, fetch, restricted, checks);
     } else {
-      problems = journeyProblems(curriculum, records);
+      problems = journeyProblems(curriculum, records, checks);
     }
   } catch (e) {
     if (e instanceof TransientError) {
@@ -386,7 +464,7 @@ async function runCheck(db: SupabaseClient, run: RunRow, check: CodeStep) {
   }
   if (problems.length > 0) {
     const shown = problems.slice(0, 8).join("; ") + (problems.length > 8 ? ` (+${problems.length - 8})` : "");
-    await finishRun(db, run, check, "draft_failed", `${problems.length} lỗi: ${shown}`, 0);
+    await finishRun(db, run, check, "draft_failed", `${problems.length} lỗi: ${shown}`, 0, { checks });
     return;
   }
   await markStepDone(db, run.id, check);
@@ -401,6 +479,7 @@ async function runCheck(db: SupabaseClient, run: RunRow, check: CodeStep) {
     attempt: 0,
     kind: "result",
     message: check === "structure_check" ? `${STEP_LABEL[check]}: ${lessons} lesson hợp lệ, link truy cập được.` : `${STEP_LABEL[check]}: hành trình qua ${lessons} lesson hợp lệ.`,
+    payload: { checks },
   });
 }
 
@@ -548,6 +627,7 @@ async function submitStep(
     await finishRun(db, run, step, "draft_failed", `Chưa cấu hình ${agentKeyEnv(agent.role)}.`, attempt);
     return;
   }
+  const prompt = await loadAgentPrompt(db, agent.promptKey);
   const ctx = await loadContext(db, run, step, lessonId);
   const tools = lessonId && spec.lessonTools ? spec.lessonTools(lessonId, ctx) : spec.tools;
   // After an infrastructure failure the retry is not a correction: the model is not told it was
@@ -574,7 +654,7 @@ async function submitStep(
       kind: spec.kind,
       provider: "openai",
       requested_model_id: spec.model,
-      prompt_version: agent.promptVersion,
+      prompt_version: prompt.promptVersion,
       params: { effort: spec.effort, max_output_tokens: spec.maxOutputTokens, tools: tools ?? [], service_tier: serviceTier },
       input,
       parent_generation_id: parentId,
@@ -595,7 +675,7 @@ async function submitStep(
   try {
     requestId = await submitResponse(apiKey, {
       model: spec.model,
-      instructions: PROMPTS[spec.prompt].system,
+      instructions: prompt.system,
       input,
       sharedInputKeys: spec.sharedInputKeys,
       effort: spec.effort,
@@ -661,7 +741,11 @@ async function pollStep(db: SupabaseClient, run: RunRow, step: StepKey, latest: 
     await finishRun(db, run, step, "draft_failed", `Chưa cấu hình ${agentKeyEnv(latest.agent_role)}.`, attempt);
     return;
   }
-  const result = await pollOrExpire(apiKey, requestId, latest.created_at);
+  const now = Date.now();
+  const pausedMs = now - Date.parse(latest.created_at) > RESPONSE_STALE_MS
+    ? await loadPausedDurationMs(db, run, now)
+    : 0;
+  const result = await pollOrExpire(apiKey, requestId, latest.created_at, pausedMs);
   if (!result || result.state === "running") return;
 
   const spec = STEP_SPECS[step]!;
@@ -716,10 +800,54 @@ async function pollStep(db: SupabaseClient, run: RunRow, step: StepKey, latest: 
     // A curriculum that asks for more research is not done either: planRun reopens the research.
     const undecided = step === "curriculum_review" || (step === "curriculum" && researchRequest(output) !== null);
     if (!lessonId && !undecided) await markStepDone(db, run.id, step);
-    await addEvent(db, { run_id: run.id, step_key: step, attempt, kind: "result", agent_role: agent.role, message: `${label}: ${acceptance.summary}` });
+    const eventPayload = step === "lesson_review"
+      ? lessonReviewEventPayload(acceptance.normalizedOutput, acceptance.codeChecks, lessonId)
+      : step === "curriculum_review"
+        ? {
+          checks: (acceptance.normalizedOutput as Record<string, unknown> | undefined)?.checks ?? [],
+          code_checks: acceptance.codeChecks ?? [],
+          ...(lessonId ? { lesson_id: lessonId } : {}),
+        }
+        : undefined;
+    await addEvent(db, {
+      run_id: run.id,
+      step_key: step,
+      attempt,
+      kind: "result",
+      agent_role: agent.role,
+      message: `${label}: ${acceptance.summary}`,
+      ...(eventPayload ? { payload: eventPayload } : {}),
+    });
   } else {
     await addEvent(db, { run_id: run.id, step_key: step, attempt, kind: "warning", agent_role: agent.role, message: `${label}: ${acceptance.reason}` });
   }
+}
+
+export function lessonReviewEventPayload(
+  normalizedOutput: unknown,
+  codeChecks: unknown[] = [],
+  lessonId?: string,
+) {
+  const norm = normalizedOutput as Record<string, unknown> | undefined;
+  const issues = Array.isArray(norm?.issues)
+    ? (norm.issues as Array<{ severity?: string; category?: string }>)
+    : [];
+  const blockingIssues = issues.filter((i) => i.severity === "blocking");
+  const blocking = blockingIssues.length;
+  const minor = issues.length - blocking;
+  const verdict = (norm?.verdict as string) || (blocking > 0 ? "needs_fix" : "pass");
+  const blockingCategories = Array.from(
+    new Set(blockingIssues.map((i) => i.category).filter((c): c is string => Boolean(c))),
+  ).slice(0, 3);
+  return {
+    checks: norm?.checks ?? [],
+    code_checks: codeChecks,
+    ...(lessonId ? { lesson_id: lessonId } : {}),
+    verdict,
+    blocking,
+    minor,
+    blocking_categories: blockingCategories,
+  };
 }
 
 async function markStepDone(db: SupabaseClient, runId: string, step: StepKey) {
@@ -782,6 +910,7 @@ async function finishRun(
   status: "published" | "draft_failed",
   reason: string,
   attempt: number,
+  payload?: unknown,
 ) {
   if (status === "draft_failed" && step) {
     const { error } = await db
@@ -802,12 +931,13 @@ async function finishRun(
     kind: status === "published" ? "result" : "error",
     agent_role: step === "catalog_research" ? "A1" : step ? stepAgent(step)?.role ?? null : null,
     message: status === "published" ? "Lượt chạy hoàn tất." : `Dừng lượt chạy, giữ nháp: ${reason}`,
+    ...(payload === undefined ? {} : { payload }),
   });
 }
 
 async function addEvent(
   db: SupabaseClient,
-  event: { run_id: string; step_key: StepKey; attempt: number; kind: string; agent_role?: string | null; message: string },
+  event: { run_id: string; step_key: StepKey; attempt: number; kind: string; agent_role?: string | null; message: string; payload?: unknown },
 ) {
   const { error } = await db.from("studio_run_events").insert({ ...event, message: event.message.slice(0, 500) });
   if (error) throw new Error(error.message);

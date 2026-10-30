@@ -20,7 +20,7 @@ import {
   type CatalogResearch,
   type CatalogRows,
 } from "./catalog.ts";
-import { PROMPTS } from "./prompts.ts";
+import { SEEDED_PROMPTS } from "./prompt_seed_test_helper.ts";
 import { MAX_TRANSPORT_FAILURES } from "./retry.ts";
 import { SUBMIT_STALE_MS } from "./steps.ts";
 
@@ -100,7 +100,7 @@ describe("CATALOG_RESEARCH_SCHEMA", () => {
 
 describe("A1 catalog prompt", () => {
   it("uses v7 and does not request open_questions", () => {
-    const prompt = PROMPTS["a1-catalog-research"];
+    const prompt = SEEDED_PROMPTS["a1-catalog-research"];
     expect(prompt.version).toBe("v7");
     expect(prompt.system).not.toContain("open_questions");
     expect(prompt.system).toContain("ít nhất một truy vấn nhắm đúng locale hoặc thị trường của audience");

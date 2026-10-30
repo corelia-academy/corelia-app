@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "../lib/supabase.ts";
 import { PLATFORM_FORMAT_GUIDE } from "./formats.ts";
-import { PROMPTS } from "./prompts.ts";
+import { SEEDED_PROMPTS } from "./prompt_seed_test_helper.ts";
 import { STEP_SPECS, type RunContext } from "./steps.ts";
 import {
   CATALOG_RESEARCH_METRIC_MAX_CHARS,
@@ -117,45 +117,45 @@ describe("A1 catalog research in the A2 brief", () => {
   });
 
   it("uses prompt version v6 and selects one enabled code language for the course", () => {
-    expect(PROMPTS["a2-brief"].version).toBe("v8");
-    expect(PROMPTS["a2-brief"].system).toContain("Nguyên tắc chỉ truyền thụ kiến thức");
-    expect(PROMPTS["a2-brief"].system).toContain("không đưa mục tiêu hay phạm vi bắt buộc người học tự chạy lệnh");
-    expect(PROMPTS["a2-brief"].system).toContain("hướng dẫn thực hành tự nguyện được phép");
-    expect(PROMPTS["a2-brief"].system).toContain("Nếu đầu vào có scope_note");
-    expect(PROMPTS["a2-brief"].system).toContain("sẽ theo tài liệu chính thức hiện hành mà bước research đọc được");
-    expect(PROMPTS["a2-brief"].system).toContain("brief không hứa bộ phiên bản tương thích được chốt");
-    expect(PROMPTS["a2-brief"].system).toContain("không chép URL A1 vào brief");
-    expect(PROMPTS["a2-brief"].system).toContain("mọi suy luận từ A1 phải ghi vào assumptions");
-    expect(PROMPTS["a2-brief"].system).toContain("code_language: chọn đúng một ID trong code_languages");
-    expect(PROMPTS["a2-brief"].system).toContain("Solana/Anchor → rust");
+    expect(SEEDED_PROMPTS["a2-brief"].version).toBe("v8");
+    expect(SEEDED_PROMPTS["a2-brief"].system).toContain("Nguyên tắc chỉ truyền thụ kiến thức");
+    expect(SEEDED_PROMPTS["a2-brief"].system).toContain("không đưa mục tiêu hay phạm vi bắt buộc người học tự chạy lệnh");
+    expect(SEEDED_PROMPTS["a2-brief"].system).toContain("hướng dẫn thực hành tự nguyện được phép");
+    expect(SEEDED_PROMPTS["a2-brief"].system).toContain("Nếu đầu vào có scope_note");
+    expect(SEEDED_PROMPTS["a2-brief"].system).toContain("sẽ theo tài liệu chính thức hiện hành mà bước research đọc được");
+    expect(SEEDED_PROMPTS["a2-brief"].system).toContain("brief không hứa bộ phiên bản tương thích được chốt");
+    expect(SEEDED_PROMPTS["a2-brief"].system).toContain("không chép URL A1 vào brief");
+    expect(SEEDED_PROMPTS["a2-brief"].system).toContain("mọi suy luận từ A1 phải ghi vào assumptions");
+    expect(SEEDED_PROMPTS["a2-brief"].system).toContain("code_language: chọn đúng một ID trong code_languages");
+    expect(SEEDED_PROMPTS["a2-brief"].system).toContain("Solana/Anchor → rust");
     expect(STEP_SPECS.brief!.schema).toBeDefined();
   });
 
   it("keeps A5 and A6 package-version decisions bounded by research evidence", () => {
-    expect(PROMPTS["a5-lesson"].version).toBe("v18");
-    expect(PROMPTS["a5-lesson"].system).toContain("tool_versions của research chỉ ghi mức tối thiểu hoặc phiên bản theo nguồn");
-    expect(PROMPTS["a5-lesson"].system).toContain("nếu chỉ nêu mức tối thiểu, ghi rõ đó là mức tối thiểu và để lệnh không ghim phiên bản");
-    expect(PROMPTS["a5-lesson"].system).toContain("Không tự suy ra phiên bản.");
-    expect(PROMPTS["a5-lesson"].system).toContain("open_questions blocking = false ghi phiên bản chưa xác minh");
+    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v18");
+    expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("tool_versions của research chỉ ghi mức tối thiểu hoặc phiên bản theo nguồn");
+    expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("nếu chỉ nêu mức tối thiểu, ghi rõ đó là mức tối thiểu và để lệnh không ghim phiên bản");
+    expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("Không tự suy ra phiên bản.");
+    expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("open_questions blocking = false ghi phiên bản chưa xác minh");
 
-    expect(PROMPTS["a6-lesson-review"].version).toBe("v15");
-    expect(PROMPTS["a6-lesson-review"].system).toContain("KHÔNG phải lỗi blocking nếu tool_versions chỉ nêu mức tối thiểu (chưa chốt bộ phiên bản tương thích)");
-    expect(PROMPTS["a6-lesson-review"].system).toContain("lesson nêu phiên bản hoặc mức tối thiểu không có trong tool_versions hay nguồn đã đọc của lesson");
-    expect(PROMPTS["a6-lesson-review"].system).toContain("khẳng định bộ phiên bản tương thích đã được xác minh/khóa khi research không nói vậy");
-    expect(PROMPTS["a6-lesson-review"].system).toContain("Không blocking vì lesson thiếu bước cài đặt/cấu hình công cụ");
+    expect(SEEDED_PROMPTS["a6-lesson-review"].version).toBe("v16");
+    expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("KHÔNG phải lỗi blocking nếu tool_versions chỉ nêu mức tối thiểu (chưa chốt bộ phiên bản tương thích)");
+    expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("lesson nêu phiên bản hoặc mức tối thiểu không có trong tool_versions hay nguồn đã đọc của lesson");
+    expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("khẳng định bộ phiên bản tương thích đã được xác minh/khóa khi research không nói vậy");
+    expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("Không blocking vì lesson thiếu bước cài đặt/cấu hình công cụ");
   });
 
   it("keeps AI courses knowledge-only and limits video recommendations to research evidence", () => {
-    const a2 = PROMPTS["a2-research"];
-    const a3 = PROMPTS["a3-curriculum"];
-    const a4 = PROMPTS["a4-curriculum-review"];
-    const a5 = PROMPTS["a5-lesson"];
-    const a6 = PROMPTS["a6-lesson-review"];
+    const a2 = SEEDED_PROMPTS["a2-research"];
+    const a3 = SEEDED_PROMPTS["a3-curriculum"];
+    const a4 = SEEDED_PROMPTS["a4-curriculum-review"];
+    const a5 = SEEDED_PROMPTS["a5-lesson"];
+    const a6 = SEEDED_PROMPTS["a6-lesson-review"];
 
     expect(a3.version).toBe("v18");
-    expect(a4.version).toBe("v14");
+    expect(a4.version).toBe("v15");
     expect(a5.version).toBe("v18");
-    expect(a6.version).toBe("v15");
+    expect(a6.version).toBe("v16");
     expect(a2.version).toBe("v13");
     expect(a2.system).toContain("videos là mảng có thể rỗng");
     expect(a2.system).toContain("evidence_source_ids không rỗng");
@@ -215,8 +215,8 @@ describe("A1 catalog research in the A2 brief", () => {
   });
 
   it("keeps the curriculum stage free of the lesson resources field and the A4 coverage rule bounded", () => {
-    const a3 = PROMPTS["a3-curriculum"].system;
-    const a4 = PROMPTS["a4-curriculum-review"].system;
+    const a3 = SEEDED_PROMPTS["a3-curriculum"].system;
+    const a4 = SEEDED_PROMPTS["a4-curriculum-review"].system;
     for (const system of [a3, a4]) {
       expect(system).toContain("curriculum không có trường resources");
       expect(system).not.toContain("tài liệu ôn nằm trong resources");
@@ -229,15 +229,15 @@ describe("A1 catalog research in the A2 brief", () => {
 
   it("allows voluntary hands-on guidance without ever making it required or a reviewer blocker", () => {
     for (const key of ["a2-brief", "a3-curriculum", "a4-curriculum-review", "a5-lesson", "a6-lesson-review"] as const) {
-      const system = PROMPTS[key].system;
+      const system = SEEDED_PROMPTS[key].system;
       expect(system).toContain("không bao giờ là bắt buộc");
       expect(system).toContain("hướng dẫn thực hành tự nguyện");
       expect(system).not.toContain("dù bắt buộc hay tự chọn");
     }
-    expect(PROMPTS["a4-curriculum-review"].system).toContain("Thiếu lesson thực hành không bao giờ là issue");
-    expect(PROMPTS["a6-lesson-review"].system).toContain("Thiếu phần thực hành tự nguyện không bao giờ là lỗi");
-    expect(PROMPTS["a6-lesson-review"].system).toContain("không tự đặt thêm tiêu chí");
-    expect(PROMPTS["a5-lesson"].system).toContain("Tự thực hành (không bắt buộc)");
+    expect(SEEDED_PROMPTS["a4-curriculum-review"].system).toContain("Thiếu lesson thực hành không bao giờ là issue");
+    expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("Thiếu phần thực hành tự nguyện không bao giờ là lỗi");
+    expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("không tự đặt thêm tiêu chí");
+    expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("Tự thực hành (không bắt buộc)");
     expect(PLATFORM_FORMAT_GUIDE.practice).toContain("bỏ qua vẫn hoàn thành bài");
   });
 });

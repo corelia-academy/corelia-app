@@ -18,9 +18,9 @@ import {
   resolveCodeLanguage,
   type EnabledCodeLanguage,
 } from "./lesson_ports.ts";
-import { PROMPTS, promptVersion, type AgentRole, type PromptKey } from "./prompts.ts";
+import { type AgentRole, type PromptKey } from "./prompts.ts";
 import type { BriefCatalogResearch } from "./catalog_research_brief.ts";
-import { normalizeReviewIssues, REVIEW_ISSUE_CATEGORIES } from "./review_policy.ts";
+import { A4_REVIEW_CRITERIA, normalizeReviewChecks, normalizeReviewIssues, REVIEW_ISSUE_CATEGORIES } from "./review_policy.ts";
 
 export const STEP_ORDER = [
   "catalog_research",
@@ -112,7 +112,7 @@ export interface RunContext {
   catalogResearch?: BriefCatalogResearch | null;
 }
 
-export type Acceptance = { ok: true; summary: string; normalizedOutput?: unknown } | { ok: false; reason: string };
+export type Acceptance = { ok: true; summary: string; normalizedOutput?: unknown; codeChecks?: unknown[] } | { ok: false; reason: string };
 
 export interface StepSpec {
   prompt: PromptKey;
@@ -277,10 +277,20 @@ const REVIEW_SCHEMA = object({
     items: object({
       location: str,
       problem: str,
+      criterion: { type: "string", enum: [...A4_REVIEW_CRITERIA] },
       category: { type: "string", enum: [...REVIEW_ISSUE_CATEGORIES] },
       principle: str,
       fix: str,
       severity: { type: "string", enum: ["blocking", "minor"] },
+    }),
+  },
+  checks: {
+    type: "array",
+    items: object({
+      criterion: { type: "string", enum: [...A4_REVIEW_CRITERIA] },
+      result: { type: "string", enum: ["ok", "issue", "unverified"] },
+      basis: str,
+      refs: strList,
     }),
   },
   needs_research: strList,
@@ -289,7 +299,8 @@ const REVIEW_SCHEMA = object({
 
 interface CurriculumReview {
   verdict: string;
-  issues: { location: string; problem: string; severity: string; category?: string }[];
+  issues: { location: string; problem: string; severity: string; category?: string; criterion?: string }[];
+  checks?: unknown;
   needs_research: string[];
 }
 
@@ -536,6 +547,22 @@ export function acceptResearch(output: unknown, today: string): Acceptance {
   };
 }
 
+function curriculumCodeChecks(curriculum: Curriculum) {
+  const lessons = curriculum.modules.flatMap((module) => module.lessons);
+  const dependencyCount = lessons.reduce((n, lesson) => n + lesson.prerequisite_lesson_ids.length + lesson.review_lesson_ids.length, 0);
+  const outcomeReferenceCount = lessons.reduce((n, lesson) => n + lesson.outcome_ids.length, 0) +
+    curriculum.outcomes.reduce((n, outcome) => n + outcome.check_lesson_ids.length, 0);
+  const quizCount = lessons.filter((lesson) => lesson.type === "quiz").length;
+  return [
+    { id: "curriculum.lesson_rules", passed: lessons.length, total: lessons.length },
+    { id: "curriculum.outcome_refs", passed: outcomeReferenceCount, total: outcomeReferenceCount },
+    { id: "curriculum.source_refs", passed: lessons.length, total: lessons.length },
+    { id: "curriculum.dependencies", passed: dependencyCount, total: dependencyCount },
+    { id: "curriculum.quiz_rules", passed: quizCount, total: quizCount },
+    { id: "curriculum.final_coverage", passed: curriculum.outcomes.length, total: curriculum.outcomes.length },
+  ];
+}
+
 export function acceptCurriculum(
   output: unknown,
   sourceIds: Set<string>,
@@ -641,7 +668,11 @@ export function acceptCurriculum(
   }
 
   if (problems.length > 0) return { ok: false, reason: `Curriculum chưa hợp lệ: ${list(problems)}` };
-  return { ok: true, summary: `${curriculum.modules.length} module, ${lessons.length} lesson, ${curriculum.outcomes.length} outcome.` };
+  return {
+    ok: true,
+    summary: `${curriculum.modules.length} module, ${lessons.length} lesson, ${curriculum.outcomes.length} outcome.`,
+    codeChecks: curriculumCodeChecks(curriculum),
+  };
 }
 
 /** Blocking items of a review: blocking issues plus topics without a source, which also go back to the author. */
@@ -654,7 +685,7 @@ export function blockingItems(output: unknown): string[] {
   ];
 }
 
-export function acceptCurriculumReview(output: unknown, curriculum: unknown): Acceptance {
+export function acceptCurriculumReview(output: unknown, curriculum: unknown, codeChecks: unknown[] = []): Acceptance {
   const review = output as CurriculumReview;
   const { issues, downgraded } = normalizeReviewIssues(review.issues);
   const needsResearch = Array.isArray(review.needs_research) ? review.needs_research : [];
@@ -673,12 +704,14 @@ export function acceptCurriculumReview(output: unknown, curriculum: unknown): Ac
   const blocking = issues.filter((i) => i.severity === "blocking").length + needsResearch.length;
   const minor = issues.filter((i) => i.severity === "minor").length;
   const verdict = blocking > 0 ? "needs_fix" : "pass";
-  const normalizedOutput = { ...(output as Record<string, unknown>), verdict, issues, needs_research: needsResearch };
+  const checks = normalizeReviewChecks(review.checks, A4_REVIEW_CRITERIA, issues, (ref) => known.has(ref));
+  const normalizedOutput = { ...(output as Record<string, unknown>), verdict, issues, needs_research: needsResearch, checks };
   const downgradeNote = downgraded.length ? ` ${downgraded.length} issue ngoài allow-list được hạ xuống minor.` : "";
   return {
     ok: true,
     summary: `${verdict}, ${blocking} lỗi blocking, ${minor} minor.${downgradeNote}`,
     normalizedOutput,
+    codeChecks,
   };
 }
 
@@ -863,7 +896,15 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
       curriculum: ctx.outputs.curriculum,
       platform_formats: AI_CURRICULUM_FORMAT_GUIDE,
     }),
-    accept: (output, ctx) => acceptCurriculumReview(output, ctx.outputs.curriculum),
+    accept: (output, ctx) => {
+      const curriculum = ctx.outputs.curriculum;
+      const code = acceptCurriculum(
+        curriculum,
+        researchSourceIds(ctx),
+        resolveCodeLanguage((ctx.outputs.brief as { code_language?: unknown }).code_language),
+      );
+      return acceptCurriculumReview(output, curriculum, code.codeChecks ?? []);
+    },
   },
   lessons: {
     prompt: "a5-lesson",
@@ -899,7 +940,8 @@ export type CodeStep = typeof CODE_STEPS[number];
 
 export function stepAgent(step: StepKey) {
   const spec = STEP_SPECS[step];
-  return spec ? { role: PROMPTS[spec.prompt].role, promptVersion: promptVersion(spec.prompt) } : null;
+  const role = STEP_OWNER[step];
+  return spec && role !== "code" && role !== "catalog_job" ? { role, promptKey: spec.prompt } : null;
 }
 
 export interface GenerationState {

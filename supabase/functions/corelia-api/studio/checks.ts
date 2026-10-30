@@ -18,6 +18,33 @@ export interface LessonRecord {
   reviewed: Provenance | null;
 }
 
+export interface CodeCheck {
+  id: string;
+  passed: number;
+  total: number;
+  failed_refs?: string[];
+  warning_refs?: string[];
+}
+
+function addCodeCheck(
+  target: CodeCheck[] | undefined,
+  id: string,
+  total: number,
+  failedRefs: string[] = [],
+  warningRefs: string[] = [],
+  uniqueFailures = true,
+) {
+  if (!target) return;
+  const failed = uniqueFailures ? [...new Set(failedRefs)] : failedRefs;
+  target.push({
+    id,
+    passed: Math.max(0, total - failed.length),
+    total,
+    ...(failed.length ? { failed_refs: failed } : {}),
+    ...(warningRefs.length ? { warning_refs: [...new Set(warningRefs)] } : {}),
+  });
+}
+
 interface CurriculumOutcomes {
   outcomes: { id: string; check_lesson_ids: string[] }[];
 }
@@ -29,26 +56,52 @@ const known = (p: Provenance | null) => Boolean(p?.model_id?.trim() && p.prompt_
 
 // ---- structure_check ---------------------------------------------------------------------------
 
-export function structureProblems(curriculum: unknown, research: unknown, records: Record<string, LessonRecord>): string[] {
+export function structureProblems(curriculum: unknown, research: unknown, records: Record<string, LessonRecord>, evidence?: CodeCheck[]): string[] {
   const problems: string[] = [];
   const refs = lessonRefs(curriculum);
   const ids = new Set(refs.map((r) => r.lesson.id));
-  for (const id of Object.keys(records)) if (!ids.has(id)) problems.push(`lesson thừa không có trong curriculum: ${id}`);
+  const extraRecords = Object.keys(records).filter((id) => !ids.has(id));
+  for (const id of extraRecords) problems.push(`lesson thừa không có trong curriculum: ${id}`);
   const researchData = research as ResearchSources;
   const readUrls = new Set(researchData.sources.filter((s) => s.access === "read").map((s) => s.url));
+  const matchFailed = [...extraRecords];
+  const acceptedFailed: string[] = [];
+  const reviewRefsFailed: string[] = [];
+  const prerequisiteRefsFailed: string[] = [];
+  const lessonRulesFailed: string[] = [];
+  let reviewRefsTotal = 0;
+  let prerequisiteRefsTotal = 0;
 
   for (const { lesson: cl } of refs) {
-    for (const id of cl.review_lesson_ids) if (!ids.has(id)) problems.push(`${cl.id}: review_lesson_ids trỏ tới lesson không có (${id})`);
-    for (const id of cl.prerequisite_lesson_ids) if (!ids.has(id)) problems.push(`${cl.id}: prerequisite_lesson_ids trỏ tới lesson không có (${id})`);
+    reviewRefsTotal += cl.review_lesson_ids.length;
+    for (const id of cl.review_lesson_ids) if (!ids.has(id)) {
+      problems.push(`${cl.id}: review_lesson_ids trỏ tới lesson không có (${id})`);
+      reviewRefsFailed.push(`${cl.id}->${id}`);
+    }
+    prerequisiteRefsTotal += cl.prerequisite_lesson_ids.length;
+    for (const id of cl.prerequisite_lesson_ids) if (!ids.has(id)) {
+      problems.push(`${cl.id}: prerequisite_lesson_ids trỏ tới lesson không có (${id})`);
+      prerequisiteRefsFailed.push(`${cl.id}->${id}`);
+    }
     const record = records[cl.id];
     if (!record) {
       problems.push(`${cl.id}: chưa có lesson được nhận`);
+      acceptedFailed.push(cl.id);
+      matchFailed.push(cl.id);
+      lessonRulesFailed.push(cl.id);
       continue;
     }
     const { lesson, questions, diagrams, source_ids } = record.draft;
     const at = (p: string) => problems.push(`${cl.id}: ${p}`);
-    if (lesson.id !== cl.id) at(`id lesson ${lesson.id} không khớp curriculum`);
-    if (lesson.lesson_format !== cl.type) at(`format ${lesson.lesson_format} không khớp curriculum (${cl.type})`);
+    if (lesson.id !== cl.id) {
+      at(`id lesson ${lesson.id} không khớp curriculum`);
+      matchFailed.push(cl.id);
+    }
+    if (lesson.lesson_format !== cl.type) {
+      at(`format ${lesson.lesson_format} không khớp curriculum (${cl.type})`);
+      matchFailed.push(cl.id);
+    }
+    const ruleStart = problems.length;
     for (const { field, code } of validateLesson(lesson)) at(`${field}: ${code}`);
     questions.forEach((q, i) => validateQuestion(q).forEach((code) => at(`câu ${i + 1}: ${code}`)));
     if (cl.type === "quiz" && questions.length === 0) at("quiz không có câu hỏi");
@@ -76,7 +129,13 @@ export function structureProblems(curriculum: unknown, research: unknown, record
     for (const id of source_ids) if (!allowed.has(id)) at(`source_id ${id} ngoài curriculum`);
     if (!known(record.written)) at("thiếu model_id/prompt_version của bản viết");
     if (!known(record.reviewed)) at("chưa có review được nhận (model_id/prompt_version)");
+    if (problems.length > ruleStart) lessonRulesFailed.push(cl.id);
   }
+  addCodeCheck(evidence, "structure.curriculum_match", refs.length + extraRecords.length, matchFailed);
+  addCodeCheck(evidence, "structure.review_refs", reviewRefsTotal, reviewRefsFailed, [], false);
+  addCodeCheck(evidence, "structure.prerequisite_refs", prerequisiteRefsTotal, prerequisiteRefsFailed, [], false);
+  addCodeCheck(evidence, "structure.accepted_lessons", refs.length, acceptedFailed);
+  addCodeCheck(evidence, "structure.lesson_rules", refs.length, lessonRulesFailed);
   return problems;
 }
 
@@ -104,11 +163,13 @@ async function urlProblem(url: string, fetchFn: typeof fetch): Promise<"ok" | "r
  * Resources and videos still answer. Throws TransientError when only temporary failures stand in the
  * way. URLs that refuse the check (401/403/429) count as reachable and are added to `restricted`.
  */
-export async function linkProblems(records: Record<string, LessonRecord>, fetchFn: typeof fetch = fetch, restricted: string[] = []): Promise<string[]> {
+export async function linkProblems(records: Record<string, LessonRecord>, fetchFn: typeof fetch = fetch, restricted: string[] = [], evidence?: CodeCheck[]): Promise<string[]> {
   const problems: string[] = [];
   let transient: TransientError | null = null;
   const checks: { where: string; run: () => Promise<boolean> }[] = [];
   const seen = new Set<string>();
+  const failedRefs: string[] = [];
+  let resolved = 0;
   for (const [id, { draft }] of Object.entries(records)) {
     for (const r of draft.lesson.resources ?? []) {
       // YouTube candidates were checked with oEmbed before the draft was accepted; watch pages
@@ -133,12 +194,17 @@ export async function linkProblems(records: Record<string, LessonRecord>, fetchF
     results.forEach((res, k) => {
       const where = checks[i + k].where;
       if (res.status === "fulfilled") {
-        if (!res.value) problems.push(`${where} không truy cập được`);
+        resolved++;
+        if (!res.value) {
+          problems.push(`${where} không truy cập được`);
+          failedRefs.push(where);
+        }
       } else if (res.reason instanceof TransientError) transient ??= res.reason;
       else throw res.reason;
     });
   }
   if (problems.length === 0 && transient) throw transient;
+  addCodeCheck(evidence, "structure.links", resolved, failedRefs, restricted);
   return problems;
 }
 
@@ -148,12 +214,22 @@ export async function linkProblems(records: Record<string, LessonRecord>, fetchF
 const TEACHING_PURPOSES = ["explanation", "worked_example"];
 
 /** Walks the lessons in curriculum order as a learner would. Every lesson counts: the app has no optional lesson. */
-export function journeyProblems(curriculum: unknown, records: Record<string, LessonRecord>): string[] {
+export function journeyProblems(curriculum: unknown, records: Record<string, LessonRecord>, evidence?: CodeCheck[]): string[] {
   const problems: string[] = [];
   const refs = lessonRefs(curriculum);
   const index = new Map(refs.map((r, i) => [r.lesson.id, i]));
   const at = (id: string, p: string) => problems.push(`${id}: ${p}`);
   const before = (a: string, b: string) => (index.get(a) ?? Infinity) < (index.get(b) ?? -1);
+  const failedOutcomes: string[] = [];
+  const failedOrder: string[] = [];
+  const failedAccepted: string[] = [];
+  const failedQuizzes: string[] = [];
+  const failedCodeExercises: string[] = [];
+  const failedPractices: string[] = [];
+  let orderTotal = 0;
+  let quizTotal = 0;
+  let codeTotal = 0;
+  let practiceTotal = 0;
 
   // An outcome is taught by its explanation or worked_example lessons (Learning Principles: model
   // before practice) and checked by the lessons in check_lesson_ids, in whichever format can check
@@ -161,46 +237,102 @@ export function journeyProblems(curriculum: unknown, records: Record<string, Les
   for (const o of (curriculum as CurriculumOutcomes).outcomes) {
     const checks = refs.filter((r) => o.check_lesson_ids.includes(r.lesson.id));
     const teachers = refs.filter((r) => r.lesson.outcome_ids.includes(o.id) && TEACHING_PURPOSES.includes(r.lesson.purpose));
-    if (teachers.length === 0) problems.push(`outcome ${o.id}: không có lesson dạy`);
-    else if (checks.length === 0) problems.push(`outcome ${o.id}: không có lesson kiểm tra`);
-    else if (!checks.some((c) => teachers.some((t) => before(t.lesson.id, c.lesson.id)))) problems.push(`outcome ${o.id}: không lesson kiểm tra nào đứng sau lesson dạy`);
+    if (teachers.length === 0) {
+      problems.push(`outcome ${o.id}: không có lesson dạy`);
+      failedOutcomes.push(o.id);
+    } else if (checks.length === 0) {
+      problems.push(`outcome ${o.id}: không có lesson kiểm tra`);
+      failedOutcomes.push(o.id);
+    } else if (!checks.some((c) => teachers.some((t) => before(t.lesson.id, c.lesson.id)))) {
+      problems.push(`outcome ${o.id}: không lesson kiểm tra nào đứng sau lesson dạy`);
+      failedOutcomes.push(o.id);
+    }
   }
 
   for (const { lesson: cl } of refs) {
-    for (const p of cl.prerequisite_lesson_ids) if (!before(p, cl.id)) at(cl.id, `prerequisite ${p} không đứng trước`);
+    orderTotal += cl.prerequisite_lesson_ids.length;
+    for (const p of cl.prerequisite_lesson_ids) if (!before(p, cl.id)) {
+      at(cl.id, `prerequisite ${p} không đứng trước`);
+      failedOrder.push(`${cl.id}->prerequisite:${p}`);
+    }
     if (cl.type === "quiz") {
-      for (const r of cl.review_lesson_ids) if (!before(r, cl.id)) at(cl.id, `lesson ôn ${r} không đứng trước quiz`);
+      orderTotal += cl.review_lesson_ids.length;
+      for (const r of cl.review_lesson_ids) if (!before(r, cl.id)) {
+        at(cl.id, `lesson ôn ${r} không đứng trước quiz`);
+        failedOrder.push(`${cl.id}->review:${r}`);
+      }
     }
     const draft = records[cl.id]?.draft;
     if (!draft) {
       at(cl.id, "chưa có lesson được nhận");
+      failedAccepted.push(cl.id);
+      if (cl.type === "quiz") {
+        quizTotal++;
+        failedQuizzes.push(cl.id);
+      }
+      if (cl.type === "code_exercise") {
+        codeTotal++;
+        failedCodeExercises.push(cl.id);
+      }
+      if (cl.type === "practice") {
+        practiceTotal++;
+        failedPractices.push(cl.id);
+      }
       continue;
     }
     const lesson = draft.lesson;
     if (cl.type === "quiz") {
+      quizTotal++;
       const total = draft.questions.length;
       const ratio = lesson.quiz_config?.passing_ratio ?? 0.7;
       // Answer every question with its correct option.
       const correct = draft.questions.filter((q) => Number.isInteger(q.correct_index) && q.correct_index >= 0 && q.correct_index < q.options.length).length;
-      if (total === 0) at(cl.id, "quiz không có câu hỏi");
-      else if (!(ratio >= 0.01 && ratio <= 1)) at(cl.id, `ngưỡng ${ratio} ngoài (0.01, 1]`);
-      else if (correct / total < ratio) at(cl.id, `trả lời đúng hết vẫn không đạt ngưỡng ${ratio}`);
+      if (total === 0) {
+        at(cl.id, "quiz không có câu hỏi");
+        failedQuizzes.push(cl.id);
+      } else if (!(ratio >= 0.01 && ratio <= 1)) {
+        at(cl.id, `ngưỡng ${ratio} ngoài (0.01, 1]`);
+        failedQuizzes.push(cl.id);
+      } else if (correct / total < ratio) {
+        at(cl.id, `trả lời đúng hết vẫn không đạt ngưỡng ${ratio}`);
+        failedQuizzes.push(cl.id);
+      }
     }
     if (cl.type === "code_exercise") {
+      codeTotal++;
       const config = lesson.code_exercise_config;
       const errors = validateCodeConfig(config, true);
-      if (errors.length > 0) at(cl.id, `code: ${errors.join(", ")}`);
+      if (errors.length > 0) {
+        at(cl.id, `code: ${errors.join(", ")}`);
+        failedCodeExercises.push(cl.id);
+      }
       else if (config) {
         const starter = config.mode === "fill" ? evaluateCodeExercise(config, { answers: {} }) : evaluateCodeExercise(config, { source: config.file.starter_source });
-        if (starter.passed) at(cl.id, "starter_source đã đạt mọi test bắt buộc");
+        if (starter.passed) {
+          at(cl.id, "starter_source đã đạt mọi test bắt buộc");
+          failedCodeExercises.push(cl.id);
+        }
       }
     }
     if (cl.type === "practice") {
+      practiceTotal++;
       const c = lesson.practice_config;
-      if (c && (c.mode !== "instruction" && c.mode !== "checklist")) at(cl.id, `practice mode ${String(c.mode)} cần bài nộp`);
-      if (c && (c.requires_review || "submission_fields" in c || "project_steps" in c)) at(cl.id, "practice có bài nộp hoặc chờ chấm");
+      if (c && (c.mode !== "instruction" && c.mode !== "checklist")) {
+        at(cl.id, `practice mode ${String(c.mode)} cần bài nộp`);
+        failedPractices.push(cl.id);
+      }
+      if (c && (c.requires_review || "submission_fields" in c || "project_steps" in c)) {
+        at(cl.id, "practice có bài nộp hoặc chờ chấm");
+        failedPractices.push(cl.id);
+      }
     }
   }
+  addCodeCheck(evidence, "journey.outcome_order", (curriculum as CurriculumOutcomes).outcomes.length, failedOutcomes);
+  addCodeCheck(evidence, "journey.lesson_order", orderTotal, failedOrder, [], false);
+  addCodeCheck(evidence, "journey.accepted_lessons", refs.length, failedAccepted);
+  addCodeCheck(evidence, "journey.quiz_thresholds", quizTotal, failedQuizzes);
+  addCodeCheck(evidence, "journey.code_exercises", codeTotal, failedCodeExercises);
+  addCodeCheck(evidence, "journey.practice_no_submission", practiceTotal, failedPractices);
   return problems;
 }
 

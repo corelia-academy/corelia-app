@@ -149,6 +149,13 @@ execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "
   input: readFileSync(resolve("scripts/db/tests/social-notifications.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
 });
 
+execFileSync(process.execPath, ["scripts/db/tests/studio-agent-prompts.integration.mjs"], { stdio: "inherit" });
+
+// Run pause/continue assertions in a multi-statement transaction and roll fixtures back.
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/studio-run-pause-continue.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
+
 // Multi-statement role-switching suite: run through psql.
 execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
   input: readFileSync(resolve("scripts/db/tests/studio-catalog-rls.integration.sql")), stdio: ["pipe", "inherit", "inherit"],

@@ -24,7 +24,7 @@ import {
 } from "./catalog.ts";
 import { agentKey, errorMessage, failGeneration, loadFailureKind, pollOrExpire } from "./generations.ts";
 import { submitResponse } from "./openai.ts";
-import { PROMPTS, promptVersion } from "./prompts.ts";
+import { loadAgentPrompt } from "./agent_prompts.ts";
 import { agentKeyEnv, SERVICE_TIER, utcDate } from "./steps.ts";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -324,12 +324,13 @@ async function loadBaseOrFinish(db: SupabaseClient, job: JobRow): Promise<Catalo
 }
 
 async function submitCatalog(db: SupabaseClient, job: JobRow, attempt: number, parentId: string | null, previousError: string | null) {
-  const agent = PROMPTS[CATALOG_SPEC.prompt];
-  const apiKey = agentKey(agent.role);
+  const role = "A1" as const;
+  const apiKey = agentKey(role);
   if (!apiKey) {
-    await finishCatalogJob(db, job.id, "failed", `Chưa cấu hình ${agentKeyEnv(agent.role)}.`);
+    await finishCatalogJob(db, job.id, "failed", `Chưa cấu hình ${agentKeyEnv(role)}.`);
     return;
   }
+  const prompt = await loadAgentPrompt(db, CATALOG_SPEC.prompt);
   const base = await loadBaseOrFinish(db, job);
   if (!base) return;
 
@@ -355,11 +356,11 @@ async function submitCatalog(db: SupabaseClient, job: JobRow, attempt: number, p
     .insert({
       catalog_job_id: job.id,
       attempt,
-      agent_role: agent.role,
+      agent_role: role,
       kind: "research",
       provider: "openai",
       requested_model_id: CATALOG_SPEC.model,
-      prompt_version: promptVersion(CATALOG_SPEC.prompt),
+      prompt_version: prompt.promptVersion,
       params: {
         effort: CATALOG_SPEC.effort,
         max_output_tokens: CATALOG_SPEC.maxOutputTokens,
@@ -379,7 +380,7 @@ async function submitCatalog(db: SupabaseClient, job: JobRow, attempt: number, p
   try {
     requestId = await submitResponse(apiKey, {
       model: CATALOG_SPEC.model,
-      instructions: agent.system,
+      instructions: prompt.system,
       input,
       effort: CATALOG_SPEC.effort,
       maxOutputTokens: CATALOG_SPEC.maxOutputTokens,

@@ -1,9 +1,9 @@
 // Step `lesson_review` (A6): an independent review of one lesson draft. The reviewer sees the lesson
 // as the app will store it (LessonDraft) and points at fields of that record.
 
-import { lessonRefs, toLessonDraft, type LessonOutput } from "./lessons.ts";
+import { buildLessonReviewInput, lessonRefs, toLessonDraft, type LessonOutput } from "./lessons.ts";
 import type { Acceptance, RunContext } from "./steps.ts";
-import { normalizeReviewIssues, REVIEW_ISSUE_CATEGORIES } from "./review_policy.ts";
+import { A6_REVIEW_CRITERIA, normalizeReviewChecks, normalizeReviewIssues, REVIEW_ISSUE_CATEGORIES } from "./review_policy.ts";
 
 const str = { type: "string" };
 const strList = { type: "array", items: str };
@@ -18,8 +18,19 @@ export const LESSON_REVIEW_SCHEMA = object({
       location: str,
       problem: str,
       fix: str,
+      criterion: { type: "string", enum: [...A6_REVIEW_CRITERIA] },
       category: { type: "string", enum: [...REVIEW_ISSUE_CATEGORIES] },
       severity: { type: "string", enum: ["blocking", "minor"] },
+      verified_by: { type: "string", enum: ["tool", "source", "reasoning"] },
+    }),
+  },
+  checks: {
+    type: "array",
+    items: object({
+      criterion: { type: "string", enum: [...A6_REVIEW_CRITERIA] },
+      result: { type: "string", enum: ["ok", "issue", "unverified"] },
+      basis: str,
+      refs: strList,
       verified_by: { type: "string", enum: ["tool", "source", "reasoning"] },
     }),
   },
@@ -30,7 +41,8 @@ export const LESSON_REVIEW_SCHEMA = object({
 
 interface LessonReview {
   verdict: string;
-  issues: { location: string; problem: string; severity: string; category?: string }[];
+  issues: { location: string; problem: string; severity: string; category?: string; criterion?: string }[];
+  checks?: unknown;
 }
 
 /** Value at a path such as questions[2].options[1] or lesson.code_exercise_config.tests[0]; undefined if absent. */
@@ -73,7 +85,15 @@ export function acceptLessonReview(output: unknown, ctx: RunContext, lessonId: s
   const blocking = issues.filter((i) => i.severity === "blocking").length;
   const minor = issues.length - blocking;
   const verdict = blocking > 0 ? "needs_fix" : "pass";
-  const normalizedOutput = { ...(output as Record<string, unknown>), verdict, issues };
+  const checks = normalizeReviewChecks(
+    review.checks,
+    A6_REVIEW_CRITERIA,
+    issues,
+    (path) => resolvePath(draft, path) !== undefined,
+    true,
+  );
+  const normalizedOutput = { ...(output as Record<string, unknown>), verdict, issues, checks };
+  const codeChecks = buildLessonReviewInput(ctx, lessonId).checks_already_run as unknown[];
   const downgradeNote = downgraded.length ? ` ${downgraded.length} issue ngoài allow-list được hạ xuống minor.` : "";
-  return { ok: true, summary: `${verdict}, ${blocking} lỗi blocking, ${minor} minor.${downgradeNote}`, normalizedOutput };
+  return { ok: true, summary: `${verdict}, ${blocking} lỗi blocking, ${minor} minor.${downgradeNote}`, normalizedOutput, codeChecks };
 }

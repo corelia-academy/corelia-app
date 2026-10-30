@@ -47,9 +47,9 @@ export async function failGeneration(
  * in the provider queue for hours) is cancelled, which fails the generation as a provider error: the
  * retry budget then decides between a new attempt and ending the run, instead of waiting for the 24h cap.
  */
-export async function pollOrExpire(apiKey: string, requestId: string, createdAt: string): Promise<PollResult | null> {
+export async function pollOrExpire(apiKey: string, requestId: string, createdAt: string, pausedDurationMs = 0): Promise<PollResult | null> {
   const result = await pollResponse(apiKey, requestId);
-  if (result?.state !== "running" || Date.now() - Date.parse(createdAt) <= RESPONSE_STALE_MS) return result;
+  if (result?.state !== "running" || Date.now() - Date.parse(createdAt) - pausedDurationMs <= RESPONSE_STALE_MS) return result;
   const minutes = Math.round(RESPONSE_STALE_MS / 60000);
   return cancelResponse(apiKey, requestId, `Chưa có kết quả sau ${minutes} phút, đã hủy yêu cầu.`);
 }

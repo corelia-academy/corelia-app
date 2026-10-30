@@ -58,7 +58,7 @@ import { handleAvatarSave, handleAvatarSvg } from "./avatar/handlers.ts";
 import { handleCatalogResearchStart } from "./studio/catalog_run.ts";
 import { handleCatalogRerank } from "./studio/ranking_run.ts";
 import { handleCatalogManualOrder, handleCatalogManualOrderReset, handleCatalogManualOrderRestore } from "./studio/manual_order.ts";
-import { handleStudioStart, handleStudioTick } from "./studio/handlers.ts";
+import { handleStudioContinue, handleStudioPause, handleStudioStart, handleStudioTick } from "./studio/handlers.ts";
 
 const PROTECTED_OPS = new Set<string>([
   "avatar.save",
@@ -265,6 +265,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleJobsAdmin(req, db);
     } else if (op === "studio.start" && req.method === "POST") {
       response = await handleStudioStart(req, db);
+    } else if (op === "studio.pause" && req.method === "POST") {
+      response = await handleStudioPause(req, db);
+    } else if (op === "studio.continue" && req.method === "POST") {
+      response = await handleStudioContinue(req, db);
     } else if (op === "studio.catalog_research" && req.method === "POST") {
       response = await handleCatalogResearchStart(req, db);
     } else if (op === "studio.catalog_rerank" && req.method === "POST") {

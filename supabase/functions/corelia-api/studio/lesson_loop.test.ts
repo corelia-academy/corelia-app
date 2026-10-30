@@ -6,7 +6,9 @@ import { MAX_TRANSPORT_FAILURES } from "./retry.ts";
 import { article, base, ctx, curriculum, editCode, fillCode, lesson, now, question } from "./lesson_fixtures.ts";
 import { getCodeLanguageAdapter } from "./lesson_ports.ts";
 import { acceptLessonReview, LESSON_REVIEW_SCHEMA, resolvePath } from "./lesson_review.ts";
+import { lessonReviewEventPayload } from "./handlers.ts";
 import { inputBlocks } from "./openai.ts";
+import { A6_REVIEW_CRITERIA } from "./review_policy.ts";
 import { buildLessonInput, buildLessonReviewInput, LESSON_SHARED_KEYS, lessonRefs, lessonRevision, lessonTools, reviewBlocking, toLessonDraft, TransientError, type LessonContext } from "./lessons.ts";
 import { planRun, STEP_ORDER, STEP_SPECS, SUBMIT_STALE_MS, type RunContext, type StepKey } from "./steps.ts";
 
@@ -411,6 +413,36 @@ describe("studio lesson loop: review input and acceptance", () => {
     expect((LESSON_REVIEW_SCHEMA.properties.issues as any).items.properties.category.enum).toContain("optional_made_mandatory");
   });
 
+  it("normalizes A6 evidence, resolves refs against lesson_draft, and keeps verdict issue-driven", () => {
+    const [c, id] = withLesson({ drafts: 1, reviews: 0, draft: quizOutput, review: null });
+    const issueWithCriterion = issue("lesson.title", "blocking", { criterion: "lesson_sequence" });
+    const checks = [
+      { criterion: "factual_accuracy_by_sources", result: "ok", basis: "Compared to cited source", refs: ["lesson.title"], verified_by: "source" },
+      { criterion: "tool_versions", result: "ok", basis: "Reasoning only", refs: ["lesson.title"], verified_by: "reasoning" },
+      { criterion: "outcome_and_level_fit", result: "ok", basis: "Invalid field", refs: ["lesson.not_a_field"], verified_by: "tool" },
+      { criterion: "lesson_sequence", result: "ok", basis: "Context checked", refs: ["lesson.title"], verified_by: "source" },
+      { criterion: "quiz_answers", result: "issue", basis: "No matching issue", refs: ["questions[0].question"], verified_by: "tool" },
+      { result: "ok", basis: "Missing criterion", refs: ["lesson.title"], verified_by: "source" },
+    ];
+    const withChecks = acceptLessonReview({ ...verdictOf("pass", [issueWithCriterion]), checks }, c, id);
+    const withoutChecks = acceptLessonReview(verdictOf("pass", [issueWithCriterion]), c, id);
+    expect(withChecks).toMatchObject({ ok: true, summary: "needs_fix, 1 lỗi blocking, 0 minor." });
+    const normalized = (withChecks as { normalizedOutput: { checks: { criterion: string; result: string; basis: string; refs: string[]; verified_by?: string }[] } }).normalizedOutput.checks;
+    expect(normalized.find((check) => check.criterion === "factual_accuracy_by_sources")).toMatchObject({ result: "ok" });
+    expect(normalized.find((check) => check.criterion === "tool_versions")).toMatchObject({ result: "ok", verified_by: "reasoning" });
+    expect(normalized.find((check) => check.criterion === "outcome_and_level_fit")).toMatchObject({ result: "unverified", refs: [] });
+    expect(normalized.find((check) => check.criterion === "lesson_sequence")).toMatchObject({ result: "issue" });
+    expect(normalized.find((check) => check.criterion === "quiz_answers")).toMatchObject({ result: "unverified" });
+    expect(normalized.find((check) => check.criterion === "diagrams")).toMatchObject({ result: "unverified", basis: "không được báo cáo" });
+    expect(normalized).toHaveLength(A6_REVIEW_CRITERIA.length);
+    expect((withChecks as { codeChecks: string[] }).codeChecks.join(" ")).toContain("CHƯA kiểm tra đáp án");
+    expect((withoutChecks as { normalizedOutput: { verdict: string } }).normalizedOutput.verdict).toBe(
+      (withChecks as { normalizedOutput: { verdict: string } }).normalizedOutput.verdict,
+    );
+    expect((LESSON_REVIEW_SCHEMA.properties.issues as any).items.properties.criterion.enum).toEqual([...A6_REVIEW_CRITERIA]);
+    expect((LESSON_REVIEW_SCHEMA.properties.checks as any).items.properties.criterion.enum).toEqual([...A6_REVIEW_CRITERIA]);
+  });
+
   it("does not block a missing optional install guide but blocks installing written as mandatory", () => {
     const optionalDraft = {
       ...base,
@@ -485,7 +517,7 @@ describe("studio lesson loop: review input and acceptance", () => {
     // The reviewer checks against the sources the research step already read.
     expect(spec.lessonTools!("l-art", ctx)).toBeUndefined();
     expect(spec.maxAttempts).toBe(2);
-    expect((spec.schema as { required: string[] }).required).toEqual(["verdict", "issues", "unverified", "summary"]);
+    expect((spec.schema as { required: string[] }).required).toEqual(["verdict", "issues", "checks", "unverified", "summary"]);
   });
 });
 
@@ -515,6 +547,31 @@ const withOutcomes = (outcomes: unknown[], lessonOver: Record<string, object> = 
 describe("studio structure_check", () => {
   it("passes complete, valid lessons", () => {
     expect(structureProblems(curriculum, research, records())).toEqual([]);
+  });
+
+  it("records passing and failing grouped structure checks without changing failures", () => {
+    const validChecks: { id: string; passed: number; total: number }[] = [];
+    expect(structureProblems(curriculum, research, records(), validChecks)).toEqual([]);
+    expect(validChecks.map((check) => check.id)).toEqual([
+      "structure.curriculum_match",
+      "structure.review_refs",
+      "structure.prerequisite_refs",
+      "structure.accepted_lessons",
+      "structure.lesson_rules",
+    ]);
+    expect(validChecks.find((check) => check.id === "structure.curriculum_match")).toMatchObject({ passed: 5, total: 5 });
+
+    const broken = records();
+    delete broken["l-code"];
+    broken["l-art"].draft.lesson.title = " ";
+    const dangling = withOutcomes([], { "l-quiz": { review_lesson_ids: ["l-ghost"], prerequisite_lesson_ids: ["l-ghost"] } });
+    const evidence: { id: string; passed: number; total: number; failed_refs?: string[] }[] = [];
+    const problems = structureProblems(dangling, research, broken, evidence);
+    expect(problems).toContain("l-code: chưa có lesson được nhận");
+    expect(evidence.find((check) => check.id === "structure.review_refs")).toMatchObject({ passed: 0, total: 1, failed_refs: ["l-quiz->l-ghost"] });
+    expect(evidence.find((check) => check.id === "structure.prerequisite_refs")).toMatchObject({ passed: 0, total: 1 });
+    expect(evidence.find((check) => check.id === "structure.accepted_lessons")).toMatchObject({ passed: 4, total: 5 });
+    expect(evidence.find((check) => check.id === "structure.lesson_rules")).toMatchObject({ passed: 3, total: 5 });
   });
 
   it("lists missing and extra lessons", () => {
@@ -595,6 +652,16 @@ describe("studio structure_check: links", () => {
     expect(await linkProblems(withLinks(), answer(() => 200))).toEqual([]);
   });
 
+  it("records link counts and bot-restricted links as accepted warnings", async () => {
+    const restricted: string[] = [];
+    const evidence: { id: string; passed: number; total: number; warning_refs?: string[] }[] = [];
+    expect(await linkProblems(withLinks(), answer((url) => url.includes("oembed") ? 200 : 403), restricted, evidence)).toEqual([]);
+    expect(evidence[0].id).toBe("structure.links");
+    expect(evidence[0].passed).toBe(evidence[0].total);
+    expect(evidence[0].warning_refs?.length).toBeGreaterThan(0);
+    expect(restricted.length).toBeGreaterThan(0);
+  });
+
   it("does not make a generic HTTP request to a suggested YouTube watch page", async () => {
     const all = withLinks();
     const url = "https://www.youtube.com/watch?v=aaaaaaaaaaa";
@@ -633,6 +700,29 @@ describe("studio journey_test", () => {
 
   it("passes a curriculum whose outcomes are taught, then checked by a later quiz", () => {
     expect(journeyProblems(good, records())).toEqual([]);
+  });
+
+  it("records grouped journey checks for valid and broken lesson groups", () => {
+    const validChecks: { id: string; passed: number; total: number }[] = [];
+    expect(journeyProblems(good, records(), validChecks)).toEqual([]);
+    expect(validChecks.map((check) => check.id)).toEqual([
+      "journey.outcome_order",
+      "journey.lesson_order",
+      "journey.accepted_lessons",
+      "journey.quiz_thresholds",
+      "journey.code_exercises",
+      "journey.practice_no_submission",
+    ]);
+
+    const all = records();
+    all["l-quiz"].draft.questions[0].correct_index = 9;
+    all["l-code"].draft.lesson.code_exercise_config!.file.starter_source = all["l-code"].draft.lesson.code_exercise_config!.reference_solution;
+    all["l-prac"].draft.lesson.practice_config = { mode: "instruction", requires_review: true };
+    const brokenChecks: { id: string; passed: number; total: number; failed_refs?: string[] }[] = [];
+    expect(journeyProblems(good, all, brokenChecks)).toContain("l-prac: practice có bài nộp hoặc chờ chấm");
+    expect(brokenChecks.find((check) => check.id === "journey.quiz_thresholds")).toMatchObject({ passed: 0, total: 1, failed_refs: ["l-quiz"] });
+    expect(brokenChecks.find((check) => check.id === "journey.code_exercises")).toMatchObject({ passed: 0, total: 1, failed_refs: ["l-code"] });
+    expect(brokenChecks.find((check) => check.id === "journey.practice_no_submission")).toMatchObject({ passed: 0, total: 1, failed_refs: ["l-prac"] });
   });
 
   it("checks that every outcome is taught and checked by a later lesson of any checking format", () => {
@@ -696,5 +786,71 @@ describe("studio journey_test", () => {
     const all = records();
     delete all["l-vid"];
     expect(journeyProblems(good, all)).toContain("l-vid: chưa có lesson được nhận");
+  });
+
+  it("builds lesson_review event payload matching normalizedOutput and handles downgraded issues", () => {
+    const passNorm = {
+      verdict: "pass",
+      issues: [],
+      checks: [{ criterion: "lesson_sequence", result: "ok", verified_by: "source" }],
+    };
+    const p1 = lessonReviewEventPayload(passNorm, ["code check 1"], "lesson-1");
+    expect(p1).toEqual({
+      checks: passNorm.checks,
+      code_checks: ["code check 1"],
+      lesson_id: "lesson-1",
+      verdict: "pass",
+      blocking: 0,
+      minor: 0,
+      blocking_categories: [],
+    });
+
+    const failNorm = {
+      verdict: "needs_fix",
+      issues: [
+        { severity: "blocking", category: "wrong_facts_or_definitions" },
+        { severity: "blocking", category: "prerequisite_missing" },
+        { severity: "blocking", category: "code_reference_broken" },
+        { severity: "blocking", category: "unsupported_platform_format" },
+        { severity: "minor", category: "spelling" },
+      ],
+      checks: [],
+    };
+    const p2 = lessonReviewEventPayload(failNorm, [], "lesson-2");
+    expect(p2.verdict).toBe("needs_fix");
+    expect(p2.blocking).toBe(4);
+    expect(p2.minor).toBe(1);
+    expect(p2.blocking_categories).toHaveLength(3);
+    expect(p2.blocking_categories).toEqual([
+      "wrong_facts_or_definitions",
+      "prerequisite_missing",
+      "code_reference_broken",
+    ]);
+
+    const [c, id] = withLesson({ drafts: 1, reviews: 0, draft: quizOutput, review: null }, "l-quiz");
+    const rawOutput = {
+      verdict: "needs_fix",
+      issues: [
+        {
+          location: "lesson.title",
+          problem: "Custom issue outside allow-list",
+          fix: "fix it",
+          criterion: "lesson_sequence",
+          category: "custom_unknown_category",
+          severity: "blocking",
+          verified_by: "source",
+        },
+      ],
+      checks: [],
+      unverified: [],
+      summary: "Review summary",
+    };
+    const acceptance = acceptLessonReview(rawOutput, c, id);
+    expect(acceptance.ok).toBe(true);
+    const p3 = lessonReviewEventPayload(acceptance.normalizedOutput, acceptance.codeChecks, id);
+    expect(p3.verdict).toBe("pass");
+    expect(p3.blocking).toBe(0);
+    expect(p3.minor).toBe(1);
+    expect(p3.blocking_categories).toEqual([]);
   });
 });
