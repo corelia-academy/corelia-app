@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import illusAi from "@/assets/illustrations/illus-ai.svg";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import type { CourseLesson } from "@/types/courses";
 
 const TARGETS: AskAiTarget[] = ["chatgpt", "claude", "gemini", "copy"];
 
-export function AskAiMenu({ lesson, courseTitle }: { lesson: CourseLesson; courseTitle?: string | null }) {
+export function AskAiMenu({ lesson, courseTitle, compact = false }: { lesson: CourseLesson; courseTitle?: string | null; compact?: boolean }) {
   const { t } = useTranslation("courses");
   const choose = async (target: AskAiTarget) => {
     const action = resolveAskAiAction(target, { courseTitle, lessonTitle: lessonText(lesson.title), content: lessonBodyForAi(lesson) });
@@ -25,10 +25,12 @@ export function AskAiMenu({ lesson, courseTitle }: { lesson: CourseLesson; cours
     if (action.kind !== "copy") window.open(action.url, "_blank", "noopener,noreferrer");
   };
   return <DropdownMenu>
-    <DropdownMenuTrigger render={<Button type="button" variant="cta" hierarchy="tertiary" size="small" />}>
-      <Sparkles className="size-4" aria-hidden />{t("learning.askAi.trigger")}
+    <DropdownMenuTrigger render={<Button type="button" variant="cta" hierarchy="tertiary" size="small" aria-label={compact ? t("learning.askAi.trigger") : undefined} className="px-3 text-[color:var(--accent-yellow-600)] dark:text-[color:var(--accent-yellow-300)]" trailingIcon={<img src={illusAi} alt="" aria-hidden className="size-5" />} />}>
+      {compact
+        ? <><span className="max-sm:hidden">{t("learning.askAi.trigger")}</span><span className="sm:hidden">{t("learning.askAi.triggerShort")}</span></>
+        : t("learning.askAi.trigger")}
     </DropdownMenuTrigger>
-    <DropdownMenuContent align="start" className="w-auto min-w-56">
+    <DropdownMenuContent side="top" align="center" className="w-auto min-w-56">
       {TARGETS.map(target => <DropdownMenuItem key={target} onClick={() => void choose(target)}>{t(`learning.askAi.${target}`)}</DropdownMenuItem>)}
     </DropdownMenuContent>
   </DropdownMenu>;

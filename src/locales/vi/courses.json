@@ -427,7 +427,9 @@
       },
       "noLessonSelected": "Chọn một bài học từ curriculum để bắt đầu.",
       "toggleCurriculum": "Bật/tắt curriculum",
-      "openCurriculum": "Mở curriculum"
+      "openCurriculum": "Mở curriculum",
+      "moveBar": "Di chuyển thanh hành động (kéo hoặc dùng phím mũi tên)",
+      "resetBar": "Đặt lại vị trí thanh"
     }
   },
   "filters": {
@@ -497,7 +499,8 @@
     "source": "Mã nguồn",
     "unavailable": "Bài học chưa khả dụng.",
     "askAi": {
-      "trigger": "Hỏi AI",
+      "trigger": "AI Summary",
+      "triggerShort": "AI",
       "chatgpt": "Hỏi ChatGPT",
       "claude": "Hỏi Claude",
       "gemini": "Hỏi Gemini (sao chép prompt)",
@@ -523,6 +526,7 @@
     "checkPrompt": "Chạy kiểm tra để nhận phản hồi.",
     "sourceLimit": "Mã nguồn tối đa 64 KiB.",
     "completeContinue": "Hoàn thành và tiếp tục",
+    "completedToast": "Đã hoàn thành bài học.",
     "loginToSave": "Đăng nhập để lưu tiến độ và nộp bài.",
     "finalAssignmentLink": "Đến bài nộp cuối khóa",
     "videoError": "Không phát được video.",
@@ -535,10 +539,14 @@
     "recalculateDuration": "Tính lại thời lượng",
     "previewBanner": "XEM THỬ · Không lưu tiến độ, bài nộp hoặc nháp.",
     "completed": "Đã hoàn thành",
+    "markComplete": "Đánh dấu hoàn thành",
     "markIncomplete": "Đánh dấu chưa hoàn thành",
+    "markCompleteShort": "Hoàn thành",
+    "markIncompleteShort": "Hoàn tác",
     "redoFromStart": "Làm lại từ đầu",
     "redoConfirm": "Làm lại bài này từ đầu? Đáp án và bản nháp trên thiết bị sẽ được xóa. Lịch sử nộp bài vẫn được giữ.",
     "resources": "Tài nguyên",
+    "resourcesDrawerHint": "Các đường dẫn, repo hướng dẫn cho mỗi phần học.",
     "previous": "Bài trước",
     "next": "Bài tiếp theo",
     "finish": "Hoàn tất khóa học",

@@ -102,3 +102,28 @@ it("opens the final assignment route after the last completed lesson", async () 
   expect(routeNavigate).toHaveBeenCalledWith("/study/course/final-assignment");
   expect(markComplete).not.toHaveBeenCalled();
 });
+
+it("uses the floating bar as a complete/incomplete toggle without a next-lesson button", async () => {
+  const host = document.createElement("div"), slot = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+  const complete = vi.fn().mockResolvedValue(undefined);
+  const reset = vi.fn().mockResolvedValue(undefined);
+  const navigate = vi.fn();
+  act(() => root.render(<TestCard {...props} courseId="course" actionSlot={slot} onMarkComplete={complete} onReset={reset} onNavigateToLesson={navigate} />));
+  const toggle = slot.querySelector("button")!;
+  expect(toggle.getAttribute("aria-pressed")).toBe("false");
+  await act(async () => toggle.click());
+  expect(complete).toHaveBeenCalledOnce();
+  expect(navigate).not.toHaveBeenCalled();
+  act(() => root.render(<TestCard {...props} completed courseId="course" actionSlot={slot} onMarkComplete={complete} onReset={reset} onNavigateToLesson={navigate} />));
+  expect(slot.querySelectorAll("button")).toHaveLength(1);
+  const incompleteToggle = slot.querySelector("button")!;
+  // The full label stays the accessible name; a short one is shown below the sm breakpoint.
+  expect(incompleteToggle.getAttribute("aria-label")).toBe("learning.markIncomplete");
+  expect(incompleteToggle.querySelector('[class~="max-sm:hidden"]')?.textContent).toBe("learning.markIncomplete");
+  expect(incompleteToggle.querySelector('[class~="sm:hidden"]')?.textContent).toBe("learning.markIncompleteShort");
+  expect(slot.textContent).not.toContain("learning.next");
+  await act(async () => slot.querySelector("button")!.click());
+  expect(reset).toHaveBeenCalledExactlyOnceWith(false);
+  expect(navigate).not.toHaveBeenCalled();
+});
