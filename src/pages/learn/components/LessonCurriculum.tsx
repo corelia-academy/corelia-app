@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from "react";
+import { useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { gsap } from "gsap";
 import { lessonText } from "@/features/learning/lessonCopy";
 import { Link } from "react-router";
 import { CaretDown, CheckSquare, Code, FileText, List, PencilLine, PlayCircle, SidebarSimple } from "@phosphor-icons/react";
@@ -60,25 +61,47 @@ function LessonItem({
 
 function CurriculumSection({ title, children }: { title: string; children: ReactNode }) {
   const [open, setOpen] = useState(true);
+  const regionRef = useRef<HTMLDivElement>(null);
+  const previousOpen = useRef(open);
+  const regionId = useId();
+
+  // Animates only real open/close changes, so the first render and StrictMode re-runs stay still.
+  useLayoutEffect(() => {
+    const region = regionRef.current;
+    if (!region || previousOpen.current === open) return;
+    previousOpen.current = open;
+    gsap.killTweensOf(region);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      gsap.set(region, open ? { clearProps: "display,height,overflow" } : { display: "none" });
+      return;
+    }
+    gsap.set(region, { display: "block", overflow: "hidden" });
+    if (open) {
+      gsap.fromTo(region, { height: 0 }, { height: "auto", duration: 0.28, ease: "power3.out", clearProps: "display,height,overflow" });
+    } else {
+      gsap.to(region, { height: 0, duration: 0.2, ease: "power2.in", onComplete: () => gsap.set(region, { display: "none" }) });
+    }
+  }, [open]);
+
   return (
-    <section
-      data-open={open}
-      className={cn("flex flex-col gap-md [[data-open=false]+&]:-mt-px", open && "not-last:pb-2xl")}
-    >
+    <section data-open={open} className="flex flex-col [[data-open=false]+&]:-mt-px">
       <div className="border-y border-border px-lg">
         <Action
           type="button"
           size="large"
-          className="cursor-pointer rounded-md hover:rounded-md hover:bg-transparent [&_span]:transition-colors hover:[&_span]:text-foreground-muted"
+          className="cursor-pointer rounded-md hover:rounded-md hover:bg-transparent [&_span]:transition-colors hover:[&_span]:text-button-secondary-foreground"
           label={title}
           aria-expanded={open}
+          aria-controls={regionId}
           onClick={() => setOpen((value) => !value)}
           trailingGroup={
             <CaretDown aria-hidden weight="duotone" className={cn("size-4 transition-transform", !open && "-rotate-90")} />
           }
         />
       </div>
-      {open ? <div className="flex flex-col px-2xl">{children}</div> : null}
+      <div ref={regionRef} id={regionId} inert={!open}>
+        <div className="flex flex-col px-2xl pt-md [section:not(:last-child)_&]:pb-2xl">{children}</div>
+      </div>
     </section>
   );
 }
@@ -161,7 +184,7 @@ function CurriculumList({
             ))
           : <div className="flex flex-col px-2xl not-last:pb-2xl">{flatLessons!.map(renderLesson)}</div>}
         {hasFinalAssignment && hasFullCourseAccess && (
-          <div className="px-2xl [[data-open=false]+&]:pt-2xl">
+          <div className="px-2xl transition-[padding-top] duration-300 ease-out [[data-open=false]+&]:pt-2xl">
             <Action
               type="button"
               size="small"
