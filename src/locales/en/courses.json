@@ -496,6 +496,7 @@
     "unavailable": "Lesson unavailable.",
     "askAi": {
       "trigger": "AI Summary",
+      "triggerShort": "AI",
       "chatgpt": "Ask ChatGPT",
       "claude": "Ask Claude",
       "gemini": "Ask Gemini (copies prompt)",
@@ -536,6 +537,8 @@
     "completed": "Completed",
     "markComplete": "Mark as complete",
     "markIncomplete": "Mark as incomplete",
+    "markCompleteShort": "Complete",
+    "markIncompleteShort": "Incomplete",
     "redoFromStart": "Start over",
     "redoConfirm": "Start this exercise over? Your current answers and local draft will be cleared. Previous submissions will stay in your history.",
     "resources": "Resources",

@@ -505,6 +505,7 @@
     "unavailable": "Lección no disponible.",
     "askAi": {
       "trigger": "Preguntar a la IA",
+      "triggerShort": "IA",
       "chatgpt": "Preguntar a ChatGPT",
       "claude": "Preguntar a Claude",
       "gemini": "Preguntar a Gemini (copia el prompt)",
@@ -545,6 +546,8 @@
     "completed": "Completada",
     "markComplete": "Marcar como completada",
     "markIncomplete": "Marcar como incompleta",
+    "markCompleteShort": "Completada",
+    "markIncompleteShort": "Incompleta",
     "redoFromStart": "Empezar de nuevo",
     "redoConfirm": "¿Empezar este ejercicio de nuevo? Se borrarán tus respuestas actuales y el borrador local. Los envíos anteriores permanecerán en tu historial.",
     "resources": "Recursos",

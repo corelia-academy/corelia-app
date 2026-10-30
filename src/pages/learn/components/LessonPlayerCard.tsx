@@ -88,6 +88,16 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
   const inFooter = actionSlot !== undefined && mode === "learner";
   const canReset = mode === "learner" && !!user && !!onReset && hasFullCourseAccess && !isDraftLesson;
   const primaryDisabled = busy || action?.pending || (!(completed && mode === "learner") && (!action || (action.disabled && (mode === "preview" || !!user))));
+  // Only "mark complete" and "mark incomplete" have a short form; other labels come from the lesson itself.
+  const toggleLabel: { full: string; short?: string } = busy
+    ? { full: t("learning.saving") }
+    : completed
+      ? canReset
+        ? { full: t("learning.markIncomplete"), short: t("learning.markIncompleteShort") }
+        : { full: t("learning.completed") }
+      : action?.label === t("learning.completeContinue")
+        ? { full: t("learning.markComplete"), short: t("learning.markCompleteShort") }
+        : { full: label };
   const header = <div><p className="text-sm text-foreground-muted">{t(`learning.formats.${getLessonFormat(lesson)}`)} {completed && `· ${t("learning.completed")}`}</p><h1 className="mt-2 text-heading-large font-display">{lessonText(lesson.title)}</h1>{lesson.short_description && <p className="mt-2 text-foreground-muted">{lessonText(lesson.short_description)}</p>}{!inFooter && canAskAboutLesson(lesson) && <div className="mt-3"><AskAiMenu lesson={lesson} courseTitle={courseTitle} /></div>}</div>;
   const resourcesNode = !!resources.length && (
     frameLayout
@@ -144,13 +154,16 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
     {inFooter && actionSlot && createPortal(
       // One toggle: complete via the lesson's own action, uncomplete via reset.
       <Button type="button" variant="cta" hierarchy={completed ? "secondary" : "primary"} size="small" aria-pressed={completed}
+        aria-label={toggleLabel.short ? toggleLabel.full : undefined}
         disabled={completed ? !canReset || busy || action?.pending : primaryDisabled}
         onClick={() => void (completed ? reset(false) : run())}
         leadingIcon={busy ? <CircleNotch className="animate-spin" aria-hidden /> : <CheckCircle weight={completed ? "fill" : "regular"} className={completed ? "text-success" : undefined} aria-hidden />}>
-        {busy ? t("learning.saving") : completed ? t(canReset ? "learning.markIncomplete" : "learning.completed") : action?.label === t("learning.completeContinue") ? t("learning.markComplete") : label}
+        {toggleLabel.short
+          ? <><span className="max-sm:hidden">{toggleLabel.full}</span><span className="sm:hidden">{toggleLabel.short}</span></>
+          : toggleLabel.full}
       </Button>,
       actionSlot,
     )}
-    {inFooter && askAiSlot && canAskAboutLesson(lesson) && createPortal(<AskAiMenu lesson={lesson} courseTitle={courseTitle} />, askAiSlot)}
+    {inFooter && askAiSlot && canAskAboutLesson(lesson) && createPortal(<AskAiMenu lesson={lesson} courseTitle={courseTitle} compact />, askAiSlot)}
   </div>;
 }

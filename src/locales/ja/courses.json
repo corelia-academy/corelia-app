@@ -487,6 +487,7 @@
     "unavailable": "レッスンは利用できません。",
     "askAi": {
       "trigger": "AI に質問",
+      "triggerShort": "AI",
       "chatgpt": "ChatGPT に質問",
       "claude": "Claude に質問",
       "gemini": "Gemini に質問（プロンプトをコピー）",
@@ -527,6 +528,8 @@
     "completed": "修了",
     "markComplete": "完了にする",
     "markIncomplete": "未完了にする",
+    "markCompleteShort": "完了",
+    "markIncompleteShort": "未完了",
     "redoFromStart": "最初からやり直す",
     "redoConfirm": "この演習を最初からやり直しますか？現在の回答とローカルの下書きは消去されます。過去の提出は履歴に残ります。",
     "resources": "リソース",
