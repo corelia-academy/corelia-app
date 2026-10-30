@@ -149,7 +149,7 @@ function TableContent() {
 export function LessonPlayerSkeletonBody() {
   return (
     <div className="flex min-h-full flex-col" aria-hidden>
-      <div className="border-b border-border"><Skeleton className="aspect-video w-full rounded-none" /></div>
+      <div className="border-b border-border"><Skeleton className="aspect-video max-h-[80vh] w-full rounded-none" /></div>
       <div className="flex w-full max-w-[880px] flex-col gap-6xl px-4 pb-7xl pt-6xl sm:px-6 md:px-8xl">
         <div>
           <Skeleton className="h-4 w-16" />
