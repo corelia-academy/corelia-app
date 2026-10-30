@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { gsap } from "gsap";
 import { GripVertical } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -62,12 +63,15 @@ export const ResizableHandle = React.forwardRef<
 ResizableHandle.displayName = "ResizableHandle";
 
 type ResizablePanelGroupProps = React.HTMLAttributes<HTMLDivElement> & {
+  /** Seconds for programmatic collapse/expand tweens; 0 keeps the instant behavior. */
+  animationDuration?: number;
   autoSaveId?: string;
   children?: React.ReactNode;
   orientation?: Orientation;
 };
 
 export function ResizablePanelGroup({
+  animationDuration = 0,
   autoSaveId,
   children,
   className,
@@ -102,7 +106,69 @@ export function ResizablePanelGroup({
     buildInitialSizes(panels, autoSaveId),
   );
 
+  const panelElsRef = React.useRef<Array<HTMLDivElement | null>>([]);
+  const tweenRef = React.useRef<gsap.core.Tween | null>(null);
+  const targetSizesRef = React.useRef(sizes);
+  const visualSizesRef = React.useRef(sizes);
+
+  const animateTo = React.useCallback(
+    (target: number[]) => {
+      const from = [...visualSizesRef.current];
+      tweenRef.current?.kill();
+      tweenRef.current = null;
+      targetSizesRef.current = target;
+
+      if (
+        animationDuration <= 0 ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ) {
+        visualSizesRef.current = target;
+        setSizes(target);
+        return;
+      }
+
+      const progress = { value: 0 };
+      tweenRef.current = gsap.to(progress, {
+        value: 1,
+        duration: animationDuration,
+        ease: "power3.inOut",
+        onUpdate: () => {
+          const visual = target.map(
+            (size, index) =>
+              (from[index] ?? 0) + (size - (from[index] ?? 0)) * progress.value,
+          );
+          visualSizesRef.current = visual;
+          visual.forEach((size, index) => {
+            const element = panelElsRef.current[index];
+            if (element) element.style.flexGrow = String(size);
+          });
+        },
+        onComplete: () => {
+          tweenRef.current = null;
+          visualSizesRef.current = target;
+          setSizes(target);
+        },
+      });
+    },
+    [animationDuration],
+  );
+
   React.useEffect(() => {
+    return () => {
+      tweenRef.current?.kill();
+    };
+  }, []);
+
+  const initKeyRef = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    // Re-initialize only when the layout identity changes; a parent re-render
+    // that merely recreates the panel descriptors must not reset live sizes.
+    const initKey = `${autoSaveId ?? ""}:${panels.length}`;
+    if (initKeyRef.current === initKey) return;
+    initKeyRef.current = initKey;
+    tweenRef.current?.kill();
+    tweenRef.current = null;
     const nextSizes = buildInitialSizes(panels, autoSaveId);
     lastExpandedSizesRef.current = nextSizes.map((size, index) =>
       isCollapsedSize(size, panels[index]?.props) ? 0 : size,
@@ -112,6 +178,12 @@ export function ResizablePanelGroup({
   }, [autoSaveId, panels]);
 
   React.useEffect(() => {
+    if (!tweenRef.current) {
+      targetSizesRef.current = sizes;
+      visualSizesRef.current = sizes;
+    }
+    const effectiveSizes = targetSizesRef.current;
+
     panels.forEach((panel, index) => {
       if (!isCollapsedSize(sizes[index] ?? 0, panel.props)) {
         lastExpandedSizesRef.current[index] = sizes[index] ?? 0;
@@ -126,7 +198,7 @@ export function ResizablePanelGroup({
     }
 
     const nextCollapsedState = panels.map((panel, index) =>
-      isCollapsedSize(sizes[index] ?? 0, panel.props),
+      isCollapsedSize(effectiveSizes[index] ?? 0, panel.props),
     );
 
     nextCollapsedState.forEach((collapsed, index) => {
@@ -146,20 +218,25 @@ export function ResizablePanelGroup({
     panels.forEach((panel, index) => {
       assignPanelHandle(panel.ref, {
         collapse: () => {
-          setSizes((current) => collapsePanel(current, panels, index));
+          const current = targetSizesRef.current;
+          const next = collapsePanel(current, panels, index);
+          if (next !== current) animateTo(next);
         },
         expand: () => {
-          setSizes((current) => expandPanel(current, panels, index, lastExpandedSizesRef));
+          const current = targetSizesRef.current;
+          const next = expandPanel(current, panels, index, lastExpandedSizesRef);
+          if (next !== current) animateTo(next);
         },
-        getSize: () => sizes[index] ?? 0,
-        isCollapsed: () => isCollapsedSize(sizes[index] ?? 0, panels[index]?.props),
+        getSize: () => targetSizesRef.current[index] ?? 0,
+        isCollapsed: () =>
+          isCollapsedSize(targetSizesRef.current[index] ?? 0, panels[index]?.props),
       });
     });
 
     return () => {
       panels.forEach((panel) => assignPanelHandle(panel.ref, null));
     };
-  }, [panels, sizes]);
+  }, [panels, animateTo]);
 
   React.useEffect(() => {
     const handlePointerMove = (event: PointerEvent) => {
@@ -233,6 +310,9 @@ export function ResizablePanelGroup({
           return (
             <div
               key={item.key ?? `panel-${itemIndex}`}
+              ref={(element) => {
+                panelElsRef.current[panelIndex] = element;
+              }}
               data-slot="resizable-panel"
               data-collapsed={collapsed ? "" : undefined}
               className={cn("min-w-0 min-h-0 overflow-hidden", item.props.className)}
@@ -272,11 +352,17 @@ export function ResizablePanelGroup({
               )}
               onPointerDown={(event) => {
                 if (item.props.disabled) return;
+                if (tweenRef.current) {
+                  tweenRef.current.kill();
+                  tweenRef.current = null;
+                  targetSizesRef.current = visualSizesRef.current;
+                  setSizes(visualSizesRef.current);
+                }
                 dragStateRef.current = {
                   handleIndex,
                   startPosition:
                     orientation === "horizontal" ? event.clientX : event.clientY,
-                  initialSizes: sizes,
+                  initialSizes: visualSizesRef.current,
                 };
                 event.currentTarget.setPointerCapture(event.pointerId);
                 event.preventDefault();

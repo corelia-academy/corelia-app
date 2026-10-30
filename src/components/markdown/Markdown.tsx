@@ -31,14 +31,17 @@ function MarkdownImage({ src, alt }: { src?: string; alt: string }) {
   );
 }
 
-export function Markdown({ content, compact }: { content: string; compact?: boolean }) {
+export function Markdown({ content, compact, variant = "default" }: { content: string; compact?: boolean; variant?: "default" | "lesson" }) {
   const value = content?.trim();
   if (!value) return null;
+  const lesson = variant === "lesson" && !compact;
 
   return (
     <div
       className={cn(
-        compact ? "space-y-2 text-sm leading-relaxed" : "space-y-3 text-sm leading-7 text-foreground-muted",
+        lesson
+          ? "flex flex-col gap-xl text-body-large text-action-text"
+          : compact ? "space-y-2 text-sm leading-relaxed" : "space-y-3 text-sm leading-7 text-foreground-muted",
         "[&>h1:first-child]:mt-0 [&>h2:first-child]:mt-0 [&>h3:first-child]:mt-0 [&>h4:first-child]:mt-0",
       )}
     >
@@ -48,13 +51,19 @@ export function Markdown({ content, compact }: { content: string; compact?: bool
         components={{
           h1: (props) => compact
             ? <h3 className="mt-3 text-heading-small font-display" {...props} />
-            : <h2 className="mt-6 text-heading-medium font-display text-foreground" {...props} />,
+            : lesson
+              ? <h2 className="mb-md mt-3xl font-display text-heading-large" {...props} />
+              : <h2 className="mt-6 text-heading-medium font-display text-foreground" {...props} />,
           h2: (props) => compact
             ? <h4 className="mt-2 text-heading-small font-display" {...props} />
-            : <h3 className="mt-5 text-heading-medium font-display text-foreground" {...props} />,
+            : lesson
+              ? <h3 className="mb-md mt-3xl font-display text-heading-large" {...props} />
+              : <h3 className="mt-5 text-heading-medium font-display text-foreground" {...props} />,
           h3: (props) => compact
             ? <h4 className="mt-2 text-heading-small font-display" {...props} />
-            : <h4 className="mt-4 text-heading-small font-display text-foreground" {...props} />,
+            : lesson
+              ? <h4 className="mb-md mt-3xl font-display text-heading-small" {...props} />
+              : <h4 className="mt-4 text-heading-small font-display text-foreground" {...props} />,
           p: (props) => <p className="whitespace-pre-wrap" {...props} />,
           a: (props) => (
             <a className="text-primary underline underline-offset-4 hover:opacity-80" {...props} />
@@ -62,7 +71,7 @@ export function Markdown({ content, compact }: { content: string; compact?: bool
           img: ({ src, alt }) => <MarkdownImage src={typeof src === "string" ? src : undefined} alt={alt ?? ""} />,
           ul: (props) => <ul className="list-disc space-y-1 pl-5" {...props} />,
           ol: (props) => <ol className="list-decimal space-y-1 pl-5" {...props} />,
-          li: (props) => <li className="leading-7" {...props} />,
+          li: (props) => <li className={lesson ? undefined : "leading-7"} {...props} />,
           code: ({ className, children }) => {
             const language = (className ?? "").replace("language-", "").toLowerCase().trim();
             if (className?.startsWith("language-")) {
@@ -70,6 +79,7 @@ export function Markdown({ content, compact }: { content: string; compact?: bool
                 <CodeBlock
                   language={language}
                   code={String(children).replace(/\n$/, "")}
+                  variant={lesson ? "lesson" : "default"}
                 />
               );
             }

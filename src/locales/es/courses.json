@@ -432,7 +432,9 @@
       },
       "noLessonSelected": "Selecciona una lección del plan de estudios para empezar.",
       "toggleCurriculum": "Mostrar u ocultar el plan de estudios",
-      "openCurriculum": "Abrir plan de estudios"
+      "openCurriculum": "Abrir plan de estudios",
+      "moveBar": "Mover la barra de acciones (arrastra o usa las flechas)",
+      "resetBar": "Restablecer la posición de la barra"
     }
   },
   "filters": {
@@ -528,6 +530,7 @@
     "checkPrompt": "Ejecuta las comprobaciones para recibir comentarios.",
     "sourceLimit": "El código fuente está limitado a 64 KiB.",
     "completeContinue": "Completar y continuar",
+    "completedToast": "Lección completada.",
     "loginToSave": "Inicia sesión para guardar tu progreso y enviar tu trabajo.",
     "finalAssignmentLink": "Ir al trabajo final",
     "videoError": "La reproducción del vídeo no está disponible.",
@@ -540,10 +543,12 @@
     "recalculateDuration": "Recalcular duración",
     "previewBanner": "VISTA PREVIA · El progreso, los envíos y los borradores no se guardan.",
     "completed": "Completada",
+    "markComplete": "Marcar como completada",
     "markIncomplete": "Marcar como incompleta",
     "redoFromStart": "Empezar de nuevo",
     "redoConfirm": "¿Empezar este ejercicio de nuevo? Se borrarán tus respuestas actuales y el borrador local. Los envíos anteriores permanecerán en tu historial.",
     "resources": "Recursos",
+    "resourcesDrawerHint": "Guías y repositorios de cada sección.",
     "previous": "Anterior",
     "next": "Siguiente lección",
     "finish": "Terminar curso",

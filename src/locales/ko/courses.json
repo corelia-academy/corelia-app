@@ -414,7 +414,9 @@
       },
       "noLessonSelected": "커리큘럼에서 레슨을 선택해 시작하세요.",
       "toggleCurriculum": "커리큘럼 전환",
-      "openCurriculum": "커리큘럼 열기"
+      "openCurriculum": "커리큘럼 열기",
+      "moveBar": "작업 표시줄 이동(드래그 또는 화살표 키)",
+      "resetBar": "표시줄 위치 초기화"
     }
   },
   "filters": {
@@ -510,6 +512,7 @@
     "checkPrompt": "검사를 실행하면 피드백을 받을 수 있습니다.",
     "sourceLimit": "소스는 64 KiB로 제한됩니다.",
     "completeContinue": "완료하고 계속",
+    "completedToast": "수업을 완료했습니다.",
     "loginToSave": "로그인하면 진도를 저장하고 과제를 제출할 수 있습니다.",
     "finalAssignmentLink": "최종 과제로 이동",
     "videoError": "영상을 재생할 수 없습니다.",
@@ -522,10 +525,12 @@
     "recalculateDuration": "시간 다시 계산",
     "previewBanner": "미리보기 · 진도, 제출물, 임시 저장은 저장되지 않습니다.",
     "completed": "완료",
+    "markComplete": "완료로 표시",
     "markIncomplete": "미완료로 표시",
     "redoFromStart": "처음부터 다시",
     "redoConfirm": "이 실습을 처음부터 다시 시작할까요? 현재 답안과 로컬 임시 저장이 삭제됩니다. 이전 제출물은 기록에 남습니다.",
     "resources": "자료",
+    "resourcesDrawerHint": "각 섹션별 가이드와 저장소입니다.",
     "previous": "이전",
     "next": "다음 레슨",
     "finish": "강의 마치기",

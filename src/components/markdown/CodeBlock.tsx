@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneLight, oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { Check, Copy, ExternalLink } from "lucide-react";
+import { ArrowSquareOut, Check as PhCheck, Copy as PhCopy } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 
@@ -48,9 +49,19 @@ const SOLIDITY_LANGS = new Set(["solidity", "sol"]);
 type Props = {
   language: string;
   code: string;
+  variant?: "default" | "lesson";
 };
 
-export function CodeBlock({ language, code }: Props) {
+const lessonDarkStyle: Record<string, React.CSSProperties> = {
+  'code[class*="language-"]': { color: "#dee2ec", background: "none", fontFamily: "inherit", textAlign: "left", whiteSpace: "pre", tabSize: 2 },
+  'pre[class*="language-"]': { color: "#dee2ec", background: "none", fontFamily: "inherit", margin: 0, overflow: "auto" },
+  function: { color: "#1ebfff" },
+  builtin: { color: "#ffa159" },
+  string: { color: "#2fe921" },
+  "attr-value": { color: "#2fe921" },
+};
+
+export function CodeBlock({ language, code, variant = "default" }: Props) {
   const { t } = useTranslation("common");
 
   const [isDark, setIsDark] = useState(() =>
@@ -86,6 +97,31 @@ export function CodeBlock({ language, code }: Props) {
     } catch {
       // clipboard not available
     }
+  }
+
+  if (variant === "lesson") {
+    return (
+      <div className="relative overflow-hidden rounded-xl bg-sidebar font-mono">
+        <div className="absolute right-xs top-0 z-10 flex items-center gap-xs">
+          {remixUrl && (
+            <Button type="button" variant="cta" hierarchy="tertiary" size="small"
+              render={<a href={remixUrl} target="_blank" rel="noreferrer" />} nativeButton={false}>
+              <ArrowSquareOut weight="duotone" aria-hidden />{t("actions.runInRemix")}
+            </Button>
+          )}
+          <Button type="button" variant="cta" hierarchy="tertiary" iconOnly size="small"
+            onClick={() => void handleCopy()} title={t("actions.copy")} aria-label={t("actions.copy")}>
+            {copied ? <PhCheck weight="duotone" className="size-5 text-success" aria-hidden /> : <PhCopy weight="duotone" className="size-5" aria-hidden />}
+          </Button>
+        </div>
+        <SyntaxHighlighter className="scrollbar-design" tabIndex={0} language={language || "text"}
+          style={isDark ? lessonDarkStyle : oneLight}
+          customStyle={{ margin: 0, borderRadius: 0, background: "transparent", fontSize: "1rem", lineHeight: "2rem", letterSpacing: "-0.01em", padding: "1.25rem 1.5rem" }}
+          codeTagProps={{ style: { fontFamily: "inherit" } }} wrapLongLines={false}>
+          {code}
+        </SyntaxHighlighter>
+      </div>
+    );
   }
 
   return (
