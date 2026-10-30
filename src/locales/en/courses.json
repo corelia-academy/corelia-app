@@ -423,7 +423,9 @@
       },
       "noLessonSelected": "Select a lesson from the curriculum to begin.",
       "toggleCurriculum": "Toggle curriculum",
-      "openCurriculum": "Open curriculum"
+      "openCurriculum": "Open curriculum",
+      "moveBar": "Move action bar (drag or use arrow keys)",
+      "resetBar": "Reset bar position"
     }
   },
   "filters": {
@@ -493,7 +495,7 @@
     "source": "Source code",
     "unavailable": "Lesson unavailable.",
     "askAi": {
-      "trigger": "Ask AI",
+      "trigger": "AI Summary",
       "chatgpt": "Ask ChatGPT",
       "claude": "Ask Claude",
       "gemini": "Ask Gemini (copies prompt)",
@@ -519,6 +521,7 @@
     "checkPrompt": "Run checks to receive feedback.",
     "sourceLimit": "Source is limited to 64 KiB.",
     "completeContinue": "Complete & continue",
+    "completedToast": "Lesson completed.",
     "loginToSave": "Sign in to save progress and submit your work.",
     "finalAssignmentLink": "Go to final assignment",
     "videoError": "Video playback is unavailable.",
@@ -531,10 +534,12 @@
     "recalculateDuration": "Recalculate duration",
     "previewBanner": "PREVIEW · Progress, submissions and drafts are not saved.",
     "completed": "Completed",
+    "markComplete": "Mark as complete",
     "markIncomplete": "Mark as incomplete",
     "redoFromStart": "Start over",
     "redoConfirm": "Start this exercise over? Your current answers and local draft will be cleared. Previous submissions will stay in your history.",
     "resources": "Resources",
+    "resourcesDrawerHint": "Guides and repos for each section.",
     "previous": "Previous",
     "next": "Next lesson",
     "finish": "Finish course",

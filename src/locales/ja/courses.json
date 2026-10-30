@@ -414,7 +414,9 @@
       },
       "noLessonSelected": "カリキュラムからレッスンを選択して始めましょう。",
       "toggleCurriculum": "カリキュラムを切り替え",
-      "openCurriculum": "カリキュラムを開く"
+      "openCurriculum": "カリキュラムを開く",
+      "moveBar": "アクションバーを移動(ドラッグまたは矢印キー)",
+      "resetBar": "バーの位置をリセット"
     }
   },
   "filters": {
@@ -510,6 +512,7 @@
     "checkPrompt": "チェックを実行するとフィードバックが表示されます。",
     "sourceLimit": "ソースは 64 KiB に制限されています。",
     "completeContinue": "完了して続行",
+    "completedToast": "レッスンを完了しました。",
     "loginToSave": "進捗の保存や課題の提出にはログインが必要です。",
     "finalAssignmentLink": "最終課題へ",
     "videoError": "動画を再生できません。",
@@ -522,10 +525,12 @@
     "recalculateDuration": "所要時間を再計算",
     "previewBanner": "プレビュー · 進捗、提出、下書きは保存されません。",
     "completed": "修了",
+    "markComplete": "完了にする",
     "markIncomplete": "未完了にする",
     "redoFromStart": "最初からやり直す",
     "redoConfirm": "この演習を最初からやり直しますか？現在の回答とローカルの下書きは消去されます。過去の提出は履歴に残ります。",
     "resources": "リソース",
+    "resourcesDrawerHint": "各セクションのガイドとリポジトリ。",
     "previous": "前へ",
     "next": "次のレッスン",
     "finish": "コースを完了",

@@ -65,7 +65,7 @@ function SheetContent({
             render={
               <Button
                 variant="cta" hierarchy="tertiary" iconOnly
-                className="absolute top-lg right-lg"
+                className="absolute pointer-coarse:absolute top-lg right-lg"
                 size="small"
               />
             }

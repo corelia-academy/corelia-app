@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import { CourseResources } from "./CourseResources";
 import { LearnSidebar } from "@/pages/learn/components/LearnSidebar";
+import { LearnResourcesDrawer } from "@/pages/learn/components/LearnResourcesDrawer";
 import { CourseResourcesEditor } from "@/pages/instructor-course-edit/components/CourseResourcesEditor";
 import type { CourseResource } from "@/types/courses";
 
@@ -30,14 +31,19 @@ it("hides an empty public section and filters malformed resources", async () => 
   expect(host.querySelectorAll('[data-slot="course-resource-icon"]')).toHaveLength(2);
 });
 
-it.each([{ items: resources }, { items: [] }])("opens curriculum first and switches to shared resources (%j)", async ({ items }) => {
-  const host = await render(<LearnSidebar curriculum={<p>Lessons</p>} resources={items} />);
-  const tabs = host.querySelectorAll<HTMLButtonElement>('[role="tab"]');
-  expect(tabs[0].getAttribute("aria-selected")).toBe("true");
-  await act(async () => tabs[1].click());
-  expect(tabs[1].getAttribute("aria-selected")).toBe("true");
-  if (items.length) expect(host.querySelectorAll("a")).toHaveLength(2);
-  else expect(host.textContent).toContain("courseResources.empty");
+it("renders only the curriculum in the learn sidebar", async () => {
+  const host = await render(<LearnSidebar curriculum={<p>Lessons</p>} />);
+  expect(host.textContent).toBe("Lessons");
+  expect(host.querySelector('[role="tab"]')).toBeNull();
+});
+
+it.each([{ items: resources }, { items: [] }])("opens the resources drawer from the header button (%j)", async ({ items }) => {
+  const host = await render(<LearnResourcesDrawer groups={[]} courseResources={items} />);
+  const trigger = host.querySelector<HTMLButtonElement>("button")!;
+  expect(trigger.textContent).toContain("learning.resources");
+  await act(async () => trigger.click());
+  if (items.length) expect(Array.from(document.body.querySelectorAll("a")).map(link => link.getAttribute("href"))).toEqual(resources.map(resource => resource.url));
+  else expect(document.body.textContent).toContain("courseResources.empty");
 });
 
 it("adds, reorders and removes resources in the authoring form", async () => {

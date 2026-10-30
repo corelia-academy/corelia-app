@@ -35,7 +35,7 @@ vi.mock("./components/LessonCurriculum", () => ({ LessonCurriculum: () => null }
 vi.mock("@/components/courses/CourseCompletionCertificatePanel", () => ({ CourseCompletionCertificatePanel: () => <p data-testid="completed">Completed</p> }));
 vi.mock("@/components/ui/sheet", () => {
   const Wrapper = ({ children }: { children: ReactNode }) => <div>{children}</div>;
-  return { Sheet: Wrapper, SheetContent: Wrapper, SheetHeader: Wrapper, SheetTitle: Wrapper, SheetTrigger: Wrapper };
+  return { Sheet: Wrapper, SheetClose: Wrapper, SheetContent: Wrapper, SheetDescription: Wrapper, SheetHeader: Wrapper, SheetTitle: Wrapper, SheetTrigger: Wrapper };
 });
 let cleanup: (() => void) | undefined;
 afterEach(() => { cleanup?.(); vi.clearAllMocks(); });
