@@ -45,7 +45,8 @@ INSERT INTO public.studio_courses(id,title,status,research_status) VALUES
  ('eeee7777-2222-4000-8000-000000000007','Expired job','idea','evidence_ok'),
  ('eeee7777-2222-4000-8000-000000000008','Minimum scope TTL','idea','evidence_ok'),
  ('eeee7777-2222-4000-8000-000000000009','Resume step 0','not_passed','evidence_ok'),
- ('eeee7777-2222-4000-8000-000000000010','Published cannot start','published','evidence_ok');
+ ('eeee7777-2222-4000-8000-000000000010','Published cannot start','published','evidence_ok'),
+ ('eeee7777-2222-4000-8000-000000000011','Atomic start event failure','idea','idea');
 
 INSERT INTO public.studio_paths(id,group_kind,slug,title) VALUES
  ('eeee7777-1111-4000-8000-000000000001','ecosystem','fixture-ecosystem','Fixture ecosystem'),
@@ -60,6 +61,8 @@ INSERT INTO public.studio_course_paths(course_id,path_id) VALUES
  ('eeee7777-2222-4000-8000-000000000007','eeee7777-1111-4000-8000-000000000001'),
  ('eeee7777-2222-4000-8000-000000000008','eeee7777-1111-4000-8000-000000000001'),
  ('eeee7777-2222-4000-8000-000000000008','eeee7777-1111-4000-8000-000000000002'),
+ ('eeee7777-2222-4000-8000-000000000002','eeee7777-1111-4000-8000-000000000002'),
+ ('eeee7777-2222-4000-8000-000000000011','eeee7777-1111-4000-8000-000000000001'),
  ('eeee7777-2222-4000-8000-000000000009','eeee7777-1111-4000-8000-000000000003'),
  ('eeee7777-2222-4000-8000-000000000010','eeee7777-1111-4000-8000-000000000001');
 
@@ -174,6 +177,104 @@ BEGIN
     GET STACKED DIAGNOSTICS got_message=MESSAGE_TEXT;
     IF got_message <> 'course_not_startable' THEN RAISE; END IF;
   END;
+END $$;
+RESET ROLE;
+
+-- One step-0 event is recorded for every start case with source and TTL metadata.
+DO $$
+DECLARE
+  sample record;
+  event_count integer;
+  event_row public.studio_run_events%ROWTYPE;
+  expected_job_id uuid;
+  expected_finished_at timestamptz;
+BEGIN
+  FOR sample IN
+    SELECT * FROM (VALUES
+      ('eeee7777-3333-4000-8000-000000000001'::uuid, 'started', NULL::uuid, 90, 'ecosystem'),
+      ('eeee7777-3333-4000-8000-000000000002'::uuid, 'reused', 'eeee7777-4444-4000-8000-000000000002'::uuid, 20, 'skill'),
+      ('eeee7777-3333-4000-8000-000000000003'::uuid, 'reused', 'eeee7777-4444-4000-8000-000000000003'::uuid, 90, 'role'),
+      ('eeee7777-3333-4000-8000-000000000004'::uuid, 'attached_running', 'eeee7777-4444-4000-8000-000000000004'::uuid, 90, 'ecosystem'),
+      ('eeee7777-3333-4000-8000-000000000010'::uuid, 'kept_previous', 'eeee7777-4444-4000-8000-000000000009'::uuid, 90, 'role')
+    ) AS cases(run_id, source, job_id, period_days, period_group)
+  LOOP
+    SELECT count(*) INTO event_count
+    FROM public.studio_run_events
+    WHERE run_id = sample.run_id AND step_key = 'catalog_research';
+    IF event_count <> 1 THEN
+      RAISE EXCEPTION 'run % should have exactly one catalog_research event; got %', sample.run_id, event_count;
+    END IF;
+    SELECT * INTO event_row FROM public.studio_run_events
+    WHERE run_id = sample.run_id AND step_key = 'catalog_research';
+    expected_job_id := COALESCE(sample.job_id, (SELECT catalog_job_id FROM public.studio_runs WHERE id = sample.run_id));
+    IF event_row.attempt <> 0 OR event_row.kind <> 'progress' OR event_row.agent_role <> 'A1'
+       OR event_row.payload->>'source' <> sample.source
+       OR event_row.payload->>'job_id' <> expected_job_id::text
+       OR (event_row.payload->>'period_days')::integer <> sample.period_days
+       OR event_row.payload->>'period_group' <> sample.period_group THEN
+      RAISE EXCEPTION 'run % has incorrect source event metadata: %', sample.run_id, to_jsonb(event_row);
+    END IF;
+
+    IF sample.source IN ('reused', 'kept_previous') THEN
+      SELECT finished_at INTO expected_finished_at FROM public.studio_catalog_jobs WHERE id = expected_job_id;
+      IF (event_row.payload->>'finished_at')::timestamptz <> expected_finished_at
+         OR (event_row.payload->>'expires_at')::timestamptz <> expected_finished_at + make_interval(days => sample.period_days) THEN
+        RAISE EXCEPTION 'run % does not record the job completion and expiry: %', sample.run_id, event_row.payload;
+      END IF;
+      IF event_row.message NOT LIKE '%UTC%' THEN RAISE EXCEPTION 'run % source message must state UTC: %', sample.run_id, event_row.message; END IF;
+    ELSE
+      IF event_row.payload->>'finished_at' IS NOT NULL OR event_row.payload->>'expires_at' IS NOT NULL THEN
+        RAISE EXCEPTION 'run % unexpectedly has a completed-job expiry: %', sample.run_id, event_row.payload;
+      END IF;
+    END IF;
+  END LOOP;
+
+  IF (SELECT payload->>'period_group' FROM public.studio_run_events WHERE run_id='eeee7777-3333-4000-8000-000000000008' AND step_key='catalog_research') <> 'skill'
+     OR (SELECT (payload->>'period_days')::integer FROM public.studio_run_events WHERE run_id='eeee7777-3333-4000-8000-000000000008' AND step_key='catalog_research') <> 20 THEN
+    RAISE EXCEPTION 'multiple-group event must identify the shortest scope period';
+  END IF;
+  IF (SELECT message FROM public.studio_run_events WHERE run_id='eeee7777-3333-4000-8000-000000000002' AND step_key='catalog_research') NOT LIKE '%20 ngày của nhóm skill%' THEN
+    RAISE EXCEPTION 'reused multiple-group message must identify the shortest scope period';
+  END IF;
+  IF (SELECT message FROM public.studio_run_events WHERE run_id='eeee7777-3333-4000-8000-000000000010' AND step_key='catalog_research') NOT LIKE '%Giữ nguyên kết quả nghiên cứu của lượt trước dù đã quá hạn%' THEN
+    RAISE EXCEPTION 'expired resumed result message is incorrect';
+  END IF;
+  IF (SELECT message FROM public.studio_run_events WHERE run_id='eeee7777-3333-4000-8000-000000000004' AND step_key='catalog_research') NOT LIKE '%Gắn vào job nghiên cứu đang chạy, bắt đầu%' THEN
+    RAISE EXCEPTION 'running-job message is incorrect';
+  END IF;
+  IF (SELECT message FROM public.studio_run_events WHERE run_id='eeee7777-3333-4000-8000-000000000001' AND step_key='catalog_research') NOT LIKE 'Bắt đầu nghiên cứu mới cho nhóm:%' THEN
+    RAISE EXCEPTION 'new-job message is incorrect';
+  END IF;
+END $$;
+
+-- If event writing fails, the RPC call rolls the run, job, and step back together.
+CREATE FUNCTION pg_temp.fail_catalog_research_start_event() RETURNS trigger
+LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.step_key = 'catalog_research' THEN RAISE EXCEPTION 'forced_start_event_failure'; END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER studio_test_fail_catalog_research_start_event
+BEFORE INSERT ON public.studio_run_events
+FOR EACH ROW EXECUTE FUNCTION pg_temp.fail_catalog_research_start_event();
+
+SET LOCAL ROLE service_role;
+DO $$
+DECLARE
+  got_message text;
+BEGIN
+  BEGIN
+    PERFORM public.studio_start_run('eeee7777-2222-4000-8000-000000000011','eeee7777-3333-4000-8000-000000000011',NULL,NULL);
+    RAISE EXCEPTION 'expected catalog start event failure';
+  EXCEPTION WHEN raise_exception THEN
+    GET STACKED DIAGNOSTICS got_message = MESSAGE_TEXT;
+    IF got_message <> 'forced_start_event_failure' THEN RAISE; END IF;
+  END;
+  IF EXISTS (SELECT 1 FROM public.studio_runs WHERE id='eeee7777-3333-4000-8000-000000000011')
+     OR EXISTS (SELECT 1 FROM public.studio_catalog_jobs WHERE course_id='eeee7777-2222-4000-8000-000000000011') THEN
+    RAISE EXCEPTION 'failed start event left a run or job behind';
+  END IF;
 END $$;
 RESET ROLE;
 

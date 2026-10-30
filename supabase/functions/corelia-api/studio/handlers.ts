@@ -92,9 +92,14 @@ export async function handleStudioStart(req: Request, db: SupabaseClient): Promi
   }
   const result = data as StartResult;
   if (result.created) {
-    await addEvent(db, { run_id: runId, step_key: "catalog_research", attempt: 0, kind: "progress", message: "Đã xếp hàng khâu 0: nghiên cứu Catalog." });
     const note = resumeNote(result, resumeFrom);
-    if (note) await addEvent(db, { run_id: runId, step_key: "brief", attempt: 0, kind: "progress", message: note });
+    if (note) {
+      try {
+        await addEvent(db, { run_id: runId, step_key: "brief", attempt: 0, kind: "progress", message: note });
+      } catch (e) {
+        console.error("[corelia-api] studio start resume note", { run_id: runId, error: errorMessage(e) });
+      }
+    }
   }
   return json(result, result.created ? 201 : 200);
 }
@@ -146,13 +151,13 @@ export async function advanceRun(db: SupabaseClient, run: RunRow): Promise<{ ste
 
   const current = STEP_ORDER.find((k) => !(k === "catalog_research" && steps[k] === undefined) && steps[k] !== "done");
   let latest: GenerationState | null = null;
-  let catalogResearch: { status: "running" | "evidence_ok" | "needs_more_sources" | "failed"; reason?: string } | null | undefined;
+  let catalogResearch: { id: string; status: "running" | "evidence_ok" | "needs_more_sources" | "failed"; reason: string | null } | null | undefined;
   if (current === "catalog_research") {
     if (run.catalog_job_id) {
-      const result = await db.from("studio_catalog_jobs").select("course_id,status,reason").eq("id", run.catalog_job_id).maybeSingle();
+      const result = await db.from("studio_catalog_jobs").select("id,course_id,status,reason").eq("id", run.catalog_job_id).maybeSingle();
       if (result.error) throw new Error(result.error.message);
       if (result.data && result.data.course_id === run.course_id) {
-        catalogResearch = { status: result.data.status, reason: result.data.reason } as typeof catalogResearch;
+        catalogResearch = { id: result.data.id, status: result.data.status, reason: result.data.reason } as typeof catalogResearch;
       } else {
         catalogResearch = null;
       }
@@ -199,7 +204,25 @@ export async function advanceRun(db: SupabaseClient, run: RunRow): Promise<{ ste
       await failGeneration(db, action.generationId, "submitting", "transport", "Gửi yêu cầu tới model bị gián đoạn.");
       break;
     case "mark_done":
-      await markStepDone(db, run.id, step!);
+      if (step === "catalog_research") {
+        const changed = await markCatalogResearchDone(db, run.id);
+        if (changed) {
+          const outcome = catalogResearch?.status === "evidence_ok" ? "đủ bằng chứng" : "cần thêm nguồn";
+          const summary = catalogResearch?.id
+            ? await loadCatalogResearchSummary(db, catalogResearch.id, catalogResearch.reason)
+            : catalogResearch?.reason?.trim() || "Không tìm thấy tóm tắt A1 đã lưu.";
+          await addEvent(db, {
+            run_id: run.id,
+            step_key: "catalog_research",
+            attempt: 0,
+            kind: "result",
+            agent_role: "A1",
+            message: `Nghiên cứu hoàn tất: ${outcome}; ${summary}`,
+          });
+        }
+      } else {
+        await markStepDone(db, run.id, step!);
+      }
       break;
     case "reopen":
       await reopenCurriculum(db, run.id, latest!.attempt, action.round, action.blocking);
@@ -699,6 +722,54 @@ async function markStepDone(db: SupabaseClient, runId: string, step: StepKey) {
   if (error) throw new Error(error.message);
 }
 
+async function markCatalogResearchDone(db: SupabaseClient, runId: string): Promise<boolean> {
+  const { data, error } = await db
+    .from("studio_run_steps")
+    .update({ state: "done" })
+    .eq("run_id", runId)
+    .eq("step_key", "catalog_research")
+    .neq("state", "done")
+    .select("step_key");
+  if (error) throw new Error(error.message);
+  return (data ?? []).length > 0;
+}
+
+async function loadCatalogResearchSummary(db: SupabaseClient, jobId: string, reason: string | null): Promise<string> {
+  const { data, error } = await db
+    .from("studio_generations")
+    .select("output")
+    .eq("catalog_job_id", jobId)
+    .eq("status", "completed")
+    .order("attempt", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) {
+    console.error("[corelia-api] studio catalog result summary", { job_id: jobId, error: error.message });
+    return reason?.trim() || "Không đọc được tóm tắt A1 đã lưu.";
+  }
+  const summary = catalogResearchSummary(data?.output);
+  return summary ?? reason?.trim() ?? "Không tìm thấy tóm tắt A1 đã lưu.";
+}
+
+function catalogResearchSummary(output: unknown): string | null {
+  if (!output || typeof output !== "object" || Array.isArray(output)) return null;
+  const record = output as Record<string, unknown>;
+  const shared = Array.isArray(record.shared) ? record.shared : [];
+  const byGroup = Array.isArray(record.by_group) ? record.by_group : [];
+  const criteria = [
+    ...shared,
+    ...byGroup.flatMap((group) => group && typeof group === "object" && !Array.isArray(group)
+      && Array.isArray((group as Record<string, unknown>).criteria)
+      ? (group as Record<string, unknown>).criteria as unknown[]
+      : []),
+  ].filter((criterion) => criterion && typeof criterion === "object" && !Array.isArray(criterion)) as Record<string, unknown>[];
+  if (criteria.length === 0) return null;
+  const rated = criteria.filter((criterion) => typeof criterion.level === "number").length;
+  const web = Array.isArray(record.web_evidence) ? record.web_evidence.length : 0;
+  const input = Array.isArray(record.input_evidence) ? record.input_evidence.length : 0;
+  return `${rated}/${criteria.length} tiêu chí có mức, ${web} bằng chứng web, ${input} bằng chứng input.`;
+}
+
 async function finishRun(
   db: SupabaseClient,
   run: RunRow,
@@ -724,7 +795,7 @@ async function finishRun(
     step_key: step ?? "publish",
     attempt,
     kind: status === "published" ? "result" : "error",
-    agent_role: step ? stepAgent(step)?.role ?? null : null,
+    agent_role: step === "catalog_research" ? "A1" : step ? stepAgent(step)?.role ?? null : null,
     message: status === "published" ? "Lượt chạy hoàn tất." : `Dừng lượt chạy, giữ nháp: ${reason}`,
   });
 }

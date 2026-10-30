@@ -111,6 +111,30 @@ describe("handleStudioStart", () => {
     expect(mocks.rerankIfStale).not.toHaveBeenCalled();
   });
 
+  it("does not write the catalog step event after RPC and returns success if the resume note write fails", async () => {
+    const insert = vi.fn().mockResolvedValue({ error: { message: "event store unavailable" } });
+    const db = {
+      rpc: vi.fn().mockResolvedValue({ data: { run_id: runId, created: true, resume_skipped: "nothing_done" }, error: null }),
+      from: vi.fn(() => ({ insert })),
+    } as unknown as SupabaseClient;
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const req = new Request("http://local/functions/v1/corelia-api?op=studio.start", {
+      method: "POST",
+      headers: { authorization: "Bearer test" },
+      body: JSON.stringify({ course_id: courseId, run_id: runId, resume_from_run_id: "33333333-3333-4333-8333-333333333333" }),
+    });
+
+    const response = await handleStudioStart(req, db);
+
+    expect(response.status).toBe(201);
+    expect(await response.json()).toMatchObject({ run_id: runId, created: true });
+    expect(insert).toHaveBeenCalledOnce();
+    expect(insert).toHaveBeenCalledWith(expect.objectContaining({ step_key: "brief", message: expect.any(String) }));
+    expect(insert).not.toHaveBeenCalledWith(expect.objectContaining({ step_key: "catalog_research" }));
+    expect(error).toHaveBeenCalledOnce();
+    error.mockRestore();
+  });
+
   it.each([
     ["course_not_found", "P0002", 404],
     ["course_not_startable", "P0001", 409],
@@ -128,20 +152,41 @@ describe("handleStudioStart", () => {
     ["running", "wait"],
     ["evidence_ok", "mark_done"],
     ["needs_more_sources", "mark_done"],
+    ["failed", "finish"],
   ] as const)("advances step 0 from the catalog job status %s", async (jobStatus, expectedAction) => {
     const tables: string[] = [];
+    const events: Record<string, unknown>[] = [];
+    const stepTableCalls = { count: 0 };
+    const output = {
+      shared: [{ level: 1 }, { level: null }],
+      by_group: [{ criteria: [{ level: 2 }] }],
+      web_evidence: [{}, {}],
+      input_evidence: [{}],
+    };
     const from = vi.fn((table: string) => {
       tables.push(table);
-      const result = table === "studio_run_steps"
-        ? { data: [{ step_key: "catalog_research", state: "pending" }], error: null }
-        : { data: { course_id: courseId, status: jobStatus, reason: null }, error: null };
+      let result: { data: unknown; error: null | { message: string } };
+      if (table === "studio_run_steps") {
+        stepTableCalls.count++;
+        result = stepTableCalls.count === 1
+          ? { data: [{ step_key: "catalog_research", state: "pending" }], error: null }
+          : { data: [{ step_key: "catalog_research" }], error: null };
+      } else if (table === "studio_catalog_jobs") {
+        result = { data: { id: "catalog-job-id", course_id: courseId, status: jobStatus, reason: jobStatus === "failed" ? "A1 provider failed" : jobStatus === "needs_more_sources" ? "Vẫn thiếu trend" : null }, error: null };
+      } else if (table === "studio_generations") {
+        result = { data: { output }, error: null };
+      } else {
+        result = { data: null, error: null };
+      }
       const q: Record<string, any> = {};
-      for (const method of ["select", "eq", "update"]) q[method] = vi.fn(() => q);
+      for (const method of ["select", "eq", "update", "neq", "order", "limit"]) q[method] = vi.fn(() => q);
       q.maybeSingle = vi.fn().mockResolvedValue(result);
+      q.insert = vi.fn(async (event: Record<string, unknown>) => { events.push(event); return { error: null }; });
       q.then = (resolve: (value: unknown) => unknown, reject: (reason: unknown) => unknown) => Promise.resolve(result).then(resolve, reject);
       return q;
     });
-    const db = { from, rpc: vi.fn() } as unknown as SupabaseClient;
+    const rpc = vi.fn().mockResolvedValue({ data: true, error: null });
+    const db = { from, rpc } as unknown as SupabaseClient;
 
     const result = await advanceRun(db, {
       id: runId,
@@ -151,8 +196,48 @@ describe("handleStudioStart", () => {
     });
 
     expect(result).toMatchObject({ step: "catalog_research", action: expectedAction });
-    expect(tables).toEqual(expectedAction === "wait" ? ["studio_run_steps", "studio_catalog_jobs"] : ["studio_run_steps", "studio_catalog_jobs", "studio_run_steps"]);
-    expect(tables).not.toContain("studio_generations");
+    if (jobStatus === "running") {
+      expect(tables).toEqual(["studio_run_steps", "studio_catalog_jobs"]);
+      expect(events).toEqual([]);
+      expect(rpc).not.toHaveBeenCalled();
+    } else if (jobStatus === "failed") {
+      expect(tables).toEqual(["studio_run_steps", "studio_catalog_jobs", "studio_run_steps", "studio_run_events"]);
+      expect(events).toHaveLength(1);
+      expect(events[0]).toMatchObject({ step_key: "catalog_research", kind: "error", agent_role: "A1" });
+      expect(events[0].message).toContain("A1 provider failed");
+      expect(rpc).toHaveBeenCalledOnce();
+    } else {
+      expect(tables).toEqual(["studio_run_steps", "studio_catalog_jobs", "studio_run_steps", "studio_generations", "studio_run_events"]);
+      expect(events).toHaveLength(1);
+      expect(events[0]).toMatchObject({ run_id: runId, step_key: "catalog_research", attempt: 0, kind: "result", agent_role: "A1" });
+      expect(events[0].message).toBe(`Nghiên cứu hoàn tất: ${jobStatus === "evidence_ok" ? "đủ bằng chứng" : "cần thêm nguồn"}; 2/3 tiêu chí có mức, 2 bằng chứng web, 1 bằng chứng input.`);
+      expect(rpc).not.toHaveBeenCalled();
+    }
+  });
+
+  it("does not write a second result event when another tick already completed catalog_research", async () => {
+    const events: unknown[] = [];
+    let stepCalls = 0;
+    const from = vi.fn((table: string) => {
+      const result = table === "studio_run_steps"
+        ? ++stepCalls === 1
+          ? { data: [{ step_key: "catalog_research", state: "pending" }], error: null }
+          : { data: [], error: null }
+        : table === "studio_catalog_jobs"
+          ? { data: { id: "catalog-job-id", course_id: courseId, status: "evidence_ok", reason: null }, error: null }
+          : { data: { output: {} }, error: null };
+      const q: Record<string, any> = {};
+      for (const method of ["select", "eq", "update", "neq", "order", "limit"]) q[method] = vi.fn(() => q);
+      q.maybeSingle = vi.fn().mockResolvedValue(result);
+      q.insert = vi.fn(async (event: unknown) => { events.push(event); return { error: null }; });
+      q.then = (resolve: (value: unknown) => unknown, reject: (reason: unknown) => unknown) => Promise.resolve(result).then(resolve, reject);
+      return q;
+    });
+    const db = { from, rpc: vi.fn() } as unknown as SupabaseClient;
+
+    await advanceRun(db, { id: runId, course_id: courseId, started_at: new Date().toISOString(), catalog_job_id: "job" });
+
+    expect(events).toEqual([]);
   });
 
   it("V-02: loads the run-pinned A1 profile only for brief context", async () => {
