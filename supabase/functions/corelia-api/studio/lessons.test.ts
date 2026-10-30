@@ -173,6 +173,24 @@ describe("studio lessons: accept by format", () => {
     expect(await run({ practice: { ...practice, mode: "instruction", checklist_items: [] }, resources })).toContain("phải là practice checklist");
   });
 
+  it("requires optional_hands_on lessons to use instruction mode without checklist completion", async () => {
+    const optionalContext = {
+      ...ctx,
+      outputs: {
+        ...ctx.outputs,
+        curriculum: {
+          ...curriculum,
+          modules: curriculum.modules.map((m) => ({ ...m, lessons: m.lessons.map((l) => (l.id === "l-prac" ? { ...l, purpose: "optional_hands_on" } : l)) })),
+        },
+      },
+    } as typeof ctx;
+    const instruction = { practice: { description_markdown: "Tự thực hành (không bắt buộc).", mode: "instruction", checklist_items: [] } };
+    expect((await accept("l-prac", instruction, ok(), optionalContext)).ok).toBe(true);
+    expect(await reason("l-prac", {
+      practice: { description_markdown: "Tự thực hành (không bắt buộc).", mode: "checklist", checklist_items: [{ id: "c1", label: "Đã cài công cụ" }] },
+    }, ok(), optionalContext)).toContain("optional_hands_on phải là practice mode instruction");
+  });
+
   it("video: use only a matching research candidate and verify its oEmbed channel", async () => {
     const video = (url: string) => ({ source_ids: ["s2"], video: { youtube_url: url, start_seconds: 0, end_seconds: 0 } });
     expect(await reason("l-vid", video("https://example.com/watch"))).toContain("youtube_required");

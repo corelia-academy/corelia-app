@@ -1,31 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { planLessons, type LessonGeneration, type LessonStep } from "./lesson_flow.ts";
-import { resumeNote } from "./resume.ts";
 import { SUBMIT_STALE_MS } from "./steps.ts";
-
-const FROM = "d982941a-7a48-4bee-99bb-97e536875dd3";
-
-describe("studio resume: event note", () => {
-  it("says what was copied and how many lessons are redone", () => {
-    const resume = { from_run_id: FROM, steps: 4, lessons_copied: 42, drafts_copied: 1, lessons_total: 44 };
-    expect(resumeNote({ run_id: "r", created: true, resume }, FROM))
-      .toBe(`Chạy tiếp từ lượt ${FROM}: chép 4 bước, 42 lesson, 1 bản nháp chờ review; tạo lại 1 lesson.`);
-    expect(resumeNote({ run_id: "r", created: true, resume: { ...resume, drafts_copied: 0, lessons_copied: 44 } }, FROM))
-      .toBe(`Chạy tiếp từ lượt ${FROM}: chép 4 bước, 44 lesson; tạo lại 0 lesson.`);
-  });
-
-  it("says so when only the early steps were copied", () => {
-    const resume = { from_run_id: FROM, steps: 2, lessons_copied: 0, drafts_copied: 0, lessons_total: 0 };
-    expect(resumeNote({ run_id: "r", created: true, resume }, FROM)).toBe(`Chạy tiếp từ lượt ${FROM}: chép 2 bước; các bước sau chạy lại.`);
-  });
-
-  it("says why a run was not resumed, and stays silent when no resume was asked", () => {
-    expect(resumeNote({ run_id: "r", created: true, resume_skipped: "not_latest_run" }, FROM)).toContain("đã có lượt chạy mới hơn");
-    expect(resumeNote({ run_id: "r", created: true, resume_skipped: "nothing_done" }, FROM)).toContain("chạy từ đầu");
-    expect(resumeNote({ run_id: "r", created: true }, null)).toBeNull();
-  });
-});
 
 // A resumed run holds copies of accepted generations (attempt 0, completed) and nothing for the lessons
 // to redo, so the lesson planner needs no special case.

@@ -8,6 +8,7 @@ import {
   acceptBrief,
   acceptCurriculum,
   acceptCurriculumReview,
+  LESSON_PURPOSES,
   buildProgress,
   MAX_RESEARCH_REQUESTS,
   researchGap,
@@ -161,7 +162,14 @@ describe("studio brief code language", () => {
 });
 
 describe("studio curriculum review loop", () => {
-  const issue = (location: string, severity: string) => ({ location, problem: `lỗi ${location}`, principle: "p", fix: "f", severity });
+  const issue = (location: string, severity: string) => ({
+    location,
+    problem: `lỗi ${location}`,
+    category: severity === "blocking" ? "wrong_answer" : "style_or_wording",
+    principle: "p",
+    fix: "f",
+    severity,
+  });
   const review = (verdict: string, issues: ReturnType<typeof issue>[] = [], needs_research: string[] = []) => ({
     verdict,
     issues,
@@ -254,21 +262,40 @@ describe("studio curriculum review loop", () => {
     expect(STEP_SPECS.curriculum!.buildInput({ ...ctx, revision: null })).not.toHaveProperty("review");
   });
 
-  it("accepts consistent verdicts and rejects contradictions or unknown locations", () => {
+  it("recomputes verdicts from the allow-list and still rejects unknown locations", () => {
     expect(acceptCurriculumReview(review("pass", [issue("l1", "minor")]), curriculum))
-      .toEqual({ ok: true, summary: "pass, 0 lỗi blocking, 1 minor." });
-    expect(acceptCurriculumReview(review("needs_fix", [issue("o1", "blocking")], ["x"]), curriculum))
-      .toEqual({ ok: true, summary: "needs_fix, 2 lỗi blocking, 0 minor." });
-    expect(acceptCurriculumReview(review("needs_fix", [], ["x"]), curriculum).ok).toBe(true);
-    for (const bad of [
-      review("pass", [issue("l1", "blocking")]),
-      review("pass", [], ["x"]),
-      review("needs_fix", [issue("l1", "minor")]),
-      review("needs_fix"),
-      review("pass", [issue("l9", "minor")]),
-    ]) {
-      expect(acceptCurriculumReview(bad, curriculum).ok).toBe(false);
-    }
+      .toMatchObject({ ok: true, summary: "pass, 0 lỗi blocking, 1 minor.", normalizedOutput: { verdict: "pass" } });
+    expect(acceptCurriculumReview(review("pass", [issue("o1", "blocking")], ["x"]), curriculum))
+      .toMatchObject({ ok: true, summary: "needs_fix, 2 lỗi blocking, 0 minor.", normalizedOutput: { verdict: "needs_fix" } });
+    expect(acceptCurriculumReview(review("needs_fix", [], ["x"]), curriculum))
+      .toMatchObject({ ok: true, summary: "needs_fix, 1 lỗi blocking, 0 minor.", normalizedOutput: { verdict: "needs_fix" } });
+    expect(acceptCurriculumReview(review("needs_fix"), curriculum))
+      .toMatchObject({ ok: true, summary: "pass, 0 lỗi blocking, 0 minor.", normalizedOutput: { verdict: "pass" } });
+
+    const outsideAllowList = { ...issue("m1", "blocking"), category: "missing_practice" };
+    expect(acceptCurriculumReview(review("needs_fix", [outsideAllowList]), curriculum))
+      .toMatchObject({ ok: true, summary: expect.stringContaining("pass, 0 lỗi blocking, 1 minor."), normalizedOutput: { verdict: "pass", issues: [{ severity: "minor", category: "missing_practice" }] } });
+
+    const { category: _category, ...legacyIssue } = issue("l1", "blocking");
+    expect(acceptCurriculumReview(review("needs_fix", [legacyIssue]), curriculum))
+      .toMatchObject({ ok: true, summary: expect.stringContaining("pass, 0 lỗi blocking, 1 minor"), normalizedOutput: { verdict: "pass", issues: [{ severity: "minor", category: "other" }] } });
+
+    expect(acceptCurriculumReview(review("pass", [issue("l9", "minor")]), curriculum).ok).toBe(false);
+  });
+
+  it("does not require practice beyond the diagnostic and passes an A4 complaint about missing practice", () => {
+    const noOptionalPractice = curriculum;
+    const missingPractice = { ...issue("m1", "blocking"), category: "missing_practice" };
+    expect(acceptCurriculumReview(review("needs_fix", [missingPractice]), noOptionalPractice))
+      .toMatchObject({ ok: true, summary: expect.stringContaining("pass, 0 lỗi blocking, 1 minor."), normalizedOutput: { verdict: "pass" } });
+  });
+
+  it("puts curriculum purpose in A4 input and requires review issue categories in its schema", () => {
+    const optional = { ...lesson("oh"), purpose: "optional_hands_on", type: "practice" };
+    const input = STEP_SPECS.curriculum_review!.buildInput({ outputs: { curriculum: { ...curriculum, modules: [{ id: "m1", lessons: [optional] }] } } } as never) as Record<string, any>;
+    expect(input.curriculum.modules[0].lessons[0].purpose).toBe("optional_hands_on");
+    const schema = STEP_SPECS.curriculum_review!.schema as any;
+    expect(schema.properties.issues.items.properties.category.enum).toContain("optional_made_mandatory");
   });
 });
 
@@ -364,9 +391,9 @@ describe("studio step owners", () => {
 });
 
 describe("A2 research prompt", () => {
-  it("uses v12, records the course stack decision, and does not block research on unverified package versions", () => {
+  it("uses v13, records the course stack decision, and does not block research on unverified package versions", () => {
     const prompt = PROMPTS["a2-research"];
-    expect(prompt.version).toBe("v12");
+    expect(prompt.version).toBe("v13");
     expect(prompt.system).toContain("needs_research CHỈ khi một chủ đề cốt lõi trong phạm vi của brief");
     expect(prompt.system).toContain("KHÔNG phải lý do needs_research");
     expect(prompt.system).toContain("trả status: ready");
@@ -609,7 +636,14 @@ describe("studio acceptance", () => {
 
   it("accepts a curriculum with diagnosis, retrieval, a final check and quiz thresholds", () => {
     expect(acceptCurriculum(curriculum, sources)).toEqual({ ok: true, summary: "2 module, 6 lesson, 2 outcome." });
+    expect(LESSON_PURPOSES).toContain("optional_hands_on");
     expect(acceptCurriculum(curriculum, sources, null).ok).toBe(true);
+    expect(acceptCurriculumReview({
+      verdict: "needs_fix",
+      issues: [{ location: "m1", problem: "Thiếu lesson thực hành tự nguyện.", category: "missing_practice", principle: "p", fix: "f", severity: "blocking" }],
+      needs_research: [],
+      summary: "s",
+    }, curriculum)).toMatchObject({ ok: true, normalizedOutput: { verdict: "pass", issues: [{ severity: "minor" }] } });
     const withCodeExercise = withModules([
       { ...curriculum.modules[0], lessons: [...curriculum.modules[0].lessons, lesson("code", { type: "code_exercise" })] },
       curriculum.modules[1],
@@ -652,6 +686,29 @@ describe("studio acceptance", () => {
     expect(reason(first(d1, lesson("l1", { prerequisite_lesson_ids: ["q1"] }), q1))).toContain("lesson l1: prerequisite q1 đứng sau");
     expect(reason(first(d1, lesson("l1", { prerequisite_lesson_ids: ["ghost"] }), q1))).toContain("prerequisite_lesson_ids không hợp lệ (ghost)");
     expect(reason(first(d1, lesson("l1", { prerequisite_lesson_ids: ["l1"] }), q1))).toContain("không hợp lệ (l1)");
+  });
+
+  it("accepts a valid optional hands-on leaf and rejects its curriculum violations", () => {
+    const [m1, m2] = curriculum.modules;
+    const [d1, l1, q1] = m1.lessons;
+    const optional = lesson("oh", { type: "practice", purpose: "optional_hands_on", outcome_ids: ["o1"] });
+    const withOptional = (...firstLessons: object[]) => withModules([{ ...m1, lessons: firstLessons }, m2]);
+    expect(acceptCurriculum(withOptional(d1, l1, q1, optional), sources).ok).toBe(true);
+
+    const secondOptional = lesson("oh2", { type: "practice", purpose: "optional_hands_on", outcome_ids: ["o1"] });
+    expect(reason(withOptional(d1, l1, q1, optional, secondOptional))).toContain("có hơn một lesson optional_hands_on");
+    expect(reason(withOptional(d1, l1, optional, q1))).toContain("phải ở cuối module");
+    expect(reason(withOptional(d1, l1, q1, { ...optional, type: "article" }))).toContain("phải là practice");
+    expect(reason(withOptional(d1, l1, q1, { ...optional, pass_threshold: 50 }))).toContain("lesson oh không phải quiz nhưng có ngưỡng pass");
+    expect(reason(withOptional(d1, { ...l1, prerequisite_lesson_ids: ["oh"] }, q1, optional)))
+      .toContain("không được phụ thuộc vào optional_hands_on oh");
+
+    const listedAsChecker = { ...curriculum, outcomes: [{ ...curriculum.outcomes[0], check_lesson_ids: ["q1", "oh"] }, curriculum.outcomes[1]] };
+    expect(reason({ ...listedAsChecker, modules: [{ ...m1, lessons: [d1, l1, q1, optional] }, m2] }))
+      .toContain("outcome o1 không có lesson kiểm tra hợp lệ");
+    const onlyOptionalChecksOutcome = { ...curriculum, outcomes: [{ ...curriculum.outcomes[0], check_lesson_ids: ["oh"] }, curriculum.outcomes[1]] };
+    expect(reason({ ...onlyOptionalChecksOutcome, modules: [{ ...m1, lessons: [d1, l1, q1, optional] }, m2] }))
+      .toContain("outcome o1 của lesson oh phải được lesson khác kiểm tra");
   });
 
   it("rejects unknown sources, unchecked outcomes and duplicate ids", () => {

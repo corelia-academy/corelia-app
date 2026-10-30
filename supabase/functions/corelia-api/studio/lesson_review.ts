@@ -3,6 +3,7 @@
 
 import { lessonRefs, toLessonDraft, type LessonOutput } from "./lessons.ts";
 import type { Acceptance, RunContext } from "./steps.ts";
+import { normalizeReviewIssues, REVIEW_ISSUE_CATEGORIES } from "./review_policy.ts";
 
 const str = { type: "string" };
 const strList = { type: "array", items: str };
@@ -17,6 +18,7 @@ export const LESSON_REVIEW_SCHEMA = object({
       location: str,
       problem: str,
       fix: str,
+      category: { type: "string", enum: [...REVIEW_ISSUE_CATEGORIES] },
       severity: { type: "string", enum: ["blocking", "minor"] },
       verified_by: { type: "string", enum: ["tool", "source", "reasoning"] },
     }),
@@ -28,7 +30,7 @@ export const LESSON_REVIEW_SCHEMA = object({
 
 interface LessonReview {
   verdict: string;
-  issues: { location: string; problem: string; severity: string }[];
+  issues: { location: string; problem: string; severity: string; category?: string }[];
 }
 
 /** Value at a path such as questions[2].options[1] or lesson.code_exercise_config.tests[0]; undefined if absent. */
@@ -52,6 +54,7 @@ export function resolvePath(root: unknown, path: string): unknown {
 
 export function acceptLessonReview(output: unknown, ctx: RunContext, lessonId: string): Acceptance {
   const review = output as LessonReview;
+  const { issues, downgraded } = normalizeReviewIssues(review.issues);
   const lc = ctx.lesson;
   if (!lc?.draft) throw new Error(`lesson ${lessonId} chưa có bản nháp để đối chiếu`);
   const ref = lessonRefs(ctx.outputs.curriculum).find((r) => r.lesson.id === lessonId)!;
@@ -62,14 +65,15 @@ export function acceptLessonReview(output: unknown, ctx: RunContext, lessonId: s
     ctx.outputs.research as Parameters<typeof toLessonDraft>[3],
   );
   const problems: string[] = [];
-  for (const i of review.issues) {
-    if (resolvePath(draft, i.location) === undefined) problems.push(`vị trí "${i.location}" không phải field của lesson_draft (một đường dẫn tính từ gốc lesson_draft, không có tiền tố "lesson_draft.", mỗi issue một field; field gốc: lesson, questions, diagrams, source_ids, summary)`);
-    if (!i.problem.trim()) problems.push(`vấn đề tại ${i.location} để trống`);
+  for (const i of issues) {
+    if (typeof i.location !== "string" || resolvePath(draft, i.location) === undefined) problems.push(`vị trí "${i.location ?? ""}" không phải field của lesson_draft (một đường dẫn tính từ gốc lesson_draft, không có tiền tố "lesson_draft.", mỗi issue một field; field gốc: lesson, questions, diagrams, source_ids, summary)`);
+    if (typeof i.problem !== "string" || !i.problem.trim()) problems.push(`vấn đề tại ${i.location ?? "?"} để trống`);
   }
-  const blocking = review.issues.filter((i) => i.severity === "blocking").length;
-  if (review.verdict === "pass" && blocking > 0) problems.push("verdict pass nhưng còn lỗi blocking");
-  if (review.verdict === "needs_fix" && blocking === 0) problems.push("verdict needs_fix nhưng không có lỗi blocking");
   if (problems.length > 0) return { ok: false, reason: `Review lesson ${lessonId} chưa hợp lệ: ${problems.slice(0, 3).join("; ")}${problems.length > 3 ? ` (+${problems.length - 3})` : ""}` };
-  const minor = review.issues.length - blocking;
-  return { ok: true, summary: `${review.verdict}, ${blocking} lỗi blocking, ${minor} minor.` };
+  const blocking = issues.filter((i) => i.severity === "blocking").length;
+  const minor = issues.length - blocking;
+  const verdict = blocking > 0 ? "needs_fix" : "pass";
+  const normalizedOutput = { ...(output as Record<string, unknown>), verdict, issues };
+  const downgradeNote = downgraded.length ? ` ${downgraded.length} issue ngoài allow-list được hạ xuống minor.` : "";
+  return { ok: true, summary: `${verdict}, ${blocking} lỗi blocking, ${minor} minor.${downgradeNote}`, normalizedOutput };
 }

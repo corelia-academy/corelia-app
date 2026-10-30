@@ -1,4 +1,184 @@
--- Record the A1 result source in the same transaction that creates the run and its step 0 row.
+-- Record A1 and resumed-result provenance in the same transaction that creates the run.
+CREATE OR REPLACE FUNCTION private.studio_resume_run(p_run_id uuid, p_course_id uuid, p_from uuid)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  v_from public.studio_runs%ROWTYPE;
+  v_step text;
+  v_gen uuid;
+  v_ids uuid[] := '{}';
+  v_steps text[] := '{}';
+  v_lessons uuid[];
+  v_unreviewed uuid[];
+  v_done_lessons integer;
+  v_total integer;
+  v_agent_role text;
+  v_label text;
+  v_message text;
+  v_finished_at timestamptz;
+BEGIN
+  SELECT * INTO v_from FROM public.studio_runs WHERE id = p_from;
+  IF NOT FOUND OR v_from.course_id <> p_course_id THEN
+    RETURN jsonb_build_object('skipped', 'run_not_found');
+  END IF;
+  IF v_from.status <> 'draft_failed' THEN
+    RETURN jsonb_build_object('skipped', 'run_not_draft_failed');
+  END IF;
+  IF EXISTS (SELECT 1 FROM public.studio_runs r WHERE r.course_id = p_course_id AND r.id NOT IN (p_run_id, p_from) AND r.started_at > v_from.started_at) THEN
+    RETURN jsonb_build_object('skipped', 'not_latest_run');
+  END IF;
+
+  -- Catalog research has no run-owned generation; its one source event is written by studio_start_run.
+  IF v_from.catalog_job_id IS NOT NULL
+     AND EXISTS (
+       SELECT 1 FROM public.studio_run_steps s
+       JOIN public.studio_catalog_jobs j ON j.id = v_from.catalog_job_id
+       WHERE s.run_id = p_from AND s.step_key = 'catalog_research' AND s.state = 'done'
+         AND j.course_id = p_course_id AND j.status IN ('evidence_ok', 'needs_more_sources')
+     )
+     AND EXISTS (
+       SELECT 1 FROM public.studio_runs r
+       WHERE r.id = p_run_id AND r.catalog_job_id = v_from.catalog_job_id
+     ) THEN
+    v_steps := array_append(v_steps, 'catalog_research');
+  END IF;
+
+  -- The steps before the lessons, as far as they were done.
+  FOREACH v_step IN ARRAY ARRAY['brief', 'research', 'curriculum', 'curriculum_review'] LOOP
+    EXIT WHEN NOT EXISTS (SELECT 1 FROM public.studio_run_steps s WHERE s.run_id = p_from AND s.step_key = v_step AND s.state = 'done');
+    SELECT g.id INTO v_gen FROM public.studio_generations g
+    WHERE g.run_id = p_from AND g.step_key = v_step AND g.lesson_id IS NULL AND g.status = 'completed'
+      AND coalesce(g.output ->> 'status', '') <> 'needs_research'
+    ORDER BY g.attempt DESC LIMIT 1;
+    EXIT WHEN v_gen IS NULL;
+    v_ids := v_ids || v_gen;
+    v_steps := v_steps || v_step;
+  END LOOP;
+
+  -- Lessons that were done: accepted drafts and their accepted reviews.
+  SELECT coalesce(array_agg(x.id), '{}') INTO v_lessons FROM (
+    SELECT DISTINCT ON (g.step_key, g.lesson_id) g.id
+    FROM public.studio_generations g
+    WHERE g.run_id = p_from AND g.step_key IN ('lessons', 'lesson_review') AND g.status = 'completed'
+      AND g.lesson_id IN (
+        SELECT d.lesson_id
+        FROM (SELECT lesson_id, count(*) AS n FROM public.studio_generations
+              WHERE run_id = p_from AND step_key = 'lessons' AND status = 'completed' AND lesson_id IS NOT NULL GROUP BY lesson_id) d
+        JOIN (SELECT lesson_id, count(*) AS n FROM public.studio_generations
+              WHERE run_id = p_from AND step_key = 'lesson_review' AND status = 'completed' AND lesson_id IS NOT NULL GROUP BY lesson_id) r
+          ON r.lesson_id = d.lesson_id AND r.n = d.n
+        WHERE NOT EXISTS (
+          SELECT 1
+          FROM (SELECT output FROM public.studio_generations
+                WHERE run_id = p_from AND step_key = 'lesson_review' AND status = 'completed' AND lesson_id = d.lesson_id
+                ORDER BY attempt DESC LIMIT 1) last_review,
+               jsonb_array_elements(last_review.output -> 'issues') i
+          WHERE i ->> 'severity' = 'blocking'
+        )
+      )
+    ORDER BY g.step_key, g.lesson_id, g.attempt DESC
+  ) x;
+
+  -- Lessons whose newest accepted draft has no review yet: keep the draft, review still pending.
+  SELECT coalesce(array_agg(x.id), '{}') INTO v_unreviewed FROM (
+    SELECT DISTINCT ON (g.lesson_id) g.id
+    FROM public.studio_generations g
+    WHERE g.run_id = p_from AND g.step_key = 'lessons' AND g.status = 'completed' AND g.lesson_id IN (
+      SELECT d.lesson_id
+      FROM (SELECT lesson_id, count(*) AS n FROM public.studio_generations
+            WHERE run_id = p_from AND step_key = 'lessons' AND status = 'completed' AND lesson_id IS NOT NULL GROUP BY lesson_id) d
+      LEFT JOIN (SELECT lesson_id, count(*) AS n FROM public.studio_generations
+                 WHERE run_id = p_from AND step_key = 'lesson_review' AND status = 'completed' AND lesson_id IS NOT NULL GROUP BY lesson_id) r
+        ON r.lesson_id = d.lesson_id
+      WHERE d.n = coalesce(r.n, 0) + 1
+    )
+    ORDER BY g.lesson_id, g.attempt DESC
+  ) x;
+
+  IF cardinality(v_steps) = 0 AND cardinality(v_lessons) = 0 AND cardinality(v_unreviewed) = 0 THEN
+    RETURN jsonb_build_object('skipped', 'nothing_done');
+  END IF;
+
+  PERFORM private.studio_copy_generations(p_run_id, v_ids || v_lessons || v_unreviewed);
+  UPDATE public.studio_run_steps SET state = 'done' WHERE run_id = p_run_id AND step_key = ANY (v_steps);
+  v_done_lessons := cardinality(v_lessons) / 2;
+
+  -- Every copied run-owned step gets one source line; Catalog keeps its start-run event only.
+  FOREACH v_step IN ARRAY v_steps LOOP
+    IF v_step = 'catalog_research' THEN CONTINUE; END IF;
+    v_agent_role := CASE v_step
+      WHEN 'brief' THEN 'A2'
+      WHEN 'research' THEN 'A2'
+      WHEN 'curriculum' THEN 'A3'
+      WHEN 'curriculum_review' THEN 'A4'
+    END;
+    v_label := CASE v_step
+      WHEN 'brief' THEN 'Chuẩn bị brief'
+      WHEN 'research' THEN 'Nghiên cứu'
+      WHEN 'curriculum' THEN 'Curriculum'
+      WHEN 'curriculum_review' THEN 'Kiểm tra curriculum'
+    END;
+    SELECT coalesce(max(g.completed_at), v_from.finished_at) INTO v_finished_at
+    FROM public.studio_generations g
+    WHERE g.run_id = p_run_id AND g.step_key = v_step AND g.lesson_id IS NULL AND g.origin = 'resumed';
+    IF v_finished_at IS NULL THEN RAISE EXCEPTION 'resume_copy_missing_finished_at:%', v_step; END IF;
+    v_message := format('Dùng lại từ lượt trước: %s (lượt %s).', v_label, left(p_from::text, 8));
+    INSERT INTO public.studio_run_events (run_id, step_key, attempt, kind, agent_role, message, payload)
+    VALUES (
+      p_run_id, v_step, 0, 'result', v_agent_role, left(v_message, 500),
+      jsonb_build_object(
+        'source', 'resumed',
+        'from_run_id', p_from,
+        'step', v_step,
+        'attempt', 0,
+        'finished_at', to_char(v_finished_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')
+      )
+    );
+  END LOOP;
+
+  IF cardinality(v_lessons) + cardinality(v_unreviewed) > 0 THEN
+    SELECT coalesce(max(g.completed_at), v_from.finished_at) INTO v_finished_at
+    FROM public.studio_generations g
+    WHERE g.run_id = p_run_id AND g.step_key IN ('lessons', 'lesson_review') AND g.origin = 'resumed';
+    IF v_finished_at IS NULL THEN RAISE EXCEPTION 'resume_copy_missing_finished_at:lessons'; END IF;
+    v_message := format('Dùng lại từ lượt trước: %s lesson đã đạt, %s bản nháp chờ review.', v_done_lessons, cardinality(v_unreviewed));
+    FOREACH v_step IN ARRAY ARRAY['lessons', 'lesson_review'] LOOP
+      v_agent_role := CASE v_step WHEN 'lessons' THEN 'A5' ELSE 'A6' END;
+      INSERT INTO public.studio_run_events (run_id, step_key, attempt, kind, agent_role, message, payload)
+      VALUES (
+        p_run_id, v_step, 0, 'result', v_agent_role, left(v_message, 500),
+        jsonb_build_object(
+          'source', 'resumed',
+          'from_run_id', p_from,
+          'step', v_step,
+          'attempt', 0,
+          'finished_at', to_char(v_finished_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
+          'completed_lessons', v_done_lessons,
+          'pending_review_drafts', cardinality(v_unreviewed)
+        )
+      );
+    END LOOP;
+  END IF;
+
+  SELECT count(*)::integer INTO v_total
+  FROM public.studio_generations c, jsonb_array_elements(c.output -> 'modules') m, jsonb_array_elements(m -> 'lessons') l
+  WHERE c.run_id = p_run_id AND c.step_key = 'curriculum' AND c.lesson_id IS NULL;
+
+  RETURN jsonb_build_object(
+    'from_run_id', p_from,
+    'steps', cardinality(v_steps),
+    'lessons_copied', v_done_lessons,
+    'drafts_copied', cardinality(v_unreviewed),
+    'lessons_total', v_total
+  );
+END;
+$$;
+
+REVOKE ALL ON FUNCTION private.studio_resume_run(uuid, uuid, uuid) FROM PUBLIC, anon, authenticated;
+
 CREATE OR REPLACE FUNCTION private.studio_start_run(
   p_course_id uuid,
   p_run_id uuid,
@@ -25,6 +205,10 @@ DECLARE
   v_expires_at timestamptz;
   v_message text;
   v_now timestamptz;
+  v_elapsed_days integer;
+  v_remaining_days integer;
+  v_overdue_days integer;
+  v_elapsed_minutes integer;
 BEGIN
   -- Serializes starts with both this function and studio_start_catalog_job.
   SELECT c.status INTO v_status
@@ -154,23 +338,26 @@ BEGIN
 
   CASE v_source
     WHEN 'reused' THEN
+      v_elapsed_days := greatest(0, floor(extract(epoch FROM (v_now - v_job_finished_at)) / 86400))::integer;
+      v_remaining_days := greatest(0, ceil(extract(epoch FROM (v_expires_at - v_now)) / 86400))::integer;
       v_message := format(
-        'Dùng lại kết quả nghiên cứu còn hiệu lực: job hoàn tất %s UTC (cách đây %s ngày), hiệu lực đến %s UTC (kỳ %s ngày của nhóm %s). Không gọi model.',
-        to_char(v_job_finished_at AT TIME ZONE 'UTC', 'DD-MM-YYYY'),
-        greatest(0, floor(extract(epoch FROM (v_now - v_job_finished_at)) / 86400))::integer,
-        to_char(v_expires_at AT TIME ZONE 'UTC', 'DD-MM-YYYY'),
+        'Dùng lại kết quả nghiên cứu còn hiệu lực: job hoàn tất cách đây %s ngày, còn hiệu lực %s ngày (kỳ %s ngày của nhóm %s). Không gọi model.',
+        v_elapsed_days,
+        v_remaining_days,
         v_period_days,
         v_period_group
       );
     WHEN 'kept_previous' THEN
+      v_overdue_days := greatest(0, floor(extract(epoch FROM (v_now - v_expires_at)) / 86400))::integer;
       v_message := format(
-        'Giữ nguyên kết quả nghiên cứu của lượt trước dù đã quá hạn ngày %s UTC, để brief và các bước đã đạt khớp nhau.',
-        to_char(v_expires_at AT TIME ZONE 'UTC', 'DD-MM-YYYY')
+        'Giữ nguyên kết quả nghiên cứu của lượt trước dù đã quá hạn %s ngày, để brief và các bước đã đạt khớp nhau.',
+        v_overdue_days
       );
     WHEN 'attached_running' THEN
+      v_elapsed_minutes := greatest(0, floor(extract(epoch FROM (v_now - v_job_started_at)) / 60))::integer;
       v_message := format(
-        'Gắn vào job nghiên cứu đang chạy, bắt đầu %s UTC.',
-        to_char(v_job_started_at AT TIME ZONE 'UTC', 'DD-MM-YYYY HH24:MI')
+        'Gắn vào job nghiên cứu đang chạy, đã chạy %s phút.',
+        v_elapsed_minutes
       );
     ELSE
       v_message := format('Bắt đầu nghiên cứu mới cho nhóm: %s.', v_group_list);
@@ -187,6 +374,7 @@ BEGIN
     jsonb_build_object(
       'source', v_source,
       'job_id', v_catalog_job_id,
+      'started_at', to_char(v_job_started_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
       'finished_at', CASE WHEN v_job_finished_at IS NULL THEN NULL ELSE to_char(v_job_finished_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') END,
       'expires_at', CASE WHEN v_expires_at IS NULL THEN NULL ELSE to_char(v_expires_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') END,
       'period_days', v_period_days,
@@ -202,3 +390,7 @@ BEGIN
     END;
 END;
 $$;
+
+REVOKE ALL ON FUNCTION private.studio_start_run(uuid, uuid, uuid, uuid) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.studio_start_run(uuid, uuid, uuid, uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION private.studio_start_run(uuid, uuid, uuid, uuid), public.studio_start_run(uuid, uuid, uuid, uuid) TO service_role;

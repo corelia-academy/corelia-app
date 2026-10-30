@@ -15,7 +15,7 @@ export const PLATFORM_FORMAT_GUIDE: Record<typeof PLATFORM_FORMATS[number], stri
   code_exercise:
     "Một tệp mã nguồn trong ngôn ngữ đã chọn cho khóa, tên tệp trần không có thư mục. Validator KHÔNG biên dịch, KHÔNG chạy và KHÔNG dùng terminal: chỉ so khớp mã nguồn (điền chỗ trống, chứa/không chứa chuỗi, trùng nguyên văn). Vì vậy test chứa/không chứa chuỗi có thể bị né bằng chú thích hoặc khoảng trắng: đây là giới hạn đã biết của nền tảng, không phải lỗi của bài. Chỉ dùng cho kỹ năng viết hoặc sửa mã kiểm được bằng nội dung mã.",
   practice:
-    "Hướng dẫn hoặc checklist tự kiểm tra; người học tự làm và tự đánh dấu, không chấm, không nộp bài. Dùng cho thao tác trên máy người học (cài đặt, terminal, chạy lệnh Cargo, xem kết quả chạy).",
+    "Hướng dẫn hoặc checklist tự kiểm tra, không chấm, không nộp bài. Chế độ hướng dẫn (không ô tick) dùng cho thực hành tự nguyện trên máy người học (cài đặt, terminal, chạy lệnh): người học tự làm, tự đối chiếu kết quả mong đợi, bỏ qua vẫn hoàn thành bài. Chế độ checklist chỉ để tự kiểm kiến thức vì phải đánh dấu đủ mục mới hoàn thành.",
 };
 
 /** Formats available to newly generated AI curricula; saved video lessons remain renderable. */

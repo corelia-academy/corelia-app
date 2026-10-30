@@ -24,6 +24,7 @@ import {
 } from "./lesson_ports.ts";
 import type { Acceptance, ResearchVideoCandidate, RunContext } from "./steps.ts";
 import { PLATFORM_FORMAT_GUIDE } from "./formats.ts";
+import { normalizeReviewIssues } from "./review_policy.ts";
 
 // ---- curriculum access -------------------------------------------------------------------------
 
@@ -243,8 +244,9 @@ export interface LessonContext {
 
 /** Blocking items of an A6 review output. */
 export function reviewBlocking(review: unknown): string[] {
-  const r = review as { issues: { location: string; problem: string; severity: string }[] };
-  return r.issues.filter((i) => i.severity === "blocking").map((i) => `${i.location}: ${i.problem}`);
+  const r = review as { issues?: unknown } | null;
+  const { issues } = normalizeReviewIssues(r?.issues);
+  return issues.filter((i) => i.severity === "blocking").map((i) => `${i.location ?? "?"}: ${i.problem ?? ""}`);
 }
 
 /**
@@ -253,7 +255,7 @@ export function reviewBlocking(review: unknown): string[] {
  */
 export function lessonRevision(lc: LessonContext | null | undefined): { round: number; issues: unknown[] } | null {
   if (!lc || lc.drafts < 1 || lc.reviews !== lc.drafts || !lc.review || reviewBlocking(lc.review).length === 0) return null;
-  return { round: lc.reviews, issues: (lc.review as { issues: unknown[] }).issues };
+  return { round: lc.reviews, issues: normalizeReviewIssues((lc.review as { issues?: unknown }).issues).issues };
 }
 
 /** The part of a lesson's input shared by writer and reviewer. */
@@ -757,6 +759,9 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
   if (format === "practice") {
     const p = out.practice!;
     if (p.mode === "instruction" && p.checklist_items.length > 0) problems.push("mode instruction không có checklist_items");
+    if (ref.lesson.purpose === "optional_hands_on" && p.mode !== "instruction") {
+      problems.push("lesson optional_hands_on phải là practice mode instruction");
+    }
     // The diagnostic is a self-check whose review material is its resources.
     if (ref.lesson.purpose === "diagnostic") {
       if (p.mode !== "checklist") problems.push("lesson diagnostic phải là practice checklist");

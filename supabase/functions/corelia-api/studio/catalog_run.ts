@@ -120,6 +120,9 @@ export async function advanceCatalogJob(db: SupabaseClient, job: JobRow): Promis
   }
 
   const action = planCatalogJob({ generations, startedAt: job.started_at, now: Date.now(), latestResult });
+  if (action.kind === "submit" && latest?.status === "failed") {
+    await logCatalogRunEvent(db, job.id, catalogRetryWarning(latest));
+  }
   switch (action.kind) {
     case "finish":
       await finishCatalogJob(db, job.id, action.status, action.reason);
@@ -137,6 +140,72 @@ export async function advanceCatalogJob(db: SupabaseClient, job: JobRow): Promis
       break;
   }
   return action.kind;
+}
+
+export function catalogSafeReason(reason: string, modelIds: (string | null | undefined)[] = []): string {
+  return modelIds
+    .filter((model): model is string => Boolean(model))
+    .reduce((current, model) => current.replace(new RegExp(model.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "model hiện tại"), reason);
+}
+
+export function catalogRetryWarning(generation: Pick<CatalogGeneration, "id" | "attempt" | "error" | "model_id">) {
+  const reason = catalogSafeReason(generation.error ?? "Yêu cầu trước không thành công.", [CATALOG_SPEC.model, generation.model_id]);
+  return {
+    generationId: generation.id,
+    attempt: generation.attempt,
+    kind: "warning" as const,
+    message: `Nghiên cứu Catalog: yêu cầu lần ${generation.attempt + 1} trả lỗi; đang gửi lại. (${reason})`,
+    payload: { reason },
+  };
+}
+
+/** Copies A1 request transitions into every still-running run pinned to the job. Log failures never stop A1. */
+export async function logCatalogRunEvent(
+  db: SupabaseClient,
+  jobId: string,
+  event: { generationId: string; attempt: number; kind: "progress" | "warning"; message: string; payload: Record<string, unknown> },
+) {
+  try {
+    const runsResult = await db.from("studio_runs").select("id").eq("catalog_job_id", jobId).eq("status", "running");
+    if (runsResult.error) throw new Error(runsResult.error.message);
+    const runIds = (runsResult.data ?? []).map((run) => run.id as string);
+    if (runIds.length === 0) return;
+
+    const [stepsResult, eventsResult] = await Promise.all([
+      db.from("studio_run_steps").select("run_id").in("run_id", runIds).eq("step_key", "catalog_research"),
+      db.from("studio_run_events").select("run_id,kind,payload").in("run_id", runIds).eq("step_key", "catalog_research"),
+    ]);
+    if (stepsResult.error) throw new Error(stepsResult.error.message);
+    if (eventsResult.error) throw new Error(eventsResult.error.message);
+
+    const eligibleRunIds = new Set((stepsResult.data ?? []).map((row) => row.run_id as string));
+    const existing = eventsResult.data ?? [];
+    for (const runId of runIds) {
+      if (!eligibleRunIds.has(runId)) continue;
+      const alreadyLogged = existing.some((row) => {
+        const payload = row.payload && typeof row.payload === "object" ? row.payload as Record<string, unknown> : {};
+        return row.run_id === runId && row.kind === event.kind && payload.generation_id === event.generationId;
+      });
+      if (alreadyLogged) continue;
+
+      try {
+        const { error } = await db.from("studio_run_events").insert({
+          run_id: runId,
+          step_key: "catalog_research",
+          attempt: event.attempt,
+          kind: event.kind,
+          agent_role: "A1",
+          message: event.message.slice(0, 500),
+          payload: { ...event.payload, generation_id: event.generationId, attempt: event.attempt },
+        });
+        if (error) throw new Error(error.message);
+      } catch (e) {
+        console.error("[corelia-api] catalog run event insert", { job_id: jobId, run_id: runId, generation_id: event.generationId, error: errorMessage(e) });
+      }
+    }
+  } catch (e) {
+    console.error("[corelia-api] catalog run event lookup", { job_id: jobId, generation_id: event.generationId, error: errorMessage(e) });
+  }
 }
 
 export async function loadCatalogBase(db: SupabaseClient, courseId: string): Promise<CatalogBase> {
@@ -325,12 +394,20 @@ async function submitCatalog(db: SupabaseClient, job: JobRow, attempt: number, p
     await failGeneration(db, gen.id, "submitting", "transport", `Không gửi được yêu cầu: ${errorMessage(e)}`);
     return;
   }
+  const submittedAt = new Date().toISOString();
   const { error: saveError } = await db
     .from("studio_generations")
-    .update({ status: "submitted", provider_request_id: requestId, submitted_at: new Date().toISOString() })
+    .update({ status: "submitted", provider_request_id: requestId, submitted_at: submittedAt })
     .eq("id", gen.id)
     .eq("status", "submitting");
   if (saveError) throw new Error(saveError.message);
+  await logCatalogRunEvent(db, job.id, {
+    generationId: gen.id,
+    attempt,
+    kind: "progress",
+    message: `Đã gửi yêu cầu nghiên cứu (lần ${attempt + 1}).`,
+    payload: { submitted_at: submittedAt },
+  });
 }
 
 // A background response belongs to the project of the key that created it, so it is read with the key

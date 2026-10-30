@@ -17,10 +17,23 @@ vi.mock("./catalog_research_brief.ts", () => ({ loadCatalogResearchForBrief: moc
 vi.mock("./catalog_run.ts", () => ({ advanceCatalogJobs: mocks.advanceCatalogJobs }));
 vi.mock("./drafts.ts", () => ({ purgeExpiredDrafts: mocks.purgeExpiredDrafts }));
 
-import { advanceRun, handleStudioStart, handleStudioTick, loadContext } from "./handlers.ts";
+import { advanceRun, handleStudioStart, handleStudioTick, loadContext, stepRequestFailureMessage, stepRequestSentMessage, stepResponseFailureMessage } from "./handlers.ts";
 
 const courseId = "11111111-1111-4111-8111-111111111111";
 const runId = "22222222-2222-4222-8222-222222222222";
+
+describe("studio generation event messages", () => {
+  it("describes request actions without exposing a model name", () => {
+    const failure = stepRequestFailureMessage("Chuẩn bị brief");
+    const sent = stepRequestSentMessage("Chuẩn bị brief", 0);
+    const responseFailure = stepResponseFailureMessage("Chuẩn bị brief", "gpt-6-luna rate limit", ["gpt-6-luna"]);
+
+    expect(failure).toBe("Chuẩn bị brief: không gửi được yêu cầu.");
+    expect(sent).toBe("Chuẩn bị brief: đã gửi yêu cầu (lượt 1).");
+    expect(responseFailure).toBe("Chuẩn bị brief: yêu cầu trả lỗi (model hiện tại rate limit).");
+    expect(`${failure} ${sent} ${responseFailure}`).not.toContain("gpt-6-luna");
+  });
+});
 
 function request() {
   return new Request("http://local/functions/v1/corelia-api?op=studio.start", {
@@ -111,13 +124,11 @@ describe("handleStudioStart", () => {
     expect(mocks.rerankIfStale).not.toHaveBeenCalled();
   });
 
-  it("does not write the catalog step event after RPC and returns success if the resume note write fails", async () => {
-    const insert = vi.fn().mockResolvedValue({ error: { message: "event store unavailable" } });
+  it("does not append a duplicate out-of-transaction resume note", async () => {
     const db = {
       rpc: vi.fn().mockResolvedValue({ data: { run_id: runId, created: true, resume_skipped: "nothing_done" }, error: null }),
-      from: vi.fn(() => ({ insert })),
+      from: vi.fn(),
     } as unknown as SupabaseClient;
-    const error = vi.spyOn(console, "error").mockImplementation(() => {});
     const req = new Request("http://local/functions/v1/corelia-api?op=studio.start", {
       method: "POST",
       headers: { authorization: "Bearer test" },
@@ -128,11 +139,7 @@ describe("handleStudioStart", () => {
 
     expect(response.status).toBe(201);
     expect(await response.json()).toMatchObject({ run_id: runId, created: true });
-    expect(insert).toHaveBeenCalledOnce();
-    expect(insert).toHaveBeenCalledWith(expect.objectContaining({ step_key: "brief", message: expect.any(String) }));
-    expect(insert).not.toHaveBeenCalledWith(expect.objectContaining({ step_key: "catalog_research" }));
-    expect(error).toHaveBeenCalledOnce();
-    error.mockRestore();
+    expect(db.from).not.toHaveBeenCalled();
   });
 
   it.each([

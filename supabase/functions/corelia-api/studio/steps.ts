@@ -20,6 +20,7 @@ import {
 } from "./lesson_ports.ts";
 import { PROMPTS, promptVersion, type AgentRole, type PromptKey } from "./prompts.ts";
 import type { BriefCatalogResearch } from "./catalog_research_brief.ts";
+import { normalizeReviewIssues, REVIEW_ISSUE_CATEGORIES } from "./review_policy.ts";
 
 export const STEP_ORDER = [
   "catalog_research",
@@ -37,7 +38,7 @@ export type StepKey = typeof STEP_ORDER[number];
 export type StepState = "pending" | "active" | "done" | "failed";
 
 export const STEP_LABEL: Record<StepKey, string> = {
-  catalog_research: "Nghiên cứu Catalog (khâu 0)",
+  catalog_research: "Nghiên cứu Catalog",
   brief: "Chuẩn bị brief",
   research: "Nghiên cứu",
   curriculum: "Curriculum",
@@ -111,7 +112,7 @@ export interface RunContext {
   catalogResearch?: BriefCatalogResearch | null;
 }
 
-export type Acceptance = { ok: true; summary: string } | { ok: false; reason: string };
+export type Acceptance = { ok: true; summary: string; normalizedOutput?: unknown } | { ok: false; reason: string };
 
 export interface StepSpec {
   prompt: PromptKey;
@@ -223,8 +224,9 @@ const RESEARCH_SCHEMA = object({
 /**
  * Role of a lesson in the learning sequence (Learning Principles): a self-check diagnostic start
  * whose resources are the review material for missing prerequisites, worked example then reduced
- * support, retrieval of earlier modules, and a final cumulative check. The app has no optional
- * lesson, so every lesson counts toward completion; there is no separate remedial lesson.
+ * support, retrieval of earlier modules, a final cumulative check, and optional hands-on instructions.
+ * `optional_hands_on` does not create an app-level skip or completion flag; the external practice
+ * itself never gates course completion.
  */
 export const LESSON_PURPOSES = [
   "diagnostic",
@@ -234,6 +236,7 @@ export const LESSON_PURPOSES = [
   "independent_practice",
   "retrieval",
   "final_check",
+  "optional_hands_on",
 ] as const;
 
 const CURRICULUM_SCHEMA = object({
@@ -274,6 +277,7 @@ const REVIEW_SCHEMA = object({
     items: object({
       location: str,
       problem: str,
+      category: { type: "string", enum: [...REVIEW_ISSUE_CATEGORIES] },
       principle: str,
       fix: str,
       severity: { type: "string", enum: ["blocking", "minor"] },
@@ -285,7 +289,7 @@ const REVIEW_SCHEMA = object({
 
 interface CurriculumReview {
   verdict: string;
-  issues: { location: string; problem: string; severity: string }[];
+  issues: { location: string; problem: string; severity: string; category?: string }[];
   needs_research: string[];
 }
 
@@ -560,21 +564,39 @@ export function acceptCurriculum(
   const ids = [...curriculum.modules.map((m) => m.id), ...lessons.map((l) => l.id), ...curriculum.outcomes.map((o) => o.id)];
   if (new Set(ids).size !== ids.length) problems.push("ID module/lesson/outcome bị trùng");
   if (lessons.length === 0) problems.push("không có lesson");
+  const optionalHandsOnByModule = curriculum.modules.map((module) => {
+    const optional = module.lessons.filter((l) => l.purpose === "optional_hands_on");
+    if (optional.length > 1) problems.push(`module ${module.id} có hơn một lesson optional_hands_on`);
+    if (optional.length === 1) {
+      if (module.lessons.at(-1)?.id !== optional[0].id) problems.push(`lesson ${optional[0].id} (optional_hands_on) phải ở cuối module`);
+      if (optional[0].type !== "practice") problems.push(`lesson ${optional[0].id} (optional_hands_on) phải là practice`);
+    }
+    return optional;
+  });
+  const optionalHandsOnIds = new Set(optionalHandsOnByModule.flat().map((l) => l.id));
   for (const o of curriculum.outcomes) {
-    if (o.check_lesson_ids.length === 0 || o.check_lesson_ids.some((id) => !lessonIds.has(id))) {
+    if (o.check_lesson_ids.length === 0 || o.check_lesson_ids.some((id) => !lessonIds.has(id) || optionalHandsOnIds.has(id))) {
       problems.push(`outcome ${o.id} không có lesson kiểm tra hợp lệ`);
     }
   }
   const position = new Map(lessons.map((l, i) => [l.id, i]));
   for (const l of lessons) {
     // The diagnostic checks prerequisites, not course outcomes, so it may have none. It is a
-    // self-check practice: the app has no optional lesson, and a threshold would gate completion.
+    // self-check practice; a threshold would make passing it a completion gate.
     const diagnostic = l.purpose === "diagnostic";
     if ((!diagnostic && l.outcome_ids.length === 0) || l.outcome_ids.some((id) => !outcomeIds.has(id))) {
       problems.push(`lesson ${l.id} có outcome không hợp lệ`);
     }
     if (l.source_ids.length === 0 || l.source_ids.some((id) => !sourceIds.has(id))) problems.push(`lesson ${l.id} có source_id không có trong research`);
     if (diagnostic && l.type !== "practice") problems.push(`lesson ${l.id} (diagnostic) phải là practice`);
+    if (l.purpose === "optional_hands_on") {
+      for (const outcomeId of l.outcome_ids) {
+        const outcome = curriculum.outcomes.find((candidate) => candidate.id === outcomeId);
+        if (outcome && !outcome.check_lesson_ids.some((id) => id !== l.id && !optionalHandsOnIds.has(id))) {
+          problems.push(`outcome ${outcomeId} của lesson ${l.id} phải được lesson khác kiểm tra`);
+        }
+      }
+    }
     // Feedback on a wrong answer points back to the lesson that teaches it again.
     if (l.type === "quiz") {
       if (l.pass_threshold === null || !(l.pass_threshold > 0 && l.pass_threshold <= 100)) problems.push(`quiz ${l.id} thiếu ngưỡng pass trong (0, 100]`);
@@ -586,6 +608,7 @@ export function acceptCurriculum(
     for (const p of l.prerequisite_lesson_ids) {
       if (!lessonIds.has(p) || p === l.id) problems.push(`lesson ${l.id} có prerequisite_lesson_ids không hợp lệ (${p})`);
       else if (position.get(p)! > position.get(l.id)!) problems.push(`lesson ${l.id}: prerequisite ${p} đứng sau`);
+      if (optionalHandsOnIds.has(p)) problems.push(`lesson ${l.id} không được phụ thuộc vào optional_hands_on ${p}`);
     }
   }
 
@@ -624,14 +647,17 @@ export function acceptCurriculum(
 /** Blocking items of a review: blocking issues plus topics without a source, which also go back to the author. */
 export function blockingItems(output: unknown): string[] {
   const review = output as CurriculumReview;
+  const { issues } = normalizeReviewIssues(review.issues);
   return [
-    ...review.issues.filter((i) => i.severity === "blocking").map((i) => `${i.location}: ${i.problem}`),
-    ...review.needs_research.map((topic) => `thiếu nguồn: ${topic}`),
+    ...issues.filter((i) => i.severity === "blocking").map((i) => `${i.location ?? "?"}: ${i.problem ?? ""}`),
+    ...(Array.isArray(review.needs_research) ? review.needs_research : []).map((topic) => `thiếu nguồn: ${topic}`),
   ];
 }
 
 export function acceptCurriculumReview(output: unknown, curriculum: unknown): Acceptance {
   const review = output as CurriculumReview;
+  const { issues, downgraded } = normalizeReviewIssues(review.issues);
+  const needsResearch = Array.isArray(review.needs_research) ? review.needs_research : [];
   const c = curriculum as Curriculum;
   const known = new Set([
     ...c.modules.map((m) => m.id),
@@ -639,16 +665,21 @@ export function acceptCurriculumReview(output: unknown, curriculum: unknown): Ac
     ...c.outcomes.map((o) => o.id),
   ]);
   const problems: string[] = [];
-  for (const i of review.issues) {
-    if (!known.has(i.location)) problems.push(`vị trí "${i.location}" không phải ID trong curriculum (location là đúng một ID module, lesson hoặc outcome; cùng lỗi ở nhiều nơi thì tách thành nhiều issue)`);
-    if (!i.problem.trim()) problems.push(`vấn đề tại ${i.location} để trống`);
+  for (const i of issues) {
+    if (typeof i.location !== "string" || !known.has(i.location)) problems.push(`vị trí "${i.location ?? ""}" không phải ID trong curriculum (location là đúng một ID module, lesson hoặc outcome; cùng lỗi ở nhiều nơi thì tách thành nhiều issue)`);
+    if (typeof i.problem !== "string" || !i.problem.trim()) problems.push(`vấn đề tại ${i.location ?? "?"} để trống`);
   }
-  const blocking = blockingItems(output).length;
-  if (review.verdict === "pass" && blocking > 0) problems.push("verdict pass nhưng còn lỗi blocking hoặc chủ đề thiếu nguồn");
-  if (review.verdict === "needs_fix" && blocking === 0) problems.push("verdict needs_fix nhưng không có lỗi blocking hay chủ đề thiếu nguồn");
   if (problems.length > 0) return { ok: false, reason: `Review chưa hợp lệ: ${list(problems)}` };
-  const minor = review.issues.filter((i) => i.severity === "minor").length;
-  return { ok: true, summary: `${review.verdict}, ${blocking} lỗi blocking, ${minor} minor.` };
+  const blocking = issues.filter((i) => i.severity === "blocking").length + needsResearch.length;
+  const minor = issues.filter((i) => i.severity === "minor").length;
+  const verdict = blocking > 0 ? "needs_fix" : "pass";
+  const normalizedOutput = { ...(output as Record<string, unknown>), verdict, issues, needs_research: needsResearch };
+  const downgradeNote = downgraded.length ? ` ${downgraded.length} issue ngoài allow-list được hạ xuống minor.` : "";
+  return {
+    ok: true,
+    summary: `${verdict}, ${blocking} lỗi blocking, ${minor} minor.${downgradeNote}`,
+    normalizedOutput,
+  };
 }
 
 /** A review round is the A4 verdict on one accepted curriculum; at most this many per run. */
@@ -733,7 +764,8 @@ export function curriculumRevision(
   if (counts.reviews === 0 || counts.curricula > counts.reviews || !latestReview) return null;
   if (blockingItems(latestReview).length === 0) return null;
   const review = latestReview as CurriculumReview;
-  return { round: counts.reviews, issues: review.issues, needs_research: review.needs_research };
+  const { issues } = normalizeReviewIssues(review.issues);
+  return { round: counts.reviews, issues, needs_research: Array.isArray(review.needs_research) ? review.needs_research : [] };
 }
 
 function researchSourceIds(ctx: RunContext): Set<string> {

@@ -5,7 +5,7 @@ import { MAX_LESSON_REVIEWS, planLessons, type LessonGeneration, type LessonStep
 import { MAX_TRANSPORT_FAILURES } from "./retry.ts";
 import { article, base, ctx, curriculum, editCode, fillCode, lesson, now, question } from "./lesson_fixtures.ts";
 import { getCodeLanguageAdapter } from "./lesson_ports.ts";
-import { acceptLessonReview, resolvePath } from "./lesson_review.ts";
+import { acceptLessonReview, LESSON_REVIEW_SCHEMA, resolvePath } from "./lesson_review.ts";
 import { inputBlocks } from "./openai.ts";
 import { buildLessonInput, buildLessonReviewInput, LESSON_SHARED_KEYS, lessonRefs, lessonRevision, lessonTools, reviewBlocking, toLessonDraft, TransientError, type LessonContext } from "./lessons.ts";
 import { planRun, STEP_ORDER, STEP_SPECS, SUBMIT_STALE_MS, type RunContext, type StepKey } from "./steps.ts";
@@ -165,7 +165,15 @@ describe("studio lesson loop: planning", () => {
 
 // ---- review feedback and A6 acceptance ----------------------------------------------------------
 
-const issue = (location: string, severity = "blocking", over: object = {}) => ({ location, problem: "sai", fix: "sửa", severity, verified_by: "source", ...over });
+const issue = (location: string, severity = "blocking", over: object = {}) => ({
+  location,
+  problem: "sai",
+  fix: "sửa",
+  category: severity === "blocking" ? "wrong_answer" : "style_or_wording",
+  severity,
+  verified_by: "source",
+  ...over,
+});
 const verdictOf = (verdict: string, issues: object[] = [], unverified: string[] = []) => ({ verdict, issues, unverified, summary: "s" });
 
 const quizOutput = { ...base, quiz: { questions: [question(), question()] } };
@@ -365,18 +373,74 @@ describe("studio lesson loop: review input and acceptance", () => {
     expect(resolvePath(draft, "")).toBeUndefined();
   });
 
-  it("accepts consistent reviews and rejects contradictions or locations that do not exist", () => {
+  it("recomputes the A6 verdict, accepts legacy issues without category, and rejects bad locations", () => {
     const [c, id] = withLesson({ drafts: 1, reviews: 0, draft: quizOutput, review: null });
     const accept = (out: object) => acceptLessonReview(out, c, id);
-    expect(accept(verdictOf("pass", [issue("lesson.title", "minor")]))).toEqual({ ok: true, summary: "pass, 0 lỗi blocking, 1 minor." });
-    expect(accept(verdictOf("needs_fix", [issue("questions[0].explanation")], ["mã chưa biên dịch"]))).toEqual({ ok: true, summary: "needs_fix, 1 lỗi blocking, 0 minor." });
-    for (const bad of [
-      verdictOf("pass", [issue("lesson.title")]),
-      verdictOf("needs_fix", [issue("lesson.title", "minor")]),
-      verdictOf("needs_fix"),
-      verdictOf("pass", [issue("questions[7]", "minor")]),
-      verdictOf("needs_fix", [issue("lesson.title", "blocking", { problem: " " })]),
-    ]) expect(accept(bad).ok).toBe(false);
+    expect(accept(verdictOf("pass", [issue("lesson.title", "minor")]))).toMatchObject({
+      ok: true,
+      summary: "pass, 0 lỗi blocking, 1 minor.",
+      normalizedOutput: { verdict: "pass" },
+    });
+    expect(accept(verdictOf("pass", [issue("questions[0].explanation")], ["mã chưa biên dịch"]))).toMatchObject({
+      ok: true,
+      summary: "needs_fix, 1 lỗi blocking, 0 minor.",
+      normalizedOutput: { verdict: "needs_fix" },
+    });
+    expect(accept(verdictOf("needs_fix", [issue("lesson.title", "minor")]))).toMatchObject({
+      ok: true,
+      summary: "pass, 0 lỗi blocking, 1 minor.",
+      normalizedOutput: { verdict: "pass" },
+    });
+    expect(accept(verdictOf("needs_fix"))).toMatchObject({ ok: true, normalizedOutput: { verdict: "pass" } });
+
+    const outsideAllowList = issue("lesson.title", "blocking", { category: "missing_installation_steps" });
+    expect(accept(verdictOf("needs_fix", [outsideAllowList]))).toMatchObject({
+      ok: true,
+      summary: expect.stringContaining("pass, 0 lỗi blocking, 1 minor"),
+      normalizedOutput: { verdict: "pass", issues: [{ severity: "minor", category: "missing_installation_steps" }] },
+    });
+    const { category: _category, ...legacyIssue } = issue("lesson.title");
+    expect(accept(verdictOf("needs_fix", [legacyIssue]))).toMatchObject({
+      ok: true,
+      summary: expect.stringContaining("pass, 0 lỗi blocking, 1 minor"),
+      normalizedOutput: { verdict: "pass", issues: [{ severity: "minor", category: "other" }] },
+    });
+
+    expect(accept(verdictOf("pass", [issue("questions[7]", "minor")])).ok).toBe(false);
+    expect(accept(verdictOf("needs_fix", [issue("lesson.title", "blocking", { problem: " " })])).ok).toBe(false);
+    expect((LESSON_REVIEW_SCHEMA.properties.issues as any).items.properties.category.enum).toContain("optional_made_mandatory");
+  });
+
+  it("does not block a missing optional install guide but blocks installing written as mandatory", () => {
+    const optionalDraft = {
+      ...base,
+      article: { description_markdown: "Tự thực hành (không bắt buộc): cài công cụ rồi xem kết quả.", diagrams: [] },
+    };
+    const [optionalContext, optionalId] = withLesson({ drafts: 1, reviews: 0, draft: optionalDraft, review: null }, "l-art");
+    const missingOptionalSteps = issue("lesson.description_markdown", "blocking", {
+      problem: "Thiếu bước cài đặt tự nguyện.",
+      category: "missing_installation_steps",
+    });
+    expect(acceptLessonReview(verdictOf("needs_fix", [missingOptionalSteps]), optionalContext, optionalId)).toMatchObject({
+      ok: true,
+      summary: expect.stringContaining("pass, 0 lỗi blocking, 1 minor"),
+      normalizedOutput: { verdict: "pass", issues: [{ severity: "minor", category: "missing_installation_steps" }] },
+    });
+
+    const mandatoryDraft = {
+      ...base,
+      article: { description_markdown: "Bắt buộc cài công cụ trước khi học tiếp.", diagrams: [] },
+    };
+    const [mandatoryContext, mandatoryId] = withLesson({ drafts: 1, reviews: 0, draft: mandatoryDraft, review: null }, "l-art");
+    const mandatoryInstall = issue("lesson.description_markdown", "blocking", {
+      problem: "Bước cài đặt tự nguyện bị viết thành điều kiện bắt buộc.",
+      category: "optional_made_mandatory",
+    });
+    expect(acceptLessonReview(verdictOf("pass", [mandatoryInstall]), mandatoryContext, mandatoryId)).toMatchObject({
+      ok: true,
+      summary: "needs_fix, 1 lỗi blocking, 0 minor.",
+      normalizedOutput: { verdict: "needs_fix", issues: [{ severity: "blocking", category: "optional_made_mandatory" }] },
+    });
   });
 
   it("gives the writer the review and the previous draft only while the draft waits for a rewrite", () => {

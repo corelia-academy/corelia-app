@@ -22,7 +22,7 @@ import { loadCatalogResearchForBrief } from "./catalog_research_brief.ts";
 import { agentKey, errorMessage, failGeneration, loadFailureKind, pollOrExpire } from "./generations.ts";
 import { submitResponse } from "./openai.ts";
 import { publishRun, PublishRejected } from "./publish.ts";
-import { resumeNote, type StartResult } from "./resume.ts";
+import type { StartResult } from "./resume.ts";
 import { PROMPTS } from "./prompts.ts";
 import {
   agentKeyEnv,
@@ -91,16 +91,6 @@ export async function handleStudioStart(req: Request, db: SupabaseClient): Promi
     throw new Error(error.message);
   }
   const result = data as StartResult;
-  if (result.created) {
-    const note = resumeNote(result, resumeFrom);
-    if (note) {
-      try {
-        await addEvent(db, { run_id: runId, step_key: "brief", attempt: 0, kind: "progress", message: note });
-      } catch (e) {
-        console.error("[corelia-api] studio start resume note", { run_id: runId, error: errorMessage(e) });
-      }
-    }
-  }
   return json(result, result.created ? 201 : 200);
 }
 
@@ -618,7 +608,7 @@ async function submitStep(
     });
   } catch (e) {
     await failGeneration(db, gen.id, "submitting", "transport", `Không gửi được yêu cầu: ${errorMessage(e)}`);
-    await addEvent(db, { run_id: run.id, step_key: step, attempt, kind: "error", agent_role: agent.role, message: `${label}: không gửi được yêu cầu tới ${spec.model}.` });
+    await addEvent(db, { run_id: run.id, step_key: step, attempt, kind: "error", agent_role: agent.role, message: stepRequestFailureMessage(label) });
     return;
   }
 
@@ -634,7 +624,7 @@ async function submitStep(
     attempt,
     kind: "progress",
     agent_role: agent.role,
-    message: `${label}: đã gửi yêu cầu tới ${spec.model} (lượt ${attempt + 1}${lessonNote(step, ctx)}).`,
+    message: stepRequestSentMessage(label, attempt, lessonNote(step, ctx)),
   });
 }
 
@@ -644,6 +634,21 @@ function lessonNote(step: StepKey, ctx: RunContext): string {
   if (step === "lesson_review") return `, review lần ${ctx.lesson.reviews + 1}`;
   const revision = lessonRevision(ctx.lesson);
   return revision ? `, sửa theo review lần ${revision.round}` : "";
+}
+
+export function stepRequestFailureMessage(label: string): string {
+  return `${label}: không gửi được yêu cầu.`;
+}
+
+export function stepRequestSentMessage(label: string, attempt: number, detail = ""): string {
+  return `${label}: đã gửi yêu cầu (lượt ${attempt + 1}${detail}).`;
+}
+
+export function stepResponseFailureMessage(label: string, reason: string, modelIds: (string | null | undefined)[] = []): string {
+  const safeReason = modelIds
+    .filter((model): model is string => Boolean(model))
+    .reduce((current, model) => current.replace(new RegExp(model.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "model hiện tại"), reason);
+  return `${label}: yêu cầu trả lỗi (${safeReason}).`;
 }
 
 // A background response belongs to the project of the key that created it, so it is read with
@@ -664,7 +669,7 @@ async function pollStep(db: SupabaseClient, run: RunRow, step: StepKey, latest: 
   const label = lessonId ? `${STEP_LABEL[step]} ${lessonId}` : STEP_LABEL[step];
   if (result.state === "failed") {
     if (await failGeneration(db, generationId, "submitted", result.cause, result.error, { model_id: result.model, usage: result.usage })) {
-      await addEvent(db, { run_id: run.id, step_key: step, attempt, kind: "warning", agent_role: agent.role, message: `${label}: model trả lỗi (${result.error}).` });
+      await addEvent(db, { run_id: run.id, step_key: step, attempt, kind: "warning", agent_role: agent.role, message: stepResponseFailureMessage(label, result.error, [spec.model, result.model]) });
     }
     return;
   }
@@ -691,7 +696,7 @@ async function pollStep(db: SupabaseClient, run: RunRow, step: StepKey, latest: 
   }
 
   const done = {
-    output: output ?? { raw: result.text.slice(0, 20000) },
+    output: acceptance.ok ? acceptance.normalizedOutput ?? output ?? { raw: result.text.slice(0, 20000) } : output ?? { raw: result.text.slice(0, 20000) },
     model_id: result.model,
     usage: result.usage,
     completed_at: new Date().toISOString(),
