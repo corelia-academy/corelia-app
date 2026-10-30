@@ -11,6 +11,7 @@ import {
 import AppSidebar from "@/components/base/AppSidebar";
 import { GsapAnimationController } from "@/components/animations/GsapAnimationController";
 import Header from "./Header";
+import { APP_HEADER_HEIGHT } from "./AppHeaderBar";
 
 const MainLayout = () => {
   const { pathname } = useLocation();
@@ -23,7 +24,7 @@ const MainLayout = () => {
       className="public-ui flex-col lg:h-svh"
       style={{
         "--sidebar-width": "15rem",
-        "--app-header-height": "72px",
+        "--app-header-height": APP_HEADER_HEIGHT,
       } as CSSProperties}
     >
       <GsapAnimationController />

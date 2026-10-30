@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AppHeaderBar } from "@/components/layouts/AppHeaderBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { skeletonRevealClass } from "./skeletonReveal";
@@ -161,14 +162,14 @@ export function LessonPlayerSkeletonBody() {
 }
 
 /**
- * Full Learn screen, mirroring `Learn.tsx`: 72px header, the lesson column with the floating
+ * Full Learn screen, mirroring `Learn.tsx`: shared `AppHeaderBar` header, the lesson column with the floating
  * action bar (and the curriculum edge tab below 1280px) and, from 1280px, the curriculum panel
  * at its default 28% share.
  */
 export function LearnShellSkeleton({ className, immediate }: { className?: string; immediate?: boolean }) {
   return (
     <LoadingStatus className={cn("flex h-full flex-col bg-background", className)} immediate={immediate}>
-      <div className="relative flex h-[72px] shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-3 sm:gap-3 sm:px-5xl" aria-hidden>
+      <AppHeaderBar aria-hidden>
         <Skeleton className="h-9 w-[108px] rounded-md" />
         <div className="flex min-w-0 flex-1 items-center justify-center gap-[15px] xl:absolute xl:left-1/2 xl:max-w-[50%] xl:flex-none xl:-translate-x-1/2">
           <Skeleton className="hidden h-5 w-40 sm:block" />
@@ -176,7 +177,7 @@ export function LearnShellSkeleton({ className, immediate }: { className?: strin
           <Skeleton className="h-5 w-16" />
         </div>
         <Skeleton className="h-8 w-28 rounded-md max-sm:size-8" />
-      </div>
+      </AppHeaderBar>
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <div className="relative min-w-0 flex-[72_1_0%] overflow-hidden">
           <LessonPlayerSkeletonBody />
