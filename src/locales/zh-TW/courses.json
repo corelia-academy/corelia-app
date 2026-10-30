@@ -487,6 +487,7 @@
     "unavailable": "單元不可用。",
     "askAi": {
       "trigger": "詢問 AI",
+      "triggerShort": "AI",
       "chatgpt": "詢問 ChatGPT",
       "claude": "詢問 Claude",
       "gemini": "詢問 Gemini（複製提示詞）",
@@ -527,6 +528,8 @@
     "completed": "已完成",
     "markComplete": "標記為已完成",
     "markIncomplete": "標記為未完成",
+    "markCompleteShort": "已完成",
+    "markIncompleteShort": "未完成",
     "redoFromStart": "重新開始",
     "redoConfirm": "重新開始此練習？您目前的答案和本機草稿將被清除。先前的提交會保留在紀錄中。",
     "resources": "資源",

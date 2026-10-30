@@ -487,6 +487,7 @@
     "unavailable": "레슨을 이용할 수 없습니다.",
     "askAi": {
       "trigger": "AI에게 질문",
+      "triggerShort": "AI",
       "chatgpt": "ChatGPT에게 질문",
       "claude": "Claude에게 질문",
       "gemini": "Gemini에게 질문 (프롬프트 복사)",
@@ -527,6 +528,8 @@
     "completed": "완료",
     "markComplete": "완료로 표시",
     "markIncomplete": "미완료로 표시",
+    "markCompleteShort": "완료",
+    "markIncompleteShort": "미완료",
     "redoFromStart": "처음부터 다시",
     "redoConfirm": "이 실습을 처음부터 다시 시작할까요? 현재 답안과 로컬 임시 저장이 삭제됩니다. 이전 제출물은 기록에 남습니다.",
     "resources": "자료",

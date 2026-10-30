@@ -487,6 +487,7 @@
     "unavailable": "课时不可用。",
     "askAi": {
       "trigger": "询问 AI",
+      "triggerShort": "AI",
       "chatgpt": "询问 ChatGPT",
       "claude": "询问 Claude",
       "gemini": "询问 Gemini（复制提示词）",
@@ -527,6 +528,8 @@
     "completed": "已完成",
     "markComplete": "标记为已完成",
     "markIncomplete": "标记为未完成",
+    "markCompleteShort": "已完成",
+    "markIncompleteShort": "未完成",
     "redoFromStart": "重新开始",
     "redoConfirm": "重新开始此练习？您当前的答案和本地草稿将被清除。之前的提交会保留在历史记录中。",
     "resources": "资源",
