@@ -48,7 +48,8 @@ INSERT INTO public.studio_courses(id,title,status,research_status) VALUES
  ('eeee7777-2222-4000-8000-000000000010','Published cannot start','published','evidence_ok'),
  ('eeee7777-2222-4000-8000-000000000011','Atomic start event failure','idea','idea'),
  ('eeee7777-2222-4000-8000-000000000012','Resume copied generations','idea','idea'),
- ('eeee7777-2222-4000-8000-000000000013','Resume nothing done','idea','idea');
+ ('eeee7777-2222-4000-8000-000000000013','Resume nothing done','idea','idea'),
+ ('eeee7777-2222-4000-8000-000000000014','Restart from the curriculum','idea','idea');
 
 -- Audience and direction are chosen per course; only the course without them must be refused.
 UPDATE public.studio_courses
@@ -75,6 +76,7 @@ INSERT INTO public.studio_course_paths(course_id,path_id) VALUES
  ('eeee7777-2222-4000-8000-000000000009','eeee7777-1111-4000-8000-000000000003'),
  ('eeee7777-2222-4000-8000-000000000012','eeee7777-1111-4000-8000-000000000002'),
  ('eeee7777-2222-4000-8000-000000000013','eeee7777-1111-4000-8000-000000000002'),
+ ('eeee7777-2222-4000-8000-000000000014','eeee7777-1111-4000-8000-000000000002'),
  ('eeee7777-2222-4000-8000-000000000010','eeee7777-1111-4000-8000-000000000001');
 
 INSERT INTO public.studio_catalog_jobs(id,course_id,trigger,status,reason,started_at,finished_at) VALUES
@@ -84,7 +86,8 @@ INSERT INTO public.studio_catalog_jobs(id,course_id,trigger,status,reason,starte
  ('eeee7777-4444-4000-8000-000000000007','eeee7777-2222-4000-8000-000000000007','manual','evidence_ok',NULL,now()-interval '92 days',now()-interval '91 days'),
  ('eeee7777-4444-4000-8000-000000000008','eeee7777-2222-4000-8000-000000000008','manual','evidence_ok',NULL,now()-interval '22 days',now()-interval '21 days'),
  ('eeee7777-4444-4000-8000-000000000009','eeee7777-2222-4000-8000-000000000009','manual','evidence_ok',NULL,now()-interval '121 days',now()-interval '120 days'),
- ('eeee7777-4444-4000-8000-000000000012','eeee7777-2222-4000-8000-000000000012','manual','evidence_ok',NULL,now()-interval '10 days',now()-interval '9 days');
+ ('eeee7777-4444-4000-8000-000000000012','eeee7777-2222-4000-8000-000000000012','manual','evidence_ok',NULL,now()-interval '10 days',now()-interval '9 days'),
+ ('eeee7777-4444-4000-8000-000000000014','eeee7777-2222-4000-8000-000000000014','manual','evidence_ok',NULL,now()-interval '10 days',now()-interval '9 days');
 
 -- Step 0 can still resume from its pinned completed A1 result beyond the normal TTL.
 INSERT INTO public.studio_runs(id,course_id,status,hold_reason,started_at,finished_at,catalog_job_id) VALUES
@@ -116,6 +119,28 @@ INSERT INTO public.studio_generations(
  ('eeee7777-5555-4000-8000-000000000016','eeee7777-3333-4000-8000-000000000012','lessons','lesson-a',0,'A5','text','openai','fixture-model','fixture-model','fixture-v1','{}','completed','resume-lesson-a','{}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days'),
  ('eeee7777-5555-4000-8000-000000000017','eeee7777-3333-4000-8000-000000000012','lesson_review','lesson-a',0,'A6','review','openai','fixture-model','fixture-model','fixture-v1','{}','completed','resume-review-a','{"issues":[]}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days'),
  ('eeee7777-5555-4000-8000-000000000018','eeee7777-3333-4000-8000-000000000012','lessons','lesson-b',0,'A5','text','openai','fixture-model','fixture-model','fixture-v1','{}','completed','resume-lesson-b','{}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days');
+
+-- A failed run whose curriculum is the problem: four accepted early steps and a finished lesson.
+INSERT INTO public.studio_runs(id,course_id,status,hold_reason,started_at,finished_at,catalog_job_id) VALUES
+ ('eeee7777-3333-4000-8000-000000000014','eeee7777-2222-4000-8000-000000000014','draft_failed','fixture failure',now()-interval '4 days',now()-interval '3 days','eeee7777-4444-4000-8000-000000000014');
+INSERT INTO public.studio_run_steps(run_id,step_key,state) VALUES
+ ('eeee7777-3333-4000-8000-000000000014','catalog_research','done'),
+ ('eeee7777-3333-4000-8000-000000000014','brief','done'),
+ ('eeee7777-3333-4000-8000-000000000014','research','done'),
+ ('eeee7777-3333-4000-8000-000000000014','curriculum','done'),
+ ('eeee7777-3333-4000-8000-000000000014','curriculum_review','done'),
+ ('eeee7777-3333-4000-8000-000000000014','lessons','done'),
+ ('eeee7777-3333-4000-8000-000000000014','lesson_review','pending');
+INSERT INTO public.studio_generations(
+  id,run_id,step_key,lesson_id,attempt,agent_role,kind,provider,requested_model_id,model_id,prompt_version,input,status,
+  provider_request_id,output,created_at,submitted_at,completed_at
+) VALUES
+ ('eeee7777-5555-4000-8000-000000000030','eeee7777-3333-4000-8000-000000000014','brief',NULL,0,'A2','text','openai','fixture-model','fixture-model','fixture-v1','{}','completed','restart-brief','{"topic":"fixture"}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days'),
+ ('eeee7777-5555-4000-8000-000000000031','eeee7777-3333-4000-8000-000000000014','research',NULL,0,'A2','research','openai','fixture-model','fixture-model','fixture-v1','{}','completed','restart-research','{"topics":[]}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days'),
+ ('eeee7777-5555-4000-8000-000000000032','eeee7777-3333-4000-8000-000000000014','curriculum',NULL,0,'A3','text','openai','fixture-model','fixture-model','fixture-v1','{}','completed','restart-curriculum','{"modules":[{"lessons":[{"id":"lesson-a"},{"id":"lesson-b"}]}]}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days'),
+ ('eeee7777-5555-4000-8000-000000000033','eeee7777-3333-4000-8000-000000000014','curriculum_review',NULL,0,'A4','review','openai','fixture-model','fixture-model','fixture-v1','{}','completed','restart-curriculum-review','{"issues":[]}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days'),
+ ('eeee7777-5555-4000-8000-000000000034','eeee7777-3333-4000-8000-000000000014','lessons','lesson-a',0,'A5','text','openai','fixture-model','fixture-model','fixture-v1','{}','completed','restart-lesson-a','{}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days'),
+ ('eeee7777-5555-4000-8000-000000000035','eeee7777-3333-4000-8000-000000000014','lesson_review','lesson-a',0,'A6','review','openai','fixture-model','fixture-model','fixture-v1','{}','completed','restart-review-a','{"issues":[]}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days');
 
 SET LOCAL ROLE service_role;
 DO $$
@@ -236,6 +261,36 @@ BEGIN
      OR (SELECT count(*) FROM public.studio_run_events WHERE run_id='eeee7777-3333-4000-8000-000000000020') <> 7 THEN
     RAISE EXCEPTION 'same run ID retry duplicated events: %', result;
   END IF;
+
+  -- Restart from the curriculum: the steps before it are copied; it, its review and every lesson are not.
+  result := public.studio_start_run('eeee7777-2222-4000-8000-000000000014','eeee7777-3333-4000-8000-000000000040',NULL,'eeee7777-3333-4000-8000-000000000014','curriculum');
+  IF result->>'created' <> 'true' OR result->'resume'->>'steps' <> '3'
+     OR result->'resume'->>'lessons_copied' <> '0' OR result->'resume'->>'drafts_copied' <> '0' THEN
+    RAISE EXCEPTION 'restart from curriculum copied the wrong parts: %', result;
+  END IF;
+  IF (SELECT count(*) FROM public.studio_generations WHERE run_id='eeee7777-3333-4000-8000-000000000040' AND step_key IN ('brief','research')) <> 2
+     OR EXISTS (SELECT 1 FROM public.studio_generations WHERE run_id='eeee7777-3333-4000-8000-000000000040' AND step_key IN ('curriculum','curriculum_review','lessons','lesson_review')) THEN
+    RAISE EXCEPTION 'restart from curriculum must copy brief and research only';
+  END IF;
+  IF (SELECT count(*) FROM public.studio_run_steps WHERE run_id='eeee7777-3333-4000-8000-000000000040' AND state='done') <> 3
+     OR EXISTS (SELECT 1 FROM public.studio_run_steps WHERE run_id='eeee7777-3333-4000-8000-000000000040' AND step_key IN ('curriculum','curriculum_review','lessons','lesson_review') AND state <> 'pending') THEN
+    RAISE EXCEPTION 'restart from curriculum must leave the curriculum and later steps pending';
+  END IF;
+  -- A restart needs the run it resumes, and only the research or the curriculum can be restarted from.
+  BEGIN
+    PERFORM public.studio_start_run('eeee7777-2222-4000-8000-000000000013','eeee7777-3333-4000-8000-000000000041',NULL,NULL,'curriculum');
+    RAISE EXCEPTION 'expected restart_requires_resume';
+  EXCEPTION WHEN SQLSTATE 'P0001' THEN
+    GET STACKED DIAGNOSTICS got_message=MESSAGE_TEXT;
+    IF got_message <> 'restart_requires_resume' THEN RAISE; END IF;
+  END;
+  BEGIN
+    PERFORM public.studio_start_run('eeee7777-2222-4000-8000-000000000013','eeee7777-3333-4000-8000-000000000042',NULL,'eeee7777-3333-4000-8000-000000000013','lessons');
+    RAISE EXCEPTION 'expected invalid_restart_step';
+  EXCEPTION WHEN SQLSTATE 'P0001' THEN
+    GET STACKED DIAGNOSTICS got_message=MESSAGE_TEXT;
+    IF got_message <> 'invalid_restart_step' THEN RAISE; END IF;
+  END;
 
   -- A source run with no copied generations returns nothing_done and writes no resume events.
   result := public.studio_start_run('eeee7777-2222-4000-8000-000000000013','eeee7777-3333-4000-8000-000000000021',NULL,'eeee7777-3333-4000-8000-000000000013');
