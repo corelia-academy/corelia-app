@@ -243,5 +243,8 @@ describe("A1 catalog research in the A2 brief", () => {
     expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("không tự đặt thêm tiêu chí");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("Tự thực hành (không bắt buộc)");
     expect(PLATFORM_FORMAT_GUIDE.practice).toContain("bỏ qua vẫn hoàn thành bài");
+    expect(PLATFORM_FORMAT_GUIDE.article).toContain("chỉ article có sơ đồ");
+    expect(PLATFORM_FORMAT_GUIDE.article).toContain("outcome không được yêu cầu đọc hay vẽ sơ đồ");
+    expect(PLATFORM_FORMAT_GUIDE.quiz).toContain("Không hiển thị sơ đồ");
   });
 });
