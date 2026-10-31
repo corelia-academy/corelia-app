@@ -5,6 +5,7 @@
 //     deno run -A --no-config scripts/studio/verify-publish.ts
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.8";
 
+import { appCoverPath, COVER_BUCKET } from "../../supabase/functions/corelia-api/studio/cover.tsx";
 import { renderDiagramPng, draftPath, diagramFile, appImagePath } from "../../supabase/functions/corelia-api/studio/diagram_render.ts";
 import { article, base, curriculum, editCode, question } from "../../supabase/functions/corelia-api/studio/lesson_fixtures.ts";
 import { lessonRefs, toLessonDraft } from "../../supabase/functions/corelia-api/studio/lessons.ts";
@@ -36,13 +37,13 @@ const records = (over: Record<string, object> = {}) =>
   Object.fromEntries(lessonRefs(curriculum).map((r) => [r.lesson.id, { draft: toLessonDraft(r, (over[r.lesson.id] ?? outputs[r.lesson.id]) as never, "vi"), written: prov, reviewed: prov }]));
 
 const admin = must(await db.from("profiles").select("id").eq("role", "admin").limit(1).single(), "admin profile").id as string;
-const created: { course: string; run: string; images: string[] }[] = [];
+const created: { course: string; run: string; images: string[]; covers: string[] }[] = [];
 
 async function setup(title: string) {
   const course = crypto.randomUUID(), run = crypto.randomUUID();
   must(await db.from("studio_courses").insert({ id: course, title, level: "beginner", status: "generating" }), "studio course");
   must(await db.from("studio_runs").insert({ id: run, course_id: course, started_by: admin }), "studio run");
-  created.push({ course, run, images: [] });
+  created.push({ course, run, images: [], covers: [] });
   return { course, run };
 }
 async function putDraftImages(run: string, recs: ReturnType<typeof records>) {
@@ -80,6 +81,10 @@ try {
   const image = await db.storage.from("app").download(appImagePath(id, file));
   check(!image.error && (image.data?.size ?? 0) > 1000, "diagram PNG copied to app/course-thumbnails/<course>/lessons/");
   created[0].images.push(appImagePath(id, file));
+  created[0].covers.push(appCoverPath(id));
+  const coverImage = await db.storage.from(COVER_BUCKET).download(appCoverPath(id));
+  check(!coverImage.error && (coverImage.data?.size ?? 0) > 1000, "cover PNG saved to cdn/course-thumbnails/<course>/cover.png");
+  check(typeof course.data.thumbnail_url === "string" && course.data.thumbnail_url.includes(appCoverPath(id)), "thumbnail_url recorded with generated cover URL");
   check(must(await db.from("studio_runs").select("app_course_id").eq("id", ok.run).single(), "run").app_course_id === id, "run.app_course_id recorded");
 
   const again = await publishRun(db, input);
@@ -120,6 +125,7 @@ try {
     await db.from("courses").delete().eq("id", c.course);
     await db.from("studio_courses").delete().eq("id", c.course);
     if (c.images.length) await db.storage.from("app").remove(c.images);
+    if (c.covers.length) await db.storage.from(COVER_BUCKET).remove(c.covers);
     const drafts = await db.storage.from("studio-drafts").list(`${c.run}/l-art`);
     await db.storage.from("studio-drafts").remove((drafts.data ?? []).map((o) => `${c.run}/l-art/${o.name}`));
   }
