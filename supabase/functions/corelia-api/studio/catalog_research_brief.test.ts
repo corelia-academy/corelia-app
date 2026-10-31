@@ -117,7 +117,7 @@ describe("A1 catalog research in the A2 brief", () => {
   });
 
   it("uses prompt version v6 and selects one enabled code language for the course", () => {
-    expect(SEEDED_PROMPTS["a2-brief"].version).toBe("v8");
+    expect(SEEDED_PROMPTS["a2-brief"].version).toBe("v9");
     expect(SEEDED_PROMPTS["a2-brief"].system).toContain("Nguyên tắc chỉ truyền thụ kiến thức");
     expect(SEEDED_PROMPTS["a2-brief"].system).toContain("không đưa mục tiêu hay phạm vi bắt buộc người học tự chạy lệnh");
     expect(SEEDED_PROMPTS["a2-brief"].system).toContain("hướng dẫn thực hành tự nguyện được phép");
@@ -128,6 +128,8 @@ describe("A1 catalog research in the A2 brief", () => {
     expect(SEEDED_PROMPTS["a2-brief"].system).toContain("mọi suy luận từ A1 phải ghi vào assumptions");
     expect(SEEDED_PROMPTS["a2-brief"].system).toContain("code_language: chọn đúng một ID trong code_languages");
     expect(SEEDED_PROMPTS["a2-brief"].system).toContain("Solana/Anchor → rust");
+    expect(SEEDED_PROMPTS["a2-brief"].system).toContain("Không đưa vào prerequisites điều kiện không có tài liệu để ôn");
+    expect(SEEDED_PROMPTS["a2-brief"].system).toContain("Không có kiến thức nền cần ôn thì để prerequisites rỗng");
     expect(STEP_SPECS.brief!.schema).toBeDefined();
   });
 
