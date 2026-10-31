@@ -8,6 +8,7 @@ export default defineConfig({
       "https://esm.sh/@supabase/supabase-js@2.49.8": "@supabase/supabase-js",
       "npm:react@19.2.0": "react",
       "npm:satori@0.33.5": "satori",
+      "npm:roughjs@4.6.6/bundled/rough.esm.js": "roughjs/bundled/rough.esm.js",
       "npm:@resvg/resvg-wasm@2.6.2": "@resvg/resvg-wasm",
       "npm:@humation/core@1.0.3": "@humation/core",
       "npm:@humation/assets-humation-1@1.0.3": "@humation/assets-humation-1",
