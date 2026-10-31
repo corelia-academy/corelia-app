@@ -9,16 +9,12 @@ export interface AutoResearchCourse {
   id: string;
   status: string;
   research_status: string;
+  research_period_days: number;
 }
 
 export interface AutoResearchPath {
   course_id: string;
   group_kind: string;
-}
-
-export interface AutoResearchScope {
-  group_kind: string;
-  research_period_days: number;
 }
 
 export interface AutoResearchJob {
@@ -32,14 +28,13 @@ export interface AutoResearchJob {
 
 export interface DueCourseSelection {
   courseId: string | null;
-  skippedMissingRequirements: Array<{ courseId: string; reason: "course_has_no_path" | "scope_missing" }>;
+  skippedMissingRequirements: Array<{ courseId: string; reason: "course_has_no_path" }>;
 }
 
 /** Selects the most overdue eligible course, without reading or mutating external state. */
 export function selectDueCourses(input: {
   courses: AutoResearchCourse[];
   paths: AutoResearchPath[];
-  scopes: AutoResearchScope[];
   jobs: AutoResearchJob[];
 }, now: number): DueCourseSelection {
   const pathsByCourse = new Map<string, Set<string>>();
@@ -48,7 +43,6 @@ export function selectDueCourses(input: {
     groupKinds.add(path.group_kind);
     pathsByCourse.set(path.course_id, groupKinds);
   }
-  const periodByGroup = new Map(input.scopes.map((scope) => [scope.group_kind, scope.research_period_days]));
   const jobsByCourse = new Map<string, AutoResearchJob[]>();
   for (const job of input.jobs) {
     const rows = jobsByCourse.get(job.course_id) ?? [];
@@ -67,11 +61,6 @@ export function selectDueCourses(input: {
       skippedMissingRequirements.push({ courseId: course.id, reason: "course_has_no_path" });
       continue;
     }
-    const periods = groupKinds.map((groupKind) => periodByGroup.get(groupKind));
-    if (periods.some((days) => typeof days !== "number" || !Number.isFinite(days) || days < 1)) {
-      skippedMissingRequirements.push({ courseId: course.id, reason: "scope_missing" });
-      continue;
-    }
 
     const courseJobs = jobsByCourse.get(course.id) ?? [];
     if (courseJobs.some((job) => job.status === "running")) continue;
@@ -88,8 +77,7 @@ export function selectDueCourses(input: {
       .reduce((latest, finishedAt) => Math.max(latest, finishedAt), Number.NEGATIVE_INFINITY);
     if (!Number.isFinite(latestSuccessful)) continue;
 
-    const periodDays = Math.min(...periods as number[]);
-    const dueAt = latestSuccessful + periodDays * DAY_MS;
+    const dueAt = latestSuccessful + course.research_period_days * DAY_MS;
     if (now >= dueAt) due.push({ courseId: course.id, dueAt });
   }
 
@@ -147,9 +135,9 @@ export async function queueAutoResearch(db: SupabaseClient, now = Date.now()): P
 }
 
 async function loadDueCourseSelection(db: SupabaseClient, now: number): Promise<DueCourseSelection> {
-  const [courses, pathLinks, scopes, jobs] = await Promise.all([
+  const [courses, pathLinks, jobs] = await Promise.all([
     fetchAllPages<AutoResearchCourse>((from, to) => db.from("studio_courses")
-      .select("id,status,research_status")
+      .select("id,status,research_status,research_period_days")
       .order("id", { ascending: true })
       .range(from, to) as PromiseLike<PageResult<AutoResearchCourse>>),
     fetchAllPages<{ course_id: string; studio_paths: { group_kind: string } | { group_kind: string }[] | null }>((from, to) => db.from("studio_course_paths")
@@ -157,10 +145,6 @@ async function loadDueCourseSelection(db: SupabaseClient, now: number): Promise<
       .order("course_id", { ascending: true })
       .order("path_id", { ascending: true })
       .range(from, to) as PromiseLike<PageResult<{ course_id: string; studio_paths: { group_kind: string } | { group_kind: string }[] | null }>>),
-    fetchAllPages<AutoResearchScope>((from, to) => db.from("studio_catalog_scopes")
-      .select("group_kind,research_period_days")
-      .order("group_kind", { ascending: true })
-      .range(from, to) as PromiseLike<PageResult<AutoResearchScope>>),
     fetchAllPages<AutoResearchJob>((from, to) => db.from("studio_catalog_jobs")
       .select("id,course_id,trigger,status,finished_at,created_at")
       .order("course_id", { ascending: true })
@@ -173,7 +157,7 @@ async function loadDueCourseSelection(db: SupabaseClient, now: number): Promise<
     const related = Array.isArray(link.studio_paths) ? link.studio_paths : link.studio_paths ? [link.studio_paths] : [];
     return related.map((path) => ({ course_id: link.course_id, group_kind: path.group_kind }));
   });
-  return selectDueCourses({ courses, paths, scopes, jobs }, now);
+  return selectDueCourses({ courses, paths, jobs }, now);
 }
 
 function errorMessage(error: unknown): string {

@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const migrationPath = "supabase/migrations/20261030164820_studio_foundation_consolidated.sql";
+const courseContextMigrationPath = "supabase/migrations/20261101090000_studio_course_context.sql";
 const contractPath = "scripts/db/tests/studio-start-gate.integration.sql";
 
 function psql(container, sql) {
@@ -71,9 +72,9 @@ export function runStudioProvenanceMutationTests(container, expectedVersion) {
   expectMutationFailure(container, "W-03 copied-step event mutation", "resumed run must have one A1 event plus six copied-step events", withoutCopiedStepEvents);
   assertCloneEmpty(container, "W-03 mutation");
 
-  const sourceMessage = "Dùng lại kết quả nghiên cứu còn hiệu lực: job hoàn tất cách đây %s ngày, còn hiệu lực %s ngày (kỳ %s ngày của nhóm %s). Không gọi model.";
-  const mutatedMessage = "Dùng lại kết quả nghiên cứu còn hiệu lực: job hoàn tất cách đây %s ngày, còn hiệu lực %s ngày (kỳ %s ngày của nhóm %s), ghi lúc 2026-10-30 UTC. Không gọi model.";
-  const startRunSource = lastFunctionDefinition(source, "CREATE OR REPLACE FUNCTION private.studio_start_run(");
+  const sourceMessage = "Dùng lại kết quả nghiên cứu còn hiệu lực: job hoàn tất cách đây %s ngày, còn hiệu lực %s ngày (kỳ %s ngày của khóa). Không gọi model.";
+  const mutatedMessage = "Dùng lại kết quả nghiên cứu còn hiệu lực: job hoàn tất cách đây %s ngày, còn hiệu lực %s ngày (kỳ %s ngày của khóa), ghi lúc 2026-10-30 UTC. Không gọi model.";
+  const startRunSource = lastFunctionDefinition(readFileSync(resolve(courseContextMigrationPath), "utf8"), "CREATE OR REPLACE FUNCTION private.studio_start_run(");
   if (!startRunSource.includes(sourceMessage)) throw new Error("Could not locate the W-04h source message for mutation.");
   const relativeCopyMutation = startRunSource.replace(sourceMessage, mutatedMessage);
   expectMutationFailure(container, "W-04h absolute UTC message mutation", "source message must not contain an absolute UTC date", relativeCopyMutation);

@@ -570,7 +570,7 @@ async function reopenCurriculum(db: SupabaseClient, runId: string, attempt: numb
 
 export async function loadContext(db: SupabaseClient, run: RunRow, step?: StepKey, lessonId?: string): Promise<RunContext> {
   const [course, links, generations] = await Promise.all([
-    db.from("studio_courses").select("title,level,scope_note").eq("id", run.course_id).single(),
+    db.from("studio_courses").select("title,level,scope_note,audience,corelia_direction,content_locale").eq("id", run.course_id).single(),
     db.from("studio_course_paths").select("studio_paths(group_kind,title)").eq("course_id", run.course_id),
     db.from("studio_generations").select("step_key,attempt,output").eq("run_id", run.id).eq("status", "completed").is("lesson_id", null).order("attempt"),
   ]);
@@ -581,11 +581,11 @@ export async function loadContext(db: SupabaseClient, run: RunRow, step?: StepKe
     return p ? [{ track: p.group_kind, title: p.title }] : [];
   });
   const tracks = [...new Set(paths.map((p) => p.track))];
-  const [scopes, catalogResearch] = await Promise.all([
-    db.from("studio_catalog_scopes").select("group_kind,audience,corelia_direction,locale").in("group_kind", tracks),
-    step === "brief" && run.catalog_job_id ? loadCatalogResearchForBrief(db, run.catalog_job_id, tracks) : Promise.resolve(null),
-  ]);
-  if (scopes.error) throw new Error(scopes.error.message);
+  const catalogResearch = step === "brief" && run.catalog_job_id
+    ? await loadCatalogResearchForBrief(db, run.catalog_job_id, tracks)
+    : null;
+  const { audience, corelia_direction, content_locale, ...courseInput } = course.data as RunContext["course"]
+    & { audience: string | null; corelia_direction: string | null; content_locale: string };
 
   // A curriculum that asked for more research is not a curriculum: it only feeds the research gap.
   const requests = (generations.data ?? []).filter((g) => g.step_key === "curriculum" && researchRequest(g.output) !== null);
@@ -596,14 +596,10 @@ export async function loadContext(db: SupabaseClient, run: RunRow, step?: StepKe
   return {
     revision: curriculumRevision({ curricula: accepted("curriculum"), reviews: accepted("curriculum_review") }, outputs.curriculum_review),
     researchGap: researchGap({ researches: accepted("research"), requests: requests.length }, requests.at(-1)?.output),
-    course: course.data as RunContext["course"],
+    course: courseInput,
     paths,
-    scopes: (scopes.data ?? []).map((s) => ({
-      track: s.group_kind,
-      audience: s.audience,
-      corelia_direction: s.corelia_direction,
-      locale: s.locale,
-    })),
+    // The start gate guarantees both fields; a course edited to NULL afterwards sends no tracks, as an unconfigured group did.
+    scopes: audience && corelia_direction ? tracks.map((track) => ({ track, audience, corelia_direction, locale: content_locale })) : [],
     catalogResearch,
     outputs,
     today: utcDate(Date.now()),

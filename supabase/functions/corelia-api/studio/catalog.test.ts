@@ -324,16 +324,11 @@ describe("acceptCatalogResearch", () => {
 describe("catalog input", () => {
   const rows = (over: Partial<CatalogRows> = {}): CatalogRows => ({
     courseId: "c1",
-    course: { title: "Rust cơ bản", level: "beginner" },
+    course: { title: "Rust cơ bản", level: "beginner", audience: "Dev mới", corelia_direction: "Kỹ năng lõi", content_locale: "vi", research_period_days: 120 },
     paths: [
       { group_kind: "skill", title: "Rust" },
       { group_kind: "skill", title: "Systems" },
       { group_kind: "ecosystem", title: "Solana" },
-    ],
-    scopes: [
-      { group_kind: "skill", audience: "Dev mới", corelia_direction: "Kỹ năng lõi", locale: "vi", research_period_days: 90 },
-      { group_kind: "ecosystem", audience: "Builder", corelia_direction: "Hệ sinh thái", locale: "en", research_period_days: 120 },
-      { group_kind: "role", audience: "ignored", corelia_direction: "ignored", locale: "vi", research_period_days: 365 },
     ],
     neighbours: [
       { group_kind: "skill", id: "c1", title: "Rust cơ bản", level: "beginner", status: "idea" },
@@ -355,29 +350,35 @@ describe("catalog input", () => {
       paths: ["Rust", "Systems"],
       other_courses: [{ title: "Go", level: null, status: "published" }],
     });
+    expect(base.groups[1]).toMatchObject({ audience: "Dev mới", corelia_direction: "Kỹ năng lõi", locale: "vi" });
     expect(base.groups[1].other_courses).toEqual([{ title: "Anchor", level: "advanced", status: "queued" }]);
   });
 
   it("passes the scope note of the course to the model input", () => {
-    const base = assembleCatalogBase(rows({ course: { title: "Rust cơ bản", level: "beginner", scope_note: "E0382, E0499" } }));
+    const base = assembleCatalogBase(rows({ course: { ...rows().course, scope_note: "E0382, E0499" } }));
     expect(buildCatalogInput(base, "2026-10-27", null, null).course).toEqual({ title: "Rust cơ bản", level: "beginner", scope_note: "E0382, E0499" });
   });
 
-  it("uses the longest period of the groups of the course (not of unrelated scopes)", () => {
-    expect(assembleCatalogBase(rows()).research_period_days).toBe(120);
+  it("uses the research period and content locale of the course for every group", () => {
+    const base = assembleCatalogBase(rows({ course: { ...rows().course, content_locale: "en", research_period_days: 30 } }));
+    expect(base.research_period_days).toBe(30);
+    expect(base.groups.map((g) => g.locale)).toEqual(["en", "en"]);
   });
 
-  it("refuses a course without a path, and a group without a scope", () => {
+  it("refuses a course without a path, and a course without audience or direction", () => {
     expect(() => assembleCatalogBase(rows({ paths: [] }))).toThrowError(CatalogInputError);
     try {
       assembleCatalogBase(rows({ paths: [] }));
     } catch (e) {
       expect((e as CatalogInputError).code).toBe("course_has_no_path");
     }
-    try {
-      assembleCatalogBase(rows({ scopes: [] }));
-    } catch (e) {
-      expect((e as CatalogInputError).code).toBe("scope_missing");
+    for (const missing of [{ audience: null }, { corelia_direction: null }]) {
+      try {
+        assembleCatalogBase(rows({ course: { ...rows().course, ...missing } }));
+        throw new Error("expected scope_missing");
+      } catch (e) {
+        expect((e as CatalogInputError).code).toBe("scope_missing");
+      }
     }
   });
 

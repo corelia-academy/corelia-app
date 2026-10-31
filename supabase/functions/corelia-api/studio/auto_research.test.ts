@@ -13,7 +13,7 @@ const courseId = "11111111-1111-4111-8111-111111111111";
 const jobId = "22222222-2222-4222-8222-222222222222";
 
 function course(overrides: Partial<AutoResearchCourse> = {}): AutoResearchCourse {
-  return { id: courseId, status: "idea", research_status: "evidence_ok", ...overrides };
+  return { id: courseId, status: "idea", research_status: "evidence_ok", research_period_days: 90, ...overrides };
 }
 
 function successfulJob(finishedAt: number, overrides: Partial<AutoResearchJob> = {}): AutoResearchJob {
@@ -31,13 +31,11 @@ function successfulJob(finishedAt: number, overrides: Partial<AutoResearchJob> =
 function selectionInput(overrides: Partial<{
   courses: AutoResearchCourse[];
   paths: Array<{ course_id: string; group_kind: string }>;
-  scopes: Array<{ group_kind: string; research_period_days: number }>;
   jobs: AutoResearchJob[];
 }> = {}) {
   return {
     courses: [course()],
     paths: [{ course_id: courseId, group_kind: "skill" }],
-    scopes: [{ group_kind: "skill", research_period_days: 90 }],
     jobs: [successfulJob(NOW - 91 * DAY_MS)],
     ...overrides,
   };
@@ -74,18 +72,9 @@ afterEach(() => {
 });
 
 describe("selectDueCourses", () => {
-  it("is not due just before the strictest group period, but is due at and after the threshold", () => {
+  it("is not due just before the course's own period, but is due at and after the threshold", () => {
     const period = 30 * DAY_MS;
-    const input = selectionInput({
-      paths: [
-        { course_id: courseId, group_kind: "skill" },
-        { course_id: courseId, group_kind: "role" },
-      ],
-      scopes: [
-        { group_kind: "skill", research_period_days: 90 },
-        { group_kind: "role", research_period_days: 30 },
-      ],
-    });
+    const input = selectionInput({ courses: [course({ research_period_days: 30 })] });
     const finishedAt = NOW - period;
     input.jobs = [successfulJob(finishedAt)];
 
@@ -110,22 +99,18 @@ describe("selectDueCourses", () => {
     ];
     const paths = courses.map((row) => ({ course_id: row.id, group_kind: "skill" }));
     const jobs = courses.map((row, index) => ({ ...validHistory[0], id: `job-${index}`, course_id: row.id }));
-    expect(selectDueCourses({ courses, paths, scopes: [{ group_kind: "skill", research_period_days: 90 }], jobs }, NOW).courseId).toBeNull();
+    expect(selectDueCourses({ courses, paths, jobs }, NOW).courseId).toBeNull();
   });
 
-  it("skips missing paths and any missing scope in a multi-group course", () => {
-    const courses = [course(), course({ id: "missing-scope" })];
+  it("skips a course without a path", () => {
+    const courses = [course(), course({ id: "with-path" })];
     const result = selectDueCourses({
       courses,
-      paths: [{ course_id: "missing-scope", group_kind: "ecosystem" }],
-      scopes: [],
-      jobs: [successfulJob(NOW - 200 * DAY_MS), { ...successfulJob(NOW - 200 * DAY_MS), id: "job-2", course_id: "missing-scope" }],
+      paths: [{ course_id: "with-path", group_kind: "ecosystem" }],
+      jobs: [successfulJob(NOW - 200 * DAY_MS), { ...successfulJob(NOW - 200 * DAY_MS), id: "job-2", course_id: "with-path" }],
     }, NOW);
-    expect(result.courseId).toBeNull();
-    expect(result.skippedMissingRequirements).toEqual([
-      { courseId, reason: "course_has_no_path" },
-      { courseId: "missing-scope", reason: "scope_missing" },
-    ]);
+    expect(result.courseId).toBe("with-path");
+    expect(result.skippedMissingRequirements).toEqual([{ courseId, reason: "course_has_no_path" }]);
   });
 
   it("skips running jobs and failed jobs completed within the last 24 hours", () => {
@@ -144,9 +129,9 @@ describe("selectDueCourses", () => {
     const courses = [course({ id: newerId }), course({ id: olderId })];
     const paths = courses.map((row) => ({ course_id: row.id, group_kind: "skill" }));
     const jobs = courses.map((row) => ({ ...successfulJob(NOW - 120 * DAY_MS), id: `job-${row.id}`, course_id: row.id }));
-    expect(selectDueCourses({ courses, paths, scopes: [{ group_kind: "skill", research_period_days: 90 }], jobs }, NOW).courseId).toBe(olderId);
+    expect(selectDueCourses({ courses, paths, jobs }, NOW).courseId).toBe(olderId);
     const oldest = { ...jobs[0], finished_at: new Date(NOW - 150 * DAY_MS).toISOString() };
-    expect(selectDueCourses({ courses, paths, scopes: [{ group_kind: "skill", research_period_days: 90 }], jobs: [oldest, jobs[1]] }, NOW).courseId).toBe(newerId);
+    expect(selectDueCourses({ courses, paths, jobs: [oldest, jobs[1]] }, NOW).courseId).toBe(newerId);
   });
 });
 
@@ -166,7 +151,6 @@ describe("queueAutoResearch", () => {
       studio_catalog_jobs: [{ data: [{ id: jobId, course_id: courseId, trigger: "manual", status: "evidence_ok", finished_at: new Date(NOW - 91 * DAY_MS).toISOString(), created_at: new Date(NOW - 91 * DAY_MS).toISOString() }], error: null }],
       studio_courses: [{ data: [course()], error: null }],
       studio_course_paths: [{ data: [{ course_id: courseId, studio_paths: { group_kind: "skill" } }], error: null }],
-      studio_catalog_scopes: [{ data: [{ group_kind: "skill", research_period_days: 90 }], error: null }],
     });
 
     const result = await queueAutoResearch(mock.db, NOW);
@@ -187,7 +171,6 @@ describe("queueAutoResearch", () => {
       studio_catalog_jobs: [{ data: [{ id: jobId, course_id: courseId, status: "evidence_ok", finished_at: new Date(NOW - 91 * DAY_MS).toISOString() }], error: null }],
       studio_courses: [{ data: [course()], error: null }],
       studio_course_paths: [{ data: [{ course_id: courseId, studio_paths: { group_kind: "skill" } }], error: null }],
-      studio_catalog_scopes: [{ data: [{ group_kind: "skill", research_period_days: 90 }], error: null }],
     };
     const raced = autoDb(dueResults, { data: null, error: { code: "23505", message: "duplicate running job" } });
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
