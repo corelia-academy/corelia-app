@@ -97,9 +97,9 @@ function setReducedMotion(matches: boolean) {
 }
 
 function Harness() {
-  const { barRef, gripProps, isMoved, reset } = useFloatingBarDrag()
+  const { barRef, gripProps, isMoved, resetState, reset } = useFloatingBarDrag()
   return (
-    <div data-testid="box">
+    <div data-testid="box" data-reset-state={resetState}>
       <div data-testid="strip">
         <div ref={barRef} data-testid="bar">
           <button type="button" data-testid="grip" {...gripProps}>
@@ -181,6 +181,7 @@ afterEach(async () => {
   container.remove()
   restoreProto.forEach(restore => restore())
   vi.unstubAllGlobals()
+  vi.useRealTimers()
 })
 
 describe("useFloatingBarDrag", () => {
@@ -329,5 +330,152 @@ describe("useFloatingBarDrag", () => {
 
     await act(async () => root.render(null))
     expect(observer.disconnect).toHaveBeenCalled()
+  })
+
+  describe("reset button lifecycle", () => {
+    const resetState = () => byId("box")!.dataset.resetState
+    const useExitTimers = () => vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+
+    it("stays mounted while it animates out, then closes", async () => {
+      useExitTimers()
+      await mount()
+      expect(resetState()).toBe("closed")
+
+      await dragGrip(-150, -300)
+      await release()
+      expect(resetState()).toBe("open")
+
+      await act(async () => byId("reset")!.click())
+      act(() => springs[0].onDone())
+      expect(resetState()).toBe("closing")
+
+      await act(async () => void vi.advanceTimersByTime(200))
+      expect(resetState()).toBe("closed")
+    })
+
+    it("closes at once when reduced motion is preferred", async () => {
+      setReducedMotion(true)
+      await mount()
+      await dragGrip(-150, -300)
+      await release()
+      await act(async () => byId("reset")!.click())
+
+      expect(resetState()).toBe("closed")
+    })
+
+    it("reopens without waiting when the bar is moved again while closing", async () => {
+      useExitTimers()
+      await mount()
+      await dragGrip(-150, -300)
+      await release()
+      await act(async () => byId("reset")!.click())
+      act(() => springs[0].onDone())
+      expect(resetState()).toBe("closing")
+
+      await dragGrip(-50, -50)
+      await release()
+      expect(resetState()).toBe("open")
+      await act(async () => void vi.advanceTimersByTime(500))
+      expect(resetState()).toBe("open")
+    })
+  })
+
+  describe("touch and press-and-hold", () => {
+    const touch = (type: string, init: PointerEventInit = {}) => pointer(type, { pointerType: "touch", ...init })
+    const fire = (event: Event) => act(async () => void grip().dispatchEvent(event))
+    const wait = (ms: number) => act(async () => void vi.advanceTimersByTime(ms))
+    // Only the timers the hook uses are faked, so React's own scheduling keeps running.
+    const useHoldTimers = () => vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+
+    it("does nothing on a quick tap", async () => {
+      useHoldTimers()
+      await mount()
+      await fire(touch("pointerdown", { clientX: 500, clientY: 500 }))
+      await fire(touch("pointerup"))
+      await wait(500)
+
+      expect(bar().style.transform).toBe("")
+      expect(bar().hasAttribute("data-dragging")).toBe(false)
+      expect(byId("reset")).toBeNull()
+      expect(storage.getItem(STORAGE_KEY)).toBeNull()
+    })
+
+    it("picks the bar up after the hold, follows the finger and blocks page scroll meanwhile", async () => {
+      useHoldTimers()
+      await mount()
+      await fire(touch("pointerdown", { clientX: 500, clientY: 500 }))
+      await wait(250)
+      expect(bar().hasAttribute("data-dragging")).toBe(true)
+
+      await fire(touch("pointermove", { clientX: 350, clientY: 200 }))
+      expect(translateOf(bar())).toEqual({ x: -150, y: -300 })
+
+      const duringDrag = new Event("touchmove", { cancelable: true })
+      window.dispatchEvent(duringDrag)
+      expect(duringDrag.defaultPrevented).toBe(true)
+
+      await fire(touch("pointerup"))
+      expect(bar().hasAttribute("data-dragging")).toBe(false)
+      expect(savedPosition()).toEqual({ x: -0.15, y: -0.5 })
+
+      const afterDrag = new Event("touchmove", { cancelable: true })
+      window.dispatchEvent(afterDrag)
+      expect(afterDrag.defaultPrevented).toBe(false)
+    })
+
+    it("treats a finger that moves before the hold finishes as a scroll, not a drag", async () => {
+      useHoldTimers()
+      await mount()
+      await fire(touch("pointerdown", { clientX: 500, clientY: 500 }))
+      await fire(touch("pointermove", { clientX: 500, clientY: 520 }))
+      await wait(500)
+      await fire(touch("pointermove", { clientX: 300, clientY: 300 }))
+
+      expect(bar().style.transform).toBe("")
+      expect(bar().hasAttribute("data-dragging")).toBe(false)
+    })
+
+    it("starts a mouse drag only after the 4px slop", async () => {
+      await mount()
+      await dragGrip(3, 0)
+      expect(bar().style.transform).toBe("")
+
+      await dragGrip(40, 0)
+      expect(translateOf(bar()).x).toBe(40)
+    })
+
+    it("does not start a drag when the pointer cannot be captured", async () => {
+      vi.mocked(HTMLElement.prototype.setPointerCapture).mockImplementationOnce(() => {
+        throw new Error("NotFoundError")
+      })
+      await mount()
+      await dragGrip(-150, -300)
+
+      expect(bar().style.transform).toBe("")
+    })
+
+    it("ends the drag when pointer capture is lost without a pointerup", async () => {
+      useHoldTimers()
+      await mount()
+      await fire(touch("pointerdown", { clientX: 500, clientY: 500 }))
+      await wait(250)
+      await fire(touch("pointermove", { clientX: 350, clientY: 200 }))
+      await fire(touch("lostpointercapture"))
+
+      expect(bar().hasAttribute("data-dragging")).toBe(false)
+      expect(savedPosition()).toEqual({ x: -0.15, y: -0.5 })
+    })
+
+    it("drops a pending hold when the bar unmounts", async () => {
+      useHoldTimers()
+      await mount()
+      await fire(touch("pointerdown", { clientX: 500, clientY: 500 }))
+      await act(async () => root.render(null))
+      await wait(500)
+
+      const afterUnmount = new Event("touchmove", { cancelable: true })
+      window.dispatchEvent(afterUnmount)
+      expect(afterUnmount.defaultPrevented).toBe(false)
+    })
   })
 })

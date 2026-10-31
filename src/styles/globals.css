@@ -1723,6 +1723,30 @@
   }
 }
 
+/* Scroll target highlight: ScrollToTarget sets data-scroll-highlight on the focused block. */
+@keyframes scrollTargetPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+
+  30% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 35%, transparent);
+  }
+}
+
+[data-scroll-highlight="true"] {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  animation: scrollTargetPulse 1.2s ease-out 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-scroll-highlight="true"] {
+    animation: none;
+  }
+}
+
 /* Press feedback: compositor-only transform, no JS. */
 .motion-press {
   transition: transform 120ms ease-out;

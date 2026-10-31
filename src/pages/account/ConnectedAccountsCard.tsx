@@ -128,7 +128,7 @@ export function ConnectedAccountsCard() {
   return <section className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card">
     <h2 className="font-display text-heading-medium">{t("xp.connections.title")}</h2>
     {callbackError ? <p role="alert" className="mt-3 rounded-lg border border-destructive p-3 text-sm text-destructive">{t(callbackError.messageKey)}</p> : null}
-    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border-subtle p-3">
+    <div id="connected-github" tabIndex={-1} className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border-subtle p-3">
       <div className="flex items-center gap-2"><GithubLogo className="size-5" weight="duotone" aria-hidden /><div><span className="font-medium">GitHub</span><p className="break-all text-xs text-foreground-muted">{identities.isSuccess ? githubIdentity ? githubIdentity.identity_data?.user_name || githubIdentity.identity_data?.email : t("xp.connections.notConnected") : null}</p></div></div>
       {identities.isPending ? <span className="text-sm text-foreground-muted">{t("xp.connections.loading")}</span> : identities.isError ? <span className="text-sm text-destructive">{t("xp.connections.loadFailed")}</span> : githubIdentity ? <span className="text-sm text-primary">{t("xp.connections.connected")}</span> : <button type="button" disabled={connecting} onClick={() => void connectIdentity("github")} className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">{connecting ? t("xp.connections.loading") : t("xp.connections.connectGithub")}</button>}
     </div>
@@ -139,7 +139,7 @@ export function ConnectedAccountsCard() {
     {(["ethereum", "solana"] as const).map((chain) => {
       const linked = wallets.data?.filter((wallet) => wallet.chain === chain) ?? [];
       const name = chain === "ethereum" ? "Ethereum" : "Solana";
-      return <div key={chain} className="mt-3 space-y-3 rounded-xl border border-border-subtle p-3">
+      return <div key={chain} id={`connected-${chain}`} tabIndex={-1} className="mt-3 space-y-3 rounded-xl border border-border-subtle p-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 font-medium"><Wallet className="size-5" aria-hidden />{name}</div>
           <span className="flex items-center gap-1.5 text-sm text-foreground-muted">
