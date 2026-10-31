@@ -508,7 +508,7 @@ describe("studio acceptance", () => {
     }, today).ok).toBe(true);
   });
 
-  it("rejects video candidates without read evidence, a parsed URL, a unique ID and a research topic", () => {
+  it("drops invalid video candidates instead of rejecting the research", () => {
     const candidate = {
       topic: "ownership",
       url: "https://youtu.be/aaaaaaaaaaa",
@@ -517,16 +517,30 @@ describe("studio acceptance", () => {
       channel_basis: "Trang giới thiệu kênh đã đọc mô tả nội dung giáo dục Rust.",
       evidence_source_ids: ["s1"],
     };
-    expect(acceptResearch({ ...research, videos: [{ ...candidate, evidence_source_ids: [] }] }, today))
-      .toMatchObject({ ok: false, reason: expect.stringContaining("evidence_source_ids phải có ít nhất một ID nguồn đã đọc") });
-    expect(acceptResearch({ ...research, videos: [{ ...candidate, evidence_source_ids: ["s3"] }] }, today))
-      .toMatchObject({ ok: false, reason: expect.stringContaining("evidence_source_ids phải trỏ tới nguồn access = read") });
-    expect(acceptResearch({ ...research, videos: [{ ...candidate, url: "https://example.com/video" }] }, today))
-      .toMatchObject({ ok: false, reason: expect.stringContaining("url không phải link YouTube hợp lệ") });
-    expect(acceptResearch({ ...research, videos: [candidate, { ...candidate, url: "https://youtube.com/watch?v=aaaaaaaaaaa" }] }, today))
-      .toMatchObject({ ok: false, reason: expect.stringContaining("trùng video ID") });
-    expect(acceptResearch({ ...research, videos: [{ ...candidate, topic: "not in research" }] }, today))
-      .toMatchObject({ ok: false, reason: expect.stringContaining("topic không có trong research") });
+    const invalid = [
+      [{ ...candidate, evidence_source_ids: [] }, "evidence_source_ids phải có ít nhất một ID nguồn đã đọc"],
+      [{ ...candidate, evidence_source_ids: ["s3"] }, "evidence_source_ids phải trỏ tới nguồn access = read"],
+      [{ ...candidate, url: "https://example.com/video" }, "url không phải link YouTube hợp lệ"],
+      [{ ...candidate, topic: "not in research" }, "topic không có trong research"],
+    ] as const;
+    for (const [bad, problem] of invalid) {
+      const result = acceptResearch({ ...research, videos: [bad] }, today);
+      expect(result).toMatchObject({ ok: true, summary: expect.stringContaining(problem), normalizedOutput: { videos: [] } });
+    }
+
+    const duplicate = { ...candidate, url: "https://youtube.com/watch?v=aaaaaaaaaaa" };
+    const other = { ...candidate, url: "https://youtu.be/bbbbbbbbbbb" };
+    const mixed = acceptResearch({ ...research, videos: [candidate, duplicate, other] }, today);
+    expect(mixed).toMatchObject({ ok: true, summary: expect.stringContaining("trùng video ID") });
+    expect((mixed as { normalizedOutput: { videos: unknown[] } }).normalizedOutput.videos).toEqual([candidate, other]);
+    expect(acceptResearch({ ...research, videos: "not a list" }, today))
+      .toMatchObject({ ok: true, normalizedOutput: { videos: [] } });
+  });
+
+  it("still rejects research whose required content is invalid when videos are also invalid", () => {
+    const badVideo = { topic: "ownership", url: "https://example.com/video" };
+    expect(acceptResearch({ ...research, topics: [], videos: [badVideo] }, today))
+      .toMatchObject({ ok: false, reason: expect.stringContaining("không có chủ đề") });
   });
 
   it("accepts ready research with no stack tools to choose", () => {

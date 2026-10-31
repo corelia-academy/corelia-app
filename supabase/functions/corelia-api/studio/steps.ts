@@ -449,26 +449,32 @@ function stackChoiceProblems(value: unknown, sources: Research["sources"]): stri
   return problems;
 }
 
-function researchVideoProblems(
+/**
+ * Video candidates are optional extra reading, so an invalid one is dropped instead of rejecting the
+ * research (which would discard every source read in that run). Valid candidates pass through unchanged.
+ */
+function usableResearchVideos(
   value: unknown,
   topics: Research["topics"],
   sources: Research["sources"],
-): string[] {
-  if (value === undefined) return []; // older accepted research has no video candidates
-  if (!Array.isArray(value)) return ["videos phải là danh sách"];
+): { videos: unknown[]; dropped: string[] } {
+  if (value === undefined) return { videos: [], dropped: [] }; // older accepted research has no video candidates
+  if (!Array.isArray(value)) return { videos: [], dropped: ["videos phải là danh sách"] };
 
   const knownTopics = new Set(topics.map((topic) => normalizeResearchTopic(topic.topic)));
   const readSources = new Set(sources.filter((source) => source.access === "read").map((source) => source.source_id));
   const videoIds = new Set<string>();
-  const problems: string[] = [];
+  const videos: unknown[] = [];
+  const dropped: string[] = [];
 
   value.forEach((candidate, index) => {
     const label = `videos[${index}]`;
     if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
-      problems.push(`${label} phải là video ứng viên`);
+      dropped.push(`${label} phải là video ứng viên`);
       return;
     }
     const video = candidate as Record<string, unknown>;
+    const problems: string[] = [];
     const topic = typeof video.topic === "string" ? normalizeResearchTopic(video.topic) : "";
     if (!topic) problems.push(`${label}: thiếu topic`);
     else if (!knownTopics.has(topic)) problems.push(`${label}: topic không có trong research`);
@@ -477,7 +483,6 @@ function researchVideoProblems(
     const videoId = url ? getYoutubeVideoId(url) : null;
     if (!videoId) problems.push(`${label}: url không phải link YouTube hợp lệ`);
     else if (videoIds.has(videoId)) problems.push(`${label}: trùng video ID`);
-    else videoIds.add(videoId);
 
     for (const field of ["title", "channel", "channel_basis"] as const) {
       if (typeof video[field] !== "string" || !video[field].trim()) problems.push(`${label}: thiếu ${field}`);
@@ -493,8 +498,15 @@ function researchVideoProblems(
         problems.push(`${label}: evidence_source_ids phải trỏ tới nguồn access = read`);
       }
     }
+
+    if (problems.length > 0) {
+      dropped.push(...problems);
+      return;
+    }
+    videoIds.add(videoId!);
+    videos.push(candidate);
   });
-  return problems;
+  return { videos, dropped };
 }
 
 export function acceptResearch(output: unknown, today: string): Acceptance {
@@ -507,10 +519,7 @@ export function acceptResearch(output: unknown, today: string): Acceptance {
   if (stackProblems.length > 0) {
     return { ok: false, reason: `Research stack_choice chưa hợp lệ: ${list(stackProblems)}` };
   }
-  const videoProblems = researchVideoProblems(research.videos, research.topics, research.sources);
-  if (videoProblems.length > 0) {
-    return { ok: false, reason: `Research videos chưa hợp lệ: ${list(videoProblems)}` };
-  }
+  const { videos, dropped: droppedVideos } = usableResearchVideos(research.videos, research.topics, research.sources);
   // Lessons are written from key points, so every point must rest on a source that was actually
   // read, and each topic needs an official source: community sources only supplement.
   const read = new Map(research.sources.filter((s) => s.access === "read").map((s) => [s.source_id, s]));
@@ -542,9 +551,11 @@ export function acceptResearch(output: unknown, today: string): Acceptance {
   }
   if (problems.length > 0) return { ok: false, reason: `Research chưa đạt: ${list(problems)}` };
   const points = research.topics.reduce((n, t) => n + t.key_points.length, 0);
+  const droppedNote = droppedVideos.length > 0 ? ` Bỏ video không hợp lệ: ${list(droppedVideos)}.` : "";
   return {
     ok: true,
-    summary: `${research.topics.length} chủ đề, ${points} ý chính, ${research.misconceptions.length} lỗi hiểu sai, ${read.size} nguồn đã đọc.`,
+    summary: `${research.topics.length} chủ đề, ${points} ý chính, ${research.misconceptions.length} lỗi hiểu sai, ${read.size} nguồn đã đọc.${droppedNote}`,
+    ...(droppedVideos.length > 0 ? { normalizedOutput: { ...research, videos } } : {}),
   };
 }
 
