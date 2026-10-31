@@ -365,9 +365,10 @@ describe("studio lesson loop: research version handoff", () => {
     };
     const writer = buildLessonInput(lessonContext, "l-art");
     const reviewer = buildLessonReviewInput(lessonContext, "l-art");
-    expect((writer.research as Record<string, any>).videos).toEqual([candidates[0]]);
-    expect((reviewer.research as Record<string, any>).videos).toEqual([candidates[0]]);
-    expect((buildLessonInput(lessonContext, "l-vid").research as Record<string, any>).videos).toEqual([candidates[1]]);
+    // The ID the writer must answer with is given, not left to be read out of the URL.
+    expect((writer.research as Record<string, any>).videos).toEqual([{ ...candidates[0], video_id: "aaaaaaaaaaa" }]);
+    expect((reviewer.research as Record<string, any>).videos).toEqual([{ ...candidates[0], video_id: "aaaaaaaaaaa" }]);
+    expect((buildLessonInput(lessonContext, "l-vid").research as Record<string, any>).videos).toEqual([{ ...candidates[1], video_id: "bbbbbbbbbbb" }]);
     expect(buildLessonInput(lessonContext, "l-vid")).toMatchObject({ lesson: { id: "l-vid", type: "video" } });
     expect(lessonTools("l-vid", lessonContext)).toBeUndefined();
 

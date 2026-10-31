@@ -300,7 +300,8 @@ function lessonBase(ctx: RunContext, lessonId: string) {
         topics: research.topics
           .filter((t) => touches(t.source_ids))
           .map((t) => ({ ...t, key_points: t.key_points.filter((k) => touches(k.source_ids)) })),
-        videos: lessonVideoCandidates(research, lesson.source_ids),
+        // The writer answers with video IDs, so the ID is given instead of left to be read out of the URL.
+        videos: lessonVideoCandidates(research, lesson.source_ids).map((video) => ({ ...video, video_id: getYoutubeVideoId(video.url) })),
         ...(research.stack_choice ? { stack_choice: research.stack_choice } : {}),
         tool_versions: (research.tool_versions ?? []).filter((v) => touches(v.source_ids)),
         misconceptions: research.misconceptions.filter((m) => touches(m.source_ids)),
@@ -706,21 +707,18 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
     const id = getYoutubeVideoId(candidate.url);
     if (id && !candidateById.has(id)) candidateById.set(id, candidate);
   }
+  // Suggested videos are optional "Xem thêm" extras: one that cannot be used is dropped and noted, it is
+  // not a reason to refuse a lesson that is otherwise sound.
+  const droppedVideos: string[] = [];
+  const keptVideoIds: string[] = [];
+  if (out.suggested_videos !== undefined && !Array.isArray(out.suggested_videos)) droppedVideos.push("suggested_videos phải là mảng video ID");
   const suggestedVideoIds = Array.isArray(out.suggested_videos) ? out.suggested_videos : [];
-  if (out.suggested_videos !== undefined && !Array.isArray(out.suggested_videos)) {
-    problems.push("suggested_videos phải là mảng video ID");
-  }
-  if (suggestedVideoIds.length > 2) problems.push("suggested_videos tối đa 2 video");
-  const seenSuggestedVideoIds = new Set<string>();
   for (const [index, videoId] of suggestedVideoIds.entries()) {
-    if (typeof videoId !== "string" || !videoId.trim()) {
-      problems.push(`suggested_videos[${index}] phải là video ID`);
-    } else if (seenSuggestedVideoIds.has(videoId)) {
-      problems.push(`suggested_videos[${index}] bị trùng video ID`);
-    } else {
-      seenSuggestedVideoIds.add(videoId);
-      if (!candidateById.has(videoId)) problems.push(`suggested_videos[${index}] ${videoId} không thuộc ứng viên của lesson`);
-    }
+    if (typeof videoId !== "string" || !videoId.trim()) droppedVideos.push(`suggested_videos[${index}] phải là video ID`);
+    else if (keptVideoIds.includes(videoId)) droppedVideos.push(`suggested_videos[${index}] bị trùng video ID`);
+    else if (!candidateById.has(videoId)) droppedVideos.push(`suggested_videos[${index}] ${videoId} không thuộc ứng viên của lesson`);
+    else if (keptVideoIds.length >= 2) droppedVideos.push(`suggested_videos[${index}] vượt tối đa 2 video`);
+    else keptVideoIds.push(videoId);
   }
 
   const blockKey = BLOCK_OF[format];
@@ -747,7 +745,8 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
   if (problems.length > 0) return { ok: false, reason: `Lesson ${lessonId} chưa hợp lệ: ${list(problems)}` };
 
   const locale = (ctx.outputs.brief as BriefFull).locale;
-  const draft = toLessonDraft(ref, out, locale, research);
+  // Without the suggested videos: the resources the code builds from them are not text the model wrote.
+  const draft = toLessonDraft(ref, { ...out, suggested_videos: [] }, locale, research);
   for (const { field, code } of validateLesson(draft.lesson)) problems.push(`${field}: ${code}`);
   if (format === "article") problems.push(...diagramProblems(out.article!.description_markdown, out.article!.diagrams));
   if (format === "quiz") problems.push(...quizProblems(out.quiz!, draft));
@@ -774,6 +773,8 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
 
   const targets: { videoId: string; candidate: ResearchVideoCandidate; location: string }[] = [];
   const targetIds = new Set<string>();
+  // A video the lesson itself needs (a video lesson, a link the model wrote in its text) must pass; a suggestion need not.
+  const requiredIds = new Set<string>();
   const addTarget = (videoId: string, candidate: ResearchVideoCandidate, location: string) => {
     if (targetIds.has(videoId)) return;
     targetIds.add(videoId);
@@ -783,11 +784,10 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
     const id = getYoutubeVideoId(out.video!.youtube_url)!; // validateLesson accepted the URL
     const candidate = candidateById.get(id);
     if (!candidate) problems.push(`video ${id} không có trong research.videos phù hợp với lesson`);
-    else addTarget(id, candidate, "lesson.youtube_url");
-  }
-  for (const [index, videoId] of suggestedVideoIds.entries()) {
-    const candidate = typeof videoId === "string" ? candidateById.get(videoId) : undefined;
-    if (candidate) addTarget(videoId, candidate, `suggested_videos[${index}]`);
+    else {
+      addTarget(id, candidate, "lesson.youtube_url");
+      requiredIds.add(id);
+    }
   }
   for (const field of learnerTextFields(draft)) {
     for (const link of youtubeLinks(field.text)) {
@@ -801,20 +801,34 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
         continue;
       }
       addTarget(link.videoId, candidate, field.location);
+      requiredIds.add(link.videoId);
     }
   }
+  for (const [index, videoId] of keptVideoIds.entries()) addTarget(videoId, candidateById.get(videoId)!, `suggested_videos[${index}]`);
   if (problems.length > 0) return { ok: false, reason: `Lesson ${lessonId} chưa hợp lệ: ${list(problems)}` };
 
+  const unusable = new Set<string>();
   for (const { videoId, candidate, location } of targets) {
     const embed = await youtubeEmbeddable(videoId, fetchFn);
-    if (!embed) {
-      problems.push(`${location}: video ${videoId} không tồn tại, không nhúng được hoặc thiếu author_name (oEmbed)`);
-    } else if (channelKey(embed.author_name) !== channelKey(candidate.channel)) {
-      problems.push(`${location}: author_name không khớp channel research cho video ${videoId}`);
+    const problem = !embed
+      ? `${location}: video ${videoId} không tồn tại, không nhúng được hoặc thiếu author_name (oEmbed)`
+      : channelKey(embed.author_name) !== channelKey(candidate.channel)
+      ? `${location}: author_name không khớp channel research cho video ${videoId}`
+      : null;
+    if (!problem) continue;
+    if (requiredIds.has(videoId)) problems.push(problem);
+    else {
+      unusable.add(videoId);
+      droppedVideos.push(problem);
     }
   }
   if (problems.length > 0) return { ok: false, reason: `Lesson ${lessonId} chưa hợp lệ: ${list(problems)}` };
-  return { ok: true, summary: `${format} ${lessonId} đạt (${draft.lesson.title}).` };
+  const note = droppedVideos.length > 0 ? ` Bỏ video xem thêm: ${list(droppedVideos)}.` : "";
+  return {
+    ok: true,
+    summary: `${format} ${lessonId} đạt (${draft.lesson.title}).${note}`,
+    ...(droppedVideos.length > 0 ? { normalizedOutput: { ...out, suggested_videos: keptVideoIds.filter((id) => !unusable.has(id)) } } : {}),
+  };
 }
 
 function list(items: string[], max = 4): string {

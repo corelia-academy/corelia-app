@@ -391,32 +391,53 @@ describe("studio lessons: accept by format", () => {
     expect(toLessonDraft(ref, empty as never, "vi", ctx.outputs.research as never).lesson.resources).toBeUndefined();
   });
 
-  it("rejects suggested video IDs that are unknown, duplicated, or over the limit", async () => {
-    expect(await reason("l-art", { article, suggested_videos: ["ccccccccccc"] })).toContain("không thuộc ứng viên của lesson");
-    expect(await reason("l-art", { article, suggested_videos: ["aaaaaaaaaaa", "aaaaaaaaaaa"] })).toContain("bị trùng video ID");
-    expect(await reason("l-code", { code: editCode, suggested_videos: ["aaaaaaaaaaa", "bbbbbbbbbbb", "ccccccccccc"], source_ids: ["s1", "s2"] })).toContain("tối đa 2 video");
+  it("drops suggested video IDs that are unknown, duplicated or over the limit instead of rejecting the lesson", async () => {
+    const dropped = async (id: string, out: object) => {
+      const r = await accept(id, out);
+      return r.ok ? { summary: r.summary, kept: (r.normalizedOutput as { suggested_videos: string[] }).suggested_videos } : { summary: r.reason, kept: null };
+    };
+    expect(await dropped("l-art", { article, suggested_videos: ["ccccccccccc"] }))
+      .toMatchObject({ summary: expect.stringContaining("không thuộc ứng viên của lesson"), kept: [] });
+    expect(await dropped("l-art", { article, suggested_videos: ["aaaaaaaaaaa", "aaaaaaaaaaa"] }))
+      .toMatchObject({ summary: expect.stringContaining("bị trùng video ID"), kept: ["aaaaaaaaaaa"] });
+    expect(await dropped("l-code", { code: editCode, suggested_videos: ["aaaaaaaaaaa", "bbbbbbbbbbb", "ccccccccccc"], source_ids: ["s1", "s2"] }))
+      .toMatchObject({ summary: expect.stringContaining("không thuộc ứng viên của lesson"), kept: ["aaaaaaaaaaa", "bbbbbbbbbbb"] });
+    expect(await dropped("l-art", { article, suggested_videos: "aaaaaaaaaaa" }))
+      .toMatchObject({ summary: expect.stringContaining("phải là mảng video ID"), kept: [] });
+    // A link the model wrote in the lesson text is not optional.
     expect(await reason("l-art", { article, resources: [{ title: "Video xem thêm", url: "https://www.youtube.com/watch?v=aaaaaaaaaaa" }] }))
       .toContain("video xem thêm phải được chọn qua suggested_videos");
   });
 
-  it("oEmbeds each suggested ID once, rejects missing embeds or channel mismatch, and keeps transient errors", async () => {
+  it("oEmbeds each suggested ID once, drops a missing embed or channel mismatch, and keeps transient errors", async () => {
     const articleWithLink = {
       ...article,
-      description_markdown: `${article.description_markdown}\n\n[Xem thêm](https://youtu.be/aaaaaaaaaaa)`,
+      description_markdown: `${article.description_markdown}
+
+[Xem thêm](https://youtu.be/aaaaaaaaaaa)`,
     };
     let calls = 0;
     const spy = (() => {
       calls++;
       return Promise.resolve(new Response(JSON.stringify({ author_name: "Rust Education" }), { status: 200 }));
     }) as typeof fetch;
-    expect((await accept("l-art", { article: articleWithLink, suggested_videos: ["aaaaaaaaaaa"] }, spy)).ok).toBe(true);
+    const good = await accept("l-art", { article: articleWithLink, suggested_videos: ["aaaaaaaaaaa"] }, spy);
+    expect(good).toMatchObject({ ok: true });
+    expect(good).not.toHaveProperty("normalizedOutput");
     expect(calls).toBe(1);
 
+    const dropsSuggestion = async (fetchFn: typeof fetch, note: string) => {
+      const r = await accept("l-art", { article, suggested_videos: ["aaaaaaaaaaa"] }, fetchFn);
+      expect(r).toMatchObject({ ok: true, summary: expect.stringContaining(note), normalizedOutput: { suggested_videos: [] } });
+    };
+    await dropsSuggestion((() => Promise.resolve(new Response(JSON.stringify({ author_name: "Other Channel" }), { status: 200 }))) as typeof fetch, "author_name không khớp channel research");
+    await dropsSuggestion((() => Promise.resolve(new Response("", { status: 404 }))) as typeof fetch, "không nhúng được");
+
+    // The same video linked in the lesson text must pass: that link is not optional.
     const wrongChannel = (() => Promise.resolve(new Response(JSON.stringify({ author_name: "Other Channel" }), { status: 200 }))) as typeof fetch;
-    expect(await reason("l-art", { article, suggested_videos: ["aaaaaaaaaaa"] }, wrongChannel))
+    expect(await reason("l-art", { article: articleWithLink, suggested_videos: ["aaaaaaaaaaa"] }, wrongChannel))
       .toContain("author_name không khớp channel research");
-    const missing = (() => Promise.resolve(new Response("", { status: 404 }))) as typeof fetch;
-    expect(await reason("l-art", { article, suggested_videos: ["aaaaaaaaaaa"] }, missing)).toContain("không nhúng được");
+
     const server = (() => Promise.resolve(new Response("", { status: 503 }))) as typeof fetch;
     const offline = (() => Promise.reject(new Error("offline"))) as typeof fetch;
     await expect(accept("l-art", { article, suggested_videos: ["aaaaaaaaaaa"] }, server)).rejects.toBeInstanceOf(TransientError);

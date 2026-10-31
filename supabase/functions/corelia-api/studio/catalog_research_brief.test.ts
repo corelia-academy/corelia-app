@@ -134,13 +134,20 @@ describe("A1 catalog research in the A2 brief", () => {
   });
 
   it("keeps A5 and A6 package-version decisions bounded by research evidence", () => {
-    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v19");
+    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v20");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("tool_versions của research chỉ ghi mức tối thiểu hoặc phiên bản theo nguồn");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("nếu chỉ nêu mức tối thiểu, ghi rõ đó là mức tối thiểu và để lệnh không ghim phiên bản");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("Không tự suy ra phiên bản.");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("open_questions blocking = false ghi phiên bản chưa xác minh");
 
-    expect(SEEDED_PROMPTS["a6-lesson-review"].version).toBe("v17");
+    expect(SEEDED_PROMPTS["a6-lesson-review"].version).toBe("v18");
+    const a5Prompt = SEEDED_PROMPTS["a5-lesson"].system;
+    expect(a5Prompt).toContain("Mỗi câu phải tự đủ ngữ cảnh");
+    expect(a5Prompt).toContain("Nhãn của các node không được trùng nhau");
+    expect(a5Prompt).toContain("một mũi tên arc_above và một mũi tên arc_below");
+    expect(a5Prompt).toContain("chứa nguyên một từ định danh");
+    expect(a5Prompt).toContain("chỉ chọn video_id (trường có sẵn của từng ứng viên)");
+    for (const key of ["a4-curriculum-review", "a6-lesson-review"]) expect(SEEDED_PROMPTS[key].system).toContain("Nếu đầu vào có previous_attempt");
     expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("phải liệt kê MỌI issue blocking trong một lần review");
     expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("Nếu đầu vào có previous_review");
     expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("KHÔNG phải lỗi blocking nếu tool_versions chỉ nêu mức tối thiểu (chưa chốt bộ phiên bản tương thích)");
@@ -157,9 +164,9 @@ describe("A1 catalog research in the A2 brief", () => {
     const a6 = SEEDED_PROMPTS["a6-lesson-review"];
 
     expect(a3.version).toBe("v19");
-    expect(a4.version).toBe("v16");
-    expect(a5.version).toBe("v19");
-    expect(a6.version).toBe("v17");
+    expect(a4.version).toBe("v17");
+    expect(a5.version).toBe("v20");
+    expect(a6.version).toBe("v18");
     expect(a2.version).toBe("v13");
     expect(a2.system).toContain("videos là mảng có thể rỗng");
     expect(a2.system).toContain("evidence_source_ids không rỗng");
