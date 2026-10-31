@@ -19,7 +19,7 @@ import { queueAutoResearch } from "./auto_research.ts";
 import { purgeExpiredDrafts } from "./drafts.ts";
 import { rerankIfStale } from "./ranking_run.ts";
 import { loadCatalogResearchForBrief } from "./catalog_research_brief.ts";
-import { agentKey, errorMessage, failGeneration, loadFailureKind, pollOrExpire } from "./generations.ts";
+import { agentKey, errorMessage, failGeneration, fallBackToDefaultTier, loadFailureKind, pollOrExpire } from "./generations.ts";
 import { submitResponse } from "./openai.ts";
 import { publishRun, PublishRejected } from "./publish.ts";
 import type { StartResult } from "./resume.ts";
@@ -748,6 +748,34 @@ async function pollStep(db: SupabaseClient, run: RunRow, step: StepKey, latest: 
   const agent = stepAgent(step)!;
   const label = lessonId ? `${STEP_LABEL[step]} ${lessonId}` : STEP_LABEL[step];
   if (result.state === "failed") {
+    if (result.cause === "provider") {
+      // Flex has no capacity (or waited too long): the same attempt goes again on the default tier.
+      const fallback = await fallBackToDefaultTier(db, generationId, requestId, async ({ input, params }) => {
+        const prompt = await loadAgentPrompt(db, agent.promptKey);
+        return submitResponse(apiKey, {
+          model: spec.model,
+          instructions: prompt.system,
+          input,
+          sharedInputKeys: spec.sharedInputKeys,
+          effort: spec.effort,
+          maxOutputTokens: spec.maxOutputTokens,
+          schemaName: step,
+          schema: spec.schema,
+          tools: (params.tools as Record<string, unknown>[] | undefined) ?? [],
+          serviceTier: "default",
+          metadata: { generation_id: generationId, run_id: run.id, step, ...(lessonId ? { lesson_id: lessonId } : {}) },
+        });
+      });
+      if (fallback.outcome === "resubmitted") {
+        await addEvent(db, { run_id: run.id, step_key: step, attempt, kind: "progress", agent_role: agent.role, message: `${label}: flex không còn chỗ, gửi lại bằng tier mặc định (lượt ${attempt + 1}).` });
+        return;
+      }
+      if (fallback.outcome === "taken_by_other_tick") return;
+      if (fallback.outcome === "submit_failed") {
+        await addEvent(db, { run_id: run.id, step_key: step, attempt, kind: "error", agent_role: agent.role, message: stepRequestFailureMessage(label) });
+        return;
+      }
+    }
     if (await failGeneration(db, generationId, "submitted", result.cause, result.error, { model_id: result.model, usage: result.usage })) {
       await addEvent(db, { run_id: run.id, step_key: step, attempt, kind: "warning", agent_role: agent.role, message: stepResponseFailureMessage(label, result.error, [spec.model, result.model]) });
     }

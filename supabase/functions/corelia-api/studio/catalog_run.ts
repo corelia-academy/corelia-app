@@ -22,7 +22,7 @@ import {
   type CatalogGeneration,
   type CatalogRows,
 } from "./catalog.ts";
-import { agentKey, errorMessage, failGeneration, loadFailureKind, pollOrExpire } from "./generations.ts";
+import { agentKey, errorMessage, failGeneration, fallBackToDefaultTier, loadFailureKind, pollOrExpire } from "./generations.ts";
 import { submitResponse } from "./openai.ts";
 import { loadAgentPrompt } from "./agent_prompts.ts";
 import { agentKeyEnv, SERVICE_TIER, utcDate } from "./steps.ts";
@@ -419,6 +419,35 @@ async function pollCatalog(db: SupabaseClient, job: JobRow, latest: CatalogGener
   const result = await pollOrExpire(apiKey, requestId, latest.created_at);
   if (!result || result.state === "running") return;
   if (result.state === "failed") {
+    if (result.cause === "provider") {
+      // Flex has no capacity (or waited too long): the same attempt goes again on the default tier.
+      const fallback = await fallBackToDefaultTier(db, latest.id, requestId, async ({ input, params }) => {
+        const prompt = await loadAgentPrompt(db, CATALOG_SPEC.prompt);
+        return submitResponse(apiKey, {
+          model: CATALOG_SPEC.model,
+          instructions: prompt.system,
+          input,
+          effort: CATALOG_SPEC.effort,
+          maxOutputTokens: CATALOG_SPEC.maxOutputTokens,
+          maxToolCalls: CATALOG_SPEC.maxToolCalls,
+          schemaName: "catalog_research",
+          schema: CATALOG_RESEARCH_SCHEMA,
+          tools: (params.tools as Record<string, unknown>[] | undefined) ?? [...CATALOG_SPEC.tools],
+          serviceTier: "default",
+          metadata: { generation_id: latest.id, catalog_job_id: job.id },
+        });
+      });
+      if (fallback.outcome === "resubmitted") {
+        await logCatalogRunEvent(db, job.id, {
+          generationId: latest.id,
+          attempt: latest.attempt,
+          kind: "progress",
+          message: `Flex không còn chỗ, gửi lại yêu cầu nghiên cứu bằng tier mặc định (lần ${latest.attempt + 1}).`,
+        });
+        return;
+      }
+      if (fallback.outcome !== "not_flex") return;
+    }
     await failGeneration(db, latest.id, "submitted", result.cause, result.error, { model_id: result.model, usage: result.usage });
     return;
   }
