@@ -5,6 +5,7 @@ import { SEEDED_PROMPTS } from "./prompt_seed_test_helper.ts";
 import { A4_REVIEW_CRITERIA } from "./review_policy.ts";
 import { AI_CURRICULUM_FORMATS, AI_CURRICULUM_FORMAT_GUIDE, PLATFORM_FORMATS, PLATFORM_FORMAT_GUIDE } from "./formats.ts";
 import { ENABLED_CODE_LANGUAGES, PREPARED_CODE_LANGUAGES, resolveCodeLanguage } from "./lesson_ports.ts";
+import { journeyProblems, type LessonRecord } from "./checks.ts";
 import {
   acceptBrief,
   acceptCurriculum,
@@ -759,6 +760,41 @@ describe("studio acceptance", () => {
     expect(acceptCurriculum(dup, sources).ok).toBe(false);
   });
 
+  it("validates lesson source_ids distinguishing empty and unknown sources, including fallback topic sources", () => {
+    const [m1, m2] = curriculum.modules;
+    const [d1, l1, q1] = m1.lessons;
+    const first = (...lessons: object[]) => withModules([{ ...m1, lessons }, m2]);
+
+    const emptyDiagnostic = first({ ...d1, source_ids: [] }, l1, q1);
+    expect(reason(emptyDiagnostic)).toContain("lesson d1 thiếu source_ids");
+
+    const unknownSourceDiagnostic = first({ ...d1, source_ids: ["not_found_source"] }, l1, q1);
+    expect(reason(unknownSourceDiagnostic)).toContain("lesson d1 có source_id không có trong research (not_found_source)");
+
+    const validDiagnostic = first(d1, l1, q1);
+    expect(acceptCurriculum(validDiagnostic, sources).ok).toBe(true);
+
+    const topicSources = new Set(["topic_s1", "topic_s2"]);
+    const curriculumWithoutPrerequisite = {
+      ...curriculum,
+      modules: [
+        {
+          id: "m1",
+          lessons: [
+            { ...d1, source_ids: ["topic_s1"] },
+            { ...l1, source_ids: ["topic_s1", "topic_s2"] },
+            { ...q1, source_ids: ["topic_s2"] },
+          ],
+        },
+        {
+          id: "m2",
+          lessons: m2.lessons.map((l) => ({ ...l, source_ids: ["topic_s2"] })),
+        },
+      ],
+    };
+    expect(acceptCurriculum(curriculumWithoutPrerequisite, topicSources).ok).toBe(true);
+  });
+
   it("requires quiz thresholds and review lessons, and no threshold elsewhere", () => {
     const [m1, m2] = curriculum.modules;
     const [d1, l1, q1] = m1.lessons;
@@ -790,6 +826,133 @@ describe("studio acceptance", () => {
     const noQuiz = [lesson("c9", { type: "code_exercise", purpose: "final_check", outcome_ids: ["o1", "o2"] })];
     expect(reason({ ...curriculum, outcomes, modules: [m1, { ...m2, lessons: [m2.lessons[0], m2.lessons[1], ...noQuiz] }] }))
       .toContain("module cuối không có quiz tổng hợp");
+  });
+
+  const [m1Default, m2Default] = curriculum.modules;
+  const [d1Default, l1Default, q1Default] = m1Default.lessons;
+  const l1NonTeaching = lesson("l1", { purpose: "guided_practice" });
+  const quizReviewLaterCurriculum = withModules([{ ...m1Default, lessons: [d1Default, l1Default, quiz("q1", { review_lesson_ids: ["l2"] })] }, m2Default]);
+  const outcomeWithoutTeachingCurriculum = withModules([{ ...m1Default, lessons: [d1Default, l1NonTeaching, q1Default] }, m2Default]);
+  const checksBeforeTeachingCurriculum = withModules([{ ...m1Default, lessons: [d1Default, q1Default, l1Default] }, m2Default]);
+  const diagnosticOutcomeCurriculum = withModules([{ ...m1Default, lessons: [{ ...d1Default, outcome_ids: ["o1"] }, l1NonTeaching, q1Default] }, m2Default]);
+  const optionalOutcomeCurriculum = withModules([
+    { ...m1Default, lessons: [d1Default, l1NonTeaching, q1Default, lesson("oh", { type: "practice", purpose: "optional_hands_on", outcome_ids: ["o1"] })] },
+    m2Default,
+  ]);
+  const selfCheckOnlyCurriculum = {
+    ...curriculum,
+    outcomes: [{ id: "o1", check_lesson_ids: ["l1"] }, curriculum.outcomes[1]],
+    modules: [
+      { ...m1Default, lessons: [d1Default, l1Default, quiz("q1", { outcome_ids: ["o2"] })] },
+      m2Default,
+    ],
+  };
+
+  it("enforces journey order rules: quizzes require review lessons to precede them", () => {
+    expect(reason(quizReviewLaterCurriculum)).toContain("quiz q1: lesson ôn l2 không đứng trước quiz");
+  });
+
+  it("enforces journey teaching rules: each outcome requires teaching lessons (explanation/worked_example)", () => {
+    expect(reason(outcomeWithoutTeachingCurriculum)).toContain("outcome o1: không có lesson dạy");
+  });
+
+  it("enforces journey check ordering: at least one check lesson must follow a teaching lesson", () => {
+    expect(reason(checksBeforeTeachingCurriculum)).toContain("outcome o1: không lesson kiểm tra nào đứng sau lesson dạy");
+  });
+
+  it("does not count diagnostic or optional_hands_on as teaching lessons for outcomes", () => {
+    expect(reason(diagnosticOutcomeCurriculum)).toContain("outcome o1: không có lesson dạy");
+    expect(reason(optionalOutcomeCurriculum)).toContain("outcome o1: không có lesson dạy");
+  });
+
+  it("falls back to empty codeChecks in curriculum_review step when acceptCurriculum fails", () => {
+    const invalidCurriculum = { ...curriculum, outcomes: [] };
+    const reviewResult = STEP_SPECS.curriculum_review!.accept(
+      { verdict: "pass", issues: [], needs_research: [] },
+      { outputs: { brief: { code_language: "rust" }, research: { topics: [], prerequisites: [] }, curriculum: invalidCurriculum } } as any,
+    );
+    expect(reviewResult.ok).toBe(true);
+    expect(reviewResult.codeChecks).toEqual([]);
+  });
+
+  it("contract test: verifies acceptCurriculum and journeyProblems stay strictly synchronized across >= 5 test cases", () => {
+    const extractJourneyOrderProblems = (c: unknown) =>
+      journeyProblems(c, {}).filter((p) =>
+        p.includes("không có lesson dạy") ||
+        p.includes("không có lesson kiểm tra") ||
+        p.includes("không lesson kiểm tra nào đứng sau lesson dạy") ||
+        p.includes("không đứng trước quiz")
+      );
+
+    const contractCases = [
+      {
+        name: "1. curriculum hợp lệ",
+        curriculum,
+        expectedAcceptOk: true,
+        expectedAcceptProblem: null,
+        expectedJourneyProblem: null,
+      },
+      {
+        name: "2. quiz có lesson ôn đứng sau quiz",
+        curriculum: quizReviewLaterCurriculum,
+        expectedAcceptOk: false,
+        expectedAcceptProblem: "quiz q1: lesson ôn l2 không đứng trước quiz",
+        expectedJourneyProblem: "lesson ôn l2 không đứng trước quiz",
+      },
+      {
+        name: "3. outcome không có lesson dạy",
+        curriculum: outcomeWithoutTeachingCurriculum,
+        expectedAcceptOk: false,
+        expectedAcceptProblem: "outcome o1: không có lesson dạy",
+        expectedJourneyProblem: "outcome o1: không có lesson dạy",
+      },
+      {
+        name: "4. mọi lesson kiểm tra đứng trước lesson dạy",
+        curriculum: checksBeforeTeachingCurriculum,
+        expectedAcceptOk: false,
+        expectedAcceptProblem: "outcome o1: không lesson kiểm tra nào đứng sau lesson dạy",
+        expectedJourneyProblem: "outcome o1: không lesson kiểm tra nào đứng sau lesson dạy",
+      },
+      {
+        name: "5. diagnostic mang outcome không được tính là lesson dạy",
+        curriculum: diagnosticOutcomeCurriculum,
+        expectedAcceptOk: false,
+        expectedAcceptProblem: "outcome o1: không có lesson dạy",
+        expectedJourneyProblem: "outcome o1: không có lesson dạy",
+      },
+      {
+        name: "6. optional_hands_on mang outcome không được tính là lesson dạy",
+        curriculum: optionalOutcomeCurriculum,
+        expectedAcceptOk: false,
+        expectedAcceptProblem: "outcome o1: không có lesson dạy",
+        expectedJourneyProblem: "outcome o1: không có lesson dạy",
+      },
+      {
+        name: "7. lesson tự kiểm tra chính nó nhưng không có bài kiểm tra đứng sau",
+        curriculum: selfCheckOnlyCurriculum,
+        expectedAcceptOk: false,
+        expectedAcceptProblem: "outcome o1: không lesson kiểm tra nào đứng sau lesson dạy",
+        expectedJourneyProblem: "outcome o1: không lesson kiểm tra nào đứng sau lesson dạy",
+      },
+    ];
+
+    for (const tc of contractCases) {
+      const acceptResult = acceptCurriculum(tc.curriculum, sources);
+      expect(acceptResult.ok, `[acceptCurriculum ${tc.name}]`).toBe(tc.expectedAcceptOk);
+      if (!tc.expectedAcceptOk && tc.expectedAcceptProblem) {
+        expect(acceptResult.ok ? "" : acceptResult.reason, `[acceptCurriculum reason ${tc.name}]`).toContain(tc.expectedAcceptProblem);
+      }
+
+      const journeyOrderProblems = extractJourneyOrderProblems(tc.curriculum);
+      if (tc.expectedJourneyProblem === null) {
+        expect(journeyOrderProblems, `[journeyProblems ${tc.name}]`).toEqual([]);
+      } else {
+        expect(
+          journeyOrderProblems.some((p) => p.includes(tc.expectedJourneyProblem!)),
+          `[journeyProblems problem ${tc.name}: expected "${tc.expectedJourneyProblem}", got ${JSON.stringify(journeyOrderProblems)}]`
+        ).toBe(true);
+      }
+    }
   });
 });
 

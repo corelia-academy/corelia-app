@@ -6,21 +6,25 @@ import { resolve } from "node:path";
 const container = process.argv[2] ?? "supabase_db_corelia-app";
 const migrationDir = resolve("supabase/migrations");
 const migrationFiles = readdirSync(migrationDir).filter((name) => name.endsWith(".sql"));
-const promptMigrations = migrationFiles.filter((name) => readFileSync(resolve(migrationDir, name), "utf8").includes("CREATE TABLE public.studio_agent_prompts"));
-if (promptMigrations.length !== 1) throw new Error(`Expected one Studio prompt migration, found ${promptMigrations.length}.`);
-const migration = readFileSync(resolve(migrationDir, promptMigrations[0]), "utf8");
-const insertStart = migration.indexOf("INSERT INTO public.studio_agent_prompts (prompt_key, version, agent_role, system_prompt) VALUES");
-const insertEnd = migration.indexOf("\n\nALTER TABLE public.studio_agent_prompts ENABLE ROW LEVEL SECURITY;", insertStart);
-if (insertStart < 0 || insertEnd < 0) throw new Error("Could not find prompt seed INSERT boundaries.");
-const seedSql = migration.slice(insertStart, insertEnd);
+const promptMigrations = migrationFiles
+  .filter((name) => readFileSync(resolve(migrationDir, name), "utf8").includes("INSERT INTO public.studio_agent_prompts"))
+  .sort();
+if (promptMigrations.length === 0) throw new Error("No Studio prompt migrations found.");
+
 const rowPattern = /\('([^']+)',\s*(\d+),\s*'(A[1-6])',\s*(\$[a-z0-9_]+\$)([\s\S]*?)\4\)/g;
-const expectedRows = [...seedSql.matchAll(rowPattern)].map(([, prompt_key, version, agent_role, , system_prompt]) => ({
-  prompt_key,
-  version: Number(version),
-  agent_role,
-  system_prompt,
-}));
-if (expectedRows.length !== 7) throw new Error(`Expected 7 prompt seed rows, found ${expectedRows.length}.`);
+const expectedRows = [];
+for (const file of promptMigrations) {
+  const content = readFileSync(resolve(migrationDir, file), "utf8");
+  for (const [, prompt_key, version, agent_role, , system_prompt] of content.matchAll(rowPattern)) {
+    expectedRows.push({
+      prompt_key,
+      version: Number(version),
+      agent_role,
+      system_prompt,
+    });
+  }
+}
+if (expectedRows.length === 0) throw new Error("Expected seeded prompt rows across migrations, found 0.");
 for (const row of expectedRows) {
   if (/^[\r\n]|[\r\n]$/.test(row.system_prompt)) throw new Error(`Migration prompt seed has a leading or trailing newline: ${row.prompt_key}@v${row.version}.`);
 }
@@ -44,6 +48,19 @@ for (const expected of expectedRows) {
   if (!actual || actual.agent_role !== expected.agent_role || actual.system_prompt !== expected.system_prompt) throw new Error(`Database prompt differs from migration seed: ${identity}.`);
   const hash = createHash("sha256").update(expected.system_prompt, "utf8").digest("hex");
   hashes.push(`${identity} ${hash}`);
+}
+const pinnedVersions = {
+  "a1-catalog-research": 7,
+  "a2-brief": 8,
+  "a2-research": 13,
+  "a3-curriculum": 19,
+  "a4-curriculum-review": 16,
+  "a5-lesson": 19,
+  "a6-lesson-review": 16,
+};
+for (const [key, version] of Object.entries(pinnedVersions)) {
+  const identity = `${key}@v${version}`;
+  if (!actualByKey.has(identity)) throw new Error(`Pinned prompt version is missing in database: ${identity}.`);
 }
 console.log("[PASS] Studio prompt roles, numeric versions, RLS, immutable mutations, and seeded bodies.");
 for (const line of hashes) console.log(line);

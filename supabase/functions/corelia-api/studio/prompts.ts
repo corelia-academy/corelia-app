@@ -14,9 +14,9 @@ export const PROMPT_VERSIONS: Record<PromptKey, number> = {
   "a1-catalog-research": 7,
   "a2-brief": 8,
   "a2-research": 13,
-  "a3-curriculum": 18,
-  "a4-curriculum-review": 15,
-  "a5-lesson": 18,
+  "a3-curriculum": 19,
+  "a4-curriculum-review": 16,
+  "a5-lesson": 19,
   "a6-lesson-review": 16,
 };
 
