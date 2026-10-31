@@ -6,6 +6,7 @@ import { BookOpen, FileText, TimerIcon } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 import { ParticipantSummary } from "@/components/participants/ParticipantSummary";
 import { AiCourseBadge } from "@/components/courses/AiCourseBadge";
+import { AiCourseCover } from "@/components/courses/AiCourseCover";
 import { CourseBadge } from "@/components/courses/CourseBadge";
 import { Timestamp } from "@/components/ui/timestamp";
 import {
@@ -42,7 +43,9 @@ export function PublicCourseCard({ course, progress, participantPreview, variant
           variant === "catalog" && "rounded-lg border border-border",
         )}
       >
-        <div className="absolute inset-0 flex items-center justify-center"><BookOpen className="size-10 text-foreground-muted" aria-hidden weight="duotone" /></div>
+        {course.course_type === "ai_generated"
+          ? <AiCourseCover seed={course.id} className="absolute inset-0 size-full" />
+          : <div className="absolute inset-0 flex items-center justify-center"><BookOpen className="size-10 text-foreground-muted" aria-hidden weight="duotone" /></div>}
         {course.thumbnail_url && failedImage !== course.thumbnail_url ? <img src={optimizedImageUrl(course.thumbnail_url, { width: 400 })} srcSet={optimizedImageSrcSet(course.thumbnail_url, 400)} decoding="async" alt="" loading="lazy" onError={() => setFailedImage(course.thumbnail_url ?? null)} className="relative size-full object-cover" /> : null}
       </div>
       <div className={variant === "catalog" ? "flex flex-1 flex-col p-4" : "flex flex-1 flex-col gap-3 p-5 sm:p-6"}>
