@@ -813,7 +813,7 @@ function LearnWorkspace() {
     <div className="pointer-events-none absolute inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 flex justify-center px-3">
       <div
         ref={barDrag.barRef}
-        className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-xs sm:gap-md rounded-xl border border-border-strong bg-surface-float/95 p-1 sm:p-1.5 shadow-dropdown backdrop-blur-md [&:not(:has(>div:not(:empty)))]:hidden"
+        className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-xs sm:gap-md rounded-xl border border-border-strong bg-surface-float/95 p-1 sm:p-1.5 shadow-dropdown backdrop-blur-md transition-[scale,box-shadow] duration-150 ease-out motion-reduce:transition-none data-[dragging]:scale-[1.02] data-[dragging]:shadow-lg data-[dragging]:will-change-transform [&:not(:has(>div:not(:empty)))]:hidden"
       >
         <Button
           type="button"
@@ -822,25 +822,31 @@ function LearnWorkspace() {
           iconOnly
           size="small"
           aria-label={translate("detail.learn.moveBar")}
-          className="cursor-grab touch-none select-none active:cursor-grabbing"
+          className="cursor-grab touch-pan-y select-none active:cursor-grabbing"
           {...barDrag.gripProps}
         >
           <DotsSixVertical weight="bold" className="size-4" aria-hidden />
         </Button>
         <div ref={setAskAiSlot} className="flex items-center empty:hidden" />
         <div ref={setFooterSlot} className="flex items-center empty:hidden" />
-        {barDrag.isMoved && (
-          <Button
-            type="button"
-            variant="cta"
-            hierarchy="tertiary"
-            iconOnly
-            size="small"
-            aria-label={translate("detail.learn.resetBar")}
-            onClick={barDrag.reset}
+        {barDrag.resetState !== "closed" && (
+          <div
+            data-state={barDrag.resetState}
+            inert={barDrag.resetState === "closing"}
+            className="max-w-8 overflow-hidden transition-[max-width,margin,opacity] duration-200 ease-out focus-within:overflow-visible motion-reduce:transition-none starting:-ml-xs starting:max-w-0 starting:opacity-0 data-[state=closing]:-ml-xs data-[state=closing]:max-w-0 data-[state=closing]:opacity-0 sm:starting:-ml-md sm:data-[state=closing]:-ml-md"
           >
-            <ArrowCounterClockwise weight="bold" className="size-4" aria-hidden />
-          </Button>
+            <Button
+              type="button"
+              variant="cta"
+              hierarchy="tertiary"
+              iconOnly
+              size="small"
+              aria-label={translate("detail.learn.resetBar")}
+              onClick={barDrag.reset}
+            >
+              <ArrowCounterClockwise weight="bold" className="size-4" aria-hidden />
+            </Button>
+          </div>
         )}
       </div>
     </div>
