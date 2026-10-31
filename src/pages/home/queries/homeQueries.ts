@@ -164,6 +164,7 @@ export function homeDashboardQueryOptions(
           meta: formatCourseMeta(course, format),
           action: `/study/${course.id}`,
           thumbnailUrl: course.thumbnail_url,
+          courseType: course.course_type,
           lastAccessedAt: enrollment.last_accessed_at,
         };
       });
