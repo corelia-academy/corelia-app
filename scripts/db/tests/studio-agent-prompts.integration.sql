@@ -6,7 +6,7 @@ BEGIN
   SELECT count(*) INTO pinned_count
   FROM (VALUES
     ('a1-catalog-research',7,'A1'),
-    ('a2-brief',8,'A2'),
+    ('a2-brief',9,'A2'),
     ('a2-research',13,'A2'),
     ('a3-curriculum',19,'A3'),
     ('a4-curriculum-review',16,'A4'),

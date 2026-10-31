@@ -501,7 +501,7 @@ describe("paused Studio run tick gating", () => {
           : { data: [], error: null };
       const q: Record<string, any> = {};
       for (const method of ["select", "eq", "is", "order", "limit", "in", "update"]) q[method] = vi.fn(() => q);
-      q.maybeSingle = vi.fn().mockResolvedValue(table === "studio_agent_prompts" ? { data: { version: 8, system_prompt: "database prompt row" }, error: null } : { data: null, error: null });
+      q.maybeSingle = vi.fn().mockResolvedValue(table === "studio_agent_prompts" ? { data: { version: 9, system_prompt: "database prompt row" }, error: null } : { data: null, error: null });
       q.single = vi.fn().mockResolvedValue({ data: { id: generationId }, error: null });
       q.insert = vi.fn((value: unknown) => {
         if (table === "studio_generations") generationInserts.push(value);
@@ -544,7 +544,7 @@ describe("paused Studio run tick gating", () => {
       });
       expect(continued).toEqual({ step: "brief", action: "submit" });
       expect(generationInserts).toHaveLength(1);
-      expect(generationInserts[0]).toMatchObject({ agent_role: "A2", prompt_version: "a2-brief@v8" });
+      expect(generationInserts[0]).toMatchObject({ agent_role: "A2", prompt_version: "a2-brief@v9" });
       expect(submittedInstructions).toEqual(["database prompt row"]);
       expect(fetchMock).toHaveBeenCalledOnce();
       expect(calls).toContain("studio_courses");
