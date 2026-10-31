@@ -337,6 +337,8 @@ export function buildLessonReviewInput(ctx: RunContext, lessonId: string): Recor
     ...common,
     ...neighbours,
     review_round: lc.reviews + 1,
+    // The author rewrote the draft from these issues; the reviewer verifies them before raising new ones.
+    ...(lc.reviews > 0 && lc.review ? { previous_review: { round: lc.reviews, issues: normalizeReviewIssues((lc.review as { issues?: unknown }).issues).issues } } : {}),
     lesson_draft: toLessonDraft(ref, lc.draft as LessonOutput, locale, ctx.outputs.research as ResearchFull),
     checks_already_run: checksAlreadyRun(
       ref.lesson.type,

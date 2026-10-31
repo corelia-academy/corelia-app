@@ -140,7 +140,9 @@ describe("A1 catalog research in the A2 brief", () => {
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("Không tự suy ra phiên bản.");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("open_questions blocking = false ghi phiên bản chưa xác minh");
 
-    expect(SEEDED_PROMPTS["a6-lesson-review"].version).toBe("v16");
+    expect(SEEDED_PROMPTS["a6-lesson-review"].version).toBe("v17");
+    expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("phải liệt kê MỌI issue blocking trong một lần review");
+    expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("Nếu đầu vào có previous_review");
     expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("KHÔNG phải lỗi blocking nếu tool_versions chỉ nêu mức tối thiểu (chưa chốt bộ phiên bản tương thích)");
     expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("lesson nêu phiên bản hoặc mức tối thiểu không có trong tool_versions hay nguồn đã đọc của lesson");
     expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("khẳng định bộ phiên bản tương thích đã được xác minh/khóa khi research không nói vậy");
@@ -157,7 +159,7 @@ describe("A1 catalog research in the A2 brief", () => {
     expect(a3.version).toBe("v19");
     expect(a4.version).toBe("v16");
     expect(a5.version).toBe("v19");
-    expect(a6.version).toBe("v16");
+    expect(a6.version).toBe("v17");
     expect(a2.version).toBe("v13");
     expect(a2.system).toContain("videos là mảng có thể rỗng");
     expect(a2.system).toContain("evidence_source_ids không rỗng");

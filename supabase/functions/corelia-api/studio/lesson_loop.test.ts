@@ -259,6 +259,20 @@ describe("studio lesson loop: research version handoff", () => {
     }
   });
 
+  it("gives the round 2 reviewer the issues of round 1 and nothing in round 1", () => {
+    const first = buildLessonReviewInput(c284Context("m2_setup_explain"), "m2_setup_explain");
+    expect(first.review_round).toBe(1);
+    expect(first).not.toHaveProperty("previous_review");
+
+    const issue = { location: "lesson.description_markdown", criterion: "factual_accuracy_by_sources", problem: "sai", fix: "sửa", category: "factual_inaccuracy", severity: "blocking", verified_by: "reasoning" };
+    const second = buildLessonReviewInput(
+      { ...c284Context("m2_setup_explain"), lesson: { ...c284Context("m2_setup_explain").lesson!, drafts: 2, reviews: 1, review: { verdict: "needs_fix", issues: [issue] } } },
+      "m2_setup_explain",
+    );
+    expect(second.review_round).toBe(2);
+    expect(second.previous_review).toMatchObject({ round: 1, issues: [{ location: "lesson.description_markdown", severity: "blocking", problem: "sai" }] });
+  });
+
   it("starts the A5 and A6 input with the keys shared by every lesson of the run, in the same order", () => {
     for (const lessonId of ["m2_setup_explain", "m1_diagnostic_js"]) {
       const writer = buildLessonInput(c284Context(lessonId), lessonId);
