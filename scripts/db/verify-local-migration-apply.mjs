@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
+import { runStudioCourseEditLogIntegration } from "./tests/studio-course-edit-log-runner.mjs";
 
 const command = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const pnpmShell = process.platform === "win32";
@@ -147,6 +148,50 @@ console.log("✓ SQL integration test suites executed successfully.\n");
 execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
   input: readFileSync(resolve("scripts/db/tests/social-notifications.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
 });
+
+execFileSync(process.execPath, ["scripts/db/tests/studio-agent-prompts.integration.mjs"], { stdio: "inherit" });
+
+// Verify the Vault-backed Studio tick schedule without executing its HTTP command.
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/studio-tick-scheduler.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
+
+// Run pause/continue assertions in a multi-statement transaction and roll fixtures back.
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/studio-run-pause-continue.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
+
+// Multi-statement role-switching suite: run through psql.
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/studio-catalog-rls.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/studio-run-events.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/studio-catalog-research.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/studio-catalog-ranking.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/studio-start-gate.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/studio-courses-drop-priority.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/studio-expire-drafts.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/studio-finish-run-closes-steps.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
+execFileSync("docker", ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1"], {
+  input: readFileSync(resolve("scripts/db/tests/studio-courses-scope-note.integration.sql")), stdio: ["pipe", "inherit", "inherit"],
+});
+// Role-switching and psql meta-command coverage needs a multi-statement client.
+// The finally-style cleanup also removes committed fixtures if an assertion fails.
+runStudioCourseEditLogIntegration();
 
 // 4. Exercise the exact Jobs relationship through the local PostgREST server.
 console.log("[STEP 4/4] Executing Jobs PostgREST relationship smoke...");

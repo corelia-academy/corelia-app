@@ -12,6 +12,7 @@
     "functions:serve:cron-learning-reminders": "supabase functions serve cron-learning-reminders --env-file supabase/functions/.env",
     "functions:serve:cron-jobs": "supabase functions serve cron-jobs --env-file supabase/functions/.env",
     "functions:serve:cron-email-center": "supabase functions serve cron-email-center --env-file supabase/functions/.env",
+    "studio:tick": "node scripts/studio/tick.mjs",
     "functions:deploy": "supabase functions deploy corelia-api",
     "functions:deploy:cron-learning-reminders": "supabase functions deploy cron-learning-reminders",
     "functions:deploy:cron-jobs": "supabase functions deploy cron-jobs",

@@ -5,7 +5,8 @@ import { ArrowRight } from "lucide-react";
 import { BookOpen, FileText, TimerIcon } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 import { ParticipantSummary } from "@/components/participants/ParticipantSummary";
-import { Badge } from "@/components/ui/badge";
+import { AiCourseBadge } from "@/components/courses/AiCourseBadge";
+import { CourseBadge } from "@/components/courses/CourseBadge";
 import { Timestamp } from "@/components/ui/timestamp";
 import {
   formatCompactParticipantCount,
@@ -54,9 +55,8 @@ export function PublicCourseCard({ course, progress, participantPreview, variant
                 className="min-h-5"
                 date={(
                   <span className="inline-flex items-center gap-2">
-                    <Badge size="xsmall" color="primary">
-                      {getCourseLevelLabel(course.level)}
-                    </Badge>
+                    <CourseBadge>{getCourseLevelLabel(course.level)}</CourseBadge>
+                    <AiCourseBadge course={course} />
                     {lessonCount !== undefined ? (
                       <span className="inline-flex items-center gap-1 whitespace-nowrap">
                         <FileText className="size-4" aria-hidden weight="duotone" />
@@ -84,13 +84,10 @@ export function PublicCourseCard({ course, progress, participantPreview, variant
           </>
         ) : (
           <>
-            <Badge
-              size="small"
-              color="primary"
-              className="self-start border-transparent bg-primary-muted px-3 py-1 text-xs leading-4 text-foreground"
-            >
-              {getCourseLevelLabel(course.level)}
-            </Badge>
+            <div className="flex flex-wrap items-center gap-2 self-start">
+              <CourseBadge>{getCourseLevelLabel(course.level)}</CourseBadge>
+              <AiCourseBadge course={course} />
+            </div>
             <h3 className="line-clamp-2 min-h-12 text-heading-medium font-display">{course.title}</h3>
             {course.short_description ? <p className="line-clamp-3 text-sm leading-6 text-foreground-muted">{course.short_description}</p> : null}
             <Timestamp

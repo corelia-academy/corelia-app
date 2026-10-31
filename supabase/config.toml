@@ -9,7 +9,7 @@ project_id = "corelia-app"
 # Keep gateway JWT check off and enforce op-level auth in handler/router.
 verify_jwt = false
 import_map = "./functions/corelia-api/deno.json"
-static_files = ["./functions/corelia-api/og/assets/*"]
+static_files = ["./functions/corelia-api/og/assets/*", "./functions/corelia-api/studio/assets/*"]
 
 [functions.cron-learning-reminders]
 # Scheduler authenticates with the shared LEARNING_REMINDER_CRON_SECRET header.

@@ -138,6 +138,64 @@ Nếu thiếu `RESEND_API_KEY` hoặc `MAIL_FROM`, handler **không lỗi**: tr�
 
 Code gửi mail chung: [`lib/mail/resend.ts`](lib/mail/resend.ts) (transport) + [`lib/mail/layout.ts`](lib/mail/layout.ts) (branded shell, i18n vi/en). Handler/builder lo `subject` + nội dung body; `wrapTransactionalEmail` / `wrapBlastEmail` bọc HTML cuối.
 
+### Corelia Studio: tạo khóa AI
+
+| Biến | Bắt buộc? | Ghi chú |
+|------|-----------|---------|
+| `CORELIA_STUDIO_A1_CATALOG_RESEARCH_OPENAI_API_KEY`, `…_A2_COURSE_RESEARCH_…`, `…_A3_CURRICULUM_…`, `…_A4_CURRICULUM_REVIEW_…`, `…_A5_LESSON_…`, `…_A6_LESSON_REVIEW_…` | Có cho bước của agent tương ứng | Mỗi agent một key OpenAI, đánh số theo thứ tự trong luồng (tên lấy từ `AGENT_NAME`), không dùng `OPENAI_API_KEY` của app. Bước thuộc agent nào lấy theo `STEP_OWNER`; poll dùng key của agent ghi trên `studio_generations`. Thiếu key thì lượt chạy dừng ở bước đó (`draft_failed`, lý do nêu tên biến); lượt chạy khác vẫn chạy. A1 thuộc luồng Catalog, chạy theo catalog job (`studio.catalog_research`), không có bước trong lượt chạy; thiếu key thì job kết thúc `failed`. |
+| `CORELIA_STUDIO_CRON_SECRET` | Có cho `studio.tick` | Scheduler gửi qua header `x-corelia-studio-cron-secret`. |
+
+`studio.start` (Bearer, chỉ `profiles.role = admin`; `support_staff` bị từ chối) nhận
+`course_id` và `run_id` tùy chọn. RPC `studio_start_run` tạo lượt chạy và 9 bước trong
+một transaction; gửi lại cùng `run_id` trả lượt chạy đã có. Khóa nháp (0 path) hoặc
+khóa đang `queued`/`generating`/`published` trả 409.
+
+`studio.tick` đẩy tối đa 5 lượt chạy đang mở, mỗi lượt một hành động: gửi yêu cầu
+model ở background mode, lấy kết quả, hoặc kết thúc lượt chạy. Mỗi lần gọi model là một
+dòng `studio_generations` được chèn trước khi gọi provider (unique theo bước và lượt
+thử), nên hai tick chồng nhau không gửi trùng. Runtime đọc nội dung prompt đã ghim phiên bản số từ bảng bất biến `public.studio_agent_prompts`; thiếu hàng thì dừng với lỗi, không dùng prompt dự phòng trong code. Bước chưa có trong `STEP_SPECS` kết thúc lượt chạy ở `draft_failed` kèm lý do và người chạy bước (agent hoặc code).
+
+`studio.catalog_research` (Bearer, admin) nhận `course_id` và `job_id` tùy chọn, tạo catalog job `manual` cho khóa
+(RPC `studio_start_catalog_job`; gửi lại cùng `job_id` trả job đã có). Khóa không có path hoặc nhóm chưa có
+scope trả 409 và không tạo job; khóa đã có job đang chạy trả 409 `course_has_running_job`. `studio.tick` đẩy
+thêm tối đa 3 catalog job đang chạy (`catalog` trong phản hồi): A1 gọi với `web_search` giới hạn
+`max_tool_calls`, kết quả qua `acceptCatalogResearch`; thiếu `trend`/`demand` thì nghiên cứu lại tối đa
+`MAX_CATALOG_RESEARCH_ROUNDS` vòng rồi kết thúc `needs_more_sources`, lỗi kỹ thuật hết lượt thử lại thì
+`failed`. Trong giai đoạn phát triển không có trần chi phí; mỗi attempt vẫn bị giới hạn bởi `maxAttempts`,
+`maxToolCalls` và thời gian chạy tối đa 24 giờ. Job không ghi `studio_run_events`; lý do kết thúc nằm ở `studio_catalog_jobs.reason`.
+
+Local không có scheduler, nên lượt chạy chỉ tiến khi có ai gọi `studio.tick`. Với
+`pnpm functions:serve` đang chạy:
+
+```bash
+pnpm studio:tick                  # mặc định 15s/lần, tới http://127.0.0.1:54321/functions/v1
+pnpm studio:tick --interval 30 --url http://127.0.0.1:54321/functions/v1
+```
+
+Script đọc `CORELIA_STUDIO_CRON_SECRET` từ `supabase/functions/.env` lúc khởi động, không
+in ra. Mỗi tick log `processed` và hành động của từng lượt chạy; Ctrl+C để dừng.
+
+`studio.start` nhận thêm `resume_from_run_id` (lượt `draft_failed` mới nhất của khóa) để chạy tiếp
+từ bản nháp: lượt mới chép các generation đã được chấp nhận (brief, research, curriculum và review
+nếu đã xong; lesson đã đạt; bản nháp lesson chưa được review) với `origin = 'resumed'`, chỉ tạo lại
+phần còn lại với ngân sách mới. Chi phí của một lượt chạy là tổng `usage` của các dòng `origin = 'ai'`.
+Kết quả có `resume` (số bước và lesson đã chép) hoặc `resume_skipped` kèm lý do, khi đó lượt chạy bắt
+đầu từ đầu. Kiểm bằng `scripts/studio/verify-resume.ts`.
+
+Các bước sau lesson chạy trong chính tick, không gọi model: `structure_check` kiểm mọi lesson
+bằng quy tắc publish của app, vẽ sơ đồ thành PNG vào bucket `studio-drafts` và kiểm link;
+`journey_test` kiểm thứ tự học; `publish` ghi `courses`, `course_sections`, `course_lessons`,
+`course_section_questions` trong một transaction (`studio_publish_course`), nên trigger
+publication của app chặn thì không có gì được ghi và lượt chạy dừng ở `draft_failed` kèm lý do.
+Kiểm hai bước cuối với DB local, không tốn model:
+
+```bash
+eval "$(npx supabase status -o env)"
+SUPABASE_URL=$API_URL SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY deno run -A --no-config scripts/studio/verify-publish.ts
+SUPABASE_URL=$API_URL SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY deno run -A --no-config scripts/studio/verify-tick.ts
+deno run -A --no-config scripts/studio/measure-diagram.ts <thư mục *.json đặc tả sơ đồ>
+```
+
 ### Email Center
 
 `email.admin` cung cấp API quản trị contact/list/import, template/version, campaign và automation. `email.worker` chỉ nhận request có `EMAIL_WORKER_SECRET`; `email.webhook` xác minh chữ ký Svix bằng `RESEND_WEBHOOK_SIGNING_SECRET`; `email.unsubscribe` là endpoint public cho marketing unsubscribe. Dữ liệu Email Center chỉ truy cập qua service-role boundary và các bảng không cấp quyền Data API cho `anon`/`authenticated`.

@@ -57,6 +57,10 @@
     "corelia": "Corelia 課程",
     "external_partner": "合作講師課程"
   },
+  "aiGenerated": {
+    "label": "AI 生成",
+    "description": "由 AI 建立並經過自動檢查的內容。"
+  },
   "catalog": {
     "title": "課程",
     "pageTitle": "課程庫",

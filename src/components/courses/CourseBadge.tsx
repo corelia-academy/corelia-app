@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { ReactNode } from "react";
+import type { ComponentProps } from "react";
 
 type CourseBadgeVariant =
   | "secondary"
@@ -8,12 +8,10 @@ type CourseBadgeVariant =
   | "warning";
 
 export function CourseBadge({
-  children,
   className,
   variant = "secondary",
-}: {
-  children: ReactNode;
-  className?: string;
+  ...props
+}: ComponentProps<"span"> & {
   variant?: CourseBadgeVariant;
 }) {
   const base =
@@ -25,8 +23,5 @@ export function CourseBadge({
     warning: "bg-warning/10 text-warning border border-warning/20",
   };
 
-  return (
-    <span className={cn(base, variants[variant], className)}>{children}</span>
-  );
+  return <span className={cn(base, variants[variant], className)} {...props} />;
 }
-

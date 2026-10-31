@@ -57,6 +57,10 @@
     "corelia": "Corelia のコース",
     "external_partner": "パートナー講師のコース"
   },
+  "aiGenerated": {
+    "label": "AI生成",
+    "description": "AIが作成し、自動チェックを行ったコンテンツです。"
+  },
   "catalog": {
     "title": "コース",
     "pageTitle": "コースライブラリ",

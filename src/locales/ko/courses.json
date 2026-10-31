@@ -57,6 +57,10 @@
     "corelia": "Corelia 강의",
     "external_partner": "파트너 강사 강의"
   },
+  "aiGenerated": {
+    "label": "AI 생성",
+    "description": "AI가 만들고 자동으로 검수한 콘텐츠입니다."
+  },
   "catalog": {
     "title": "강의",
     "pageTitle": "강의 라이브러리",
