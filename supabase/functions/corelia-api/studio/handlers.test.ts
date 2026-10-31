@@ -149,6 +149,30 @@ describe("handleStudioStart", () => {
     expect(db.from).not.toHaveBeenCalled();
   });
 
+  it("passes restart_from to the RPC together with the run to resume", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: { run_id: runId, created: true }, error: null });
+    const db = { rpc } as unknown as SupabaseClient;
+    const resumeFrom = "33333333-3333-4333-8333-333333333333";
+    const req = (body: Record<string, unknown>) => new Request("http://local/functions/v1/corelia-api?op=studio.start", {
+      method: "POST",
+      headers: { authorization: "Bearer test" },
+      body: JSON.stringify({ course_id: courseId, run_id: runId, ...body }),
+    });
+
+    expect((await handleStudioStart(req({ resume_from_run_id: resumeFrom, restart_from: "curriculum" }), db)).status).toBe(201);
+    expect(rpc).toHaveBeenCalledWith("studio_start_run", { p_course_id: courseId, p_run_id: runId, p_started_by: "admin-id", p_resume_from: resumeFrom, p_restart_from: "curriculum" });
+
+    rpc.mockClear();
+    expect((await handleStudioStart(req({ resume_from_run_id: resumeFrom }), db)).status).toBe(201);
+    expect(rpc).toHaveBeenCalledWith("studio_start_run", expect.objectContaining({ p_restart_from: null }));
+
+    rpc.mockClear();
+    // A restart needs a run to resume from, and only the steps the RPC can restart from.
+    expect((await handleStudioStart(req({ restart_from: "curriculum" }), db)).status).toBe(400);
+    expect((await handleStudioStart(req({ resume_from_run_id: resumeFrom, restart_from: "lessons" }), db)).status).toBe(400);
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
   it.each([
     ["course_not_found", "P0002", 404],
     ["course_not_startable", "P0001", 409],

@@ -67,6 +67,9 @@ export interface RunRow {
   paused_at?: string | null;
 }
 
+/** Steps a failed run can be restarted from (studio_resume_run). */
+const RESTART_STEPS = ["research", "curriculum"];
+
 // Studio is admin only: support_staff is excluded, matching studio_can_write() in the schema.
 export async function handleStudioStart(req: Request, db: SupabaseClient): Promise<Response> {
   let userId: string;
@@ -82,9 +85,12 @@ export async function handleStudioStart(req: Request, db: SupabaseClient): Promi
   const runId = body.run_id === undefined ? crypto.randomUUID() : String(body.run_id);
   // Optional: continue from the accepted work of the course's latest failed run instead of starting over.
   const resumeFrom = body.resume_from_run_id === undefined ? null : String(body.resume_from_run_id);
+  // Optional, with resume_from_run_id: the first step to regenerate; the steps before it are copied, it and what follows are not.
+  const restartFrom = body.restart_from === undefined ? null : String(body.restart_from);
   if (!UUID_RE.test(courseId) || !UUID_RE.test(runId) || (resumeFrom !== null && !UUID_RE.test(resumeFrom))) return json({ message: "invalid_input" }, 400);
+  if (restartFrom !== null && (resumeFrom === null || !RESTART_STEPS.includes(restartFrom))) return json({ message: "invalid_input" }, 400);
 
-  const { data, error } = await db.rpc("studio_start_run", { p_course_id: courseId, p_run_id: runId, p_started_by: userId, p_resume_from: resumeFrom });
+  const { data, error } = await db.rpc("studio_start_run", { p_course_id: courseId, p_run_id: runId, p_started_by: userId, p_resume_from: resumeFrom, p_restart_from: restartFrom });
   if (error) {
     const status = START_ERRORS[error.message] ?? (error.code === "23505" ? 409 : undefined);
     if (status) {

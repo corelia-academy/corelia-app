@@ -3,8 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const migrationPath = "supabase/migrations/20261030164820_studio_foundation_consolidated.sql";
-const courseContextMigrationPath = "supabase/migrations/20261101090000_studio_course_context.sql";
+const restartRunMigrationPath = "supabase/migrations/20261101160000_studio_restart_run.sql";
 const contractPath = "scripts/db/tests/studio-start-gate.integration.sql";
 
 function psql(container, sql) {
@@ -62,9 +61,11 @@ function lastFunctionDefinition(source, declaration) {
 
 export function runStudioProvenanceMutationTests(container, expectedVersion) {
   assertDisposableClone(container, expectedVersion);
-  const source = readFileSync(resolve(migrationPath), "utf8");
+  const restartRunSource = readFileSync(resolve(restartRunMigrationPath), "utf8");
 
-  const functionSource = lastFunctionDefinition(source, "CREATE OR REPLACE FUNCTION private.studio_resume_run(");
+  // The migration creates the functions; the mutation replaces the existing ones.
+  const asReplacement = (definition) => definition.replace("CREATE FUNCTION", "CREATE OR REPLACE FUNCTION");
+  const functionSource = asReplacement(lastFunctionDefinition(restartRunSource, "CREATE FUNCTION private.studio_resume_run("));
   const eventStart = functionSource.indexOf("  -- Every copied run-owned step gets one source line; Catalog keeps its start-run event only.");
   const eventEnd = functionSource.indexOf("  SELECT count(*)::integer INTO v_total", eventStart);
   if (eventStart < 0 || eventEnd < 0) throw new Error("Could not locate the copied-step source event block.");
@@ -74,7 +75,7 @@ export function runStudioProvenanceMutationTests(container, expectedVersion) {
 
   const sourceMessage = "Dùng lại kết quả nghiên cứu còn hiệu lực: job hoàn tất cách đây %s ngày, còn hiệu lực %s ngày (kỳ %s ngày của khóa). Không gọi model.";
   const mutatedMessage = "Dùng lại kết quả nghiên cứu còn hiệu lực: job hoàn tất cách đây %s ngày, còn hiệu lực %s ngày (kỳ %s ngày của khóa), ghi lúc 2026-10-30 UTC. Không gọi model.";
-  const startRunSource = lastFunctionDefinition(readFileSync(resolve(courseContextMigrationPath), "utf8"), "CREATE OR REPLACE FUNCTION private.studio_start_run(");
+  const startRunSource = asReplacement(lastFunctionDefinition(restartRunSource, "CREATE FUNCTION private.studio_start_run("));
   if (!startRunSource.includes(sourceMessage)) throw new Error("Could not locate the W-04h source message for mutation.");
   const relativeCopyMutation = startRunSource.replace(sourceMessage, mutatedMessage);
   expectMutationFailure(container, "W-04h absolute UTC message mutation", "source message must not contain an absolute UTC date", relativeCopyMutation);
