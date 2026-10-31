@@ -211,7 +211,7 @@ export async function linkProblems(records: Record<string, LessonRecord>, fetchF
 // ---- journey_test ------------------------------------------------------------------------------
 
 /** Lesson purposes that teach an outcome; practice and checks come after them. */
-const TEACHING_PURPOSES = ["explanation", "worked_example"];
+export const TEACHING_PURPOSES = ["explanation", "worked_example"] as const;
 
 /** Walks the lessons in curriculum order as a learner would. Every lesson counts: the app has no optional lesson. */
 export function journeyProblems(curriculum: unknown, records: Record<string, LessonRecord>, evidence?: CodeCheck[]): string[] {

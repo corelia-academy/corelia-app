@@ -21,6 +21,7 @@ import {
 import { type AgentRole, type PromptKey } from "./prompts.ts";
 import type { BriefCatalogResearch } from "./catalog_research_brief.ts";
 import { A4_REVIEW_CRITERIA, normalizeReviewChecks, normalizeReviewIssues, REVIEW_ISSUE_CATEGORIES } from "./review_policy.ts";
+import { TEACHING_PURPOSES } from "./checks.ts";
 
 export const STEP_ORDER = [
   "catalog_research",
@@ -601,12 +602,19 @@ export function acceptCurriculum(
     return optional;
   });
   const optionalHandsOnIds = new Set(optionalHandsOnByModule.flat().map((l) => l.id));
+  const position = new Map(lessons.map((l, i) => [l.id, i]));
   for (const o of curriculum.outcomes) {
+    const validChecks = o.check_lesson_ids.filter((id) => lessonIds.has(id) && !optionalHandsOnIds.has(id));
     if (o.check_lesson_ids.length === 0 || o.check_lesson_ids.some((id) => !lessonIds.has(id) || optionalHandsOnIds.has(id))) {
       problems.push(`outcome ${o.id} không có lesson kiểm tra hợp lệ`);
     }
+    const teachers = lessons.filter((l) => l.outcome_ids.includes(o.id) && (TEACHING_PURPOSES as readonly string[]).includes(l.purpose));
+    if (teachers.length === 0) {
+      problems.push(`outcome ${o.id}: không có lesson dạy`);
+    } else if (validChecks.length > 0 && !validChecks.some((cId) => teachers.some((t) => position.get(t.id)! < position.get(cId)!))) {
+      problems.push(`outcome ${o.id}: không lesson kiểm tra nào đứng sau lesson dạy`);
+    }
   }
-  const position = new Map(lessons.map((l, i) => [l.id, i]));
   for (const l of lessons) {
     // The diagnostic checks prerequisites, not course outcomes, so it may have none. It is a
     // self-check practice; a threshold would make passing it a completion gate.
@@ -614,7 +622,14 @@ export function acceptCurriculum(
     if ((!diagnostic && l.outcome_ids.length === 0) || l.outcome_ids.some((id) => !outcomeIds.has(id))) {
       problems.push(`lesson ${l.id} có outcome không hợp lệ`);
     }
-    if (l.source_ids.length === 0 || l.source_ids.some((id) => !sourceIds.has(id))) problems.push(`lesson ${l.id} có source_id không có trong research`);
+    if (l.source_ids.length === 0) {
+      problems.push(`lesson ${l.id} thiếu source_ids`);
+    } else {
+      const unknown = l.source_ids.filter((id) => !sourceIds.has(id));
+      if (unknown.length > 0) {
+        problems.push(`lesson ${l.id} có source_id không có trong research (${unknown.join(", ")})`);
+      }
+    }
     if (diagnostic && l.type !== "practice") problems.push(`lesson ${l.id} (diagnostic) phải là practice`);
     if (l.purpose === "optional_hands_on") {
       for (const outcomeId of l.outcome_ids) {
@@ -628,6 +643,11 @@ export function acceptCurriculum(
     if (l.type === "quiz") {
       if (l.pass_threshold === null || !(l.pass_threshold > 0 && l.pass_threshold <= 100)) problems.push(`quiz ${l.id} thiếu ngưỡng pass trong (0, 100]`);
       if (l.review_lesson_ids.length === 0) problems.push(`quiz ${l.id} không có lesson để ôn khi sai`);
+      for (const r of l.review_lesson_ids) {
+        if (lessonIds.has(r) && r !== l.id && position.get(r)! >= position.get(l.id)!) {
+          problems.push(`quiz ${l.id}: lesson ôn ${r} không đứng trước quiz`);
+        }
+      }
     } else if (l.pass_threshold !== null) {
       problems.push(`lesson ${l.id} không phải quiz nhưng có ngưỡng pass`);
     }
@@ -903,7 +923,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
         researchSourceIds(ctx),
         resolveCodeLanguage((ctx.outputs.brief as { code_language?: unknown }).code_language),
       );
-      return acceptCurriculumReview(output, curriculum, code.codeChecks ?? []);
+      return acceptCurriculumReview(output, curriculum, ("codeChecks" in code ? code.codeChecks : undefined) ?? []);
     },
   },
   lessons: {

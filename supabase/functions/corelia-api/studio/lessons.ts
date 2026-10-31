@@ -765,7 +765,7 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
     // The diagnostic is a self-check whose review material is its resources.
     if (ref.lesson.purpose === "diagnostic") {
       if (p.mode !== "checklist") problems.push("lesson diagnostic phải là practice checklist");
-      if (out.resources.length === 0) problems.push("lesson diagnostic cần resources là tài liệu ôn prerequisite");
+      if (out.resources.length === 0) problems.push("lesson diagnostic cần resources là tài liệu ôn/đối chiếu");
     }
   }
   if (problems.length > 0) return { ok: false, reason: `Lesson ${lessonId} chưa hợp lệ: ${list(problems)}` };

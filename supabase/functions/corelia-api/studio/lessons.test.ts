@@ -173,6 +173,61 @@ describe("studio lessons: accept by format", () => {
     expect(await run({ practice: { ...practice, mode: "instruction", checklist_items: [] }, resources })).toContain("phải là practice checklist");
   });
 
+  it("A5 accepts diagnostic lesson when research has empty prerequisites and uses topic sources", async () => {
+    const topicSourceId = "s1";
+    const topicUrl = "https://doc.rust-lang.org/book/";
+    const noPrereqCtx = {
+      ...ctx,
+      outputs: {
+        ...ctx.outputs,
+        research: {
+          ...(ctx.outputs.research as object),
+          prerequisites: [],
+        },
+        curriculum: {
+          ...curriculum,
+          modules: curriculum.modules.map((m) => ({
+            ...m,
+            lessons: m.lessons.map((l) =>
+              l.id === "l-prac"
+                ? { ...l, purpose: "diagnostic", source_ids: [topicSourceId] }
+                : l,
+            ),
+          })),
+        },
+      },
+    };
+
+    const practice = {
+      description_markdown: "Tự kiểm tra kiến thức trước khi vào module đầu...",
+      mode: "checklist",
+      checklist_items: [{ id: "c1", label: "Hiểu biến cơ bản" }],
+    };
+    const resources = [{ title: "Tài liệu đối chiếu chủ đề", url: topicUrl }];
+
+    const result = await acceptLesson(
+      {
+        ...base,
+        source_ids: [topicSourceId],
+        practice,
+        resources,
+      },
+      noPrereqCtx,
+      "l-prac",
+      ok(),
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.summary).toContain("l-prac");
+    }
+
+    const input = buildLessonInput(noPrereqCtx, "l-prac") as Record<string, any>;
+    expect(input.lesson.purpose).toBe("diagnostic");
+    expect(input.lesson.source_ids).toEqual([topicSourceId]);
+    expect(input.research.sources.some((s: { source_id: string }) => s.source_id === topicSourceId)).toBe(true);
+  });
+
   it("requires optional_hands_on lessons to use instruction mode without checklist completion", async () => {
     const optionalContext = {
       ...ctx,

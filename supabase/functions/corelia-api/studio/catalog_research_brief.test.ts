@@ -132,7 +132,7 @@ describe("A1 catalog research in the A2 brief", () => {
   });
 
   it("keeps A5 and A6 package-version decisions bounded by research evidence", () => {
-    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v18");
+    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v19");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("tool_versions của research chỉ ghi mức tối thiểu hoặc phiên bản theo nguồn");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("nếu chỉ nêu mức tối thiểu, ghi rõ đó là mức tối thiểu và để lệnh không ghim phiên bản");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("Không tự suy ra phiên bản.");
@@ -152,9 +152,9 @@ describe("A1 catalog research in the A2 brief", () => {
     const a5 = SEEDED_PROMPTS["a5-lesson"];
     const a6 = SEEDED_PROMPTS["a6-lesson-review"];
 
-    expect(a3.version).toBe("v18");
-    expect(a4.version).toBe("v15");
-    expect(a5.version).toBe("v18");
+    expect(a3.version).toBe("v19");
+    expect(a4.version).toBe("v16");
+    expect(a5.version).toBe("v19");
     expect(a6.version).toBe("v16");
     expect(a2.version).toBe("v13");
     expect(a2.system).toContain("videos là mảng có thể rỗng");

@@ -1,22 +1,21 @@
 BEGIN;
 
 DO $$
-DECLARE actual_count integer; expected_count integer;
+DECLARE pinned_count integer;
 BEGIN
-  SELECT count(*) INTO actual_count FROM public.studio_agent_prompts;
-  SELECT count(*) INTO expected_count
+  SELECT count(*) INTO pinned_count
   FROM (VALUES
     ('a1-catalog-research',7,'A1'),
     ('a2-brief',8,'A2'),
     ('a2-research',13,'A2'),
-    ('a3-curriculum',18,'A3'),
-    ('a4-curriculum-review',15,'A4'),
-    ('a5-lesson',18,'A5'),
+    ('a3-curriculum',19,'A3'),
+    ('a4-curriculum-review',16,'A4'),
+    ('a5-lesson',19,'A5'),
     ('a6-lesson-review',16,'A6')
   ) expected(prompt_key,version,agent_role)
   JOIN public.studio_agent_prompts actual USING (prompt_key,version,agent_role);
-  IF actual_count <> 7 OR expected_count <> 7 THEN
-    RAISE EXCEPTION 'Expected 7 pinned Studio prompt rows; found %, matching metadata %', actual_count, expected_count;
+  IF pinned_count <> 7 THEN
+    RAISE EXCEPTION 'Expected 7 pinned Studio prompt rows; found %', pinned_count;
   END IF;
   IF has_table_privilege('anon','public.studio_agent_prompts','SELECT') THEN
     RAISE EXCEPTION 'anon has direct SELECT privilege on studio_agent_prompts';
@@ -42,6 +41,9 @@ BEGIN
 END $$;
 RESET ROLE;
 
+-- Record expected prompt count using postgres role before testing restricted roles.
+SELECT set_config('test.expected_prompts', count(*)::text, true) FROM public.studio_agent_prompts;
+
 -- An authenticated user with no admin profile can query but RLS returns no rows.
 SELECT set_config('request.jwt.claim.sub','eeee5555-0000-4000-8000-000000000002',true);
 SET LOCAL ROLE authenticated;
@@ -62,20 +64,24 @@ UPDATE public.profiles SET role='admin' WHERE id='eeee5555-0000-4000-8000-000000
 SELECT set_config('request.jwt.claim.sub','eeee5555-0000-4000-8000-000000000001',true);
 SET LOCAL ROLE authenticated;
 DO $$
-DECLARE visible_count integer;
+DECLARE
+  visible_count integer;
+  expected_count integer := current_setting('test.expected_prompts')::integer;
 BEGIN
   SELECT count(*) INTO visible_count FROM public.studio_agent_prompts;
-  IF visible_count <> 7 THEN RAISE EXCEPTION 'admin read % prompts, expected 7', visible_count; END IF;
+  IF visible_count <> expected_count THEN RAISE EXCEPTION 'admin read % prompts, expected %', visible_count, expected_count; END IF;
 END $$;
 RESET ROLE;
 
 -- service_role can read prompts but is not granted writes. RLS bypass does not disable triggers.
 SET LOCAL ROLE service_role;
 DO $$
-DECLARE visible_count integer;
+DECLARE
+  visible_count integer;
+  expected_count integer := current_setting('test.expected_prompts')::integer;
 BEGIN
   SELECT count(*) INTO visible_count FROM public.studio_agent_prompts;
-  IF visible_count <> 7 THEN RAISE EXCEPTION 'service_role read % prompts, expected 7', visible_count; END IF;
+  IF visible_count <> expected_count THEN RAISE EXCEPTION 'service_role read % prompts, expected %', visible_count, expected_count; END IF;
 END $$;
 RESET ROLE;
 
