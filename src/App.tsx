@@ -34,6 +34,7 @@ import { ROLE_GROUPS } from "@/config/roles";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/authStore";
 import { ScrollToTop } from "@/components/navigation/ScrollToTop";
+import { ScrollToTarget } from "@/components/navigation/ScrollToTarget";
 import {
   PageTitleProvider,
   RoutePageTitleSync,
@@ -263,6 +264,7 @@ function ApplicationRoutes() {
           <RoutePageTitleSync />
           <CredentialRealtimeSync />
           <ScrollToTop />
+          <ScrollToTarget />
           <RecoveryGuard />
           <PendingCredentialsWelcomeModal />
           <Routes>
