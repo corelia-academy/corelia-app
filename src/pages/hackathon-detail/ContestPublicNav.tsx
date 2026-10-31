@@ -147,7 +147,7 @@ export function ContestPublicNav() {
           className="min-w-0 px-1"
           aria-label={translate("detail.public.nav.ariaLabel")}
         >
-          <div className="-mb-px flex gap-4 overflow-x-auto overscroll-x-contain pb-px [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
+          <div className="-mb-px flex gap-4 overflow-x-auto overscroll-x-contain pb-px scrollbar-hidden snap-x snap-mandatory">
             {navItems.map((item) => {
               const active = displayedActiveId === item.id;
               const to = `${base}${item.hash}`;

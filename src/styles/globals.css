@@ -1626,43 +1626,6 @@
   line-height: 1.7;
 }
 
-/* Shared native scrollbar styles */
-.scrollbar-design {
-  scrollbar-width: thin;
-  scrollbar-color: var(--neutral-400) transparent;
-}
-
-@supports selector(::-webkit-scrollbar) {
-  .scrollbar-design {
-    scrollbar-width: auto;
-    scrollbar-color: auto;
-  }
-
-  .scrollbar-design::-webkit-scrollbar {
-    width: 16px;
-    height: 16px;
-  }
-
-  .scrollbar-design::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .scrollbar-design::-webkit-scrollbar-thumb {
-    background-color: var(--neutral-400);
-    border: 6px solid transparent;
-    background-clip: content-box;
-    border-radius: 8px;
-  }
-
-  .scrollbar-design::-webkit-scrollbar-thumb:hover {
-    background-color: var(--foreground-muted);
-  }
-
-  .scrollbar-design::-webkit-scrollbar-corner {
-    background: transparent;
-  }
-}
-
 @layer components {
   [data-slot="dropdown-menu-checkbox-item"][data-variant="warning"] {
     --dropdown-title: var(--dropdown-warning);

@@ -460,7 +460,7 @@ export default function ContestPublicLayout() {
         }}
       >
   <div className="mobile-bleed-surface sticky top-[var(--app-header-height)] z-30 mt-6 bg-background lg:top-0 lg:mt-8 lg:pt-0 after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-10 after:bg-linear-to-b after:from-background/90 after:via-background/30 after:to-transparent after:content-['']">
-          <div ref={tabsScrollerRef} className="overflow-x-auto overscroll-x-contain scroll-px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div ref={tabsScrollerRef} className="overflow-x-auto overscroll-x-contain scroll-px-4 scrollbar-hidden">
             <PageContainer width="default" className="py-0">
               <Tabs.List ref={tabsListRef} level="3a" className="relative min-w-max gap-2 py-1 lg:py-0" aria-label={t("public.tabsLabel")}>
                 <Tabs.Indicator

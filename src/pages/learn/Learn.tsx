@@ -62,6 +62,7 @@ import { useLearnEnrollmentAccess } from "./hooks/useLearnEnrollmentAccess";
 import { useLearnProgress } from "./hooks/useLearnProgress";
 import { useLearnSubmission } from "./hooks/useLearnSubmission";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { CourseCompletionCertificatePanel } from "@/components/courses/CourseCompletionCertificatePanel";
 import type { CertificateIssueReason } from "@/lib/courses";
 import type { Enrollment } from "@/types/courses";
@@ -862,9 +863,9 @@ function LearnWorkspace() {
               className="min-w-0 bg-background"
             >
               <div className="relative flex h-full min-w-0 flex-col">
-                <main className="min-h-0 flex-1 overflow-y-auto pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <ScrollArea autoHide viewportRender={<main />} viewportClassName="pb-24" contentClassName="flex min-h-full flex-col">
                   {lessonContent}
-                </main>
+                </ScrollArea>
                 {footerBar}
                 <div ref={tabDrag.ref} {...tabDrag.handlers} className="pointer-events-none absolute top-5 right-0 z-10 touch-none">
                   <Button
@@ -902,9 +903,9 @@ function LearnWorkspace() {
         </div>
       ) : (
         <div className="relative flex min-h-0 flex-1 flex-col">
-          <main className="min-h-0 min-w-0 flex-1 overflow-y-auto pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <ScrollArea autoHide viewportRender={<main />} viewportClassName="pb-24" contentClassName="flex min-h-full flex-col">
             {lessonContent}
-          </main>
+          </ScrollArea>
           {footerBar}
           <MobileCurriculumSheet
             key={`${courseId}:${lessonId ?? ""}:${isFinalAssignment}`}
