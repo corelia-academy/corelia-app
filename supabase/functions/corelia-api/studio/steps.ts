@@ -375,7 +375,12 @@ export function utcDate(ms: number): string {
   return new Date(ms).toISOString().slice(0, 10);
 }
 
-export function acceptBrief(output: unknown): Acceptance {
+/**
+ * The content language is the course's own setting (Catalog), not something the model decides; a free
+ * string here would only be refused at publish, after every step has been paid for. `courseLocale` is
+ * that setting; a brief that names another value is corrected to it.
+ */
+export function acceptBrief(output: unknown, courseLocale?: string): Acceptance {
   const brief = output as Brief;
   if (brief.status !== "ready") return { ok: false, reason: `Brief thiếu dữ liệu: ${list(brief.open_questions)}` };
   const requestedLanguage = (brief as { code_language?: unknown }).code_language;
@@ -387,6 +392,13 @@ export function acceptBrief(output: unknown): Acceptance {
     if (!adapter) {
       return { ok: false, reason: `code_language "${String(requestedLanguage)}" không hợp lệ hoặc chưa hỗ trợ publish.` };
     }
+  }
+  if (courseLocale && (brief as { locale?: unknown }).locale !== courseLocale) {
+    return {
+      ok: true,
+      summary: `brief sẵn sàng. Ngôn ngữ nội dung đặt theo khóa (${courseLocale}).`,
+      normalizedOutput: { ...(output as Record<string, unknown>), locale: courseLocale },
+    };
   }
   return { ok: true, summary: "brief sẵn sàng." };
 }
@@ -871,7 +883,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
       code_languages: ENABLED_CODE_LANGUAGES,
       platform_formats: PLATFORM_FORMAT_GUIDE,
     }),
-    accept: acceptBrief,
+    accept: (output, ctx) => acceptBrief(output, ctx.scopes[0]?.locale),
   },
   research: {
     prompt: "a2-research",

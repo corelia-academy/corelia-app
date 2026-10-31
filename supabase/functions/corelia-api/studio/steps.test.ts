@@ -145,6 +145,11 @@ describe("studio brief code language", () => {
 
   it("keeps old briefs on Rust, allows explicit null, and rejects prepared languages for publish", () => {
     expect(acceptBrief({ status: "ready", open_questions: [] })).toEqual({ ok: true, summary: "brief sẵn sàng." });
+    // The content language comes from the course, not from the model.
+    expect(acceptBrief({ status: "ready", open_questions: [], locale: "vi" }, "vi")).toEqual({ ok: true, summary: "brief sẵn sàng." });
+    expect(acceptBrief({ status: "ready", open_questions: [], locale: "vi-VN", topic: "x" }, "vi"))
+      .toEqual({ ok: true, summary: "brief sẵn sàng. Ngôn ngữ nội dung đặt theo khóa (vi).", normalizedOutput: { status: "ready", open_questions: [], locale: "vi", topic: "x" } });
+    expect(acceptBrief({ status: "needs_input", open_questions: ["q"], locale: "vi-VN" }, "vi").ok).toBe(false);
     expect(resolveCodeLanguage(undefined)).toBe("rust");
     expect(acceptBrief({ status: "ready", open_questions: [], code_language: null }).ok).toBe(true);
     expect(resolveCodeLanguage(null)).toBeNull();

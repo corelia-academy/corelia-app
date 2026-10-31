@@ -9,9 +9,9 @@ BEGIN
     ('a2-brief',9,'A2'),
     ('a2-research',13,'A2'),
     ('a3-curriculum',19,'A3'),
-    ('a4-curriculum-review',16,'A4'),
-    ('a5-lesson',19,'A5'),
-    ('a6-lesson-review',17,'A6')
+    ('a4-curriculum-review',17,'A4'),
+    ('a5-lesson',20,'A5'),
+    ('a6-lesson-review',18,'A6')
   ) expected(prompt_key,version,agent_role)
   JOIN public.studio_agent_prompts actual USING (prompt_key,version,agent_role);
   IF pinned_count <> 7 THEN
