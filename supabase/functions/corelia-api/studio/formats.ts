@@ -10,8 +10,8 @@ export const PLATFORM_FORMATS = ["video", "article", "quiz", "code_exercise", "p
  */
 export const PLATFORM_FORMAT_GUIDE: Record<typeof PLATFORM_FORMATS[number], string> = {
   video: "Video YouTube có sẵn (có thể cắt đoạn). Hoàn thành khi xem; không kiểm tra hiểu bài.",
-  article: "Markdown kèm sơ đồ. Hoàn thành khi đọc; không kiểm tra hiểu bài.",
-  quiz: "Câu hỏi trắc nghiệm một đáp án, chấm tự động theo passing_ratio. Kiểm tra hiểu khái niệm, dự đoán kết quả, đọc code.",
+  article: "Markdown kèm sơ đồ; chỉ article có sơ đồ. Hoàn thành khi đọc; không kiểm tra hiểu bài. Sơ đồ là hình minh họa trong bài, không format nào kiểm kỹ năng đọc hoặc vẽ sơ đồ: outcome không được yêu cầu đọc hay vẽ sơ đồ, hãy diễn đạt bằng điều người học giải thích hoặc dự đoán.",
+  quiz: "Câu hỏi trắc nghiệm một đáp án, chấm tự động theo passing_ratio. Kiểm tra hiểu khái niệm, dự đoán kết quả, đọc code. Không hiển thị sơ đồ, nên không kiểm được việc đọc sơ đồ.",
   code_exercise:
     "Một tệp mã nguồn trong ngôn ngữ đã chọn cho khóa, tên tệp trần không có thư mục. Validator KHÔNG biên dịch, KHÔNG chạy và KHÔNG dùng terminal: chỉ so khớp mã nguồn (điền chỗ trống, chứa/không chứa chuỗi, trùng nguyên văn). Vì vậy test chứa/không chứa chuỗi có thể bị né bằng chú thích hoặc khoảng trắng: đây là giới hạn đã biết của nền tảng, không phải lỗi của bài. Chỉ dùng cho kỹ năng viết hoặc sửa mã kiểm được bằng nội dung mã.",
   practice:
