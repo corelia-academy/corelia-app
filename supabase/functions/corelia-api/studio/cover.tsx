@@ -2,12 +2,11 @@
 // If a course mentions known technology brands (e.g. Stellar, Solana, Rust),
 // vector logos are retrieved from Iconify (simple-icons, devicon, logos, token-branded).
 // If no logo is found, renders a crisp typographic cover with the path or course title.
-// Dimensions: 1200x675 (16:9). Safe margins and app brand palette (#0a0913).
+// Dimensions: 1200x675 (16:9). Safe margins and white paper and ink strokes like the lesson diagrams.
 
-import React from "npm:react@19.2.0";
-import satori from "npm:satori@0.33.5";
 import { initWasm, Resvg } from "npm:@resvg/resvg-wasm@2.6.2";
 import type { SupabaseClient } from "../lib/supabase.ts";
+import { textWidth } from "./diagram.ts";
 
 export const ICONIFY_HOST = "api.iconify.design";
 export const ALLOWED_COLLECTIONS = new Set(["simple-icons", "devicon", "logos", "token-branded"]);
@@ -124,12 +123,12 @@ export async function fetchIconSvg(
   return text;
 }
 
-/** Prepares SVG for dark-background rendering: ensures currentColor maps to white. */
+/** Prepares SVG for the white cover: currentColor and unfilled icons are drawn in ink. */
 export function prepareSvgForCover(svgText: string): string {
   let s = svgText;
-  s = s.replace(/currentColor/gi, "#ffffff");
+  s = s.replace(/currentColor/gi, "#1e1e1e");
   if (!/<svg[^>]*\sfill=/i.test(s)) {
-    s = s.replace(/<svg\b/i, '<svg fill="#ffffff"');
+    s = s.replace(/<svg\b/i, '<svg fill="#1e1e1e"');
   }
   return s;
 }
@@ -235,151 +234,163 @@ async function readAsset(url: URL): Promise<Uint8Array> {
   return readFile(url);
 }
 
-type FontConfig = Array<{ name: string; data: ArrayBuffer; weight: 400 | 500 | 700; style: "normal" }>;
-let fontPromise: Promise<FontConfig> | null = null;
-let wasmPromise: Promise<void> | null = null;
+const INK = "#1e1e1e";
+const WIDTH = 1200;
+const HEIGHT = 675;
 
-async function loadAssets(): Promise<{ fonts: FontConfig }> {
-  const fontFiles = [
-    ["akt-medium.ttf", "Akt", 500],
-    ["tt-norms-pro-normal.ttf", "TT Norms Pro Trial", 400],
-    ["tt-norms-pro-medium.ttf", "TT Norms Pro Trial", 500],
-    ["latin-400.woff", "Be Vietnam Pro", 400],
-    ["vietnamese-400.woff", "Be Vietnam Pro", 400],
-    ["latin-700.woff", "Be Vietnam Pro", 700],
-    ["vietnamese-700.woff", "Be Vietnam Pro", 700],
-  ] as const;
+let assetsPromise: Promise<{ rough: any; font: Uint8Array }> | null = null; // deno-lint-ignore no-explicit-any
 
-  fontPromise ??= Promise.all(
-    fontFiles.map(async ([filename, name, weight]) => ({
-      name,
-      data: Uint8Array.from(await readAsset(new URL(`../og/assets/${filename}`, import.meta.url))).buffer,
-      weight,
-      style: "normal" as const,
-    })),
-  );
-
-  wasmPromise ??= (async () => {
-    const wasm = await readAsset(new URL("../og/assets/resvg.wasm", import.meta.url));
+/** roughjs, the Patrick Hand font (same as the lesson diagrams) and the resvg wasm, loaded once. */
+function loadAssets(): Promise<{ rough: any; font: Uint8Array }> { // deno-lint-ignore no-explicit-any
+  assetsPromise ??= (async () => {
+    const [{ default: rough }, wasm, font] = await Promise.all([
+      import("npm:roughjs@4.6.6/bundled/rough.esm.js"),
+      readAsset(new URL("../og/assets/resvg.wasm", import.meta.url)),
+      readAsset(new URL("./assets/PatrickHand-Regular.ttf", import.meta.url)),
+    ]);
     try {
       await initWasm(wasm);
     } catch (e) {
+      // og/ initializes the same module in the same isolate.
       if (!/already/i.test(e instanceof Error ? e.message : String(e))) throw e;
     }
+    return { rough, font };
   })();
-
-  await wasmPromise;
-  const fonts = await fontPromise;
-  return { fonts };
+  assetsPromise.catch(() => (assetsPromise = null));
+  return assetsPromise;
 }
 
 function computeFontSize(text: string): number {
-  if (text.length <= 15) return 72;
-  if (text.length <= 30) return 60;
-  if (text.length <= 50) return 48;
-  if (text.length <= 80) return 40;
-  return 34;
+  if (text.length <= 15) return 112;
+  if (text.length <= 30) return 92;
+  if (text.length <= 50) return 72;
+  if (text.length <= 80) return 58;
+  return 46;
 }
 
-/** Renders a 1200x675 cover PNG from the plan. */
-export async function renderCoverPng(plan: CoverPlan): Promise<Uint8Array> {
-  const { fonts } = await loadAssets();
+const escapeXml = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-  let element: React.JSX.Element;
-  if (plan.kind === "logo" && plan.logos.length >= 2) {
-    element = (
-      <div
-        style={{
-          display: "flex",
-          position: "relative",
-          width: 1200,
-          height: 675,
-          backgroundColor: "#0a0913",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 64,
-        }}
-      >
-        <img
-          src={svgToDataUri(prepareSvgForCover(plan.logos[0].svg))}
-          width={220}
-          height={220}
-          style={{ width: 220, height: 220, objectFit: "contain" }}
-          alt=""
-        />
-        <img
-          src={svgToDataUri(prepareSvgForCover(plan.logos[1].svg))}
-          width={220}
-          height={220}
-          style={{ width: 220, height: 220, objectFit: "contain" }}
-          alt=""
-        />
-      </div>
-    );
-  } else if (plan.kind === "logo" && plan.logos.length === 1) {
-    element = (
-      <div
-        style={{
-          display: "flex",
-          position: "relative",
-          width: 1200,
-          height: 675,
-          backgroundColor: "#0a0913",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <img
-          src={svgToDataUri(prepareSvgForCover(plan.logos[0].svg))}
-          width={280}
-          height={280}
-          style={{ width: 280, height: 280, objectFit: "contain" }}
-          alt=""
-        />
-      </div>
-    );
+/** Greedy word wrap using the diagram font metrics; a word longer than the line stays on its own line. */
+function wrapText(text: string, size: number, maxWidth: number): string[] {
+  const lines: string[] = [];
+  let line = "";
+  for (const word of text.split(/\s+/).filter(Boolean)) {
+    const next = line ? `${line} ${word}` : word;
+    if (line && textWidth(next, size) > maxWidth) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = next;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+/** Small accent colours for the doodles; the main subject (logo or title) stays in ink. */
+const DOODLE_COLORS = ["#2563eb", "#f59e0b", "#10b981", "#ec4899"];
+
+/** Stable 32-bit hash of the cover subject, so the same course always gets the same doodles. */
+function hashSeed(text: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i += 1) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+  return h >>> 0;
+}
+
+type Doodle = (gen: any, cx: number, cy: number, r: number, o: Record<string, unknown>) => any; // deno-lint-ignore no-explicit-any
+
+const DOODLES: Doodle[] = [
+  // star
+  (g, cx, cy, r, o) =>
+    g.polygon(
+      Array.from({ length: 10 }, (_, i) => {
+        const a = (Math.PI / 5) * i - Math.PI / 2;
+        const rr = i % 2 === 0 ? r : r * 0.45;
+        return [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr];
+      }),
+      o,
+    ),
+  // sparkle
+  (g, cx, cy, r, o) => g.path(`M ${cx - r} ${cy} L ${cx + r} ${cy} M ${cx} ${cy - r} L ${cx} ${cy + r} M ${cx - r * 0.6} ${cy - r * 0.6} L ${cx + r * 0.6} ${cy + r * 0.6}`, o),
+  // ring
+  (g, cx, cy, r, o) => g.circle(cx, cy, r * 1.6, o),
+  // squiggle
+  (g, cx, cy, r, o) => g.curve([[cx - r * 1.2, cy], [cx - r * 0.6, cy - r * 0.7], [cx, cy + r * 0.7], [cx + r * 0.6, cy - r * 0.7], [cx + r * 1.2, cy]], o),
+  // arrow
+  (g, cx, cy, r, o) => g.path(`M ${cx - r} ${cy + r * 0.6} Q ${cx} ${cy - r} ${cx + r} ${cy - r * 0.2} M ${cx + r * 0.4} ${cy - r * 0.7} L ${cx + r} ${cy - r * 0.2} L ${cx + r * 0.3} ${cy + r * 0.2}`, o),
+  // brackets
+  (g, cx, cy, r, o) => g.path(`M ${cx - r * 0.3} ${cy - r} L ${cx - r} ${cy} L ${cx - r * 0.3} ${cy + r} M ${cx + r * 0.3} ${cy - r} L ${cx + r} ${cy} L ${cx + r * 0.3} ${cy + r}`, o),
+  // dots
+  (g, cx, cy, r, o) => g.path(`M ${cx - r} ${cy} L ${cx - r + 1} ${cy} M ${cx} ${cy} L ${cx + 1} ${cy} M ${cx + r} ${cy} L ${cx + r + 1} ${cy}`, { ...o, strokeWidth: 9 }),
+];
+
+/** Six accent doodles around the frame, kept clear of the middle band where the logo or title sits. */
+function doodles(
+  gen: any, // deno-lint-ignore no-explicit-any
+  strokes: (drawable: any, color?: string) => string, // deno-lint-ignore no-explicit-any
+  subject: string,
+): string {
+  const slots: Array<[number, number]> = [[140, 140], [1060, 140], [140, 535], [1060, 535], [420, 105], [780, 570]];
+  const h = hashSeed(subject);
+  let out = "";
+  slots.forEach(([x, y], i) => {
+    const pick = (h >>> (i * 4)) & 0xff;
+    const shape = DOODLES[pick % DOODLES.length];
+    const color = DOODLE_COLORS[(pick >> 3) % DOODLE_COLORS.length];
+    const r = 26 + (pick % 5) * 4;
+    const o = { roughness: 1.4, bowing: 1, stroke: color, strokeWidth: 3.5, seed: (h % 1000) + i * 13 + 1 };
+    out += strokes(shape(gen, x + ((pick % 7) - 3) * 8, y + (((pick >> 2) % 7) - 3) * 8, r, o), color);
+  });
+  return out;
+}
+
+/** Renders a 1200x675 hand-drawn cover PNG (white paper, ink strokes, Patrick Hand) from the plan. */
+export async function renderCoverPng(plan: CoverPlan): Promise<Uint8Array> {
+  const { rough, font } = await loadAssets();
+  const gen = rough.generator();
+  const opts = { roughness: 1.3, bowing: 0.9, stroke: INK, strokeWidth: 3, seed: 11, preserveVertices: true };
+  // deno-lint-ignore no-explicit-any
+  const strokes = (drawable: any, color = INK) =>
+    gen.toPaths(drawable).map((p: { d: string; strokeWidth: number }) =>
+      `<path d="${p.d}" stroke="${color}" stroke-width="${p.strokeWidth}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+    ).join("");
+
+  let body = strokes(gen.rectangle(40, 40, WIDTH - 80, HEIGHT - 80, opts));
+  body += strokes(gen.rectangle(56, 54, WIDTH - 112, HEIGHT - 108, { ...opts, seed: 23, roughness: 1.8, strokeWidth: 2 }));
+
+  body += doodles(gen, strokes, plan.kind === "logo" ? plan.logos.map((l) => l.name).join("+") : plan.text);
+
+  if (plan.kind === "logo" && plan.logos.length > 0) {
+    const size = plan.logos.length >= 2 ? 240 : 300;
+    const gap = 96;
+    const total = plan.logos.length * size + (plan.logos.length - 1) * gap;
+    const x0 = (WIDTH - total) / 2;
+    const y0 = (HEIGHT - size) / 2 - 20;
+    plan.logos.forEach((logo, i) => {
+      const x = x0 + i * (size + gap);
+      body += `<image href="${svgToDataUri(prepareSvgForCover(logo.svg))}" x="${x}" y="${y0}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet"/>`;
+    });
+    body += strokes(gen.line(x0, y0 + size + 44, x0 + total, y0 + size + 50, { ...opts, seed: 31 }));
   } else {
     const text = plan.kind === "text" ? plan.text : "";
     const size = computeFontSize(text);
-    element = (
-      <div
-        style={{
-          display: "flex",
-          position: "relative",
-          width: 1200,
-          height: 675,
-          backgroundColor: "#0a0913",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "60px 80px",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            color: "#ffffff",
-            fontFamily: "Akt, Be Vietnam Pro",
-            fontSize: size,
-            fontWeight: 500,
-            lineHeight: 1.25,
-            textAlign: "center",
-            alignItems: "center",
-            justifyContent: "center",
-            maxWidth: 1040,
-            maxHeight: 480,
-            overflow: "hidden",
-            wordBreak: "break-word",
-          }}
-        >
-          {text}
-        </div>
-      </div>
-    );
+    const lines = wrapText(text, size, 900).slice(0, 4);
+    const lineHeight = size * 1.15;
+    const top = HEIGHT / 2 - ((lines.length - 1) * lineHeight) / 2 - 10;
+    lines.forEach((line, i) => {
+      body += `<text x="${WIDTH / 2}" y="${top + i * lineHeight}" font-family="Patrick Hand" font-size="${size}" fill="${INK}" text-anchor="middle" dominant-baseline="middle">${escapeXml(line)}</text>`;
+    });
+    const widest = Math.max(...lines.map((l) => textWidth(l, size)), 0);
+    const underlineY = top + (lines.length - 1) * lineHeight + size * 0.62;
+    body += strokes(gen.line(WIDTH / 2 - widest / 2, underlineY, WIDTH / 2 + widest / 2, underlineY + 5, { ...opts, seed: 37 }));
   }
 
-  const svg = await satori(element, { width: 1200, height: 675, fonts });
-  const renderer = new Resvg(svg, { fitTo: { mode: "original" } });
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}"><rect width="${WIDTH}" height="${HEIGHT}" fill="#ffffff"/>${body}</svg>`;
+  const renderer = new Resvg(svg, {
+    fitTo: { mode: "original" },
+    font: { fontBuffers: [font], defaultFontFamily: "Patrick Hand", loadSystemFonts: false },
+  });
   try {
     return renderer.render().asPng();
   } finally {
