@@ -6,6 +6,13 @@
 
 import type { SupabaseClient } from "../lib/supabase.ts";
 import type { LessonRecord } from "./checks.ts";
+import {
+  appCoverPath,
+  appCoverUrl,
+  COVER_BUCKET,
+  renderCoverPng,
+  resolveCoverPlan,
+} from "./cover.tsx";
 import { appImagePath, diagramFile, draftPath, publishMarkdown } from "./diagram_render.ts";
 import { lessonRefs } from "./lessons.ts";
 
@@ -111,12 +118,85 @@ const isDatabaseVerdict = (code: string | undefined) => /^[0-9A-Z]{5}$/.test(cod
 export async function publishRun(db: SupabaseClient, input: PublishInput): Promise<string> {
   const payload = buildPublishPayload(input);
   const uploaded: string[] = [];
+  let coverPathUploaded: string | null = null;
   for (const job of imageJobs(input)) {
     const file = await db.storage.from("studio-drafts").download(job.from);
     if (file.error || !file.data) throw new PublishRejected(`Thiếu ảnh nháp ${job.from}.`);
     const put = await db.storage.from("app").upload(job.to, file.data, { contentType: "image/png", upsert: true });
     if (put.error) throw new Error(`Không chép được ảnh ${job.to}: ${put.error.message}`);
     uploaded.push(job.to);
+  }
+
+  // Cover generation with a hard 10s ceiling and cancellation support
+  const abortController = new AbortController();
+  const { signal } = abortController;
+  let timerId: any;
+
+  try {
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timerId = setTimeout(() => {
+        abortController.abort(new Error("Cover generation timed out after 10s"));
+        reject(new Error("Cover generation timed out after 10s"));
+      }, 10_000);
+    });
+
+    const coverPromise = (async () => {
+      const { data: pathRows } = await db
+        .from("studio_course_paths")
+        .select("learning_order, studio_paths(title)")
+        .eq("course_id", input.courseId)
+        .order("learning_order", { ascending: true });
+
+      if (signal.aborted) throw signal.reason ?? new Error("Aborted");
+
+      const paths = (pathRows ?? []).map((r: any) => ({
+        title: r.studio_paths?.title ?? "",
+        learning_order: r.learning_order ?? 0,
+      }));
+
+      const plan = await resolveCoverPlan(input.title, paths, (url, opts) => {
+        const fetchSignal = opts?.signal
+          ? AbortSignal.any([opts.signal, signal])
+          : signal;
+        return fetch(url, { ...opts, signal: fetchSignal });
+      });
+
+      if (signal.aborted) throw signal.reason ?? new Error("Aborted");
+
+      const png = await renderCoverPng(plan);
+
+      if (signal.aborted) throw signal.reason ?? new Error("Aborted");
+
+      const coverPath = appCoverPath(input.courseId);
+      const put = await db.storage.from(COVER_BUCKET).upload(coverPath, png, { contentType: "image/png", upsert: true });
+      if (put.error) throw new Error(put.error.message);
+
+      if (signal.aborted) {
+        await db.storage.from(COVER_BUCKET).remove([coverPath]).catch(() => {});
+        throw signal.reason ?? new Error("Aborted");
+      }
+
+      coverPathUploaded = coverPath;
+      payload.course.data.thumbnail_url = appCoverUrl(db, input.courseId);
+    })();
+
+    await Promise.race([coverPromise, timeoutPromise]);
+  } catch (e: any) {
+    // Invariant: Lỗi ở bất kỳ bước nào của việc sinh ảnh KHÔNG được làm hỏng hoặc chặn publish.
+    // thumbnail_url giữ nguyên rỗng, kèm một sự kiện cảnh báo trong studio_run_events cho bước publish.
+    try {
+      await db.from("studio_run_events").insert({
+        run_id: input.runId,
+        step_key: "publish",
+        attempt: 0,
+        kind: "warning",
+        message: `Không sinh được ảnh cover: ${e?.message ?? e}`.slice(0, 500),
+      });
+    } catch {
+      // ignore
+    }
+  } finally {
+    clearTimeout(timerId);
   }
 
   const { data, error } = await db.rpc("studio_publish_course", {
@@ -130,7 +210,9 @@ export async function publishRun(db: SupabaseClient, input: PublishInput): Promi
     if (!isDatabaseVerdict(error.code)) throw new Error(error.message);
     // Nothing was written; the images were only a precondition of the course.
     await db.storage.from("app").remove(uploaded);
+    if (coverPathUploaded) await db.storage.from(COVER_BUCKET).remove([coverPathUploaded]);
     throw new PublishRejected(`${error.message}${error.details ? ` (${error.details.slice(0, 300)})` : ""}`);
   }
+
   return data as string;
 }
