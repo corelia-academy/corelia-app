@@ -100,10 +100,9 @@ function stubTickEnv(autoResearch: string | undefined) {
 
 function contextDb() {
   const tables: Record<string, unknown> = {
-    studio_courses: { data: { title: "Solana", level: "beginner" }, error: null },
+    studio_courses: { data: { title: "Solana", level: "beginner", audience: "Dev mới", corelia_direction: "Kỹ năng lõi", content_locale: "vi" }, error: null },
     studio_course_paths: { data: [{ studio_paths: { group_kind: "skill", title: "Blockchain" } }], error: null },
     studio_generations: { data: [], error: null },
-    studio_catalog_scopes: { data: [], error: null },
   };
   const queries = Object.fromEntries(Object.entries(tables).map(([name, result]) => [name, contextQuery(result)]));
   return { db: { from: vi.fn((table: string) => queries[table]) } as unknown as SupabaseClient, queries };
@@ -270,6 +269,28 @@ describe("handleStudioStart", () => {
     expect(curriculum.catalogResearch).toBeNull();
   });
 
+  it("builds the agent tracks and course input from the course fields, one track per group", async () => {
+    const { db } = contextDb();
+    const run = { id: runId, course_id: courseId, started_at: "2026-10-24T00:00:00Z", catalog_job_id: null };
+
+    const ctx = await loadContext(db, run, "brief");
+
+    expect(ctx.scopes).toEqual([{ track: "skill", audience: "Dev mới", corelia_direction: "Kỹ năng lõi", locale: "vi" }]);
+    expect(ctx.course).toEqual({ title: "Solana", level: "beginner" });
+  });
+
+  it("sends no tracks when the course has lost its audience or direction", async () => {
+    const { db } = contextDb();
+    const run = { id: runId, course_id: courseId, started_at: "2026-10-24T00:00:00Z", catalog_job_id: null };
+    const incomplete = {
+      from: vi.fn((table: string) => table === "studio_courses"
+        ? contextQuery({ data: { title: "Solana", level: "beginner", audience: null, corelia_direction: "x", content_locale: "vi" }, error: null })
+        : (db as unknown as { from: (t: string) => unknown }).from(table)),
+    } as unknown as SupabaseClient;
+
+    expect((await loadContext(incomplete, run, "brief")).scopes).toEqual([]);
+  });
+
   it("uses no A1 profile when a run has no catalog job", async () => {
     const { db } = contextDb();
     const run = { id: runId, course_id: courseId, started_at: "2026-10-24T00:00:00Z", catalog_job_id: null };
@@ -319,7 +340,6 @@ describe("handleStudioStart", () => {
       studio_catalog_jobs: [{ data: [], error: null }],
       studio_courses: [{ data: null, error: { message: "catalog read unavailable" } }],
       studio_course_paths: [{ data: [], error: null }],
-      studio_catalog_scopes: [{ data: [], error: null }],
     });
     const error = vi.spyOn(console, "error").mockImplementation(() => {});
     mocks.advanceCatalogJobs.mockResolvedValue([{ job_id: "already-running", action: "wait" }]);
@@ -347,14 +367,13 @@ describe("handleStudioStart", () => {
         { id: "older-job", course_id: mostOverdueCourseId, trigger: "manual", status: "evidence_ok", finished_at: mostOverdueFinishedAt, created_at: mostOverdueFinishedAt },
       ], error: null }],
       studio_courses: [{ data: [
-        { id: courseId, status: "idea", research_status: "evidence_ok" },
-        { id: mostOverdueCourseId, status: "idea", research_status: "evidence_ok" },
+        { id: courseId, status: "idea", research_status: "evidence_ok", research_period_days: 90 },
+        { id: mostOverdueCourseId, status: "idea", research_status: "evidence_ok", research_period_days: 90 },
       ], error: null }],
       studio_course_paths: [{ data: [
         { course_id: courseId, studio_paths: { group_kind: "skill" } },
         { course_id: mostOverdueCourseId, studio_paths: { group_kind: "skill" } },
       ], error: null }],
-      studio_catalog_scopes: [{ data: [{ group_kind: "skill", research_period_days: 90 }], error: null }],
     });
 
     const response = await handleStudioTick(tickRequest(), mock.db);
@@ -379,9 +398,8 @@ describe("handleStudioStart", () => {
     const mock = tickDb({
       studio_runs: [{ data: [], error: null }],
       studio_catalog_jobs: [{ data: [{ id: "prior-job", course_id: courseId, trigger: "manual", status: "evidence_ok", finished_at: new Date(now - 91 * 24 * 60 * 60 * 1000).toISOString(), created_at: new Date(now - 91 * 24 * 60 * 60 * 1000).toISOString() }], error: null }],
-      studio_courses: [{ data: [{ id: courseId, status: "idea", research_status: "evidence_ok" }], error: null }],
+      studio_courses: [{ data: [{ id: courseId, status: "idea", research_status: "evidence_ok", research_period_days: 90 }], error: null }],
       studio_course_paths: [{ data: [{ course_id: courseId, studio_paths: { group_kind: "skill" } }], error: null }],
-      studio_catalog_scopes: [{ data: [{ group_kind: "skill", research_period_days: 90 }], error: null }],
     }, { data: null, error: { code: "23505", message: "one running job per course" } });
     const error = vi.spyOn(console, "error").mockImplementation(() => {});
 
@@ -479,7 +497,7 @@ describe("paused Studio run tick gating", () => {
       const readResult = table === "studio_run_steps"
         ? { data: [{ step_key: "brief", state: "active" }], error: null }
         : table === "studio_courses"
-          ? { data: { title: "Fixture course", level: "beginner", scope_note: null }, error: null }
+          ? { data: { title: "Fixture course", level: "beginner", scope_note: null, audience: "Fixture audience", corelia_direction: "Fixture direction", content_locale: "vi" }, error: null }
           : { data: [], error: null };
       const q: Record<string, any> = {};
       for (const method of ["select", "eq", "is", "order", "limit", "in", "update"]) q[method] = vi.fn(() => q);
@@ -581,9 +599,8 @@ describe("paused Studio run tick gating", () => {
           : { data: [{ id: generationId }], error: null };
         return makeQuery(table, result);
       }
-      if (table === "studio_courses") return makeQuery(table, { data: { title: "Fixture course", level: "beginner", scope_note: null }, error: null });
+      if (table === "studio_courses") return makeQuery(table, { data: { title: "Fixture course", level: "beginner", scope_note: null, audience: "Fixture audience", corelia_direction: "Fixture direction", content_locale: "vi" }, error: null });
       if (table === "studio_course_paths") return makeQuery(table, { data: [{ studio_paths: { group_kind: "skill", title: "Fixture path" } }], error: null });
-      if (table === "studio_catalog_scopes") return makeQuery(table, { data: [], error: null });
       if (table === "studio_run_events") return makeQuery(table, { data: [], error: null });
       throw new Error(`Unexpected table: ${table}`);
     });

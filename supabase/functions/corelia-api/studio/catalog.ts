@@ -360,10 +360,17 @@ export function boundAppCourses(candidates: AppCourseCandidate[], sourceTruncate
 }
 
 export interface CatalogRows {
-  course: { title: string; level: string | null; scope_note?: string | null };
+  course: {
+    title: string;
+    level: string | null;
+    scope_note?: string | null;
+    audience: string | null;
+    corelia_direction: string | null;
+    content_locale: string;
+    research_period_days: number;
+  };
   /** Paths of the course. */
   paths: { group_kind: string; title: string }[];
-  scopes: { group_kind: string; audience: string; corelia_direction: string; locale: string; research_period_days: number }[];
   /** Courses with a path in one of the groups, the course itself included; a course in several paths of a group repeats. */
   neighbours: { group_kind: string; id: string; title: string; level: string | null; status: string }[];
   courseId: string;
@@ -371,34 +378,33 @@ export interface CatalogRows {
 }
 
 /**
- * One group per group_kind in which the course has a path, in a fixed order. `other_courses` are the
- * other courses of the group, each once. The measuring period is the longest of the groups' periods
- * (the research is shared by all groups of the course).
+ * One group per group_kind in which the course has a path, in a fixed order. Audience, direction and
+ * locale belong to the course, so every group carries the same values. `other_courses` are the other
+ * courses of the group, each once. The measuring period is the course's own.
  */
 export function assembleCatalogBase(rows: CatalogRows): CatalogBase {
   if (rows.paths.length === 0) throw new CatalogInputError("course_has_no_path", "Khóa chưa thuộc path nào nên không có phạm vi để nghiên cứu.");
+  const { audience, corelia_direction, content_locale, research_period_days, ...course } = rows.course;
+  if (!audience || !corelia_direction) throw new CatalogInputError("scope_missing", "Khóa chưa có đối tượng học viên hoặc hướng của Corelia.");
   const kinds = GROUP_KINDS.filter((k) => rows.paths.some((p) => p.group_kind === k));
   const groups = kinds.map((kind): CatalogGroup => {
-    const scope = rows.scopes.find((s) => s.group_kind === kind);
-    if (!scope) throw new CatalogInputError("scope_missing", `Nhóm ${kind} chưa có scope (audience, định hướng Corelia).`);
     const others = new Map<string, CatalogGroup["other_courses"][number]>();
     for (const n of rows.neighbours) {
       if (n.group_kind === kind && n.id !== rows.courseId) others.set(n.id, { title: n.title, level: n.level, status: n.status });
     }
     return {
       group_kind: kind,
-      audience: scope.audience,
-      corelia_direction: scope.corelia_direction,
-      locale: scope.locale,
+      audience,
+      corelia_direction,
+      locale: content_locale,
       paths: rows.paths.filter((p) => p.group_kind === kind).map((p) => p.title),
       other_courses: [...others.values()],
     };
   });
-  const period = Math.max(...kinds.map((k) => rows.scopes.find((s) => s.group_kind === k)!.research_period_days));
   return {
-    course: rows.course,
+    course,
     groups,
-    research_period_days: period,
+    research_period_days,
     app_courses: boundAppCourses(rows.appCourses?.items ?? [], rows.appCourses?.truncated ?? false),
   };
 }

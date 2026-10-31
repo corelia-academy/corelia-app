@@ -124,8 +124,7 @@ SELECT r.run_id, 'catalog_research', 0, 'progress', 'A1',
          'started_at', to_char(j.started_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
          'finished_at', CASE WHEN j.finished_at IS NULL THEN NULL ELSE to_char(j.finished_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') END,
          'expires_at', CASE WHEN j.finished_at IS NULL THEN NULL ELSE to_char((j.finished_at + interval '20 days') AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') END,
-         'period_days', 20,
-         'period_group', 'skill'
+         'period_days', 20
        ), now()
 FROM studio_ui_fixture_runs r
 JOIN public.studio_catalog_jobs j ON j.id = r.catalog_job_id

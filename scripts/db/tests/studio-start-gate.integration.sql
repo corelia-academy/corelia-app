@@ -41,14 +41,21 @@ INSERT INTO public.studio_courses(id,title,status,research_status) VALUES
  ('eeee7777-2222-4000-8000-000000000003','Reuse needs_more_sources','needs_update','needs_more_sources'),
  ('eeee7777-2222-4000-8000-000000000004','Attach running A1 job','not_passed','idea'),
  ('eeee7777-2222-4000-8000-000000000005','Missing path','idea','idea'),
- ('eeee7777-2222-4000-8000-000000000006','Missing scope','idea','idea'),
+ ('eeee7777-2222-4000-8000-000000000006','Missing audience and direction','idea','idea'),
  ('eeee7777-2222-4000-8000-000000000007','Expired job','idea','evidence_ok'),
- ('eeee7777-2222-4000-8000-000000000008','Minimum scope TTL','idea','evidence_ok'),
+ ('eeee7777-2222-4000-8000-000000000008','Course period TTL','idea','evidence_ok'),
  ('eeee7777-2222-4000-8000-000000000009','Resume step 0','not_passed','evidence_ok'),
  ('eeee7777-2222-4000-8000-000000000010','Published cannot start','published','evidence_ok'),
  ('eeee7777-2222-4000-8000-000000000011','Atomic start event failure','idea','idea'),
  ('eeee7777-2222-4000-8000-000000000012','Resume copied generations','idea','idea'),
  ('eeee7777-2222-4000-8000-000000000013','Resume nothing done','idea','idea');
+
+-- Audience and direction are chosen per course; only the course without them must be refused.
+UPDATE public.studio_courses
+SET audience = 'Fixture audience', corelia_direction = 'Fixture direction'
+WHERE id::text LIKE 'eeee7777-2222-%' AND id <> 'eeee7777-2222-4000-8000-000000000006';
+UPDATE public.studio_courses SET research_period_days = 20
+WHERE id IN ('eeee7777-2222-4000-8000-000000000002','eeee7777-2222-4000-8000-000000000008');
 
 INSERT INTO public.studio_paths(id,group_kind,slug,title) VALUES
  ('eeee7777-1111-4000-8000-000000000001','ecosystem','fixture-ecosystem','Fixture ecosystem'),
@@ -239,7 +246,6 @@ BEGIN
   END IF;
 
   -- Guards reject early and leave no run or job behind.
-  DELETE FROM public.studio_catalog_scopes WHERE group_kind = 'skill';
   BEGIN
     PERFORM public.studio_start_run('eeee7777-2222-4000-8000-000000000005','eeee7777-3333-4000-8000-000000000005',NULL,NULL);
     RAISE EXCEPTION 'expected course_has_no_path';
@@ -283,12 +289,12 @@ DECLARE
 BEGIN
   FOR sample IN
     SELECT * FROM (VALUES
-      ('eeee7777-3333-4000-8000-000000000001'::uuid, 'started', NULL::uuid, 90, 'ecosystem'),
-      ('eeee7777-3333-4000-8000-000000000002'::uuid, 'reused', 'eeee7777-4444-4000-8000-000000000002'::uuid, 20, 'skill'),
-      ('eeee7777-3333-4000-8000-000000000003'::uuid, 'reused', 'eeee7777-4444-4000-8000-000000000003'::uuid, 90, 'role'),
-      ('eeee7777-3333-4000-8000-000000000004'::uuid, 'attached_running', 'eeee7777-4444-4000-8000-000000000004'::uuid, 90, 'ecosystem'),
-      ('eeee7777-3333-4000-8000-000000000010'::uuid, 'kept_previous', 'eeee7777-4444-4000-8000-000000000009'::uuid, 90, 'role')
-    ) AS cases(run_id, source, job_id, period_days, period_group)
+      ('eeee7777-3333-4000-8000-000000000001'::uuid, 'started', NULL::uuid, 90),
+      ('eeee7777-3333-4000-8000-000000000002'::uuid, 'reused', 'eeee7777-4444-4000-8000-000000000002'::uuid, 20),
+      ('eeee7777-3333-4000-8000-000000000003'::uuid, 'reused', 'eeee7777-4444-4000-8000-000000000003'::uuid, 90),
+      ('eeee7777-3333-4000-8000-000000000004'::uuid, 'attached_running', 'eeee7777-4444-4000-8000-000000000004'::uuid, 90),
+      ('eeee7777-3333-4000-8000-000000000010'::uuid, 'kept_previous', 'eeee7777-4444-4000-8000-000000000009'::uuid, 90)
+    ) AS cases(run_id, source, job_id, period_days)
   LOOP
     SELECT count(*) INTO event_count
     FROM public.studio_run_events
@@ -306,7 +312,7 @@ BEGIN
        OR (event_row.payload->>'started_at')::timestamptz IS DISTINCT FROM expected_started_at
        OR coalesce(event_row.payload->>'started_at' ~ '^\d{4}-\d{2}-\d{2}T.*Z$', false) = false
        OR (event_row.payload->>'period_days')::integer <> sample.period_days
-       OR event_row.payload->>'period_group' <> sample.period_group THEN
+       OR event_row.payload ? 'period_group' THEN
       RAISE EXCEPTION 'run % has incorrect source event metadata: %', sample.run_id, to_jsonb(event_row);
     END IF;
 
@@ -331,12 +337,11 @@ BEGIN
     END IF;
   END LOOP;
 
-  IF (SELECT payload->>'period_group' FROM public.studio_run_events WHERE run_id='eeee7777-3333-4000-8000-000000000008' AND step_key='catalog_research') <> 'skill'
-     OR (SELECT (payload->>'period_days')::integer FROM public.studio_run_events WHERE run_id='eeee7777-3333-4000-8000-000000000008' AND step_key='catalog_research') <> 20 THEN
-    RAISE EXCEPTION 'multiple-group event must identify the shortest scope period';
+  IF (SELECT (payload->>'period_days')::integer FROM public.studio_run_events WHERE run_id='eeee7777-3333-4000-8000-000000000008' AND step_key='catalog_research') <> 20 THEN
+    RAISE EXCEPTION 'multiple-group event must carry the period of the course';
   END IF;
-  IF (SELECT message FROM public.studio_run_events WHERE run_id='eeee7777-3333-4000-8000-000000000002' AND step_key='catalog_research') NOT LIKE '%cách đây % ngày, còn hiệu lực % ngày (kỳ 20 ngày của nhóm skill)%' THEN
-    RAISE EXCEPTION 'reused multiple-group message must identify the shortest scope period';
+  IF (SELECT message FROM public.studio_run_events WHERE run_id='eeee7777-3333-4000-8000-000000000002' AND step_key='catalog_research') NOT LIKE '%cách đây % ngày, còn hiệu lực % ngày (kỳ 20 ngày của khóa)%' THEN
+    RAISE EXCEPTION 'reused multiple-group message must identify the period of the course';
   END IF;
   IF (SELECT message FROM public.studio_run_events WHERE run_id='eeee7777-3333-4000-8000-000000000010' AND step_key='catalog_research') NOT LIKE '%Giữ nguyên kết quả nghiên cứu của lượt trước dù đã quá hạn % ngày%' THEN
     RAISE EXCEPTION 'expired resumed result message is incorrect';

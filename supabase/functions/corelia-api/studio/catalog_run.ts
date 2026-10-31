@@ -210,7 +210,7 @@ export async function logCatalogRunEvent(
 
 export async function loadCatalogBase(db: SupabaseClient, courseId: string): Promise<CatalogBase> {
   const [course, links] = await Promise.all([
-    db.from("studio_courses").select("title,level,scope_note").eq("id", courseId).maybeSingle(),
+    db.from("studio_courses").select("title,level,scope_note,audience,corelia_direction,content_locale,research_period_days").eq("id", courseId).maybeSingle(),
     db.from("studio_course_paths").select("studio_paths(group_kind,title)").eq("course_id", courseId),
   ]);
   if (course.error) throw new Error(course.error.message);
@@ -224,8 +224,7 @@ export async function loadCatalogBase(db: SupabaseClient, courseId: string): Pro
   const kinds = [...new Set(paths.map((p) => p.group_kind))];
   if (kinds.length === 0) throw new CatalogInputError("course_has_no_path", "Khóa chưa thuộc path nào nên không có phạm vi để nghiên cứu.");
 
-  const [scopes, neighbours, publicCourses, studioPublishedCourses] = await Promise.all([
-    db.from("studio_catalog_scopes").select("group_kind,audience,corelia_direction,locale,research_period_days").in("group_kind", kinds),
+  const [neighbours, publicCourses, studioPublishedCourses] = await Promise.all([
     db.from("studio_course_paths").select("studio_paths!inner(group_kind),studio_courses!inner(id,title,level,status)").in("studio_paths.group_kind", kinds),
     db.from("courses")
       .select("id,slug,updated_at,data", { count: "exact" })
@@ -240,7 +239,6 @@ export async function loadCatalogBase(db: SupabaseClient, courseId: string): Pro
       .order("id", { ascending: true })
       .limit(APP_COURSES_MAX_ITEMS + 1),
   ]);
-  if (scopes.error) throw new Error(scopes.error.message);
   if (neighbours.error) throw new Error(neighbours.error.message);
   if (publicCourses.error) throw new Error(publicCourses.error.message);
   if (studioPublishedCourses.error) throw new Error(studioPublishedCourses.error.message);
@@ -296,7 +294,6 @@ export async function loadCatalogBase(db: SupabaseClient, courseId: string): Pro
     courseId,
     course: course.data as CatalogRows["course"],
     paths,
-    scopes: (scopes.data ?? []) as CatalogRows["scopes"],
     neighbours: (neighbours.data ?? []).map((n) => {
       const path = n.studio_paths as unknown as { group_kind: string };
       const c = n.studio_courses as unknown as { id: string; title: string; level: string | null; status: string };
