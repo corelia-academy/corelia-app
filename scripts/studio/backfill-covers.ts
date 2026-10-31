@@ -119,7 +119,7 @@ async function main() {
         console.warn(`  Warning fetching paths: ${pathErr.message}`);
       }
 
-      const paths = (pathRows ?? []).map((r: any) => ({
+      const paths = (pathRows ?? []).map((r: { studio_paths?: { title?: string } | null; learning_order?: number | null }) => ({
         title: r.studio_paths?.title ?? "",
         learning_order: r.learning_order ?? 0,
       }));
@@ -186,8 +186,8 @@ async function main() {
       } else {
         console.log(`  [DRY-RUN] Would generate and set thumbnail: ${appCoverUrl(db, course.id)}`);
       }
-    } catch (err: any) {
-      console.error(`  [ERROR] Failed to process course ${course.id}: ${err?.message ?? err}`);
+    } catch (err) {
+      console.error(`  [ERROR] Failed to process course ${course.id}: ${err instanceof Error ? err.message : err}`);
       errorCount++;
     }
   }
