@@ -56,7 +56,7 @@ const pinnedVersions = {
   "a3-curriculum": 19,
   "a4-curriculum-review": 16,
   "a5-lesson": 19,
-  "a6-lesson-review": 16,
+  "a6-lesson-review": 17,
 };
 for (const [key, version] of Object.entries(pinnedVersions)) {
   const identity = `${key}@v${version}`;
