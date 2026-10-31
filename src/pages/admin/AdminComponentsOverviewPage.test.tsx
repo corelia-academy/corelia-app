@@ -225,7 +225,11 @@ describe("AdminComponentsPage", () => {
         MockIntersectionObserver.instances.push(this);
       }
 
-      observe() {}
+      targets: Element[] = [];
+
+      observe(target: Element) {
+        this.targets.push(target);
+      }
 
       disconnect() {}
 
@@ -248,7 +252,9 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    const observer = MockIntersectionObserver.instances[0];
+    const observer = MockIntersectionObserver.instances.find((instance) =>
+      instance.targets.some((target) => target.id.startsWith("component-")),
+    )!;
     const badgeSection = container.querySelector("#component-badge");
     expect(observer).toBeDefined();
     expect(badgeSection).not.toBeNull();
@@ -292,7 +298,11 @@ describe("AdminComponentsPage", () => {
         MockIntersectionObserver.instances.push(this);
       }
 
-      observe() {}
+      targets: Element[] = [];
+
+      observe(target: Element) {
+        this.targets.push(target);
+      }
 
       disconnect() {}
 
@@ -316,7 +326,9 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    const observer = MockIntersectionObserver.instances[0];
+    const observer = MockIntersectionObserver.instances.find((instance) =>
+      instance.targets.some((target) => target.id.startsWith("component-")),
+    )!;
     const selectionSection = container.querySelector<HTMLElement>(
       "#component-selection",
     );
@@ -381,7 +393,11 @@ describe("AdminComponentsPage", () => {
         MockIntersectionObserver.instances.push(this);
       }
 
-      observe() {}
+      targets: Element[] = [];
+
+      observe(target: Element) {
+        this.targets.push(target);
+      }
 
       disconnect() {}
 
@@ -405,7 +421,9 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    const observer = MockIntersectionObserver.instances[0];
+    const observer = MockIntersectionObserver.instances.find((instance) =>
+      instance.targets.some((target) => target.id.startsWith("component-")),
+    )!;
     const tagSection = container.querySelector<HTMLElement>("#component-tag");
     const activeMenuItem = container.querySelector<HTMLElement>(
       '[data-component-nav-item="tag"]',
@@ -479,7 +497,11 @@ describe("AdminComponentsPage", () => {
         MockIntersectionObserver.instances.push(this);
       }
 
-      observe() {}
+      targets: Element[] = [];
+
+      observe(target: Element) {
+        this.targets.push(target);
+      }
 
       disconnect() {}
 
@@ -516,7 +538,9 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    const observer = MockIntersectionObserver.instances[0];
+    const observer = MockIntersectionObserver.instances.find((instance) =>
+      instance.targets.some((target) => target.id.startsWith("component-")),
+    )!;
     const selectionSection = container.querySelector<HTMLElement>(
       "#component-selection",
     );
@@ -540,7 +564,11 @@ describe("AdminComponentsPage", () => {
 
     expect(pathnames).toContain("/components/selection");
     expect(container.isConnected).toBe(true);
-    expect(MockIntersectionObserver.instances).toHaveLength(1);
+    expect(
+      MockIntersectionObserver.instances.filter((instance) =>
+        instance.targets.some((target) => target.id.startsWith("component-")),
+      ),
+    ).toHaveLength(1);
 
     await act(async () => root.unmount());
     container.remove();
@@ -565,7 +593,11 @@ describe("AdminComponentsPage", () => {
         MockIntersectionObserver.instances.push(this);
       }
 
-      observe() {}
+      targets: Element[] = [];
+
+      observe(target: Element) {
+        this.targets.push(target);
+      }
 
       disconnect() {}
 
@@ -598,7 +630,9 @@ describe("AdminComponentsPage", () => {
     });
 
     const badgeLink = container.querySelector('a[href="/components/badge"]');
-    const observer = MockIntersectionObserver.instances[0];
+    const observer = MockIntersectionObserver.instances.find((instance) =>
+      instance.targets.some((target) => target.id.startsWith("component-")),
+    )!;
     expect(badgeLink).not.toBeNull();
     expect(observer).toBeDefined();
 
@@ -642,7 +676,11 @@ describe("AdminComponentsPage", () => {
         MockIntersectionObserver.instances.push(this);
       }
 
-      observe() {}
+      targets: Element[] = [];
+
+      observe(target: Element) {
+        this.targets.push(target);
+      }
 
       disconnect() {}
 
@@ -671,7 +709,9 @@ describe("AdminComponentsPage", () => {
     const selectionLink = container.querySelector(
       'a[href="/components/selection"]',
     );
-    const observer = MockIntersectionObserver.instances[0];
+    const observer = MockIntersectionObserver.instances.find((instance) =>
+      instance.targets.some((target) => target.id.startsWith("component-")),
+    )!;
 
     expect(selectionSection).not.toBeNull();
     expect(selectionLink).not.toBeNull();

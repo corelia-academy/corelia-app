@@ -56,7 +56,7 @@ export function ContestDetailManageSectionTabs({
       )}
       aria-label={translate("workspace.manage.tabs.ariaLabel")}
     >
-      <div className="-mb-px flex gap-1 overflow-x-auto overscroll-x-contain px-1 pb-px [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="-mb-px flex gap-1 overflow-x-auto overscroll-x-contain px-1 pb-px scrollbar-hidden">
         {visibleSections.map((key) => {
           const isActive = activeSection === key;
           return (
