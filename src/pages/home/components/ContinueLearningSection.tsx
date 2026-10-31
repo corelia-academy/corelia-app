@@ -1,3 +1,4 @@
+import { AiCourseCover } from "@/components/courses/AiCourseCover";
 import { FileText, MonitorPlay, TimerIcon } from "@phosphor-icons/react";
 import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { NavLink } from "react-router";
@@ -59,7 +60,8 @@ export function ContinueLearningSection({
               to={item.action}
               className="motion-hover-card min-w-[240px] max-w-none sm:max-w-[335px] flex-[1_1_100%] sm:flex-[1_1_240px] @min-[504px]:@max-[807px]:flex-[1_1_240px]! overflow-hidden rounded-xl"
             >
-              <div className="aspect-video overflow-hidden rounded-lg border border-border bg-surface-raised">
+              <div className="relative aspect-video overflow-hidden rounded-lg border border-border bg-surface-raised">
+                {item.courseType === "ai_generated" ? <AiCourseCover seed={item.id} className="absolute inset-0 size-full" /> : null}
                 {item.thumbnailUrl ? (
                   <img
                     src={optimizedImageUrl(item.thumbnailUrl, { width: 335 })}
@@ -67,7 +69,7 @@ export function ContinueLearningSection({
                     decoding="async"
                     alt=""
                     loading="lazy"
-                    className="size-full object-cover"
+                    className="relative size-full object-cover"
                   />
                 ) : null}
               </div>

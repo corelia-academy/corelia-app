@@ -1,3 +1,4 @@
+import { AiCourseCover } from "@/components/courses/AiCourseCover";
 import { useMemo } from "react";
 import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { FileText, TimerIcon } from "@phosphor-icons/react";
@@ -106,7 +107,8 @@ export function ExploreCoursesSection({
                 to={`/courses/${course.slug || course.id}`}
                 className="motion-hover-card min-w-[240px] max-w-none sm:max-w-[335px] flex-[1_1_100%] sm:flex-[1_1_240px] @min-[504px]:@max-[807px]:flex-[1_1_240px]! overflow-hidden rounded-xl"
               >
-                <div className="aspect-video overflow-hidden rounded-lg border border-border bg-surface-raised">
+                <div className="relative aspect-video overflow-hidden rounded-lg border border-border bg-surface-raised">
+                  {course.course_type === "ai_generated" ? <AiCourseCover seed={course.id} className="absolute inset-0 size-full" /> : null}
                   {course.thumbnail_url ? (
                     <img
                       src={optimizedImageUrl(course.thumbnail_url, { width: 335 })}
@@ -114,7 +116,7 @@ export function ExploreCoursesSection({
                       decoding="async"
                       alt=""
                       loading="lazy"
-                      className="size-full object-cover"
+                      className="relative size-full object-cover"
                     />
                   ) : null}
                 </div>
