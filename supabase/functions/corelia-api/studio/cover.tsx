@@ -288,78 +288,19 @@ function wrapText(text: string, size: number, maxWidth: number): string[] {
   return lines;
 }
 
-/** Small accent colours for the doodles; the main subject (logo or title) stays in ink. */
-const DOODLE_COLORS = ["#2563eb", "#f59e0b", "#10b981", "#ec4899"];
-
-/** Stable 32-bit hash of the cover subject, so the same course always gets the same doodles. */
-function hashSeed(text: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < text.length; i += 1) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
-  return h >>> 0;
-}
-
-type Doodle = (gen: any, cx: number, cy: number, r: number, o: Record<string, unknown>) => any; // deno-lint-ignore no-explicit-any
-
-const DOODLES: Doodle[] = [
-  // star
-  (g, cx, cy, r, o) =>
-    g.polygon(
-      Array.from({ length: 10 }, (_, i) => {
-        const a = (Math.PI / 5) * i - Math.PI / 2;
-        const rr = i % 2 === 0 ? r : r * 0.45;
-        return [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr];
-      }),
-      o,
-    ),
-  // sparkle
-  (g, cx, cy, r, o) => g.path(`M ${cx - r} ${cy} L ${cx + r} ${cy} M ${cx} ${cy - r} L ${cx} ${cy + r} M ${cx - r * 0.6} ${cy - r * 0.6} L ${cx + r * 0.6} ${cy + r * 0.6}`, o),
-  // ring
-  (g, cx, cy, r, o) => g.circle(cx, cy, r * 1.6, o),
-  // squiggle
-  (g, cx, cy, r, o) => g.curve([[cx - r * 1.2, cy], [cx - r * 0.6, cy - r * 0.7], [cx, cy + r * 0.7], [cx + r * 0.6, cy - r * 0.7], [cx + r * 1.2, cy]], o),
-  // arrow
-  (g, cx, cy, r, o) => g.path(`M ${cx - r} ${cy + r * 0.6} Q ${cx} ${cy - r} ${cx + r} ${cy - r * 0.2} M ${cx + r * 0.4} ${cy - r * 0.7} L ${cx + r} ${cy - r * 0.2} L ${cx + r * 0.3} ${cy + r * 0.2}`, o),
-  // brackets
-  (g, cx, cy, r, o) => g.path(`M ${cx - r * 0.3} ${cy - r} L ${cx - r} ${cy} L ${cx - r * 0.3} ${cy + r} M ${cx + r * 0.3} ${cy - r} L ${cx + r} ${cy} L ${cx + r * 0.3} ${cy + r}`, o),
-  // dots
-  (g, cx, cy, r, o) => g.path(`M ${cx - r} ${cy} L ${cx - r + 1} ${cy} M ${cx} ${cy} L ${cx + 1} ${cy} M ${cx + r} ${cy} L ${cx + r + 1} ${cy}`, { ...o, strokeWidth: 9 }),
-];
-
-/** Six accent doodles around the frame, kept clear of the middle band where the logo or title sits. */
-function doodles(
-  gen: any, // deno-lint-ignore no-explicit-any
-  strokes: (drawable: any, color?: string) => string, // deno-lint-ignore no-explicit-any
-  subject: string,
-): string {
-  const slots: Array<[number, number]> = [[140, 140], [1060, 140], [140, 535], [1060, 535], [420, 105], [780, 570]];
-  const h = hashSeed(subject);
-  let out = "";
-  slots.forEach(([x, y], i) => {
-    const pick = (h >>> (i * 4)) & 0xff;
-    const shape = DOODLES[pick % DOODLES.length];
-    const color = DOODLE_COLORS[(pick >> 3) % DOODLE_COLORS.length];
-    const r = 26 + (pick % 5) * 4;
-    const o = { roughness: 1.4, bowing: 1, stroke: color, strokeWidth: 3.5, seed: (h % 1000) + i * 13 + 1 };
-    out += strokes(shape(gen, x + ((pick % 7) - 3) * 8, y + (((pick >> 2) % 7) - 3) * 8, r, o), color);
-  });
-  return out;
-}
-
 /** Renders a 1200x675 hand-drawn cover PNG (white paper, ink strokes, Patrick Hand) from the plan. */
 export async function renderCoverPng(plan: CoverPlan): Promise<Uint8Array> {
   const { rough, font } = await loadAssets();
   const gen = rough.generator();
   const opts = { roughness: 1.3, bowing: 0.9, stroke: INK, strokeWidth: 3, seed: 11, preserveVertices: true };
   // deno-lint-ignore no-explicit-any
-  const strokes = (drawable: any, color = INK) =>
+  const strokes = (drawable: any) =>
     gen.toPaths(drawable).map((p: { d: string; strokeWidth: number }) =>
-      `<path d="${p.d}" stroke="${color}" stroke-width="${p.strokeWidth}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+      `<path d="${p.d}" stroke="${INK}" stroke-width="${p.strokeWidth}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
     ).join("");
 
   let body = strokes(gen.rectangle(40, 40, WIDTH - 80, HEIGHT - 80, opts));
   body += strokes(gen.rectangle(56, 54, WIDTH - 112, HEIGHT - 108, { ...opts, seed: 23, roughness: 1.8, strokeWidth: 2 }));
-
-  body += doodles(gen, strokes, plan.kind === "logo" ? plan.logos.map((l) => l.name).join("+") : plan.text);
 
   if (plan.kind === "logo" && plan.logos.length > 0) {
     const size = plan.logos.length >= 2 ? 240 : 300;
