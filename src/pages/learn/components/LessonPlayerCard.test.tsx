@@ -41,6 +41,15 @@ it("submits once and does not navigate when the old completion resolves after a 
   expect(host.textContent).not.toContain("learning.saving");
 });
 
+it.each(["article", "quiz"] as const)("puts the %s footer in the lesson column", format => {
+  const host = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+  act(() => root.render(
+    <TestCard {...props} lesson={{ ...lesson, lesson_format: format }} courseId="c" onMarkComplete={vi.fn()} onNavigateToLesson={vi.fn()} actionSlot={document.createElement("div")} />,
+  ));
+  expect(host.querySelectorAll("[data-lesson-column]")).toHaveLength(1);
+});
+
 it("keeps a failed completion on the same lesson and clears its error for another course", async () => {
   const host = document.createElement("div"), root = createRoot(host);
   cleanup = () => act(() => root.unmount());
