@@ -26,7 +26,7 @@ function MarkdownImage({ src, alt, lesson = false }: { src?: string; alt: string
       alt={alt}
       loading="lazy"
       decoding="async"
-      className={cn("my-3 h-auto max-w-full rounded-lg border border-border-subtle", lesson && "max-h-[60vh]")}
+      className={cn("my-3 h-auto max-w-full rounded-lg border border-border-subtle", lesson && "max-h-[max(60vh,20rem)]")}
     />
   );
 }
