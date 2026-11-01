@@ -11,6 +11,7 @@ vi.mock("./YoutubeLessonVideo", () => ({ YoutubeLessonVideo: () => null }));
 vi.mock("./PracticeLesson", () => ({ PracticeLesson: () => null }));
 vi.mock("./QuizLesson", () => ({ QuizLesson: () => null }));
 vi.mock("@/features/code-exercise/CodeExerciseLesson", () => ({ CodeExerciseLesson: () => null }));
+vi.mock("@/components/markdown/Markdown", () => ({ Markdown: () => null }));
 
 it("shows an updating video without offering a completion action", () => {
   const host = document.createElement("div");
@@ -40,5 +41,18 @@ it("shows an updating video without offering a completion action", () => {
 
   expect(host.querySelector('[role="status"]')?.textContent).toBe("learning.videoUpdating");
   expect(onAction).toHaveBeenLastCalledWith(null);
+  act(() => root.unmount());
+});
+
+it.each(["article", "quiz", "practice", "code_exercise"] as const)("renders the %s lesson header inside the lesson column", format => {
+  const host = document.createElement("div");
+  const root = createRoot(host);
+  const lesson = { id: format, section_id: "section", order: 0, duration_seconds: 0, title: format, lesson_format: format, description_markdown: "Body", published: true } as CourseLesson;
+
+  act(() => root.render(
+    <LessonRenderer lesson={lesson} courseId="course" mode="learner" completed={false} onComplete={vi.fn()} onAction={vi.fn()} contentFrame={{ header: <p>Header</p> }} />,
+  ));
+
+  expect(host.querySelector("[data-lesson-column]")?.textContent).toContain("Header");
   act(() => root.unmount());
 });

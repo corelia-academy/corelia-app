@@ -193,6 +193,7 @@ function LearnWorkspace() {
   const [askAiSlot, setAskAiSlot] = useState<HTMLDivElement | null>(null);
   const curriculumPanelRef = useRef<ResizablePanelHandle | null>(null);
   const reopenTabRef = useRef<HTMLButtonElement | null>(null);
+  const lessonScrollRef = useRef<HTMLElement>(null);
   const tabDrag = useEdgeTabDrag();
   const barDrag = useFloatingBarDrag();
   const reopenTabAppliedRef = useRef<{ tab: HTMLButtonElement; show: boolean } | null>(null);
@@ -459,6 +460,10 @@ function LearnWorkspace() {
   useEffect(() => {
     if (user && currentLesson && courseId) void recordLearningEvent(courseId, currentLesson.id, "lesson_started");
   }, [user, courseId, currentLesson]);
+  // The lesson column scrolls inside its own viewport, not the window, so ScrollToTop never resets it.
+  useEffect(() => {
+    lessonScrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  }, [lessonId]);
 
   useEffect(() => {
     const enrollmentId = access.enrollment?.id;
@@ -869,7 +874,7 @@ function LearnWorkspace() {
               className="min-w-0 bg-background"
             >
               <div className="relative flex h-full min-w-0 flex-col">
-                <ScrollArea autoHide viewportRender={<main />} viewportClassName="pb-24" contentClassName="flex min-h-full flex-col">
+                <ScrollArea autoHide viewportRender={<main ref={lessonScrollRef} />} viewportClassName="pb-24" contentClassName="flex min-h-full flex-col">
                   {lessonContent}
                 </ScrollArea>
                 {footerBar}
@@ -909,7 +914,7 @@ function LearnWorkspace() {
         </div>
       ) : (
         <div className="relative flex min-h-0 flex-1 flex-col">
-          <ScrollArea autoHide viewportRender={<main />} viewportClassName="pb-24" contentClassName="flex min-h-full flex-col">
+          <ScrollArea autoHide viewportRender={<main ref={lessonScrollRef} />} viewportClassName="pb-24" contentClassName="flex min-h-full flex-col">
             {lessonContent}
           </ScrollArea>
           {footerBar}

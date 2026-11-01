@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, CircleNotch } from "@phosphor-icons/react";
 import { useAuth } from "@/stores/authStore";
 import { LessonRenderer } from "@/features/learning/LessonRenderer";
+import { LessonColumn } from "@/features/learning/lessonLayout";
 import { canAskAboutLesson } from "@/features/learning/askAi";
 import { AskAiMenu } from "./AskAiMenu";
 import type { LessonActionState } from "@/features/learning/types";
@@ -84,7 +85,6 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
   };
   const label = busy ? t("learning.saving") : mode === "learner" && !user ? t("learning.login") : completed && mode === "learner" ? t(nextLesson ? "learning.next" : hasFinalAssignment ? "learning.finalAssignmentLink" : "learning.finish") : action?.label ?? t("learning.unavailable");
   const format = getLessonFormat(lesson);
-  const frameLayout = mode === "learner" && (format === "video" || format === "article");
   const inFooter = actionSlot !== undefined && mode === "learner";
   const canReset = mode === "learner" && !!user && !!onReset && hasFullCourseAccess && !isDraftLesson;
   const primaryDisabled = busy || action?.pending || (!(completed && mode === "learner") && (!action || (action.disabled && (mode === "preview" || !!user))));
@@ -98,32 +98,21 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
       : action?.label === t("learning.completeContinue")
         ? { full: t("learning.markComplete"), short: t("learning.markCompleteShort") }
         : { full: label };
-  const header = <div><p className="text-sm text-foreground-muted">{t(`learning.formats.${getLessonFormat(lesson)}`)} {completed && `· ${t("learning.completed")}`}</p><h1 className="mt-2 text-heading-large font-display">{lessonText(lesson.title)}</h1>{lesson.short_description && <p className="mt-2 text-foreground-muted">{lessonText(lesson.short_description)}</p>}{!inFooter && canAskAboutLesson(lesson) && <div className="mt-3"><AskAiMenu lesson={lesson} courseTitle={courseTitle} /></div>}</div>;
+  const header = <>{mode === "preview" && <p className="rounded-lg bg-primary/10 p-3 text-sm">{t("learning.previewBanner")}</p>}<div><p className="text-sm text-foreground-muted">{t(`learning.formats.${getLessonFormat(lesson)}`)} {completed && `· ${t("learning.completed")}`}</p><h1 className="mt-2 text-heading-large font-display">{lessonText(lesson.title)}</h1>{lesson.short_description && <p className="mt-2 text-foreground-muted">{lessonText(lesson.short_description)}</p>}{!inFooter && canAskAboutLesson(lesson) && <div className="mt-3"><AskAiMenu lesson={lesson} courseTitle={courseTitle} /></div>}</div></>;
   const resourcesNode = !!resources.length && (
-    frameLayout
-      ? <section>
-          <h2 className="mb-3xl font-display text-heading-large text-action-text">{t("learning.resources")}</h2>
-          <div className="flex flex-col gap-xl text-body-large text-action-text">
-            {resources.map((r,i) => <a key={i} href={r.url} target="_blank" rel="noreferrer" className="block text-primary underline">{r.title}</a>)}
-          </div>
-        </section>
-      : <section className="rounded-xl border border-border p-4"><h2 className="mb-2 font-medium">{t("learning.resources")}</h2>{resources.map((r,i) => <a key={i} href={r.url} target="_blank" rel="noreferrer" className="block text-primary underline">{r.title}</a>)}</section>
+    <section>
+      <h2 className="mb-3xl font-display text-heading-large text-action-text">{t("learning.resources")}</h2>
+      <div className="flex flex-col gap-xl text-body-large text-action-text">
+        {resources.map((r,i) => <a key={i} href={r.url} target="_blank" rel="noreferrer" className="block text-primary underline">{r.title}</a>)}
+      </div>
+    </section>
   );
   return <div className="flex min-h-full flex-col">
-    {frameLayout ? (
-      <div className="flex-1">
-        <LessonRenderer lesson={lesson} courseId={courseId} mode={mode} contentLocale={contentLocale} completed={completed} onComplete={complete} onAction={registerAction} questions={questions} resetEpoch={resetEpoch} draftEpoch={draftEpoch} contentFrame={{ header, resources: resourcesNode || undefined }} />
-      </div>
-    ) : (
-      <div className="mx-auto w-full max-w-5xl flex-1 space-y-5 px-4 py-6 sm:px-6">
-        {mode === "preview" && <p className="rounded-lg bg-primary/10 p-3 text-sm">{t("learning.previewBanner")}</p>}
-        {header}
-        <LessonRenderer lesson={lesson} courseId={courseId} mode={mode} contentLocale={contentLocale} completed={completed} onComplete={complete} onAction={registerAction} questions={questions} resetEpoch={resetEpoch} draftEpoch={draftEpoch} />
-        {resourcesNode}
-      </div>
-    )}
+    <div className="flex-1">
+      <LessonRenderer lesson={lesson} courseId={courseId} mode={mode} contentLocale={contentLocale} completed={completed} onComplete={complete} onAction={registerAction} questions={questions} resetEpoch={resetEpoch} draftEpoch={draftEpoch} contentFrame={{ header, resources: resourcesNode || undefined }} />
+    </div>
     {inFooter && (
-      <div className={`w-full space-y-3 pb-6 ${frameLayout ? "mx-auto max-w-[880px] px-4 sm:px-6 md:px-8xl" : "mx-auto max-w-5xl px-4 sm:px-6"}`}>
+      <LessonColumn className="space-y-3 pb-6">
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
         {confirmation}
         <div className="flex flex-wrap items-center gap-md">
@@ -132,7 +121,7 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
           */}
           {canReset && ["quiz", "practice", "code_exercise"].includes(format) && <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={busy || action?.pending} onClick={() => void reset(true)}>{t("learning.redoFromStart")}</Button>}
         </div>
-      </div>
+      </LessonColumn>
     )}
     {!inFooter && (
     <footer className="sticky bottom-0 z-10 border-t border-border bg-surface-base px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-3">
