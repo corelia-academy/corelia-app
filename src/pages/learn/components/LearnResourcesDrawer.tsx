@@ -62,7 +62,7 @@ export function LearnResourcesDrawer({ groups, courseResources }: { groups: Curr
               <h3 data-reveal="" className="pb-md text-label-small leading-[1.4] text-foreground-subtle">{group.title}</h3>
               <ul className="space-y-md">
                 {group.items.map((item, index) => (
-                  <li key={`${item.url}:${index}`} data-reveal="" className="rounded-xl bg-[var(--neutral-800)]">
+                  <li key={`${item.url}:${index}`} data-reveal="" className="rounded-xl bg-resource-item-surface">
                     <Action
                       size="large"
                       nativeButton={false}
