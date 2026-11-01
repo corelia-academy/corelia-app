@@ -139,8 +139,12 @@ export function structureProblems(curriculum: unknown, research: unknown, record
   return problems;
 }
 
-/** Checks a URL answers. Only a definite miss (404/410) is a problem; a server error or no answer is transient. */
-async function urlProblem(url: string, fetchFn: typeof fetch): Promise<"ok" | "restricted" | "broken"> {
+/**
+ * Checks a URL answers. Only a miss (404/410) that GET confirms is a problem: a HEAD request is not
+ * answered like GET everywhere. A server error or no answer is transient.
+ * Returns the status of a confirmed miss.
+ */
+async function urlProblem(url: string, fetchFn: typeof fetch): Promise<"ok" | "restricted" | number> {
   const attempt = async (method: "HEAD" | "GET") => {
     try {
       const res = await fetchFn(url, { method, redirect: "follow", signal: AbortSignal.timeout(8000) });
@@ -151,8 +155,8 @@ async function urlProblem(url: string, fetchFn: typeof fetch): Promise<"ok" | "r
     }
   };
   let status = await attempt("HEAD");
-  if (status >= 400 && status !== 404 && status !== 410) status = await attempt("GET"); // some servers reject HEAD
-  if (status === 404 || status === 410) return "broken";
+  if (status >= 400) status = await attempt("GET"); // some servers reject or misanswer HEAD
+  if (status === 404 || status === 410) return status;
   if (status < 400) return "ok";
   // 401/403/429: the page exists but refuses a bot; the learner's browser is not affected.
   if (status === 401 || status === 403 || status === 429) return "restricted";
@@ -166,7 +170,7 @@ async function urlProblem(url: string, fetchFn: typeof fetch): Promise<"ok" | "r
 export async function linkProblems(records: Record<string, LessonRecord>, fetchFn: typeof fetch = fetch, restricted: string[] = [], evidence?: CodeCheck[]): Promise<string[]> {
   const problems: string[] = [];
   let transient: TransientError | null = null;
-  const checks: { where: string; run: () => Promise<boolean> }[] = [];
+  const checks: { where: string; run: () => Promise<string | null> }[] = [];
   const seen = new Set<string>();
   const failedRefs: string[] = [];
   let resolved = 0;
@@ -182,12 +186,12 @@ export async function linkProblems(records: Record<string, LessonRecord>, fetchF
         run: async () => {
           const result = await urlProblem(r.url, fetchFn);
           if (result === "restricted") restricted.push(r.url);
-          return result !== "broken";
+          return typeof result === "number" ? ` (HTTP ${result})` : null;
         },
       });
     }
     const video = draft.lesson.youtube_url ? getYoutubeVideoId(draft.lesson.youtube_url) : null;
-    if (video) checks.push({ where: `${id}: video ${video}`, run: async () => Boolean(await youtubeEmbeddable(video, fetchFn)) });
+    if (video) checks.push({ where: `${id}: video ${video}`, run: async () => ((await youtubeEmbeddable(video, fetchFn)) ? null : "") });
   }
   for (let i = 0; i < checks.length; i += 8) {
     const results = await Promise.allSettled(checks.slice(i, i + 8).map((c) => c.run()));
@@ -195,8 +199,8 @@ export async function linkProblems(records: Record<string, LessonRecord>, fetchF
       const where = checks[i + k].where;
       if (res.status === "fulfilled") {
         resolved++;
-        if (!res.value) {
-          problems.push(`${where} không truy cập được`);
+        if (res.value !== null) {
+          problems.push(`${where} không truy cập được${res.value}`);
           failedRefs.push(where);
         }
       } else if (res.reason instanceof TransientError) transient ??= res.reason;

@@ -1026,7 +1026,7 @@ export function planRun(input: {
    * Curriculum lessons with their generations of both lesson steps and the blocking items of each
    * lesson's newest accepted review; required while the step is `lessons` or `lesson_review`.
    */
-  lessons?: { ids: string[]; rows: LessonGeneration[]; blocking: Record<string, string[]> };
+  lessons?: { ids: string[]; rows: LessonGeneration[]; blocking: Record<string, string[]>; unseenBlocking?: Record<string, boolean> };
 }): { step: StepKey | null; action: TickAction } {
   // Runs already in progress when step 0 was introduced have no row for it. Leave them on their
   // existing step sequence rather than starting A1 halfway through a run.
@@ -1066,6 +1066,7 @@ export function planRun(input: {
       lessonIds: input.lessons.ids,
       rows: input.lessons.rows,
       blocking: input.lessons.blocking,
+      unseenBlocking: input.lessons.unseenBlocking,
       now: input.now,
       maxAttempts: { lessons: STEP_SPECS.lessons!.maxAttempts, lesson_review: STEP_SPECS.lesson_review!.maxAttempts },
       submitStaleMs: SUBMIT_STALE_MS,

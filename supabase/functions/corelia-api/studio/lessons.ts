@@ -249,6 +249,14 @@ export function reviewBlocking(review: unknown): string[] {
   return issues.filter((i) => i.severity === "blocking").map((i) => `${i.location ?? "?"}: ${i.problem ?? ""}`);
 }
 
+/** True when `review` has a blocking location that `previous` did not flag. */
+export function hasUnseenBlocking(review: unknown, previous: unknown): boolean {
+  const locations = (r: unknown) =>
+    new Set(normalizeReviewIssues((r as { issues?: unknown } | null)?.issues).issues.filter((i) => i.severity === "blocking").map((i) => i.location ?? "?"));
+  const seen = locations(previous);
+  return [...locations(review)].some((l) => !seen.has(l));
+}
+
 /**
  * Review feedback a lesson is being rewritten against: the newest accepted draft was reviewed and
  * the review has blocking items. Null while the draft waits for review or has passed.

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { journeyProblems, linkProblems, structureProblems, type LessonRecord } from "./checks.ts";
-import { MAX_LESSON_REVIEWS, planLessons, type LessonGeneration, type LessonStep } from "./lesson_flow.ts";
+import { MAX_LESSON_REVIEWS, MAX_LESSON_REVIEWS_LATE, planLessons, type LessonGeneration, type LessonStep } from "./lesson_flow.ts";
 import { MAX_TRANSPORT_FAILURES } from "./retry.ts";
 import { article, base, ctx, curriculum, editCode, fillCode, lesson, now, question } from "./lesson_fixtures.ts";
 import { getCodeLanguageAdapter } from "./lesson_ports.ts";
@@ -9,7 +9,7 @@ import { acceptLessonReview, LESSON_REVIEW_SCHEMA, resolvePath } from "./lesson_
 import { lessonReviewEventPayload } from "./handlers.ts";
 import { inputBlocks } from "./openai.ts";
 import { A6_REVIEW_CRITERIA } from "./review_policy.ts";
-import { buildLessonInput, buildLessonReviewInput, LESSON_SHARED_KEYS, lessonRefs, lessonRevision, lessonTools, reviewBlocking, toLessonDraft, TransientError, type LessonContext } from "./lessons.ts";
+import { buildLessonInput, buildLessonReviewInput, LESSON_SHARED_KEYS, lessonRefs, hasUnseenBlocking, lessonRevision, lessonTools, reviewBlocking, toLessonDraft, TransientError, type LessonContext } from "./lessons.ts";
 import { planRun, STEP_ORDER, STEP_SPECS, SUBMIT_STALE_MS, type RunContext, type StepKey } from "./steps.ts";
 
 // ---- loop planning -----------------------------------------------------------------------------
@@ -55,6 +55,29 @@ describe("studio lesson loop: planning", () => {
     expect(p.actions).toEqual([{ lessonId: "a", kind: "submit", step: "lessons", attempt: 1, parentId: d.id, previousError: null }]);
     // minor-only review (no blocking items) does not rewrite
     expect(kinds(plan([d, review("a")], { a: [] }, 1))).toEqual(["b:lessons#0"]);
+  });
+
+  it("gives a third round to a blocking item that first appeared in the last review, and no more", () => {
+    const rows2 = [draft("a"), review("a"), draft("a", 1), review("a", 1)];
+    const items = { a: ["questions[1].question: mơ hồ"] };
+    const withUnseen = (rows: LessonGeneration[], unseen: boolean) =>
+      planLessons({ lessonIds: ids, rows, blocking: items, unseenBlocking: { a: unseen }, now, maxAttempts: { lessons: 2, lesson_review: 2 }, submitStaleMs: SUBMIT_STALE_MS, limit: 3 });
+    // The author never saw this item: one more rewrite.
+    expect(withUnseen(rows2, true).actions[0]).toMatchObject({ lessonId: "a", kind: "submit", step: "lessons", attempt: 2 });
+    // The same items as the review before: the author already had a rewrite for them.
+    expect(withUnseen(rows2, false).exhausted.map((e) => e.lessonId)).toEqual(["a"]);
+    // The third review is final, whatever it raises.
+    const rows3 = [...rows2, draft("a", 2), review("a", 2)];
+    expect(MAX_LESSON_REVIEWS_LATE).toBe(3);
+    expect(withUnseen(rows3, true).exhausted[0].reason).toContain("sau 3 lần review");
+  });
+
+  it("tells a blocking location the earlier review did not flag", () => {
+    const rev = (...locations: string[]) => ({ verdict: "needs_fix", issues: locations.map((location) => ({ location, severity: "blocking", category: "wrong_answer", problem: "x", fix: "y" })) });
+    expect(hasUnseenBlocking(rev("questions[1].question"), rev("questions[0].question"))).toBe(true);
+    expect(hasUnseenBlocking(rev("questions[0].question"), rev("questions[0].question", "lesson.title"))).toBe(false);
+    expect(hasUnseenBlocking(rev("questions[0].question", "questions[1].question"), rev("questions[0].question"))).toBe(true);
+    expect(hasUnseenBlocking({ verdict: "pass", issues: [] }, rev("questions[0].question"))).toBe(false);
   });
 
   it("reviews the rewrite as a new attempt of the review step", () => {
@@ -693,12 +716,16 @@ describe("studio structure_check: links", () => {
 
   it("reports a missing page or video", async () => {
     const problems = await linkProblems(withLinks(), answer((url) => (url.includes("oembed") ? 404 : url.includes("rust-lang") ? 404 : 200)));
-    expect(problems).toEqual(["l-art: resource https://doc.rust-lang.org/book/ không truy cập được", "l-vid: video dQw4w9WgXcQ không truy cập được"]);
+    expect(problems).toEqual(["l-art: resource https://doc.rust-lang.org/book/ không truy cập được (HTTP 404)", "l-vid: video dQw4w9WgXcQ không truy cập được"]);
   });
 
   it("falls back to GET when HEAD is refused, and does not count a bot block as a missing page", async () => {
     expect(await linkProblems(withLinks(), answer((_u, method) => (method === "HEAD" ? 405 : 200)))).toEqual([]);
     expect(await linkProblems(withLinks(), answer((url) => (url.includes("oembed") ? 200 : 403)))).toEqual([]);
+  });
+
+  it("does not call a page missing when only HEAD says so", async () => {
+    expect(await linkProblems(withLinks(), answer((url, method) => (url.includes("oembed") ? 200 : method === "HEAD" ? 404 : 200)))).toEqual([]);
   });
 
   it("defers when the only obstacle is a server error or no network", async () => {
