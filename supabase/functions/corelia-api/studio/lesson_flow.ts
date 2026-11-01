@@ -11,6 +11,8 @@ export type LessonStep = "lessons" | "lesson_review";
 
 /** A review is the verdict on one accepted draft; at most this many per lesson. */
 export const MAX_LESSON_REVIEWS = 2;
+/** One more round when the last review raised a blocking item the author has not been told about yet. */
+export const MAX_LESSON_REVIEWS_LATE = 3;
 export const LESSONS_PER_TICK = 3;
 
 export type LessonGeneration = GenerationState & { step_key: LessonStep; lesson_id: string };
@@ -60,6 +62,8 @@ export function planLessons(input: {
   rows: LessonGeneration[];
   /** Blocking items of the newest accepted review of each lesson that has one. */
   blocking: Record<string, string[]>;
+  /** Lessons whose newest review has a blocking location that the review before it did not flag. */
+  unseenBlocking?: Record<string, boolean>;
   now: number;
   maxAttempts: Record<LessonStep, number>;
   submitStaleMs: number;
@@ -96,7 +100,7 @@ export function planLessons(input: {
 function lessonFlow(
   lessonId: string,
   rows: LessonGeneration[],
-  input: Pick<Parameters<typeof planLessons>[0], "blocking" | "now" | "maxAttempts" | "submitStaleMs">,
+  input: Pick<Parameters<typeof planLessons>[0], "blocking" | "unseenBlocking" | "now" | "maxAttempts" | "submitStaleMs">,
 ): Flow {
   const drafts = track(rows, "lessons");
   const reviews = track(rows, "lesson_review");
@@ -138,7 +142,10 @@ function lessonFlow(
   const items = input.blocking[lessonId];
   if (!items) return { kind: "exhausted", reason: "không đọc được kết quả review" };
   if (items.length === 0) return { kind: "done" };
-  if (reviews.accepted >= MAX_LESSON_REVIEWS) {
+  // A blocking item that first appears in the last allowed review has had no rewrite: the author is
+  // told about it once more, so a miss of the earlier review does not fail the lesson.
+  const limit = input.unseenBlocking?.[lessonId] ? MAX_LESSON_REVIEWS_LATE : MAX_LESSON_REVIEWS;
+  if (reviews.accepted >= limit) {
     return { kind: "exhausted", reason: `còn lỗi blocking sau ${reviews.accepted} lần review: ${items.slice(0, 3).join("; ")}${items.length > 3 ? ` (+${items.length - 3})` : ""}` };
   }
   // Rewrite only this lesson; the review is the feedback (the handler adds it to the input).

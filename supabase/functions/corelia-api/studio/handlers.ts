@@ -8,6 +8,7 @@ import {
   lessonIds,
   lessonRefs,
   lessonRevision,
+  hasUnseenBlocking,
   reviewBlocking,
   toLessonDraft,
   TransientError,
@@ -362,8 +363,15 @@ async function loadLessons(db: SupabaseClient, run: RunRow) {
     .order("attempt");
   if (reviews.error) throw new Error(reviews.error.message);
   const blocking: Record<string, string[]> = {};
-  for (const r of reviews.data ?? []) blocking[r.lesson_id as string] = reviewBlocking(r.output); // ascending: newest wins
-  return { ids, rows: (rows.data ?? []) as LessonGeneration[], blocking };
+  const unseenBlocking: Record<string, boolean> = {};
+  const previous: Record<string, unknown> = {};
+  for (const r of reviews.data ?? []) {
+    const id = r.lesson_id as string;
+    blocking[id] = reviewBlocking(r.output); // ascending: newest wins
+    unseenBlocking[id] = id in previous && hasUnseenBlocking(r.output, previous[id]);
+    previous[id] = r.output;
+  }
+  return { ids, rows: (rows.data ?? []) as LessonGeneration[], blocking, unseenBlocking };
 }
 
 // Lessons are independent, so one failing action does not hold back the others; the first error is
