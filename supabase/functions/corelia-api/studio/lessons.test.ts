@@ -66,6 +66,7 @@ describe("studio lessons: accept by format", () => {
     expect(await reason("l-art", { article: { ...article, diagrams: [crossing] } })).toContain("đi xuyên node b");
     const dup = { ...diagram, nodes: [diagram.nodes[0], { ...diagram.nodes[1], col: 0 }] };
     expect(await reason("l-art", { article: { ...article, diagrams: [dup] } })).toContain("cùng ô");
+    expect(await reason("l-art", { article: { description_markdown: "Bài giải thích không có sơ đồ nào.", diagrams: [] } })).toContain("phải có ít nhất 1 sơ đồ");
   });
 
   it("quiz: keys, options and explanations follow the publish gate", async () => {

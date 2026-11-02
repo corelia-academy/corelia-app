@@ -14,8 +14,8 @@ describe("Studio staging secret contract", () => {
     const openAiKeys = configured.filter((name) => name.endsWith("_OPENAI_API_KEY"));
     const roles = Object.keys(AGENT_NAME) as AgentRole[];
 
-    expect(configured).toHaveLength(7);
-    expect(new Set(configured).size).toBe(7);
+    expect(configured).toHaveLength(8);
+    expect(new Set(configured).size).toBe(8);
     expect(configured).toContain("CORELIA_STUDIO_CRON_SECRET");
     expect(openAiKeys.sort()).toEqual(roles.map(agentKeyEnv).sort());
     expect(workflow).toContain('for secret_name in "${studio_required_secrets[@]}"; do');

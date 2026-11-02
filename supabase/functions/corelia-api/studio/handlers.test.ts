@@ -1,3 +1,5 @@
+import * as fs from "node:fs";
+import * as pathMod from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "../lib/supabase.ts";
 
@@ -18,7 +20,11 @@ vi.mock("./catalog_run.ts", () => ({ advanceCatalogJobs: mocks.advanceCatalogJob
 vi.mock("./drafts.ts", () => ({ purgeExpiredDrafts: mocks.purgeExpiredDrafts }));
 
 import { PROMPT_VERSIONS, promptVersion } from "./prompts.ts";
-import { activePauseDurationMs, advanceRun, handleStudioContinue, handleStudioPause, handleStudioStart, handleStudioTick, loadContext, pausedTickAction, stepRequestFailureMessage, stepRequestSentMessage, stepResponseFailureMessage, tickActionForRun } from "./handlers.ts";
+import { TRANSLATION_LOCALES } from "./translate.ts";
+import { clearFontRegistry } from "./diagram_render.ts";
+import { STEP_ORDER } from "./steps.ts";
+import { activePauseDurationMs, advanceRun,
+  runTranslate, handleStudioContinue, handleStudioPause, handleStudioStart, handleStudioTick, loadContext, pausedTickAction, stepRequestFailureMessage, stepRequestSentMessage, stepResponseFailureMessage, tickActionForRun } from "./handlers.ts";
 
 const courseId = "11111111-1111-4111-8111-111111111111";
 const runId = "22222222-2222-4222-8222-222222222222";
@@ -638,7 +644,7 @@ describe("paused Studio run tick gating", () => {
       return new Response(JSON.stringify({
         status: "completed",
         model: "mock-model",
-        output: [{ content: [{ type: "output_text", text: JSON.stringify({ status: "ready", open_questions: [], code_language: null }) }] }],
+        output: [{ content: [{ type: "output_text", text: JSON.stringify({ status: "ready", title: "Fixture title", open_questions: [], code_language: null }) }] }],
         usage: { input_tokens: 12, output_tokens: 4 },
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }));
@@ -658,5 +664,1060 @@ describe("paused Studio run tick gating", () => {
       vi.stubGlobal("fetch", oldFetch);
       vi.stubGlobal("Deno", oldDeno);
     }
+  });
+});
+
+describe("Studio translate step handling", () => {
+  const briefOutput = { title: "Python Programming Course", topic: "Python Course", goals: ["Master Python"], locale: "en" };
+  const curriculumOutput = {
+    modules: [
+      {
+        id: "m1",
+        title: "Module 1",
+        description: "Desc 1",
+        lessons: [
+          { id: "l1", title: "Lesson 1", type: "article", duration_seconds: 300, outcome_ids: [] },
+        ],
+      },
+    ],
+    outcomes: [{ id: "o1", text: "Outcome 1" }],
+  };
+
+  const lessonGenRow = {
+    step_key: "lessons",
+    status: "completed",
+    lesson_id: "l1",
+    attempt: 0,
+    model_id: "test-model",
+    prompt_version: "v1",
+    output: {
+      title: "Lesson 1",
+      lesson_format: "article",
+      short_description: "Short desc 1",
+      summary: "Summary of lesson 1",
+      resources: [],
+      content_markdown: "# Title\n\nContent",
+      take_aways: ["Takeaway 1"],
+      diagrams: [],
+    },
+  };
+
+  const lessonDraftRow = {
+    lesson_id: "l1",
+    run_id: runId,
+    draft: {
+      lesson: { id: "l1", title: "Lesson 1", lesson_format: "article" },
+      summary: "Summary of lesson 1",
+      article: { content_markdown: "# Title\n\nContent", take_aways: ["Takeaway 1"], diagrams: [] },
+    },
+  };
+
+  function createMockDb(options: {
+    generations?: any[];
+    stepState?: string;
+    lessonDrafts?: any[];
+    storageDownloads?: Record<string, Record<string, any>>;
+    runEvents?: any[];
+  }) {
+    const insertedGens: any[] = [];
+    const updatedGens: any[] = [];
+    const insertedEvents: any[] = [];
+    const dbEvents = [...(options.runEvents ?? [])];
+    const stepUpdates: any[] = [];
+
+    const dbGenerations = options.generations ? [...options.generations] : [
+      { step_key: "brief", status: "completed", output: briefOutput, attempt: 0 },
+      { step_key: "curriculum", status: "completed", output: curriculumOutput, attempt: 0 },
+      lessonGenRow,
+    ];
+
+    const allSteps = STEP_ORDER.map((stepKey) => ({
+      run_id: runId,
+      step_key: stepKey,
+      state: stepKey === "translate" ? (options.stepState || "active") : "done",
+    }));
+
+    const from = vi.fn((table: string) => {
+      const q: Record<string, any> = {};
+      for (const m of ["select", "eq", "is", "order", "limit", "in", "neq", "not"]) q[m] = vi.fn(() => q);
+
+      q.maybeSingle = vi.fn().mockImplementation(async () => {
+        if (table === "studio_agent_prompts") {
+          return { data: { prompt_version: 1, version: 1, system_prompt: "Translate test prompt" }, error: null };
+        }
+        if (table === "studio_generations") {
+          // Check for completed aggregate row
+          const comp = dbGenerations.find((g) => g.step_key === "translate" && (g.locale === null || g.locale === undefined) && (g.lesson_id === null || g.lesson_id === undefined) && g.status === "completed");
+          return { data: comp || null, error: null };
+        }
+        return { data: null, error: null };
+      });
+
+      q.single = vi.fn().mockImplementation(async () => {
+        if (table === "studio_courses") {
+          return { data: { id: courseId, title: "Python Course", level: "beginner", audience: "All", corelia_direction: "Standard", content_locale: "en" }, error: null };
+        }
+        if (table === "studio_generations") {
+          const target = dbGenerations.find((g) => g.id === "gen-rej-0") || insertedGens[insertedGens.length - 1] || { id: "gen-new", failure_kind: "rejected", status: "failed" };
+          return { data: { id: target.id, failure_kind: target.failure_kind || "rejected", status: target.status || "failed" }, error: null };
+        }
+        return { data: {}, error: null };
+      });
+
+      q.insert = vi.fn().mockImplementation((val: any) => {
+        if (table === "studio_generations") {
+          const item = { id: `gen-${insertedGens.length + 1}`, ...val };
+          insertedGens.push(item);
+          dbGenerations.push(item);
+        }
+        if (table === "studio_run_events") {
+          insertedEvents.push(val);
+          dbEvents.push(val);
+        }
+        return {
+          select: vi.fn(() => ({
+            single: vi.fn().mockResolvedValue({ data: insertedGens[insertedGens.length - 1], error: null }),
+          })),
+          then: (res: any) => Promise.resolve({ error: null }).then(res),
+        };
+      });
+
+      q.update = vi.fn().mockImplementation((val: any) => {
+        if (table === "studio_generations") updatedGens.push(val);
+        if (table === "studio_run_steps") stepUpdates.push(val);
+        return q;
+      });
+
+      q.then = (resolve: any, reject: any) => {
+        let result: any = { data: [], error: null };
+        if (table === "studio_courses") {
+          result = { data: { id: courseId, title: "Python Course", level: "beginner", audience: "All", corelia_direction: "Standard", content_locale: "en" }, error: null };
+        } else if (table === "studio_course_paths") {
+          result = { data: [], error: null };
+        } else if (table === "studio_run_steps") {
+          result = { data: allSteps, error: null };
+        } else if (table === "studio_generations") {
+          result = { data: dbGenerations, error: null };
+        } else if (table === "studio_lesson_drafts") {
+          result = { data: options.lessonDrafts || [lessonDraftRow], error: null };
+        } else if (table === "studio_run_events") {
+          result = { data: dbEvents, error: null };
+        }
+        return Promise.resolve(result).then(resolve, reject);
+      };
+
+      return q;
+    });
+
+    const uploadedFiles: any[] = [];
+    const storage = {
+      from: vi.fn((bucket: string) => ({
+        list: vi.fn().mockResolvedValue({ data: [], error: null }),
+        upload: vi.fn().mockImplementation(async (p: string, b: any, opts: any) => {
+          uploadedFiles.push({ bucket, path: p, body: b, opts });
+          return { data: { path: p }, error: null };
+        }),
+        download: vi.fn().mockImplementation(async (p: string) => {
+          if (options.storageDownloads && options.storageDownloads[bucket]?.[p] !== undefined) {
+            const mock = options.storageDownloads[bucket][p];
+            if (mock instanceof Error) throw mock;
+            return mock;
+          }
+          return { data: null, error: { status: 404, message: "Object not found" } };
+        }),
+      })),
+    };
+
+    const rpc = vi.fn().mockImplementation(async (name: string, args: any) => {
+      if (name === "studio_finish_run") return { data: true, error: null };
+      return { data: true, error: null };
+    });
+
+    const db = { from, storage, rpc } as unknown as SupabaseClient;
+    return { db, insertedGens, updatedGens, insertedEvents, stepUpdates, rpc, uploadedFiles };
+  }
+
+  it("submits translation units up to limit per tick when step is translate", async () => {
+    const { db, insertedGens, updatedGens } = createMockDb({});
+    const oldDeno = (globalThis as any).Deno;
+    const oldFetch = globalThis.fetch;
+
+    vi.stubGlobal("Deno", { env: { get: (k: string) => k.endsWith("OPENAI_API_KEY") ? "mock-key" : undefined } });
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      return new Response(JSON.stringify({ id: "resp_translate_1" }), { status: 200, headers: { "Content-Type": "application/json" } });
+    }));
+
+    try {
+      const res = await advanceRun(db, {
+        id: runId,
+        course_id: courseId,
+        started_at: new Date().toISOString(),
+        paused_at: null,
+      });
+
+      expect(res).toEqual({ step: "translate", action: "translate" });
+      // TRANSLATE_LIMIT_PER_TICK = 6
+      expect(insertedGens.length).toBe(6);
+      expect(insertedGens[0]).toMatchObject({
+        step_key: "translate",
+        agent_role: "A7",
+        status: "submitting",
+      });
+      expect(updatedGens).toContainEqual(expect.objectContaining({
+        status: "submitted",
+        provider_request_id: "resp_translate_1",
+      }));
+    } finally {
+      vi.stubGlobal("Deno", oldDeno);
+      vi.stubGlobal("fetch", oldFetch);
+    }
+  });
+
+  it("polls and marks completed when valid translation is returned", async () => {
+    const submittedGen = {
+      id: "gen-sub-1",
+      run_id: runId,
+      step_key: "translate",
+      attempt: 0,
+      agent_role: "A7",
+      status: "submitted",
+      provider_request_id: "resp_sub_1",
+      created_at: new Date().toISOString(),
+      locale: "zh-CN",
+      lesson_id: null, // course unit
+    };
+
+    const { db, updatedGens, insertedEvents } = createMockDb({
+      generations: [
+        { step_key: "brief", status: "completed", output: briefOutput, attempt: 0 },
+        { step_key: "curriculum", status: "completed", output: curriculumOutput, attempt: 0 },
+        lessonGenRow,
+        submittedGen,
+      ],
+    });
+
+    const validCourseOutput = {
+      course: {
+        title: "Python 课程",
+        short_description: "Python 基础",
+        description: "掌握 Python",
+        learning_outcomes: ["学习语法"],
+      },
+      sections: [
+        { id: "m1", title: "第一单元", description: "基础概念" },
+      ],
+    };
+
+    const oldDeno = (globalThis as any).Deno;
+    const oldFetch = globalThis.fetch;
+
+    vi.stubGlobal("Deno", { env: { get: (k: string) => k.endsWith("OPENAI_API_KEY") ? "mock-key" : undefined } });
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      return new Response(JSON.stringify({
+        status: "completed",
+        model: "gpt-4o",
+        output: [{ content: [{ type: "output_text", text: JSON.stringify(validCourseOutput) }] }],
+      }), { status: 200, headers: { "Content-Type": "application/json" } });
+    }));
+
+    try {
+      await runTranslate(db, {
+        id: runId,
+        course_id: courseId,
+        started_at: new Date().toISOString(),
+        paused_at: null,
+      });
+
+      expect(updatedGens).toContainEqual(expect.objectContaining({
+        status: "completed",
+      }));
+      expect(insertedEvents).toContainEqual(expect.objectContaining({
+        kind: "progress",
+        step_key: "translate",
+        agent_role: "A7",
+      }));
+    } finally {
+      vi.stubGlobal("Deno", oldDeno);
+      vi.stubGlobal("fetch", oldFetch);
+    }
+  });
+
+  it("fails generation with rejected when translation violates integrity and marks draft_failed on attempt >= 3", async () => {
+    const failedGenAttempt2 = {
+      id: "gen-failed-2",
+      run_id: runId,
+      step_key: "translate",
+      attempt: 2,
+      agent_role: "A7",
+      status: "submitted",
+      provider_request_id: "resp_sub_invalid",
+      created_at: new Date().toISOString(),
+      locale: "zh-CN",
+      lesson_id: null,
+    };
+
+    const { db, updatedGens, rpc, insertedEvents } = createMockDb({
+      generations: [
+        { step_key: "brief", status: "completed", output: briefOutput, attempt: 0 },
+        { step_key: "curriculum", status: "completed", output: curriculumOutput, attempt: 0 },
+        lessonGenRow,
+        failedGenAttempt2,
+      ],
+    });
+
+    // Output thiếu module m1 -> vi phạm toàn vẹn
+    const invalidCourseOutput = {
+      course: {
+        title: "Python 课程",
+        short_description: "Python 基础",
+        description: "掌握 Python",
+        learning_outcomes: ["学习语法"],
+      },
+      sections: [], // thiếu m1
+    };
+
+    const oldDeno = (globalThis as any).Deno;
+    const oldFetch = globalThis.fetch;
+
+    vi.stubGlobal("Deno", { env: { get: (k: string) => k.endsWith("OPENAI_API_KEY") ? "mock-key" : undefined } });
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      return new Response(JSON.stringify({
+        status: "completed",
+        model: "gpt-4o",
+        usage: { input_tokens: 123, output_tokens: 45 },
+        output: [{ content: [{ type: "output_text", text: JSON.stringify(invalidCourseOutput) }] }],
+      }), { status: 200, headers: { "Content-Type": "application/json" } });
+    }));
+
+    try {
+      // Tick 1: Poll và fail với rejected
+      await runTranslate(db, {
+        id: runId,
+        course_id: courseId,
+        started_at: new Date().toISOString(),
+        paused_at: null,
+      });
+
+      expect(updatedGens).toContainEqual(expect.objectContaining({
+        status: "failed",
+        failure_kind: "rejected",
+        model_id: "gpt-4o",
+        output: invalidCourseOutput,
+        usage: expect.objectContaining({ input_tokens: 123, output_tokens: 45 }),
+      }));
+      expect(insertedEvents).toContainEqual(expect.objectContaining({
+        kind: "warning",
+        step_key: "translate",
+        agent_role: "A7",
+      }));
+    } finally {
+      vi.stubGlobal("Deno", oldDeno);
+      vi.stubGlobal("fetch", oldFetch);
+    }
+  });
+
+  it("resumes and completes step without re-translating when aggregate completed row exists", async () => {
+    const fullTranslationMap: any = {};
+    for (const loc of TRANSLATION_LOCALES) {
+      fullTranslationMap[loc] = {
+        course: { title: `Course ${loc}`, short_description: "desc", description: "desc", learning_outcomes: [] },
+        sections: { m1: { id: "m1", title: "sec", description: "desc" } },
+        lessons: { l1: { summary: "summary", article: { content_markdown: "content", take_aways: [] } } },
+      };
+    }
+
+    const completedAggregateGen = {
+      id: "gen-agg-completed",
+      run_id: runId,
+      step_key: "translate",
+      locale: null,
+      lesson_id: null,
+      status: "completed",
+      output: fullTranslationMap,
+      attempt: 0,
+    };
+
+    const { db, stepUpdates } = createMockDb({
+      generations: [
+        { step_key: "brief", status: "completed", output: briefOutput, attempt: 0 },
+        { step_key: "curriculum", status: "completed", output: curriculumOutput, attempt: 0 },
+        lessonGenRow,
+        completedAggregateGen,
+      ],
+    });
+
+    const oldFetch = globalThis.fetch;
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+
+    try {
+      await runTranslate(db, {
+        id: runId,
+        course_id: courseId,
+        started_at: new Date().toISOString(),
+        paused_at: null,
+      });
+
+      // Không gọi API dịch
+      expect(fetchSpy).not.toHaveBeenCalled();
+      // Đã đánh dấu hoàn thành step translate
+      expect(stepUpdates).toContainEqual(expect.objectContaining({
+        state: "done",
+      }));
+    } finally {
+      vi.stubGlobal("fetch", oldFetch);
+    }
+  });
+  it("marks run as draft_failed when a unit fails 3 attempts", async () => {
+    const failedGenAttempt3 = {
+      id: "gen-failed-3",
+      run_id: runId,
+      step_key: "translate",
+      attempt: 2,
+      agent_role: "A7",
+      status: "failed",
+      failure_kind: "rejected",
+      error: "Bản dịch vi phạm toàn vẹn",
+      created_at: new Date().toISOString(),
+      locale: "zh-CN",
+      lesson_id: null,
+    };
+
+    const { db, rpc } = createMockDb({
+      generations: [
+        { step_key: "brief", status: "completed", output: briefOutput, attempt: 0 },
+        { step_key: "curriculum", status: "completed", output: curriculumOutput, attempt: 0 },
+        lessonGenRow,
+        failedGenAttempt3,
+      ],
+    });
+
+    const oldDeno = (globalThis as any).Deno;
+    vi.stubGlobal("Deno", { env: { get: (k: string) => k.endsWith("OPENAI_API_KEY") ? "mock-key" : undefined } });
+
+    try {
+      await runTranslate(db, {
+        id: runId,
+        course_id: courseId,
+        started_at: new Date().toISOString(),
+        paused_at: null,
+      });
+
+      expect(rpc).toHaveBeenCalledWith("studio_finish_run", expect.objectContaining({
+        p_run_id: runId,
+        p_status: "draft_failed",
+      }));
+    } finally {
+      vi.stubGlobal("Deno", oldDeno);
+    }
+  });
+
+  it("V-25 Lỗi 1: loadContext ignores single-locale course unit attempts and returns the complete aggregate translation", async () => {
+    const fullTranslationsMap = {
+      "zh-CN": { course: { title: "Full ZH" }, sections: {}, lessons: {} },
+      "en": { course: { title: "Full EN" }, sections: {}, lessons: {} },
+    };
+    const unitCourseAttempt1 = {
+      id: "gen-unit-course-1",
+      run_id: runId,
+      step_key: "translate",
+      locale: "zh-CN",
+      lesson_id: null,
+      attempt: 1,
+      status: "completed",
+      output: { course: { title: "Single Locale Only" } },
+    };
+    const aggregateCompletedGen = {
+      id: "gen-agg-0",
+      run_id: runId,
+      step_key: "translate",
+      locale: null,
+      lesson_id: null,
+      attempt: 0,
+      status: "completed",
+      output: fullTranslationsMap,
+    };
+
+    const { db } = createMockDb({
+      generations: [
+        { step_key: "brief", status: "completed", output: briefOutput, attempt: 0 },
+        { step_key: "curriculum", status: "completed", output: curriculumOutput, attempt: 0 },
+        lessonGenRow,
+        aggregateCompletedGen,
+        unitCourseAttempt1,
+      ],
+    });
+
+    const ctx = await loadContext(db, {
+      id: runId,
+      course_id: courseId,
+      started_at: new Date().toISOString(),
+      paused_at: null,
+    });
+
+    expect(ctx.outputs.translate).toEqual(fullTranslationsMap);
+  });
+
+  it("V-25 Lỗi 2: video lesson converted to article uses article schema and format from draft", async () => {
+    const videoInCurriculum = {
+      modules: [
+        {
+          id: "m1",
+          title: "Module 1",
+          description: "Desc 1",
+          lessons: [
+            { id: "l1", title: "Lesson 1", type: "video", duration_seconds: 300, outcome_ids: [] },
+          ],
+        },
+      ],
+      outcomes: [{ id: "o1", text: "Outcome 1" }],
+    };
+
+    // A5 đã chuyển sang article trong generation row
+    const convertedLessonGenRow = {
+      id: "gen-l1-converted",
+      run_id: runId,
+      step_key: "lessons",
+      status: "completed",
+      lesson_id: "l1",
+      attempt: 0,
+      model_id: "test-model",
+      prompt_version: "v1",
+      output: {
+        title: "Lesson 1",
+        lesson_format: "article",
+        short_description: "Short desc 1",
+        summary: "Summary of converted lesson",
+        resources: [],
+        article: {
+          description_markdown: "# Article\n\nContent",
+          diagrams: [],
+        },
+      },
+    };
+
+    const convertedDraftRow = {
+      lesson_id: "l1",
+      run_id: runId,
+      draft: {
+        lesson: { id: "l1", title: "Lesson 1", lesson_format: "article" },
+        summary: "Summary of converted lesson",
+        article: { content_markdown: "# Article\n\nContent", take_aways: ["Takeaway 1"], diagrams: [] },
+      },
+    };
+
+    const { db } = createMockDb({
+      lessonDrafts: [convertedDraftRow],
+      generations: [
+        { step_key: "brief", status: "completed", output: briefOutput, attempt: 0 },
+        { step_key: "curriculum", status: "completed", output: videoInCurriculum, attempt: 0 },
+        convertedLessonGenRow,
+        // Course unit already completed so it picks the lesson unit
+        ...TRANSLATION_LOCALES.map((loc) => ({
+          run_id: runId,
+          step_key: "translate",
+          locale: loc,
+          lesson_id: null,
+          status: "completed",
+          output: { course: { title: "Title" }, sections: {} },
+          attempt: 0,
+        })),
+      ],
+    });
+
+    const oldDeno = (globalThis as any).Deno;
+    const oldFetch = globalThis.fetch;
+    const submittedSchemas: string[] = [];
+    const submittedInputs: any[] = [];
+
+    vi.stubGlobal("Deno", { env: { get: (k: string) => k.endsWith("OPENAI_API_KEY") ? "mock-key" : undefined } });
+    vi.stubGlobal("fetch", vi.fn(async (_url, init) => {
+      const body = JSON.parse(String(init?.body || "{}"));
+      submittedSchemas.push(body.text?.format?.name || "");
+      const userText = body.input?.[1]?.content?.[0]?.text;
+      submittedInputs.push(userText ? JSON.parse(userText) : null);
+      return new Response(JSON.stringify({ id: "resp_converted_article" }), { status: 200, headers: { "Content-Type": "application/json" } });
+    }));
+
+    try {
+      await runTranslate(db, {
+        id: runId,
+        course_id: courseId,
+        started_at: new Date().toISOString(),
+        paused_at: null,
+      });
+
+      // Kiểm tra schema gửi đi là translate_article chứ không phải translate_video
+      expect(submittedSchemas.some((s) => s.includes("article"))).toBe(true);
+      expect(submittedSchemas.every((s) => !s.includes("video"))).toBe(true);
+      expect(submittedInputs.some((inp) => inp?.format === "article")).toBe(true);
+    } finally {
+      vi.stubGlobal("Deno", oldDeno);
+      vi.stubGlobal("fetch", oldFetch);
+    }
+  });
+
+  it("V-25 Lỗi 4: retry after rejected includes previous_attempt.rejected_because; provider failure does not", async () => {
+    const failedRejectedGen = {
+      id: "gen-rej-0",
+      run_id: runId,
+      step_key: "translate",
+      attempt: 0,
+      agent_role: "A7",
+      status: "failed",
+      failure_kind: "rejected",
+      error: "Bản dịch vi phạm toàn vẹn",
+      created_at: new Date().toISOString(),
+      locale: "zh-CN",
+      lesson_id: null,
+    };
+
+    const { db } = createMockDb({
+      generations: [
+        { step_key: "brief", status: "completed", output: briefOutput, attempt: 0 },
+        { step_key: "curriculum", status: "completed", output: curriculumOutput, attempt: 0 },
+        lessonGenRow,
+        failedRejectedGen,
+      ],
+    });
+
+    const oldDeno = (globalThis as any).Deno;
+    const oldFetch = globalThis.fetch;
+    const submittedBodies: any[] = [];
+
+    vi.stubGlobal("Deno", { env: { get: (k: string) => k.endsWith("OPENAI_API_KEY") ? "mock-key" : undefined } });
+    vi.stubGlobal("fetch", vi.fn(async (_url, init) => {
+      const body = JSON.parse(String(init?.body || "{}"));
+      submittedBodies.push(body);
+      return new Response(JSON.stringify({ id: "resp_retry_1" }), { status: 200, headers: { "Content-Type": "application/json" } });
+    }));
+
+    try {
+      await runTranslate(db, {
+        id: runId,
+        course_id: courseId,
+        started_at: new Date().toISOString(),
+        paused_at: null,
+      });
+
+      const userText = submittedBodies[0]?.input?.[1]?.content?.[0]?.text;
+      const parsedInput = userText ? JSON.parse(userText) : null;
+      expect(parsedInput?.previous_attempt).toEqual({
+        attempt: 0,
+        rejected_because: "Bản dịch vi phạm toàn vẹn",
+      });
+    } finally {
+      vi.stubGlobal("Deno", oldDeno);
+      vi.stubGlobal("fetch", oldFetch);
+    }
+  });
+
+  describe("V-29 Acceptance: CJK font storage resolver in runTranslate", () => {
+    const fullTranslationMap: any = {};
+    for (const loc of TRANSLATION_LOCALES) {
+      fullTranslationMap[loc] = {
+        course: { title: `Course ${loc}`, short_description: "desc", description: "desc", learning_outcomes: [] },
+        sections: { m1: { id: "m1", title: "sec", description: "desc" } },
+        lessons: {
+          l1: {
+            summary: "summary",
+            article: {
+              description_markdown: "![Diagram](diagram:d1)",
+              diagrams: [
+                {
+                  id: "d1",
+                  title: "CJK Diagram",
+                  alt: "Alt",
+                  nodes: [{ id: "n1", label: "CJK Label", col: 0, row: 0 }],
+                  edges: [],
+                },
+              ],
+            },
+          },
+        },
+      };
+    }
+
+    const completedAggregateGen = {
+      id: "gen-agg-completed",
+      run_id: runId,
+      step_key: "translate",
+      locale: null,
+      lesson_id: null,
+      status: "completed",
+      output: fullTranslationMap,
+      attempt: 0,
+    };
+
+    const draftWithDiagram = {
+      lesson_id: "l1",
+      run_id: runId,
+      draft: {
+        lesson: { id: "l1", title: "Lesson 1", lesson_format: "article" },
+        summary: "Summary of lesson 1",
+        article: { content_markdown: "# Title\n\nContent", take_aways: ["Takeaway 1"] },
+        diagrams: [
+          {
+            id: "d1",
+            title: "CJK Diagram",
+            alt: "Alt",
+            nodes: [{ id: "n1", label: "CJK Label", col: 0, row: 0 }],
+            edges: [],
+          },
+        ],
+      },
+    };
+
+    const lessonGenWithDiagram = {
+      id: "gen-l1-diag",
+      run_id: runId,
+      step_key: "lessons",
+      status: "completed",
+      lesson_id: "l1",
+      attempt: 0,
+      model_id: "test-model",
+      prompt_version: "v1",
+      output: {
+        title: "Lesson 1",
+        lesson_format: "article",
+        short_description: "Short desc 1",
+        summary: "Summary of lesson 1",
+        resources: [],
+        article: {
+          description_markdown: "![Diagram](diagram:d1)",
+          diagrams: [
+            {
+              id: "d1",
+              title: "CJK Diagram",
+              alt: "Alt",
+              nodes: [{ id: "n1", label: "CJK Label", col: 0, row: 0 }],
+              edges: [],
+            },
+          ],
+        },
+      },
+    };
+
+    beforeEach(() => {
+      clearFontRegistry();
+    });
+
+    function completedUnitGenerations() {
+      return TRANSLATION_LOCALES.flatMap((loc) => [
+        {
+          id: `gen-course-${loc}`,
+          run_id: runId,
+          step_key: "translate",
+          locale: loc,
+          lesson_id: null,
+          status: "completed",
+          attempt: 0,
+          output: { course: fullTranslationMap[loc].course, sections: fullTranslationMap[loc].sections },
+        },
+        {
+          id: `gen-lesson-${loc}`,
+          run_id: runId,
+          step_key: "translate",
+          locale: loc,
+          lesson_id: "l1",
+          status: "completed",
+          attempt: 0,
+          output: fullTranslationMap[loc].lessons.l1,
+        },
+      ]);
+    }
+
+    function completedTranslateRunGenerations() {
+      return [
+        { step_key: "brief", status: "completed", output: briefOutput, attempt: 0 },
+        { step_key: "curriculum", status: "completed", output: curriculumOutput, attempt: 0 },
+        lessonGenWithDiagram,
+        ...completedUnitGenerations(),
+      ];
+    }
+
+    function cjkFontDownloads() {
+      const fixtureDir = pathMod.join(__dirname, "fixtures");
+      const fixtureFiles: Record<string, string> = {
+        "fonts/NotoSansSC.ttf": "noto-sc-test.ttf",
+        "fonts/NotoSansTC.ttf": "noto-tc-test.ttf",
+        "fonts/NotoSansKR.ttf": "noto-kr-test.ttf",
+        "fonts/NotoSansJP.ttf": "noto-ja-test.ttf",
+      };
+      return {
+        "studio-assets": Object.fromEntries(Object.entries(fixtureFiles).map(([path, file]) => [
+          path,
+          { data: new Blob([fs.readFileSync(pathMod.join(fixtureDir, file))]), error: null },
+        ])),
+      };
+    }
+
+    function createRun() {
+      return {
+        id: runId,
+        course_id: courseId,
+        started_at: new Date().toISOString(),
+        paused_at: null,
+      };
+    }
+
+    it("V-37: aggregate row carries every field the completed-generation constraints require", async () => {
+      const { db, insertedGens, stepUpdates } = createMockDb({
+        lessonDrafts: [draftWithDiagram],
+        generations: completedTranslateRunGenerations(),
+        storageDownloads: cjkFontDownloads(),
+      });
+
+      const oldDeno = (globalThis as any).Deno;
+      vi.stubGlobal("Deno", { env: { get: (k: string) => k.endsWith("OPENAI_API_KEY") ? "mock-key" : undefined } });
+
+      try {
+        await runTranslate(db, createRun());
+
+        expect(insertedGens).toHaveLength(1);
+        expect(insertedGens[0]).toMatchObject({
+          step_key: "translate",
+          status: "completed",
+          model_id: expect.any(String),
+          provider_request_id: `translate-aggregate:${runId}`,
+          input: { locales: TRANSLATION_LOCALES },
+          output: expect.any(Object),
+          completed_at: expect.any(String),
+        });
+        expect(stepUpdates).toContainEqual(expect.objectContaining({ state: "done" }));
+      } finally {
+        vi.stubGlobal("Deno", oldDeno);
+      }
+    });
+
+    it("V-29 Acceptance 1: storage has font -> renders CJK diagrams and uploads PNGs successfully", async () => {
+      // Đọc 4 font fixture từ thư mục fixtures
+      const fixtureDir = pathMod.join(__dirname, "fixtures");
+      const fontFiles: Record<string, Uint8Array> = {
+        "fonts/NotoSansSC.ttf": fs.readFileSync(pathMod.join(fixtureDir, "noto-sc-test.ttf")),
+        "fonts/NotoSansTC.ttf": fs.readFileSync(pathMod.join(fixtureDir, "noto-tc-test.ttf")),
+        "fonts/NotoSansKR.ttf": fs.readFileSync(pathMod.join(fixtureDir, "noto-kr-test.ttf")),
+        "fonts/NotoSansJP.ttf": fs.readFileSync(pathMod.join(fixtureDir, "noto-ja-test.ttf")),
+      };
+
+      const storageDownloads: Record<string, Record<string, any>> = {
+        "studio-assets": {},
+      };
+      for (const [fName, buf] of Object.entries(fontFiles)) {
+        storageDownloads["studio-assets"][fName] = {
+          data: new Blob([buf]),
+          error: null,
+        };
+      }
+
+      const { db, rpc, uploadedFiles, stepUpdates } = createMockDb({
+        lessonDrafts: [draftWithDiagram],
+        generations: [
+          { step_key: "brief", status: "completed", output: briefOutput, attempt: 0 },
+          { step_key: "curriculum", status: "completed", output: curriculumOutput, attempt: 0 },
+          lessonGenWithDiagram,
+          completedAggregateGen,
+        ],
+        storageDownloads,
+      });
+
+      const oldDeno = (globalThis as any).Deno;
+      vi.stubGlobal("Deno", { env: { get: (k: string) => k.endsWith("OPENAI_API_KEY") ? "mock-key" : undefined } });
+
+      try {
+        await runTranslate(db, {
+          id: runId,
+          course_id: courseId,
+          started_at: new Date().toISOString(),
+          paused_at: null,
+        });
+
+        // 1. Không gọi finishRun với draft_failed
+        expect(rpc).not.toHaveBeenCalledWith("studio_finish_run", expect.anything());
+        // 2. PNGs được upload vào bucket studio-drafts
+        expect(uploadedFiles.some((f) => f.bucket === "studio-drafts" && f.path.includes("d1_zh-CN.png"))).toBe(true);
+        // 3. Step translate được đánh dấu done
+        expect(stepUpdates).toContainEqual(expect.objectContaining({ state: "done" }));
+      } finally {
+        vi.stubGlobal("Deno", oldDeno);
+      }
+    });
+
+    it("V-29 Acceptance 2: storage misses font file (404) -> fails run with draft_failed", async () => {
+      const storageDownloads: Record<string, Record<string, any>> = {
+        "studio-assets": {
+          "fonts/NotoSansSC.ttf": { data: null, error: { status: 404, message: "Object not found" } },
+        },
+      };
+
+      const { db, rpc } = createMockDb({
+        lessonDrafts: [draftWithDiagram],
+        generations: [
+          { step_key: "brief", status: "completed", output: briefOutput, attempt: 0 },
+          { step_key: "curriculum", status: "completed", output: curriculumOutput, attempt: 0 },
+          lessonGenWithDiagram,
+          completedAggregateGen,
+        ],
+        storageDownloads,
+      });
+
+      const oldDeno = (globalThis as any).Deno;
+      vi.stubGlobal("Deno", { env: { get: (k: string) => k.endsWith("OPENAI_API_KEY") ? "mock-key" : undefined } });
+
+      try {
+        await runTranslate(db, {
+          id: runId,
+          course_id: courseId,
+          started_at: new Date().toISOString(),
+          paused_at: null,
+        });
+
+        expect(rpc).toHaveBeenCalledWith("studio_finish_run", expect.objectContaining({
+          p_run_id: runId,
+          p_status: "draft_failed",
+          p_reason: expect.stringContaining("Lỗi nạp font CJK"),
+        }));
+      } finally {
+        vi.stubGlobal("Deno", oldDeno);
+      }
+    });
+
+    it("V-29 Acceptance 3: storage network error -> defers without changing run status; fails after retries", async () => {
+      // 1. Lỗi mạng lần đầu: ném network error
+      const storageDownloads: Record<string, Record<string, any>> = {
+        "studio-assets": {
+          "fonts/NotoSansSC.ttf": new Error("Storage connection timeout"),
+        },
+      };
+
+      const { db, rpc, insertedEvents } = createMockDb({
+        lessonDrafts: [draftWithDiagram],
+        generations: [
+          { step_key: "brief", status: "completed", output: briefOutput, attempt: 0 },
+          { step_key: "curriculum", status: "completed", output: curriculumOutput, attempt: 0 },
+          lessonGenWithDiagram,
+          completedAggregateGen,
+        ],
+        storageDownloads,
+      });
+
+      const oldDeno = (globalThis as any).Deno;
+      vi.stubGlobal("Deno", { env: { get: (k: string) => k.endsWith("OPENAI_API_KEY") ? "mock-key" : undefined } });
+
+      try {
+        await runTranslate(db, {
+          id: runId,
+          course_id: courseId,
+          started_at: new Date().toISOString(),
+          paused_at: null,
+        });
+
+        // Không gọi studio_finish_run
+        expect(rpc).not.toHaveBeenCalledWith("studio_finish_run", expect.anything());
+        // Có ghi warning event về lỗi mạng
+        expect(insertedEvents).toContainEqual(expect.objectContaining({
+          kind: "warning",
+          step_key: "translate",
+          message: expect.stringContaining("Lỗi kết nối Storage khi tải font CJK"),
+          payload: { font_render_retry: true },
+        }));
+      } finally {
+        vi.stubGlobal("Deno", oldDeno);
+      }
+    });
+
+    it("V-29 main path: defers a network font failure after three integrity warnings, then renders on the next tick", async () => {
+      const integrityWarnings = Array.from({ length: 3 }, (_, i) => ({
+        kind: "warning",
+        step_key: "translate",
+        payload: { integrity_violation: true, index: i },
+      }));
+      const failed = createMockDb({
+        generations: completedTranslateRunGenerations(),
+        lessonDrafts: [draftWithDiagram],
+        runEvents: integrityWarnings,
+        storageDownloads: { "studio-assets": { "fonts/NotoSansSC.ttf": new Error("Storage connection timeout") } },
+      });
+      const oldDeno = (globalThis as any).Deno;
+      vi.stubGlobal("Deno", { env: { get: (k: string) => k.endsWith("OPENAI_API_KEY") ? "mock-key" : undefined } });
+
+      try {
+        await runTranslate(failed.db, createRun());
+
+        expect(failed.rpc).not.toHaveBeenCalledWith("studio_finish_run", expect.anything());
+        expect(failed.stepUpdates).toEqual([]);
+        expect(failed.insertedEvents).toContainEqual(expect.objectContaining({
+          attempt: 1,
+          payload: { font_render_retry: true },
+        }));
+
+        const recovered = createMockDb({
+          generations: completedTranslateRunGenerations(),
+          lessonDrafts: [draftWithDiagram],
+          runEvents: [...integrityWarnings, ...failed.insertedEvents],
+          storageDownloads: cjkFontDownloads(),
+        });
+        await runTranslate(recovered.db, createRun());
+
+        expect(recovered.rpc).not.toHaveBeenCalledWith("studio_finish_run", expect.anything());
+        expect(recovered.stepUpdates).toContainEqual(expect.objectContaining({ state: "done" }));
+        expect(recovered.uploadedFiles.some((file) => file.bucket === "studio-drafts" && file.path.includes("d1_zh-CN.png"))).toBe(true);
+      } finally {
+        vi.stubGlobal("Deno", oldDeno);
+      }
+    });
+
+    it("V-29 main path: fails only after the three marked font retries are exhausted", async () => {
+      const { db, rpc, stepUpdates } = createMockDb({
+        generations: completedTranslateRunGenerations(),
+        lessonDrafts: [draftWithDiagram],
+        runEvents: Array.from({ length: 3 }, (_, attempt) => ({
+          kind: "warning",
+          step_key: "translate",
+          attempt: attempt + 1,
+          payload: { font_render_retry: true },
+        })),
+        storageDownloads: { "studio-assets": { "fonts/NotoSansSC.ttf": new Error("Storage connection timeout") } },
+      });
+      const oldDeno = (globalThis as any).Deno;
+      vi.stubGlobal("Deno", { env: { get: (k: string) => k.endsWith("OPENAI_API_KEY") ? "mock-key" : undefined } });
+
+      try {
+        await runTranslate(db, createRun());
+
+        expect(rpc).toHaveBeenCalledWith("studio_finish_run", expect.objectContaining({
+          p_run_id: runId,
+          p_status: "draft_failed",
+          p_reason: expect.stringContaining("vượt quá giới hạn thử lại"),
+        }));
+        expect(stepUpdates).toContainEqual(expect.objectContaining({ state: "failed" }));
+      } finally {
+        vi.stubGlobal("Deno", oldDeno);
+      }
+    });
+
+    it("V-29 main path: missing CJK font fails immediately", async () => {
+      const { db, rpc, insertedEvents, stepUpdates } = createMockDb({
+        generations: completedTranslateRunGenerations(),
+        lessonDrafts: [draftWithDiagram],
+        storageDownloads: { "studio-assets": { "fonts/NotoSansSC.ttf": { data: null, error: { status: 404, message: "Object not found" } } } },
+      });
+      const oldDeno = (globalThis as any).Deno;
+      vi.stubGlobal("Deno", { env: { get: (k: string) => k.endsWith("OPENAI_API_KEY") ? "mock-key" : undefined } });
+
+      try {
+        await runTranslate(db, createRun());
+
+        expect(rpc).toHaveBeenCalledWith("studio_finish_run", expect.objectContaining({
+          p_run_id: runId,
+          p_status: "draft_failed",
+          p_reason: expect.stringContaining("Lỗi nạp font CJK"),
+        }));
+        expect(insertedEvents).not.toContainEqual(expect.objectContaining({ payload: { font_render_retry: true } }));
+        expect(stepUpdates).toContainEqual(expect.objectContaining({ state: "failed" }));
+      } finally {
+        vi.stubGlobal("Deno", oldDeno);
+      }
+    });
   });
 });

@@ -22,7 +22,7 @@ if (promptMigrations.length === 0) {
   throw new Error("No migrations inserting into studio_agent_prompts found.");
 }
 
-const rowPattern = /\('([^']+)',\s*(\d+),\s*'(A[1-6])',\s*(\$[a-z0-9_]+\$)([\s\S]*?)\4\)/g;
+const rowPattern = /\('([^']+)',\s*(\d+),\s*'(A[1-7])',\s*(\$[a-z0-9_]+\$)([\s\S]*?)\4\)/g;
 
 const seededByKey = new Map<string, SeededPrompt[]>();
 

@@ -149,12 +149,15 @@ DECLARE
   got_message text;
   job_id uuid;
 BEGIN
-  -- With no prior A1 job, start creates one and inserts all ten steps.
+  -- With no prior A1 job, start creates one and inserts all eleven steps.
   result := public.studio_start_run('eeee7777-2222-4000-8000-000000000001','eeee7777-3333-4000-8000-000000000001',NULL,NULL);
   job_id := (SELECT catalog_job_id FROM public.studio_runs WHERE id='eeee7777-3333-4000-8000-000000000001');
   IF result->>'created' <> 'true' OR job_id IS NULL THEN RAISE EXCEPTION 'start should create and pin an A1 job: %',result; END IF;
-  IF (SELECT count(*) FROM public.studio_run_steps WHERE run_id='eeee7777-3333-4000-8000-000000000001') <> 10 THEN
-    RAISE EXCEPTION 'new run must create ten steps';
+  IF (SELECT count(*) FROM public.studio_run_steps WHERE run_id='eeee7777-3333-4000-8000-000000000001') <> 11 THEN
+    RAISE EXCEPTION 'new run must create eleven steps';
+  END IF;
+  IF (SELECT state FROM public.studio_run_steps WHERE run_id='eeee7777-3333-4000-8000-000000000001' AND step_key='translate') <> 'pending' THEN
+    RAISE EXCEPTION 'new translate step must be pending';
   END IF;
   IF (SELECT state FROM public.studio_run_steps WHERE run_id='eeee7777-3333-4000-8000-000000000001' AND step_key='catalog_research') <> 'pending' THEN
     RAISE EXCEPTION 'new A1 job step 0 must be pending';

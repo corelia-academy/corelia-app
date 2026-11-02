@@ -3,7 +3,7 @@
 // Contract: corelia-studio/docs/agents/catalog-research-agent.md.
 import { PLATFORM_FORMAT_GUIDE } from "./formats.ts";
 import { canRetry, roundFailures, type AttemptRow, type RoundFailures } from "./retry.ts";
-import { CATALOG_MAX_RUN_MS, EFFORT, list, MODEL, SUBMIT_STALE_MS, utcDate, type Acceptance } from "./steps.ts";
+import { CATALOG_MAX_RUN_MS, list, SUBMIT_STALE_MS, utcDate, type Acceptance } from "./steps.ts";
 
 export const SHARED_CRITERIA = ["trend", "demand", "ai_feasibility", "maintainability"] as const;
 export const GROUP_CRITERIA = ["corelia_fit", "catalog_gap"] as const;
@@ -57,11 +57,11 @@ export const CATALOG_RESEARCH_SCHEMA = object({
   },
 });
 
-/** Model call of one attempt. The model, effort and output budget follow the course research step (A2) until A1 is measured. */
+/** Model call of one attempt. A1 only collects evidence for a human to choose from, so it stays on Luna at the highest effort. */
 export const CATALOG_SPEC = {
   prompt: "a1-catalog-research",
-  model: MODEL,
-  effort: EFFORT,
+  model: "gpt-6-luna",
+  effort: "max",
   maxOutputTokens: 40_000,
   /** Attempts the model answered and that were refused, per research round (as the steps of a run). */
   maxAttempts: 2,
@@ -80,6 +80,7 @@ export const MAX_CATALOG_RESEARCH_ROUNDS = 2;
 export const MODEL_PRICES: Record<string, { input: number; output: number }> = {
   "gpt-6-astra": { input: 10, output: 50 },
   "gpt-6.1-sol": { input: 2, output: 10 },
+  "gpt-6.1-terra": { input: 1, output: 5 },
   "gpt-6-luna": { input: 0.1, output: 0.5 },
 };
 /** web_search: $10 per 1,000 calls. */

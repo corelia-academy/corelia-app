@@ -38,6 +38,88 @@ function load() {
   return ready;
 }
 
+export class FontLoadError extends Error {
+  readonly kind: "configuration" | "missing" | "network";
+  constructor(message: string, kind: "configuration" | "missing" | "network" = "missing") {
+    super(message);
+    this.name = "FontLoadError";
+    this.kind = kind;
+  }
+}
+
+export const CJK_FONT_FAMILIES: Record<string, string> = {
+  "zh-CN": "Noto Sans SC",
+  "zh-TW": "Noto Sans TC",
+  "ko": "Noto Sans KR",
+  "ja": "Noto Sans JP",
+};
+
+const fontRegistry = new Map<string, Uint8Array>();
+
+export function registerFontBuffer(locale: string, buffer: Uint8Array): void {
+  fontRegistry.set(locale, buffer);
+}
+
+export function clearFontRegistry(): void {
+  fontRegistry.clear();
+}
+
+let customResolver: ((locale: string) => Promise<Uint8Array | null>) | null = null;
+
+export function setFontResolver(fn: ((locale: string) => Promise<Uint8Array | null>) | null): void {
+  customResolver = fn;
+}
+
+export function createStorageFontResolver(storageClient: any): (locale: string) => Promise<Uint8Array | null> {
+  return async (locale: string): Promise<Uint8Array | null> => {
+    const family = CJK_FONT_FAMILIES[locale];
+    if (!family) return null;
+    const fileName = `${family.replace(/ /g, "")}.ttf`;
+    let res: any;
+    try {
+      res = await storageClient.from("studio-assets").download(`fonts/${fileName}`);
+    } catch (e: any) {
+      throw new FontLoadError(`[${locale}] Lỗi mạng khi kết nối Storage: ${e?.message || String(e)}`, "network");
+    }
+
+    if (res?.error) {
+      const status = res.error.status || res.error.statusCode;
+      const msg = res.error.message || String(res.error);
+      if (status === 404 || /not found|not_found/i.test(msg)) {
+        throw new FontLoadError(`[${locale}] Không tìm thấy font CJK ${fileName} trong bucket studio-assets: ${msg}`, "missing");
+      }
+      throw new FontLoadError(`[${locale}] Lỗi Storage khi tải font CJK ${fileName}: ${msg}`, "network");
+    }
+
+    if (res?.data) {
+      const buf = await res.data.arrayBuffer();
+      return new Uint8Array(buf);
+    }
+
+    throw new FontLoadError(`[${locale}] Không tìm thấy font CJK ${fileName} trong bucket studio-assets.`, "missing");
+  };
+}
+
+async function resolveLocaleFont(locale: string, customFont?: Uint8Array): Promise<{ buffer: Uint8Array; family: string }> {
+  const family = CJK_FONT_FAMILIES[locale];
+  if (!family) {
+    throw new FontLoadError(`[${locale}] Ngôn ngữ ${locale} không được hỗ trợ font CJK.`);
+  }
+  if (customFont) return { buffer: customFont, family };
+  if (fontRegistry.has(locale)) return { buffer: fontRegistry.get(locale)!, family };
+
+  if (customResolver) {
+    const res = await customResolver(locale);
+    if (res) {
+      fontRegistry.set(locale, res);
+      return { buffer: res, family };
+    }
+    throw new FontLoadError(`[${locale}] Font resolver không tìm thấy font CJK (${family}).`);
+  }
+
+    throw new FontLoadError(`[${locale}] Không tìm thấy nguồn font CJK (${family}) cho ngôn ngữ ${locale}. Render diagram thất bại.`, "missing");
+}
+
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 function roundedRect(x: number, y: number, w: number, h: number, r: number) {
@@ -45,7 +127,7 @@ function roundedRect(x: number, y: number, w: number, h: number, r: number) {
     `L${x + r},${y + h} Q${x},${y + h} ${x},${y + h - r} L${x},${y + r} Q${x},${y} ${x + r},${y} Z`;
 }
 
-export function renderSvg(rough: any, spec: Diagram, seed = 7): string {
+export function renderSvg(rough: any, spec: Diagram, seed = 7, fontFamily = "Patrick Hand"): string {
   const gen = rough.generator();
   // deno-lint-ignore no-explicit-any
   const paths = (drawable: any, extra = "") =>
@@ -69,7 +151,7 @@ export function renderSvg(rough: any, spec: Diagram, seed = 7): string {
     lines.forEach((l, i) => {
       const w = textWidth(l, size), ly = top + i * size * 1.1;
       grow(anchor === "middle" ? x - w / 2 : x, ly - size / 2, anchor === "middle" ? x + w / 2 : x + w, ly + size / 2);
-      out += `<text x="${x}" y="${ly}" font-family="Patrick Hand" font-size="${size}" fill="${INK}" text-anchor="${anchor}" dominant-baseline="middle">${esc(l)}</text>`;
+      out += `<text x="${x}" y="${ly}" font-family="${fontFamily}" font-size="${size}" fill="${INK}" text-anchor="${anchor}" dominant-baseline="middle">${esc(l)}</text>`;
     });
   };
 
@@ -117,12 +199,27 @@ export function renderSvg(rough: any, spec: Diagram, seed = 7): string {
 }
 
 /** PNG bytes of a checked diagram spec, at 2x. */
-export async function renderDiagramPng(spec: Diagram): Promise<Uint8Array> {
-  const { rough, font } = await load();
-  const svg = renderSvg(rough, spec);
+export async function renderDiagramPng(
+  spec: Diagram,
+  locale?: string,
+  customFont?: Uint8Array
+): Promise<Uint8Array> {
+  const { rough, font: baseFont } = await load();
+  const isCjk = Boolean(locale && CJK_FONT_FAMILIES[locale]);
+
+  let fontFamily = "Patrick Hand";
+  const fontBuffers = [baseFont];
+
+  if (isCjk) {
+    const cjk = await resolveLocaleFont(locale!, customFont);
+    fontFamily = cjk.family;
+    fontBuffers.unshift(cjk.buffer);
+  }
+
+  const svg = renderSvg(rough, spec, 7, fontFamily);
   const resvg = new Resvg(svg, {
     fitTo: { mode: "zoom", value: ZOOM },
-    font: { fontBuffers: [font], defaultFontFamily: "Patrick Hand", loadSystemFonts: false },
+    font: { fontBuffers, defaultFontFamily: fontFamily, loadSystemFonts: false },
   });
   return resvg.render().asPng();
 }
@@ -133,8 +230,9 @@ export async function renderDiagramPng(spec: Diagram): Promise<Uint8Array> {
 const slug = (id: string) => id.toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "x";
 
 /** File name of a diagram image in the app (`/lesson-image/<courseId>/<file>`), unique per lesson and diagram. */
-export function diagramFile(lessonId: string, diagramId: string): string {
-  return `${`${slug(lessonId)}-${slug(diagramId)}`.slice(0, 60)}.png`;
+export function diagramFile(lessonId: string, diagramId: string, locale?: string): string {
+  const locSuffix = locale && locale !== "en" ? `_${locale}` : "";
+  return `${`${slug(lessonId)}-${slug(diagramId)}${locSuffix}`.slice(0, 60)}.png`;
 }
 
 /** Folder of a lesson's images in the studio-drafts bucket. */
@@ -143,8 +241,9 @@ export function draftDir(runId: string, lessonId: string): string {
 }
 
 /** Object path in the studio-drafts bucket. */
-export function draftPath(runId: string, lessonId: string, diagramId: string): string {
-  return `${draftDir(runId, lessonId)}/${slug(diagramId)}.png`;
+export function draftPath(runId: string, lessonId: string, diagramId: string, locale?: string): string {
+  const locSuffix = locale && locale !== "en" ? `_${locale}` : "";
+  return `${draftDir(runId, lessonId)}/${slug(diagramId)}${locSuffix}.png`;
 }
 
 /** Where the app stores lesson images: bucket `app`. */
@@ -153,6 +252,6 @@ export function appImagePath(courseId: string, file: string): string {
 }
 
 /** Markdown with diagram references pointing at the app's lesson images. */
-export function publishMarkdown(markdown: string, courseId: string, lessonId: string): string {
-  return markdown.replace(/(!\[[^\]]*\]\()diagram:([^)\s]+)\)/g, (_m, head: string, id: string) => `${head}/lesson-image/${courseId}/${diagramFile(lessonId, id)})`);
+export function publishMarkdown(markdown: string, courseId: string, lessonId: string, locale?: string): string {
+  return markdown.replace(/(!\[[^\]]*\]\()diagram:([^)\s]+)\)/g, (_m, head: string, id: string) => `${head}/lesson-image/${courseId}/${diagramFile(lessonId, id, locale)})`);
 }

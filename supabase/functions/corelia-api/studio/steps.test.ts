@@ -143,22 +143,46 @@ describe("studio brief code language", () => {
     expect(input.code_languages).toEqual(ENABLED_CODE_LANGUAGES);
   });
 
-  it("keeps old briefs on Rust, allows explicit null, and rejects prepared languages for publish", () => {
-    expect(acceptBrief({ status: "ready", open_questions: [] })).toEqual({ ok: true, summary: "brief sẵn sàng." });
+  it("V-30: requires non-empty canonical English title in brief, allows explicit null code_language, and rejects prepared languages", () => {
+    // Brief thiếu title hoặc title rỗng bị từ chối
+    expect(acceptBrief({ status: "ready", open_questions: [] })).toEqual({
+      ok: false,
+      reason: "Brief thiếu tiêu đề tiếng Anh chuẩn tắc (title).",
+    });
+    expect(acceptBrief({ status: "ready", open_questions: [], title: "" })).toEqual({
+      ok: false,
+      reason: "Brief thiếu tiêu đề tiếng Anh chuẩn tắc (title).",
+    });
+    expect(acceptBrief({ status: "ready", open_questions: [], title: "   " })).toEqual({
+      ok: false,
+      reason: "Brief thiếu tiêu đề tiếng Anh chuẩn tắc (title).",
+    });
+
+    // Brief có title hợp lệ
+    const validBrief = { status: "ready", open_questions: [], title: "Rust for Web3" };
+    expect(acceptBrief(validBrief)).toEqual({ ok: true, summary: "brief sẵn sàng." });
+
     // The content language comes from the course, not from the model.
-    expect(acceptBrief({ status: "ready", open_questions: [], locale: "vi" }, "vi")).toEqual({ ok: true, summary: "brief sẵn sàng." });
-    expect(acceptBrief({ status: "ready", open_questions: [], locale: "vi-VN", topic: "x" }, "vi"))
-      .toEqual({ ok: true, summary: "brief sẵn sàng. Ngôn ngữ nội dung đặt theo khóa (vi).", normalizedOutput: { status: "ready", open_questions: [], locale: "vi", topic: "x" } });
-    expect(acceptBrief({ status: "needs_input", open_questions: ["q"], locale: "vi-VN" }, "vi").ok).toBe(false);
+    expect(acceptBrief({ ...validBrief, locale: "vi" }, "vi")).toEqual({ ok: true, summary: "brief sẵn sàng." });
+    expect(acceptBrief({ ...validBrief, locale: "vi-VN", topic: "x" }, "vi"))
+      .toEqual({ ok: true, summary: "brief sẵn sàng. Ngôn ngữ nội dung đặt theo khóa (vi).", normalizedOutput: { status: "ready", open_questions: [], title: "Rust for Web3", locale: "vi", topic: "x" } });
+    expect(acceptBrief({ ...validBrief, status: "needs_input", open_questions: ["q"], locale: "vi-VN" }, "vi").ok).toBe(false);
+
     expect(resolveCodeLanguage(undefined)).toBe("rust");
-    expect(acceptBrief({ status: "ready", open_questions: [], code_language: null }).ok).toBe(true);
+    expect(acceptBrief({ ...validBrief, code_language: null }).ok).toBe(true);
     expect(resolveCodeLanguage(null)).toBeNull();
+
     for (const language of PREPARED_CODE_LANGUAGES) {
-      expect(acceptBrief({ status: "ready", open_questions: [], code_language: language }))
+      expect(acceptBrief({ ...validBrief, code_language: language }))
         .toMatchObject({ ok: false, reason: expect.stringContaining("chưa hỗ trợ publish") });
     }
-    expect(acceptBrief({ status: "ready", open_questions: [], code_language: "cobol" }))
+    expect(acceptBrief({ ...validBrief, code_language: "cobol" }))
       .toMatchObject({ ok: false, reason: expect.stringContaining("chưa hỗ trợ publish") });
+  });
+
+  it("V-30: STEP_SPECS.brief.buildInput does not include source_locale", () => {
+    const input = STEP_SPECS.brief!.buildInput({ course: { title: "Solana", level: "beginner" }, paths: [], scopes: [], catalogResearch: null } as never);
+    expect((input as any).source_locale).toBeUndefined();
   });
 
   it("normalizes a saved brief without code_language to Rust for A3 and A4", () => {
@@ -419,17 +443,18 @@ describe("studio step owners", () => {
     }
   });
 
-  it("places the six agents and keeps code steps without an agent", () => {
-    expect(STEP_ORDER.map((k) => STEP_OWNER[k])).toEqual(["catalog_job", "A2", "A2", "A3", "A4", "A5", "A6", "code", "code", "code"]);
+  it("places the seven agents and keeps code steps without an agent", () => {
+    expect(STEP_ORDER.map((k) => STEP_OWNER[k])).toEqual(["catalog_job", "A2", "A2", "A3", "A4", "A5", "A6", "code", "code", "A7", "code"]);
     expect(agentKeyEnv("A1")).toBe("CORELIA_STUDIO_A1_CATALOG_RESEARCH_OPENAI_API_KEY");
     expect(agentKeyEnv("A4")).toBe("CORELIA_STUDIO_A4_CURRICULUM_REVIEW_OPENAI_API_KEY");
+    expect(agentKeyEnv("A7")).toBe("CORELIA_STUDIO_A7_TRANSLATE_OPENAI_API_KEY");
   });
 });
 
 describe("A2 research prompt", () => {
-  it("uses v15, records the course stack decision, and does not block research on unverified package versions", () => {
+  it("uses v16, records the course stack decision, and does not block research on unverified package versions", () => {
     const prompt = SEEDED_PROMPTS["a2-research"];
-    expect(prompt.version).toBe("v15");
+    expect(prompt.version).toBe("v16");
     expect(prompt.system).toContain("needs_research CHỈ khi một chủ đề cốt lõi trong phạm vi của brief");
     expect(prompt.system).toContain("KHÔNG phải lý do needs_research");
     expect(prompt.system).toContain("trả status: ready");

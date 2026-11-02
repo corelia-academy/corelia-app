@@ -444,7 +444,7 @@ export function checksAlreadyRun(format: LessonFormat, codeLanguage: EnabledCode
     "source_ids nằm trong source_ids của lesson ở curriculum; resource do A5 viết thuộc nguồn research đã đọc; suggested video thuộc ứng viên lesson và oEmbed/handle kênh đã được kiểm.",
   ];
   const byFormat: Record<LessonFormat, string[]> = {
-    article: ["Markdown và diagrams khớp hai chiều; bố cục sơ đồ vẽ được (không chồng nét, không đi xuyên node)."],
+    article: ["Markdown và diagrams khớp hai chiều; bài explanation có ít nhất 1 sơ đồ; bố cục sơ đồ vẽ được (không chồng nét, không đi xuyên node)."],
     quiz: ["Mỗi câu có ≥ 2 phương án, id duy nhất, correct_index hợp lệ, có giải thích. CHƯA kiểm tra đáp án đúng về nội dung."],
     code_exercise: [
       `code_language=${codeLanguage ?? "null"}; tệp có đuôi hợp lệ; reference_solution đạt mọi test bắt buộc; starter_source không đạt.`,
@@ -929,6 +929,9 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
   for (const { field, code } of validateLesson(draft.lesson)) problems.push(`${field}: ${code}`);
   if (format === "article") {
     problems.push(...diagramProblems(out.article!.description_markdown, out.article!.diagrams));
+    if (ref.lesson.purpose === "explanation" && out.article!.diagrams.length === 0) {
+      problems.push("lesson article mang purpose explanation phải có ít nhất 1 sơ đồ");
+    }
   }
   if (format === "quiz") problems.push(...quizProblems(out.quiz!, draft));
   if (format === "code_exercise") {

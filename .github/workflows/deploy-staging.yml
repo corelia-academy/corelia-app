@@ -140,6 +140,7 @@ jobs:
             CORELIA_STUDIO_A4_CURRICULUM_REVIEW_OPENAI_API_KEY
             CORELIA_STUDIO_A5_LESSON_OPENAI_API_KEY
             CORELIA_STUDIO_A6_LESSON_REVIEW_OPENAI_API_KEY
+            CORELIA_STUDIO_A7_TRANSLATE_OPENAI_API_KEY
           )
           missing_studio_secrets=()
           for secret_name in "${studio_required_secrets[@]}"; do

@@ -35,6 +35,7 @@ export const STEP_ORDER = [
   "lesson_review",
   "structure_check",
   "journey_test",
+  "translate",
   "publish",
 ] as const;
 export type StepKey = typeof STEP_ORDER[number];
@@ -50,6 +51,7 @@ export const STEP_LABEL: Record<StepKey, string> = {
   lesson_review: "Kiểm tra lesson",
   structure_check: "Kiểm tra cấu trúc",
   journey_test: "Kiểm thử hành trình",
+  translate: "Dịch đa ngôn ngữ",
   publish: "Publish",
 };
 
@@ -67,6 +69,7 @@ export const STEP_OWNER: Record<StepKey, AgentRole | "code" | "catalog_job"> = {
   lesson_review: "A6",
   structure_check: "code",
   journey_test: "code",
+  translate: "A7",
   publish: "code",
 };
 
@@ -78,6 +81,7 @@ export const AGENT_NAME: Record<AgentRole, string> = {
   A4: "CURRICULUM_REVIEW",
   A5: "LESSON",
   A6: "LESSON_REVIEW",
+  A7: "TRANSLATE",
 };
 
 /** Env var holding the OpenAI key of each agent, so usage and billing are tracked per agent. */
@@ -144,6 +148,7 @@ function object(properties: Record<string, unknown>): Record<string, unknown> {
 
 const BRIEF_SCHEMA = object({
   status: { type: "string", enum: ["ready", "needs_input"] },
+  title: str,
   topic: str,
   audience: str,
   level: { type: "string", enum: ["beginner", "intermediate", "advanced"] },
@@ -314,6 +319,7 @@ export interface CurriculumRevision {
 
 interface Brief {
   status: string;
+  title?: string;
   open_questions: string[];
   code_language?: EnabledCodeLanguage | null;
 }
@@ -383,6 +389,9 @@ export function utcDate(ms: number): string {
 export function acceptBrief(output: unknown, courseLocale?: string): Acceptance {
   const brief = output as Brief;
   if (brief.status !== "ready") return { ok: false, reason: `Brief thiếu dữ liệu: ${list(brief.open_questions)}` };
+  if (!brief.title || typeof brief.title !== "string" || !brief.title.trim()) {
+    return { ok: false, reason: "Brief thiếu tiêu đề tiếng Anh chuẩn tắc (title)." };
+  }
   const requestedLanguage = (brief as { code_language?: unknown }).code_language;
   if (requestedLanguage !== undefined && requestedLanguage !== null) {
     const adapter = getCodeLanguageAdapter(requestedLanguage);
@@ -878,7 +887,10 @@ function researchSourceIds(ctx: RunContext): Set<string> {
   return new Set((research?.sources ?? []).filter((s) => s.access === "read").map((s) => s.source_id));
 }
 
-export const MODEL = "gpt-6-luna";
+/** A2-A6 write and check the content. */
+export const MODEL = "gpt-6.1-terra";
+/** A7 translates a finished text: the comparison of one lesson per target locale decides whether this stays. */
+const TRANSLATE_MODEL = "gpt-6-luna";
 /** Steps called once per run decide the shape of the whole course and keep the highest effort. */
 export const EFFORT = "xhigh";
 /**
@@ -912,7 +924,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
       code_languages: ENABLED_CODE_LANGUAGES,
       platform_formats: PLATFORM_FORMAT_GUIDE,
     }),
-    accept: (output, ctx) => acceptBrief(output, ctx.scopes[0]?.locale),
+    accept: (output, _ctx) => acceptBrief(output, "en"),
   },
   research: {
     prompt: "a2-research",
@@ -1008,6 +1020,46 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
     accept: (output, ctx, lessonId) => acceptLessonReview(output, ctx, lessonId!),
     lessonTools: reviewTools,
   },
+  translate: {
+    prompt: "a7-translate",
+    kind: "text",
+    model: TRANSLATE_MODEL,
+    effort: EFFORT,
+    maxOutputTokens: 40_000,
+    maxAttempts: 3,
+    schema: object({
+      target_locale: str,
+      course: object({
+        title: str,
+        short_description: str,
+        description: str,
+        learning_outcomes: strList,
+      }),
+      sections: {
+        type: "array",
+        items: object({
+          id: str,
+          title: str,
+          description: str,
+        }),
+      },
+      lessons: {
+        type: "array",
+        items: object({
+          id: str,
+          title: str,
+          short_description: str,
+          summary: str,
+        }),
+      },
+    }),
+    buildInput: (ctx) => ({
+      course_type: "ai_generated",
+      brief: ctx.outputs.brief,
+      curriculum: ctx.outputs.curriculum,
+    }),
+    accept: (_output, _ctx) => ({ ok: true, summary: "Translations accepted" }),
+  },
 };
 
 /** Steps the runtime executes itself, without a model. */
@@ -1043,6 +1095,7 @@ export type TickAction =
   | { kind: "reopen_research"; round: number; missing: string[] }
   | { kind: "lessons"; actions: LessonAction[] }
   | { kind: "check"; check: CodeStep }
+  | { kind: "translate" }
   | { kind: "publish" }
   | { kind: "wait" };
 
@@ -1084,6 +1137,7 @@ export function planRun(input: {
     return { step: current, action: { kind: "mark_done" } };
   }
   if (current === "structure_check" || current === "journey_test") return { step: current, action: { kind: "check", check: current } };
+  if (current === "translate") return { step: current, action: { kind: "translate" } };
   if (current === "publish") return { step: current, action: { kind: "publish" } };
   const spec = STEP_SPECS[current];
   if (!spec) {

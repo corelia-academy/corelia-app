@@ -185,7 +185,8 @@ describe("studio lesson loop: planning", () => {
     const input = { latest: null, startedAt: new Date(now - 1000).toISOString(), now };
     expect(planRun({ ...input, steps: steps(upTo) })).toEqual({ step: "structure_check", action: { kind: "check", check: "structure_check" } });
     expect(planRun({ ...input, steps: steps([...upTo, "structure_check"]) }).action).toEqual({ kind: "check", check: "journey_test" });
-    expect(planRun({ ...input, steps: steps([...upTo, "structure_check", "journey_test"]) })).toEqual({ step: "publish", action: { kind: "publish" } });
+    expect(planRun({ ...input, steps: steps([...upTo, "structure_check", "journey_test"]) })).toEqual({ step: "translate", action: { kind: "translate" } });
+    expect(planRun({ ...input, steps: steps([...upTo, "structure_check", "journey_test", "translate"]) })).toEqual({ step: "publish", action: { kind: "publish" } });
   });
 });
 

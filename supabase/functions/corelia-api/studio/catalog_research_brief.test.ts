@@ -117,7 +117,7 @@ describe("A1 catalog research in the A2 brief", () => {
   });
 
   it("uses prompt version v6 and selects one enabled code language for the course", () => {
-    expect(SEEDED_PROMPTS["a2-brief"].version).toBe("v10");
+    expect(SEEDED_PROMPTS["a2-brief"].version).toBe("v11");
     expect(SEEDED_PROMPTS["a2-brief"].system).toContain("Nguyên tắc chỉ truyền thụ kiến thức");
     expect(SEEDED_PROMPTS["a2-brief"].system).toContain("không đưa mục tiêu hay phạm vi bắt buộc người học tự chạy lệnh");
     expect(SEEDED_PROMPTS["a2-brief"].system).toContain("hướng dẫn thực hành tự nguyện được phép");
@@ -134,13 +134,13 @@ describe("A1 catalog research in the A2 brief", () => {
   });
 
   it("keeps A5 and A6 package-version decisions bounded by research evidence", () => {
-    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v24");
+    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v25");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("tool_versions của research chỉ ghi mức tối thiểu hoặc phiên bản theo nguồn");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("nếu chỉ nêu mức tối thiểu, ghi rõ đó là mức tối thiểu và để lệnh không ghim phiên bản");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("Không tự suy ra phiên bản.");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("open_questions blocking = false ghi phiên bản chưa xác minh");
 
-    expect(SEEDED_PROMPTS["a6-lesson-review"].version).toBe("v20");
+    expect(SEEDED_PROMPTS["a6-lesson-review"].version).toBe("v21");
     const a5Prompt = SEEDED_PROMPTS["a5-lesson"].system;
     expect(a5Prompt).toContain("Mỗi câu phải tự đủ ngữ cảnh");
     expect(a5Prompt).toContain("Nhãn của các node không được trùng nhau");
@@ -163,11 +163,11 @@ describe("A1 catalog research in the A2 brief", () => {
     const a5 = SEEDED_PROMPTS["a5-lesson"];
     const a6 = SEEDED_PROMPTS["a6-lesson-review"];
 
-    expect(a3.version).toBe("v22");
-    expect(a4.version).toBe("v19");
-    expect(a5.version).toBe("v24");
-    expect(a6.version).toBe("v20");
-    expect(a2.version).toBe("v15");
+    expect(a3.version).toBe("v23");
+    expect(a4.version).toBe("v20");
+    expect(a5.version).toBe("v25");
+    expect(a6.version).toBe("v21");
+    expect(a2.version).toBe("v16");
     expect(a2.system).toContain("videos là mảng có thể rỗng");
     expect(a2.system).toContain("evidence_source_ids không rỗng");
     expect(a2.system).toContain("thiếu video không phải lý do needs_research");
@@ -250,7 +250,8 @@ describe("A1 catalog research in the A2 brief", () => {
     expect(SEEDED_PROMPTS["a4-curriculum-review"].system).toContain("Thiếu lesson thực hành không bao giờ là issue");
     expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("Thiếu phần thực hành tự nguyện không bao giờ là lỗi");
     expect(SEEDED_PROMPTS["a6-lesson-review"].system).toContain("không tự đặt thêm tiêu chí");
-    expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("Tự thực hành (không bắt buộc)");
+    expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("Optional hands-on practice");
+    expect(SEEDED_PROMPTS["a5-lesson"].system).not.toContain("Tự thực hành (không bắt buộc)");
     expect(PLATFORM_FORMAT_GUIDE.practice).toContain("bỏ qua vẫn hoàn thành bài");
     expect(PLATFORM_FORMAT_GUIDE.article).toContain("chỉ article có sơ đồ");
     expect(PLATFORM_FORMAT_GUIDE.article).toContain("outcome không được yêu cầu đọc hay vẽ sơ đồ");
