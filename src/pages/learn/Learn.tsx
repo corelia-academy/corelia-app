@@ -805,7 +805,7 @@ function LearnWorkspace() {
 
         {/* Right */}
         <div className="flex items-center gap-2">
-          <LearnResourcesDrawer groups={lessonsBySection} courseResources={course.course_resources} />
+          <LearnResourcesDrawer resources={currentLesson?.resources} />
         </div>
     </AppHeaderBar>
   );

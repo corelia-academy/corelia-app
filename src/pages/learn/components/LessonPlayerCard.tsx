@@ -99,7 +99,7 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
         ? { full: t("learning.markComplete"), short: t("learning.markCompleteShort") }
         : { full: label };
   const header = <div><p className="text-sm text-foreground-muted">{t(`learning.formats.${getLessonFormat(lesson)}`)} {completed && `· ${t("learning.completed")}`}</p><h1 className="mt-2 text-heading-large font-display">{lessonText(lesson.title)}</h1>{lesson.short_description && <p className="mt-2 text-foreground-muted">{lessonText(lesson.short_description)}</p>}{!inFooter && canAskAboutLesson(lesson) && <div className="mt-3"><AskAiMenu lesson={lesson} courseTitle={courseTitle} /></div>}</div>;
-  const resourcesNode = !!resources.length && (
+  const resourcesNode = (mode === "preview" && !!resources.length) && (
     frameLayout
       ? <section>
           <h2 className="mb-3xl font-display text-heading-large text-action-text">{t("learning.resources")}</h2>

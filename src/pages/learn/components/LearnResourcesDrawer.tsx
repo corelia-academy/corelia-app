@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { CourseResourceIcon } from "@/components/courses/CourseResourceIcon";
 import { visibleCourseResources } from "@/features/courses/courseResources";
-import { groupResourcesBySection } from "@/features/learning/resourceGroups";
-import type { CurriculumGroup } from "./LessonCurriculum";
+import { resourceIconForUrl } from "@/features/learning/resourceGroups";
 
 /** Reveals the drawer content one piece at a time each time the drawer mounts open. */
 function RevealOnMount() {
@@ -34,13 +33,13 @@ function RevealOnMount() {
   return <span ref={markerRef} hidden aria-hidden />;
 }
 
-export function LearnResourcesDrawer({ groups, courseResources }: { groups: CurriculumGroup[]; courseResources: unknown }) {
+export function LearnResourcesDrawer({ resources }: { resources?: unknown }) {
   const { t } = useTranslation(["courses", "common"]);
-  const shared = visibleCourseResources(courseResources);
-  const all = [
-    ...(shared.length ? [{ id: "course", title: t("courseResources.title"), items: shared }] : []),
-    ...groupResourcesBySection(groups),
-  ];
+  const items = visibleCourseResources(resources).map((item) => ({
+    ...item,
+    icon: item.icon ?? resourceIconForUrl(item.url),
+  }));
+
   return (
     <Sheet>
       <SheetTrigger render={<Button type="button" variant="cta" hierarchy="secondary" size="small" className="max-sm:size-8 max-sm:px-0" trailingIcon={<ListIcon weight="duotone" aria-hidden />} />}>
@@ -57,25 +56,24 @@ export function LearnResourcesDrawer({ groups, courseResources }: { groups: Curr
           <span className="sr-only">{t("common:actions.close")}</span>
         </SheetClose>
         <div className="scrollbar-design min-h-0 flex-1 space-y-3xl overflow-y-auto px-3xl pb-3xl">
-          {all.length ? all.map(group => (
-            <section key={group.id}>
-              <h3 data-reveal="" className="pb-md text-label-small leading-[1.4] text-foreground-subtle">{group.title}</h3>
-              <ul className="space-y-md">
-                {group.items.map((item, index) => (
-                  <li key={`${item.url}:${index}`} data-reveal="" className="rounded-xl bg-[var(--neutral-800)]">
-                    <Action
-                      size="large"
-                      nativeButton={false}
-                      render={<a href={item.url} target="_blank" rel="noopener noreferrer" />}
-                      icon={<CourseResourceIcon icon={item.icon} />}
-                      label={item.title}
-                      trailingGroup={<ArrowUpRight className="size-4" weight="duotone" aria-hidden />}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )) : <p className="text-body-small text-foreground-subtle">{t("courseResources.empty")}</p>}
+          {items.length ? (
+            <ul className="space-y-md">
+              {items.map((item, index) => (
+                <li key={`${item.url}:${index}`} data-reveal="" className="rounded-xl bg-[var(--neutral-800)]">
+                  <Action
+                    size="large"
+                    nativeButton={false}
+                    render={<a href={item.url} target="_blank" rel="noopener noreferrer" />}
+                    icon={<CourseResourceIcon icon={item.icon} />}
+                    label={item.title}
+                    trailingGroup={<ArrowUpRight className="size-4" weight="duotone" aria-hidden />}
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p data-reveal="" className="text-body-small text-foreground-subtle">{t("learning.resourcesEmpty")}</p>
+          )}
         </div>
       </SheetContent>
     </Sheet>
