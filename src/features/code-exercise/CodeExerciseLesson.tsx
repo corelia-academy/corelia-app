@@ -141,7 +141,7 @@ function TwoStageExercise({ lesson, courseId, config, userId, mode, completed, o
       inFlight.current = false;
       setBusy(false);
     }
-  }, [activeStage, p1, p2, answers1, source2, stage1Passed, key, courseId, lesson.id, mode, completed, completionPending, onComplete, t]);
+  }, [activeStage, p1, p2, answers1, source2, key, courseId, lesson.id, mode, completed, completionPending, onComplete, t]);
 
   useEffect(() => {
     onAction({

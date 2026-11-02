@@ -78,3 +78,19 @@ it("renders two_stage exercise in safe read-only notice mode", () => {
   expect(host.textContent).toContain("learning.codePart1");
   expect(host.textContent).toContain("learning.codePart2");
 });
+
+it("keeps hook order when the same builder changes between fill and two_stage", () => {
+  const fillConfig: CodeExerciseConfig = defaultCodeConfig("fill");
+  const twoStageConfig: CodeExerciseTwoStageConfig = defaultCodeConfig("two_stage");
+  const host = document.createElement("div"), root = createRoot(host);
+  cleanup = () => act(() => root.unmount());
+
+  act(() => root.render(<CodeExerciseBuilder config={fillConfig} onChange={() => {}} />));
+  expect(host.querySelector("#learning-code-reference")).not.toBeNull();
+
+  act(() => root.render(<CodeExerciseBuilder config={twoStageConfig} onChange={() => {}} />));
+  expect(host.textContent).toContain("learning.twoStageNotice");
+
+  act(() => root.render(<CodeExerciseBuilder config={fillConfig} onChange={() => {}} />));
+  expect(host.querySelector("#learning-code-reference")).not.toBeNull();
+});

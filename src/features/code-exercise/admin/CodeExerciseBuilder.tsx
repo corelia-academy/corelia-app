@@ -15,6 +15,7 @@ export function CodeExerciseBuilder({ config, onChange }: { config: CodeExercise
   const { t } = useLearningTranslation();
   const sourceRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<string[]>([]);
+  const { confirm, confirmation } = useLearningConfirm();
 
   if (config.mode === "two_stage") {
     return (
@@ -54,7 +55,6 @@ export function CodeExerciseBuilder({ config, onChange }: { config: CodeExercise
     onChange({ ...c, file: { ...c.file, starter_source: source.slice(0, textarea.selectionStart) + `{{blank:${id}}}` + source.slice(textarea.selectionEnd) }, blanks: [...c.blanks, { id, accepted_answers: [answer] }] } as CodeExerciseConfig);
   }
   function setTest(index: number, next: CodeExerciseTest) { patch({ tests: (c.tests ?? []).map((test, i) => i === index ? next : test) }); }
-  const { confirm, confirmation } = useLearningConfirm();
   return (
     <div id="learning-code_exercise_config" tabIndex={-1} className="space-y-5">
       {confirmation}<p className="rounded-xl bg-surface-raised p-4 text-sm">{t("learning.textRulesNotice")}</p>
