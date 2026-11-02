@@ -13,6 +13,24 @@ function normalizeDraft(value: unknown): CodeExerciseDraft | null {
     && sourceBytes(JSON.stringify(d.answers)) <= MAX_SOURCE_BYTES) {
     return { mode: "fill", answers: { ...d.answers } as Record<string, string>, updated_at: d.updated_at };
   }
+  if (d.mode === "two_stage") {
+    const stage1_answers = (d.stage1_answers && typeof d.stage1_answers === "object" && !Array.isArray(d.stage1_answers)
+      && Object.values(d.stage1_answers).every(v => typeof v === "string" && !/[\r\n]/.test(v)))
+      ? { ...d.stage1_answers } as Record<string, string>
+      : {};
+    const stage2_source = typeof d.stage2_source === "string" ? d.stage2_source : "";
+    if (sourceBytes(JSON.stringify(stage1_answers)) > MAX_SOURCE_BYTES || sourceBytes(stage2_source) > MAX_SOURCE_BYTES) return null;
+    const active_stage: 1 | 2 = d.active_stage === 2 ? 2 : 1;
+    const stage1_passed = typeof d.stage1_passed === "boolean" ? d.stage1_passed : undefined;
+    return {
+      mode: "two_stage",
+      stage1_answers,
+      stage2_source,
+      active_stage,
+      stage1_passed,
+      updated_at: d.updated_at,
+    };
+  }
   return null;
 }
 export function readCodeDraft(key: string): CodeExerciseDraft | null {

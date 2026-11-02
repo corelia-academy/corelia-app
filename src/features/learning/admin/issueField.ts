@@ -23,6 +23,7 @@ export function issueField(issue: PublishValidationIssue, lesson: CourseLesson):
   }
   const config = lesson.code_exercise_config;
   if (issue.field === "code_exercise_config" && isCodeConfigShape(config)) {
+    if (config.mode === "two_stage") return "learning-code_exercise_config";
     if (code === "invalid_file") return "code-file";
     if (["solution_failed", "unresolved_solution"].includes(code)) return "code-reference";
     if (["invalid_markers", "invalid_blanks"].includes(code)) return "code-starter";

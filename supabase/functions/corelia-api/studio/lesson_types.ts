@@ -8,6 +8,8 @@ import type { Diagram } from "./diagram.ts";
 
 export type LessonFormat = "video" | "article" | "quiz" | "practice" | "code_exercise";
 
+export const MIN_QUIZ_QUESTIONS = 5;
+
 export interface LessonResource {
   title: string;
   url: string;
@@ -25,8 +27,19 @@ export interface PracticeConfig {
   requires_review?: boolean;
 }
 
+export interface CodeExercisePartLocale {
+  instructions?: string;
+  hints?: string[];
+  blank_feedback?: Record<string, string>;
+  test_copy?: Record<string, { description?: string; failure_message?: string; hint?: string }>;
+}
+
 export interface CodeExerciseLocaleContent {
   instructions?: string;
+  hints?: string[];
+  blank_feedback?: Record<string, string>;
+  test_copy?: Record<string, { description?: string; failure_message?: string; hint?: string }>;
+  parts?: [CodeExercisePartLocale, CodeExercisePartLocale];
 }
 
 export interface CourseLesson {

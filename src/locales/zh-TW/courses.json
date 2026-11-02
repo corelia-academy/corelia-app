@@ -750,6 +750,7 @@
       "required_test_missing": "請至少將一個測試標記為必要。",
       "solution_failed": "請修正參考解答，使必要的測試通過。",
       "unresolved_solution": "請補全參考解答中的所有填空。",
+      "starter_passes": "初始程式碼已通過所有必要測試。請更新初始程式碼以確保學習者需要動手解題。",
       "invalid_locale_copy": "文字、翻譯或影片中繼資料的類型無效。"
     },
     "publishSettings": "發布與預覽",
@@ -775,6 +776,13 @@
     "imageUploadFailed": "無法上傳圖片，請再試一次。",
     "imageInvalid": "請選擇不超過 5 MB 的 PNG、JPEG、WebP 或 GIF 圖片。",
     "imageDefaultAlt": "圖片",
-    "imageInserted": "已將圖片插入課程內文。"
+    "imageInserted": "已將圖片插入課程內文。",
+    "codePart1": "第1部分：填空",
+    "codePart2": "第2部分：編寫程式碼",
+    "codePart2Locked": "完成第1部分以解鎖第2部分",
+    "codeContinueToPart2": "繼續進行第2部分",
+    "twoStageNotice": "本練習分為兩個部分：完成第1部分，然後解答第2部分。",
+    "blanks": "填空",
+    "tests": "測試"
   }
 }

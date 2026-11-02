@@ -750,6 +750,7 @@
       "required_test_missing": "请至少将一个测试标记为必需。",
       "solution_failed": "请修复参考答案，使必需的测试通过。",
       "unresolved_solution": "请补全参考答案中的所有填空。",
+      "starter_passes": "初始代码已通过所有必需测试。请更新初始代码以确保学习者需要动手解题。",
       "invalid_locale_copy": "文本、翻译或视频元数据的类型无效。"
     },
     "publishSettings": "发布与预览",
@@ -775,6 +776,13 @@
     "imageUploadFailed": "无法上传图片，请重试。",
     "imageInvalid": "请选择不超过 5 MB 的 PNG、JPEG、WebP 或 GIF 图片。",
     "imageDefaultAlt": "图片",
-    "imageInserted": "已将图片插入课程正文。"
+    "imageInserted": "已将图片插入课程正文。",
+    "codePart1": "第1部分：填空",
+    "codePart2": "第2部分：编写代码",
+    "codePart2Locked": "完成第1部分以解锁第2部分",
+    "codeContinueToPart2": "继续进行第2部分",
+    "twoStageNotice": "本练习分为两个部分：完成第1部分，然后解答第2部分。",
+    "blanks": "填空",
+    "tests": "测试"
   }
 }
