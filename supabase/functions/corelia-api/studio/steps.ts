@@ -4,6 +4,7 @@ import {
   acceptLesson,
   buildLessonInput,
   buildLessonReviewInput,
+  lessonVideoCandidates,
   normalizeResearchTopic,
   LESSON_SCHEMA,
   LESSON_SHARED_KEYS,
@@ -22,6 +23,7 @@ import { type AgentRole, type PromptKey } from "./prompts.ts";
 import type { BriefCatalogResearch } from "./catalog_research_brief.ts";
 import { A4_REVIEW_CRITERIA, normalizeReviewChecks, normalizeReviewIssues, REVIEW_ISSUE_CATEGORIES } from "./review_policy.ts";
 import { TEACHING_PURPOSES } from "./checks.ts";
+import { ALLOWED_CHANNELS, isAllowedChannel } from "./channels.ts";
 
 export const STEP_ORDER = [
   "catalog_research",
@@ -163,7 +165,7 @@ const RESEARCH_SCHEMA = object({
   goals: strList,
   scope: strList,
   out_of_scope: strList,
-  prerequisites: { type: "array", items: object({ prerequisite: str, remedial_source_ids: strList }) },
+  prerequisites: strList,
   topics: {
     type: "array",
     items: object({
@@ -223,14 +225,12 @@ const RESEARCH_SCHEMA = object({
 });
 
 /**
- * Role of a lesson in the learning sequence (Learning Principles): a self-check diagnostic start
- * whose resources are the review material for missing prerequisites, worked example then reduced
+ * Role of a lesson in the learning sequence (Learning Principles): worked example then reduced
  * support, retrieval of earlier modules, a final cumulative check, and optional hands-on instructions.
  * `optional_hands_on` does not create an app-level skip or completion flag; the external practice
  * itself never gates course completion.
  */
 export const LESSON_PURPOSES = [
-  "diagnostic",
   "explanation",
   "worked_example",
   "guided_practice",
@@ -320,7 +320,7 @@ interface Brief {
 
 interface Research {
   status: string;
-  prerequisites: { prerequisite: string; remedial_source_ids: string[] }[];
+  prerequisites: string[];
   topics: { topic: string; source_ids: string[]; key_points: { point: string; source_ids: string[] }[] }[];
   sources: { source_id: string; authority: string; access: string; checked_at: string }[];
   videos?: ResearchVideoCandidate[];
@@ -499,6 +499,9 @@ function usableResearchVideos(
     for (const field of ["title", "channel", "channel_basis"] as const) {
       if (typeof video[field] !== "string" || !video[field].trim()) problems.push(`${label}: thiếu ${field}`);
     }
+    if (typeof video.channel === "string" && video.channel.trim() && !isAllowedChannel(video.channel)) {
+      problems.push(`${label}: kênh "${video.channel}" không thuộc danh sách kênh cho phép`);
+    }
 
     if (!Array.isArray(video.evidence_source_ids) || video.evidence_source_ids.length === 0 ||
         video.evidence_source_ids.some((id) => typeof id !== "string" || !id.trim())) {
@@ -553,11 +556,7 @@ export function acceptResearch(output: unknown, today: string): Acceptance {
       problems.push(`nguồn ${s.source_id}: ngày kiểm tra ${s.checked_at || "trống"} không phải ngày chạy`);
     }
   }
-  // Prerequisites need material to catch up with, and quiz distractors and feedback are built from
-  // misconceptions, so both must rest on sources that were read.
-  for (const p of research.prerequisites) {
-    if (!cited(p.remedial_source_ids)) problems.push(`prerequisite "${p.prerequisite}": thiếu nguồn ôn đã đọc`);
-  }
+  // Quiz distractors and feedback are built from misconceptions, so they must rest on sources that were read.
   for (const m of research.misconceptions) {
     if (!cited(m.source_ids)) problems.push(`lỗi hiểu sai về ${m.topic}: thiếu nguồn đã đọc`);
   }
@@ -591,6 +590,7 @@ export function acceptCurriculum(
   output: unknown,
   sourceIds: Set<string>,
   codeLanguage: EnabledCodeLanguage | null = "rust",
+  research?: Parameters<typeof lessonVideoCandidates>[0],
 ): Acceptance {
   const curriculum = output as Curriculum;
   if (curriculum.status === "needs_research") {
@@ -599,12 +599,7 @@ export function acceptCurriculum(
     return { ok: true, summary: `cần thêm nghiên cứu: ${list(curriculum.missing)}` };
   }
   if (curriculum.status !== "draft") return { ok: false, reason: `Curriculum có status không hợp lệ: ${curriculum.status}` };
-  for (const module of curriculum.modules) {
-    const legacyVideoLesson = module.lessons.find((lesson) => lesson.type === "video");
-    if (legacyVideoLesson) {
-      return { ok: false, reason: `lesson ${legacyVideoLesson.id}: type video không còn được hỗ trợ trong curriculum AI mới` };
-    }
-  }
+
   const problems: string[] = [];
   const lessons = curriculum.modules.flatMap((m) => m.lessons);
   if (codeLanguage === null && lessons.some((lesson) => lesson.type === "code_exercise")) {
@@ -626,9 +621,13 @@ export function acceptCurriculum(
   });
   const optionalHandsOnIds = new Set(optionalHandsOnByModule.flat().map((l) => l.id));
   const position = new Map(lessons.map((l, i) => [l.id, i]));
+  const practiceIds = new Set(lessons.filter((l) => l.type === "practice").map((l) => l.id));
   for (const o of curriculum.outcomes) {
-    const validChecks = o.check_lesson_ids.filter((id) => lessonIds.has(id) && !optionalHandsOnIds.has(id));
-    if (o.check_lesson_ids.length === 0 || o.check_lesson_ids.some((id) => !lessonIds.has(id) || optionalHandsOnIds.has(id))) {
+    if (o.check_lesson_ids.some((id) => practiceIds.has(id))) {
+      problems.push(`outcome ${o.id}: check_lesson_ids không được chứa practice`);
+    }
+    const validChecks = o.check_lesson_ids.filter((id) => lessonIds.has(id) && !optionalHandsOnIds.has(id) && !practiceIds.has(id));
+    if (o.check_lesson_ids.length === 0 || o.check_lesson_ids.some((id) => !lessonIds.has(id) || optionalHandsOnIds.has(id) || practiceIds.has(id))) {
       problems.push(`outcome ${o.id} không có lesson kiểm tra hợp lệ`);
     }
     const teachers = lessons.filter((l) => l.outcome_ids.includes(o.id) && (TEACHING_PURPOSES as readonly string[]).includes(l.purpose));
@@ -639,10 +638,7 @@ export function acceptCurriculum(
     }
   }
   for (const l of lessons) {
-    // The diagnostic checks prerequisites, not course outcomes, so it may have none. It is a
-    // self-check practice; a threshold would make passing it a completion gate.
-    const diagnostic = l.purpose === "diagnostic";
-    if ((!diagnostic && l.outcome_ids.length === 0) || l.outcome_ids.some((id) => !outcomeIds.has(id))) {
+    if (l.outcome_ids.length === 0 || l.outcome_ids.some((id) => !outcomeIds.has(id))) {
       problems.push(`lesson ${l.id} có outcome không hợp lệ`);
     }
     if (l.source_ids.length === 0) {
@@ -653,7 +649,26 @@ export function acceptCurriculum(
         problems.push(`lesson ${l.id} có source_id không có trong research (${unknown.join(", ")})`);
       }
     }
-    if (diagnostic && l.type !== "practice") problems.push(`lesson ${l.id} (diagnostic) phải là practice`);
+    if (l.type === "video") {
+      if (l.purpose !== "explanation") {
+        problems.push(`lesson ${l.id} (video) chỉ được mang purpose explanation`);
+      }
+      if (research) {
+        const candidates = lessonVideoCandidates(research, l.source_ids);
+        if (candidates.length === 0) {
+          problems.push(`Lesson video "${l.id}" không có video ứng viên phù hợp trong research (cùng topic từ kênh cho phép); hãy đổi sang article`);
+        }
+      }
+    }
+    if (l.type === "practice" && l.purpose !== "optional_hands_on") {
+      problems.push(`lesson ${l.id} (practice) phải có purpose optional_hands_on`);
+    }
+    if (l.purpose === "retrieval" && l.type !== "quiz") {
+      problems.push(`lesson ${l.id} (retrieval) phải là quiz`);
+    }
+    if (l.purpose === "final_check" && l.type !== "quiz" && l.type !== "code_exercise") {
+      problems.push(`lesson ${l.id} (final_check) phải là quiz hoặc code_exercise`);
+    }
     if (l.purpose === "optional_hands_on") {
       for (const outcomeId of l.outcome_ids) {
         const outcome = curriculum.outcomes.find((candidate) => candidate.id === outcomeId);
@@ -682,8 +697,23 @@ export function acceptCurriculum(
     }
   }
 
-  // Starting point: the first module opens with a self-check on prior knowledge.
-  if (!curriculum.modules[0]?.lessons.some((l) => l.purpose === "diagnostic")) problems.push("module đầu không có lesson chẩn đoán đầu vào");
+  // Module quiz gate: every module has at least one quiz. If the module has a teaching lesson
+  // (explanation or worked_example), at least one quiz must come after the first teaching lesson.
+  for (const module of curriculum.modules) {
+    const quizzes = module.lessons.filter((l) => l.type === "quiz");
+    if (quizzes.length === 0) {
+      problems.push(`module ${module.id} không có quiz`);
+      continue;
+    }
+    const firstTeacher = module.lessons.find((l) => (TEACHING_PURPOSES as readonly string[]).includes(l.purpose));
+    if (firstTeacher) {
+      const teacherPos = position.get(firstTeacher.id)!;
+      const hasQuizAfter = quizzes.some((q) => position.get(q.id)! > teacherPos);
+      if (!hasQuizAfter) {
+        problems.push(`module ${module.id}: không có quiz đứng sau bài dạy đầu tiên (${firstTeacher.id})`);
+      }
+    }
+  }
 
   // Transfer: the final_check lessons of the last module (a summary quiz, plus code_exercise or
   // practice for outcomes a quiz cannot check) together cover every outcome. There is no final
@@ -700,7 +730,6 @@ export function acceptCurriculum(
     const firstModule = new Map<string, number>();
     curriculum.modules.forEach((m, i) => {
       for (const l of m.lessons) {
-        if (l.purpose === "diagnostic") continue;
         for (const o of l.outcome_ids) if (!firstModule.has(o)) firstModule.set(o, i);
       }
     });
@@ -899,6 +928,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
       brief: briefWithCodeLanguage(ctx.outputs.brief),
       today: ctx.today,
       platform_formats: PLATFORM_FORMAT_GUIDE,
+      allowed_channels: ALLOWED_CHANNELS.map((c) => ({ name: c.name, handle: c.handle })),
       ...(ctx.researchGap ? { research_gap: ctx.researchGap, previous_research: ctx.outputs.research } : {}),
     }),
     accept: (output, ctx) => acceptResearch(output, ctx.today),
@@ -916,12 +946,14 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
       brief: briefWithCodeLanguage(ctx.outputs.brief),
       research_brief: ctx.outputs.research,
       platform_formats: AI_CURRICULUM_FORMAT_GUIDE,
+      allowed_channels: ALLOWED_CHANNELS.map((c) => ({ name: c.name, handle: c.handle })),
       ...(ctx.revision ? { previous_curriculum: ctx.outputs.curriculum, review: ctx.revision } : {}),
     }),
     accept: (output, ctx) => acceptCurriculum(
       output,
       researchSourceIds(ctx),
       resolveCodeLanguage((ctx.outputs.brief as { code_language?: unknown }).code_language),
+      ctx.outputs.research as Parameters<typeof lessonVideoCandidates>[0] | undefined,
     ),
   },
   curriculum_review: {
@@ -945,6 +977,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
         curriculum,
         researchSourceIds(ctx),
         resolveCodeLanguage((ctx.outputs.brief as { code_language?: unknown }).code_language),
+        ctx.outputs.research as Parameters<typeof lessonVideoCandidates>[0] | undefined,
       );
       return acceptCurriculumReview(output, curriculum, ("codeChecks" in code ? code.codeChecks : undefined) ?? []);
     },
@@ -1020,7 +1053,7 @@ export function planRun(input: {
   startedAt: string;
   now: number;
   /** Status of the A1 job pinned to this run when step 0 is current. */
-  catalogResearch?: { status: "running" | "evidence_ok" | "needs_more_sources" | "failed"; reason?: string } | null;
+  catalogResearch?: { status: "running" | "evidence_ok" | "needs_more_sources" | "failed"; reason?: string | null } | null;
   progress?: RunProgress;
   /**
    * Curriculum lessons with their generations of both lesson steps and the blocking items of each

@@ -117,7 +117,7 @@ describe("A1 catalog research in the A2 brief", () => {
   });
 
   it("uses prompt version v6 and selects one enabled code language for the course", () => {
-    expect(SEEDED_PROMPTS["a2-brief"].version).toBe("v9");
+    expect(SEEDED_PROMPTS["a2-brief"].version).toBe("v10");
     expect(SEEDED_PROMPTS["a2-brief"].system).toContain("Nguyên tắc chỉ truyền thụ kiến thức");
     expect(SEEDED_PROMPTS["a2-brief"].system).toContain("không đưa mục tiêu hay phạm vi bắt buộc người học tự chạy lệnh");
     expect(SEEDED_PROMPTS["a2-brief"].system).toContain("hướng dẫn thực hành tự nguyện được phép");
@@ -128,19 +128,19 @@ describe("A1 catalog research in the A2 brief", () => {
     expect(SEEDED_PROMPTS["a2-brief"].system).toContain("mọi suy luận từ A1 phải ghi vào assumptions");
     expect(SEEDED_PROMPTS["a2-brief"].system).toContain("code_language: chọn đúng một ID trong code_languages");
     expect(SEEDED_PROMPTS["a2-brief"].system).toContain("Solana/Anchor → rust");
-    expect(SEEDED_PROMPTS["a2-brief"].system).toContain("Không đưa vào prerequisites điều kiện không có tài liệu để ôn");
-    expect(SEEDED_PROMPTS["a2-brief"].system).toContain("Không có kiến thức nền cần ôn thì để prerequisites rỗng");
+    expect(SEEDED_PROMPTS["a2-brief"].system).toContain("Không đưa vào prerequisites điều kiện như khả năng đọc ngôn ngữ");
+    expect(SEEDED_PROMPTS["a2-brief"].system).toContain("Không có kiến thức nền thì để prerequisites rỗng");
     expect(STEP_SPECS.brief!.schema).toBeDefined();
   });
 
   it("keeps A5 and A6 package-version decisions bounded by research evidence", () => {
-    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v20");
+    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v24");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("tool_versions của research chỉ ghi mức tối thiểu hoặc phiên bản theo nguồn");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("nếu chỉ nêu mức tối thiểu, ghi rõ đó là mức tối thiểu và để lệnh không ghim phiên bản");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("Không tự suy ra phiên bản.");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("open_questions blocking = false ghi phiên bản chưa xác minh");
 
-    expect(SEEDED_PROMPTS["a6-lesson-review"].version).toBe("v18");
+    expect(SEEDED_PROMPTS["a6-lesson-review"].version).toBe("v20");
     const a5Prompt = SEEDED_PROMPTS["a5-lesson"].system;
     expect(a5Prompt).toContain("Mỗi câu phải tự đủ ngữ cảnh");
     expect(a5Prompt).toContain("Nhãn của các node không được trùng nhau");
@@ -163,11 +163,11 @@ describe("A1 catalog research in the A2 brief", () => {
     const a5 = SEEDED_PROMPTS["a5-lesson"];
     const a6 = SEEDED_PROMPTS["a6-lesson-review"];
 
-    expect(a3.version).toBe("v19");
-    expect(a4.version).toBe("v17");
-    expect(a5.version).toBe("v20");
-    expect(a6.version).toBe("v18");
-    expect(a2.version).toBe("v13");
+    expect(a3.version).toBe("v22");
+    expect(a4.version).toBe("v19");
+    expect(a5.version).toBe("v24");
+    expect(a6.version).toBe("v20");
+    expect(a2.version).toBe("v15");
     expect(a2.system).toContain("videos là mảng có thể rỗng");
     expect(a2.system).toContain("evidence_source_ids không rỗng");
     expect(a2.system).toContain("thiếu video không phải lý do needs_research");
@@ -192,7 +192,7 @@ describe("A1 catalog research in the A2 brief", () => {
     expect(a4.system).toContain("báo blocking; không báo blocking vì curriculum thiếu các nhiệm vụ như vậy");
     expect(a3.system).toContain("Chỉ gắn outcome vào lesson mà description thật sự dạy và kiểm đủ điều outcome nêu");
     expect(a4.system).toContain("đọc description của mọi lesson trong check_lesson_ids");
-    expect(a4.system).toContain("Báo blocking nếu curriculum có lesson type video");
+    expect(a4.system).toContain("Báo blocking nếu lesson video mang purpose khác explanation");
     expect(a4.system).toContain("outcome chỉ được dạy khi người học phải xem/hiểu video tùy chọn");
     expect(a5.system).toContain("Bài không bắt buộc có bước cài đặt/cấu hình công cụ");
     expect(a5.system).toContain("Khi purpose là optional_hands_on, chỉ tạo practice mode instruction");
@@ -201,9 +201,11 @@ describe("A1 catalog research in the A2 brief", () => {
     expect(a5.system).toContain("tối đa 2");
     expect(a5.system).toContain("code sẽ dựng resources xem thêm");
     expect(a5.system).toContain("không đặt link YouTube trong text/markdown hoặc resources");
-    expect(a5.system).toContain("Khối video chỉ dùng khi curriculum đã lưu sẵn lesson.type = video");
+    expect(a5.system).toContain("description_markdown dưới video bắt buộc có cấu trúc");
     expect(a5.system).toContain("không dùng web_search để tìm video");
     expect(a5.system).toContain("không đưa video vào completion_rule hay checklist");
+    expect(a5.system).toContain("start_seconds và end_seconds bắt buộc để 0");
+    expect(a2.system).toContain("allowed_channels");
     expect(a5.system).toContain("Nội dung video không phải bằng chứng");
     expect(a5.system).toContain("code_language_guide nhận trong đầu vào");
     expect(a5.system).toContain("Quy tắc gợi ý code");
@@ -253,5 +255,6 @@ describe("A1 catalog research in the A2 brief", () => {
     expect(PLATFORM_FORMAT_GUIDE.article).toContain("chỉ article có sơ đồ");
     expect(PLATFORM_FORMAT_GUIDE.article).toContain("outcome không được yêu cầu đọc hay vẽ sơ đồ");
     expect(PLATFORM_FORMAT_GUIDE.quiz).toContain("Không hiển thị sơ đồ");
+    expect(PLATFORM_FORMAT_GUIDE.video).not.toContain("cắt đoạn");
   });
 });

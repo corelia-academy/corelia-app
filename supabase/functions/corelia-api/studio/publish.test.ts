@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { appImagePath, diagramFile, draftDir, draftPath, publishMarkdown } from "./diagram_render.ts";
-import { article, base, curriculum, editCode, question } from "./lesson_fixtures.ts";
+import { article, base, curriculum, twoStageCode, question } from "./lesson_fixtures.ts";
 import { lessonRefs, toLessonDraft } from "./lessons.ts";
 import { buildPublishPayload, imageJobs, publishRun, PublishRejected, slugify } from "./publish.ts";
 
@@ -9,9 +9,9 @@ const brief = { topic: "Rust cơ bản", audience: "Người mới", level: "beg
 const outputs: Record<string, object> = {
   "l-art": { ...base, article },
   "l-quiz": { ...base, quiz: { questions: [question(), question({ question: "Câu 2" })] } },
-  "l-code": { ...base, code: editCode, source_ids: ["s1", "s2"] },
+  "l-code": { ...base, code: twoStageCode, source_ids: ["s1", "s2"] },
   "l-prac": { ...base, practice: { description_markdown: "Làm.", mode: "instruction", checklist_items: [] } },
-  "l-vid": { ...base, source_ids: ["s2"], video: { youtube_url: "https://youtu.be/dQw4w9WgXcQ", start_seconds: 0, end_seconds: 0 } },
+  "l-vid": { ...base, source_ids: ["s2"], video: { youtube_url: "https://youtu.be/dQw4w9WgXcQ", start_seconds: 0, end_seconds: 0, description_markdown: "## Mục tiêu\n\nHiểu Y.\n\n## Ý chính\n\n- Ý 1\n- Ý 2\n- Ý 3\n\nVideo từ kênh Let's Get Rusty." } },
 };
 const prov = { model_id: "m", prompt_version: "p" };
 const records = Object.fromEntries(lessonRefs(curriculum).map((r) => [r.lesson.id, { draft: toLessonDraft(r, outputs[r.lesson.id] as never, "vi"), written: prov, reviewed: prov }]));

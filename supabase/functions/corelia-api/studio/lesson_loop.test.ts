@@ -3,11 +3,12 @@ import { describe, expect, it } from "vitest";
 import { journeyProblems, linkProblems, structureProblems, type LessonRecord } from "./checks.ts";
 import { MAX_LESSON_REVIEWS, MAX_LESSON_REVIEWS_LATE, planLessons, type LessonGeneration, type LessonStep } from "./lesson_flow.ts";
 import { MAX_TRANSPORT_FAILURES } from "./retry.ts";
-import { article, base, ctx, curriculum, editCode, fillCode, lesson, now, question } from "./lesson_fixtures.ts";
+import { article, base, ctx, curriculum, editCode, fillCode, lesson, makeFiveQuestions, now, question, twoStageCode } from "./lesson_fixtures.ts";
 import { getCodeLanguageAdapter } from "./lesson_ports.ts";
 import { acceptLessonReview, LESSON_REVIEW_SCHEMA, resolvePath } from "./lesson_review.ts";
 import { lessonReviewEventPayload } from "./handlers.ts";
 import { inputBlocks } from "./openai.ts";
+import { PLATFORM_FORMAT_GUIDE } from "./formats.ts";
 import { A6_REVIEW_CRITERIA } from "./review_policy.ts";
 import { buildLessonInput, buildLessonReviewInput, LESSON_SHARED_KEYS, lessonRefs, hasUnseenBlocking, lessonRevision, lessonTools, reviewBlocking, toLessonDraft, TransientError, type LessonContext } from "./lessons.ts";
 import { planRun, STEP_ORDER, STEP_SPECS, SUBMIT_STALE_MS, type RunContext, type StepKey } from "./steps.ts";
@@ -201,8 +202,8 @@ const issue = (location: string, severity = "blocking", over: object = {}) => ({
 });
 const verdictOf = (verdict: string, issues: object[] = [], unverified: string[] = []) => ({ verdict, issues, unverified, summary: "s" });
 
-const quizOutput = { ...base, quiz: { questions: [question(), question()] } };
-const codeOutput = { ...base, code: editCode, source_ids: ["s1", "s2"] };
+const quizOutput = { ...base, quiz: { questions: makeFiveQuestions() } };
+const codeOutput = { ...base, code: twoStageCode, source_ids: ["s1", "s2"] };
 
 // Reduced field sample from run c284b778; source IDs, package facts, and question states are retained.
 const c284ResearchSample = {
@@ -361,7 +362,7 @@ describe("studio lesson loop: research version handoff", () => {
 
     const reviewContext = {
       ...selectedContext,
-      lesson: { drafts: 1, reviews: 0, draft: { ...base, code: editCode }, review: null },
+      lesson: { drafts: 1, reviews: 0, draft: { ...base, code: twoStageCode }, review: null },
     } as RunContext;
     const reviewer = buildLessonReviewInput(reviewContext, "l-code") as Record<string, any>;
     expect(reviewer).toMatchObject({ code_language: "python", code_language_guide: pythonGuide });
@@ -375,8 +376,8 @@ describe("studio lesson loop: research version handoff", () => {
 
   it("passes only source-matched video candidates to A5/A6 and gives A5 no video search tool", () => {
     const candidates = [
-      { topic: "t1", url: "https://youtu.be/aaaaaaaaaaa", title: "Topic one", channel: "Rust Education", channel_basis: "Read channel evidence.", evidence_source_ids: ["s1"] },
-      { topic: "t2", url: "https://youtu.be/bbbbbbbbbbb", title: "Topic two", channel: "Rust Education", channel_basis: "Read channel evidence.", evidence_source_ids: ["s2"] },
+      { topic: "t1", url: "https://youtu.be/aaaaaaaaaaa", title: "Topic one", channel: "Let's Get Rusty", channel_basis: "Read channel evidence.", evidence_source_ids: ["s1"] },
+      { topic: "t2", url: "https://youtu.be/bbbbbbbbbbb", title: "Topic two", channel: "Let's Get Rusty", channel_basis: "Read channel evidence.", evidence_source_ids: ["s2"] },
     ];
     const topics = (ctx.outputs.research as { topics: { topic: string }[] }).topics
       .map((topic) => ({ ...topic, topic: ` ${topic.topic} ` }));
@@ -406,7 +407,7 @@ describe("studio lesson loop: review input and acceptance", () => {
     const draft = toLessonDraft(lessonRefs(curriculum).find((r) => r.lesson.id === "l-quiz")!, quizOutput as never, "vi");
     expect(resolvePath(draft, "lesson.title")).toBe("Tiêu đề");
     expect(resolvePath(draft, "questions[1].options[2]")).toEqual({ id: "c", text: "C" });
-    expect(resolvePath(draft, "questions[2]")).toBeUndefined();
+    expect(resolvePath(draft, "questions[5]")).toBeUndefined();
     expect(resolvePath(draft, "lesson.description_markdown")).toBeUndefined();
     expect(resolvePath(draft, "lesson.nope")).toBeUndefined();
     expect(resolvePath(draft, "questions[x]")).toBeUndefined();
@@ -531,7 +532,7 @@ describe("studio lesson loop: review input and acceptance", () => {
     const input = buildLessonReviewInput(c, id) as Record<string, any>;
     expect(input.review_round).toBe(1);
     expect(input.lesson_draft.lesson).toMatchObject({ id: "l-quiz", lesson_format: "quiz", quiz_config: { passing_ratio: 0.7 } });
-    expect(input.lesson_draft.questions).toHaveLength(2);
+    expect(input.lesson_draft.questions).toHaveLength(5);
     expect(input.checks_already_run.join(" ")).toContain("CHƯA kiểm tra đáp án");
     const [code] = withLesson({ drafts: 1, reviews: 1, draft: codeOutput, review: verdictOf("pass") }, "l-code");
     expect(buildLessonReviewInput(code, "l-code")).toMatchObject({ review_round: 2 });
@@ -544,10 +545,62 @@ describe("studio lesson loop: review input and acceptance", () => {
     const [c, id] = withLesson({ drafts: 1, reviews: 0, draft, review: null }, "l-art");
     const input = buildLessonReviewInput(c, id) as Record<string, any>;
     expect(input.lesson_draft.lesson.resources).toContainEqual({
-      title: "Video: Worked example for t1 — Rust Education",
+      title: "Video: Worked example for t1 — Let's Get Rusty",
       url: "https://www.youtube.com/watch?v=aaaaaaaaaaa",
     });
     expect(input.checks_already_run.join(" ")).toContain("suggested video thuộc ứng viên lesson");
+  });
+
+  it("carries video-to-article fallback through review and rewrite without reverting to video format", () => {
+    const articleDraft = {
+      title: "Bài đọc thay video",
+      short_description: "Mô tả ngắn",
+      duration_seconds: 400,
+      source_ids: ["s2"],
+      resources: [],
+      summary: "Tóm tắt",
+      article: { description_markdown: "## Bài đọc\n\nNội dung bài viết thay cho video.", diagrams: [] },
+    };
+    const vidContext = {
+      ...ctx,
+      lesson: {
+        lessonId: "l-vid",
+        drafts: 1,
+        reviews: 0,
+        draft: articleDraft,
+        review: null,
+      },
+    } as unknown as RunContext;
+
+    // Reviewer round 1 sees article, not video
+    const reviewerRound1 = buildLessonReviewInput(vidContext, "l-vid") as Record<string, any>;
+    expect(reviewerRound1.lesson.type).toBe("article");
+    expect(reviewerRound1.platform_format).toBe(PLATFORM_FORMAT_GUIDE.article);
+    expect(reviewerRound1.checks_already_run).toEqual(expect.arrayContaining([
+      expect.stringContaining("Markdown và diagrams khớp hai chiều"),
+    ]));
+
+    // Reviewer requests fix
+    const vidContextRound2 = {
+      ...vidContext,
+      lesson: {
+        ...vidContext.lesson,
+        drafts: 1,
+        reviews: 1,
+        review: {
+          verdict: "needs_fix",
+          issues: [{ location: "lesson.description_markdown", category: "factual_inaccuracy", severity: "blocking", problem: "cần bổ sung", fix: "thêm ý" }],
+        },
+      },
+    } as unknown as RunContext;
+
+    // Writer rewrite sees article format, not video
+    const writerRound2 = buildLessonInput(vidContextRound2, "l-vid") as Record<string, any>;
+    expect(writerRound2.lesson.type).toBe("article");
+    expect(writerRound2.platform_format).toBe(PLATFORM_FORMAT_GUIDE.article);
+
+    // Curriculum remains untouched
+    expect((vidContextRound2.outputs.curriculum as any).modules[1].lessons[2].type).toBe("video");
   });
 
   it("has a reviewer spec without web search and with a strict schema", () => {
@@ -567,7 +620,7 @@ const outputs: Record<string, object> = {
   "l-quiz": quizOutput,
   "l-code": codeOutput,
   "l-prac": { ...base, practice: { description_markdown: "Làm.", mode: "instruction", checklist_items: [] } },
-  "l-vid": { ...base, source_ids: ["s2"], video: { youtube_url: "https://youtu.be/dQw4w9WgXcQ", start_seconds: 0, end_seconds: 0 } },
+  "l-vid": { ...base, source_ids: ["s2"], video: { youtube_url: "https://youtu.be/dQw4w9WgXcQ", start_seconds: 0, end_seconds: 0, description_markdown: "Mô tả video." } },
 };
 function records(over: Partial<Record<string, object>> = {}): Record<string, LessonRecord> {
   return Object.fromEntries(lessonRefs(curriculum).map((r) => [
@@ -625,7 +678,8 @@ describe("studio structure_check", () => {
     const all = records();
     all["l-art"].draft.lesson.title = " ";
     all["l-quiz"].draft.questions[0].correct_index = 9;
-    all["l-code"].draft.lesson.code_exercise_config!.reference_solution = "fn nope() {}";
+    all["l-quiz"].draft.questions[1].correct_index = 9;
+    all["l-code"].draft.lesson.code_exercise_config!.parts[1].reference_solution = "fn nope() {}";
     all["l-vid"].draft.lesson.youtube_url = "https://example.com/v";
     const problems = structureProblems(curriculum, research, all).join("\n");
     expect(problems).toContain("l-art: title: title_required");
@@ -652,7 +706,7 @@ describe("studio structure_check", () => {
       "l-art": { ...base, article, suggested_videos: ["aaaaaaaaaaa"] },
     });
     expect(all["l-art"].draft.lesson.resources).toContainEqual({
-      title: "Video: Worked example for t1 — Rust Education",
+      title: "Video: Worked example for t1 — Let's Get Rusty",
       url: "https://www.youtube.com/watch?v=aaaaaaaaaaa",
     });
     expect(structureProblems(curriculum, research, all)).toEqual([]);
@@ -682,7 +736,7 @@ describe("studio structure_check: links", () => {
     ((url: string, init?: RequestInit) => {
       const target = String(url);
       const code = status(target, init?.method ?? "GET");
-      const body = target.includes("oembed") && code === 200 ? JSON.stringify({ author_name: "Rust Education" }) : "";
+      const body = target.includes("oembed") && code === 200 ? JSON.stringify({ author_name: "Let's Get Rusty", author_url: "https://www.youtube.com/@letsgetrusty" }) : "";
       return Promise.resolve(new Response(body, { status: code }));
     }) as unknown as typeof fetch;
 
@@ -703,11 +757,11 @@ describe("studio structure_check: links", () => {
   it("does not make a generic HTTP request to a suggested YouTube watch page", async () => {
     const all = withLinks();
     const url = "https://www.youtube.com/watch?v=aaaaaaaaaaa";
-    all["l-art"].draft.lesson.resources!.push({ title: "Video: Topic one — Rust Education", url });
+    all["l-art"].draft.lesson.resources!.push({ title: "Video: Topic one — Let's Get Rusty", url });
     const requested: string[] = [];
     const fetcher = ((target: string) => {
       requested.push(target);
-      return Promise.resolve(new Response(JSON.stringify({ author_name: "Rust Education" }), { status: 200 }));
+      return Promise.resolve(new Response(JSON.stringify({ author_name: "Let's Get Rusty", author_url: "https://www.youtube.com/@letsgetrusty" }), { status: 200 }));
     }) as unknown as typeof fetch;
     expect(await linkProblems(all, fetcher)).toEqual([]);
     expect(requested).not.toContain(url);
@@ -758,7 +812,8 @@ describe("studio journey_test", () => {
 
     const all = records();
     all["l-quiz"].draft.questions[0].correct_index = 9;
-    all["l-code"].draft.lesson.code_exercise_config!.file.starter_source = all["l-code"].draft.lesson.code_exercise_config!.reference_solution;
+    all["l-quiz"].draft.questions[1].correct_index = 9;
+    all["l-code"].draft.lesson.code_exercise_config!.parts[1].file.starter_source = all["l-code"].draft.lesson.code_exercise_config!.parts[1].reference_solution;
     all["l-prac"].draft.lesson.practice_config = { mode: "instruction", requires_review: true };
     const brokenChecks: { id: string; passed: number; total: number; failed_refs?: string[] }[] = [];
     expect(journeyProblems(good, all, brokenChecks)).toContain("l-prac: practice có bài nộp hoặc chờ chấm");
@@ -806,10 +861,11 @@ describe("studio journey_test", () => {
   it("plays the quizzes and exercises", () => {
     const all = records();
     all["l-quiz"].draft.questions[0].correct_index = 9;
+    all["l-quiz"].draft.questions[1].correct_index = 9;
     expect(journeyProblems(good, all)).toContain("l-quiz: trả lời đúng hết vẫn không đạt ngưỡng 0.7");
-    const solved = records({ "l-code": { ...codeOutput, code: { ...editCode, starter_source: editCode.reference_solution } } });
-    expect(journeyProblems(good, solved)).toContain("l-code: starter_source đã đạt mọi test bắt buộc");
-    const brokenCode = records({ "l-code": { ...codeOutput, code: { ...fillCode, reference_solution: "let x = 5;" } } });
+    const solved = records({ "l-code": { ...codeOutput, code: { ...twoStageCode, part_2: { ...twoStageCode.part_2, starter_source: twoStageCode.part_2.reference_solution } } } });
+    expect(journeyProblems(good, solved)).toContain("l-code: code: starter_passes");
+    const brokenCode = records({ "l-code": { ...codeOutput, code: { ...twoStageCode, part_1: { ...twoStageCode.part_1, reference_solution: "let x = 5;" } } } });
     expect(journeyProblems(good, brokenCode).join("\n")).toContain("l-code: code: solution_failed");
     const lowRatio = records();
     lowRatio["l-quiz"].draft.lesson.quiz_config = { passing_ratio: 0, allow_retry: true };

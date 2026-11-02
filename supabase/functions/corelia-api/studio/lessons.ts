@@ -5,7 +5,7 @@
 // video existence.
 
 import { checkDiagram } from "./diagram.ts";
-import type { LessonDiagram, LessonDraft, LessonFormat, QuestionData } from "./lesson_types.ts";
+import { MIN_QUIZ_QUESTIONS, type LessonDiagram, type LessonDraft, type LessonFormat, type QuestionData } from "./lesson_types.ts";
 import {
   evaluateCodeExercise,
   ENABLED_CODE_LANGUAGES,
@@ -23,6 +23,12 @@ import {
   type EnabledCodeLanguage,
 } from "./lesson_ports.ts";
 import type { Acceptance, ResearchVideoCandidate, RunContext } from "./steps.ts";
+import {
+  extractChannelHandle,
+  findAllowedChannelByName,
+  findChannelByHandle,
+  isAllowedChannel,
+} from "./channels.ts";
 import { PLATFORM_FORMAT_GUIDE } from "./formats.ts";
 import { normalizeReviewIssues } from "./review_policy.ts";
 
@@ -86,7 +92,38 @@ export function lessonVideoCandidates(
   const topicNames = new Set(research.topics
     .filter((topic) => topic.source_ids.some((id) => sourceIds.has(id)))
     .map((topic) => normalizeResearchTopic(topic.topic)));
-  return (research.videos ?? []).filter((video) => topicNames.has(normalizeResearchTopic(video.topic)));
+  return (research.videos ?? []).filter((video) => topicNames.has(normalizeResearchTopic(video.topic)) && isAllowedChannel(video.channel));
+}
+
+/**
+ * Resolves usable video candidates for a lesson by verifying each candidate through oEmbed.
+ * A candidate is usable iff oEmbed returns HTTP 200, provides author_name and author_url,
+ * extracts a handle, and that handle matches the channel in ALLOWED_CHANNELS for candidate.channel.
+ * Transient errors (5xx, network error) are rethrown so the check is retried instead of treated as dead.
+ * Uses cache to avoid redundant oEmbed calls for the same video ID.
+ */
+export async function usableLessonVideoCandidates(
+  candidates: ResearchVideoCandidate[],
+  fetchFn: typeof fetch,
+  cache: Map<string, Promise<YoutubeOEmbed | null>> = new Map(),
+): Promise<ResearchVideoCandidate[]> {
+  const usable: ResearchVideoCandidate[] = [];
+  for (const c of candidates) {
+    const videoId = getYoutubeVideoId(c.url);
+    if (!videoId) continue;
+    let embedPromise = cache.get(videoId);
+    if (!embedPromise) {
+      embedPromise = youtubeEmbeddable(videoId, fetchFn);
+      cache.set(videoId, embedPromise);
+    }
+    const embed = await embedPromise;
+    if (!embed) continue;
+    const expected = findAllowedChannelByName(c.channel);
+    if (expected && embed.handle.toLowerCase() === expected.handle.toLowerCase()) {
+      usable.push(c);
+    }
+  }
+  return usable;
 }
 
 export interface LessonRef {
@@ -137,6 +174,41 @@ const DIAGRAM = object({
   },
 });
 
+const CODE_TEST = object({
+  id: str,
+  type: { type: "string", enum: ["source_equals", "contains", "not_contains"] },
+  description: str,
+  required: { type: "boolean" },
+  value: str,
+  accepted_sources: strList,
+  failure_message: str,
+  hint: str,
+});
+
+const CODE_BLANK = object({
+  id: str,
+  accepted_answers: strList,
+  feedback: str,
+});
+
+const CODE_PART_1 = object({
+  instructions: str,
+  file_path: str,
+  starter_source: str,
+  reference_solution: str,
+  hints: strList,
+  blanks: { type: "array", items: CODE_BLANK },
+});
+
+const CODE_PART_2 = object({
+  instructions: str,
+  file_path: str,
+  starter_source: str,
+  reference_solution: str,
+  hints: strList,
+  tests: { type: "array", items: CODE_TEST },
+});
+
 /**
  * One schema for all formats: the block of the lesson's format is filled and the others are null
  * (strict mode needs every key present). Lists are empty rather than null where a format has no use
@@ -165,29 +237,12 @@ export const LESSON_SCHEMA = object({
   code: nullable(object({
     instructions: str,
     language: { type: "string", enum: [...ENABLED_CODE_LANGUAGES] },
-    file_path: str,
-    starter_source: str,
-    reference_solution: str,
-    hints: strList,
-    mode: { type: "string", enum: ["fill", "edit"] },
-    blanks: { type: "array", items: object({ id: str, accepted_answers: strList, feedback: str }) },
-    tests: {
-      type: "array",
-      items: object({
-        id: str,
-        type: { type: "string", enum: ["source_equals", "contains", "not_contains"] },
-        description: str,
-        required: { type: "boolean" },
-        value: str,
-        accepted_sources: strList,
-        failure_message: str,
-        hint: str,
-      }),
-    },
+    part_1: CODE_PART_1,
+    part_2: CODE_PART_2,
   })),
   practice: nullable(object({
     description_markdown: str,
-    mode: { type: "string", enum: ["instruction", "checklist"] },
+    mode: { type: "string", enum: ["instruction"] },
     checklist_items: { type: "array", items: object({ id: str, label: str }) },
   })),
   video: nullable(object({
@@ -195,6 +250,7 @@ export const LESSON_SCHEMA = object({
     start_seconds: { type: "integer" },
     /** 0 plays to the end of the video. */
     end_seconds: { type: "integer" },
+    description_markdown: str,
   })),
 });
 
@@ -211,16 +267,25 @@ export interface LessonOutput {
   code: {
     instructions: string;
     language: string;
-    file_path: string;
-    starter_source: string;
-    reference_solution: string;
-    hints: string[];
-    mode: "fill" | "edit";
-    blanks: { id: string; accepted_answers: string[]; feedback: string }[];
-    tests: { id: string; type: "source_equals" | "contains" | "not_contains"; description: string; required: boolean; value: string; accepted_sources: string[]; failure_message: string; hint: string }[];
+    part_1: {
+      instructions: string;
+      file_path: string;
+      starter_source: string;
+      reference_solution: string;
+      hints: string[];
+      blanks: { id: string; accepted_answers: string[]; feedback: string }[];
+    };
+    part_2: {
+      instructions: string;
+      file_path: string;
+      starter_source: string;
+      reference_solution: string;
+      hints: string[];
+      tests: { id: string; type: "source_equals" | "contains" | "not_contains"; description: string; required: boolean; value: string; accepted_sources: string[]; failure_message: string; hint: string }[];
+    };
   } | null;
-  practice: { description_markdown: string; mode: "instruction" | "checklist"; checklist_items: { id: string; label: string }[] } | null;
-  video: { youtube_url: string; start_seconds: number; end_seconds: number } | null;
+  practice: { description_markdown: string; mode: "instruction"; checklist_items: { id: string; label: string }[] } | null;
+  video: { youtube_url: string; start_seconds: number; end_seconds: number; description_markdown: string } | null;
 }
 
 const BLOCK_OF: Record<LessonFormat, keyof LessonOutput> = {
@@ -276,7 +341,15 @@ function lessonBrief(brief: BriefFull): Record<string, unknown> {
 /** Keys that come first in every lesson input and are the same for all lessons of a run; keep them leading and in this order. */
 export const LESSON_SHARED_KEYS = ["course_type", "brief", "code_language", "code_language_guide", "today"] as const;
 
-function lessonBase(ctx: RunContext, lessonId: string) {
+export function effectiveLessonFormat(cl: CurriculumLesson, draft?: unknown): LessonFormat {
+  if (cl.type === "video" && draft && typeof draft === "object") {
+    const out = draft as LessonOutput;
+    if (out.article && !out.video) return "article";
+  }
+  return cl.type;
+}
+
+export function lessonBase(ctx: RunContext, lessonId: string, draftOverride?: unknown) {
   const curriculum = ctx.outputs.curriculum as CurriculumFull;
   const research = ctx.outputs.research as ResearchFull;
   const brief = ctx.outputs.brief as BriefFull;
@@ -284,12 +357,20 @@ function lessonBase(ctx: RunContext, lessonId: string) {
   const codeLanguageAdapter = codeLanguage ? getCodeLanguageAdapter(codeLanguage) : undefined;
   const { refs, index } = findLesson(ctx, lessonId);
   const { lesson, moduleId } = refs[index];
+  const revision = lessonRevision(ctx.lesson);
+  const draft = draftOverride ?? (revision ? ctx.lesson?.draft : undefined);
+  const effectiveFormat = effectiveLessonFormat(lesson, draft);
+  const effectiveLesson: CurriculumLesson = effectiveFormat === lesson.type
+    ? lesson
+    : { ...lesson, type: effectiveFormat };
   const mod = curriculum.modules.find((m) => m.id === moduleId)!;
   const mine = new Set(lesson.source_ids);
   const touches = (ids: string[]) => ids.some((id) => mine.has(id));
   const neighbour = (r: LessonRef | undefined) => r && { id: r.lesson.id, title: r.lesson.title, purpose: r.lesson.purpose, type: r.lesson.type };
   return {
     ref: refs[index],
+    effectiveFormat,
+    effectiveLesson,
     locale: brief.locale,
     // The fields of LESSON_SHARED_KEYS are the same for every lesson of the run and come first: they
     // are a separate cached block of the request, so the lesson-specific part must follow them.
@@ -299,8 +380,8 @@ function lessonBase(ctx: RunContext, lessonId: string) {
       code_language: codeLanguage,
       ...(codeLanguageAdapter ? { code_language_guide: codeLanguageAdapter.guide } : {}),
       today: ctx.today,
-      platform_format: PLATFORM_FORMAT_GUIDE[lesson.type],
-      lesson,
+      platform_format: PLATFORM_FORMAT_GUIDE[effectiveFormat],
+      lesson: effectiveLesson,
       module: { id: mod.id, title: mod.title, description: mod.description },
       outcomes: curriculum.outcomes.filter((o) => lesson.outcome_ids.includes(o.id)),
       research: {
@@ -339,9 +420,9 @@ export function buildLessonInput(ctx: RunContext, lessonId: string): Record<stri
 
 /** Input of the lesson reviewer: the lesson as the app will store it, plus what the code already checked. */
 export function buildLessonReviewInput(ctx: RunContext, lessonId: string): Record<string, unknown> {
-  const { ref, locale, common, neighbours } = lessonBase(ctx, lessonId);
   const lc = ctx.lesson;
   if (!lc?.draft) throw new Error(`lesson ${lessonId} chưa có bản nháp được nhận`);
+  const { ref, effectiveFormat, locale, common, neighbours } = lessonBase(ctx, lessonId, lc.draft);
   return {
     ...common,
     ...neighbours,
@@ -350,7 +431,7 @@ export function buildLessonReviewInput(ctx: RunContext, lessonId: string): Recor
     ...(lc.reviews > 0 && lc.review ? { previous_review: { round: lc.reviews, issues: normalizeReviewIssues((lc.review as { issues?: unknown }).issues).issues } } : {}),
     lesson_draft: toLessonDraft(ref, lc.draft as LessonOutput, locale, ctx.outputs.research as ResearchFull),
     checks_already_run: checksAlreadyRun(
-      ref.lesson.type,
+      effectiveFormat,
       resolveCodeLanguage((ctx.outputs.brief as BriefFull).code_language),
     ),
   };
@@ -360,7 +441,7 @@ export function buildLessonReviewInput(ctx: RunContext, lessonId: string): Recor
 export function checksAlreadyRun(format: LessonFormat, codeLanguage: EnabledCodeLanguage | null = "rust"): string[] {
   const common = [
     "Quy tắc publish của app cho lesson (validateLesson): tiêu đề, cấu hình theo format.",
-    "source_ids nằm trong source_ids của lesson ở curriculum; resource do A5 viết thuộc nguồn research đã đọc; suggested video thuộc ứng viên lesson và oEmbed/author_name đã được kiểm.",
+    "source_ids nằm trong source_ids của lesson ở curriculum; resource do A5 viết thuộc nguồn research đã đọc; suggested video thuộc ứng viên lesson và oEmbed/handle kênh đã được kiểm.",
   ];
   const byFormat: Record<LessonFormat, string[]> = {
     article: ["Markdown và diagrams khớp hai chiều; bố cục sơ đồ vẽ được (không chồng nét, không đi xuyên node)."],
@@ -370,8 +451,8 @@ export function checksAlreadyRun(format: LessonFormat, codeLanguage: EnabledCode
       `CHƯA biên dịch hay chạy mã ${codeLanguage ?? "đã chọn"}; đúng/sai của mã và test chưa được kiểm chứng bằng công cụ.`,
       "Đã kiểm lộ đáp án dạng định danh nguyên từ trong hints, feedback, failure_message và hint của test theo accepted_answers/value của test contains.",
     ],
-    practice: ["Chỉ mode instruction hoặc checklist, không bài nộp; checklist có id duy nhất."],
-    video: ["Video ID thuộc ứng viên research của lesson, oEmbed trả 200 và author_name khớp channel ứng viên. CHƯA kiểm tra nội dung, độ dài hay ngôn ngữ video."],
+    practice: ["Chỉ mode instruction, không bài nộp; không checklist."],
+    video: ["Video ID thuộc ứng viên research của lesson, oEmbed trả 200 và handle kênh khớp channel ứng viên. CHƯA kiểm tra nội dung, độ dài hay ngôn ngữ video."],
   };
   return [...common, ...byFormat[format]];
 }
@@ -404,32 +485,50 @@ function nonEmpty<T>(items: T[]): T[] | undefined {
 }
 
 function codeConfig(code: NonNullable<LessonOutput["code"]>): CodeExerciseConfig {
-  const tests: CodeExerciseTest[] = code.tests.map((t) => ({
-    id: t.id,
-    description: t.description,
-    required: t.required,
-    ...(t.failure_message ? { failure_message: t.failure_message } : {}),
-    ...(t.hint ? { hint: t.hint } : {}),
-    ...(t.type === "source_equals"
-      ? { type: "source_equals" as const, accepted_sources: t.accepted_sources }
-      : { type: t.type, value: t.value }),
-  }));
-  const base = {
-    schema_version: 1 as const,
+  const mapTests = (
+    tests: { id: string; type: "source_equals" | "contains" | "not_contains"; description: string; required: boolean; value: string; accepted_sources: string[]; failure_message: string; hint: string }[] = [],
+  ): CodeExerciseTest[] =>
+    tests.map((t) => ({
+      id: t.id,
+      description: t.description,
+      required: t.required,
+      ...(t.failure_message ? { failure_message: t.failure_message } : {}),
+      ...(t.hint ? { hint: t.hint } : {}),
+      ...(t.type === "source_equals"
+        ? { type: "source_equals" as const, accepted_sources: t.accepted_sources }
+        : { type: t.type, value: t.value }),
+    }));
+
+  const p2Tests = mapTests(code.part_2.tests ?? []);
+
+  return {
+    schema_version: 1,
     revision: 1,
     language: code.language,
-    file: { path: code.file_path, starter_source: code.starter_source },
-    reference_solution: code.reference_solution,
-    ...(code.hints.length ? { hints: code.hints } : {}),
+    mode: "two_stage",
+    parts: [
+      {
+        mode: "fill",
+        file: { path: code.part_1.file_path, starter_source: code.part_1.starter_source },
+        reference_solution: code.part_1.reference_solution,
+        blanks: (code.part_1.blanks ?? []).map((b) => ({
+          id: b.id,
+          accepted_answers: b.accepted_answers,
+          ...(b.feedback ? { feedback: b.feedback } : {}),
+        })),
+        ...(code.part_1.hints?.length ? { hints: code.part_1.hints } : {}),
+        ...(code.part_1.instructions ? { instructions: code.part_1.instructions } : {}),
+      },
+      {
+        mode: "edit",
+        file: { path: code.part_2.file_path, starter_source: code.part_2.starter_source },
+        reference_solution: code.part_2.reference_solution,
+        tests: p2Tests,
+        ...(code.part_2.hints?.length ? { hints: code.part_2.hints } : {}),
+        ...(code.part_2.instructions ? { instructions: code.part_2.instructions } : {}),
+      },
+    ],
   };
-  return code.mode === "fill"
-    ? {
-      ...base,
-      mode: "fill",
-      blanks: code.blanks.map((b) => ({ id: b.id, accepted_answers: b.accepted_answers, ...(b.feedback ? { feedback: b.feedback } : {}) })),
-      ...(tests.length ? { tests } : {}),
-    }
-    : { ...base, mode: "edit", tests };
 }
 
 /** The app's lesson record for one accepted (or candidate) model output. Pure. */
@@ -486,12 +585,23 @@ export function toLessonDraft(
     })));
   } else if (cl.type === "code_exercise" && out.code) {
     lesson.code_exercise_config = codeConfig(out.code);
-    lesson.code_exercise_locale = { instructions: out.code.instructions };
+    lesson.code_exercise_locale = {
+      instructions: out.code.instructions,
+      parts: [
+        {
+          instructions: out.code.part_1.instructions,
+          ...(out.code.part_1.hints?.length ? { hints: out.code.part_1.hints } : {}),
+        },
+        {
+          instructions: out.code.part_2.instructions,
+          ...(out.code.part_2.hints?.length ? { hints: out.code.part_2.hints } : {}),
+        },
+      ],
+    };
   } else if (cl.type === "practice" && out.practice) {
     lesson.description_markdown = out.practice.description_markdown;
     lesson.practice_config = {
-      mode: out.practice.mode,
-      ...(out.practice.mode === "checklist" ? { checklist_items: out.practice.checklist_items } : {}),
+      mode: "instruction",
       requires_review: false,
     };
   } else if (cl.type === "video" && out.video) {
@@ -500,6 +610,11 @@ export function toLessonDraft(
     lesson.youtube_url = id ? `https://www.youtube.com/watch?v=${id}` : out.video.youtube_url;
     lesson.youtube_start_seconds = out.video.start_seconds;
     lesson.youtube_end_seconds = out.video.end_seconds > 0 ? out.video.end_seconds : null;
+    lesson.description_markdown = out.video.description_markdown.trim();
+  } else if (cl.type === "video" && out.article && !out.video) {
+    lesson.lesson_format = "article";
+    lesson.description_markdown = out.article.description_markdown;
+    diagrams.push(...out.article.diagrams);
   }
   return { lesson, questions, diagrams, source_ids: out.source_ids, summary: out.summary };
 }
@@ -511,9 +626,11 @@ export class TransientError extends Error {}
 
 export interface YoutubeOEmbed {
   author_name: string;
+  author_url: string;
+  handle: string;
 }
 
-/** HTTP 200 with an author_name means the video exists and can be embedded. */
+/** HTTP 200 with author_name and author_url handle means the video exists and can be embedded. */
 export async function youtubeEmbeddable(videoId: string, fetchFn: typeof fetch): Promise<YoutubeOEmbed | null> {
   const watch = encodeURIComponent(`https://www.youtube.com/watch?v=${videoId}`);
   let res: Response;
@@ -525,9 +642,19 @@ export async function youtubeEmbeddable(videoId: string, fetchFn: typeof fetch):
   if (res.status === 200) {
     try {
       const body: unknown = await res.json();
-      if (body && typeof body === "object" && "author_name" in body &&
-          typeof body.author_name === "string" && body.author_name.trim()) {
-        return { author_name: body.author_name };
+      if (
+        body && typeof body === "object" &&
+        "author_name" in body && typeof body.author_name === "string" && body.author_name.trim() &&
+        "author_url" in body && typeof body.author_url === "string" && body.author_url.trim()
+      ) {
+        const handle = extractChannelHandle(body.author_url);
+        if (handle) {
+          return {
+            author_name: body.author_name.trim(),
+            author_url: body.author_url.trim(),
+            handle,
+          };
+        }
       }
       return null;
     } catch (e) {
@@ -561,9 +688,6 @@ function youtubeLinks(text: string): { url: string; videoId: string | null }[] {
   return links;
 }
 
-function channelKey(value: string): string {
-  return value.normalize("NFKC").trim().replace(/\s+/g, " ").toLowerCase();
-}
 
 /** Text saved in learner-visible fields; summary and code samples are not rendered as lesson copy. */
 function learnerTextFields(draft: LessonDraft): { location: string; text: string }[] {
@@ -585,20 +709,29 @@ function learnerTextFields(draft: LessonDraft): { location: string; text: string
     question.options.forEach((option, optionIndex) => add(`questions[${index}].options[${optionIndex}].text`, option.text));
     add(`questions[${index}].explanation`, question.explanation);
   });
-  (lesson.practice_config?.checklist_items ?? []).forEach((item, index) => {
-    add(`lesson.practice_config.checklist_items[${index}].label`, item.label);
-  });
   const code = lesson.code_exercise_config;
   if (code) {
-    (code.hints ?? []).forEach((hint, index) => add(`lesson.code_exercise_config.hints[${index}]`, hint));
-    if (code.mode === "fill") {
-      code.blanks.forEach((blank, index) => add(`lesson.code_exercise_config.blanks[${index}].feedback`, blank.feedback));
+    if (code.mode === "two_stage") {
+      const [p1, p2] = code.parts;
+      (p1.hints ?? []).forEach((hint, index) => add(`lesson.code_exercise_config.parts[0].hints[${index}]`, hint));
+      p1.blanks.forEach((blank, index) => add(`lesson.code_exercise_config.parts[0].blanks[${index}].feedback`, blank.feedback));
+      (p2.hints ?? []).forEach((hint, index) => add(`lesson.code_exercise_config.parts[1].hints[${index}]`, hint));
+      p2.tests.forEach((test, index) => {
+        add(`lesson.code_exercise_config.parts[1].tests[${index}].description`, test.description);
+        add(`lesson.code_exercise_config.parts[1].tests[${index}].failure_message`, test.failure_message);
+        add(`lesson.code_exercise_config.parts[1].tests[${index}].hint`, test.hint);
+      });
+    } else {
+      (code.hints ?? []).forEach((hint, index) => add(`lesson.code_exercise_config.hints[${index}]`, hint));
+      if (code.mode === "fill") {
+        code.blanks.forEach((blank, index) => add(`lesson.code_exercise_config.blanks[${index}].feedback`, blank.feedback));
+      }
+      (code.tests ?? []).forEach((test, index) => {
+        add(`lesson.code_exercise_config.tests[${index}].description`, test.description);
+        add(`lesson.code_exercise_config.tests[${index}].failure_message`, test.failure_message);
+        add(`lesson.code_exercise_config.tests[${index}].hint`, test.hint);
+      });
     }
-    (code.tests ?? []).forEach((test, index) => {
-      add(`lesson.code_exercise_config.tests[${index}].description`, test.description);
-      add(`lesson.code_exercise_config.tests[${index}].failure_message`, test.failure_message);
-      add(`lesson.code_exercise_config.tests[${index}].hint`, test.hint);
-    });
   }
   return fields;
 }
@@ -620,7 +753,7 @@ export function diagramProblems(markdown: string, diagrams: LessonDiagram[]): st
 
 function quizProblems(quiz: NonNullable<LessonOutput["quiz"]>, draft: LessonDraft): string[] {
   const problems: string[] = [];
-  if (quiz.questions.length === 0) problems.push("quiz không có câu hỏi");
+  if (quiz.questions.length < MIN_QUIZ_QUESTIONS) problems.push(`quiz phải có ít nhất ${MIN_QUIZ_QUESTIONS} câu hỏi`);
   draft.questions.forEach((q, i) => {
     for (const code of validateQuestion(q)) problems.push(`câu ${i + 1}: ${code}`);
     if (!q.explanation?.trim()) problems.push(`câu ${i + 1}: thiếu giải thích`);
@@ -629,26 +762,7 @@ function quizProblems(quiz: NonNullable<LessonOutput["quiz"]>, draft: LessonDraf
 }
 
 function answerLeakProblems(code: NonNullable<LessonOutput["code"]>): string[] {
-  const answers = new Set<string>();
-  for (const blank of code.blanks) {
-    for (const answer of blank.accepted_answers) {
-      const identifier = answer.trim();
-      if (/^[A-Za-z_][A-Za-z0-9_]{2,}$/.test(identifier)) answers.add(identifier);
-    }
-  }
-  for (const test of code.tests) {
-    if (test.type !== "contains") continue;
-    const identifier = test.value.trim();
-    if (/^[A-Za-z_][A-Za-z0-9_]{2,}$/.test(identifier)) answers.add(identifier);
-  }
-
-  const texts: { location: string; value: string }[] = [];
-  code.hints.forEach((value, index) => texts.push({ location: `code.hints[${index}]`, value }));
-  code.blanks.forEach((blank, index) => texts.push({ location: `code.blanks[${index}].feedback`, value: blank.feedback }));
-  code.tests.forEach((test, index) => {
-    texts.push({ location: `code.tests[${index}].failure_message`, value: test.failure_message });
-    texts.push({ location: `code.tests[${index}].hint`, value: test.hint });
-  });
+  const problems: string[] = [];
 
   const hasWholeIdentifier = (text: string, identifier: string): boolean => {
     for (let start = text.indexOf(identifier); start >= 0; start = text.indexOf(identifier, start + 1)) {
@@ -659,13 +773,45 @@ function answerLeakProblems(code: NonNullable<LessonOutput["code"]>): string[] {
     return false;
   };
 
-  const problems: string[] = [];
-  for (const { location, value } of texts) {
-    if (typeof value !== "string" || !value) continue;
-    for (const answer of answers) {
-      if (hasWholeIdentifier(value, answer)) problems.push(`${location} lộ đáp án định danh "${answer}"`);
+  const checkLeaks = (answers: Set<string>, texts: { location: string; value: string }[]) => {
+    for (const { location, value } of texts) {
+      if (typeof value !== "string" || !value) continue;
+      for (const answer of answers) {
+        if (hasWholeIdentifier(value, answer)) problems.push(`${location} lộ đáp án định danh "${answer}"`);
+      }
+    }
+  };
+
+  // Part 1: fill blanks
+  const p1Answers = new Set<string>();
+  for (const blank of code.part_1.blanks ?? []) {
+    for (const answer of blank.accepted_answers) {
+      const identifier = answer.trim();
+      if (/^[A-Za-z_][A-Za-z0-9_]{2,}$/.test(identifier)) p1Answers.add(identifier);
     }
   }
+
+  const p1Texts: { location: string; value: string }[] = [];
+  (code.part_1.hints ?? []).forEach((value, index) => p1Texts.push({ location: `code.part_1.hints[${index}]`, value }));
+  (code.part_1.blanks ?? []).forEach((blank, index) => p1Texts.push({ location: `code.part_1.blanks[${index}].feedback`, value: blank.feedback }));
+  checkLeaks(p1Answers, p1Texts);
+
+  // Part 2: edit tests
+  const p2Answers = new Set<string>();
+  for (const test of code.part_2.tests ?? []) {
+    if (test.type !== "contains") continue;
+    const identifier = test.value.trim();
+    if (/^[A-Za-z_][A-Za-z0-9_]{2,}$/.test(identifier)) p2Answers.add(identifier);
+  }
+
+  const p2Texts: { location: string; value: string }[] = [];
+  (code.part_2.hints ?? []).forEach((value, index) => p2Texts.push({ location: `code.part_2.hints[${index}]`, value }));
+  (code.part_2.tests ?? []).forEach((test, index) => {
+    p2Texts.push({ location: `code.part_2.tests[${index}].failure_message`, value: test.failure_message });
+    p2Texts.push({ location: `code.part_2.tests[${index}].hint`, value: test.hint });
+  });
+  checkLeaks(p2Answers, p2Texts);
+
   return problems;
 }
 
@@ -683,22 +829,33 @@ function codeProblems(
   } else if (code.language !== expectedLanguage) {
     problems.push(`language phải khớp code_language của khóa (${expectedLanguage})`);
   }
-  if (adapter && !validCodeFile(code.file_path, code.language)) {
-    problems.push(`file_path "${code.file_path}" phải là tên tệp trần có đuôi hợp lệ cho ${code.language}`);
+  if (!code.instructions?.trim()) problems.push("thiếu hướng dẫn (instructions)");
+
+  // Part 1: fill
+  if (adapter && !validCodeFile(code.part_1.file_path, code.language)) {
+    problems.push(`part_1: file_path "${code.part_1.file_path}" phải là tên tệp trần có đuôi hợp lệ cho ${code.language}`);
   }
-  if (!code.instructions.trim()) problems.push("thiếu hướng dẫn (instructions)");
-  if (code.mode === "edit" && code.blanks.length > 0) problems.push("mode edit không có blanks");
-  for (const t of code.tests) {
-    if (t.type === "source_equals" ? t.accepted_sources.length === 0 : !t.value) problems.push(`test ${t.id} thiếu ${t.type === "source_equals" ? "accepted_sources" : "value"}`);
+  if (!code.part_1.instructions?.trim()) problems.push("part_1: thiếu hướng dẫn (instructions)");
+  if (!code.part_1.blanks || code.part_1.blanks.length === 0) problems.push("part_1: phải có ít nhất 1 blank");
+
+  // Part 2: edit
+  if (adapter && !validCodeFile(code.part_2.file_path, code.language)) {
+    problems.push(`part_2: file_path "${code.part_2.file_path}" phải là tên tệp trần có đuôi hợp lệ cho ${code.language}`);
   }
+  if (!code.part_2.instructions?.trim()) problems.push("part_2: thiếu hướng dẫn (instructions)");
+  if (!code.part_2.tests || code.part_2.tests.length === 0) problems.push("part_2: phải có ít nhất 1 test");
+  for (const t of code.part_2.tests ?? []) {
+    if (t.type === "source_equals" ? t.accepted_sources.length === 0 : !t.value) {
+      problems.push(`part_2: test ${t.id} thiếu ${t.type === "source_equals" ? "accepted_sources" : "value"}`);
+    }
+  }
+
   problems.push(...answerLeakProblems(code));
   if (problems.length > 0) return problems;
+
   const errors = validateCodeConfig(config, true);
   if (errors.length > 0) return errors.map((e) => `code_exercise_config: ${e}`);
-  // validateCodeConfig(publish) shows the reference solution passes. The starter must not: an
-  // exercise that is already solved teaches nothing.
-  const starter = config.mode === "fill" ? evaluateCodeExercise(config, { answers: {} }) : evaluateCodeExercise(config, { source: config.file.starter_source });
-  if (starter.passed) problems.push("starter_source đã vượt mọi test bắt buộc");
+
   return problems;
 }
 
@@ -706,10 +863,24 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
   const out = output as LessonOutput;
   const { refs, index } = findLesson(ctx, lessonId);
   const ref = refs[index];
-  const format = ref.lesson.type;
-  const problems: string[] = [];
   const research = ctx.outputs.research as ResearchFull;
   const candidates = lessonVideoCandidates(research, ref.lesson.source_ids);
+  const oembedCache = new Map<string, Promise<YoutubeOEmbed | null>>();
+
+  let isVideoArticleFallback = false;
+  if (ref.lesson.type === "video" && out.article != null && out.video == null) {
+    const usable = await usableLessonVideoCandidates(candidates, fetchFn, oembedCache);
+    if (usable.length > 0) {
+      return {
+        ok: false,
+        reason: `Lesson video "${lessonId}" vẫn còn video ứng viên dùng được trong research (${usable.map((c) => c.url).join(", ")}); không được tự ý chuyển sang article.`,
+      };
+    }
+    isVideoArticleFallback = true;
+  }
+
+  const format: LessonFormat = isVideoArticleFallback ? "article" : ref.lesson.type;
+  const problems: string[] = [];
   const candidateById = new Map<string, ResearchVideoCandidate>();
   for (const candidate of candidates) {
     const id = getYoutubeVideoId(candidate.url);
@@ -738,7 +909,7 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
   const allowed = new Set(ref.lesson.source_ids);
   const strays = out.source_ids.filter((id) => !allowed.has(id));
   if (strays.length > 0) problems.push(`source_ids ngoài curriculum: ${strays.join(", ")}`);
-  if (format !== "video" && out.source_ids.length === 0) problems.push("thiếu source_ids");
+  if (out.source_ids.length === 0) problems.push("thiếu source_ids");
 
   const readUrls = new Set(research.sources.filter((s) => s.access === "read").map((s) => s.url));
   for (const [index, r] of out.resources.entries()) {
@@ -756,7 +927,9 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
   // Without the suggested videos: the resources the code builds from them are not text the model wrote.
   const draft = toLessonDraft(ref, { ...out, suggested_videos: [] }, locale, research);
   for (const { field, code } of validateLesson(draft.lesson)) problems.push(`${field}: ${code}`);
-  if (format === "article") problems.push(...diagramProblems(out.article!.description_markdown, out.article!.diagrams));
+  if (format === "article") {
+    problems.push(...diagramProblems(out.article!.description_markdown, out.article!.diagrams));
+  }
   if (format === "quiz") problems.push(...quizProblems(out.quiz!, draft));
   if (format === "code_exercise") {
     problems.push(...codeProblems(
@@ -767,14 +940,10 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
   }
   if (format === "practice") {
     const p = out.practice!;
-    if (p.mode === "instruction" && p.checklist_items.length > 0) problems.push("mode instruction không có checklist_items");
-    if (ref.lesson.purpose === "optional_hands_on" && p.mode !== "instruction") {
-      problems.push("lesson optional_hands_on phải là practice mode instruction");
-    }
-    // The diagnostic is a self-check whose review material is its resources.
-    if (ref.lesson.purpose === "diagnostic") {
-      if (p.mode !== "checklist") problems.push("lesson diagnostic phải là practice checklist");
-      if (out.resources.length === 0) problems.push("lesson diagnostic cần resources là tài liệu ôn/đối chiếu");
+    if (p.mode !== "instruction") problems.push("practice của khóa AI chỉ hỗ trợ mode instruction");
+    if (p.checklist_items.length > 0) problems.push("mode instruction không có checklist_items");
+    if (ref.lesson.purpose !== "optional_hands_on") {
+      problems.push("lesson practice phải có purpose optional_hands_on");
     }
   }
   if (problems.length > 0) return { ok: false, reason: `Lesson ${lessonId} chưa hợp lệ: ${list(problems)}` };
@@ -789,12 +958,28 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
     targets.push({ videoId, candidate, location });
   };
   if (format === "video") {
-    const id = getYoutubeVideoId(out.video!.youtube_url)!; // validateLesson accepted the URL
-    const candidate = candidateById.get(id);
-    if (!candidate) problems.push(`video ${id} không có trong research.videos phù hợp với lesson`);
-    else {
-      addTarget(id, candidate, "lesson.youtube_url");
-      requiredIds.add(id);
+    const v = out.video;
+    if (!v) {
+      problems.push("thiếu khối video cho lesson video");
+    } else {
+      if (v.start_seconds !== 0 || v.end_seconds !== 0) {
+        problems.push("video: start_seconds và end_seconds phải bằng 0 (khóa AI không cắt đoạn video)");
+      }
+      if (!v.description_markdown.trim()) {
+        problems.push("video: thiếu description_markdown (mục tiêu, ý chính)");
+      } else if (/self-check|checklist|tự kiểm tra|tự đánh giá|tự thử|self-assessment/i.test(v.description_markdown)) {
+        problems.push("video: không dùng checklist hoặc tự đánh giá dưới video");
+      }
+      const id = getYoutubeVideoId(v.youtube_url);
+      const candidate = id ? candidateById.get(id) : null;
+      if (!candidate) {
+        problems.push(`video ${id ?? v.youtube_url} không có trong research.videos phù hợp với lesson`);
+      } else if (!isAllowedChannel(candidate.channel)) {
+        problems.push(`video ${id} thuộc kênh "${candidate.channel}" không nằm trong danh sách kênh cho phép`);
+      } else {
+        addTarget(id!, candidate, "lesson.youtube_url");
+        requiredIds.add(id!);
+      }
     }
   }
   for (const field of learnerTextFields(draft)) {
@@ -817,24 +1002,41 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
 
   const unusable = new Set<string>();
   for (const { videoId, candidate, location } of targets) {
-    const embed = await youtubeEmbeddable(videoId, fetchFn);
+    let embedPromise = oembedCache.get(videoId);
+    if (!embedPromise) {
+      embedPromise = youtubeEmbeddable(videoId, fetchFn);
+      oembedCache.set(videoId, embedPromise);
+    }
+    const embed = await embedPromise;
+    const expected = findAllowedChannelByName(candidate.channel);
     const problem = !embed
-      ? `${location}: video ${videoId} không tồn tại, không nhúng được hoặc thiếu author_name (oEmbed)`
-      : channelKey(embed.author_name) !== channelKey(candidate.channel)
-      ? `${location}: author_name không khớp channel research cho video ${videoId}`
+      ? `${location}: video ${videoId} không tồn tại, không nhúng được hoặc thiếu author_name/author_url (oEmbed)`
+      : !expected || embed.handle.toLowerCase() !== expected.handle.toLowerCase()
+      ? `${location}: handle kênh không khớp channel research cho video ${videoId} (nhận "${embed.author_name}" ${embed.handle}, cần "${candidate.channel}" ${expected?.handle ?? "unknown"})`
       : null;
     if (!problem) continue;
-    if (requiredIds.has(videoId)) problems.push(problem);
-    else {
+    if (requiredIds.has(videoId)) {
+      if (format === "video" && location === "lesson.youtube_url") {
+        const usable = await usableLessonVideoCandidates(candidates, fetchFn, oembedCache);
+        if (usable.length === 0) {
+          problems.push(`${problem}. Lesson video "${lessonId}" không có video ứng viên nào có thể nhúng được qua oEmbed; hãy chuyển sang viết bài dạng article với đầy đủ khối article và video: null`);
+        } else {
+          problems.push(`${problem}. Hãy chọn video ứng viên khác trong research có thể nhúng được: ${usable.map((c) => c.url).join(", ")}`);
+        }
+      } else {
+        problems.push(problem);
+      }
+    } else {
       unusable.add(videoId);
       droppedVideos.push(problem);
     }
   }
   if (problems.length > 0) return { ok: false, reason: `Lesson ${lessonId} chưa hợp lệ: ${list(problems)}` };
   const note = droppedVideos.length > 0 ? ` Bỏ video xem thêm: ${list(droppedVideos)}.` : "";
+  const formatLabel = isVideoArticleFallback ? "article (chuyển từ video)" : format;
   return {
     ok: true,
-    summary: `${format} ${lessonId} đạt (${draft.lesson.title}).${note}`,
+    summary: `${formatLabel} ${lessonId} đạt (${draft.lesson.title}).${note}`,
     ...(droppedVideos.length > 0 ? { normalizedOutput: { ...out, suggested_videos: keptVideoIds.filter((id) => !unusable.has(id)) } } : {}),
   };
 }

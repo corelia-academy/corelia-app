@@ -9,7 +9,7 @@ export function lesson(id: string, type: string, extra: object = {}) {
     title: id,
     description: "d",
     type,
-    purpose: "explanation",
+    purpose: type === "practice" ? "optional_hands_on" : "explanation",
     prerequisite_lesson_ids: [],
     outcome_ids: ["o1"],
     prerequisites: [],
@@ -25,7 +25,7 @@ export const curriculum = {
   outcomes: [{ id: "o1", text: "Làm được X" }, { id: "o2", text: "Làm được Y" }],
   modules: [
     { id: "m1", title: "Module 1", description: "md", lessons: [lesson("l-art", "article"), lesson("l-quiz", "quiz", { pass_threshold: 70, review_lesson_ids: ["l-art"] })] },
-    { id: "m2", title: "Module 2", description: "md", lessons: [lesson("l-code", "code_exercise", { source_ids: ["s1", "s2"] }), lesson("l-prac", "practice"), lesson("l-vid", "video", { source_ids: ["s2"] })] },
+    { id: "m2", title: "Module 2", description: "md", lessons: [lesson("l-code", "code_exercise", { source_ids: ["s1", "s2"] }), lesson("l-prac", "practice", { purpose: "optional_hands_on" }), lesson("l-vid", "video", { source_ids: ["s2"] })] },
   ],
 };
 
@@ -44,7 +44,7 @@ export const research = {
       topic: "t1",
       url: "https://youtu.be/aaaaaaaaaaa",
       title: "Worked example for t1",
-      channel: "Rust Education",
+      channel: "Let's Get Rusty",
       channel_basis: "A read channel page establishes the educational focus.",
       evidence_source_ids: ["s1"],
     },
@@ -52,7 +52,7 @@ export const research = {
       topic: "t2",
       url: "https://youtu.be/bbbbbbbbbbb",
       title: "Worked example for t2",
-      channel: "Rust Education",
+      channel: "Let's Get Rusty",
       channel_basis: "A read channel page establishes the educational focus.",
       evidence_source_ids: ["s2"],
     },
@@ -105,6 +105,11 @@ export const question = (over: object = {}) => ({
   explanation: "B đúng vì ...; A sai vì ...; C sai vì ...",
   ...over,
 });
+export const makeFiveQuestions = (over: object = {}) =>
+  Array.from({ length: 5 }, (_, i) =>
+    question({ question: `Điều gì xảy ra ở câu ${i + 1}?`, ...over })
+  );
+export const fiveQuestions = makeFiveQuestions();
 export const test = (over: object = {}) => ({
   id: "sum",
   type: "contains",
@@ -136,3 +141,23 @@ export const fillCode = {
   tests: [],
 };
 
+export const twoStageCode = {
+  instructions: "Thực hành Rust.",
+  language: "rust",
+  part_1: {
+    instructions: "Khai báo biến có thể thay đổi giá trị.",
+    file_path: "lib.rs",
+    starter_source: "let {{blank:kw}} x = 5;",
+    reference_solution: "let mut x = 5;",
+    hints: ["Biến trong Rust mặc định là immutable; cần từ khóa cho phép gán lại."],
+    blanks: [{ id: "kw", accepted_answers: ["mut"], feedback: "Từ khóa này cho phép thay đổi giá trị biến sau khi gán." }],
+  },
+  part_2: {
+    instructions: "Hoàn thành hàm add.",
+    file_path: "lib.rs",
+    starter_source: "pub fn add(a: i32, b: i32) -> i32 { 0 }",
+    reference_solution: "pub fn add(a: i32, b: i32) -> i32 { a + b }",
+    hints: ["Cộng hai số tham số lại với nhau."],
+    tests: [test()],
+  },
+};

@@ -17,6 +17,7 @@ vi.mock("./catalog_research_brief.ts", () => ({ loadCatalogResearchForBrief: moc
 vi.mock("./catalog_run.ts", () => ({ advanceCatalogJobs: mocks.advanceCatalogJobs }));
 vi.mock("./drafts.ts", () => ({ purgeExpiredDrafts: mocks.purgeExpiredDrafts }));
 
+import { PROMPT_VERSIONS, promptVersion } from "./prompts.ts";
 import { activePauseDurationMs, advanceRun, handleStudioContinue, handleStudioPause, handleStudioStart, handleStudioTick, loadContext, pausedTickAction, stepRequestFailureMessage, stepRequestSentMessage, stepResponseFailureMessage, tickActionForRun } from "./handlers.ts";
 
 const courseId = "11111111-1111-4111-8111-111111111111";
@@ -525,7 +526,7 @@ describe("paused Studio run tick gating", () => {
           : { data: [], error: null };
       const q: Record<string, any> = {};
       for (const method of ["select", "eq", "is", "order", "limit", "in", "update"]) q[method] = vi.fn(() => q);
-      q.maybeSingle = vi.fn().mockResolvedValue(table === "studio_agent_prompts" ? { data: { version: 9, system_prompt: "database prompt row" }, error: null } : { data: null, error: null });
+      q.maybeSingle = vi.fn().mockResolvedValue(table === "studio_agent_prompts" ? { data: { version: PROMPT_VERSIONS["a2-brief"], system_prompt: "database prompt row" }, error: null } : { data: null, error: null });
       q.single = vi.fn().mockResolvedValue({ data: { id: generationId }, error: null });
       q.insert = vi.fn((value: unknown) => {
         if (table === "studio_generations") generationInserts.push(value);
@@ -568,7 +569,7 @@ describe("paused Studio run tick gating", () => {
       });
       expect(continued).toEqual({ step: "brief", action: "submit" });
       expect(generationInserts).toHaveLength(1);
-      expect(generationInserts[0]).toMatchObject({ agent_role: "A2", prompt_version: "a2-brief@v9" });
+      expect(generationInserts[0]).toMatchObject({ agent_role: "A2", prompt_version: promptVersion("a2-brief", PROMPT_VERSIONS["a2-brief"]) });
       expect(submittedInstructions).toEqual(["database prompt row"]);
       expect(fetchMock).toHaveBeenCalledOnce();
       expect(calls).toContain("studio_courses");

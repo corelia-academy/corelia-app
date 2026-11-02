@@ -3,7 +3,7 @@
 
 import { diagramProblems, lessonRefs, lessonVideoCandidates, TransientError, youtubeEmbeddable, type LessonRef } from "./lessons.ts";
 import { evaluateCodeExercise, getYoutubeVideoId, validateCodeConfig, validateLesson, validateQuestion, validateResources } from "./lesson_ports.ts";
-import type { LessonDraft } from "./lesson_types.ts";
+import { MIN_QUIZ_QUESTIONS, type LessonDraft } from "./lesson_types.ts";
 
 interface Provenance {
   model_id: string | null;
@@ -104,7 +104,7 @@ export function structureProblems(curriculum: unknown, research: unknown, record
     const ruleStart = problems.length;
     for (const { field, code } of validateLesson(lesson)) at(`${field}: ${code}`);
     questions.forEach((q, i) => validateQuestion(q).forEach((code) => at(`câu ${i + 1}: ${code}`)));
-    if (cl.type === "quiz" && questions.length === 0) at("quiz không có câu hỏi");
+    if (cl.type === "quiz" && questions.length < MIN_QUIZ_QUESTIONS) at(`quiz phải có ít nhất ${MIN_QUIZ_QUESTIONS} câu hỏi`);
     if (cl.type === "article") for (const p of diagramProblems(lesson.description_markdown ?? "", diagrams)) at(p);
     for (const code of validateResources(lesson.resources ?? [])) at(`resources: ${code}`);
     const candidateById = new Map<string, { title: string; channel: string }>();
@@ -291,8 +291,8 @@ export function journeyProblems(curriculum: unknown, records: Record<string, Les
       const ratio = lesson.quiz_config?.passing_ratio ?? 0.7;
       // Answer every question with its correct option.
       const correct = draft.questions.filter((q) => Number.isInteger(q.correct_index) && q.correct_index >= 0 && q.correct_index < q.options.length).length;
-      if (total === 0) {
-        at(cl.id, "quiz không có câu hỏi");
+      if (total < MIN_QUIZ_QUESTIONS) {
+        at(cl.id, `quiz phải có ít nhất ${MIN_QUIZ_QUESTIONS} câu hỏi`);
         failedQuizzes.push(cl.id);
       } else if (!(ratio >= 0.01 && ratio <= 1)) {
         at(cl.id, `ngưỡng ${ratio} ngoài (0.01, 1]`);
@@ -311,8 +311,16 @@ export function journeyProblems(curriculum: unknown, records: Record<string, Les
         failedCodeExercises.push(cl.id);
       }
       else if (config) {
-        const starter = config.mode === "fill" ? evaluateCodeExercise(config, { answers: {} }) : evaluateCodeExercise(config, { source: config.file.starter_source });
-        if (starter.passed) {
+        let starterPassed = false;
+        if (config.mode === "fill") {
+          starterPassed = evaluateCodeExercise(config, { answers: {} }).passed;
+        } else if (config.mode === "edit") {
+          starterPassed = evaluateCodeExercise(config, { source: config.file.starter_source }).passed;
+        } else if (config.mode === "two_stage") {
+          starterPassed = evaluateCodeExercise(config.parts[0], { answers: {} }).passed ||
+            evaluateCodeExercise(config.parts[1], { source: config.parts[1].file.starter_source }).passed;
+        }
+        if (starterPassed) {
           at(cl.id, "starter_source đã đạt mọi test bắt buộc");
           failedCodeExercises.push(cl.id);
         }
@@ -321,8 +329,12 @@ export function journeyProblems(curriculum: unknown, records: Record<string, Les
     if (cl.type === "practice") {
       practiceTotal++;
       const c = lesson.practice_config;
-      if (c && (c.mode !== "instruction" && c.mode !== "checklist")) {
-        at(cl.id, `practice mode ${String(c.mode)} cần bài nộp`);
+      if (c && c.mode !== "instruction") {
+        if (c.mode === "checklist") {
+          at(cl.id, "practice của khóa AI không hỗ trợ mode checklist");
+        } else {
+          at(cl.id, `practice mode ${String(c.mode)} cần bài nộp`);
+        }
         failedPractices.push(cl.id);
       }
       if (c && (c.requires_review || "submission_fields" in c || "project_steps" in c)) {
