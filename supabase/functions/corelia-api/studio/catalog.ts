@@ -77,11 +77,19 @@ export const CATALOG_SPEC = {
 export const MAX_CATALOG_RESEARCH_ROUNDS = 2;
 
 /** USD per 1M tokens, input / output (docs/stack/0004-llm-provider-and-models.md, list prices). */
+/** Model of step A8 (video segment), a Gemini model: the one place the name is written. */
+export const VIDEO_SEGMENT_MODEL = "gemini-3.8-flash";
+
 export const MODEL_PRICES: Record<string, { input: number; output: number }> = {
   "gpt-6-astra": { input: 10, output: 50 },
   "gpt-6.1-sol": { input: 2, output: 10 },
   "gpt-6.1-terra": { input: 1, output: 5 },
   "gpt-6-luna": { input: 0.1, output: 0.5 },
+  // Input: 0.75 USD per 1M tokens until 31/12/2026, 1.50 from 01/01/2027; the table has no date switch, so the
+  // first price applies. Video input is free while the YouTube URL feature is in preview (per the docs read on
+  // 03/11/2026; not charged here). Output is not in that source: the highest output price of this table is
+  // used as the cap until the official price is confirmed, so the estimate errs high.
+  [VIDEO_SEGMENT_MODEL]: { input: 0.75, output: 50 },
 };
 /** web_search: $10 per 1,000 calls. */
 export const WEB_SEARCH_USD_PER_CALL = 10 / 1000;

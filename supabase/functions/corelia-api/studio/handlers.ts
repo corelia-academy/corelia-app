@@ -3,11 +3,17 @@ import { json } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 import { journeyProblems, linkProblems, structureProblems, type CodeCheck, type LessonRecord } from "./checks.ts";
 import { draftDir, draftPath, renderDiagramPng, FontLoadError, createStorageFontResolver, setFontResolver } from "./diagram_render.ts";
-import type { LessonAction, LessonGeneration } from "./lesson_flow.ts";
+import { acceptedSegment, isFallbackRow, type LessonAction, type LessonGeneration, type VideoPlan } from "./lesson_flow.ts";
+import { callVideoSegment, VIDEO_SEGMENT_TIMEOUT_MS } from "./gemini.ts";
+import { VIDEO_SEGMENT_MODEL } from "./catalog.ts";
+import { PROMPT_VERSIONS } from "./prompts.ts";
+import { judgeCandidate, VIDEO_SEGMENT_CANDIDATE_LIMIT, VIDEO_SEGMENT_MAX_ATTEMPTS, type VideoSegmentCandidate } from "./video_segment.ts";
 import {
   lessonIds,
   lessonRefs,
   lessonRevision,
+  lessonVideoCandidates,
+  usableLessonVideoCandidates,
   curriculumStaleReason,
   hasUnseenBlocking,
   reviewBlocking,
@@ -365,7 +371,8 @@ async function loadCurriculum(db: SupabaseClient, run: RunRow): Promise<unknown>
 // The lessons of the accepted curriculum, their generations of both lesson steps, and the blocking
 // items of the newest accepted review of each lesson.
 async function loadLessons(db: SupabaseClient, run: RunRow) {
-  const ids = lessonIds(await loadCurriculum(db, run));
+  const curriculum = await loadCurriculum(db, run);
+  const ids = lessonIds(curriculum);
   const rows = await db
     .from("studio_generations")
     .select("id,attempt,agent_role,status,provider_request_id,failure_kind,error,created_at,lesson_id,step_key")
@@ -391,7 +398,16 @@ async function loadLessons(db: SupabaseClient, run: RunRow) {
     unseenBlocking[id] = id in previous && hasUnseenBlocking(r.output, previous[id]);
     previous[id] = r.output;
   }
-  return { ids, rows: (rows.data ?? []) as LessonGeneration[], blocking, unseenBlocking };
+  // The video stage (A8) rows: their output carries the segment, and a fallback row ends the stage.
+  const videoRows = await db
+    .from("studio_generations")
+    .select("id,attempt,agent_role,status,provider_request_id,failure_kind,error,created_at,lesson_id,step_key,output")
+    .eq("run_id", run.id)
+    .eq("step_key", "lesson_video")
+    .not("lesson_id", "is", null);
+  if (videoRows.error) throw new Error(videoRows.error.message);
+  const video = await loadVideoPlan(db, run, curriculum);
+  return { ids, rows: [...((rows.data ?? []) as LessonGeneration[]), ...((videoRows.data ?? []) as LessonGeneration[])], blocking, unseenBlocking, video };
 }
 
 // Lessons are independent, so one failing action does not hold back the others; the first error is
@@ -400,8 +416,11 @@ async function runLessonActions(db: SupabaseClient, run: RunRow, actions: Lesson
   let failure: unknown = null;
   for (const a of actions) {
     try {
-      if (a.kind === "submit") await submitStep(db, run, a.step, a.attempt, a.parentId, a.previousError, a.lessonId);
-      else if (a.kind === "poll") await pollStep(db, run, a.step, a.generation, a.generation.provider_request_id ?? "");
+      if (a.kind === "submit" && a.step === "lesson_video") await runVideoSegment(db, run, a.lessonId, a.attempt, a.parentId, a.video!);
+      // Only the two lesson steps reach these branches: the planner sends no poll or submit of lesson_video here.
+      else if (a.kind === "submit") await submitStep(db, run, a.step as "lessons" | "lesson_review", a.attempt, a.parentId, a.previousError, a.lessonId);
+      else if (a.kind === "record_fallback") await recordVideoFallback(db, run, a.lessonId, a.reason);
+      else if (a.kind === "poll") await pollStep(db, run, a.step as "lessons" | "lesson_review", a.generation, a.generation.provider_request_id ?? "");
       else await failGeneration(db, a.generationId, "submitting", "transport", "Gửi yêu cầu tới model bị gián đoạn.");
     } catch (e) {
       console.error("[corelia-api] studio lesson", { run_id: run.id, lesson_id: a.lessonId, error: errorMessage(e) });
@@ -992,6 +1011,193 @@ async function runPublish(db: SupabaseClient, run: RunRow) {
   await addEvent(db, { run_id: run.id, step_key: "publish", attempt: 0, kind: "result", message: `${STEP_LABEL.publish}: đã tạo khóa học ${courseId} (${Object.keys(records).length} lesson).` });
 }
 
+// ---- video stage (step A8) -------------------------------------------------------------------------
+
+/** Output of the latest completed generation of a run-level step (null when there is none). */
+async function latestCompletedOutput(db: SupabaseClient, run: RunRow, step: StepKey): Promise<unknown | null> {
+  const res = await db
+    .from("studio_generations")
+    .select("output")
+    .eq("run_id", run.id)
+    .eq("step_key", step)
+    .eq("status", "completed")
+    .is("lesson_id", null)
+    .order("attempt", { ascending: false })
+    .limit(1);
+  if (res.error) throw new Error(res.error.message);
+  return res.data?.[0]?.output ?? null;
+}
+
+/**
+ * The inputs of the video stage for one tick: for each video lesson the URLs offered to A8 (research
+ * candidates that pass the embed check, at most the candidate limit), the key, and the failure budget.
+ */
+async function loadVideoPlan(db: SupabaseClient, run: RunRow, curriculum: unknown): Promise<VideoPlan> {
+  const research = (await latestCompletedOutput(db, run, "research")) as Parameters<typeof lessonVideoCandidates>[0] | null;
+  const offered: Record<string, string[]> = {};
+  for (const { lesson } of lessonRefs(curriculum)) {
+    if (lesson.type !== "video") continue;
+    const candidates = research ? lessonVideoCandidates(research, lesson.source_ids) : [];
+    const usable = candidates.length > 0 ? await usableLessonVideoCandidates(candidates, fetch) : [];
+    offered[lesson.id] = usable.slice(0, VIDEO_SEGMENT_CANDIDATE_LIMIT).map((c) => c.url);
+  }
+  return {
+    offered,
+    geminiConfigured: Boolean(Deno.env.get(agentKeyEnv("A8"))?.trim()),
+    maxAttempts: VIDEO_SEGMENT_MAX_ATTEMPTS,
+  };
+}
+
+/** The video stage of one lesson, from its A8 rows: the segment A8 chose, or the fallback, or nothing yet. */
+async function loadVideoState(db: SupabaseClient, run: RunRow, lessonId: string): Promise<LessonContext["video"]> {
+  const res = await db
+    .from("studio_generations")
+    .select("attempt,status,failure_kind,error,step_key,output")
+    .eq("run_id", run.id)
+    .eq("lesson_id", lessonId)
+    .eq("step_key", "lesson_video")
+    .order("attempt");
+  if (res.error) throw new Error(res.error.message);
+  const rows = res.data ?? [];
+  const segment = rows.filter((r) => r.status === "completed").map((r) => acceptedSegment(r.output)).filter((s) => s !== null).at(-1) ?? null;
+  const fallback = rows.find((r) => isFallbackRow(r as LessonGeneration))?.error ?? null;
+  return { segment, fallback };
+}
+
+/** What A8 is asked about for one lesson: the lesson's own teaching target and the research points it rests on. */
+async function videoSegmentInput(db: SupabaseClient, run: RunRow, lessonId: string): Promise<Record<string, unknown>> {
+  const curriculum = await loadCurriculum(db, run) as { outcomes: { id: string; text: string }[] };
+  const ref = lessonRefs(curriculum).find((r) => r.lesson.id === lessonId);
+  if (!ref) throw new Error(`lesson ${lessonId} không có trong curriculum`);
+  const research = (await latestCompletedOutput(db, run, "research")) as { topics?: { source_ids: string[]; key_points: { point: string; source_ids: string[] }[] }[] } | null;
+  const mine = new Set(ref.lesson.source_ids);
+  const points = (research?.topics ?? [])
+    .filter((t) => t.source_ids.some((id) => mine.has(id)))
+    .flatMap((t) => t.key_points.filter((k) => k.source_ids.some((id) => mine.has(id))).map((k) => k.point));
+  return {
+    lesson: {
+      id: ref.lesson.id,
+      title: ref.lesson.title,
+      description: ref.lesson.description,
+      purpose: ref.lesson.purpose,
+      outcomes: curriculum.outcomes.filter((o) => ref.lesson.outcome_ids.includes(o.id)).map((o) => o.text),
+      new_knowledge: ref.lesson.new_knowledge,
+      opening_question: ref.lesson.opening_question,
+    },
+    research_points: points,
+  };
+}
+
+/**
+ * One Gemini call for one candidate video of one lesson. The call is synchronous and bounded by
+ * VIDEO_SEGMENT_TIMEOUT_MS; a failed call is recorded with its cause, and the planner retries it under
+ * the run's rules. The answer is judged here: a usable segment is accepted, anything else is recorded.
+ */
+async function runVideoSegment(db: SupabaseClient, run: RunRow, lessonId: string, attempt: number, parentId: string | null, video: { url: string; candidateIndex: number }) {
+  const apiKey = Deno.env.get(agentKeyEnv("A8"))?.trim() ?? "";
+  if (!apiKey) {
+    await recordVideoFallback(db, run, lessonId, "chưa cấu hình Gemini");
+    return;
+  }
+  const prompt = await loadAgentPrompt(db, "a8-video-segment");
+  const input = { ...(await videoSegmentInput(db, run, lessonId)), candidate_index: video.candidateIndex };
+  const label = `Chọn đoạn video ${lessonId}`;
+
+  // The video stage has its own run step row (it is not a step of STEP_ORDER); the generation references it.
+  const step = await db.from("studio_run_steps").upsert({ run_id: run.id, step_key: "lesson_video", state: "active" }, { onConflict: "run_id,step_key", ignoreDuplicates: true });
+  if (step.error) throw new Error(step.error.message);
+  // The insert is the claim: a concurrent tick hitting the same attempt gets 23505 and stops here.
+  const { data: gen, error } = await db
+    .from("studio_generations")
+    .insert({
+      run_id: run.id,
+      step_key: "lesson_video",
+      lesson_id: lessonId,
+      attempt,
+      agent_role: "A8",
+      kind: "research",
+      provider: "google",
+      requested_model_id: VIDEO_SEGMENT_MODEL,
+      prompt_version: prompt.promptVersion,
+      params: { candidate_index: video.candidateIndex, video_url: video.url, timeout_ms: VIDEO_SEGMENT_TIMEOUT_MS },
+      input,
+      parent_generation_id: parentId,
+    })
+    .select("id")
+    .single();
+  if (error?.code === "23505") return;
+  if (error) throw new Error(error.message);
+
+  const result = await callVideoSegment({ apiKey, model: VIDEO_SEGMENT_MODEL, videoUrl: video.url, system: prompt.system, input, timeoutMs: VIDEO_SEGMENT_TIMEOUT_MS });
+  if (!result.ok) {
+    await failGeneration(db, gen.id, "submitting", result.cause, result.error);
+    await addEvent(db, { run_id: run.id, step_key: "lessons", attempt, kind: "error", agent_role: "A8", message: `${label}: ${result.error}` });
+    return;
+  }
+  const judgement = judgeCandidate(result.output as VideoSegmentCandidate, video.url);
+  const output = judgement.accepted
+    ? { accepted: true, segment: judgement.segment, candidate_index: video.candidateIndex, video_url: video.url }
+    : { accepted: false, reason: judgement.reason, candidate_index: video.candidateIndex, video_url: video.url, answer: result.output };
+  const { error: saveError } = await db
+    .from("studio_generations")
+    .update({
+      status: "completed",
+      provider_request_id: `gemini:${gen.id}`,
+      model_id: VIDEO_SEGMENT_MODEL,
+      usage: { input_tokens: result.usage.input_tokens, output_tokens: result.usage.output_tokens, web_search_calls: 0 },
+      output,
+      completed_at: new Date().toISOString(),
+    })
+    .eq("id", gen.id)
+    .eq("status", "submitting");
+  if (saveError) throw new Error(saveError.message);
+  await addEvent(db, {
+    run_id: run.id,
+    step_key: "lessons",
+    attempt,
+    kind: "progress",
+    agent_role: "A8",
+    message: judgement.accepted
+      ? `${label}: đã chọn đoạn ${judgement.segment.start_seconds}s–${judgement.segment.end_seconds}s`
+      : `${label}: ứng viên ${video.candidateIndex + 1} không dùng được (${judgement.reason})`,
+  });
+}
+
+/** The video stage ended without a segment: the lesson is written as an article. Kept as a failed row, so it is read back. */
+async function recordVideoFallback(db: SupabaseClient, run: RunRow, lessonId: string, reason: string) {
+  const { data: latest, error: readError } = await db
+    .from("studio_generations")
+    .select("attempt")
+    .eq("run_id", run.id)
+    .eq("lesson_id", lessonId)
+    .eq("step_key", "lesson_video")
+    .order("attempt", { ascending: false })
+    .limit(1);
+  if (readError) throw new Error(readError.message);
+  const attempt = latest?.[0] ? latest[0].attempt + 1 : 0;
+  const step = await db.from("studio_run_steps").upsert({ run_id: run.id, step_key: "lesson_video", state: "active" }, { onConflict: "run_id,step_key", ignoreDuplicates: true });
+  if (step.error) throw new Error(step.error.message);
+  const { error } = await db.from("studio_generations").insert({
+    run_id: run.id,
+    step_key: "lesson_video",
+    lesson_id: lessonId,
+    attempt,
+    agent_role: "A8",
+    kind: "research",
+    provider: "google",
+    requested_model_id: VIDEO_SEGMENT_MODEL,
+    prompt_version: `a8-video-segment@v${PROMPT_VERSIONS["a8-video-segment"]}`,
+    params: { fallback: true },
+    input: {},
+    status: "failed",
+    failure_kind: "rejected",
+    error: reason,
+    completed_at: new Date().toISOString(),
+  });
+  if (error) throw new Error(error.message);
+  await addEvent(db, { run_id: run.id, step_key: "lessons", attempt, kind: "progress", agent_role: "A8", message: `Lesson ${lessonId}: không có đoạn video dùng được (${reason}); bài sẽ viết dạng article.` });
+}
+
 // Draft/review state of one lesson, from its accepted generations.
 async function loadLessonContext(db: SupabaseClient, run: RunRow, lessonId: string): Promise<LessonContext> {
   const res = await db
@@ -1004,7 +1210,8 @@ async function loadLessonContext(db: SupabaseClient, run: RunRow, lessonId: stri
   if (res.error) throw new Error(res.error.message);
   const drafts = (res.data ?? []).filter((g) => g.step_key === "lessons");
   const reviews = (res.data ?? []).filter((g) => g.step_key === "lesson_review");
-  return { drafts: drafts.length, reviews: reviews.length, draft: drafts.at(-1)?.output ?? null, review: reviews.at(-1)?.output ?? null };
+  const video = await loadVideoState(db, run, lessonId);
+  return { drafts: drafts.length, reviews: reviews.length, draft: drafts.at(-1)?.output ?? null, review: reviews.at(-1)?.output ?? null, video };
 }
 
 // The curriculum asked for evidence it does not have: research runs again. Only the tick that moves the
@@ -1114,6 +1321,10 @@ async function submitStep(
   }
   const prompt = await loadAgentPrompt(db, agent.promptKey);
   const ctx = await loadContext(db, run, step, lessonId);
+  // A video lesson that goes on as an article says so in the run log, once per draft it is written in.
+  if (step === "lessons" && lessonId && ctx.lesson?.video?.fallback) {
+    await addEvent(db, { run_id: run.id, step_key: "lessons", attempt, kind: "progress", agent_role: agent.role, message: `${STEP_LABEL[step]} ${lessonId}: viết dạng article (${ctx.lesson.video.fallback}).` });
+  }
   // A curriculum that cannot be written from or reviewed (no knowledge fields, or no code_mode on a code lesson)
   // stops the run here, before any model call. A thrown error would only be logged on every tick and never shown.
   if (step === "curriculum_review" || step === "lessons" || step === "lesson_review") {

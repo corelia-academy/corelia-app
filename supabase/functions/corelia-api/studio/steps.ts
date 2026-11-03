@@ -1,4 +1,4 @@
-import { LESSONS_PER_TICK, planLessons, type LessonAction, type LessonGeneration } from "./lesson_flow.ts";
+import { LESSONS_PER_TICK, planLessons, type LessonAction, type LessonGeneration, type VideoPlan } from "./lesson_flow.ts";
 import { acceptLessonReview, LESSON_REVIEW_SCHEMA } from "./lesson_review.ts";
 import {
   acceptLesson,
@@ -84,10 +84,12 @@ export const AGENT_NAME: Record<AgentRole, string> = {
   A5: "LESSON",
   A6: "LESSON_REVIEW",
   A7: "TRANSLATE",
+  A8: "VIDEO",
 };
 
-/** Env var holding the OpenAI key of each agent, so usage and billing are tracked per agent. */
+/** Env var holding the key of each agent, so usage and billing are tracked per agent. A8 uses Gemini; the others use OpenAI. */
 export function agentKeyEnv(role: AgentRole): string {
+  if (role === "A8") return "CORELIA_STUDIO_A8_VIDEO_GEMINI_API_KEY";
   return `CORELIA_STUDIO_${role}_${AGENT_NAME[role]}_OPENAI_API_KEY`;
 }
 
@@ -1337,7 +1339,7 @@ export function planRun(input: {
    * Curriculum lessons with their generations of both lesson steps and the blocking items of each
    * lesson's newest accepted review; required while the step is `lessons` or `lesson_review`.
    */
-  lessons?: { ids: string[]; rows: LessonGeneration[]; blocking: Record<string, string[]>; unseenBlocking?: Record<string, boolean> };
+  lessons?: { ids: string[]; rows: LessonGeneration[]; blocking: Record<string, string[]>; unseenBlocking?: Record<string, boolean>; video: VideoPlan };
 }): { step: StepKey | null; action: TickAction } {
   // Runs already in progress when step 0 was introduced have no row for it. Leave them on their
   // existing step sequence rather than starting A1 halfway through a run.
@@ -1379,6 +1381,7 @@ export function planRun(input: {
       rows: input.lessons.rows,
       blocking: input.lessons.blocking,
       unseenBlocking: input.lessons.unseenBlocking,
+      video: input.lessons.video,
       now: input.now,
       maxAttempts: { lessons: STEP_SPECS.lessons!.maxAttempts, lesson_review: STEP_SPECS.lesson_review!.maxAttempts },
       submitStaleMs: SUBMIT_STALE_MS,

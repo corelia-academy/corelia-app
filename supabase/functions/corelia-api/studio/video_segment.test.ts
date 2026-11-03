@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   candidateProblem,
-  chooseVideoSegment,
+  judgeCandidate,
   VIDEO_SEGMENT_MAX_SECONDS,
   VIDEO_WHOLE_MAX_SECONDS,
   videoBlockMismatch,
@@ -25,10 +25,23 @@ const candidate = (over: Partial<VideoSegmentCandidate> = {}): VideoSegmentCandi
 });
 
 describe("studio video segment rules (A8)", () => {
-  it("chooses the first candidate that passes every rule, in A8's order", () => {
-    const choice = chooseVideoSegment([candidate({ fits: false }), candidate({ video_url: B, start_seconds: 0, end_seconds: 300, mode: "whole" })], [A, B]);
-    expect(choice).toMatchObject({ ok: true, segment: { video_url: B, mode: "whole", start_seconds: 0, end_seconds: 300 } });
-    if (choice.ok) expect(choice.rejected).toEqual([`${A}: không khớp outcome của bài`]);
+  it("accepts a candidate that passes every rule, and returns the segment with the offered URL", () => {
+    const j = judgeCandidate(candidate({ mode: "whole", start_seconds: 0, end_seconds: 300 }), A);
+    expect(j).toEqual({
+      accepted: true,
+      segment: { video_url: A, mode: "whole", start_seconds: 0, end_seconds: 300, key_points: points },
+    });
+  });
+
+  it("refuses an answer about a different video than the one A8 was given", () => {
+    expect(judgeCandidate(candidate({ video_url: B }), A)).toEqual({
+      accepted: false,
+      reason: "A8 trả lời về một video khác video được đưa",
+    });
+  });
+
+  it("refuses a candidate that does not fit the outcome, with the reason A8 gave the rule", () => {
+    expect(judgeCandidate(candidate({ fits: false }), A)).toEqual({ accepted: false, reason: "không khớp outcome của bài" });
   });
 
   it("refuses a segment that needs earlier parts of the video", () => {
@@ -56,27 +69,13 @@ describe("studio video segment rules (A8)", () => {
   it("refuses an end past the known length of the video, and skips that check when the length is unknown", () => {
     expect(candidateProblem(candidate({ end_seconds: 480 }), 400)).toBe("mốc kết thúc 480s vượt độ dài video 400s");
     expect(candidateProblem(candidate({ end_seconds: 480 }), undefined)).toBeNull();
+    expect(judgeCandidate(candidate({ end_seconds: 480 }), A, 400)).toEqual({ accepted: false, reason: "mốc kết thúc 480s vượt độ dài video 400s" });
   });
 
   it("needs three to five non-empty key points", () => {
     expect(candidateProblem(candidate({ key_points: ["a", "b"] }), undefined)).toBe("cần 3–5 ý chính, có 2");
     expect(candidateProblem(candidate({ key_points: ["a", "b", "c", "d", "e", "f"] }), undefined)).toBe("cần 3–5 ý chính, có 6");
     expect(candidateProblem(candidate({ key_points: ["a", "b", "  "] }), undefined)).toBe("cần 3–5 ý chính, có 2");
-  });
-
-  it("rejects an answer about a video the lesson was not offered, and offers only the first two candidates", () => {
-    const other = "https://www.youtube.com/watch?v=ccccccccccc";
-    expect(chooseVideoSegment([candidate({ video_url: other })], [A, B])).toMatchObject({ ok: false, rejected: [`${other}: không phải video được đưa cho A8`] });
-    // A third URL in the research is never offered, so a choice of it is refused.
-    const third = "https://www.youtube.com/watch?v=ddddddddddd";
-    expect(chooseVideoSegment([candidate({ video_url: third })], [A, B, third]).ok).toBe(false);
-  });
-
-  it("reports why nothing was usable, and says so when A8 gave no candidate", () => {
-    const none = chooseVideoSegment([], [A]);
-    expect(none).toEqual({ ok: false, reason: "A8 không trả ứng viên nào", rejected: [] });
-    const bad = chooseVideoSegment([candidate({ fits: false })], [A]);
-    expect(bad).toMatchObject({ ok: false, reason: expect.stringContaining("không video nào đạt") });
   });
 
   it("checks that the lesson video block is exactly the chosen segment", () => {

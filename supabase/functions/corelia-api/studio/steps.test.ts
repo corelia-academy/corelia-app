@@ -476,6 +476,7 @@ describe("studio step owners", () => {
     expect(agentKeyEnv("A1")).toBe("CORELIA_STUDIO_A1_CATALOG_RESEARCH_OPENAI_API_KEY");
     expect(agentKeyEnv("A4")).toBe("CORELIA_STUDIO_A4_CURRICULUM_REVIEW_OPENAI_API_KEY");
     expect(agentKeyEnv("A7")).toBe("CORELIA_STUDIO_A7_TRANSLATE_OPENAI_API_KEY");
+    expect(agentKeyEnv("A8")).toBe("CORELIA_STUDIO_A8_VIDEO_GEMINI_API_KEY");
   });
 });
 

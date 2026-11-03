@@ -134,13 +134,13 @@ describe("A1 catalog research in the A2 brief", () => {
   });
 
   it("keeps A5 and A6 package-version decisions bounded by research evidence", () => {
-    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v30");
+    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v31");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("tool_versions của research chỉ ghi mức tối thiểu hoặc phiên bản theo nguồn");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("nếu chỉ nêu mức tối thiểu, ghi rõ đó là mức tối thiểu và để lệnh không ghim phiên bản");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("Không tự suy ra phiên bản.");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("open_questions blocking = false ghi phiên bản chưa xác minh");
 
-    expect(SEEDED_PROMPTS["a6-lesson-review"].version).toBe("v28");
+    expect(SEEDED_PROMPTS["a6-lesson-review"].version).toBe("v29");
     const a5Prompt = SEEDED_PROMPTS["a5-lesson"].system;
     expect(a5Prompt).toContain("Mỗi câu phải tự đủ ngữ cảnh");
     expect(a5Prompt).toContain("Nhãn của các node không được trùng nhau");
@@ -165,8 +165,8 @@ describe("A1 catalog research in the A2 brief", () => {
 
     expect(a3.version).toBe("v27");
     expect(a4.version).toBe("v24");
-    expect(a5.version).toBe("v30");
-    expect(a6.version).toBe("v28");
+    expect(a5.version).toBe("v31");
+    expect(a6.version).toBe("v29");
     expect(a6.system).toContain("so khớp chuỗi cũng không loại được mọi mã sai");
     expect(a6.system).toContain("Cách viết chỉ khác về hình thức và ít gặp ở trình độ của bài");
     expect(a2.version).toBe("v16");
@@ -206,7 +206,7 @@ describe("A1 catalog research in the A2 brief", () => {
     expect(a5.system).toContain("description_markdown dưới video bắt buộc có cấu trúc");
     expect(a5.system).toContain("không dùng web_search để tìm video");
     expect(a5.system).toContain("không đưa video vào completion_rule hay checklist");
-    expect(a5.system).toContain("start_seconds và end_seconds bắt buộc để 0");
+    expect(a5.system).toContain("start_seconds và end_seconds bằng đúng start_seconds và end_seconds của đoạn");
     expect(a2.system).toContain("allowed_channels");
     expect(a5.system).toContain("Nội dung video không phải bằng chứng");
     expect(a5.system).toContain("code_language_guide nhận trong đầu vào");

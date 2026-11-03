@@ -9,8 +9,10 @@ import { getYoutubeVideoId } from "./lesson_ports.ts";
 export const VIDEO_SEGMENT_MAX_SECONDS = 900;
 /** Longest whole video (mode "whole") a lesson may play, in seconds. */
 export const VIDEO_WHOLE_MAX_SECONDS = 1200;
-/** Candidates given to A8 for one lesson; research may list more, the lesson only ever sees these. */
+/** Candidates given to A8 for one lesson, in research order; research may list more. */
 export const VIDEO_SEGMENT_CANDIDATE_LIMIT = 2;
+/** Failed calls allowed in a row for one candidate (transport or provider failures) before the video stage falls back. */
+export const VIDEO_SEGMENT_MAX_ATTEMPTS = 2;
 export const VIDEO_KEY_POINTS_MIN = 3;
 export const VIDEO_KEY_POINTS_MAX = 5;
 
@@ -36,10 +38,6 @@ export interface ChosenVideoSegment {
   end_seconds: number;
   key_points: string[];
 }
-
-export type VideoSegmentChoice =
-  | { ok: true; segment: ChosenVideoSegment; rejected: string[] }
-  | { ok: false; reason: string; rejected: string[] };
 
 function isWholeSeconds(value: unknown): value is number {
   return typeof value === "number" && Number.isInteger(value) && value >= 0;
@@ -74,44 +72,33 @@ export function candidateProblem(
   return null;
 }
 
+/** Verdict on one candidate: the segment A5 will write from, or why it cannot be used. */
+export type VideoJudgement =
+  | { accepted: true; segment: ChosenVideoSegment }
+  | { accepted: false; reason: string };
+
 /**
- * The first candidate that passes every rule, in the order A8 gave them. Only URLs the lesson was
- * offered count: an answer about any other video is rejected, not used. `durations` maps a video URL to
- * its known length in seconds.
+ * Judges the answer A8 gave for the one video it was asked about. A different video in the answer is
+ * refused, and so is any candidate that breaks a rule of candidateProblem. The known length, when there
+ * is one, bounds the end of the segment.
  */
-export function chooseVideoSegment(
-  candidates: VideoSegmentCandidate[],
-  offeredUrls: string[],
-  durations: Record<string, number> = {},
-): VideoSegmentChoice {
-  const offered = new Set(offeredUrls.slice(0, VIDEO_SEGMENT_CANDIDATE_LIMIT));
-  const rejected: string[] = [];
-  for (const candidate of candidates) {
-    if (!offered.has(candidate.video_url)) {
-      rejected.push(`${candidate.video_url}: không phải video được đưa cho A8`);
-      continue;
-    }
-    const problem = candidateProblem(candidate, durations[candidate.video_url]);
-    if (problem) {
-      rejected.push(`${candidate.video_url}: ${problem}`);
-      continue;
-    }
-    return {
-      ok: true,
-      rejected,
-      segment: {
-        video_url: candidate.video_url,
-        mode: candidate.mode,
-        start_seconds: candidate.start_seconds,
-        end_seconds: candidate.end_seconds,
-        key_points: candidate.key_points.map((p) => p.trim()).filter((p) => p.length > 0),
-      },
-    };
+export function judgeCandidate(candidate: VideoSegmentCandidate, offeredUrl: string, durationSeconds?: number): VideoJudgement {
+  const offeredId = getYoutubeVideoId(offeredUrl);
+  if (!offeredId || getYoutubeVideoId(candidate.video_url) !== offeredId) {
+    return { accepted: false, reason: "A8 trả lời về một video khác video được đưa" };
   }
-  const reason = rejected.length > 0
-    ? `không video nào đạt: ${rejected.join("; ")}`
-    : "A8 không trả ứng viên nào";
-  return { ok: false, reason, rejected };
+  const problem = candidateProblem(candidate, durationSeconds);
+  if (problem) return { accepted: false, reason: problem };
+  return {
+    accepted: true,
+    segment: {
+      video_url: offeredUrl,
+      mode: candidate.mode,
+      start_seconds: candidate.start_seconds,
+      end_seconds: candidate.end_seconds,
+      key_points: candidate.key_points.map((p) => p.trim()).filter((p) => p.length > 0),
+    },
+  };
 }
 
 /**

@@ -13,6 +13,7 @@ describe("Studio prompt seeds", () => {
       "a5-lesson": "A5",
       "a6-lesson-review": "A6",
       "a7-translate": "A7",
+      "a8-video-segment": "A8",
     };
     expect(Object.keys(SEEDED_PROMPTS).sort()).toEqual(Object.keys(PROMPT_VERSIONS).sort());
     for (const key of Object.keys(PROMPT_VERSIONS) as PromptKey[]) {

@@ -12,7 +12,9 @@ describe("Studio staging secret contract", () => {
     const configured = [...requiredBlock![1]!.matchAll(/^\s*(CORELIA_STUDIO_[A-Z0-9_]+)\s*$/gm)]
       .map(([, name]) => name!);
     const openAiKeys = configured.filter((name) => name.endsWith("_OPENAI_API_KEY"));
-    const roles = Object.keys(AGENT_NAME) as AgentRole[];
+    // A8 (video segment) uses Gemini and an optional key: without it, video lessons are written as articles.
+    const roles = (Object.keys(AGENT_NAME) as AgentRole[]).filter((role) => role !== "A8");
+    expect(agentKeyEnv("A8")).toBe("CORELIA_STUDIO_A8_VIDEO_GEMINI_API_KEY");
 
     expect(configured).toHaveLength(8);
     expect(new Set(configured).size).toBe(8);

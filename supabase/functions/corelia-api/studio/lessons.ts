@@ -30,6 +30,7 @@ import {
 } from "./channels.ts";
 import { PLATFORM_FORMAT_GUIDE } from "./formats.ts";
 import { normalizeReviewIssues } from "./review_policy.ts";
+import { videoBlockMismatch, type ChosenVideoSegment } from "./video_segment.ts";
 
 // ---- curriculum access -------------------------------------------------------------------------
 
@@ -401,6 +402,11 @@ export interface LessonContext {
   reviews: number;
   draft: unknown | null;
   review: unknown | null;
+  /**
+   * The video stage of a video lesson (step A8): the segment A8 chose, or the reason the lesson is written as
+   * an article. Absent for lessons without a video stage, which keep the earlier oEmbed rule.
+   */
+  video?: { segment: ChosenVideoSegment | null; fallback: string | null } | null;
 }
 
 /** Blocking items of an A6 review output. */
@@ -465,7 +471,9 @@ export function lessonBase(ctx: RunContext, lessonId: string, draftOverride?: un
   }
   const revision = lessonRevision(ctx.lesson);
   const draft = draftOverride ?? (revision ? ctx.lesson?.draft : undefined);
-  const effectiveFormat = effectiveLessonFormat(lesson, draft);
+  const videoState = ctx.lesson?.video ?? null;
+  // A video lesson whose video stage found no usable segment is written as an article.
+  const effectiveFormat: LessonFormat = lesson.type === "video" && videoState?.fallback ? "article" : effectiveLessonFormat(lesson, draft);
   const effectiveLesson: CurriculumLesson = effectiveFormat === lesson.type
     ? lesson
     : { ...lesson, type: effectiveFormat };
@@ -475,6 +483,11 @@ export function lessonBase(ctx: RunContext, lessonId: string, draftOverride?: un
   const mine = new Set(lesson.source_ids);
   const touches = (ids: string[]) => ids.some((id) => mine.has(id));
   const neighbour = (r: LessonRef | undefined) => r && { id: r.lesson.id, title: r.lesson.title, purpose: r.lesson.purpose, type: r.lesson.type };
+  // The video stage's result for this lesson: the segment A5 must use, or the reason it is an article.
+  const segment = videoState?.segment ?? null;
+  const videoStageInput = segment
+    ? { video_segment: { video_url: segment.video_url, mode: segment.mode, start_seconds: segment.start_seconds, end_seconds: segment.end_seconds, key_points: segment.key_points } }
+    : videoState?.fallback ? { video_fallback: videoState.fallback } : {};
   return {
     ref: refs[index],
     effectiveFormat,
@@ -524,6 +537,7 @@ export function lessonBase(ctx: RunContext, lessonId: string, draftOverride?: un
       }),
       // The recap this lesson writes, if it carries one (decision 03/11/2026): none for most lessons.
       recap_to_write: recapCarriers(curriculum).get(lessonId) ?? [],
+      ...videoStageInput,
     },
   };
 }
@@ -579,7 +593,7 @@ export function checksAlreadyRun(format: LessonFormat, codeLanguage: EnabledCode
       "Đã kiểm lộ đáp án dạng định danh nguyên từ trong hints, feedback, failure_message và hint của test theo accepted_answers/value của test contains.",
     ],
     practice: ["Chỉ mode instruction, không bài nộp; không checklist."],
-    video: ["Video ID thuộc ứng viên research của lesson, oEmbed trả 200 và handle kênh khớp channel ứng viên. CHƯA kiểm tra nội dung, độ dài hay ngôn ngữ video."],
+    video: ["Video ID thuộc ứng viên research của lesson, oEmbed trả 200 và handle kênh khớp channel ứng viên; youtube_url, start_seconds và end_seconds khớp đúng đoạn A8 đã chọn. CHƯA kiểm tra nội dung video: key_points của A8 là căn cứ duy nhất về nội dung đoạn."],
   };
   return [...common, ...byFormat[format]];
 }
@@ -962,16 +976,30 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
   const candidates = lessonVideoCandidates(research, ref.lesson.source_ids);
   const oembedCache = new Map<string, Promise<YoutubeOEmbed | null>>();
 
+  const videoState = ctx.lesson?.video ?? null;
+  const segment = videoState?.segment ?? null;
   let isVideoArticleFallback = false;
   if (ref.lesson.type === "video" && out.article != null && out.video == null) {
-    const usable = await usableLessonVideoCandidates(candidates, fetchFn, oembedCache);
-    if (usable.length > 0) {
-      return {
-        ok: false,
-        reason: `Lesson video "${lessonId}" vẫn còn video ứng viên dùng được trong research (${usable.map((c) => c.url).join(", ")}); không được tự ý chuyển sang article.`,
-      };
+    if (videoState) {
+      // With a video stage, the choice is A8's: a chosen segment must be written as video, and an article
+      // is written only when A8 found no usable segment.
+      if (segment) {
+        return { ok: false, reason: `Lesson video "${lessonId}" có đoạn A8 đã chọn; phải viết khối video đúng đoạn đó, không chuyển sang article.` };
+      }
+      if (!videoState.fallback) {
+        return { ok: false, reason: `Lesson video "${lessonId}" chưa có kết quả chọn đoạn video (A8); không được chuyển sang article.` };
+      }
+      isVideoArticleFallback = true;
+    } else {
+      const usable = await usableLessonVideoCandidates(candidates, fetchFn, oembedCache);
+      if (usable.length > 0) {
+        return {
+          ok: false,
+          reason: `Lesson video "${lessonId}" vẫn còn video ứng viên dùng được trong research (${usable.map((c) => c.url).join(", ")}); không được tự ý chuyển sang article.`,
+        };
+      }
+      isVideoArticleFallback = true;
     }
-    isVideoArticleFallback = true;
   }
 
   const format: LessonFormat = isVideoArticleFallback ? "article" : ref.lesson.type;
@@ -1080,7 +1108,13 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
     if (!v) {
       problems.push("thiếu khối video cho lesson video");
     } else {
-      if (v.start_seconds !== 0 || v.end_seconds !== 0) {
+      if (segment) {
+        // The video is the segment A8 chose, cut exactly as it chose (a whole video keeps its real end).
+        const mismatch = videoBlockMismatch(v, segment);
+        if (mismatch) problems.push(`video: ${mismatch}`);
+      } else if (videoState) {
+        problems.push("video: không có đoạn A8 để viết khối video; hãy viết article");
+      } else if (v.start_seconds !== 0 || v.end_seconds !== 0) {
         problems.push("video: start_seconds và end_seconds phải bằng 0 (khóa AI không cắt đoạn video)");
       }
       if (!v.description_markdown.trim()) {

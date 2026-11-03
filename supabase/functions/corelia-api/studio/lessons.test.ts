@@ -896,3 +896,35 @@ describe("studio lessons: knowledge chain, length, ID and code_mode checks (A5 v
     expect(() => buildLessonInput(staleCtx, "l-art")).toThrow(STALE_KNOWLEDGE_MESSAGE);
   });
 });
+
+describe("studio lessons: the video stage decides the segment (A8)", () => {
+  const segment = { video_url: "https://youtu.be/bbbbbbbbbbb", mode: "segment" as const, start_seconds: 30, end_seconds: 200, key_points: ["one", "two", "three"] };
+  const withVideoState = (video: { segment: typeof segment | null; fallback: string | null } | null) =>
+    ({ ...ctx, lesson: { drafts: 0, reviews: 0, draft: null, review: null, video } }) as typeof ctx;
+  const description = "## Mục tiêu\n\nHiểu Y.\n\n## Ý chính\n\n- Ý 1\n- Ý 2\n- Ý 3\n\nVideo từ kênh Let's Get Rusty.";
+  const videoBlock = (over: object = {}) => ({
+    source_ids: ["s2"],
+    video: { youtube_url: "https://youtu.be/bbbbbbbbbbb", start_seconds: 30, end_seconds: 200, description_markdown: description, ...over },
+  });
+
+  it("accepts a video block that is exactly the chosen segment", async () => {
+    expect(await reason("l-vid", videoBlock(), ok(), withVideoState({ segment, fallback: null }))).toBe("");
+  });
+
+  it("refuses a video block whose start or end is not the chosen segment's", async () => {
+    expect(await reason("l-vid", videoBlock({ start_seconds: 0 }), ok(), withVideoState({ segment, fallback: null }))).toContain("start_seconds 0 phải bằng 30");
+    expect(await reason("l-vid", videoBlock({ end_seconds: 0 }), ok(), withVideoState({ segment, fallback: null }))).toContain("end_seconds 0 phải bằng 200");
+  });
+
+  it("refuses an article when A8 chose a segment, and accepts an article when A8 found none", async () => {
+    const article_ = { source_ids: ["s2"], article: { description_markdown: "## Biên dịch\n\nXem ![sơ đồ](diagram:d1).", diagrams: [diagram] }, video: null };
+    expect(await reason("l-vid", article_, ok(), withVideoState({ segment, fallback: null }))).toContain("có đoạn A8 đã chọn");
+    expect(await reason("l-vid", article_, ok(), withVideoState({ segment: null, fallback: "không đoạn nào trong 2 video đạt" }))).toBe("");
+  });
+
+  it("refuses a video block when A8 found no segment, and an article when no outcome of the stage is recorded", async () => {
+    expect(await reason("l-vid", videoBlock(), ok(), withVideoState({ segment: null, fallback: "chưa cấu hình Gemini" }))).toContain("không có đoạn A8 để viết khối video");
+    const article_ = { source_ids: ["s2"], article: { description_markdown: "## Biên dịch\n\nXem ![sơ đồ](diagram:d1).", diagrams: [diagram] }, video: null };
+    expect(await reason("l-vid", article_, ok(), withVideoState({ segment: null, fallback: null }))).toContain("chưa có kết quả chọn đoạn video (A8)");
+  });
+});
