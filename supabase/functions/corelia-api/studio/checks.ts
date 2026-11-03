@@ -311,15 +311,9 @@ export function journeyProblems(curriculum: unknown, records: Record<string, Les
         failedCodeExercises.push(cl.id);
       }
       else if (config) {
-        let starterPassed = false;
-        if (config.mode === "fill") {
-          starterPassed = evaluateCodeExercise(config, { answers: {} }).passed;
-        } else if (config.mode === "edit") {
-          starterPassed = evaluateCodeExercise(config, { source: config.file.starter_source }).passed;
-        } else if (config.mode === "two_stage") {
-          starterPassed = evaluateCodeExercise(config.parts[0], { answers: {} }).passed ||
-            evaluateCodeExercise(config.parts[1], { source: config.parts[1].file.starter_source }).passed;
-        }
+        const starterPassed = config.mode === "fill"
+          ? evaluateCodeExercise(config, { answers: {} }).passed
+          : evaluateCodeExercise(config, { source: config.file.starter_source }).passed;
         if (starterPassed) {
           at(cl.id, "starter_source đã đạt mọi test bắt buộc");
           failedCodeExercises.push(cl.id);

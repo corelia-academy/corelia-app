@@ -700,7 +700,7 @@ describe("studio acceptance", () => {
     ...over,
   });
   const quiz = (id: string, over: object = {}) => lesson(id, { type: "quiz", pass_threshold: 80, review_lesson_ids: ["l1"], ...over });
-  const code = (id: string, purpose: string, over: object = {}) => lesson(id, { type: "code_exercise", purpose, ...over });
+  const code = (id: string, purpose: string, over: object = {}) => lesson(id, { type: "code_exercise", purpose, code_mode: "edit", ...over });
   // The first teaching lesson embeds its opening situation; module 2 quick_check recalls o1 from module 1.
   const curriculum = {
     status: "draft",

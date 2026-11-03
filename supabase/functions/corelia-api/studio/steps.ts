@@ -19,7 +19,7 @@ import {
   resolveCodeLanguage,
   type EnabledCodeLanguage,
 } from "./lesson_ports.ts";
-import { PROMPT_VERSIONS, type AgentRole, type PromptKey } from "./prompts.ts";
+import type { AgentRole, PromptKey } from "./prompts.ts";
 import type { BriefCatalogResearch } from "./catalog_research_brief.ts";
 import { A4_REVIEW_CRITERIA, normalizeReviewChecks, normalizeReviewIssues, REVIEW_ISSUE_CATEGORIES } from "./review_policy.ts";
 import { TEACHING_PURPOSES } from "./checks.ts";
@@ -316,6 +316,9 @@ function moduleStepProblems(
 
 const CURRICULUM_PURPOSES = LESSON_PURPOSES.filter((purpose) => purpose !== "warm_up");
 
+/** First A3 prompt version without warm_up (opening-situation contract). An accepted older curriculum may keep warm_up. */
+const FIRST_A3_VERSION_WITHOUT_WARM_UP = 25;
+
 const CURRICULUM_SCHEMA = object({
   status: { type: "string", enum: ["draft", "needs_research"] },
   missing: strList,
@@ -334,6 +337,7 @@ const CURRICULUM_SCHEMA = object({
           description: str,
           type: { type: "string", enum: [...AI_CURRICULUM_FORMATS] },
           purpose: { type: "string", enum: CURRICULUM_PURPOSES },
+          code_mode: { type: ["string", "null"], enum: ["fill", "edit", null] },
           outcome_ids: strList,
           prerequisites: strList,
           prerequisite_lesson_ids: strList,
@@ -430,6 +434,8 @@ interface CurriculumLesson {
   id: string;
   type: string;
   purpose: LessonPurpose;
+  /** Set for code_exercise lessons only; null for every other type. Absent on curricula from before this field. */
+  code_mode?: "fill" | "edit" | null;
   outcome_ids: string[];
   prerequisite_lesson_ids: string[];
   pass_threshold: number | null;
@@ -752,6 +758,12 @@ export function acceptCurriculum(
   for (const l of lessons) {
     if (l.outcome_ids.length === 0 || l.outcome_ids.some((id) => !outcomeIds.has(id))) {
       problems.push(`lesson ${l.id} có outcome không hợp lệ`);
+    }
+    if (l.type === "code_exercise" && l.code_mode !== "fill" && l.code_mode !== "edit") {
+      problems.push(`lesson ${l.id} (code_exercise) thiếu code_mode: phải là "fill" hoặc "edit"`);
+    }
+    if (l.type !== "code_exercise" && l.code_mode !== undefined && l.code_mode !== null) {
+      problems.push(`lesson ${l.id} (${l.type}) phải có code_mode null`);
     }
     if (l.source_ids.length === 0) {
       problems.push(`lesson ${l.id} thiếu source_ids`);
@@ -1096,7 +1108,7 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
     accept: (output, ctx) => {
       const curriculum = ctx.outputs.curriculum;
       const a3Version = ctx.curriculumPromptVersion?.match(/^a3-curriculum@v(\d+)$/);
-      const allowLegacyWarmUp = ctx.curriculumPromptVersion == null || Boolean(a3Version && Number(a3Version[1]) < PROMPT_VERSIONS["a3-curriculum"]);
+      const allowLegacyWarmUp = ctx.curriculumPromptVersion == null || Boolean(a3Version && Number(a3Version[1]) < FIRST_A3_VERSION_WITHOUT_WARM_UP);
       const code = acceptCurriculum(
         curriculum,
         researchSourceIds(ctx),

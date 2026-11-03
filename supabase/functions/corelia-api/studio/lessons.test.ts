@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { acceptLesson, hasUnseenBlocking, buildLessonInput, buildLessonReviewInput, LESSON_SCHEMA, lessonIds, lessonRefs, quizPassingRatio, toLessonDraft, TransientError } from "./lessons.ts";
 import { ENABLED_CODE_LANGUAGES, getCodeLanguageAdapter, PREPARED_CODE_LANGUAGES } from "./lesson_ports.ts";
 import { PLATFORM_FORMAT_GUIDE } from "./formats.ts";
-import { article, base, ctx, curriculum, diagram, editCode, fillCode, fiveQuestions, lesson, question, test, twoStageCode } from "./lesson_fixtures.ts";
+import { article, base, ctx, curriculum, diagram, editCode, fillCode, fiveQuestions, lesson, question, test } from "./lesson_fixtures.ts";
 
 const ok = (youtube = true, over?: object): typeof fetch => (() => Promise.resolve(new Response(
   youtube ? JSON.stringify({ author_name: "Let's Get Rusty", author_url: "https://www.youtube.com/@letsgetrusty", ...over }) : "",
@@ -18,12 +18,28 @@ const withCodeLanguage = (language: unknown): typeof ctx => ({
   ...ctx,
   outputs: { ...ctx.outputs, brief: { locale: "vi", code_language: language } },
 }) as typeof ctx;
+/** The curriculum of ctx with the code_mode of l-code replaced. */
+const withCodeMode = (codeMode: "fill" | "edit"): typeof ctx => ({
+  ...ctx,
+  outputs: {
+    ...ctx.outputs,
+    curriculum: {
+      ...curriculum,
+      modules: curriculum.modules.map((m) => ({
+        ...m,
+        lessons: m.lessons.map((l) => (l.id === "l-code" ? { ...l, code_mode: codeMode } : l)),
+      })),
+    },
+  },
+}) as typeof ctx;
+const fillBlock = { ...fillCode, blanks: [{ id: "kw", accepted_answers: ["mut"], feedback: "Từ khóa cho phép gán lại." }] };
 
 describe("studio lessons: accept by format", () => {
   it("accepts a valid lesson of each format", async () => {
     expect((await accept("l-art", { article })).ok).toBe(true);
     expect((await accept("l-quiz", { quiz: { questions: fiveQuestions } })).ok).toBe(true);
-    expect((await accept("l-code", { code: twoStageCode, source_ids: ["s1", "s2"] })).ok).toBe(true);
+    expect((await accept("l-code", { code: editCode, source_ids: ["s1", "s2"] })).ok).toBe(true);
+    expect((await accept("l-code", { code: fillBlock }, ok(), withCodeMode("fill"))).ok).toBe(true);
     expect((await accept("l-prac", { practice: { description_markdown: "Làm theo.", mode: "instruction", checklist_items: [] } })).ok).toBe(true);
     expect((await accept("l-prac", { practice: { description_markdown: "Tự kiểm tra.", mode: "checklist", checklist_items: [{ id: "c1", label: "Đã chạy" }] } })).ok).toBe(false);
     expect((await accept("l-vid", {
@@ -83,23 +99,38 @@ describe("studio lessons: accept by format", () => {
     expect(await reason("l-quiz", quiz(question({ explanation: "" })))).toContain("thiếu giải thích");
   });
 
-  it("code: two_stage format validates both parts, tests, reference solutions, and course language", async () => {
-    const code = (over: object) => ({ code: { ...twoStageCode, ...over } });
-    expect(await reason("l-code", { ...code({ part_2: { ...twoStageCode.part_2, starter_source: twoStageCode.part_2.reference_solution } }), source_ids: ["s1"] })).toContain("starter_passes");
-    expect(await reason("l-code", code({ part_2: { ...twoStageCode.part_2, reference_solution: "pub fn add(a: i32, b: i32) -> i32 { 0 }" } }))).toContain("solution_failed");
-    expect(await reason("l-code", code({ part_2: { ...twoStageCode.part_2, tests: [test({ required: false })] } }))).toContain("required_test_missing");
-    expect(await reason("l-code", code({ part_2: { ...twoStageCode.part_2, tests: [test({ value: "" })] } }))).toContain("thiếu value");
-    expect(await reason("l-code", code({ part_1: { ...twoStageCode.part_1, blanks: [] } }))).toContain("part_1: phải có ít nhất 1 blank");
-    expect(await reason("l-code", code({ part_2: { ...twoStageCode.part_2, tests: [] } }))).toContain("part_2: phải có ít nhất 1 test");
-    expect(await reason("l-code", code({ part_1: { ...twoStageCode.part_1, file_path: "main.py" } }))).toContain("part_1: file_path");
-    expect(await reason("l-code", code({ part_2: { ...twoStageCode.part_2, file_path: "src/lib.rs" } }))).toContain("part_2: file_path");
-    expect(await reason("l-code", code({ language: "python", part_1: { ...twoStageCode.part_1, file_path: "main.py" }, part_2: { ...twoStageCode.part_2, file_path: "main.py" } }))).toContain("language phải khớp code_language của khóa (rust)");
-    expect(await reason("l-code", code({ language: "solidity", part_1: { ...twoStageCode.part_1, file_path: "lib.sol" }, part_2: { ...twoStageCode.part_2, file_path: "lib.sol" } }), ok(), withCodeLanguage("solidity"))).toContain("solidity chưa hỗ trợ publish");
-    expect(await reason("l-code", code({}), ok(), withCodeLanguage(null))).toContain("brief.code_language = null");
-    expect(await reason("l-code", code({ instructions: " " }))).toContain("instructions");
-    expect(await reason("l-code", code({ part_1: { ...twoStageCode.part_1, reference_solution: "let x = 5;" } }))).toContain("solution_failed");
-    const sourceEquals = test({ id: "eq", type: "source_equals", value: "", accepted_sources: [twoStageCode.part_2.reference_solution] });
-    expect((await accept("l-code", { code: { ...twoStageCode, part_2: { ...twoStageCode.part_2, tests: [sourceEquals] } } })).ok).toBe(true);
+  it("code edit: validates tests, reference solution, file, and course language", async () => {
+    const edit = (over: object) => ({ code: { ...editCode, ...over } });
+    expect(await reason("l-code", edit({ reference_solution: "pub fn add(a: i32, b: i32) -> i32 { 0 }" }))).toContain("solution_failed");
+    expect(await reason("l-code", edit({ tests: [test({ required: false })] }))).toContain("required_test_missing");
+    expect(await reason("l-code", edit({ tests: [test({ value: "" })] }))).toContain("thiếu value");
+    expect(await reason("l-code", edit({ tests: [] }))).toContain("mode edit phải có ít nhất 1 test");
+    expect(await reason("l-code", edit({ blanks: [{ id: "kw", accepted_answers: ["mut"], feedback: "Từ khóa." }] }))).toContain("mode edit không có blanks");
+    expect(await reason("l-code", edit({ file_path: "main.py" }))).toContain("file_path");
+    expect(await reason("l-code", edit({ file_path: "src/lib.rs" }))).toContain("file_path");
+    expect(await reason("l-code", edit({ language: "python", file_path: "main.py" }))).toContain("language phải khớp code_language của khóa (rust)");
+    expect(await reason("l-code", edit({ language: "solidity", file_path: "lib.sol" }), ok(), withCodeLanguage("solidity"))).toContain("solidity chưa hỗ trợ publish");
+    expect(await reason("l-code", edit({}), ok(), withCodeLanguage(null))).toContain("brief.code_language = null");
+    expect(await reason("l-code", edit({ instructions: " " }))).toContain("instructions");
+    const sourceEquals = test({ id: "eq", type: "source_equals", value: "", accepted_sources: [editCode.reference_solution] });
+    expect((await accept("l-code", edit({ tests: [sourceEquals] }))).ok).toBe(true);
+  });
+
+  it("code fill: validates blanks, markers and solutions, and rejects tests", async () => {
+    const fill = (over: object) => ({ code: { ...fillBlock, ...over } });
+    const fillMode = withCodeMode("fill");
+    expect(await reason("l-code", fill({ reference_solution: "let x = 5;" }), ok(), fillMode)).toContain("solution_failed");
+    expect(await reason("l-code", fill({ blanks: [] }), ok(), fillMode)).toContain("mode fill phải có ít nhất 1 blank");
+    expect(await reason("l-code", fill({ tests: [test()] }), ok(), fillMode)).toContain("mode fill không có tests");
+    expect(await reason("l-code", fill({ file_path: "main.py" }), ok(), fillMode)).toContain("file_path");
+    expect(await reason("l-code", fill({ blanks: [{ id: "kw", accepted_answers: [" "], feedback: "x" }] }), ok(), fillMode)).toContain("invalid_blank");
+    expect((await accept("l-code", fill({}), ok(), fillMode)).ok).toBe(true);
+  });
+
+  it("code: the block's mode must equal the curriculum code_mode of the lesson", async () => {
+    expect(await reason("l-code", { code: fillBlock }, ok(), withCodeMode("edit"))).toContain('code.mode "fill" phải khớp code_mode của lesson ("edit")');
+    expect(await reason("l-code", { code: editCode }, ok(), withCodeMode("fill"))).toContain('code.mode "edit" phải khớp code_mode của lesson ("fill")');
+    expect(await reason("l-code", { code: null })).toContain("thiếu khối code");
   });
 
   it.each(ENABLED_CODE_LANGUAGES)("accepts a valid code lesson in enabled language %s", async (language) => {
@@ -108,10 +139,9 @@ describe("studio lessons: accept by format", () => {
       "l-code",
       {
         code: {
-          ...twoStageCode,
+          ...editCode,
           language,
-          part_1: { ...twoStageCode.part_1, file_path: `Main.${extension}` },
-          part_2: { ...twoStageCode.part_2, file_path: `Main.${extension}` },
+          file_path: `Main.${extension}`,
         },
       },
       ok(),
@@ -127,10 +157,9 @@ describe("studio lessons: accept by format", () => {
         "l-code",
         {
           code: {
-            ...twoStageCode,
+            ...editCode,
             language,
-            part_1: { ...twoStageCode.part_1, file_path: `Main.${extension}` },
-            part_2: { ...twoStageCode.part_2, file_path: `Main.${extension}` },
+            file_path: `Main.${extension}`,
           },
         },
         ok(),
@@ -140,36 +169,35 @@ describe("studio lessons: accept by format", () => {
   });
 
   it("rejects identifier answers leaked into each hint surface", async () => {
-    expect(await reason("l-code", { code: { ...twoStageCode, part_1: { ...twoStageCode.part_1, hints: ["Hãy thử từ mut ở đây."] } } }))
-      .toContain('code.part_1.hints[0] lộ đáp án định danh "mut"');
-    expect(await reason("l-code", { code: { ...twoStageCode, part_1: { ...twoStageCode.part_1, blanks: [{ ...twoStageCode.part_1.blanks[0], feedback: "Đáp án là mut." }] } } }))
-      .toContain('code.part_1.blanks[0].feedback lộ đáp án định danh "mut"');
-    expect(await reason("l-code", { code: { ...twoStageCode, part_2: { ...twoStageCode.part_2, tests: [test({ value: "add", failure_message: "Hãy thêm add." })] } } }))
-      .toContain('code.part_2.tests[0].failure_message lộ đáp án định danh "add"');
-    expect(await reason("l-code", { code: { ...twoStageCode, part_2: { ...twoStageCode.part_2, tests: [test({ value: "add", hint: "Dùng add." })] } } }))
-      .toContain('code.part_2.tests[0].hint lộ đáp án định danh "add"');
+    const fillMode = withCodeMode("fill");
+    expect(await reason("l-code", { code: { ...fillBlock, hints: ["Hãy thử từ mut ở đây."] } }, ok(), fillMode))
+      .toContain('code.hints[0] lộ đáp án định danh "mut"');
+    expect(await reason("l-code", { code: { ...fillBlock, blanks: [{ ...fillBlock.blanks[0], feedback: "Đáp án là mut." }] } }, ok(), fillMode))
+      .toContain('code.blanks[0].feedback lộ đáp án định danh "mut"');
+    expect(await reason("l-code", { code: { ...editCode, tests: [test({ value: "add", failure_message: "Hãy thêm add." })] } }))
+      .toContain('code.tests[0].failure_message lộ đáp án định danh "add"');
+    expect(await reason("l-code", { code: { ...editCode, tests: [test({ value: "add", hint: "Dùng add." })] } }))
+      .toContain('code.tests[0].hint lộ đáp án định danh "add"');
   });
 
   it("uses whole-identifier, case-sensitive, conservative answer matching", async () => {
-    const nonLeaking = await accept("l-code", { code: { ...twoStageCode, part_1: { ...twoStageCode.part_1, hints: ["Tư duy về tính mutable; đừng trả lời MUT."] } } });
+    const fillMode = withCodeMode("fill");
+    const nonLeaking = await accept("l-code", { code: { ...fillBlock, hints: ["Tư duy về tính mutable; đừng trả lời MUT."] } }, ok(), fillMode);
     expect(nonLeaking).toMatchObject({ ok: true });
 
     const shortAndNonIdentifierAnswers = {
-      ...twoStageCode,
-      part_1: {
-        ...twoStageCode.part_1,
-        blanks: [{ id: "kw", accepted_answers: ["if", "::", "a + b"], feedback: "Từ khóa if, toán tử :: và biểu thức a + b." }],
-        hints: ["Xem lại if, :: và a + b."],
-      },
+      ...fillBlock,
+      blanks: [{ id: "kw", accepted_answers: ["if", "::", "a + b"], feedback: "Từ khóa if, toán tử :: và biểu thức a + b." }],
+      hints: ["Xem lại if, :: và a + b."],
     };
-    const conservativeReason = await reason("l-code", { code: shortAndNonIdentifierAnswers });
+    const conservativeReason = await reason("l-code", { code: shortAndNonIdentifierAnswers }, ok(), fillMode);
     expect(conservativeReason).not.toContain("lộ đáp án định danh");
 
-    const sourceEquals = test({ id: "eq", type: "source_equals", value: "", accepted_sources: [twoStageCode.part_2.reference_solution], failure_message: "Đáp án add chưa đúng." });
-    const ignoredTestReason = await reason("l-code", { code: { ...twoStageCode, part_2: { ...twoStageCode.part_2, tests: [sourceEquals] } } });
+    const sourceEquals = test({ id: "eq", type: "source_equals", value: "", accepted_sources: [editCode.reference_solution], failure_message: "Đáp án add chưa đúng." });
+    const ignoredTestReason = await reason("l-code", { code: { ...editCode, tests: [sourceEquals] } });
     expect(ignoredTestReason).not.toContain("lộ đáp án định danh");
     const notContains = test({ type: "not_contains", value: "add", failure_message: "Đừng dùng add." });
-    expect(await reason("l-code", { code: { ...twoStageCode, part_2: { ...twoStageCode.part_2, tests: [notContains] } } })).not.toContain("lộ đáp án định danh");
+    expect(await reason("l-code", { code: { ...editCode, tests: [notContains] } })).not.toContain("lộ đáp án định danh");
   });
 
   it("practice: only instruction mode allowed for AI courses, checklist and non-optional_hands_on are rejected", async () => {
@@ -427,7 +455,7 @@ describe("studio lessons: accept by format", () => {
         checklist_items: [],
       },
     };
-    const codeWith = (over: object) => ({ code: { ...twoStageCode, ...over } });
+    const codeWith = (over: object) => ({ code: { ...editCode, ...over } });
     const resourceContext = {
       ...ctx,
       outputs: {
@@ -459,11 +487,16 @@ describe("studio lessons: accept by format", () => {
       { field: "questions[0].options[0].text", lessonId: "l-quiz", output: { quiz: { questions: [question({ options: [{ id: "a", text: unresearched }, ...question().options.slice(1)] }), ...fiveQuestions.slice(1)] } } },
       { field: "questions[0].explanation", lessonId: "l-quiz", output: { quiz: { questions: [question({ explanation: unresearched }), ...fiveQuestions.slice(1)] } } },
       { field: "lesson.code_exercise_locale.instructions", lessonId: "l-code", output: codeWith({ instructions: `[Xem video](${unresearched})` }) },
-      { field: "lesson.code_exercise_config.parts[0].hints[0]", lessonId: "l-code", output: codeWith({ part_1: { ...twoStageCode.part_1, hints: [unresearched] } }) },
-      { field: "lesson.code_exercise_config.parts[0].blanks[0].feedback", lessonId: "l-code", output: { code: { ...twoStageCode, part_1: { ...twoStageCode.part_1, blanks: [{ ...twoStageCode.part_1.blanks[0], feedback: unresearched }] } } } },
-      { field: "lesson.code_exercise_config.parts[1].tests[0].description", lessonId: "l-code", output: codeWith({ part_2: { ...twoStageCode.part_2, tests: [{ ...twoStageCode.part_2.tests[0], description: unresearched }] } }) },
-      { field: "lesson.code_exercise_config.parts[1].tests[0].failure_message", lessonId: "l-code", output: codeWith({ part_2: { ...twoStageCode.part_2, tests: [{ ...twoStageCode.part_2.tests[0], failure_message: unresearched }] } }) },
-      { field: "lesson.code_exercise_config.parts[1].tests[0].hint", lessonId: "l-code", output: codeWith({ part_2: { ...twoStageCode.part_2, tests: [{ ...twoStageCode.part_2.tests[0], hint: unresearched }] } }) },
+      { field: "lesson.code_exercise_config.hints[0]", lessonId: "l-code", output: codeWith({ hints: [unresearched] }) },
+      {
+        field: "lesson.code_exercise_config.blanks[0].feedback",
+        lessonId: "l-code",
+        output: { code: { ...fillBlock, blanks: [{ ...fillBlock.blanks[0], feedback: unresearched }] } },
+        lessonCtx: withCodeMode("fill"),
+      },
+      { field: "lesson.code_exercise_config.tests[0].description", lessonId: "l-code", output: codeWith({ tests: [{ ...editCode.tests[0], description: unresearched }] }) },
+      { field: "lesson.code_exercise_config.tests[0].failure_message", lessonId: "l-code", output: codeWith({ tests: [{ ...editCode.tests[0], failure_message: unresearched }] }) },
+      { field: "lesson.code_exercise_config.tests[0].hint", lessonId: "l-code", output: codeWith({ tests: [{ ...editCode.tests[0], hint: unresearched }] }) },
     ];
   })())("rejects an unresearched YouTube link in $field", async ({ field, lessonId, output, lessonCtx }) => {
     const why = await reason(lessonId, output, ok(), lessonCtx);
@@ -510,7 +543,7 @@ describe("studio lessons: accept by format", () => {
   it.each([
     ["l-art", { article }],
     ["l-quiz", { quiz: { questions: fiveQuestions } }],
-    ["l-code", { code: twoStageCode, source_ids: ["s1", "s2"] }],
+    ["l-code", { code: editCode, source_ids: ["s1", "s2"] }],
     ["l-prac", { practice: { description_markdown: "Đọc ví dụ.", mode: "instruction", checklist_items: [] } }],
   ])("builds a code-owned optional video resource for %s and allows an empty selection", async (lessonId, block) => {
     const selected = { ...base, ...block, suggested_videos: ["aaaaaaaaaaa"] };
@@ -536,7 +569,7 @@ describe("studio lessons: accept by format", () => {
       .toMatchObject({ summary: expect.stringContaining("không thuộc ứng viên của lesson"), kept: [] });
     expect(await dropped("l-art", { article, suggested_videos: ["aaaaaaaaaaa", "aaaaaaaaaaa"] }))
       .toMatchObject({ summary: expect.stringContaining("bị trùng video ID"), kept: ["aaaaaaaaaaa"] });
-    expect(await dropped("l-code", { code: twoStageCode, suggested_videos: ["aaaaaaaaaaa", "bbbbbbbbbbb", "ccccccccccc"], source_ids: ["s1", "s2"] }))
+    expect(await dropped("l-code", { code: editCode, suggested_videos: ["aaaaaaaaaaa", "bbbbbbbbbbb", "ccccccccccc"], source_ids: ["s1", "s2"] }))
       .toMatchObject({ summary: expect.stringContaining("không thuộc ứng viên của lesson"), kept: ["aaaaaaaaaaa", "bbbbbbbbbbb"] });
     expect(await dropped("l-art", { article, suggested_videos: "aaaaaaaaaaa" }))
       .toMatchObject({ summary: expect.stringContaining("phải là mảng video ID"), kept: [] });
@@ -625,21 +658,29 @@ describe("studio lessons: app record", () => {
     expect(draft.questions).toEqual([{ type: "mcq", question: "Điều gì xảy ra?", options: question().options, correct_index: 1, explanation: question().explanation, locale: "vi" }]);
   });
 
-  it("builds records the app validates: two_stage code config, canonical video URL", () => {
-    const codeLesson = toLessonDraft(ref("l-code"), { ...base, code: twoStageCode } as never, "vi").lesson;
-    expect(codeLesson.code_exercise_config).toMatchObject({
+  it("builds records the app validates: one-mode code config for fill and edit, canonical video URL", () => {
+    const editLesson = toLessonDraft(ref("l-code"), { ...base, code: editCode } as never, "vi").lesson;
+    expect(editLesson.code_exercise_config).toMatchObject({
       schema_version: 1,
       revision: 1,
-      mode: "two_stage",
+      mode: "edit",
       language: "rust",
+      file: { path: "lib.rs", starter_source: editCode.starter_source },
+      tests: [{ id: "sum", type: "contains", value: "a + b", required: true }],
     });
-    expect(codeLesson.code_exercise_locale).toMatchObject({
-      instructions: "Thực hành Rust.",
-      parts: [
-        { instructions: "Khai báo biến có thể thay đổi giá trị." },
-        { instructions: "Hoàn thành hàm add." },
-      ],
+    expect(editLesson.code_exercise_config).not.toHaveProperty("blanks");
+    expect(editLesson.code_exercise_locale).toEqual({ instructions: "Hoàn thành hàm add." });
+
+    const fillLesson = toLessonDraft(ref("l-code"), { ...base, code: fillBlock } as never, "vi").lesson;
+    expect(fillLesson.code_exercise_config).toMatchObject({
+      schema_version: 1,
+      revision: 1,
+      mode: "fill",
+      language: "rust",
+      file: { path: "lib.rs", starter_source: fillBlock.starter_source },
+      blanks: [{ id: "kw", accepted_answers: ["mut"], feedback: "Từ khóa cho phép gán lại." }],
     });
+    expect(fillLesson.code_exercise_config).not.toHaveProperty("tests");
     const video = toLessonDraft(ref("l-vid"), { ...base, video: { youtube_url: "https://youtu.be/dQw4w9WgXcQ", start_seconds: 5, end_seconds: 0, description_markdown: "Mô tả video." } } as never, "vi").lesson;
     expect(video).toMatchObject({ youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", youtube_start_seconds: 5, youtube_end_seconds: null, description_markdown: "Mô tả video." });
     const practice = toLessonDraft(ref("l-prac"), { ...base, practice: { description_markdown: "x", mode: "instruction", checklist_items: [] } } as never, "vi").lesson;
@@ -728,8 +769,9 @@ describe("studio lessons: schema", () => {
     expect((LESSON_SCHEMA as any).required).toContain("suggested_videos");
     const codeSchema = (LESSON_SCHEMA.properties.code as any).anyOf[0];
     expect(codeSchema.properties.language.enum).toEqual(ENABLED_CODE_LANGUAGES);
-    expect(codeSchema.properties.part_1.type).toBe("object");
-    expect(codeSchema.properties.part_2.type).toBe("object");
+    expect(codeSchema.properties.mode.enum).toEqual(["fill", "edit"]);
+    expect(codeSchema.required).toEqual(expect.arrayContaining(["mode", "blanks", "tests"]));
+    expect(codeSchema).not.toHaveProperty("properties.part_1");
     for (const language of PREPARED_CODE_LANGUAGES) {
       expect(codeSchema.properties.language.enum).not.toContain(language);
     }

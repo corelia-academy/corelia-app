@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { journeyProblems, linkProblems, structureProblems, type LessonRecord } from "./checks.ts";
 import { MAX_LESSON_REVIEWS, MAX_LESSON_REVIEWS_LATE, planLessons, type LessonGeneration, type LessonStep } from "./lesson_flow.ts";
 import { MAX_TRANSPORT_FAILURES } from "./retry.ts";
-import { article, base, ctx, curriculum, editCode, fillCode, lesson, makeFiveQuestions, now, question, twoStageCode } from "./lesson_fixtures.ts";
+import { article, base, ctx, curriculum, editCode, fillCode, lesson, makeFiveQuestions, now, question } from "./lesson_fixtures.ts";
 import { getCodeLanguageAdapter } from "./lesson_ports.ts";
 import { acceptLessonReview, LESSON_REVIEW_SCHEMA, resolvePath } from "./lesson_review.ts";
 import { lessonReviewEventPayload } from "./handlers.ts";
@@ -204,7 +204,7 @@ const issue = (location: string, severity = "blocking", over: object = {}) => ({
 const verdictOf = (verdict: string, issues: object[] = [], unverified: string[] = []) => ({ verdict, issues, unverified, summary: "s" });
 
 const quizOutput = { ...base, quiz: { questions: makeFiveQuestions() } };
-const codeOutput = { ...base, code: twoStageCode, source_ids: ["s1", "s2"] };
+const codeOutput = { ...base, code: editCode, source_ids: ["s1", "s2"] };
 
 // Reduced field sample from run c284b778; source IDs, package facts, and question states are retained.
 const c284ResearchSample = {
@@ -363,7 +363,7 @@ describe("studio lesson loop: research version handoff", () => {
 
     const reviewContext = {
       ...selectedContext,
-      lesson: { drafts: 1, reviews: 0, draft: { ...base, code: twoStageCode }, review: null },
+      lesson: { drafts: 1, reviews: 0, draft: { ...base, code: editCode }, review: null },
     } as RunContext;
     const reviewer = buildLessonReviewInput(reviewContext, "l-code") as Record<string, any>;
     expect(reviewer).toMatchObject({ code_language: "python", code_language_guide: pythonGuide });
@@ -680,7 +680,7 @@ describe("studio structure_check", () => {
     all["l-art"].draft.lesson.title = " ";
     all["l-quiz"].draft.questions[0].correct_index = 9;
     all["l-quiz"].draft.questions[1].correct_index = 9;
-    all["l-code"].draft.lesson.code_exercise_config!.parts[1].reference_solution = "fn nope() {}";
+    all["l-code"].draft.lesson.code_exercise_config!.reference_solution = "fn nope() {}";
     all["l-vid"].draft.lesson.youtube_url = "https://example.com/v";
     const problems = structureProblems(curriculum, research, all).join("\n");
     expect(problems).toContain("l-art: title: title_required");
@@ -814,7 +814,7 @@ describe("studio journey_test", () => {
     const all = records();
     all["l-quiz"].draft.questions[0].correct_index = 9;
     all["l-quiz"].draft.questions[1].correct_index = 9;
-    all["l-code"].draft.lesson.code_exercise_config!.parts[1].file.starter_source = all["l-code"].draft.lesson.code_exercise_config!.parts[1].reference_solution;
+    all["l-code"].draft.lesson.code_exercise_config!.file.starter_source = all["l-code"].draft.lesson.code_exercise_config!.reference_solution;
     all["l-prac"].draft.lesson.practice_config = { mode: "instruction", requires_review: true };
     const brokenChecks: { id: string; passed: number; total: number; failed_refs?: string[] }[] = [];
     expect(journeyProblems(good, all, brokenChecks)).toContain("l-prac: practice có bài nộp hoặc chờ chấm");
@@ -864,9 +864,9 @@ describe("studio journey_test", () => {
     all["l-quiz"].draft.questions[0].correct_index = 9;
     all["l-quiz"].draft.questions[1].correct_index = 9;
     expect(journeyProblems(good, all)).toContain("l-quiz: trả lời đúng hết vẫn không đạt ngưỡng 0.7");
-    const solved = records({ "l-code": { ...codeOutput, code: { ...twoStageCode, part_2: { ...twoStageCode.part_2, starter_source: twoStageCode.part_2.reference_solution } } } });
-    expect(journeyProblems(good, solved)).toContain("l-code: code: starter_passes");
-    const brokenCode = records({ "l-code": { ...codeOutput, code: { ...twoStageCode, part_1: { ...twoStageCode.part_1, reference_solution: "let x = 5;" } } } });
+    const solved = records({ "l-code": { ...codeOutput, code: { ...editCode, starter_source: editCode.reference_solution } } });
+    expect(journeyProblems(good, solved)).toContain("l-code: starter_source đã đạt mọi test bắt buộc");
+    const brokenCode = records({ "l-code": { ...codeOutput, code: { ...editCode, reference_solution: "let x = 5;" } } });
     expect(journeyProblems(good, brokenCode).join("\n")).toContain("l-code: code: solution_failed");
     const lowRatio = records();
     lowRatio["l-quiz"].draft.lesson.quiz_config = { passing_ratio: 0, allow_retry: true };

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { appImagePath, diagramFile, draftDir, draftPath, publishMarkdown } from "./diagram_render.ts";
-import { article, base, curriculum, twoStageCode, question } from "./lesson_fixtures.ts";
+import { article, base, curriculum, editCode, question } from "./lesson_fixtures.ts";
 import { lessonRefs, toLessonDraft } from "./lessons.ts";
 import { buildPublishPayload, imageJobs, publishRun, PublishRejected, slugify } from "./publish.ts";
 
@@ -9,7 +9,7 @@ const brief = { title: "Rust for Beginners", topic: "Rust cơ bản", audience: 
 const outputs: Record<string, object> = {
   "l-art": { ...base, article },
   "l-quiz": { ...base, quiz: { questions: [question(), question({ question: "Câu 2" })] } },
-  "l-code": { ...base, code: twoStageCode, source_ids: ["s1", "s2"] },
+  "l-code": { ...base, code: editCode, source_ids: ["s1", "s2"] },
   "l-prac": { ...base, practice: { description_markdown: "Làm.", mode: "instruction", checklist_items: [] } },
   "l-vid": { ...base, source_ids: ["s2"], video: { youtube_url: "https://youtu.be/dQw4w9WgXcQ", start_seconds: 0, end_seconds: 0, description_markdown: "## Mục tiêu\n\nHiểu về Rust.\n\n## Ý chính\n\n- Ý 1\n- Ý 2\n- Ý 3\n\nVideo từ kênh Let's Get Rusty." } },
 };
@@ -68,18 +68,11 @@ function makeMockTranslations() {
           summary: "Summary",
           code: {
             instructions: `Common instructions in ${loc}`,
-            part_1: {
-              instructions: "Part 1 instructions",
-              hints: ["Hint 1"],
-              blanks: [{ id: "kw", feedback: "Feedback 1" }],
-            },
-            part_2: {
-              instructions: "Part 2 instructions",
-              hints: ["Hint 2"],
-              tests: [
-                { id: "sum", description: "Test 1", failure_message: "Fail", hint: "Hint" },
-              ],
-            },
+            hints: [],
+            blanks: [],
+            tests: [
+              { id: "sum", description: "Test 1", failure_message: "Fail", hint: "Hint" },
+            ],
           },
         },
         "l-prac": {
@@ -486,18 +479,11 @@ describe("studio publish: multilanguage format v2 (Mục E)", () => {
             summary: "Summary",
             code: {
               instructions: `Common instructions in ${loc}`,
-              part_1: {
-                instructions: "Part 1 instructions",
-                hints: ["Hint 1"],
-                blanks: [{ id: "kw", feedback: "Feedback 1" }],
-              },
-              part_2: {
-                instructions: "Part 2 instructions",
-                hints: ["Hint 2"],
-                tests: [
-                  { id: "sum", description: "Test 1", failure_message: "Fail", hint: "Hint" },
-                ],
-              },
+              hints: [],
+              blanks: [],
+              tests: [
+                { id: "sum", description: "Test 1", failure_message: "Fail", hint: "Hint" },
+              ],
             },
           },
           "l-prac": {

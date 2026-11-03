@@ -43,17 +43,6 @@ export function extractCodeBlocks(markdown: string): string[] {
   return blocks;
 }
 
-/** Tách các marker {{blank:<id>}} trong instructions. */
-export function extractBlankMarkers(text: string): string[] {
-  const markers: string[] = [];
-  const re = /\{\{blank:([^}]+)\}\}/g;
-  let match: RegExpExecArray | null;
-  while ((match = re.exec(text)) !== null) {
-    markers.push(match[0].trim());
-  }
-  return markers;
-}
-
 /** Kiểm tra các khối code được bảo toàn 100%. */
 export function assertCodeBlocksPreserved(
   srcText: string,
@@ -127,18 +116,12 @@ export interface TranslatedLesson {
   video?: {
     description_markdown: string;
   } | null;
+  /** blanks are translated for a fill exercise, tests for an edit exercise; the other list is empty. */
   code?: {
-    instructions?: string;
-    part_1?: {
-      instructions: string;
-      hints: string[];
-      blanks: { id: string; feedback: string }[];
-    };
-    part_2?: {
-      instructions: string;
-      hints: string[];
-      tests: { id: string; description: string; failure_message: string; hint: string }[];
-    };
+    instructions: string;
+    hints: string[];
+    blanks: { id: string; feedback: string }[];
+    tests: { id: string; description: string; failure_message: string; hint: string }[];
   } | null;
 }
 
@@ -231,20 +214,12 @@ export function validateLessonTranslation(
   if (format === "code_exercise") {
     const code = translated.code;
     assertNoEnglishLeak(code?.instructions ?? "", `${lessonLabel} code instructions`, locale);
-    for (const [index, part] of [code?.part_1, code?.part_2].entries()) {
-      if (!part) continue;
-      assertNoEnglishLeak(part.instructions ?? "", `${lessonLabel} part ${index + 1} instructions`, locale);
-      for (const [hintIndex, hint] of (part.hints ?? []).entries()) assertNoEnglishLeak(hint, `${lessonLabel} part ${index + 1} hint ${hintIndex + 1}`, locale);
-      if ("blanks" in part) {
-        for (const blank of part.blanks) assertNoEnglishLeak(blank.feedback ?? "", `${lessonLabel} blank ${blank.id} feedback`, locale);
-      }
-      if ("tests" in part) {
-        for (const test of part.tests) {
-          assertNoEnglishLeak(test.description ?? "", `${lessonLabel} test ${test.id} description`, locale);
-          assertNoEnglishLeak(test.failure_message ?? "", `${lessonLabel} test ${test.id} failure message`, locale);
-          assertNoEnglishLeak(test.hint ?? "", `${lessonLabel} test ${test.id} hint`, locale);
-        }
-      }
+    for (const [hintIndex, hint] of (code?.hints ?? []).entries()) assertNoEnglishLeak(hint, `${lessonLabel} hint ${hintIndex + 1}`, locale);
+    for (const blank of code?.blanks ?? []) assertNoEnglishLeak(blank.feedback ?? "", `${lessonLabel} blank ${blank.id} feedback`, locale);
+    for (const test of code?.tests ?? []) {
+      assertNoEnglishLeak(test.description ?? "", `${lessonLabel} test ${test.id} description`, locale);
+      assertNoEnglishLeak(test.failure_message ?? "", `${lessonLabel} test ${test.id} failure message`, locale);
+      assertNoEnglishLeak(test.hint ?? "", `${lessonLabel} test ${test.id} hint`, locale);
     }
   }
 
@@ -353,87 +328,55 @@ export function validateLessonTranslation(
     assertCodeBlocksPreserved(srcVideo, transVideo, `Lesson ${sourceRecord.draft.lesson.id} video`, locale);
   }
 
-  // 5. Code Exercise (hai phần)
+  // 5. Code Exercise (một kiểu: fill hoặc edit)
   if (format === "code_exercise") {
     const codeCfg = sourceRecord.draft.lesson.code_exercise_config;
-    if (codeCfg && codeCfg.mode === "two_stage") {
-      const part1Src = codeCfg.parts[0];
-      const part2Src = codeCfg.parts[1];
+    if (codeCfg) {
       const transCode = translated.code;
       if (!transCode) throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: thiếu khối code trong bản dịch`);
+      const lessonId = sourceRecord.draft.lesson.id;
 
-      // Instructions chung của bài code
-      const sharedInstructions = sourceRecord.draft.lesson.code_exercise_locale?.instructions;
-      if (sharedInstructions) {
-        if (!transCode.instructions?.trim()) {
-          throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: thiếu instructions chung của bài code`);
-        }
-        assertCodeBlocksPreserved(sharedInstructions, transCode.instructions, `Lesson ${sourceRecord.draft.lesson.id} code instructions`, locale);
+      const sourceInstructions = sourceRecord.draft.lesson.code_exercise_locale?.instructions;
+      if (sourceInstructions) {
+        if (!transCode.instructions?.trim()) throw new TranslationIntegrityError(`[${locale}] Lesson ${lessonId}: thiếu instructions của bài code`);
+        assertCodeBlocksPreserved(sourceInstructions, transCode.instructions, `Lesson ${lessonId} code instructions`, locale);
       }
 
-      // Part 1
-      if (!transCode.part_1) throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: thiếu part_1`);
-      if (!transCode.part_1.instructions?.trim()) throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: part_1 thiếu instructions`);
-      assertCodeBlocksPreserved(part1Src.instructions || "", transCode.part_1.instructions, `Lesson ${sourceRecord.draft.lesson.id} part_1 instructions`, locale);
+      const srcHints = codeCfg.hints ?? [];
+      const transHints = transCode.hints ?? [];
+      if (srcHints.length !== transHints.length) {
+        throw new TranslationIntegrityError(`[${locale}] Lesson ${lessonId}: số hints (${transHints.length}) không khớp nguồn (${srcHints.length})`);
+      }
+      srcHints.forEach((srcHint, i) => {
+        if (!transHints[i]?.trim()) throw new TranslationIntegrityError(`[${locale}] Lesson ${lessonId}: hint ${i + 1} không được rỗng`);
+        assertCodeBlocksPreserved(srcHint, transHints[i], `Lesson ${lessonId} hint ${i + 1}`, locale);
+      });
 
-      const srcBlankMarkers = extractBlankMarkers(part1Src.instructions || "");
-      const transBlankMarkers = extractBlankMarkers(transCode.part_1.instructions || "");
-      if (srcBlankMarkers.sort().join(",") !== transBlankMarkers.sort().join(",")) {
-        throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: marker {{blank:...}} trong part_1 instructions không khớp nguồn`);
+      const srcBlanks = codeCfg.mode === "fill" ? codeCfg.blanks : [];
+      const transBlanks = transCode.blanks ?? [];
+      if (transBlanks.length !== srcBlanks.length) {
+        throw new TranslationIntegrityError(`[${locale}] Lesson ${lessonId}: số blanks (${transBlanks.length}) không khớp nguồn (${srcBlanks.length})`);
       }
-
-      const srcHints1 = part1Src.hints ?? [];
-      const transHints1 = transCode.part_1.hints ?? [];
-      if (srcHints1.length !== transHints1.length) {
-        throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: số hints part_1 (${transHints1.length}) không khớp nguồn (${srcHints1.length})`);
-      }
-      for (let i = 0; i < srcHints1.length; i++) {
-        if (!transHints1[i]?.trim()) {
-          throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: hint ${i + 1} của part_1 không được rỗng`);
-        }
-        assertCodeBlocksPreserved(srcHints1[i], transHints1[i], `Lesson ${sourceRecord.draft.lesson.id} part_1 hint ${i + 1}`, locale);
-      }
-
-      const transBlanks = transCode.part_1.blanks ?? [];
-      if (transBlanks.length !== part1Src.blanks.length) {
-        throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: số blanks part_1 (${transBlanks.length}) không khớp nguồn (${part1Src.blanks.length})`);
-      }
-      for (const sb of part1Src.blanks) {
+      for (const sb of srcBlanks) {
         const tb = transBlanks.find((b) => b.id === sb.id);
-        if (!tb) throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: thiếu blank ${sb.id}`);
-        if (!tb.feedback?.trim()) throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: blank ${sb.id} thiếu feedback`);
+        if (!tb) throw new TranslationIntegrityError(`[${locale}] Lesson ${lessonId}: thiếu blank ${sb.id}`);
+        if (!tb.feedback?.trim()) throw new TranslationIntegrityError(`[${locale}] Lesson ${lessonId}: blank ${sb.id} thiếu feedback`);
       }
 
-      // Part 2
-      if (!transCode.part_2) throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: thiếu part_2`);
-      if (!transCode.part_2.instructions?.trim()) throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: part_2 thiếu instructions`);
-      assertCodeBlocksPreserved(part2Src.instructions || "", transCode.part_2.instructions, `Lesson ${sourceRecord.draft.lesson.id} part_2 instructions`, locale);
-
-      const srcHints2 = part2Src.hints ?? [];
-      const transHints2 = transCode.part_2.hints ?? [];
-      if (srcHints2.length !== transHints2.length) {
-        throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: số hints part_2 (${transHints2.length}) không khớp nguồn (${srcHints2.length})`);
+      const srcTests = codeCfg.mode === "edit" ? codeCfg.tests : [];
+      const transTests = transCode.tests ?? [];
+      if (transTests.length !== srcTests.length) {
+        throw new TranslationIntegrityError(`[${locale}] Lesson ${lessonId}: số tests (${transTests.length}) không khớp nguồn (${srcTests.length})`);
       }
-      for (let i = 0; i < srcHints2.length; i++) {
-        if (!transHints2[i]?.trim()) {
-          throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: hint ${i + 1} của part_2 không được rỗng`);
-        }
-        assertCodeBlocksPreserved(srcHints2[i], transHints2[i], `Lesson ${sourceRecord.draft.lesson.id} part_2 hint ${i + 1}`, locale);
-      }
-
-      const transTests = transCode.part_2.tests ?? [];
-      if (transTests.length !== part2Src.tests.length) {
-        throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: số tests part_2 (${transTests.length}) không khớp nguồn (${part2Src.tests.length})`);
-      }
-      for (const st of part2Src.tests) {
+      for (const st of srcTests) {
         const tt = transTests.find((t) => t.id === st.id);
-        if (!tt) throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: thiếu test ${st.id}`);
-        if (!tt.description?.trim()) throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: test ${st.id} thiếu description`);
+        if (!tt) throw new TranslationIntegrityError(`[${locale}] Lesson ${lessonId}: thiếu test ${st.id}`);
+        if (!tt.description?.trim()) throw new TranslationIntegrityError(`[${locale}] Lesson ${lessonId}: test ${st.id} thiếu description`);
         if (st.failure_message && !tt.failure_message?.trim()) {
-          throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: test ${st.id} thiếu failure_message`);
+          throw new TranslationIntegrityError(`[${locale}] Lesson ${lessonId}: test ${st.id} thiếu failure_message`);
         }
         if (st.hint && !tt.hint?.trim()) {
-          throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: test ${st.id} thiếu hint`);
+          throw new TranslationIntegrityError(`[${locale}] Lesson ${lessonId}: test ${st.id} thiếu hint`);
         }
       }
     }
@@ -483,35 +426,14 @@ export function buildLessonLocaleData(
     });
     result.question_copy = questionCopy;
   } else if (format === "code_exercise" && translated.code) {
-    const codeCfg = sourceRecord.draft.lesson.code_exercise_config;
-    if (codeCfg && codeCfg.mode === "two_stage") {
-      result.code_exercise_locale = {
-        instructions: translated.code.instructions,
-        parts: [
-          {
-            instructions: translated.code.part_1?.instructions,
-            hints: translated.code.part_1?.hints,
-            blank_feedback: Object.fromEntries(
-              (translated.code.part_1?.blanks ?? []).map((b) => [b.id, b.feedback]),
-            ),
-          },
-          {
-            instructions: translated.code.part_2?.instructions,
-            hints: translated.code.part_2?.hints,
-            test_copy: Object.fromEntries(
-              (translated.code.part_2?.tests ?? []).map((t) => [
-                t.id,
-                {
-                  description: t.description,
-                  failure_message: t.failure_message,
-                  hint: t.hint,
-                },
-              ]),
-            ),
-          },
-        ],
-      };
-    }
+    result.code_exercise_locale = {
+      instructions: translated.code.instructions,
+      ...(translated.code.hints.length ? { hints: translated.code.hints } : {}),
+      blank_feedback: Object.fromEntries(translated.code.blanks.map((b) => [b.id, b.feedback])),
+      test_copy: Object.fromEntries(
+        translated.code.tests.map((t) => [t.id, { description: t.description, failure_message: t.failure_message, hint: t.hint }]),
+      ),
+    };
   }
 
   // Đảm bảo TUYỆT ĐỐI không vi phạm learning_content_shape_guard
@@ -600,27 +522,20 @@ export const TRANSLATE_CODE_SCHEMA = schemaObj({
   summary: schemaStr,
   code: schemaObj({
     instructions: schemaStr,
-    part_1: schemaObj({
-      instructions: schemaStr,
-      hints: schemaStrList,
-      blanks: {
-        type: "array",
-        items: schemaObj({ id: schemaStr, feedback: schemaStr }),
-      },
-    }),
-    part_2: schemaObj({
-      instructions: schemaStr,
-      hints: schemaStrList,
-      tests: {
-        type: "array",
-        items: schemaObj({
-          id: schemaStr,
-          description: schemaStr,
-          failure_message: schemaStr,
-          hint: schemaStr,
-        }),
-      },
-    }),
+    hints: schemaStrList,
+    blanks: {
+      type: "array",
+      items: schemaObj({ id: schemaStr, feedback: schemaStr }),
+    },
+    tests: {
+      type: "array",
+      items: schemaObj({
+        id: schemaStr,
+        description: schemaStr,
+        failure_message: schemaStr,
+        hint: schemaStr,
+      }),
+    },
   }),
 });
 
@@ -709,21 +624,14 @@ export function buildLessonTranslateInput(record: LessonRecord, courseId: string
     const cfg = l.code_exercise_config as any;
     base.code = {
       instructions: l.code_exercise_locale?.instructions || "",
-      part_1: cfg?.parts?.[0] ? {
-        instructions: cfg.parts[0].instructions,
-        hints: cfg.parts[0].hints || [],
-        blanks: (cfg.parts[0].blanks || []).map((b: any) => ({ id: b.id, feedback: b.feedback })),
-      } : undefined,
-      part_2: cfg?.parts?.[1] ? {
-        instructions: cfg.parts[1].instructions,
-        hints: cfg.parts[1].hints || [],
-        tests: (cfg.parts[1].tests || []).map((t: any) => ({
-          id: t.id,
-          description: t.description,
-          failure_message: t.failure_message,
-          hint: t.hint,
-        })),
-      } : undefined,
+      hints: cfg?.hints || [],
+      blanks: (cfg?.blanks || []).map((b: any) => ({ id: b.id, feedback: b.feedback || "" })),
+      tests: (cfg?.tests || []).map((t: any) => ({
+        id: t.id,
+        description: t.description,
+        failure_message: t.failure_message || "",
+        hint: t.hint || "",
+      })),
     };
   } else if (format === "practice") {
     base.practice = {

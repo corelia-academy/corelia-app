@@ -189,8 +189,8 @@ describe("translate: validateLessonTranslation", () => {
     });
   });
 
-  it("code_exercise: rejects when two-stage blanks or tests mismatch", () => {
-    const sourceRecord: LessonRecord = {
+  it("code_exercise: rejects when blanks (fill) or tests (edit) mismatch", () => {
+    const fillRecord: LessonRecord = {
       lessonId: "l-code",
       source_ids: ["s1"],
       draft: {
@@ -203,25 +203,11 @@ describe("translate: validateLessonTranslation", () => {
             schema_version: 1,
             revision: 1,
             language: "rust",
-            mode: "two_stage",
-            parts: [
-              {
-                mode: "fill",
-                instructions: "Part 1 instructions",
-                hints: ["Hint 1"],
-                file: { path: "main.rs", starter_source: "let x = {{blank:b1}};" },
-                reference_solution: "let x = 42;",
-                blanks: [{ id: "b1", accepted_answers: ["42"], feedback: "Forty two" }],
-              },
-              {
-                mode: "edit",
-                instructions: "Part 2 instructions",
-                hints: ["Hint 2"],
-                file: { path: "main.rs", starter_source: "" },
-                reference_solution: "fn solve() {}",
-                tests: [{ id: "t1", description: "Has solve", required: true, type: "contains", value: "solve" }],
-              },
-            ],
+            mode: "fill",
+            hints: ["Hint 1"],
+            file: { path: "main.rs", starter_source: "let x = {{blank:b1}};" },
+            reference_solution: "let x = 42;",
+            blanks: [{ id: "b1", accepted_answers: ["42"], feedback: "Forty two" }],
           },
         },
         questions: [],
@@ -229,40 +215,66 @@ describe("translate: validateLessonTranslation", () => {
       },
     };
 
-    const validTranslated: TranslatedLesson = {
+    const validFill: TranslatedLesson = {
       title: "Bài code 1",
       short_description: "Mô tả",
       summary: "Tóm tắt",
       code: {
-        instructions: "Đề bài chung đã dịch",
-        part_1: {
-          instructions: "Hướng dẫn phần 1",
-          hints: ["Gợi ý 1"],
-          blanks: [{ id: "b1", feedback: "Số 42" }],
-        },
-        part_2: {
-          instructions: "Hướng dẫn phần 2",
-          hints: ["Gợi ý 2"],
-          tests: [{ id: "t1", description: "Có hàm solve", failure_message: "Thiếu", hint: "Xem lại" }],
-        },
+        instructions: "Đề bài đã dịch",
+        hints: ["Gợi ý 1"],
+        blanks: [{ id: "b1", feedback: "Số 42" }],
+        tests: [],
       },
     };
 
-    expect(() => validateLessonTranslation(sourceRecord, validTranslated, "vi")).not.toThrow();
+    expect(() => validateLessonTranslation(fillRecord, validFill, "vi")).not.toThrow();
+    expect(() => validateLessonTranslation(fillRecord, { ...validFill, code: { ...validFill.code!, blanks: [{ id: "wrong_id", feedback: "Feedback" }] } }, "vi"))
+      .toThrow("thiếu blank b1");
+    expect(() => validateLessonTranslation(fillRecord, { ...validFill, code: { ...validFill.code!, tests: [{ id: "t1", description: "D", failure_message: "F", hint: "H" }] } }, "vi"))
+      .toThrow("số tests (1) không khớp nguồn (0)");
 
-    // Blank ID bị đổi
-    const invalidBlank: TranslatedLesson = {
-      ...validTranslated,
+    const editRecord: LessonRecord = {
+      lessonId: "l-code",
+      source_ids: ["s1"],
+      draft: {
+        lesson: {
+          id: "l-code",
+          lesson_format: "code_exercise",
+          title: "Code 1",
+          short_description: "Short",
+          code_exercise_config: {
+            schema_version: 1,
+            revision: 1,
+            language: "rust",
+            mode: "edit",
+            hints: ["Hint 2"],
+            file: { path: "main.rs", starter_source: "" },
+            reference_solution: "fn solve() {}",
+            tests: [{ id: "t1", description: "Has solve", required: true, type: "contains", value: "solve" }],
+          },
+        },
+        questions: [],
+        diagrams: [],
+      },
+    };
+
+    const validEdit: TranslatedLesson = {
+      title: "Bài code 1",
+      short_description: "Mô tả",
+      summary: "Tóm tắt",
       code: {
-        ...validTranslated.code!,
-        part_1: {
-          instructions: "Hướng dẫn",
-          hints: ["Gợi ý 1"],
-          blanks: [{ id: "wrong_id", feedback: "Feedback" }],
-        },
+        instructions: "Đề bài đã dịch",
+        hints: ["Gợi ý 2"],
+        blanks: [],
+        tests: [{ id: "t1", description: "Có hàm solve", failure_message: "Thiếu", hint: "Xem lại" }],
       },
     };
-    expect(() => validateLessonTranslation(sourceRecord, invalidBlank, "vi")).toThrow("thiếu blank b1");
+
+    expect(() => validateLessonTranslation(editRecord, validEdit, "vi")).not.toThrow();
+    expect(() => validateLessonTranslation(editRecord, { ...validEdit, code: { ...validEdit.code!, tests: [] } }, "vi"))
+      .toThrow("số tests (0) không khớp nguồn (1)");
+    expect(() => validateLessonTranslation(editRecord, { ...validEdit, code: { ...validEdit.code!, tests: [{ id: "wrong", description: "D", failure_message: "F", hint: "H" }] } }, "vi"))
+      .toThrow("thiếu test t1");
   });
 
   it("practice & video: rejects when code block in markdown is altered (V-28)", () => {
@@ -315,7 +327,7 @@ describe("translate: validateLessonTranslation", () => {
     expect(() => validateLessonTranslation(vidSource, badVid, "vi")).toThrow("bị sửa đổi");
   });
 
-  it("code_exercise: checks code blocks and {{blank:...}} markers integrity (V-28)", () => {
+  it("code_exercise: checks code blocks in instructions and hints, and English leaks (V-28)", () => {
     const codeSource: LessonRecord = {
       lessonId: "l-code",
       source_ids: ["s1"],
@@ -325,30 +337,16 @@ describe("translate: validateLessonTranslation", () => {
           lesson_format: "code_exercise",
           title: "Code",
           short_description: "Short",
+          code_exercise_locale: { instructions: "Overarching ```rust\nlet a = 1;\n```" },
           code_exercise_config: {
             schema_version: 1,
             revision: 1,
             language: "rust",
-            mode: "two_stage",
-            instructions: "Overarching ```rust\nlet a = 1;\n```",
-            parts: [
-              {
-                mode: "fill",
-                instructions: "Fill in {{blank:b1}} please",
-                hints: ["Hint ```code```"],
-                file: { path: "main.rs", starter_source: "" },
-                reference_solution: "",
-                blanks: [{ id: "b1", accepted_answers: ["1"], feedback: "Feedback" }],
-              },
-              {
-                mode: "edit",
-                instructions: "Edit instructions",
-                hints: ["Hint 2"],
-                file: { path: "main.rs", starter_source: "" },
-                reference_solution: "",
-                tests: [{ id: "t1", description: "Desc", failure_message: "Fail", hint: "Hint", required: true, type: "contains", value: "x" }],
-              },
-            ],
+            mode: "fill",
+            hints: ["Hint ```code```"],
+            file: { path: "main.rs", starter_source: "let {{blank:b1}} = 1;" },
+            reference_solution: "let a = 1;",
+            blanks: [{ id: "b1", accepted_answers: ["a"], feedback: "Feedback" }],
           },
         },
         questions: [],
@@ -362,40 +360,23 @@ describe("translate: validateLessonTranslation", () => {
       summary: "Tóm tắt",
       code: {
         instructions: "Đề bài chung ```rust\nlet a = 1;\n```",
-        part_1: {
-          instructions: "Điền vào {{blank:b1}} nhé",
-          hints: ["Gợi ý ```code```"],
-          blanks: [{ id: "b1", feedback: "Phản hồi" }],
-        },
-        part_2: {
-          instructions: "Sửa phần 2",
-          hints: ["Gợi ý 2"],
-          tests: [{ id: "t1", description: "Mô tả", failure_message: "Lỗi", hint: "Gợi ý test" }],
-        },
+        hints: ["Gợi ý ```code```"],
+        blanks: [{ id: "b1", feedback: "Phản hồi" }],
+        tests: [],
       },
     };
     expect(() => validateLessonTranslation(codeSource, validCode, "vi")).not.toThrow();
 
     const leakedCodeFields: TranslatedLesson[] = [
       { ...validCode, code: { ...validCode.code!, instructions: "Đề bài but còn sót" } },
-      { ...validCode, code: { ...validCode.code!, part_1: { ...validCode.code!.part_1!, hints: ["Gợi ý with phần chưa dịch"] } } },
-      { ...validCode, code: { ...validCode.code!, part_1: { ...validCode.code!.part_1!, blanks: [{ id: "b1", feedback: "Phản hồi but còn sót" }] } } },
-      { ...validCode, code: { ...validCode.code!, part_2: { ...validCode.code!.part_2!, tests: [{ id: "t1", description: "Mô tả", failure_message: "Lỗi", hint: "Gợi ý but còn sót" }] } } },
+      { ...validCode, code: { ...validCode.code!, hints: ["Gợi ý with phần chưa dịch"] } },
+      { ...validCode, code: { ...validCode.code!, blanks: [{ id: "b1", feedback: "Phản hồi but còn sót" }] } },
     ];
     for (const leaked of leakedCodeFields) expect(() => validateLessonTranslation(codeSource, leaked, "vi")).toThrow("còn chữ tiếng Anh");
 
-    // Marker {{blank:b1}} bị dịch mất
-    const missingMarker: TranslatedLesson = {
-      ...validCode,
-      code: {
-        ...validCode.code!,
-        part_1: {
-          ...validCode.code!.part_1!,
-          instructions: "Điền vào ô trống nhé",
-        },
-      },
-    };
-    expect(() => validateLessonTranslation(codeSource, missingMarker, "vi")).toThrow("marker {{blank:...}}");
+    // Code block trong instructions bị đổi nội dung
+    const alteredBlock: TranslatedLesson = { ...validCode, code: { ...validCode.code!, instructions: "Đề bài chung ```rust\nlet a = 2;\n```" } };
+    expect(() => validateLessonTranslation(codeSource, alteredBlock, "vi")).toThrow("code instructions");
   });
 
   it("article: checks diagram edges integrity (V-28)", () => {
@@ -481,11 +462,11 @@ describe("translate: buildLessonLocaleData shape guard compliance", () => {
             schema_version: 1,
             revision: 1,
             language: "rust",
-            mode: "two_stage",
-            parts: [
-              { mode: "fill", file: { path: "main.rs", starter_source: "" }, reference_solution: "", blanks: [{ id: "b1", accepted_answers: ["1"] }] },
-              { mode: "edit", file: { path: "main.rs", starter_source: "" }, reference_solution: "", tests: [{ id: "t1", description: "desc", required: true, type: "contains", value: "v" }] },
-            ],
+            mode: "fill",
+            file: { path: "main.rs", starter_source: "let {{blank:b1}} = 1;" },
+            reference_solution: "let x = 1;",
+            hints: ["H1"],
+            blanks: [{ id: "b1", accepted_answers: ["1"], feedback: "F1" }],
           },
         },
         questions: [],
@@ -499,8 +480,9 @@ describe("translate: buildLessonLocaleData shape guard compliance", () => {
       summary: "Tóm tắt",
       code: {
         instructions: "Đề bài chung",
-        part_1: { instructions: "P1", hints: ["H1"], blanks: [{ id: "b1", feedback: "F1" }] },
-        part_2: { instructions: "P2", hints: ["H2"], tests: [{ id: "t1", description: "D1", failure_message: "M1", hint: "H1" }] },
+        hints: ["H1 dịch"],
+        blanks: [{ id: "b1", feedback: "F1" }],
+        tests: [],
       },
     };
 
@@ -509,12 +491,11 @@ describe("translate: buildLessonLocaleData shape guard compliance", () => {
 
     expect(data.title).toBe("Bài code");
     expect(data.short_description).toBe("Mô tả");
-    expect(data.code_exercise_locale).toMatchObject({
+    expect(data.code_exercise_locale).toEqual({
       instructions: "Đề bài chung",
-      parts: [
-        { instructions: "P1", blank_feedback: { b1: "F1" } },
-        { instructions: "P2", test_copy: { t1: { description: "D1" } } },
-      ],
+      hints: ["H1 dịch"],
+      blank_feedback: { b1: "F1" },
+      test_copy: {},
     });
 
     // BẮT BUỘC KHÔNG ĐƯỢC CHỨA CÁC TRƯỜNG BỊ CẤM BỞI TRIGGER
@@ -524,6 +505,49 @@ describe("translate: buildLessonLocaleData shape guard compliance", () => {
     expect(data).not.toHaveProperty("code_exercise_config");
     expect(data).not.toHaveProperty("published");
     expect(data).not.toHaveProperty("archived_at");
+  });
+
+  it("maps an edit exercise's tests to test_copy and leaves blank_feedback empty", () => {
+    const sourceRecord: LessonRecord = {
+      lessonId: "l-code",
+      source_ids: ["s1"],
+      draft: {
+        lesson: {
+          id: "l-code",
+          lesson_format: "code_exercise",
+          title: "Code 2",
+          short_description: "Short",
+          code_exercise_config: {
+            schema_version: 1,
+            revision: 1,
+            language: "rust",
+            mode: "edit",
+            file: { path: "main.rs", starter_source: "" },
+            reference_solution: "fn solve() {}",
+            tests: [{ id: "t1", description: "desc", required: true, type: "contains", value: "solve" }],
+          },
+        },
+        questions: [],
+        diagrams: [],
+      },
+    };
+    const translated: TranslatedLesson = {
+      title: "Bài code 2",
+      short_description: "Mô tả",
+      summary: "Tóm tắt",
+      code: {
+        instructions: "Đề bài",
+        hints: [],
+        blanks: [],
+        tests: [{ id: "t1", description: "D1", failure_message: "M1", hint: "H1" }],
+      },
+    };
+    const data = buildLessonLocaleData(sourceRecord, translated, "course-123", "vi", (md: string) => md);
+    expect(data.code_exercise_locale).toEqual({
+      instructions: "Đề bài",
+      blank_feedback: {},
+      test_copy: { t1: { description: "D1", failure_message: "M1", hint: "H1" } },
+    });
   });
 });
 
@@ -542,15 +566,13 @@ describe("V-25: code_exercise_locale instructions & course description parity", 
             schema_version: 1,
             revision: 1,
             language: "rust",
-            mode: "two_stage",
-            parts: [
-              { mode: "fill", instructions: "P1", blanks: [{ id: "b1", accepted_answers: ["1"] }] },
-              { mode: "edit", instructions: "P2", tests: [{ id: "t1", description: "D1", required: true, type: "contains", value: "x" }] },
-            ],
+            mode: "fill",
+            file: { path: "main.rs", starter_source: "let {{blank:b1}} = 10;" },
+            reference_solution: "let x = 10;",
+            blanks: [{ id: "b1", accepted_answers: ["x"] }],
           },
           code_exercise_locale: {
             instructions: "Thực hành Rust với đề bài chung: ```rust\nlet x = 10;\n```",
-            parts: [{ instructions: "P1" }, { instructions: "P2" }],
           },
         },
         questions: [],
@@ -576,15 +598,13 @@ describe("V-25: code_exercise_locale instructions & course description parity", 
             schema_version: 1,
             revision: 1,
             language: "rust",
-            mode: "two_stage",
-            parts: [
-              { mode: "fill", instructions: "P1", blanks: [{ id: "b1", accepted_answers: ["1"], feedback: "Fb" }] },
-              { mode: "edit", instructions: "P2", tests: [{ id: "t1", description: "D1", required: true, type: "contains", value: "x" }] },
-            ],
+            mode: "fill",
+            file: { path: "main.rs", starter_source: "let {{blank:b1}} = 1;" },
+            reference_solution: "let x = 1;",
+            blanks: [{ id: "b1", accepted_answers: ["x"], feedback: "Fb" }],
           },
           code_exercise_locale: {
             instructions: "Đề bài chung: ```rust\nfn foo() {}\n```",
-            parts: [{ instructions: "P1" }, { instructions: "P2" }],
           },
         },
         questions: [],
@@ -598,8 +618,9 @@ describe("V-25: code_exercise_locale instructions & course description parity", 
       summary: "Tóm tắt",
       code: {
         instructions: "Đề bài dịch: ```rust\nfn foo() {}\n```",
-        part_1: { instructions: "P1 trans", blanks: [{ id: "b1", feedback: "Phản hồi" }] },
-        part_2: { instructions: "P2 trans", tests: [{ id: "t1", description: "D1 trans" }] },
+        hints: [],
+        blanks: [{ id: "b1", feedback: "Phản hồi" }],
+        tests: [],
       },
     };
 
@@ -613,7 +634,7 @@ describe("V-25: code_exercise_locale instructions & course description parity", 
         instructions: "   ",
       },
     };
-    expect(() => validateLessonTranslation(record, missingInstructions, "vi")).toThrow("thiếu instructions chung");
+    expect(() => validateLessonTranslation(record, missingInstructions, "vi")).toThrow("thiếu instructions của bài code");
 
     // 2. Sửa code block trong instructions chung
     const alteredCodeBlock: TranslatedLesson = {

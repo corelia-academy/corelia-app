@@ -10,6 +10,7 @@ export function lesson(id: string, type: string, extra: object = {}) {
     description: "d",
     type,
     purpose: type === "practice" ? "optional_hands_on" : "explanation",
+    code_mode: type === "code_exercise" ? "edit" : null,
     prerequisite_lesson_ids: [],
     outcome_ids: ["o1"],
     prerequisites: [],
@@ -141,23 +142,3 @@ export const fillCode = {
   tests: [],
 };
 
-export const twoStageCode = {
-  instructions: "Thực hành Rust.",
-  language: "rust",
-  part_1: {
-    instructions: "Khai báo biến có thể thay đổi giá trị.",
-    file_path: "lib.rs",
-    starter_source: "let {{blank:kw}} x = 5;",
-    reference_solution: "let mut x = 5;",
-    hints: ["Biến trong Rust mặc định là immutable; cần từ khóa cho phép gán lại."],
-    blanks: [{ id: "kw", accepted_answers: ["mut"], feedback: "Từ khóa này cho phép thay đổi giá trị biến sau khi gán." }],
-  },
-  part_2: {
-    instructions: "Hoàn thành hàm add.",
-    file_path: "lib.rs",
-    starter_source: "pub fn add(a: i32, b: i32) -> i32 { 0 }",
-    reference_solution: "pub fn add(a: i32, b: i32) -> i32 { a + b }",
-    hints: ["Cộng hai số tham số lại với nhau."],
-    tests: [test()],
-  },
-};

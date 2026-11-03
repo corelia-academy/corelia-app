@@ -7,7 +7,6 @@
 import { checkDiagram } from "./diagram.ts";
 import { minQuizQuestions, type LessonDiagram, type LessonDraft, type LessonFormat, type QuestionData } from "./lesson_types.ts";
 import {
-  evaluateCodeExercise,
   ENABLED_CODE_LANGUAGES,
   getCodeLanguageAdapter,
   getYoutubeVideoId,
@@ -40,6 +39,7 @@ interface CurriculumLesson {
   description: string;
   type: LessonFormat;
   purpose: string;
+  code_mode?: "fill" | "edit" | null;
   outcome_ids: string[];
   prerequisites: string[];
   prerequisite_lesson_ids: string[];
@@ -191,21 +191,19 @@ const CODE_BLANK = object({
   feedback: str,
 });
 
-const CODE_PART_1 = object({
+/**
+ * The code block of a code_exercise lesson has one mode, the one the curriculum set (code_mode).
+ * blanks are filled for fill and tests for edit; the list of the other mode stays empty.
+ */
+const CODE_BLOCK = object({
   instructions: str,
+  language: { type: "string", enum: [...ENABLED_CODE_LANGUAGES] },
+  mode: { type: "string", enum: ["fill", "edit"] },
   file_path: str,
   starter_source: str,
   reference_solution: str,
   hints: strList,
   blanks: { type: "array", items: CODE_BLANK },
-});
-
-const CODE_PART_2 = object({
-  instructions: str,
-  file_path: str,
-  starter_source: str,
-  reference_solution: str,
-  hints: strList,
   tests: { type: "array", items: CODE_TEST },
 });
 
@@ -234,12 +232,7 @@ export const LESSON_SCHEMA = object({
       }),
     },
   })),
-  code: nullable(object({
-    instructions: str,
-    language: { type: "string", enum: [...ENABLED_CODE_LANGUAGES] },
-    part_1: CODE_PART_1,
-    part_2: CODE_PART_2,
-  })),
+  code: nullable(CODE_BLOCK),
   practice: nullable(object({
     description_markdown: str,
     mode: { type: "string", enum: ["instruction"] },
@@ -267,22 +260,13 @@ export interface LessonOutput {
   code: {
     instructions: string;
     language: string;
-    part_1: {
-      instructions: string;
-      file_path: string;
-      starter_source: string;
-      reference_solution: string;
-      hints: string[];
-      blanks: { id: string; accepted_answers: string[]; feedback: string }[];
-    };
-    part_2: {
-      instructions: string;
-      file_path: string;
-      starter_source: string;
-      reference_solution: string;
-      hints: string[];
-      tests: { id: string; type: "source_equals" | "contains" | "not_contains"; description: string; required: boolean; value: string; accepted_sources: string[]; failure_message: string; hint: string }[];
-    };
+    mode: "fill" | "edit";
+    file_path: string;
+    starter_source: string;
+    reference_solution: string;
+    hints: string[];
+    blanks: { id: string; accepted_answers: string[]; feedback: string }[];
+    tests: { id: string; type: "source_equals" | "contains" | "not_contains"; description: string; required: boolean; value: string; accepted_sources: string[]; failure_message: string; hint: string }[];
   } | null;
   practice: { description_markdown: string; mode: "instruction"; checklist_items: { id: string; label: string }[] } | null;
   video: { youtube_url: string; start_seconds: number; end_seconds: number; description_markdown: string } | null;
@@ -496,50 +480,31 @@ function nonEmpty<T>(items: T[]): T[] | undefined {
 }
 
 function codeConfig(code: NonNullable<LessonOutput["code"]>): CodeExerciseConfig {
-  const mapTests = (
-    tests: { id: string; type: "source_equals" | "contains" | "not_contains"; description: string; required: boolean; value: string; accepted_sources: string[]; failure_message: string; hint: string }[] = [],
-  ): CodeExerciseTest[] =>
-    tests.map((t) => ({
-      id: t.id,
-      description: t.description,
-      required: t.required,
-      ...(t.failure_message ? { failure_message: t.failure_message } : {}),
-      ...(t.hint ? { hint: t.hint } : {}),
-      ...(t.type === "source_equals"
-        ? { type: "source_equals" as const, accepted_sources: t.accepted_sources }
-        : { type: t.type, value: t.value }),
-    }));
-
-  const p2Tests = mapTests(code.part_2.tests ?? []);
-
-  return {
-    schema_version: 1,
+  const tests: CodeExerciseTest[] = code.tests.map((t) => ({
+    id: t.id,
+    description: t.description,
+    required: t.required,
+    ...(t.failure_message ? { failure_message: t.failure_message } : {}),
+    ...(t.hint ? { hint: t.hint } : {}),
+    ...(t.type === "source_equals"
+      ? { type: "source_equals" as const, accepted_sources: t.accepted_sources }
+      : { type: t.type, value: t.value }),
+  }));
+  const base = {
+    schema_version: 1 as const,
     revision: 1,
     language: code.language,
-    mode: "two_stage",
-    parts: [
-      {
-        mode: "fill",
-        file: { path: code.part_1.file_path, starter_source: code.part_1.starter_source },
-        reference_solution: code.part_1.reference_solution,
-        blanks: (code.part_1.blanks ?? []).map((b) => ({
-          id: b.id,
-          accepted_answers: b.accepted_answers,
-          ...(b.feedback ? { feedback: b.feedback } : {}),
-        })),
-        ...(code.part_1.hints?.length ? { hints: code.part_1.hints } : {}),
-        ...(code.part_1.instructions ? { instructions: code.part_1.instructions } : {}),
-      },
-      {
-        mode: "edit",
-        file: { path: code.part_2.file_path, starter_source: code.part_2.starter_source },
-        reference_solution: code.part_2.reference_solution,
-        tests: p2Tests,
-        ...(code.part_2.hints?.length ? { hints: code.part_2.hints } : {}),
-        ...(code.part_2.instructions ? { instructions: code.part_2.instructions } : {}),
-      },
-    ],
+    file: { path: code.file_path, starter_source: code.starter_source },
+    reference_solution: code.reference_solution,
+    ...(code.hints.length ? { hints: code.hints } : {}),
   };
+  return code.mode === "fill"
+    ? {
+      ...base,
+      mode: "fill",
+      blanks: code.blanks.map((b) => ({ id: b.id, accepted_answers: b.accepted_answers, ...(b.feedback ? { feedback: b.feedback } : {}) })),
+    }
+    : { ...base, mode: "edit", tests };
 }
 
 /** The app's lesson record for one accepted (or candidate) model output. Pure. */
@@ -596,19 +561,7 @@ export function toLessonDraft(
     })));
   } else if (cl.type === "code_exercise" && out.code) {
     lesson.code_exercise_config = codeConfig(out.code);
-    lesson.code_exercise_locale = {
-      instructions: out.code.instructions,
-      parts: [
-        {
-          instructions: out.code.part_1.instructions,
-          ...(out.code.part_1.hints?.length ? { hints: out.code.part_1.hints } : {}),
-        },
-        {
-          instructions: out.code.part_2.instructions,
-          ...(out.code.part_2.hints?.length ? { hints: out.code.part_2.hints } : {}),
-        },
-      ],
-    };
+    lesson.code_exercise_locale = { instructions: out.code.instructions };
   } else if (cl.type === "practice" && out.practice) {
     lesson.description_markdown = out.practice.description_markdown;
     lesson.practice_config = {
@@ -722,27 +675,15 @@ function learnerTextFields(draft: LessonDraft): { location: string; text: string
   });
   const code = lesson.code_exercise_config;
   if (code) {
-    if (code.mode === "two_stage") {
-      const [p1, p2] = code.parts;
-      (p1.hints ?? []).forEach((hint, index) => add(`lesson.code_exercise_config.parts[0].hints[${index}]`, hint));
-      p1.blanks.forEach((blank, index) => add(`lesson.code_exercise_config.parts[0].blanks[${index}].feedback`, blank.feedback));
-      (p2.hints ?? []).forEach((hint, index) => add(`lesson.code_exercise_config.parts[1].hints[${index}]`, hint));
-      p2.tests.forEach((test, index) => {
-        add(`lesson.code_exercise_config.parts[1].tests[${index}].description`, test.description);
-        add(`lesson.code_exercise_config.parts[1].tests[${index}].failure_message`, test.failure_message);
-        add(`lesson.code_exercise_config.parts[1].tests[${index}].hint`, test.hint);
-      });
-    } else {
-      (code.hints ?? []).forEach((hint, index) => add(`lesson.code_exercise_config.hints[${index}]`, hint));
-      if (code.mode === "fill") {
-        code.blanks.forEach((blank, index) => add(`lesson.code_exercise_config.blanks[${index}].feedback`, blank.feedback));
-      }
-      (code.tests ?? []).forEach((test, index) => {
-        add(`lesson.code_exercise_config.tests[${index}].description`, test.description);
-        add(`lesson.code_exercise_config.tests[${index}].failure_message`, test.failure_message);
-        add(`lesson.code_exercise_config.tests[${index}].hint`, test.hint);
-      });
+    (code.hints ?? []).forEach((hint, index) => add(`lesson.code_exercise_config.hints[${index}]`, hint));
+    if (code.mode === "fill") {
+      code.blanks.forEach((blank, index) => add(`lesson.code_exercise_config.blanks[${index}].feedback`, blank.feedback));
     }
+    (code.tests ?? []).forEach((test, index) => {
+      add(`lesson.code_exercise_config.tests[${index}].description`, test.description);
+      add(`lesson.code_exercise_config.tests[${index}].failure_message`, test.failure_message);
+      add(`lesson.code_exercise_config.tests[${index}].hint`, test.hint);
+    });
   }
   return fields;
 }
@@ -794,35 +735,28 @@ function answerLeakProblems(code: NonNullable<LessonOutput["code"]>): string[] {
     }
   };
 
-  // Part 1: fill blanks
-  const p1Answers = new Set<string>();
-  for (const blank of code.part_1.blanks ?? []) {
+  // Identifiers a blank or a contains test asks for must not appear in the words the learner reads.
+  const answers = new Set<string>();
+  for (const blank of code.blanks) {
     for (const answer of blank.accepted_answers) {
       const identifier = answer.trim();
-      if (/^[A-Za-z_][A-Za-z0-9_]{2,}$/.test(identifier)) p1Answers.add(identifier);
+      if (/^[A-Za-z_][A-Za-z0-9_]{2,}$/.test(identifier)) answers.add(identifier);
     }
   }
-
-  const p1Texts: { location: string; value: string }[] = [];
-  (code.part_1.hints ?? []).forEach((value, index) => p1Texts.push({ location: `code.part_1.hints[${index}]`, value }));
-  (code.part_1.blanks ?? []).forEach((blank, index) => p1Texts.push({ location: `code.part_1.blanks[${index}].feedback`, value: blank.feedback }));
-  checkLeaks(p1Answers, p1Texts);
-
-  // Part 2: edit tests
-  const p2Answers = new Set<string>();
-  for (const test of code.part_2.tests ?? []) {
+  for (const test of code.tests) {
     if (test.type !== "contains") continue;
     const identifier = test.value.trim();
-    if (/^[A-Za-z_][A-Za-z0-9_]{2,}$/.test(identifier)) p2Answers.add(identifier);
+    if (/^[A-Za-z_][A-Za-z0-9_]{2,}$/.test(identifier)) answers.add(identifier);
   }
 
-  const p2Texts: { location: string; value: string }[] = [];
-  (code.part_2.hints ?? []).forEach((value, index) => p2Texts.push({ location: `code.part_2.hints[${index}]`, value }));
-  (code.part_2.tests ?? []).forEach((test, index) => {
-    p2Texts.push({ location: `code.part_2.tests[${index}].failure_message`, value: test.failure_message });
-    p2Texts.push({ location: `code.part_2.tests[${index}].hint`, value: test.hint });
+  const texts: { location: string; value: string }[] = [];
+  code.hints.forEach((value, index) => texts.push({ location: `code.hints[${index}]`, value }));
+  code.blanks.forEach((blank, index) => texts.push({ location: `code.blanks[${index}].feedback`, value: blank.feedback }));
+  code.tests.forEach((test, index) => {
+    texts.push({ location: `code.tests[${index}].failure_message`, value: test.failure_message });
+    texts.push({ location: `code.tests[${index}].hint`, value: test.hint });
   });
-  checkLeaks(p2Answers, p2Texts);
+  checkLeaks(answers, texts);
 
   return problems;
 }
@@ -842,23 +776,19 @@ function codeProblems(
     problems.push(`language phải khớp code_language của khóa (${expectedLanguage})`);
   }
   if (!code.instructions?.trim()) problems.push("thiếu hướng dẫn (instructions)");
-
-  // Part 1: fill
-  if (adapter && !validCodeFile(code.part_1.file_path, code.language)) {
-    problems.push(`part_1: file_path "${code.part_1.file_path}" phải là tên tệp trần có đuôi hợp lệ cho ${code.language}`);
+  if (adapter && !validCodeFile(code.file_path, code.language)) {
+    problems.push(`file_path "${code.file_path}" phải là tên tệp trần có đuôi hợp lệ cho ${code.language}`);
   }
-  if (!code.part_1.instructions?.trim()) problems.push("part_1: thiếu hướng dẫn (instructions)");
-  if (!code.part_1.blanks || code.part_1.blanks.length === 0) problems.push("part_1: phải có ít nhất 1 blank");
-
-  // Part 2: edit
-  if (adapter && !validCodeFile(code.part_2.file_path, code.language)) {
-    problems.push(`part_2: file_path "${code.part_2.file_path}" phải là tên tệp trần có đuôi hợp lệ cho ${code.language}`);
+  if (code.mode === "fill") {
+    if (code.blanks.length === 0) problems.push("mode fill phải có ít nhất 1 blank");
+    if (code.tests.length > 0) problems.push("mode fill không có tests");
+  } else {
+    if (code.blanks.length > 0) problems.push("mode edit không có blanks");
+    if (code.tests.length === 0) problems.push("mode edit phải có ít nhất 1 test");
   }
-  if (!code.part_2.instructions?.trim()) problems.push("part_2: thiếu hướng dẫn (instructions)");
-  if (!code.part_2.tests || code.part_2.tests.length === 0) problems.push("part_2: phải có ít nhất 1 test");
-  for (const t of code.part_2.tests ?? []) {
+  for (const t of code.tests) {
     if (t.type === "source_equals" ? t.accepted_sources.length === 0 : !t.value) {
-      problems.push(`part_2: test ${t.id} thiếu ${t.type === "source_equals" ? "accepted_sources" : "value"}`);
+      problems.push(`test ${t.id} thiếu ${t.type === "source_equals" ? "accepted_sources" : "value"}`);
     }
   }
 
@@ -947,11 +877,18 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
   }
   if (format === "quiz") problems.push(...quizProblems(out.quiz!, draft, ref.lesson.purpose));
   if (format === "code_exercise") {
-    problems.push(...codeProblems(
-      out.code!,
-      draft.lesson.code_exercise_config!,
-      resolveCodeLanguage((ctx.outputs.brief as BriefFull).code_language),
-    ));
+    if (!out.code) {
+      problems.push("thiếu khối code");
+    } else {
+      if (out.code.mode !== ref.lesson.code_mode) {
+        problems.push(`code.mode "${out.code.mode}" phải khớp code_mode của lesson ("${ref.lesson.code_mode ?? "null"}")`);
+      }
+      problems.push(...codeProblems(
+        out.code,
+        draft.lesson.code_exercise_config!,
+        resolveCodeLanguage((ctx.outputs.brief as BriefFull).code_language),
+      ));
+    }
   }
   if (format === "practice") {
     const p = out.practice!;

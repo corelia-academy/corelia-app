@@ -34,19 +34,11 @@ export interface PracticeConfig {
   requires_review?: boolean;
 }
 
-export interface CodeExercisePartLocale {
-  instructions?: string;
-  hints?: string[];
-  blank_feedback?: Record<string, string>;
-  test_copy?: Record<string, { description?: string; failure_message?: string; hint?: string }>;
-}
-
 export interface CodeExerciseLocaleContent {
   instructions?: string;
   hints?: string[];
   blank_feedback?: Record<string, string>;
   test_copy?: Record<string, { description?: string; failure_message?: string; hint?: string }>;
-  parts?: [CodeExercisePartLocale, CodeExercisePartLocale];
 }
 
 export interface CourseLesson {
