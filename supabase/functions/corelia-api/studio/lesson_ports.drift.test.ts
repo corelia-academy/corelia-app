@@ -36,32 +36,9 @@ const edit = {
   reference_solution: "pub fn add(a: i32, b: i32) -> i32 { a + b }",
   tests: [{ id: "sum", type: "contains", value: "a + b", required: true, description: "d" }],
 };
-
-const twoStage = {
-  schema_version: 1,
-  revision: 1,
-  language: "rust",
-  mode: "two_stage",
-  parts: [
-    {
-      mode: "fill",
-      file: { path: "lib.rs", starter_source: "let {{blank:kw}} x = 5;" },
-      reference_solution: "let mut x = 5;",
-      blanks: [{ id: "kw", accepted_answers: ["mut"] }],
-    },
-    {
-      mode: "edit",
-      file: { path: "lib.rs", starter_source: "pub fn add(a: i32, b: i32) -> i32 { 0 }" },
-      reference_solution: "pub fn add(a: i32, b: i32) -> i32 { a + b }",
-      tests: [{ id: "sum", type: "contains", value: "a + b", required: true, description: "d" }],
-    },
-  ],
-};
 const configs: [string, unknown][] = [
   ["valid fill", fill],
   ["valid edit", edit],
-  ["valid two_stage", twoStage],
-  ["two_stage starter passes", { ...twoStage, parts: [twoStage.parts[0], { ...twoStage.parts[1], file: { path: "lib.rs", starter_source: twoStage.parts[1].reference_solution } }] }],
   ["null", null],
   ["not an object shape", { ...fill, schema_version: 2 }],
   ["bad language", { ...fill, language: "cobol" }],
@@ -98,7 +75,6 @@ const lessons: [string, Record<string, unknown>][] = [
   ["quiz bad shape", { ...lessonBase, lesson_format: "quiz", quiz_config: { passing_ratio: "x" } }],
   ["code", { ...lessonBase, lesson_format: "code_exercise", code_exercise_config: edit }],
   ["code bad", { ...lessonBase, lesson_format: "code_exercise", code_exercise_config: { ...edit, reference_solution: "x" } }],
-  ["code two_stage", { ...lessonBase, lesson_format: "code_exercise", code_exercise_config: twoStage }],
   ["practice instruction", { ...lessonBase, lesson_format: "practice", description_markdown: "x", practice_config: { mode: "instruction", requires_review: false } }],
   ["practice review", { ...lessonBase, lesson_format: "practice", description_markdown: "x", practice_config: { mode: "instruction", requires_review: true } }],
   ["practice checklist", { ...lessonBase, lesson_format: "practice", description_markdown: "x", practice_config: { mode: "checklist", checklist_items: [{ id: "a", label: "A" }] } }],

@@ -546,8 +546,7 @@
     "redoFromStart": "Làm lại từ đầu",
     "redoConfirm": "Làm lại bài này từ đầu? Đáp án và bản nháp trên thiết bị sẽ được xóa. Lịch sử nộp bài vẫn được giữ.",
     "resources": "Tài nguyên",
-    "resourcesDrawerHint": "Các đường dẫn, tài liệu tham khảo cho bài học này.",
-    "resourcesEmpty": "Chưa có tài nguyên cho bài học này.",
+    "resourcesDrawerHint": "Các đường dẫn, repo hướng dẫn cho mỗi phần học.",
     "previous": "Bài trước",
     "next": "Bài tiếp theo",
     "finish": "Hoàn tất khóa học",
@@ -759,7 +758,6 @@
       "required_test_missing": "Đánh dấu ít nhất một test bắt buộc.",
       "solution_failed": "Sửa lời giải tham chiếu để vượt qua các test bắt buộc.",
       "unresolved_solution": "Điền đầy đủ ô trống trong lời giải tham chiếu.",
-      "starter_passes": "Mã khởi đầu đã vượt qua các kiểm tra bắt buộc. Hãy cập nhật mã khởi đầu để người học cần giải bài tập.",
       "invalid_locale_copy": "Nội dung chữ, bản dịch hoặc metadata video sai kiểu."
     },
     "publishSettings": "Xuất bản & xem thử",
@@ -785,13 +783,6 @@
     "imageUploadFailed": "Không tải được ảnh. Vui lòng thử lại.",
     "imageInvalid": "Chọn ảnh PNG, JPEG, WebP hoặc GIF tối đa 5 MB.",
     "imageDefaultAlt": "Ảnh",
-    "imageInserted": "Đã chèn ảnh vào nội dung bài học.",
-    "codePart1": "Phần 1: Điền chỗ trống",
-    "codePart2": "Phần 2: Viết mã",
-    "codePart2Locked": "Hoàn thành Phần 1 để mở khóa Phần 2",
-    "codeContinueToPart2": "Tiếp tục sang Phần 2",
-    "twoStageNotice": "Bài tập này gồm 2 phần: hoàn thành Phần 1, sau đó giải quyết Phần 2.",
-    "blanks": "chỗ trống",
-    "tests": "kiểm tra"
+    "imageInserted": "Đã chèn ảnh vào nội dung bài học."
   }
 }

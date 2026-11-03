@@ -35,16 +35,3 @@ it("tolerates blocked storage on read and write", () => {
   expect(readCodeDraft("draft")).toBeNull();
   expect(saveCodeDraft("draft", { mode: "edit", source: "fn main() {}", updated_at })).toBe(false);
 });
-
-it("round trips two_stage drafts correctly", () => {
-  const draft: CodeExerciseDraft = {
-    mode: "two_stage",
-    stage1_answers: { kw: "mut" },
-    stage2_source: "fn main() {}",
-    active_stage: 2,
-    stage1_passed: true,
-    updated_at,
-  };
-  expect(saveCodeDraft("draft", draft)).toBe(true);
-  expect(readCodeDraft("draft")).toEqual(draft);
-});

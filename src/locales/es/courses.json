@@ -555,8 +555,7 @@
     "redoFromStart": "Empezar de nuevo",
     "redoConfirm": "¿Empezar este ejercicio de nuevo? Se borrarán tus respuestas actuales y el borrador local. Los envíos anteriores permanecerán en tu historial.",
     "resources": "Recursos",
-    "resourcesDrawerHint": "Materiales de referencia y enlaces para esta lección.",
-    "resourcesEmpty": "No hay recursos para esta lección.",
+    "resourcesDrawerHint": "Guías y repositorios de cada sección.",
     "previous": "Anterior",
     "next": "Siguiente lección",
     "finish": "Terminar curso",
@@ -768,7 +767,6 @@
       "required_test_missing": "Marca al menos una prueba como obligatoria.",
       "solution_failed": "Corrige la solución de referencia para que superen las pruebas obligatorias.",
       "unresolved_solution": "Resuelve todos los huecos de la solución de referencia.",
-      "starter_passes": "El código inicial ya supera las pruebas obligatorias. Actualiza el código inicial para que el estudiante tenga que resolver el ejercicio.",
       "invalid_locale_copy": "El texto, las traducciones o los metadatos del vídeo tienen tipos no válidos."
     },
     "publishSettings": "Publicación y vista previa",
@@ -794,13 +792,6 @@
     "imageUploadFailed": "No se pudo subir la imagen. Inténtalo de nuevo.",
     "imageInvalid": "Elige una imagen PNG, JPEG, WebP o GIF de hasta 5 MB.",
     "imageDefaultAlt": "Imagen",
-    "imageInserted": "Imagen insertada en el texto de la lección.",
-    "codePart1": "Parte 1: Completar espacios",
-    "codePart2": "Parte 2: Escribir código",
-    "codePart2Locked": "Completa la Parte 1 para desbloquear la Parte 2",
-    "codeContinueToPart2": "Continuar a la Parte 2",
-    "twoStageNotice": "Este ejercicio consta de dos partes: completa la Parte 1 y luego resuelve la Parte 2.",
-    "blanks": "huecos",
-    "tests": "pruebas"
+    "imageInserted": "Imagen insertada en el texto de la lección."
   }
 }

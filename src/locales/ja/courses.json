@@ -537,8 +537,7 @@
     "redoFromStart": "最初からやり直す",
     "redoConfirm": "この演習を最初からやり直しますか？現在の回答とローカルの下書きは消去されます。過去の提出は履歴に残ります。",
     "resources": "リソース",
-    "resourcesDrawerHint": "このレッスンのガイドと参考資料。",
-    "resourcesEmpty": "このレッスンのリソースはまだありません。",
+    "resourcesDrawerHint": "各セクションのガイドとリポジトリ。",
     "previous": "前へ",
     "next": "次のレッスン",
     "finish": "コースを完了",
@@ -750,7 +749,6 @@
       "required_test_missing": "少なくとも 1 つのテストを必須にしてください。",
       "solution_failed": "必須テストに合格するよう、参考解答を修正してください。",
       "unresolved_solution": "参考解答のすべての空欄を埋めてください。",
-      "starter_passes": "開始コードはすでに必須テストに合格しています。学習者が課題を解く必要があるように開始コードを更新してください。",
       "invalid_locale_copy": "テキスト、翻訳、または動画メタデータの型が無効です。"
     },
     "publishSettings": "公開とプレビュー",
@@ -776,13 +774,6 @@
     "imageUploadFailed": "画像をアップロードできませんでした。もう一度お試しください。",
     "imageInvalid": "5 MB までの PNG、JPEG、WebP、GIF 画像を選択してください。",
     "imageDefaultAlt": "画像",
-    "imageInserted": "レッスン本文に画像を挿入しました。",
-    "codePart1": "パート1: 穴埋め",
-    "codePart2": "パート2: コード記述",
-    "codePart2Locked": "パート2を解除するにはパート1を完了してください",
-    "codeContinueToPart2": "パート2に進む",
-    "twoStageNotice": "この演習は2つのパートで構成されています。パート1を完了してからパート2を解いてください。",
-    "blanks": "空欄",
-    "tests": "テスト"
+    "imageInserted": "レッスン本文に画像を挿入しました。"
   }
 }

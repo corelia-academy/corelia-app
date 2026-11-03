@@ -30,12 +30,7 @@ it("keeps code marker/test identities and locale copy within a new lesson scope"
   const copy = duplicateLesson(original, [], { en: { code_exercise_locale: { hints: ["Use mut"] } } }, 9, title);
   expect(copy.lesson.code_exercise_config).toEqual(config);
   expect(copy.locales.en?.code_exercise_locale?.hints).toEqual(["Use mut"]);
-  const copiedConfig = copy.lesson.code_exercise_config;
-  const originalConfig = original.code_exercise_config;
-  if (!copiedConfig || copiedConfig.mode === "two_stage" || !originalConfig) {
-    throw new Error("Expected single-stage code exercise configs");
-  }
-  copiedConfig.file.starter_source = "new source";
-  expect(originalConfig.file.starter_source).toBe(config.file.starter_source);
+  copy.lesson.code_exercise_config!.file.starter_source = "new source";
+  expect(original.code_exercise_config.file.starter_source).toBe(config.file.starter_source);
   expect(config.file.starter_source).not.toBe("new source");
 });

@@ -109,55 +109,18 @@ export interface CodeExerciseBlank {
 export type CodeExerciseTest =
   & { id: string; description: string; required: boolean; failure_message?: string; hint?: string }
   & ({ type: "source_equals"; accepted_sources: string[] } | { type: "contains" | "not_contains"; value: string });
-export interface CodeExercisePartFill {
-  mode: "fill";
-  file: { path: string; starter_source: string };
-  reference_solution: string;
-  blanks: CodeExerciseBlank[];
-  hints?: string[];
-  instructions?: string;
-}
-
-export interface CodeExercisePartEdit {
-  mode: "edit";
-  file: { path: string; starter_source: string };
-  reference_solution: string;
-  tests: CodeExerciseTest[];
-  hints?: string[];
-  instructions?: string;
-}
-
-export interface CodeExerciseFillConfig {
+interface BaseConfig {
   schema_version: 1;
   revision: number;
   language: string;
-  mode: "fill";
   file: { path: string; starter_source: string };
   reference_solution: string;
   hints?: string[];
-  blanks: CodeExerciseBlank[];
-  tests?: CodeExerciseTest[];
 }
-export interface CodeExerciseEditConfig {
-  schema_version: 1;
-  revision: number;
-  language: string;
-  mode: "edit";
-  file: { path: string; starter_source: string };
-  reference_solution: string;
-  hints?: string[];
-  blanks?: never;
-  tests: CodeExerciseTest[];
-}
-export type CodeExerciseSingleConfig = CodeExerciseFillConfig | CodeExerciseEditConfig;
-export interface CodeExerciseTwoStageConfig {
-  schema_version: 1;
-  revision: number;
-  language: string;
-  mode: "two_stage";
-  parts: [CodeExercisePartFill, CodeExercisePartEdit];
-}
-export type CodeExerciseConfig = CodeExerciseFillConfig | CodeExerciseEditConfig | CodeExerciseTwoStageConfig;
+export type CodeExerciseConfig = BaseConfig & (
+  | { mode: "fill"; blanks: CodeExerciseBlank[]; tests?: CodeExerciseTest[] }
+  | { mode: "edit"; blanks?: never; tests: CodeExerciseTest[] }
+);
 export interface CodeExerciseResult {
   passed: boolean;
   results: { test_id: string; passed: boolean; required: boolean }[];
@@ -202,26 +165,20 @@ function matchBlank(blank: CodeExerciseBlank, answer: string): boolean {
   };
   return blank.accepted_answers.some((value) => normalize(value) === normalize(answer));
 }
-export function evaluateCodeExercise(
-  target: CodeExerciseConfig | CodeExercisePartFill | CodeExercisePartEdit,
-  input: { answers?: Record<string, string>; source?: string; stage?: 0 | 1 }
-): CodeExerciseResult {
-  const config = target.mode === "two_stage" ? target.parts[input.stage ?? 0] : target;
+export function evaluateCodeExercise(config: CodeExerciseConfig, input: { answers?: Record<string, string>; source?: string }): CodeExerciseResult {
   const source = config.mode === "fill" ? reconstructSource(config.file.starter_source, input.answers ?? {}) : input.source ?? "";
   if (sourceBytes(source) > MAX_SOURCE_BYTES) throw new Error("source_too_large");
   const results: CodeExerciseResult["results"] = config.mode === "fill"
     ? config.blanks.map((blank) => ({ test_id: blank.id, required: true, passed: matchBlank(blank, input.answers?.[blank.id] ?? "") }))
     : [];
-  if (config.mode === "edit") {
-    for (const test of config.tests ?? []) {
-      const normalized = source.replace(/\r\n?/g, "\n");
-      const passed = test.type === "source_equals"
-        ? test.accepted_sources.some((value) => normalizeSource(value) === normalizeSource(source))
-        : test.type === "contains"
-        ? normalized.includes(test.value.replace(/\r\n?/g, "\n"))
-        : !normalized.includes(test.value.replace(/\r\n?/g, "\n"));
-      results.push({ test_id: test.id, required: test.required, passed });
-    }
+  for (const test of config.tests ?? []) {
+    const normalized = source.replace(/\r\n?/g, "\n");
+    const passed = test.type === "source_equals"
+      ? test.accepted_sources.some((value) => normalizeSource(value) === normalizeSource(source))
+      : test.type === "contains"
+      ? normalized.includes(test.value.replace(/\r\n?/g, "\n"))
+      : !normalized.includes(test.value.replace(/\r\n?/g, "\n"));
+    results.push({ test_id: test.id, required: test.required, passed });
   }
   return { passed: results.some((r) => r.required) && results.every((r) => !r.required || r.passed), results };
 }
@@ -232,8 +189,22 @@ const record = (value: unknown): value is Record<string, unknown> => value !== n
 const strings = (value: unknown): value is string[] => Array.isArray(value) && value.every((item) => typeof item === "string");
 const optionalText = (value: Record<string, unknown>, keys: string[]) => keys.every((key) => value[key] === undefined || typeof value[key] === "string");
 
-function isTestsShape(tests: unknown): boolean {
-  return tests === undefined || (Array.isArray(tests) && tests.every((test) =>
+function isCodeConfigShape(value: unknown): value is CodeExerciseConfig {
+  if (
+    !record(value) || value.schema_version !== 1 || !isCodeLanguage(value.language) ||
+    !Number.isSafeInteger(value.revision) || Number(value.revision) < 1 ||
+    !record(value.file) || typeof value.file.path !== "string" || typeof value.file.starter_source !== "string" ||
+    typeof value.reference_solution !== "string" || (value.hints !== undefined && !strings(value.hints))
+  ) return false;
+  if (value.mode === "fill") {
+    if (
+      !Array.isArray(value.blanks) || !value.blanks.every((blank) =>
+        record(blank) && typeof blank.id === "string" && strings(blank.accepted_answers) && optionalText(blank, ["feedback"]) &&
+        ["case_sensitive", "trim_whitespace"].every((key) => blank[key] === undefined || typeof blank[key] === "boolean")
+      )
+    ) return false;
+  } else if (value.mode !== "edit" || value.blanks !== undefined || !Array.isArray(value.tests)) return false;
+  return value.tests === undefined || (Array.isArray(value.tests) && value.tests.every((test) =>
     record(test) && typeof test.id === "string" && typeof test.description === "string" && typeof test.required === "boolean" &&
     optionalText(test, ["failure_message", "hint"]) &&
     (test.type === "source_equals"
@@ -242,153 +213,53 @@ function isTestsShape(tests: unknown): boolean {
   ));
 }
 
-function isBlanksShape(blanks: unknown): boolean {
-  return Array.isArray(blanks) && blanks.every((blank) =>
-    record(blank) && typeof blank.id === "string" && strings(blank.accepted_answers) && optionalText(blank, ["feedback"]) &&
-    ["case_sensitive", "trim_whitespace"].every((key) => blank[key] === undefined || typeof blank[key] === "boolean")
-  );
-}
-
-function isCodeConfigShape(value: unknown): value is CodeExerciseConfig {
-  if (
-    !record(value) || value.schema_version !== 1 || !isCodeLanguage(value.language) ||
-    !Number.isSafeInteger(value.revision) || Number(value.revision) < 1
-  ) return false;
-
-  if (value.mode === "two_stage") {
-    if (!Array.isArray(value.parts) || value.parts.length !== 2) return false;
-    const [p1, p2] = value.parts;
-    if (!record(p1) || p1.mode !== "fill" || !record(p1.file) || typeof p1.file.path !== "string" || typeof p1.file.starter_source !== "string" || typeof p1.reference_solution !== "string" || (p1.hints !== undefined && !strings(p1.hints)) || (p1.instructions !== undefined && typeof p1.instructions !== "string") || !isBlanksShape(p1.blanks) || (p1 as { tests?: unknown }).tests !== undefined) return false;
-    if (!record(p2) || p2.mode !== "edit" || !record(p2.file) || typeof p2.file.path !== "string" || typeof p2.file.starter_source !== "string" || typeof p2.reference_solution !== "string" || (p2.hints !== undefined && !strings(p2.hints)) || (p2.instructions !== undefined && typeof p2.instructions !== "string") || p2.blanks !== undefined || !isTestsShape(p2.tests) || !Array.isArray(p2.tests)) return false;
-    return true;
-  }
-
-  if (
-    !record(value.file) || typeof value.file.path !== "string" || typeof value.file.starter_source !== "string" ||
-    typeof value.reference_solution !== "string" || (value.hints !== undefined && !strings(value.hints))
-  ) return false;
-  if (value.mode === "fill") {
-    if (!isBlanksShape(value.blanks)) return false;
-  } else if (value.mode !== "edit" || value.blanks !== undefined || !Array.isArray(value.tests)) return false;
-  return isTestsShape(value.tests);
-}
-
 // ---- src/features/code-exercise/config.ts: validateCodeConfig -------------------------------
-
-function validateTestsList(tests: CodeExerciseTest[] | undefined, errors: string[]): boolean {
-  if (tests !== undefined && !Array.isArray(tests)) {
-    errors.push("invalid_tests");
-    return false;
-  }
-  const testIds = new Set<string>();
-  for (const t of tests ?? []) {
-    if (!t || typeof t.id !== "string" || !t.id || testIds.has(t.id) || typeof t.description !== "string" || typeof t.required !== "boolean") {
-      errors.push("invalid_test");
-      continue;
-    }
-    testIds.add(t.id);
-    if (t.type === "source_equals") {
-      if (!Array.isArray(t.accepted_sources) || !t.accepted_sources.length || t.accepted_sources.some(s => typeof s !== "string" || !s.trim() || sourceBytes(s) > MAX_SOURCE_BYTES)) {
-        errors.push("invalid_test_source");
-      }
-    } else if (!["contains", "not_contains"].includes(t.type) || typeof t.value !== "string" || !t.value) {
-      errors.push("invalid_test_rule");
-    }
-  }
-  return true;
-}
 
 export function validateCodeConfig(value: unknown, publish = false): string[] {
   const errors: string[] = [];
   if (!value || typeof value !== "object") return ["config_required"];
   if (!isCodeConfigShape(value)) return ["invalid_config"];
   const c = value as CodeExerciseConfig;
-  if (c.schema_version !== 1 || !isCodeLanguage(c.language) || !["fill", "edit", "two_stage"].includes(c.mode)) errors.push("unsupported_config");
+  if (c.schema_version !== 1 || !isCodeLanguage(c.language) || !["fill", "edit"].includes(c.mode)) errors.push("unsupported_config");
   if (!Number.isInteger(c.revision) || c.revision < 1) errors.push("invalid_revision");
-
-  if (c.mode === "two_stage") {
-    if (!Array.isArray(c.parts) || c.parts.length !== 2) return ["invalid_config"];
-    const [p1, p2] = c.parts;
-
-    // Part 1: fill
-    if (!p1.file || typeof p1.file.path !== "string" || !validCodeFile(p1.file.path, c.language)) errors.push("invalid_file");
-    for (const source of [p1.file?.starter_source, p1.reference_solution]) {
-      if (typeof source !== "string" || !source.trim()) errors.push("source_required");
-      else if (sourceBytes(source) > MAX_SOURCE_BYTES) errors.push("source_too_large");
-    }
-    if (p1.hints && (!Array.isArray(p1.hints) || p1.hints.some(h => typeof h !== "string"))) errors.push("invalid_hints");
-    try {
-      const ids = parseMarkers(p1.file.starter_source).flatMap(s => s.type === "blank" ? [s.id] : []);
-      if (!Array.isArray(p1.blanks) || ids.length < 1 || ids.length > 5 || p1.blanks.length !== ids.length) errors.push("invalid_blanks");
-      else for (const b of p1.blanks) {
-        if (!b || !ids.includes(b.id) || p1.blanks.filter(x => x.id === b.id).length !== 1 || !Array.isArray(b.accepted_answers) || !b.accepted_answers.length || b.accepted_answers.some(a => typeof a !== "string" || !a.trim() || /[\r\n]/.test(a))) errors.push("invalid_blank");
-      }
-    } catch { errors.push("invalid_markers"); }
-
-    // Part 2: edit
-    if (!p2.file || typeof p2.file.path !== "string" || !validCodeFile(p2.file.path, c.language)) errors.push("invalid_file");
-    for (const source of [p2.file?.starter_source, p2.reference_solution]) {
-      if (typeof source !== "string" || !source.trim()) errors.push("source_required");
-      else if (sourceBytes(source) > MAX_SOURCE_BYTES) errors.push("source_too_large");
-    }
-    if (p2.hints && (!Array.isArray(p2.hints) || p2.hints.some(h => typeof h !== "string"))) errors.push("invalid_hints");
-    validateTestsList(p2.tests, errors);
-    if (!(p2.tests ?? []).some(t => t?.required) || (p2 as { blanks?: unknown }).blanks !== undefined) errors.push("required_test_missing");
-
-    if (publish && !errors.length) {
-      // Validate part 1 solution
-      if (p1.reference_solution.includes("{{blank:")) errors.push("unresolved_solution");
-      else {
-        const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        try {
-          const segments = parseMarkers(p1.file.starter_source);
-          const pattern = segments.map(s => s.type === "source" ? escape(s.value) : "([^\\r\\n]*?)").join("");
-          const match = new RegExp(`^${pattern}$`).exec(p1.reference_solution);
-          const ids = segments.flatMap(s => s.type === "blank" ? [s.id] : []);
-          const answers = Object.fromEntries(ids.map((id, i) => [id, match?.[i + 1] ?? ""]));
-          if (!match || p1.blanks.some(b => !matchBlank(b, answers[b.id])) || !evaluateCodeExercise(p1, { answers }).passed) {
-            errors.push("solution_failed");
-          }
-        } catch { errors.push("solution_failed"); }
-      }
-      // Validate part 2 solution
-      if (p2.reference_solution.includes("{{blank:")) errors.push("unresolved_solution");
-      else if (!evaluateCodeExercise(p2, { source: p2.reference_solution }).passed) {
-        errors.push("solution_failed");
-      }
-
-      // Starter of neither part may automatically pass
-      if (evaluateCodeExercise(p1, { answers: {} }).passed) errors.push("starter_passes");
-      if (evaluateCodeExercise(p2, { source: p2.file.starter_source }).passed) errors.push("starter_passes");
-    }
-    return [...new Set(errors)];
-  }
-
   if (!c.file || typeof c.file.path !== "string" || !validCodeFile(c.file.path, c.language)) errors.push("invalid_file");
   for (const source of [c.file?.starter_source, c.reference_solution]) {
     if (typeof source !== "string" || !source.trim()) errors.push("source_required");
     else if (sourceBytes(source) > MAX_SOURCE_BYTES) errors.push("source_too_large");
   }
-  if (c.hints && (!Array.isArray(c.hints) || c.hints.some(h => typeof h !== "string"))) errors.push("invalid_hints");
+  if (c.hints && (!Array.isArray(c.hints) || c.hints.some((h) => typeof h !== "string"))) errors.push("invalid_hints");
   if (errors.length) return errors;
   const testIds = new Set<string>();
   if (c.tests !== undefined && !Array.isArray(c.tests)) return ["invalid_tests"];
   for (const t of c.tests ?? []) {
-    if (!t || typeof t.id !== "string" || !t.id || testIds.has(t.id) || typeof t.description !== "string" || typeof t.required !== "boolean") { errors.push("invalid_test"); continue; }
+    if (!t || typeof t.id !== "string" || !t.id || testIds.has(t.id) || typeof t.description !== "string" || typeof t.required !== "boolean") {
+      errors.push("invalid_test");
+      continue;
+    }
     testIds.add(t.id);
     if (t.type === "source_equals") {
-      if (!Array.isArray(t.accepted_sources) || !t.accepted_sources.length || t.accepted_sources.some(s => typeof s !== "string" || !s.trim() || sourceBytes(s) > MAX_SOURCE_BYTES)) errors.push("invalid_test_source");
+      if (
+        !Array.isArray(t.accepted_sources) || !t.accepted_sources.length ||
+        t.accepted_sources.some((s) => typeof s !== "string" || !s.trim() || sourceBytes(s) > MAX_SOURCE_BYTES)
+      ) errors.push("invalid_test_source");
     } else if (!["contains", "not_contains"].includes(t.type) || typeof t.value !== "string" || !t.value) errors.push("invalid_test_rule");
   }
-  if (c.mode === "edit" && (!(c.tests ?? []).some(t => t?.required) || c.blanks !== undefined)) errors.push("required_test_missing");
+  if (c.mode === "edit" && (!(c.tests ?? []).some((t) => t?.required) || c.blanks !== undefined)) errors.push("required_test_missing");
   if (c.mode === "fill") {
     try {
-      const ids = parseMarkers(c.file.starter_source).flatMap(s => s.type === "blank" ? [s.id] : []);
+      const ids = parseMarkers(c.file.starter_source).flatMap((s) => s.type === "blank" ? [s.id] : []);
       if (!Array.isArray(c.blanks) || ids.length < 1 || ids.length > 5 || c.blanks.length !== ids.length) errors.push("invalid_blanks");
-      else for (const b of c.blanks) {
-        if (!b || !ids.includes(b.id) || c.blanks.filter(x => x.id === b.id).length !== 1 || !Array.isArray(b.accepted_answers) || !b.accepted_answers.length || b.accepted_answers.some(a => typeof a !== "string" || !a.trim() || /[\r\n]/.test(a))) errors.push("invalid_blank");
+      else {
+        for (const b of c.blanks) {
+          if (
+            !b || !ids.includes(b.id) || c.blanks.filter((x) => x.id === b.id).length !== 1 || !Array.isArray(b.accepted_answers) ||
+            !b.accepted_answers.length || b.accepted_answers.some((a) => typeof a !== "string" || !a.trim() || /[\r\n]/.test(a))
+          ) errors.push("invalid_blank");
+        }
       }
-    } catch { errors.push("invalid_markers"); }
+    } catch {
+      errors.push("invalid_markers");
+    }
   }
   if (publish && !errors.length) {
     if (c.reference_solution.includes("{{blank:")) errors.push("unresolved_solution");
@@ -398,11 +269,11 @@ export function validateCodeConfig(value: unknown, publish = false): string[] {
       // Capture blanks using the literal surrounding source; no arbitrary regex rules.
       const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const segments = parseMarkers(c.file.starter_source);
-      const pattern = segments.map(s => s.type === "source" ? escape(s.value) : "([^\\r\\n]*?)").join("");
+      const pattern = segments.map((s) => s.type === "source" ? escape(s.value) : "([^\\r\\n]*?)").join("");
       const match = new RegExp(`^${pattern}$`).exec(c.reference_solution);
-      const ids = segments.flatMap(s => s.type === "blank" ? [s.id] : []);
+      const ids = segments.flatMap((s) => s.type === "blank" ? [s.id] : []);
       const answers = Object.fromEntries(ids.map((id, i) => [id, match?.[i + 1] ?? ""]));
-      if (!match || c.blanks.some(b => !matchBlank(b, answers[b.id])) || !evaluateCodeExercise(c, { answers }).passed) errors.push("solution_failed");
+      if (!match || c.blanks.some((b) => !matchBlank(b, answers[b.id])) || !evaluateCodeExercise(c, { answers }).passed) errors.push("solution_failed");
     }
   }
   return [...new Set(errors)];

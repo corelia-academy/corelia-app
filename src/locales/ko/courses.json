@@ -537,8 +537,7 @@
     "redoFromStart": "처음부터 다시",
     "redoConfirm": "이 실습을 처음부터 다시 시작할까요? 현재 답안과 로컬 임시 저장이 삭제됩니다. 이전 제출물은 기록에 남습니다.",
     "resources": "자료",
-    "resourcesDrawerHint": "이 레슨의 가이드와 참고 링크입니다.",
-    "resourcesEmpty": "이 레슨에 대한 자료가 없습니다.",
+    "resourcesDrawerHint": "각 섹션별 가이드와 저장소입니다.",
     "previous": "이전",
     "next": "다음 레슨",
     "finish": "강의 마치기",
@@ -750,7 +749,6 @@
       "required_test_missing": "테스트를 하나 이상 필수로 표시하세요.",
       "solution_failed": "필수 테스트가 통과하도록 참고 정답을 수정하세요.",
       "unresolved_solution": "참고 정답의 모든 빈칸을 채우세요.",
-      "starter_passes": "시작 코드가 이미 필수 테스트를 통과했습니다. 학습자가 문제를 해결할 수 있도록 시작 코드를 수정하세요.",
       "invalid_locale_copy": "텍스트, 번역 또는 영상 메타데이터의 형식이 올바르지 않습니다."
     },
     "publishSettings": "게시 및 미리보기",
@@ -776,13 +774,6 @@
     "imageUploadFailed": "이미지를 업로드하지 못했습니다. 다시 시도하세요.",
     "imageInvalid": "최대 5 MB의 PNG, JPEG, WebP 또는 GIF 이미지를 선택하세요.",
     "imageDefaultAlt": "이미지",
-    "imageInserted": "레슨 본문에 이미지를 삽입했습니다.",
-    "codePart1": "1단계: 빈칸 채우기",
-    "codePart2": "2단계: 코드 작성",
-    "codePart2Locked": "2단계를 잠금 해제하려면 1단계를 완료하세요",
-    "codeContinueToPart2": "2단계로 계속",
-    "twoStageNotice": "이 연습 문제는 두 단계로 구성되어 있습니다. 1단계를 완료한 후 2단계를 해결하세요.",
-    "blanks": "빈칸",
-    "tests": "테스트"
+    "imageInserted": "레슨 본문에 이미지를 삽입했습니다."
   }
 }

@@ -546,8 +546,7 @@
     "redoFromStart": "Start over",
     "redoConfirm": "Start this exercise over? Your current answers and local draft will be cleared. Previous submissions will stay in your history.",
     "resources": "Resources",
-    "resourcesDrawerHint": "Reference materials and links for this lesson.",
-    "resourcesEmpty": "No resources for this lesson.",
+    "resourcesDrawerHint": "Guides and repos for each section.",
     "previous": "Previous",
     "next": "Next lesson",
     "finish": "Finish course",
@@ -759,7 +758,6 @@
       "required_test_missing": "Mark at least one test as required.",
       "solution_failed": "Fix the reference solution so required tests pass.",
       "unresolved_solution": "Resolve all blanks in the reference solution.",
-      "starter_passes": "The starter code already passes required checks. Update the starter code so learners have to solve the exercise.",
       "invalid_locale_copy": "Text, translations or video metadata have invalid types."
     },
     "publishSettings": "Publication & preview",
@@ -785,13 +783,6 @@
     "imageUploadFailed": "Could not upload the image. Try again.",
     "imageInvalid": "Choose a PNG, JPEG, WebP or GIF image up to 5 MB.",
     "imageDefaultAlt": "Image",
-    "imageInserted": "Image inserted into the lesson text.",
-    "codePart1": "Part 1: Fill in blanks",
-    "codePart2": "Part 2: Write code",
-    "codePart2Locked": "Complete Part 1 to unlock Part 2",
-    "codeContinueToPart2": "Continue to Part 2",
-    "twoStageNotice": "This exercise has two parts: complete Part 1, then solve Part 2.",
-    "blanks": "blanks",
-    "tests": "tests"
+    "imageInserted": "Image inserted into the lesson text."
   }
 }

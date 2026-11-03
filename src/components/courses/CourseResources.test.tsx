@@ -38,32 +38,12 @@ it("renders only the curriculum in the learn sidebar", async () => {
 });
 
 it.each([{ items: resources }, { items: [] }])("opens the resources drawer from the header button (%j)", async ({ items }) => {
-  const host = await render(<LearnResourcesDrawer resources={items} />);
+  const host = await render(<LearnResourcesDrawer groups={[]} courseResources={items} />);
   const trigger = host.querySelector<HTMLButtonElement>("button")!;
   expect(trigger.textContent).toContain("learning.resources");
   await act(async () => trigger.click());
   if (items.length) expect(Array.from(document.body.querySelectorAll("a")).map(link => link.getAttribute("href"))).toEqual(resources.map(resource => resource.url));
-  else expect(document.body.textContent).toContain("learning.resourcesEmpty");
-});
-
-it("updates drawer content when switching lessons", async () => {
-  function DrawerWrapper() {
-    const [currentResources, setCurrentResources] = useState<CourseResource[] | undefined>(resources);
-    return (
-      <>
-        <button type="button" onClick={() => setCurrentResources([])}>Clear</button>
-        <LearnResourcesDrawer resources={currentResources} />
-      </>
-    );
-  }
-  const host = await render(<DrawerWrapper />);
-  const trigger = Array.from(host.querySelectorAll("button")).find(b => b.textContent?.includes("learning.resources"))!;
-  await act(async () => trigger.click());
-  expect(Array.from(document.body.querySelectorAll("a")).map(link => link.getAttribute("href"))).toEqual(resources.map(resource => resource.url));
-
-  const clearBtn = Array.from(host.querySelectorAll("button")).find(b => b.textContent === "Clear")!;
-  await act(async () => clearBtn.click());
-  expect(document.body.textContent).toContain("learning.resourcesEmpty");
+  else expect(document.body.textContent).toContain("courseResources.empty");
 });
 
 it("adds, reorders and removes resources in the authoring form", async () => {

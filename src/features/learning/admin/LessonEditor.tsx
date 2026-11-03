@@ -25,7 +25,6 @@ import { applyCourseLessonLocaleContent } from "@/lib/courses";
 import { saveLearningLesson } from "@/lib/learning";
 import type { Course, CourseLesson, CourseLessonLocaleContent, CourseSection, LessonFormat, SupportedCourseLocale } from "@/types/courses";
 import type { SectionQuestion } from "@/types/questions";
-import type { CodeExercisePartLocale } from "@/features/code-exercise/types";
 import { QuizBuilder } from "./QuizBuilder";
 import { PracticeBuilder } from "./PracticeBuilder";
 import { isPracticeConfig } from "../practiceConfig";
@@ -41,92 +40,6 @@ import { CONTENT_LOCALES, LOCALE_META } from "@/lib/locales";
 function issueControl(field: string): HTMLElement | null {
   const target = document.getElementById(`learning-${field}`);
   return target?.matches("input:not([disabled]),textarea:not([disabled]),select:not([disabled]),button:not([disabled])") ? target : target?.querySelector<HTMLElement>("input:not([disabled]),textarea:not([disabled]),select:not([disabled]),button:not([disabled])") ?? target;
-}
-
-function CodeExerciseLocaleEditor({
-  config,
-  localeContent,
-  onChange,
-}: {
-  config: NonNullable<CourseLesson["code_exercise_config"]>;
-  localeContent: CourseLessonLocaleContent["code_exercise_locale"];
-  onChange(next: CourseLessonLocaleContent["code_exercise_locale"]): void;
-}) {
-  const { t } = useLearningTranslation();
-
-  if (config.mode === "two_stage") {
-    const p1 = config.parts[0];
-    const p2 = config.parts[1];
-    const currentParts = localeContent?.parts ?? [{}, {}];
-    const p1Loc = currentParts[0] ?? {};
-    const p2Loc = currentParts[1] ?? {};
-
-    const updatePart = (index: 0 | 1, partPatch: Partial<CodeExercisePartLocale>) => {
-      const nextParts: [CodeExercisePartLocale, CodeExercisePartLocale] = [
-        index === 0 ? { ...p1Loc, ...partPatch } : p1Loc,
-        index === 1 ? { ...p2Loc, ...partPatch } : p2Loc,
-      ];
-      onChange({ ...localeContent, parts: nextParts });
-    };
-
-    return (
-      <div className="space-y-6">
-        <div className="space-y-3 rounded-xl border border-border p-4">
-          <h4 className="font-semibold text-sm">{t("learning.codePart1")} ({t("learning.fill")})</h4>
-          <TranslationReference values={[p1.instructions, ...(p1.hints ?? []), ...p1.blanks.map(b => b.feedback)]} />
-          {p1.instructions && (
-            <TextField label={t("learning.instructions")} multiline value={p1Loc.instructions ?? ""} onChange={instructions => updatePart(0, { instructions })} />
-          )}
-          <TextField label={t("learning.hints")} multiline value={(p1Loc.hints ?? []).join("\n")} onChange={v => updatePart(0, { hints: v.split("\n") })} />
-          {p1.blanks.map(b => (
-            <TextField key={b.id} label={`${t("learning.feedback")} · ${b.id}`} value={p1Loc.blank_feedback?.[b.id] ?? ""} onChange={feedback => updatePart(0, { blank_feedback: { ...p1Loc.blank_feedback, [b.id]: feedback } })} />
-          ))}
-        </div>
-
-        <div className="space-y-3 rounded-xl border border-border p-4">
-          <h4 className="font-semibold text-sm">{t("learning.codePart2")} ({t("learning.editCode")})</h4>
-          <TranslationReference values={[p2.instructions, ...(p2.hints ?? []), ...p2.tests.flatMap(test => [test.description, test.failure_message, test.hint])]} />
-          {p2.instructions && (
-            <TextField label={t("learning.instructions")} multiline value={p2Loc.instructions ?? ""} onChange={instructions => updatePart(1, { instructions })} />
-          )}
-          <TextField label={t("learning.hints")} multiline value={(p2Loc.hints ?? []).join("\n")} onChange={v => updatePart(1, { hints: v.split("\n") })} />
-          {p2.tests.map(test => (
-            <div key={test.id} className="space-y-2">
-              <TextField id={`learning-test-${test.id}-description`} label={t("learning.description")} value={p2Loc.test_copy?.[test.id]?.description ?? ""} onChange={description => updatePart(1, { test_copy: { ...p2Loc.test_copy, [test.id]: { ...p2Loc.test_copy?.[test.id], description } } })} />
-              <TextField label={t("learning.feedback")} value={p2Loc.test_copy?.[test.id]?.failure_message ?? ""} onChange={failure_message => updatePart(1, { test_copy: { ...p2Loc.test_copy, [test.id]: { ...p2Loc.test_copy?.[test.id], failure_message } } })} />
-              <TextField label={t("learning.hints")} value={p2Loc.test_copy?.[test.id]?.hint ?? ""} onChange={hint => updatePart(1, { test_copy: { ...p2Loc.test_copy, [test.id]: { ...p2Loc.test_copy?.[test.id], hint } } })} />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (config.mode === "fill") {
-    return (
-      <>
-        <TranslationReference values={[...(config.hints ?? []), ...config.blanks.map(b => b.feedback)]} />
-        <TextField label={t("learning.hints")} multiline value={(localeContent?.hints ?? []).join("\n")} onChange={value => onChange({ ...localeContent, hints: value.split("\n") })} />
-        {config.blanks.map(b => (
-          <TextField key={b.id} label={`${t("learning.feedback")} · ${b.id}`} value={localeContent?.blank_feedback?.[b.id] ?? ""} onChange={value => onChange({ ...localeContent, blank_feedback: { ...localeContent?.blank_feedback, [b.id]: value } })} />
-        ))}
-      </>
-    );
-  }
-
-  return (
-    <>
-      <TranslationReference values={[...(config.hints ?? []), ...config.tests.flatMap(test => [test.description, test.failure_message, test.hint])]} />
-      <TextField label={t("learning.hints")} multiline value={(localeContent?.hints ?? []).join("\n")} onChange={value => onChange({ ...localeContent, hints: value.split("\n") })} />
-      {config.tests.map(test => (
-        <div key={test.id} className="space-y-2">
-          <TextField id={`learning-test-${test.id}-description`} label={t("learning.description")} value={localeContent?.test_copy?.[test.id]?.description ?? ""} onChange={description => onChange({ ...localeContent, test_copy: { ...localeContent?.test_copy, [test.id]: { ...localeContent?.test_copy?.[test.id], description } } })} />
-          <TextField label={t("learning.feedback")} value={localeContent?.test_copy?.[test.id]?.failure_message ?? ""} onChange={failure_message => onChange({ ...localeContent, test_copy: { ...localeContent?.test_copy, [test.id]: { ...localeContent?.test_copy?.[test.id], failure_message } } })} />
-          <TextField label={t("learning.hints")} value={localeContent?.test_copy?.[test.id]?.hint ?? ""} onChange={hint => onChange({ ...localeContent, test_copy: { ...localeContent?.test_copy, [test.id]: { ...localeContent?.test_copy?.[test.id], hint } } })} />
-        </div>
-      ))}
-    </>
-  );
 }
 
 type Locales = Partial<Record<SupportedCourseLocale, Partial<CourseLessonLocaleContent>>>;
@@ -247,7 +160,7 @@ function Editor({courseId,finalAssignment,initial,sections,nextLessonOrder,prima
       {lesson.lesson_format==="video"&&<>{!master&&<><Toggle label={t("learning.useSourceVideo")} checked={!ownVideo} onChange={useSource=>{setOwnVideoLocales(previous=>({...previous,[locale]:!useSource}));if(useSource)localPatch({youtube_url:"",youtube_start_seconds:0,youtube_end_seconds:null});}}/>{!ownVideo&&<p className="text-sm">{lesson.youtube_url??t("learning.videoUpdating")}</p>}</>}{(master||ownVideo)&&<><TextField id="learning-youtube_url" label={t("learning.youtubeUrl")} value={display.youtube_url??""} onChange={youtube_url=>master?patch({youtube_url}):localPatch({youtube_url})}/><TextField label={t("learning.startSeconds")} type="number" value={String(display.youtube_start_seconds??0)} onChange={v=>master?patch({youtube_start_seconds:Number(v)}):localPatch({youtube_start_seconds:Number(v)})}/><TextField id="learning-youtube_end_seconds" label={t("learning.endSeconds")} type="number" value={display.youtube_end_seconds==null?"":String(display.youtube_end_seconds)} onChange={v=>master?patch({youtube_end_seconds:v?Number(v):null}):localPatch({youtube_end_seconds:v?Number(v):null})}/></>}</>}
       {lesson.lesson_format==="quiz"&&(invalidQuestions||invalidQuiz?<div id={invalidQuiz?"learning-quiz_config":"learning-questions"} tabIndex={-1}><p role="alert">{t("learning.invalidQuestionsRecovery")}</p><Button type="button" onClick={async()=>{if(!await confirm(t("learning.recoverQuestionsConfirm")))return;setQuestions(displayQuestions);patch({published:false,...(invalidQuiz?{quiz_config:{passing_ratio:typeof lesson.quiz_config?.passing_ratio==="number"?lesson.quiz_config.passing_ratio:0.7,allow_retry:typeof lesson.quiz_config?.allow_retry==="boolean"?lesson.quiz_config.allow_retry:true}}:{})});setLocale(primaryLocale);}}>{t("learning.recoverQuestions")}</Button></div>:master?<><TextField id="learning-quiz_config" label={t("learning.passingScore")} type="number" value={String((lesson.quiz_config?.passing_ratio??0.7)*100)} onChange={v=>patch({quiz_config:{allow_retry:lesson.quiz_config?.allow_retry??true,passing_ratio:Number(v)/100}})}/><QuizBuilder questions={questions} onChange={setQuestions} courseId={courseId} lessonId={lesson.id}/></>:questions.map(q=><div key={q.id} className="space-y-3 rounded-xl border border-border p-4"><TranslationReference values={[q.question,...q.options.map(o=>o.text),q.explanation]}/><TextField label={t("learning.question")} value={questionCopy?.[q.id]?.question??""} onChange={question=>localPatch({question_copy:{...localized.question_copy,[q.id]:{...questionCopy?.[q.id],question}}})}/>{q.options.map(o=><TextField key={o.id} label={t("learning.option")} value={questionCopy?.[q.id]?.options?.[o.id]??""} onChange={value=>localPatch({question_copy:{...localized.question_copy,[q.id]:{...questionCopy?.[q.id],options:{...questionCopy?.[q.id]?.options,[o.id]:value}}}})}/>)}<TextField label={t("learning.explanation")} value={questionCopy?.[q.id]?.explanation??""} onChange={explanation=>localPatch({question_copy:{...localized.question_copy,[q.id]:{...questionCopy?.[q.id],explanation}}})}/></div>))}
       {lesson.lesson_format==="practice"&&(invalidPractice?<div id="learning-practice_config" tabIndex={-1} className="space-y-3 rounded-lg border border-destructive/30 p-3"><p role="alert">{t("learning.invalidPracticeRecovery")}</p>{master?<Button type="button" variant="cta" hierarchy="secondary" onClick={async()=>{if(await confirm(t("learning.resetPracticeConfirm"))){patch({practice_config:{mode:"instruction"},published:false});setIssues([]);setError(null);}}}>{t("learning.resetPracticeConfig")}</Button>:<Button type="button" variant="cta" hierarchy="secondary" onClick={()=>setLocale(primaryLocale)}>{t("learning.editMasterConfig")}</Button>}</div>:master?<PracticeBuilder config={lesson.practice_config??{mode:"instruction"}} onChange={practice_config=>patch({practice_config})}/>:<><TranslationReference values={[...(lesson.practice_config?.checklist_items??[]).map(item=>item.label),...(lesson.practice_config?.project_steps??[]).flatMap(step=>[step.title,step.instructions_markdown])]}/>{lesson.practice_config?.checklist_items?.map(item=><TextField key={item.id} label={item.label} value={localized.practice_copy?.[item.id]?.label??""} onChange={label=>localPatch({practice_copy:{...localized.practice_copy,[item.id]:{label}}})}/>)}{lesson.practice_config?.project_steps?.map(step=><div key={step.id}><TextField label={t("learning.title")} value={localized.practice_copy?.[step.id]?.title??""} onChange={title=>localPatch({practice_copy:{...localized.practice_copy,[step.id]:{...localized.practice_copy?.[step.id],title}}})}/><TextField label={t("learning.instructions")} multiline value={localized.practice_copy?.[step.id]?.instructions_markdown??""} onChange={instructions_markdown=>localPatch({practice_copy:{...localized.practice_copy,[step.id]:{...localized.practice_copy?.[step.id],instructions_markdown}}})}/></div>)}</>)}
-      {lesson.lesson_format==="code_exercise"&&(invalidCode?<div id="learning-code_exercise_config" tabIndex={-1} className="space-y-3 rounded-lg border border-destructive/30 p-3"><p role="alert">{t("learning.invalidCodeRecovery")}</p>{master?<Button type="button" variant="cta" hierarchy="secondary" onClick={async()=>{if(await confirm(t("learning.resetCodeConfirm"))){patch({code_exercise_config:defaultCodeConfig(),published:false});setIssues([]);setError(null);}}}>{t("learning.resetCodeConfig")}</Button>:<Button type="button" variant="cta" hierarchy="secondary" onClick={()=>setLocale(primaryLocale)}>{t("learning.editMasterConfig")}</Button>}</div>:lesson.code_exercise_config&&(master?<CodeExerciseBuilder config={lesson.code_exercise_config} onChange={code_exercise_config=>patch({code_exercise_config})}/>:invalidCopy?null:<CodeExerciseLocaleEditor config={lesson.code_exercise_config} localeContent={localized.code_exercise_locale} onChange={code_exercise_locale=>localPatch({code_exercise_locale})}/>))}
+      {lesson.lesson_format==="code_exercise"&&(invalidCode?<div id="learning-code_exercise_config" tabIndex={-1} className="space-y-3 rounded-lg border border-destructive/30 p-3"><p role="alert">{t("learning.invalidCodeRecovery")}</p>{master?<Button type="button" variant="cta" hierarchy="secondary" onClick={async()=>{if(await confirm(t("learning.resetCodeConfirm"))){patch({code_exercise_config:defaultCodeConfig(),published:false});setIssues([]);setError(null);}}}>{t("learning.resetCodeConfig")}</Button>:<Button type="button" variant="cta" hierarchy="secondary" onClick={()=>setLocale(primaryLocale)}>{t("learning.editMasterConfig")}</Button>}</div>:lesson.code_exercise_config&&(master?<CodeExerciseBuilder config={lesson.code_exercise_config} onChange={code_exercise_config=>patch({code_exercise_config})}/>:invalidCopy?null:<><TranslationReference values={[...(lesson.code_exercise_config.hints??[]),...(lesson.code_exercise_config.blanks??[]).map(b=>b.feedback),...(lesson.code_exercise_config.tests??[]).flatMap(test=>[test.description,test.failure_message,test.hint])]}/><TextField label={t("learning.hints")} multiline value={(localized.code_exercise_locale?.hints??[]).join("\n")} onChange={value=>localPatch({code_exercise_locale:{...localized.code_exercise_locale,hints:value.split("\n")}})}/>{lesson.code_exercise_config.blanks?.map(b=><TextField key={b.id} label={`${t("learning.feedback")} · ${b.id}`} value={localized.code_exercise_locale?.blank_feedback?.[b.id]??""} onChange={value=>localPatch({code_exercise_locale:{...localized.code_exercise_locale,blank_feedback:{...localized.code_exercise_locale?.blank_feedback,[b.id]:value}}})}/>)}{lesson.code_exercise_config.tests?.map(test=><div key={test.id}><TextField id={`learning-test-${test.id}-description`} label={t("learning.description")} value={localized.code_exercise_locale?.test_copy?.[test.id]?.description??""} onChange={description=>localPatch({code_exercise_locale:{...localized.code_exercise_locale,test_copy:{...localized.code_exercise_locale?.test_copy,[test.id]:{...localized.code_exercise_locale?.test_copy?.[test.id],description}}}})}/><TextField label={t("learning.feedback")} value={localized.code_exercise_locale?.test_copy?.[test.id]?.failure_message??""} onChange={failure_message=>localPatch({code_exercise_locale:{...localized.code_exercise_locale,test_copy:{...localized.code_exercise_locale?.test_copy,[test.id]:{...localized.code_exercise_locale?.test_copy?.[test.id],failure_message}}}})}/><TextField label={t("learning.hints")} value={localized.code_exercise_locale?.test_copy?.[test.id]?.hint??""} onChange={hint=>localPatch({code_exercise_locale:{...localized.code_exercise_locale,test_copy:{...localized.code_exercise_locale?.test_copy,[test.id]:{...localized.code_exercise_locale?.test_copy?.[test.id],hint}}}})}/></div>)}</>))}
       {!isLessonResourceList(display.resources??[]) ? <div id="learning-resources" tabIndex={-1} className="space-y-3 rounded-lg border border-destructive/30 p-3"><p role="alert">{t("learning.invalidResourcesRecovery")}</p><Button type="button" variant="cta" hierarchy="secondary" onClick={async()=>{if(await confirm(t("learning.recoverResourcesConfirm"))){const resources=Array.isArray(display.resources)?display.resources.filter(resource=>isLessonResourceList([resource])):[];if(master)patch({resources,published:false});else{localPatch({resources});patch({published:false});}setIssues([]);setError(null);}}}>{t("learning.recoverResources")}</Button></div> : <>
       {(display.resources??[]).map((r,i)=><div key={i} className="grid gap-2 sm:grid-cols-2"><TextField id={`learning-resource-${i}-title`} label={t("learning.title")} value={r.title} onChange={title=>{const resources=(display.resources??[]).map((v,j)=>i===j?{...v,title}:v);if(master) patch({resources}); else localPatch({resources});}}/><TextField id={`learning-resource-${i}-url`} label="URL" value={r.url} onChange={url=>{const resources=(display.resources??[]).map((v,j)=>i===j?{...v,url}:v);if(master) patch({resources}); else localPatch({resources});}}/><Button type="button" variant="cta" hierarchy="tertiary" className="sm:col-span-2" onClick={()=>{const resources=(display.resources??[]).filter((_,index)=>index!==i);if(master)patch({resources});else localPatch({resources});}}>{t("learning.removeResource",{number:i+1})}</Button></div>)}<Button type="button" variant="cta" hierarchy="secondary" onClick={()=>{const resources=[...display.resources??[],{title:"",url:""}];if(master) patch({resources}); else localPatch({resources});}}>{t("learning.addResource")}</Button></>}
     </div>}

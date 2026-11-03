@@ -47,20 +47,6 @@ describe("code exercise engine", () => {
     expect(withCodeRevision(c, { ...c, hints: ["new hint"] }).revision).toBe(1);
     expect(withCodeRevision(c, { ...c, reference_solution: "new solution" }).revision).toBe(2);
   });
-  it("evaluates two_stage config directly across stage 0 and stage 1", () => {
-    const twoStage = defaultCodeConfig("two_stage");
-    expect(twoStage.mode).toBe("two_stage");
-
-    // Stage 0 (fill): default stage or explicit stage: 0
-    expect(evaluateCodeExercise(twoStage, { answers: { mutable: "mut" } }).passed).toBe(true);
-    expect(evaluateCodeExercise(twoStage, { answers: { mutable: "mut" }, stage: 0 }).passed).toBe(true);
-    expect(evaluateCodeExercise(twoStage, { answers: { mutable: "wrong" }, stage: 0 }).passed).toBe(false);
-
-    // Stage 1 (edit): explicit stage: 1
-    const p2Solution = twoStage.parts[1].reference_solution;
-    expect(evaluateCodeExercise(twoStage, { source: p2Solution, stage: 1 }).passed).toBe(true);
-    expect(evaluateCodeExercise(twoStage, { source: "let x = 1;", stage: 1 }).passed).toBe(false);
-  });
 });
 describe("local draft isolation", () => {
   beforeEach(() => localStorage.clear());
