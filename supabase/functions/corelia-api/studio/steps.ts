@@ -4,8 +4,10 @@ import {
   acceptLesson,
   buildLessonInput,
   buildLessonReviewInput,
+  hasText,
   lessonVideoCandidates,
   normalizeResearchTopic,
+  recapCarriers,
   LESSON_SCHEMA,
   LESSON_SHARED_KEYS,
   lessonTools,
@@ -329,6 +331,8 @@ const CURRICULUM_SCHEMA = object({
       id: str,
       title: str,
       description: str,
+      /** "After this module you can …": what the learner can do once the module is done. */
+      recap: str,
       lessons: {
         type: "array",
         items: object({
@@ -345,6 +349,9 @@ const CURRICULUM_SCHEMA = object({
           pass_threshold: { type: ["number", "null"] },
           review_lesson_ids: strList,
           source_ids: strList,
+          new_knowledge: str,
+          opening_question: str,
+          next_question: { type: ["string", "null"] },
         }),
       },
     }),
@@ -441,13 +448,19 @@ interface CurriculumLesson {
   pass_threshold: number | null;
   review_lesson_ids: string[];
   source_ids: string[];
+  /** What the learner understands or can do after the lesson, and why the course needs it. */
+  new_knowledge: string;
+  /** A concrete, light question taken from the course task; the lesson answers it. */
+  opening_question: string;
+  /** The question this lesson leaves for the next lesson; null only at the end of the course or for optional_hands_on. */
+  next_question: string | null;
 }
 
 interface Curriculum {
   status: string;
   missing: string[];
   outcomes: { id: string; check_lesson_ids: string[] }[];
-  modules: { id: string; lessons: CurriculumLesson[] }[];
+  modules: { id: string; recap: string; lessons: CurriculumLesson[] }[];
 }
 
 export function list(items: string[], max = 3): string {
@@ -694,6 +707,77 @@ function curriculumCodeChecks(curriculum: Curriculum) {
   ];
 }
 
+/** Longest run of article/video lessons in one module. Past this, a quiz or code exercise must break the run. */
+export const MAX_READING_OR_VIDEO_RUN = 2;
+/** Most teaching lessons (explanation or worked_example) in a row before a quiz or code exercise. */
+export const MAX_TEACHING_RUN = 2;
+
+const TEXT_FIELD_ERROR = "phải là chuỗi không rỗng";
+
+/**
+ * Knowledge and question chain, checked by code: the fields exist, and next_question is null only where
+ * no next lesson exists (the last lesson of the course) or for optional_hands_on. What the texts say
+ * is checked by A4 and A6, not here.
+ */
+function knowledgeProblems(curriculum: Curriculum): string[] {
+  const problems: string[] = [];
+  const lessons = curriculum.modules.flatMap((m) => m.lessons);
+  const last = lessons.length - 1;
+  for (const module of curriculum.modules) {
+    if (!hasText(module.recap)) problems.push(`module ${module.id}: recap ${TEXT_FIELD_ERROR} (giờ bạn hiểu được …, làm được …)`);
+  }
+  lessons.forEach((l, index) => {
+    if (!hasText(l.new_knowledge)) problems.push(`lesson ${l.id}: new_knowledge ${TEXT_FIELD_ERROR}`);
+    if (!hasText(l.opening_question)) problems.push(`lesson ${l.id}: opening_question ${TEXT_FIELD_ERROR}`);
+    if (l.next_question === null) {
+      if (index !== last && l.purpose !== "optional_hands_on") {
+        problems.push(`lesson ${l.id}: next_question chỉ được null ở bài cuối khóa hoặc optional_hands_on`);
+      }
+    } else if (typeof l.next_question !== "string") {
+      problems.push(`lesson ${l.id}: next_question phải là chuỗi hoặc null`);
+    } else if (index === last) {
+      problems.push(`lesson ${l.id}: bài cuối khóa phải có next_question = null`);
+    } else if (!hasText(l.next_question)) {
+      problems.push(`lesson ${l.id}: next_question ${TEXT_FIELD_ERROR}`);
+    }
+  });
+  return problems;
+}
+
+/** Every module must have a lesson that carries its recap (see recapCarriers in lessons.ts). */
+function recapProblems(curriculum: Curriculum): string[] {
+  const carried = new Set([...recapCarriers(curriculum).values()].flat().map((p) => p.module_id));
+  return curriculum.modules
+    .filter((m) => !carried.has(m.id))
+    .map((m) => `module ${m.id}: không có bài có phần chữ để mang recap (bài dạy đầu module sau, hoặc bài có phần chữ cuối module cuối trước final_check)`);
+}
+
+/**
+ * Mix of forms inside one module, checked in lesson order: no more than MAX_READING_OR_VIDEO_RUN
+ * article/video lessons in a row, and no more than MAX_TEACHING_RUN teaching lessons before a quiz
+ * or code exercise. A run is reported once, at the lesson where it first goes over the limit.
+ */
+function rhythmProblems(module: { id: string; lessons: CurriculumLesson[] }): string[] {
+  const problems: string[] = [];
+  let readingRun = 0;
+  let teachingRun = 0;
+  for (const lesson of module.lessons) {
+    readingRun = lesson.type === "article" || lesson.type === "video" ? readingRun + 1 : 0;
+    if (readingRun === MAX_READING_OR_VIDEO_RUN + 1) {
+      problems.push(`module ${module.id}: hơn ${MAX_READING_OR_VIDEO_RUN} bài liên tiếp dạng article/video tại ${lesson.id}; cần một quiz hoặc code_exercise xen vào`);
+    }
+    if (TEACHING_STEP_PURPOSES.includes(lesson.purpose)) {
+      teachingRun += 1;
+      if (teachingRun === MAX_TEACHING_RUN + 1) {
+        problems.push(`module ${module.id}: hơn ${MAX_TEACHING_RUN} bài dạy liên tiếp trước quiz hoặc code_exercise tại ${lesson.id}`);
+      }
+    } else if (lesson.type === "quiz" || lesson.type === "code_exercise") {
+      teachingRun = 0;
+    }
+  }
+  return problems;
+}
+
 export function acceptCurriculum(
   output: unknown,
   sourceIds: Set<string>,
@@ -733,6 +817,7 @@ export function acceptCurriculum(
   const earlierLessonIds = new Set<string>();
   curriculum.modules.forEach((module, moduleIndex) => {
     problems.push(...moduleStepProblems(module, moduleIndex, curriculum.modules.length, earlierLessonIds, codeLanguage, allowLegacyWarmUp));
+    problems.push(...rhythmProblems(module));
     module.lessons.forEach((l) => earlierLessonIds.add(l.id));
   });
   const practiceIds = new Set(lessons.filter((l) => l.type === "practice").map((l) => l.id));
@@ -870,6 +955,8 @@ export function acceptCurriculum(
     if (!recalls) problems.push("không có lesson ôn lại outcome của module trước");
   }
 
+  // Knowledge fields and recap placement come after the module rules, so a module's own problem is reported first.
+  problems.push(...knowledgeProblems(curriculum), ...recapProblems(curriculum));
   if (problems.length > 0) return { ok: false, reason: `Curriculum chưa hợp lệ: ${list(problems)}` };
   return {
     ok: true,

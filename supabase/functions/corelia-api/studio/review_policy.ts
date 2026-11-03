@@ -39,6 +39,8 @@ export const A4_REVIEW_CRITERIA = [
   "no_submissions",
   "supported_platform_formats",
   "outcome_coverage",
+  // Each lesson adds knowledge the one before it did not teach, and the next lesson answers next_question.
+  "knowledge_progression",
 ] as const;
 
 export const A6_REVIEW_CRITERIA = [

@@ -8,6 +8,7 @@ import {
   lessonIds,
   lessonRefs,
   lessonRevision,
+  curriculumStaleReason,
   hasUnseenBlocking,
   reviewBlocking,
   toLessonDraft,
@@ -1113,6 +1114,15 @@ async function submitStep(
   }
   const prompt = await loadAgentPrompt(db, agent.promptKey);
   const ctx = await loadContext(db, run, step, lessonId);
+  // A curriculum that cannot be written from or reviewed (no knowledge fields, or no code_mode on a code lesson)
+  // stops the run here, before any model call. A thrown error would only be logged on every tick and never shown.
+  if (step === "curriculum_review" || step === "lessons" || step === "lesson_review") {
+    const stale = curriculumStaleReason(ctx.outputs.curriculum);
+    if (stale) {
+      await finishRun(db, run, step, "draft_failed", stale, attempt);
+      return;
+    }
+  }
   const tools = lessonId && spec.lessonTools ? spec.lessonTools(lessonId, ctx) : spec.tools;
   // After an infrastructure failure the retry is not a correction: the model is not told it was
   // rejected, and a provider failure (possibly no flex capacity) goes to the default tier.

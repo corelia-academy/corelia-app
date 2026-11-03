@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { journeyProblems, linkProblems, structureProblems, type LessonRecord } from "./checks.ts";
 import { MAX_LESSON_REVIEWS, MAX_LESSON_REVIEWS_LATE, planLessons, type LessonGeneration, type LessonStep } from "./lesson_flow.ts";
 import { MAX_TRANSPORT_FAILURES } from "./retry.ts";
-import { article, base, ctx, curriculum, editCode, fillCode, lesson, makeFiveQuestions, now, question } from "./lesson_fixtures.ts";
+import { article, base, ctx, curriculum, editCode, fillCode, lesson, makeFiveQuestions, now, question, withKnowledge } from "./lesson_fixtures.ts";
 import { getCodeLanguageAdapter } from "./lesson_ports.ts";
 import { acceptLessonReview, LESSON_REVIEW_SCHEMA, resolvePath } from "./lesson_review.ts";
 import { lessonReviewEventPayload } from "./handlers.ts";
@@ -260,7 +260,7 @@ function c284Context(lessonId: string, research = c284ResearchSample): RunContex
   const sourceIds = lessonId === "m1_diagnostic_js" ? ["S15", "S16"] : lessonId === "m2_node_only" ? ["S07"] : ["S05", "S07"];
   return {
     ...ctx,
-    outputs: { ...ctx.outputs, brief: { locale: "vi" }, research, curriculum: c284CurriculumSample },
+    outputs: { ...ctx.outputs, brief: { locale: "vi" }, research, curriculum: withKnowledge(c284CurriculumSample) },
     lesson: { drafts: 1, reviews: 0, draft: { ...base, source_ids: sourceIds, article }, review: null },
   };
 }

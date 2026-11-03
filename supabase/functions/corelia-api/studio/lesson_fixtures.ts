@@ -22,6 +22,42 @@ export function lesson(id: string, type: string, extra: object = {}) {
   };
 }
 
+/**
+ * Fills the knowledge fields a curriculum now carries, where a fixture leaves them out: each lesson
+ * gets its own new_knowledge and opening_question, next_question names the following lesson (null at
+ * the end of the course or for optional_hands_on), and each module gets a recap. Fields the fixture
+ * already sets are kept, so a test can still break one on purpose. Positions are counted in order.
+ */
+export function withKnowledge<T extends { modules: { id: string; lessons: { id: string; purpose: string }[] }[] }>(curriculum: T): T {
+  // A research request has no modules; it passes through unchanged.
+  if (!Array.isArray(curriculum?.modules)) return curriculum;
+  const lessons = curriculum.modules.flatMap((m) => m.lessons);
+  let position = -1;
+  return {
+    ...curriculum,
+    modules: curriculum.modules.map((module) => ({
+      recap: `After this module you can use ${module.id}.`,
+      ...module,
+      lessons: module.lessons.map((l) => {
+        position += 1;
+        const index = position;
+        const next = lessons[index + 1];
+        const nextQuestion = index === lessons.length - 1 || l.purpose === "optional_hands_on" ? null : `What does ${next.id} build on?`;
+        const fixture = { ...(l as Record<string, unknown>) };
+        // A next_question this helper wrote for another position is recomputed; one a test wrote stays.
+        if (typeof fixture.next_question === "string" && fixture.next_question.startsWith("What does ")) delete fixture.next_question;
+        return {
+          new_knowledge: `Learner knows the new idea taught in ${l.id}.`,
+          opening_question: `How would you handle the situation in ${l.id}?`,
+          next_question: nextQuestion,
+          // The fixture's own values win over the defaults above.
+          ...fixture,
+        };
+      }),
+    })),
+  } as T;
+}
+
 export const curriculum = {
   outcomes: [{ id: "o1", text: "Làm được X" }, { id: "o2", text: "Làm được Y" }],
   modules: [
@@ -68,7 +104,7 @@ export const ctx: RunContext = {
   course: { title: "Rust", level: "beginner" },
   paths: [],
   scopes: [],
-  outputs: { brief: { locale: "vi", code_language: "rust" }, research, curriculum },
+  outputs: { brief: { locale: "vi", code_language: "rust" }, research, curriculum: withKnowledge(curriculum) },
   today: "2026-10-20",
   revision: null,
 };

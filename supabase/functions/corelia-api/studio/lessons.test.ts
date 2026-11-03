@@ -1,9 +1,25 @@
 import { describe, expect, it } from "vitest";
 
-import { acceptLesson, hasUnseenBlocking, buildLessonInput, buildLessonReviewInput, LESSON_SCHEMA, lessonIds, lessonRefs, quizPassingRatio, toLessonDraft, TransientError } from "./lessons.ts";
+import {
+  acceptLesson,
+  ARTICLE_MAX_PROSE_CHARS,
+  articleProseLength,
+  buildLessonInput,
+  buildLessonReviewInput,
+  checksAlreadyRun,
+  hasUnseenBlocking,
+  LESSON_SCHEMA,
+  lessonIdLeaks,
+  lessonIds,
+  lessonRefs,
+  quizPassingRatio,
+  STALE_KNOWLEDGE_MESSAGE,
+  toLessonDraft,
+  TransientError,
+} from "./lessons.ts";
 import { ENABLED_CODE_LANGUAGES, getCodeLanguageAdapter, PREPARED_CODE_LANGUAGES } from "./lesson_ports.ts";
 import { PLATFORM_FORMAT_GUIDE } from "./formats.ts";
-import { article, base, ctx, curriculum, diagram, editCode, fillCode, fiveQuestions, lesson, question, test } from "./lesson_fixtures.ts";
+import { article, base, ctx, curriculum, diagram, editCode, fillCode, fiveQuestions, lesson, question, test, withKnowledge } from "./lesson_fixtures.ts";
 
 const ok = (youtube = true, over?: object): typeof fetch => (() => Promise.resolve(new Response(
   youtube ? JSON.stringify({ author_name: "Let's Get Rusty", author_url: "https://www.youtube.com/@letsgetrusty", ...over }) : "",
@@ -741,7 +757,7 @@ describe("studio lessons: input", () => {
         curriculum.modules[1],
       ],
     };
-    const legacyCtx = { ...ctx, outputs: { ...ctx.outputs, curriculum: legacyCurriculum } } as typeof ctx;
+    const legacyCtx = { ...ctx, outputs: { ...ctx.outputs, curriculum: withKnowledge(legacyCurriculum) } } as typeof ctx;
     const input = buildLessonInput(legacyCtx, "l-art") as Record<string, any>;
     expect(input.module).toMatchObject({ first_teaching_lesson_id: "l-art" });
   });
@@ -821,5 +837,62 @@ describe("studio lessons: schema", () => {
 describe("studio lessons: curriculum", () => {
   it("lists the lessons of a curriculum in teaching order", () => {
     expect(lessonIds(curriculum)).toEqual(["l-art", "l-quiz", "l-code", "l-prac", "l-vid"]);
+  });
+});
+
+describe("studio lessons: knowledge chain, length, ID and code_mode checks (A5 v30)", () => {
+  it("counts article length without fenced code blocks", () => {
+    expect(articleProseLength("abc\n```ts\nxxxxx\n```\ndef")).toBe("abc\n\ndef".length);
+    // An unclosed fence runs to the end of the text, so the code after it is not counted.
+    expect(articleProseLength("abc\n```\ncode that goes on")).toBe("abc\n".length);
+    expect(ARTICLE_MAX_PROSE_CHARS).toBe(9000);
+  });
+
+  it("refuses an article whose prose is longer than the limit, and counts only prose", async () => {
+    const long = await reason("l-art", { article: { ...article, description_markdown: "x".repeat(ARTICLE_MAX_PROSE_CHARS + 1) } });
+    expect(long).toContain(`vượt giới hạn ${ARTICLE_MAX_PROSE_CHARS}`);
+    const withCode = `## Biên dịch\n\nXem ![sơ đồ](diagram:d1) bên dưới.\n\n${"x".repeat(8900)}\n\`\`\`\n${"y".repeat(5000)}\n\`\`\``;
+    expect(await reason("l-art", { article: { ...article, description_markdown: withCode } })).not.toContain("vượt giới hạn");
+  });
+
+  it("finds curriculum lesson IDs in learner text as whole tokens, ignoring case", () => {
+    const texts = [{ location: "lesson.description_markdown", text: "See L04-02 and l04-02, not L04-020 or xL04-02." }];
+    expect(lessonIdLeaks(texts, ["L04-02"])).toEqual([
+      { location: "lesson.description_markdown", id: "L04-02" },
+      { location: "lesson.description_markdown", id: "l04-02" },
+    ]);
+    // A short ID is still a token: "intro" matches "Intro", not "introduction".
+    expect(lessonIdLeaks([{ location: "t", text: "Intro, then introduction." }], ["intro"])).toEqual([{ location: "t", id: "Intro" }]);
+    expect(lessonIdLeaks([{ location: "t", text: "no ids here" }], [])).toEqual([]);
+  });
+
+  it("refuses a lesson that shows another lesson's ID to the learner", async () => {
+    const leaked = await reason("l-art", { article: { ...article, description_markdown: "## Biên dịch\n\nXem l-quiz trước.\n" } });
+    expect(leaked).toContain('lộ mã bài "l-quiz"');
+    expect(leaked).toContain("hãy viết tiêu đề bài thay cho mã");
+  });
+
+  it("names the checks by code_mode separately (V-55): a fill exercise has no test claim", () => {
+    const fill = checksAlreadyRun("code_exercise", "rust", "fill");
+    expect(fill.some((c) => c.startsWith("code_mode fill") && c.includes("tests rỗng"))).toBe(true);
+    expect(fill.some((c) => c.includes("reference_solution đạt mọi test bắt buộc"))).toBe(false);
+    const edit = checksAlreadyRun("code_exercise", "rust", "edit");
+    expect(edit.some((c) => c.startsWith("code_mode edit") && c.includes("reference_solution đạt mọi test bắt buộc"))).toBe(true);
+    // Starter behaviour is not checked by code; the list must say so instead of claiming it.
+    expect(edit.join(" ")).toContain("CHƯA được code kiểm");
+  });
+
+  it("gives A5 the recap it writes here, by placement, and prerequisite lessons by title", () => {
+    // Module m1 ends with a quiz: its recap opens l-code, the first teaching lesson of m2.
+    expect(buildLessonInput(ctx, "l-code").recap_to_write).toEqual([{ module_id: "m1", placement: "opening", text: "After this module you can use m1." }]);
+    // Module m2 ends with a video, its last prose lesson: the recap of m2 closes there.
+    expect(buildLessonInput(ctx, "l-vid").recap_to_write).toEqual([{ module_id: "m2", placement: "closing", text: "After this module you can use m2." }]);
+    expect(buildLessonInput(ctx, "l-art").recap_to_write).toEqual([]);
+    expect(buildLessonInput(ctx, "l-vid").prerequisite_lessons).toEqual([]);
+  });
+
+  it("refuses to write a lesson from a curriculum without the knowledge fields", () => {
+    const staleCtx = { ...ctx, outputs: { ...ctx.outputs, curriculum } } as typeof ctx;
+    expect(() => buildLessonInput(staleCtx, "l-art")).toThrow(STALE_KNOWLEDGE_MESSAGE);
   });
 });

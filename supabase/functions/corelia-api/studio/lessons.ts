@@ -47,10 +47,125 @@ interface CurriculumLesson {
   pass_threshold: number | null;
   review_lesson_ids: string[];
   source_ids: string[];
+  new_knowledge: string;
+  opening_question: string;
+  next_question: string | null;
 }
 interface CurriculumFull {
   outcomes: { id: string; text: string }[];
-  modules: { id: string; title: string; description: string; lessons: CurriculumLesson[] }[];
+  modules: { id: string; title: string; description: string; recap: string; lessons: CurriculumLesson[] }[];
+}
+
+/** Error for a curriculum written before new_knowledge, opening_question, next_question and recap existed. */
+export const STALE_KNOWLEDGE_MESSAGE =
+  "Curriculum của lượt này được tạo trước khi có new_knowledge, opening_question, next_question và recap, nên không dùng được cho bước tiếp theo. Hãy tạo lại curriculum cho khóa.";
+
+/** A string with some text after trimming: the text fields the curriculum and lessons must fill. */
+export function hasText(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+/**
+ * True when the curriculum carries the fields the lesson and review steps need. A curriculum written
+ * before these fields existed has none of them, so it cannot be reviewed or written from: it must be created again.
+ */
+export function hasKnowledgeFields(curriculum: unknown): boolean {
+  const c = curriculum as Partial<CurriculumFull> | null;
+  if (!c || !Array.isArray(c.modules)) return false;
+  return c.modules.every((m) =>
+    hasText(m.recap) && Array.isArray(m.lessons) && m.lessons.every((l) =>
+      hasText(l.new_knowledge) && hasText(l.opening_question) && (l.next_question === null || hasText(l.next_question))
+    )
+  );
+}
+
+/**
+ * Why a curriculum cannot be written from, or null when it can: the knowledge fields are missing, or a
+ * code lesson has no code_mode (a curriculum from before code_mode). The run stops with this message
+ * before any model call.
+ */
+export function curriculumStaleReason(curriculum: unknown): string | null {
+  if (!hasKnowledgeFields(curriculum)) return STALE_KNOWLEDGE_MESSAGE;
+  const c = curriculum as CurriculumFull;
+  for (const l of c.modules.flatMap((m) => m.lessons)) {
+    if (l.type === "code_exercise" && l.code_mode !== "fill" && l.code_mode !== "edit") {
+      return `Bài code "${l.id}" của khóa này được lập trước khi có code_mode; cần tạo lại khóa.`;
+    }
+  }
+  return null;
+}
+
+/** A recap written in one lesson: the module it belongs to, where it goes, and its text. */
+export interface RecapPlacement {
+  module_id: string;
+  placement: "opening" | "closing";
+  text: string;
+}
+
+const PROSE_LESSON_TYPES: readonly string[] = ["article", "video", "code_exercise"];
+const TEACHING_PURPOSES_FOR_RECAP: readonly string[] = ["explanation", "worked_example"];
+
+/**
+ * Which lesson carries each module's recap (decision 03/11/2026, log 3.9). A module that ends with prose
+ * (article, video or code_exercise, optional_hands_on not counted) closes with its recap in that lesson.
+ * A module that ends with a quiz has no prose to close in: its recap opens the first teaching lesson of
+ * the next module. The last module closes in its last prose lesson before the first final_check.
+ * A quiz never carries a recap. Pure.
+ */
+export function recapCarriers(curriculum: unknown): Map<string, RecapPlacement[]> {
+  const out = new Map<string, RecapPlacement[]>();
+  const modules = (curriculum as Partial<CurriculumFull> | null)?.modules;
+  if (!Array.isArray(modules)) return out;
+  const add = (lessonId: string, placement: RecapPlacement) => out.set(lessonId, [...(out.get(lessonId) ?? []), placement]);
+  modules.forEach((module, index) => {
+    const lessons = module.lessons.filter((l) => l.purpose !== "optional_hands_on");
+    if (index < modules.length - 1) {
+      const last = lessons.at(-1);
+      if (last && PROSE_LESSON_TYPES.includes(last.type)) {
+        add(last.id, { module_id: module.id, placement: "closing", text: module.recap });
+      } else {
+        const opening = modules[index + 1].lessons.find((l) => TEACHING_PURPOSES_FOR_RECAP.includes(l.purpose));
+        if (opening) add(opening.id, { module_id: module.id, placement: "opening", text: module.recap });
+      }
+    } else {
+      const firstFinal = lessons.findIndex((l) => l.purpose === "final_check");
+      const before = firstFinal < 0 ? lessons : lessons.slice(0, firstFinal);
+      const carrier = before.filter((l) => PROSE_LESSON_TYPES.includes(l.type)).at(-1);
+      if (carrier) add(carrier.id, { module_id: module.id, placement: "closing", text: module.recap });
+    }
+  });
+  return out;
+}
+
+/** Longest article body, counted without code blocks. Past it A5 must write the lesson shorter (A3 plans the split). */
+export const ARTICLE_MAX_PROSE_CHARS = 9000;
+/** How many leaked lesson IDs are listed in one refusal; the rest are counted. */
+const LEAK_REPORT_LIMIT = 4;
+
+/** Characters of article text a learner reads: fenced code blocks are left out, the rest is counted as written. */
+export function articleProseLength(markdown: string): number {
+  // An unclosed fence runs to the end of the text, so the code after it is not counted either.
+  return markdown.replace(/```[\s\S]*?(?:```|$)/g, "").length;
+}
+
+function escapeForRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Curriculum lesson IDs that appear in learner-facing text. A whole token only, ignoring case: "L04-02"
+ * in "see L04-02" is a leak; "intro" inside "introduction" is not. A short ID that is also an ordinary
+ * English word can match it, so IDs should be codes such as "L04-02".
+ */
+export function lessonIdLeaks(texts: { location: string; text: string }[], ids: string[]): { location: string; id: string }[] {
+  const unique = [...new Set(ids.filter((id) => id.trim().length > 0))].sort((a, b) => b.length - a.length);
+  if (unique.length === 0) return [];
+  const pattern = new RegExp(`(?<![\\p{L}\\p{N}_-])(${unique.map(escapeForRegExp).join("|")})(?![\\p{L}\\p{N}_-])`, "giu");
+  const leaks: { location: string; id: string }[] = [];
+  for (const field of texts) {
+    for (const match of field.text.matchAll(pattern)) leaks.push({ location: field.location, id: match[1] });
+  }
+  return leaks;
 }
 interface ResearchFull {
   sources: { source_id: string; title: string; url: string; access: string }[];
@@ -357,6 +472,8 @@ export function lessonBase(ctx: RunContext, lessonId: string, draftOverride?: un
   const effectiveLesson: CurriculumLesson = effectiveFormat === lesson.type
     ? lesson
     : { ...lesson, type: effectiveFormat };
+  // Checked before any model call that uses this input (the run stops earlier with the same message).
+  if (!hasKnowledgeFields(curriculum)) throw new Error(STALE_KNOWLEDGE_MESSAGE);
   const mod = curriculum.modules.find((m) => m.id === moduleId)!;
   const mine = new Set(lesson.source_ids);
   const touches = (ids: string[]) => ids.some((id) => mine.has(id));
@@ -403,6 +520,13 @@ export function lessonBase(ctx: RunContext, lessonId: string, draftOverride?: un
         const r = refs.find((x) => x.lesson.id === id);
         return r ? [{ id, title: r.lesson.title }] : [];
       }),
+      // Lessons referred to by title only: the text must not carry a lesson ID (see acceptLesson).
+      prerequisite_lessons: lesson.prerequisite_lesson_ids.flatMap((id) => {
+        const r = refs.find((x) => x.lesson.id === id);
+        return r ? [{ title: r.lesson.title }] : [];
+      }),
+      // The recap this lesson writes, if it carries one (decision 03/11/2026): none for most lessons.
+      recap_to_write: recapCarriers(curriculum).get(lessonId) ?? [],
     },
   };
 }
@@ -432,12 +556,13 @@ export function buildLessonReviewInput(ctx: RunContext, lessonId: string): Recor
     checks_already_run: checksAlreadyRun(
       effectiveFormat,
       resolveCodeLanguage((ctx.outputs.brief as BriefFull).code_language),
+      ref.lesson.code_mode ?? null,
     ),
   };
 }
 
 /** What acceptLesson verified before the draft reached the reviewer, so the reviewer does not repeat it. */
-export function checksAlreadyRun(format: LessonFormat, codeLanguage: EnabledCodeLanguage | null = "rust"): string[] {
+export function checksAlreadyRun(format: LessonFormat, codeLanguage: EnabledCodeLanguage | null = "rust", codeMode: "fill" | "edit" | null = null): string[] {
   const common = [
     "Quy tắc publish của app cho lesson (validateLesson): tiêu đề, cấu hình theo format.",
     "source_ids nằm trong source_ids của lesson ở curriculum; resource do A5 viết thuộc nguồn research đã đọc; suggested video thuộc ứng viên lesson và oEmbed/handle kênh đã được kiểm.",
@@ -446,7 +571,13 @@ export function checksAlreadyRun(format: LessonFormat, codeLanguage: EnabledCode
     article: ["Markdown và diagrams khớp hai chiều; bài explanation có ít nhất 1 sơ đồ; bố cục sơ đồ vẽ được (không chồng nét, không đi xuyên node)."],
     quiz: ["Mỗi câu có ≥ 2 phương án, id duy nhất, correct_index hợp lệ, có giải thích. CHƯA kiểm tra đáp án đúng về nội dung."],
     code_exercise: [
-      `code_language=${codeLanguage ?? "null"}; tệp có đuôi hợp lệ; reference_solution đạt mọi test bắt buộc; starter_source không đạt.`,
+      `code_language=${codeLanguage ?? "null"}; tệp có đuôi hợp lệ.`,
+      // V-55: the two modes are checked differently; a fill exercise has no tests, so no test claim applies to it.
+      ...(codeMode === "fill"
+        ? ["code_mode fill: đáp án mẫu khớp accepted_answers của từng chỗ trống (code kiểm khi publish); mỗi chỗ có feedback; tests rỗng. Starter chưa điền đạt hay không CHƯA được code kiểm."]
+        : codeMode === "edit"
+          ? ["code_mode edit: reference_solution đạt mọi test bắt buộc (code kiểm khi publish); blanks rỗng. Starter không đạt mọi test bắt buộc CHƯA được code kiểm."]
+          : ["code_mode chưa xác định: không có kiểm tra code nào được ghi nhận."]),
       `CHƯA biên dịch hay chạy mã ${codeLanguage ?? "đã chọn"}; đúng/sai của mã và test chưa được kiểm chứng bằng công cụ.`,
       "Đã kiểm lộ đáp án dạng định danh nguyên từ trong hints, feedback, failure_message và hint của test theo accepted_answers/value của test contains.",
     ],
@@ -662,6 +793,19 @@ function youtubeLinks(text: string): { url: string; videoId: string | null }[] {
 
 
 /** Text saved in learner-visible fields; summary and code samples are not rendered as lesson copy. */
+/** Diagram text a learner sees: the alt text, the title, node labels and edge labels. */
+function diagramTextFields(diagrams: LessonDiagram[]): { location: string; text: string }[] {
+  const fields: { location: string; text: string }[] = [];
+  diagrams.forEach((diagram, index) => {
+    const at = `diagrams[${index}]`;
+    fields.push({ location: `${at}.alt`, text: diagram.alt ?? "" });
+    fields.push({ location: `${at}.title`, text: diagram.title ?? "" });
+    diagram.nodes.forEach((node, n) => fields.push({ location: `${at}.nodes[${n}].label`, text: node.label ?? "" }));
+    diagram.edges.forEach((edge, e) => fields.push({ location: `${at}.edges[${e}].label`, text: edge.label ?? "" }));
+  });
+  return fields.filter((f) => f.text.length > 0);
+}
+
 function learnerTextFields(draft: LessonDraft): { location: string; text: string }[] {
   const fields: { location: string; text: string }[] = [];
   const add = (location: string, value: unknown) => {
@@ -881,10 +1025,23 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
   // Without the suggested videos: the resources the code builds from them are not text the model wrote.
   const draft = toLessonDraft(ref, { ...out, suggested_videos: [] }, locale, research);
   for (const { field, code } of validateLesson(draft.lesson)) problems.push(`${field}: ${code}`);
+  // The learner reads the lesson's own text and diagram labels; a curriculum lesson ID there leaks internal codes.
+  const idLeaks = lessonIdLeaks(
+    [...learnerTextFields(draft), ...diagramTextFields(draft.diagrams)],
+    lessonIds(ctx.outputs.curriculum),
+  );
+  for (const leak of idLeaks.slice(0, LEAK_REPORT_LIMIT)) {
+    problems.push(`${leak.location}: lộ mã bài "${leak.id}" trong nội dung người học đọc; hãy viết tiêu đề bài thay cho mã`);
+  }
+  if (idLeaks.length > LEAK_REPORT_LIMIT) problems.push(`còn ${idLeaks.length - LEAK_REPORT_LIMIT} chỗ lộ mã bài khác`);
   if (format === "article") {
     problems.push(...diagramProblems(out.article!.description_markdown, out.article!.diagrams));
     if (ref.lesson.purpose === "explanation" && out.article!.diagrams.length === 0) {
       problems.push("lesson article mang purpose explanation phải có ít nhất 1 sơ đồ");
+    }
+    const prose = articleProseLength(out.article!.description_markdown);
+    if (prose > ARTICLE_MAX_PROSE_CHARS) {
+      problems.push(`bài đọc dài ${prose} ký tự (không tính code), vượt giới hạn ${ARTICLE_MAX_PROSE_CHARS}; viết gọn lại, giữ đủ ý chính và bỏ phần dư`);
     }
   }
   if (format === "quiz") problems.push(...quizProblems(out.quiz!, draft, ref.lesson.purpose));
