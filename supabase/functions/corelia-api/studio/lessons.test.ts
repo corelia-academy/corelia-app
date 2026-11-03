@@ -133,6 +133,12 @@ describe("studio lessons: accept by format", () => {
     expect(await reason("l-code", { code: null })).toContain("thiếu khối code");
   });
 
+  it("a draft saved in the removed two-part format fails with a clear message, not a TypeError", () => {
+    const legacy = { ...base, code: { instructions: "Đề bài", language: "rust", part_1: {}, part_2: {} } };
+    const codeRef = lessonRefs(curriculum).find((item) => item.lesson.id === "l-code")!;
+    expect(() => toLessonDraft(codeRef, legacy as never, "vi")).toThrow("cần tạo lại khóa");
+  });
+
   it.each(ENABLED_CODE_LANGUAGES)("accepts a valid code lesson in enabled language %s", async (language) => {
     const extension = getCodeLanguageAdapter(language)!.extensions[0];
     const result = await accept(

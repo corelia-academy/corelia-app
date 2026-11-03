@@ -480,6 +480,10 @@ function nonEmpty<T>(items: T[]): T[] | undefined {
 }
 
 function codeConfig(code: NonNullable<LessonOutput["code"]>): CodeExerciseConfig {
+  // A draft saved before the one-mode contract (two-part code) has no mode; a new run cannot produce one.
+  if (code.mode !== "fill" && code.mode !== "edit") {
+    throw new Error("Bài code của lượt này theo định dạng hai phần đã bỏ; cần tạo lại khóa.");
+  }
   const tests: CodeExerciseTest[] = code.tests.map((t) => ({
     id: t.id,
     description: t.description,
