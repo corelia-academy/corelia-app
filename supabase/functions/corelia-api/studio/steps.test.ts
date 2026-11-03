@@ -6,6 +6,7 @@ import { A4_REVIEW_CRITERIA } from "./review_policy.ts";
 import { AI_CURRICULUM_FORMATS, AI_CURRICULUM_FORMAT_GUIDE, PLATFORM_FORMATS, PLATFORM_FORMAT_GUIDE } from "./formats.ts";
 import { ENABLED_CODE_LANGUAGES, PREPARED_CODE_LANGUAGES, resolveCodeLanguage } from "./lesson_ports.ts";
 import { journeyProblems, type LessonRecord } from "./checks.ts";
+import { MIN_QUIZ_QUESTIONS, minQuizQuestions } from "./lesson_types.ts";
 import {
   acceptBrief,
   acceptCurriculum,
@@ -169,7 +170,8 @@ describe("studio brief code language", () => {
     expect(acceptBrief({ ...validBrief, status: "needs_input", open_questions: ["q"], locale: "vi-VN" }, "vi").ok).toBe(false);
 
     expect(resolveCodeLanguage(undefined)).toBe("rust");
-    expect(acceptBrief({ ...validBrief, code_language: null }).ok).toBe(true);
+    expect(acceptBrief({ ...validBrief, code_language: null })).toMatchObject({ ok: false, reason: expect.stringContaining("code_language = null") });
+    expect(acceptBrief({ status: "ready", open_questions: [], title: "Web3 concepts", topic: "Blockchain basics", code_language: null }).ok).toBe(true);
     expect(resolveCodeLanguage(null)).toBeNull();
 
     for (const language of PREPARED_CODE_LANGUAGES) {
@@ -190,6 +192,25 @@ describe("studio brief code language", () => {
       const input = STEP_SPECS[step]!.buildInput({ outputs: { brief: { locale: "vi" }, research: {}, curriculum: {} }, revision: null } as never) as Record<string, any>;
       expect(input.brief.code_language).toBe("rust");
     }
+  });
+});
+
+describe("studio brief language vs code_language null", () => {
+  it("rejects code_language null when the title or topic names an enabled language", () => {
+    expect(acceptBrief({ status: "ready", open_questions: [], title: "Rust ownership", code_language: null }))
+      .toMatchObject({ ok: false, reason: expect.stringContaining('đặt code_language = "rust"') });
+    expect(acceptBrief({ status: "ready", open_questions: [], title: "Web3 concepts", topic: "Learn C++ basics", code_language: null }).ok).toBe(false);
+    expect(acceptBrief({ status: "ready", open_questions: [], title: "Rustic cooking", code_language: null }).ok).toBe(true);
+  });
+});
+
+describe("studio quiz minimum by lesson purpose", () => {
+  it("keeps 5 questions except warm_up (1) and quick_check (2)", () => {
+    expect(minQuizQuestions("warm_up")).toBe(1);
+    expect(minQuizQuestions("quick_check")).toBe(2);
+    expect(minQuizQuestions("final_check")).toBe(MIN_QUIZ_QUESTIONS);
+    expect(minQuizQuestions("retrieval")).toBe(MIN_QUIZ_QUESTIONS);
+    expect(minQuizQuestions(undefined)).toBe(MIN_QUIZ_QUESTIONS);
   });
 });
 
@@ -679,23 +700,57 @@ describe("studio acceptance", () => {
     ...over,
   });
   const quiz = (id: string, over: object = {}) => lesson(id, { type: "quiz", pass_threshold: 80, review_lesson_ids: ["l1"], ...over });
+  const code = (id: string, purpose: string, over: object = {}) => lesson(id, { type: "code_exercise", purpose, ...over });
+  // Five-step course with code: module 1 teaches o1; module 2 teaches o2 and its quick_check recalls o1 from module 1.
   const curriculum = {
     status: "draft",
     missing: [],
-    outcomes: [{ id: "o1", check_lesson_ids: ["q1"] }, { id: "o2", check_lesson_ids: ["q9"] }],
+    outcomes: [{ id: "o1", check_lesson_ids: ["q1"] }, { id: "o2", check_lesson_ids: ["q2", "q9"] }],
     modules: [
       {
         id: "m1",
         lessons: [
+          quiz("w1", { purpose: "warm_up", review_lesson_ids: [] }),
           lesson("l1"),
-          quiz("q1", { purpose: "guided_practice" }),
+          quiz("q1", { purpose: "quick_check" }),
+          code("g1", "guided_practice"),
+          code("i1", "independent_practice"),
         ],
       },
       {
         id: "m2",
         lessons: [
-          lesson("l2", { outcome_ids: ["o2"], purpose: "worked_example" }),
-          quiz("r1", { purpose: "retrieval", outcome_ids: ["o1"] }),
+          quiz("w2", { purpose: "warm_up", review_lesson_ids: [], outcome_ids: ["o2"] }),
+          lesson("l2", { purpose: "worked_example", outcome_ids: ["o2"] }),
+          quiz("q2", { purpose: "quick_check", outcome_ids: ["o1", "o2"] }),
+          code("g2", "guided_practice", { outcome_ids: ["o2"] }),
+          code("i2", "independent_practice", { outcome_ids: ["o2"] }),
+          quiz("q9", { purpose: "final_check", outcome_ids: ["o1", "o2"], review_lesson_ids: ["l1", "l2"] }),
+        ],
+      },
+    ],
+  };
+  // Course without code: each module replaces Luyện/Ghép code exercises with one scenario quiz.
+  const noCodeCurriculum = {
+    ...curriculum,
+    modules: [
+      {
+        id: "m1",
+        lessons: [
+          quiz("w1", { purpose: "warm_up", review_lesson_ids: [] }),
+          lesson("l1"),
+          lesson("l1b", { purpose: "worked_example" }),
+          quiz("q1", { purpose: "quick_check", review_lesson_ids: ["l1", "l1b"] }),
+          quiz("i1q", { purpose: "independent_practice", outcome_ids: ["o1"], review_lesson_ids: ["l1"] }),
+        ],
+      },
+      {
+        id: "m2",
+        lessons: [
+          quiz("w2", { purpose: "warm_up", review_lesson_ids: [], outcome_ids: ["o2"] }),
+          lesson("l2", { outcome_ids: ["o2"] }),
+          quiz("q2", { purpose: "quick_check", outcome_ids: ["o1", "o2"], review_lesson_ids: ["l1"] }),
+          quiz("i2q", { purpose: "independent_practice", outcome_ids: ["o2"], review_lesson_ids: ["l2"] }),
           quiz("q9", { purpose: "final_check", outcome_ids: ["o1", "o2"], review_lesson_ids: ["l1", "l2"] }),
         ],
       },
@@ -707,40 +762,45 @@ describe("studio acceptance", () => {
     const result = acceptCurriculum(output, sources);
     return result.ok ? "" : result.reason;
   };
+  const [m1, m2] = curriculum.modules;
+  const [w1, l1, q1, g1, i1] = m1.lessons;
+  const [w2, l2, q2, g2, i2, q9] = m2.lessons;
 
-  it("accepts a curriculum with retrieval, a final check and quiz thresholds", () => {
+  it("accepts the five-step curriculum with a final check and quiz thresholds", () => {
     const res = acceptCurriculum(curriculum, sources);
     expect(res.ok).toBe(true);
-    expect(res.summary).toBe("2 module, 5 lesson, 2 outcome.");
-    expect(LESSON_PURPOSES).toContain("optional_hands_on");
-    expect(acceptCurriculum(curriculum, sources, null).ok).toBe(true);
+    expect(res.summary).toBe("2 module, 11 lesson, 2 outcome.");
+    expect(LESSON_PURPOSES).toEqual(expect.arrayContaining(["optional_hands_on", "warm_up", "quick_check"]));
     expect(acceptCurriculumReview({
       verdict: "needs_fix",
       issues: [{ location: "m1", problem: "Thiếu lesson thực hành tự nguyện.", category: "missing_practice", principle: "p", fix: "f", severity: "blocking" }],
       needs_research: [],
       summary: "s",
     }, curriculum)).toMatchObject({ ok: true, normalizedOutput: { verdict: "pass", issues: [{ severity: "minor" }] } });
-    const withCodeExercise = withModules([
-      { ...curriculum.modules[0], lessons: [...curriculum.modules[0].lessons, lesson("code", { type: "code_exercise" })] },
-      curriculum.modules[1],
-    ]);
-    expect(acceptCurriculum(withCodeExercise, sources, null))
+  });
+
+  it("requires code_language when code steps exist, and accepts a course without code steps", () => {
+    expect(acceptCurriculum(curriculum, sources, null))
       .toMatchObject({ ok: false, reason: expect.stringContaining("brief.code_language = null") });
+    expect(acceptCurriculum(noCodeCurriculum, sources, null).ok).toBe(true);
+    expect(reason(withModules([{ ...m1, lessons: [w1, l1, q1, g1, i1] }, m2]))).toBe("");
+  });
+
+  it("rejects code steps in a course without code", () => {
+    const withCode = {
+      ...noCodeCurriculum,
+      modules: [noCodeCurriculum.modules[0], { ...noCodeCurriculum.modules[1], lessons: [...noCodeCurriculum.modules[1].lessons, code("g9", "guided_practice", { outcome_ids: ["o2"] })] }],
+    };
+    expect(acceptCurriculum(withCode, sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("brief.code_language = null") });
   });
 
   it("accepts video lessons with explanation purpose in new curricula and rejects invalid purpose", () => {
-    const [m1, m2] = curriculum.modules;
-    const validVideoCurriculum = withModules([
-      { ...m1, lessons: [lesson("l1"), { ...lesson("v1"), type: "video", purpose: "explanation", pass_threshold: null }, quiz("q1", { purpose: "guided_practice" })] },
-      m2,
-    ]);
-    expect(acceptCurriculum(validVideoCurriculum, sources).ok).toBe(true);
-
-    const invalidPurpose = withModules([
-      { ...m1, lessons: [lesson("l1"), { ...lesson("v1"), type: "video", purpose: "practice" as any, pass_threshold: null }, quiz("q1", { purpose: "guided_practice" })] },
-      m2,
-    ]);
-    expect(acceptCurriculum(invalidPurpose, sources))
+    const videoModule = (purpose: string) => ({
+      ...m1,
+      lessons: [w1, l1, { ...lesson("v1"), type: "video", purpose, pass_threshold: null }, quiz("q1", { purpose: "quick_check", review_lesson_ids: ["v1"] }), g1, i1],
+    });
+    expect(acceptCurriculum(withModules([videoModule("explanation"), m2]), sources).ok).toBe(true);
+    expect(acceptCurriculum(withModules([videoModule("practice")]), sources))
       .toMatchObject({ ok: false, reason: expect.stringContaining("chỉ được mang purpose explanation") });
   });
 
@@ -760,9 +820,8 @@ describe("studio acceptance", () => {
   });
 
   it("rejects video lesson when research has no matching video candidate and accepts when present", () => {
-    const [m1, m2] = curriculum.modules;
     const videoLessonCurriculum = withModules([
-      { ...m1, lessons: [lesson("l1"), { ...lesson("v1"), type: "video", purpose: "explanation", pass_threshold: null }, quiz("q1", { purpose: "guided_practice" })] },
+      { ...m1, lessons: [w1, l1, { ...lesson("v1"), type: "video", purpose: "explanation", pass_threshold: null }, quiz("q1", { purpose: "quick_check", review_lesson_ids: ["v1"] }), g1, i1] },
       m2,
     ]);
     const mockResearchWithVideo = {
@@ -802,128 +861,92 @@ describe("studio acceptance", () => {
   });
 
   it("rejects diagnostic lesson and orders prerequisites", () => {
-    const [m1, m2] = curriculum.modules;
-    const [l1, q1] = m1.lessons;
     const first = (...lessons: object[]) => withModules([{ ...m1, lessons }, m2]);
-    expect(reason(first(lesson("d1", { type: "practice", purpose: "diagnostic" as any }), l1, q1))).toContain("phải có purpose optional_hands_on");
-    expect(reason(first(lesson("l1", { prerequisite_lesson_ids: ["q1"] }), q1))).toContain("lesson l1: prerequisite q1 đứng sau");
-    expect(reason(first(lesson("l1", { prerequisite_lesson_ids: ["ghost"] }), q1))).toContain("prerequisite_lesson_ids không hợp lệ (ghost)");
-    expect(reason(first(lesson("l1", { prerequisite_lesson_ids: ["l1"] }), q1))).toContain("không hợp lệ (l1)");
+    expect(reason(first(lesson("d1", { type: "practice", purpose: "diagnostic" as any }), w1, l1, q1, g1, i1))).toContain("phải có purpose optional_hands_on");
+    expect(reason(first(w1, lesson("l1", { prerequisite_lesson_ids: ["q1"] }), q1, g1, i1))).toContain("lesson l1: prerequisite q1 đứng sau");
+    expect(reason(first(w1, lesson("l1", { prerequisite_lesson_ids: ["ghost"] }), q1, g1, i1))).toContain("prerequisite_lesson_ids không hợp lệ (ghost)");
+    expect(reason(first(w1, lesson("l1", { prerequisite_lesson_ids: ["l1"] }), q1, g1, i1))).toContain("không hợp lệ (l1)");
   });
 
   it("accepts a valid optional hands-on leaf and rejects its curriculum violations", () => {
-    const [m1, m2] = curriculum.modules;
-    const [l1, q1] = m1.lessons;
     const optional = lesson("oh", { type: "practice", purpose: "optional_hands_on", outcome_ids: ["o1"] });
-    const withOptional = (...firstLessons: object[]) => withModules([{ ...m1, lessons: firstLessons }, m2]);
-    expect(acceptCurriculum(withOptional(l1, q1, optional), sources).ok).toBe(true);
+    const withOptional = (...lessons: object[]) => withModules([{ ...m1, lessons }, m2]);
+    expect(acceptCurriculum(withOptional(w1, l1, q1, g1, i1, optional), sources).ok).toBe(true);
 
     const secondOptional = lesson("oh2", { type: "practice", purpose: "optional_hands_on", outcome_ids: ["o1"] });
-    expect(reason(withOptional(l1, q1, optional, secondOptional))).toContain("có hơn một lesson optional_hands_on");
-    expect(reason(withOptional(l1, optional, q1))).toContain("phải ở cuối module");
-    expect(reason(withOptional(l1, q1, { ...optional, type: "article" }))).toContain("phải là practice");
-    expect(reason(withOptional(l1, q1, { ...optional, pass_threshold: 50 }))).toContain("lesson oh không phải quiz nhưng có ngưỡng pass");
-    expect(reason(withOptional({ ...l1, prerequisite_lesson_ids: ["oh"] }, q1, optional)))
+    expect(reason(withOptional(w1, l1, q1, g1, i1, optional, secondOptional))).toContain("có hơn một lesson optional_hands_on");
+    expect(reason(withOptional(w1, l1, optional, q1, g1, i1))).toContain("phải ở cuối module");
+    expect(reason(withOptional(w1, l1, q1, g1, i1, { ...optional, type: "article" }))).toContain("phải là practice");
+    expect(reason(withOptional(w1, l1, q1, g1, i1, { ...optional, pass_threshold: 50 }))).toContain("lesson oh không phải quiz nhưng có ngưỡng pass");
+    expect(reason(withOptional({ ...w1, prerequisite_lesson_ids: ["oh"] }, l1, q1, g1, i1, optional)))
       .toContain("không được phụ thuộc vào optional_hands_on oh");
 
     const listedAsChecker = { ...curriculum, outcomes: [{ ...curriculum.outcomes[0], check_lesson_ids: ["q1", "oh"] }, curriculum.outcomes[1]] };
-    expect(reason({ ...listedAsChecker, modules: [{ ...m1, lessons: [l1, q1, optional] }, m2] }))
+    expect(reason({ ...listedAsChecker, modules: [{ ...m1, lessons: [w1, l1, q1, g1, i1, optional] }, m2] }))
       .toContain("check_lesson_ids không được chứa practice");
     const onlyOptionalChecksOutcome = { ...curriculum, outcomes: [{ ...curriculum.outcomes[0], check_lesson_ids: ["oh"] }, curriculum.outcomes[1]] };
-    expect(reason({ ...onlyOptionalChecksOutcome, modules: [{ ...m1, lessons: [l1, q1, optional] }, m2] }))
+    expect(reason({ ...onlyOptionalChecksOutcome, modules: [{ ...m1, lessons: [w1, l1, q1, g1, i1, optional] }, m2] }))
       .toContain("check_lesson_ids không được chứa practice");
   });
 
   it("rejects unknown sources, unchecked outcomes and duplicate ids", () => {
     expect(acceptCurriculum(curriculum, new Set(["s2"])).ok).toBe(false);
     expect(acceptCurriculum({ ...curriculum, outcomes: [{ id: "o1", check_lesson_ids: [] }, curriculum.outcomes[1]] }, sources).ok).toBe(false);
-    const dup = withModules([{ ...curriculum.modules[0], id: "l1" }, curriculum.modules[1]]);
+    const dup = withModules([{ ...m1, id: "l1" }, m2]);
     expect(acceptCurriculum(dup, sources).ok).toBe(false);
   });
 
   it("validates lesson source_ids distinguishing empty and unknown sources, including fallback topic sources", () => {
-    const [m1, m2] = curriculum.modules;
-    const [l1, q1] = m1.lessons;
     const first = (...lessons: object[]) => withModules([{ ...m1, lessons }, m2]);
-
-    const emptyL1 = first({ ...l1, source_ids: [] }, q1);
-    expect(reason(emptyL1)).toContain("lesson l1 thiếu source_ids");
-
-    const unknownSourceL1 = first({ ...l1, source_ids: ["not_found_source"] }, q1);
-    expect(reason(unknownSourceL1)).toContain("lesson l1 có source_id không có trong research (not_found_source)");
-
-    const validFirst = first(l1, q1);
-    expect(acceptCurriculum(validFirst, sources).ok).toBe(true);
+    expect(reason(first(w1, { ...l1, source_ids: [] }, q1, g1, i1))).toContain("lesson l1 thiếu source_ids");
+    expect(reason(first(w1, { ...l1, source_ids: ["not_found_source"] }, q1, g1, i1)))
+      .toContain("lesson l1 có source_id không có trong research (not_found_source)");
+    expect(acceptCurriculum(curriculum, sources).ok).toBe(true);
 
     const topicSources = new Set(["topic_s1", "topic_s2"]);
-    const curriculumWithoutPrerequisite = {
-      ...curriculum,
-      modules: [
-        {
-          id: "m1",
-          lessons: [
-            { ...l1, source_ids: ["topic_s1", "topic_s2"] },
-            { ...q1, source_ids: ["topic_s2"] },
-          ],
-        },
-        {
-          id: "m2",
-          lessons: m2.lessons.map((l) => ({ ...l, source_ids: ["topic_s2"] })),
-        },
-      ],
-    };
-    expect(acceptCurriculum(curriculumWithoutPrerequisite, topicSources).ok).toBe(true);
+    const withTopicSources = withModules([
+      { id: "m1", lessons: m1.lessons.map((l) => ({ ...l, source_ids: ["topic_s1", "topic_s2"] })) },
+      { id: "m2", lessons: m2.lessons.map((l) => ({ ...l, source_ids: ["topic_s2"] })) },
+    ]);
+    expect(acceptCurriculum(withTopicSources, topicSources).ok).toBe(true);
   });
 
   it("requires quiz thresholds and review lessons, and no threshold elsewhere", () => {
-    const [m1, m2] = curriculum.modules;
-    const [l1, q1] = m1.lessons;
     const first = (...lessons: object[]) => withModules([{ ...m1, lessons }, m2]);
-    expect(reason(first(l1, quiz("q1", { pass_threshold: null })))).toContain("quiz q1 thiếu ngưỡng pass");
-    expect(reason(first(l1, quiz("q1", { review_lesson_ids: [] })))).toContain("quiz q1 không có lesson để ôn khi sai");
-    expect(reason(first(lesson("l1", { pass_threshold: 70 }), q1))).toContain("lesson l1 không phải quiz nhưng có ngưỡng pass");
+    expect(reason(first(w1, l1, quiz("q1", { purpose: "quick_check", pass_threshold: null }), g1, i1))).toContain("quiz q1 thiếu ngưỡng pass");
+    expect(reason(first(w1, l1, quiz("q1", { purpose: "quick_check", review_lesson_ids: [] }), g1, i1))).toContain("quiz q1 không có lesson để ôn khi sai");
+    expect(reason(first(w1, lesson("l1", { pass_threshold: 70 }), q1, g1, i1))).toContain("lesson l1 không phải quiz nhưng có ngưỡng pass");
   });
 
-  it("requires a covering final check and retrieval of an earlier module", () => {
-    const [m1, m2] = curriculum.modules;
-    expect(reason(withModules([m1, { ...m2, lessons: m2.lessons.slice(0, 2) }]))).toContain("module cuối không có quiz tổng hợp");
-    expect(reason(withModules([m1, { ...m2, lessons: [m2.lessons[0], m2.lessons[1], quiz("q9", { purpose: "final_check" })] }])))
-      .toContain("chưa phủ outcome");
-    expect(reason(withModules([m1, { ...m2, lessons: [m2.lessons[0], m2.lessons[2]] }]))).toContain("không có lesson ôn lại outcome");
+  it("exempts warm_up from review lessons, and keeps warm_up a quiz", () => {
+    expect(reason(withModules([{ ...m1, lessons: [quiz("w1", { purpose: "warm_up", review_lesson_ids: [] }), l1, q1, g1, i1] }, m2]))).toBe("");
+    expect(reason(withModules([{ ...m1, lessons: [lesson("w1", { purpose: "warm_up" }), l1, q1, g1, i1] }, m2]))).toContain("(warm_up) phải là quiz");
   });
 
-  it("lets code_exercise and practice final checks cover outcomes the summary quiz cannot check", () => {
-    const [m1, m2] = curriculum.modules;
-    const finals = [
-      quiz("q9", { purpose: "final_check", outcome_ids: ["o2"], review_lesson_ids: ["l2"] }),
-      lesson("c9", { type: "code_exercise", purpose: "final_check", outcome_ids: ["o1"] }),
-    ];
-    const outcomes = [{ id: "o1", check_lesson_ids: ["q1", "c9"] }, curriculum.outcomes[1]];
-    expect(acceptCurriculum({ ...curriculum, outcomes, modules: [m1, { ...m2, lessons: [m2.lessons[0], m2.lessons[1], ...finals] }] }, sources).ok)
-      .toBe(true);
-    // Without the summary quiz the final check is incomplete even when the other lessons cover everything.
-    const noQuiz = [lesson("c9", { type: "code_exercise", purpose: "final_check", outcome_ids: ["o1", "o2"] })];
-    expect(reason({ ...curriculum, outcomes, modules: [m1, { ...m2, lessons: [m2.lessons[0], m2.lessons[1], ...noQuiz] }] }))
-      .toContain("module cuối không có quiz tổng hợp");
+  it("requires a covering final check and a recall of an earlier module", () => {
+    expect(reason(withModules([m1, { ...m2, lessons: [w2, l2, q2, g2, i2] }]))).toContain("module cuối không có quiz tổng hợp");
+    expect(reason(withModules([m1, { ...m2, lessons: [w2, l2, q2, g2, i2, quiz("q9", { purpose: "final_check", outcome_ids: ["o2"], review_lesson_ids: ["l2"] })] }])))
+      .toContain("chưa phủ outcome o1");
+    expect(reason(withModules([m1, { ...m2, lessons: [w2, l2, g2, i2, q9] }]))).toContain("không có lesson ôn lại outcome của module trước");
   });
 
-  const [m1Default, m2Default] = curriculum.modules;
-  const [l1Default, q1Default] = m1Default.lessons;
-  const l1NonTeaching = lesson("l1", { purpose: "guided_practice" });
-  const quizReviewLaterCurriculum = withModules([{ ...m1Default, lessons: [l1Default, quiz("q1", { review_lesson_ids: ["l2"] })] }, m2Default]);
-  const outcomeWithoutTeachingCurriculum = withModules([{ ...m1Default, lessons: [l1NonTeaching, q1Default] }, m2Default]);
-  const checksBeforeTeachingCurriculum = withModules([{ ...m1Default, lessons: [q1Default, l1Default] }, m2Default]);
+  it("counts code_exercise final checks toward outcome coverage, and still needs a summary quiz", () => {
+    const withCodeFinal = withModules([m1, { ...m2, lessons: [w2, l2, q2, g2, i2, code("c9", "final_check", { outcome_ids: ["o1", "o2"] })] }]);
+    expect(reason(withCodeFinal)).toContain("module cuối không có quiz tổng hợp");
+    expect(reason(withCodeFinal)).not.toContain("chưa phủ outcome");
+  });
+
+  const quizReviewLaterCurriculum = withModules([{ ...m1, lessons: [w1, l1, quiz("q1", { purpose: "quick_check", review_lesson_ids: ["l2"] }), g1, i1] }, m2]);
+  const outcomeWithoutTeachingCurriculum = withModules([{ ...m1, lessons: [w1, lesson("l1", { purpose: "guided_practice" }), q1, g1, i1] }, m2]);
+  const checksBeforeTeachingCurriculum = withModules([{ ...m1, lessons: [w1, q1, l1, g1, i1] }, m2]);
   const optionalOutcomeCurriculum = withModules([
-    { ...m1Default, lessons: [l1NonTeaching, q1Default, lesson("oh", { type: "practice", purpose: "optional_hands_on", outcome_ids: ["o1"] })] },
-    m2Default,
+    { ...m1, lessons: [w1, lesson("l1", { purpose: "guided_practice" }), q1, g1, lesson("oh", { type: "practice", purpose: "optional_hands_on", outcome_ids: ["o1"] })] },
+    m2,
   ]);
   const selfCheckOnlyCurriculum = {
     ...curriculum,
     outcomes: [{ id: "o1", check_lesson_ids: ["l1"] }, curriculum.outcomes[1]],
-    modules: [
-      { ...m1Default, lessons: [l1Default, quiz("q1", { outcome_ids: ["o2"] })] },
-      m2Default,
-    ],
+    modules: [{ ...m1, lessons: [w1, l1, quiz("q1", { purpose: "quick_check", outcome_ids: ["o2"] }), g1, i1] }, m2],
   };
 
   it("enforces journey order rules: quizzes require review lessons to precede them", () => {
@@ -1025,37 +1048,93 @@ describe("studio acceptance", () => {
     }
   });
 
-  it("passes a module without teaching lessons if it has a quiz (B-04)", () => {
-    const mReviewOnly = {
-      id: "m-review-only",
-      lessons: [
-        quiz("r2", { purpose: "retrieval", outcome_ids: ["o1"] }),
-        quiz("q10", { purpose: "final_check", outcome_ids: ["o1", "o2"], review_lesson_ids: ["l1", "l2"] }),
-      ],
-    };
-    const c = withModules([curriculum.modules[0], curriculum.modules[1], mReviewOnly]);
-    expect(acceptCurriculum(c, sources).ok).toBe(true);
-  });
-
   it("rejects a module without any quiz", () => {
     const noQuizModule = {
       id: "m-no-quiz",
-      lessons: [lesson("art1", { purpose: "explanation" })],
+      lessons: [
+        quiz("w3", { purpose: "warm_up", review_lesson_ids: [] }),
+        lesson("art1", { purpose: "explanation" }),
+        quiz("scenario", { purpose: "independent_practice", outcome_ids: ["o1"], review_lesson_ids: ["l1"] }),
+        lesson("art2", { purpose: "worked_example" }),
+      ],
     };
-    const c = withModules([curriculum.modules[0], noQuizModule]);
-    expect(reason(c)).toContain("không có quiz");
+    const c = withModules([noCodeCurriculum.modules[0], noQuizModule]);
+    expect(acceptCurriculum(c, sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("module m-no-quiz: cần đúng 1 bài quick_check") });
+  });
+
+  it("rejects a module without teaching lessons, even when it has quizzes", () => {
+    const reviewOnly = {
+      id: "m-review-only",
+      lessons: [quiz("w3", { purpose: "warm_up", review_lesson_ids: [] }), quiz("q3", { purpose: "quick_check", review_lesson_ids: ["l1"] }), g1, i1],
+    };
+    expect(reason(withModules([m1, m2, reviewOnly]))).toContain("module m-review-only: thiếu bài dạy");
   });
 
   it("rejects retrieval that is not a quiz", () => {
     const badRetrieval = lesson("r1_bad", { type: "article", purpose: "retrieval", outcome_ids: ["o1"] });
-    const c = withModules([curriculum.modules[0], { ...curriculum.modules[1], lessons: [curriculum.modules[1].lessons[0], badRetrieval, curriculum.modules[1].lessons[2]] }]);
-    expect(reason(c)).toMatch(/retrieval.*quiz/);
+    const c = withModules([m1, { ...m2, lessons: [w2, badRetrieval, q9] }]);
+    expect(reason(c)).toContain("module m2: dùng purpose retrieval");
   });
 
   it("rejects practice with purpose other than optional_hands_on (B-04)", () => {
     const badPractice = lesson("p1", { type: "practice", purpose: "guided_practice" as any });
-    const c = withModules([{ ...curriculum.modules[0], lessons: [...curriculum.modules[0].lessons, badPractice] }, curriculum.modules[1]]);
+    const c = withModules([{ ...m1, lessons: [w1, l1, q1, g1, i1, badPractice] }, m2]);
     expect(reason(c)).toContain("phải có purpose optional_hands_on");
+  });
+
+  it("rejects a module whose first lesson is not warm_up", () => {
+    expect(reason(withModules([{ ...m1, lessons: [l1, w1, q1, g1, i1] }, m2]))).toContain("module m1: bài đầu phải có purpose warm_up");
+  });
+
+  it("rejects a module outside 4-6 lessons", () => {
+    expect(reason(withModules([{ ...m1, lessons: [w1, l1, q1] }, m2]))).toContain("module m1: có 3 bài; cần 4-6 bài");
+  });
+
+  it("requires exactly one quick_check after a teaching lesson in every module", () => {
+    const twoChecks = { ...m1, lessons: [w1, l1, quiz("q1x", { purpose: "quick_check", review_lesson_ids: ["l1"] }), quiz("q1y", { purpose: "quick_check", review_lesson_ids: ["l1"] }), g1, i1] };
+    expect(reason(withModules([twoChecks, m2]))).toContain("module m1: cần đúng 1 bài quick_check");
+    expect(reason(withModules([{ ...m1, lessons: [w1, q1, l1, g1, i1] }, m2]))).toContain("module m1: thiếu bài dạy");
+  });
+
+  it("requires each later module's quick_check to recall a lesson of an earlier module", () => {
+    const noRecall = { ...m2, lessons: [w2, l2, { ...q2, review_lesson_ids: ["l2"] }, g2, i2, q9] };
+    expect(reason(withModules([m1, noRecall]))).toContain("module m2: quick_check của module sau phải kiểm một kiến thức của module trước");
+  });
+
+  it("requires guided_practice then independent_practice after quick_check in a course with code", () => {
+    expect(reason(withModules([m1, { ...m2, lessons: [w2, l2, q2, i2, g2, q9] }])))
+      .toContain("module m2: thứ tự phải là quick_check → guided_practice → independent_practice");
+    expect(reason(withModules([{ ...m1, lessons: [w1, l1, q1, g1] }, m2])))
+      .toContain("module m1: khóa có code: cần đúng 1 bài Luyện (guided_practice) và 1 bài Ghép (independent_practice)");
+    expect(reason(withModules([{ ...m1, lessons: [w1, l1, q1, quiz("g1q", { purpose: "guided_practice" }), i1] }, m2])))
+      .toContain("bước Luyện và Ghép phải là code_exercise");
+  });
+
+  it("refuses retrieval inside a module and final_check outside the last lesson of the last module", () => {
+    expect(reason(withModules([{ ...m1, lessons: [w1, l1, q1, quiz("r0", { purpose: "retrieval", review_lesson_ids: ["l1"] }), g1, i1] }, m2])))
+      .toContain("module m1: dùng purpose retrieval");
+    expect(reason(withModules([{ ...m1, lessons: [w1, l1, q1, quiz("f1", { purpose: "final_check", review_lesson_ids: ["l1"] }), g1, i1] }, m2])))
+      .toContain("final_check chỉ được là bài cuối của module cuối");
+  });
+
+  it("requires exactly one no-code Ghép scenario quiz after quick_check", () => {
+    expect(acceptCurriculum(noCodeCurriculum, sources, null).ok).toBe(true);
+    const [m1NoCode, m2NoCode] = noCodeCurriculum.modules;
+    const missingScenario = { ...m1NoCode, lessons: m1NoCode.lessons.filter((l) => l.purpose !== "independent_practice") };
+    expect(acceptCurriculum(withModules([missingScenario, m2NoCode]), sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("cần đúng 1 quiz tình huống Ghép") });
+    const duplicateScenario = { ...m1NoCode, lessons: [...m1NoCode.lessons, quiz("i1q2", { purpose: "independent_practice", outcome_ids: ["o1"], review_lesson_ids: ["l1"] })] };
+    expect(acceptCurriculum(withModules([duplicateScenario, m2NoCode]), sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("cần đúng 1 quiz tình huống Ghép") });
+    const scenarioBeforeQuick = { ...m1NoCode, lessons: [m1NoCode.lessons[0], m1NoCode.lessons[1], m1NoCode.lessons[2], m1NoCode.lessons[4], m1NoCode.lessons[3]] };
+    expect(acceptCurriculum(withModules([scenarioBeforeQuick, m2NoCode]), sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("bước Ghép phải là quiz tình huống đứng sau quick_check") });
+    const duplicateWarmUp = { ...m1NoCode, lessons: [...m1NoCode.lessons, quiz("w1x", { purpose: "warm_up", review_lesson_ids: [] })] };
+    expect(acceptCurriculum(withModules([duplicateWarmUp, m2NoCode]), sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("cần đúng 1 bài warm_up") });
+    const guidedNoCode = { ...m2NoCode, lessons: [m2NoCode.lessons[0], m2NoCode.lessons[1], m2NoCode.lessons[2], quiz("g2q", { purpose: "guided_practice", review_lesson_ids: ["l2"] }), m2NoCode.lessons[4]] };
+    expect(acceptCurriculum(withModules([noCodeCurriculum.modules[0], guidedNoCode]), sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("khóa không có code nhưng có bước Luyện") });
+  });
+
+  it("refuses warm_up in check_lesson_ids", () => {
+    const withWarmUpCheck = { ...curriculum, outcomes: [{ id: "o1", check_lesson_ids: ["q1", "w1"] }, curriculum.outcomes[1]] };
+    expect(reason(withWarmUpCheck)).toContain("outcome o1: check_lesson_ids không được chứa warm_up");
   });
 });
 

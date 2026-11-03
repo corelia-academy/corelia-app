@@ -49,7 +49,8 @@ INSERT INTO public.studio_courses(id,title,status,research_status) VALUES
  ('eeee7777-2222-4000-8000-000000000011','Atomic start event failure','idea','idea'),
  ('eeee7777-2222-4000-8000-000000000012','Resume copied generations','idea','idea'),
  ('eeee7777-2222-4000-8000-000000000013','Resume nothing done','idea','idea'),
- ('eeee7777-2222-4000-8000-000000000014','Restart from the curriculum','idea','idea');
+ ('eeee7777-2222-4000-8000-000000000014','Restart from the curriculum','idea','idea'),
+ ('eeee7777-2222-4000-8000-000000000015','Resume accepted translations','idea','idea');
 
 -- Audience and direction are chosen per course; only the course without them must be refused.
 UPDATE public.studio_courses
@@ -77,6 +78,7 @@ INSERT INTO public.studio_course_paths(course_id,path_id) VALUES
  ('eeee7777-2222-4000-8000-000000000012','eeee7777-1111-4000-8000-000000000002'),
  ('eeee7777-2222-4000-8000-000000000013','eeee7777-1111-4000-8000-000000000002'),
  ('eeee7777-2222-4000-8000-000000000014','eeee7777-1111-4000-8000-000000000002'),
+ ('eeee7777-2222-4000-8000-000000000015','eeee7777-1111-4000-8000-000000000002'),
  ('eeee7777-2222-4000-8000-000000000010','eeee7777-1111-4000-8000-000000000001');
 
 INSERT INTO public.studio_catalog_jobs(id,course_id,trigger,status,reason,started_at,finished_at) VALUES
@@ -87,7 +89,8 @@ INSERT INTO public.studio_catalog_jobs(id,course_id,trigger,status,reason,starte
  ('eeee7777-4444-4000-8000-000000000008','eeee7777-2222-4000-8000-000000000008','manual','evidence_ok',NULL,now()-interval '22 days',now()-interval '21 days'),
  ('eeee7777-4444-4000-8000-000000000009','eeee7777-2222-4000-8000-000000000009','manual','evidence_ok',NULL,now()-interval '121 days',now()-interval '120 days'),
  ('eeee7777-4444-4000-8000-000000000012','eeee7777-2222-4000-8000-000000000012','manual','evidence_ok',NULL,now()-interval '10 days',now()-interval '9 days'),
- ('eeee7777-4444-4000-8000-000000000014','eeee7777-2222-4000-8000-000000000014','manual','evidence_ok',NULL,now()-interval '10 days',now()-interval '9 days');
+ ('eeee7777-4444-4000-8000-000000000014','eeee7777-2222-4000-8000-000000000014','manual','evidence_ok',NULL,now()-interval '10 days',now()-interval '9 days'),
+ ('eeee7777-4444-4000-8000-000000000015','eeee7777-2222-4000-8000-000000000015','manual','evidence_ok',NULL,now()-interval '4 days',now()-interval '3 days');
 
 -- Step 0 can still resume from its pinned completed A1 result beyond the normal TTL.
 INSERT INTO public.studio_runs(id,course_id,status,hold_reason,started_at,finished_at,catalog_job_id) VALUES
@@ -119,6 +122,30 @@ INSERT INTO public.studio_generations(
  ('eeee7777-5555-4000-8000-000000000016','eeee7777-3333-4000-8000-000000000012','lessons','lesson-a',0,'A5','text','openai','fixture-model','fixture-model','fixture-v1','{}','completed','resume-lesson-a','{}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days'),
  ('eeee7777-5555-4000-8000-000000000017','eeee7777-3333-4000-8000-000000000012','lesson_review','lesson-a',0,'A6','review','openai','fixture-model','fixture-model','fixture-v1','{}','completed','resume-review-a','{"issues":[]}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days'),
  ('eeee7777-5555-4000-8000-000000000018','eeee7777-3333-4000-8000-000000000012','lessons','lesson-b',0,'A5','text','openai','fixture-model','fixture-model','fixture-v1','{}','completed','resume-lesson-b','{}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days');
+
+-- A translation failure after lesson review keeps the locale that already passed validation.
+INSERT INTO public.studio_runs(id,course_id,status,hold_reason,started_at,finished_at,catalog_job_id) VALUES
+ ('eeee7777-3333-4000-8000-000000000015','eeee7777-2222-4000-8000-000000000015','draft_failed','translation failure',now()-interval '4 days',now()-interval '3 days','eeee7777-4444-4000-8000-000000000015');
+INSERT INTO public.studio_run_steps(run_id,step_key,state) VALUES
+ ('eeee7777-3333-4000-8000-000000000015','catalog_research','done'),
+ ('eeee7777-3333-4000-8000-000000000015','brief','done'),
+ ('eeee7777-3333-4000-8000-000000000015','research','done'),
+ ('eeee7777-3333-4000-8000-000000000015','curriculum','done'),
+ ('eeee7777-3333-4000-8000-000000000015','curriculum_review','done'),
+ ('eeee7777-3333-4000-8000-000000000015','lessons','done'),
+ ('eeee7777-3333-4000-8000-000000000015','lesson_review','done'),
+ ('eeee7777-3333-4000-8000-000000000015','translate','failed');
+INSERT INTO public.studio_generations(
+  id,run_id,step_key,lesson_id,locale,attempt,agent_role,kind,provider,requested_model_id,model_id,prompt_version,input,status,
+  provider_request_id,output,created_at,submitted_at,completed_at
+) VALUES
+ ('eeee7777-5555-4000-8000-000000000040','eeee7777-3333-4000-8000-000000000015','brief',NULL,NULL,0,'A2','text','openai','fixture-model','fixture-model','fixture-v1','{}','completed','resume-translation-brief','{"topic":"fixture"}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days'),
+ ('eeee7777-5555-4000-8000-000000000041','eeee7777-3333-4000-8000-000000000015','research',NULL,NULL,0,'A2','research','openai','fixture-model','fixture-model','fixture-v1','{}','completed','resume-translation-research','{"topics":[]}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days'),
+ ('eeee7777-5555-4000-8000-000000000042','eeee7777-3333-4000-8000-000000000015','curriculum',NULL,NULL,0,'A3','text','openai','fixture-model','fixture-model','fixture-v1','{}','completed','resume-translation-curriculum','{"modules":[{"lessons":[{"id":"lesson-translation"}]}]}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days'),
+ ('eeee7777-5555-4000-8000-000000000043','eeee7777-3333-4000-8000-000000000015','curriculum_review',NULL,NULL,0,'A4','review','openai','fixture-model','fixture-model','fixture-v1','{}','completed','resume-translation-curriculum-review','{"issues":[]}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days'),
+ ('eeee7777-5555-4000-8000-000000000044','eeee7777-3333-4000-8000-000000000015','lessons','lesson-translation',NULL,0,'A5','text','openai','fixture-model','fixture-model','fixture-v1','{}','completed','resume-translation-lesson','{}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days'),
+ ('eeee7777-5555-4000-8000-000000000045','eeee7777-3333-4000-8000-000000000015','lesson_review','lesson-translation',NULL,0,'A6','review','openai','fixture-model','fixture-model','fixture-v1','{}','completed','resume-translation-review','{"issues":[]}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days'),
+ ('eeee7777-5555-4000-8000-000000000046','eeee7777-3333-4000-8000-000000000015','translate',NULL,'vi',0,'A7','text','openai','fixture-model','fixture-model','a7-translate@v2','{}','completed','resume-translation-vi','{"course":{"title":"Khóa thử"}}',now()-interval '4 days',now()-interval '4 days',now()-interval '3 days');
 
 -- A failed run whose curriculum is the problem: four accepted early steps and a finished lesson.
 INSERT INTO public.studio_runs(id,course_id,status,hold_reason,started_at,finished_at,catalog_job_id) VALUES
@@ -258,6 +285,33 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'lesson source event counts or metadata are incorrect';
   END IF;
+  -- Translation completion survives a resume after every lesson and review has passed.
+  result := public.studio_start_run('eeee7777-2222-4000-8000-000000000015','eeee7777-3333-4000-8000-000000000050',NULL,'eeee7777-3333-4000-8000-000000000015');
+  IF result->>'created' <> 'true' OR result->'resume'->>'translations_copied' <> '1'
+     OR result->'resume'->>'lessons_copied' <> '1' OR result->'resume'->>'steps' <> '5' THEN
+    RAISE EXCEPTION 'resume did not report the accepted translation copy: %', result;
+  END IF;
+  IF (SELECT count(*) FROM public.studio_generations
+      WHERE run_id='eeee7777-3333-4000-8000-000000000050' AND step_key='translate' AND origin='resumed') <> 1
+     OR NOT EXISTS (
+       SELECT 1 FROM public.studio_generations
+       WHERE run_id='eeee7777-3333-4000-8000-000000000050' AND step_key='translate' AND locale='vi'
+         AND status='completed' AND origin='resumed' AND output='{"course":{"title":"Khóa thử"}}'::jsonb
+         AND parent_generation_id='eeee7777-5555-4000-8000-000000000046'
+         AND provider_request_id='resume:eeee7777-5555-4000-8000-000000000046'
+     ) THEN
+    RAISE EXCEPTION 'resumed translation did not preserve its accepted output and parent';
+  END IF;
+  IF (SELECT state FROM public.studio_run_steps WHERE run_id='eeee7777-3333-4000-8000-000000000050' AND step_key='translate') <> 'pending'
+     OR NOT EXISTS (
+       SELECT 1 FROM public.studio_run_events
+       WHERE run_id='eeee7777-3333-4000-8000-000000000050' AND step_key='translate' AND kind='result' AND agent_role='A7'
+         AND message='Dùng lại từ lượt trước: 1 bản dịch đã đạt.'
+         AND payload->>'source'='resumed' AND payload->>'translations_copied'='1'
+     ) THEN
+    RAISE EXCEPTION 'resumed translation must be reported while translate remains pending until the pipeline consumes it';
+  END IF;
+
   -- Same run ID replays start without duplicating L1 or resume events.
   result := public.studio_start_run('eeee7777-2222-4000-8000-000000000012','eeee7777-3333-4000-8000-000000000020',NULL,NULL);
   IF result->>'created' <> 'false'

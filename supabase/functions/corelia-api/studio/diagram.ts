@@ -34,7 +34,13 @@ export interface Box {
   lines: string[];
 }
 
-export const textWidth = (s: string, size: number) => [...s].length * size * CHAR_W;
+export const LABEL_FONT_SIZE = 26;
+/** Free space kept between an edge label and the nearest box border or label. */
+const LABEL_GAP = 24;
+
+// CJK glyphs are about one em wide; Latin is measured with the average width CHAR_W.
+const isWide = (ch: string) => /[ᄀ-ᇿ⺀-鿿가-힯豈-﫿＀-￯]/.test(ch);
+export const textWidth = (s: string, size: number) => [...s].reduce((w, ch) => w + size * (isWide(ch) ? 1 : CHAR_W), 0);
 
 // Wrap only when one line does not fit the widest box.
 function wrap(label: string): string[] {
@@ -53,7 +59,7 @@ function wrap(label: string): string[] {
 }
 
 export function layout(spec: Diagram): Map<string, Box> {
-  const boxes = new Map<string, Box>();
+  const sized = new Map<string, Omit<Box, "cx" | "cy">>();
   for (const n of spec.nodes) {
     const lines = wrap(n.label);
     const longest = Math.max(...lines.map((l) => textWidth(l, FONT_SIZE)));
@@ -62,9 +68,63 @@ export function layout(spec: Diagram): Map<string, Box> {
       w += 24;
       h += 12;
     }
-    boxes.set(n.id, { cx: n.col * CELL_W + CELL_W / 2, cy: n.row * CELL_H + CELL_H / 2, w, h, shape: n.shape, lines });
+    sized.set(n.id, { w, h, shape: n.shape, lines });
+  }
+  // Only columns and rows that hold a node get a slot, so an empty grid row or column adds no space.
+  const cols = [...new Set(spec.nodes.map((n) => n.col))].sort((a, b) => a - b);
+  const rows = [...new Set(spec.nodes.map((n) => n.row))].sort((a, b) => a - b);
+  const colSlot = new Map(cols.map((c, i) => [c, i]));
+  const rowSlot = new Map(rows.map((r, i) => [r, i]));
+  const halfW = cols.map((c) => Math.max(...spec.nodes.filter((n) => n.col === c).map((n) => sized.get(n.id)!.w / 2)));
+  // gap[i]: distance between the centers of slot i and slot i + 1.
+  const colGap = cols.slice(1).map(() => CELL_W);
+  const rowGap = rows.slice(1).map(() => CELL_H);
+  // A horizontal label must fit between the two box borders; widen the gaps it spans when it does not.
+  for (const e of spec.edges) {
+    if (!e.label || e.route !== "straight") continue;
+    const a = spec.nodes.find((n) => n.id === e.from)!, b = spec.nodes.find((n) => n.id === e.to)!;
+    if (a.row !== b.row || a.col === b.col) continue;
+    const lo = Math.min(colSlot.get(a.col)!, colSlot.get(b.col)!), hi = Math.max(colSlot.get(a.col)!, colSlot.get(b.col)!);
+    const need = textWidth(e.label, LABEL_FONT_SIZE) + LABEL_GAP;
+    const free = colGap.slice(lo, hi).reduce((s, g) => s + g, 0) - halfW[lo] - halfW[hi];
+    if (free < need) for (let k = lo; k < hi; k++) colGap[k] += (need - free) / (hi - lo);
+  }
+  const xs = [0];
+  colGap.forEach((g) => xs.push(xs[xs.length - 1] + g));
+  const ys = [0];
+  rowGap.forEach((g) => ys.push(ys[ys.length - 1] + g));
+  const boxes = new Map<string, Box>();
+  for (const n of spec.nodes) {
+    boxes.set(n.id, { ...sized.get(n.id)!, cx: xs[colSlot.get(n.col)!] + CELL_W / 2, cy: ys[rowSlot.get(n.row)!] + CELL_H / 2 });
   }
   return boxes;
+}
+
+export interface EdgeLabel {
+  text: string;
+  x: number;
+  y: number;
+  anchor: "middle" | "start";
+  w: number;
+}
+
+/** Where an edge label is drawn, or null when the edge has no label. Shared by the renderer and the check. */
+export function edgeLabel(e: DiagramEdge, boxes: Map<string, Box>): EdgeLabel | null {
+  if (!e.label) return null;
+  const g = edgeGeometry(e, boxes);
+  const [mx, my] = g.mid;
+  const w = textWidth(e.label, LABEL_FONT_SIZE);
+  const vertical = e.route === "straight" && Math.abs(g.y2 - g.y1) > Math.abs(g.x2 - g.x1);
+  if (vertical) return { text: e.label, x: mx + 14, y: my, anchor: "start", w };
+  return { text: e.label, x: mx, y: my + (e.route === "arc_below" ? 28 : -28), anchor: "middle", w };
+}
+
+const overlaps = (a: [number, number, number, number], b: [number, number, number, number]) =>
+  a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
+
+function labelRect(l: EdgeLabel): [number, number, number, number] {
+  const x0 = l.anchor === "middle" ? l.x - l.w / 2 : l.x;
+  return [x0, l.y - LABEL_FONT_SIZE / 2, x0 + l.w, l.y + LABEL_FONT_SIZE / 2];
 }
 
 // Does segment p→q pass through box b (shrunk slightly so touching corners is allowed)?
@@ -164,5 +224,23 @@ export function checkDiagram(spec: Diagram): string[] {
       }
     }
   }
+  // Edge labels must not sit on a node or on another label. Layout widens straight horizontal gaps for
+  // labels, so a remaining hit comes from arc labels or from a label stacked on another label.
+  const rects = spec.edges.flatMap((e) => {
+    const l = edgeLabel(e, boxes);
+    return l ? [{ text: l.text, rect: labelRect(l) }] : [];
+  });
+  for (const r of rects) {
+    for (const [id, b] of boxes) {
+      if (overlaps(r.rect, [b.cx - b.w / 2, b.cy - b.h / 2, b.cx + b.w / 2, b.cy + b.h / 2])) {
+        problems.push(`nhãn "${r.text}" đè lên node ${id}; đổi route hoặc vị trí node`);
+      }
+    }
+  }
+  rects.forEach((r, i) => {
+    for (const other of rects.slice(i + 1)) {
+      if (overlaps(r.rect, other.rect)) problems.push(`nhãn "${r.text}" đè lên nhãn "${other.text}"`);
+    }
+  });
   return problems;
 }

@@ -743,7 +743,7 @@ describe("Studio translate step handling", () => {
 
       q.maybeSingle = vi.fn().mockImplementation(async () => {
         if (table === "studio_agent_prompts") {
-          return { data: { prompt_version: 1, version: 1, system_prompt: "Translate test prompt" }, error: null };
+          return { data: { prompt_version: 1, version: PROMPT_VERSIONS["a7-translate"], system_prompt: "Translate test prompt" }, error: null };
         }
         if (table === "studio_generations") {
           // Check for completed aggregate row
@@ -1068,27 +1068,29 @@ describe("Studio translate step handling", () => {
       vi.stubGlobal("fetch", oldFetch);
     }
   });
-  it("marks run as draft_failed when a unit fails 3 attempts", async () => {
-    const failedGenAttempt3 = {
-      id: "gen-failed-3",
-      run_id: runId,
-      step_key: "translate",
-      attempt: 2,
-      agent_role: "A7",
-      status: "failed",
-      failure_kind: "rejected",
-      error: "Bản dịch vi phạm toàn vẹn",
-      created_at: new Date().toISOString(),
-      locale: "zh-CN",
-      lesson_id: null,
-    };
+  const failedTranslation = (attempt: number, failure_kind: string) => ({
+    id: `gen-failed-${attempt}`,
+    run_id: runId,
+    step_key: "translate",
+    attempt,
+    agent_role: "A7",
+    status: "failed",
+    failure_kind,
+    error: "Bản dịch vi phạm toàn vẹn",
+    created_at: new Date().toISOString(),
+    locale: "zh-CN",
+    lesson_id: null,
+  });
 
+  it("marks run as draft_failed when a unit fails 3 attempts", async () => {
     const { db, rpc } = createMockDb({
       generations: [
         { step_key: "brief", status: "completed", output: briefOutput, attempt: 0 },
         { step_key: "curriculum", status: "completed", output: curriculumOutput, attempt: 0 },
         lessonGenRow,
-        failedGenAttempt3,
+        failedTranslation(0, "rejected"),
+        failedTranslation(1, "rejected"),
+        failedTranslation(2, "rejected"),
       ],
     });
 
@@ -1108,6 +1110,35 @@ describe("Studio translate step handling", () => {
         p_status: "draft_failed",
       }));
     } finally {
+      vi.stubGlobal("Deno", oldDeno);
+    }
+  });
+
+  it.each([
+    { kinds: ["provider", "provider", "rejected"], fails: false },
+    { kinds: ["provider", "provider", "provider", "provider", "provider"], fails: true },
+  ])("counts provider failures apart from the model's attempts: $kinds", async ({ kinds, fails }) => {
+    const { db, rpc } = createMockDb({
+      generations: [
+        { step_key: "brief", status: "completed", output: briefOutput, attempt: 0 },
+        { step_key: "curriculum", status: "completed", output: curriculumOutput, attempt: 0 },
+        lessonGenRow,
+        ...kinds.map((kind, attempt) => failedTranslation(attempt, kind)),
+      ],
+    });
+
+    const oldDeno = (globalThis as any).Deno;
+    const oldFetch = globalThis.fetch;
+    vi.stubGlobal("Deno", { env: { get: (k: string) => k.endsWith("OPENAI_API_KEY") ? "mock-key" : undefined } });
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network down")));
+
+    try {
+      await runTranslate(db, { id: runId, course_id: courseId, started_at: new Date().toISOString(), paused_at: null }).catch(() => undefined);
+
+      const finished = rpc.mock.calls.some(([name, args]: any[]) => name === "studio_finish_run" && args.p_status === "draft_failed");
+      expect(finished).toBe(fails);
+    } finally {
+      vi.stubGlobal("fetch", oldFetch);
       vi.stubGlobal("Deno", oldDeno);
     }
   });

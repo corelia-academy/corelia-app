@@ -3,7 +3,7 @@
 
 import { diagramProblems, lessonRefs, lessonVideoCandidates, TransientError, youtubeEmbeddable, type LessonRef } from "./lessons.ts";
 import { evaluateCodeExercise, getYoutubeVideoId, validateCodeConfig, validateLesson, validateQuestion, validateResources } from "./lesson_ports.ts";
-import { MIN_QUIZ_QUESTIONS, type LessonDraft } from "./lesson_types.ts";
+import { minQuizQuestions, type LessonDraft } from "./lesson_types.ts";
 
 interface Provenance {
   model_id: string | null;
@@ -104,7 +104,7 @@ export function structureProblems(curriculum: unknown, research: unknown, record
     const ruleStart = problems.length;
     for (const { field, code } of validateLesson(lesson)) at(`${field}: ${code}`);
     questions.forEach((q, i) => validateQuestion(q).forEach((code) => at(`câu ${i + 1}: ${code}`)));
-    if (cl.type === "quiz" && questions.length < MIN_QUIZ_QUESTIONS) at(`quiz phải có ít nhất ${MIN_QUIZ_QUESTIONS} câu hỏi`);
+    if (cl.type === "quiz" && questions.length < minQuizQuestions(cl.purpose)) at(`quiz phải có ít nhất ${minQuizQuestions(cl.purpose)} câu hỏi`);
     if (cl.type === "article") for (const p of diagramProblems(lesson.description_markdown ?? "", diagrams)) at(p);
     for (const code of validateResources(lesson.resources ?? [])) at(`resources: ${code}`);
     const candidateById = new Map<string, { title: string; channel: string }>();
@@ -215,7 +215,7 @@ export async function linkProblems(records: Record<string, LessonRecord>, fetchF
 // ---- journey_test ------------------------------------------------------------------------------
 
 /** Lesson purposes that teach an outcome; practice and checks come after them. */
-export const TEACHING_PURPOSES = ["explanation", "worked_example"] as const;
+export const TEACHING_PURPOSES: readonly string[] = ["explanation", "worked_example"];
 
 /** Walks the lessons in curriculum order as a learner would. Every lesson counts: the app has no optional lesson. */
 export function journeyProblems(curriculum: unknown, records: Record<string, LessonRecord>, evidence?: CodeCheck[]): string[] {
@@ -291,8 +291,8 @@ export function journeyProblems(curriculum: unknown, records: Record<string, Les
       const ratio = lesson.quiz_config?.passing_ratio ?? 0.7;
       // Answer every question with its correct option.
       const correct = draft.questions.filter((q) => Number.isInteger(q.correct_index) && q.correct_index >= 0 && q.correct_index < q.options.length).length;
-      if (total < MIN_QUIZ_QUESTIONS) {
-        at(cl.id, `quiz phải có ít nhất ${MIN_QUIZ_QUESTIONS} câu hỏi`);
+      if (total < minQuizQuestions(cl.purpose)) {
+        at(cl.id, `quiz phải có ít nhất ${minQuizQuestions(cl.purpose)} câu hỏi`);
         failedQuizzes.push(cl.id);
       } else if (!(ratio >= 0.01 && ratio <= 1)) {
         at(cl.id, `ngưỡng ${ratio} ngoài (0.01, 1]`);

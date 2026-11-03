@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   extractCodeBlocks,
+  findEnglishLeaks,
   extractDiagramReferences,
   validateCourseTranslation,
   validateSectionTranslation,
@@ -53,6 +54,7 @@ describe("translate: validateCourseTranslation & validateSectionTranslation", ()
     const source = { id: "m1", title: "Module 1", description: "Desc 1" };
     expect(() => validateSectionTranslation(source, { id: "m1", title: "Phần 1", description: "Mô tả 1" }, "vi")).not.toThrow();
     expect(() => validateSectionTranslation(source, { id: "m1", title: "", description: "Mô tả 1" }, "vi")).toThrow(TranslationIntegrityError);
+    expect(() => validateSectionTranslation(source, { id: "m1", title: "Phần 1", description: "Mô tả with lỗi" }, "vi")).toThrow("còn chữ tiếng Anh");
   });
 });
 
@@ -168,6 +170,23 @@ describe("translate: validateLessonTranslation", () => {
         { id: "a", text: "A" }, { id: "b", text: "B" }, { id: "c", text: "C" },
       ]), "ko")).toThrow("số lựa chọn");
     });
+
+    it("rejects English text left in quiz questions, explanations, and options", () => {
+      const valid = translation([
+        { id: "a", text: "Lựa chọn A" }, { id: "b", text: "Lựa chọn B" },
+        { id: "c", text: "Lựa chọn C" }, { id: "d", text: "Đáp án đúng" },
+      ]);
+      const baseQuestion = valid.quiz!.questions[0];
+      const leakedQuestion: TranslatedLesson = { ...valid, quiz: { questions: [{ ...baseQuestion, question: "Câu hỏi with phần còn lại" }] } };
+      const leakedExplanation: TranslatedLesson = { ...valid, quiz: { questions: [{ ...baseQuestion, explanation: "Giải thích but còn sót" }] } };
+      const leakedOption = translation([
+        { id: "a", text: "Lựa chọn A" }, { id: "b", text: "Lựa chọn B" },
+        { id: "c", text: "Lựa chọn C" }, { id: "d", text: "Đáp án and phần còn lại" },
+      ]);
+      expect(() => validateLessonTranslation(sourceRecord, leakedQuestion, "ko")).toThrow("còn chữ tiếng Anh");
+      expect(() => validateLessonTranslation(sourceRecord, leakedExplanation, "ko")).toThrow("còn chữ tiếng Anh");
+      expect(() => validateLessonTranslation(sourceRecord, leakedOption, "ko")).toThrow("còn chữ tiếng Anh");
+    });
   });
 
   it("code_exercise: rejects when two-stage blanks or tests mismatch", () => {
@@ -263,6 +282,7 @@ describe("translate: validateLessonTranslation", () => {
       practice: { description_markdown: "Chạy lệnh: ```bash\ncargo build\n```" },
     };
     expect(() => validateLessonTranslation(pracSource, validPrac, "vi")).not.toThrow();
+    expect(() => validateLessonTranslation(pracSource, { ...validPrac, practice: { description_markdown: "Chạy lệnh but còn sót ```bash\ncargo build\n```" } }, "vi")).toThrow("còn chữ tiếng Anh");
 
     const badPrac: TranslatedLesson = {
       ...validPrac,
@@ -286,6 +306,7 @@ describe("translate: validateLessonTranslation", () => {
       video: { description_markdown: "Mã: ```rust\nfn foo() {}\n```" },
     };
     expect(() => validateLessonTranslation(vidSource, validVid, "vi")).not.toThrow();
+    expect(() => validateLessonTranslation(vidSource, { ...validVid, video: { description_markdown: "Mục tiêu with phần chưa dịch ```rust\nfn foo() {}\n```" } }, "vi")).toThrow("còn chữ tiếng Anh");
 
     const badVid: TranslatedLesson = {
       ...validVid,
@@ -355,6 +376,14 @@ describe("translate: validateLessonTranslation", () => {
     };
     expect(() => validateLessonTranslation(codeSource, validCode, "vi")).not.toThrow();
 
+    const leakedCodeFields: TranslatedLesson[] = [
+      { ...validCode, code: { ...validCode.code!, instructions: "Đề bài but còn sót" } },
+      { ...validCode, code: { ...validCode.code!, part_1: { ...validCode.code!.part_1!, hints: ["Gợi ý with phần chưa dịch"] } } },
+      { ...validCode, code: { ...validCode.code!, part_1: { ...validCode.code!.part_1!, blanks: [{ id: "b1", feedback: "Phản hồi but còn sót" }] } } },
+      { ...validCode, code: { ...validCode.code!, part_2: { ...validCode.code!.part_2!, tests: [{ id: "t1", description: "Mô tả", failure_message: "Lỗi", hint: "Gợi ý but còn sót" }] } } },
+    ];
+    for (const leaked of leakedCodeFields) expect(() => validateLessonTranslation(codeSource, leaked, "vi")).toThrow("còn chữ tiếng Anh");
+
     // Marker {{blank:b1}} bị dịch mất
     const missingMarker: TranslatedLesson = {
       ...validCode,
@@ -402,6 +431,24 @@ describe("translate: validateLessonTranslation", () => {
       },
     };
     expect(() => validateLessonTranslation(artSource, validArt, "vi")).not.toThrow();
+
+    const leakedDiagram: TranslatedLesson = {
+      ...validArt,
+      article: {
+        ...validArt.article!,
+        diagrams: [{ ...validArt.article!.diagrams[0], title: "Tiêu đề but thiếu dịch" }],
+      },
+    };
+    expect(() => validateLessonTranslation(artSource, leakedDiagram, "vi")).toThrow("còn chữ tiếng Anh");
+
+    const leakedNode: TranslatedLesson = {
+      ...validArt,
+      article: {
+        ...validArt.article!,
+        diagrams: [{ ...validArt.article!.diagrams[0], nodes: [{ id: "n1", label: "Nút and còn sót" }, validArt.article!.diagrams[0].nodes[1]] }],
+      },
+    };
+    expect(() => validateLessonTranslation(artSource, leakedNode, "vi")).toThrow("còn chữ tiếng Anh");
 
     // Edge from/to bị đổi
     const badEdge: TranslatedLesson = {
@@ -587,5 +634,69 @@ describe("V-25: code_exercise_locale instructions & course description parity", 
     const input = buildCourseTranslateInput("Sui Move Course", brief, { outcomes: [], modules: [] }, "vi");
     expect(input.course.short_description).toBe(canonicalCourseShortDescription(brief));
     expect(input.course.description).toBe(canonicalCourseDescription(brief));
+  });
+});
+
+describe("translate: English leak check (V-38, V-42)", () => {
+  it("flags an English function word left inside a Vietnamese sentence", () => {
+    expect(findEnglishLeaks("Trình biên dịch phát hiện—not chỉ là lỗi cú pháp.")).toEqual(["not"]);
+    expect(findEnglishLeaks("Lỗi này là lỗi kiểu, with thông báo ngắn.")).toEqual(["with"]);
+  });
+
+  it("lists every match in order, not only the first", () => {
+    expect(findEnglishLeaks("Trình biên dịch—not chỉ là lỗi, and the cách sửa.")).toEqual(["not", "and", "the"]);
+  });
+
+  it("keeps proper names written in capitals, including connectors inside the name", () => {
+    expect(findEnglishLeaks("Đọc The Rust Book để hiểu ownership.")).toEqual([]);
+    expect(findEnglishLeaks("Xem The Graph và Rust and Cargo trong bài.")).toEqual([]);
+    expect(findEnglishLeaks("Học Ownership and Borrowing trước.")).toEqual([]);
+  });
+
+  it("still flags a lowercase connector that is not between two capitalised words", () => {
+    expect(findEnglishLeaks("Học Rust with cargo trước.")).toEqual(["with"]);
+    expect(findEnglishLeaks("Lỗi sign-and-send khác và tùy chọn read-only.")).toEqual([]);
+  });
+
+  it("ignores code blocks, inline code, URLs, link targets and blank markers", () => {
+    const md = [
+      "Dùng `not` và `the` trong code.",
+      "```rust\nlet not = true; // with the\n```",
+      "Xem https://doc.rust-lang.org/the/and/index.html để đọc thêm.",
+      "![sơ đồ](diagram:the-and-flow)",
+      "Điền {{blank:not_the_one}} vào chỗ trống.",
+    ].join("\n");
+    expect(findEnglishLeaks(md)).toEqual([]);
+  });
+
+  it("ignores identifiers written in plain text outside inline code", () => {
+    expect(findEnglishLeaks("Gọi from() hoặc is_empty() rồi x.from để đổi kiểu.")).toEqual([]);
+    expect(findEnglishLeaks("Hàm and_then và isEmpty xử lý Option.")).toEqual([]);
+  });
+
+  it("keeps fixed technical terms such as Not Found", () => {
+    expect(findEnglishLeaks("Máy chủ trả về 404 Not Found khi đường dẫn sai.")).toEqual([]);
+  });
+
+  it("does not flag valid Vietnamese or Spanish prose", () => {
+    expect(findEnglishLeaks("Bài học này giải thích kiểu dữ liệu và ownership trong Rust.")).toEqual([]);
+    expect(findEnglishLeaks("Esta lección explica cómo funciona el préstamo de valores en Rust.")).toEqual([]);
+    expect(findEnglishLeaks("Este módulo no trata de errores; sólo muestra cómo leer el mensaje.")).toEqual([]);
+  });
+
+  it("rejects a lesson translation that still contains an English word in its article", () => {
+    const record = {
+      draft: {
+        lesson: { id: "l1", lesson_format: "article", description_markdown: "Nội dung" },
+        diagrams: [],
+        questions: [],
+      },
+    } as unknown as LessonRecord;
+    const translated = {
+      title: "Bài 1",
+      short_description: "Mô tả",
+      article: { description_markdown: "Trình biên dịch phát hiện—not chỉ là lỗi cú pháp.", diagrams: [] },
+    } as unknown as TranslatedLesson;
+    expect(() => validateLessonTranslation(record, translated, "vi")).toThrow(TranslationIntegrityError);
   });
 });

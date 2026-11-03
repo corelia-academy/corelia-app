@@ -148,9 +148,44 @@ export type CourseTranslationMap = Record<TranslationLocale, {
   lessons: Record<string, TranslatedLesson>;
 }>;
 
+/**
+ * Từ chức năng tiếng Anh hay lọt vào câu dịch (ví dụ "phát hiện—not chỉ là"). Danh sách hẹp: chỉ các
+ * từ không phải từ thông dụng của tiếng Việt, tiếng Tây Ban Nha hay tiếng Trung/Nhật/Hàn ở dạng Latin.
+ * Từ nối bằng gạch nối là một phần của thuật ngữ ("sign-and-send"), không tính.
+ */
+const ENGLISH_LEAK_WORDS = ["and", "are", "but", "from", "is", "just", "not", "only", "that", "the", "this", "with"];
+const LEAK_WORD = new RegExp(`(?<![\\w.:]|\\w-)(?:${ENGLISH_LEAK_WORDS.join("|")})(?!\\w|-\\w|\\s*\\(|::|\\.\\w)`, "g");
+/** Từ chức năng viết thường nằm giữa hai từ viết hoa là một phần tên riêng ("Rust and Cargo"), không tính là lọt chữ. */
+const NAME_CONNECTOR = new RegExp(`(\\b[A-Z][\\w+#.-]*)\\s+(?:${ENGLISH_LEAK_WORDS.join("|")})\\s+(?=[A-Z])`, "g");
+
+/** Văn bản thuần để kiểm tra: bỏ code block, inline code, URL, link target, marker sơ đồ/chỗ trống và tên riêng nối bằng từ chức năng. */
+function proseOnly(text: string): string {
+  return text
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`[^`\n]*`/g, " ")
+    .replace(/\]\([^)]*\)/g, "] ")
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/\{\{blank:[^}]*\}\}/g, " ")
+    .replace(NAME_CONNECTOR, "$1 ");
+}
+
+/** Mọi từ tiếng Anh lọt vào văn bản dịch, theo thứ tự xuất hiện. Mảng rỗng khi văn bản không còn chữ Anh. */
+export function findEnglishLeaks(text: string): string[] {
+  return proseOnly(text).match(LEAK_WORD) ?? [];
+}
+
+function assertNoEnglishLeak(text: string, context: string, locale: TranslationLocale): void {
+  const words = [...new Set(findEnglishLeaks(text))];
+  if (words.length > 0) {
+    throw new TranslationIntegrityError(`[${locale}] ${context}: còn chữ tiếng Anh "${words.join('", "')}" trong bản dịch`);
+  }
+}
+
 /** Kiểm tra toàn vẹn bản dịch khóa. */
 export function validateCourseTranslation(source: TranslatedCourse, translated: TranslatedCourse, locale: TranslationLocale): void {
   if (!translated.title?.trim()) throw new TranslationIntegrityError(`[${locale}] Tiêu đề khóa học không được rỗng`);
+  assertNoEnglishLeak(`${translated.title} ${translated.short_description ?? ""} ${translated.description ?? ""}`, "Khóa học", locale);
+  for (const outcome of translated.learning_outcomes ?? []) assertNoEnglishLeak(outcome, "Learning outcome", locale);
   if (!translated.short_description?.trim()) throw new TranslationIntegrityError(`[${locale}] Mô tả ngắn khóa học không được rỗng`);
   if (!translated.description?.trim()) throw new TranslationIntegrityError(`[${locale}] Mô tả khóa học không được rỗng`);
   if (!Array.isArray(translated.learning_outcomes) || translated.learning_outcomes.length !== source.learning_outcomes.length) {
@@ -167,6 +202,7 @@ export function validateCourseTranslation(source: TranslatedCourse, translated: 
 export function validateSectionTranslation(source: TranslatedSection, translated: TranslatedSection, locale: TranslationLocale): void {
   if (!translated.title?.trim()) throw new TranslationIntegrityError(`[${locale}] Section ${source.id}: tiêu đề không được rỗng`);
   if (!translated.description?.trim()) throw new TranslationIntegrityError(`[${locale}] Section ${source.id}: mô tả không được rỗng`);
+  assertNoEnglishLeak(`${translated.title} ${translated.description}`, `Section ${source.id}`, locale);
 }
 
 /** Kiểm tra toàn vẹn bản dịch lesson theo đúng yêu cầu handoff Mục E. */
@@ -180,6 +216,36 @@ export function validateLessonTranslation(
   if (!translated.short_description?.trim()) throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: mô tả ngắn không được rỗng`);
   if ((sourceRecord.draft.lesson as any).summary && !translated.summary?.trim()) {
     throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: tóm tắt (summary) không được rỗng`);
+  }
+  const lessonLabel = `Lesson ${sourceRecord.draft.lesson.id}`;
+  assertNoEnglishLeak(`${translated.title} ${translated.short_description} ${translated.summary ?? ""}`, lessonLabel, locale);
+  if (format === "article") assertNoEnglishLeak(translated.article?.description_markdown ?? "", `${lessonLabel} article`, locale);
+  if (format === "quiz") {
+    for (const [qIndex, question] of (translated.quiz?.questions ?? []).entries()) {
+      assertNoEnglishLeak(`${question.question ?? ""} ${question.explanation ?? ""}`, `${lessonLabel} question ${qIndex + 1}`, locale);
+      for (const option of question.options ?? []) assertNoEnglishLeak(option.text ?? "", `${lessonLabel} question ${qIndex + 1} option ${option.id}`, locale);
+    }
+  }
+  if (format === "practice") assertNoEnglishLeak(translated.practice?.description_markdown ?? "", `${lessonLabel} practice`, locale);
+  if (format === "video") assertNoEnglishLeak(translated.video?.description_markdown ?? "", `${lessonLabel} video`, locale);
+  if (format === "code_exercise") {
+    const code = translated.code;
+    assertNoEnglishLeak(code?.instructions ?? "", `${lessonLabel} code instructions`, locale);
+    for (const [index, part] of [code?.part_1, code?.part_2].entries()) {
+      if (!part) continue;
+      assertNoEnglishLeak(part.instructions ?? "", `${lessonLabel} part ${index + 1} instructions`, locale);
+      for (const [hintIndex, hint] of (part.hints ?? []).entries()) assertNoEnglishLeak(hint, `${lessonLabel} part ${index + 1} hint ${hintIndex + 1}`, locale);
+      if ("blanks" in part) {
+        for (const blank of part.blanks) assertNoEnglishLeak(blank.feedback ?? "", `${lessonLabel} blank ${blank.id} feedback`, locale);
+      }
+      if ("tests" in part) {
+        for (const test of part.tests) {
+          assertNoEnglishLeak(test.description ?? "", `${lessonLabel} test ${test.id} description`, locale);
+          assertNoEnglishLeak(test.failure_message ?? "", `${lessonLabel} test ${test.id} failure message`, locale);
+          assertNoEnglishLeak(test.hint ?? "", `${lessonLabel} test ${test.id} hint`, locale);
+        }
+      }
+    }
   }
 
   // 1. Article
@@ -209,6 +275,7 @@ export function validateLessonTranslation(
       const td = transDiagrams.find((d) => d.id === sd.id);
       if (!td) throw new TranslationIntegrityError(`[${locale}] Lesson ${sourceRecord.draft.lesson.id}: thiếu sơ đồ ${sd.id}`);
       if (!td.alt?.trim()) throw new TranslationIntegrityError(`[${locale}] Sơ đồ ${sd.id}: alt text không được rỗng`);
+      assertNoEnglishLeak(`${td.title ?? ""} ${td.alt}`, `${lessonLabel} diagram ${sd.id}`, locale);
       if (sd.nodes.length !== td.nodes.length) {
         throw new TranslationIntegrityError(`[${locale}] Sơ đồ ${sd.id}: số node (${td.nodes.length}) không khớp nguồn (${sd.nodes.length})`);
       }
@@ -216,6 +283,7 @@ export function validateLessonTranslation(
         const tn = td.nodes.find((n) => n.id === sn.id);
         if (!tn) throw new TranslationIntegrityError(`[${locale}] Sơ đồ ${sd.id}: thiếu node ${sn.id}`);
         if (!tn.label?.trim()) throw new TranslationIntegrityError(`[${locale}] Sơ đồ ${sd.id}, node ${sn.id}: label không được rỗng`);
+        assertNoEnglishLeak(tn.label, `${lessonLabel} diagram ${sd.id} node ${sn.id}`, locale);
       }
       const srcEdges = sd.edges ?? [];
       const tdEdges = td.edges ?? [];
@@ -231,6 +299,7 @@ export function validateLessonTranslation(
         if (se.label && !te.label?.trim()) {
           throw new TranslationIntegrityError(`[${locale}] Sơ đồ ${sd.id}, edge ${eIdx + 1}: label không được rỗng`);
         }
+        if (te.label) assertNoEnglishLeak(te.label, `${lessonLabel} diagram ${sd.id} edge ${eIdx + 1}`, locale);
       }
     }
   }

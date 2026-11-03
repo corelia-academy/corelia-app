@@ -6,16 +6,17 @@ BEGIN
   SELECT count(*) INTO pinned_count
   FROM (VALUES
     ('a1-catalog-research',7,'A1'),
-    ('a2-brief',9,'A2'),
-    ('a2-research',13,'A2'),
-    ('a3-curriculum',19,'A3'),
-    ('a4-curriculum-review',17,'A4'),
-    ('a5-lesson',20,'A5'),
-    ('a6-lesson-review',18,'A6')
+    ('a2-brief',12,'A2'),
+    ('a2-research',16,'A2'),
+    ('a3-curriculum',24,'A3'),
+    ('a4-curriculum-review',21,'A4'),
+    ('a5-lesson',27,'A5'),
+    ('a6-lesson-review',25,'A6'),
+    ('a7-translate',2,'A7')
   ) expected(prompt_key,version,agent_role)
   JOIN public.studio_agent_prompts actual USING (prompt_key,version,agent_role);
-  IF pinned_count <> 7 THEN
-    RAISE EXCEPTION 'Expected 7 pinned Studio prompt rows; found %', pinned_count;
+  IF pinned_count <> 8 THEN
+    RAISE EXCEPTION 'Expected 8 pinned Studio prompt rows; found %', pinned_count;
   END IF;
   IF has_table_privilege('anon','public.studio_agent_prompts','SELECT') THEN
     RAISE EXCEPTION 'anon has direct SELECT privilege on studio_agent_prompts';

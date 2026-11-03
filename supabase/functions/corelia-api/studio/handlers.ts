@@ -38,6 +38,7 @@ import {
   canonicalCourseShortDescription,
 } from "./translate.ts";
 import type { StartResult } from "./resume.ts";
+import { canRetry, roundFailures } from "./retry.ts";
 import { loadAgentPrompt } from "./agent_prompts.ts";
 import {
   agentKeyEnv,
@@ -763,13 +764,13 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
 
       // Chưa có attempt hoặc attempt trước đó bị failed -> SUBMIT mới
       const nextAttempt = latest ? latest.attempt + 1 : 0;
-      if (nextAttempt >= (STEP_SPECS.translate!.maxAttempts ?? 3)) {
+      if (latest && !canRetry(roundFailures(attempts, 0), STEP_SPECS.translate!.maxAttempts ?? 3)) {
         await finishRun(
           db,
           run,
           "translate",
           "draft_failed",
-          `Bản dịch ${u.unitKey} sang ${loc} thất bại sau ${nextAttempt} lần thử: ${latest?.error || "Lỗi kiểm tra toàn vẹn"}`,
+          `Bản dịch ${u.unitKey} sang ${loc} thất bại sau ${attempts.length} lần thử: ${latest?.error || "Lỗi kiểm tra toàn vẹn"}`,
           nextAttempt
         );
         return;

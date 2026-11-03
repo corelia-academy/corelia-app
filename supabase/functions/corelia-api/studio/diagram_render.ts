@@ -4,7 +4,7 @@
 
 import { initWasm, Resvg } from "npm:@resvg/resvg-wasm@2.6.2";
 
-import { border, edgeGeometry, FONT_SIZE, layout, textWidth, type Diagram } from "./diagram.ts";
+import { border, edgeGeometry, edgeLabel, FONT_SIZE, LABEL_FONT_SIZE, layout, textWidth, type Diagram } from "./diagram.ts";
 
 const INK = "#1e1e1e", PAD = 50;
 /** PNG scale: the diagram is drawn at about 1300 px wide, so 2x stays sharp on retina screens. */
@@ -180,11 +180,8 @@ export function renderSvg(rough: any, spec: Diagram, seed = 7, fontFamily = "Pat
     }
     const [mx, my] = mid;
     if (e.crossed) out += paths(gen.line(mx - 14, my - 14, mx + 14, my + 14, o)) + paths(gen.line(mx - 14, my + 14, mx + 14, my - 14, o));
-    if (e.label) {
-      const vertical = e.route === "straight" && Math.abs(y2 - y1) > Math.abs(x2 - x1);
-      if (vertical) text(mx + 14, my, [e.label], 26, "start");
-      else text(mx, my + (e.route === "arc_below" ? 28 : -28), [e.label], 26, "middle");
-    }
+    const label = edgeLabel(e, boxes);
+    if (label) text(label.x, label.y, [label.text], LABEL_FONT_SIZE, label.anchor);
   });
 
   if (spec.title) {

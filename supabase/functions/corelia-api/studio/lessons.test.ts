@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { acceptLesson, buildLessonInput, buildLessonReviewInput, LESSON_SCHEMA, lessonIds, lessonRefs, quizPassingRatio, toLessonDraft, TransientError } from "./lessons.ts";
+import { acceptLesson, hasUnseenBlocking, buildLessonInput, buildLessonReviewInput, LESSON_SCHEMA, lessonIds, lessonRefs, quizPassingRatio, toLessonDraft, TransientError } from "./lessons.ts";
 import { ENABLED_CODE_LANGUAGES, getCodeLanguageAdapter, PREPARED_CODE_LANGUAGES } from "./lesson_ports.ts";
 import { PLATFORM_FORMAT_GUIDE } from "./formats.ts";
 import { article, base, ctx, curriculum, diagram, editCode, fillCode, fiveQuestions, question, test, twoStageCode } from "./lesson_fixtures.ts";
@@ -594,6 +594,23 @@ describe("studio lessons: accept by format", () => {
     }) as typeof fetch;
     await accept("l-vid", { ...out, duration_seconds: 0 }, spy);
     expect(called).toBe(false);
+  });
+});
+
+describe("studio lessons: blocking issues new in a review", () => {
+  const issue = (problem: string, location = "lesson.description_markdown") => ({ severity: "blocking", category: "flow_violation", location, problem });
+  const previous = { issues: [issue("The opening uses lamports without explaining it.")] };
+
+  it("counts an issue A6 marks as new at a location the previous review flagged", () => {
+    expect(hasUnseenBlocking({ issues: [issue("Mới ở vòng này: Bài dùng wallet mà không giải thích.")] }, previous)).toBe(true);
+  });
+
+  it("counts an issue at a new location", () => {
+    expect(hasUnseenBlocking({ issues: [issue("Sai đáp án.", "questions[0]")] }, previous)).toBe(true);
+  });
+
+  it("does not count an issue kept at the same location", () => {
+    expect(hasUnseenBlocking({ issues: [issue("Vẫn chưa giải thích lamports.")] }, previous)).toBe(false);
   });
 });
 

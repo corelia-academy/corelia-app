@@ -236,14 +236,69 @@ const RESEARCH_SCHEMA = object({
  * itself never gates course completion.
  */
 export const LESSON_PURPOSES = [
+  "warm_up",
   "explanation",
   "worked_example",
+  "quick_check",
   "guided_practice",
   "independent_practice",
   "retrieval",
   "final_check",
   "optional_hands_on",
 ] as const;
+
+/**
+ * Module shape (5 steps): warm_up (Thử) → explanation/worked_example (Dạy) → quick_check (Kiểm tra nhanh)
+ * → guided_practice (Luyện) → independent_practice (Ghép). Courses without code replace the last two with a scenario quiz.
+ * `retrieval` is replaced by quick_check and is refused in a module. `final_check` and `optional_hands_on`
+ * keep their own placement rules.
+ */
+const TEACHING_STEP_PURPOSES: readonly string[] = ["explanation", "worked_example"];
+
+function moduleStepProblems(
+  module: { id: string; lessons: CurriculumLesson[] },
+  moduleIndex: number,
+  moduleCount: number,
+  earlierLessonIds: Set<string>,
+  codeLanguage: EnabledCodeLanguage | null,
+): string[] {
+  const problems: string[] = [];
+  const at = (p: string) => problems.push(`module ${module.id}: ${p}`);
+  const lessons = module.lessons;
+  if (lessons.length < 4 || lessons.length > 6) at(`có ${lessons.length} bài; cần 4-6 bài`);
+  if (lessons.some((l) => l.purpose === "retrieval")) at("dùng purpose retrieval; bước Kiểm tra nhanh (quick_check) đã thay thế");
+  if (lessons[0]?.purpose !== "warm_up") at("bài đầu phải có purpose warm_up (bước Thử)");
+  if (lessons.filter((l) => l.purpose === "warm_up").length !== 1) at("cần đúng 1 bài warm_up (bước Thử)");
+  const quickIndex = lessons.findIndex((l) => l.purpose === "quick_check");
+  if (lessons.filter((l) => l.purpose === "quick_check").length !== 1) at("cần đúng 1 bài quick_check (bước Kiểm tra nhanh)");
+  else if (!lessons.slice(1, quickIndex).some((l) => TEACHING_STEP_PURPOSES.includes(l.purpose))) at("thiếu bài dạy (explanation/worked_example) trước quick_check");
+  if (moduleIndex > 0 && quickIndex >= 0 && !lessons[quickIndex].review_lesson_ids.some((id) => earlierLessonIds.has(id))) {
+    at("quick_check của module sau phải kiểm một kiến thức của module trước qua review_lesson_ids");
+  }
+  const guidedIndex = lessons.findIndex((l) => l.purpose === "guided_practice");
+  const independentIndex = lessons.findIndex((l) => l.purpose === "independent_practice");
+  const guidedCount = lessons.filter((l) => l.purpose === "guided_practice").length;
+  const independentCount = lessons.filter((l) => l.purpose === "independent_practice").length;
+  if (codeLanguage === null) {
+    // Without code, Luyện is dropped and Ghép is one scenario quiz after quick_check.
+    if (guidedIndex >= 0) at("khóa không có code nhưng có bước Luyện (guided_practice)");
+    if (independentCount !== 1) at("khóa không có code: cần đúng 1 quiz tình huống Ghép (independent_practice)");
+    else if (lessons[independentIndex].type !== "quiz" || independentIndex < quickIndex) {
+      at("khóa không có code: bước Ghép phải là quiz tình huống đứng sau quick_check");
+    }
+  } else if (guidedCount !== 1 || independentCount !== 1) {
+    at("khóa có code: cần đúng 1 bài Luyện (guided_practice) và 1 bài Ghép (independent_practice)");
+  } else if (lessons[guidedIndex].type !== "code_exercise" || lessons[independentIndex].type !== "code_exercise") {
+    at("khóa có code: bước Luyện và Ghép phải là code_exercise");
+  } else if (!(quickIndex < guidedIndex && guidedIndex < independentIndex)) {
+    at("thứ tự phải là quick_check → guided_practice → independent_practice");
+  }
+  const finalIndex = lessons.findIndex((l) => l.purpose === "final_check");
+  if (finalIndex >= 0 && (moduleIndex !== moduleCount - 1 || finalIndex !== lessons.length - 1)) {
+    at("final_check chỉ được là bài cuối của module cuối");
+  }
+  return problems;
+}
 
 const CURRICULUM_SCHEMA = object({
   status: { type: "string", enum: ["draft", "needs_research"] },
@@ -386,6 +441,20 @@ export function utcDate(ms: number): string {
  * string here would only be refused at publish, after every step has been paid for. `courseLocale` is
  * that setting; a brief that names another value is corrected to it.
  */
+/**
+ * Names an English title or topic uses for enabled languages. `c` is left out because a single letter
+ * matches too much text; a C course needs code_language set by the brief rule anyway.
+ */
+const ENABLED_CODE_LANGUAGE_NAMES: { id: EnabledCodeLanguage; name: string }[] = [
+  { id: "rust", name: "Rust" },
+  { id: "typescript", name: "TypeScript" },
+  { id: "javascript", name: "JavaScript" },
+  { id: "python", name: "Python" },
+  { id: "java", name: "Java" },
+  { id: "cpp", name: "C++" },
+  { id: "go", name: "Go" },
+].filter((entry): entry is { id: EnabledCodeLanguage; name: string } => (ENABLED_CODE_LANGUAGES as readonly string[]).includes(entry.id));
+
 export function acceptBrief(output: unknown, courseLocale?: string): Acceptance {
   const brief = output as Brief;
   if (brief.status !== "ready") return { ok: false, reason: `Brief thiếu dữ liệu: ${list(brief.open_questions)}` };
@@ -400,6 +469,14 @@ export function acceptBrief(output: unknown, courseLocale?: string): Acceptance 
     }
     if (!adapter) {
       return { ok: false, reason: `code_language "${String(requestedLanguage)}" không hợp lệ hoặc chưa hỗ trợ publish.` };
+    }
+  } else if (requestedLanguage === null) {
+    // A course that teaches an enabled language must say so; `null` is only for courses without code.
+    // Matches the language name in the title or topic only, so a passing mention elsewhere does not count.
+    const named = [brief.title, (brief as { topic?: unknown }).topic].filter((v): v is string => typeof v === "string").join(" ");
+    const language = ENABLED_CODE_LANGUAGE_NAMES.find(({ name }) => new RegExp(`(?<![A-Za-z0-9])${name.replace(/\+/g, "\\+")}(?![A-Za-z0-9])`).test(named));
+    if (language) {
+      return { ok: false, reason: `Khóa nhắc tới ${language.name} nhưng code_language = null; đặt code_language = "${language.id}".` };
     }
   }
   if (courseLocale && (brief as { locale?: unknown }).locale !== courseLocale) {
@@ -630,11 +707,19 @@ export function acceptCurriculum(
   });
   const optionalHandsOnIds = new Set(optionalHandsOnByModule.flat().map((l) => l.id));
   const position = new Map(lessons.map((l, i) => [l.id, i]));
+  const earlierLessonIds = new Set<string>();
+  curriculum.modules.forEach((module, moduleIndex) => {
+    problems.push(...moduleStepProblems(module, moduleIndex, curriculum.modules.length, earlierLessonIds, codeLanguage));
+    module.lessons.forEach((l) => earlierLessonIds.add(l.id));
+  });
   const practiceIds = new Set(lessons.filter((l) => l.type === "practice").map((l) => l.id));
+  const warmUpIds = new Set(lessons.filter((l) => l.purpose === "warm_up").map((l) => l.id));
   for (const o of curriculum.outcomes) {
     if (o.check_lesson_ids.some((id) => practiceIds.has(id))) {
       problems.push(`outcome ${o.id}: check_lesson_ids không được chứa practice`);
     }
+    // warm_up only checks prerequisite knowledge before the module teaches anything; it never counts as an outcome check.
+    if (o.check_lesson_ids.some((id) => warmUpIds.has(id))) problems.push(`outcome ${o.id}: check_lesson_ids không được chứa warm_up`);
     const validChecks = o.check_lesson_ids.filter((id) => lessonIds.has(id) && !optionalHandsOnIds.has(id) && !practiceIds.has(id));
     if (o.check_lesson_ids.length === 0 || o.check_lesson_ids.some((id) => !lessonIds.has(id) || optionalHandsOnIds.has(id) || practiceIds.has(id))) {
       problems.push(`outcome ${o.id} không có lesson kiểm tra hợp lệ`);
@@ -675,6 +760,9 @@ export function acceptCurriculum(
     if (l.purpose === "retrieval" && l.type !== "quiz") {
       problems.push(`lesson ${l.id} (retrieval) phải là quiz`);
     }
+    if ((l.purpose === "warm_up" || l.purpose === "quick_check") && l.type !== "quiz") {
+      problems.push(`lesson ${l.id} (${l.purpose}) phải là quiz`);
+    }
     if (l.purpose === "final_check" && l.type !== "quiz" && l.type !== "code_exercise") {
       problems.push(`lesson ${l.id} (final_check) phải là quiz hoặc code_exercise`);
     }
@@ -689,7 +777,8 @@ export function acceptCurriculum(
     // Feedback on a wrong answer points back to the lesson that teaches it again.
     if (l.type === "quiz") {
       if (l.pass_threshold === null || !(l.pass_threshold > 0 && l.pass_threshold <= 100)) problems.push(`quiz ${l.id} thiếu ngưỡng pass trong (0, 100]`);
-      if (l.review_lesson_ids.length === 0) problems.push(`quiz ${l.id} không có lesson để ôn khi sai`);
+      // warm_up comes first in its module and has nothing earlier to review.
+      if (l.review_lesson_ids.length === 0 && l.purpose !== "warm_up") problems.push(`quiz ${l.id} không có lesson để ôn khi sai`);
       for (const r of l.review_lesson_ids) {
         if (lessonIds.has(r) && r !== l.id && position.get(r)! >= position.get(l.id)!) {
           problems.push(`quiz ${l.id}: lesson ôn ${r} không đứng trước quiz`);
@@ -743,7 +832,7 @@ export function acceptCurriculum(
       }
     });
     const recalls = curriculum.modules.some((m, i) =>
-      m.lessons.some((l) => l.purpose === "retrieval" && l.outcome_ids.some((o) => (firstModule.get(o) ?? i) < i))
+      m.lessons.some((l) => (l.purpose === "retrieval" || l.purpose === "quick_check") && l.outcome_ids.some((o) => (firstModule.get(o) ?? i) < i))
     );
     if (!recalls) problems.push("không có lesson ôn lại outcome của module trước");
   }

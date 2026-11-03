@@ -5,7 +5,7 @@
 // video existence.
 
 import { checkDiagram } from "./diagram.ts";
-import { MIN_QUIZ_QUESTIONS, type LessonDiagram, type LessonDraft, type LessonFormat, type QuestionData } from "./lesson_types.ts";
+import { minQuizQuestions, type LessonDiagram, type LessonDraft, type LessonFormat, type QuestionData } from "./lesson_types.ts";
 import {
   evaluateCodeExercise,
   ENABLED_CODE_LANGUAGES,
@@ -314,12 +314,18 @@ export function reviewBlocking(review: unknown): string[] {
   return issues.filter((i) => i.severity === "blocking").map((i) => `${i.location ?? "?"}: ${i.problem ?? ""}`);
 }
 
-/** True when `review` has a blocking location that `previous` did not flag. */
+/** Prefix the A6 prompt requires on a blocking issue the previous review missed. */
+const NEW_ISSUE_PREFIX = "Mới ở vòng này:";
+
+/**
+ * True when `review` has a blocking issue that `previous` did not flag: its location is new, or A6
+ * marks it as new. Whole-lesson issues share one location, so the location alone cannot tell them apart.
+ */
 export function hasUnseenBlocking(review: unknown, previous: unknown): boolean {
-  const locations = (r: unknown) =>
-    new Set(normalizeReviewIssues((r as { issues?: unknown } | null)?.issues).issues.filter((i) => i.severity === "blocking").map((i) => i.location ?? "?"));
-  const seen = locations(previous);
-  return [...locations(review)].some((l) => !seen.has(l));
+  const blocking = (r: unknown) =>
+    normalizeReviewIssues((r as { issues?: unknown } | null)?.issues).issues.filter((i) => i.severity === "blocking");
+  const seen = new Set(blocking(previous).map((i) => i.location ?? "?"));
+  return blocking(review).some((i) => !seen.has(i.location ?? "?") || i.problem?.trimStart().startsWith(NEW_ISSUE_PREFIX));
 }
 
 /**
@@ -751,9 +757,10 @@ export function diagramProblems(markdown: string, diagrams: LessonDiagram[]): st
   return problems;
 }
 
-function quizProblems(quiz: NonNullable<LessonOutput["quiz"]>, draft: LessonDraft): string[] {
+function quizProblems(quiz: NonNullable<LessonOutput["quiz"]>, draft: LessonDraft, purpose: string): string[] {
   const problems: string[] = [];
-  if (quiz.questions.length < MIN_QUIZ_QUESTIONS) problems.push(`quiz phải có ít nhất ${MIN_QUIZ_QUESTIONS} câu hỏi`);
+  const minimum = minQuizQuestions(purpose);
+  if (quiz.questions.length < minimum) problems.push(`quiz phải có ít nhất ${minimum} câu hỏi`);
   draft.questions.forEach((q, i) => {
     for (const code of validateQuestion(q)) problems.push(`câu ${i + 1}: ${code}`);
     if (!q.explanation?.trim()) problems.push(`câu ${i + 1}: thiếu giải thích`);
@@ -933,7 +940,7 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
       problems.push("lesson article mang purpose explanation phải có ít nhất 1 sơ đồ");
     }
   }
-  if (format === "quiz") problems.push(...quizProblems(out.quiz!, draft));
+  if (format === "quiz") problems.push(...quizProblems(out.quiz!, draft, ref.lesson.purpose));
   if (format === "code_exercise") {
     problems.push(...codeProblems(
       out.code!,

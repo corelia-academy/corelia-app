@@ -10,6 +10,16 @@ export type LessonFormat = "video" | "article" | "quiz" | "practice" | "code_exe
 
 export const MIN_QUIZ_QUESTIONS = 5;
 
+/**
+ * Module steps 1 (warm_up) and 3 (quick_check) are short quizzes; every other quiz needs MIN_QUIZ_QUESTIONS.
+ * The minimum follows the lesson purpose, not the format.
+ */
+const SHORT_QUIZ_MIN_QUESTIONS: Record<string, number> = { warm_up: 1, quick_check: 2 };
+
+export function minQuizQuestions(purpose: string | undefined): number {
+  return (purpose && SHORT_QUIZ_MIN_QUESTIONS[purpose]) || MIN_QUIZ_QUESTIONS;
+}
+
 export interface LessonResource {
   title: string;
   url: string;
