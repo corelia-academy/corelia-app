@@ -798,6 +798,14 @@ describe("studio acceptance", () => {
     expect(acceptCurriculum(minimalNoCode, sources, null).ok).toBe(true);
   });
 
+  it("requires fill or edit on each code_exercise and null on every other lesson", () => {
+    const withLessons = (lessons: object[]) => withModules([{ ...m1, lessons }, m2]);
+    expect(reason(withLessons([w1, l1, q1, { ...g1, code_mode: undefined }, i1]))).toContain("thiếu code_mode");
+    expect(reason(withLessons([w1, l1, q1, { ...g1, code_mode: "two_stage" }, i1]))).toContain("thiếu code_mode");
+    expect(reason(withLessons([w1, l1, { ...q1, code_mode: "edit" }, g1, i1]))).toContain("phải có code_mode null");
+    expect(reason(withLessons([w1, l1, q1, { ...g1, code_mode: "fill" }, { ...i1, code_mode: "edit" }]))).toBe("");
+  });
+
   it("rejects code steps in a course without code", () => {
     const withCode = {
       ...noCodeCurriculum,

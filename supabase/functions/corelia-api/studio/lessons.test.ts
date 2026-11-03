@@ -137,6 +137,9 @@ describe("studio lessons: accept by format", () => {
     const legacy = { ...base, code: { instructions: "Đề bài", language: "rust", part_1: {}, part_2: {} } };
     const codeRef = lessonRefs(curriculum).find((item) => item.lesson.id === "l-code")!;
     expect(() => toLessonDraft(codeRef, legacy as never, "vi")).toThrow("cần tạo lại khóa");
+
+    const resumed = { ...ctx, lesson: { drafts: 1, reviews: 0, draft: legacy, review: null } };
+    expect(() => buildLessonReviewInput(resumed as never, "l-code")).toThrow("cần tạo lại khóa");
   });
 
   it.each(ENABLED_CODE_LANGUAGES)("accepts a valid code lesson in enabled language %s", async (language) => {
