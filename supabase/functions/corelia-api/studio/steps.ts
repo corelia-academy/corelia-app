@@ -19,7 +19,7 @@ import {
   resolveCodeLanguage,
   type EnabledCodeLanguage,
 } from "./lesson_ports.ts";
-import { type AgentRole, type PromptKey } from "./prompts.ts";
+import { PROMPT_VERSIONS, type AgentRole, type PromptKey } from "./prompts.ts";
 import type { BriefCatalogResearch } from "./catalog_research_brief.ts";
 import { A4_REVIEW_CRITERIA, normalizeReviewChecks, normalizeReviewIssues, REVIEW_ISSUE_CATEGORIES } from "./review_policy.ts";
 import { TEACHING_PURPOSES } from "./checks.ts";
@@ -107,6 +107,8 @@ export interface RunContext {
   scopes: { track: string; audience: string; corelia_direction: string; locale: string }[];
   /** Validated output of each earlier step. */
   outputs: Partial<Record<StepKey, unknown>>;
+  /** Prompt version of the accepted curriculum, used to preserve legacy validation when A4 resumes it. */
+  curriculumPromptVersion?: string | null;
   /** Current UTC date (YYYY-MM-DD). Models do not know it, so source check dates come from here. */
   today: string;
   /** Review feedback the curriculum is being revised against; null when it is not being revised. */
@@ -236,7 +238,7 @@ const RESEARCH_SCHEMA = object({
  * itself never gates course completion.
  */
 export const LESSON_PURPOSES = [
-  "warm_up",
+  "warm_up", // Legacy purpose kept so already-accepted runs can finish.
   "explanation",
   "worked_example",
   "quick_check",
@@ -248,8 +250,9 @@ export const LESSON_PURPOSES = [
 ] as const;
 
 /**
- * Module shape (5 steps): warm_up (Thử) → explanation/worked_example (Dạy) → quick_check (Kiểm tra nhanh)
- * → guided_practice (Luyện) → independent_practice (Ghép). Courses without code replace the last two with a scenario quiz.
+ * The opening situation is embedded in the first explanation/worked_example lesson, followed by
+ * quick_check → guided_practice → independent_practice. Courses without code replace practice with
+ * one scenario quiz. There is no separate warm_up lesson.
  * `retrieval` is replaced by quick_check and is refused in a module. `final_check` and `optional_hands_on`
  * keep their own placement rules.
  */
@@ -261,17 +264,28 @@ function moduleStepProblems(
   moduleCount: number,
   earlierLessonIds: Set<string>,
   codeLanguage: EnabledCodeLanguage | null,
+  allowLegacyWarmUp: boolean,
 ): string[] {
   const problems: string[] = [];
   const at = (p: string) => problems.push(`module ${module.id}: ${p}`);
   const lessons = module.lessons;
-  if (lessons.length < 4 || lessons.length > 6) at(`có ${lessons.length} bài; cần 4-6 bài`);
+  const hasWarmUp = lessons.some((l) => l.purpose === "warm_up");
+  const legacyWarmUp = allowLegacyWarmUp && hasWarmUp;
+  if (legacyWarmUp) {
+    if (lessons.length < 4 || lessons.length > 6) at(`có ${lessons.length} bài; cần 4-6 bài`);
+    if (lessons[0]?.purpose !== "warm_up") at("bài đầu phải có purpose warm_up (bước Thử)");
+    if (lessons.filter((l) => l.purpose === "warm_up").length !== 1) at("cần đúng 1 bài warm_up (bước Thử)");
+  } else {
+    if (lessons.length < 3 || lessons.length > 6) at(`có ${lessons.length} bài; cần 3-6 bài`);
+    if (hasWarmUp) at("không tạo lesson riêng warm_up; nhúng tình huống mở đầu vào bài dạy đầu tiên");
+    if (!lessons[0] || !TEACHING_STEP_PURPOSES.includes(lessons[0].purpose)) {
+      at("bài đầu module phải là explanation/worked_example và mang tình huống mở đầu");
+    }
+  }
   if (lessons.some((l) => l.purpose === "retrieval")) at("dùng purpose retrieval; bước Kiểm tra nhanh (quick_check) đã thay thế");
-  if (lessons[0]?.purpose !== "warm_up") at("bài đầu phải có purpose warm_up (bước Thử)");
-  if (lessons.filter((l) => l.purpose === "warm_up").length !== 1) at("cần đúng 1 bài warm_up (bước Thử)");
   const quickIndex = lessons.findIndex((l) => l.purpose === "quick_check");
   if (lessons.filter((l) => l.purpose === "quick_check").length !== 1) at("cần đúng 1 bài quick_check (bước Kiểm tra nhanh)");
-  else if (!lessons.slice(1, quickIndex).some((l) => TEACHING_STEP_PURPOSES.includes(l.purpose))) at("thiếu bài dạy (explanation/worked_example) trước quick_check");
+  else if (!lessons.slice(legacyWarmUp ? 1 : 0, quickIndex).some((l) => TEACHING_STEP_PURPOSES.includes(l.purpose))) at("thiếu bài dạy (explanation/worked_example) trước quick_check");
   if (moduleIndex > 0 && quickIndex >= 0 && !lessons[quickIndex].review_lesson_ids.some((id) => earlierLessonIds.has(id))) {
     at("quick_check của module sau phải kiểm một kiến thức của module trước qua review_lesson_ids");
   }
@@ -300,6 +314,8 @@ function moduleStepProblems(
   return problems;
 }
 
+const CURRICULUM_PURPOSES = LESSON_PURPOSES.filter((purpose) => purpose !== "warm_up");
+
 const CURRICULUM_SCHEMA = object({
   status: { type: "string", enum: ["draft", "needs_research"] },
   missing: strList,
@@ -317,7 +333,7 @@ const CURRICULUM_SCHEMA = object({
           title: str,
           description: str,
           type: { type: "string", enum: [...AI_CURRICULUM_FORMATS] },
-          purpose: { type: "string", enum: [...LESSON_PURPOSES] },
+          purpose: { type: "string", enum: CURRICULUM_PURPOSES },
           outcome_ids: strList,
           prerequisites: strList,
           prerequisite_lesson_ids: strList,
@@ -677,6 +693,7 @@ export function acceptCurriculum(
   sourceIds: Set<string>,
   codeLanguage: EnabledCodeLanguage | null = "rust",
   research?: Parameters<typeof lessonVideoCandidates>[0],
+  allowLegacyWarmUp = false,
 ): Acceptance {
   const curriculum = output as Curriculum;
   if (curriculum.status === "needs_research") {
@@ -709,19 +726,20 @@ export function acceptCurriculum(
   const position = new Map(lessons.map((l, i) => [l.id, i]));
   const earlierLessonIds = new Set<string>();
   curriculum.modules.forEach((module, moduleIndex) => {
-    problems.push(...moduleStepProblems(module, moduleIndex, curriculum.modules.length, earlierLessonIds, codeLanguage));
+    problems.push(...moduleStepProblems(module, moduleIndex, curriculum.modules.length, earlierLessonIds, codeLanguage, allowLegacyWarmUp));
     module.lessons.forEach((l) => earlierLessonIds.add(l.id));
   });
   const practiceIds = new Set(lessons.filter((l) => l.type === "practice").map((l) => l.id));
-  const warmUpIds = new Set(lessons.filter((l) => l.purpose === "warm_up").map((l) => l.id));
+  const legacyWarmUpIds = allowLegacyWarmUp ? new Set(lessons.filter((l) => l.purpose === "warm_up").map((l) => l.id)) : new Set<string>();
   for (const o of curriculum.outcomes) {
     if (o.check_lesson_ids.some((id) => practiceIds.has(id))) {
       problems.push(`outcome ${o.id}: check_lesson_ids không được chứa practice`);
     }
-    // warm_up only checks prerequisite knowledge before the module teaches anything; it never counts as an outcome check.
-    if (o.check_lesson_ids.some((id) => warmUpIds.has(id))) problems.push(`outcome ${o.id}: check_lesson_ids không được chứa warm_up`);
-    const validChecks = o.check_lesson_ids.filter((id) => lessonIds.has(id) && !optionalHandsOnIds.has(id) && !practiceIds.has(id));
-    if (o.check_lesson_ids.length === 0 || o.check_lesson_ids.some((id) => !lessonIds.has(id) || optionalHandsOnIds.has(id) || practiceIds.has(id))) {
+    if (allowLegacyWarmUp && o.check_lesson_ids.some((id) => legacyWarmUpIds.has(id))) {
+      problems.push(`outcome ${o.id}: check_lesson_ids không được chứa warm_up`);
+    }
+    const validChecks = o.check_lesson_ids.filter((id) => lessonIds.has(id) && !optionalHandsOnIds.has(id) && !practiceIds.has(id) && !legacyWarmUpIds.has(id));
+    if (o.check_lesson_ids.length === 0 || o.check_lesson_ids.some((id) => !lessonIds.has(id) || optionalHandsOnIds.has(id) || practiceIds.has(id) || legacyWarmUpIds.has(id))) {
       problems.push(`outcome ${o.id} không có lesson kiểm tra hợp lệ`);
     }
     const teachers = lessons.filter((l) => l.outcome_ids.includes(o.id) && (TEACHING_PURPOSES as readonly string[]).includes(l.purpose));
@@ -760,8 +778,11 @@ export function acceptCurriculum(
     if (l.purpose === "retrieval" && l.type !== "quiz") {
       problems.push(`lesson ${l.id} (retrieval) phải là quiz`);
     }
-    if ((l.purpose === "warm_up" || l.purpose === "quick_check") && l.type !== "quiz") {
+    if (l.purpose === "quick_check" && l.type !== "quiz") {
       problems.push(`lesson ${l.id} (${l.purpose}) phải là quiz`);
+    }
+    if (l.purpose === "warm_up" && allowLegacyWarmUp && l.type !== "quiz") {
+      problems.push(`lesson ${l.id} (warm_up) phải là quiz`);
     }
     if (l.purpose === "final_check" && l.type !== "quiz" && l.type !== "code_exercise") {
       problems.push(`lesson ${l.id} (final_check) phải là quiz hoặc code_exercise`);
@@ -777,7 +798,7 @@ export function acceptCurriculum(
     // Feedback on a wrong answer points back to the lesson that teaches it again.
     if (l.type === "quiz") {
       if (l.pass_threshold === null || !(l.pass_threshold > 0 && l.pass_threshold <= 100)) problems.push(`quiz ${l.id} thiếu ngưỡng pass trong (0, 100]`);
-      // warm_up comes first in its module and has nothing earlier to review.
+      // A legacy warm_up has no previous lesson to point to; new curricula cannot use this purpose.
       if (l.review_lesson_ids.length === 0 && l.purpose !== "warm_up") problems.push(`quiz ${l.id} không có lesson để ôn khi sai`);
       for (const r of l.review_lesson_ids) {
         if (lessonIds.has(r) && r !== l.id && position.get(r)! >= position.get(l.id)!) {
@@ -1074,11 +1095,14 @@ export const STEP_SPECS: Partial<Record<StepKey, StepSpec>> = {
     }),
     accept: (output, ctx) => {
       const curriculum = ctx.outputs.curriculum;
+      const a3Version = ctx.curriculumPromptVersion?.match(/^a3-curriculum@v(\d+)$/);
+      const allowLegacyWarmUp = ctx.curriculumPromptVersion == null || Boolean(a3Version && Number(a3Version[1]) < PROMPT_VERSIONS["a3-curriculum"]);
       const code = acceptCurriculum(
         curriculum,
         researchSourceIds(ctx),
         resolveCodeLanguage((ctx.outputs.brief as { code_language?: unknown }).code_language),
         ctx.outputs.research as Parameters<typeof lessonVideoCandidates>[0] | undefined,
+        allowLegacyWarmUp,
       );
       return acceptCurriculumReview(output, curriculum, ("codeChecks" in code ? code.codeChecks : undefined) ?? []);
     },

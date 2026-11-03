@@ -134,13 +134,13 @@ describe("A1 catalog research in the A2 brief", () => {
   });
 
   it("keeps A5 and A6 package-version decisions bounded by research evidence", () => {
-    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v27");
+    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v28");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("tool_versions của research chỉ ghi mức tối thiểu hoặc phiên bản theo nguồn");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("nếu chỉ nêu mức tối thiểu, ghi rõ đó là mức tối thiểu và để lệnh không ghim phiên bản");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("Không tự suy ra phiên bản.");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("open_questions blocking = false ghi phiên bản chưa xác minh");
 
-    expect(SEEDED_PROMPTS["a6-lesson-review"].version).toBe("v25");
+    expect(SEEDED_PROMPTS["a6-lesson-review"].version).toBe("v26");
     const a5Prompt = SEEDED_PROMPTS["a5-lesson"].system;
     expect(a5Prompt).toContain("Mỗi câu phải tự đủ ngữ cảnh");
     expect(a5Prompt).toContain("Nhãn của các node không được trùng nhau");
@@ -163,10 +163,10 @@ describe("A1 catalog research in the A2 brief", () => {
     const a5 = SEEDED_PROMPTS["a5-lesson"];
     const a6 = SEEDED_PROMPTS["a6-lesson-review"];
 
-    expect(a3.version).toBe("v24");
-    expect(a4.version).toBe("v21");
-    expect(a5.version).toBe("v27");
-    expect(a6.version).toBe("v25");
+    expect(a3.version).toBe("v25");
+    expect(a4.version).toBe("v22");
+    expect(a5.version).toBe("v28");
+    expect(a6.version).toBe("v26");
     expect(a6.system).toContain("so khớp chuỗi cũng không loại được mọi mã sai");
     expect(a6.system).toContain("Cách viết chỉ khác về hình thức và ít gặp ở trình độ của bài");
     expect(a2.version).toBe("v16");

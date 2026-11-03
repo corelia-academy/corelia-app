@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { acceptLesson, hasUnseenBlocking, buildLessonInput, buildLessonReviewInput, LESSON_SCHEMA, lessonIds, lessonRefs, quizPassingRatio, toLessonDraft, TransientError } from "./lessons.ts";
 import { ENABLED_CODE_LANGUAGES, getCodeLanguageAdapter, PREPARED_CODE_LANGUAGES } from "./lesson_ports.ts";
 import { PLATFORM_FORMAT_GUIDE } from "./formats.ts";
-import { article, base, ctx, curriculum, diagram, editCode, fillCode, fiveQuestions, question, test, twoStageCode } from "./lesson_fixtures.ts";
+import { article, base, ctx, curriculum, diagram, editCode, fillCode, fiveQuestions, lesson, question, test, twoStageCode } from "./lesson_fixtures.ts";
 
 const ok = (youtube = true, over?: object): typeof fetch => (() => Promise.resolve(new Response(
   youtube ? JSON.stringify({ author_name: "Let's Get Rusty", author_url: "https://www.youtube.com/@letsgetrusty", ...over }) : "",
@@ -651,7 +651,7 @@ describe("studio lessons: input", () => {
   it("gives the lesson, its neighbours and only the research that rests on its sources", () => {
     const input = buildLessonInput(ctx, "l-quiz") as Record<string, any>;
     expect(input.lesson.id).toBe("l-quiz");
-    expect(input.module).toEqual({ id: "m1", title: "Module 1", description: "md" });
+    expect(input.module).toEqual({ id: "m1", title: "Module 1", description: "md", first_teaching_lesson_id: "l-art" });
     expect(input.outcomes).toEqual([{ id: "o1", text: "Làm được X" }]);
     expect(input.previous_lesson).toMatchObject({ id: "l-art" });
     expect(input.next_lesson).toMatchObject({ id: "l-code" });
@@ -662,6 +662,22 @@ describe("studio lessons: input", () => {
     expect(input.research.misconceptions.map((m: { topic: string }) => m.topic)).toEqual(["t1"]);
     expect(buildLessonInput(ctx, "l-art").previous_lesson).toBeNull();
     expect(buildLessonInput(ctx, "l-vid").next_lesson).toBeNull();
+  });
+
+  it("identifies the first teaching lesson separately from a legacy warm_up lesson", () => {
+    const legacyCurriculum = {
+      ...curriculum,
+      modules: [
+        {
+          ...curriculum.modules[0],
+          lessons: [lesson("l-warm-up", "quiz", { purpose: "warm_up", pass_threshold: 70 }), ...curriculum.modules[0].lessons],
+        },
+        curriculum.modules[1],
+      ],
+    };
+    const legacyCtx = { ...ctx, outputs: { ...ctx.outputs, curriculum: legacyCurriculum } } as typeof ctx;
+    const input = buildLessonInput(legacyCtx, "l-art") as Record<string, any>;
+    expect(input.module).toMatchObject({ first_teaching_lesson_id: "l-art" });
   });
 
   it("uses effective article format in inputs and review checks when video fallback occurred", () => {
@@ -696,6 +712,7 @@ describe("studio lessons: input", () => {
 
     const reviewerInput = buildLessonReviewInput(fallbackCtx, "l-vid") as Record<string, any>;
     expect(reviewerInput.lesson.type).toBe("article");
+    expect(reviewerInput.module.first_teaching_lesson_id).toBe("l-code");
     expect(reviewerInput.platform_format).toBe(PLATFORM_FORMAT_GUIDE.article);
     expect(reviewerInput.checks_already_run).toEqual(expect.arrayContaining([
       expect.stringContaining("Markdown và diagrams khớp hai chiều"),

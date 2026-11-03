@@ -1052,7 +1052,7 @@ export async function loadContext(db: SupabaseClient, run: RunRow, step?: StepKe
   const [course, links, generations] = await Promise.all([
     db.from("studio_courses").select("title,level,scope_note,audience,corelia_direction,content_locale").eq("id", run.course_id).single(),
     db.from("studio_course_paths").select("studio_paths(group_kind,title)").eq("course_id", run.course_id),
-    db.from("studio_generations").select("step_key,attempt,output,locale").eq("run_id", run.id).eq("status", "completed").is("lesson_id", null).order("attempt"),
+    db.from("studio_generations").select("step_key,attempt,output,locale,prompt_version").eq("run_id", run.id).eq("status", "completed").is("lesson_id", null).order("attempt"),
   ]);
   for (const res of [course, links, generations]) if (res.error) throw new Error(res.error.message);
 
@@ -1078,6 +1078,7 @@ export async function loadContext(db: SupabaseClient, run: RunRow, step?: StepKe
   });
   const outputs: RunContext["outputs"] = {};
   for (const g of used) outputs[g.step_key as StepKey] = g.output; // ordered by attempt: latest wins
+  const curriculumPromptVersion = used.filter((g) => g.step_key === "curriculum").at(-1)?.prompt_version ?? null;
   const accepted = (step: StepKey) => used.filter((g) => g.step_key === step).length;
   return {
     revision: curriculumRevision({ curricula: accepted("curriculum"), reviews: accepted("curriculum_review") }, outputs.curriculum_review),
@@ -1088,6 +1089,7 @@ export async function loadContext(db: SupabaseClient, run: RunRow, step?: StepKe
     scopes: audience && corelia_direction ? tracks.map((track) => ({ track, audience, corelia_direction, locale: content_locale })) : [],
     catalogResearch,
     outputs,
+    curriculumPromptVersion,
     today: utcDate(Date.now()),
     lesson: lessonId ? await loadLessonContext(db, run, lessonId) : null,
   };

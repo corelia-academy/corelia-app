@@ -205,7 +205,7 @@ describe("studio brief language vs code_language null", () => {
 });
 
 describe("studio quiz minimum by lesson purpose", () => {
-  it("keeps 5 questions except warm_up (1) and quick_check (2)", () => {
+  it("keeps legacy warm_up at 1 and quick_check at 2 while other quizzes use 5", () => {
     expect(minQuizQuestions("warm_up")).toBe(1);
     expect(minQuizQuestions("quick_check")).toBe(2);
     expect(minQuizQuestions("final_check")).toBe(MIN_QUIZ_QUESTIONS);
@@ -701,7 +701,7 @@ describe("studio acceptance", () => {
   });
   const quiz = (id: string, over: object = {}) => lesson(id, { type: "quiz", pass_threshold: 80, review_lesson_ids: ["l1"], ...over });
   const code = (id: string, purpose: string, over: object = {}) => lesson(id, { type: "code_exercise", purpose, ...over });
-  // Five-step course with code: module 1 teaches o1; module 2 teaches o2 and its quick_check recalls o1 from module 1.
+  // The first teaching lesson embeds its opening situation; module 2 quick_check recalls o1 from module 1.
   const curriculum = {
     status: "draft",
     missing: [],
@@ -710,7 +710,7 @@ describe("studio acceptance", () => {
       {
         id: "m1",
         lessons: [
-          quiz("w1", { purpose: "warm_up", review_lesson_ids: [] }),
+          lesson("w1"),
           lesson("l1"),
           quiz("q1", { purpose: "quick_check" }),
           code("g1", "guided_practice"),
@@ -720,7 +720,7 @@ describe("studio acceptance", () => {
       {
         id: "m2",
         lessons: [
-          quiz("w2", { purpose: "warm_up", review_lesson_ids: [], outcome_ids: ["o2"] }),
+          lesson("w2", { purpose: "worked_example", outcome_ids: ["o2"] }),
           lesson("l2", { purpose: "worked_example", outcome_ids: ["o2"] }),
           quiz("q2", { purpose: "quick_check", outcome_ids: ["o1", "o2"] }),
           code("g2", "guided_practice", { outcome_ids: ["o2"] }),
@@ -737,7 +737,7 @@ describe("studio acceptance", () => {
       {
         id: "m1",
         lessons: [
-          quiz("w1", { purpose: "warm_up", review_lesson_ids: [] }),
+          lesson("w1"),
           lesson("l1"),
           lesson("l1b", { purpose: "worked_example" }),
           quiz("q1", { purpose: "quick_check", review_lesson_ids: ["l1", "l1b"] }),
@@ -747,7 +747,7 @@ describe("studio acceptance", () => {
       {
         id: "m2",
         lessons: [
-          quiz("w2", { purpose: "warm_up", review_lesson_ids: [], outcome_ids: ["o2"] }),
+          lesson("w2", { purpose: "worked_example", outcome_ids: ["o2"] }),
           lesson("l2", { outcome_ids: ["o2"] }),
           quiz("q2", { purpose: "quick_check", outcome_ids: ["o1", "o2"], review_lesson_ids: ["l1"] }),
           quiz("i2q", { purpose: "independent_practice", outcome_ids: ["o2"], review_lesson_ids: ["l2"] }),
@@ -766,11 +766,13 @@ describe("studio acceptance", () => {
   const [w1, l1, q1, g1, i1] = m1.lessons;
   const [w2, l2, q2, g2, i2, q9] = m2.lessons;
 
-  it("accepts the five-step curriculum with a final check and quiz thresholds", () => {
+  it("accepts a curriculum with the opening embedded in the first teaching lesson", () => {
     const res = acceptCurriculum(curriculum, sources);
     expect(res.ok).toBe(true);
     expect(res.summary).toBe("2 module, 11 lesson, 2 outcome.");
     expect(LESSON_PURPOSES).toEqual(expect.arrayContaining(["optional_hands_on", "warm_up", "quick_check"]));
+    const purposeEnum = (STEP_SPECS.curriculum!.schema as any).properties.modules.items.properties.lessons.items.properties.purpose.enum;
+    expect(purposeEnum).not.toContain("warm_up");
     expect(acceptCurriculumReview({
       verdict: "needs_fix",
       issues: [{ location: "m1", problem: "Thiếu lesson thực hành tự nguyện.", category: "missing_practice", principle: "p", fix: "f", severity: "blocking" }],
@@ -784,6 +786,16 @@ describe("studio acceptance", () => {
       .toMatchObject({ ok: false, reason: expect.stringContaining("brief.code_language = null") });
     expect(acceptCurriculum(noCodeCurriculum, sources, null).ok).toBe(true);
     expect(reason(withModules([{ ...m1, lessons: [w1, l1, q1, g1, i1] }, m2]))).toBe("");
+    const minimalCodeCurriculum = withModules([
+      { id: "m1", lessons: [l1, q1, g1, i1] },
+      m2,
+    ]);
+    expect(acceptCurriculum(minimalCodeCurriculum, sources, "rust").ok).toBe(true);
+    const minimalNoCode = withModules([
+      { id: "m1", lessons: [l1, q1, quiz("i1q", { purpose: "independent_practice", outcome_ids: ["o1"], review_lesson_ids: ["l1"] })] },
+      { id: "m2", lessons: [l2, quiz("q2", { purpose: "quick_check", outcome_ids: ["o1", "o2"], review_lesson_ids: ["l1"] }), quiz("i2q", { purpose: "independent_practice", outcome_ids: ["o2"], review_lesson_ids: ["l2"] }), q9] },
+    ]);
+    expect(acceptCurriculum(minimalNoCode, sources, null).ok).toBe(true);
   });
 
   it("rejects code steps in a course without code", () => {
@@ -918,9 +930,10 @@ describe("studio acceptance", () => {
     expect(reason(first(w1, lesson("l1", { pass_threshold: 70 }), q1, g1, i1))).toContain("lesson l1 không phải quiz nhưng có ngưỡng pass");
   });
 
-  it("exempts warm_up from review lessons, and keeps warm_up a quiz", () => {
-    expect(reason(withModules([{ ...m1, lessons: [quiz("w1", { purpose: "warm_up", review_lesson_ids: [] }), l1, q1, g1, i1] }, m2]))).toBe("");
-    expect(reason(withModules([{ ...m1, lessons: [lesson("w1", { purpose: "warm_up" }), l1, q1, g1, i1] }, m2]))).toContain("(warm_up) phải là quiz");
+  it("rejects a separate warm_up lesson while preserving legacy quiz validation", () => {
+    const legacyWarmUp = quiz("w1", { purpose: "warm_up", review_lesson_ids: [] });
+    expect(reason(withModules([{ ...m1, lessons: [legacyWarmUp, l1, q1, g1, i1] }, m2]))).toContain("không tạo lesson riêng warm_up");
+    expect(minQuizQuestions("warm_up")).toBe(1);
   });
 
   it("requires a covering final check and a recall of an earlier module", () => {
@@ -937,16 +950,16 @@ describe("studio acceptance", () => {
   });
 
   const quizReviewLaterCurriculum = withModules([{ ...m1, lessons: [w1, l1, quiz("q1", { purpose: "quick_check", review_lesson_ids: ["l2"] }), g1, i1] }, m2]);
-  const outcomeWithoutTeachingCurriculum = withModules([{ ...m1, lessons: [w1, lesson("l1", { purpose: "guided_practice" }), q1, g1, i1] }, m2]);
-  const checksBeforeTeachingCurriculum = withModules([{ ...m1, lessons: [w1, q1, l1, g1, i1] }, m2]);
+  const outcomeWithoutTeachingCurriculum = withModules([{ ...m1, lessons: [lesson("w1", { outcome_ids: ["o2"] }), lesson("l1", { purpose: "guided_practice" }), q1, g1, i1] }, m2]);
+  const checksBeforeTeachingCurriculum = withModules([{ ...m1, lessons: [lesson("w1", { outcome_ids: ["o2"] }), quiz("q1", { purpose: "quick_check", outcome_ids: ["o1"], review_lesson_ids: ["w1"] }), lesson("l1", { outcome_ids: ["o1"] }), g1, i1] }, m2]);
   const optionalOutcomeCurriculum = withModules([
-    { ...m1, lessons: [w1, lesson("l1", { purpose: "guided_practice" }), q1, g1, lesson("oh", { type: "practice", purpose: "optional_hands_on", outcome_ids: ["o1"] })] },
+    { ...m1, lessons: [lesson("w1", { outcome_ids: ["o2"] }), lesson("l1", { purpose: "guided_practice" }), q1, g1, lesson("oh", { type: "practice", purpose: "optional_hands_on", outcome_ids: ["o1"] })] },
     m2,
   ]);
   const selfCheckOnlyCurriculum = {
     ...curriculum,
     outcomes: [{ id: "o1", check_lesson_ids: ["l1"] }, curriculum.outcomes[1]],
-    modules: [{ ...m1, lessons: [w1, l1, quiz("q1", { purpose: "quick_check", outcome_ids: ["o2"] }), g1, i1] }, m2],
+    modules: [{ ...m1, lessons: [lesson("w1", { outcome_ids: ["o2"] }), lesson("l1", { outcome_ids: ["o1"] }), quiz("q1", { purpose: "quick_check", outcome_ids: ["o2"] }), g1, i1] }, m2],
   };
 
   it("enforces journey order rules: quizzes require review lessons to precede them", () => {
@@ -973,6 +986,34 @@ describe("studio acceptance", () => {
     );
     expect(reviewResult.ok).toBe(true);
     expect(reviewResult.codeChecks).toEqual([]);
+  });
+
+  it("keeps the accepted legacy warm_up curriculum valid for A4 only when its A3 prompt predates v25", () => {
+    const legacyCurriculum = {
+      ...curriculum,
+      modules: [
+        { ...m1, lessons: [quiz("w1", { purpose: "warm_up", review_lesson_ids: [] }), l1, q1, g1, i1] },
+        m2,
+      ],
+    };
+    const review = { verdict: "pass", issues: [], needs_research: [] };
+    const context = (curriculumPromptVersion?: string | null) => ({
+      outputs: {
+        brief: { code_language: "rust" },
+        research: { sources: [{ source_id: "s1", access: "read" }], topics: [], prerequisites: [] },
+        curriculum: legacyCurriculum,
+      },
+      ...(curriculumPromptVersion === undefined ? {} : { curriculumPromptVersion }),
+    });
+
+    for (const version of ["a3-curriculum@v24", null, undefined]) {
+      const legacyResult = STEP_SPECS.curriculum_review!.accept(review, context(version) as any);
+      expect(legacyResult.codeChecks?.length).toBeGreaterThan(0);
+    }
+    for (const version of ["a3-curriculum@v25", "a3-curriculum@v26"]) {
+      const currentResult = STEP_SPECS.curriculum_review!.accept(review, context(version) as any);
+      expect(currentResult.codeChecks).toEqual([]);
+    }
   });
 
   it("contract test: verifies acceptCurriculum and journeyProblems stay strictly synchronized across >= 5 test cases", () => {
@@ -1048,11 +1089,11 @@ describe("studio acceptance", () => {
     }
   });
 
-  it("rejects a module without any quiz", () => {
+  it("rejects a module without a quick_check quiz", () => {
     const noQuizModule = {
       id: "m-no-quiz",
       lessons: [
-        quiz("w3", { purpose: "warm_up", review_lesson_ids: [] }),
+        lesson("w3"),
         lesson("art1", { purpose: "explanation" }),
         quiz("scenario", { purpose: "independent_practice", outcome_ids: ["o1"], review_lesson_ids: ["l1"] }),
         lesson("art2", { purpose: "worked_example" }),
@@ -1065,9 +1106,9 @@ describe("studio acceptance", () => {
   it("rejects a module without teaching lessons, even when it has quizzes", () => {
     const reviewOnly = {
       id: "m-review-only",
-      lessons: [quiz("w3", { purpose: "warm_up", review_lesson_ids: [] }), quiz("q3", { purpose: "quick_check", review_lesson_ids: ["l1"] }), g1, i1],
+      lessons: [quiz("q3", { purpose: "quick_check", review_lesson_ids: ["l1"] }), quiz("i3", { purpose: "independent_practice", review_lesson_ids: ["l1"] }), g1, i1],
     };
-    expect(reason(withModules([m1, m2, reviewOnly]))).toContain("module m-review-only: thiếu bài dạy");
+    expect(reason(withModules([m1, m2, reviewOnly]))).toContain("module m-review-only: bài đầu module phải là explanation/worked_example");
   });
 
   it("rejects retrieval that is not a quiz", () => {
@@ -1082,18 +1123,18 @@ describe("studio acceptance", () => {
     expect(reason(c)).toContain("phải có purpose optional_hands_on");
   });
 
-  it("rejects a module whose first lesson is not warm_up", () => {
-    expect(reason(withModules([{ ...m1, lessons: [l1, w1, q1, g1, i1] }, m2]))).toContain("module m1: bài đầu phải có purpose warm_up");
+  it("requires the first lesson in a module to teach and embed the opening situation", () => {
+    expect(reason(withModules([{ ...m1, lessons: [quiz("first-quiz", { purpose: "quick_check" }), l1, q1, g1, i1] }, m2]))).toContain("module m1: bài đầu module phải là explanation/worked_example");
   });
 
-  it("rejects a module outside 4-6 lessons", () => {
-    expect(reason(withModules([{ ...m1, lessons: [w1, l1, q1] }, m2]))).toContain("module m1: có 3 bài; cần 4-6 bài");
+  it("rejects a module outside 3-6 lessons", () => {
+    expect(reason(withModules([{ ...m1, lessons: [w1, l1] }, m2]))).toContain("module m1: có 2 bài; cần 3-6 bài");
   });
 
   it("requires exactly one quick_check after a teaching lesson in every module", () => {
     const twoChecks = { ...m1, lessons: [w1, l1, quiz("q1x", { purpose: "quick_check", review_lesson_ids: ["l1"] }), quiz("q1y", { purpose: "quick_check", review_lesson_ids: ["l1"] }), g1, i1] };
     expect(reason(withModules([twoChecks, m2]))).toContain("module m1: cần đúng 1 bài quick_check");
-    expect(reason(withModules([{ ...m1, lessons: [w1, q1, l1, g1, i1] }, m2]))).toContain("module m1: thiếu bài dạy");
+    expect(reason(withModules([{ ...m1, lessons: [quiz("legacy-warmup", { purpose: "warm_up", review_lesson_ids: [] }), q1, l1, g1, i1] }, m2]))).toContain("module m1: thiếu bài dạy");
   });
 
   it("requires each later module's quick_check to recall a lesson of an earlier module", () => {
@@ -1126,15 +1167,16 @@ describe("studio acceptance", () => {
     expect(acceptCurriculum(withModules([duplicateScenario, m2NoCode]), sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("cần đúng 1 quiz tình huống Ghép") });
     const scenarioBeforeQuick = { ...m1NoCode, lessons: [m1NoCode.lessons[0], m1NoCode.lessons[1], m1NoCode.lessons[2], m1NoCode.lessons[4], m1NoCode.lessons[3]] };
     expect(acceptCurriculum(withModules([scenarioBeforeQuick, m2NoCode]), sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("bước Ghép phải là quiz tình huống đứng sau quick_check") });
-    const duplicateWarmUp = { ...m1NoCode, lessons: [...m1NoCode.lessons, quiz("w1x", { purpose: "warm_up", review_lesson_ids: [] })] };
-    expect(acceptCurriculum(withModules([duplicateWarmUp, m2NoCode]), sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("cần đúng 1 bài warm_up") });
+    const standaloneWarmUp = { ...m1NoCode, lessons: [quiz("w1x", { purpose: "warm_up", review_lesson_ids: [] }), ...m1NoCode.lessons] };
+    expect(acceptCurriculum(withModules([standaloneWarmUp, m2NoCode]), sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("không tạo lesson riêng warm_up") });
     const guidedNoCode = { ...m2NoCode, lessons: [m2NoCode.lessons[0], m2NoCode.lessons[1], m2NoCode.lessons[2], quiz("g2q", { purpose: "guided_practice", review_lesson_ids: ["l2"] }), m2NoCode.lessons[4]] };
     expect(acceptCurriculum(withModules([noCodeCurriculum.modules[0], guidedNoCode]), sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("khóa không có code nhưng có bước Luyện") });
   });
 
-  it("refuses warm_up in check_lesson_ids", () => {
-    const withWarmUpCheck = { ...curriculum, outcomes: [{ id: "o1", check_lesson_ids: ["q1", "w1"] }, curriculum.outcomes[1]] };
-    expect(reason(withWarmUpCheck)).toContain("outcome o1: check_lesson_ids không được chứa warm_up");
+  it("does not treat a legacy warm_up quiz as a valid new module opener", () => {
+    const legacyWarmUp = quiz("legacy-warmup", { purpose: "warm_up", review_lesson_ids: [] });
+    const withWarmUp = withModules([{ ...m1, lessons: [legacyWarmUp, l1, q1, g1, i1] }, m2]);
+    expect(reason(withWarmUp)).toContain("module m1: không tạo lesson riêng warm_up");
   });
 });
 

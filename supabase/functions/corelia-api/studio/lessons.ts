@@ -388,7 +388,12 @@ export function lessonBase(ctx: RunContext, lessonId: string, draftOverride?: un
       today: ctx.today,
       platform_format: PLATFORM_FORMAT_GUIDE[effectiveFormat],
       lesson: effectiveLesson,
-      module: { id: mod.id, title: mod.title, description: mod.description },
+      module: {
+        id: mod.id,
+        title: mod.title,
+        description: mod.description,
+        first_teaching_lesson_id: mod.lessons.find((candidate) => candidate.purpose === "explanation" || candidate.purpose === "worked_example")?.id,
+      },
       outcomes: curriculum.outcomes.filter((o) => lesson.outcome_ids.includes(o.id)),
       research: {
         sources: research.sources.filter((s) => mine.has(s.source_id) && s.access === "read"),

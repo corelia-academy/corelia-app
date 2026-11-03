@@ -26,7 +26,7 @@ export const BLOCKING_REVIEW_CATEGORIES = [
   "optional_made_mandatory",
   "unsupported_platform_format",
   // Lesson opens without a concrete case, uses a term before explaining it, does not reuse what
-  // earlier lessons taught, or a module breaks the five-step shape. Blocking so A5 rewrites it.
+  // earlier lessons taught, or a module breaks the teaching → quick_check → practice flow. Blocking so A5 rewrites it.
   "flow_violation",
 ] as const satisfies readonly ReviewIssueCategory[];
 

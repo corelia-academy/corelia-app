@@ -8,10 +8,10 @@ BEGIN
     ('a1-catalog-research',7,'A1'),
     ('a2-brief',12,'A2'),
     ('a2-research',16,'A2'),
-    ('a3-curriculum',24,'A3'),
-    ('a4-curriculum-review',21,'A4'),
-    ('a5-lesson',27,'A5'),
-    ('a6-lesson-review',25,'A6'),
+    ('a3-curriculum',25,'A3'),
+    ('a4-curriculum-review',22,'A4'),
+    ('a5-lesson',28,'A5'),
+    ('a6-lesson-review',26,'A6'),
     ('a7-translate',2,'A7')
   ) expected(prompt_key,version,agent_role)
   JOIN public.studio_agent_prompts actual USING (prompt_key,version,agent_role);
