@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { isFallbackRow, planLessons, videoStage, type LessonGeneration, type VideoPlan } from "./lesson_flow.ts";
-import { MAX_TRANSPORT_FAILURES } from "./retry.ts";
+import { VIDEO_SEGMENT_MAX_ATTEMPTS } from "./video_segment.ts";
 
 const now = Date.parse("2026-11-03T12:00:00Z");
 const SUBMIT_STALE_MS = 10 * 60 * 1000;
@@ -69,7 +69,7 @@ describe("studio video stage planning (A8)", () => {
   it("retries a transport failure on the same candidate, and falls back once the failures use up the budget", () => {
     const retry = plan(["v1"], [transport("v1", 0)], video({ v1: [A, B] }));
     expect(retry.actions).toEqual([expect.objectContaining({ kind: "submit", step: "lesson_video", attempt: 1, parentId: "v1-lesson_video-0", video: { url: A, candidateIndex: 0 } })]);
-    const many = Array.from({ length: MAX_TRANSPORT_FAILURES }, (_, i) => transport("v1", i));
+    const many = Array.from({ length: VIDEO_SEGMENT_MAX_ATTEMPTS }, (_, i) => transport("v1", i));
     const spent = plan(["v1"], many, video({ v1: [A, B] }));
     expect(spent.actions).toEqual([expect.objectContaining({ kind: "record_fallback", reason: "Gemini không trả lời trong thời gian cho phép" })]);
   });
@@ -92,5 +92,34 @@ describe("studio video stage planning (A8)", () => {
     expect(videoStage([], [A], { geminiConfigured: true, maxAttempts: 2 }, now, SUBMIT_STALE_MS)).toEqual({
       kind: "submit", attempt: 0, parentId: null, previousError: null, url: A, candidateIndex: 0,
     });
+  });
+
+  it("does not ask A8 again for a lesson that already has a completed draft, as in a resumed run", () => {
+    const draft = row("v1", "lessons", 0, "completed", { output: { lesson: "ok" } as never });
+    // The copied video rows of a resumed run: a transport failure is not copied, so only the judged candidate is here.
+    const resumed = plan(["v1"], [rejected("v1", 0), draft], video({ v1: [A, B] }));
+    expect(resumed.actions.some((a) => a.step === "lesson_video")).toBe(false);
+    expect(resumed.actions.some((a) => a.kind === "record_fallback")).toBe(false);
+    // A legacy lesson with a draft and no video rows at all: the stage is not started either.
+    const legacy = plan(["v1"], [draft], video({ v1: [A, B] }));
+    expect(legacy.actions.some((a) => a.step === "lesson_video")).toBe(false);
+  });
+
+  it("moves to the next candidate when Gemini refuses a video, and falls back when every candidate is refused", () => {
+    const refused = (lessonId: string, attempt: number, status: number) =>
+      row(lessonId, "lesson_video", attempt, "completed", { output: { accepted: false, reason: `Gemini từ chối video này (HTTP ${status})`, refused_http: status } as never });
+    const next = plan(["v1"], [refused("v1", 0, 400)], video({ v1: [A, B] }));
+    expect(next.actions).toEqual([expect.objectContaining({ kind: "submit", step: "lesson_video", attempt: 1, video: { url: B, candidateIndex: 1 } })]);
+    const none = plan(["v1"], [refused("v1", 0, 400), refused("v1", 1, 404)], video({ v1: [A, B] }));
+    expect(none.actions).toEqual([expect.objectContaining({ kind: "record_fallback", reason: "không đoạn nào trong 2 video đạt" })]);
+  });
+
+  it("gives a candidate maxAttempts failed calls in all, provider errors included, before the stage falls back", () => {
+    const keyError = (attempt: number) =>
+      row("v1", "lesson_video", attempt, "failed", { failure_kind: "provider", error: "Gemini HTTP 403 (khóa hoặc quyền truy cập)" });
+    const once = plan(["v1"], [keyError(0)], video({ v1: [A, B] }));
+    expect(once.actions).toEqual([expect.objectContaining({ kind: "submit", step: "lesson_video", attempt: 1, video: { url: A, candidateIndex: 0 } })]);
+    const twice = plan(["v1"], [keyError(0), keyError(1)], video({ v1: [A, B] }));
+    expect(twice.actions).toEqual([expect.objectContaining({ kind: "record_fallback", reason: "Gemini HTTP 403 (khóa hoặc quyền truy cập)" })]);
   });
 });

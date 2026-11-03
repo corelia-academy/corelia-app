@@ -29,9 +29,17 @@ export const GEMINI_VIDEO_SEGMENT_SCHEMA = {
   required: ["video_url", "fits", "mode", "start_seconds", "end_seconds", "needs_prior_context", "key_points", "reason"],
 };
 
+/**
+ * Why a call gave no answer. transport: the call may succeed later (timeout, network, 408, 429, 5xx).
+ * candidate: Gemini refused this video (other 4xx: the video cannot be read, the request is refused), so
+ * the candidate is judged and the next one is tried. provider: anything else, including a key or permission
+ * problem (401, 403), which would fail every candidate alike.
+ */
+export type GeminiFailureCause = "transport" | "candidate" | "provider";
+
 export type GeminiCall =
   | { ok: true; output: unknown; usage: { input_tokens: number; output_tokens: number }; response_id: string | null }
-  | { ok: false; cause: "transport" | "provider"; error: string };
+  | { ok: false; cause: GeminiFailureCause; error: string; status?: number };
 
 /** The body of one request: the video as a file part, then the lesson input as text, JSON out. */
 export function buildVideoSegmentRequest(args: { videoUrl: string; system: string; input: unknown }): Record<string, unknown> {
@@ -89,8 +97,11 @@ export async function callVideoSegment(args: {
   }
 
   if (!res.ok) {
-    const transport = res.status === 408 || res.status === 429 || res.status >= 500;
-    return { ok: false, cause: transport ? "transport" : "provider", error: `Gemini HTTP ${res.status}` };
+    const status = res.status;
+    if (status === 408 || status === 429 || status >= 500) return { ok: false, cause: "transport", error: `Gemini HTTP ${status}`, status };
+    if (status === 401 || status === 403) return { ok: false, cause: "provider", error: `Gemini HTTP ${status} (khóa hoặc quyền truy cập)`, status };
+    if (status >= 400) return { ok: false, cause: "candidate", error: `Gemini từ chối video này (HTTP ${status})`, status };
+    return { ok: false, cause: "provider", error: `Gemini HTTP ${status}`, status };
   }
 
   let body: any;

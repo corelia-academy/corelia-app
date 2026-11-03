@@ -7,7 +7,7 @@
 // consumes one accepted draft.
 
 import type { GenerationState } from "./steps.ts";
-import { canRetry, roundFailures, type AttemptRow, type RoundFailures } from "./retry.ts";
+import { canRetry, roundFailures, type RoundFailures } from "./retry.ts";
 import type { ChosenVideoSegment } from "./video_segment.ts";
 
 export type LessonStep = "lessons" | "lesson_review" | "lesson_video";
@@ -102,7 +102,7 @@ export type VideoStage =
 /**
  * Where a video lesson stands in the video stage, from its A8 rows (step_key lesson_video). A candidate
  * is judged once: by a completed call (accepted or not) or by a call that A8 refused as unusable. A
- * transport or provider failure is retried on the same candidate within canRetry's limits. The stage
+ * transport or provider failure is retried on the same candidate, until it has used up maxAttempts failed calls. The stage
  * ends with a segment, or falls back to an article when no candidate is usable or the calls keep failing.
  */
 export function videoStage(
@@ -134,8 +134,10 @@ export function videoStage(
     // Failures since the last judged call count against this candidate only.
     const lastJudged = judged.at(-1)?.attempt ?? -1;
     const since = mine.filter((r) => r.attempt > lastJudged);
-    const budget = roundFailures(since as AttemptRow[], lastJudged + 1);
-    if (!canRetry(budget, plan.maxAttempts)) return fail(latest.error ?? "Gemini không trả lời được");
+    // The candidate gets plan.maxAttempts failed calls in all (VIDEO_SEGMENT_MAX_ATTEMPTS), transport and provider alike.
+    // canRetry's transport budget is for drafts; a key error (401, 403) would otherwise be retried five times per candidate.
+    const failedCalls = since.filter((r) => r.status === "failed").length;
+    if (failedCalls >= plan.maxAttempts) return fail(latest.error ?? "Gemini không trả lời được");
     return { kind: "submit", attempt: latest.attempt + 1, parentId: latest.id, previousError: latest.error, url: offered[candidateIndex], candidateIndex };
   }
   // The newest call was judged, and an offered candidate is still unjudged.
@@ -198,7 +200,10 @@ function lessonFlow(
 ): Flow {
   // The video stage comes first for a video lesson; a fallback or a segment lets the lesson go on to its draft.
   const offered = input.video?.offered[lessonId];
-  if (offered && input.video) {
+  // A lesson with an accepted draft already went through the video stage (on this run, or on the run it resumes):
+  // its draft and review are the state, and no candidate is asked again.
+  const hasDraft = rows.some((r) => r.step_key === "lessons" && r.status === "completed");
+  if (offered && input.video && !hasDraft) {
     const stage = videoStage(rows, offered, input.video, input.now, input.submitStaleMs);
     if (stage.kind === "fallback" && !stage.recorded) {
       return { kind: "act", inflight: false, video: false, action: { lessonId, kind: "record_fallback", reason: stage.reason } };

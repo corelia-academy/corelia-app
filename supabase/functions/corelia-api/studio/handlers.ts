@@ -286,6 +286,11 @@ export async function advanceRun(db: SupabaseClient, run: RunRow): Promise<{ ste
         }
       } else {
         await markStepDone(db, run.id, step!);
+        // The video stage ends with the lessons it serves: its run step is done when the lessons step is.
+        if (step === "lessons" || step === "lesson_review") {
+          const video = await db.from("studio_run_steps").update({ state: "done" }).eq("run_id", run.id).eq("step_key", "lesson_video");
+          if (video.error) throw new Error(video.error.message);
+        }
       }
       break;
     case "reopen":
@@ -1129,22 +1134,27 @@ async function runVideoSegment(db: SupabaseClient, run: RunRow, lessonId: string
   if (error) throw new Error(error.message);
 
   const result = await callVideoSegment({ apiKey, model: VIDEO_SEGMENT_MODEL, videoUrl: video.url, system: prompt.system, input, timeoutMs: VIDEO_SEGMENT_TIMEOUT_MS });
-  if (!result.ok) {
+  if (!result.ok && result.cause !== "candidate") {
+    // Transport and provider failures are retried by the planner, on the same candidate.
     await failGeneration(db, gen.id, "submitting", result.cause, result.error);
     await addEvent(db, { run_id: run.id, step_key: "lessons", attempt, kind: "error", agent_role: "A8", message: `${label}: ${result.error}` });
     return;
   }
-  const judgement = judgeCandidate(result.output as VideoSegmentCandidate, video.url);
+  // An answer, or a refusal of this video, is a judgement: the candidate is done and the next one is tried.
+  const usage = result.ok ? result.usage : { input_tokens: 0, output_tokens: 0 };
+  const judgement = result.ok
+    ? judgeCandidate(result.output as VideoSegmentCandidate, video.url)
+    : { accepted: false as const, reason: result.error };
   const output = judgement.accepted
     ? { accepted: true, segment: judgement.segment, candidate_index: video.candidateIndex, video_url: video.url }
-    : { accepted: false, reason: judgement.reason, candidate_index: video.candidateIndex, video_url: video.url, answer: result.output };
+    : { accepted: false, reason: judgement.reason, candidate_index: video.candidateIndex, video_url: video.url, ...(result.ok ? { answer: result.output } : { refused_http: result.status ?? null }) };
   const { error: saveError } = await db
     .from("studio_generations")
     .update({
       status: "completed",
       provider_request_id: `gemini:${gen.id}`,
       model_id: VIDEO_SEGMENT_MODEL,
-      usage: { input_tokens: result.usage.input_tokens, output_tokens: result.usage.output_tokens, web_search_calls: 0 },
+      usage: { input_tokens: usage.input_tokens, output_tokens: usage.output_tokens, web_search_calls: 0 },
       output,
       completed_at: new Date().toISOString(),
     })

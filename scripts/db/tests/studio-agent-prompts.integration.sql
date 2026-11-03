@@ -8,15 +8,16 @@ BEGIN
     ('a1-catalog-research',7,'A1'),
     ('a2-brief',12,'A2'),
     ('a2-research',16,'A2'),
-    ('a3-curriculum',26,'A3'),
-    ('a4-curriculum-review',23,'A4'),
-    ('a5-lesson',29,'A5'),
-    ('a6-lesson-review',27,'A6'),
-    ('a7-translate',3,'A7')
+    ('a3-curriculum',27,'A3'),
+    ('a4-curriculum-review',24,'A4'),
+    ('a5-lesson',31,'A5'),
+    ('a6-lesson-review',29,'A6'),
+    ('a7-translate',3,'A7'),
+    ('a8-video-segment',1,'A8')
   ) expected(prompt_key,version,agent_role)
   JOIN public.studio_agent_prompts actual USING (prompt_key,version,agent_role);
-  IF pinned_count <> 8 THEN
-    RAISE EXCEPTION 'Expected 8 pinned Studio prompt rows; found %', pinned_count;
+  IF pinned_count <> 9 THEN
+    RAISE EXCEPTION 'Expected 9 pinned Studio prompt rows; found %', pinned_count;
   END IF;
   IF has_table_privilege('anon','public.studio_agent_prompts','SELECT') THEN
     RAISE EXCEPTION 'anon has direct SELECT privilege on studio_agent_prompts';

@@ -80,13 +80,22 @@ describe("studio Gemini call for A8", () => {
     expect(await call(network)).toMatchObject({ ok: false, cause: "transport" });
     for (const status of [408, 429, 500, 503]) {
       const fetchFn = (async () => new Response("{}", { status })) as unknown as typeof fetch;
-      expect(await call(fetchFn)).toEqual({ ok: false, cause: "transport", error: `Gemini HTTP ${status}` });
+      expect(await call(fetchFn)).toMatchObject({ ok: false, cause: "transport", error: `Gemini HTTP ${status}`, status });
     }
   });
 
-  it("treats any other HTTP error, a blocked answer, and text that is not JSON as provider failures", async () => {
-    const bad = (async () => new Response("{}", { status: 400 })) as unknown as typeof fetch;
-    expect(await call(bad)).toEqual({ ok: false, cause: "provider", error: "Gemini HTTP 400" });
+  it("treats other 4xx answers as a refusal of this video, and key or permission errors as provider failures", async () => {
+    for (const status of [400, 404, 410]) {
+      const refused = (async () => new Response("{}", { status })) as unknown as typeof fetch;
+      expect(await call(refused)).toMatchObject({ ok: false, cause: "candidate", status });
+    }
+    for (const status of [401, 403]) {
+      const keyProblem = (async () => new Response("{}", { status })) as unknown as typeof fetch;
+      expect(await call(keyProblem)).toMatchObject({ ok: false, cause: "provider", status });
+    }
+  });
+
+  it("treats a blocked answer and text that is not JSON as provider failures", async () => {
 
     const cut = (async () => jsonResponse(okBody(JSON.stringify(answer), { candidates: [{ content: { parts: [{ text: "{}" }] }, finishReason: "MAX_TOKENS" }] }))) as unknown as typeof fetch;
     expect(await call(cut)).toMatchObject({ ok: false, cause: "provider" });
