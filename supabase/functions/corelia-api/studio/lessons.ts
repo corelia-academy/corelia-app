@@ -347,6 +347,10 @@ export function lessonBase(ctx: RunContext, lessonId: string, draftOverride?: un
   const codeLanguageAdapter = codeLanguage ? getCodeLanguageAdapter(codeLanguage) : undefined;
   const { refs, index } = findLesson(ctx, lessonId);
   const { lesson, moduleId } = refs[index];
+  // A curriculum accepted before code_mode existed is not re-checked on resume; stop before any model call.
+  if (lesson.type === "code_exercise" && lesson.code_mode !== "fill" && lesson.code_mode !== "edit") {
+    throw new Error(`Bài code "${lesson.id}" của khóa này được lập trước khi có code_mode; cần tạo lại khóa.`);
+  }
   const revision = lessonRevision(ctx.lesson);
   const draft = draftOverride ?? (revision ? ctx.lesson?.draft : undefined);
   const effectiveFormat = effectiveLessonFormat(lesson, draft);
@@ -786,6 +790,10 @@ function codeProblems(
   if (code.mode === "fill") {
     if (code.blanks.length === 0) problems.push("mode fill phải có ít nhất 1 blank");
     if (code.tests.length > 0) problems.push("mode fill không có tests");
+    // Translation sends each feedback and requires a translated one, so an empty feedback would fail later.
+    for (const blank of code.blanks) {
+      if (!blank.feedback?.trim()) problems.push(`blank ${blank.id} thiếu feedback`);
+    }
   } else {
     if (code.blanks.length > 0) problems.push("mode edit không có blanks");
     if (code.tests.length === 0) problems.push("mode edit phải có ít nhất 1 test");

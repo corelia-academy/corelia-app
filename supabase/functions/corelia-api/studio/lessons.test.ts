@@ -124,6 +124,7 @@ describe("studio lessons: accept by format", () => {
     expect(await reason("l-code", fill({ tests: [test()] }), ok(), fillMode)).toContain("mode fill không có tests");
     expect(await reason("l-code", fill({ file_path: "main.py" }), ok(), fillMode)).toContain("file_path");
     expect(await reason("l-code", fill({ blanks: [{ id: "kw", accepted_answers: [" "], feedback: "x" }] }), ok(), fillMode)).toContain("invalid_blank");
+    expect(await reason("l-code", fill({ blanks: [{ id: "kw", accepted_answers: ["mut"], feedback: " " }] }), ok(), fillMode)).toContain("blank kw thiếu feedback");
     expect((await accept("l-code", fill({}), ok(), fillMode)).ok).toBe(true);
   });
 
@@ -140,6 +141,21 @@ describe("studio lessons: accept by format", () => {
 
     const resumed = { ...ctx, lesson: { drafts: 1, reviews: 0, draft: legacy, review: null } };
     expect(() => buildLessonReviewInput(resumed as never, "l-code")).toThrow("cần tạo lại khóa");
+  });
+
+  it("a curriculum accepted before code_mode fails before any model call, asking for a regenerated course", () => {
+    const legacyCtx = {
+      ...ctx,
+      outputs: {
+        ...ctx.outputs,
+        curriculum: {
+          ...curriculum,
+          modules: curriculum.modules.map((m) => ({ ...m, lessons: m.lessons.map((l) => (l.id === "l-code" ? { ...l, code_mode: undefined } : l)) })),
+        },
+      },
+    } as typeof ctx;
+    expect(() => buildLessonInput(legacyCtx, "l-code")).toThrow("cần tạo lại khóa");
+    expect(() => buildLessonInput(ctx, "l-code")).not.toThrow();
   });
 
   it.each(ENABLED_CODE_LANGUAGES)("accepts a valid code lesson in enabled language %s", async (language) => {
