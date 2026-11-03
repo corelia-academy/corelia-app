@@ -8,11 +8,11 @@ BEGIN
     ('a1-catalog-research',7,'A1'),
     ('a2-brief',12,'A2'),
     ('a2-research',16,'A2'),
-    ('a3-curriculum',25,'A3'),
-    ('a4-curriculum-review',22,'A4'),
-    ('a5-lesson',28,'A5'),
-    ('a6-lesson-review',26,'A6'),
-    ('a7-translate',2,'A7')
+    ('a3-curriculum',26,'A3'),
+    ('a4-curriculum-review',23,'A4'),
+    ('a5-lesson',29,'A5'),
+    ('a6-lesson-review',27,'A6'),
+    ('a7-translate',3,'A7')
   ) expected(prompt_key,version,agent_role)
   JOIN public.studio_agent_prompts actual USING (prompt_key,version,agent_role);
   IF pinned_count <> 8 THEN

@@ -15,11 +15,11 @@ export const PROMPT_VERSIONS: Record<PromptKey, number> = {
   "a1-catalog-research": 7,
   "a2-brief": 12,
   "a2-research": 16,
-  "a3-curriculum": 25,
-  "a4-curriculum-review": 22,
-  "a5-lesson": 28,
-  "a6-lesson-review": 26,
-  "a7-translate": 2,
+  "a3-curriculum": 26,
+  "a4-curriculum-review": 23,
+  "a5-lesson": 29,
+  "a6-lesson-review": 27,
+  "a7-translate": 3,
 };
 
 export function promptVersion(key: PromptKey, version: number): string {
