@@ -7,7 +7,7 @@ import { parseLessonImageRef } from "@/lib/lessonImage";
 import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { CodeBlock } from "./CodeBlock";
 
-function MarkdownImage({ src, alt }: { src?: string; alt: string }) {
+function MarkdownImage({ src, alt, lesson = false }: { src?: string; alt: string; lesson?: boolean }) {
   const isRef = parseLessonImageRef(src) !== null;
   const [resolved, setResolved] = useState<string | null>(null);
   useEffect(() => {
@@ -26,7 +26,7 @@ function MarkdownImage({ src, alt }: { src?: string; alt: string }) {
       alt={alt}
       loading="lazy"
       decoding="async"
-      className="my-3 h-auto max-w-full rounded-lg border border-border-subtle"
+      className={cn("my-3 h-auto max-w-full rounded-lg border border-border-subtle", lesson && "max-h-[max(60vh,20rem)]")}
     />
   );
 }
@@ -68,7 +68,7 @@ export function Markdown({ content, compact, variant = "default" }: { content: s
           a: (props) => (
             <a className="text-primary underline underline-offset-4 hover:opacity-80" {...props} />
           ),
-          img: ({ src, alt }) => <MarkdownImage src={typeof src === "string" ? src : undefined} alt={alt ?? ""} />,
+          img: ({ src, alt }) => <MarkdownImage src={typeof src === "string" ? src : undefined} alt={alt ?? ""} lesson={lesson} />,
           ul: (props) => <ul className="list-disc space-y-1 pl-5" {...props} />,
           ol: (props) => <ol className="list-decimal space-y-1 pl-5" {...props} />,
           li: (props) => <li className={lesson ? undefined : "leading-7"} {...props} />,

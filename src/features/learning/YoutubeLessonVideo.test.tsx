@@ -3,6 +3,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import { YoutubeLessonVideo } from "./YoutubeLessonVideo";
+import { LessonColumn, LESSON_MEDIA_MAX_HEIGHT } from "./lessonLayout";
 import { loadYoutubePlayerApi, type YoutubePlayerApi } from "@/lib/youtubePlayerApi";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -37,6 +38,20 @@ it("keeps segment/no-autoplay, handles player errors, and recreates the player w
   expect(host.querySelector("iframe")).not.toBe(frame);
   expect(host.querySelector('[role="alert"]')).toBeNull();
   expect(Player).toHaveBeenCalledTimes(2);
+});
+
+it("caps a flush video at the same height the lesson column derives its width from", async () => {
+  const host = document.createElement("div");
+  const root = createRoot(host);
+  vi.mocked(loadYoutubePlayerApi).mockResolvedValue({ Player: vi.fn(() => ({ destroy: vi.fn() })) } as unknown as YoutubePlayerApi);
+  cleanup = () => act(() => root.unmount());
+  await act(async () => root.render(
+    <><YoutubeLessonVideo url="https://www.youtube.com/embed/M7lc1UVf-VE" title="Fixture" flush /><LessonColumn>x</LessonColumn></>,
+  ));
+  const video = host.querySelector<HTMLElement>(".aspect-video")!;
+  const column = host.querySelector<HTMLElement>("[data-lesson-column]")!;
+  expect(video.style.maxHeight).toBe(LESSON_MEDIA_MAX_HEIGHT);
+  expect(column.style.maxWidth).toContain(LESSON_MEDIA_MAX_HEIGHT);
 });
 
 it("reports API failure without extra controls", async () => {

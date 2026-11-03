@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { AppHeaderBar } from "@/components/layouts/AppHeaderBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { LessonColumn } from "@/features/learning/lessonLayout";
 import { skeletonRevealClass } from "./skeletonReveal";
 
 import type { RouteSkeletonVariant } from "./routeSkeletonVariant";
@@ -150,13 +151,13 @@ export function LessonPlayerSkeletonBody() {
   return (
     <div className="flex min-h-full flex-col" aria-hidden>
       <div className="border-b border-border"><Skeleton className="aspect-video max-h-[80vh] w-full rounded-none" /></div>
-      <div className="flex w-full max-w-[880px] flex-col gap-6xl px-4 pb-7xl pt-6xl sm:px-6 md:px-8xl">
+      <LessonColumn className="flex flex-col gap-6xl pb-7xl pt-6xl">
         <div>
           <Skeleton className="h-4 w-16" />
           <Skeleton className="mt-3 h-8 w-3/4 max-w-xl rounded-lg" />
           <Skeleton className="mt-3 h-4 w-full max-w-2xl" />
         </div>
-      </div>
+      </LessonColumn>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { loadYoutubePlayerApi, type YoutubePlayer } from "@/lib/youtubePlayerApi";
 import { cn } from "@/lib/utils";
 import { useLearningTranslation } from "./useLearningTranslation";
+import { LESSON_MEDIA_MAX_HEIGHT } from "./lessonLayout";
 
 type Props = { url: string; title: string; flush?: boolean };
 export function YoutubeLessonVideo(props: Props) {
@@ -47,7 +48,7 @@ function Player({ url, title, flush = false }: Props) {
     };
   }, [url, title]);
   return <div className={flush ? "border-b border-border" : "space-y-3"}>
-    <div ref={container} className={cn("aspect-video w-full overflow-hidden bg-background", flush ? "max-h-[80vh]" : "rounded-xl")} />
+    <div ref={container} className={cn("aspect-video w-full overflow-hidden bg-background", !flush && "rounded-xl")} style={flush ? { maxHeight: LESSON_MEDIA_MAX_HEIGHT } : undefined} />
     {failed && <p role="alert" className={flush ? "px-4 py-3 sm:px-6 md:px-8xl" : undefined}>{t("learning.videoError")}</p>}
   </div>;
 }

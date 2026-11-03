@@ -313,6 +313,7 @@
   --shadow-dropdown: var(--dropdown-shadow);
   /* Action interaction token mapped from the Figma hover surface. */
   --color-action-hover: var(--action-hover);
+  --color-resource-item-surface: var(--resource-item-surface);
   --color-action-text: var(--action-text);
   --color-action-supporting: var(--action-supporting);
   --color-action-destructive: var(--action-destructive);
@@ -1029,6 +1030,8 @@
   --home-xp-progress-track: var(--neutral-200);
   /* Light hover uses a visible neutral layer instead of the page background. */
   --action-hover: var(--neutral-200);
+  /* Learn resources drawer row: one neutral step off the drawer background (--background = neutral-50). */
+  --resource-item-surface: var(--neutral-100);
   --action-text: var(--foreground);
   --action-supporting: var(--neutral-400);
   --action-destructive: var(--destructive);
@@ -1388,6 +1391,8 @@
   --home-xp-progress-track: var(--surface-raised);
   /* Dark hover maps to the Figma neutral raised surface. */
   --action-hover: var(--neutral-700);
+  /* Figma Neutral/800 row on the dark drawer. */
+  --resource-item-surface: var(--neutral-800);
   --action-text: var(--neutral-200);
   --action-supporting: var(--neutral-400);
   --action-destructive: var(--error-400);
