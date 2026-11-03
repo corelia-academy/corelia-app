@@ -39,7 +39,8 @@ BEGIN
     WHERE conrelid = 'public.studio_generations'::regclass
       AND conname = 'studio_generations_agent_role_check'
       AND pg_get_constraintdef(oid) LIKE '%A7%'
-  ) THEN RAISE EXCEPTION 'A7 is not accepted by the agent role CHECK'; END IF;
+      AND pg_get_constraintdef(oid) LIKE '%A8%'
+  ) THEN RAISE EXCEPTION 'A7/A8 are not accepted by the agent role CHECK'; END IF;
 END $$;
 
 INSERT INTO public.studio_generations (
@@ -67,8 +68,8 @@ BEGIN
       run_id, step_key, lesson_id, locale, attempt, agent_role, kind, provider,
       requested_model_id, prompt_version, input, status
     ) VALUES
-      ('ffff2900-2000-4000-8000-000000000001', 'translate', NULL, 'ja', 0, 'A8', 'text', 'openai', 'fixture-model', 'v1', '{}', 'submitting');
-    RAISE EXCEPTION 'unsupported A8 agent role unexpectedly accepted';
+      ('ffff2900-2000-4000-8000-000000000001', 'translate', NULL, 'ja', 0, 'A9', 'text', 'openai', 'fixture-model', 'v1', '{}', 'submitting');
+    RAISE EXCEPTION 'unsupported A9 agent role unexpectedly accepted';
   EXCEPTION WHEN check_violation THEN NULL;
   END;
 
