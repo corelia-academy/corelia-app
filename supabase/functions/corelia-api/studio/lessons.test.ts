@@ -885,8 +885,8 @@ describe("studio lessons: knowledge chain, length, ID and code_mode checks (A5 v
   it("gives A5 the recap it writes here, by placement, and prerequisite lessons by title", () => {
     // Module m1 ends with a quiz: its recap opens l-code, the first teaching lesson of m2.
     expect(buildLessonInput(ctx, "l-code").recap_to_write).toEqual([{ module_id: "m1", placement: "opening", text: "After this module you can use m1." }]);
-    // Module m2 ends with a video, its last prose lesson: the recap of m2 closes there.
-    expect(buildLessonInput(ctx, "l-vid").recap_to_write).toEqual([{ module_id: "m2", placement: "closing", text: "After this module you can use m2." }]);
+    // Module m2 is the last module: it has no recap, so the video carries none.
+    expect(buildLessonInput(ctx, "l-vid").recap_to_write).toEqual([]);
     expect(buildLessonInput(ctx, "l-art").recap_to_write).toEqual([]);
     expect(buildLessonInput(ctx, "l-vid").prerequisite_lessons).toEqual([]);
   });

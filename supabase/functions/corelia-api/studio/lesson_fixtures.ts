@@ -25,7 +25,7 @@ export function lesson(id: string, type: string, extra: object = {}) {
 /**
  * Fills the knowledge fields a curriculum now carries, where a fixture leaves them out: each lesson
  * gets its own new_knowledge and opening_question, next_question names the following lesson (null at
- * the end of the course or for optional_hands_on), and each module gets a recap. Fields the fixture
+ * the end of the course or for optional_hands_on), and each module but the last gets a recap. Fields the fixture
  * already sets are kept, so a test can still break one on purpose. Positions are counted in order.
  */
 export function withKnowledge<T extends { modules: { id: string; lessons: { id: string; purpose: string }[] }[] }>(curriculum: T): T {
@@ -35,8 +35,9 @@ export function withKnowledge<T extends { modules: { id: string; lessons: { id: 
   let position = -1;
   return {
     ...curriculum,
-    modules: curriculum.modules.map((module) => ({
-      recap: `After this module you can use ${module.id}.`,
+    modules: curriculum.modules.map((module, moduleIndex) => ({
+      // The last module has no recap (decision 03/11/2026); the others get one unless the fixture sets it.
+      recap: moduleIndex === curriculum.modules.length - 1 ? null : `After this module you can use ${module.id}.`,
       ...module,
       lessons: module.lessons.map((l) => {
         position += 1;

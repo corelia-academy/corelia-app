@@ -53,7 +53,8 @@ interface CurriculumLesson {
 }
 interface CurriculumFull {
   outcomes: { id: string; text: string }[];
-  modules: { id: string; title: string; description: string; recap: string; lessons: CurriculumLesson[] }[];
+  /** Null only on the last module: the course has no recap of its own (decision 03/11/2026). */
+  modules: { id: string; title: string; description: string; recap: string | null; lessons: CurriculumLesson[] }[];
 }
 
 /** Error for a curriculum written before new_knowledge, opening_question, next_question and recap existed. */
@@ -72,8 +73,9 @@ export function hasText(value: unknown): value is string {
 export function hasKnowledgeFields(curriculum: unknown): boolean {
   const c = curriculum as Partial<CurriculumFull> | null;
   if (!c || !Array.isArray(c.modules)) return false;
-  return c.modules.every((m) =>
-    hasText(m.recap) && Array.isArray(m.lessons) && m.lessons.every((l) =>
+  const last = c.modules.length - 1;
+  return c.modules.every((m, index) =>
+    (index === last ? m.recap === null : hasText(m.recap)) && Array.isArray(m.lessons) && m.lessons.every((l) =>
       hasText(l.new_knowledge) && hasText(l.opening_question) && (l.next_question === null || hasText(l.next_question))
     )
   );
@@ -102,15 +104,16 @@ export interface RecapPlacement {
   text: string;
 }
 
-const PROSE_LESSON_TYPES: readonly string[] = ["article", "video", "code_exercise"];
+/** Lesson types whose prose can close a module: a learner reads the recap at the end of the lesson. */
+const CLOSING_LESSON_TYPES: readonly string[] = ["article", "video"];
 const TEACHING_PURPOSES_FOR_RECAP: readonly string[] = ["explanation", "worked_example"];
 
 /**
- * Which lesson carries each module's recap (decision 03/11/2026, log 3.9). A module that ends with prose
- * (article, video or code_exercise, optional_hands_on not counted) closes with its recap in that lesson.
- * A module that ends with a quiz has no prose to close in: its recap opens the first teaching lesson of
- * the next module. The last module closes in its last prose lesson before the first final_check.
- * A quiz never carries a recap. Pure.
+ * Which lesson carries each module's recap (decision 03/11/2026, log 3.9). The last module has no recap.
+ * A module that ends with an article or a video (optional_hands_on not counted) closes with its recap in
+ * that lesson. A module that ends with a quiz or a code_exercise opens its recap in the first teaching
+ * lesson of the next module, after the opening situation. A quiz and a code_exercise never carry a recap.
+ * Pure.
  */
 export function recapCarriers(curriculum: unknown): Map<string, RecapPlacement[]> {
   const out = new Map<string, RecapPlacement[]>();
@@ -118,20 +121,14 @@ export function recapCarriers(curriculum: unknown): Map<string, RecapPlacement[]
   if (!Array.isArray(modules)) return out;
   const add = (lessonId: string, placement: RecapPlacement) => out.set(lessonId, [...(out.get(lessonId) ?? []), placement]);
   modules.forEach((module, index) => {
+    if (index === modules.length - 1 || !hasText(module.recap)) return;
     const lessons = module.lessons.filter((l) => l.purpose !== "optional_hands_on");
-    if (index < modules.length - 1) {
-      const last = lessons.at(-1);
-      if (last && PROSE_LESSON_TYPES.includes(last.type)) {
-        add(last.id, { module_id: module.id, placement: "closing", text: module.recap });
-      } else {
-        const opening = modules[index + 1].lessons.find((l) => TEACHING_PURPOSES_FOR_RECAP.includes(l.purpose));
-        if (opening) add(opening.id, { module_id: module.id, placement: "opening", text: module.recap });
-      }
+    const last = lessons.at(-1);
+    if (last && CLOSING_LESSON_TYPES.includes(last.type)) {
+      add(last.id, { module_id: module.id, placement: "closing", text: module.recap });
     } else {
-      const firstFinal = lessons.findIndex((l) => l.purpose === "final_check");
-      const before = firstFinal < 0 ? lessons : lessons.slice(0, firstFinal);
-      const carrier = before.filter((l) => PROSE_LESSON_TYPES.includes(l.type)).at(-1);
-      if (carrier) add(carrier.id, { module_id: module.id, placement: "closing", text: module.recap });
+      const opening = modules[index + 1].lessons.find((l) => TEACHING_PURPOSES_FOR_RECAP.includes(l.purpose));
+      if (opening) add(opening.id, { module_id: module.id, placement: "opening", text: module.recap });
     }
   });
   return out;

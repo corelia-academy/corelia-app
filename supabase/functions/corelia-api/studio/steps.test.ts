@@ -12,6 +12,7 @@ import { MIN_QUIZ_QUESTIONS, minQuizQuestions } from "./lesson_types.ts";
 import {
   acceptBrief,
   acceptCurriculum,
+  recapProblems,
   acceptCurriculumReview,
   LESSON_PURPOSES,
   buildProgress,
@@ -1260,7 +1261,7 @@ describe("studio curriculum knowledge chain, rhythm and recap placement (A3 v27)
       },
       {
         id: "m2",
-        recap: "After this module you can explain idea two.",
+        recap: null,
         lessons: [
           lesson("w2", { purpose: "worked_example", outcome_ids: ["o2"], next_question: "What does q2 check?" }),
           quiz("q2", { purpose: "quick_check", outcome_ids: ["o1", "o2"], review_lesson_ids: ["w1"], next_question: "What does i2q check?" }),
@@ -1286,8 +1287,16 @@ describe("studio curriculum knowledge chain, rhythm and recap placement (A3 v27)
     expect(acceptCurriculum(withLesson("q2", { opening_question: "" }), sources, null))
       .toMatchObject({ ok: false, reason: expect.stringContaining("lesson q2: opening_question") });
     const noRecap = valid();
-    noRecap.modules[1] = { ...noRecap.modules[1], recap: "" };
-    expect(acceptCurriculum(noRecap, sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("module m2: recap") });
+    noRecap.modules[0] = { ...noRecap.modules[0], recap: "" };
+    expect(acceptCurriculum(noRecap, sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("module m1: recap") });
+    // A middle module with recap null is refused: only the last module has no recap.
+    const middleNull = valid();
+    middleNull.modules[0] = { ...middleNull.modules[0], recap: null };
+    expect(acceptCurriculum(middleNull, sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("module m1: recap") });
+    // The last module must have recap null: any text is refused.
+    const lastText = valid();
+    lastText.modules[1] = { ...lastText.modules[1], recap: "After this course you can …" };
+    expect(acceptCurriculum(lastText, sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("module m2: module cuối khóa không có recap") });
   });
 
   it("allows next_question null only at the end of the course or for optional_hands_on", () => {
@@ -1314,26 +1323,64 @@ describe("studio curriculum knowledge chain, rhythm and recap placement (A3 v27)
     expect(acceptCurriculum(c, sources, null)).toMatchObject({ ok: false, reason: expect.stringContaining("hơn 2 bài dạy liên tiếp trước quiz hoặc code_exercise tại a3") });
   });
 
-  it("places a module recap at the closing of a module that ends with prose, or at the opening of the next module after a quiz", () => {
+  // Recap placement (decision 03/11/2026, reviewed): a middle module ends with an article or video
+  // (closing in that lesson) or with a quiz or code_exercise (opening in the next module's first teaching
+  // lesson). The last module has no recap. A quiz and a code_exercise never carry a recap.
+  const code = (id: string, over: object = {}) => lesson(id, { type: "code_exercise", purpose: "guided_practice", code_mode: "fill", ...over });
+
+  it("opens a recap in the next module when a middle module ends with a code_exercise", () => {
     const c = {
       modules: [
-        { id: "a", recap: "ra", lessons: [lesson("x1", { purpose: "explanation" }), quiz("x2", { purpose: "quick_check" })] },
-        { id: "b", recap: "rb", lessons: [lesson("y1", { purpose: "explanation" }), quiz("y2", { purpose: "final_check" })] },
+        { id: "a", recap: "ra", lessons: [lesson("x1", { purpose: "explanation" }), code("c1")] },
+        { id: "b", recap: null, lessons: [lesson("y1", { purpose: "explanation" }), quiz("y2", { purpose: "final_check" })] },
       ],
     };
     const placements = recapCarriers(c);
-    // Module a ends with a quiz: its recap opens the first teaching lesson of module b.
-    // Module b is the last: its recap closes in its last prose lesson before the final check, y1.
-    expect(placements.get("y1")).toEqual([
-      { module_id: "a", placement: "opening", text: "ra" },
-      { module_id: "b", placement: "closing", text: "rb" },
-    ]);
+    expect(placements.get("y1")).toEqual([{ module_id: "a", placement: "opening", text: "ra" }]);
+    expect(placements.has("c1")).toBe(false);
     expect(placements.has("x1")).toBe(false);
-    expect(placements.has("x2")).toBe(false);
-    // A module that ends with prose closes in that prose; optional_hands_on is not the closing lesson.
-    const prose = { modules: [{ id: "a", recap: "ra", lessons: [lesson("x1"), lesson("p1", { type: "practice", purpose: "optional_hands_on", pass_threshold: null })] }] };
-    expect(recapCarriers(prose).get("x1")).toEqual([{ module_id: "a", placement: "closing", text: "ra" }]);
-    expect(recapCarriers(prose).has("p1")).toBe(false);
+  });
+
+  it("opens a recap in the next module when a middle module ends with a quiz", () => {
+    const c = {
+      modules: [
+        { id: "a", recap: "ra", lessons: [lesson("x1", { purpose: "explanation" }), quiz("x2", { purpose: "quick_check" })] },
+        { id: "b", recap: null, lessons: [lesson("y1", { purpose: "explanation" }), quiz("y2", { purpose: "final_check" })] },
+      ],
+    };
+    expect(recapCarriers(c).get("y1")).toEqual([{ module_id: "a", placement: "opening", text: "ra" }]);
+    expect(recapCarriers(c).has("x2")).toBe(false);
+  });
+
+  it("closes a middle module's recap in its last lesson when that lesson is an article, not optional_hands_on", () => {
+    const c = {
+      modules: [
+        { id: "a", recap: "ra", lessons: [quiz("x2", { purpose: "quick_check" }), lesson("x1", { purpose: "explanation" }), lesson("p1", { type: "practice", purpose: "optional_hands_on", pass_threshold: null })] },
+        { id: "b", recap: null, lessons: [lesson("y1", { purpose: "explanation" }), quiz("y2", { purpose: "final_check" })] },
+      ],
+    };
+    expect(recapCarriers(c).get("x1")).toEqual([{ module_id: "a", placement: "closing", text: "ra" }]);
+    expect(recapCarriers(c).has("p1")).toBe(false);
+    expect(recapCarriers(c).has("y1")).toBe(false);
+  });
+
+  it("gives the last module no recap: none is placed, and a valid course with recap null is accepted", () => {
+    const c = valid();
+    expect(acceptCurriculum(c, sources, null).ok).toBe(true);
+    const placed = [...recapCarriers(c).values()].flat().map((p) => p.module_id);
+    expect(placed).not.toContain("m2");
+    expect(recapCarriers(c).get("w2")).toEqual([{ module_id: "m1", placement: "opening", text: "After this module you can explain idea one." }]);
+  });
+
+  it("reports a middle module whose recap has no lesson to carry it, naming the next module", () => {
+    const c = {
+      modules: [
+        { id: "a", recap: "ra", lessons: [lesson("x1", { purpose: "explanation" }), quiz("x2", { purpose: "quick_check" })] },
+        { id: "b", recap: "rb", lessons: [quiz("z1", { purpose: "quick_check" }), quiz("z2", { purpose: "independent_practice" })] },
+        { id: "c", recap: null, lessons: [lesson("w1", { purpose: "explanation" }), quiz("w2", { purpose: "final_check" })] },
+      ],
+    };
+    expect(recapProblems(c as never)).toEqual([expect.stringContaining("module a: không có bài để mang recap; module kế tiếp b cần một bài dạy")]);
   });
 
   it("treats a curriculum without the knowledge fields as stale, with the message the run shows", () => {

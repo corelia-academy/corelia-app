@@ -331,8 +331,8 @@ const CURRICULUM_SCHEMA = object({
       id: str,
       title: str,
       description: str,
-      /** "After this module you can …": what the learner can do once the module is done. */
-      recap: str,
+      /** "After this module you can …" for every module but the last; null on the last module (no recap there). */
+      recap: { type: ["string", "null"] },
       lessons: {
         type: "array",
         items: object({
@@ -460,7 +460,7 @@ interface Curriculum {
   status: string;
   missing: string[];
   outcomes: { id: string; check_lesson_ids: string[] }[];
-  modules: { id: string; recap: string; lessons: CurriculumLesson[] }[];
+  modules: { id: string; recap: string | null; lessons: CurriculumLesson[] }[];
 }
 
 export function list(items: string[], max = 3): string {
@@ -723,9 +723,15 @@ function knowledgeProblems(curriculum: Curriculum): string[] {
   const problems: string[] = [];
   const lessons = curriculum.modules.flatMap((m) => m.lessons);
   const last = lessons.length - 1;
-  for (const module of curriculum.modules) {
-    if (!hasText(module.recap)) problems.push(`module ${module.id}: recap ${TEXT_FIELD_ERROR} (giờ bạn hiểu được …, làm được …)`);
-  }
+  const lastModule = curriculum.modules.length - 1;
+  curriculum.modules.forEach((module, index) => {
+    if (index === lastModule) {
+      // The course has no recap of its own: the last module's recap is null, and any text is refused.
+      if (module.recap !== null) problems.push(`module ${module.id}: module cuối khóa không có recap (recap phải là null)`);
+    } else if (!hasText(module.recap)) {
+      problems.push(`module ${module.id}: recap ${TEXT_FIELD_ERROR} (giờ bạn hiểu được …, làm được …)`);
+    }
+  });
   lessons.forEach((l, index) => {
     if (!hasText(l.new_knowledge)) problems.push(`lesson ${l.id}: new_knowledge ${TEXT_FIELD_ERROR}`);
     if (!hasText(l.opening_question)) problems.push(`lesson ${l.id}: opening_question ${TEXT_FIELD_ERROR}`);
@@ -744,12 +750,19 @@ function knowledgeProblems(curriculum: Curriculum): string[] {
   return problems;
 }
 
-/** Every module must have a lesson that carries its recap (see recapCarriers in lessons.ts). */
-function recapProblems(curriculum: Curriculum): string[] {
+/**
+ * Every module but the last must have a lesson that carries its recap (see recapCarriers in lessons.ts):
+ * its last lesson when that is an article or video, otherwise the first teaching lesson of the next module.
+ */
+export function recapProblems(curriculum: Curriculum): string[] {
   const carried = new Set([...recapCarriers(curriculum).values()].flat().map((p) => p.module_id));
-  return curriculum.modules
-    .filter((m) => !carried.has(m.id))
-    .map((m) => `module ${m.id}: không có bài có phần chữ để mang recap (bài dạy đầu module sau, hoặc bài có phần chữ cuối module cuối trước final_check)`);
+  const problems: string[] = [];
+  curriculum.modules.slice(0, -1).forEach((module, index) => {
+    if (!hasText(module.recap) || carried.has(module.id)) return;
+    const next = curriculum.modules[index + 1];
+    problems.push(`module ${module.id}: không có bài để mang recap; module kế tiếp ${next.id} cần một bài dạy (explanation hoặc worked_example) đứng đầu`);
+  });
+  return problems;
 }
 
 /**
