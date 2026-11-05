@@ -874,7 +874,7 @@ function LearnWorkspace() {
               className="min-w-0 bg-background"
             >
               <div className="relative flex h-full min-w-0 flex-col">
-                <ScrollArea autoHide viewportRender={<main ref={lessonScrollRef} />} viewportClassName="pb-24" contentClassName="flex min-h-full flex-col">
+                <ScrollArea autoHide viewportRender={<main ref={lessonScrollRef} />} viewportClassName="pb-24" contentClassName="flex min-h-full min-w-0! flex-col">
                   {lessonContent}
                 </ScrollArea>
                 {footerBar}
@@ -914,7 +914,7 @@ function LearnWorkspace() {
         </div>
       ) : (
         <div className="relative flex min-h-0 flex-1 flex-col">
-          <ScrollArea autoHide viewportRender={<main ref={lessonScrollRef} />} viewportClassName="pb-24" contentClassName="flex min-h-full flex-col">
+          <ScrollArea autoHide viewportRender={<main ref={lessonScrollRef} />} viewportClassName="pb-24" contentClassName="flex min-h-full min-w-0! flex-col">
             {lessonContent}
           </ScrollArea>
           {footerBar}

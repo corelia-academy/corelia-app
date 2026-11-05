@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 export const LESSON_MEDIA_MAX_HEIGHT = "80vh";
 
 // One column for every lesson format: frame, quiz/practice/code, footer and skeleton all use it so they stay aligned.
-export const LESSON_COLUMN = "mx-auto w-full px-4 sm:px-6 md:px-8xl";
+export const LESSON_COLUMN = "mx-auto w-full wrap-anywhere px-4 sm:px-6 md:px-8xl";
 
 export function LessonColumn({ className, style, ...props }: ComponentProps<"div">) {
   return <div data-lesson-column className={cn(LESSON_COLUMN, className)}
