@@ -20,6 +20,12 @@ export default defineConfig({
     optimizeDeps: {
       include: ["gsap", "gsap/ScrollTrigger", "gsap/SplitText"],
     },
+    build: {
+      rollupOptions: {
+        // Cloudflare Workers Builds hits EMFILE with Rollup's default of 1000 parallel file reads.
+        maxParallelFileOps: 100,
+      },
+    },
   },
 
   integrations: [
