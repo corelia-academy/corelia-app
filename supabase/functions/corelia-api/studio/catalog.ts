@@ -465,6 +465,8 @@ export function planCatalogJob(input: {
   now: number;
   /** Outcome of the newest generation when it is completed (read from its output); null otherwise. */
   latestResult: { status: CatalogStatus; missing: string[] } | null;
+  /** External Claude Code tasks may legitimately wait for a human-sized model run. */
+  submitStaleMs?: number;
 }): CatalogAction {
   if (input.now - Date.parse(input.startedAt) > CATALOG_MAX_RUN_MS) {
     return { kind: "finish", status: "failed", reason: "Lượt nghiên cứu vượt quá 24 giờ." };
@@ -474,7 +476,7 @@ export function planCatalogJob(input: {
   if (!latest) return { kind: "submit", attempt: 0, parentId: null };
   switch (latest.status) {
     case "submitting":
-      return input.now - Date.parse(latest.created_at) > SUBMIT_STALE_MS
+      return input.now - Date.parse(latest.created_at) > (input.submitStaleMs ?? SUBMIT_STALE_MS)
         ? { kind: "expire_submitting", generationId: latest.id }
         : { kind: "wait" };
     case "submitted":

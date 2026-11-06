@@ -134,13 +134,13 @@ describe("A1 catalog research in the A2 brief", () => {
   });
 
   it("keeps A5 and A6 package-version decisions bounded by research evidence", () => {
-    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v29");
+    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v30");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("tool_versions của research chỉ ghi mức tối thiểu hoặc phiên bản theo nguồn");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("nếu chỉ nêu mức tối thiểu, ghi rõ đó là mức tối thiểu và để lệnh không ghim phiên bản");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("Không tự suy ra phiên bản.");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("open_questions blocking = false ghi phiên bản chưa xác minh");
 
-    expect(SEEDED_PROMPTS["a6-lesson-review"].version).toBe("v27");
+    expect(SEEDED_PROMPTS["a6-lesson-review"].version).toBe("v28");
     const a5Prompt = SEEDED_PROMPTS["a5-lesson"].system;
     expect(a5Prompt).toContain("Mỗi câu phải tự đủ ngữ cảnh");
     expect(a5Prompt).toContain("Nhãn của các node không được trùng nhau");
@@ -163,10 +163,10 @@ describe("A1 catalog research in the A2 brief", () => {
     const a5 = SEEDED_PROMPTS["a5-lesson"];
     const a6 = SEEDED_PROMPTS["a6-lesson-review"];
 
-    expect(a3.version).toBe("v26");
-    expect(a4.version).toBe("v23");
-    expect(a5.version).toBe("v29");
-    expect(a6.version).toBe("v27");
+    expect(a3.version).toBe("v27");
+    expect(a4.version).toBe("v24");
+    expect(a5.version).toBe("v30");
+    expect(a6.version).toBe("v28");
     expect(a6.system).toContain("so khớp chuỗi cũng không loại được mọi mã sai");
     expect(a6.system).toContain("Cách viết chỉ khác về hình thức và ít gặp ở trình độ của bài");
     expect(a2.version).toBe("v16");
@@ -184,9 +184,14 @@ describe("A1 catalog research in the A2 brief", () => {
     expect(a3.system).toContain("Chỉ lập lesson code_exercise khi brief.code_language khác null");
     expect(a3.system).toContain("Không tạo lesson type video");
     expect(a3.system).toContain("bỏ qua video vẫn phải hiểu đủ lesson");
-    expect(a3.system).toContain("purpose optional_hands_on ở cuối module");
+    expect(a3.system).toContain("purpose optional_hands_on ở cuối phần bài của module đó (ở module cuối thì ngay trước các bài final_check)");
     expect(a3.system).toContain("Không đưa lesson này vào check_lesson_ids");
-    expect(a4.system).toContain("optional_hands_on tối đa một lesson ở cuối module");
+    expect(a3.system).toContain("một hoặc hai lesson purpose final_check nằm liền nhau ở cuối module");
+    expect(a3.system).toContain("Khóa không có code_language (khóa không thuần kỹ thuật): final_check là đúng một quiz tổng hợp");
+    expect(a4.system).toContain("optional_hands_on tối đa một lesson ở cuối phần bài của module");
+    expect(a4.system).toContain("một hoặc hai lesson final_check liền nhau ở cuối module");
+    expect(a5.system).toContain("Bài quiz, code_exercise và practice không cần mở bằng tình huống");
+    expect(a6.system).toContain("chỉ áp dụng cho bài dạy");
     expect(a4.system).toContain("optional_hands_on không tạo cờ bỏ qua lesson trong app");
     expect(a4.system).toContain("factual_inaccuracy, wrong_source, wrong_answer");
     expect(a4.system).toContain("outcome_mismatch chỉ dùng khi lesson không dạy/kiểm một khái niệm hoặc kỹ năng trong outcome");

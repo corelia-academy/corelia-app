@@ -96,7 +96,9 @@ export function buildPublishPayload(input: PublishInput): PublishPayload {
     // id, section, position and published are columns; everything else is the lesson's data.
     const { id: _id, section_id: _section, order: _order, ...data } = record.draft.lesson;
     if (data.description_markdown) data.description_markdown = publishMarkdown(data.description_markdown, input.courseId, ref.lesson.id);
-    return { id: ref.lesson.id, section_id: ref.moduleId, sort_order: index, data: data as Record<string, unknown> };
+    // Marks the lessons that close the course so the app can present them apart; absent on every other lesson.
+    const rowData: Record<string, unknown> = ref.lesson.purpose === "final_check" ? { ...data, is_final_check: true } : data;
+    return { id: ref.lesson.id, section_id: ref.moduleId, sort_order: index, data: rowData };
   });
   const questions = refs.flatMap((ref) =>
     input.records[ref.lesson.id].draft.questions.map((q, i) => {

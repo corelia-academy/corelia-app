@@ -41,6 +41,8 @@ interface JobRow {
   id: string;
   course_id: string;
   started_at: string;
+  execution_mode?: "server" | "claude_code";
+  agent_models?: Record<string, string>;
 }
 
 // Studio is admin only: support_staff is excluded, matching studio_can_write() in the schema.
@@ -80,8 +82,9 @@ export async function handleCatalogResearchStart(req: Request, db: SupabaseClien
 export async function advanceCatalogJobs(db: SupabaseClient): Promise<Record<string, unknown>[]> {
   const { data: jobs, error } = await db
     .from("studio_catalog_jobs")
-    .select("id,course_id,started_at")
+    .select("id,course_id,started_at,execution_mode,agent_models")
     .eq("status", "running")
+    .eq("execution_mode", "server")
     .order("updated_at", { ascending: true })
     .limit(CATALOG_JOBS_PER_TICK);
   if (error) throw new Error(error.message);
@@ -119,7 +122,13 @@ export async function advanceCatalogJob(db: SupabaseClient, job: JobRow): Promis
     latestResult = { status: catalogStatus(out.data.output), missing: catalogGap(out.data.output) };
   }
 
-  const action = planCatalogJob({ generations, startedAt: job.started_at, now: Date.now(), latestResult });
+  const action = planCatalogJob({
+    generations,
+    startedAt: job.started_at,
+    now: Date.now(),
+    latestResult,
+    submitStaleMs: job.execution_mode === "claude_code" ? 24 * 60 * 60 * 1000 : undefined,
+  });
   if (action.kind === "submit" && latest?.status === "failed") {
     await logCatalogRunEvent(db, job.id, catalogRetryWarning(latest));
   }
@@ -323,7 +332,8 @@ async function loadBaseOrFinish(db: SupabaseClient, job: JobRow): Promise<Catalo
 async function submitCatalog(db: SupabaseClient, job: JobRow, attempt: number, parentId: string | null, previousError: string | null) {
   const role = "A1" as const;
   const apiKey = agentKey(role);
-  if (!apiKey) {
+  const external = job.execution_mode === "claude_code";
+  if (!external && !apiKey) {
     await finishCatalogJob(db, job.id, "failed", `Chưa cấu hình ${agentKeyEnv(role)}.`);
     return;
   }
@@ -355,8 +365,9 @@ async function submitCatalog(db: SupabaseClient, job: JobRow, attempt: number, p
       attempt,
       agent_role: role,
       kind: "research",
-      provider: "openai",
-      requested_model_id: CATALOG_SPEC.model,
+      origin: external ? "external" : "ai",
+      provider: external ? "anthropic" : "openai",
+      requested_model_id: external ? job.agent_models?.[role] ?? "sonnet" : CATALOG_SPEC.model,
       prompt_version: prompt.promptVersion,
       params: {
         effort: CATALOG_SPEC.effort,
@@ -372,6 +383,18 @@ async function submitCatalog(db: SupabaseClient, job: JobRow, attempt: number, p
     .single();
   if (error?.code === "23505") return;
   if (error) throw new Error(error.message);
+
+  if (external) {
+    await logCatalogRunEvent(db, job.id, {
+      generationId: gen.id,
+      attempt,
+      kind: "progress",
+      message: `Đã tạo tác vụ Claude Code nghiên cứu Catalog (lần ${attempt + 1}).`,
+      payload: { submitted_at: new Date().toISOString() },
+    });
+    return;
+  }
+  if (!apiKey) throw new Error(`Chưa cấu hình ${agentKeyEnv(role)}.`);
 
   let requestId: string;
   try {
@@ -443,6 +466,7 @@ async function pollCatalog(db: SupabaseClient, job: JobRow, latest: CatalogGener
           attempt: latest.attempt,
           kind: "progress",
           message: `Flex không còn chỗ, gửi lại yêu cầu nghiên cứu bằng tier mặc định (lần ${latest.attempt + 1}).`,
+          payload: { fallback_tier: "default" },
         });
         return;
       }

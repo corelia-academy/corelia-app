@@ -945,16 +945,35 @@ describe("studio acceptance", () => {
   });
 
   it("requires a covering final check and a recall of an earlier module", () => {
-    expect(reason(withModules([m1, { ...m2, lessons: [w2, l2, q2, g2, i2] }]))).toContain("module cuối không có quiz tổng hợp");
+    expect(reason(withModules([m1, { ...m2, lessons: [w2, l2, q2, g2, i2] }]))).toContain("module cuối không có bài final_check");
     expect(reason(withModules([m1, { ...m2, lessons: [w2, l2, q2, g2, i2, quiz("q9", { purpose: "final_check", outcome_ids: ["o2"], review_lesson_ids: ["l2"] })] }])))
       .toContain("chưa phủ outcome o1");
     expect(reason(withModules([m1, { ...m2, lessons: [w2, l2, g2, i2, q9] }]))).toContain("không có lesson ôn lại outcome của module trước");
   });
 
-  it("counts code_exercise final checks toward outcome coverage, and still needs a summary quiz", () => {
-    const withCodeFinal = withModules([m1, { ...m2, lessons: [w2, l2, q2, g2, i2, code("c9", "final_check", { outcome_ids: ["o1", "o2"] })] }]);
-    expect(reason(withCodeFinal)).toContain("module cuối không có quiz tổng hợp");
-    expect(reason(withCodeFinal)).not.toContain("chưa phủ outcome");
+  it("accepts a code_exercise final check alone, or together with a summary quiz, in the last module", () => {
+    const codeFinal = code("c9", "final_check", { outcome_ids: ["o1", "o2"] });
+    const codeOnly = withModules([m1, { ...m2, lessons: [w2, l2, q2, g2, i2, codeFinal] }]);
+    expect(reason(codeOnly)).not.toContain("final_check");
+    expect(reason(codeOnly)).not.toContain("chưa phủ outcome");
+    const quizFinal = quiz("q9f", { purpose: "final_check", outcome_ids: ["o1", "o2"], review_lesson_ids: ["l2"] });
+    const both = withModules([m1, { ...m2, lessons: [w2, l2, q2, g2, i2, quizFinal, codeFinal] }]);
+    expect(reason(both)).not.toContain("final_check");
+    expect(reason(both)).not.toContain("module m2: có");
+  });
+
+  it("keeps final_check lessons together at the end of the last module, at most two", () => {
+    const f = (id: string) => quiz(id, { purpose: "final_check", outcome_ids: ["o1", "o2"], review_lesson_ids: ["l2"] });
+    expect(reason(withModules([m1, { ...m2, lessons: [w2, l2, q2, g2, f("f1"), i2, f("f2")] }]))).toContain("final_check chỉ được là bài cuối của module cuối");
+    expect(reason(withModules([m1, { ...m2, lessons: [w2, l2, q2, g2, i2, f("f1"), f("f2"), f("f3")] }]))).toContain("tối đa 2");
+  });
+
+  it("places optional_hands_on after the module's own lessons and before the final_check block", () => {
+    const f = quiz("f1", { purpose: "final_check", outcome_ids: ["o1", "o2"], review_lesson_ids: ["l2"] });
+    const oh = lesson("oh", { type: "practice", purpose: "optional_hands_on", outcome_ids: ["o2"] });
+    expect(reason(withModules([m1, { ...m2, lessons: [w2, l2, q2, g2, i2, oh, f] }]))).not.toContain("optional_hands_on");
+    expect(reason(withModules([m1, { ...m2, lessons: [w2, l2, q2, g2, oh, i2, f] }])))
+      .toContain("(optional_hands_on) phải ở cuối module, trước các bài final_check");
   });
 
   const quizReviewLaterCurriculum = withModules([{ ...m1, lessons: [w1, l1, quiz("q1", { purpose: "quick_check", review_lesson_ids: ["l2"] }), g1, i1] }, m2]);

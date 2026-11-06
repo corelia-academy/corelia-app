@@ -30,6 +30,9 @@ verify_jwt = false
 [functions.generate-questions]
 verify_jwt = false
 
+[functions.studio-mcp]
+verify_jwt = false
+
 [api]
 enabled = true
 # Port to use for the API URL.

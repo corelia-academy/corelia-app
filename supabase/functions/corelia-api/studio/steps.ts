@@ -257,6 +257,8 @@ export const LESSON_PURPOSES = [
  * keep their own placement rules.
  */
 const TEACHING_STEP_PURPOSES: readonly string[] = ["explanation", "worked_example"];
+/** The last module closes with one or two final_check lessons: a quiz, a code_exercise, or both in a code course. */
+const MAX_FINAL_CHECKS = 2;
 
 function moduleStepProblems(
   module: { id: string; lessons: CurriculumLesson[] },
@@ -271,12 +273,15 @@ function moduleStepProblems(
   const lessons = module.lessons;
   const hasWarmUp = lessons.some((l) => l.purpose === "warm_up");
   const legacyWarmUp = allowLegacyWarmUp && hasWarmUp;
+  // final_check lessons close the last module and are counted apart from the module's own 3-6 lessons.
+  const finalCount = lessons.filter((l) => l.purpose === "final_check").length;
+  const bodyCount = lessons.length - finalCount;
   if (legacyWarmUp) {
-    if (lessons.length < 4 || lessons.length > 6) at(`có ${lessons.length} bài; cần 4-6 bài`);
+    if (bodyCount < 4 || bodyCount > 6) at(`có ${bodyCount} bài; cần 4-6 bài`);
     if (lessons[0]?.purpose !== "warm_up") at("bài đầu phải có purpose warm_up (bước Thử)");
     if (lessons.filter((l) => l.purpose === "warm_up").length !== 1) at("cần đúng 1 bài warm_up (bước Thử)");
   } else {
-    if (lessons.length < 3 || lessons.length > 6) at(`có ${lessons.length} bài; cần 3-6 bài`);
+    if (bodyCount < 3 || bodyCount > 6) at(`có ${bodyCount} bài; cần 3-6 bài`);
     if (hasWarmUp) at("không tạo lesson riêng warm_up; nhúng tình huống mở đầu vào bài dạy đầu tiên");
     if (!lessons[0] || !TEACHING_STEP_PURPOSES.includes(lessons[0].purpose)) {
       at("bài đầu module phải là explanation/worked_example và mang tình huống mở đầu");
@@ -307,9 +312,10 @@ function moduleStepProblems(
   } else if (!(quickIndex < guidedIndex && guidedIndex < independentIndex)) {
     at("thứ tự phải là quick_check → guided_practice → independent_practice");
   }
-  const finalIndex = lessons.findIndex((l) => l.purpose === "final_check");
-  if (finalIndex >= 0 && (moduleIndex !== moduleCount - 1 || finalIndex !== lessons.length - 1)) {
-    at("final_check chỉ được là bài cuối của module cuối");
+  if (finalCount > 0) {
+    const tailIsFinal = lessons.slice(lessons.length - finalCount).every((l) => l.purpose === "final_check");
+    if (moduleIndex !== moduleCount - 1 || !tailIsFinal) at("final_check chỉ được là bài cuối của module cuối");
+    else if (finalCount > MAX_FINAL_CHECKS) at(`có ${finalCount} bài final_check; tối đa ${MAX_FINAL_CHECKS}`);
   }
   return problems;
 }
@@ -723,7 +729,9 @@ export function acceptCurriculum(
     const optional = module.lessons.filter((l) => l.purpose === "optional_hands_on");
     if (optional.length > 1) problems.push(`module ${module.id} có hơn một lesson optional_hands_on`);
     if (optional.length === 1) {
-      if (module.lessons.at(-1)?.id !== optional[0].id) problems.push(`lesson ${optional[0].id} (optional_hands_on) phải ở cuối module`);
+      // In the last module the final_check block closes the course, so the optional lesson sits right before it.
+      const ownLessons = module.lessons.filter((l) => l.purpose !== "final_check");
+      if (ownLessons.at(-1)?.id !== optional[0].id) problems.push(`lesson ${optional[0].id} (optional_hands_on) phải ở cuối module, trước các bài final_check`);
       if (optional[0].type !== "practice") problems.push(`lesson ${optional[0].id} (optional_hands_on) phải là practice`);
     }
     return optional;
@@ -846,13 +854,13 @@ export function acceptCurriculum(
     }
   }
 
-  // Transfer: the final_check lessons of the last module (a summary quiz, plus code_exercise or
-  // practice for outcomes a quiz cannot check) together cover every outcome. There is no final
-  // assignment in an ai_generated course (docs/course-types.md).
+  // Transfer: the final_check lessons of the last module (a quiz, a code_exercise, or both in a code
+  // course; a course without code closes with a quiz) together cover every outcome. They are marked
+  // by purpose only: there is no submission or grading step in an ai_generated course (docs/course-types.md).
   const last = curriculum.modules[curriculum.modules.length - 1];
   const finals = (last?.lessons ?? []).filter((l) => l.purpose === "final_check");
   const covered = new Set(finals.flatMap((l) => l.outcome_ids));
-  if (!finals.some((l) => l.type === "quiz")) problems.push("module cuối không có quiz tổng hợp");
+  if (finals.length === 0) problems.push("module cuối không có bài final_check");
   const uncovered = [...outcomeIds].filter((id) => !covered.has(id));
   if (uncovered.length > 0) problems.push(`các lesson final_check của module cuối chưa phủ outcome ${uncovered.join(", ")}`);
 
@@ -1233,6 +1241,8 @@ export function planRun(input: {
   /** Status of the A1 job pinned to this run when step 0 is current. */
   catalogResearch?: { status: "running" | "evidence_ok" | "needs_more_sources" | "failed"; reason?: string | null } | null;
   progress?: RunProgress;
+  /** External Claude Code tasks may legitimately wait for a human-sized model run. */
+  submitStaleMs?: number;
   /**
    * Curriculum lessons with their generations of both lesson steps and the blocking items of each
    * lesson's newest accepted review; required while the step is `lessons` or `lesson_review`.
@@ -1281,7 +1291,7 @@ export function planRun(input: {
       unseenBlocking: input.lessons.unseenBlocking,
       now: input.now,
       maxAttempts: { lessons: STEP_SPECS.lessons!.maxAttempts, lesson_review: STEP_SPECS.lesson_review!.maxAttempts },
-      submitStaleMs: SUBMIT_STALE_MS,
+      submitStaleMs: input.submitStaleMs ?? SUBMIT_STALE_MS,
       limit: LESSONS_PER_TICK,
     });
     if (plan.outcome === "done") return { step: current, action: { kind: "mark_done", generationId: plan.lastGenerationId } };
@@ -1296,7 +1306,7 @@ export function planRun(input: {
   if (!latest) return { step: current, action: { kind: "submit", attempt: 0, parentId: null } };
   switch (latest.status) {
     case "submitting":
-      return input.now - Date.parse(latest.created_at) > SUBMIT_STALE_MS
+      return input.now - Date.parse(latest.created_at) > (input.submitStaleMs ?? SUBMIT_STALE_MS)
         ? { step: current, action: { kind: "expire_submitting", generationId: latest.id } }
         : { step: current, action: { kind: "wait" } };
     case "submitted":

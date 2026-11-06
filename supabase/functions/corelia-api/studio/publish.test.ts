@@ -116,6 +116,17 @@ describe("studio publish: payload", () => {
     for (const key of ["id", "section_id", "order", "published"]) expect(quiz).not.toHaveProperty(key);
   });
 
+  it("marks only the final_check lessons with is_final_check and keeps it out of the locale rows", () => {
+    const finalCurriculum = {
+      ...curriculum,
+      modules: curriculum.modules.map((m) => ({ ...m, lessons: m.lessons.map((l) => (l.id === "l-quiz" ? { ...l, purpose: "final_check" } : l)) })),
+    };
+    const p = buildPublishPayload({ ...input, curriculum: finalCurriculum });
+    expect(p.lessons.filter((l) => l.data.is_final_check).map((l) => l.id)).toEqual(["l-quiz"]);
+    expect(buildPublishPayload(input).lessons.some((l) => "is_final_check" in l.data)).toBe(false);
+    expect(p.lesson_locales.some((l) => "is_final_check" in l.data)).toBe(false);
+  });
+
   it("marks the course as AI generated, owned by Corelia, in the run's locale", () => {
     const { course } = buildPublishPayload(input);
     expect(course.slug).toBe("rust-for-beginners");

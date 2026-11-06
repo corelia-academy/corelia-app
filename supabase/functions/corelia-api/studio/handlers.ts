@@ -27,6 +27,7 @@ import {
   TRANSLATION_LOCALES,
   type TranslationLocale,
   type CourseTranslationMap,
+  type TranslatedLesson,
   TranslationIntegrityError,
   validateCourseTranslation,
   validateSectionTranslation,
@@ -82,6 +83,8 @@ export interface RunRow {
   started_at: string;
   catalog_job_id?: string | null;
   paused_at?: string | null;
+  execution_mode?: "server" | "claude_code";
+  agent_models?: Record<string, string>;
 }
 
 /** Steps a failed run can be restarted from (studio_resume_run). */
@@ -158,8 +161,9 @@ export async function handleStudioTick(req: Request, db: SupabaseClient): Promis
   // Least recently advanced first, so every running run moves forward across ticks.
   const { data: runs, error } = await db
     .from("studio_runs")
-    .select("id,course_id,started_at,catalog_job_id,paused_at")
+    .select("id,course_id,started_at,catalog_job_id,paused_at,execution_mode,agent_models")
     .eq("status", "running")
+    .eq("execution_mode", "server")
     .order("updated_at", { ascending: true })
     .limit(RUNS_PER_TICK);
   if (error) throw new Error(error.message);
@@ -232,7 +236,16 @@ export async function advanceRun(db: SupabaseClient, run: RunRow): Promise<{ ste
   }
   const progress = current && current !== "catalog_research" ? await loadProgress(db, run, current, latest) : undefined;
   const lessons = current === "lessons" || current === "lesson_review" ? await loadLessons(db, run) : undefined;
-  const planned = planRun({ steps, latest, startedAt, now, catalogResearch, progress, lessons });
+  const planned = planRun({
+    steps,
+    latest,
+    startedAt,
+    now,
+    catalogResearch,
+    progress,
+    lessons,
+    submitStaleMs: run.execution_mode === "claude_code" ? 24 * 60 * 60 * 1000 : undefined,
+  });
   const { step } = planned;
   const action = tickActionForRun(run.paused_at, planned.action);
   switch (action.kind) {
@@ -567,6 +580,8 @@ async function handleTranslateRenderError(db: SupabaseClient, run: RunRow, error
 }
 
 export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<void> {
+  const external = run.execution_mode === "claude_code";
+  const submitStaleMs = external ? 24 * 60 * 60 * 1000 : SUBMIT_STALE_MS;
   setFontResolver(createStorageFontResolver(db.storage));
   const ctx = await loadContext(db, run, "translate");
   const curriculum = ctx.outputs.curriculum as any;
@@ -602,7 +617,7 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
 
   // 2. Kiểm tra API key
   const apiKey = agentKey("A7");
-  if (!apiKey) {
+  if (!external && !apiKey) {
     await finishRun(db, run, "translate", "draft_failed", `Chưa cấu hình ${agentKeyEnv("A7")}.`, 0);
     return;
   }
@@ -674,7 +689,7 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
       allUnitsCompleted = false;
 
       if (latest?.status === "submitting") {
-        if (Date.now() - Date.parse(latest.created_at) > SUBMIT_STALE_MS) {
+        if (Date.now() - Date.parse(latest.created_at) > submitStaleMs) {
           await failGeneration(db, latest.id, "submitting", "transport", "Gửi yêu cầu dịch bị gián đoạn.");
         }
         continue;
@@ -803,9 +818,9 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
           attempt: nextAttempt,
           agent_role: "A7",
           kind: "text",
-          origin: "ai",
-          provider: "openai",
-          requested_model_id: STEP_SPECS.translate!.model,
+          origin: external ? "external" : "ai",
+          provider: external ? "anthropic" : "openai",
+          requested_model_id: external ? run.agent_models?.A7 ?? "sonnet" : STEP_SPECS.translate!.model,
           prompt_version: prompt.promptVersion,
           locale: loc,
           lesson_id: u.kind === "lesson" ? u.lessonId : null,
@@ -815,6 +830,7 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
             effort: STEP_SPECS.translate!.effort,
             max_output_tokens: 16_000,
             service_tier: serviceTier,
+            ...(external ? { external_schema: schema } : {}),
           },
           parent_generation_id: latest?.id || null,
         })
@@ -822,6 +838,21 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
         .single();
       if (insErr?.code === "23505") continue;
       if (insErr) throw new Error(insErr.message);
+
+      if (external) {
+        await addEvent(db, {
+          run_id: run.id,
+          step_key: "translate",
+          attempt: nextAttempt,
+          kind: "progress",
+          agent_role: "A7",
+          message: `Đã tạo tác vụ Claude Code dịch ${u.unitKey} sang ${loc}.`,
+          payload: { generation_id: insertedGen.id, locale: loc, lesson_id: u.lessonId ?? null },
+        });
+        workDoneThisTick++;
+        continue;
+      }
+      if (!apiKey) throw new Error(`Chưa cấu hình ${agentKeyEnv("A7")}.`);
 
       try {
         const requestId = await submitResponse(apiKey, {
@@ -892,9 +923,10 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
       attempt: 0,
       agent_role: "A7",
       kind: "text",
-      provider: "openai",
-      requested_model_id: STEP_SPECS.translate!.model,
-      model_id: STEP_SPECS.translate!.model,
+      origin: external ? "external" : "ai",
+      provider: external ? "anthropic" : "openai",
+      requested_model_id: external ? run.agent_models?.A7 ?? "sonnet" : STEP_SPECS.translate!.model,
+      model_id: external ? "claude-code" : STEP_SPECS.translate!.model,
       prompt_version: prompt.promptVersion,
       status: "completed",
       provider_request_id: `translate-aggregate:${run.id}`,
@@ -915,6 +947,61 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
     });
 
     await markStepDone(db, run.id, "translate");
+  }
+}
+
+/** Runs the same integrity checks for a Claude Code translation before accepting it. */
+export async function acceptExternalTranslation(
+  db: SupabaseClient,
+  run: RunRow,
+  generation: { locale: string | null; lesson_id: string | null },
+  output: unknown,
+): Promise<Acceptance> {
+  try {
+    if (!generation.locale || !TRANSLATION_LOCALES.includes(generation.locale as TranslationLocale)) {
+      throw new TranslationIntegrityError("Ngôn ngữ dịch không hợp lệ.");
+    }
+    if (!output || typeof output !== "object" || Array.isArray(output)) {
+      throw new TranslationIntegrityError("Đầu ra dịch phải là một object JSON.");
+    }
+    const locale = generation.locale as TranslationLocale;
+    const raw = structuredClone(output) as Record<string, any>;
+    const ctx = await loadContext(db, run, "translate");
+    if (generation.lesson_id) {
+      const records = await loadRecords(db, run, ctx);
+      const record = records[generation.lesson_id];
+      if (!record) throw new TranslationIntegrityError(`Không tìm thấy lesson ${generation.lesson_id}.`);
+      validateLessonTranslation(record, raw as TranslatedLesson, locale);
+    } else {
+      const brief = ctx.outputs.brief as any;
+      const curriculum = ctx.outputs.curriculum as any;
+      const title = brief?.title?.trim();
+      if (!title) throw new TranslationIntegrityError("Brief thiếu tiêu đề tiếng Anh chuẩn tắc (title).");
+      validateCourseTranslation(
+        {
+          title,
+          short_description: canonicalCourseShortDescription(brief),
+          description: canonicalCourseDescription(brief),
+          learning_outcomes: curriculum.outcomes.map((outcome: any) => outcome.text),
+        },
+        raw.course,
+        locale,
+      );
+      const sections: Record<string, any> = Array.isArray(raw.sections)
+        ? Object.fromEntries(raw.sections.filter((section: any) => typeof section?.id === "string").map((section: any) => [section.id, section]))
+        : raw.sections && typeof raw.sections === "object" && !Array.isArray(raw.sections)
+          ? raw.sections
+          : {};
+      for (const module of curriculum.modules) {
+        const translated = sections[module.id];
+        if (!translated) throw new TranslationIntegrityError(`[${locale}] Thiếu bản dịch cho module ${module.id}`);
+        validateSectionTranslation({ id: module.id, title: module.title, description: module.description }, translated, locale);
+      }
+      raw.sections = sections;
+    }
+    return { ok: true, summary: "Bản dịch đạt kiểm tra toàn vẹn.", normalizedOutput: raw };
+  } catch (error) {
+    return { ok: false, reason: errorMessage(error) };
   }
 }
 
@@ -1106,8 +1193,9 @@ async function submitStep(
 ) {
   const spec = STEP_SPECS[step]!;
   const agent = stepAgent(step)!;
+  const external = run.execution_mode === "claude_code";
   const apiKey = agentKey(agent.role);
-  if (!apiKey) {
+  if (!external && !apiKey) {
     await finishRun(db, run, step, "draft_failed", `Chưa cấu hình ${agentKeyEnv(agent.role)}.`, attempt);
     return;
   }
@@ -1136,8 +1224,9 @@ async function submitStep(
       attempt,
       agent_role: agent.role,
       kind: spec.kind,
-      provider: "openai",
-      requested_model_id: spec.model,
+      origin: external ? "external" : "ai",
+      provider: external ? "anthropic" : "openai",
+      requested_model_id: external ? run.agent_models?.[agent.role] ?? "sonnet" : spec.model,
       prompt_version: prompt.promptVersion,
       params: { effort: spec.effort, max_output_tokens: spec.maxOutputTokens, tools: tools ?? [], service_tier: serviceTier },
       input,
@@ -1153,6 +1242,20 @@ async function submitStep(
   if (stepUpdate.error) throw new Error(stepUpdate.error.message);
   const courseUpdate = await db.from("studio_courses").update({ status: "generating" }).eq("id", run.course_id).eq("status", "queued");
   if (courseUpdate.error) throw new Error(courseUpdate.error.message);
+
+  if (external) {
+    await addEvent(db, {
+      run_id: run.id,
+      step_key: step,
+      attempt,
+      kind: "progress",
+      agent_role: agent.role,
+      message: `${STEP_LABEL[step]}: đã tạo tác vụ Claude Code (${attempt + 1}).`,
+      payload: { generation_id: gen.id, lesson_id: lessonId ?? null },
+    });
+    return;
+  }
+  if (!apiKey) throw new Error(`Chưa cấu hình ${agentKeyEnv(agent.role)}.`);
 
   const label = lessonId ? `${STEP_LABEL[step]} ${lessonId}` : STEP_LABEL[step];
   let requestId: string;
