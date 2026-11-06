@@ -17,9 +17,19 @@ import {
   CATALOG_SPEC,
 } from "../corelia-api/studio/catalog.ts";
 import { loadAgentPrompt } from "../corelia-api/studio/agent_prompts.ts";
+import {
+  DEFAULT_AGENT_EFFORTS,
+  DEFAULT_AGENT_MODELS,
+  AGENT_ROLES,
+  EFFORT_LEVELS,
+  MODEL_ALIASES,
+  resolveAgentEfforts,
+  resolveAgentModels,
+  type AgentEffortOverrides,
+  type AgentModelOverrides,
+} from "../corelia-api/studio/agent_preferences.ts";
 import { stepAgent, STEP_ORDER, STEP_SPECS, utcDate, type Acceptance, type StepKey } from "../corelia-api/studio/steps.ts";
 
-const MODEL_ALIASES = ["haiku", "sonnet", "opus", "fable"] as const;
 const MODEL_ALIAS = z.enum(MODEL_ALIASES);
 const MODEL_MAP_SCHEMA = z.object({
   A1: MODEL_ALIAS.optional(),
@@ -31,6 +41,16 @@ const MODEL_MAP_SCHEMA = z.object({
   A7: MODEL_ALIAS.optional(),
 }).strict();
 const MODEL_MAP = MODEL_MAP_SCHEMA.optional();
+const EFFORT_LEVEL = z.enum(EFFORT_LEVELS);
+const EFFORT_MAP_SCHEMA = z.object({
+  A1: EFFORT_LEVEL.optional(),
+  A2: EFFORT_LEVEL.optional(),
+  A3: EFFORT_LEVEL.optional(),
+  A4: EFFORT_LEVEL.optional(),
+  A5: EFFORT_LEVEL.optional(),
+  A6: EFFORT_LEVEL.optional(),
+  A7: EFFORT_LEVEL.optional(),
+}).strict();
 const LOCALES = ["en", "zh-CN", "ko", "es", "zh-TW", "vi", "ja"] as const;
 
 const PATH_SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -62,7 +82,7 @@ function object(value: unknown): Record<string, unknown> {
 async function requireRun(db: SupabaseClient, runId: string): Promise<RunRow & { status: string; execution_mode: "claude_code" }> {
   const { data, error } = await db
     .from("studio_runs")
-    .select("id,course_id,started_at,catalog_job_id,paused_at,status,execution_mode,agent_models")
+    .select("id,course_id,started_at,catalog_job_id,paused_at,status,execution_mode,agent_models,agent_efforts")
     .eq("id", runId)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -99,6 +119,8 @@ async function pendingTask(db: SupabaseClient, run: RunRow & { status: string; e
       ? object(runGeneration.params).external_schema
       : STEP_SPECS[step]?.schema;
     if (!outputSchema) throw new Error(`missing_output_schema:${step}`);
+    const modelAlias = resolveAgentModels(run.agent_models)[agent.role];
+    const effort = resolveAgentEfforts(run.agent_efforts)[agent.role];
     return {
       generation_id: runGeneration.id,
       run_id: run.id,
@@ -110,10 +132,11 @@ async function pendingTask(db: SupabaseClient, run: RunRow & { status: string; e
       system_prompt: prompt.system,
       input: runGeneration.input,
       output_schema: outputSchema,
-      model_alias: runGeneration.requested_model_id,
+      model_alias: modelAlias,
+      effort,
       attempt: runGeneration.attempt,
       parent_generation_id: runGeneration.parent_generation_id,
-      instructions: "Spawn a Claude Code child session using model_alias. Give it system_prompt, input, and output_schema; collect one JSON object and submit it with studio_submit_task. If rejected, fetch the next task for the correction context.",
+      instructions: "Spawn a Claude Code child session using model_alias and effort. Give it system_prompt, input, and output_schema; collect one JSON object and submit it with studio_submit_task, including model_id and effort for audit. If rejected, fetch the next task for the correction context.",
     };
   }
 
@@ -130,6 +153,8 @@ async function pendingTask(db: SupabaseClient, run: RunRow & { status: string; e
   if (catalogError) throw new Error(catalogError.message);
   if (!catalogGeneration) return null;
   const prompt = await loadAgentPrompt(db, CATALOG_SPEC.prompt);
+  const modelAlias = resolveAgentModels(run.agent_models).A1;
+  const effort = resolveAgentEfforts(run.agent_efforts).A1;
   return {
     generation_id: catalogGeneration.id,
     run_id: run.id,
@@ -139,10 +164,11 @@ async function pendingTask(db: SupabaseClient, run: RunRow & { status: string; e
     system_prompt: prompt.system,
     input: catalogGeneration.input,
     output_schema: CATALOG_RESEARCH_SCHEMA,
-    model_alias: catalogGeneration.requested_model_id,
+    model_alias: modelAlias,
+    effort,
     attempt: catalogGeneration.attempt,
     parent_generation_id: catalogGeneration.parent_generation_id,
-    instructions: "Spawn a Claude Code child session using model_alias. Give it system_prompt, input, and output_schema; collect one JSON object and submit it with studio_submit_task.",
+    instructions: "Spawn a Claude Code child session using model_alias and effort. Give it system_prompt, input, and output_schema; collect one JSON object and submit it with studio_submit_task, including model_id and effort for audit.",
   };
 }
 
@@ -174,12 +200,45 @@ async function runStatus(db: SupabaseClient, runId: string) {
     run_status: run.status,
     paused: Boolean(run.paused_at),
     execution_mode: run.execution_mode,
-    agent_models: run.agent_models ?? {},
+    agent_models: resolveAgentModels(run.agent_models),
+    agent_efforts: resolveAgentEfforts(run.agent_efforts),
     steps: steps.data ?? [],
     latest_generations: latest.data ?? [],
     catalog_job: catalogJob,
     catalog_generations: catalogGenerations,
   };
+}
+
+async function persistStartProfile(
+  db: SupabaseClient,
+  userId: string,
+  runId: string,
+  agentModels: Record<string, string>,
+  agentEfforts: Record<string, string>,
+  created: boolean,
+) {
+  if (!created) {
+    const { data: run, error } = await db.from("studio_runs")
+      .select("status,agent_models,agent_efforts")
+      .eq("id", runId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (run && run.status !== "running") {
+      return {
+        run_id: runId,
+        agent_models: resolveAgentModels(run.agent_models as AgentModelOverrides),
+        agent_efforts: resolveAgentEfforts(run.agent_efforts as AgentEffortOverrides),
+      };
+    }
+  }
+  const { data, error } = await db.rpc("studio_set_claude_agent_preferences", {
+    p_run_id: runId,
+    p_started_by: userId,
+    p_agent_models: agentModels,
+    p_agent_efforts: agentEfforts,
+  });
+  if (error) throw new Error(error.message);
+  return object(data);
 }
 
 function createServer(db: SupabaseClient, userId: string) {
@@ -192,12 +251,18 @@ function createServer(db: SupabaseClient, userId: string) {
     annotations: { readOnlyHint: true },
   }, () => result({
     coordinator: "Use Claude Code as the parent coordinator. Do not ask Studio to run a model.",
+    child_session_defaults: {
+      model_alias_by_role: DEFAULT_AGENT_MODELS,
+      effort_by_role: DEFAULT_AGENT_EFFORTS,
+    },
     workflow: [
-      "Ask the user which course they want and how to configure it (level, audience, Corelia direction, content language, scope), offering concrete suggestions for each; do not silently infer values the user has not confirmed.",
+      "In one pre-start turn, ask the user which course they want and how to configure it (level, audience, Corelia direction, content language, scope), and whether to use the default child profile or customize it. Offer concrete suggestions; do not silently infer values the user has not confirmed.",
       "A path belongs to a course. Call studio_list_paths to reuse existing paths via path_ids, and pass new_paths ({group_kind, title, slug?}) to studio_begin_course for paths the course needs that do not exist yet (for example Solana under ecosystem). An existing (group_kind, slug) is reused, not duplicated.",
       "For a course that already exists, find it with studio_list_courses and start it with studio_run_existing_course (same run_id rules, optional resume_from_run_id / restart_from) instead of studio_begin_course. studio_list_courses also returns the latest run_id of each course.",
-      "Call studio_begin_course once with a stable UUID run_id. Then call studio_configure_child_models before requesting any task, so each child agent role (A1-A7) has an explicit Claude Code model alias; use sonnet where the user has not specified an override.",
-      "Repeat studio_get_next_task. For every returned task, spawn a Claude Code child session using model_alias, system_prompt, input, and output_schema; wait for its JSON result; then call studio_submit_task.",
+      "Use that one-time answer before the start tool call. The default profile is Haiku 5.5 (alias haiku) for A1-A7; A1=max, A2-A4=xhigh, A5=high, A6-A7=xhigh. Pass the user's choice in agent_models and agent_efforts, and set child_profile_resolved=true. Do not ask again during that run.",
+      "When resuming from a Claude Code run, reuse that run's saved profile and do not ask again unless the user requests a change; set child_profile_resolved=true to confirm the profile is resolved. The start tool accepts optional per-role model and effort overrides; omitted roles inherit the saved profile or defaults.",
+      "Use studio_configure_child_models later only when the user asks to change the active run profile. It accepts partial model and/or effort maps; changes apply to tasks fetched after the update, while already spawned child sessions continue with their original settings.",
+      "Repeat studio_get_next_task. For every returned task, spawn a Claude Code child session using both model_alias and effort plus system_prompt, input, and output_schema; wait for its JSON result; then call studio_submit_task with the selected model_id and effort for audit.",
       "A rejected result creates a new repair task. Continue the loop until studio_get_next_task reports no pending model task and studio_get_run_status reports published or a concrete failure.",
       "The MCP server only persists and validates outputs. It never performs model inference; deterministic checks, draft rendering, and publish are run by Studio code.",
     ],
@@ -216,9 +281,10 @@ function createServer(db: SupabaseClient, userId: string) {
 
   server.registerTool("studio_begin_course", {
     title: "Start a Claude Code course run",
-    description: "Create a course idea and start it in the Studio dashboard under Claude Code orchestration. No model runs here. The course needs at least one path: pass existing path_ids and/or new_paths to create paths with the course in the same transaction. Supply a stable UUID run_id for safe retries and select child model aliases for A1-A7; omitted roles use sonnet.",
+    description: "Create a course idea and start it in the Studio dashboard under Claude Code orchestration. Before calling, ask the user once to accept or customize the child profile and set child_profile_resolved=true. Defaults are Haiku 5.5 (alias haiku) for every role and the current Studio effort profile (A1=max, A2-A4=xhigh, A5=high, A6-A7=xhigh). No model runs here. The course needs at least one path: pass existing path_ids and/or new_paths to create paths with the course in the same transaction. Supply a stable UUID run_id for safe retries.",
     inputSchema: z.object({
       run_id: z.string().uuid(),
+      child_profile_resolved: z.literal(true),
       title: z.string().trim().min(1).max(300),
       level: z.enum(["beginner", "intermediate", "advanced"]).nullable().optional(),
       scope_note: z.string().trim().max(2000).nullable().optional(),
@@ -229,6 +295,7 @@ function createServer(db: SupabaseClient, userId: string) {
       path_ids: z.array(z.string().uuid()).max(20).default([]),
       new_paths: z.array(NEW_PATH_SCHEMA).max(20).default([]),
       agent_models: MODEL_MAP,
+      agent_efforts: EFFORT_MAP_SCHEMA.optional(),
     }),
     annotations: { destructiveHint: false, idempotentHint: true },
   }, async (input) => {
@@ -238,6 +305,8 @@ function createServer(db: SupabaseClient, userId: string) {
       if (!PATH_SLUG.test(slug)) throw new Error(`path_slug_required:${path.title}`);
       return { group_kind: path.group_kind, title: path.title, slug };
     });
+    const agentModels = resolveAgentModels(input.agent_models);
+    const agentEfforts = resolveAgentEfforts(input.agent_efforts);
     const { data, error } = await db.rpc("studio_start_claude_course", {
       p_run_id: input.run_id,
       p_started_by: userId,
@@ -252,10 +321,11 @@ function createServer(db: SupabaseClient, userId: string) {
       },
       p_path_ids: input.path_ids,
       p_new_paths: newPaths,
-      p_agent_models: input.agent_models ?? {},
+      p_agent_models: agentModels,
     });
     if (error) throw new Error(error.message);
-    return result(data);
+    const preferences = await persistStartProfile(db, userId, input.run_id, agentModels, agentEfforts, object(data).created !== false);
+    return result({ ...object(data), ...preferences });
   });
 
   server.registerTool("studio_list_courses", {
@@ -297,44 +367,79 @@ function createServer(db: SupabaseClient, userId: string) {
 
   server.registerTool("studio_run_existing_course", {
     title: "Start a Claude Code run for an existing course",
-    description: "Start a Claude Code run for a course that already exists in the Studio catalog (status idea, needs_update or not_passed; it needs a path, audience and Corelia direction). Optionally resume from the accepted work of its latest failed run with resume_from_run_id, and restart_from (research or curriculum) to regenerate from that step. Supply a stable UUID run_id for safe retries, then continue with studio_configure_child_models and studio_get_next_task.",
+    description: "Start a Claude Code run for a course that already exists in the Studio catalog (status idea, needs_update or not_passed; it needs a path, audience and Corelia direction). Before a fresh run, ask the user once to accept the defaults or customize child model and effort by role. When resuming from a Claude Code run, reuse its saved profile unless the user requests a change. Set child_profile_resolved=true after asking or reusing the saved profile. Defaults are Haiku 5.5 (alias haiku) for every role and the current Studio effort profile (A1=max, A2-A4=xhigh, A5=high, A6-A7=xhigh). Optionally resume from the accepted work of its latest failed run with resume_from_run_id, and restart_from (research or curriculum) to regenerate from that step. Supply a stable UUID run_id for safe retries.",
     inputSchema: z.object({
       run_id: z.string().uuid(),
+      child_profile_resolved: z.literal(true),
       course_id: z.string().uuid(),
       resume_from_run_id: z.string().uuid().optional(),
       restart_from: z.enum(["research", "curriculum"]).optional(),
       agent_models: MODEL_MAP,
+      agent_efforts: EFFORT_MAP_SCHEMA.optional(),
     }),
     annotations: { destructiveHint: false, idempotentHint: true },
   }, async (input) => {
     if (input.restart_from && !input.resume_from_run_id) throw new Error("restart_requires_resume");
+    let savedModels: AgentModelOverrides = {};
+    let savedEfforts: AgentEffortOverrides = {};
+    if (input.resume_from_run_id) {
+      const { data: sourceRun, error: sourceError } = await db.from("studio_runs")
+        .select("course_id,execution_mode,agent_models,agent_efforts")
+        .eq("id", input.resume_from_run_id)
+        .maybeSingle();
+      if (sourceError) throw new Error(sourceError.message);
+      if (sourceRun?.course_id === input.course_id && sourceRun.execution_mode === "claude_code") {
+        savedModels = (sourceRun.agent_models ?? {}) as AgentModelOverrides;
+        savedEfforts = (sourceRun.agent_efforts ?? {}) as AgentEffortOverrides;
+      }
+    }
+    const agentModels = resolveAgentModels({ ...savedModels, ...input.agent_models });
+    const agentEfforts = resolveAgentEfforts({ ...savedEfforts, ...input.agent_efforts });
     const { data, error } = await db.rpc("studio_start_claude_run", {
       p_run_id: input.run_id,
       p_started_by: userId,
       p_course_id: input.course_id,
-      p_agent_models: input.agent_models ?? {},
+      p_agent_models: agentModels,
       p_resume_from: input.resume_from_run_id ?? null,
       p_restart_from: input.restart_from ?? null,
     });
     // 23505: the course already has a running run (unique index), same mapping as studio.start.
     if (error) throw new Error(error.code === "23505" ? "course_has_running_run" : error.message);
-    return result(data);
+    const preferences = await persistStartProfile(db, userId, input.run_id, agentModels, agentEfforts, object(data).created !== false);
+    return result({ ...object(data), ...preferences });
   });
 
   server.registerTool("studio_configure_child_models", {
-    title: "Configure Claude Code child models",
-    description: "Set the Claude Code model alias for each Studio agent role before any task is generated. Call this once immediately after studio_begin_course; unspecified roles use sonnet. Settings are pinned to this run and its A1 Catalog job.",
-    inputSchema: z.object({ run_id: z.string().uuid(), agent_models: MODEL_MAP_SCHEMA }),
+    title: "Configure Claude Code child models and effort",
+    description: "Override child model aliases and/or effort levels for selected A1-A7 roles on an active run. Partial maps preserve other roles. Changes apply to tasks fetched after this update; already spawned child sessions keep their original settings. Use this tool whenever the user asks to change the profile.",
+    inputSchema: z.object({
+      run_id: z.string().uuid(),
+      agent_models: MODEL_MAP_SCHEMA.optional(),
+      agent_efforts: EFFORT_MAP_SCHEMA.optional(),
+    }),
     annotations: { idempotentHint: true },
-  }, async ({ run_id, agent_models }) => {
-    const { data, error } = await db.rpc("studio_set_claude_agent_models", { p_run_id: run_id, p_agent_models: agent_models });
+  }, async ({ run_id, agent_models, agent_efforts }) => {
+    if ((!agent_models || Object.keys(agent_models).length === 0)
+        && (!agent_efforts || Object.keys(agent_efforts).length === 0)) {
+      throw new Error("at_least_one_agent_preference_required");
+    }
+    const { data, error } = await db.rpc("studio_set_claude_agent_preferences", {
+      p_run_id: run_id,
+      p_started_by: userId,
+      p_agent_models: agent_models ?? {},
+      p_agent_efforts: agent_efforts ?? {},
+    });
     if (error) throw new Error(error.message);
-    return result({ ...object(data), defaults: { unspecified_roles: "sonnet" } });
+    return result({
+      ...object(data),
+      agent_models: resolveAgentModels(object(data).agent_models as AgentModelOverrides),
+      agent_efforts: resolveAgentEfforts(object(data).agent_efforts as AgentEffortOverrides),
+    });
   });
 
   server.registerTool("studio_get_next_task", {
     title: "Advance the Studio course and get the next child task",
-    description: "Advance the pinned Studio workflow through deterministic steps and return the next pending agent task with its version-pinned prompt, input, JSON schema, and configured Claude Code model alias. The coordinator must run that task in a child session and submit the result.",
+    description: "Advance the pinned Studio workflow through deterministic steps and return the next pending agent task with its version-pinned prompt, input, JSON schema, configured Claude Code model alias, and effort. The coordinator must use both model_alias and effort for that child session and submit the result.",
     inputSchema: z.object({ run_id: z.string().uuid() }),
     annotations: { idempotentHint: true },
   }, async ({ run_id }) => {
@@ -351,7 +456,7 @@ function createServer(db: SupabaseClient, userId: string) {
         await advanceRun(db, run);
       } else if (step === "catalog_research" && run.catalog_job_id) {
         const { data: job, error } = await db.from("studio_catalog_jobs")
-          .select("id,course_id,started_at,execution_mode,agent_models,status")
+          .select("id,course_id,started_at,execution_mode,agent_models,agent_efforts,status")
           .eq("id", run.catalog_job_id)
           .maybeSingle();
         if (error) throw new Error(error.message);
@@ -370,14 +475,15 @@ function createServer(db: SupabaseClient, userId: string) {
 
   server.registerTool("studio_submit_task", {
     title: "Submit a child session result to Studio",
-    description: "Persist one child session JSON result. Studio runs its existing step acceptance checks before marking the generation complete; rejected output is retained with repair feedback and produces a new task.",
+    description: "Persist one child session JSON result and the selected model and effort for audit. Studio runs its existing step acceptance checks before marking the generation complete; rejected output is retained with repair feedback and produces a new task.",
     inputSchema: z.object({
       generation_id: z.string().uuid(),
       output: z.record(z.string(), z.unknown()),
       model_id: z.string().trim().min(1).max(200).optional(),
+      effort: EFFORT_LEVEL.optional(),
     }),
     annotations: { idempotentHint: true },
-  }, async ({ generation_id, output, model_id }) => {
+  }, async ({ generation_id, output, model_id, effort }) => {
     const { data: row, error: loadError } = await db.from("studio_generations").select("*").eq("id", generation_id).maybeSingle();
     if (loadError) throw new Error(loadError.message);
     if (!row || row.origin !== "external") throw new Error("external_generation_not_found");
@@ -388,11 +494,17 @@ function createServer(db: SupabaseClient, userId: string) {
     let normalizedOutput: unknown = output;
     let acceptance: Acceptance;
     let courseRun: (RunRow & { status: string; execution_mode: "claude_code" }) | null = null;
+    let selectedModelAlias = String(row.requested_model_id ?? DEFAULT_AGENT_MODELS.A2);
+    let selectedEffort = object(row.params).effort;
     if (row.catalog_job_id) {
-      const { data: job, error: jobError } = await db.from("studio_catalog_jobs").select("id,course_id,started_at,status").eq("id", row.catalog_job_id).maybeSingle();
+      const { data: job, error: jobError } = await db.from("studio_catalog_jobs")
+        .select("id,course_id,started_at,status,agent_models,agent_efforts")
+        .eq("id", row.catalog_job_id).maybeSingle();
       if (jobError) throw new Error(jobError.message);
       if (!job) throw new Error("catalog_job_not_found");
       if (job.status !== "running") throw new Error("catalog_job_not_running");
+      selectedModelAlias = resolveAgentModels(job.agent_models).A1;
+      selectedEffort = resolveAgentEfforts(job.agent_efforts).A1;
       const base = await loadCatalogBase(db, job.course_id);
       acceptance = acceptCatalogResearch(output, {
         today: utcDate(Date.now()),
@@ -403,6 +515,10 @@ function createServer(db: SupabaseClient, userId: string) {
       if (!row.run_id) throw new Error("run_not_found");
       courseRun = await requireRun(db, row.run_id);
       if (courseRun.status !== "running") throw new Error("run_not_running");
+      const agentRole = row.agent_role as typeof AGENT_ROLES[number];
+      if (!AGENT_ROLES.includes(agentRole)) throw new Error("invalid_agent_role");
+      selectedModelAlias = resolveAgentModels(courseRun.agent_models)[agentRole];
+      selectedEffort = resolveAgentEfforts(courseRun.agent_efforts)[agentRole];
       const step = row.step_key as StepKey;
       if (step === "translate") {
         acceptance = await acceptExternalTranslation(db, courseRun, row, output);
@@ -417,9 +533,11 @@ function createServer(db: SupabaseClient, userId: string) {
 
     if (acceptance.ok) normalizedOutput = acceptance.normalizedOutput ?? output;
     const completedAt = new Date().toISOString();
+    const auditParams = { ...object(row.params), effort: effort ?? selectedEffort };
+    const auditedModelId = model_id ?? `claude-code/${selectedModelAlias}`;
     const update = await db.from("studio_generations").update(acceptance.ok
-      ? { status: "completed", output: normalizedOutput, model_id: model_id ?? `claude-code/${row.requested_model_id}`, completed_at: completedAt }
-      : { status: "failed", output, model_id: model_id ?? `claude-code/${row.requested_model_id}`, failure_kind: "rejected", error: acceptance.reason ?? "Output rejected by Studio validation." })
+      ? { status: "completed", output: normalizedOutput, model_id: auditedModelId, params: auditParams, completed_at: completedAt }
+      : { status: "failed", output, model_id: auditedModelId, params: auditParams, failure_kind: "rejected", error: acceptance.reason ?? "Output rejected by Studio validation." })
       .eq("id", generation_id)
       .eq("status", "submitting")
       .select("id,status")

@@ -25,6 +25,7 @@ import {
 import { agentKey, errorMessage, failGeneration, fallBackToDefaultTier, loadFailureKind, pollOrExpire } from "./generations.ts";
 import { submitResponse } from "./openai.ts";
 import { loadAgentPrompt } from "./agent_prompts.ts";
+import { resolveAgentEfforts, resolveAgentModels } from "./agent_preferences.ts";
 import { agentKeyEnv, SERVICE_TIER, utcDate } from "./steps.ts";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -43,6 +44,7 @@ interface JobRow {
   started_at: string;
   execution_mode?: "server" | "claude_code";
   agent_models?: Record<string, string>;
+  agent_efforts?: Record<string, string>;
 }
 
 // Studio is admin only: support_staff is excluded, matching studio_can_write() in the schema.
@@ -82,7 +84,7 @@ export async function handleCatalogResearchStart(req: Request, db: SupabaseClien
 export async function advanceCatalogJobs(db: SupabaseClient): Promise<Record<string, unknown>[]> {
   const { data: jobs, error } = await db
     .from("studio_catalog_jobs")
-    .select("id,course_id,started_at,execution_mode,agent_models")
+    .select("id,course_id,started_at,execution_mode,agent_models,agent_efforts")
     .eq("status", "running")
     .eq("execution_mode", "server")
     .order("updated_at", { ascending: true })
@@ -367,10 +369,10 @@ async function submitCatalog(db: SupabaseClient, job: JobRow, attempt: number, p
       kind: "research",
       origin: external ? "external" : "ai",
       provider: external ? "anthropic" : "openai",
-      requested_model_id: external ? job.agent_models?.[role] ?? "sonnet" : CATALOG_SPEC.model,
+      requested_model_id: external ? resolveAgentModels(job.agent_models).A1 : CATALOG_SPEC.model,
       prompt_version: prompt.promptVersion,
       params: {
-        effort: CATALOG_SPEC.effort,
+        effort: external ? resolveAgentEfforts(job.agent_efforts).A1 : CATALOG_SPEC.effort,
         max_output_tokens: CATALOG_SPEC.maxOutputTokens,
         max_tool_calls: CATALOG_SPEC.maxToolCalls,
         tools: CATALOG_SPEC.tools,

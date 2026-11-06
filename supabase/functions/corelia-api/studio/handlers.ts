@@ -41,6 +41,7 @@ import {
 import type { StartResult } from "./resume.ts";
 import { canRetry, roundFailures } from "./retry.ts";
 import { loadAgentPrompt } from "./agent_prompts.ts";
+import { resolveAgentEfforts, resolveAgentModels } from "./agent_preferences.ts";
 import {
   agentKeyEnv,
   buildProgress,
@@ -85,6 +86,7 @@ export interface RunRow {
   paused_at?: string | null;
   execution_mode?: "server" | "claude_code";
   agent_models?: Record<string, string>;
+  agent_efforts?: Record<string, string>;
 }
 
 /** Steps a failed run can be restarted from (studio_resume_run). */
@@ -820,14 +822,14 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
           kind: "text",
           origin: external ? "external" : "ai",
           provider: external ? "anthropic" : "openai",
-          requested_model_id: external ? run.agent_models?.A7 ?? "sonnet" : STEP_SPECS.translate!.model,
+          requested_model_id: external ? resolveAgentModels(run.agent_models).A7 : STEP_SPECS.translate!.model,
           prompt_version: prompt.promptVersion,
           locale: loc,
           lesson_id: u.kind === "lesson" ? u.lessonId : null,
           status: "submitting",
           input: inputPayload,
           params: {
-            effort: STEP_SPECS.translate!.effort,
+            effort: external ? resolveAgentEfforts(run.agent_efforts).A7 : STEP_SPECS.translate!.effort,
             max_output_tokens: 16_000,
             service_tier: serviceTier,
             ...(external ? { external_schema: schema } : {}),
@@ -925,7 +927,7 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
       kind: "text",
       origin: external ? "external" : "ai",
       provider: external ? "anthropic" : "openai",
-      requested_model_id: external ? run.agent_models?.A7 ?? "sonnet" : STEP_SPECS.translate!.model,
+      requested_model_id: external ? resolveAgentModels(run.agent_models).A7 : STEP_SPECS.translate!.model,
       model_id: external ? "claude-code" : STEP_SPECS.translate!.model,
       prompt_version: prompt.promptVersion,
       status: "completed",
@@ -1226,9 +1228,14 @@ async function submitStep(
       kind: spec.kind,
       origin: external ? "external" : "ai",
       provider: external ? "anthropic" : "openai",
-      requested_model_id: external ? run.agent_models?.[agent.role] ?? "sonnet" : spec.model,
+      requested_model_id: external ? resolveAgentModels(run.agent_models)[agent.role] : spec.model,
       prompt_version: prompt.promptVersion,
-      params: { effort: spec.effort, max_output_tokens: spec.maxOutputTokens, tools: tools ?? [], service_tier: serviceTier },
+      params: {
+        effort: external ? resolveAgentEfforts(run.agent_efforts)[agent.role] : spec.effort,
+        max_output_tokens: spec.maxOutputTokens,
+        tools: tools ?? [],
+        service_tier: serviceTier,
+      },
       input,
       parent_generation_id: parentId,
     })
