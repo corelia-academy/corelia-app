@@ -473,9 +473,9 @@ describe("studio step owners", () => {
 });
 
 describe("A2 research prompt", () => {
-  it("uses v16, records the course stack decision, and does not block research on unverified package versions", () => {
+  it("uses v19, records the course stack decision, and does not block research on unverified package versions", () => {
     const prompt = SEEDED_PROMPTS["a2-research"];
-    expect(prompt.version).toBe("v16");
+    expect(prompt.version).toBe("v19");
     expect(prompt.system).toContain("needs_research CHỈ khi một chủ đề cốt lõi trong phạm vi của brief");
     expect(prompt.system).toContain("KHÔNG phải lý do needs_research");
     expect(prompt.system).toContain("trả status: ready");
@@ -502,6 +502,11 @@ describe("A2 research prompt", () => {
     expect(schema.properties).toHaveProperty("videos");
     expect(prompt.system).toContain("videos là mảng có thể rỗng");
     expect(prompt.system).toContain("Với mỗi topic, chủ động tìm video YouTube");
+    expect(prompt.system).toContain("rank = 1 là tốt nhất");
+    expect(prompt.system).toContain("Đây chỉ là tie-breaker");
+    const videosSchema = schema.properties.videos as any;
+    expect(videosSchema.items.required).toContain("rank");
+    expect(videosSchema.items.properties.rank).toEqual({ type: "integer", minimum: 1 });
   });
 });
 
@@ -557,6 +562,32 @@ describe("studio acceptance", () => {
       topics: research.topics.map((topic) => ({ ...topic, topic: ` ${topic.topic} ` })),
       videos: [{ ...candidate, topic: ` ${candidate.topic} ` }],
     }, today).ok).toBe(true);
+  });
+
+  it("drops malformed and duplicate per-topic video ranks without rejecting the research", () => {
+    const candidate = {
+      topic: "ownership",
+      url: "https://youtu.be/aaaaaaaaaaa",
+      title: "Giải thích ownership",
+      channel: "Let's Get Rusty",
+      channel_basis: "Trang giới thiệu kênh đã đọc mô tả nội dung giáo dục Rust.",
+      evidence_source_ids: ["s1"],
+    };
+    const result = acceptResearch({
+      ...research,
+      videos: [
+        { ...candidate, rank: 1 },
+        { ...candidate, url: "https://youtu.be/bbbbbbbbbbb", rank: 1 },
+        { ...candidate, url: "https://youtu.be/ccccccccccc" },
+        { ...candidate, url: "https://youtu.be/ddddddddddd", rank: 0 },
+      ],
+    }, today);
+    expect(result).toMatchObject({
+      ok: true,
+      summary: expect.stringContaining("rank bị trùng trong topic"),
+      normalizedOutput: { videos: [] },
+    });
+    expect(result.summary).toContain("mọi ứng viên phải có rank là số nguyên dương");
   });
 
   it("drops invalid video candidates instead of rejecting the research", () => {

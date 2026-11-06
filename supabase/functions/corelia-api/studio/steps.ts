@@ -216,6 +216,7 @@ const RESEARCH_SCHEMA = object({
       url: str,
       title: str,
       channel: str,
+      rank: { type: "integer", minimum: 1 },
       channel_basis: str,
       evidence_source_ids: strList,
     }),
@@ -430,6 +431,8 @@ export interface ResearchVideoCandidate {
   url: string;
   title: string;
   channel: string;
+  /** Per-topic A2 preference order; optional only for already accepted pre-v19 research. */
+  rank?: number;
   channel_basis: string;
   evidence_source_ids: string[];
 }
@@ -589,6 +592,19 @@ function usableResearchVideos(
 
   const knownTopics = new Set(topics.map((topic) => normalizeResearchTopic(topic.topic)));
   const readSources = new Set(sources.filter((source) => source.access === "read").map((source) => source.source_id));
+  const rankedTopics = new Set<string>();
+  const rankCounts = new Map<string, Map<number, number>>();
+  for (const candidate of value) {
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) continue;
+    const video = candidate as Record<string, unknown>;
+    const topic = typeof video.topic === "string" ? normalizeResearchTopic(video.topic) : "";
+    if (!Object.prototype.hasOwnProperty.call(video, "rank")) continue;
+    rankedTopics.add(topic);
+    if (!Number.isInteger(video.rank) || (video.rank as number) < 1) continue;
+    const counts = rankCounts.get(topic) ?? new Map<number, number>();
+    counts.set(video.rank as number, (counts.get(video.rank as number) ?? 0) + 1);
+    rankCounts.set(topic, counts);
+  }
   const videoIds = new Set<string>();
   const videos: unknown[] = [];
   const dropped: string[] = [];
@@ -604,6 +620,13 @@ function usableResearchVideos(
     const topic = typeof video.topic === "string" ? normalizeResearchTopic(video.topic) : "";
     if (!topic) problems.push(`${label}: thiếu topic`);
     else if (!knownTopics.has(topic)) problems.push(`${label}: topic không có trong research`);
+    if (rankedTopics.has(topic)) {
+      if (!Number.isInteger(video.rank) || (video.rank as number) < 1) {
+        problems.push(`${label}: topic đã xếp hạng thì mọi ứng viên phải có rank là số nguyên dương`);
+      } else if ((rankCounts.get(topic)?.get(video.rank as number) ?? 0) > 1) {
+        problems.push(`${label}: rank bị trùng trong topic`);
+      }
+    }
 
     const url = typeof video.url === "string" ? video.url.trim() : "";
     const videoId = url ? getYoutubeVideoId(url) : null;

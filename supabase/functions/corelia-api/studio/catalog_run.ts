@@ -174,13 +174,14 @@ export function catalogRetryWarning(generation: Pick<CatalogGeneration, "id" | "
 export async function logCatalogRunEvent(
   db: SupabaseClient,
   jobId: string,
-  event: { generationId: string; attempt: number; kind: "progress" | "warning"; message: string; payload: Record<string, unknown> },
+  event: { generationId: string; attempt: number; kind: "progress" | "warning" | "error"; message: string; payload: Record<string, unknown> },
 ) {
+  let logged = false;
   try {
     const runsResult = await db.from("studio_runs").select("id").eq("catalog_job_id", jobId).eq("status", "running");
     if (runsResult.error) throw new Error(runsResult.error.message);
     const runIds = (runsResult.data ?? []).map((run) => run.id as string);
-    if (runIds.length === 0) return;
+    if (runIds.length === 0) return false;
 
     const [stepsResult, eventsResult] = await Promise.all([
       db.from("studio_run_steps").select("run_id").in("run_id", runIds).eq("step_key", "catalog_research"),
@@ -197,7 +198,10 @@ export async function logCatalogRunEvent(
         const payload = row.payload && typeof row.payload === "object" ? row.payload as Record<string, unknown> : {};
         return row.run_id === runId && row.kind === event.kind && payload.generation_id === event.generationId;
       });
-      if (alreadyLogged) continue;
+      if (alreadyLogged) {
+        logged = true;
+        continue;
+      }
 
       try {
         const { error } = await db.from("studio_run_events").insert({
@@ -210,6 +214,7 @@ export async function logCatalogRunEvent(
           payload: { ...event.payload, generation_id: event.generationId, attempt: event.attempt },
         });
         if (error) throw new Error(error.message);
+        logged = true;
       } catch (e) {
         console.error("[corelia-api] catalog run event insert", { job_id: jobId, run_id: runId, generation_id: event.generationId, error: errorMessage(e) });
       }
@@ -217,6 +222,7 @@ export async function logCatalogRunEvent(
   } catch (e) {
     console.error("[corelia-api] catalog run event lookup", { job_id: jobId, generation_id: event.generationId, error: errorMessage(e) });
   }
+  return logged;
 }
 
 export async function loadCatalogBase(db: SupabaseClient, courseId: string): Promise<CatalogBase> {

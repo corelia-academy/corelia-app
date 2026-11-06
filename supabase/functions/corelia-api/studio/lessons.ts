@@ -92,7 +92,19 @@ export function lessonVideoCandidates(
   const topicNames = new Set(research.topics
     .filter((topic) => topic.source_ids.some((id) => sourceIds.has(id)))
     .map((topic) => normalizeResearchTopic(topic.topic)));
-  return (research.videos ?? []).filter((video) => topicNames.has(normalizeResearchTopic(video.topic)) && isAllowedChannel(video.channel));
+  const byTopic = new Map<string, ResearchVideoCandidate[]>();
+  for (const video of research.videos ?? []) {
+    const topic = normalizeResearchTopic(video.topic);
+    if (!topicNames.has(topic) || !isAllowedChannel(video.channel)) continue;
+    const group = byTopic.get(topic) ?? [];
+    group.push(video);
+    byTopic.set(topic, group);
+  }
+  return [...byTopic.values()].flatMap((group) =>
+    group.every((video) => Number.isInteger(video.rank))
+      ? [...group].sort((left, right) => left.rank! - right.rank!)
+      : group
+  );
 }
 
 /**
@@ -243,9 +255,29 @@ export const LESSON_SCHEMA = object({
     start_seconds: { type: "integer" },
     /** 0 plays to the end of the video. */
     end_seconds: { type: "integer" },
+    /** Self-reported, non-learner-facing provenance returned by the local caption helper. */
+    caption_evidence: nullable(object({
+      video_id: str,
+      language: str,
+      track: { type: "string", enum: ["manual", "auto"] },
+      start_seconds: { type: "integer" },
+      end_seconds: { type: "integer" },
+      cue_count: { type: "integer" },
+      cue_text_sha256: str,
+    })),
     description_markdown: str,
   })),
 });
+
+export interface VideoCaptionEvidence {
+  video_id: string;
+  language: string;
+  track: "manual" | "auto";
+  start_seconds: number;
+  end_seconds: number;
+  cue_count: number;
+  cue_text_sha256: string;
+}
 
 export interface LessonOutput {
   title: string;
@@ -269,7 +301,7 @@ export interface LessonOutput {
     tests: { id: string; type: "source_equals" | "contains" | "not_contains"; description: string; required: boolean; value: string; accepted_sources: string[]; failure_message: string; hint: string }[];
   } | null;
   practice: { description_markdown: string; mode: "instruction"; checklist_items: { id: string; label: string }[] } | null;
-  video: { youtube_url: string; start_seconds: number; end_seconds: number; description_markdown: string } | null;
+  video: { youtube_url: string; start_seconds: number; end_seconds: number; caption_evidence: VideoCaptionEvidence | null; description_markdown: string } | null;
 }
 
 const BLOCK_OF: Record<LessonFormat, keyof LessonOutput> = {
@@ -451,7 +483,7 @@ export function checksAlreadyRun(format: LessonFormat, codeLanguage: EnabledCode
       "Đã kiểm lộ đáp án dạng định danh nguyên từ trong hints, feedback, failure_message và hint của test theo accepted_answers/value của test contains.",
     ],
     practice: ["Chỉ mode instruction, không bài nộp; không checklist."],
-    video: ["Video ID thuộc ứng viên research của lesson, oEmbed trả 200 và handle kênh khớp channel ứng viên. CHƯA kiểm tra nội dung, độ dài hay ngôn ngữ video."],
+    video: ["Video ID thuộc ứng viên research của lesson; oEmbed trả 200 và handle kênh khớp channel ứng viên; mốc phát là số nguyên không âm và end_seconds bằng 0 hoặc lớn hơn start_seconds. CHƯA kiểm tra nội dung, độ dài, ngôn ngữ hay timestamp có khớp nội dung video."],
   };
   return [...common, ...byFormat[format]];
 }
@@ -860,6 +892,35 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
 
   if (!(Number.isInteger(out.duration_seconds) && out.duration_seconds > 0)) problems.push("duration_seconds phải là số nguyên dương");
   if (!out.summary.trim()) problems.push("thiếu summary");
+  if (format === "video" && out.video) {
+    if (!Number.isInteger(out.video.start_seconds) || out.video.start_seconds < 0) {
+      problems.push("video: start_seconds phải là số nguyên không âm");
+    }
+    if (!Number.isInteger(out.video.end_seconds) || out.video.end_seconds < 0) {
+      problems.push("video: end_seconds phải là số nguyên không âm (0 = đến hết video)");
+    } else if (Number.isInteger(out.video.start_seconds) && out.video.end_seconds > 0 && out.video.end_seconds <= out.video.start_seconds) {
+      problems.push("video: end_seconds phải lớn hơn start_seconds khi giới hạn đoạn phát");
+    }
+
+    const evidence = out.video.caption_evidence;
+    const hasSelectedRange = out.video.start_seconds > 0 || out.video.end_seconds > 0;
+    if (hasSelectedRange && !evidence) {
+      problems.push("video: đoạn phát giới hạn phải có caption_evidence từ helper captions");
+    } else if (!hasSelectedRange && evidence) {
+      problems.push("video: caption_evidence phải null khi phát toàn bộ video");
+    } else if (evidence) {
+      const videoId = getYoutubeVideoId(out.video.youtube_url);
+      if (!videoId || evidence.video_id !== videoId) problems.push("video: caption_evidence.video_id phải khớp video được chọn");
+      if (!/^en(?:-[A-Za-z0-9]+)*$/.test(evidence.language)) problems.push("video: caption_evidence.language phải là tiếng Anh");
+      if (evidence.track !== "manual" && evidence.track !== "auto") problems.push("video: caption_evidence.track phải là manual hoặc auto");
+      if (!Number.isInteger(evidence.start_seconds) || evidence.start_seconds < 0) problems.push("video: caption_evidence.start_seconds không hợp lệ");
+      if (!Number.isInteger(evidence.end_seconds) || evidence.end_seconds <= evidence.start_seconds) problems.push("video: caption_evidence.end_seconds phải lớn hơn start_seconds");
+      if (out.video.start_seconds !== evidence.start_seconds) problems.push("video: start_seconds phải khớp caption_evidence");
+      if (out.video.end_seconds > 0 && out.video.end_seconds !== evidence.end_seconds) problems.push("video: end_seconds phải khớp caption_evidence");
+      if (!Number.isInteger(evidence.cue_count) || evidence.cue_count < 1) problems.push("video: caption_evidence.cue_count phải là số nguyên dương");
+      if (!/^[a-f0-9]{64}$/.test(evidence.cue_text_sha256)) problems.push("video: caption_evidence.cue_text_sha256 phải là SHA-256 hex");
+    }
+  }
   const allowed = new Set(ref.lesson.source_ids);
   const strays = out.source_ids.filter((id) => !allowed.has(id));
   if (strays.length > 0) problems.push(`source_ids ngoài curriculum: ${strays.join(", ")}`);
@@ -926,9 +987,6 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
     if (!v) {
       problems.push("thiếu khối video cho lesson video");
     } else {
-      if (v.start_seconds !== 0 || v.end_seconds !== 0) {
-        problems.push("video: start_seconds và end_seconds phải bằng 0 (khóa AI không cắt đoạn video)");
-      }
       if (!v.description_markdown.trim()) {
         problems.push("video: thiếu description_markdown (mục tiêu, ý chính)");
       } else if (/self-check|checklist|tự kiểm tra|tự đánh giá|tự thử|self-assessment/i.test(v.description_markdown)) {
@@ -993,6 +1051,26 @@ export async function acceptLesson(output: unknown, ctx: RunContext, lessonId: s
     } else {
       unusable.add(videoId);
       droppedVideos.push(problem);
+    }
+  }
+  if (problems.length === 0 && format === "video" && out.video) {
+    const selectedId = getYoutubeVideoId(out.video.youtube_url);
+    const selected = selectedId ? candidateById.get(selectedId) : undefined;
+    if (selectedId && selected && Number.isInteger(selected.rank)) {
+      const rankedTopicCandidates = candidates
+        .filter((candidate) =>
+          normalizeResearchTopic(candidate.topic) === normalizeResearchTopic(selected.topic) &&
+          Number.isInteger(candidate.rank)
+        )
+        .sort((left, right) => left.rank! - right.rank!);
+      const usable = await usableLessonVideoCandidates(rankedTopicCandidates, fetchFn, oembedCache);
+      const preferred = usable[0];
+      const preferredId = preferred ? getYoutubeVideoId(preferred.url) : null;
+      if (preferredId && preferredId !== selectedId) {
+        problems.push(
+          `video: ứng viên rank ${selected.rank} không phải video có rank cao nhất còn dùng được cho topic "${selected.topic}"; chọn rank ${preferred.rank} (${preferred.url})`,
+        );
+      }
     }
   }
   if (problems.length > 0) return { ok: false, reason: `Lesson ${lessonId} chưa hợp lệ: ${list(problems)}` };

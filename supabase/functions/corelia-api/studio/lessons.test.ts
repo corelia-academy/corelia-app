@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { acceptLesson, hasUnseenBlocking, buildLessonInput, buildLessonReviewInput, LESSON_SCHEMA, lessonIds, lessonRefs, quizPassingRatio, toLessonDraft, TransientError } from "./lessons.ts";
+import { acceptLesson, hasUnseenBlocking, buildLessonInput, buildLessonReviewInput, LESSON_SCHEMA, lessonIds, lessonRefs, lessonVideoCandidates, quizPassingRatio, toLessonDraft, TransientError } from "./lessons.ts";
 import { ENABLED_CODE_LANGUAGES, getCodeLanguageAdapter, PREPARED_CODE_LANGUAGES } from "./lesson_ports.ts";
 import { PLATFORM_FORMAT_GUIDE } from "./formats.ts";
 import { article, base, ctx, curriculum, diagram, editCode, fillCode, fiveQuestions, lesson, question, test } from "./lesson_fixtures.ts";
@@ -257,10 +257,56 @@ describe("studio lessons: accept by format", () => {
   });
 
   it("video: use only a matching research candidate and verify its oEmbed channel", async () => {
-    const video = (url: string) => ({ source_ids: ["s2"], video: { youtube_url: url, start_seconds: 0, end_seconds: 0, description_markdown: "## Mục tiêu\n\nHiểu Y.\n\n## Ý chính\n\n- Ý 1\n- Ý 2\n- Ý 3\n\nVideo từ kênh Let's Get Rusty." } });
+    const video = (url: string) => ({ source_ids: ["s2"], video: { youtube_url: url, start_seconds: 0, end_seconds: 0, caption_evidence: null, description_markdown: "## Mục tiêu\n\nHiểu Y.\n\n## Ý chính\n\n- Ý 1\n- Ý 2\n- Ý 3\n\nVideo từ kênh Let's Get Rusty." } });
+    const captionEvidence = {
+      video_id: "bbbbbbbbbbb",
+      language: "en",
+      track: "manual",
+      start_seconds: 30,
+      end_seconds: 75,
+      cue_count: 8,
+      cue_text_sha256: "a".repeat(64),
+    };
     expect(await reason("l-vid", video("https://example.com/watch"))).toContain("youtube_required");
-    expect(await reason("l-vid", { source_ids: ["s2"], video: { youtube_url: "https://youtu.be/bbbbbbbbbbb", start_seconds: 30, end_seconds: 0, description_markdown: "Mô tả." } })).toContain("start_seconds và end_seconds phải bằng 0");
-    expect(await reason("l-vid", { source_ids: ["s2"], video: { youtube_url: "https://youtu.be/bbbbbbbbbbb", start_seconds: 0, end_seconds: 20, description_markdown: "Mô tả." } })).toContain("start_seconds và end_seconds phải bằng 0");
+    const bounded = {
+      ...video("https://youtu.be/bbbbbbbbbbb"),
+      video: { ...video("https://youtu.be/bbbbbbbbbbb").video, start_seconds: 30, end_seconds: 75, caption_evidence: captionEvidence },
+    };
+    expect((await accept("l-vid", bounded)).ok).toBe(true);
+    expect((await accept("l-vid", {
+      ...bounded,
+      video: { ...bounded.video, start_seconds: 30, end_seconds: 0 },
+    })).ok).toBe(true);
+    expect(await reason("l-vid", { ...bounded, video: { ...bounded.video, start_seconds: -1 } })).toContain("start_seconds phải là số nguyên không âm");
+    expect(await reason("l-vid", { ...bounded, video: { ...bounded.video, start_seconds: 1.5 } })).toContain("start_seconds phải là số nguyên không âm");
+    expect(await reason("l-vid", { ...bounded, video: { ...bounded.video, end_seconds: -1 } })).toContain("end_seconds phải là số nguyên không âm");
+    expect(await reason("l-vid", { ...bounded, video: { ...bounded.video, end_seconds: 75.5 } })).toContain("end_seconds phải là số nguyên không âm");
+    expect(await reason("l-vid", { ...bounded, video: { ...bounded.video, start_seconds: 30, end_seconds: 30 } })).toContain("end_seconds phải lớn hơn start_seconds");
+    expect(await reason("l-vid", { ...bounded, video: { ...bounded.video, start_seconds: 30, end_seconds: 20 } })).toContain("end_seconds phải lớn hơn start_seconds");
+    expect(await reason("l-vid", {
+      ...bounded,
+      video: { ...bounded.video, caption_evidence: null },
+    })).toContain("đoạn phát giới hạn phải có caption_evidence");
+    expect(await reason("l-vid", {
+      ...bounded,
+      video: { ...bounded.video, caption_evidence: { ...captionEvidence, video_id: "aaaaaaaaaaa" } },
+    })).toContain("caption_evidence.video_id phải khớp");
+    expect(await reason("l-vid", {
+      ...bounded,
+      video: { ...bounded.video, caption_evidence: { ...captionEvidence, end_seconds: 76 } },
+    })).toContain("end_seconds phải khớp caption_evidence");
+    expect(await reason("l-vid", {
+      ...bounded,
+      video: { ...bounded.video, caption_evidence: { ...captionEvidence, cue_text_sha256: "not-a-digest" } },
+    })).toContain("cue_text_sha256 phải là SHA-256 hex");
+    expect(await reason("l-vid", {
+      ...bounded,
+      video: { ...bounded.video, caption_evidence: { ...captionEvidence, cue_count: 0 } },
+    })).toContain("cue_count phải là số nguyên dương");
+    expect(await reason("l-vid", {
+      ...video("https://youtu.be/bbbbbbbbbbb"),
+      video: { ...video("https://youtu.be/bbbbbbbbbbb").video, caption_evidence: captionEvidence },
+    })).toContain("caption_evidence phải null khi phát toàn bộ video");
     expect(await reason("l-vid", video("https://youtu.be/bbbbbbbbbbb"), ok(false))).toContain("oEmbed");
     const seen: string[] = [];
     const spy = ((url: string) => {
@@ -279,6 +325,69 @@ describe("studio lessons: accept by format", () => {
     expect(await reason("l-vid", video("https://youtu.be/bbbbbbbbbbb"), missingAuthor)).toContain("thiếu author_name");
   });
 
+  it("video: follows A2 topic ranks and falls through only when the higher-ranked candidate is unusable", async () => {
+    const official = {
+      topic: "t2",
+      url: "https://youtu.be/bbbbbbbbbbb",
+      title: "CNCF overview",
+      channel: "CNCF",
+      rank: 1,
+      channel_basis: "Official organization channel.",
+      evidence_source_ids: ["s2"],
+    };
+    const personal = {
+      topic: "t2",
+      url: "https://youtu.be/ccccccccccc",
+      title: "Let's Get Rusty overview",
+      channel: "Let's Get Rusty",
+      rank: 2,
+      channel_basis: "Educator channel.",
+      evidence_source_ids: ["s2"],
+    };
+    const withVideos = (videos: typeof official[]) => ({
+      ...ctx,
+      outputs: {
+        ...ctx.outputs,
+        research: { ...ctx.outputs.research, videos },
+      },
+    } as typeof ctx);
+    const rankedContext = withVideos([personal, official]);
+    const research = rankedContext.outputs.research as Parameters<typeof lessonVideoCandidates>[0];
+    expect(lessonVideoCandidates(research, ["s2"]).map((candidate) => candidate.rank)).toEqual([1, 2]);
+    const a5Input = buildLessonInput(rankedContext, "l-vid") as Record<string, any>;
+    expect(a5Input.research.videos.map((candidate: { video_id: string; rank: number }) => [candidate.video_id, candidate.rank]))
+      .toEqual([["bbbbbbbbbbb", 1], ["ccccccccccc", 2]]);
+
+    const oembedById = (unavailableOfficial = false): typeof fetch => (async (input: RequestInfo | URL) => {
+      const requestUrl = new URL(String(input));
+      const videoUrl = requestUrl.searchParams.get("url");
+      const videoId = videoUrl ? new URL(videoUrl).searchParams.get("v") : null;
+      if (videoId === "bbbbbbbbbbb" && unavailableOfficial) return new Response("", { status: 404 });
+      const payload = videoId === "bbbbbbbbbbb"
+        ? { author_name: "CNCF [Cloud Native Computing Foundation]", author_url: "https://www.youtube.com/@cncf" }
+        : { author_name: "Let's Get Rusty", author_url: "https://www.youtube.com/@letsgetrusty" };
+      return new Response(JSON.stringify(payload), { status: 200 });
+    }) as typeof fetch;
+
+    const lessonVideo = (url: string) => ({
+      source_ids: ["s2"],
+      video: {
+        youtube_url: url,
+        start_seconds: 0,
+        end_seconds: 0,
+        caption_evidence: null,
+        description_markdown: "## Objectives\n\nUnderstand the topic.\n\n## Key Takeaways\n\n- One\n- Two\n- Three\n\nVideo from channel Let's Get Rusty.",
+      },
+    });
+
+    expect(await reason("l-vid", lessonVideo(personal.url), oembedById(), rankedContext)).toContain("rank 2");
+    expect((await accept("l-vid", lessonVideo(official.url), oembedById(), rankedContext)).ok).toBe(true);
+    expect((await accept("l-vid", lessonVideo(personal.url), oembedById(true), rankedContext)).ok).toBe(true);
+
+    const personalRanksFirst = withVideos([{ ...personal, rank: 1 }, { ...official, rank: 2 }]);
+    expect((await accept("l-vid", lessonVideo(personal.url), oembedById(), personalRanksFirst)).ok).toBe(true);
+  });
+
 
   it("video: validates CNCF, imposter handle, missing author_url, curly quote, source_ids, banned self-assessment terms, and article fallback", async () => {
     const video = (url = "https://youtu.be/bbbbbbbbbbb", over = {}) => ({
@@ -287,6 +396,7 @@ describe("studio lessons: accept by format", () => {
         youtube_url: url,
         start_seconds: 0,
         end_seconds: 0,
+        caption_evidence: null,
         description_markdown: "## Mục tiêu\n\nHiểu Y.\n\n## Ý chính\n\n- Ý 1\n- Ý 2\n- Ý 3\n\nVideo từ kênh Let's Get Rusty.",
         ...over,
       },
@@ -706,8 +816,12 @@ describe("studio lessons: app record", () => {
       blanks: [{ id: "kw", accepted_answers: ["mut"], feedback: "Từ khóa cho phép gán lại." }],
     });
     expect(fillLesson.code_exercise_config).not.toHaveProperty("tests");
-    const video = toLessonDraft(ref("l-vid"), { ...base, video: { youtube_url: "https://youtu.be/dQw4w9WgXcQ", start_seconds: 5, end_seconds: 0, description_markdown: "Mô tả video." } } as never, "vi").lesson;
+    const captionEvidence = { video_id: "dQw4w9WgXcQ", language: "en", track: "manual", start_seconds: 5, end_seconds: 30, cue_count: 4, cue_text_sha256: "a".repeat(64) };
+    const video = toLessonDraft(ref("l-vid"), { ...base, video: { youtube_url: "https://youtu.be/dQw4w9WgXcQ", start_seconds: 5, end_seconds: 0, caption_evidence: captionEvidence, description_markdown: "Mô tả video." } } as never, "vi").lesson;
     expect(video).toMatchObject({ youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", youtube_start_seconds: 5, youtube_end_seconds: null, description_markdown: "Mô tả video." });
+    expect(video).not.toHaveProperty("caption_evidence");
+    const boundedVideo = toLessonDraft(ref("l-vid"), { ...base, video: { youtube_url: "https://youtu.be/dQw4w9WgXcQ", start_seconds: 30, end_seconds: 75, caption_evidence: { ...captionEvidence, start_seconds: 30, end_seconds: 75 }, description_markdown: "Mô tả video." } } as never, "vi").lesson;
+    expect(boundedVideo).toMatchObject({ youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", youtube_start_seconds: 30, youtube_end_seconds: 75 });
     const practice = toLessonDraft(ref("l-prac"), { ...base, practice: { description_markdown: "x", mode: "instruction", checklist_items: [] } } as never, "vi").lesson;
     expect(practice.practice_config).toEqual({ mode: "instruction", requires_review: false });
   });
@@ -797,6 +911,9 @@ describe("studio lessons: schema", () => {
     expect(codeSchema.properties.mode.enum).toEqual(["fill", "edit"]);
     expect(codeSchema.required).toEqual(expect.arrayContaining(["mode", "blanks", "tests"]));
     expect(codeSchema).not.toHaveProperty("properties.part_1");
+    const videoSchema = (LESSON_SCHEMA.properties.video as any).anyOf[0];
+    expect(videoSchema.required).toContain("caption_evidence");
+    expect(videoSchema.properties.caption_evidence.anyOf[1].type).toBe("null");
     for (const language of PREPARED_CODE_LANGUAGES) {
       expect(codeSchema.properties.language.enum).not.toContain(language);
     }

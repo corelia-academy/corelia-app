@@ -134,7 +134,7 @@ describe("A1 catalog research in the A2 brief", () => {
   });
 
   it("keeps A5 and A6 package-version decisions bounded by research evidence", () => {
-    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v30");
+    expect(SEEDED_PROMPTS["a5-lesson"].version).toBe("v34");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("tool_versions của research chỉ ghi mức tối thiểu hoặc phiên bản theo nguồn");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("nếu chỉ nêu mức tối thiểu, ghi rõ đó là mức tối thiểu và để lệnh không ghim phiên bản");
     expect(SEEDED_PROMPTS["a5-lesson"].system).toContain("Không tự suy ra phiên bản.");
@@ -165,14 +165,21 @@ describe("A1 catalog research in the A2 brief", () => {
 
     expect(a3.version).toBe("v27");
     expect(a4.version).toBe("v24");
-    expect(a5.version).toBe("v30");
+    expect(a5.version).toBe("v34");
     expect(a6.version).toBe("v28");
     expect(a6.system).toContain("so khớp chuỗi cũng không loại được mọi mã sai");
     expect(a6.system).toContain("Cách viết chỉ khác về hình thức và ít gặp ở trình độ của bài");
-    expect(a2.version).toBe("v16");
+    expect(a2.version).toBe("v19");
     expect(a2.system).toContain("videos là mảng có thể rỗng");
     expect(a2.system).toContain("evidence_source_ids không rỗng");
     expect(a2.system).toContain("thiếu video không phải lý do needs_research");
+    expect(a2.system).toContain("Cả ba loại kênh đều được chấp nhận");
+    expect(a2.system).toContain("giá trị giảng dạy có bằng chứng");
+    expect(a2.system).toContain("Không ưu tiên tổ chức/official hơn nhà giáo dục cá nhân");
+    expect(a2.system).toContain("Khi các ứng viên tương đương về độ khớp và giá trị giảng dạy có bằng chứng");
+    expect(a2.system).toContain("ưu tiên kênh giáo dục/chính thống do tổ chức, trường học, cơ quan hoặc tổ chức giáo dục vận hành");
+    expect(a2.system).toContain("Đây chỉ là tie-breaker");
+    expect(a2.system).toContain("Không tự mở rộng danh sách");
 
     for (const prompt of [a3, a4, a5, a6]) {
       expect(prompt.system).toContain("Nguyên tắc chỉ truyền thụ kiến thức");
@@ -205,13 +212,17 @@ describe("A1 catalog research in the A2 brief", () => {
     expect(a5.system).toContain("Khi purpose là optional_hands_on, chỉ tạo practice mode instruction");
     expect(a5.system).toContain("chấp nhận mọi cách sửa đúng hợp lý");
     expect(a5.system).toContain("suggested_videos là mảng video ID");
+    expect(a5.system).toContain("research.videos có rank số nguyên dương của A2");
+    expect(a5.system).toContain("chọn ứng viên có rank thấp nhất còn dùng được trong topic đó");
+    expect(a5.system).toContain("không chọn rank thấp hơn chỉ vì kênh cá nhân nổi tiếng hơn hoặc video dài hơn");
     expect(a5.system).toContain("tối đa 2");
     expect(a5.system).toContain("code sẽ dựng resources xem thêm");
     expect(a5.system).toContain("không đặt link YouTube trong text/markdown hoặc resources");
-    expect(a5.system).toContain("description_markdown dưới video bắt buộc có cấu trúc");
-    expect(a5.system).toContain("không dùng web_search để tìm video");
+    expect(a5.system).toContain("`description_markdown` dưới video bắt buộc có cấu trúc");
+    expect(a5.system).toContain("## Key Takeaways (3–5 bullet points synthesized from research sources)");
+    expect(a5.system).toContain("không tìm ứng viên khác");
     expect(a5.system).toContain("không đưa video vào completion_rule hay checklist");
-    expect(a5.system).toContain("start_seconds và end_seconds bắt buộc để 0");
+    expect(a5.system).toContain("đặt `start_seconds` và `end_seconds` bằng chính xác hai timestamp của match");
     expect(a2.system).toContain("allowed_channels");
     expect(a5.system).toContain("Nội dung video không phải bằng chứng");
     expect(a5.system).toContain("code_language_guide nhận trong đầu vào");
