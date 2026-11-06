@@ -64,7 +64,7 @@ DECLARE
   s text;
   bad text[] := ARRAY[
     $q$INSERT INTO public.studio_run_events(run_id,step_key,kind,message) VALUES('dddd6666-3333-4000-8000-000000000001','research','thinking','x')$q$,
-    $q$INSERT INTO public.studio_run_events(run_id,step_key,kind,agent_role,message) VALUES('dddd6666-3333-4000-8000-000000000001','research','progress','A7','x')$q$,
+    $q$INSERT INTO public.studio_run_events(run_id,step_key,kind,agent_role,message) VALUES('dddd6666-3333-4000-8000-000000000001','research','progress','A8','x')$q$,
     $q$INSERT INTO public.studio_run_events(run_id,step_key,kind,message) VALUES('dddd6666-3333-4000-8000-000000000001','research','progress','   ')$q$,
     $q$INSERT INTO public.studio_run_events(run_id,step_key,kind,message) VALUES('dddd6666-3333-4000-8000-000000000001','research','progress',repeat('x',501))$q$,
     $q$INSERT INTO public.studio_run_events(run_id,step_key,attempt,kind,message) VALUES('dddd6666-3333-4000-8000-000000000001','research',-1,'progress','x')$q$,
