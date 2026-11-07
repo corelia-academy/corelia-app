@@ -6,6 +6,9 @@ import { z } from "npm:zod@^4.3.6";
 import { getUserRole } from "../corelia-api/lib/authz.ts";
 import { createServiceClient, verifyBearerUser, type SupabaseClient } from "../corelia-api/lib/supabase.ts";
 import { acceptExternalTranslation, advanceRun, loadContext, type RunRow } from "../corelia-api/studio/handlers.ts";
+import { resolveTranslationLocales, TRANSLATION_LOCALES } from "../corelia-api/studio/translate.ts";
+import { droppedTranslationLocales, requireResearchVideos, RESEARCH_VIDEO_INSTRUCTIONS } from "./rules.ts";
+import { rerankIfStale } from "../corelia-api/studio/ranking_run.ts";
 import {
   advanceCatalogJob,
   loadCatalogBase,
@@ -17,6 +20,7 @@ import {
   CATALOG_SPEC,
 } from "../corelia-api/studio/catalog.ts";
 import { loadAgentPrompt } from "../corelia-api/studio/agent_prompts.ts";
+import type { PromptKey } from "../corelia-api/studio/prompts.ts";
 import {
   DEFAULT_AGENT_EFFORTS,
   DEFAULT_AGENT_MODELS,
@@ -109,6 +113,16 @@ function object(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }
 
+function generationPromptVersion(value: unknown, key: PromptKey): number {
+  const prefix = `${key}@v`;
+  if (typeof value !== "string" || !value.startsWith(prefix)) throw new Error(`invalid_generation_prompt_version:${key}`);
+  const version = Number(value.slice(prefix.length));
+  if (!Number.isSafeInteger(version) || version < 1) throw new Error(`invalid_generation_prompt_version:${key}`);
+  return version;
+}
+
+const EXTERNAL_TASK_INSTRUCTIONS = "Use exactly one model session for this generation_id. If the coordinator is itself running in the selected model-capable CLI, it may generate this result directly; otherwise use one child session in that CLI. Apply model_alias and effort when the runtime supports them; otherwise use the selected runtime model and supported effort, then report those actual values in studio_submit_task as model_id and effort. Give the model session system_prompt, input, and output_schema. It returns one JSON result or a concise, redacted execution-failure report and does not call MCP except when the CLI session itself is the coordinator. If it fails, call studio_report_task_failure; never submit partial output. If rejected, fetch the next task for correction context.";
+
 async function requireRun(db: SupabaseClient, runId: string): Promise<RunRow & { status: string; execution_mode: "claude_code" }> {
   const { data, error } = await db
     .from("studio_runs")
@@ -144,7 +158,7 @@ async function pendingTask(db: SupabaseClient, run: RunRow & { status: string; e
     const step = runGeneration.step_key as StepKey;
     const agent = stepAgent(step);
     if (!agent) throw new Error(`missing_agent_for_step:${step}`);
-    const prompt = await loadAgentPrompt(db, agent.promptKey);
+    const prompt = await loadAgentPrompt(db, agent.promptKey, generationPromptVersion(runGeneration.prompt_version, agent.promptKey));
     const outputSchema = step === "translate"
       ? object(runGeneration.params).external_schema
       : STEP_SPECS[step]?.schema;
@@ -166,17 +180,30 @@ async function pendingTask(db: SupabaseClient, run: RunRow & { status: string; e
       effort,
       attempt: runGeneration.attempt,
       parent_generation_id: runGeneration.parent_generation_id,
-      instructions: step === "lessons"
-        ? "Spawn one Claude Code child session using model_alias and effort. Give it system_prompt, input, and output_schema. Tell it to return either one JSON result or a concise, redacted execution-failure report to the parent coordinator; do not give the child MCP task-management responsibility. Submit valid results with studio_submit_task, including model_id and effort for audit. If the child fails, the parent calls studio_report_task_failure for this generation_id; do not submit partial output. For a video lesson, that same A5 child may run scripts/studio/youtube-captions.ts from the repository root for caption-based timestamp candidates; do not create another session. If rejected, fetch the next task for the correction context."
-        : "Spawn a Claude Code child session using model_alias and effort. Give it system_prompt, input, and output_schema. Tell it to return either one JSON result or a concise, redacted execution-failure report to the parent coordinator; do not give the child MCP task-management responsibility. Submit valid results with studio_submit_task, including model_id and effort for audit. If the child fails, the parent calls studio_report_task_failure for this generation_id; do not submit partial output. If rejected, fetch the next task for the correction context.",
+      instructions: step === "research"
+        ? `${EXTERNAL_TASK_INSTRUCTIONS} ${RESEARCH_VIDEO_INSTRUCTIONS}`
+        : step === "lessons"
+        ?"Use exactly one model session for this generation_id. If the coordinator is itself running in the selected model-capable CLI, it may generate this result directly; otherwise use one child session in that CLI. Apply model_alias and effort when the runtime supports them; otherwise use the selected runtime model and supported effort, then report those actual values in studio_submit_task as model_id and effort. Give the model session system_prompt, input, and output_schema. It returns one JSON result or a concise, redacted execution-failure report and does not call MCP except when the CLI session itself is the coordinator. If it fails, call studio_report_task_failure; never submit partial output. For a video lesson, that same A5 session may run scripts/studio/youtube-captions.ts from the repository root; do not create another session. If rejected, fetch the next task for correction context."
+        : EXTERNAL_TASK_INSTRUCTIONS,
     };
   }
 
   if (await currentStep(db, run.id) !== "catalog_research" || !run.catalog_job_id) return null;
+  return await catalogJobTask(db, run.catalog_job_id, run.agent_models, run.agent_efforts, run.id);
+}
+
+/** The pending A1 task of an external catalog job, or null when none is waiting for output. */
+async function catalogJobTask(
+  db: SupabaseClient,
+  jobId: string,
+  agentModels: AgentModelOverrides | null | undefined,
+  agentEfforts: AgentEffortOverrides | null | undefined,
+  runId: string | null,
+) {
   const { data: catalogGeneration, error: catalogError } = await db
     .from("studio_generations")
     .select("*")
-    .eq("catalog_job_id", run.catalog_job_id)
+    .eq("catalog_job_id", jobId)
     .eq("origin", "external")
     .eq("status", "submitting")
     .order("attempt", { ascending: true })
@@ -184,12 +211,13 @@ async function pendingTask(db: SupabaseClient, run: RunRow & { status: string; e
     .maybeSingle();
   if (catalogError) throw new Error(catalogError.message);
   if (!catalogGeneration) return null;
-  const prompt = await loadAgentPrompt(db, CATALOG_SPEC.prompt);
-  const modelAlias = resolveAgentModels(run.agent_models).A1;
-  const effort = resolveAgentEfforts(run.agent_efforts).A1;
+  const prompt = await loadAgentPrompt(db, CATALOG_SPEC.prompt, generationPromptVersion(catalogGeneration.prompt_version, CATALOG_SPEC.prompt));
+  const modelAlias = resolveAgentModels(agentModels).A1;
+  const effort = resolveAgentEfforts(agentEfforts).A1;
   return {
     generation_id: catalogGeneration.id,
-    run_id: run.id,
+    run_id: runId,
+    catalog_job_id: jobId,
     step_key: "catalog_research",
     agent_role: "A1",
     prompt_version: prompt.promptVersion,
@@ -200,7 +228,7 @@ async function pendingTask(db: SupabaseClient, run: RunRow & { status: string; e
     effort,
     attempt: catalogGeneration.attempt,
     parent_generation_id: catalogGeneration.parent_generation_id,
-    instructions: "Spawn a Claude Code child session using model_alias and effort. Give it system_prompt, input, and output_schema. Tell it to return either one JSON result or a concise, redacted execution-failure report to the parent coordinator; do not give the child MCP task-management responsibility. Submit valid results with studio_submit_task, including model_id and effort for audit. If the child fails, the parent calls studio_report_task_failure for this generation_id; do not submit partial output.",
+    instructions: "Use one child session in the current external CLI runtime for this generation_id. Apply model_alias and effort when that runtime supports them; otherwise use the selected runtime model and supported effort, and report those actual values in studio_submit_task as model_id and effort. Give it system_prompt, input, and output_schema. The child returns one JSON result or a concise, redacted execution-failure report and does not call MCP. If it fails, the coordinator calls studio_report_task_failure; never submit partial output.",
   };
 }
 
@@ -278,11 +306,11 @@ function createServer(db: SupabaseClient, userId: string) {
 
   server.registerTool("studio_coordinator_guide", {
     title: "Course creation coordinator guide",
-    description: "Read the required orchestration loop before creating a course. Claude Code is the coordinator and model runtime; Studio stores, validates, and publishes the work.",
+    description: "Read the required orchestration loop before creating a course. The current external CLI runtime (such as Claude Code or Codex CLI) coordinates model sessions; Studio stores, validates, and publishes the work.",
     inputSchema: z.object({}),
     annotations: { readOnlyHint: true },
   }, () => result({
-    coordinator: "By default, scope each Claude Code parent coordinator to one course and keep it responsible for that course's runs and resumes. Only that parent calls Studio MCP for the course; do not have multiple parent coordinators operate the same course concurrently. Each child returns either its assigned result or a concise, redacted execution-failure report to the parent; children do not call MCP or fetch tasks. The parent reports child failures through Studio MCP. Do not ask Studio to run a model.",
+    coordinator: "By default, scope each external CLI parent coordinator (Claude Code, Codex CLI, or another connected runtime) to one course and keep it responsible for that course's runs and resumes. Only that parent calls Studio MCP for the course; do not have multiple parent coordinators operate the same course concurrently. For each generation, either the parent CLI itself or one child session returns the assigned result or a concise, redacted execution-failure report; never run duplicate sessions for one generation_id. Only the parent calls Studio MCP unless it is directly generating the current result in that same session. Do not ask Studio to run a model. Submit the actual model identifier and supported effort used by the CLI; do not label Codex output as a Claude model.",
     child_session_defaults: {
       model_alias_by_role: DEFAULT_AGENT_MODELS,
       effort_by_role: DEFAULT_AGENT_EFFORTS,
@@ -292,14 +320,16 @@ function createServer(db: SupabaseClient, userId: string) {
       "A path belongs to a course. Call studio_list_paths to reuse existing paths via path_ids, and pass new_paths ({group_kind, title, slug?}) to studio_begin_course for paths the course needs that do not exist yet (for example Solana under ecosystem). An existing (group_kind, slug) is reused, not duplicated.",
       "For a course that already exists, find it with studio_list_courses and start it with studio_run_existing_course (same run_id rules, optional resume_from_run_id / restart_from) instead of studio_begin_course. studio_list_courses also returns the latest run_id of each course.",
       "Use that one-time answer before the start tool call. The default profile is Haiku 5.5 (alias haiku) for A1-A7; A1=max, A2-A4=xhigh, A5=high, A6-A7=xhigh. Pass the user's choice in agent_models and agent_efforts, and set child_profile_resolved=true. Do not ask again during that run.",
-      "When resuming from a Claude Code run, reuse that run's saved profile and do not ask again unless the user requests a change; set child_profile_resolved=true to confirm the profile is resolved. The start tool accepts optional per-role model and effort overrides; omitted roles inherit the saved profile or defaults.",
+      "When resuming an external CLI run, reuse that run's saved profile and do not ask again unless the user requests a change; set child_profile_resolved=true to confirm the profile is resolved. The start tool accepts optional per-role model and effort overrides; omitted roles inherit the saved profile or defaults.",
       "Use studio_configure_child_models later only when the user asks to change the active run profile. It accepts partial model and/or effort maps; changes apply to tasks fetched after the update, while already spawned child sessions continue with their original settings.",
-      "Process one generation_id at a time: keep exactly one child session for each generation_id, wait for its JSON result, and submit it before calling studio_get_next_task again. If the same pending generation_id is returned again while its child is active, resume that child instead of spawning a duplicate. Never launch competing child sessions for one generation_id.",
+      "Process one generation_id at a time: use exactly one model session, either this model-capable coordinator CLI itself or one child session, wait for its JSON result, and submit it before calling studio_get_next_task again. If the same pending generation_id is returned while its child is active, resume that child instead of spawning a duplicate. Never launch competing sessions for one generation_id.",
       "If a child cannot produce a usable JSON result because it crashed, timed out, or hit an execution error, call studio_report_task_failure with that generation_id. Use retryable=true only for transient failures; use needs_fix=true and include a concise, redacted incident for a system, configuration, dependency, database, MCP, or contract defect. Give repeated failures the same stable uppercase error_code and lowercase component slug so Studio can deduplicate them. Never include secrets, full prompts, or raw environment dumps. Set P0/P1 only when the reported evidence shows critical security, data-loss, or core-workflow impact; otherwise use P2-P5 or leave priority unset. For an ordinary rejected output, call studio_submit_task so Studio can provide correction feedback; do not create an operations incident for validation rejection alone.",
       "After reporting a task failure, call studio_get_next_task and let Studio's retry budget decide whether another attempt is available. If the failure is non-retryable or the budget is exhausted, stop spawning children and report the failure and any incident_id to the user.",
       "Handoff ownership: A2 supplies the research candidates; A5 authors one lesson and alone selects its video candidate and optional playback range; A6 reviews the accepted A5 draft and returns field-level issues without rewriting it or replacing its video; a later A5 generation applies accepted review feedback. A7 translates text while Studio preserves the original video URL and playback timestamps.",
       "For an A5 video lesson, keep video selection and timestamp selection in that same A5 child session. From the repository root run `deno run -A --no-config scripts/studio/youtube-captions.ts --url \"<candidate URL>\" --query \"<lesson title and outcome>\"`; the helper returns up to three short, time-coded caption matches as JSON and removes downloaded VTT files from its OS temp directory. Copy the selected match's exact times, cue_count, and cue_text_sha256 into caption_evidence; copy video_id, language, and track from the result's top-level fields. If Deno, yt-dlp, English captions, or a clear match is unavailable, use start_seconds=0, end_seconds=0, caption_evidence=null. Do not install tools or create another child session for this lookup.",
       "A rejected result creates a new repair task. Continue the loop until studio_get_next_task reports no pending model task and studio_get_run_status reports published or a concrete failure.",
+      "Translation covers six locales by default (zh-CN, ko, es, zh-TW, vi, ja). When the requester wants fewer, call studio_configure_translation_locales right after starting the run and before the translate step; English is always the source and is always published.",
+      "If the user requests local unpublished content, after all requested generation outputs are accepted call studio_pause_run before calling studio_get_next_task again. Confirm paused=true and publish remains pending with studio_get_run_status. Do not advance into publish. Call studio_continue_run only when the requester later wants the paused run to continue.",
       "The MCP server only persists and validates outputs. It never performs model inference; deterministic checks, draft rendering, and publish are run by Studio code.",
     ],
   }));
@@ -316,8 +346,8 @@ function createServer(db: SupabaseClient, userId: string) {
   });
 
   server.registerTool("studio_begin_course", {
-    title: "Start a Claude Code course run",
-    description: "Create a course idea and start it in the Studio dashboard under Claude Code orchestration. Before calling, ask the user once to accept or customize the child profile and set child_profile_resolved=true. Defaults are Haiku 5.5 (alias haiku) for every role and the current Studio effort profile (A1=max, A2-A4=xhigh, A5=high, A6-A7=xhigh). No model runs here. The course needs at least one path: pass existing path_ids and/or new_paths to create paths with the course in the same transaction. Supply a stable UUID run_id for safe retries.",
+    title: "Start an external CLI course run",
+    description: "Create a course idea and start it in the Studio dashboard for an external CLI coordinator such as Claude Code or Codex CLI. Before calling, ask the user once to accept or customize the child profile and set child_profile_resolved=true. Defaults are Haiku 5.5 (alias haiku) for every role and the current Studio effort profile (A1=max, A2-A4=xhigh, A5=high, A6-A7=xhigh); use the alias only when the selected runtime supports it and audit the actual model used. No model runs here. The course needs at least one path: pass existing path_ids and/or new_paths to create paths with the course in the same transaction. Supply a stable UUID run_id for safe retries.",
     inputSchema: z.object({
       run_id: z.string().uuid(),
       child_profile_resolved: z.literal(true),
@@ -402,8 +432,8 @@ function createServer(db: SupabaseClient, userId: string) {
   });
 
   server.registerTool("studio_run_existing_course", {
-    title: "Start a Claude Code run for an existing course",
-    description: "Start a Claude Code run for a course that already exists in the Studio catalog (status idea, needs_update or not_passed; it needs a path, audience and Corelia direction). Before a fresh run, ask the user once to accept the defaults or customize child model and effort by role. When resuming from a Claude Code run, reuse its saved profile unless the user requests a change. Set child_profile_resolved=true after asking or reusing the saved profile. Defaults are Haiku 5.5 (alias haiku) for every role and the current Studio effort profile (A1=max, A2-A4=xhigh, A5=high, A6-A7=xhigh). Optionally resume from the accepted work of its latest failed run with resume_from_run_id, and restart_from (research or curriculum) to regenerate from that step. Supply a stable UUID run_id for safe retries.",
+    title: "Start an external CLI run for an existing course",
+    description: "Start an external CLI run for a course that already exists in the Studio catalog (status idea, needs_update or not_passed; it needs a path, audience and Corelia direction). Before a fresh run, ask the user once to accept the defaults or customize child model and effort by role. When resuming an external CLI run, reuse its saved profile unless the user requests a change. Set child_profile_resolved=true after asking or reusing the saved profile. Defaults are Haiku 5.5 (alias haiku) for every role and the current Studio effort profile (A1=max, A2-A4=xhigh, A5=high, A6-A7=xhigh); use aliases only when the selected runtime supports them and audit the actual model used. Optionally resume from the accepted work of its latest failed run with resume_from_run_id, and restart_from (research or curriculum) to regenerate from that step. Supply a stable UUID run_id for safe retries.",
     inputSchema: z.object({
       run_id: z.string().uuid(),
       child_profile_resolved: z.literal(true),
@@ -446,8 +476,8 @@ function createServer(db: SupabaseClient, userId: string) {
   });
 
   server.registerTool("studio_configure_child_models", {
-    title: "Configure Claude Code child models and effort",
-    description: "Override child model aliases and/or effort levels for selected A1-A7 roles on an active run. Partial maps preserve other roles. Changes apply to tasks fetched after this update; already spawned child sessions keep their original settings. Use this tool whenever the user asks to change the profile.",
+    title: "Configure external CLI child models and effort",
+    description: "Override Studio model aliases and/or effort levels for selected A1-A7 roles on an active run. Partial maps preserve other roles. These preferences only control a child runtime that supports the aliases; every coordinator must submit the actual model and effort it used. Changes apply to tasks fetched after this update; already spawned child sessions keep their original settings. Use this tool whenever the user asks to change the profile.",
     inputSchema: z.object({
       run_id: z.string().uuid(),
       agent_models: MODEL_MAP_SCHEMA.optional(),
@@ -475,11 +505,13 @@ function createServer(db: SupabaseClient, userId: string) {
 
   server.registerTool("studio_get_next_task", {
     title: "Advance the Studio course and get the next child task",
-    description: "Advance the pinned Studio workflow through deterministic steps and return the next pending agent task with its version-pinned prompt, input, JSON schema, configured Claude Code model alias, and effort. The coordinator must use both model_alias and effort, then submit a usable child result or report its execution failure.",
+    description: "Advance the pinned Studio workflow through deterministic steps and return the next pending agent task with its version-pinned prompt, input, JSON schema, Studio model alias, and effort. Apply these preferences when supported by the selected external CLI runtime; otherwise report the actual model and effort used when submitting the result.",
     inputSchema: z.object({ run_id: z.string().uuid() }),
     annotations: { idempotentHint: true },
   }, async ({ run_id }) => {
     let run = await requireRun(db, run_id);
+    // Server ticks rank the catalog; MCP runs have no tick, so rank here (no-op unless research is newer than the last pass).
+    await rerankIfStale(db);
     if (run.paused_at) return result({ state: "paused", status: run.status, run_id });
     if (run.status !== "running") return result({ state: run.status, run_id, status: await runStatus(db, run_id) });
 
@@ -497,7 +529,14 @@ function createServer(db: SupabaseClient, userId: string) {
           .maybeSingle();
         if (error) throw new Error(error.message);
         if (!job) throw new Error("catalog_job_not_found");
-        await advanceCatalogJob(db, job as Parameters<typeof advanceCatalogJob>[1]);
+        const catalogAction = await advanceCatalogJob(db, job as Parameters<typeof advanceCatalogJob>[1]);
+        // A1 can be finished by an external CLI failure report before the regular catalog tick.
+        // In either case, advance the parent run after the job ends so catalog_research is marked
+        // failed/done and the coordinator does not loop on a terminal catalog job.
+        if (catalogAction === "finish" || job.status !== "running") {
+          await advanceRun(db, run);
+          await rerankIfStale(db);
+        }
       } else {
         await advanceRun(db, run);
       }
@@ -564,6 +603,7 @@ function createServer(db: SupabaseClient, userId: string) {
         if (!agent || !spec) throw new Error(`unsupported_agent_step:${step}`);
         const ctx = await loadContext(db, courseRun, step, row.lesson_id ?? undefined);
         acceptance = await spec.accept(output, ctx, row.lesson_id ?? undefined);
+        if (step === "research") acceptance = requireResearchVideos(acceptance, output);
       }
     }
 
@@ -609,7 +649,7 @@ function createServer(db: SupabaseClient, userId: string) {
 
   server.registerTool("studio_report_task_failure", {
     title: "Report a failed Studio child task",
-    description: "Record why an external Claude Code child could not produce a usable result. Set retryable only for transient failures. Include needs_fix=true and the incident details for a system/configuration/dependency/MCP/database/contract issue that needs repair. Then call studio_get_next_task so Studio applies its bounded retry policy.",
+    description: "Record why an external CLI child could not produce a usable result. Set retryable only for transient failures. Include needs_fix=true and the incident details for a system/configuration/dependency/MCP/database/contract issue that needs repair. Then call studio_get_next_task so Studio applies its bounded retry policy.",
     inputSchema: TASK_FAILURE_REPORT_SCHEMA,
     annotations: { idempotentHint: true },
   }, async (input) => {
@@ -618,6 +658,7 @@ function createServer(db: SupabaseClient, userId: string) {
     const summary = sanitizeOperationalText(input.summary);
     const safeIncident = incident ? {
       ...incident,
+      error_code: input.error_code,
       title: sanitizeOperationalText(incident.title),
       description: sanitizeOperationalText(incident.description),
       impact: sanitizeOperationalText(incident.impact),
@@ -772,6 +813,104 @@ function createServer(db: SupabaseClient, userId: string) {
     inputSchema: z.object({ run_id: z.string().uuid() }),
     annotations: { readOnlyHint: true },
   }, async ({ run_id }) => result(await runStatus(db, run_id)));
+
+  server.registerTool("studio_pause_run", {
+    title: "Pause a Studio course run",
+    description: "Pause a running course at its current step. Use this after the requested local work is accepted and before another studio_get_next_task call could advance into publish. Safe to call repeatedly for an already paused run.",
+    inputSchema: z.object({ run_id: z.string().uuid() }),
+    annotations: { idempotentHint: true },
+  }, async ({ run_id }) => {
+    await requireRun(db, run_id);
+    const { data, error } = await db.rpc("studio_pause_run", { p_run_id: run_id });
+    if (error) throw new Error(error.message);
+    return result(data);
+  });
+
+  server.registerTool("studio_start_catalog_research", {
+    title: "Start catalog research for an existing course",
+    description: "Start a new catalog research job (agent A1: trend, demand, fit and gap evidence that feeds the catalog ranking) for a course that already exists, run by the external CLI coordinator. No course run is created. Then loop studio_get_catalog_task and studio_submit_task until the job ends. A course has at most one running research job. Supply a stable UUID job_id for safe retries. Defaults are the same child profile as course runs.",
+    inputSchema: z.object({
+      course_id: z.string().uuid(),
+      job_id: z.string().uuid(),
+      agent_models: MODEL_MAP,
+      agent_efforts: EFFORT_MAP_SCHEMA.optional(),
+    }),
+    annotations: { destructiveHint: false, idempotentHint: true },
+  }, async ({ course_id, job_id, agent_models, agent_efforts }) => {
+    // Same guards as the dashboard: a course with no path or group scope has nothing to research.
+    await loadCatalogBase(db, course_id);
+    const { data, error } = await db.rpc("studio_start_claude_catalog_job", {
+      p_course_id: course_id,
+      p_job_id: job_id,
+      p_started_by: userId,
+      p_agent_models: resolveAgentModels(agent_models),
+      p_agent_efforts: resolveAgentEfforts(agent_efforts),
+    });
+    if (error) throw new Error(error.code === "23505" ? "course_has_running_job" : error.message);
+    return result(object(data));
+  });
+
+  server.registerTool("studio_get_catalog_task", {
+    title: "Advance a catalog research job and get its next task",
+    description: "Advance an external catalog research job started with studio_start_catalog_research and return its pending A1 task (system_prompt, input, output_schema, model alias, effort). Submit the result with studio_submit_task. When the job has ended it returns the final state (evidence_ok, needs_more_sources or failed) and refreshes the catalog ranking.",
+    inputSchema: z.object({ job_id: z.string().uuid() }),
+    annotations: { idempotentHint: true },
+  }, async ({ job_id }) => {
+    const { data: job, error } = await db.from("studio_catalog_jobs")
+      .select("id,course_id,started_at,execution_mode,agent_models,agent_efforts,status,reason")
+      .eq("id", job_id).maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!job) throw new Error("catalog_job_not_found");
+    if (job.execution_mode !== "claude_code") throw new Error("catalog_job_not_claude_code_managed");
+    const ended = async (status: string, reason: string | null) => {
+      await rerankIfStale(db);
+      return result({ state: status, job_id, reason });
+    };
+    if (job.status !== "running") return await ended(job.status, job.reason);
+
+    let task = await catalogJobTask(db, job_id, job.agent_models, job.agent_efforts, null);
+    if (!task) {
+      await advanceCatalogJob(db, job as Parameters<typeof advanceCatalogJob>[1]);
+      const { data: latest, error: latestError } = await db.from("studio_catalog_jobs").select("status,reason").eq("id", job_id).single();
+      if (latestError) throw new Error(latestError.message);
+      if (latest.status !== "running") return await ended(latest.status, latest.reason);
+      task = await catalogJobTask(db, job_id, job.agent_models, job.agent_efforts, null);
+    }
+    if (task) return result({ state: "task_ready", task });
+    return result({ state: "processing", job_id, message: "Call studio_get_catalog_task again to continue." });
+  });
+
+  server.registerTool("studio_configure_translation_locales", {
+    title: "Choose the translation locales of a Studio course run",
+    description: "Set which locales the run translates into and publishes besides English (the source language, always published). Allowed: zh-CN, ko, es, zh-TW, vi, ja. Runs default to all six. Only allowed before the translate step has produced any generation.",
+    inputSchema: z.object({ run_id: z.string().uuid(), locales: z.array(z.enum(TRANSLATION_LOCALES)).min(1) }),
+    annotations: { idempotentHint: true },
+  }, async ({ run_id, locales }) => {
+    const run = await requireRun(db, run_id);
+    if (run.status !== "running") throw new Error("run_not_running");
+    const chosen = resolveTranslationLocales(locales);
+    // A locale that already has translation generations cannot be dropped.
+    const { data: used, error: usedError } = await db.from("studio_generations")
+      .select("locale").eq("run_id", run_id).eq("step_key", "translate").not("locale", "is", null);
+    if (usedError) throw new Error(usedError.message);
+    const dropped = droppedTranslationLocales((used ?? []).map((r) => r.locale as string), chosen);
+    if (dropped.length > 0) throw new Error(`translation_locales_in_use:${dropped.join(",")}`);
+    const { error } = await db.from("studio_runs").update({ translation_locales: chosen }).eq("id", run_id);
+    if (error) throw new Error(error.message);
+    return result({ run_id, translation_locales: chosen });
+  });
+
+  server.registerTool("studio_continue_run", {
+    title: "Continue a paused Studio course run",
+    description: "Resume a paused course run so studio_get_next_task can advance it again, including into publish. Use it only when the requester wants the run to continue past the pause. Safe to call repeatedly for a run that is not paused.",
+    inputSchema: z.object({ run_id: z.string().uuid() }),
+    annotations: { idempotentHint: true },
+  }, async ({ run_id }) => {
+    await requireRun(db, run_id);
+    const { data, error } = await db.rpc("studio_continue_run", { p_run_id: run_id });
+    if (error) throw new Error(error.message);
+    return result(data);
+  });
 
   return server;
 }

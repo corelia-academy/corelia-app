@@ -32,6 +32,8 @@ verify_jwt = false
 
 [functions.studio-mcp]
 verify_jwt = false
+# Shares corelia-api's studio modules (diagram and cover rendering), which read these assets at run time.
+static_files = ["./functions/corelia-api/og/assets/*", "./functions/corelia-api/studio/assets/*"]
 
 [api]
 enabled = true
