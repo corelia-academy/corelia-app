@@ -59,29 +59,16 @@ export function homeCatalogQueryOptions(user: User | null, locale: string) {
     queryFn: async () => {
       const coursesModule = await import("@/lib/courses");
       const publishedCourses = await coursesModule.getPublishedCourses();
-      const previewCourses = publishedCourses.slice(0, 8);
-      const contentLocale = coursesModule.pickCourseContentLocale(previewCourses[0], locale);
       // Locale content and lesson counts only depend on the course list: fetch them together.
-      const [localeMap, lessonCountEntries] = await Promise.all([
-        previewCourses.length
-          ? coursesModule
-              .getBatchCourseLocaleContent(
-                previewCourses.map((course) => course.id),
-                contentLocale,
-              )
-              .catch(() => new Map())
-          : Promise.resolve(new Map()),
+      const [courseCatalog, lessonCountEntries] = await Promise.all([
+        coursesModule
+          .localizePublicCourses(publishedCourses, locale)
+          .catch(() => publishedCourses),
         user ? countVisibleContentLessons(coursesModule, publishedCourses.slice(0, 2)) : Promise.resolve([]),
       ]);
-      const localizedMap = new Map(
-        previewCourses.map((course) => [
-          course.id,
-          coursesModule.applyCourseLocaleContent(course, localeMap.get(course.id) ?? null),
-        ]),
-      );
 
       return {
-        courseCatalog: publishedCourses.map((course) => localizedMap.get(course.id) ?? course),
+        courseCatalog,
         courseLessonCounts: Object.fromEntries(lessonCountEntries),
       };
     },

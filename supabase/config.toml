@@ -30,6 +30,11 @@ verify_jwt = false
 [functions.generate-questions]
 verify_jwt = false
 
+[functions.studio-mcp]
+verify_jwt = false
+# Shares corelia-api's studio modules (diagram and cover rendering), which read these assets at run time.
+static_files = ["./functions/corelia-api/og/assets/*", "./functions/corelia-api/studio/assets/*"]
+
 [api]
 enabled = true
 # Port to use for the API URL.
@@ -434,11 +439,11 @@ enabled = false
 # OAuth server configuration
 [auth.oauth_server]
 # Enable OAuth server functionality
-enabled = false
+enabled = true
 # Path for OAuth consent flow UI
-authorization_url_path = "/oauth/consent"
+authorization_url_path = "/learn/oauth/consent"
 # Allow dynamic client registration
-allow_dynamic_registration = false
+allow_dynamic_registration = true
 
 [edge_runtime]
 enabled = false

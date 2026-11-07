@@ -14,19 +14,35 @@ import {
   resolveCoverPlan,
 } from "./cover.tsx";
 import { appImagePath, diagramFile, draftPath, publishMarkdown } from "./diagram_render.ts";
+import {
+  TRANSLATION_LOCALES,
+  type TranslationLocale,
+  type TranslatedCourse,
+  type TranslatedSection,
+  type TranslatedLesson,
+  buildLessonLocaleData,
+  validateLessonTranslation,
+  validateCourseTranslation,
+  validateSectionTranslation,
+  stableQuestionId,
+  canonicalCourseDescription,
+  canonicalCourseShortDescription,
+} from "./translate.ts";
 import { lessonRefs } from "./lessons.ts";
 
 /** The database or the data refused this course: a reason for the run, not a fault to retry. */
 export class PublishRejected extends Error {}
 
 /** Content locales the app supports for courses (CourseI18nConfig.supported_locales). */
-const COURSE_LOCALES = ["vi", "en"];
+export const COURSE_LOCALES = ["en", "zh-CN", "ko", "es", "zh-TW", "vi", "ja"] as const;
+export type CourseContentLocale = typeof COURSE_LOCALES[number];
 
 interface CurriculumFull {
   outcomes: { id: string; text: string }[];
   modules: { id: string; title: string; description: string; lessons: { id: string }[] }[];
 }
 interface BriefFull {
+  title?: string;
   topic: string;
   audience: string;
   level: string;
@@ -41,13 +57,19 @@ export interface PublishInput {
   brief: unknown;
   curriculum: unknown;
   records: Record<string, LessonRecord>;
+  translations?: Record<string, any>;
+  /** Locales this run translated into; defaults to every translation locale. */
+  translationLocales?: readonly TranslationLocale[];
 }
 
 export interface PublishPayload {
   course: { slug: string; data: Record<string, unknown> };
   sections: { id: string; sort_order: number; data: Record<string, unknown> }[];
   lessons: { id: string; section_id: string; sort_order: number; data: Record<string, unknown> }[];
-  questions: { lesson_id: string; sort_order: number; data: Record<string, unknown> }[];
+  questions: { id: string; lesson_id: string; sort_order: number; data: Record<string, unknown> }[];
+  course_locales: { locale: string; data: Record<string, unknown> }[];
+  section_locales: { section_id: string; locale: string; data: Record<string, unknown> }[];
+  lesson_locales: { lesson_id: string; locale: string; data: Record<string, unknown> }[];
 }
 
 export function slugify(title: string): string {
@@ -67,7 +89,7 @@ export function slugify(title: string): string {
 export function buildPublishPayload(input: PublishInput): PublishPayload {
   const curriculum = input.curriculum as CurriculumFull;
   const brief = input.brief as BriefFull;
-  if (!COURSE_LOCALES.includes(brief.locale)) throw new PublishRejected(`Ngôn ngữ nội dung ${brief.locale} chưa được app hỗ trợ cho khóa học (${COURSE_LOCALES.join(", ")}).`);
+  if (!COURSE_LOCALES.includes(brief.locale as any)) throw new PublishRejected(`Ngôn ngữ nội dung ${brief.locale} chưa được app hỗ trợ cho khóa học (${COURSE_LOCALES.join(", ")}).`);
   const refs = lessonRefs(curriculum);
 
   const lessons = refs.map((ref, index) => {
@@ -76,23 +98,89 @@ export function buildPublishPayload(input: PublishInput): PublishPayload {
     // id, section, position and published are columns; everything else is the lesson's data.
     const { id: _id, section_id: _section, order: _order, ...data } = record.draft.lesson;
     if (data.description_markdown) data.description_markdown = publishMarkdown(data.description_markdown, input.courseId, ref.lesson.id);
-    return { id: ref.lesson.id, section_id: ref.moduleId, sort_order: index, data: data as Record<string, unknown> };
+    // Marks the lessons that close the course so the app can present them apart; absent on every other lesson.
+    const rowData: Record<string, unknown> = ref.lesson.purpose === "final_check" ? { ...data, is_final_check: true } : data;
+    return { id: ref.lesson.id, section_id: ref.moduleId, sort_order: index, data: rowData };
   });
   const questions = refs.flatMap((ref) =>
-    input.records[ref.lesson.id].draft.questions.map((q, i) => ({ lesson_id: ref.lesson.id, sort_order: i, data: q as unknown as Record<string, unknown> }))
+    input.records[ref.lesson.id].draft.questions.map((q, i) => {
+      const questionId = stableQuestionId(input.courseId, ref.lesson.id, i);
+      return {
+        id: questionId,
+        lesson_id: ref.lesson.id,
+        sort_order: i,
+        data: { ...(q as unknown as Record<string, unknown>), id: questionId },
+      };
+    })
   );
+
+  const course_locales: PublishPayload["course_locales"] = [];
+  const section_locales: PublishPayload["section_locales"] = [];
+  const lesson_locales: PublishPayload["lesson_locales"] = [];
+
+  if (!input.translations) {
+    throw new PublishRejected("Thiếu dữ liệu bản dịch đa ngôn ngữ cho khóa học.");
+  }
+
+  const translationLocales = input.translationLocales ?? TRANSLATION_LOCALES;
+  for (const loc of translationLocales) {
+    const trans = input.translations[loc];
+    if (!trans) throw new PublishRejected(`Thiếu bản dịch cho ngôn ngữ ${loc}.`);
+    if (!trans.course) throw new PublishRejected(`Thiếu bản dịch khóa học cho ngôn ngữ ${loc}.`);
+    validateCourseTranslation({
+      title: input.title,
+      short_description: brief.topic,
+      description: `${brief.topic}. ${brief.audience}`,
+      learning_outcomes: curriculum.outcomes.map((o) => o.text),
+    }, trans.course, loc);
+    course_locales.push({
+      locale: loc,
+      data: {
+        title: trans.course.title,
+        short_description: trans.course.short_description,
+        description: trans.course.description,
+        learning_outcomes: trans.course.learning_outcomes,
+      },
+    });
+
+    if (!trans.sections) throw new PublishRejected(`Thiếu bản dịch module cho ngôn ngữ ${loc}.`);
+    for (const m of curriculum.modules) {
+      const tSec = trans.sections[m.id];
+      if (!tSec) throw new PublishRejected(`Thiếu bản dịch cho module ${m.id} ở ngôn ngữ ${loc}.`);
+      validateSectionTranslation({ id: m.id, title: m.title, description: m.description }, tSec, loc);
+      section_locales.push({ section_id: m.id, locale: loc, data: { title: tSec.title, description: tSec.description } });
+    }
+
+    if (!trans.lessons) throw new PublishRejected(`Thiếu bản dịch lesson cho ngôn ngữ ${loc}.`);
+    for (const ref of refs) {
+      const tLesson = trans.lessons[ref.lesson.id];
+      const record = input.records[ref.lesson.id];
+      if (!record) throw new PublishRejected(`Thiếu lesson ${ref.lesson.id}.`);
+      if (!tLesson) throw new PublishRejected(`Thiếu bản dịch cho lesson ${ref.lesson.id} ở ngôn ngữ ${loc}.`);
+      validateLessonTranslation(record, tLesson, loc);
+      const locData = buildLessonLocaleData(record, tLesson, input.courseId, loc, publishMarkdown);
+      lesson_locales.push({ lesson_id: ref.lesson.id, locale: loc, data: locData });
+    }
+  }
+
+  const canonicalTitle = brief.title?.trim();
+  if (!canonicalTitle) {
+    throw new PublishRejected("Brief thiếu tiêu đề tiếng Anh chuẩn tắc (title).");
+  }
+
+  const supportedLocales = COURSE_LOCALES.filter((loc) => loc === "en" || translationLocales.includes(loc as TranslationLocale));
 
   return {
     course: {
-      slug: slugify(input.title),
+      slug: slugify(canonicalTitle),
       data: {
-        title: input.title,
-        description: `${brief.topic}. ${brief.audience}`,
-        short_description: brief.topic,
+        title: canonicalTitle,
+        description: canonicalCourseDescription(brief),
+        short_description: canonicalCourseShortDescription(brief),
         level: brief.level,
         learning_outcomes: curriculum.outcomes.map((o) => o.text),
         thumbnail_url: "",
-        i18n: { supported_locales: [brief.locale], primary_content_locale: brief.locale },
+        i18n: { supported_locales: supportedLocales, primary_content_locale: "en" },
         owner_type: "corelia",
         course_type: "ai_generated",
         has_sections: true,
@@ -101,14 +189,35 @@ export function buildPublishPayload(input: PublishInput): PublishPayload {
     sections: curriculum.modules.map((m, i) => ({ id: m.id, sort_order: i, data: { title: m.title, description: m.description } })),
     lessons,
     questions,
+    course_locales,
+    section_locales,
+    lesson_locales,
   };
 }
 
 /** Images of the run: draft object and its place in the app. */
-export function imageJobs(input: Pick<PublishInput, "runId" | "courseId" | "records">): { from: string; to: string }[] {
-  return Object.entries(input.records).flatMap(([lessonId, r]) =>
+export function imageJobs(input: Pick<PublishInput, "runId" | "courseId" | "records" | "translationLocales"> & { translations?: Record<string, any> }): { from: string; to: string }[] {
+  const baseJobs = Object.entries(input.records).flatMap(([lessonId, r]) =>
     r.draft.diagrams.map((d) => ({ from: draftPath(input.runId, lessonId, d.id), to: appImagePath(input.courseId, diagramFile(lessonId, d.id)) }))
   );
+  if (!input.translations) return baseJobs;
+
+  const translatedJobs: { from: string; to: string }[] = [];
+  for (const loc of input.translationLocales ?? TRANSLATION_LOCALES) {
+    const locTranslations = input.translations[loc];
+    if (!locTranslations?.lessons) continue;
+    for (const [lessonId, r] of Object.entries(input.records)) {
+      const tLesson = locTranslations.lessons[lessonId];
+      if (!tLesson?.article?.diagrams) continue;
+      for (const d of tLesson.article.diagrams) {
+        translatedJobs.push({
+          from: draftPath(input.runId, lessonId, d.id, loc),
+          to: appImagePath(input.courseId, diagramFile(lessonId, d.id, loc)),
+        });
+      }
+    }
+  }
+  return [...baseJobs, ...translatedJobs];
 }
 
 /** A SQLSTATE means the database answered and said no; anything else is a failure to reach it. */
@@ -205,6 +314,9 @@ export async function publishRun(db: SupabaseClient, input: PublishInput): Promi
     p_sections: payload.sections,
     p_lessons: payload.lessons,
     p_questions: payload.questions,
+    p_course_locales: payload.course_locales,
+    p_section_locales: payload.section_locales,
+    p_lesson_locales: payload.lesson_locales,
   });
   if (error) {
     if (!isDatabaseVerdict(error.code)) throw new Error(error.message);

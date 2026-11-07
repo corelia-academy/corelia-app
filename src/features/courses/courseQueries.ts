@@ -12,12 +12,12 @@ import {
   getCourseLocaleContent,
   getCourseSectionLocaleContentMap,
   getCourseSections,
-  getBatchCourseLocaleContent,
   getLessonCountsByCourseIds,
   getEnrollment,
   getLessonProgressForCourse,
   getMyEnrollments,
   getPublishedCourses,
+  localizePublicCourses,
   computeProgressPercent,
   sortLessonsByCurriculum,
   pickCourseContentLocale,
@@ -34,7 +34,6 @@ import type {
 } from "@/types/courses";
 import type { PublicProfile } from "@/types/database";
 import type { Contest } from "@/types/hackathons";
-import { normalizeLocale } from "@/lib/locales";
 
 export interface CourseBundle {
   course: Course | null;
@@ -268,15 +267,8 @@ export function coursesCatalogQueryOptions(locale: string) {
     queryKey: courseKeys.catalog(locale),
     queryFn: async () => {
       const courses = await getPublishedCourses();
-      const contentLocale = normalizeLocale(locale);
-      if (contentLocale === "vi" || courses.length === 0) return courses;
-      const localeMap = await getBatchCourseLocaleContent(
-        courses.map((course) => course.id),
-        contentLocale,
-      );
-      return courses.map((course) =>
-        applyCourseLocaleContent(course, localeMap.get(course.id) ?? null),
-      );
+      // Locale enrichment failure keeps the master copy, as the bundle query does.
+      return localizePublicCourses(courses, locale).catch(() => courses);
     },
     staleTime: 60_000,
     meta: { scope: "public", showInGlobalLoading: true },

@@ -25,6 +25,7 @@ import {
 import { agentKey, errorMessage, failGeneration, fallBackToDefaultTier, loadFailureKind, pollOrExpire } from "./generations.ts";
 import { submitResponse } from "./openai.ts";
 import { loadAgentPrompt } from "./agent_prompts.ts";
+import { resolveAgentEfforts, resolveAgentModels } from "./agent_preferences.ts";
 import { agentKeyEnv, SERVICE_TIER, utcDate } from "./steps.ts";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -41,6 +42,9 @@ interface JobRow {
   id: string;
   course_id: string;
   started_at: string;
+  execution_mode?: "server" | "claude_code";
+  agent_models?: Record<string, string>;
+  agent_efforts?: Record<string, string>;
 }
 
 // Studio is admin only: support_staff is excluded, matching studio_can_write() in the schema.
@@ -80,8 +84,9 @@ export async function handleCatalogResearchStart(req: Request, db: SupabaseClien
 export async function advanceCatalogJobs(db: SupabaseClient): Promise<Record<string, unknown>[]> {
   const { data: jobs, error } = await db
     .from("studio_catalog_jobs")
-    .select("id,course_id,started_at")
+    .select("id,course_id,started_at,execution_mode,agent_models,agent_efforts")
     .eq("status", "running")
+    .eq("execution_mode", "server")
     .order("updated_at", { ascending: true })
     .limit(CATALOG_JOBS_PER_TICK);
   if (error) throw new Error(error.message);
@@ -119,7 +124,13 @@ export async function advanceCatalogJob(db: SupabaseClient, job: JobRow): Promis
     latestResult = { status: catalogStatus(out.data.output), missing: catalogGap(out.data.output) };
   }
 
-  const action = planCatalogJob({ generations, startedAt: job.started_at, now: Date.now(), latestResult });
+  const action = planCatalogJob({
+    generations,
+    startedAt: job.started_at,
+    now: Date.now(),
+    latestResult,
+    submitStaleMs: job.execution_mode === "claude_code" ? 24 * 60 * 60 * 1000 : undefined,
+  });
   if (action.kind === "submit" && latest?.status === "failed") {
     await logCatalogRunEvent(db, job.id, catalogRetryWarning(latest));
   }
@@ -163,13 +174,14 @@ export function catalogRetryWarning(generation: Pick<CatalogGeneration, "id" | "
 export async function logCatalogRunEvent(
   db: SupabaseClient,
   jobId: string,
-  event: { generationId: string; attempt: number; kind: "progress" | "warning"; message: string; payload: Record<string, unknown> },
+  event: { generationId: string; attempt: number; kind: "progress" | "warning" | "error"; message: string; payload: Record<string, unknown> },
 ) {
+  let logged = false;
   try {
     const runsResult = await db.from("studio_runs").select("id").eq("catalog_job_id", jobId).eq("status", "running");
     if (runsResult.error) throw new Error(runsResult.error.message);
     const runIds = (runsResult.data ?? []).map((run) => run.id as string);
-    if (runIds.length === 0) return;
+    if (runIds.length === 0) return false;
 
     const [stepsResult, eventsResult] = await Promise.all([
       db.from("studio_run_steps").select("run_id").in("run_id", runIds).eq("step_key", "catalog_research"),
@@ -186,7 +198,10 @@ export async function logCatalogRunEvent(
         const payload = row.payload && typeof row.payload === "object" ? row.payload as Record<string, unknown> : {};
         return row.run_id === runId && row.kind === event.kind && payload.generation_id === event.generationId;
       });
-      if (alreadyLogged) continue;
+      if (alreadyLogged) {
+        logged = true;
+        continue;
+      }
 
       try {
         const { error } = await db.from("studio_run_events").insert({
@@ -199,6 +214,7 @@ export async function logCatalogRunEvent(
           payload: { ...event.payload, generation_id: event.generationId, attempt: event.attempt },
         });
         if (error) throw new Error(error.message);
+        logged = true;
       } catch (e) {
         console.error("[corelia-api] catalog run event insert", { job_id: jobId, run_id: runId, generation_id: event.generationId, error: errorMessage(e) });
       }
@@ -206,6 +222,7 @@ export async function logCatalogRunEvent(
   } catch (e) {
     console.error("[corelia-api] catalog run event lookup", { job_id: jobId, generation_id: event.generationId, error: errorMessage(e) });
   }
+  return logged;
 }
 
 export async function loadCatalogBase(db: SupabaseClient, courseId: string): Promise<CatalogBase> {
@@ -323,7 +340,8 @@ async function loadBaseOrFinish(db: SupabaseClient, job: JobRow): Promise<Catalo
 async function submitCatalog(db: SupabaseClient, job: JobRow, attempt: number, parentId: string | null, previousError: string | null) {
   const role = "A1" as const;
   const apiKey = agentKey(role);
-  if (!apiKey) {
+  const external = job.execution_mode === "claude_code";
+  if (!external && !apiKey) {
     await finishCatalogJob(db, job.id, "failed", `Chưa cấu hình ${agentKeyEnv(role)}.`);
     return;
   }
@@ -355,11 +373,12 @@ async function submitCatalog(db: SupabaseClient, job: JobRow, attempt: number, p
       attempt,
       agent_role: role,
       kind: "research",
-      provider: "openai",
-      requested_model_id: CATALOG_SPEC.model,
+      origin: external ? "external" : "ai",
+      provider: external ? "anthropic" : "openai",
+      requested_model_id: external ? resolveAgentModels(job.agent_models).A1 : CATALOG_SPEC.model,
       prompt_version: prompt.promptVersion,
       params: {
-        effort: CATALOG_SPEC.effort,
+        effort: external ? resolveAgentEfforts(job.agent_efforts).A1 : CATALOG_SPEC.effort,
         max_output_tokens: CATALOG_SPEC.maxOutputTokens,
         max_tool_calls: CATALOG_SPEC.maxToolCalls,
         tools: CATALOG_SPEC.tools,
@@ -372,6 +391,18 @@ async function submitCatalog(db: SupabaseClient, job: JobRow, attempt: number, p
     .single();
   if (error?.code === "23505") return;
   if (error) throw new Error(error.message);
+
+  if (external) {
+    await logCatalogRunEvent(db, job.id, {
+      generationId: gen.id,
+      attempt,
+      kind: "progress",
+      message: `Đã tạo tác vụ Claude Code nghiên cứu Catalog (lần ${attempt + 1}).`,
+      payload: { submitted_at: new Date().toISOString() },
+    });
+    return;
+  }
+  if (!apiKey) throw new Error(`Chưa cấu hình ${agentKeyEnv(role)}.`);
 
   let requestId: string;
   try {
@@ -443,6 +474,7 @@ async function pollCatalog(db: SupabaseClient, job: JobRow, latest: CatalogGener
           attempt: latest.attempt,
           kind: "progress",
           message: `Flex không còn chỗ, gửi lại yêu cầu nghiên cứu bằng tier mặc định (lần ${latest.attempt + 1}).`,
+          payload: { fallback_tier: "default" },
         });
         return;
       }

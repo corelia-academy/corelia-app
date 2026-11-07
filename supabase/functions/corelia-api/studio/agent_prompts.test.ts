@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "../lib/supabase.ts";
 import { loadAgentPrompt } from "./agent_prompts.ts";
+import { PROMPT_VERSIONS } from "./prompts.ts";
 
 function promptDb(result: { data: unknown; error: { message: string } | null }) {
   const query: Record<string, any> = {};
@@ -12,29 +13,40 @@ function promptDb(result: { data: unknown; error: { message: string } | null }) 
 }
 
 describe("Studio agent prompt lookup", () => {
+  const version = PROMPT_VERSIONS["a2-research"];
+
   it("loads the code-pinned numeric version once and returns prompt text and provenance from that row", async () => {
-    const { db, query } = promptDb({ data: { version: 13, system_prompt: "database prompt body" }, error: null });
+    const { db, query } = promptDb({ data: { version, system_prompt: "database prompt body" }, error: null });
     const prompt = await loadAgentPrompt(db, "a2-research");
 
     expect(db.from).toHaveBeenCalledTimes(1);
     expect(db.from).toHaveBeenCalledWith("studio_agent_prompts");
     expect(query.select).toHaveBeenCalledWith("version, system_prompt");
-    expect(query.eq.mock.calls).toEqual([["prompt_key", "a2-research"], ["version", 13]]);
-    expect(prompt).toEqual({ version: 13, promptVersion: "a2-research@v13", system: "database prompt body" });
+    expect(query.eq.mock.calls).toEqual([["prompt_key", "a2-research"], ["version", version]]);
+    expect(prompt).toEqual({ version, promptVersion: `a2-research@v${version}`, system: "database prompt body" });
+  });
+
+  it("loads the immutable version already recorded on an in-flight generation", async () => {
+    const storedVersion = 7;
+    const { db, query } = promptDb({ data: { version: storedVersion, system_prompt: "stored prompt body" }, error: null });
+    const prompt = await loadAgentPrompt(db, "a1-catalog-research", storedVersion);
+
+    expect(query.eq.mock.calls).toEqual([["prompt_key", "a1-catalog-research"], ["version", storedVersion]]);
+    expect(prompt).toEqual({ version: storedVersion, promptVersion: "a1-catalog-research@v7", system: "stored prompt body" });
   });
 
   it("fails clearly when the pinned version is missing instead of falling back", async () => {
     const { db } = promptDb({ data: null, error: null });
-    await expect(loadAgentPrompt(db, "a2-research")).rejects.toThrow("Studio prompt a2-research@v13 is missing or invalid in public.studio_agent_prompts.");
+    await expect(loadAgentPrompt(db, "a2-research")).rejects.toThrow(`Studio prompt a2-research@v${version} is missing or invalid in public.studio_agent_prompts.`);
   });
 
   it("surfaces database lookup errors with the requested prompt version", async () => {
     const { db } = promptDb({ data: null, error: { message: "permission denied" } });
-    await expect(loadAgentPrompt(db, "a2-research")).rejects.toThrow("Could not load Studio prompt a2-research@v13: permission denied");
+    await expect(loadAgentPrompt(db, "a2-research")).rejects.toThrow(`Could not load Studio prompt a2-research@v${version}: permission denied`);
   });
 
   it("rejects an empty prompt row", async () => {
-    const { db } = promptDb({ data: { version: 13, system_prompt: "  " }, error: null });
-    await expect(loadAgentPrompt(db, "a2-research")).rejects.toThrow("Studio prompt a2-research@v13 is missing or invalid");
+    const { db } = promptDb({ data: { version, system_prompt: "  " }, error: null });
+    await expect(loadAgentPrompt(db, "a2-research")).rejects.toThrow(`Studio prompt a2-research@v${version} is missing or invalid`);
   });
 });

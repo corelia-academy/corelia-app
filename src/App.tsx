@@ -51,6 +51,7 @@ const FeedPage = lazyRoute(routeChunks.feed);
 const Courses = lazyRoute(routeChunks.courses);
 const LearningPrinciplesPage = lazy(() => import("@/pages/learning-principles/LearningPrinciplesPage"));
 const Auth = lazyRoute(routeChunks.login);
+const OAuthConsent = lazy(() => import("@/pages/oauth/OAuthConsent"));
 const OCIDRedirect = lazy(() => import("@/pages/OCIDRedirect"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const MainLayout = lazyRoute(routeChunks.mainLayout);
@@ -274,6 +275,16 @@ function ApplicationRoutes() {
                 <Suspense fallback={<LocationPlaceholder />}>
                   <Auth />
                 </Suspense>
+              }
+            />
+            <Route
+              path="/oauth/consent"
+              element={
+                <RequireRole roles={ROLE_GROUPS.adminOnly}>
+                  <Suspense fallback={<PageFallback />}>
+                    <OAuthConsent />
+                  </Suspense>
+                </RequireRole>
               }
             />
             <Route

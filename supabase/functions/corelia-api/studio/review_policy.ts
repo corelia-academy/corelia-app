@@ -7,6 +7,7 @@ export const REVIEW_ISSUE_CATEGORIES = [
   "outcome_mismatch",
   "optional_made_mandatory",
   "unsupported_platform_format",
+  "flow_violation",
   "missing_practice",
   "missing_installation_steps",
   "insufficient_description",
@@ -24,6 +25,9 @@ export const BLOCKING_REVIEW_CATEGORIES = [
   "outcome_mismatch",
   "optional_made_mandatory",
   "unsupported_platform_format",
+  // Lesson opens without a concrete case, uses a term before explaining it, does not reuse what
+  // earlier lessons taught, or a module breaks the teaching → quick_check → practice flow. Blocking so A5 rewrites it.
+  "flow_violation",
 ] as const satisfies readonly ReviewIssueCategory[];
 
 export const A4_REVIEW_CRITERIA = [

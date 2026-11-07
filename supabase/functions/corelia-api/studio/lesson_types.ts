@@ -8,6 +8,15 @@ import type { Diagram } from "./diagram.ts";
 
 export type LessonFormat = "video" | "article" | "quiz" | "practice" | "code_exercise";
 
+export const MIN_QUIZ_QUESTIONS = 5;
+
+/** warm_up stays short only for legacy in-progress curricula; new curricula cannot use that purpose. */
+const SHORT_QUIZ_MIN_QUESTIONS: Record<string, number> = { warm_up: 1, quick_check: 2 };
+
+export function minQuizQuestions(purpose: string | undefined): number {
+  return (purpose && SHORT_QUIZ_MIN_QUESTIONS[purpose]) || MIN_QUIZ_QUESTIONS;
+}
+
 export interface LessonResource {
   title: string;
   url: string;
@@ -27,6 +36,9 @@ export interface PracticeConfig {
 
 export interface CodeExerciseLocaleContent {
   instructions?: string;
+  hints?: string[];
+  blank_feedback?: Record<string, string>;
+  test_copy?: Record<string, { description?: string; failure_message?: string; hint?: string }>;
 }
 
 export interface CourseLesson {

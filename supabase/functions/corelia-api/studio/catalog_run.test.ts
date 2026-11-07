@@ -85,7 +85,7 @@ describe("A1 run event logging", () => {
       kind: "progress",
       message: "Đã gửi yêu cầu nghiên cứu (lần 1).",
       payload: { submitted_at: "2026-10-30T04:00:00.000Z" },
-    })).resolves.toBeUndefined();
+    })).resolves.toBe(false);
     expect(tables).toEqual(["studio_runs"]);
     expect(inserted).toEqual([]);
   });
@@ -99,7 +99,7 @@ describe("A1 run event logging", () => {
       kind: "progress",
       message: "Đã gửi yêu cầu nghiên cứu (lần 1).",
       payload: { submitted_at: "2026-10-30T04:00:00.000Z" },
-    })).resolves.toBeUndefined();
+    })).resolves.toBe(false);
     expect(error).toHaveBeenCalledTimes(2);
   });
 

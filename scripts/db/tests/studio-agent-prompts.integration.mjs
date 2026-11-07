@@ -11,7 +11,7 @@ const promptMigrations = migrationFiles
   .sort();
 if (promptMigrations.length === 0) throw new Error("No Studio prompt migrations found.");
 
-const rowPattern = /\('([^']+)',\s*(\d+),\s*'(A[1-6])',\s*(\$[a-z0-9_]+\$)([\s\S]*?)\4\)/g;
+const rowPattern = /\('([^']+)',\s*(\d+),\s*'(A[1-7])',\s*(\$[a-z0-9_]+\$)([\s\S]*?)\4\)/g;
 const expectedRows = [];
 for (const file of promptMigrations) {
   const content = readFileSync(resolve(migrationDir, file), "utf8");
@@ -51,12 +51,13 @@ for (const expected of expectedRows) {
 }
 const pinnedVersions = {
   "a1-catalog-research": 7,
-  "a2-brief": 9,
-  "a2-research": 13,
-  "a3-curriculum": 19,
-  "a4-curriculum-review": 17,
-  "a5-lesson": 20,
-  "a6-lesson-review": 18,
+  "a2-brief": 12,
+  "a2-research": 16,
+  "a3-curriculum": 26,
+  "a4-curriculum-review": 23,
+  "a5-lesson": 29,
+  "a6-lesson-review": 27,
+  "a7-translate": 3,
 };
 for (const [key, version] of Object.entries(pinnedVersions)) {
   const identity = `${key}@v${version}`;

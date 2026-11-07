@@ -30,11 +30,11 @@ export async function failGeneration(
   from: "submitting" | "submitted",
   kind: FailureKind,
   reason: string,
-  billed: { model_id?: string; usage?: Record<string, unknown> | null } = {},
+  failureData: { model_id?: string; usage?: Record<string, unknown> | null; output?: unknown } = {},
 ): Promise<boolean> {
   const { data, error } = await db
     .from("studio_generations")
-    .update({ ...billed, status: "failed", failure_kind: kind, error: reason.slice(0, 2000), completed_at: new Date().toISOString() })
+    .update({ ...failureData, status: "failed", failure_kind: kind, error: reason.slice(0, 2000), completed_at: new Date().toISOString() })
     .eq("id", id)
     .eq("status", from)
     .select("id");

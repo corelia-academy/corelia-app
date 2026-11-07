@@ -34,6 +34,7 @@ function supabaseAuthToPseudoCode(err: {
 }): string {
   const apiCode = err.code?.toLowerCase();
   if (apiCode === "email_not_confirmed") return "auth/email-not-confirmed";
+  if (apiCode === "invalid_credentials") return "auth/invalid-credential";
 
   const msg = err.message.toLowerCase();
   if (apiCode === "same_password" || msg.includes("different from the old password")) {

@@ -11,6 +11,37 @@ const appVersion = JSON.parse(
   readFileSync(fileURLToPath(new URL('./package.json', import.meta.url)), 'utf-8'),
 ).version as string
 
+function localSpaHistoryFallback() {
+  return {
+    name: 'corelia-local-spa-history-fallback',
+    apply: 'serve' as const,
+    enforce: 'pre' as const,
+    configureServer(server: import('vite').ViteDevServer) {
+      server.middlewares.use(async (req, res, next) => {
+        if (req.method !== 'GET' || !req.headers.accept?.includes('text/html')) return next()
+
+        const requestUrl = req.url ?? '/'
+        const pathname = new URL(requestUrl, 'http://vite.local').pathname
+        const basePath = server.config.base.replace(/\/+$/, '')
+        if (basePath && pathname !== basePath && !pathname.startsWith(`${basePath}/`)) return next()
+        if (basePath && pathname.startsWith(`${basePath}/assets/`)) return next()
+
+        try {
+          const html = await server.transformIndexHtml(
+            requestUrl,
+            readFileSync(fileURLToPath(new URL('./index.html', import.meta.url)), 'utf-8'),
+          )
+          res.statusCode = 200
+          res.setHeader('Content-Type', 'text/html')
+          res.end(html)
+        } catch (error) {
+          next(error as Error)
+        }
+      })
+    },
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   // The SPA is served at corelia.academy/learn; the Astro landing owns the domain root.
@@ -27,7 +58,7 @@ export default defineConfig({
     babel: {
       plugins: [['babel-plugin-react-compiler']],
     },
-  }), tailwindcss(), cloudflare()],
+  }), tailwindcss(), localSpaHistoryFallback(), cloudflare()],
   build: {
     rollupOptions: {
       // Cloudflare Workers Builds hits EMFILE with Rollup's default of 1000 parallel file reads.

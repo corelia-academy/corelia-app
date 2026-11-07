@@ -9,13 +9,15 @@
  */
 export const MAX_TRANSPORT_FAILURES = 5;
 
-export type FailureKind = "transport" | "provider" | "rejected";
+export type FailureKind = "transport" | "provider" | "rejected" | "system";
 
 export interface RoundFailures {
   /** Attempts the model answered and that were refused (acceptance check, output budget). */
   model: number;
   /** Attempts that never reached the provider, or that the provider failed after accepting them. */
   transport: number;
+  /** Non-retryable operational failures. Optional to preserve existing callers' object shape. */
+  terminal?: number;
 }
 
 export interface AttemptRow {
@@ -33,10 +35,16 @@ export function failureKind(r: Pick<AttemptRow, "provider_request_id" | "failure
 
 export function roundFailures(rows: AttemptRow[], firstAttempt: number): RoundFailures {
   const failed = rows.filter((r) => r.attempt >= firstAttempt && r.status === "failed");
-  const model = failed.filter((r) => failureKind(r) === "rejected").length;
-  return { model, transport: failed.length - model };
+  const kinds = failed.map(failureKind);
+  const model = kinds.filter((kind) => kind === "rejected").length;
+  const terminal = kinds.filter((kind) => kind === "system").length;
+  return {
+    model,
+    transport: kinds.filter((kind) => kind === "transport" || kind === "provider").length,
+    ...(terminal > 0 ? { terminal } : {}),
+  };
 }
 
 export function canRetry(f: RoundFailures, maxAttempts: number): boolean {
-  return f.model < maxAttempts && f.transport < MAX_TRANSPORT_FAILURES;
+  return (f.terminal ?? 0) === 0 && f.model < maxAttempts && f.transport < MAX_TRANSPORT_FAILURES;
 }

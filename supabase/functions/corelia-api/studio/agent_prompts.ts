@@ -7,9 +7,12 @@ export interface LoadedAgentPrompt {
   system: string;
 }
 
-/** Load the exact version pinned by code. There is no in-code prompt fallback. */
-export async function loadAgentPrompt(db: SupabaseClient, key: PromptKey): Promise<LoadedAgentPrompt> {
-  const version = PROMPT_VERSIONS[key];
+/** Load the immutable version pinned for a new task or recorded on an existing generation. */
+export async function loadAgentPrompt(db: SupabaseClient, key: PromptKey, requestedVersion = PROMPT_VERSIONS[key]): Promise<LoadedAgentPrompt> {
+  if (!Number.isSafeInteger(requestedVersion) || requestedVersion < 1) {
+    throw new Error(`Invalid Studio prompt version ${key}@v${requestedVersion}.`);
+  }
+  const version = requestedVersion;
   const { data, error } = await db
     .from("studio_agent_prompts")
     .select("version, system_prompt")
