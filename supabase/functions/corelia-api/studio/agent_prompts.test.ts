@@ -26,6 +26,15 @@ describe("Studio agent prompt lookup", () => {
     expect(prompt).toEqual({ version, promptVersion: `a2-research@v${version}`, system: "database prompt body" });
   });
 
+  it("loads the immutable version already recorded on an in-flight generation", async () => {
+    const storedVersion = 7;
+    const { db, query } = promptDb({ data: { version: storedVersion, system_prompt: "stored prompt body" }, error: null });
+    const prompt = await loadAgentPrompt(db, "a1-catalog-research", storedVersion);
+
+    expect(query.eq.mock.calls).toEqual([["prompt_key", "a1-catalog-research"], ["version", storedVersion]]);
+    expect(prompt).toEqual({ version: storedVersion, promptVersion: "a1-catalog-research@v7", system: "stored prompt body" });
+  });
+
   it("fails clearly when the pinned version is missing instead of falling back", async () => {
     const { db } = promptDb({ data: null, error: null });
     await expect(loadAgentPrompt(db, "a2-research")).rejects.toThrow(`Studio prompt a2-research@v${version} is missing or invalid in public.studio_agent_prompts.`);

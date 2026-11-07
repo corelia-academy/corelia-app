@@ -99,12 +99,14 @@ describe("CATALOG_RESEARCH_SCHEMA", () => {
 });
 
 describe("A1 catalog prompt", () => {
-  it("uses v7 and does not request open_questions", () => {
+  it("uses v8 and does not request open_questions", () => {
     const prompt = SEEDED_PROMPTS["a1-catalog-research"];
-    expect(prompt.version).toBe("v7");
+    expect(prompt.version).toBe("v8");
     expect(prompt.system).not.toContain("open_questions");
     expect(prompt.system).toContain("ít nhất một truy vấn nhắm đúng locale hoặc thị trường của audience");
     expect(prompt.system).toContain("input_ref = app_courses");
+    expect(prompt.system).toContain("Nếu app_courses.items rỗng, không tạo input_evidence với input_ref = app_courses");
+    expect(prompt.system).toContain("kể cả khi other_courses là []");
   });
 });
 
