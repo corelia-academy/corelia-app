@@ -20,13 +20,12 @@ export default function OAuthConsent() {
   const [details, setDetails] = useState<AuthorizationDetails | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const errorMessage = authorizationId ? error : t("oauthConsent.missingRequest");
 
   useEffect(() => {
+    if (!authorizationId) return;
+
     let active = true;
-    if (!authorizationId) {
-      setError(t("oauthConsent.missingRequest"));
-      return () => { active = false; };
-    }
 
     void supabase.auth.oauth.getAuthorizationDetails(authorizationId).then(({ data, error: requestError }) => {
       if (!active) return;
@@ -82,7 +81,7 @@ export default function OAuthConsent() {
           <p className="text-sm text-foreground-muted">{t("oauthConsent.description")}</p>
         </div>
 
-        {error && <p className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive" role="alert">{error}</p>}
+        {errorMessage && <p className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive" role="alert">{errorMessage}</p>}
 
         {details && (
           <dl className="grid gap-3 rounded-xl border border-border-subtle p-4 text-sm">
