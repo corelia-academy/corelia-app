@@ -58,6 +58,8 @@ export interface PublishInput {
   curriculum: unknown;
   records: Record<string, LessonRecord>;
   translations?: Record<string, any>;
+  /** Locales this run translated into; defaults to every translation locale. */
+  translationLocales?: readonly TranslationLocale[];
 }
 
 export interface PublishPayload {
@@ -120,7 +122,8 @@ export function buildPublishPayload(input: PublishInput): PublishPayload {
     throw new PublishRejected("Thiếu dữ liệu bản dịch đa ngôn ngữ cho khóa học.");
   }
 
-  for (const loc of TRANSLATION_LOCALES) {
+  const translationLocales = input.translationLocales ?? TRANSLATION_LOCALES;
+  for (const loc of translationLocales) {
     const trans = input.translations[loc];
     if (!trans) throw new PublishRejected(`Thiếu bản dịch cho ngôn ngữ ${loc}.`);
     if (!trans.course) throw new PublishRejected(`Thiếu bản dịch khóa học cho ngôn ngữ ${loc}.`);
@@ -165,7 +168,7 @@ export function buildPublishPayload(input: PublishInput): PublishPayload {
     throw new PublishRejected("Brief thiếu tiêu đề tiếng Anh chuẩn tắc (title).");
   }
 
-  const supportedLocales = [...COURSE_LOCALES];
+  const supportedLocales = COURSE_LOCALES.filter((loc) => loc === "en" || translationLocales.includes(loc as TranslationLocale));
 
   return {
     course: {
@@ -193,14 +196,14 @@ export function buildPublishPayload(input: PublishInput): PublishPayload {
 }
 
 /** Images of the run: draft object and its place in the app. */
-export function imageJobs(input: Pick<PublishInput, "runId" | "courseId" | "records"> & { translations?: Record<string, any> }): { from: string; to: string }[] {
+export function imageJobs(input: Pick<PublishInput, "runId" | "courseId" | "records" | "translationLocales"> & { translations?: Record<string, any> }): { from: string; to: string }[] {
   const baseJobs = Object.entries(input.records).flatMap(([lessonId, r]) =>
     r.draft.diagrams.map((d) => ({ from: draftPath(input.runId, lessonId, d.id), to: appImagePath(input.courseId, diagramFile(lessonId, d.id)) }))
   );
   if (!input.translations) return baseJobs;
 
   const translatedJobs: { from: string; to: string }[] = [];
-  for (const loc of TRANSLATION_LOCALES) {
+  for (const loc of input.translationLocales ?? TRANSLATION_LOCALES) {
     const locTranslations = input.translations[loc];
     if (!locTranslations?.lessons) continue;
     for (const [lessonId, r] of Object.entries(input.records)) {

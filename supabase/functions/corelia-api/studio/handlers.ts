@@ -24,7 +24,7 @@ import { agentKey, errorMessage, failGeneration, fallBackToDefaultTier, loadFail
 import { submitResponse } from "./openai.ts";
 import { publishRun, PublishRejected } from "./publish.ts";
 import {
-  TRANSLATION_LOCALES,
+  resolveTranslationLocales,
   type TranslationLocale,
   type CourseTranslationMap,
   type TranslatedLesson,
@@ -488,13 +488,21 @@ async function renderDrafts(db: SupabaseClient, run: RunRow, records: Record<str
 // structure_check and journey_test run in the tick itself. A failure ends the run as a draft with the
 // list of problems; a check that could not be made (links unreachable for now) is retried next tick.
 
+/** Target locales chosen for the run; every translation locale unless the run narrowed them. */
+export async function loadRunTranslationLocales(db: SupabaseClient, runId: string): Promise<TranslationLocale[]> {
+  const { data, error } = await db.from("studio_runs").select("translation_locales").eq("id", runId).single();
+  if (error) throw new Error(error.message);
+  return resolveTranslationLocales(data.translation_locales);
+}
+
 async function renderTranslatedDrafts(
   db: SupabaseClient,
   run: RunRow,
   records: Record<string, LessonRecord>,
   translations: CourseTranslationMap,
+  locales: readonly TranslationLocale[],
 ): Promise<void> {
-  for (const loc of TRANSLATION_LOCALES) {
+  for (const loc of locales) {
     const locTranslations = translations[loc];
     if (!locTranslations?.lessons) continue;
     for (const [lessonId, r] of Object.entries(records)) {
@@ -590,6 +598,7 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
   const records = await loadRecords(db, run, ctx);
   const brief = ctx.outputs.brief as any;
   const refs = lessonRefs(curriculum);
+  const locales = await loadRunTranslationLocales(db, run.id);
 
   // 1. Kiểm tra generation tổng hợp đã hoàn thành chưa (idempotent / resume)
   const existingGen = await db
@@ -604,10 +613,10 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
 
   if (existingGen?.data?.output) {
     const existingTranslations = existingGen.data.output as CourseTranslationMap;
-    const hasAll = TRANSLATION_LOCALES.every((loc) => Boolean(existingTranslations[loc]));
+    const hasAll = locales.every((loc) => Boolean(existingTranslations[loc]));
     if (hasAll) {
       try {
-        await renderTranslatedDrafts(db, run, records, existingTranslations);
+        await renderTranslatedDrafts(db, run, records, existingTranslations, locales);
         await markStepDone(db, run.id, "translate");
       } catch (renderErr) {
         if (!await handleTranslateRenderError(db, run, renderErr)) throw renderErr;
@@ -678,7 +687,7 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
   let workDoneThisTick = 0;
   let allUnitsCompleted = true;
 
-  for (const loc of TRANSLATION_LOCALES) {
+  for (const loc of locales) {
     for (const u of units) {
       const key = `${loc}:${u.unitKey}`;
       const attempts = gensByUnit.get(key) ?? [];
@@ -884,10 +893,10 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
     }
   }
 
-  // 5. Nếu tất cả units của 6 ngôn ngữ đã hoàn tất
+  // 5. Nếu tất cả units của các ngôn ngữ đích của run đã hoàn tất
   if (allUnitsCompleted) {
     const fullTranslations: Record<string, any> = {};
-    for (const loc of TRANSLATION_LOCALES) {
+    for (const loc of locales) {
       fullTranslations[loc] = {
         course: null,
         sections: {},
@@ -912,7 +921,7 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
 
     // Render sơ đồ dịch
     try {
-      await renderTranslatedDrafts(db, run, records, translationsMap);
+      await renderTranslatedDrafts(db, run, records, translationsMap, locales);
     } catch (renderErr) {
       if (!await handleTranslateRenderError(db, run, renderErr)) throw renderErr;
       return;
@@ -932,7 +941,7 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
       prompt_version: prompt.promptVersion,
       status: "completed",
       provider_request_id: `translate-aggregate:${run.id}`,
-      input: { locales: TRANSLATION_LOCALES },
+      input: { locales },
       output: translationsMap,
       completed_at: new Date().toISOString(),
     });
@@ -944,8 +953,8 @@ export async function runTranslate(db: SupabaseClient, run: RunRow): Promise<voi
       attempt: 0,
       kind: "result",
       agent_role: "A7",
-      message: `${STEP_LABEL.translate}: Đã hoàn tất bản dịch cho 6 ngôn ngữ đích (${TRANSLATION_LOCALES.join(", ")}).`,
-      payload: { locales: TRANSLATION_LOCALES },
+      message: `${STEP_LABEL.translate}: Đã hoàn tất bản dịch cho ${locales.length} ngôn ngữ đích (${locales.join(", ")}).`,
+      payload: { locales },
     });
 
     await markStepDone(db, run.id, "translate");
@@ -960,7 +969,8 @@ export async function acceptExternalTranslation(
   output: unknown,
 ): Promise<Acceptance> {
   try {
-    if (!generation.locale || !TRANSLATION_LOCALES.includes(generation.locale as TranslationLocale)) {
+    const runLocales = await loadRunTranslationLocales(db, run.id);
+    if (!generation.locale || !runLocales.includes(generation.locale as TranslationLocale)) {
       throw new TranslationIntegrityError("Ngôn ngữ dịch không hợp lệ.");
     }
     if (!output || typeof output !== "object" || Array.isArray(output)) {
@@ -1068,6 +1078,7 @@ async function runPublish(db: SupabaseClient, run: RunRow) {
       curriculum: ctx.outputs.curriculum,
       records,
       translations: ctx.outputs.translate as any,
+      translationLocales: await loadRunTranslationLocales(db, run.id),
     });
   } catch (e) {
     if (e instanceof PublishRejected) {

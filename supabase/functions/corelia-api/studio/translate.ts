@@ -17,6 +17,13 @@ import type { Diagram, DiagramNode, DiagramEdge } from "./diagram.ts";
 export const TRANSLATION_LOCALES = ["zh-CN", "ko", "es", "zh-TW", "vi", "ja"] as const;
 export type TranslationLocale = typeof TRANSLATION_LOCALES[number];
 
+/** Target locales of one run (studio_runs.translation_locales), in the canonical order; unknown values are dropped and an empty result falls back to every locale. */
+export function resolveTranslationLocales(value: unknown): TranslationLocale[] {
+  const chosen = new Set(Array.isArray(value) ? value : []);
+  const locales = TRANSLATION_LOCALES.filter((loc) => chosen.has(loc));
+  return locales.length > 0 ? locales : [...TRANSLATION_LOCALES];
+}
+
 export class TranslationIntegrityError extends Error {
   constructor(message: string) {
     super(message);

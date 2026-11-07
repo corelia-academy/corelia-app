@@ -556,6 +556,30 @@ describe("studio publish: multilanguage format v2 (Mục E)", () => {
     expect(() => buildPublishPayload(multiInput)).toThrow("Thiếu bản dịch cho ngôn ngữ ja");
   });
 
+  it("publishes only the run's locales plus English when the run narrowed them", () => {
+    const viOnly = {
+      ...input,
+      brief: { ...brief, locale: "en" },
+      translations: { vi: makeMockTranslations()["vi"] },
+      translationLocales: ["vi"] as const,
+    };
+    const p = buildPublishPayload(viOnly);
+
+    expect(p.course.data.i18n).toMatchObject({ supported_locales: ["en", "vi"], primary_content_locale: "en" });
+    expect(p.course_locales.map((c) => c.locale)).toEqual(["vi"]);
+    expect(p.section_locales.length).toBe(2);
+    expect(p.lesson_locales.length).toBe(5);
+    expect(imageJobs(viOnly).map((j) => j.to)).toEqual([
+      `course-thumbnails/${input.courseId}/lessons/l-art-d1.png`,
+      `course-thumbnails/${input.courseId}/lessons/l-art-d1_vi.png`,
+    ]);
+  });
+
+  it("still requires every locale the run chose", () => {
+    const missingVi = { ...input, brief: { ...brief, locale: "en" }, translations: {}, translationLocales: ["vi"] as const };
+    expect(() => buildPublishPayload(missingVi)).toThrow("Thiếu bản dịch cho ngôn ngữ vi");
+  });
+
   it("imageJobs produces diagram images for both canonical and translated locales", () => {
     const multiInput = {
       ...input,

@@ -13,9 +13,25 @@ import {
   canonicalCourseShortDescription,
   TranslationIntegrityError,
   TRANSLATION_LOCALES,
+  resolveTranslationLocales,
   type TranslatedLesson,
 } from "./translate.ts";
 import type { LessonRecord } from "./checks.ts";
+
+describe("translate: run target locales", () => {
+  it("keeps the chosen locales in canonical order", () => {
+    expect(resolveTranslationLocales(["vi", "ko"])).toEqual(["ko", "vi"]);
+    expect(resolveTranslationLocales(["vi"])).toEqual(["vi"]);
+  });
+
+  it("drops unknown values and falls back to every locale when nothing valid is left", () => {
+    expect(resolveTranslationLocales(["vi", "en", "fr"])).toEqual(["vi"]);
+    expect(resolveTranslationLocales([])).toEqual([...TRANSLATION_LOCALES]);
+    expect(resolveTranslationLocales(["en"])).toEqual([...TRANSLATION_LOCALES]);
+    expect(resolveTranslationLocales(null)).toEqual([...TRANSLATION_LOCALES]);
+    expect(resolveTranslationLocales("vi")).toEqual([...TRANSLATION_LOCALES]);
+  });
+});
 
 describe("translate: extract helpers", () => {
   it("extracts code blocks exactly", () => {
