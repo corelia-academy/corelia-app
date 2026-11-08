@@ -115,6 +115,7 @@ export function CodeBlock({ language, code, variant = "default" }: Props) {
           </Button>
         </div>
         <SyntaxHighlighter className="scrollbar-design" tabIndex={0} language={language || "text"}
+          showLineNumbers lineNumberStyle={{ minWidth: "2.5rem", paddingRight: "1rem", textAlign: "right", userSelect: "none", color: isDark ? "#596587" : undefined }}
           style={isDark ? lessonDarkStyle : oneLight}
           customStyle={{ margin: 0, borderRadius: 0, background: "transparent", fontSize: "1rem", lineHeight: "2rem", letterSpacing: "-0.01em", padding: "1.25rem 1.5rem" }}
           codeTagProps={{ style: { fontFamily: "inherit" } }} wrapLongLines={false}>

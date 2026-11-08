@@ -3,8 +3,11 @@ import { validateLessonResources } from "@/features/learning/resourceValidation"
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { Action } from "@/components/ui/action";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, CircleNotch } from "@phosphor-icons/react";
+import { CourseResourceIcon } from "@/components/courses/CourseResourceIcon";
+import { resourceIconForUrl } from "@/features/learning/resourceGroups";
+import { ArrowUpRight, CheckCircle, CircleNotch } from "@phosphor-icons/react";
 import { useAuth } from "@/stores/authStore";
 import { LessonRenderer } from "@/features/learning/LessonRenderer";
 import { LessonColumn } from "@/features/learning/lessonLayout";
@@ -98,13 +101,19 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
       : action?.label === t("learning.completeContinue")
         ? { full: t("learning.markComplete"), short: t("learning.markCompleteShort") }
         : { full: label };
-  const header = <>{mode === "preview" && <p className="rounded-lg bg-primary/10 p-3 text-sm">{t("learning.previewBanner")}</p>}<div><p className="text-sm text-foreground-muted">{t(`learning.formats.${getLessonFormat(lesson)}`)} {completed && `· ${t("learning.completed")}`}</p><h1 className="mt-2 text-heading-large font-display">{lessonText(lesson.title)}</h1>{lesson.short_description && <p className="mt-2 text-foreground-muted">{lessonText(lesson.short_description)}</p>}{!inFooter && canAskAboutLesson(lesson) && <div className="mt-3"><AskAiMenu lesson={lesson} courseTitle={courseTitle} /></div>}</div></>;
+  const header = <>{mode === "preview" && <p className="rounded-lg bg-primary/10 p-3 text-sm">{t("learning.previewBanner")}</p>}<div><h1 className="text-heading-large font-display">{lessonText(lesson.title)}</h1>{lesson.short_description && <p className="mt-2 text-foreground-muted">{lessonText(lesson.short_description)}</p>}{!inFooter && canAskAboutLesson(lesson) && <div className="mt-3"><AskAiMenu lesson={lesson} courseTitle={courseTitle} /></div>}</div></>;
   const resourcesNode = !!resources.length && (
     <section>
       <h2 className="mb-3xl font-display text-heading-large text-action-text">{t("learning.resources")}</h2>
-      <div className="flex flex-col gap-xl text-body-large text-action-text">
-        {resources.map((r,i) => <a key={i} href={r.url} target="_blank" rel="noreferrer" className="block text-primary underline">{r.title}</a>)}
-      </div>
+      <ul className="flex flex-wrap gap-md">
+        {resources.map((r, i) => (
+          <li key={`${r.url}:${i}`} className="min-w-0 max-w-full rounded-xl bg-resource-item-surface">
+            <Action size="large" nativeButton={false} render={<a href={r.url} target="_blank" rel="noopener noreferrer" />}
+              icon={<CourseResourceIcon icon={resourceIconForUrl(r.url)} />} label={r.title}
+              trailingGroup={<ArrowUpRight className="size-4" weight="duotone" aria-hidden />} />
+          </li>
+        ))}
+      </ul>
     </section>
   );
   return <div className="flex min-h-full flex-col">
