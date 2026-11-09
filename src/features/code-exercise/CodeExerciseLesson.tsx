@@ -8,6 +8,7 @@ import { CodeBlock, CodeBlockFrame, CodeSpan } from "@/components/markdown/CodeB
 import { ExplanationBox } from "@/components/ui/explanation-box";
 import { useAuth } from "@/stores/authStore";
 import { recordLearningEvent } from "@/lib/learning";
+import { LessonConfetti } from "@/features/learning/LessonConfetti";
 import type { LessonRendererProps } from "@/features/learning/types";
 import { CodeEditor } from "./CodeEditor";
 import { validateCodeConfig } from "./config";
@@ -52,6 +53,7 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
   const fill = config.mode === "fill";
   const blankIds = useMemo(() => segments.flatMap(s => s.type === "blank" ? [s.id] : []), [segments]);
   const [missingId, setMissingId] = useState<string | null>(null);
+  const [celebrateKey, setCelebrateKey] = useState(0);
   const locked = result !== null;
   const retryable = result !== null && !result.passed;
   const notes = result ? result.results.filter(r => !r.passed).flatMap(r => [
@@ -96,6 +98,7 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
       }
       const evaluated = evaluateCodeExercise(config, { answers, source });
       setResult(evaluated);
+      if (evaluated.passed) setCelebrateKey(k => k + 1);
       if (key) void recordLearningEvent(courseId, lesson.id, "code_exercise_checked", evaluated.passed);
       if (evaluated.passed && mode === "learner" && !completed) {
         setCompletionPending(true);
@@ -112,10 +115,11 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
     disabled: busy, pending: busy,
     run: act,
   }); return () => onAction(null); }, [onAction, act, busy, completionPending, retryable, t]);
-  return <div className="space-y-4" onKeyDown={e => {
+  return <div className="relative space-y-4" onKeyDown={e => {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); void act(); }
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") { e.preventDefault(); save(); }
   }}>
+    <LessonConfetti burstKey={celebrateKey} />
     <div className="space-y-4">
       <div className="min-w-0">
         {config.mode === "fill" ? <CodeBlockFrame language={config.language}>

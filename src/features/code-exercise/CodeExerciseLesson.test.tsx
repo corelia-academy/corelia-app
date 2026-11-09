@@ -98,4 +98,5 @@ it("retries only completion after a passed check, then locks the answers", async
   expect(complete).toHaveBeenCalledTimes(2);
   expect(recordLearningEvent).toHaveBeenCalledTimes(1);
   expect(host.querySelector("input")!.readOnly).toBe(true);
+  expect(host.querySelector('canvas[data-testid="lesson-confetti"]')).not.toBeNull();
 });

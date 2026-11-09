@@ -56,6 +56,7 @@ describe("quiz preview", () => {
     act(() => radios(container)[0].click());
     await act(async () => { await action?.run(); });
     expect((action as LessonActionState | null)?.summary).toEqual({ correct: 1, total: 1, passed: true });
+    expect(container.querySelector('canvas[data-testid="lesson-confetti"]')).not.toBeNull();
     expect(getLearningQuiz).not.toHaveBeenCalled();
     expect(submitLearningQuiz).not.toHaveBeenCalled();
     expect(onComplete).not.toHaveBeenCalled();
@@ -143,6 +144,7 @@ describe("quiz mutation recovery", () => {
     expect(box?.textContent).toContain("learning.quizThinkAgain");
     expect(box?.textContent).toContain("Explanation");
     expect(ui.action()?.summary).toEqual({ correct: 0, total: 1, passed: false });
+    expect(ui.container.querySelector('canvas[data-testid="lesson-confetti"]')).toBeNull();
     expect(ui.container.querySelector('[role="status"]')).toBeNull();
   });
 

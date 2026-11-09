@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
 import { getLearningQuiz, submitLearningQuiz, type LearningQuizResult } from "@/lib/learning";
+import { LessonConfetti } from "./LessonConfetti";
 import type { LessonRendererProps } from "./types";
 import type { SectionQuestion } from "@/types/questions";
 
@@ -36,6 +37,7 @@ function Quiz({ courseId, lesson, mode, completed, onComplete, onAction, questio
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [missingId, setMissingId] = useState<string | null>(null);
+  const [celebrateKey, setCelebrateKey] = useState(0);
   const allAnswered = questions.every(q => answers[q.id] !== undefined);
   const locked = busy || Boolean(result) || submittedAnswers !== null;
   const retry = useCallback(() => { setAnswers({}); setSubmittedAnswers(null); setResult(null); setError(null); setMissingId(null); setRequestId(crypto.randomUUID()); }, []);
@@ -64,6 +66,7 @@ function Quiz({ courseId, lesson, mode, completed, onComplete, onAction, questio
       const correct = questions.filter(q => q.correct_index === payload[q.id]).length;
       const value: LearningQuizResult = mode === "preview" ? { total: questions.length, correct, passed: correct / questions.length >= threshold, passing_ratio: threshold, attempt_group_id: requestId, completed: true, attempts: [] } : await submitLearningQuiz(courseId, lesson.id, requestId, payload, resetEpoch);
       setResult(value);
+      if (value.passed) setCelebrateKey(k => k + 1);
       if (value.passed && mode === "learner" && !completed) await onComplete();
     } catch (e) { setError(e instanceof Error ? e.message : t("learning.systemError")); }
     finally { inFlight.current = false; setBusy(false); }
@@ -74,7 +77,8 @@ function Quiz({ courseId, lesson, mode, completed, onComplete, onAction, questio
       run: result && !result.passed ? retry : submit });
     return () => onAction(null);
   }, [onAction, busy, result, error, mode, user, retry, submit, t, questions.length]);
-  return <div className="space-y-6">
+  return <div className="relative space-y-6">
+    <LessonConfetti burstKey={celebrateKey} />
     {mode === "learner" && !user && <p>{t("learning.loginToSave")}</p>}
     <div className="flex flex-col gap-10">
       {questions.map((q, i) => {

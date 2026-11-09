@@ -398,6 +398,12 @@
   --color-explanation-box-surface: var(--explanation-box-surface);
   --color-code-block-header-surface: var(--code-block-header-surface);
   --color-code-block-surface: var(--code-block-surface);
+  --color-confetti-yellow: var(--confetti-yellow);
+  --color-confetti-green: var(--confetti-green);
+  --color-confetti-sky: var(--confetti-sky);
+  --color-confetti-teal: var(--confetti-teal);
+  --color-confetti-coral: var(--confetti-coral);
+  --color-confetti-purple: var(--confetti-purple);
 
   /* Brand tokens */
   --color-brand-navy: var(--brand-navy);
@@ -1167,6 +1173,12 @@
   --mint-revoked-badge-text: var(--neutral-400);
   --mint-revoked-badge-border: var(--neutral-500);
   --selection-mark: var(--neutral-50);
+  --confetti-yellow: var(--accent-yellow-400);
+  --confetti-green: var(--success-400);
+  --confetti-sky: var(--accent-sky-400);
+  --confetti-teal: var(--accent-teal-400);
+  --confetti-coral: var(--error-400);
+  --confetti-purple: var(--accent-purple-400);
 }
 
 .dark {
@@ -1540,6 +1552,12 @@
   --mint-revoked-badge-text: var(--neutral-400);
   --mint-revoked-badge-border: var(--neutral-500);
   --selection-mark: var(--neutral-50);
+  --confetti-yellow: var(--accent-yellow-400);
+  --confetti-green: var(--success-400);
+  --confetti-sky: var(--accent-sky-400);
+  --confetti-teal: var(--accent-teal-400);
+  --confetti-coral: var(--error-400);
+  --confetti-purple: var(--accent-purple-400);
 }
 
 @layer base {
