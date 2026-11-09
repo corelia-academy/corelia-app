@@ -99,6 +99,8 @@
     "submit": "Gửi",
     "retry": "Thử lại",
     "copy": "Sao chép",
+    "copied": "Đã sao chép",
+    "copyFailed": "Không thể sao chép",
     "download": "Tải xuống",
     "share": "Chia sẻ",
     "search": "Tìm kiếm",

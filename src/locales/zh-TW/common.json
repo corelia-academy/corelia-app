@@ -99,6 +99,8 @@
     "submit": "提交",
     "retry": "重試",
     "copy": "複製",
+    "copied": "已複製",
+    "copyFailed": "無法複製",
     "download": "下載",
     "share": "分享",
     "search": "搜尋",

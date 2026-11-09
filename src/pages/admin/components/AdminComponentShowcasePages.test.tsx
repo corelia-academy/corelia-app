@@ -30,6 +30,7 @@ import AdminAvatarComponentPage from "./AdminAvatarComponentPage";
 import AdminBadgeComponentPage from "./AdminBadgeComponentPage";
 import AdminDropdownMenuComponentPage from "./AdminDropdownMenuComponentPage";
 import AdminEmptyStateIllustrationComponentPage from "./AdminEmptyStateIllustrationComponentPage";
+import AdminExplanationBoxComponentPage from "./AdminExplanationBoxComponentPage";
 import AdminFullPageEmptyStateComponentPage from "./AdminFullPageEmptyStateComponentPage";
 import AdminInformativeIconComponentPage from "./AdminInformativeIconComponentPage";
 import AdminInputFieldComponentPage from "./AdminInputFieldComponentPage";
@@ -59,6 +60,7 @@ const pages = [
   AdminInputFieldComponentPage,
   AdminInformativeIconComponentPage,
   AdminStepperComponentPage,
+  AdminExplanationBoxComponentPage,
 ];
 
 describe("admin component detail pages", () => {
@@ -497,6 +499,59 @@ describe("admin component detail pages", () => {
     expect(container.querySelector('[data-testid="badge-filled-color-row-white"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="badge-outline-color-row-primary"]')?.querySelectorAll("svg")).toHaveLength(6);
     expect(container.querySelector('[data-testid="badge-filled-color-row-primary"]')?.querySelectorAll("svg")).toHaveLength(6);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders the single-choice answer selection for every orientation, size and state, and clears on a second click", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <AdminSelectionComponentPage />
+        </MemoryRouter>,
+      );
+    });
+
+    const answer = container.querySelector('[data-testid="selection-answer-card-reference"]');
+    expect(answer?.querySelectorAll('[data-slot="select-card"][data-appearance="answer"]')).toHaveLength(16);
+    expect(answer?.querySelectorAll('[data-slot="checkbox"]')).toHaveLength(0);
+
+    const selectedCell = answer?.querySelector('[data-testid="selection-answer-card-state-horizontal-small-selected"]');
+    const control = selectedCell?.querySelector<HTMLElement>('[role="radio"]');
+    expect(control?.getAttribute("aria-checked")).toBe("true");
+
+    await act(async () => selectedCell?.querySelector<HTMLElement>('[data-slot="select-card"]')?.click());
+
+    expect(control?.getAttribute("aria-checked")).toBe("false");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders Explanation Box correct and incorrect states, with and without a body", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <AdminExplanationBoxComponentPage />
+        </MemoryRouter>,
+      );
+    });
+
+    const statuses = container.querySelector('[data-testid="explanation-box-status"]');
+    const content = container.querySelector('[data-testid="explanation-box-content"]');
+    expect(statuses?.querySelectorAll('[data-slot="explanation-box"][data-status="correct"]')).toHaveLength(1);
+    expect(statuses?.querySelectorAll('[data-slot="explanation-box"][data-status="incorrect"]')).toHaveLength(1);
+    expect(content?.querySelectorAll('[data-slot="explanation-box"]')).toHaveLength(2);
+    expect(content?.querySelectorAll('[data-slot="progress-circle"]')).toHaveLength(2);
 
     await act(async () => root.unmount());
     container.remove();

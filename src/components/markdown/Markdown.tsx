@@ -7,7 +7,7 @@ import { parseLessonImageRef } from "@/lib/lessonImage";
 import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { CodeBlock } from "./CodeBlock";
 
-function MarkdownImage({ src, alt, lesson = false }: { src?: string; alt: string; lesson?: boolean }) {
+function MarkdownImage({ src, alt, compact = false }: { src?: string; alt: string; compact?: boolean }) {
   const isRef = parseLessonImageRef(src) !== null;
   const [resolved, setResolved] = useState<string | null>(null);
   useEffect(() => {
@@ -26,22 +26,19 @@ function MarkdownImage({ src, alt, lesson = false }: { src?: string; alt: string
       alt={alt}
       loading="lazy"
       decoding="async"
-      className={cn("my-3 h-auto max-w-full rounded-lg border border-border-subtle", lesson && "max-h-[max(60vh,20rem)]")}
+      className={cn("my-3 h-auto max-w-full rounded-lg border border-border-subtle", !compact && "max-h-[max(60vh,20rem)]")}
     />
   );
 }
 
-export function Markdown({ content, compact, variant = "default" }: { content: string; compact?: boolean; variant?: "default" | "lesson" }) {
+export function Markdown({ content, compact, codeHeader = true }: { content: string; compact?: boolean; codeHeader?: boolean }) {
   const value = content?.trim();
   if (!value) return null;
-  const lesson = variant === "lesson" && !compact;
 
   return (
     <div
       className={cn(
-        lesson
-          ? "flex flex-col gap-xl text-body-large text-action-text"
-          : compact ? "space-y-2 text-sm leading-relaxed" : "space-y-3 text-sm leading-7 text-foreground-muted",
+        compact ? "space-y-2 text-sm leading-relaxed" : "flex flex-col gap-xl text-body-large text-action-text",
         "[&>h1:first-child]:mt-0 [&>h2:first-child]:mt-0 [&>h3:first-child]:mt-0 [&>h4:first-child]:mt-0",
       )}
     >
@@ -51,27 +48,21 @@ export function Markdown({ content, compact, variant = "default" }: { content: s
         components={{
           h1: (props) => compact
             ? <h3 className="mt-3 text-heading-small font-display" {...props} />
-            : lesson
-              ? <h2 className="mb-md mt-3xl font-display text-heading-large" {...props} />
-              : <h2 className="mt-6 text-heading-medium font-display text-foreground" {...props} />,
+            : <h2 className="mb-md mt-3xl font-display text-heading-large" {...props} />,
           h2: (props) => compact
             ? <h4 className="mt-2 text-heading-small font-display" {...props} />
-            : lesson
-              ? <h3 className="mb-md mt-3xl font-display text-heading-large" {...props} />
-              : <h3 className="mt-5 text-heading-medium font-display text-foreground" {...props} />,
+            : <h3 className="mb-md mt-3xl font-display text-heading-large" {...props} />,
           h3: (props) => compact
             ? <h4 className="mt-2 text-heading-small font-display" {...props} />
-            : lesson
-              ? <h4 className="mb-md mt-3xl font-display text-heading-small" {...props} />
-              : <h4 className="mt-4 text-heading-small font-display text-foreground" {...props} />,
+            : <h4 className="mb-md mt-3xl font-display text-heading-small" {...props} />,
           p: (props) => <p className="whitespace-pre-wrap" {...props} />,
           a: (props) => (
             <a className="text-primary underline underline-offset-4 hover:opacity-80" {...props} />
           ),
-          img: ({ src, alt }) => <MarkdownImage src={typeof src === "string" ? src : undefined} alt={alt ?? ""} lesson={lesson} />,
+          img: ({ src, alt }) => <MarkdownImage src={typeof src === "string" ? src : undefined} alt={alt ?? ""} compact={compact} />,
           ul: (props) => <ul className="list-disc space-y-1 pl-5" {...props} />,
           ol: (props) => <ol className="list-decimal space-y-1 pl-5" {...props} />,
-          li: (props) => <li className={lesson ? undefined : "leading-7"} {...props} />,
+          li: (props) => <li {...props} />,
           code: ({ className, children }) => {
             const language = (className ?? "").replace("language-", "").toLowerCase().trim();
             if (className?.startsWith("language-")) {
@@ -79,12 +70,12 @@ export function Markdown({ content, compact, variant = "default" }: { content: s
                 <CodeBlock
                   language={language}
                   code={String(children).replace(/\n$/, "")}
-                  variant={lesson ? "lesson" : "default"}
+                  header={codeHeader}
                 />
               );
             }
             return (
-              <code className="rounded bg-surface-raised px-1.5 py-0.5 font-mono text-[0.9em] text-foreground">
+              <code className="rounded-md bg-code-block-surface px-1.5 py-0.5 font-mono text-[0.9em] text-foreground">
                 {children}
               </code>
             );
@@ -97,12 +88,10 @@ export function Markdown({ content, compact, variant = "default" }: { content: s
               {...props}
             />
           ),
-          // Lesson tables keep a readable minimum width and scroll sideways on narrow screens instead of squeezing their columns.
-          table: (props) => lesson
-            ? <div className="scrollbar-design max-w-full overflow-x-auto"><table className="w-full min-w-[32rem] border-collapse text-left [overflow-wrap:normal]" {...props} /></div>
-            : <table {...props} />,
-          th: (props) => <th className={lesson ? "border-b border-border-subtle px-md py-sm font-medium" : undefined} {...props} />,
-          td: (props) => <td className={lesson ? "border-b border-border-subtle px-md py-sm align-top" : undefined} {...props} />,
+          // Tables keep a readable minimum width and scroll sideways on narrow screens instead of squeezing their columns.
+          table: (props) => <div className="scrollbar-design max-w-full overflow-x-auto"><table className="w-full min-w-[32rem] border-collapse text-left [overflow-wrap:normal]" {...props} /></div>,
+          th: (props) => <th className="border-b border-border-subtle px-md py-sm font-medium" {...props} />,
+          td: (props) => <td className="border-b border-border-subtle px-md py-sm align-top" {...props} />,
         }}
       >
         {value}

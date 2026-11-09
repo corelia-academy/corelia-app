@@ -94,6 +94,9 @@ export default function AdminSelectionComponentPage({
   const [radioCardMatrix, setRadioCardMatrix] = useState(radioCardMatrixInitialState);
   const [radioCardEvent, setRadioCardEvent] = useState("No radio card interaction yet");
   const radioCardSelectionGuard = useRef<Record<string, RadioCardGuard | undefined>>({});
+  const [answerCardMatrix, setAnswerCardMatrix] = useState(radioCardMatrixInitialState);
+  const [answerCardEvent, setAnswerCardEvent] = useState("No answer selection interaction yet");
+  const answerCardSelectionGuard = useRef<Record<string, RadioCardGuard | undefined>>({});
 
   const getCheckboxAggregate = (rowId: string) => {
     const selectedCount = (["normal", "active"] as const).filter(
@@ -182,6 +185,48 @@ export default function AdminSelectionComponentPage({
     });
     setRadioCardMatrix((current) => ({ ...current, [groupId]: undefined }));
     setRadioCardEvent(`Cleared radio card: ${cellId}`);
+  };
+
+  const handleAnswerCardMatrixChange = (groupId: string, cellId: string) => {
+    const guard = answerCardSelectionGuard.current[groupId];
+
+    if (guard?.action === "deselect" && guard.cellId === cellId) {
+      delete answerCardSelectionGuard.current[groupId];
+      return;
+    }
+
+    answerCardSelectionGuard.current[groupId] = { action: "select", cellId };
+    queueMicrotask(() => {
+      if (
+        answerCardSelectionGuard.current[groupId]?.action === "select" &&
+        answerCardSelectionGuard.current[groupId]?.cellId === cellId
+      ) {
+        delete answerCardSelectionGuard.current[groupId];
+      }
+    });
+    setAnswerCardMatrix((current) => ({ ...current, [groupId]: cellId }));
+    setAnswerCardEvent(`Selected answer: ${cellId}`);
+  };
+
+  const handleAnswerCardMatrixDeselect = (groupId: string, cellId: string) => {
+    const guard = answerCardSelectionGuard.current[groupId];
+
+    if (guard?.action === "select" && guard.cellId === cellId) {
+      delete answerCardSelectionGuard.current[groupId];
+      return;
+    }
+
+    answerCardSelectionGuard.current[groupId] = { action: "deselect", cellId };
+    queueMicrotask(() => {
+      if (
+        answerCardSelectionGuard.current[groupId]?.action === "deselect" &&
+        answerCardSelectionGuard.current[groupId]?.cellId === cellId
+      ) {
+        delete answerCardSelectionGuard.current[groupId];
+      }
+    });
+    setAnswerCardMatrix((current) => ({ ...current, [groupId]: undefined }));
+    setAnswerCardEvent(`Cleared answer: ${cellId}`);
   };
 
   return (
@@ -466,6 +511,111 @@ export default function AdminSelectionComponentPage({
             <p role="status" className="text-body-small text-foreground-muted">{checkboxCardEvent}</p>
             <p role="status" className="text-body-small text-foreground-muted">{radioCardEvent}</p>
           </div>
+        </div>
+      </ShowcaseSection>
+
+      <ShowcaseSection title="Answer selection" criterion='RadioCard appearance="answer": single choice only. Same states as the Radio cards above, with a default border and the app background; clicking the selected card again clears it.'>
+        <div data-testid="selection-answer-card-reference" className="space-y-8">
+          {cardOrientations.map((orientation) => (
+            <section key={orientation} aria-labelledby={`selection-answer-card-${orientation}-heading`} className="space-y-6">
+              <div>
+                <h2 id={`selection-answer-card-${orientation}-heading`} className="text-title-medium text-foreground">
+                  {orientation[0].toUpperCase() + orientation.slice(1)}
+                </h2>
+              </div>
+
+              {cardSizes.map((cardSize) => {
+                const groupId = `${orientation}-${cardSize.id}`;
+
+                return (
+                  <section key={cardSize.id} aria-labelledby={`selection-answer-card-${groupId}-heading`} className="space-y-4">
+                    <h3 id={`selection-answer-card-${groupId}-heading`} className="text-label-large text-foreground">
+                      {cardSize.label}
+                    </h3>
+
+                    <div data-testid={`selection-answer-card-grid-${groupId}`} className="space-y-4">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        {cardStates.map((state) => (
+                          <p key={state.id} className="text-body-small text-foreground-muted">{state.label}</p>
+                        ))}
+                      </div>
+                      <RadioGroup
+                        value={answerCardMatrix[groupId] ?? ""}
+                        onValueChange={(value) => handleAnswerCardMatrixChange(groupId, value)}
+                      >
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          {cardStates.map((state) => {
+                            const cellId = `${groupId}-${state.id}`;
+
+                            return (
+                              <div
+                                key={state.id}
+                                data-testid={`selection-answer-card-state-${cellId}`}
+                                className="min-w-0"
+                              >
+                                <RadioCard
+                                  appearance="answer"
+                                  value={cellId}
+                                  label={state.controlLabel}
+                                  supportingText="Supporting text for this selection"
+                                  orientation={orientation}
+                                  size={cardSize.size}
+                                  allowDeselect={answerCardMatrix[groupId] === cellId}
+                                  disabled={state.disabled}
+                                  onDeselect={
+                                    answerCardMatrix[groupId] === cellId
+                                      ? () => handleAnswerCardMatrixDeselect(groupId, cellId)
+                                      : undefined
+                                  }
+                                  showSupportingText
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </RadioGroup>
+
+                      <div data-testid={`selection-answer-card-disabled-grid-${groupId}`} className="space-y-2 pt-2">
+                        <p className="text-body-small text-foreground-muted">Disabled</p>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          {disabledCardStates.map((state) => (
+                            <p key={state.id} className="text-body-small text-foreground-muted">{state.label}</p>
+                          ))}
+                        </div>
+                        <RadioGroup value={answerCardMatrix[`${groupId}-disabled`] ?? ""}>
+                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            {disabledCardStates.map((state) => {
+                              const cellId = `${groupId}-${state.id}`;
+
+                              return (
+                                <div
+                                  key={state.id}
+                                  data-testid={`selection-answer-card-state-${cellId}`}
+                                  className="min-w-0"
+                                >
+                                  <RadioCard
+                                    appearance="answer"
+                                    value={cellId}
+                                    label={state.controlLabel}
+                                    supportingText="Supporting text for this selection"
+                                    orientation={orientation}
+                                    size={cardSize.size}
+                                    disabled
+                                    showSupportingText
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })}
+            </section>
+          ))}
+          <p role="status" className="text-body-small text-foreground-muted">{answerCardEvent}</p>
         </div>
       </ShowcaseSection>
     </ComponentShowcaseLayout>

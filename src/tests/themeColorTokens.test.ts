@@ -70,7 +70,7 @@ describe("semantic theme color tokens", () => {
       ["mint-revoked-badge-text", "var(--neutral-400)", "var(--neutral-400)"],
       ["mint-revoked-badge-border", "var(--neutral-500)", "var(--neutral-500)"],
       ["stroke-divider", "var(--neutral-500)", "var(--neutral-600)"],
-      ["selection-mark", "var(--blue-100)", "var(--blue-100)"],
+      ["selection-mark", "var(--neutral-50)", "var(--neutral-50)"],
     ] as const
 
     for (const [name, lightValue, darkValue] of roles) {

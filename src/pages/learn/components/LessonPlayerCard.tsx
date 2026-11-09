@@ -22,6 +22,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { xpAwardNotificationQueryKey } from "@/features/xp/xpNotificationKeys";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 type Props = {
   lesson: CourseLesson | null; lessonIndex: number | null; isDraftLesson: boolean; completed: boolean;
@@ -87,7 +88,8 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
     finally { inFlight.current = false; if (active.current) setBusy(false); }
   };
   const label = busy ? t("learning.saving") : mode === "learner" && !user ? t("learning.login") : completed && mode === "learner" ? t(nextLesson ? "learning.next" : hasFinalAssignment ? "learning.finalAssignmentLink" : "learning.finish") : action?.label ?? t("learning.unavailable");
-  const format = getLessonFormat(lesson);
+  // TODO(figma-learn): chỉ dùng cho nút "Làm lại từ đầu" đang tạm ẩn
+  // const format = getLessonFormat(lesson);
   const inFooter = actionSlot !== undefined && mode === "learner";
   const canReset = mode === "learner" && !!user && !!onReset && hasFullCourseAccess && !isDraftLesson;
   const primaryDisabled = busy || action?.pending || (!(completed && mode === "learner") && (!action || (action.disabled && (mode === "preview" || !!user))));
@@ -101,7 +103,7 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
       : action?.label === t("learning.completeContinue")
         ? { full: t("learning.markComplete"), short: t("learning.markCompleteShort") }
         : { full: label };
-  const header = <>{mode === "preview" && <p className="rounded-lg bg-primary/10 p-3 text-sm">{t("learning.previewBanner")}</p>}<div><h1 className="text-heading-large font-display">{lessonText(lesson.title)}</h1>{lesson.short_description && <p className="mt-2 text-foreground-muted">{lessonText(lesson.short_description)}</p>}{!inFooter && canAskAboutLesson(lesson) && <div className="mt-3"><AskAiMenu lesson={lesson} courseTitle={courseTitle} /></div>}</div></>;
+  const header = <>{mode === "preview" && <p className="rounded-lg bg-primary/10 p-3 text-sm">{t("learning.previewBanner")}</p>}<div><h1 className="text-heading-large font-display text-action-text">{lessonText(lesson.title)}</h1>{lesson.short_description && <p className="mt-3xl text-body-medium text-action-text">{lessonText(lesson.short_description)}</p>}{!inFooter && canAskAboutLesson(lesson) && <div className="mt-3"><AskAiMenu lesson={lesson} courseTitle={courseTitle} /></div>}</div></>;
   const resourcesNode = !!resources.length && (
     <section>
       <h2 className="mb-3xl font-display text-heading-large text-action-text">{t("learning.resources")}</h2>
@@ -128,7 +130,9 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
           {/* TODO(figma-learn): tạm ẩn "Bài trước" (Figma footer chưa có), chờ thiết kế mới nhất
           <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={!previousLesson || busy} onClick={() => previousLesson && onNavigateToLesson(previousLesson.id)}>{t("learning.previous")}</Button>
           */}
+          {/* TODO(figma-learn): tạm ẩn "Làm lại từ đầu" theo yêu cầu, bật lại khi có thiết kế
           {canReset && ["quiz", "practice", "code_exercise"].includes(format) && <Button type="button" variant="cta" hierarchy="secondary" size="small" disabled={busy || action?.pending} onClick={() => void reset(true)}>{t("learning.redoFromStart")}</Button>}
+          */}
         </div>
       </LessonColumn>
     )}
@@ -163,5 +167,26 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
       actionSlot,
     )}
     {inFooter && askAiSlot && canAskAboutLesson(lesson) && createPortal(<AskAiMenu lesson={lesson} courseTitle={courseTitle} compact />, askAiSlot)}
+    {inFooter && askAiSlot && action?.summary && createPortal(
+      <div role="status" className="flex items-baseline gap-lg px-3">
+        {action.summary.passed === undefined ? (
+          <p className="flex items-baseline gap-xs whitespace-nowrap">
+            <span className="text-label-small leading-[1.4] text-foreground-subtle max-sm:hidden">{t("learning.quizAchieveLead")}</span>
+            <span className="font-display text-cta-medium text-foreground">{action.summary.correct}</span>
+            <span className="text-label-small leading-[1.4] text-foreground-subtle">/{action.summary.total}<span className="max-sm:hidden">{` ${t("learning.quizAchieveTail")}`}</span></span>
+          </p>
+        ) : (
+          <>
+            <p className="flex items-baseline gap-xs whitespace-nowrap">
+              <span className="font-display text-cta-medium text-foreground">{action.summary.correct}</span>
+              <span className="font-display text-cta-small text-foreground-subtle">/</span>
+              <span className="text-label-small leading-[1.4] text-foreground-subtle">{action.summary.total}<span className="max-sm:hidden">{` ${t("learning.quizScoreCorrect")}`}</span></span>
+            </p>
+            <Badge size="xsmall" color={action.summary.passed ? "success" : "error"}>{t(action.summary.passed ? "learning.passed" : "learning.failed")}</Badge>
+          </>
+        )}
+      </div>,
+      askAiSlot,
+    )}
   </div>;
 }

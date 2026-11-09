@@ -99,6 +99,8 @@
     "submit": "제출",
     "retry": "다시 시도",
     "copy": "복사",
+    "copied": "복사했습니다",
+    "copyFailed": "복사할 수 없습니다",
     "download": "다운로드",
     "share": "공유",
     "search": "검색",
