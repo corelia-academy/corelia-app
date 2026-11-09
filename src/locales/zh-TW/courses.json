@@ -489,6 +489,8 @@
     "retry": "重試",
     "source": "原始碼",
     "unavailable": "單元不可用。",
+    "lessonDataErrorTitle": "找不到單元資料。",
+    "lessonDataErrorDescription": "請檢查網路連線，或回報給管理員。",
     "askAi": {
       "trigger": "詢問 AI",
       "triggerShort": "AI",

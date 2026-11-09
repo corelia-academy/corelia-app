@@ -32,6 +32,10 @@ function LocationProbe({
   return null;
 }
 
+// The showcase renders every component section (and GSAP motion) per test;
+// the default 5s budget is too tight when the full suite runs in parallel.
+vi.setConfig({ testTimeout: 15_000 });
+
 describe("AdminComponentsPage", () => {
   afterEach(() => {
     document.body.innerHTML = "";
@@ -102,7 +106,7 @@ describe("AdminComponentsPage", () => {
       emptyStateSection?.querySelectorAll(
         '[data-testid^="empty-state-illustration-"]',
       ),
-    ).toHaveLength(6);
+    ).toHaveLength(9);
 
     const buttonSection = container.querySelector<HTMLElement>("#component-button");
     expect(buttonSection).not.toBeNull();

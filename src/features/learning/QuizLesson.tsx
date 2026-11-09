@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { RadioGroup } from "@base-ui/react/radio-group";
 import { useLearningTranslation } from "@/features/learning/useLearningTranslation";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ExplanationBox } from "@/components/ui/explanation-box";
 import { ProgressCircle } from "@/components/ui/progress";
 import { RadioCard } from "@/components/ui/selection";
@@ -12,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
 import { getLearningQuiz, submitLearningQuiz, type LearningQuizResult } from "@/lib/learning";
 import { LessonConfetti } from "./LessonConfetti";
+import { LessonDataError } from "./LessonDataError";
 import type { LessonRendererProps } from "./types";
 import type { SectionQuestion } from "@/types/questions";
 
@@ -21,9 +21,9 @@ export function QuizLesson(props: LessonRendererProps & { questions?: SectionQue
   const locale = props.contentLocale ?? i18n.language;
   const query = useQuery({ queryKey: ["learning-quiz", props.courseId, props.lesson.id, props.mode, user?.id, locale, props.resetEpoch ?? 0], queryFn: ({ signal }) => getLearningQuiz(props.courseId, props.lesson.id, props.mode === "preview" ? undefined : user?.id, locale, signal), enabled: !props.questions, staleTime: 30_000 });
   if (!props.questions && query.isPending) return <div role="status" aria-busy="true" className="space-y-3"><span className="sr-only">{t("learning.loading")}</span><Skeleton className="h-6 w-1/2" /><Skeleton className="h-24 w-full rounded-xl" /></div>;
-  if (!props.questions && query.isError) return <div role="alert">{t("learning.loadError")} <Button type="button" onClick={() => void query.refetch()}>{t("learning.retry")}</Button></div>;
+  if (!props.questions && query.isError) return <LessonDataError />;
   const questions = props.questions ?? query.data?.questions ?? [];
-  if (!questions.length) return <p role="alert">{t("learning.unavailable")}</p>;
+  if (!questions.length) return <LessonDataError />;
   return <Quiz key={`${props.courseId}:${props.lesson.id}:${props.mode}:${user?.id}:${locale}:${props.resetEpoch ?? 0}`} {...props} questions={questions} initial={props.questions ? null : query.data?.result ?? null} />;
 }
 function Quiz({ courseId, lesson, mode, completed, onComplete, onAction, questions, initial, resetEpoch = 0 }: LessonRendererProps & { questions: SectionQuestion[]; initial: LearningQuizResult | null }) {

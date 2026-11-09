@@ -498,6 +498,8 @@
     "retry": "Try again",
     "source": "Source code",
     "unavailable": "Lesson unavailable.",
+    "lessonDataErrorTitle": "Lesson data not found.",
+    "lessonDataErrorDescription": "Check your connection or report this to an admin.",
     "askAi": {
       "trigger": "AI Summary",
       "triggerShort": "AI",

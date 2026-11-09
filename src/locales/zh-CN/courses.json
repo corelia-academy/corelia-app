@@ -489,6 +489,8 @@
     "retry": "重试",
     "source": "源代码",
     "unavailable": "课时不可用。",
+    "lessonDataErrorTitle": "未找到课时数据。",
+    "lessonDataErrorDescription": "请检查网络连接，或向管理员反馈。",
     "askAi": {
       "trigger": "询问 AI",
       "triggerShort": "AI",

@@ -10,6 +10,7 @@ import { resourceIconForUrl } from "@/features/learning/resourceGroups";
 import { ArrowUpRight, CheckCircle, CircleNotch } from "@phosphor-icons/react";
 import { useAuth } from "@/stores/authStore";
 import { LessonRenderer } from "@/features/learning/LessonRenderer";
+import { LessonDataError } from "@/features/learning/LessonDataError";
 import { LessonColumn } from "@/features/learning/lessonLayout";
 import { canAskAboutLesson } from "@/features/learning/askAi";
 import { AskAiMenu } from "./AskAiMenu";
@@ -72,7 +73,7 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
     // The floating bar is a complete/incomplete toggle, so it stays on the lesson.
     if (actionSlot === undefined && nextLesson && lesson && ["article","video","practice"].includes(getLessonFormat(lesson))) onNavigateToLesson(nextLesson.id);
   }, [mode, onMarkComplete, lesson, queryClient, nextLesson, onNavigateToLesson, t, actionSlot]);
-  if (!lesson || !courseId) return <p className="p-6">{t("learning.unavailable")}</p>;
+  if (!lesson || !courseId) return <LessonDataError />;
   const resources = validateLessonResources(lesson.resources ?? [], lesson.id, "vi", true).length ? [] : lesson.resources ?? [];
   const run = async () => {
     if (inFlight.current) return;

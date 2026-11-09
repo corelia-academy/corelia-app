@@ -489,6 +489,8 @@
     "retry": "再試行",
     "source": "ソースコード",
     "unavailable": "レッスンは利用できません。",
+    "lessonDataErrorTitle": "レッスンのデータが見つかりません。",
+    "lessonDataErrorDescription": "接続を確認するか、管理者に報告してください。",
     "askAi": {
       "trigger": "AI に質問",
       "triggerShort": "AI",

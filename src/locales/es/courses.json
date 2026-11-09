@@ -507,6 +507,8 @@
     "retry": "Reintentar",
     "source": "Código fuente",
     "unavailable": "Lección no disponible.",
+    "lessonDataErrorTitle": "No se encontraron los datos de la lección.",
+    "lessonDataErrorDescription": "Revisa tu conexión o avisa a un administrador.",
     "askAi": {
       "trigger": "Preguntar a la IA",
       "triggerShort": "IA",

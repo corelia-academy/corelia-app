@@ -9,6 +9,7 @@ import { ExplanationBox } from "@/components/ui/explanation-box";
 import { useAuth } from "@/stores/authStore";
 import { recordLearningEvent } from "@/lib/learning";
 import { LessonConfetti } from "@/features/learning/LessonConfetti";
+import { LessonDataError } from "@/features/learning/LessonDataError";
 import type { LessonRendererProps } from "@/features/learning/types";
 import { CodeEditor } from "./CodeEditor";
 import { validateCodeConfig } from "./config";
@@ -19,9 +20,8 @@ import type { CodeExerciseConfig, CodeExerciseResult } from "./types";
 
 export function CodeExerciseLesson(props: LessonRendererProps) {
   const { user } = useAuth();
-  const { t } = useLearningTranslation();
   const config = props.lesson.code_exercise_config;
-  if (validateCodeConfig(config).length || !config) return <p role="alert">{t("learning.unavailable")}</p>;
+  if (validateCodeConfig(config).length || !config) return <LessonDataError />;
   return <Exercise key={`${props.courseId}:${props.lesson.id}:${config.revision}:${user?.id}:${props.mode}:${props.draftEpoch ?? 0}:${props.resetEpoch ?? 0}`} {...props} config={config} userId={user?.id} />;
 }
 function Exercise({ lesson, courseId, config, userId, mode, completed, onComplete, onAction, draftEpoch = 0 }: LessonRendererProps & { config: CodeExerciseConfig; userId?: string }) {

@@ -5,6 +5,7 @@ import { ComponentShowcaseLayout, ShowcaseSection } from "./ComponentShowcaseLay
 const illustrationTypes = [
   { value: "search", label: "Search No Data" },
   { value: "empty", label: "Empty No Data" },
+  { value: "error", label: "Data Connection Failure" },
 ] as const;
 
 const illustrationSizes = [
@@ -23,7 +24,7 @@ export default function AdminEmptyStateIllustrationComponentPage({
   return (
     <ComponentShowcaseLayout
       title="Empty State Illustration"
-      description="Inspect both illustration types at all three Figma sizes."
+      description="Inspect every illustration type at all three Figma sizes."
       embedded={embedded}
     >
       <ShowcaseSection

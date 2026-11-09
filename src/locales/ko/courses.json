@@ -489,6 +489,8 @@
     "retry": "다시 시도",
     "source": "소스 코드",
     "unavailable": "레슨을 이용할 수 없습니다.",
+    "lessonDataErrorTitle": "레슨 데이터를 찾을 수 없습니다.",
+    "lessonDataErrorDescription": "연결 상태를 확인하거나 관리자에게 신고해 주세요.",
     "askAi": {
       "trigger": "AI에게 질문",
       "triggerShort": "AI",

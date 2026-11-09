@@ -8,6 +8,7 @@ import { CodeExerciseLesson } from "@/features/code-exercise/CodeExerciseLesson"
 import { PracticeLesson } from "./PracticeLesson";
 import { QuizLesson } from "./QuizLesson";
 import { LessonColumn } from "./lessonLayout";
+import { LessonDataError } from "./LessonDataError";
 import { validateLesson, validateLessonResources } from "./validation";
 import type { LessonRendererProps } from "./types";
 import type { SectionQuestion } from "@/types/questions";
@@ -25,11 +26,7 @@ function Framed({ frame, media, children }: { frame?: LessonRendererProps["conte
 
 export function LessonRenderer(props: LessonRendererProps & { questions?: SectionQuestion[] }) {
   const format = getLessonFormat(props.lesson);
-  const { t } = useLearningTranslation();
-  if (validateLesson(props.lesson).length || validateLessonResources(props.lesson.resources ?? [], props.lesson.id, "vi", true).length) {
-    const alert = <p role="alert" className="rounded-xl border border-border p-6">{t("learning.unavailable")}</p>;
-    return props.contentFrame ? <LessonColumn className={FRAME_CLASS}>{props.contentFrame.header}{alert}</LessonColumn> : alert;
-  }
+  if (validateLesson(props.lesson).length || validateLessonResources(props.lesson.resources ?? [], props.lesson.id, "vi", true).length) return <LessonDataError />;
   switch (format) {
     case "quiz": return <Framed frame={props.contentFrame}><QuizLesson {...props} /></Framed>;
     case "practice": return <Framed frame={props.contentFrame}><PracticeLesson {...props} /></Framed>;
