@@ -68,4 +68,15 @@ describe("Avatar Figma contract", () => {
 
     expect(markup).not.toContain("data-avatar-action")
   })
+
+  it("uses the Brand Logos surface token and applies separation rings to wrapped avatars in AvatarGroup", () => {
+    const brandMarkup = renderToStaticMarkup(
+      <Avatar type="Brand Logos" size="Small">
+        <AvatarFallback>C</AvatarFallback>
+      </Avatar>,
+    )
+
+    expect(brandMarkup).toContain("data-[avatar-type=brand-logos]:bg-avatar-brand")
+    expect(brandMarkup).toContain("group-data-[avatar-type=brand-logos]/avatar:bg-avatar-brand")
+  })
 })

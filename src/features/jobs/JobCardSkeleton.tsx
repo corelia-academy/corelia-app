@@ -4,7 +4,7 @@ export function JobCardSkeleton() {
   return (
     <div aria-hidden className="flex h-full flex-col gap-6 rounded-md border border-border bg-surface-base p-4">
       <div className="flex items-center gap-4">
-        <Skeleton className="size-12 shrink-0 rounded-full" />
+        <Skeleton className="size-14 shrink-0 rounded-full" />
         <div className="min-w-0 flex-1 space-y-2">
           <Skeleton className="h-[22px] w-3/4" />
           <Skeleton className="h-[15px] w-1/2" />

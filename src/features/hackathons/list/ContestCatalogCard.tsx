@@ -3,6 +3,7 @@ import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { NavLink } from "react-router";
 import { Trans, useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Timestamp } from "@/components/ui/timestamp";
 import { ParticipantSummary } from "@/components/participants/ParticipantSummary";
@@ -75,9 +76,23 @@ export function ContestCatalogCard({
                 </Badge>
                 {contest.host?.name ? (
                   <span className="inline-flex items-center gap-2 text-foreground-subtle">
-                    {contest.host.logo_url ? (
-                      <img src={optimizedImageUrl(contest.host.logo_url, { width: 20, resize: "contain" })} srcSet={optimizedImageSrcSet(contest.host.logo_url, 20, { resize: "contain" })} decoding="async" alt="" className="size-5 rounded-full object-cover" />
-                    ) : null}
+                    <Avatar
+                      type={contest.host.logo_url ? "Brand Logos" : "Text"}
+                      size="Small"
+                      className="border border-border-subtle"
+                    >
+                      {contest.host.logo_url ? (
+                        <AvatarImage
+                          src={optimizedImageUrl(contest.host.logo_url, { width: 24, resize: "contain" })}
+                          srcSet={optimizedImageSrcSet(contest.host.logo_url, 24, { resize: "contain" })}
+                          decoding="async"
+                          alt=""
+                        />
+                      ) : null}
+                      <AvatarFallback className="text-xs">
+                        {contest.host.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                     {t("catalog.hostedBy", { name: contest.host.name })}
                   </span>
                 ) : null}

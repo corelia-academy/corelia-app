@@ -27,8 +27,8 @@ type CatalogSort = "newest" | "oldest" | "deadlineSoonest";
 
 function CatalogGridSkeleton() {
   return <>{Array.from({ length: 3 }).map((_, index) => (
-    <div key={index} className="grid min-h-[202px] overflow-hidden rounded-xl border border-border xl:grid-rows-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_352px] xl:gap-x-[clamp(2.25rem,calc(40.8cqi_-_328px),clamp(2.75rem,calc(20.5cqi_-_139.6px),5rem))]">
-      <div className="space-y-4 p-6">
+    <div key={index} className="grid min-h-[202px] overflow-hidden rounded-md border border-border bg-surface-base xl:grid-rows-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_352px] xl:gap-x-[clamp(2.25rem,calc(40.8cqi_-_328px),clamp(2.75rem,calc(20.5cqi_-_139.6px),5rem))]">
+      <div className="order-2 flex min-w-0 flex-col px-3xl py-2xl space-y-4 xl:order-none">
         <Skeleton className="h-7 w-3/4" />
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-6 w-2/3" />

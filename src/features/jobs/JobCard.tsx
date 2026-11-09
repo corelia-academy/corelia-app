@@ -3,6 +3,7 @@ import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatJobDate, formatJobSalary, humanizeJobSlug } from "@/features/jobs/jobFormat";
@@ -25,11 +26,18 @@ export function JobCard({ publicAppearance = false, job, state, busy, onToggleSa
     <Card className={cn("motion-hover-card group h-full rounded-md border-border transition-colors hover:border-primary/35", publicAppearance && "public-job-card min-w-0")}>
       <CardContent className="flex h-full flex-col gap-6 p-4!">
         <div className="flex items-center gap-4">
-          <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-raised">
-            {job.company_logo_url
-              ? <img src={optimizedImageUrl(job.company_logo_url, { width: 48, resize: "contain" })} srcSet={optimizedImageSrcSet(job.company_logo_url, 48, { resize: "contain" })} alt="" className="size-full object-contain" />
-              : <Briefcase className="size-6 text-foreground-subtle" weight="duotone" aria-hidden />}
-          </div>
+          <Avatar type="Brand Logos" size="1.5XLarge" className="border border-border">
+            {job.company_logo_url ? (
+              <AvatarImage
+                src={optimizedImageUrl(job.company_logo_url, { width: 56, resize: "contain" })}
+                srcSet={optimizedImageSrcSet(job.company_logo_url, 56, { resize: "contain" })}
+                alt=""
+              />
+            ) : null}
+            <AvatarFallback>
+              <Briefcase className="size-7" weight="duotone" aria-hidden />
+            </AvatarFallback>
+          </Avatar>
           <div className="min-w-0 flex-1">
             <Link to={`/jobs/${job.slug}`} title={job.title} className="line-clamp-1 font-display text-heading-medium text-foreground hover:text-primary">
               {job.title}
