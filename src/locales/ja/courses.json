@@ -541,6 +541,7 @@
     "previous": "前へ",
     "next": "次のレッスン",
     "finish": "コースを完了",
+    "partLetter": "Part {{letter}}",
     "lessonNumber": "レッスン {{number}}",
     "saving": "保存中…",
     "login": "ログイン",

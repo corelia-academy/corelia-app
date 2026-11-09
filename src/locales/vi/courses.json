@@ -563,6 +563,7 @@
     "previous": "Bài trước",
     "next": "Bài tiếp theo",
     "finish": "Hoàn tất khóa học",
+    "partLetter": "Part {{letter}}",
     "lessonNumber": "Bài {{number}}",
     "saving": "Đang lưu…",
     "login": "Đăng nhập",

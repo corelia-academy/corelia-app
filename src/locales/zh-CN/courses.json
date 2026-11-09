@@ -541,6 +541,7 @@
     "previous": "上一个",
     "next": "下一课时",
     "finish": "完成课程",
+    "partLetter": "Part {{letter}}",
     "lessonNumber": "课时 {{number}}",
     "saving": "正在保存…",
     "login": "登录",

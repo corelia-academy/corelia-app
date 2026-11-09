@@ -541,6 +541,7 @@
     "previous": "이전",
     "next": "다음 레슨",
     "finish": "강의 마치기",
+    "partLetter": "Part {{letter}}",
     "lessonNumber": "레슨 {{number}}",
     "saving": "저장 중…",
     "login": "로그인",

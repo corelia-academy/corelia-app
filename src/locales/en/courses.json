@@ -563,6 +563,7 @@
     "previous": "Previous",
     "next": "Next lesson",
     "finish": "Finish course",
+    "partLetter": "Part {{letter}}",
     "lessonNumber": "Lesson {{number}}",
     "saving": "Saving…",
     "login": "Sign in",
