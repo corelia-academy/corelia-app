@@ -31,6 +31,7 @@ import AdminTooltipComponentPage from "./components/AdminTooltipComponentPage";
 import AdminToggleComponentPage from "./components/AdminToggleComponentPage";
 import AdminStepperComponentPage from "./components/AdminStepperComponentPage";
 import AdminToastBarComponentPage from "./components/AdminToastBarComponentPage";
+import AdminExplanationBoxComponentPage from "./components/AdminExplanationBoxComponentPage";
 import AdminComponentsSidebar from "./components/AdminComponentsSidebar";
 
 const components = [
@@ -138,6 +139,11 @@ const components = [
     slug: "toast-bar",
     title: "Toast Bar",
     criterion: "All eight visual models across top and bottom positioning with InformativeIcon feedback states.",
+  },
+  {
+    slug: "explanation-box",
+    title: "Explanation Box",
+    criterion: "Correct and incorrect feedback boxes with a status icon and an optional explanation body.",
   },
 ] as const;
 
@@ -599,6 +605,9 @@ export default function AdminComponentsPage() {
               </ComponentSection>
               <ComponentSection {...components[20]}>
                 <AdminToastBarComponentPage embedded />
+              </ComponentSection>
+              <ComponentSection {...components[21]}>
+                <AdminExplanationBoxComponentPage embedded />
               </ComponentSection>
             </>
           )}

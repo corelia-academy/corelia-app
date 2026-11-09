@@ -460,6 +460,70 @@ describe("Selection cards", () => {
     await view.unmount()
   })
 
+  it("gives the answer appearance a default border and the app background and leaves the basic card unchanged", async () => {
+    const view = render(
+      <RadioGroup defaultValue="b">
+        <RadioCard label="Basic" value="a" />
+        <RadioCard appearance="answer" label="Answer selected" value="b" />
+        <RadioCard appearance="answer" disabled label="Answer disabled" value="c" />
+      </RadioGroup>,
+    )
+    await view.render()
+
+    const [basic, answer, answerDisabled] = view.container.querySelectorAll<HTMLElement>('[data-slot="select-card"]')
+    expect(basic.getAttribute("data-appearance")).toBe("default")
+    expect(basic.className).toContain("border-transparent")
+    expect(basic.className).toContain("bg-selection-card-surface")
+    expect(basic.className).not.toContain("bg-background")
+
+    expect(answer.getAttribute("data-appearance")).toBe("answer")
+    expect(answer.className).toContain("border-input-field-border")
+    expect(answer.className).toContain("bg-background")
+    expect(answer.className).not.toContain("border-transparent")
+    expect(answer.className).toContain("has-data-[checked]:bg-selection-card-surface")
+    expect(answer.className).toContain("has-data-[checked]:border-selection-card-selected-border")
+
+    expect(answerDisabled.className).toContain("has-data-[disabled]:border-input-field-border")
+    expect(answerDisabled.className).toContain("has-data-[disabled]:has-data-[checked]:border-input-field-border")
+    expect(answerDisabled.className).toContain("has-data-[disabled]:text-selection-disabled-foreground")
+    expect(answerDisabled.className).toContain("has-data-[disabled]:[&_[data-slot=select-card-supporting-text]]:text-selection-disabled-foreground")
+    expect(answerDisabled.className).not.toContain("has-data-[disabled]:text-foreground-muted")
+    expect(answerDisabled.className).not.toContain("has-data-[disabled]:border-transparent")
+
+    await view.unmount()
+  })
+
+  it("clears an active answer card when it is clicked again", async () => {
+    function ToggleableAnswerExample() {
+      const [value, setValue] = React.useState<string | undefined>("a")
+
+      return (
+        <RadioGroup value={value ?? ""} onValueChange={setValue}>
+          <RadioCard
+            allowDeselect
+            appearance="answer"
+            label="Answer"
+            onDeselect={() => setValue(undefined)}
+            value="a"
+          />
+        </RadioGroup>
+      )
+    }
+
+    const view = render(<ToggleableAnswerExample />)
+    await view.render()
+
+    const card = view.container.querySelector<HTMLElement>('[data-slot="select-card"]')
+    const control = view.container.querySelector<HTMLElement>('[role="radio"]')
+    expect(control?.getAttribute("aria-checked")).toBe("true")
+
+    await act(async () => card?.click())
+
+    expect(control?.getAttribute("aria-checked")).toBe("false")
+
+    await view.unmount()
+  })
+
   it("renders checkbox cards in horizontal and vertical layouts", async () => {
     const view = render(
       <>
@@ -494,6 +558,11 @@ describe("Selection cards", () => {
     expect(cards[1].className).toContain(
       "has-data-[disabled]:has-data-[checked]:border-transparent",
     )
+    expect(cards[1].className).toContain("has-data-[disabled]:text-selection-disabled-foreground")
+    expect(cards[1].className).toContain(
+      "has-data-[disabled]:[&_[data-slot=select-card-supporting-text]]:text-selection-disabled-foreground",
+    )
+    expect(cards[1].className).not.toContain("has-data-[disabled]:text-foreground-muted")
     expect(view.container.querySelectorAll('[data-slot="select-card-supporting-text"]')).toHaveLength(1)
 
     await view.unmount()
@@ -564,6 +633,8 @@ describe("Selection cards", () => {
     expect(cards[1].className).toContain(
       "has-data-[checked]:border-selection-card-selected-border",
     )
+    expect(cards[1].className).toContain("bg-selection-card-surface")
+    expect(cards[1].className).not.toContain("bg-surface-raised")
     expect(new FormData(form ?? undefined).get("plan")).toBe("pro")
 
     await act(async () => cards[0]?.click())

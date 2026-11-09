@@ -303,6 +303,8 @@ function handleRadioDeselect(
   onDeselect()
 }
 
+export type RadioCardAppearance = "default" | "answer"
+
 type SelectionCardCommonProps = {
   className?: string
   label: React.ReactNode
@@ -339,6 +341,8 @@ export type RadioCardProps = SelectionCardCommonProps &
     | "trailing"
     | "value"
   > & {
+    /** `answer` is the single-choice "Answer Selection" card: a default border and the app background. */
+    appearance?: RadioCardAppearance
     value: string
   }
 
@@ -393,7 +397,7 @@ function SelectionLabelContent({
   )
 
   const wrapperClassName = cn(
-    "inline-flex items-center gap-md select-none has-data-[disabled]:cursor-not-allowed has-data-[disabled]:text-foreground-muted",
+    "inline-flex items-center gap-md select-none has-data-[disabled]:cursor-not-allowed has-data-[disabled]:text-selection-disabled-foreground",
     hasVisibleLabel && sizeStyles[size].label,
     labelClassName,
   )
@@ -633,6 +637,7 @@ function useSelectionCardIds(id?: string) {
 }
 
 function SelectionCardShell({
+  appearance = "default",
   className,
   control,
   disabled,
@@ -645,6 +650,7 @@ function SelectionCardShell({
   supportingText,
   supportingTextId,
 }: SelectionCardCommonProps & {
+  appearance?: RadioCardAppearance
   control: React.ReactNode
   disabled: boolean
   hasSupportingText: boolean
@@ -652,14 +658,19 @@ function SelectionCardShell({
   onClick?: React.MouseEventHandler<HTMLLabelElement>
   supportingTextId: string
 }) {
+  const answer = appearance === "answer"
+
   return (
     <label
       data-slot="select-card"
+      data-appearance={appearance}
       data-disabled={disabled ? "" : undefined}
       data-orientation={orientation}
       data-size={size}
       className={cn(
-        "group/select-card flex w-full min-w-0 cursor-pointer rounded-md border border-transparent bg-surface-raised p-lg text-foreground outline-none transition-colors duration-150 ease-out select-none focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-background has-data-[checked]:border-selection-card-selected-border has-data-[disabled]:cursor-not-allowed has-data-[disabled]:border-transparent has-data-[disabled]:text-foreground-muted has-data-[disabled]:has-data-[checked]:border-transparent",
+        "group/select-card flex w-full min-w-0 cursor-pointer rounded-md border border-transparent bg-selection-card-surface p-lg text-foreground outline-none transition-colors duration-150 ease-out select-none focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-background has-data-[checked]:border-selection-card-selected-border has-data-[disabled]:cursor-not-allowed has-data-[disabled]:border-transparent has-data-[disabled]:text-selection-disabled-foreground has-data-[disabled]:[&_[data-slot=select-card-supporting-text]]:text-selection-disabled-foreground has-data-[disabled]:has-data-[checked]:border-transparent",
+        answer &&
+          "border-input-field-border bg-background has-data-[checked]:bg-selection-card-surface has-data-[disabled]:border-input-field-border has-data-[disabled]:has-data-[checked]:border-input-field-border",
         orientation === "horizontal" ? "flex-col gap-xs" : "flex-col gap-md",
         className,
       )}
@@ -791,6 +802,7 @@ CheckboxCard.displayName = "CheckboxCard"
 
 export const RadioCard = React.forwardRef<HTMLElement, RadioCardProps>((props, ref) => {
   const {
+    appearance,
     className,
     id,
     label,
@@ -831,6 +843,7 @@ export const RadioCard = React.forwardRef<HTMLElement, RadioCardProps>((props, r
 
   return (
     <SelectionCardShell
+      appearance={appearance}
       className={className}
       control={
         <Radio

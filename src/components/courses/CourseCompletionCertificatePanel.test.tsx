@@ -110,7 +110,7 @@ describe("CourseCompletionCertificatePanel", () => {
     );
     const radios = document.body.querySelectorAll<HTMLElement>('[role="radio"]');
     expect(radioCards).toHaveLength(2);
-    expect(radioCards[0]?.className).toContain("bg-surface-raised");
+    expect(radioCards[0]?.className).toContain("bg-selection-card-surface");
     expect(radios).toHaveLength(2);
     expect(radios[0]?.getAttribute("aria-checked")).toBe("true");
     expect(radios[1]?.getAttribute("aria-checked")).toBe("false");

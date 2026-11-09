@@ -422,6 +422,7 @@ function ApplicationRoutes() {
               "stepper",
               "informative-icon",
               "toast-bar",
+              "explanation-box",
             ].map((component) => (
               <Route
                 key={component}

@@ -1,8 +1,9 @@
 import { cn } from "@/lib/utils";
 import emptyNoDataSvg from "@/assets/illustrations/empty-state/empty-no-data.svg?raw";
 import searchNoDataSvg from "@/assets/illustrations/empty-state/search-no-data.svg?raw";
+import dataConnectionFailureSvg from "@/assets/illustrations/empty-state/data-connection-failure.svg?raw";
 
-export type EmptyStateIllustrationType = "search" | "empty";
+export type EmptyStateIllustrationType = "search" | "empty" | "error";
 export type EmptyStateIllustrationSize = "tiny" | "medium" | "large" | "fullPage";
 
 type EmptyStateIllustrationProps = {
@@ -10,11 +11,13 @@ type EmptyStateIllustrationProps = {
   size: EmptyStateIllustrationSize;
   title?: string;
   description?: string;
+  contentClassName?: string;
 };
 
 const illustrationMarkup: Record<EmptyStateIllustrationType, string> = {
   search: searchNoDataSvg,
   empty: emptyNoDataSvg,
+  error: dataConnectionFailureSvg,
 };
 
 const illustrationSizes: Record<EmptyStateIllustrationSize, string> = {
@@ -27,6 +30,7 @@ const illustrationSizes: Record<EmptyStateIllustrationSize, string> = {
 const illustrationInsets: Record<EmptyStateIllustrationType, string> = {
   search: "inset-0",
   empty: "inset-[13.75%_10.8%_17.27%_10.3%]",
+  error: "inset-[11.25%_9.57%_11.18%_10.83%]",
 };
 
 const contentWidths: Record<EmptyStateIllustrationSize, string> = {
@@ -54,6 +58,7 @@ export function EmptyStateIllustration({
   size,
   title,
   description,
+  contentClassName,
 }: EmptyStateIllustrationProps) {
   return (
     <div
@@ -80,6 +85,7 @@ export function EmptyStateIllustration({
           className={cn(
             "flex flex-col items-center gap-2 text-foreground-muted",
             contentWidths[size],
+            contentClassName,
           )}
         >
           {size !== "tiny" && title ? (

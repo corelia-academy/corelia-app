@@ -64,7 +64,7 @@ async function mount() {
           lessonTotal={4}
           nextLessonTitle={null}
           hasFullCourseAccess
-          translate={key => key}
+          translate={(key, options) => (options?.letter ? `Part ${options.letter}` : key)}
           variant="sidebar"
         />
       </MemoryRouter>,
@@ -105,10 +105,12 @@ describe("CurriculumSection open and close", () => {
     expect(gsapMocks.set).not.toHaveBeenCalled()
   })
 
-  it("links each header to the region it controls", async () => {
+  it("links each header to the region it controls and renders sequential part badges", async () => {
     await mount()
     const [first, second] = headers()
 
+    expect(first.querySelector('[data-slot="badge"]')?.textContent).toBe("Part A")
+    expect(second.querySelector('[data-slot="badge"]')?.textContent).toBe("Part B")
     expect(first.getAttribute("aria-expanded")).toBe("true")
     expect(regionOf(first)).not.toBeNull()
     expect(regionOf(first).id).not.toBe(regionOf(second).id)

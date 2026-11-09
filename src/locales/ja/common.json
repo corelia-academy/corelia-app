@@ -99,6 +99,8 @@
     "submit": "提出",
     "retry": "再試行",
     "copy": "コピー",
+    "copied": "コピーしました",
+    "copyFailed": "コピーできませんでした",
     "download": "ダウンロード",
     "share": "共有",
     "search": "検索",

@@ -70,7 +70,13 @@ describe("semantic theme color tokens", () => {
       ["mint-revoked-badge-text", "var(--neutral-400)", "var(--neutral-400)"],
       ["mint-revoked-badge-border", "var(--neutral-500)", "var(--neutral-500)"],
       ["stroke-divider", "var(--neutral-500)", "var(--neutral-600)"],
-      ["selection-mark", "var(--blue-100)", "var(--blue-100)"],
+      ["selection-mark", "var(--neutral-50)", "var(--neutral-50)"],
+      ["confetti-yellow", "var(--accent-yellow-400)", "var(--accent-yellow-400)"],
+      ["confetti-green", "var(--success-400)", "var(--success-400)"],
+      ["confetti-sky", "var(--accent-sky-400)", "var(--accent-sky-400)"],
+      ["confetti-teal", "var(--accent-teal-400)", "var(--accent-teal-400)"],
+      ["confetti-coral", "var(--error-400)", "var(--error-400)"],
+      ["confetti-purple", "var(--accent-purple-400)", "var(--accent-purple-400)"],
     ] as const
 
     for (const [name, lightValue, darkValue] of roles) {
@@ -122,6 +128,12 @@ describe("semantic theme color tokens", () => {
       "badge-white-foreground",
       "badge-white-filled",
       "badge-white-filled-foreground",
+      "confetti-yellow",
+      "confetti-green",
+      "confetti-sky",
+      "confetti-teal",
+      "confetti-coral",
+      "confetti-purple",
     ]
 
     for (const name of utilityRoles) {

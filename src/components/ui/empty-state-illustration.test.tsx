@@ -7,6 +7,7 @@ describe("EmptyStateIllustration", () => {
   it.each([
     ["search", 'id="Empty Illustration"'],
     ["empty", 'id="Group 2"'],
+    ["error", 'id="Group 7"'],
   ] as const)("renders the %s illustration", (type, expectedSvgId) => {
     const markup = renderToStaticMarkup(
       <EmptyStateIllustration type={type} size="medium" />,
@@ -65,6 +66,21 @@ describe("EmptyStateIllustration", () => {
       expect(markup).toContain("Empty description");
     },
   );
+
+  it("lets callers override the text area classes", () => {
+    const markup = renderToStaticMarkup(
+      <EmptyStateIllustration
+        type="error"
+        size="fullPage"
+        title="Title"
+        description="Description"
+        contentClassName="w-auto"
+      />,
+    );
+
+    expect(markup).toContain("w-auto");
+    expect(markup).not.toContain("w-[320px]");
+  });
 
   it("omits the text area when no text is provided", () => {
     const markup = renderToStaticMarkup(

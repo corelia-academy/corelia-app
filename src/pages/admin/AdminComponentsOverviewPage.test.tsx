@@ -32,6 +32,10 @@ function LocationProbe({
   return null;
 }
 
+// The showcase renders every component section (and GSAP motion) per test;
+// the default 5s budget is too tight when the full suite runs in parallel.
+vi.setConfig({ testTimeout: 15_000 });
+
 describe("AdminComponentsPage", () => {
   afterEach(() => {
     document.body.innerHTML = "";
@@ -51,9 +55,10 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(21);
+    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(22);
     expect(container.querySelector('a[href="/components/timestamp"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/toast-bar"]')).not.toBeNull();
+    expect(container.querySelector('a[href="/components/explanation-box"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/action"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/avatar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/scrollbar"]')).not.toBeNull();
@@ -75,14 +80,15 @@ describe("AdminComponentsPage", () => {
     expect(navigation?.classList.contains("overflow-x-auto")).toBe(true);
     expect(navigation?.classList.contains("overflow-x-hidden")).toBe(false);
     expect(container.querySelector("main")?.classList.contains("select-none")).toBe(false);
-    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(20);
+    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(21);
     expect(container.querySelector("#component-full-page-empty-state")).toBeNull();
-    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(20);
+    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(21);
     expect(container.querySelector('[data-testid="component-section-title"]')?.textContent).toBe("Action");
     expect(container.textContent).toContain("Badge");
     expect(container.textContent).toContain("Selection");
     expect(container.querySelector("#component-timestamp")).not.toBeNull();
     expect(container.querySelector("#component-toast-bar")).not.toBeNull();
+    expect(container.querySelector("#component-explanation-box")).not.toBeNull();
     expect(container.querySelector("#component-tooltip")).not.toBeNull();
     expect(container.querySelector("#component-stepper")).not.toBeNull();
     expect(container.querySelector("#component-informative-icon")).not.toBeNull();
@@ -100,7 +106,7 @@ describe("AdminComponentsPage", () => {
       emptyStateSection?.querySelectorAll(
         '[data-testid^="empty-state-illustration-"]',
       ),
-    ).toHaveLength(6);
+    ).toHaveLength(9);
 
     const buttonSection = container.querySelector<HTMLElement>("#component-button");
     expect(buttonSection).not.toBeNull();

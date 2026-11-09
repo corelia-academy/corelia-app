@@ -4,6 +4,7 @@ import { lessonText } from "@/features/learning/lessonCopy";
 import { Link } from "react-router";
 import { CaretDown, CheckSquare, Code, FileText, List, PencilLine, PlayCircle, SidebarSimple } from "@phosphor-icons/react";
 import { Action } from "@/components/ui/action";
+import { Badge } from "@/components/ui/badge";
 import { ProgressCircle } from "@/components/ui/progress";
 import { getLessonFormat, isArticleLesson } from "@/lib/lessonFormat";
 import { Button } from "@/components/ui/button";
@@ -59,7 +60,17 @@ function LessonItem({
   );
 }
 
-function CurriculumSection({ title, children }: { title: string; children: ReactNode }) {
+function formatPartLetter(index: number): string {
+  let n = index;
+  let label = "";
+  do {
+    label = String.fromCharCode(65 + (n % 26)) + label;
+    n = Math.floor(n / 26) - 1;
+  } while (n >= 0);
+  return label;
+}
+
+function CurriculumSection({ partLabel, title, children }: { partLabel: string; title: string; children: ReactNode }) {
   const [open, setOpen] = useState(true);
   const regionRef = useRef<HTMLDivElement>(null);
   const previousOpen = useRef(open);
@@ -89,8 +100,15 @@ function CurriculumSection({ title, children }: { title: string; children: React
         <Action
           type="button"
           size="large"
-          className="cursor-pointer rounded-md hover:rounded-md hover:bg-transparent [&_span]:transition-colors hover:[&_span]:text-button-secondary-foreground"
-          label={title}
+          className="cursor-pointer rounded-md hover:rounded-md hover:bg-transparent [&_span]:transition-colors hover:[&_span:not([data-slot=badge]_*)]:text-button-secondary-foreground"
+          label={
+            <span className="flex min-w-0 items-center gap-md">
+              <Badge size="small" color="gray" variant="filled" className="h-5">
+                {partLabel}
+              </Badge>
+              <span className="min-w-0 truncate">{title}</span>
+            </span>
+          }
           aria-expanded={open}
           aria-controls={regionId}
           onClick={() => setOpen((value) => !value)}
@@ -177,8 +195,12 @@ function CurriculumList({
     <div className={cn(scrollClassName)}>
       <div className="flex flex-col pb-2xl">
         {hasSections
-          ? groups.map(({ section, lessons: sectionLessons }) => (
-              <CurriculumSection key={section.id} title={section.title}>
+          ? groups.map(({ section, lessons: sectionLessons }, index) => (
+              <CurriculumSection
+                key={section.id}
+                partLabel={translate("learning.partLetter", { letter: formatPartLetter(index) })}
+                title={section.title}
+              >
                 {sectionLessons.map(renderLesson)}
               </CurriculumSection>
             ))

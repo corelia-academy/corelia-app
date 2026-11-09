@@ -99,6 +99,8 @@
     "submit": "Submit",
     "retry": "Retry",
     "copy": "Copy",
+    "copied": "Copied",
+    "copyFailed": "Could not copy",
     "download": "Download",
     "share": "Share",
     "search": "Search",

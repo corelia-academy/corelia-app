@@ -19,7 +19,7 @@ export interface PracticeConfig {
 }
 export type NormalizedLesson = CourseLesson & { lesson_format: NonNullable<CourseLesson["lesson_format"]> };
 export type LessonStatus = "loading" | "ready" | "checking" | "submitting" | "completed" | "failed" | "system_error" | "unavailable";
-export interface LessonActionState { label: string; disabled?: boolean; pending?: boolean; run(): void | Promise<void> }
+export interface LessonActionState { label: string; disabled?: boolean; pending?: boolean; summary?: { correct: number; total: number; passed?: boolean }; run(): void | Promise<void> }
 export interface LessonRendererProps {
   courseId: string;
   lesson: CourseLesson;
