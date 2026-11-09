@@ -1345,6 +1345,7 @@
   --on-primary-container: var(--blue-200);
 
   /* Issue #382 — Avatar semantic aliases follow dark mode. */
+  --avatar-brand: var(--background);
   --avatar-filled: var(--blue-600);
   --avatar-set: var(--neutral-600);
   --avatar-action-edit: var(--neutral-900);

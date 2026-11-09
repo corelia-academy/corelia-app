@@ -248,6 +248,7 @@ function Avatar({
         data-avatar-type={avatarTypeKeys[type]}
         className={cn(
           "group/avatar relative flex shrink-0 overflow-visible rounded-full bg-background select-none",
+          "data-[avatar-type=brand-logos]:bg-avatar-brand",
           isLegacySize &&
             "after:pointer-events-none after:absolute after:inset-0 after:z-20 after:rounded-full after:border after:border-border after:mix-blend-darken dark:after:mix-blend-lighten",
           avatarSizeClasses[size],
@@ -289,7 +290,7 @@ function AvatarFallback({
         "group-data-[avatar-type=text]/avatar:bg-avatar-filled group-data-[avatar-type=text]/avatar:text-avatar-text group-data-[avatar-type=text]/avatar:font-medium",
         "group-data-[avatar-type=icon]/avatar:bg-avatar-filled group-data-[avatar-type=icon]/avatar:text-avatar-icon",
         "group-data-[avatar-type=set-avatar]/avatar:bg-avatar-set group-data-[avatar-type=set-avatar]/avatar:text-avatar-icon",
-        "group-data-[avatar-type=brand-logos]/avatar:bg-background group-data-[avatar-type=brand-logos]/avatar:[&>img]:size-full group-data-[avatar-type=brand-logos]/avatar:[&>img]:object-contain",
+        "group-data-[avatar-type=brand-logos]/avatar:bg-avatar-brand group-data-[avatar-type=brand-logos]/avatar:text-foreground group-data-[avatar-type=brand-logos]/avatar:font-semibold group-data-[avatar-type=brand-logos]/avatar:[&>img]:size-full group-data-[avatar-type=brand-logos]/avatar:[&>img]:object-contain",
         "group-data-[avatar-type=disabled]/avatar:opacity-50",
         className
       )}

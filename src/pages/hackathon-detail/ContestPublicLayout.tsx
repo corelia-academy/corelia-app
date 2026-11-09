@@ -18,6 +18,7 @@ import { toast } from "sonner";
 
 import { PageContainer } from "@/components/layouts/PagePrimitives";
 import { BackLink } from "@/components/navigation/BackLink";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -330,11 +331,22 @@ export default function ContestPublicLayout() {
                       </Badge>
                       {contest.host?.name ? (
                         <span className="inline-flex min-w-0 items-center gap-1.5">
-                          {contest.host.logo_url ? (
-                            <img src={optimizedImageUrl(contest.host.logo_url, { width: 24, resize: "contain" })} srcSet={optimizedImageSrcSet(contest.host.logo_url, 24, { resize: "contain" })} alt="" className="size-6 shrink-0 rounded-full bg-white object-contain p-0.5" />
-                          ) : (
-                            <Globe className="size-4 shrink-0" weight="duotone" aria-hidden />
-                          )}
+                          <Avatar
+                            type={contest.host.logo_url ? "Brand Logos" : "Icon"}
+                            size="Medium"
+                            className="border border-border-subtle"
+                          >
+                            {contest.host.logo_url ? (
+                              <AvatarImage
+                                src={optimizedImageUrl(contest.host.logo_url, { width: 32, resize: "contain" })}
+                                srcSet={optimizedImageSrcSet(contest.host.logo_url, 32, { resize: "contain" })}
+                                alt=""
+                              />
+                            ) : null}
+                            <AvatarFallback>
+                              <Globe className="size-4 shrink-0" weight="duotone" aria-hidden />
+                            </AvatarFallback>
+                          </Avatar>
                           <span className="truncate">
                             {contest.host.website_url
                               ? <a href={contest.host.website_url} target="_blank" rel="noreferrer" className="hover:underline">{t("catalog.hostedBy", { name: contest.host.name })}</a>

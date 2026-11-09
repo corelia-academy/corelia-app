@@ -13,8 +13,11 @@ import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { ProjectSaveBlock } from "@/components/projects/ProjectSaveBlock";
 import { Chip } from "@/components/ui/chip";
 import {
+  Avatar,
+  AvatarFallback,
   AvatarGroup,
   AvatarGroupCount,
+  AvatarImage,
 } from "@/components/ui/avatar";
 import { UserAvatar } from "@/components/UserAvatar";
 import { getProjectCoverImageUrl } from "@/lib/projects";
@@ -107,7 +110,7 @@ export function ProjectCard({
         avatarConfig={ownerAvatarConfig}
         alt={ownerName}
         fallback={ownerName.charAt(0).toUpperCase()}
-        size="Xsmall"
+        size="Small"
       />
       {ownerHandle ? (
         <NavLink to={`/@${ownerHandle}`} className="min-w-0 truncate text-foreground-subtle hover:underline">
@@ -128,7 +131,7 @@ export function ProjectCard({
             avatarConfig={person.avatarConfig}
             alt={person.label}
             fallback={person.label.charAt(0).toUpperCase()}
-            size="Xsmall"
+            size="Small"
           />
         );
         return person.href ? (
@@ -195,15 +198,22 @@ export function ProjectCard({
           to={detailPath}
           tabIndex={-1}
           aria-hidden="true"
-          className={cn(
-            "flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-subtle bg-surface-raised",
-          )}
+          className="shrink-0 rounded-full"
         >
-          {logo ? (
-            <img src={optimizedImageUrl(logo, { width: 56, resize: "contain" })} srcSet={optimizedImageSrcSet(logo, 56, { resize: "contain" })} decoding="async" alt="" className="size-full object-contain" loading="lazy" />
-          ) : (
-            <PhosphorImage className="size-7 text-foreground-subtle" weight="duotone" />
-          )}
+          <Avatar type="Brand Logos" size="2XLarge" className="border border-border-subtle">
+            {logo ? (
+              <AvatarImage
+                src={optimizedImageUrl(logo, { width: 64, resize: "contain" })}
+                srcSet={optimizedImageSrcSet(logo, 64, { resize: "contain" })}
+                decoding="async"
+                alt=""
+                loading="lazy"
+              />
+            ) : null}
+            <AvatarFallback>
+              <PhosphorImage className="size-8" weight="duotone" />
+            </AvatarFallback>
+          </Avatar>
         </NavLink>
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-heading-medium font-display text-foreground">

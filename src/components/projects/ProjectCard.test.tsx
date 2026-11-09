@@ -88,14 +88,15 @@ describe("ProjectCard team preview", () => {
   it("shows the owner avatar and name when the owner is the only builder", () => {
     const { container, root } = renderCard();
     expect(container.textContent).toContain("Owner Name");
-    expect(container.querySelectorAll('[data-slot="avatar"]')).toHaveLength(1);
+    expect(container.querySelector('[data-slot="avatar"][data-avatar-type="brand-logos"][data-avatar-size="xlarge-2"]')).not.toBeNull();
+    expect(container.querySelectorAll('[data-slot="avatar"][data-avatar-type="user"][data-avatar-size="small"]')).toHaveLength(1);
     expect(container.querySelector('a[href="/@owner"]')).not.toBeNull();
     act(() => root.unmount());
   });
 
   it("shows three avatars and an accessible overflow count for larger teams", () => {
     const { container, root } = renderCard([member("member-1"), member("member-2"), member("member-3"), member("member-4")]);
-    expect(container.querySelectorAll('[data-slot="avatar-group"] [data-slot="avatar"]')).toHaveLength(3);
+    expect(container.querySelectorAll('[data-slot="avatar-group"] [data-slot="avatar"][data-avatar-size="small"]')).toHaveLength(3);
     const overflow = container.querySelector('[data-slot="avatar-group-count"]');
     expect(overflow?.textContent).toBe("+2");
     expect(overflow?.getAttribute("aria-label")).toBe("2 more members");
