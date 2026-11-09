@@ -33,7 +33,7 @@ export function LessonRenderer(props: LessonRendererProps & { questions?: Sectio
   switch (format) {
     case "quiz": return <Framed frame={props.contentFrame}><QuizLesson {...props} /></Framed>;
     case "practice": return <Framed frame={props.contentFrame}><PracticeLesson {...props} /></Framed>;
-    case "code_exercise": return <Framed frame={props.contentFrame}><div className="flex flex-col gap-6xl"><Markdown content={props.lesson.code_exercise_locale?.instructions ?? props.lesson.description_markdown ?? ""} /><CodeExerciseLesson {...props} /></div></Framed>;
+    case "code_exercise": return <Framed frame={props.contentFrame}><div className="flex flex-col gap-6xl"><Markdown content={props.lesson.code_exercise_locale?.instructions ?? props.lesson.description_markdown ?? ""} variant="lesson" /><CodeExerciseLesson {...props} /></div></Framed>;
     case "video": return <ContentLesson {...props} video />;
     case "article": return <ContentLesson {...props} />;
   }
@@ -46,7 +46,7 @@ function ContentLesson({ lesson, mode, onAction, onComplete, video = false, cont
   useEffect(() => { onAction(updating ? null : { label: t("learning.completeContinue"), run: complete }); return () => onAction(null); }, [onAction, complete, t, updating]);
   const videoNode = url && <YoutubeLessonVideo url={url} title={lesson.title} flush={!!contentFrame} />;
   const updatingNode = updating && <p role="status" className="rounded-xl border border-border bg-surface-raised p-6 text-foreground-muted">{t("learning.videoUpdating")}</p>;
-  const body = <Markdown content={lesson.description_markdown ?? ""} />;
+  const body = <Markdown content={lesson.description_markdown ?? ""} variant="lesson" />;
   if (contentFrame) return <Framed frame={contentFrame} media={videoNode}>{updatingNode}{body}</Framed>;
   return <div className="space-y-6">{videoNode}{updatingNode}{body}</div>;
 }
