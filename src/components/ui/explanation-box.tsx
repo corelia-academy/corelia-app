@@ -15,7 +15,7 @@ function ExplanationBox({ className, status, title, statusLabel, children, ...pr
     <div
       data-slot="explanation-box"
       data-status={status}
-      className={cn("flex flex-col gap-md overflow-clip bg-explanation-box-surface p-2xl", className)}
+      className={cn("flex flex-col gap-md rounded-xl border border-border-subtle overflow-clip bg-explanation-box-surface p-2xl", className)}
       {...props}
     >
       <div className="flex items-center gap-[10px]">

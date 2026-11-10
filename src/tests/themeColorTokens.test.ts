@@ -29,7 +29,22 @@ describe("semantic theme color tokens", () => {
   it("defines Informative Icon colors separately in light and dark mode", () => {
     const lightMode = readCssRule(":root")
     const darkMode = readCssRule(".dark")
-    const informativeIconColors = [
+    const lightInformativeIconColors = [
+      ["informative-icon-error-surface", "error-400"],
+      ["informative-icon-error-content", "error-100"],
+      ["informative-icon-error-outline", "error-300"],
+      ["informative-icon-warning-surface", "warning-400"],
+      ["informative-icon-warning-content", "warning-100"],
+      ["informative-icon-warning-outline", "warning-200"],
+      ["informative-icon-success-surface", "success-400"],
+      ["informative-icon-success-content", "success-100"],
+      ["informative-icon-success-outline", "success-300"],
+      ["informative-icon-blue-surface", "accent-sky-300"],
+      ["informative-icon-blue-content", "accent-sky-100"],
+      ["informative-icon-blue-outline", "accent-sky-200"],
+    ] as const
+
+    const darkInformativeIconColors = [
       ["informative-icon-error-surface", "error-400"],
       ["informative-icon-error-content", "error-200"],
       ["informative-icon-error-outline", "error-600"],
@@ -44,11 +59,12 @@ describe("semantic theme color tokens", () => {
       ["informative-icon-blue-outline", "accent-sky-600"],
     ] as const
 
-    for (const [name, paletteToken] of informativeIconColors) {
-      const value = `var(--${paletteToken})`
+    for (const [name, paletteToken] of lightInformativeIconColors) {
+      expectSingleDeclaration(lightMode, name, `var(--${paletteToken})`)
+    }
 
-      expectSingleDeclaration(lightMode, name, value)
-      expectSingleDeclaration(darkMode, name, value)
+    for (const [name, paletteToken] of darkInformativeIconColors) {
+      expectSingleDeclaration(darkMode, name, `var(--${paletteToken})`)
     }
   })
 

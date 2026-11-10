@@ -83,10 +83,12 @@ describe("quiz mutation recovery", () => {
     await ui.run();
     expect(ui.container.textContent).toContain("Progress synchronization failed");
     expect(radios(ui.container)[0].getAttribute("aria-checked")).toBe("true");
+    expect(ui.container.querySelector('canvas[data-testid="lesson-confetti"]')).toBeNull();
     await ui.run();
     expect(submitLearningQuiz).toHaveBeenCalledTimes(1);
     expect(onComplete).toHaveBeenCalledTimes(2);
     expect(ui.container.querySelector('[role="alert"]')).toBeNull();
+    expect(ui.container.querySelector('canvas[data-testid="lesson-confetti"]')).not.toBeNull();
   });
 
   it("keeps the same request ID and answers when the submit response is lost", async () => {

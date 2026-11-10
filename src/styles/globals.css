@@ -721,23 +721,23 @@
   --radius: 0.65rem;
   --content-px: clamp(1rem, 3vw, 2rem);
   --app-max-width: 80rem;
-  /* Light mode: use shared palette shades with stronger contrast on the light surface. */
-  --progress-track: var(--neutral-400);
-  --progress-neutral: var(--neutral-700);
-  --progress-neutral-fill: var(--neutral-600);
+  /* Light mode: use bright shared palette shades matching Figma design. */
+  --progress-track: var(--neutral-200);
+  --progress-neutral: var(--neutral-400);
+  --progress-neutral-fill: var(--neutral-400);
   --progress-accent-fill: var(--blue-600);
   --progress-status-low: var(--error-400);
   --progress-status-medium: var(--accent-yellow-400);
-  --progress-status-good: var(--accent-teal-500);
-  --progress-status-done: var(--success-400);
-  --progress-circle-success: var(--success-500);
-  --progress-circle-error: var(--error-500);
+  --progress-status-good: var(--accent-teal-400);
+  --progress-status-done: var(--success-300);
+  --progress-circle-success: var(--success-400);
+  --progress-circle-error: var(--error-400);
   --progress-circle-blue: var(--blue-600);
   --progress-circle-purple: var(--accent-purple-400);
   --progress-circle-sky: var(--accent-sky-400);
-  --progress-circle-yellow: var(--accent-yellow-500);
-  --progress-circle-neutral: var(--neutral-500);
-  --progress-circle-done-neutral: var(--neutral-500);
+  --progress-circle-yellow: var(--accent-yellow-400);
+  --progress-circle-neutral: var(--neutral-300);
+  --progress-circle-done-neutral: var(--neutral-400);
   --progress-circle-icon: var(--neutral-50);
   --progress-circle-icon-on-bright: var(--neutral-50);
   --progress-circle-ring-default: color-mix(in srgb, var(--progress-neutral) 40%, var(--background));
@@ -861,22 +861,22 @@
 
   /* Informative Icon tokens — defaults match Figma and can be overridden per theme. */
   --informative-icon-error-surface: var(--error-400);
-  --informative-icon-error-content: var(--error-200);
-  --informative-icon-error-outline: var(--error-600);
-  --informative-icon-warning-surface: var(--warning-500);
-  --informative-icon-warning-content: var(--warning-200);
-  --informative-icon-warning-outline: var(--warning-600);
-  --informative-icon-success-surface: var(--success-500);
-  --informative-icon-success-content: var(--success-200);
-  --informative-icon-success-outline: var(--success-600);
-  --informative-icon-blue-surface: var(--accent-sky-500);
-  --informative-icon-blue-content: var(--accent-sky-200);
-  --informative-icon-blue-outline: var(--accent-sky-600);
+  --informative-icon-error-content: var(--error-100);
+  --informative-icon-error-outline: var(--error-300);
+  --informative-icon-warning-surface: var(--warning-400);
+  --informative-icon-warning-content: var(--warning-100);
+  --informative-icon-warning-outline: var(--warning-200);
+  --informative-icon-success-surface: var(--success-400);
+  --informative-icon-success-content: var(--success-100);
+  --informative-icon-success-outline: var(--success-300);
+  --informative-icon-blue-surface: var(--accent-sky-300);
+  --informative-icon-blue-content: var(--accent-sky-100);
+  --informative-icon-blue-outline: var(--accent-sky-200);
 
-  /* Toast Bar tokens — exact Figma Dark Midnight Navy specification */
-  --toast-bar-surface: var(--neutral-800);
-  --toast-bar-border: color-mix(in srgb, var(--neutral-700) 40%, transparent);
-  --toast-bar-foreground: var(--neutral-50);
+  /* Toast Bar tokens — Light mode reversed from Dark Midnight Navy */
+  --toast-bar-surface: var(--neutral-50);
+  --toast-bar-border: var(--neutral-200);
+  --toast-bar-foreground: var(--text-primary-2);
 
   --text-primary-2: #121926;
   --text-secondary: #4b5565;

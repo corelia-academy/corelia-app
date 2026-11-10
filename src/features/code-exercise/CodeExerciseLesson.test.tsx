@@ -88,12 +88,13 @@ it("retries only completion after a passed check, then locks the answers", async
   localStorage.setItem(codeDraftKey("learner", "course", "lesson", 1), JSON.stringify({ mode: "fill", answers: { mutable: "mut" }, updated_at: "2026-09-11T00:00:00Z" }));
   const host = document.createElement("div"), root = createRoot(host);
   cleanup = () => act(() => root.unmount());
-  const complete = vi.fn().mockRejectedValue(new Error("Offline"));
+  const complete = vi.fn().mockRejectedValueOnce(new Error("Offline")).mockResolvedValue(undefined);
   let action: LessonActionState | null = null;
   act(() => root.render(<CodeExerciseLesson {...props} onComplete={complete} onAction={next => { action = next; }} />));
   await act(async () => { await action!.run(); });
   expect(action!.label).toBe("learning.retryProgress");
   expect(host.querySelector("input")!.value).toBe("mut");
+  expect(host.querySelector('canvas[data-testid="lesson-confetti"]')).toBeNull();
   await act(async () => { await action!.run(); });
   expect(complete).toHaveBeenCalledTimes(2);
   expect(recordLearningEvent).toHaveBeenCalledTimes(1);

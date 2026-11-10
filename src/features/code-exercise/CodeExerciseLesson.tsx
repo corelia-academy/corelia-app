@@ -94,17 +94,18 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
       if (completionPending) {
         await onComplete();
         setCompletionPending(false);
+        setCelebrateKey(k => k + 1);
         return;
       }
       const evaluated = evaluateCodeExercise(config, { answers, source });
       setResult(evaluated);
-      if (evaluated.passed) setCelebrateKey(k => k + 1);
       if (key) void recordLearningEvent(courseId, lesson.id, "code_exercise_checked", evaluated.passed);
       if (evaluated.passed && mode === "learner" && !completed) {
         setCompletionPending(true);
         await onComplete();
         setCompletionPending(false);
       }
+      if (evaluated.passed) setCelebrateKey(k => k + 1);
     } catch { setError(t("learning.systemError")); }
     finally { inFlight.current = false; setBusy(false); }
   }, [config, fill, blankIds, answers, source, key, courseId, lesson.id, mode, completed, completionPending, onComplete, t]);
