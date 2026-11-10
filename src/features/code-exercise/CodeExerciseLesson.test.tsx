@@ -12,6 +12,7 @@ const translate = (key: string) => key;
 vi.mock("@/features/learning/useLearningTranslation", () => ({ useLearningTranslation: () => ({ t: translate }) }));
 vi.mock("@/stores/authStore", () => ({ useAuth: () => ({ user: { id: "learner" } }) }));
 vi.mock("@/lib/learning", () => ({ recordLearningEvent: vi.fn() }));
+vi.mock("@/components/ui/input-code-monaco", () => ({ default: (p: { readOnly?: boolean }) => <div data-testid="monaco" data-readonly={String(!!p.readOnly)} /> }));
 const props: LessonRendererProps = { courseId: "course", mode: "learner", completed: false, onComplete: vi.fn(), onAction: vi.fn(), lesson: { id: "lesson", section_id: "section", title: "Fill", order: 0, duration_seconds: 0, code_exercise_config: defaultCodeConfig() } };
 let cleanup: (() => void) | undefined;
 afterEach(() => { cleanup?.(); localStorage.clear(); vi.clearAllMocks(); });
@@ -100,4 +101,33 @@ it("retries only completion after a passed check, then locks the answers", async
   expect(recordLearningEvent).toHaveBeenCalledTimes(1);
   expect(host.querySelector("input")!.readOnly).toBe(true);
   expect(host.querySelector('canvas[data-testid="lesson-confetti"]')).not.toBeNull();
+});
+
+it("draws the fill-in-the-blank lines inside the shared Code Block frame", () => {
+  const host = document.createElement("div"), root = createRoot(host);
+  document.body.append(host);
+  cleanup = () => { act(() => root.unmount()); host.remove(); };
+  act(() => root.render(<CodeExerciseLesson {...props} />));
+  const block = host.querySelector('[data-slot="code-block"]');
+  expect(block?.getAttribute("data-header")).toBe("label");
+  expect(block?.querySelectorAll("input").length).toBeGreaterThan(0);
+  expect(block?.querySelectorAll('[class*="text-code-block-line-number"]').length).toBeGreaterThan(0);
+  expect(host.querySelector('[class*="neutral-"]')).toBeNull();
+});
+
+it("types the edit exercise in the shared Input Code and locks it after a check", async () => {
+  const host = document.createElement("div"), root = createRoot(host);
+  document.body.append(host);
+  cleanup = () => { act(() => root.unmount()); host.remove(); };
+  let action: LessonActionState | null = null;
+  const edit = { ...props, onAction: (next: LessonActionState | null) => { action = next; }, lesson: { ...props.lesson, code_exercise_config: defaultCodeConfig("edit") } };
+  await act(async () => root.render(<CodeExerciseLesson {...edit} />));
+  await act(async () => { await new Promise(resolve => setTimeout(resolve, 0)); });
+  const area = () => host.querySelector('[data-slot="input-code"]');
+  expect(area()?.getAttribute("data-status")).toBe("filled");
+  expect(host.querySelector('[data-slot="code-block"]')).toBeNull();
+  expect(host.querySelector('[data-testid="monaco"]')?.getAttribute("data-readonly")).toBe("false");
+  await act(async () => { await action!.run(); });
+  expect(area()?.getAttribute("data-status")).toBe("disabled");
+  expect(host.querySelector('[data-testid="monaco"]')?.getAttribute("data-readonly")).toBe("true");
 });

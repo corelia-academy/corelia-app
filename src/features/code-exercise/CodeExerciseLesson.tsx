@@ -4,14 +4,15 @@ import { useLearningTranslation } from "@/features/learning/useLearningTranslati
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProgressCircle } from "@/components/ui/progress";
-import { CodeBlock, CodeBlockFrame, CodeSpan } from "@/components/markdown/CodeBlock";
+import { CodeBlock, CodeBlockFrame, CodeBlockLine, CodeSpan } from "@/components/ui/code-block";
+import { codeLanguageLabel } from "@/components/ui/code-syntax";
+import { InputCode } from "@/components/ui/input-code";
 import { ExplanationBox } from "@/components/ui/explanation-box";
 import { useAuth } from "@/stores/authStore";
 import { recordLearningEvent } from "@/lib/learning";
 import { LessonConfetti } from "@/features/learning/LessonConfetti";
 import { LessonDataError } from "@/features/learning/LessonDataError";
 import type { LessonRendererProps } from "@/features/learning/types";
-import { CodeEditor } from "./CodeEditor";
 import { validateCodeConfig } from "./config";
 import { evaluateCodeExercise, MAX_SOURCE_BYTES, sourceBytes } from "./evaluate";
 import { codeDraftKey, readCodeDraft, saveCodeDraft } from "./drafts";
@@ -123,11 +124,9 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
     <LessonConfetti burstKey={celebrateKey} />
     <div className="space-y-4">
       <div className="min-w-0">
-        {config.mode === "fill" ? <CodeBlockFrame language={config.language}>
-          <div className="flex flex-col gap-xl overflow-x-auto p-2xl font-mono text-[16px] leading-none tracking-[-0.01em] text-foreground">
-            {lines.map((line, n) => <div key={n} className="flex items-center gap-2xl">
-              <span aria-hidden="true" className="shrink-0 select-none text-neutral-500" style={{ width: `${String(lines.length).length}ch` }}>{n + 1}</span>
-              <code className="flex items-center gap-[10px] whitespace-pre">{line.map((s, i) => {
+        {config.mode === "fill" ? <CodeBlockFrame label={codeLanguageLabel(config.language)}>
+          <div className="overflow-x-auto px-2xl py-lg font-mono text-[16px] leading-8 tracking-[-0.01em]">
+            {lines.map((line, n) => <CodeBlockLine key={n} number={n + 1} digits={String(lines.length).length}>{line.map((s, i) => {
                 if (s.type === "source") return <CodeSpan key={i} code={s.value} language={config.language} />;
                 const value = answers[s.id] ?? "";
                 const passed = result?.results.find(r => r.test_id === s.id)?.passed;
@@ -140,10 +139,9 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
                     onChange={e => { setAnswers(a => ({ ...a, [s.id]: e.target.value.slice(0, 1024) })); setResult(null); setError(null); setCompletionPending(false); }}
                     onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); e.stopPropagation(); void act(); } }} />
                 </span>;
-              })}</code>
-            </div>)}
+              })}</CodeBlockLine>)}
           </div>
-        </CodeBlockFrame> : <CodeBlockFrame language={config.language}><CodeEditor language={config.language} source={source} readOnly={busy || locked} onChange={value => { if (sourceBytes(value) <= MAX_SOURCE_BYTES) { setSource(value); setResult(null); setError(null); setCompletionPending(false); } else setError(t("learning.sourceLimit")); }} /></CodeBlockFrame>}
+        </CodeBlockFrame> : <InputCode language={config.language} value={source} disabled={busy || locked} ariaLabel={t("learning.source")} onChange={value => { if (sourceBytes(value) <= MAX_SOURCE_BYTES) { setSource(value); setResult(null); setError(null); setCompletionPending(false); } else setError(t("learning.sourceLimit")); }} />}
         {fill && missingId && !(answers[missingId] ?? "").trim() && <p role="alert" className="mt-lg text-body-medium text-input-field-error">{t("learning.codeFillAll")}</p>}
         <div aria-live="polite">{result && <ExplanationBox className="mt-6xl" status={result.passed ? "correct" : "incorrect"}
           title={t(result.passed ? "learning.quizCorrect" : "learning.quizThinkAgain")}

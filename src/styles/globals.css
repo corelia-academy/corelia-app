@@ -398,6 +398,10 @@
   --color-explanation-box-surface: var(--explanation-box-surface);
   --color-code-block-header-surface: var(--code-block-header-surface);
   --color-code-block-surface: var(--code-block-surface);
+  --color-input-code-surface: var(--input-code-surface);
+  --color-input-code-focus: var(--input-code-focus-ring);
+  --color-code-block-text: var(--code-block-text);
+  --color-code-block-line-number: var(--code-block-line-number);
   --color-confetti-yellow: var(--confetti-yellow);
   --color-confetti-green: var(--confetti-green);
   --color-confetti-sky: var(--confetti-sky);
@@ -1091,6 +1095,18 @@
   --explanation-box-surface: var(--neutral-100);
   --code-block-header-surface: var(--neutral-300);
   --code-block-surface: var(--neutral-200);
+  /* Code Block text and syntax colors (Figma DS Codeblock). Light values keep contrast on --code-block-surface. */
+  --code-block-text: var(--neutral-800);
+  --code-block-line-number: var(--neutral-500);
+  --code-syntax-function: var(--blue-700);
+  --code-syntax-string: var(--success-600);
+  --code-syntax-keyword: var(--error-500);
+  --code-syntax-builtin: var(--warning-600);
+  /* Input Code (Figma DS Codeblock): editor surface, current-line band, wrong-line band and focus ring. */
+  --input-code-surface: var(--neutral-100);
+  --input-code-line-highlight: var(--neutral-200);
+  --input-code-error-line: color-mix(in srgb, var(--error-500) 20%, transparent);
+  --input-code-focus-ring: var(--blue-700);
   /* Badge semantic colors preserve the current light Figma mapping. */
   --badge-outline-background: color-mix(in srgb, var(--neutral-50) 5%, transparent);
   --badge-primary: var(--blue-500);
@@ -1464,6 +1480,17 @@
   --explanation-box-surface: var(--neutral-800);
   --code-block-header-surface: var(--neutral-700);
   --code-block-surface: var(--neutral-800);
+  /* Dark syntax colors are the existing lesson code palette; Figma uses #1ebfff and #2fe921, no primitive matches. */
+  --code-block-text: var(--neutral-200);
+  --code-block-line-number: var(--neutral-500);
+  --code-syntax-function: #1ebfff;
+  --code-syntax-string: #2fe921;
+  --code-syntax-keyword: #ff8787;
+  --code-syntax-builtin: #ffa159;
+  --input-code-surface: var(--neutral-900);
+  --input-code-line-highlight: var(--neutral-800);
+  --input-code-error-line: color-mix(in srgb, var(--error-400) 20%, transparent);
+  --input-code-focus-ring: var(--blue-400);
   /* Badge semantic colors preserve the current dark Figma mapping. */
   --badge-outline-background: color-mix(in srgb, var(--neutral-50) 5%, transparent);
   --badge-primary: var(--blue-500);
@@ -1674,6 +1701,23 @@
   [data-slot="dropdown-menu-checkbox-item"][data-disabled] {
     --dropdown-title: var(--dropdown-disabled);
     --dropdown-supporting: var(--dropdown-disabled);
+  }
+
+  /* Input Code: Monaco decorations mark a wrong line, and a disabled editor dims its text. */
+  .input-code-error-line {
+    background-color: var(--input-code-error-line);
+  }
+
+  .input-code-error-number {
+    color: var(--input-field-error) !important;
+  }
+
+  [data-slot="input-code"][data-status="disabled"] .monaco-editor .view-line span {
+    color: var(--input-field-disabled-foreground) !important;
+  }
+
+  [data-slot="input-code"]:focus-within .monaco-editor .active-line-number:not(.input-code-error-number) {
+    color: var(--foreground) !important;
   }
 
   input[data-slot="input"]:autofill {

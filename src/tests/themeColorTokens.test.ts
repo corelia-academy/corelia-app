@@ -93,6 +93,17 @@ describe("semantic theme color tokens", () => {
       ["confetti-teal", "var(--accent-teal-400)", "var(--accent-teal-400)"],
       ["confetti-coral", "var(--error-400)", "var(--error-400)"],
       ["confetti-purple", "var(--accent-purple-400)", "var(--accent-purple-400)"],
+      ["code-block-text", "var(--neutral-800)", "var(--neutral-200)"],
+      ["code-block-line-number", "var(--neutral-500)", "var(--neutral-500)"],
+      // Dark syntax colors are the existing lesson code palette; no primitive color matches them.
+      ["code-syntax-function", "var(--blue-700)", "#1ebfff"],
+      ["code-syntax-string", "var(--success-600)", "#2fe921"],
+      ["code-syntax-keyword", "var(--error-500)", "#ff8787"],
+      ["code-syntax-builtin", "var(--warning-600)", "#ffa159"],
+      ["input-code-surface", "var(--neutral-100)", "var(--neutral-900)"],
+      ["input-code-line-highlight", "var(--neutral-200)", "var(--neutral-800)"],
+      ["input-code-error-line", "color-mix(in srgb, var(--error-500) 20%, transparent)", "color-mix(in srgb, var(--error-400) 20%, transparent)"],
+      ["input-code-focus-ring", "var(--blue-700)", "var(--blue-400)"],
     ] as const
 
     for (const [name, lightValue, darkValue] of roles) {
@@ -150,6 +161,7 @@ describe("semantic theme color tokens", () => {
       "confetti-teal",
       "confetti-coral",
       "confetti-purple",
+      "input-code-surface",
     ]
 
     for (const name of utilityRoles) {
