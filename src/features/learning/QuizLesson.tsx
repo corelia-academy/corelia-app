@@ -57,7 +57,10 @@ function Quiz({ courseId, lesson, mode, completed, onComplete, onAction, questio
       // A successful RPC has already committed the attempt. Retry only the
       // progress/cache synchronization if that subsequent step failed.
       if (result?.passed && mode === "learner") {
-        if (!completed) await onComplete();
+        if (!completed) {
+          await onComplete();
+          setCelebrateKey(k => k + 1);
+        }
         return;
       }
       const threshold = lesson.quiz_config?.passing_ratio ?? 0.7;
@@ -66,8 +69,8 @@ function Quiz({ courseId, lesson, mode, completed, onComplete, onAction, questio
       const correct = questions.filter(q => q.correct_index === payload[q.id]).length;
       const value: LearningQuizResult = mode === "preview" ? { total: questions.length, correct, passed: correct / questions.length >= threshold, passing_ratio: threshold, attempt_group_id: requestId, completed: true, attempts: [] } : await submitLearningQuiz(courseId, lesson.id, requestId, payload, resetEpoch);
       setResult(value);
-      if (value.passed) setCelebrateKey(k => k + 1);
       if (value.passed && mode === "learner" && !completed) await onComplete();
+      if (value.passed) setCelebrateKey(k => k + 1);
     } catch (e) { setError(e instanceof Error ? e.message : t("learning.systemError")); }
     finally { inFlight.current = false; setBusy(false); }
   }, [allAnswered, lesson.id, lesson.quiz_config, questions, answers, submittedAnswers, mode, requestId, courseId, completed, onComplete, result, resetEpoch, t]);
