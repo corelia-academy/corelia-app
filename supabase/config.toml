@@ -30,6 +30,9 @@ verify_jwt = false
 [functions.generate-questions]
 verify_jwt = false
 
+[functions.app-mcp]
+verify_jwt = false
+
 [functions.studio-mcp]
 verify_jwt = false
 # Shares corelia-api's studio modules (diagram and cover rendering), which read these assets at run time.

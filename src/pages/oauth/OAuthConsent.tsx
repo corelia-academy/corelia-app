@@ -104,7 +104,6 @@ export default function OAuthConsent() {
           </dl>
         )}
 
-        <p className="text-sm text-foreground-muted">{t("oauthConsent.adminOnly")}</p>
         <div className="flex flex-wrap justify-end gap-3">
           <Button variant="cta" hierarchy="secondary" disabled={!details || busy} onClick={() => void decide("deny")}>
             {busy ? t("oauthConsent.processing") : t("oauthConsent.deny")}

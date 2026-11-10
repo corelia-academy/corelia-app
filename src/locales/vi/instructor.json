@@ -1,4 +1,17 @@
 {
+  "mcpConnection": {
+    "title": "Kết nối AI / MCP",
+    "description": "Dành cho giảng viên và quản trị viên. Quyền trên từng khóa học vẫn được kiểm tra khi thao tác.",
+    "unavailable": "Chưa cấu hình địa chỉ kết nối.",
+    "client": "Ứng dụng",
+    "copyCommand": "Sao chép lệnh",
+    "copyUrl": "Sao chép URL",
+    "copied": "Đã sao chép.",
+    "copyFailed": "Không thể sao chép. Hãy chọn và sao chép thủ công.",
+    "existing": "Nếu đã thêm corelia-app, hãy kiểm tra URL cấu hình trước khi chạy lệnh đăng nhập.",
+    "prompt": "Prompt kiểm tra: Hãy kiểm tra kết nối Corelia App MCP.",
+    "availability": "Hiện chỉ hỗ trợ kiểm tra kết nối; công cụ khóa học sẽ được bổ sung sau."
+  },
   "sidebar": {
     "title": "Corelia Instructor",
     "subtitle": "Quản lý khoá học, hồ sơ và các tác vụ vận hành trong một nơi.",

@@ -1,4 +1,17 @@
 {
+  "mcpConnection": {
+    "title": "Connect AI / MCP",
+    "description": "For instructors and administrators. Course permissions are checked for each action.",
+    "unavailable": "Connection address is not configured.",
+    "client": "Client",
+    "copyCommand": "Copy command",
+    "copyUrl": "Copy URL",
+    "copied": "Copied.",
+    "copyFailed": "Could not copy. Select and copy manually.",
+    "existing": "If corelia-app already exists, check its configured URL before logging in.",
+    "prompt": "Test prompt: Check the Corelia App MCP connection.",
+    "availability": "Only connection testing is available now; course tools will be added later."
+  },
   "sidebar": {
     "title": "Corelia Instructor",
     "subtitle": "Manage courses, profile, and operations in one place.",

@@ -1,3 +1,4 @@
+import { AppMcpConnection } from "./instructor/AppMcpConnection";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
@@ -76,6 +77,7 @@ const InstructorCourses = () => {
 
   return (
     <PageContainer>
+      {(profile?.role === "instructor" || isAdmin) && <AppMcpConnection />}
       {error && (
         <div className="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
           {error}

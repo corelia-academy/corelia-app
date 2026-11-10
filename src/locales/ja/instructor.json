@@ -1,4 +1,17 @@
 {
+  "mcpConnection": {
+    "title": "AI / MCP に接続",
+    "description": "講師と管理者向けです。各操作でコースの権限を確認します。",
+    "unavailable": "接続先が設定されていません。",
+    "client": "クライアント",
+    "copyCommand": "コマンドをコピー",
+    "copyUrl": "URL をコピー",
+    "copied": "コピーしました。",
+    "copyFailed": "コピーできませんでした。手動でコピーしてください。",
+    "existing": "corelia-app が既にある場合は、ログイン前に設定済み URL を確認してください。",
+    "prompt": "確認用プロンプト: Corelia App MCP の接続を確認してください。",
+    "availability": "現在は接続確認のみ利用できます。コース用ツールは後で追加されます。"
+  },
   "sidebar": {
     "title": "Corelia 講師",
     "subtitle": "コース、プロフィール、運用を 1 か所で管理します。",

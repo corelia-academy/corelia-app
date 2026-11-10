@@ -1,4 +1,17 @@
 {
+  "mcpConnection": {
+    "title": "連接 AI / MCP",
+    "description": "供講師和管理員使用。每次操作都會檢查課程權限。",
+    "unavailable": "尚未設定連線位址。",
+    "client": "用戶端",
+    "copyCommand": "複製指令",
+    "copyUrl": "複製 URL",
+    "copied": "已複製。",
+    "copyFailed": "無法複製，請手動選取並複製。",
+    "existing": "如果 corelia-app 已存在，請在登入前檢查其設定的 URL。",
+    "prompt": "測試提示：請檢查 Corelia App MCP 連線。",
+    "availability": "目前僅支援連線測試，課程工具將於之後新增。"
+  },
   "sidebar": {
     "title": "Corelia 講師",
     "subtitle": "在一處管理課程、資料和營運。",

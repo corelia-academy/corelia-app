@@ -1,4 +1,17 @@
 {
+  "mcpConnection": {
+    "title": "连接 AI / MCP",
+    "description": "供讲师和管理员使用。每次操作都会检查课程权限。",
+    "unavailable": "尚未配置连接地址。",
+    "client": "客户端",
+    "copyCommand": "复制命令",
+    "copyUrl": "复制 URL",
+    "copied": "已复制。",
+    "copyFailed": "无法复制，请手动选择并复制。",
+    "existing": "如果 corelia-app 已存在，请在登录前检查其配置的 URL。",
+    "prompt": "测试提示：请检查 Corelia App MCP 连接。",
+    "availability": "目前仅支持连接测试，课程工具将在之后添加。"
+  },
   "sidebar": {
     "title": "Corelia 讲师",
     "subtitle": "在一处管理课程、资料和运营。",

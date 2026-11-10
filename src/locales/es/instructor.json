@@ -1,4 +1,17 @@
 {
+  "mcpConnection": {
+    "title": "Conectar IA / MCP",
+    "description": "Para instructores y administradores. Se comprueban los permisos de cada curso en cada acción.",
+    "unavailable": "La dirección de conexión no está configurada.",
+    "client": "Cliente",
+    "copyCommand": "Copiar comando",
+    "copyUrl": "Copiar URL",
+    "copied": "Copiado.",
+    "copyFailed": "No se pudo copiar. Selecciona y copia manualmente.",
+    "existing": "Si corelia-app ya existe, comprueba su URL configurada antes de iniciar sesión.",
+    "prompt": "Mensaje de prueba: Comprueba la conexión de Corelia App MCP.",
+    "availability": "Por ahora solo está disponible la prueba de conexión; las herramientas de cursos se añadirán después."
+  },
   "sidebar": {
     "title": "Instructor de Corelia",
     "subtitle": "Gestiona cursos, perfil y operaciones en un solo lugar.",

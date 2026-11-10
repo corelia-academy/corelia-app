@@ -280,7 +280,7 @@ function ApplicationRoutes() {
             <Route
               path="/oauth/consent"
               element={
-                <RequireRole roles={ROLE_GROUPS.adminOnly}>
+                <RequireRole roles={ROLE_GROUPS.appMcp}>
                   <Suspense fallback={<PageFallback />}>
                     <OAuthConsent />
                   </Suspense>

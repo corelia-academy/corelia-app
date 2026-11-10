@@ -1,4 +1,17 @@
 {
+  "mcpConnection": {
+    "title": "AI / MCP 연결",
+    "description": "강사와 관리자용입니다. 각 작업에서 강좌 권한을 확인합니다.",
+    "unavailable": "연결 주소가 설정되지 않았습니다.",
+    "client": "클라이언트",
+    "copyCommand": "명령 복사",
+    "copyUrl": "URL 복사",
+    "copied": "복사했습니다.",
+    "copyFailed": "복사하지 못했습니다. 직접 선택하여 복사하세요.",
+    "existing": "corelia-app이 이미 있으면 로그인 전에 설정된 URL을 확인하세요.",
+    "prompt": "테스트 프롬프트: Corelia App MCP 연결을 확인해 주세요.",
+    "availability": "현재 연결 확인만 가능합니다. 강좌 도구는 나중에 추가됩니다."
+  },
   "sidebar": {
     "title": "Corelia 강사",
     "subtitle": "강의, 프로필, 운영을 한곳에서 관리하세요.",

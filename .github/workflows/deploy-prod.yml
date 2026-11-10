@@ -268,6 +268,12 @@ jobs:
             (.name == "extension_in_public" and .metadata.name == "pg_net" and .metadata.schema == "public")
           )' <<< "$advisor_output"
 
+      - name: Deploy Edge Function (app-mcp)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase functions deploy app-mcp --project-ref "$SUPABASE_PROJECT_REF"
+
       - name: Deploy Edge Function (cron-jobs)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
