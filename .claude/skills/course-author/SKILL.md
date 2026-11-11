@@ -56,7 +56,7 @@ Mỗi child nhận:
 1. Nội dung file role của bước đó.
 2. Đường dẫn tới `references/principles.md` và `references/platform.md`.
 3. Đường dẫn tuyệt đối tới các file đầu vào và file đầu ra nó được ghi.
-4. Với bước 5: `lesson_id`, module chứa lesson, lesson trước và sau trong curriculum.
+4. Với bước 5 và 6: `lesson_id`, module chứa lesson, lesson trước và sau trong curriculum, cùng bảng nhãn app cho mọi lesson và module (`lesson_id` → "Part X, Bài N"; N là số thứ tự trong cả khóa, đếm cả quiz và practice). Child dùng bảng này khi nhắc bài khác, và không đưa mã nội bộ vào chữ người học.
 
 Child không gọi child khác, không sửa file ngoài file đầu ra của mình, không ghi lên DB.
 
@@ -83,6 +83,8 @@ Child viết lesson chỉ nhận phần research thuộc `source_ids` của less
 ## Kiểm output và chạy lại
 
 Sau mỗi child, kiểm output theo phần **Output** trong file role: đủ trường bắt buộc, đúng kiểu, ID tham chiếu tồn tại, không vi phạm `platform.md`. Kết quả kiểm là: đạt, hoặc không đạt kèm lý do cụ thể (trường nào, sai gì).
+
+Lesson có sơ đồ: coordinator chạy thêm `deno run -A --no-config scripts/studio/diagram-lint.ts lessons/<lesson_id>.json`; còn dòng báo lỗi thì kết quả là không đạt, kèm đúng các dòng đó.
 
 - **Đạt:** sang bước sau.
 - **Không đạt, hoặc review trả `needs_fix`:** gọi lại child của bước đó, đưa kèm lý do không đạt (hoặc các issue blocking của review) và output cũ. Child sửa đúng các điểm được nêu, giữ nguyên phần đã đạt.

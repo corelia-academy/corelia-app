@@ -12,7 +12,7 @@ Viết MỘT lesson theo `curriculum.json`. Dùng đúng `lesson_id`, `type`, `p
 
 ## Bài dạy (article, video)
 
-- Mở bài theo mục Mở bài dạy trong `principles.md`: "Trước khi bắt đầu", rồi tình huống và câu hỏi, rồi trả lời câu hỏi, rồi khái niệm. Kết thúc bài bằng việc giải quyết trọn tình huống mở bài. Phần "Trước khi bắt đầu" trỏ tới bài trong khóa bằng `lesson_id`, tới nguồn ngoài bằng URL đã đọc.
+- Mở bài theo mục Mở bài dạy trong `principles.md`: "Trước khi bắt đầu", rồi tình huống và câu hỏi, rồi trả lời câu hỏi, rồi khái niệm. Kết thúc bài bằng việc giải quyết trọn tình huống mở bài. Phần "Trước khi bắt đầu" trỏ tới bài trong khóa bằng nhãn của app (xem mục Gọi tên bài và phần trong `principles.md`, nhãn lấy từ bảng nhãn coordinator đưa), tới nguồn ngoài bằng URL đã đọc. Không đưa `lesson_id`, `module_id` hay `source_ids` vào chữ người học.
 - Từ bài thứ hai: nêu cụ thể dùng lại gì từ bài trước và dùng nó trong nội dung (ví dụ lấy kết quả của bài trước làm đầu vào). Câu "bài trước đã giới thiệu..." không đủ.
 - Bài đầu khóa liên hệ với `brief.prerequisites`.
 - Mọi khái niệm chưa được dạy ở bài trước có giải thích ngắn tại lần xuất hiện đầu trong bài. Trước khi trả kết quả, rà toàn bài một lượt để kiểm điều này.
@@ -21,7 +21,7 @@ Viết MỘT lesson theo `curriculum.json`. Dùng đúng `lesson_id`, `type`, `p
 
 ### Article
 
-Article `explanation` có ít nhất một sơ đồ trong `diagrams`, theo quy tắc sơ đồ trong `platform.md`.
+Article `explanation` có ít nhất một sơ đồ trong `diagrams`, theo quy tắc sơ đồ trong `platform.md`. Thêm sơ đồ chỉ ở chỗ chữ đang kể một cấu trúc, luồng, quan hệ hoặc sự đối lập mà vẽ được trong giới hạn nền tảng, và tuân theo mục Minh họa bằng sơ đồ trong `principles.md`: tối đa một sơ đồ cho mỗi mục `##`, thường 1–3 sơ đồ cho cả bài, không vẽ trang trí. Mỗi sơ đồ đặt ngay sau đoạn nó minh họa và tham chiếu đúng một lần. Chữ và hình phải bổ trợ nhau: bỏ chữ vẫn nắm được ý chính từ nhãn và `alt`, bỏ hình vẫn hiểu trọn từ chữ, và đoạn văn dẫn người học nhìn hình bằng đúng nhãn node. Tình huống mở bài là một chỗ có thể có sơ đồ khi nó có nhiều bên (website, ví, contract...) hoặc có một điều cần nhìn thấy mới hiểu. Viết nhãn theo mục Nội dung sơ đồ trong `platform.md` (đọc to từng cạnh thành câu) và đặt node theo mục Bố cục sơ đồ (dòng chính trong một hàng, ưu tiên 2 hàng, nguồn phụ hợp lưu từ hàng trên). Trước khi trả kết quả, chạy `deno run -A --no-config scripts/studio/diagram-lint.ts lessons/<lesson_id>.json` và sửa mọi dòng nó báo.
 
 ### Video
 
@@ -36,7 +36,7 @@ Article `explanation` có ít nhất một sơ đồ trong `diagrams`, theo quy 
 - Ít nhất 5 câu; `recall` 2–3 câu. Mỗi câu một đáp án đúng, 3–4 phương án với id `a`–`d`.
 - Câu hỏi bắt dự đoán hoặc giải thích, không chỉ nhớ thuật ngữ. Mỗi câu tự đủ ngữ cảnh: mọi đoạn code, giá trị, tên được nhắc tới đều có trong câu hỏi.
 - Phương án nhiễu lấy từ `misconceptions`.
-- `explanation` nói vì sao đáp án đúng, vì sao từng phương án nhiễu sai, và trỏ tới bài trong `review_lesson_ids` để ôn.
+- `explanation` nói vì sao đáp án đúng, vì sao từng phương án nhiễu sai, và trỏ tới bài trong `review_lesson_ids` để ôn, viết bằng nhãn của app ("Part A, Bài 2"), không viết `lesson_id`.
 - `final_check`: mỗi câu là tình huống mới; người chưa học không đoán đúng được, người đã học ở mức trung bình làm được.
 
 ## Code exercise

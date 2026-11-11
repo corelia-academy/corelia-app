@@ -4,9 +4,9 @@
 
 import { initWasm, Resvg } from "npm:@resvg/resvg-wasm@2.6.2";
 
-import { border, edgeGeometry, edgeLabel, FONT_SIZE, LABEL_FONT_SIZE, layout, textWidth, type Diagram } from "./diagram.ts";
+import { border, edgeGeometry, edgeLabel, FONT_SIZE, LABEL_FONT_SIZE, layout, PAD, textWidth, type Diagram } from "./diagram.ts";
 
-const INK = "#1e1e1e", PAD = 50;
+const INK = "#1e1e1e";
 /** PNG scale: the diagram is drawn at about 1300 px wide, so 2x stays sharp on retina screens. */
 const ZOOM = 2;
 
@@ -127,7 +127,16 @@ function roundedRect(x: number, y: number, w: number, h: number, r: number) {
     `L${x + r},${y + h} Q${x},${y + h} ${x},${y + h - r} L${x},${y + r} Q${x},${y} ${x + r},${y} Z`;
 }
 
-export function renderSvg(rough: any, spec: Diagram, seed = 7, fontFamily = "Patrick Hand"): string {
+export interface RenderOptions {
+  /**
+   * Drawing width (px, before the PNG zoom) to fill. The lesson column of the app is as wide as the image may be
+   * (src/features/learning/lessonLayout.tsx), so a diagram rendered at that width is shown edge to edge. Columns are
+   * spread to reach it and the canvas is padded to exactly this width; a diagram already wider is left as it is.
+   */
+  targetWidth?: number;
+}
+
+export function renderSvg(rough: any, spec: Diagram, seed = 7, fontFamily = "Patrick Hand", ro: RenderOptions = {}): string {
   const gen = rough.generator();
   // deno-lint-ignore no-explicit-any
   const paths = (drawable: any, extra = "") =>
@@ -136,7 +145,7 @@ export function renderSvg(rough: any, spec: Diagram, seed = 7, fontFamily = "Pat
     ).join("");
   // preserveVertices keeps segment endpoints fixed so lines and corner curves meet (Excalidraw does the same).
   const opts = { roughness: 1.1, bowing: 0.8, stroke: INK, strokeWidth: 2.2, seed, preserveVertices: true };
-  const boxes = layout(spec);
+  const boxes = layout(spec, ro.targetWidth ? { fillWidth: ro.targetWidth - PAD * 2 } : {});
   // Tight canvas: grow a bounding box with everything that is drawn.
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   const grow = (x0: number, y0: number, x1: number, y1: number) => {
@@ -190,7 +199,12 @@ export function renderSvg(rough: any, spec: Diagram, seed = 7, fontFamily = "Pat
     out += paths(gen.line(tx, ty + 30, tx + textWidth(spec.title, 40), ty + 32, { ...opts, seed: seed + 999 }));
     grow(tx, ty + 30, tx + textWidth(spec.title, 40), ty + 32);
   }
-  const x = minX - PAD, y = minY - PAD, W = Math.ceil(maxX - minX + PAD * 2), H = Math.ceil(maxY - minY + PAD * 2);
+  let x = minX - PAD, y = minY - PAD, W = Math.ceil(maxX - minX + PAD * 2);
+  const H = Math.ceil(maxY - minY + PAD * 2);
+  if (ro.targetWidth && W < ro.targetWidth) {
+    x -= (ro.targetWidth - W) / 2; // centre the drawing on a canvas of exactly the target width
+    W = ro.targetWidth;
+  }
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="${x} ${y} ${W} ${H}">` +
     `<rect x="${x}" y="${y}" width="${W}" height="${H}" fill="#ffffff"/>${out}</svg>`;
 }
@@ -199,7 +213,8 @@ export function renderSvg(rough: any, spec: Diagram, seed = 7, fontFamily = "Pat
 export async function renderDiagramPng(
   spec: Diagram,
   locale?: string,
-  customFont?: Uint8Array
+  customFont?: Uint8Array,
+  ro: RenderOptions = {},
 ): Promise<Uint8Array> {
   const { rough, font: baseFont } = await load();
   const isCjk = Boolean(locale && CJK_FONT_FAMILIES[locale]);
@@ -213,7 +228,7 @@ export async function renderDiagramPng(
     fontBuffers.unshift(cjk.buffer);
   }
 
-  const svg = renderSvg(rough, spec, 7, fontFamily);
+  const svg = renderSvg(rough, spec, 7, fontFamily, ro);
   const resvg = new Resvg(svg, {
     fitTo: { mode: "zoom", value: ZOOM },
     font: { fontBuffers, defaultFontFamily: fontFamily, loadSystemFonts: false },

@@ -16,8 +16,9 @@ Mỗi tiêu chí có đúng một mục trong `checks`:
 | `lesson_flow` | Bài dạy: mở bài đúng mục Mở bài dạy, giải quyết tình huống, nối cụ thể với bài trước, giải thích khái niệm mới tại chỗ. Bài code: tên khớp khung code chung |
 | `answers` | Quiz một đáp án đúng, không mơ hồ, giải thích từng phương án nhiễu. Code: `accepted_answers` và test không từ chối cách viết đã dạy; gợi ý không lộ đáp án |
 | `verification` | Mọi bước có kết quả `pass`, hoặc `not_run` kèm lý do hợp lệ; kết quả trong bài khớp output thật |
-| `diagrams` | Article `explanation` có sơ đồ hợp lệ; sơ đồ không gợi ý điều sai |
-| `language` | Tiếng Việt rõ, thuật ngữ nhất quán, gọi người học là "bạn" |
+| `diagrams` | Article `explanation` có sơ đồ hợp lệ, mỗi sơ đồ tham chiếu đúng một lần; sơ đồ không gợi ý điều sai. Kiểm ba điều cho từng sơ đồ: (1) chỉ nhìn hình (nhãn, `alt`) vẫn nắm được ý chính; (2) bỏ hình, chữ quanh nó vẫn trọn ý; (3) chữ dẫn người học nhìn hình bằng đúng nhãn node, hai bên dùng cùng tên gọi. Không đạt một trong ba: `minor`. Hình gợi ý điều sai: `blocking`, category `factual_inaccuracy`. Lạm dụng (quá một sơ đồ cho một mục `##`, sơ đồ chỉ lặp một câu, trang trí): `minor`. Đọc to từng cạnh theo mục Nội dung sơ đồ trong `platform.md`: cạnh không thành câu, node lẫn nhiều loại, nhãn cạnh trơ hoặc chung chung là `minor`, nêu nhãn thay thế. Chạy `deno run -A --no-config scripts/studio/diagram-lint.ts lessons/<lesson_id>.json`: dòng báo chữ đè lên đường, dấu gạch chéo hoặc node là `blocking` (category `unsupported_platform_format`); dòng báo bố cục (xem Bố cục sơ đồ trong `platform.md`) là `minor`, nêu cách đặt lại node. Chỗ bài kể bằng chữ một luồng hoặc quan hệ nhiều bên mà vẽ được nhưng chưa có sơ đồ: `minor`, nêu vị trí và gợi ý nội dung |
+| `language` | Tiếng Việt rõ, thuật ngữ nhất quán, xưng hô đúng mục Giọng văn (bạn / chúng ta / hãy; không "mình", "tôi", "chúng tôi"). Nhắc bài khác đúng nhãn app ("Part A, Bài 2") và khớp bảng nhãn; không có mã nội bộ (`lesson_id`, `module_id`, `source_ids`) trong chữ người học (vi phạm: `minor`, `style_or_wording`) |
+| `tone_and_flow` | Văn đọc như người hướng dẫn nói chuyện: câu đủ chủ vị, có từ nối giữa câu và đoạn, mỗi đoạn có câu mở và câu chuyển, nêu lý do trước thao tác. Không có chuỗi ba câu cụt liên tiếp, không có đoạn chỉ là danh sách cụt thiếu câu dẫn |
 
 `result` là `ok`, `issue` hoặc `unverified`. `basis` tối đa 160 ký tự. `refs` là đường dẫn field có thật trong lesson (ví dụ `quiz.questions[2].options`). `verified_by` là `tool`, `source` hoặc `reasoning`.
 
@@ -30,6 +31,7 @@ Chỉ các category sau được `blocking`: `factual_inaccuracy`, `wrong_source
 - `wrong_answer` với code: chỉ khi `accepted_answers` hoặc test từ chối đáp án đã dạy hoặc cách viết thường gặp ở trình độ đó, hoặc test chấp nhận đúng lỗi sai mà bài đã nêu. Cách viết hiếm gặp bị từ chối, hoặc cố tình sửa code để né test, chỉ là `minor`. Gợi ý lộ đáp án hoặc dùng code block là `blocking`.
 - `verification_mismatch`: kết quả trong bài khác output thật, hoặc bước được viết như đã chạy nhưng verification ghi `not_run`.
 - `flow_violation`: bài dạy mở bằng định nghĩa hoặc lý thuyết; không giải quyết tình huống mở bài; nhắc chung chung về bài trước; dùng khái niệm chưa dạy mà không giải thích (gộp mọi khái niệm thiếu vào một issue, nêu tên từng khái niệm). Văn phong hoặc ví dụ chưa tối ưu chỉ là `style_or_wording`.
+- `tone_and_flow` luôn là `minor`, nhưng review phải nêu vị trí cụ thể và câu sửa mẫu cho mỗi đoạn không đạt, không chỉ ghi chung chung "văn khô".
 - Phát biểu cần nguồn ngoài research: ghi `unverified`; chỉ `blocking` khi research cho thấy nó sai.
 - Lesson không phải video mà bắt người học xem video mới nắm được outcome: `blocking`.
 - `final_check` quiz chỉ hỏi nhớ thuật ngữ: `minor`, criterion `outcome_and_level`.
