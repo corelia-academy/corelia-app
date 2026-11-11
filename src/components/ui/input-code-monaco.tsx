@@ -62,13 +62,14 @@ type InputCodeMonacoProps = {
   language: string;
   placeholder?: string;
   readOnly?: boolean;
+  disabled?: boolean;
   /** 1-based lines to mark as wrong. */
   errorLines?: number[];
   ariaLabel?: string;
   onFocusChange?(focused: boolean): void;
 };
 
-export default function InputCodeMonaco({ value, onChange, language, placeholder, readOnly = false, errorLines, ariaLabel, onFocusChange }: InputCodeMonacoProps) {
+export default function InputCodeMonaco({ value, onChange, language, placeholder, readOnly = false, disabled = false, errorLines, ariaLabel, onFocusChange }: InputCodeMonacoProps) {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const decorationsRef = useRef<monaco.editor.IEditorDecorationsCollection | null>(null);
   const [ready, setReady] = useState(false);
@@ -103,13 +104,13 @@ export default function InputCodeMonaco({ value, onChange, language, placeholder
   }, [ready, key, value, measure]);
 
   useEffect(() => {
-    if (readOnly) {
+    if (readOnly || disabled) {
       if (editorRef.current?.hasWidgetFocus()) {
         (document.activeElement as HTMLElement)?.blur?.();
       }
       onFocusChange?.(false);
     }
-  }, [readOnly, onFocusChange]);
+  }, [readOnly, disabled, onFocusChange]);
 
   const height = Math.min(MAX_HEIGHT, Math.max(MIN_LINES * LINE_HEIGHT + PADDING_Y * 2, value.split("\n").length * LINE_HEIGHT + PADDING_Y * 2));
 
@@ -122,13 +123,19 @@ export default function InputCodeMonaco({ value, onChange, language, placeholder
           editor.onDidFocusEditorWidget(() => onFocusChange?.(true));
           editor.onDidBlurEditorWidget(() => onFocusChange?.(false));
           editor.onDidScrollChange(() => measureRef.current());
+          if (disabled) {
+            editor.getContainerDomNode().querySelectorAll('textarea, [contenteditable]').forEach(el => {
+              el.setAttribute('tabindex', '-1');
+              el.setAttribute('disabled', 'true');
+            });
+          }
           setReady(true);
         }}
         options={{
-          readOnly, domReadOnly: readOnly, placeholder, ariaLabel, minimap: { enabled: false }, fontFamily: '"JetBrains Mono Variable", ui-monospace, monospace', fontSize: 16, letterSpacing: -0.16,
+          readOnly: readOnly || disabled, domReadOnly: readOnly || disabled, placeholder, ariaLabel, minimap: { enabled: false }, fontFamily: '"JetBrains Mono Variable", ui-monospace, monospace', fontSize: 16, letterSpacing: -0.16,
           lineHeight: LINE_HEIGHT, tabSize: 4, automaticLayout: true, scrollBeyondLastLine: false, wordWrap: "on", accessibilitySupport: "on",
           padding: { top: PADDING_Y, bottom: PADDING_Y }, lineNumbers: "on", lineNumbersMinChars: 1, glyphMargin: false, folding: false, lineDecorationsWidth: 20,
-          renderLineHighlight: readOnly ? "none" : "line", renderLineHighlightOnlyWhenFocus: true, overviewRulerLanes: 0, hideCursorInOverviewRuler: true,
+          renderLineHighlight: readOnly || disabled ? "none" : "line", renderLineHighlightOnlyWhenFocus: true, overviewRulerLanes: 0, hideCursorInOverviewRuler: true,
           scrollbar: { alwaysConsumeMouseWheel: false },
         }} />
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">

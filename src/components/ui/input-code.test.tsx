@@ -52,10 +52,11 @@ describe("InputCode", () => {
     unmount();
   });
 
-  it("makes the editor read-only when disabled", async () => {
+  it("makes the editor read-only and overlays full surface when disabled", async () => {
     const { container, unmount } = await mount({ value: "fn main() {}", disabled: true });
     expect(status(container)).toBe("disabled");
     expect(container.querySelector('[data-testid="monaco"]')?.getAttribute("data-readonly")).toBe("true");
+    expect(container.querySelector('.cursor-not-allowed')).not.toBeNull();
     unmount();
   });
 

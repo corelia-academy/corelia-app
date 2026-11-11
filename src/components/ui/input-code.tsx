@@ -43,11 +43,12 @@ export function InputCode({ value, onChange, language, placeholder, disabled = f
   return (
     <div data-slot="input-code" data-status={status} data-readonly={readOnly || undefined}
       className={cn(
-        "rounded-xl bg-input-code-surface font-mono text-foreground",
+        "relative rounded-xl bg-input-code-surface font-mono text-foreground",
         !disabled && !readOnly && !wrong && "focus-within:ring-2 focus-within:ring-input-code-focus",
         disabled && "cursor-not-allowed bg-input-field-disabled-surface",
         className
       )}>
+      {disabled && <div aria-hidden="true" className="absolute inset-0 z-10 cursor-not-allowed select-none" />}
       <div className="overflow-hidden rounded-xl border border-stroke-divider">
         <div className="bg-code-block-header-surface p-lg font-body">
           <p className="text-body-medium font-medium text-foreground">{codeLanguageLabel(language)}</p>
@@ -55,7 +56,7 @@ export function InputCode({ value, onChange, language, placeholder, disabled = f
         <EditorBoundary fallback={fallback}>
           <Suspense fallback={fallback}>
             <div className={cn("pl-2xl", (disabled || readOnly) && "pointer-events-none select-none")}>
-              <Monaco value={value} onChange={onChange} language={language} placeholder={placeholder} readOnly={disabled || readOnly} errorLines={wrong} ariaLabel={ariaLabel} onFocusChange={setFocused} />
+              <Monaco value={value} onChange={onChange} language={language} placeholder={placeholder} readOnly={disabled || readOnly} disabled={disabled} errorLines={wrong} ariaLabel={ariaLabel} onFocusChange={setFocused} />
             </div>
           </Suspense>
         </EditorBoundary>
