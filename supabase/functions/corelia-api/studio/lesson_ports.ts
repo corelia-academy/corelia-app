@@ -57,8 +57,8 @@ export const CODE_LANGUAGE_ADAPTERS = [
   { id: "c", status: "enabled", extensions: ["c"], guide: "C: dùng khai báo, hàm và header cần thiết; giữ một tệp .c tự đủ theo giới hạn bài." },
   { id: "cpp", status: "enabled", extensions: ["cpp", "cc", "cxx"], guide: "C++: dùng kiểu, hàm và include cần thiết; chọn cú pháp nhất quán với chủ đề bài." },
   { id: "go", status: "enabled", extensions: ["go"], guide: "Go: gồm package declaration và hàm Go; xử lý error return khi chủ đề cần." },
-  { id: "solidity", status: "prepared", extensions: ["sol"], guide: "Solidity: dùng pragma, contract, function và modifier; nêu rõ visibility và khả năng truy cập." },
-  { id: "move", status: "prepared", extensions: ["move"], guide: "Move: dùng module, hàm public, kiểu u64 và ability phù hợp (copy, drop, store, key)." },
+  { id: "solidity", status: "enabled", extensions: ["sol"], guide: "Solidity: dùng pragma, contract, function và modifier; nêu rõ visibility và khả năng truy cập." },
+  { id: "move", status: "enabled", extensions: ["move"], guide: "Move: dùng module, hàm public, kiểu u64 và ability phù hợp (copy, drop, store, key)." },
 ] as const satisfies readonly CodeLanguageDefinition[];
 
 type CodeLanguageAdapter = (typeof CODE_LANGUAGE_ADAPTERS)[number];

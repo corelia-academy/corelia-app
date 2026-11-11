@@ -8,6 +8,8 @@ import "monaco-editor/languages/definitions/python/register";
 import "monaco-editor/languages/definitions/java/register";
 import "monaco-editor/languages/definitions/cpp/register";
 import "monaco-editor/languages/definitions/go/register";
+import "monaco-editor/languages/definitions/solidity/register";
+// Monaco has no Move definition: Move exercises open in the editor as plain text, without highlighting.
 import "monaco-editor/editor/contrib/placeholderText/browser/placeholderText.contribution";
 import EditorWorker from "monaco-editor/editor/editor.worker?worker";
 import { Warning } from "@phosphor-icons/react";

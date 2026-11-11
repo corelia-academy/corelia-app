@@ -137,8 +137,8 @@ describe("studio brief code language", () => {
   it("offers only publish-enabled languages plus null in A2's strict output schema and input", () => {
     const schema = STEP_SPECS.brief!.schema as { properties: Record<string, { enum?: unknown[] }> };
     expect(schema.properties.code_language.enum).toEqual([...ENABLED_CODE_LANGUAGES, null]);
-    expect(schema.properties.code_language.enum).not.toContain("solidity");
-    expect(schema.properties.code_language.enum).not.toContain("move");
+    expect(schema.properties.code_language.enum).toContain("solidity");
+    expect(schema.properties.code_language.enum).toContain("move");
 
     const input = STEP_SPECS.brief!.buildInput({ course: { title: "Solana", level: "beginner" }, paths: [], scopes: [], catalogResearch: null } as never);
     expect(input.code_languages).toEqual(ENABLED_CODE_LANGUAGES);

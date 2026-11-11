@@ -1,4 +1,4 @@
-export const CODE_LANGUAGES = ["rust", "typescript", "javascript", "python", "java", "c", "cpp", "go"] as const;
+export const CODE_LANGUAGES = ["rust", "typescript", "javascript", "python", "java", "c", "cpp", "go", "solidity", "move"] as const;
 export type CodeLanguage = typeof CODE_LANGUAGES[number];
 
 export const codeLanguages: Record<CodeLanguage, { label: string; extensions: readonly string[]; path: string; fill: string; answer: string; edit: string; solution: string }> = {
@@ -10,6 +10,8 @@ export const codeLanguages: Record<CodeLanguage, { label: string; extensions: re
   c: { label: "C", extensions: ["c"], path: "main.c", fill: "{{blank:mutable}} count = 0;", answer: "int", edit: "int add(int a, int b) { return 0; }", solution: "int add(int a, int b) { return a + b; }" },
   cpp: { label: "C++", extensions: ["cpp", "cc", "cxx"], path: "main.cpp", fill: "{{blank:mutable}} count = 0;", answer: "int", edit: "int add(int a, int b) { return 0; }", solution: "int add(int a, int b) { return a + b; }" },
   go: { label: "Go", extensions: ["go"], path: "main.go", fill: "package main\nvar count {{blank:mutable}} = 0", answer: "int", edit: "package main\nfunc add(a int, b int) int { return 0 }", solution: "package main\nfunc add(a int, b int) int { return a + b }" },
+  solidity: { label: "Solidity", extensions: ["sol"], path: "Main.sol", fill: "contract Counter { uint256 {{blank:mutable}} count = 0; }", answer: "public", edit: "function add(uint256 a, uint256 b) public pure returns (uint256) { return 0; }", solution: "function add(uint256 a, uint256 b) public pure returns (uint256) { return a + b; }" },
+  move: { label: "Move", extensions: ["move"], path: "main.move", fill: "struct Counter has {{blank:mutable}} { value: u64 }", answer: "store", edit: "fun add(a: u64, b: u64): u64 { 0 }", solution: "fun add(a: u64, b: u64): u64 { a + b }" },
 };
 
 export function isCodeLanguage(value: unknown): value is CodeLanguage {

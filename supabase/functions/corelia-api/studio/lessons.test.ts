@@ -109,7 +109,7 @@ describe("studio lessons: accept by format", () => {
     expect(await reason("l-code", edit({ file_path: "main.py" }))).toContain("file_path");
     expect(await reason("l-code", edit({ file_path: "src/lib.rs" }))).toContain("file_path");
     expect(await reason("l-code", edit({ language: "python", file_path: "main.py" }))).toContain("language phải khớp code_language của khóa (rust)");
-    expect(await reason("l-code", edit({ language: "solidity", file_path: "lib.sol" }), ok(), withCodeLanguage("solidity"))).toContain("solidity chưa hỗ trợ publish");
+    expect(await reason("l-code", edit({ language: "solidity", file_path: "lib.rs" }), ok(), withCodeLanguage("solidity"))).toContain("file_path");
     expect(await reason("l-code", edit({}), ok(), withCodeLanguage(null))).toContain("brief.code_language = null");
     expect(await reason("l-code", edit({ instructions: " " }))).toContain("instructions");
     const sourceEquals = test({ id: "eq", type: "source_equals", value: "", accepted_sources: [editCode.reference_solution] });

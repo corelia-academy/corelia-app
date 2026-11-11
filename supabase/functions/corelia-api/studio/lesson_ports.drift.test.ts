@@ -119,12 +119,12 @@ describe("lesson_ports drift", () => {
   });
 
   it("keeps all enabled adapters aligned with the registry and leaves prepared adapters out of schemas", () => {
-    expect(ENABLED_CODE_LANGUAGES).toEqual(["rust", "typescript", "javascript", "python", "java", "c", "cpp", "go"]);
+    expect(ENABLED_CODE_LANGUAGES).toEqual(["rust", "typescript", "javascript", "python", "java", "c", "cpp", "go", "solidity", "move"]);
     expect(CODE_LANGUAGE_ADAPTERS.map((language) => language.id)).toEqual([
       ...ENABLED_CODE_LANGUAGES,
       ...PREPARED_CODE_LANGUAGES,
     ]);
-    expect(PREPARED_CODE_LANGUAGES).toEqual(["solidity", "move"]);
+    expect(PREPARED_CODE_LANGUAGES).toEqual([]);
     for (const language of CODE_LANGUAGE_ADAPTERS) {
       expect(language.extensions.length, language.id).toBeGreaterThan(0);
       expect(language.guide.trim(), language.id).not.toBe("");

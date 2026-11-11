@@ -18,7 +18,7 @@ Nguồn đúng là code; file này tóm tắt để các role không hứa vư�
 | `code_exercise` | Một file, một ngôn ngữ đang bật. `fill`: điền chỗ trống. `edit`: viết/sửa để qua test so khớp chuỗi | Biên dịch, chạy, terminal. Test chứa/không chứa chuỗi có thể bị né bằng chú thích |
 | `practice` | Checklist từng bước người học tự tick. Không chặn bài sau | Việc người học có làm thật hay không |
 
-Ngôn ngữ code đang bật: rust, typescript, javascript, python, java, c, cpp, go. Solidity và Move chưa bật.
+Ngôn ngữ code đang bật: rust, typescript, javascript, python, java, c, cpp, go, solidity, move. Solidity và Move chạy như mọi ngôn ngữ khác (file `.sol`, `.move`, chấm bằng so khớp chuỗi, không biên dịch); riêng Move mở trong editor dưới dạng văn bản thường, không tô màu cú pháp.
 
 ## Practice
 
