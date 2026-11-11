@@ -56,7 +56,7 @@ Mỗi child nhận:
 1. Nội dung file role của bước đó.
 2. Đường dẫn tới `references/principles.md` và `references/platform.md`.
 3. Đường dẫn tuyệt đối tới các file đầu vào và file đầu ra nó được ghi.
-4. Với bước 5 và 6: `lesson_id`, module chứa lesson, lesson trước và sau trong curriculum, cùng bảng nhãn app cho mọi lesson và module (`lesson_id` → "Part X, Bài N"; N là số thứ tự trong cả khóa, đếm cả quiz và practice). Child dùng bảng này khi nhắc bài khác, và không đưa mã nội bộ vào chữ người học.
+4. Với bước 5 và 6: `lesson_id`, module chứa lesson, lesson trước và sau trong curriculum, cùng bảng nhãn app cho mọi lesson và module (`lesson_id` → "Part X, Bài N"; N là số thứ tự trong Part chứa bài, bắt đầu lại từ 1 ở mỗi Part, đếm cả quiz, practice và video). Child dùng bảng này khi nhắc bài khác, và không đưa mã nội bộ vào chữ người học.
 
 Child không gọi child khác, không sửa file ngoài file đầu ra của mình, không ghi lên DB.
 

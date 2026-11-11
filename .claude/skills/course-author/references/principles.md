@@ -39,7 +39,7 @@ Không mở bài bằng định nghĩa, lịch sử hay bước cài đặt.
 Chữ người học thấy phải gọi bài và phần đúng như app hiển thị, không dùng mã tự đặt.
 
 - **Phần** (module) gọi là "Part A", "Part B", "Part C"... theo thứ tự module trong khóa, đúng badge ở danh sách bài của app.
-- **Bài** gọi là "Bài N", với N là số thứ tự của bài trong cả khóa, đếm cả quiz và practice, theo thứ tự curriculum, đúng số "Bài N" app hiện ở đầu trang bài.
+- **Bài** gọi là "Bài N", với N là số thứ tự của bài trong Part chứa nó, bắt đầu lại từ 1 ở mỗi Part, đếm cả quiz, practice và video, theo thứ tự curriculum. Đã gọi Part thì số bài thuộc Part đó ("Part B, Bài 2" là bài thứ hai của Part B), không dùng số đếm xuyên cả khóa. Tiêu đề trang bài của app đang hiện số xuyên cả khóa, nên nhãn trong văn bản khớp theo vị trí trong danh sách của Part, không khớp số ở tiêu đề trang.
 - Khi nhắc một bài khác viết "Part A, Bài 2". Nhắc nhiều bài cùng phần thì gộp: "Part A (Bài 1, Bài 2)".
 - Không bao giờ đưa mã nội bộ vào chữ người học: `lesson_id` (L1-2), `module_id` (M3), `source_ids` (S02). Dẫn nguồn bằng tên nguồn hoặc URL.
 - Nhãn được tính từ `curriculum.json`; coordinator đưa bảng nhãn (`lesson_id` → "Part X, Bài N") cho child viết lesson và child review. Curriculum đổi thứ tự thì bảng nhãn và các câu nhắc chéo phải cập nhật.
