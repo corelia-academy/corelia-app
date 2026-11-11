@@ -46,7 +46,6 @@ Article `explanation` có ít nhất một sơ đồ trong `diagrams`, theo quy 
 - `fill`: `starter_source` có 1–5 chỗ trống `{{blank:<id>}}`, chỉ đặt ở phần là trọng tâm outcome. Mỗi chỗ trống có `accepted_answers` (mọi cách viết đúng thường gặp, mỗi cách một phần tử) và `feedback` giải thích khái niệm. `tests: []`. Starter chưa điền không được tự đạt.
 - `edit`: `starter_source` không có chỗ trống; `reference_solution` hoàn chỉnh; `tests` có ít nhất một test `required`. Starter phải chưa đạt mọi test required, `reference_solution` phải đạt mọi test required. Test kiểm điều bài dạy và chấp nhận mọi cách sửa đúng hợp lý. `blanks: []`.
 - Gợi ý (`hints`, `feedback`, `failure_message`, hint của test) xếp từ chung đến cụ thể nhưng không chạm đáp án, vì app hiện mọi gợi ý cùng lúc. Chỉ hướng tư duy: câu hỏi nên tự đặt, khái niệm cần xem lại, cách thu hẹp lỗi. Không chứa định danh trùng với đáp án hoặc với `value` của test `contains`, không dán code giải, không dùng code block.
-- Chạy `reference_solution` bằng toolchain thật khi máy có toolchain đó; ghi kết quả vào verification.
 
 ## Practice
 
@@ -55,7 +54,9 @@ Article `explanation` có ít nhất một sơ đồ trong `diagrams`, theo quy 
 
 ## Kiểm chứng
 
-Lesson có ví dụ chạy được, `code_exercise` hoặc `practice` thì ghi `verification/<lesson_id>.md`, theo mục Kiểm chứng bước thực hành trong `SKILL.md`. Mỗi bước gồm lệnh hoặc thao tác, output thật, `pass` / `fail` / `not_run` (kèm lý do). Output thật khác `expected` thì sửa bài theo output thật trước khi trả kết quả.
+Lesson có ví dụ chạy được, `code_exercise` hoặc `practice` thì trả kèm `verification_plan`: danh sách bước cần chạy, mỗi bước gồm lệnh hoặc thao tác và `expected`. Với `code_exercise`, có bước chạy `reference_solution` bằng toolchain của `code_language`. Bước cần ví, private key, tài khoản hoặc tiền thật thì đánh dấu `not_run` kèm lý do.
+
+Coordinator giao plan cho child kiểm chứng; child đó ghi `verification/<lesson_id>.md` (lệnh hoặc thao tác, output thật, `pass` / `fail` / `not_run`). Khi nhận lại kết quả có `fail`, sửa bài theo output thật.
 
 ## Video xem thêm
 
@@ -78,3 +79,9 @@ Với lesson không phải video: `suggested_videos` là mảng `video_id` từ 
 ```
 
 `resources` chỉ chứa URL nguồn đã đọc trong research.
+
+`verification_plan` (cùng file, khi lesson cần kiểm chứng):
+
+```json
+{ "verification_plan": [{ "id": "v1", "kind": "shell|gui", "action": "", "expected": "", "not_run_reason": null }] }
+```

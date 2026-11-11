@@ -60,6 +60,26 @@ Mỗi child nhận:
 
 Child không gọi child khác, không sửa file ngoài file đầu ra của mình, không ghi lên DB.
 
+## Model
+
+Coordinator chạy bằng model của session: Sonnet 5.5, effort medium. Session đang dùng model khác thì báo user trước khi bắt đầu.
+
+Khi gọi child, đặt `model` theo bảng:
+
+| Child | Model |
+|---|---|
+| Bước 1: metadata, brief | `haiku` |
+| Bước 2: research | `sonnet` |
+| Bước 3: curriculum | `sonnet` |
+| Bước 4: review curriculum | `sonnet` |
+| Bước 5: viết lesson | `sonnet` |
+| Bước 5: chạy kiểm chứng (`verification/<id>.md`) | `haiku` |
+| Bước 6: review lesson | `sonnet` |
+
+Ở bước 5, child viết lesson soạn danh sách bước cần chạy. Một child `haiku` riêng chạy các bước đó và ghi `verification/<id>.md`. Child viết lesson đọc kết quả rồi sửa bài nếu output thật khác `expected`.
+
+Child viết lesson chỉ nhận phần research thuộc `source_ids` của lesson và các `misconceptions`, `setup_steps`, `videos` của topic liên quan, không nhận toàn bộ `research.json`.
+
 ## Kiểm output và chạy lại
 
 Sau mỗi child, kiểm output theo phần **Output** trong file role: đủ trường bắt buộc, đúng kiểu, ID tham chiếu tồn tại, không vi phạm `platform.md`. Kết quả kiểm là: đạt, hoặc không đạt kèm lý do cụ thể (trường nào, sai gì).
