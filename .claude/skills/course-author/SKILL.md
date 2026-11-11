@@ -91,6 +91,7 @@ Lesson có sơ đồ: coordinator chạy thêm `deno run -A --no-config scripts/
 - **Dừng và báo user** khi lần chạy lại bị từ chối với đúng lý do của lần trước. Khi đó lỗi nằm ở hợp đồng (file role, platform hoặc đầu vào) chứ không nằm ở output; báo lý do, bước và file liên quan để user sửa hợp đồng.
 
 Research thiếu nguồn cho một chủ đề cốt lõi (curriculum hoặc review chỉ ra) thì quay lại bước 2 với danh sách mục cần bổ sung; áp dụng cùng quy tắc dừng.
+Khi lesson hoặc lesson review chỉ ra kiến thức nền hay hướng dẫn cốt lõi chưa đủ bằng chứng, quay lại bước 2 bổ sung nguồn và phạm vi áp dụng; sau đó chuyển research cập nhật cho người viết lesson và review lại. Không coi `unverified` ở phần cốt lõi là `pass`; giữ nguyên các issue blocking khác khi chạy lại.
 
 ## Kiểm chứng bước thực hành
 

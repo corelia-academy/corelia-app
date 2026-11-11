@@ -5,6 +5,8 @@ Viết MỘT lesson theo `curriculum.json`. Dùng đúng `lesson_id`, `type`, `p
 ## Nội dung và nguồn
 
 - Phát biểu thực tế chỉ lấy từ `key_points` và nguồn của research; ghi `source_ids`. Tách rõ nội dung từ nguồn với ví dụ do bạn đề xuất.
+- Rà các định nghĩa và kiến thức nền người học cần để hiểu outcome: đối chiếu ý nghĩa, điều kiện và phạm vi với nguồn đã đọc, không chỉ kiểm tra từ khóa. Phân biệt khái niệm chung với cách hoạt động trong nền tảng, phiên bản hoặc trường hợp cụ thể; nêu phạm vi ngay trong câu hoặc ngữ cảnh gần đó khi thiếu nó dễ gây hiểu nhầm. Ví dụ khóa dùng Ethereum có thể giải thích contract trên Ethereum, nhưng không trình bày đặc tính riêng của Ethereum thành định nghĩa cho mọi blockchain. Không cần mở rộng bài ra ngoài scope.
+- Với hướng dẫn, quy tắc và ví dụ liên quan an toàn hoặc quyết định của người học, đối chiếu cả điều kiện áp dụng và phản ví dụ có liên quan; không biến cách kiểm tra chưa đủ thành khuyến nghị an toàn. Nếu research thiếu bằng chứng cho kiến thức nền hoặc hướng dẫn cốt lõi, báo coordinator mục và nguồn còn thiếu để quay lại research; không tự khẳng định hoặc bịa nguồn.
 - Dùng đúng `stack_choice` cho mọi công cụ trong ví dụ, lệnh và practice.
 - Chỉ ghim phiên bản khi `tool_versions` hoặc nguồn đã đọc nêu. Nguồn chỉ nêu mức tối thiểu thì ghi rõ là mức tối thiểu và để lệnh không ghim.
 - Điều còn trong `open_questions` thì trình bày là chưa xác minh, không khẳng định.

@@ -12,6 +12,7 @@ Từ `brief.json`, tạo research có bằng chứng. Dùng web search để tì
 ## Nội dung
 
 - `topics`: mỗi chủ đề có `key_points`. Mỗi ý ghi đúng điều nguồn nói và gắn `source_ids`. `key_points` không được nói vượt nguồn.
+- Với khái niệm nền cần dạy để hiểu outcome, tìm nguồn cho định nghĩa và phạm vi áp dụng, kể cả khi brief chỉ chọn một nền tảng hoặc một trường hợp để thực hành. Ghi rõ điều nào là đặc tính chung, điều nào chỉ đúng trong bối cảnh được chọn; không suy rộng từ một ví dụ hay tài liệu riêng của nền tảng.
 - `prerequisites`: kiến thức cần có trước.
 - `misconceptions`: lỗi hiểu sai thường gặp theo từng chủ đề, kèm cách hiểu đúng và `source_ids` (tài liệu chính thức, mục lỗi thường gặp, thông báo lỗi của công cụ). Chỉ ghi lỗi có nguồn. Bước lesson dùng mục này làm phương án nhiễu cho quiz.
 - `tool_versions`: chỉ ghi phiên bản do nguồn chính thức đã đọc nêu. Nguồn chỉ nêu mức tối thiểu thì ghi đúng mức đó. Không suy đoán phiên bản.
@@ -37,7 +38,7 @@ Nội dung video không phải nguồn sự thật. Topic không có video phù 
 
 ## Khi nào trả needs_research
 
-Chỉ khi một chủ đề cốt lõi trong `scope` (khái niệm, API, thao tác mà khóa dạy) không có nguồn chính thức đã đọc. Các trường hợp sau không phải lý do: thiếu phiên bản chính xác, trang gói bị chặn, thiếu video, câu hỏi về phạm vi. Ghi những điều chưa xác minh vào `open_questions`, kèm việc đã thử.
+Khi một chủ đề cốt lõi trong `scope` (khái niệm, API, thao tác mà khóa dạy), kể cả kiến thức nền cần để hiểu outcome, không có nguồn chính thức đã đọc đủ để xác minh phát biểu cần dùng và phạm vi áp dụng. Các trường hợp sau không phải lý do: thiếu phiên bản chính xác, trang gói bị chặn nếu đã có nguồn đủ khác, thiếu video, câu hỏi về phạm vi. Ghi những điều chưa xác minh vào `open_questions`, kèm việc đã thử.
 
 ## Output
 

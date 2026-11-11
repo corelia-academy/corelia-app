@@ -10,7 +10,7 @@ Mỗi tiêu chí có đúng một mục trong `checks`:
 
 | criterion | Kiểm gì |
 |---|---|
-| `factual_accuracy` | Phát biểu thực tế đúng và có nguồn trong research; không dùng video làm bằng chứng |
+| `factual_accuracy` | Kiểm phát biểu thực tế, định nghĩa, kiến thức nền và hướng dẫn quyết định theo nguồn đã đọc; đối chiếu điều kiện, phạm vi và phản ví dụ liên quan, không chỉ khớp từ khóa. Phân biệt định nghĩa chung với đặc tính của nền tảng hoặc trường hợp cụ thể; không dùng video làm bằng chứng |
 | `tool_versions` | Phiên bản và công cụ khớp `tool_versions` và `stack_choice` |
 | `outcome_and_level` | Lesson dạy/kiểm đủ outcome của nó, đúng trình độ, dễ hiểu |
 | `lesson_flow` | Bài dạy: mở bài đúng mục Mở bài dạy, giải quyết tình huống, nối cụ thể với bài trước, giải thích khái niệm mới tại chỗ. Bài code: tên khớp khung code chung |
@@ -32,7 +32,8 @@ Chỉ các category sau được `blocking`: `factual_inaccuracy`, `wrong_source
 - `verification_mismatch`: kết quả trong bài khác output thật, hoặc bước được viết như đã chạy nhưng verification ghi `not_run`.
 - `flow_violation`: bài dạy mở bằng định nghĩa hoặc lý thuyết; không giải quyết tình huống mở bài; nhắc chung chung về bài trước; dùng khái niệm chưa dạy mà không giải thích (gộp mọi khái niệm thiếu vào một issue, nêu tên từng khái niệm). Văn phong hoặc ví dụ chưa tối ưu chỉ là `style_or_wording`.
 - `tone_and_flow` luôn là `minor`, nhưng review phải nêu vị trí cụ thể và câu sửa mẫu cho mỗi đoạn không đạt, không chỉ ghi chung chung "văn khô".
-- Phát biểu cần nguồn ngoài research: ghi `unverified`; chỉ `blocking` khi research cho thấy nó sai.
+- Với kiến thức nền hoặc hướng dẫn cốt lõi cần cho outcome, kiểm tra nghĩa người mới có thể hiểu từ câu và ngữ cảnh gần, kể cả tiêu đề, ví dụ, hình và đáp án. Khi phạm vi bị trình bày sai hoặc thiếu khiến phát biểu gây hiểu nhầm về bản chất và có bằng chứng: `factual_inaccuracy`, `blocking`, nêu nguồn và phản ví dụ liên quan. Ví dụ, đặc tính riêng của Ethereum không được dùng làm định nghĩa chung của smart contract; câu giới hạn rõ "trên Ethereum" có thể đúng trong phạm vi đó.
+- Phát biểu cốt lõi chưa đủ nguồn để xác minh: ghi `unverified` trong `checks`, tạo issue `wrong_source`, `blocking`, nêu phát biểu, bằng chứng còn thiếu và yêu cầu bổ sung research; không khẳng định phát biểu sai chỉ vì thiếu nguồn. Phát biểu phụ thiếu nguồn: ghi `unverified`, yêu cầu bỏ hoặc bổ sung nguồn, không tự nâng thành lỗi thực tế. Khi nguồn đã đọc chứng minh sai, dùng `factual_inaccuracy`, `blocking`.
 - Lesson không phải video mà bắt người học xem video mới nắm được outcome: `blocking`.
 - `final_check` quiz chỉ hỏi nhớ thuật ngữ: `minor`, criterion `outcome_and_level`.
 
