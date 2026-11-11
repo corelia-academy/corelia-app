@@ -59,12 +59,23 @@ describe("InputCode", () => {
     unmount();
   });
 
-  it("marks the wrong lines and lets error win over focus", async () => {
+  it("marks the wrong lines and lets error win over focus without focus ring", async () => {
     const { container, unmount } = await mount({ value: "a\nb", errorLines: [2] });
     expect(status(container)).toBe("error");
     expect(container.querySelector('[data-testid="monaco"]')?.getAttribute("data-errors")).toBe("2");
+    expect(container.querySelector('[data-slot="input-code"]')?.className).not.toContain("focus-within:ring-2");
     await act(async () => press(container, "focus").click());
     expect(status(container)).toBe("error");
+    unmount();
+  });
+
+  it("makes the editor read-only and suppresses pointer events without focus ring", async () => {
+    const { container, unmount } = await mount({ value: "fn main() {}", readOnly: true });
+    expect(status(container)).toBe("filled");
+    expect(container.querySelector('[data-slot="input-code"]')?.getAttribute("data-readonly")).toBe("true");
+    expect(container.querySelector('[data-slot="input-code"]')?.className).not.toContain("focus-within:ring-2");
+    expect(container.querySelector('[data-testid="monaco"]')?.getAttribute("data-readonly")).toBe("true");
+    expect(container.querySelector('.pointer-events-none')).not.toBeNull();
     unmount();
   });
 });

@@ -1716,6 +1716,12 @@
     color: var(--input-field-disabled-foreground) !important;
   }
 
+  /* Hide cursor caret when readOnly or disabled so no blinking caret remains after evaluation */
+  [data-slot="input-code"][data-readonly="true"] .monaco-editor .cursors-layer,
+  [data-slot="input-code"][data-status="disabled"] .monaco-editor .cursors-layer {
+    display: none !important;
+  }
+
   [data-slot="input-code"]:focus-within .monaco-editor .active-line-number:not(.input-code-error-number) {
     color: var(--foreground) !important;
   }

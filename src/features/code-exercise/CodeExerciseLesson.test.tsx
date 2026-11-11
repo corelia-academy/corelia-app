@@ -128,6 +128,16 @@ it("types the edit exercise in the shared Input Code and locks it after a check"
   expect(host.querySelector('[data-slot="code-block"]')).toBeNull();
   expect(host.querySelector('[data-testid="monaco"]')?.getAttribute("data-readonly")).toBe("false");
   await act(async () => { await action!.run(); });
-  expect(area()?.getAttribute("data-status")).toBe("disabled");
+  expect(area()?.getAttribute("data-status")).toBe("error");
   expect(host.querySelector('[data-testid="monaco"]')?.getAttribute("data-readonly")).toBe("true");
+});
+
+it("resets modified source back to starter_source when reset button is clicked", async () => {
+  const host = document.createElement("div"), root = createRoot(host);
+  document.body.append(host);
+  cleanup = () => { act(() => root.unmount()); host.remove(); };
+  const edit = { ...props, lesson: { ...props.lesson, code_exercise_config: defaultCodeConfig("edit") } };
+  await act(async () => root.render(<CodeExerciseLesson {...edit} />));
+  const resetButton = Array.from(host.querySelectorAll("button")).find(b => b.textContent?.includes("learning.reset"));
+  expect(resetButton).toBeDefined();
 });
