@@ -16,6 +16,7 @@ vi.mock("@/stores/authStore", () => ({
   useAuth: () => ({ user: null, profile: null }),
 }));
 
+vi.mock("@/components/ui/input-code-monaco", () => ({ default: () => null }));
 import AdminComponentsPage from "./AdminComponentsPage";
 
 function LocationProbe({
@@ -55,10 +56,12 @@ describe("AdminComponentsPage", () => {
       );
     });
 
-    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(22);
+    expect(container.querySelectorAll('a[href^="/components/"]')).toHaveLength(24);
     expect(container.querySelector('a[href="/components/timestamp"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/toast-bar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/explanation-box"]')).not.toBeNull();
+    expect(container.querySelector('a[href="/components/code-block"]')).not.toBeNull();
+    expect(container.querySelector('a[href="/components/input-code"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/action"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/avatar"]')).not.toBeNull();
     expect(container.querySelector('a[href="/components/scrollbar"]')).not.toBeNull();
@@ -80,15 +83,17 @@ describe("AdminComponentsPage", () => {
     expect(navigation?.classList.contains("overflow-x-auto")).toBe(true);
     expect(navigation?.classList.contains("overflow-x-hidden")).toBe(false);
     expect(container.querySelector("main")?.classList.contains("select-none")).toBe(false);
-    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(21);
+    expect(container.querySelectorAll('section[id^="component-"]')).toHaveLength(23);
     expect(container.querySelector("#component-full-page-empty-state")).toBeNull();
-    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(21);
+    expect(container.querySelectorAll('[data-testid="component-section-title"]')).toHaveLength(23);
     expect(container.querySelector('[data-testid="component-section-title"]')?.textContent).toBe("Action");
     expect(container.textContent).toContain("Badge");
     expect(container.textContent).toContain("Selection");
     expect(container.querySelector("#component-timestamp")).not.toBeNull();
     expect(container.querySelector("#component-toast-bar")).not.toBeNull();
     expect(container.querySelector("#component-explanation-box")).not.toBeNull();
+    expect(container.querySelector("#component-code-block")).not.toBeNull();
+    expect(container.querySelector("#component-input-code")).not.toBeNull();
     expect(container.querySelector("#component-tooltip")).not.toBeNull();
     expect(container.querySelector("#component-stepper")).not.toBeNull();
     expect(container.querySelector("#component-informative-icon")).not.toBeNull();

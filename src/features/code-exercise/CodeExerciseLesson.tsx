@@ -1,17 +1,21 @@
 import { normalizeCodeLocale } from "./locale";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowCounterClockwise } from "@phosphor-icons/react";
+import { cn } from "@/lib/utils";
 import { useLearningTranslation } from "@/features/learning/useLearningTranslation";
+import { useLearningConfirm } from "@/features/learning/useLearningConfirm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProgressCircle } from "@/components/ui/progress";
-import { CodeBlock, CodeBlockFrame, CodeSpan } from "@/components/markdown/CodeBlock";
+import { CodeBlock, CodeBlockFrame, CodeBlockLine, CodeSpan } from "@/components/ui/code-block";
+import { codeLanguageLabel } from "@/components/ui/code-syntax";
+import { InputCode } from "@/components/ui/input-code";
 import { ExplanationBox } from "@/components/ui/explanation-box";
 import { useAuth } from "@/stores/authStore";
 import { recordLearningEvent } from "@/lib/learning";
 import { LessonConfetti } from "@/features/learning/LessonConfetti";
 import { LessonDataError } from "@/features/learning/LessonDataError";
 import type { LessonRendererProps } from "@/features/learning/types";
-import { CodeEditor } from "./CodeEditor";
 import { validateCodeConfig } from "./config";
 import { evaluateCodeExercise, MAX_SOURCE_BYTES, sourceBytes } from "./evaluate";
 import { codeDraftKey, readCodeDraft, saveCodeDraft } from "./drafts";
@@ -26,6 +30,7 @@ export function CodeExerciseLesson(props: LessonRendererProps) {
 }
 function Exercise({ lesson, courseId, config, userId, mode, completed, onComplete, onAction, draftEpoch = 0 }: LessonRendererProps & { config: CodeExerciseConfig; userId?: string }) {
   const { t } = useLearningTranslation();
+  const { confirm, confirmation } = useLearningConfirm();
   const copy = normalizeCodeLocale(lesson.code_exercise_locale).value;
   const key = mode === "learner" && userId ? `${codeDraftKey(userId, courseId, lesson.id, config.revision)}${draftEpoch ? `:${draftEpoch}` : ""}` : null;
   useEffect(() => {
@@ -56,11 +61,48 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
   const [celebrateKey, setCelebrateKey] = useState(0);
   const locked = result !== null;
   const retryable = result !== null && !result.passed;
+  useEffect(() => {
+    if (locked) {
+      (document.activeElement as HTMLElement)?.blur?.();
+    }
+  }, [locked]);
   const notes = result ? result.results.filter(r => !r.passed).flatMap(r => [
     ...(fill ? [] : [copy.test_copy?.[r.test_id]?.description ?? r.description]),
     copy.blank_feedback?.[r.test_id] ?? copy.test_copy?.[r.test_id]?.failure_message ?? r.message,
     copy.test_copy?.[r.test_id]?.hint ?? r.hint,
   ]).filter((note): note is string => Boolean(note)) : [];
+
+  const errorLines = useMemo(() => {
+    if (!result || result.passed || config.mode !== "edit") return undefined;
+    const sourceLines = source.split("\n");
+    const solutionLines = (config.reference_solution ?? "").split("\n");
+    const wrong: number[] = [];
+    sourceLines.forEach((line, idx) => {
+      if (solutionLines[idx] === undefined || line.trimEnd() !== solutionLines[idx].trimEnd()) {
+        wrong.push(idx + 1);
+      }
+    });
+    if (wrong.length === 0 && sourceLines.length < solutionLines.length) {
+      wrong.push(sourceLines.length || 1);
+    }
+    return wrong.length > 0 ? wrong : undefined;
+  }, [result, config.mode, config.reference_solution, source]);
+
+  async function handleReset() {
+    const isModified = config.mode === "fill"
+      ? Object.values(answers).some(Boolean)
+      : source !== config.file.starter_source;
+    if (isModified && !await confirm(t("learning.resetConfirm"))) return;
+    setSource(config.file.starter_source);
+    setAnswers({});
+    setResult(null);
+    setError(null);
+    setCompletionPending(false);
+    if (key) {
+      try { localStorage.removeItem(key); } catch { /* Ignore */ }
+    }
+  }
+
   const save = useCallback(() => {
     if (!key) return;
     setSaved(saveCodeDraft(key, config.mode === "fill" ? { mode: "fill", answers, updated_at: new Date().toISOString() } : { mode: "edit", source, updated_at: new Date().toISOString() }));
@@ -123,11 +165,9 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
     <LessonConfetti burstKey={celebrateKey} />
     <div className="space-y-4">
       <div className="min-w-0">
-        {config.mode === "fill" ? <CodeBlockFrame language={config.language}>
-          <div className="flex flex-col gap-xl overflow-x-auto p-2xl font-mono text-[16px] leading-none tracking-[-0.01em] text-foreground">
-            {lines.map((line, n) => <div key={n} className="flex items-center gap-2xl">
-              <span aria-hidden="true" className="shrink-0 select-none text-neutral-500" style={{ width: `${String(lines.length).length}ch` }}>{n + 1}</span>
-              <code className="flex items-center gap-[10px] whitespace-pre">{line.map((s, i) => {
+        {config.mode === "fill" ? <CodeBlockFrame label={codeLanguageLabel(config.language)}>
+          <div className="overflow-x-auto px-2xl py-lg font-mono text-[16px] leading-8 tracking-[-0.01em]">
+            {lines.map((line, n) => <CodeBlockLine key={n} number={n + 1} digits={String(lines.length).length}>{line.map((s, i) => {
                 if (s.type === "source") return <CodeSpan key={i} code={s.value} language={config.language} />;
                 const value = answers[s.id] ?? "";
                 const passed = result?.results.find(r => r.test_id === s.id)?.passed;
@@ -140,10 +180,11 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
                     onChange={e => { setAnswers(a => ({ ...a, [s.id]: e.target.value.slice(0, 1024) })); setResult(null); setError(null); setCompletionPending(false); }}
                     onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); e.stopPropagation(); void act(); } }} />
                 </span>;
-              })}</code>
-            </div>)}
+              })}</CodeBlockLine>)}
           </div>
-        </CodeBlockFrame> : <CodeBlockFrame language={config.language}><CodeEditor language={config.language} source={source} readOnly={busy || locked} onChange={value => { if (sourceBytes(value) <= MAX_SOURCE_BYTES) { setSource(value); setResult(null); setError(null); setCompletionPending(false); } else setError(t("learning.sourceLimit")); }} /></CodeBlockFrame>}
+        </CodeBlockFrame> : <div className={cn("min-w-0", (busy || locked) && "pointer-events-none")}>
+          <InputCode language={config.language} value={source} disabled={busy} readOnly={locked} errorLines={errorLines} ariaLabel={t("learning.source")} onChange={value => { if (sourceBytes(value) <= MAX_SOURCE_BYTES) { setSource(value); setResult(null); setError(null); setCompletionPending(false); } else setError(t("learning.sourceLimit")); }} />
+        </div>}
         {fill && missingId && !(answers[missingId] ?? "").trim() && <p role="alert" className="mt-lg text-body-medium text-input-field-error">{t("learning.codeFillAll")}</p>}
         <div aria-live="polite">{result && <ExplanationBox className="mt-6xl" status={result.passed ? "correct" : "incorrect"}
           title={t(result.passed ? "learning.quizCorrect" : "learning.quizThinkAgain")}
@@ -154,8 +195,13 @@ function Exercise({ lesson, courseId, config, userId, mode, completed, onComplet
     </div>
     {error && <p role="alert" className="text-destructive">{error}</p>}
     <div className="flex flex-wrap items-center gap-2">
-      <Button type="button" variant="cta" hierarchy="tertiary" onClick={() => setHints(v => !v)}>{t("learning.hints")}</Button>
-      <Button type="button" variant="cta" hierarchy="tertiary" onClick={() => setSolution(v => !v)}>{t("learning.solution")}</Button>
+      {confirmation}
+      <Button type="button" variant="cta" hierarchy="tertiary" size="small" disabled={busy} onClick={() => void handleReset()}
+        leadingIcon={<ArrowCounterClockwise weight="bold" className="size-4" aria-hidden />}>
+        {t("learning.reset")}
+      </Button>
+      <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => setHints(v => !v)}>{t("learning.hints")}</Button>
+      <Button type="button" variant="cta" hierarchy="tertiary" size="small" onClick={() => setSolution(v => !v)}>{t("learning.solution")}</Button>
       {key && saved !== null && <span role="status" className="text-xs text-foreground-muted">{t(saved ? "learning.draftSaved" : "learning.draftUnavailable")}</span>}
     </div>
     {hints && <ul className="list-disc space-y-1 rounded-xl border border-border-subtle bg-surface-raised py-3 pl-8 pr-4 text-sm">{(copy.hints ?? config.hints ?? []).map((hint,i) => <li key={i}>{hint}</li>)}</ul>}

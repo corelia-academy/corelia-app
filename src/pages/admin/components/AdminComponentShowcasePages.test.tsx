@@ -25,12 +25,16 @@ vi.mock("@/stores/authStore", () => ({
   }),
 }));
 
+vi.mock("@/components/ui/input-code-monaco", () => ({ default: () => null }));
+
 import AdminActionComponentPage from "./AdminActionComponentPage";
 import AdminAvatarComponentPage from "./AdminAvatarComponentPage";
 import AdminBadgeComponentPage from "./AdminBadgeComponentPage";
 import AdminDropdownMenuComponentPage from "./AdminDropdownMenuComponentPage";
 import AdminEmptyStateIllustrationComponentPage from "./AdminEmptyStateIllustrationComponentPage";
+import AdminCodeBlockComponentPage from "./AdminCodeBlockComponentPage";
 import AdminExplanationBoxComponentPage from "./AdminExplanationBoxComponentPage";
+import AdminInputCodeComponentPage from "./AdminInputCodeComponentPage";
 import AdminFullPageEmptyStateComponentPage from "./AdminFullPageEmptyStateComponentPage";
 import AdminInformativeIconComponentPage from "./AdminInformativeIconComponentPage";
 import AdminInputFieldComponentPage from "./AdminInputFieldComponentPage";
@@ -61,6 +65,8 @@ const pages = [
   AdminInformativeIconComponentPage,
   AdminStepperComponentPage,
   AdminExplanationBoxComponentPage,
+  AdminCodeBlockComponentPage,
+  AdminInputCodeComponentPage,
 ];
 
 describe("admin component detail pages", () => {
@@ -552,6 +558,47 @@ describe("admin component detail pages", () => {
     expect(statuses?.querySelectorAll('[data-slot="explanation-box"][data-status="incorrect"]')).toHaveLength(1);
     expect(content?.querySelectorAll('[data-slot="explanation-box"]')).toHaveLength(2);
     expect(content?.querySelectorAll('[data-slot="progress-circle"]')).toHaveLength(2);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders Code Block with no header, one language label and language tabs", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <AdminCodeBlockComponentPage />
+        </MemoryRouter>,
+      );
+    });
+
+    const headers = container.querySelector('[data-testid="code-block-headers"]');
+    expect(Array.from(headers?.querySelectorAll('[data-slot="code-block"]') ?? []).map(block => block.getAttribute("data-header"))).toEqual(["none", "label", "tabs"]);
+    expect(container.querySelector('[data-testid="code-block-solidity"] a[href^="https://remix.ethereum.org/#code="]')).not.toBeNull();
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders Input Code in its five states", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <AdminInputCodeComponentPage />
+        </MemoryRouter>,
+      );
+    });
+
+    const states = container.querySelector('[data-testid="input-code-states"]');
+    expect(Array.from(states?.querySelectorAll('[data-slot="input-code"]') ?? []).map(block => block.getAttribute("data-status"))).toEqual(["default", "filled", "filled", "disabled", "error"]);
 
     await act(async () => root.unmount());
     container.remove();

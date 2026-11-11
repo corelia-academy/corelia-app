@@ -423,6 +423,8 @@ function ApplicationRoutes() {
               "informative-icon",
               "toast-bar",
               "explanation-box",
+              "code-block",
+              "input-code",
             ].map((component) => (
               <Route
                 key={component}

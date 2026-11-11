@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { parseLessonImageRef } from "@/lib/lessonImage";
 import { optimizedImageSrcSet, optimizedImageUrl } from "@/lib/imageUrl";
-import { CodeBlock } from "./CodeBlock";
+import { CodeBlock } from "@/components/ui/code-block";
 
 function MarkdownImage({ src, alt, lesson = false }: { src?: string; alt: string; lesson?: boolean }) {
   const isRef = parseLessonImageRef(src) !== null;
