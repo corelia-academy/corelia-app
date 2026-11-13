@@ -140,6 +140,8 @@ const AdminHackathons = lazy(() => import("@/pages/admin/hackathons/AdminHackath
 const AdminHackathonEditor = lazy(() => import("@/pages/admin/hackathons/AdminHackathonEditorPage"));
 const AdminProjectsPage = lazy(() => import("@/pages/admin/AdminProjectsPage"));
 const AdminJobsPage = lazy(() => import("@/pages/admin/jobs/AdminJobsPage"));
+const AdminBlogPage = lazy(() => import("@/pages/admin/blog/AdminBlogPage"));
+const AdminBlogEditorPage = lazy(() => import("@/pages/admin/blog/AdminBlogEditorPage"));
 const AdminComponentsPage = lazy(() => import("@/pages/admin/AdminComponentsPage"));
 const AdminEmailCenterPage = lazy(() => import("@/pages/admin/email/AdminEmailCenterPage"));
 const AdminCertificateAnalytics = lazy(() => import("@/pages/admin/AdminCertificateAnalytics"));
@@ -682,6 +684,9 @@ function ApplicationRoutes() {
                     </Suspense>
                   }
                 />
+                <Route path="blog" element={<Suspense fallback={<TableFallback />}><AdminBlogPage /></Suspense>} />
+                <Route path="blog/new" element={<Suspense fallback={<FormFallback />}><AdminBlogEditorPage /></Suspense>} />
+                <Route path="blog/:id/edit" element={<Suspense fallback={<FormFallback />}><AdminBlogEditorPage /></Suspense>} />
                 <Route path="hackathons" element={<Suspense fallback={<TableFallback />}><AdminHackathons /></Suspense>} />
                 <Route path="hackathons/new" element={<Suspense fallback={<FormFallback />}><AdminHackathonEditor /></Suspense>} />
                 <Route path="hackathons/:id/edit" element={<Suspense fallback={<FormFallback />}><AdminHackathonEditor /></Suspense>} />

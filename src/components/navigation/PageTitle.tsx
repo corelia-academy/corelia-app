@@ -68,6 +68,9 @@ export type PageTitleKey =
   | "manageHackathons"
   | "newHackathon"
   | "editHackathon"
+  | "manageBlog"
+  | "newBlogPost"
+  | "editBlogPost"
   | "manageProjects"
   | "manageJobs"
   | "reviewJobs"
@@ -171,6 +174,9 @@ export const PAGE_TITLE_ROUTES: PageTitleRoute[] = [
   { path: "/admin/hackathons", handle: "manageHackathons" },
   { path: "/admin/hackathons/new", handle: "newHackathon" },
   { path: "/admin/hackathons/:id/edit", handle: "editHackathon" },
+  { path: "/admin/blog", handle: "manageBlog" },
+  { path: "/admin/blog/new", handle: "newBlogPost" },
+  { path: "/admin/blog/:id/edit", handle: "editBlogPost" },
   { path: "/admin/projects", handle: "manageProjects" },
   { path: "/admin/jobs", handle: "manageJobs" },
   { path: "/admin/jobs/review", handle: "reviewJobs" },

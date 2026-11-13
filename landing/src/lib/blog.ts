@@ -1,11 +1,129 @@
-import { getCollection, type CollectionEntry } from "astro:content";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
-import type { BlogCategory, BlogMedia } from "@/lib/blogTaxonomy";
+import {
+  BLOG_CATEGORY_KEYS,
+  type BlogCategory,
+  type BlogMedia,
+} from "@/lib/blogTaxonomy";
 import { getYouTubeThumbnailUrl } from "@/lib/youtube";
 
 export type BlogLocale = "vi" | "en";
-export type BlogPost = CollectionEntry<"blog">;
+export type BlogContentType = "blog" | "case-study";
+
+/**
+ * A published article from `public.blog_posts` (written in Admin → Blog in the learning
+ * app). `slug` keeps the `<locale>/<slug>` form the URL helpers below expect. `body` is
+ * the Markdown source and is only loaded for the article page (`getArticle`).
+ */
+export type BlogPost = {
+  id: string;
+  slug: string;
+  body: string;
+  data: {
+    title: string;
+    description?: string;
+    date: Date;
+    updatedAt: Date;
+    locale: BlogLocale;
+    translationKey: string;
+    author?: string;
+    contentType: BlogContentType;
+    category: BlogCategory;
+    tags: string[];
+    media?: BlogMedia;
+    wordCount: number;
+  };
+};
+
+const SUPABASE_URL = String(import.meta.env.PUBLIC_SUPABASE_URL ?? "").replace(/\/+$/, "");
+const SUPABASE_KEY = String(import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "");
+/** Edge cache for upstream reads; a published or edited article shows up within this window. */
+const EDGE_CACHE_SECONDS = 60;
+const LIST_COLUMNS =
+  "id,locale,slug,translation_key,content_type,title,description,author,category,tags,media,word_count,published_on,updated_at";
+
+export class BlogUnavailableError extends Error {}
+
+export function blogConfigured(): boolean {
+  return Boolean(SUPABASE_URL && SUPABASE_KEY);
+}
+
+type BlogRow = {
+  id: string;
+  locale: BlogLocale;
+  slug: string;
+  translation_key: string;
+  content_type: BlogContentType;
+  title: string;
+  description: string | null;
+  author: string | null;
+  category: string;
+  tags: string[] | null;
+  media: BlogMedia | null;
+  word_count: number | null;
+  published_on: string;
+  updated_at: string;
+  body?: string;
+};
+
+/** Published rows only: the publishable key reads under RLS, which hides drafts. */
+async function rest(params: Record<string, string>): Promise<BlogRow[]> {
+  const url = `${SUPABASE_URL}/rest/v1/blog_posts?${new URLSearchParams({ status: "eq.published", ...params })}`;
+  const response = await fetch(url, {
+    headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${SUPABASE_KEY}`, accept: "application/json" },
+    cf: { cacheTtl: EDGE_CACHE_SECONDS, cacheEverything: true },
+  } as RequestInit);
+  if (!response.ok) throw new BlogUnavailableError(`blog_posts_${response.status}`);
+  return response.json() as Promise<BlogRow[]>;
+}
+
+function postFromRow(row: BlogRow): BlogPost {
+  const category = (BLOG_CATEGORY_KEYS as readonly string[]).includes(row.category)
+    ? (row.category as BlogCategory)
+    : "announcements-events";
+  const media = row.media && (row.media.type === "image" || row.media.type === "youtube") ? row.media : undefined;
+  return {
+    id: row.id,
+    slug: `${row.locale}/${row.slug}`,
+    body: row.body ?? "",
+    data: {
+      title: row.title,
+      description: row.description?.trim() || undefined,
+      date: new Date(row.published_on),
+      updatedAt: new Date(row.updated_at),
+      locale: row.locale,
+      translationKey: row.translation_key,
+      author: row.author?.trim() || undefined,
+      contentType: row.content_type,
+      category,
+      tags: Array.isArray(row.tags) ? row.tags : [],
+      media,
+      wordCount: row.word_count ?? 0,
+    },
+  };
+}
+
+// One page renders several sections from the same list; share the read between them
+// (and between requests landing on the same isolate within the cache window).
+const listCache = new Map<string, { at: number; posts: Promise<BlogPost[]> }>();
+
+/**
+ * Published articles of one kind in one language, newest first, without bodies.
+ * Without Supabase build variables the list is empty, so local builds still work.
+ */
+function listPosts(locale: BlogLocale, contentType: BlogContentType): Promise<BlogPost[]> {
+  if (!blogConfigured()) return Promise.resolve([]);
+  const key = `${locale}:${contentType}`;
+  const cached = listCache.get(key);
+  if (cached && Date.now() - cached.at < EDGE_CACHE_SECONDS * 1000) return cached.posts;
+  const posts = rest({
+    select: LIST_COLUMNS,
+    locale: `eq.${locale}`,
+    content_type: `eq.${contentType}`,
+    order: "published_on.desc,created_at.desc",
+  }).then((rows) => rows.map(postFromRow));
+  listCache.set(key, { at: Date.now(), posts });
+  posts.catch(() => listCache.delete(key));
+  return posts;
+}
 
 export type BlogNewsTabKey =
   | "all"
@@ -67,46 +185,57 @@ export function articlePostUrl(locale: BlogLocale, post: BlogPost) {
     : blogPostUrl(locale, post.slug);
 }
 
-export async function getArticleStaticPaths(
-  locale: BlogLocale,
-  contentType: "blog" | "case-study",
-) {
-  const all = await getCollection(
-    "blog",
-    (entry) => !entry.data.draft && entry.data.contentType === contentType,
-  );
-  const alternateLocale = locale === "en" ? "vi" : "en";
-  const alternatesByKey = new Map(
-    all
-      .filter((post) => post.data.locale === alternateLocale)
-      .map((post) => [post.data.translationKey, post]),
-  );
+export type Article = {
+  post: BlogPost;
+  locale: BlogLocale;
+  /** Language switcher targets: the translation, or the other language's index. */
+  languageHrefs: Record<BlogLocale, string>;
+  /** hreflang alternates: only languages the article exists in. */
+  alternates: Partial<Record<BlogLocale, string>>;
+};
 
-  return all
-    .filter((post) => post.data.locale === locale)
-    .map((post) => {
-      const alternate = alternatesByKey.get(post.data.translationKey);
-      const currentHref = articlePostUrl(locale, post);
-      const alternateHref = alternate
-        ? articlePostUrl(alternateLocale, alternate)
-        : contentType === "case-study"
-          ? caseStudyIndexUrl(alternateLocale)
-          : blogIndexUrl(alternateLocale);
-      return {
-        params: { slug: blogPostSlug(post.slug) },
-        props: {
-          post,
-          locale,
-          languageHrefs: {
-            [locale]: currentHref,
-            [alternateLocale]: alternateHref,
-          },
-          alternates: alternate
-            ? { [locale]: currentHref, [alternateLocale]: alternateHref }
-            : { [locale]: currentHref },
-        },
-      };
-    });
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** The published article at `/blog/<slug>` or `/case-studies/<slug>`, with its body. */
+export async function getArticle(
+  locale: BlogLocale,
+  contentType: BlogContentType,
+  slug: string | undefined,
+): Promise<Article | null> {
+  if (!slug || slug.length > 200 || !SLUG_PATTERN.test(slug)) return null;
+  const [row] = await rest({
+    select: `${LIST_COLUMNS},body`,
+    locale: `eq.${locale}`,
+    content_type: `eq.${contentType}`,
+    slug: `eq.${slug}`,
+    limit: "1",
+  });
+  if (!row) return null;
+  const post = postFromRow(row);
+
+  const alternateLocale: BlogLocale = locale === "en" ? "vi" : "en";
+  const [alternateRow] = await rest({
+    select: LIST_COLUMNS,
+    locale: `eq.${alternateLocale}`,
+    translation_key: `eq.${post.data.translationKey}`,
+    limit: "1",
+  });
+  const alternate = alternateRow ? postFromRow(alternateRow) : null;
+  const currentHref = articlePostUrl(locale, post);
+  const alternateHref = alternate
+    ? articlePostUrl(alternateLocale, alternate)
+    : contentType === "case-study"
+      ? caseStudyIndexUrl(alternateLocale)
+      : blogIndexUrl(alternateLocale);
+
+  return {
+    post,
+    locale,
+    languageHrefs: { [locale]: currentHref, [alternateLocale]: alternateHref } as Record<BlogLocale, string>,
+    alternates: alternate
+      ? { [locale]: currentHref, [alternateLocale]: alternateHref }
+      : { [locale]: currentHref },
+  };
 }
 
 export function blogCategoryUrl(
@@ -131,50 +260,67 @@ export function blogTagUrl(locale: BlogLocale, tag: string, page: number = 1) {
   return `${base}/page/${page}`;
 }
 
-export async function getBlogPosts(
+export function getBlogPosts(locale: BlogLocale) {
+  return listPosts(locale, "blog");
+}
+
+export function getCaseStudyPosts(locale: BlogLocale) {
+  return listPosts(locale, "case-study");
+}
+
+/** `/blog/page/N` and `/blog/<tab>/page/N`: null when the tab or page does not exist. */
+export async function getBlogNewsPage(
   locale: BlogLocale,
-  opts: { includeDrafts?: boolean } = {},
-) {
-  const { includeDrafts = false } = opts;
-  const posts = await getCollection("blog", (entry) => {
-    if (entry.data.locale !== locale) return false;
-    if (entry.data.contentType === "case-study") return false;
-    if (!includeDrafts && entry.data.draft) return false;
-    return true;
-  });
-
-  return posts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  tab: string | undefined,
+  pageParam: string | undefined,
+): Promise<{ tab: BlogNewsTabKey; page: number } | null> {
+  if (tab !== "all" && !(tab && tab in BLOG_NEWS_TAB_CATEGORIES)) return null;
+  const page = parsePage(pageParam);
+  if (page === null) return null;
+  const posts = filterBlogPostsForNewsTab(await getBlogPosts(locale), tab as BlogNewsTabKey);
+  if (page > Math.ceil(posts.length / BLOG_NEWS_PAGE_SIZE)) return null;
+  return { tab: tab as BlogNewsTabKey, page };
 }
 
-export async function getCaseStudyPosts(locale: BlogLocale) {
-  const posts = await getCollection("blog", (entry) =>
-    !entry.data.draft &&
-    entry.data.locale === locale &&
-    entry.data.contentType === "case-study",
+export type BlogFacetPage = { key: string; posts: BlogPost[]; page: number; totalPages: number };
+
+/**
+ * One page of a category or tag listing: null when nothing is published under it or the
+ * page is out of range. Without `pageParam` it is page 1; `/page/N` routes start at 2.
+ */
+export async function getBlogFacetPage(
+  locale: BlogLocale,
+  facet: "category" | "tag",
+  key: string | undefined,
+  pageParam?: string,
+): Promise<BlogFacetPage | null> {
+  if (!key) return null;
+  const page = pageParam === undefined ? 1 : parsePage(pageParam);
+  if (page === null) return null;
+  const posts = (await getBlogPosts(locale)).filter((post) =>
+    facet === "category" ? post.data.category === key : post.data.tags.includes(key),
   );
-  return posts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  const totalPages = Math.ceil(posts.length / BLOG_PAGE_SIZE);
+  if (page > totalPages) return null;
+  return { key, posts: posts.slice((page - 1) * BLOG_PAGE_SIZE, page * BLOG_PAGE_SIZE), page, totalPages };
 }
 
-export async function getBlogPostPairs(opts: { includeDrafts?: boolean } = {}) {
-  const { includeDrafts = false } = opts;
-  const all = await getCollection("blog", (entry) =>
-    entry.data.contentType !== "case-study" &&
-    (includeDrafts || !entry.data.draft),
-  );
+/** Page number of a `/page/N` route (2 and up; page 1 is the unpaginated URL). */
+function parsePage(value: string | undefined): number | null {
+  if (!value || !/^[1-9]\d{0,3}$/.test(value)) return null;
+  const page = Number(value);
+  return page >= 2 ? page : null;
+}
 
-  const byKey = new Map<
-    string,
-    Partial<Record<BlogLocale, BlogPost>>
-  >();
-
-  for (const post of all) {
-    const key = post.data.translationKey;
-    const bucket = byKey.get(key) ?? {};
-    bucket[post.data.locale] = post;
-    byKey.set(key, bucket);
-  }
-
-  return byKey;
+/** Published articles in both languages for the blog sitemap. */
+export async function listSitemapArticles(): Promise<BlogPost[]> {
+  const lists = await Promise.all([
+    listPosts("en", "blog"),
+    listPosts("vi", "blog"),
+    listPosts("en", "case-study"),
+    listPosts("vi", "case-study"),
+  ]);
+  return lists.flat();
 }
 
 export type OgImage = {
@@ -212,16 +358,6 @@ function ogImageTypeFromUrl(url: string): string | undefined {
   return undefined;
 }
 
-function getOgVariantSrc(src: string) {
-  if (!src.startsWith("/")) return null;
-
-  const ogSrc = src.replace(/^(\/blog\/)(.+)$/, "$1og/$2");
-  if (ogSrc === src) return null;
-
-  const ogPath = join(process.cwd(), "public", ogSrc.slice(1));
-  return existsSync(ogPath) ? ogSrc : null;
-}
-
 export function getBlogOgImage(
   media?: BlogMedia,
   opts: { siteOrigin?: string } = {},
@@ -230,7 +366,8 @@ export function getBlogOgImage(
   const siteOrigin = opts.siteOrigin ?? DEFAULT_SITE_ORIGIN;
 
   if (media.type === "image") {
-    const src = getOgVariantSrc(media.src) ?? media.src;
+    // `ogSrc` is the 1200×630 variant some imported cover images have.
+    const src = media.ogSrc ?? media.src;
     const url = toAbsoluteUrl(src, siteOrigin);
     return {
       url,

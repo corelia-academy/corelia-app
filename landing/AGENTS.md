@@ -11,11 +11,10 @@ Astro 5 marketing site for `https://corelia.academy` (home, roadmap, case studie
 - `src/pages/` — routes. English is the default locale at `/`; Vietnamese lives under `/vi/` (see `astro.config.mjs` and `src/i18n/`).
 - `src/pages/[...locale]/{courses,hackathons,jobs}/` — the SEO catalog: server-rendered (`prerender = false`) in every site locale (`/`, `/vi`, `/zh-cn`, `/zh-tw`, `/ko`, `/ja`, `/es`) from public Supabase rows (`src/lib/catalog.ts`). A locale without a translation is `noindex` with a canonical to the language the content is written in; job postings are indexed only at the English URL and only when their source allows it. UI copy: `src/i18n/catalog.ts`. `/sitemap-catalog.xml` lists them; `@astrojs/sitemap` covers the static pages.
 - `src/components/` — `.astro` sections plus React islands (`@astrojs/react`).
-- `src/content/blog/` — published blog and case-study Markdown (schema in `src/content.config.ts`). `blog/` at this level holds unpublished drafts.
+- Blog and case studies (`/blog`, `/case-studies`, `/vi/...`) — server-rendered from `public.blog_posts` in Supabase (`src/lib/blog.ts`, `src/lib/blogRoute.ts`; Markdown bodies rendered by `src/lib/blogMarkdown.ts`). Articles are written in the learning app at Admin → Blog (`/learn/admin/blog`), not in this repository; category and tag keys are in `@corelia/ui/blog`. The home page stays prerendered, so its blog preview shows the articles published at build time. `/sitemap-blog.xml` lists these pages. `public/blog/` holds the images of articles imported from the old Markdown files.
 - `src/layouts/BaseLayout.astro` — `<head>`, canonical, robots, Open Graph/Twitter metadata.
 - `src/components/common/header.astro` — the landing header (navigation, language switcher, "Learn now" into the app at `PUBLIC_APP_URL`). The learning app keeps its own header and sidebar.
 - `public/_redirects` — permanent redirects served by Cloudflare static assets.
-- `tools/blog-editor/` — local blog editing tool (`pnpm --filter corelia-landing blog:editor`).
 
 ## Rules
 

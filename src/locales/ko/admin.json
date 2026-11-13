@@ -156,6 +156,10 @@
       },
       "projects": {
         "label": "프로젝트"
+      },
+      "blog": {
+        "label": "블로그",
+        "tooltip": "랜딩 사이트 블로그와 사례 연구"
       }
     },
     "pageMeta": {
@@ -202,6 +206,10 @@
       "projects": {
         "title": "프로젝트",
         "description": "프로젝트 검수"
+      },
+      "blog": {
+        "title": "블로그",
+        "description": "랜딩 사이트에 표시되는 글을 작성하고 게시합니다."
       }
     },
     "hero": {
@@ -766,6 +774,117 @@
       "empty": "수동으로 부여된 자격 증명이 아직 없습니다.",
       "emptyFiltered": "현재 필터와 일치하는 자격 증명이 없습니다.",
       "loadFailed": "수동 발행 내역을 불러오지 못했습니다."
+    }
+  },
+  "blog": {
+    "title": "블로그",
+    "description": "corelia.academy의 글과 사례 연구입니다. 여기서 게시한 글은 1~2분 안에 사이트에 표시됩니다.",
+    "new": "새 글",
+    "loadFailed": "글 목록을 불러오지 못했습니다.",
+    "list": {
+      "search": "제목 또는 슬러그로 검색",
+      "allStatuses": "모든 상태",
+      "allLocales": "모든 언어",
+      "empty": "아직 글이 없습니다.",
+      "noMatches": "필터와 일치하는 글이 없습니다."
+    },
+    "status": {
+      "draft": "초안",
+      "published": "게시됨"
+    },
+    "locales": {
+      "vi": "베트남어",
+      "en": "영어"
+    },
+    "contentTypes": {
+      "blog": "블로그 글",
+      "case-study": "사례 연구"
+    },
+    "fields": {
+      "title": "제목",
+      "locale": "언어",
+      "contentType": "유형",
+      "slug": "URL 슬러그",
+      "translationKey": "번역 키",
+      "description": "요약",
+      "category": "카테고리",
+      "publishedOn": "날짜",
+      "author": "작성자",
+      "tags": "태그",
+      "status": "상태",
+      "cover": "커버",
+      "coverImage": "커버 이미지",
+      "imageUrl": "이미지 URL",
+      "imageAlt": "이미지 설명(대체 텍스트)",
+      "imageFit": "이미지 맞춤",
+      "youtubeUrl": "YouTube 링크",
+      "body": "본문"
+    },
+    "cover": {
+      "none": "커버 없음",
+      "image": "이미지",
+      "youtube": "YouTube 동영상",
+      "fitCover": "프레임 채우기(자르기)",
+      "fitContain": "이미지 전체 표시"
+    },
+    "hints": {
+      "slugPublished": "게시된 글의 슬러그를 바꾸면 그 글로 연결된 링크가 끊어집니다.",
+      "translationKey": "같은 글의 베트남어판과 영어판은 이 키를 함께 씁니다. 비워 두면 슬러그를 사용합니다.",
+      "description": "제목 아래, 목록, 검색 및 소셜 미리보기에 표시됩니다.",
+      "tags": "({{selected}}개 선택됨, 게시하려면 {{min}}~{{max}}개)",
+      "image": "PNG, JPEG, WebP, GIF 또는 AVIF, 최대 5 MB.",
+      "body": "Markdown: ## 제목, **굵게**, [링크](https://…), - 목록. HTML은 글자 그대로 표시됩니다."
+    },
+    "editor": {
+      "newTitle": "새 글",
+      "editTitle": "글 수정",
+      "back": "모든 글",
+      "write": "작성",
+      "preview": "미리보기",
+      "bodyPlaceholder": "Markdown으로 글을 작성하세요…",
+      "previewEmpty": "아직 미리 볼 내용이 없습니다.",
+      "unsaved": "저장되지 않은 변경 사항",
+      "saved": "모든 변경 사항이 저장됨",
+      "notFound": "이 글은 더 이상 존재하지 않습니다."
+    },
+    "actions": {
+      "edit": "수정",
+      "view": "사이트에서 보기",
+      "saveDraft": "초안 저장",
+      "publish": "게시",
+      "update": "업데이트",
+      "unpublish": "게시 취소",
+      "delete": "삭제",
+      "uploadCover": "이미지 업로드",
+      "insertImage": "이미지 삽입",
+      "addTranslation": "{{language}} 버전 추가",
+      "openTranslation": "{{language}} 버전 열기"
+    },
+    "confirm": {
+      "delete": "“{{title}}” 글을 삭제할까요? 되돌릴 수 없습니다."
+    },
+    "messages": {
+      "draftSaved": "초안을 저장했습니다.",
+      "published": "게시했습니다. 1~2분 안에 사이트에 표시됩니다.",
+      "deleted": "글을 삭제했습니다."
+    },
+    "errors": {
+      "titleRequired": "제목을 입력하세요.",
+      "slugInvalid": "슬러그에는 영문 소문자, 숫자, 하이픈만 쓸 수 있습니다.",
+      "translationKeyInvalid": "번역 키에는 영문 소문자, 숫자, 하이픈만 쓸 수 있습니다.",
+      "dateInvalid": "올바른 날짜를 선택하세요.",
+      "imageRequired": "커버 이미지를 업로드하거나 “커버 없음”을 선택하세요.",
+      "imageUrlInvalid": "이미지 URL은 https:// 또는 /로 시작해야 합니다.",
+      "youtubeInvalid": "올바른 YouTube 링크를 입력하세요.",
+      "tagsCount": "게시하기 전에 태그를 {{min}}~{{max}}개 선택하세요.",
+      "bodyRequired": "게시하기 전에 본문을 작성하세요.",
+      "slugTaken": "이 언어의 다른 글이 이미 이 슬러그를 사용하고 있습니다.",
+      "translationTaken": "이 번역 키에는 이 언어의 글이 이미 있습니다.",
+      "saveFailed": "글을 저장하지 못했습니다. 다시 시도하세요.",
+      "deleteFailed": "글을 삭제하지 못했습니다. 다시 시도하세요.",
+      "imageType": "PNG, JPEG, WebP, GIF 또는 AVIF 이미지를 선택하세요.",
+      "imageTooLarge": "이미지가 5 MB보다 큽니다.",
+      "uploadFailed": "이미지를 업로드하지 못했습니다. 다시 시도하세요."
     }
   }
 }

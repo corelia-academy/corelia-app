@@ -6,48 +6,21 @@ import BlogPostCard from "@/components/blog/BlogPostCard.astro";
 import { useTranslations } from "@/i18n/translations";
 import { getCollection } from "astro:content";
 import {
-  BLOG_PAGE_SIZE,
   blogCategoryUrl,
   blogIndexUrl,
-  getBlogPosts,
+  getBlogFacetPage,
 } from "@/lib/blog";
+import { loadBlogPage } from "@/lib/blogRoute";
 import { blogCategoryLabel, type BlogCategory } from "@/lib/blogTaxonomy";
 
 const t = useTranslations("vi");
 
-type Props = {
-  category: BlogCategory;
-  posts: Awaited<ReturnType<typeof getBlogPosts>>;
-  page: number;
-  totalPages: number;
-};
+export const prerender = false;
 
-export async function getStaticPaths() {
-  const allPosts = await getBlogPosts("vi");
-  const byCategory = new Map<string, typeof allPosts>();
-
-  for (const post of allPosts) {
-    const key = post.data.category;
-    const bucket = byCategory.get(key) ?? [];
-    bucket.push(post);
-    byCategory.set(key, bucket);
-  }
-
-  return Array.from(byCategory.entries()).map(([category, posts]) => {
-    const totalPages = Math.max(1, Math.ceil(posts.length / BLOG_PAGE_SIZE));
-    return {
-      params: { category },
-      props: {
-        category,
-        posts: posts.slice(0, BLOG_PAGE_SIZE),
-        page: 1,
-        totalPages,
-      },
-    };
-  });
-}
-
-const { category, posts, page, totalPages } = Astro.props as Props;
+const listing = await loadBlogPage(Astro, () => getBlogFacetPage("vi", "category", Astro.params.category));
+if (listing instanceof Response) return listing;
+const { posts, page, totalPages } = listing;
+const category = listing.key as BlogCategory;
 const fmtDate = new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium" });
 
 const members = await getCollection("members");

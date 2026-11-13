@@ -61,6 +61,10 @@
         "label": "Users",
         "tooltip": "Users"
       },
+      "blog": {
+        "label": "Blog",
+        "tooltip": "Landing site blog and case studies"
+      },
       "jobs": {
         "label": "Jobs",
         "tooltip": "Jobs ingestion and review"
@@ -113,6 +117,10 @@
       "users": {
         "title": "User management",
         "description": "Control roles and access health across all users."
+      },
+      "blog": {
+        "title": "Blog",
+        "description": "Write and publish the articles shown on the landing site."
       },
       "jobs": {
         "title": "Jobs operations",
@@ -713,6 +721,117 @@
       "empty": "No credentials have been granted manually yet.",
       "emptyFiltered": "No credentials matched the current filter.",
       "loadFailed": "Failed to load manual mint history."
+    }
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Articles and case studies on corelia.academy. Publishing here puts an article on the site within a minute or two.",
+    "new": "New article",
+    "loadFailed": "Could not load the articles.",
+    "list": {
+      "search": "Search by title or slug",
+      "allStatuses": "All statuses",
+      "allLocales": "All languages",
+      "empty": "No articles yet.",
+      "noMatches": "No articles match these filters."
+    },
+    "status": {
+      "draft": "Draft",
+      "published": "Published"
+    },
+    "locales": {
+      "vi": "Vietnamese",
+      "en": "English"
+    },
+    "contentTypes": {
+      "blog": "Blog post",
+      "case-study": "Case study"
+    },
+    "fields": {
+      "title": "Title",
+      "locale": "Language",
+      "contentType": "Type",
+      "slug": "URL slug",
+      "translationKey": "Translation key",
+      "description": "Summary",
+      "category": "Category",
+      "publishedOn": "Date",
+      "author": "Author",
+      "tags": "Tags",
+      "status": "Status",
+      "cover": "Cover",
+      "coverImage": "Cover image",
+      "imageUrl": "Image URL",
+      "imageAlt": "Image description (alt text)",
+      "imageFit": "Image fit",
+      "youtubeUrl": "YouTube link",
+      "body": "Content"
+    },
+    "cover": {
+      "none": "No cover",
+      "image": "Image",
+      "youtube": "YouTube video",
+      "fitCover": "Fill the frame (crop)",
+      "fitContain": "Show the whole image"
+    },
+    "hints": {
+      "slugPublished": "Changing the slug of a published article breaks links to it.",
+      "translationKey": "The Vietnamese and English versions of one article share this key. Leave empty to use the slug.",
+      "description": "Shown under the title, in lists, and in search and social previews.",
+      "tags": "({{selected}} selected, {{min}}–{{max}} to publish)",
+      "image": "PNG, JPEG, WebP, GIF or AVIF, up to 5 MB.",
+      "body": "Markdown: ## heading, **bold**, [link](https://…), - list. Raw HTML is shown as text."
+    },
+    "editor": {
+      "newTitle": "New article",
+      "editTitle": "Edit article",
+      "back": "All articles",
+      "write": "Write",
+      "preview": "Preview",
+      "bodyPlaceholder": "Write the article in Markdown…",
+      "previewEmpty": "Nothing to preview yet.",
+      "unsaved": "Unsaved changes",
+      "saved": "All changes saved",
+      "notFound": "This article no longer exists."
+    },
+    "actions": {
+      "edit": "Edit",
+      "view": "View on site",
+      "saveDraft": "Save draft",
+      "publish": "Publish",
+      "update": "Update",
+      "unpublish": "Unpublish",
+      "delete": "Delete",
+      "uploadCover": "Upload image",
+      "insertImage": "Insert image",
+      "addTranslation": "Add {{language}} version",
+      "openTranslation": "Open {{language}} version"
+    },
+    "confirm": {
+      "delete": "Delete “{{title}}”? This cannot be undone."
+    },
+    "messages": {
+      "draftSaved": "Draft saved.",
+      "published": "Published. It appears on the site within a minute or two.",
+      "deleted": "Article deleted."
+    },
+    "errors": {
+      "titleRequired": "Enter a title.",
+      "slugInvalid": "The slug can only contain lowercase letters, digits and hyphens.",
+      "translationKeyInvalid": "The translation key can only contain lowercase letters, digits and hyphens.",
+      "dateInvalid": "Choose a valid date.",
+      "imageRequired": "Upload a cover image or choose “No cover”.",
+      "imageUrlInvalid": "The image URL must start with https:// or /.",
+      "youtubeInvalid": "Enter a valid YouTube link.",
+      "tagsCount": "Choose {{min}} to {{max}} tags before publishing.",
+      "bodyRequired": "Write the content before publishing.",
+      "slugTaken": "Another article in this language already uses this slug.",
+      "translationTaken": "This translation key already has an article in this language.",
+      "saveFailed": "Could not save the article. Try again.",
+      "deleteFailed": "Could not delete the article. Try again.",
+      "imageType": "Choose a PNG, JPEG, WebP, GIF or AVIF image.",
+      "imageTooLarge": "The image is larger than 5 MB.",
+      "uploadFailed": "Could not upload the image. Try again."
     }
   }
 }

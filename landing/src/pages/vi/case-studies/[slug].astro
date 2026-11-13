@@ -1,17 +1,12 @@
 ---
 import ArticleDetail from "@/components/blog/ArticleDetail.astro";
-import { getArticleStaticPaths, type BlogPost } from "@/lib/blog";
+import { getArticle } from "@/lib/blog";
+import { loadBlogPage } from "@/lib/blogRoute";
 
-export function getStaticPaths() {
-  return getArticleStaticPaths("vi", "case-study");
-}
+export const prerender = false;
 
-const { post, locale, languageHrefs, alternates } = Astro.props as {
-  post: BlogPost;
-  locale: "vi";
-  languageHrefs: Record<string, string>;
-  alternates: Partial<Record<"en" | "vi", string>>;
-};
+const article = await loadBlogPage(Astro, () => getArticle("vi", "case-study", Astro.params.slug));
+if (article instanceof Response) return article;
 ---
 
-<ArticleDetail {post} {locale} {languageHrefs} {alternates} />
+<ArticleDetail {...article} />

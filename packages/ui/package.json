@@ -3,8 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "Locale helpers shared by the landing site and the learning app.",
+  "description": "Locale helpers and blog taxonomy shared by the landing site and the learning app.",
   "exports": {
-    "./locales": "./src/locales.ts"
+    "./locales": "./src/locales.ts",
+    "./blog": "./src/blog.ts"
   }
 }

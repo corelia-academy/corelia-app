@@ -156,6 +156,10 @@
       },
       "projects": {
         "label": "プロジェクト"
+      },
+      "blog": {
+        "label": "ブログ",
+        "tooltip": "ランディングサイトのブログと事例"
       }
     },
     "pageMeta": {
@@ -202,6 +206,10 @@
       "projects": {
         "title": "プロジェクト",
         "description": "プロジェクトのモデレーション"
+      },
+      "blog": {
+        "title": "ブログ",
+        "description": "ランディングサイトに表示する記事を書いて公開します。"
       }
     },
     "hero": {
@@ -766,6 +774,117 @@
       "empty": "手動で付与された資格情報はまだありません。",
       "emptyFiltered": "現在のフィルターに一致する資格情報がありません。",
       "loadFailed": "手動ミント履歴を読み込めませんでした。"
+    }
+  },
+  "blog": {
+    "title": "ブログ",
+    "description": "corelia.academy の記事と事例です。ここで公開した記事は 1〜2 分でサイトに表示されます。",
+    "new": "新しい記事",
+    "loadFailed": "記事を読み込めませんでした。",
+    "list": {
+      "search": "タイトルまたはスラッグで検索",
+      "allStatuses": "すべてのステータス",
+      "allLocales": "すべての言語",
+      "empty": "記事はまだありません。",
+      "noMatches": "条件に一致する記事はありません。"
+    },
+    "status": {
+      "draft": "下書き",
+      "published": "公開済み"
+    },
+    "locales": {
+      "vi": "ベトナム語",
+      "en": "英語"
+    },
+    "contentTypes": {
+      "blog": "ブログ記事",
+      "case-study": "事例"
+    },
+    "fields": {
+      "title": "タイトル",
+      "locale": "言語",
+      "contentType": "種類",
+      "slug": "URL スラッグ",
+      "translationKey": "翻訳キー",
+      "description": "概要",
+      "category": "カテゴリー",
+      "publishedOn": "日付",
+      "author": "著者",
+      "tags": "タグ",
+      "status": "ステータス",
+      "cover": "カバー",
+      "coverImage": "カバー画像",
+      "imageUrl": "画像の URL",
+      "imageAlt": "画像の説明（代替テキスト）",
+      "imageFit": "画像の表示方法",
+      "youtubeUrl": "YouTube のリンク",
+      "body": "本文"
+    },
+    "cover": {
+      "none": "カバーなし",
+      "image": "画像",
+      "youtube": "YouTube 動画",
+      "fitCover": "枠いっぱいに表示（トリミング）",
+      "fitContain": "画像全体を表示"
+    },
+    "hints": {
+      "slugPublished": "公開済みの記事のスラッグを変更すると、その記事へのリンクが切れます。",
+      "translationKey": "同じ記事のベトナム語版と英語版はこのキーを共有します。空欄の場合はスラッグを使います。",
+      "description": "タイトルの下、一覧、検索や SNS のプレビューに表示されます。",
+      "tags": "（{{selected}} 個選択中、公開には {{min}}〜{{max}} 個）",
+      "image": "PNG、JPEG、WebP、GIF、AVIF。5 MB まで。",
+      "body": "Markdown: ## 見出し、**太字**、[リンク](https://…)、- リスト。HTML は文字として表示されます。"
+    },
+    "editor": {
+      "newTitle": "新しい記事",
+      "editTitle": "記事を編集",
+      "back": "すべての記事",
+      "write": "編集",
+      "preview": "プレビュー",
+      "bodyPlaceholder": "Markdown で記事を書きます…",
+      "previewEmpty": "プレビューする内容がまだありません。",
+      "unsaved": "未保存の変更があります",
+      "saved": "すべての変更を保存しました",
+      "notFound": "この記事はすでに存在しません。"
+    },
+    "actions": {
+      "edit": "編集",
+      "view": "サイトで表示",
+      "saveDraft": "下書きを保存",
+      "publish": "公開",
+      "update": "更新",
+      "unpublish": "公開を取り消す",
+      "delete": "削除",
+      "uploadCover": "画像をアップロード",
+      "insertImage": "画像を挿入",
+      "addTranslation": "{{language}}版を追加",
+      "openTranslation": "{{language}}版を開く"
+    },
+    "confirm": {
+      "delete": "「{{title}}」を削除しますか？元に戻せません。"
+    },
+    "messages": {
+      "draftSaved": "下書きを保存しました。",
+      "published": "公開しました。1〜2 分でサイトに表示されます。",
+      "deleted": "記事を削除しました。"
+    },
+    "errors": {
+      "titleRequired": "タイトルを入力してください。",
+      "slugInvalid": "スラッグに使えるのは英小文字、数字、ハイフンだけです。",
+      "translationKeyInvalid": "翻訳キーに使えるのは英小文字、数字、ハイフンだけです。",
+      "dateInvalid": "有効な日付を選択してください。",
+      "imageRequired": "カバー画像をアップロードするか、「カバーなし」を選択してください。",
+      "imageUrlInvalid": "画像の URL は https:// または / で始めてください。",
+      "youtubeInvalid": "有効な YouTube のリンクを入力してください。",
+      "tagsCount": "公開する前にタグを {{min}}〜{{max}} 個選択してください。",
+      "bodyRequired": "公開する前に本文を書いてください。",
+      "slugTaken": "この言語の別の記事がすでにこのスラッグを使っています。",
+      "translationTaken": "この翻訳キーには、この言語の記事がすでにあります。",
+      "saveFailed": "記事を保存できませんでした。もう一度お試しください。",
+      "deleteFailed": "記事を削除できませんでした。もう一度お試しください。",
+      "imageType": "PNG、JPEG、WebP、GIF、AVIF の画像を選択してください。",
+      "imageTooLarge": "画像が 5 MB を超えています。",
+      "uploadFailed": "画像をアップロードできませんでした。もう一度お試しください。"
     }
   }
 }

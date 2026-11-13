@@ -7,6 +7,14 @@ import BusinessServicePanel from "@/components/businesse/business-service-panel.
 import Footer from "@/components/common/footer.astro";
 import { useTranslations } from "@/i18n/translations";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getBlogPosts, getCaseStudyPosts } from "@/lib/blog";
+import { loadBlogPage } from "@/lib/blogRoute";
+
+export const prerender = false;
+
+// The sections below read these lists; load them first so a failed read is a 503, not a broken page.
+const articles = await loadBlogPage(Astro, () => Promise.all([getBlogPosts("vi"), getCaseStudyPosts("vi")]));
+if (articles instanceof Response) return articles;
 
 const lang = "vi";
 const t = useTranslations(lang);

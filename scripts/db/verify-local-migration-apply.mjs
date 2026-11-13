@@ -32,6 +32,7 @@ const sqlTestPaths = [
   "scripts/db/tests/search-trending-abuse.integration.sql",
   "scripts/db/tests/notification-storage-abuse.integration.sql",
   "scripts/db/tests/public-media-cdn.integration.sql",
+  "scripts/db/tests/blog-posts.integration.sql",
 ].map((path) => resolve(process.cwd(), path));
 
 console.log("===============================================================================");

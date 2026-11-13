@@ -156,6 +156,10 @@
       },
       "projects": {
         "label": "Proyectos"
+      },
+      "blog": {
+        "label": "Blog",
+        "tooltip": "Blog y casos de estudio del sitio"
       }
     },
     "pageMeta": {
@@ -202,6 +206,10 @@
       "projects": {
         "title": "Proyectos",
         "description": "Moderación de proyectos"
+      },
+      "blog": {
+        "title": "Blog",
+        "description": "Escribe y publica los artículos que se muestran en el sitio."
       }
     },
     "hero": {
@@ -766,6 +774,117 @@
       "empty": "Aún no se ha concedido ninguna credencial manualmente.",
       "emptyFiltered": "Ninguna credencial coincide con el filtro actual.",
       "loadFailed": "No se pudo cargar el historial de emisiones manuales."
+    }
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Artículos y casos de estudio en corelia.academy. Lo que publiques aquí aparece en el sitio en uno o dos minutos.",
+    "new": "Nuevo artículo",
+    "loadFailed": "No se pudieron cargar los artículos.",
+    "list": {
+      "search": "Buscar por título o slug",
+      "allStatuses": "Todos los estados",
+      "allLocales": "Todos los idiomas",
+      "empty": "Aún no hay artículos.",
+      "noMatches": "Ningún artículo coincide con estos filtros."
+    },
+    "status": {
+      "draft": "Borrador",
+      "published": "Publicado"
+    },
+    "locales": {
+      "vi": "Vietnamita",
+      "en": "Inglés"
+    },
+    "contentTypes": {
+      "blog": "Entrada de blog",
+      "case-study": "Caso de estudio"
+    },
+    "fields": {
+      "title": "Título",
+      "locale": "Idioma",
+      "contentType": "Tipo",
+      "slug": "Slug de la URL",
+      "translationKey": "Clave de traducción",
+      "description": "Resumen",
+      "category": "Categoría",
+      "publishedOn": "Fecha",
+      "author": "Autor",
+      "tags": "Etiquetas",
+      "status": "Estado",
+      "cover": "Portada",
+      "coverImage": "Imagen de portada",
+      "imageUrl": "URL de la imagen",
+      "imageAlt": "Descripción de la imagen (texto alternativo)",
+      "imageFit": "Ajuste de la imagen",
+      "youtubeUrl": "Enlace de YouTube",
+      "body": "Contenido"
+    },
+    "cover": {
+      "none": "Sin portada",
+      "image": "Imagen",
+      "youtube": "Vídeo de YouTube",
+      "fitCover": "Llenar el marco (recortar)",
+      "fitContain": "Mostrar la imagen completa"
+    },
+    "hints": {
+      "slugPublished": "Cambiar el slug de un artículo publicado rompe los enlaces que apuntan a él.",
+      "translationKey": "Las versiones en vietnamita e inglés de un artículo comparten esta clave. Déjala vacía para usar el slug.",
+      "description": "Se muestra bajo el título, en las listas y en las vistas previas de buscadores y redes sociales.",
+      "tags": "({{selected}} seleccionadas, de {{min}} a {{max}} para publicar)",
+      "image": "PNG, JPEG, WebP, GIF o AVIF, hasta 5 MB.",
+      "body": "Markdown: ## título, **negrita**, [enlace](https://…), - lista. El HTML se muestra como texto."
+    },
+    "editor": {
+      "newTitle": "Nuevo artículo",
+      "editTitle": "Editar artículo",
+      "back": "Todos los artículos",
+      "write": "Escribir",
+      "preview": "Vista previa",
+      "bodyPlaceholder": "Escribe el artículo en Markdown…",
+      "previewEmpty": "Aún no hay nada que previsualizar.",
+      "unsaved": "Cambios sin guardar",
+      "saved": "Todos los cambios guardados",
+      "notFound": "Este artículo ya no existe."
+    },
+    "actions": {
+      "edit": "Editar",
+      "view": "Ver en el sitio",
+      "saveDraft": "Guardar borrador",
+      "publish": "Publicar",
+      "update": "Actualizar",
+      "unpublish": "Retirar",
+      "delete": "Eliminar",
+      "uploadCover": "Subir imagen",
+      "insertImage": "Insertar imagen",
+      "addTranslation": "Añadir versión en {{language}}",
+      "openTranslation": "Abrir versión en {{language}}"
+    },
+    "confirm": {
+      "delete": "¿Eliminar «{{title}}»? No se puede deshacer."
+    },
+    "messages": {
+      "draftSaved": "Borrador guardado.",
+      "published": "Publicado. Aparece en el sitio en uno o dos minutos.",
+      "deleted": "Artículo eliminado."
+    },
+    "errors": {
+      "titleRequired": "Escribe un título.",
+      "slugInvalid": "El slug solo puede contener letras minúsculas, dígitos y guiones.",
+      "translationKeyInvalid": "La clave de traducción solo puede contener letras minúsculas, dígitos y guiones.",
+      "dateInvalid": "Elige una fecha válida.",
+      "imageRequired": "Sube una imagen de portada o elige «Sin portada».",
+      "imageUrlInvalid": "La URL de la imagen debe empezar por https:// o /.",
+      "youtubeInvalid": "Introduce un enlace de YouTube válido.",
+      "tagsCount": "Elige de {{min}} a {{max}} etiquetas antes de publicar.",
+      "bodyRequired": "Escribe el contenido antes de publicar.",
+      "slugTaken": "Otro artículo en este idioma ya usa este slug.",
+      "translationTaken": "Esta clave de traducción ya tiene un artículo en este idioma.",
+      "saveFailed": "No se pudo guardar el artículo. Inténtalo de nuevo.",
+      "deleteFailed": "No se pudo eliminar el artículo. Inténtalo de nuevo.",
+      "imageType": "Elige una imagen PNG, JPEG, WebP, GIF o AVIF.",
+      "imageTooLarge": "La imagen supera los 5 MB.",
+      "uploadFailed": "No se pudo subir la imagen. Inténtalo de nuevo."
     }
   }
 }

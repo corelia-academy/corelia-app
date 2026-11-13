@@ -61,6 +61,10 @@
         "label": "Tài khoản",
         "tooltip": "Tài khoản"
       },
+      "blog": {
+        "label": "Blog",
+        "tooltip": "Blog và case study trên trang landing"
+      },
       "jobs": {
         "label": "Việc làm",
         "tooltip": "Nguồn, crawler và duyệt việc làm"
@@ -113,6 +117,10 @@
       "users": {
         "title": "Quản lý tài khoản",
         "description": "Kiểm soát vai trò và sức khoẻ truy cập của toàn bộ người dùng."
+      },
+      "blog": {
+        "title": "Blog",
+        "description": "Viết và đăng các bài hiển thị trên trang landing."
       },
       "jobs": {
         "title": "Vận hành Jobs",
@@ -713,6 +721,117 @@
       "empty": "Chưa có chứng nhận nào được cấp thủ công.",
       "emptyFiltered": "Không tìm thấy chứng nhận phù hợp với bộ lọc.",
       "loadFailed": "Không thể tải danh sách cấp thủ công."
+    }
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Bài viết và case study trên corelia.academy. Bài đăng ở đây sẽ lên trang trong vòng một đến hai phút.",
+    "new": "Bài viết mới",
+    "loadFailed": "Không tải được danh sách bài viết.",
+    "list": {
+      "search": "Tìm theo tiêu đề hoặc slug",
+      "allStatuses": "Mọi trạng thái",
+      "allLocales": "Mọi ngôn ngữ",
+      "empty": "Chưa có bài viết nào.",
+      "noMatches": "Không có bài viết nào khớp bộ lọc."
+    },
+    "status": {
+      "draft": "Bản nháp",
+      "published": "Đã đăng"
+    },
+    "locales": {
+      "vi": "Tiếng Việt",
+      "en": "Tiếng Anh"
+    },
+    "contentTypes": {
+      "blog": "Bài blog",
+      "case-study": "Case study"
+    },
+    "fields": {
+      "title": "Tiêu đề",
+      "locale": "Ngôn ngữ",
+      "contentType": "Loại bài",
+      "slug": "Slug (đường dẫn)",
+      "translationKey": "Khóa bản dịch",
+      "description": "Tóm tắt",
+      "category": "Chuyên mục",
+      "publishedOn": "Ngày đăng",
+      "author": "Tác giả",
+      "tags": "Thẻ",
+      "status": "Trạng thái",
+      "cover": "Ảnh bìa",
+      "coverImage": "Ảnh bìa",
+      "imageUrl": "Đường dẫn ảnh",
+      "imageAlt": "Mô tả ảnh (alt)",
+      "imageFit": "Cách hiển thị ảnh",
+      "youtubeUrl": "Liên kết YouTube",
+      "body": "Nội dung"
+    },
+    "cover": {
+      "none": "Không có",
+      "image": "Hình ảnh",
+      "youtube": "Video YouTube",
+      "fitCover": "Phủ kín khung (cắt ảnh)",
+      "fitContain": "Hiện toàn bộ ảnh"
+    },
+    "hints": {
+      "slugPublished": "Đổi slug của bài đã đăng sẽ làm hỏng các liên kết cũ tới bài.",
+      "translationKey": "Bản tiếng Việt và tiếng Anh của cùng một bài dùng chung khóa này. Để trống để dùng slug.",
+      "description": "Hiện dưới tiêu đề, trong danh sách bài và khi chia sẻ lên mạng xã hội, công cụ tìm kiếm.",
+      "tags": "(đã chọn {{selected}}, cần {{min}}–{{max}} để đăng)",
+      "image": "PNG, JPEG, WebP, GIF hoặc AVIF, tối đa 5 MB.",
+      "body": "Markdown: ## tiêu đề, **in đậm**, [liên kết](https://…), - danh sách. HTML thô sẽ hiện dưới dạng chữ."
+    },
+    "editor": {
+      "newTitle": "Bài viết mới",
+      "editTitle": "Sửa bài viết",
+      "back": "Tất cả bài viết",
+      "write": "Soạn",
+      "preview": "Xem trước",
+      "bodyPlaceholder": "Viết nội dung bài bằng Markdown…",
+      "previewEmpty": "Chưa có nội dung để xem trước.",
+      "unsaved": "Có thay đổi chưa lưu",
+      "saved": "Đã lưu mọi thay đổi",
+      "notFound": "Bài viết này không còn tồn tại."
+    },
+    "actions": {
+      "edit": "Sửa",
+      "view": "Xem trên trang",
+      "saveDraft": "Lưu nháp",
+      "publish": "Đăng bài",
+      "update": "Cập nhật",
+      "unpublish": "Gỡ bài",
+      "delete": "Xóa",
+      "uploadCover": "Tải ảnh lên",
+      "insertImage": "Chèn ảnh",
+      "addTranslation": "Thêm bản {{language}}",
+      "openTranslation": "Mở bản {{language}}"
+    },
+    "confirm": {
+      "delete": "Xóa “{{title}}”? Không thể hoàn tác."
+    },
+    "messages": {
+      "draftSaved": "Đã lưu bản nháp.",
+      "published": "Đã đăng. Bài sẽ lên trang trong vòng một đến hai phút.",
+      "deleted": "Đã xóa bài viết."
+    },
+    "errors": {
+      "titleRequired": "Hãy nhập tiêu đề.",
+      "slugInvalid": "Slug chỉ gồm chữ thường không dấu, số và dấu gạch ngang.",
+      "translationKeyInvalid": "Khóa bản dịch chỉ gồm chữ thường không dấu, số và dấu gạch ngang.",
+      "dateInvalid": "Hãy chọn ngày hợp lệ.",
+      "imageRequired": "Hãy tải ảnh bìa lên hoặc chọn “Không có”.",
+      "imageUrlInvalid": "Đường dẫn ảnh phải bắt đầu bằng https:// hoặc /.",
+      "youtubeInvalid": "Hãy nhập liên kết YouTube hợp lệ.",
+      "tagsCount": "Hãy chọn từ {{min}} đến {{max}} thẻ trước khi đăng.",
+      "bodyRequired": "Hãy viết nội dung trước khi đăng.",
+      "slugTaken": "Một bài khác cùng ngôn ngữ đã dùng slug này.",
+      "translationTaken": "Khóa bản dịch này đã có bài ở ngôn ngữ này.",
+      "saveFailed": "Không lưu được bài viết. Hãy thử lại.",
+      "deleteFailed": "Không xóa được bài viết. Hãy thử lại.",
+      "imageType": "Hãy chọn ảnh PNG, JPEG, WebP, GIF hoặc AVIF.",
+      "imageTooLarge": "Ảnh lớn hơn 5 MB.",
+      "uploadFailed": "Không tải được ảnh lên. Hãy thử lại."
     }
   }
 }

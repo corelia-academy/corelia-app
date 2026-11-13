@@ -1,36 +1,6 @@
 import { defineCollection, z } from "astro:content";
-import { BLOG_CATEGORY_KEYS, BLOG_TAG_KEYS } from "./lib/blogTaxonomy";
 
-const blog = defineCollection({
-  type: "content",
-  schema: z.object({
-    title: z.string().min(1),
-    description: z.string().optional(),
-    date: z.coerce.date(),
-    locale: z.enum(["vi", "en"]),
-    translationKey: z.string().min(1),
-    author: z.string().min(1).optional(),
-    draft: z.boolean().optional().default(false),
-    contentType: z.enum(["blog", "case-study"]).optional().default("blog"),
-    category: z.enum(BLOG_CATEGORY_KEYS),
-    tags: z.array(z.enum(BLOG_TAG_KEYS)).min(3).max(6),
-    media: z
-      .discriminatedUnion("type", [
-        z.object({
-          type: z.literal("image"),
-          src: z.string().min(1),
-          alt: z.string().optional(),
-          fit: z.enum(["cover", "contain"]).optional(),
-        }),
-        z.object({
-          type: z.literal("youtube"),
-          url: z.string().url(),
-        }),
-      ])
-      .optional(),
-  }),
-});
-
+// Blog and case-study articles live in Supabase (`public.blog_posts`); see src/lib/blog.ts.
 const members = defineCollection({
   type: "content",
   schema: z.object({
@@ -48,4 +18,4 @@ const members = defineCollection({
   }),
 });
 
-export const collections = { blog, members };
+export const collections = { members };
