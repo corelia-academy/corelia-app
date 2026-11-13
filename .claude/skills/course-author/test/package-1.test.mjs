@@ -1,0 +1,262 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import os from "node:os";
+import { execSync } from "node:child_process";
+
+const rootDir = path.resolve(".");
+const scriptsDir = path.join(rootDir, ".claude/skills/course-author/scripts");
+
+function run(cmd, opts = {}) {
+  try {
+    const stdout = execSync(cmd, {
+      cwd: rootDir,
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+      ...opts,
+    });
+    return { status: 0, stdout, stderr: "" };
+  } catch (err) {
+    return {
+      status: err.status ?? 1,
+      stdout: err.stdout?.toString() ?? "",
+      stderr: err.stderr?.toString() ?? "",
+    };
+  }
+}
+
+test("AC1.1: review-lint trên .course-runs/rust-error-handling báo L3-4 (unverified) và L4-5 (issue answers)", () => {
+  const res = run(`node ${path.join(scriptsDir, "review-lint.mjs")} .course-runs/rust-error-handling L3-4 L4-5`);
+  assert.equal(res.status, 1);
+  assert.match(res.stdout, /L3-4: unverified:/);
+  assert.match(res.stdout, /L4-5: issue-cốt-lõi:.*answers/);
+});
+
+test("AC1.1 (smart-contract): review-lint trên smart-contract báo L2-2 và L1-4", () => {
+  const res = run(`node ${path.join(scriptsDir, "review-lint.mjs")} .course-runs/smart-contract-reading-before-interacting L2-2 L1-4`);
+  assert.equal(res.status, 1);
+  assert.match(res.stdout, /L2-2:.*answers/);
+  assert.match(res.stdout, /L1-4:.*factual_accuracy/);
+});
+
+test("AC1.2: test với fixture cho review-lint", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "review-lint-fixture-"));
+  const revDir = path.join(tmpDir, "reviews");
+  const verDir = path.join(tmpDir, "verification");
+  fs.mkdirSync(revDir, { recursive: true });
+  fs.mkdirSync(verDir, { recursive: true });
+
+  const allCriteria = [
+    "factual_accuracy",
+    "tool_versions",
+    "outcome_and_level",
+    "lesson_flow",
+    "verification",
+    "language",
+    "tone_and_flow",
+  ];
+
+  // 1. Review pass sạch -> ok
+  const cleanChecks = allCriteria.map((c) => ({
+    criterion: c,
+    result: "ok",
+    basis: "hợp lệ",
+    refs: [],
+    verified_by: "reasoning",
+  }));
+  fs.writeFileSync(
+    path.join(revDir, "clean.json"),
+    JSON.stringify({ verdict: "pass", checks: cleanChecks, issues: [] }, null, 2)
+  );
+
+  const resClean = run(`node ${path.join(scriptsDir, "review-lint.mjs")} ${tmpDir} clean`);
+  assert.equal(resClean.status, 0);
+  assert.match(resClean.stdout, /ok: 1 review/);
+
+  // 2. Pass có unverified ở factual_accuracy -> lỗi
+  const unverChecks = cleanChecks.map((c) =>
+    c.criterion === "factual_accuracy" ? { ...c, result: "unverified" } : c
+  );
+  fs.writeFileSync(
+    path.join(revDir, "unver_fact.json"),
+    JSON.stringify({ verdict: "pass", checks: unverChecks, issues: [] }, null, 2)
+  );
+  const resUnver = run(`node ${path.join(scriptsDir, "review-lint.mjs")} ${tmpDir} unver_fact`);
+  assert.equal(resUnver.status, 1);
+  assert.match(resUnver.stdout, /unver_fact: unverified: check "factual_accuracy" ghi unverified/);
+
+  // 3. Pass có unverified ở verification kèm not_run hợp lệ -> ok
+  const unverVerChecks = cleanChecks.map((c) =>
+    c.criterion === "verification" ? { ...c, result: "unverified" } : c
+  );
+  fs.writeFileSync(
+    path.join(revDir, "not_run_ok.json"),
+    JSON.stringify({ verdict: "pass", checks: unverVerChecks, issues: [] }, null, 2)
+  );
+  fs.writeFileSync(
+    path.join(verDir, "not_run_ok.md"),
+    `# Verification\n\n| v1 | test | not_run: cần private key thật |`
+  );
+  const resNotRunOk = run(`node ${path.join(scriptsDir, "review-lint.mjs")} ${tmpDir} not_run_ok`);
+  assert.equal(resNotRunOk.status, 0);
+  assert.match(resNotRunOk.stdout, /ok: 1 review/);
+
+  // 4. Thiếu một tiêu chí -> lỗi
+  const missingChecks = cleanChecks.filter((c) => c.criterion !== "factual_accuracy");
+  fs.writeFileSync(
+    path.join(revDir, "missing_crit.json"),
+    JSON.stringify({ verdict: "pass", checks: missingChecks, issues: [] }, null, 2)
+  );
+  const resMissing = run(`node ${path.join(scriptsDir, "review-lint.mjs")} ${tmpDir} missing_crit`);
+  assert.equal(resMissing.status, 1);
+  assert.match(resMissing.stdout, /missing_crit: checks: thiếu tiêu chí "factual_accuracy"/);
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test("AC1.3: lesson-lint trên khóa smart-contract không crash; in lỗi dạng labels.json", () => {
+  const res = run(`node ${path.join(scriptsDir, "lesson-lint.mjs")} .course-runs/smart-contract-reading-before-interacting`);
+  assert.equal(res.status, 1);
+  assert.match(res.stdout, /labels\.json sai định dạng/);
+  assert.doesNotMatch(res.stderr, /TypeError/);
+});
+
+test("AC1.4: labels.mjs trên bản sao curriculum.json của khóa rust cho nhãn trùng labels.json hiện có", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "labels-verify-"));
+  fs.copyFileSync(
+    path.join(rootDir, ".course-runs/rust-error-handling/curriculum.json"),
+    path.join(tmpDir, "curriculum.json")
+  );
+
+  const resGen = run(`node ${path.join(scriptsDir, "labels.mjs")} ${tmpDir}`);
+  assert.equal(resGen.status, 0);
+
+  const gen = JSON.parse(fs.readFileSync(path.join(tmpDir, "labels.json"), "utf8"));
+  const orig = JSON.parse(
+    fs.readFileSync(path.join(rootDir, ".course-runs/rust-error-handling/labels.json"), "utf8")
+  );
+
+  assert.deepEqual(gen.lessons, orig.lessons);
+  assert.deepEqual(gen.modules, orig.modules);
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test("AC1.5: lesson-lint trên khóa rust vẫn ra đúng 24 dòng", () => {
+  const res = run(`node ${path.join(scriptsDir, "lesson-lint.mjs")} .course-runs/rust-error-handling`);
+  assert.equal(res.status, 1);
+  const lines = res.stdout.trim().split("\n");
+  assert.equal(lines.length, 24);
+});
+
+test("W-03: review-lint nhận loại bài code_exercise và đòi frame_consistency khi có frame.md", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "review-lint-w03-"));
+  const revDir = path.join(tmpDir, "reviews");
+  fs.mkdirSync(revDir, { recursive: true });
+
+  // 1. Tạo curriculum có 1 bài code_exercise
+  fs.writeFileSync(
+    path.join(tmpDir, "curriculum.json"),
+    JSON.stringify({
+      modules: [
+        {
+          module_id: "M1",
+          lessons: [{ lesson_id: "L1-1", type: "code_exercise" }],
+        },
+      ],
+    })
+  );
+
+  // Review cho L1-1 thiếu check 'answers'
+  const checksWithoutAnswers = [
+    "factual_accuracy",
+    "tool_versions",
+    "outcome_and_level",
+    "lesson_flow",
+    "verification",
+    "language",
+    "tone_and_flow",
+  ].map((c) => ({ criterion: c, result: "ok" }));
+
+  fs.writeFileSync(
+    path.join(revDir, "L1-1.json"),
+    JSON.stringify({ verdict: "pass", checks: checksWithoutAnswers, issues: [] })
+  );
+
+  const resCode = run(`node ${path.join(scriptsDir, "review-lint.mjs")} ${tmpDir} L1-1`);
+  assert.equal(resCode.status, 1);
+  assert.match(resCode.stdout, /thiếu tiêu chí "answers" cho loại bài code/);
+
+  // 2. Thêm frame.md -> đòi frame_consistency cho mọi bài
+  fs.writeFileSync(path.join(tmpDir, "frame.md"), "# Code frame\n");
+  const checksWithAnswers = [...checksWithoutAnswers, { criterion: "answers", result: "ok" }];
+  fs.writeFileSync(
+    path.join(revDir, "L1-1.json"),
+    JSON.stringify({ verdict: "pass", checks: checksWithAnswers, issues: [] })
+  );
+
+  const resFrame = run(`node ${path.join(scriptsDir, "review-lint.mjs")} ${tmpDir} L1-1`);
+  assert.equal(resFrame.status, 1);
+  assert.match(resFrame.stdout, /thiếu tiêu chí "frame_consistency" cho loại bài code/);
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test("W-04: review-lint siết chặt not_run có lý do tách bạch và kiểm tra giá trị verdict", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "review-lint-w04-"));
+  const revDir = path.join(tmpDir, "reviews");
+  const verDir = path.join(tmpDir, "verification");
+  fs.mkdirSync(revDir, { recursive: true });
+  fs.mkdirSync(verDir, { recursive: true });
+
+  const validChecks = [
+    "factual_accuracy",
+    "tool_versions",
+    "outcome_and_level",
+    "lesson_flow",
+    "verification",
+    "language",
+    "tone_and_flow",
+  ].map((c) => ({ criterion: c, result: c === "verification" ? "unverified" : "ok" }));
+
+  // 1. not_run không có lý do tách bạch (chỉ chứa từ 'do' trong câu bình thường) -> báo lỗi unverified
+  fs.writeFileSync(
+    path.join(revDir, "loose_not_run.json"),
+    JSON.stringify({ verdict: "pass", checks: validChecks, issues: [] })
+  );
+  fs.writeFileSync(
+    path.join(verDir, "loose_not_run.md"),
+    "# Verification\n\nbước 1 not_run do nothing\n"
+  );
+  const resLoose = run(`node ${path.join(scriptsDir, "review-lint.mjs")} ${tmpDir} loose_not_run`);
+  assert.equal(resLoose.status, 1);
+  assert.match(resLoose.stdout, /unverified: check "verification" ghi unverified/);
+
+  // 2. not_run có lý do tách bạch sau dấu hai chấm -> ok
+  fs.writeFileSync(
+    path.join(verDir, "loose_not_run.md"),
+    "# Verification\n\nnot_run: cần private key thật của tài khoản mainnet\n"
+  );
+  const resColon = run(`node ${path.join(scriptsDir, "review-lint.mjs")} ${tmpDir} loose_not_run`);
+  assert.equal(resColon.status, 0);
+
+  // 3. not_run có lý do trong ngoặc -> ok
+  fs.writeFileSync(
+    path.join(verDir, "loose_not_run.md"),
+    "# Verification\n\nnot_run (chưa có tài khoản staging)\n"
+  );
+  const resParen = run(`node ${path.join(scriptsDir, "review-lint.mjs")} ${tmpDir} loose_not_run`);
+  assert.equal(resParen.status, 0);
+
+  // 4. verdict không hợp lệ -> báo lỗi verdict
+  fs.writeFileSync(
+    path.join(revDir, "invalid_verdict.json"),
+    JSON.stringify({ verdict: "approved", checks: validChecks, issues: [] })
+  );
+  const resVerdict = run(`node ${path.join(scriptsDir, "review-lint.mjs")} ${tmpDir} invalid_verdict`);
+  assert.equal(resVerdict.status, 1);
+  assert.match(resVerdict.stdout, /verdict không hợp lệ: "approved"/);
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});

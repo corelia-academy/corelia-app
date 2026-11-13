@@ -1,0 +1,335 @@
+// Script import khóa học vào Supabase LOCAL stack qua Deno.
+// Tái hiện đầy đủ hành vi kiểm chứng của Studio: validateLesson, validateQuestion, validateResources, checkDiagram, renderDiagramPng.
+// Chỉ nhắm stack local (http://127.0.0.1:54321 và container supabase_db_corelia-app).
+// Chạy: SERVICE_KEY=<local_service_role> deno run -A --no-config import-local.ts <thư-mục-khóa> [--dry-run]
+import * as path from "jsr:@std/path@1";
+import {
+  checkDiagram,
+  layoutIssues,
+  wordingIssues,
+  LESSON_DIAGRAM_WIDTH,
+  type Diagram,
+} from "../../../../supabase/functions/corelia-api/studio/diagram.ts";
+import {
+  appImagePath,
+  diagramFile,
+  publishMarkdown,
+  renderDiagramPng,
+} from "../../../../supabase/functions/corelia-api/studio/diagram_render.ts";
+import {
+  validateLesson,
+  validateQuestion,
+  validateResources,
+} from "../../../../supabase/functions/corelia-api/studio/lesson_ports.ts";
+
+const rawArgs = Deno.args.filter((a) => !a.startsWith("--"));
+const isDryRun = Deno.args.includes("--dry-run");
+const targetDir = rawArgs[0] ? path.resolve(rawArgs[0]) : Deno.cwd();
+
+if (!isDryRun) {
+  const serviceKey = Deno.env.get("SERVICE_KEY");
+  if (!serviceKey) throw new Error("Thiếu biến môi trường SERVICE_KEY (cần service_role key của local Supabase)");
+}
+
+const read = async (relPath: string) => {
+  const p = path.join(targetDir, relPath);
+  try {
+    return JSON.parse(await Deno.readTextFile(p));
+  } catch (err: any) {
+    throw new Error(`Lỗi đọc file ${relPath}: ${err.message}`);
+  }
+};
+
+const brief = await read("brief.json");
+const curriculum = await read("curriculum.json");
+const finalAssignment = await read("final_assignment.json");
+let research: any = { videos: [] };
+try {
+  research = await read("research.json");
+} catch {}
+
+// Quản lý courseId: đọc course_id.txt khi có, nếu không sinh UUID mới
+let courseId: string;
+const courseIdFile = path.join(targetDir, "course_id.txt");
+try {
+  courseId = (await Deno.readTextFile(courseIdFile)).trim();
+} catch {
+  courseId = crypto.randomUUID();
+  if (!isDryRun) {
+    await Deno.writeTextFile(courseIdFile, courseId + "\n");
+  }
+}
+
+const quote = (val: unknown) => `'${String(val ?? "").replaceAll("'", "''")}'`;
+const json = (val: unknown) => `${quote(JSON.stringify(val))}::jsonb`;
+
+const execSql = async (sql: string): Promise<string> => {
+  const proc = new Deno.Command("docker", {
+    args: ["exec", "-i", "supabase_db_corelia-app", "psql", "-U", "postgres", "-v", "ON_ERROR_STOP=1", "-At"],
+    stdin: "piped",
+    stdout: "piped",
+    stderr: "piped",
+  }).spawn();
+  const writer = proc.stdin.getWriter();
+  await writer.write(new TextEncoder().encode(sql));
+  await writer.close();
+  const result = await proc.output();
+  if (!result.success) throw new Error(new TextDecoder().decode(result.stderr));
+  return new TextDecoder().decode(result.stdout).trim();
+};
+
+// Khi chạy thật vào DB: kiểm tra xem khóa đã tồn tại chưa. Mặc định DỪNG để không làm mất dữ liệu thử nghiệm.
+if (!isDryRun) {
+  const checkCount = await execSql(
+    `select count(*) from public.courses where slug=${quote(brief.slug)} or id=${quote(courseId)}`
+  );
+  if (checkCount !== "0") {
+    throw new Error(`Khóa đã tồn tại trong database local (slug=${brief.slug} hoặc id=${courseId}); dừng để không làm mất dữ liệu thử nghiệm.`);
+  }
+}
+
+let instructorId = "00000000-0000-0000-0000-000000000001";
+let instructorName = "Corelia";
+if (!isDryRun) {
+  const iId = await execSql("select id from auth.users where email='admin@corelia.academy'");
+  if (!/^[0-9a-f-]{36}$/.test(iId)) throw new Error("Expected exactly one local instructor with email admin@corelia.academy");
+  instructorId = iId;
+  instructorName =
+    (await execSql(`select coalesce(nullif(btrim(full_name),''),'Corelia') from public.profiles where id=${quote(instructorId)}`)) ||
+    "Corelia";
+}
+
+const lessonRows: string[] = [];
+const questionRows: string[] = [];
+const images: { path: string; bytes: Uint8Array }[] = [];
+let order = 0;
+
+for (const module of curriculum.modules ?? []) {
+  for (const cl of module.lessons ?? []) {
+    const rec = await read(`lessons/${cl.lesson_id}.json`);
+    if (rec.lesson_id && rec.lesson_id !== cl.lesson_id) {
+      throw new Error(`Lesson ID mismatch: ${cl.lesson_id} vs ${rec.lesson_id}`);
+    }
+
+    // 1. Kiểm tra tài nguyên bổ trợ (resources + suggested_videos)
+    const resources = [...(rec.resources ?? [])];
+    for (const id of rec.suggested_videos ?? []) {
+      const v = research.videos?.find((item: any) => item.video_id === id);
+      if (!v) throw new Error(`Video ${id} not found in research`);
+      const title = String(v.title).split(" | ")[0];
+      resources.push({
+        title: `Video: ${title} — ${v.channel}`,
+        url: `https://www.youtube.com/watch?v=${id}`,
+      });
+    }
+    const resErrors = validateResources(resources);
+    if (resErrors.length) throw new Error(`${cl.lesson_id}: resources: ${resErrors.join(", ")}`);
+
+    // 2. Dựng markdown bài học
+    let markdown =
+      rec.article?.description_markdown ??
+      rec.video?.description_markdown ??
+      rec.practice?.instructions_markdown ??
+      rec.code?.instructions ??
+      "";
+
+    if (cl.type === "practice" && rec.practice?.checklist_items?.length) {
+      const steps = rec.practice.checklist_items
+        .map((s: any, index: number) =>
+          [
+            `### Bước ${index + 1}: ${s.title ?? s.action}`,
+            `**Làm:** ${s.action}`,
+            `**Bạn sẽ thấy:** ${s.expected}`,
+            ...(s.record ? [`**Ghi vào ghi chú:** ${s.record}`] : []),
+            ...((s.common_errors ?? []).length
+              ? [["**Lỗi hay gặp:**", ...s.common_errors.map((e: string) => `- ${e}`)].join("\n")]
+              : []),
+          ].join("\n\n")
+        )
+        .join("\n\n");
+      markdown += `\n\n## Các bước\n\n${steps}`;
+    }
+
+    // 3. Kiểm tra và render sơ đồ
+    for (const diagram of rec.article?.diagrams ?? []) {
+      const spec: Diagram = {
+        title: "",
+        nodes: (diagram.nodes ?? []).map((n: any) => ({ shape: "box", ...n })),
+        edges: (diagram.edges ?? []).map((e: any) => ({ style: "solid", label: "", crossed: false, ...e })),
+      };
+      const issues = [
+        ...new Set([
+          ...checkDiagram(spec),
+          ...checkDiagram(spec, { targetWidth: LESSON_DIAGRAM_WIDTH }),
+          ...layoutIssues(spec),
+          ...wordingIssues(spec),
+        ]),
+      ];
+      if (issues.length) throw new Error(`${cl.lesson_id}/${diagram.id}: sơ đồ không hợp lệ: ${issues.join("; ")}`);
+      const pngBytes = await renderDiagramPng(spec, undefined, undefined, { targetWidth: LESSON_DIAGRAM_WIDTH });
+      images.push({
+        path: appImagePath(courseId, diagramFile(cl.lesson_id, diagram.id)),
+        bytes: pngBytes,
+      });
+    }
+
+    // 4. Chuẩn bị payload bài học
+    const data: Record<string, unknown> = {
+      title: rec.title,
+      short_description: rec.short_description,
+      description_markdown: publishMarkdown(markdown, courseId, cl.lesson_id),
+      resources,
+      lesson_format: cl.type,
+      duration_seconds: rec.duration_seconds ?? 600,
+    };
+
+    if (cl.type === "video" && rec.video) {
+      Object.assign(data, {
+        youtube_url: rec.video.youtube_url,
+        youtube_start_seconds: rec.video.start_seconds,
+        youtube_end_seconds: rec.video.end_seconds > 0 ? rec.video.end_seconds : null,
+      });
+    }
+
+    if (cl.type === "quiz") {
+      data.quiz_config = {
+        passing_ratio: (cl.pass_threshold ?? 60) / 100,
+        allow_retry: true,
+      };
+    }
+
+    if (cl.type === "practice" && rec.practice?.checklist_items) {
+      data.practice_config = {
+        mode: "checklist",
+        revision: 1,
+        checklist_items: rec.practice.checklist_items.map((s: any, i: number) => ({
+          id: s.id ?? `step-${i + 1}`,
+          label: `Bước ${i + 1}: ${s.title ?? s.action}`,
+        })),
+      };
+    }
+
+    if (cl.type === "code_exercise" && rec.code) {
+      const code = rec.code;
+      const base = {
+        schema_version: 1,
+        revision: 1,
+        language: code.language,
+        file: { path: code.file_path, starter_source: code.starter_source },
+        reference_solution: code.reference_solution,
+        hints: code.hints,
+        mode: code.mode,
+      };
+      data.code_exercise_config =
+        code.mode === "fill"
+          ? { ...base, blanks: code.blanks }
+          : { ...base, tests: (code.tests ?? []).map((t: any) => ({ ...t, type: t.type ?? t.kind })) };
+    }
+
+    if (cl.purpose === "final_check") data.is_final_check = true;
+
+    // 5. Validate bài học qua schema cổng Studio
+    const problems = validateLesson(data);
+    if (problems.length) {
+      throw new Error(`${cl.lesson_id}: validateLesson: ${JSON.stringify(problems)}`);
+    }
+
+    lessonRows.push(
+      `(${quote(courseId)},${quote(cl.lesson_id)},${quote(module.module_id)},${order++},${json(data)},true)`
+    );
+
+    // 6. Validate và chuẩn bị câu hỏi trắc nghiệm
+    for (const [qIndex, q] of (rec.quiz?.questions ?? []).entries()) {
+      const questionId = `${courseId}-${cl.lesson_id}-q${qIndex + 1}`.toLowerCase();
+      const question = {
+        id: questionId,
+        type: "mcq" as const,
+        question: q.prompt,
+        options: q.options,
+        correct_index: q.correct_index,
+        explanation: q.explanation,
+        locale: "vi",
+      };
+      const qIssues = validateQuestion(question);
+      if (qIssues.length) {
+        throw new Error(`${cl.lesson_id} q${qIndex + 1}: validateQuestion: ${qIssues.join(", ")}`);
+      }
+      questionRows.push(
+        `(${quote(question.id)},${quote(courseId)},${quote(cl.lesson_id)},${qIndex},${json(question)})`
+      );
+    }
+  }
+}
+
+const courseData = {
+  title: brief.title,
+  slug: brief.slug,
+  description: `${brief.topic}. ${brief.audience}.`,
+  short_description: brief.topic,
+  level: brief.level,
+  learning_outcomes: (curriculum.outcomes ?? []).map((o: any) => (typeof o === "string" ? o : o.text)),
+  thumbnail_url: "",
+  i18n: { supported_locales: ["vi"], primary_content_locale: "vi" },
+  owner_type: "corelia",
+  has_sections: true,
+  instructor_name: instructorName,
+  final_assignment_title: finalAssignment.title,
+  final_assignment_description: finalAssignment.description,
+  final_assignment_instructions: finalAssignment.instructions,
+  final_assignment_fields: finalAssignment.fields,
+};
+
+const sections = (curriculum.modules ?? []).map(
+  (m: any, i: number) =>
+    `(${quote(courseId)},${quote(m.module_id)},${i},${json({ title: m.title, description: m.description })})`
+);
+
+const sqlParts = [
+  "BEGIN;",
+  `INSERT INTO public.courses (id,instructor_id,published,slug,data) VALUES (${quote(courseId)},${quote(instructorId)},true,${quote(brief.slug)},${json(courseData)});`,
+  `INSERT INTO public.course_sections (course_id,id,sort_order,data) VALUES\n${sections.join(",\n")};`,
+  `INSERT INTO public.course_lessons (course_id,id,section_id,sort_order,data,published) VALUES\n${lessonRows.join(",\n")};`,
+];
+
+if (questionRows.length > 0) {
+  sqlParts.push(
+    `INSERT INTO public.course_section_questions (id,course_id,lesson_id,sort_order,data) VALUES\n${questionRows.join(",\n")};`
+  );
+}
+
+sqlParts.push("COMMIT;");
+const fullSql = sqlParts.join("\n");
+
+const summary = {
+  course_id: courseId,
+  slug: brief.slug,
+  sections: sections.length,
+  lessons: order,
+  questions: questionRows.length,
+  images: images.length,
+};
+
+if (isDryRun) {
+  console.log(JSON.stringify({ dry_run: true, ...summary }, null, 2));
+  console.log("\n" + fullSql);
+  Deno.exit(0);
+}
+
+// 7. Chạy thật trên local stack
+const key = Deno.env.get("SERVICE_KEY")!;
+for (const image of images) {
+  const response = await fetch(`http://127.0.0.1:54321/storage/v1/object/app/${image.path}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      apikey: key,
+      "Content-Type": "image/png",
+      "x-upsert": "false",
+    },
+    body: new Blob([new Uint8Array(image.bytes)]),
+  });
+  if (!response.ok) throw new Error(`Upload ảnh ${image.path} thất bại: ${response.status} ${await response.text()}`);
+}
+
+await execSql(fullSql);
+console.log(JSON.stringify({ success: true, ...summary }, null, 2));
