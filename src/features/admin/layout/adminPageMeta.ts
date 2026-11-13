@@ -22,6 +22,11 @@ const PAGE_META: Array<{
     descriptionKey: "layout.pageMeta.jobs.description",
   },
   {
+    match: (pathname) => pathname.startsWith("/admin/blog"),
+    titleKey: "layout.pageMeta.blog.title",
+    descriptionKey: "layout.pageMeta.blog.description",
+  },
+  {
     match: (pathname) => pathname.startsWith("/admin/hackathons"),
     titleKey: "layout.pageMeta.hackathons.title",
     descriptionKey: "layout.pageMeta.hackathons.description",

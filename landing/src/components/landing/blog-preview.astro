@@ -26,7 +26,7 @@ function previewImageSrc(post: (typeof posts)[number]): string | null {
 }
 
 function estimateReadMinutes(post: (typeof posts)[number]): number {
-  const WordCount = post.body?.trim().split(/\s+/).filter(Boolean).length ?? 0;
+  const WordCount = post.data.wordCount;
   return Math.max(1, Math.ceil(WordCount / 200));
 }
 

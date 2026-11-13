@@ -30,8 +30,7 @@ function getPreviewImage(post: BlogPost) {
 }
 
 function estimateReadMinutes(post: BlogPost) {
-    const wordCount =
-        post.body?.trim().split(/\s+/).filter(Boolean).length ?? 0;
+    const wordCount = post.data.wordCount;
 
     return Math.max(1, Math.ceil(wordCount / 200));
 }

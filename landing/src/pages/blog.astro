@@ -10,6 +10,14 @@ import Footer from "@/components/common/footer.astro";
 // import BlogBadges from "@/components/blog/BlogBadges.astro";
 // import BlogMedia from "@/components/blog/BlogMedia.astro";
 import { useTranslations } from "@/i18n/translations";
+import { getBlogPosts } from "@/lib/blog";
+import { loadBlogPage } from "@/lib/blogRoute";
+
+export const prerender = false;
+
+// The sections below read these lists; load them first so a failed read is a 503, not a broken page.
+const articles = await loadBlogPage(Astro, () => Promise.all([getBlogPosts("en")]));
+if (articles instanceof Response) return articles;
 // import { getCollection } from "astro:content";
 // import {
 //   blogIndexUrl,

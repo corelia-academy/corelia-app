@@ -272,6 +272,14 @@ export function uploadCoreliaLogo(file: File): Promise<{ url: string; path: stri
   return uploadToCdn(`brand/${Date.now()}.${ext}`, file);
 }
 
+/** Permanent CDN URL — image uploaded from Admin → Blog (cover or in-article).
+ *  Path: blog/{timestamp}-{random}.{ext}. Admin/support only (RLS cdn_blog_insert). */
+export function uploadBlogImage(file: File): Promise<{ url: string; path: string }> {
+  const ext = buildSafeExt(file.name, "jpg");
+  const random = Math.random().toString(36).slice(2, 8);
+  return uploadToCdn(`blog/${Date.now()}-${random}.${ext}`, file);
+}
+
 /** Permanent CDN URL — rendered certificate PNG with learner name baked in.
  *  Path: certificates/{userId}/{courseId}.png
  *  Upserted on every render so the name is always current. */

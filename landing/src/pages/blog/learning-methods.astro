@@ -1,5 +1,12 @@
 ---
 import BlogNewsRoute from "@/components/blog/blog-news-route.astro";
+import { getBlogPosts } from "@/lib/blog";
+import { loadBlogPage } from "@/lib/blogRoute";
+
+export const prerender = false;
+
+const posts = await loadBlogPage(Astro, () => getBlogPosts("en"));
+if (posts instanceof Response) return posts;
 ---
 
 <BlogNewsRoute lang="en" tabPath="learning-methods" />
