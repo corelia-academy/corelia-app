@@ -36,7 +36,6 @@ const author = post.data.author
   ? members.find((member) => member.slug === post.data.author)
   : null;
 const authorName = author?.data.name ?? post.data.author;
-const authorHref = post.data.author ? `/member/${post.data.author}` : null;
 const allSameLocale = await getCollection(
   "blog",
   (entry) =>
@@ -113,7 +112,7 @@ const defaultOgImage = `https://corelia.academy/corelia-og-site-v2-${locale}.png
       image: og?.url ?? defaultOgImage,
       datePublished: post.data.date.toISOString(),
       dateModified: post.data.date.toISOString(),
-      ...(authorName ? { author: { "@type": "Person", name: authorName, ...(authorHref ? { url: `https://corelia.academy${authorHref}` } : {}) } } : {}),
+      ...(authorName ? { author: { "@type": "Person", name: authorName } } : {}),
       publisher: { "@type": "Organization", name: "Corelia Academy", logo: { "@type": "ImageObject", url: "https://corelia.academy/corelia_favicon.svg" } },
       mainEntityOfPage: { "@type": "WebPage", "@id": canonicalUrl },
     })} />
@@ -141,9 +140,9 @@ const defaultOgImage = `https://corelia.academy/corelia-og-site-v2-${locale}.png
               </div>
               <span class="text-border-strong" aria-hidden="true">•</span>
               <p class="text-border-strong">{fmtDate.format(post.data.date)}</p>
-              {authorHref && <>
+              {authorName && <>
                 <span class="text-border-strong" aria-hidden="true">•</span>
-                <p class="text-border-strong">{t("blog.by")} <a class="text-primary-a hover:underline underline-offset-4" href={authorHref}>{authorName}</a></p>
+                <p class="text-border-strong">{t("blog.by")} {authorName}</p>
               </>}
             </div>
             {post.data.description && <p class="text-sm leading-[1.4] text-border-strong md:text-base" data-reveal="fade-up" data-reveal-delay="250">{post.data.description}</p>}

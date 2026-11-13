@@ -19,46 +19,13 @@ const translatePath = useTranslatedPath(lang);
 const appUrl = String(import.meta.env.PUBLIC_APP_URL ?? "/learn").replace(/\/$/, "");
 const appLoginUrl = `${appUrl}/login`;
 
-// const navItems = [
 const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
-//   {
-//     label: t("nav.home"),
-//     href: translatePath("/"),
-//   },
-//   {
-//     label: "Cora",
-//     href: translatePath("/cora"),
-//   },
-//   {
-//     label: "UniHackfest",
-//     href: "https://unihackfest.vn ",
-//   },
-//   {
-//     label: t("nav.about"),
-//     href: translatePath("/about"),
-//   },
-//   {
-//     label: t("nav.universities"),
-//     href: translatePath("/universities"),
-//   },
-//   {
-//     label: t("nav.blog"),
-//     href: translatePath("/blog"),
-//   },
-// ];
 const navItems = [
   {
     label: t("nav.about"),
     href: translatePath("/"),
   },
-  // {
-  //   label: t("nav.ecosystem"),
-  //   href: translatePath("/ecosystem"),
-  // },
-  {
-    label: t("nav.roadmap"),
-    href: translatePath("/roadmap"),
-  },
+  // Roadmap is hidden for now: the page stays at /roadmap (noindex) but is not linked.
   {
     label: t("nav.businesses"),
     href: translatePath("/case-studies"),

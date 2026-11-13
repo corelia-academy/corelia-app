@@ -1,6 +1,7 @@
 ---
 import Header from "../components/common/header.astro";
 import Footer from "../components/common/footer.astro";
+import HeroBackground from "@/assets/herocontact.jpg";
 import { getLangFromUrl, useTranslatedPath } from "@/i18n/utils";
 import { useTranslations } from "@/i18n/translations";
 import BaseLayout from "@/layouts/BaseLayout.astro";
@@ -16,116 +17,92 @@ const translatePath = useTranslatedPath(lang);
   description={t("404.description")}
   robots="noindex, nofollow"
 >
-  <Header />
+  <div class="flex min-h-svh flex-col">
+    <Header />
 
-  <main class="min-h-screen flex items-center justify-center px-4 pt-20">
-    <div class="container max-w-[800px] mx-auto text-center">
-      <div class="space-y-8">
-        <div class="space-y-4">
-          <h1 class="text-8xl md:text-9xl font-bold text-primary animate-pulse">
+    <main class="mt-[var(--site-header-height,0px)] flex min-h-0 flex-1 flex-col">
+      <div class="relative mx-auto flex w-full flex-1 flex-col overflow-hidden bg-background">
+        <img
+          src={HeroBackground.src}
+          alt=""
+          aria-hidden="true"
+          loading="eager"
+          class="pointer-events-none absolute inset-0 size-full select-none object-fill"
+        />
+        <div
+          class="container relative z-10 mx-auto flex max-w-(--app-max-width) flex-1 flex-col items-center px-3 py-10"
+        >
+          <p
+            class="border border-muted-foreground px-2 py-1 text-sm font-medium leading-[1.2] text-foreground-muted md:text-lg"
+            style="font-family: var(--font-number);"
+            data-reveal="fade-up"
+          >
             404
-          </h1>
-          <h2 class="text-3xl md:text-4xl font-semibold text-foreground">
-            {t("404.heading")}
-          </h2>
-          <p class="text-lg md:text-xl text-muted-foreground max-w-[600px] mx-auto">
-            {t("404.description")}
           </p>
-        </div>
 
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
-          <a
-            href={translatePath("/")}
-            class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full font-medium hover:bg-secondary hover:text-secondary-foreground transition-all duration-300"
+          <div
+            class="flex flex-1 flex-col items-center justify-center gap-6 py-10 text-center lg:px-40"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+            <h1
+              class="text-4xl font-medium leading-[1.15] tracking-[-0.04em] text-foreground md:text-5xl"
+              style="font-family: var(--font-heading);"
             >
-              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
-            {t("404.backHome")}
-          </a>
-          <a
-            href={translatePath("/contact")}
-            class="inline-flex items-center gap-2 border border-primary text-primary px-6 py-3 rounded-full font-medium hover:bg-primary hover:text-black transition-all duration-300"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-            {t("404.contact")}
-          </a>
-        </div>
-
-        <div class="pt-8">
-          <div class="relative">
-            <div class="absolute inset-0 flex items-center">
-              <div class="w-full border-t border-border"></div>
-            </div>
-            <div class="relative flex justify-center text-sm">
-              <span class="px-4 text-muted-foreground bg-background">
-                {lang === "vi"
-                  ? "Có thể bạn đang tìm kiếm"
-                  : "You might be looking for"}
+              <span data-reveal="text-up" data-reveal-delay="200">
+                {t("404.heading")}
               </span>
+            </h1>
+            <p
+              class="max-w-[560px] text-sm font-normal leading-[1.4] text-foreground-muted md:text-base"
+              data-reveal="text-up"
+              data-reveal-delay="600"
+            >
+              {t("404.description")}
+            </p>
+            <div
+              class="flex flex-wrap items-center justify-center gap-3 pt-2"
+              data-reveal="fade-up"
+              data-reveal-delay="1000"
+            >
+              <a
+                href={translatePath("/")}
+                data-hover-wave
+                class="inline-flex h-10 cursor-pointer items-center justify-center rounded-lg border border-border-button bg-button-primary-background px-4 text-sm font-normal leading-[1.2] text-button-primary-foreground shadow-button-primary-glow transition-all duration-300 hover:bg-button-primary-background-hover md:text-lg"
+              >
+                <span class="hw-label relative top-px md:top-0">
+                  {t("404.backHome")}
+                </span>
+              </a>
+              <a
+                href={translatePath("/contact")}
+                data-hover-wave
+                class="inline-flex h-10 cursor-pointer items-center justify-center rounded-lg border border-border-container bg-primary-container px-4 text-sm font-normal leading-[1.2] text-on-primary-container shadow-button-tertiary-glow transition-all duration-300 hover:bg-primary-container-hover md:text-lg"
+              >
+                <span class="hw-label relative top-px md:top-0">
+                  {t("404.contact")}
+                </span>
+              </a>
             </div>
           </div>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6">
-            <a
-              href={translatePath("/")}
-              class="p-4 border border-border rounded-lg hover:border-primary transition-all duration-300 group"
-            >
-              <div class="text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                {t("nav.home")}
-              </div>
-            </a>
-            <a
-              href={translatePath("/fields")}
-              class="p-4 border border-border rounded-lg hover:border-primary transition-all duration-300 group"
-            >
-              <div class="text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                {t("nav.fields")}
-              </div>
-            </a>
-            <a
-              href={translatePath("/case-studies")}
-              class="p-4 border border-border rounded-lg hover:border-primary transition-all duration-300 group"
-            >
-              <div class="text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                {t("nav.businesses")}
-              </div>
-            </a>
-            <a
-              href={translatePath("/universities")}
-              class="p-4 border border-border rounded-lg hover:border-primary transition-all duration-300 group"
-            >
-              <div class="text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                {t("nav.universities")}
-              </div>
-            </a>
+
+          <div
+            class="relative w-full max-w-[240px] shrink-0 p-5 text-[10px] uppercase leading-[1.2] tracking-[0.04em] md:text-xs"
+            style="font-family: var(--font-number);"
+            aria-hidden="true"
+            data-reveal-eager
+            data-reveal="fade-up"
+          >
+            <span class="absolute right-5 top-5 text-foreground">/</span>
+            <p class="text-left text-foreground">@2026</p>
+            <p class="mt-2 text-left" style="color: var(--blue-ribbon-500);">
+              BOUNDARY COME FROM NOTHING
+            </p>
+            <p class="mt-2 text-right text-foreground">CORELIA ACADEMY</p>
+            <span class="absolute bottom-5 left-5 text-foreground">/</span>
           </div>
         </div>
       </div>
-    </div>
-  </main>
+    </main>
+  </div>
 
   <Footer />
 </BaseLayout>
