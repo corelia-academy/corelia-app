@@ -16,11 +16,8 @@ export const translations = {
     "nav.about": "Về chúng tôi",
     "nav.program": "Chương trình",
     "nav.contact": "Liên hệ",
-    "nav.fields": "Lĩnh vực",
     "nav.businesses": "Case Studies",
-    "nav.universities": "Cho Trường học",
     "nav.blog": "Blog",
-    "nav.ecosystem": "Hệ sinh thái",
     "nav.roadmap": "Lộ trình học viên",
     "nav.getStarted": "Học ngay",
 
@@ -442,77 +439,6 @@ export const translations = {
     "blog.stats.featuredEvents": "Sự kiện nổi bật mỗi năm",
     "blog.stats.web3Projects": "Dự án Web3 xuất sắc",
 
-    // About page
-    "about.meta.title":
-      "Về Corelia Academy – Kiến tạo thế hệ Developer toàn diện hàng đầu Việt Nam",
-    "about.meta.description":
-      "Corelia Academy xây dựng hệ sinh thái khép kín từ giáo dục, thực hành đến cung ứng nhân sự, hướng tới thế hệ developer toàn diện trong lập trình ứng dụng, AI và blockchain, đồng hành doanh nghiệp và đại học tại Việt Nam.",
-
-    "about.hero.badge":
-      "App Development · AI · Blockchain, Education · Practice · Talent Supply",
-    "about.hero.title": "Kiến tạo thế hệ Developer toàn diện hàng đầu Việt Nam",
-    "about.hero.description":
-      "Corelia Academy xây dựng hệ sinh thái khép kín từ giáo dục, thực hành đến cung ứng nhân sự, hướng tới thế hệ developer toàn diện trong lập trình ứng dụng, AI và blockchain, đồng hành doanh nghiệp và đại học tại Việt Nam.",
-
-    "about.philosophy.label": "Triết lý cốt lõi",
-    "about.philosophy.title": '"Vấn đề và giá trị trước, kỹ thuật theo sau"',
-    "about.philosophy.description":
-      "Mọi học viên được định hướng hiểu người dùng, luồng sản phẩm và chỗ phù hợp của lập trình ứng dụng, AI và blockchain trước khi viết dòng lệnh đầu tiên. Như vậy họ biết khi nào AI giúp được việc, khi nào triển khai on-chain có ý nghĩa và khi nào một ứng dụng truyền thống là đủ.",
-    "about.philosophy.point1":
-      "Tư duy toàn cảnh: bài toán sản phẩm, dữ liệu và kỳ vọng người dùng trước khi chọn stack",
-    "about.philosophy.point2":
-      "Hiểu giá trị, chi phí và giới hạn của AI trước khi nhúng vào sản phẩm thật",
-    "about.philosophy.point3":
-      "Tiến hóa từ người chỉ viết code thành Product Builder biết kết hợp app, AI và triển khai blockchain có chủ đích",
-
-    "about.pillars.title": "Hệ sinh thái 3 Trụ cột",
-    "about.pillars.description":
-      "Corelia không chỉ là một trung tâm đào tạo. Đây là hệ sinh thái khép kín phục vụ ba đối tượng chiến lược.",
-
-    "about.pillars.learners.title": "Khối Học viên",
-    "about.pillars.learners.subtitle": "Learners",
-    "about.pillars.learners.description":
-      "Trải nghiệm Developer Semester 3–6 tháng với track App, AI hoặc Blockchain; học offline, tiếng Việt 100% giai đoạn nền tảng để phá bỏ rào cản khái niệm, thực chiến dự án thật và xây dựng portfolio.",
-    "about.pillars.learners.point1":
-      "Developer Semester: 3–6 tháng, chọn track App, AI hoặc Blockchain",
-    "about.pillars.learners.point2": "100% tiếng Việt giai đoạn nền tảng",
-    "about.pillars.learners.point3": "Demo Day & Portfolio thực chiến",
-
-    "about.pillars.universities.title": "Khối Đại học",
-    "about.pillars.universities.subtitle": "Universities",
-    "about.pillars.universities.description":
-      'Đóng vai trò "Cầu nối Công nghiệp" với tiêu chí "Zero-Burden". Corelia bảo trợ 100% chuyên môn để đồng tổ chức Hackathon, Bootcamp và tích hợp tín chỉ học thuật.',
-    "about.pillars.universities.point1":
-      "Zero-Burden: Không gánh nặng chuyên môn",
-    "about.pillars.universities.point2":
-      "Tích hợp 2-3 tín chỉ vào hệ thống đại học",
-    "about.pillars.universities.point3":
-      "Tech Hackathon và Bootcamp (track App · AI · Blockchain) ngay tại campus",
-
-    "about.pillars.b2b.title": "Khối Doanh nghiệp",
-    "about.pillars.b2b.subtitle": "B2B Solutions",
-    "about.pillars.b2b.description":
-      'Giải quyết cơn khát nhân sự Move, Rust thông qua mô hình cung cấp nhân sự đã qua kiểm chứng và giải pháp đột phá "Squad-as-a-Service" – cho thuê trọn gói một Đội tác chiến.',
-    "about.pillars.b2b.point1": "Talent Placement từ Verified Pool",
-    "about.pillars.b2b.point2": "Squad-as-a-Service: PM + Devs + Researcher",
-    "about.pillars.b2b.point3": "Tiết kiệm hàng tháng chi phí onboarding",
-
-    "about.advantages.title": "Tại sao chọn Corelia Academy?",
-    "about.advantages.description":
-      "Những giá trị bảo chứng tạo nên lợi thế cạnh tranh độc tôn mà không trung tâm đào tạo nào có thể sao chép.",
-    "about.advantages.cert.title": "Bảo chứng Quốc tế",
-    "about.advantages.cert.description":
-      "Chứng chỉ Corelia Certified Developer được công nhận bởi các đối tác Foundation lớn như Sui và Aptos, trở thành giấy thông hành cho năng lực sẵn sàng làm việc tại dự án quốc tế.",
-    "about.advantages.career.title": "Cam kết Đầu ra",
-    "about.advantages.career.description":
-      "Mạng lưới liên kết B2B khổng lồ hỗ trợ khớp nối việc làm (Career Placement) ngay sau khi tốt nghiệp, với các CTO và HR trực tiếp dự khán Demo Day.",
-    "about.advantages.handson.title": "Thực chiến 100%",
-    "about.advantages.handson.description":
-      "Không học lý thuyết suông. Mọi lớp học đều kết thúc bằng Demo Day hoặc dự án thực tế, sản phẩm được mang đi thi đấu tại Hackathon danh giá trong khu vực.",
-    "about.advantages.ecosystem.title": "Hệ sinh thái Khép kín",
-    "about.advantages.ecosystem.description":
-      "Bao trọn vòng đời nhân sự: từ truyền cảm hứng (Learning Tour), đào tạo chuyên sâu (Web3 Semester), thực hành sản phẩm (Capstone), đến khớp nối việc làm (B2B Placement).",
-
     // Businesses page
     "biz.meta.title":
       "Case Studies Hợp tác Giáo dục & Hệ sinh thái | Corelia Academy",
@@ -643,87 +569,6 @@ export const translations = {
       "Liên hệ để nhận tư vấn về nhân sự lập trình, đào tạo chuyển đổi số hoặc mô hình Squad-as-a-Service phù hợp doanh nghiệp của bạn.",
     "biz.cta.button": "Liên hệ tư vấn",
 
-    // Universities page
-    "uni.meta.title": "Hợp tác Đại học - Corelia Academy",
-    "uni.meta.description":
-      "Corelia Academy là cầu nối ngành công nghệ: đồng tổ chức Hackathon, Bootcamp và tích hợp tín chỉ về ứng dụng, AI và blockchain vào hệ thống đại học theo tiêu chí Zero-Burden.",
-
-    "uni.hero.badge": "Cầu nối ngành Công nghệ",
-    "uni.hero.title": "Cầu nối ngành Công nghệ cho Đại học Việt Nam",
-    "uni.hero.description":
-      "Corelia không cạnh tranh với nhà trường. Chúng tôi là cầu nối ngành Công nghệ. App, AI và Blockchain thay đổi từng tháng; Corelia cập nhật liên tục module và thực hành để đồng hành giảng đường. Bảo trợ 100% chuyên môn bổ sung theo tiêu chí Zero-Burden, không tạo thêm gánh nặng chuyên môn cho cơ sở giáo dục.",
-
-    "uni.pain.title": "Ba trọng tâm khi đưa App, AI và Blockchain vào đại học",
-    "uni.pain.description":
-      "Corelia đồng hành nhà trường với mô hình Zero-Burden, bổ sung chuyên môn bên ngoài một cách có lộ trình và đo lường được.",
-    "uni.pain.curriculum.title": "Đồng bộ nhịp đổi mới với thực tiễn ngành",
-    "uni.pain.curriculum.description":
-      "App, AI và Blockchain thay đổi từng tháng; Corelia cập nhật liên tục học phần bổ sung và tiêu chí thực hành, giúp sinh viên bám chuẩn thị trường và bổ trợ song song chương trình đào tạo chính do nhà trường phụ trách.",
-    "uni.pain.curriculum.solution":
-      'Corelia cung cấp module "Plug-and-Play" luôn được làm mới theo tiêu chuẩn đối tác Foundation và thực tiễn sản phẩm.',
-    "uni.pain.lecturers.title": "Củng cố thực chiến cùng đội ngũ giảng dạy",
-    "uni.pain.lecturers.description":
-      "Nhà trường phát huy thế mạnh nền tảng và học thuật; phần triển khai ứng dụng, tích hợp AI và sản phẩm blockchain thương mại được củng cố qua mentor đang làm dự án thật tại Corelia.",
-    "uni.pain.lecturers.solution":
-      "Mentor Corelia là kỹ sư đang xây dựng sản phẩm thực tế, đồng hành giờ thực hành và chấm bài capstone.",
-    "uni.pain.jobs.title": "Đầu ra và minh chứng cho kiểm định",
-    "uni.pain.jobs.description":
-      "Các khung kiểm định (ví dụ AUN-QA) đặt kỳ vọng rõ về việc làm đúng chuyên ngành sau tốt nghiệp; nhà trường cần pipeline doanh nghiệp minh bạch.",
-    "uni.pain.jobs.solution":
-      "Corelia kết nối B2B Talent Pipeline, hỗ trợ thực tập và việc làm chính thức có lộ trình theo dõi.",
-
-    "uni.tiers.title": "3 Cấp độ Hợp tác Linh hoạt",
-    "uni.tiers.description":
-      "Thiết kế để nhà trường triển khai dần, bổ sung song song với chương trình đào tạo chính.",
-
-    "uni.tiers.t1.title": "Cấp độ 1: Khởi tạo",
-    "uni.tiers.t1.subtitle": "Learning Tour (App · AI · Blockchain)",
-    "uni.tiers.t1.description":
-      "Phương thức tiếp cận bề mặt nhằm truyền cảm hứng và phổ cập nhận thức. Tổ chức hội thảo quy mô lớn, workshop ngắn hạn và hình thành Câu lạc bộ Công nghệ sinh viên ngay tại campus.",
-    "uni.tiers.t1.result":
-      "Đã triển khai thành công tại ĐH Văn Lang, ĐH Văn Hiến, CĐ APC.",
-
-    "uni.tiers.t2.title": "Cấp độ 2: Tích hợp Học thuật",
-    "uni.tiers.t2.subtitle": "Tín chỉ & Thay thế Thực tập",
-    "uni.tiers.t2.description":
-      "Module đào tạo Corelia được công nhận như học phần tự chọn trị giá 2-3 tín chỉ. Sinh viên hoàn thành Capstone Project tại Corelia được công nhận tương đương thực tập tốt nghiệp.",
-    "uni.tiers.t2.result":
-      "Khuyến khích sinh viên trải nghiệm thực tế mà không chậm tiến độ học tập.",
-
-    "uni.tiers.t3.title": "Cấp độ 3: Chiến lược Bền vững",
-    "uni.tiers.t3.subtitle": "R&D Lab & Train-the-Trainer",
-    "uni.tiers.t3.description":
-      "Đào tạo chuyển giao công nghệ cho giảng viên cơ hữu. Hợp lực kêu gọi tài trợ quốc tế để xây dựng Phòng lab R&D (ứng dụng, AI, blockchain) và không gian ươm mầm khởi nghiệp ngay trong khuôn viên đại học.",
-    "uni.tiers.t3.result":
-      "Cấp độ hợp tác cao nhất, tạo ra giá trị bền vững dài hạn cho nhà trường.",
-
-    "uni.zeroburden.title": "Mô hình Zero-Burden",
-    "uni.zeroburden.description":
-      "Trách nhiệm được phân định rạch ròi: Nhà trường chỉ cần hỗ trợ cơ sở vật chất và truyền thông. Mọi vấn đề phức tạp thuộc về Corelia.",
-    "uni.zeroburden.school.title": "Nhà trường cung cấp",
-    "uni.zeroburden.school.point1": "Hội trường, phòng máy tính",
-    "uni.zeroburden.school.point2": "Truyền thông huy động sinh viên",
-    "uni.zeroburden.school.point3": "Ghi nhận kết quả ngoại khóa",
-    "uni.zeroburden.corelia.title": "Corelia đảm nhận",
-    "uni.zeroburden.corelia.point1": "100% giáo trình chuyên sâu",
-    "uni.zeroburden.corelia.point2":
-      "Giảng viên, server thực hành, quy chuẩn chấm điểm",
-    "uni.zeroburden.corelia.point3":
-      "Thiết kế đề Hackathon theo track App · AI · Blockchain và mentor túc trực",
-
-    "uni.activities.title": "Hoạt động trọng tâm tại campus",
-    "uni.activities.bootcamp.title": "Tech Bootcamp tại campus",
-    "uni.activities.bootcamp.description":
-      "Khóa cường độ cao 1 đến 2 tuần hoặc cuối tuần với các track App · AI · Blockchain (hoặc lộ trình phối hợp theo thỏa thuận với nhà trường). Corelia đảm nhận giáo trình, môi trường thực hành, giảng viên và quy chuẩn đánh giá độc lập.",
-    "uni.activities.hackathon.title": "Tech Hackathon",
-    "uni.activities.hackathon.description":
-      "Cuộc thi công nghệ 48 đến 72 giờ với các track App · AI · Blockchain: sinh viên chọn track phù hợp năng lực và định hướng. Corelia thiết kế đề bài, cử mentor kỹ thuật và mời ban giám khảo từ doanh nghiệp.",
-
-    "uni.cta.title": "Đưa App, AI và Blockchain vào giảng đường",
-    "uni.cta.description":
-      "Liên hệ để chọn cấp độ hợp tác phù hợp với nhà trường. Corelia cam kết Zero-Burden: chúng tôi đảm nhận phần chuyên môn bổ sung.",
-    "uni.cta.button": "Liên hệ hợp tác",
-
     // Contact page
     "contact.meta.title": "Liên hệ – Corelia Academy",
     "contact.meta.description":
@@ -797,11 +642,8 @@ export const translations = {
     "nav.about": "About",
     "nav.program": "Program",
     "nav.contact": "Contact",
-    "nav.fields": "Fields",
     "nav.businesses": "Case Studies",
-    "nav.universities": "For Universities",
     "nav.blog": "Blog",
-    "nav.ecosystem": "Ecosystem",
     "nav.roadmap": "Roadmap",
     "nav.getStarted": "Learn now",
 
@@ -1231,78 +1073,6 @@ export const translations = {
     "blog.stats.featuredEvents": "Featured events each year",
     "blog.stats.web3Projects": "Outstanding Web3 projects",
 
-    // About page
-    "about.meta.title":
-      "About Corelia Academy – Building Vietnam's Leading Generation of Well-Rounded Developers",
-    "about.meta.description":
-      "Corelia Academy builds a closed-loop ecosystem across education, hands-on practice, and talent supply, developing well-rounded developers in applications, AI, and blockchain, with enterprises and universities in Vietnam.",
-
-    "about.hero.badge":
-      "App Development · AI · Blockchain, Education · Practice · Talent Supply",
-    "about.hero.title":
-      "Building Vietnam's Leading Generation of Well-Rounded Developers",
-    "about.hero.description":
-      "Corelia Academy builds a closed-loop ecosystem across education, hands-on practice, and talent supply, developing well-rounded developers in applications, AI, and blockchain, with enterprises and universities in Vietnam.",
-
-    "about.philosophy.label": "Core Philosophy",
-    "about.philosophy.title": '"Problems and Value First, Engineering Follows"',
-    "about.philosophy.description":
-      "Every learner is guided to understand users, product flows, and where application development, AI, and blockchain each fit before writing the first line of code. That way they know when AI helps, when on-chain deployment matters, and when a conventional application is enough.",
-    "about.philosophy.point1":
-      "Take a helicopter view of product problems, data, and users before choosing a stack",
-    "about.philosophy.point2":
-      "Understand AI value, cost, and limits before wiring models into real products",
-    "about.philosophy.point3":
-      "Grow from writing code to shipping products that blend apps, AI, and blockchain where it fits",
-
-    "about.pillars.title": "The 3-Pillar Ecosystem",
-    "about.pillars.description":
-      "Corelia is not just a training center. It's a closed-loop ecosystem serving three strategic audiences.",
-
-    "about.pillars.learners.title": "Learners",
-    "about.pillars.learners.subtitle": "Learners",
-    "about.pillars.learners.description":
-      "Experience the Developer Semester over 3–6 months with an App, AI, or Blockchain track. Learn offline with 100% Vietnamese in the foundation phase to clear conceptual hurdles, then ship real projects for a battle-tested portfolio.",
-    "about.pillars.learners.point1":
-      "Developer Semester: 3–6 months, choose an App, AI, or Blockchain track",
-    "about.pillars.learners.point2": "100% Vietnamese in foundation phase",
-    "about.pillars.learners.point3": "Demo Day & battle-tested Portfolio",
-
-    "about.pillars.universities.title": "Universities",
-    "about.pillars.universities.subtitle": "Universities",
-    "about.pillars.universities.description":
-      'Acting as an "Industry Bridge" with the "Zero-Burden" principle. Corelia sponsors 100% of expertise to co-organize Hackathons, Bootcamps and integrate academic credits.',
-    "about.pillars.universities.point1":
-      "Zero-Burden: No expertise overhead for schools",
-    "about.pillars.universities.point2":
-      "2-3 credit integration into university systems",
-    "about.pillars.universities.point3":
-      "Tech Hackathons and Bootcamps (App · AI · Blockchain tracks) on campus",
-
-    "about.pillars.b2b.title": "Enterprises",
-    "about.pillars.b2b.subtitle": "B2B Solutions",
-    "about.pillars.b2b.description":
-      'Solving the Move & Rust talent shortage through verified talent placement and the breakthrough "Squad-as-a-Service" model – leasing a complete operational squad.',
-    "about.pillars.b2b.point1": "Talent Placement from Verified Pool",
-    "about.pillars.b2b.point2": "Squad-as-a-Service: PM + Devs + Researcher",
-    "about.pillars.b2b.point3": "Save months of onboarding costs",
-
-    "about.advantages.title": "Why Choose Corelia Academy?",
-    "about.advantages.description":
-      "Endorsed values that create an unrivaled competitive moat no other training center can replicate.",
-    "about.advantages.cert.title": "International Endorsement",
-    "about.advantages.cert.description":
-      "The Corelia Certified Developer credential is recognized by major Foundation partners like Sui and Aptos, serving as a passport of credibility for international project readiness.",
-    "about.advantages.career.title": "Career Commitment",
-    "about.advantages.career.description":
-      "A massive B2B network supports Career Placement immediately after graduation, with CTOs and HR leaders directly attending Demo Day presentations.",
-    "about.advantages.handson.title": "100% Hands-On",
-    "about.advantages.handson.description":
-      "No pure theory. Every class culminates in a Demo Day or real project. Products are submitted to compete in prestigious regional Hackathons.",
-    "about.advantages.ecosystem.title": "Closed-Loop Ecosystem",
-    "about.advantages.ecosystem.description":
-      "Covering the full talent lifecycle: from inspiration (Learning Tour), deep specialization (Web3 Semester), product execution (Capstone), to job matching (B2B Placement).",
-
     // Businesses page
     "biz.meta.title":
       "Education & Ecosystem Partnership Case Studies | Corelia Academy",
@@ -1434,91 +1204,6 @@ export const translations = {
     "biz.cta.description":
       "Contact us for consulting on programming talent, digital transformation training, or Squad-as-a-Service tailored to your enterprise.",
     "biz.cta.button": "Contact Us",
-
-    // Universities page
-    "uni.meta.title": "University Partnership - Corelia Academy",
-    "uni.meta.description":
-      "Corelia Academy is an industry bridge for technology education: co-organizing Hackathons and Bootcamps and integrating credits for applications, AI, and blockchain into university programs with Zero-Burden criteria.",
-
-    "uni.hero.badge": "Technology industry bridge",
-    "uni.hero.title":
-      "The Technology Industry Bridge for Vietnamese Universities",
-    "uni.hero.description":
-      "Corelia doesn't compete with your institution. We are a technology industry bridge. Apps, AI, and blockchain evolve month by month; Corelia updates modules and hands-on practice continuously to stay alongside your teaching. We underwrite 100% of this complementary expertise under Zero-Burden, with no added specialist load for your staff.",
-
-    "uni.pain.title":
-      "Three focus areas for bringing Apps, AI, and Blockchain to campus",
-    "uni.pain.description":
-      "Corelia partners with institutions through Zero-Burden delivery: external expertise that is phased, measurable, and aligned with academic governance.",
-    "uni.pain.curriculum.title":
-      "Keeping pace with how fast the industry moves",
-    "uni.pain.curriculum.description":
-      "Apps, AI, and blockchain shift month by month; Corelia continuously refreshes elective modules and lab criteria so students stay aligned with market practice while complementing the degree programs your faculty lead.",
-    "uni.pain.curriculum.solution":
-      'Corelia delivers "Plug-and-Play" modules refreshed against Foundation partner standards and live product practice.',
-    "uni.pain.lecturers.title":
-      "Strengthening hands-on delivery alongside faculty",
-    "uni.pain.lecturers.description":
-      "Your institution leads foundations and scholarship; shipping commercial applications, AI features, and blockchain products is reinforced by Corelia mentors who build those products day to day.",
-    "uni.pain.lecturers.solution":
-      "Corelia mentors are practicing engineers who join labs and capstone reviews with clear rubrics.",
-    "uni.pain.jobs.title": "Outcomes evidence for accreditation and careers",
-    "uni.pain.jobs.description":
-      "Accreditation frameworks such as AUN-QA set clear expectations for graduate employment in relevant fields; institutions benefit from a transparent employer pipeline.",
-    "uni.pain.jobs.solution":
-      "Corelia connects a B2B talent pipeline with structured internships and full-time pathways you can track.",
-
-    "uni.tiers.title": "3 Flexible Partnership Tiers",
-    "uni.tiers.description":
-      "Designed so institutions can adopt gradually in parallel with their main degree programs.",
-
-    "uni.tiers.t1.title": "Tier 1: Initiation",
-    "uni.tiers.t1.subtitle": "Learning Tour (App · AI · Blockchain)",
-    "uni.tiers.t1.description":
-      "Surface-level engagement focused on inspiration and awareness. Large-scale seminars, short-term workshops and student Technology Clubs formed right on campus.",
-    "uni.tiers.t1.result":
-      "Successfully deployed at Van Lang University, Van Hien University, APC College.",
-
-    "uni.tiers.t2.title": "Tier 2: Academic Integration",
-    "uni.tiers.t2.subtitle": "Credits & Alternative Internship",
-    "uni.tiers.t2.description":
-      "Corelia training modules recognized as elective courses worth 2-3 credits. Students completing a Capstone Project at Corelia get equivalent graduation internship recognition.",
-    "uni.tiers.t2.result":
-      "Encourages students to gain real industry exposure without delaying academic progress.",
-
-    "uni.tiers.t3.title": "Tier 3: Sustainable Strategy",
-    "uni.tiers.t3.subtitle": "R&D Lab & Train-the-Trainer",
-    "uni.tiers.t3.description":
-      "Technology transfer training for full-time faculty. Joint efforts to secure international funding for R&D labs spanning applications, AI, and blockchain, plus on-campus incubation space.",
-    "uni.tiers.t3.result":
-      "The highest level of collaboration, creating sustainable long-term value for institutions.",
-
-    "uni.zeroburden.title": "The Zero-Burden Model",
-    "uni.zeroburden.description":
-      "Responsibilities are clearly delineated: Universities provide facilities and outreach. All complexities are handled by Corelia.",
-    "uni.zeroburden.school.title": "University provides",
-    "uni.zeroburden.school.point1": "Auditoriums, computer labs",
-    "uni.zeroburden.school.point2": "Student outreach communications",
-    "uni.zeroburden.school.point3": "Extracurricular achievement recognition",
-    "uni.zeroburden.corelia.title": "Corelia handles",
-    "uni.zeroburden.corelia.point1": "100% specialized curriculum",
-    "uni.zeroburden.corelia.point2":
-      "Instructors, practice servers, grading standards",
-    "uni.zeroburden.corelia.point3":
-      "Hackathon track design (App · AI · Blockchain) and on-site mentors",
-
-    "uni.activities.title": "Core on-campus activities",
-    "uni.activities.bootcamp.title": "On-campus Tech Bootcamp",
-    "uni.activities.bootcamp.description":
-      "High-intensity one to two week or weekend programs with App · AI · Blockchain tracks, or blended paths agreed with your institution. Corelia delivers curriculum, practice environments, instructors, and independent grading standards.",
-    "uni.activities.hackathon.title": "Tech Hackathon",
-    "uni.activities.hackathon.description":
-      "A 48 to 72 hour technology hackathon with App · AI · Blockchain tracks so students choose the path that fits their skills and goals. Corelia designs challenges, provides technical mentors, and invites industry judges.",
-
-    "uni.cta.title": "Bring Apps, AI, and Blockchain into your classroom",
-    "uni.cta.description":
-      "Contact us to choose the partnership tier that fits your institution. Corelia commits to Zero-Burden delivery for the complementary expertise we provide.",
-    "uni.cta.button": "Contact for Partnership",
 
     // Contact page
     "contact.meta.title": "Contact – Corelia Academy",

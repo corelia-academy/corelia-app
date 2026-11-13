@@ -32,7 +32,8 @@ export default defineConfig({
     react(),
     // Static pages only; /sitemap-catalog.xml lists the server-rendered catalog.
     sitemap({
-      filter: (page) => !/\/404\/?$/.test(page),
+      // /roadmap is hidden (noindex) until its content is final.
+      filter: (page) => !/\/(404|roadmap)\/?$/.test(page),
       // Pages are served without a trailing slash (wrangler html_handling) and canonicalised that way.
       serialize: (item) => ({ ...item, url: item.url.replace(/(?<=[^/])\/$/, "") }),
     }),
