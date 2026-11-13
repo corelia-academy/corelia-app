@@ -16,3 +16,13 @@
 /blog/vi-sao-corelia-dong-to-chuc-unihackfest-2026 /blog/why-corelia-co-organizes-unihackfest-2026 301
 /vi/blog/rwa-tokenized-gold-hanoi-workshop-2026 /vi/blog/corelia-academy-rwa-tokenized-gold-hanoi-workshop-2026 301
 /vi/blog/van-lang-web3-dapp-workshop-2026 /vi/blog/corelia-academy-van-lang-web3-dapp-workshop-2026 301
+/about / 301
+/vi/about /vi 301
+/universities /contact 301
+/vi/universities /vi/contact 301
+/cora / 301
+/vi/cora /vi 301
+/ecosystem / 301
+/vi/ecosystem /vi 301
+/member/* /blog 301
+/vi/member/* /vi/blog 301

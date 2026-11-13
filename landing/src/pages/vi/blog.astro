@@ -110,9 +110,6 @@ const t = useTranslations("vi");
                   ? memberBySlug.get(post.data.author)
                   : null;
                 const authorName = author?.data.name ?? post.data.author;
-                const authorHref = post.data.author
-                  ? `/member/${post.data.author}`
-                  : null;
                 const href = blogPostUrl("vi", post.slug);
 
                 return (
@@ -136,16 +133,10 @@ const t = useTranslations("vi");
                         <p class="text-xs text-black">
                           {fmtDate.format(post.data.date)}
                         </p>
-                        {authorHref ? (
+                        {authorName ? (
                           <p class="text-xs text-black">
                             <span class="mx-1">•</span>
-                            {t("blog.by")}{" "}
-                            <a
-                              class="text-black hover:underline underline-offset-4"
-                              href={authorHref}
-                            >
-                              {authorName}
-                            </a>
+                            {t("blog.by")} {authorName}
                           </p>
                         ) : null}
                       </div>
