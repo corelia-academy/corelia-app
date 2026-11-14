@@ -5,7 +5,7 @@ import { useLearningTranslation } from "./useLearningTranslation";
 export function LessonDataError() {
   const { t } = useLearningTranslation();
   return (
-    <div role="alert" className="flex min-h-[60vh] flex-col items-center justify-center gap-xl py-6xl">
+    <div role="alert" className="flex flex-1 flex-col items-center justify-center gap-xl py-6xl">
       <EmptyStateIllustration
         type="error"
         size="fullPage"

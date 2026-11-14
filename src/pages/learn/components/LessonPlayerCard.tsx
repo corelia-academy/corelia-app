@@ -137,8 +137,8 @@ function Workspace({ lesson, lessonIndex, isDraftLesson, hasFullCourseAccess, co
       </ul>
     </section>
   );
-  return <div className="flex min-h-full flex-col">
-    <div ref={bodyRef} className="flex-1">
+  return <div className="flex min-h-full flex-1 flex-col">
+    <div ref={bodyRef} className="flex flex-1 flex-col">
       <LessonRenderer lesson={lesson} courseId={courseId} mode={mode} contentLocale={contentLocale} completed={completed} onComplete={complete} onAction={registerAction} questions={questions} resetEpoch={resetEpoch} draftEpoch={draftEpoch} contentFrame={{ header, resources: resourcesNode || undefined }} />
     </div>
     {inFooter && (

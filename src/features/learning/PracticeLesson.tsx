@@ -4,6 +4,9 @@ import { PracticeHackathonLink } from "./PracticeHackathon";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLearningTranslation } from "@/features/learning/useLearningTranslation";
 import { Markdown } from "@/components/markdown/Markdown";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { CheckboxCard } from "@/components/ui/selection";
 import { useAuth } from "@/stores/authStore";
 import { validArtifact } from "./validation";
 import { readPracticeDraft } from "./practiceDraft";
@@ -62,8 +65,17 @@ function Practice({ lesson, mode, courseId, userId, onAction, onComplete, conten
     <Markdown content={lesson.description_markdown ?? ""} variant="lesson" />
     {config.related_project_id && <PracticeProjectLink id={config.related_project_id} locale={contentLocale} />}
     {config.related_hackathon_id && <PracticeHackathonLink id={config.related_hackathon_id} locale={contentLocale} />}
-    {steps.map(step => <div key={step.id} className="rounded-xl border border-border p-4"><label className="flex min-h-11 items-center gap-3"><input type="checkbox" checked={checked[step.id] === true} onChange={e => setChecked(c => ({ ...c, [step.id]: e.target.checked }))} /><span>{step.title}</span></label>{step.instructions_markdown && <Markdown content={step.instructions_markdown} variant="lesson" />}</div>)}
-    {fields.map(field => <label key={field} className="block space-y-2 text-sm"><span>{t(`learning.artifacts.${field}`)} *</span><input value={artifacts[field] ?? ""} onChange={e => setArtifacts(a => ({ ...a, [field]: e.target.value }))} className="min-h-11 w-full rounded-lg border border-border bg-surface-base px-3" /></label>)}
+    {steps.map(step => (
+      <div key={step.id} className="flex flex-col gap-md">
+        <CheckboxCard size="large" checked={checked[step.id] === true} onCheckedChange={value => setChecked(c => ({ ...c, [step.id]: value }))} label={step.title} />
+        {step.instructions_markdown && <Markdown content={step.instructions_markdown} variant="lesson" />}
+      </div>
+    ))}
+    {fields.map(field => (
+      <Field key={field} label={t(`learning.artifacts.${field}`)} required>
+        <Input value={artifacts[field] ?? ""} onChange={e => setArtifacts(a => ({ ...a, [field]: e.target.value }))} />
+      </Field>
+    ))}
     {mode === "learner" && (fields.length > 0 || config.mode === "submission") && <Link to={`/study/${courseId}/final-assignment`} className="text-primary underline">{t("learning.finalAssignmentLink")}</Link>}
     {mode === "learner" && config.mode === "guided_project" && <div className="space-y-2 text-sm"><p>{t("learning.portfolioOptional")}</p><a href={appPath("/account/profile")} className="text-primary underline">{t("learning.openProfile")}</a></div>}
     {(!saved || !artifactSaved) && <p role="status" className="text-sm text-foreground-muted">{t("learning.draftUnavailable")}</p>}
